@@ -1,62 +1,81 @@
 import React from "react";
 import Logo from "../logo/Logo";
-import Image from "next/image";
-import { Button } from "../ui/button";
 import { FaFacebookF } from "react-icons/fa";
 import { FcGoogle } from "react-icons/fc";
 import Link from "next/link";
+import { routes } from "@/constantes/routes";
 
 const connectionMethods = [
     {
         icon: FcGoogle,
-        method: 'GOOGLE'
+        method: "GOOGLE",
     },
     {
         icon: FaFacebookF,
-        method: 'GOOGLE'
+        method: "FACEBOOK",
     },
-] as const
+] as const;
 
 type LayoutAuthProps = React.PropsWithChildren & {
-    type: 'Signin' | 'Signup'
-}
+    type: "Signin" | "Signup";
+};
 
 export const LayoutAuth: React.FC<LayoutAuthProps> = ({ children, type }) => {
     return (
-        <div className="w-full min-h-screen">
-            <div className="hidden lg:block w-1/2 h-full relative">
-                <div className="absolute w-full h-screen">
-                    <Image
-                        src='/assets/img-city.jpg'
-                        alt="city"
-                        fill
-                    />
+        <div className="min-h-screen bg-gray-100 flex justify-center items-center py-5">
+            {/* Container */}
+            <div className="w-full max-w-4xl mx-4 bg-white shadow-lg rounded-lg flex flex-col md:flex-row overflow-hidden">
+                {/* Left Side: Branding/Message */}
+                <div className="hidden md:block md:w-1/2 bg-gradient-to-br from-blue-500 to-indigo-500 text-white p-8">
+                    <div className="flex flex-col h-full">
+                        <Logo />
+                        <h1 className="text-2xl font-bold">
+                            Bienvenue sur Home-Rent
+                        </h1>
+                        <p className="mt-4 text-lg">
+                            Trouvez facilement votre maison ou appartement de rêve grâce à notre plateforme intuitive.
+                        </p>
+                    </div>
                 </div>
-            </div>
-            <div className="lg:w-1/2 lg:ml-auto lg:p-20 flex flex-col gap-4 p-5">
-                <Logo />
-                <h1>Bienvenue sur Home-Rent, la plateforme pour facilité vos recherches de logements</h1>
-                {children}
-                <div className="flex gap-3 justify-center">
-                    {
-                        connectionMethods.map((connection: typeof connectionMethods[number], key) => (
-                            <button
-                                key={key}
-                                type="button"
-                                className="rounded-full flex items-center justify-center w-14 h-14 border"
-                            >
-                                <connection.icon size={25} color="blue" />
-                            </button>
-                        ))
-                    }
-                </div>
-                <div className="flex items-center justify-center gap-2">
-                    <span>{type === 'Signup' ? "Vous n'avez pas de compte?" : "Vous avez déjà un compte?"}</span>
-                    <Link href={''}>
-                        {type === 'Signup' ? "Se connecter" : "S'enregistrer"}
-                    </Link>
+
+                {/* Right Side: Form/Card */}
+                <div className="w-full md:w-1/2 flex flex-col justify-center p-6 sm:p-10">
+                    {/* Card Content */}
+                    <div className="w-full max-w-md mx-auto">
+                        <h1 className="text-center text-2xl font-bold mb-6">
+                            {type === "Signin" ? "Connexion" : "Créer un compte"}
+                        </h1>
+                        <div>{children}</div>
+                        <div className="mt-6 flex flex-col items-center">
+                            <span className="text-sm text-gray-500 mb-2">Ou connectez-vous avec</span>
+                            <div className="flex gap-4">
+                                {connectionMethods.map((connection, key) => (
+                                    <button
+                                        key={key}
+                                        type="button"
+                                        className="w-12 h-12 rounded-full bg-gray-100 flex items-center justify-center hover:bg-gray-200 transition duration-200"
+                                    >
+                                        <connection.icon size={24} />
+                                    </button>
+                                ))}
+                            </div>
+                        </div>
+                        <div className="mt-6 text-center">
+                            <p className="text-sm text-gray-500">
+                                {type === "Signin"
+                                    ? "Vous n'avez pas de compte?"
+                                    : "Vous avez déjà un compte?"}{" "}
+                                <Link
+                                    href={type === "Signup" ? routes.public.signin : routes.public.signup}
+                                    className="text-blue-500 hover:underline"
+                                >
+                                    {type === "Signup" ? "Se connecter" : "S'enregistrer"}
+                                </Link>
+                            </p>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
-    )
-}
+    );
+};

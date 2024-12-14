@@ -17,7 +17,7 @@ export const Signin = () => {
 
     }
     return (
-        <LayoutAuth>
+        <LayoutAuth type='Signin'>
             <Form {...form}>
                 <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-3">
                     <h1 className="text-lg">Heureux de vous revoir, connectez-vous</h1>
