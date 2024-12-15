@@ -1,34 +1,45 @@
 import React from 'react'
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from '../ui/form'
-import { Button } from '../ui/button'
 import { PhoneInput } from '../ui/phone-input'
+import { FieldValues, UseFormReturn, Path } from 'react-hook-form'
+import { cn } from '@/lib/utils'
 
-type PhoneNumberFormProps = {
-    form: any,
-    label?: string,
-    description?: string,
-    placeholder?: string,
-    name: string,
+type PhoneNumberFormProps<T extends FieldValues> = {
+    form: UseFormReturn<T>;
+    name: Path<T>;
+    label?: string;
+    description?: string;
+    placeholder?: string;
+    className?: string;
+    classNameItem?: string;
+    classNameLabel?: string;
+    classNameControl?: string;
+    classNameDescription?: string;
 }
-export const PhoneNumberForm: React.FC<PhoneNumberFormProps> = ({
+export const PhoneNumberForm = <T extends FieldValues>({
     form,
     label,
     description,
     placeholder,
-    name
-}) => {
+    name,
+    className,
+    classNameItem,
+    classNameLabel,
+    classNameControl,
+    classNameDescription
+}: PhoneNumberFormProps<T>) => {
     return (
         <Form {...form}>
             <FormField
                 control={form.control}
                 name={name}
                 render={({ field }) => (
-                    <FormItem className="flex flex-col items-start">
-                        <FormLabel className="text-left">{label}</FormLabel>
-                        <FormControl className="w-full">
-                            <PhoneInput placeholder={placeholder} {...field} />
+                    <FormItem className={cn(classNameItem, "flex flex-col items-start")}>
+                        <FormLabel className={cn(classNameLabel, "text-left")}>{label}</FormLabel>
+                        <FormControl className={cn(classNameControl, "w-full")}>
+                            <PhoneInput className={className} placeholder={placeholder} {...field} />
                         </FormControl>
-                        <FormDescription className="text-left">
+                        <FormDescription className={cn(classNameDescription, "text-left")}>
                             {description}
                         </FormDescription>
                         <FormMessage />

@@ -1,15 +1,15 @@
 import { Link } from 'lucide-react'
 import React from 'react'
 import { FormField, FormItem, FormLabel, FormControl, FormDescription, FormMessage } from '../ui/form'
-import { UseFormReturn } from 'react-hook-form';
+import { FieldValues, Path, UseFormReturn } from 'react-hook-form';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../ui/select';
 type OptionType = {
     value: string,
     label: string
 }
-type SelectFormProps = {
-    form: UseFormReturn<any>;
-    name: string,
+type SelectFormProps<T extends FieldValues> = {
+    form: UseFormReturn<T>;
+    name: Path<T>;
     options: OptionType[];
     label?: string;
     description?: string;
@@ -19,7 +19,7 @@ type SelectFormProps = {
     classNameContent?: string;
     classNameItem?: string
 }
-export const SelectForm: React.FC<SelectFormProps> = ({
+export const SelectForm = <T extends FieldValues>({
     form,
     label,
     description,
@@ -30,7 +30,7 @@ export const SelectForm: React.FC<SelectFormProps> = ({
     classNameValue,
     classNameContent,
     classNameItem
-}) => {
+}: SelectFormProps<T>) => {
     return (
         <FormField
             control={form.control}

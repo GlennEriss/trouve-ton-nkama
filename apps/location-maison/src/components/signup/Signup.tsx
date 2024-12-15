@@ -9,6 +9,7 @@ import { Form } from '../ui/form'
 import { SelectForm } from '../forms/SelectForm'
 import { countries } from '@/constantes/country'
 import { PhoneNumberForm } from '../forms/PhoneNumberForm'
+import { CheckboxForm } from '../forms/CheckboxForm'
 
 export const Signup: React.FC = () => {
     const form = useForm<FormRegisterSchemaType>({
@@ -79,12 +80,17 @@ export const Signup: React.FC = () => {
                         className='p-5'
                     />
                     <InputForm
-                        form={form as any}
+                        form={form}
                         name='password'
                         label='Mot de passe'
                         type='password'
                         placeholder='*******'
                         className='p-5'
+                    />
+                    <CheckboxForm
+                        form={form}
+                        name={'termsOfPrivacyPolicy'}
+                        label="En cliquant sur s'inscrire, vous êtes en accord avec notre politique de confidentialité"
                     />
                 </form>
             </Form>

@@ -5,13 +5,13 @@ import { isValidPhoneNumber } from 'react-phone-number-input';
 import { z } from 'zod';
 
 export const FormLoginSchema = z.object({
-    email: z
-        .string()
-        .email({ message: "Veuillez entrer un email valide" })
-        .nonempty({ message: "L'email est obligatoire" }),
-    password: z
-        .string()
-        .min(1, { message: "Le mot de passe est obligatoire" }),
+  email: z
+    .string()
+    .email({ message: "Veuillez entrer un email valide" })
+    .nonempty({ message: "L'email est obligatoire" }),
+  password: z
+    .string()
+    .min(1, { message: "Le mot de passe est obligatoire" }),
 });
 
 export const FormRegisterSchema = z.object({
@@ -32,6 +32,9 @@ export const FormRegisterSchema = z.object({
     .string()
     .refine(isValidPhoneNumber, { message: "Invalid phone number" })
     .or(z.literal("")),
+  termsOfPrivacyPolicy: z
+    .boolean()
+    .refine((value) => value === true, 'errors.terms_required'),
 });
 
 export type FormRegisterSchemaType = z.infer<typeof FormRegisterSchema>;
