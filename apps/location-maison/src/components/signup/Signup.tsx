@@ -57,7 +57,7 @@ export const Signup: React.FC = () => {
                 console.error(error)
                 toast({
                     title: 'Création de compte',
-                    description: "Une erreur est survenue durant la création du compte!" + error,
+                    description: "L'adresse email est déjà utilisé!",
                     variant: 'destructive',
                 });
             })
@@ -142,7 +142,7 @@ export const Signup: React.FC = () => {
                         name={'termsOfPrivacyPolicy'}
                         label="En cliquant sur s'inscrire, vous êtes en accord avec notre politique de confidentialité"
                     />
-                    <ButtonLoading type='submit' disabled={form.formState.isSubmitting} className='w-full'>
+                    <ButtonLoading type='submit' disabled={form.formState.isSubmitting || form.formState.isLoading} className='w-full'>
                         S'enregistrer
                     </ButtonLoading>
                 </form>

@@ -6,7 +6,8 @@ export type User = Person & {
     uid: string;
     login: string,
     password?: string
-    roles: Role[]
+    roles: Role[],
+    emailVerified?: boolean
 }
 
 export type Role = 'Admin' | 'Announcer'

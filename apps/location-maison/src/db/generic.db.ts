@@ -2,12 +2,12 @@ import firebaseCollectionNames from "@/constantes/firebase-collection-name";
 
 const getFirestore = () => import("@/firebase/firestore");
 
-export async function createModel<T>(user: T): Promise<string | null> {
+export async function createModel<T>(model: T): Promise<string | null> {
     try {
         const { addDoc, collection, db, serverTimestamp } = await getFirestore();
         const collectionRef = collection(db, firebaseCollectionNames.users);
         const docRef = await addDoc(collectionRef, {
-            ...user,
+            ...model,
             state: 'IN_PROGRESS',
             createdAt: serverTimestamp(),
             updatedAt: serverTimestamp()
@@ -17,5 +17,4 @@ export async function createModel<T>(user: T): Promise<string | null> {
         console.error("Error creating model:", error);
         return null;
     }
-
 }

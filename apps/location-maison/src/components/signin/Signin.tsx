@@ -8,13 +8,35 @@ import { Form } from '../ui/form';
 import { InputForm } from '../forms/InputForm';
 import Link from 'next/link';
 import { ButtonLoading } from '../buttons/ButtonLoading';
+import { useRouter } from 'next/navigation';
+import { useToast } from '@/hooks/use-toast';
+import { login } from '@/actions/login';
 
 export const Signin = () => {
+    const router = useRouter()
+    const [isPending, startTransition] = React.useTransition()
+    const { toast } = useToast()
     const form = useForm<FormLoginSchemaType>({
         resolver: zodResolver(FormLoginSchema)
     })
-    const onSubmit = () => {
-
+    const onSubmit = async (values: FormLoginSchemaType) => {
+        startTransition(async () => {
+            const result = await login(values)
+            if (result?.error) {
+                toast({
+                    title: 'Erreur de connexion',
+                    description: "Email ou mot de passe incorrect!",
+                    variant: 'destructive',
+                });
+            } else {
+                toast({
+                    title: 'Connexion réussie',
+                    description: "Vous vous êtes connectés avec succès!",
+                    variant: 'success',
+                });
+                router.push('/account/property'); // Redirection après succès
+            }
+        })
     }
     return (
         <LayoutAuth type='Signin'>
@@ -40,7 +62,7 @@ export const Signin = () => {
                     <Link href='' className='text-red-500 flex justify-end text-sm'>
                         Mot de passe oublié?
                     </Link>
-                    <ButtonLoading type='submit' disabled={false} className='w-full'>
+                    <ButtonLoading type='submit' disabled={form.formState.isSubmitting || form.formState.isLoading} className='w-full'>
                         Se connecter
                     </ButtonLoading>
                 </form>
