@@ -40,7 +40,7 @@ export const Signin = () => {
                     <Link href='' className='text-red-500 flex justify-end text-sm'>
                         Mot de passe oublié?
                     </Link>
-                    <ButtonLoading type='submit' isLoading={false} className='w-full'>
+                    <ButtonLoading type='submit' disabled={false} className='w-full'>
                         Se connecter
                     </ButtonLoading>
                 </form>
