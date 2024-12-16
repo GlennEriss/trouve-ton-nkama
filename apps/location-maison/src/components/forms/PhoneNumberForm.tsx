@@ -33,11 +33,11 @@ export const PhoneNumberForm = <T extends FieldValues>({
             <FormField
                 control={form.control}
                 name={name}
-                render={({ field }) => (
+                render={({ field, formState: { isSubmitting } }) => (
                     <FormItem className={cn(classNameItem, "flex flex-col items-start")}>
                         <FormLabel className={cn(classNameLabel, "text-left")}>{label}</FormLabel>
                         <FormControl className={cn(classNameControl, "w-full")}>
-                            <PhoneInput className={className} placeholder={placeholder} {...field} />
+                            <PhoneInput disabled={isSubmitting} className={className} placeholder={placeholder} {...field} />
                         </FormControl>
                         <FormDescription className={cn(classNameDescription, "text-left")}>
                             {description}

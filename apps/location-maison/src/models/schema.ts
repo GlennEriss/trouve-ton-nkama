@@ -23,6 +23,7 @@ export const FormRegisterSchema = z.object({
     .min(8, { message: 'Le mot de passe doit contenir au moins 8 caractères' })
     .regex(/[A-Z]/, { message: 'Le mot de passe doit contenir une majuscule' })
     .regex(/[0-9]/, { message: 'Le mot de passe doit contenir un chiffre' }),
+  passwordConfirm: z.string(),
   birthdate: z.string().regex(
     /^\d{4}-\d{2}-\d{2}$/,
     'La date de naissance doit être au format AAAA-MM-JJ'
@@ -30,11 +31,14 @@ export const FormRegisterSchema = z.object({
   country: z.string().min(1, { message: 'Le pays est requis' }),
   phone: z
     .string()
-    .refine(isValidPhoneNumber, { message: "Invalid phone number" })
+    .refine(isValidPhoneNumber, { message: "Le numéro de téléphone est invalide" })
     .or(z.literal("")),
   termsOfPrivacyPolicy: z
     .boolean()
     .refine((value) => value === true, 'errors.terms_required'),
+}).refine((data) => data.password === data.passwordConfirm, {
+  path: ['passwordConfirm'],
+  message: 'Les mots de passe ne correspondent pas',
 });
 
 export type FormRegisterSchemaType = z.infer<typeof FormRegisterSchema>;

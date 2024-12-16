@@ -44,7 +44,7 @@ export const InputForm = <T extends FieldValues>({
         <FormField
             control={form.control}
             name={name}
-            render={({ field }) => (
+            render={({ field, formState: { isSubmitting } }) => (
                 <FormItem>
                     {label && <FormLabel>{label}</FormLabel>}
                     <FormControl>
@@ -54,6 +54,7 @@ export const InputForm = <T extends FieldValues>({
                                 type={isPasswordField && showPassword ? 'text' : type}
                                 placeholder={placeholder}
                                 className={cn(className, 'pr-10')}
+                                disabled={isSubmitting}
                             />
                             {/* Toggle password visibility icon */}
                             {isPasswordField && (
@@ -61,6 +62,7 @@ export const InputForm = <T extends FieldValues>({
                                     type="button"
                                     onClick={togglePasswordVisibility}
                                     className={cn(classNameButton, "absolute inset-y-0 right-0 flex items-center pr-3 text-gray-500 hover:text-gray-700")}
+                                    disabled={isSubmitting}
                                 >
                                     {showPassword ? <EyeOff size={sizeIcon ? sizeIcon : 20} /> : <Eye size={sizeIcon ? sizeIcon : 20} />}
                                 </button>

@@ -7,6 +7,7 @@ export {
   reauthenticateWithCredential,
   signInWithEmailAndPassword,
   signInWithRedirect,
+  signInWithCustomToken,
   sendPasswordResetEmail,
   sendEmailVerification,
   onAuthStateChanged,

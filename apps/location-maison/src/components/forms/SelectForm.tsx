@@ -35,10 +35,10 @@ export const SelectForm = <T extends FieldValues>({
         <FormField
             control={form.control}
             name={name}
-            render={({ field }) => (
+            render={({ field, formState: { isSubmitting } }) => (
                 <FormItem>
                     <FormLabel>{label}</FormLabel>
-                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                    <Select disabled={isSubmitting} onValueChange={field.onChange} defaultValue={field.value}>
                         <FormControl>
                             <SelectTrigger className={classNameTrigger}>
                                 <SelectValue className={classNameValue} placeholder={placeholder} />
@@ -47,7 +47,7 @@ export const SelectForm = <T extends FieldValues>({
                         <SelectContent className={classNameContent}>
                             {
                                 options.map((option, key) => (
-                                    <SelectItem className={classNameItem} key={key} value={option.value}>
+                                    <SelectItem key={key} className={classNameItem} value={option.value}>
                                         {option.label}
                                     </SelectItem>
                                 ))

@@ -1,9 +1,8 @@
 /**
  * @module country
  */
-import { Country } from "@/models/compte";
 
-export const countries: Country[] = [
+export const countries = [
     { name: "Afghanistan", code: "AF" },
     { name: "Albanie", code: "AL" },
     { name: "Algérie", code: "DZ" },
