@@ -4,27 +4,68 @@
 
 import { ICreation } from "./creation";
 
+//Property
+export type TypeProperty = 'Home' | 'Studio' | 'Apartment' | 'Desk' | 'Building' | 'Villa' | 'Property' | 'Logement'
+export type StatusProperty = "FOR_RENT" | "FOR_SALE"
 export type Image = {
-    path: string,
-    url: string
+    filePATH: string,
+    fileURL: string
 }
-
-export type Address = {
-    region: string,
-    city: string,
-    street: string,
-    logitude: string,
-    latitude: string
-}
-
-export const TypeAnnonce = 'HOME'| 'APARTMENT' | 'STUDIO'| 'LAND'
-export type Annonce = ICreation & {
-    images: Image[],
-    address: Address,
+export type Property = Location & ICreation & {
+    typeProperty: TypeProperty
+    images: Image[]
     title: string,
     description: string,
-    type: TypeAnnonce,
+    area: number,
     price: number,
-    area: number
+    tags: string[],
+    createdBy?: string,
+    status: StatusProperty
 }
 
+export type Location = {
+    street: string,
+    city: string,
+    province: string,
+    additionnalInformation?: string
+    longitude: number,
+    latitude: number,
+    country: string,
+    countryCode: string
+}
+export type Logement = Property & {
+    nbrRooms: number,
+    nbrChickens: number,
+    nbrBathrooms: number,
+    nbrToilets: number
+}
+
+export type Apartment = Logement & {
+    nbrFloorApartment: number,
+    numeroApartment: string
+}
+
+export type Building = Property & {
+    nbrApartments: number,
+    nbrFloors: number,
+    hasParking: number
+}
+
+export type Desk = Property & {
+    nbrToilets: number,
+    nbrRooms: number
+}
+
+export type Home = Logement & {
+    nbrFloors: number,
+    nbrGarages: number
+}
+
+export type Studio = Logement & {
+    nbrFloorStudio: number,
+    numeroStudio: string
+}
+
+export type Villa = Home & {
+    nbrPiscine: number
+}

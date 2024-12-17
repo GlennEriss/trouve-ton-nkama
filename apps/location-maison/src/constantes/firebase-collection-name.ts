@@ -2,8 +2,9 @@
  * @module constantes
  */
 
-const firebaseCollectionNames: Record<string, string> = {
+const firebaseCollectionNames = {
     users: "users",
+    properties: "properties"
 }
 
 export default firebaseCollectionNames

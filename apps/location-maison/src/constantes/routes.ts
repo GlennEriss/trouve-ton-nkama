@@ -3,9 +3,12 @@
  */
 
 export const routes = {
-    protected: {},
+    protected: {
+        properties: '/account/property'
+    },
     public: {
         signin: '/signin',
-        signup: '/signup'
+        signup: '/signup',
+        homePage: '',
     }
 }
