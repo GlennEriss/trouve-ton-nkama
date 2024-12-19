@@ -66,17 +66,20 @@ export async function getProperties({ limitPerPage, lastDoc, createdBy, type }: 
  * @returns {Promise<number>} - Retourne le nombre total de propriétés pour ce type.
  * @throws {Error} - Lève une erreur si la récupération échoue.
  */
-export async function getCountStatisticsByPropertyType(type: TypeProperty, createdBy: string): Promise<number> {
+export async function getCountStatisticsByPropertyType(createdBy: string, type?: TypeProperty,): Promise<number> {
     const { collection, getCountFromServer, db, where, query } = await getFirestore();
     const propertiesRef = collection(db, firebaseCollectionNames.properties);
 
     try {
         // Créer la requête pour compter les documents avec le type spécifié
-        const q = query(propertiesRef,
-            where('typeProperty', '==', type),
+        let q = query(propertiesRef,
             where('createdBy', '==', createdBy)
         );
-
+        if (type) {
+            q = query(q,
+                where('typeProperty', '==', type),
+            );
+        }
         // Utiliser getCountFromServer pour compter les documents
         const snapshot = await getCountFromServer(q);
 
@@ -84,5 +87,60 @@ export async function getCountStatisticsByPropertyType(type: TypeProperty, creat
     } catch (error) {
         console.error("Error fetching property count:", error);
         throw new Error("Failed to fetch property count");
+    }
+}
+
+/**
+ * Retrieve a property document from Firestore by its ID.
+ * 
+ * @param {string} id - The unique ID of the property to be retrieved.
+ * @returns {Promise<Property | null>} - Returns a promise that resolves with the property object or null if not found.
+ * @throws {Error} - Throws an error if the retrieval fails.
+ */
+export async function getPropertyById(id: string): Promise<Property | null> {
+    try {
+        const { doc, getDoc, db } = await getFirestore();
+        const propertyDocRef = doc(db, firebaseCollectionNames.properties, id);
+
+        // Fetch the document
+        const propertySnapshot = await getDoc(propertyDocRef);
+
+        // Check if the document exists
+        if (propertySnapshot.exists()) {
+            // Return the property data with the document ID included
+            const property = { ...propertySnapshot.data() } as Property
+            return { id: propertySnapshot.id, ...property, /* updatedAt: (property.updatedAt as any).toDate(), createdAt: (property.createdAt as any).toDate() */ } as Property;
+        } else {
+            // Return null if no document was found
+            return null;
+        }
+    } catch (error) {
+        console.error("Error fetching property by ID:", error);
+        throw new Error(`Failed to fetch property with ID ${id}: ${error}`);
+    }
+}
+
+export async function createProperty(property: Property): Promise<Property> {
+    const { collection, addDoc, db, serverTimestamp } = await getFirestore();
+
+    // Attach timestamps for creation and update
+    const propertyWithTimestamp = {
+        ...property,
+        createdAt: serverTimestamp(),
+        updatedAt: serverTimestamp(),
+        state: 'IN_PROGRESS'
+    };
+
+    try {
+        // Add the document to the Firestore 'properties' collection
+        const docRef = await addDoc(
+            collection(db, firebaseCollectionNames.properties),
+            propertyWithTimestamp
+        );
+        // Return the property object with the generated Firestore ID
+        return { ...property, id: docRef.id };
+    } catch (error) {
+        console.error('Error adding property:', error);
+        throw error;
     }
 }

@@ -28,7 +28,7 @@ export default function PropertyStatistics() {
                 const updatedStats = await Promise.all(
                     statistics.map(async (stat) => {
                         if (stat.type !== "Property") {
-                            const count = await getCountStatisticsByPropertyType(stat.type, user?.uid ?? '');
+                            const count = await getCountStatisticsByPropertyType(user?.uid ?? '', stat.type);
                             return { ...stat, value: count };
                         }
                         return stat;

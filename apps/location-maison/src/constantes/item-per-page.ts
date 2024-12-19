@@ -1,0 +1,1 @@
+export const PROPERTY_ITEM_PER_PAGE = 12

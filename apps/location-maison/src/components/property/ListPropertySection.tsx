@@ -1,6 +1,6 @@
 'use client'
 import React from 'react'
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '../ui/card'
+import { Card } from '../ui/card'
 import Image from 'next/image'
 import { IconType } from 'react-icons/lib';
 import { BsBuilding } from 'react-icons/bs'
@@ -15,104 +15,168 @@ import { FiEdit2 } from 'react-icons/fi'
 import { AiOutlineEye } from 'react-icons/ai'
 import { useSearchParams } from 'next/navigation';
 import { useCurrentUser } from '@/hooks/use-current-user';
-import { usePropertiesPagination } from '@/hooks/use-properties-pagination';
 import { routes } from '@/constantes/routes';
-import { Property, Apartment, Building, Desk, Home, Studio, Villa, Logement } from '@/models/annonce';
+import { Property, Apartment, Building, Desk, Home, Studio, Villa, Logement, TypeProperty } from '@/models/annonce';
 import { cn } from '@/lib/utils';
+import { capitalizeFirstLetter } from '@/lib/capitalizeFirstLetter';
+import { ChevronLeft, ChevronRight } from 'lucide-react'
+import { getCountStatisticsByPropertyType, getProperties } from '@/db/property.db';
+import { useInfiniteQuery } from '@tanstack/react-query';
+import { PROPERTY_ITEM_PER_PAGE } from '@/constantes/item-per-page';
 
 export default function ListPropertySection() {
     const searchParams = useSearchParams();
-    const type = searchParams.get("type") || ""; // Filtre par type
-    const user = useCurrentUser(); // Récupération de l'utilisateur connecté
-    const { properties, loading, nextPage, previousPage, currentPage } =
-        usePropertiesPagination({
-            limitPerPage: 10,
-            type,
-            createdBy: user?.uid,
-        });
-    if (loading) {
+    const queryType = searchParams.get("type") || "";
+    const type = capitalizeFirstLetter(queryType);
+    const user = useCurrentUser();
+    const [currentPage, setCurrentPage] = React.useState(0);
+    const [totalPage, setTotalPage] = React.useState(0);
+    const fetchInfiniteProperties = async ({ pageParam }: { pageParam: any }) => {
+        const { lastDoc } = pageParam;
+        const { limitPerPage } = pageParam;
+        const createdBy = user ? user.uid : '';
+        return getProperties({
+            limitPerPage,
+            lastDoc,
+            createdBy,
+            type
+        })
+    }
+    const { data, isPending, isFetching, fetchNextPage } = useInfiniteQuery({
+        queryKey: ['properties', type, user],
+        queryFn: fetchInfiniteProperties,
+        initialPageParam: { limitPerPage: PROPERTY_ITEM_PER_PAGE, lastDoc: null },
+        getNextPageParam: (lastPage, allPages, pageParam) => {
+            const { limitPerPage } = pageParam;
+            const lastDoc = allPages[allPages.length - 1].lastDoc;
+            return { limitPerPage, lastDoc };
+        },
+    })
+    const handlePrev = () => {
+        setCurrentPage(currentPage - 1);
+    };
+    const handleNext = () => {
+        if (data?.pages.length! - 1 === currentPage) {
+            fetchNextPage();
+        }
+        setCurrentPage(currentPage + 1);
+    };
+    React.useEffect(() => {
+        getCountStatisticsByPropertyType(user?.uid ?? '', type as TypeProperty)
+            .then((count) => {
+                const total = Math.ceil(count / PROPERTY_ITEM_PER_PAGE)
+                setTotalPage(total)
+            })
+    }, [user, type])
+    if (isPending || isFetching) {
         return <div>Loading...</div>
     }
     return (
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 justify-center">
-            {properties.map((item, key) => (
-                <CardPropertyCrud key={key} property={item} />
-            ))}
+        <div>
+            <div className="grid md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 justify-center">
+                {data?.pages[currentPage].properties.map((item, key) => (
+                    <CardPropertyCrud key={key} property={item} />
+                ))}
+            </div>
+            <div className="flex justify-center items-center gap-4 mt-8">
+                <Button
+                    variant="outline"
+                    onClick={handlePrev}
+                    disabled={isPending || isFetching || currentPage === 0}
+                    className="flex items-center gap-2"
+                >
+                    <ChevronLeft size={20} />
+                    Précédent
+                </Button>
+                <span className="font-medium text-gray-700">
+                    Page {currentPage+1}/ {totalPage}
+                </span>
+                <Button
+                    variant="outline"
+                    onClick={handleNext}
+                    className="flex items-center gap-2"
+                    disabled={isPending || !(currentPage < (totalPage - 1))}
+                >
+                    Suivant
+                    <ChevronRight size={20} />
+                </Button>
+            </div>
         </div>
+
     )
 }
 
 const STATUS_COLORS: Record<Property['status'], { bg: string; text: string }> = {
     FOR_RENT: { bg: 'bg-blue-100', text: 'text-blue-700' },
     FOR_SALE: { bg: 'bg-green-100', text: 'text-green-700' },
-  };
-  
-  export const CardPropertyCrud = ({ property }: { property: Property }) => {
+};
+
+export const CardPropertyCrud = ({ property }: { property: Property }) => {
     const { images, title, street, city, province, price, status } = property;
     const statusColors = STATUS_COLORS[status];
-  
+
     return (
-      <Card
-        className={cn(
-          'relative overflow-hidden rounded-lg shadow-md hover:shadow-lg transition-shadow duration-300',
-          'flex flex-col'
-        )}
-      >
-        {/* Image */}
-        <div className="relative h-48 w-full">
-          <Image
-            src={images[0]?.fileURL || '/fallback-image.jpg'} // Fallback si aucune image
-            alt={title}
-            layout="fill"
-            objectFit="cover"
-            className="rounded-t-lg"
-          />
-          {/* Badge pour le statut */}
-          <span
+        <Card
             className={cn(
-              'absolute top-2 left-2 px-2 py-1 rounded-md text-xs font-semibold',
-              statusColors.bg,
-              statusColors.text
+                'relative overflow-hidden rounded-lg shadow-md hover:shadow-lg transition-shadow duration-300',
+                'flex flex-col'
             )}
-          >
-            {status === 'FOR_RENT' ? 'À Louer' : 'À Vendre'}
-          </span>
-        </div>
-  
-        {/* Contenu principal */}
-        <div className="flex-1 flex flex-col justify-between p-4 gap-2">
-          <div>
-            <h3 className="text-lg font-bold line-clamp-1">{title}</h3>
-            <p className="text-sm text-gray-600 line-clamp-2">
-              {street}, {city}, {province}
-            </p>
-            <PropertyInformations property={property}/>
-          </div>
-  
-          {/* Footer */}
-          <div className="flex justify-between items-center mt-2">
-            <span className="font-semibold text-lg text-gray-800">{price} FCFA</span>
-  
-            <div className="flex gap-2">
-              <Button variant="outline" size="icon" asChild>
-                <Link href="">
-                  <FiEdit2 size={18} />
-                </Link>
-              </Button>
-              <Button variant="outline" size="icon" asChild>
-                <Link href={`${routes.protected.properties}/${property.id}`}>
-                  <AiOutlineEye size={18} />
-                </Link>
-              </Button>
-              <Button variant="destructive" size="icon">
-                <FaTrash size={18} />
-              </Button>
+        >
+            {/* Image */}
+            <div className="relative h-48 w-full">
+                <Image
+                    src={images[0]?.fileURL || '/fallback-image.jpg'} // Fallback si aucune image
+                    alt={title}
+                    layout="fill"
+                    objectFit="cover"
+                    className="rounded-t-lg"
+                />
+                {/* Badge pour le statut */}
+                <span
+                    className={cn(
+                        'absolute top-2 left-2 px-2 py-1 rounded-md text-xs font-semibold',
+                        statusColors.bg,
+                        statusColors.text
+                    )}
+                >
+                    {status === 'FOR_RENT' ? 'À Louer' : 'À Vendre'}
+                </span>
             </div>
-          </div>
-        </div>
-      </Card>
+
+            {/* Contenu principal */}
+            <div className="flex-1 flex flex-col justify-between p-4 gap-2">
+                <div>
+                    <h3 className="text-lg font-bold line-clamp-1">{title}</h3>
+                    <p className="text-sm text-gray-600 line-clamp-2">
+                        {street}, {city}, {province}
+                    </p>
+                    <PropertyInformations property={property} />
+                </div>
+
+                {/* Footer */}
+                <div className="flex justify-between items-center mt-2">
+                    <span className="font-semibold text-lg text-gray-800">{price} FCFA</span>
+
+                    <div className="flex gap-2">
+                        <Button variant="outline" size="icon" asChild>
+                            <Link href="">
+                                <FiEdit2 size={18} />
+                            </Link>
+                        </Button>
+                        <Button variant="outline" size="icon" asChild>
+                            <Link href={`${routes.protected.properties}/${property.id}`}>
+                                <AiOutlineEye size={18} />
+                            </Link>
+                        </Button>
+                        <Button variant="destructive" size="icon">
+                            <FaTrash size={18} />
+                        </Button>
+                    </div>
+                </div>
+            </div>
+        </Card>
     );
-  };
+};
 
 export const PropertyInformations = ({ property }: { property: Property }) => {
     const informations = () => {

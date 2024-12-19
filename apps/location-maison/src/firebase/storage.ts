@@ -8,4 +8,5 @@ export {
   uploadBytes,
   deleteObject,
   getDownloadURL,
+  updateMetadata
 } from 'firebase/storage';
