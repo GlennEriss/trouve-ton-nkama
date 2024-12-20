@@ -1,6 +1,6 @@
 import type { NextConfig } from "next";
 
-const nextConfig: NextConfig = {
+/* const nextConfig: NextConfig = {
   images: {
     remotePatterns: [
       {
@@ -16,6 +16,12 @@ const nextConfig: NextConfig = {
         pathname: '/v0/b/home-rent-1534e.appspot.com/o/*',
       },
     ],
+  },
+}; */
+const nextConfig: NextConfig = {
+  reactStrictMode: true,
+  images: {
+    unoptimized: true, // Désactive l'optimisation d'image de Next.js
   },
 };
 
