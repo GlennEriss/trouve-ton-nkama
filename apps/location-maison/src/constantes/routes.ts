@@ -14,7 +14,8 @@ export const routes = {
         add_villa: '/property/add/villa',
         account: '/profil',
         favoris: '/favoris',
-        profil: '/profil'
+        profil: '/profil',
+        profil_informations: '/profil/informations'
     },
     public: {
         signin: '/signin',

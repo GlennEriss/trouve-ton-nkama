@@ -5,12 +5,13 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import Link from 'next/link';
 import { ChevronRight } from 'lucide-react';
 import { generateColorFromName } from '@/lib/generateColorFromName';
+import { routes } from '@/constantes/routes';
 
 export default function ProfilInformations() {
     const user = useCurrentUser()
     const avatarBackground = generateColorFromName(user?.firstname);
     return (
-        <Link href='' className='flex items-center gap-5 border rounded-lg p-5'>
+        <Link href={routes.protected.profil_informations} className='flex items-center gap-5 border rounded-lg p-5'>
             <Avatar
                 className='w-[50px] h-[50px]'
             >
