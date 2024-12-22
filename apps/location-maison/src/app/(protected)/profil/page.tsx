@@ -15,7 +15,7 @@ export default function page() {
             </div>
             <ProfilInformations/>
             <ProfilDetails/>
-            <Separator/>
+            <Separator className='md:hidden'/>
             <Logout/>
         </div>
     )
