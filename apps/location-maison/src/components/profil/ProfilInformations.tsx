@@ -22,7 +22,11 @@ export default function ProfilInformations() {
                 </AvatarFallback>
             </Avatar>
             <div className='flex flex-col'>
-                <span className='text-xl'>{user?.firstname}</span>
+                <p className='flex gap-1'>
+                    <span className='text-xl'>{user?.firstname}</span>
+                    <span className='text-xl hidden md:block'>{user?.lastname}</span>
+                </p>
+
                 <span className='text-xs text-gray-500'>Voir son profil</span>
             </div>
             <ChevronRight className='ml-auto' size={24} />
