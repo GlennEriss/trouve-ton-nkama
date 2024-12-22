@@ -32,7 +32,7 @@ export default function BreadCrumpComponent() {
     }
   };
   return (
-    <Breadcrumb>
+    <Breadcrumb className='hidden md:block'>
       <BreadcrumbList>
         <BreadcrumbItem>
           <BreadcrumbLink className='hover:text-[#1B4D5B]' href={routes.public.homePage}>Accueil</BreadcrumbLink>

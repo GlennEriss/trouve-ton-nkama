@@ -10,7 +10,6 @@ export default async function page({params}: {params:Promise<{id: string}>}) {
   if(!property){
     return notFound()
   }
-  console.log(property)
   return (
     <PreviewProperty property={property}/>
   )

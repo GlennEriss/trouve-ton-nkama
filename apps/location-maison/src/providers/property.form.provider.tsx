@@ -12,14 +12,16 @@ import { createFile } from "@/db/file.db"
 import { useCurrentUser } from "@/hooks/use-current-user"
 import { useMutation, useQueryClient } from "@tanstack/react-query"
 import { queryKeys } from "@/constantes"
-import { createProperty } from "@/db/property.db"
+import { createProperty, getPropertyById } from "@/db/property.db"
+import useLastpath from "@/hooks/use-lastpath"
+import React from "react"
 
 type PropertyFormComponent = {
     form: any,
     activeStep: number,
     setActiveStep: React.Dispatch<React.SetStateAction<number>>,
-    propertyPreview: Property|undefined,
-    setPropertyPreview: React.Dispatch<React.SetStateAction<Property|undefined>>,
+    propertyPreview: Property | undefined,
+    setPropertyPreview: React.Dispatch<React.SetStateAction<Property | undefined>>,
 }
 
 export const PropertyFormComponentContext = createContext<PropertyFormComponent>({
@@ -46,7 +48,7 @@ export const PropertyFormComponentProvider = ({ children }: { children: React.Re
 
     //pathnames
     const pathname = usePathname()
-
+    const id = useLastpath()
     //Type Property
     const getTypeProperty = () => {
         const pathnames = pathname.split('/')
@@ -73,7 +75,7 @@ export const PropertyFormComponentProvider = ({ children }: { children: React.Re
 
     //States
     const [activeStep, setActiveStep] = useState(0)
-    const [propertyPreview, setPropertyPreview] = useState<Property|undefined>(undefined)
+    const [propertyPreview, setPropertyPreview] = useState<Property | undefined>(undefined)
 
     //Form
     const director = DirectorFactory.createDirectorProperty(typeProperty)
@@ -117,7 +119,7 @@ export const PropertyFormComponentProvider = ({ children }: { children: React.Re
                 description: "Propriété ajoutée avec succès!",
                 variant: "success"
             })
-            setActiveStep(prev => prev+1)
+            setActiveStep(prev => prev + 1)
         },
         onError: (error) => {
             toast({
@@ -145,6 +147,21 @@ export const PropertyFormComponentProvider = ({ children }: { children: React.Re
         }
         mutation.mutate(propertyMutate)
     }
+    React.useEffect(() => {
+        if (id) {
+            getPropertyById(id).then((fetchedProperty) => {
+                // Set form values dynamically
+                if (fetchedProperty) {
+                    const { createdAt, updatedAt, images, ...othersData } = fetchedProperty
+                    Object.entries(othersData).forEach(([key, value]) => {
+                        form.setValue(key as any, value); // Populate each field with the fetched data
+                    });
+                    const imgList = images.map(img => img.fileURL)
+                    form.setValue('images', imgList)
+                }
+            });
+        }
+    }, [id])
     return (
         <PropertyFormComponentContext.Provider value={{
             activeStep,
