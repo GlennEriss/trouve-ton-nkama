@@ -1,5 +1,5 @@
-import HomePage from "@/components/HomePage";
-import Navbar from "@/components/Navbar";
+import HomePage from "@/components/home-page/HomePage";
+import Navbar from "@/components/home-page/Navbar";
 import React from "react";
 
 
