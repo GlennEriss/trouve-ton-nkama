@@ -194,7 +194,20 @@ export const Step2Schema = Step2SchemaBase.refine((data) => {
       throw new Error("Type de propriété non pris en charge.");
   }
 });
-
+export const FormUserProfilSchema = z.object({
+  firstname: z.string().min(1, "Le prénom est requis"),
+  lastname: z.string().min(1, "Le nom est requis"),
+  email: z.string().email("L'email est invalide"),
+  phoneNumbers: z
+    .string()
+    .refine(isValidPhoneNumber, { message: "Le numéro de téléphone est invalide" })
+    .optional(),
+  country: z.string().min(1, { message: 'Le pays est requis' }),
+  birthDate: z.string().regex(
+    /^\d{4}-\d{2}-\d{2}$/,
+    'La date de naissance doit être au format AAAA-MM-JJ'
+  ),
+});
 //Types
 export type DeskSchemaType = z.infer<typeof DeskSchema>;
 export type BuildingSchemaType = z.infer<typeof BuildingSchema>;
@@ -210,3 +223,4 @@ export type Step1SchemaType = z.infer<typeof Step1Schema>;
 export type Step3SchemaType = z.infer<typeof Step3Schema>;
 export type FormRegisterSchemaType = z.infer<typeof FormRegisterSchema>;
 export type FormLoginSchemaType = z.infer<typeof FormLoginSchema>
+export type FormUserProfilSchemaType = z.infer<typeof FormUserProfilSchema>;

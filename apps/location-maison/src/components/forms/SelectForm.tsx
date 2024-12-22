@@ -1,4 +1,3 @@
-import { Link } from 'lucide-react'
 import React from 'react'
 import { FormField, FormItem, FormLabel, FormControl, FormDescription, FormMessage } from '../ui/form'
 import { FieldValues, Path, UseFormReturn } from 'react-hook-form';
@@ -31,6 +30,11 @@ export const SelectForm = <T extends FieldValues>({
     classNameContent,
     classNameItem
 }: SelectFormProps<T>) => {
+    const handleOnValueChange = (value: any) => {
+        if(value){
+            form.setValue(name, value)
+        }
+      };
     return (
         <FormField
             control={form.control}
@@ -38,7 +42,7 @@ export const SelectForm = <T extends FieldValues>({
             render={({ field, formState: { isSubmitting } }) => (
                 <FormItem>
                     <FormLabel>{label}</FormLabel>
-                    <Select disabled={isSubmitting} onValueChange={field.onChange} defaultValue={field.value}>
+                    <Select disabled={isSubmitting} onValueChange={handleOnValueChange} value={field.value}>
                         <FormControl>
                             <SelectTrigger className={classNameTrigger}>
                                 <SelectValue className={classNameValue} placeholder={placeholder} />
