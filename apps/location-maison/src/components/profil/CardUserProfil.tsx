@@ -5,10 +5,12 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { generateColorFromName } from '@/lib/generateColorFromName';
 import { useCurrentUser } from '@/hooks/use-current-user';
 import { formatDateISO } from '@/lib/formatDateISO';
+import { firebaseTimestampToDate } from '@/lib/firebaseTimestampToDate';
 
 export default function CardUserProfil() {
     const user = useCurrentUser()
     const avatarBackground = generateColorFromName(user?.firstname)
+    console.log(user?.createdAt?.nanoseconds)
     return (
         <Card className="shadow-lg border border-gray-200 md:flex md:items-center md:max-w-[550px] lg:flex-col lg:mt-7">
             {/* Header de la carte */}
@@ -27,8 +29,16 @@ export default function CardUserProfil() {
                     <div className='flex flex-col items-center md:items-start lg:items-center' >
                         <CardTitle className='text-center md:text-start text-xl'>{`${user?.firstname} ${user?.lastname}`}</CardTitle>
                         <CardDescription className="text-sm text-gray-500 flex flex-col">
-                            <span>Depuis le: {formatDateISO(user?.createdAt?.toString())}</span>
-                            <span>Modifié le: {formatDateISO(user?.updatedAt?.toString())}</span>
+                            <span>Depuis le: {firebaseTimestampToDate(user?.createdAt?.seconds, user?.createdAt?.nanoseconds)?.toLocaleDateString('fr-FR', {
+                                day: '2-digit',
+                                month: 'short',
+                                year: 'numeric',
+                            })}</span>
+                            <span>Modifié le: {firebaseTimestampToDate(user?.updatedAt?.seconds, user?.updatedAt?.nanoseconds)?.toLocaleDateString('fr-FR', {
+                                day: '2-digit',
+                                month: 'short',
+                                year: 'numeric',
+                            })}</span>
                             <span className='md:hidden'>{user?.email}</span>
                         </CardDescription>
                     </div>
