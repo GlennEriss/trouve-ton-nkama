@@ -23,6 +23,7 @@ type InputFormProps<T extends FieldValues> = {
     classNameDiv?: string;
     classNameButton?: string;
     sizeIcon?: string;
+    disabled?: boolean;
 };
 
 export const InputForm = <T extends FieldValues>({
@@ -35,7 +36,8 @@ export const InputForm = <T extends FieldValues>({
     className,
     classNameDiv,
     classNameButton,
-    sizeIcon
+    sizeIcon,
+    disabled,
 }: InputFormProps<T>) => {
     const [showPassword, setShowPassword] = useState(false);
     const togglePasswordVisibility = () => setShowPassword((prev) => !prev);
@@ -54,7 +56,7 @@ export const InputForm = <T extends FieldValues>({
                                 type={isPasswordField && showPassword ? 'text' : type}
                                 placeholder={placeholder}
                                 className={cn(className, 'pr-10')}
-                                disabled={isSubmitting}
+                                disabled={isSubmitting || disabled}
                             />
                             {/* Toggle password visibility icon */}
                             {isPasswordField && (
