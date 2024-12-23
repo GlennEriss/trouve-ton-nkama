@@ -11,6 +11,7 @@ import { ButtonLoading } from '../buttons/ButtonLoading';
 import { useRouter } from 'next/navigation';
 import { useToast } from '@/hooks/use-toast';
 import { login } from '@/actions/login';
+import { routes } from '@/constantes/routes';
 
 export const Signin = () => {
     const router = useRouter()
@@ -34,7 +35,7 @@ export const Signin = () => {
                     description: "Vous vous êtes connectés avec succès!",
                     variant: 'success',
                 });
-                router.push('/account/property'); // Redirection après succès
+                router.push(routes.protected.properties); // Redirection après succès
             }
         })
     }
