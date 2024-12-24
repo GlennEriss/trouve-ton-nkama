@@ -90,7 +90,7 @@ export default function Navbar() {
   }, []);
 
   return (
-    <nav className="bg-white dark:bg-black text-black dark:text-white px-4 py-4 md:px-14 md:py-6 flex flex-col md:flex-row items-center justify-between space-y-4 md:space-y-0">
+    <nav className="fixed top-0 left-0 right-0 z-50 bg-white dark:bg-black text-black dark:text-white px-4 py-4 md:px-14 md:py-6 flex flex-col md:flex-row items-center justify-between space-y-4 md:space-y-0">
       {/* Logo et boutons à droite */}
       <div className="flex items-center justify-between w-full md:w-auto">
         {/* Logo */}
