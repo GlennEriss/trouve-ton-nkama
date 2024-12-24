@@ -8,7 +8,7 @@ import { Clover, Search } from "lucide-react";
 import { BiCurrentLocation } from "react-icons/bi";
 import { useHits, useRefinementList, useRange } from "react-instantsearch";
 import { useAlgoliaContext } from "@/providers/AlgoliaContext";
-import LanguageModal from "./ModaleLanguageSwitcher";
+// import LanguageModal from "./ModaleLanguageSwitcher";
 import { FilterModal } from "./FilterModal";
 
 export default function Navbar() {
@@ -42,7 +42,6 @@ export default function Navbar() {
     setFilteredResults,
   } = useAlgoliaContext();
 
-  // Utilisation des refinements pour les filtres
   const { refine: cityRefine } = useRefinementList({ attribute: "city" });
   const { refine: streetRefine } = useRefinementList({ attribute: "street" });
   const { refine: typePropertyRefine } = useRefinementList({
@@ -53,18 +52,15 @@ export default function Navbar() {
   const { refine: priceRefine } = useRange({ attribute: "price" });
   const { refine: roomsRefine } = useRange({ attribute: "nbrRooms" });
 
-  // Hook pour les résultats de recherche
   const { hits } = useHits();
 
-  // Appliquer les refinements pour filtrer les résultats
   const applyRefinements = () => {
-    if (city) cityRefine(city); // Filtrer par ville
-    if (street) streetRefine(street); // Filtrer par quartier
+    if (city) cityRefine(city);
+    if (street) streetRefine(street);
     if (typeProperty.length > 0)
-      typeProperty.forEach((type) => typePropertyRefine(type)); // Filtrer par type de propriété
-    if (tags.length > 0) tags.forEach((tag) => tagsRefine(tag)); // Filtrer par tags
+      typeProperty.forEach((type) => typePropertyRefine(type));
+    if (tags.length > 0) tags.forEach((tag) => tagsRefine(tag));
 
-    // Filtrer par plage de prix
     if (minPrice || maxPrice) {
       priceRefine([
         minPrice ? Number(minPrice) : undefined,
@@ -72,7 +68,6 @@ export default function Navbar() {
       ]);
     }
 
-    // Filtrer par plage de surface
     if (minArea || maxArea) {
       areaRefine([
         minArea ? Number(minArea) : undefined,
@@ -80,7 +75,6 @@ export default function Navbar() {
       ]);
     }
 
-    // Filtrer par nombre de chambres
     if (minNbrRooms || maxNbrRooms) {
       roomsRefine([
         minNbrRooms ? Number(minNbrRooms) : undefined,
@@ -91,75 +85,62 @@ export default function Navbar() {
     setFilteredResults(hits);
   };
 
-  // Appliquer les refinements au chargement initial
   useEffect(() => {
     applyRefinements();
   }, []);
 
   return (
-      <nav className="bg-white dark:bg-black text-black dark:text-white flex items-center justify-between px-14 py-8">
+    <nav className="fixed top-0 left-0 right-0 z-50 bg-white dark:bg-black text-black dark:text-white px-4 py-4 md:px-14 md:py-6 flex flex-col md:flex-row items-center justify-between space-y-4 md:space-y-0">
+      {/* Logo et boutons à droite */}
+      <div className="flex items-center justify-between w-full md:w-auto">
         {/* Logo */}
         <div className="flex items-center">
-          <div className="flex items-center justify-center w-8 h-8 bg-black dark:bg-white rounded-full">
-            <Clover className="text-white dark:text-black w-4 h-4" />
+          <div className="flex items-center justify-center w-10 h-10 bg-black dark:bg-white rounded-full">
+            <Clover className="text-white dark:text-black w-6 h-6" />
           </div>
         </div>
-
-        {/* Barre de recherche */}
-        <div className="flex items-center gap-2 w-1/2 max-w-[500px]">
-          <div className="relative w-full">
-            <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-500 w-5 h-5" />
-            <Input
-                placeholder="Chercher une propriété"
-                className="bg-neutral-200 dark:bg-neutral-900 text-black dark:text-white placeholder:text-gray-500 border-none focus:ring-2 focus:ring-black/50 dark:focus:ring-white/50 min-h-[50px] rounded-full pl-12"
-            />
-          </div>
-          {/* Modale déclenchée par l'icône de filtre */}
-          <FilterModal applyRefinements={applyRefinements} />
-          <div className="w-11 h-11 bg-black border-black dark:border-white border-[1px] flex items-center justify-center rounded-full cursor-pointer aspect-square">
-            <BiCurrentLocation className="w-6 h-6 text-white" />
-          </div>
-        </div>
-
-        {/* Modale pour le changement de langue */}
-        <LanguageModal />
 
         {/* Boutons */}
-        <div className="flex items-center gap-2">
-          <a
-              href="/signin"
-              target="_blank"
-              rel="noopener noreferrer"
-          >
+        <div className="flex items-center gap-2 md:gap-4 ml-auto md:ml-8">
+          <a href="/signin" target="_blank" rel="noopener noreferrer">
             <Button
-                variant="outline"
-                className="text-black dark:text-white border-black dark:border-white rounded-xl p-5"
+              variant="outline"
+              className="text-black dark:text-white border-black dark:border-white rounded-xl px-4 py-2"
             >
               Entrer
             </Button>
           </a>
-          <a
-              href="/signup"
-              target="_blank"
-              rel="noopener noreferrer"
-          >
+          <a href="/signup" target="_blank" rel="noopener noreferrer">
             <Button
-                variant="default"
-                className="bg-black dark:bg-white text-white dark:text-black rounded-xl hover:bg-black dark:hover:bg-white p-5"
+              variant="default"
+              className="bg-black dark:bg-white text-white dark:text-black rounded-xl hover:bg-black dark:hover:bg-white px-4 py-2"
             >
               S&apos;inscrire
             </Button>
           </a>
-          {/* Bouton pour changer le thème */}
-          <div className="ml-4">
-            <button
-                onClick={toggleTheme}
-                className="w-10 h-10 rounded-full border-black dark:border-white flex items-center justify-center bg-black dark:bg-white text-white dark:text-black"
-            >
-              {theme === "light" ? "🌞" : "🌙"}
-            </button>
-          </div>
+          <button
+            onClick={toggleTheme}
+            className="w-10 h-10 rounded-full border-black dark:border-white flex items-center justify-center bg-black dark:bg-white text-white dark:text-black"
+          >
+            {theme === "light" ? "🌞" : "🌙"}
+          </button>
         </div>
-      </nav>
+      </div>
+
+      {/* Barre de recherche */}
+      <div className="flex items-center gap-2 w-full md:w-1/2 max-w-[500px]">
+        <div className="relative w-full">
+          <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-500 w-5 h-5" />
+          <Input
+            placeholder="Chercher une propriété"
+            className="bg-neutral-200 dark:bg-neutral-900 text-black dark:text-white placeholder:text-gray-500 border-none focus:ring-2 focus:ring-black/50 dark:focus:ring-white/50 min-h-[50px] rounded-full pl-12"
+          />
+        </div>
+        <FilterModal applyRefinements={applyRefinements} />
+        <div className="w-11 h-11 bg-black border-black dark:border-white border-[1px] flex items-center justify-center rounded-full cursor-pointer aspect-square">
+          <BiCurrentLocation className="w-6 h-6 text-white" />
+        </div>
+      </div>
+    </nav>
   );
 }
