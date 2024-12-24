@@ -21,5 +21,6 @@ export const routes = {
         signin: '/signin',
         signup: '/signup',
         homePage: '/',
+        reset_password: '/password-reset'
     }
 }
