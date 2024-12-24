@@ -1,7 +1,6 @@
 import React from 'react'
 import { Bell } from 'lucide-react';
 import ProfilInformations from '@/components/profil/ProfilInformations';
-import Security from '@/components/profil/Security';
 import ProfilDetails from '@/components/profil/ProfilDetails';
 import Logout from '../../../components/shared/Logout';
 import { Separator } from '@/components/ui/separator';

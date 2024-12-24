@@ -27,9 +27,9 @@ export default function FormPersonalInformation() {
             form.setValue('firstname', user.firstname)
             form.setValue('lastname', user.lastname)
             form.setValue('email', user.email!)
-            form.setValue('birthDate', user.birthDate)
-            form.setValue('country', user.country.code)
-            form.setValue('phoneNumbers', user.phoneNumbers[0] ?? '')
+            form.setValue('birthDate', user?.birthDate ?? '')
+            form.setValue('country', user?.country?.code ?? '')
+            form.setValue('phoneNumbers', user.phoneNumbers.length >0 ? user.phoneNumbers[0] : '')
         }
     }, [user])
     return (

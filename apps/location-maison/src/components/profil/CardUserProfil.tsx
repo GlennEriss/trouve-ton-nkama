@@ -4,7 +4,6 @@ import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/com
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { generateColorFromName } from '@/lib/generateColorFromName';
 import { useCurrentUser } from '@/hooks/use-current-user';
-import { formatDateISO } from '@/lib/formatDateISO';
 import { firebaseTimestampToDate } from '@/lib/firebaseTimestampToDate';
 
 export default function CardUserProfil() {
@@ -48,9 +47,13 @@ export default function CardUserProfil() {
 
             {/* Contenu principal */}
             <CardContent className="flex flex-col gap-1 text-center md:text-start md:gap-0 md:mt-5 lg:mt-0">
-                <div className='text-sm'>
-                    <strong>Pays:</strong> {user?.country?.name} ({user?.country?.code})
-                </div>
+                {
+                    user?.country && (
+                        <div className='text-sm'>
+                            <strong>Pays:</strong> {user?.country?.name} ({user?.country?.code})
+                        </div>
+                    )
+                }
                 <div className='text-sm space-x-1'>
                     <strong>Téléphone:</strong>
                     {user?.phoneNumbers && user?.phoneNumbers.length > 0 ? (

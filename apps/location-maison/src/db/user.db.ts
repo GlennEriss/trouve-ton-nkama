@@ -7,7 +7,7 @@ export async function createUser(user: Partial<User>) {
     return await createModel<Partial<User>>(user)
 }
 
-export async function getUserByUID(uid: string): Promise<User|null> {
+export async function getUserByUID(uid: string): Promise<User | null> {
     try {
         const { collection, db, getDocs, query, where } = await getFirestore();
         const collectionRef = collection(db, firebaseCollectionNames.users);
@@ -24,5 +24,46 @@ export async function getUserByUID(uid: string): Promise<User|null> {
     } catch (error) {
         console.error("Error fetching user by UID:", error);
         return null;
+    }
+}
+
+export async function findUserDetailsByUserID(uid: string) {
+    try {
+        const { getDocs, where, query, collection, db } = await getFirestore();
+        const docSnapshot = await getDocs(
+            query(collection(db, firebaseCollectionNames.users), where("uid", "==", uid))
+        );
+        if (docSnapshot.empty) {
+            return null;
+        }
+        const userDetailsDoc = docSnapshot.docs[0];
+        const userDetails = {
+            ...userDetailsDoc.data(),
+        };
+        return userDetails;
+    } catch (error) {
+        console.error("Error retrieving userDetails:", error);
+        return null
+    }
+}
+
+export async function findUserByEmail(email: string) {
+    try {
+        const { getDocs, where, query, collection, db } = await getFirestore();
+        const docSnapshot = await getDocs(
+            query(collection(db, firebaseCollectionNames.users), where("email", "==", email))
+        );
+        if (docSnapshot.empty) {
+            return null;
+        }
+        const userDetailsDoc = docSnapshot.docs[0];
+        const userDetails = {
+            id: userDetailsDoc.id,
+            ...userDetailsDoc.data() as User,
+        };
+        return userDetails;
+    } catch (error) {
+        console.error("Error retrieving userDetails by email:", error);
+        throw error;
     }
 }

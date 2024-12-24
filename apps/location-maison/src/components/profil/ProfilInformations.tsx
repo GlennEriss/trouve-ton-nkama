@@ -15,11 +15,11 @@ export default function ProfilInformations() {
             <Avatar
                 className='w-[50px] h-[50px]'
             >
-                <AvatarImage src={user?.image ?? ''} alt="@shadcn" />
+                <AvatarImage src={user?.image ?? ''} alt={user?.firstname} />
                 <AvatarFallback
                     style={{ backgroundColor: avatarBackground }}
                     className='text-2xl font-bold text-white'>
-                    {user?.firstname.at(0)}
+                    {user?.firstname?.at(0) ?? ''}
                 </AvatarFallback>
             </Avatar>
             <div className='flex flex-col'>

@@ -3,6 +3,7 @@
  */
 import { countries } from "@/constantes/country";
 import { ICreation } from "./creation";
+import { Image } from "./annonce";
 
 export type Country = {
     name: string,
@@ -12,8 +13,9 @@ export type Country = {
 export type Person = ICreation & {
     firstname: string,
     lastname: string,
-    birthDate: string,
+    birthDate?: string,
     email: string,
-    country: Country,
+    country?: Country,
     phoneNumbers: string[]
+    image?: string
 }
