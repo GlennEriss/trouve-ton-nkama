@@ -8,7 +8,7 @@ import MenuProfil from './MenuProfil'
 
 export default function Navbar() {
     return (
-        <div className='hidden md:flex md:items-center md:justify-between py-3 md:px-10 xl:px-20 md:sticky md:top-0 md:bg-white md:z-50'>
+        <div className='hidden md:flex md:items-center md:justify-between py-3 md:px-10 xl:px-20 md:sticky md:top-0 md:bg-white md:z-50 border-b shadow'>
             <Link href={routes.public.homePage}>
                 <Logo className='text-xl' />
             </Link>

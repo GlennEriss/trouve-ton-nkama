@@ -4,6 +4,8 @@ import { FaFacebookF } from "react-icons/fa";
 import { FcGoogle } from "react-icons/fc";
 import Link from "next/link";
 import { routes } from "@/constantes/routes";
+import { signInWithGoogle } from "@/actions/signin-with-google";
+import { ButtonLoading } from "../buttons/ButtonLoading";
 
 const connectionMethods = [
     {
@@ -21,6 +23,21 @@ type LayoutAuthProps = React.PropsWithChildren & {
 };
 
 export const LayoutAuth: React.FC<LayoutAuthProps> = ({ children, type }) => {
+    const [isPending, startTransition] = React.useTransition()
+    const handleConnection = (method: 'FACEBOOK' | 'GOOGLE') => {
+        switch (method) {
+            case 'GOOGLE':
+                startTransition(() => {
+                    signInWithGoogle();
+                })
+                break;
+            case 'FACEBOOK':
+
+                break;
+            default:
+                break;
+        }
+    }
     return (
         <div className="min-h-screen bg-gray-100 flex justify-center items-center py-5">
             {/* Container */}
@@ -50,13 +67,15 @@ export const LayoutAuth: React.FC<LayoutAuthProps> = ({ children, type }) => {
                             <span className="text-sm text-gray-500 mb-2">Ou connectez-vous avec</span>
                             <div className="flex gap-4">
                                 {connectionMethods.map((connection, key) => (
-                                    <button
+                                    <ButtonLoading
                                         key={key}
                                         type="button"
                                         className="w-12 h-12 rounded-full bg-gray-100 flex items-center justify-center hover:bg-gray-200 transition duration-200"
+                                        onClick={() => handleConnection(connection.method)}
+                                        disabled={isPending}
                                     >
                                         <connection.icon size={24} />
-                                    </button>
+                                    </ButtonLoading>
                                 ))}
                             </div>
                         </div>

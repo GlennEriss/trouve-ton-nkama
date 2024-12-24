@@ -1,12 +1,13 @@
 /* import { auth, GoogleAuthProvider } from "@/firebase/auth";
 import { getUserDetailsByID } from "@/services/patientService";
 import { createUserDetails, findUserByEmail, findUserDetailsByUser, getUserWithDetails } from "@/services/userService";
-import { signInWithCredential } from "firebase/auth"; */
-import { getUserByUID } from "@/db/user.db";
-import { StateCreation } from "@/models/creation";
+import { signInWithCredential } from 'firebase/auth'; */
+import { createUser, findUserByEmail, findUserDetailsByUserID, getUserByUID } from "@/db/user.db";
+import { auth, GoogleAuthProvider } from "@/firebase/auth";
+import { signInWithCredential } from "firebase/auth";
 import { NextAuthConfig } from "next-auth"
 import Credentials from "next-auth/providers/credentials"
-//import GoogleProvider from "next-auth/providers/google";
+import GoogleProvider from "next-auth/providers/google";
 
 const getAuth = () => import('@/firebase/auth')
 const authConfig = {
@@ -17,10 +18,10 @@ const authConfig = {
         maxAge: 30 * 24 * 60 * 60,
     },
     providers: [
-        /* GoogleProvider({
-            clientId: process.env.AUTH_GOOGLE_ID,
-            clientSecret: process.env.AUTH_GOOGLE_SECRET
-        }),*/
+        GoogleProvider({
+            clientId: process.env.GOOGLE_CLIENT_ID,
+            clientSecret: process.env.GOOGLE_CLIENT_SECRET
+        }),
         Credentials({
             authorize: async (credentials) => {
                 const { signInWithEmailAndPassword, auth } = await getAuth();
@@ -55,57 +56,43 @@ const authConfig = {
     ],
     callbacks: {
         async signIn({ user, account, profile }) {
-            /* console.log('user',user)
-            console.log('account',account)
-            console.log('profile',profile)
+            /* console.log('user', user)
+            console.log('account', account)
+            console.log('profile', profile) */
             if (account?.provider === "google") {
                 const credential = GoogleAuthProvider.credential(account.id_token);
                 try {
                     const firebaseUser = await signInWithCredential(auth, credential);
-
                     const uid = firebaseUser.user.uid;
                     const userData = {
                         uid,
-                        firstName: profile?.given_name,
-                        lastName: profile?.family_name,
-                        email: user.email,
-                        avatarPATH: '',
-                        avatarURL: profile?.picture,
-                        patientsID: [],
-                        phoneNumber: '',
-                        professionalType: '',
-                        role: "PRO",
-                        username: profile?.given_name + ' ' + profile?.family_name,
-                        description: '',
-                        gender: 'Unknow',
-                        birthdate: ''
+                        firstname: profile?.given_name ?? '',
+                        lastname: profile?.family_name ?? '',
+                        email: user?.email ?? '',
+                        image: profile?.picture ?? '',
+                        phoneNumbers: firebaseUser.user.phoneNumber ? [firebaseUser.user.phoneNumber] : [],
+                        role: ["Announcer"],
+                        searchableName: firebaseUser.user?.displayName ?? '',
                     };
-                    const userExists = await findUserDetailsByUser(uid);
+                    const userExists = await findUserDetailsByUserID(uid);
                     if (!userExists) {
-                        await createUserDetails(userData);
-                    }
-                    user = {
-                        ...user,
-                        ...userExists
+                        await createUser(userData);
                     }
                     return true;
                 } catch (error) {
                     console.error("Erreur lors de la connexion avec Firebase:", error);
                     return false;
                 }
-            } */
+            }
             return true;
         },
         async jwt({ token, user, trigger, session }) {
-            /* if (token) {
-                if (token?.email) {
-                    const userDetails = await findUserByEmail(token.email)
-                    token = {
-                        ...token,
-                        ...userDetails
-                    }
+            if (!user && token?.email) {
+                const userDetails = await findUserByEmail(token.email)
+                if (userDetails) {
+                    user = userDetails
                 }
-            } */
+            }
             if (user) {
                 token = {
                     ...token,

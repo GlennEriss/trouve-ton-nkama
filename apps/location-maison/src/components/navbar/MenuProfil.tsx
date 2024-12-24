@@ -1,9 +1,12 @@
+'use client'
 import React from 'react'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { routes } from '@/constantes/routes'
 import { Button } from '../ui/button'
 import Link from 'next/link'
 import { DropdownMenu, DropdownMenuContent, DropdownMenuGroup, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from '../ui/dropdown-menu'
+import { useCurrentUser } from '@/hooks/use-current-user'
+import { generateColorFromName } from '@/lib/generateColorFromName'
 
 const menu = [
     {
@@ -20,14 +23,19 @@ const menu = [
     }
 ]
 export default function MenuProfil() {
+    const user = useCurrentUser()
+    const avatarBackground = generateColorFromName(user?.firstname);
     return (
         <DropdownMenu>
             <DropdownMenuTrigger asChild>
                 <Button variant='ghost' className='focus:ring-0 focus-visible:ring-0 hover:bg-white'>
                     <Avatar>
-                        <AvatarImage src="https://github.com/shadcn.png" alt="@shadcn" />
-                        <AvatarFallback>CN</AvatarFallback>
-                    </Avatar>
+                        <AvatarImage src={user?.image ?? ''} alt={user?.firstname + '' + user?.lastname} />
+                        <AvatarFallback
+                            style={{ backgroundColor: avatarBackground }}
+                            className='text-2xl font-bold text-white'>
+                            {user?.firstname?.at(0) ?? ''}
+                        </AvatarFallback>                    </Avatar>
                 </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent className="w-56 z-50 bg-white rounded-xl">

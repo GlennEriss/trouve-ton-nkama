@@ -19,7 +19,7 @@ export default function HomePage() {
   console.log("filteredResults:", filteredResults);
 
   return (
-    <div className="p-6 bg-white dark:bg-black min-h-screen">
+    <div className="p-6 bg-white dark:bg-black min-h-screen mb-20">
       {/* Titre */}
       <h1 className="text-3xl font-bold text-center mb-8 text-black dark:text-white">
       Trouvez votre chez-vous
