@@ -33,7 +33,7 @@ export const houseMocks: House[] = [
     // Exemples statiques avec les quartiers
     {
         id: "1",
-        title: "House 1",
+        title: "Villa 3 chambres à louer à Akanda",
         city: "Libreville",
         province: "Estuaire",
         country: "Gabon",
