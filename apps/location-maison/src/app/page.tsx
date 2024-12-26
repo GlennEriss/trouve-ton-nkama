@@ -5,9 +5,9 @@ import React from "react";
 
 export default function Home() {
     return (
-        <>
+        <div className="bg-gray-100 dark:bg-gray-900">
             <Navbar/>
             <HomePage/>
-        </>)
+        </div>)
         ;
 }
