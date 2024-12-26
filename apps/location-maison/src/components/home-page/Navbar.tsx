@@ -8,7 +8,6 @@ import { Clover, Search } from "lucide-react";
 import { BiCurrentLocation } from "react-icons/bi";
 import { useHits, useRefinementList, useRange } from "react-instantsearch";
 import { useAlgoliaContext } from "@/providers/AlgoliaContext";
-// import LanguageModal from "./ModaleLanguageSwitcher";
 import { FilterModal } from "./FilterModal";
 
 export default function Navbar() {
@@ -90,7 +89,7 @@ export default function Navbar() {
   }, []);
 
   return (
-    <nav className="sticky top-0 left-0 right-0 z-50 bg-white dark:bg-black text-black dark:text-white px-4 py-4 md:px-14 md:py-6 flex flex-col md:flex-row items-center justify-between space-y-4 md:space-y-0">
+    <nav className="sticky top-0 left-0 right-0 z-50 bg-white dark:bg-black text-black dark:text-white px-4 pt-6 pb-4 lg:px-14 md:py-6 flex flex-col md:flex-row  justify-between space-y-4 md:space-y-0 shadow-md">
       {/* Logo et boutons à droite */}
       <div className="flex items-center justify-between w-full md:w-auto">
         {/* Logo */}
@@ -101,7 +100,7 @@ export default function Navbar() {
         </div>
 
         {/* Boutons */}
-        <div className="flex items-center gap-2 md:gap-4 ml-auto md:ml-8">
+        <div className="flex items-center gap-2 md:gap-4 ml-auto mr-1 md:ml-8">
           <a href="/signin" target="_blank" rel="noopener noreferrer">
             <Button
               variant="outline"
@@ -118,6 +117,7 @@ export default function Navbar() {
               S&apos;inscrire
             </Button>
           </a>
+
           <button
             onClick={toggleTheme}
             className="w-10 h-10 rounded-full border-black dark:border-white flex items-center justify-center bg-black dark:bg-white text-white dark:text-black"
@@ -128,7 +128,7 @@ export default function Navbar() {
       </div>
 
       {/* Barre de recherche */}
-      <div className="flex items-center gap-2 w-full md:w-1/2 max-w-[500px]">
+      <div className="flex items-center gap-2 w-full md:w-1/2 max-w-[500px] mr-1">
         <div className="relative w-full">
           <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-500 w-5 h-5" />
           <Input
@@ -141,6 +141,14 @@ export default function Navbar() {
           <BiCurrentLocation className="w-6 h-6 text-white" />
         </div>
       </div>
+      <a href="/publish" target="_blank" rel="noopener noreferrer">
+        <Button
+          variant="default"
+          className="bg-blue-500 text-white rounded-xl text-lg hover:bg-blue-600 px-4 py-6 font-bold"
+        >
+          Poster une annonce
+        </Button>
+      </a>
     </nav>
   );
 }
