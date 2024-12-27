@@ -8,6 +8,8 @@ export const useCurrentUser = () => {
   useEffect(() => {
     if (status === "authenticated") {
       setUser(session.user);
+    }else{
+      setUser(undefined);
     }
   }, [session, status]);
 

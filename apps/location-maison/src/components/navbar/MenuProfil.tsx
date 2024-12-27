@@ -1,5 +1,5 @@
 'use client'
-import React from 'react'
+import React, { useTransition } from 'react'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { routes } from '@/constantes/routes'
 import { Button } from '../ui/button'
@@ -7,6 +7,9 @@ import Link from 'next/link'
 import { DropdownMenu, DropdownMenuContent, DropdownMenuGroup, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from '../ui/dropdown-menu'
 import { useCurrentUser } from '@/hooks/use-current-user'
 import { generateColorFromName } from '@/lib/generateColorFromName'
+import { signout } from '@/actions/signout'
+import { useToast } from '@/hooks/use-toast'
+import { useRouter } from 'next/navigation'
 
 const menu = [
     {
@@ -24,7 +27,29 @@ const menu = [
 ]
 export default function MenuProfil() {
     const user = useCurrentUser()
+    const { toast } = useToast();
+    const router = useRouter()
+    const [isPending, startTransition] = useTransition()
     const avatarBackground = generateColorFromName(user?.firstname);
+    const handleSignout = () => {
+        startTransition(async () => {
+            const isSignout = await signout()
+            if (isSignout) {
+                toast({
+                    title: "Déconnexion",
+                    description: "Vous vous êtes déconnectés de la plateforme",
+                    variant: "warning",
+                });
+                router.push(routes.public.signin)
+            } else {
+                toast({
+                    title: "Déconnexion",
+                    description: "Une erreur est survenue durant la déconnexion.",
+                    variant: "destructive",
+                });
+            }
+        })
+    }
     return (
         <DropdownMenu>
             <DropdownMenuTrigger asChild>
@@ -52,8 +77,14 @@ export default function MenuProfil() {
                         ))
                     }
                     <DropdownMenuItem className='flex justify-center hover:bg-white'>
-                        <Button variant='outline' className='border rounded-lg border-red-500 text-red-500 hover:bg-red-500 hover:text-white'>
-                            Se déconnecter
+                        <Button onClick={handleSignout} variant='outline' className='border rounded-lg border-red-500 text-red-500 hover:bg-red-500 hover:text-white'>
+                            {
+                                isPending ? (
+                                    <div className="w-5 h-5 border-4 border-red-500 rounded-full animate-spin border-t-transparent"></div>
+                                ) : (
+                                    <span>Se déconnecter</span>
+                                )
+                            }
                         </Button>
                     </DropdownMenuItem>
                 </DropdownMenuGroup>
