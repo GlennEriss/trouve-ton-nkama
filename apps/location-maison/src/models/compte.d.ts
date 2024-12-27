@@ -17,5 +17,5 @@ export type Person = ICreation & {
     email: string,
     country?: Country,
     phoneNumbers: string[]
-    image?: string
+    image?: string|null
 }

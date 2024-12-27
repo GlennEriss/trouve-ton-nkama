@@ -10,17 +10,43 @@ import { countries } from '@/constantes/country'
 import { PhoneNumberForm } from '../forms/PhoneNumberForm'
 import { SelectForm } from '../forms/SelectForm'
 import { ButtonLoading } from '../buttons/ButtonLoading'
+import { updateUser } from '@/db/user.db'
+import { useToast } from '@/hooks/use-toast';
+import { useSession } from "next-auth/react"
 
 
 export default function FormPersonalInformation() {
     const user = useCurrentUser()
+    const { data: session, status, update } = useSession()
+    const { toast } = useToast();
 
     const form = useForm<FormUserProfilSchemaType>({
         resolver: zodResolver(FormUserProfilSchema),
     })
     const onSubmit = async (values: FormUserProfilSchemaType) => {
-        console.log(values)
-
+        const userUpdated = {
+            ...user,
+            ...values,
+            country: countries.find(country => country.code === values.country),
+            phoneNumbers: values.phoneNumbers ? [values.phoneNumbers] : []
+        }
+        const isUpdated = await updateUser(user?.uid!, userUpdated)
+        if (isUpdated) {
+            toast({
+                title: "Modification du profil",
+                description: "Votre profil a été modifié avec succès!",
+                variant: "success",
+            });
+            update({
+                user: userUpdated
+            })
+        } else {
+            toast({
+                title: "Erreur de modification du profil",
+                description: "Une erreur est survenue lors de la modification de votre profil.",
+                variant: "destructive",
+            });
+        }
     }
     React.useEffect(() => {
         if (user) {
@@ -29,7 +55,7 @@ export default function FormPersonalInformation() {
             form.setValue('email', user.email!)
             form.setValue('birthDate', user?.birthDate ?? '')
             form.setValue('country', user?.country?.code ?? '')
-            form.setValue('phoneNumbers', user.phoneNumbers.length >0 ? user.phoneNumbers[0] : '')
+            form.setValue('phoneNumbers', user.phoneNumbers.length > 0 ? user.phoneNumbers[0] : '')
         }
     }, [user])
     return (
