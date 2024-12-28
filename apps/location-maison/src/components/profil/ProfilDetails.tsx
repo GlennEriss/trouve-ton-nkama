@@ -3,12 +3,13 @@ import React from 'react'
 import { ChevronRight, Lock, HelpCircle, Bell, ShieldCheck } from 'lucide-react';
 import Link from 'next/link';
 import { useWindowSize } from '@/hooks/useSize';
+import { routes } from '@/constantes/routes';
 
 const menu = [
     {
         title: 'Connexion et sécurité',
         icon: Lock,
-        link: '',
+        link: routes.protected.login_and_security,
         description: 'Gérez vos informations de connexion, réinitialisez votre mot de passe et configurez les options de sécurité pour protéger votre compte.'
     },
     {

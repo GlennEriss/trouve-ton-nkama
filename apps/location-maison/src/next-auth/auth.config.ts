@@ -1,7 +1,3 @@
-/* import { auth, GoogleAuthProvider } from "@/firebase/auth";
-import { getUserDetailsByID } from "@/services/patientService";
-import { createUserDetails, findUserByEmail, findUserDetailsByUser, getUserWithDetails } from "@/services/userService";
-import { signInWithCredential } from 'firebase/auth'; */
 import { createUser, findUserByEmail, findUserDetailsByUserID, getUserByUID } from "@/db/user.db";
 import { auth, GoogleAuthProvider } from "@/firebase/auth";
 import { signInWithCredential } from "firebase/auth";

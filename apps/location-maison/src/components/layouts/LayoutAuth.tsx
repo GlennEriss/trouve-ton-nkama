@@ -6,17 +6,7 @@ import Link from "next/link";
 import { routes } from "@/constantes/routes";
 import { signInWithGoogle } from "@/actions/signin-with-google";
 import { ButtonLoading } from "../buttons/ButtonLoading";
-
-const connectionMethods = [
-    {
-        icon: FcGoogle,
-        method: "GOOGLE",
-    },
-    {
-        icon: FaFacebookF,
-        method: "FACEBOOK",
-    },
-] as const;
+import connectionMethods from "@/constantes/connections-methods";
 
 type LayoutAuthProps = React.PropsWithChildren & {
     type: "Signin" | "Signup";
