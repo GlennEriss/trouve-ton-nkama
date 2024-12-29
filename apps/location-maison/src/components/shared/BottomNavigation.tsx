@@ -36,7 +36,7 @@ export const BottomNavigation: React.FC = () => {
         return null
     }
     return (
-        <div className='fixed bottom-0 z-50 w-full flex bg-white p-2 justify-between px-4 md:hidden shadow border-t'>
+        <div className='fixed bottom-0 z-50 w-full flex bg-white p-4 justify-between md:hidden shadow border-t'>
             {
                 menu.map((item, key) => (
                     <Link href={item.link} key={key} className={clsx({
