@@ -15,7 +15,9 @@ export const routes = {
         account: '/profil',
         favoris: '/favoris',
         profil: '/profil',
-        profil_informations: '/profil/informations'
+        profil_informations: '/profil/informations',
+        login_and_security: 'login-and-security',
+        notifications: '/notifications'
     },
     public: {
         signin: '/signin',
