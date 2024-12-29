@@ -104,10 +104,6 @@ export const tags = [
   },
 ];
 
-export const queryKeys = {
-  property: 'properties',
-}
-
 export const collectionFirebaseNames = {
   properties: 'properties'
 }

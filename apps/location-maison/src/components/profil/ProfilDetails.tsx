@@ -1,6 +1,6 @@
 'use client'
 import React from 'react'
-import { ChevronRight, Lock, HelpCircle, Bell, ShieldCheck } from 'lucide-react';
+import { ChevronRight, Lock, Bell, ShieldCheck } from 'lucide-react';
 import Link from 'next/link';
 import { useWindowSize } from '@/hooks/useSize';
 import { routes } from '@/constantes/routes';

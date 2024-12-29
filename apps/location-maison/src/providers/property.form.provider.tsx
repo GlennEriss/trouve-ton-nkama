@@ -11,10 +11,10 @@ import { usePathname } from "next/navigation"
 import { createFile } from "@/db/file.db"
 import { useCurrentUser } from "@/hooks/use-current-user"
 import { useMutation, useQueryClient } from "@tanstack/react-query"
-import { queryKeys } from "@/constantes"
 import { createProperty, getPropertyById } from "@/db/property.db"
 import useLastpath from "@/hooks/use-lastpath"
 import React from "react"
+import queryKeys from "@/constantes/react-query-keys"
 
 type PropertyFormComponent = {
     form: any,
@@ -106,14 +106,18 @@ export const PropertyFormComponentProvider = ({ children }: { children: React.Re
     //Mutation
     const queryClient = useQueryClient()
     const mutation = useMutation({
-        mutationKey: [queryKeys.property],
+        mutationKey: [queryKeys.properties],
         mutationFn: async (data: Property) => {
-            const propertyP = await createProperty(data)
-            setPropertyPreview(propertyP)
-            return propertyP
+            const id = await createProperty(data)
+            if(id){
+                const propertyCreate = {...data, id}
+                setPropertyPreview(propertyCreate)
+
+            }
+            return data
         },
         onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: [queryKeys.property] })
+            queryClient.invalidateQueries({ queryKey: [queryKeys.properties] })
             toast({
                 title: "Ajout d'une propriété",
                 description: "Propriété ajoutée avec succès!",
