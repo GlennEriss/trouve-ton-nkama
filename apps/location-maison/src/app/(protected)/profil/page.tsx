@@ -3,7 +3,6 @@ import { Bell } from 'lucide-react';
 import ProfilInformations from '@/components/profil/ProfilInformations';
 import ProfilDetails from '@/components/profil/ProfilDetails';
 import Logout from '../../../components/shared/Logout';
-import { Separator } from '@/components/ui/separator';
 
 export default function page() {
     return (

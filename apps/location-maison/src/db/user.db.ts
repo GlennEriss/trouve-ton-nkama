@@ -4,7 +4,7 @@ import firebaseCollectionNames from "@/constantes/firebase-collection-name";
 const getFirestore = () => import("@/firebase/firestore");
 
 export async function createUser(user: Partial<User>) {
-    return await createModel<Partial<User>>(user)
+    return await createModel<Partial<User>>(user, firebaseCollectionNames.users)
 }
 
 export async function getUserByUID(uid: string): Promise<User | null> {

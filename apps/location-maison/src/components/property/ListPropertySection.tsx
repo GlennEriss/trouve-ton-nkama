@@ -23,6 +23,8 @@ import { ChevronLeft, ChevronRight } from 'lucide-react'
 import { getCountStatisticsByPropertyType, getProperties } from '@/db/property.db';
 import { useInfiniteQuery } from '@tanstack/react-query';
 import { PROPERTY_ITEM_PER_PAGE } from '@/constantes/item-per-page';
+import queryKeys from '@/constantes/react-query-keys';
+import { RemoveProperty } from './RemoveProperty';
 
 export default function ListPropertySection() {
     const searchParams = useSearchParams();
@@ -43,7 +45,7 @@ export default function ListPropertySection() {
         })
     }
     const { data, isPending, isFetching, fetchNextPage } = useInfiniteQuery({
-        queryKey: ['properties', type, user],
+        queryKey: [queryKeys.properties, type, user],
         queryFn: fetchInfiniteProperties,
         initialPageParam: { limitPerPage: PROPERTY_ITEM_PER_PAGE, lastDoc: null },
         getNextPageParam: (lastPage, allPages, pageParam) => {
@@ -168,9 +170,7 @@ export const CardPropertyCrud = ({ property }: { property: Property }) => {
                                 <AiOutlineEye size={18} />
                             </Link>
                         </Button>
-                        <Button variant="destructive" size="icon">
-                            <FaTrash size={18} />
-                        </Button>
+                        <RemoveProperty id={property.id!}/>
                     </div>
                 </div>
             </div>

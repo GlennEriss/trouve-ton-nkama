@@ -1,11 +1,9 @@
-import firebaseCollectionNames from "@/constantes/firebase-collection-name";
-
 const getFirestore = () => import("@/firebase/firestore");
 
-export async function createModel<T>(model: T): Promise<string | null> {
+export async function createModel<T>(model: T, collectionName: string): Promise<string | null> {
     try {
         const { addDoc, collection, db, serverTimestamp } = await getFirestore();
-        const collectionRef = collection(db, firebaseCollectionNames.users);
+        const collectionRef = collection(db, collectionName);
         const docRef = await addDoc(collectionRef, {
             ...model,
             state: 'IN_PROGRESS',
@@ -16,5 +14,17 @@ export async function createModel<T>(model: T): Promise<string | null> {
     } catch (error) {
         console.error("Error creating model:", error);
         return null;
+    }
+}
+
+export async function deleteModel(id: string, collectionName: string): Promise<boolean> {
+    try {
+        const { db, doc, deleteDoc } = await getFirestore();
+        const docRef = doc(db, collectionName, id);
+        await deleteDoc(docRef);
+        return true;
+    } catch (error) {
+        console.error("Error deleting model:", error);
+        return false;
     }
 }
