@@ -17,6 +17,8 @@ export {
   signOut,
   signInWithPopup,
   EmailAuthProvider,
+  fetchSignInMethodsForEmail,
+  linkWithCredential,
   type Auth,
   type User,
   GoogleAuthProvider,

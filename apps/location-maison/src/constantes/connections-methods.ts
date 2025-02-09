@@ -5,10 +5,12 @@ const connectionMethods = [
     {
         icon: FcGoogle,
         method: "GOOGLE",
+        colorIcon: undefined
     },
     {
         icon: FaFacebookF,
         method: "FACEBOOK",
+        colorIcon: "blue"
     },
 ] as const;
 

@@ -7,7 +7,7 @@ import StepperButtonComponent from '@/components/stepper/StepperButtonComponent'
 export default function layout({ children }: { children: React.ReactNode }) {
     return (
         <PropertyFormComponentProvider>
-            <div className='flex flex-col gap-4'>
+            <div className='flex flex-col gap-4 px-6 pb-20'>
                 <TitleComponent />
                 <StepperComponent />
                 {children}

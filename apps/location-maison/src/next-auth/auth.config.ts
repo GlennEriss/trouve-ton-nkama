@@ -1,9 +1,11 @@
-import { createUser, findUserByEmail, findUserDetailsByUserID, getUserByUID } from "@/db/user.db";
+import { createUser, findUserByEmail, findUserDetailsByUserID, getUserByUID, updateUser } from "@/db/user.db";
 import { auth, GoogleAuthProvider } from "@/firebase/auth";
-import { signInWithCredential } from "firebase/auth";
+import { ProviderType } from "@/models/authentication";
+import { FacebookAuthProvider, fetchSignInMethodsForEmail, linkWithCredential, signInWithCredential, signInWithPopup } from "firebase/auth";
 import { NextAuthConfig } from "next-auth"
 import Credentials from "next-auth/providers/credentials"
 import GoogleProvider from "next-auth/providers/google";
+import FacebookProvider from "next-auth/providers/facebook";
 
 const getAuth = () => import('@/firebase/auth')
 const authConfig = {
@@ -17,6 +19,10 @@ const authConfig = {
         GoogleProvider({
             clientId: process.env.GOOGLE_CLIENT_ID,
             clientSecret: process.env.GOOGLE_CLIENT_SECRET
+        }),
+        FacebookProvider({
+            clientId: process.env.FACEBOOK_CLIENT_ID,
+            clientSecret: process.env.FACEBOOK_CLIENT_SECRET
         }),
         Credentials({
             authorize: async (credentials) => {
@@ -58,24 +64,89 @@ const authConfig = {
             if (account?.provider === "google") {
                 const credential = GoogleAuthProvider.credential(account.id_token);
                 try {
-                    const firebaseUser = await signInWithCredential(auth, credential);
-                    const uid = firebaseUser.user.uid;
-                    const userData = {
-                        uid,
-                        firstname: profile?.given_name ?? '',
-                        lastname: profile?.family_name ?? '',
-                        email: user?.email ?? '',
-                        image: profile?.picture ?? '',
-                        phoneNumbers: firebaseUser.user.phoneNumber ? [firebaseUser.user.phoneNumber] : [],
-                        role: ["Announcer"],
-                        searchableName: firebaseUser.user?.displayName ?? '',
-                    };
-                    const userExists = await findUserDetailsByUserID(uid);
+                    const userExists = await findUserByEmail(user?.email ?? '');
                     if (!userExists) {
+                        const firebaseUser = await signInWithCredential(auth, credential);
+                        const uid = firebaseUser.user.uid;
+                        const userData = {
+                            uid,
+                            firstname: profile?.given_name ?? '',
+                            lastname: profile?.family_name ?? '',
+                            email: user?.email ?? '',
+                            image: profile?.picture ?? '',
+                            phoneNumbers: firebaseUser.user.phoneNumber ? [firebaseUser.user.phoneNumber] : [],
+                            role: ["Announcer"],
+                            searchableName: firebaseUser.user?.displayName ?? '',
+                            providers: ['GOOGLE' as ProviderType],
+                            metadata: {
+                                idToken: account.id_token
+                            }
+                        };
                         await createUser(userData);
+                    } else {
+                        const providers = userExists?.providers || []
+                        if (!providers.includes('GOOGLE')) {
+                            const facebookCredential = FacebookAuthProvider.credential(userExists.metadata.accessToken)
+                            const facebookUser = await signInWithCredential(auth, facebookCredential)
+                            await linkWithCredential(facebookUser.user, credential)
+                            providers.push('GOOGLE')
+                        }
+                        await updateUser(userExists.uid, {
+                            ...userExists,
+                            metadata: {
+                                idToken: account.id_token
+                            },
+                            providers
+                        })
                     }
                     return true;
                 } catch (error) {
+                    console.error("Erreur lors de la connexion avec Firebase:", error);
+                    return false;
+                }
+            }
+            if (account?.provider === "facebook") {
+                if (!account.access_token) {
+                    return false
+                }
+                const credential = FacebookAuthProvider.credential(account.access_token)
+                try {
+                    const userExists = await findUserByEmail(user?.email ?? '');
+                    if (!userExists) {
+                        const firebaseUser = await signInWithCredential(auth, credential)
+                        const uid = firebaseUser.user.uid
+                        const userData = {
+                            uid,
+                            firstname: profile?.name ?? '',
+                            lastname: '',
+                            email: user?.email ?? '',
+                            image: profile?.picture?.data?.url ?? '',
+                            phoneNumbers: firebaseUser.user.phoneNumber ? [firebaseUser.user.phoneNumber] : [],
+                            role: ["Announcer"],
+                            searchableName: profile?.name ?? '',
+                            providers: ['FACEBOOK' as ProviderType],
+                            metadata: {
+                                accessToken: account.access_token
+                            }
+                        }
+                        await createUser(userData);
+                    } else {
+                        const providers = userExists?.providers || []
+                        if (!providers.includes('FACEBOOK')) {
+                            const googleCredential = GoogleAuthProvider.credential(userExists.metadata.idToken)
+                            const googleUser = await signInWithCredential(auth, googleCredential);
+                            await linkWithCredential(googleUser.user, credential);
+                            providers.push('FACEBOOK')
+                        }
+                        await updateUser(userExists.uid, {
+                            ...userExists,
+                            metadata: {
+                                accessToken: account.access_token
+                            },
+                            providers
+                        })
+                    }
+                } catch (error: any) {
                     console.error("Erreur lors de la connexion avec Firebase:", error);
                     return false;
                 }

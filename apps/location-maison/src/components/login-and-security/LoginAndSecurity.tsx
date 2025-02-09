@@ -6,8 +6,12 @@ import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 import { routes } from '@/constantes/routes';
 import { signInWithGoogle } from '@/actions/signin-with-google';
+import { useCurrentUser } from '@/hooks/use-current-user';
+import { ProviderType } from '@/models/authentication';
+import { signInWithFacebook } from '@/actions/signin-with-facebook';
 
 export default function LoginAndSecurity() {
+    const user = useCurrentUser()
     const [isPending, startTransition] = React.useTransition()
     const handleConnection = (method: 'FACEBOOK' | 'GOOGLE') => {
         switch (method) {
@@ -17,7 +21,9 @@ export default function LoginAndSecurity() {
                 })
                 break;
             case 'FACEBOOK':
-
+                startTransition(() => {
+                    signInWithFacebook()
+                })
                 break;
             default:
                 break;
@@ -38,11 +44,18 @@ export default function LoginAndSecurity() {
                                     <connection.icon size={24} />
                                 </div>
                                 <div>
-                                    Non connecté
+                                    {
+                                        user?.providers?.includes(connection.method as ProviderType) ? (
+                                            <span className='text-green-500 font-bold'>Connecté</span>
+                                        ) : (
+                                            <span className='text-red-500 font-bold'>Non connecté</span>
+                                        )
+                                    }
                                 </div>
                                 <Button
                                     type='button'
                                     onClick={() => handleConnection(connection.method)}
+                                    disabled={user?.providers?.includes(connection.method as ProviderType)}
                                 >
                                     Se connecter
                                 </Button>

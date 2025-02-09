@@ -16,6 +16,7 @@ import { routes } from '@/constantes/routes';
 export const Signin = () => {
     const router = useRouter()
     const [isPending, startTransition] = React.useTransition()
+    const [isOtherMethodConnection, setIsOtherMethodConnection] = React.useState(false)
     const { toast } = useToast()
     const form = useForm<FormLoginSchemaType>({
         resolver: zodResolver(FormLoginSchema)
@@ -40,7 +41,10 @@ export const Signin = () => {
         })
     }
     return (
-        <LayoutAuth type='Signin'>
+        <LayoutAuth
+            type='Signin'
+            setIsOtherMethodConnection={setIsOtherMethodConnection}
+        >
             <Form {...form}>
                 <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-3">
                     <h1 className="text-lg">Heureux de vous revoir, connectez-vous</h1>
@@ -63,7 +67,10 @@ export const Signin = () => {
                     <Link href={routes.public.reset_password} className='text-red-500 flex justify-end text-sm'>
                         Mot de passe oublié?
                     </Link>
-                    <ButtonLoading type='submit' disabled={form.formState.isSubmitting || form.formState.isLoading} className='w-full'>
+                    <ButtonLoading
+                        type='submit'
+                        disabled={form.formState.isSubmitting || form.formState.isLoading || isOtherMethodConnection || isPending}
+                        className='w-full'>
                         Se connecter
                     </ButtonLoading>
                 </form>
