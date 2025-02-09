@@ -1,18 +1,18 @@
 import React from "react";
 import Logo from "../logo/Logo";
-import { FaFacebookF } from "react-icons/fa";
-import { FcGoogle } from "react-icons/fc";
 import Link from "next/link";
 import { routes } from "@/constantes/routes";
 import { signInWithGoogle } from "@/actions/signin-with-google";
 import { ButtonLoading } from "../buttons/ButtonLoading";
 import connectionMethods from "@/constantes/connections-methods";
+import { signInWithFacebook } from "@/actions/signin-with-facebook";
 
 type LayoutAuthProps = React.PropsWithChildren & {
     type: "Signin" | "Signup";
+    setIsOtherMethodConnection: React.Dispatch<React.SetStateAction<boolean>>
 };
 
-export const LayoutAuth: React.FC<LayoutAuthProps> = ({ children, type }) => {
+export const LayoutAuth: React.FC<LayoutAuthProps> = ({ children, type, setIsOtherMethodConnection }) => {
     const [isPending, startTransition] = React.useTransition()
     const handleConnection = (method: 'FACEBOOK' | 'GOOGLE') => {
         switch (method) {
@@ -22,12 +22,17 @@ export const LayoutAuth: React.FC<LayoutAuthProps> = ({ children, type }) => {
                 })
                 break;
             case 'FACEBOOK':
-
+                startTransition(() => {
+                    signInWithFacebook();
+                })
                 break;
             default:
                 break;
         }
     }
+    React.useEffect(() => {
+        setIsOtherMethodConnection(isPending)
+    }, [isPending])
     return (
         <div className="min-h-screen bg-gray-100 flex justify-center items-center py-5">
             {/* Container */}
@@ -64,7 +69,7 @@ export const LayoutAuth: React.FC<LayoutAuthProps> = ({ children, type }) => {
                                         onClick={() => handleConnection(connection.method)}
                                         disabled={isPending}
                                     >
-                                        <connection.icon size={24} />
+                                        <connection.icon size={24} color={connection?.colorIcon} />
                                     </ButtonLoading>
                                 ))}
                             </div>

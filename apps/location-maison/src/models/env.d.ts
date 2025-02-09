@@ -23,5 +23,8 @@ namespace NodeJS {
     //ALGOLIA
     NEXT_PUBLIC_ALGOLIA_APP_ID: string;
     NEXT_PUBLIC_ALGOLIA_SEARCH_API_KEY: string;
+    //FACEBOOK
+    FACEBOOK_CLIENT_ID: string;
+    FACEBOOK_CLIENT_SECRET: string;
   }
 }

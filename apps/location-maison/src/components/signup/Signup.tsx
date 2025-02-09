@@ -20,6 +20,7 @@ import { useRouter } from 'next/navigation'
 export const Signup: React.FC = () => {
     const router = useRouter()
     const { toast } = useToast()
+    const [isOtherMethodConnection, setIsOtherMethodConnection] = React.useState(false)
     const form = useForm<FormRegisterSchemaType>({
         resolver: zodResolver(FormRegisterSchema)
     })
@@ -63,7 +64,10 @@ export const Signup: React.FC = () => {
             })
     }
     return (
-        <LayoutAuth type='Signup'>
+        <LayoutAuth
+            type='Signup'
+            setIsOtherMethodConnection={setIsOtherMethodConnection}
+        >
             <Form {...form}>
                 <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-3">
                     <h1 className="text-lg">Créer un compte pour commencer à poster des annonces</h1>
@@ -142,7 +146,10 @@ export const Signup: React.FC = () => {
                         name={'termsOfPrivacyPolicy'}
                         label="En cliquant sur s'inscrire, vous êtes en accord avec notre politique de confidentialité"
                     />
-                    <ButtonLoading type='submit' disabled={form.formState.isSubmitting || form.formState.isLoading} className='w-full'>
+                    <ButtonLoading
+                        type='submit'
+                        disabled={form.formState.isSubmitting || form.formState.isLoading || isOtherMethodConnection}
+                        className='w-full'>
                         S'enregistrer
                     </ButtonLoading>
                 </form>
