@@ -45,7 +45,7 @@ const HomePage = () => {
   // Mock des maisons en vedette
   const houses = [
     {
-      id: 1,
+      id: "kradf2hfmvP7qxJkrpYN",
       images: [
         {
           fileURL:
