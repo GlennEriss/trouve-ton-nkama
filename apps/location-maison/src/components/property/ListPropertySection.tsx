@@ -34,8 +34,7 @@ export default function ListPropertySection() {
     const [currentPage, setCurrentPage] = React.useState(0);
     const [totalPage, setTotalPage] = React.useState(0);
     const fetchInfiniteProperties = async ({ pageParam }: { pageParam: any }) => {
-        const { lastDoc } = pageParam;
-        const { limitPerPage } = pageParam;
+        const { limitPerPage, lastDoc } = pageParam;
         const createdBy = user ? user.uid : '';
         return getProperties({
             limitPerPage,
@@ -91,7 +90,7 @@ export default function ListPropertySection() {
                     Précédent
                 </Button>
                 <span className="font-medium text-gray-700">
-                    Page {currentPage+1}/ {totalPage}
+                    Page {currentPage + 1}/ {totalPage}
                 </span>
                 <Button
                     variant="outline"
@@ -161,7 +160,7 @@ export const CardPropertyCrud = ({ property }: { property: Property }) => {
 
                     <div className="flex gap-2">
                         <Button variant="outline" size="icon" asChild>
-                            <Link href={routes.protected.properties+'/modify/'+property.id}>
+                            <Link href={routes.protected.properties + '/modify/' + property.id}>
                                 <FiEdit2 size={18} />
                             </Link>
                         </Button>
@@ -170,7 +169,7 @@ export const CardPropertyCrud = ({ property }: { property: Property }) => {
                                 <AiOutlineEye size={18} />
                             </Link>
                         </Button>
-                        <RemoveProperty id={property.id!}/>
+                        <RemoveProperty id={property.id!} />
                     </div>
                 </div>
             </div>

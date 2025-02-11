@@ -13,7 +13,7 @@ import "slick-carousel/slick/slick.css";
 import "slick-carousel/slick/slick-theme.css";
 
 interface Property {
-  id: number;
+  id: number|string;
   title: string;
   images: { fileURL: string }[];
   city: string;
@@ -54,8 +54,8 @@ const CustomNextArrow = ({ onClick }: { onClick?: () => void }) => (
 const PropertyCarousel: React.FC<CarouselProps> = ({ properties }) => {
   const router = useRouter();
 
-  const handleCardClick = (id: number) => {
-    router.push(`/houseDetails?id=${id}`);
+  const handleCardClick = (id: number|string) => {
+    router.push(`/houseDetails/${id}`);
   };
 
   // Configuration du carousel

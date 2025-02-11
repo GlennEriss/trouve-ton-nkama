@@ -1,5 +1,6 @@
 const queryKeys = {
-    properties: 'properties'
+    properties: 'properties',
+    favoris: 'favoris',
 } as const
 
 export default queryKeys
