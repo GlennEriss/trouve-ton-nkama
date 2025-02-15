@@ -9,6 +9,61 @@ import { MdOutlineApartment, MdOutlineWorkspaces } from "react-icons/md";
 import { Button } from "@/components/ui/button";
 import { TypeProperty } from "@/lib/utils";
 import PropertyCarousel from "../property/PropertyCarousel";
+import MapComponent, { Neighborhood } from "../map/MapComponent";
+import houseMocks from "@/mocks/mocksHouse";
+
+const neighborhoods: Neighborhood[] = [
+  {
+    name: "Louis",
+    coordinates: [
+      [0.3916, 9.4538],
+      [0.3919, 9.4565],
+      [0.3908, 9.4572],
+      [0.3897, 9.4544],
+      [0.3916, 9.4538],
+    ],
+  },
+  {
+    name: "Akébé",
+    coordinates: [
+      [0.3941, 9.4511],
+      [0.3958, 9.4533],
+      [0.3934, 9.4546],
+      [0.3918, 9.4528],
+      [0.3941, 9.4511],
+    ],
+  },
+  {
+    name: "Nombakélé",
+    coordinates: [
+      [0.3892, 9.4497],
+      [0.3905, 9.452],
+      [0.3881, 9.453],
+      [0.3867, 9.4508],
+      [0.3892, 9.4497],
+    ],
+  },
+  {
+    name: "Glass",
+    coordinates: [
+      [0.3967, 9.4595],
+      [0.398, 9.4612],
+      [0.3962, 9.4624],
+      [0.3948, 9.4607],
+      [0.3967, 9.4595],
+    ],
+  },
+  {
+    name: "Montagne Sainte",
+    coordinates: [
+      [0.393, 9.449],
+      [0.3947, 9.451],
+      [0.3925, 9.4525],
+      [0.391, 9.4503],
+      [0.393, 9.449],
+    ],
+  },
+];
 
 const HomePage = () => {
   const adCarouselSettings = {
@@ -312,10 +367,10 @@ const HomePage = () => {
         <h2 className="text-3xl font-semibold text-center mb-6 text-gray-800 dark:text-gray-200">
           Trouvez votre propriété sur la carte
         </h2>
-        <div className="w-full h-96 bg-gray-200 dark:bg-gray-800 rounded-lg shadow-lg">
-          {/* Remplacez l'iframe par une map interactive comme Leaflet ou Google Maps */}
+        <div className="w-full h-96 rounded-lg shadow-lg overflow-hidden">
+          {/* <MapComponent houses={houseMocks} neighborhoods={neighborhoods} /> */}
           <iframe
-            src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3153.8354345097714!2d-122.41941618468197!3d37.77492977975956!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x80858064f1d1c91d%3A0x11d4794c44bb9ec5!2sSan%20Francisco%2C%20CA%2C%20USA!5e0!3m2!1sen!2s!4v1684837560218!5m2!1sen!2s"
+            src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3357.5285037442964!2d9.4077066!3d0.4473876!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f50!3m3!1m2!1s0x107f24adbf1740a3%3A0x25c7c1ada0b81a2d!2sCharbonnages%2C%20Libreville%2C%20Gabon!5e0!3m2!1sen!2s!4v1684837560218"
             width="100%"
             height="100%"
             style={{ border: 0 }}
