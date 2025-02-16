@@ -78,7 +78,7 @@ export abstract class PropertyFormBuilder {
             },
             {
                 name: "price",
-                label: "Prix",
+                label: "Prix (FCFA)",
                 description: "Entrez le prix du bien immobilier ou le loyer attendu.",
                 component: (field: any) => <NumberComponent field={field} />,
                 step: 1

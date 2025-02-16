@@ -101,7 +101,6 @@ const MapForm = () => {
         const lat = result.geometry.coordinates[1];
         const lon = result.geometry.coordinates[0];
         const { name, city, state: province, country, countrycode: countryCode } = result.properties;
-        console.log(result)
         // Mise à jour du marqueur sur la carte
         setCoordinates([lat, lon]);
 
