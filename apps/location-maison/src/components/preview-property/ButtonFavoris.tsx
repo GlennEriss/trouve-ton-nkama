@@ -7,46 +7,64 @@ import { useSession } from 'next-auth/react';
 import { updateUser } from '@/db/user.db';
 
 type ButtonFavorisProps = {
-    idProperty: string
+  idProperty: string
 }
+
 export const ButtonFavoris: React.FC<ButtonFavorisProps> = ({ idProperty }) => {
-    const user = useCurrentUser()
-    const { update } = useSession()
-    const [isFavorite, setIsFavorite] = React.useState(false);
-    const toggleFavorite = async () => {
-        const addInFavorite = !isFavorite
-        setIsFavorite(addInFavorite);
-        const favoris = user?.favoris || [];
-        if (addInFavorite) {
-            favoris.push(idProperty)
-        } else {
-            const index = favoris.indexOf(idProperty)
-            if (index !== -1) {
-                favoris.splice(index, 1)
-            }
-        }
-        await updateUser(user?.uid!, {
-            ...user,
-            favoris
-        })
-        update({
-            user: {
-                ...user,
-                favoris
-            }
-        })
-    };
-    React.useEffect(() => {
-        if (user?.favoris)
-            setIsFavorite(user.favoris.includes(idProperty))
-    }, [user])
-    return (
-        <Heart className={clsx({
-            "text-red-500": !isFavorite,
-            "text-red-500 fill-red-500": isFavorite
-        })}
-            size='30'
-            onClick={toggleFavorite}
-        />
-    )
+  const user = useCurrentUser()
+  const { update } = useSession()
+  const [isFavorite, setIsFavorite] = React.useState(false);
+  const [isLoading, setIsLoading] = React.useState(false);
+
+  const toggleFavorite = async () => {
+    if (isLoading) return; // Empêche plusieurs clics
+    setIsLoading(true);
+    
+    const addInFavorite = !isFavorite;
+    setIsFavorite(addInFavorite);
+    
+    // On crée une copie du tableau favoris pour éviter les mutations directes
+    const favoris = user?.favoris ? [...user.favoris] : [];
+    
+    if (addInFavorite) {
+      favoris.push(idProperty);
+    } else {
+      const index = favoris.indexOf(idProperty);
+      if (index !== -1) {
+        favoris.splice(index, 1);
+      }
+    }
+    
+    await updateUser(user?.uid!, {
+      ...user,
+      favoris
+    });
+    
+    update({
+      user: {
+        ...user,
+        favoris
+      }
+    });
+    
+    setIsLoading(false);
+  };
+
+  React.useEffect(() => {
+    if (user?.favoris)
+      setIsFavorite(user.favoris.includes(idProperty));
+  }, [user, idProperty]);
+
+  return (
+    <Heart 
+      className={clsx({
+        "text-red-500": !isFavorite,
+        "text-red-500 fill-red-500": isFavorite,
+        "cursor-pointer": !isLoading,
+        "cursor-not-allowed opacity-50": isLoading,
+      })}
+      size={30}
+      onClick={isLoading ? undefined : toggleFavorite}
+    />
+  );
 }

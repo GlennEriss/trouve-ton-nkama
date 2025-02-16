@@ -87,7 +87,6 @@ export default function ListPropertySection() {
                     className="flex items-center gap-2"
                 >
                     <ChevronLeft size={20} />
-                    Précédent
                 </Button>
                 <span className="font-medium text-gray-700">
                     Page {currentPage + 1}/ {totalPage}
@@ -98,7 +97,6 @@ export default function ListPropertySection() {
                     className="flex items-center gap-2"
                     disabled={isPending || !(currentPage < (totalPage - 1))}
                 >
-                    Suivant
                     <ChevronRight size={20} />
                 </Button>
             </div>
