@@ -5,7 +5,8 @@ import CarouselProperty from './CarouselProperty'
 import DetailsProperty from './DetailsProperty'
 import { Property } from '@/models/annonce'
 import { ButtonFavoris } from './ButtonFavoris'
-
+import ContactSection from './ContactSection'
+import { MapSection } from './MapSection'
 export default function PreviewProperty({ property }: { property: Property }) {
   const tagSatus: Record<string, string> = {
     "FOR_RENT": "A LOUER",
@@ -49,14 +50,35 @@ export default function PreviewProperty({ property }: { property: Property }) {
           </p>
         </div>
 
-        <div className="flex flex-col gap-3 rounded-lg p-5 shadow">
+        <section className="flex flex-col gap-3 rounded-lg p-5 shadow">
           <h1 className='font-bold'>Aperçu</h1>
           <p className='flex flex-col text-gray-500 text-sm'>
             <span>Créé le: {property.createdAt?.toDate().toLocaleDateString()}</span>
             <span>Modifié le: {property.updatedAt?.toDate().toLocaleDateString()}</span>
           </p>
           <DetailsProperty property={property as any} />
-        </div>
+        </section>
+
+        <ContactSection />
+        {
+          property.additionnalInformation && (
+            <section className="flex flex-col gap-3 rounded-lg p-5 shadow">
+              <h1 className='font-bold'>Localisation</h1>
+              <p>
+                {property.additionnalInformation}
+              </p>
+            </section>
+          )
+        }
+
+        <MapSection
+          street={property.street}
+          city={property.city}
+          province={property.province}
+          latitude={property.latitude}
+          longitude={property.longitude}
+          countryCode={property.countryCode}
+        />
       </section>
     </div>
   )
