@@ -3,15 +3,12 @@ import { usePropertyFormComponentContext } from '@/providers/property.form.provi
 import React from 'react'
 import { FormField, FormItem, FormLabel, FormControl, FormDescription, FormMessage } from '../ui/form'
 import { FormElement } from '@/builders/property-form/property.form.builder'
-import { useFormContext } from 'react-hook-form'
 
 type Step3Props = {
     data: FormElement[]
 }
 export default function Step3({ data }: Step3Props) {
     const { form } = usePropertyFormComponentContext()
-    const {getValues} = useFormContext()
-    console.log(getValues())
     return (
         <div className='flex flex-col mx-auto xl:w-1/2'>
             {

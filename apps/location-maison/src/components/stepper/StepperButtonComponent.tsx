@@ -4,14 +4,28 @@ import { Button } from '../ui/button'
 import { usePropertyFormComponentContext } from '@/providers/property.form.provider'
 import { useFormContext } from 'react-hook-form'
 import { LoadingSpinner } from '../shared/LoadingSpinner'
+import { useToast } from '@/hooks/use-toast';
 
 export default function StepperButtonComponent() {
+  const { toast } = useToast();
   const { activeStep, setActiveStep } = usePropertyFormComponentContext()
-  const { getValues, formState } = useFormContext()
+  const { formState } = useFormContext()
   const handleNextStep = () => {
     setActiveStep(prev => prev + 1)
   }
-  if(activeStep===3){
+  React.useEffect(() => {
+    if (
+      activeStep === 2 &&
+      Object.keys(formState.errors).length > 0
+    ) {
+      toast({
+        title: "Erreur dans le formulaire",
+        description: "Le formulaire contient des erreurs. Veuillez corriger les erreurs avant de continuer.",
+        variant: "destructive",
+    });
+    }
+  }, [activeStep, formState.submitCount, formState.errors])
+  if (activeStep === 3) {
     return null
   }
   return (
