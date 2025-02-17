@@ -163,11 +163,14 @@ export const TagItem = ({ tag, field }: { tag: { tagName: string, tagIcon: IconT
     const handleSelectIcon = () => {
         const active = !isActived
         if (active) {
-            field.onChange([...field.value, tag.tagName])
+            if (field.value.length < 6) {
+                field.onChange([...field.value, tag.tagName])
+                setIsActived(!isActived)
+            }
         } else {
             field.onChange(field.value.filter((item: string) => item !== tag.tagName))
+            setIsActived(!isActived)
         }
-        setIsActived(!isActived)
     }
     return (
         <div className={clsx({

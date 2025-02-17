@@ -2,7 +2,7 @@
 
 import * as React from "react"
 import { Input } from "../ui/input"
-import { useForm, useFormContext } from "react-hook-form"
+import { useFormContext } from "react-hook-form"
 import Select from 'react-select';
 import { useQuery } from "@tanstack/react-query"
 
@@ -100,6 +100,7 @@ export const LocationSearch = ({ field, index, location }: { field: any, index: 
 
 export const InputDisabledComponent = ({ field }: { field: any }) => {
   return (
-    <Input {...field} value={field.value} disabled={false} />
+    <Input {...field} value={field.value} disabled={true} />
   )
 }
+

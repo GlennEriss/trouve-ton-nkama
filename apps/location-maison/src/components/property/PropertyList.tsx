@@ -8,7 +8,7 @@ import { routes } from '@/constantes/routes'
 
 export default function PropertyList() {
     return (
-        <div className='space-y-4'>
+        <div className='space-y-4 mb-20'>
             <section className='sticky top-0 md:static z-50 bg-white px-5 py-4 shadow border-b flex items-center justify-between'>
                 <h1 className='text-xl font-bold'>Annonces</h1>
                 <Button variant='outline' className='border-[#846CF9] hover:bg-[#846CF9] text-[#846CF9] hover:text-white' asChild>

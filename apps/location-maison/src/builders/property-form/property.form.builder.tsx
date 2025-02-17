@@ -2,9 +2,10 @@
  * @module Builders/property-form
  */
 
+import MapForm from "@/components/stepper/MapForm";
 import { NumberComponent, TextareaComponent, TextComponent } from "@/components/stepper/step.shared.component";
 import { ImagesComponent, StatusComponent, TagsComponent } from "@/components/stepper/step1.components";
-import { ComboboxComponent, InputDisabledComponent } from '@/components/stepper/step3.components';
+import { InputDisabledComponent } from '@/components/stepper/step3.components';
 
 /**
  * @typedef {Object} FormElement
@@ -77,7 +78,7 @@ export abstract class PropertyFormBuilder {
             },
             {
                 name: "price",
-                label: "Prix",
+                label: "Prix (FCFA)",
                 description: "Entrez le prix du bien immobilier ou le loyer attendu.",
                 component: (field: any) => <NumberComponent field={field} />,
                 step: 1
@@ -98,9 +99,16 @@ export abstract class PropertyFormBuilder {
             },
             {
                 name: "street",
-                label: "Quartier",
+                label: "Saisissez la localité de votre logement",
                 description: "Saisissez puis sélectionnez un quartier",
-                component: (field: any) => <ComboboxComponent field={field} />,
+                component: (field: any) => <MapForm />,
+                step: 3
+            }, 
+            {
+                name: "province",
+                label: "Province",
+                description: "",
+                component: (field: any) => <InputDisabledComponent field={field} />,
                 step: 3
             },
             {
@@ -111,12 +119,12 @@ export abstract class PropertyFormBuilder {
                 step: 3
             },
             {
-                name: "province",
-                label: "Province",
-                description: "",
+                name: "street",
+                label: "Quartier",
+                description: "Saisissez puis sélectionnez un quartier",
                 component: (field: any) => <InputDisabledComponent field={field} />,
                 step: 3
-            },
+            }, 
             {
                 name: "additionnalInformation",
                 label: "Informations complémentaires",

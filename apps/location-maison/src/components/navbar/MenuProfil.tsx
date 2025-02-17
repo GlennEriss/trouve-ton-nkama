@@ -3,7 +3,6 @@ import React, { useTransition } from 'react'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { routes } from '@/constantes/routes'
 import { Button } from '../ui/button'
-import Link from 'next/link'
 import { DropdownMenu, DropdownMenuContent, DropdownMenuGroup, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from '../ui/dropdown-menu'
 import { useCurrentUser } from '@/hooks/use-current-user'
 import { generateColorFromName } from '@/lib/generateColorFromName'
@@ -50,6 +49,9 @@ export default function MenuProfil() {
             }
         })
     }
+    const handleNavigate = (link: string) => {
+        router.push(link)
+    }
     return (
         <DropdownMenu>
             <DropdownMenuTrigger asChild>
@@ -69,25 +71,26 @@ export default function MenuProfil() {
                 <DropdownMenuGroup>
                     {
                         menu.map((item, index) => (
-                            <DropdownMenuItem key={index} className='hover:text-[#846CF9] cursor-pointer'>
-                                <Link href={item.link}>
-                                    {item.title}
-                                </Link>
+                            <DropdownMenuItem
+                                onClick={() => handleNavigate(item.link)}
+                                key={index}
+                                className='cursor-pointer'>
+                                {item.title}
                             </DropdownMenuItem>
                         ))
                     }
-                    <DropdownMenuItem className='flex justify-center hover:bg-white'>
-                        <Button onClick={handleSignout} variant='outline' className='border rounded-lg border-red-500 text-red-500 hover:bg-red-500 hover:text-white'>
-                            {
-                                isPending ? (
-                                    <div className="w-5 h-5 border-4 border-red-500 rounded-full animate-spin border-t-transparent"></div>
-                                ) : (
-                                    <span>Se déconnecter</span>
-                                )
-                            }
-                        </Button>
-                    </DropdownMenuItem>
                 </DropdownMenuGroup>
+                <div className='flex justify-center hover:bg-white my-2'>
+                    <Button onClick={handleSignout} variant='outline' className='border rounded-lg border-red-500 text-red-500 hover:bg-red-500 hover:text-white'>
+                        {
+                            isPending ? (
+                                <div className="w-5 h-5 border-4 border-red-500 rounded-full animate-spin border-t-transparent"></div>
+                            ) : (
+                                <span>Se déconnecter</span>
+                            )
+                        }
+                    </Button>
+                </div>
             </DropdownMenuContent>
         </DropdownMenu>
     )

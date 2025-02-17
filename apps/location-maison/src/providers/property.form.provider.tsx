@@ -7,7 +7,7 @@ import { ApartmentSchema, BuildingSchema, DeskSchema, HomeSchema, StudioSchema, 
 import { Property, TypeProperty } from "@/models/annonce"
 import { DirectorFactory } from "@/directors/factory.director"
 import { useToast } from "@/hooks/use-toast"
-import { usePathname } from "next/navigation"
+import { usePathname, useRouter } from "next/navigation"
 import { createFile } from "@/db/file.db"
 import { useCurrentUser } from "@/hooks/use-current-user"
 import { useMutation, useQueryClient } from "@tanstack/react-query"
@@ -15,6 +15,7 @@ import { createProperty, getPropertyById } from "@/db/property.db"
 import useLastpath from "@/hooks/use-lastpath"
 import React from "react"
 import queryKeys from "@/constantes/react-query-keys"
+import { routes } from "@/constantes/routes"
 
 type PropertyFormComponent = {
     form: any,
@@ -45,7 +46,8 @@ export const steps = [
 export const PropertyFormComponentProvider = ({ children }: { children: React.ReactNode }) => {
     //User
     const user = useCurrentUser()
-
+    //Router
+    const router = useRouter()
     //pathnames
     const pathname = usePathname()
     const id = useLastpath()
@@ -123,7 +125,8 @@ export const PropertyFormComponentProvider = ({ children }: { children: React.Re
                 description: "Propriété ajoutée avec succès!",
                 variant: "success"
             })
-            setActiveStep(prev => prev + 1)
+            router.push(routes.protected.properties)
+            //setActiveStep(prev => prev + 1)
         },
         onError: (error) => {
             toast({
