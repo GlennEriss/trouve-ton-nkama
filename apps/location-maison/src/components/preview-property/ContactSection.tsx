@@ -21,14 +21,14 @@ export default function ContactSection() {
                 </a>
 
                 {/* Facebook Messenger */}
-                <a
+                {/* <a
                     href={`https://m.me/${user?.email}`}
                     target="_blank"
                     rel="noopener noreferrer"
                     title="Contacter via Facebook Messenger"
                 >
                     <FaFacebookMessenger size={30} className="cursor-pointer hover:text-blue-600" />
-                </a>
+                </a> */}
 
                 {/* Gmail */}
                 <a
