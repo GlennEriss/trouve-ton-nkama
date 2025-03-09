@@ -1,6 +1,6 @@
 'use client'
 import React from 'react'
-import { Search, Heart, UserCircle, House } from "lucide-react";
+import { Search, Heart, UserCircle, House, Bell } from "lucide-react";
 import Link from 'next/link';
 import { routes } from '@/constantes/routes';
 import { usePathname } from 'next/navigation';
@@ -8,11 +8,6 @@ import clsx from 'clsx';
 import { useCurrentUser } from '@/hooks/use-current-user';
 
 const menu = [
-    {
-        title: 'Explorer',
-        icon: Search,
-        link: routes.public.homePage
-    },
     {
         title: 'Logements',
         icon: House,
@@ -22,6 +17,16 @@ const menu = [
         title: 'Favoris',
         icon: Heart,
         link: routes.protected.favoris
+    },
+    {
+        title: 'Explorer',
+        icon: Search,
+        link: routes.public.homePage
+    },
+    {
+        title: 'Notification',
+        icon: Bell,
+        link: routes.protected.notifications
     },
     {
         title: 'Profil',
@@ -43,8 +48,8 @@ export const BottomNavigation: React.FC = () => {
                         'text-xs flex flex-col items-center text-[#846CF9]': pathnames === item.link,
                         'text-xs flex flex-col items-center': pathnames !== item.link,
                     })}>
-                        <item.icon />
-                        <span>{item.title}</span>
+                        <item.icon size={25} />
+                        {/* <span>{item.title}</span> */}
                     </Link>
                 ))
             }
