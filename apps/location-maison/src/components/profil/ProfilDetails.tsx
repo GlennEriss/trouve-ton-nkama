@@ -22,7 +22,7 @@ const menu = [
     {
         title: 'Politique de confidentialité',
         icon: ShieldCheck,
-        link: '',
+        link: routes.public.confidentiality,
         description: 'Consultez comment vos données personnelles sont collectées, utilisées et protégées conformément à nos politiques.'
     },
     /* {
