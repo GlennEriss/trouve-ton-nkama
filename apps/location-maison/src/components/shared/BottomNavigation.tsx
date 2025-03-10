@@ -26,7 +26,7 @@ const menu = [
     {
         title: 'Notification',
         icon: Bell,
-        link: routes.protected.notifications
+        link: routes.protected.notification_list
     },
     {
         title: 'Profil',

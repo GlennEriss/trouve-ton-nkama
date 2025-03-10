@@ -17,7 +17,8 @@ export const routes = {
         profil: '/profil',
         profil_informations: '/profil/informations',
         login_and_security: 'login-and-security',
-        notifications: '/notifications'
+        notifications: '/notifications',
+        notification_list: '/list-notifications',
     },
     public: {
         signin: '/signin',
