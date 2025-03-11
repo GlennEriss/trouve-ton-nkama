@@ -281,7 +281,7 @@ const HomePage = () => {
   ];
 
   return (
-    <div className="container mx-auto px-4 py-8 bg-gray-100 dark:bg-gray-900 transition-colors">
+    <div className="container mx-auto px-4 py-8 bg-gray-100 dark:bg-gray-900 transition-colors mb-10">
       {/* Hero Section */}
       <section className="relative bg-gradient-to-r from-blue-500 to-indigo-500 text-white text-center py-10 mb-16 rounded-lg shadow-lg">
         <motion.h1
@@ -338,21 +338,21 @@ const HomePage = () => {
       </section>
 
       {/* Section des publicités */}
-      <section className="mb-16">
-        <Slider {...adCarouselSettings}>
-          {ads.map((ad) => (
-            <div key={ad.id} className="p-4">
-              <a href={ad.link} target="_blank" rel="noopener noreferrer">
-                <img
-                  src={ad.image}
-                  alt={`Ad ${ad.id}`}
-                  className="w-full h-80 object-cover rounded-lg shadow-md"
-                />
-              </a>
-            </div>
-          ))}
-        </Slider>
-      </section>
+{/* <section className="mb-16 w-full">
+  <Slider {...adCarouselSettings}>
+    {ads.map((ad) => (
+      <div key={ad.id} className="p-2">
+        <a href={ad.link} target="_blank" rel="noopener noreferrer">
+          <img
+            src={ad.image}
+            alt={`Ad ${ad.id}`}
+            className="w-full sm:h-80 h-56 object-cover rounded-lg shadow-md"
+          />
+        </a>
+      </div>
+    ))}
+  </Slider>
+</section> */}
 
       {/* Logements en vedette */}
       <section className="mb-16">
