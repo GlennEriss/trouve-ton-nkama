@@ -1,40 +1,13 @@
 "use client";
 
 import React from 'react'
-import { useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { BellIcon } from "lucide-react";
-
-const initialNotifications = [
-  {
-    id: 1,
-    image: "/avatar-80-01.jpg",
-    user: "Chris Tompson",
-    action: "requested review on",
-    target: "PR #42: Feature implementation",
-    timestamp: "15 minutes ago",
-    unread: true,
-  },
-  {
-    id: 2,
-    image: "/avatar-80-02.jpg",
-    user: "Emma Davis",
-    action: "shared",
-    target: "New component library",
-    timestamp: "45 minutes ago",
-    unread: true,
-  },
-  {
-    id: 3,
-    image: "/avatar-80-03.jpg",
-    user: "James Wilson",
-    action: "assigned you to",
-    target: "API integration task",
-    timestamp: "4 hours ago",
-    unread: false,
-  },
-];
+import { useNotifications } from '@/providers/NotificationProvider';
+import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
+import { useCurrentUser } from '@/hooks/use-current-user';
+import { generateColorFromName } from '@/lib/generateColorFromName';
 
 function Dot({ className }: { className?: string }) {
   return (
@@ -53,28 +26,16 @@ function Dot({ className }: { className?: string }) {
 }
 
 export default function SectionNotifications() {
-  const [notifications, setNotifications] = useState(initialNotifications);
-  const unreadCount = notifications.filter((n) => n.unread).length;
-
-  const handleMarkAllAsRead = () => {
-    setNotifications(notifications.map((notification) => ({ ...notification, unread: false })));
-  };
-
-  const handleNotificationClick = (id: number) => {
-    setNotifications(
-      notifications.map((notification) =>
-        notification.id === id ? { ...notification, unread: false } : notification
-      )
-    );
-  };
-
+  const user = useCurrentUser()
+  const { notifications, unreadCount, markAllAsRead, markAsRead } = useNotifications();
+  const avatarBackground = generateColorFromName(user?.firstname);
   return (
     <div className="max-w-xl mx-auto p-4">
       {/* Header */}
       <div className="flex items-center justify-between pb-4 border-b">
         <h2 className="text-lg font-semibold">Notifications</h2>
         {unreadCount > 0 && (
-          <button className="text-xs font-medium text-blue-600 hover:underline" onClick={handleMarkAllAsRead}>
+          <button className="text-xs font-medium text-blue-600 hover:underline" onClick={markAllAsRead}>
             Tout marquer comme lu
           </button>
         )}
@@ -85,19 +46,21 @@ export default function SectionNotifications() {
         {notifications.map((notification) => (
           <div
             key={notification.id}
-            className={`flex items-start gap-3 p-3 rounded-lg transition ${
-              notification.unread ? "bg-gray-100" : "bg-white"
-            }`}
+            className={`flex items-start gap-3 p-3 rounded-lg transition ${notification.unread ? "bg-gray-100" : "bg-white"
+              }`}
           >
-            <img
-              src={notification.image}
-              alt={notification.user}
-              className="w-10 h-10 rounded-md"
-            />
+            <Avatar>
+              <AvatarImage src={user?.image ?? ''} alt={user?.firstname + '' + user?.lastname} />
+              <AvatarFallback
+                style={{ backgroundColor: avatarBackground }}
+                className='text-2xl font-bold text-white'>
+                {user?.firstname?.at(0) ?? ''}
+              </AvatarFallback>
+            </Avatar>
             <div className="flex-1">
               <button
                 className="text-left text-sm text-gray-800 font-medium hover:underline"
-                onClick={() => handleNotificationClick(notification.id)}
+                onClick={() => markAsRead(notification.id)}
               >
                 {notification.user} {notification.action}{" "}
                 <span className="font-semibold">{notification.target}</span>.

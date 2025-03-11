@@ -62,7 +62,8 @@ export default function MenuProfil() {
                             style={{ backgroundColor: avatarBackground }}
                             className='text-2xl font-bold text-white'>
                             {user?.firstname?.at(0) ?? ''}
-                        </AvatarFallback>                    </Avatar>
+                        </AvatarFallback>
+                    </Avatar>
                 </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent className="w-56 z-50 bg-white rounded-xl">

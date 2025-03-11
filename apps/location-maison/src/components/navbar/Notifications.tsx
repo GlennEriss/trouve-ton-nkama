@@ -3,65 +3,12 @@
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { useNotifications } from "@/providers/NotificationProvider";
 import { BellIcon } from "lucide-react";
 import { useState } from "react";
-
-const initialNotifications = [
-  {
-    id: 1,
-    image: "/avatar-80-01.jpg",
-    user: "Chris Tompson",
-    action: "requested review on",
-    target: "PR #42: Feature implementation",
-    timestamp: "15 minutes ago",
-    unread: true,
-  },
-  {
-    id: 2,
-    image: "/avatar-80-02.jpg",
-    user: "Emma Davis",
-    action: "shared",
-    target: "New component library",
-    timestamp: "45 minutes ago",
-    unread: true,
-  },
-  {
-    id: 3,
-    image: "/avatar-80-03.jpg",
-    user: "James Wilson",
-    action: "assigned you to",
-    target: "API integration task",
-    timestamp: "4 hours ago",
-    unread: false,
-  },
-  {
-    id: 4,
-    image: "/avatar-80-04.jpg",
-    user: "Alex Morgan",
-    action: "replied to your comment in",
-    target: "Authentication flow",
-    timestamp: "12 hours ago",
-    unread: false,
-  },
-  {
-    id: 5,
-    image: "/avatar-80-05.jpg",
-    user: "Sarah Chen",
-    action: "commented on",
-    target: "Dashboard redesign",
-    timestamp: "2 days ago",
-    unread: false,
-  },
-  {
-    id: 6,
-    image: "/avatar-80-06.jpg",
-    user: "Miky Derya",
-    action: "mentioned you in",
-    target: "Origin UI open graph image",
-    timestamp: "2 weeks ago",
-    unread: false,
-  },
-];
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { useCurrentUser } from "@/hooks/use-current-user";
+import { generateColorFromName } from "@/lib/generateColorFromName";
 
 function Dot({ className }: { className?: string }) {
   return (
@@ -80,25 +27,9 @@ function Dot({ className }: { className?: string }) {
 }
 
 export default function Notifications() {
-  const [notifications, setNotifications] = useState(initialNotifications);
-  const unreadCount = notifications.filter((n) => n.unread).length;
-
-  const handleMarkAllAsRead = () => {
-    setNotifications(
-      notifications.map((notification) => ({
-        ...notification,
-        unread: false,
-      })),
-    );
-  };
-
-  const handleNotificationClick = (id: number) => {
-    setNotifications(
-      notifications.map((notification) =>
-        notification.id === id ? { ...notification, unread: false } : notification,
-      ),
-    );
-  };
+  const { notifications, unreadCount, markAllAsRead, markAsRead } = useNotifications();
+  const user = useCurrentUser()
+  const avatarBackground = generateColorFromName(user?.firstname);
 
   return (
     <Popover>
@@ -116,8 +47,8 @@ export default function Notifications() {
         <div className="flex items-baseline justify-between gap-4 px-3 py-2">
           <div className="text-sm font-semibold">Notifications</div>
           {unreadCount > 0 && (
-            <button className="text-xs font-medium hover:underline" onClick={handleMarkAllAsRead}>
-              Mark all as read
+            <button className="text-xs font-medium hover:underline" onClick={markAllAsRead}>
+              Tout marquer comme lu
             </button>
           )}
         </div>
@@ -132,17 +63,18 @@ export default function Notifications() {
             className="hover:bg-accent rounded-md px-3 py-2 text-sm transition-colors"
           >
             <div className="relative flex items-start gap-3 pe-3">
-              <img
-                className="size-9 rounded-md"
-                src={notification.image}
-                width={32}
-                height={32}
-                alt={notification.user}
-              />
+              <Avatar>
+                <AvatarImage src={user?.image ?? ''} alt={user?.firstname + '' + user?.lastname} />
+                <AvatarFallback
+                  style={{ backgroundColor: avatarBackground }}
+                  className='text-2xl font-bold text-white'>
+                  {user?.firstname?.at(0) ?? ''}
+                </AvatarFallback>
+              </Avatar>
               <div className="flex-1 space-y-1">
                 <button
                   className="text-foreground/80 text-left after:absolute after:inset-0"
-                  onClick={() => handleNotificationClick(notification.id)}
+                  onClick={() => markAsRead(notification.id)}
                 >
                   <span className="text-foreground font-medium hover:underline">
                     {notification.user}

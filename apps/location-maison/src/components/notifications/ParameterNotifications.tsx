@@ -1,6 +1,5 @@
 'use client'
 import React from 'react';
-import { Separator } from '../ui/separator';
 import { Switch } from '../ui/switch';
 import { useCurrentUser } from '@/hooks/use-current-user';
 import { useSession } from 'next-auth/react';
