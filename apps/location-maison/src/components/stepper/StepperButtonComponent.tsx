@@ -5,11 +5,16 @@ import { usePropertyFormComponentContext } from '@/providers/property.form.provi
 import { useFormContext } from 'react-hook-form'
 import { LoadingSpinner } from '../shared/LoadingSpinner'
 import { useToast } from '@/hooks/use-toast';
+import useLastpath from '@/hooks/use-lastpath'
+import { TypePropertyEnum } from '@/constantes/property-type'
 
 export default function StepperButtonComponent() {
   const { toast } = useToast();
   const { activeStep, setActiveStep } = usePropertyFormComponentContext()
   const { formState } = useFormContext()
+  //pathnames
+  const id = useLastpath()
+  const TypePropertyList = Object.values(TypePropertyEnum);
   const handleNextStep = () => {
     setActiveStep(prev => prev + 1)
   }
@@ -22,7 +27,7 @@ export default function StepperButtonComponent() {
         title: "Erreur dans le formulaire",
         description: "Le formulaire contient des erreurs. Veuillez corriger les erreurs avant de continuer.",
         variant: "destructive",
-    });
+      });
     }
   }, [activeStep, formState.submitCount, formState.errors])
   if (activeStep === 3) {
@@ -50,7 +55,7 @@ export default function StepperButtonComponent() {
                   <LoadingSpinner /> Création...
                 </>
               ) : (
-                'Enregistrer'
+                TypePropertyList.includes(id as any) ? 'Enregistrer': 'Modifier'
               )
             }
           </Button>

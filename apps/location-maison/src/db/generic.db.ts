@@ -28,3 +28,20 @@ export async function deleteModel(id: string, collectionName: string): Promise<b
         return false;
     }
 }
+
+export async function updateModel<T>(id: string, updates: Partial<T>, collectionName: string): Promise<boolean> {
+    try {
+        const { db, doc, updateDoc, serverTimestamp } = await getFirestore();
+        const docRef = doc(db, collectionName, id);
+        
+        await updateDoc(docRef, {
+            ...updates,
+            updatedAt: serverTimestamp() 
+        });
+
+        return true;
+    } catch (error) {
+        console.error("Error updating model:", error);
+        return false;
+    }
+}

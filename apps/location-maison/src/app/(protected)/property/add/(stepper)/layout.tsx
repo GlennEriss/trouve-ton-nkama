@@ -6,13 +6,21 @@ import StepperButtonComponent from '@/components/stepper/StepperButtonComponent'
 
 export default function layout({ children }: { children: React.ReactNode }) {
     return (
-        <PropertyFormComponentProvider>
-            <div className='flex flex-col gap-4 px-6 pb-20'>
+        <div className='space-y-4 mb-10'>
+            <div className='sticky top-0 md:static z-50 bg-white px-5 py-4 shadow border-b flex items-center justify-between md:hidden'>
                 <TitleComponent />
-                <StepperComponent />
-                {children}
-                <StepperButtonComponent/>
             </div>
-        </PropertyFormComponentProvider>
+            <PropertyFormComponentProvider>
+                <div className='flex flex-col gap-4 px-6 pb-20'>
+                    <div className="hidden md:block">
+                        <TitleComponent />
+                    </div>
+                    <StepperComponent />
+                    {children}
+                    <StepperButtonComponent />
+                </div>
+            </PropertyFormComponentProvider>
+        </div>
+
     )
 }

@@ -6,7 +6,7 @@ import React from 'react'
 
 export default function page() {
     return (
-        <div className='space-y-4 pb-20'>
+        <div className='space-y-4 pb-12'>
             <div className='bg-white sticky top-0 flex gap-5 items-center border-b py-3 md:hidden px-4 z-50'>
                 <Link href={routes.protected.profil}>
                     <ChevronLeft />

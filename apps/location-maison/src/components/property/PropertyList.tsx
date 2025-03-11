@@ -22,7 +22,6 @@ export default function PropertyList() {
                 <PropertyFilter />
                 <ListPropertySection />
             </section>
-
         </div>
     )
 }

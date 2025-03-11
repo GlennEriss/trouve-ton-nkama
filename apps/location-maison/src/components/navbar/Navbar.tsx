@@ -5,6 +5,7 @@ import Link from 'next/link'
 import { routes } from '@/constantes/routes'
 import { ThemeMode } from '../shared/ThemeMode'
 import MenuProfil from './MenuProfil'
+import Notifications from './Notifications'
 
 export default function Navbar() {
     return (
@@ -13,6 +14,7 @@ export default function Navbar() {
                 <Logo className='text-xl' />
             </Link>
             <div className='flex items-center'>
+                <Notifications/>
                 <MenuProfil />
                 <ThemeMode />
             </div>
