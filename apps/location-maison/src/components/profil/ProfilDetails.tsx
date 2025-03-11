@@ -1,6 +1,6 @@
 'use client'
 import React from 'react'
-import { ChevronRight, Lock, Bell, ShieldCheck } from 'lucide-react';
+import { ChevronRight, Lock, Bell, ShieldCheck, FileText } from 'lucide-react';
 import Link from 'next/link';
 import { useWindowSize } from '@/hooks/useSize';
 import { routes } from '@/constantes/routes';
@@ -24,6 +24,12 @@ const menu = [
         icon: ShieldCheck,
         link: routes.public.confidentiality,
         description: 'Consultez comment vos données personnelles sont collectées, utilisées et protégées conformément à nos politiques.'
+    },
+    {
+        title: "Condition d'utilisations",
+        icon: FileText,
+        link: routes.public.terms_of_use,
+        description: "Prenez connaissance de nos règles et engagements qui encadrent l'utilisation de notre plateforme afin de garantir une expérience sécurisée et équitable pour tous."
     },
     /* {
         title: 'Signaler un problème',

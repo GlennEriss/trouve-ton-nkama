@@ -25,6 +25,7 @@ export const routes = {
         signup: '/signup',
         homePage: '/',
         reset_password: '/password-reset',
-        confidentiality: '/privacy-policy'
+        confidentiality: '/privacy-policy',
+        terms_of_use: '/terms-of-use',
     }
 }
