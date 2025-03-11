@@ -4,6 +4,7 @@
 import { countries } from "@/constantes/country";
 import { ICreation } from "./creation";
 import { Image } from "./annonce";
+import { NotificationParameter } from "@/models/notifications";
 
 export type Country = {
     name: string,
@@ -17,5 +18,6 @@ export type Person = ICreation & {
     email?: string|null,
     country?: Country,
     phoneNumbers: string[]
-    image?: string|null
+    image?: string|null,
+    notificationParameter?: NotificationParameter
 }
