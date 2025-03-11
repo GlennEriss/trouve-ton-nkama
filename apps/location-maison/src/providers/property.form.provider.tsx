@@ -110,19 +110,24 @@ export const PropertyFormComponentProvider = ({ children }: { children: React.Re
     const mutation = useMutation({
         mutationKey: [queryKeys.properties],
         mutationFn: async (data: Property) => {
-            const id = await createProperty(data)
-            if(id){
-                const propertyCreate = {...data, id}
-                setPropertyPreview(propertyCreate)
+            if (id) {
 
+            } else {
+                const idP = await createProperty(data)
+                if (idP) {
+                    const propertyCreate = { ...data, idP }
+                    setPropertyPreview(propertyCreate)
+
+                }
             }
-            return data
+
+            //return data
         },
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: [queryKeys.properties] })
             toast({
-                title: "Ajout d'une propriété",
-                description: "Propriété ajoutée avec succès!",
+                title: id ? "Modification d'une propriété" : "Ajout d'une propriété",
+                description: id ? "Propriété modifiée avec succès!" : "Propriété ajoutée avec succès!",
                 variant: "success"
             })
             router.push(routes.protected.properties)
@@ -130,7 +135,7 @@ export const PropertyFormComponentProvider = ({ children }: { children: React.Re
         },
         onError: (error) => {
             toast({
-                title: "Ajout d'une propriété",
+                title: id ? "Modification d'une propriété" : "Ajout d'une propriété",
                 description: error.message,
                 variant: "destructive",
                 duration: 20

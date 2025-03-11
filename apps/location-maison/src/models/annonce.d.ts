@@ -5,7 +5,7 @@
 import { ICreation } from "./creation";
 
 //Property
-export type TypeProperty = 'Home' | 'Studio' | 'Apartment' | 'Desk' | 'Building' | 'Villa' | 'Property' | 'Logement'
+export type TypeProperty = keyof typeof TypePropertyEnum;
 export type StatusProperty = "FOR_RENT" | "FOR_SALE"
 export type Image = {
     filePATH: string,
