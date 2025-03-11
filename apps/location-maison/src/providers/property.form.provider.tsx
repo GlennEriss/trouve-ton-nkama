@@ -4,14 +4,14 @@ import { createContext, useContext, useState, useTransition } from "react"
 import { useForm } from "react-hook-form"
 import { zodResolver } from '@hookform/resolvers/zod'
 import { ApartmentSchema, BuildingSchema, DeskSchema, HomeSchema, StudioSchema, VillaSchema } from "@/models/schema"
-import { Property, TypeProperty } from "@/models/annonce"
+import { Property, TypeProperty, Image } from "@/models/annonce"
 import { DirectorFactory } from "@/directors/factory.director"
 import { useToast } from "@/hooks/use-toast"
 import { usePathname, useRouter } from "next/navigation"
 import { createFile } from "@/db/file.db"
 import { useCurrentUser } from "@/hooks/use-current-user"
 import { useMutation, useQueryClient } from "@tanstack/react-query"
-import { createProperty, getPropertyById } from "@/db/property.db"
+import { createProperty, getPropertyById, updateProperty } from "@/db/property.db"
 import useLastpath from "@/hooks/use-lastpath"
 import React from "react"
 import queryKeys from "@/constantes/react-query-keys"
@@ -51,6 +51,8 @@ export const PropertyFormComponentProvider = ({ children }: { children: React.Re
     //pathnames
     const pathname = usePathname()
     const id = useLastpath()
+    //Images already uplaod
+    const [imagesAlreadyUplaod, setImagesAlreadyUplaod ] = useState<Image[]>([])
     //Type Property
     const getTypeProperty = () => {
         const pathnames = pathname.split('/')
@@ -111,7 +113,7 @@ export const PropertyFormComponentProvider = ({ children }: { children: React.Re
         mutationKey: [queryKeys.properties],
         mutationFn: async (data: Property) => {
             if (id) {
-
+                return await updateProperty(id, data)
             } else {
                 const idP = await createProperty(data)
                 if (idP) {
@@ -144,9 +146,12 @@ export const PropertyFormComponentProvider = ({ children }: { children: React.Re
     });
     //Submit
     const onSubmit = async (data: any) => {
+        //Get images already uplaod:
+        const imgStringList = data.images.filter((img: File | string | undefined) => typeof img === "string")
+        const imgUplaods = imagesAlreadyUplaod.filter(img => imgStringList.includes(img.fileURL))
         //Create Images
-        const filesUplaod = data.images.filter((img: File | undefined) => img)
-        const promiseFiles = filesUplaod.map(async (img: File) => {
+        const filesUpload = data.images.filter((img: File | string | undefined) => img instanceof File);
+        const promiseFiles = filesUpload.map(async (img: File) => {
             return await createFile(img, user?.uid!, 'property')
         })
         const images = await Promise.all(promiseFiles)
@@ -154,7 +159,7 @@ export const PropertyFormComponentProvider = ({ children }: { children: React.Re
         const propertyMutate: Property = {
             ...property,
             ...data,
-            images,
+            images: [...images, ...imgUplaods],
             createdBy: user?.uid
         }
         mutation.mutate(propertyMutate)
@@ -169,6 +174,7 @@ export const PropertyFormComponentProvider = ({ children }: { children: React.Re
                         form.setValue(key as any, value); // Populate each field with the fetched data
                     });
                     const imgList = images.map(img => img.fileURL)
+                    setImagesAlreadyUplaod(images)
                     form.setValue('images', imgList)
                 }
             });

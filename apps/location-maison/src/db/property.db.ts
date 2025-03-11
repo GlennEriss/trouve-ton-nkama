@@ -1,9 +1,14 @@
 import firebaseCollectionNames from "@/constantes/firebase-collection-name";
 import { Property, TypeProperty } from "@/models/annonce";
-import { createModel, deleteModel } from "./generic.db";
+import { createModel, deleteModel, updateModel } from "./generic.db";
+import { collectionFirebaseNames } from "@/constantes";
 
 const getFirestore = () => import("@/firebase/firestore");
 
+export async function updateProperty(id: string, property: Partial<Property>): Promise<boolean>{
+    return await updateModel<Property>(id, property, collectionFirebaseNames.properties)
+
+}
 export async function createProperty(property: Property): Promise<string | null> {
     return await createModel<Property>(property, firebaseCollectionNames.properties);
 }
