@@ -105,5 +105,6 @@ export const tags = [
 ];
 
 export const collectionFirebaseNames = {
-  properties: 'properties'
+  properties: 'properties',
+  notifications: 'notifications'
 }

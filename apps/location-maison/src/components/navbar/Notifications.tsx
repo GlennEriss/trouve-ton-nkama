@@ -8,6 +8,7 @@ import { BellIcon } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { useCurrentUser } from "@/hooks/use-current-user";
 import { generateColorFromName } from "@/lib/generateColorFromName";
+import { Notification } from "@/models/notification";
 
 function Dot({ className }: { className?: string }) {
   return (
@@ -25,6 +26,14 @@ function Dot({ className }: { className?: string }) {
   );
 }
 
+// Fonction pour générer un message adapté au type de notification
+function getNotificationContent(notification: Notification) {
+  switch (notification.type) {
+    case "BOOKMARKING":
+      return notification.message;
+  }
+}
+
 export default function Notifications() {
   const { notifications, unreadCount, markAllAsRead, markAsRead } = useNotifications();
   const user = useCurrentUser();
@@ -33,7 +42,7 @@ export default function Notifications() {
   return (
     <Popover>
       <PopoverTrigger asChild>
-        <Button size="icon" variant="outline" className="relative" aria-label="Open notifications">
+        <Button size="icon" variant="outline" className="relative" aria-label="Ouvrir les notifications">
           <BellIcon size={16} aria-hidden="true" />
           {unreadCount > 0 && (
             <Badge className="absolute -top-2 left-full min-w-5 -translate-x-1/2 rounded-full px-1 flex justify-center">
@@ -42,31 +51,33 @@ export default function Notifications() {
           )}
         </Button>
       </PopoverTrigger>
-      <PopoverContent className="w-80 p-1">
+
+      <PopoverContent className="w-80 p-1 dark:bg-gray-900 dark:text-gray-100">
         <div className="flex items-baseline justify-between gap-4 px-3 py-2">
           <div className="text-sm font-semibold">Notifications</div>
           {unreadCount > 0 && (
-            <button className="text-xs font-medium hover:underline" onClick={markAllAsRead}>
+            <button className="text-xs font-medium text-blue-600 dark:text-blue-400 hover:underline" onClick={markAllAsRead}>
               Tout marquer comme lu
             </button>
           )}
         </div>
-        <div role="separator" aria-orientation="horizontal" className="bg-border -mx-1 my-1 h-px"></div>
+        <div role="separator" aria-orientation="horizontal" className="bg-border dark:bg-gray-700 -mx-1 my-1 h-px"></div>
 
+        {/* Aucune notification */}
         {notifications.length === 0 ? (
-          <div className="flex flex-col items-center justify-center py-6 text-muted-foreground">
-            <BellIcon size={32} className="mb-2 text-gray-400" />
+          <div className="flex flex-col items-center justify-center py-6 text-gray-500 dark:text-gray-400">
+            <BellIcon size={32} className="mb-2 text-gray-400 dark:text-gray-500" />
             <p className="text-sm">Aucune notification pour le moment</p>
           </div>
         ) : (
           notifications.map((notification) => (
             <div
               key={notification.id}
-              className="hover:bg-accent rounded-md px-3 py-2 text-sm transition-colors"
+              className={`hover:bg-accent rounded-md px-3 py-2 text-sm transition-colors ${notification.isRead ? "bg-white dark:bg-gray-900" : "bg-gray-100 dark:bg-gray-800"}`}
             >
               <div className="relative flex items-start gap-3 pe-3">
                 <Avatar>
-                  <AvatarImage src={user?.image ?? ''} alt={user?.firstname + '' + user?.lastname} />
+                  <AvatarImage src={user?.image ?? ''} alt={`${user?.firstname} ${user?.lastname}`} />
                   <AvatarFallback
                     style={{ backgroundColor: avatarBackground }}
                     className='text-2xl font-bold text-white'>
@@ -75,23 +86,18 @@ export default function Notifications() {
                 </Avatar>
                 <div className="flex-1 space-y-1">
                   <button
-                    className="text-foreground/80 text-left after:absolute after:inset-0"
+                    className="text-gray-800 dark:text-gray-100 text-left font-medium hover:underline"
                     onClick={() => markAsRead(notification.id!)}
                   >
-                    <span className="text-foreground font-medium hover:underline">
-                      {notification.userName}
-                    </span>{" "}
-                    {notification.action}{" "}
-                    <span className="text-foreground font-medium hover:underline">
-                      {notification.target}
-                    </span>
-                    .
+                    {getNotificationContent(notification)}
                   </button>
-                  <div className="text-muted-foreground text-xs">{notification.timestamp}</div>
+                  <div className="text-xs text-gray-500 dark:text-gray-400">
+                    {notification.createdAt?.toDate().toLocaleDateString()}
+                  </div>
                 </div>
-                {notification.unread && (
+                {!notification.isRead && (
                   <div className="absolute end-0 self-center">
-                    <Dot />
+                    <Dot className="text-blue-500 dark:text-blue-400" />
                   </div>
                 )}
               </div>

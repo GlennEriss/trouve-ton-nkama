@@ -8,7 +8,9 @@ import { useNotifications } from '@/providers/NotificationProvider';
 import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
 import { useCurrentUser } from '@/hooks/use-current-user';
 import { generateColorFromName } from '@/lib/generateColorFromName';
+import { Notification, TypeNotification } from '@/models/notification';
 
+// Icône de notification non lue
 function Dot({ className }: { className?: string }) {
   return (
     <svg
@@ -25,6 +27,14 @@ function Dot({ className }: { className?: string }) {
   );
 }
 
+// Fonction pour générer un message en fonction du type de notification
+function getNotificationContent(notification: Notification) {
+  switch (notification.type) {
+    case "BOOKMARKING":
+      return notification.message;
+  }
+}
+
 export default function SectionNotifications() {
   const user = useCurrentUser();
   const { notifications, unreadCount, markAllAsRead, markAsRead } = useNotifications();
@@ -34,10 +44,10 @@ export default function SectionNotifications() {
     <div className="max-w-xl mx-auto p-4">
       {/* Header */}
       {notifications.length !== 0 && (
-        <div className="flex items-center justify-between pb-4 border-b">
-          <h2 className="text-lg font-semibold">Notifications</h2>
+        <div className="flex items-center justify-between pb-4 border-b dark:border-gray-700">
+          <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100">Notifications</h2>
           {unreadCount > 0 && (
-            <button className="text-xs font-medium text-blue-600 hover:underline" onClick={markAllAsRead}>
+            <button className="text-xs font-medium text-blue-600 dark:text-blue-400 hover:underline" onClick={markAllAsRead}>
               Tout marquer comme lu
             </button>
           )}
@@ -47,19 +57,18 @@ export default function SectionNotifications() {
       {/* Liste des notifications */}
       <div className="mt-4 space-y-3">
         {notifications.length === 0 ? (
-          <div className="flex flex-col items-center justify-center py-6 text-gray-500">
-            <BellIcon size={60} className="mb-2 text-gray-400" />
+          <div className="flex flex-col items-center justify-center py-6 text-gray-500 dark:text-gray-400">
+            <BellIcon size={60} className="mb-2 text-gray-400 dark:text-gray-500" />
             <p className="text-sm">Vous n'avez aucune notification pour le moment.</p>
           </div>
         ) : (
           notifications.map((notification) => (
             <div
               key={notification.id}
-              className={`flex items-start gap-3 p-3 rounded-lg transition ${notification.unread ? "bg-gray-100" : "bg-white"
-                }`}
+              className={`flex items-start gap-3 p-3 rounded-lg transition ${notification.isRead ? "bg-white dark:bg-gray-900" : "bg-gray-100 dark:bg-gray-800"}`}
             >
               <Avatar>
-                <AvatarImage src={user?.image ?? ''} alt={user?.firstname + '' + user?.lastname} />
+                <AvatarImage src={user?.image ?? ''} alt={`${user?.firstname} ${user?.lastname}`} />
                 <AvatarFallback
                   style={{ backgroundColor: avatarBackground }}
                   className='text-2xl font-bold text-white'>
@@ -68,17 +77,16 @@ export default function SectionNotifications() {
               </Avatar>
               <div className="flex-1">
                 <button
-                  className="text-left text-sm text-gray-800 font-medium hover:underline"
+                  className="text-left text-sm text-gray-800 dark:text-gray-100 font-medium hover:underline"
                   onClick={() => markAsRead(notification.id!)}
                 >
-                  {notification.userName} {notification.action}{" "}
-                  <span className="font-semibold">{notification.target}</span>.
+                  {getNotificationContent(notification)}
                 </button>
-                <div className="text-xs text-gray-500">{notification.timestamp}</div>
+                <div className="text-xs text-gray-500 dark:text-gray-400">{notification.createdAt?.toDate().toLocaleDateString()}</div>
               </div>
-              {notification.unread && (
+              {!notification.isRead && (
                 <div className="self-center">
-                  <Dot className="text-blue-500" />
+                  <Dot className="text-blue-500 dark:text-blue-400" />
                 </div>
               )}
             </div>
