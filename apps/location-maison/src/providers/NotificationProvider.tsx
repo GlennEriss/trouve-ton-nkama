@@ -1,56 +1,19 @@
 'use client'
 
 import React, { createContext, useContext, useState } from "react";
-
-type Notification = {
-    id: number;
-    image: string;
-    user: string;
-    action: string;
-    target: string;
-    timestamp: string;
-    unread: boolean;
-};
+import {Notification} from "@/models/notification"
 
 type NotificationContextType = {
     notifications: Notification[];
     unreadCount: number;
     markAllAsRead: () => void;
-    markAsRead: (id: number) => void;
+    markAsRead: (id: string) => void;
 };
 
 const NotificationContext = createContext<NotificationContextType | undefined>(undefined);
 
 export function NotificationProvider({ children }: { children: React.ReactNode }) {
-    const [notifications, setNotifications] = useState<Notification[]>([
-        {
-            id: 1,
-            image: "/avatar-80-01.jpg",
-            user: "Chris Tompson",
-            action: "requested review on",
-            target: "PR #42: Feature implementation",
-            timestamp: "15 minutes ago",
-            unread: true,
-        },
-        {
-            id: 2,
-            image: "/avatar-80-02.jpg",
-            user: "Emma Davis",
-            action: "shared",
-            target: "New component library",
-            timestamp: "45 minutes ago",
-            unread: true,
-        },
-        {
-            id: 3,
-            image: "/avatar-80-03.jpg",
-            user: "James Wilson",
-            action: "assigned you to",
-            target: "API integration task",
-            timestamp: "4 hours ago",
-            unread: false,
-        },
-    ]);
+    const [notifications, setNotifications] = useState<Notification[]>([]);
 
     const [unreadCount, setUnreadCount] = useState(0);
 
@@ -65,7 +28,7 @@ export function NotificationProvider({ children }: { children: React.ReactNode }
 
     };
 
-    const markAsRead = (id: number) => {
+    const markAsRead = (id: string) => {
         setNotifications((prev) =>
             prev.map((notification) =>
                 notification.id === id ? { ...notification, unread: false } : notification

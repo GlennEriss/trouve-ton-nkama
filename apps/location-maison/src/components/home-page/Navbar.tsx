@@ -195,7 +195,7 @@ export default function Navbar() {
           <BiCurrentLocation className="w-6 h-6 text-white" />
         </div>
       </div>
-      <a href="/publish" target="_blank" rel="noopener noreferrer">
+      <a href={routes.protected.add_property} target="_blank" rel="noopener noreferrer">
         <Button
           variant="default"
           className="bg-blue-500 text-white rounded-xl text-lg hover:bg-blue-600 px-4 py-6 font-bold"
