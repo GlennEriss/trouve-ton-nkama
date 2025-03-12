@@ -10,16 +10,16 @@ export default function Footer() {
                     <Logo className='text-white'/>
                     <ul className="flex flex-wrap items-center mb-6 text-sm font-medium text-gray-500 sm:mb-0 dark:text-gray-400">
                         <li>
-                            <a href="#" className="hover:underline me-4 md:me-6">About</a>
+                            <a href={"#"} className="hover:underline me-4 md:me-6">À propos</a>
                         </li>
                         <li>
-                            <a href="#" className="hover:underline me-4 md:me-6">Privacy Policy</a>
+                            <a href={routes.public.confidentiality} className="hover:underline me-4 md:me-6">Politique de confidentialité</a>
                         </li>
                         <li>
-                            <a href="#" className="hover:underline me-4 md:me-6">Licensing</a>
+                            <a href={routes.public.terms_of_use} className="hover:underline me-4 md:me-6">Condition d'utilisation</a>
                         </li>
                         <li>
-                            <a href="#" className="hover:underline">Contact</a>
+                            <a href="#" className="hover:underline">Contacts</a>
                         </li>
                     </ul>
                 </div>
