@@ -55,8 +55,9 @@ export const notifications = [
 ];
 
 export default function ParameterNotifications() {
-    const user = useCurrentUser()
-    const { data: session, status, update } = useSession()
+    const user = useCurrentUser();
+    const { update } = useSession();
+
     const onCheckedChange = async (param: string) => {
         const userUpdated = {
             ...user,
@@ -64,25 +65,36 @@ export default function ParameterNotifications() {
                 ...user?.notificationParameter,
                 [param]: !user?.notificationParameter?.[param]
             }
-        }
-        await updateUser(user?.uid!, userUpdated)
-    }
-    return (
-        <div className='px-6 space-y-6 py-6 bg-white rounded-lg shadow-md max-w-4xl mx-auto'>
-            <h1 className='text-2xl font-bold mb-4'>Paramètres de notifications</h1>
-            {
-                notifications.map((notification, key) => (
-                    <div key={key} className='flex items-center justify-between gap-4 py-4 border-b last:border-b-0'>
-                        <div className="flex flex-col">
-                            <h2 className='text-lg font-semibold'>{notification.title}</h2>
-                            <p className='text-sm text-gray-500'>{notification.description}</p>
-                        </div>
-                        <Switch 
-                        onCheckedChange={() => onCheckedChange(notification.key)}
-                        checked={user?.notificationParameter ? user.notificationParameter[notification.key] : false}/>
-                    </div>
-                ))
+        };
+        await updateUser(user?.uid!, userUpdated);
+        update({
+            user: {
+                ...userUpdated
             }
+        });
+    };
+
+    return (
+        <div className="px-6 space-y-6 py-6 bg-white dark:bg-gray-900 rounded-lg shadow-md max-w-4xl mx-auto">
+            <h1 className="text-2xl font-bold mb-4 text-gray-900 dark:text-white">
+                Paramètres de notifications
+            </h1>
+            {notifications.map((notification, key) => (
+                <div key={key} className="flex items-center justify-between gap-4 py-4 border-b border-gray-200 dark:border-gray-700 last:border-b-0">
+                    <div className="flex flex-col">
+                        <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
+                            {notification.title}
+                        </h2>
+                        <p className="text-sm text-gray-600 dark:text-gray-400">
+                            {notification.description}
+                        </p>
+                    </div>
+                    <Switch
+                        onCheckedChange={() => onCheckedChange(notification.key)}
+                        checked={user?.notificationParameter ? user.notificationParameter[notification.key] : false}
+                    />
+                </div>
+            ))}
         </div>
     );
 }

@@ -105,8 +105,12 @@ export default function FormPersonalInformation() {
                         name='phoneNumbers'
                     />
                     <ButtonLoading
-                        type='submit'
-                        className='w-full'
+                        type="submit"
+                        className="w-full bg-black text-white font-bold border border-transparent 
+              dark:bg-gray-900 dark:text-white dark:border-gray-700 
+              hover:bg-gray-800 dark:hover:bg-gray-700 
+              focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 
+              disabled:opacity-50 disabled:cursor-not-allowed"
                         disabled={form.formState.isLoading || form.formState.isSubmitting}
                     >
                         Modifier
