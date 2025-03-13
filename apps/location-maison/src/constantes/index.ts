@@ -1,0 +1,110 @@
+/**
+ * @module constantes
+ */
+
+import { FaBriefcase, FaHome, FaHeart, FaBuilding, FaUsers, FaCouch, FaTree, FaMountain, FaSwimmingPool, FaDog, FaShoppingCart, FaPlane, FaCar, FaWifi, FaShieldAlt, FaBicycle, FaRunning, FaChild, FaWheelchair, FaGraduationCap, FaUmbrellaBeach, FaPeace } from 'react-icons/fa';
+
+
+export const tags = [
+  {
+    tagName: 'Travail',
+    tagIcon: FaBriefcase, // Icon for work-related housing
+  },
+  {
+    tagName: 'Famille',
+    tagIcon: FaUsers, // Icon for family-friendly homes
+  },
+  {
+    tagName: 'Couple',
+    tagIcon: FaHeart, // Icon for couple-friendly homes
+  },
+  {
+    tagName: 'Maison',
+    tagIcon: FaHome, // Icon for houses
+  },
+  {
+    tagName: 'Appartement',
+    tagIcon: FaBuilding, // Icon for apartments
+  },
+  {
+    tagName: 'Meublé',
+    tagIcon: FaCouch, // Icon for furnished properties
+  },
+  {
+    tagName: 'Studio',
+    tagIcon: FaBuilding, // Icon for studio apartments
+  },
+  {
+    tagName: 'Vacances',
+    tagIcon: FaHome, // Icon for vacation homes
+  },
+  {
+    tagName: 'Nature',
+    tagIcon: FaTree, // Icon for nature-friendly homes
+  },
+  {
+    tagName: 'Montagne',
+    tagIcon: FaMountain, // Icon for mountain homes
+  },
+  {
+    tagName: 'Piscine',
+    tagIcon: FaSwimmingPool, // Icon for properties with pools
+  },
+  {
+    tagName: 'Animaux admis',
+    tagIcon: FaDog, // Icon for pet-friendly homes
+  },
+  {
+    tagName: 'Commerces proches',
+    tagIcon: FaShoppingCart, // Icon for homes near shops
+  },
+  {
+    tagName: 'Transport proche',
+    tagIcon: FaPlane, // Icon for homes near public transport
+  },
+  {
+    tagName: 'Parking',
+    tagIcon: FaCar, // Icon for homes with parking
+  },
+  {
+    tagName: 'Wi-Fi',
+    tagIcon: FaWifi, // Icon for homes with Wi-Fi
+  },
+  {
+    tagName: 'Sécurisé',
+    tagIcon: FaShieldAlt, // Icon for homes with security features
+  },
+  {
+    tagName: 'Vélo',
+    tagIcon: FaBicycle, // Icon for bike-friendly homes
+  },
+  {
+    tagName: 'Activités sportives',
+    tagIcon: FaRunning, // Icon for homes near sports activities
+  },
+  {
+    tagName: 'Adapté aux enfants',
+    tagIcon: FaChild, // Icon for child-friendly homes
+  },
+  {
+    tagName: 'Accessible handicapés',
+    tagIcon: FaWheelchair, // Icon for accessible homes
+  },
+  {
+    tagName: 'Étudiant',
+    tagIcon: FaGraduationCap, // Icon for student accommodations
+  },
+  {
+    tagName: 'Calme et tranquillité',
+    tagIcon: FaPeace,
+  },
+  {
+    tagName: 'Proche de la plage',
+    tagIcon: FaUmbrellaBeach, 
+  },
+];
+
+export const collectionFirebaseNames = {
+  properties: 'properties',
+  notifications: 'notifications'
+}
