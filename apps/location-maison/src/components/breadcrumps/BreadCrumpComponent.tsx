@@ -27,6 +27,10 @@ export default function BreadCrumpComponent() {
         return 'Bureau';
       case 'building':
         return 'Immeuble';
+      case 'login-and-security':
+        return 'Connexion et sécurité';
+      case 'modify':
+        return 'Modifier';
       default:
         return segment.charAt(0).toUpperCase() + segment.slice(1);
     }

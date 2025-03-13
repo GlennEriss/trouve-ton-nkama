@@ -118,7 +118,7 @@ export const CardPropertyCrud = ({ property }: { property: Property }) => {
         <Card
             className={cn(
                 'relative overflow-hidden rounded-lg shadow-md hover:shadow-lg transition-shadow duration-300',
-                'flex flex-col'
+                'flex flex-col bg-white dark:bg-gray-900 dark:border-gray-700'
             )}
         >
             {/* Image */}
@@ -145,8 +145,8 @@ export const CardPropertyCrud = ({ property }: { property: Property }) => {
             {/* Contenu principal */}
             <div className="flex-1 flex flex-col justify-between p-4 gap-2">
                 <div>
-                    <h3 className="text-lg font-bold line-clamp-1">{title}</h3>
-                    <p className="text-sm text-gray-600 line-clamp-2">
+                    <h3 className="text-lg font-bold text-gray-900 dark:text-white line-clamp-1">{title}</h3>
+                    <p className="text-sm text-gray-600 dark:text-gray-400 line-clamp-2">
                         {street}, {city}, {province}
                     </p>
                     <PropertyInformations property={property} />
@@ -154,15 +154,15 @@ export const CardPropertyCrud = ({ property }: { property: Property }) => {
 
                 {/* Footer */}
                 <div className="flex justify-between items-center mt-2">
-                    <span className="font-semibold text-lg text-gray-800">{price} FCFA</span>
+                    <span className="font-semibold text-lg text-gray-800 dark:text-gray-200">{price} FCFA</span>
 
                     <div className="flex gap-2">
-                        <Button variant="outline" size="icon" asChild>
+                        <Button variant="outline" size="icon" className="dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-700" asChild>
                             <Link href={routes.protected.properties + '/modify/' + property.id}>
                                 <FiEdit2 size={18} />
                             </Link>
                         </Button>
-                        <Button variant="outline" size="icon" asChild>
+                        <Button variant="outline" size="icon" className="dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-700" asChild>
                             <Link href={`${routes.protected.properties}/${property.id}`}>
                                 <AiOutlineEye size={18} />
                             </Link>

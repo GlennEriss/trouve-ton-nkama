@@ -71,7 +71,7 @@ export default function DetailsProperty({ property }: { property: Property }) {
 const DetailsItem = ({ keyName, value }: { keyName: string, value: number }) => {
     const item = items[keyName]
     return (
-        <div className="flex gap-1">
+        <div className="flex gap-1 my-2">
             <item.icon size={25} />
             <span>{value}</span>
             <span>{item.label}</span>
