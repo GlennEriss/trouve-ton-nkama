@@ -2,7 +2,7 @@
 
 import React, { createContext, useContext, useEffect, useState } from "react";
 import { Notification } from "@/models/notification";
-import { collection, query, where, onSnapshot, doc, updateDoc } from "firebase/firestore";
+import { collection, query, where, onSnapshot, doc, updateDoc, Timestamp, orderBy, limit } from 'firebase/firestore';
 import { useCurrentUser } from "@/hooks/use-current-user";
 import { db } from "@/firebase/firestore";
 
@@ -23,21 +23,56 @@ export function NotificationProvider({ children }: { children: React.ReactNode }
     // Récupération des notifications en temps réel
     useEffect(() => {
         if (!user) return;
-
-        const q = query(
+    
+        // 🔹 Calcul de la date limite (7 jours en arrière)
+        const sevenDaysAgo = Timestamp.fromDate(new Date(Date.now() - 7 * 24 * 60 * 60 * 1000));
+    
+        // 🔹 Requête 1 : Récupérer uniquement les notifications non lues
+        const unreadQuery = query(
             collection(db, "notifications"),
-            where("createdFor", "==", user.uid)
+            where("createdFor", "==", user.uid),
+            where("isRead", "==", false), // 🔥 Récupérer seulement les non lues
+            orderBy("createdAt", "desc"),
+            limit(50) // 🔹 On limite pour éviter de surcharger Firestore
         );
-
-        const unsubscribe = onSnapshot(q, (snapshot) => {
-            const fetchedNotifications = snapshot.docs.map((doc) => ({
+    
+        // 🔹 Requête 2 : Récupérer les notifications des 7 derniers jours
+        const recentQuery = query(
+            collection(db, "notifications"),
+            where("createdFor", "==", user.uid),
+            where("createdAt", ">=", sevenDaysAgo), // 🔥 Seulement les 7 derniers jours
+            orderBy("createdAt", "desc"),
+            limit(50)
+        );
+    
+        // 🔹 Exécuter les deux requêtes
+        const unsubscribeUnread = onSnapshot(unreadQuery, (snapshot) => {
+            const unreadNotifications = snapshot.docs.map((doc) => ({
                 id: doc.id,
                 ...(doc.data() as Notification),
             }));
-            setNotifications(fetchedNotifications);
+    
+            const unsubscribeRecent = onSnapshot(recentQuery, (snapshot) => {
+                const recentNotifications = snapshot.docs.map((doc) => ({
+                    id: doc.id,
+                    ...(doc.data() as Notification),
+                }));
+    
+                // 🔥 Fusionner les résultats : non lues en premier, puis récentes sans doublons
+                const allNotifications = [
+                    ...unreadNotifications, // 🔹 Priorité aux non lues
+                    ...recentNotifications.filter((notif) => 
+                        !unreadNotifications.some((un) => un.id === notif.id)
+                    ) // 🔹 Ajout des récentes sans doublons
+                ];
+    
+                setNotifications(allNotifications);
+            });
+    
+            return () => unsubscribeRecent();
         });
-
-        return () => unsubscribe();
+    
+        return () => unsubscribeUnread();
     }, [user]);
 
     // Mise à jour du nombre de notifications non lues
