@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "next dev --turbopack",
-    "build": "mv .env.local .env.local.backup && cp .env.local.prod .env.local && next build && mv .env.local.backup .env.local",
+    "build":"next build",
     "start": "next start",
     "lint": "next lint"
   },
