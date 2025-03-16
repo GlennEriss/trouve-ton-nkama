@@ -1,9 +1,6 @@
 'use client'
 import React from 'react'
 import Image from "next/image";
-import { IoMdBed } from "react-icons/io";
-import { FaToilet } from "react-icons/fa";
-import { MdOutlineSquareFoot } from "react-icons/md";
 import { TypeProperty } from '@/lib/utils';
 import { useRouter } from 'next/navigation';
 import { useCurrentUser } from '@/hooks/use-current-user';
@@ -14,6 +11,7 @@ import { Property } from '@/models/annonce';
 import { getPropertyById } from '@/db/property.db';
 import { Button } from '../ui/button';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { Skeleton } from '../ui/skeleton';
 
 export default function SectionFavoris() {
     const user = useCurrentUser()
@@ -64,8 +62,12 @@ export default function SectionFavoris() {
     })
     if (isLoading || isFetching) {
         return (
-            <div className="w-10 h-10 border-4 border-blue-500 rounded-full animate-spin border-t-transparent"></div>
-        )
+            <div className="px-5 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
+                {Array.from({ length: 8 }).map((_, index) => (
+                    <SkeletonCard key={index} />
+                ))}
+            </div>
+        );
     }
     if (!data || data.pages[currentPage]?.properties?.length === 0) {
         return (
@@ -173,3 +175,15 @@ export default function SectionFavoris() {
 
     )
 }
+
+const SkeletonCard = () => (
+    <div className="p-2 rounded-lg bg-gray-100 shadow-xl">
+        <Skeleton className="h-52 w-full rounded-lg" />
+        <div className="p-4">
+            <Skeleton className="h-5 w-3/4 mb-2" />
+            <Skeleton className="h-4 w-1/2 mb-1" />
+            <Skeleton className="h-4 w-1/3 mb-3" />
+            <Skeleton className="h-5 w-1/2" />
+        </div>
+    </div>
+);
