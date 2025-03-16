@@ -74,7 +74,7 @@ export default function SectionFavoris() {
             <div className="flex flex-col items-center justify-center p-10">
                 <Image src="/no-favorites.svg" width={128} height={128} alt="Aucun favori" />
                 <h2 className="text-xl font-semibold text-gray-700">Aucun favori pour le moment</h2>
-                <p className="text-gray-500">Ajoutez des propriétés à vos favoris pour les retrouver ici</p>
+                <p className="text-gray-500 text-center">Ajoutez des propriétés à vos favoris pour les retrouver ici</p>
             </div>
         );
     }
