@@ -4,6 +4,7 @@ import "./globals.css";
 import { Providers } from "@/providers/providers";
 import { BottomNavigation } from "@/components/shared/BottomNavigation";
 import Footer from "@/components/footer/Footer";
+import Head from 'next/head';
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -27,6 +28,10 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
+      <Head>
+        <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-2799688336707362"
+          crossOrigin="anonymous"></script>
+      </Head>
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased overscroll-y-none`}
       >
