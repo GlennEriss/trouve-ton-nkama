@@ -25,6 +25,7 @@ import { useInfiniteQuery } from '@tanstack/react-query';
 import { PROPERTY_ITEM_PER_PAGE } from '@/constantes/item-per-page';
 import queryKeys from '@/constantes/react-query-keys';
 import { RemoveProperty } from './RemoveProperty';
+import { Skeleton } from '../ui/skeleton';
 
 export default function ListPropertySection() {
     const searchParams = useSearchParams();
@@ -70,7 +71,13 @@ export default function ListPropertySection() {
             })
     }, [user, type])
     if (isPending || isFetching) {
-        return <div>Loading...</div>
+        return (
+            <div className="px-5 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
+                {Array.from({ length: 8 }).map((_, index) => (
+                    <SkeletonCard key={index} />
+                ))}
+            </div>
+        );
     }
     return (
         <div>
@@ -332,3 +339,16 @@ export const DetailsVilla = ({ villa }: { villa: Villa }) => {
         </div>
     )
 }
+
+
+const SkeletonCard = () => (
+    <div className="p-2 rounded-lg bg-gray-100 shadow-xl">
+        <Skeleton className="h-52 w-full rounded-lg" />
+        <div className="p-4">
+            <Skeleton className="h-5 w-3/4 mb-2" />
+            <Skeleton className="h-4 w-1/2 mb-1" />
+            <Skeleton className="h-4 w-1/3 mb-3" />
+            <Skeleton className="h-5 w-1/2" />
+        </div>
+    </div>
+);
