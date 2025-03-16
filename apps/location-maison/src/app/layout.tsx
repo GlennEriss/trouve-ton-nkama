@@ -29,8 +29,8 @@ export default function RootLayout({
   return (
     <html lang="en">
       <Head>
-        <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-2799688336707362"
-          crossOrigin="anonymous"></script>
+        <meta name="google-site-verification" content="owGLe__J-ZZiJvB-iZzlfxianxrwoO8vdRyxKFfSkTk" />
+        <meta name="google-adsense-account" content="ca-pub-2799688336707362" />
       </Head>
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased overscroll-y-none`}
