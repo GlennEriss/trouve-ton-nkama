@@ -8,6 +8,7 @@ import GoogleProvider from "next-auth/providers/google";
 import FacebookProvider from "next-auth/providers/facebook";
 import { createNotification } from "@/db/notification.db";
 import { routes } from "@/constantes/routes";
+import { NotificationParameter } from "@/models/notification";
 
 const getAuth = () => import('@/firebase/auth')
 const authConfig = {
@@ -70,6 +71,14 @@ const authConfig = {
                     if (!userExists) {
                         const firebaseUser = await signInWithCredential(auth, credential);
                         const uid = firebaseUser.user.uid;
+                        const notificationParameter: NotificationParameter = {
+                            isNew: true,
+                            isAccountActivity: true,
+                            isNewAnnouncement: true,
+                            isFavoris: true,
+                            isPersonalizedSuggestions: true,
+                            isSystemUpdated: true
+                        }
                         const userData = {
                             uid,
                             firstname: profile?.given_name ?? '',
@@ -82,7 +91,8 @@ const authConfig = {
                             providers: ['GOOGLE' as ProviderType],
                             metadata: {
                                 idToken: account.id_token
-                            }
+                            },
+                            notificationParameter
                         };
                         await createUser(userData);
                         await createNotification({
@@ -125,6 +135,14 @@ const authConfig = {
                     if (!userExists) {
                         const firebaseUser = await signInWithCredential(auth, credential)
                         const uid = firebaseUser.user.uid
+                        const notificationParameter: NotificationParameter = {
+                            isNew: true,
+                            isAccountActivity: true,
+                            isNewAnnouncement: true,
+                            isFavoris: true,
+                            isPersonalizedSuggestions: true,
+                            isSystemUpdated: true
+                        }
                         const userData = {
                             uid,
                             firstname: profile?.name ?? '',
@@ -137,7 +155,8 @@ const authConfig = {
                             providers: ['FACEBOOK' as ProviderType],
                             metadata: {
                                 accessToken: account.access_token
-                            }
+                            },
+                            notificationParameter
                         }
                         await createUser(userData);
                         await createNotification({
