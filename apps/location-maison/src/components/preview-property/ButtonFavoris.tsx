@@ -7,7 +7,8 @@ import { useSession } from 'next-auth/react';
 import { updateUser } from '@/db/user.db';
 import { getPropertyById } from '@/db/property.db';
 import { createNotification } from '@/db/notification.db';
-
+import { Notification } from '@/models/notification'
+import { routes } from '@/constantes/routes';
 type ButtonFavorisProps = {
   idProperty: string
 }
@@ -32,14 +33,21 @@ export const ButtonFavoris: React.FC<ButtonFavorisProps> = ({ idProperty }) => {
       const property = await getPropertyById(idProperty)
       if (property) {
         favoris.push(idProperty);
-        await createNotification({
+        let notification: Partial<Notification> = {
           type: 'BOOKMARKING',
           idProperty,
           title: property.title,
-          message: user?.uid === property.createdBy ? 'Une annonce a été ajoutée a vos favoris': `${user?.firstname} ${user?.lastname}`,
           isRead: false,
           createdFor: property.createdBy,
-        })
+        }
+        if(user?.uid === property.createdBy){
+          notification.message = 'Une annonce a été ajoutée a vos favoris'
+          notification.actionUrl = routes.protected.favoris
+        }else{
+          notification.message =  `${user?.firstname} ${user?.lastname} a ajouté votre annonce à ses favoris`
+          notification.actionUrl = routes.protected.properties+'/'+idProperty
+        }
+        await createNotification(notification)
       }
 
     } else {

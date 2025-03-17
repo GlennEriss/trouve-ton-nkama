@@ -1,14 +1,14 @@
 "use client";
 
-import React from 'react';
+import React from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { useNotifications } from "@/providers/NotificationProvider";
 import { BellIcon } from "lucide-react";
-import { useNotifications } from '@/providers/NotificationProvider';
-import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
-import { useCurrentUser } from '@/hooks/use-current-user';
-import { generateColorFromName } from '@/lib/generateColorFromName';
-import { Notification, TypeNotification } from '@/models/notification';
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { useCurrentUser } from "@/hooks/use-current-user";
+import { generateColorFromName } from "@/lib/generateColorFromName";
+import Link from "next/link";
 
 // Icône de notification non lue
 function Dot({ className }: { className?: string }) {
@@ -27,14 +27,6 @@ function Dot({ className }: { className?: string }) {
   );
 }
 
-// Fonction pour générer un message en fonction du type de notification
-function getNotificationContent(notification: Notification) {
-  switch (notification.type) {
-    case "BOOKMARKING":
-      return notification.message;
-  }
-}
-
 export default function SectionNotifications() {
   const user = useCurrentUser();
   const { notifications, unreadCount, markAllAsRead, markAsRead } = useNotifications();
@@ -43,7 +35,7 @@ export default function SectionNotifications() {
   return (
     <div className="max-w-xl mx-auto p-4">
       {/* Header */}
-      {notifications.length !== 0 && (
+      {notifications.length > 0 && (
         <div className="flex items-center justify-between pb-4 border-b dark:border-gray-700">
           <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100">Notifications</h2>
           {unreadCount > 0 && (
@@ -65,25 +57,48 @@ export default function SectionNotifications() {
           notifications.map((notification) => (
             <div
               key={notification.id}
-              className={`flex items-start gap-3 p-3 rounded-lg transition ${notification.isRead ? "bg-white dark:bg-gray-900" : "bg-gray-100 dark:bg-gray-800"}`}
+              className={`flex items-start gap-3 p-3 rounded-lg transition ${
+                notification.isRead ? "bg-white dark:bg-gray-900" : "bg-gray-100 dark:bg-gray-800"
+              }`}
             >
+              {/* Avatar */}
               <Avatar>
-                <AvatarImage src={user?.image ?? ''} alt={`${user?.firstname} ${user?.lastname}`} />
+                <AvatarImage src={user?.image ?? ""} alt={`${user?.firstname} ${user?.lastname}`} />
                 <AvatarFallback
                   style={{ backgroundColor: avatarBackground }}
-                  className='text-2xl font-bold text-white'>
-                  {user?.firstname?.at(0) ?? ''}
+                  className="text-2xl font-bold text-white"
+                >
+                  {user?.firstname?.at(0) ?? ""}
                 </AvatarFallback>
               </Avatar>
+
+              {/* Contenu de la notification */}
               <div className="flex-1">
-                <button
-                  className="text-left text-sm text-gray-800 dark:text-gray-100 font-medium hover:underline"
-                  onClick={() => markAsRead(notification.id!)}
-                >
-                  {getNotificationContent(notification)}
-                </button>
-                <div className="text-xs text-gray-500 dark:text-gray-400">{notification.createdAt?.toDate().toLocaleDateString()}</div>
+                <h3 className="text-sm font-semibold text-gray-900 dark:text-gray-100">
+                  {notification.title}
+                </h3>
+                {notification.actionUrl ? (
+                  <Link 
+                    href={notification.actionUrl} 
+                    className="text-sm text-blue-600 dark:text-blue-400 hover:underline"
+                    onClick={() => markAsRead(notification.id!)}
+                  >
+                    {notification.message}
+                  </Link>
+                ) : (
+                  <button
+                    className="text-sm text-gray-800 dark:text-gray-300 text-left"
+                    onClick={() => markAsRead(notification.id!)}
+                  >
+                    {notification.message}
+                  </button>
+                )}
+                <div className="text-xs text-gray-500 dark:text-gray-400">
+                  {notification.createdAt?.toDate().toLocaleDateString()}
+                </div>
               </div>
+
+              {/* Indicateur de non-lu */}
               {!notification.isRead && (
                 <div className="self-center">
                   <Dot className="text-blue-500 dark:text-blue-400" />
@@ -96,12 +111,7 @@ export default function SectionNotifications() {
 
       {/* Icône de notification (mobile) */}
       <div className="fixed bottom-4 right-4">
-        <Button
-          size="icon"
-          variant="outline"
-          className="relative"
-          aria-label="Ouvrir les notifications"
-        >
+        <Button size="icon" variant="outline" className="relative" aria-label="Ouvrir les notifications">
           <BellIcon size={20} aria-hidden="true" />
           {unreadCount > 0 && (
             <Badge className="absolute -top-2 right-0 min-w-5 rounded-full px-1 flex justify-center">
