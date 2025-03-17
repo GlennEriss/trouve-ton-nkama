@@ -6,6 +6,8 @@ import { NextAuthConfig } from "next-auth"
 import Credentials from "next-auth/providers/credentials"
 import GoogleProvider from "next-auth/providers/google";
 import FacebookProvider from "next-auth/providers/facebook";
+import { createNotification } from "@/db/notification.db";
+import { routes } from "@/constantes/routes";
 
 const getAuth = () => import('@/firebase/auth')
 const authConfig = {
@@ -83,6 +85,14 @@ const authConfig = {
                             }
                         };
                         await createUser(userData);
+                        await createNotification({
+                            type: 'SECURITY',
+                            title: 'Sécurisez votre compte avec Facebook',
+                            message: "Pour mieux protéger votre compte et éviter toute tentative d'accès non autorisé, connectez-le à Facebook dès maintenant.",
+                            isRead: false,
+                            createdFor: uid,
+                            actionUrl: routes.protected.login_and_security,
+                        });
                     } else {
                         const providers = userExists?.providers || []
                         if (!providers.includes('GOOGLE')) {
@@ -130,6 +140,14 @@ const authConfig = {
                             }
                         }
                         await createUser(userData);
+                        await createNotification({
+                            type: 'SECURITY',
+                            title: 'Sécurisez votre compte avec Google',
+                            message: "Pour mieux protéger votre compte et éviter toute tentative d'accès non autorisé, connectez-le à Google dès maintenant.",
+                            isRead: false,
+                            createdFor: uid,
+                            actionUrl: routes.protected.login_and_security,
+                        });
                     } else {
                         const providers = userExists?.providers || []
                         if (!providers.includes('FACEBOOK')) {

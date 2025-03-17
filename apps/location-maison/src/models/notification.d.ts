@@ -4,7 +4,7 @@ import { ICreation } from "./creation";
  * @module notifications
  */
 
-export type TypeNotification = 'BOOKMARKING'
+export type TypeNotification = 'BOOKMARKING'|'SECURITY'
 export type NotificationParameter = {
     isNew: boolean;
     isAccountActivity: boolean,
@@ -21,4 +21,5 @@ export type Notification = ICreation & {
     message: string;
     isRead: boolean;
     createdFor: string;
+    actionUrl?: string
 };
