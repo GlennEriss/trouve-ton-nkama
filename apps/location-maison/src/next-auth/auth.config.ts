@@ -9,6 +9,8 @@ import FacebookProvider from "next-auth/providers/facebook";
 import { createNotification } from "@/db/notification.db";
 import { routes } from "@/constantes/routes";
 import { NotificationParameter } from "@/models/notification";
+import { redirect } from "next/navigation";
+import { metadata } from '../app/layout';
 
 const getAuth = () => import('@/firebase/auth')
 const authConfig = {
@@ -60,14 +62,23 @@ const authConfig = {
         })
     ],
     callbacks: {
-        async signIn({ user, account, profile }) {
+        async signIn({ user, account, profile, credentials }) {
             /* console.log('user', user)
             console.log('account', account)
             console.log('profile', profile) */
+            const userExists = await findUserByEmail(user?.email ?? '');
+            if (userExists) {
+                if (
+                    userExists?.providers?.includes('CREDENTIALS') &&
+                    !userExists?.providers?.includes('FACEBOOK') &&
+                    !userExists?.providers?.includes('GOOGLE')
+                ) {
+                    return !!credentials;
+                }
+            }
             if (account?.provider === "google") {
                 const credential = GoogleAuthProvider.credential(account.id_token);
                 try {
-                    const userExists = await findUserByEmail(user?.email ?? '');
                     if (!userExists) {
                         const firebaseUser = await signInWithCredential(auth, credential);
                         const uid = firebaseUser.user.uid;
@@ -110,10 +121,19 @@ const authConfig = {
                             const facebookUser = await signInWithCredential(auth, facebookCredential)
                             await linkWithCredential(facebookUser.user, credential)
                             providers.push('GOOGLE')
+                            await createNotification({
+                                type: 'SECURITY',
+                                title: 'Sécurité avec Google',
+                                message: "Votre compte a été sécurisé avec Google",
+                                isRead: false,
+                                createdFor: user.uid,
+                                actionUrl: routes.protected.login_and_security,
+                            });
                         }
                         await updateUser(userExists.uid, {
                             ...userExists,
                             metadata: {
+                                ...userExists.metadata,
                                 idToken: account.id_token
                             },
                             providers
@@ -131,7 +151,6 @@ const authConfig = {
                 }
                 const credential = FacebookAuthProvider.credential(account.access_token)
                 try {
-                    const userExists = await findUserByEmail(user?.email ?? '');
                     if (!userExists) {
                         const firebaseUser = await signInWithCredential(auth, credential)
                         const uid = firebaseUser.user.uid
@@ -174,10 +193,19 @@ const authConfig = {
                             const googleUser = await signInWithCredential(auth, googleCredential);
                             await linkWithCredential(googleUser.user, credential);
                             providers.push('FACEBOOK')
+                            await createNotification({
+                                type: 'SECURITY',
+                                title: 'Sécurité avec Facebook',
+                                message: "Votre compte a été sécurisé avec Facebook",
+                                isRead: false,
+                                createdFor: user.uid,
+                                actionUrl: routes.protected.login_and_security,
+                            });
                         }
                         await updateUser(userExists.uid, {
                             ...userExists,
                             metadata: {
+                                ...userExists.metadata,
                                 accessToken: account.access_token
                             },
                             providers
