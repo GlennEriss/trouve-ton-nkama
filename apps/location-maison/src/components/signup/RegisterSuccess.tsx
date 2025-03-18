@@ -5,6 +5,8 @@ import { Button } from "@/components/ui/button";
 import { Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useToast } from "@/hooks/use-toast";
+import Link from "next/link";
+import { routes } from '@/constantes/routes';
 
 type RegisterSuccessProps = {
   uid: string;
@@ -118,8 +120,9 @@ export const RegisterSuccess: React.FC<RegisterSuccessProps> = ({ uid }) => {
                 ? "Votre email a été vérifié. Vous pouvez maintenant vous connecter."
                 : "Un email de confirmation a été envoyé à votre adresse email. Veuillez vérifier votre boîte de réception."}
             </p>
-            {!isEmailVerified && (
-              <div className="flex justify-center">
+            <div className="flex flex-col justify-center">
+
+              {!isEmailVerified &&
                 <Button
                   onClick={handleResendEmail}
                   disabled={resendStatus || isPending}
@@ -139,8 +142,14 @@ export const RegisterSuccess: React.FC<RegisterSuccessProps> = ({ uid }) => {
                     "Renvoyer l'email de confirmation"
                   )}
                 </Button>
-              </div>
-            )}
+              }
+              <Link
+                href={routes.public.signin}
+                className="mt-4 text-sm text-blue-600 dark:text-blue-400 hover:underline text-center"
+              >
+                Aller à la page de connexion
+              </Link>
+            </div>
           </>
         )}
       </div>

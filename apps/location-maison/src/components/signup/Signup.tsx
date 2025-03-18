@@ -46,7 +46,12 @@ export const Signup: React.FC = () => {
                 isPersonalizedSuggestions: true,
                 isSystemUpdated: true
             }
-            const id = await createUser({ ...userDetails, uid: userCred.user.uid, notificationParameter })
+            const id = await createUser({ 
+                ...userDetails, 
+                uid: userCred.user.uid, 
+                notificationParameter,
+                providers: ['CREDENTIALS']
+            })
             await createNotification({
                 type: 'SECURITY',
                 title: 'Sécurisez votre compte avec Facebook et Google',
