@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { ReactNode } from 'react'
 import { FormField, FormItem, FormControl, FormLabel, FormDescription, FormMessage } from '../ui/form'
 import { Checkbox } from '../ui/checkbox'
 import { UseFormReturn, Path, FieldValues } from 'react-hook-form'
@@ -8,14 +8,17 @@ type CheckboxFormProps<T extends FieldValues> = {
     form: UseFormReturn<T>;
     name: Path<T>;
     label?: string;
+    labelElement?: ReactNode;  // Permet d'ajouter des liens dans le label
     description?: string;
     classNameItem?: string;
     classNameDiv?: string;
-    className?: string
+    className?: string;
 }
+
 export const CheckboxForm = <T extends FieldValues>({
     form,
     label,
+    labelElement,
     description,
     name,
     classNameItem,
@@ -38,8 +41,9 @@ export const CheckboxForm = <T extends FieldValues>({
                             />
                         </FormControl>
                         <div className={cn(classNameDiv, "space-y-1 leading-none")}>
+                            {/* Si `labelElement` est fourni, on l'affiche. Sinon, on affiche `label` en texte brut */}
                             <FormLabel>
-                                {label}
+                                {labelElement ? labelElement : label}
                             </FormLabel>
                             <FormDescription>
                                 {description}
