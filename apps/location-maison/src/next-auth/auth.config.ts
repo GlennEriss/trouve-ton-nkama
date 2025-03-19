@@ -75,7 +75,7 @@ const authConfig = {
                     if (credentials) {
                         return true;
                     } else {
-                        throw redirect(routes.public.signin + "?error=wrong_provider"); // ✅ Redirection en cas d'erreur
+                        return routes.public.signin + "?error=wrong_provider"
                     }
                 }
             }
