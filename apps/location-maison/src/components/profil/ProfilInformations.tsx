@@ -8,7 +8,7 @@ import { generateColorFromName } from '@/lib/generateColorFromName';
 import { routes } from '@/constantes/routes';
 
 export default function ProfilInformations() {
-    const user = useCurrentUser()
+    const { user } = useCurrentUser()
     const avatarBackground = generateColorFromName(user?.firstname);
     return (
         <Link href={routes.protected.profil_informations} className='flex items-center gap-5 border rounded-lg p-5'>

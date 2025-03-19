@@ -45,7 +45,7 @@ export const steps = [
 
 export const PropertyFormComponentProvider = ({ children, isUpdate }: { children: React.ReactNode, isUpdate?: boolean }) => {
     //User
-    const user = useCurrentUser()
+    const { user } = useCurrentUser()
     //Router
     const router = useRouter()
     //pathnames

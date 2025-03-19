@@ -10,7 +10,6 @@ import { createNotification } from "@/db/notification.db";
 import { routes } from "@/constantes/routes";
 import { NotificationParameter } from "@/models/notification";
 import { redirect } from "next/navigation";
-import { metadata } from '../app/layout';
 
 const getAuth = () => import('@/firebase/auth')
 const authConfig = {
@@ -73,8 +72,11 @@ const authConfig = {
                     !userExists?.providers?.includes('FACEBOOK') &&
                     !userExists?.providers?.includes('GOOGLE')
                 ) {
-                    return routes.public.signin+'?error=wrong_provider';
-                    return !!credentials;
+                    if (credentials) {
+                        return true;
+                    } else {
+                        throw redirect(routes.public.signin + "?error=wrong_provider"); // ✅ Redirection en cas d'erreur
+                    }
                 }
             }
             if (account?.provider === "google") {
@@ -220,18 +222,17 @@ const authConfig = {
             return true;
         },
         async jwt({ token, user, trigger, session }) {
-            if (!user && token?.email) {
-                const userDetails = await findUserByEmail(token.email)
+            if (user) {
+                const userDetails = await findUserByEmail(user.email!)
                 if (userDetails) {
                     user = userDetails
                 }
-            }
-            if (user) {
                 token = {
                     ...token,
                     user
                 }
             }
+
             if (trigger === "update") {
                 token = {
                     ...token,

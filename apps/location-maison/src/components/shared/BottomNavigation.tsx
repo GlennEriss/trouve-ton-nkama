@@ -19,8 +19,9 @@ const menu = [
 
 export const BottomNavigation: React.FC = () => {
     const pathnames = usePathname();
-    const user = useCurrentUser();
+    const { user } = useCurrentUser();
     const { unreadCount } = useNotifications();
+    console.log('use in bottom', user)
     if (!user) return null;
 
     return (
@@ -30,7 +31,7 @@ export const BottomNavigation: React.FC = () => {
                     href={item.link}
                     key={key}
                     className={clsx(
-                        'relative text-xs flex flex-col items-center', 
+                        'relative text-xs flex flex-col items-center',
                         pathnames === item.link ? 'text-[#846CF9]' : ''
                     )}
                 >

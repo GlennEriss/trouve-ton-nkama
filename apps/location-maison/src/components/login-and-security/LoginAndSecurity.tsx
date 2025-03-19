@@ -18,7 +18,7 @@ import { useSession } from 'next-auth/react';
 import { User as UserModel } from '@/models/authentication'
 
 export default function LoginAndSecurity() {
-    const user = useCurrentUser();
+    const { user } = useCurrentUser();
     const { update } = useSession();
     const [isPending, startTransition] = React.useTransition();
 

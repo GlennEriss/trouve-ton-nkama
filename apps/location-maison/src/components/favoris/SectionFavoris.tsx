@@ -14,7 +14,7 @@ import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { Skeleton } from '../ui/skeleton';
 
 export default function SectionFavoris() {
-    const user = useCurrentUser()
+    const {user} = useCurrentUser()
     const router = useRouter();
     const [currentPage, setCurrentPage] = React.useState(0);
     const [totalPage, setTotalPage] = React.useState(0);

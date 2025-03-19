@@ -4,14 +4,15 @@ import { useEffect, useState } from "react";
 export const useCurrentUser = () => {
   const { data: session, status } = useSession();
   const [user, setUser] = useState(session?.user || undefined);
-
+  console.log('status', status)
   useEffect(() => {
     if (status === "authenticated") {
       setUser(session.user);
-    }else{
+    }
+    if(status === "unauthenticated"){
       setUser(undefined);
     }
   }, [session, status]);
 
-  return user;
+  return { user, setUser };
 };

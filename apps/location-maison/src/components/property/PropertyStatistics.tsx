@@ -19,7 +19,7 @@ const propertyStatList: { icon: LucideIcon; title: string; value: number; type: 
 ];
 
 export default function PropertyStatistics() {
-    const user = useCurrentUser()
+    const { user } = useCurrentUser()
     const [statistics, setStatistics] = React.useState(propertyStatList)
     React.useEffect(() => {
         const fetchStatistics = async () => {
