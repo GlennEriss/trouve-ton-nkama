@@ -5,7 +5,7 @@ import { AiOutlineMail } from 'react-icons/ai'
 import { useCurrentUser } from '@/hooks/use-current-user'
 
 export default function ContactSection() {
-    const user = useCurrentUser()
+    const { user } = useCurrentUser()
     return (
         <section className="flex flex-col gap-3 rounded-lg p-5 shadow">
             <h1 className="font-bold">Contacts</h1>

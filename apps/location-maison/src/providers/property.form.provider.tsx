@@ -43,16 +43,16 @@ export const steps = [
     { label: 'Third', description: 'Select Rooms' },
 ]
 
-export const PropertyFormComponentProvider = ({ children }: { children: React.ReactNode }) => {
+export const PropertyFormComponentProvider = ({ children, isUpdate }: { children: React.ReactNode, isUpdate?: boolean }) => {
     //User
-    const user = useCurrentUser()
+    const { user } = useCurrentUser()
     //Router
     const router = useRouter()
     //pathnames
     const pathname = usePathname()
-    const id = useLastpath()
+    const id = isUpdate ? useLastpath() : null
     //Images already uplaod
-    const [imagesAlreadyUplaod, setImagesAlreadyUplaod ] = useState<Image[]>([])
+    const [imagesAlreadyUplaod, setImagesAlreadyUplaod] = useState<Image[]>([])
     //Type Property
     const getTypeProperty = () => {
         const pathnames = pathname.split('/')

@@ -5,9 +5,9 @@ import Link from 'next/link';
 import { routes } from '@/constantes/routes';
 import { usePathname } from 'next/navigation';
 import clsx from 'clsx';
-import { useCurrentUser } from '@/hooks/use-current-user';
 import { Badge } from '../ui/badge';
 import { useNotifications } from '@/providers/NotificationProvider';
+import { Session } from 'next-auth';
 
 const menu = [
     { title: 'Logements', icon: House, link: routes.protected.properties },
@@ -16,12 +16,11 @@ const menu = [
     { title: 'Notification', icon: Bell, link: routes.protected.notification_list },
     { title: 'Profil', icon: UserCircle, link: '/profil' },
 ];
-
-export const BottomNavigation: React.FC = () => {
+type BottomNavigationProps = {session: Session|null}
+export const BottomNavigation: React.FC<BottomNavigationProps> = ({session}) => {
     const pathnames = usePathname();
-    const user = useCurrentUser();
     const { unreadCount } = useNotifications();
-    if (!user) return null;
+    if (!session) return null;
 
     return (
         <div className="fixed bottom-0 z-50 w-full flex bg-white p-4 justify-between md:hidden shadow border-t">
@@ -30,7 +29,7 @@ export const BottomNavigation: React.FC = () => {
                     href={item.link}
                     key={key}
                     className={clsx(
-                        'relative text-xs flex flex-col items-center', 
+                        'relative text-xs flex flex-col items-center',
                         pathnames === item.link ? 'text-[#846CF9]' : ''
                     )}
                 >

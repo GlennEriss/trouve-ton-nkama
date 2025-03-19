@@ -31,7 +31,7 @@ export default function ListPropertySection() {
     const searchParams = useSearchParams();
     const queryType = searchParams.get("type") || "";
     const type = capitalizeFirstLetter(queryType);
-    const user = useCurrentUser();
+    const { user } = useCurrentUser();
     const [currentPage, setCurrentPage] = React.useState(0);
     const [totalPage, setTotalPage] = React.useState(0);
     const fetchInfiniteProperties = async ({ pageParam }: { pageParam: any }) => {

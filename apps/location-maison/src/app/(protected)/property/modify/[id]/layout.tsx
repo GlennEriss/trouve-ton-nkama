@@ -10,7 +10,7 @@ export default function layout({ children }: { children: React.ReactNode }) {
             <div className='sticky top-0 md:static z-50 bg-white px-5 py-4 shadow border-b flex items-center justify-between md:hidden'>
                 <TitleComponent />
             </div>
-            <PropertyFormComponentProvider>
+            <PropertyFormComponentProvider isUpdate={true}>
                 <div className='flex flex-col gap-4 px-4'>
                     <div className="hidden md:block">
                         <TitleComponent />

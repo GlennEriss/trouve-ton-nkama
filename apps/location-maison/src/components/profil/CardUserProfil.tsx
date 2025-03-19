@@ -7,7 +7,7 @@ import { useCurrentUser } from '@/hooks/use-current-user';
 import { firebaseTimestampToDate } from '@/lib/firebaseTimestampToDate';
 
 export default function CardUserProfil() {
-    const user = useCurrentUser()
+    const { user } = useCurrentUser()
     const avatarBackground = generateColorFromName(user?.firstname)
     console.log(user?.createdAt?.nanoseconds)
     return (

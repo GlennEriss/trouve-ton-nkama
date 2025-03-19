@@ -26,7 +26,7 @@ const menu = [
 ]
 
 export default function MenuProfil() {
-    const user = useCurrentUser()
+    const { user } = useCurrentUser()
     const { toast } = useToast();
     const router = useRouter()
     const [isPending, startTransition] = useTransition()

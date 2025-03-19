@@ -46,7 +46,12 @@ export const Signup: React.FC = () => {
                 isPersonalizedSuggestions: true,
                 isSystemUpdated: true
             }
-            const id = await createUser({ ...userDetails, uid: userCred.user.uid, notificationParameter })
+            const id = await createUser({
+                ...userDetails,
+                uid: userCred.user.uid,
+                notificationParameter,
+                providers: ['CREDENTIALS']
+            })
             await createNotification({
                 type: 'SECURITY',
                 title: 'Sécurisez votre compte avec Facebook et Google',
@@ -163,7 +168,18 @@ export const Signup: React.FC = () => {
                     <CheckboxForm
                         form={form}
                         name={'termsOfPrivacyPolicy'}
-                        label="En cliquant sur s'inscrire, vous êtes en accord avec notre politique de confidentialité"
+                        labelElement={
+                            <>
+                                En cliquant sur s'inscrire, vous êtes en accord avec notre{" "}
+                                <a href={routes.public.confidentiality} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">
+                                    politique de confidentialité
+                                </a>{" "}
+                                et nos{" "}
+                                <a href={routes.public.terms_of_use} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">
+                                    conditions d'utilisation
+                                </a>.
+                            </>
+                        }
                     />
                     <ButtonLoading
                         type='submit'

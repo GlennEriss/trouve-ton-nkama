@@ -3,7 +3,7 @@
  */
 import { Person } from "@/models/compte";
 import { metadata } from '../app/layout';
-type ProviderType = 'GOOGLE'|'FACEBOOK'
+type ProviderType = 'GOOGLE'|'FACEBOOK'|'CREDENTIALS'
 export type User = Person & {
     uid: string;
     login: string,

@@ -28,7 +28,7 @@ function Dot({ className }: { className?: string }) {
 }
 
 export default function SectionNotifications() {
-  const user = useCurrentUser();
+  const { user } = useCurrentUser();
   const { notifications, unreadCount, markAllAsRead, markAsRead } = useNotifications();
   const avatarBackground = generateColorFromName(user?.firstname);
 
