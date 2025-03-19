@@ -1,38 +1,54 @@
 import { routes } from '@/constantes/routes'
-import { ChevronLeft, Home, Building, Landmark, Warehouse, Briefcase, Building2 } from 'lucide-react'
+import { TypeProperty } from '@/lib/utils'
+import { ChevronLeft, Home, Building, Landmark, Warehouse, Briefcase, Building2, Bed, Store, ShoppingBag } from 'lucide-react'
 import Link from 'next/link'
 import React from 'react'
 
 const buttonList = [
   {
-    label: "Maison",
+    label: TypeProperty.House,
     link: routes.protected.add_home,
     icon: <Home size={24} />
   },
   {
-    label: "Studio",
+    label: TypeProperty.Studio,
     link: routes.protected.add_studio,
-    icon: <Building2 size={24} />
-  },
-  {
-    label: "Appartement",
-    link: routes.protected.add_apartment,
-    icon: <Building size={24} />
-  },
-  {
-    label: "Villa",
-    link: routes.protected.add_villa,
-    icon: <Landmark size={24} />
-  },
-  {
-    label: "Immeuble",
-    link: routes.protected.add_building,
     icon: <Warehouse size={24} />
   },
   {
-    label: "Bureau",
+    label: TypeProperty.Apartment,
+    link: routes.protected.add_apartment,
+    icon: <Building size={24} />
+  },
+  /* {
+    label: TypeProperty.Villa,
+    link: routes.protected.add_villa,
+    icon: <Landmark size={24} />
+  }, */
+  {
+    label: TypeProperty.Building,
+    link: routes.protected.add_building,
+    icon: <Building2 size={24} />
+  },
+  {
+    label: TypeProperty.Office,
     link: routes.protected.add_desk,
     icon: <Briefcase size={24} />
+  },
+  {
+    label: TypeProperty.Room,
+    link: "#",
+    icon: <Bed size={24} />
+  },
+  {
+    label: TypeProperty.Kiosk,
+    link: "#",
+    icon: <Store size={24} />
+  },
+  {
+    label: TypeProperty.Shop,
+    link: "#",
+    icon: <ShoppingBag size={24} />
   },
 ]
 export default function page() {

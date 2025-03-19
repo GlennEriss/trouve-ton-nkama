@@ -13,6 +13,7 @@ import { ChevronLeft } from "lucide-react";
 import { useAlgoliaContext } from "@/providers/AlgoliaContext";
 import { BiFilter } from "react-icons/bi";
 import { useState } from "react";
+import { TypeProperty } from "@/lib/utils";
 
 export const FilterModal = ({
   applyRefinements,
@@ -227,7 +228,7 @@ export const FilterModal = ({
                 Type de propriété
               </label>
               <div className="flex flex-wrap gap-3">
-                {["Maison", "Appartement", "Studio", "Chambre"].map((type) => (
+                {Object.values(TypeProperty).map((type) => (
                   <Button
                     key={type}
                     variant="outline"
