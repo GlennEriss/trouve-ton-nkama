@@ -19,7 +19,7 @@ export default function Logout() {
                     description: "Vous vous êtes déconnectés de la plateforme",
                     variant: "warning",
                 });
-                router.push(routes.public.signin)
+                router.push(routes.public.homePage)
             } else {
                 toast({
                     title: "Déconnexion",

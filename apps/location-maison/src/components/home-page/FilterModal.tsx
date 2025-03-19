@@ -17,8 +17,10 @@ import { TypeProperty } from "@/lib/utils";
 import { tags as tagsList } from "@/constantes";
 export const FilterModal = ({
   applyRefinements,
+  handleSearch
 }: {
   applyRefinements: () => void;
+  handleSearch: () => void;
 }) => {
   const {
     city,
@@ -90,6 +92,7 @@ export const FilterModal = ({
     }
 
     applyRefinements();
+    handleSearch();
     setOpen(false);
   };
 

@@ -138,7 +138,7 @@ export default function SectionFavoris() {
                             {/* Type de propriété */}
                             {property.typeProperty && (
                                 <div className="absolute top-2 left-2 px-3 py-1 text-xs font-bold bg-blue-100 text-blue-600 dark:bg-blue-800 dark:text-blue-200 rounded-full">
-                                    {TypeProperty[property.typeProperty]}
+                                    {TypeProperty[property.typeProperty as string]}
                                 </div>
                             )}
                         </div>
