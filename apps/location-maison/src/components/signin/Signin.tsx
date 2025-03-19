@@ -8,13 +8,19 @@ import { Form } from '../ui/form';
 import { InputForm } from '../forms/InputForm';
 import Link from 'next/link';
 import { ButtonLoading } from '../buttons/ButtonLoading';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { useToast } from '@/hooks/use-toast';
 import { login } from '@/actions/login';
 import { routes } from '@/constantes/routes';
+import { findUserByEmail } from '@/db/user.db';
+import { useCurrentUser } from '@/hooks/use-current-user';
+import { useSession } from 'next-auth/react';
 
 export const Signin = () => {
     const router = useRouter()
+    const {setUser} = useCurrentUser()
+    const { data: session, status, update } = useSession()
+    const searchParams = useSearchParams();
     const [isPending, startTransition] = React.useTransition()
     const [isOtherMethodConnection, setIsOtherMethodConnection] = React.useState(false)
     const { toast } = useToast()
@@ -31,6 +37,9 @@ export const Signin = () => {
                     variant: 'destructive',
                 });
             } else {
+                //const userDetails: any = await findUserByEmail(values.email!)
+                //setUser(userDetails)
+                await update()
                 toast({
                     title: 'Connexion réussie',
                     description: "Vous vous êtes connectés avec succès!",
@@ -40,6 +49,16 @@ export const Signin = () => {
             }
         })
     }
+    React.useEffect(() => {
+        const error = searchParams.get("error");
+        if (error === "wrong_provider") {
+            toast({
+                title: "Erreur de connexion",
+                description: "Ce compte est associé à un autre mode de connexion.",
+                variant: "destructive",
+            });
+        }
+    }, [searchParams, toast]);
     return (
         <LayoutAuth
             type='Signin'

@@ -16,7 +16,7 @@ import { useSession } from "next-auth/react"
 
 
 export default function FormPersonalInformation() {
-    const user = useCurrentUser()
+    const { user } = useCurrentUser()
     const { data: session, status, update } = useSession()
     const { toast } = useToast();
 

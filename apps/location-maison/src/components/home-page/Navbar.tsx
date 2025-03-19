@@ -14,7 +14,7 @@ import { useHits, useRange, useRefinementList } from "react-instantsearch";
 import { routes } from "@/constantes/routes";
 
 export default function Navbar() {
-  const user = useCurrentUser();
+  const { user } = useCurrentUser();
   const { width } = useWindowSize();
   const [theme, setTheme] = useState("light");
   const [showSearch, setShowSearch] = useState(false);

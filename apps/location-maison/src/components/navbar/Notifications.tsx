@@ -28,7 +28,7 @@ function Dot({ className }: { className?: string }) {
 
 export default function Notifications() {
   const { notifications, unreadCount, markAllAsRead, markAsRead } = useNotifications();
-  const user = useCurrentUser();
+  const { user } = useCurrentUser();
   const avatarBackground = generateColorFromName(user?.firstname);
 
   return (
