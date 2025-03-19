@@ -14,7 +14,7 @@ import { useAlgoliaContext } from "@/providers/AlgoliaContext";
 import { BiFilter } from "react-icons/bi";
 import { useState } from "react";
 import { TypeProperty } from "@/lib/utils";
-
+import { tags as tagsList } from "@/constantes";
 export const FilterModal = ({
   applyRefinements,
 }: {
@@ -251,19 +251,19 @@ export const FilterModal = ({
             <div>
               <label className="text-md font-bold mb-2 block">Tags</label>
               <div className="flex flex-wrap gap-3">
-                {["Étudiant", "Wi-Fi", "Meublé", "Proche de la plage"].map(
+                {tagsList.map(
                   (tag) => (
                     <Button
-                      key={tag}
+                      key={tag.tagName}
                       variant="outline"
-                      onClick={() => toggleSelection(tags, tag, setTags)}
+                      onClick={() => toggleSelection(tags, tag.tagName, setTags)}
                       className={`rounded-full border-gray-600 font-semibold ${
-                        tags.includes(tag)
+                        tags.includes(tag.tagName)
                           ? "bg-red-800 text-white"
                           : "text-gray-400"
                       }`}
                     >
-                      {tag}
+                      {tag.tagName}
                     </Button>
                   )
                 )}

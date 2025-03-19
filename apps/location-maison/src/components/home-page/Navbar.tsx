@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Clover, Search, LogIn, User, Plus } from "lucide-react";
-import { BiCurrentLocation } from "react-icons/bi";
+import { BiSearch } from "react-icons/bi";
 import { useAlgoliaContext } from "@/providers/AlgoliaContext";
 import { FilterModal } from "./FilterModal";
 import { useCurrentUser } from "@/hooks/use-current-user";
@@ -105,18 +105,15 @@ export default function Navbar() {
           <Search className="w-6 h-6 text-black dark:text-white" />
         </button>
         <FilterModal applyRefinements={() => { }} />
-        <button className="w-10 h-10 flex items-center justify-center bg-gray-100 dark:bg-gray-800 rounded-full">
-          <BiCurrentLocation className="w-6 h-6 text-black dark:text-white" />
-        </button>
         {user ? (
-          <>
+          <div className="flex items-center">
             <a href={routes.protected.add_property}>
               <button className="w-10 h-10 flex items-center justify-center bg-blue-500 text-white rounded-full">
                 <Plus className="w-6 h-6" />
               </button>
             </a>
-            {/* <MenuProfil /> */}
-          </>
+            <MenuProfil />
+          </div>
         ) : (
           <a href="/signin">
             <Button variant="outline" className="px-4 py-2">Se connecter</Button>
@@ -124,7 +121,7 @@ export default function Navbar() {
         )}
       </div>
       {showSearch && (
-        <div className="absolute top-full left-0 right-0 bg-white dark:bg-black shadow-md p-4">
+        <div className="absolute top-full left-0 right-0 bg-white dark:bg-black shadow-md p-4 flex w-full">
           <div className="relative">
             <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-500 w-5 h-5" />
             <Input
@@ -132,6 +129,11 @@ export default function Navbar() {
               className="w-full bg-neutral-200 dark:bg-neutral-900 text-black dark:text-white placeholder:text-gray-500 border-none focus:ring-2 focus:ring-black/50 dark:focus:ring-white/50 min-h-[50px] rounded-full pl-12"
             />
           </div>
+          <a href="/search" target="_blank" rel="noopener noreferrer">
+            <div className="w-11 h-11 bg-black border-black dark:border-white border-[1px] flex items-center justify-center rounded-full cursor-pointer aspect-square">
+              <BiSearch className="w-6 h-6 text-white" />
+            </div>
+          </a>
         </div>
       )}
     </nav>
@@ -145,7 +147,33 @@ export default function Navbar() {
             <Clover className="text-white dark:text-black w-6 h-6" />
           </div>
         </div>
+      </div>
 
+      {/* Barre de recherche */}
+      <div className="flex items-center gap-2 w-full md:w-1/2 max-w-[500px] mr-1">
+        <div className="relative w-full">
+          <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-500 w-5 h-5" />
+          <Input
+            placeholder="Chercher une propriété"
+            className="bg-neutral-200 dark:bg-neutral-900 text-black dark:text-white placeholder:text-gray-500 border-none focus:ring-2 focus:ring-black/50 dark:focus:ring-white/50 min-h-[50px] rounded-full pl-12"
+          />
+        </div>
+        <a href="/search" target="_blank" rel="noopener noreferrer">
+          <div className="w-11 h-11 bg-black border-black dark:border-white border-[1px] flex items-center justify-center rounded-full cursor-pointer aspect-square">
+            <BiSearch className="w-6 h-6 text-white" />
+          </div>
+        </a>
+        <FilterModal applyRefinements={applyRefinements} />
+      </div>
+      <div className="flex items-center">
+        <a href={routes.protected.add_property} target="_blank" rel="noopener noreferrer">
+          <Button
+            variant="default"
+            className="bg-blue-500 text-white rounded-xl text-lg hover:bg-blue-600 px-4 py-6 font-bold"
+          >
+            Poster une annonce
+          </Button>
+        </a>
         {/* Boutons */}
         {
           user ? (
@@ -168,41 +196,17 @@ export default function Navbar() {
                   S&apos;inscrire
                 </Button>
               </a>
-
-              <button
-                onClick={toggleTheme}
-                className="w-10 h-10 rounded-full border-black dark:border-white flex items-center justify-center bg-black dark:bg-white text-white dark:text-black"
-              >
-                {theme === "light" ? "🌞" : "🌙"}
-              </button>
             </div>
           )
         }
-
-      </div>
-
-      {/* Barre de recherche */}
-      <div className="flex items-center gap-2 w-full md:w-1/2 max-w-[500px] mr-1">
-        <div className="relative w-full">
-          <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-500 w-5 h-5" />
-          <Input
-            placeholder="Chercher une propriété"
-            className="bg-neutral-200 dark:bg-neutral-900 text-black dark:text-white placeholder:text-gray-500 border-none focus:ring-2 focus:ring-black/50 dark:focus:ring-white/50 min-h-[50px] rounded-full pl-12"
-          />
-        </div>
-        <FilterModal applyRefinements={applyRefinements} />
-        <div className="w-11 h-11 bg-black border-black dark:border-white border-[1px] flex items-center justify-center rounded-full cursor-pointer aspect-square">
-          <BiCurrentLocation className="w-6 h-6 text-white" />
-        </div>
-      </div>
-      <a href={routes.protected.add_property} target="_blank" rel="noopener noreferrer">
-        <Button
-          variant="default"
-          className="bg-blue-500 text-white rounded-xl text-lg hover:bg-blue-600 px-4 py-6 font-bold"
+        <button
+          onClick={toggleTheme}
+          className="w-10 h-10 rounded-full border-black dark:border-white flex items-center justify-center bg-black dark:bg-white text-white dark:text-black"
         >
-          Poster une annonce
-        </Button>
-      </a>
+          {theme === "light" ? "🌞" : "🌙"}
+        </button>
+      </div>
+
     </nav>
   );
 }
