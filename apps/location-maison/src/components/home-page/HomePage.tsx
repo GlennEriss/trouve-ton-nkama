@@ -11,6 +11,7 @@ import { TypeProperty } from "@/lib/utils";
 import PropertyCarousel from "../property/PropertyCarousel";
 import MapComponent, { Neighborhood } from "../map/MapComponent";
 import houseMocks from "@/mocks/mocksHouse";
+import { Home, Warehouse, Building, Building2, Briefcase, Bed, Store, ShoppingBag } from "lucide-react";
 
 const neighborhoods: Neighborhood[] = [
   {
@@ -76,24 +77,28 @@ const HomePage = () => {
   };
 
   const propertyTypes = [
-    { type: "House", icon: <FaHome className="w-10 h-10 text-blue-500" /> },
-    {
-      type: "Apartment",
-      icon: <FaBuilding className="w-10 h-10 text-green-500" />,
-    },
+    { type: "House", icon: <Home className="w-10 h-10 text-blue-500" /> },
     {
       type: "Studio",
-      icon: <MdOutlineApartment className="w-10 h-10 text-yellow-500" />,
+      icon: <Warehouse className="w-10 h-10 text-yellow-500" />,
     },
-    { type: "Room", icon: <BiBed className="w-10 h-10 text-red-500" /> },
-    { type: "Kiosk", icon: <FaStore className="w-10 h-10 text-orange-500" /> },
-    {
-      type: "Shop",
-      icon: <FaWarehouse className="w-10 h-10 text-purple-500" />,
-    },
+    { type: "Apartment", icon: <Building className="w-10 h-10 text-red-500" /> },
+    { type: "Building", icon: <Building2 className="w-10 h-10 text-orange-500" /> },
     {
       type: "Office",
-      icon: <MdOutlineWorkspaces className="w-10 h-10 text-teal-500" />,
+      icon: <Briefcase className="w-10 h-10 text-purple-500" />,
+    },
+    {
+      type: "Room",
+      icon: <Bed className="w-10 h-10 text-teal-500" />,
+    },
+    {
+      type: "Kiosk",
+      icon: <Store className="w-10 h-10 text-teal-500" />,
+    },
+    {
+      type: "Shop",
+      icon: <ShoppingBag className="w-10 h-10 text-teal-500" />,
     },
   ];
 
@@ -338,7 +343,7 @@ const HomePage = () => {
       </section>
 
       {/* Section des publicités */}
-{/* <section className="mb-16 w-full">
+      {/* <section className="mb-16 w-full">
   <Slider {...adCarouselSettings}>
     {ads.map((ad) => (
       <div key={ad.id} className="p-2">
