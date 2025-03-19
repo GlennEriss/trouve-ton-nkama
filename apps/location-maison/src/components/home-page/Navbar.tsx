@@ -12,12 +12,15 @@ import { useWindowSize } from "@/hooks/useSize";
 import MenuProfil from "../navbar/MenuProfil";
 import { useHits, useRange, useRefinementList } from "react-instantsearch";
 import { routes } from "@/constantes/routes";
+import { useRouter } from "next/navigation";
 
 export default function Navbar() {
+  const router = useRouter();
   const user = useCurrentUser();
   const { width } = useWindowSize();
   const [theme, setTheme] = useState("light");
   const [showSearch, setShowSearch] = useState(false);
+  const [searchText, setSearchText] = useState("");
 
   useEffect(() => {
     if (theme === "dark") {
@@ -90,12 +93,36 @@ export default function Navbar() {
   useEffect(() => {
     applyRefinements();
   }, []);
+
+  const handleSearch = () => {
+    const params = new URLSearchParams();
+    if (searchText) params.append("query", searchText);
+    if (city) params.append("city", city);
+    if (street) params.append("street", street);
+    if (minPrice) params.append("minPrice", minPrice);
+    if (maxPrice) params.append("maxPrice", maxPrice);
+    if (minArea) params.append("minArea", minArea);
+    if (maxArea) params.append("maxArea", maxArea);
+    if (minNbrRooms) params.append("minNbrRooms", minNbrRooms);
+    if (maxNbrRooms) params.append("maxNbrRooms", maxNbrRooms);
+    if (typeProperty && typeProperty.length > 0) {
+      params.append("typeProperty", typeProperty.join(","));
+    }
+    if (tags && tags.length > 0) {
+      params.append("tags", tags.join(","));
+    }
+
+    router.push(`/search?${params.toString()}`);
+  };
+
   return width < 768 ? (
     <nav className="sticky top-0 left-0 right-0 z-50 bg-white dark:bg-black text-black dark:text-white px-4 py-4 flex items-center justify-between shadow-md">
       <div className="flex items-center">
-        <div className="w-10 h-10 flex items-center justify-center bg-black dark:bg-white rounded-full">
-          <Clover className="text-white dark:text-black w-6 h-6" />
-        </div>
+        <a href="/" rel="noopener noreferrer">
+          <div className="w-10 h-10 flex items-center justify-center bg-black dark:bg-white rounded-full cursor-pointer">
+            <Clover className="text-white dark:text-black w-6 h-6" />
+          </div>
+        </a>
       </div>
       <div className="flex items-center gap-4">
         <button
@@ -104,7 +131,7 @@ export default function Navbar() {
         >
           <Search className="w-6 h-6 text-black dark:text-white" />
         </button>
-        <FilterModal applyRefinements={() => { }} />
+        <FilterModal applyRefinements={() => { }} handleSearch={handleSearch} />
         {user ? (
           <div className="flex items-center">
             <a href={routes.protected.add_property}>
@@ -125,15 +152,18 @@ export default function Navbar() {
           <div className="relative">
             <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-500 w-5 h-5" />
             <Input
+              value={searchText}
+              onChange={(e) => setSearchText(e.target.value)}
               placeholder="Rechercher..."
               className="w-full bg-neutral-200 dark:bg-neutral-900 text-black dark:text-white placeholder:text-gray-500 border-none focus:ring-2 focus:ring-black/50 dark:focus:ring-white/50 min-h-[50px] rounded-full pl-12"
             />
           </div>
-          <a href="/search" target="_blank" rel="noopener noreferrer">
-            <div className="w-11 h-11 bg-black border-black dark:border-white border-[1px] flex items-center justify-center rounded-full cursor-pointer aspect-square">
-              <BiSearch className="w-6 h-6 text-white" />
-            </div>
-          </a>
+          <div
+            onClick={handleSearch}
+            className="w-11 h-11 bg-black border-black dark:border-white border-[1px] flex items-center justify-center rounded-full cursor-pointer aspect-square"
+          >
+            <BiSearch className="w-6 h-6 text-white" />
+          </div>
         </div>
       )}
     </nav>
@@ -143,9 +173,11 @@ export default function Navbar() {
       <div className="flex items-center justify-between w-full md:w-auto">
         {/* Logo */}
         <div className="flex items-center">
-          <div className="flex items-center justify-center w-10 h-10 bg-black dark:bg-white rounded-full">
-            <Clover className="text-white dark:text-black w-6 h-6" />
-          </div>
+          <a href="/" rel="noopener noreferrer">
+            <div className="flex items-center justify-center w-10 h-10 bg-black dark:bg-white rounded-full cursor-pointer">
+              <Clover className="text-white dark:text-black w-6 h-6" />
+            </div>
+          </a>
         </div>
       </div>
 
@@ -154,19 +186,22 @@ export default function Navbar() {
         <div className="relative w-full">
           <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-500 w-5 h-5" />
           <Input
+            value={searchText}
+            onChange={(e) => setSearchText(e.target.value)}
             placeholder="Chercher une propriété"
             className="bg-neutral-200 dark:bg-neutral-900 text-black dark:text-white placeholder:text-gray-500 border-none focus:ring-2 focus:ring-black/50 dark:focus:ring-white/50 min-h-[50px] rounded-full pl-12"
           />
         </div>
-        <a href="/search" target="_blank" rel="noopener noreferrer">
-          <div className="w-11 h-11 bg-black border-black dark:border-white border-[1px] flex items-center justify-center rounded-full cursor-pointer aspect-square">
-            <BiSearch className="w-6 h-6 text-white" />
-          </div>
-        </a>
-        <FilterModal applyRefinements={applyRefinements} />
+        <div
+          onClick={handleSearch}
+          className="w-11 h-11 bg-black border-black dark:border-white border-[1px] flex items-center justify-center rounded-full cursor-pointer aspect-square"
+        >
+          <BiSearch className="w-6 h-6 text-white" />
+        </div>
+        <FilterModal applyRefinements={applyRefinements} handleSearch={handleSearch} />
       </div>
       <div className="flex items-center">
-        <a href={routes.protected.add_property} target="_blank" rel="noopener noreferrer">
+        <a href={routes.protected.add_property} rel="noopener noreferrer">
           <Button
             variant="default"
             className="bg-blue-500 text-white rounded-xl text-lg hover:bg-blue-600 px-4 py-6 font-bold"
@@ -180,7 +215,7 @@ export default function Navbar() {
             <MenuProfil />
           ) : (
             <div className="flex items-center gap-2 md:gap-4 ml-auto mr-1 md:ml-8">
-              <a href="/signin" target="_blank" rel="noopener noreferrer">
+              <a href="/signin" rel="noopener noreferrer">
                 <Button
                   variant="outline"
                   className="text-black dark:text-white border-black dark:border-white rounded-xl px-4 py-2"
@@ -188,7 +223,7 @@ export default function Navbar() {
                   Se connecter
                 </Button>
               </a>
-              <a href="/signup" target="_blank" rel="noopener noreferrer">
+              <a href="/signup" rel="noopener noreferrer">
                 <Button
                   variant="default"
                   className="bg-black dark:bg-white text-white dark:text-black rounded-xl hover:bg-black dark:hover:bg-white px-4 py-2"

@@ -12,6 +12,7 @@ import PropertyCarousel from "../property/PropertyCarousel";
 import MapComponent, { Neighborhood } from "../map/MapComponent";
 import houseMocks from "@/mocks/mocksHouse";
 import { Home, Warehouse, Building, Building2, Briefcase, Bed, Store, ShoppingBag } from "lucide-react";
+import { routes } from "@/constantes/routes";
 
 const neighborhoods: Neighborhood[] = [
   {
@@ -330,7 +331,7 @@ const HomePage = () => {
               className="flex flex-col items-center justify-center p-6 bg-white dark:bg-gray-800 shadow-md rounded-lg hover:shadow-lg transition-shadow cursor-pointer"
               whileHover={{ scale: 1.05 }}
               onClick={() => {
-                window.location.href = `/search?category=${type.type}`;
+                window.location.href = `/search?typeProperty=${type.type}`;
               }}
             >
               {type.icon}
@@ -395,9 +396,12 @@ const HomePage = () => {
           Créez votre annonce dès maintenant et atteignez des milliers de
           clients potentiels.
         </p>
-        <Button className="bg-white text-blue-500 px-6 py-3 rounded-full hover:bg-gray-100">
-          Poster une annonce
-        </Button>
+        <a href={routes.protected.add_property} rel="noopener noreferrer">
+          <Button className="bg-white text-blue-500 px-6 py-3 rounded-full hover:bg-gray-100">
+            Poster une annonce
+          </Button>
+        </a>
+
       </section>
     </div>
   );
