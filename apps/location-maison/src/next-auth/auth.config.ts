@@ -73,6 +73,7 @@ const authConfig = {
                     !userExists?.providers?.includes('FACEBOOK') &&
                     !userExists?.providers?.includes('GOOGLE')
                 ) {
+                    return routes.public.signin+'?error=wrong_provider';
                     return !!credentials;
                 }
             }
