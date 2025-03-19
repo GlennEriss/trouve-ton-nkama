@@ -16,7 +16,7 @@ import { useRouter } from "next/navigation";
 
 export default function Navbar() {
   const router = useRouter();
-  const user = useCurrentUser();
+  const { user } = useCurrentUser();
   const { width } = useWindowSize();
   const [theme, setTheme] = useState("light");
   const [showSearch, setShowSearch] = useState(false);
