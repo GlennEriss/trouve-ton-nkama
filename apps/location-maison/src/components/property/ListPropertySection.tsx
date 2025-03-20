@@ -70,7 +70,7 @@ export default function ListPropertySection() {
                 setTotalPage(total)
             })
     }, [user, type])
-    if(isError){
+    if (isError) {
         console.log(error)
     }
     if (isPending || isFetching) {
@@ -79,6 +79,15 @@ export default function ListPropertySection() {
                 {Array.from({ length: 8 }).map((_, index) => (
                     <SkeletonCard key={index} />
                 ))}
+            </div>
+        );
+    }
+    if (!data || data.pages[currentPage]?.properties?.length === 0) {
+        return (
+            <div className="flex flex-col items-center justify-center p-10 gap-3">
+                <Image src="/no-favorites.svg" width={250} height={250} alt="Aucun favori" />
+                <h2 className="text-xl font-semibold text-gray-700">Aucune propriété pour le moment</h2>
+                <p className="text-gray-500 text-center">Ajoutez des propriétés pour enrichir votre catalogue</p>
             </div>
         );
     }
