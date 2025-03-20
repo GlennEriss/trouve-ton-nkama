@@ -112,20 +112,20 @@ const DetailsVilla = ({ villa }: { villa: Villa }) => (
 );
 
 const DetailsShop = ({ shop }: { shop: Shop }) => (
-    <div className="grid grid-cols-1 gap-4">
-        <DetailsItem keyName='shopType' value={shop.shopType} />
+    <div className="grid grid-cols-2 gap-4">
+        <DetailsItem keyName='room' value={shop.nbrRooms} />
+        <DetailsItem keyName='toilet' value={shop.nbrToilet} />
     </div>
 );
 
 const DetailsKiosk = ({ kiosk }: { kiosk: Kiosk }) => (
-    <div className="grid grid-cols-1 gap-4">
-        <DetailsItem keyName='kioskSize' value={kiosk.kioskSize} />
+    <div className="text-gray-500 italic">
+        Aucune information supplémentaire pour ce kiosque.
     </div>
 );
 
 const DetailsRoom = ({ room }: { room: Room }) => (
     <div className="grid grid-cols-2 gap-4">
         <DetailsItem keyName='roomType' value={room.roomType} />
-        <DetailsItem keyName='nbrBeds' value={room.nbrBeds} />
     </div>
 );
