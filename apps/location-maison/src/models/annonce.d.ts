@@ -3,7 +3,7 @@
  */
 
 import { ICreation } from "./creation";
-
+import {TypePropertyEnum} from '@/constantes/property-type'
 //Property
 export type TypeProperty = keyof typeof TypePropertyEnum;
 export type StatusProperty = "FOR_RENT" | "FOR_SALE"
@@ -68,4 +68,17 @@ export type Studio = Logement & {
 
 export type Villa = Home & {
     nbrPiscine: number
+}
+
+export type Shop = Property & {
+    shopType: string;
+}
+
+export type Kiosk = Property & {
+    kioskSize: number;
+}
+
+export type Room = Property & {
+    roomType: string;
+    nbrBeds: number;
 }
