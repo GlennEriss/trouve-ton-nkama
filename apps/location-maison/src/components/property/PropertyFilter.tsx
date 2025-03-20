@@ -3,7 +3,7 @@
 import React from "react";
 import { useSearchParams, usePathname, useRouter } from "next/navigation";
 import { cn } from "@/lib/utils";
-import { Home, Building, Layout, MapPin, List, Briefcase, House, Landmark } from "lucide-react";
+import { Home, Building, Layout, MapPin, List, Briefcase, House, Landmark, ShoppingCart, Store, Bed } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 // Types des filtres
@@ -15,7 +15,9 @@ const filters = [
     { label: "Terrains", value: "land", icon: MapPin },
     { label: "Bureaux", value: "desk", icon: Briefcase },
     { label: "Immeubles", value: "building", icon: Landmark },
-    { label: "Villas", value: "villa", icon: House },
+    { label: "Magasins", value: "shop", icon: ShoppingCart },
+    { label: "Kiosques", value: "kiosk", icon: Store },
+    { label: "Chambres", value: "room", icon: Bed },
 ];
 
 export const PropertyFilter = () => {
@@ -35,7 +37,7 @@ export const PropertyFilter = () => {
             params.delete("type"); // Supprime le query param si "Tous" est sélectionné
         }
 
-        router.replace(`${pathname}?${params.toString()}`);
+        router.replace(`${pathname}?${params.toString()}`, { scroll: false });
     };
 
     return (

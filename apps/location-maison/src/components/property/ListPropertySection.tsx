@@ -16,7 +16,7 @@ import { AiOutlineEye } from 'react-icons/ai'
 import { useSearchParams } from 'next/navigation';
 import { useCurrentUser } from '@/hooks/use-current-user';
 import { routes } from '@/constantes/routes';
-import { Property, Apartment, Building, Desk, Home, Studio, Villa, Logement, TypeProperty } from '@/models/annonce';
+import { Property, Apartment, Building, Desk, Home, Studio, Villa, Logement, Shop, Kiosk, Room, TypeProperty } from '@/models/annonce';
 import { cn } from '@/lib/utils';
 import { capitalizeFirstLetter } from '@/lib/capitalizeFirstLetter';
 import { ChevronLeft, ChevronRight } from 'lucide-react'
@@ -44,7 +44,7 @@ export default function ListPropertySection() {
             type
         })
     }
-    const { data, isPending, isFetching, fetchNextPage } = useInfiniteQuery({
+    const { data, isPending, isFetching, fetchNextPage, error, isError } = useInfiniteQuery({
         queryKey: [queryKeys.properties, type, user],
         queryFn: fetchInfiniteProperties,
         initialPageParam: { limitPerPage: PROPERTY_ITEM_PER_PAGE, lastDoc: null },
@@ -70,12 +70,24 @@ export default function ListPropertySection() {
                 setTotalPage(total)
             })
     }, [user, type])
+    if (isError) {
+        console.log(error)
+    }
     if (isPending || isFetching) {
         return (
             <div className="px-5 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
                 {Array.from({ length: 8 }).map((_, index) => (
                     <SkeletonCard key={index} />
                 ))}
+            </div>
+        );
+    }
+    if (!data || data.pages[currentPage]?.properties?.length === 0) {
+        return (
+            <div className="flex flex-col items-center justify-center p-10 gap-3">
+                <Image src="/no-favorites.svg" width={250} height={250} alt="Aucun favori" />
+                <h2 className="text-xl font-semibold text-gray-700">Aucune propriété pour le moment</h2>
+                <p className="text-gray-500 text-center">Ajoutez des propriétés pour enrichir votre catalogue</p>
             </div>
         );
     }
@@ -124,23 +136,26 @@ export const CardPropertyCrud = ({ property }: { property: Property }) => {
     return (
         <Card
             className={cn(
-                'relative overflow-hidden rounded-lg shadow-md hover:shadow-lg transition-shadow duration-300',
-                'flex flex-col bg-white dark:bg-gray-900 dark:border-gray-700'
+                'relative overflow-hidden rounded-xl shadow-lg hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-1',
+                'flex flex-col bg-white dark:bg-gray-900 dark:border-gray-800',
+                'w-[330px] lg:w-[300px] h-[400px]'
             )}
         >
             {/* Image */}
-            <div className="relative h-48 w-full">
+            <div className="relative h-40 w-full rounded-t-xl overflow-hidden border-b">
                 <Image
-                    src={images[0]?.fileURL || '/fallback-image.jpg'} // Fallback si aucune image
+                    src={images[0]?.fileURL || '/fallback-image.jpg'}
                     alt={title}
                     layout="fill"
                     objectFit="cover"
-                    className="rounded-t-lg"
+                    className="rounded-t-xl transition-transform duration-300 hover:scale-105"
                 />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent"></div>
                 {/* Badge pour le statut */}
                 <span
                     className={cn(
-                        'absolute top-2 left-2 px-2 py-1 rounded-md text-xs font-semibold',
+                        'absolute top-3 left-3 px-3 py-1 rounded-full text-xs font-semibold uppercase',
+                        'bg-opacity-75 backdrop-blur-md',
                         statusColors.bg,
                         statusColors.text
                     )}
@@ -150,26 +165,24 @@ export const CardPropertyCrud = ({ property }: { property: Property }) => {
             </div>
 
             {/* Contenu principal */}
-            <div className="flex-1 flex flex-col justify-between p-4 gap-2">
+            <div className="flex-1 flex flex-col justify-between p-4 gap-3">
                 <div>
-                    <h3 className="text-lg font-bold text-gray-900 dark:text-white line-clamp-1">{title}</h3>
-                    <p className="text-sm text-gray-600 dark:text-gray-400 line-clamp-2">
-                        {street}, {city}, {province}
-                    </p>
+                    <h3 className="text-lg font-semibold text-gray-900 dark:text-white">{title}</h3>
+                    <p className="text-sm text-gray-600 dark:text-gray-400">{street}, {city}, {province}</p>
+                    <hr className="my-2 border-gray-200 dark:border-gray-700" />
                     <PropertyInformations property={property} />
                 </div>
 
                 {/* Footer */}
-                <div className="flex justify-between items-center mt-2">
+                <div className="flex justify-between items-center mt-3">
                     <span className="font-semibold text-lg text-gray-800 dark:text-gray-200">{price} FCFA</span>
-
                     <div className="flex gap-2">
-                        <Button variant="outline" size="icon" className="dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-700" asChild>
+                        <Button variant="ghost" size="icon" className="hover:bg-gray-200 dark:hover:bg-gray-700" asChild>
                             <Link href={routes.protected.properties + '/modify/' + property.id}>
                                 <FiEdit2 size={18} />
                             </Link>
                         </Button>
-                        <Button variant="outline" size="icon" className="dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-700" asChild>
+                        <Button variant="ghost" size="icon" className="hover:bg-gray-200 dark:hover:bg-gray-700" asChild>
                             <Link href={`${routes.protected.properties}/${property.id}`}>
                                 <AiOutlineEye size={18} />
                             </Link>
@@ -195,6 +208,12 @@ export const PropertyInformations = ({ property }: { property: Property }) => {
                 return <DetailsHome home={property as Home} />
             case 'Studio':
                 return <DetailsStudio studio={property as Studio} />
+            case 'Shop':
+                return <DetailsShop shop={property as Shop} />
+            case 'Kiosk':
+                return <DetailsKiosk kiosk={property as Kiosk} />
+            case 'Room':
+                return <DetailsRoom room={property as Room} />
             default:
                 return <DetailsVilla villa={property as Villa} />
         }
@@ -316,6 +335,31 @@ const DetailsHome = ({ home }: { home: Home }) => {
             </div>
         </div>
 
+    )
+}
+
+const DetailsShop = ({ shop }: { shop: Shop }) => {
+    return (
+        <div>
+            <span className='text-sm'>Type de boutique: {shop.shopType}</span>
+        </div>
+    )
+}
+
+const DetailsKiosk = ({ kiosk }: { kiosk: Kiosk }) => {
+    return (
+        <div>
+            <span className='text-sm'>Taille du kiosque: {kiosk.kioskSize} m²</span>
+        </div>
+    )
+}
+
+const DetailsRoom = ({ room }: { room: Room }) => {
+    return (
+        <div>
+            <span className='text-sm'>Type de chambre: {room.roomType}</span>
+            <span className='text-sm'>Nombre de lits: {room.nbrBeds}</span>
+        </div>
     )
 }
 
