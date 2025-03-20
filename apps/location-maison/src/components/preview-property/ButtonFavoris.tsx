@@ -78,15 +78,26 @@ export const ButtonFavoris: React.FC<ButtonFavorisProps> = ({ idProperty }) => {
   }, [user, idProperty]);
 
   return (
-    <Heart
-      className={clsx({
-        "text-red-500": !isFavorite,
-        "text-red-500 fill-red-500": isFavorite,
-        "cursor-pointer": !isLoading,
-        "cursor-not-allowed opacity-50": isLoading,
-      })}
-      size={30}
+    <button
+      className="relative flex items-center justify-center p-2 rounded-full transition-all duration-300 
+                 hover:bg-red-100 dark:hover:bg-red-900 group"
       onClick={isLoading ? undefined : toggleFavorite}
-    />
+      disabled={isLoading}
+    >
+      <Heart
+        className={clsx(
+          "transition-all duration-300 ease-in-out",
+          isFavorite
+            ? "text-red-500 fill-red-500 scale-110"
+            : "text-gray-400 group-hover:text-red-500"
+        )}
+        size={30}
+      />
+      {isLoading && (
+        <div className="absolute inset-0 flex items-center justify-center">
+          <span className="animate-spin h-5 w-5 border-t-2 border-red-500 border-solid rounded-full"></span>
+        </div>
+      )}
+    </button>
   );
 }
