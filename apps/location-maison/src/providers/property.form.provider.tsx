@@ -3,7 +3,7 @@ import { Form } from "@/components/ui/form"
 import { createContext, useContext, useState, useTransition } from "react"
 import { useForm } from "react-hook-form"
 import { zodResolver } from '@hookform/resolvers/zod'
-import { ApartmentSchema, BuildingSchema, DeskSchema, HomeSchema, StudioSchema, VillaSchema } from "@/models/schema"
+import { ApartmentSchema, BuildingSchema, DeskSchema, HomeSchema, StudioSchema, VillaSchema, KioskSchema, RoomSchema, ShopSchema } from "@/models/schema"
 import { Property, TypeProperty, Image } from "@/models/annonce"
 import { DirectorFactory } from "@/directors/factory.director"
 import { useToast } from "@/hooks/use-toast"
@@ -68,6 +68,12 @@ export const PropertyFormComponentProvider = ({ children, isUpdate }: { children
                 return 'Home' as TypeProperty
             case 'studio':
                 return 'Studio' as TypeProperty
+            case 'shop':
+                return 'Shop' as TypeProperty
+            case 'kiosk':
+                return 'Kiosk' as TypeProperty
+            case 'room':
+                return 'Room' as TypeProperty
             default:
                 return 'Villa' as TypeProperty
         }
@@ -96,6 +102,12 @@ export const PropertyFormComponentProvider = ({ children, isUpdate }: { children
                 return HomeSchema
             case 'Studio':
                 return StudioSchema
+            case 'Shop':
+                return ShopSchema
+            case 'Kiosk':
+                return KioskSchema
+            case 'Room':
+                return RoomSchema
             default:
                 return VillaSchema
         }

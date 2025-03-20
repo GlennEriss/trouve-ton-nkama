@@ -338,27 +338,23 @@ const DetailsHome = ({ home }: { home: Home }) => {
     )
 }
 
-const DetailsShop = ({ shop }: { shop: Shop }) => {
-    return (
-        <div>
-            <span className='text-sm'>Type de boutique: {shop.shopType}</span>
-        </div>
-    )
-}
+const DetailsShop = ({ shop }: { shop: Shop }) => (
+    <div className="grid grid-cols-2 gap-4">
+        <DetailsItem keyName='room' value={shop.nbrRooms} />
+        <DetailsItem keyName='toilet' value={shop.nbrToilet} />
+    </div>
+);
 
-const DetailsKiosk = ({ kiosk }: { kiosk: Kiosk }) => {
-    return (
-        <div>
-            <span className='text-sm'>Taille du kiosque: {kiosk.kioskSize} m²</span>
-        </div>
-    )
-}
+const DetailsKiosk = ({ kiosk }: { kiosk: Kiosk }) => (
+    <div className="text-gray-500 italic">
+        
+    </div>
+);
 
 const DetailsRoom = ({ room }: { room: Room }) => {
     return (
         <div>
             <span className='text-sm'>Type de chambre: {room.roomType}</span>
-            <span className='text-sm'>Nombre de lits: {room.nbrBeds}</span>
         </div>
     )
 }

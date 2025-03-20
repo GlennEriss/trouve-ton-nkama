@@ -107,7 +107,18 @@ export const BuildingSchema = PropertySchema.extend({
   nbrFloors: z.number().min(0, "Le nombre d'étages doit être un nombre positif"),
   hasParking: z.number().min(0, "Le nombre de places de parking doit être un nombre positif"),
 });
+export const KioskSchema = PropertySchema.extend({
+  // Pas d'attributs supplémentaires pour un kiosque
+});
 
+export const RoomSchema = PropertySchema.extend({
+  roomType: z.string().min(1, "Le type de chambre est obligatoire"),
+});
+
+export const ShopSchema = PropertySchema.extend({
+  nbrRooms: z.number().min(0, "Le nombre de pièces doit être un nombre positif"),
+  nbrToilet: z.number().min(0, "Le nombre de toilettes doit être un nombre positif"),
+});
 //Steps schemas
 export const Step1Schema = z.object({
   images: z.array(z.any()).nonempty("Au moins une image est requise"),
@@ -230,3 +241,6 @@ export type Step3SchemaType = z.infer<typeof Step3Schema>;
 export type FormRegisterSchemaType = z.infer<typeof FormRegisterSchema>;
 export type FormLoginSchemaType = z.infer<typeof FormLoginSchema>
 export type FormUserProfilSchemaType = z.infer<typeof FormUserProfilSchema>;
+export type KioskSchemaType = z.infer<typeof KioskSchema>;
+export type RoomSchemaType = z.infer<typeof RoomSchema>;
+export type ShopSchemaType = z.infer<typeof ShopSchema>;

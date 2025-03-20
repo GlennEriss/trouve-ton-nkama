@@ -71,14 +71,14 @@ export type Villa = Home & {
 }
 
 export type Shop = Property & {
-    shopType: string;
+    nbrRooms: number;
+    nbrToilet: number;
 }
 
 export type Kiosk = Property & {
-    kioskSize: number;
+    
 }
 
 export type Room = Property & {
     roomType: string;
-    nbrBeds: number;
 }
