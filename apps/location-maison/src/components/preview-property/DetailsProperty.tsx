@@ -119,13 +119,13 @@ const DetailsShop = ({ shop }: { shop: Shop }) => (
 );
 
 const DetailsKiosk = ({ kiosk }: { kiosk: Kiosk }) => (
-    <div className="text-gray-500 italic">
-        Aucune information supplémentaire pour ce kiosque.
+    <div className="text-gray-500">
+        Type: {kiosk.kioskType}
     </div>
 );
 
 const DetailsRoom = ({ room }: { room: Room }) => (
-    <div className="grid grid-cols-2 gap-4">
-        <DetailsItem keyName='roomType' value={room.roomType} />
+    <div className="text-gray-500">
+        {room.roomType}
     </div>
 );
