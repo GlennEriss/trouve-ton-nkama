@@ -30,7 +30,7 @@ export class RoomFormBuilder extends PropertyFormBuilder {
                 name: "roomType",
                 label: "Type de chambre",
                 description: "Spécifiez le type de chambre (ex: Chambre américaine).",
-                component: (field: any) => <TextComponent {...field} />,
+                component: (field: any) => <TextComponent field={field} />,
                 step: 2
             }
         );

@@ -37,7 +37,9 @@ export default function PropertyStatistics() {
                     })
                 );
 
-                const totalProperties = updatedStats.reduce((sum, stat) => sum + stat.value, 0);
+                const totalProperties = updatedStats
+                    .filter(stat => stat.type !== "Property") // Exclure "Property" du calcul total
+                    .reduce((sum, stat) => sum + stat.value, 0);
                 const finalStats = updatedStats.map((stat) =>
                     stat.type === "Property" ? { ...stat, value: totalProperties } : stat
                 );

@@ -346,8 +346,8 @@ const DetailsShop = ({ shop }: { shop: Shop }) => (
 );
 
 const DetailsKiosk = ({ kiosk }: { kiosk: Kiosk }) => (
-    <div className="text-gray-500 italic">
-        
+    <div className="text-sm">
+        Type de Kiosque: {kiosk.kioskType}
     </div>
 );
 

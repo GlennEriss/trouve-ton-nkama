@@ -76,7 +76,7 @@ export type Shop = Property & {
 }
 
 export type Kiosk = Property & {
-    
+    kioskType: string;
 }
 
 export type Room = Property & {

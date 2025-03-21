@@ -43,7 +43,11 @@ export const steps = [
     { label: 'Third', description: 'Select Rooms' },
 ]
 
-export const PropertyFormComponentProvider = ({ children, isUpdate }: { children: React.ReactNode, isUpdate?: boolean }) => {
+export const PropertyFormComponentProvider = ({ children, isUpdate, propertyToUpdated }: {
+    children: React.ReactNode,
+    isUpdate?: boolean,
+    propertyToUpdated?: Partial<Property>
+}) => {
     //User
     const { user } = useCurrentUser()
     //Router
@@ -78,8 +82,7 @@ export const PropertyFormComponentProvider = ({ children, isUpdate }: { children
                 return 'Villa' as TypeProperty
         }
     }
-    const typeProperty = getTypeProperty()
-
+    const typeProperty = propertyToUpdated ? propertyToUpdated.typeProperty as TypeProperty : getTypeProperty()
     //Toast
     const { toast } = useToast()
 
@@ -177,8 +180,8 @@ export const PropertyFormComponentProvider = ({ children, isUpdate }: { children
         mutation.mutate(propertyMutate)
     }
     React.useEffect(() => {
-        if (id) {
-            getPropertyById(id).then((fetchedProperty) => {
+        if (propertyToUpdated) {
+            /* getPropertyById(id).then((fetchedProperty) => {
                 // Set form values dynamically
                 if (fetchedProperty) {
                     const { createdAt, updatedAt, images, ...othersData } = fetchedProperty
@@ -189,9 +192,18 @@ export const PropertyFormComponentProvider = ({ children, isUpdate }: { children
                     setImagesAlreadyUplaod(images)
                     form.setValue('images', imgList)
                 }
+            }); */
+            const { images, ...othersData } = propertyToUpdated
+            Object.entries(othersData).forEach(([key, value]) => {
+                form.setValue(key as any, value);
             });
+            if (images) {
+                const imgList = images.map(img => img.fileURL)
+                setImagesAlreadyUplaod(images)
+                form.setValue('images', imgList)
+            }
         }
-    }, [id])
+    }, [propertyToUpdated])
     return (
         <PropertyFormComponentContext.Provider value={{
             activeStep,

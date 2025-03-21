@@ -108,7 +108,7 @@ export const BuildingSchema = PropertySchema.extend({
   hasParking: z.number().min(0, "Le nombre de places de parking doit être un nombre positif"),
 });
 export const KioskSchema = PropertySchema.extend({
-  // Pas d'attributs supplémentaires pour un kiosque
+  kioskType: z.string().min(1, "Le type de kiosque est obligatoire"),
 });
 
 export const RoomSchema = PropertySchema.extend({
