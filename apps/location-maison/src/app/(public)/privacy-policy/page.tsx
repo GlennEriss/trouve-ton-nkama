@@ -3,6 +3,7 @@
 import React from "react";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
+import { routes } from "@/constantes/routes";
 
 export default function PrivacyPolicy() {
   return (
@@ -38,6 +39,12 @@ export default function PrivacyPolicy() {
             <li>Photos et descriptions des annonces postées</li>
             <li>Données de connexion (adresse IP, appareil utilisé, navigateur)</li>
           </ul>
+          <p className="text-gray-700 text-md leading-relaxed mt-2">
+            Pour exercer ces droits, vous pouvez également consulter notre page dédiée à la{" "}
+            <a href={routes.public.data_deletion} className="text-blue-600 underline">
+              suppression des données
+            </a>.
+          </p>
 
           <h2 className="text-xl font-semibold text-gray-800 mt-6">2. Utilisation des données</h2>
           <p className="text-gray-700 text-md leading-relaxed mt-2">
