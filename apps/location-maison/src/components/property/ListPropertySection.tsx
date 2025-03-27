@@ -258,14 +258,29 @@ const items: Record<string, { label: string, icon: IconType }> = {
         label: 'Garages',
         icon: GiHomeGarage
     },
+    parking: {
+        label: 'Parking',
+        icon: GiHomeGarage
+    },
     pool: {
         label: 'Piscines',
         icon: FaSwimmingPool
     }
 }
-const DetailsItem = ({ keyName, value }: { keyName: string, value: number }) => {
+const DetailsItem = ({ keyName, value }: { keyName: string, value: any }) => {
     const item = items[keyName]
-    return (
+    return keyName === 'parking' ? (
+        <React.Fragment>
+            {
+                value && (
+                    <div className="flex gap-1">
+                        <item.icon size={20} />
+                        <span className='text-sm mt-[0.9]'>{item.label}</span>
+                    </div>
+                )
+            }
+        </React.Fragment>
+    ) : (
         <div className="flex gap-1 items-center">
             <item.icon size={20} />
             <span className='text-sm'>{value}</span>
@@ -312,6 +327,7 @@ const DetailsBuilding = ({ building }: { building: Building }) => {
         <div className='grid grid-cols-2 gap-2'>
             <DetailsItem keyName='floor' value={building.nbrFloors} />
             <DetailsItem keyName='apartment' value={building.nbrApartments} />
+            <DetailsItem keyName='parking' value={building.hasParking} />
         </div>
     )
 }

@@ -4,6 +4,7 @@
 
 import { NumberComponent } from "@/components/stepper/step.shared.component";
 import { PropertyFormBuilder } from "./property.form.builder";
+import { ChoiceComponent } from "@/components/stepper/step2.components";
 
 /**
  * A concrete builder class responsible for constructing forms related to buildings.
@@ -14,7 +15,7 @@ import { PropertyFormBuilder } from "./property.form.builder";
  * @extends LogementFormBuilder
  */
 export class BuildingFormBuilder extends PropertyFormBuilder {
-    
+
     /**
      * Private constructor that initializes building-specific form elements for step 2.
      * The form fields include:
@@ -43,11 +44,18 @@ export class BuildingFormBuilder extends PropertyFormBuilder {
                 component: (field: any) => <NumberComponent field={field} />,
                 step: 2
             },
-            {
+            /* {
                 name: "hasParking",
                 label: "Parking",
                 description: "Indiquez s'il y a un parking disponible.",
                 component: (field: any) => <NumberComponent field={field} />,
+                step: 2
+            }, */
+            {
+                name: "hasParking",
+                label: "Parking",
+                description: "L'immeuble possède t'il un parking ?",
+                component: (field: any) => <ChoiceComponent field={field} data={[{label: 'Oui', value: true}, {label: 'Non', value: false}]} />,
                 step: 2
             },
         )
