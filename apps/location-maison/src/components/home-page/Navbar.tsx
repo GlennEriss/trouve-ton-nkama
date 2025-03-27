@@ -7,16 +7,15 @@ import { Clover, Search, LogIn, User, Plus } from "lucide-react";
 import { BiSearch } from "react-icons/bi";
 import { useAlgoliaContext } from "@/providers/AlgoliaContext";
 import { FilterModal } from "./FilterModal";
-import { useCurrentUser } from "@/hooks/use-current-user";
 import { useWindowSize } from "@/hooks/useSize";
 import MenuProfil from "../navbar/MenuProfil";
 import { useHits, useRange, useRefinementList } from "react-instantsearch";
 import { routes } from "@/constantes/routes";
 import { useRouter } from "next/navigation";
+import { Session } from "next-auth";
 
-export default function Navbar() {
+export default function Navbar({session}: {session: Session|null}) {
   const router = useRouter();
-  const { user } = useCurrentUser();
   const { width } = useWindowSize();
   const [theme, setTheme] = useState("light");
   const [showSearch, setShowSearch] = useState(false);
@@ -132,7 +131,7 @@ export default function Navbar() {
           <Search className="w-6 h-6 text-black dark:text-white" />
         </button>
         <FilterModal applyRefinements={() => { }} handleSearch={handleSearch} />
-        {user ? (
+        {session ? (
           <div className="flex items-center">
             <a href={routes.protected.add_property}>
               <button className="w-10 h-10 flex items-center justify-center bg-blue-500 text-white rounded-full">
@@ -211,7 +210,7 @@ export default function Navbar() {
         </a>
         {/* Boutons */}
         {
-          user ? (
+          session ? (
             <MenuProfil />
           ) : (
             <div className="flex items-center gap-2 md:gap-4 ml-auto mr-1 md:ml-8">
