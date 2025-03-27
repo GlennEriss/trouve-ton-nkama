@@ -6,7 +6,7 @@ import { IconType } from 'react-icons/lib'
 import { FaBath, FaRegBuilding, FaSwimmingPool, FaToilet, FaStore, FaWarehouse } from 'react-icons/fa'
 import { BsBuilding } from 'react-icons/bs'
 import { RiBookmarkLine } from 'react-icons/ri'
-import { MdStorefront } from "react-icons/md";
+import { GiHomeGarage } from 'react-icons/gi'
 
 const items: Record<string, { label: string, icon: IconType }> = {
     room: { label: 'Salles', icon: RiBookmarkLine },
@@ -16,7 +16,8 @@ const items: Record<string, { label: string, icon: IconType }> = {
     toilet: { label: 'Toilettes', icon: FaToilet },
     floor: { label: 'Étages', icon: FaRegBuilding },
     apartment: { label: 'Appartements', icon: BsBuilding },
-    garage: { label: 'Garages', icon: BsBuilding },
+    garage: { label: 'Garages', icon: GiHomeGarage },
+    parking: { label: 'Parking', icon: GiHomeGarage },
     pool: { label: 'Piscines', icon: FaSwimmingPool },
     shopType: { label: 'Type de magasin', icon: FaStore },
     kioskSize: { label: 'Taille du kiosque', icon: FaWarehouse },
@@ -46,7 +47,7 @@ export default function DetailsProperty({ property }: { property: Property }) {
     )
 }
 
-const DetailsItem = ({ keyName, value }: { keyName: string, value: number | string }) => {
+const DetailsItem = ({ keyName, value }: { keyName: string, value: number | string | boolean }) => {
     const item = items[keyName];
     return (
         <div className="flex items-center gap-2 my-2 bg-gray-100 p-2 rounded-md shadow-sm">
@@ -59,7 +60,7 @@ const DetailsItem = ({ keyName, value }: { keyName: string, value: number | stri
 
 const DetailsLogement = ({ logement }: { logement: Logement }) => {
     return (
-        <div className='grid grid-cols-2 gap-4'>
+        <div className='flex flex-wrap gap-4'>
             <DetailsItem keyName='bedroom' value={logement.nbrRooms} />
             <DetailsItem keyName='kitchen' value={logement.nbrChickens} />
             <DetailsItem keyName='bathroom' value={logement.nbrBathrooms} />
@@ -73,14 +74,15 @@ const DetailsApartment = ({ apartment }: { apartment: Apartment }) => (
 );
 
 const DetailsBuilding = ({ building }: { building: Building }) => (
-    <div className='grid grid-cols-2 gap-4'>
+    <div className='flex flex-wrap gap-4'>
         <DetailsItem keyName='floor' value={building.nbrFloors} />
+        <DetailsItem keyName='parking' value={building.hasParking} />
         <DetailsItem keyName='apartment' value={building.nbrApartments} />
     </div>
 );
 
 const DetailsDesk = ({ desk }: { desk: Desk }) => (
-    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+    <div className="flex flex-wrap md:grid-cols-3 lg:grid-cols-4 gap-4">
         <DetailsItem keyName='toilet' value={desk.nbrToilets} />
         <DetailsItem keyName='room' value={desk.nbrRooms} />
     </div>
@@ -89,7 +91,7 @@ const DetailsDesk = ({ desk }: { desk: Desk }) => (
 const DetailsHome = ({ home }: { home: Home }) => (
     <div>
         <DetailsLogement logement={home} />
-        <div className="grid grid-cols-2 gap-4">
+        <div className="flex flex-wrap gap-4">
             <DetailsItem keyName='floor' value={home.nbrFloors} />
             <DetailsItem keyName='garage' value={home.nbrGarages} />
         </div>
@@ -103,7 +105,7 @@ const DetailsStudio = ({ studio }: { studio: Studio }) => (
 const DetailsVilla = ({ villa }: { villa: Villa }) => (
     <div>
         <DetailsLogement logement={villa} />
-        <div className="grid grid-cols-2 gap-4">
+        <div className="flex flex-wrap gap-4">
             <DetailsItem keyName='floor' value={villa.nbrFloors} />
             <DetailsItem keyName='pool' value={villa.nbrPiscine} />
             <DetailsItem keyName='garage' value={villa.nbrGarages} />
@@ -112,7 +114,7 @@ const DetailsVilla = ({ villa }: { villa: Villa }) => (
 );
 
 const DetailsShop = ({ shop }: { shop: Shop }) => (
-    <div className="grid grid-cols-2 gap-4">
+    <div className="flex flex-wrap gap-4">
         <DetailsItem keyName='room' value={shop.nbrRooms} />
         <DetailsItem keyName='toilet' value={shop.nbrToilet} />
     </div>
