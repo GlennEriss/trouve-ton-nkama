@@ -27,7 +27,7 @@ export class RoomBuilder extends PropertyBuilder {
         this.property = {
             ...this.property,
             typeProperty: 'Room',
-            roomType: ''
+            roomType: 'Chambre américaine'
         } as Room;
     }
 

@@ -27,7 +27,7 @@ export class KioskBuilder extends PropertyBuilder {
         this.property = {
             ...this.property,
             typeProperty: 'Kiosk',
-            kioskType: ''
+            kioskType: 'Alimentaire'
         } as Kiosk;
     }
 
