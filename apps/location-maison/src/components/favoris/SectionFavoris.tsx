@@ -109,7 +109,7 @@ export default function SectionFavoris() {
                                     </p>
                                     {property.street && (
                                         <p className="text-sm text-gray-600 dark:text-gray-400 truncate">
-                                            {property.street}
+                                            {property.street} {property.additionnalInformation}
                                         </p>
                                     )}
                                     <p className="text-sm text-gray-700 dark:text-gray-300">
