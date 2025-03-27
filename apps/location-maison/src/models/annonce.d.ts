@@ -48,7 +48,7 @@ export type Apartment = Logement & {
 export type Building = Property & {
     nbrApartments: number,
     nbrFloors: number,
-    hasParking: number
+    hasParking: boolean
 }
 
 export type Desk = Property & {

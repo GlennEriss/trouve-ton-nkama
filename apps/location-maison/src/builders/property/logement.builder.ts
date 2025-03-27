@@ -28,6 +28,7 @@ export abstract class LogementBuilder extends PropertyBuilder {
         this.property = {
             ...this.property,
             typeProperty: 'Logement',
+            nbrRooms: 0,
             nbrChickens: 0,
             nbrBathrooms: 0,
             nbrToilets: 0
