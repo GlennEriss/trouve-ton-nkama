@@ -103,7 +103,7 @@ export const DeskSchema = PropertySchema.extend({
   nbrRooms: z.number().min(0, "Le nombre de salles doit être un nombre positif"),
 });
 export const BuildingSchema = PropertySchema.extend({
-  nbrAppartement: z.number().min(0, "Le nombre d'appartements doit être un nombre positif"),
+  nbrApartments: z.number().min(0, "Le nombre d'appartements doit être un nombre positif"),
   nbrFloors: z.number().min(0, "Le nombre d'étages doit être un nombre positif"),
   hasParking: z.number().min(0, "Le nombre de places de parking doit être un nombre positif"),
 });

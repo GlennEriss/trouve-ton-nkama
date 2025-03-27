@@ -16,6 +16,7 @@ import useLastpath from "@/hooks/use-lastpath"
 import React from "react"
 import queryKeys from "@/constantes/react-query-keys"
 import { routes } from "@/constantes/routes"
+import { updateOrCreateSuggestion } from "@/db/suggestion.db"
 
 type PropertyFormComponent = {
     form: any,
@@ -127,6 +128,9 @@ export const PropertyFormComponentProvider = ({ children, isUpdate, propertyToUp
     const mutation = useMutation({
         mutationKey: [queryKeys.properties],
         mutationFn: async (data: Property) => {
+            const province = data.province
+            const city = data.city
+            const street = data.street
             if (id) {
                 return await updateProperty(id, data)
             } else {
@@ -137,7 +141,7 @@ export const PropertyFormComponentProvider = ({ children, isUpdate, propertyToUp
 
                 }
             }
-
+            await updateOrCreateSuggestion({ province, city, street });
             //return data
         },
         onSuccess: () => {
