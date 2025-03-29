@@ -6,7 +6,7 @@ export class AuthError extends Error {
 	}
 }
 
-/* const NextAuth = () => ({
+const NextAuth = () => ({
 	auth: jest.fn(),
 	signIn: jest.fn(),
 	signOut: jest.fn(),
@@ -17,4 +17,4 @@ export class AuthError extends Error {
 	AuthError: AuthError,
 });
 
-export default NextAuth; */
+export default NextAuth; 
