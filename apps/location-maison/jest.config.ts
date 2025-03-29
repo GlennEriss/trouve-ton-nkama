@@ -7,9 +7,9 @@ const config: Config = {
   coverageProvider: "v8",
   preset: 'ts-jest',
   testEnvironment: 'jsdom',
-  transform: {
+  /* transform: {
     '^.+\\.tsx?$': 'ts-jest',
-  },
+  }, */
   moduleNameMapper: {
     '^@/(.*)$': '<rootDir>/src/$1',
     '^next-auth$': '<rootDir>/__tests__/mocks/next-auth.ts',
