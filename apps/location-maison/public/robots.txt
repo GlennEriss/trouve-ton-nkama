@@ -1,0 +1,9 @@
+# *
+User-agent: *
+Allow: /
+
+# Host
+Host: https://location-maison-gabon.vercel.app
+
+# Sitemaps
+Sitemap: https://location-maison-gabon.vercel.app/sitemap.xml
