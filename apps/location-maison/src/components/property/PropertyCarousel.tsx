@@ -45,7 +45,7 @@ interface CarouselProps {
 // Flèches personnalisées
 const CustomPrevArrow = ({ onClick }: { onClick?: () => void }) => (
   <button
-    className="absolute left-0 top-1/2 transform -translate-y-1/2 z-10 bg-blue-500 text-white p-2 rounded-full shadow-lg hover:bg-blue-600"
+    className="absolute left-0 top-1/2 transform -translate-y-1/2 z-10 bg-[#146B67] text-white p-2 rounded-full shadow-lg hover:bg-[#146B67]"
     onClick={onClick}
   >
     <FaArrowLeft className="w-5 h-5" />
@@ -54,7 +54,7 @@ const CustomPrevArrow = ({ onClick }: { onClick?: () => void }) => (
 
 const CustomNextArrow = ({ onClick }: { onClick?: () => void }) => (
   <button
-    className="absolute right-0 top-1/2 transform -translate-y-1/2 z-10 bg-blue-500 text-white p-2 rounded-full shadow-lg hover:bg-blue-600"
+    className="absolute right-0 top-1/2 transform -translate-y-1/2 z-10 bg-[#146B67] text-white p-2 rounded-full shadow-lg hover:bg-[#146B67]"
     onClick={onClick}
   >
     <FaArrowRight className="w-5 h-5" />
@@ -144,7 +144,7 @@ const PropertyCarousel: React.FC<CarouselProps> = ({ properties }) => {
                 <h3 className="text-lg font-semibold text-gray-900 dark:text-white line-clamp-2">
                   {property.title || "Propriété"}
                 </h3>
-                <p className="text-base font-bold text-blue-700 dark:text-blue-300">
+                <p className="text-base font-bold text-[#146B67] dark:text-blue-300">
                   {property.status === "FOR_RENT" ? "À louer" : "À vendre"} - {property.price.toLocaleString()} F CFA
                 </p>
                 <p className="text-sm text-gray-600 dark:text-gray-400 truncate">
@@ -255,7 +255,7 @@ const PropertyCarousel: React.FC<CarouselProps> = ({ properties }) => {
       <div className="mt-6 flex justify-center">
         <button
           onClick={() => router.push("/search")}
-          className="px-6 py-2 rounded-full bg-blue-600 hover:bg-blue-700 text-white font-semibold transition duration-300 shadow-md"
+          className="px-6 py-2 rounded-full bg-gradient-to-r from-[#146B67] via-[#1FA89B] to-[#146B67] hover:brightness-110 text-white font-semibold transition duration-300 shadow-md"
         >
           Voir plus
         </button>
