@@ -33,7 +33,7 @@ export default async function page({ params }: { params: Promise<{ id: string }>
   }
 
   return (
-    <>
+    <div className='px-20'>
       <Head>
         <script
           type="application/ld+json"
@@ -41,6 +41,6 @@ export default async function page({ params }: { params: Promise<{ id: string }>
         />
       </Head>
       <PreviewProperty property={property} />
-    </>
+    </div>
   )
 }
