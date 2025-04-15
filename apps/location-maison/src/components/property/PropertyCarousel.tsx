@@ -110,13 +110,13 @@ const PropertyCarousel: React.FC<CarouselProps> = ({ properties }) => {
       },
     ],
   };
-  if(isError){
+  /* if(isError){
     return (
       <div>
         {error.message}
       </div>
     )
-  }
+  } */
   if(!data){
     return null
   }
