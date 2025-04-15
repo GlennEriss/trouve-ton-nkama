@@ -7,8 +7,7 @@
     "build": "next build",
     "start": "next start",
     "test": "jest",
-    "test:watch": "jest --watch",
-    "postbuild": "next-sitemap"
+    "test:watch": "jest --watch"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.9.1",
@@ -41,7 +40,6 @@
     "lucide-react": "^0.468.0",
     "next": "15.1.0",
     "next-auth": "^5.0.0-beta.25",
-    "next-sitemap": "^4.2.3",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
     "react-dropzone": "^14.3.5",
