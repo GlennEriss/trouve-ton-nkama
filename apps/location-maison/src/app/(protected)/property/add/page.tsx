@@ -6,7 +6,7 @@ import React from 'react'
 
 const buttonList = [
   {
-    label: TypeProperty.House,
+    label: TypeProperty.Home,
     link: routes.protected.add_home,
     icon: <Home size={24} />
   },
@@ -31,7 +31,7 @@ const buttonList = [
     icon: <Building2 size={24} />
   },
   {
-    label: TypeProperty.Office,
+    label: TypeProperty.Desk,
     link: routes.protected.add_desk,
     icon: <Briefcase size={24} />
   },

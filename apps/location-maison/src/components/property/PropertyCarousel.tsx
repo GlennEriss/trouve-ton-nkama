@@ -4,16 +4,21 @@ import React from "react";
 import Slider from "react-slick";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-import { FaArrowLeft, FaArrowRight } from "react-icons/fa";
+import { FaArrowLeft, FaArrowRight, FaToilet, FaCar } from "react-icons/fa";
 import { IoMdBed } from "react-icons/io";
-import { FaToilet } from "react-icons/fa";
-import { MdOutlineSquareFoot } from "react-icons/md";
+import { MdOutlineSquareFoot, MdOutlineBathtub, MdPool } from "react-icons/md";
+import { GiStairs } from "react-icons/gi";
+import { PiBuildings } from "react-icons/pi";
 import { TypeProperty } from "@/lib/utils";
 import "slick-carousel/slick/slick.css";
 import "slick-carousel/slick/slick-theme.css";
+import { getProperties } from "@/db/property.db";
+import queryKeys from "@/constantes/react-query-keys";
+import { PROPERTY_ITEM_PER_PAGE_CAROUSEL } from "@/constantes/item-per-page";
+import { useInfiniteQuery } from "@tanstack/react-query";
 
 interface Property {
-  id: number|string;
+  id: number | string;
   title: string;
   images: { fileURL: string }[];
   city: string;
@@ -22,10 +27,15 @@ interface Property {
   street?: string;
   status: string;
   price: string;
-  nbrRooms: number;
-  nbrToilets: number;
+  nbrRooms?: number;
+  nbrToilets?: number;
+  nbrBathrooms?: number;
+  nbrGarages?: number;
+  nbrFloors?: number;
+  nbrPiscine?: number;
   area: number;
   typeProperty: string;
+  description: string; // Ajout de la description
 }
 
 interface CarouselProps {
@@ -53,8 +63,24 @@ const CustomNextArrow = ({ onClick }: { onClick?: () => void }) => (
 
 const PropertyCarousel: React.FC<CarouselProps> = ({ properties }) => {
   const router = useRouter();
-
-  const handleCardClick = (id: number|string) => {
+  const fetchInfiniteProperties = async ({ pageParam }: { pageParam: any }) => {
+    const { limitPerPage, lastDoc } = pageParam;
+    return getProperties({
+      limitPerPage,
+      lastDoc,
+    })
+  }
+  const { data, isPending, isFetching, fetchNextPage, error, isError } = useInfiniteQuery({
+    queryKey: [queryKeys.propertie_carousel],
+    queryFn: fetchInfiniteProperties,
+    initialPageParam: { limitPerPage: PROPERTY_ITEM_PER_PAGE_CAROUSEL, lastDoc: null },
+    getNextPageParam: (lastPage, allPages, pageParam) => {
+      const { limitPerPage } = pageParam;
+      const lastDoc = allPages[allPages.length - 1].lastDoc;
+      return { limitPerPage, lastDoc };
+    },
+  })
+  const handleCardClick = (id: number | string) => {
     router.push(`/houseDetails/${id}`);
   };
 
@@ -63,7 +89,7 @@ const PropertyCarousel: React.FC<CarouselProps> = ({ properties }) => {
     dots: true,
     infinite: true,
     speed: 500,
-    slidesToShow: 5,
+    slidesToShow: 4,
     slidesToScroll: 1,
     prevArrow: <CustomPrevArrow />,
     nextArrow: <CustomNextArrow />,
@@ -84,14 +110,23 @@ const PropertyCarousel: React.FC<CarouselProps> = ({ properties }) => {
       },
     ],
   };
-
+  /* if(isError){
+    return (
+      <div>
+        {error.message}
+      </div>
+    )
+  } */
+  if(!data){
+    return null
+  }
   return (
     <div className="container mx-auto px-4 py-8 relative">
       <Slider {...settings}>
-        {properties.map((property) => (
+        {data.pages[0]?.properties.map((property) => (
           <div key={property.id} className="p-2 rounded-lg">
             <div
-              onClick={() => handleCardClick(property.id)}
+              onClick={() => handleCardClick(property.id ?? '')}
               className="relative cursor-pointer rounded-lg shadow-lg overflow-hidden transition-transform hover:scale-105 bg-white dark:bg-gray-800 hover:shadow-2xl flex flex-col"
               style={{ height: "380px" }}
             >
@@ -105,43 +140,108 @@ const PropertyCarousel: React.FC<CarouselProps> = ({ properties }) => {
                 />
               </div>
 
-              {/* Contenu de la carte */}
-              <div className="p-4 bg-gradient-to-b from-white to-gray-100 dark:from-gray-800 dark:to-gray-900 flex flex-col justify-between flex-grow">
-                <div>
-                  <h3 className="text-md font-semibold text-gray-800 dark:text-gray-100 line-clamp-2 h-12">
-                    {property.title || "Propriété"}
-                  </h3>
-                  <p className="text-sm text-gray-600 dark:text-gray-400 truncate">
-                    {property.city}, {property.province}, {property.country}
+              <div className="mb-3 space-y-1 px-4 pt-2">
+                <h3 className="text-lg font-semibold text-gray-900 dark:text-white line-clamp-2">
+                  {property.title || "Propriété"}
+                </h3>
+                <p className="text-base font-bold text-blue-700 dark:text-blue-300">
+                  {property.status === "FOR_RENT" ? "À louer" : "À vendre"} - {property.price.toLocaleString()} F CFA
+                </p>
+                <p className="text-sm text-gray-600 dark:text-gray-400 truncate">
+                  {property.city}, {property.province}, {property.country}
+                </p>
+                {property.street && (
+                  <p className="text-sm text-gray-600 dark:text-gray-400 truncate italic">
+                    {property.street}
                   </p>
-                  {property.street && (
-                    <p className="text-sm text-gray-600 dark:text-gray-400 truncate">
-                      {property.street}
-                    </p>
-                  )}
-                  <p className="text-sm text-gray-700 dark:text-gray-300">
-                    {property.status === "FOR_RENT" ? "À louer" : "À vendre"} -{" "}
-                    {property.price} F CFA
-                  </p>
-                </div>
-
-                {/* Section d'icônes et chiffres */}
-                <div className="flex justify-between text-gray-600 dark:text-gray-400">
-                  <div className="flex items-center space-x-1">
-                    <IoMdBed className="w-5 h-5" />
-                    <span className="text-sm">{property.nbrRooms}</span>
-                  </div>
-                  <div className="flex items-center space-x-1">
-                    <FaToilet className="w-5 h-5" />
-                    <span className="text-sm">{property.nbrToilets}</span>
-                  </div>
-                  <div className="flex items-center space-x-1">
-                    <MdOutlineSquareFoot className="w-5 h-5" />
-                    <span className="text-sm">{property.area} m²</span>
-                  </div>
-                </div>
+                )}
               </div>
 
+              {/* Section d'icônes et chiffres */}
+              <div className="flex flex-wrap gap-x-4 gap-y-1 px-4 pb-2 text-gray-600 dark:text-gray-400 text-sm">
+                {property.area > 0 && (
+                  <div className="flex items-center gap-1">
+                    <MdOutlineSquareFoot className="w-4 h-4" />
+                    <span>{property.area} m²</span>
+                  </div>
+                )}
+
+                {(property.typeProperty === "Home" ||
+                  property.typeProperty === "Villa" ||
+                  property.typeProperty === "Apartment" ||
+                  property.typeProperty === "Studio" ||
+                  property.typeProperty === "Logement" ||
+                  property.typeProperty === "Desk" ||
+                  property.typeProperty === "Shop") && (
+                  <>
+                    {"nbrRooms" in property && (property as any).nbrRooms > 0 && (
+                      <div className="flex items-center gap-1">
+                        <IoMdBed className="w-4 h-4" />
+                        <span>{(property as any).nbrRooms}</span>
+                      </div>
+                    )}
+                    {"nbrToilets" in property && (property as any).nbrToilets > 0 && (
+                      <div className="flex items-center gap-1">
+                        <FaToilet className="w-4 h-4" />
+                        <span>{(property as any).nbrToilets}</span>
+                      </div>
+                    )}
+                    {"nbrBathrooms" in property && (property as any).nbrBathrooms > 0 && (
+                      <div className="flex items-center gap-1">
+                        <MdOutlineBathtub className="w-4 h-4" />
+                        <span>{(property as any).nbrBathrooms} sdb</span>
+                      </div>
+                    )}
+                  </>
+                )}
+
+                {property.typeProperty === "Home" && "nbrFloors" in property && (property as any).nbrFloors > 0 && (
+                  <div className="flex items-center gap-1">
+                    <GiStairs className="w-4 h-4" />
+                    <span>Étages : {(property as any).nbrFloors}</span>
+                  </div>
+                )}
+
+                {property.typeProperty === "Villa" && (
+                  <>
+                    {"nbrFloors" in property && (property as any).nbrFloors > 0 && (
+                      <div className="flex items-center gap-1">
+                        <GiStairs className="w-4 h-4" />
+                        <span>Étages : {(property as any).nbrFloors}</span>
+                      </div>
+                    )}
+                    {"nbrGarages" in property && (property as any).nbrGarages > 0 && (
+                      <div className="flex items-center gap-1">
+                        <FaCar className="w-4 h-4" />
+                        <span>Garage : {(property as any).nbrGarages}</span>
+                      </div>
+                    )}
+                    {"nbrPiscine" in property && (property as any).nbrPiscine > 0 && (
+                      <div className="flex items-center gap-1">
+                        <MdPool className="w-4 h-4" />
+                        <span>Piscine : {(property as any).nbrPiscine}</span>
+                      </div>
+                    )}
+                  </>
+                )}
+
+                {property.typeProperty === "Building" && (
+                  <>
+                    {"nbrApartments" in property && (property as any).nbrApartments > 0 && (
+                      <div className="flex items-center gap-1">
+                        <PiBuildings className="w-4 h-4" />
+                        <span>Appartements : {(property as any).nbrApartments}</span>
+                      </div>
+                    )}
+                    {"nbrFloors" in property && (property as any).nbrFloors > 0 && (
+                      <div className="flex items-center gap-1">
+                        <GiStairs className="w-4 h-4" />
+                        <span>Étages : {(property as any).nbrFloors}</span>
+                      </div>
+                    )}
+                  </>
+                )}
+              </div>
               {/* Type de propriété */}
               {property.typeProperty && (
                 <div className="absolute top-2 left-2 px-3 py-1 text-xs font-bold bg-blue-100 text-blue-600 dark:bg-blue-800 dark:text-blue-200 rounded-full">
@@ -152,6 +252,14 @@ const PropertyCarousel: React.FC<CarouselProps> = ({ properties }) => {
           </div>
         ))}
       </Slider>
+      <div className="mt-6 flex justify-center">
+        <button
+          onClick={() => router.push("/search")}
+          className="px-6 py-2 rounded-full bg-blue-600 hover:bg-blue-700 text-white font-semibold transition duration-300 shadow-md"
+        >
+          Voir plus
+        </button>
+      </div>
     </div>
   );
 };

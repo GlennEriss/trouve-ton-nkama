@@ -78,7 +78,7 @@ const HomePage = () => {
   };
 
   const propertyTypes = [
-    { type: "House", icon: <Home className="w-10 h-10 text-blue-500" /> },
+    { type: "Home", icon: <Home className="w-10 h-10 text-blue-500" /> },
     {
       type: "Studio",
       icon: <Warehouse className="w-10 h-10 text-yellow-500" />,
@@ -86,7 +86,7 @@ const HomePage = () => {
     { type: "Apartment", icon: <Building className="w-10 h-10 text-red-500" /> },
     { type: "Building", icon: <Building2 className="w-10 h-10 text-orange-500" /> },
     {
-      type: "Office",
+      type: "Desk",
       icon: <Briefcase className="w-10 h-10 text-purple-500" />,
     },
     {
@@ -100,189 +100,6 @@ const HomePage = () => {
     {
       type: "Shop",
       icon: <ShoppingBag className="w-10 h-10 text-teal-500" />,
-    },
-  ];
-
-  // Mock des maisons en vedette
-  const houses = [
-    {
-      id: "kradf2hfmvP7qxJkrpYN",
-      images: [
-        {
-          fileURL:
-            "https://media.bazarafrique.com/upload/post/62320b769e379479930349.png",
-        },
-      ],
-      title: "Villa moderne avec piscine",
-      city: "Dakar",
-      province: "Dakar",
-      country: "Sénégal",
-      street: "Rue de la Corniche",
-      status: "FOR_RENT",
-      price: "300 000",
-      nbrRooms: 5,
-      nbrToilets: 4,
-      area: 250,
-      typeProperty: "House",
-    },
-    {
-      id: 2,
-      images: [
-        {
-          fileURL:
-            "https://media.bazarafrique.com/upload/post/62320b769e379479930349.png",
-        },
-      ],
-      title: "Appartement luxueux en bord de mer",
-      city: "Abidjan",
-      province: "Lagunes",
-      country: "Côte d'Ivoire",
-      street: "Zone 4",
-      status: "FOR_SALE",
-      price: "200 000 000",
-      nbrRooms: 3,
-      nbrToilets: 2,
-      area: 180,
-      typeProperty: "Apartment",
-    },
-    {
-      id: 3,
-      images: [
-        {
-          fileURL:
-            "https://media.bazarafrique.com/upload/post/62320b769e379479930349.png",
-        },
-      ],
-      title: "Maison familiale spacieuse",
-      city: "Casablanca",
-      province: "Grand Casablanca",
-      country: "Maroc",
-      street: "Quartier Palmier",
-      status: "FOR_RENT",
-      price: "150 000",
-      nbrRooms: 4,
-      nbrToilets: 3,
-      area: 220,
-      typeProperty: "House",
-    },
-    {
-      id: 4,
-      images: [
-        {
-          fileURL:
-            "https://media.bazarafrique.com/upload/post/62320b769e379479930349.png",
-        },
-      ],
-      title: "Maison familiale spacieuse",
-      city: "Casablanca",
-      province: "Grand Casablanca",
-      country: "Maroc",
-      street: "Quartier Palmier",
-      status: "FOR_RENT",
-      price: "150 000",
-      nbrRooms: 4,
-      nbrToilets: 3,
-      area: 220,
-      typeProperty: "House",
-    },
-    {
-      id: 5,
-      images: [
-        {
-          fileURL:
-            "https://media.bazarafrique.com/upload/post/62320b769e379479930349.png",
-        },
-      ],
-      title: "Maison familiale spacieuse",
-      city: "Casablanca",
-      province: "Grand Casablanca",
-      country: "Maroc",
-      street: "Quartier Palmier",
-      status: "FOR_RENT",
-      price: "150 000",
-      nbrRooms: 4,
-      nbrToilets: 3,
-      area: 220,
-      typeProperty: "House",
-    },
-    {
-      id: 6,
-      images: [
-        {
-          fileURL:
-            "https://media.bazarafrique.com/upload/post/62320b769e379479930349.png",
-        },
-      ],
-      title: "Maison familiale spacieuse",
-      city: "Casablanca",
-      province: "Grand Casablanca",
-      country: "Maroc",
-      street: "Quartier Palmier",
-      status: "FOR_RENT",
-      price: "150 000",
-      nbrRooms: 4,
-      nbrToilets: 3,
-      area: 220,
-      typeProperty: "House",
-    },
-    {
-      id: 7,
-      images: [
-        {
-          fileURL:
-            "https://media.bazarafrique.com/upload/post/62320b769e379479930349.png",
-        },
-      ],
-      title: "Maison familiale spacieuse",
-      city: "Casablanca",
-      province: "Grand Casablanca",
-      country: "Maroc",
-      street: "Quartier Palmier",
-      status: "FOR_RENT",
-      price: "150 000",
-      nbrRooms: 4,
-      nbrToilets: 3,
-      area: 220,
-      typeProperty: "House",
-    },
-    {
-      id: 8,
-      images: [
-        {
-          fileURL:
-            "https://media.bazarafrique.com/upload/post/62320b769e379479930349.png",
-        },
-      ],
-      title: "Maison familiale spacieuse",
-      city: "Casablanca",
-      province: "Grand Casablanca",
-      country: "Maroc",
-      street: "Quartier Palmier",
-      status: "FOR_RENT",
-      price: "150 000",
-      nbrRooms: 4,
-      nbrToilets: 3,
-      area: 220,
-      typeProperty: "House",
-    },
-  ];
-
-  const ads = [
-    {
-      id: 1,
-      image: "https://www.touchinnovative.com/img/blg/6-170223162621.jpg",
-      link: "#",
-    },
-    {
-      id: 2,
-      image:
-        "https://static.wixstatic.com/media/a533e7_c9ab2af50964476eb4c3f33ce31db6ce~mv2.jpg/v1/fill/w_618,h_388,al_c,q_80,usm_0.66_1.00_0.01,enc_avif,quality_auto/a533e7_c9ab2af50964476eb4c3f33ce31db6ce~mv2.jpg",
-      link: "#",
-    },
-    {
-      id: 3,
-      image: "https://www.touchinnovative.com/img/blg/6-170223162621.jpg",
-      link: "#",
     },
   ];
 
@@ -363,18 +180,18 @@ const HomePage = () => {
       {/* Logements en vedette */}
       <section className="mb-16">
         <h2 className="text-3xl font-semibold text-center mb-6 text-gray-800 dark:text-gray-200">
-          Logements en vedette
+          Logements récents
         </h2>
-        <PropertyCarousel properties={houses} />
+        <PropertyCarousel properties={[]} />
       </section>
 
       {/* Section de la map */}
-      <section className="mb-16">
+      {/* <section className="mb-16">
         <h2 className="text-3xl font-semibold text-center mb-6 text-gray-800 dark:text-gray-200">
           Trouvez votre propriété sur la carte
         </h2>
         <div className="w-full h-96 rounded-lg shadow-lg overflow-hidden">
-          {/* <MapComponent houses={houseMocks} neighborhoods={neighborhoods} /> */}
+          <MapComponent houses={houseMocks} neighborhoods={neighborhoods} />
           <iframe
             src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3357.5285037442964!2d9.4077066!3d0.4473876!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f50!3m3!1m2!1s0x107f24adbf1740a3%3A0x25c7c1ada0b81a2d!2sCharbonnages%2C%20Libreville%2C%20Gabon!5e0!3m2!1sen!2s!4v1684837560218"
             width="100%"
@@ -385,7 +202,7 @@ const HomePage = () => {
             className="rounded-lg"
           ></iframe>
         </div>
-      </section>
+      </section> */}
 
       {/* Call-to-action */}
       <section className="bg-blue-500 text-white text-center py-12 rounded-lg shadow-lg">

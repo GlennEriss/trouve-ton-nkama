@@ -11,7 +11,7 @@ export default function Footer() {
                     <Logo className='text-white'/>
                     <ul className="flex flex-wrap items-center mb-6 text-sm font-medium text-gray-400 sm:mb-0">
                         <li>
-                            <a href={"#"} className="hover:underline me-4 md:me-6">À propos</a>
+                            <a href={"https://www.facebook.com/profile.php?id=61574099562451"} className="hover:underline me-4 md:me-6">À propos</a>
                         </li>
                         <li>
                             <a href={routes.public.confidentiality} className="hover:underline me-4 md:me-6">Politique de confidentialité</a>
