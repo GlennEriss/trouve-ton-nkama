@@ -30,7 +30,7 @@ export const BottomNavigation: React.FC<BottomNavigationProps> = ({session}) => 
                     key={key}
                     className={clsx(
                         'relative text-xs flex flex-col items-center',
-                        pathnames === item.link ? 'text-[#846CF9]' : ''
+                        pathnames === item.link ? 'text-[#146B67]' : ''
                     )}
                 >
                     {/* Ajout du badge si c'est l'icône Notification */}

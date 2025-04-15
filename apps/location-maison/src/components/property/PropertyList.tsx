@@ -16,7 +16,7 @@ export default function PropertyList() {
                 </h1>
                 <Button 
                     variant="outline" 
-                    className="border-[#846CF9] hover:bg-[#846CF9] text-[#846CF9] hover:text-white dark:border-[#A390F9] dark:hover:bg-[#A390F9] dark:text-[#A390F9] dark:hover:text-black"
+                    className="border-[#146B67] hover:bg-[#146B67] text-[#146B67] hover:text-white dark:border-[#A390F9] dark:hover:bg-[#A390F9] dark:text-[#A390F9] dark:hover:text-black"
                     asChild
                 >
                     <Link href={routes.protected.add_property}>

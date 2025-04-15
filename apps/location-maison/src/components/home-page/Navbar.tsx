@@ -97,11 +97,10 @@ export default function Navbar({ session }: { session: Session | null }) {
           {session ? (
             <div className="flex items-center">
               <a href={routes.protected.add_property}>
-                <button className="bg-gradient-to-r from-[#146B67] via-[#1FA89B] to-[#146B67] text-white rounded-lg text-base px-6 py-3 font-semibold hover:brightness-110 hover:shadow-md transition">
-                  <Plus className="w-6 h-6" />
+                <button className="bg-gradient-to-r from-[#146B67] via-[#1FA89B] to-[#146B67] text-white rounded-lg text-[10px] px-3 py-2 font-semibold hover:brightness-110 hover:shadow-md transition">
+                  Poster une annonce
                 </button>
               </a>
-              <MenuProfil />
             </div>
           ) : (
             <a href="/signin">

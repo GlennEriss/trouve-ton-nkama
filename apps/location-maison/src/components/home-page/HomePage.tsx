@@ -138,7 +138,7 @@ const HomePage = () => {
 
       {/* Section des types de logements */}
       <section className="mb-16">
-        <h2 className="text-3xl font-semibold text-center mb-6 text-[#146B67] dark:text-gray-200">
+        <h2 className="text-3xl font-semibold text-center mb-8 text-[#146B67] dark:text-gray-200">
           Types de logements
         </h2>
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6">
@@ -179,7 +179,7 @@ const HomePage = () => {
 
       {/* Logements en vedette */}
       <section className="mb-16">
-        <h2 className="text-3xl font-semibold text-center mb-6 text-[#146B67] dark:text-gray-200">
+        <h2 className="text-3xl font-semibold text-center text-[#146B67] dark:text-gray-200">
           Logements récents
         </h2>
         <PropertyCarousel properties={[]} />
