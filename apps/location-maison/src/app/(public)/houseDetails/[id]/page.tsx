@@ -4,8 +4,8 @@ import { notFound } from 'next/navigation'
 import React from 'react'
 import Head from 'next/head'
 
-export default async function page({ params }: { params: { id: string } }) {
-  const { id } = params
+export default async function page({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params
   const property = await getPropertyById(id)
 
   if (!property) {
