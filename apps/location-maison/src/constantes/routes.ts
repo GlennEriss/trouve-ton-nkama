@@ -30,6 +30,7 @@ export const routes = {
         reset_password: '/password-reset',
         confidentiality: '/privacy-policy',
         terms_of_use: '/terms-of-use',
-        data_deletion: '/data-deletion'
+        data_deletion: '/data-deletion',
+        search_property: '/search'
     }
 }

@@ -128,7 +128,7 @@ const HomePage = () => {
           animate={{ scale: 1 }}
           transition={{ duration: 0.5, delay: 0.6 }}
         >
-          <a href="/search" rel="noopener noreferrer">
+          <a href={routes.public.search_property} rel="noopener noreferrer">
             <Button className="bg-white text-[#146B67] px-6 py-3 rounded-full shadow-md hover:bg-gray-100">
               Explorer
             </Button>
