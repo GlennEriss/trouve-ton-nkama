@@ -1,29 +1,19 @@
-import { routes } from '@/constantes/routes'
-
 export async function GET() {
   const baseUrl = 'https://location-maison-gabon.vercel.app'
 
-  const allRoutes = {
-    ...routes.public,
-    ...routes.protected,
-  }
+  const sitemapIndex = `<?xml version="1.0" encoding="UTF-8"?>
+<sitemapindex xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <sitemap>
+    <loc>${baseUrl}/sitemap-static.xml</loc>
+    <lastmod>${new Date().toISOString()}</lastmod>
+  </sitemap>
+  <sitemap>
+    <loc>${baseUrl}/sitemap-properties.xml</loc>
+    <lastmod>${new Date().toISOString()}</lastmod>
+  </sitemap>
+</sitemapindex>`
 
-  const urls = Object.values(allRoutes)
-
-  const sitemap = `<?xml version="1.0" encoding="UTF-8"?>
-<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-  ${urls
-    .map(
-      (path) => `
-    <url>
-      <loc>${baseUrl}${path}</loc>
-      <lastmod>${new Date().toISOString()}</lastmod>
-    </url>`
-    )
-    .join('')}
-</urlset>`
-
-  return new Response(sitemap, {
+  return new Response(sitemapIndex, {
     headers: {
       'Content-Type': 'application/xml',
     },
