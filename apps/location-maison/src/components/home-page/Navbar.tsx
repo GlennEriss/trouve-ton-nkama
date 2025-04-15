@@ -12,6 +12,7 @@ import MenuProfil from "../navbar/MenuProfil";
 import { routes } from "@/constantes/routes";
 import { useRouter } from "next/navigation";
 import { Session } from "next-auth";
+import Logo from "../logo/Logo";
 
 export default function Navbar({session}: {session: Session|null}) {
   const router = useRouter();
@@ -81,9 +82,7 @@ export default function Navbar({session}: {session: Session|null}) {
       <nav className="sticky top-0 left-0 right-0 z-50 bg-white dark:bg-black text-black dark:text-white px-4 py-4 flex items-center justify-between shadow-md">
         <div className="flex items-center">
           <a href="/" rel="noopener noreferrer">
-            <div className="w-10 h-10 flex items-center justify-center bg-black dark:bg-white rounded-full cursor-pointer">
-              <Clover className="text-white dark:text-black w-6 h-6" />
-            </div>
+            <Logo/>
           </a>
         </div>
         <div className="flex items-center gap-4">
@@ -141,9 +140,7 @@ export default function Navbar({session}: {session: Session|null}) {
       <div className="flex items-center justify-between w-full md:w-auto">
         <div className="flex items-center">
           <a href="/" rel="noopener noreferrer">
-            <div className="flex items-center justify-center w-10 h-10 bg-black dark:bg-white rounded-full cursor-pointer">
-              <Clover className="text-white dark:text-black w-6 h-6" />
-            </div>
+            <Logo/>
           </a>
         </div>
       </div>
