@@ -133,8 +133,8 @@ export const FilterModal = ({
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <div className="w-11 h-11 bg-black border-white border-none hover:bg-gray-900 flex items-center justify-center rounded-full aspect-square">
-          <BiFilter className="w-8 h-8 text-gray-400 cursor-pointer" />
+        <div className="w-11 h-11 bg-gradient-to-r from-[#146B67] via-[#1FA89B] to-[#146B67] border-none hover:brightness-110 flex items-center justify-center rounded-full aspect-square">
+          <BiFilter className="w-8 h-8 text-white cursor-pointer" />
         </div>
       </DialogTrigger>
 
