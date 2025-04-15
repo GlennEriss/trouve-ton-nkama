@@ -106,7 +106,7 @@ const HomePage = () => {
   return (
     <div className="container mx-auto px-4 py-8 bg-gray-100 dark:bg-gray-900 transition-colors mb-10">
       {/* Hero Section */}
-      <section className="relative bg-gradient-to-r from-blue-500 to-indigo-500 text-white text-center py-10 mb-16 rounded-lg shadow-lg">
+      <section className="relative bg-gradient-to-r from-[#146B67] via-[#1FA89B] to-[#146B67] text-white text-center py-10 mb-16 rounded-lg shadow-lg">
         <motion.h1
           className="text-5xl font-bold mb-4"
           initial={{ opacity: 0, y: -50 }}
@@ -129,7 +129,7 @@ const HomePage = () => {
           transition={{ duration: 0.5, delay: 0.6 }}
         >
           <a href="/search" rel="noopener noreferrer">
-            <Button className="bg-white text-blue-500 px-6 py-3 rounded-full shadow-md hover:bg-gray-100">
+            <Button className="bg-white text-[#146B67] px-6 py-3 rounded-full shadow-md hover:bg-gray-100">
               Explorer
             </Button>
           </a>
@@ -138,7 +138,7 @@ const HomePage = () => {
 
       {/* Section des types de logements */}
       <section className="mb-16">
-        <h2 className="text-3xl font-semibold text-center mb-6 text-gray-800 dark:text-gray-200">
+        <h2 className="text-3xl font-semibold text-center mb-8 text-[#146B67] dark:text-gray-200">
           Types de logements
         </h2>
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6">
@@ -179,7 +179,7 @@ const HomePage = () => {
 
       {/* Logements en vedette */}
       <section className="mb-16">
-        <h2 className="text-3xl font-semibold text-center mb-6 text-gray-800 dark:text-gray-200">
+        <h2 className="text-3xl font-semibold text-center text-[#146B67] dark:text-gray-200">
           Logements récents
         </h2>
         <PropertyCarousel properties={[]} />

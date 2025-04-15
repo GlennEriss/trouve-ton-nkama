@@ -88,7 +88,7 @@ export const StatCard: React.FC<StatCardProps> = ({
             <div className={cn("flex items-center justify-center rounded-full p-3", colors.iconBg)}>
                 <Icon className={cn(colors.iconColor)} size={32} />
             </div>
-            <h3 className="text-gray-800 dark:text-white text-lg font-semibold mt-3">{title}</h3>
+            <h3 className="text-gray-800 text-lg font-semibold mt-3">{title}</h3>
             <p className={cn("text-3xl font-bold mt-1", colors.textColor)}>{value}</p>
         </div>
     );

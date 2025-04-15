@@ -5,15 +5,16 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Clover, Search, Plus } from "lucide-react";
 import { BiSearch } from "react-icons/bi";
-import { useAlgoliaContext } from "@/providers/AlgoliaContext"; 
+import { useAlgoliaContext } from "@/providers/AlgoliaContext";
 import { FilterModal } from "./FilterModal";
 import { useWindowSize } from "@/hooks/useSize";
 import MenuProfil from "../navbar/MenuProfil";
 import { routes } from "@/constantes/routes";
 import { useRouter } from "next/navigation";
 import { Session } from "next-auth";
+import Logo from "../logo/Logo";
 
-export default function Navbar({session}: {session: Session|null}) {
+export default function Navbar({ session }: { session: Session | null }) {
   const router = useRouter();
   const { width } = useWindowSize();
 
@@ -81,32 +82,31 @@ export default function Navbar({session}: {session: Session|null}) {
       <nav className="sticky top-0 left-0 right-0 z-50 bg-white dark:bg-black text-black dark:text-white px-4 py-4 flex items-center justify-between shadow-md">
         <div className="flex items-center">
           <a href="/" rel="noopener noreferrer">
-            <div className="w-10 h-10 flex items-center justify-center bg-black dark:bg-white rounded-full cursor-pointer">
-              <Clover className="text-white dark:text-black w-6 h-6" />
-            </div>
+            <Logo />
           </a>
         </div>
         <div className="flex items-center gap-4">
           <button
             onClick={() => setShowSearch(!showSearch)}
-            className="w-10 h-10 flex items-center justify-center bg-gray-100 dark:bg-gray-800 rounded-full"
+            className="w-11 h-11 flex items-center justify-center bg-white border border-[#146B67] dark:bg-gray-800 rounded-full"
           >
-            <Search className="w-6 h-6 text-black dark:text-white" />
+            <Search className="w-6 h-6 text-[#146B67] dark:text-white" />
           </button>
           {/* La FilterModal peut toujours utiliser le contexte pour remplir city, price, etc. */}
           <FilterModal handleSearch={handleSearch} />
           {session ? (
             <div className="flex items-center">
               <a href={routes.protected.add_property}>
-                <button className="w-10 h-10 flex items-center justify-center bg-blue-500 text-white rounded-full">
-                  <Plus className="w-6 h-6" />
+                <button className="bg-gradient-to-r from-[#146B67] via-[#1FA89B] to-[#146B67] text-white rounded-lg text-[10px] px-3 py-2 font-semibold hover:brightness-110 hover:shadow-md transition">
+                  Poster une annonce
                 </button>
               </a>
-              <MenuProfil />
             </div>
           ) : (
             <a href="/signin">
-              <Button variant="outline" className="px-4 py-2">
+              <Button variant="outline"
+                className="bg-transparent border border-[#146B67] text-[#146B67] rounded-lg text-base px-6 py-3 font-semibold hover:bg-[#0f5c59] hover:text-white hover:shadow-md transition"
+              >
                 Se connecter
               </Button>
             </a>
@@ -120,14 +120,14 @@ export default function Navbar({session}: {session: Session|null}) {
                 value={searchText}
                 onChange={(e) => setSearchText(e.target.value)}
                 placeholder="Rechercher..."
-                className="w-full bg-neutral-200 dark:bg-neutral-900 text-black dark:text-white placeholder:text-gray-500 border-none focus:ring-2 focus:ring-black/50 dark:focus:ring-white/50 min-h-[50px] rounded-full pl-12"
+                className="w-full bg-neutral-200 dark:bg-neutral-900 text-black dark:text-white placeholder:text-gray-500 border-none focus:ring-2 focus:ring-black/50 dark:focus:ring-white/50 min-h-[45px] rounded-full pl-12"
               />
             </div>
             <div
               onClick={handleSearch}
-              className="w-11 h-11 bg-black border-black dark:border-white border-[1px] flex items-center justify-center rounded-full cursor-pointer aspect-square"
+              className="ml-2 w-11 h-11 border border-[#146B67] text-[#146B67] hover:bg-[#146B67] hover:text-white flex items-center justify-center rounded-full cursor-pointer aspect-square"
             >
-              <BiSearch className="w-6 h-6 text-white" />
+              <BiSearch className="w-6 h-6" />
             </div>
           </div>
         )}
@@ -141,9 +141,7 @@ export default function Navbar({session}: {session: Session|null}) {
       <div className="flex items-center justify-between w-full md:w-auto">
         <div className="flex items-center">
           <a href="/" rel="noopener noreferrer">
-            <div className="flex items-center justify-center w-10 h-10 bg-black dark:bg-white rounded-full cursor-pointer">
-              <Clover className="text-white dark:text-black w-6 h-6" />
-            </div>
+            <Logo />
           </a>
         </div>
       </div>
@@ -161,7 +159,7 @@ export default function Navbar({session}: {session: Session|null}) {
         </div>
         <div
           onClick={handleSearch}
-          className="w-11 h-11 bg-black border-black dark:border-white border-[1px] flex items-center justify-center rounded-full cursor-pointer aspect-square"
+          className="w-11 h-11 bg-gradient-to-r from-[#146B67] via-[#1FA89B] to-[#146B67] border-none flex items-center justify-center rounded-full cursor-pointer aspect-square"
         >
           <BiSearch className="w-6 h-6 text-white" />
         </div>
@@ -172,7 +170,7 @@ export default function Navbar({session}: {session: Session|null}) {
         <a href={routes.protected.add_property} rel="noopener noreferrer">
           <Button
             variant="default"
-            className="bg-blue-500 text-white rounded-xl text-lg hover:bg-blue-600 px-4 py-6 font-bold"
+            className="bg-gradient-to-r from-[#146B67] via-[#1FA89B] to-[#146B67] text-white rounded-lg text-base px-6 py-3 font-semibold hover:brightness-110 hover:shadow-md transition"
           >
             Poster une annonce
           </Button>
@@ -182,11 +180,11 @@ export default function Navbar({session}: {session: Session|null}) {
           session ? (
             <MenuProfil />
           ) : (
-            <div className="flex items-center gap-2 md:gap-4 ml-auto mr-1 md:ml-8">
+            <div className="flex items-center gap-2 md:gap-4 mx-4">
               <a href="/signin" rel="noopener noreferrer">
                 <Button
                   variant="outline"
-                  className="text-black dark:text-white border-black dark:border-white rounded-xl px-4 py-2"
+                  className="bg-transparent border border-[#146B67] text-[#146B67] rounded-lg text-base px-6 py-3 font-semibold hover:bg-[#0f5c59] hover:text-white hover:shadow-md transition"
                 >
                   Se connecter
                 </Button>
@@ -194,7 +192,7 @@ export default function Navbar({session}: {session: Session|null}) {
               <a href="/signup" rel="noopener noreferrer">
                 <Button
                   variant="default"
-                  className="bg-black dark:bg-white text-white dark:text-black rounded-xl hover:bg-black dark:hover:bg-white px-4 py-2"
+                  className="bg-transparent border border-[#146B67] text-[#146B67] rounded-lg text-base px-6 py-3 font-semibold hover:bg-[#0f5c59] hover:text-white hover:shadow-md transition"
                 >
                   S&apos;inscrire
                 </Button>

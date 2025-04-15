@@ -40,7 +40,9 @@ export const LayoutAuth: React.FC<LayoutAuthProps> = ({ children, type, setIsOth
                 {/* Left Side: Branding/Message */}
                 <div className="hidden md:block md:w-1/2 bg-gradient-to-br from-blue-500 to-indigo-500 text-white p-8">
                     <div className="flex flex-col h-full">
-                        <Logo />
+                        <Link href={routes.public.homePage}>
+                            <Logo color='white' />
+                        </Link>
                         <h1 className="text-2xl font-bold">
                             Bienvenue sur Home-Rent
                         </h1>
