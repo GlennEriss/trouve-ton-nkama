@@ -125,6 +125,29 @@ const PropertyCarousel: React.FC<CarouselProps> = ({ properties }) => {
       <Slider {...settings}>
         {data.pages[0]?.properties.map((property) => (
           <div key={property.id} className="p-2 rounded-lg">
+            <script
+              type="application/ld+json"
+              dangerouslySetInnerHTML={{
+                __html: JSON.stringify({
+                  "@context": "https://schema.org",
+                  "@type": "Product",
+                  "name": property.title,
+                  "image": property.images?.[0]?.fileURL || "/home.png",
+                  "description": property.description,
+                  "brand": {
+                    "@type": "Brand",
+                    "name": "LogisGabon"
+                  },
+                  "offers": {
+                    "@type": "Offer",
+                    "priceCurrency": "XAF",
+                    "price": property.price,
+                    "availability": "https://schema.org/InStock",
+                    "url": `https://location-maison-gabon.vercel.app/houseDetails/${property.id}`
+                  }
+                })
+              }}
+            />
             <div
               onClick={() => handleCardClick(property.id ?? '')}
               className="relative cursor-pointer rounded-lg shadow-lg overflow-hidden transition-transform hover:scale-105 bg-white dark:bg-gray-800 hover:shadow-2xl flex flex-col"
