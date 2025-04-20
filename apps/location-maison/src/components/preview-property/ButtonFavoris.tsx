@@ -15,6 +15,10 @@ type ButtonFavorisProps = {
 
 export const ButtonFavoris: React.FC<ButtonFavorisProps> = ({ idProperty }) => {
   const { user } = useCurrentUser()
+
+  if(!user){
+    return null
+  }
   const { update } = useSession()
   const [isFavorite, setIsFavorite] = React.useState(false);
   const [isLoading, setIsLoading] = React.useState(false);

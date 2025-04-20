@@ -12,6 +12,8 @@ type MapSectionProps = {
   longitude: number;
   latitude: number;
   countryCode: string;
+  image?: string;
+  additionalInformation?: string;
 };
 
 // Import dynamique des composants react-leaflet pour éviter les erreurs SSR
@@ -46,6 +48,8 @@ export const MapSection: React.FC<MapSectionProps> = ({
   province,
   longitude,
   latitude,
+  image,
+  additionalInformation,
   countryCode,
 }) => {
   return (
@@ -62,7 +66,17 @@ export const MapSection: React.FC<MapSectionProps> = ({
         />
         <Marker position={[latitude, longitude]} icon={defaultIcon}>
           <Popup>
-            {street}, {city}, {province}
+            <div>
+              {image && (
+                <img
+                  src={image}
+                  alt={`${street}, ${city}`}
+                  style={{ width: '100%', maxHeight: '150px', objectFit: 'cover', marginTop: '8px' }}
+                />
+              )}
+              <p>{street}, {city}, {province}</p>
+              <p>{additionalInformation}</p>
+            </div>
           </Popup>
         </Marker>
       </MapContainer>
