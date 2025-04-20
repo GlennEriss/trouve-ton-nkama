@@ -70,7 +70,7 @@ export default function PropertyStatistics() {
             {window.innerWidth < 1024 && (
                 <button
                     onClick={() => setIsExpanded(!isExpanded)}
-                    className="mt-4 px-4 py-2 bg-[#146B67] text-white rounded-lg transition hover:bg-blue-700"
+                    className="mt-4 px-4 py-2 bg-[#146B67] text-white rounded-lg transition hover:bg-[#146B67]"
                 >
                     {isExpanded ? "Réduire" : "Afficher plus"}
                 </button>

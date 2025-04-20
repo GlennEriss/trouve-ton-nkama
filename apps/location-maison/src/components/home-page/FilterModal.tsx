@@ -65,11 +65,11 @@ export const FilterModal = ({
     (list: string[], item: string, setter: (val: string[]) => void) => {
       if (list.includes(item)) {
         const newList = list.filter((i) => i !== item);
-        console.log(`Retrait de l'élément "${item}". Nouvelle liste :`, newList);
+        //console.log(`Retrait de l'élément "${item}". Nouvelle liste :`, newList);
         setter(newList);
       } else {
         const newList = [...list, item];
-        console.log(`Ajout de l'élément "${item}". Nouvelle liste :`, newList);
+        //console.log(`Ajout de l'élément "${item}". Nouvelle liste :`, newList);
         setter(newList);
       }
     },

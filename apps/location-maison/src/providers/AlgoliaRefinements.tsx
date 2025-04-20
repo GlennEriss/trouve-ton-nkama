@@ -75,9 +75,9 @@ const AlgoliaRefinements = () => {
    *   puis on sélectionne les nouvelles valeurs.
    */
   const applyRefinements = useCallback(() => {
-    console.log("=== Appliquer filtres (approche refine) ===");
-    console.log("city:", city, "street:", street, "typeProperty:", typeProperty, "tags:", tags);
-    console.log("minPrice:", minPrice, "maxPrice:", maxPrice);
+    //console.log("=== Appliquer filtres (approche refine) ===");
+    //console.log("city:", city, "street:", street, "typeProperty:", typeProperty, "tags:", tags);
+    //console.log("minPrice:", minPrice, "maxPrice:", maxPrice);
 
     // 1) Recherche textuelle
     refineQuery(searchText || "");
