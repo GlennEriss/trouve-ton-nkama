@@ -89,7 +89,7 @@ export default function MenuProfil() {
                     <Button
                         onClick={handleSignout}
                         variant='outline'
-                        className='border rounded-lg border-red-500 text-red-500 hover:bg-red-500 hover:text-white dark:border-red-400 dark:text-red-400 dark:hover:bg-red-400 dark:hover:text-black transition-all'>
+                        className='border rounded-lg border-red-500 text-red-500 hover:text-red-500 dark:border-red-400 dark:text-red-400 dark:hover:bg-red-400 dark:hover:text-black transition-all'>
                         {
                             isPending ? (
                                 <div className="w-5 h-5 border-4 border-red-500 rounded-full animate-spin border-t-transparent"></div>

@@ -70,6 +70,7 @@ export const LayoutAuth: React.FC<LayoutAuthProps> = ({ children, type, setIsOth
                                         className="w-12 h-12 rounded-full bg-gray-100 flex items-center justify-center hover:bg-gray-200 transition duration-200"
                                         onClick={() => handleConnection(connection.method)}
                                         disabled={isPending}
+                                        colorSpinner="blue"
                                     >
                                         <connection.icon size={24} color={connection?.colorIcon} />
                                     </ButtonLoading>

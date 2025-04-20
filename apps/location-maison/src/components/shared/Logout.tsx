@@ -31,7 +31,7 @@ export default function Logout() {
     }
     return (
         <div className='md:hidden'>
-            <Button onClick={handleSignout} variant='outline' className='w-full text-md border-red-500 text-red-500 hover:bg-red-500 hover:text-white'>
+            <Button onClick={handleSignout} variant='outline' className='w-full text-md border-red-500 text-red-500 hover:text-white'>
                 {
                     isPending ? (
                         <div className="w-5 h-5 border-4 border-red-500 rounded-full animate-spin border-t-transparent"></div>
