@@ -81,6 +81,8 @@ export default function PreviewProperty({ property }: { property: Property }) {
 
         {/* Carte */}
         <MapSection
+          image={property.images[0].fileURL}
+          additionalInformation={property?.additionnalInformation}
           street={property.street}
           city={property.city}
           province={property.province}
