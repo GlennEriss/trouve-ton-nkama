@@ -189,7 +189,7 @@ const PropertyCarousel: React.FC<CarouselProps> = ({ properties }) => {
                     {"nbrBathrooms" in property && (property as any).nbrBathrooms > 0 && (
                       <div className="flex items-center gap-1">
                         <MdOutlineBathtub className="w-4 h-4" />
-                        <span>{(property as any).nbrBathrooms} sdb</span>
+                        <span>{(property as any).nbrBathrooms}</span>
                       </div>
                     )}
                   </>
