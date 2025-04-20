@@ -26,7 +26,7 @@ const menu = [
 ]
 
 export default function MenuProfil() {
-    const user = useCurrentUser()
+    const { user } = useCurrentUser()
     const { toast } = useToast();
     const router = useRouter()
     const [isPending, startTransition] = useTransition()
@@ -41,7 +41,7 @@ export default function MenuProfil() {
                     description: "Vous vous êtes déconnecté de la plateforme",
                     variant: "warning",
                 });
-                router.push(routes.public.signin)
+                router.push(routes.public.homePage)
             } else {
                 toast({
                     title: "Déconnexion",

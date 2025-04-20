@@ -5,7 +5,7 @@ import { AiOutlineMail } from 'react-icons/ai'
 import { useCurrentUser } from '@/hooks/use-current-user'
 
 export default function ContactSection() {
-    const user = useCurrentUser()
+    const { user } = useCurrentUser()
     return (
         <section className="flex flex-col gap-3 rounded-lg p-5 shadow">
             <h1 className="font-bold">Contacts</h1>
@@ -17,7 +17,7 @@ export default function ContactSection() {
                     rel="noopener noreferrer"
                     title="Contacter via WhatsApp"
                 >
-                    <FaWhatsapp size={30} className="cursor-pointer hover:text-green-600" />
+                    <FaWhatsapp size={30} className="cursor-pointer hover:text-green-600 text-green-600" />
                 </a>
 
                 {/* Facebook Messenger */}
@@ -37,7 +37,7 @@ export default function ContactSection() {
                     rel="noopener noreferrer"
                     title="Contacter via Gmail"
                 >
-                    <AiOutlineMail size={30} className="cursor-pointer hover:text-red-600" />
+                    <AiOutlineMail size={30} className="cursor-pointer hover:text-red-600 text-red-600" />
                 </a>
 
                 {/* Appeler directement */}
@@ -47,7 +47,7 @@ export default function ContactSection() {
                     rel="noopener noreferrer"
                     title="Appeler"
                 >
-                    <FaPhoneAlt size={30} className="cursor-pointer hover:text-blue-500" />
+                    <FaPhoneAlt size={27} className="cursor-pointer hover:text-blue-500 text-blue-500" />
                 </a>
             </div>
         </section>

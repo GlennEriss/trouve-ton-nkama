@@ -5,10 +5,10 @@ import { Button } from "@/components/ui/button";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { useNotifications } from "@/providers/NotificationProvider";
 import { BellIcon } from "lucide-react";
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useCurrentUser } from "@/hooks/use-current-user";
 import { generateColorFromName } from "@/lib/generateColorFromName";
-import { Notification } from "@/models/notification";
+import Link from "next/link";
 
 function Dot({ className }: { className?: string }) {
   return (
@@ -26,17 +26,9 @@ function Dot({ className }: { className?: string }) {
   );
 }
 
-// Fonction pour générer un message adapté au type de notification
-function getNotificationContent(notification: Notification) {
-  switch (notification.type) {
-    case "BOOKMARKING":
-      return notification.message;
-  }
-}
-
 export default function Notifications() {
   const { notifications, unreadCount, markAllAsRead, markAsRead } = useNotifications();
-  const user = useCurrentUser();
+  const { user } = useCurrentUser();
   const avatarBackground = generateColorFromName(user?.firstname);
 
   return (
@@ -56,7 +48,10 @@ export default function Notifications() {
         <div className="flex items-baseline justify-between gap-4 px-3 py-2">
           <div className="text-sm font-semibold">Notifications</div>
           {unreadCount > 0 && (
-            <button className="text-xs font-medium text-blue-600 dark:text-blue-400 hover:underline" onClick={markAllAsRead}>
+            <button
+              className="text-xs font-medium text-blue-600 dark:text-blue-400 hover:underline"
+              onClick={markAllAsRead}
+            >
               Tout marquer comme lu
             </button>
           )}
@@ -73,24 +68,38 @@ export default function Notifications() {
           notifications.map((notification) => (
             <div
               key={notification.id}
-              className={`hover:bg-accent rounded-md px-3 py-2 text-sm transition-colors ${notification.isRead ? "bg-white dark:bg-gray-900" : "bg-gray-100 dark:bg-gray-800"}`}
+              className={`hover:bg-accent rounded-md px-3 py-2 text-sm transition-colors ${
+                notification.isRead ? "bg-white dark:bg-gray-900" : "bg-gray-100 dark:bg-gray-800"
+              }`}
             >
               <div className="relative flex items-start gap-3 pe-3">
                 <Avatar>
-                  <AvatarImage src={user?.image ?? ''} alt={`${user?.firstname} ${user?.lastname}`} />
+                  <AvatarImage src={user?.image ?? ""} alt={`${user?.firstname} ${user?.lastname}`} />
                   <AvatarFallback
                     style={{ backgroundColor: avatarBackground }}
-                    className='text-2xl font-bold text-white'>
-                    {user?.firstname?.at(0) ?? ''}
+                    className="text-2xl font-bold text-white"
+                  >
+                    {user?.firstname?.at(0) ?? ""}
                   </AvatarFallback>
                 </Avatar>
                 <div className="flex-1 space-y-1">
-                  <button
-                    className="text-gray-800 dark:text-gray-100 text-left font-medium hover:underline"
-                    onClick={() => markAsRead(notification.id!)}
-                  >
-                    {getNotificationContent(notification)}
-                  </button>
+                  <h3 className="text-gray-800 dark:text-gray-100 font-semibold">{notification.title}</h3>
+                  {notification.actionUrl ? (
+                    <Link
+                      href={notification.actionUrl}
+                      className="text-gray-800 dark:text-gray-300 text-sm hover:underline"
+                      onClick={() => markAsRead(notification.id!)}
+                    >
+                      {notification.message}
+                    </Link>
+                  ) : (
+                    <button
+                      className="text-gray-800 dark:text-gray-300 text-sm text-left"
+                      onClick={() => markAsRead(notification.id!)}
+                    >
+                      {notification.message}
+                    </button>
+                  )}
                   <div className="text-xs text-gray-500 dark:text-gray-400">
                     {notification.createdAt?.toDate().toLocaleDateString()}
                   </div>

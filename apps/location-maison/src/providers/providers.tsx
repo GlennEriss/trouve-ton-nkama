@@ -11,7 +11,7 @@ export function Providers({ children }: { children: React.ReactNode }) {
       <NextAuthProvider>
         <LocationProvider>
           <NotificationProvider>
-            <AlgoliaProvider indexName={"Users"}>{children}</AlgoliaProvider>
+            <AlgoliaProvider indexName={"location-maison_property-index"}>{children}</AlgoliaProvider>
           </NotificationProvider>
           <Toaster />
         </LocationProvider>

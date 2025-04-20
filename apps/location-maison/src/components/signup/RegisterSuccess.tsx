@@ -5,6 +5,8 @@ import { Button } from "@/components/ui/button";
 import { Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useToast } from "@/hooks/use-toast";
+import Link from "next/link";
+import { routes } from '@/constantes/routes';
 
 type RegisterSuccessProps = {
   uid: string;
@@ -98,18 +100,31 @@ export const RegisterSuccess: React.FC<RegisterSuccessProps> = ({ uid }) => {
   }, [countdown]);
 
   useEffect(() => {
-    fetchUserVerificationStatus();
-  }, []);
+    if (isEmailVerified) return;
+
+    const interval = setInterval(() => {
+      fetchUserVerificationStatus();
+    }, 10000);
+
+    const timeout = setTimeout(() => {
+      clearInterval(interval);
+    }, 3 * 60 * 1000); // Arrête après 3 minutes
+
+    return () => {
+      clearInterval(interval);
+      clearTimeout(timeout);
+    };
+  }, [isEmailVerified]);
 
   return (
     <div className="flex items-center justify-center min-h-screen p-4 bg-gray-100">
       <div className="bg-white p-8 rounded-lg shadow-md max-w-md w-full">
         {loading ? (
-          <div className="flex items-center justify-center">
+          <div key='loading' className="flex items-center justify-center">
             <Loader2 className="animate-spin w-6 h-6 text-gray-500" />
           </div>
         ) : (
-          <>
+          <React.Fragment key='success'>
             <h1 className="text-2xl font-bold mb-4 text-center">
               Inscription réussie !
             </h1>
@@ -118,8 +133,9 @@ export const RegisterSuccess: React.FC<RegisterSuccessProps> = ({ uid }) => {
                 ? "Votre email a été vérifié. Vous pouvez maintenant vous connecter."
                 : "Un email de confirmation a été envoyé à votre adresse email. Veuillez vérifier votre boîte de réception."}
             </p>
-            {!isEmailVerified && (
-              <div className="flex justify-center">
+            <div className="flex flex-col justify-center">
+
+              {!isEmailVerified &&
                 <Button
                   onClick={handleResendEmail}
                   disabled={resendStatus || isPending}
@@ -139,9 +155,15 @@ export const RegisterSuccess: React.FC<RegisterSuccessProps> = ({ uid }) => {
                     "Renvoyer l'email de confirmation"
                   )}
                 </Button>
-              </div>
-            )}
-          </>
+              }
+              <Link
+                href={routes.public.signin}
+                className="mt-4 text-sm text-blue-600 dark:text-blue-400 hover:underline text-center"
+              >
+                Aller à la page de connexion
+              </Link>
+            </div>
+          </React.Fragment>
         )}
       </div>
     </div>

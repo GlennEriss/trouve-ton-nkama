@@ -6,6 +6,10 @@ import { NextAuthConfig } from "next-auth"
 import Credentials from "next-auth/providers/credentials"
 import GoogleProvider from "next-auth/providers/google";
 import FacebookProvider from "next-auth/providers/facebook";
+import { createNotification } from "@/db/notification.db";
+import { routes } from "@/constantes/routes";
+import { NotificationParameter } from "@/models/notification";
+import { redirect } from "next/navigation";
 
 const getAuth = () => import('@/firebase/auth')
 const authConfig = {
@@ -57,17 +61,38 @@ const authConfig = {
         })
     ],
     callbacks: {
-        async signIn({ user, account, profile }) {
+        async signIn({ user, account, profile, credentials }) {
             /* console.log('user', user)
             console.log('account', account)
             console.log('profile', profile) */
+            const userExists = await findUserByEmail(user?.email ?? '');
+            if (userExists) {
+                if (
+                    userExists?.providers?.includes('CREDENTIALS') &&
+                    !userExists?.providers?.includes('FACEBOOK') &&
+                    !userExists?.providers?.includes('GOOGLE')
+                ) {
+                    if (credentials) {
+                        return true;
+                    } else {
+                        return routes.public.signin + "?error=wrong_provider"
+                    }
+                }
+            }
             if (account?.provider === "google") {
                 const credential = GoogleAuthProvider.credential(account.id_token);
                 try {
-                    const userExists = await findUserByEmail(user?.email ?? '');
                     if (!userExists) {
                         const firebaseUser = await signInWithCredential(auth, credential);
                         const uid = firebaseUser.user.uid;
+                        const notificationParameter: NotificationParameter = {
+                            isNew: true,
+                            isAccountActivity: true,
+                            isNewAnnouncement: true,
+                            isFavoris: true,
+                            isPersonalizedSuggestions: true,
+                            isSystemUpdated: true
+                        }
                         const userData = {
                             uid,
                             firstname: profile?.given_name ?? '',
@@ -80,9 +105,18 @@ const authConfig = {
                             providers: ['GOOGLE' as ProviderType],
                             metadata: {
                                 idToken: account.id_token
-                            }
+                            },
+                            notificationParameter
                         };
                         await createUser(userData);
+                        await createNotification({
+                            type: 'SECURITY',
+                            title: 'Sécurisez votre compte avec Facebook',
+                            message: "Pour mieux protéger votre compte et éviter toute tentative d'accès non autorisé, connectez-le à Facebook dès maintenant.",
+                            isRead: false,
+                            createdFor: uid,
+                            actionUrl: routes.protected.login_and_security,
+                        });
                     } else {
                         const providers = userExists?.providers || []
                         if (!providers.includes('GOOGLE')) {
@@ -90,10 +124,19 @@ const authConfig = {
                             const facebookUser = await signInWithCredential(auth, facebookCredential)
                             await linkWithCredential(facebookUser.user, credential)
                             providers.push('GOOGLE')
+                            await createNotification({
+                                type: 'SECURITY',
+                                title: 'Sécurité avec Google',
+                                message: "Votre compte a été sécurisé avec Google",
+                                isRead: false,
+                                createdFor: user.uid,
+                                actionUrl: routes.protected.login_and_security,
+                            });
                         }
                         await updateUser(userExists.uid, {
                             ...userExists,
                             metadata: {
+                                ...userExists.metadata,
                                 idToken: account.id_token
                             },
                             providers
@@ -111,10 +154,17 @@ const authConfig = {
                 }
                 const credential = FacebookAuthProvider.credential(account.access_token)
                 try {
-                    const userExists = await findUserByEmail(user?.email ?? '');
                     if (!userExists) {
                         const firebaseUser = await signInWithCredential(auth, credential)
                         const uid = firebaseUser.user.uid
+                        const notificationParameter: NotificationParameter = {
+                            isNew: true,
+                            isAccountActivity: true,
+                            isNewAnnouncement: true,
+                            isFavoris: true,
+                            isPersonalizedSuggestions: true,
+                            isSystemUpdated: true
+                        }
                         const userData = {
                             uid,
                             firstname: profile?.name ?? '',
@@ -127,9 +177,18 @@ const authConfig = {
                             providers: ['FACEBOOK' as ProviderType],
                             metadata: {
                                 accessToken: account.access_token
-                            }
+                            },
+                            notificationParameter
                         }
                         await createUser(userData);
+                        await createNotification({
+                            type: 'SECURITY',
+                            title: 'Sécurisez votre compte avec Google',
+                            message: "Pour mieux protéger votre compte et éviter toute tentative d'accès non autorisé, connectez-le à Google dès maintenant.",
+                            isRead: false,
+                            createdFor: uid,
+                            actionUrl: routes.protected.login_and_security,
+                        });
                     } else {
                         const providers = userExists?.providers || []
                         if (!providers.includes('FACEBOOK')) {
@@ -137,10 +196,19 @@ const authConfig = {
                             const googleUser = await signInWithCredential(auth, googleCredential);
                             await linkWithCredential(googleUser.user, credential);
                             providers.push('FACEBOOK')
+                            await createNotification({
+                                type: 'SECURITY',
+                                title: 'Sécurité avec Facebook',
+                                message: "Votre compte a été sécurisé avec Facebook",
+                                isRead: false,
+                                createdFor: user.uid,
+                                actionUrl: routes.protected.login_and_security,
+                            });
                         }
                         await updateUser(userExists.uid, {
                             ...userExists,
                             metadata: {
+                                ...userExists.metadata,
                                 accessToken: account.access_token
                             },
                             providers
@@ -154,18 +222,17 @@ const authConfig = {
             return true;
         },
         async jwt({ token, user, trigger, session }) {
-            if (!user && token?.email) {
-                const userDetails = await findUserByEmail(token.email)
+            if (user) {
+                const userDetails = await findUserByEmail(user.email!)
                 if (userDetails) {
                     user = userDetails
                 }
-            }
-            if (user) {
                 token = {
                     ...token,
                     user
                 }
             }
+
             if (trigger === "update") {
                 token = {
                     ...token,

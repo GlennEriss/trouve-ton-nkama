@@ -15,6 +15,9 @@ import { StudioFactory } from "../factories/property/studio.factory";
 import { VillaFactory } from "../factories/property/villa.factory";
 import { PropertyFactory } from "../factories/property/property.factory";
 import { PropertyDirector } from "@/directors/property.director";
+import { KioskFactory } from "@/factories/property/kiosk.factory";
+import { RoomFactory } from "@/factories/property/room.factory";
+import { ShopFactory } from "@/factories/property/shop.factory";
 
 export abstract class DirectorFactory {
     /**
@@ -42,6 +45,15 @@ export abstract class DirectorFactory {
                 break;
             case 'Studio':
                 factory = new StudioFactory();
+                break;
+            case 'Room':
+                factory = new RoomFactory();
+                break;
+            case 'Shop':
+                factory = new ShopFactory();
+                break;
+            case 'Kiosk':
+                factory = new KioskFactory();
                 break;
             default:
                 factory = new VillaFactory();

@@ -10,13 +10,15 @@ import { TypeProperty } from "@/lib/utils";
 import { FaBath, FaToilet } from "react-icons/fa";
 import { IoMdBed } from "react-icons/io";
 import { MdOutlineSquareFoot } from "react-icons/md";
+import { House } from "@/mocks/mocksHouse";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-const HouseCard = ({ house }: any) => {
+const PropertyCard = ({property}: any) => {
   const router = useRouter();
+  //console.log("property:",property)
 
   const handleCardClick = () => {
-    router.push(`/houseDetails?id=${house.id}`);
+    router.push(`/houseDetails/${property.path.replace("properties/", "")}`);
   };
 
   return (
@@ -28,8 +30,8 @@ const HouseCard = ({ house }: any) => {
       {/* Image principale */}
       <div className="relative w-full h-52 overflow-hidden">
         <Image
-          src={house.images?.[0]?.fileURL || "/home.png"}
-          alt={house.title || "Image de la propriété"}
+          src={property.images?.[0]?.fileURL || "/home.png"}
+          alt={property.title || "Image de la propriété"}
           fill
           className="object-cover transform transition-transform duration-500 hover:scale-110"
         />
@@ -39,18 +41,18 @@ const HouseCard = ({ house }: any) => {
       <div className="p-4 bg-gradient-to-b from-white to-gray-100 dark:from-gray-800 dark:to-gray-900 flex flex-col justify-between flex-grow">
         <div>
           <h3 className="text-md font-semibold text-gray-800 dark:text-gray-100 line-clamp-2 h-12">
-            {house.title || "Propriété"}
+            {property.title || "Propriété"}
           </h3>
           <p className="text-sm text-gray-600 dark:text-gray-400 truncate">
-            {house.city}, {house.province}, {house.country}
+            {property.city}, {property.province}, {property.country}
           </p>
-          {house.street && (
+          {property.street && (
             <p className="text-sm text-gray-600 dark:text-gray-400 truncate">
-              {house.street}
+              {property.street}
             </p>
           )}
           <p className="text-sm text-gray-700 dark:text-gray-300">
-            {house.status === "FOR_RENT" ? "À louer" : "À vendre"} - {house.price}{" "}
+            {property.status === "FOR_RENT" ? "À louer" : "À vendre"} - {property.price}{" "}
             F CFA
           </p>
         </div>
@@ -59,23 +61,23 @@ const HouseCard = ({ house }: any) => {
         <div className="flex justify-between text-gray-600 dark:text-gray-400">
           <div className="flex items-center space-x-1">
             <IoMdBed className="w-5 h-5" />
-            <span className="text-sm">{house.nbrRooms}</span>
+            <span className="text-sm">{property.nbrRooms}</span>
           </div>
           <div className="flex items-center space-x-1">
             <FaToilet className="w-5 h-5" />
-            <span className="text-sm">{house.nbrToilets}</span>
+            <span className="text-sm">{property.nbrToilets}</span>
           </div>
           <div className="flex items-center space-x-1">
             <MdOutlineSquareFoot className="w-5 h-5" />
-            <span className="text-sm">{house.area} m²</span>
+            <span className="text-sm">{property.area} m²</span>
           </div>
         </div>
       </div>
 
       {/* Type de propriété */}
-      {house.typeProperty && (
+      {property.typeProperty && (
         <div className="absolute top-2 left-2 px-3 py-1 text-xs font-bold bg-blue-100 text-blue-600 dark:bg-blue-800 dark:text-blue-200 rounded-full">
-          {TypeProperty[house.typeProperty]}
+          {TypeProperty[property.typeProperty]}
         </div>
       )}
 
@@ -103,4 +105,4 @@ const HouseCard = ({ house }: any) => {
   );
 };
 
-export default HouseCard;
+export default PropertyCard;

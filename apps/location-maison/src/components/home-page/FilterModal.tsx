@@ -1,5 +1,6 @@
 "use client";
 
+import { useCallback, useState } from "react";
 import {
   Dialog,
   DialogContent,
@@ -10,14 +11,25 @@ import {
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { ChevronLeft } from "lucide-react";
-import { useAlgoliaContext } from "@/providers/AlgoliaContext";
 import { BiFilter } from "react-icons/bi";
-import { useState } from "react";
+import { useAlgoliaContext } from "@/providers/AlgoliaContext";
+import { getTypePropertyKey, TypeProperty } from "@/lib/utils";
+import { tags as tagsList } from "@/constantes";
 
+/**
+ * Composant FilterModal
+ * - Gère l'ouverture/fermeture de la modal
+ * - Affiche les champs de filtres (prix, surface, etc.)
+ * - Applique la logique de toggling pour typeProperty et tags
+ * - Valide les champs (min <= max)
+ * - Appelle `applyRefinements()` et `handleSearch()` lorsque l'utilisateur clique sur "Appliquer"
+ */
 export const FilterModal = ({
-  applyRefinements,
+  //applyRefinements,
+  handleSearch,
 }: {
-  applyRefinements: () => void;
+  //applyRefinements: () => void;
+  handleSearch: () => void;
 }) => {
   const {
     city,
@@ -43,71 +55,100 @@ export const FilterModal = ({
     clearFilters,
   } = useAlgoliaContext();
 
-  const toggleSelection = (
-    list: string[],
-    item: string,
-    setter: (val: string[]) => void
-  ) => {
-    if (list.includes(item)) {
-      setter(list.filter((i) => i !== item));
-    } else {
-      setter([...list, item]);
-    }
-  };
-
+  // État local pour l'ouverture/fermeture de la modal
   const [open, setOpen] = useState(false);
 
-  const handleApplyFilters = () => {
-    // Validation pour éviter des erreurs dans les plages de valeurs
-    if (
-      minPrice &&
-      maxPrice &&
-      Number(minPrice) > Number(maxPrice)
-    ) {
+  /**
+   * Fonction utilitaire pour ajouter/retirer un élément d'un tableau (typeProperty, tags)
+   */
+  const toggleSelection = useCallback(
+    (list: string[], item: string, setter: (val: string[]) => void) => {
+      if (list.includes(item)) {
+        const newList = list.filter((i) => i !== item);
+        //console.log(`Retrait de l'élément "${item}". Nouvelle liste :`, newList);
+        setter(newList);
+      } else {
+        const newList = [...list, item];
+        //console.log(`Ajout de l'élément "${item}". Nouvelle liste :`, newList);
+        setter(newList);
+      }
+    },
+    []
+  );
+
+
+  /**
+   * Valide et applique les filtres (appel d'applyRefinements et handleSearch)
+   */
+  const handleApplyFilters = useCallback(() => {
+    // Vérification basique des valeurs min/max
+    if (minPrice && maxPrice && Number(minPrice) > Number(maxPrice)) {
       alert("Le prix minimum ne peut pas être supérieur au prix maximum.");
       return;
     }
-
-    if (
-      minArea &&
-      maxArea &&
-      Number(minArea) > Number(maxArea)
-    ) {
+    if (minArea && maxArea && Number(minArea) > Number(maxArea)) {
       alert("La surface minimum ne peut pas être supérieure à la surface maximum.");
       return;
     }
-
-    if (
-      minNbrRooms &&
-      maxNbrRooms &&
-      Number(minNbrRooms) > Number(maxNbrRooms)
-    ) {
+    if (minNbrRooms && maxNbrRooms && Number(minNbrRooms) > Number(maxNbrRooms)) {
       alert(
         "Le nombre minimum de chambres ne peut pas être supérieur au nombre maximum."
       );
       return;
     }
 
-    applyRefinements();
+    // Applique les filtres (mise à jour du UI state)
+    //applyRefinements();
+
+    // Lance la recherche (si vous construisez l'URL ou relancez la requête)
+    handleSearch();
+
+    // Ferme la modal
     setOpen(false);
-  };
+  }, [
+    minPrice,
+    maxPrice,
+    minArea,
+    maxArea,
+    minNbrRooms,
+    maxNbrRooms,
+    //applyRefinements,
+    handleSearch,
+  ]);
+
+  /**
+   * Si vous voulez réinitialiser et appliquer immédiatement,
+   * vous pouvez faire :
+   * clearFilters();
+   * applyRefinements();
+   * handleSearch();
+   */
+  const handleClearFilters = useCallback(() => {
+    clearFilters();
+    // Optionnel : appliquez la remise à zéro directement
+    // applyRefinements();
+    // handleSearch();
+  }, [clearFilters]);
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <div className="w-11 h-11 bg-black border-white border-none hover:bg-gray-900 flex items-center justify-center rounded-full aspect-square">
-          <BiFilter className="w-8 h-8 text-gray-400 cursor-pointer" />
+        <div className="w-11 h-11 bg-gradient-to-r from-[#146B67] via-[#1FA89B] to-[#146B67] border-none hover:brightness-110 flex items-center justify-center rounded-full aspect-square">
+          <BiFilter className="w-8 h-8 text-white cursor-pointer" />
         </div>
       </DialogTrigger>
 
       <DialogContent
         style={{ borderRadius: "24px" }}
-        className=" bg-white dark:bg-black text-black dark:text-white max-w-5xl mx-auto max-h-[700px] overflow-scroll rounded-full p-6 border-none"
+        className=" bg-white dark:bg-black text-black dark:text-white max-w-5xl mx-auto max-h-[700px] overflow-scroll rounded-2xl p-6 border-none"
       >
-        <DialogHeader className="flex items-center gap-2 sticky top-[-25] bg-white dark:bg-black flex-initial w-full">
+        <DialogHeader className="flex items-center gap-2 sticky top-0 bg-white dark:bg-black w-full">
           <DialogTitle className="text-xl font-bold">
-            <div className="flex flex-initial items-center gap-2 rounded-xl">
-              <ChevronLeft className="w-5 h-5 cursor-pointer" />
+            <div className="flex items-center gap-2">
+              <ChevronLeft
+                className="w-5 h-5 cursor-pointer"
+                onClick={() => setOpen(false)}
+              />
               <h2 className="text-2xl font-bold">Filtres de recherche</h2>
             </div>
           </DialogTitle>
@@ -116,7 +157,7 @@ export const FilterModal = ({
         <div className="flex gap-6 mt-6">
           {/* Colonne gauche */}
           <div className="flex-1 space-y-6">
-            {/* Section Ville */}
+            {/* Ville */}
             <div>
               <label htmlFor="city-input" className="text-md font-bold mb-2 block">
                 Ville
@@ -130,7 +171,7 @@ export const FilterModal = ({
               />
             </div>
 
-            {/* Section Quartier */}
+            {/* Quartier */}
             <div>
               <label htmlFor="street-input" className="text-md font-bold mb-2 block">
                 Quartier
@@ -144,7 +185,7 @@ export const FilterModal = ({
               />
             </div>
 
-            {/* Section Prix */}
+            {/* Prix */}
             <div>
               <label className="text-md font-bold mb-2 block">Prix en F CFA</label>
               <div className="flex items-center gap-2">
@@ -168,7 +209,7 @@ export const FilterModal = ({
               </div>
             </div>
 
-            {/* Section Surface */}
+            {/* Surface */}
             <div>
               <label className="text-md font-bold mb-2 block">Surface (m²)</label>
               <div className="flex items-center gap-2">
@@ -192,7 +233,7 @@ export const FilterModal = ({
               </div>
             </div>
 
-            {/* Section Nombre de chambres */}
+            {/* Nombre de chambres */}
             <div>
               <label className="text-md font-bold mb-2 block">
                 Nombre de chambres
@@ -221,24 +262,21 @@ export const FilterModal = ({
 
           {/* Colonne droite */}
           <div className="flex-1 space-y-6">
-            {/* Section Type de propriété */}
+            {/* Type de propriété */}
             <div>
               <label className="text-md font-bold mb-2 block">
                 Type de propriété
               </label>
               <div className="flex flex-wrap gap-3">
-                {["Maison", "Appartement", "Studio", "Chambre"].map((type) => (
+                {Object.values(TypeProperty).map((type) => (
                   <Button
                     key={type}
                     variant="outline"
-                    onClick={() =>
-                      toggleSelection(typeProperty, type, setTypeProperty)
-                    }
-                    className={`rounded-full border-gray-600 font-semibold ${
-                      typeProperty.includes(type)
+                    onClick={() => toggleSelection(typeProperty, getTypePropertyKey(type)!, setTypeProperty)}
+                    className={`rounded-full border-gray-600 font-semibold ${typeProperty.includes(getTypePropertyKey(type)!)
                         ? "bg-red-800 text-white"
                         : "text-gray-400"
-                    }`}
+                      }`}
                   >
                     {type}
                   </Button>
@@ -246,37 +284,34 @@ export const FilterModal = ({
               </div>
             </div>
 
-            {/* Section Tags */}
+            {/* Tags */}
             <div>
               <label className="text-md font-bold mb-2 block">Tags</label>
               <div className="flex flex-wrap gap-3">
-                {["Étudiant", "Wi-Fi", "Meublé", "Proche de la plage"].map(
-                  (tag) => (
-                    <Button
-                      key={tag}
-                      variant="outline"
-                      onClick={() => toggleSelection(tags, tag, setTags)}
-                      className={`rounded-full border-gray-600 font-semibold ${
-                        tags.includes(tag)
-                          ? "bg-red-800 text-white"
-                          : "text-gray-400"
+                {tagsList.map((tag) => (
+                  <Button
+                    key={tag.tagName}
+                    variant="outline"
+                    onClick={() => toggleSelection(tags, tag.tagName, setTags)}
+                    className={`rounded-full border-gray-600 font-semibold ${tags.includes(tag.tagName)
+                        ? "bg-red-800 text-white"
+                        : "text-gray-400"
                       }`}
-                    >
-                      {tag}
-                    </Button>
-                  )
-                )}
+                  >
+                    {tag.tagName}
+                  </Button>
+                ))}
               </div>
             </div>
           </div>
         </div>
 
         {/* Boutons d'action */}
-        <div className="mt-8 flex gap-4 justify-end sticky bottom-[-25] bg-white dark:bg-black py-5">
+        <div className="mt-8 flex gap-4 justify-end sticky bottom-0 bg-white dark:bg-black py-5">
           <Button
             variant="outline"
-            onClick={clearFilters}
-            className="rounded-xl dark:text-white text-black border-gray-500 p-5 no"
+            onClick={handleClearFilters}
+            className="rounded-xl dark:text-white text-black border-gray-500 p-5"
           >
             Effacer les filtres
           </Button>

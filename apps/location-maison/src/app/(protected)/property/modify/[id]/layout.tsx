@@ -3,6 +3,7 @@ import TitleComponent from '@/components/shared/TitleComponent'
 import { PropertyFormComponentProvider } from '@/providers/property.form.provider'
 import React from 'react'
 import StepperButtonComponent from '@/components/stepper/StepperButtonComponent'
+import ModifyPropertyWithProvider from '@/components/property/ModifyPropertyWithProvider'
 
 export default function layout({ children }: { children: React.ReactNode }) {
     return (
@@ -10,7 +11,7 @@ export default function layout({ children }: { children: React.ReactNode }) {
             <div className='sticky top-0 md:static z-50 bg-white px-5 py-4 shadow border-b flex items-center justify-between md:hidden'>
                 <TitleComponent />
             </div>
-            <PropertyFormComponentProvider>
+            <ModifyPropertyWithProvider>
                 <div className='flex flex-col gap-4 px-4'>
                     <div className="hidden md:block">
                         <TitleComponent />
@@ -19,7 +20,7 @@ export default function layout({ children }: { children: React.ReactNode }) {
                     {children}
                     <StepperButtonComponent />
                 </div>
-            </PropertyFormComponentProvider>
+            </ModifyPropertyWithProvider>
         </div>
     )
 }

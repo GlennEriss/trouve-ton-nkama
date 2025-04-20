@@ -29,7 +29,7 @@ export class ApartmentBuilder extends LogementBuilder {
             ...this.property,
             typeProperty: 'Apartment',
             nbrFloorApartment: 0,
-            numeroApartment: ''
+            numeroApartment: '01'
         } as Apartment;
     }
 

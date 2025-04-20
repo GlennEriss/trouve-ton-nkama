@@ -7,9 +7,9 @@ import { useCurrentUser } from '@/hooks/use-current-user';
 import { firebaseTimestampToDate } from '@/lib/firebaseTimestampToDate';
 
 export default function CardUserProfil() {
-    const user = useCurrentUser()
+    const { user } = useCurrentUser()
     const avatarBackground = generateColorFromName(user?.firstname)
-    console.log(user?.createdAt?.nanoseconds)
+    //console.log(user?.createdAt?.nanoseconds)
     return (
         <Card className="shadow-lg border border-gray-200 md:flex md:items-center md:max-w-[550px] lg:flex-col lg:mt-7">
             {/* Header de la carte */}
@@ -59,7 +59,7 @@ export default function CardUserProfil() {
                     {user?.phoneNumbers && user?.phoneNumbers.length > 0 ? (
                         user?.phoneNumbers.map((phone, index) => <span key={index}>{phone}</span>)
                     ) : (
-                        <span>No phone numbers available</span>
+                        <span>Aucun numéro de téléphone disponible</span>
                     )}
                 </div>
                 <div className='hidden md:flex text-sm gap-1'>

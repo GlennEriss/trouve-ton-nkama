@@ -1,45 +1,61 @@
 import { routes } from '@/constantes/routes'
-import { ChevronLeft, Home, Building, Landmark, Warehouse, Briefcase, Building2 } from 'lucide-react'
+import { TypeProperty } from '@/lib/utils'
+import { ChevronLeft, Home, Building, Landmark, Warehouse, Briefcase, Building2, Bed, Store, ShoppingBag } from 'lucide-react'
 import Link from 'next/link'
 import React from 'react'
 
 const buttonList = [
   {
-    label: "Maison",
+    label: TypeProperty.Home,
     link: routes.protected.add_home,
     icon: <Home size={24} />
   },
   {
-    label: "Studio",
+    label: TypeProperty.Studio,
     link: routes.protected.add_studio,
-    icon: <Building2 size={24} />
-  },
-  {
-    label: "Appartement",
-    link: routes.protected.add_apartment,
-    icon: <Building size={24} />
-  },
-  {
-    label: "Villa",
-    link: routes.protected.add_villa,
-    icon: <Landmark size={24} />
-  },
-  {
-    label: "Immeuble",
-    link: routes.protected.add_building,
     icon: <Warehouse size={24} />
   },
   {
-    label: "Bureau",
+    label: TypeProperty.Apartment,
+    link: routes.protected.add_apartment,
+    icon: <Building size={24} />
+  },
+  /* {
+    label: TypeProperty.Villa,
+    link: routes.protected.add_villa,
+    icon: <Landmark size={24} />
+  }, */
+  {
+    label: TypeProperty.Building,
+    link: routes.protected.add_building,
+    icon: <Building2 size={24} />
+  },
+  {
+    label: TypeProperty.Desk,
     link: routes.protected.add_desk,
     icon: <Briefcase size={24} />
+  },
+  {
+    label: TypeProperty.Room,
+    link: routes.protected.add_room,
+    icon: <Bed size={24} />
+  },
+  {
+    label: TypeProperty.Kiosk,
+    link: routes.protected.add_kiosk,
+    icon: <Store size={24} />
+  },
+  {
+    label: TypeProperty.Shop,
+    link: routes.protected.add_shop,
+    icon: <ShoppingBag size={24} />
   },
 ]
 export default function page() {
   return (
-    <div className='space-y-6 dark:bg-gray-900 min-h-screen mb-10 dark:py-1 dark:rounded-xl'>
+    <div className='space-y-8 min-h-screen pb-10 bg-gradient-to-br from-gray-100 to-gray-200 dark:bg-gradient-to-b dark:from-gray-900 dark:to-gray-800 mb-10 md:pt-1'>
       {/* Header Mobile */}
-      <div className='bg-white dark:bg-gray-800 sticky top-0 flex gap-5 items-center border-b dark:border-gray-700 py-3 md:hidden px-4 z-50 shadow'>
+      <div className='bg-white dark:bg-gray-800 sticky top-0 flex gap-5 items-center border-b dark:border-gray-700 py-4 md:hidden px-6 shadow-md'>
         <Link href={routes.protected.properties}>
           <ChevronLeft className='text-gray-800 dark:text-white' />
         </Link>
@@ -47,16 +63,16 @@ export default function page() {
       </div>
 
       {/* Section des boutons */}
-      <div className='grid grid-cols-1 gap-6 md:grid-cols-2 px-6'>
+      <div className='grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 px-6'>
         {
           buttonList.map((item, index) => (
             <Link
-              className='text-xl font-semibold flex items-center gap-4 justify-center border p-5 rounded-xl lg:h-[130px] lg:text-2xl transition-all 
-              hover:bg-blue-50 hover:shadow-lg focus:ring focus:ring-blue-300 text-blue-700 border-blue-300
-              dark:text-blue-400 dark:border-blue-500 dark:hover:bg-gray-700 dark:hover:shadow-lg'
+              className='text-lg font-semibold flex flex-col items-center gap-4 justify-center border p-5 rounded-xl shadow-md lg:h-[140px] lg:text-xl transition-all bg-white dark:bg-gray-800 dark:border-gray-700 hover:scale-105 hover:shadow-lg hover:bg-blue-100 dark:hover:bg-gray-700 text-gray-900 dark:text-white'
               href={item.link}
               key={index}>
-              {item.icon}
+              <div className="p-3 rounded-full bg-blue-100 dark:bg-gray-700">
+                {item.icon}
+              </div>
               {item.label}
             </Link>
           ))

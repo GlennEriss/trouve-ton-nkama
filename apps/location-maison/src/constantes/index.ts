@@ -19,19 +19,19 @@ export const tags = [
     tagIcon: FaHeart, // Icon for couple-friendly homes
   },
   {
-    tagName: 'Maison',
+    tagName: 'Villa',
     tagIcon: FaHome, // Icon for houses
   },
   {
-    tagName: 'Appartement',
-    tagIcon: FaBuilding, // Icon for apartments
+    tagName: 'Sous barrière',
+    tagIcon: FaShieldAlt, // Updated icon for gated properties
   },
   {
     tagName: 'Meublé',
     tagIcon: FaCouch, // Icon for furnished properties
   },
   {
-    tagName: 'Studio',
+    tagName: 'Centre-ville',
     tagIcon: FaBuilding, // Icon for studio apartments
   },
   {

@@ -33,18 +33,18 @@ import clsx from 'clsx';
 export const ImagesComponent = ({ field }: { field: any }) => {
     return (
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-2 gap-3">
-            {
-                [0, 1, 2, 3, 4, 5].map((item, key) =>
-                    <ImageComponent index={item} key={key} field={field} />
-                )
-            }
+            <ImageUploader field={field} />
+            {field.value?.map((image: File | string, index: number) => (
+                <ImageComponent key={index} index={index} field={field} />
+            ))}
         </div>
     )
 }
 
-export const ImageComponent = ({ field, index }: { field: any, index: number }) => {
+export const ImageUploader = ({ field }: { field: any }) => {
     const { getInputProps, getRootProps, isDragActive } = useDropzone({
-        maxFiles: 1,
+        maxFiles: 6,
+        multiple: true,
         accept: {
             'image/png': ['.png'],
             'image/jpeg': ['.jpg', '.jpeg'],
@@ -52,24 +52,38 @@ export const ImageComponent = ({ field, index }: { field: any, index: number }) 
         },
         onDrop: (acceptedFiles) => {
             const currentFiles = field.value || [];
-            const newFiles = [...currentFiles];
-            newFiles[index] = acceptedFiles[0]
+            const newFiles = [...currentFiles, ...acceptedFiles].slice(0, 6); // Max 6 images
             field.onChange(newFiles);
         },
     });
-    const image: File | string | undefined = field.value && field.value[index];
+
     return (
-        <div {...getRootProps()} className='border border-dashed h-40 md:h-[240px] flex justify-center items-center'>
+        <div {...getRootProps()} className='border border-dashed h-40 md:h-[240px] flex justify-center items-center cursor-pointer'>
             <Input {...getInputProps()} />
+            {isDragActive ? (
+                <p className="text-gray-500">Déposez vos images ici...</p>
+            ) : (
+                <AiOutlineCamera size={50} className='text-gray-500' />
+            )}
+        </div>
+    );
+};
+
+export const ImageComponent = ({ field, index }: { field: any, index: number }) => {
+    const image: File | string | undefined = field.value && field.value[index];
+
+    return (
+        <div className='border border-dashed h-40 md:h-[240px] flex justify-center items-center'>
             <RenderImage image={image} field={field} index={index} />
         </div>
-    )
+    );
 }
 
 export const RenderImage = ({ image, field, index }: { image: File | string | undefined, field: any, index: number }) => {
     const handleDeleteImage = () => {
         const currentFiles = field.value as any[] || [];
-        const newFiles = currentFiles.filter((_, i) => i !== index);
+        const newFiles = currentFiles.slice(); // Copie du tableau
+        newFiles.splice(index, 1); // Supprime l'image à cet index
         field.onChange(newFiles);
     };
     return (

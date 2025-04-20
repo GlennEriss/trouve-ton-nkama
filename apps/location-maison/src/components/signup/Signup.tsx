@@ -16,6 +16,9 @@ import { User } from '@/models/authentication'
 import { createUser } from '@/db/user.db'
 import { useToast } from '@/hooks/use-toast'
 import { useRouter } from 'next/navigation'
+import { NotificationParameter } from '@/models/notification'
+import { createNotification } from '@/db/notification.db'
+import { routes } from '@/constantes/routes'
 
 export const Signup: React.FC = () => {
     const router = useRouter()
@@ -35,7 +38,28 @@ export const Signup: React.FC = () => {
             );
             await sendEmailVerification(userCred.user);
             const { password, ...userDetails } = user
-            const id = await createUser({ ...userDetails, uid: userCred.user.uid })
+            const notificationParameter: NotificationParameter = {
+                isNew: true,
+                isAccountActivity: true,
+                isNewAnnouncement: true,
+                isFavoris: true,
+                isPersonalizedSuggestions: true,
+                isSystemUpdated: true
+            }
+            const id = await createUser({
+                ...userDetails,
+                uid: userCred.user.uid,
+                notificationParameter,
+                providers: ['CREDENTIALS']
+            })
+            await createNotification({
+                type: 'SECURITY',
+                title: 'Sécurisez votre compte avec Facebook et Google',
+                message: "Pour mieux protéger votre compte et éviter toute tentative d'accès non autorisé, connectez-le à Facebook et Google dès maintenant.",
+                isRead: false,
+                createdFor: userCred.user.uid,
+                actionUrl: routes.protected.login_and_security,
+            });
             await signOut(auth)
             return userCred.user.uid
         } catch (error) {
@@ -144,7 +168,18 @@ export const Signup: React.FC = () => {
                     <CheckboxForm
                         form={form}
                         name={'termsOfPrivacyPolicy'}
-                        label="En cliquant sur s'inscrire, vous êtes en accord avec notre politique de confidentialité"
+                        labelElement={
+                            <>
+                                En cliquant sur s'inscrire, vous êtes en accord avec notre{" "}
+                                <a href={routes.public.confidentiality} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">
+                                    politique de confidentialité
+                                </a>{" "}
+                                et nos{" "}
+                                <a href={routes.public.terms_of_use} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">
+                                    conditions d'utilisation
+                                </a>.
+                            </>
+                        }
                     />
                     <ButtonLoading
                         type='submit'

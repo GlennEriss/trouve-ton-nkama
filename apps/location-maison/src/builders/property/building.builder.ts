@@ -30,7 +30,7 @@ export class BuildingBuilder extends PropertyBuilder {
             typeProperty: 'Building',
             nbrApartments: 0,
             nbrFloors: 0,
-            hasParking: 0
+            hasParking: false
         } as Building;
     }
 
@@ -62,7 +62,7 @@ export class BuildingBuilder extends PropertyBuilder {
      * @param {number} hasParking - The number representing whether the building has parking (0 for no, 1 for yes).
      * @returns {BuildingBuilder} The current instance of `BuildingBuilder`.
      */
-    setHasParking(hasParking: number): BuildingBuilder {
+    setHasParking(hasParking: boolean): BuildingBuilder {
         (this.property as Building).hasParking = hasParking;
         return this;
     }

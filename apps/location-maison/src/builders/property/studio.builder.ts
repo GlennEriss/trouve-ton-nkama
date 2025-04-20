@@ -27,7 +27,7 @@ export class StudioBuilder extends LogementBuilder {
             ...this.property,
             typeProperty: 'Studio',
             nbrFloorStudio: 0,
-            numeroStudio: ''
+            numeroStudio: '01'
         } as Studio;
     }
 

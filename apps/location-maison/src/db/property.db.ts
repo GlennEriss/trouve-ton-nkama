@@ -16,7 +16,7 @@ export async function createProperty(property: Property): Promise<string | null>
 export async function deleteProperty(id: string): Promise<boolean> {
     return await deleteModel(id, firebaseCollectionNames.properties)
 }
-export async function getProperties({ limitPerPage, lastDoc, createdBy, type }: { limitPerPage: number, lastDoc: any, createdBy: string, type: string }) {
+export async function getProperties({ limitPerPage, lastDoc, createdBy, type }: { limitPerPage: number, lastDoc: any, createdBy?: string, type?: string }) {
     const { collection, getDocs, db, where, query, startAfter, limit, orderBy } = await getFirestore();
     const professionalRef = collection(db, firebaseCollectionNames.properties);
     let q = query(

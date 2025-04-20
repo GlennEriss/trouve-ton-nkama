@@ -3,7 +3,7 @@
 import React from "react";
 import { useSearchParams, usePathname, useRouter } from "next/navigation";
 import { cn } from "@/lib/utils";
-import { Home, Building, Layout, MapPin, List, Briefcase, House, Landmark } from "lucide-react";
+import { Home, Building, Layout, MapPin, List, Briefcase, House, Landmark, ShoppingCart, Store, Bed } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 // Types des filtres
@@ -15,7 +15,9 @@ const filters = [
     { label: "Terrains", value: "land", icon: MapPin },
     { label: "Bureaux", value: "desk", icon: Briefcase },
     { label: "Immeubles", value: "building", icon: Landmark },
-    { label: "Villas", value: "villa", icon: House },
+    { label: "Magasins", value: "shop", icon: ShoppingCart },
+    { label: "Kiosques", value: "kiosk", icon: Store },
+    { label: "Chambres", value: "room", icon: Bed },
 ];
 
 export const PropertyFilter = () => {
@@ -35,11 +37,11 @@ export const PropertyFilter = () => {
             params.delete("type"); // Supprime le query param si "Tous" est sélectionné
         }
 
-        router.replace(`${pathname}?${params.toString()}`);
+        router.replace(`${pathname}?${params.toString()}`, { scroll: false });
     };
 
     return (
-        <div className="flex items-center gap-4 py-4 px-2 overflow-auto w-full">
+        <div className="flex items-center gap-4 py-4 px-2 overflow-x-auto w-full">
             {filters.map((filter) => {
                 const isActive = currentFilter === filter.value;
 
@@ -50,7 +52,7 @@ export const PropertyFilter = () => {
                         variant={isActive ? "default" : "outline"} // Change de style si actif
                         className={cn(
                             "flex items-center justify-center gap-2 rounded-md transition",
-                            isActive ? "bg-[#846CF9] hover:bg-[#846CF9] text-white" : "text-gray-600",
+                            isActive ? "bg-[#146B67] hover:bg-[#146B67] text-white" : "text-gray-600",
                             "sm:w-auto w-10 h-10 sm:h-auto"
                         )}
                     >

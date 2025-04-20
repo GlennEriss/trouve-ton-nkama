@@ -12,34 +12,58 @@ const searchClient = algoliasearch(
 
 // Typage du contexte Algolia
 interface AlgoliaContextType {
+  indexName: string;
+
+  // Champs textuels / numériques
   city: string;
   setCity: React.Dispatch<React.SetStateAction<string>>;
+
   street: string;
   setStreet: React.Dispatch<React.SetStateAction<string>>;
+
   minPrice: string;
   setMinPrice: React.Dispatch<React.SetStateAction<string>>;
   maxPrice: string;
   setMaxPrice: React.Dispatch<React.SetStateAction<string>>;
+
   minArea: string;
   setMinArea: React.Dispatch<React.SetStateAction<string>>;
   maxArea: string;
   setMaxArea: React.Dispatch<React.SetStateAction<string>>;
+
   minNbrRooms: string;
   setMinNbrRooms: React.Dispatch<React.SetStateAction<string>>;
   maxNbrRooms: string;
   setMaxNbrRooms: React.Dispatch<React.SetStateAction<string>>;
+
+  minNbrBathrooms: string;
+  setMinNbrBathrooms: React.Dispatch<React.SetStateAction<string>>;
+  maxNbrBathrooms: string;
+  setMaxNbrBathrooms: React.Dispatch<React.SetStateAction<string>>;
+
+  minNbrChickens: string;
+  setMinNbrChickens: React.Dispatch<React.SetStateAction<string>>;
+  maxNbrChickens: string;
+  setMaxNbrChickens: React.Dispatch<React.SetStateAction<string>>;
+
   typeProperty: string[];
   setTypeProperty: React.Dispatch<React.SetStateAction<string[]>>;
+
   tags: string[];
   setTags: React.Dispatch<React.SetStateAction<string[]>>;
-  clearFilters: () => void; // Réinitialise tous les filtres
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
+  // Nettoyage total des filtres
+  clearFilters: () => void;
+
+  // Résultats filtrés (si vous en avez besoin)
   filteredResults: any[];
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  setFilteredResults: (filteredResults: any) => void;
+  setFilteredResults: (filteredResults: any[]) => void;
+
+  // Recherche textuelle globale
+  searchText: string;
+  setSearchText: React.Dispatch<React.SetStateAction<string>>;
 }
 
-// Création du contexte Algolia
 const AlgoliaContext = createContext<AlgoliaContextType | null>(null);
 
 interface AlgoliaProviderProps {
@@ -50,20 +74,32 @@ interface AlgoliaProviderProps {
 export const AlgoliaProvider: React.FC<AlgoliaProviderProps> = ({
   children,
   indexName,
-}: AlgoliaProviderProps) => {
-  const [city, setCity] = useState<string>("");
-  const [street, setStreet] = useState<string>("");
-  const [minPrice, setMinPrice] = useState<string>("");
-  const [maxPrice, setMaxPrice] = useState<string>("");
-  const [minArea, setMinArea] = useState<string>("");
-  const [maxArea, setMaxArea] = useState<string>("");
-  const [minNbrRooms, setMinNbrRooms] = useState<string>("");
-  const [maxNbrRooms, setMaxNbrRooms] = useState<string>("");
+}) => {
+  // Champs textuels / numériques
+  const [city, setCity] = useState("");
+  const [street, setStreet] = useState("");
+  const [minPrice, setMinPrice] = useState("");
+  const [maxPrice, setMaxPrice] = useState("");
+  const [minArea, setMinArea] = useState("");
+  const [maxArea, setMaxArea] = useState("");
+  const [minNbrRooms, setMinNbrRooms] = useState("");
+  const [maxNbrRooms, setMaxNbrRooms] = useState("");
+  const [minNbrBathrooms, setMinNbrBathrooms] = useState("");
+  const [maxNbrBathrooms, setMaxNbrBathrooms] = useState("");
+  const [minNbrChickens, setMinNbrChickens] = useState("");
+  const [maxNbrChickens, setMaxNbrChickens] = useState("");
+
+  // Sélections multiples
   const [typeProperty, setTypeProperty] = useState<string[]>([]);
   const [tags, setTags] = useState<string[]>([]);
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
+  // Résultats filtrés (optionnel)
   const [filteredResults, setFilteredResults] = useState<any[]>([]);
 
+  // Recherche textuelle globale
+  const [searchText, setSearchText] = useState("");
+
+  // Fonction pour tout remettre à zéro
   const clearFilters = () => {
     setCity("");
     setStreet("");
@@ -73,13 +109,19 @@ export const AlgoliaProvider: React.FC<AlgoliaProviderProps> = ({
     setMaxArea("");
     setMinNbrRooms("");
     setMaxNbrRooms("");
+    setMinNbrBathrooms("");
+    setMaxNbrBathrooms("");
+    setMinNbrChickens("");
+    setMaxNbrChickens("");
     setTypeProperty([]);
     setTags([]);
+    setSearchText("");
   };
 
   return (
     <AlgoliaContext.Provider
       value={{
+        indexName,
         city,
         setCity,
         street,
@@ -96,13 +138,23 @@ export const AlgoliaProvider: React.FC<AlgoliaProviderProps> = ({
         setMinNbrRooms,
         maxNbrRooms,
         setMaxNbrRooms,
+        minNbrBathrooms,
+        setMinNbrBathrooms,
+        maxNbrBathrooms,
+        setMaxNbrBathrooms,
+        minNbrChickens,
+        setMinNbrChickens,
+        maxNbrChickens,
+        setMaxNbrChickens,
         typeProperty,
         setTypeProperty,
         tags,
         setTags,
-        clearFilters,
         filteredResults,
         setFilteredResults,
+        searchText,
+        setSearchText,
+        clearFilters,
       }}
     >
       <InstantSearch searchClient={searchClient} indexName={indexName}>

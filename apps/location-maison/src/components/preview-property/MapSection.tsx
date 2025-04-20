@@ -49,7 +49,7 @@ export const MapSection: React.FC<MapSectionProps> = ({
   countryCode,
 }) => {
   return (
-    <div style={{ height: '400px', width: '100%' }}>
+    <div style={{ height: '400px', width: '100%', zIndex: 1 }}>
       <MapContainer
         center={[latitude, longitude]}
         zoom={13}

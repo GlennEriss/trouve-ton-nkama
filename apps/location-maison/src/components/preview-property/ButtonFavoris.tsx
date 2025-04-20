@@ -7,13 +7,14 @@ import { useSession } from 'next-auth/react';
 import { updateUser } from '@/db/user.db';
 import { getPropertyById } from '@/db/property.db';
 import { createNotification } from '@/db/notification.db';
-
+import { Notification } from '@/models/notification'
+import { routes } from '@/constantes/routes';
 type ButtonFavorisProps = {
   idProperty: string
 }
 
 export const ButtonFavoris: React.FC<ButtonFavorisProps> = ({ idProperty }) => {
-  const user = useCurrentUser()
+  const { user } = useCurrentUser()
   const { update } = useSession()
   const [isFavorite, setIsFavorite] = React.useState(false);
   const [isLoading, setIsLoading] = React.useState(false);
@@ -32,14 +33,21 @@ export const ButtonFavoris: React.FC<ButtonFavorisProps> = ({ idProperty }) => {
       const property = await getPropertyById(idProperty)
       if (property) {
         favoris.push(idProperty);
-        await createNotification({
+        let notification: Partial<Notification> = {
           type: 'BOOKMARKING',
           idProperty,
           title: property.title,
-          message: user?.uid === property.createdBy ? 'Une annonce a été ajoutée a vos favoris': `${user?.firstname} ${user?.lastname}`,
           isRead: false,
           createdFor: property.createdBy,
-        })
+        }
+        if(user?.uid === property.createdBy){
+          notification.message = 'Une annonce a été ajoutée a vos favoris'
+          notification.actionUrl = routes.protected.favoris
+        }else{
+          notification.message =  `${user?.firstname} ${user?.lastname} a ajouté votre annonce à ses favoris`
+          notification.actionUrl = routes.protected.properties+'/'+idProperty
+        }
+        await createNotification(notification)
       }
 
     } else {
@@ -70,15 +78,26 @@ export const ButtonFavoris: React.FC<ButtonFavorisProps> = ({ idProperty }) => {
   }, [user, idProperty]);
 
   return (
-    <Heart
-      className={clsx({
-        "text-red-500": !isFavorite,
-        "text-red-500 fill-red-500": isFavorite,
-        "cursor-pointer": !isLoading,
-        "cursor-not-allowed opacity-50": isLoading,
-      })}
-      size={30}
+    <button
+      className="relative flex items-center justify-center p-2 rounded-full transition-all duration-300 
+                 hover:bg-red-100 dark:hover:bg-red-900 group"
       onClick={isLoading ? undefined : toggleFavorite}
-    />
+      disabled={isLoading}
+    >
+      <Heart
+        className={clsx(
+          "transition-all duration-300 ease-in-out",
+          isFavorite
+            ? "text-red-500 fill-red-500 scale-110"
+            : "text-gray-400 group-hover:text-red-500"
+        )}
+        size={30}
+      />
+      {isLoading && (
+        <div className="absolute inset-0 flex items-center justify-center">
+          <span className="animate-spin h-5 w-5 border-t-2 border-red-500 border-solid rounded-full"></span>
+        </div>
+      )}
+    </button>
   );
 }

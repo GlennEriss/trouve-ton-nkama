@@ -12,11 +12,14 @@ export const routes = {
         add_desk: '/property/add/desk',
         add_studio: '/property/add/studio',
         add_villa: '/property/add/villa',
+        add_room: '/property/add/room',
+        add_kiosk: '/property/add/kiosk',
+        add_shop: '/property/add/shop',
         account: '/profil',
         favoris: '/favoris',
         profil: '/profil',
         profil_informations: '/profil/informations',
-        login_and_security: 'login-and-security',
+        login_and_security: '/login-and-security',
         notifications: '/notifications',
         notification_list: '/list-notifications',
     },
@@ -27,5 +30,7 @@ export const routes = {
         reset_password: '/password-reset',
         confidentiality: '/privacy-policy',
         terms_of_use: '/terms-of-use',
+        data_deletion: '/data-deletion',
+        search_property: '/search'
     }
 }

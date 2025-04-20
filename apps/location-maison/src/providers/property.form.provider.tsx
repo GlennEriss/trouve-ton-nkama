@@ -3,7 +3,7 @@ import { Form } from "@/components/ui/form"
 import { createContext, useContext, useState, useTransition } from "react"
 import { useForm } from "react-hook-form"
 import { zodResolver } from '@hookform/resolvers/zod'
-import { ApartmentSchema, BuildingSchema, DeskSchema, HomeSchema, StudioSchema, VillaSchema } from "@/models/schema"
+import { ApartmentSchema, BuildingSchema, DeskSchema, HomeSchema, StudioSchema, VillaSchema, KioskSchema, RoomSchema, ShopSchema } from "@/models/schema"
 import { Property, TypeProperty, Image } from "@/models/annonce"
 import { DirectorFactory } from "@/directors/factory.director"
 import { useToast } from "@/hooks/use-toast"
@@ -16,6 +16,7 @@ import useLastpath from "@/hooks/use-lastpath"
 import React from "react"
 import queryKeys from "@/constantes/react-query-keys"
 import { routes } from "@/constantes/routes"
+import { updateOrCreateSuggestion } from "@/db/suggestion.db"
 
 type PropertyFormComponent = {
     form: any,
@@ -43,16 +44,20 @@ export const steps = [
     { label: 'Third', description: 'Select Rooms' },
 ]
 
-export const PropertyFormComponentProvider = ({ children }: { children: React.ReactNode }) => {
+export const PropertyFormComponentProvider = ({ children, isUpdate, propertyToUpdated }: {
+    children: React.ReactNode,
+    isUpdate?: boolean,
+    propertyToUpdated?: Partial<Property>
+}) => {
     //User
-    const user = useCurrentUser()
+    const { user } = useCurrentUser()
     //Router
     const router = useRouter()
     //pathnames
     const pathname = usePathname()
-    const id = useLastpath()
+    const id = isUpdate ? useLastpath() : null
     //Images already uplaod
-    const [imagesAlreadyUplaod, setImagesAlreadyUplaod ] = useState<Image[]>([])
+    const [imagesAlreadyUplaod, setImagesAlreadyUplaod] = useState<Image[]>([])
     //Type Property
     const getTypeProperty = () => {
         const pathnames = pathname.split('/')
@@ -68,12 +73,17 @@ export const PropertyFormComponentProvider = ({ children }: { children: React.Re
                 return 'Home' as TypeProperty
             case 'studio':
                 return 'Studio' as TypeProperty
+            case 'shop':
+                return 'Shop' as TypeProperty
+            case 'kiosk':
+                return 'Kiosk' as TypeProperty
+            case 'room':
+                return 'Room' as TypeProperty
             default:
                 return 'Villa' as TypeProperty
         }
     }
-    const typeProperty = getTypeProperty()
-
+    const typeProperty = propertyToUpdated ? propertyToUpdated.typeProperty as TypeProperty : getTypeProperty()
     //Toast
     const { toast } = useToast()
 
@@ -96,6 +106,12 @@ export const PropertyFormComponentProvider = ({ children }: { children: React.Re
                 return HomeSchema
             case 'Studio':
                 return StudioSchema
+            case 'Shop':
+                return ShopSchema
+            case 'Kiosk':
+                return KioskSchema
+            case 'Room':
+                return RoomSchema
             default:
                 return VillaSchema
         }
@@ -112,6 +128,9 @@ export const PropertyFormComponentProvider = ({ children }: { children: React.Re
     const mutation = useMutation({
         mutationKey: [queryKeys.properties],
         mutationFn: async (data: Property) => {
+            const province = data.province
+            const city = data.city
+            const street = data.street
             if (id) {
                 return await updateProperty(id, data)
             } else {
@@ -122,7 +141,7 @@ export const PropertyFormComponentProvider = ({ children }: { children: React.Re
 
                 }
             }
-
+            await updateOrCreateSuggestion({ province, city, street });
             //return data
         },
         onSuccess: () => {
@@ -165,8 +184,8 @@ export const PropertyFormComponentProvider = ({ children }: { children: React.Re
         mutation.mutate(propertyMutate)
     }
     React.useEffect(() => {
-        if (id) {
-            getPropertyById(id).then((fetchedProperty) => {
+        if (propertyToUpdated) {
+            /* getPropertyById(id).then((fetchedProperty) => {
                 // Set form values dynamically
                 if (fetchedProperty) {
                     const { createdAt, updatedAt, images, ...othersData } = fetchedProperty
@@ -177,9 +196,18 @@ export const PropertyFormComponentProvider = ({ children }: { children: React.Re
                     setImagesAlreadyUplaod(images)
                     form.setValue('images', imgList)
                 }
+            }); */
+            const { images, ...othersData } = propertyToUpdated
+            Object.entries(othersData).forEach(([key, value]) => {
+                form.setValue(key as any, value);
             });
+            if (images) {
+                const imgList = images.map(img => img.fileURL)
+                setImagesAlreadyUplaod(images)
+                form.setValue('images', imgList)
+            }
         }
-    }, [id])
+    }, [propertyToUpdated])
     return (
         <PropertyFormComponentContext.Provider value={{
             activeStep,

@@ -50,8 +50,8 @@ export abstract class PropertyFormBuilder {
         this.formElements.push(
             {
                 name: "images",
-                label: "Images",
-                description: "Ajoutez des images de bonne qualité du bien immobilier.",
+                label: "Sélectionnez plusieurs images",
+                description: "Ajoutez des images de bonne qualité du bien immobilier. (Max 6)",
                 component: (field: any) => <ImagesComponent field={field} />,
                 step: 1
             },

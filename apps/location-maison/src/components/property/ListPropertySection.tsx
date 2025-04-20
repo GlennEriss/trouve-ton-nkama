@@ -16,7 +16,7 @@ import { AiOutlineEye } from 'react-icons/ai'
 import { useSearchParams } from 'next/navigation';
 import { useCurrentUser } from '@/hooks/use-current-user';
 import { routes } from '@/constantes/routes';
-import { Property, Apartment, Building, Desk, Home, Studio, Villa, Logement, TypeProperty } from '@/models/annonce';
+import { Property, Apartment, Building, Desk, Home, Studio, Villa, Logement, Shop, Kiosk, Room, TypeProperty } from '@/models/annonce';
 import { cn } from '@/lib/utils';
 import { capitalizeFirstLetter } from '@/lib/capitalizeFirstLetter';
 import { ChevronLeft, ChevronRight } from 'lucide-react'
@@ -25,12 +25,13 @@ import { useInfiniteQuery } from '@tanstack/react-query';
 import { PROPERTY_ITEM_PER_PAGE } from '@/constantes/item-per-page';
 import queryKeys from '@/constantes/react-query-keys';
 import { RemoveProperty } from './RemoveProperty';
+import { Skeleton } from '../ui/skeleton';
 
 export default function ListPropertySection() {
     const searchParams = useSearchParams();
     const queryType = searchParams.get("type") || "";
     const type = capitalizeFirstLetter(queryType);
-    const user = useCurrentUser();
+    const { user } = useCurrentUser();
     const [currentPage, setCurrentPage] = React.useState(0);
     const [totalPage, setTotalPage] = React.useState(0);
     const fetchInfiniteProperties = async ({ pageParam }: { pageParam: any }) => {
@@ -43,7 +44,7 @@ export default function ListPropertySection() {
             type
         })
     }
-    const { data, isPending, isFetching, fetchNextPage } = useInfiniteQuery({
+    const { data, isPending, isFetching, fetchNextPage, error, isError } = useInfiniteQuery({
         queryKey: [queryKeys.properties, type, user],
         queryFn: fetchInfiniteProperties,
         initialPageParam: { limitPerPage: PROPERTY_ITEM_PER_PAGE, lastDoc: null },
@@ -69,8 +70,26 @@ export default function ListPropertySection() {
                 setTotalPage(total)
             })
     }, [user, type])
+    if (isError) {
+        console.log(error)
+    }
     if (isPending || isFetching) {
-        return <div>Loading...</div>
+        return (
+            <div className="px-5 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
+                {Array.from({ length: 8 }).map((_, index) => (
+                    <SkeletonCard key={index} />
+                ))}
+            </div>
+        );
+    }
+    if (!data || data.pages[currentPage]?.properties?.length === 0) {
+        return (
+            <div className="flex flex-col items-center justify-center p-10 gap-3">
+                <Image src="/no-favorites.svg" width={250} height={250} alt="Aucun favori" />
+                <h2 className="text-xl font-semibold text-gray-700">Aucune propriété pour le moment</h2>
+                <p className="text-gray-500 text-center">Ajoutez des propriétés pour enrichir votre catalogue</p>
+            </div>
+        );
     }
     return (
         <div>
@@ -117,23 +136,26 @@ export const CardPropertyCrud = ({ property }: { property: Property }) => {
     return (
         <Card
             className={cn(
-                'relative overflow-hidden rounded-lg shadow-md hover:shadow-lg transition-shadow duration-300',
-                'flex flex-col bg-white dark:bg-gray-900 dark:border-gray-700'
+                'relative overflow-hidden rounded-xl shadow-lg hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-1',
+                'flex flex-col bg-white dark:bg-gray-900 dark:border-gray-800',
+                'w-[330px] lg:w-[300px] h-[400px]'
             )}
         >
             {/* Image */}
-            <div className="relative h-48 w-full">
+            <div className="relative h-40 w-full rounded-t-xl overflow-hidden border-b">
                 <Image
-                    src={images[0]?.fileURL || '/fallback-image.jpg'} // Fallback si aucune image
+                    src={images[0]?.fileURL || '/fallback-image.jpg'}
                     alt={title}
                     layout="fill"
                     objectFit="cover"
-                    className="rounded-t-lg"
+                    className="rounded-t-xl transition-transform duration-300 hover:scale-105"
                 />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent"></div>
                 {/* Badge pour le statut */}
                 <span
                     className={cn(
-                        'absolute top-2 left-2 px-2 py-1 rounded-md text-xs font-semibold',
+                        'absolute top-3 left-3 px-3 py-1 rounded-full text-xs font-semibold uppercase',
+                        'bg-opacity-75 backdrop-blur-md',
                         statusColors.bg,
                         statusColors.text
                     )}
@@ -143,26 +165,24 @@ export const CardPropertyCrud = ({ property }: { property: Property }) => {
             </div>
 
             {/* Contenu principal */}
-            <div className="flex-1 flex flex-col justify-between p-4 gap-2">
+            <div className="flex-1 flex flex-col justify-between p-4 gap-3">
                 <div>
-                    <h3 className="text-lg font-bold text-gray-900 dark:text-white line-clamp-1">{title}</h3>
-                    <p className="text-sm text-gray-600 dark:text-gray-400 line-clamp-2">
-                        {street}, {city}, {province}
-                    </p>
+                    <h3 className="text-lg font-semibold text-gray-900 dark:text-white">{title}</h3>
+                    <p className="text-sm text-gray-600 dark:text-gray-400">{street}, {city}, {province}</p>
+                    <hr className="my-2 border-gray-200 dark:border-gray-700" />
                     <PropertyInformations property={property} />
                 </div>
 
                 {/* Footer */}
-                <div className="flex justify-between items-center mt-2">
+                <div className="flex justify-between items-center mt-3">
                     <span className="font-semibold text-lg text-gray-800 dark:text-gray-200">{price} FCFA</span>
-
                     <div className="flex gap-2">
-                        <Button variant="outline" size="icon" className="dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-700" asChild>
+                        <Button variant="ghost" size="icon" className="hover:bg-gray-200 dark:hover:bg-gray-700" asChild>
                             <Link href={routes.protected.properties + '/modify/' + property.id}>
                                 <FiEdit2 size={18} />
                             </Link>
                         </Button>
-                        <Button variant="outline" size="icon" className="dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-700" asChild>
+                        <Button variant="ghost" size="icon" className="hover:bg-gray-200 dark:hover:bg-gray-700" asChild>
                             <Link href={`${routes.protected.properties}/${property.id}`}>
                                 <AiOutlineEye size={18} />
                             </Link>
@@ -188,6 +208,12 @@ export const PropertyInformations = ({ property }: { property: Property }) => {
                 return <DetailsHome home={property as Home} />
             case 'Studio':
                 return <DetailsStudio studio={property as Studio} />
+            case 'Shop':
+                return <DetailsShop shop={property as Shop} />
+            case 'Kiosk':
+                return <DetailsKiosk kiosk={property as Kiosk} />
+            case 'Room':
+                return <DetailsRoom room={property as Room} />
             default:
                 return <DetailsVilla villa={property as Villa} />
         }
@@ -232,14 +258,29 @@ const items: Record<string, { label: string, icon: IconType }> = {
         label: 'Garages',
         icon: GiHomeGarage
     },
+    parking: {
+        label: 'Parking',
+        icon: GiHomeGarage
+    },
     pool: {
         label: 'Piscines',
         icon: FaSwimmingPool
     }
 }
-const DetailsItem = ({ keyName, value }: { keyName: string, value: number }) => {
+const DetailsItem = ({ keyName, value }: { keyName: string, value: any }) => {
     const item = items[keyName]
-    return (
+    return keyName === 'parking' ? (
+        <React.Fragment>
+            {
+                value && (
+                    <div className="flex gap-1">
+                        <item.icon size={20} />
+                        <span className='text-sm mt-[0.9]'>{item.label}</span>
+                    </div>
+                )
+            }
+        </React.Fragment>
+    ) : (
         <div className="flex gap-1 items-center">
             <item.icon size={20} />
             <span className='text-sm'>{value}</span>
@@ -286,6 +327,7 @@ const DetailsBuilding = ({ building }: { building: Building }) => {
         <div className='grid grid-cols-2 gap-2'>
             <DetailsItem keyName='floor' value={building.nbrFloors} />
             <DetailsItem keyName='apartment' value={building.nbrApartments} />
+            <DetailsItem keyName='parking' value={building.hasParking} />
         </div>
     )
 }
@@ -312,6 +354,27 @@ const DetailsHome = ({ home }: { home: Home }) => {
     )
 }
 
+const DetailsShop = ({ shop }: { shop: Shop }) => (
+    <div className="grid grid-cols-2 gap-4">
+        <DetailsItem keyName='room' value={shop.nbrRooms} />
+        <DetailsItem keyName='toilet' value={shop.nbrToilet} />
+    </div>
+);
+
+const DetailsKiosk = ({ kiosk }: { kiosk: Kiosk }) => (
+    <div className="text-sm">
+        Type de Kiosque: {kiosk.kioskType}
+    </div>
+);
+
+const DetailsRoom = ({ room }: { room: Room }) => {
+    return (
+        <div>
+            <span className='text-sm'>Type de chambre: {room.roomType}</span>
+        </div>
+    )
+}
+
 export const DetailsStudio = ({ studio }: { studio: Studio }) => {
     return (
         <div>
@@ -332,3 +395,16 @@ export const DetailsVilla = ({ villa }: { villa: Villa }) => {
         </div>
     )
 }
+
+
+const SkeletonCard = () => (
+    <div className="p-2 rounded-lg bg-gray-100 shadow-xl">
+        <Skeleton className="h-52 w-full rounded-lg" />
+        <div className="p-4">
+            <Skeleton className="h-5 w-3/4 mb-2" />
+            <Skeleton className="h-4 w-1/2 mb-1" />
+            <Skeleton className="h-4 w-1/3 mb-3" />
+            <Skeleton className="h-5 w-1/2" />
+        </div>
+    </div>
+);

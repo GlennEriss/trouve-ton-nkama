@@ -56,7 +56,7 @@ export const useLocationContext = () => {
 export const LocationProvider = ({ children }: { children: ReactNode }) => {
   const [locationsContext, setLocationsContext] = useState<any[]>([]);
   const [currentLocation, setCurrentLocation] = useState<any>();
-  const user = useCurrentUser();
+  const { user } = useCurrentUser();
 
   const getAddressFromCoordinates = async (
     latitude: number,

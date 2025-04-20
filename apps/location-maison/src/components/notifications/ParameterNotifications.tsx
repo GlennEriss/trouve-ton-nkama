@@ -55,7 +55,7 @@ export const notifications = [
 ];
 
 export default function ParameterNotifications() {
-    const user = useCurrentUser();
+    const { user } = useCurrentUser();
     const { update } = useSession();
 
     const onCheckedChange = async (param: string) => {

@@ -1,9 +1,6 @@
 'use client'
 import React from 'react'
 import Image from "next/image";
-import { IoMdBed } from "react-icons/io";
-import { FaToilet } from "react-icons/fa";
-import { MdOutlineSquareFoot } from "react-icons/md";
 import { TypeProperty } from '@/lib/utils';
 import { useRouter } from 'next/navigation';
 import { useCurrentUser } from '@/hooks/use-current-user';
@@ -14,9 +11,10 @@ import { Property } from '@/models/annonce';
 import { getPropertyById } from '@/db/property.db';
 import { Button } from '../ui/button';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { Skeleton } from '../ui/skeleton';
 
 export default function SectionFavoris() {
-    const user = useCurrentUser()
+    const {user} = useCurrentUser()
     const router = useRouter();
     const [currentPage, setCurrentPage] = React.useState(0);
     const [totalPage, setTotalPage] = React.useState(0);
@@ -64,15 +62,19 @@ export default function SectionFavoris() {
     })
     if (isLoading || isFetching) {
         return (
-            <div className="w-10 h-10 border-4 border-blue-500 rounded-full animate-spin border-t-transparent"></div>
-        )
+            <div className="px-5 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
+                {Array.from({ length: 8 }).map((_, index) => (
+                    <SkeletonCard key={index} />
+                ))}
+            </div>
+        );
     }
     if (!data || data.pages[currentPage]?.properties?.length === 0) {
         return (
             <div className="flex flex-col items-center justify-center p-10">
                 <Image src="/no-favorites.svg" width={128} height={128} alt="Aucun favori" />
                 <h2 className="text-xl font-semibold text-gray-700">Aucun favori pour le moment</h2>
-                <p className="text-gray-500">Ajoutez des propriétés à vos favoris pour les retrouver ici</p>
+                <p className="text-gray-500 text-center">Ajoutez des propriétés à vos favoris pour les retrouver ici</p>
             </div>
         );
     }
@@ -107,7 +109,7 @@ export default function SectionFavoris() {
                                     </p>
                                     {property.street && (
                                         <p className="text-sm text-gray-600 dark:text-gray-400 truncate">
-                                            {property.street}
+                                            {property.street} {property.additionnalInformation}
                                         </p>
                                     )}
                                     <p className="text-sm text-gray-700 dark:text-gray-300">
@@ -136,7 +138,7 @@ export default function SectionFavoris() {
                             {/* Type de propriété */}
                             {property.typeProperty && (
                                 <div className="absolute top-2 left-2 px-3 py-1 text-xs font-bold bg-blue-100 text-blue-600 dark:bg-blue-800 dark:text-blue-200 rounded-full">
-                                    {TypeProperty[property.typeProperty]}
+                                    {TypeProperty[property.typeProperty as string]}
                                 </div>
                             )}
                         </div>
@@ -173,3 +175,15 @@ export default function SectionFavoris() {
 
     )
 }
+
+const SkeletonCard = () => (
+    <div className="p-2 rounded-lg bg-gray-100 shadow-xl">
+        <Skeleton className="h-52 w-full rounded-lg" />
+        <div className="p-4">
+            <Skeleton className="h-5 w-3/4 mb-2" />
+            <Skeleton className="h-4 w-1/2 mb-1" />
+            <Skeleton className="h-4 w-1/3 mb-3" />
+            <Skeleton className="h-5 w-1/2" />
+        </div>
+    </div>
+);
