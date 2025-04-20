@@ -33,7 +33,7 @@ export default async function page({ params }: { params: Promise<{ id: string }>
   }
 
   return (
-    <div className='px-20'>
+    <div className='md:px-10 lg:px-20'>
       <Head>
         <script
           type="application/ld+json"

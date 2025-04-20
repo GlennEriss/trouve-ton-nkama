@@ -41,9 +41,9 @@ export default function SearchPage() {
   const { applyRefinements } = AlgoliaRefinements();
 
   // Affichage des résultats dans la console pour le debug
-  useEffect(() => {
+  /* useEffect(() => {
     console.log("Résultats filtrés (hits) :", items);
-  }, [items]);
+  }, [items]); */
 
   /**
    * Parse l'URL, met à jour les filtres dans le contexte avec des valeurs par défaut si aucun filtre n'est présent,

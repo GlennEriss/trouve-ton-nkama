@@ -18,7 +18,7 @@ const PropertyCard = ({property}: any) => {
   //console.log("property:",property)
 
   const handleCardClick = () => {
-    router.push(`/houseDetails?id=${property.id}`);
+    router.push(`/houseDetails/${property.path.replace("properties/", "")}`);
   };
 
   return (

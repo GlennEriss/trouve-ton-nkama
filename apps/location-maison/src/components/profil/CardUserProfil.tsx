@@ -9,7 +9,7 @@ import { firebaseTimestampToDate } from '@/lib/firebaseTimestampToDate';
 export default function CardUserProfil() {
     const { user } = useCurrentUser()
     const avatarBackground = generateColorFromName(user?.firstname)
-    console.log(user?.createdAt?.nanoseconds)
+    //console.log(user?.createdAt?.nanoseconds)
     return (
         <Card className="shadow-lg border border-gray-200 md:flex md:items-center md:max-w-[550px] lg:flex-col lg:mt-7">
             {/* Header de la carte */}
