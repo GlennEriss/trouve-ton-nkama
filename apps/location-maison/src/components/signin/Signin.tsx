@@ -89,7 +89,7 @@ export const Signin = () => {
                     <ButtonLoading
                         type='submit'
                         disabled={form.formState.isSubmitting || form.formState.isLoading || isOtherMethodConnection || isPending}
-                        className='w-full'>
+                        className='w-full bg-gradient-to-r from-[#146B67] via-[#1FA89B] to-[#146B67]'>
                         Se connecter
                     </ButtonLoading>
                 </form>

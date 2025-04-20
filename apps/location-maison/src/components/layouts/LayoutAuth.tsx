@@ -38,7 +38,7 @@ export const LayoutAuth: React.FC<LayoutAuthProps> = ({ children, type, setIsOth
             {/* Container */}
             <div className="w-full max-w-4xl mx-4 bg-white shadow-lg rounded-lg flex flex-col md:flex-row overflow-hidden">
                 {/* Left Side: Branding/Message */}
-                <div className="hidden md:block md:w-1/2 bg-gradient-to-br from-blue-500 to-indigo-500 text-white p-8">
+                <div className="hidden md:block md:w-1/2 bg-gradient-to-br from-[#146B67] via-[#1FA89B] to-[#146B67] text-white p-8">
                     <div className="flex flex-col h-full">
                         <Link href={routes.public.homePage}>
                             <Logo color='white' />
