@@ -36,11 +36,13 @@ export default function PreviewProperty({ property }: { property: Property }) {
       <section className='flex flex-col gap-2'>
         <div className='flex flex-col gap-2 md:flex-row md:justify-between'>
           <h1 className='text-2xl font-bold text-gray-900 dark:text-white'>{property.title}</h1>
-          <h1 className='text-2xl font-bold text-gray-900 dark:text-white'>FCFA {property.price}</h1>
+          <h1 className='text-2xl font-bold text-green-700'>
+            FCFA {property.price.toLocaleString('fr-FR')}
+          </h1>
         </div>
         <div className='flex items-center gap-2'>
-          <GoLocation size={25} className='text-gray-600 dark:text-gray-400' />
-          <h2 className='text-md text-justify text-gray-500 dark:text-gray-400'>{property.street}, {property.city} {property.province}</h2>
+          <GoLocation size={25} className='text-red-600' />
+          <h2 className='text-lg text-justify text-gray-500 dark:text-gray-400'>{property.street}, {property.city} {property.province}</h2>
         </div>
         <CarouselProperty images={images} />
       </section>
