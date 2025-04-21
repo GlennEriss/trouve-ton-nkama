@@ -1,14 +1,23 @@
 import PreviewProperty from '@/components/preview-property/PreviewProperty'
+import { routes } from '@/constantes/routes'
 import { getPropertyById } from '@/db/property.db'
-import { notFound } from 'next/navigation'
+import { auth } from '@/next-auth/auth'
+import { notFound, redirect } from 'next/navigation'
 import React from 'react'
 
 export default async function page({params}: {params:Promise<{id: string}>}) {
+  const session = await auth()
+  if(!session){
+    return null
+  }
   const {id} = await params
   //const id = params.id
   const property = await getPropertyById(id)
   if(!property){
     return notFound()
+  }
+  if(property.createdBy !== session.user?.uid){
+    redirect(routes.protected.properties)
   }
   return (
     <PreviewProperty property={property}/>

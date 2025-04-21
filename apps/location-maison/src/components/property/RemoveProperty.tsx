@@ -7,11 +7,13 @@ import { CgTrashEmpty } from 'react-icons/cg';
 import { GrCircleInformation } from 'react-icons/gr';
 import { Button } from '../ui/button';
 import { deleteProperty } from '@/db/property.db';
+import { useRouter } from 'next/navigation';
 
 export interface RemovePropertyProps {
     id: string;
 }
 export const RemoveProperty = ({ id }: RemovePropertyProps) => {
+    const router = useRouter()
     //Personalized hooks
     const { toast } = useToast();
     const queryClient = useQueryClient();
@@ -30,6 +32,7 @@ export const RemoveProperty = ({ id }: RemovePropertyProps) => {
                 description: "Un logement a été supprimé avec succès",
                 variant: 'warning',
             });
+            router.refresh()
             setIsModalOpen(false);
         },
         onError: (error) => {

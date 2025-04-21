@@ -42,7 +42,7 @@ export default function PreviewProperty({ property }: { property: Property }) {
         </div>
         <div className='flex items-center gap-2'>
           <GoLocation size={25} className='text-red-600' />
-          <h2 className='text-lg text-justify text-gray-500 dark:text-gray-400'>{property.street}, {property.city} {property.province}</h2>
+          <h2 className='text-[13px] md:text-lg text-justify text-gray-500 dark:text-gray-400'>{property.street}, {property.city} {property.province}</h2>
         </div>
         <CarouselProperty images={images} />
       </section>
