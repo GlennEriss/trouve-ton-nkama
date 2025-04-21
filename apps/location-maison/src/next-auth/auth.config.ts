@@ -9,7 +9,6 @@ import FacebookProvider from "next-auth/providers/facebook";
 //import { createNotification } from "@/db/notification.db";
 import { routes } from "@/constantes/routes";
 import { NotificationParameter } from "@/models/notification";
-import { redirect } from "next/navigation";
 
 const getAuth = () => import('@/firebase/auth')
 const authConfig = {
