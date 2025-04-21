@@ -18,6 +18,21 @@ export default function CarouselProperty({ images }: { images: string[] }) {
         setIsPreviewOpen(false);
     };
 
+    // state additionnel
+    const selectedIndex = selectedImage ? images.indexOf(selectedImage) : -1;
+
+    const goToNextImage = () => {
+        if (selectedIndex < images.length - 1) {
+            setSelectedImage(images[selectedIndex + 1]);
+        }
+    };
+
+    const goToPreviousImage = () => {
+        if (selectedIndex > 0) {
+            setSelectedImage(images[selectedIndex - 1]);
+        }
+    };
+
     return (
         <>
             <Carousel>
@@ -52,6 +67,18 @@ export default function CarouselProperty({ images }: { images: string[] }) {
                             className="absolute top-6 right-6 bg-gray-200 hover:bg-gray-300 rounded-full p-3 text-black"
                         >
                             ✕
+                        </button>
+                        <button
+                            onClick={goToPreviousImage}
+                            className="absolute left-4 top-1/2 transform -translate-y-1/2 bg-gray-200 hover:bg-gray-300 rounded-full p-3 text-black"
+                        >
+                            ←
+                        </button>
+                        <button
+                            onClick={goToNextImage}
+                            className="absolute right-4 top-1/2 transform -translate-y-1/2 bg-gray-200 hover:bg-gray-300 rounded-full p-3 text-black"
+                        >
+                            →
                         </button>
                         <Image
                             src={selectedImage}
