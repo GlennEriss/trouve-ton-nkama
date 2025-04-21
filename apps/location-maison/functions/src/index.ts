@@ -18,4 +18,4 @@
 //   response.send("Hello from Firebase!");
 // });
 
-export { onUserCreate } from './notification';
+export { onUserCreate, onUserFavorisUpdate } from './notification';
