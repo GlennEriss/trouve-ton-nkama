@@ -67,7 +67,7 @@ export default function PreviewProperty({ property }: { property: Property }) {
         </section>
 
         {/* Section contact */}
-        <ContactSection />
+        <ContactSection property={property} />
 
         {/* Section localisation */}
         {
