@@ -17,7 +17,7 @@ import { createUser } from '@/db/user.db'
 import { useToast } from '@/hooks/use-toast'
 import { useRouter } from 'next/navigation'
 import { NotificationParameter } from '@/models/notification'
-import { createNotification } from '@/db/notification.db'
+//import { createNotification } from '@/db/notification.db'
 import { routes } from '@/constantes/routes'
 
 export const Signup: React.FC = () => {
@@ -52,14 +52,14 @@ export const Signup: React.FC = () => {
                 notificationParameter,
                 providers: ['CREDENTIALS']
             })
-            await createNotification({
+            /* await createNotification({
                 type: 'SECURITY',
                 title: 'Sécurisez votre compte avec Facebook et Google',
                 message: "Pour mieux protéger votre compte et éviter toute tentative d'accès non autorisé, connectez-le à Facebook et Google dès maintenant.",
                 isRead: false,
                 createdFor: userCred.user.uid,
                 actionUrl: routes.protected.login_and_security,
-            });
+            }); */
             await signOut(auth)
             return userCred.user.uid
         } catch (error) {

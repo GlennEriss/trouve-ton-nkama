@@ -6,7 +6,7 @@ import { useCurrentUser } from '@/hooks/use-current-user';
 import { useSession } from 'next-auth/react';
 import { updateUser } from '@/db/user.db';
 import { getPropertyById } from '@/db/property.db';
-import { createNotification } from '@/db/notification.db';
+//import { createNotification } from '@/db/notification.db';
 import { Notification } from '@/models/notification'
 import { routes } from '@/constantes/routes';
 type ButtonFavorisProps = {
@@ -51,7 +51,7 @@ export const ButtonFavoris: React.FC<ButtonFavorisProps> = ({ idProperty }) => {
           notification.message =  `${user?.firstname} ${user?.lastname} a ajouté votre annonce à ses favoris`
           notification.actionUrl = routes.protected.properties+'/'+idProperty
         }
-        await createNotification(notification)
+        //await createNotification(notification)
       }
 
     } else {

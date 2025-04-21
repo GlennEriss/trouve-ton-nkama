@@ -6,7 +6,7 @@ import { NextAuthConfig } from "next-auth"
 import Credentials from "next-auth/providers/credentials"
 import GoogleProvider from "next-auth/providers/google";
 import FacebookProvider from "next-auth/providers/facebook";
-import { createNotification } from "@/db/notification.db";
+//import { createNotification } from "@/db/notification.db";
 import { routes } from "@/constantes/routes";
 import { NotificationParameter } from "@/models/notification";
 import { redirect } from "next/navigation";
@@ -109,14 +109,14 @@ const authConfig = {
                             notificationParameter
                         };
                         await createUser(userData);
-                        await createNotification({
+                        /* await createNotification({
                             type: 'SECURITY',
                             title: 'Sécurisez votre compte avec Facebook',
                             message: "Pour mieux protéger votre compte et éviter toute tentative d'accès non autorisé, connectez-le à Facebook dès maintenant.",
                             isRead: false,
                             createdFor: uid,
                             actionUrl: routes.protected.login_and_security,
-                        });
+                        }); */
                     } else {
                         const providers = userExists?.providers || []
                         if (!providers.includes('GOOGLE')) {
@@ -124,14 +124,14 @@ const authConfig = {
                             const facebookUser = await signInWithCredential(auth, facebookCredential)
                             await linkWithCredential(facebookUser.user, credential)
                             providers.push('GOOGLE')
-                            await createNotification({
+                            /* await createNotification({
                                 type: 'SECURITY',
                                 title: 'Sécurité avec Google',
                                 message: "Votre compte a été sécurisé avec Google",
                                 isRead: false,
                                 createdFor: user.uid,
                                 actionUrl: routes.protected.login_and_security,
-                            });
+                            }); */
                         }
                         await updateUser(userExists.uid, {
                             ...userExists,
@@ -181,14 +181,14 @@ const authConfig = {
                             notificationParameter
                         }
                         await createUser(userData);
-                        await createNotification({
+                        /* await createNotification({
                             type: 'SECURITY',
                             title: 'Sécurisez votre compte avec Google',
                             message: "Pour mieux protéger votre compte et éviter toute tentative d'accès non autorisé, connectez-le à Google dès maintenant.",
                             isRead: false,
                             createdFor: uid,
                             actionUrl: routes.protected.login_and_security,
-                        });
+                        }); */
                     } else {
                         const providers = userExists?.providers || []
                         if (!providers.includes('FACEBOOK')) {
@@ -196,14 +196,14 @@ const authConfig = {
                             const googleUser = await signInWithCredential(auth, googleCredential);
                             await linkWithCredential(googleUser.user, credential);
                             providers.push('FACEBOOK')
-                            await createNotification({
+                            /* await createNotification({
                                 type: 'SECURITY',
                                 title: 'Sécurité avec Facebook',
                                 message: "Votre compte a été sécurisé avec Facebook",
                                 isRead: false,
                                 createdFor: user.uid,
                                 actionUrl: routes.protected.login_and_security,
-                            });
+                            }); */
                         }
                         await updateUser(userExists.uid, {
                             ...userExists,
