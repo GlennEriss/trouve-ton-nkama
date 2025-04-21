@@ -13,7 +13,7 @@ import PasswordModal from '@/components/login-and-security/PasswordModal';
 import { updateUser } from '@/db/user.db';
 import { EmailAuthCredential, EmailAuthProvider, FacebookAuthProvider, fetchSignInMethodsForEmail, GoogleAuthProvider, linkWithCredential, linkWithPopup, signInWithCredential, signInWithPopup, User } from 'firebase/auth';
 import { auth } from '@/firebase/auth';
-import { createNotification } from '@/db/notification.db';
+//import { createNotification } from '@/db/notification.db';
 import { useSession } from 'next-auth/react';
 import { User as UserModel } from '@/models/authentication'
 
@@ -75,14 +75,14 @@ export default function LoginAndSecurity() {
                 .catch((error) => {
                     console.error("Erreur lors de la liaison avec Google :", error);
                 });
-            await createNotification({
+            /* await createNotification({
                 type: 'SECURITY',
                 title: 'Sécurité avec Google',
                 message: "Votre compte a été sécurisé avec Google",
                 isRead: false,
                 createdFor: user.uid,
                 actionUrl: routes.protected.login_and_security,
-            });
+            }); */
         } else if (pendingProvider === 'FACEBOOK') {
             const facebookProvider = new FacebookAuthProvider();
             const emailAuthCred: EmailAuthCredential = EmailAuthProvider.credential(email, password);
@@ -103,14 +103,14 @@ export default function LoginAndSecurity() {
                         }
                     });
                 })
-            await createNotification({
+            /* await createNotification({
                 type: 'SECURITY',
                 title: 'Sécurité avec Facebook',
                 message: "Votre compte a été sécurisé avec Facebook",
                 isRead: false,
                 createdFor: user.uid,
                 actionUrl: routes.protected.login_and_security,
-            });
+            }); */
         }
     };
 
