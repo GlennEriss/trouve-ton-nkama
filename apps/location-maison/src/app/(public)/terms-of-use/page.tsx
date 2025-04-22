@@ -76,7 +76,7 @@ export default function TermsOfUsePage() {
               <h2 className="text-xl font-semibold mb-2">6. Contact</h2>
               <p className="text-gray-700">
                 Pour toute question relative à ces conditions, vous pouvez nous contacter à :  
-                <a href="mailto:support@home-rent.com" className="text-blue-500 hover:underline"> support@home-rent.com</a>.
+                <a href={`mailto:${process.env.NEXT_PUBLIC_EMAIL_SUPPORT}`} className="text-blue-500 hover:underline"> {process.env.NEXT_PUBLIC_EMAIL_SUPPORT}</a>.
               </p>
             </section>
         </CardContent>

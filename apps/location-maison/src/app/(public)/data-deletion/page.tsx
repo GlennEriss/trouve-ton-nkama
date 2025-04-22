@@ -12,7 +12,7 @@ export default function DataDeletionPage() {
         </p>
         <p className="mb-4">
           Si vous souhaitez supprimer vos données de notre plateforme, veuillez nous contacter par email à l'adresse suivante :
-          <strong> contact@home-rent.com</strong> en mentionnant l'objet « Suppression de compte ». 
+          <strong> {process.env.NEXT_PUBLIC_EMAIL_SUPPORT}</strong> en mentionnant l'objet « Suppression de compte ». 
         </p>
         <p className="mb-4">
           Une fois votre demande reçue, nous traiterons la suppression de vos données dans un délai de 30 jours, conformément à nos conditions d'utilisation et notre politique de confidentialité.

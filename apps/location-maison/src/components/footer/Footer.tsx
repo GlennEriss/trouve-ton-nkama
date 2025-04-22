@@ -40,7 +40,7 @@ export default function Footer() {
                     </div> */}
                     <div className="flex items-center space-x-2">
                         <Mail size={16} />
-                        <a href="mailto:contact@home-rent.com" className="hover:underline">contact@home-rent.com</a>
+                        <a href={`mailto:${process.env.NEXT_PUBLIC_EMAIL_SUPPORT}`} className="hover:underline">{process.env.NEXT_PUBLIC_EMAIL_SUPPORT}</a>
                     </div>
                 </div>
 
