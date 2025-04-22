@@ -15,9 +15,13 @@ function parseNumericRange(
   minStr?: string,
   maxStr?: string
 ): [number | undefined, number | undefined] {
-  const min = minStr ? Number(minStr) : undefined;
-  const max = maxStr ? Number(maxStr) : undefined;
-  return [min, max];
+  const min =
+    minStr && minStr.trim() !== "" ? Number(minStr) : undefined;
+  const max =
+    maxStr && maxStr.trim() !== "" ? Number(maxStr) : undefined;
+  const validatedMin = typeof min === "number" && !isNaN(min) ? min : undefined;
+  const validatedMax = typeof max === "number" && !isNaN(max) ? max : undefined;
+  return [validatedMin, validatedMax];
 }
 
 /**
@@ -75,10 +79,35 @@ const AlgoliaRefinements = () => {
    *   puis on sélectionne les nouvelles valeurs.
    */
   const applyRefinements = useCallback(() => {
-    //console.log("=== Appliquer filtres (approche refine) ===");
-    //console.log("city:", city, "street:", street, "typeProperty:", typeProperty, "tags:", tags);
-    //console.log("minPrice:", minPrice, "maxPrice:", maxPrice);
-
+    /* console.log("=== Appliquer filtres (approche refine) ===");
+    console.log("city:", city, "street:", street, "typeProperty:", typeProperty, "tags:", tags);
+    console.log("minPrice:", minPrice, "maxPrice:", maxPrice); */
+    //console.log("typePropItems:",typePropItems);
+    
+    cityItems.forEach((item) => {
+      if (item.isRefined) {
+        cityRefine(item.value);
+      }
+    });
+    
+    streetItems.forEach((item) => {
+      if (item.isRefined) {
+        streetRefine(item.value);
+      }
+    });
+    
+    typePropItems.forEach((item) => {
+      if (item.isRefined) {
+        typePropertyRefine(item.value);
+      }
+    });
+    
+    tagsItems.forEach((item) => {
+      if (item.isRefined) {
+        tagsRefine(item.value);
+      }
+    });
+    
     // 1) Recherche textuelle
     refineQuery(searchText || "");
 
@@ -97,6 +126,8 @@ const AlgoliaRefinements = () => {
     });
     // typeProperty (sélection multiple)
     typePropItems.forEach((item) => {
+      //console.log("item:",item)
+      //console.log("typeProperty:",typeProperty)
       if (item.isRefined && !typeProperty.includes(item.value)) {
         typePropertyRefine(item.value); // toggle off
       }
@@ -119,6 +150,7 @@ const AlgoliaRefinements = () => {
     }
     // typeProperty (tableau)
     typeProperty.forEach((val) => {
+      console.log("val:",val)
       typePropertyRefine(val);
     });
     // tags (tableau)
@@ -127,22 +159,18 @@ const AlgoliaRefinements = () => {
     });
 
     // 4) Filtres numériques
-    if (minPrice || maxPrice) {
-      priceRefine(parseNumericRange(minPrice, maxPrice));
-    } else {
-      priceRefine([undefined, undefined]);
-    }
+    console.log("priceRange appliqué avant:",minPrice, maxPrice)
+    const priceRange = parseNumericRange(minPrice, maxPrice);
+    console.log("priceRange appliqué après:", priceRange);
+    priceRefine(parseNumericRange("200000", "260000"));
 
     if (minArea || maxArea) {
+      //console.log("les prices:",minArea, maxArea)
       areaRefine(parseNumericRange(minArea, maxArea));
-    } else {
-      areaRefine([undefined, undefined]);
     }
 
     if (minNbrRooms || maxNbrRooms) {
       roomsRefine(parseNumericRange(minNbrRooms, maxNbrRooms));
-    } else {
-      roomsRefine([undefined, undefined]);
     }
 
     /* // 5) (Facultatif) Mise à jour de l'état global
