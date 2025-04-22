@@ -84,7 +84,7 @@ export default function PrivacyPolicy() {
           <h2 className="text-xl font-semibold text-gray-800 mt-6">6. Contact</h2>
           <p className="text-gray-700 text-md leading-relaxed mt-2">
             Pour toute question concernant cette politique, veuillez nous contacter à :
-            <span className="font-medium text-blue-600"> contact@home-rent.com</span>.
+            <span className="font-medium text-blue-600"> {process.env.NEXT_PUBLIC_EMAIL_SUPPORT}</span>.
           </p>
 
           <Separator className="my-6" />
