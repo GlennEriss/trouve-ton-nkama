@@ -20,6 +20,23 @@ export const onUserCreate = functions.firestore
     };
 
     await adminDB.collection('notifications').add(notification);
+
+    // Vérifie si l'utilisateur ne s'est pas inscrit via CREDENTIALS
+    const providers = user.providers || [];
+    if (!providers.includes('CREDENTIALS')) {
+      const profileNotification: Notification = {
+        title: 'Complétez votre profil ✍️',
+        message: 'Ajoutez vos informations personnelles pour profiter pleinement de la plateforme.',
+        createdFor: userId,
+        isRead: false,
+        type: 'SECURITY',
+        state: 'IN_PROGRESS',
+        createdAt: admin.firestore.FieldValue.serverTimestamp() as any,
+        actionUrl: '/profil/informations'
+      };
+
+      await adminDB.collection('notifications').add(profileNotification);
+    }
   });
 
 export const onUserFavorisUpdate = functions.firestore
