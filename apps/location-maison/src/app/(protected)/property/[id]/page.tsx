@@ -17,7 +17,7 @@ export default async function page({params}: {params:Promise<{id: string}>}) {
     return notFound()
   }
   if(property.createdBy !== session.user?.uid){
-    redirect(routes.protected.properties)
+    redirect('/houseDetails/'+id)
   }
   return (
     <PreviewProperty property={property}/>
