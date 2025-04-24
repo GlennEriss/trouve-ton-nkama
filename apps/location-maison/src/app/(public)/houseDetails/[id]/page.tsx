@@ -17,14 +17,14 @@ export async function generateMetadata({ params }: { params:  Promise<{ id: stri
     openGraph: {
       title: property.title,
       description: property.description,
-      /* images: [
+      images: [
         {
-          url: property.images[0]?.fileURL || '',
+          url: "https://www.logi-market.com/assets/not-found.png",
           width: 1200,
           height: 630,
           alt: property.title,
         },
-      ], */
+      ],
       url: `https://www.logi-market.com/houseDetails/${property.id}`,
       type: 'website',
     },
