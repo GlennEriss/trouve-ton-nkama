@@ -19,7 +19,7 @@ export async function generateMetadata({ params }: { params:  Promise<{ id: stri
       description: property.description,
       images: [
         {
-          url: "https://www.logi-market.com/assets/not-found.png",
+          url: "https://www.logi-market.com/assets/og_img.png",
           width: 1200,
           height: 630,
           alt: property.title,
