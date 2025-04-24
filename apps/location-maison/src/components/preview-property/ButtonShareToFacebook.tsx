@@ -13,13 +13,13 @@ export default function ButtonShareToFacebook({ property }: { property: Property
 
     return (
         <>
-            <head>
+            {/* <head>
                 <meta property="og:title" content={property.title} />
                 <meta property="og:description" content={property.description} />
                 <meta property="og:image" content={property.images[0].fileURL} />
                 <meta property="og:url" content={`https://www.logi-market.com/houseDetails/${property.id}`} />
                 <meta property="og:type" content="website" />
-            </head>
+            </head> */}
             <button
                 onClick={handleShare}
                 className="flex items-center gap-2 px-4 bg-blue-600 text-white text-base rounded hover:bg-blue-700 transition-colors"
