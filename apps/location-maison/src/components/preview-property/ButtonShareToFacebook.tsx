@@ -22,9 +22,10 @@ export default function ButtonShareToFacebook({ property }: { property: Property
             </head> */}
             <button
                 onClick={handleShare}
-                className="flex items-center gap-2 px-4 bg-blue-600 text-white text-base rounded hover:bg-blue-700 transition-colors"
+                className="flex items-center gap-2 px-2 bg-blue-600 text-white text-base rounded hover:bg-blue-700 transition-colors"
             >
-                <Share2 size={20} />
+                <Share2 size={18} />
+                <span className='hidden lg:block'>Partager</span>
                 <FaFacebookF size={18} />
 
             </button>
