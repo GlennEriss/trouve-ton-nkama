@@ -3,7 +3,6 @@ import React from 'react';
 import { Property } from '@/models/annonce';
 import { FaFacebookF } from 'react-icons/fa';
 import { Share2 } from 'lucide-react';
-import Head from 'next/head';
 
 export default function ButtonShareToFacebook({ property }: { property: Property }) {
     const handleShare = () => {
