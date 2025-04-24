@@ -7,6 +7,7 @@ import { Property } from '@/models/annonce'
 import { ButtonFavoris } from './ButtonFavoris'
 import ContactSection from './ContactSection'
 import { MapSection } from './MapSection'
+import ButtonShareToFacebook from './ButtonShareToFacebook'
 
 export default function PreviewProperty({ property }: { property: Property }) {
   const tagSatus: Record<string, string> = {
@@ -27,7 +28,8 @@ export default function PreviewProperty({ property }: { property: Property }) {
             ))
           }
         </div>
-        <div>
+        <div className='flex gap-2'>
+          <ButtonShareToFacebook property={property}/>
           <ButtonFavoris idProperty={property.id!} />
         </div>
       </section>
