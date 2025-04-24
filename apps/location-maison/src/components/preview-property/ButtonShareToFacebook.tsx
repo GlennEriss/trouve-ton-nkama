@@ -22,7 +22,7 @@ export default function ButtonShareToFacebook({ property }: { property: Property
             </head> */}
             <button
                 onClick={handleShare}
-                className="flex items-center gap-2 px-4 py-2 bg-blue-500 text-white rounded hover:bg-bleu-600"
+                className="flex items-center gap-2 px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
                 >
                 <FaFacebookF size={18} />
             </button>
