@@ -59,7 +59,7 @@ export default function CardUserProfil() {
                     {user?.phoneNumbers && user?.phoneNumbers.length > 0 ? (
                         user?.phoneNumbers.map((phone, index) => <span key={index}>{phone}</span>)
                     ) : (
-                        <span>Aucun numéro de téléphone disponible</span>
+                        <span>Indisponible</span>
                     )}
                 </div>
                 <div className='hidden md:flex text-sm gap-1'>
