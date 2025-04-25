@@ -14,7 +14,7 @@ export default function ContactSection({property}: {property: Property}) {
                 {/* WhatsApp */}
                 <a
                     href={`https://wa.me/${user?.phoneNumbers[0]}?text=${encodeURIComponent(
-                      `Bonjour, je suis intéressé par votre annonce "${property.title}" au prix de ${property.price.toLocaleString('fr-FR')} FCFA.`
+                      `Bonjour, je suis intéressé par votre annonce "${property.title}" au prix de ${property.price.toLocaleString('fr-FR')} FCFA. Voici le lien : https://www.logi-market.com/houseDetails/${property.id}`
                     )}`}
                     target="_blank"
                     rel="noopener noreferrer"
@@ -35,7 +35,7 @@ export default function ContactSection({property}: {property: Property}) {
 
                 {/* Gmail */}
                 <a
-                    href={`mailto:${user?.email}?subject=${encodeURIComponent(`Intérêt pour l'annonce "${property.title}"`)}&body=${encodeURIComponent(`Bonjour,\n\nJe suis intéressé(e) par votre annonce intitulée "${property.title}" au prix de ${property.price.toLocaleString('fr-FR')} FCFA.\n\nCordialement,`)}`}
+                    href={`mailto:${user?.email}?subject=${encodeURIComponent(`Intérêt pour l'annonce "${property.title}"`)}&body=${encodeURIComponent(`Bonjour,\n\nJe suis intéressé(e) par votre annonce intitulée "${property.title}" au prix de ${property.price.toLocaleString('fr-FR')} FCFA.\n\nVoici le lien de l'annonce : https://www.logi-market.com/houseDetails/${property.id}\n\nCordialement,`)}`}
                     target="_blank"
                     rel="noopener noreferrer"
                     title="Contacter via Gmail"
