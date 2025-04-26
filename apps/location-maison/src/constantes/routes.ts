@@ -24,6 +24,7 @@ export const routes = {
         notification_list: '/list-notifications',
     },
     public: {
+        signinSignup: '/signin-signup',
         signin: '/signin',
         signup: '/signup',
         homePage: '/',

@@ -103,7 +103,7 @@ export default function Navbar({ session }: { session: Session | null }) {
               </a>
             </div>
           ) : (
-            <a href="/signin">
+            <a href={routes.public.signinSignup}>
               <Button variant="outline"
                 className="bg-transparent border border-[#146B67] text-[#146B67] rounded-lg text-base px-6 py-3 font-semibold hover:bg-[#0f5c59] hover:text-white hover:shadow-md transition"
               >
