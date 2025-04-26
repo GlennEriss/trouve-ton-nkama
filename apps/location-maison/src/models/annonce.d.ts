@@ -20,7 +20,8 @@ export type Property = Location & ICreation & {
     price: number,
     tags: string[],
     createdBy?: string,
-    status: StatusProperty
+    status: StatusProperty,
+    contact?: string //Propriété tampon
 }
 
 export type Location = {

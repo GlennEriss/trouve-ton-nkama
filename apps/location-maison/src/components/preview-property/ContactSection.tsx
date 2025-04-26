@@ -5,17 +5,17 @@ import { AiOutlineMail } from 'react-icons/ai'
 import { useCurrentUser } from '@/hooks/use-current-user'
 import { Property } from '@/models/annonce'
 
-export default function ContactSection({property}: {property: Property}) {
+export default function ContactSection({ property }: { property: Property }) {
     const { user } = useCurrentUser()
     return (
         <section className="flex flex-col gap-3 rounded-lg p-5 shadow">
-            <h1 className="font-bold">Contacts</h1>
+            <h1 className="font-bold">Choisissez un moyen de contact</h1>
             <div className="flex gap-4">
                 {/* WhatsApp */}
                 <a
-                    href={`https://wa.me/${user?.phoneNumbers[0]}?text=${encodeURIComponent(
-                      `Bonjour, je suis intéressé par votre annonce "${property.title}" au prix de ${property.price.toLocaleString('fr-FR')} FCFA. Voici le lien : https://www.logi-market.com/houseDetails/${property.id}`
-                    )}`}
+                    href={property?.contact || user?.phoneNumbers?.[0] ? `https://wa.me/${property.contact ? property.contact : user?.phoneNumbers[0]}?text=${encodeURIComponent(
+                        `Bonjour, je suis intéressé par votre annonce "${property.title}" au prix de ${property.price.toLocaleString('fr-FR')} FCFA. Voici le lien de l'annonce : https://www.logi-market.com/houseDetails/${property.id}`
+                    )}` : '#'}
                     target="_blank"
                     rel="noopener noreferrer"
                     title="Contacter via WhatsApp"
@@ -45,7 +45,7 @@ export default function ContactSection({property}: {property: Property}) {
 
                 {/* Appeler directement */}
                 <a
-                    href={`tel:${user?.phoneNumbers[0]}`}
+                    href={property?.contact || user?.phoneNumbers?.[0] ? `tel:${property.contact ? property.contact : user?.phoneNumbers[0]}` : '#'}
                     target="_blank"
                     rel="noopener noreferrer"
                     title="Appeler"
