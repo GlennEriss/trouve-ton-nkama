@@ -1,4 +1,4 @@
-import { FormControl, FormField, FormItem, FormLabel } from '@/components/ui/form'
+import { FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form'
 import { PhoneInput, PhoneInputProps } from '@/components/ui/phone-input'
 import React from 'react'
 import { Control, FieldValues, Path } from 'react-hook-form'
@@ -33,7 +33,7 @@ export const PhoneNumberFormApp = <T extends FieldValues>({
                             />
                         </FormControl>
                     </div>
-
+                    <FormMessage/>
                 </FormItem>
             )}
         />

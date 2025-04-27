@@ -1,7 +1,7 @@
 import React from 'react'
 import { InputApp } from '../ui/InputApp'
 import { LucideIcon } from 'lucide-react'
-import { FormField, FormItem, FormLabel } from '@/components/ui/form'
+import { FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form'
 import { Control, FieldValues, Path } from 'react-hook-form'
 
 type InputFormAppProps<T extends FieldValues> = {
@@ -37,8 +37,8 @@ export const InputFormApp = <T extends FieldValues>({
                         {...props}
                         {...field}
                     />
+                    <FormMessage />
                 </FormItem>
-
             )}
         />
     )

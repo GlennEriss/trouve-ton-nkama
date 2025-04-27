@@ -22,6 +22,7 @@ import { Button } from '../ui/button'
 import { SelectFormApp } from '../shared/form/SelectFormApp'
 import { countries } from '@/constantes/country'
 import { PhoneNumberFormApp } from '../shared/form/PhoneNumberFormApp'
+import { CheckboxFormApp } from '../shared/form/CheckboxFormApp'
 
 const inter = Inter({
     subsets: ['latin'],
@@ -113,7 +114,7 @@ export const SignupMobileComponent = () => {
             </div>
 
             <section className='mt-8 md:mt-10'>
-                <h1 className='text-2xl font-bold'>Explorons ensemble avec LogisGabon !</h1>
+                <h1 className='text-2xl font-bold text-[#187872]'>Explorons ensemble avec LogisGabon !</h1>
                 <p className='text-gray-500'>
                     Créez votre compte LogisGabon pour trouver votre logement de rêve partout au Gabon !
                 </p>
@@ -198,6 +199,22 @@ export const SignupMobileComponent = () => {
                             IconColorFill='none'
                             IconColor='gray'
                             placeholder='Saisissez votre mot de passe'
+                        />
+                        <CheckboxFormApp
+                            control={form.control}
+                            name='termsOfPrivacyPolicy'
+                            label={
+                                <>
+                                    En cliquant sur s'inscrire, vous êtes en accord avec notre{" "}
+                                    <a href={routes.public.confidentiality} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">
+                                        politique de confidentialité
+                                    </a>{" "}
+                                    et nos{" "}
+                                    <a href={routes.public.terms_of_use} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">
+                                        conditions d'utilisation
+                                    </a>.
+                                </>
+                            }
                         />
                         <div className='flex flex-col items-center gap-3'>
                             <ButtonApp

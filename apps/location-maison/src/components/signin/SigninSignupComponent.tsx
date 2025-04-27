@@ -42,7 +42,7 @@ export default function SigninSignupComponent() {
             {isImageLoaded && (
                 <section className={`absolute left-1/2 transform -translate-x-1/2 ${size.height > 740 ? '':'bottom-[-120px]'} md:bottom-[-270px] rounded-lg w-[90%] max-w-[400px] md:max-w-[600px] flex flex-col gap-8 transition-opacity duration-700 opacity-100`}>
                     <div>
-                        <h1 className='text-xl font-bold text-center md:text-4xl'>Nouveau lieu, nouvelle maison !</h1>
+                        <h1 className='text-xl font-bold text-center md:text-4xl text-[#187872]'>Nouveau lieu, nouvelle maison !</h1>
                         <p className='text-center text-md text-gray-500 flex flex-col md:text-xl'>
                             <span>LogisGabon, votre nouveau départ.</span>
                             <span>Trouvez votre futur logement dès aujourd'hui.</span>
