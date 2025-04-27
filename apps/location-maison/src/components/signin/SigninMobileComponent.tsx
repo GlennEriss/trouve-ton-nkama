@@ -6,7 +6,7 @@ import { FormLoginSchema, FormLoginSchemaType } from '@/models/schema';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Form } from '../ui/form';
 import { InputFormApp } from '../shared/form/InputFormApp';
-import { ButtonApp } from '../shared/ButtonApp';
+import { ButtonApp } from '../shared/ui/ButtonApp';
 import { Inter } from 'next/font/google';
 import { cn } from '@/lib/utils';
 import Link from 'next/link';

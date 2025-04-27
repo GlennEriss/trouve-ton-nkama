@@ -26,13 +26,14 @@ export const InputFormApp = <T extends FieldValues>({
         <FormField
             control={control}
             name={name}
-            render={({ field }) => (
+            render={({ field, formState: { isSubmitting } }) => (
                 <FormItem>
                     <FormLabel className='text-md'>{label}</FormLabel>
                     <InputApp
                         IconLucide={IconLucide}
                         IconColorFill={IconColorFill}
                         IconColor={IconColor}
+                        disabled={isSubmitting}
                         {...props}
                         {...field}
                     />

@@ -15,12 +15,13 @@ export const InputApp: React.FC<InputAppProps> = ({
     ...props
 }) => {
     return (
-        <div className="border border-gray-200 bg-gray-50 rounded-full flex py-2 px-4 items-center">
+        <div className="border border-gray-200 bg-gray-50 rounded-full flex py-2 px-4 items-center group transition-colors focus-within:border-[#1FA89B] focus-within:bg-[#ebf6f5]">
             {IconLucide && (
                 <IconLucide
                     size={30}
                     fill={IconColorFill}
                     color={IconColor}
+                    className='transition-colors group-focus-within:stroke-[#1FA89B]'
                 />
             )}
             <Input className="border-none shadow-none focus-visible:ring-0 placeholder:text-gray-400" {...props} />

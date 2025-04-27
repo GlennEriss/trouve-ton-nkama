@@ -37,7 +37,9 @@ export const PhoneNumberForm = <T extends FieldValues>({
                     <FormItem className={cn(classNameItem, "flex flex-col items-start")}>
                         <FormLabel className={cn(classNameLabel, "text-left")}>{label}</FormLabel>
                         <FormControl className={cn(classNameControl, "w-full")}>
-                            <PhoneInput defaultCountry='GA' disabled={isSubmitting} className={className} placeholder={placeholder} {...field} />
+                            <div className='border rounded-lg'>
+                                <PhoneInput defaultCountry='GA' disabled={isSubmitting} className={className} placeholder={placeholder} {...field} />
+                            </div>
                         </FormControl>
                         <FormDescription className={cn(classNameDescription, "text-left")}>
                             {description}
