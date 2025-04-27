@@ -7,7 +7,7 @@ import { usePathname } from 'next/navigation';
 import clsx from 'clsx';
 import { Badge } from '../ui/badge';
 import { useNotifications } from '@/providers/NotificationProvider';
-import { Session } from 'next-auth';
+import { useCurrentUser } from '@/hooks/use-current-user';
 
 const menu = [
     { title: 'Logements', icon: House, link: routes.protected.properties },
@@ -16,11 +16,12 @@ const menu = [
     { title: 'Notification', icon: Bell, link: routes.protected.notification_list },
     { title: 'Profil', icon: UserCircle, link: '/profil' },
 ];
-type BottomNavigationProps = {session: Session|null}
-export const BottomNavigation: React.FC<BottomNavigationProps> = ({session}) => {
+type BottomNavigationProps = {}
+export const BottomNavigation: React.FC<BottomNavigationProps> = ({}) => {
+    const {user} = useCurrentUser()
     const pathnames = usePathname();
     const { unreadCount } = useNotifications();
-    if (!session) return null;
+    if (!user) return null;
 
     return (
         <div className="fixed bottom-0 z-50 w-full flex bg-white p-4 justify-between md:hidden shadow border-t">

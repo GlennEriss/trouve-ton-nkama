@@ -33,7 +33,9 @@ export const InputFormApp = <T extends FieldValues>({
                         IconLucide={IconLucide}
                         IconColorFill={IconColorFill}
                         IconColor={IconColor}
-                        {...props} />
+                        {...props}
+                        {...field}
+                    />
                 </FormItem>
 
             )}
