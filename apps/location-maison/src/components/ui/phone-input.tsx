@@ -21,23 +21,26 @@ import {
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { cn } from "@/lib/utils";
 
-type PhoneInputProps = Omit<
+export type PhoneInputProps = Omit<
     React.ComponentProps<"input">,
     "onChange" | "value" | "ref"
 > &
     Omit<RPNInput.Props<typeof RPNInput.default>, "onChange"> & {
         onChange?: (value: RPNInput.Value) => void;
+        triggerClassName?: string;
     };
 
 const PhoneInput: React.ForwardRefExoticComponent<PhoneInputProps> =
     React.forwardRef<React.ElementRef<typeof RPNInput.default>, PhoneInputProps>(
-        ({ className, onChange, ...props }, ref) => {
+        ({ className, onChange, triggerClassName, ...props }, ref) => {
             return (
                 <RPNInput.default
                     ref={ref}
                     className={cn("flex", className)}
                     flagComponent={FlagComponent}
-                    countrySelectComponent={CountrySelect}
+                    countrySelectComponent={(props) => (
+                        <CountrySelect {...props} triggerClassName={triggerClassName} />
+                    )}
                     inputComponent={InputComponent}
                     smartCaret={false}
                     /**
@@ -62,7 +65,7 @@ const InputComponent = React.forwardRef<
     React.ComponentProps<"input">
 >(({ className, ...props }, ref) => (
     <Input
-        className={cn("rounded-e-lg rounded-s-none", className)}
+        className={cn("border-none focus-visible:ring-0 shadow-none", className)}
         {...props}
         ref={ref}
     />
@@ -76,6 +79,7 @@ type CountrySelectProps = {
     value: RPNInput.Country;
     options: CountryEntry[];
     onChange: (country: RPNInput.Country) => void;
+    triggerClassName?: string;
 };
 
 const CountrySelect = ({
@@ -83,14 +87,15 @@ const CountrySelect = ({
     value: selectedCountry,
     options: countryList,
     onChange,
+    triggerClassName,
 }: CountrySelectProps) => {
     return (
         <Popover>
-            <PopoverTrigger asChild>
+            <PopoverTrigger asChild className={triggerClassName}>
                 <Button
                     type="button"
                     variant="outline"
-                    className="flex gap-1 rounded-e-none rounded-s-lg border-r-0 px-3 focus:z-10"
+                    className="flex gap-1 border-none bg-transparent px-3 focus:z-10 rounded-full shadow-none"
                     disabled={disabled}
                 >
                     <FlagComponent
@@ -159,7 +164,7 @@ const FlagComponent = ({ country, countryName }: RPNInput.FlagProps) => {
     const Flag = flags[country];
 
     return (
-        <span className="flex h-3 w-full overflow-hidden rounded-sm bg-foreground/20 items-center">
+        <span className="flex h-3 overflow-hidden rounded-sm bg-foreground/20 items-center">
             {Flag && <Flag title={countryName} />}
         </span>
     );
