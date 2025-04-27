@@ -7,6 +7,7 @@ import Image from 'next/image'
 import { ButtonApp } from '../shared/ui/ButtonApp'
 import { Inter } from 'next/font/google'
 import { cn } from '@/lib/utils'
+import Link from 'next/link';
 
 const inter = Inter({
     subsets: ['latin'],
@@ -40,9 +41,9 @@ export default function SigninSignupComponent() {
                 />
             </section>
             {isImageLoaded && (
-                <section className={`absolute left-1/2 transform -translate-x-1/2 ${size.height > 740 ? '':'bottom-[-120px]'} md:bottom-[-270px] rounded-lg w-[90%] max-w-[400px] md:max-w-[600px] flex flex-col gap-8 transition-opacity duration-700 opacity-100`}>
+                <section className={`absolute left-1/2 transform -translate-x-1/2 ${size.height > 740 ? '':'bottom-[-150px]'} md:bottom-[-270px] rounded-lg w-[90%] max-w-[400px] md:max-w-[600px] flex flex-col gap-8 transition-opacity duration-700 opacity-100`}>
                     <div>
-                        <h1 className='text-xl font-bold text-center md:text-4xl text-[#187872]'>Nouveau lieu, nouvelle maison !</h1>
+                        <h1 className='text-xl font-bold text-center md:text-4xl text-[#146b66]'>Nouveau lieu, nouvelle maison !</h1>
                         <p className='text-center text-md text-gray-500 flex flex-col md:text-xl'>
                             <span>LogisGabon, votre nouveau départ.</span>
                             <span>Trouvez votre futur logement dès aujourd'hui.</span>
@@ -60,6 +61,11 @@ export default function SigninSignupComponent() {
                             className='bg-white border border-gray-400 text-black md:text-xl md:py-7 hover:bg-none'
                             onClick={handleGoToSignup}
                         />
+                        <div className="text-center">
+                            <Link href={routes.public.homePage} className="text-sm text-gray-500 hover:underline">
+                                Revenir à l'accueil
+                            </Link>
+                        </div>
                     </div>
                 </section>
             )}

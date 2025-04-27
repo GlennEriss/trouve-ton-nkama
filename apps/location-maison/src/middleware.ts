@@ -17,7 +17,7 @@ export default auth(async (req) => {
         return NextResponse.redirect(new URL(routes.protected.properties, nextUrl))
     }
     if (!isLoggedIn && isProtectedRoute) {
-        return NextResponse.redirect(new URL(routes.public.signin, nextUrl))
+        return NextResponse.redirect(new URL(routes.public.homePage, nextUrl))
     }
 
     return NextResponse.next()
