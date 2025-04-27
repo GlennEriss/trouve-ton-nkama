@@ -9,8 +9,8 @@ import { Inter } from 'next/font/google'
 import { cn } from '@/lib/utils'
 
 const inter = Inter({
-  subsets: ['latin'],
-  weight: ['400'],
+    subsets: ['latin'],
+    weight: ['400'],
 })
 
 export default function SigninSignupComponent() {
@@ -26,7 +26,7 @@ export default function SigninSignupComponent() {
         router.push(routes.public.signin)
     }
     return (
-        <div className={cn('relative',inter.className)}>
+        <div className={cn('relative', inter.className)}>
             <section className="max-h-[510px] md:max-h-[700px]">
                 <Image
                     src="/assets/auth/welcome-mobile-img.png"
@@ -53,8 +53,9 @@ export default function SigninSignupComponent() {
                         onClick={() => handleGoToSignin()}
                     />
                     <ButtonApp
+                        variant='outline'
                         title={"S'enregistrer"}
-                        className='bg-white border border-gray-400 text-black md:text-xl md:py-7'
+                        className='bg-white border border-gray-400 text-black md:text-xl md:py-7 hover:bg-none'
                         onClick={() => handleGoToSignup()}
                     />
                 </div>
