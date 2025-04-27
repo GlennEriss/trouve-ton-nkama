@@ -5,6 +5,13 @@ import { useRouter } from 'next/navigation'
 import React from 'react'
 import Image from 'next/image'
 import { ButtonApp } from '../shared/ButtonApp'
+import { Inter } from 'next/font/google'
+import { cn } from '@/lib/utils'
+
+const inter = Inter({
+  subsets: ['latin'],
+  weight: ['400'],
+})
 
 export default function SigninSignupComponent() {
     const size = useWindowSize()
@@ -19,7 +26,7 @@ export default function SigninSignupComponent() {
         router.push(routes.public.signin)
     }
     return (
-        <div className='relative'>
+        <div className={cn('relative',inter.className)}>
             <section className="max-h-[510px] md:max-h-[700px]">
                 <Image
                     src="/assets/auth/welcome-mobile-img.png"
