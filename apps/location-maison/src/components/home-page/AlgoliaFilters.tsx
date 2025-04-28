@@ -21,7 +21,7 @@ const AlgoliaFilters = () => {
     maxNbrRooms,
   } = useAlgoliaContext();
 
-  const { refine: refineSearch } = useSearchBox();
+  /* const { refine: refineSearch } = useSearchBox();
   const { refine: cityRefine } = useRefinementList({ attribute: "city" });
   const { refine: streetRefine } = useRefinementList({ attribute: "street" });
   const { refine: typePropertyRefine } = useRefinementList({
@@ -31,9 +31,9 @@ const AlgoliaFilters = () => {
   const { refine: priceRefine } = useRange({ attribute: "price" });
   const { refine: areaRefine } = useRange({ attribute: "area" });
   const { refine: roomsRefine } = useRange({ attribute: "nbrRooms" });
-  const { setUiState } = useInstantSearch();
+  const { setUiState } = useInstantSearch(); */
 
-  useEffect(() => {
+  /* useEffect(() => {
     // Mettre à jour l'état de l'interface utilisateur avec les filtres
     setUiState((uiState) => ({
       ...uiState,
@@ -72,7 +72,7 @@ const AlgoliaFilters = () => {
     minNbrRooms,
     maxNbrRooms,
     setUiState,
-  ]);
+  ]); */
 
   return null;
 };

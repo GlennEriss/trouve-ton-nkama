@@ -4,6 +4,7 @@ import NextAuthProvider from "@/providers/NextAuthProvider";
 import { Toaster } from "@/components/ui/toaster";
 import { LocationProvider } from "./LocationProvider";
 import { NotificationProvider } from "./NotificationProvider";
+import { AlgoliaRefinementsProvider } from "./AlgoliaRefinementsContext";
 
 export function Providers({ children }: { children: React.ReactNode }) {
   return (
@@ -11,7 +12,11 @@ export function Providers({ children }: { children: React.ReactNode }) {
       <NextAuthProvider>
         <LocationProvider>
           <NotificationProvider>
-            <AlgoliaProvider indexName={"location-maison_property-index"}>{children}</AlgoliaProvider>
+            <AlgoliaProvider indexName={"location-maison_property-index"}>
+              <AlgoliaRefinementsProvider>
+                {children}
+              </AlgoliaRefinementsProvider>
+            </AlgoliaProvider>
           </NotificationProvider>
           <Toaster />
         </LocationProvider>
