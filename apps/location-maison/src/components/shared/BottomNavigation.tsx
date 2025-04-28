@@ -17,8 +17,8 @@ const menu = [
     { title: 'Profil', icon: UserCircle, link: '/profil' },
 ];
 type BottomNavigationProps = {}
-export const BottomNavigation: React.FC<BottomNavigationProps> = ({}) => {
-    const {user} = useCurrentUser()
+export const BottomNavigation: React.FC<BottomNavigationProps> = ({ }) => {
+    const { user } = useCurrentUser()
     const pathnames = usePathname();
     const { unreadCount } = useNotifications();
     if (!user) return null;
@@ -40,7 +40,11 @@ export const BottomNavigation: React.FC<BottomNavigationProps> = ({}) => {
                             {unreadCount > 99 ? "99+" : unreadCount}
                         </Badge>
                     )}
-                    <item.icon size={25} />
+                    <div className='flex flex-col items-center space-y-1'>
+                        <item.icon size={25} />
+                        <h6 className='text-[10px]'> {item.title} </h6>
+                    </div>
+
                 </Link>
             ))}
         </div>
