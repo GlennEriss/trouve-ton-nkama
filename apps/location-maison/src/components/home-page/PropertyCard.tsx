@@ -4,7 +4,7 @@
 import React from "react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-import { TypeProperty } from "@/lib/utils";
+import { formatDateFr, TypeProperty } from "@/lib/utils";
 
 // Import des icônes
 import { FaBath, FaToilet } from "react-icons/fa";
@@ -13,9 +13,9 @@ import { MdOutlineSquareFoot } from "react-icons/md";
 import { House } from "@/mocks/mocksHouse";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-const PropertyCard = ({property}: any) => {
+const PropertyCard = ({ property }: any) => {
   const router = useRouter();
-  //console.log("property:",property)
+  console.log("property:", property)
 
   const handleCardClick = () => {
     router.push(`/houseDetails/${property.path.replace("properties/", "")}`);
@@ -43,6 +43,9 @@ const PropertyCard = ({property}: any) => {
           <h3 className="text-md font-semibold text-gray-800 dark:text-gray-100 line-clamp-2 h-12">
             {property.title || "Propriété"}
           </h3>
+          <p className="text-xs text-gray-500 dark:text-gray-400 mb-1">
+            {formatDateFr(property.createdAt)}
+          </p>
           <p className="text-sm text-gray-600 dark:text-gray-400 truncate">
             {property.city}, {property.province}, {property.country}
           </p>
@@ -58,7 +61,7 @@ const PropertyCard = ({property}: any) => {
         </div>
 
         {/* Section d'icônes et chiffres */}
-        <div className="flex justify-between text-gray-600 dark:text-gray-400">
+        <div className="flex flex-wrap gap-10 mt-2 text-gray-600 dark:text-gray-400">
           <div className="flex items-center space-x-1">
             <IoMdBed className="w-5 h-5" />
             <span className="text-sm">{property.nbrRooms}</span>
@@ -67,10 +70,10 @@ const PropertyCard = ({property}: any) => {
             <FaToilet className="w-5 h-5" />
             <span className="text-sm">{property.nbrToilets}</span>
           </div>
-          <div className="flex items-center space-x-1">
+          {Number(property.area) > 0 && <div className="flex items-center space-x-1">
             <MdOutlineSquareFoot className="w-5 h-5" />
             <span className="text-sm">{property.area} m²</span>
-          </div>
+          </div>}
         </div>
       </div>
 

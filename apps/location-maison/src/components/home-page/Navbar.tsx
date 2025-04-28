@@ -3,10 +3,9 @@
 import { useState, useEffect } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Clover, Search, Plus } from "lucide-react";
+import { Clover, Search, Plus, Moon, Sun } from "lucide-react";
 import { BiSearch } from "react-icons/bi";
 import { useAlgoliaContext } from "@/providers/AlgoliaContext";
-import { FilterModal } from "./FilterModal";
 import { useWindowSize } from "@/hooks/useSize";
 import MenuProfil from "../navbar/MenuProfil";
 import { routes } from "@/constantes/routes";
@@ -77,7 +76,8 @@ export default function Navbar({ session }: { session: Session | null }) {
     if (tags && tags.length > 0) {
       params.append("tags", tags.join(","));
     }
-    //console.log("params:", params.toString())
+    //params.append("page", "1");
+    console.log("params:", params.toString())
     router.push(`/search?${params.toString()}`);
   };
   // --- Rendu mobile ---
@@ -99,8 +99,6 @@ export default function Navbar({ session }: { session: Session | null }) {
           >
             <Search className="w-6 h-6 text-[#146B67] dark:text-white" />
           </button>
-          {/* La FilterModal peut toujours utiliser le contexte pour remplir city, price, etc. */}
-          <FilterModal handleSearch={handleSearch} />
           {session ? (
             <div className="flex items-center">
               <a href={routes.protected.add_property}>
@@ -170,7 +168,6 @@ export default function Navbar({ session }: { session: Session | null }) {
         >
           <BiSearch className="w-6 h-6 text-white" />
         </div>
-        <FilterModal handleSearch={handleSearch} />
       </div>
 
       <div className="flex items-center">
@@ -209,9 +206,22 @@ export default function Navbar({ session }: { session: Session | null }) {
         }
         <button
           onClick={toggleTheme}
-          className="w-10 h-10 rounded-full border-black dark:border-white flex items-center justify-center bg-black dark:bg-white text-white dark:text-black"
+          aria-label={`Activer le thème ${theme === "light" ? "sombre" : "clair"}`}
+          title={`Passer au thème ${theme === "light" ? "sombre" : "clair"}`}
+          className="
+            w-10 h-10
+            flex items-center justify-center
+            rounded-full
+            bg-gray-100 dark:bg-gray-700
+            text-gray-800 dark:text-yellow-300
+            border border-gray-300 dark:border-gray-600
+            hover:bg-gray-200 dark:hover:bg-gray-600
+            focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary
+            transition-transform transition-colors
+            hover:scale-110
+          "
         >
-          {theme === "light" ? "🌞" : "🌙"}
+          {theme === "light" ? <Moon size={20} /> : <Sun size={20} />}
         </button>
       </div>
     </nav>
