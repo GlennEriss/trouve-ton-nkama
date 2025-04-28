@@ -34,14 +34,14 @@ export default function ContactSection({ property }: { property: Property }) {
                 </a> */}
 
                 {/* Gmail */}
-                <a
+                {/* <a
                     href={`mailto:${user?.email}?subject=${encodeURIComponent(`Intérêt pour l'annonce "${property.title}"`)}&body=${encodeURIComponent(`Bonjour,\n\nJe suis intéressé(e) par votre annonce intitulée "${property.title}" au prix de ${property.price.toLocaleString('fr-FR')} FCFA.\n\nVoici le lien de l'annonce : https://www.logi-market.com/houseDetails/${property.id}\n\nCordialement,`)}`}
                     target="_blank"
                     rel="noopener noreferrer"
                     title="Contacter via Gmail"
                 >
                     <AiOutlineMail size={30} className="cursor-pointer hover:text-red-600 text-red-600" />
-                </a>
+                </a> */}
 
                 {/* Appeler directement */}
                 <a

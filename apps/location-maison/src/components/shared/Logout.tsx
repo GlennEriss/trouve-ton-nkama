@@ -12,6 +12,7 @@ const getAuth = () => import("@/firebase/auth");
 export default function Logout() {
     const { toast } = useToast();
     const router = useRouter()
+    const [isLoading, setIsLoading] = React.useState(false)
     const [isPending, startTransition] = useTransition()
     const handleServerSignout = () => {
         startTransition(async () => {
@@ -33,6 +34,7 @@ export default function Logout() {
         })
     }
     const handleClientSignout = async () => {
+        setIsLoading(true)
         try {
             const { auth, signOut: firebaseSignOut } = await getAuth();
             await firebaseSignOut(auth);
@@ -42,9 +44,11 @@ export default function Logout() {
                 description: "Vous vous êtes déconnectés de la plateforme",
                 variant: "warning",
             });
+            setIsLoading(false)
             router.push(routes.public.homePage)
         } catch (error) {
             console.error('Erreur lors de la déconnexion :', error);
+            setIsLoading(false)
             toast({
                 title: "Erreur de déconnexion",
                 description: "Une erreur est survenue lors de la déconnexion.",
@@ -54,9 +58,9 @@ export default function Logout() {
     }
     return (
         <div className='md:hidden'>
-            <Button onClick={handleClientSignout} variant='outline' className='w-full text-md border-red-500 text-red-500 hover:text-white'>
+            <Button onClick={handleClientSignout} variant='outline' className='w-full text-md border-red-500 text-red-500 hover:text-red-500'>
                 {
-                    isPending ? (
+                    (isPending || isLoading) ? (
                         <div className="w-5 h-5 border-4 border-red-500 rounded-full animate-spin border-t-transparent"></div>
                     ) : (
                         <span>Se déconnecter</span>

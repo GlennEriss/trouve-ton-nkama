@@ -1,6 +1,5 @@
 'use client'
 import React from 'react'
-import { Heart } from "lucide-react";
 import clsx from 'clsx';
 import { useCurrentUser } from '@/hooks/use-current-user';
 import { useSession } from 'next-auth/react';
@@ -9,6 +8,7 @@ import { getPropertyById } from '@/db/property.db';
 //import { createNotification } from '@/db/notification.db';
 import { Notification } from '@/models/notification'
 import { routes } from '@/constantes/routes';
+import { RiHeart3Line } from 'react-icons/ri';
 type ButtonFavorisProps = {
   idProperty: string
 }
@@ -83,19 +83,20 @@ export const ButtonFavoris: React.FC<ButtonFavorisProps> = ({ idProperty }) => {
 
   return (
     <button
-      className="relative flex items-center justify-center p-2 rounded-full transition-all duration-300 
+      className="relative flex items-center justify-center rounded-full transition-all duration-300 
                  hover:bg-red-100 dark:hover:bg-red-900 group"
       onClick={isLoading ? undefined : toggleFavorite}
       disabled={isLoading}
     >
-      <Heart
+      <RiHeart3Line
         className={clsx(
           "transition-all duration-300 ease-in-out",
           isFavorite
             ? "text-red-500 fill-red-500 scale-110"
             : "text-gray-400 group-hover:text-red-500"
         )}
-        size={30}
+        color='black'
+        size={40}
       />
       {isLoading && (
         <div className="absolute inset-0 flex items-center justify-center">
