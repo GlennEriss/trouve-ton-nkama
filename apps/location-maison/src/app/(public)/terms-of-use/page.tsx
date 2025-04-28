@@ -4,8 +4,16 @@ import React from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { routes } from "@/constantes/routes";
+import { useWindowSize } from "@/hooks/useSize";
+import TermsOfUseMobilePage from "@/components/terms-of-use/TermsOfUseMobilePage";
 
 export default function TermsOfUsePage() {
+  const size = useWindowSize()
+  if(size.width < 768){
+    return (
+      <TermsOfUseMobilePage/>
+    )
+  }
   return (
     <div className="container mx-auto px-4 py-8 max-w-3xl">
       <Card>
@@ -16,7 +24,7 @@ export default function TermsOfUsePage() {
         </CardHeader>
         <CardContent>
             <p className="text-gray-600 text-center mb-6">
-              Dernière mise à jour : 11 Mars 2025
+              Dernière mise à jour : 28 avril 2025
             </p>
             
             <Separator className="mb-6" />
