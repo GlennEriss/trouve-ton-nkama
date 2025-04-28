@@ -34,6 +34,7 @@ export default function Navbar({ session }: { session: Session | null }) {
     maxArea,
     minNbrRooms,
     maxNbrRooms,
+    setTypeProperty,
     typeProperty,
     tags,
   } = useAlgoliaContext();
@@ -55,6 +56,10 @@ export default function Navbar({ session }: { session: Session | null }) {
    * Construit l'URL à partir des champs du contexte et redirige vers /search
    */
   const handleSearch = () => {
+    //setTypeProperty(["Home"])
+    //console.log("typeProperty:", typeProperty)
+
+
     // Construire l'URL
     const params = new URLSearchParams();
     if (searchText) params.append("query", searchText);
@@ -72,7 +77,7 @@ export default function Navbar({ session }: { session: Session | null }) {
     if (tags && tags.length > 0) {
       params.append("tags", tags.join(","));
     }
-
+    //console.log("params:", params.toString())
     router.push(`/search?${params.toString()}`);
   };
 

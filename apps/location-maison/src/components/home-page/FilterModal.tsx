@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import {
   Dialog,
   DialogContent,
@@ -15,22 +15,23 @@ import { BiFilter } from "react-icons/bi";
 import { useAlgoliaContext } from "@/providers/AlgoliaContext";
 import { getTypePropertyKey, TypeProperty } from "@/lib/utils";
 import { tags as tagsList } from "@/constantes";
+import {
+  ToggleRefinement, RefinementList,
+  useRange
+} from "react-instantsearch";
+import { useRouter } from "next/navigation";
+import { useAlgoliaRefinements } from "@/providers/AlgoliaRefinementsContext";
 
-/**
- * Composant FilterModal
- * - Gère l'ouverture/fermeture de la modal
- * - Affiche les champs de filtres (prix, surface, etc.)
- * - Applique la logique de toggling pour typeProperty et tags
- * - Valide les champs (min <= max)
- * - Appelle `applyRefinements()` et `handleSearch()` lorsque l'utilisateur clique sur "Appliquer"
- */
+
 export const FilterModal = ({
-  //applyRefinements,
   handleSearch,
 }: {
-  //applyRefinements: () => void;
   handleSearch: () => void;
 }) => {
+  const router = useRouter();
+
+  const { refineTags } = useAlgoliaRefinements();
+
   const {
     city,
     setCity,
@@ -58,10 +59,13 @@ export const FilterModal = ({
   // État local pour l'ouverture/fermeture de la modal
   const [open, setOpen] = useState(false);
 
+  //pour autoriser l'effacement des filtres
+  const [isClearFilters, setIsClearFilters] = useState(false);
+
   /**
    * Fonction utilitaire pour ajouter/retirer un élément d'un tableau (typeProperty, tags)
    */
-  const toggleSelection = useCallback(
+  const toggleSelection = (
     (list: string[], item: string, setter: (val: string[]) => void) => {
       if (list.includes(item)) {
         const newList = list.filter((i) => i !== item);
@@ -69,18 +73,16 @@ export const FilterModal = ({
         setter(newList);
       } else {
         const newList = [...list, item];
-        //console.log(`Ajout de l'élément "${item}". Nouvelle liste :`, newList);
+        console.log(`Ajout de l'élément "${item}". Nouvelle liste :`, newList);
         setter(newList);
       }
-    },
-    []
+    }
   );
-
 
   /**
    * Valide et applique les filtres (appel d'applyRefinements et handleSearch)
    */
-  const handleApplyFilters = useCallback(() => {
+  const handleApplyFilters = () => {
     // Vérification basique des valeurs min/max
     if (minPrice && maxPrice && Number(minPrice) > Number(maxPrice)) {
       alert("Le prix minimum ne peut pas être supérieur au prix maximum.");
@@ -97,38 +99,18 @@ export const FilterModal = ({
       return;
     }
 
-    // Applique les filtres (mise à jour du UI state)
-    //applyRefinements();
-
     // Lance la recherche (si vous construisez l'URL ou relancez la requête)
     handleSearch();
 
     // Ferme la modal
     setOpen(false);
-  }, [
-    minPrice,
-    maxPrice,
-    minArea,
-    maxArea,
-    minNbrRooms,
-    maxNbrRooms,
-    //applyRefinements,
-    handleSearch,
-  ]);
-
-  /**
-   * Si vous voulez réinitialiser et appliquer immédiatement,
-   * vous pouvez faire :
-   * clearFilters();
-   * applyRefinements();
-   * handleSearch();
-   */
-  const handleClearFilters = useCallback(() => {
+  }
+  const handleClearFilters = () => {
     clearFilters();
-    // Optionnel : appliquez la remise à zéro directement
-    // applyRefinements();
-    // handleSearch();
-  }, [clearFilters]);
+    setOpen(false);
+    router.push("/search");
+  };
+
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
@@ -192,9 +174,12 @@ export const FilterModal = ({
                 <Input
                   placeholder="Prix min."
                   type="number"
-                  value={minPrice}
+                  //value={value.start}
                   min={0}
+                  value={minPrice}
                   onChange={(e) => setMinPrice(e.target.value)}
+
+                  //onChange={(e) => { setValue((previous) => ({ start: Number(e.target.value), end: previous.end })) }}
                   className="rounded-xl py-5 dark:text-white text-black bg-white dark:bg-neutral-900 placeholder-gray-500 max-w-[90px] w-full"
                 />
                 <span>-</span>
@@ -202,8 +187,11 @@ export const FilterModal = ({
                   placeholder="Prix max."
                   type="number"
                   min={0}
+                  //value={value.end}
                   value={maxPrice}
                   onChange={(e) => setMaxPrice(e.target.value)}
+
+                  //onChange={(e) => { setValue((previous) => ({ start: previous.start, end: Number(e.target.value) })) }}
                   className="rounded-xl py-5 dark:text-white text-black bg-white dark:bg-neutral-900 placeholder-gray-500 max-w-[90px] w-full"
                 />
               </div>
@@ -268,14 +256,18 @@ export const FilterModal = ({
                 Type de propriété
               </label>
               <div className="flex flex-wrap gap-3">
+                {/* <RefinementList attribute={"typeProperty"} /> */}
                 {Object.values(TypeProperty).map((type) => (
                   <Button
                     key={type}
                     variant="outline"
-                    onClick={() => toggleSelection(typeProperty, getTypePropertyKey(type)!, setTypeProperty)}
+                    onClick={() => {
+                      toggleSelection(typeProperty, getTypePropertyKey(type)!, setTypeProperty);
+                      //typePropertyRefine((getTypePropertyKey(type) ?? ""));
+                    }}
                     className={`rounded-full border-gray-600 font-semibold ${typeProperty.includes(getTypePropertyKey(type)!)
-                        ? "bg-red-800 text-white"
-                        : "text-gray-400"
+                      ? "bg-red-800 text-white"
+                      : "text-gray-400"
                       }`}
                   >
                     {type}
@@ -292,10 +284,10 @@ export const FilterModal = ({
                   <Button
                     key={tag.tagName}
                     variant="outline"
-                    onClick={() => toggleSelection(tags, tag.tagName, setTags)}
+                    onClick={() => { toggleSelection(tags, tag.tagName, setTags); refineTags(tag.tagName) }}
                     className={`rounded-full border-gray-600 font-semibold ${tags.includes(tag.tagName)
-                        ? "bg-red-800 text-white"
-                        : "text-gray-400"
+                      ? "bg-red-800 text-white"
+                      : "text-gray-400"
                       }`}
                   >
                     {tag.tagName}

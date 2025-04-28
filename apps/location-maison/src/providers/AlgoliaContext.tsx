@@ -115,7 +115,7 @@ export const AlgoliaProvider: React.FC<AlgoliaProviderProps> = ({
     setMaxNbrChickens("");
     setTypeProperty([]);
     setTags([]);
-    setSearchText("");
+    //setSearchText("");
   };
 
   return (
