@@ -7,7 +7,6 @@ import { Property } from '@/models/annonce'
 import { ButtonFavoris } from './ButtonFavoris'
 import ContactSection from './ContactSection'
 import { MapSection } from './MapSection'
-import ButtonShareToFacebook from './ButtonShareToFacebook'
 import ButtonShare from './ButtonShare'
 
 export default function PreviewProperty({ property }: { property: Property }) {

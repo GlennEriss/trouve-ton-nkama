@@ -75,9 +75,11 @@ export default function Navbar({ session }: { session: Session | null }) {
 
     router.push(`/search?${params.toString()}`);
   };
-
   // --- Rendu mobile ---
   if (width < 768) {
+    if (session?.user) {
+      return null
+    }
     return (
       <nav className="sticky top-0 left-0 right-0 z-50 bg-white dark:bg-black text-black dark:text-white px-4 py-4 flex items-center justify-between shadow-md">
         <div className="flex items-center">

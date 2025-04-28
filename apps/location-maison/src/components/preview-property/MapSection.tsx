@@ -4,7 +4,7 @@ import React from 'react';
 import dynamic from 'next/dynamic';
 import 'leaflet/dist/leaflet.css';
 import L from 'leaflet';
-
+import 'leaflet.fullscreen/Control.FullScreen.css';
 type MapSectionProps = {
   street: string;
   city: string;
@@ -31,6 +31,10 @@ const Marker = dynamic(
 );
 const Popup = dynamic(
   () => import('react-leaflet').then((mod) => mod.Popup),
+  { ssr: false }
+);
+const FullscreenControl = dynamic(
+  () => import('react-leaflet-fullscreen').then(mod => mod.FullscreenControl),
   { ssr: false }
 );
 
@@ -64,6 +68,7 @@ export const MapSection: React.FC<MapSectionProps> = ({
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
           attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
         />
+        <FullscreenControl position="topright" />
         <Marker position={[latitude, longitude]} icon={defaultIcon}>
           <Popup>
             <div>
