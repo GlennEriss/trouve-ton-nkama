@@ -29,6 +29,13 @@ const DetailsItemMobile = ({ label, value }: { label: string; value: string | nu
     if (value === 0 || value === '' || value === null || value === undefined) {
         return null;
     }
+    if (label === "Type de Kiosque" || label === "Type de Chambre") {
+        return (
+            <div className="flex items-center justify-center p-3 border border-gray-200 rounded-lg bg-gray-50 shadow-sm">
+                <div className="text-gray-700 text-sm">{value}</div>
+            </div>
+        );
+    }
     return (
         <div className="flex items-center gap-3 p-3 bg-white border border-gray-200 rounded-lg shadow-sm hover:shadow transition-all duration-150">
             <div className="flex-shrink-0">

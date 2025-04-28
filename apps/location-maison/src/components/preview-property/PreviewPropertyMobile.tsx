@@ -18,6 +18,8 @@ import Tag from './Tag'
 import { MapSection } from './MapSection'
 import DetailsProperty from './DetailsProperty'
 import { DetailsPropertyMobile } from './DetailsPropertyMobile'
+import ButtonShareToFacebook from './ButtonShareToFacebook'
+import ButtonShareToWhatsapp from './ButtonShareToWhatsapp'
 
 const inter = Inter({
     subsets: ['latin'],
@@ -122,6 +124,13 @@ export const PreviewPropertyMobile: React.FC<PreviewPropertyMobileProps> = ({ pr
             <section className='px-2 space-y-3'>
                 <h1 className='font-bold text-xl'>Détails du logement</h1>
                 <DetailsPropertyMobile property={property as any} />
+            </section>
+            <section className='px-2 space-y-3'>
+                <h1 className='font-bold text-xl'>Partager l'annonce</h1>
+                <div className="justify-end flex gap-2 bg-white rounded">
+                    <ButtonShareToFacebook property={property} />
+                    <ButtonShareToWhatsapp property={property} />
+                </div>
             </section>
             <section>
                 <MapSection
