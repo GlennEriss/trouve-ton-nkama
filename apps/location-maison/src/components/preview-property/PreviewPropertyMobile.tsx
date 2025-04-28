@@ -122,7 +122,7 @@ export const PreviewPropertyMobile: React.FC<PreviewPropertyMobileProps> = ({ pr
                 </p>
             </section>
             <section className='px-2 space-y-3'>
-                <h1 className='font-bold text-xl'>Détails du logement</h1>
+                <h1 className='font-bold text-xl'>Aperçu</h1>
                 <DetailsPropertyMobile property={property as any} />
             </section>
             <section className='px-2 space-y-3'>
@@ -132,6 +132,16 @@ export const PreviewPropertyMobile: React.FC<PreviewPropertyMobileProps> = ({ pr
                     <ButtonShareToWhatsapp property={property} />
                 </div>
             </section>
+            {
+                property.additionnalInformation && (
+                    <section className="flex flex-col gap-5 rounded-lg p-5 shadow dark:shadow-gray-800 dark:bg-gray-800 dark:text-white">
+                        <h1 className='font-bold text-xl'>Localisation</h1>
+                        <p className='text-gray-700 dark:text-gray-300'>
+                            {property.additionnalInformation}
+                        </p>
+                    </section>
+                )
+            }
             <section>
                 <MapSection
                     image={property.images[0].fileURL}
