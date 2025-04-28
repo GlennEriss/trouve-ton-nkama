@@ -13,8 +13,8 @@ const iconMap: Record<string, JSX.Element> = {
     "Étages": <FaBuilding size={20} className="text-yellow-500" />,
     "Garages": <FaWarehouse size={20} className="text-orange-500" />,
     "Piscine": <FaSwimmingPool size={20} className="text-cyan-500" />,
-    "Nombre d'étages": <FaBuilding size={20} className="text-yellow-500" />,
-    "Nombre d'appartements": <FaBuilding size={20} className="text-purple-500" />,
+    "Etages": <FaBuilding size={20} className="text-yellow-500" />,
+    "Appartements": <FaBuilding size={20} className="text-purple-500" />,
     "Parking": <FaWarehouse size={20} className="text-pink-500" />,
     "Bureaux": <FaHome size={20} className="text-green-500" />,
     "Toilettes": <FaToilet size={20} className="text-rose-500" />,
@@ -78,8 +78,8 @@ export const DetailsPropertyMobile: React.FC<DetailsPropertyMobileProps> = ({ pr
             break;
         case "Building":
             items = [
-                { label: "Nombre d'étages", value: propertyDetails.nbrFloors },
-                { label: "Nombre d'appartements", value: propertyDetails.nbrApartments },
+                { label: "Etages", value: propertyDetails.nbrFloors },
+                { label: "Appartements", value: propertyDetails.nbrApartments },
                 { label: "Parking", value: propertyDetails.hasParking ? "Oui" : "Non" },
             ].filter((item): item is { label: string; value: string | number | boolean | undefined } => Boolean(item));
             break;
