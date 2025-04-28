@@ -4,8 +4,16 @@ import React from "react";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { routes } from "@/constantes/routes";
+import { useWindowSize } from "@/hooks/useSize";
+import PrivacyPolicyMobile from "@/components/privacy-policy/PrivacyPolicyMobile";
 
 export default function PrivacyPolicy() {
+  const size = useWindowSize()
+  if (size.width < 768) {
+    return (
+      <PrivacyPolicyMobile />
+    )
+  }
   return (
     <div className="max-w-3xl mx-auto p-6 md:p-10">
       {/* Carte principale */}
@@ -15,13 +23,13 @@ export default function PrivacyPolicy() {
             Politique de Confidentialité
           </CardTitle>
           <p className="text-gray-600 text-sm text-center mt-2">
-            Dernière mise à jour : 10 mars 2025
+            Dernière mise à jour : 28 avril 2025
           </p>
         </CardHeader>
 
         <CardContent>
           <p className="text-gray-700 text-md leading-relaxed">
-            Bienvenue sur Home-Rent, votre plateforme de publication d'annonces de logements à louer.
+            Bienvenue sur LogisGabon, votre plateforme de publication d'annonces de logements à louer.
             Nous nous engageons à protéger votre vie privée et à assurer la transparence quant à la collecte,
             l'utilisation et la protection de vos données personnelles.
           </p>
@@ -90,7 +98,7 @@ export default function PrivacyPolicy() {
           <Separator className="my-6" />
 
           <p className="text-sm text-gray-500 text-center">
-            © 2025 Home-Rent. Tous droits réservés.
+            © 2025 LogisGabon. Tous droits réservés.
           </p>
         </CardContent>
       </Card>

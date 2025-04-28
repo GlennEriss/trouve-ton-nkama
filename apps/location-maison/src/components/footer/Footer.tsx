@@ -46,7 +46,7 @@ export default function Footer() {
 
                 <hr className="my-6 border-gray-700 sm:mx-auto lg:my-8" />
                 <span className="block text-sm text-gray-600 sm:text-center">
-                    © 2023 <a href={routes.public.homePage} className="hover:underline">Home-Rent</a>. All Rights Reserved.
+                    © 2023 <a href={routes.public.homePage} className="hover:underline">LogisGabon</a>. All Rights Reserved.
                 </span>
             </div>
         </footer>

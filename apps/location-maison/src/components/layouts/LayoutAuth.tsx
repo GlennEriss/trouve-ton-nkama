@@ -44,7 +44,7 @@ export const LayoutAuth: React.FC<LayoutAuthProps> = ({ children, type, setIsOth
                             <Logo color='white' />
                         </Link>
                         <h1 className="text-2xl font-bold">
-                            Bienvenue sur Home-Rent
+                            Bienvenue sur LogisGabon
                         </h1>
                         <p className="mt-4 text-lg">
                             Trouvez facilement votre maison ou appartement de rêve grâce à notre plateforme intuitive.
