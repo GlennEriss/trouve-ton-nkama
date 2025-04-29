@@ -29,7 +29,8 @@ export class HomeBuilder extends LogementBuilder {
             ...this.property,
             typeProperty: 'Home',
             nbrFloors: 0,
-            nbrGarages: 0
+            nbrGarages: 0,
+            nbrLivingRoom: 0
         } as Home;
     }
 

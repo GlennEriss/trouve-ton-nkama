@@ -96,6 +96,7 @@ export const LogementSchema = PropertySchema.extend({
 export const HomeSchema = LogementSchema.extend({
   nbrGarages: z.number().min(0, "Le nombre de garages doit être positif ou nul"),
   nbrFloors: z.number().min(0, "Le nombre d'étages doit être un nombre positif"),
+  nbrLivingRoom: z.number().min(0, "Le nombre de salon doit être un nombre positif"),
 });
 export const StudioSchema = LogementSchema.extend({
   nbrFloorStudio: z.number().min(0, "Le numéro d'étage doit être un nombre positif"),
