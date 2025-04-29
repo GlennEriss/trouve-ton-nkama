@@ -1,6 +1,15 @@
+'use client'
+import DataDeletionMobilePage from "@/components/data-deletion/DataDeletionMobilePage";
 import { routes } from "@/constantes/routes";
+import { useWindowSize } from "@/hooks/useSize";
 
 export default function DataDeletionPage() {
+  const size = useWindowSize()
+  if(size.width < 768){
+    return (
+      <DataDeletionMobilePage/>
+    )
+  }
   return (
     <section className="min-h-screen bg-gray-50 flex items-center justify-center px-4 py-12">
       <div className="bg-white shadow-md rounded-lg p-8 max-w-3xl w-full text-gray-800">
