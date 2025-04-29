@@ -12,7 +12,7 @@ export const contentType = 'image/png'
 // Image generation
 export default async function Image({ params }: { params: { id: string } }) {
   const post = await getPropertyById(params.id)
-  const imageURL = post?.images?.[0]?.fileURL || 'https://www.logi-market.com/assets/og_img.png'
+  const imageURL = post?.images?.[0]?.fileURL || process.env.NEXT_PUBLIC_HOST+'/assets/og_img.png'
   const title = post?.title || 'Découvrez une annonce immobilière sur LogisGabon'
 
   return new ImageResponse(
