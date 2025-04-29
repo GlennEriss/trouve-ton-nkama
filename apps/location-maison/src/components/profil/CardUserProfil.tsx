@@ -5,11 +5,38 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { generateColorFromName } from '@/lib/generateColorFromName';
 import { useCurrentUser } from '@/hooks/use-current-user';
 import { firebaseTimestampToDate } from '@/lib/firebaseTimestampToDate';
+import { useWindowSize } from '@/hooks/useSize';
+import { Separator } from '../ui/separator';
 
 export default function CardUserProfil() {
     const { user } = useCurrentUser()
     const avatarBackground = generateColorFromName(user?.firstname)
-    //console.log(user?.createdAt?.nanoseconds)
+    const size = useWindowSize()
+    if (size.width < 768) {
+        return (
+            <div className='flex flex-col items-center gap-3'>
+                <Avatar
+                    className='w-[80px] h-[80px] mt-5'
+                >
+                    <AvatarImage src={user?.image ?? ''} alt="@shadcn" />
+                    <AvatarFallback
+                        style={{ backgroundColor: avatarBackground }}
+                        className='text-2xl font-bold text-white'>
+                        {user?.firstname?.at(0)}
+                    </AvatarFallback>
+                </Avatar>
+                <p className='flex flex-col items-center'>
+                    <h1 className='font-bold text-xl'>
+                        {user?.firstname} {user?.lastname}
+                    </h1>
+                    <span className='text-gray-500'>
+                        {user?.email}
+                    </span>
+                </p>
+                <Separator className='mt-6'/>
+            </div>
+        )
+    }
     return (
         <Card className="shadow-lg border border-gray-200 md:flex md:items-center md:max-w-[550px] lg:flex-col lg:mt-7">
             {/* Header de la carte */}
