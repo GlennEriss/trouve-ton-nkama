@@ -53,6 +53,9 @@ export default function SectionFavoris() {
     const { data, isPending, isFetching, fetchNextPage, isLoading } = useInfiniteQuery({
         queryKey: [queryKeys.favoris, user, currentPage],
         queryFn: fetchInfiniteProperties,
+        staleTime: 600000,
+        gcTime: 1000 * 60 * 15,
+        refetchOnWindowFocus: false,
         initialPageParam: { limitPerPage: PROPERTY_ITEM_PER_PAGE, lastDoc: null },
         getNextPageParam: (lastPage, allPages, pageParam) => {
             const { limitPerPage } = pageParam;

@@ -4,8 +4,16 @@ import React from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { routes } from "@/constantes/routes";
+import { useWindowSize } from "@/hooks/useSize";
+import TermsOfUseMobilePage from "@/components/terms-of-use/TermsOfUseMobilePage";
 
 export default function TermsOfUsePage() {
+  const size = useWindowSize()
+  if(size.width < 768){
+    return (
+      <TermsOfUseMobilePage/>
+    )
+  }
   return (
     <div className="container mx-auto px-4 py-8 max-w-3xl">
       <Card>
@@ -16,7 +24,7 @@ export default function TermsOfUsePage() {
         </CardHeader>
         <CardContent>
             <p className="text-gray-600 text-center mb-6">
-              Dernière mise à jour : 11 Mars 2025
+              Dernière mise à jour : 28 avril 2025
             </p>
             
             <Separator className="mb-6" />
@@ -37,14 +45,14 @@ export default function TermsOfUsePage() {
             <section id="introduction" className="mb-6">
               <h2 className="text-xl font-semibold mb-2">1. Introduction</h2>
               <p className="text-gray-700">
-                Bienvenue sur <strong>Home-Rent</strong>. En accédant et en utilisant notre plateforme, vous acceptez nos conditions d&apos;utilisation.
+                Bienvenue sur <strong>LogisGabon</strong>. En accédant et en utilisant notre plateforme, vous acceptez nos conditions d&apos;utilisation.
               </p>
             </section>
 
             <section id="utilisation" className="mb-6">
               <h2 className="text-xl font-semibold mb-2">2. Utilisation de la plateforme</h2>
               <p className="text-gray-700">
-                Home-Rent est une plateforme permettant aux utilisateurs de publier et consulter des annonces de location immobilière.
+                LogisGabon est une plateforme permettant aux utilisateurs de publier et consulter des annonces de location immobilière.
                 L&apos;utilisation du site doit être conforme aux lois en vigueur et aux règles éthiques de la communauté.
               </p>
             </section>
@@ -52,7 +60,7 @@ export default function TermsOfUsePage() {
             <section id="contenu" className="mb-6">
               <h2 className="text-xl font-semibold mb-2">3. Contenu et responsabilité</h2>
               <p className="text-gray-700">
-                Chaque utilisateur est responsable du contenu qu&apos;il publie sur Home-Rent. Les annonces ne doivent contenir ni informations
+                Chaque utilisateur est responsable du contenu qu&apos;il publie sur LogisGabon. Les annonces ne doivent contenir ni informations
                 trompeuses ni contenu illégal.
               </p>
             </section>

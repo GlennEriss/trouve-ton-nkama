@@ -8,6 +8,8 @@ import clsx from 'clsx';
 import { Badge } from '../ui/badge';
 import { useNotifications } from '@/providers/NotificationProvider';
 import { useCurrentUser } from '@/hooks/use-current-user';
+import { Inter } from 'next/font/google';
+import { cn } from '@/lib/utils';
 
 const menu = [
     { title: 'Logements', icon: House, link: routes.protected.properties },
@@ -16,15 +18,20 @@ const menu = [
     { title: 'Notification', icon: Bell, link: routes.protected.notification_list },
     { title: 'Profil', icon: UserCircle, link: '/profil' },
 ];
+
+const inter = Inter({
+    subsets: ['latin'],
+    weight: ['400'],
+})
 type BottomNavigationProps = {}
-export const BottomNavigation: React.FC<BottomNavigationProps> = ({}) => {
-    const {user} = useCurrentUser()
+export const BottomNavigation: React.FC<BottomNavigationProps> = ({ }) => {
+    const { user } = useCurrentUser()
     const pathnames = usePathname();
     const { unreadCount } = useNotifications();
     if (!user) return null;
 
     return (
-        <div className="fixed bottom-0 z-50 w-full flex bg-white p-4 justify-between md:hidden shadow border-t">
+        <div className={cn("fixed bottom-0 z-50 w-full flex bg-white p-4 justify-between md:hidden shadow border-t",inter.className)}>
             {menu.map((item, key) => (
                 <Link
                     href={item.link}
@@ -40,7 +47,11 @@ export const BottomNavigation: React.FC<BottomNavigationProps> = ({}) => {
                             {unreadCount > 99 ? "99+" : unreadCount}
                         </Badge>
                     )}
-                    <item.icon size={25} />
+                    <div className='flex flex-col items-center space-y-1'>
+                        <item.icon size={25} />
+                        <h6 className='text-[10px]'> {item.title} </h6>
+                    </div>
+
                 </Link>
             ))}
         </div>
