@@ -18,7 +18,7 @@ import { useSession } from 'next-auth/react';
 
 export const Signin = () => {
     const router = useRouter()
-    const {setUser} = useCurrentUser()
+    const { setUser } = useCurrentUser()
     const { data: session, status, update } = useSession()
     const searchParams = useSearchParams();
     const [isPending, startTransition] = React.useTransition()
@@ -32,6 +32,7 @@ export const Signin = () => {
             const result = await login(values)
             if (result?.error) {
                 toast({
+                    duration: 5000,
                     title: 'Erreur de connexion',
                     description: "Email ou mot de passe incorrect!",
                     variant: 'destructive',
@@ -41,6 +42,7 @@ export const Signin = () => {
                 //setUser(userDetails)
                 await update()
                 toast({
+                    duration: 5000,
                     title: 'Connexion réussie',
                     description: "Vous vous êtes connectés avec succès!",
                     variant: 'success',
@@ -53,6 +55,7 @@ export const Signin = () => {
         const error = searchParams.get("error");
         if (error === "wrong_provider") {
             toast({
+                duration: 5000,
                 title: "Erreur de connexion",
                 description: "Ce compte est associé à un autre mode de connexion.",
                 variant: "destructive",

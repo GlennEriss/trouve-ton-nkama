@@ -39,6 +39,7 @@ export default function FormPersonalInformation() {
         const isUpdated = await updateUser(user?.uid!, userUpdated)
         if (isUpdated) {
             toast({
+                duration: 5000,
                 title: "Modification du profil",
                 description: "Votre profil a été modifié avec succès!",
                 variant: "success",
@@ -48,6 +49,7 @@ export default function FormPersonalInformation() {
             })
         } else {
             toast({
+                duration: 5000,
                 title: "Erreur de modification du profil",
                 description: "Une erreur est survenue lors de la modification de votre profil.",
                 variant: "destructive",
@@ -121,8 +123,8 @@ export default function FormPersonalInformation() {
                         <div className='flex flex-col items-center gap-3'>
                             <ButtonApp
                                 type='submit'
-                                disabled={form.formState.isSubmitting || form.formState.isLoading }
-                                isLoading={form.formState.isSubmitting || form.formState.isLoading }
+                                disabled={form.formState.isSubmitting || form.formState.isLoading}
+                                isLoading={form.formState.isSubmitting || form.formState.isLoading}
                                 className='bg-gradient-to-b from-[#1FA89B] to-[#146B67] md:py-7 mt-5'
                                 title='Modifier'
                             />

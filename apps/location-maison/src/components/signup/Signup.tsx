@@ -72,6 +72,7 @@ export const Signup: React.FC = () => {
         onRegister(user)
             .then((uid) => {
                 toast({
+                    duration: 5000,
                     title: 'Création de compte',
                     description: "Votre compte a été créé avec succès!",
                     variant: 'success',
@@ -81,6 +82,7 @@ export const Signup: React.FC = () => {
             .catch(error => {
                 console.error(error)
                 toast({
+                    duration: 5000,
                     title: 'Création de compte',
                     description: "L'adresse email est déjà utilisé!",
                     variant: 'destructive',

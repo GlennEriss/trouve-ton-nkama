@@ -24,6 +24,7 @@ export default function StepperButtonComponent() {
       Object.keys(formState.errors).length > 0
     ) {
       toast({
+        duration: 5000,
         title: "Erreur dans le formulaire",
         description: "Le formulaire contient des erreurs. Veuillez corriger les erreurs avant de continuer.",
         variant: "destructive",
@@ -55,7 +56,7 @@ export default function StepperButtonComponent() {
                   <LoadingSpinner /> Création...
                 </>
               ) : (
-                TypePropertyList.includes(id as any) ? 'Enregistrer': 'Modifier'
+                TypePropertyList.includes(id as any) ? 'Enregistrer' : 'Modifier'
               )
             }
           </Button>

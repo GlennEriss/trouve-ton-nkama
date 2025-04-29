@@ -37,6 +37,7 @@ export default function MenuProfil() {
             const isSignout = await signout()
             if (isSignout) {
                 toast({
+                    duration: 5000,
                     title: "Déconnexion",
                     description: "Vous vous êtes déconnecté de la plateforme",
                     variant: "warning",
@@ -44,6 +45,7 @@ export default function MenuProfil() {
                 router.push(routes.public.homePage)
             } else {
                 toast({
+                    duration: 5000,
                     title: "Déconnexion",
                     description: "Une erreur est survenue durant la déconnexion.",
                     variant: "destructive",

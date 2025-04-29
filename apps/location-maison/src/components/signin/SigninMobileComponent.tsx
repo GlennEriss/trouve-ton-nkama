@@ -39,6 +39,7 @@ export default function SigninMobileComponent() {
     const validateFields = FormLoginSchema.safeParse(values)
     if (!validateFields.success) {
       return toast({
+        duration: 5000,
         title: 'Erreur de connexion',
         description: "Email ou mot de passe incorrect!",
         variant: 'destructive',
@@ -55,12 +56,14 @@ export default function SigninMobileComponent() {
       })
       if (!result?.ok || result?.error !== null) {
         return toast({
+          duration: 5000,
           title: 'Erreur de connexion',
           description: "Email ou mot de passe incorrect!",
           variant: 'destructive',
         });
       }
       toast({
+        duration: 5000,
         title: 'Connexion réussie',
         description: "Vous vous êtes connectés avec succès!",
         variant: 'success',
@@ -69,6 +72,7 @@ export default function SigninMobileComponent() {
     } catch (error) {
       console.error('Authentication Error:', error);
       return toast({
+        duration: 5000,
         title: 'Erreur de connexion',
         description: "Email ou mot de passe incorrect!",
         variant: 'destructive',
@@ -80,6 +84,7 @@ export default function SigninMobileComponent() {
     const error = searchParams.get("error");
     if (error === "wrong_provider") {
       toast({
+        duration: 5000,
         title: "Erreur de connexion",
         description: "Ce compte est associé à un autre mode de connexion.",
         variant: "destructive",

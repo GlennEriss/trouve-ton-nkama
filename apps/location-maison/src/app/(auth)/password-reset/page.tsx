@@ -31,12 +31,14 @@ export default function PasswordResetRequest() {
         try {
             await sendPasswordResetEmail(auth, data.email);
             toast({
+                duration: 5000,
                 title: "Succès",
                 description: "Un email de réinitialisation a été envoyé.",
                 variant: "success",
             });
         } catch (error: any) {
             toast({
+                duration: 5000,
                 title: "Erreur",
                 description: error.message || "Une erreur est survenue.",
                 variant: "destructive",
