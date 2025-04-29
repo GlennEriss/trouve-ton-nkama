@@ -14,7 +14,7 @@ export default function page() {
                 </Link>
                 <h1 className='text-xl font-bold'>Informations personnelles</h1>
             </div>
-            <div className='flex flex-col gap-5 px-4 items-center lg:flex-row lg:items-start lg:gap-0'>
+            <div className='flex flex-col gap-5 md:px-4 md:items-center lg:flex-row lg:items-start lg:gap-0'>
                 <CardUserProfil/>
                 <FormPersonalInformation />
             </div>

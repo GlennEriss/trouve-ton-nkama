@@ -13,13 +13,19 @@ import { ButtonLoading } from '../buttons/ButtonLoading'
 import { updateUser } from '@/db/user.db'
 import { useToast } from '@/hooks/use-toast';
 import { useSession } from "next-auth/react"
+import { useWindowSize } from '../../hooks/useSize';
+import { InputFormApp } from '../shared/form/InputFormApp'
+import { Calendar, CircleUser } from 'lucide-react'
+import { SelectFormApp } from '../shared/form/SelectFormApp'
+import { PhoneNumberFormApp } from '../shared/form/PhoneNumberFormApp'
+import { ButtonApp } from '../shared/ui/ButtonApp'
 
 
 export default function FormPersonalInformation() {
     const { user } = useCurrentUser()
     const { data: session, status, update } = useSession()
     const { toast } = useToast();
-
+    const size = useWindowSize()
     const form = useForm<FormUserProfilSchemaType>({
         resolver: zodResolver(FormUserProfilSchema),
     })
@@ -58,6 +64,74 @@ export default function FormPersonalInformation() {
             form.setValue('phoneNumbers', user.phoneNumbers.length > 0 ? user.phoneNumbers[0] : '')
         }
     }, [user])
+
+    if (size.width < 768) {
+        return (
+            <div className='px-4 pb-5'>
+                <Form {...form}>
+                    <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-3 mt-5">
+                        <InputFormApp
+                            control={form.control}
+                            name='firstname'
+                            label='Nom'
+                            type='text'
+                            IconLucide={CircleUser}
+                            IconColorFill={'none'}
+                            IconColor='gray'
+                            placeholder='Saisissez votre nom'
+                        />
+                        <InputFormApp
+                            control={form.control}
+                            name='lastname'
+                            label='Prénom'
+                            type='text'
+                            IconLucide={CircleUser}
+                            IconColorFill={'none'}
+                            IconColor='gray'
+                            placeholder='Saisissez votre prénom'
+                        />
+                        <InputFormApp
+                            control={form.control}
+                            name='birthDate'
+                            label='Date de naissance'
+                            type='date'
+                            IconLucide={Calendar}
+                            IconColorFill={'none'}
+                            IconColor='gray'
+                            placeholder='Saisissez votre date de naissance'
+                        />
+                        <SelectFormApp
+                            control={form.control}
+                            name='country'
+                            label='Votre pays'
+                            placeholder='Sélectionner un pays'
+                            options={countries.map(
+                                country => ({
+                                    value: country.code,
+                                    label: country.name
+                                })
+                            )}
+                        />
+                        <PhoneNumberFormApp
+                            control={form.control}
+                            name='phoneNumbers'
+                            label='Téléphone'
+                            placeholder='Saisissez votre numéro de téléphone'
+                        />
+                        <div className='flex flex-col items-center gap-3'>
+                            <ButtonApp
+                                type='submit'
+                                disabled={form.formState.isSubmitting || form.formState.isLoading }
+                                isLoading={form.formState.isSubmitting || form.formState.isLoading }
+                                className='bg-gradient-to-b from-[#1FA89B] to-[#146B67] md:py-7 mt-5'
+                                title='Modifier'
+                            />
+                        </div>
+                    </form>
+                </Form>
+            </div>
+        )
+    }
     return (
         <div className='md:w-2/3 md:mx-auto lg:w-3/5'>
             <Form {...form}>
