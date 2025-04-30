@@ -171,7 +171,7 @@ export default function Navbar() {
       </div>
 
       <div className="flex items-center">
-        <a href={routes.protected.add_property} rel="noopener noreferrer">
+        <a href={routes.protected.add_property} rel="noopener noreferrer" className={width < 820 && !user ? 'hidden' : 'block'}>
           <Button
             variant="default"
             className="bg-gradient-to-r from-[#146B67] via-[#1FA89B] to-[#146B67] text-white rounded-lg text-base px-6 py-3 font-semibold hover:brightness-110 hover:shadow-md transition"
@@ -185,7 +185,7 @@ export default function Navbar() {
             <MenuProfil />
           ) : (
             <div className="flex items-center gap-2 md:gap-4 mx-4">
-              <a href="/signin" rel="noopener noreferrer">
+              <a href={width < 820 ? "/signin-signup" : "/signin"} rel="noopener noreferrer">
                 <Button
                   variant="outline"
                   className="bg-transparent border border-[#146B67] text-[#146B67] rounded-lg text-base px-6 py-3 font-semibold hover:bg-[#0f5c59] hover:text-white hover:shadow-md transition"
@@ -193,7 +193,7 @@ export default function Navbar() {
                   Se connecter
                 </Button>
               </a>
-              <a href="/signup" rel="noopener noreferrer">
+              <a href="/signup" rel="noopener noreferrer" className={width < 820 ? 'hidden' : 'block'}>
                 <Button
                   variant="default"
                   className="bg-transparent border border-[#146B67] text-[#146B67] rounded-lg text-base px-6 py-3 font-semibold hover:bg-[#0f5c59] hover:text-white hover:shadow-md transition"
