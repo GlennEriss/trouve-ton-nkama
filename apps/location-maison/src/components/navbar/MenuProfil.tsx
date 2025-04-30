@@ -9,6 +9,8 @@ import { generateColorFromName } from '@/lib/generateColorFromName'
 import { signout } from '@/actions/signout'
 import { useToast } from '@/hooks/use-toast'
 import { useRouter } from 'next/navigation'
+import { signOut } from 'next-auth/react'
+const getAuth = () => import("@/firebase/auth");
 
 const menu = [
     {
@@ -30,6 +32,7 @@ export default function MenuProfil() {
     const { toast } = useToast();
     const router = useRouter()
     const [isPending, startTransition] = useTransition()
+    const [isLoading, setIsLoading] = React.useState(false)
     const avatarBackground = generateColorFromName(user?.firstname);
 
     const handleSignout = () => {
@@ -53,7 +56,31 @@ export default function MenuProfil() {
             }
         })
     }
-
+    const handleClientSignout = async () => {
+        setIsLoading(true)
+        try {
+            const { auth, signOut: firebaseSignOut } = await getAuth();
+            await firebaseSignOut(auth);
+            await signOut();
+            toast({
+                duration: 5000,
+                title: "Déconnexion",
+                description: "Vous vous êtes déconnectés de la plateforme",
+                variant: "warning",
+            });
+            setIsLoading(false)
+            router.push(routes.public.homePage)
+        } catch (error) {
+            console.error('Erreur lors de la déconnexion :', error);
+            setIsLoading(false)
+            toast({
+                duration: 5000,
+                title: "Erreur de déconnexion",
+                description: "Une erreur est survenue lors de la déconnexion.",
+                variant: "destructive",
+            });
+        }
+    }
     const handleNavigate = (link: string) => {
         router.push(link)
     }
@@ -89,11 +116,12 @@ export default function MenuProfil() {
                 </DropdownMenuGroup>
                 <div className='flex justify-center hover:bg-white dark:hover:bg-gray-800 my-2'>
                     <Button
-                        onClick={handleSignout}
+                        onClick={handleClientSignout}
                         variant='outline'
+                        disabled={isPending || isLoading}
                         className='border rounded-lg border-red-500 text-red-500 hover:text-red-500 dark:border-red-400 dark:text-red-400 dark:hover:bg-red-400 dark:hover:text-black transition-all'>
                         {
-                            isPending ? (
+                            isPending || isLoading ? (
                                 <div className="w-5 h-5 border-4 border-red-500 rounded-full animate-spin border-t-transparent"></div>
                             ) : (
                                 <span>Se déconnecter</span>
