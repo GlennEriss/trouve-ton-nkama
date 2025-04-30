@@ -80,7 +80,7 @@ export default function ParameterNotifications() {
     return (
         <div className="px-6 space-y-6 py-6 bg-white dark:bg-gray-900 max-w-4xl mx-auto">
             <h1 className="text-2xl font-bold mb-4 text-gray-900 dark:text-white">
-                Paramètres de notifications
+                Paramètre de notifications
             </h1>
             {notifications.map((notification, key) => (
                 <div key={key} className="flex items-center justify-between gap-4 py-4 border-b border-gray-200 dark:border-gray-700 last:border-b-0">

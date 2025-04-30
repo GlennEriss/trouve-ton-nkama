@@ -30,7 +30,7 @@ export default function ParameterSystem() {
     return (
         <div className='px-6 space-y-6 py-6 bg-white dark:bg-gray-900 max-w-4xl mx-auto'>
             <h1 className="text-2xl font-bold mb-4 text-gray-900 dark:text-white">
-                Paramètres du système
+                Paramètre du système
             </h1>
             <div className="flex items-center justify-between gap-4 py-4 border-b border-gray-200 dark:border-gray-700 last:border-b-0">
                 <div className="flex flex-col">
