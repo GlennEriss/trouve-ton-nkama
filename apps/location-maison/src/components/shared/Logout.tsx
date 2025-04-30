@@ -19,6 +19,7 @@ export default function Logout() {
             const isSignout = await signout()
             if (isSignout) {
                 toast({
+                    duration: 5000,
                     title: "Déconnexion",
                     description: "Vous vous êtes déconnectés de la plateforme",
                     variant: "warning",
@@ -26,6 +27,7 @@ export default function Logout() {
                 router.push(routes.public.homePage)
             } else {
                 toast({
+                    duration: 5000,
                     title: "Déconnexion",
                     description: "Une erreur est survenue durant la déconnexion.",
                     variant: "destructive",
@@ -40,6 +42,7 @@ export default function Logout() {
             await firebaseSignOut(auth);
             await signOut();
             toast({
+                duration: 5000,
                 title: "Déconnexion",
                 description: "Vous vous êtes déconnectés de la plateforme",
                 variant: "warning",
@@ -50,6 +53,7 @@ export default function Logout() {
             console.error('Erreur lors de la déconnexion :', error);
             setIsLoading(false)
             toast({
+                duration: 5000,
                 title: "Erreur de déconnexion",
                 description: "Une erreur est survenue lors de la déconnexion.",
                 variant: "destructive",

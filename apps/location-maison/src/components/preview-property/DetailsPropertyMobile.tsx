@@ -23,6 +23,7 @@ const iconMap: Record<string, JSX.Element> = {
     "Type de Kiosque": <FaStore size={20} className="text-violet-500" />,
     "Type de Chambre": <FaDoorOpen size={20} className="text-sky-500" />,
     "Numéro": <FaDoorOpen size={20} className="text-emerald-500" />,
+    "Salons": <FaDoorOpen size={20} className="text-teal-600" />,
 };
 
 const DetailsItemMobile = ({ label, value }: { label: string; value: string | number | boolean }) => {
@@ -64,6 +65,7 @@ export const DetailsPropertyMobile: React.FC<DetailsPropertyMobileProps> = ({ pr
                 { label: "Étages", value: propertyDetails.nbrFloors },
                 { label: "Garages", value: propertyDetails.nbrGarages },
                 ...(property.typeProperty === "Villa" ? [{ label: "Piscine", value: propertyDetails.nbrPiscine ? "Oui" : "Non" }] : []),
+                ...(property.typeProperty === "Home" ? [{ label: "Salons", value: propertyDetails.nbrLivingRoom }] : []),
             ].filter((item): item is { label: string; value: string | number | boolean | undefined } => Boolean(item));
             break;
         case "Apartment":

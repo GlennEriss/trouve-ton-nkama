@@ -76,8 +76,8 @@ export default function SectionFavoris() {
         return (
             <div className="flex flex-col items-center justify-center p-10">
                 <Image src="/no-favorites.svg" width={128} height={128} alt="Aucun favori" />
-                <h2 className="text-xl font-semibold text-gray-700">Aucun favori pour le moment</h2>
-                <p className="text-gray-500 text-center">Ajoutez des propriétés à vos favoris pour les retrouver ici</p>
+                <h2 className="text-xl font-semibold text-gray-700 dark:text-white">Aucun favori pour le moment</h2>
+                <p className="text-gray-500 dark:text-gray-400 text-center">Ajoutez des propriétés à vos favoris pour les retrouver ici</p>
             </div>
         );
     }
@@ -159,7 +159,7 @@ export default function SectionFavoris() {
                         >
                             <ChevronLeft size={20} />
                         </Button>
-                        <span className="font-medium text-gray-700">
+                        <span className="font-medium text-gray-700 dark:text-white">
                             Page {currentPage + 1}/ {totalPage}
                         </span>
                         <Button
@@ -180,7 +180,7 @@ export default function SectionFavoris() {
 }
 
 const SkeletonCard = () => (
-    <div className="p-2 rounded-lg bg-gray-100 shadow-xl">
+    <div className="p-2 rounded-lg bg-gray-100 dark:bg-gray-800 shadow-xl">
         <Skeleton className="h-52 w-full rounded-lg" />
         <div className="p-4">
             <Skeleton className="h-5 w-3/4 mb-2" />

@@ -28,6 +28,7 @@ export const RemoveProperty = ({ id }: RemovePropertyProps) => {
         onSuccess: (data, variables, context) => {
             queryClient.invalidateQueries({ queryKey: [queryKeys.properties] });
             toast({
+                duration: 5000,
                 title: "Suppression d'un logement",
                 description: "Un logement a été supprimé avec succès",
                 variant: 'warning',
@@ -38,6 +39,7 @@ export const RemoveProperty = ({ id }: RemovePropertyProps) => {
         onError: (error) => {
             console.error('Error delete property:', error);
             toast({
+                duration: 5000,
                 title: "Suppression d'un logement",
                 description: "Une erreur est survenue durant la suppression",
                 variant: 'destructive',

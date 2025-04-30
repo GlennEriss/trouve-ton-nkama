@@ -5,6 +5,7 @@ import PreviewProperty from "./PreviewProperty"
 import { PreviewPropertyMobile } from "./PreviewPropertyMobile"
 import { useProperty } from "@/hooks/use-property"
 import { notFound, useParams } from "next/navigation"
+import HouseDetailSkeleton from "./HouseDetailSkeleton"
 
 export default function HouseDetails() {
     const size = useWindowSize()
@@ -15,7 +16,9 @@ export default function HouseDetails() {
     const { data: property, isLoading, error, isFetching, isStale } = useProperty(id)
 
     if (isLoading) {
-        return <div>Chargement...</div>
+        return (
+            <HouseDetailSkeleton />
+        )
     }
 
     if (error || !property) {

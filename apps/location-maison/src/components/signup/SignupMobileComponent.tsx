@@ -80,6 +80,7 @@ export const SignupMobileComponent = () => {
         const validateFields = FormRegisterSchema.safeParse(values)
         if (!validateFields.success) {
             return toast({
+                duration: 5000,
                 title: 'Information invalide!',
                 description: "Des éléments du formulaire sont invalides",
                 variant: 'destructive',
@@ -90,6 +91,7 @@ export const SignupMobileComponent = () => {
         onRegister(user)
             .then((uid) => {
                 toast({
+                    duration: 5000,
                     title: 'Création de compte',
                     description: "Votre compte a été créé avec succès!",
                     variant: 'success',
@@ -99,6 +101,7 @@ export const SignupMobileComponent = () => {
             .catch(error => {
                 console.error(error)
                 toast({
+                    duration: 5000,
                     title: 'Création de compte',
                     description: "L'adresse email est déjà utilisé!",
                     variant: 'destructive',

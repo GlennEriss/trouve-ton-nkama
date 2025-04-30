@@ -66,6 +66,7 @@ export const RegisterSuccess: React.FC<RegisterSuccessProps> = ({ uid }) => {
         if (userCredential.user) {
           await sendEmailVerification(userCredential.user);
           toast({
+            duration: 5000,
             title: "Renvoie de confirmation de l'email",
             description: "Email de confirmation renvoyé avec succès!",
             variant: 'success',

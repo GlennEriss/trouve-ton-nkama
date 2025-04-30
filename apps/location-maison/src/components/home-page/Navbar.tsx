@@ -10,15 +10,15 @@ import { useWindowSize } from "@/hooks/useSize";
 import MenuProfil from "../navbar/MenuProfil";
 import { routes } from "@/constantes/routes";
 import { useRouter } from "next/navigation";
-import { Session } from "next-auth";
 import Logo from "../logo/Logo";
+import { useCurrentUser } from "@/hooks/use-current-user";
 
-export default function Navbar({ session }: { session: Session | null }) {
+export default function Navbar() {
   const router = useRouter();
   const { width } = useWindowSize();
-
+  const { user } = useCurrentUser()
   // Thème local
-  const [theme, setTheme] = useState("light");
+  const [theme, setTheme] = useState("system");
   const [showSearch, setShowSearch] = useState(false);
 
   // Récupération du contexte (champs de recherche/filtres)
@@ -42,7 +42,7 @@ export default function Navbar({ session }: { session: Session | null }) {
   useEffect(() => {
     if (theme === "dark") {
       document.documentElement.classList.add("dark");
-    } else {
+    } else if (theme === "light") {
       document.documentElement.classList.remove("dark");
     }
   }, [theme]);
@@ -82,7 +82,7 @@ export default function Navbar({ session }: { session: Session | null }) {
   };
   // --- Rendu mobile ---
   if (width < 768) {
-    if (session?.user) {
+    if (user) {
       return null
     }
     return (
@@ -97,9 +97,9 @@ export default function Navbar({ session }: { session: Session | null }) {
             onClick={() => setShowSearch(!showSearch)}
             className="w-11 h-11 flex items-center justify-center bg-white border border-[#146B67] dark:bg-gray-800 rounded-full"
           >
-            <Search className="w-6 h-6 text-[#146B67] dark:text-white" />
+            <Search className="w-6 h-6 text-[#146B67]" />
           </button>
-          {session ? (
+          {user ? (
             <div className="flex items-center">
               <a href={routes.protected.add_property}>
                 <button className="bg-gradient-to-r from-[#146B67] via-[#1FA89B] to-[#146B67] text-white rounded-lg text-[10px] px-3 py-2 font-semibold hover:brightness-110 hover:shadow-md transition">
@@ -171,7 +171,7 @@ export default function Navbar({ session }: { session: Session | null }) {
       </div>
 
       <div className="flex items-center">
-        <a href={routes.protected.add_property} rel="noopener noreferrer">
+        <a href={routes.protected.add_property} rel="noopener noreferrer" className={width < 820 && !user ? 'hidden' : 'block'}>
           <Button
             variant="default"
             className="bg-gradient-to-r from-[#146B67] via-[#1FA89B] to-[#146B67] text-white rounded-lg text-base px-6 py-3 font-semibold hover:brightness-110 hover:shadow-md transition"
@@ -181,11 +181,11 @@ export default function Navbar({ session }: { session: Session | null }) {
         </a>
         {/* Boutons */}
         {
-          session ? (
+          user ? (
             <MenuProfil />
           ) : (
             <div className="flex items-center gap-2 md:gap-4 mx-4">
-              <a href="/signin" rel="noopener noreferrer">
+              <a href={width < 820 ? "/signin-signup" : "/signin"} rel="noopener noreferrer">
                 <Button
                   variant="outline"
                   className="bg-transparent border border-[#146B67] text-[#146B67] rounded-lg text-base px-6 py-3 font-semibold hover:bg-[#0f5c59] hover:text-white hover:shadow-md transition"
@@ -193,7 +193,7 @@ export default function Navbar({ session }: { session: Session | null }) {
                   Se connecter
                 </Button>
               </a>
-              <a href="/signup" rel="noopener noreferrer">
+              <a href="/signup" rel="noopener noreferrer" className={width < 820 ? 'hidden' : 'block'}>
                 <Button
                   variant="default"
                   className="bg-transparent border border-[#146B67] text-[#146B67] rounded-lg text-base px-6 py-3 font-semibold hover:bg-[#0f5c59] hover:text-white hover:shadow-md transition"
@@ -217,7 +217,7 @@ export default function Navbar({ session }: { session: Session | null }) {
             border border-gray-300 dark:border-gray-600
             hover:bg-gray-200 dark:hover:bg-gray-600
             focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary
-            transition-transform transition-colors
+            transition-transform
             hover:scale-110
           "
         >
