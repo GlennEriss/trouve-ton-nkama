@@ -8,11 +8,11 @@ import CardUserProfil from '@/components/profil/CardUserProfil'
 export default function page() {
     return (
         <div className='space-y-4 pb-20'>
-            <div className='bg-white sticky top-0 flex gap-5 items-center border-b py-3 md:hidden px-4 z-50'>
+            <div className='bg-white dark:bg-gray-900 sticky top-0 flex gap-5 items-center border-b dark:border-gray-700 py-3 md:hidden px-4 z-50'>
                 <Link href={routes.protected.profil}>
                     <ChevronLeft />
                 </Link>
-                <h1 className='text-xl font-bold'>Informations personnelles</h1>
+                <h1 className='text-xl font-bold dark:text-white'>Informations personnelles</h1>
             </div>
             <div className='flex flex-col gap-5 md:px-4 md:items-center lg:flex-row lg:items-start lg:gap-0'>
                 <CardUserProfil/>

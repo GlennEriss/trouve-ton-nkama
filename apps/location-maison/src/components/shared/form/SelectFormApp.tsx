@@ -41,7 +41,7 @@ export const SelectFormApp = <T extends FieldValues>({
                         <FormControl>
                             <SelectTrigger
                                 className={cn(
-                                    'rounded-full transition-colors focus:ring-0 focus:border-[#1FA89B] focus:bg-[#ebf6f5] group py-6 text-md bg-gray-50',
+                                    'rounded-full transition-colors border-white focus:ring-0 focus:border-[#1FA89B] focus:bg-[#ebf6f5] group py-6 text-md bg-gray-50 dark:bg-gray-900 dark:text-white',
                                     isOpen ? 'border-[#1FA89B] bg-[#ebf6f5]' : ''
                                 )}
                                 classNameIcon={cn(

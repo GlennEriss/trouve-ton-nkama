@@ -21,13 +21,13 @@ export const PhoneNumberFormApp = <T extends FieldValues>({
             render={({ field, formState: { isSubmitting } }) => (
                 <FormItem>
                     <FormLabel className="text-md">{label}</FormLabel>
-                    <div className='border border-gray-200 bg-gray-50 p-2 rounded-full focus-within:border-[#1FA89B] focus-within:bg-[#ebf6f5]'>
+                    <div className='border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900 p-2 rounded-full focus-within:border-[#1FA89B] focus-within:bg-[#ebf6f5] dark:focus-within:bg-gray-800'>
                         <FormControl>
                             <PhoneInput
                                 defaultCountry='GA'
                                 disabled={isSubmitting}
                                 triggerClassName=' border-none shadow-none rounded-full'
-                                className='border-none shadow-none focus-visible:ring-0 rounded-full'
+                                className='border-none shadow-none focus-visible:ring-0 rounded-full dark:text-white dark:placeholder:text-gray-500 bg-transparent'
                                 {...props}
                                 {...field}
                             />
