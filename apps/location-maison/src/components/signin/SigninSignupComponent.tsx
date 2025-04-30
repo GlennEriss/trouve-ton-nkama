@@ -43,8 +43,8 @@ export default function SigninSignupComponent() {
             {isImageLoaded && (
                 <section className={`absolute left-1/2 transform -translate-x-1/2 ${size.height > 740 ? '':'bottom-[-150px]'} md:bottom-[-270px] rounded-lg w-[90%] max-w-[400px] md:max-w-[600px] flex flex-col gap-8 transition-opacity duration-700 opacity-100`}>
                     <div>
-                        <h1 className='text-xl font-bold text-center md:text-4xl text-[#146b66]'>Nouveau lieu, nouvelle maison !</h1>
-                        <p className='text-center text-md text-gray-500 flex flex-col md:text-xl'>
+                        <h1 className='text-xl font-bold text-center md:text-4xl text-[#146b66] dark:text-[#3ebeb8]'>Nouveau lieu, nouvelle maison !</h1>
+                        <p className={cn('text-center text-md text-gray-500 flex flex-col md:text-xl', `${size.height < 700 ? 'dark:text-[#277874]':''}`)}>
                             <span>LogisGabon, votre nouveau départ.</span>
                             <span>Trouvez votre futur logement dès aujourd'hui.</span>
                         </p>
@@ -58,11 +58,11 @@ export default function SigninSignupComponent() {
                         <ButtonApp
                             variant='outline'
                             title={"S'enregistrer"}
-                            className='bg-white border border-gray-400 text-black md:text-xl md:py-7 hover:bg-none'
+                            className='bg-white dark:bg-gray-900 border border-gray-400 dark:border-gray-600 text-black dark:text-white md:text-xl md:py-7 hover:bg-none'
                             onClick={handleGoToSignup}
                         />
                         <div className="text-center">
-                            <Link href={routes.public.homePage} className="text-sm text-gray-500 hover:underline">
+                            <Link href={routes.public.homePage} className="text-sm text-gray-500 dark:text-gray-400 hover:underline">
                                 Revenir à l'accueil
                             </Link>
                         </div>

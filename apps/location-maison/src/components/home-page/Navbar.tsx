@@ -97,7 +97,7 @@ export default function Navbar() {
             onClick={() => setShowSearch(!showSearch)}
             className="w-11 h-11 flex items-center justify-center bg-white border border-[#146B67] dark:bg-gray-800 rounded-full"
           >
-            <Search className="w-6 h-6 text-[#146B67] dark:text-white" />
+            <Search className="w-6 h-6 text-[#146B67]" />
           </button>
           {user ? (
             <div className="flex items-center">
