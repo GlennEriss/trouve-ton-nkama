@@ -57,8 +57,10 @@ export const notifications = [
 export default function ParameterNotifications() {
     const { user } = useCurrentUser();
     const { update } = useSession();
+    const [loading, setLoading] = React.useState(false)
 
     const onCheckedChange = async (param: string) => {
+        setLoading(true)
         const userUpdated = {
             ...user,
             notificationParameter: {
@@ -72,10 +74,11 @@ export default function ParameterNotifications() {
                 ...userUpdated
             }
         });
+        setLoading(false)
     };
 
     return (
-        <div className="px-6 space-y-6 py-6 bg-white dark:bg-gray-900 rounded-lg shadow-md max-w-4xl mx-auto">
+        <div className="px-6 space-y-6 py-6 bg-white dark:bg-gray-900 max-w-4xl mx-auto">
             <h1 className="text-2xl font-bold mb-4 text-gray-900 dark:text-white">
                 Paramètres de notifications
             </h1>
@@ -92,6 +95,7 @@ export default function ParameterNotifications() {
                     <Switch
                         onCheckedChange={() => onCheckedChange(notification.key)}
                         checked={user?.notificationParameter ? user.notificationParameter[notification.key] : false}
+                        disabled={loading}
                     />
                 </div>
             ))}

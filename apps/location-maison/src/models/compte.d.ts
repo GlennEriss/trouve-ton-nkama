@@ -15,9 +15,10 @@ export type Person = ICreation & {
     firstname: string,
     lastname: string,
     birthDate?: string,
-    email?: string|null,
+    email?: string | null,
     country?: Country,
     phoneNumbers: string[]
-    image?: string|null,
-    notificationParameter?: NotificationParameter
+    image?: string | null,
+    notificationParameter?: NotificationParameter,
+    darkMode?: boolean
 }

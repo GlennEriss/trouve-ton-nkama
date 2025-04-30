@@ -31,13 +31,13 @@ export const BottomNavigation: React.FC<BottomNavigationProps> = ({ }) => {
     if (!user) return null;
 
     return (
-        <div className={cn("fixed bottom-0 z-50 w-full flex bg-white p-4 justify-between md:hidden shadow border-t",inter.className)}>
+        <div className={cn("fixed bottom-0 z-50 w-full flex bg-white dark:bg-gray-900 p-4 justify-between md:hidden shadow border-t dark:border-gray-700",inter.className)}>
             {menu.map((item, key) => (
                 <Link
                     href={item.link}
                     key={key}
                     className={clsx(
-                        'relative text-xs flex flex-col items-center',
+                        'relative text-xs flex flex-col items-center dark:text-white',
                         pathnames === item.link ? 'text-[#146B67]' : ''
                     )}
                 >
@@ -49,7 +49,7 @@ export const BottomNavigation: React.FC<BottomNavigationProps> = ({ }) => {
                     )}
                     <div className='flex flex-col items-center space-y-1'>
                         <item.icon size={25} />
-                        <h6 className='text-[10px]'> {item.title} </h6>
+                        <h6 className='text-[10px] dark:text-white'> {item.title} </h6>
                     </div>
 
                 </Link>
