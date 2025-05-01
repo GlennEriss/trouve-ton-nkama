@@ -1,4 +1,6 @@
 "use client";
+const LOCAL_STORAGE_KEY = "location-cache";
+let searchCache = new Map<string, any[]>();
 
 import { useState, useEffect } from "react";
 import dynamic from "next/dynamic";
@@ -46,6 +48,19 @@ const MapForm = () => {
     const [L, setL] = useState<any>(null);
     const [pinIcon, setPinIcon] = useState<any>(null);
 
+    // Charger le cache depuis localStorage au chargement du composant
+    useEffect(() => {
+        const rawCache = localStorage.getItem(LOCAL_STORAGE_KEY);
+        if (rawCache) {
+            try {
+                const parsed = JSON.parse(rawCache);
+                searchCache = new Map(Object.entries(parsed));
+            } catch (err) {
+                console.warn("❌ Erreur de parsing du cache localStorage", err);
+            }
+        }
+    }, []);
+
     // Charger Leaflet côté client et définir l'icône personnalisée
     useEffect(() => {
         const loadLeaflet = async () => {
@@ -76,15 +91,26 @@ const MapForm = () => {
     const searchLocation = async () => {
         if (!location.trim()) return;
 
+        const query = location.toLowerCase().trim();
+
+        if (searchCache.has(query)) {
+            setSearchResults(searchCache.get(query)!);
+            setError(null);
+            return;
+        }
+
         try {
             const response = await fetch(
-                `https://photon.komoot.io/api/?q=${encodeURIComponent(
-                    location
-                )}&lat=0.7&lon=11.5&limit=10`
+                `https://photon.komoot.io/api/?q=${encodeURIComponent(query)}&lat=0.7&lon=11.5&limit=10`
             );
             const data = await response.json();
 
             if (data.features && data.features.length > 0) {
+                searchCache.set(query, data.features);
+                localStorage.setItem(
+                    LOCAL_STORAGE_KEY,
+                    JSON.stringify(Object.fromEntries(searchCache))
+                );
                 setSearchResults(data.features);
                 setError(null);
             } else {

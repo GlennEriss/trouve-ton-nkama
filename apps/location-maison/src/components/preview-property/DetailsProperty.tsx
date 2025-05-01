@@ -7,6 +7,7 @@ import { FaBath, FaRegBuilding, FaSwimmingPool, FaToilet, FaStore, FaWarehouse }
 import { BsBuilding } from 'react-icons/bs'
 import { RiBookmarkLine } from 'react-icons/ri'
 import { GiHomeGarage } from 'react-icons/gi'
+import { FaCouch } from 'react-icons/fa';
 
 const items: Record<string, { label: string, icon: IconType }> = {
     room: { label: 'Salles', icon: RiBookmarkLine },
@@ -22,7 +23,8 @@ const items: Record<string, { label: string, icon: IconType }> = {
     shopType: { label: 'Type de magasin', icon: FaStore },
     kioskSize: { label: 'Taille du kiosque', icon: FaWarehouse },
     roomType: { label: 'Type de chambre', icon: IoMdBed },
-    nbrBeds: { label: 'Lits', icon: IoMdBed }
+    nbrBeds: { label: 'Lits', icon: IoMdBed },
+    nbrLivingRoom: { label: 'Salons', icon: FaCouch }
 };
 
 export default function DetailsProperty({ property }: { property: Property }) {
@@ -92,6 +94,7 @@ const DetailsHome = ({ home }: { home: Home }) => (
     <div>
         <DetailsLogement logement={home} />
         <div className="flex flex-wrap gap-4">
+            <DetailsItem keyName='nbrLivingRoom' value={home.nbrLivingRoom ?? 0} />
             <DetailsItem keyName='floor' value={home.nbrFloors} />
             <DetailsItem keyName='garage' value={home.nbrGarages} />
         </div>

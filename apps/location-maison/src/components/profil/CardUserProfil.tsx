@@ -41,7 +41,7 @@ export default function CardUserProfil() {
         <Card className="shadow-lg border border-gray-200 md:flex md:items-center md:max-w-[550px] lg:flex-col lg:mt-7">
             {/* Header de la carte */}
             <CardHeader>
-                <div className='flex flex-col items-center gap-2 md:flex-row md:gap-4 lg:flex-col'>
+                <div className='flex flex-col items-center gap-2 md:gap-4'>
                     <Avatar
                         className='w-[80px] h-[80px]'
                     >
@@ -52,8 +52,9 @@ export default function CardUserProfil() {
                             {user?.firstname?.at(0)}
                         </AvatarFallback>
                     </Avatar>
-                    <div className='flex flex-col items-center md:items-start lg:items-center' >
-                        <CardTitle className='text-center md:text-start text-xl'>{`${user?.firstname} ${user?.lastname}`}</CardTitle>
+                    <div className='flex flex-col items-center' >
+                        <CardTitle className='text-center md:text-start text-xl'>{`${user?.firstname}`}</CardTitle>
+                        <CardTitle className='text-center md:text-start text-lg text-gray-500'>{`${user?.lastname}`}</CardTitle>
                         <CardDescription className="text-sm text-gray-500 flex flex-col">
                             <span>Depuis le: {firebaseTimestampToDate(user?.createdAt?.seconds, user?.createdAt?.nanoseconds)?.toLocaleDateString('fr-FR', {
                                 day: '2-digit',
@@ -73,7 +74,7 @@ export default function CardUserProfil() {
             </CardHeader>
 
             {/* Contenu principal */}
-            <CardContent className="flex flex-col gap-1 text-center md:text-start md:gap-0 md:mt-5 lg:mt-0">
+            <CardContent className="xl:flex flex-col gap-1 text-center md:text-start md:gap-0 md:mt-5 lg:mt-0 hidden">
                 {
                     user?.country && (
                         <div className='text-sm'>

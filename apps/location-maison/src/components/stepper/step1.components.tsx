@@ -28,6 +28,8 @@ import { FormItem, FormControl, FormLabel } from '../ui/form';
 import { tags } from '@/constantes';
 import { IconType } from 'react-icons/lib';
 import clsx from 'clsx';
+import imageCompression from 'browser-image-compression';
+import { useToast } from '@/hooks/use-toast';
 
 //Images
 export const ImagesComponent = ({ field }: { field: any }) => {
@@ -42,6 +44,8 @@ export const ImagesComponent = ({ field }: { field: any }) => {
 }
 
 export const ImageUploader = ({ field }: { field: any }) => {
+    const { toast } = useToast();
+
     const { getInputProps, getRootProps, isDragActive } = useDropzone({
         maxFiles: 6,
         multiple: true,
@@ -50,9 +54,40 @@ export const ImageUploader = ({ field }: { field: any }) => {
             'image/jpeg': ['.jpg', '.jpeg'],
             'image/webp': ['.webp'],
         },
-        onDrop: (acceptedFiles) => {
+        onDrop: async (acceptedFiles) => {
+            const maxSizeInBytes = 300 * 1024;
             const currentFiles = field.value || [];
-            const newFiles = [...currentFiles, ...acceptedFiles].slice(0, 6); // Max 6 images
+            const compressedFiles: File[] = [];
+
+            for (const file of acceptedFiles) {
+                try {
+                    const compressedFile = await imageCompression(file, {
+                        maxSizeMB: 0.3,
+                        maxWidthOrHeight: 1920,
+                        useWebWorker: true,
+                    });
+
+                    if (compressedFile.size <= maxSizeInBytes) {
+                        compressedFiles.push(compressedFile);
+                    } else {
+                        toast({
+                            duration: 5000,
+                            title: "Erreur",
+                            description: `L'image "${file.name}" dépasse 300 Ko même après compression.`,
+                            variant: "destructive",
+                        });
+                    }
+                } catch (error: any) {
+                    toast({
+                        duration: 5000,
+                        title: "Erreur",
+                        description: error.message || "Une erreur est survenue.",
+                        variant: "destructive",
+                    });
+                }
+            }
+
+            const newFiles = [...currentFiles, ...compressedFiles].slice(0, 6);
             field.onChange(newFiles);
         },
     });
