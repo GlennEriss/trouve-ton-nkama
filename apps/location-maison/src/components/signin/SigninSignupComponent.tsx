@@ -41,7 +41,7 @@ export default function SigninSignupComponent() {
                 />
             </section>
             {isImageLoaded && (
-                <section className={`absolute left-1/2 transform -translate-x-1/2 ${size.height > 740 ? '':'bottom-[-150px]'} md:bottom-[-270px] rounded-lg w-[90%] max-w-[400px] md:max-w-[600px] flex flex-col gap-8 transition-opacity duration-700 opacity-100`}>
+                <section className={`absolute left-1/2 transform -translate-x-1/2 ${size.height > 740 ? '':'bottom-[-190px]'} md:bottom-[-270px] rounded-lg w-[90%] max-w-[400px] md:max-w-[600px] flex flex-col gap-8 transition-opacity duration-700 opacity-100`}>
                     <div>
                         <h1 className='text-xl font-bold text-center md:text-4xl text-[#146b66] dark:text-[#3ebeb8]'>Nouveau lieu, nouvelle maison !</h1>
                         <p className={cn('text-center text-md text-gray-500 flex flex-col md:text-xl', `${size.height < 700 ? 'dark:text-[#277874]':''}`)}>
