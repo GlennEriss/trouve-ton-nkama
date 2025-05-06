@@ -1,7 +1,7 @@
 'use client'
 import { useAlgoliaContext } from '@/providers/AlgoliaContext';
 import React from 'react'
-import { SlidersHorizontal, Search, MapPin } from 'lucide-react';
+import { Search, MapPin } from 'lucide-react';
 import { Input } from '../ui/input';
 import Form from 'next/form'
 import Link from 'next/link';
@@ -11,6 +11,7 @@ import Image from 'next/image';
 import { Tabs, TabsList, TabsTrigger } from '../ui/tabs';
 import Navbar from './Navbar';
 import PropertyCarousel from '../property/PropertyCarousel';
+import { FilterModalHomePage } from './FilterModalHomePage';
 
 export default function HomePageMobileComponent() {
     const {
@@ -56,7 +57,7 @@ export default function HomePageMobileComponent() {
                         </div>
                     </div>
                     <Form action="/search">
-                        <div className="flex border rounded-full p-2 px-4 bg-gray-100 focus-within:border-[#1FA89B]">
+                        <div className="flex items-center border rounded-full p-2 px-4 bg-gray-100 focus-within:border-[#1FA89B]">
                             <button
                                 type='submit'
                             >
@@ -72,7 +73,7 @@ export default function HomePageMobileComponent() {
                             <button
                                 type='button'
                             >
-                                <SlidersHorizontal />
+                                <FilterModalHomePage />
                             </button>
                         </div>
                     </Form>
