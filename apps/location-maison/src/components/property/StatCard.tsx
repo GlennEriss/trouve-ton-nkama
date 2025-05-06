@@ -57,7 +57,13 @@ const typeColors: Record<string, { bg: string; iconBg: string; iconColor: string
         iconBg: "bg-teal-200",
         iconColor: "text-teal-600",
         textColor: "text-teal-800",
-    }
+    },
+    Land: {
+        bg: "bg-lime-100",
+        iconBg: "bg-lime-200",
+        iconColor: "text-lime-600",
+        textColor: "text-lime-800",
+    },
 };
 
 type StatCardProps = {

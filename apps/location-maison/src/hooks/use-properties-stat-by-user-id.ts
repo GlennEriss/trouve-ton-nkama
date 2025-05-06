@@ -2,7 +2,7 @@
 import { useQuery } from '@tanstack/react-query';
 import { useCurrentUser } from '@/hooks/use-current-user';
 import { getCountStatisticsByPropertyType } from '@/db/property.db';
-import { Home, Building, Layout, Briefcase, Globe, Landmark, Bed, Store, ShoppingCart, LucideIcon } from 'lucide-react';
+import { Home, Building, Layout, Briefcase, Globe, Landmark, Bed, Store, ShoppingCart, LucideIcon, Mountain } from 'lucide-react';
 import { TypeProperty } from '@/models/annonce';
 
 const propertyStatList: { icon: LucideIcon; title: string; value: number; type: TypeProperty }[] = [
@@ -15,6 +15,7 @@ const propertyStatList: { icon: LucideIcon; title: string; value: number; type: 
     { icon: Briefcase, title: "Bureaux", value: 0, type: "Desk" },
     { icon: Landmark, title: "Immeubles", value: 0, type: "Building" },
     { icon: ShoppingCart, title: "Magasin", value: 0, type: "Shop" },
+    { icon: Mountain, title: "Terrains", value: 0, type: "Land" },
 ];
 
 export function usePropertiesStatByUserId() {
