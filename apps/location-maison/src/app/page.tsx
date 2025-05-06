@@ -1,7 +1,6 @@
-import HomePage from "@/components/home-page/HomePage";
-import Navbar from "@/components/home-page/Navbar";
 import React from "react";
 import type { Metadata } from "next";
+import HomePageComponent from "@/components/home-page/HomePageComponent";
 
 export const metadata: Metadata = {
     title: "LogisGabon - Trouvez ou publiez un logement au Gabon",
@@ -24,9 +23,6 @@ export const metadata: Metadata = {
 
 export default async function Home() {
     return (
-        <div className="bg-gray-100 dark:bg-gray-900">
-            <Navbar />
-            <HomePage />
-        </div>)
-        ;
+        <HomePageComponent />
+    )
 }
