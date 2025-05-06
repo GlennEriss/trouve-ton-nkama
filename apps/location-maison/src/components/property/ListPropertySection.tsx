@@ -256,8 +256,10 @@ export const PropertyInformations = ({ property }: { property: Property }) => {
                 return <DetailsKiosk kiosk={property as Kiosk} />
             case 'Room':
                 return <DetailsRoom room={property as Room} />
-            default:
+            case "Villa":
                 return <DetailsVilla villa={property as Villa} />
+            default:
+                return <DetailsLand land={property} />
         }
     }
     return (
@@ -434,6 +436,16 @@ export const DetailsVilla = ({ villa }: { villa: Villa }) => {
                 <DetailsItem keyName='pool' value={villa.nbrPiscine} />
                 <DetailsItem keyName='garage' value={villa.nbrGarages} />
             </div>
+        </div>
+    )
+}
+
+export const DetailsLand = ({ land }: { land: Property }) => {
+    return (
+        <div>
+            <span>
+                Superficie: {land.area} m²
+            </span>
         </div>
     )
 }

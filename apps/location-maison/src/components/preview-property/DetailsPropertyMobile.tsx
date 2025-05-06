@@ -1,4 +1,4 @@
-import { FaBed, FaBath, FaBuilding, FaWarehouse, FaHome, FaSwimmingPool, FaStore, FaToilet, FaDoorOpen } from 'react-icons/fa';
+import { FaBed, FaBath, FaBuilding, FaWarehouse, FaHome, FaSwimmingPool, FaStore, FaToilet, FaDoorOpen, FaRulerCombined } from 'react-icons/fa';
 import { Property } from '@/models/annonce'
 import React from 'react'
 
@@ -19,7 +19,7 @@ const iconMap: Record<string, JSX.Element> = {
     "Bureaux": <FaHome size={20} className="text-green-500" />,
     "Toilettes": <FaToilet size={20} className="text-rose-500" />,
     "Salles": <FaDoorOpen size={20} className="text-teal-500" />,
-    "Superficie (m²)": <FaBuilding size={20} className="text-lime-500" />,
+    "Superficie (m²)": <FaRulerCombined size={20} className="text-lime-500" />,
     "Type de Kiosque": <FaStore size={20} className="text-violet-500" />,
     "Type de Chambre": <FaDoorOpen size={20} className="text-sky-500" />,
     "Numéro": <FaDoorOpen size={20} className="text-emerald-500" />,

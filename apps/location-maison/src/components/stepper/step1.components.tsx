@@ -89,6 +89,8 @@ export const ImageUploader = ({ field }: { field: any }) => {
 
             const newFiles = [...currentFiles, ...compressedFiles].slice(0, 6);
             field.onChange(newFiles);
+            console.log('field',field)
+            console.log('newFiles',newFiles)
         },
     });
 

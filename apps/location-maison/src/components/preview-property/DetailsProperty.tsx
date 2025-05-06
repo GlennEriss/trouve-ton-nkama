@@ -8,6 +8,7 @@ import { BsBuilding } from 'react-icons/bs'
 import { RiBookmarkLine } from 'react-icons/ri'
 import { GiHomeGarage } from 'react-icons/gi'
 import { FaCouch } from 'react-icons/fa';
+import { Ruler } from 'lucide-react';
 
 const items: Record<string, { label: string, icon: IconType }> = {
     room: { label: 'Salles', icon: RiBookmarkLine },
@@ -24,7 +25,8 @@ const items: Record<string, { label: string, icon: IconType }> = {
     kioskSize: { label: 'Taille du kiosque', icon: FaWarehouse },
     roomType: { label: 'Type de chambre', icon: IoMdBed },
     nbrBeds: { label: 'Lits', icon: IoMdBed },
-    nbrLivingRoom: { label: 'Salons', icon: FaCouch }
+    nbrLivingRoom: { label: 'Salons', icon: FaCouch },
+    area: { label: 'Superficie', icon: Ruler },
 };
 
 export default function DetailsProperty({ property }: { property: Property }) {
@@ -38,7 +40,8 @@ export default function DetailsProperty({ property }: { property: Property }) {
             case 'Shop': return <DetailsShop shop={property as Shop} />;
             case 'Kiosk': return <DetailsKiosk kiosk={property as Kiosk} />;
             case 'Room': return <DetailsRoom room={property as Room} />;
-            default: return <DetailsVilla villa={property as Villa} />;
+            case 'Villa': return <DetailsVilla villa={property as Villa} />;
+            default: return <DetailsLand land={property} />;
         }
     }
 
@@ -132,5 +135,11 @@ const DetailsKiosk = ({ kiosk }: { kiosk: Kiosk }) => (
 const DetailsRoom = ({ room }: { room: Room }) => (
     <div className="text-gray-500">
         {room.roomType}
+    </div>
+);
+
+const DetailsLand = ({ land }: { land: Property }) => (
+    <div className="flex flex-wrap gap-4">
+        <DetailsItem keyName="area" value={`${land.area} m²`} />
     </div>
 );

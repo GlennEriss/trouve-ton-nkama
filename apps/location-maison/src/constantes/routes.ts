@@ -15,6 +15,7 @@ export const routes = {
         add_room: '/property/add/room',
         add_kiosk: '/property/add/kiosk',
         add_shop: '/property/add/shop',
+        add_land: '/property/add/land',
         account: '/profil',
         favoris: '/favoris',
         profil: '/profil',
