@@ -3,7 +3,7 @@ import { Form } from "@/components/ui/form"
 import { createContext, useContext, useState, useTransition } from "react"
 import { useForm } from "react-hook-form"
 import { zodResolver } from '@hookform/resolvers/zod'
-import { ApartmentSchema, BuildingSchema, DeskSchema, HomeSchema, StudioSchema, VillaSchema, KioskSchema, RoomSchema, ShopSchema } from "@/models/schema"
+import { ApartmentSchema, BuildingSchema, DeskSchema, HomeSchema, StudioSchema, VillaSchema, KioskSchema, RoomSchema, ShopSchema, PropertySchema } from "@/models/schema"
 import { Property, TypeProperty, Image } from "@/models/annonce"
 import { DirectorFactory } from "@/directors/factory.director"
 import { useToast } from "@/hooks/use-toast"
@@ -79,8 +79,12 @@ export const PropertyFormComponentProvider = ({ children, isUpdate, propertyToUp
                 return 'Kiosk' as TypeProperty
             case 'room':
                 return 'Room' as TypeProperty
-            default:
+            case 'land':
+                return 'Land' as TypeProperty
+            case 'villa':
                 return 'Villa' as TypeProperty
+            default:
+                return 'Property' as TypeProperty
         }
     }
     const typeProperty = propertyToUpdated ? propertyToUpdated.typeProperty as TypeProperty : getTypeProperty()
@@ -112,8 +116,10 @@ export const PropertyFormComponentProvider = ({ children, isUpdate, propertyToUp
                 return KioskSchema
             case 'Room':
                 return RoomSchema
-            default:
+            case 'Villa':
                 return VillaSchema
+            default: 
+                return PropertySchema
         }
     }
     const form = useForm<any>({
@@ -167,13 +173,21 @@ export const PropertyFormComponentProvider = ({ children, isUpdate, propertyToUp
     //Submit
     const onSubmit = async (data: any) => {
         //Get images already uplaod:
-        const imgStringList = data.images.filter((img: File | string | undefined) => typeof img === "string")
+        const imgStringList = data.images.filter((img: File | Blob | string | undefined) => typeof img === "string")
         const imgUplaods = imagesAlreadyUplaod.filter(img => imgStringList.includes(img.fileURL))
-        //Create Images
-        const filesUpload = data.images.filter((img: File | string | undefined) => img instanceof File);
-        const promiseFiles = filesUpload.map(async (img: File) => {
-            return await createFile(img, user?.uid!, 'property')
-        })
+
+        // Create Images
+        const filesUpload = data.images.filter((img: File | Blob | string | undefined) =>
+            img instanceof File || img instanceof Blob
+        ) as (File | Blob)[];
+
+        const promiseFiles = filesUpload.map(async (img: File | Blob, index) => {
+            const file = img instanceof File ? img : new File([img], `image_${index}.jpeg`, {
+                type: img.type || 'image/jpeg',
+                lastModified: Date.now(),
+            });
+            return await createFile(file, user?.uid!, 'property');
+        });
         const images = await Promise.all(promiseFiles)
         //Create Property
         const propertyMutate: Property = {

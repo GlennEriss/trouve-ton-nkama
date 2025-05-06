@@ -16,7 +16,11 @@ export default function StepperButtonComponent() {
   const id = useLastpath()
   const TypePropertyList = Object.values(TypePropertyEnum);
   const handleNextStep = () => {
-    setActiveStep(prev => prev + 1)
+    if (id === 'land' && activeStep === 0) {
+      setActiveStep(2); // passer directement à Step3
+    } else {
+      setActiveStep(prev => prev + 1);
+    }
   }
   React.useEffect(() => {
     if (
@@ -40,7 +44,13 @@ export default function StepperButtonComponent() {
         className='bg-[#1B4D5B]'
         type='button'
         disabled={activeStep === 0}
-        onClick={() => setActiveStep(prev => prev - 1)}>
+        onClick={() => {
+          if (id === 'land' && activeStep === 2) {
+            setActiveStep(0); // revenir directement à Step1
+          } else {
+            setActiveStep(prev => prev - 1);
+          }
+        }}>
         Précédent
       </Button>
       {

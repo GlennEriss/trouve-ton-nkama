@@ -10,5 +10,6 @@ export const TypePropertyEnum = {
     Room: "room",
     Property: "property",
     Logement: "logement",
-    Villa: 'villa'
+    Villa: 'villa',
+    Land: 'land'
   } as const;

@@ -14,6 +14,7 @@ export const TypeProperty: Record<string, string> = {
   Shop: "Magasin",
   Desk: "Bureau",
   Building: "Immeuble",
+  Land: "Terrain",
   // Villa: "Villa"
 };
 
