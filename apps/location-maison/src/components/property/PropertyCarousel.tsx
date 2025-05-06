@@ -121,7 +121,7 @@ const PropertyCarousel: React.FC<CarouselProps> = ({ properties }) => {
     return null
   }
   return (
-    <div className="container mx-auto px-4 py-8 relative">
+    <div className="container mx-auto px-4 md:py-8 relative">
       <Slider {...settings}>
         {data.pages[0]?.properties.map((property) => (
           <div key={property.id} className="p-2 rounded-lg">
