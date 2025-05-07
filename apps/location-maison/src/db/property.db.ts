@@ -162,3 +162,29 @@ export async function getServerCountByProvince(province: string): Promise<number
         throw new Error("Failed to fetch property count by province");
     }
 }
+/**
+ * Récupère le nombre total de propriétés pour un type donné dans Firestore.
+ *
+ * @async
+ * @function getServerCountByPropertyType
+ * @param {string} type - Le type de propriété (ex: "Apartment", "House", "Land").
+ * @returns {Promise<number>} - Retourne le nombre total de propriétés pour ce type.
+ * @throws {Error} - Lève une erreur si la récupération échoue.
+ */
+export async function getServerCountByPropertyType(type: string): Promise<number> {
+    try {
+        const { collection, getCountFromServer, db, where, query } = await getFirestore();
+        const propertiesRef = collection(db, firebaseCollectionNames.properties);
+
+        // Créer la requête pour compter les documents avec le type spécifié
+        const q = query(propertiesRef, where('typeProperty', '==', type));
+
+        // Utiliser getCountFromServer pour compter les documents
+        const snapshot = await getCountFromServer(q);
+
+        return snapshot.data().count; // Retourner le nombre total
+    } catch (error) {
+        console.error("Error fetching property count by type:", error);
+        throw new Error("Failed to fetch property count by type");
+    }
+}

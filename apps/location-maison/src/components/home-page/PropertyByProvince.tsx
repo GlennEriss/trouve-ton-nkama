@@ -51,7 +51,7 @@ export default function PropertyByProvince() {
                     return (
                         <div
                             key={index}
-                            className='relative rounded-xl overflow-hidden w-[335px] h-[340px] group'
+                            className='relative rounded-xl overflow-hidden w-full h-[340px] group'
                         >
                             <Image
                                 src={`/assets/home-page/${province.img}`}

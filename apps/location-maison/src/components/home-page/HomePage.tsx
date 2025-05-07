@@ -11,12 +11,12 @@ import { getTypePropertyKey, TypeProperty } from "@/lib/utils";
 import PropertyCarousel from "../property/PropertyCarousel";
 import MapComponent, { Neighborhood } from "../map/MapComponent";
 import houseMocks from "@/mocks/mocksHouse";
-import { Home, Warehouse, Building, Building2, Briefcase, Bed, Store, ShoppingBag } from "lucide-react";
 import { routes } from "@/constantes/routes";
 import { useRefinementList } from "react-instantsearch";
 import { useAlgoliaContext } from "@/providers/AlgoliaContext";
 import AlgoliaRefinements, { useAlgoliaRefinements } from "@/providers/AlgoliaRefinementsContext";
 import { useRouter } from "next/navigation";
+import { propertyTypesList } from "./PropertyTypeList";
 
 const neighborhoods: Neighborhood[] = [
   {
@@ -130,31 +130,7 @@ const HomePage = () => {
     operator: "or", // ou "and" selon la logique voulue
   });
 
-  const propertyTypes = [
-    { type: "Home", icon: <Home className="w-10 h-10 text-blue-500" /> },
-    {
-      type: "Studio",
-      icon: <Warehouse className="w-10 h-10 text-yellow-500" />,
-    },
-    { type: "Apartment", icon: <Building className="w-10 h-10 text-red-500" /> },
-    { type: "Building", icon: <Building2 className="w-10 h-10 text-orange-500" /> },
-    {
-      type: "Desk",
-      icon: <Briefcase className="w-10 h-10 text-purple-500" />,
-    },
-    {
-      type: "Room",
-      icon: <Bed className="w-10 h-10 text-teal-500" />,
-    },
-    {
-      type: "Kiosk",
-      icon: <Store className="w-10 h-10 text-teal-500" />,
-    },
-    {
-      type: "Shop",
-      icon: <ShoppingBag className="w-10 h-10 text-teal-500" />,
-    },
-  ];
+  
 
   function handleTypeClick(
     type: string,
@@ -211,7 +187,7 @@ const HomePage = () => {
           Types de logements
         </h2>
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6">
-          {propertyTypes.map((type) => (
+          {propertyTypesList.map((type) => (
             <motion.div
               key={type.type}
               className="flex flex-col items-center justify-center p-6 bg-white dark:bg-gray-800 shadow-md rounded-lg hover:shadow-lg transition-shadow cursor-pointer"
