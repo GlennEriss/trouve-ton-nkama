@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import * as SliderPrimitive from "@radix-ui/react-slider";
 import {
     Dialog,
+    DialogClose,
     DialogContent,
     DialogHeader,
     DialogTitle,
@@ -18,6 +19,9 @@ import { useAlgoliaContext } from "@/providers/AlgoliaContext";
 import { getTypePropertyKey, TypeProperty } from "@/lib/utils";
 import { tags as tagsList } from "@/constantes";
 import { useAlgoliaRefinements } from "@/providers/AlgoliaRefinementsContext";
+import { DialogDescription } from "@radix-ui/react-dialog";
+import { InputApp } from "../shared/ui/InputApp";
+import { InputNumberApp } from "../shared/ui/InputNumberApp";
 
 const PRICE_MIN = 0;
 const PRICE_MAX = 1_000_000_000;
@@ -149,36 +153,41 @@ export const FilterModalHomePage = () => {
                 </button>
             </DialogTrigger>
 
-            <DialogContent className="shadow-xl h-[90vh] max-w-[95%] md:max-w-4xl mx-auto flex flex-col rounded-2xl bg-white dark:bg-black overflow-hidden">
+            <DialogContent isDefaultIconClose={false} className="shadow-xl h-[90vh] max-w-[95%] md:max-w-4xl mx-auto flex flex-col rounded-2xl bg-white dark:bg-black overflow-hidden">
                 {/* Header fixe */}
-                <DialogHeader className="flex items-center justify-between p-4 border-b bg-white dark:bg-black sticky top-0 z-20  w-[98%]">
-                    <DialogTitle className="flex items-center gap-2 text-lg font-bold m-0 text-[#146B67]">
+                <DialogHeader className="justify-between p-4 border-b bg-white dark:bg-black w-[98%]">
+                    <div className="flex items-center gap-3">
                         <ChevronLeft
-                            className="w-6 h-6 cursor-pointer text-gray-600 dark:text-gray-300 hover:text-gray-800 dark:hover:text-white"
+                            className="w-6 h-6 rounded-full border border-gray-500 cursor-pointer text-gray-600 dark:text-gray-300 hover:text-gray-800 dark:hover:text-white"
                             onClick={() => setOpen(false)}
                         />
-                        <BiFilter className="w-5 h-5 text-[#146B67]" />
-                        Filtres de recherche
-                    </DialogTitle>
+                        <DialogTitle className="flex items-center gap-2 text-lg font-bold m-0 text-[#146B67]">
+                            Filtres de recherche
+                        </DialogTitle>
+                    </div>
+                    <DialogDescription className="text-sm text-gray-500">
+                        Sélectionnez vos critères de recherche
+                    </DialogDescription>
                 </DialogHeader>
 
                 {/* Contenu défilant */}
-                <div className="flex-1 overflow-auto p-6 grid grid-cols-1 lg:grid-cols-2 gap-8">
+                <div className="flex-1 overflow-auto px-2 grid grid-cols-1 lg:grid-cols-2 gap-8">
                     {/* Colonne Gauche */}
                     <div className="space-y-6">
                         {/* Ville & Quartier */}
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                            <div>
-                                <label className="block font-semibold mb-1">Ville</label>
-                                <Input
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                            <h1 className="text-lg mb-1 text-[#1FA89B] font-bold">Secteur recherché</h1>
+                            <div className="space-y-2">
+                                <label className="text-gray-600">Saisissez une Ville</label>
+                                <InputApp
                                     value={localCity}
                                     onChange={e => setLocalCity(e.target.value)}
                                     placeholder="Entrez une ville"
                                 />
                             </div>
-                            <div>
-                                <label className="block font-semibold mb-1">Quartier</label>
-                                <Input
+                            <div className="space-y-2">
+                                <label className="text-gray-600">Saisissez un quartier</label>
+                                <InputApp
                                     value={localStreet}
                                     onChange={e => setLocalStreet(e.target.value)}
                                     placeholder="Entrez un quartier"
@@ -188,31 +197,33 @@ export const FilterModalHomePage = () => {
 
                         {/* Prix */}
                         <div className="space-y-2">
-                            <label className="block font-semibold mb-1">Prix (F CFA)</label>
+                            <h1 className="text-lg mb-1 text-[#1FA89B] font-bold">Prix (FCFA)</h1>
                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                 <div>
-                                    <label htmlFor="min-price" className="text-sm">Prix min</label>
-                                    <Input
+                                    <label htmlFor="min-price" className="text-gray-600">Prix min</label>
+                                    <InputNumberApp
                                         id="min-price"
                                         type="number"
                                         min={0}
-                                        value={localMinPrice}
-                                        onChange={e => setLocalMinPrice(
-                                            String(Math.max(0, Number(e.target.value)))
-                                        )}
+                                        step={10000}
+                                        defaultValue={Number(localMinPrice)}
+                                        personalizedOnChange={(value) =>
+                                            setLocalMinPrice(String(Math.max(0, value)))
+                                        }
                                         placeholder="0"
                                     />
                                 </div>
                                 <div>
-                                    <label htmlFor="max-price" className="text-sm">Prix max</label>
-                                    <Input
+                                    <label htmlFor="max-price" className="text-gray-600">Prix max</label>
+                                    <InputNumberApp
                                         id="max-price"
                                         type="number"
                                         min={0}
-                                        value={localMaxPrice}
-                                        onChange={e => setLocalMaxPrice(
-                                            String(Math.max(0, Number(e.target.value)))
-                                        )}
+                                        step={10000}
+                                        defaultValue={Number(localMaxPrice)}
+                                        personalizedOnChange={(value) =>
+                                            setLocalMaxPrice(String(Math.max(0, value)))
+                                        }
                                         placeholder="1 000 000 000"
                                     />
                                 </div>
@@ -220,8 +231,9 @@ export const FilterModalHomePage = () => {
                         </div>
 
                         {/* Surface */}
-                        <div>
-                            <label className="block font-semibold mb-2">Surface (m²)</label>
+                        <div className="space-y-3">
+                            <h1 className="text-lg mb-1 text-[#1FA89B] font-bold">Détails</h1>
+                            <label className="text-gray-600">Surface (m²)</label>
                             <SliderPrimitive.Root
                                 value={[Number(localMinArea) || AREA_MIN, Number(localMaxArea) || AREA_MAX]}
                                 onValueChange={([low, high]) => {
@@ -244,8 +256,8 @@ export const FilterModalHomePage = () => {
                         </div>
 
                         {/* Chambres */}
-                        <div>
-                            <label className="block font-semibold mb-2">Chambres</label>
+                        <div className="space-y-3">
+                            <label className="text-gray-600">Chambres</label>
                             <SliderPrimitive.Root
                                 value={[Number(localMinRooms) || ROOMS_MIN, Number(localMaxRooms) || ROOMS_MAX]}
                                 onValueChange={([low, high]) => {
@@ -271,8 +283,8 @@ export const FilterModalHomePage = () => {
                     {/* Colonne Droite */}
                     <div className="space-y-6">
                         {/* Type de propriété */}
-                        <div>
-                            <label className="block font-semibold mb-2">Type de propriété</label>
+                        <div className="space-y-3">
+                            <h1 className="text-lg mb-1 text-[#1FA89B] font-bold">Type de propriété</h1>
                             <div className="flex flex-wrap gap-2">
                                 {Object.values(TypeProperty).map(type => {
                                     const key = getTypePropertyKey(type)!;
@@ -282,9 +294,8 @@ export const FilterModalHomePage = () => {
                                             key={key}
                                             variant="outline"
                                             onClick={() => toggleLocal(key, setLocalTypes)}
-                                            className={`px-3 py-1 rounded-full font-medium transition ${
-                                                sel ? "bg-[#146B67] text-white" : "bg-gray-100 text-gray-700 border"
-                                            }`}
+                                            className={`px-3 py-1 rounded-full font-medium transition ${sel ? "bg-[#146B67] text-white" : "bg-gray-100 text-gray-700 border"
+                                                }`}
                                         >
                                             {type}
                                         </Button>
@@ -294,8 +305,8 @@ export const FilterModalHomePage = () => {
                         </div>
 
                         {/* Tags */}
-                        <div>
-                            <label className="block font-semibold mb-2">Tags</label>
+                        <div className="space-y-3">
+                            <h1 className="text-lg mb-1 text-[#1FA89B] font-bold">Tags</h1>
                             <div className="flex flex-wrap gap-2">
                                 {tagsList.map(tag => {
                                     const sel = localTags.includes(tag.tagName);
@@ -304,9 +315,8 @@ export const FilterModalHomePage = () => {
                                             key={tag.tagName}
                                             variant="outline"
                                             onClick={() => toggleLocal(tag.tagName, setLocalTags)}
-                                            className={`px-3 py-1 hover:bg-[#146B67] hover:text-white rounded-full font-medium transition ${
-                                                sel ? "bg-[#146B67] text-white" : "bg-gray-100 text-gray-700 border"
-                                            }`}
+                                            className={`px-3 py-1 hover:bg-[#146B67] hover:text-white rounded-full font-medium transition ${sel ? "bg-[#146B67] text-white" : "bg-gray-100 text-gray-700 border"
+                                                }`}
                                         >
                                             {tag.tagName}
                                         </Button>
@@ -322,14 +332,14 @@ export const FilterModalHomePage = () => {
                     <Button
                         variant="outline"
                         onClick={onClear}
-                        className="w-full sm:w-auto border-[#146B67] text-[#146B67] hover:bg-[#1FA89B]/10"
+                        className="w-full sm:w-auto border-[#146B67] text-[#146B67] hover:bg-[#1FA89B]/10 rounded-full"
                     >
                         Effacer
                     </Button>
                     <Button
                         variant="default"
                         onClick={onApply}
-                        className="w-full sm:w-auto bg-[#146B67] hover:bg-[#1FA89B] text-white"
+                        className="w-full sm:w-auto bg-[#146B67] hover:bg-[#1FA89B] text-white rounded-full"
                     >
                         Appliquer
                     </Button>
