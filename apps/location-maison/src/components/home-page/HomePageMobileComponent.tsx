@@ -14,6 +14,8 @@ import { FilterModalHomePage } from './FilterModalHomePage';
 import PropertyByProvince from './PropertyByProvince';
 import CarouselPropertyType from './CarouselPropertyType';
 import Footer from '../footer/Footer';
+import { useWindowSize } from '@/hooks/useSize';
+import { cn } from '@/lib/utils';
 
 export default function HomePageMobileComponent() {
     const {
@@ -22,7 +24,7 @@ export default function HomePageMobileComponent() {
     } = useAlgoliaContext();
 
     const { user } = useCurrentUser()
-
+    const { width } = useWindowSize()
     // Porte de garage: gestion de la navbar animée
     const [navbarVisible, setNavbarVisible] = React.useState(false);
     const [navbarHeight, setNavbarHeight] = React.useState(0);
@@ -77,7 +79,7 @@ export default function HomePageMobileComponent() {
             >
                 <Navbar />
             </div>
-            <div className='text-sm space-y-5'>
+            <div className={cn('text-sm space-y-5', user && width < 768 ? 'mb-20' : '')}>
                 <section className='space-y-4 m-5' ref={searchSectionRef}>
                     <div className='space-y-1 '>
                         <h1 className='text-gray-500 text-[11px]'>Votre futur chez-vous grâce à LogisGabon</h1>
