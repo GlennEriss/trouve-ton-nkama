@@ -132,3 +132,33 @@ export async function getPropertyById(id: string): Promise<Property | null> {
         throw new Error(`Failed to fetch property with ID ${id}: ${error}`);
     }
 }
+
+
+/**
+ * Récupère le nombre total de propriétés pour une province donnée dans Firestore.
+ *
+ * @async
+ * @function getServerCountByProvince
+ * @param {string} province - Le nom de la province pour laquelle compter les propriétés.
+ * @returns {Promise<number>} - Retourne le nombre total de propriétés pour cette province.
+ * @throws {Error} - Lève une erreur si la récupération échoue.
+ */
+export async function getServerCountByProvince(province: string): Promise<number> {
+    try {
+        const { collection, getCountFromServer, db, where, query } = await getFirestore();
+        const propertiesRef = collection(db, firebaseCollectionNames.properties);
+
+        // Créer la requête pour compter les documents avec la province spécifiée
+        const q = query(propertiesRef,
+            where('province', '==', province)
+        );
+
+        // Utiliser getCountFromServer pour compter les documents
+        const snapshot = await getCountFromServer(q);
+
+        return snapshot.data().count; // Retourner le nombre total
+    } catch (error) {
+        console.error("Error fetching property count by province:", error);
+        throw new Error("Failed to fetch property count by province");
+    }
+}

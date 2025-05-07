@@ -12,6 +12,7 @@ import { Tabs, TabsList, TabsTrigger } from '../ui/tabs';
 import Navbar from './Navbar';
 import PropertyCarousel from '../property/PropertyCarousel';
 import { FilterModalHomePage } from './FilterModalHomePage';
+import PropertyByProvince from './PropertyByProvince';
 
 export default function HomePageMobileComponent() {
     const {
@@ -137,7 +138,10 @@ export default function HomePageMobileComponent() {
                     </section>
                 </section>
 
-
+                <section className='space-y-5'>
+                    <h1 className='text-xl font-bold text-[#146B67]'>Logements par province</h1>
+                    <PropertyByProvince />
+                </section>
 
                 <section>
                     <div className='bg-gradient-to-r to-[#146B67] from-[#1FA89B] rounded-xl py-5 px-3 flex flex-col gap-3 items-center'>
