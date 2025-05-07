@@ -4,10 +4,14 @@ import Logo from '../logo/Logo'
 import { routes } from '@/constantes/routes'
 import { MapPin, Phone, Mail } from "lucide-react";
 import { usePathname } from 'next/navigation';
+import { useCurrentUser } from '@/hooks/use-current-user';
+import { useWindowSize } from '@/hooks/useSize';
 
 export default function Footer({ isHide = false }: { isHide?: boolean }) {
     const pathname = usePathname()
-    if (isHide || pathname === routes.public.signin || pathname === routes.public.signup || pathname === routes.public.signinSignup) {
+    const { user } = useCurrentUser()
+    const { width } = useWindowSize()
+    if (isHide || pathname === routes.public.signin || pathname === routes.public.signup || pathname === routes.public.signinSignup || (user && width < 768)) {
         return null
     }
     return (
