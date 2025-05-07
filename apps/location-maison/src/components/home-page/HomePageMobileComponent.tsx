@@ -1,16 +1,19 @@
 'use client'
 import { useAlgoliaContext } from '@/providers/AlgoliaContext';
 import React from 'react'
-import { SlidersHorizontal, Search, MapPin } from 'lucide-react';
+import { Search, MapPin } from 'lucide-react';
 import { Input } from '../ui/input';
 import Form from 'next/form'
 import Link from 'next/link';
 import { routes } from '@/constantes/routes';
 import { useCurrentUser } from '@/hooks/use-current-user';
 import Image from 'next/image';
-import { Tabs, TabsList, TabsTrigger } from '../ui/tabs';
 import Navbar from './Navbar';
 import PropertyCarousel from '../property/PropertyCarousel';
+import { FilterModalHomePage } from './FilterModalHomePage';
+import PropertyByProvince from './PropertyByProvince';
+import CarouselPropertyType from './CarouselPropertyType';
+import Footer from '../footer/Footer';
 
 export default function HomePageMobileComponent() {
     const {
@@ -20,12 +23,21 @@ export default function HomePageMobileComponent() {
 
     const { user } = useCurrentUser()
 
-    const [showNavbar, setShowNavbar] = React.useState(false);
+    // Porte de garage: gestion de la navbar animée
+    const [navbarVisible, setNavbarVisible] = React.useState(false);
+    const [navbarHeight, setNavbarHeight] = React.useState(0);
+    const navbarRef = React.useRef<HTMLDivElement | null>(null);
     const searchSectionRef = React.useRef<HTMLDivElement | null>(null);
 
     React.useEffect(() => {
         const observer = new IntersectionObserver(
-            ([entry]) => setShowNavbar(!entry.isIntersecting),
+            ([entry]) => {
+                if (!entry.isIntersecting) {
+                    setNavbarVisible(true);
+                } else {
+                    setNavbarVisible(false);
+                }
+            },
             { threshold: 0.1 }
         );
 
@@ -41,11 +53,32 @@ export default function HomePageMobileComponent() {
         };
     }, []);
 
+    // Capture la hauteur du navbar pour gérer l'effet de porte de garage
+    React.useEffect(() => {
+        if (navbarRef.current) {
+            setNavbarHeight(navbarRef.current.offsetHeight);
+        }
+    }, [navbarRef.current]);
+
     return (
         <>
-            {showNavbar && <Navbar />}
-            <div className='m-5 text-sm space-y-5 mb-20'>
-                <section className='space-y-4' ref={searchSectionRef}>
+            <div
+                ref={navbarRef}
+                style={{
+                    transform: navbarVisible ? 'translateY(0)' : `translateY(-${navbarHeight}px)`,
+                    transition: 'transform 0.5s ease-in-out',
+                    overflow: 'hidden',
+                    zIndex: 50,
+                    position: 'fixed',
+                    top: 0,
+                    left: 0,
+                    right: 0
+                }}
+            >
+                <Navbar />
+            </div>
+            <div className='text-sm space-y-5'>
+                <section className='space-y-4 m-5' ref={searchSectionRef}>
                     <div className='space-y-1 '>
                         <h1 className='text-gray-500 text-[11px]'>Votre futur chez-vous grâce à LogisGabon</h1>
                         <div className='flex text-xl font-bold text-[#146B67] items-center gap-2'>
@@ -56,7 +89,7 @@ export default function HomePageMobileComponent() {
                         </div>
                     </div>
                     <Form action="/search">
-                        <div className="flex border rounded-full p-2 px-4 bg-gray-100 focus-within:border-[#1FA89B]">
+                        <div className="flex items-center border rounded-full p-2 px-4 bg-gray-100 focus-within:border-[#1FA89B]">
                             <button
                                 type='submit'
                             >
@@ -72,15 +105,14 @@ export default function HomePageMobileComponent() {
                             <button
                                 type='button'
                             >
-                                <SlidersHorizontal />
+                                <FilterModalHomePage />
                             </button>
                         </div>
                     </Form>
                 </section>
 
-                <section className='space-y-5'>
-                    <h1 className='text-xl font-bold text-[#146B67]'>Mettez votre logement en valeur</h1>
-
+                <section className='space-y-5 m-5'>
+                    <h1 className='text-xl font-bold text-center text-[#146B67]'>Mettez votre logement en valeur</h1>
                     <div className='rounded-xl flex'>
                         <div className='w-2/3 bg-[#146B67] rounded-l-xl py-5 px-3 flex flex-col gap-3'>
                             <h1 className='text-xl text-white font-bold'>
@@ -107,39 +139,47 @@ export default function HomePageMobileComponent() {
                     </div>
                 </section>
 
-                <section className='space-y-5'>
-                    <h1 className='text-xl font-bold text-[#146B67]'>Quels sont vos besoins ?</h1>
+                <section className='space-y-5 bg-green-50 p-5 py-16'>
+                    <h1 className='text-xl font-bold text-center text-[#146B67]'>Quels sont vos besoins ?</h1>
                     <div className='flex gap-2'>
                         <Link href={user ? routes.protected.add_property : routes.public.signinSignup} className='w-1/2 bg-[#146B67] text-white font-bold py-3 rounded-xl flex justify-center items-center'>Publier une annonce</Link>
                         <Link href={routes.public.search_property} className='w-1/2 bg-white border border-[#146B67] text-[#146B67] font-bold py-3 rounded-xl flex justify-center items-center text-center'>Rechercher un logement</Link>
                     </div>
                 </section>
 
+                <section className='space-y-5 p-5'>
+                    <h1 className='text-xl text-center font-bold text-[#146B67]'>Type de propriétés</h1>
+                    <CarouselPropertyType />
+                </section>
+
                 <section className='space-y-5'>
-                    {/* <section className='space-y-3'>
-                        <h1 className='text-xl font-bold text-[#146B67]'>
+                    {/* <section className='space-y-3 bg-green-50 p-5 py-10'>
+                        <h1 className='text-xl font-bold text-center text-[#146B67]'>
                             À la une
                         </h1>
                         <PropertyCarousel properties={[]} />
                     </section>
-                    <section className='space-y-3'>
-                        <h1 className='text-xl font-bold text-[#146B67]'>
+                    <section className='space-y-3 m-5'>
+                        <h1 className='text-xl font-bold text-center text-[#146B67]'>
                             À proximité de chez vous
                         </h1>
                         <PropertyCarousel properties={[]} />
-                    </section> */}
-                    <section className='space-y-3'>
-                        <h1 className='text-xl font-bold text-[#146B67]'>
+                    </section>  */}
+                    <section className='space-y-3 bg-green-50 p-5 py-10'>
+                        <h1 className='text-xl font-bold text-center text-[#146B67]'>
                             Logements récents
                         </h1>
                         <PropertyCarousel properties={[]} />
                     </section>
                 </section>
 
+                <section className='space-y-5 m-5'>
+                    <h1 className='text-xl font-bold text-center text-[#146B67]'>Logements par province</h1>
+                    <PropertyByProvince />
+                </section>
 
-
-                <section>
-                    <div className='bg-gradient-to-r to-[#146B67] from-[#1FA89B] rounded-xl py-5 px-3 flex flex-col gap-3 items-center'>
+                <section className='bg-green-50'>
+                    <div className='m-5 bg-gradient-to-r to-[#146B67] from-[#1FA89B] rounded-xl py-5 px-3 flex flex-col gap-3 items-center'>
                         <h1 className='text-xl text-white font-bold text-center flex flex-col'>
                             <span>Vous recherchez</span>
                             <span>un nouveau logement ?</span>

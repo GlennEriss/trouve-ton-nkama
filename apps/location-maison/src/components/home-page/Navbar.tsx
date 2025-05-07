@@ -86,7 +86,7 @@ export default function Navbar() {
       return null
     }
     return (
-      <nav className="sticky top-0 left-0 right-0 z-50 bg-white dark:bg-black text-black dark:text-white px-4 py-4 flex items-center justify-between shadow-md">
+      <nav className="border-b border-gray-300 sticky top-0 left-0 right-0 z-50 bg-white dark:bg-black text-black dark:text-white px-4 py-4 flex items-center justify-between shadow-md">
         <div className="flex items-center">
           <a href="/" rel="noopener noreferrer">
             <Logo />
