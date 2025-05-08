@@ -1,16 +1,22 @@
-import { useQuery, queryOptions } from '@tanstack/react-query'
-import { getPropertyById } from '@/db/property.db'
+import { useQuery, queryOptions } from '@tanstack/react-query';
 
 export function useProperty(id: string | undefined) {
   return useQuery(queryOptions({
     queryKey: ['property', id],
-    queryFn: () => {
-      if (!id) throw new Error('ID is required to fetch the property.')
-      return getPropertyById(id)
+    queryFn: async () => {
+      if (!id) throw new Error('ID is required to fetch the property.');
+      const res = await fetch(`/api/property/id?id=${id}`);
+      const data = await res.json();
+
+      if (res.status !== 200) {
+        throw new Error(data.error || 'Failed to fetch property');
+      }
+      console.log(data)
+      return data;
     },
     enabled: !!id,
-    staleTime: 1000 * 60 * 10,
-    gcTime: 1000 * 60 * 15,
+    staleTime: 1000 * 60 * 10, // 10 minutes
+    gcTime: 1000 * 60 * 15, // 15 minutes
     refetchOnWindowFocus: false,
-  }))
+  }));
 }

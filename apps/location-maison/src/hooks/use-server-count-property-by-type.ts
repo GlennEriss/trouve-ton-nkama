@@ -1,7 +1,4 @@
-
-
 import { useQuery, queryOptions } from '@tanstack/react-query';
-import { getServerCountByPropertyType } from '@/db/property.db';
 
 /**
  * Custom hook to get the count of properties by type from Firestore.
@@ -11,13 +8,15 @@ import { getServerCountByPropertyType } from '@/db/property.db';
 export function useServerCountByPropertyType(type: string | undefined) {
   return useQuery(queryOptions({
     queryKey: ['propertyCountByType', type],
-    queryFn: () => {
+    queryFn: async () => {
       if (!type) throw new Error('Property type is required to fetch the count.');
-      return getServerCountByPropertyType(type);
+      const response = await fetch(`/api/property/count/by-type?type=${type}`);
+      const data = await response.json();
+      return data.count || 0;
     },
     enabled: !!type,
-    staleTime: 1000 * 60 * 10,
-    gcTime: 1000 * 60 * 15,
+    staleTime: 1000 * 60 * 10, // 10 minutes
+    gcTime: 1000 * 60 * 15, // 15 minutes
     refetchOnWindowFocus: false,
   }));
 }

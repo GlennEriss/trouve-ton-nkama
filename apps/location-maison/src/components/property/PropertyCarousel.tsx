@@ -65,20 +65,30 @@ const PropertyCarousel: React.FC<CarouselProps> = ({ properties }) => {
   const router = useRouter();
   const fetchInfiniteProperties = async ({ pageParam }: { pageParam: any }) => {
     const { limitPerPage, lastDoc } = pageParam;
-    return getProperties({
-      limitPerPage,
-      lastDoc,
-    })
-  }
+    const url = `/api/property/list?limit=${limitPerPage}&lastDoc=${lastDoc || ''}`;
+    const response = await fetch(url, {
+        headers: {
+            'Cache-Control': 'public, s-maxage=600, stale-while-revalidate=600',
+        },
+    });
+    if (!response.ok) {
+        throw new Error("Failed to fetch properties");
+    }
+    const data = await response.json();
+    return data;
+  };
   const { data, isPending, isFetching, fetchNextPage, error, isError } = useInfiniteQuery({
     queryKey: [queryKeys.propertie_carousel],
     queryFn: fetchInfiniteProperties,
     initialPageParam: { limitPerPage: PROPERTY_ITEM_PER_PAGE_CAROUSEL, lastDoc: null },
     getNextPageParam: (lastPage, allPages, pageParam) => {
       const { limitPerPage } = pageParam;
-      const lastDoc = allPages[allPages.length - 1].lastDoc;
+      const lastDoc = allPages[allPages.length - 1]?.lastDoc || null;
       return { limitPerPage, lastDoc };
     },
+    staleTime: 1000 * 60 * 10, // 10 minutes
+    gcTime: 1000 * 60 * 15, // 15 minutes
+    refetchOnWindowFocus: false,
   })
   const handleCardClick = (id: number | string) => {
     router.push(`/houseDetails/${id}`);
@@ -123,7 +133,7 @@ const PropertyCarousel: React.FC<CarouselProps> = ({ properties }) => {
   return (
     <div className="container mx-auto px-4 md:py-8 relative">
       <Slider {...settings}>
-        {data.pages[0]?.properties.map((property) => (
+        {data.pages[0]?.properties.map((property: Property) => (
           <div key={property.id} className="p-2 rounded-lg">
             <div
               onClick={() => handleCardClick(property.id ?? '')}

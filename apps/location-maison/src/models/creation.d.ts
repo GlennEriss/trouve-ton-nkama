@@ -6,8 +6,8 @@ import { Timestamp } from "firebase/firestore"
 export type StateCreation = 'ARCHIVED'|'IN_PROGRESS'
 export type ICreation = {
     id?: string,
-    createdAt?: Timestamp,
-    updatedAt?: Timestamp,
+    createdAt?: Timestamp | {seconds: number, nanoseconds: number},
+    updatedAt?: Timestamp | {seconds: number, nanoseconds: number},
     searchableName?: string,
     state: StateCreation
 }

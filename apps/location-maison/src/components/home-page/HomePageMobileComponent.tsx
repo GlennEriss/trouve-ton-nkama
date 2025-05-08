@@ -180,7 +180,7 @@ export default function HomePageMobileComponent() {
                     <PropertyByProvince />
                 </section>
 
-                <section className='bg-green-50'>
+                <section className='bg-green-50 py-5'>
                     <div className='m-5 bg-gradient-to-r to-[#146B67] from-[#1FA89B] rounded-xl py-5 px-3 flex flex-col gap-3 items-center'>
                         <h1 className='text-xl text-white font-bold text-center flex flex-col'>
                             <span>Vous recherchez</span>
