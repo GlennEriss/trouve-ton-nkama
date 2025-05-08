@@ -57,9 +57,8 @@ export default function SectionNotifications() {
           notifications.map((notification) => (
             <div
               key={notification.id}
-              className={`flex items-start gap-3 p-3 rounded-lg transition ${
-                notification.isRead ? "bg-white dark:bg-gray-900" : "bg-gray-100 dark:bg-gray-800"
-              }`}
+              className={`flex items-start gap-3 p-3 rounded-lg transition ${notification.isRead ? "bg-white dark:bg-gray-900" : "bg-gray-100 dark:bg-gray-800"
+                }`}
             >
               {/* Avatar */}
               <Avatar>
@@ -78,8 +77,8 @@ export default function SectionNotifications() {
                   {notification.title}
                 </h3>
                 {notification.actionUrl ? (
-                  <Link 
-                    href={notification.actionUrl} 
+                  <Link
+                    href={notification.actionUrl}
                     className="text-sm text-blue-600 dark:text-blue-400 hover:underline"
                     onClick={() => markAsRead(notification.id!)}
                   >
@@ -94,7 +93,11 @@ export default function SectionNotifications() {
                   </button>
                 )}
                 <div className="text-xs text-gray-500 dark:text-gray-400">
-                  {notification.createdAt?.toDate().toLocaleDateString()}
+                  {notification.createdAt
+                    ? (notification.createdAt instanceof Date
+                      ? notification.createdAt.toLocaleDateString("fr-FR", { day: "2-digit", month: "long", year: "numeric" })
+                      : new Date(notification.createdAt.seconds * 1000).toLocaleDateString("fr-FR", { day: "2-digit", month: "long", year: "numeric" }))
+                    : "Date inconnue"}
                 </div>
               </div>
 
