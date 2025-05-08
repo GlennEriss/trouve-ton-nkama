@@ -1,7 +1,4 @@
-
-
 import { useQuery, queryOptions } from '@tanstack/react-query';
-import { getServerCountByProvince } from '@/db/property.db';
 
 /**
  * Custom hook to fetch the count of properties in a specific province.
@@ -11,9 +8,11 @@ import { getServerCountByProvince } from '@/db/property.db';
 export function useServerCountByProvince(province: string | undefined) {
   return useQuery(queryOptions({
     queryKey: ['propertyCount', province],
-    queryFn: () => {
+    queryFn: async () => {
       if (!province) throw new Error('Province is required to fetch property count.');
-      return getServerCountByProvince(province);
+      const res = await fetch(`/api/property/count/by-province?province=${province}`);
+      const data = await res.json();
+      return data.count;
     },
     enabled: !!province,
     staleTime: 1000 * 60 * 10,  // Cache duration: 10 minutes
