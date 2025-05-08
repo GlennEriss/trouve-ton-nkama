@@ -63,8 +63,12 @@ export const PreviewPropertyMobile: React.FC<PreviewPropertyMobileProps> = ({ pr
                         </div>
                     </div>
                     <p className='flex flex-col text-gray-500 dark:text-gray-400 text-md text-justify italic mt-1'>
-                        <span>Créé le: {property.createdAt?.toDate().toLocaleDateString('fr-FR', { weekday: 'short', year: 'numeric', month: 'long', day: 'numeric' })}</span>
-                        <span>Modifié le: {property.updatedAt?.toDate().toLocaleDateString('fr-FR', { weekday: 'short', year: 'numeric', month: 'long', day: 'numeric' })}</span>
+                        <span>
+                            Créé le: {property.createdAt ? new Date(property.createdAt.seconds * 1000).toLocaleDateString('fr-FR', { weekday: 'short', year: 'numeric', month: 'long', day: 'numeric' }) : 'Date inconnue'}
+                        </span>
+                        <span>
+                            Modifié le: {property.updatedAt ? new Date(property.updatedAt.seconds * 1000).toLocaleDateString('fr-FR', { weekday: 'short', year: 'numeric', month: 'long', day: 'numeric' }) : 'Date inconnue'}
+                        </span>
                     </p>
                 </div>
             </section>

@@ -64,8 +64,12 @@ export default function PreviewProperty({ property }: { property: Property }) {
         <section className="flex flex-col gap-3 rounded-lg p-5 shadow dark:shadow-gray-800 dark:bg-gray-800 dark:text-white">
           <h1 className='font-bold'>Aperçu</h1>
           <p className='flex flex-col text-gray-500 dark:text-gray-400 text-sm text-justify italic'>
-            <span>Créé le: {property.createdAt?.toDate().toLocaleDateString('fr-FR', { weekday: 'short', year: 'numeric', month: 'long', day: 'numeric' })}</span>
-            <span>Modifié le: {property.updatedAt?.toDate().toLocaleDateString('fr-FR', { weekday: 'short', year: 'numeric', month: 'long', day: 'numeric' })}</span>
+            <span>
+              Créé le: {property.createdAt ? new Date(property.createdAt.seconds * 1000).toLocaleDateString('fr-FR', { weekday: 'short', year: 'numeric', month: 'long', day: 'numeric' }) : 'Date inconnue'}
+            </span>
+            <span>
+              Modifié le: {property.updatedAt ? new Date(property.updatedAt.seconds * 1000).toLocaleDateString('fr-FR', { weekday: 'short', year: 'numeric', month: 'long', day: 'numeric' }) : 'Date inconnue'}
+            </span>
           </p>
           <DetailsProperty property={property as any} />
         </section>
