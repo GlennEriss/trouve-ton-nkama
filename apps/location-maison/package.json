@@ -3,8 +3,8 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "mv .env.local .env.local.backup && cp .env.local.dev .env.local && next dev --turbopack && mv .env.local.backup .env.local",
-    "build": "mv .env.local .env.local.backup && cp .env.local.prod .env.local && next build && mv .env.local.backup .env.local",
+    "dev": "next dev --turbopack",
+    "build": "next build",
     "start": "next start",
     "test": "jest",
     "test:watch": "jest --watch"
