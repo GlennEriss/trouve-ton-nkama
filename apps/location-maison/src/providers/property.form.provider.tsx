@@ -1,6 +1,6 @@
 'use client'
 import { Form } from "@/components/ui/form"
-import { createContext, useContext, useState, useTransition } from "react"
+import { createContext, useContext, useState, useTransition, useEffect } from "react"
 import { useForm } from "react-hook-form"
 import { zodResolver } from '@hookform/resolvers/zod'
 import { ApartmentSchema, BuildingSchema, DeskSchema, HomeSchema, StudioSchema, VillaSchema, KioskSchema, RoomSchema, ShopSchema, PropertySchema } from "@/models/schema"
@@ -43,6 +43,30 @@ export const steps = [
     { label: 'Second', description: 'Date & Time' },
     { label: 'Third', description: 'Select Rooms' },
 ]
+
+const STORAGE_KEY = 'property_form_draft'
+
+const saveFormToLocalStorage = (data: any) => {
+    if (typeof window !== 'undefined') {
+        // On crée une copie des données sans les images
+        const { images, ...dataWithoutImages } = data
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(dataWithoutImages))
+    }
+}
+
+const getFormFromLocalStorage = () => {
+    if (typeof window !== 'undefined') {
+        const saved = localStorage.getItem(STORAGE_KEY)
+        return saved ? JSON.parse(saved) : null
+    }
+    return null
+}
+
+const clearFormLocalStorage = () => {
+    if (typeof window !== 'undefined') {
+        localStorage.removeItem(STORAGE_KEY)
+    }
+}
 
 export const PropertyFormComponentProvider = ({ children, isUpdate, propertyToUpdated }: {
     children: React.ReactNode,
@@ -197,21 +221,12 @@ export const PropertyFormComponentProvider = ({ children, isUpdate, propertyToUp
             createdBy: user?.uid
         }
         mutation.mutate(propertyMutate)
+        if (!isUpdate) {
+            clearFormLocalStorage()
+        }
     }
     React.useEffect(() => {
         if (propertyToUpdated) {
-            /* getPropertyById(id).then((fetchedProperty) => {
-                // Set form values dynamically
-                if (fetchedProperty) {
-                    const { createdAt, updatedAt, images, ...othersData } = fetchedProperty
-                    Object.entries(othersData).forEach(([key, value]) => {
-                        form.setValue(key as any, value); // Populate each field with the fetched data
-                    });
-                    const imgList = images.map(img => img.fileURL)
-                    setImagesAlreadyUplaod(images)
-                    form.setValue('images', imgList)
-                }
-            }); */
             const { images, ...othersData } = propertyToUpdated
             Object.entries(othersData).forEach(([key, value]) => {
                 form.setValue(key as any, value);
@@ -221,8 +236,30 @@ export const PropertyFormComponentProvider = ({ children, isUpdate, propertyToUp
                 setImagesAlreadyUplaod(images)
                 form.setValue('images', imgList)
             }
+        } else if (!isUpdate) {
+            // Charger les données du localStorage si elles existent
+            const savedData = getFormFromLocalStorage()
+            if (savedData) {
+                Object.entries(savedData).forEach(([key, value]) => {
+                    form.setValue(key as any, value);
+                });
+            }
         }
     }, [propertyToUpdated])
+
+    // Sauvegarder dans le localStorage à chaque changement du formulaire
+    useEffect(() => {
+        if (!isUpdate) {
+            const subscription = form.watch((value) => {
+                if (value) {
+                    console.log('value', value)
+                    saveFormToLocalStorage(value);
+                }
+            });
+            return () => subscription.unsubscribe();
+        }
+    }, [form, isUpdate]);
+
     return (
         <PropertyFormComponentContext.Provider value={{
             activeStep,

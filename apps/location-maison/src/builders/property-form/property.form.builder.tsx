@@ -85,7 +85,7 @@ export abstract class PropertyFormBuilder {
             },
             {
                 name: "status",
-                label: "Status",
+                label: "Statut",
                 description: "Choisissez si le bien est à vendre ou à louer.",
                 component: (field: any) => <StatusComponent field={field} />,
                 step: 1
