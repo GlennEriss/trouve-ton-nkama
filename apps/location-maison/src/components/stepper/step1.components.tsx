@@ -19,7 +19,7 @@
 'use client'
 import { useDropzone } from 'react-dropzone'
 import { Input } from "../ui/input"
-import React, { useState } from "react"
+import React, { useState, useEffect } from "react"
 import { AiOutlineCamera, AiOutlineCloseCircle } from "react-icons/ai";
 import Image from 'next/image'
 import { Button } from '../ui/button';
@@ -177,7 +177,7 @@ export const StatusComponent = ({ field }: { field: any }) => {
     return (
         <RadioGroup
             onValueChange={field.onChange}
-            defaultValue={field.value}
+            value={field.value}
             className="flex gap-5"
         >
             {
@@ -210,19 +210,23 @@ export const TagsComponent = ({ field }: { field: any }) => {
 }
 
 export const TagItem = ({ tag, field }: { tag: { tagName: string, tagIcon: IconType }, field: any }) => {
-    const [isActived, setIsActived] = useState(field.value.includes(tag.tagName) ? true : false)
+    const [isActived, setIsActived] = useState(false)
+
+    useEffect(() => {
+        setIsActived(field.value?.includes(tag.tagName) || false)
+    }, [field.value, tag.tagName])
+
     const handleSelectIcon = () => {
         const active = !isActived
         if (active) {
-            if (field.value.length < 6) {
-                field.onChange([...field.value, tag.tagName])
-                setIsActived(!isActived)
+            if (field.value?.length < 6) {
+                field.onChange([...(field.value || []), tag.tagName])
             }
         } else {
-            field.onChange(field.value.filter((item: string) => item !== tag.tagName))
-            setIsActived(!isActived)
+            field.onChange((field.value || []).filter((item: string) => item !== tag.tagName))
         }
     }
+
     return (
         <div className={clsx({
             "flex items-center gap-2 cursor-pointer text-gray-500": !isActived,
