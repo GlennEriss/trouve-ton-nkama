@@ -13,7 +13,6 @@ import PropertyCarousel from '../property/PropertyCarousel';
 import { FilterModalHomePage } from './FilterModalHomePage';
 import PropertyByProvince from './PropertyByProvince';
 import CarouselPropertyType from './CarouselPropertyType';
-import Footer from '../footer/Footer';
 import { useWindowSize } from '@/hooks/useSize';
 import { cn } from '@/lib/utils';
 

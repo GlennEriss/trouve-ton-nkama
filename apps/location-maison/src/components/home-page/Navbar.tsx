@@ -1,86 +1,17 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
-import { Clover, Search, Plus, Moon, Sun } from "lucide-react";
-import { BiSearch } from "react-icons/bi";
-import { useAlgoliaContext } from "@/providers/AlgoliaContext";
 import { useWindowSize } from "@/hooks/useSize";
-import MenuProfil from "../navbar/MenuProfil";
-import { routes } from "@/constantes/routes";
-import { useRouter } from "next/navigation";
 import Logo from "../logo/Logo";
 import { useCurrentUser } from "@/hooks/use-current-user";
+import InputSearchNavbar from "./InputSearchNavbar";
+import { Button } from "@/components/ui/button";
+import { routes } from "@/constantes/routes";
+import Link from "next/link";
+import { NavigationMenu, NavigationMenuList, NavigationMenuItem, NavigationMenuLink } from "@/components/ui/navigation-menu"
 
 export default function Navbar() {
-  const router = useRouter();
   const { width } = useWindowSize();
   const { user } = useCurrentUser()
-  // Thème local
-  const [theme, setTheme] = useState("system");
-  const [showSearch, setShowSearch] = useState(false);
-
-  // Récupération du contexte (champs de recherche/filtres)
-  const {
-    searchText,
-    setSearchText,
-    city,
-    street,
-    minPrice,
-    maxPrice,
-    minArea,
-    maxArea,
-    minNbrRooms,
-    maxNbrRooms,
-    setTypeProperty,
-    typeProperty,
-    tags,
-  } = useAlgoliaContext();
-
-  // Gestion du thème (light/dark)
-  useEffect(() => {
-    if (theme === "dark") {
-      document.documentElement.classList.add("dark");
-    } else if (theme === "light") {
-      document.documentElement.classList.remove("dark");
-    }
-  }, [theme]);
-
-  const toggleTheme = () => {
-    setTheme(theme === "light" ? "dark" : "light");
-  };
-
-  /**
-   * Construit l'URL à partir des champs du contexte et redirige vers /search
-   */
-  const handleSearch = () => {
-    //setTypeProperty(["Home"])
-    //console.log("typeProperty:", typeProperty)
-
-
-    // Construire l'URL
-    const params = new URLSearchParams();
-    if (searchText) params.append("query", searchText);
-    if (city) params.append("city", city);
-    if (street) params.append("street", street);
-    if (minPrice) params.append("minPrice", minPrice);
-    if (maxPrice) params.append("maxPrice", maxPrice);
-    if (minArea) params.append("minArea", minArea);
-    if (maxArea) params.append("maxArea", maxArea);
-    if (minNbrRooms) params.append("minNbrRooms", minNbrRooms);
-    if (maxNbrRooms) params.append("maxNbrRooms", maxNbrRooms);
-    if (typeProperty && typeProperty.length > 0) {
-      params.append("typeProperty", typeProperty.join(","));
-    }
-    if (tags && tags.length > 0) {
-      params.append("tags", tags.join(","));
-    }
-    //params.append("page", "1");
-    console.log("params:", params.toString())
-    router.push(`/search?${params.toString()}`);
-  };
-  // --- Rendu mobile ---
   if (width < 768) {
     if (user) {
       return null
@@ -88,17 +19,10 @@ export default function Navbar() {
     return (
       <nav className="border-b border-gray-300 sticky top-0 left-0 right-0 z-50 bg-white dark:bg-black text-black dark:text-white px-4 py-4 flex items-center justify-between shadow-md">
         <div className="flex items-center">
-          <a href="/" rel="noopener noreferrer">
-            <Logo />
-          </a>
+          <LogoNavigation />
         </div>
         <div className="flex items-center gap-4">
-          <button
-            onClick={() => setShowSearch(!showSearch)}
-            className="w-11 h-11 flex items-center justify-center bg-white border border-[#146B67] dark:bg-gray-800 rounded-full"
-          >
-            <Search className="w-6 h-6 text-[#146B67]" />
-          </button>
+          <InputSearchNavbar />
           {user ? (
             <div className="flex items-center">
               <a href={routes.protected.add_property}>
@@ -108,122 +32,71 @@ export default function Navbar() {
               </a>
             </div>
           ) : (
-            <a href={routes.public.signinSignup}>
-              <Button variant="outline"
-                className="bg-transparent border border-[#146B67] text-[#146B67] rounded-lg text-base px-6 py-3 font-semibold hover:bg-[#0f5c59] hover:text-white hover:shadow-md transition"
-              >
-                Se connecter
-              </Button>
-            </a>
+            <ButtonLogin />
           )}
         </div>
-        {showSearch && (
-          <div className="absolute top-full left-0 right-0 bg-white dark:bg-black shadow-md p-4 flex w-full">
-            <div className="relative">
-              <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-500 w-5 h-5" />
-              <Input
-                value={searchText}
-                onChange={(e) => setSearchText(e.target.value)}
-                placeholder="Rechercher..."
-                className="w-full bg-neutral-200 dark:bg-neutral-900 text-black dark:text-white placeholder:text-gray-500 border-none focus:ring-2 focus:ring-black/50 dark:focus:ring-white/50 min-h-[45px] rounded-full pl-12"
-              />
-            </div>
-            <div
-              onClick={handleSearch}
-              className="ml-2 w-11 h-11 border border-[#146B67] text-[#146B67] hover:bg-[#146B67] hover:text-white flex items-center justify-center rounded-full cursor-pointer aspect-square"
-            >
-              <BiSearch className="w-6 h-6" />
-            </div>
-          </div>
-        )}
       </nav>
     );
   }
-
-  // --- Rendu desktop ---
   return (
-    <nav className="sticky top-0 left-0 right-0 z-50 bg-white dark:bg-black text-black dark:text-white px-4 pt-6 pb-4 lg:px-14 md:py-6 flex flex-col md:flex-row justify-between space-y-4 md:space-y-0 shadow-md">
-      <div className="flex items-center justify-between w-full md:w-auto">
-        <div className="flex items-center">
-          <a href="/" rel="noopener noreferrer">
-            <Logo />
-          </a>
-        </div>
+    <div className="rounded-full bg-[#f4f9f9] flex shadow sticky top-0 z-50">
+      <LogoNavigation />
+      <div className="ml-auto flex items-center gap-4 mr-5">
+        <NavigationMenuNavbar />
+        <InputSearchNavbar />
+        <ButtonLogin />
       </div>
+    </div>
+  )
+}
 
-      {/* Barre de recherche */}
-      <div className="flex items-center gap-2 w-full md:w-1/2 max-w-[500px] mr-1">
-        <div className="relative w-full">
-          <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-500 w-5 h-5" />
-          <Input
-            value={searchText}
-            onChange={(e) => setSearchText(e.target.value)}
-            placeholder="Chercher une propriété"
-            className="bg-neutral-200 dark:bg-neutral-900 text-black dark:text-white placeholder:text-gray-500 border-none focus:ring-2 focus:ring-black/50 dark:focus:ring-white/50 min-h-[50px] rounded-full pl-12"
-          />
-        </div>
-        <div
-          onClick={handleSearch}
-          className="w-11 h-11 bg-gradient-to-r from-[#146B67] via-[#1FA89B] to-[#146B67] border-none flex items-center justify-center rounded-full cursor-pointer aspect-square"
-        >
-          <BiSearch className="w-6 h-6 text-white" />
-        </div>
-      </div>
+const LogoNavigation = () => {
+  return (
+    <div className="rounded-full bg-[#f4f9f9] shadow">
+      <a href="/" rel="noopener noreferrer">
+        <Logo />
+      </a>
+    </div>
+  )
+}
 
-      <div className="flex items-center">
-        <a href={routes.protected.add_property} rel="noopener noreferrer" className={width < 820 && !user ? 'hidden' : 'block'}>
-          <Button
-            variant="default"
-            className="bg-gradient-to-r from-[#146B67] via-[#1FA89B] to-[#146B67] text-white rounded-lg text-base px-6 py-3 font-semibold hover:brightness-110 hover:shadow-md transition"
-          >
-            Poster une annonce
-          </Button>
-        </a>
-        {/* Boutons */}
-        {
-          user ? (
-            <MenuProfil />
-          ) : (
-            <div className="flex items-center gap-2 md:gap-4 mx-4">
-              <a href={width < 820 ? "/signin-signup" : "/signin"} rel="noopener noreferrer">
-                <Button
-                  variant="outline"
-                  className="bg-transparent border border-[#146B67] text-[#146B67] rounded-lg text-base px-6 py-3 font-semibold hover:bg-[#0f5c59] hover:text-white hover:shadow-md transition"
-                >
-                  Se connecter
-                </Button>
-              </a>
-              <a href="/signup" rel="noopener noreferrer" className={width < 820 ? 'hidden' : 'block'}>
-                <Button
-                  variant="default"
-                  className="bg-transparent border border-[#146B67] text-[#146B67] rounded-lg text-base px-6 py-3 font-semibold hover:bg-[#0f5c59] hover:text-white hover:shadow-md transition"
-                >
-                  S&apos;inscrire
-                </Button>
-              </a>
-            </div>
-          )
-        }
-        <button
-          onClick={toggleTheme}
-          aria-label={`Activer le thème ${theme === "light" ? "sombre" : "clair"}`}
-          title={`Passer au thème ${theme === "light" ? "sombre" : "clair"}`}
-          className="
-            w-10 h-10
-            flex items-center justify-center
-            rounded-full
-            bg-gray-100 dark:bg-gray-700
-            text-gray-800 dark:text-yellow-300
-            border border-gray-300 dark:border-gray-600
-            hover:bg-gray-200 dark:hover:bg-gray-600
-            focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary
-            transition-transform
-            hover:scale-110
-          "
-        >
-          {theme === "light" ? <Moon size={20} /> : <Sun size={20} />}
-        </button>
-      </div>
-    </nav>
-  );
+const ButtonLogin = () => {
+  return (
+    <Button
+      variant="link"
+      className="bg-gradient-to-r from-[#146B67] via-[#1FA89B] to-[#146B67] text-white border-none rounded-full text-base px-6 py-3 font-semibold hover:brightness-110 hover:shadow-md transition"
+      asChild
+    >
+      <Link href={routes.public.signinSignup}>
+        Se connecter
+      </Link>
+    </Button>
+  )
+}
+
+const NavigationMenuNavbar = () => {
+  const { user } = useCurrentUser()
+  const menu = [
+    {
+      link: routes.public.search_property,
+      label: "Catalogue"
+    },
+    {
+      link: user ? routes.protected.add_property : routes.public.signinSignup,
+      label: "Poster une annonce"
+    }
+  ]
+  return (
+    <NavigationMenu>
+      <NavigationMenuList>
+        <NavigationMenuItem className="space-x-4">
+          {menu.map((item) => (
+            <NavigationMenuLink className="text-base text-[#146B67] font-semibold hover:text-[#146B67] transition" key={item.label} href={item.link}>
+              {item.label}
+            </NavigationMenuLink>
+          ))}
+        </NavigationMenuItem>
+      </NavigationMenuList>
+    </NavigationMenu>
+  )
 }
