@@ -1,5 +1,7 @@
+import { routes } from '@/constantes/routes'
 import { useServerCountByProvince } from '@/hooks/use-server-count-by-province'
 import Image from 'next/image'
+import { useRouter } from 'next/navigation'
 import React from 'react'
 
 const provinces = [
@@ -51,6 +53,7 @@ const provinces = [
 ]
 
 export default function PropertyByProvince() {
+    const router = useRouter()
     return (
         <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5'>
             {
@@ -60,7 +63,10 @@ export default function PropertyByProvince() {
                     return (
                         <div
                             key={index}
-                            className='relative rounded-xl overflow-hidden w-full h-[340px] group'
+                            className='relative rounded-xl overflow-hidden w-full h-[340px] group cursor-pointer'
+                            onClick={() => {
+                                router.push(`${routes.public.search_property}?province=${province.name}`)
+                            }}
                         >
                             <Image
                                 src={`/assets/home-page/${province.img}`}

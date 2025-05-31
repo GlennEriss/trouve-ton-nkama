@@ -44,7 +44,12 @@ export default function Navbar() {
       <div className="ml-auto flex items-center gap-4 mr-5">
         <NavigationMenuNavbar />
         <InputSearchNavbar />
-        <ButtonLogin />
+        {!user && (
+          <div className="flex items-center gap-4">
+            <ButtonLogin />
+            <ButtonRegister />
+          </div>
+        )}
       </div>
     </div>
   )
@@ -63,12 +68,25 @@ const LogoNavigation = () => {
 const ButtonLogin = () => {
   return (
     <Button
-      variant="link"
+      variant="ghost"
       className="bg-gradient-to-r from-[#146B67] via-[#1FA89B] to-[#146B67] text-white border-none rounded-full text-base px-6 py-3 font-semibold hover:brightness-110 hover:shadow-md transition"
       asChild
     >
       <Link href={routes.public.signinSignup}>
         Se connecter
+      </Link>
+    </Button>
+  )
+}
+
+const ButtonRegister = () => {
+  return (
+    <Button
+      variant="outline"
+      className="text-[#146B67] border border-[#146B67] rounded-full text-base px-6 py-3 font-semibold hover:brightness-110 hover:shadow-md transition"
+      asChild>
+      <Link href={routes.public.signup}>
+        S'inscrire
       </Link>
     </Button>
   )
