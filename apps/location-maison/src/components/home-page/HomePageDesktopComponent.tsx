@@ -35,7 +35,7 @@ export default function HomePageDesktopComponent() {
           src="/assets/home-page/form.webp"
           alt="Background shape"
           fill
-          className="object-cover opacity-15 -rotate-[160deg]"
+          className="object-cover opacity-5 xl:opacity-15 lg:-rotate-45 xl:-rotate-[160deg]"
         />
       </div>
 
@@ -156,7 +156,44 @@ export default function HomePageDesktopComponent() {
         <h1 className='text-xl lg:text-2xl xl:text-3xl leading-tight font-bold text-center text-[#146B67] my-10'>Logements par province</h1>
         <PropertyByProvince />
       </section>
-      
+
+      <section className='rounded-3xl bg-gradient-to-r from-[#C1DEE8] to-[#FBD9B9] p-8 lg:p-12 relative mt-10 overflow-visible mb-32 lg:mb-40'>
+        <div className='flex flex-col gap-5 max-w-xl'>
+          <h1 className='text-2xl lg:text-3xl xl:text-4xl text-[#146B67] font-bold flex flex-col gap-1'>
+            <span>Vous recherchez</span>
+            <span>un nouveau logement ?</span>
+            <span>Parcourez notre catalogue !</span>
+          </h1>
+          <p className='flex flex-col gap-1 text-lg lg:text-xl text-gray-700'>
+            <span>
+              Maisons, appartements, terrains…
+            </span>
+            <span>
+              Trouvez le bien qui vous correspond
+            </span>
+            <span>
+              en toute simplicité.
+            </span>
+          </p>
+          <Link
+            href={routes.public.search_property}
+            className='bg-white hover:bg-[#146B67] text-[#146B67] hover:text-white px-8 py-3 rounded-full text-center font-semibold w-fit transition-all duration-300 shadow-lg hover:shadow-xl mt-4'
+          >
+            Explorez maintenant
+          </Link>
+        </div>
+        <div className="absolute bottom-20 translate-y-1/3 right-0 lg:translate-y-1/3 xl:right-20">
+          <Image
+            src="/assets/home-page/rendering.webp"
+            alt="Home Page Desktop Component"
+            width={450}
+            height={450}
+            quality={100}
+            priority
+            className="object-contain"
+          />
+        </div>
+      </section>
     </div>
   )
 }
