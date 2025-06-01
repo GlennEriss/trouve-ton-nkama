@@ -56,8 +56,11 @@ export const LayoutAuth: React.FC<LayoutAuthProps> = ({ children, type, setIsOth
                 <div className="w-full md:w-1/2 flex flex-col justify-center p-6 sm:p-10">
                     {/* Card Content */}
                     <div className="w-full max-w-md mx-auto">
-                        <h1 className="text-center text-2xl font-bold mb-6">
-                            {type === "Signin" ? "Connexion" : "Créer un compte"}
+                        <h1 className="relative text-center text-2xl md:text-3xl font-bold mb-8">
+                            <span className="bg-gradient-to-r from-[#146B67] via-[#1FA89B] to-[#146B67] text-transparent bg-clip-text">
+                                {type === "Signin" ? "Connexion" : "Créer un compte"}
+                            </span>
+                            <div className="absolute -bottom-3 left-1/2 transform -translate-x-1/2 w-12 h-1 rounded-full bg-gradient-to-r from-[#146B67] via-[#1FA89B] to-[#146B67]" />
                         </h1>
                         <div>{children}</div>
                         <div className="mt-6 flex flex-col items-center">
