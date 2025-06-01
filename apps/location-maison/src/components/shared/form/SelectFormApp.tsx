@@ -24,6 +24,7 @@ export const SelectFormApp = <T extends FieldValues>({
     ...props
 }: SelectFormAppProps<T>) => {
     const [isOpen, setIsOpen] = React.useState(false);
+    const { disabled } = props;
     return (
         <FormField
             control={control}
@@ -36,7 +37,7 @@ export const SelectFormApp = <T extends FieldValues>({
                         onOpenChange={setIsOpen}
                         value={field.value}
                         onValueChange={field.onChange}
-                        disabled={isSubmitting}
+                        disabled={isSubmitting || disabled}
                     >
                         <FormControl>
                             <SelectTrigger

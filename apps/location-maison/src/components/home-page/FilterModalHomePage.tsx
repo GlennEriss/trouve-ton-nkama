@@ -4,26 +4,21 @@ import { useEffect, useState } from "react";
 import * as SliderPrimitive from "@radix-ui/react-slider";
 import {
     Dialog,
-    DialogClose,
     DialogContent,
     DialogHeader,
     DialogTitle,
     DialogTrigger,
 } from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { ChevronLeft, SlidersHorizontal } from "lucide-react";
-import { BiFilter } from "react-icons/bi";
 import { useRouter } from "next/navigation";
 import { useAlgoliaContext } from "@/providers/AlgoliaContext";
 import { getTypePropertyKey, TypeProperty } from "@/lib/utils";
 import { tags as tagsList } from "@/constantes";
-import { useAlgoliaRefinements } from "@/providers/AlgoliaRefinementsContext";
 import { DialogDescription } from "@radix-ui/react-dialog";
 import { InputApp } from "../shared/ui/InputApp";
 import { InputNumberApp } from "../shared/ui/InputNumberApp";
 
-const PRICE_MIN = 0;
 const PRICE_MAX = 1_000_000_000;
 const AREA_MIN = 0;
 const AREA_MAX = 1000;
@@ -32,7 +27,6 @@ const ROOMS_MAX = 10;
 
 export const FilterModalHomePage = () => {
     const router = useRouter();
-    const { refineTags } = useAlgoliaRefinements();
     const {
         searchText,
         city, setCity,
@@ -91,6 +85,7 @@ export const FilterModalHomePage = () => {
 
     const onClear = () => {
         clearLocalFilters();
+        clearFilters();
     };
 
     const onApply = () => {
@@ -138,8 +133,6 @@ export const FilterModalHomePage = () => {
             prev.includes(item) ? prev.filter(i => i !== item) : [...prev, item]
         );
     };
-
-    const priceInvalid = Number(localMinPrice) < 0 || Number(localMaxPrice) < 0;
 
     return (
         <Dialog open={open} onOpenChange={setOpen}>

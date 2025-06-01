@@ -11,7 +11,6 @@ export function useProperty(id: string | undefined) {
       if (res.status !== 200) {
         throw new Error(data.error || 'Failed to fetch property');
       }
-      console.log(data)
       return data;
     },
     enabled: !!id,

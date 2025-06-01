@@ -1,11 +1,9 @@
-import React from 'react';
-import Navbar from "@/components/home-page/Navbar";
+import PublicLayout from "@/components/layouts/PublicLayout";
 
 export default async function Layout({ children }: { children: React.ReactNode }) {
     return (
-        <>
-            <Navbar />
+        <PublicLayout>
             {children}
-        </>
+        </PublicLayout>
     );
 }

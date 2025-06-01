@@ -88,7 +88,7 @@ export default function MenuProfil() {
     return (
         <DropdownMenu>
             <DropdownMenuTrigger asChild>
-                <Button variant='ghost' className='focus:ring-0 focus-visible:ring-0 hover:bg-transparent dark:hover:bg-transparent'>
+                <Button variant='ghost' className='focus:ring-0 focus-visible:ring-0 hover:bg-transparent dark:hover:bg-transparent p-0'>
                     <Avatar>
                         <AvatarImage src={user?.image ?? ''} alt={user?.firstname + '' + user?.lastname} />
                         <AvatarFallback

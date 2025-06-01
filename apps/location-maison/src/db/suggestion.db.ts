@@ -31,3 +31,9 @@ export const updateOrCreateSuggestion = async ({ province, city, street }: Sugge
         console.error("Erreur lors de la mise à jour ou création de suggestion :", error);
     }
 };
+
+export const getSuggestions = async () => {
+    const ref = doc(db, "suggestions", "data");
+    const docSnap = await getDoc(ref);
+    return docSnap.data();
+}

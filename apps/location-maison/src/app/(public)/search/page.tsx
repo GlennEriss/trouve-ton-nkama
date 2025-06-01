@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
-import SearchPage from '@/components/search/SearchPage'
 import React from 'react'
+import SearchPageComponent from "@/components/search/SearchPageComponent";
+import FilterProviders from "@/providers/FilterProviders";
 
 export const metadata: Metadata = {
   title: "Catalogue des logements - LogisGabon",
@@ -23,8 +24,8 @@ export const metadata: Metadata = {
 
 export default function page() {
   return (
-    <>
-      <SearchPage />
-    </>
+    <FilterProviders>
+      <SearchPageComponent />
+    </FilterProviders>
   )
 }
