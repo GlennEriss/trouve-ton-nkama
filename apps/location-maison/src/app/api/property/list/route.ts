@@ -16,7 +16,6 @@ export async function GET(request: Request) {
     const isCacheValid = (now - cacheTimestamp) < CACHE_DURATION_MS;
 
     if (isCacheValid && propertiesCache.properties.length > 0) {
-        console.log("\n\nServing properties from cache\n\n");
         return NextResponse.json(propertiesCache, {
             headers: {
                 'Cache-Control': 'public, s-maxage=600, stale-while-revalidate=300',
@@ -26,7 +25,6 @@ export async function GET(request: Request) {
 
     try {
         // Fetch fresh properties if cache is invalid
-        console.log("\n\nFetching fresh properties from Firestore\n\n");
         const properties = await getProperties({ limitPerPage, lastDoc });
         
         // Update the cache

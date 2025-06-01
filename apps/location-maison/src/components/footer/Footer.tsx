@@ -6,6 +6,7 @@ import { MapPin, Phone, Mail } from "lucide-react";
 import { usePathname } from 'next/navigation';
 import { useCurrentUser } from '@/hooks/use-current-user';
 import { useWindowSize } from '@/hooks/useSize';
+import { cn } from '@/lib/utils';
 
 export default function Footer({ isHide = false }: { isHide?: boolean }) {
     const pathname = usePathname()
@@ -15,7 +16,7 @@ export default function Footer({ isHide = false }: { isHide?: boolean }) {
         return null
     }
     return (
-        <footer className="shadow md:block dark:bg-gray-900 text-white dark:border-gray-900 dark:border-2 bg-black md:bg-[#282828] md:text-black">
+        <footer className={cn("shadow md:block dark:bg-gray-900 text-white dark:border-gray-900 dark:border-2 bg-black md:bg-[#282828] md:text-black", pathname === routes.public.search_property && "lg:hidden")}>
             <div className="w-full max-w-screen-xl mx-auto p-4 md:py-8">
                 <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
                     <div className='hidden md:block'>

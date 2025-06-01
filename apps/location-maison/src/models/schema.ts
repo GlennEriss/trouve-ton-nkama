@@ -239,6 +239,20 @@ export const FormUserProfilSchema = z.object({
     'La date de naissance doit être au format AAAA-MM-JJ'
   ),
 });
+
+export const FormFilterSchema = z.object({
+  province: z.string().optional(),
+  city: z.string().optional(),
+  street: z.string().optional(),
+  minPrice: z.number().optional(),
+  maxPrice: z.number().optional(),
+  minArea: z.number().optional(),
+  maxArea: z.number().optional(),
+  minNbrRooms: z.number().optional(),
+  maxNbrRooms: z.number().optional(),
+  typeProperty: z.array(z.string()).optional(),
+  tags: z.array(z.string()).optional(),
+});
 //Types
 export type DeskSchemaType = z.infer<typeof DeskSchema>;
 export type BuildingSchemaType = z.infer<typeof BuildingSchema>;
@@ -258,3 +272,4 @@ export type FormUserProfilSchemaType = z.infer<typeof FormUserProfilSchema>;
 export type KioskSchemaType = z.infer<typeof KioskSchema>;
 export type RoomSchemaType = z.infer<typeof RoomSchema>;
 export type ShopSchemaType = z.infer<typeof ShopSchema>;
+export type FormFilterSchemaType = z.infer<typeof FormFilterSchema>;

@@ -4,13 +4,11 @@ import { Search, MapPin } from 'lucide-react';
 import { Input } from '../ui/input';
 import { FilterModalHomePage } from '../home-page/FilterModalHomePage';
 import { useAlgoliaContext } from '@/providers/AlgoliaContext';
-import { useConfigure, useInfiniteHits, useSearchBox } from 'react-instantsearch';
+import { useInfiniteHits } from 'react-instantsearch';
 import PropertyCard from '../home-page/PropertyCard';
 import Image from 'next/image';
-import { useSearchParams } from 'next/navigation';
 
 export default function SearchMobilePage() {
-    const searchParams = useSearchParams();
     const { searchText, setSearchText, setCity, setStreet, setMinPrice, setMaxPrice, setMinArea, setMaxArea, setMinNbrRooms, setMaxNbrRooms, setTypeProperty, setTags } = useAlgoliaContext()
     const topRef = React.useRef<HTMLDivElement>(null);
     const sentinelRef = React.useRef<HTMLDivElement>(null);
@@ -23,13 +21,6 @@ export default function SearchMobilePage() {
     const scrollToBottom = () => {
         sentinelRef.current?.scrollIntoView({ behavior: "smooth" });
     };
-
-    // Recherche texte
-    const { refine: refineQuery } = useSearchBox();
-    const queryVal = searchParams.get("query") ?? "";
-    React.useEffect(() => {
-        refineQuery(queryVal);
-    }, [queryVal]);
 
     // Infinite hits + intersection observer
     React.useEffect(() => {
@@ -46,54 +37,9 @@ export default function SearchMobilePage() {
         return () => obs.disconnect();
     }, [sentinelRef, isLastPage, showMore]);
 
-    // Filtres
-    const filtersString = React.useMemo(() => {
-        const f: string[] = [];
-        const cityVal = searchParams.get("city") ?? "";
-        const streetVal = searchParams.get("street") ?? "";
-        const minPriceVal = searchParams.get("minPrice") ?? "";
-        const maxPriceVal = searchParams.get("maxPrice") ?? "";
-        const minAreaVal = searchParams.get("minArea") ?? "";
-        const maxAreaVal = searchParams.get("maxArea") ?? "";
-        const minRoomsVal = searchParams.get("minNbrRooms") ?? "";
-        const maxRoomsVal = searchParams.get("maxNbrRooms") ?? "";
-        const typePropRaw = searchParams.get("typeProperty") ?? "";
-        const tagsRaw = searchParams.get("tags") ?? "";
-
-        if (cityVal) f.push(`city:"${cityVal}"`);
-        if (streetVal) f.push(`street:"${streetVal}"`);
-        if (minPriceVal) f.push(`price >= ${minPriceVal}`);
-        if (maxPriceVal) f.push(`price <= ${maxPriceVal}`);
-        if (minAreaVal) f.push(`area >= ${minAreaVal}`);
-        if (maxAreaVal) f.push(`area <= ${maxAreaVal}`);
-        if (minRoomsVal) f.push(`nbrRooms >= ${minRoomsVal}`);
-        if (maxRoomsVal) f.push(`nbrRooms <= ${maxRoomsVal}`);
-        if (typePropRaw) {
-            f.push(
-                "(" +
-                typePropRaw
-                    .split(",")
-                    .map((t) => `typeProperty:"${t.trim()}"`)
-                    .join(" OR ") +
-                ")"
-            );
-        }
-        if (tagsRaw) {
-            f.push(
-                "(" +
-                tagsRaw
-                    .split(",")
-                    .map((t) => `tags:"${t.trim()}"`)
-                    .join(" OR ") +
-                ")"
-            );
-        }
-        return f.join(" AND ");
-    }, [searchParams.toString()]);
-    useConfigure({ filters: filtersString });
 
     return (
-        <div className='p-5 space-y-5' ref={topRef}>
+        <div className='p-5 space-y-5 h-full md:h-screen' ref={topRef}>
             <section className='md:hidden'>
                 <h1 className='text-2xl font-bold text-[#146B67]'>
                     Rechercher un logement
