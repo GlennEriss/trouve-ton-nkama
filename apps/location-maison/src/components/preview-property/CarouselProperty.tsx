@@ -2,7 +2,8 @@
 import React, { useState } from 'react'
 import Image from 'next/image'
 import { Carousel, CarouselContent, CarouselItem, CarouselPrevious, CarouselNext } from '../ui/carousel'
- 
+import { ChevronLeft, ChevronRight, X } from 'lucide-react'
+import { useSwipeable } from 'react-swipeable'
 
 export default function CarouselProperty({ images }: { images: string[] }) {
     const [selectedImage, setSelectedImage] = useState<string | null>(null);
@@ -11,84 +12,165 @@ export default function CarouselProperty({ images }: { images: string[] }) {
     const openPreview = (image: string) => {
         setSelectedImage(image);
         setIsPreviewOpen(true);
+        // Désactiver le scroll quand la preview est ouverte
+        document.body.style.overflow = 'hidden';
     };
  
     const closePreview = () => {
         setSelectedImage(null);
         setIsPreviewOpen(false);
+        // Réactiver le scroll
+        document.body.style.overflow = 'unset';
     };
 
-    // state additionnel
     const selectedIndex = selectedImage ? images.indexOf(selectedImage) : -1;
 
     const goToNextImage = () => {
         if (selectedIndex < images.length - 1) {
             setSelectedImage(images[selectedIndex + 1]);
+        } else {
+            // Retour à la première image si on est à la dernière
+            setSelectedImage(images[0]);
         }
     };
 
     const goToPreviousImage = () => {
         if (selectedIndex > 0) {
             setSelectedImage(images[selectedIndex - 1]);
+        } else {
+            // Aller à la dernière image si on est à la première
+            setSelectedImage(images[images.length - 1]);
         }
     };
 
+    // Configuration du swipe pour la preview
+    const handlers = useSwipeable({
+        onSwipedLeft: () => goToNextImage(),
+        onSwipedRight: () => goToPreviousImage(),
+        preventScrollOnSwipe: true,
+        trackMouse: true
+    });
+
+    // Gestion des touches du clavier pour la navigation
+    React.useEffect(() => {
+        const handleKeyDown = (e: KeyboardEvent) => {
+            if (!isPreviewOpen) return;
+            
+            switch(e.key) {
+                case 'ArrowRight':
+                    goToNextImage();
+                    break;
+                case 'ArrowLeft':
+                    goToPreviousImage();
+                    break;
+                case 'Escape':
+                    closePreview();
+                    break;
+            }
+        };
+
+        window.addEventListener('keydown', handleKeyDown);
+        return () => window.removeEventListener('keydown', handleKeyDown);
+    }, [isPreviewOpen, selectedIndex]);
+
     return (
         <>
-            <Carousel>
-                <CarouselContent className='relative'>
+            <Carousel className="w-full">
+                <CarouselContent className='-ml-2 md:-ml-4'>
                     {images.map((image, index) => (
-                    <CarouselItem className='md:basis-1/2 xl:basis-1/3' key={index}>
-                        <Image
-                            src={image}
-                            sizes="100vw"
-                            alt="alt"
-                            width={0}
-                            height={0}
-                            objectFit='cover'
-                            quality={100}
-                            priority
-                            className='w-[500px] h-[400px] cursor-pointer transition-transform duration-300 hover:scale-105'
-                            onClick={() => openPreview(image)}
-                        />
-                    </CarouselItem>
+                        <CarouselItem 
+                            key={index} 
+                            className='pl-2 md:pl-4 md:basis-1/2 lg:basis-1/3'
+                        >
+                            <div className="relative aspect-[4/3] overflow-hidden rounded-xl">
+                                <Image
+                                    src={image}
+                                    alt={`Image ${index + 1}`}
+                                    fill
+                                    sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                                    className='object-cover hover:scale-110 transition-transform duration-300 cursor-pointer'
+                                    onClick={() => openPreview(image)}
+                                    priority={index < 3} // Priorité aux 3 premières images
+                                />
+                            </div>
+                        </CarouselItem>
                     ))}
                 </CarouselContent>
-                <CarouselPrevious className="left-0 top-1/2 transform -translate-y-1/2 bg-gray-500 text-white px-3 py-2 rounded-none h-10 w-10" />
-                <CarouselNext className="right-0 top-1/2 transform -translate-y-1/2 bg-gray-500 text-white px-3 py-2 rounded-none h-10 w-10" />
+                <CarouselPrevious className="hidden md:flex -left-4 h-8 w-8 bg-white/80 hover:bg-white border-none shadow-md" />
+                <CarouselNext className="hidden md:flex -right-4 h-8 w-8 bg-white/80 hover:bg-white border-none shadow-md" />
             </Carousel>
 
-            {/* Fullscreen Image Preview */}
+            {/* Preview en plein écran */}
             {isPreviewOpen && selectedImage && (
-                <div className="fixed inset-0 w-screen h-screen bg-black bg-opacity-90 flex justify-center items-center z-50">
-                    <div className="relative w-full h-full flex justify-center items-center">
+                <div className="fixed inset-0 bg-black/95 backdrop-blur-sm z-50 flex items-center justify-center">
+                    {/* Barre de navigation supérieure */}
+                    <div className="absolute top-0 left-0 right-0 flex justify-between items-center p-4 bg-gradient-to-b from-black/50 to-transparent z-10">
+                        <span className="text-white text-sm">
+                            {selectedIndex + 1} / {images.length}
+                        </span>
                         <button
                             onClick={closePreview}
-                            className="absolute top-6 right-6 bg-gray-200 hover:bg-gray-300 rounded-full p-3 text-black"
+                            className="text-white hover:text-gray-300 transition-colors z-10"
+                            aria-label="Fermer"
                         >
-                            ✕
+                            <X size={24} />
                         </button>
-                        <button
-                            onClick={goToPreviousImage}
-                            className="absolute left-4 top-1/2 transform -translate-y-1/2 bg-gray-200 hover:bg-gray-300 rounded-full p-3 text-black"
-                        >
-                            ←
-                        </button>
-                        <button
-                            onClick={goToNextImage}
-                            className="absolute right-4 top-1/2 transform -translate-y-1/2 bg-gray-200 hover:bg-gray-300 rounded-full p-3 text-black"
-                        >
-                            →
-                        </button>
-                        <Image
-                            src={selectedImage}
-                            sizes="100vw"
-                            alt="Preview"
-                            width={1200}
-                            height={800}
-                            objectFit="contain"
-                            className="max-w-full max-h-full"
-                        />
+                    </div>
+
+                    {/* Boutons de navigation */}
+                    <button
+                        onClick={goToPreviousImage}
+                        className="absolute left-4 top-1/2 -translate-y-1/2 p-2 rounded-full bg-white/10 hover:bg-white/20 transition-colors z-10"
+                        aria-label="Image précédente"
+                    >
+                        <ChevronLeft className="w-6 h-6 text-white" />
+                    </button>
+                    <button
+                        onClick={goToNextImage}
+                        className="absolute right-4 top-1/2 -translate-y-1/2 p-2 rounded-full bg-white/10 hover:bg-white/20 transition-colors z-10"
+                        aria-label="Image suivante"
+                    >
+                        <ChevronRight className="w-6 h-6 text-white" />
+                    </button>
+
+                    <div 
+                        className="relative w-full h-full flex flex-col items-center justify-center px-4"
+                        {...handlers}
+                    >
+                        {/* Image */}
+                        <div className="relative w-full h-full flex items-center justify-center">
+                            <Image
+                                src={selectedImage}
+                                alt="Preview"
+                                fill
+                                sizes="100vw"
+                                className="object-contain"
+                                priority
+                            />
+                        </div>
+
+                        {/* Miniatures en bas */}
+                        <div className="absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-black/50 to-transparent overflow-x-auto z-10">
+                            <div className="flex gap-2 justify-center">
+                                {images.map((img, idx) => (
+                                    <button
+                                        key={idx}
+                                        onClick={() => setSelectedImage(img)}
+                                        className={`relative w-16 h-16 rounded-lg overflow-hidden transition-opacity ${
+                                            selectedImage === img ? 'ring-2 ring-white' : 'opacity-50 hover:opacity-100'
+                                        }`}
+                                    >
+                                        <Image
+                                            src={img}
+                                            alt={`Miniature ${idx + 1}`}
+                                            fill
+                                            sizes="64px"
+                                            className="object-cover"
+                                        />
+                                    </button>
+                                ))}
+                            </div>
+                        </div>
                     </div>
                 </div>
             )}
