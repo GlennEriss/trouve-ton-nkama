@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { routes } from "@/constantes/routes";
 import Link from "next/link";
 import { NavigationMenu, NavigationMenuList, NavigationMenuItem, NavigationMenuLink } from "@/components/ui/navigation-menu"
+import MenuProfil from "@/components/navbar/MenuProfil";
 
 export default function Navbar() {
   const { width } = useWindowSize();
@@ -44,7 +45,11 @@ export default function Navbar() {
       <div className="ml-auto flex items-center gap-4 mr-5">
         <NavigationMenuNavbar />
         <InputSearchNavbar />
-        {!user && (
+        {user ? (
+          <div>
+            <MenuProfil />
+          </div>
+        ) : (
           <div className="flex items-center gap-4">
             <ButtonLogin />
             <ButtonRegister />
@@ -96,13 +101,17 @@ const NavigationMenuNavbar = () => {
   const { user } = useCurrentUser()
   const menu = [
     {
+      link: user ? routes.protected.properties : routes.public.signinSignup,
+      label: user ? "Mes logements" : ""
+    },
+    {
       link: routes.public.search_property,
       label: "Catalogue"
     },
     {
       link: user ? routes.protected.add_property : routes.public.signinSignup,
       label: "Poster une annonce"
-    }
+    },
   ]
   return (
     <NavigationMenu>

@@ -39,7 +39,7 @@ export default function SearchMobilePage() {
 
 
     return (
-        <div className='p-5 space-y-5 h-full md:h-screen' ref={topRef}>
+        <div className='p-5 space-y-5 h-full pb-20' ref={topRef}>
             <section className='md:hidden'>
                 <h1 className='text-2xl font-bold text-[#146B67]'>
                     Rechercher un logement
@@ -146,7 +146,7 @@ export default function SearchMobilePage() {
                         </>
                     )}
                 </div>
-                <div className="fixed bottom-6 right-6 flex flex-col gap-2 z-50">
+                <div className="fixed bottom-24 right-6 flex flex-col gap-2 z-50">
                     <button
                         onClick={scrollToTop}
                         className="p-2 bg-gray-200 dark:bg-gray-700 rounded-full shadow hover:bg-gray-300 dark:hover:bg-gray-600 transition"
