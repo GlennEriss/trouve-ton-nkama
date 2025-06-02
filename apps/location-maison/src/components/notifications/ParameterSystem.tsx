@@ -2,29 +2,13 @@
 import { useTheme } from 'next-themes'
 import React from 'react'
 import { Switch } from '../ui/switch'
-import { useCurrentUser } from '@/hooks/use-current-user'
-import { useSession } from 'next-auth/react'
-import { updateUser } from '@/db/user.db'
 
 export default function ParameterSystem() {
-    const { setTheme } = useTheme()
-    const { user } = useCurrentUser()
-    const { update } = useSession();
+    const { setTheme, theme } = useTheme()
     const [loading, setLoading] = React.useState(false)
     const setDarkOrLightMode = async () => {
         setLoading(true)
-        const darkMode = !user?.darkMode
-        setTheme(darkMode ? "dark" : "light")
-        const userUpdated = {
-            ...user,
-            darkMode
-        }
-        //await updateUser(user?.uid!, userUpdated);
-        update({
-            user: {
-                ...userUpdated
-            }
-        });
+        setTheme(theme === "dark" ? "light" : "dark")
         setLoading(false)
     }
     return (
@@ -43,7 +27,7 @@ export default function ParameterSystem() {
                 </div>
                 <Switch
                     onCheckedChange={setDarkOrLightMode}
-                    checked={user?.darkMode}
+                    checked={theme === "dark"}
                     disabled={loading}
                 />
             </div>

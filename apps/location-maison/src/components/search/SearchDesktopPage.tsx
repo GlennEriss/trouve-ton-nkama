@@ -13,7 +13,7 @@ import { getTypePropertyKey, TypeProperty } from '@/lib/utils'
 import { tags as tagsList } from "@/constantes";
 import { Button } from '../ui/button'
 import { useAlgoliaContext } from "@/providers/AlgoliaContext";
-import { useConfigure, useInfiniteHits } from 'react-instantsearch'
+import { useInfiniteHits } from 'react-instantsearch'
 import Image from 'next/image'
 import PropertyCard from '../home-page/PropertyCard'
 import { useRouter } from 'next/navigation'
@@ -29,17 +29,17 @@ export default function SearchDesktopPage() {
     const router = useRouter();
 
     const {
-        searchText, setSearchText,
-        city, setCity,
-        street, setStreet,
-        minPrice, setMinPrice,
-        maxPrice, setMaxPrice,
-        minArea, setMinArea,
-        maxArea, setMaxArea,
-        minNbrRooms, setMinNbrRooms,
-        maxNbrRooms, setMaxNbrRooms,
-        typeProperty, setTypeProperty,
-        tags, setTags,
+        searchText,
+        setCity,
+        setStreet,
+        setMinPrice,
+        setMaxPrice,
+        setMinArea,
+        setMaxArea,
+        setMinNbrRooms,
+        setMaxNbrRooms,
+        setTypeProperty,
+        setTags,
         clearFilters,
     } = useAlgoliaContext();
     const form = useForm<FormFilterSchemaType>({
@@ -169,19 +169,18 @@ export default function SearchDesktopPage() {
     };
     return (
         <div className='flex p-5'>
-            <div className="w-1/4 border border-gray-200 dark:border-gray-700 bg-white relative">
+            <div className="w-1/4 border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 relative">
                 <Form {...form}>
                     <form onSubmit={form.handleSubmit(onSubmit)} className="h-[calc(100vh-40px)] flex flex-col">
                         <div className='border-b border-gray-200 dark:border-gray-700 p-5 flex items-center justify-center'>
-                            <h1 className='text-2xl font-bold text-[#146B67] text-center'>
+                            <h1 className='text-2xl font-bold text-[#146B67] dark:text-[#1FA89B] text-center'>
                                 Filtres de recherches
                             </h1>
                         </div>
                         <div className="flex-1 overflow-auto mb-20">
                             <section>
-
                                 <div className='space-y-5 p-5'>
-                                    <h2 className='text-lg font-semibold text-[#146B67]'>
+                                    <h2 className='text-lg font-semibold text-[#146B67] dark:text-[#1FA89B]'>
                                         Secteur recherché
                                     </h2>
                                     <SelectFormApp
@@ -214,7 +213,7 @@ export default function SearchDesktopPage() {
                             </section>
 
                             <section className='space-y-5 p-5'>
-                                <h2 className='text-lg font-semibold text-[#146B67]'>
+                                <h2 className='text-lg font-semibold text-[#146B67] dark:text-[#1FA89B]'>
                                     Prix (FCFA)
                                 </h2>
                                 <InputFormNumberApp
@@ -236,7 +235,7 @@ export default function SearchDesktopPage() {
                             </section>
 
                             <section className='space-y-5 p-5'>
-                                <h2 className='text-lg font-semibold text-[#146B67]'>
+                                <h2 className='text-lg font-semibold text-[#146B67] dark:text-[#1FA89B]'>
                                     Surface (m²)
                                 </h2>
                                 <InputFormNumberApp
@@ -258,7 +257,7 @@ export default function SearchDesktopPage() {
                             </section>
 
                             <section className='space-y-5 p-5'>
-                                <h2 className='text-lg font-semibold text-[#146B67]'>
+                                <h2 className='text-lg font-semibold text-[#146B67] dark:text-[#1FA89B]'>
                                     Types de propriété
                                 </h2>
                                 <MultiSelectFormApp
@@ -274,7 +273,7 @@ export default function SearchDesktopPage() {
                             </section>
 
                             <section className='space-y-5 p-5'>
-                                <h2 className='text-lg font-semibold text-[#146B67]'>
+                                <h2 className='text-lg font-semibold text-[#146B67] dark:text-[#1FA89B]'>
                                     Tags
                                 </h2>
                                 <MultiSelectFormApp
@@ -290,12 +289,12 @@ export default function SearchDesktopPage() {
                             </section>
                         </div>
 
-                        <div className="sticky bottom-0 bg-white p-5 border-t border-gray-200 space-y-3">
+                        <div className="sticky bottom-0 bg-white dark:bg-gray-800 p-5 border-t border-gray-200 dark:border-gray-700 space-y-3">
                             <Button
                                 variant="outline"
                                 type="reset"
                                 onClick={onClear}
-                                className="w-full border-[#146B67] text-[#146B67] hover:bg-[#1FA89B]/10 rounded-full mb-2"
+                                className="w-full border-[#146B67] dark:border-[#1FA89B] text-[#146B67] dark:text-[#1FA89B] hover:bg-[#1FA89B]/10 dark:hover:bg-[#1FA89B]/20 rounded-full mb-2"
                             >
                                 Effacer
                             </Button>
