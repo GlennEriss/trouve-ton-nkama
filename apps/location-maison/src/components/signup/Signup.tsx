@@ -25,7 +25,10 @@ export const Signup: React.FC = () => {
     const { toast } = useToast()
     const [isOtherMethodConnection, setIsOtherMethodConnection] = React.useState(false)
     const form = useForm<FormRegisterSchemaType>({
-        resolver: zodResolver(FormRegisterSchema)
+        resolver: zodResolver(FormRegisterSchema),
+        defaultValues: {
+            country: 'GA'
+        }
     })
     const onRegister = async (user: Partial<User>) => {
         try {

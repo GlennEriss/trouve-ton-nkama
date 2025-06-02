@@ -66,29 +66,32 @@ export default function HomePageDesktopComponent() {
       </section>
 
       <section className='mt-10 lg:my-20'>
-        <h1 className="text-xl lg:text-2xl xl:text-3xl font-bold leading-tight text-center text-[#146B67]">
+        <h1 className="text-xl lg:text-2xl xl:text-3xl font-bold leading-tight text-center text-[#146B67] dark:text-[#1FA89B]">
           Développez votre activité immobilière en toute simplicité.
         </h1>
-        <div className='grid grid-cols-3 lg:mt-5'>
+        <div className='grid grid-cols-3 lg:mt-5 gap-4'>
           {
             detailssection2.map((item, index) => (
-              <div key={index} className='bg-white p-6 rounded-xl hover:shadow-md transition-shadow flex flex-col items-center h-[200px]'>
+              <div 
+                key={index} 
+                className='bg-white dark:bg-gray-800 p-6 rounded-xl hover:shadow-md dark:hover:shadow-[#1FA89B]/10 transition-all flex flex-col items-center h-[200px] dark:border dark:border-gray-700'
+              >
                 <div className="h-[60px] flex items-center justify-center">
                   <Image
                     src={item.image}
                     alt={item.title}
                     width={50}
                     height={50}
-                    className="object-contain"
+                    className="object-contain dark:filter dark:brightness-90"
                   />
                 </div>
                 <div className="h-[30px] flex items-center justify-center">
-                  <h2 className='text-lg font-bold text-center text-[#146B67]'>
+                  <h2 className='text-lg font-bold text-center text-[#146B67] dark:text-[#1FA89B]'>
                     {item.title}
                   </h2>
                 </div>
                 <div className="h-[60px] flex items-center justify-center">
-                  <p className='text-sm text-gray-600 text-center'>
+                  <p className='text-sm text-gray-600 dark:text-gray-300 text-center'>
                     {item.description}
                   </p>
                 </div>

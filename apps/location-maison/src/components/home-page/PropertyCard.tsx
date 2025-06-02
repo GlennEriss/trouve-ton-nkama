@@ -23,8 +23,7 @@ const PropertyCard = ({ property }: any) => {
     <div key={property.id} className="">
       <div
         onClick={() => handleCardClick()}
-        className="relative cursor-pointer rounded-2xl shadow-lg overflow-hidden transition-all duration-300 hover:scale-[1.03] bg-white dark:bg-gray-800 hover:shadow-2xl flex flex-col group"
-        style={{ height: "430px" }}
+        className="h-[460px] md:h-[450px] relative cursor-pointer rounded-2xl shadow-lg overflow-hidden transition-all duration-300 hover:scale-[1.03] bg-white dark:bg-gray-800 hover:shadow-2xl flex flex-col group"
       >
         {/* Image principale */}
         <div className="relative w-full aspect-[3/2] bg-gray-200">

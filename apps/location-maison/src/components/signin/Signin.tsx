@@ -12,14 +12,9 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { useToast } from '@/hooks/use-toast';
 import { login } from '@/actions/login';
 import { routes } from '@/constantes/routes';
-import { findUserByEmail } from '@/db/user.db';
-import { useCurrentUser } from '@/hooks/use-current-user';
-import { useSession } from 'next-auth/react';
 
 export const Signin = () => {
     const router = useRouter()
-    const { setUser } = useCurrentUser()
-    const { data: session, status, update } = useSession()
     const searchParams = useSearchParams();
     const [isPending, startTransition] = React.useTransition()
     const [isOtherMethodConnection, setIsOtherMethodConnection] = React.useState(false)
@@ -38,9 +33,6 @@ export const Signin = () => {
                     variant: 'destructive',
                 });
             } else {
-                //const userDetails: any = await findUserByEmail(values.email!)
-                //setUser(userDetails)
-                await update()
                 toast({
                     duration: 5000,
                     title: 'Connexion réussie',
