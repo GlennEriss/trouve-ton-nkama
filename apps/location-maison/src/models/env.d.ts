@@ -27,5 +27,7 @@ namespace NodeJS {
     //FACEBOOK
     FACEBOOK_CLIENT_ID: string;
     FACEBOOK_CLIENT_SECRET: string;
+    //SUPPORT
+    NEXT_PUBLIC_EMAIL_SUPPORT: string
   }
 }

@@ -19,7 +19,7 @@
 'use client'
 import { useDropzone } from 'react-dropzone'
 import { Input } from "../ui/input"
-import React, { useState } from "react"
+import React, { useState, useEffect } from "react"
 import { AiOutlineCamera, AiOutlineCloseCircle } from "react-icons/ai";
 import Image from 'next/image'
 import { Button } from '../ui/button';
@@ -28,6 +28,8 @@ import { FormItem, FormControl, FormLabel } from '../ui/form';
 import { tags } from '@/constantes';
 import { IconType } from 'react-icons/lib';
 import clsx from 'clsx';
+import imageCompression from 'browser-image-compression';
+import { useToast } from '@/hooks/use-toast';
 
 //Images
 export const ImagesComponent = ({ field }: { field: any }) => {
@@ -42,6 +44,8 @@ export const ImagesComponent = ({ field }: { field: any }) => {
 }
 
 export const ImageUploader = ({ field }: { field: any }) => {
+    const { toast } = useToast();
+
     const { getInputProps, getRootProps, isDragActive } = useDropzone({
         maxFiles: 6,
         multiple: true,
@@ -50,10 +54,43 @@ export const ImageUploader = ({ field }: { field: any }) => {
             'image/jpeg': ['.jpg', '.jpeg'],
             'image/webp': ['.webp'],
         },
-        onDrop: (acceptedFiles) => {
+        onDrop: async (acceptedFiles) => {
+            const maxSizeInBytes = 300 * 1024;
             const currentFiles = field.value || [];
-            const newFiles = [...currentFiles, ...acceptedFiles].slice(0, 6); // Max 6 images
+            const compressedFiles: File[] = [];
+
+            for (const file of acceptedFiles) {
+                try {
+                    const compressedFile = await imageCompression(file, {
+                        maxSizeMB: 0.3,
+                        maxWidthOrHeight: 1920,
+                        useWebWorker: true,
+                    });
+
+                    if (compressedFile.size <= maxSizeInBytes) {
+                        compressedFiles.push(compressedFile);
+                    } else {
+                        toast({
+                            duration: 5000,
+                            title: "Erreur",
+                            description: `L'image "${file.name}" dépasse 300 Ko même après compression.`,
+                            variant: "destructive",
+                        });
+                    }
+                } catch (error: any) {
+                    toast({
+                        duration: 5000,
+                        title: "Erreur",
+                        description: error.message || "Une erreur est survenue.",
+                        variant: "destructive",
+                    });
+                }
+            }
+
+            const newFiles = [...currentFiles, ...compressedFiles].slice(0, 6);
             field.onChange(newFiles);
+            console.log('field',field)
+            console.log('newFiles',newFiles)
         },
     });
 
@@ -140,7 +177,7 @@ export const StatusComponent = ({ field }: { field: any }) => {
     return (
         <RadioGroup
             onValueChange={field.onChange}
-            defaultValue={field.value}
+            value={field.value}
             className="flex gap-5"
         >
             {
@@ -173,19 +210,23 @@ export const TagsComponent = ({ field }: { field: any }) => {
 }
 
 export const TagItem = ({ tag, field }: { tag: { tagName: string, tagIcon: IconType }, field: any }) => {
-    const [isActived, setIsActived] = useState(field.value.includes(tag.tagName) ? true : false)
+    const [isActived, setIsActived] = useState(false)
+
+    useEffect(() => {
+        setIsActived(field.value?.includes(tag.tagName) || false)
+    }, [field.value, tag.tagName])
+
     const handleSelectIcon = () => {
         const active = !isActived
         if (active) {
-            if (field.value.length < 6) {
-                field.onChange([...field.value, tag.tagName])
-                setIsActived(!isActived)
+            if (field.value?.length < 6) {
+                field.onChange([...(field.value || []), tag.tagName])
             }
         } else {
-            field.onChange(field.value.filter((item: string) => item !== tag.tagName))
-            setIsActived(!isActived)
+            field.onChange((field.value || []).filter((item: string) => item !== tag.tagName))
         }
     }
+
     return (
         <div className={clsx({
             "flex items-center gap-2 cursor-pointer text-gray-500": !isActived,

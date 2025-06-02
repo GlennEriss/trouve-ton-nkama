@@ -4,7 +4,7 @@ import React from 'react';
 import dynamic from 'next/dynamic';
 import 'leaflet/dist/leaflet.css';
 import L from 'leaflet';
-
+import 'leaflet.fullscreen/Control.FullScreen.css';
 type MapSectionProps = {
   street: string;
   city: string;
@@ -12,6 +12,8 @@ type MapSectionProps = {
   longitude: number;
   latitude: number;
   countryCode: string;
+  image?: string;
+  additionalInformation?: string;
 };
 
 // Import dynamique des composants react-leaflet pour éviter les erreurs SSR
@@ -31,6 +33,10 @@ const Popup = dynamic(
   () => import('react-leaflet').then((mod) => mod.Popup),
   { ssr: false }
 );
+const FullscreenControl = dynamic(
+  () => import('react-leaflet-fullscreen').then(mod => mod.FullscreenControl),
+  { ssr: false }
+);
 
 // Définition d'une icône personnalisée pour le marqueur
 const defaultIcon = L.icon({
@@ -46,6 +52,8 @@ export const MapSection: React.FC<MapSectionProps> = ({
   province,
   longitude,
   latitude,
+  image,
+  additionalInformation,
   countryCode,
 }) => {
   return (
@@ -60,9 +68,20 @@ export const MapSection: React.FC<MapSectionProps> = ({
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
           attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
         />
+        <FullscreenControl position="topright" />
         <Marker position={[latitude, longitude]} icon={defaultIcon}>
           <Popup>
-            {street}, {city}, {province}
+            <div>
+              {image && (
+                <img
+                  src={image}
+                  alt={`${street}, ${city}`}
+                  style={{ width: '100%', maxHeight: '150px', objectFit: 'cover', marginTop: '8px' }}
+                />
+              )}
+              <p>{street}, {city}, {province}</p>
+              <p>{additionalInformation}</p>
+            </div>
           </Popup>
         </Marker>
       </MapContainer>

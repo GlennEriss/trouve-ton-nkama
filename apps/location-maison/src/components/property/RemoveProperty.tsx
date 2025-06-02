@@ -7,11 +7,13 @@ import { CgTrashEmpty } from 'react-icons/cg';
 import { GrCircleInformation } from 'react-icons/gr';
 import { Button } from '../ui/button';
 import { deleteProperty } from '@/db/property.db';
+import { useRouter } from 'next/navigation';
 
 export interface RemovePropertyProps {
     id: string;
 }
 export const RemoveProperty = ({ id }: RemovePropertyProps) => {
+    const router = useRouter()
     //Personalized hooks
     const { toast } = useToast();
     const queryClient = useQueryClient();
@@ -26,15 +28,18 @@ export const RemoveProperty = ({ id }: RemovePropertyProps) => {
         onSuccess: (data, variables, context) => {
             queryClient.invalidateQueries({ queryKey: [queryKeys.properties] });
             toast({
+                duration: 5000,
                 title: "Suppression d'un logement",
                 description: "Un logement a été supprimé avec succès",
                 variant: 'warning',
             });
+            router.refresh()
             setIsModalOpen(false);
         },
         onError: (error) => {
             console.error('Error delete property:', error);
             toast({
+                duration: 5000,
                 title: "Suppression d'un logement",
                 description: "Une erreur est survenue durant la suppression",
                 variant: 'destructive',

@@ -1,5 +1,5 @@
 'use client'
-import React from 'react'
+import React, { useState } from 'react'
 import { Card } from '../ui/card'
 import Image from 'next/image'
 import { IconType } from 'react-icons/lib';
@@ -20,12 +20,14 @@ import { Property, Apartment, Building, Desk, Home, Studio, Villa, Logement, Sho
 import { cn } from '@/lib/utils';
 import { capitalizeFirstLetter } from '@/lib/capitalizeFirstLetter';
 import { ChevronLeft, ChevronRight } from 'lucide-react'
-import { getCountStatisticsByPropertyType, getProperties } from '@/db/property.db';
+import { getCountStatisticsByPropertyType, getProperties, updateProperty } from '@/db/property.db';
 import { useInfiniteQuery } from '@tanstack/react-query';
 import { PROPERTY_ITEM_PER_PAGE } from '@/constantes/item-per-page';
 import queryKeys from '@/constantes/react-query-keys';
 import { RemoveProperty } from './RemoveProperty';
 import { Skeleton } from '../ui/skeleton';
+import { Switch } from '../ui/switch';
+import { useQueryClient } from '@tanstack/react-query';
 
 export default function ListPropertySection() {
     const searchParams = useSearchParams();
@@ -132,7 +134,35 @@ const STATUS_COLORS: Record<Property['status'], { bg: string; text: string }> = 
 export const CardPropertyCrud = ({ property }: { property: Property }) => {
     const { images, title, street, city, province, price, status } = property;
     const statusColors = STATUS_COLORS[status];
+    const [loading, setIsLoading] = useState(false)
+    const { user } = useCurrentUser();
+    const queryClient = useQueryClient();
+    const [localState, setLocalState] = useState(property.state);
+    const handleChangePropertyState = async () => {
+        setIsLoading(true);
+        const newState = localState === 'ARCHIVED' ? 'IN_PROGRESS' : 'ARCHIVED';
 
+        await updateProperty(property.id!, {
+            ...property,
+            state: newState,
+        });
+
+        queryClient.setQueryData([queryKeys.properties, property.typeProperty, user], (oldData: any) => {
+            if (!oldData) return oldData;
+
+            return {
+                ...oldData,
+                pages: oldData.pages.map((page: any) => ({
+                    ...page,
+                    properties: page.properties.map((p: any) =>
+                        p.id === property.id ? { ...p, state: newState } : p
+                    ),
+                })),
+            };
+        });
+        setLocalState(newState);
+        setIsLoading(false);
+    }
     return (
         <Card
             className={cn(
@@ -172,7 +202,19 @@ export const CardPropertyCrud = ({ property }: { property: Property }) => {
                     <hr className="my-2 border-gray-200 dark:border-gray-700" />
                     <PropertyInformations property={property} />
                 </div>
-
+                {/* Etat property */}
+                <div className='flex gap-2 items-center'>
+                    <Switch
+                        disabled={loading}
+                        checked={localState === "IN_PROGRESS"}
+                        onCheckedChange={handleChangePropertyState}
+                    />
+                    <span>
+                        {
+                            localState === 'IN_PROGRESS' ? 'Disponible' : 'Indisponible'
+                        }
+                    </span>
+                </div>
                 {/* Footer */}
                 <div className="flex justify-between items-center mt-3">
                     <span className="font-semibold text-lg text-gray-800 dark:text-gray-200">{price} FCFA</span>
@@ -214,8 +256,10 @@ export const PropertyInformations = ({ property }: { property: Property }) => {
                 return <DetailsKiosk kiosk={property as Kiosk} />
             case 'Room':
                 return <DetailsRoom room={property as Room} />
-            default:
+            case "Villa":
                 return <DetailsVilla villa={property as Villa} />
+            default:
+                return <DetailsLand land={property} />
         }
     }
     return (
@@ -392,6 +436,16 @@ export const DetailsVilla = ({ villa }: { villa: Villa }) => {
                 <DetailsItem keyName='pool' value={villa.nbrPiscine} />
                 <DetailsItem keyName='garage' value={villa.nbrGarages} />
             </div>
+        </div>
+    )
+}
+
+export const DetailsLand = ({ land }: { land: Property }) => {
+    return (
+        <div>
+            <span>
+                Superficie: {land.area} m²
+            </span>
         </div>
     )
 }

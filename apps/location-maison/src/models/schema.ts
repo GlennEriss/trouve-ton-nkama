@@ -24,10 +24,22 @@ export const FormRegisterSchema = z.object({
     .regex(/[A-Z]/, { message: 'Le mot de passe doit contenir une majuscule' })
     .regex(/[0-9]/, { message: 'Le mot de passe doit contenir un chiffre' }),
   passwordConfirm: z.string(),
-  birthdate: z.string().regex(
-    /^\d{4}-\d{2}-\d{2}$/,
-    'La date de naissance doit être au format AAAA-MM-JJ'
-  ),
+  birthdate: z.string()
+    .regex(/^\d{4}-\d{2}-\d{2}$/, 'La date de naissance doit être au format AAAA-MM-JJ')
+    .refine((dateString) => {
+      const birthDate = new Date(dateString);
+      const today = new Date();
+      const age = today.getFullYear() - birthDate.getFullYear();
+      const m = today.getMonth() - birthDate.getMonth();
+      const d = today.getDate() - birthDate.getDate();
+
+      if (m < 0 || (m === 0 && d < 0)) {
+        return age - 1 >= 18; // pas encore son anniversaire
+      }
+      return age >= 18;
+    }, {
+      message: 'Vous devez avoir au moins 18 ans',
+    }),
   country: z.string().min(1, { message: 'Le pays est requis' }),
   phone: z
     .string()
@@ -84,6 +96,7 @@ export const LogementSchema = PropertySchema.extend({
 export const HomeSchema = LogementSchema.extend({
   nbrGarages: z.number().min(0, "Le nombre de garages doit être positif ou nul"),
   nbrFloors: z.number().min(0, "Le nombre d'étages doit être un nombre positif"),
+  nbrLivingRoom: z.number().min(0, "Le nombre de salon doit être un nombre positif"),
 });
 export const StudioSchema = LogementSchema.extend({
   nbrFloorStudio: z.number().min(0, "Le numéro d'étage doit être un nombre positif"),
@@ -105,8 +118,9 @@ export const DeskSchema = PropertySchema.extend({
 export const BuildingSchema = PropertySchema.extend({
   nbrApartments: z.number().min(0, "Le nombre d'appartements doit être un nombre positif"),
   nbrFloors: z.number().min(0, "Le nombre d'étages doit être un nombre positif"),
-  hasParking: z.boolean({ required_error: "Le champ parking est requis" }),});
-  
+  hasParking: z.boolean({ required_error: "Le champ parking est requis" }),
+});
+
 export const KioskSchema = PropertySchema.extend({
   kioskType: z.string().min(1, "Le type de kiosque est obligatoire"),
 });
@@ -225,6 +239,20 @@ export const FormUserProfilSchema = z.object({
     'La date de naissance doit être au format AAAA-MM-JJ'
   ),
 });
+
+export const FormFilterSchema = z.object({
+  province: z.string().optional(),
+  city: z.string().optional(),
+  street: z.string().optional(),
+  minPrice: z.number().optional(),
+  maxPrice: z.number().optional(),
+  minArea: z.number().optional(),
+  maxArea: z.number().optional(),
+  minNbrRooms: z.number().optional(),
+  maxNbrRooms: z.number().optional(),
+  typeProperty: z.array(z.string()).optional(),
+  tags: z.array(z.string()).optional(),
+});
 //Types
 export type DeskSchemaType = z.infer<typeof DeskSchema>;
 export type BuildingSchemaType = z.infer<typeof BuildingSchema>;
@@ -244,3 +272,4 @@ export type FormUserProfilSchemaType = z.infer<typeof FormUserProfilSchema>;
 export type KioskSchemaType = z.infer<typeof KioskSchema>;
 export type RoomSchemaType = z.infer<typeof RoomSchema>;
 export type ShopSchemaType = z.infer<typeof ShopSchema>;
+export type FormFilterSchemaType = z.infer<typeof FormFilterSchema>;

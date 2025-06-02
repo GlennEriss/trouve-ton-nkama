@@ -1,9 +1,9 @@
 'use client'
 import { Form } from "@/components/ui/form"
-import { createContext, useContext, useState, useTransition } from "react"
+import { createContext, useContext, useState, useTransition, useEffect } from "react"
 import { useForm } from "react-hook-form"
 import { zodResolver } from '@hookform/resolvers/zod'
-import { ApartmentSchema, BuildingSchema, DeskSchema, HomeSchema, StudioSchema, VillaSchema, KioskSchema, RoomSchema, ShopSchema } from "@/models/schema"
+import { ApartmentSchema, BuildingSchema, DeskSchema, HomeSchema, StudioSchema, VillaSchema, KioskSchema, RoomSchema, ShopSchema, PropertySchema } from "@/models/schema"
 import { Property, TypeProperty, Image } from "@/models/annonce"
 import { DirectorFactory } from "@/directors/factory.director"
 import { useToast } from "@/hooks/use-toast"
@@ -44,6 +44,30 @@ export const steps = [
     { label: 'Third', description: 'Select Rooms' },
 ]
 
+const STORAGE_KEY = 'property_form_draft'
+
+const saveFormToLocalStorage = (data: any) => {
+    if (typeof window !== 'undefined') {
+        // On crée une copie des données sans les images
+        const { images, ...dataWithoutImages } = data
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(dataWithoutImages))
+    }
+}
+
+const getFormFromLocalStorage = () => {
+    if (typeof window !== 'undefined') {
+        const saved = localStorage.getItem(STORAGE_KEY)
+        return saved ? JSON.parse(saved) : null
+    }
+    return null
+}
+
+const clearFormLocalStorage = () => {
+    if (typeof window !== 'undefined') {
+        localStorage.removeItem(STORAGE_KEY)
+    }
+}
+
 export const PropertyFormComponentProvider = ({ children, isUpdate, propertyToUpdated }: {
     children: React.ReactNode,
     isUpdate?: boolean,
@@ -79,8 +103,12 @@ export const PropertyFormComponentProvider = ({ children, isUpdate, propertyToUp
                 return 'Kiosk' as TypeProperty
             case 'room':
                 return 'Room' as TypeProperty
-            default:
+            case 'land':
+                return 'Land' as TypeProperty
+            case 'villa':
                 return 'Villa' as TypeProperty
+            default:
+                return 'Property' as TypeProperty
         }
     }
     const typeProperty = propertyToUpdated ? propertyToUpdated.typeProperty as TypeProperty : getTypeProperty()
@@ -112,8 +140,10 @@ export const PropertyFormComponentProvider = ({ children, isUpdate, propertyToUp
                 return KioskSchema
             case 'Room':
                 return RoomSchema
-            default:
+            case 'Villa':
                 return VillaSchema
+            default: 
+                return PropertySchema
         }
     }
     const form = useForm<any>({
@@ -147,6 +177,7 @@ export const PropertyFormComponentProvider = ({ children, isUpdate, propertyToUp
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: [queryKeys.properties] })
             toast({
+                duration: 5000,
                 title: id ? "Modification d'une propriété" : "Ajout d'une propriété",
                 description: id ? "Propriété modifiée avec succès!" : "Propriété ajoutée avec succès!",
                 variant: "success"
@@ -156,23 +187,31 @@ export const PropertyFormComponentProvider = ({ children, isUpdate, propertyToUp
         },
         onError: (error) => {
             toast({
+                duration: 5000,
                 title: id ? "Modification d'une propriété" : "Ajout d'une propriété",
                 description: error.message,
                 variant: "destructive",
-                duration: 20
             })
         }
     });
     //Submit
     const onSubmit = async (data: any) => {
         //Get images already uplaod:
-        const imgStringList = data.images.filter((img: File | string | undefined) => typeof img === "string")
+        const imgStringList = data.images.filter((img: File | Blob | string | undefined) => typeof img === "string")
         const imgUplaods = imagesAlreadyUplaod.filter(img => imgStringList.includes(img.fileURL))
-        //Create Images
-        const filesUpload = data.images.filter((img: File | string | undefined) => img instanceof File);
-        const promiseFiles = filesUpload.map(async (img: File) => {
-            return await createFile(img, user?.uid!, 'property')
-        })
+
+        // Create Images
+        const filesUpload = data.images.filter((img: File | Blob | string | undefined) =>
+            img instanceof File || img instanceof Blob
+        ) as (File | Blob)[];
+
+        const promiseFiles = filesUpload.map(async (img: File | Blob, index) => {
+            const file = img instanceof File ? img : new File([img], `image_${index}.jpeg`, {
+                type: img.type || 'image/jpeg',
+                lastModified: Date.now(),
+            });
+            return await createFile(file, user?.uid!, 'property');
+        });
         const images = await Promise.all(promiseFiles)
         //Create Property
         const propertyMutate: Property = {
@@ -182,21 +221,12 @@ export const PropertyFormComponentProvider = ({ children, isUpdate, propertyToUp
             createdBy: user?.uid
         }
         mutation.mutate(propertyMutate)
+        if (!isUpdate) {
+            clearFormLocalStorage()
+        }
     }
     React.useEffect(() => {
         if (propertyToUpdated) {
-            /* getPropertyById(id).then((fetchedProperty) => {
-                // Set form values dynamically
-                if (fetchedProperty) {
-                    const { createdAt, updatedAt, images, ...othersData } = fetchedProperty
-                    Object.entries(othersData).forEach(([key, value]) => {
-                        form.setValue(key as any, value); // Populate each field with the fetched data
-                    });
-                    const imgList = images.map(img => img.fileURL)
-                    setImagesAlreadyUplaod(images)
-                    form.setValue('images', imgList)
-                }
-            }); */
             const { images, ...othersData } = propertyToUpdated
             Object.entries(othersData).forEach(([key, value]) => {
                 form.setValue(key as any, value);
@@ -206,8 +236,30 @@ export const PropertyFormComponentProvider = ({ children, isUpdate, propertyToUp
                 setImagesAlreadyUplaod(images)
                 form.setValue('images', imgList)
             }
+        } else if (!isUpdate) {
+            // Charger les données du localStorage si elles existent
+            const savedData = getFormFromLocalStorage()
+            if (savedData) {
+                Object.entries(savedData).forEach(([key, value]) => {
+                    form.setValue(key as any, value);
+                });
+            }
         }
     }, [propertyToUpdated])
+
+    // Sauvegarder dans le localStorage à chaque changement du formulaire
+    useEffect(() => {
+        if (!isUpdate) {
+            const subscription = form.watch((value) => {
+                if (value) {
+                    console.log('value', value)
+                    saveFormToLocalStorage(value);
+                }
+            });
+            return () => subscription.unsubscribe();
+        }
+    }, [form, isUpdate]);
+
     return (
         <PropertyFormComponentContext.Provider value={{
             activeStep,

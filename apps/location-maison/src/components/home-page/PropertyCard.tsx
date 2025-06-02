@@ -4,102 +4,104 @@
 import React from "react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-import { TypeProperty } from "@/lib/utils";
+import { formatDateFr, TypeProperty } from "@/lib/utils";
 
 // Import des icônes
-import { FaBath, FaToilet } from "react-icons/fa";
+import { FaToilet } from "react-icons/fa";
 import { IoMdBed } from "react-icons/io";
-import { MdOutlineSquareFoot } from "react-icons/md";
-import { House } from "@/mocks/mocksHouse";
+import { MdOutlineBathtub, MdOutlineSquareFoot } from "react-icons/md";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-const PropertyCard = ({property}: any) => {
+const PropertyCard = ({ property }: any) => {
   const router = useRouter();
-  //console.log("property:",property)
 
   const handleCardClick = () => {
     router.push(`/houseDetails/${property.path.replace("properties/", "")}`);
   };
 
   return (
-    <div
-      onClick={handleCardClick}
-      className="relative cursor-pointer rounded-lg shadow-lg overflow-hidden transition-transform hover:scale-105 bg-white dark:bg-gray-800 hover:shadow-2xl flex flex-col"
-      style={{ height: "380px" }}
-    >
-      {/* Image principale */}
-      <div className="relative w-full h-52 overflow-hidden">
-        <Image
-          src={property.images?.[0]?.fileURL || "/home.png"}
-          alt={property.title || "Image de la propriété"}
-          fill
-          className="object-cover transform transition-transform duration-500 hover:scale-110"
-        />
-      </div>
-
-      {/* Contenu de la carte */}
-      <div className="p-4 bg-gradient-to-b from-white to-gray-100 dark:from-gray-800 dark:to-gray-900 flex flex-col justify-between flex-grow">
-        <div>
-          <h3 className="text-md font-semibold text-gray-800 dark:text-gray-100 line-clamp-2 h-12">
-            {property.title || "Propriété"}
-          </h3>
-          <p className="text-sm text-gray-600 dark:text-gray-400 truncate">
-            {property.city}, {property.province}, {property.country}
-          </p>
-          {property.street && (
-            <p className="text-sm text-gray-600 dark:text-gray-400 truncate">
-              {property.street}
-            </p>
-          )}
-          <p className="text-sm text-gray-700 dark:text-gray-300">
-            {property.status === "FOR_RENT" ? "À louer" : "À vendre"} - {property.price}{" "}
-            F CFA
-          </p>
-        </div>
-
-        {/* Section d'icônes et chiffres */}
-        <div className="flex justify-between text-gray-600 dark:text-gray-400">
-          <div className="flex items-center space-x-1">
-            <IoMdBed className="w-5 h-5" />
-            <span className="text-sm">{property.nbrRooms}</span>
-          </div>
-          <div className="flex items-center space-x-1">
-            <FaToilet className="w-5 h-5" />
-            <span className="text-sm">{property.nbrToilets}</span>
-          </div>
-          <div className="flex items-center space-x-1">
-            <MdOutlineSquareFoot className="w-5 h-5" />
-            <span className="text-sm">{property.area} m²</span>
-          </div>
-        </div>
-      </div>
-
-      {/* Type de propriété */}
-      {property.typeProperty && (
-        <div className="absolute top-2 left-2 px-3 py-1 text-xs font-bold bg-blue-100 text-blue-600 dark:bg-blue-800 dark:text-blue-200 rounded-full">
-          {TypeProperty[property.typeProperty]}
-        </div>
-      )}
-
-      {/* Bouton "Voir les détails" */}
-      <div className="absolute bottom-2 right-2 flex items-center space-x-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-        <span className="text-sm text-gray-500 dark:text-gray-300">
-          Voir les détails
-        </span>
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          className="w-4 h-4 text-gray-600 dark:text-gray-300"
-          fill="none"
-          viewBox="0 0 24 24"
-          stroke="currentColor"
-        >
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth={2}
-            d="M17 8l4 4m0 0l-4 4m4-4H3"
+    <div key={property.id} className="">
+      <div
+        onClick={() => handleCardClick()}
+        className="h-[460px] md:h-[450px] relative cursor-pointer rounded-2xl shadow-lg overflow-hidden transition-all duration-300 hover:scale-[1.03] bg-white dark:bg-gray-800 hover:shadow-2xl flex flex-col group"
+      >
+        {/* Image principale */}
+        <div className="relative w-full aspect-[3/2] bg-gray-200">
+          <Image
+            src={property.images?.[0]?.fileURL || "/home.png"}
+            alt={property.title || "Image de la propriété"}
+            fill
+            className="object-cover"
           />
-        </svg>
+          {/* Type de propriété */}
+          {property.typeProperty && (
+            <div className="absolute top-4 left-4 px-4 py-2 text-sm font-semibold bg-white/90 dark:bg-gray-800/90 text-[#146B67] dark:text-white rounded-full backdrop-blur-sm">
+              {TypeProperty[property.typeProperty]}
+            </div>
+          )}
+        </div>
+
+        <div className="flex flex-col flex-grow p-5">
+          {/* Titre */}
+          <div className="h-[60px]">
+            <h3 className="text-lg font-bold text-gray-900 dark:text-white line-clamp-2 group-hover:text-[#146B67] transition-colors">
+              {property.title || "Propriété"}
+            </h3>
+          </div>
+
+          {/* Prix */}
+          <div className="h-[48px]">
+            <p className="text-lg font-bold text-[#146B67] dark:text-blue-300">
+              {property.status === "FOR_RENT" ? "À louer" : "À vendre"} - {property.price.toLocaleString()} F CFA
+            </p>
+          </div>
+
+          {/* Adresse */}
+          <div className="h-[30px]">
+            {property.street && (
+              <p className="text-sm text-gray-500 dark:text-gray-400 truncate italic">
+                {property.city}, {property.province}, {property.street}
+              </p>
+            )}
+          </div>
+
+          {/* Section d'icônes et chiffres */}
+          <div className={`flex flex-wrap gap-4 mt-auto pt-3 text-gray-600 dark:text-gray-400 text-sm ${(property.area > 0 ||
+              ("nbrRooms" in property && (property as any).nbrRooms > 0) ||
+              ("nbrBathrooms" in property && (property as any).nbrBathrooms > 0))
+              ? "border-t" : ""
+            }`}>
+            {property.area > 0 && (
+              <div className="flex items-center gap-2 group-hover:text-[#146B67] transition-colors">
+                <MdOutlineSquareFoot className="w-5 h-5" />
+                <span>{property.area} m²</span>
+              </div>
+            )}
+
+            {(property.typeProperty === "Home" ||
+              property.typeProperty === "Villa" ||
+              property.typeProperty === "Apartment" ||
+              property.typeProperty === "Studio" ||
+              property.typeProperty === "Logement" ||
+              property.typeProperty === "Desk" ||
+              property.typeProperty === "Shop") && (
+                <>
+                  {"nbrRooms" in property && (property as any).nbrRooms > 0 && (
+                    <div className="flex items-center gap-2 group-hover:text-[#146B67] transition-colors">
+                      <IoMdBed className="w-5 h-5" />
+                      <span>{(property as any).nbrRooms}</span>
+                    </div>
+                  )}
+                  {"nbrBathrooms" in property && (property as any).nbrBathrooms > 0 && (
+                    <div className="flex items-center gap-2 group-hover:text-[#146B67] transition-colors">
+                      <MdOutlineBathtub className="w-5 h-5" />
+                      <span>{(property as any).nbrBathrooms}</span>
+                    </div>
+                  )}
+                </>
+              )}
+          </div>
+        </div>
       </div>
     </div>
   );

@@ -1,6 +1,6 @@
 import { routes } from '@/constantes/routes'
 import { TypeProperty } from '@/lib/utils'
-import { ChevronLeft, Home, Building, Landmark, Warehouse, Briefcase, Building2, Bed, Store, ShoppingBag } from 'lucide-react'
+import { ChevronLeft, Home, Building, Landmark, Warehouse, Briefcase, Building2, Bed, Store, ShoppingBag, Globe } from 'lucide-react'
 import Link from 'next/link'
 import React from 'react'
 
@@ -50,6 +50,11 @@ const buttonList = [
     link: routes.protected.add_shop,
     icon: <ShoppingBag size={24} />
   },
+  {
+    label: TypeProperty.Land,
+    link: routes.protected.add_land,
+    icon: <Globe size={24} />
+  }, 
 ]
 export default function page() {
   return (

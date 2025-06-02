@@ -4,18 +4,31 @@ import NextAuthProvider from "@/providers/NextAuthProvider";
 import { Toaster } from "@/components/ui/toaster";
 import { LocationProvider } from "./LocationProvider";
 import { NotificationProvider } from "./NotificationProvider";
+import { AlgoliaRefinementsProvider } from "./AlgoliaRefinementsContext";
+import { ThemeProvider } from "@/components/theme-provider"
 
 export function Providers({ children }: { children: React.ReactNode }) {
   return (
-    <ReactQueryProvider>
-      <NextAuthProvider>
-        <LocationProvider>
-          <NotificationProvider>
-            <AlgoliaProvider indexName={"location-maison_property-index"}>{children}</AlgoliaProvider>
-          </NotificationProvider>
-          <Toaster />
-        </LocationProvider>
-      </NextAuthProvider>
-    </ReactQueryProvider>
+    <ThemeProvider
+      attribute="class"
+      defaultTheme="light"
+      enableSystem
+      disableTransitionOnChange
+    >
+      <ReactQueryProvider>
+        <NextAuthProvider>
+          <LocationProvider>
+            <NotificationProvider>
+                <AlgoliaProvider indexName={"location-maison_property-index"}>
+                  <AlgoliaRefinementsProvider>
+                    {children}
+                  </AlgoliaRefinementsProvider>
+                </AlgoliaProvider>
+            </NotificationProvider>
+            <Toaster />
+          </LocationProvider>
+        </NextAuthProvider>
+      </ReactQueryProvider>
+    </ThemeProvider>
   );
 }

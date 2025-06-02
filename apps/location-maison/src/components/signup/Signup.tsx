@@ -17,7 +17,7 @@ import { createUser } from '@/db/user.db'
 import { useToast } from '@/hooks/use-toast'
 import { useRouter } from 'next/navigation'
 import { NotificationParameter } from '@/models/notification'
-import { createNotification } from '@/db/notification.db'
+//import { createNotification } from '@/db/notification.db'
 import { routes } from '@/constantes/routes'
 
 export const Signup: React.FC = () => {
@@ -25,7 +25,10 @@ export const Signup: React.FC = () => {
     const { toast } = useToast()
     const [isOtherMethodConnection, setIsOtherMethodConnection] = React.useState(false)
     const form = useForm<FormRegisterSchemaType>({
-        resolver: zodResolver(FormRegisterSchema)
+        resolver: zodResolver(FormRegisterSchema),
+        defaultValues: {
+            country: 'GA'
+        }
     })
     const onRegister = async (user: Partial<User>) => {
         try {
@@ -52,14 +55,14 @@ export const Signup: React.FC = () => {
                 notificationParameter,
                 providers: ['CREDENTIALS']
             })
-            await createNotification({
+            /* await createNotification({
                 type: 'SECURITY',
                 title: 'Sécurisez votre compte avec Facebook et Google',
                 message: "Pour mieux protéger votre compte et éviter toute tentative d'accès non autorisé, connectez-le à Facebook et Google dès maintenant.",
                 isRead: false,
                 createdFor: userCred.user.uid,
                 actionUrl: routes.protected.login_and_security,
-            });
+            }); */
             await signOut(auth)
             return userCred.user.uid
         } catch (error) {
@@ -72,6 +75,7 @@ export const Signup: React.FC = () => {
         onRegister(user)
             .then((uid) => {
                 toast({
+                    duration: 5000,
                     title: 'Création de compte',
                     description: "Votre compte a été créé avec succès!",
                     variant: 'success',
@@ -81,6 +85,7 @@ export const Signup: React.FC = () => {
             .catch(error => {
                 console.error(error)
                 toast({
+                    duration: 5000,
                     title: 'Création de compte',
                     description: "L'adresse email est déjà utilisé!",
                     variant: 'destructive',
@@ -184,7 +189,7 @@ export const Signup: React.FC = () => {
                     <ButtonLoading
                         type='submit'
                         disabled={form.formState.isSubmitting || form.formState.isLoading || isOtherMethodConnection}
-                        className='w-full'>
+                        className='w-full bg-gradient-to-r from-[#146B67] via-[#1FA89B] to-[#146B67]'>
                         S'enregistrer
                     </ButtonLoading>
                 </form>

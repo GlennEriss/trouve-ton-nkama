@@ -38,13 +38,13 @@ export const LayoutAuth: React.FC<LayoutAuthProps> = ({ children, type, setIsOth
             {/* Container */}
             <div className="w-full max-w-4xl mx-4 bg-white shadow-lg rounded-lg flex flex-col md:flex-row overflow-hidden">
                 {/* Left Side: Branding/Message */}
-                <div className="hidden md:block md:w-1/2 bg-gradient-to-br from-blue-500 to-indigo-500 text-white p-8">
+                <div className="hidden md:block md:w-1/2 bg-gradient-to-br from-[#146B67] via-[#1FA89B] to-[#146B67] text-white p-8">
                     <div className="flex flex-col h-full">
                         <Link href={routes.public.homePage}>
                             <Logo color='white' />
                         </Link>
                         <h1 className="text-2xl font-bold">
-                            Bienvenue sur Home-Rent
+                            Bienvenue sur LogisGabon
                         </h1>
                         <p className="mt-4 text-lg">
                             Trouvez facilement votre maison ou appartement de rêve grâce à notre plateforme intuitive.
@@ -56,8 +56,11 @@ export const LayoutAuth: React.FC<LayoutAuthProps> = ({ children, type, setIsOth
                 <div className="w-full md:w-1/2 flex flex-col justify-center p-6 sm:p-10">
                     {/* Card Content */}
                     <div className="w-full max-w-md mx-auto">
-                        <h1 className="text-center text-2xl font-bold mb-6">
-                            {type === "Signin" ? "Connexion" : "Créer un compte"}
+                        <h1 className="relative text-center text-2xl md:text-3xl font-bold mb-8">
+                            <span className="bg-gradient-to-r from-[#146B67] via-[#1FA89B] to-[#146B67] text-transparent bg-clip-text">
+                                {type === "Signin" ? "Connexion" : "Créer un compte"}
+                            </span>
+                            <div className="absolute -bottom-3 left-1/2 transform -translate-x-1/2 w-12 h-1 rounded-full bg-gradient-to-r from-[#146B67] via-[#1FA89B] to-[#146B67]" />
                         </h1>
                         <div>{children}</div>
                         <div className="mt-6 flex flex-col items-center">
@@ -70,6 +73,7 @@ export const LayoutAuth: React.FC<LayoutAuthProps> = ({ children, type, setIsOth
                                         className="w-12 h-12 rounded-full bg-gray-100 flex items-center justify-center hover:bg-gray-200 transition duration-200"
                                         onClick={() => handleConnection(connection.method)}
                                         disabled={isPending}
+                                        colorSpinner="blue"
                                     >
                                         <connection.icon size={24} color={connection?.colorIcon} />
                                     </ButtonLoading>

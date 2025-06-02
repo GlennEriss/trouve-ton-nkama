@@ -1,18 +1,22 @@
 "use client";
 
-import React from "react";
+import React, { useCallback } from "react";
 import Slider from "react-slick";
 import { motion } from "framer-motion";
 import { FaHome, FaBuilding, FaWarehouse, FaStore } from "react-icons/fa";
 import { BiBed } from "react-icons/bi";
 import { MdOutlineApartment, MdOutlineWorkspaces } from "react-icons/md";
 import { Button } from "@/components/ui/button";
-import { TypeProperty } from "@/lib/utils";
+import { getTypePropertyKey, TypeProperty } from "@/lib/utils";
 import PropertyCarousel from "../property/PropertyCarousel";
 import MapComponent, { Neighborhood } from "../map/MapComponent";
 import houseMocks from "@/mocks/mocksHouse";
-import { Home, Warehouse, Building, Building2, Briefcase, Bed, Store, ShoppingBag } from "lucide-react";
 import { routes } from "@/constantes/routes";
+import { useRefinementList } from "react-instantsearch";
+import { useAlgoliaContext } from "@/providers/AlgoliaContext";
+import AlgoliaRefinements, { useAlgoliaRefinements } from "@/providers/AlgoliaRefinementsContext";
+import { useRouter } from "next/navigation";
+import { propertyTypesList } from "./PropertyTypeList";
 
 const neighborhoods: Neighborhood[] = [
   {
@@ -68,6 +72,48 @@ const neighborhoods: Neighborhood[] = [
 ];
 
 const HomePage = () => {
+
+  const {
+    city,
+    setCity,
+    street,
+    setStreet,
+    minPrice,
+    setMinPrice,
+    maxPrice,
+    setMaxPrice,
+    minArea,
+    setMinArea,
+    maxArea,
+    setMaxArea,
+    minNbrRooms,
+    setMinNbrRooms,
+    maxNbrRooms,
+    setMaxNbrRooms,
+    typeProperty,
+    setTypeProperty,
+    tags,
+    setTags,
+    clearFilters,
+  } = useAlgoliaContext();
+  const { datas } = useAlgoliaRefinements();
+
+
+  const toggleSelection = useCallback(
+    (list: string[], item: string, setter: (val: string[]) => void) => {
+      if (list.includes(item)) {
+        const newList = list.filter((i) => i !== item);
+        //console.log(`Retrait de l'élément "${item}". Nouvelle liste :`, newList);
+        setter(newList);
+      } else {
+        const newList = [...list, item];
+        //console.log(`Ajout de l'élément "${item}". Nouvelle liste :`, newList);
+        setter(newList);
+      }
+    },
+    []
+  );
+
   const adCarouselSettings = {
     dots: true,
     infinite: true,
@@ -77,31 +123,30 @@ const HomePage = () => {
     slidesToScroll: 1,
   };
 
-  const propertyTypes = [
-    { type: "Home", icon: <Home className="w-10 h-10 text-blue-500" /> },
-    {
-      type: "Studio",
-      icon: <Warehouse className="w-10 h-10 text-yellow-500" />,
-    },
-    { type: "Apartment", icon: <Building className="w-10 h-10 text-red-500" /> },
-    { type: "Building", icon: <Building2 className="w-10 h-10 text-orange-500" /> },
-    {
-      type: "Desk",
-      icon: <Briefcase className="w-10 h-10 text-purple-500" />,
-    },
-    {
-      type: "Room",
-      icon: <Bed className="w-10 h-10 text-teal-500" />,
-    },
-    {
-      type: "Kiosk",
-      icon: <Store className="w-10 h-10 text-teal-500" />,
-    },
-    {
-      type: "Shop",
-      icon: <ShoppingBag className="w-10 h-10 text-teal-500" />,
-    },
-  ];
+  const router = useRouter();
+
+  const { items: typePropItems, refine: typePropertyRefine } = useRefinementList({
+    attribute: "typeProperty",
+    operator: "or", // ou "and" selon la logique voulue
+  });
+
+  
+
+  function handleTypeClick(
+    type: string,
+    typeProperty: string[],
+    getTypePropertyKey: (type: string) => string | undefined,
+    setTypeProperty: (props: string[]) => void,
+    typePropertyRefine: (value: string) => void,
+  ) {
+    console.log("click")
+    const key = getTypePropertyKey(type)!;
+    toggleSelection(typeProperty, key, setTypeProperty);
+    //typePropertyRefine(type);
+    router.push(`/search?typeProperty=${encodeURIComponent(type)}`);
+  }
+
+  //console.log("datas:", datas)
 
   return (
     <div className="container mx-auto px-4 py-8 bg-gray-100 dark:bg-gray-900 transition-colors mb-10">
@@ -142,13 +187,22 @@ const HomePage = () => {
           Types de logements
         </h2>
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6">
-          {propertyTypes.map((type) => (
+          {propertyTypesList.map((type) => (
             <motion.div
               key={type.type}
               className="flex flex-col items-center justify-center p-6 bg-white dark:bg-gray-800 shadow-md rounded-lg hover:shadow-lg transition-shadow cursor-pointer"
               whileHover={{ scale: 1.05 }}
-              onClick={() => {
+              /* onClick={() => {
                 window.location.href = `/search?typeProperty=${type.type}`;
+              }} */
+              onClick={() => {
+                handleTypeClick(
+                  type.type ?? "",
+                  typeProperty,
+                  getTypePropertyKey,
+                  setTypeProperty,
+                  typePropertyRefine,
+                )
               }}
             >
               {type.icon}

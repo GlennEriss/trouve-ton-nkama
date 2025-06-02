@@ -1,4 +1,6 @@
 "use client";
+const LOCAL_STORAGE_KEY = "location-cache";
+let searchCache = new Map<string, any[]>();
 
 import { useState, useEffect } from "react";
 import dynamic from "next/dynamic";
@@ -46,6 +48,19 @@ const MapForm = () => {
     const [L, setL] = useState<any>(null);
     const [pinIcon, setPinIcon] = useState<any>(null);
 
+    // Charger le cache depuis localStorage au chargement du composant
+    useEffect(() => {
+        const rawCache = localStorage.getItem(LOCAL_STORAGE_KEY);
+        if (rawCache) {
+            try {
+                const parsed = JSON.parse(rawCache);
+                searchCache = new Map(Object.entries(parsed));
+            } catch (err) {
+                console.warn("❌ Erreur de parsing du cache localStorage", err);
+            }
+        }
+    }, []);
+
     // Charger Leaflet côté client et définir l'icône personnalisée
     useEffect(() => {
         const loadLeaflet = async () => {
@@ -76,15 +91,26 @@ const MapForm = () => {
     const searchLocation = async () => {
         if (!location.trim()) return;
 
+        const query = location.toLowerCase().trim();
+
+        if (searchCache.has(query)) {
+            setSearchResults(searchCache.get(query)!);
+            setError(null);
+            return;
+        }
+
         try {
             const response = await fetch(
-                `https://photon.komoot.io/api/?q=${encodeURIComponent(
-                    location
-                )}&lat=0.7&lon=11.5&limit=10`
+                `https://photon.komoot.io/api/?q=${encodeURIComponent(query)}&lat=0.7&lon=11.5&limit=10`
             );
             const data = await response.json();
 
             if (data.features && data.features.length > 0) {
+                searchCache.set(query, data.features);
+                localStorage.setItem(
+                    LOCAL_STORAGE_KEY,
+                    JSON.stringify(Object.fromEntries(searchCache))
+                );
                 setSearchResults(data.features);
                 setError(null);
             } else {
@@ -120,13 +146,13 @@ const MapForm = () => {
     return (
         <section className="h-[600px] w-full flex flex-col gap-4">
             {/* Barre de recherche */}
-            <div className="flex gap-2 items-center bg-gray-100 p-2 rounded-md shadow-md">
+            <div className="flex gap-2 items-center bg-gray-100 dark:bg-gray-800 p-2 rounded-md shadow-md">
                 <input
                     type="text"
                     value={location}
                     onChange={(e) => setLocation(e.target.value)}
                     placeholder="Rechercher une localité au Gabon..."
-                    className="flex-1 p-2 rounded-md border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="flex-1 p-2 rounded-md border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900 text-black dark:text-white placeholder:text-gray-400 dark:placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
                 />
                 <button
                     type="button"
@@ -142,14 +168,14 @@ const MapForm = () => {
 
             {/* Liste des résultats trouvés */}
             {searchResults.length > 0 && (
-                <div className="bg-white shadow-md rounded-md p-2 max-h-60 overflow-auto">
+                <div className="bg-white dark:bg-gray-900 shadow-md rounded-md p-2 max-h-60 overflow-auto">
                     <p className="font-semibold">Sélectionnez une localité :</p>
                     {searchResults.map((result, index) => (
                         <button
                             type="button"
                             key={index}
                             onClick={() => selectLocation(result)}
-                            className="block w-full text-left p-2 hover:bg-gray-200 rounded-md"
+                            className="block w-full text-left p-2 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-md text-black dark:text-white"
                         >
                             {result.properties.name || "Localité inconnue"}
                         </button>

@@ -3,7 +3,9 @@ import { Account, User } from "@/types/models";
 import {User as UserDetails} from '@/models/authentication'
 
 declare module '@auth/core/types' {
-    interface User extends UserDetails {}
+    interface User extends UserDetails {
+        firebaseToken?: string;
+    }
     interface Session {
         user: User
     }

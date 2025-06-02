@@ -18,6 +18,7 @@ import { PropertyDirector } from "@/directors/property.director";
 import { KioskFactory } from "@/factories/property/kiosk.factory";
 import { RoomFactory } from "@/factories/property/room.factory";
 import { ShopFactory } from "@/factories/property/shop.factory";
+import { LandFactory } from "@/factories/property/LandFactory";
 
 export abstract class DirectorFactory {
     /**
@@ -55,8 +56,10 @@ export abstract class DirectorFactory {
             case 'Kiosk':
                 factory = new KioskFactory();
                 break;
-            default:
+            case 'Villa':
                 factory = new VillaFactory();
+            default:
+                factory = new LandFactory()
         }
         return new PropertyDirector(factory);
     }

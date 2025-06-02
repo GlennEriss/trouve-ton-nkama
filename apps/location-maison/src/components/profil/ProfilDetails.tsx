@@ -1,6 +1,6 @@
 'use client'
 import React from 'react'
-import { ChevronRight, Lock, Bell, ShieldCheck, FileText } from 'lucide-react';
+import { ChevronRight, Lock, Settings, ShieldCheck, FileText } from 'lucide-react';
 import Link from 'next/link';
 import { useWindowSize } from '@/hooks/useSize';
 import { routes } from '@/constantes/routes';
@@ -8,16 +8,16 @@ import { Separator } from '../ui/separator';
 
 const menu = [
     {
+        title: 'Paramètre',
+        icon: Settings,
+        link: routes.protected.notifications,
+        description: 'Personnalisez vos préférences de notification pour rester informé tout en évitant les distractions inutiles.'
+    },
+    {
         title: 'Connexion et sécurité',
         icon: Lock,
         link: routes.protected.login_and_security,
         description: 'Gérez vos informations de connexion, réinitialisez votre mot de passe et configurez les options de sécurité pour protéger votre compte.'
-    },
-    {
-        title: 'Notifications',
-        icon: Bell,
-        link: routes.protected.notifications,
-        description: 'Personnalisez vos préférences de notification pour rester informé tout en évitant les distractions inutiles.'
     },
     {
         title: 'Politique de confidentialité',

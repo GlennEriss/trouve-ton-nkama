@@ -1,13 +1,9 @@
-import React from 'react';
-import Navbar from "@/components/home-page/Navbar";
-import { auth } from '@/next-auth/auth';
+import PublicLayout from "@/components/layouts/PublicLayout";
 
 export default async function Layout({ children }: { children: React.ReactNode }) {
-    const session = await auth()
     return (
-        <>
-            <Navbar session={session} />
+        <PublicLayout>
             {children}
-        </>
+        </PublicLayout>
     );
 }

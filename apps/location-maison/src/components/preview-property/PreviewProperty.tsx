@@ -7,6 +7,7 @@ import { Property } from '@/models/annonce'
 import { ButtonFavoris } from './ButtonFavoris'
 import ContactSection from './ContactSection'
 import { MapSection } from './MapSection'
+import ButtonShare from './ButtonShare'
 
 export default function PreviewProperty({ property }: { property: Property }) {
   const tagSatus: Record<string, string> = {
@@ -27,8 +28,11 @@ export default function PreviewProperty({ property }: { property: Property }) {
             ))
           }
         </div>
-        <div>
-          <ButtonFavoris idProperty={property.id!} />
+        <div className=''>
+          <div className='flex gap-2 items-center'>
+            <ButtonShare property={property} />
+            <ButtonFavoris idProperty={property.id!} />
+          </div>
         </div>
       </section>
 
@@ -36,11 +40,13 @@ export default function PreviewProperty({ property }: { property: Property }) {
       <section className='flex flex-col gap-2'>
         <div className='flex flex-col gap-2 md:flex-row md:justify-between'>
           <h1 className='text-2xl font-bold text-gray-900 dark:text-white'>{property.title}</h1>
-          <h1 className='text-2xl font-bold text-gray-900 dark:text-white'>FCFA {property.price}</h1>
+          <h1 className='text-2xl font-bold text-green-700'>
+            FCFA {property.price.toLocaleString('fr-FR')}
+          </h1>
         </div>
         <div className='flex items-center gap-2'>
-          <GoLocation size={25} className='text-gray-600 dark:text-gray-400' />
-          <h2 className='text-md text-justify text-gray-500 dark:text-gray-400'>{property.street}, {property.city} {property.province}</h2>
+          <GoLocation size={25} className='text-red-600' />
+          <h2 className='text-[13px] md:text-lg text-justify text-gray-500 dark:text-gray-400'>{property.street}, {property.city} {property.province}</h2>
         </div>
         <CarouselProperty images={images} />
       </section>
@@ -58,14 +64,18 @@ export default function PreviewProperty({ property }: { property: Property }) {
         <section className="flex flex-col gap-3 rounded-lg p-5 shadow dark:shadow-gray-800 dark:bg-gray-800 dark:text-white">
           <h1 className='font-bold'>Aperçu</h1>
           <p className='flex flex-col text-gray-500 dark:text-gray-400 text-sm text-justify italic'>
-            <span>Créé le: {property.createdAt?.toDate().toLocaleDateString('fr-FR', { weekday: 'short', year: 'numeric', month: 'long', day: 'numeric' })}</span>
-            <span>Modifié le: {property.updatedAt?.toDate().toLocaleDateString('fr-FR', { weekday: 'short', year: 'numeric', month: 'long', day: 'numeric' })}</span>
+            <span>
+              Créé le: {property.createdAt ? new Date(property.createdAt.seconds * 1000).toLocaleDateString('fr-FR', { weekday: 'short', year: 'numeric', month: 'long', day: 'numeric' }) : 'Date inconnue'}
+            </span>
+            <span>
+              Modifié le: {property.updatedAt ? new Date(property.updatedAt.seconds * 1000).toLocaleDateString('fr-FR', { weekday: 'short', year: 'numeric', month: 'long', day: 'numeric' }) : 'Date inconnue'}
+            </span>
           </p>
           <DetailsProperty property={property as any} />
         </section>
 
         {/* Section contact */}
-        <ContactSection />
+        <ContactSection property={property} />
 
         {/* Section localisation */}
         {
@@ -81,6 +91,8 @@ export default function PreviewProperty({ property }: { property: Property }) {
 
         {/* Carte */}
         <MapSection
+          image={property.images[0].fileURL}
+          additionalInformation={property?.additionnalInformation}
           street={property.street}
           city={property.city}
           province={property.province}

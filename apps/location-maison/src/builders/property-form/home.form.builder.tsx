@@ -30,8 +30,15 @@ export class HomeFormBuilder extends LogementFormBuilder {
         this.formElements.push(
             {
                 name: "nbrFloors",
-                label: "Nombre d'étage",
+                label: "Nombre d'étages",
                 description: "Indiquez le nombre total d'étages dans la propriété.",
+                component: (field: any) => <NumberComponent field={field} />,
+                step: 2
+            },
+            {
+                name: "nbrLivingRoom",
+                label: "Nombre de salons",
+                description: "Indiquez le nombre total de salons disponibles dans la propriété.",
                 component: (field: any) => <NumberComponent field={field} />,
                 step: 2
             },

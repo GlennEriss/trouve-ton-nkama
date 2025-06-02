@@ -68,9 +68,8 @@ export default function Notifications() {
           notifications.map((notification) => (
             <div
               key={notification.id}
-              className={`hover:bg-accent rounded-md px-3 py-2 text-sm transition-colors ${
-                notification.isRead ? "bg-white dark:bg-gray-900" : "bg-gray-100 dark:bg-gray-800"
-              }`}
+              className={`hover:bg-accent rounded-md px-3 py-2 text-sm transition-colors ${notification.isRead ? "bg-white dark:bg-gray-900" : "bg-gray-100 dark:bg-gray-800"
+                }`}
             >
               <div className="relative flex items-start gap-3 pe-3">
                 <Avatar>
@@ -101,7 +100,11 @@ export default function Notifications() {
                     </button>
                   )}
                   <div className="text-xs text-gray-500 dark:text-gray-400">
-                    {notification.createdAt?.toDate().toLocaleDateString()}
+                    {notification.createdAt
+                      ? (notification.createdAt instanceof Date
+                        ? notification.createdAt.toLocaleDateString("fr-FR", { day: "2-digit", month: "long", year: "numeric" })
+                        : new Date(notification.createdAt.seconds * 1000).toLocaleDateString("fr-FR", { day: "2-digit", month: "long", year: "numeric" }))
+                      : "Date inconnue"}
                   </div>
                 </div>
                 {!notification.isRead && (

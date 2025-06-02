@@ -11,6 +11,6 @@ export default function Logo({ className, color }: { className?: string, color?:
     </svg>
   )
   return (
-    <div className={cn('text-4xl text-black font-bold dark:text-white', className)}>Home-Rent</div>
+    <div className={cn('text-4xl text-black font-bold dark:text-white', className)}>LogisGabon</div>
   )
 }
