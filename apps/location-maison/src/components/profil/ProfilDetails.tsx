@@ -1,12 +1,18 @@
 'use client'
 import React from 'react'
-import { ChevronRight, Lock, Settings, ShieldCheck, FileText } from 'lucide-react';
+import { ChevronRight, Lock, Settings, ShieldCheck, FileText, Coins } from 'lucide-react';
 import Link from 'next/link';
 import { useWindowSize } from '@/hooks/useSize';
 import { routes } from '@/constantes/routes';
 import { Separator } from '../ui/separator';
 
 const menu = [
+    {
+        title: 'Mon solde',
+        icon: Coins,
+        link: routes.protected.my_balance,
+        description: 'Consultez votre solde de crédits, rechargez votre compte et accédez à l\'historique de vos transactions pour utiliser nos services premium.'
+    },
     {
         title: 'Paramètre',
         icon: Settings,
@@ -35,7 +41,7 @@ const menu = [
         title: 'Signaler un problème',
         icon: HelpCircle,
         link: '',
-        description: 'Contactez l’assistance ou signalez un bug pour nous aider à améliorer votre expérience.'
+        description: 'Contactez l'assistance ou signalez un bug pour nous aider à améliorer votre expérience.'
     }, */
 ];
 export default function ProfilDetails() {
