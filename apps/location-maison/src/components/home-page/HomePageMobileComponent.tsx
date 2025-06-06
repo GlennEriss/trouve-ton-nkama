@@ -15,6 +15,8 @@ import PropertyByProvince from './PropertyByProvince';
 import CarouselPropertyType from './CarouselPropertyType';
 import { useWindowSize } from '@/hooks/useSize';
 import { cn } from '@/lib/utils';
+import FeaturedSection from './FeaturedSection';
+import TrendingSection from './TrendingSection';
 
 export default function HomePageMobileComponent() {
     const {
@@ -153,19 +155,12 @@ export default function HomePageMobileComponent() {
                     <CarouselPropertyType />
                 </section>
 
+
+
                 <section className='space-y-5'>
-                    {/* <section className='space-y-3 bg-green-50 p-5 py-10'>
-                        <h1 className='text-xl font-bold text-center text-[#146B67]'>
-                            À la une
-                        </h1>
-                        <PropertyCarousel properties={[]} />
-                    </section>
-                    <section className='space-y-3 m-5'>
-                        <h1 className='text-xl font-bold text-center text-[#146B67]'>
-                            À proximité de chez vous
-                        </h1>
-                        <PropertyCarousel properties={[]} />
-                    </section>  */}
+                    {/* Sections des annonces promues */}
+                    <FeaturedSection />
+                    <TrendingSection /> 
                     <section className='space-y-3 bg-green-50 p-5 py-10'>
                         <h1 className='text-xl font-bold text-center text-[#146B67]'>
                             Logements récents

@@ -11,7 +11,6 @@ import {
   getCreditTransactionStats,
   GetHistoryOptions 
 } from '@/db/credit-transaction.db'
-import { CreditTransaction, HistoryResponse } from '@/types/credit-transaction.types'
 
 interface HistoryFilters {
   type?: 'all' | 'purchase' | 'spend'
@@ -91,6 +90,3 @@ export function useCreditTransactionStats() {
     }
   })
 }
-
-// Réexporter le type pour l'usage dans les composants
-export type { CreditTransaction } 

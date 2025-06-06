@@ -28,6 +28,8 @@ import { RemoveProperty } from './RemoveProperty';
 import { Skeleton } from '../ui/skeleton';
 import { Switch } from '../ui/switch';
 import { useQueryClient } from '@tanstack/react-query';
+import PromotionButton from '../promotion/PromotionButton';
+import PromotionBadge from '../promotion/PromotionBadge';
 
 export default function ListPropertySection() {
     const searchParams = useSearchParams();
@@ -232,14 +234,17 @@ export const CardPropertyCrud = ({ property }: { property: Property }) => {
                 {/* Overlay gradient */}
                 <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
                 
-                {/* Badge statut */}
-                <div className={cn(
-                    "absolute top-3 left-3 px-3 py-1.5 rounded-full text-xs font-semibold backdrop-blur-md border",
-                    statusColors.bg,
-                    statusColors.text,
-                    statusColors.border
-                )}>
-                    {status === 'FOR_RENT' ? 'À Louer' : 'À Vendre'}
+                {/* Badges statut et promotion */}
+                <div className="absolute top-3 left-3 space-y-2">
+                    <div className={cn(
+                        "px-3 py-1.5 rounded-full text-xs font-semibold backdrop-blur-md border",
+                        statusColors.bg,
+                        statusColors.text,
+                        statusColors.border
+                    )}>
+                        {status === 'FOR_RENT' ? 'À Louer' : 'À Vendre'}
+                    </div>
+                    <PromotionBadge property={property} />
                 </div>
                 
                 {/* Actions rapides - Visibles au hover */}
@@ -317,28 +322,37 @@ export const CardPropertyCrud = ({ property }: { property: Property }) => {
                         </div>
                     </div>
                     
-                    <div className="flex items-center gap-1">
-                        <Button
-                            variant="ghost"
-                            size="sm"
-                            className="w-9 h-9 p-0 text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white"
-                            asChild
-                        >
-                            <Link href={`${routes.protected.properties}/${property.id}`}>
-                                <AiOutlineEye size={16} />
-                            </Link>
-                        </Button>
-                        <Button
-                            variant="ghost"
-                            size="sm"
-                            className="w-9 h-9 p-0 text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white"
-                            asChild
-                        >
-                            <Link href={routes.protected.properties + '/modify/' + property.id}>
-                                <FiEdit2 size={16} />
-                            </Link>
-                        </Button>
-                        <RemoveProperty id={property.id!} />
+                    {/* Section des actions - Réorganisée */}
+                    <div className="flex flex-col gap-2">
+                        {/* Ligne 1: Bouton de promotion (plus large) */}
+                        <div className="flex justify-end">
+                            <PromotionButton property={property} />
+                        </div>
+                        
+                        {/* Ligne 2: Boutons d'action principaux */}
+                        <div className="flex items-center gap-1">
+                            <Button
+                                variant="ghost"
+                                size="sm"
+                                className="w-8 h-8 p-0 text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white"
+                                asChild
+                            >
+                                <Link href={`${routes.protected.properties}/${property.id}`}>
+                                    <AiOutlineEye size={16} />
+                                </Link>
+                            </Button>
+                            <Button
+                                variant="ghost"
+                                size="sm"
+                                className="w-8 h-8 p-0 text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white"
+                                asChild
+                            >
+                                <Link href={routes.protected.properties + '/modify/' + property.id}>
+                                    <FiEdit2 size={16} />
+                                </Link>
+                            </Button>
+                            <RemoveProperty id={property.id!} />
+                        </div>
                     </div>
                 </div>
             </div>

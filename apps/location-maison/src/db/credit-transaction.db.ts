@@ -1,10 +1,6 @@
 import firebaseCollectionNames from "@/constantes/firebase-collection-name";
-import { 
-  CreditTransaction, 
-  CreditTransactionInput, 
-  GetHistoryOptions, 
-  HistoryResponse 
-} from "@/types/credit-transaction.types";
+import { CreditTransaction, CreditTransactionInput, GetHistoryOptions, HistoryResponse } from "@/models/credit-transaction";
+
 
 const getFirestore = () => import("@/firebase/firestore");
 

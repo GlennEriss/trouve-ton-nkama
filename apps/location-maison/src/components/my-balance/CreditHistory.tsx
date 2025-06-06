@@ -4,8 +4,8 @@ import React, { useState, useEffect } from 'react'
 import { History, CheckCircle, Clock, XCircle, Plus, Minus, Download, Filter } from 'lucide-react'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { useCreditHistory } from '@/hooks/use-credit-history'
-import { CreditTransaction } from '@/types/credit-transaction.types'
 import { Button } from '@/components/ui/button'
+import { CreditTransaction } from '@/db/credit-transaction.db'
 
 export default function CreditHistory() {
   const [filter, setFilter] = useState<'all' | 'purchase' | 'spend'>('all')

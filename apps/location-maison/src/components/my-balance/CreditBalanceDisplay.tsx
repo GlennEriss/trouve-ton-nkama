@@ -3,6 +3,8 @@
 import React, { useState } from 'react'
 import { Wallet, Zap, Gift, Clock, Loader2, AlertCircle } from 'lucide-react'
 import { useCreditsBalance } from '@/hooks/use-credits-balance'
+import { useCurrentUser } from '@/hooks/use-current-user'
+import { useSession } from 'next-auth/react'
 
 interface CreditBalanceDisplayProps {
   onRecharge?: () => void
@@ -12,11 +14,21 @@ export default function CreditBalanceDisplay({
   onRecharge
 }: CreditBalanceDisplayProps) {
   const { data: balanceData, isLoading, error, isError } = useCreditsBalance()
-  
+  const { user } = useCurrentUser()
+  const { update, data: session } = useSession();
   const balance = balanceData?.credits || 0
   const isNewUser = balanceData?.message?.includes('Bienvenue') || false
   const welcomeCredits = 3
-
+  React.useEffect(() => {
+    if (user?.credits != balance) {
+      update({
+        user: {
+          ...session?.user,
+          credits: balance
+        }
+      })
+    }
+  }, [user, balance])
   const handleRecharge = () => {
     if (onRecharge) {
       onRecharge()
@@ -61,7 +73,7 @@ export default function CreditBalanceDisplay({
       <div className="absolute top-0 right-0 opacity-5 dark:opacity-10">
         <Wallet className="w-32 h-32 text-[#146B67]" />
       </div>
-      
+
       <div className="relative z-10 space-y-6">
         {/* Welcome Banner for new users */}
         {isNewUser && (
@@ -86,9 +98,9 @@ export default function CreditBalanceDisplay({
               Solde actuel
             </span>
           </div>
-          
+
           <div className="text-3xl md:text-5xl font-bold text-[#146B67] dark:text-[#1FA89B]">
-            {balance.toLocaleString()} 
+            {balance.toLocaleString()}
             <span className="text-lg md:text-xl ml-2 font-medium text-gray-500 dark:text-gray-400">
               crédit{balance > 1 ? 's' : ''}
             </span>
@@ -114,7 +126,7 @@ export default function CreditBalanceDisplay({
 
         {/* Action Button */}
         <div className="text-center">
-          <button 
+          <button
             onClick={handleRecharge}
             className="bg-gradient-to-r from-[#146B67] via-[#1FA89B] to-[#146B67] text-white px-6 md:px-8 py-2.5 md:py-3 rounded-full font-semibold hover:brightness-110 transition-all duration-300 shadow-lg hover:shadow-xl flex items-center gap-2 mx-auto text-sm md:text-base"
           >
