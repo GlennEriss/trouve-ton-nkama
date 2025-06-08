@@ -19,3 +19,6 @@
 // });
 
 export { onUserCreate, onUserFavorisUpdate } from './notification';
+
+// Paiements Airtel Money
+export { initiatePurchase } from './payments/airtel';

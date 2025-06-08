@@ -1,5 +1,7 @@
 {
   "projects": {
-    "default": "location-maison-prod-167da"
+    "default": "location-maison-prod-167da",
+    "production": "location-maison-prod-167da",
+    "development": "home-rent-1534e"
   }
 }

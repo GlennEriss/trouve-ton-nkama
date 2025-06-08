@@ -7,6 +7,7 @@ import Step1 from './Step1';
 import Step2 from './Step2';
 import Step3 from './Step3';
 import PreviewProperty from '../preview-property/PreviewProperty';
+import FloatingAssistantButton from '../ai-assistant/FloatingAssistantButton';
 
 type Constructor<T> = new () => T;
 
@@ -21,6 +22,18 @@ export const FormProperty = <T extends PropertyFormBuilderFactory>
     const dataStep1 = director.build().filter(item => item.step === 1)
     const dataStep2 = director.build().filter(item => item.step === 2)
     const dataStep3 = director.build().filter(item => item.step === 3)
+    
+    // Préparation du contexte pour l'assistant IA
+    const formContext = {
+        activeStep,
+        propertyPreview,
+        totalSteps: 4, // Steps 1-3 + Preview
+        dataStep1,
+        dataStep2,
+        dataStep3,
+        factoryType: FactoryClass.name
+    };
+    
     const currentStep = () => {
         switch (activeStep) {
             case 0:
@@ -36,6 +49,9 @@ export const FormProperty = <T extends PropertyFormBuilderFactory>
     return (
         <React.Fragment>
             {currentStep()}
+            
+            {/* Assistant IA flottant */}
+            <FloatingAssistantButton formContext={formContext} />
         </React.Fragment>
     )
 }

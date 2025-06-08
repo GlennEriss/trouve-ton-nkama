@@ -7,6 +7,8 @@ import { useCurrentUser } from '@/hooks/use-current-user'
 import CarouselPropertyType from './CarouselPropertyType'
 import PropertyCarousel from '../property/PropertyCarousel'
 import PropertyByProvince from './PropertyByProvince'
+import FeaturedSection from './FeaturedSection'
+import TrendingSection from './TrendingSection'
 
 const detailssection2 = [
   {
@@ -72,8 +74,8 @@ export default function HomePageDesktopComponent() {
         <div className='grid grid-cols-3 lg:mt-5 gap-4'>
           {
             detailssection2.map((item, index) => (
-              <div 
-                key={index} 
+              <div
+                key={index}
                 className='bg-white dark:bg-gray-800 p-6 rounded-xl hover:shadow-md dark:hover:shadow-[#1FA89B]/10 transition-all flex flex-col items-center h-[200px] dark:border dark:border-gray-700'
               >
                 <div className="h-[60px] flex items-center justify-center">
@@ -137,6 +139,13 @@ export default function HomePageDesktopComponent() {
       <section className='space-y-5 p-5 mb-8'>
         <h1 className='text-xl lg:text-2xl xl:text-3xl leading-tight text-center font-bold text-[#146B67] my-5'>Type de propriétés</h1>
         <CarouselPropertyType />
+      </section>
+      <section className='mb-8'>
+        <FeaturedSection />
+      </section>
+
+      <section className='mb-8'>
+        <TrendingSection />
       </section>
 
       <section className='relative space-y-3 bg-gradient-to-r from-[#146B67]/5 via-[#1FA89B]/10 to-[#146B67]/5 rounded-3xl p-5 py-10 overflow-hidden'>
