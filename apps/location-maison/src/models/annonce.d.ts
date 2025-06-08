@@ -4,13 +4,28 @@
 
 import { ICreation } from "./creation";
 import {TypePropertyEnum} from '@/constantes/property-type'
+import { Timestamp } from "firebase/firestore";
+
 //Property
 export type TypeProperty = keyof typeof TypePropertyEnum;
 export type StatusProperty = "FOR_RENT" | "FOR_SALE"
+
+// Types pour les promotions
+export type PromotionType = 'featured' | 'trending-7d' | 'trending-3d' | 'boost' | null;
+
+export type Promotion = {
+  type: PromotionType;
+  startDate: Timestamp;
+  endDate: Timestamp;
+  isActive: boolean;
+  creditsUsed: number;
+}
+
 export type Image = {
     filePATH: string,
     fileURL: string
 }
+
 export type Property = Location & ICreation & {
     typeProperty: TypeProperty
     images: Image[]
@@ -22,6 +37,12 @@ export type Property = Location & ICreation & {
     createdBy?: string,
     status: StatusProperty,
     contact?: string //Propriété tampon
+    
+    // Nouvelles propriétés pour les promotions
+    currentPromotion?: Promotion;
+    promotionHistory?: Promotion[];
+    lastBoostedAt?: Timestamp; // Pour le boost simple
+    isPromoted?: boolean; // Indicateur rapide pour les requêtes
 }
 
 export type Location = {

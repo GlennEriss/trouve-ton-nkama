@@ -12,7 +12,6 @@ export async function POST(req: NextRequest) {
 
         // Créer un custom token pour l'utilisateur
         const customToken = await adminAuth.createCustomToken(uid);
-
         return NextResponse.json({ token: customToken });
     } catch (error) {
         console.error("Erreur lors de la génération du token :", error);

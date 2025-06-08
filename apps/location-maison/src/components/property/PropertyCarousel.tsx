@@ -2,17 +2,10 @@
 
 import React from "react";
 import Slider from "react-slick";
-import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { FaArrowLeft, FaArrowRight, FaToilet, FaCar } from "react-icons/fa";
-import { IoMdBed } from "react-icons/io";
-import { MdOutlineSquareFoot, MdOutlineBathtub, MdPool } from "react-icons/md";
-import { GiStairs } from "react-icons/gi";
-import { PiBuildings } from "react-icons/pi";
-import { TypeProperty } from "@/lib/utils";
 import "slick-carousel/slick/slick.css";
 import "slick-carousel/slick/slick-theme.css";
-import { getProperties } from "@/db/property.db";
 import queryKeys from "@/constantes/react-query-keys";
 import { PROPERTY_ITEM_PER_PAGE_CAROUSEL } from "@/constantes/item-per-page";
 import { useInfiniteQuery } from "@tanstack/react-query";
@@ -40,7 +33,7 @@ interface Property {
 }
 
 interface CarouselProps {
-  properties: Property[];
+  properties?: Property[]; // Optionnel maintenant
 }
 
 // Flèches personnalisées
@@ -64,6 +57,10 @@ const CustomNextArrow = ({ onClick }: { onClick?: () => void }) => (
 
 const PropertyCarousel: React.FC<CarouselProps> = ({ properties }) => {
   const router = useRouter();
+  
+  // Seulement faire la requête si aucune propriété n'est fournie en props
+  const shouldFetch = !properties || properties.length === 0;
+  
   const fetchInfiniteProperties = async ({ pageParam }: { pageParam: any }) => {
     const { limitPerPage, lastDoc } = pageParam;
     const url = `/api/property/list?limit=${limitPerPage}&lastDoc=${lastDoc || ''}`;
@@ -78,6 +75,7 @@ const PropertyCarousel: React.FC<CarouselProps> = ({ properties }) => {
     const data = await response.json();
     return data;
   };
+
   const { data, isPending, isFetching, fetchNextPage, error, isError } = useInfiniteQuery({
     queryKey: [queryKeys.propertie_carousel],
     queryFn: fetchInfiniteProperties,
@@ -90,7 +88,9 @@ const PropertyCarousel: React.FC<CarouselProps> = ({ properties }) => {
     staleTime: 1000 * 60 * 10, // 10 minutes
     gcTime: 1000 * 60 * 15, // 15 minutes
     refetchOnWindowFocus: false,
+    enabled: shouldFetch, // Seulement activer la requête si nécessaire
   })
+
   const handleCardClick = (id: number | string) => {
     router.push(`/houseDetails/${id}`);
   };
@@ -149,20 +149,30 @@ const PropertyCarousel: React.FC<CarouselProps> = ({ properties }) => {
       },
     ],
   };
-  /* if(isError){
-    return (
-      <div>
-        {error.message}
-      </div>
-    )
-  } */
-  if (!data) {
-    return null
+
+  // Déterminer quelles propriétés utiliser
+  let propertiesToDisplay: Property[] = [];
+  
+  if (properties && properties.length > 0) {
+    // Utiliser les propriétés fournies en props (cas des sections promues)
+    propertiesToDisplay = properties;
+    console.log('🎠 [DEBUG] PropertyCarousel utilise les props:', properties.length, 'propriétés');
+  } else if (data?.pages?.[0]?.properties) {
+    // Utiliser les données de la requête (cas général)
+    propertiesToDisplay = data.pages[0].properties;
+    console.log('🎠 [DEBUG] PropertyCarousel utilise les données React Query:', propertiesToDisplay.length, 'propriétés');
   }
+
+  // Si aucune propriété à afficher, ne rien rendre
+  if (propertiesToDisplay.length === 0) {
+    console.log('🎠 [DEBUG] PropertyCarousel: Aucune propriété à afficher');
+    return null;
+  }
+
   return (
     <div className="container mx-auto px-4 md:py-12 relative">
       <Slider {...settings}>
-        {data.pages[0]?.properties.map((property: Property) => (
+        {propertiesToDisplay.map((property: Property) => (
           <div key={property.id} className="p-3" onClick={() => handleCardClick(property.id)}>
             <PropertyCard property={property} />
           </div>

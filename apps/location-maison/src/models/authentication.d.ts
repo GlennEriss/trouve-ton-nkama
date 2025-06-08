@@ -12,7 +12,8 @@ export type User = Person & {
     emailVerified?: boolean,
     providers: ProviderType[],
     metadata: any,
-    favoris: string[]
+    favoris: string[],
+    credits: number
 }
 
 export type Role = 'Admin' | 'Announcer'
