@@ -61,11 +61,9 @@ export default function SearchMobilePage() {
                             onChange={(e) => setSearchText(e.target.value)}
                             name="query"
                         />
-                        <button
-                            type='button'
-                        >
+                        <div>
                             <FilterModalHomePage />
-                        </button>
+                        </div>
                     </div>
                 </Form>
             </section>
@@ -132,7 +130,7 @@ export default function SearchMobilePage() {
                             {/* Sentinel pour infinite scroll */}
                             <div ref={sentinelRef} />
 
-                            {/* Bouton “Voir plus” */}
+                            {/* Bouton "Voir plus" */}
                             {!isLastPage && (
                                 <div className="text-center mt-6">
                                     <button

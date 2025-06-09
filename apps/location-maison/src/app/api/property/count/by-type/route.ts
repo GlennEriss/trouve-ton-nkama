@@ -1,9 +1,9 @@
 import { NextResponse } from 'next/server';
 import { getServerCountByPropertyType } from '@/db/property.db';
 
-// Add the in-memory cache
+// Cache pour les comptages de propriétés
 const propertyCountByTypeCache = new Map<string, { count: number; expiry: number }>();
-const cacheDuration = 1000 * 60 * 10; // 10 minutes
+const CACHE_DURATION_MS = 1000 * 60 * 30; // 30 minutes
 
 export async function GET(request: Request) {
     const url = new URL(request.url);
@@ -13,7 +13,7 @@ export async function GET(request: Request) {
         return NextResponse.json({ error: 'Property type is required' }, { status: 400 });
     }
 
-    // Check if the count is in the cache
+    // Vérifier le cache
     const cached = propertyCountByTypeCache.get(type);
     const now = Date.now();
 
@@ -21,21 +21,21 @@ export async function GET(request: Request) {
         console.log(`Serving property count for type ${type} from cache`);
         return NextResponse.json({ count: cached.count }, {
             headers: {
-                'Cache-Control': 'public, s-maxage=600, stale-while-revalidate=600',
+                'Cache-Control': 'public, s-maxage=1800, stale-while-revalidate=1800',
             },
         });
     }
 
     try {
-        // Fetch the count from Firestore
+        // Récupérer le comptage depuis Firestore
         const count = await getServerCountByPropertyType(type);
 
-        // Cache the count
-        propertyCountByTypeCache.set(type, { count, expiry: now + cacheDuration });
+        // Mettre en cache le comptage
+        propertyCountByTypeCache.set(type, { count, expiry: now + CACHE_DURATION_MS });
 
         return NextResponse.json({ count }, {
             headers: {
-                'Cache-Control': 'public, s-maxage=600, stale-while-revalidate=600',
+                'Cache-Control': 'public, s-maxage=1800, stale-while-revalidate=1800',
             },
         });
     } catch (error) {

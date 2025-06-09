@@ -218,7 +218,6 @@ export default function SearchDesktopPage() {
                                 </h2>
                                 <InputFormNumberApp
                                     control={form.control}
-                                    id="minPrice"
                                     name="minPrice"
                                     label="Prix min"
                                     step={10000}
@@ -226,7 +225,6 @@ export default function SearchDesktopPage() {
                                 />
                                 <InputFormNumberApp
                                     control={form.control}
-                                    id="maxPrice"
                                     name="maxPrice"
                                     label="Prix max"
                                     step={10000}
@@ -240,7 +238,6 @@ export default function SearchDesktopPage() {
                                 </h2>
                                 <InputFormNumberApp
                                     control={form.control}
-                                    id="minArea"
                                     name="minArea"
                                     label="Surface min"
                                     step={10}
@@ -248,7 +245,6 @@ export default function SearchDesktopPage() {
                                 />
                                 <InputFormNumberApp
                                     control={form.control}
-                                    id="maxArea"
                                     name="maxArea"
                                     label="Surface max"
                                     step={10}

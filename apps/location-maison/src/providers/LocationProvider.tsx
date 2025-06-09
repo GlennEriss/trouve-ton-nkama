@@ -1,12 +1,5 @@
 "use client";
-import { useCurrentUser } from "@/hooks/use-current-user";
-import {
-  ReactNode,
-  createContext,
-  useContext,
-  useEffect,
-  useState,
-} from "react";
+import React, { createContext, useContext, useState, useEffect } from 'react';
 
 interface Neighborhood {
   name: string;
@@ -28,35 +21,39 @@ interface LocationContextType {
   getAllNeighborhoodsWithOverpass: (
     province: string
   ) => Promise<Neighborhood[]>;
+  address: string;
+  isLoading: boolean;
+  error: string | null;
+  updateLocation: (lat: number, lng: number) => Promise<void>;
+  searchAddress: (query: string) => Promise<any[]>;
 }
 
-export const LocationContext = createContext<LocationContextType>({
-  locationsContext: null,
-  currentLocation: null,
-  setCurrentLocation: (...params: any[]) => {},
-  setLocationsContext: (...params: any[]) => {},
-  getLatitudeAndLongitudeLocation: async () => ({
-    latitude: 0,
-    longitude: 0,
-  }),
-  getUserLocation: async () => {},
-  getAddressFromCoordinates: async () => {},
-  getAllNeighborhoods: async () => [],
-  getAllNeighborhoodsWithOverpass: async () => [],
-});
+const LocationContext = createContext<LocationContextType | undefined>(undefined);
 
-export const useLocationContext = () => {
-  const locationContext = useContext(LocationContext);
-  if (locationContext === undefined) {
-    throw new Error("Context not defined");
+export const useLocation = () => {
+  const context = useContext(LocationContext);
+  if (!context) {
+    throw new Error('useLocation must be used within a LocationProvider');
   }
-  return locationContext;
+  return context;
 };
 
-export const LocationProvider = ({ children }: { children: ReactNode }) => {
+interface LocationProviderProps {
+  children: React.ReactNode;
+  initialLat?: number;
+  initialLng?: number;
+}
+
+export const LocationProvider: React.FC<LocationProviderProps> = ({
+  children,
+  initialLat,
+  initialLng,
+}) => {
   const [locationsContext, setLocationsContext] = useState<any[]>([]);
   const [currentLocation, setCurrentLocation] = useState<any>();
-  const { user } = useCurrentUser();
+  const [address, setAddress] = useState<string>('');
+  const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [error, setError] = useState<string | null>(null);
 
   const getAddressFromCoordinates = async (
     latitude: number,
@@ -64,12 +61,13 @@ export const LocationProvider = ({ children }: { children: ReactNode }) => {
   ) => {
     try {
       const response = await fetch(
-        `https://nominatim.openstreetmap.org/reverse?lat=${latitude}&lon=${longitude}&format=json`
+        `/api/geocode?lat=${latitude}&lng=${longitude}`
       );
 
       if (!response.ok) {
-        throw new Error("Réponse du serveur non valide");
+        throw new Error(`HTTP error! status: ${response.status}`);
       }
+
       const data = await response.json();
       if (data.address) {
         const {
@@ -80,32 +78,47 @@ export const LocationProvider = ({ children }: { children: ReactNode }) => {
           neighbourhood,
           city_district,
         } = data.address;
-        setCurrentLocation({
+        const locationData = {
           country,
           region,
           city,
           countryCode: country_code,
           neighbourhood,
           city_district,
-        });
-        setLocationsContext([
-          {
-            country,
-            region,
-            city,
-            countryCode: country_code,
-            neighbourhood,
-            city_district,
-          },
-        ]);
+        };
+        setCurrentLocation(locationData);
+        setLocationsContext([locationData]);
+        setAddress(data.display_name || 'Adresse non trouvée');
+        
+        // Sauvegarder dans le localStorage
+        localStorage.setItem('userLocation', JSON.stringify({
+          location: locationData,
+          address: data.display_name,
+          timestamp: Date.now()
+        }));
+        
         return data;
       }
     } catch (error) {
-      console.error("Erreur lors de la récupération des données", error);
+      console.error('Erreur lors de la récupération des données', error);
+      setAddress('Adresse non trouvée');
     }
   };
 
   const getUserLocation = async () => {
+    // Vérifier si on a déjà une localisation dans le localStorage
+    const savedLocation = localStorage.getItem('userLocation');
+    if (savedLocation) {
+      const { location, address: savedAddress, timestamp } = JSON.parse(savedLocation);
+      // Vérifier si la localisation a moins de 24h
+      if (Date.now() - timestamp < 24 * 60 * 60 * 1000) {
+        setCurrentLocation(location);
+        setLocationsContext([location]);
+        setAddress(savedAddress);
+        return;
+      }
+    }
+
     if ("geolocation" in navigator) {
       navigator.geolocation.getCurrentPosition(
         (position) => {
@@ -152,7 +165,7 @@ export const LocationProvider = ({ children }: { children: ReactNode }) => {
   const getAllNeighborhoods = async (city: string): Promise<Neighborhood[]> => {
     try {
       const response = await fetch(
-        `https://nominatim.openstreetmap.org/search?q=${city}&format=json&polygon_geojson=1&addressdetails=1`
+        `/api/geocode/search?q=${encodeURIComponent(city)}&format=json&polygon_geojson=1&addressdetails=1`
       );
       if (!response.ok) {
         throw new Error("Erreur lors de la récupération des quartiers");
@@ -187,7 +200,7 @@ export const LocationProvider = ({ children }: { children: ReactNode }) => {
       `;
   
       const response = await fetch(
-        `https://overpass-api.de/api/interpreter?data=${encodeURIComponent(overpassQuery)}`
+        `/api/overpass?data=${encodeURIComponent(overpassQuery)}`
       );
       if (!response.ok) {
         throw new Error("Erreur lors de la récupération des quartiers");
@@ -210,24 +223,66 @@ export const LocationProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
+  const updateLocation = async (lat: number, lng: number) => {
+    setIsLoading(true);
+    setError(null);
+    try {
+      const newAddress = await getAddressFromCoordinates(lat, lng);
+      setAddress(newAddress.display_name || 'Adresse non trouvée');
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Une erreur est survenue');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const searchAddress = async (query: string): Promise<any[]> => {
+    try {
+      const response = await fetch(
+        `/api/geocode/search?q=${encodeURIComponent(query)}`
+      );
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const data = await response.json();
+      return data;
+    } catch (error) {
+      console.error('Erreur lors de la recherche:', error);
+      return [];
+    }
+  };
+
   useEffect(() => {
     getUserLocation();
   }, []);
 
+  useEffect(() => {
+    if (initialLat && initialLng) {
+      updateLocation(initialLat, initialLng);
+    }
+  }, [initialLat, initialLng]);
+
+  const value = {
+    locationsContext,
+    currentLocation,
+    setLocationsContext,
+    setCurrentLocation,
+    getLatitudeAndLongitudeLocation,
+    getUserLocation,
+    getAddressFromCoordinates,
+    getAllNeighborhoods,
+    getAllNeighborhoodsWithOverpass,
+    address,
+    isLoading,
+    error,
+    updateLocation,
+    searchAddress,
+  };
+
   return (
-    <LocationContext.Provider
-      value={{
-        locationsContext,
-        currentLocation,
-        setLocationsContext,
-        setCurrentLocation,
-        getLatitudeAndLongitudeLocation,
-        getUserLocation,
-        getAddressFromCoordinates,
-        getAllNeighborhoods,
-        getAllNeighborhoodsWithOverpass,
-      }}
-    >
+    <LocationContext.Provider value={value}>
       {children}
     </LocationContext.Provider>
   );
