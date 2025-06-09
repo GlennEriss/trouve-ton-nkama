@@ -20,7 +20,7 @@ export async function getCreditHistoryByUserId(
     // Construction de la query
     let q = query(
       collectionRef,
-      where("userId", "==", userId),
+      where("uid", "==", userId),
       orderBy("createdAt", "desc")
     );
 
@@ -28,7 +28,7 @@ export async function getCreditHistoryByUserId(
     if (type && type !== 'all') {
       q = query(
         collectionRef,
-        where("userId", "==", userId),
+        where("uid", "==", userId),
         where("type", "==", type),
         orderBy("createdAt", "desc")
       );
@@ -166,7 +166,7 @@ export async function getCreditTransactionCount(
     const { collection, db, getCountFromServer, query, where } = await getFirestore();
     const collectionRef = collection(db, firebaseCollectionNames.credit_transactions);
 
-    let q = query(collectionRef, where("userId", "==", userId));
+    let q = query(collectionRef, where("uid", "==", userId));
 
     // Filtrage par type si spécifié
     if (type && type !== 'all') {
@@ -221,7 +221,7 @@ export async function getCreditTransactionStats(userId: string): Promise<{
     const { collection, db, getDocs, query, where } = await getFirestore();
     const collectionRef = collection(db, firebaseCollectionNames.credit_transactions);
     
-    const q = query(collectionRef, where("userId", "==", userId));
+    const q = query(collectionRef, where("uid", "==", userId));
     const querySnapshot = await getDocs(q);
 
     let totalPurchases = 0;

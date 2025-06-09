@@ -10,7 +10,7 @@ import { useCurrentUser } from '@/hooks/use-current-user'
 
 interface PurchaseRequest {
   packId: string
-  phoneNumber: string
+  code: string
 }
 
 interface PurchaseResponse {

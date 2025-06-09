@@ -137,13 +137,12 @@ export const FilterModalHomePage = () => {
     return (
         <Dialog open={open} onOpenChange={setOpen}>
             <DialogTrigger asChild>
-                <button
-                    type='button'
+                <div
+                    className="p-2 rounded-full bg-gray-200 hover:bg-[#1FA89B]/20 transition cursor-pointer"
                     title="Ouvrir les filtres de recherche"
-                    className=" p-2 rounded-full bg-gray-200 hover:bg-[#1FA89B]/20 transition"
                 >
                     <SlidersHorizontal />
-                </button>
+                </div>
             </DialogTrigger>
 
             <DialogContent isDefaultIconClose={false} className="shadow-xl h-[90vh] max-w-[95%] md:max-w-4xl mx-auto flex flex-col rounded-2xl bg-white dark:bg-black overflow-hidden">
@@ -200,7 +199,7 @@ export const FilterModalHomePage = () => {
                                         min={0}
                                         step={10000}
                                         defaultValue={Number(localMinPrice)}
-                                        personalizedOnChange={(value) =>
+                                        onChange={(value) =>
                                             setLocalMinPrice(String(Math.max(0, value)))
                                         }
                                         placeholder="0"
@@ -214,7 +213,7 @@ export const FilterModalHomePage = () => {
                                         min={0}
                                         step={10000}
                                         defaultValue={Number(localMaxPrice)}
-                                        personalizedOnChange={(value) =>
+                                        onChange={(value) =>
                                             setLocalMaxPrice(String(Math.max(0, value)))
                                         }
                                         placeholder="1 000 000 000"

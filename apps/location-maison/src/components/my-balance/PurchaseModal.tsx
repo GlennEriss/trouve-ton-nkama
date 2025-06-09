@@ -6,7 +6,8 @@
 
 import React, { useState, useEffect } from 'react'
 import { X, Package, Smartphone, Loader2, CheckCircle, AlertCircle } from 'lucide-react'
-import { useCreditsPurchase } from '@/hooks/use-credits-purchase'
+/* import { useCreditsPurchase } from '@/hooks/use-credits-purchase' */
+import { useVerifyCode } from '@/hooks/use-verify-code'
 import { useToast } from '@/hooks/use-toast'
 
 interface CreditPack {
@@ -56,16 +57,24 @@ const CREDIT_PACKS: CreditPack[] = [
 export default function PurchaseModal({ isOpen, onClose, preselectedPack }: PurchaseModalProps) {
   const [selectedPack, setSelectedPack] = useState<CreditPack | null>(null)
   const [phoneNumber, setPhoneNumber] = useState('')
-  const [step, setStep] = useState<'select' | 'phone' | 'confirm'>('select')
+  const [code, setCode] = useState('')
+  const [step, setStep] = useState<'select' | 'instructions' | 'code'>('select')
   
-  const { mutate: purchaseCredits, isPending, isSuccess, isError, error } = useCreditsPurchase()
+  /* const { mutate: purchaseCredits, isPending, isSuccess, isError, error } = useCreditsPurchase() */
+  const { 
+    mutate: verifyCode, 
+    isPending: isVerifying, 
+    isSuccess: isVerified, 
+    isError: hasError, 
+    error: verifyError 
+  } = useVerifyCode()
   const { toast } = useToast()
 
   // Effet pour gérer le pack présélectionné
   useEffect(() => {
     if (preselectedPack && isOpen) {
       setSelectedPack(preselectedPack)
-      setStep('phone')
+      setStep('instructions')
     } else if (!preselectedPack && isOpen) {
       setStep('select')
     }
@@ -73,42 +82,37 @@ export default function PurchaseModal({ isOpen, onClose, preselectedPack }: Purc
 
   const handlePackSelect = (pack: CreditPack) => {
     setSelectedPack(pack)
-    setStep('phone')
+    setStep('instructions')
   }
 
-  const handlePhoneSubmit = () => {
-    if (phoneNumber.trim()) {
-      setStep('confirm')
-    }
+  const handleInstructionsConfirm = () => {
+    setStep('code')
   }
 
   const handlePurchase = () => {
-    if (selectedPack && phoneNumber) {
-      purchaseCredits({
-        packId: selectedPack.id,
-        phoneNumber: phoneNumber.trim()
+    if (selectedPack && code) {
+      verifyCode({
+        code: code.trim(),
+        amount: selectedPack.price
       }, {
         onSuccess: (response) => {
-          console.log('Achat réussi:', response)
+          console.log('Code vérifié:', response)
           
-          // Toast de succès
           toast({
-            title: "✅ Achat réussi !",
+            title: "✅ Code validé !",
             description: `${selectedPack.credits} crédits ajoutés à votre solde`,
           })
           
-          // Fermer la modal après 2 secondes
-          setTimeout(() => {
-            handleClose()
-          }, 2000)
+          // Réinitialiser le code mais garder le pack sélectionné
+          setCode('')
+          setStep('instructions')
         },
         onError: (error) => {
-          console.error('Erreur achat:', error)
+          console.error('Erreur vérification:', error)
           
-          // Toast d'erreur
           toast({
-            title: "❌ Erreur de paiement",
-            description: error.message || 'Une erreur est survenue lors du paiement',
+            title: "❌ Erreur de validation",
+            description: error.message || 'Une erreur est survenue lors de la validation du code',
             variant: "destructive"
           })
         }
@@ -116,7 +120,7 @@ export default function PurchaseModal({ isOpen, onClose, preselectedPack }: Purc
     }
   }
 
-  const formatPhoneNumber = (value: string) => {
+/*   const formatPhoneNumber = (value: string) => {
     // Nettoyer et formater le numéro
     const cleaned = value.replace(/\D/g, '')
     
@@ -137,10 +141,11 @@ export default function PurchaseModal({ isOpen, onClose, preselectedPack }: Purc
     const cleaned = phoneNumber.replace(/\D/g, '')
     return cleaned.length >= 8 && (cleaned.startsWith('241') || cleaned.length === 8)
   }
-
+ */
   const resetModal = () => {
     setSelectedPack(null)
     setPhoneNumber('')
+    setCode('')
     setStep('select')
   }
 
@@ -212,42 +217,27 @@ export default function PurchaseModal({ isOpen, onClose, preselectedPack }: Purc
             </div>
           )}
 
-          {/* Étape 2: Numéro de téléphone */}
-          {step === 'phone' && selectedPack && (
+          {/* Étape 2: Instructions */}
+          {step === 'instructions' && selectedPack && (
             <div className="space-y-4">
               <div className="text-center">
                 <h3 className="font-semibold text-gray-900 dark:text-white">
-                  Pack sélectionné: {selectedPack.name}
+                  Instructions de paiement
                 </h3>
-                <p className="text-sm text-gray-600 dark:text-gray-400">
-                  {selectedPack.credits} crédits - {selectedPack.price.toLocaleString()} FCFA
+                <p className="text-sm text-gray-600 dark:text-gray-400 mt-2">
+                  Pack {selectedPack.name} - {selectedPack.price.toLocaleString()} FCFA
                 </p>
               </div>
 
-              <div className="space-y-3">
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                  Numéro Airtel Money
-                </label>
-                <div className="relative">
-                  <Smartphone className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
-                  <input
-                    type="tel"
-                    value={phoneNumber}
-                    onChange={handlePhoneChange}
-                    placeholder="241 XX XX XX XX"
-                    className="w-full pl-10 pr-4 py-3 border border-gray-200 dark:border-gray-700 rounded-xl focus:ring-2 focus:ring-[#146B67] focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white font-mono"
-                  />
-                </div>
-                <p className="text-xs text-gray-500 dark:text-gray-400">
-                  Format: +241 XX XX XX XX ou XX XX XX XX
+              <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4 space-y-3">
+                <p className="text-sm text-blue-700 dark:text-blue-300">
+                  Pour obtenir votre code de paiement, suivez ces étapes :
                 </p>
-              </div>
-
-              <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-3">
-                <p className="text-sm text-blue-700 dark:text-blue-300 flex items-center gap-2">
-                  <Smartphone className="h-4 w-4" />
-                  Vous recevrez une notification Airtel Money pour confirmer le paiement.
-                </p>
+                <ol className="list-decimal list-inside space-y-2 text-sm text-blue-700 dark:text-blue-300">
+                  <li>Faites un retrait de {selectedPack.price.toLocaleString()} FCFA sur le code Agent A66221</li>
+                  <li>Vous recevrez un code de paiement par SMS</li>
+                  <li>Entrez ce code dans l'étape suivante</li>
+                </ol>
               </div>
 
               <div className="flex gap-3">
@@ -258,82 +248,79 @@ export default function PurchaseModal({ isOpen, onClose, preselectedPack }: Purc
                   {preselectedPack ? 'Annuler' : 'Retour'}
                 </button>
                 <button
-                  onClick={handlePhoneSubmit}
-                  disabled={!isValidPhone()}
-                  className="flex-1 py-3 bg-[#146B67] text-white rounded-xl font-medium hover:bg-[#125A56] disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                  onClick={handleInstructionsConfirm}
+                  className="flex-1 py-3 bg-[#146B67] text-white rounded-xl font-medium hover:bg-[#125A56] transition-colors"
                 >
-                  Continuer
+                  J'ai le code
                 </button>
               </div>
             </div>
           )}
 
-          {/* Étape 3: Confirmation */}
-          {step === 'confirm' && selectedPack && (
+          {/* Étape 3: Saisie du code */}
+          {step === 'code' && selectedPack && (
             <div className="space-y-4">
-              <div className="text-center space-y-2">
+              <div className="text-center">
                 <h3 className="font-semibold text-gray-900 dark:text-white">
-                  Confirmer l'achat
+                  Entrez votre code
                 </h3>
+                <p className="text-sm text-gray-600 dark:text-gray-400">
+                  Pack {selectedPack.name} - {selectedPack.price.toLocaleString()} FCFA
+                </p>
               </div>
 
-              <div className="bg-gray-50 dark:bg-gray-700 rounded-xl p-4 space-y-2">
-                <div className="flex justify-between">
-                  <span className="text-gray-600 dark:text-gray-400">Pack:</span>
-                  <span className="font-medium">{selectedPack.name}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-gray-600 dark:text-gray-400">Crédits:</span>
-                  <span className="font-medium">{selectedPack.credits}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-gray-600 dark:text-gray-400">Prix:</span>
-                  <span className="font-bold text-[#146B67] dark:text-[#1FA89B]">
-                    {selectedPack.price.toLocaleString()} FCFA
-                  </span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-gray-600 dark:text-gray-400">Numéro:</span>
-                  <span className="font-medium">{phoneNumber}</span>
-                </div>
+              <div className="space-y-3">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                  Code de paiement
+                </label>
+                <input
+                  type="text"
+                  value={code}
+                  onChange={(e) => setCode(e.target.value)}
+                  placeholder="Entrez le code reçu"
+                  className="w-full px-4 py-3 border border-gray-200 dark:border-gray-700 rounded-xl focus:ring-2 focus:ring-[#146B67] focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white font-mono"
+                />
+                <p className="text-xs text-gray-500 dark:text-gray-400">
+                  Le code a été envoyé par SMS après votre paiement
+                </p>
               </div>
 
               {/* État des requêtes */}
-              {isPending && (
+              {isVerifying && (
                 <div className="flex items-center justify-center gap-2 text-[#146B67]">
                   <Loader2 className="w-5 h-5 animate-spin" />
-                  <span>Initiation du paiement...</span>
+                  <span>Vérification du code...</span>
                 </div>
               )}
 
-              {isSuccess && (
+              {isVerified && (
                 <div className="flex items-center gap-2 text-green-600 dark:text-green-400">
                   <CheckCircle className="w-5 h-5" />
-                  <span>Paiement initié avec succès !</span>
+                  <span>Code validé avec succès !</span>
                 </div>
               )}
 
-              {isError && (
+              {hasError && (
                 <div className="flex items-center gap-2 text-red-600 dark:text-red-400">
                   <AlertCircle className="w-5 h-5" />
-                  <span className="text-sm">{error?.message || 'Erreur lors du paiement'}</span>
+                  <span className="text-sm">{verifyError?.message || 'Erreur lors de la validation du code'}</span>
                 </div>
               )}
 
               <div className="flex gap-3">
                 <button
-                  onClick={() => setStep('phone')}
-                  disabled={isPending}
+                  onClick={() => setStep('instructions')}
+                  disabled={isVerifying}
                   className="flex-1 py-3 border border-gray-200 dark:border-gray-700 rounded-xl font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors disabled:opacity-50"
                 >
                   Retour
                 </button>
                 <button
-                  onClick={isSuccess ? handleClose : handlePurchase}
-                  disabled={isPending}
+                  onClick={handlePurchase}
+                  disabled={isVerifying || !code.trim()}
                   className="flex-1 py-3 bg-[#146B67] text-white rounded-xl font-medium hover:bg-[#125A56] disabled:opacity-50 transition-colors"
                 >
-                  {isSuccess ? 'Fermer' : `Payer ${selectedPack.price.toLocaleString()} FCFA`}
+                  Valider le code
                 </button>
               </div>
             </div>
