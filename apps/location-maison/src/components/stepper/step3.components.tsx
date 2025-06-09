@@ -104,3 +104,19 @@ export const InputDisabledComponent = ({ field }: { field: any }) => {
   )
 }
 
+const searchAddress = async (inputValue: string) => {
+  try {
+    const response = await fetch(`/api/geocode/search?q=${encodeURIComponent(inputValue)}`);
+    
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    const data = await response.json();
+    return data;
+  } catch (error) {
+    console.error('Erreur lors de la recherche:', error);
+    return [];
+  }
+};
+

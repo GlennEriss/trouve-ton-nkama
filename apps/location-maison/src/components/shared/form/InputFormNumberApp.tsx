@@ -1,36 +1,56 @@
 import React from 'react'
 import { InputNumberApp } from '../ui/InputNumberApp'
 import { Control, FieldValues, Path } from 'react-hook-form'
-import { FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form'
+import { FormField, FormItem, FormLabel, FormMessage, FormControl } from '@/components/ui/form'
 
-type InputFormNumberAppProps<T extends FieldValues> = {
-    control: Control<T>,
-    name: Path<T>,
-    label: string,
-    placeholder: string,
-    step?: number,
-} & React.ComponentProps<"input">
+interface InputFormNumberAppProps<T extends FieldValues = any> {
+    control: Control<T>;
+    name: Path<T>;
+    label: string;
+    placeholder?: string;
+    step?: number;
+    min?: number;
+    max?: number;
+    required?: boolean;
+    className?: string;
+}
 
-export default function InputFormNumberApp<T extends FieldValues>({ control, name, label, placeholder, step = 1, ...props }: InputFormNumberAppProps<T>) {
+const InputFormNumberApp = <T extends FieldValues = any>({
+    control,
+    name,
+    label,
+    placeholder,
+    step = 1,
+    min,
+    max,
+    required = false,
+    className,
+}: InputFormNumberAppProps<T>) => {
     return (
         <FormField
             control={control}
             name={name}
-            render={({ field, formState: { isSubmitting } }) => (
-                <FormItem>
-                    <FormLabel className='text-md'>{label}</FormLabel>
-                    <InputNumberApp
-                        {...props}
-                        {...field}
-                        disabled={isSubmitting}
-                        step={step}
-                        personalizedOnChange={(value) => {
-                            field.onChange(value)
-                        }}
-                    />
+            render={({ field }) => (
+                <FormItem className={className}>
+                    <FormLabel>
+                        {label}
+                        {required && <span className="text-red-500 ml-1">*</span>}
+                    </FormLabel>
+                    <FormControl>
+                        <InputNumberApp
+                            placeholder={placeholder}
+                            step={step}
+                            min={min}
+                            max={max}
+                            onChange={(value) => field.onChange(value)}
+                            defaultValue={field.value}
+                        />
+                    </FormControl>
                     <FormMessage />
                 </FormItem>
             )}
         />
-    )
-}
+    );
+};
+
+export default InputFormNumberApp;

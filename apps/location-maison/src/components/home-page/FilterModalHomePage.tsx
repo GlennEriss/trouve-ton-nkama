@@ -199,9 +199,11 @@ export const FilterModalHomePage = () => {
                                         min={0}
                                         step={10000}
                                         defaultValue={Number(localMinPrice)}
-                                        onChange={(value) =>
-                                            setLocalMinPrice(String(Math.max(0, value)))
-                                        }
+                                        onChange={(value) => {
+                                            if (typeof value === 'number') {
+                                                setLocalMinPrice(String(Math.max(0, value)));
+                                            }
+                                        }}
                                         placeholder="0"
                                     />
                                 </div>
@@ -213,9 +215,11 @@ export const FilterModalHomePage = () => {
                                         min={0}
                                         step={10000}
                                         defaultValue={Number(localMaxPrice)}
-                                        onChange={(value) =>
-                                            setLocalMaxPrice(String(Math.max(0, value)))
-                                        }
+                                        onChange={(value) => {
+                                            if (typeof value === 'number') {
+                                                setLocalMaxPrice(String(Math.max(0, value)));
+                                            }
+                                        }}
                                         placeholder="1 000 000 000"
                                     />
                                 </div>

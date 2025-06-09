@@ -26,11 +26,11 @@ export default function Navbar() {
           <InputSearchNavbar />
           {user ? (
             <div className="flex items-center">
-              <a href={routes.protected.add_property}>
-                <button className="bg-gradient-to-r from-[#146B67] via-[#1FA89B] to-[#146B67] text-white rounded-lg text-[10px] px-3 py-2 font-semibold hover:brightness-110 hover:shadow-md transition dark:hover:shadow-[#1FA89B]/20">
+              <Link href={routes.protected.add_property}>
+                <button className="bg-gradient-to-r from-[#146B67] via-[#1FA89B] to-[#146B67] text-white rounded-lg text-[10px] px-3 py-2 font-semibold hover:brightness-110 hover:shadow-md transition-all duration-300 hover:scale-105 dark:hover:shadow-[#1FA89B]/20">
                   Poster une annonce
                 </button>
-              </a>
+              </Link>
             </div>
           ) : (
             <ButtonLogin />
@@ -74,10 +74,10 @@ const ButtonLogin = () => {
   return (
     <Button
       variant="ghost"
-      className="bg-gradient-to-r from-[#146B67] via-[#1FA89B] to-[#146B67] text-white border-none rounded-full text-base px-6 py-3 font-semibold hover:brightness-110 hover:shadow-md transition dark:hover:shadow-[#1FA89B]/20"
+      className="bg-gradient-to-r from-[#146B67] via-[#1FA89B] to-[#146B67] text-white border-none rounded-full text-base px-6 py-3 font-semibold hover:brightness-110 hover:shadow-md transition-all duration-300 hover:scale-105 dark:hover:shadow-[#1FA89B]/20"
       asChild
     >
-      <Link href={routes.public.signinSignup}>
+      <Link href={routes.public.signin}>
         Se connecter
       </Link>
     </Button>
@@ -88,7 +88,7 @@ const ButtonRegister = () => {
   return (
     <Button
       variant="outline"
-      className="text-[#146B67] dark:text-[#1FA89B] border border-[#146B67] dark:border-[#1FA89B] rounded-full text-base px-6 py-3 font-semibold hover:brightness-110 hover:shadow-md transition dark:hover:shadow-[#1FA89B]/20"
+      className="text-[#146B67] dark:text-[#1FA89B] border border-[#146B67] dark:border-[#1FA89B] rounded-full text-base px-6 py-3 font-semibold hover:brightness-110 hover:shadow-md transition-all duration-300 hover:scale-105 hover:bg-[#146B67]/5 dark:hover:bg-[#1FA89B]/5 dark:hover:shadow-[#1FA89B]/20"
       asChild>
       <Link href={routes.public.signup}>
         S'inscrire
@@ -101,7 +101,7 @@ const NavigationMenuNavbar = () => {
   const { user } = useCurrentUser()
   const menu = [
     {
-      link: user ? routes.protected.properties : routes.public.signinSignup,
+      link: user ? routes.protected.properties : routes.public.signin,
       label: user ? "Mes logements" : ""
     },
     {
@@ -109,7 +109,7 @@ const NavigationMenuNavbar = () => {
       label: "Catalogue"
     },
     {
-      link: user ? routes.protected.add_property : routes.public.signinSignup,
+      link: user ? routes.protected.add_property : routes.public.signin,
       label: "Poster une annonce"
     },
   ]
@@ -119,7 +119,7 @@ const NavigationMenuNavbar = () => {
         <NavigationMenuItem className="space-x-4">
           {menu.map((item) => (
             <NavigationMenuLink 
-              className="text-base text-[#146B67] dark:text-[#1FA89B] font-semibold hover:text-[#146B67] dark:hover:text-[#1FA89B] transition" 
+              className="text-base text-[#146B67] dark:text-[#1FA89B] font-semibold hover:text-[#146B67] dark:hover:text-[#1FA89B] relative after:absolute after:bottom-0 after:left-0 after:h-0.5 after:w-0 after:bg-[#146B67] dark:after:bg-[#1FA89B] after:transition-all after:duration-300 hover:after:w-full" 
               key={item.label} 
               href={item.link}
             >
