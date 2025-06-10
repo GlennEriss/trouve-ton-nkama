@@ -7,7 +7,7 @@ import { NextRequest, NextResponse } from 'next/server'
 
 interface PurchaseRequestBody {
   packId: string
-  phoneNumber: string
+  code: string
 }
 
 interface PurchaseResponse {
@@ -37,12 +37,12 @@ export async function POST(request: NextRequest): Promise<NextResponse<PurchaseR
 
     // Parser le body de la requête
     const body: PurchaseRequestBody = await request.json()
-    const { packId, phoneNumber } = body
+    const { packId, code } = body
 
     // Validation des paramètres
-    if (!packId || !phoneNumber) {
+    if (!packId || !code) {
       return NextResponse.json(
-        { success: false, message: 'Pack ID et numéro de téléphone requis' },
+        { success: false, message: 'Pack ID et code requis' },
         { status: 400 }
       )
     }
@@ -65,7 +65,7 @@ export async function POST(request: NextRequest): Promise<NextResponse<PurchaseR
       body: JSON.stringify({
         data: {
           packId,
-          phoneNumber
+          code
         }
       })
     })

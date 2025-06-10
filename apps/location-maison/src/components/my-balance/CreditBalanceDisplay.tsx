@@ -13,14 +13,16 @@ interface CreditBalanceDisplayProps {
 export default function CreditBalanceDisplay({
   onRecharge
 }: CreditBalanceDisplayProps) {
-  const { data: balanceData, isLoading, error, isError } = useCreditsBalance()
+  const { data: balanceData, isLoading, error, isError, refetch } = useCreditsBalance()
   const { user } = useCurrentUser()
   const { update, data: session } = useSession();
   const balance = balanceData?.credits || 0
   const isNewUser = balanceData?.message?.includes('Bienvenue') || false
   const welcomeCredits = 3
+
+  // Mettre à jour la session avec le nouveau solde
   React.useEffect(() => {
-    if (user?.credits != balance) {
+    if (user?.credits !== balance) {
       update({
         user: {
           ...session?.user,
@@ -28,12 +30,12 @@ export default function CreditBalanceDisplay({
         }
       })
     }
-  }, [user, balance])
+  }, [user, balance, session?.user, update])
+
   const handleRecharge = () => {
     if (onRecharge) {
       onRecharge()
     } else {
-      // TODO: Ouvrir modal de recharge ou rediriger vers sélection pack
       console.log('Recharger le solde')
     }
   }

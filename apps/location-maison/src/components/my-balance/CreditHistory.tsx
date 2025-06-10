@@ -21,11 +21,6 @@ export default function CreditHistory() {
     refetch
   } = useCreditHistory({ type: filter, limit: 10 })
 
-  // Debug - voir les données qui arrivent
-  console.log('historyData:', historyData)
-  console.log('isLoadingHistory:', isLoadingHistory)
-  console.log('historyError:', historyError)
-
   // Fusionner les pages de données
   useEffect(() => {
     if (historyData?.pages) {

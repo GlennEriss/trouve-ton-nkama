@@ -105,11 +105,9 @@ export default function HomePageMobileComponent() {
                                 onChange={(e) => setSearchText(e.target.value)}
                                 name="query"
                             />
-                            <button
-                                type='button'
-                            >
+                            <div>
                                 <FilterModalHomePage />
-                            </button>
+                            </div>
                         </div>
                     </Form>
                 </section>
