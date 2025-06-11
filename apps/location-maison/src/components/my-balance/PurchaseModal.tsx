@@ -234,7 +234,7 @@ export default function PurchaseModal({ isOpen, onClose, preselectedPack }: Purc
                   Pour obtenir votre code de paiement, suivez ces étapes :
                 </p>
                 <ol className="list-decimal list-inside space-y-2 text-sm text-blue-700 dark:text-blue-300">
-                  <li>Faites un retrait de {selectedPack.price.toLocaleString()} FCFA sur le code Agent A66221</li>
+                  <li>Faites un retrait de {selectedPack.price.toLocaleString()} FCFA sur le code Agent {process.env.NEXT_PUBLIC_AGENT_CODE_AIRTEL}</li>
                   <li>Vous recevrez un code de paiement par SMS</li>
                   <li>Entrez ce code dans l'étape suivante</li>
                 </ol>
