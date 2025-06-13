@@ -29,5 +29,6 @@ namespace NodeJS {
     FACEBOOK_CLIENT_SECRET: string;
     //SUPPORT
     NEXT_PUBLIC_EMAIL_SUPPORT: string
+    NEXT_PUBLIC_AGENT_CODE_AIRTEL: string
   }
 }

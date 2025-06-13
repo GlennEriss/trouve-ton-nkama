@@ -1,7 +1,6 @@
 'use client'
 import React from 'react'
 import Image from "next/image";
-import { TypeProperty } from '@/lib/utils';
 import { useRouter } from 'next/navigation';
 import { useCurrentUser } from '@/hooks/use-current-user';
 import { useInfiniteQuery } from '@tanstack/react-query';
@@ -12,6 +11,7 @@ import { getPropertyById } from '@/db/property.db';
 import { Button } from '../ui/button';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { Skeleton } from '../ui/skeleton';
+import { TypeProperty } from '@/constantes/property-type';
 
 export default function SectionFavoris() {
     const {user} = useCurrentUser()

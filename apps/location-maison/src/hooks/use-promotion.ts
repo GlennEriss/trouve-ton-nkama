@@ -4,8 +4,8 @@ import { useRouter } from 'next/navigation'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { Property, PromotionType, Promotion } from '@/models/annonce'
 import { useCurrentUser } from './use-current-user'
-import { updateUser } from '@/db/user.db'
 import { updateProperty } from '@/db/property.db'
+import { deductCreditsWithTransaction } from '@/db/credit-transaction.db'
 import { routes } from '@/constantes/routes'
 import { useToast } from './use-toast'
 import { Timestamp } from 'firebase/firestore'
@@ -19,6 +19,7 @@ interface UsePromotionProps {
 interface PromotionServiceConfig {
   credits: number
   duration: number // en jours
+  serviceName: string // Pour l'historique des transactions
 }
 
 interface PromotePropertyParams {
@@ -26,10 +27,10 @@ interface PromotePropertyParams {
 }
 
 const PROMOTION_CONFIGS: Record<NonNullable<PromotionType>, PromotionServiceConfig> = {
-  'featured': { credits: 15, duration: 7 },
-  'trending-7d': { credits: 10, duration: 7 },
-  'trending-3d': { credits: 5, duration: 3 },
-  'boost': { credits: 3, duration: 0 }, // Boost n'a pas de durée, il remet juste à jour
+  'featured': { credits: 15, duration: 7, serviceName: 'Mise à la une' },
+  'trending-7d': { credits: 10, duration: 7, serviceName: 'Mise en tendance 7j' },
+  'trending-3d': { credits: 5, duration: 3, serviceName: 'Mise en tendance 3j' },
+  'boost': { credits: 3, duration: 0, serviceName: 'Boost' }, // Boost n'a pas de durée, il remet juste à jour
 }
 
 export const usePromotion = ({ property, onSuccess }: UsePromotionProps) => {
@@ -85,43 +86,57 @@ export const usePromotion = ({ property, onSuccess }: UsePromotionProps) => {
         propertyUpdates.lastBoostedAt = startDate
       }
 
-      // 4. Débiter les crédits de l'utilisateur
-      const newCreditsBalance = user.credits - config.credits
-      const userUpdateSuccess = await updateUser(user.uid, {
-        credits: newCreditsBalance
-      })
+      // 4. Déduire les crédits ET créer la transaction atomiquement
+      const description = `${config.serviceName} - Annonce "${property.title}"`
+      
+      try {
+        const transactionResult = await deductCreditsWithTransaction(
+          user.uid,
+          config.credits,
+          config.serviceName,
+          property.id,
+          description
+        )
 
-      if (!userUpdateSuccess) {
-        throw new Error("Échec de la mise à jour des crédits utilisateur")
-      }
-
-      // 5. Mettre à jour la propriété
-      const propertyUpdateSuccess = await updateProperty(property.id!, propertyUpdates)
-
-      if (!propertyUpdateSuccess) {
-        // Rollback : remettre les crédits si la mise à jour de la propriété échoue
-        await updateUser(user.uid, {
-          credits: user.credits
-        })
-        throw new Error("Échec de la mise à jour de la propriété")
-      }
-
-      // 6. Mettre à jour l'état local de l'utilisateur
-      setUser({
-        ...user,
-        credits: newCreditsBalance
-      })
-      update({
-        user: {
-          ...session?.user,
-          credits: newCreditsBalance
+        if (!transactionResult.success) {
+          throw new Error("Échec de la déduction des crédits")
         }
-      })
 
-      return { promotionType, newCreditsBalance, config }
+        // 5. Mettre à jour la propriété
+        const propertyUpdateSuccess = await updateProperty(property.id!, propertyUpdates)
+
+        if (!propertyUpdateSuccess) {
+          throw new Error("Échec de la mise à jour de la propriété")
+        }
+
+        // 6. Mettre à jour l'état local de l'utilisateur
+        const newCreditsBalance = user.credits - config.credits
+        setUser({
+          ...user,
+          credits: newCreditsBalance
+        })
+        
+        update({
+          user: {
+            ...session?.user,
+            credits: newCreditsBalance
+          }
+        })
+
+        return { 
+          promotionType, 
+          newCreditsBalance, 
+          config, 
+          transactionId: transactionResult.transactionId 
+        }
+
+      } catch (error) {
+        console.error('Erreur lors de la promotion:', error)
+        throw error
+      }
     },
     onSuccess: (data) => {
-      const { promotionType, config } = data
+      const { promotionType, config, transactionId } = data
       
       const promotionNames = {
         'featured': 'à la une',
@@ -135,6 +150,8 @@ export const usePromotion = ({ property, onSuccess }: UsePromotionProps) => {
         description: `Votre annonce "${property.title}" est maintenant ${promotionNames[promotionType]}. ${config.credits} crédits ont été débités.`,
         variant: "default"
       })
+
+      console.log(`Promotion activée - Transaction ID: ${transactionId}`)
 
       // Invalider les caches liés aux propriétés promues
       queryClient.invalidateQueries({ queryKey: ['promoted-properties'] })

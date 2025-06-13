@@ -40,7 +40,7 @@ export interface CreditPack {
   }
   
   export interface CreditTransactionInput {
-    userId: string
+    uid: string
     type?: 'purchase' | 'spend'
     packId?: string
     credits: number

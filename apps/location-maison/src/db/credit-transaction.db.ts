@@ -276,7 +276,7 @@ export async function createSpendTransaction(
 ): Promise<string> {
   try {
     const transactionData: CreditTransactionInput = {
-      userId,
+      uid: userId,
       type: 'spend',
       credits: -Math.abs(credits), // Négatif pour les dépenses
       service,
@@ -303,16 +303,21 @@ export async function deductCreditsWithTransaction(
   description?: string
 ): Promise<{transactionId: string, success: boolean}> {
   try {
-    const { runTransaction, doc, getDoc, updateDoc, serverTimestamp } = await getFirestore();
+    console.log('🔄 deductCreditsWithTransaction appelée avec:', { userId, credits, service, propertyId, description });
+    
+    const { runTransaction, doc, serverTimestamp } = await getFirestore();
     const { collection, db, where, query, getDocs } = await getFirestore();
     
     return await runTransaction(db, async (transaction) => {
+      console.log('📊 Début de la transaction atomique');
+      
       // Trouver le document utilisateur
       const usersCollection = collection(db, firebaseCollectionNames.users);
       const userQuery = query(usersCollection, where("uid", "==", userId));
       const userSnapshot = await getDocs(userQuery);
       
       if (userSnapshot.empty) {
+        console.error('❌ Utilisateur introuvable avec uid:', userId);
         throw new Error('Utilisateur introuvable');
       }
       
@@ -320,12 +325,17 @@ export async function deductCreditsWithTransaction(
       const userData = userDoc.data();
       const currentCredits = userData.credits || 0;
       
+      console.log('💰 Crédits actuels:', currentCredits, 'Crédits à déduire:', credits);
+      
       if (currentCredits < credits) {
+        console.error('❌ Solde insuffisant. Disponible:', currentCredits, 'Requis:', credits);
         throw new Error('Solde de crédits insuffisant');
       }
       
       // Déduire les crédits
       const newCredits = currentCredits - credits;
+      console.log('📝 Mise à jour du solde utilisateur:', newCredits);
+      
       transaction.update(userDoc.ref, {
         credits: newCredits,
         updatedAt: serverTimestamp()
@@ -333,7 +343,7 @@ export async function deductCreditsWithTransaction(
       
       // Créer la transaction de dépense
       const transactionData: CreditTransactionInput = {
-        userId,
+        uid: userId,
         type: 'spend',
         credits: -Math.abs(credits),
         service,
@@ -342,13 +352,19 @@ export async function deductCreditsWithTransaction(
         propertyId
       };
       
+      console.log('📄 Données de transaction à créer:', transactionData);
+      
       const transactionRef = doc(collection(db, firebaseCollectionNames.credit_transactions));
+      console.log('📁 Nom de collection utilisé:', firebaseCollectionNames.credit_transactions);
+      console.log('🆔 Transaction ref ID:', transactionRef.id);
+      
       transaction.set(transactionRef, {
         ...transactionData,
-        id: transactionRef.id,
         createdAt: serverTimestamp(),
         updatedAt: serverTimestamp()
       });
+      
+      console.log('✅ Transaction créée avec succès, ID:', transactionRef.id);
       
       return {
         transactionId: transactionRef.id,
@@ -357,7 +373,7 @@ export async function deductCreditsWithTransaction(
     });
     
   } catch (error) {
-    console.error("Error deducting credits:", error);
+    console.error("❌ Error deducting credits:", error);
     throw error;
   }
 }

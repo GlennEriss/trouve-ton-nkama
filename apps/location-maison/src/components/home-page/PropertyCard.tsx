@@ -4,7 +4,8 @@
 import React from "react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-import { formatDateFr, TypeProperty } from "@/lib/utils";
+import { formatDateFr } from "@/lib/utils";
+import { TypeProperty } from "@/constantes/property-type";
 
 // Import des icônes
 import { FaToilet } from "react-icons/fa";
