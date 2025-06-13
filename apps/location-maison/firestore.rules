@@ -1,0 +1,60 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    function isSignedIn() {
+      return request.auth != null;
+    }
+    
+    function isOwner(userId) {
+      return isSignedIn() && request.auth.uid == userId;
+    }
+    
+    function isTransactionOperation() {
+      return request.resource != null && 
+             request.resource.data.diff(resource.data).affectedKeys().hasOnly(['credits', 'updatedAt']);
+    }
+    
+    match /users/{userId} {
+      allow read, create: if true;
+      allow update: if isSignedIn() && (
+        // Soit l'utilisateur est le propriétaire
+        request.auth.uid == resource.data.uid ||
+        // Soit c'est une transaction atomique
+        (isTransactionOperation() && request.auth.uid == request.resource.data.uid)
+      );
+    }
+    
+    match /notifications/{notificationId} {
+      allow read, update: if isSignedIn() && request.auth.uid == resource.data.uid;
+    }
+    
+    match /properties/{propertyId} {
+      allow read: if true;
+      allow create: if isSignedIn();
+      allow update, delete: if isSignedIn() && request.auth.uid == resource.data.uid;
+    }
+    
+    match /suggestions/{suggestionId} {
+      allow read: if true;
+      allow write: if isSignedIn();
+    }
+    
+    match /credit_transactions/{transactionId} {
+      // Simplification des règles de lecture
+      allow read: if isSignedIn() && (
+        // L'utilisateur peut lire ses propres transactions
+        request.auth.uid == resource.data.uid ||
+        // Ou lire dans le contexte d'une transaction atomique
+        (request.auth.uid == request.resource.data.uid)
+      );
+      
+      // Création de transaction
+      allow create: if isSignedIn() && request.auth.uid == request.resource.data.uid;
+      
+      // Mise à jour de transaction
+      allow update: if isSignedIn() && request.auth.uid == resource.data.uid;
+    }
+  }
+} 

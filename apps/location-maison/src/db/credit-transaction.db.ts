@@ -348,9 +348,13 @@ export async function deductCreditsWithTransaction(
         credits: -Math.abs(credits),
         service,
         status: 'success',
-        description: description || `${service}${propertyId ? ` - Annonce ${propertyId}` : ''}`,
-        propertyId
+        description: description || `${service}${propertyId ? ` - Annonce ${propertyId}` : ''}`
       };
+
+      // Ajouter propertyId seulement s'il est défini
+      if (propertyId) {
+        transactionData.propertyId = propertyId;
+      }
       
       console.log('📄 Données de transaction à créer:', transactionData);
       

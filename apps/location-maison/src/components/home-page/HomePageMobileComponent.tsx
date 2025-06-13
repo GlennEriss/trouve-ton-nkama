@@ -130,7 +130,7 @@ export default function HomePageMobileComponent() {
                             </Link>
                         </div>
                         <Image
-                            src='assets/home-page/img-home-page.png'
+                            src='assets/home-page/img-home-page.webp'
                             alt='maison-à-louer'
                             className='w-1/3 object-cover rounded-r-xl'
                             width={0}
