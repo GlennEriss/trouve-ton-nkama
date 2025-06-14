@@ -9,7 +9,6 @@ import { useForm } from 'react-hook-form'
 import { useLocation } from '@/hooks/use-location'
 import InputFormNumberApp from '../shared/form/InputFormNumberApp'
 import MultiSelectFormApp from '../shared/form/MultiSelectFormApp'
-import { getTypePropertyKey, TypeProperty } from '@/lib/utils'
 import { tags as tagsList } from "@/constantes";
 import { Button } from '../ui/button'
 import { useAlgoliaContext } from "@/providers/AlgoliaContext";
@@ -17,6 +16,7 @@ import { useInfiniteHits } from 'react-instantsearch'
 import Image from 'next/image'
 import PropertyCard from '../home-page/PropertyCard'
 import { useRouter } from 'next/navigation'
+import { TypeProperty, getTypePropertyKey } from '@/constantes/property-type'
 
 interface OptionType {
     label: string;

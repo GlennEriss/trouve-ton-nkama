@@ -7,7 +7,6 @@ import { FaHome, FaBuilding, FaWarehouse, FaStore } from "react-icons/fa";
 import { BiBed } from "react-icons/bi";
 import { MdOutlineApartment, MdOutlineWorkspaces } from "react-icons/md";
 import { Button } from "@/components/ui/button";
-import { getTypePropertyKey, TypeProperty } from "@/lib/utils";
 import PropertyCarousel from "../property/PropertyCarousel";
 import MapComponent, { Neighborhood } from "../map/MapComponent";
 import houseMocks from "@/mocks/mocksHouse";
@@ -19,6 +18,7 @@ import { useRouter } from "next/navigation";
 import { propertyTypesList } from "./PropertyTypeList";
 import Link from "next/link";
 import { useCurrentUser } from "@/hooks/use-current-user";
+import { getTypePropertyKey, TypeProperty } from "@/constantes/property-type";
 
 const neighborhoods: Neighborhood[] = [
   {

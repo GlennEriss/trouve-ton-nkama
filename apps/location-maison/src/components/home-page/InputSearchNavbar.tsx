@@ -51,7 +51,7 @@ export default function InputSearchNavbar() {
             // En mobile : scroll vers le formulaire
             const searchForm = document.querySelector('form[action="/search"]');
             if (searchForm) {
-                searchForm.scrollIntoView({ 
+                searchForm.scrollIntoView({
                     behavior: 'smooth',
                     block: 'start'
                 });
@@ -61,24 +61,24 @@ export default function InputSearchNavbar() {
             setShowSearch(!showSearch);
         }
     };
-
-    return (
-        <div>
-            <button
-                onClick={handleClick}
-                className="w-9 h-9 flex items-center justify-center border border-[#146B67] dark:bg-gray-800 rounded-full"
-            >
-                <Search size={20} className="text-[#146B67]" />
-            </button>
-            
-            {showSearch && width >= 768 && (
-                <div 
-                    className="absolute top-[calc(100%+1rem)] left-1/2 -translate-x-1/2 bg-white dark:bg-black shadow-xl rounded-2xl p-6 w-[600px] max-w-[90vw] z-50 transition-all duration-300 ease-out origin-top animate-search-appear"
-                    style={{
-                        animation: 'search-appear 0.3s ease-out'
-                    }}
+    if (width < 1280) {
+        return (
+            <div>
+                <button
+                    onClick={handleClick}
+                    className="w-9 h-9 flex items-center justify-center border border-[#146B67] dark:bg-gray-800 rounded-full"
                 >
-                    <style jsx>{`
+                    <Search size={20} className="text-[#146B67]" />
+                </button>
+
+                {showSearch && width >= 768 && (
+                    <div
+                        className="absolute top-[calc(100%+1rem)] left-1/2 -translate-x-1/2 bg-white dark:bg-black shadow-xl rounded-2xl p-6 w-[600px] max-w-[90vw] z-50 transition-all duration-300 ease-out origin-top animate-search-appear"
+                        style={{
+                            animation: 'search-appear 0.3s ease-out'
+                        }}
+                    >
+                        <style jsx>{`
                         @keyframes search-appear {
                             0% {
                                 opacity: 0;
@@ -90,23 +90,46 @@ export default function InputSearchNavbar() {
                             }
                         }
                     `}</style>
-                    <div className="relative w-full">
-                        <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-500 w-5 h-5" />
-                        <Input
-                            value={searchText}
-                            onChange={(e) => setSearchText(e.target.value)}
-                            placeholder="Rechercher une propriété..."
-                            className="w-full bg-neutral-100 dark:bg-neutral-900 text-black dark:text-white placeholder:text-gray-500 border-none focus-visible:ring-1 focus-visible:ring-[#146B67]/50 dark:focus-visible:ring-[#1FA89B]/50 min-h-[50px] rounded-full pl-12 shadow-inner"
-                        />
+                        <div className="relative w-full">
+                            <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-500 w-5 h-5" />
+                            <Input
+                                value={searchText}
+                                onChange={(e) => setSearchText(e.target.value)}
+                                placeholder="Rechercher une propriété..."
+                                className="w-full bg-neutral-100 dark:bg-neutral-900 text-black dark:text-white placeholder:text-gray-500 border-none focus-visible:ring-1 focus-visible:ring-[#146B67]/50 dark:focus-visible:ring-[#1FA89B]/50 min-h-[50px] rounded-full pl-12 shadow-inner"
+                            />
+                        </div>
+                        <div
+                            onClick={handleSearch}
+                            className="absolute right-6 top-6 w-[50px] h-[50px] bg-gradient-to-r from-[#146B67] via-[#1FA89B] to-[#146B67] text-white hover:brightness-110 flex items-center justify-center rounded-full cursor-pointer transition-all duration-200 shadow-md hover:shadow-lg"
+                        >
+                            <BiSearch className="w-6 h-6" />
+                        </div>
                     </div>
-                    <div
-                        onClick={handleSearch}
-                        className="absolute right-6 top-6 w-[50px] h-[50px] bg-gradient-to-r from-[#146B67] via-[#1FA89B] to-[#146B67] text-white hover:brightness-110 flex items-center justify-center rounded-full cursor-pointer transition-all duration-200 shadow-md hover:shadow-lg"
-                    >
-                        <BiSearch className="w-6 h-6" />
-                    </div>
-                </div>
-            )}
+                )}
+            </div>
+        )
+    }
+    // Nouveau rendu pour les écrans desktop (>= 1024px)
+    return (
+        <div className="flex items-center gap-3 lg:mr-5">
+            {/* Champ de recherche */}
+            <div className="relative w-[260px] lg:w-[320px]">
+                <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500 w-5 h-5" />
+                <Input
+                    value={searchText}
+                    onChange={(e) => setSearchText(e.target.value)}
+                    placeholder="Rechercher…"
+                    className="w-full bg-neutral-100 dark:bg-neutral-900 text-black dark:text-white placeholder:text-gray-500 border-none focus-visible:ring-1 focus-visible:ring-[#146B67]/50 dark:focus-visible:ring-[#1FA89B]/50 min-h-[42px] rounded-full pl-12 shadow-inner"
+                />
+            </div>
+            {/* Bouton de validation */}
+            <button
+                onClick={handleSearch}
+                className="flex items-center justify-center w-9 h-9 bg-white dark:bg-neutral-900 border border-[#146B67] text-[#146B67] rounded-full hover:bg-gradient-to-r hover:from-[#146B67] hover:to-[#1FA89B] hover:text-white transition-colors duration-200"
+            >
+                <BiSearch className="w-6 h-6" />
+            </button>
         </div>
     )
 }

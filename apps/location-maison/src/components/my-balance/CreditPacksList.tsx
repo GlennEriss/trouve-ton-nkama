@@ -3,6 +3,7 @@
 import React from 'react'
 import { Package } from 'lucide-react'
 import CreditPackCard from './CreditPackCard'
+import Image from 'next/image'
 
 interface CreditPack {
   id: string
@@ -63,6 +64,18 @@ const creditPacks: CreditPack[] = [
   }
 ]
 
+const paymentMethods = [
+  {
+    id: 'airtel',
+    name: 'Airtel Money',
+    icon: 'airtel.webp'
+  },
+  {
+    id: 'libertis',
+    name: 'Mobicash',
+    icon: 'libertis.webp'
+  }
+]
 export default function CreditPacksList({ onOpenModal, onPackSelect }: CreditPacksListProps) {
   const handlePackSelect = (pack: CreditPack) => {
     // Communiquer le pack sélectionné au parent
@@ -126,16 +139,19 @@ export default function CreditPacksList({ onOpenModal, onPackSelect }: CreditPac
           Paiement sécurisé avec
         </p>
         <div className="flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-6">
-          <div className="flex items-center gap-2 text-xs md:text-sm font-medium text-gray-600 dark:text-gray-300">
-            <div className="w-6 h-6 md:w-8 md:h-8 bg-red-500 rounded-lg flex items-center justify-center text-white font-bold text-xs md:text-sm">
-              A
+          {paymentMethods.map((method) => (
+            <div key={method.id} className="flex items-center gap-2">
+              <div className="w-8 h-8 md:w-20 md:h-16 relative flex-shrink-0">
+                <Image
+                  src={`/assets/balance/${method.icon}`}
+                  alt={method.name}
+                  fill
+                  className="object-contain"
+                />
+              </div>
+              <span className="text-sm text-gray-500 dark:text-gray-400">{method.name}</span>
             </div>
-            Airtel Money
-          </div>
-          <div className="hidden sm:block text-gray-300 dark:text-gray-600">•</div>
-          <div className="text-xs md:text-sm text-gray-500 dark:text-gray-400">
-            Autres méthodes bientôt disponibles
-          </div>
+          ))}
         </div>
       </div>
     </div>

@@ -15,9 +15,9 @@ import { ChevronLeft } from "lucide-react";
 import { BiFilter } from "react-icons/bi";
 import { useRouter } from "next/navigation";
 import { useAlgoliaContext } from "@/providers/AlgoliaContext";
-import { getTypePropertyKey, TypeProperty } from "@/lib/utils";
 import { tags as tagsList } from "@/constantes";
 import { useAlgoliaRefinements } from "@/providers/AlgoliaRefinementsContext";
+import { TypeProperty, getTypePropertyKey } from "@/constantes/property-type";
 
 const PRICE_MIN = 0;
 const PRICE_MAX = 1_000_000_000;

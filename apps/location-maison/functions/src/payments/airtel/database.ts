@@ -43,7 +43,7 @@ export async function createCreditTransaction(
 
   const transaction: CreditTransaction = {
     id: transactionId,
-    userId,
+    uid:userId,
     type: 'purchase',
     packId,
     credits: pack.credits,
@@ -189,7 +189,7 @@ export async function getUserTransactions(
 ): Promise<CreditTransaction[]> {
   let query = db
     .collection('credit_transactions')
-    .where('userId', '==', userId)
+    .where('uid', '==', userId)
     .orderBy('createdAt', 'desc')
     .limit(limit)
 

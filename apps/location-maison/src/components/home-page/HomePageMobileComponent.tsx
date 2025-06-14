@@ -9,7 +9,6 @@ import { routes } from '@/constantes/routes';
 import { useCurrentUser } from '@/hooks/use-current-user';
 import Image from 'next/image';
 import Navbar from './Navbar';
-import PropertyCarousel from '../property/PropertyCarousel';
 import { FilterModalHomePage } from './FilterModalHomePage';
 import PropertyByProvince from './PropertyByProvince';
 import CarouselPropertyType from './CarouselPropertyType';
@@ -17,6 +16,7 @@ import { useWindowSize } from '@/hooks/useSize';
 import { cn } from '@/lib/utils';
 import FeaturedSection from './FeaturedSection';
 import TrendingSection from './TrendingSection';
+import RecentSection from './RecentSection';
 
 export default function HomePageMobileComponent() {
     const {
@@ -130,7 +130,7 @@ export default function HomePageMobileComponent() {
                             </Link>
                         </div>
                         <Image
-                            src='assets/home-page/img-home-page.png'
+                            src='assets/home-page/img-home-page.webp'
                             alt='maison-à-louer'
                             className='w-1/3 object-cover rounded-r-xl'
                             width={0}
@@ -159,12 +159,7 @@ export default function HomePageMobileComponent() {
                     {/* Sections des annonces promues */}
                     <FeaturedSection />
                     <TrendingSection /> 
-                    <section className='space-y-3 bg-green-50 p-5 py-10'>
-                        <h1 className='text-xl font-bold text-center text-[#146B67]'>
-                            Logements récents
-                        </h1>
-                        <PropertyCarousel properties={[]} />
-                    </section>
+                    <RecentSection />
                 </section>
 
                 <section className='space-y-5 m-5'>

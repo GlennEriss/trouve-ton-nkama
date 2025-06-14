@@ -1,15 +1,13 @@
 "use client";
 
-import React from "react";
+import React, { memo, useMemo, useCallback } from "react";
 import Slider from "react-slick";
 import { useRouter } from "next/navigation";
-import { FaArrowLeft, FaArrowRight, FaToilet, FaCar } from "react-icons/fa";
+import { FaArrowLeft, FaArrowRight } from "react-icons/fa";
 import "slick-carousel/slick/slick.css";
 import "slick-carousel/slick/slick-theme.css";
-import queryKeys from "@/constantes/react-query-keys";
-import { PROPERTY_ITEM_PER_PAGE_CAROUSEL } from "@/constantes/item-per-page";
-import { useInfiniteQuery } from "@tanstack/react-query";
 import PropertyCard from "../home-page/PropertyCard";
+import { useWindowSize } from "@/hooks/useSize";
 
 interface Property {
   id: number | string;
@@ -36,148 +34,99 @@ interface CarouselProps {
   properties?: Property[]; // Optionnel maintenant
 }
 
-// Flèches personnalisées
-const CustomPrevArrow = ({ onClick }: { onClick?: () => void }) => (
-  <button
-    className="absolute left-0 top-1/2 transform -translate-y-1/2 z-10 group hover:text-white border border-[#146B67] text-white p-2 rounded-full shadow-lg hover:bg-[#146B67]"
-    onClick={onClick}
-  >
-    <FaArrowLeft className="w-5 h-5 text-[#0e4845] group-hover:text-white" />
-  </button>
-);
+/* Flèche réutilisable (précédent / suivant) */
+const ArrowButton: React.FC<{ direction: "prev" | "next"; onClick?: () => void }> = ({ direction, onClick }) => {
+  const Icon = direction === "prev" ? FaArrowLeft : FaArrowRight;
+  const position = direction === "prev" ? "left-0" : "right-0";
+  return (
+    <button
+      aria-label={direction === "prev" ? "Précédent" : "Suivant"}
+      onClick={onClick}
+      className={`absolute ${position} top-1/2 -translate-y-1/2 z-10 group
+                  border border-[#146B67] p-2 rounded-full shadow-lg
+                  bg-white/80 hover:bg-[#146B67] transition-colors`}
+    >
+      <Icon className="w-5 h-5 text-[#0e4845] group-hover:text-white" />
+    </button>
+  );
+};
 
-const CustomNextArrow = ({ onClick }: { onClick?: () => void }) => (
-  <button
-    className="absolute right-0 top-1/2 transform -translate-y-1/2 z-10 group hover:text-white border border-[#146B67] text-white p-2 rounded-full shadow-lg hover:bg-[#146B67]"
-    onClick={onClick}
-  >
-    <FaArrowRight className="w-5 h-5 text-[#0e4845] group-hover:text-white" />
-  </button>
-);
-
-const PropertyCarousel: React.FC<CarouselProps> = ({ properties }) => {
+const PropertyCarousel: React.FC<CarouselProps> = ({ properties = [] }) => {
   const router = useRouter();
-  
-  // Seulement faire la requête si aucune propriété n'est fournie en props
-  const shouldFetch = !properties || properties.length === 0;
-  
-  const fetchInfiniteProperties = async ({ pageParam }: { pageParam: any }) => {
-    const { limitPerPage, lastDoc } = pageParam;
-    const url = `/api/property/list?limit=${limitPerPage}&lastDoc=${lastDoc || ''}`;
-    const response = await fetch(url, {
-      headers: {
-        'Cache-Control': 'public, s-maxage=600, stale-while-revalidate=600',
-      },
-    });
-    if (!response.ok) {
-      throw new Error("Failed to fetch properties");
-    }
-    const data = await response.json();
-    return data;
-  };
+  const { width } = useWindowSize();
 
-  const { data, isPending, isFetching, fetchNextPage, error, isError } = useInfiniteQuery({
-    queryKey: [queryKeys.propertie_carousel],
-    queryFn: fetchInfiniteProperties,
-    initialPageParam: { limitPerPage: PROPERTY_ITEM_PER_PAGE_CAROUSEL, lastDoc: null },
-    getNextPageParam: (lastPage, allPages, pageParam) => {
-      const { limitPerPage } = pageParam;
-      const lastDoc = allPages[allPages.length - 1]?.lastDoc || null;
-      return { limitPerPage, lastDoc };
-    },
-    staleTime: 1000 * 60 * 10, // 10 minutes
-    gcTime: 1000 * 60 * 15, // 15 minutes
-    refetchOnWindowFocus: false,
-    enabled: shouldFetch, // Seulement activer la requête si nécessaire
-  })
+  /* ----- Comptage & helpers ----- */
+  const count       = properties.length;
+  const hasMultiple = count > 1;
 
-  const handleCardClick = (id: number | string) => {
-    router.push(`/houseDetails/${id}`);
-  };
+  /* centre-mode seulement sur desktop et ≤ 3 cartes */
+  const isDesktop    = width >= 1024;
+  const shouldCenter = isDesktop && count <= 3;
 
-  // Configuration du carousel
-  const settings = {
-    dots: true,
-    infinite: true,
-    speed: 500,
-    slidesToShow: 4,
-    slidesToScroll: 1,
-    prevArrow: <CustomPrevArrow />,
-    nextArrow: <CustomNextArrow />,
-    responsive: [
-      {
-        breakpoint: 1280,
-        settings: {
-          slidesToShow: 3,
-          slidesToScroll: 1,
-        },
-      },
-      {
-        breakpoint: 1024,
-        settings: {
-          slidesToShow: 3,
-          slidesToScroll: 1,
-        },
-      },
-      {
-        breakpoint: 853,
-        settings: {
-          slidesToShow: 2,
-          slidesToScroll: 1,
-        },
-      },
-      {
-        breakpoint: 768,
-        settings: {
-          slidesToShow: 2,
-          slidesToScroll: 1,
-        },
-      },
-      {
-        breakpoint: 430,
-        settings: {
-          slidesToShow: 1,
-          slidesToScroll: 1,
-        },
-      },
-      {
-        breakpoint: 375,
-        settings: {
-          slidesToShow: 1,
-          slidesToScroll: 1,
-        },
-      },
-    ],
-  };
+  /* Navigation mémoïsée */
+  const handleCardClick = useCallback(
+    (id: number | string) => router.push(`/houseDetails/${id}`),
+    [router]
+  );
 
-  // Déterminer quelles propriétés utiliser
-  let propertiesToDisplay: Property[] = [];
-  
-  if (properties && properties.length > 0) {
-    // Utiliser les propriétés fournies en props (cas des sections promues)
-    propertiesToDisplay = properties;
-    console.log('🎠 [DEBUG] PropertyCarousel utilise les props:', properties.length, 'propriétés');
-  } else if (data?.pages?.[0]?.properties) {
-    // Utiliser les données de la requête (cas général)
-    propertiesToDisplay = data.pages[0].properties;
-    console.log('🎠 [DEBUG] PropertyCarousel utilise les données React Query:', propertiesToDisplay.length, 'propriétés');
-  }
+  /* Paramètres du slider (uniquement si plusieurs propriétés) */
+  const settings = useMemo(
+    () =>
+      hasMultiple
+        ? {
+            dots: true,
+            infinite: count > 4,
+            speed: 500,
+            slidesToShow: Math.min(count, 4),
+            variableWidth: shouldCenter,
+            centerMode:    shouldCenter,
+            centerPadding: shouldCenter ? "40px" : "0px",
+            slidesToScroll: 1,
+            prevArrow: <ArrowButton direction="prev" />,
+            nextArrow: <ArrowButton direction="next" />,
+            responsive: [
+              {
+                breakpoint: 1280,
+                settings: {
+                  slidesToShow: Math.min(count, 3),
+                  variableWidth: false,
+                  centerMode:    false,
+                },
+              },
+              { breakpoint: 1024, settings: { slidesToShow: Math.min(count, 2) } },
+              { breakpoint: 640,  settings: { slidesToShow: 1 } },
+            ],
+          }
+        : undefined,
+    [hasMultiple, count, shouldCenter]
+  );
 
-  // Si aucune propriété à afficher, ne rien rendre
-  if (propertiesToDisplay.length === 0) {
-    console.log('🎠 [DEBUG] PropertyCarousel: Aucune propriété à afficher');
-    return null;
-  }
-
+  /* ----- Rendu ----- */
   return (
     <div className="container mx-auto px-4 md:py-12 relative">
-      <Slider {...settings}>
-        {propertiesToDisplay.map((property: Property) => (
-          <div key={property.id} className="p-3" onClick={() => handleCardClick(property.id)}>
-            <PropertyCard property={property} />
+      {hasMultiple ? (
+        <Slider {...settings}>
+          {properties.map((p) => (
+            <div
+              key={p.id}
+              className="p-3"
+              style={shouldCenter ? { width: 320 } : undefined}
+              onClick={() => handleCardClick(p.id)}
+            >
+              <PropertyCard property={p} />
+            </div>
+          ))}
+        </Slider>
+      ) : (
+        /* 1 seule carte : pas de slider */
+        properties[0] && (
+          <div className="max-w-sm mx-auto" onClick={() => handleCardClick(properties[0].id)}>
+            <PropertyCard property={properties[0]} />
           </div>
-        ))}
-      </Slider>
+        )
+      )}
+
+      {/* Bouton « voir plus » toujours présent */}
       <div className="mt-8 flex justify-center">
         <button
           onClick={() => router.push("/search")}
@@ -190,4 +139,4 @@ const PropertyCarousel: React.FC<CarouselProps> = ({ properties }) => {
   );
 };
 
-export default PropertyCarousel;
+export default memo(PropertyCarousel);

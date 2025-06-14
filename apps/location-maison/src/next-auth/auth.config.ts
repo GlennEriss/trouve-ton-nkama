@@ -1,7 +1,7 @@
-import { createUser, findUserByEmail, findUserDetailsByUserID, getUserByUID, updateUser } from "@/db/user.db";
+import { createUser, findUserByEmail, getUserByUID, updateUser } from "@/db/user.db";
 import { auth, GoogleAuthProvider } from "@/firebase/auth";
 import { ProviderType } from "@/models/authentication";
-import { FacebookAuthProvider, fetchSignInMethodsForEmail, linkWithCredential, signInWithCredential, signInWithPopup } from "firebase/auth";
+import { FacebookAuthProvider, linkWithCredential, signInWithCredential } from "firebase/auth";
 import { NextAuthConfig } from "next-auth"
 import Credentials from "next-auth/providers/credentials"
 import GoogleProvider from "next-auth/providers/google";

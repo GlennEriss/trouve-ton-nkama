@@ -64,7 +64,7 @@ export interface WebhookPayload {
 
 export interface CreditTransaction {
   id: string
-  userId: string
+  uid: string
   type?: 'purchase' | 'spend'  // Nouveau champ pour l'historique
   packId?: string             // Optionnel pour les dépenses
   credits: number

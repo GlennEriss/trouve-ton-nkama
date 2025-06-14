@@ -2,7 +2,7 @@
 
 import { useSession } from 'next-auth/react';
 import { useState } from 'react';
-import { updateUser } from '@/db/user.db';
+import { deductCreditsWithTransaction } from '@/db/credit-transaction.db';
 import { model } from '@/firebase/ai';
 import AIPromptsService, { FormContext } from '@/services/ai-prompts.service';
 
@@ -12,6 +12,7 @@ interface AIResponse {
   response?: string;
   error?: string;
   creditsRemaining?: number;
+  transactionId?: string;
 }
 
 interface AIAssistantHook {
@@ -85,10 +86,28 @@ export const useAIAssistant = (): AIAssistantHook => {
         };
       }
 
-      // Calculer les nouveaux crédits
-      const newCredits = session.user.credits - 1;
-      
+      // Déduire les crédits ET créer la transaction atomiquement
+      const description = `Assistant IA - Question: "${message.substring(0, 50)}${message.length > 50 ? '...' : ''}"`;
       try {
+        const transactionResult = await deductCreditsWithTransaction(
+          session.user.uid,
+          1, // 1 crédit pour l'IA
+          'Assistant IA',
+          undefined, // Pas de propertyId pour l'IA générale
+          description
+        );
+
+        if (!transactionResult.success) {
+          setIsLoading(false);
+          return {
+            success: false,
+            error: "Erreur lors de la déduction des crédits"
+          };
+        }
+
+        // Calculer les nouveaux crédits
+        const newCredits = session.user.credits - 1;
+        
         // Mise à jour de la session
         await update({
           user: {
@@ -97,33 +116,28 @@ export const useAIAssistant = (): AIAssistantHook => {
           }
         });
         
-        // Mise à jour dans Firebase (en arrière-plan)
-        updateUser(session.user.uid, { 
-          credits: newCredits 
-        }).catch((error) => {
-          console.error('Erreur lors de la mise à jour des crédits dans Firebase:', error);
-          // Note: On ne bloque pas l'utilisateur même si la mise à jour Firebase échoue
-        });
-        
         setIsLoading(false);
         
         return {
           success: true,
           response: aiResponse.text,
-          creditsRemaining: newCredits
+          creditsRemaining: newCredits,
+          transactionId: transactionResult.transactionId
         };
-      } catch (sessionError) {
-        console.error('Erreur lors de la mise à jour de la session:', sessionError);
+
+      } catch (transactionError) {
+        console.error('Erreur lors de la transaction de crédits:', transactionError);
         setIsLoading(false);
         
-        // Même si la mise à jour de session échoue, on retourne la réponse de l'IA
-        // mais on avertit qu'il y a eu un problème avec les crédits
+        // Si la transaction échoue, on retourne quand même la réponse de l'IA
+        // mais on avertit l'utilisateur
         return {
           success: true,
           response: aiResponse.text,
-          error: "Réponse générée mais erreur lors de la déduction des crédits"
+          error: "Réponse générée mais erreur lors de la déduction des crédits. Contactez le support."
         };
       }
+      
     } catch (error) {
       console.error("Erreur générale de l'assistant IA:", error);
       setIsLoading(false);

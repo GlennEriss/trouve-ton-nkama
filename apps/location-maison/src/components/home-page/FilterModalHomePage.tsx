@@ -13,11 +13,11 @@ import { Button } from "@/components/ui/button";
 import { ChevronLeft, SlidersHorizontal } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useAlgoliaContext } from "@/providers/AlgoliaContext";
-import { getTypePropertyKey, TypeProperty } from "@/lib/utils";
 import { tags as tagsList } from "@/constantes";
 import { DialogDescription } from "@radix-ui/react-dialog";
 import { InputApp } from "../shared/ui/InputApp";
 import { InputNumberApp } from "../shared/ui/InputNumberApp";
+import { TypeProperty, getTypePropertyKey } from "@/constantes/property-type";
 
 const PRICE_MAX = 1_000_000_000;
 const AREA_MIN = 0;

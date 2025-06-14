@@ -2,7 +2,7 @@
 import React from 'react'
 import { propertyTypesList } from './PropertyTypeList'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../ui/card'
-import { TypeProperty } from '@/lib/utils'
+import { TypeProperty } from '@/constantes/property-type'
 import { useServerCountByPropertyType } from '@/hooks/use-server-count-property-by-type'
 import { useAlgoliaContext } from '@/providers/AlgoliaContext'
 import { useRouter } from 'next/navigation'

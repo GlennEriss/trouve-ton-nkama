@@ -5,10 +5,10 @@ import Link from 'next/link'
 import { routes } from '@/constantes/routes'
 import { useCurrentUser } from '@/hooks/use-current-user'
 import CarouselPropertyType from './CarouselPropertyType'
-import PropertyCarousel from '../property/PropertyCarousel'
 import PropertyByProvince from './PropertyByProvince'
 import FeaturedSection from './FeaturedSection'
 import TrendingSection from './TrendingSection'
+import RecentSection from './RecentSection'
 
 const detailssection2 = [
   {
@@ -148,20 +148,8 @@ export default function HomePageDesktopComponent() {
         <TrendingSection />
       </section>
 
-      <section className='relative space-y-3 bg-gradient-to-r from-[#146B67]/5 via-[#1FA89B]/10 to-[#146B67]/5 rounded-3xl p-5 py-10 overflow-hidden'>
-        {/* Forme 3 - Derrière la 5ème section */}
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full h-full -z-10 overflow-hidden">
-          <Image
-            src="/assets/home-page/form.webp"
-            alt="Background shape"
-            fill
-            className="object-cover opacity-10 -rotate-90"
-          />
-        </div>
-        <h1 className='text-xl lg:text-2xl xl:text-3xl leading-tight font-bold text-center text-[#146B67]'>
-          Logements récents
-        </h1>
-        <PropertyCarousel properties={[]} />
+      <section className='mb-8'>
+        <RecentSection />
       </section>
 
       <section className='space-y-5 m-5'>
