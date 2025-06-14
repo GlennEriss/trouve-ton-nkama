@@ -118,9 +118,14 @@ const PropertyCarousel: React.FC<CarouselProps> = ({ properties = [] }) => {
           ))}
         </Slider>
       ) : (
-        /* 1 seule carte : pas de slider */
+        /* 1 seule carte : largeur contrôlée */
         properties[0] && (
-          <div className="max-w-sm mx-auto" onClick={() => handleCardClick(properties[0].id)}>
+          <div
+            className="mx-auto"
+            /* 100 % en mobile, 320 px max en desktop */
+            style={{ width: "100%", maxWidth: 320 }}
+            onClick={() => handleCardClick(properties[0].id)}
+          >
             <PropertyCard property={properties[0]} />
           </div>
         )
