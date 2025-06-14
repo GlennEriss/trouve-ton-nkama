@@ -4,15 +4,14 @@ import { useEffect, useMemo, useRef } from "react";
 import Image from "next/image";
 import { useSearchParams } from "next/navigation";
 import {
-  useHits,
   useConfigure,
   useSearchBox,
   useInfiniteHits,
 } from "react-instantsearch";
 import { useAlgoliaContext } from "@/providers/AlgoliaContext";
 import PropertyCard from "../home-page/PropertyCard";
-import { TypeProperty } from "@/lib/utils";
 import { FilterModal } from "../home-page/FilterModal";
+import { TypeProperty } from "@/constantes/property-type";
 
 function FilterTag({
   children,
