@@ -25,7 +25,7 @@ export function useRecommend({
         queryKey: ['recommendations', { limit, excludeId, type, location }],
         queryFn: () => getRecommendedProperties({ limit, excludeId, type, location }),
         staleTime: 5 * 60 * 1000, // Les données sont considérées comme fraîches pendant 5 minutes
-        cacheTime: 30 * 60 * 1000, // Les données sont gardées en cache pendant 30 minutes
+        gcTime: 30 * 60 * 1000, // Les données sont gardées en cache pendant 30 minutes
         refetchOnWindowFocus: false, // Ne pas recharger automatiquement quand la fenêtre regagne le focus
         refetchOnMount: false, // Ne pas recharger automatiquement quand le composant est monté
     });
