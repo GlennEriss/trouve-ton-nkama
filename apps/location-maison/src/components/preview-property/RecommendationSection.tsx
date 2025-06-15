@@ -66,7 +66,7 @@ export default function RecommendationSection({
             <h1 className='text-xl lg:text-2xl xl:text-3xl leading-tight font-bold text-center text-[#146B67]'>
                 Annonces similaires
             </h1>
-            <PropertyCarousel properties={properties} />
+            <PropertyCarousel properties={properties} isRecommendation={true} />
         </section>
     )
 } 
