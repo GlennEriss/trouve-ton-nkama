@@ -66,8 +66,10 @@ export default function HomePageDesktopComponent() {
           />
         </div>
       </section>
-
-      <section className='mt-10 lg:my-20'>
+      <section className='mb-8 mt-10'>
+        <FeaturedSection />
+      </section>
+      {/* <section className='mt-10 lg:my-20'>
         <h1 className="text-xl lg:text-2xl xl:text-3xl font-bold leading-tight text-center text-[#146B67] dark:text-[#1FA89B]">
           Développez votre activité immobilière en toute simplicité.
         </h1>
@@ -101,7 +103,7 @@ export default function HomePageDesktopComponent() {
             ))
           }
         </div>
-      </section>
+      </section> */}
 
       <section className='relative overflow-hidden bg-gradient-to-r from-[#146B67]/5 via-[#1FA89B]/10 to-[#146B67]/5 p-8 py-16 rounded-3xl'>
         {/* Forme 2 - Derrière la 3ème section */}
@@ -139,9 +141,6 @@ export default function HomePageDesktopComponent() {
       <section className='space-y-5 p-5 mb-8'>
         <h1 className='text-xl lg:text-2xl xl:text-3xl leading-tight text-center font-bold text-[#146B67] my-5'>Type de propriétés</h1>
         <CarouselPropertyType />
-      </section>
-      <section className='mb-8'>
-        <FeaturedSection />
       </section>
 
       <section className='mb-8'>
