@@ -9,9 +9,11 @@ import "slick-carousel/slick/slick-theme.css";
 import PropertyCard from "../home-page/PropertyCard";
 import { useWindowSize } from "@/hooks/useSize";
 import { Property } from "@/models/annonce";
+import { cn } from "@/lib/utils";
 
 interface CarouselProps {
-  properties?: Property[];
+  properties?: Property[]; // Optionnel maintenant
+  isRecommendation?: boolean;
 }
 
 /* Flèche réutilisable (précédent / suivant) */
@@ -32,7 +34,7 @@ const ArrowButton: React.FC<{ direction: "prev" | "next"; onClick?: () => void }
   );
 };
 
-const PropertyCarousel: React.FC<CarouselProps> = ({ properties = [] }) => {
+const PropertyCarousel: React.FC<CarouselProps> = ({ properties = [], isRecommendation = false }) => {
   const router = useRouter();
   const { width } = useWindowSize();
 
@@ -115,6 +117,15 @@ const PropertyCarousel: React.FC<CarouselProps> = ({ properties = [] }) => {
           </div>
         )
       )}
+      {/* Bouton « voir plus » toujours présent */}
+      <div className={cn("mt-8 flex justify-center", isRecommendation ? 'hidden' : '')}>
+        <button
+          onClick={() => router.push("/search")}
+          className="px-8 py-3 rounded-xl bg-gradient-to-r from-[#146B67] via-[#1FA89B] to-[#146B67] hover:scale-[1.02] text-white font-semibold transition-all duration-300 shadow-lg hover:shadow-xl"
+        >
+          Voir plus d'annonces
+        </button>
+      </div>
     </div>
   );
 };
