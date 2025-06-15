@@ -18,7 +18,7 @@ export default function Navbar() {
       return null
     }
     return (
-      <nav className="border-b border-gray-300 dark:border-gray-700 sticky top-0 left-0 right-0 z-50 bg-white dark:bg-gray-900 text-black dark:text-white px-4 py-4 flex items-center justify-between shadow-md dark:shadow-gray-900/50">
+      <nav className="border-b border-gray-300 dark:border-gray-700 sticky top-0 left-0 right-0 z-[9999] bg-white dark:bg-gray-900 text-black dark:text-white px-4 py-4 flex items-center justify-between shadow-md dark:shadow-gray-900/50">
         <div className="flex items-center">
           <LogoNavigation />
         </div>
@@ -40,7 +40,7 @@ export default function Navbar() {
     );
   }
   return (
-    <div className="rounded-full bg-[#f4f9f9] dark:bg-gray-900 flex shadow dark:shadow-gray-900/50 sticky top-0 z-50">
+    <div className="rounded-full bg-[#f4f9f9] dark:bg-gray-900 flex shadow dark:shadow-gray-900/50 sticky top-0 z-[9999]">
       <LogoNavigation />
       <div className="ml-auto flex items-center gap-4 mr-5">
         <NavigationMenuNavbar />

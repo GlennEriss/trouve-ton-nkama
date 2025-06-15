@@ -36,5 +36,5 @@ export const MapSection: React.FC<MapSectionProps> = (props) => {
     return <div style={{ height: '400px', width: '100%', backgroundColor: '#f0f0f0' }} />;
   }
 
-  return <SimpleMap {...props} />;
+  return <div className="relative z-0"><SimpleMap {...props} /></div>;
 };

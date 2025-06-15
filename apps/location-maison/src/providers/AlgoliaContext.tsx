@@ -157,7 +157,13 @@ export const AlgoliaProvider: React.FC<AlgoliaProviderProps> = ({
         clearFilters,
       }}
     >
-      <InstantSearch searchClient={searchClient} indexName={indexName}>
+      <InstantSearch 
+        searchClient={searchClient} 
+        indexName={indexName}
+        future={{
+          preserveSharedStateOnUnmount: true
+        }}
+      >
         {children}
       </InstantSearch>
     </AlgoliaContext.Provider>

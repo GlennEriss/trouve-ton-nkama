@@ -18,7 +18,7 @@ export async function GET(request: Request) {
     const now = Date.now();
 
     if (cached && cached.expiry > now) {
-        console.log(`Serving property ${id} from cache`);
+        //console.log(`Serving property ${id} from cache`);
         return NextResponse.json(cached.property, {
             headers: {
                 'Cache-Control': 'public, s-maxage=600, stale-while-revalidate=600',

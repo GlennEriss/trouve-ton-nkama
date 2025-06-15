@@ -18,7 +18,7 @@ export async function GET(request: Request) {
     const now = Date.now();
 
     if (cached && cached.expiry > now) {
-        console.log(`Serving property count for type ${type} from cache`);
+        //console.log(`Serving property count for type ${type} from cache`);
         return NextResponse.json({ count: cached.count }, {
             headers: {
                 'Cache-Control': 'public, s-maxage=1800, stale-while-revalidate=1800',
