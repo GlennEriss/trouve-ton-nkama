@@ -8,27 +8,7 @@ import "slick-carousel/slick/slick.css";
 import "slick-carousel/slick/slick-theme.css";
 import PropertyCard from "../home-page/PropertyCard";
 import { useWindowSize } from "@/hooks/useSize";
-
-interface Property {
-  id: number | string;
-  title: string;
-  images: { fileURL: string }[];
-  city: string;
-  province: string;
-  country: string;
-  street?: string;
-  status: string;
-  price: string;
-  nbrRooms?: number;
-  nbrToilets?: number;
-  nbrBathrooms?: number;
-  nbrGarages?: number;
-  nbrFloors?: number;
-  nbrPiscine?: number;
-  area: number;
-  typeProperty: string;
-  description: string; // Ajout de la description
-}
+import { Property } from "@/models/annonce";
 
 interface CarouselProps {
   properties?: Property[]; // Optionnel maintenant
@@ -65,7 +45,11 @@ const PropertyCarousel: React.FC<CarouselProps> = ({ properties = [] }) => {
 
   /* Navigation mémoïsée */
   const handleCardClick = useCallback(
-    (id: number | string) => router.push(`/houseDetails/${id}`),
+    (id?: string) => {
+      if (id) {
+        router.push(`/houseDetails/${id}`);
+      }
+    },
     [router]
   );
 
@@ -108,7 +92,7 @@ const PropertyCarousel: React.FC<CarouselProps> = ({ properties = [] }) => {
         <Slider {...settings}>
           {properties.map((p) => (
             <div
-              key={p.id}
+              key={p.id || `property-${Math.random()}`}
               className="p-3"
               style={shouldCenter ? { width: 320 } : undefined}
               onClick={() => handleCardClick(p.id)}
