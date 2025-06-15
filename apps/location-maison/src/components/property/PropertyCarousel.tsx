@@ -107,7 +107,7 @@ const PropertyCarousel: React.FC<CarouselProps> = ({ properties = [] }) => {
           <div
             className="mx-auto"
             /* 100 % en mobile, 320 px max en desktop */
-            style={{ width: "100%", maxWidth: 320 }}
+            style={{ width: "100%", maxWidth: 280 }}
             onClick={() => handleCardClick(properties[0].id)}
           >
             <PropertyCard property={properties[0]} />
