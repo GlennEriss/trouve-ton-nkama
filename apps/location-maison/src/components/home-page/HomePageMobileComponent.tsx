@@ -139,6 +139,7 @@ export default function HomePageMobileComponent() {
                         />
                     </div>
                 </section>
+                <FeaturedSection />
 
                 <section className='space-y-5 bg-green-50 p-5 py-16'>
                     <h1 className='text-xl font-bold text-center text-[#146B67]'>Quels sont vos besoins ?</h1>
@@ -157,7 +158,6 @@ export default function HomePageMobileComponent() {
 
                 <section className='space-y-5'>
                     {/* Sections des annonces promues */}
-                    <FeaturedSection />
                     <TrendingSection /> 
                     <RecentSection />
                 </section>
