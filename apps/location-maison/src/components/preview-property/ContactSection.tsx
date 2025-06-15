@@ -1,12 +1,20 @@
 'use client'
-import React from 'react'
+import React, { useState } from 'react'
 import { FaWhatsapp, FaPhoneAlt } from 'react-icons/fa'
 import { Property } from '@/models/annonce'
 import Link from 'next/link'
 
 import { useUserByUID } from '@/hooks/use-user-by-uid'
+import { useWindowSize } from "@/hooks/useSize"
+
 export default function ContactSection({ property }: { property: Property }) {
     const { data: user } = useUserByUID(property.createdBy)
+    const { width } = useWindowSize()
+    const isDesktop = width >= 1024
+
+    const [showNumber, setShowNumber] = useState(false)
+    const phoneNumber = property?.contact || user?.phoneNumbers?.[0]
+
     return (
         <section className="flex flex-col gap-3 rounded-lg p-5 shadow">
             <h1 className="font-bold">Choisissez un moyen de contact</h1>
@@ -19,20 +27,47 @@ export default function ContactSection({ property }: { property: Property }) {
                         rel="noopener noreferrer"
                         title="Contacter via WhatsApp"
                     >
-                        <div className='border border-gray-300 p-3 rounded-lg shadow-lg '>
-                            <FaWhatsapp size={30} className="cursor-pointer hover:text-green-600 text-green-600" />
+                        <div
+                            className={`flex items-center gap-2 border border-gray-300 ${
+                                isDesktop ? 'px-4 py-3' : 'p-3'
+                            } rounded-lg shadow-lg`}
+                        >
+                            <FaWhatsapp
+                                size={isDesktop ? 22 : 30}
+                                className="text-green-600"
+                            />
+                            {isDesktop && phoneNumber && (
+                                <span className="font-medium select-all">
+                                    {phoneNumber}
+                                </span>
+                            )}
                         </div>
                     </Link>
-                    <a
-                        href={property?.contact || user?.phoneNumbers?.[0] ? `tel:${property.contact ? property.contact : user?.phoneNumbers[0]}` : '#'}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        title="Appeler"
-                    >
-                        <div className='border border-gray-300 p-3 rounded-lg shadow-lg '>
-                            <FaPhoneAlt size={30} className="cursor-pointer hover:text-blue-500 text-blue-500" />
-                        </div>
-                    </a>
+                    {isDesktop ? (
+                        phoneNumber && (
+                            <div className="flex items-center gap-2 border border-gray-300 px-4 py-3 rounded-lg shadow-lg">
+                                <FaPhoneAlt size={22} className="text-[#146B67]" />
+                                <span className="font-medium select-all">{phoneNumber}</span>
+                            </div>
+                        )
+                    ) : (
+                        <>
+                            {showNumber ? (
+                                <div className="border border-gray-300 px-4 py-3 rounded-lg shadow-lg">
+                                    <span className="font-medium select-all">{phoneNumber}</span>
+                                </div>
+                            ) : (
+                                <button
+                                    type="button"
+                                    onClick={() => setShowNumber(true)}
+                                    className="border border-gray-300 p-3 rounded-lg shadow-lg"
+                                    title="Afficher le numéro"
+                                >
+                                    <FaPhoneAlt size={30} className="text-[#146B67]" />
+                                </button>
+                            )}
+                        </>
+                    )}
                 </div>
         </section>
     )
