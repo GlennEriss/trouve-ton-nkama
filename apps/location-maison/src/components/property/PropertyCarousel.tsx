@@ -26,9 +26,10 @@ const ArrowButton: React.FC<{ direction: "prev" | "next"; onClick?: () => void }
       onClick={onClick}
       className={`absolute ${position} top-1/2 -translate-y-1/2 z-10 group
                   border border-[#146B67] p-2 rounded-full shadow-lg
-                  bg-white/80 hover:bg-[#146B67] transition-colors`}
+                  bg-white/80 hover:bg-[#146B67] transition-all duration-300
+                  hover:scale-110 focus:outline-none focus:ring-2 focus:ring-[#146B67] focus:ring-offset-2`}
     >
-      <Icon className="w-5 h-5 text-[#0e4845] group-hover:text-white" />
+      <Icon className="w-5 h-5 text-[#0e4845] group-hover:text-white transition-colors duration-300" />
     </button>
   );
 };
@@ -38,11 +39,11 @@ const PropertyCarousel: React.FC<CarouselProps> = ({ properties = [], isRecommen
   const { width } = useWindowSize();
 
   /* ----- Comptage & helpers ----- */
-  const count       = properties.length;
+  const count = properties.length;
   const hasMultiple = count > 1;
 
   /* centre-mode seulement sur desktop et ≤ 3 cartes */
-  const isDesktop    = width >= 1024;
+  const isDesktop = width >= 1024;
   const shouldCenter = isDesktop && count <= 3;
 
   /* Navigation mémoïsée */
@@ -65,7 +66,7 @@ const PropertyCarousel: React.FC<CarouselProps> = ({ properties = [], isRecommen
             speed: 500,
             slidesToShow: Math.min(count, 4),
             variableWidth: shouldCenter,
-            centerMode:    shouldCenter,
+            centerMode: shouldCenter,
             centerPadding: shouldCenter ? "40px" : "0px",
             slidesToScroll: 1,
             prevArrow: <ArrowButton direction="prev" />,
@@ -76,11 +77,11 @@ const PropertyCarousel: React.FC<CarouselProps> = ({ properties = [], isRecommen
                 settings: {
                   slidesToShow: Math.min(count, 3),
                   variableWidth: false,
-                  centerMode:    false,
+                  centerMode: false,
                 },
               },
               { breakpoint: 1024, settings: { slidesToShow: Math.min(count, 2) } },
-              { breakpoint: 640,  settings: { slidesToShow: 1 } },
+              { breakpoint: 640, settings: { slidesToShow: 1 } },
             ],
           }
         : undefined,
@@ -89,7 +90,7 @@ const PropertyCarousel: React.FC<CarouselProps> = ({ properties = [], isRecommen
 
   /* ----- Rendu ----- */
   return (
-    <div className="container mx-auto px-4 md:py-12 relative">
+    <div className="container mx-auto px-4 relative">
       {hasMultiple ? (
         <Slider {...settings}>
           {properties.map((p) => (
@@ -116,7 +117,6 @@ const PropertyCarousel: React.FC<CarouselProps> = ({ properties = [], isRecommen
           </div>
         )
       )}
-
       {/* Bouton « voir plus » toujours présent */}
       <div className={cn("mt-8 flex justify-center", isRecommendation ? 'hidden' : '')}>
         <button
