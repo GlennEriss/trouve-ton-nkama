@@ -6,6 +6,8 @@
     "dev": "next dev --turbopack",
     "build": "next build",
     "start": "next start",
+    "dev:local": "cp .env.local.dev .env.local && next dev --turbopack",
+    "build:local": "mv .env.local .env.local.backup && cp .env.local.prod .env.local && next build && mv .env.local.backup .env.local",
     "test": "jest",
     "test:watch": "jest --watch"
   },
@@ -30,6 +32,7 @@
     "@radix-ui/react-toast": "^1.2.3",
     "@radix-ui/react-tooltip": "^1.1.6",
     "@tanstack/react-query": "^5.62.8",
+    "@upstash/redis": "^1.35.0",
     "algoliasearch": "^5.18.0",
     "browser-image-compression": "^2.0.2",
     "class-variance-authority": "^0.7.1",

@@ -1,9 +1,9 @@
 import { NextResponse } from 'next/server';
 import { getServerCountByPropertyType } from '@/db/property.db';
+import redis from '@/redis/client';
 
-// Cache pour les comptages de propriétés
-const propertyCountByTypeCache = new Map<string, { count: number; expiry: number }>();
-const CACHE_DURATION_MS = 1000 * 60 * 30; // 30 minutes
+// TTL du cache (en secondes) – configurable via REDIS_CATALOG_TTL, défaut 1800 (30 min)
+const CACHE_TTL_SECONDS = parseInt(process.env.REDIS_CATALOG_TTL || '1800', 10);
 
 export async function GET(request: Request) {
     const url = new URL(request.url);
@@ -14,14 +14,12 @@ export async function GET(request: Request) {
     }
 
     // Vérifier le cache
-    const cached = propertyCountByTypeCache.get(type);
-    const now = Date.now();
+    const cached = await redis.get<number>(`propertyCountByType:${type}`);
 
-    if (cached && cached.expiry > now) {
-        //console.log(`Serving property count for type ${type} from cache`);
-        return NextResponse.json({ count: cached.count }, {
+    if (typeof cached === 'number') {
+        return NextResponse.json({ count: cached }, {
             headers: {
-                'Cache-Control': 'public, s-maxage=1800, stale-while-revalidate=1800',
+                'Cache-Control': `public, s-maxage=${CACHE_TTL_SECONDS}, stale-while-revalidate=${CACHE_TTL_SECONDS}`,
             },
         });
     }
@@ -31,11 +29,11 @@ export async function GET(request: Request) {
         const count = await getServerCountByPropertyType(type);
 
         // Mettre en cache le comptage
-        propertyCountByTypeCache.set(type, { count, expiry: now + CACHE_DURATION_MS });
+        await redis.set(`propertyCountByType:${type}`, count, { ex: CACHE_TTL_SECONDS });
 
         return NextResponse.json({ count }, {
             headers: {
-                'Cache-Control': 'public, s-maxage=1800, stale-while-revalidate=1800',
+                'Cache-Control': `public, s-maxage=${CACHE_TTL_SECONDS}, stale-while-revalidate=${CACHE_TTL_SECONDS}`,
             },
         });
     } catch (error) {

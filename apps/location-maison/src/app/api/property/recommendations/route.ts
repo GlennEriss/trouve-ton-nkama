@@ -2,6 +2,10 @@ import { NextResponse } from 'next/server';
 import { getFirestore } from 'firebase-admin/firestore';
 import { adminApp } from '@/firebase/admin';
 import { Property } from '@/models/annonce';
+import redis from '@/redis/client';
+
+// TTL pour les recommandations (en secondes)
+const CACHE_TTL_SECONDS = parseInt(process.env.REDIS_CATALOG_TTL || '600', 10);
 
 if (!adminApp) {
     throw new Error('Firebase Admin not initialized');
@@ -17,6 +21,23 @@ export async function GET(request: Request) {
         const excludeId = searchParams.get('excludeId') || '';
         const type = searchParams.get('type');
         const location = searchParams.get('location');
+
+        // Générer une clé cache spécifique aux paramètres
+        const cacheKey = `properties:recommendations:${type || 'all'}:${location || 'all'}:${excludeId || 'none'}:${limitPerPage}:${lastDocId || 'first'}`;
+
+        // 1. Tentative de lecture cache Redis
+        try {
+            const cached = await redis.get<any>(cacheKey);
+            if (cached) {
+                return NextResponse.json(cached, {
+                    headers: {
+                        'Cache-Control': 'public, s-maxage=60, stale-while-revalidate=60',
+                    },
+                });
+            }
+        } catch (err) {
+            console.error('Redis GET error (recommendations):', err);
+        }
 
 /*         console.log('Search params:', { limitPerPage, lastDocId, excludeId, type, location });
  */
@@ -71,10 +92,23 @@ export async function GET(request: Request) {
         /* console.log('Final properties count:', properties.length);
         console.log('Properties:', properties); */
 
-        return NextResponse.json({
+        const result = {
             properties,
             lastDoc,
-            hasMore: properties.length === limitPerPage
+            hasMore: properties.length === limitPerPage,
+        };
+
+        // 2. Stockage dans Redis
+        try {
+            await redis.set(cacheKey, result, { ex: CACHE_TTL_SECONDS });
+        } catch (err) {
+            console.error('Redis SET error (recommendations):', err);
+        }
+
+        return NextResponse.json(result, {
+            headers: {
+                'Cache-Control': 'public, s-maxage=60, stale-while-revalidate=60',
+            },
         });
     } catch (error) {
         console.error('Error fetching recommended properties:', error);
