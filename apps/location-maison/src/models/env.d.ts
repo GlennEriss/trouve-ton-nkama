@@ -36,5 +36,9 @@ namespace NodeJS {
     // TTL optionnels (en secondes)
     REDIS_CATALOG_TTL?: string;
     REDIS_PROPERTY_TTL?: string;
+    //VAULT
+    VAULT_ADDR: string;
+    VAULT_TOKEN: string;
+    VAULT_PATH: string;
   }
 }
