@@ -1,31 +1,7 @@
 pipeline {
     agent { docker { image 'node:20' } }
 
-    environment {
-        // Token Vercel stocké dans Jenkins Credentials
-        VERCEL_TOKEN = credentials('vercel-token')
-
-        // Détermine si on est en production (branche main)
-        IS_PRODUCTION = "${env.BRANCH_NAME == 'main'}"
-        // Choix du credential et du chemin Vault selon l'environnement
-        VAULT_CRED = "${IS_PRODUCTION == 'true' ? 'vault-approle-prod' : 'vault-approle-dev'}"
-        VAULT_PATH = "${IS_PRODUCTION == 'true' ? 'secret/logisgabon/prod' : 'secret/logisgabon/dev'}"
-    }
-
     stages {
-        stage('Secrets') {
-            steps {
-                withVault(
-                    vaultCredentialId: "${VAULT_CRED}",
-                    vaultSecrets: [[path: "${VAULT_PATH}", engineVersion: 2]],
-                    configuration: [
-                        vaultUrl: 'http://127.0.0.1:8200'
-                    ]) {
-                    echo "Secrets injected from ${VAULT_PATH} (Production: ${IS_PRODUCTION})"
-                }
-            }
-        }
-
         stage('Install & Test') {
             steps {
                 sh 'npm ci'
@@ -38,25 +14,6 @@ pipeline {
             steps { sh 'npm run build' }
         }
 
-        stage('Deploy Production') {
-            when { 
-                expression { IS_PRODUCTION == 'true' }
-            }
-            steps { 
-                sh 'npx vercel deploy --prod --token $VERCEL_TOKEN'
-                echo 'Deployed to production from main branch'
-            }
-        }
-
-        stage('Preview Deploy') {
-            when { 
-                expression { IS_PRODUCTION == 'false' }
-            }
-            steps { 
-                sh 'npx vercel deploy --prebuilt --token $VERCEL_TOKEN'
-                echo 'Preview deployment created'
-            }
-        }
     }
 
     post {
