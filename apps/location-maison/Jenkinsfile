@@ -1,65 +1,73 @@
 pipeline {
-  agent { docker { image 'node:20' } }
+    agent { docker { image 'node:20' } }
 
-  environment {
-    // Token Vercel stocké dans Jenkins Credentials
-    VERCEL_TOKEN = credentials('vercel-token')
+    environment {
+        // Token Vercel stocké dans Jenkins Credentials
+        VERCEL_TOKEN = credentials('vercel-token')
 
-    // Choix du credential et du chemin Vault selon la branche
-    VAULT_CRED  = env.BRANCH_NAME == 'develop' ? 'vault-approle-prod'
-                                               : 'vault-approle-dev'
-    VAULT_PATH  = env.BRANCH_NAME == 'develop' ? 'secret/logisgabon/prod'
-                                               : 'secret/logisgabon/dev'
-  }
+        // Détermine si on est en production (branche main)
+        IS_PRODUCTION = "${env.BRANCH_NAME == 'main'}"
+        // Choix du credential et du chemin Vault selon l'environnement
+        VAULT_CRED = "${IS_PRODUCTION == 'true' ? 'vault-approle-prod' : 'vault-approle-dev'}"
+        VAULT_PATH = "${IS_PRODUCTION == 'true' ? 'secret/logisgabon/prod' : 'secret/logisgabon/dev'}"
+    }
 
-  stages {
-    stage('Secrets') {
-      steps {
-        withVault(vaultCredentialId: "${VAULT_CRED}",
-                  vaultSecrets: [[path: "${VAULT_PATH}", engineVersion: 2]]) {
-          echo "Secrets injected from ${VAULT_PATH}"
+    stages {
+        stage('Secrets') {
+            steps {
+                withVault(
+                    vaultCredentialId: "${VAULT_CRED}",
+                    vaultSecrets: [[path: "${VAULT_PATH}", engineVersion: 2]],
+                    configuration: [
+                        vaultUrl: 'http://127.0.0.1:8200'
+                    ]) {
+                    echo "Secrets injected from ${VAULT_PATH} (Production: ${IS_PRODUCTION})"
+                }
+            }
         }
-      }
+
+        stage('Install & Test') {
+            steps {
+                sh 'npm ci'
+                sh 'npm run lint'
+                sh 'npm test -- --ci'
+            }
+        }
+
+        stage('Build') {
+            steps { sh 'npm run build' }
+        }
+
+        stage('Deploy Production') {
+            when { 
+                expression { IS_PRODUCTION == 'true' }
+            }
+            steps { 
+                sh 'npx vercel deploy --prod --token $VERCEL_TOKEN'
+                echo 'Deployed to production from main branch'
+            }
+        }
+
+        stage('Preview Deploy') {
+            when { 
+                expression { IS_PRODUCTION == 'false' }
+            }
+            steps { 
+                sh 'npx vercel deploy --prebuilt --token $VERCEL_TOKEN'
+                echo 'Preview deployment created'
+            }
+        }
     }
 
-    stage('Install & Test') {
-      steps {
-        sh 'npm ci'
-        sh 'npm run lint'
-        sh 'npm test -- --ci'
-      }
+    post {
+        success {
+            echo 'Pipeline completed successfully!'
+        }
+        failure {
+            echo 'Pipeline failed. Check logs for details.'
+        }
+        cleanup {
+            cleanWs()
+        }
     }
-
-    stage('Build') {
-      steps { sh 'npm run build' }
-    }
-
-    stage('Deploy Production') {
-      when { branch 'develop' }
-      steps { 
-        sh 'npx vercel deploy --prod --token $VERCEL_TOKEN'
-        echo 'Deployed to production from develop branch'
-      }
-    }
-
-    stage('Preview Deploy') {
-      when { not { branch 'develop' } }
-      steps { 
-        sh 'npx vercel deploy --prebuilt --token $VERCEL_TOKEN'
-        echo 'Preview deployment created'
-      }
-    }
-  }
-
-  post {
-    success {
-      echo 'Pipeline completed successfully!'
-    }
-    failure {
-      echo 'Pipeline failed. Check logs for details.'
-    }
-    cleanup {
-      cleanWs()
-    }
-  }
-} 
+}
