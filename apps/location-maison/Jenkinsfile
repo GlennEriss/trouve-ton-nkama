@@ -1,22 +1,31 @@
 pipeline {
-    agent { docker { image 'node:20' } }
+    /* 1️⃣  Un SEUL conteneur Node 20 réutilisé pour tous les stages */
+    agent {
+        docker {
+            image 'node:20'
+            /* garde le même conteneur pour éviter de perdre node_modules */
+            reuseNode true
+        }
+    }
 
     stages {
-        stage('Build') {
-            steps { sh 'npm run build' }
+        stage('Install') {
+            steps {
+                /* 2️⃣  Installe les dépendances avant de builder */
+                sh 'npm ci'
+            }
         }
 
+        stage('Build') {
+            steps {
+                sh 'npm run build'
+            }
+        }
     }
 
     post {
-        success {
-            echo 'Pipeline completed successfully!'
-        }
-        failure {
-            echo 'Pipeline failed. Check logs for details.'
-        }
-        cleanup {
-            cleanWs()
-        }
+        success { echo '✅ Build réussi !' }
+        failure { echo '❌ Build échoué – voir les logs' }
+        cleanup { cleanWs() }
     }
 }
