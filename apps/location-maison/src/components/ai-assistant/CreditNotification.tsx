@@ -1,7 +1,7 @@
 'use client'
 
 import React, { useState, useEffect } from 'react';
-import { AlertTriangle, CreditCard, Zap } from 'lucide-react';
+import { AlertTriangle, Zap } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 
 interface CreditNotificationProps {
