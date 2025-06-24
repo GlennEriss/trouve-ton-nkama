@@ -20,7 +20,7 @@ pipeline {
             steps {
                 script {
                     /* 3️⃣  Détermine l'environnement selon la branche */
-                    def vaultCred = 'vault-token'
+                    def vaultCred = 'vault-token'  // ID du credential Jenkins
                     def vaultPath = 'secret/data/logisgabon/dev'
                     withVault([
                         vaultSecrets: [[
@@ -58,7 +58,7 @@ pipeline {
                         ]],
                         configuration: [
                             vaultCredentialId: vaultCred,
-                            vaultUrl: 'http://127.0.0.1:8200'
+                            vaultUrl: 'http://host.docker.internal:8200'
                         ]
                     ]) {
                         /* 5️⃣  Stocke les variables pour les stages suivants */
