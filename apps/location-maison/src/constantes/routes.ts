@@ -23,6 +23,7 @@ export const routes = {
         login_and_security: '/login-and-security',
         notifications: '/settings',
         notification_list: '/list-notifications',
+        my_balance: '/my-balance',
     },
     public: {
         signinSignup: '/signin-signup',

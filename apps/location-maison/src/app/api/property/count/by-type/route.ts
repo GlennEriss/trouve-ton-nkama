@@ -1,9 +1,9 @@
 import { NextResponse } from 'next/server';
 import { getServerCountByPropertyType } from '@/db/property.db';
+import redis from '@/redis/client';
 
-// Add the in-memory cache
-const propertyCountByTypeCache = new Map<string, { count: number; expiry: number }>();
-const cacheDuration = 1000 * 60 * 10; // 10 minutes
+// TTL du cache (en secondes) – configurable via REDIS_CATALOG_TTL, défaut 1800 (30 min)
+const CACHE_TTL_SECONDS = parseInt(process.env.REDIS_CATALOG_TTL || '1800', 10);
 
 export async function GET(request: Request) {
     const url = new URL(request.url);
@@ -13,29 +13,27 @@ export async function GET(request: Request) {
         return NextResponse.json({ error: 'Property type is required' }, { status: 400 });
     }
 
-    // Check if the count is in the cache
-    const cached = propertyCountByTypeCache.get(type);
-    const now = Date.now();
+    // Vérifier le cache
+    const cached = await redis.get<number>(`propertyCountByType:${type}`);
 
-    if (cached && cached.expiry > now) {
-        console.log(`Serving property count for type ${type} from cache`);
-        return NextResponse.json({ count: cached.count }, {
+    if (typeof cached === 'number') {
+        return NextResponse.json({ count: cached }, {
             headers: {
-                'Cache-Control': 'public, s-maxage=600, stale-while-revalidate=600',
+                'Cache-Control': `public, s-maxage=${CACHE_TTL_SECONDS}, stale-while-revalidate=${CACHE_TTL_SECONDS}`,
             },
         });
     }
 
     try {
-        // Fetch the count from Firestore
+        // Récupérer le comptage depuis Firestore
         const count = await getServerCountByPropertyType(type);
 
-        // Cache the count
-        propertyCountByTypeCache.set(type, { count, expiry: now + cacheDuration });
+        // Mettre en cache le comptage
+        await redis.set(`propertyCountByType:${type}`, count, { ex: CACHE_TTL_SECONDS });
 
         return NextResponse.json({ count }, {
             headers: {
-                'Cache-Control': 'public, s-maxage=600, stale-while-revalidate=600',
+                'Cache-Control': `public, s-maxage=${CACHE_TTL_SECONDS}, stale-while-revalidate=${CACHE_TTL_SECONDS}`,
             },
         });
     } catch (error) {

@@ -29,5 +29,16 @@ namespace NodeJS {
     FACEBOOK_CLIENT_SECRET: string;
     //SUPPORT
     NEXT_PUBLIC_EMAIL_SUPPORT: string
+    NEXT_PUBLIC_AGENT_CODE_AIRTEL: string
+    //REDIS / UPSTASH
+    UPSTASH_REDIS_REST_URL: string;
+    UPSTASH_REDIS_REST_TOKEN: string;
+    // TTL optionnels (en secondes)
+    REDIS_CATALOG_TTL?: string;
+    REDIS_PROPERTY_TTL?: string;
+    //VAULT
+    VAULT_ADDR: string;
+    VAULT_TOKEN: string;
+    VAULT_PATH: string;
   }
 }

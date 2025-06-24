@@ -7,48 +7,48 @@ import React from 'react'
 const provinces = [
     {
         name: 'Estuaire',
-        img: 'estuaire.png',
-        logo: 'g1.png'
+        img: 'estuaire.webp',
+        logo: 'g1.webp'
     },
     {
         name: 'Haut-Ogooué',
-        img: 'haut-ogooue.png',
-        logo: 'g2.png'
+        img: 'haut-ogooue.webp',
+        logo: 'g2.webp'
     },
     {
         name: 'Moyen-Ogooué',
-        img: 'moyen-ogooue.png',
-        logo: 'g3.png'
+        img: 'moyen-ogooue.webp',
+        logo: 'g3.webp'
     },
     {
         name: 'Ngounié',
-        img: 'ngounié.png',
-        logo: 'g4.png'
+        img: 'ngounié.webp',
+        logo: 'g4.webp'
     },
     {
         name: 'Nyanga',
-        img: 'nyanga.png',
-        logo: 'g5.png'
+        img: 'nyanga.webp',
+        logo: 'g5.webp'
     },
     {
         name: 'Ogooué-Ivindo',
-        img: 'ogooue-ivindo.png',
-        logo: 'g6.png'
+        img: 'ogooue-ivindo.webp',
+        logo: 'g6.webp'
     },
     {
         name: 'Ogooué-Lolo',
-        img: 'ogooue-lolo.png',
-        logo: 'g7.png'
+        img: 'ogooue-lolo.webp',
+        logo: 'g7.webp'
     },
     {
         name: 'Ogooué-Maritime',
-        img: 'ogooue-maritime.png',
-        logo: 'g8.png'
+        img: 'ogooue-maritime.webp',
+        logo: 'g8.webp'
     },
     {
         name: 'Woleu-Ntem',
-        img: 'woleu-ntem.png',
-        logo: 'g9.svg'
+        img: 'woleu-ntem.webp',
+        logo: 'g9.webp'
     }
 ]
 

@@ -7,7 +7,6 @@ import { FaHome, FaBuilding, FaWarehouse, FaStore } from "react-icons/fa";
 import { BiBed } from "react-icons/bi";
 import { MdOutlineApartment, MdOutlineWorkspaces } from "react-icons/md";
 import { Button } from "@/components/ui/button";
-import { getTypePropertyKey, TypeProperty } from "@/lib/utils";
 import PropertyCarousel from "../property/PropertyCarousel";
 import MapComponent, { Neighborhood } from "../map/MapComponent";
 import houseMocks from "@/mocks/mocksHouse";
@@ -17,6 +16,9 @@ import { useAlgoliaContext } from "@/providers/AlgoliaContext";
 import AlgoliaRefinements, { useAlgoliaRefinements } from "@/providers/AlgoliaRefinementsContext";
 import { useRouter } from "next/navigation";
 import { propertyTypesList } from "./PropertyTypeList";
+import Link from "next/link";
+import { useCurrentUser } from "@/hooks/use-current-user";
+import { getTypePropertyKey, TypeProperty } from "@/constantes/property-type";
 
 const neighborhoods: Neighborhood[] = [
   {
@@ -97,7 +99,7 @@ const HomePage = () => {
     clearFilters,
   } = useAlgoliaContext();
   const { datas } = useAlgoliaRefinements();
-
+  const { user } = useCurrentUser();
 
   const toggleSelection = useCallback(
     (list: string[], item: string, setter: (val: string[]) => void) => {
@@ -267,12 +269,11 @@ const HomePage = () => {
           Créez votre annonce dès maintenant et atteignez des milliers de
           clients potentiels.
         </p>
-        <a href={routes.protected.add_property} rel="noopener noreferrer">
+        <Link href={user ? routes.protected.add_property : routes.public.signin}>
           <Button className="bg-white text-blue-500 px-6 py-3 rounded-full hover:bg-gray-100">
             Poster une annonce
           </Button>
-        </a>
-
+        </Link>
       </section>
     </div>
   );

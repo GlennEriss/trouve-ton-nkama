@@ -1,10 +1,18 @@
 'use client';
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import dynamic from 'next/dynamic';
-import 'leaflet/dist/leaflet.css';
-import L from 'leaflet';
-import 'leaflet.fullscreen/Control.FullScreen.css';
+
+const SimpleMap = dynamic(
+  () => import('./SimpleMap'),
+  {
+    ssr: false,
+    loading: () => (
+      <div style={{ height: '400px', width: '100%', backgroundColor: '#f0f0f0' }} />
+    ),
+  }
+);
+
 type MapSectionProps = {
   street: string;
   city: string;
@@ -16,75 +24,17 @@ type MapSectionProps = {
   additionalInformation?: string;
 };
 
-// Import dynamique des composants react-leaflet pour éviter les erreurs SSR
-const MapContainer = dynamic(
-  () => import('react-leaflet').then((mod) => mod.MapContainer),
-  { ssr: false }
-);
-const TileLayer = dynamic(
-  () => import('react-leaflet').then((mod) => mod.TileLayer),
-  { ssr: false }
-);
-const Marker = dynamic(
-  () => import('react-leaflet').then((mod) => mod.Marker),
-  { ssr: false }
-);
-const Popup = dynamic(
-  () => import('react-leaflet').then((mod) => mod.Popup),
-  { ssr: false }
-);
-const FullscreenControl = dynamic(
-  () => import('react-leaflet-fullscreen').then(mod => mod.FullscreenControl),
-  { ssr: false }
-);
+export const MapSection: React.FC<MapSectionProps> = (props) => {
+  const [mounted, setMounted] = useState(false);
 
-// Définition d'une icône personnalisée pour le marqueur
-const defaultIcon = L.icon({
-  iconUrl: 'https://upload.wikimedia.org/wikipedia/commons/8/88/Map_marker.svg',
-  iconSize: [30, 40],
-  iconAnchor: [15, 40],
-  popupAnchor: [0, -40],
-});
+  useEffect(() => {
+    setMounted(true);
+    return () => setMounted(false);
+  }, []);
 
-export const MapSection: React.FC<MapSectionProps> = ({
-  street,
-  city,
-  province,
-  longitude,
-  latitude,
-  image,
-  additionalInformation,
-  countryCode,
-}) => {
-  return (
-    <div style={{ height: '400px', width: '100%', zIndex: 1 }}>
-      <MapContainer
-        center={[latitude, longitude]}
-        zoom={13}
-        style={{ height: '100%', width: '100%' }}
-        scrollWheelZoom={true}
-      >
-        <TileLayer
-          url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-          attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-        />
-        <FullscreenControl position="topright" />
-        <Marker position={[latitude, longitude]} icon={defaultIcon}>
-          <Popup>
-            <div>
-              {image && (
-                <img
-                  src={image}
-                  alt={`${street}, ${city}`}
-                  style={{ width: '100%', maxHeight: '150px', objectFit: 'cover', marginTop: '8px' }}
-                />
-              )}
-              <p>{street}, {city}, {province}</p>
-              <p>{additionalInformation}</p>
-            </div>
-          </Popup>
-        </Marker>
-      </MapContainer>
-    </div>
-  );
+  if (!mounted) {
+    return <div style={{ height: '400px', width: '100%', backgroundColor: '#f0f0f0' }} />;
+  }
+
+  return <div className="relative z-0"><SimpleMap {...props} /></div>;
 };

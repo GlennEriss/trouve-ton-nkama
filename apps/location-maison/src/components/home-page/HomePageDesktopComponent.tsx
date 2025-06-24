@@ -5,8 +5,10 @@ import Link from 'next/link'
 import { routes } from '@/constantes/routes'
 import { useCurrentUser } from '@/hooks/use-current-user'
 import CarouselPropertyType from './CarouselPropertyType'
-import PropertyCarousel from '../property/PropertyCarousel'
 import PropertyByProvince from './PropertyByProvince'
+import FeaturedSection from './FeaturedSection'
+import TrendingSection from './TrendingSection'
+import RecentSection from './RecentSection'
 
 const detailssection2 = [
   {
@@ -64,31 +66,36 @@ export default function HomePageDesktopComponent() {
           />
         </div>
       </section>
-
-      <section className='mt-10 lg:my-20'>
-        <h1 className="text-xl lg:text-2xl xl:text-3xl font-bold leading-tight text-center text-[#146B67]">
+      <section className='mb-8 mt-10'>
+        <FeaturedSection />
+      </section>
+      {/* <section className='mt-10 lg:my-20'>
+        <h1 className="text-xl lg:text-2xl xl:text-3xl font-bold leading-tight text-center text-[#146B67] dark:text-[#1FA89B]">
           Développez votre activité immobilière en toute simplicité.
         </h1>
-        <div className='grid grid-cols-3 lg:mt-5'>
+        <div className='grid grid-cols-3 lg:mt-5 gap-4'>
           {
             detailssection2.map((item, index) => (
-              <div key={index} className='bg-white p-6 rounded-xl hover:shadow-md transition-shadow flex flex-col items-center h-[200px]'>
+              <div
+                key={index}
+                className='bg-white dark:bg-gray-800 p-6 rounded-xl hover:shadow-md dark:hover:shadow-[#1FA89B]/10 transition-all flex flex-col items-center h-[200px] dark:border dark:border-gray-700'
+              >
                 <div className="h-[60px] flex items-center justify-center">
                   <Image
                     src={item.image}
                     alt={item.title}
                     width={50}
                     height={50}
-                    className="object-contain"
+                    className="object-contain dark:filter dark:brightness-90"
                   />
                 </div>
                 <div className="h-[30px] flex items-center justify-center">
-                  <h2 className='text-lg font-bold text-center text-[#146B67]'>
+                  <h2 className='text-lg font-bold text-center text-[#146B67] dark:text-[#1FA89B]'>
                     {item.title}
                   </h2>
                 </div>
                 <div className="h-[60px] flex items-center justify-center">
-                  <p className='text-sm text-gray-600 text-center'>
+                  <p className='text-sm text-gray-600 dark:text-gray-300 text-center'>
                     {item.description}
                   </p>
                 </div>
@@ -96,7 +103,7 @@ export default function HomePageDesktopComponent() {
             ))
           }
         </div>
-      </section>
+      </section> */}
 
       <section className='relative overflow-hidden bg-gradient-to-r from-[#146B67]/5 via-[#1FA89B]/10 to-[#146B67]/5 p-8 py-16 rounded-3xl'>
         {/* Forme 2 - Derrière la 3ème section */}
@@ -136,20 +143,12 @@ export default function HomePageDesktopComponent() {
         <CarouselPropertyType />
       </section>
 
-      <section className='relative space-y-3 bg-gradient-to-r from-[#146B67]/5 via-[#1FA89B]/10 to-[#146B67]/5 rounded-3xl p-5 py-10 overflow-hidden'>
-        {/* Forme 3 - Derrière la 5ème section */}
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full h-full -z-10 overflow-hidden">
-          <Image
-            src="/assets/home-page/form.webp"
-            alt="Background shape"
-            fill
-            className="object-cover opacity-10 -rotate-90"
-          />
-        </div>
-        <h1 className='text-xl lg:text-2xl xl:text-3xl leading-tight font-bold text-center text-[#146B67]'>
-          Logements récents
-        </h1>
-        <PropertyCarousel properties={[]} />
+      <section className='mb-8'>
+        <TrendingSection />
+      </section>
+
+      <section className='mb-8'>
+        <RecentSection />
       </section>
 
       <section className='space-y-5 m-5'>

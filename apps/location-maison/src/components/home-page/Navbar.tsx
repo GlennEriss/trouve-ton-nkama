@@ -18,7 +18,7 @@ export default function Navbar() {
       return null
     }
     return (
-      <nav className="border-b border-gray-300 sticky top-0 left-0 right-0 z-50 bg-white dark:bg-black text-black dark:text-white px-4 py-4 flex items-center justify-between shadow-md">
+      <nav className="border-b border-gray-300 dark:border-gray-700 sticky top-0 left-0 right-0 z-[9999] bg-white dark:bg-gray-900 text-black dark:text-white px-4 py-4 flex items-center justify-between shadow-md dark:shadow-gray-900/50">
         <div className="flex items-center">
           <LogoNavigation />
         </div>
@@ -26,11 +26,11 @@ export default function Navbar() {
           <InputSearchNavbar />
           {user ? (
             <div className="flex items-center">
-              <a href={routes.protected.add_property}>
-                <button className="bg-gradient-to-r from-[#146B67] via-[#1FA89B] to-[#146B67] text-white rounded-lg text-[10px] px-3 py-2 font-semibold hover:brightness-110 hover:shadow-md transition">
+              <Link href={routes.protected.add_property}>
+                <button className="bg-gradient-to-r from-[#146B67] via-[#1FA89B] to-[#146B67] text-white rounded-lg text-[10px] px-3 py-2 font-semibold hover:brightness-110 hover:shadow-md transition-all duration-300 hover:scale-105 dark:hover:shadow-[#1FA89B]/20">
                   Poster une annonce
                 </button>
-              </a>
+              </Link>
             </div>
           ) : (
             <ButtonLogin />
@@ -40,7 +40,7 @@ export default function Navbar() {
     );
   }
   return (
-    <div className="rounded-full bg-[#f4f9f9] flex shadow sticky top-0 z-50">
+    <div className="rounded-full bg-[#f4f9f9] dark:bg-gray-900 flex shadow dark:shadow-gray-900/50 sticky top-0 z-[9999]">
       <LogoNavigation />
       <div className="ml-auto flex items-center gap-4 mr-5">
         <NavigationMenuNavbar />
@@ -62,7 +62,7 @@ export default function Navbar() {
 
 const LogoNavigation = () => {
   return (
-    <div className="rounded-full bg-[#f4f9f9] shadow">
+    <div className="rounded-full bg-[#f4f9f9] dark:bg-gray-900 shadow dark:shadow-gray-900/50">
       <a href="/" rel="noopener noreferrer">
         <Logo />
       </a>
@@ -74,10 +74,10 @@ const ButtonLogin = () => {
   return (
     <Button
       variant="ghost"
-      className="bg-gradient-to-r from-[#146B67] via-[#1FA89B] to-[#146B67] text-white border-none rounded-full text-base px-6 py-3 font-semibold hover:brightness-110 hover:shadow-md transition"
+      className="bg-gradient-to-r from-[#146B67] via-[#1FA89B] to-[#146B67] text-white border-none rounded-full text-base px-6 py-3 font-semibold hover:brightness-110 hover:shadow-md transition-all duration-300 hover:scale-105 dark:hover:shadow-[#1FA89B]/20"
       asChild
     >
-      <Link href={routes.public.signinSignup}>
+      <Link href={routes.public.signin}>
         Se connecter
       </Link>
     </Button>
@@ -88,7 +88,7 @@ const ButtonRegister = () => {
   return (
     <Button
       variant="outline"
-      className="text-[#146B67] border border-[#146B67] rounded-full text-base px-6 py-3 font-semibold hover:brightness-110 hover:shadow-md transition"
+      className="text-[#146B67] dark:text-[#1FA89B] border border-[#146B67] dark:border-[#1FA89B] rounded-full text-base px-6 py-3 font-semibold hover:brightness-110 hover:shadow-md transition-all duration-300 hover:scale-105 hover:bg-[#146B67]/5 dark:hover:bg-[#1FA89B]/5 dark:hover:shadow-[#1FA89B]/20"
       asChild>
       <Link href={routes.public.signup}>
         S'inscrire
@@ -101,7 +101,7 @@ const NavigationMenuNavbar = () => {
   const { user } = useCurrentUser()
   const menu = [
     {
-      link: user ? routes.protected.properties : routes.public.signinSignup,
+      link: user ? routes.protected.properties : routes.public.signin,
       label: user ? "Mes logements" : ""
     },
     {
@@ -109,7 +109,7 @@ const NavigationMenuNavbar = () => {
       label: "Catalogue"
     },
     {
-      link: user ? routes.protected.add_property : routes.public.signinSignup,
+      link: user ? routes.protected.add_property : routes.public.signin,
       label: "Poster une annonce"
     },
   ]
@@ -118,7 +118,11 @@ const NavigationMenuNavbar = () => {
       <NavigationMenuList>
         <NavigationMenuItem className="space-x-4">
           {menu.map((item) => (
-            <NavigationMenuLink className="text-base text-[#146B67] font-semibold hover:text-[#146B67] transition" key={item.label} href={item.link}>
+            <NavigationMenuLink 
+              className="text-base text-[#146B67] dark:text-[#1FA89B] font-semibold hover:text-[#146B67] dark:hover:text-[#1FA89B] relative after:absolute after:bottom-0 after:left-0 after:h-0.5 after:w-0 after:bg-[#146B67] dark:after:bg-[#1FA89B] after:transition-all after:duration-300 hover:after:w-full" 
+              key={item.label} 
+              href={item.link}
+            >
               {item.label}
             </NavigationMenuLink>
           ))}

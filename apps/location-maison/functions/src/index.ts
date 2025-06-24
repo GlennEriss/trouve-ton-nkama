@@ -1,21 +1,22 @@
 /**
- * Import function triggers from their respective submodules:
- *
- * import {onCall} from "firebase-functions/v2/https";
- * import {onDocumentWritten} from "firebase-functions/v2/firestore";
- *
- * See a full list of supported triggers at https://firebase.google.com/docs/functions
+ * Firebase Cloud Functions
+ * 
+ * Ce fichier exporte toutes les fonctions Cloud de l'application.
+ * Les fonctions sont organisées par catégorie (notifications, paiements, etc.)
  */
 
-//import {onRequest} from "firebase-functions/v2/https";
+//import { onRequest } from "firebase-functions/v2/https";
 //import * as logger from "firebase-functions/logger";
 
-// Start writing functions
-// https://firebase.google.com/docs/functions/typescript
+// Fonctions de notification
+export { onUserCreate, onUserFavorisUpdate } from './notification';
 
+// Fonctions de paiement
+export { initiatePurchase } from './payments/airtel';
+export { createCreditPayment } from './credit-payment';
+
+// Exemple de fonction (à décommenter si nécessaire)
 // export const helloWorld = onRequest((request, response) => {
 //   logger.info("Hello logs!", {structuredData: true});
 //   response.send("Hello from Firebase!");
 // });
-
-export { onUserCreate, onUserFavorisUpdate } from './notification';

@@ -13,11 +13,11 @@ import { Button } from "@/components/ui/button";
 import { ChevronLeft, SlidersHorizontal } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useAlgoliaContext } from "@/providers/AlgoliaContext";
-import { getTypePropertyKey, TypeProperty } from "@/lib/utils";
 import { tags as tagsList } from "@/constantes";
 import { DialogDescription } from "@radix-ui/react-dialog";
 import { InputApp } from "../shared/ui/InputApp";
 import { InputNumberApp } from "../shared/ui/InputNumberApp";
+import { TypeProperty, getTypePropertyKey } from "@/constantes/property-type";
 
 const PRICE_MAX = 1_000_000_000;
 const AREA_MIN = 0;
@@ -137,13 +137,12 @@ export const FilterModalHomePage = () => {
     return (
         <Dialog open={open} onOpenChange={setOpen}>
             <DialogTrigger asChild>
-                <button
-                    type='button'
+                <div
+                    className="p-2 rounded-full bg-gray-200 hover:bg-[#1FA89B]/20 transition cursor-pointer"
                     title="Ouvrir les filtres de recherche"
-                    className=" p-2 rounded-full bg-gray-200 hover:bg-[#1FA89B]/20 transition"
                 >
                     <SlidersHorizontal />
-                </button>
+                </div>
             </DialogTrigger>
 
             <DialogContent isDefaultIconClose={false} className="shadow-xl h-[90vh] max-w-[95%] md:max-w-4xl mx-auto flex flex-col rounded-2xl bg-white dark:bg-black overflow-hidden">
@@ -200,9 +199,11 @@ export const FilterModalHomePage = () => {
                                         min={0}
                                         step={10000}
                                         defaultValue={Number(localMinPrice)}
-                                        personalizedOnChange={(value) =>
-                                            setLocalMinPrice(String(Math.max(0, value)))
-                                        }
+                                        onChange={(value) => {
+                                            if (typeof value === 'number') {
+                                                setLocalMinPrice(String(Math.max(0, value)));
+                                            }
+                                        }}
                                         placeholder="0"
                                     />
                                 </div>
@@ -214,9 +215,11 @@ export const FilterModalHomePage = () => {
                                         min={0}
                                         step={10000}
                                         defaultValue={Number(localMaxPrice)}
-                                        personalizedOnChange={(value) =>
-                                            setLocalMaxPrice(String(Math.max(0, value)))
-                                        }
+                                        onChange={(value) => {
+                                            if (typeof value === 'number') {
+                                                setLocalMaxPrice(String(Math.max(0, value)));
+                                            }
+                                        }}
                                         placeholder="1 000 000 000"
                                     />
                                 </div>

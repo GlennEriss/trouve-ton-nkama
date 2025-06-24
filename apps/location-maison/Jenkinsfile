@@ -1,0 +1,80 @@
+pipeline {
+    /* 1️⃣  Un SEUL conteneur Node 20 réutilisé pour tous les stages */
+    agent {
+        docker {
+            image 'node:20'
+            /* garde le même conteneur pour éviter de perdre node_modules */
+            reuseNode true
+        }
+    }
+
+    stages {
+        stage('Install') {
+            steps {
+                /* 2️⃣  Installe les dépendances avant de builder */
+                sh 'npm ci'
+            }
+        }
+        
+        stage('Vault & Build') {
+            steps {
+                script {
+                    /* 3️⃣  Détermine l'environnement selon la branche */
+                    def vaultCred = 'vault-token'  // ID du credential Jenkins
+                    def vaultPath = 'secret/logisgabon/dev'
+                    withVault([
+                        vaultSecrets: [[
+                            path: vaultPath,
+                            engineVersion: 2,
+                            secretValues: [
+                                [envVar: 'FIREBASE_PROJECT_ID', vaultKey: 'FIREBASE_PROJECT_ID'],
+                                [envVar: 'FIREBASE_CLIENT_EMAIL', vaultKey: 'FIREBASE_CLIENT_EMAIL'],
+                                [envVar: 'FIREBASE_PRIVATE_KEY', vaultKey: 'FIREBASE_PRIVATE_KEY'],
+                                [envVar: 'NEXTAUTH_SECRET', vaultKey: 'NEXTAUTH_SECRET'],
+                                [envVar: 'UPSTASH_REDIS_REST_URL', vaultKey: 'UPSTASH_REDIS_REST_URL'],
+                                [envVar: 'UPSTASH_REDIS_REST_TOKEN', vaultKey: 'UPSTASH_REDIS_REST_TOKEN'],
+                                [envVar: 'NEXT_PUBLIC_FIREBASE_API_KEY', vaultKey: 'NEXT_PUBLIC_FIREBASE_API_KEY'],
+                                [envVar: 'NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN', vaultKey: 'NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN'],
+                                [envVar: 'NEXT_PUBLIC_FIREBASE_PROJECT_ID', vaultKey: 'NEXT_PUBLIC_FIREBASE_PROJECT_ID'],
+                                [envVar: 'NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET', vaultKey: 'NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET'],
+                                [envVar: 'NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID', vaultKey: 'NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID'],
+                                [envVar: 'NEXT_PUBLIC_FIREBASE_APP_ID', vaultKey: 'NEXT_PUBLIC_FIREBASE_APP_ID'],
+                                // Clés OAuth
+                                [envVar: 'GOOGLE_CLIENT_ID', vaultKey: 'GOOGLE_CLIENT_ID'],
+                                [envVar: 'GOOGLE_CLIENT_SECRET', vaultKey: 'GOOGLE_CLIENT_SECRET'],
+                                [envVar: 'FACEBOOK_CLIENT_ID', vaultKey: 'FACEBOOK_CLIENT_ID'],
+                                [envVar: 'FACEBOOK_CLIENT_SECRET', vaultKey: 'FACEBOOK_CLIENT_SECRET'],
+                                // Clés Next.js publiques
+                                [envVar: 'NEXT_PUBLIC_ALGOLIA_APP_ID', vaultKey: 'NEXT_PUBLIC_ALGOLIA_APP_ID'],
+                                [envVar: 'NEXT_PUBLIC_ALGOLIA_SEARCH_API_KEY', vaultKey: 'NEXT_PUBLIC_ALGOLIA_SEARCH_API_KEY'],
+                                [envVar: 'NEXT_PUBLIC_EMAIL_SUPPORT', vaultKey: 'NEXT_PUBLIC_EMAIL_SUPPORT'],
+                                [envVar: 'NEXT_PUBLIC_HOST', vaultKey: 'NEXT_PUBLIC_HOST'],
+                                [envVar: 'NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID', vaultKey: 'NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID'],
+                                [envVar: 'NEXT_PUBLIC_AGENT_CODE_AIRTEL', vaultKey: 'NEXT_PUBLIC_AGENT_CODE_AIRTEL'],
+                                // Configuration Redis/Cache
+                                [envVar: 'REDIS_CATALOG_TTL', vaultKey: 'REDIS_CATALOG_TTL'],
+                                [envVar: 'REDIS_PROPERTY_TTL', vaultKey: 'REDIS_PROPERTY_TTL']
+                            ]
+                        ]],
+                        configuration: [
+                            vaultCredentialId: vaultCred,
+                            vaultUrl: 'http://host.docker.internal:8200'
+                        ]
+                    ]) {
+                        echo "✅ Secrets injectés avec succès"
+                        sh 'npm run build'
+                    }
+                }
+            }
+        }
+    }
+
+    post {
+        success { echo '✅ Build réussi !' }
+        failure { echo '❌ Build échoué – voir les logs' }
+        cleanup { 
+            /* 7️⃣  Nettoie le fichier temporaire */
+            cleanWs() 
+        }
+    }
+}

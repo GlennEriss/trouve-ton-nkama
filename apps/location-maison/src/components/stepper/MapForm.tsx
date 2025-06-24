@@ -144,7 +144,7 @@ const MapForm = () => {
     };
 
     return (
-        <section className="h-[600px] w-full flex flex-col gap-4">
+        <section className="w-full flex flex-col gap-4">
             {/* Barre de recherche */}
             <div className="flex gap-2 items-center bg-gray-100 dark:bg-gray-800 p-2 rounded-md shadow-md">
                 <input
@@ -183,8 +183,8 @@ const MapForm = () => {
                 </div>
             )}
 
-            {/* Affichage de la carte */}
-            <div className="h-[500px] w-full">
+            {   /* Affichage de la carte */}
+            {/* <div className="h-[500px] w-full">
                 <MapContainer
                     center={coordinates}
                     zoom={12}
@@ -198,17 +198,15 @@ const MapForm = () => {
                         attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
                     />
 
-                    {/* Mise à jour automatique de la vue en fonction du marqueur */}
                     <MapViewUpdater coordinates={coordinates} />
 
-                    {/* Marqueur sur la position sélectionnée */}
                     {L && pinIcon && (
                         <Marker position={coordinates} icon={pinIcon}>
                             <Popup>Localité sélectionnée</Popup>
                         </Marker>
                     )}
                 </MapContainer>
-            </div>
+            </div> */}
         </section>
     );
 };
