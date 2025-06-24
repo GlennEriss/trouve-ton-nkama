@@ -194,6 +194,24 @@ export const CardPropertyCrud = ({ property }: { property: Property }) => {
     const queryClient = useQueryClient();
     const [localState, setLocalState] = useState(property.state);
     
+    // Fonction pour mettre à jour une propriété dans les pages
+    const updatePropertyInPage = (page: any, newState: string) => ({
+        ...page,
+        properties: page.properties.map((p: any) =>
+            p.id === property.id ? { ...p, state: newState } : p
+        ),
+    });
+
+    // Fonction pour mettre à jour toutes les pages
+    const updateAllPages = (oldData: any, newState: string) => {
+        if (!oldData) return oldData;
+        
+        return {
+            ...oldData,
+            pages: oldData.pages.map((page: any) => updatePropertyInPage(page, newState)),
+        };
+    };
+
     const handleChangePropertyState = async () => {
         setIsLoading(true);
         const newState = localState === 'ARCHIVED' ? 'IN_PROGRESS' : 'ARCHIVED';
@@ -203,19 +221,10 @@ export const CardPropertyCrud = ({ property }: { property: Property }) => {
             state: newState,
         });
 
-        queryClient.setQueryData([queryKeys.properties, property.typeProperty, user], (oldData: any) => {
-            if (!oldData) return oldData;
-
-            return {
-                ...oldData,
-                pages: oldData.pages.map((page: any) => ({
-                    ...page,
-                    properties: page.properties.map((p: any) =>
-                        p.id === property.id ? { ...p, state: newState } : p
-                    ),
-                })),
-            };
-        });
+        queryClient.setQueryData([queryKeys.properties, property.typeProperty, user], (oldData: any) => 
+            updateAllPages(oldData, newState)
+        );
+        
         setLocalState(newState);
         setIsLoading(false);
     }

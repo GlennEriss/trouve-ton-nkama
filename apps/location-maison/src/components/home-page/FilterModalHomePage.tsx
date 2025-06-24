@@ -88,43 +88,88 @@ export const FilterModalHomePage = () => {
         clearFilters();
     };
 
-    const onApply = () => {
+    // Fonction pour normaliser et valider les valeurs numériques
+    const normalizeNumericValues = () => {
         let minP = Math.max(0, Number(localMinPrice) || 0);
         let maxP = Math.max(0, Number(localMaxPrice) || 0);
+        
         if (minP >= maxP) {
             maxP = PRICE_MAX;
             setLocalMaxPrice(String(PRICE_MAX));
         }
-        let minA = Math.max(0, Number(localMinArea) || 0);
-        let maxA = Math.max(0, Number(localMaxArea) || 0);
-        let minR = Math.max(0, Number(localMinRooms) || 0);
-        let maxR = Math.max(0, Number(localMaxRooms) || 0);
+        
+        const minA = Math.max(0, Number(localMinArea) || 0);
+        const maxA = Math.max(0, Number(localMaxArea) || 0);
+        const minR = Math.max(0, Number(localMinRooms) || 0);
+        const maxR = Math.max(0, Number(localMaxRooms) || 0);
+        
+        return { minP, maxP, minA, maxA, minR, maxR };
+    };
 
-        if (localCity) setCity(localCity);
-        if (localStreet) setStreet(localStreet);
-        if (localMinPrice) setMinPrice(String(minP));
-        if (localMaxPrice) setMaxPrice(String(maxP));
-        if (localMinArea) setMinArea(String(minA));
-        if (localMaxArea) setMaxArea(String(maxA));
-        if (localMinRooms) setMinNbrRooms(String(minR));
-        if (localMaxRooms) setMaxNbrRooms(String(maxR));
-        if (localTypes.length) setTypeProperty(localTypes);
-        if (localTags.length) setTags(localTags);
+    // Fonction pour mettre à jour les états globaux
+    const updateGlobalStates = (values: ReturnType<typeof normalizeNumericValues>) => {
+        const { minP, maxP, minA, maxA, minR, maxR } = values;
+        
+        // Mises à jour des états string
+        const stringUpdates = [
+            { condition: localCity, setter: setCity, value: localCity },
+            { condition: localStreet, setter: setStreet, value: localStreet },
+            { condition: localMinPrice, setter: setMinPrice, value: String(minP) },
+            { condition: localMaxPrice, setter: setMaxPrice, value: String(maxP) },
+            { condition: localMinArea, setter: setMinArea, value: String(minA) },
+            { condition: localMaxArea, setter: setMaxArea, value: String(maxA) },
+            { condition: localMinRooms, setter: setMinNbrRooms, value: String(minR) },
+            { condition: localMaxRooms, setter: setMaxNbrRooms, value: String(maxR) },
+        ];
 
+        // Mises à jour des états array
+        const arrayUpdates = [
+            { condition: localTypes.length, setter: setTypeProperty, value: localTypes },
+            { condition: localTags.length, setter: setTags, value: localTags },
+        ];
+
+        stringUpdates.forEach(({ condition, setter, value }) => {
+            if (condition) setter(value as string);
+        });
+
+        arrayUpdates.forEach(({ condition, setter, value }) => {
+            if (condition) setter(value as string[]);
+        });
+    };
+
+    // Fonction pour construire les paramètres URL
+    const buildUrlParams = (values: ReturnType<typeof normalizeNumericValues>) => {
+        const { minP, maxP } = values;
         const params = new URLSearchParams();
-        if (searchText) params.append("query", searchText);
-        if (localCity) params.append("city", localCity);
-        if (localStreet) params.append("street", localStreet);
-        if (localMinPrice) params.append("minPrice", String(minP));
-        if (localMaxPrice) params.append("maxPrice", String(maxP));
-        if (localMinArea) params.append("minArea", localMinArea);
-        if (localMaxArea) params.append("maxArea", localMaxArea);
-        if (localMinRooms) params.append("minNbrRooms", localMinRooms);
-        if (localMaxRooms) params.append("maxNbrRooms", localMaxRooms);
-        if (localTypes.length) params.append("typeProperty", localTypes.join(","));
-        if (localTags.length) params.append("tags", localTags.join(","));
-        router.push(`/search?${params.toString()}`);
+        
+        const paramMappings = [
+            { condition: searchText, key: "query", value: searchText },
+            { condition: localCity, key: "city", value: localCity },
+            { condition: localStreet, key: "street", value: localStreet },
+            { condition: localMinPrice, key: "minPrice", value: String(minP) },
+            { condition: localMaxPrice, key: "maxPrice", value: String(maxP) },
+            { condition: localMinArea, key: "minArea", value: localMinArea },
+            { condition: localMaxArea, key: "maxArea", value: localMaxArea },
+            { condition: localMinRooms, key: "minNbrRooms", value: localMinRooms },
+            { condition: localMaxRooms, key: "maxNbrRooms", value: localMaxRooms },
+            { condition: localTypes.length, key: "typeProperty", value: localTypes.join(",") },
+            { condition: localTags.length, key: "tags", value: localTags.join(",") },
+        ];
 
+        paramMappings.forEach(({ condition, key, value }) => {
+            if (condition) params.append(key, value);
+        });
+        
+        return params;
+    };
+
+    const onApply = () => {
+        const normalizedValues = normalizeNumericValues();
+        updateGlobalStates(normalizedValues);
+        
+        const params = buildUrlParams(normalizedValues);
+        router.push(`/search?${params.toString()}`);
+        
         setOpen(false);
     };
 
