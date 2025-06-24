@@ -16,7 +16,7 @@ pipeline {
             }
         }
         
-        stage('Vault') {
+        stage('Vault & Build') {
             steps {
                 script {
                     /* 3️⃣  Détermine l'environnement selon la branche */
@@ -60,17 +60,11 @@ pipeline {
                             vaultCredentialId: vaultCred,
                             vaultUrl: 'http://host.docker.internal:8200'
                         ]
-                    ])
+                    ]) {
+                        echo "✅ Secrets injectés avec succès"
+                        sh 'npm run build'
+                    }
                 }
-            }
-        }
-        
-        stage('Build') {
-            steps {
-                /* 6️⃣  Build avec les variables d'environnement */
-                sh '''
-                    npm run build
-                '''
             }
         }
     }
