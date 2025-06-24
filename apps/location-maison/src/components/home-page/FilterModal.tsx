@@ -18,7 +18,6 @@ import { TypeProperty, getTypePropertyKey } from "@/constantes/property-type";
 import { useFilterModal } from "@/hooks/use-filter-modal";
 
 const PRICE_MIN = 0;
-const PRICE_MAX = 1_000_000_000;
 const AREA_MIN = 0;
 const AREA_MAX = 1000;
 const ROOMS_MIN = 0;
@@ -48,80 +47,6 @@ export const FilterModal = () => {
 
   const onClear = () => {
     clearLocalFilters();
-  };
-
-  // Fonction pour normaliser et valider les valeurs numériques
-  const normalizeNumericValues = () => {
-    let minP = Math.max(0, Number(localMinPrice) || 0);
-    let maxP = Math.max(0, Number(localMaxPrice) || 0);
-    
-    if (minP >= maxP) {
-      maxP = PRICE_MAX;
-      setLocalMaxPrice(String(PRICE_MAX));
-    }
-    
-    const minA = Math.max(0, Number(localMinArea) || 0);
-    const maxA = Math.max(0, Number(localMaxArea) || 0);
-    const minR = Math.max(0, Number(localMinRooms) || 0);
-    const maxR = Math.max(0, Number(localMaxRooms) || 0);
-    
-    return { minP, maxP, minA, maxA, minR, maxR };
-  };
-
-  // Fonction pour mettre à jour les états globaux
-  const updateGlobalStates = (values: ReturnType<typeof normalizeNumericValues>) => {
-    const { minP, maxP, minA, maxA, minR, maxR } = values;
-    
-    // Mises à jour des états string
-    const stringUpdates = [
-      { condition: localCity, setter: setLocalCity, value: localCity },
-      { condition: localStreet, setter: setLocalStreet, value: localStreet },
-      { condition: localMinPrice, setter: setLocalMinPrice, value: String(minP) },
-      { condition: localMaxPrice, setter: setLocalMaxPrice, value: String(maxP) },
-      { condition: localMinArea, setter: setLocalMinArea, value: String(minA) },
-      { condition: localMaxArea, setter: setLocalMaxArea, value: String(maxA) },
-      { condition: localMinRooms, setter: setLocalMinRooms, value: String(minR) },
-      { condition: localMaxRooms, setter: setLocalMaxRooms, value: String(maxR) },
-    ];
-
-    // Mises à jour des états array
-    const arrayUpdates = [
-      { condition: localTypes.length, setter: setLocalTypes, value: localTypes },
-      { condition: localTags.length, setter: setLocalTags, value: localTags },
-    ];
-
-    stringUpdates.forEach(({ condition, setter, value }) => {
-      if (condition) setter(value as string);
-    });
-
-    arrayUpdates.forEach(({ condition, setter, value }) => {
-      if (condition) setter(value as string[]);
-    });
-  };
-
-  // Fonction pour construire les paramètres URL
-  const buildUrlParams = (values: ReturnType<typeof normalizeNumericValues>) => {
-    const { minP, maxP } = values;
-    const params = new URLSearchParams();
-    
-    const paramMappings = [
-      { condition: localCity, key: "city", value: localCity },
-      { condition: localStreet, key: "street", value: localStreet },
-      { condition: localMinPrice, key: "minPrice", value: String(minP) },
-      { condition: localMaxPrice, key: "maxPrice", value: String(maxP) },
-      { condition: localMinArea, key: "minArea", value: localMinArea },
-      { condition: localMaxArea, key: "maxArea", value: localMaxArea },
-      { condition: localMinRooms, key: "minNbrRooms", value: localMinRooms },
-      { condition: localMaxRooms, key: "maxNbrRooms", value: localMaxRooms },
-      { condition: localTypes.length, key: "typeProperty", value: localTypes.join(",") },
-      { condition: localTags.length, key: "tags", value: localTags.join(",") },
-    ];
-
-    paramMappings.forEach(({ condition, key, value }) => {
-      if (condition) params.append(key, value);
-    });
-    
-    return params;
   };
 
   const priceInvalid = Number(localMinPrice) < 0 || Number(localMaxPrice) < 0;
