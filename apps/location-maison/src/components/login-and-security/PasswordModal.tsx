@@ -27,7 +27,7 @@ export default function PasswordModal({ isOpen, onClose, onConfirm }: PasswordMo
     setError("");
 
     try {
-      await onConfirm(password);
+      onConfirm(password);
       setPassword(""); // Réinitialisation après succès
       onClose();
     } catch (err) {

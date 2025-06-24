@@ -104,7 +104,7 @@ export default function SearchDesktopPage() {
     }, [locations, selectedProvince, selectedCity]);
 
     const onClear = () => {
-        // Reset du formulaire React Hook Form
+        // Reset des valeurs du formulaire
         form.reset({
             province: '',
             city: '',
@@ -125,48 +125,88 @@ export default function SearchDesktopPage() {
         // Reset de l'URL
         router.push('/search');
     };
-    const onSubmit = (data: FormFilterSchemaType) => {
-        // Validation et normalisation des valeurs
+
+    // Fonction pour normaliser et valider les valeurs numériques
+    const normalizeValues = (data: FormFilterSchemaType) => {
         let minPrice = Math.max(0, Number(data.minPrice) || 0);
         let maxPrice = Math.max(0, Number(data.maxPrice) || 0);
+        
         if (minPrice >= maxPrice) {
             maxPrice = Infinity;
             form.setValue('maxPrice', maxPrice);
         }
 
-        let minArea = Math.max(0, Number(data.minArea) || 0);
-        let maxArea = Math.max(0, Number(data.maxArea) || 0);
-        let minRooms = Math.max(0, Number(data.minNbrRooms) || 0);
-        let maxRooms = Math.max(0, Number(data.maxNbrRooms) || 0);
+        const minArea = Math.max(0, Number(data.minArea) || 0);
+        const maxArea = Math.max(0, Number(data.maxArea) || 0);
+        const minRooms = Math.max(0, Number(data.minNbrRooms) || 0);
+        const maxRooms = Math.max(0, Number(data.maxNbrRooms) || 0);
 
-        // Mise à jour du contexte
-        if (data.city) setCity(data.city);
-        if (data.street) setStreet(data.street);
-        if (data.minPrice) setMinPrice(String(minPrice));
-        if (data.maxPrice) setMaxPrice(String(maxPrice));
-        if (data.minArea) setMinArea(String(minArea));
-        if (data.maxArea) setMaxArea(String(maxArea));
-        if (data.minNbrRooms) setMinNbrRooms(String(minRooms));
-        if (data.maxNbrRooms) setMaxNbrRooms(String(maxRooms));
-        if (data.typeProperty?.length) setTypeProperty(data.typeProperty);
-        if (data.tags?.length) setTags(data.tags);
+        return { minPrice, maxPrice, minArea, maxArea, minRooms, maxRooms };
+    };
 
-        // Construction et mise à jour de l'URL
+    // Fonction pour mettre à jour le contexte
+    const updateContext = (data: FormFilterSchemaType, normalizedValues: ReturnType<typeof normalizeValues>) => {
+        const { minPrice, maxPrice, minArea, maxArea, minRooms, maxRooms } = normalizedValues;
+
+        const contextUpdates = [
+            { condition: data.city, setter: setCity, value: data.city },
+            { condition: data.street, setter: setStreet, value: data.street },
+            { condition: data.minPrice, setter: setMinPrice, value: String(minPrice) },
+            { condition: data.maxPrice, setter: setMaxPrice, value: String(maxPrice) },
+            { condition: data.minArea, setter: setMinArea, value: String(minArea) },
+            { condition: data.maxArea, setter: setMaxArea, value: String(maxArea) },
+            { condition: data.minNbrRooms, setter: setMinNbrRooms, value: String(minRooms) },
+            { condition: data.maxNbrRooms, setter: setMaxNbrRooms, value: String(maxRooms) },
+        ];
+
+        const arrayUpdates = [
+            { condition: data.typeProperty?.length, setter: setTypeProperty, value: data.typeProperty },
+            { condition: data.tags?.length, setter: setTags, value: data.tags },
+        ];
+
+        contextUpdates.forEach(({ condition, setter, value }) => {
+            if (condition) setter(value as string);
+        });
+
+        arrayUpdates.forEach(({ condition, setter, value }) => {
+            if (condition) setter(value as string[]);
+        });
+    };
+
+    // Fonction pour construire les paramètres URL
+    const buildUrlParams = (data: FormFilterSchemaType, normalizedValues: ReturnType<typeof normalizeValues>) => {
+        const { minPrice, maxPrice, minArea, maxArea, minRooms, maxRooms } = normalizedValues;
         const params = new URLSearchParams();
-        if (searchText) params.append("query", searchText);
-        if (data.city) params.append("city", data.city);
-        if (data.street) params.append("street", data.street);
-        if (minPrice) params.append("minPrice", String(minPrice));
-        if (maxPrice && maxPrice !== Infinity) params.append("maxPrice", String(maxPrice));
-        if (minArea) params.append("minArea", String(minArea));
-        if (maxArea) params.append("maxArea", String(maxArea));
-        if (minRooms) params.append("minNbrRooms", String(minRooms));
-        if (maxRooms) params.append("maxNbrRooms", String(maxRooms));
-        if (data.typeProperty?.length) params.append("typeProperty", data.typeProperty.join(","));
-        if (data.tags?.length) params.append("tags", data.tags.join(","));
 
+        const paramMappings = [
+            { condition: searchText, key: "query", value: searchText },
+            { condition: data.city, key: "city", value: data.city },
+            { condition: data.street, key: "street", value: data.street },
+            { condition: minPrice, key: "minPrice", value: String(minPrice) },
+            { condition: maxPrice && maxPrice !== Infinity, key: "maxPrice", value: String(maxPrice) },
+            { condition: minArea, key: "minArea", value: String(minArea) },
+            { condition: maxArea, key: "maxArea", value: String(maxArea) },
+            { condition: minRooms, key: "minNbrRooms", value: String(minRooms) },
+            { condition: maxRooms, key: "maxNbrRooms", value: String(maxRooms) },
+            { condition: data.typeProperty?.length, key: "typeProperty", value: data.typeProperty?.join(",") },
+            { condition: data.tags?.length, key: "tags", value: data.tags?.join(",") },
+        ];
+
+        paramMappings.forEach(({ condition, key, value }) => {
+            if (condition && value) params.append(key, value);
+        });
+
+        return params;
+    };
+
+    const onSubmit = (data: FormFilterSchemaType) => {
+        const normalizedValues = normalizeValues(data);
+        updateContext(data, normalizedValues);
+        
+        const params = buildUrlParams(data, normalizedValues);
         router.push(`/search?${params.toString()}`);
     };
+
     return (
         <div className='flex p-5'>
             <div className="w-1/4 border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 relative">
