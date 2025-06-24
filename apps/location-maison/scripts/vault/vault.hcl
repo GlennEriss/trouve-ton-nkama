@@ -2,7 +2,7 @@
 # créer le core: vault operator init -key-shares=1 -key-threshold=1 > init.txt
 # set le VAULT_TOKEN: export VAULT_TOKEN=
 # Monter le secret: vault secrets enable -path=secret kv-v2
-
+# Monter le approle: vault auth enable approle
 ui = true
 
 listener "tcp" {
