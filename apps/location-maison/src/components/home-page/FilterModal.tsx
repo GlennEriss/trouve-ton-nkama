@@ -1,6 +1,5 @@
 "use client";
 
-import { useEffect, useState } from "react";
 import * as SliderPrimitive from "@radix-ui/react-slider";
 import {
   Dialog,
@@ -13,124 +12,42 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { ChevronLeft } from "lucide-react";
 import { BiFilter } from "react-icons/bi";
-import { useRouter } from "next/navigation";
-import { useAlgoliaContext } from "@/providers/AlgoliaContext";
 import { tags as tagsList } from "@/constantes";
 import { useAlgoliaRefinements } from "@/providers/AlgoliaRefinementsContext";
 import { TypeProperty, getTypePropertyKey } from "@/constantes/property-type";
+import { useFilterModal } from "@/hooks/use-filter-modal";
 
 const PRICE_MIN = 0;
-const PRICE_MAX = 1_000_000_000;
 const AREA_MIN = 0;
 const AREA_MAX = 1000;
 const ROOMS_MIN = 0;
 const ROOMS_MAX = 10;
 
 export const FilterModal = () => {
-  const router = useRouter();
   const { refineTags } = useAlgoliaRefinements();
   const {
-    searchText,
-    city, setCity,
-    street, setStreet,
-    minPrice, setMinPrice,
-    maxPrice, setMaxPrice,
-    minArea, setMinArea,
-    maxArea, setMaxArea,
-    minNbrRooms, setMinNbrRooms,
-    maxNbrRooms, setMaxNbrRooms,
-    typeProperty, setTypeProperty,
-    tags, setTags,
-    clearFilters,
-  } = useAlgoliaContext();
-
-  const [open, setOpen] = useState(false);
-
-  const [localCity, setLocalCity] = useState(city);
-  const [localStreet, setLocalStreet] = useState(street);
-  const [localMinPrice, setLocalMinPrice] = useState(minPrice);
-  const [localMaxPrice, setLocalMaxPrice] = useState(maxPrice);
-  const [localMinArea, setLocalMinArea] = useState(minArea);
-  const [localMaxArea, setLocalMaxArea] = useState(maxArea);
-  const [localMinRooms, setLocalMinRooms] = useState(minNbrRooms);
-  const [localMaxRooms, setLocalMaxRooms] = useState(maxNbrRooms);
-  const [localTypes, setLocalTypes] = useState<string[]>(typeProperty);
-  const [localTags, setLocalTags] = useState<string[]>(tags);
-
-  useEffect(() => {
-    if (open) {
-      setLocalCity(city);
-      setLocalStreet(street);
-      setLocalMinPrice(minPrice);
-      setLocalMaxPrice(maxPrice);
-      setLocalMinArea(minArea);
-      setLocalMaxArea(maxArea);
-      setLocalMinRooms(minNbrRooms);
-      setLocalMaxRooms(maxNbrRooms);
-      setLocalTypes(typeProperty);
-      setLocalTags(tags);
-    }
-  }, [open]);
-
-  const clearLocalFilters = () => {
-    setLocalCity("");
-    setLocalStreet("");
-    setLocalMinPrice("");
-    setLocalMaxPrice("");
-    setLocalMinArea("");
-    setLocalMaxArea("");
-    setLocalMinRooms("");
-    setLocalMaxRooms("");
-    setLocalTypes([]);
-    setLocalTags([]);
-  };
+    // États
+    open, setOpen,
+    localCity, setLocalCity,
+    localStreet, setLocalStreet,
+    localMinPrice, setLocalMinPrice,
+    localMaxPrice, setLocalMaxPrice,
+    localMinArea, setLocalMinArea,
+    localMaxArea, setLocalMaxArea,
+    localMinRooms, setLocalMinRooms,
+    localMaxRooms, setLocalMaxRooms,
+    localTypes, setLocalTypes,
+    localTags, setLocalTags,
+    
+    // Actions
+    clearLocalFilters,
+    onApply,
+    toggleLocal,
+  } = useFilterModal();
 
   const onClear = () => {
     clearLocalFilters();
   };
-
-  const onApply = () => {
-    let minP = Math.max(0, Number(localMinPrice) || 0);
-    let maxP = Math.max(0, Number(localMaxPrice) || 0);
-    if (minP >= maxP) {
-      maxP = PRICE_MAX;
-      setLocalMaxPrice(String(PRICE_MAX));
-    }
-    let minA = Math.max(0, Number(localMinArea) || 0);
-    let maxA = Math.max(0, Number(localMaxArea) || 0);
-    let minR = Math.max(0, Number(localMinRooms) || 0);
-    let maxR = Math.max(0, Number(localMaxRooms) || 0);
-
-    if (localCity) setCity(localCity);
-    if (localStreet) setStreet(localStreet);
-    if (localMinPrice) setMinPrice(String(minP));
-    if (localMaxPrice) setMaxPrice(String(maxP));
-    if (localMinArea) setMinArea(String(minA));
-    if (localMaxArea) setMaxArea(String(maxA));
-    if (localMinRooms) setMinNbrRooms(String(minR));
-    if (localMaxRooms) setMaxNbrRooms(String(maxR));
-    if (localTypes.length) setTypeProperty(localTypes);
-    if (localTags.length) setTags(localTags);
-
-    const params = new URLSearchParams();
-    if (searchText) params.append("query", searchText);
-    if (localCity) params.append("city", localCity);
-    if (localStreet) params.append("street", localStreet);
-    if (localMinPrice) params.append("minPrice", String(minP));
-    if (localMaxPrice) params.append("maxPrice", String(maxP));
-    if (localMinArea) params.append("minArea", localMinArea);
-    if (localMaxArea) params.append("maxArea", localMaxArea);
-    if (localMinRooms) params.append("minNbrRooms", localMinRooms);
-    if (localMaxRooms) params.append("maxNbrRooms", localMaxRooms);
-    if (localTypes.length) params.append("typeProperty", localTypes.join(","));
-    if (localTags.length) params.append("tags", localTags.join(","));
-    router.push(`/search?${params.toString()}`);
-
-    setOpen(false);
-  };
-
-  const toggleLocal = (list: string[], item: string, setter: (v: string[]) => void) =>
-    setter(list.includes(item) ? list.filter(i => i !== item) : [...list, item]);
 
   const priceInvalid = Number(localMinPrice) < 0 || Number(localMaxPrice) < 0;
 

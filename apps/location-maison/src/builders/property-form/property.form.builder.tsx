@@ -142,5 +142,4 @@ export abstract class PropertyFormBuilder {
     public build() {
         return this.formElements
     };
-    public static getInstance() { }
 }

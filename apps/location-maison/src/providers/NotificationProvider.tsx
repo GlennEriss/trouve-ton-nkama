@@ -2,7 +2,7 @@
 
 import React, { createContext, useContext, useEffect, useState } from "react";
 import { Notification } from "@/models/notification";
-import { collection, query, where, onSnapshot, doc, updateDoc, Timestamp, orderBy, limit } from 'firebase/firestore';
+import { collection, query, where, onSnapshot, doc, updateDoc, Timestamp, orderBy, limit, Query, QuerySnapshot, DocumentData } from 'firebase/firestore';
 import { useCurrentUser } from "@/hooks/use-current-user";
 import { db } from "@/firebase/firestore";
 
@@ -19,6 +19,41 @@ export function NotificationProvider({ children }: { children: React.ReactNode }
     const { user } = useCurrentUser();
     const [notifications, setNotifications] = useState<Notification[]>([]);
     const [unreadCount, setUnreadCount] = useState(0);
+
+    // Fonction pour traiter les notifications non lues
+    const handleUnreadNotifications = (unreadNotifications: Notification[], recentQuery: Query<DocumentData, DocumentData>) => {
+        const unsubscribeRecent = onSnapshot(recentQuery, (snapshot: QuerySnapshot<DocumentData, DocumentData>) => {
+            const recentNotifications = snapshot.docs.map((doc) => ({
+                id: doc.id,
+                ...(doc.data() as Notification),
+            }));
+
+            // 🔥 Fusionner les résultats : non lues en premier, puis récentes sans doublons
+            const allNotifications = [
+                ...unreadNotifications, // 🔹 Priorité aux non lues
+                ...recentNotifications.filter((notif: Notification) => 
+                    !unreadNotifications.some((un: Notification) => un.id === notif.id)
+                ) // 🔹 Ajout des récentes sans doublons
+            ];
+
+            setNotifications(allNotifications);
+        });
+
+        return unsubscribeRecent;
+    };
+
+    // Fonction pour traiter la requête des notifications non lues
+    const handleUnreadQuery = (unreadQuery: Query<DocumentData, DocumentData>, recentQuery: Query<DocumentData, DocumentData>) => {
+        return onSnapshot(unreadQuery, (snapshot: QuerySnapshot<DocumentData, DocumentData>) => {
+            const unreadNotifications = snapshot.docs.map((doc) => ({
+                id: doc.id,
+                ...(doc.data() as Notification),
+            }));
+
+            const unsubscribeRecent = handleUnreadNotifications(unreadNotifications, recentQuery);
+            return unsubscribeRecent;
+        });
+    };
 
     // Récupération des notifications en temps réel
     useEffect(() => {
@@ -46,31 +81,7 @@ export function NotificationProvider({ children }: { children: React.ReactNode }
         );
     
         // 🔹 Exécuter les deux requêtes
-        const unsubscribeUnread = onSnapshot(unreadQuery, (snapshot) => {
-            const unreadNotifications = snapshot.docs.map((doc) => ({
-                id: doc.id,
-                ...(doc.data() as Notification),
-            }));
-    
-            const unsubscribeRecent = onSnapshot(recentQuery, (snapshot) => {
-                const recentNotifications = snapshot.docs.map((doc) => ({
-                    id: doc.id,
-                    ...(doc.data() as Notification),
-                }));
-    
-                // 🔥 Fusionner les résultats : non lues en premier, puis récentes sans doublons
-                const allNotifications = [
-                    ...unreadNotifications, // 🔹 Priorité aux non lues
-                    ...recentNotifications.filter((notif) => 
-                        !unreadNotifications.some((un) => un.id === notif.id)
-                    ) // 🔹 Ajout des récentes sans doublons
-                ];
-    
-                setNotifications(allNotifications);
-            });
-    
-            return () => unsubscribeRecent();
-        });
+        const unsubscribeUnread = handleUnreadQuery(unreadQuery, recentQuery);
     
         return () => unsubscribeUnread();
     }, [user]);
