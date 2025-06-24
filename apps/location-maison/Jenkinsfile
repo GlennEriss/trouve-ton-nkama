@@ -15,10 +15,95 @@ pipeline {
                 sh 'npm ci'
             }
         }
-
+        
+        stage('Vault') {
+            steps {
+                script {
+                    /* 3️⃣  Détermine l'environnement selon la branche */
+                    def vaultCred = 'vault-token'
+                    def vaultPath = 'secret/data/logisgabon/dev'
+                    withVault([
+                        vaultSecrets: [[
+                            path: vaultPath,
+                            engineVersion: 2,
+                            secretValues: [
+                                [envVar: 'FIREBASE_PROJECT_ID', vaultKey: 'FIREBASE_PROJECT_ID'],
+                                [envVar: 'FIREBASE_CLIENT_EMAIL', vaultKey: 'FIREBASE_CLIENT_EMAIL'],
+                                [envVar: 'FIREBASE_PRIVATE_KEY', vaultKey: 'FIREBASE_PRIVATE_KEY'],
+                                [envVar: 'NEXTAUTH_SECRET', vaultKey: 'NEXTAUTH_SECRET'],
+                                [envVar: 'UPSTASH_REDIS_REST_URL', vaultKey: 'UPSTASH_REDIS_REST_URL'],
+                                [envVar: 'UPSTASH_REDIS_REST_TOKEN', vaultKey: 'UPSTASH_REDIS_REST_TOKEN'],
+                                [envVar: 'NEXT_PUBLIC_FIREBASE_API_KEY', vaultKey: 'NEXT_PUBLIC_FIREBASE_API_KEY'],
+                                [envVar: 'NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN', vaultKey: 'NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN'],
+                                [envVar: 'NEXT_PUBLIC_FIREBASE_PROJECT_ID', vaultKey: 'NEXT_PUBLIC_FIREBASE_PROJECT_ID'],
+                                [envVar: 'NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET', vaultKey: 'NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET'],
+                                [envVar: 'NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID', vaultKey: 'NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID'],
+                                [envVar: 'NEXT_PUBLIC_FIREBASE_APP_ID', vaultKey: 'NEXT_PUBLIC_FIREBASE_APP_ID'],
+                                // Clés OAuth
+                                [envVar: 'GOOGLE_CLIENT_ID', vaultKey: 'GOOGLE_CLIENT_ID'],
+                                [envVar: 'GOOGLE_CLIENT_SECRET', vaultKey: 'GOOGLE_CLIENT_SECRET'],
+                                [envVar: 'FACEBOOK_CLIENT_ID', vaultKey: 'FACEBOOK_CLIENT_ID'],
+                                [envVar: 'FACEBOOK_CLIENT_SECRET', vaultKey: 'FACEBOOK_CLIENT_SECRET'],
+                                // Clés Next.js publiques
+                                [envVar: 'NEXT_PUBLIC_ALGOLIA_APP_ID', vaultKey: 'NEXT_PUBLIC_ALGOLIA_APP_ID'],
+                                [envVar: 'NEXT_PUBLIC_ALGOLIA_SEARCH_API_KEY', vaultKey: 'NEXT_PUBLIC_ALGOLIA_SEARCH_API_KEY'],
+                                [envVar: 'NEXT_PUBLIC_EMAIL_SUPPORT', vaultKey: 'NEXT_PUBLIC_EMAIL_SUPPORT'],
+                                [envVar: 'NEXT_PUBLIC_HOST', vaultKey: 'NEXT_PUBLIC_HOST'],
+                                [envVar: 'NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID', vaultKey: 'NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID'],
+                                [envVar: 'NEXT_PUBLIC_AGENT_CODE_AIRTEL', vaultKey: 'NEXT_PUBLIC_AGENT_CODE_AIRTEL'],
+                                // Configuration Redis/Cache
+                                [envVar: 'REDIS_CATALOG_TTL', vaultKey: 'REDIS_CATALOG_TTL'],
+                                [envVar: 'REDIS_PROPERTY_TTL', vaultKey: 'REDIS_PROPERTY_TTL']
+                            ]
+                        ]],
+                        configuration: [
+                            vaultCredentialId: vaultCred,
+                            vaultUrl: 'http://127.0.0.1:8200'
+                        ]
+                    ]) {
+                        /* 5️⃣  Stocke les variables pour les stages suivants */
+                        sh '''
+                            echo "FIREBASE_PROJECT_ID=$FIREBASE_PROJECT_ID" >> .env.build
+                            echo "FIREBASE_CLIENT_EMAIL=$FIREBASE_CLIENT_EMAIL" >> .env.build
+                            echo "FIREBASE_PRIVATE_KEY=$FIREBASE_PRIVATE_KEY" >> .env.build
+                            echo "NEXTAUTH_SECRET=$NEXTAUTH_SECRET" >> .env.build
+                            echo "UPSTASH_REDIS_REST_URL=$UPSTASH_REDIS_REST_URL" >> .env.build
+                            echo "UPSTASH_REDIS_REST_TOKEN=$UPSTASH_REDIS_REST_TOKEN" >> .env.build
+                            echo "NEXT_PUBLIC_FIREBASE_API_KEY=$NEXT_PUBLIC_FIREBASE_API_KEY" >> .env.build
+                            echo "NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN=$NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN" >> .env.build
+                            echo "NEXT_PUBLIC_FIREBASE_PROJECT_ID=$NEXT_PUBLIC_FIREBASE_PROJECT_ID" >> .env.build
+                            echo "NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET=$NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET" >> .env.build
+                            echo "NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID=$NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID" >> .env.build
+                            echo "NEXT_PUBLIC_FIREBASE_APP_ID=$NEXT_PUBLIC_FIREBASE_APP_ID" >> .env.build
+                            echo "GOOGLE_CLIENT_ID=$GOOGLE_CLIENT_ID" >> .env.build
+                            echo "GOOGLE_CLIENT_SECRET=$GOOGLE_CLIENT_SECRET" >> .env.build
+                            echo "FACEBOOK_CLIENT_ID=$FACEBOOK_CLIENT_ID" >> .env.build
+                            echo "FACEBOOK_CLIENT_SECRET=$FACEBOOK_CLIENT_SECRET" >> .env.build
+                            echo "NEXT_PUBLIC_ALGOLIA_APP_ID=$NEXT_PUBLIC_ALGOLIA_APP_ID" >> .env.build
+                            echo "NEXT_PUBLIC_ALGOLIA_SEARCH_API_KEY=$NEXT_PUBLIC_ALGOLIA_SEARCH_API_KEY" >> .env.build
+                            echo "NEXT_PUBLIC_EMAIL_SUPPORT=$NEXT_PUBLIC_EMAIL_SUPPORT" >> .env.build
+                            echo "NEXT_PUBLIC_HOST=$NEXT_PUBLIC_HOST" >> .env.build
+                            echo "NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID=$NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID" >> .env.build
+                            echo "NEXT_PUBLIC_AGENT_CODE_AIRTEL=$NEXT_PUBLIC_AGENT_CODE_AIRTEL" >> .env.build
+                            echo "REDIS_CATALOG_TTL=$REDIS_CATALOG_TTL" >> .env.build
+                            echo "REDIS_PROPERTY_TTL=$REDIS_PROPERTY_TTL" >> .env.build
+                        '''
+                        echo "✅ Secrets ${envType} injectés avec succès"
+                    }
+                }
+            }
+        }
+        
         stage('Build') {
             steps {
-                sh 'npm run build'
+                /* 6️⃣  Build avec les variables d'environnement */
+                sh '''
+                    # Charge les variables depuis Vault
+                    export $(cat .env.build | xargs)
+                    
+                    # Lance le build Next.js
+                    npm run build
+                '''
             }
         }
     }
@@ -26,6 +111,10 @@ pipeline {
     post {
         success { echo '✅ Build réussi !' }
         failure { echo '❌ Build échoué – voir les logs' }
-        cleanup { cleanWs() }
+        cleanup { 
+            /* 7️⃣  Nettoie le fichier temporaire */
+            sh 'rm -f .env.build'
+            cleanWs() 
+        }
     }
 }
