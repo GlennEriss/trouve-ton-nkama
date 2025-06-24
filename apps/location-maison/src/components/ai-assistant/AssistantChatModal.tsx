@@ -1,7 +1,7 @@
 'use client'
 
 import React, { useState, useRef, useEffect } from 'react';
-import { Send, X, CreditCard, Sparkles, Download, RefreshCw, Wand2 } from 'lucide-react';
+import { Send, X, CreditCard, Sparkles, RefreshCw } from 'lucide-react';
 import {
   Dialog,
   DialogContent,
