@@ -1,7 +1,7 @@
 import { createFile } from '@/db/file.db';
 import { createProperty, updateProperty } from '@/db/property.db';
 import { updateOrCreateSuggestion } from '@/db/suggestion.db';
-import { renderHook, waitFor } from '@testing-library/react';
+import { renderHook } from '@testing-library/react';
 import { useForm } from 'react-hook-form';
 import { Property } from '@/models/annonce';
 import { act } from 'react-dom/test-utils';
