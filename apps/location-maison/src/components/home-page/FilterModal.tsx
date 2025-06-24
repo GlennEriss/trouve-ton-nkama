@@ -1,6 +1,5 @@
 "use client";
 
-import { useEffect, useState } from "react";
 import * as SliderPrimitive from "@radix-ui/react-slider";
 import {
   Dialog,
@@ -13,11 +12,10 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { ChevronLeft } from "lucide-react";
 import { BiFilter } from "react-icons/bi";
-import { useRouter } from "next/navigation";
-import { useAlgoliaContext } from "@/providers/AlgoliaContext";
 import { tags as tagsList } from "@/constantes";
 import { useAlgoliaRefinements } from "@/providers/AlgoliaRefinementsContext";
 import { TypeProperty, getTypePropertyKey } from "@/constantes/property-type";
+import { useFilterModal } from "@/hooks/use-filter-modal";
 
 const PRICE_MIN = 0;
 const PRICE_MAX = 1_000_000_000;
@@ -27,63 +25,26 @@ const ROOMS_MIN = 0;
 const ROOMS_MAX = 10;
 
 export const FilterModal = () => {
-  const router = useRouter();
   const { refineTags } = useAlgoliaRefinements();
   const {
-    searchText,
-    city, setCity,
-    street, setStreet,
-    minPrice, setMinPrice,
-    maxPrice, setMaxPrice,
-    minArea, setMinArea,
-    maxArea, setMaxArea,
-    minNbrRooms, setMinNbrRooms,
-    maxNbrRooms, setMaxNbrRooms,
-    typeProperty, setTypeProperty,
-    tags, setTags,
-    clearFilters,
-  } = useAlgoliaContext();
-
-  const [open, setOpen] = useState(false);
-
-  const [localCity, setLocalCity] = useState(city);
-  const [localStreet, setLocalStreet] = useState(street);
-  const [localMinPrice, setLocalMinPrice] = useState(minPrice);
-  const [localMaxPrice, setLocalMaxPrice] = useState(maxPrice);
-  const [localMinArea, setLocalMinArea] = useState(minArea);
-  const [localMaxArea, setLocalMaxArea] = useState(maxArea);
-  const [localMinRooms, setLocalMinRooms] = useState(minNbrRooms);
-  const [localMaxRooms, setLocalMaxRooms] = useState(maxNbrRooms);
-  const [localTypes, setLocalTypes] = useState<string[]>(typeProperty);
-  const [localTags, setLocalTags] = useState<string[]>(tags);
-
-  useEffect(() => {
-    if (open) {
-      setLocalCity(city);
-      setLocalStreet(street);
-      setLocalMinPrice(minPrice);
-      setLocalMaxPrice(maxPrice);
-      setLocalMinArea(minArea);
-      setLocalMaxArea(maxArea);
-      setLocalMinRooms(minNbrRooms);
-      setLocalMaxRooms(maxNbrRooms);
-      setLocalTypes(typeProperty);
-      setLocalTags(tags);
-    }
-  }, [open]);
-
-  const clearLocalFilters = () => {
-    setLocalCity("");
-    setLocalStreet("");
-    setLocalMinPrice("");
-    setLocalMaxPrice("");
-    setLocalMinArea("");
-    setLocalMaxArea("");
-    setLocalMinRooms("");
-    setLocalMaxRooms("");
-    setLocalTypes([]);
-    setLocalTags([]);
-  };
+    // États
+    open, setOpen,
+    localCity, setLocalCity,
+    localStreet, setLocalStreet,
+    localMinPrice, setLocalMinPrice,
+    localMaxPrice, setLocalMaxPrice,
+    localMinArea, setLocalMinArea,
+    localMaxArea, setLocalMaxArea,
+    localMinRooms, setLocalMinRooms,
+    localMaxRooms, setLocalMaxRooms,
+    localTypes, setLocalTypes,
+    localTags, setLocalTags,
+    
+    // Actions
+    clearLocalFilters,
+    onApply,
+    toggleLocal,
+  } = useFilterModal();
 
   const onClear = () => {
     clearLocalFilters();
@@ -113,20 +74,20 @@ export const FilterModal = () => {
     
     // Mises à jour des états string
     const stringUpdates = [
-      { condition: localCity, setter: setCity, value: localCity },
-      { condition: localStreet, setter: setStreet, value: localStreet },
-      { condition: localMinPrice, setter: setMinPrice, value: String(minP) },
-      { condition: localMaxPrice, setter: setMaxPrice, value: String(maxP) },
-      { condition: localMinArea, setter: setMinArea, value: String(minA) },
-      { condition: localMaxArea, setter: setMaxArea, value: String(maxA) },
-      { condition: localMinRooms, setter: setMinNbrRooms, value: String(minR) },
-      { condition: localMaxRooms, setter: setMaxNbrRooms, value: String(maxR) },
+      { condition: localCity, setter: setLocalCity, value: localCity },
+      { condition: localStreet, setter: setLocalStreet, value: localStreet },
+      { condition: localMinPrice, setter: setLocalMinPrice, value: String(minP) },
+      { condition: localMaxPrice, setter: setLocalMaxPrice, value: String(maxP) },
+      { condition: localMinArea, setter: setLocalMinArea, value: String(minA) },
+      { condition: localMaxArea, setter: setLocalMaxArea, value: String(maxA) },
+      { condition: localMinRooms, setter: setLocalMinRooms, value: String(minR) },
+      { condition: localMaxRooms, setter: setLocalMaxRooms, value: String(maxR) },
     ];
 
     // Mises à jour des états array
     const arrayUpdates = [
-      { condition: localTypes.length, setter: setTypeProperty, value: localTypes },
-      { condition: localTags.length, setter: setTags, value: localTags },
+      { condition: localTypes.length, setter: setLocalTypes, value: localTypes },
+      { condition: localTags.length, setter: setLocalTags, value: localTags },
     ];
 
     stringUpdates.forEach(({ condition, setter, value }) => {
@@ -144,7 +105,6 @@ export const FilterModal = () => {
     const params = new URLSearchParams();
     
     const paramMappings = [
-      { condition: searchText, key: "query", value: searchText },
       { condition: localCity, key: "city", value: localCity },
       { condition: localStreet, key: "street", value: localStreet },
       { condition: localMinPrice, key: "minPrice", value: String(minP) },
@@ -163,19 +123,6 @@ export const FilterModal = () => {
     
     return params;
   };
-
-  const onApply = () => {
-    const normalizedValues = normalizeNumericValues();
-    updateGlobalStates(normalizedValues);
-    
-    const params = buildUrlParams(normalizedValues);
-    router.push(`/search?${params.toString()}`);
-    
-    setOpen(false);
-  };
-
-  const toggleLocal = (list: string[], item: string, setter: (v: string[]) => void) =>
-    setter(list.includes(item) ? list.filter(i => i !== item) : [...list, item]);
 
   const priceInvalid = Number(localMinPrice) < 0 || Number(localMaxPrice) < 0;
 
