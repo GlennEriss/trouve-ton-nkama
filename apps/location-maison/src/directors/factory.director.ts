@@ -58,8 +58,13 @@ export abstract class DirectorFactory {
                 break;
             case 'Villa':
                 factory = new VillaFactory();
+                break;
+            case 'Land':
+                factory = new LandFactory();
+                break;
             default:
-                factory = new LandFactory()
+                factory = new LandFactory();
+                break;
         }
         return new PropertyDirector(factory);
     }

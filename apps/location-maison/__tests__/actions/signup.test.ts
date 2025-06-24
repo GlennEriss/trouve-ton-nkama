@@ -1,4 +1,3 @@
-import { FormRegisterSchemaType } from '@/models/schema'
 import * as userDb from '@/db/user.db'
 import * as notificationDb from '@/db/notification.db'
 import { User } from '@/models/authentication';

@@ -28,17 +28,14 @@ export default function SigninSignupComponent() {
     const handleGoToSignup = () => {
         router.push(routes.public.signup)
     }
-    
-    if (user) {
-        return null
-    }
-    
     useEffect(() => {
         if (isImageLoaded) {
             setTimeout(() => setIsVisible(true), 100)
         }
     }, [isImageLoaded]);
-
+    if (user) {
+        return null
+    }
     return (
         <div className={cn('relative min-h-screen flex flex-col items-center justify-center', inter.className)}>
             <section className="w-full max-w-[400px] md:max-w-[600px] transition-opacity duration-500 ease-in-out">
