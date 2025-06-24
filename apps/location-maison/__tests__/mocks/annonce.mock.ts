@@ -1,5 +1,4 @@
 import { Timestamp } from "firebase/firestore";
-import { Home, Apartment, Studio, Villa, Desk } from "@/models/annonce";
 
 const now = Timestamp.now();
 
