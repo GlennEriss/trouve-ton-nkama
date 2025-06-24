@@ -21,7 +21,7 @@ pipeline {
                 script {
                     /* 3️⃣  Détermine l'environnement selon la branche */
                     def vaultCred = 'vault-token'  // ID du credential Jenkins
-                    def vaultPath = 'secret/data/logisgabon/dev'
+                    def vaultPath = 'secret/logisgabon/dev'
                     def envType = 'DEV'  // Variable manquante ajoutée
                     withVault([
                         vaultSecrets: [[
