@@ -8,7 +8,7 @@ import clsx from 'clsx'
 type Step1Props = {
   data: FormElement[]
 }
-export default function Step1({ data }: Step1Props) {
+export default function Step1({ data }: Readonly<Step1Props>) {
   const { form } = usePropertyFormComponentContext()
   return (
     <div className='lg:grid lg:grid-cols-2 xl:grid-cols-3 lg:gap-5'>

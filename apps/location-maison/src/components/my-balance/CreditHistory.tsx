@@ -7,8 +7,11 @@ import { useCreditHistory } from '@/hooks/use-credit-history'
 import { Button } from '@/components/ui/button'
 import { CreditTransaction } from '@/db/credit-transaction.db'
 
+// Type alias pour les filtres
+type FilterType = 'all' | 'purchase' | 'spend'
+
 // Sous-composant pour les messages d'état vide
-const EmptyStateMessage = ({ filter }: { filter: 'all' | 'purchase' | 'spend' }) => {
+const EmptyStateMessage = ({ filter }: { filter: FilterType }) => {
   const getEmptyMessage = () => {
     switch (filter) {
       case 'all':
@@ -59,7 +62,7 @@ const LoadingSkeleton = () => (
 )
 
 export default function CreditHistory() {
-  const [filter, setFilter] = useState<'all' | 'purchase' | 'spend'>('all')
+  const [filter, setFilter] = useState<FilterType>('all')
   const [allTransactions, setAllTransactions] = useState<CreditTransaction[]>([])
 
   const {
@@ -129,23 +132,22 @@ export default function CreditHistory() {
     }
   }
 
-  const handleFilterChange = (newFilter: 'all' | 'purchase' | 'spend') => {
+  const handleFilterChange = (newFilter: FilterType) => {
     setFilter(newFilter)
   }
 
   const handleExport = () => {
-    // TODO: Implémenter l'export CSV
     const csvContent = allTransactions.map(tx => ({
       Date: formatDate(tx.createdAt),
       Type: tx.type === 'purchase' ? 'Achat' : 'Dépense',
       Description: tx.description,
       Crédits: tx.credits,
-      Montant: tx.amount || '',
+      Montant: tx.amount ?? '',
       Statut: getStatusText(tx.status)
     }))
     
     const csvString = [
-      Object.keys(csvContent[0] || {}).join(','),
+      Object.keys(csvContent[0] ?? {}).join(','),
       ...csvContent.map(row => Object.values(row).join(','))
     ].join('\n')
     
@@ -158,7 +160,7 @@ export default function CreditHistory() {
     window.URL.revokeObjectURL(url)
   }
 
-  const totalTransactions = historyData?.pages?.[0]?.total || 0
+  const totalTransactions = historyData?.pages?.[0]?.total ?? 0
 
   if (historyError) {
     return (

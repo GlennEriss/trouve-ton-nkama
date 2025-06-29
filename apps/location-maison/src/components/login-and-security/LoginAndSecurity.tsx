@@ -7,7 +7,7 @@ import Link from 'next/link';
 import { routes } from '@/constantes/routes';
 import { signInWithGoogle } from '@/actions/signin-with-google';
 import { useCurrentUser } from '@/hooks/use-current-user';
-import { ProviderType } from '@/models/authentication';
+import { ProviderType, User as UserModel } from '@/models/authentication';
 import { signInWithFacebook } from '@/actions/signin-with-facebook';
 import PasswordModal from '@/components/login-and-security/PasswordModal';
 import { updateUser } from '@/db/user.db';
@@ -15,7 +15,6 @@ import { EmailAuthCredential, EmailAuthProvider, FacebookAuthProvider, fetchSign
 import { auth } from '@/firebase/auth';
 //import { createNotification } from '@/db/notification.db';
 import { useSession } from 'next-auth/react';
-import { User as UserModel } from '@/models/authentication'
 
 export default function LoginAndSecurity() {
     const { user } = useCurrentUser();

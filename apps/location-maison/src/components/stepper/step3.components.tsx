@@ -7,7 +7,7 @@ import Select from 'react-select';
 import { useQuery } from "@tanstack/react-query"
 
 const invalidAddressTypes = ["administrative"];
-export function ComboboxComponent({ field }: { field: any }) {
+export function ComboboxComponent({ field }: Readonly<{ field: any }>) {
   const [inputValue, setInputValue] = React.useState('');
   const {setValue} = useFormContext()
   const { data, isPending } = useQuery({
@@ -60,7 +60,7 @@ export function ComboboxComponent({ field }: { field: any }) {
   );
 }
 
-export const LocationSearch = ({ field, index, location }: { field: any, index: number, location: Location }) => {
+export const LocationSearch = ({ field, index, location }: Readonly<{ field: any, index: number, location: Location }>) => {
   const [inputValue, setInputValue] = React.useState('');
   const { data, isPending } = useQuery({
       queryKey: ['locations', inputValue],
@@ -98,7 +98,7 @@ export const LocationSearch = ({ field, index, location }: { field: any, index: 
   );
 }
 
-export const InputDisabledComponent = ({ field }: { field: any }) => {
+export const InputDisabledComponent = ({ field }: Readonly<{ field: any }>) => {
   return (
     <Input {...field} value={field.value} disabled={true} />
   )

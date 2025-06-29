@@ -2,7 +2,7 @@ import { Property } from '@/models/annonce'
 import React from 'react'
 import { FaWhatsapp } from 'react-icons/fa'
 
-export default function ButtonShareToWhatsapp({ property }: { property: Property }) {
+export default function ButtonShareToWhatsapp({ property }: Readonly<{ property: Property }>) {
   const handleShare = () => {
     const message = `🏠 Découvrez cette annonce sur LogisGabon :
 ${property.title}

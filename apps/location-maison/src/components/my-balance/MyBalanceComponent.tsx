@@ -58,7 +58,6 @@ export default function MyBalanceComponent() {
       {/* Credit Packs Section */}
       <CreditPacksList 
         onOpenModal={handleOpenRecharge}
-        isModalOpen={isRechargeModalOpen}
         onPackSelect={handlePackSelect}
       />
 

@@ -87,14 +87,14 @@ export default function Notifications() {
                     <Link
                       href={notification.actionUrl}
                       className="text-gray-800 dark:text-gray-300 text-sm hover:underline"
-                      onClick={() => markAsRead(notification.id!)}
+                      onClick={() => markAsRead(notification.id ?? '')}
                     >
                       {notification.message}
                     </Link>
                   ) : (
                     <button
                       className="text-gray-800 dark:text-gray-300 text-sm text-left"
-                      onClick={() => markAsRead(notification.id!)}
+                      onClick={() => markAsRead(notification.id ?? '')}
                     >
                       {notification.message}
                     </button>

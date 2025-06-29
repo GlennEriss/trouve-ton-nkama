@@ -1,7 +1,7 @@
 'use client'
 
-import React, { useState } from 'react'
-import { Wallet, Zap, Gift, Clock, Loader2, AlertCircle } from 'lucide-react'
+import React from 'react'
+import { Wallet, Zap, Gift, Loader2, AlertCircle } from 'lucide-react'
 import { useCreditsBalance } from '@/hooks/use-credits-balance'
 import { useCurrentUser } from '@/hooks/use-current-user'
 import { useSession } from 'next-auth/react'
@@ -12,12 +12,12 @@ interface CreditBalanceDisplayProps {
 
 export default function CreditBalanceDisplay({
   onRecharge
-}: CreditBalanceDisplayProps) {
-  const { data: balanceData, isLoading, error, isError, refetch } = useCreditsBalance()
+}: Readonly<CreditBalanceDisplayProps>) {
+  const { data: balanceData, isLoading, error, isError } = useCreditsBalance()
   const { user } = useCurrentUser()
   const { update, data: session } = useSession();
-  const balance = balanceData?.credits || 0
-  const isNewUser = balanceData?.message?.includes('Bienvenue') || false
+  const balance = balanceData?.credits ?? 0
+  const isNewUser = balanceData?.message?.includes('Bienvenue') ?? false
   const welcomeCredits = 3
 
   // Mettre à jour la session avec le nouveau solde
@@ -62,7 +62,7 @@ export default function CreditBalanceDisplay({
           <AlertCircle className="w-6 h-6" />
           <div className="text-center">
             <p className="font-semibold">Erreur de chargement</p>
-            <p className="text-sm">{error?.message || 'Impossible de récupérer votre solde'}</p>
+            <p className="text-sm">{error?.message ?? 'Impossible de récupérer votre solde'}</p>
           </div>
         </div>
       </div>

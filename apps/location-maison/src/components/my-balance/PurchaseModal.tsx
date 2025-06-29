@@ -5,7 +5,7 @@
 'use client'
 
 import React, { useState, useEffect } from 'react'
-import { X, Package, Smartphone, Loader2, CheckCircle, AlertCircle } from 'lucide-react'
+import { X, Package, Loader2, CheckCircle, AlertCircle } from 'lucide-react'
 /* import { useCreditsPurchase } from '@/hooks/use-credits-purchase' */
 import { useVerifyCode } from '@/hooks/use-verify-code'
 import { useToast } from '@/hooks/use-toast'
@@ -54,7 +54,7 @@ const CREDIT_PACKS: CreditPack[] = [
   }
 ]
 
-export default function PurchaseModal({ isOpen, onClose, preselectedPack }: PurchaseModalProps) {
+export default function PurchaseModal({ isOpen, onClose, preselectedPack }: Readonly<PurchaseModalProps>) {
   const [selectedPack, setSelectedPack] = useState<CreditPack | null>(null)
   const [phoneNumber, setPhoneNumber] = useState('')
   const [code, setCode] = useState('')
@@ -112,7 +112,7 @@ export default function PurchaseModal({ isOpen, onClose, preselectedPack }: Purc
           
           toast({
             title: "❌ Erreur de validation",
-            description: error.message || 'Une erreur est survenue lors de la validation du code',
+            description: error.message ?? 'Une erreur est survenue lors de la validation du code',
             variant: "destructive"
           })
         }
@@ -154,6 +154,13 @@ export default function PurchaseModal({ isOpen, onClose, preselectedPack }: Purc
     onClose()
   }
 
+  const handleKeyDown = (event: React.KeyboardEvent, pack: CreditPack) => {
+    if (event.key === 'Enter' || event.key === ' ') {
+      event.preventDefault()
+      handlePackSelect(pack)
+    }
+  }
+
   if (!isOpen) return null
 
   return (
@@ -182,10 +189,12 @@ export default function PurchaseModal({ isOpen, onClose, preselectedPack }: Purc
               
               <div className="space-y-3">
                 {CREDIT_PACKS.map((pack) => (
-                  <div
+                  <button
                     key={pack.id}
                     onClick={() => handlePackSelect(pack)}
-                    className="border border-gray-200 dark:border-gray-700 rounded-xl p-4 cursor-pointer hover:border-[#146B67] hover:bg-[#146B67]/5 transition-all duration-200"
+                    onKeyDown={(e) => handleKeyDown(e, pack)}
+                    className="w-full text-left border border-gray-200 dark:border-gray-700 rounded-xl p-4 cursor-pointer hover:border-[#146B67] hover:bg-[#146B67]/5 focus:outline-none focus:ring-2 focus:ring-[#146B67] focus:ring-offset-2 transition-all duration-200"
+                    aria-label={`Sélectionner le pack ${pack.name} - ${pack.credits} crédits pour ${pack.price} FCFA`}
                   >
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-3">
@@ -211,7 +220,7 @@ export default function PurchaseModal({ isOpen, onClose, preselectedPack }: Purc
                         )}
                       </div>
                     </div>
-                  </div>
+                  </button>
                 ))}
               </div>
             </div>
@@ -303,7 +312,7 @@ export default function PurchaseModal({ isOpen, onClose, preselectedPack }: Purc
               {hasError && (
                 <div className="flex items-center gap-2 text-red-600 dark:text-red-400">
                   <AlertCircle className="w-5 h-5" />
-                  <span className="text-sm">{verifyError?.message || 'Erreur lors de la validation du code'}</span>
+                  <span className="text-sm">{verifyError?.message ?? 'Erreur lors de la validation du code'}</span>
                 </div>
               )}
 
@@ -329,4 +338,4 @@ export default function PurchaseModal({ isOpen, onClose, preselectedPack }: Purc
       </div>
     </div>
   )
-} 
+}

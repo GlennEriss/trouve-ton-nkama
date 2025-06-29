@@ -135,7 +135,7 @@ export const FilterModal = () => {
             <div>
               <label className="block font-semibold mb-2">Surface (m²)</label>
               <SliderPrimitive.Root
-                value={[Number(localMinArea) || AREA_MIN, Number(localMaxArea) || AREA_MAX]}
+                value={[Number(localMinArea) ?? AREA_MIN, Number(localMaxArea) ?? AREA_MAX]}
                 onValueChange={([low, high]) => {
                   setLocalMinArea(low.toString());
                   setLocalMaxArea(high.toString());
@@ -150,8 +150,8 @@ export const FilterModal = () => {
                 <SliderPrimitive.Thumb className="block h-5 w-5 rounded-full border bg-background shadow" />
               </SliderPrimitive.Root>
               <div className="flex justify-between text-sm text-gray-600 mt-1">
-                <span>{localMinArea || AREA_MIN} m²</span>
-                <span>{localMaxArea || AREA_MAX} m²</span>
+                <span>{localMinArea ?? AREA_MIN} m²</span>
+                <span>{localMaxArea ?? AREA_MAX} m²</span>
               </div>
             </div>
 
@@ -159,7 +159,7 @@ export const FilterModal = () => {
             <div>
               <label className="block font-semibold mb-2">Chambres</label>
               <SliderPrimitive.Root
-                value={[Number(localMinRooms) || ROOMS_MIN, Number(localMaxRooms) || ROOMS_MAX]}
+                value={[Number(localMinRooms) ?? ROOMS_MIN, Number(localMaxRooms) ?? ROOMS_MAX]}
                 onValueChange={([low, high]) => {
                   setLocalMinRooms(low.toString());
                   setLocalMaxRooms(high.toString());
@@ -174,8 +174,8 @@ export const FilterModal = () => {
                 <SliderPrimitive.Thumb className="block h-5 w-5 rounded-full border bg-background shadow" />
               </SliderPrimitive.Root>
               <div className="flex justify-between text-sm text-gray-600 mt-1">
-                <span>{localMinRooms || ROOMS_MIN}</span>
-                <span>{localMaxRooms || ROOMS_MAX}</span>
+                <span>{localMinRooms ?? ROOMS_MIN}</span>
+                <span>{localMaxRooms ?? ROOMS_MAX}</span>
               </div>
             </div>
           </div>

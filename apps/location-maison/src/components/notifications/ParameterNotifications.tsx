@@ -7,49 +7,49 @@ import { updateUser } from '@/db/user.db';
 
 export const notifications = [
     {
-        title: 'Nouveautés',
-        description: 'Recevez des mises à jour sur les nouvelles fonctionnalités et services.',
+        title: 'Nouveautes',
+        description: 'Recevez des mises a jour sur les nouvelles fonctionnalites et services.',
         key: 'isNew'
     },
     {
-        title: 'Activités du compte',
-        description: 'Soyez informé des modifications liées à votre compte, telles que les changements d’e-mail ou de mot de passe.',
+        title: 'Activites du compte',
+        description: 'Soyez informe des modifications liees a votre compte, telles que les changements d\'email ou de mot de passe.',
         key: 'isAccountActivity'
     },
     {
         title: 'Annonces',
-        description: 'Recevez des notifications sur les nouvelles annonces disponibles dans votre région ou vos critères de recherche.',
+        description: 'Recevez des notifications sur les nouvelles annonces disponibles dans votre region ou vos criteres de recherche.',
         key: 'isNewAnnouncement'
     },
     /* {
         title: 'Messages',
-        description: 'Recevez des alertes lorsqu’un autre utilisateur vous envoie un message.',
+        description: 'Recevez des alertes lorsqu\'un autre utilisateur vous envoie un message.',
     }, */
     {
         title: 'Favoris',
-        description: 'Soyez averti lorsqu’une annonce ajoutée à vos favoris est mise à jour ou supprimée.',
+        description: 'Soyez averti lorsqu\'une annonce ajoutee a vos favoris est mise a jour ou supprimee.',
         key: 'isFavoris'
     },
     /* {
         title: 'Promotions',
-        description: 'Recevez des offres spéciales et des promotions sur nos services premium.',
+        description: 'Recevez des offres speciales et des promotions sur nos services premium.',
     }, */
     {
-        title: 'Suggestions personnalisées',
-        description: 'Obtenez des recommandations personnalisées basées sur vos recherches récentes.',
+        title: 'Suggestions personnalisees',
+        description: 'Obtenez des recommandations personnalisees basees sur vos recherches recentes.',
         key: 'isPersonalizedSuggestions'
     },
     /* {
         title: 'Rappels',
-        description: 'Recevez des rappels sur les visites programmées ou les dates d’expiration de vos annonces.',
+        description: 'Recevez des rappels sur les visites programmees ou les dates d\'expiration de vos annonces.',
     }, */
     /* {
         title: 'Avis et commentaires',
         description: 'Recevez des notifications lorsque vous recevez des avis ou des commentaires sur vos annonces.',
     }, */
     {
-        title: 'Mises à jour système',
-        description: 'Soyez informé des interruptions de service ou des mises à jour importantes.',
+        title: 'Mises a jour systeme',
+        description: 'Soyez informe des interruptions de service ou des mises a jour importantes.',
         key: 'isSystemUpdated'
     }
 ];
@@ -68,7 +68,7 @@ export default function ParameterNotifications() {
                 [param]: !user?.notificationParameter?.[param]
             }
         };
-        await updateUser(user?.uid!, userUpdated);
+        await updateUser(user?.uid, userUpdated);
         update({
             user: {
                 ...userUpdated

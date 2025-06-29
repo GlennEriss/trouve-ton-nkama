@@ -11,7 +11,7 @@ import { generateColorFromName } from "@/lib/generateColorFromName";
 import Link from "next/link";
 
 // Icône de notification non lue
-function Dot({ className }: { className?: string }) {
+function Dot({ className }: Readonly<{ className?: string }>) {
   return (
     <svg
       width="6"
@@ -80,14 +80,14 @@ export default function SectionNotifications() {
                   <Link
                     href={notification.actionUrl}
                     className="text-sm text-blue-600 dark:text-blue-400 hover:underline"
-                    onClick={() => markAsRead(notification.id!)}
+                    onClick={() => markAsRead(notification.id ?? '')}
                   >
                     {notification.message}
                   </Link>
                 ) : (
                   <button
                     className="text-sm text-gray-800 dark:text-gray-300 text-left"
-                    onClick={() => markAsRead(notification.id!)}
+                    onClick={() => markAsRead(notification.id ?? '')}
                   >
                     {notification.message}
                   </button>

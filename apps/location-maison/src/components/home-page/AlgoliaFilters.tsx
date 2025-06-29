@@ -1,14 +1,14 @@
-import { useAlgoliaContext } from "@/providers/AlgoliaContext";
+/* import { useAlgoliaContext } from "@/providers/AlgoliaContext";
 import { useEffect } from "react";
 import {
   useSearchBox,
   useRefinementList,
   useRange,
   useInstantSearch,
-} from "react-instantsearch";
+} from "react-instantsearch"; */
 
 const AlgoliaFilters = () => {
-  const {
+  /* const {
     city,
     street,
     typeProperty,
@@ -19,7 +19,7 @@ const AlgoliaFilters = () => {
     maxArea,
     minNbrRooms,
     maxNbrRooms,
-  } = useAlgoliaContext();
+  } = useAlgoliaContext(); */
 
   /* const { refine: refineSearch } = useSearchBox();
   const { refine: cityRefine } = useRefinementList({ attribute: "city" });

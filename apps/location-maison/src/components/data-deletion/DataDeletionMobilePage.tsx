@@ -20,7 +20,7 @@ export default function DataDeletionMobilePage() {
                     Conformément à la politique de protection des données, vous avez le droit de demander la suppression de vos données personnelles associées à votre compte.
                 </p>
                 <p className="mb-4 text-gray-700 dark:text-gray-300">
-                    Si vous souhaitez supprimer vos données de notre plateforme, veuillez nous contacter par email à l'adresse suivante :
+                    Si vous souhaitez supprimer vos données de notre plateforme, veuillez nous contacter par email à l'adresse suivante :{" "}
                     <strong className='text-[#1FA89B]'>{process.env.NEXT_PUBLIC_EMAIL_SUPPORT}</strong> en mentionnant l'objet « Suppression de compte ».
                 </p>
                 <p className="mb-4 text-gray-700 dark:text-gray-300">

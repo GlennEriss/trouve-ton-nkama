@@ -50,7 +50,7 @@ export default function SectionFavoris() {
         }
         return favoris
     }
-    const { data, isPending, isFetching, fetchNextPage, isLoading } = useInfiniteQuery({
+    const { data, isPending, isFetching, isLoading } = useInfiniteQuery({
         queryKey: [queryKeys.favoris, user, currentPage],
         queryFn: fetchInfiniteProperties,
         staleTime: 600000,
@@ -173,7 +173,7 @@ export default function SectionFavoris() {
                             variant="outline"
                             onClick={handleNext}
                             className="flex items-center gap-2"
-                            disabled={isPending || !(currentPage < (totalPage - 1))}
+                            disabled={isPending || currentPage >= (totalPage - 1)}
                         >
                             <ChevronRight size={20} />
                         </Button>
