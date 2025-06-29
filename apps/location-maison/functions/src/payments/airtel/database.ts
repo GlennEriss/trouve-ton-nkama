@@ -98,8 +98,8 @@ export async function getCreditTransaction(transactionId: string): Promise<Credi
   const data = doc.data()!
   return {
     ...data,
-    createdAt: data.createdAt?.toDate() || new Date(),
-    updatedAt: data.updatedAt?.toDate() || new Date(),
+    createdAt: data.createdAt?.toDate() ?? new Date(),
+    updatedAt: data.updatedAt?.toDate() ?? new Date(),
     completedAt: data.completedAt?.toDate()
   } as CreditTransaction
 }
@@ -120,7 +120,7 @@ export async function addCreditsToUser(
       throw new Error(`Utilisateur introuvable: ${userId}`)
     }
 
-    const currentCredits = userDoc.data()?.credits || 0
+    const currentCredits = userDoc.data()?.credits ?? 0
     const newCredits = currentCredits + credits
 
     // Mettre à jour le solde utilisateur
@@ -151,7 +151,7 @@ export async function getUserCredits(userId: string): Promise<number> {
     return 0
   }
 
-  return userDoc.data()?.credits || 0
+  return userDoc.data()?.credits ?? 0
 }
 
 /**
@@ -203,8 +203,8 @@ export async function getUserTransactions(
     const data = doc.data()
     return {
       ...data,
-      createdAt: data.createdAt?.toDate() || new Date(),
-      updatedAt: data.updatedAt?.toDate() || new Date(),
+      createdAt: data.createdAt?.toDate() ?? new Date(),
+      updatedAt: data.updatedAt?.toDate() ?? new Date(),
       completedAt: data.completedAt?.toDate()
     } as CreditTransaction
   })

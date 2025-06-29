@@ -125,7 +125,7 @@ export const createCreditPayment = onRequest(async (req, res) => {
           `- Pack ${pack.name} : ${pack.amount.toLocaleString()} FCFA (${pack.credits} crédits)`
         ).join('\n') + '\n\n' +
         `Pour toute réclamation, contactez notre service client :\n` +
-        `📞 ${process.env.CUSTOMER_SERVICE_PHONE || '+241 XX XX XX XX'}\n` +
+        `📞 ${process.env.CUSTOMER_SERVICE_PHONE ?? '+241 XX XX XX XX'}\n` +
         `🌐 ${WEBSITE_URL}/contact`;
 
       await sendSMS(phoneNumber, errorMessage);
