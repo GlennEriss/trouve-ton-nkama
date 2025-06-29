@@ -92,7 +92,7 @@ export const createCreditPayment = onRequest(async (req, res) => {
     }
 
     // Valider le numéro de téléphone sénégalais (format: +221XXXXXXXXX)
-    const phoneRegex = /^\+221[0-9]{9}$/;
+    const phoneRegex = /^\+221\d{9}$/;
     if (!phoneRegex.test(phoneNumber)) {
       res.status(400).json({ success: false, message: 'Numéro de téléphone sénégalais invalide' });
       return;
