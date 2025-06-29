@@ -2,13 +2,13 @@
 import React from 'react'
 import Logo from '../logo/Logo'
 import { routes } from '@/constantes/routes'
-import { MapPin, Phone, Mail } from "lucide-react";
+import { MapPin, Mail } from "lucide-react";
 import { usePathname } from 'next/navigation';
 import { useCurrentUser } from '@/hooks/use-current-user';
 import { useWindowSize } from '@/hooks/useSize';
 import { cn } from '@/lib/utils';
 
-export default function Footer({ isHide = false }: { isHide?: boolean }) {
+export default function Footer({ isHide = false }: Readonly<{ isHide?: boolean }>) {
     const pathname = usePathname()
     const { user } = useCurrentUser()
     const { width } = useWindowSize()

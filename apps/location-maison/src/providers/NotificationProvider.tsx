@@ -15,73 +15,71 @@ type NotificationContextType = {
 
 const NotificationContext = createContext<NotificationContextType | undefined>(undefined);
 
-export function NotificationProvider({ children }: { children: React.ReactNode }) {
+export function NotificationProvider({ children }: Readonly<{ children: React.ReactNode }>) {
     const { user } = useCurrentUser();
     const [notifications, setNotifications] = useState<Notification[]>([]);
     const [unreadCount, setUnreadCount] = useState(0);
 
-    // Fonction pour traiter les notifications non lues
-    const handleUnreadNotifications = (unreadNotifications: Notification[], recentQuery: Query<DocumentData, DocumentData>) => {
-        const unsubscribeRecent = onSnapshot(recentQuery, (snapshot: QuerySnapshot<DocumentData, DocumentData>) => {
-            const recentNotifications = snapshot.docs.map((doc) => ({
-                id: doc.id,
-                ...(doc.data() as Notification),
-            }));
-
-            // 🔥 Fusionner les résultats : non lues en premier, puis récentes sans doublons
-            const allNotifications = [
-                ...unreadNotifications, // 🔹 Priorité aux non lues
-                ...recentNotifications.filter((notif: Notification) => 
-                    !unreadNotifications.some((un: Notification) => un.id === notif.id)
-                ) // 🔹 Ajout des récentes sans doublons
-            ];
-
-            setNotifications(allNotifications);
-        });
-
-        return unsubscribeRecent;
+    // Fonction pour mapper les documents Firestore vers des notifications
+    const mapDocumentsToNotifications = (snapshot: QuerySnapshot<DocumentData, DocumentData>): Notification[] => {
+        return snapshot.docs.map((doc) => ({
+            id: doc.id,
+            ...(doc.data() as Notification),
+        }));
     };
 
-    // Fonction pour traiter la requête des notifications non lues
-    const handleUnreadQuery = (unreadQuery: Query<DocumentData, DocumentData>, recentQuery: Query<DocumentData, DocumentData>) => {
-        return onSnapshot(unreadQuery, (snapshot: QuerySnapshot<DocumentData, DocumentData>) => {
-            const unreadNotifications = snapshot.docs.map((doc) => ({
-                id: doc.id,
-                ...(doc.data() as Notification),
-            }));
+    // Fonction pour fusionner les notifications en évitant les doublons
+    const mergeNotifications = (unreadNotifications: Notification[], recentNotifications: Notification[]): Notification[] => {
+        const filteredRecent = recentNotifications.filter((notif: Notification) => 
+            !unreadNotifications.some((un: Notification) => un.id === notif.id)
+        );
+        return [...unreadNotifications, ...filteredRecent];
+    };
 
-            const unsubscribeRecent = handleUnreadNotifications(unreadNotifications, recentQuery);
-            return unsubscribeRecent;
-        });
+    // Callback pour traiter les notifications récentes
+    const handleRecentSnapshot = (unreadNotifications: Notification[]) => {
+        return (snapshot: QuerySnapshot<DocumentData, DocumentData>) => {
+            const recentNotifications = mapDocumentsToNotifications(snapshot);
+            const allNotifications = mergeNotifications(unreadNotifications, recentNotifications);
+            setNotifications(allNotifications);
+        };
+    };
+
+    // Callback pour traiter les notifications non lues
+    const handleUnreadSnapshot = (recentQuery: Query<DocumentData, DocumentData>) => {
+        return (snapshot: QuerySnapshot<DocumentData, DocumentData>) => {
+            const unreadNotifications = mapDocumentsToNotifications(snapshot);
+            return onSnapshot(recentQuery, handleRecentSnapshot(unreadNotifications));
+        };
     };
 
     // Récupération des notifications en temps réel
     useEffect(() => {
         if (!user) return;
     
-        // 🔹 Calcul de la date limite (7 jours en arrière)
+        // Calcul de la date limite (7 jours en arrière)
         const sevenDaysAgo = Timestamp.fromDate(new Date(Date.now() - 7 * 24 * 60 * 60 * 1000));
     
-        // 🔹 Requête 1 : Récupérer uniquement les notifications non lues
+        // Requête 1 : Récupérer uniquement les notifications non lues
         const unreadQuery = query(
             collection(db, "notifications"),
             where("createdFor", "==", user.uid),
-            where("isRead", "==", false), // 🔥 Récupérer seulement les non lues
-            orderBy("createdAt", "desc"),
-            limit(50) // 🔹 On limite pour éviter de surcharger Firestore
-        );
-    
-        // 🔹 Requête 2 : Récupérer les notifications des 7 derniers jours
-        const recentQuery = query(
-            collection(db, "notifications"),
-            where("createdFor", "==", user.uid),
-            where("createdAt", ">=", sevenDaysAgo), // 🔥 Seulement les 7 derniers jours
+            where("isRead", "==", false),
             orderBy("createdAt", "desc"),
             limit(50)
         );
     
-        // 🔹 Exécuter les deux requêtes
-        const unsubscribeUnread = handleUnreadQuery(unreadQuery, recentQuery);
+        // Requête 2 : Récupérer les notifications des 7 derniers jours
+        const recentQuery = query(
+            collection(db, "notifications"),
+            where("createdFor", "==", user.uid),
+            where("createdAt", ">=", sevenDaysAgo),
+            orderBy("createdAt", "desc"),
+            limit(50)
+        );
+    
+        // Exécuter les requêtes
+        const unsubscribeUnread = onSnapshot(unreadQuery, handleUnreadSnapshot(recentQuery));
     
         return () => unsubscribeUnread();
     }, [user]);
@@ -91,7 +89,7 @@ export function NotificationProvider({ children }: { children: React.ReactNode }
         setUnreadCount(notifications.filter((n) => !n.isRead).length);
     }, [notifications]);
 
-    // Fonction pour marquer une notification comme lue (Mise à jour Firestore)
+    // Fonction pour marquer une notification comme lue
     const markAsRead = async (id: string) => {
         try {
             const notificationRef = doc(db, "notifications", id);

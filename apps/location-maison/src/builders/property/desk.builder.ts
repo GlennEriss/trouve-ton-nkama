@@ -37,9 +37,9 @@ export class DeskBuilder extends PropertyBuilder {
      * Sets the number of toilets in the desk.
      * 
      * @param {number} nbrToilets - The number of toilets in the desk property.
-     * @returns {DeskBuilder} The current instance of `DeskBuilder`.
+     * @returns {this} The current instance of `DeskBuilder`.
      */
-    setNbrToilets(nbrToilets: number): DeskBuilder {
+    setNbrToilets(nbrToilets: number): this {
         (this.property as Desk).nbrToilets = nbrToilets;
         return this;
     }
@@ -48,9 +48,9 @@ export class DeskBuilder extends PropertyBuilder {
      * Sets the number of rooms in the desk.
      * 
      * @param {number} nbrRooms - The number of rooms in the desk property.
-     * @returns {DeskBuilder} The current instance of `DeskBuilder`.
+     * @returns {this} The current instance of `DeskBuilder`.
      */
-    setNbrRooms(nbrRooms: number): DeskBuilder {
+    setNbrRooms(nbrRooms: number): this {
         (this.property as Desk).nbrRooms = nbrRooms;
         return this;
     }

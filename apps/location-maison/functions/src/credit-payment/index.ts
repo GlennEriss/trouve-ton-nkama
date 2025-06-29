@@ -92,7 +92,7 @@ export const createCreditPayment = onRequest(async (req, res) => {
     }
 
     // Valider le numéro de téléphone sénégalais (format: +221XXXXXXXXX)
-    const phoneRegex = /^\+221[0-9]{9}$/;
+    const phoneRegex = /^\+221\d{9}$/;
     if (!phoneRegex.test(phoneNumber)) {
       res.status(400).json({ success: false, message: 'Numéro de téléphone sénégalais invalide' });
       return;
@@ -125,7 +125,7 @@ export const createCreditPayment = onRequest(async (req, res) => {
           `- Pack ${pack.name} : ${pack.amount.toLocaleString()} FCFA (${pack.credits} crédits)`
         ).join('\n') + '\n\n' +
         `Pour toute réclamation, contactez notre service client :\n` +
-        `📞 ${process.env.CUSTOMER_SERVICE_PHONE || '+241 XX XX XX XX'}\n` +
+        `📞 ${process.env.CUSTOMER_SERVICE_PHONE ?? '+241 XX XX XX XX'}\n` +
         `🌐 ${WEBSITE_URL}/contact`;
 
       await sendSMS(phoneNumber, errorMessage);

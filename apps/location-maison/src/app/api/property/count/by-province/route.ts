@@ -3,7 +3,7 @@ import { getServerCountByProvince } from '@/db/property.db';
 import redis from '@/redis/client'
 
 // TTL du cache (en secondes) pour les compteurs – configurable via REDIS_CATALOG_TTL (défaut 600)
-const CACHE_TTL_SECONDS = parseInt(process.env.REDIS_CATALOG_TTL || '600', 10);
+const CACHE_TTL_SECONDS = parseInt(process.env.REDIS_CATALOG_TTL ?? '600', 10);
 
 export async function GET(request: Request) {
     const url = new URL(request.url);

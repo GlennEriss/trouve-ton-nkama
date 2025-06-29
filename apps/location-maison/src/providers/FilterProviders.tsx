@@ -3,7 +3,7 @@ import { useConfigure, useSearchBox } from 'react-instantsearch';
 import { useSearchParams } from 'next/navigation';
 import React from 'react'
 
-export default function FilterProviders({ children }: { children: React.ReactNode }) {
+export default function FilterProviders({ children }: Readonly<{ children: React.ReactNode }>) {
     const searchParams = useSearchParams();
 
     // Recherche texte

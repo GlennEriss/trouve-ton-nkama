@@ -6,7 +6,7 @@ import { PropertyFormComponentProvider } from '@/providers/property.form.provide
 import React from 'react'
 import { LoadingSpinner } from '../shared/LoadingSpinner'
 
-export default function ModifyPropertyWithProvider({ children }: { children: React.ReactNode }) {
+export default function ModifyPropertyWithProvider({ children }: Readonly<{ children: React.ReactNode }>) {
     const id = useLastpath()
     const [property, setProperty] = React.useState<Partial<Property>|null>(null)
     React.useEffect(() => {
