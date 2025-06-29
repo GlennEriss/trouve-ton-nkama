@@ -3,7 +3,7 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server'
-import { adminAuth, adminApp } from '@/firebase/admin'
+import { adminApp } from '@/firebase/admin'
 import { getFirestore, FieldValue } from 'firebase-admin/firestore'
 
 interface AirtelWebhookPayload {
@@ -26,7 +26,6 @@ const db = getFirestore(adminApp as any)
  * Vérifie la signature du webhook (à implémenter en Phase 2)
  */
 function verifyWebhookSignature(payload: string, signature: string): boolean {
-  // TODO Phase 2: Vérifier la signature avec AIRTEL_WEBHOOK_SECRET
   // const expectedSignature = crypto.createHmac('sha256', process.env.AIRTEL_WEBHOOK_SECRET!)
   //   .update(payload)
   //   .digest('hex')
