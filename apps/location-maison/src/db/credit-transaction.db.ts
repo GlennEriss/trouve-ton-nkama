@@ -55,10 +55,10 @@ export async function getCreditHistoryByUserId(
           id: doc.id,
           ...data,
           // S'assurer que le type est défini pour l'historique
-          type: data.type || (data.packId ? 'purchase' : 'spend'),
+          type: data.type ?? (data.packId ? 'purchase' : 'spend'),
           // Mapper les anciens champs Airtel Money
-          transactionId: data.transactionId || data.airtelTransactionId,
-          description: data.description || generateDescription(data)
+          transactionId: data.transactionId ?? data.airtelTransactionId,
+          description: data.description ?? generateDescription(data)
         } as CreditTransaction);
         lastVisible = doc;
       }
@@ -95,7 +95,7 @@ function generateDescription(data: any): string {
       'advanced': 'Pack Avancé',
       'premium': 'Pack Premium'
     };
-    return `Achat ${packNames[data.packId] || 'pack de crédits'}`;
+    return `Achat ${packNames[data.packId] ?? 'pack de crédits'}`;
   }
   
   if (data.service) {
@@ -195,9 +195,9 @@ export async function getCreditTransactionById(transactionId: string): Promise<C
       return {
         id: docSnap.id,
         ...data,
-        type: data.type || (data.packId ? 'purchase' : 'spend'),
-        transactionId: data.transactionId || data.airtelTransactionId,
-        description: data.description || generateDescription(data)
+        type: data.type ?? (data.packId ? 'purchase' : 'spend'),
+        transactionId: data.transactionId ?? data.airtelTransactionId,
+        description: data.description ?? generateDescription(data)
       } as CreditTransaction;
     }
 
@@ -233,7 +233,7 @@ export async function getCreditTransactionStats(userId: string): Promise<{
       const transaction = doc.data() as CreditTransaction;
       
       if (transaction.status === 'success') {
-        const type = transaction.type || (transaction.packId ? 'purchase' : 'spend');
+        const type = transaction.type ?? (transaction.packId ? 'purchase' : 'spend');
         
         if (type === 'purchase') {
           totalPurchases += transaction.credits;
@@ -281,7 +281,7 @@ export async function createSpendTransaction(
       credits: -Math.abs(credits), // Négatif pour les dépenses
       service,
       status: 'success', // Les dépenses sont immédiates
-      description: description || `${service}${propertyId ? ` - Annonce ${propertyId}` : ''}`,
+      description: description ?? `${service}${propertyId ? ` - Annonce ${propertyId}` : ''}`,
       propertyId
     };
 
@@ -348,7 +348,7 @@ export async function deductCreditsWithTransaction(
         credits: -Math.abs(credits),
         service,
         status: 'success',
-        description: description || `${service}${propertyId ? ` - Annonce ${propertyId}` : ''}`
+        description: description ?? `${service}${propertyId ? ` - Annonce ${propertyId}` : ''}`
       };
 
       // Ajouter propertyId seulement s'il est défini

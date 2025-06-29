@@ -33,7 +33,7 @@ async function fetchCreditsBalance(): Promise<BalanceResponse> {
 
   if (!response.ok) {
     const errorData = await response.json()
-    throw new Error(errorData.message || 'Erreur lors de la récupération du solde')
+    throw new Error(errorData.message ?? 'Erreur lors de la récupération du solde')
   }
 
   return response.json()

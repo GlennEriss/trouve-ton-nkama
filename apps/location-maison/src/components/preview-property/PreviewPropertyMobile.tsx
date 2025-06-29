@@ -94,7 +94,7 @@ export const PreviewPropertyMobile: React.FC<PreviewPropertyMobileProps> = ({ pr
                 </div>
                 <div className='flex gap-3'>
                     <Link
-                        href={property?.contact || user?.phoneNumbers?.[0] ? `https://wa.me/${property.contact ? property.contact : user?.phoneNumbers[0]}?text=${encodeURIComponent(
+                        href={property?.contact ?? user?.phoneNumbers?.[0] ? `https://wa.me/${property.contact ?? user?.phoneNumbers[0]}?text=${encodeURIComponent(
                             `Bonjour, je suis intéressé par votre annonce "${property.title}" au prix de ${property.price.toLocaleString('fr-FR')} FCFA. Voici le lien de l'annonce : https://www.logi-market.com/houseDetails/${property.id}`
                         )}` : '#'}
                         target="_blank"
@@ -106,7 +106,7 @@ export const PreviewPropertyMobile: React.FC<PreviewPropertyMobileProps> = ({ pr
                         </div>
                     </Link>
                     <a
-                        href={property?.contact || user?.phoneNumbers?.[0] ? `tel:${property.contact ? property.contact : user?.phoneNumbers[0]}` : '#'}
+                        href={property?.contact ?? user?.phoneNumbers?.[0] ? `tel:${property.contact ?? user?.phoneNumbers[0]}` : '#'}
                         target="_blank"
                         rel="noopener noreferrer"
                         title="Appeler"

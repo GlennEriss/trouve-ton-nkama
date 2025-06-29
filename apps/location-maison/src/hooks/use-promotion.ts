@@ -50,7 +50,7 @@ export const usePromotion = ({ property, onSuccess }: UsePromotionProps) => {
       
       // Vérifier si l'utilisateur a assez de crédits
       if (!user.credits || user.credits < config.credits) {
-        const error = new Error(`Crédits insuffisants. Vous avez ${user.credits || 0} crédits mais ${config.credits} sont nécessaires.`)
+        const error = new Error(`Crédits insuffisants. Vous avez ${user.credits ?? 0} crédits mais ${config.credits} sont nécessaires.`)
         error.name = 'INSUFFICIENT_CREDITS'
         throw error
       }
@@ -75,7 +75,7 @@ export const usePromotion = ({ property, onSuccess }: UsePromotionProps) => {
       const propertyUpdates: Partial<Property> = {
         currentPromotion: newPromotion,
         promotionHistory: [
-          ...(property.promotionHistory || []),
+          ...(property.promotionHistory ?? []),
           newPromotion
         ],
         isPromoted: true
@@ -229,7 +229,7 @@ export const usePromotion = ({ property, onSuccess }: UsePromotionProps) => {
     hasActivePromotion: hasActivePromotion(),
     canPromote,
     getPromotionStatus,
-    userCredits: user?.credits || 0,
+    userCredits: user?.credits ?? 0,
     error: promoteMutation.error
   }
 } 

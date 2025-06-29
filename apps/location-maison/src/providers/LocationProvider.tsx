@@ -88,7 +88,7 @@ export const LocationProvider: React.FC<LocationProviderProps> = ({
         };
         setCurrentLocation(locationData);
         setLocationsContext([locationData]);
-        setAddress(data.display_name || 'Adresse non trouvée');
+        setAddress(data.display_name ?? 'Adresse non trouvée');
         
         // Sauvegarder dans le localStorage
         localStorage.setItem('userLocation', JSON.stringify({
@@ -214,8 +214,8 @@ export const LocationProvider: React.FC<LocationProviderProps> = ({
             element.type === "relation" || element.type === "way" || element.type === "node"
         )
         .map((element: any) => ({
-          name: element.tags?.name || "Inconnu",
-          coordinates: element.geometry?.map((point: any) => [point.lat, point.lon]) || [],
+          name: element.tags?.name ?? "Inconnu",
+          coordinates: element.geometry?.map((point: any) => [point.lat, point.lon]) ?? [],
         }));
     } catch (error) {
       console.error("Erreur lors de la récupération des quartiers :", error);
@@ -228,7 +228,7 @@ export const LocationProvider: React.FC<LocationProviderProps> = ({
     setError(null);
     try {
       const newAddress = await getAddressFromCoordinates(lat, lng);
-      setAddress(newAddress.display_name || 'Adresse non trouvée');
+      setAddress(newAddress.display_name ?? 'Adresse non trouvée');
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Une erreur est survenue');
     } finally {

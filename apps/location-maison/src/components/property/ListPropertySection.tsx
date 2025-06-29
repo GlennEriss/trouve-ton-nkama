@@ -33,7 +33,7 @@ import PromotionBadge from '../promotion/PromotionBadge';
 
 export default function ListPropertySection() {
     const searchParams = useSearchParams();
-    const queryType = searchParams.get("type") || "";
+    const queryType = searchParams.get("type") ?? "";
     const type = capitalizeFirstLetter(queryType);
     const { user } = useCurrentUser();
     const [currentPage, setCurrentPage] = React.useState(0);
@@ -234,7 +234,7 @@ export const CardPropertyCrud = ({ property }: { property: Property }) => {
             {/* Section Image - Hauteur fixe uniforme */}
             <div className="relative w-full h-48 overflow-hidden rounded-t-2xl bg-gray-100 dark:bg-gray-800">
                 <Image
-                    src={images[0]?.fileURL || '/fallback-image.jpg'}
+                    src={images[0]?.fileURL ?? '/fallback-image.jpg'}
                     alt={title}
                     fill
                     className="object-cover transition-transform duration-500 group-hover:scale-110"

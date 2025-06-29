@@ -131,11 +131,11 @@ const MapForm = () => {
         setCoordinates([lat, lon]);
 
         // Mise à jour des champs dans le formulaire
-        setValue("street", name || "");
-        setValue("city", city || name || "");
-        setValue("province", province || "");
-        setValue("country", country || "");
-        setValue("countryCode", countryCode || "");
+        setValue("street", name ?? "");
+        setValue("city", city ?? name ?? "");
+        setValue("province", province ?? "");
+        setValue("country", country ?? "");
+        setValue("countryCode", countryCode ?? "");
         setValue("latitude", lat);
         setValue("longitude", lon);
 
@@ -177,7 +177,7 @@ const MapForm = () => {
                             onClick={() => selectLocation(result)}
                             className="block w-full text-left p-2 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-md text-black dark:text-white"
                         >
-                            {result.properties.name || "Localité inconnue"}
+                            {result.properties.name ?? "Localité inconnue"}
                         </button>
                     ))}
                 </div>

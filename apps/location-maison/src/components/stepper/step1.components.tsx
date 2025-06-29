@@ -56,7 +56,7 @@ export const ImageUploader = ({ field }: { field: any }) => {
         },
         onDrop: async (acceptedFiles) => {
             const maxSizeInBytes = 300 * 1024;
-            const currentFiles = field.value || [];
+            const currentFiles = field.value ?? [];
             const compressedFiles: File[] = [];
 
             for (const file of acceptedFiles) {
@@ -81,7 +81,7 @@ export const ImageUploader = ({ field }: { field: any }) => {
                     toast({
                         duration: 5000,
                         title: "Erreur",
-                        description: error.message || "Une erreur est survenue.",
+                        description: error.message ?? "Une erreur est survenue.",
                         variant: "destructive",
                     });
                 }
@@ -118,7 +118,7 @@ export const ImageComponent = ({ field, index }: { field: any, index: number }) 
 
 export const RenderImage = ({ image, field, index }: { image: File | string | undefined, field: any, index: number }) => {
     const handleDeleteImage = () => {
-        const currentFiles = field.value as any[] || [];
+        const currentFiles = field.value as any[] ?? [];
         const newFiles = currentFiles.slice(); // Copie du tableau
         newFiles.splice(index, 1); // Supprime l'image à cet index
         field.onChange(newFiles);
@@ -213,17 +213,17 @@ export const TagItem = ({ tag, field }: { tag: { tagName: string, tagIcon: IconT
     const [isActived, setIsActived] = useState(false)
 
     useEffect(() => {
-        setIsActived(field.value?.includes(tag.tagName) || false)
+        setIsActived(field.value?.includes(tag.tagName) ?? false)
     }, [field.value, tag.tagName])
 
     const handleSelectIcon = () => {
         const active = !isActived
         if (active) {
             if (field.value?.length < 6) {
-                field.onChange([...(field.value || []), tag.tagName])
+                field.onChange([...(field.value ?? []), tag.tagName])
             }
         } else {
-            field.onChange((field.value || []).filter((item: string) => item !== tag.tagName))
+            field.onChange((field.value ?? []).filter((item: string) => item !== tag.tagName))
         }
     }
 

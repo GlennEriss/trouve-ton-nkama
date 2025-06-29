@@ -12,7 +12,7 @@ export function useServerCountByPropertyType(type: string | undefined) {
       if (!type) throw new Error('Property type is required to fetch the count.');
       const response = await fetch(`/api/property/count/by-type?type=${type}`);
       const data = await response.json();
-      return data.count || 0;
+      return data.count ?? 0;
     },
     enabled: !!type,
     staleTime: 1000 * 60 * 10, // 10 minutes
