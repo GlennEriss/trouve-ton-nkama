@@ -12,7 +12,7 @@ type PasswordModalProps = {
   onConfirm: (password: string) => void;
 };
 
-export default function PasswordModal({ isOpen, onClose, onConfirm }: PasswordModalProps) {
+export default function PasswordModal({ isOpen, onClose, onConfirm }: Readonly<PasswordModalProps>) {
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
@@ -31,6 +31,7 @@ export default function PasswordModal({ isOpen, onClose, onConfirm }: PasswordMo
       setPassword(""); // Réinitialisation après succès
       onClose();
     } catch (err) {
+      console.error("Erreur lors de la confirmation du mot de passe:", err);
       setError("Échec de la vérification. Veuillez réessayer.");
     } finally {
       setLoading(false);

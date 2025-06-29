@@ -14,7 +14,7 @@ export default function RecommendationSection({
     currentPropertyId, 
     currentPropertyType, 
     currentPropertyLocation 
-}: RecommendationSectionProps) {
+}: Readonly<RecommendationSectionProps>) {
     const { properties, loading, error } = useRecommend({
         limit: 8,
         excludeId: currentPropertyId,

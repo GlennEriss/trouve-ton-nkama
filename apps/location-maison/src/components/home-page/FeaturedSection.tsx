@@ -42,7 +42,7 @@ export default function FeaturedSection() {
         <p className="text-center text-sm text-gray-600 dark:text-gray-400 mb-4">
           Les meilleures annonces sélectionnées pour vous
         </p>
-        <PropertyCarousel properties={(featuredProperties || []).filter(p => p.id) as any} />
+        <PropertyCarousel properties={(featuredProperties ?? []).filter(p => p.id) as any} />
       </div>
     </section>
   )

@@ -7,20 +7,20 @@ import Link from 'next/link'
 import { useUserByUID } from '@/hooks/use-user-by-uid'
 import { useWindowSize } from "@/hooks/useSize"
 
-export default function ContactSection({ property }: { property: Property }) {
+export default function ContactSection({ property }: Readonly<{ property: Property }>) {
     const { data: user } = useUserByUID(property.createdBy)
     const { width } = useWindowSize()
     const isDesktop = width >= 1024
 
     const [showNumber, setShowNumber] = useState(false)
-    const phoneNumber = property?.contact || user?.phoneNumbers?.[0]
+    const phoneNumber = property?.contact ?? user?.phoneNumbers?.[0]
 
     return (
         <section className="flex flex-col gap-3 rounded-lg p-5 shadow">
             <h1 className="font-bold">Choisissez un moyen de contact</h1>
             <div className='flex gap-3'>
                     <Link
-                        href={property?.contact || user?.phoneNumbers?.[0] ? `https://wa.me/${property.contact ? property.contact : user?.phoneNumbers[0]}?text=${encodeURIComponent(
+                        href={property?.contact ?? user?.phoneNumbers?.[0] ? `https://wa.me/${property.contact ? property.contact : user?.phoneNumbers[0]}?text=${encodeURIComponent(
                             `Bonjour, je suis intéressé par votre annonce "${property.title}" au prix de ${property.price.toLocaleString('fr-FR')} FCFA. Voici le lien de l'annonce : https://www.logi-market.com/houseDetails/${property.id}`
                         )}` : '#'}
                         target="_blank"

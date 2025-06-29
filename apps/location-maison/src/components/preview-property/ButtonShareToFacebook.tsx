@@ -2,9 +2,8 @@
 import React from 'react';
 import { Property } from '@/models/annonce';
 import { FaFacebookF } from 'react-icons/fa';
-import { Share2 } from 'lucide-react';
 
-export default function ButtonShareToFacebook({ property }: { property: Property }) {
+export default function ButtonShareToFacebook({ property }: Readonly<{ property: Property }>) {
     const handleShare = () => {
         const url = `https://www.logi-market.com/houseDetails/${property.id}`;
         const fbUrl = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}`;

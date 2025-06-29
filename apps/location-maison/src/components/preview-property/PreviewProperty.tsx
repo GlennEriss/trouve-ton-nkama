@@ -9,7 +9,7 @@ import ContactSection from './ContactSection'
 import { MapSection } from './MapSection'
 import ButtonShare from './ButtonShare'
 
-export default function PreviewProperty({ property }: { property: Property }) {
+export default function PreviewProperty({ property }: Readonly<{ property: Property }>) {
   const tagSatus: Record<string, string> = {
     "FOR_RENT": "A LOUER",
     "FOR_SALE": "A VENDRE"

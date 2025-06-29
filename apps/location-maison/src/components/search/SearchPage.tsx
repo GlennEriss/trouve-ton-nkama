@@ -16,10 +16,10 @@ import { TypeProperty } from "@/constantes/property-type";
 function FilterTag({
   children,
   onRemove,
-}: {
+}: Readonly<{
   children: React.ReactNode;
   onRemove?: () => void;
-}) {
+}>) {
   return (
     <span className="flex items-center space-x-1 px-2 py-1 text-md font-medium bg-blue-100 text-blue-600 dark:bg-blue-800 dark:text-blue-200 rounded-full">
       <span>{children}</span>
@@ -238,7 +238,7 @@ export default function SearchPage() {
         ))}
       </div>
 
-      {/* Si pas de résultats, on affiche l’illustration */}
+      {/* Si pas de résultats, on affiche l'illustration */}
       {items.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-20">
           <Image
@@ -282,7 +282,7 @@ export default function SearchPage() {
           {/* Sentinel pour infinite scroll */}
           <div ref={sentinelRef} />
 
-          {/* Bouton “Voir plus” */}
+          {/* Bouton "Voir plus" */}
           {!isLastPage && (
             <div className="text-center mt-6">
               <button

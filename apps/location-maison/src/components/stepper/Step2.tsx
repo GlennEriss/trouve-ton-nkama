@@ -7,7 +7,7 @@ import { FormElement } from '@/builders/property-form/property.form.builder'
 type Step2Props = {
     data: FormElement[]
 }
-export default function Step2({ data }: Step2Props) {
+export default function Step2({ data }: Readonly<Step2Props>) {
     const { form } = usePropertyFormComponentContext()
     return (
         <div className='grid md:grid-cols-2 md:gap-5'>

@@ -21,10 +21,17 @@ interface CreditPackCardProps {
   isLoading?: boolean
 }
 
-export default function CreditPackCard({ pack, onSelect, isLoading = false }: CreditPackCardProps) {
+export default function CreditPackCard({ pack, onSelect, isLoading = false }: Readonly<CreditPackCardProps>) {
   const handleSelect = () => {
     if (!isLoading) {
       onSelect(pack)
+    }
+  }
+
+  const handleKeyDown = (event: React.KeyboardEvent) => {
+    if (event.key === 'Enter' || event.key === ' ') {
+      event.preventDefault()
+      handleSelect()
     }
   }
 
@@ -38,13 +45,18 @@ export default function CreditPackCard({ pack, onSelect, isLoading = false }: Cr
   const pricePerCredit = pack.price / pack.credits
 
   return (
-    <div className={`
-      relative bg-white dark:bg-gray-800 border-2 rounded-2xl p-6 transition-all duration-300 cursor-pointer
+    <button className={`
+      relative bg-white dark:bg-gray-800 border-2 rounded-2xl p-6 transition-all duration-300 cursor-pointer text-left w-full
       ${pack.popular ? 'border-[#1FA89B] shadow-lg scale-105' : 'border-gray-200 dark:border-gray-700 hover:border-[#146B67] dark:hover:border-[#1FA89B]'}
       ${pack.bestValue ? 'border-gradient-to-r from-yellow-400 to-orange-500' : ''}
-      hover:shadow-xl hover:scale-105
+      hover:shadow-xl hover:scale-105 focus:outline-none focus:ring-2 focus:ring-[#1FA89B] focus:ring-offset-2
       ${isLoading ? 'opacity-50 cursor-not-allowed' : ''}
-    `} onClick={handleSelect}>
+    `} 
+    onClick={handleSelect}
+    onKeyDown={handleKeyDown}
+    disabled={isLoading}
+    aria-label={`Sélectionner le pack ${pack.name} - ${pack.credits} crédits pour ${pack.price} FCFA`}
+    >
       
       {/* Badge */}
       {(pack.popular || pack.bestValue || pack.savings) && (
@@ -144,6 +156,6 @@ export default function CreditPackCard({ pack, onSelect, isLoading = false }: Cr
           </div>
         )}
       </div>
-    </div>
+    </button>
   )
 } 

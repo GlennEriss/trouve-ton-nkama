@@ -101,7 +101,7 @@ const AssistantChatModal: React.FC<AssistantChatModalProps> = ({
 
   // Générateur d'ID unique pour les messages
   const generateMessageId = () => {
-    return `msg-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+    return `msg-${Date.now()}-${Math.random().toString(36).substring(2, 11)}`;
   };
 
   // Envoyer un message à l'IA
@@ -177,7 +177,8 @@ const AssistantChatModal: React.FC<AssistantChatModalProps> = ({
     // pour parser la réponse de l'IA et extraire des suggestions de champs à remplir
     
     // Exemple simple : si l'IA mentionne "superficie: X m²", on peut l'extraire
-    const areaMatch = response.match(/superficie[:\s]*(\d+)\s*m²/i);
+    const areaRegex = /superficie[:\s]*(\d+)\s*m²/i;
+    const areaMatch = areaRegex.exec(response);
     if (areaMatch && !currentData.area) {
       const suggestedArea = parseInt(areaMatch[1]);
       
@@ -317,7 +318,7 @@ const AssistantChatModal: React.FC<AssistantChatModalProps> = ({
 **Confiance :** ${generatedData.confidence}%
 
 **Suggestions :**
-${generatedData.suggestions?.map((s: string) => `• ${s}`).join('\n') || ''}
+${generatedData.suggestions?.map((s: string) => `• ${s}`).join('\n') ?? ''}
 
 📝 *Le formulaire a été automatiquement rempli ! Vous pouvez maintenant le réviser et l'ajuster selon vos besoins.*`,
             timestamp: new Date(),

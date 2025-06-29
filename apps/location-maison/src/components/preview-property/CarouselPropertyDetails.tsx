@@ -2,7 +2,6 @@ import { Image as ImageModel } from '@/models/annonce'
 import React from 'react'
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from '../ui/carousel'
 import Image from 'next/image'
-import { X, ChevronLeft, ChevronRight } from 'lucide-react';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { Skeleton } from '@/components/ui/skeleton';
 
@@ -23,10 +22,10 @@ export const CarouselPropertyDetails: React.FC<CarouselPropertyDetailsProps> = (
     setIsPreviewOpen(true);
   };
 
-  const closePreview = () => {
+  /* const closePreview = () => {
     setSelectedImage(null);
     setIsPreviewOpen(false);
-  };
+  }; */
 
   const handleImageLoad = (index: number) => {
     setLoadedImages((prev) => {
@@ -36,7 +35,7 @@ export const CarouselPropertyDetails: React.FC<CarouselPropertyDetailsProps> = (
     });
   };
 
-  const selectedIndex = selectedImage ? imageUrls.indexOf(selectedImage) : -1;
+  //const selectedIndex = selectedImage ? imageUrls.indexOf(selectedImage) : -1;
 
   return (
     <>

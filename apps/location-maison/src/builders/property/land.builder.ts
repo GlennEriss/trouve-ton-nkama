@@ -1,5 +1,3 @@
-
-
 /**
  * @module Builders/property
  */
@@ -38,7 +36,7 @@ export class LandBuilder extends PropertyBuilder {
      * @returns {Property} The built `Land` object.
      */
     build(): Property {
-        return this.property as Property;
+        return this.property;
     }
 
     /**

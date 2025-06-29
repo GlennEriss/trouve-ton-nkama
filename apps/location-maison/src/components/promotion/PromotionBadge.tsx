@@ -10,7 +10,7 @@ interface PromotionBadgeProps {
   className?: string
 }
 
-export default function PromotionBadge({ property, className }: PromotionBadgeProps) {
+export default function PromotionBadge({ property, className }: Readonly<PromotionBadgeProps>) {
   // Vérifier si l'annonce a une promotion active
   const hasActivePromotion = property.currentPromotion?.isActive && 
     property.currentPromotion?.endDate && 
