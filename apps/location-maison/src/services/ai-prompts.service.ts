@@ -57,8 +57,8 @@ STYLE:
     return `
 ANALYSE DU FORMULAIRE DEMANDÉE
 
-Étape actuelle: ${currentStepName} (${context?.activeStep !== undefined ? context.activeStep + 1 : '?'}/${context?.totalSteps || 4})
-Type de propriété: ${context?.factoryType || 'Non spécifié'}
+Étape actuelle: ${currentStepName} (${context?.activeStep !== undefined ? context.activeStep + 1 : '?'}/${context?.totalSteps ?? 4})
+Type de propriété: ${context?.factoryType ?? 'Non spécifié'}
 
 DONNÉES ACTUELLES:
 ${JSON.stringify(formData, null, 2)}
@@ -86,11 +86,11 @@ Donne une analyse structurée avec:
 SUGGESTION DE TAGS POUR PROPRIÉTÉ
 
 Données de la propriété:
-- Type: ${propertyData.propertyType || 'Non spécifié'}
-- Superficie: ${propertyData.area || 'Non spécifiée'} m²
-- Prix: ${propertyData.price || 'Non spécifié'}€
-- Localisation: ${propertyData.city || ''}, ${propertyData.province || ''}
-- Description: ${propertyData.description || 'Aucune description'}
+- Type: ${propertyData.propertyType ?? 'Non spécifié'}
+- Superficie: ${propertyData.area ?? 'Non spécifiée'} m²
+- Prix: ${propertyData.price ?? 'Non spécifié'}€
+- Localisation: ${propertyData.city ?? ''}, ${propertyData.province ?? ''}
+- Description: ${propertyData.description ?? 'Aucune description'}
 
 CONSIGNES:
 1. Propose 4-6 tags pertinents et attractifs
@@ -120,10 +120,10 @@ Description actuelle:
 "${currentDescription}"
 
 Contexte de la propriété:
-- Type: ${propertyData.propertyType || 'Non spécifié'}
-- Superficie: ${propertyData.area || '?'} m²
-- Nombre de pièces: ${propertyData.nbrRooms || '?'}
-- Localisation: ${propertyData.city || '?'}, ${propertyData.province || '?'}
+- Type: ${propertyData.propertyType ?? 'Non spécifié'}
+- Superficie: ${propertyData.area ?? '?'} m²
+- Nombre de pièces: ${propertyData.nbrRooms ?? '?'}
+- Localisation: ${propertyData.city ?? '?'}, ${propertyData.province ?? '?'}
 
 OBJECTIF:
 Réécris cette description pour la rendre plus attractive et professionnelle.
@@ -149,11 +149,11 @@ Propose une version améliorée suivie de 2-3 conseils spécifiques pour l'optim
 ESTIMATION DE PRIX IMMOBILIER
 
 Propriété à évaluer:
-- Type: ${propertyData.propertyType || 'Non spécifié'}
-- Superficie: ${propertyData.area || '?'} m²
-- Nombre de pièces: ${propertyData.nbrRooms || '?'}
-- Localisation: ${propertyData.city || '?'}, ${propertyData.province || '?'}
-- État/Caractéristiques: ${propertyData.description || 'Non spécifié'}
+- Type: ${propertyData.propertyType ?? 'Non spécifié'}
+- Superficie: ${propertyData.area ?? '?'} m²
+- Nombre de pièces: ${propertyData.nbrRooms ?? '?'}
+- Localisation: ${propertyData.city ?? '?'}, ${propertyData.province ?? '?'}
+- État/Caractéristiques: ${propertyData.description ?? 'Non spécifié'}
 
 CONSIGNES:
 1. Donne une fourchette de prix réaliste pour cette propriété
@@ -174,10 +174,10 @@ CONSIGNES:
 CONSEILS LOCALISATION IMMOBILIÈRE
 
 Localisation:
-- Rue: ${locationData.street || 'Non spécifiée'}
-- Ville: ${locationData.city || 'Non spécifiée'}
-- Province: ${locationData.province || 'Non spécifiée'}
-- Informations additionnelles: ${locationData.additionalInformation || 'Aucune'}
+- Rue: ${locationData.street ?? 'Non spécifiée'}
+- Ville: ${locationData.city ?? 'Non spécifiée'}
+- Province: ${locationData.province ?? 'Non spécifiée'}
+- Informations additionnelles: ${locationData.additionalInformation ?? 'Aucune'}
 
 CONSIGNES:
 1. Évalue les avantages de cette localisation

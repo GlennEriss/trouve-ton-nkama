@@ -95,7 +95,7 @@ const PropertyCarousel: React.FC<CarouselProps> = ({ properties = [], isRecommen
         <Slider {...settings}>
           {properties.map((p) => (
             <div
-              key={p.id || `property-${Math.random()}`}
+              key={p.id ?? `property-${Math.random()}`}
               className="p-3"
               style={shouldCenter ? { width: 320 } : undefined}
               onClick={() => handleCardClick(p.id)}

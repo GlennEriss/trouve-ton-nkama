@@ -74,8 +74,8 @@ export const DetailsPropertyMobile: React.FC<DetailsPropertyMobileProps> = ({ pr
                 { label: "Chambres", value: propertyDetails.nbrRooms },
                 { label: "Cuisines", value: propertyDetails.nbrChickens },
                 { label: "Salles de bain", value: propertyDetails.nbrBathrooms },
-                { label: "Étage Appartement", value: propertyDetails.nbrFloorApartment || propertyDetails.nbrFloorStudio },
-                { label: "Numéro", value: propertyDetails.numeroApartment || propertyDetails.numeroStudio },
+                { label: "Étage Appartement", value: propertyDetails.nbrFloorApartment ?? propertyDetails.nbrFloorStudio },
+                { label: "Numéro", value: propertyDetails.numeroApartment ?? propertyDetails.numeroStudio },
             ].filter((item): item is { label: string; value: string | number | boolean | undefined } => Boolean(item));
             break;
         case "Building":

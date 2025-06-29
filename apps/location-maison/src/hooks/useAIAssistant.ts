@@ -82,7 +82,7 @@ export const useAIAssistant = (): AIAssistantHook => {
         setIsLoading(false);
         return {
           success: false,
-          error: aiResponse.error || "Erreur lors de la génération de la réponse"
+          error: aiResponse.error ?? "Erreur lors de la génération de la réponse"
         };
       }
 
@@ -151,7 +151,7 @@ export const useAIAssistant = (): AIAssistantHook => {
 
   return {
     sendMessage,
-    creditsAvailable: session?.user?.credits || 0,
+    creditsAvailable: session?.user?.credits ?? 0,
     isLoading
   };
 };
