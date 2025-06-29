@@ -9,7 +9,7 @@ import { useInfiniteQuery } from '@tanstack/react-query'
 export default function RecentSection() {
     const fetchInfiniteProperties = async ({ pageParam }: { pageParam: any }) => {
         const { limitPerPage, lastDoc } = pageParam;
-        const url = `/api/property/list?limit=${limitPerPage}&lastDoc=${lastDoc || ''}`;
+        const url = `/api/property/list?limit=${limitPerPage}&lastDoc=${lastDoc ?? ''}`;
         const response = await fetch(url, {
             headers: {
                 'Cache-Control': 'public, s-maxage=600, stale-while-revalidate=600',

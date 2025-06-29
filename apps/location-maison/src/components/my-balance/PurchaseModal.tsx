@@ -161,6 +161,8 @@ export default function PurchaseModal({ isOpen, onClose, preselectedPack }: Read
     }
   }
 
+  const isSubmitDisabled = isVerifying || !code.trim()
+
   if (!isOpen) return null
 
   return (
@@ -326,7 +328,7 @@ export default function PurchaseModal({ isOpen, onClose, preselectedPack }: Read
                 </button>
                 <button
                   onClick={handlePurchase}
-                  disabled={isVerifying || !code.trim()}
+                  disabled={isSubmitDisabled}
                   className="flex-1 py-3 bg-[#146B67] text-white rounded-xl font-medium hover:bg-[#125A56] disabled:opacity-50 transition-colors"
                 >
                   Valider le code
