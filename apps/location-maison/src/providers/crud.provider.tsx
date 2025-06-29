@@ -27,7 +27,7 @@ export const useCrudContext = () => {
     return useContext(CrudContext)
 }
 
-export const CrudProvider = ({ children }: { children: React.ReactNode }) => {
+export const CrudProvider = ({ children }: Readonly<{ children: React.ReactNode }>) => {
     const [filterCrud, setFilterCrud] = useState<any[]>(['InProgress'])
     const [filterDate, setFilterDate] = useState<string|null>(null)
     const [contextValues, setContextValues] = useState({

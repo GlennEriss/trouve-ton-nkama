@@ -40,7 +40,7 @@ export default function PasswordResetRequest() {
             toast({
                 duration: 5000,
                 title: "Erreur",
-                description: error.message || "Une erreur est survenue.",
+                description: error.message ?? "Une erreur est survenue.",
                 variant: "destructive",
             });
         }

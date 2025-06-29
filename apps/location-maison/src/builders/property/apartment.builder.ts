@@ -37,9 +37,9 @@ export class ApartmentBuilder extends LogementBuilder {
      * Sets the number of floors in the apartment.
      * 
      * @param {number} nbrFloorApartment - The number of floors in the apartment.
-     * @returns {ApartmentBuilder} The current instance of `ApartmentBuilder`.
+     * @returns {this} The current instance of `ApartmentBuilder`.
      */
-    setNbrFloorApartment(nbrFloorApartment: number): ApartmentBuilder {
+    setNbrFloorApartment(nbrFloorApartment: number): this {
         (this.property as Apartment).nbrFloorApartment = nbrFloorApartment;
         return this;
     }
@@ -48,9 +48,9 @@ export class ApartmentBuilder extends LogementBuilder {
      * Sets the apartment number.
      * 
      * @param {string} numeroApartment - The apartment number.
-     * @returns {ApartmentBuilder} The current instance of `ApartmentBuilder`.
+     * @returns {this} The current instance of `ApartmentBuilder`.
      */
-    setNumeroApartment(numeroApartment: string): ApartmentBuilder {
+    setNumeroApartment(numeroApartment: string): this {
         (this.property as Apartment).numeroApartment = numeroApartment;
         return this;
     }

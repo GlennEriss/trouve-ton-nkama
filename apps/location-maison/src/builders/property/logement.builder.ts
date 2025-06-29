@@ -39,9 +39,9 @@ export abstract class LogementBuilder extends PropertyBuilder {
      * Sets the number of kitchens in the logement.
      * 
      * @param {number} nbrChickens - The number of kitchens.
-     * @returns {LogementBuilder} The current instance of `LogementBuilder`.
+     * @returns {this} The current instance of `LogementBuilder`.
      */
-    setNbrChickens(nbrChickens: number): LogementBuilder {
+    setNbrChickens(nbrChickens: number): this {
         (this.property as Logement).nbrChickens = nbrChickens;
         return this;
     }
@@ -50,9 +50,9 @@ export abstract class LogementBuilder extends PropertyBuilder {
      * Sets the number of bathrooms in the logement.
      * 
      * @param {number} nbrBathrooms - The number of bathrooms.
-     * @returns {LogementBuilder} The current instance of `LogementBuilder`.
+     * @returns {this} The current instance of `LogementBuilder`.
      */
-    setNbrBathrooms(nbrBathrooms: number): LogementBuilder {
+    setNbrBathrooms(nbrBathrooms: number): this {
         (this.property as Logement).nbrBathrooms = nbrBathrooms;
         return this;
     }
@@ -61,9 +61,9 @@ export abstract class LogementBuilder extends PropertyBuilder {
      * Sets the number of toilets in the logement.
      * 
      * @param {number} nbrToilets - The number of toilets.
-     * @returns {LogementBuilder} The current instance of `LogementBuilder`.
+     * @returns {this} The current instance of `LogementBuilder`.
      */
-    setNbrToilets(nbrToilets: number): LogementBuilder {
+    setNbrToilets(nbrToilets: number): this {
         (this.property as Logement).nbrToilets = nbrToilets;
         return this;
     }

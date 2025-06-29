@@ -123,7 +123,7 @@ export async function POST(request: NextRequest): Promise<NextResponse<VerifyCod
 
     const userDoc = userQuery.docs[0]
     const userData = userDoc.data()
-    const currentCredits = userData?.credits || 0
+    const currentCredits = userData?.credits ?? 0
     const newCredits = currentCredits + paymentData.credits
 
     // Mettre à jour les crédits de l'utilisateur
@@ -142,7 +142,7 @@ export async function POST(request: NextRequest): Promise<NextResponse<VerifyCod
       status: 'success',
       provider: 'airtel_money',
       description: 'Achat de crédits via code',
-      phoneNumber: paymentData.phoneNumber || null,
+      phoneNumber: paymentData.phoneNumber ?? null,
       createdAt: new Date(),
       updatedAt: new Date(),
       completedAt: new Date()

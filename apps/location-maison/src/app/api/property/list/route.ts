@@ -3,12 +3,12 @@ import { getProperties } from '@/db/property.db';
 import redis from '@/redis/client';
 
 // TTL du cache catalogue (en secondes) – configurable via REDIS_CATALOG_TTL, défaut 600 s
-const CACHE_TTL_SECONDS = parseInt(process.env.REDIS_CATALOG_TTL || '600', 10);
+const CACHE_TTL_SECONDS = parseInt(process.env.REDIS_CATALOG_TTL ?? '600', 10);
 
 export async function GET(request: Request) {
     const url = new URL(request.url);
-    const limitPerPage = parseInt(url.searchParams.get('limitPerPage') || '10', 10);
-    const lastDoc = url.searchParams.get('lastDoc') || null;
+    const limitPerPage = parseInt(url.searchParams.get('limitPerPage') ?? '10', 10);
+    const lastDoc = url.searchParams.get('lastDoc') ?? null;
 
     // Clé Redis incluant pagination (limit et lastDoc)
     const cacheKey = `properties:list:${limitPerPage}:${lastDoc ?? 'first'}`;

@@ -10,7 +10,7 @@ if (!adminApp) {
 
 const db = getFirestore(adminApp)
 const CACHE_KEY = 'properties:promoted'
-const CACHE_TTL_SECONDS = parseInt(process.env.REDIS_CATALOG_TTL || '600', 10)
+const CACHE_TTL_SECONDS = parseInt(process.env.REDIS_CATALOG_TTL ?? '600', 10)
 
 export async function GET() {
   // 1. Tentative de lecture en cache Redis

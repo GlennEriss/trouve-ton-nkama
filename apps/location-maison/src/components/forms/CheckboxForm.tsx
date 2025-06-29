@@ -43,7 +43,7 @@ export const CheckboxForm = <T extends FieldValues>({
                         <div className={cn(classNameDiv, "space-y-1 leading-none")}>
                             {/* Si `labelElement` est fourni, on l'affiche. Sinon, on affiche `label` en texte brut */}
                             <FormLabel>
-                                {labelElement ? labelElement : label}
+                                {labelElement ?? label}
                             </FormLabel>
                             <FormDescription>
                                 {description}

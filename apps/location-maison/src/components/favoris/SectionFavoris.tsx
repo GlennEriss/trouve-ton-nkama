@@ -37,8 +37,8 @@ export default function SectionFavoris() {
         }
         setTotalPage(paginated.length)
         const properties: Property[] = []
-        for (let i = 0; i < paginated[currentPage].length; i++) {
-            const property = await getPropertyById(paginated[currentPage][i])
+        for (const propertyId of paginated[currentPage]) {
+            const property = await getPropertyById(propertyId)
             if (property) {
                 properties.push(property)
             }
@@ -86,16 +86,23 @@ export default function SectionFavoris() {
             <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5'>
                 {data?.pages[0].properties.map((property) => (
                     <div key={property.id} className="p-2 rounded-lg">
-                        <div
-                            onClick={() => handleCardClick(property.id!)}
-                            className="relative cursor-pointer rounded-lg shadow-lg overflow-hidden transition-transform hover:scale-105 bg-white dark:bg-gray-800 hover:shadow-2xl flex flex-col"
+                        <button
+                            onClick={() => property.id && handleCardClick(property.id)}
+                            onKeyDown={(e) => {
+                                if (e.key === 'Enter' || e.key === ' ') {
+                                    e.preventDefault();
+                                    property.id && handleCardClick(property.id);
+                                }
+                            }}
+                            className="relative cursor-pointer rounded-lg shadow-lg overflow-hidden transition-transform hover:scale-105 bg-white dark:bg-gray-800 hover:shadow-2xl flex flex-col w-full text-left border-none"
                             style={{ height: "380px" }}
+                            aria-label={`Voir les détails de ${property.title ?? "la propriété"}`}
                         >
                             {/* Image principale */}
                             <div className="relative w-full h-52 overflow-hidden">
                                 <Image
-                                    src={property.images?.[0]?.fileURL || "/home.png"}
-                                    alt={property.title || "Image de la propriété"}
+                                    src={property.images?.[0]?.fileURL ?? "/home.png"}
+                                    alt={property.title ?? "Image de la propriété"}
                                     fill
                                     className="object-cover transform transition-transform duration-500 hover:scale-110"
                                 />
@@ -105,7 +112,7 @@ export default function SectionFavoris() {
                             <div className="p-4 bg-gradient-to-b from-white to-gray-100 dark:from-gray-800 dark:to-gray-900 flex flex-col justify-between flex-grow">
                                 <div>
                                     <h3 className="text-md font-semibold text-gray-800 dark:text-gray-100 line-clamp-2 h-12">
-                                        {property.title || "Propriété"}
+                                        {property.title ?? "Propriété"}
                                     </h3>
                                     <p className="text-sm text-gray-600 dark:text-gray-400 truncate">
                                         {property.city}, {property.province}, {property.country}
@@ -144,7 +151,7 @@ export default function SectionFavoris() {
                                     {TypeProperty[property.typeProperty as string]}
                                 </div>
                             )}
-                        </div>
+                        </button>
                     </div>
                 ))}
             </div>

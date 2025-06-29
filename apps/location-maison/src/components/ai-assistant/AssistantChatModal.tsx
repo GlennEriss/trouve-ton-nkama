@@ -1,7 +1,7 @@
 'use client'
 
 import React, { useState, useRef, useEffect } from 'react';
-import { Send, X, CreditCard, Sparkles, RefreshCw } from 'lucide-react';
+import { Send, CreditCard, Sparkles, RefreshCw } from 'lucide-react';
 import {
   Dialog,
   DialogContent,
@@ -35,7 +35,7 @@ const WELCOME_MESSAGES = [
 // Fonction pour sauvegarder les données dans le localStorage
 const saveFormDataToLocalStorage = (data: any) => {
   try {
-    const savedData = JSON.parse(localStorage.getItem('property_form_draft') || '{}');
+    const savedData = JSON.parse(localStorage.getItem('property_form_draft') ?? '{}');
     const updatedData = { ...savedData, ...data };
     localStorage.setItem('property_form_draft', JSON.stringify(updatedData));
     console.log('Données sauvegardées:', updatedData);
@@ -47,7 +47,7 @@ const saveFormDataToLocalStorage = (data: any) => {
 // Fonction pour lire les données du localStorage
 const getFromLocalStorage = () => {
   try {
-    return JSON.parse(localStorage.getItem('property_form_draft') || '{}');
+    return JSON.parse(localStorage.getItem('property_form_draft') ?? '{}');
   } catch (error) {
     console.error('Erreur lors de la lecture du localStorage:', error);
     return {};
@@ -125,7 +125,7 @@ const AssistantChatModal: React.FC<AssistantChatModalProps> = ({
     const contextData = {
       ...formContext,
       currentFormData,
-      currentStep: formContext?.activeStep || 0,
+      currentStep: formContext?.activeStep ?? 0,
       availableCredits: creditsAvailable
     };
 
@@ -137,7 +137,7 @@ const AssistantChatModal: React.FC<AssistantChatModalProps> = ({
         const assistantMessage: Message = {
           id: generateMessageId(),
           type: 'assistant',
-          content: result.response || '',
+          content: result.response ?? '',
           timestamp: new Date(),
           creditsUsed: 1,
           creditsRemaining: result.creditsRemaining
@@ -146,12 +146,12 @@ const AssistantChatModal: React.FC<AssistantChatModalProps> = ({
         setMessages(prev => [...prev, assistantMessage]);
 
         // Analyser la réponse pour des suggestions de remplissage automatique
-        await handleAutoFillSuggestions(result.response || '', currentFormData);
+        await handleAutoFillSuggestions(result.response ?? '', currentFormData);
       } else {
         const errorMessage: Message = {
           id: generateMessageId(),
           type: 'error',
-          content: result.error || 'Une erreur est survenue',
+          content: result.error ?? 'Une erreur est survenue',
           timestamp: new Date()
         };
 
@@ -221,7 +221,7 @@ const AssistantChatModal: React.FC<AssistantChatModalProps> = ({
       const assistantMessage: Message = {
         id: generateMessageId(),
         type: 'assistant',
-        content: result.response || '',
+        content: result.response ?? '',
         timestamp: new Date(),
         creditsUsed: 1,
         creditsRemaining: result.creditsRemaining
@@ -283,7 +283,7 @@ const AssistantChatModal: React.FC<AssistantChatModalProps> = ({
       if (result.success && result.response) {
         try {
           // Parser la réponse JSON de l'IA
-          const cleanedResponse = result.response.replace(/```json\n?|\n?```/g, '').trim();
+          const cleanedResponse = result.response?.replace(/```json\n?|\n?```/g, '').trim() ?? '';
           const generatedData = JSON.parse(cleanedResponse);
 
           // Sauvegarder dans localStorage
@@ -338,7 +338,7 @@ ${generatedData.suggestions?.map((s: string) => `• ${s}`).join('\n') || ''}
           const errorMessage: Message = {
             id: generateMessageId(),
             type: 'error',
-            content: `Erreur lors de l'analyse de la réponse de l'IA. Réponse reçue: ${result.response}`,
+            content: `Erreur lors de l'analyse de la réponse de l'IA. Réponse reçue: ${result.response ?? ''}`,
             timestamp: new Date()
           };
           setMessages(prev => [...prev, errorMessage]);
@@ -347,7 +347,7 @@ ${generatedData.suggestions?.map((s: string) => `• ${s}`).join('\n') || ''}
         const errorMessage: Message = {
           id: generateMessageId(),
           type: 'error',
-          content: result.error || 'Erreur lors de la génération automatique',
+          content: result.error ?? 'Erreur lors de la génération automatique',
           timestamp: new Date()
         };
         setMessages(prev => [...prev, errorMessage]);
@@ -462,7 +462,7 @@ ${generatedData.suggestions?.map((s: string) => `• ${s}`).join('\n') || ''}
       <AutoFillModal
         isOpen={showAutoFillModal}
         onClose={() => setShowAutoFillModal(false)}
-        propertyLabel={propertyLabel || 'propriété'}
+        propertyLabel={propertyLabel ?? 'propriété'}
         requiredFields={requiredFields}
         onGenerate={handleAutoFillProperty}
         creditsAvailable={creditsAvailable}

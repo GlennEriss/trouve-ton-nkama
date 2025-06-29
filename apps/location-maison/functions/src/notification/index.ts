@@ -1,6 +1,5 @@
 import * as functions from 'firebase-functions/v1';
-import { admin } from '../admin';
-import { adminDB } from '../admin';
+import { admin, adminDB } from '../admin';
 import { Notification } from '../models/notification';
 
 export const onUserCreate = functions.firestore
@@ -22,7 +21,7 @@ export const onUserCreate = functions.firestore
     await adminDB.collection('notifications').add(notification);
 
     // Vérifie si l'utilisateur ne s'est pas inscrit via CREDENTIALS
-    const providers = user.providers || [];
+    const providers = user.providers ?? [];
     if (!providers.includes('CREDENTIALS')) {
       const profileNotification: Notification = {
         title: 'Complétez votre profil ✍️',
@@ -46,8 +45,8 @@ export const onUserFavorisUpdate = functions.firestore
     const after = change.after.data();
     const uid = before.uid;
 
-    const beforeFavoris = before.favoris || [];
-    const afterFavoris = after.favoris || [];
+    const beforeFavoris = before.favoris ?? [];
+    const afterFavoris = after.favoris ?? [];
 
     // Vérifie s'il y a une nouvelle propriété ajoutée en favoris
     const added = afterFavoris.find((id: string) => !beforeFavoris.includes(id));

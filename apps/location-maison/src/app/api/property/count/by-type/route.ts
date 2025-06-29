@@ -3,7 +3,7 @@ import { getServerCountByPropertyType } from '@/db/property.db';
 import redis from '@/redis/client';
 
 // TTL du cache (en secondes) – configurable via REDIS_CATALOG_TTL, défaut 1800 (30 min)
-const CACHE_TTL_SECONDS = parseInt(process.env.REDIS_CATALOG_TTL || '1800', 10);
+const CACHE_TTL_SECONDS = parseInt(process.env.REDIS_CATALOG_TTL ?? '1800', 10);
 
 export async function GET(request: Request) {
     const url = new URL(request.url);

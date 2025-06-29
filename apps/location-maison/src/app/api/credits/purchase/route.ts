@@ -76,7 +76,7 @@ export async function POST(request: NextRequest): Promise<NextResponse<PurchaseR
       
       return NextResponse.json({
         success: false,
-        message: errorData.error || 'Erreur lors de l\'initiation du paiement',
+        message: errorData.error ?? 'Erreur lors de l\'initiation du paiement',
         error: process.env.NODE_ENV === 'development' ? `Cloud Function error: ${cloudFunctionResponse.status}` : undefined
       }, { status: 500 })
     }
