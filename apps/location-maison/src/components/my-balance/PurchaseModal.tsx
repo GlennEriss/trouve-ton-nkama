@@ -161,7 +161,10 @@ export default function PurchaseModal({ isOpen, onClose, preselectedPack }: Read
     }
   }
 
-  const isSubmitDisabled = isVerifying || !code.trim()
+  // Logique de désactivation du bouton de soumission
+  const isProcessingRequest = isVerifying;
+  const hasEmptyCode = !code.trim();
+  const isSubmitDisabled = isProcessingRequest || hasEmptyCode;
 
   if (!isOpen) return null
 
