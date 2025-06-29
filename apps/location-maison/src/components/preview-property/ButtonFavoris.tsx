@@ -61,7 +61,7 @@ export const ButtonFavoris: React.FC<ButtonFavorisProps> = ({ idProperty }) => {
       }
     }
 
-    await updateUser(user?.uid!, {
+    await updateUser(user?.uid, {
       ...user,
       favoris
     });

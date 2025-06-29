@@ -10,7 +10,7 @@ interface PromotionButtonProps {
   property: Property
 }
 
-export default function PromotionButton({ property }: PromotionButtonProps) {
+export default function PromotionButton({ property }: Readonly<PromotionButtonProps>) {
   const [isModalOpen, setIsModalOpen] = useState(false)
   
   // Vérifier si l'annonce a une promotion active

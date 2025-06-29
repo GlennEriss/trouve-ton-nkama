@@ -4,11 +4,9 @@
 import React from "react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-import { formatDateFr } from "@/lib/utils";
 import { TypeProperty } from "@/constantes/property-type";
 
 // Import des icônes
-import { FaToilet } from "react-icons/fa";
 import { IoMdBed } from "react-icons/io";
 import { MdOutlineBathtub, MdOutlineSquareFoot } from "react-icons/md";
 
@@ -22,15 +20,22 @@ const PropertyCard = ({ property }: any) => {
 
   return (
     <div key={property.id} className="">
-      <div
+      <button
         onClick={() => handleCardClick()}
-        className="h-[460px] md:h-[450px] relative cursor-pointer rounded-2xl shadow-lg overflow-hidden transition-transform duration-200 ease-out hover:scale-[1.02] bg-white dark:bg-gray-800 hover:shadow-xl flex flex-col group will-change-transform"
+        onKeyDown={(e) => {
+          if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault();
+            handleCardClick();
+          }
+        }}
+        className="h-[460px] md:h-[450px] relative cursor-pointer rounded-2xl shadow-lg overflow-hidden transition-transform duration-200 ease-out hover:scale-[1.02] bg-white dark:bg-gray-800 hover:shadow-xl flex flex-col group will-change-transform w-full text-left border-none p-0"
+        aria-label={`Voir les détails de ${property.title ?? "la propriété"}`}
       >
         {/* Image principale */}
         <div className="relative w-full aspect-[3/2] bg-gray-200">
           <Image
-            src={property.images?.[0]?.fileURL || "/home.png"}
-            alt={property.title || "Image de la propriété"}
+            src={property.images?.[0]?.fileURL ?? "/home.png"}
+            alt={property.title ?? "Image de la propriété"}
             fill
             className="object-cover"
           />
@@ -46,7 +51,7 @@ const PropertyCard = ({ property }: any) => {
           {/* Titre */}
           <div className="h-[60px]">
             <h3 className="text-lg font-bold text-gray-900 dark:text-white line-clamp-2 group-hover:text-[#146B67] transition-colors">
-              {property.title || "Propriété"}
+              {property.title ?? "Propriété"}
             </h3>
           </div>
 
@@ -68,8 +73,8 @@ const PropertyCard = ({ property }: any) => {
 
           {/* Section d'icônes et chiffres */}
           <div className={`flex flex-wrap gap-4 mt-auto pt-3 text-gray-600 dark:text-gray-400 text-sm ${(property.area > 0 ||
-              ("nbrRooms" in property && (property as any).nbrRooms > 0) ||
-              ("nbrBathrooms" in property && (property as any).nbrBathrooms > 0))
+              ("nbrRooms" in property && property.nbrRooms > 0) ||
+              ("nbrBathrooms" in property && property.nbrBathrooms > 0))
               ? "border-t" : ""
             }`}>
             {property.area > 0 && (
@@ -87,23 +92,23 @@ const PropertyCard = ({ property }: any) => {
               property.typeProperty === "Desk" ||
               property.typeProperty === "Shop") && (
                 <>
-                  {"nbrRooms" in property && (property as any).nbrRooms > 0 && (
+                  {"nbrRooms" in property && property.nbrRooms > 0 && (
                     <div className="flex items-center gap-2 group-hover:text-[#146B67] transition-colors">
                       <IoMdBed className="w-5 h-5" />
-                      <span>{(property as any).nbrRooms}</span>
+                      <span>{property.nbrRooms}</span>
                     </div>
                   )}
-                  {"nbrBathrooms" in property && (property as any).nbrBathrooms > 0 && (
+                  {"nbrBathrooms" in property && property.nbrBathrooms > 0 && (
                     <div className="flex items-center gap-2 group-hover:text-[#146B67] transition-colors">
                       <MdOutlineBathtub className="w-5 h-5" />
-                      <span>{(property as any).nbrBathrooms}</span>
+                      <span>{property.nbrBathrooms}</span>
                     </div>
                   )}
                 </>
               )}
           </div>
         </div>
-      </div>
+      </button>
     </div>
   );
 };

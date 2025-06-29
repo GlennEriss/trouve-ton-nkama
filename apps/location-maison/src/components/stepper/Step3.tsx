@@ -7,7 +7,7 @@ import { FormElement } from '@/builders/property-form/property.form.builder'
 type Step3Props = {
     data: FormElement[]
 }
-export default function Step3({ data }: Step3Props) {
+export default function Step3({ data }: Readonly<Step3Props>) {
     const { form } = usePropertyFormComponentContext()
     return (
         <div className='flex flex-col mx-auto xl:w-1/2'>

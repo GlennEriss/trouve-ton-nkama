@@ -66,7 +66,7 @@ export const InputForm = <T extends FieldValues>({
                                     className={cn(classNameButton, "absolute inset-y-0 right-0 flex items-center pr-3 text-gray-500 hover:text-gray-700")}
                                     disabled={isSubmitting}
                                 >
-                                    {showPassword ? <EyeOff size={sizeIcon ? sizeIcon : 20} /> : <Eye size={sizeIcon ? sizeIcon : 20} />}
+                                    {showPassword ? <EyeOff size={sizeIcon ?? 20} /> : <Eye size={sizeIcon ?? 20} />}
                                 </button>
                             )}
                         </div>

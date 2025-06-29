@@ -61,12 +61,19 @@ export default function PropertyByProvince() {
                     const { data: count, isLoading } = useServerCountByProvince(province.name)
 
                     return (
-                        <div
+                        <button
                             key={index}
-                            className='relative rounded-xl overflow-hidden w-full h-[340px] group cursor-pointer'
+                            className='relative rounded-xl overflow-hidden w-full h-[340px] group cursor-pointer border-none bg-transparent p-0'
                             onClick={() => {
                                 router.push(`${routes.public.search_property}?province=${province.name}`)
                             }}
+                            onKeyDown={(e) => {
+                                if (e.key === 'Enter' || e.key === ' ') {
+                                    e.preventDefault();
+                                    router.push(`${routes.public.search_property}?province=${province.name}`);
+                                }
+                            }}
+                            aria-label={`Rechercher des propriétés dans la province ${province.name}`}
                         >
                             <Image
                                 src={`/assets/home-page/${province.img}`}
@@ -86,7 +93,7 @@ export default function PropertyByProvince() {
                                             <span className='text-white'>Chargement...</span>
                                         </div>
                                     ) : (
-                                        <h3 className='text-white'>{(count || 0) > 0 ? `${count} Propriété(s)` : 'Aucune propriété'}</h3>
+                                        <h3 className='text-white'>{(count ?? 0) > 0 ? `${count} Propriété(s)` : 'Aucune propriété'}</h3>
                                     )}
                                 </div>
                                 <div className="ml-auto relative h-14 w-14">
@@ -99,7 +106,7 @@ export default function PropertyByProvince() {
                                 </div>
 
                             </div>
-                        </div>
+                        </button>
                     )
                 })
             }

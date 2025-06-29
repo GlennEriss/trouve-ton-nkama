@@ -3,11 +3,10 @@ import React from 'react'
 import { IoMdBed } from 'react-icons/io'
 import { MdKitchen } from 'react-icons/md'
 import { IconType } from 'react-icons/lib'
-import { FaBath, FaRegBuilding, FaSwimmingPool, FaToilet, FaStore, FaWarehouse } from 'react-icons/fa'
+import { FaBath, FaRegBuilding, FaSwimmingPool, FaToilet, FaStore, FaWarehouse, FaCouch } from 'react-icons/fa'
 import { BsBuilding } from 'react-icons/bs'
 import { RiBookmarkLine } from 'react-icons/ri'
 import { GiHomeGarage } from 'react-icons/gi'
-import { FaCouch } from 'react-icons/fa';
 import { Ruler } from 'lucide-react';
 
 const items: Record<string, { label: string, icon: IconType }> = {
@@ -29,7 +28,7 @@ const items: Record<string, { label: string, icon: IconType }> = {
     area: { label: 'Superficie', icon: Ruler },
 };
 
-export default function DetailsProperty({ property }: { property: Property }) {
+export default function DetailsProperty({ property }: Readonly<{ property: Property }>) {
     const details = () => {
         switch (property.typeProperty) {
             case 'Apartment': return <DetailsApartment apartment={property as Apartment} />;
@@ -52,7 +51,7 @@ export default function DetailsProperty({ property }: { property: Property }) {
     )
 }
 
-const DetailsItem = ({ keyName, value }: { keyName: string, value: number | string | boolean }) => {
+const DetailsItem = ({ keyName, value }: Readonly<{ keyName: string, value: number | string | boolean }>) => {
     const item = items[keyName];
     return (
         <div className="flex items-center gap-2 my-2 bg-gray-100 p-2 rounded-md shadow-sm">
@@ -63,7 +62,7 @@ const DetailsItem = ({ keyName, value }: { keyName: string, value: number | stri
     )
 }
 
-const DetailsLogement = ({ logement }: { logement: Logement }) => {
+const DetailsLogement = ({ logement }: Readonly<{ logement: Logement }>) => {
     return (
         <div className='flex flex-wrap gap-4'>
             <DetailsItem keyName='bedroom' value={logement.nbrRooms} />
@@ -74,11 +73,11 @@ const DetailsLogement = ({ logement }: { logement: Logement }) => {
     )
 }
 
-const DetailsApartment = ({ apartment }: { apartment: Apartment }) => (
+const DetailsApartment = ({ apartment }: Readonly<{ apartment: Apartment }>) => (
     <DetailsLogement logement={apartment} />
 );
 
-const DetailsBuilding = ({ building }: { building: Building }) => (
+const DetailsBuilding = ({ building }: Readonly<{ building: Building }>) => (
     <div className='flex flex-wrap gap-4'>
         <DetailsItem keyName='floor' value={building.nbrFloors} />
         <DetailsItem keyName='parking' value={building.hasParking} />
@@ -86,14 +85,14 @@ const DetailsBuilding = ({ building }: { building: Building }) => (
     </div>
 );
 
-const DetailsDesk = ({ desk }: { desk: Desk }) => (
+const DetailsDesk = ({ desk }: Readonly<{ desk: Desk }>) => (
     <div className="flex flex-wrap md:grid-cols-3 lg:grid-cols-4 gap-4">
         <DetailsItem keyName='toilet' value={desk.nbrToilets} />
         <DetailsItem keyName='room' value={desk.nbrRooms} />
     </div>
 );
 
-const DetailsHome = ({ home }: { home: Home }) => (
+const DetailsHome = ({ home }: Readonly<{ home: Home }>) => (
     <div>
         <DetailsLogement logement={home} />
         <div className="flex flex-wrap gap-4">
@@ -104,11 +103,11 @@ const DetailsHome = ({ home }: { home: Home }) => (
     </div>
 );
 
-const DetailsStudio = ({ studio }: { studio: Studio }) => (
+const DetailsStudio = ({ studio }: Readonly<{ studio: Studio }>) => (
     <DetailsLogement logement={studio} />
 );
 
-const DetailsVilla = ({ villa }: { villa: Villa }) => (
+const DetailsVilla = ({ villa }: Readonly<{ villa: Villa }>) => (
     <div>
         <DetailsLogement logement={villa} />
         <div className="flex flex-wrap gap-4">
@@ -119,26 +118,26 @@ const DetailsVilla = ({ villa }: { villa: Villa }) => (
     </div>
 );
 
-const DetailsShop = ({ shop }: { shop: Shop }) => (
+const DetailsShop = ({ shop }: Readonly<{ shop: Shop }>) => (
     <div className="flex flex-wrap gap-4">
         <DetailsItem keyName='room' value={shop.nbrRooms} />
         <DetailsItem keyName='toilet' value={shop.nbrToilet} />
     </div>
 );
 
-const DetailsKiosk = ({ kiosk }: { kiosk: Kiosk }) => (
+const DetailsKiosk = ({ kiosk }: Readonly<{ kiosk: Kiosk }>) => (
     <div className="text-gray-500">
         Type: {kiosk.kioskType}
     </div>
 );
 
-const DetailsRoom = ({ room }: { room: Room }) => (
+const DetailsRoom = ({ room }: Readonly<{ room: Room }>) => (
     <div className="text-gray-500">
         {room.roomType}
     </div>
 );
 
-const DetailsLand = ({ land }: { land: Property }) => (
+const DetailsLand = ({ land }: Readonly<{ land: Property }>) => (
     <div className="flex flex-wrap gap-4">
         <DetailsItem keyName="area" value={`${land.area} m²`} />
     </div>

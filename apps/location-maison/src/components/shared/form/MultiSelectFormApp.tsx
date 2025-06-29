@@ -15,7 +15,7 @@ type MultiSelectFormAppProps<T extends FieldValues> = {
     label?: string,
     className?: string
 }
-export default function MultiSelectFormApp<T extends FieldValues>({ control, name, options, placeholder, label, className }: MultiSelectFormAppProps<T>) {
+export default function MultiSelectFormApp<T extends FieldValues>({ control, name, options, placeholder, label, className }: Readonly<MultiSelectFormAppProps<T>>) {
     return (
         <FormField
             control={control}

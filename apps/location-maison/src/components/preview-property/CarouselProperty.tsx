@@ -5,7 +5,7 @@ import { Carousel, CarouselContent, CarouselItem, CarouselPrevious, CarouselNext
 import { ChevronLeft, ChevronRight, X } from 'lucide-react'
 import { useSwipeable } from 'react-swipeable'
 
-export default function CarouselProperty({ images }: { images: string[] }) {
+export default function CarouselProperty({ images }: Readonly<{ images: string[] }>) {
     const [selectedImage, setSelectedImage] = useState<string | null>(null);
     const [isPreviewOpen, setIsPreviewOpen] = useState(false);
  
