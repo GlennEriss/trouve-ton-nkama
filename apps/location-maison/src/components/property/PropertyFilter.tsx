@@ -25,7 +25,7 @@ export const PropertyFilter = () => {
     const router = useRouter();
     const scrollRef = React.useRef<HTMLDivElement>(null);
 
-    const currentFilter = searchParams.get("type") || "";
+    const currentFilter = searchParams.get("type") ?? "";
 
     // Fonction pour changer le filtre
     const handleFilterChange = (value: string) => {

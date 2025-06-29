@@ -20,7 +20,7 @@ export default function ContactSection({ property }: Readonly<{ property: Proper
             <h1 className="font-bold">Choisissez un moyen de contact</h1>
             <div className='flex gap-3'>
                     <Link
-                        href={property?.contact ?? user?.phoneNumbers?.[0] ? `https://wa.me/${property.contact ? property.contact : user?.phoneNumbers[0]}?text=${encodeURIComponent(
+                        href={property?.contact ?? user?.phoneNumbers?.[0] ? `https://wa.me/${property.contact ?? user?.phoneNumbers[0]}?text=${encodeURIComponent(
                             `Bonjour, je suis intéressé par votre annonce "${property.title}" au prix de ${property.price.toLocaleString('fr-FR')} FCFA. Voici le lien de l'annonce : https://www.logi-market.com/houseDetails/${property.id}`
                         )}` : '#'}
                         target="_blank"

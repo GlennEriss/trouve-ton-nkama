@@ -29,7 +29,7 @@ export function useCreditHistory(filters: HistoryFilters = {}) {
 
       const options: GetHistoryOptions = {
         type: filters.type,
-        limit: filters.limit || 10
+        limit: filters.limit ?? 10
       }
 
       if (pageParam) {

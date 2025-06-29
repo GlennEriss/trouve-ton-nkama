@@ -24,7 +24,7 @@ const fetchPromotedProperties = async (): Promise<PromotedPropertiesData> => {
   const data = await res.json()
 
   if (!res.ok) {
-    throw new Error(data.error || 'Erreur lors du chargement des annonces promues')
+    throw new Error(data.error ?? 'Erreur lors du chargement des annonces promues')
   }
 
   return data as PromotedPropertiesData
@@ -52,21 +52,21 @@ export const usePromotedProperties = (filter?: PromotionFilter) => {
     return { 
       featuredProperties, 
       isLoading, 
-      error: error?.message || null 
+      error: error?.message ?? null 
     }
   }
   if (filter === 'trending') {
     return { 
       trendingProperties, 
       isLoading, 
-      error: error?.message || null 
+      error: error?.message ?? null 
     }
   }
   if (filter === 'boost') {
     return { 
       boostProperties, 
       isLoading, 
-      error: error?.message || null 
+      error: error?.message ?? null 
     }
   }
 
@@ -76,6 +76,6 @@ export const usePromotedProperties = (filter?: PromotionFilter) => {
     trendingProperties,
     boostProperties,
     isLoading,
-    error: error?.message || null
+    error: error?.message ?? null
   } as UsePromotedPropertiesReturn
 } 

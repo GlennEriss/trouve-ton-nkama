@@ -12,7 +12,7 @@ interface UseCurrentUserReturn {
 
 export const useCurrentUser = (): UseCurrentUserReturn => {
   const { data: session, status } = useSession();
-  const [user, setUser] = useState(session?.user || undefined);
+  const [user, setUser] = useState(session?.user ?? undefined);
   const [isLoading, setIsLoading] = useState(false);
   const [isFirebaseConnected, setIsFirebaseConnected] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -36,7 +36,7 @@ export const useCurrentUser = (): UseCurrentUserReturn => {
 
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.details || `Erreur ${response.status}: ${response.statusText}`);
+        throw new Error(errorData.details ?? `Erreur ${response.status}: ${response.statusText}`);
       }
 
       const { token } = await response.json();
@@ -47,7 +47,7 @@ export const useCurrentUser = (): UseCurrentUserReturn => {
       //console.log('✅ Connexion Firebase réussie');
 
     } catch (err: any) {
-      const errorMessage = err.message || 'Erreur de connexion Firebase';
+      const errorMessage = err.message ?? 'Erreur de connexion Firebase';
       //console.error('❌ Erreur Firebase Auth:', errorMessage);
       setError(errorMessage);
       setIsFirebaseConnected(false);

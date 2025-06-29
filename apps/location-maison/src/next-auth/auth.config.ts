@@ -58,7 +58,7 @@ const handleNewGoogleUser = async (user: any, account: any, profile: any, creden
 
 // Fonction pour gérer la connexion Google d'un utilisateur existant
 const handleExistingGoogleUser = async (userExists: any, account: any, credential: any) => {
-    const providers = userExists?.providers || [];
+    const providers = userExists?.providers ?? [];
     
     if (!providers.includes('GOOGLE')) {
         const facebookCredential = FacebookAuthProvider.credential(userExists.metadata.accessToken);
@@ -118,7 +118,7 @@ const handleNewFacebookUser = async (user: any, account: any, profile: any, cred
 
 // Fonction pour gérer la connexion Facebook d'un utilisateur existant
 const handleExistingFacebookUser = async (userExists: any, account: any, credential: any) => {
-    const providers = userExists?.providers || [];
+    const providers = userExists?.providers ?? [];
     
     if (!providers.includes('FACEBOOK')) {
         const googleCredential = GoogleAuthProvider.credential(userExists.metadata.idToken);

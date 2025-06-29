@@ -40,7 +40,7 @@ async function purchaseCredits(data: PurchaseRequest): Promise<PurchaseResponse>
 
   if (!response.ok) {
     const errorData = await response.json()
-    throw new Error(errorData.message || 'Erreur lors de l\'initiation du paiement')
+    throw new Error(errorData.message ?? 'Erreur lors de l\'initiation du paiement')
   }
 
   return response.json()

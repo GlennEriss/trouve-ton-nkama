@@ -40,7 +40,7 @@ export async function verifyCodeAPI(data: VerifyCodeRequest): Promise<VerifyCode
   const responseData = await response.json()
   
   if (!response.ok) {
-    throw new Error(responseData.message || 'Erreur lors de la vérification du code')
+    throw new Error(responseData.message ?? 'Erreur lors de la vérification du code')
   }
 
   return responseData
