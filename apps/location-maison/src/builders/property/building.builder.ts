@@ -38,9 +38,9 @@ export class BuildingBuilder extends PropertyBuilder {
      * Sets the number of apartments in the building.
      * 
      * @param {number} nbrApartments - The number of apartments in the building.
-     * @returns {BuildingBuilder} The current instance of `BuildingBuilder`.
+     * @returns {this} The current instance of `BuildingBuilder`.
      */
-    setNbrApartments(nbrApartments: number): BuildingBuilder {
+    setNbrApartments(nbrApartments: number): this {
         (this.property as Building).nbrApartments = nbrApartments;
         return this;
     }
@@ -49,9 +49,9 @@ export class BuildingBuilder extends PropertyBuilder {
      * Sets the number of floors in the building.
      * 
      * @param {number} nbrFloors - The number of floors in the building.
-     * @returns {BuildingBuilder} The current instance of `BuildingBuilder`.
+     * @returns {this} The current instance of `BuildingBuilder`.
      */
-    setNbrFloors(nbrFloors: number): BuildingBuilder {
+    setNbrFloors(nbrFloors: number): this {
         (this.property as Building).nbrFloors = nbrFloors;
         return this;
     }
@@ -60,9 +60,9 @@ export class BuildingBuilder extends PropertyBuilder {
      * Sets whether the building has parking.
      * 
      * @param {number} hasParking - The number representing whether the building has parking (0 for no, 1 for yes).
-     * @returns {BuildingBuilder} The current instance of `BuildingBuilder`.
+     * @returns {this} The current instance of `BuildingBuilder`.
      */
-    setHasParking(hasParking: boolean): BuildingBuilder {
+    setHasParking(hasParking: boolean): this {
         (this.property as Building).hasParking = hasParking;
         return this;
     }

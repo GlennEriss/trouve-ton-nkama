@@ -128,17 +128,17 @@ const FloatingAssistantButton: React.FC<FloatingAssistantButtonProps> = ({ formC
       if (result.success && result.response) {
         try {
           // Parser la réponse JSON de l'IA
-          const cleanedResponse = result.response.replace(/```json\n?|\n?```/g, '').trim();
+          const cleanedResponse = result.response?.replace(/```json\n?|\n?```/g, '').trim() ?? '';
           const generatedData = JSON.parse(cleanedResponse);
 
           // Créer la structure de données conforme au localStorage attendu
           const formData = {
-            typeProperty: PROPERTY_TYPE_MAPPING[propertyType] || 'Home',
-            title: generatedData.title || '',
-            description: generatedData.description || '',
-            price: generatedData.price || 0,
-            area: generatedData.area || 0,
-            tags: generatedData.tags || [],
+            typeProperty: PROPERTY_TYPE_MAPPING[propertyType] ?? 'Home',
+            title: generatedData.title ?? '',
+            description: generatedData.description ?? '',
+            price: generatedData.price ?? 0,
+            area: generatedData.area ?? 0,
+            tags: generatedData.tags ?? [],
             street: '',
             city: '',
             province: '',
@@ -186,7 +186,7 @@ const FloatingAssistantButton: React.FC<FloatingAssistantButtonProps> = ({ formC
       } else {
         toast({
           title: "❌ Erreur de génération",
-          description: result.error || "Une erreur s'est produite lors de la génération automatique.",
+          description: result.error ?? "Une erreur s'est produite lors de la génération automatique.",
           variant: "destructive",
         });
       }

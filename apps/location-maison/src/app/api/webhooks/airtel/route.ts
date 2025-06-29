@@ -51,7 +51,7 @@ async function addCreditsToUser(userId: string, credits: number, transactionId: 
   }
 
   const userDoc = usersSnapshot.docs[0]
-  const currentCredits = userDoc.data()?.credits || 0
+  const currentCredits = userDoc.data()?.credits ?? 0
   const newCredits = currentCredits + credits
 
   // Transaction atomique
@@ -84,7 +84,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     console.log('📄 Payload webhook:', payload)
 
     // Vérification de la signature (développement: désactivé)
-    const signature = request.headers.get('x-airtel-signature') || ''
+    const signature = request.headers.get('x-airtel-signature') ?? ''
     if (!verifyWebhookSignature(body, signature)) {
       console.error('❌ Signature webhook invalide')
       return NextResponse.json(

@@ -15,7 +15,7 @@ type NotificationContextType = {
 
 const NotificationContext = createContext<NotificationContextType | undefined>(undefined);
 
-export function NotificationProvider({ children }: { children: React.ReactNode }) {
+export function NotificationProvider({ children }: Readonly<{ children: React.ReactNode }>) {
     const { user } = useCurrentUser();
     const [notifications, setNotifications] = useState<Notification[]>([]);
     const [unreadCount, setUnreadCount] = useState(0);

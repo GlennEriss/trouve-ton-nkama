@@ -1,10 +1,9 @@
-import type { Metadata } from "next";
-import { Geist, Geist_Mono, Inter } from "next/font/google";
+import React from 'react'
+import { Inter } from "next/font/google";
 import "./globals.css";
 import { Providers } from "@/providers/providers";
 import { BottomNavigation } from "@/components/shared/BottomNavigation";
 import Footer from "@/components/footer/Footer";
-import { auth } from "@/next-auth/auth";
 import { cn } from "@/lib/utils";
 
 /* const geistSans = Geist({
@@ -32,8 +31,6 @@ export default async function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const session = await auth()
-
   return (
     <html lang="en" suppressHydrationWarning>
       <head>

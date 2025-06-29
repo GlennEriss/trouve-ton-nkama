@@ -1,7 +1,7 @@
 'use client'
 
 import React from 'react';
-import { Bot, User, AlertCircle, CheckCircle2 } from 'lucide-react';
+import { Bot, User, AlertCircle } from 'lucide-react';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 

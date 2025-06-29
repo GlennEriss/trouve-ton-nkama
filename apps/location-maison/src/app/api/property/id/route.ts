@@ -3,7 +3,7 @@ import { getPropertyById } from '@/db/property.db';
 import redis from '@/redis/client';
 
 // TTL du cache (en secondes) – configurable via variable d'env, défaut 600 s (10 min)
-const CACHE_TTL_SECONDS = parseInt(process.env.REDIS_PROPERTY_TTL || '600', 10);
+const CACHE_TTL_SECONDS = parseInt(process.env.REDIS_PROPERTY_TTL ?? '600', 10);
 
 export async function GET(request: Request) {
     const url = new URL(request.url);

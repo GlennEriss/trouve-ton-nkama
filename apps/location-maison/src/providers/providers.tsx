@@ -7,7 +7,7 @@ import { NotificationProvider } from "./NotificationProvider";
 import { AlgoliaRefinementsProvider } from "./AlgoliaRefinementsContext";
 import { ThemeProvider } from "@/components/theme-provider"
 
-export function Providers({ children }: { children: React.ReactNode }) {
+export function Providers({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
     <ThemeProvider
       attribute="class"
