@@ -56,7 +56,6 @@ const CREDIT_PACKS: CreditPack[] = [
 
 export default function PurchaseModal({ isOpen, onClose, preselectedPack }: Readonly<PurchaseModalProps>) {
   const [selectedPack, setSelectedPack] = useState<CreditPack | null>(null)
-  const [phoneNumber, setPhoneNumber] = useState('')
   const [code, setCode] = useState('')
   const [step, setStep] = useState<'select' | 'instructions' | 'code'>('select')
   
@@ -131,7 +130,6 @@ export default function PurchaseModal({ isOpen, onClose, preselectedPack }: Read
 
   const resetModal = () => {
     setSelectedPack(null)
-    setPhoneNumber('')
     setCode('')
     setStep('select')
   }

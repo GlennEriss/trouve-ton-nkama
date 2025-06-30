@@ -81,7 +81,7 @@ export default function ListPropertySection() {
             <div className="px-4 py-6">
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-4 gap-6">
                     {Array.from({ length: 8 }).map((_, index) => (
-                        <SkeletonCard key={`skeleton-${Date.now()}-${index}`} />
+                        <SkeletonCard key={`skeleton-card-${index}`} />
                     ))}
                 </div>
             </div>

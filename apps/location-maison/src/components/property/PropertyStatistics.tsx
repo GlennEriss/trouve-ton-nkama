@@ -26,7 +26,7 @@ export default function PropertyStatistics() {
                 <div className="h-4 bg-gray-200 dark:bg-gray-600 rounded w-1/3 mb-4"></div>
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                     {[...Array(4)].map((_, i) => (
-                        <div key={`skeleton-stat-${i}`} className="h-16 bg-gray-200 dark:bg-gray-600 rounded-xl"></div>
+                        <div key={`stat-skeleton-${i}`} className="h-16 bg-gray-200 dark:bg-gray-600 rounded-xl"></div>
                     ))}
                 </div>
             </div>
