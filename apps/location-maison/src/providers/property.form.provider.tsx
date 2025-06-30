@@ -1,5 +1,5 @@
 'use client'
-import React, { createContext, useContext, useState, useEffect } from "react"
+import React, { createContext, useContext, useState, useEffect, useMemo } from "react"
 import { Form } from "@/components/ui/form"
 import { useForm } from "react-hook-form"
 import { zodResolver } from '@hookform/resolvers/zod'
@@ -78,7 +78,9 @@ export const PropertyFormComponentProvider = ({ children, isUpdate, propertyToUp
     const router = useRouter()
     //pathnames
     const pathname = usePathname()
-    const id = isUpdate ? useLastpath() : null
+    // Hook appelé toujours, puis utilisé conditionnellement
+    const lastPathValue = useLastpath()
+    const id = isUpdate ? lastPathValue : null
     //Images already uplaod
     const [imagesAlreadyUplaod, setImagesAlreadyUplaod] = useState<Image[]>([])
     //Type Property
@@ -259,14 +261,16 @@ export const PropertyFormComponentProvider = ({ children, isUpdate, propertyToUp
         }
     }, [form, isUpdate]);
 
+    const contextValue = useMemo(() => ({
+        activeStep,
+        setActiveStep,
+        form,
+        propertyPreview,
+        setPropertyPreview
+    }), [activeStep, form, propertyPreview]);
+
     return (
-        <PropertyFormComponentContext.Provider value={{
-            activeStep,
-            setActiveStep,
-            form,
-            propertyPreview,
-            setPropertyPreview
-        }}>
+        <PropertyFormComponentContext.Provider value={contextValue}>
             <Form {...form}>
                 <form
                     className='flex flex-col'

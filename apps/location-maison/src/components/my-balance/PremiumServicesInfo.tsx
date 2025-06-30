@@ -129,8 +129,8 @@ export default function PremiumServicesInfo() {
                   Avantages :
                 </div>
                 <ul className="space-y-1">
-                  {service.benefits.map((benefit, index) => (
-                    <li key={index} className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
+                  {service.benefits.map((benefit) => (
+                    <li key={benefit} className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
                       <div className="w-1.5 h-1.5 bg-[#146B67] dark:bg-[#1FA89B] rounded-full flex-shrink-0" />
                       {benefit}
                     </li>

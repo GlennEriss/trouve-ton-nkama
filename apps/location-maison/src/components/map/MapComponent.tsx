@@ -55,7 +55,6 @@ const MapComponent: React.FC<MapComponentProps> = ({
   neighborhoods,
 }) => {
   const [L, setL] = useState<any>(null);
-  const [mapCenter, setMapCenter] = useState<[number, number]>([0.39, 9.45]); // Par défaut, Libreville
   const [hoveredNeighborhood, setHoveredNeighborhood] = useState<string | null>(
     null
   );
@@ -124,7 +123,7 @@ const MapComponent: React.FC<MapComponentProps> = ({
 
   return (
     <MapContainer
-      center={mapCenter}
+      center={[0.39, 9.45]} // Par défaut, Libreville
       zoom={15}
       style={{ height: "100%", width: "100%", borderRadius: "10px" }}
       className="h-full w-full z-10"

@@ -31,13 +31,21 @@ import clsx from 'clsx';
 import imageCompression from 'browser-image-compression';
 import { useToast } from '@/hooks/use-toast';
 
+// Fonction utilitaire pour générer une clé unique pour les images
+const generateImageKey = (image: File | string, index: number): string => {
+  if (typeof image === 'string') {
+    return `image-url-${image.slice(-10)}-${index}`;
+  }
+  return `image-file-${image.name}-${image.size}-${index}`;
+};
+
 //Images
 export const ImagesComponent = ({ field }: { field: any }) => {
     return (
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-2 gap-3">
             <ImageUploader field={field} />
             {field.value?.map((image: File | string, index: number) => (
-                <ImageComponent key={index} index={index} field={field} />
+                <ImageComponent key={generateImageKey(image, index)} index={index} field={field} />
             ))}
         </div>
     )
@@ -107,7 +115,7 @@ export const ImageUploader = ({ field }: { field: any }) => {
 };
 
 export const ImageComponent = ({ field, index }: { field: any, index: number }) => {
-    const image: File | string | undefined = field.value && field.value[index];
+    const image: File | string | undefined = field.value?.[index];
 
     return (
         <div className='border border-dashed h-40 md:h-[240px] flex justify-center items-center'>
@@ -181,8 +189,8 @@ export const StatusComponent = ({ field }: { field: any }) => {
             className="flex gap-5"
         >
             {
-                status.map((item, key) =>
-                    <FormItem key={key} className="flex items-center space-x-3 space-y-0">
+                status.map((item) =>
+                    <FormItem key={item.value} className="flex items-center space-x-3 space-y-0">
                         <FormControl>
                             <RadioGroupItem value={item.value} />
                         </FormControl>
@@ -201,8 +209,8 @@ export const TagsComponent = ({ field }: { field: any }) => {
     return (
         <div className='grid grid-cols-3 gap-2'>
             {
-                tags.map((tag, key) => (
-                    <TagItem key={key} tag={tag} field={field} />
+                tags.map((tag) => (
+                    <TagItem key={tag.tagName} tag={tag} field={field} />
                 ))
             }
         </div>

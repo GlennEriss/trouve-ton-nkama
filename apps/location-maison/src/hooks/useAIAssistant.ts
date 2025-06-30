@@ -25,13 +25,9 @@ interface AIAssistantHook {
 async function sendToAI(message: string, context?: FormContext): Promise<{ success: boolean; text?: string; error?: string }> {
   try {
     // Construction du prompt intelligent avec contexte
-    let prompt = message;
-    if (context) {
-      prompt = AIPromptsService.buildContextualPrompt(message, context);
-    } else {
-      // Prompt système de base si pas de contexte
-      prompt = `${AIPromptsService.getSystemPrompt()}\n\nQUESTION: ${message}\n\nRéponds en français de manière utile:`;
-    }
+    const prompt = context 
+      ? AIPromptsService.buildContextualPrompt(message, context)
+      : `${AIPromptsService.getSystemPrompt()}\n\nQUESTION: ${message}\n\nRéponds en français de manière utile:`;
 
     const result = await model.generateContent(prompt);
     const response = result.response;

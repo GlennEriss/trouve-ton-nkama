@@ -19,6 +19,22 @@ export const RegisterSuccess: React.FC<RegisterSuccessProps> = ({ uid }) => {
   const [resendStatus, setResendStatus] = useState(false);
   const [countdown, setCountdown] = useState(0); // État pour le compte à rebours
 
+  // Fonction pour gérer l'affichage du contenu du bouton de renvoi
+  const getResendButtonContent = () => {
+    if (resendStatus) {
+      return `Veuillez patienter... (${countdown}s)`;
+    }
+    if (isPending) {
+      return (
+        <>
+          <Loader2 className="animate-spin mr-2 w-5 h-5" />
+          Renvoi en cours...
+        </>
+      );
+    }
+    return "Renvoyer l'email de confirmation";
+  };
+
   // Fetch verification status
   const fetchUserVerificationStatus = async () => {
     try {
@@ -136,16 +152,7 @@ export const RegisterSuccess: React.FC<RegisterSuccessProps> = ({ uid }) => {
                 (resendStatus || isPending) && "opacity-75"
               )}
             >
-              {resendStatus ? (
-                `Veuillez patienter... (${countdown}s)`
-              ) : isPending ? (
-                <>
-                  <Loader2 className="animate-spin mr-2 w-5 h-5" />
-                  Renvoi en cours...
-                </>
-              ) : (
-                "Renvoyer l'email de confirmation"
-              )}
+              {getResendButtonContent()}
             </Button>
           }
           <Link

@@ -14,13 +14,29 @@ export default function CarouselPropertyType() {
     const { setTypeProperty } = useAlgoliaContext()
     const router = useRouter()
 
-    // Appeler les hooks pour tous les types de propriétés au niveau du composant
-    const propertyCounts = Object.fromEntries(
-        propertyTypesList.map(property => [
-            property.type,
-            useServerCountByPropertyType(property.type).data ?? 0
-        ])
-    )
+    // Appeler les hooks individuellement au niveau du composant (conforme aux règles React)
+    const homeCount = useServerCountByPropertyType("Home")
+    const studioCount = useServerCountByPropertyType("Studio")
+    const apartmentCount = useServerCountByPropertyType("Apartment")
+    const buildingCount = useServerCountByPropertyType("Building")
+    const deskCount = useServerCountByPropertyType("Desk")
+    const roomCount = useServerCountByPropertyType("Room")
+    const kioskCount = useServerCountByPropertyType("Kiosk")
+    const shopCount = useServerCountByPropertyType("Shop")
+    const landCount = useServerCountByPropertyType("Land")
+
+    // Créer le mapping des données
+    const propertyCounts: Record<string, number> = {
+        "Home": homeCount.data ?? 0,
+        "Studio": studioCount.data ?? 0,
+        "Apartment": apartmentCount.data ?? 0,
+        "Building": buildingCount.data ?? 0,
+        "Desk": deskCount.data ?? 0,
+        "Room": roomCount.data ?? 0,
+        "Kiosk": kioskCount.data ?? 0,
+        "Shop": shopCount.data ?? 0,
+        "Land": landCount.data ?? 0,
+    }
 
     const handleClick = (propertyType: string) => {
         setTypeProperty([propertyType])

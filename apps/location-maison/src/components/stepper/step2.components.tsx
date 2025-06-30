@@ -14,8 +14,8 @@ export const ChoiceComponent: React.FC<ChoiceComponentProps> = ({field, data}) =
             className="flex gap-5"
         >
             {
-                data.map((item, key) =>
-                    <FormItem key={key} className="flex items-center space-x-3 space-y-0">
+                data.map((item) =>
+                    <FormItem key={item.value} className="flex items-center space-x-3 space-y-0">
                         <FormControl>
                             <RadioGroupItem value={item.value} />
                         </FormControl>

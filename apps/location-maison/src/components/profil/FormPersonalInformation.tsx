@@ -23,7 +23,7 @@ import { ButtonApp } from '../shared/ui/ButtonApp'
 
 export default function FormPersonalInformation() {
     const { user } = useCurrentUser()
-    const { data: session, status, update } = useSession()
+    const { update } = useSession()
     const { toast } = useToast();
     const size = useWindowSize()
     const form = useForm<FormUserProfilSchemaType>({

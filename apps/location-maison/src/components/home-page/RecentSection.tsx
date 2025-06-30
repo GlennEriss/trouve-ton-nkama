@@ -21,7 +21,7 @@ export default function RecentSection() {
         const data = await response.json();
         return data;
     };
-    const { data, isPending, isFetching, fetchNextPage, error, isError } = useInfiniteQuery({
+    const { data } = useInfiniteQuery({
         queryKey: [queryKeys.propertie_carousel],
         queryFn: fetchInfiniteProperties,
         initialPageParam: { limitPerPage: PROPERTY_ITEM_PER_PAGE_CAROUSEL, lastDoc: null },

@@ -1,5 +1,5 @@
 "use client";
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState, useEffect, useMemo } from 'react';
 
 interface Neighborhood {
   name: string;
@@ -273,7 +273,7 @@ export const LocationProvider: React.FC<LocationProviderProps> = ({
     }
   }, [initialLat, initialLng]);
 
-  const value = {
+  const value = useMemo(() => ({
     locationsContext,
     currentLocation,
     setLocationsContext,
@@ -288,7 +288,13 @@ export const LocationProvider: React.FC<LocationProviderProps> = ({
     error,
     updateLocation,
     searchAddress,
-  };
+  }), [
+    locationsContext,
+    currentLocation,
+    address,
+    isLoading,
+    error
+  ]);
 
   return (
     <LocationContext.Provider value={value}>

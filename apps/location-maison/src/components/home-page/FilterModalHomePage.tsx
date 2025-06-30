@@ -90,16 +90,18 @@ export const FilterModalHomePage = () => {
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                             <h1 className="text-lg mb-1 text-[#1FA89B] font-bold">Secteur recherché</h1>
                             <div className="space-y-2">
-                                <label className="text-gray-600">Saisissez une Ville</label>
+                                <label htmlFor="city-input-home" className="text-gray-600">Saisissez une Ville</label>
                                 <InputApp
+                                    id="city-input-home"
                                     value={localCity}
                                     onChange={e => setLocalCity(e.target.value)}
                                     placeholder="Entrez une ville"
                                 />
                             </div>
                             <div className="space-y-2">
-                                <label className="text-gray-600">Saisissez un quartier</label>
+                                <label htmlFor="street-input-home" className="text-gray-600">Saisissez un quartier</label>
                                 <InputApp
+                                    id="street-input-home"
                                     value={localStreet}
                                     onChange={e => setLocalStreet(e.target.value)}
                                     placeholder="Entrez un quartier"
@@ -149,9 +151,13 @@ export const FilterModalHomePage = () => {
                         {/* Surface */}
                         <div className="space-y-3">
                             <h1 className="text-lg mb-1 text-[#1FA89B] font-bold">Détails</h1>
-                            <label className="text-gray-600">Surface (m²)</label>
+                            <label htmlFor="area-slider-home" className="text-gray-600">Surface (m²)</label>
                             <SliderPrimitive.Root
-                                value={[Number(localMinArea) ?? AREA_MIN, Number(localMaxArea) ?? AREA_MAX]}
+                                id="area-slider-home"
+                                value={[
+                                    localMinArea ? Number(localMinArea) : AREA_MIN, 
+                                    localMaxArea ? Number(localMaxArea) : AREA_MAX
+                                ]}
                                 onValueChange={([low, high]) => {
                                     setLocalMinArea(low.toString());
                                     setLocalMaxArea(high.toString());
@@ -166,16 +172,20 @@ export const FilterModalHomePage = () => {
                                 <SliderPrimitive.Thumb className="block h-5 w-5 rounded-full border bg-background shadow" />
                             </SliderPrimitive.Root>
                             <div className="flex justify-between text-sm text-gray-600 mt-1">
-                                <span>{localMinArea ?? AREA_MIN} m²</span>
-                                <span>{localMaxArea ?? AREA_MAX} m²</span>
+                                <span>{localMinArea || AREA_MIN} m²</span>
+                                <span>{localMaxArea || AREA_MAX} m²</span>
                             </div>
                         </div>
 
                         {/* Chambres */}
                         <div className="space-y-3">
-                            <label className="text-gray-600">Chambres</label>
+                            <label htmlFor="rooms-slider-home" className="text-gray-600">Chambres</label>
                             <SliderPrimitive.Root
-                                value={[Number(localMinRooms) ?? ROOMS_MIN, Number(localMaxRooms) ?? ROOMS_MAX]}
+                                id="rooms-slider-home"
+                                value={[
+                                    localMinRooms ? Number(localMinRooms) : ROOMS_MIN, 
+                                    localMaxRooms ? Number(localMaxRooms) : ROOMS_MAX
+                                ]}
                                 onValueChange={([low, high]) => {
                                     setLocalMinRooms(low.toString());
                                     setLocalMaxRooms(high.toString());
@@ -190,8 +200,8 @@ export const FilterModalHomePage = () => {
                                 <SliderPrimitive.Thumb className="block h-5 w-5 rounded-full border bg-background shadow" />
                             </SliderPrimitive.Root>
                             <div className="flex justify-between text-sm text-gray-600 mt-1">
-                                <span>{localMinRooms ?? ROOMS_MIN}</span>
-                                <span>{localMaxRooms ?? ROOMS_MAX}</span>
+                                <span>{localMinRooms || ROOMS_MIN}</span>
+                                <span>{localMaxRooms || ROOMS_MAX}</span>
                             </div>
                         </div>
                     </div>

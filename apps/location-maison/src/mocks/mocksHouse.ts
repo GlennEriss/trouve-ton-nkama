@@ -46,6 +46,47 @@ const streetsByCity = {
   },
 };
 
+// Fonctions utilitaires pour générer les propriétés aléatoirement
+function generateRandomPrice(propertyType: string): number {
+  if (propertyType === "House") {
+    return Math.floor(Math.random() * 4000000) + 1000000;
+  }
+  if (propertyType === "Apartment") {
+    return Math.floor(Math.random() * 350000) + 150000;
+  }
+  if (propertyType === "Studio") {
+    return Math.floor(Math.random() * 100000) + 100000;
+  }
+  return Math.floor(Math.random() * 40000) + 50000;
+}
+
+function generateRandomRooms(propertyType: string): number {
+  if (propertyType === "Room" || propertyType === "Studio") {
+    return 1;
+  }
+  return Math.floor(Math.random() * 3) + 3;
+}
+
+function generateRandomToilets(propertyType: string): number {
+  if (propertyType === "Room" || propertyType === "Studio") {
+    return 1;
+  }
+  return Math.floor(Math.random() * 2) + 2;
+}
+
+function generateRandomArea(propertyType: string): number {
+  if (propertyType === "House") {
+    return Math.floor(Math.random() * 250) + 250;
+  }
+  if (propertyType === "Apartment") {
+    return Math.floor(Math.random() * 100) + 100;
+  }
+  if (propertyType === "Studio") {
+    return Math.floor(Math.random() * 20) + 30;
+  }
+  return Math.floor(Math.random() * 10) + 15;
+}
+
 // Génération des propriétés avec coordonnées
 export const houseMocks: House[] = [
   {
@@ -123,30 +164,12 @@ for (let i = 5; i <= 100; i++) {
   const city = ["Libreville", "Port-Gentil", "Akanda"][
     Math.floor(Math.random() * 3)
   ];
-  const price =
-    propertyType === "House"
-      ? Math.floor(Math.random() * 4000000) + 1000000
-      : propertyType === "Apartment"
-      ? Math.floor(Math.random() * 350000) + 150000
-      : propertyType === "Studio"
-      ? Math.floor(Math.random() * 100000) + 100000
-      : Math.floor(Math.random() * 40000) + 50000;
-  const nbrRooms =
-    propertyType === "Room" || propertyType === "Studio"
-      ? 1
-      : Math.floor(Math.random() * 3) + 3;
-  const nbrToilets =
-    propertyType === "Room" || propertyType === "Studio"
-      ? 1
-      : Math.floor(Math.random() * 2) + 2;
-  const area =
-    propertyType === "House"
-      ? Math.floor(Math.random() * 250) + 250
-      : propertyType === "Apartment"
-      ? Math.floor(Math.random() * 100) + 100
-      : propertyType === "Studio"
-      ? Math.floor(Math.random() * 20) + 30
-      : Math.floor(Math.random() * 10) + 15;
+  
+  const price = generateRandomPrice(propertyType);
+  const nbrRooms = generateRandomRooms(propertyType);
+  const nbrToilets = generateRandomToilets(propertyType);
+  const area = generateRandomArea(propertyType);
+  
   const imageURL = images[propertyType.toLowerCase() as keyof typeof images];
 
   const streets: any = streetsByCity[city as keyof typeof streetsByCity];

@@ -15,7 +15,7 @@ export default function Step1({ data }: Readonly<Step1Props>) {
       {
         data.map((item, key) =>
           <div
-            key={key}
+            key={item.name}
             className={clsx({
               'lg:row-span-6': key === 0,
               'lg:col-span-1 xl:col-span-2': key !== 0,
