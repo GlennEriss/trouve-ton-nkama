@@ -57,7 +57,7 @@ describe('PropertyForm onSubmit', () => {
       id: 'property-id',
     } as unknown as Property;
 
-    const { result } = renderHook(() =>
+    renderHook(() =>
       useForm({
         defaultValues: {
           ...property,
@@ -91,7 +91,7 @@ describe('PropertyForm onSubmit', () => {
   it('should call updateProperty when updating an existing property', async () => {
     const propertyToUpdate = { ...MOCK_PROPERTIES[0], id: 'property-id' };
 
-    const { result } = renderHook(() =>
+    renderHook(() =>
       useForm({
         defaultValues: {
           ...propertyToUpdate,

@@ -50,8 +50,8 @@ export const SelectForm = <T extends FieldValues>({
                         </FormControl>
                         <SelectContent className={classNameContent}>
                             {
-                                options.map((option, key) => (
-                                    <SelectItem key={key} className={classNameItem} value={option.value}>
+                                options.map((option) => (
+                                    <SelectItem key={option.value} className={classNameItem} value={option.value}>
                                         {option.label}
                                     </SelectItem>
                                 ))

@@ -44,7 +44,7 @@ export default function BreadCrumpComponent() {
         {pathnames.map((segment, index) => {
           const href = '/' + pathnames.slice(0, index + 1).join('/');
           return (
-            <React.Fragment key={index}>
+            <React.Fragment key={href}>
               <BreadcrumbSeparator />
               <BreadcrumbItem>
                 <BreadcrumbLink className='hover:text-[#1B4D5B]' href={href}>
