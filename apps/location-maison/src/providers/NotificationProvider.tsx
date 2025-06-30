@@ -1,6 +1,6 @@
 'use client';
 
-import React, { createContext, useContext, useEffect, useState } from "react";
+import React, { createContext, useContext, useEffect, useState, useMemo } from "react";
 import { Notification } from "@/models/notification";
 import { collection, query, where, onSnapshot, doc, updateDoc, Timestamp, orderBy, limit, Query, QuerySnapshot, DocumentData } from 'firebase/firestore';
 import { useCurrentUser } from "@/hooks/use-current-user";
@@ -125,8 +125,15 @@ export function NotificationProvider({ children }: Readonly<{ children: React.Re
         }
     };
 
+    const contextValue = useMemo(() => ({
+        notifications,
+        unreadCount,
+        markAllAsRead,
+        markAsRead
+    }), [notifications, unreadCount, markAllAsRead, markAsRead]);
+
     return (
-        <NotificationContext.Provider value={{ notifications, unreadCount, markAllAsRead, markAsRead }}>
+        <NotificationContext.Provider value={contextValue}>
             {children}
         </NotificationContext.Provider>
     );

@@ -5,7 +5,6 @@ import { useCurrentUser } from '@/hooks/use-current-user';
 import { useSession } from 'next-auth/react';
 import { updateUser } from '@/db/user.db';
 import { getPropertyById } from '@/db/property.db';
-//import { createNotification } from '@/db/notification.db';
 import { Notification } from '@/models/notification'
 import { routes } from '@/constantes/routes';
 import { RiHeart3Line } from 'react-icons/ri';
@@ -15,13 +14,19 @@ type ButtonFavorisProps = {
 
 export const ButtonFavoris: React.FC<ButtonFavorisProps> = ({ idProperty }) => {
   const { user } = useCurrentUser()
+  const { update } = useSession()
+  const [isFavorite, setIsFavorite] = React.useState(false);
+  const [isLoading, setIsLoading] = React.useState(false);
+
+  // Tous les hooks doivent être appelés avant le retour conditionnel
+  React.useEffect(() => {
+    if (user?.favoris)
+      setIsFavorite(user.favoris.includes(idProperty));
+  }, [user, idProperty]);
 
   if(!user){
     return null
   }
-  const { update } = useSession()
-  const [isFavorite, setIsFavorite] = React.useState(false);
-  const [isLoading, setIsLoading] = React.useState(false);
 
   const toggleFavorite = async () => {
     if (isLoading) return; // Empêche plusieurs clics
@@ -75,11 +80,6 @@ export const ButtonFavoris: React.FC<ButtonFavorisProps> = ({ idProperty }) => {
 
     setIsLoading(false);
   };
-
-  React.useEffect(() => {
-    if (user?.favoris)
-      setIsFavorite(user.favoris.includes(idProperty));
-  }, [user, idProperty]);
 
   return (
     <button

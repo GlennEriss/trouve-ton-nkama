@@ -6,7 +6,6 @@ import { NextAuthConfig } from "next-auth"
 import Credentials from "next-auth/providers/credentials"
 import GoogleProvider from "next-auth/providers/google";
 import FacebookProvider from "next-auth/providers/facebook";
-//import { createNotification } from "@/db/notification.db";
 import { routes } from "@/constantes/routes";
 import { NotificationParameter } from "@/models/notification";
 

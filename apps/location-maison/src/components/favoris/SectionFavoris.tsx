@@ -66,8 +66,8 @@ export default function SectionFavoris() {
     if (isLoading || isFetching) {
         return (
             <div className="px-5 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
-                {Array.from({ length: 8 }).map((_, index) => (
-                    <SkeletonCard key={`skeleton-${index}`} />
+                {Array.from({ length: 8 }, (_, index) => `skeleton-${Date.now()}-${index}`).map((skeletonId) => (
+                    <SkeletonCard key={skeletonId} />
                 ))}
             </div>
         );

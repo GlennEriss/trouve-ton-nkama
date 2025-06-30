@@ -1,9 +1,8 @@
 'use client'
-import React, { useTransition } from 'react'
+import React from 'react'
 import { Button } from '../ui/button'
 import { useToast } from '@/hooks/use-toast';
 import { useRouter } from 'next/navigation';
-import { signout } from '@/actions/signout';
 import { routes } from '@/constantes/routes';
 import { signOut } from "next-auth/react"
 
@@ -13,28 +12,6 @@ export default function Logout() {
     const { toast } = useToast();
     const router = useRouter()
     const [isLoading, setIsLoading] = React.useState(false)
-    const [isPending, startTransition] = useTransition()
-    const handleServerSignout = () => {
-        startTransition(async () => {
-            const isSignout = await signout()
-            if (isSignout) {
-                toast({
-                    duration: 5000,
-                    title: "Déconnexion",
-                    description: "Vous vous êtes déconnectés de la plateforme",
-                    variant: "warning",
-                });
-                router.push(routes.public.homePage)
-            } else {
-                toast({
-                    duration: 5000,
-                    title: "Déconnexion",
-                    description: "Une erreur est survenue durant la déconnexion.",
-                    variant: "destructive",
-                });
-            }
-        })
-    }
     const handleClientSignout = async () => {
         setIsLoading(true)
         try {
@@ -64,7 +41,7 @@ export default function Logout() {
         <div className='md:hidden'>
             <Button onClick={handleClientSignout} variant='outline' className='w-full text-md border-red-500 text-red-500 hover:text-red-500'>
                 {
-                    (isPending || isLoading) ? (
+                    isLoading ? (
                         <div className="w-5 h-5 border-4 border-red-500 rounded-full animate-spin border-t-transparent"></div>
                     ) : (
                         <span>Se déconnecter</span>

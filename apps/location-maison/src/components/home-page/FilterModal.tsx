@@ -13,7 +13,6 @@ import { Button } from "@/components/ui/button";
 import { ChevronLeft } from "lucide-react";
 import { BiFilter } from "react-icons/bi";
 import { tags as tagsList } from "@/constantes";
-import { useAlgoliaRefinements } from "@/providers/AlgoliaRefinementsContext";
 import { TypeProperty, getTypePropertyKey } from "@/constantes/property-type";
 import { useFilterModal } from "@/hooks/use-filter-modal";
 
@@ -24,7 +23,6 @@ const ROOMS_MIN = 0;
 const ROOMS_MAX = 10;
 
 export const FilterModal = () => {
-  const { refineTags } = useAlgoliaRefinements();
   const {
     // États
     open, setOpen,
@@ -48,8 +46,6 @@ export const FilterModal = () => {
   const onClear = () => {
     clearLocalFilters();
   };
-
-  const priceInvalid = Number(localMinPrice) < 0 || Number(localMaxPrice) < 0;
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
@@ -81,16 +77,18 @@ export const FilterModal = () => {
             {/* Ville & Quartier */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
-                <label className="block font-semibold mb-1">Ville</label>
+                <label htmlFor="city-input" className="block font-semibold mb-1">Ville</label>
                 <Input
+                  id="city-input"
                   value={localCity}
                   onChange={e => setLocalCity(e.target.value)}
                   placeholder="Entrez une ville"
                 />
               </div>
               <div>
-                <label className="block font-semibold mb-1">Quartier</label>
+                <label htmlFor="street-input" className="block font-semibold mb-1">Quartier</label>
                 <Input
+                  id="street-input"
                   value={localStreet}
                   onChange={e => setLocalStreet(e.target.value)}
                   placeholder="Entrez un quartier"
@@ -100,7 +98,7 @@ export const FilterModal = () => {
 
             {/* Prix */}
             <div className="space-y-2">
-              <label className="block font-semibold mb-1">Prix (F CFA)</label>
+              <label htmlFor="price-range" className="block font-semibold mb-1">Prix (F CFA)</label>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <label htmlFor="min-price" className="text-sm">Prix min</label>
@@ -133,9 +131,13 @@ export const FilterModal = () => {
 
             {/* Surface */}
             <div>
-              <label className="block font-semibold mb-2">Surface (m²)</label>
+              <label htmlFor="area-slider" className="block font-semibold mb-2">Surface (m²)</label>
               <SliderPrimitive.Root
-                value={[Number(localMinArea) ?? AREA_MIN, Number(localMaxArea) ?? AREA_MAX]}
+                id="area-slider"
+                value={[
+                  localMinArea ? Number(localMinArea) : AREA_MIN, 
+                  localMaxArea ? Number(localMaxArea) : AREA_MAX
+                ]}
                 onValueChange={([low, high]) => {
                   setLocalMinArea(low.toString());
                   setLocalMaxArea(high.toString());
@@ -150,16 +152,20 @@ export const FilterModal = () => {
                 <SliderPrimitive.Thumb className="block h-5 w-5 rounded-full border bg-background shadow" />
               </SliderPrimitive.Root>
               <div className="flex justify-between text-sm text-gray-600 mt-1">
-                <span>{localMinArea ?? AREA_MIN} m²</span>
-                <span>{localMaxArea ?? AREA_MAX} m²</span>
+                <span>{localMinArea || AREA_MIN} m²</span>
+                <span>{localMaxArea || AREA_MAX} m²</span>
               </div>
             </div>
 
             {/* Chambres */}
             <div>
-              <label className="block font-semibold mb-2">Chambres</label>
+              <label htmlFor="rooms-slider" className="block font-semibold mb-2">Chambres</label>
               <SliderPrimitive.Root
-                value={[Number(localMinRooms) ?? ROOMS_MIN, Number(localMaxRooms) ?? ROOMS_MAX]}
+                id="rooms-slider"
+                value={[
+                  localMinRooms ? Number(localMinRooms) : ROOMS_MIN, 
+                  localMaxRooms ? Number(localMaxRooms) : ROOMS_MAX
+                ]}
                 onValueChange={([low, high]) => {
                   setLocalMinRooms(low.toString());
                   setLocalMaxRooms(high.toString());
@@ -174,8 +180,8 @@ export const FilterModal = () => {
                 <SliderPrimitive.Thumb className="block h-5 w-5 rounded-full border bg-background shadow" />
               </SliderPrimitive.Root>
               <div className="flex justify-between text-sm text-gray-600 mt-1">
-                <span>{localMinRooms ?? ROOMS_MIN}</span>
-                <span>{localMaxRooms ?? ROOMS_MAX}</span>
+                <span>{localMinRooms || ROOMS_MIN}</span>
+                <span>{localMaxRooms || ROOMS_MAX}</span>
               </div>
             </div>
           </div>
@@ -184,8 +190,8 @@ export const FilterModal = () => {
           <div className="space-y-6">
             {/* Type de propriété */}
             <div>
-              <label className="block font-semibold mb-2">Type de propriété</label>
-              <div className="flex flex-wrap gap-2">
+              <label htmlFor="property-types" className="block font-semibold mb-2">Type de propriété</label>
+              <div id="property-types" className="flex flex-wrap gap-2">
                 {Object.values(TypeProperty).map(type => {
                   const key = getTypePropertyKey(type)!;
                   const sel = localTypes.includes(key);
@@ -208,8 +214,8 @@ export const FilterModal = () => {
 
             {/* Tags */}
             <div>
-              <label className="block font-semibold mb-2">Tags</label>
-              <div className="flex flex-wrap gap-2">
+              <label htmlFor="tags-list" className="block font-semibold mb-2">Tags</label>
+              <div id="tags-list" className="flex flex-wrap gap-2">
                 {tagsList.map(tag => {
                   const sel = localTags.includes(tag.tagName);
                   return (

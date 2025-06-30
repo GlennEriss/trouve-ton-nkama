@@ -70,27 +70,8 @@ const neighborhoods: Neighborhood[] = [
 const HomePage = () => {
 
   const {
-    city,
-    setCity,
-    street,
-    setStreet,
-    minPrice,
-    setMinPrice,
-    maxPrice,
-    setMaxPrice,
-    minArea,
-    setMinArea,
-    maxArea,
-    setMaxArea,
-    minNbrRooms,
-    setMinNbrRooms,
-    maxNbrRooms,
-    setMaxNbrRooms,
     typeProperty,
     setTypeProperty,
-    tags,
-    setTags,
-    clearFilters,
   } = useAlgoliaContext();
   const { user } = useCurrentUser();
 
@@ -98,11 +79,9 @@ const HomePage = () => {
     (list: string[], item: string, setter: (val: string[]) => void) => {
       if (list.includes(item)) {
         const newList = list.filter((i) => i !== item);
-        //console.log(`Retrait de l'élément "${item}". Nouvelle liste :`, newList);
         setter(newList);
       } else {
         const newList = [...list, item];
-        //console.log(`Ajout de l'élément "${item}". Nouvelle liste :`, newList);
         setter(newList);
       }
     },
@@ -125,10 +104,8 @@ const HomePage = () => {
     setTypeProperty: (props: string[]) => void,
     typePropertyRefine: (value: string) => void,
   ) {
-    console.log("click")
     const key = getTypePropertyKey(type)!;
     toggleSelection(typeProperty, key, setTypeProperty);
-    //typePropertyRefine(type);
     router.push(`/search?typeProperty=${encodeURIComponent(type)}`);
   }
 

@@ -16,7 +16,7 @@ export default function StepperComponent() {
         <div className='grid grid-cols-5 md:grid-cols-7 lg:grid-cols-9 items-center'>
             {
                 steps.map((step, index) => (
-                    <React.Fragment key={index}>
+                    <React.Fragment key={`step-${index}-${step.label}`}>
                         <div className={clsx({
                             'flex justify-start': index === 0,
                             'flex justify-center': index === 1,

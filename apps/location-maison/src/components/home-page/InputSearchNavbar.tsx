@@ -41,8 +41,6 @@ export default function InputSearchNavbar() {
         if (tags && tags.length > 0) {
             params.append("tags", tags.join(","));
         }
-        //params.append("page", "1");
-        console.log("params:", params.toString())
         router.push(`/search?${params.toString()}`);
     };
 

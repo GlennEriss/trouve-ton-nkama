@@ -3,50 +3,15 @@ const LOCAL_STORAGE_KEY = "location-cache";
 let searchCache = new Map<string, any[]>();
 
 import { useState, useEffect } from "react";
-import dynamic from "next/dynamic";
-import "leaflet/dist/leaflet.css";
-import { useMap } from "react-leaflet";
 import { useFormContext } from "react-hook-form";
-
-// Import dynamique des composants React-Leaflet
-const MapContainer = dynamic(
-    () => import("react-leaflet").then((mod) => mod.MapContainer),
-    { ssr: false }
-);
-const TileLayer = dynamic(
-    () => import("react-leaflet").then((mod) => mod.TileLayer),
-    { ssr: false }
-);
-const Marker = dynamic(
-    () => import("react-leaflet").then((mod) => mod.Marker),
-    { ssr: false }
-);
-const Popup = dynamic(
-    () => import("react-leaflet").then((mod) => mod.Popup),
-    { ssr: false }
-);
-
-const LIBREVILLE_COORDINATES: [number, number] = [0.3901, 9.4536]; // Coordonnées GPS de Libreville
-
-// Composant pour déplacer la vue lorsque le marqueur change
-const MapViewUpdater = ({ coordinates }: { coordinates: [number, number] }) => {
-    const map = useMap();
-    useEffect(() => {
-        map.setView(coordinates, 12, { animate: true });
-    }, [coordinates, map]);
-    return null;
-};
 
 const MapForm = () => {
     // Accès aux méthodes de react-hook-form
     const { setValue } = useFormContext();
 
     const [location, setLocation] = useState("");
-    const [coordinates, setCoordinates] = useState<[number, number]>(LIBREVILLE_COORDINATES);
     const [error, setError] = useState<string | null>(null);
     const [searchResults, setSearchResults] = useState<any[]>([]);
-    const [L, setL] = useState<any>(null);
-    const [pinIcon, setPinIcon] = useState<any>(null);
 
     // Charger le cache depuis localStorage au chargement du composant
     useEffect(() => {
@@ -61,31 +26,7 @@ const MapForm = () => {
         }
     }, []);
 
-    // Charger Leaflet côté client et définir l'icône personnalisée
-    useEffect(() => {
-        const loadLeaflet = async () => {
-            if (typeof window !== "undefined") {
-                const leaflet = await import("leaflet");
-                setL(leaflet);
 
-                setPinIcon(
-                    new leaflet.Icon({
-                        iconUrl:
-                            "https://upload.wikimedia.org/wikipedia/commons/8/88/Map_marker.svg",
-                        iconSize: [30, 40],
-                        iconAnchor: [15, 40],
-                        popupAnchor: [0, -40],
-                        shadowUrl:
-                            "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png",
-                        shadowSize: [41, 41],
-                        shadowAnchor: [13, 41],
-                    })
-                );
-            }
-        };
-
-        loadLeaflet();
-    }, []);
 
     // Recherche de localité via l'API Photon
     const searchLocation = async () => {
@@ -128,8 +69,6 @@ const MapForm = () => {
         const lat = result.geometry.coordinates[1];
         const lon = result.geometry.coordinates[0];
         const { name, city, state: province, country, countrycode: countryCode } = result.properties;
-        // Mise à jour du marqueur sur la carte
-        setCoordinates([lat, lon]);
 
         // Mise à jour des champs dans le formulaire
         setValue("street", name ?? "");
@@ -174,7 +113,7 @@ const MapForm = () => {
                     {searchResults.map((result, index) => (
                         <button
                             type="button"
-                            key={index}
+                            key={`${result.properties.name}-${index}`}
                             onClick={() => selectLocation(result)}
                             className="block w-full text-left p-2 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-md text-black dark:text-white"
                         >

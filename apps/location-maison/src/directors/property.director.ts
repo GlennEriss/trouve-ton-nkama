@@ -15,7 +15,7 @@ export class PropertyDirector {
      * The builder instance used to construct the property.
      * @type {PropertyBuilder}
      */
-    private builder: PropertyBuilder;
+    private readonly builder: PropertyBuilder;
 
     /**
      * Constructor for PropertyDirector.

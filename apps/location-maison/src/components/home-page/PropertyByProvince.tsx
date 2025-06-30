@@ -54,15 +54,40 @@ const provinces = [
 
 export default function PropertyByProvince() {
     const router = useRouter()
+    
+    // Appeler les hooks pour toutes les provinces au niveau du composant
+    const estuaireData = useServerCountByProvince('Estuaire')
+    const hautOgooueData = useServerCountByProvince('Haut-Ogooué')
+    const moyenOgooueData = useServerCountByProvince('Moyen-Ogooué')
+    const ngnounieData = useServerCountByProvince('Ngounié')
+    const nyangaData = useServerCountByProvince('Nyanga')
+    const ogooueIvindoData = useServerCountByProvince('Ogooué-Ivindo')
+    const ogooueLolooData = useServerCountByProvince('Ogooué-Lolo')
+    const ogooueMaritimeData = useServerCountByProvince('Ogooué-Maritime')
+    const woleuNtemData = useServerCountByProvince('Woleu-Ntem')
+
+    // Créer le mapping des données
+    const provinceData: Record<string, { data: number | undefined; isLoading: boolean }> = {
+        'Estuaire': estuaireData,
+        'Haut-Ogooué': hautOgooueData,
+        'Moyen-Ogooué': moyenOgooueData,
+        'Ngounié': ngnounieData,
+        'Nyanga': nyangaData,
+        'Ogooué-Ivindo': ogooueIvindoData,
+        'Ogooué-Lolo': ogooueLolooData,
+        'Ogooué-Maritime': ogooueMaritimeData,
+        'Woleu-Ntem': woleuNtemData,
+    }
+
     return (
         <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5'>
             {
-                provinces.map((province, index) => {
-                    const { data: count, isLoading } = useServerCountByProvince(province.name)
+                provinces.map((province) => {
+                    const { data: count, isLoading } = provinceData[province.name]
 
                     return (
                         <button
-                            key={index}
+                            key={province.name}
                             className='relative rounded-xl overflow-hidden w-full h-[340px] group cursor-pointer border-none bg-transparent p-0'
                             onClick={() => {
                                 router.push(`${routes.public.search_property}?province=${province.name}`)

@@ -121,8 +121,8 @@ export const DetailsPropertyMobile: React.FC<DetailsPropertyMobileProps> = ({ pr
 
     return (
         <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
-            {items.map((item, index) => (
-                <DetailsItemMobile key={index} label={item.label} value={item.value ?? '-'} />
+            {items.map((item) => (
+                <DetailsItemMobile key={item.label} label={item.label} value={item.value ?? '-'} />
             ))}
         </div>
     );

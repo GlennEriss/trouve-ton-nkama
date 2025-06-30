@@ -5,6 +5,13 @@ import { CreditTransaction, CreditTransactionInput, GetHistoryOptions, HistoryRe
 const getFirestore = () => import("@/firebase/firestore");
 
 /**
+ * Génère le suffixe d'annonce si propertyId est présent
+ */
+function generatePropertySuffix(propertyId?: string): string {
+  return propertyId ? ` - Annonce ${propertyId}` : '';
+}
+
+/**
  * Récupère l'historique des transactions de crédits pour un utilisateur
  */
 export async function getCreditHistoryByUserId(
@@ -99,7 +106,7 @@ function generateDescription(data: any): string {
   }
   
   if (data.service) {
-    return `${data.service}${data.propertyId ? ` - Annonce ${data.propertyId}` : ''}`;
+    return data.service + generatePropertySuffix(data.propertyId);
   }
   
   return data.credits > 0 ? 'Achat de crédits' : 'Utilisation de crédits';
@@ -275,13 +282,15 @@ export async function createSpendTransaction(
   description?: string
 ): Promise<string> {
   try {
+    const defaultDescription = service + generatePropertySuffix(propertyId);
+    
     const transactionData: CreditTransactionInput = {
       uid: userId,
       type: 'spend',
       credits: -Math.abs(credits), // Négatif pour les dépenses
       service,
       status: 'success', // Les dépenses sont immédiates
-      description: description ?? `${service}${propertyId ? ` - Annonce ${propertyId}` : ''}`,
+      description: description ?? defaultDescription,
       propertyId
     };
 
@@ -342,13 +351,15 @@ export async function deductCreditsWithTransaction(
       });
       
       // Créer la transaction de dépense
+      const defaultDescription = service + generatePropertySuffix(propertyId);
+      
       const transactionData: CreditTransactionInput = {
         uid: userId,
         type: 'spend',
         credits: -Math.abs(credits),
         service,
         status: 'success',
-        description: description ?? `${service}${propertyId ? ` - Annonce ${propertyId}` : ''}`
+        description: description ?? defaultDescription
       };
 
       // Ajouter propertyId seulement s'il est défini

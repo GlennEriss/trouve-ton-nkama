@@ -41,8 +41,8 @@ export const PreviewPropertyMobile: React.FC<PreviewPropertyMobileProps> = ({ pr
                         <div className='flex flex-wrap gap-3 items-center mt-1.5'>
                             <Tag name={tagSatus[property.status as string]} />
                             {
-                                property.tags.map((tag, key) => (
-                                    <Tag key={key} name={tag} />
+                                property.tags.map((tag) => (
+                                    <Tag key={tag} name={tag} />
                                 ))
                             }
                         </div>

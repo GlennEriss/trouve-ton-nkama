@@ -28,6 +28,19 @@ interface PremiumService {
   disabled?: boolean
 }
 
+function getPromotionTypeName(promotionType: PromotionType | undefined): string {
+  if (promotionType === 'featured') {
+    return 'à la une';
+  }
+  if (promotionType === 'trending-7d') {
+    return 'en tendance (7j)';
+  }
+  if (promotionType === 'trending-3d') {
+    return 'en tendance (3j)';
+  }
+  return 'boostée';
+}
+
 export function PromotionModal({ property, isOpen, onClose }: Readonly<PromotionModalProps>) {
   const [selectedPromotion, setSelectedPromotion] = useState<PromotionType>(null)
   
@@ -155,12 +168,7 @@ export function PromotionModal({ property, isOpen, onClose }: Readonly<Promotion
                   Promotion active
                 </h3>
                 <p className="text-sm text-emerald-700 dark:text-emerald-400">
-                  Votre annonce est actuellement {
-                    currentPromotionType === 'featured' ? 'à la une' :
-                    currentPromotionType === 'trending-7d' ? 'en tendance (7j)' :
-                    currentPromotionType === 'trending-3d' ? 'en tendance (3j)' :
-                    'boostée'
-                  }
+                  Votre annonce est actuellement {getPromotionTypeName(currentPromotionType)}
                   {promotionStatus.daysLeft > 0 && (
                     <span> - {promotionStatus.daysLeft} jour{promotionStatus.daysLeft > 1 ? 's' : ''} restant{promotionStatus.daysLeft > 1 ? 's' : ''}</span>
                   )}
@@ -279,8 +287,8 @@ export function PromotionModal({ property, isOpen, onClose }: Readonly<Promotion
                       Avantages :
                     </div>
                     <ul className="space-y-1">
-                      {service.benefits.slice(0, 2).map((benefit, index) => (
-                        <li key={index} className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
+                      {service.benefits.slice(0, 2).map((benefit) => (
+                        <li key={benefit} className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
                           <div className="w-1.5 h-1.5 bg-[#146B67] dark:bg-[#1FA89B] rounded-full flex-shrink-0" />
                           {benefit}
                         </li>

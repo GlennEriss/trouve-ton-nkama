@@ -19,7 +19,7 @@ export class PropertyFormDirector {
      * @private
      * @type {PropertyFormBuilder}
      */
-    private builder: PropertyFormBuilder;
+    private readonly builder: PropertyFormBuilder;
 
     /**
      * Constructor to initialize the `PropertyFormDirector` with a specific factory.
