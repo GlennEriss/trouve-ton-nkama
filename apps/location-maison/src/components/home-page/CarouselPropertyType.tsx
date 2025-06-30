@@ -14,6 +14,14 @@ export default function CarouselPropertyType() {
     const { setTypeProperty } = useAlgoliaContext()
     const router = useRouter()
 
+    // Appeler les hooks pour tous les types de propriétés au niveau du composant
+    const propertyCounts = Object.fromEntries(
+        propertyTypesList.map(property => [
+            property.type,
+            useServerCountByPropertyType(property.type).data ?? 0
+        ])
+    )
+
     const handleClick = (propertyType: string) => {
         setTypeProperty([propertyType])
         const params = new URLSearchParams()
@@ -59,11 +67,11 @@ export default function CarouselPropertyType() {
     return (
         <div className="px-4 md:px-8">
             <Slider {...settings} className="my-8">
-                {propertyTypesList.map((property, key) => {
-                    const { data: count = 0 } = useServerCountByPropertyType(property.type)
+                {propertyTypesList.map((property) => {
+                    const count = propertyCounts[property.type]
 
                     return (
-                        <div key={key} className="px-2">
+                        <div key={property.type} className="px-2">
                             <Card
                                 className="group flex flex-col items-center cursor-pointer bg-white dark:bg-gray-800 transition-all duration-300 hover:shadow-lg"
                                 onClick={() => handleClick(property.type)}

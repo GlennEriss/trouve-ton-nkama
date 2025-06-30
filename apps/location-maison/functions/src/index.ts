@@ -5,9 +5,6 @@
  * Les fonctions sont organisées par catégorie (notifications, paiements, etc.)
  */
 
-//import { onRequest } from "firebase-functions/v2/https";
-//import * as logger from "firebase-functions/logger";
-
 // Fonctions de notification
 export { onUserCreate, onUserFavorisUpdate } from './notification';
 

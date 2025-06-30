@@ -65,10 +65,10 @@ const AutoFillModal: React.FC<AutoFillModalProps> = ({
               Décrivez votre {propertyLabel} en détail. L'IA générera automatiquement :
             </p>
             <ul className="text-xs text-gray-500 mb-4 space-y-1 bg-gray-50 p-3 rounded-lg">
-              {requiredFields.slice(0, 6).map((field, index) => (
-                <li key={index}>• {field}</li>
+              {requiredFields.slice(0, 6).map((field) => (
+                <li key={field}>• {field}</li>
               ))}
-              {requiredFields.length > 6 && <li>• et plus...</li>}
+              {requiredFields.length > 6 && <li key="more">• et plus...</li>}
             </ul>
           </div>
           

@@ -1,9 +1,8 @@
 import { Input } from '@/components/ui/input'
-import { LucideIcon } from 'lucide-react'
 import React from 'react'
 import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
-import { Minus, Plus } from 'lucide-react'
+import { Minus, Plus, LucideIcon } from 'lucide-react'
 
 type InputNumberAppProps = {
     IconLucide?: LucideIcon

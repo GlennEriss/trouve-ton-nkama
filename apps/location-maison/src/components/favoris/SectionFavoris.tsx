@@ -28,7 +28,7 @@ export default function SectionFavoris() {
         currentPage > 0 && setCurrentPage(currentPage - 1);
     }
     const fetchInfiniteProperties = async ({ pageParam }: { pageParam: any }) => {
-        const { limitPerPage, lastDoc } = pageParam;
+        const { limitPerPage } = pageParam;
         const paginated: string[][] = [];
         if (user?.favoris) {
             for (let i = 0; i < user.favoris.length; i += limitPerPage) {
@@ -67,7 +67,7 @@ export default function SectionFavoris() {
         return (
             <div className="px-5 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
                 {Array.from({ length: 8 }).map((_, index) => (
-                    <SkeletonCard key={index} />
+                    <SkeletonCard key={`skeleton-${index}`} />
                 ))}
             </div>
         );

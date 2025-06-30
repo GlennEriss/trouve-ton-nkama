@@ -18,6 +18,6 @@ const redis = global._redis ?? new Redis({
 })
 
 // Stocker l'instance dans le global pour la réutiliser
-if (!global._redis) global._redis = redis
+global._redis ??= redis
 
 export default redis 

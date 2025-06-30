@@ -160,9 +160,9 @@ const SmartSuggestions: React.FC<SmartSuggestionsProps> = ({
       )}
       
       <div className="flex flex-wrap gap-2">
-        {suggestions.map((suggestion, index) => (
+        {suggestions.map((suggestion) => (
           <Button
-            key={index}
+            key={suggestion.text}
             variant="outline"
             size="sm"
             onClick={() => onSuggestionClick(suggestion.prompt)}
