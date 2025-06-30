@@ -67,11 +67,12 @@ pipeline {
                 }
             }
         }
-    }
 
-    stage('Deploy to Vercel') {
-        steps {
-            sh 'curl -X POST https://api.vercel.com/v1/integrations/deploy/prj_oEzvwXQPLs6xnStE6O5g3tLR7AUn/4nA0nYcZs9'
+        stage('Deploy to Vercel') {
+            steps {
+                sh '''curl -X POST \\
+                    https://api.vercel.com/v1/integrations/deploy/prj_oEzvwXQPLs6xnStE6O5g3tLR7AUn/4nA0nYcZs9'''
+            }
         }
     }
 
