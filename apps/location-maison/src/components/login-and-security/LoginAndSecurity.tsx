@@ -11,7 +11,7 @@ import { ProviderType, User as UserModel } from '@/models/authentication';
 import { signInWithFacebook } from '@/actions/signin-with-facebook';
 import PasswordModal from '@/components/login-and-security/PasswordModal';
 import { updateUser } from '@/db/user.db';
-import { EmailAuthCredential, EmailAuthProvider, FacebookAuthProvider, fetchSignInMethodsForEmail, GoogleAuthProvider, linkWithCredential, linkWithPopup, signInWithCredential, signInWithPopup, User } from 'firebase/auth';
+import { EmailAuthCredential, EmailAuthProvider, FacebookAuthProvider, GoogleAuthProvider, linkWithPopup, signInWithCredential } from 'firebase/auth';
 import { auth } from '@/firebase/auth';
 //import { createNotification } from '@/db/notification.db';
 import { useSession } from 'next-auth/react';

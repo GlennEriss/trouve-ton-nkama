@@ -142,7 +142,7 @@ export const RenderImage = ({ image, field, index }: { image: File | string | un
                         </div>
                         <div className='h-[150px] w-full md:h-[230px]'>
                             <Image
-                                src={typeof image === 'string' ? image : URL.createObjectURL(image as File)}
+                                src={typeof image === 'string' ? image : URL.createObjectURL(image)}
                                 alt="Selected Image"
                                 sizes="100vw"
                                 width={0}
@@ -228,12 +228,18 @@ export const TagItem = ({ tag, field }: { tag: { tagName: string, tagIcon: IconT
     }
 
     return (
-        <div className={clsx({
-            "flex items-center gap-2 cursor-pointer text-gray-500": !isActived,
-            "flex items-center gap-2 text-[#e7c873] cursor-pointer": isActived,
-        })} onClick={handleSelectIcon}>
+        <button
+            type="button"
+            className={clsx({
+                "flex items-center gap-2 cursor-pointer text-gray-500 border-none bg-transparent p-2 rounded-md hover:bg-gray-100 dark:hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-all duration-200": !isActived,
+                "flex items-center gap-2 text-[#e7c873] cursor-pointer border-none bg-transparent p-2 rounded-md hover:bg-gray-100 dark:hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:ring-offset-2 transition-all duration-200": isActived,
+            })}
+            onClick={handleSelectIcon}
+            aria-label={`${isActived ? 'Désélectionner' : 'Sélectionner'} le tag ${tag.tagName}`}
+            aria-pressed={isActived}
+        >
             <tag.tagIcon size={20} />
             <h2 className='text-[0.6rem] xl:text-lg'>{tag.tagName}</h2>
-        </div>
+        </button>
     )
 }

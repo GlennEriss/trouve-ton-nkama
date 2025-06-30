@@ -118,6 +118,7 @@ const MapForm = () => {
                 setError("Localité introuvable. Essayez une autre recherche.");
             }
         } catch (err) {
+            console.error("Erreur lors de la recherche de localisation:", err);
             setError("Erreur de connexion. Vérifiez votre connexion internet.");
         }
     };

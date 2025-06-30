@@ -6,6 +6,11 @@ type DetailsPropertyMobileProps = {
     property: Property
 }
 
+type PropertyDetailItem = {
+    label: string;
+    value: string | number | boolean | undefined;
+}
+
 const iconMap: Record<string, JSX.Element> = {
     "Chambres": <FaBed size={20} className="text-blue-500" />,
     "Cuisines": <FaHome size={20} className="text-green-500" />,
@@ -53,7 +58,7 @@ const DetailsItemMobile = ({ label, value }: { label: string; value: string | nu
 export const DetailsPropertyMobile: React.FC<DetailsPropertyMobileProps> = ({ property }) => {
     const propertyDetails: any = property;
 
-    let items: { label: string; value: string | number | boolean | undefined }[] = [];
+    let items: PropertyDetailItem[] = [];
 
     switch (property.typeProperty) {
         case "Villa":
@@ -66,7 +71,7 @@ export const DetailsPropertyMobile: React.FC<DetailsPropertyMobileProps> = ({ pr
                 { label: "Garages", value: propertyDetails.nbrGarages },
                 ...(property.typeProperty === "Villa" ? [{ label: "Piscine", value: propertyDetails.nbrPiscine ? "Oui" : "Non" }] : []),
                 ...(property.typeProperty === "Home" ? [{ label: "Salons", value: propertyDetails.nbrLivingRoom }] : []),
-            ].filter((item): item is { label: string; value: string | number | boolean | undefined } => Boolean(item));
+            ].filter((item): item is PropertyDetailItem => Boolean(item));
             break;
         case "Apartment":
         case "Studio":
@@ -76,41 +81,41 @@ export const DetailsPropertyMobile: React.FC<DetailsPropertyMobileProps> = ({ pr
                 { label: "Salles de bain", value: propertyDetails.nbrBathrooms },
                 { label: "Étage Appartement", value: propertyDetails.nbrFloorApartment ?? propertyDetails.nbrFloorStudio },
                 { label: "Numéro", value: propertyDetails.numeroApartment ?? propertyDetails.numeroStudio },
-            ].filter((item): item is { label: string; value: string | number | boolean | undefined } => Boolean(item));
+            ].filter((item): item is PropertyDetailItem => Boolean(item));
             break;
         case "Building":
             items = [
                 { label: "Etages", value: propertyDetails.nbrFloors },
                 { label: "Appartements", value: propertyDetails.nbrApartments },
                 { label: "Parking", value: propertyDetails.hasParking ? "Oui" : "Non" },
-            ].filter((item): item is { label: string; value: string | number | boolean | undefined } => Boolean(item));
+            ].filter((item): item is PropertyDetailItem => Boolean(item));
             break;
         case "Desk":
             items = [
                 { label: "Bureaux", value: propertyDetails.nbrRooms },
                 { label: "Toilettes", value: propertyDetails.nbrToilets },
-            ].filter((item): item is { label: string; value: string | number | boolean | undefined } => Boolean(item));
+            ].filter((item): item is PropertyDetailItem => Boolean(item));
             break;
         case "Shop":
             items = [
                 { label: "Salles", value: propertyDetails.nbrRooms },
                 { label: "Toilettes", value: propertyDetails.nbrToilet },
-            ].filter((item): item is { label: string; value: string | number | boolean | undefined } => Boolean(item));
+            ].filter((item): item is PropertyDetailItem => Boolean(item));
             break;
         case "Kiosk":
             items = [
                 { label: "Type de Kiosque", value: propertyDetails.kioskType },
-            ].filter((item): item is { label: string; value: string | number | boolean | undefined } => Boolean(item));
+            ].filter((item): item is PropertyDetailItem => Boolean(item));
             break;
         case "Room":
             items = [
                 { label: "Type de Chambre", value: propertyDetails.roomType },
-            ].filter((item): item is { label: string; value: string | number | boolean | undefined } => Boolean(item));
+            ].filter((item): item is PropertyDetailItem => Boolean(item));
             break;
         default:
             items = [
                 { label: "Superficie (m²)", value: propertyDetails.area },
-            ].filter((item): item is { label: string; value: string | number | boolean | undefined } => Boolean(item));
+            ].filter((item): item is PropertyDetailItem => Boolean(item));
             break;
     }
 

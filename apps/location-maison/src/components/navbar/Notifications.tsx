@@ -10,7 +10,7 @@ import { useCurrentUser } from "@/hooks/use-current-user";
 import { generateColorFromName } from "@/lib/generateColorFromName";
 import Link from "next/link";
 
-function Dot({ className }: { className?: string }) {
+function Dot({ className }: Readonly<{ className?: string }>) {
   return (
     <svg
       width="6"

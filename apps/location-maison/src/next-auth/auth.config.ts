@@ -232,7 +232,7 @@ const authConfig = {
         },
         async jwt({ token, user, trigger, session }) {
             if (user) {
-                const userDetails = await findUserByEmail(user.email!)
+                const userDetails = await findUserByEmail(user.email ?? '')
                 if (userDetails) {
                     user = userDetails
                 }

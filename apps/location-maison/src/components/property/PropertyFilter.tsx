@@ -3,7 +3,7 @@
 import React from "react";
 import { useSearchParams, usePathname, useRouter } from "next/navigation";
 import { cn } from "@/lib/utils";
-import { Home, Building, Layout, MapPin, List, Briefcase, House, Landmark, ShoppingCart, Store, Bed } from "lucide-react";
+import { Home, Building, Layout, MapPin, List, Briefcase, Landmark, ShoppingCart, Store, Bed } from "lucide-react";
 
 // Types des filtres avec couleurs personnalisées
 const filters = [

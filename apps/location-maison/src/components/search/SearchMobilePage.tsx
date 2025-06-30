@@ -1,6 +1,6 @@
 import React from 'react'
 import Form from 'next/form'
-import { Search, MapPin } from 'lucide-react';
+import { Search } from 'lucide-react';
 import { Input } from '../ui/input';
 import { FilterModalHomePage } from '../home-page/FilterModalHomePage';
 import { useAlgoliaContext } from '@/providers/AlgoliaContext';

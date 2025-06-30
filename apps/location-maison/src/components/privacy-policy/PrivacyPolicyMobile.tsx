@@ -72,12 +72,13 @@ export default function PrivacyPolicyMobile() {
                 <ul className="list-disc pl-6 text-gray-700 dark:text-gray-300 text-md">
                     <li>Accéder à vos données</li>
                     <li>Demander la suppression ou modification de vos informations</li>
-                    <li>Vous opposer à l’utilisation de vos données</li>
+                    <li>Vous opposer à l'utilisation de vos données</li>
                 </ul>
 
                 <h2 className="text-xl font-semibold text-[#494949] dark:text-white mt-6">6. Contact</h2>
                 <p className="text-gray-700 dark:text-gray-300 text-md leading-relaxed mt-2">
                     Pour toute question concernant cette politique, veuillez nous contacter à :
+                    {" "}
                     <span className="font-medium text-[#1FA89B]"> {process.env.NEXT_PUBLIC_EMAIL_SUPPORT}</span>.
                 </p>
             </div>

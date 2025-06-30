@@ -1,5 +1,5 @@
 "use client"
-import React, { createContext, useContext, useCallback, useEffect } from "react";
+import React, { createContext, useContext, useCallback } from "react";
 import {
   useMenu,
   useRange,

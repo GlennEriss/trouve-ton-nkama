@@ -12,11 +12,8 @@ import { Inter } from 'next/font/google'
 import { cn } from '@/lib/utils'
 import { FaPhoneAlt, FaWhatsapp } from 'react-icons/fa'
 import Link from 'next/link'
-import { Button } from '../ui/button'
-import { AiOutlineMail } from 'react-icons/ai'
 import Tag from './Tag'
 import { MapSection } from './MapSection'
-import DetailsProperty from './DetailsProperty'
 import { DetailsPropertyMobile } from './DetailsPropertyMobile'
 import ButtonShareToFacebook from './ButtonShareToFacebook'
 import ButtonShareToWhatsapp from './ButtonShareToWhatsapp'
@@ -127,7 +124,7 @@ export const PreviewPropertyMobile: React.FC<PreviewPropertyMobileProps> = ({ pr
             </section>
             <section className='px-2 space-y-3'>
                 <h1 className='font-bold text-xl'>Aperçu</h1>
-                <DetailsPropertyMobile property={property as any} />
+                <DetailsPropertyMobile property={property} />
             </section>
             <section className='px-2 space-y-3'>
                 <h1 className='font-bold text-xl'>Partager l'annonce</h1>
