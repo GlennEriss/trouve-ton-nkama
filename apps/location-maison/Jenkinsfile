@@ -15,7 +15,7 @@ pipeline {
                 sh 'npm ci'
             }
         }
-        
+
         stage('Vault & Build') {
             steps {
                 script {
@@ -61,7 +61,7 @@ pipeline {
                             vaultUrl: 'http://host.docker.internal:8200'
                         ]
                     ]) {
-                        echo "✅ Secrets injectés avec succès"
+                        echo '✅ Secrets injectés avec succès'
                         sh 'npm run build'
                     }
                 }
@@ -69,12 +69,18 @@ pipeline {
         }
     }
 
+    stage('Deploy to Vercel') {
+        steps {
+            sh 'curl -X POST https://api.vercel.com/v1/integrations/deploy/prj_oEzvwXQPLs6xnStE6O5g3tLR7AUn/4nA0nYcZs9'
+        }
+    }
+
     post {
         success { echo '✅ Build réussi !' }
         failure { echo '❌ Build échoué – voir les logs' }
-        cleanup { 
+        cleanup {
             /* 7️⃣  Nettoie le fichier temporaire */
-            cleanWs() 
+            cleanWs()
         }
     }
 }
