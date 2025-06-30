@@ -6,21 +6,6 @@ import { BottomNavigation } from "@/components/shared/BottomNavigation";
 import Footer from "@/components/footer/Footer";
 import { cn } from "@/lib/utils";
 
-/* const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
-});
-
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
-});
-
-export const metadata: Metadata = {
-  title: "LogisGabon",
-  description: "Découvrez LogisGabon, la plateforme immobilière gabonaise qui facilite la location, la vente et l'achat de biens. Trouvez facilement votre logement idéal partout au Gabon.",
-}; */
-
 const inter = Inter({
   subsets: ['latin'],
   weight: ['400'],

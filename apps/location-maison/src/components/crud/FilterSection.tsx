@@ -91,9 +91,9 @@ const FilterList = () => {
                 />
             </div>
             {
-                filters.map((filter, key) => (
+                filters.map((filter) => (
                     <FilterButton
-                        key={key}
+                        key={filter.title}
                         title={filter.title}
                         state={filter.state}
                         handleFilter={handleFilter}

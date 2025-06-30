@@ -232,13 +232,7 @@ const AssistantChatModal: React.FC<AssistantChatModalProps> = ({
     }
   };
 
-  // Suggestions rapides
-  const quickSuggestions = [
-    "Comment bien décrire ma propriété ?",
-    "Quels tags recommanderiez-vous ?",
-    "Quel prix proposer ?",
-    "Analyser mon formulaire"
-  ];
+
 
   const handleQuickSuggestion = (suggestion: string) => {
     // Vérifier si c'est une demande de génération automatique

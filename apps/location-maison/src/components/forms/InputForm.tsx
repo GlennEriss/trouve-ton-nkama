@@ -48,7 +48,7 @@ export const InputForm = <T extends FieldValues>({
             control={form.control}
             name={name}
             render={({ field, formState: { isSubmitting } }) => {
-                const isInputDisabled = isSubmitting || disabled;
+                const isInputDisabled = Boolean(isSubmitting) || Boolean(disabled);
                 return (
                     <FormItem>
                         {label && <FormLabel>{label}</FormLabel>}
