@@ -188,7 +188,7 @@ export const Signup: React.FC = () => {
                     />
                     <ButtonLoading
                         type='submit'
-                        disabled={form.formState.isSubmitting || form.formState.isLoading || isOtherMethodConnection}
+                        disabled={Boolean(form.formState.isSubmitting) || Boolean(form.formState.isLoading) || Boolean(isOtherMethodConnection)}
                         className='w-full bg-gradient-to-r from-[#146B67] via-[#1FA89B] to-[#146B67]'>
                         S'enregistrer
                     </ButtonLoading>

@@ -5,7 +5,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '../ui/dialog'
 import { Button } from '../ui/button'
 import { Badge } from '../ui/badge'
 import { Property, PromotionType } from '@/models/annonce'
-import { Megaphone, TrendingUp, ArrowUpCircle, Clock, Coins, Calendar, CheckCircle2, CreditCard } from 'lucide-react'
+import { Megaphone, TrendingUp, ArrowUpCircle, Clock, Coins, CheckCircle2, CreditCard } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { usePromotion } from '@/hooks/use-promotion'
 
@@ -28,7 +28,7 @@ interface PremiumService {
   disabled?: boolean
 }
 
-export function PromotionModal({ property, isOpen, onClose }: PromotionModalProps) {
+export function PromotionModal({ property, isOpen, onClose }: Readonly<PromotionModalProps>) {
   const [selectedPromotion, setSelectedPromotion] = useState<PromotionType>(null)
   
   const { 
@@ -182,21 +182,25 @@ export function PromotionModal({ property, isOpen, onClose }: PromotionModalProp
             const isCurrentPromotion = currentPromotionType === service.id && hasActivePromotion
             
             return (
-              <div
+              <button
                 key={service.id}
+                type="button"
                 className={cn(
-                  "relative border-2 rounded-2xl p-6 cursor-pointer transition-all duration-300",
+                  "relative border-2 rounded-2xl p-6 transition-all duration-300 text-left",
                   selectedPromotion === service.id
                     ? "border-[#146B67] bg-[#146B67]/5 dark:bg-[#146B67]/10"
                     : "border-gray-200 dark:border-gray-700 hover:border-[#146B67]/50",
                   service.disabled && "opacity-50 cursor-not-allowed",
-                  !hasEnoughCredits && "border-red-200 dark:border-red-800"
+                  !hasEnoughCredits && "border-red-200 dark:border-red-800",
+                  (!service.disabled && hasEnoughCredits) && "hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-[#146B67] focus:ring-offset-2"
                 )}
                 onClick={() => {
                   if (!service.disabled && hasEnoughCredits) {
                     setSelectedPromotion(service.id)
                   }
                 }}
+                disabled={service.disabled || !hasEnoughCredits}
+                aria-label={`Sélectionner ${service.name} - ${service.credits} crédits`}
               >
                 {isCurrentPromotion && (
                   <div className="absolute top-3 right-3">
@@ -284,7 +288,7 @@ export function PromotionModal({ property, isOpen, onClose }: PromotionModalProp
                     </ul>
                   </div>
                 </div>
-              </div>
+              </button>
             )
           })}
         </div>

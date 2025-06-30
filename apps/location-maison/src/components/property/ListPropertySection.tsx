@@ -4,7 +4,7 @@ import { Card } from '../ui/card'
 import Image from 'next/image'
 import { IconType } from 'react-icons/lib';
 import { BsBuilding } from 'react-icons/bs'
-import { FaBath, FaToilet, FaRegBuilding, FaSwimmingPool, FaTrash } from 'react-icons/fa'
+import { FaBath, FaToilet, FaRegBuilding, FaSwimmingPool } from 'react-icons/fa'
 import { IoMdBed } from 'react-icons/io'
 import { MdKitchen } from 'react-icons/md'
 import { RiBookmarkLine } from 'react-icons/ri'
@@ -19,15 +19,14 @@ import { routes } from '@/constantes/routes';
 import { Property, Apartment, Building, Desk, Home, Studio, Villa, Logement, Shop, Kiosk, Room, TypeProperty } from '@/models/annonce';
 import { cn } from '@/lib/utils';
 import { capitalizeFirstLetter } from '@/lib/capitalizeFirstLetter';
-import { ChevronLeft, ChevronRight, MapPin, Calendar, Eye, Edit3, MoreVertical } from 'lucide-react'
+import { ChevronLeft, ChevronRight, MapPin, Eye, Edit3 } from 'lucide-react'
 import { getCountStatisticsByPropertyType, getProperties, updateProperty } from '@/db/property.db';
-import { useInfiniteQuery } from '@tanstack/react-query';
 import { PROPERTY_ITEM_PER_PAGE } from '@/constantes/item-per-page';
 import queryKeys from '@/constantes/react-query-keys';
 import { RemoveProperty } from './RemoveProperty';
 import { Skeleton } from '../ui/skeleton';
 import { Switch } from '../ui/switch';
-import { useQueryClient } from '@tanstack/react-query';
+import { useQueryClient, useInfiniteQuery } from '@tanstack/react-query';
 import PromotionButton from '../promotion/PromotionButton';
 import PromotionBadge from '../promotion/PromotionBadge';
 
@@ -128,7 +127,7 @@ export default function ListPropertySection() {
                         variant="outline"
                         size="sm"
                         onClick={handlePrev}
-                        disabled={isPending || isFetching || currentPage === 0}
+                        disabled={Boolean(isPending) || Boolean(isFetching) || Boolean(currentPage === 0)}
                         className="flex items-center gap-2 px-4"
                     >
                         <ChevronLeft size={16} />
@@ -170,7 +169,7 @@ export default function ListPropertySection() {
                         size="sm"
                         onClick={handleNext}
                         className="flex items-center gap-2 px-4"
-                        disabled={isPending || !(currentPage < (totalPage - 1))}
+                        disabled={Boolean(isPending) || Boolean(currentPage >= (totalPage - 1))}
                     >
                         <span className="hidden sm:inline">Suivant</span>
                         <ChevronRight size={16} />
@@ -189,7 +188,7 @@ const STATUS_COLORS: Record<Property['status'], { bg: string; text: string; bord
 export const CardPropertyCrud = ({ property }: { property: Property }) => {
     const { images, title, street, city, province, price, status } = property;
     const statusColors = STATUS_COLORS[status];
-    const [loading, setIsLoading] = useState(false)
+    const [isLoading, setIsLoading] = useState(false)
     const { user } = useCurrentUser();
     const queryClient = useQueryClient();
     const [localState, setLocalState] = useState(property.state);
@@ -315,7 +314,7 @@ export const CardPropertyCrud = ({ property }: { property: Property }) => {
                         </div>
                         <div className="flex items-center gap-2 text-sm">
                             <Switch
-                                disabled={loading}
+                                disabled={isLoading}
                                 checked={localState === "IN_PROGRESS"}
                                 onCheckedChange={handleChangePropertyState}
                                 className="scale-75"

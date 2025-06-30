@@ -6,11 +6,20 @@ interface Neighborhood {
   coordinates: [number, number][];
 }
 
+interface LocationData {
+  country?: string;
+  region?: string;
+  city?: string;
+  countryCode?: string;
+  neighbourhood?: string;
+  city_district?: string;
+}
+
 interface LocationContextType {
-  locationsContext: any | null;
-  currentLocation: any | null;
-  setCurrentLocation: (...params: any[]) => void;
-  setLocationsContext: (...params: any[]) => void;
+  locationsContext: LocationData[];
+  currentLocation: LocationData | null;
+  setCurrentLocation: (location: LocationData | null) => void;
+  setLocationsContext: (locations: LocationData[]) => void;
   getLatitudeAndLongitudeLocation: () => Promise<{
     latitude: number;
     longitude: number;
@@ -49,8 +58,8 @@ export const LocationProvider: React.FC<LocationProviderProps> = ({
   initialLat,
   initialLng,
 }) => {
-  const [locationsContext, setLocationsContext] = useState<any[]>([]);
-  const [currentLocation, setCurrentLocation] = useState<any>();
+  const [locationsContext, setLocationsContext] = useState<LocationData[]>([]);
+  const [currentLocation, setCurrentLocation] = useState<LocationData | null>(null);
   const [address, setAddress] = useState<string>('');
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);

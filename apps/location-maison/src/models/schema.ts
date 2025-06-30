@@ -22,7 +22,7 @@ export const FormRegisterSchema = z.object({
     .string()
     .min(8, { message: 'Le mot de passe doit contenir au moins 8 caractères' })
     .regex(/[A-Z]/, { message: 'Le mot de passe doit contenir une majuscule' })
-    .regex(/[0-9]/, { message: 'Le mot de passe doit contenir un chiffre' }),
+    .regex(/\d/, { message: 'Le mot de passe doit contenir un chiffre' }),
   passwordConfirm: z.string(),
   birthdate: z.string()
     .regex(/^\d{4}-\d{2}-\d{2}$/, 'La date de naissance doit être au format AAAA-MM-JJ')

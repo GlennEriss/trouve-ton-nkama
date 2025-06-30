@@ -57,6 +57,7 @@ export default function TermsOfUseMobilePage() {
                     <h2 className="text-xl font-semibold mb-2 text-[#494949] dark:text-white">6. Contact</h2>
                     <p className="text-gray-700 dark:text-gray-300">
                         Pour toute question relative à ces conditions, vous pouvez nous contacter à :
+                        {" "}
                         <a href={`mailto:${process.env.NEXT_PUBLIC_EMAIL_SUPPORT}`} className="text-[#1FA89B] hover:underline"> {process.env.NEXT_PUBLIC_EMAIL_SUPPORT}</a>.
                     </p>
                 </section>

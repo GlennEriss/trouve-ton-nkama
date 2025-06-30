@@ -94,27 +94,31 @@ const PropertyCarousel: React.FC<CarouselProps> = ({ properties = [], isRecommen
       {hasMultiple ? (
         <Slider {...settings}>
           {properties.map((p) => (
-            <div
+            <button
               key={p.id ?? `property-${Math.random()}`}
-              className="p-3"
+              type="button"
+              className="p-3 w-full text-left focus:outline-none focus:ring-2 focus:ring-[#146B67] focus:ring-offset-2 rounded-lg transition-all duration-200"
               style={shouldCenter ? { width: 320 } : undefined}
               onClick={() => handleCardClick(p.id)}
+              aria-label={`Voir les détails de ${p.title}`}
             >
               <PropertyCard property={p} />
-            </div>
+            </button>
           ))}
         </Slider>
       ) : (
         /* 1 seule carte : largeur contrôlée */
         properties[0] && (
-          <div
-            className="mx-auto"
+          <button
+            type="button"
+            className="mx-auto block focus:outline-none focus:ring-2 focus:ring-[#146B67] focus:ring-offset-2 rounded-lg transition-all duration-200"
             /* 100 % en mobile, 320 px max en desktop */
             style={{ width: "100%", maxWidth: 280 }}
             onClick={() => handleCardClick(properties[0].id)}
+            aria-label={`Voir les détails de ${properties[0].title}`}
           >
             <PropertyCard property={properties[0]} />
-          </div>
+          </button>
         )
       )}
       {/* Bouton « voir plus » toujours présent */}
