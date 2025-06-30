@@ -118,8 +118,8 @@ export default function CreditPackCard({ pack, onSelect, isLoading = false }: Re
         {/* Features */}
         {pack.features && pack.features.length > 0 && (
           <div className="space-y-2">
-            {pack.features.map((feature, index) => (
-              <div key={index} className="text-sm text-gray-600 dark:text-gray-300 flex items-center gap-2">
+            {pack.features.map((feature) => (
+              <div key={feature} className="text-sm text-gray-600 dark:text-gray-300 flex items-center gap-2">
                 <div className="w-1.5 h-1.5 bg-[#146B67] dark:bg-[#1FA89B] rounded-full" />
                 {feature}
               </div>
