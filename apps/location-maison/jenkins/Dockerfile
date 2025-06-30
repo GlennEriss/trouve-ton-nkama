@@ -18,4 +18,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 # Switch back to the Jenkins user and install plugins
 USER jenkins
 RUN jenkins-plugin-cli --plugins \
-      "blueocean docker-workflow json-path-api" 
+      "blueocean docker-workflow json-path-api"
+
+# Exposer les ports Jenkins
+EXPOSE 8090 
