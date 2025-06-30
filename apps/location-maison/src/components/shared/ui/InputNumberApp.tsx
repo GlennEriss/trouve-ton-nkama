@@ -1,7 +1,6 @@
 import { Input } from '@/components/ui/input'
 import { LucideIcon } from 'lucide-react'
-import React, { useState } from 'react'
-import { FiPlus, FiMinus } from 'react-icons/fi'
+import React from 'react'
 import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
 import { Minus, Plus } from 'lucide-react'

@@ -1,5 +1,5 @@
 import React from 'react'
-import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from '../ui/card'
+import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '../ui/card'
 import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar'
 import { FaUserCircle } from 'react-icons/fa'
 import { BiBuilding } from 'react-icons/bi'

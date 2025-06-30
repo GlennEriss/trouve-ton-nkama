@@ -37,7 +37,7 @@ export const SelectFormApp = <T extends FieldValues>({
                         onOpenChange={setIsOpen}
                         value={field.value}
                         onValueChange={field.onChange}
-                        disabled={isSubmitting || disabled}
+                        disabled={Boolean(isSubmitting) || Boolean(disabled)}
                     >
                         <FormControl>
                             <SelectTrigger

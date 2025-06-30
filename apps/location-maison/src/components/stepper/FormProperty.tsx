@@ -43,7 +43,7 @@ export const FormProperty = <T extends PropertyFormBuilderFactory>
             case 2:
                 return <Step3 data={dataStep3} />
             default:
-                return <PreviewProperty property={propertyPreview!} />
+                return propertyPreview ? <PreviewProperty property={propertyPreview} /> : null
         }
     }
     return (

@@ -177,7 +177,7 @@ export default function MenuProfil() {
                 <div className='p-2'>
                     <Button
                         onClick={handleClientSignout}
-                        disabled={isPending || isLoading}
+                        disabled={Boolean(isPending) || Boolean(isLoading)}
                         variant="ghost"
                         className='w-full justify-start gap-3 h-12 px-3 text-red-600 dark:text-red-400 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-950/50 transition-all duration-200 rounded-xl group'
                     >

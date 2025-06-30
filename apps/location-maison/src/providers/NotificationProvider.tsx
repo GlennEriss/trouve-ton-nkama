@@ -111,7 +111,7 @@ export function NotificationProvider({ children }: Readonly<{ children: React.Re
 
         try {
             const updatePromises = unreadNotifications.map((notif) => {
-                const notificationRef = doc(db, "notifications", notif.id!);
+                const notificationRef = doc(db, "notifications", notif.id ?? '');
                 return updateDoc(notificationRef, { isRead: true });
             });
 

@@ -218,6 +218,7 @@ export default function PrivacyPolicyClientPage() {
                   <div className="text-center space-y-4 mt-8">
                     <p className="text-gray-600">
                       Pour toute question concernant cette politique, contactez-nous à :
+                      {" "}
                       <a
                         href={`mailto:${process.env.NEXT_PUBLIC_EMAIL_SUPPORT}`}
                         className="ml-2 font-medium text-[#146B67] hover:text-[#1FA89B] transition-colors"

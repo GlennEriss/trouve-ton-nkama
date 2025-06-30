@@ -1,13 +1,13 @@
 "use client";
 
-import { createContext, ReactNode, useContext, useState } from "react";
+import { createContext, useContext, useState } from "react";
 import { InstantSearch } from "react-instantsearch";
 import { liteClient as algoliasearch } from "algoliasearch/lite";
 
 // Configuration du client Algolia
 const searchClient = algoliasearch(
-  process.env.NEXT_PUBLIC_ALGOLIA_APP_ID!,
-  process.env.NEXT_PUBLIC_ALGOLIA_SEARCH_API_KEY!
+  process.env.NEXT_PUBLIC_ALGOLIA_APP_ID,
+  process.env.NEXT_PUBLIC_ALGOLIA_SEARCH_API_KEY
 );
 
 // Typage du contexte Algolia

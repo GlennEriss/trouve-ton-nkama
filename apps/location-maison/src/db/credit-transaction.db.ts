@@ -323,7 +323,7 @@ export async function deductCreditsWithTransaction(
       
       const userDoc = userSnapshot.docs[0];
       const userData = userDoc.data();
-      const currentCredits = userData.credits || 0;
+      const currentCredits = userData.credits ?? 0;
       
       console.log('💰 Crédits actuels:', currentCredits, 'Crédits à déduire:', credits);
       

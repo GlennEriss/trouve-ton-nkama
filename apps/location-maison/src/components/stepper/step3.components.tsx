@@ -25,7 +25,7 @@ export function ComboboxComponent({ field }: Readonly<{ field: any }>) {
               longitude: location.lon,
               latitude: location.lat,
               street: location.name,
-              city: location.address?.city ? location.address.city: location.address.county,
+              city: location.address?.city ?? location.address?.county,
               province: location.address.state,
               country: location.address.country,
               countryCode: location.address.country_code,
@@ -50,7 +50,7 @@ export function ComboboxComponent({ field }: Readonly<{ field: any }>) {
       <Select
           isSearchable
           isLoading={isPending}
-          options={data ? data : []}
+          options={data ?? []}
           onInputChange={handleSelectLocation}
           onChange={handleSetField}
           defaultValue={{value: field.value.street, label: field.value.street}}
@@ -88,7 +88,7 @@ export const LocationSearch = ({ field, index, location }: Readonly<{ field: any
       <Select
           isSearchable
           isLoading={isPending}
-          options={data ? data : []}
+          options={data ?? []}
           onInputChange={handleSelectLocation}
           onChange={handleSetField}
           defaultInputValue={field.value[index].address}
