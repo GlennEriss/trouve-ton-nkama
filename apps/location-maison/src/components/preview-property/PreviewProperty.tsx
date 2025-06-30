@@ -23,8 +23,8 @@ export default function PreviewProperty({ property }: Readonly<{ property: Prope
         <div className='flex flex-wrap gap-3 items-center'>
           <Tag name={tagSatus[property.status as string]} />
           {
-            property.tags.map((tag, key) => (
-              <Tag key={key} name={tag} />
+            property.tags.map((tag) => (
+              <Tag key={tag} name={tag} />
             ))
           }
         </div>

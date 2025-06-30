@@ -31,6 +31,14 @@ export type PhoneInputProps = Omit<
         triggerClassName?: string;
     };
 
+type CountrySelectWrapperProps = {
+    triggerClassName?: string;
+} & React.ComponentProps<typeof CountrySelect>;
+
+const CountrySelectWrapper: React.FC<CountrySelectWrapperProps> = ({ triggerClassName, ...props }) => (
+    <CountrySelect {...props} triggerClassName={triggerClassName} />
+);
+
 const PhoneInput: React.ForwardRefExoticComponent<PhoneInputProps> =
     React.forwardRef<React.ElementRef<typeof PhoneNumberInput>, PhoneInputProps>(
         ({ className, onChange, triggerClassName, ...props }, ref) => {
@@ -39,8 +47,8 @@ const PhoneInput: React.ForwardRefExoticComponent<PhoneInputProps> =
                     ref={ref}
                     className={cn("flex", className)}
                     flagComponent={FlagComponent}
-                    countrySelectComponent={(props) => (
-                        <CountrySelect {...props} triggerClassName={triggerClassName} />
+                    countrySelectComponent={(selectProps) => (
+                        <CountrySelectWrapper {...selectProps} triggerClassName={triggerClassName} />
                     )}
                     inputComponent={InputComponent}
                     smartCaret={false}

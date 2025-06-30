@@ -26,7 +26,7 @@ export default function PropertyStatistics() {
                 <div className="h-4 bg-gray-200 dark:bg-gray-600 rounded w-1/3 mb-4"></div>
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                     {[...Array(4)].map((_, i) => (
-                        <div key={i} className="h-16 bg-gray-200 dark:bg-gray-600 rounded-xl"></div>
+                        <div key={`skeleton-stat-${i}`} className="h-16 bg-gray-200 dark:bg-gray-600 rounded-xl"></div>
                     ))}
                 </div>
             </div>
@@ -70,11 +70,11 @@ export default function PropertyStatistics() {
 
             {/* Stats Desktop - Grid horizontal */}
             <div className="hidden md:grid md:grid-cols-2 lg:grid-cols-4 gap-4">
-                {statistics.map((stat, index) => {
+                {statistics.map((stat) => {
                     const IconComponent = stat.icon
                     return (
                         <div 
-                            key={index}
+                            key={stat.title}
                             className="group bg-white dark:bg-gray-800 rounded-xl p-4 border border-gray-100 dark:border-gray-600 hover:border-blue-200 dark:hover:border-blue-400 transition-all duration-300 hover:shadow-md hover:-translate-y-0.5"
                         >
                             <div className="flex items-center gap-3">
@@ -123,9 +123,9 @@ export default function PropertyStatistics() {
                 {/* Indicateurs de pagination */}
                 {statistics.length > 1 && (
                     <div className="flex justify-center gap-1.5 mt-4">
-                        {statistics.map((_, index) => (
+                        {statistics.map((stat, index) => (
                             <button
-                                key={index}
+                                key={stat.title}
                                 onClick={() => setCurrentIndex(index)}
                                 className={`w-2 h-2 rounded-full transition-all duration-300 ${
                                     index === currentIndex 

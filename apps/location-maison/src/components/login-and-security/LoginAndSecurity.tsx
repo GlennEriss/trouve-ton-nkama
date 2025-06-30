@@ -13,7 +13,6 @@ import PasswordModal from '@/components/login-and-security/PasswordModal';
 import { updateUser } from '@/db/user.db';
 import { EmailAuthCredential, EmailAuthProvider, FacebookAuthProvider, GoogleAuthProvider, linkWithPopup, signInWithCredential } from 'firebase/auth';
 import { auth } from '@/firebase/auth';
-//import { createNotification } from '@/db/notification.db';
 import { useSession } from 'next-auth/react';
 
 export default function LoginAndSecurity() {
@@ -74,14 +73,6 @@ export default function LoginAndSecurity() {
                 .catch((error) => {
                     console.error("Erreur lors de la liaison avec Google :", error);
                 });
-            /* await createNotification({
-                type: 'SECURITY',
-                title: 'Sécurité avec Google',
-                message: "Votre compte a été sécurisé avec Google",
-                isRead: false,
-                createdFor: user.uid,
-                actionUrl: routes.protected.login_and_security,
-            }); */
         } else if (pendingProvider === 'FACEBOOK') {
             const facebookProvider = new FacebookAuthProvider();
             const emailAuthCred: EmailAuthCredential = EmailAuthProvider.credential(email, password);
@@ -102,14 +93,6 @@ export default function LoginAndSecurity() {
                         }
                     });
                 })
-            /* await createNotification({
-                type: 'SECURITY',
-                title: 'Sécurité avec Facebook',
-                message: "Votre compte a été sécurisé avec Facebook",
-                isRead: false,
-                createdFor: user.uid,
-                actionUrl: routes.protected.login_and_security,
-            }); */
         }
     };
 
@@ -118,8 +101,8 @@ export default function LoginAndSecurity() {
             <h1 className='text-xl font-bold'>Réseaux sociaux</h1>
             <Separator className='my-4' />
             <div>
-                {connectionMethods.map((connection, key) => (
-                    <div key={key} className=''>
+                {connectionMethods.map((connection) => (
+                    <div key={connection.method} className=''>
                         <div className='flex items-center justify-between'>
                             <div className="w-12 h-12 rounded-full bg-gray-100 flex items-center justify-center hover:bg-gray-200 transition duration-200">
                                 <connection.icon size={24} />
@@ -134,7 +117,7 @@ export default function LoginAndSecurity() {
                             <Button
                                 type='button'
                                 onClick={() => handleConnection(connection.method)}
-                                disabled={user?.providers?.includes(connection.method as ProviderType)}
+                                disabled={Boolean(user?.providers?.includes(connection.method as ProviderType)) || Boolean(isPending)}
                             >
                                 Se connecter
                             </Button>
@@ -145,7 +128,7 @@ export default function LoginAndSecurity() {
             </div>
             <div className='space-y-2'>
                 <h1 className='text-xl font-bold'>Modifier le mot de passe</h1>
-                <Button variant='outline' asChild>
+                <Button variant='outline' asChild disabled={isPending}>
                     <Link href={routes.public.reset_password}>
                         Mettre à jour
                     </Link>

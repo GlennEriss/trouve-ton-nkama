@@ -1,12 +1,11 @@
 'use client'
-import React, { useTransition } from 'react'
+import React from 'react'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { routes } from '@/constantes/routes'
 import { Button } from '../ui/button'
 import { DropdownMenu, DropdownMenuContent, DropdownMenuGroup, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '../ui/dropdown-menu'
 import { useCurrentUser } from '@/hooks/use-current-user'
 import { generateColorFromName } from '@/lib/generateColorFromName'
-import { signout } from '@/actions/signout'
 import { useToast } from '@/hooks/use-toast'
 import { useRouter } from 'next/navigation'
 import { signOut } from 'next-auth/react'
@@ -38,31 +37,10 @@ export default function MenuProfil() {
     const { user } = useCurrentUser()
     const { toast } = useToast();
     const router = useRouter()
-    const [isPending, startTransition] = useTransition()
     const [isLoading, setIsLoading] = React.useState(false)
     const avatarBackground = generateColorFromName(user?.firstname);
 
-    const handleSignout = () => {
-        startTransition(async () => {
-            const isSignout = await signout()
-            if (isSignout) {
-                toast({
-                    duration: 5000,
-                    title: "Déconnexion",
-                    description: "Vous vous êtes déconnecté de la plateforme",
-                    variant: "warning",
-                });
-                router.push(routes.public.homePage)
-            } else {
-                toast({
-                    duration: 5000,
-                    title: "Déconnexion",
-                    description: "Une erreur est survenue durant la déconnexion.",
-                    variant: "destructive",
-                });
-            }
-        })
-    }
+
     
     const handleClientSignout = async () => {
         setIsLoading(true)
@@ -144,11 +122,11 @@ export default function MenuProfil() {
                 {/* Menu Items */}
                 <div className="py-2">
                     <DropdownMenuGroup>
-                        {menu.map((item, index) => {
+                        {menu.map((item) => {
                             const IconComponent = item.icon
                             return (
                                 <DropdownMenuItem
-                                    key={index}
+                                    key={item.link}
                                     onClick={() => handleNavigate(item.link)}
                                     className='mx-2 my-1 px-3 py-3 cursor-pointer rounded-xl hover:bg-gray-50 dark:hover:bg-gray-800 transition-all duration-200 group'
                                 >
@@ -177,12 +155,12 @@ export default function MenuProfil() {
                 <div className='p-2'>
                     <Button
                         onClick={handleClientSignout}
-                        disabled={Boolean(isPending) || Boolean(isLoading)}
+                        disabled={isLoading}
                         variant="ghost"
                         className='w-full justify-start gap-3 h-12 px-3 text-red-600 dark:text-red-400 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-950/50 transition-all duration-200 rounded-xl group'
                     >
                         <div className="flex-shrink-0 w-10 h-10 rounded-lg bg-red-50 dark:bg-red-950/50 group-hover:bg-red-100 dark:group-hover:bg-red-950 flex items-center justify-center transition-all duration-200">
-                            {isPending || isLoading ? (
+                            {isLoading ? (
                                 <div className="w-5 h-5 border-2 border-red-500 rounded-full animate-spin border-t-transparent"></div>
                             ) : (
                                 <LogOut className="h-5 w-5 text-red-600 dark:text-red-400" />
@@ -190,7 +168,7 @@ export default function MenuProfil() {
                         </div>
                         <div className="flex-1 text-left">
                             <p className="font-medium">
-                                {isPending || isLoading ? 'Déconnexion...' : 'Se déconnecter'}
+                                {isLoading ? 'Déconnexion...' : 'Se déconnecter'}
                             </p>
                             <p className="text-xs text-red-500 dark:text-red-400">
                                 Fermer votre session

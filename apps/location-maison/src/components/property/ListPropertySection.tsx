@@ -81,7 +81,7 @@ export default function ListPropertySection() {
             <div className="px-4 py-6">
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-4 gap-6">
                     {Array.from({ length: 8 }).map((_, index) => (
-                        <SkeletonCard key={index} />
+                        <SkeletonCard key={`skeleton-${Date.now()}-${index}`} />
                     ))}
                 </div>
             </div>
@@ -111,8 +111,8 @@ export default function ListPropertySection() {
         <div className="px-4 py-6">
             {/* Grid des propriétés */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-4 gap-6 mb-8">
-                {data?.pages[currentPage].properties.map((item, key) => (
-                    <CardPropertyCrud key={key} property={item} />
+                {data?.pages[currentPage].properties.map((item) => (
+                    <CardPropertyCrud key={item.id} property={item} />
                 ))}
             </div>
 
@@ -487,8 +487,8 @@ const DetailsLogement = ({ logement }: { logement: Logement }) => {
     return (
         <div className='grid grid-cols-1 sm:grid-cols-2 gap-3'>
             {
-                logementItems.map((keyName, index) => (
-                    <React.Fragment key={index}>
+                logementItems.map((keyName) => (
+                    <React.Fragment key={keyName}>
                         {getDetailComponent(keyName)}
                     </React.Fragment>
                 ))

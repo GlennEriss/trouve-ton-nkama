@@ -12,9 +12,9 @@ export default function Step2({ data }: Readonly<Step2Props>) {
     return (
         <div className='grid md:grid-cols-2 md:gap-5'>
             {
-                data.map((item, key) =>
+                data.map((item) =>
                     <FormField
-                        key={key}
+                        key={item.name}
                         control={form.control}
                         name={item.name}
                         render={({ field }) => (

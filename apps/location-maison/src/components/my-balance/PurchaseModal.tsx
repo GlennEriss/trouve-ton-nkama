@@ -70,15 +70,24 @@ export default function PurchaseModal({ isOpen, onClose, preselectedPack }: Read
   } = useVerifyCode()
   const { toast } = useToast()
 
-  // Effet pour gérer le pack présélectionné
+  // Effet pour initialiser le modal avec le pack présélectionné
   useEffect(() => {
-    if (preselectedPack && isOpen) {
+    initializeWithPreselectedPack()
+  }, [preselectedPack])
+
+  // Méthode pour initialiser le modal avec le pack présélectionné
+  const initializeWithPreselectedPack = () => {
+    if (preselectedPack) {
       setSelectedPack(preselectedPack)
       setStep('instructions')
-    } else if (!preselectedPack && isOpen) {
-      setStep('select')
+    } else {
+      // Réinitialiser si pas de pack présélectionné
+      setSelectedPack(null)
+      if (step !== 'select') {
+        setStep('select')
+      }
     }
-  }, [preselectedPack, isOpen])
+  }
 
   const handlePackSelect = (pack: CreditPack) => {
     setSelectedPack(pack)
@@ -120,28 +129,6 @@ export default function PurchaseModal({ isOpen, onClose, preselectedPack }: Read
     }
   }
 
-/*   const formatPhoneNumber = (value: string) => {
-    // Nettoyer et formater le numéro
-    const cleaned = value.replace(/\D/g, '')
-    
-    // Format: +241 XX XX XX XX
-    if (cleaned.length <= 3) return cleaned
-    if (cleaned.length <= 5) return `${cleaned.slice(0, 3)} ${cleaned.slice(3)}`
-    if (cleaned.length <= 7) return `${cleaned.slice(0, 3)} ${cleaned.slice(3, 5)} ${cleaned.slice(5)}`
-    return `${cleaned.slice(0, 3)} ${cleaned.slice(3, 5)} ${cleaned.slice(5, 7)} ${cleaned.slice(7, 9)}`
-  }
-
-  const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = e.target.value
-    const formatted = formatPhoneNumber(value)
-    setPhoneNumber(formatted)
-  }
-
-  const isValidPhone = () => {
-    const cleaned = phoneNumber.replace(/\D/g, '')
-    return cleaned.length >= 8 && (cleaned.startsWith('241') || cleaned.length === 8)
-  }
- */
   const resetModal = () => {
     setSelectedPack(null)
     setPhoneNumber('')
@@ -279,10 +266,11 @@ export default function PurchaseModal({ isOpen, onClose, preselectedPack }: Read
               </div>
 
               <div className="space-y-3">
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                <label htmlFor="payment-code-input" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
                   Code de paiement
                 </label>
                 <input
+                  id="payment-code-input"
                   type="text"
                   value={code}
                   onChange={(e) => setCode(e.target.value)}

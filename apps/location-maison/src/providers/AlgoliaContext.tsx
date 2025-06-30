@@ -1,6 +1,6 @@
 "use client";
 
-import { createContext, useContext, useState } from "react";
+import { createContext, useContext, useState, useMemo } from "react";
 import { InstantSearch } from "react-instantsearch";
 import { liteClient as algoliasearch } from "algoliasearch/lite";
 
@@ -115,48 +115,66 @@ export const AlgoliaProvider: React.FC<AlgoliaProviderProps> = ({
     setMaxNbrChickens("");
     setTypeProperty([]);
     setTags([]);
-    //setSearchText("");
   };
 
+  const contextValue = useMemo(() => ({
+    indexName,
+    city,
+    setCity,
+    street,
+    setStreet,
+    minPrice,
+    setMinPrice,
+    maxPrice,
+    setMaxPrice,
+    minArea,
+    setMinArea,
+    maxArea,
+    setMaxArea,
+    minNbrRooms,
+    setMinNbrRooms,
+    maxNbrRooms,
+    setMaxNbrRooms,
+    minNbrBathrooms,
+    setMinNbrBathrooms,
+    maxNbrBathrooms,
+    setMaxNbrBathrooms,
+    minNbrChickens,
+    setMinNbrChickens,
+    maxNbrChickens,
+    setMaxNbrChickens,
+    typeProperty,
+    setTypeProperty,
+    tags,
+    setTags,
+    filteredResults,
+    setFilteredResults,
+    searchText,
+    setSearchText,
+    clearFilters,
+  }), [
+    indexName,
+    city,
+    street,
+    minPrice,
+    maxPrice,
+    minArea,
+    maxArea,
+    minNbrRooms,
+    maxNbrRooms,
+    minNbrBathrooms,
+    maxNbrBathrooms,
+    minNbrChickens,
+    maxNbrChickens,
+    typeProperty,
+    tags,
+    filteredResults,
+    searchText,
+    clearFilters
+  ]);
+
   return (
-    <AlgoliaContext.Provider
-      value={{
-        indexName,
-        city,
-        setCity,
-        street,
-        setStreet,
-        minPrice,
-        setMinPrice,
-        maxPrice,
-        setMaxPrice,
-        minArea,
-        setMinArea,
-        maxArea,
-        setMaxArea,
-        minNbrRooms,
-        setMinNbrRooms,
-        maxNbrRooms,
-        setMaxNbrRooms,
-        minNbrBathrooms,
-        setMinNbrBathrooms,
-        maxNbrBathrooms,
-        setMaxNbrBathrooms,
-        minNbrChickens,
-        setMinNbrChickens,
-        maxNbrChickens,
-        setMaxNbrChickens,
-        typeProperty,
-        setTypeProperty,
-        tags,
-        setTags,
-        filteredResults,
-        setFilteredResults,
-        searchText,
-        setSearchText,
-        clearFilters,
-      }}
-    >
+    <AlgoliaContext.Provider value={contextValue}>
       <InstantSearch 
         searchClient={searchClient} 
         indexName={indexName}

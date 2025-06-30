@@ -12,7 +12,7 @@ export default function PreviewPropertyClient() {
     if (!id) {
         notFound()
     }
-    const { data: property, isLoading, error, isFetching, isStale } = useProperty(id)
+    const { data: property, isLoading, error } = useProperty(id)
 
     if (isLoading) {
         return <div>Chargement...</div>

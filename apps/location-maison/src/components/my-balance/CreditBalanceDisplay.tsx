@@ -20,6 +20,22 @@ export default function CreditBalanceDisplay({
   const isNewUser = balanceData?.message?.includes('Bienvenue') ?? false
   const welcomeCredits = 3
 
+  // Calculer le statut du solde
+  const getStatusColor = () => {
+    if (balance > 10) return 'bg-green-500'
+    if (balance > 5) return 'bg-yellow-500'
+    return 'bg-red-500'
+  }
+  
+  const getStatusText = () => {
+    if (balance > 10) return 'Solde élevé'
+    if (balance > 5) return 'Solde modéré'
+    return 'Solde faible'
+  }
+
+  const statusColor = getStatusColor()
+  const statusText = getStatusText()
+
   // Mettre à jour la session avec le nouveau solde
   React.useEffect(() => {
     if (user?.credits !== balance) {
@@ -111,9 +127,9 @@ export default function CreditBalanceDisplay({
           {/* Status indicators */}
           <div className="flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-6 text-sm">
             <div className="flex items-center gap-2">
-              <div className={`w-2 h-2 rounded-full ${balance > 10 ? 'bg-green-500' : balance > 5 ? 'bg-yellow-500' : 'bg-red-500'}`} />
+              <div className={`w-2 h-2 rounded-full ${statusColor}`} />
               <span className="text-gray-600 dark:text-gray-400">
-                {balance > 10 ? 'Solde élevé' : balance > 5 ? 'Solde modéré' : 'Solde faible'}
+                {statusText}
               </span>
             </div>
           </div>

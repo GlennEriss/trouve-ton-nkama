@@ -15,6 +15,11 @@ export default function StepperButtonComponent() {
   //pathnames
   const id = useLastpath()
   const TypePropertyList = Object.values(TypePropertyEnum);
+  
+  const getSubmitButtonText = (id: string): string => {
+    return TypePropertyList.includes(id as any) ? 'Enregistrer' : 'Modifier';
+  };
+
   const handleNextStep = () => {
     if (id === 'land' && activeStep === 0) {
       setActiveStep(2); // passer directement à Step3
@@ -66,7 +71,7 @@ export default function StepperButtonComponent() {
                   <LoadingSpinner /> Création...
                 </>
               ) : (
-                TypePropertyList.includes(id as any) ? 'Enregistrer' : 'Modifier'
+                getSubmitButtonText(id)
               )
             }
           </Button>

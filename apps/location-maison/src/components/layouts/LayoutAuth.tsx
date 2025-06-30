@@ -66,9 +66,9 @@ export const LayoutAuth: React.FC<LayoutAuthProps> = ({ children, type, setIsOth
                         <div className="mt-6 flex flex-col items-center">
                             <span className="text-sm text-gray-500 dark:text-gray-400 mb-2">Ou connectez-vous avec</span>
                             <div className="flex gap-4">
-                                {connectionMethods.map((connection, key) => (
+                                {connectionMethods.map((connection) => (
                                     <ButtonLoading
-                                        key={key}
+                                        key={connection.method}
                                         type="button"
                                         className="w-12 h-12 rounded-full bg-gray-100 dark:bg-gray-700 flex items-center justify-center hover:bg-gray-200 dark:hover:bg-gray-600 transition duration-200"
                                         onClick={() => handleConnection(connection.method)}

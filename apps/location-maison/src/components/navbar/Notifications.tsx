@@ -26,6 +26,18 @@ function Dot({ className }: Readonly<{ className?: string }>) {
   );
 }
 
+function formatNotificationDate(createdAt: any): string {
+  if (!createdAt) {
+    return "Date inconnue";
+  }
+  
+  if (createdAt instanceof Date) {
+    return createdAt.toLocaleDateString("fr-FR", { day: "2-digit", month: "long", year: "numeric" });
+  }
+  
+  return new Date(createdAt.seconds * 1000).toLocaleDateString("fr-FR", { day: "2-digit", month: "long", year: "numeric" });
+}
+
 export default function Notifications() {
   const { notifications, unreadCount, markAllAsRead, markAsRead } = useNotifications();
   const { user } = useCurrentUser();
@@ -56,7 +68,7 @@ export default function Notifications() {
             </button>
           )}
         </div>
-        <div role="separator" aria-orientation="horizontal" className="bg-border dark:bg-gray-700 -mx-1 my-1 h-px"></div>
+        <hr className="bg-border dark:bg-gray-700 -mx-1 my-1 h-px border-0" />
 
         {/* Aucune notification */}
         {notifications.length === 0 ? (
@@ -100,11 +112,7 @@ export default function Notifications() {
                     </button>
                   )}
                   <div className="text-xs text-gray-500 dark:text-gray-400">
-                    {notification.createdAt
-                      ? (notification.createdAt instanceof Date
-                        ? notification.createdAt.toLocaleDateString("fr-FR", { day: "2-digit", month: "long", year: "numeric" })
-                        : new Date(notification.createdAt.seconds * 1000).toLocaleDateString("fr-FR", { day: "2-digit", month: "long", year: "numeric" }))
-                      : "Date inconnue"}
+                    {formatNotificationDate(notification.createdAt)}
                   </div>
                 </div>
                 {!notification.isRead && (

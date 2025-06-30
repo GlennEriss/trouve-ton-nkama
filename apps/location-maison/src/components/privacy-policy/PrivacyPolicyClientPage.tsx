@@ -201,8 +201,8 @@ export default function PrivacyPolicyClientPage() {
 
                       {section.list && (
                         <ul className="space-y-3">
-                          {section.list.map((item, i) => (
-                            <li key={i} className="flex items-start gap-3 text-gray-600">
+                          {section.list.map((item) => (
+                            <li key={item} className="flex items-start gap-3 text-gray-600">
                               <span className="mt-2 w-1.5 h-1.5 rounded-full bg-[#1FA89B]" />
                               <span>{item}</span>
                             </li>

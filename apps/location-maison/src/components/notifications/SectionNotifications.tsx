@@ -27,6 +27,18 @@ function Dot({ className }: Readonly<{ className?: string }>) {
   );
 }
 
+function formatNotificationDate(createdAt: any): string {
+  if (!createdAt) {
+    return "Date inconnue";
+  }
+  
+  if (createdAt instanceof Date) {
+    return createdAt.toLocaleDateString("fr-FR", { day: "2-digit", month: "long", year: "numeric" });
+  }
+  
+  return new Date(createdAt.seconds * 1000).toLocaleDateString("fr-FR", { day: "2-digit", month: "long", year: "numeric" });
+}
+
 export default function SectionNotifications() {
   const { user } = useCurrentUser();
   const { notifications, unreadCount, markAllAsRead, markAsRead } = useNotifications();
@@ -93,11 +105,7 @@ export default function SectionNotifications() {
                   </button>
                 )}
                 <div className="text-xs text-gray-500 dark:text-gray-400">
-                  {notification.createdAt
-                    ? (notification.createdAt instanceof Date
-                      ? notification.createdAt.toLocaleDateString("fr-FR", { day: "2-digit", month: "long", year: "numeric" })
-                      : new Date(notification.createdAt.seconds * 1000).toLocaleDateString("fr-FR", { day: "2-digit", month: "long", year: "numeric" }))
-                    : "Date inconnue"}
+                  {formatNotificationDate(notification.createdAt)}
                 </div>
               </div>
 
