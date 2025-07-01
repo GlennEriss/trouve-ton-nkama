@@ -63,7 +63,7 @@ export const SignupMobileComponent = () => {
                 isPersonalizedSuggestions: true,
                 isSystemUpdated: true
             }
-            const id = await createUser({
+            await createUser({
                 ...userDetails,
                 uid: userCred.user.uid,
                 notificationParameter,

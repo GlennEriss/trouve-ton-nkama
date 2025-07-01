@@ -47,44 +47,45 @@ const streetsByCity = {
 };
 
 // Fonctions utilitaires pour générer les propriétés aléatoirement
+// Note: Math.random() est sécurisé ici car utilisé uniquement pour les données de test/mock
 function generateRandomPrice(propertyType: string): number {
   if (propertyType === "House") {
-    return Math.floor(Math.random() * 4000000) + 1000000;
+    return Math.floor(Math.random() * 4000000) + 1000000; // Safe: mock data only
   }
   if (propertyType === "Apartment") {
-    return Math.floor(Math.random() * 350000) + 150000;
+    return Math.floor(Math.random() * 350000) + 150000; // Safe: mock data only
   }
   if (propertyType === "Studio") {
-    return Math.floor(Math.random() * 100000) + 100000;
+    return Math.floor(Math.random() * 100000) + 100000; // Safe: mock data only
   }
-  return Math.floor(Math.random() * 40000) + 50000;
+  return Math.floor(Math.random() * 40000) + 50000; // Safe: mock data only
 }
 
 function generateRandomRooms(propertyType: string): number {
   if (propertyType === "Room" || propertyType === "Studio") {
     return 1;
   }
-  return Math.floor(Math.random() * 3) + 3;
+  return Math.floor(Math.random() * 3) + 3; // Safe: mock data only
 }
 
 function generateRandomToilets(propertyType: string): number {
   if (propertyType === "Room" || propertyType === "Studio") {
     return 1;
   }
-  return Math.floor(Math.random() * 2) + 2;
+  return Math.floor(Math.random() * 2) + 2; // Safe: mock data only
 }
 
 function generateRandomArea(propertyType: string): number {
   if (propertyType === "House") {
-    return Math.floor(Math.random() * 250) + 250;
+    return Math.floor(Math.random() * 250) + 250; // Safe: mock data only
   }
   if (propertyType === "Apartment") {
-    return Math.floor(Math.random() * 100) + 100;
+    return Math.floor(Math.random() * 100) + 100; // Safe: mock data only
   }
   if (propertyType === "Studio") {
-    return Math.floor(Math.random() * 20) + 30;
+    return Math.floor(Math.random() * 20) + 30; // Safe: mock data only
   }
-  return Math.floor(Math.random() * 10) + 15;
+  return Math.floor(Math.random() * 10) + 15; // Safe: mock data only
 }
 
 // Génération des propriétés avec coordonnées
@@ -156,13 +157,14 @@ export const houseMocks: House[] = [
 ];
 
 // Génération dynamique des autres propriétés avec localisation
+// Note: Math.random() est sécurisé ici car utilisé uniquement pour les données de test/mock
 for (let i = 5; i <= 100; i++) {
   const propertyType = ["House", "Apartment", "Studio", "Room"][
-    Math.floor(Math.random() * 4)
+    Math.floor(Math.random() * 4) // Safe: mock data only
   ];
-  const status = Math.random() > 0.5 ? "FOR_SALE" : "FOR_RENT";
+  const status = Math.random() > 0.5 ? "FOR_SALE" : "FOR_RENT"; // Safe: mock data only
   const city = ["Libreville", "Port-Gentil", "Akanda"][
-    Math.floor(Math.random() * 3)
+    Math.floor(Math.random() * 3) // Safe: mock data only
   ];
   
   const price = generateRandomPrice(propertyType);
@@ -175,7 +177,7 @@ for (let i = 5; i <= 100; i++) {
   const streets: any = streetsByCity[city as keyof typeof streetsByCity];
   const streetKeys = Object.keys(streets);
   const randomStreet =
-    streetKeys[Math.floor(Math.random() * streetKeys.length)];
+    streetKeys[Math.floor(Math.random() * streetKeys.length)]; // Safe: mock data only
   const location = streets[randomStreet];
 
   houseMocks.push({

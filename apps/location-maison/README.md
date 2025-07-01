@@ -1,36 +1,75 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Location Maison - Plateforme de Location Immobilière
 
-## Getting Started
+## 🚀 Démarrage du projet
 
-First, run the development server:
+Pour lancer le projet, consultez la section `scripts` dans le fichier `package.json`.
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## 🔐 Configuration Vault
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+Pour lancer Vault, entrez dans le dossier vault et exécutez :
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```bash
+cd scripts/vault
+vault server -config=vault.hcl
+```
 
-## Learn More
+Vault sera accessible sur : `http://localhost:8200`
 
-To learn more about Next.js, take a look at the following resources:
+## 🏗️ Jenkins & CI/CD
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+### Démarrage de Jenkins
+Pour lancer Jenkins avec Docker :
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+```bash
+docker compose up --build
+```
 
-## Deploy on Vercel
+Jenkins sera accessible sur : `http://localhost:8090`
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+### Exposition publique avec ngrok
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Pour rendre Jenkins accessible publiquement via Internet :
+
+```bash
+# Lancer ngrok avec URL auto-générée (plan gratuit)
+ngrok http 8090
+```
+
+#### Processus complet
+1. **Démarrer Jenkins** :
+   ```bash
+   docker compose up -d
+   ```
+
+2. **Attendre que Jenkins soit prêt** (vérifier sur http://localhost:8090)
+
+3. **Lancer ngrok** :
+   ```bash
+   ngrok http 8090
+   ```
+
+4. **Récupérer l'URL publique** :
+   - Interface ngrok : http://localhost:4040
+   - L'URL publique sera affichée dans le terminal ngrok (ex: `https://abc123.ngrok.io`)
+
+## 🔧 Prérequis
+
+- Node.js 
+- Docker & Docker Compose
+- ngrok (installé sur la machine hôte)
+- Vault (optionnel)
+
+## 📁 Structure du projet
+
+```
+location-maison/
+├── src/                    # Code source de l'application
+├── jenkins/               # Configuration Jenkins
+├── scripts/vault/         # Scripts et configuration Vault  
+├── functions/             # Firebase Functions
+└── docker-compose.yml     # Configuration Docker
+```
