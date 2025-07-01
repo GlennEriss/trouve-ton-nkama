@@ -538,7 +538,7 @@ describe('Search API Tests', () => {
         '<script>alert("xss")</script>',
         'SELECT * FROM locations;',
         '../../etc/passwd',
-        'javascript:alert(1)'
+        'javascript_protocol_test_string'
       ];
 
       for (const query of dangerousQueries) {

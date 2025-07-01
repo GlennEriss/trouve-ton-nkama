@@ -18,6 +18,7 @@ jest.mock('@/db/notification.db', () => ({
 }));
 
 describe('Signup', () => {
+  const SIGNUP_TEST_PASSWORD = `SignupPass_${Date.now()}_${Math.random().toString(36).substring(7)}`;
   const mockUserData: Partial<User> = {
     firstname: 'John',
     lastname: 'Doe',
@@ -26,7 +27,7 @@ describe('Signup', () => {
     birthDate: '1990-01-01',
     country: { name: 'Gabon', code: 'GA' },
     phoneNumbers: ['+24101234567'],
-    password: 'password123',
+    password: SIGNUP_TEST_PASSWORD,
     roles: ['Announcer'],
     uid: '',
     providers: ['CREDENTIALS'],

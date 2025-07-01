@@ -243,6 +243,9 @@ class MockAuthService {
       throw new Error('Utilisateur non trouvé');
     }
     
+    // Dans un vrai système, on vérifierait le mot de passe ici
+    // Pour les tests, on simule juste la validation
+    
     const sessionToken = `token_${user.id}`;
     this.sessions.set(sessionToken, { userId: user.id, createdAt: new Date() });
     
@@ -359,9 +362,10 @@ describe('Parcours Utilisateur Complet - Tests d\'Intégration', () => {
   describe('Parcours Complet : Inscription → Recherche → Favoris → Notifications', () => {
     test('devrait permettre un parcours utilisateur complet sans erreur', async () => {
       // === ÉTAPE 1: INSCRIPTION ===
+      const TEST_PASSWORD = `TestPass_${Date.now()}_${Math.random().toString(36).substring(7)}`;
       const signUpData = {
         email: 'nouveau@example.com',
-        password: 'motdepasse123',
+        password: TEST_PASSWORD,
         firstName: 'Marie',
         lastName: 'Martin',
         phone: '+24107123456'
@@ -546,17 +550,19 @@ describe('Parcours Utilisateur Complet - Tests d\'Intégration', () => {
   describe('Parcours avec Gestion d\'Erreurs', () => {
     test('devrait gérer gracieusement les erreurs dans le parcours', async () => {
       // === TENTATIVE DE CONNEXION AVEC EMAIL INEXISTANT ===
+      const INVALID_PASSWORD = `InvalidPass_${Math.random().toString(36).substring(7)}`;
       try {
-        await mockAuthService.signIn('inexistant@example.com', 'motdepasse');
+        await mockAuthService.signIn('inexistant@example.com', INVALID_PASSWORD);
         fail('Devrait lever une erreur');
       } catch (error: any) {
         expect(error.message).toContain('Utilisateur non trouvé');
       }
 
       // === INSCRIPTION VALIDE ===
+      const ERROR_TEST_PASSWORD = `ErrorTestPass_${Date.now()}_${Math.random().toString(36).substring(7)}`;
       const { user, token } = await mockAuthService.signUp(
         'test.erreur@example.com',
-        'motdepasse123',
+        ERROR_TEST_PASSWORD,
         { firstName: 'Test', lastName: 'Erreur' }
       );
 
@@ -597,10 +603,11 @@ describe('Parcours Utilisateur Complet - Tests d\'Intégration', () => {
       const startTime = Date.now();
 
       // === CRÉATION DE PLUSIEURS UTILISATEURS SIMULTANÉMENT ===
+      const PERF_TEST_PASSWORD = `PerfTestPass_${Date.now()}_${Math.random().toString(36).substring(7)}`;
       const userPromises = Array.from({ length: 5 }, (_, i) => 
         mockAuthService.signUp(
           `user${i}@example.com`,
-          'motdepasse123',
+          PERF_TEST_PASSWORD,
           { firstName: `User${i}`, lastName: 'Test' }
         )
       );
@@ -645,9 +652,10 @@ describe('Parcours Utilisateur Complet - Tests d\'Intégration', () => {
   describe('Parcours Métier Avancé', () => {
     test('devrait supporter un workflow utilisateur expert', async () => {
       // === UTILISATEUR EXPERT ===
+      const EXPERT_PASSWORD = `ExpertPass_${Date.now()}_${Math.random().toString(36).substring(7)}`;
       const { user: expertUser, token } = await mockAuthService.signUp(
         'expert@example.com',
-        'expertpassword',
+        EXPERT_PASSWORD,
         { 
           firstName: 'Expert', 
           lastName: 'Immobilier',
