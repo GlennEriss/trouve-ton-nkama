@@ -14,10 +14,16 @@ const SEGMENT_LABELS: Record<string, string> = {
   'studio': 'Studio',
   'villa': 'Villa',
   'desk': 'Bureau',
-  'building': 'Immeuble'
+  'building': 'Immeuble',
+  'login-and-security': 'Connexion et sécurité',
+  'modify': 'Modifier'
 };
 
-export default function BreadCrumpComponent() {
+interface BreadCrumpComponentProps {
+  hideOnMobile?: boolean;
+}
+
+export default function BreadCrumpComponent({ hideOnMobile = false }: BreadCrumpComponentProps) {
   const pathname: string = usePathname();
   const pathnames = pathname.split('/').filter(Boolean);
 
@@ -43,8 +49,10 @@ export default function BreadCrumpComponent() {
     );
   };
 
+  const breadcrumbClassName = hideOnMobile ? 'hidden md:block' : '';
+
   return (
-    <Breadcrumb>
+    <Breadcrumb className={breadcrumbClassName}>
       <BreadcrumbList>
         <BreadcrumbItem>
           <BreadcrumbLink className='hover:text-[#1B4D5B]' href={routes.public.homePage}>
