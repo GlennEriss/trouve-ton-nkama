@@ -8,8 +8,10 @@ jest.mock('@/next-auth/auth', () => ({
 }))
 
 describe('login', () => {
-  const validUser = { email: 'test@example.com', password: 'validpassword' }
-  const invalidUser = { email: 'wrong@example.com', password: 'wrongpassword' }
+  const VALID_TEST_PASSWORD = `ValidPass_${Date.now()}_${Math.random().toString(36).substring(7)}`;
+const INVALID_TEST_PASSWORD = `InvalidPass_${Date.now()}_${Math.random().toString(36).substring(7)}`;
+const validUser = { email: 'test@example.com', password: VALID_TEST_PASSWORD }
+const invalidUser = { email: 'wrong@example.com', password: INVALID_TEST_PASSWORD }
 
   it('should return success when login is successful', async () => {
     (signIn as jest.MockedFunction<typeof signIn>).mockResolvedValueOnce({ ok: true } as any)
