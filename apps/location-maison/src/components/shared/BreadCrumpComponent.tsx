@@ -34,19 +34,19 @@ export default function BreadCrumpComponent({ hideOnMobile = false }: BreadCrump
 
   // Fonction pour créer un élément de breadcrumb
   const createBreadcrumbItem = (segment: string, index: number) => {
-    const href = '/' + pathnames.slice(0, index + 1).join('/');
+          const href = '/' + pathnames.slice(0, index + 1).join('/');
     const label = getLabel(segment);
 
-    return (
-      <React.Fragment key={href}>
-        <BreadcrumbSeparator />
-        <BreadcrumbItem>
-          <BreadcrumbLink className='hover:text-[#1B4D5B]' href={href}>
+          return (
+            <React.Fragment key={href}>
+              <BreadcrumbSeparator />
+              <BreadcrumbItem>
+                <BreadcrumbLink className='hover:text-[#1B4D5B]' href={href}>
             {label}
-          </BreadcrumbLink>
-        </BreadcrumbItem>
-      </React.Fragment>
-    );
+                </BreadcrumbLink>
+              </BreadcrumbItem>
+            </React.Fragment>
+          );
   };
 
   const breadcrumbClassName = hideOnMobile ? 'hidden md:block' : '';

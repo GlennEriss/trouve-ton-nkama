@@ -1,5 +1,6 @@
 "use client";
 
+import React from "react";
 import * as SliderPrimitive from "@radix-ui/react-slider";
 import {
   Dialog,
@@ -26,6 +27,7 @@ export const FilterModal = () => {
   const {
     // États
     open, setOpen,
+    localProvince, setLocalProvince,
     localCity, setLocalCity,
     localStreet, setLocalStreet,
     localMinPrice, setLocalMinPrice,
@@ -74,11 +76,22 @@ export const FilterModal = () => {
         <div className="flex-1 overflow-auto p-6 grid grid-cols-1 lg:grid-cols-2 gap-8">
           {/* Colonne Gauche */}
           <div className="space-y-6">
-            {/* Ville & Quartier */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            {/* Province, Ville & Quartier */}
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+              <div>
+                <label htmlFor="province-input" className="block font-semibold mb-1">Province</label>
+                <Input
+                  key={`province-${localProvince}`}
+                  id="province-input"
+                  value={localProvince}
+                  onChange={e => setLocalProvince(e.target.value)}
+                  placeholder="Entrez une province"
+                />
+              </div>
               <div>
                 <label htmlFor="city-input" className="block font-semibold mb-1">Ville</label>
                 <Input
+                  key={`city-${localCity}`}
                   id="city-input"
                   value={localCity}
                   onChange={e => setLocalCity(e.target.value)}
@@ -88,6 +101,7 @@ export const FilterModal = () => {
               <div>
                 <label htmlFor="street-input" className="block font-semibold mb-1">Quartier</label>
                 <Input
+                  key={`street-${localStreet}`}
                   id="street-input"
                   value={localStreet}
                   onChange={e => setLocalStreet(e.target.value)}
@@ -103,6 +117,7 @@ export const FilterModal = () => {
                 <div>
                   <label htmlFor="min-price" className="text-sm">Prix min</label>
                   <Input
+                    key={`min-price-${localMinPrice}`}
                     id="min-price"
                     type="number"
                     min={0}
@@ -116,6 +131,7 @@ export const FilterModal = () => {
                 <div>
                   <label htmlFor="max-price" className="text-sm">Prix max</label>
                   <Input
+                    key={`max-price-${localMaxPrice}`}
                     id="max-price"
                     type="number"
                     min={0}
@@ -133,6 +149,7 @@ export const FilterModal = () => {
             <div>
               <label htmlFor="area-slider" className="block font-semibold mb-2">Surface (m²)</label>
               <SliderPrimitive.Root
+                key={`area-slider-${localMinArea}-${localMaxArea}`}
                 id="area-slider"
                 value={[
                   localMinArea ? Number(localMinArea) : AREA_MIN, 
@@ -161,6 +178,7 @@ export const FilterModal = () => {
             <div>
               <label htmlFor="rooms-slider" className="block font-semibold mb-2">Chambres</label>
               <SliderPrimitive.Root
+                key={`rooms-slider-${localMinRooms}-${localMaxRooms}`}
                 id="rooms-slider"
                 value={[
                   localMinRooms ? Number(localMinRooms) : ROOMS_MIN, 
@@ -197,7 +215,7 @@ export const FilterModal = () => {
                   const sel = localTypes.includes(key);
                   return (
                     <Button
-                      key={key}
+                      key={`type-${key}-${sel}`}
                       variant="outline"
                       onClick={() => toggleLocal(localTypes, key, setLocalTypes)}
                       className={`px-3 py-1 rounded-full font-medium transition ${sel ? "bg-red-800 text-white" : "border-gray-400 text-gray-600"
@@ -220,7 +238,7 @@ export const FilterModal = () => {
                   const sel = localTags.includes(tag.tagName);
                   return (
                     <Button
-                      key={tag.tagName}
+                      key={`tag-${tag.tagName}-${sel}`}
                       variant="outline"
                       onClick={() => {
                         toggleLocal(localTags, tag.tagName, setLocalTags);

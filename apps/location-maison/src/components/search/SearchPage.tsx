@@ -40,6 +40,7 @@ export default function SearchPage() {
   // 1. destructuration du contexte
   const {
     searchText, setSearchText,
+    province, setProvince,
     city, setCity,
     street, setStreet,
     minPrice, setMinPrice,
@@ -55,6 +56,7 @@ export default function SearchPage() {
   // 2. Au montage, lire l'URL et initialiser le contexte
   useEffect(() => {
     const queryVal = searchParams.get("query") ?? "";
+    const provinceVal = searchParams.get("province") ?? "";
     const cityVal = searchParams.get("city") ?? "";
     const streetVal = searchParams.get("street") ?? "";
     const minPriceVal = searchParams.get("minPrice") ?? "";
@@ -66,22 +68,32 @@ export default function SearchPage() {
     const typePropRaw = searchParams.get("typeProperty");
     const tagsRaw = searchParams.get("tags");
 
-    setSearchText(queryVal);
-    setCity(cityVal);
-    setStreet(streetVal);
-    setMinPrice(minPriceVal);
-    setMaxPrice(maxPriceVal);
-    setMinArea(minAreaVal);
-    setMaxArea(maxAreaVal);
-    setMinNbrRooms(minRoomsVal);
-    setMaxNbrRooms(maxRoomsVal);
-    setTypeProperty(typePropRaw ? typePropRaw.split(",").map(s => s.trim()) : []);
-    setTags(tagsRaw ? tagsRaw.split(",").map(s => s.trim()) : []);
-  }, [searchParams.toString()]);
+
+    // Mettre à jour le contexte Algolia avec délai pour s'assurer de la stabilité
+    setTimeout(() => {
+      setSearchText(queryVal);
+      setProvince(provinceVal);
+      setCity(cityVal);
+      setStreet(streetVal);
+      setMinPrice(minPriceVal);
+      setMaxPrice(maxPriceVal);
+      setMinArea(minAreaVal);
+      setMaxArea(maxAreaVal);
+      setMinNbrRooms(minRoomsVal);
+      setMaxNbrRooms(maxRoomsVal);
+      setTypeProperty(typePropRaw ? typePropRaw.split(",").map(s => s.trim()) : []);
+      setTags(tagsRaw ? tagsRaw.split(",").map(s => s.trim()) : []);
+
+  }, [searchParams.toString(), setSearchText, setProvince, setCity, setStreet, setMinPrice, setMaxPrice, setMinArea, setMaxArea, setMinNbrRooms, setMaxNbrRooms, setTypeProperty, setTags]);
 
   // 3. Construire la string de filtres
   const filtersString = useMemo(() => {
     const f: string[] = [];
+    
+    // Filtre constant pour ne récupérer que les propriétés en cours
+    f.push(`state:"IN_PROGRESS"`);
+    
+    const provinceVal = searchParams.get("province") ?? "";
     const cityVal = searchParams.get("city") ?? "";
     const streetVal = searchParams.get("street") ?? "";
     const minPriceVal = searchParams.get("minPrice") ?? "";
@@ -93,6 +105,7 @@ export default function SearchPage() {
     const typePropRaw = searchParams.get("typeProperty") ?? "";
     const tagsRaw = searchParams.get("tags") ?? "";
 
+    if (provinceVal) f.push(`province:"${provinceVal}"`);
     if (cityVal) f.push(`city:"${cityVal}"`);
     if (streetVal) f.push(`street:"${streetVal}"`);
     if (minPriceVal) f.push(`price >= ${minPriceVal}`);
@@ -177,6 +190,11 @@ export default function SearchPage() {
             Recherche : {searchText}
           </FilterTag>
         )}
+        {province && (
+          <FilterTag onRemove={() => setProvince("")} key={`province-${province}`}>
+            Province : {province}
+          </FilterTag>
+        )}
         {city && (
           <FilterTag onRemove={() => setCity("")} key={`city-${city}`}>
             Ville : {city}
@@ -254,6 +272,7 @@ export default function SearchPage() {
           <button
             onClick={() => {
               setSearchText("");
+              setProvince("");
               setCity("");
               setStreet("");
               setMinPrice("");
