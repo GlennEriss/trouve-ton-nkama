@@ -8,6 +8,7 @@ import { ButtonFavoris } from './ButtonFavoris'
 import ContactSection from './ContactSection'
 import { MapSection } from './MapSection'
 import ButtonShare from './ButtonShare'
+import { AlertTriangle } from 'lucide-react'
 
 export default function PreviewProperty({ property }: Readonly<{ property: Property }>) {
   const tagSatus: Record<string, string> = {
@@ -50,6 +51,25 @@ export default function PreviewProperty({ property }: Readonly<{ property: Prope
         </div>
         <CarouselProperty images={images} />
       </section>
+
+      {/* Alerte propriété archivée */}
+      {property.state === 'ARCHIVED' && (
+        <section className="mx-3 md:mx-0">
+          <div className="flex items-center gap-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-4 shadow-md">
+            <div className="flex-shrink-0">
+              <AlertTriangle className="h-6 w-6 text-red-600 dark:text-red-400" />
+            </div>
+            <div className="flex-1">
+              <h3 className="text-lg font-semibold text-red-800 dark:text-red-200">
+                Propriété non disponible
+              </h3>
+              <p className="text-red-700 dark:text-red-300 text-sm mt-1">
+                Cette propriété n'est plus disponible à la location ou à la vente.
+              </p>
+            </div>
+          </div>
+        </section>
+      )}
 
       {/* Section description */}
       <section className='flex flex-col gap-2'>
