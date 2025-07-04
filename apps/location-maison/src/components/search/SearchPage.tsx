@@ -68,7 +68,6 @@ export default function SearchPage() {
     const typePropRaw = searchParams.get("typeProperty");
     const tagsRaw = searchParams.get("tags");
 
-
     // Mettre à jour le contexte Algolia avec délai pour s'assurer de la stabilité
     setTimeout(() => {
       setSearchText(queryVal);
@@ -83,7 +82,7 @@ export default function SearchPage() {
       setMaxNbrRooms(maxRoomsVal);
       setTypeProperty(typePropRaw ? typePropRaw.split(",").map(s => s.trim()) : []);
       setTags(tagsRaw ? tagsRaw.split(",").map(s => s.trim()) : []);
-
+    }, 50);
   }, [searchParams.toString(), setSearchText, setProvince, setCity, setStreet, setMinPrice, setMaxPrice, setMinArea, setMaxArea, setMinNbrRooms, setMaxNbrRooms, setTypeProperty, setTags]);
 
   // 3. Construire la string de filtres
@@ -141,10 +140,10 @@ export default function SearchPage() {
 
   // 4. Recherche texte
   const { refine: refineQuery } = useSearchBox();
-  const queryVal = searchParams.get("query") ?? "";
   useEffect(() => {
-    refineQuery(queryVal);
-  }, [queryVal]);
+    const queryValue = searchParams.get("query") ?? "";
+    refineQuery(queryValue);
+  }, [searchParams, refineQuery]);
 
   // 5. Infinite hits + intersection observer
   const { items, isLastPage, showMore } = useInfiniteHits();
