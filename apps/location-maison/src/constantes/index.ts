@@ -2,7 +2,7 @@
  * @module constantes
  */
 
-import { FaBriefcase, FaHome, FaHeart, FaBuilding, FaUsers, FaCouch, FaTree, FaMountain, FaSwimmingPool, FaDog, FaShoppingCart, FaPlane, FaCar, FaWifi, FaShieldAlt, FaBicycle, FaRunning, FaChild, FaWheelchair, FaGraduationCap, FaUmbrellaBeach, FaPeace } from 'react-icons/fa';
+import { FaBriefcase, FaHome, FaHeart, FaBuilding, FaUsers, FaCouch, FaTree, FaMountain, FaSwimmingPool, FaDog, FaShoppingCart, FaBus, FaCar, FaWifi, FaShieldAlt, FaBicycle, FaRunning, FaChild, FaWheelchair, FaGraduationCap, FaUmbrellaBeach, FaPeace, FaColumns, FaWarehouse } from 'react-icons/fa';
 
 
 export const tags = [
@@ -36,7 +36,7 @@ export const tags = [
   },
   {
     tagName: 'Vacances',
-    tagIcon: FaHome, // Icon for vacation homes
+    tagIcon: FaUmbrellaBeach, // Icon for vacation homes
   },
   {
     tagName: 'Nature',
@@ -60,7 +60,7 @@ export const tags = [
   },
   {
     tagName: 'Transport proche',
-    tagIcon: FaPlane, // Icon for homes near public transport
+    tagIcon: FaBus, // Icon for homes near public transport
   },
   {
     tagName: 'Parking',
@@ -101,6 +101,22 @@ export const tags = [
   {
     tagName: 'Proche de la plage',
     tagIcon: FaUmbrellaBeach, 
+  },
+  {
+    tagName: 'Duplex',
+    tagIcon: FaBuilding, // Icon for duplex properties
+  },
+  {
+    tagName: 'Boutique',
+    tagIcon: FaWarehouse, // Icon for shop properties
+  },
+  {
+    tagName: 'Balcon',
+    tagIcon: FaColumns, // Icon for properties with balcony
+  },
+  {
+    tagName: 'Terrasse',
+    tagIcon: FaColumns, // Icon for properties with terrace
   },
 ];
 

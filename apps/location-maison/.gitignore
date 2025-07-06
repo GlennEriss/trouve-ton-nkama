@@ -43,3 +43,6 @@ next-env.d.ts
 # Vault
 vault-data/
 init.txt
+
+# Scripts
+/scripts/scrap/images

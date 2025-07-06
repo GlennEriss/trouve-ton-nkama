@@ -1,0 +1,23 @@
+# Variables d'environnement
+.env
+
+# Rapports d'importation
+reports/
+*.json
+
+# Logs
+*.log
+*.txt
+
+# Fichiers temporaires
+temp/
+tmp/
+
+# Images locales (si trop volumineuses)
+images/
+
+# Node modules
+node_modules/
+
+# Fichiers de cache TypeScript
+*.tsbuildinfo 
