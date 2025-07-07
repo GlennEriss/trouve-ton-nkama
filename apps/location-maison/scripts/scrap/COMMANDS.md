@@ -181,4 +181,97 @@ scripts/scrap/
 ├── localisations_enrichies_photon.json    ✅ Géolocalisation
 ├── images/                                 ✅ Images des annonces
 └── .env                                    ✅ Configuration Firebase
-``` 
+```
+
+# Commandes disponibles
+
+## 🚀 Import principal
+
+```bash
+npm run import              # Import réel complet
+npm run import:test         # Test avec 10 annonces
+npm run import:dry-run      # Simulation complète
+npm run import:real         # Import réel avec limite de 5
+```
+
+## 🔧 Configuration
+
+```bash
+npm run show-owner          # Afficher le propriétaire actuel
+npm run change-owner        # Changer le propriétaire des annonces
+```
+
+## 🏠 Correction des Villas (Script dédié)
+
+```bash
+npm run fix:villa           # Corriger toutes les villas → Home
+npm run fix:villa:dry       # Test correction villas (dry-run)
+npm run fix:villa:test      # Test avec 5 villas seulement
+```
+
+## 🌍 Corrections mixtes (Terrains + Villas)
+
+```bash
+npm run fix:terrain-villa      # Ajouter terrains + corriger villas
+npm run fix:terrain-villa:dry  # Test complet (dry-run)
+npm run fix:terrain-only       # Ajouter uniquement les terrains
+npm run fix:villa-only         # Corriger uniquement les villas
+```
+
+## 📊 Rapports
+
+```bash
+npm run reports:list        # Lister les 10 derniers rapports
+npm run reports:latest      # Afficher le rapport le plus récent
+npm run reports:stats       # Statistiques du dernier rapport
+npm run reports:clean       # Supprimer les rapports anciens (>30 jours)
+```
+
+## 🧪 Tests et développement
+
+```bash
+npm run test:upload         # Tester l'upload d'images
+npm run test               # Test simple
+npm run build              # Compiler TypeScript
+npm run dev                # Mode développement
+```
+
+## 💡 Commandes détaillées
+
+### Correction des Villas uniquement
+
+```bash
+# Test avec aperçu détaillé
+ts-node fix-villa-to-home.ts --dry-run
+
+# Correction réelle
+ts-node fix-villa-to-home.ts
+
+# Test avec limite
+ts-node fix-villa-to-home.ts --dry-run --limit 10
+
+# Aide
+ts-node fix-villa-to-home.ts --help
+```
+
+### Import avec options
+
+```bash
+# Import avec limite personnalisée
+ts-node import-script.ts --limit 20
+
+# Import en mode dry-run avec limite
+ts-node import-script.ts --dry-run --limit 5
+
+# Aide complète
+ts-node import-script.ts --help
+```
+
+---
+
+## 🎯 Recommandations
+
+1. **Toujours tester d'abord** avec `--dry-run`
+2. **Utiliser des limites** pour les tests (`--limit`)
+3. **Consulter les rapports** après chaque opération
+4. **Vérifier Firebase Console** après les corrections 

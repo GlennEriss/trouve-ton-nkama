@@ -22,7 +22,7 @@ export const CONFIG = {
    * 
    * ⚠️ IMPORTANT: Doit correspondre à FIREBASE_STORAGE_BUCKET dans .env
    */
-  FIREBASE_STORAGE_BUCKET: 'home-rent-1534e.appspot.com',
+  FIREBASE_STORAGE_BUCKET: 'location-maison-prod-167da.firebasestorage.app',
   
   // Configuration du traitement
   BATCH_SIZE: 50, // Nombre d'annonces à traiter par lot
@@ -44,7 +44,7 @@ export const CONFIG = {
    * UID de l'utilisateur qui sera défini comme propriétaire de toutes les annonces importées
    * Modifiez cette valeur pour changer le propriétaire de toutes les annonces
    */
-  DEFAULT_CREATED_BY: 'rgNMpYuXxFMpe3zeYvlxzkigPnm1',
+  DEFAULT_CREATED_BY: 'cf3H6p5myIh11BVE9NSR55dN01y2',
   
   /**
    * État par défaut des annonces importées

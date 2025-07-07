@@ -2,7 +2,7 @@
  * Mappers pour transformer les données JSON vers le format Firestore
  */
 
-import { StatusProperty, TypeProperty, Property, Image, Location, Home, Apartment, Studio, Building, Desk, Shop, Villa, Room, Kiosk } from './types/annonce';
+import { StatusProperty, TypeProperty, Property, Image, Location, Home, Apartment, Studio, Building, Desk, Shop, Villa, Room, Kiosk, Land } from './types/annonce';
 import { Timestamp } from 'firebase-admin/firestore';
 import { CONFIG } from './config';
 
@@ -115,11 +115,11 @@ export const typePropertyMapper: Record<string, TypeProperty> = {
   "Magasin": "Shop",
   "Boutique": "Shop",
   "Terrain": "Land",
-  "Villa": "Villa",
+  "Villa": "Home",
   "Chambre": "Room",
   "Kiosque": "Kiosk",
   "Immeuble": "Building",
-  "Duplex": "Home" // Mapper Duplex vers Home car c'est le plus proche
+  "Duplex": "Home"
 };
 
 /**
@@ -329,23 +329,16 @@ export function mapToShop(bien: BienJSON, location: Location, images: Image[]): 
 }
 
 /**
- * Mappe spécifiquement vers une Villa
+ * Mappe spécifiquement vers un Terrain
  */
-export function mapToVilla(bien: BienJSON, location: Location, images: Image[]): Villa {
+export function mapToLand(bien: BienJSON, location: Location, images: Image[]): Land {
   const baseProperty = mapBaseProperty(bien, location, images);
   
   return {
     ...baseProperty,
-    typeProperty: 'Villa',
-    nbrRooms: bien.caracteristiques.nombre_chambres,
-    nbrChickens: bien.caracteristiques.nombre_chambres,
-    nbrBathrooms: bien.caracteristiques.nombre_salles_bain,
-    nbrToilets: bien.caracteristiques.nombre_toilettes,
-    nbrFloors: bien.caracteristiques.nombre_etages || 1,
-    nbrGarages: bien.caracteristiques.nombre_garages,
-    nbrLivingRoom: bien.caracteristiques.nombre_salons,
-    nbrPiscine: 0 // Par défaut, à ajuster selon les données
-  } as Villa;
+    typeProperty: 'Land',
+    landType: 'Standard' // Type de terrain par défaut
+  } as Land;
 }
 
 /**
@@ -393,12 +386,13 @@ export function mapPropertyByType(bien: BienJSON, location: Location, images: Im
       return mapToDesk(bien, location, images);
     case 'Shop':
       return mapToShop(bien, location, images);
-    case 'Villa':
-      return mapToVilla(bien, location, images);
+    case 'Land':
+      return mapToLand(bien, location, images);
     case 'Room':
       return mapToRoom(bien, location, images);
     case 'Kiosk':
       return mapToKiosk(bien, location, images);
+    // Note: Villa est maintenant mappé vers Home, donc pas besoin de case Villa
     default:
       throw new Error(`Type de propriété non supporté: ${bien.type_bien}`);
   }

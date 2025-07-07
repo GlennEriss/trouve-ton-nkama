@@ -105,3 +105,6 @@ export type Kiosk = Property & {
 export type Room = Property & {
     roomType: string;
 }
+
+export type Land = Property & {
+}
