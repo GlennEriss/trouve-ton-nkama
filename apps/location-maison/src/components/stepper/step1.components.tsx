@@ -209,7 +209,7 @@ export const TagsComponent = ({ field }: { field: any }) => {
     return (
         <div className='grid grid-cols-3 gap-2'>
             {
-                tags.map((tag) => (
+                [...tags].sort((a, b) => a.tagName.localeCompare(b.tagName, 'fr')).map((tag) => (
                     <TagItem key={tag.tagName} tag={tag} field={field} />
                 ))
             }

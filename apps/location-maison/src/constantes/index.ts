@@ -118,6 +118,14 @@ export const tags = [
     tagName: 'Terrasse',
     tagIcon: FaColumns, // Icon for properties with terrace
   },
+  {
+    tagName: 'Collocation',
+    tagIcon: FaUsers, // Icon for collocation properties
+  },
+  {
+    tagName: 'Garage',
+    tagIcon: FaCar, // Icon for properties with garage
+  }
 ];
 
 export const collectionFirebaseNames = {

@@ -4,10 +4,12 @@ let searchCache = new Map<string, any[]>();
 
 import { useState, useEffect } from "react";
 import { useFormContext } from "react-hook-form";
+import { useQueryClient } from '@tanstack/react-query';
 
 const MapForm = () => {
     // Accès aux méthodes de react-hook-form
     const { setValue } = useFormContext();
+    const queryClient = useQueryClient();
 
     const [location, setLocation] = useState("");
     const [error, setError] = useState<string | null>(null);
@@ -25,8 +27,6 @@ const MapForm = () => {
             }
         }
     }, []);
-
-
 
     // Recherche de localité via l'API Photon
     const searchLocation = async () => {
@@ -64,6 +64,22 @@ const MapForm = () => {
         }
     };
 
+    // Ajout d'une rue dans le cache local React Query
+    const handleAddStreet = (province: string, city: string, newStreet: string) => {
+        queryClient.setQueryData(['locations'], (oldData: any) => {
+            if (!oldData) return oldData;
+            // Copie profonde pour éviter de muter le cache directement
+            const newData = JSON.parse(JSON.stringify(oldData));
+            if (!newData[province]) newData[province] = {};
+            if (!newData[province][city]) newData[province][city] = [];
+            if (!newData[province][city].includes(newStreet)) {
+                newData[province][city].push(newStreet);
+                newData[province][city].sort((a: string, b: string) => a.localeCompare(b, 'fr'));
+            }
+            return newData;
+        });
+    };
+
     // Sélection d'un résultat Photon et mise à jour des champs du formulaire
     const selectLocation = (result: any) => {
         const lat = result.geometry.coordinates[1];
@@ -78,6 +94,11 @@ const MapForm = () => {
         setValue("countryCode", countryCode ?? "");
         setValue("latitude", lat);
         setValue("longitude", lon);
+
+        // Mise à jour du cache local si la rue n'existe pas déjà
+        if (province && city && name) {
+            handleAddStreet(province, city, name);
+        }
 
         // Masquer la liste de résultats
         setSearchResults([]);

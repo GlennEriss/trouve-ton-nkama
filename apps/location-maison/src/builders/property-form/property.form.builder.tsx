@@ -2,10 +2,12 @@
  * @module Builders/property-form
  */
 
+import { InputApp } from "@/components/shared/ui/InputApp";
+import { InputNumberApp } from "@/components/shared/ui/InputNumberApp";
+import TextareaApp from "@/components/shared/ui/TextareaApp";
 import MapForm from "@/components/stepper/MapForm";
-import { NumberComponent, TextareaComponent, TextComponent } from "@/components/stepper/step.shared.component";
 import { ImagesComponent, StatusComponent, TagsComponent } from "@/components/stepper/step1.components";
-import { InputDisabledComponent } from '@/components/stepper/step3.components';
+import { InputDisabledComponent, SelectCityComponent, SelectProvinceComponent, SelectStreetComponent } from '@/components/stepper/step3.components';
 import { PhoneInput } from '@/components/ui/phone-input'
 
 /**
@@ -60,28 +62,28 @@ export abstract class PropertyFormBuilder {
                 name: "title",
                 label: "Titre",
                 description: "Entrez un titre pour décrire le bien (ex: Maison familiale spacieuse).",
-                component: (field: any) => <TextComponent field={field} />,
+                component: (field: any) => <InputApp {...field} />,
                 step: 1
             },
             {
                 name: "description",
                 label: "Description",
                 description: "Décrivez les caractéristiques principales du bien immobilier.",
-                component: (field: any) => <TextareaComponent field={field} />,
+                component: (field: any) => <TextareaApp {...field} />,
                 step: 1
             },
             {
                 name: "area",
                 label: "Superficie",
                 description: "Indiquez la superficie du bien en mètres carrés.",
-                component: (field: any) => <NumberComponent field={field} />,
+                component: (field: any) => <InputNumberApp step={10} {...field} />,
                 step: 1
             },
             {
                 name: "price",
                 label: "Prix (FCFA)",
                 description: "Entrez le prix du bien immobilier ou le loyer attendu.",
-                component: (field: any) => <NumberComponent field={field} />,
+                component: (field: any) => <InputNumberApp step={10000} {...field} />,
                 step: 1
             },
             {
@@ -109,28 +111,28 @@ export abstract class PropertyFormBuilder {
                 name: "province",
                 label: "Province",
                 description: "",
-                component: (field: any) => <InputDisabledComponent field={field} />,
+                component: (field: any) => <SelectProvinceComponent field={field} />,
                 step: 3
             },
             {
                 name: "city",
                 label: "Ville",
                 description: "",
-                component: (field: any) => <InputDisabledComponent field={field} />,
+                component: (field: any) => <SelectCityComponent field={field} />,
                 step: 3
             },
             {
                 name: "street",
                 label: "Quartier",
                 description: "Saisissez puis sélectionnez un quartier",
-                component: (field: any) => <InputDisabledComponent field={field} />,
+                component: (field: any) => <SelectStreetComponent field={field} />,
                 step: 3
             },
             {
                 name: "additionnalInformation",
                 label: "Informations complémentaires",
                 description: "Ex: Terminus Awoungou en face de...",
-                component: (field: any) => <TextareaComponent field={field} />,
+                component: (field: any) => <TextareaApp rows={3} {...field} />,
                 step: 3
             },
             {
