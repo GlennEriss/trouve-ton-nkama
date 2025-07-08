@@ -184,10 +184,13 @@ export const SelectStreetComponent = ({ field }: Readonly<{ field: any }>) => {
   const selectedProvince = watch('province');
   const selectedCity = watch('city');
   const streetOptions = React.useMemo((): OptionType[] => {
-    if (!selectedProvince) {
-      return []
-    }
-    if (!locations || !selectedCity || !locations[selectedProvince][selectedCity]) {
+    if (
+      !locations ||
+      !selectedProvince ||
+      !locations[selectedProvince] ||
+      !selectedCity ||
+      !locations[selectedProvince][selectedCity]
+    ) {
       return [];
     }
     return locations[selectedProvince][selectedCity]
