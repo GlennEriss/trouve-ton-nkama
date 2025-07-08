@@ -151,7 +151,7 @@ export const PropertyFormComponentProvider = ({ children, isUpdate, propertyToUp
         resolver: zodResolver(getSchema()),
         defaultValues: {
             ...property,
-            images: []
+            images: [],
         },
     })
     //Mutation
@@ -227,6 +227,9 @@ export const PropertyFormComponentProvider = ({ children, isUpdate, propertyToUp
         }
     }
     React.useEffect(() => {
+        if(user && user?.phoneNumbers.length > 0){
+            form.setValue('contact', user.phoneNumbers[0])
+        }
         if (propertyToUpdated) {
             const { images, ...othersData } = propertyToUpdated
             Object.entries(othersData).forEach(([key, value]) => {
@@ -246,7 +249,7 @@ export const PropertyFormComponentProvider = ({ children, isUpdate, propertyToUp
                 });
             }
         }
-    }, [propertyToUpdated])
+    }, [propertyToUpdated, user])
 
     // Sauvegarder dans le localStorage à chaque changement du formulaire
     useEffect(() => {
