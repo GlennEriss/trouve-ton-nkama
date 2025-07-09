@@ -251,18 +251,6 @@ export const PropertyFormComponentProvider = ({ children, isUpdate, propertyToUp
         }
     }, [propertyToUpdated, user])
 
-    // Sauvegarder dans le localStorage à chaque changement du formulaire
-    useEffect(() => {
-        if (!isUpdate) {
-            const subscription = form.watch((value) => {
-                if (value) {
-                    saveFormToLocalStorage(value);
-                }
-            });
-            return () => subscription.unsubscribe();
-        }
-    }, [form, isUpdate]);
-
     const contextValue = useMemo(() => ({
         activeStep,
         setActiveStep,

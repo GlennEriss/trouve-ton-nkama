@@ -130,13 +130,22 @@ const FloatingAssistantButton: React.FC<FloatingAssistantButtonProps> = ({ formC
           const cleanedResponse = result.response?.replace(/```json\n?|\n?```/g, '').trim() ?? '';
           const generatedData = JSON.parse(cleanedResponse);
 
+          // Post-traitement : prix en FCFA, superficie à 0 si absente ou invalide
+          let price = generatedData.price;
+          if (typeof price === 'string') {
+            price = parseInt(price.replace(/[^0-9]/g, ''), 10);
+          }
+          if (!price || isNaN(price) || price < 0) price = 0;
+          let area = generatedData.area;
+          if (!area || isNaN(area) || area < 0) area = 0;
+
           // Créer la structure de données conforme au localStorage attendu
           const formData = {
             typeProperty: PROPERTY_TYPE_MAPPING[propertyType] ?? 'Home',
             title: generatedData.title ?? '',
             description: generatedData.description ?? '',
-            price: generatedData.price ?? 0,
-            area: generatedData.area ?? 0,
+            price,
+            area,
             tags: generatedData.tags ?? [],
             street: '',
             city: '',
@@ -161,18 +170,13 @@ const FloatingAssistantButton: React.FC<FloatingAssistantButtonProps> = ({ formC
             description: (
               <div className="space-y-1">
                 <p><strong>Titre:</strong> {generatedData.title}</p>
-                <p><strong>Superficie:</strong> {generatedData.area} m²</p>
-                <p><strong>Prix:</strong> {formData.price?.toLocaleString()} FCFA</p>
+                <p><strong>Superficie:</strong> {area} m²</p>
+                <p><strong>Prix:</strong> {price?.toLocaleString()} FCFA</p>
                 <p className="text-sm text-gray-600 mt-2">La page va se recharger pour afficher les nouvelles données.</p>
               </div>
             ),
             variant: "success",
           });
-
-          // Rafraîchir la page après un délai pour laisser le temps au toast d'être lu
-          setTimeout(() => {
-            window.location.reload();
-          }, 3000);
 
         } catch (parseError) {
           console.error('Erreur parsing JSON:', parseError);
