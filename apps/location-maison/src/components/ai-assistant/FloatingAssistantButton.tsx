@@ -236,10 +236,10 @@ const FloatingAssistantButton: React.FC<FloatingAssistantButtonProps> = ({ formC
           <button
             type="button"
             onClick={handleOpenModal}
-            disabled={creditsAvailable <= 0}
+            disabled={creditsAvailable <= 0 || isLoading}
             className={`
               group relative p-0 border-none bg-transparent focus:outline-none
-              ${creditsAvailable <= 0 ? 'opacity-50 cursor-not-allowed' : 'hover:scale-105 active:scale-95'}
+              ${creditsAvailable <= 0 || isLoading ? 'opacity-50 cursor-not-allowed' : 'hover:scale-105 active:scale-95'}
             `}
             style={{}}
           >
@@ -248,23 +248,31 @@ const FloatingAssistantButton: React.FC<FloatingAssistantButtonProps> = ({ formC
                 inline-flex items-center justify-center
                 transition-all duration-300
                 drop-shadow-lg
-                ${creditsAvailable > 0 ? 'hover:drop-shadow-2xl' : ''}
+                ${creditsAvailable > 0 && !isLoading ? 'hover:drop-shadow-2xl' : ''}
               `}
               style={{
                 filter: 'drop-shadow(0 4px 16px rgba(21,107,102,0.25))',
               }}
             >
-              <Bot
-                className="w-16 h-16"
-                style={{
-                  background: 'linear-gradient(135deg, #1de9b6 0%, #156B66 100%)',
-                  borderRadius: '50%',
-                  boxShadow: '0 6px 24px 0 rgba(21,107,102,0.25)',
-                  padding: '12px',
-                  color: 'white',
-                }}
-              />
-              {creditsAvailable > 0 && (
+              {isLoading ? (
+                // Animation de réflexion pendant le chargement
+                <svg className="animate-spin w-16 h-16 text-[#156B66]" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z" />
+                </svg>
+              ) : (
+                <Bot
+                  className="w-16 h-16"
+                  style={{
+                    background: 'linear-gradient(135deg, #1de9b6 0%, #156B66 100%)',
+                    borderRadius: '50%',
+                    boxShadow: '0 6px 24px 0 rgba(21,107,102,0.25)',
+                    padding: '12px',
+                    color: 'white',
+                  }}
+                />
+              )}
+              {creditsAvailable > 0 && !isLoading && (
                 <span className="absolute -bottom-1 -right-1 w-3 h-3 bg-green-400 rounded-full animate-pulse border-2 border-white" />
               )}
             </span>
