@@ -404,10 +404,13 @@ export default function SearchDesktopPage() {
                                 <MultiSelectFormApp
                                     control={form.control}
                                     name="typeProperty"
-                                    options={Object.values(TypeProperty).map(type => ({
-                                        label: type,
-                                        value: getTypePropertyKey(type)!
-                                    }))}
+                                    options={Object.values(TypeProperty)
+                                        .map(type => ({
+                                            label: type,
+                                            value: getTypePropertyKey(type)!
+                                        }))
+                                        .sort((a, b) => a.label.localeCompare(b.label))
+                                    }
                                     placeholder="Types de propriété"
                                     className='rounded-full p-2 h-14 bg-gray-50 dark:bg-gray-900 dark:text-white'
                                 />
@@ -420,10 +423,13 @@ export default function SearchDesktopPage() {
                                 <MultiSelectFormApp
                                     control={form.control}
                                     name="tags"
-                                    options={tagsList.map(tag => ({
-                                        label: tag.tagName,
-                                        value: tag.tagName
-                                    }))}
+                                    options={tagsList
+                                        .map(tag => ({
+                                            label: tag.tagName,
+                                            value: tag.tagName
+                                        }))
+                                        .sort((a, b) => a.label.localeCompare(b.label))
+                                    }
                                     placeholder="Sélectionnez les tags"
                                     className='rounded-full p-2 h-14 bg-gray-50 dark:bg-gray-900 dark:text-white'
                                 />
