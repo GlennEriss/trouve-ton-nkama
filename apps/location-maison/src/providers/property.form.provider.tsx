@@ -256,7 +256,6 @@ export const PropertyFormComponentProvider = ({ children, isUpdate, propertyToUp
         if (!isUpdate) {
             const subscription = form.watch((value) => {
                 if (value) {
-                    console.log('value', value)
                     saveFormToLocalStorage(value);
                 }
             });

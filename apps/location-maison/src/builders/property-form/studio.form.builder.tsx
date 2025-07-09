@@ -2,8 +2,9 @@
  * @module Builders/property-form
  */
 
-import { NumberComponent, TextComponent } from "@/components/stepper/step.shared.component";
+import { TextComponent } from "@/components/stepper/step.shared.component";
 import { LogementFormBuilder } from "./logement.form.builder";
+import { InputNumberApp } from "@/components/shared/ui/InputNumberApp";
 
 /**
  * StudioFormBuilder class is a concrete builder class used to construct forms specific to studio apartments.
@@ -32,7 +33,7 @@ export class StudioFormBuilder extends LogementFormBuilder {
                 name: "nbrFloorStudio",
                 label: "Numero d'étage",
                 description: "Indiquez le numéro d'étage où se situe le studio.",
-                component: (field: any) => <NumberComponent field={field} />,
+                component: (field: any) => <InputNumberApp {...field} />,
                 step: 2
             },
             {

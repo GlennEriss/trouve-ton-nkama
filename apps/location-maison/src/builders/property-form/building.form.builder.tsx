@@ -2,7 +2,7 @@
  * @module Builders/property-form
  */
 
-import { NumberComponent } from "@/components/stepper/step.shared.component";
+import { InputNumberApp } from "@/components/shared/ui/InputNumberApp";
 import { PropertyFormBuilder } from "./property.form.builder";
 import { ChoiceComponent } from "@/components/stepper/step2.components";
 
@@ -34,21 +34,21 @@ export class BuildingFormBuilder extends PropertyFormBuilder {
                 name: "nbrApartments",
                 label: "Nombre d'appartements",
                 description: "Indiquez le nombre total d'appartements dans ce bâtiment.",
-                component: (field: any) => <NumberComponent field={field} />,
+                component: (field: any) => <InputNumberApp {...field} />,
                 step: 2
             },
             {
                 name: "nbrFloors",
                 label: "Nombre d'étages",
                 description: "Indiquez le nombre d'étages que contient le bâtiment.",
-                component: (field: any) => <NumberComponent field={field} />,
+                component: (field: any) => <InputNumberApp {...field} />,
                 step: 2
             },
             /* {
                 name: "hasParking",
                 label: "Parking",
                 description: "Indiquez s'il y a un parking disponible.",
-                component: (field: any) => <NumberComponent field={field} />,
+                component: (field: any) => <InputNumberApp {...field} />,
                 step: 2
             }, */
             {
