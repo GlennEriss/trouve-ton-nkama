@@ -24,9 +24,9 @@ export const useFilterModal = () => {
   } = useAlgoliaContext();
 
   const [open, setOpen] = useState(false);
-  const [localProvince, setLocalProvince] = useState(province);
-  const [localCity, setLocalCity] = useState(city);
-  const [localStreet, setLocalStreet] = useState(street);
+  const [localProvince, setLocalProvince] = useState<string[]>([]);
+  const [localCity, setLocalCity] = useState<string[]>([]);
+  const [localStreet, setLocalStreet] = useState<string[]>([]);
   const [localMinPrice, setLocalMinPrice] = useState(minPrice);
   const [localMaxPrice, setLocalMaxPrice] = useState(maxPrice);
   const [localMinArea, setLocalMinArea] = useState(minArea);
@@ -63,9 +63,9 @@ export const useFilterModal = () => {
       setTimeout(() => {
         // console.log('⏳ FilterModal - Application des valeurs...');
         
-        setLocalProvince(provinceVal);
-        setLocalCity(cityVal);
-        setLocalStreet(streetVal);
+        setLocalProvince(provinceVal.split(","));
+        setLocalCity(cityVal.split(","));
+        setLocalStreet(streetVal.split(","));
         setLocalMinPrice(minPriceVal);
         setLocalMaxPrice(maxPriceVal);
         setLocalMinArea(minAreaVal);
@@ -93,9 +93,9 @@ export const useFilterModal = () => {
   }, [open, searchParams.toString()]);
 
   const clearLocalFilters = () => {
-    setLocalProvince("");
-    setLocalCity("");
-    setLocalStreet("");
+    setLocalProvince([]);
+    setLocalCity([]);
+    setLocalStreet([]);
     setLocalMinPrice("");
     setLocalMaxPrice("");
     setLocalMinArea("");
@@ -130,9 +130,9 @@ export const useFilterModal = () => {
     
     // Mises à jour des états string
     const stringUpdates = [
-      { condition: localProvince, setter: setProvince, value: localProvince },
-      { condition: localCity, setter: setCity, value: localCity },
-      { condition: localStreet, setter: setStreet, value: localStreet },
+      { condition: localProvince.length, setter: setProvince, value: localProvince.join(",") },
+      { condition: localCity.length, setter: setCity, value: localCity.join(",") },
+      { condition: localStreet.length, setter: setStreet, value: localStreet.join(",") },
       { condition: localMinPrice, setter: setMinPrice, value: String(minP) },
       { condition: localMaxPrice, setter: setMaxPrice, value: String(maxP) },
       { condition: localMinArea, setter: setMinArea, value: String(minA) },
@@ -163,9 +163,9 @@ export const useFilterModal = () => {
     
     const paramMappings = [
       { condition: searchText, key: "query", value: searchText },
-      { condition: localProvince, key: "province", value: localProvince },
-      { condition: localCity, key: "city", value: localCity },
-      { condition: localStreet, key: "street", value: localStreet },
+      { condition: localProvince.length, key: "province", value: localProvince.join(",") },
+      { condition: localCity.length, key: "city", value: localCity.join(",") },
+      { condition: localStreet.length, key: "street", value: localStreet.join(",") },
       { condition: localMinPrice, key: "minPrice", value: String(minP) },
       { condition: localMaxPrice, key: "maxPrice", value: String(maxP) },
       { condition: localMinArea, key: "minArea", value: localMinArea },

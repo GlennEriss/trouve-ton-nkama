@@ -140,7 +140,6 @@ export default function SearchDesktopPage() {
             
             // Vérifier si la ville actuelle est valide pour la nouvelle province
             const currentCity = form.getValues('city');
-            const currentStreet = form.getValues('street');
             
             if (currentCity && !locations[selectedProvince]?.[currentCity]) {
                 form.setValue('city', '');
@@ -152,10 +151,8 @@ export default function SearchDesktopPage() {
     // Réinitialiser street quand la ville change (seulement après le chargement initial)
     React.useEffect(() => {
         if (!isInitialLoad && selectedCity && selectedProvince && locations) {
-            
             // Vérifier si le quartier actuel est valide pour la nouvelle ville
             const currentStreet = form.getValues('street');
-            
             if (currentStreet && !locations[selectedProvince]?.[selectedCity]?.includes(currentStreet)) {
                 // console.log('❌ Quartier invalide, réinitialisation:', currentStreet);
                 form.setValue('street', '');
