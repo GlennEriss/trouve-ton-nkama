@@ -140,7 +140,6 @@ export default function SearchDesktopPage() {
             
             // Vérifier si la ville actuelle est valide pour la nouvelle province
             const currentCity = form.getValues('city');
-            const currentStreet = form.getValues('street');
             
             if (currentCity && !locations[selectedProvince]?.[currentCity]) {
                 form.setValue('city', '');
@@ -152,10 +151,8 @@ export default function SearchDesktopPage() {
     // Réinitialiser street quand la ville change (seulement après le chargement initial)
     React.useEffect(() => {
         if (!isInitialLoad && selectedCity && selectedProvince && locations) {
-            
             // Vérifier si le quartier actuel est valide pour la nouvelle ville
             const currentStreet = form.getValues('street');
-            
             if (currentStreet && !locations[selectedProvince]?.[selectedCity]?.includes(currentStreet)) {
                 // console.log('❌ Quartier invalide, réinitialisation:', currentStreet);
                 form.setValue('street', '');
@@ -404,10 +401,13 @@ export default function SearchDesktopPage() {
                                 <MultiSelectFormApp
                                     control={form.control}
                                     name="typeProperty"
-                                    options={Object.values(TypeProperty).map(type => ({
-                                        label: type,
-                                        value: getTypePropertyKey(type)!
-                                    }))}
+                                    options={Object.values(TypeProperty)
+                                        .map(type => ({
+                                            label: type,
+                                            value: getTypePropertyKey(type)!
+                                        }))
+                                        .sort((a, b) => a.label.localeCompare(b.label))
+                                    }
                                     placeholder="Types de propriété"
                                     className='rounded-full p-2 h-14 bg-gray-50 dark:bg-gray-900 dark:text-white'
                                 />
@@ -420,10 +420,13 @@ export default function SearchDesktopPage() {
                                 <MultiSelectFormApp
                                     control={form.control}
                                     name="tags"
-                                    options={tagsList.map(tag => ({
-                                        label: tag.tagName,
-                                        value: tag.tagName
-                                    }))}
+                                    options={tagsList
+                                        .map(tag => ({
+                                            label: tag.tagName,
+                                            value: tag.tagName
+                                        }))
+                                        .sort((a, b) => a.label.localeCompare(b.label))
+                                    }
                                     placeholder="Sélectionnez les tags"
                                     className='rounded-full p-2 h-14 bg-gray-50 dark:bg-gray-900 dark:text-white'
                                 />

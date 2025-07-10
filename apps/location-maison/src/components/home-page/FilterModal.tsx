@@ -81,30 +81,30 @@ export const FilterModal = () => {
               <div>
                 <label htmlFor="province-input" className="block font-semibold mb-1">Province</label>
                 <Input
-                  key={`province-${localProvince}`}
+                  key={`province-${localProvince[0] || ''}`}
                   id="province-input"
-                  value={localProvince}
-                  onChange={e => setLocalProvince(e.target.value)}
+                  value={localProvince[0] || ''}
+                  onChange={e => setLocalProvince([e.target.value])}
                   placeholder="Entrez une province"
                 />
               </div>
               <div>
                 <label htmlFor="city-input" className="block font-semibold mb-1">Ville</label>
                 <Input
-                  key={`city-${localCity}`}
+                  key={`city-${localCity[0] || ''}`}
                   id="city-input"
-                  value={localCity}
-                  onChange={e => setLocalCity(e.target.value)}
+                  value={localCity[0] || ''}
+                  onChange={e => setLocalCity([e.target.value])}
                   placeholder="Entrez une ville"
                 />
               </div>
               <div>
                 <label htmlFor="street-input" className="block font-semibold mb-1">Quartier</label>
                 <Input
-                  key={`street-${localStreet}`}
+                  key={`street-${localStreet[0] || ''}`}
                   id="street-input"
-                  value={localStreet}
-                  onChange={e => setLocalStreet(e.target.value)}
+                  value={localStreet[0] || ''}
+                  onChange={e => setLocalStreet([e.target.value])}
                   placeholder="Entrez un quartier"
                 />
               </div>

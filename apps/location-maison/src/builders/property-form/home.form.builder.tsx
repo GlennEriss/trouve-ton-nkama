@@ -2,7 +2,7 @@
  * @module Builders/property-form
  */
 
-import { NumberComponent } from "@/components/stepper/step.shared.component";
+import { InputNumberApp } from "@/components/shared/ui/InputNumberApp";
 import { LogementFormBuilder } from "./logement.form.builder";
 
 /**
@@ -32,21 +32,21 @@ export class HomeFormBuilder extends LogementFormBuilder {
                 name: "nbrFloors",
                 label: "Nombre d'étages",
                 description: "Indiquez le nombre total d'étages dans la propriété.",
-                component: (field: any) => <NumberComponent field={field} />,
+                component: (field: any) => <InputNumberApp {...field} />,
                 step: 2
             },
             {
                 name: "nbrLivingRoom",
                 label: "Nombre de salons",
                 description: "Indiquez le nombre total de salons disponibles dans la propriété.",
-                component: (field: any) => <NumberComponent field={field} />,
+                component: (field: any) => <InputNumberApp {...field} />,
                 step: 2
             },
             {
                 name: "nbrGarages",
                 label: "Nombre de garages",
                 description: "Indiquez le nombre total de garages disponibles dans la propriété.",
-                component: (field: any) => <NumberComponent field={field} />,
+                component: (field: any) => <InputNumberApp {...field} />,
                 step: 2
             },
         );

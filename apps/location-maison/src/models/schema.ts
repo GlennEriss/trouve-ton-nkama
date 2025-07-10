@@ -77,6 +77,7 @@ export const PropertySchema = z.object({
   street: z.string().min(1, "Le nom de la rue est obligatoire"),
   city: z.string().min(1, "Le nom de la ville est obligatoire"),
   province: z.string().min(1, "Le nom de la province est obligatoire"),
+  contact: z.string().min(1, "Le numéro de téléphone est obligatoire"),
   additionalInformation: z.string().optional(),
   longitude: z
     .number()

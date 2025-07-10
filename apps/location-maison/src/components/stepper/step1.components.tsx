@@ -53,9 +53,10 @@ export const ImagesComponent = ({ field }: { field: any }) => {
 
 export const ImageUploader = ({ field }: { field: any }) => {
     const { toast } = useToast();
+    const [isUploading, setIsUploading] = React.useState(false);
 
     const { getInputProps, getRootProps, isDragActive } = useDropzone({
-        maxFiles: 6,
+        maxFiles: 10,
         multiple: true,
         accept: {
             'image/png': ['.png'],
@@ -63,6 +64,7 @@ export const ImageUploader = ({ field }: { field: any }) => {
             'image/webp': ['.webp'],
         },
         onDrop: async (acceptedFiles) => {
+            setIsUploading(true);
             const maxSizeInBytes = 300 * 1024;
             const currentFiles = field.value ?? [];
             const compressedFiles: File[] = [];
@@ -95,17 +97,22 @@ export const ImageUploader = ({ field }: { field: any }) => {
                 }
             }
 
-            const newFiles = [...currentFiles, ...compressedFiles].slice(0, 6);
+            const newFiles = [...currentFiles, ...compressedFiles].slice(0, 10);
             field.onChange(newFiles);
-            console.log('field',field)
-            console.log('newFiles',newFiles)
+            setIsUploading(false);
         },
+        disabled: isUploading,
     });
 
     return (
-        <div {...getRootProps()} className='border border-dashed h-40 md:h-[240px] flex justify-center items-center cursor-pointer'>
-            <Input {...getInputProps()} />
-            {isDragActive ? (
+        <div {...getRootProps()} className={`border border-dashed h-40 md:h-[240px] flex justify-center items-center cursor-pointer ${isUploading ? 'opacity-60 pointer-events-none' : ''}`}>
+            <Input {...getInputProps()} disabled={isUploading} />
+            {isUploading ? (
+                <svg className="animate-spin w-10 h-10 text-gray-400" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z" />
+                </svg>
+            ) : isDragActive ? (
                 <p className="text-gray-500">Déposez vos images ici...</p>
             ) : (
                 <AiOutlineCamera size={50} className='text-gray-500' />
@@ -209,7 +216,7 @@ export const TagsComponent = ({ field }: { field: any }) => {
     return (
         <div className='grid grid-cols-3 gap-2'>
             {
-                tags.map((tag) => (
+                [...tags].sort((a, b) => a.tagName.localeCompare(b.tagName, 'fr')).map((tag) => (
                     <TagItem key={tag.tagName} tag={tag} field={field} />
                 ))
             }
