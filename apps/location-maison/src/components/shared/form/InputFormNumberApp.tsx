@@ -1,7 +1,7 @@
 import React from 'react'
-import { InputNumberApp } from '../ui/InputNumberApp'
 import { Control, FieldValues, Path } from 'react-hook-form'
 import { FormField, FormItem, FormLabel, FormMessage, FormControl } from '@/components/ui/form'
+import { NumberInputRHF } from '../ui/NumberInputRHF';
 
 interface InputFormNumberAppProps<T extends FieldValues = any> {
     control: Control<T>;
@@ -37,13 +37,12 @@ const InputFormNumberApp = <T extends FieldValues = any>({
                         {required && <span className="text-red-500 ml-1">*</span>}
                     </FormLabel>
                     <FormControl>
-                        <InputNumberApp
+                        <NumberInputRHF
                             placeholder={placeholder}
                             step={step}
                             min={min}
                             max={max}
-                            onChange={(value) => field.onChange(value)}
-                            defaultValue={field.value}
+                            {...field}
                         />
                     </FormControl>
                     <FormMessage />
