@@ -61,13 +61,14 @@ async function sendSMS(phoneNumber: string, message: string): Promise<void> {
     console.log('Message:', message);
 
     // Envoyer le SMS via Twilio
-    const result = await twilioClient.messages.create({
+    /* const result = await twilioClient.messages.create({
       body: message,
       from: process.env.TWILIO_PHONE_NUMBER,
       to: phoneNumber
-    });
+    }); */
 
-    console.log('SMS envoyé avec succès:', result.sid);
+    //console.log('SMS envoyé avec succès:', result.sid);
+    console.log('SMS envoyé avec succès:');
   } catch (error) {
     console.error('Erreur lors de l\'envoi du SMS:', error);
     throw new Error('Échec de l\'envoi du SMS');

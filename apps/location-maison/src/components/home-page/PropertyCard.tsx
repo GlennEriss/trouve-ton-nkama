@@ -4,7 +4,7 @@
 import React from "react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-import { formatDateFr } from "@/lib/utils";
+import { formatPublicationDate } from "@/lib/utils";
 import { TypeProperty } from "@/constantes/property-type";
 
 // Import des icônes
@@ -101,6 +101,13 @@ const PropertyCard = ({ property }: any) => {
                   )}
                 </>
               )}
+          </div>
+
+          {/* Date de publication */}
+          <div className="mt-1 pt-3 border-t border-gray-200 dark:border-gray-700">
+            <p className="text-xs text-gray-500 dark:text-gray-400 italic">
+              Publiée {formatPublicationDate(property.createdAt)}
+            </p>
           </div>
         </div>
       </div>
