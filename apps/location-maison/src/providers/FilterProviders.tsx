@@ -3,7 +3,7 @@ import { useConfigure, useSearchBox } from 'react-instantsearch';
 import { useSearchParams } from 'next/navigation';
 import React from 'react'
 
-export default function FilterProviders({ children }: { children: React.ReactNode }) {
+export default function FilterProviders({ children }: Readonly<{ children: React.ReactNode }>) {
     const searchParams = useSearchParams();
 
     // Recherche texte
@@ -16,8 +16,13 @@ export default function FilterProviders({ children }: { children: React.ReactNod
     // Filtres
     const filtersString = React.useMemo(() => {
         const f: string[] = [];
+        
+        // Filtre constant pour ne récupérer que les propriétés en cours
+        f.push(`state:"IN_PROGRESS"`);
+        
         const cityVal = searchParams.get("city") ?? "";
         const streetVal = searchParams.get("street") ?? "";
+        const provinceVal = searchParams.get("province") ?? "";
         const minPriceVal = searchParams.get("minPrice") ?? "";
         const maxPriceVal = searchParams.get("maxPrice") ?? "";
         const minAreaVal = searchParams.get("minArea") ?? "";
@@ -29,6 +34,7 @@ export default function FilterProviders({ children }: { children: React.ReactNod
 
         if (cityVal) f.push(`city:"${cityVal}"`);
         if (streetVal) f.push(`street:"${streetVal}"`);
+        if (provinceVal) f.push(`province:"${provinceVal}"`);
         if (minPriceVal) f.push(`price >= ${minPriceVal}`);
         if (maxPriceVal) f.push(`price <= ${maxPriceVal}`);
         if (minAreaVal) f.push(`area >= ${minAreaVal}`);

@@ -19,7 +19,6 @@ interface CreditPack {
 
 interface CreditPacksListProps {
   onOpenModal: () => void
-  isModalOpen: boolean
   onPackSelect?: (pack: CreditPack) => void
 }
 
@@ -76,7 +75,7 @@ const paymentMethods = [
     icon: 'libertis.webp'
   }
 ]
-export default function CreditPacksList({ onOpenModal, onPackSelect }: CreditPacksListProps) {
+export default function CreditPacksList({ onOpenModal, onPackSelect }: Readonly<CreditPacksListProps>) {
   const handlePackSelect = (pack: CreditPack) => {
     // Communiquer le pack sélectionné au parent
     if (onPackSelect) {

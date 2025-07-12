@@ -16,7 +16,7 @@ export default function FeaturedSection() {
    }
 
   return (
-    <section className='relative rounded-3xl space-y-3 bg-gradient-to-r from-yellow-50 to-amber-50 dark:from-yellow-900/10 dark:to-amber-900/10 p-5 py-10 overflow-hidden'>
+    <section className='relative rounded-3xl space-y-3 bg-gradient-to-r from-[#C1DEE8] to-[#FBD9B9] dark:from-[#146B67]/10 dark:to-[#1FA89B]/10 p-5 py-10 overflow-hidden'>
       {/* Image d'arrière-plan */}
       <div className="absolute inset-0 z-0">
         <Image
@@ -42,7 +42,7 @@ export default function FeaturedSection() {
         <p className="text-center text-sm text-gray-600 dark:text-gray-400 mb-4">
           Les meilleures annonces sélectionnées pour vous
         </p>
-        <PropertyCarousel properties={(featuredProperties || []).filter(p => p.id) as any} />
+        <PropertyCarousel properties={(featuredProperties ?? []).filter(p => p.id) as any} />
       </div>
     </section>
   )

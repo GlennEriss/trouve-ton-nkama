@@ -5,7 +5,7 @@ import { Carousel, CarouselContent, CarouselItem, CarouselPrevious, CarouselNext
 import { ChevronLeft, ChevronRight, X } from 'lucide-react'
 import { useSwipeable } from 'react-swipeable'
 
-export default function CarouselProperty({ images }: { images: string[] }) {
+export default function CarouselProperty({ images }: Readonly<{ images: string[] }>) {
     const [selectedImage, setSelectedImage] = useState<string | null>(null);
     const [isPreviewOpen, setIsPreviewOpen] = useState(false);
  
@@ -79,7 +79,7 @@ export default function CarouselProperty({ images }: { images: string[] }) {
                 <CarouselContent className='-ml-2 md:-ml-4'>
                     {images.map((image, index) => (
                         <CarouselItem 
-                            key={index} 
+                            key={image} 
                             className='pl-2 md:pl-4 md:basis-1/2 lg:basis-1/3'
                         >
                             <div className="relative aspect-[4/3] overflow-hidden rounded-xl">
@@ -154,7 +154,7 @@ export default function CarouselProperty({ images }: { images: string[] }) {
                             <div className="flex gap-2 justify-center">
                                 {images.map((img, idx) => (
                                     <button
-                                        key={idx}
+                                        key={img}
                                         onClick={() => setSelectedImage(img)}
                                         className={`relative w-16 h-16 rounded-lg overflow-hidden transition-opacity ${
                                             selectedImage === img ? 'ring-2 ring-white' : 'opacity-50 hover:opacity-100'

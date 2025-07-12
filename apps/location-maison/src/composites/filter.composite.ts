@@ -31,7 +31,7 @@ export class FilterWhere extends CompositeFilter {
 }
 
 export class StateFilter extends FilterWhere {
-    constructor(private state: StateCreation) {
+    constructor(private readonly state: StateCreation) {
         super('state', state, '==');
     }
     applyFilter(queryValue: any) {

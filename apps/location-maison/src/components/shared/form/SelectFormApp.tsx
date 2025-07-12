@@ -37,7 +37,7 @@ export const SelectFormApp = <T extends FieldValues>({
                         onOpenChange={setIsOpen}
                         value={field.value}
                         onValueChange={field.onChange}
-                        disabled={isSubmitting || disabled}
+                        disabled={Boolean(isSubmitting) || Boolean(disabled)}
                     >
                         <FormControl>
                             <SelectTrigger
@@ -54,8 +54,8 @@ export const SelectFormApp = <T extends FieldValues>({
                         </FormControl>
                         <SelectContent>
                             {
-                                options.map((option, key) => (
-                                    <SelectItem key={key} value={option.value}>
+                                options.map((option) => (
+                                    <SelectItem key={option.value} value={option.value}>
                                         {option.label}
                                     </SelectItem>
                                 ))

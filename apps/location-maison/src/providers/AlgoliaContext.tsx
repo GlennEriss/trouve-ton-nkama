@@ -1,13 +1,13 @@
 "use client";
 
-import { createContext, ReactNode, useContext, useState } from "react";
+import { createContext, useContext, useState, useMemo } from "react";
 import { InstantSearch } from "react-instantsearch";
 import { liteClient as algoliasearch } from "algoliasearch/lite";
 
 // Configuration du client Algolia
 const searchClient = algoliasearch(
-  process.env.NEXT_PUBLIC_ALGOLIA_APP_ID!,
-  process.env.NEXT_PUBLIC_ALGOLIA_SEARCH_API_KEY!
+  process.env.NEXT_PUBLIC_ALGOLIA_APP_ID,
+  process.env.NEXT_PUBLIC_ALGOLIA_SEARCH_API_KEY
 );
 
 // Typage du contexte Algolia
@@ -15,6 +15,9 @@ interface AlgoliaContextType {
   indexName: string;
 
   // Champs textuels / numériques
+  province: string;
+  setProvince: React.Dispatch<React.SetStateAction<string>>;
+
   city: string;
   setCity: React.Dispatch<React.SetStateAction<string>>;
 
@@ -76,6 +79,7 @@ export const AlgoliaProvider: React.FC<AlgoliaProviderProps> = ({
   indexName,
 }) => {
   // Champs textuels / numériques
+  const [province, setProvince] = useState("");
   const [city, setCity] = useState("");
   const [street, setStreet] = useState("");
   const [minPrice, setMinPrice] = useState("");
@@ -101,6 +105,7 @@ export const AlgoliaProvider: React.FC<AlgoliaProviderProps> = ({
 
   // Fonction pour tout remettre à zéro
   const clearFilters = () => {
+    setProvince("");
     setCity("");
     setStreet("");
     setMinPrice("");
@@ -115,48 +120,69 @@ export const AlgoliaProvider: React.FC<AlgoliaProviderProps> = ({
     setMaxNbrChickens("");
     setTypeProperty([]);
     setTags([]);
-    //setSearchText("");
   };
 
+  const contextValue = useMemo(() => ({
+    indexName,
+    province,
+    setProvince,
+    city,
+    setCity,
+    street,
+    setStreet,
+    minPrice,
+    setMinPrice,
+    maxPrice,
+    setMaxPrice,
+    minArea,
+    setMinArea,
+    maxArea,
+    setMaxArea,
+    minNbrRooms,
+    setMinNbrRooms,
+    maxNbrRooms,
+    setMaxNbrRooms,
+    minNbrBathrooms,
+    setMinNbrBathrooms,
+    maxNbrBathrooms,
+    setMaxNbrBathrooms,
+    minNbrChickens,
+    setMinNbrChickens,
+    maxNbrChickens,
+    setMaxNbrChickens,
+    typeProperty,
+    setTypeProperty,
+    tags,
+    setTags,
+    filteredResults,
+    setFilteredResults,
+    searchText,
+    setSearchText,
+    clearFilters,
+  }), [
+    indexName,
+    province,
+    city,
+    street,
+    minPrice,
+    maxPrice,
+    minArea,
+    maxArea,
+    minNbrRooms,
+    maxNbrRooms,
+    minNbrBathrooms,
+    maxNbrBathrooms,
+    minNbrChickens,
+    maxNbrChickens,
+    typeProperty,
+    tags,
+    filteredResults,
+    searchText,
+    clearFilters
+  ]);
+
   return (
-    <AlgoliaContext.Provider
-      value={{
-        indexName,
-        city,
-        setCity,
-        street,
-        setStreet,
-        minPrice,
-        setMinPrice,
-        maxPrice,
-        setMaxPrice,
-        minArea,
-        setMinArea,
-        maxArea,
-        setMaxArea,
-        minNbrRooms,
-        setMinNbrRooms,
-        maxNbrRooms,
-        setMaxNbrRooms,
-        minNbrBathrooms,
-        setMinNbrBathrooms,
-        maxNbrBathrooms,
-        setMaxNbrBathrooms,
-        minNbrChickens,
-        setMinNbrChickens,
-        maxNbrChickens,
-        setMaxNbrChickens,
-        typeProperty,
-        setTypeProperty,
-        tags,
-        setTags,
-        filteredResults,
-        setFilteredResults,
-        searchText,
-        setSearchText,
-        clearFilters,
-      }}
-    >
+    <AlgoliaContext.Provider value={contextValue}>
       <InstantSearch 
         searchClient={searchClient} 
         indexName={indexName}

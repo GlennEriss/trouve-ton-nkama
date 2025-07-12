@@ -1,6 +1,6 @@
 import { TypeProperty } from '@/constantes/property-type'
 import { routes } from '@/constantes/routes'
-import { ChevronLeft, Home, Building, Landmark, Warehouse, Briefcase, Building2, Bed, Store, ShoppingBag, Globe } from 'lucide-react'
+import { ChevronLeft, Home, Building, Warehouse, Briefcase, Building2, Bed, Store, ShoppingBag, Globe } from 'lucide-react'
 import Link from 'next/link'
 import React from 'react'
 
@@ -74,7 +74,7 @@ export default function page() {
             <Link
               className='text-lg font-semibold flex flex-col items-center gap-4 justify-center border p-5 rounded-xl shadow-md lg:h-[140px] lg:text-xl transition-all bg-white dark:bg-gray-800 dark:border-gray-700 hover:scale-105 hover:shadow-lg hover:bg-blue-100 dark:hover:bg-gray-700 text-gray-900 dark:text-white'
               href={item.link}
-              key={index}>
+              key={item.link}>
               <div className="p-3 rounded-full bg-blue-100 dark:bg-gray-700">
                 {item.icon}
               </div>

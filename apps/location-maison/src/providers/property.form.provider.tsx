@@ -1,6 +1,6 @@
 'use client'
+import React, { createContext, useContext, useState, useEffect, useMemo } from "react"
 import { Form } from "@/components/ui/form"
-import { createContext, useContext, useState, useTransition, useEffect } from "react"
 import { useForm } from "react-hook-form"
 import { zodResolver } from '@hookform/resolvers/zod'
 import { ApartmentSchema, BuildingSchema, DeskSchema, HomeSchema, StudioSchema, VillaSchema, KioskSchema, RoomSchema, ShopSchema, PropertySchema } from "@/models/schema"
@@ -11,9 +11,8 @@ import { usePathname, useRouter } from "next/navigation"
 import { createFile } from "@/db/file.db"
 import { useCurrentUser } from "@/hooks/use-current-user"
 import { useMutation, useQueryClient } from "@tanstack/react-query"
-import { createProperty, getPropertyById, updateProperty } from "@/db/property.db"
+import { createProperty, updateProperty } from "@/db/property.db"
 import useLastpath from "@/hooks/use-lastpath"
-import React from "react"
 import queryKeys from "@/constantes/react-query-keys"
 import { routes } from "@/constantes/routes"
 import { updateOrCreateSuggestion } from "@/db/suggestion.db"
@@ -79,7 +78,9 @@ export const PropertyFormComponentProvider = ({ children, isUpdate, propertyToUp
     const router = useRouter()
     //pathnames
     const pathname = usePathname()
-    const id = isUpdate ? useLastpath() : null
+    // Hook appelé toujours, puis utilisé conditionnellement
+    const lastPathValue = useLastpath()
+    const id = isUpdate ? lastPathValue : null
     //Images already uplaod
     const [imagesAlreadyUplaod, setImagesAlreadyUplaod] = useState<Image[]>([])
     //Type Property
@@ -150,7 +151,7 @@ export const PropertyFormComponentProvider = ({ children, isUpdate, propertyToUp
         resolver: zodResolver(getSchema()),
         defaultValues: {
             ...property,
-            images: []
+            images: [],
         },
     })
     //Mutation
@@ -210,7 +211,7 @@ export const PropertyFormComponentProvider = ({ children, isUpdate, propertyToUp
                 type: img.type || 'image/jpeg',
                 lastModified: Date.now(),
             });
-            return await createFile(file, user?.uid!, 'property');
+            return await createFile(file, user?.uid, 'property');
         });
         const images = await Promise.all(promiseFiles)
         //Create Property
@@ -226,6 +227,9 @@ export const PropertyFormComponentProvider = ({ children, isUpdate, propertyToUp
         }
     }
     React.useEffect(() => {
+        if(user && user?.phoneNumbers.length > 0){
+            form.setValue('contact', user.phoneNumbers[0])
+        }
         if (propertyToUpdated) {
             const { images, ...othersData } = propertyToUpdated
             Object.entries(othersData).forEach(([key, value]) => {
@@ -245,29 +249,18 @@ export const PropertyFormComponentProvider = ({ children, isUpdate, propertyToUp
                 });
             }
         }
-    }, [propertyToUpdated])
+    }, [propertyToUpdated, user])
 
-    // Sauvegarder dans le localStorage à chaque changement du formulaire
-    useEffect(() => {
-        if (!isUpdate) {
-            const subscription = form.watch((value) => {
-                if (value) {
-                    console.log('value', value)
-                    saveFormToLocalStorage(value);
-                }
-            });
-            return () => subscription.unsubscribe();
-        }
-    }, [form, isUpdate]);
+    const contextValue = useMemo(() => ({
+        activeStep,
+        setActiveStep,
+        form,
+        propertyPreview,
+        setPropertyPreview
+    }), [activeStep, form, propertyPreview]);
 
     return (
-        <PropertyFormComponentContext.Provider value={{
-            activeStep,
-            setActiveStep,
-            form,
-            propertyPreview,
-            setPropertyPreview
-        }}>
+        <PropertyFormComponentContext.Provider value={contextValue}>
             <Form {...form}>
                 <form
                     className='flex flex-col'

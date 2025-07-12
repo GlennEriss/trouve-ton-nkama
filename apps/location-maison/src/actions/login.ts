@@ -8,7 +8,7 @@ export const login = async (user: FormLoginSchemaType) => {
   const { email, password } = user;
 
   try {
-    const result = await signIn('credentials', {
+    await signIn('credentials', {
       redirect: false, // Pas de redirection automatique
       login: email, // Assurez-vous que la clé correspond au `authorize` côté serveur
       password: password,

@@ -3,7 +3,7 @@
 import React from "react";
 import { useSearchParams, usePathname, useRouter } from "next/navigation";
 import { cn } from "@/lib/utils";
-import { Home, Building, Layout, MapPin, List, Briefcase, House, Landmark, ShoppingCart, Store, Bed } from "lucide-react";
+import { Home, Building, Layout, MapPin, List, Briefcase, Landmark, ShoppingCart, Store, Bed } from "lucide-react";
 
 // Types des filtres avec couleurs personnalisées
 const filters = [
@@ -25,7 +25,7 @@ export const PropertyFilter = () => {
     const router = useRouter();
     const scrollRef = React.useRef<HTMLDivElement>(null);
 
-    const currentFilter = searchParams.get("type") || "";
+    const currentFilter = searchParams.get("type") ?? "";
 
     // Fonction pour changer le filtre
     const handleFilterChange = (value: string) => {
@@ -107,10 +107,7 @@ export const PropertyFilter = () => {
                             )}>
                                 <IconComponent 
                                     size={24} 
-                                    className={cn(
-                                        "transition-all duration-300",
-                                        isActive ? "text-white" : "text-white"
-                                    )} 
+                                    className="transition-all duration-300 text-white" 
                                 />
                                 
                                 {/* Pulse effect pour l'élément actif */}
@@ -144,7 +141,7 @@ export const PropertyFilter = () => {
                 <div className="flex gap-1">
                     {[...Array(Math.ceil(filters.length / 3))].map((_, i) => (
                         <div
-                            key={i}
+                            key={`indicator-${i}`}
                             className="w-2 h-2 rounded-full bg-gray-300 dark:bg-gray-600 opacity-30"
                         />
                     ))}

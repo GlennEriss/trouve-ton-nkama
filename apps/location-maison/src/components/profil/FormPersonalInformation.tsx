@@ -23,7 +23,7 @@ import { ButtonApp } from '../shared/ui/ButtonApp'
 
 export default function FormPersonalInformation() {
     const { user } = useCurrentUser()
-    const { data: session, status, update } = useSession()
+    const { update } = useSession()
     const { toast } = useToast();
     const size = useWindowSize()
     const form = useForm<FormUserProfilSchemaType>({
@@ -36,7 +36,7 @@ export default function FormPersonalInformation() {
             country: countries.find(country => country.code === values.country),
             phoneNumbers: values.phoneNumbers ? [values.phoneNumbers] : []
         }
-        const isUpdated = await updateUser(user?.uid!, userUpdated)
+        const isUpdated = await updateUser(user?.uid ?? '', userUpdated)
         if (isUpdated) {
             toast({
                 duration: 5000,
@@ -60,7 +60,7 @@ export default function FormPersonalInformation() {
         if (user) {
             form.setValue('firstname', user.firstname)
             form.setValue('lastname', user.lastname)
-            form.setValue('email', user.email!)
+            form.setValue('email', user.email ?? '')
             form.setValue('birthDate', user?.birthDate ?? '')
             form.setValue('country', user?.country?.code ?? '')
             form.setValue('phoneNumbers', user.phoneNumbers.length > 0 ? user.phoneNumbers[0] : '')
@@ -123,8 +123,8 @@ export default function FormPersonalInformation() {
                         <div className='flex flex-col items-center gap-3'>
                             <ButtonApp
                                 type='submit'
-                                disabled={form.formState.isSubmitting || form.formState.isLoading}
-                                isLoading={form.formState.isSubmitting || form.formState.isLoading}
+                                disabled={Boolean(form.formState.isSubmitting) || Boolean(form.formState.isLoading)}
+                                isLoading={Boolean(form.formState.isSubmitting) || Boolean(form.formState.isLoading)}
                                 className='bg-gradient-to-b from-[#1FA89B] to-[#146B67] md:py-7 mt-5'
                                 title='Modifier'
                             />
@@ -187,7 +187,7 @@ export default function FormPersonalInformation() {
               hover:bg-gray-800 dark:hover:bg-gray-700 
               focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 
               disabled:opacity-50 disabled:cursor-not-allowed"
-                        disabled={form.formState.isLoading || form.formState.isSubmitting}
+                        disabled={Boolean(form.formState.isLoading) || Boolean(form.formState.isSubmitting)}
                     >
                         Modifier
                     </ButtonLoading>

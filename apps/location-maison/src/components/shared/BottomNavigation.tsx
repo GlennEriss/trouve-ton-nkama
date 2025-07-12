@@ -26,7 +26,7 @@ const inter = Inter({
 
 type BottomNavigationProps = {}
 
-export const BottomNavigation: React.FC<BottomNavigationProps> = ({ }) => {
+export const BottomNavigation: React.FC<BottomNavigationProps> = () => {
     const { user } = useCurrentUser()
     const pathnames = usePathname();
     const { unreadCount } = useNotifications();
@@ -42,10 +42,10 @@ export const BottomNavigation: React.FC<BottomNavigationProps> = ({ }) => {
         )}>
             <div className="max-w-screen-xl mx-auto px-4 py-2">
                 <div className="flex justify-between items-center">
-                    {menu.map((item, key) => (
+                    {menu.map((item) => (
                         <Link
                             href={item.link}
-                            key={key}
+                            key={item.link}
                             className={clsx(
                                 'relative group flex flex-col items-center py-2 px-3 rounded-xl transition-all duration-200',
                                 'hover:bg-gray-100 dark:hover:bg-gray-800',

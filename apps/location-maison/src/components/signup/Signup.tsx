@@ -49,20 +49,12 @@ export const Signup: React.FC = () => {
                 isPersonalizedSuggestions: true,
                 isSystemUpdated: true
             }
-            const id = await createUser({
+            await createUser({
                 ...userDetails,
                 uid: userCred.user.uid,
                 notificationParameter,
                 providers: ['CREDENTIALS']
             })
-            /* await createNotification({
-                type: 'SECURITY',
-                title: 'Sécurisez votre compte avec Facebook et Google',
-                message: "Pour mieux protéger votre compte et éviter toute tentative d'accès non autorisé, connectez-le à Facebook et Google dès maintenant.",
-                isRead: false,
-                createdFor: userCred.user.uid,
-                actionUrl: routes.protected.login_and_security,
-            }); */
             await signOut(auth)
             return userCred.user.uid
         } catch (error) {
@@ -101,7 +93,6 @@ export const Signup: React.FC = () => {
                 <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-3">
                     <h1 className="text-lg">Créer un compte pour commencer à poster des annonces</h1>
                     <InputForm
-                        key={0}
                         form={form}
                         name='firstname'
                         label='Nom'
@@ -110,7 +101,6 @@ export const Signup: React.FC = () => {
                         className='p-5'
                     />
                     <InputForm
-                        key={1}
                         form={form}
                         name='lastname'
                         label='Prénom'
@@ -119,7 +109,6 @@ export const Signup: React.FC = () => {
                         className='p-5'
                     />
                     <InputForm
-                        key={2}
                         form={form}
                         name='email'
                         label='Email'
@@ -128,7 +117,6 @@ export const Signup: React.FC = () => {
                         className='p-5'
                     />
                     <InputForm
-                        key={3}
                         form={form}
                         name='birthdate'
                         label='Date de naissance'
@@ -153,7 +141,6 @@ export const Signup: React.FC = () => {
                         name='phone'
                     />
                     <InputForm
-                        key={4}
                         form={form}
                         name='password'
                         label='Mot de passe'
@@ -162,7 +149,6 @@ export const Signup: React.FC = () => {
                         className='p-5'
                     />
                     <InputForm
-                        key={5}
                         form={form}
                         name='passwordConfirm'
                         label='Mot de passe'
@@ -188,7 +174,7 @@ export const Signup: React.FC = () => {
                     />
                     <ButtonLoading
                         type='submit'
-                        disabled={form.formState.isSubmitting || form.formState.isLoading || isOtherMethodConnection}
+                        disabled={Boolean(form.formState.isSubmitting) || Boolean(form.formState.isLoading) || Boolean(isOtherMethodConnection)}
                         className='w-full bg-gradient-to-r from-[#146B67] via-[#1FA89B] to-[#146B67]'>
                         S'enregistrer
                     </ButtonLoading>

@@ -8,14 +8,14 @@ import clsx from 'clsx'
 type Step1Props = {
   data: FormElement[]
 }
-export default function Step1({ data }: Step1Props) {
+export default function Step1({ data }: Readonly<Step1Props>) {
   const { form } = usePropertyFormComponentContext()
   return (
     <div className='lg:grid lg:grid-cols-2 xl:grid-cols-3 lg:gap-5'>
       {
         data.map((item, key) =>
           <div
-            key={key}
+            key={item.name}
             className={clsx({
               'lg:row-span-6': key === 0,
               'lg:col-span-1 xl:col-span-2': key !== 0,

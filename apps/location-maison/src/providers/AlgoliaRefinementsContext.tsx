@@ -1,14 +1,11 @@
 "use client"
-import React, { createContext, useContext, useCallback, useEffect } from "react";
+import React, { createContext, useContext, useCallback, useMemo } from "react";
 import {
   useMenu,
-  useRange,
   useSearchBox,
-  useInstantSearch,
   useRefinementList,
   useHits,
 } from "react-instantsearch";
-import { useAlgoliaContext } from "./AlgoliaContext";
 import { Hit } from "algoliasearch";
 
 interface AlgoliaRefinementsProviderProps {
@@ -36,35 +33,16 @@ const AlgoliaRefinementsContext = createContext<AlgoliaRefinementsContextType | 
 
 // Provider qui contient toute la logique de raffinement
 export const AlgoliaRefinementsProvider: React.FC<AlgoliaRefinementsProviderProps> = ({ children }) => {
-  const {
-    city,
-    street,
-    searchText,
-    typeProperty,
-    tags,
-    minPrice,
-    maxPrice,
-    minArea,
-    maxArea,
-    minNbrRooms,
-    maxNbrRooms,
-  } = useAlgoliaContext();
 
   // 1) Filtres textuels
-  const { items: cityItems, refine: cityRefine } = useMenu({ attribute: "city" });
-  const { items: streetItems, refine: streetRefine } = useMenu({ attribute: "street" });
-  const { items: typePropItems, refine: typePropertyRefineBase } = useRefinementList({ attribute: "typeProperty", operator: "or" });
-  const { items: tagsItems, refine: tagsRefineBase } = useRefinementList({ attribute: "tags", operator: "or" });
+  const { refine: cityRefine } = useMenu({ attribute: "city" });
+  const { refine: streetRefine } = useMenu({ attribute: "street" });
+  const { refine: typePropertyRefineBase } = useRefinementList({ attribute: "typeProperty", operator: "or" });
+  const { refine: tagsRefineBase } = useRefinementList({ attribute: "tags", operator: "or" });
 
-  // 2) Filtres numériques
-  const { refine: areaRefine } = useRange({ attribute: "area" });
-  const { refine: roomsRefine } = useRange({ attribute: "nbrRooms" });
 
   // 3) Recherche textuelle
   const { refine: refineQuery } = useSearchBox();
-
-  // 4) UI InstantSearch (optional)
-  const { setUiState, indexUiState, uiState } = useInstantSearch();
 
   // 5) Hits
   const { items } = useHits();
@@ -79,28 +57,31 @@ export const AlgoliaRefinementsProvider: React.FC<AlgoliaRefinementsProviderProp
     (value: string) => tagsRefineBase(value),
     [tagsRefineBase]
   );
-  //console.log("items:",items)
-  /* useEffect(() => {
-    console.log("items:",items)
-  }, [items]); */
+
+  const contextValue = useMemo(() => ({
+    // Text filters
+    cityRefine,
+    streetRefine,
+    refineTypeProperty,
+    refineTags,
+    // Numeric filters
+    //areaRefine,
+    //roomsRefine,
+    // Search
+    refineQuery,
+    // Results
+    datas: items,
+  }), [
+    cityRefine,
+    streetRefine,
+    refineTypeProperty,
+    refineTags,
+    refineQuery,
+    items
+  ]);
 
   return (
-    <AlgoliaRefinementsContext.Provider
-      value={{
-        // Text filters
-        cityRefine,
-        streetRefine,
-        refineTypeProperty,
-        refineTags,
-        // Numeric filters
-        //areaRefine,
-        //roomsRefine,
-        // Search
-        refineQuery,
-        // Results
-        datas:items,
-      }}
-    >
+    <AlgoliaRefinementsContext.Provider value={contextValue}>
       {children}
     </AlgoliaRefinementsContext.Provider>
   );

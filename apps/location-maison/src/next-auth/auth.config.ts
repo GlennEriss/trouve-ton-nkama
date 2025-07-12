@@ -6,11 +6,157 @@ import { NextAuthConfig } from "next-auth"
 import Credentials from "next-auth/providers/credentials"
 import GoogleProvider from "next-auth/providers/google";
 import FacebookProvider from "next-auth/providers/facebook";
-//import { createNotification } from "@/db/notification.db";
 import { routes } from "@/constantes/routes";
 import { NotificationParameter } from "@/models/notification";
 
 const getAuth = () => import('@/firebase/auth')
+
+// Fonction pour créer les paramètres de notification par défaut
+const createDefaultNotificationParameter = (): NotificationParameter => ({
+    isNew: true,
+    isAccountActivity: true,
+    isNewAnnouncement: true,
+    isFavoris: true,
+    isPersonalizedSuggestions: true,
+    isSystemUpdated: true
+});
+
+// Fonction pour valider les credentials
+const validateCredentialsUser = (userExists: any, credentials: any) => {
+    const hasOnlyCredentials = userExists?.providers?.includes('CREDENTIALS') &&
+        !userExists?.providers?.includes('FACEBOOK') &&
+        !userExists?.providers?.includes('GOOGLE');
+    
+    if (hasOnlyCredentials) {
+        return credentials ? true : routes.public.signin + "?error=wrong_provider";
+    }
+    return null;
+};
+
+// Fonction pour gérer la connexion Google d'un nouvel utilisateur
+const handleNewGoogleUser = async (user: any, account: any, profile: any, credential: any) => {
+    const firebaseUser = await signInWithCredential(auth, credential);
+    const uid = firebaseUser.user.uid;
+    
+    const userData = {
+        uid,
+        firstname: profile?.given_name ?? '',
+        lastname: profile?.family_name ?? '',
+        email: user?.email ?? '',
+        image: profile?.picture ?? '',
+        phoneNumbers: firebaseUser.user.phoneNumber ? [firebaseUser.user.phoneNumber] : [],
+        role: ["Announcer"],
+        searchableName: firebaseUser.user?.displayName ?? '',
+        providers: ['GOOGLE' as ProviderType],
+        metadata: { idToken: account.id_token },
+        notificationParameter: createDefaultNotificationParameter()
+    };
+    
+    await createUser(userData);
+};
+
+// Fonction pour gérer la connexion Google d'un utilisateur existant
+const handleExistingGoogleUser = async (userExists: any, account: any, credential: any) => {
+    const providers = userExists?.providers ?? [];
+    
+    if (!providers.includes('GOOGLE')) {
+        const facebookCredential = FacebookAuthProvider.credential(userExists.metadata.accessToken);
+        const facebookUser = await signInWithCredential(auth, facebookCredential);
+        await linkWithCredential(facebookUser.user, credential);
+        providers.push('GOOGLE');
+    }
+    
+    await updateUser(userExists.uid, {
+        ...userExists,
+        metadata: {
+            ...userExists.metadata,
+            idToken: account.id_token
+        },
+        providers
+    });
+};
+
+// Fonction pour gérer la connexion Google
+const handleGoogleSignIn = async (user: any, account: any, profile: any, userExists: any) => {
+    const credential = GoogleAuthProvider.credential(account.id_token);
+    
+    try {
+        if (!userExists) {
+            await handleNewGoogleUser(user, account, profile, credential);
+        } else {
+            await handleExistingGoogleUser(userExists, account, credential);
+        }
+        return true;
+    } catch (error) {
+        console.error("Erreur lors de la connexion avec Firebase:", error);
+        return false;
+    }
+};
+
+// Fonction pour gérer la connexion Facebook d'un nouvel utilisateur
+const handleNewFacebookUser = async (user: any, account: any, profile: any, credential: any) => {
+    const firebaseUser = await signInWithCredential(auth, credential);
+    const uid = firebaseUser.user.uid;
+    
+    const userData = {
+        uid,
+        firstname: profile?.name ?? '',
+        lastname: '',
+        email: user?.email ?? '',
+        image: profile?.picture?.data?.url ?? '',
+        phoneNumbers: firebaseUser.user.phoneNumber ? [firebaseUser.user.phoneNumber] : [],
+        role: ["Announcer"],
+        searchableName: profile?.name ?? '',
+        providers: ['FACEBOOK' as ProviderType],
+        metadata: { accessToken: account.access_token },
+        notificationParameter: createDefaultNotificationParameter()
+    };
+    
+    await createUser(userData);
+};
+
+// Fonction pour gérer la connexion Facebook d'un utilisateur existant
+const handleExistingFacebookUser = async (userExists: any, account: any, credential: any) => {
+    const providers = userExists?.providers ?? [];
+    
+    if (!providers.includes('FACEBOOK')) {
+        const googleCredential = GoogleAuthProvider.credential(userExists.metadata.idToken);
+        const googleUser = await signInWithCredential(auth, googleCredential);
+        await linkWithCredential(googleUser.user, credential);
+        providers.push('FACEBOOK');
+    }
+    
+    await updateUser(userExists.uid, {
+        ...userExists,
+        metadata: {
+            ...userExists.metadata,
+            accessToken: account.access_token
+        },
+        providers
+    });
+};
+
+// Fonction pour gérer la connexion Facebook
+const handleFacebookSignIn = async (user: any, account: any, profile: any, userExists: any) => {
+    if (!account.access_token) {
+        return false;
+    }
+    
+    const credential = FacebookAuthProvider.credential(account.access_token);
+    
+    try {
+        if (!userExists) {
+            await handleNewFacebookUser(user, account, profile, credential);
+        } else {
+            await handleExistingFacebookUser(userExists, account, credential);
+        }
+        return true;
+    } catch (error: any) {
+        console.error("Erreur lors de la connexion avec Firebase:", error);
+        return false;
+    }
+};
+
 const authConfig = {
     secret: process.env.NEXTAUTH_SECRET,
     trustHost: true,
@@ -61,168 +207,31 @@ const authConfig = {
     ],
     callbacks: {
         async signIn({ user, account, profile, credentials }) {
-            /* console.log('user', user)
-            console.log('account', account)
-            console.log('profile', profile) */
             const userExists = await findUserByEmail(user?.email ?? '');
+            
+            // Validation pour les utilisateurs avec credentials uniquement
             if (userExists) {
-                if (
-                    userExists?.providers?.includes('CREDENTIALS') &&
-                    !userExists?.providers?.includes('FACEBOOK') &&
-                    !userExists?.providers?.includes('GOOGLE')
-                ) {
-                    if (credentials) {
-                        return true;
-                    } else {
-                        return routes.public.signin + "?error=wrong_provider"
-                    }
+                const credentialsValidation = validateCredentialsUser(userExists, credentials);
+                if (credentialsValidation !== null) {
+                    return credentialsValidation;
                 }
             }
+            
+            // Gestion de la connexion Google
             if (account?.provider === "google") {
-                const credential = GoogleAuthProvider.credential(account.id_token);
-                try {
-                    if (!userExists) {
-                        const firebaseUser = await signInWithCredential(auth, credential);
-                        const uid = firebaseUser.user.uid;
-                        const notificationParameter: NotificationParameter = {
-                            isNew: true,
-                            isAccountActivity: true,
-                            isNewAnnouncement: true,
-                            isFavoris: true,
-                            isPersonalizedSuggestions: true,
-                            isSystemUpdated: true
-                        }
-                        const userData = {
-                            uid,
-                            firstname: profile?.given_name ?? '',
-                            lastname: profile?.family_name ?? '',
-                            email: user?.email ?? '',
-                            image: profile?.picture ?? '',
-                            phoneNumbers: firebaseUser.user.phoneNumber ? [firebaseUser.user.phoneNumber] : [],
-                            role: ["Announcer"],
-                            searchableName: firebaseUser.user?.displayName ?? '',
-                            providers: ['GOOGLE' as ProviderType],
-                            metadata: {
-                                idToken: account.id_token
-                            },
-                            notificationParameter
-                        };
-                        await createUser(userData);
-                        /* await createNotification({
-                            type: 'SECURITY',
-                            title: 'Sécurisez votre compte avec Facebook',
-                            message: "Pour mieux protéger votre compte et éviter toute tentative d'accès non autorisé, connectez-le à Facebook dès maintenant.",
-                            isRead: false,
-                            createdFor: uid,
-                            actionUrl: routes.protected.login_and_security,
-                        }); */
-                    } else {
-                        const providers = userExists?.providers || []
-                        if (!providers.includes('GOOGLE')) {
-                            const facebookCredential = FacebookAuthProvider.credential(userExists.metadata.accessToken)
-                            const facebookUser = await signInWithCredential(auth, facebookCredential)
-                            await linkWithCredential(facebookUser.user, credential)
-                            providers.push('GOOGLE')
-                            /* await createNotification({
-                                type: 'SECURITY',
-                                title: 'Sécurité avec Google',
-                                message: "Votre compte a été sécurisé avec Google",
-                                isRead: false,
-                                createdFor: user.uid,
-                                actionUrl: routes.protected.login_and_security,
-                            }); */
-                        }
-                        await updateUser(userExists.uid, {
-                            ...userExists,
-                            metadata: {
-                                ...userExists.metadata,
-                                idToken: account.id_token
-                            },
-                            providers
-                        })
-                    }
-                    return true;
-                } catch (error) {
-                    console.error("Erreur lors de la connexion avec Firebase:", error);
-                    return false;
-                }
+                return await handleGoogleSignIn(user, account, profile, userExists);
             }
+            
+            // Gestion de la connexion Facebook
             if (account?.provider === "facebook") {
-                if (!account.access_token) {
-                    return false
-                }
-                const credential = FacebookAuthProvider.credential(account.access_token)
-                try {
-                    if (!userExists) {
-                        const firebaseUser = await signInWithCredential(auth, credential)
-                        const uid = firebaseUser.user.uid
-                        const notificationParameter: NotificationParameter = {
-                            isNew: true,
-                            isAccountActivity: true,
-                            isNewAnnouncement: true,
-                            isFavoris: true,
-                            isPersonalizedSuggestions: true,
-                            isSystemUpdated: true
-                        }
-                        const userData = {
-                            uid,
-                            firstname: profile?.name ?? '',
-                            lastname: '',
-                            email: user?.email ?? '',
-                            image: profile?.picture?.data?.url ?? '',
-                            phoneNumbers: firebaseUser.user.phoneNumber ? [firebaseUser.user.phoneNumber] : [],
-                            role: ["Announcer"],
-                            searchableName: profile?.name ?? '',
-                            providers: ['FACEBOOK' as ProviderType],
-                            metadata: {
-                                accessToken: account.access_token
-                            },
-                            notificationParameter
-                        }
-                        await createUser(userData);
-                        /* await createNotification({
-                            type: 'SECURITY',
-                            title: 'Sécurisez votre compte avec Google',
-                            message: "Pour mieux protéger votre compte et éviter toute tentative d'accès non autorisé, connectez-le à Google dès maintenant.",
-                            isRead: false,
-                            createdFor: uid,
-                            actionUrl: routes.protected.login_and_security,
-                        }); */
-                    } else {
-                        const providers = userExists?.providers || []
-                        if (!providers.includes('FACEBOOK')) {
-                            const googleCredential = GoogleAuthProvider.credential(userExists.metadata.idToken)
-                            const googleUser = await signInWithCredential(auth, googleCredential);
-                            await linkWithCredential(googleUser.user, credential);
-                            providers.push('FACEBOOK')
-                            /* await createNotification({
-                                type: 'SECURITY',
-                                title: 'Sécurité avec Facebook',
-                                message: "Votre compte a été sécurisé avec Facebook",
-                                isRead: false,
-                                createdFor: user.uid,
-                                actionUrl: routes.protected.login_and_security,
-                            }); */
-                        }
-                        await updateUser(userExists.uid, {
-                            ...userExists,
-                            metadata: {
-                                ...userExists.metadata,
-                                accessToken: account.access_token
-                            },
-                            providers
-                        })
-                    }
-                } catch (error: any) {
-                    console.error("Erreur lors de la connexion avec Firebase:", error);
-                    return false;
-                }
+                return await handleFacebookSignIn(user, account, profile, userExists);
             }
+            
             return true;
         },
         async jwt({ token, user, trigger, session }) {
             if (user) {
-                const userDetails = await findUserByEmail(user.email!)
+                const userDetails = await findUserByEmail(user.email ?? '')
                 if (userDetails) {
                     user = userDetails
                 }

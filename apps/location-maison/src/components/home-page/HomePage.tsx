@@ -1,19 +1,13 @@
 "use client";
 
 import React, { useCallback } from "react";
-import Slider from "react-slick";
 import { motion } from "framer-motion";
-import { FaHome, FaBuilding, FaWarehouse, FaStore } from "react-icons/fa";
-import { BiBed } from "react-icons/bi";
-import { MdOutlineApartment, MdOutlineWorkspaces } from "react-icons/md";
 import { Button } from "@/components/ui/button";
 import PropertyCarousel from "../property/PropertyCarousel";
-import MapComponent, { Neighborhood } from "../map/MapComponent";
-import houseMocks from "@/mocks/mocksHouse";
+import { Neighborhood } from "../map/MapComponent";
 import { routes } from "@/constantes/routes";
 import { useRefinementList } from "react-instantsearch";
 import { useAlgoliaContext } from "@/providers/AlgoliaContext";
-import AlgoliaRefinements, { useAlgoliaRefinements } from "@/providers/AlgoliaRefinementsContext";
 import { useRouter } from "next/navigation";
 import { propertyTypesList } from "./PropertyTypeList";
 import Link from "next/link";
@@ -76,58 +70,27 @@ const neighborhoods: Neighborhood[] = [
 const HomePage = () => {
 
   const {
-    city,
-    setCity,
-    street,
-    setStreet,
-    minPrice,
-    setMinPrice,
-    maxPrice,
-    setMaxPrice,
-    minArea,
-    setMinArea,
-    maxArea,
-    setMaxArea,
-    minNbrRooms,
-    setMinNbrRooms,
-    maxNbrRooms,
-    setMaxNbrRooms,
     typeProperty,
     setTypeProperty,
-    tags,
-    setTags,
-    clearFilters,
   } = useAlgoliaContext();
-  const { datas } = useAlgoliaRefinements();
   const { user } = useCurrentUser();
 
   const toggleSelection = useCallback(
     (list: string[], item: string, setter: (val: string[]) => void) => {
       if (list.includes(item)) {
         const newList = list.filter((i) => i !== item);
-        //console.log(`Retrait de l'élément "${item}". Nouvelle liste :`, newList);
         setter(newList);
       } else {
         const newList = [...list, item];
-        //console.log(`Ajout de l'élément "${item}". Nouvelle liste :`, newList);
         setter(newList);
       }
     },
     []
   );
 
-  const adCarouselSettings = {
-    dots: true,
-    infinite: true,
-    autoplay: true,
-    autoplaySpeed: 4000,
-    slidesToShow: 1,
-    slidesToScroll: 1,
-  };
-
   const router = useRouter();
 
-  const { items: typePropItems, refine: typePropertyRefine } = useRefinementList({
+  const { refine: typePropertyRefine } = useRefinementList({
     attribute: "typeProperty",
     operator: "or", // ou "and" selon la logique voulue
   });
@@ -141,14 +104,10 @@ const HomePage = () => {
     setTypeProperty: (props: string[]) => void,
     typePropertyRefine: (value: string) => void,
   ) {
-    console.log("click")
     const key = getTypePropertyKey(type)!;
     toggleSelection(typeProperty, key, setTypeProperty);
-    //typePropertyRefine(type);
     router.push(`/search?typeProperty=${encodeURIComponent(type)}`);
   }
-
-  //console.log("datas:", datas)
 
   return (
     <div className="container mx-auto px-4 py-8 bg-gray-100 dark:bg-gray-900 transition-colors mb-10">

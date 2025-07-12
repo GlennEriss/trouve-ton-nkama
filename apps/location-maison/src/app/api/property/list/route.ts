@@ -1,43 +1,50 @@
 import { NextResponse } from 'next/server';
 import { getProperties } from '@/db/property.db';
+import redis from '@/redis/client';
 
-// Cache variables
-let propertiesCache: any;
-let cacheTimestamp: number = 0;
-const CACHE_DURATION_MS = 1000 * 60 * 10; // 10 minutes
+// TTL du cache catalogue (en secondes) – configurable via REDIS_CATALOG_TTL, défaut 600 s
+const CACHE_TTL_SECONDS = parseInt(process.env.REDIS_CATALOG_TTL ?? '600', 10);
 
 export async function GET(request: Request) {
     const url = new URL(request.url);
-    const limitPerPage = parseInt(url.searchParams.get('limitPerPage') || '10', 10);
-    const lastDoc = url.searchParams.get('lastDoc') || null;
+    const limitPerPage = parseInt(url.searchParams.get('limitPerPage') ?? '10', 10);
+    const lastDoc = url.searchParams.get('lastDoc') ?? null;
 
-    // Check if cache is still valid
-    const now = Date.now();
-    const isCacheValid = (now - cacheTimestamp) < CACHE_DURATION_MS;
+    // Clé Redis incluant pagination (limit et lastDoc)
+    const cacheKey = `properties:list:${limitPerPage}:${lastDoc ?? 'first'}`;
 
-    if (isCacheValid && propertiesCache.properties.length > 0) {
-        return NextResponse.json(propertiesCache, {
-            headers: {
-                'Cache-Control': 'public, s-maxage=600, stale-while-revalidate=300',
-            },
-        });
+    // Tentative de lecture du cache Redis
+    try {
+        const cached = await redis.get<any>(cacheKey);
+        if (cached) {
+            return NextResponse.json(cached, {
+                headers: {
+                    'Cache-Control': `public, s-maxage=60, stale-while-revalidate=60`,
+                },
+            });
+        }
+    } catch (err) {
+        console.error('Erreur Redis (GET list):', err);
     }
 
     try {
-        // Fetch fresh properties if cache is invalid
+        // Cache manquant : récupération Firestore
         const properties = await getProperties({ limitPerPage, lastDoc });
-        
-        // Update the cache
-        propertiesCache = properties;
-        cacheTimestamp = now;
+
+        // Enregistrement dans Redis
+        try {
+            await redis.set(cacheKey, properties, { ex: CACHE_TTL_SECONDS });
+        } catch (err) {
+            console.error('Erreur Redis (SET list):', err);
+        }
 
         return NextResponse.json(properties, {
             headers: {
-                'Cache-Control': 'public, s-maxage=600, stale-while-revalidate=300',
+                'Cache-Control': `public, s-maxage=60, stale-while-revalidate=60`,
             },
         });
     } catch (error) {
-        console.error("Error fetching properties:", error);
+        console.error('Error fetching properties:', error);
         return NextResponse.json({ error: 'Failed to fetch properties' }, { status: 500 });
     }
 }

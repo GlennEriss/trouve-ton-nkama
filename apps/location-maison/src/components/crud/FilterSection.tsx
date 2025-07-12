@@ -10,7 +10,7 @@ import { Input } from '../ui/input'
 import { Tooltip, TooltipContent, TooltipTrigger } from '../ui/tooltip'
 import { useCrudContext } from '@/providers/crud.provider'
 
-export default function FilterSection({ children }: { children: React.ReactNode }) {
+export default function FilterSection({ children }: Readonly<{ children: React.ReactNode }>) {
     return (
         <div>
             <FilterMobile children={children} />
@@ -19,7 +19,7 @@ export default function FilterSection({ children }: { children: React.ReactNode 
     )
 }
 
-export const FilterMobile = ({ children }: { children: ReactNode }) => {
+export const FilterMobile = ({ children }: Readonly<{ children: ReactNode }>) => {
     const [isOpen, setIsOpen] = React.useState(false)
     return (
         <Popover open={isOpen}>
@@ -47,7 +47,7 @@ export const FilterMobile = ({ children }: { children: ReactNode }) => {
     )
 }
 
-export const FilterDesktop = ({ children }: { children: React.ReactNode }) => {
+export const FilterDesktop = ({ children }: Readonly<{ children: React.ReactNode }>) => {
     return (
         <div className='hidden xl:flex'>
             <div className="flex gap-2 items-center">
@@ -91,9 +91,9 @@ const FilterList = () => {
                 />
             </div>
             {
-                filters.map((filter, key) => (
+                filters.map((filter) => (
                     <FilterButton
-                        key={key}
+                        key={filter.title}
                         title={filter.title}
                         state={filter.state}
                         handleFilter={handleFilter}
@@ -104,7 +104,7 @@ const FilterList = () => {
     )
 }
 
-export const FilterButton = ({ title, handleFilter, state, icon }: { title: string, handleFilter: (state: any) => void, state: any, icon?: any }) => {
+export const FilterButton = ({ title, handleFilter, state, icon }: Readonly<{ title: string, handleFilter: (state: any) => void, state: any, icon?: any }>) => {
     const [actived, setActived] = React.useState(state === 'InProgress')
     return (
         <div className={`flex flex-col gap-3`}>

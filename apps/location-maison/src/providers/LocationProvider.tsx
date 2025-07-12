@@ -1,16 +1,25 @@
 "use client";
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState, useEffect, useMemo } from 'react';
 
 interface Neighborhood {
   name: string;
   coordinates: [number, number][];
 }
 
+interface LocationData {
+  country?: string;
+  region?: string;
+  city?: string;
+  countryCode?: string;
+  neighbourhood?: string;
+  city_district?: string;
+}
+
 interface LocationContextType {
-  locationsContext: any | null;
-  currentLocation: any | null;
-  setCurrentLocation: (...params: any[]) => void;
-  setLocationsContext: (...params: any[]) => void;
+  locationsContext: LocationData[];
+  currentLocation: LocationData | null;
+  setCurrentLocation: (location: LocationData | null) => void;
+  setLocationsContext: (locations: LocationData[]) => void;
   getLatitudeAndLongitudeLocation: () => Promise<{
     latitude: number;
     longitude: number;
@@ -49,8 +58,8 @@ export const LocationProvider: React.FC<LocationProviderProps> = ({
   initialLat,
   initialLng,
 }) => {
-  const [locationsContext, setLocationsContext] = useState<any[]>([]);
-  const [currentLocation, setCurrentLocation] = useState<any>();
+  const [locationsContext, setLocationsContext] = useState<LocationData[]>([]);
+  const [currentLocation, setCurrentLocation] = useState<LocationData | null>(null);
   const [address, setAddress] = useState<string>('');
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
@@ -88,7 +97,7 @@ export const LocationProvider: React.FC<LocationProviderProps> = ({
         };
         setCurrentLocation(locationData);
         setLocationsContext([locationData]);
-        setAddress(data.display_name || 'Adresse non trouvée');
+        setAddress(data.display_name ?? 'Adresse non trouvée');
         
         // Sauvegarder dans le localStorage
         localStorage.setItem('userLocation', JSON.stringify({
@@ -214,8 +223,8 @@ export const LocationProvider: React.FC<LocationProviderProps> = ({
             element.type === "relation" || element.type === "way" || element.type === "node"
         )
         .map((element: any) => ({
-          name: element.tags?.name || "Inconnu",
-          coordinates: element.geometry?.map((point: any) => [point.lat, point.lon]) || [],
+          name: element.tags?.name ?? "Inconnu",
+          coordinates: element.geometry?.map((point: any) => [point.lat, point.lon]) ?? [],
         }));
     } catch (error) {
       console.error("Erreur lors de la récupération des quartiers :", error);
@@ -228,7 +237,7 @@ export const LocationProvider: React.FC<LocationProviderProps> = ({
     setError(null);
     try {
       const newAddress = await getAddressFromCoordinates(lat, lng);
-      setAddress(newAddress.display_name || 'Adresse non trouvée');
+      setAddress(newAddress.display_name ?? 'Adresse non trouvée');
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Une erreur est survenue');
     } finally {
@@ -264,7 +273,7 @@ export const LocationProvider: React.FC<LocationProviderProps> = ({
     }
   }, [initialLat, initialLng]);
 
-  const value = {
+  const value = useMemo(() => ({
     locationsContext,
     currentLocation,
     setLocationsContext,
@@ -279,7 +288,13 @@ export const LocationProvider: React.FC<LocationProviderProps> = ({
     error,
     updateLocation,
     searchAddress,
-  };
+  }), [
+    locationsContext,
+    currentLocation,
+    address,
+    isLoading,
+    error
+  ]);
 
   return (
     <LocationContext.Provider value={value}>

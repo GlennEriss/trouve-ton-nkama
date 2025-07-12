@@ -2,10 +2,13 @@
  * @module Builders/property-form
  */
 
+import { InputApp } from "@/components/shared/ui/InputApp";
+import { InputNumberApp } from "@/components/shared/ui/InputNumberApp";
+import TextareaApp from "@/components/shared/ui/TextareaApp";
 import MapForm from "@/components/stepper/MapForm";
-import { NumberComponent, TextareaComponent, TextComponent } from "@/components/stepper/step.shared.component";
 import { ImagesComponent, StatusComponent, TagsComponent } from "@/components/stepper/step1.components";
-import { InputDisabledComponent } from '@/components/stepper/step3.components';
+import { SelectCityComponent, SelectProvinceComponent, SelectStreetComponent } from '@/components/stepper/step3.components';
+import { PhoneInput } from '@/components/ui/phone-input'
 
 /**
  * @typedef {Object} FormElement
@@ -59,28 +62,28 @@ export abstract class PropertyFormBuilder {
                 name: "title",
                 label: "Titre",
                 description: "Entrez un titre pour décrire le bien (ex: Maison familiale spacieuse).",
-                component: (field: any) => <TextComponent field={field} />,
+                component: (field: any) => <InputApp {...field} />,
                 step: 1
             },
             {
                 name: "description",
                 label: "Description",
                 description: "Décrivez les caractéristiques principales du bien immobilier.",
-                component: (field: any) => <TextareaComponent field={field} />,
+                component: (field: any) => <TextareaApp {...field} />,
                 step: 1
             },
             {
                 name: "area",
                 label: "Superficie",
                 description: "Indiquez la superficie du bien en mètres carrés.",
-                component: (field: any) => <NumberComponent field={field} />,
+                component: (field: any) => <InputNumberApp step={10} {...field} />,
                 step: 1
             },
             {
                 name: "price",
                 label: "Prix (FCFA)",
                 description: "Entrez le prix du bien immobilier ou le loyer attendu.",
-                component: (field: any) => <NumberComponent field={field} />,
+                component: (field: any) => <InputNumberApp step={10000} {...field} />,
                 step: 1
             },
             {
@@ -98,38 +101,55 @@ export abstract class PropertyFormBuilder {
                 step: 1
             },
             {
-                name: "street",
+                name: "map",
                 label: "Saisissez la localité de votre logement",
                 description: "Saisissez puis sélectionnez un quartier",
                 component: (field: any) => <MapForm />,
                 step: 3
-            }, 
+            },
             {
                 name: "province",
                 label: "Province",
                 description: "",
-                component: (field: any) => <InputDisabledComponent field={field} />,
+                component: (field: any) => <SelectProvinceComponent field={field} />,
                 step: 3
             },
             {
                 name: "city",
                 label: "Ville",
                 description: "",
-                component: (field: any) => <InputDisabledComponent field={field} />,
+                component: (field: any) => <SelectCityComponent field={field} />,
                 step: 3
             },
             {
                 name: "street",
                 label: "Quartier",
                 description: "Saisissez puis sélectionnez un quartier",
-                component: (field: any) => <InputDisabledComponent field={field} />,
+                component: (field: any) => <SelectStreetComponent field={field} />,
                 step: 3
-            }, 
+            },
             {
                 name: "additionnalInformation",
                 label: "Informations complémentaires",
                 description: "Ex: Terminus Awoungou en face de...",
-                component: (field: any) => <TextareaComponent field={field} />,
+                component: (field: any) => <TextareaApp rows={3} {...field} />,
+                step: 3
+            },
+            {
+                name: "contact",
+                label: "Numéro de téléphone",
+                description: "Ex: +241 06 97 00 00 00",
+                component: (field: any) => (
+                    <div className='border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900 p-2 rounded-full focus-within:border-[#1FA89B] focus-within:bg-[#ebf6f5] dark:focus-within:bg-gray-800'>
+                        <PhoneInput
+                            defaultCountry='GA'
+                            triggerClassName=' border-none shadow-none rounded-full'
+                            className='border-none shadow-none focus-visible:ring-0 rounded-full dark:text-white dark:placeholder:text-gray-500 bg-transparent'
+                            onChange={(value) => field.onChange(value)}
+                            value={field.value}
+                        />
+                    </div>
+                ),
                 step: 3
             }
         )
@@ -142,5 +162,4 @@ export abstract class PropertyFormBuilder {
     public build() {
         return this.formElements
     };
-    public static getInstance() { }
 }

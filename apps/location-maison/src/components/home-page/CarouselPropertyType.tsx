@@ -14,6 +14,30 @@ export default function CarouselPropertyType() {
     const { setTypeProperty } = useAlgoliaContext()
     const router = useRouter()
 
+    // Appeler les hooks individuellement au niveau du composant (conforme aux règles React)
+    const homeCount = useServerCountByPropertyType("Home")
+    const studioCount = useServerCountByPropertyType("Studio")
+    const apartmentCount = useServerCountByPropertyType("Apartment")
+    const buildingCount = useServerCountByPropertyType("Building")
+    const deskCount = useServerCountByPropertyType("Desk")
+    const roomCount = useServerCountByPropertyType("Room")
+    const kioskCount = useServerCountByPropertyType("Kiosk")
+    const shopCount = useServerCountByPropertyType("Shop")
+    const landCount = useServerCountByPropertyType("Land")
+
+    // Créer le mapping des données
+    const propertyCounts: Record<string, number> = {
+        "Home": homeCount.data ?? 0,
+        "Studio": studioCount.data ?? 0,
+        "Apartment": apartmentCount.data ?? 0,
+        "Building": buildingCount.data ?? 0,
+        "Desk": deskCount.data ?? 0,
+        "Room": roomCount.data ?? 0,
+        "Kiosk": kioskCount.data ?? 0,
+        "Shop": shopCount.data ?? 0,
+        "Land": landCount.data ?? 0,
+    }
+
     const handleClick = (propertyType: string) => {
         setTypeProperty([propertyType])
         const params = new URLSearchParams()
@@ -59,11 +83,11 @@ export default function CarouselPropertyType() {
     return (
         <div className="px-4 md:px-8">
             <Slider {...settings} className="my-8">
-                {propertyTypesList.map((property, key) => {
-                    const { data: count = 0 } = useServerCountByPropertyType(property.type)
+                {propertyTypesList.map((property) => {
+                    const count = propertyCounts[property.type]
 
                     return (
-                        <div key={key} className="px-2">
+                        <div key={property.type} className="px-2">
                             <Card
                                 className="group flex flex-col items-center cursor-pointer bg-white dark:bg-gray-800 transition-all duration-300 hover:shadow-lg"
                                 onClick={() => handleClick(property.type)}

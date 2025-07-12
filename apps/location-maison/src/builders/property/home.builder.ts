@@ -38,9 +38,9 @@ export class HomeBuilder extends LogementBuilder {
      * Sets the number of floors in the home.
      * 
      * @param {number} nbrFloors - The number of floors in the home.
-     * @returns {HomeBuilder} The current instance of `HomeBuilder`.
+     * @returns {this} The current instance of `HomeBuilder`.
      */
-    setNbrFloors(nbrFloors: number): HomeBuilder {
+    setNbrFloors(nbrFloors: number): this {
         (this.property as Home).nbrFloors = nbrFloors;
         return this;
     }
@@ -49,9 +49,9 @@ export class HomeBuilder extends LogementBuilder {
      * Sets the number of garages in the home.
      * 
      * @param {number} nbrGarages - The number of garages in the home.
-     * @returns {HomeBuilder} The current instance of `HomeBuilder`.
+     * @returns {this} The current instance of `HomeBuilder`.
      */
-    setNbrGarages(nbrGarages: number): HomeBuilder {
+    setNbrGarages(nbrGarages: number): this {
         (this.property as Home).nbrGarages = nbrGarages;
         return this;
     }

@@ -9,7 +9,7 @@ export function useProperty(id: string | undefined) {
       const data = await res.json();
 
       if (res.status !== 200) {
-        throw new Error(data.error || 'Failed to fetch property');
+        throw new Error(data.error ?? 'Failed to fetch property');
       }
       return data;
     },

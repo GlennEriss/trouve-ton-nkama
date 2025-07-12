@@ -16,19 +16,23 @@ export default function StepperComponent() {
         <div className='grid grid-cols-5 md:grid-cols-7 lg:grid-cols-9 items-center'>
             {
                 steps.map((step, index) => (
-                    <React.Fragment key={index}>
+                    <React.Fragment key={`step-${index}-${step.label}`}>
                         <div className={clsx({
                             'flex justify-start': index === 0,
                             'flex justify-center': index === 1,
                             'flex justify-end': index === 2,
                         })}>
-                            <div 
-                            onClick={() => handleChangeStep(index)}
-                            className={clsx({
-                                'rounded-full border-2 border-[#1B4D5B] text-[#1B4D5B] cursor-pointer text-2xl flex justify-center items-center h-10 w-10 md:h-20 md:w-20': activeStep == index,
-                                'rounded-full border-2 border-[#1B4D5B] bg-[#1B4D5B] cursor-pointer text-2xl flex justify-center items-center h-10 w-10 md:h-20 md:w-20': activeStep > index,
-                                'rounded-full border-2  text-2xl text-gray-400 flex justify-center items-center h-10 w-10 md:h-20 md:w-20': activeStep < index,
-                            })}>
+                            <button
+                                type="button"
+                                onClick={() => handleChangeStep(index)}
+                                disabled={activeStep <= index}
+                                aria-label={`Aller à l'étape ${index + 1}: ${step.label}`}
+                                className={clsx({
+                                    'rounded-full border-2 border-[#1B4D5B] text-[#1B4D5B] cursor-pointer text-2xl flex justify-center items-center h-10 w-10 md:h-20 md:w-20 focus:outline-none focus:ring-2 focus:ring-[#1B4D5B] focus:ring-offset-2 transition-all duration-200': activeStep == index,
+                                    'rounded-full border-2 border-[#1B4D5B] bg-[#1B4D5B] cursor-pointer text-2xl flex justify-center items-center h-10 w-10 md:h-20 md:w-20 focus:outline-none focus:ring-2 focus:ring-[#1B4D5B] focus:ring-offset-2 hover:opacity-80 transition-all duration-200': activeStep > index,
+                                    'rounded-full border-2 text-2xl text-gray-400 flex justify-center items-center h-10 w-10 md:h-20 md:w-20 cursor-not-allowed opacity-50': activeStep < index,
+                                })}
+                            >
                                 {
                                     activeStep > index ? (
                                         <AiOutlineCheck color='white' size={25} />
@@ -38,7 +42,7 @@ export default function StepperComponent() {
                                         </React.Fragment>
                                     )
                                 }
-                            </div>
+                            </button>
                         </div>
 
                         <div className='md:col-span-2 lg:col-span-3'>

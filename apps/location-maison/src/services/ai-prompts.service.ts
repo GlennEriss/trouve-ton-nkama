@@ -57,8 +57,8 @@ STYLE:
     return `
 ANALYSE DU FORMULAIRE DEMANDÉE
 
-Étape actuelle: ${currentStepName} (${context?.activeStep !== undefined ? context.activeStep + 1 : '?'}/${context?.totalSteps || 4})
-Type de propriété: ${context?.factoryType || 'Non spécifié'}
+Étape actuelle: ${currentStepName} (${context?.activeStep !== undefined ? context.activeStep + 1 : '?'}/${context?.totalSteps ?? 4})
+Type de propriété: ${context?.factoryType ?? 'Non spécifié'}
 
 DONNÉES ACTUELLES:
 ${JSON.stringify(formData, null, 2)}
@@ -86,11 +86,11 @@ Donne une analyse structurée avec:
 SUGGESTION DE TAGS POUR PROPRIÉTÉ
 
 Données de la propriété:
-- Type: ${propertyData.propertyType || 'Non spécifié'}
-- Superficie: ${propertyData.area || 'Non spécifiée'} m²
-- Prix: ${propertyData.price || 'Non spécifié'}€
-- Localisation: ${propertyData.city || ''}, ${propertyData.province || ''}
-- Description: ${propertyData.description || 'Aucune description'}
+- Type: ${propertyData.propertyType ?? 'Non spécifié'}
+- Superficie: ${propertyData.area ?? 'Non spécifiée'} m²
+- Prix: ${propertyData.price ?? 'Non spécifié'}€
+- Localisation: ${propertyData.city ?? ''}, ${propertyData.province ?? ''}
+- Description: ${propertyData.description ?? 'Aucune description'}
 
 CONSIGNES:
 1. Propose 4-6 tags pertinents et attractifs
@@ -120,10 +120,10 @@ Description actuelle:
 "${currentDescription}"
 
 Contexte de la propriété:
-- Type: ${propertyData.propertyType || 'Non spécifié'}
-- Superficie: ${propertyData.area || '?'} m²
-- Nombre de pièces: ${propertyData.nbrRooms || '?'}
-- Localisation: ${propertyData.city || '?'}, ${propertyData.province || '?'}
+- Type: ${propertyData.propertyType ?? 'Non spécifié'}
+- Superficie: ${propertyData.area ?? '?'} m²
+- Nombre de pièces: ${propertyData.nbrRooms ?? '?'}
+- Localisation: ${propertyData.city ?? '?'}, ${propertyData.province ?? '?'}
 
 OBJECTIF:
 Réécris cette description pour la rendre plus attractive et professionnelle.
@@ -149,11 +149,11 @@ Propose une version améliorée suivie de 2-3 conseils spécifiques pour l'optim
 ESTIMATION DE PRIX IMMOBILIER
 
 Propriété à évaluer:
-- Type: ${propertyData.propertyType || 'Non spécifié'}
-- Superficie: ${propertyData.area || '?'} m²
-- Nombre de pièces: ${propertyData.nbrRooms || '?'}
-- Localisation: ${propertyData.city || '?'}, ${propertyData.province || '?'}
-- État/Caractéristiques: ${propertyData.description || 'Non spécifié'}
+- Type: ${propertyData.propertyType ?? 'Non spécifié'}
+- Superficie: ${propertyData.area ?? '?'} m²
+- Nombre de pièces: ${propertyData.nbrRooms ?? '?'}
+- Localisation: ${propertyData.city ?? '?'}, ${propertyData.province ?? '?'}
+- État/Caractéristiques: ${propertyData.description ?? 'Non spécifié'}
 
 CONSIGNES:
 1. Donne une fourchette de prix réaliste pour cette propriété
@@ -174,10 +174,10 @@ CONSIGNES:
 CONSEILS LOCALISATION IMMOBILIÈRE
 
 Localisation:
-- Rue: ${locationData.street || 'Non spécifiée'}
-- Ville: ${locationData.city || 'Non spécifiée'}
-- Province: ${locationData.province || 'Non spécifiée'}
-- Informations additionnelles: ${locationData.additionalInformation || 'Aucune'}
+- Rue: ${locationData.street ?? 'Non spécifiée'}
+- Ville: ${locationData.city ?? 'Non spécifiée'}
+- Province: ${locationData.province ?? 'Non spécifiée'}
+- Informations additionnelles: ${locationData.additionalInformation ?? 'Aucune'}
 
 CONSIGNES:
 1. Évalue les avantages de cette localisation
@@ -224,13 +224,17 @@ CONSIGNES STRICTES:
 4. Choisis 3-5 tags pertinents maximum
 5. Le prix doit être cohérent avec la superficie et le type de bien
 6. Tous les nombres doivent être des entiers positifs
+7. Le prix doit TOUJOURS être exprimé en FCFA (jamais en euro ou autre devise)
+8. Si la superficie n'est pas donnée, mets 0 (n'invente jamais de valeur)
+9. Si le prix est donné dans la description utilisateur, tu dois le reprendre tel quel (en FCFA). N'invente jamais un autre prix.
+10. Si la superficie est donnée dans la description utilisateur, tu dois la reprendre telle quelle.
 
 FORMAT DE RÉPONSE OBLIGATOIRE (JSON strict):
 {
   "title": "Titre attractif pour l'annonce",
   "description": "Description détaillée et professionnelle (100-200 mots)",
-  "area": nombre_entier_superficie_en_m2,
-  "price": nombre_entier_prix_en_euros,
+  "area": superficie_donnée_par_l_utilisateur_ou_0_si_absente,
+  "price": prix_en_fcfa_donné_par_l_utilisateur_ou_0_si_absent,
   "tags": ["tag1", "tag2", "tag3"],
   "propertyDetails": {
     ${this.getPropertyDetailsFormat(propertyType)}
@@ -247,6 +251,10 @@ IMPORTANT:
 - Assure-toi que tous les champs numériques sont des nombres entiers
 - Les tags doivent être choisis UNIQUEMENT dans la liste autorisée
 - Si des informations cruciales manquent, indique-le dans les suggestions
+- Le prix doit TOUJOURS être en FCFA, jamais en euro ou autre devise
+- Si la superficie n'est pas donnée, mets 0 (n'invente jamais de valeur)
+- Si le prix est donné dans la description utilisateur, tu dois le reprendre tel quel (en FCFA). N'invente jamais un autre prix.
+- Si la superficie est donnée dans la description utilisateur, tu dois la reprendre telle quelle.
     `;
   }
 
@@ -338,7 +346,10 @@ IMPORTANT:
       contextInfo += `\nDONNÉES DU FORMULAIRE:\n${JSON.stringify(context.currentFormData, null, 2)}\n`;
     }
 
-    return `${systemPrompt}\n${contextInfo}\nQUESTION UTILISATEUR: ${userMessage}\n\nRéponds de manière utile et précise:`;
+    // Ajout des règles strictes pour la superficie et la devise
+    const rules = `\n\nRègles importantes :\n- Si la superficie n'est pas précisée par l'utilisateur, indique 0 pour la superficie (n'invente jamais de valeur).\n- Le prix doit toujours être exprimé en FCFA, jamais en euro ou autre devise.\n`;
+
+    return `${systemPrompt}\n${contextInfo}${rules}\nQUESTION UTILISATEUR: ${userMessage}\n\nRéponds de manière utile et précise:`;
   }
 }
 

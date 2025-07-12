@@ -1,10 +1,8 @@
 import { Input } from '@/components/ui/input'
-import { LucideIcon } from 'lucide-react'
-import React, { useState } from 'react'
-import { FiPlus, FiMinus } from 'react-icons/fi'
+import React from 'react'
 import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
-import { Minus, Plus } from 'lucide-react'
+import { Minus, Plus, LucideIcon } from 'lucide-react'
 
 type InputNumberAppProps = {
     IconLucide?: LucideIcon
@@ -15,19 +13,17 @@ type InputNumberAppProps = {
 } & React.ComponentProps<"input">
 
 export const InputNumberApp = React.forwardRef<HTMLInputElement, InputNumberAppProps>(
-    ({ className, type, onChange, ...props }, ref) => {
-        const [value, setValue] = React.useState<number>(props.defaultValue as number || 0);
-
-        React.useEffect(() => {
-            onChange?.(value);
-        }, [value, onChange]);
-
+    ({ className, type, onChange, value, step, ...props }, ref) => {
         const increment = () => {
-            setValue(prev => prev + (props.step as number || 1));
+            if (typeof value === 'number') {
+                onChange?.((value as number) + (step || 1));
+            }
         };
 
         const decrement = () => {
-            setValue(prev => Math.max(0, prev - (props.step as number || 1)));
+            if (typeof value === 'number') {
+                onChange?.(Math.max(0, (value as number) - (step || 1)));
+            }
         };
 
         return (
@@ -39,11 +35,8 @@ export const InputNumberApp = React.forwardRef<HTMLInputElement, InputNumberAppP
                         className
                     )}
                     ref={ref}
-                    value={value}
-                    onChange={(e) => {
-                        const newValue = Number(e.target.value);
-                        setValue(newValue);
-                    }}
+                    value={value === undefined ? '' : value}
+                    onChange={onChange}
                     {...props}
                 />
                 <div className="absolute inset-y-0 right-0 flex items-center">

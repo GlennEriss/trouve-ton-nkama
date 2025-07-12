@@ -5,17 +5,18 @@ import { SelectFormApp } from '../shared/form/SelectFormApp'
 import { Form } from '../ui/form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { FormFilterSchema, FormFilterSchemaType } from '@/models/schema'
-import { useForm } from 'react-hook-form'
+import { useForm, useWatch } from 'react-hook-form'
 import { useLocation } from '@/hooks/use-location'
 import InputFormNumberApp from '../shared/form/InputFormNumberApp'
 import MultiSelectFormApp from '../shared/form/MultiSelectFormApp'
 import { tags as tagsList } from "@/constantes";
 import { Button } from '../ui/button'
 import { useAlgoliaContext } from "@/providers/AlgoliaContext";
-import { useInfiniteHits } from 'react-instantsearch'
+import { useInfiniteHits, useStats } from 'react-instantsearch'
 import Image from 'next/image'
 import PropertyCard from '../home-page/PropertyCard'
 import { useRouter } from 'next/navigation'
+import { useSearchParams } from 'next/navigation'
 import { TypeProperty, getTypePropertyKey } from '@/constantes/property-type'
 
 interface OptionType {
@@ -26,10 +27,13 @@ interface OptionType {
 export default function SearchDesktopPage() {
     const { data: locations } = useLocation();
     const { items, isLastPage, showMore } = useInfiniteHits();
+    const { nbHits } = useStats();
     const router = useRouter();
+    const searchParams = useSearchParams();
 
     const {
         searchText,
+        setProvince,
         setCity,
         setStreet,
         setMinPrice,
@@ -46,22 +50,115 @@ export default function SearchDesktopPage() {
         resolver: zodResolver(FormFilterSchema)
     });
 
-    // Observer la sélection de la province
-    const selectedProvince = form.watch('province');
+    // État pour éviter les conflits entre URL et interactions utilisateur
+    const [isInitialLoad, setIsInitialLoad] = React.useState(true);
+    // Key pour forcer le re-render des selects quand les valeurs sont synchronisées
+    const [formKey, setFormKey] = React.useState(0);
 
-    // Observer la sélection de la ville
-    const selectedCity = form.watch('city');
-
-    // Réinitialiser city et street quand la province change
+    // Synchronisation URL → Contexte Algolia au chargement initial
     React.useEffect(() => {
-        form.setValue('city', '');
-        form.setValue('street', '');
-    }, [selectedProvince, form]);
+        // Attendre que les données locations soient chargées avant la synchronisation
+        if (!locations) return;
 
-    // Réinitialiser street quand la ville change
+        const provinceVal = searchParams.get("province") ?? "";
+        const cityVal = searchParams.get("city") ?? "";
+        const streetVal = searchParams.get("street") ?? "";
+        const minPriceVal = searchParams.get("minPrice") ?? "";
+        const maxPriceVal = searchParams.get("maxPrice") ?? "";
+        const minAreaVal = searchParams.get("minArea") ?? "";
+        const maxAreaVal = searchParams.get("maxArea") ?? "";
+        const minRoomsVal = searchParams.get("minNbrRooms") ?? "";
+        const maxRoomsVal = searchParams.get("maxNbrRooms") ?? "";
+        const typePropRaw = searchParams.get("typeProperty");
+        const tagsRaw = searchParams.get("tags");
+
+        // Debug log pour vérifier la synchronisation
+        // console.log('🔄 Synchronisation URL→Form:', { provinceVal, cityVal });
+
+        // Mettre à jour le contexte Algolia
+        setProvince(provinceVal);
+        setCity(cityVal);
+        setStreet(streetVal);
+        setMinPrice(minPriceVal);
+        setMaxPrice(maxPriceVal);
+        setMinArea(minAreaVal);
+        setMaxArea(maxAreaVal);
+        setMinNbrRooms(minRoomsVal);
+        setMaxNbrRooms(maxRoomsVal);
+        setTypeProperty(typePropRaw ? typePropRaw.split(",").map(s => s.trim()) : []);
+        setTags(tagsRaw ? tagsRaw.split(",").map(s => s.trim()) : []);
+
+        // Mettre à jour le formulaire avec un délai pour s'assurer que le render est terminé
+        setTimeout(() => {
+            // Vérifier que la province existe dans les options avant de l'appliquer
+            const validProvince = provinceVal && locations[provinceVal] ? provinceVal : '';
+            const validCity = cityVal && validProvince && locations[validProvince]?.[cityVal] ? cityVal : '';
+            const validStreet = streetVal && validCity && validProvince && locations[validProvince]?.[cityVal]?.includes(streetVal) ? streetVal : '';
+
+
+            form.setValue('province', validProvince);
+            form.setValue('city', validCity);
+            form.setValue('street', validStreet);
+            form.setValue('minPrice', minPriceVal ? Number(minPriceVal) : undefined);
+            form.setValue('maxPrice', maxPriceVal ? Number(maxPriceVal) : undefined);
+            form.setValue('minArea', minAreaVal ? Number(minAreaVal) : undefined);
+            form.setValue('maxArea', maxAreaVal ? Number(maxAreaVal) : undefined);
+            form.setValue('minNbrRooms', minRoomsVal ? Number(minRoomsVal) : undefined);
+            form.setValue('maxNbrRooms', maxRoomsVal ? Number(maxRoomsVal) : undefined);
+            form.setValue('typeProperty', typePropRaw ? typePropRaw.split(",").map(s => s.trim()) : []);
+            form.setValue('tags', tagsRaw ? tagsRaw.split(",").map(s => s.trim()) : []);
+            
+            // Marquer le chargement initial comme terminé et forcer re-render
+            setIsInitialLoad(false);
+            setFormKey(prev => prev + 1);
+        }, 100);
+    }, [searchParams.toString(), locations, setProvince, setCity, setStreet, setMinPrice, setMaxPrice, setMinArea, setMaxArea, setMinNbrRooms, setMaxNbrRooms, setTypeProperty, setTags, form]);
+
+    // Observer la sélection de la province et ville avec useWatch pour meilleure réactivité
+    const selectedProvince = useWatch({
+        control: form.control,
+        name: 'province'
+    });
+
+    const selectedCity = useWatch({
+        control: form.control,
+        name: 'city'
+    });
+
+    // Debug pour voir les valeurs du formulaire
+    // React.useEffect(() => {
+    //     console.log('🔍 Valeurs du formulaire:', {
+    //         province: selectedProvince,
+    //         city: selectedCity,
+    //         formValues: form.getValues()
+    //     });
+    // }, [selectedProvince, selectedCity, form]);
+
+    // Réinitialiser city et street quand la province change (seulement après le chargement initial)
     React.useEffect(() => {
-        form.setValue('street', '');
-    }, [selectedCity, form]);
+        if (!isInitialLoad && selectedProvince && locations) {
+            
+            // Vérifier si la ville actuelle est valide pour la nouvelle province
+            const currentCity = form.getValues('city');
+            
+            if (currentCity && !locations[selectedProvince]?.[currentCity]) {
+                form.setValue('city', '');
+                form.setValue('street', '');
+            }
+        }
+    }, [selectedProvince, form, isInitialLoad, locations]);
+
+    // Réinitialiser street quand la ville change (seulement après le chargement initial)
+    React.useEffect(() => {
+        if (!isInitialLoad && selectedCity && selectedProvince && locations) {
+            // Vérifier si le quartier actuel est valide pour la nouvelle ville
+            const currentStreet = form.getValues('street');
+            if (currentStreet && !locations[selectedProvince]?.[selectedCity]?.includes(currentStreet)) {
+                // console.log('❌ Quartier invalide, réinitialisation:', currentStreet);
+                form.setValue('street', '');
+            }
+        }
+    }, [selectedCity, form, isInitialLoad, selectedProvince, locations]);
 
     // Générer les options des provinces triées alphabétiquement
     const provinceOptions = React.useMemo((): OptionType[] => {
@@ -104,7 +201,7 @@ export default function SearchDesktopPage() {
     }, [locations, selectedProvince, selectedCity]);
 
     const onClear = () => {
-        // Reset du formulaire React Hook Form
+        // Reset des valeurs du formulaire
         form.reset({
             province: '',
             city: '',
@@ -125,48 +222,90 @@ export default function SearchDesktopPage() {
         // Reset de l'URL
         router.push('/search');
     };
-    const onSubmit = (data: FormFilterSchemaType) => {
-        // Validation et normalisation des valeurs
+
+    // Fonction pour normaliser et valider les valeurs numériques
+    const normalizeValues = (data: FormFilterSchemaType) => {
         let minPrice = Math.max(0, Number(data.minPrice) || 0);
         let maxPrice = Math.max(0, Number(data.maxPrice) || 0);
+        
         if (minPrice >= maxPrice) {
             maxPrice = Infinity;
             form.setValue('maxPrice', maxPrice);
         }
 
-        let minArea = Math.max(0, Number(data.minArea) || 0);
-        let maxArea = Math.max(0, Number(data.maxArea) || 0);
-        let minRooms = Math.max(0, Number(data.minNbrRooms) || 0);
-        let maxRooms = Math.max(0, Number(data.maxNbrRooms) || 0);
+        const minArea = Math.max(0, Number(data.minArea) || 0);
+        const maxArea = Math.max(0, Number(data.maxArea) || 0);
+        const minRooms = Math.max(0, Number(data.minNbrRooms) || 0);
+        const maxRooms = Math.max(0, Number(data.maxNbrRooms) || 0);
 
-        // Mise à jour du contexte
-        if (data.city) setCity(data.city);
-        if (data.street) setStreet(data.street);
-        if (data.minPrice) setMinPrice(String(minPrice));
-        if (data.maxPrice) setMaxPrice(String(maxPrice));
-        if (data.minArea) setMinArea(String(minArea));
-        if (data.maxArea) setMaxArea(String(maxArea));
-        if (data.minNbrRooms) setMinNbrRooms(String(minRooms));
-        if (data.maxNbrRooms) setMaxNbrRooms(String(maxRooms));
-        if (data.typeProperty?.length) setTypeProperty(data.typeProperty);
-        if (data.tags?.length) setTags(data.tags);
+        return { minPrice, maxPrice, minArea, maxArea, minRooms, maxRooms };
+    };
 
-        // Construction et mise à jour de l'URL
+    // Fonction pour mettre à jour le contexte
+    const updateContext = (data: FormFilterSchemaType, normalizedValues: ReturnType<typeof normalizeValues>) => {
+        const { minPrice, maxPrice, minArea, maxArea, minRooms, maxRooms } = normalizedValues;
+
+        const contextUpdates = [
+            { condition: data.province, setter: setProvince, value: data.province },
+            { condition: data.city, setter: setCity, value: data.city },
+            { condition: data.street, setter: setStreet, value: data.street },
+            { condition: data.minPrice, setter: setMinPrice, value: String(minPrice) },
+            { condition: data.maxPrice, setter: setMaxPrice, value: String(maxPrice) },
+            { condition: data.minArea, setter: setMinArea, value: String(minArea) },
+            { condition: data.maxArea, setter: setMaxArea, value: String(maxArea) },
+            { condition: data.minNbrRooms, setter: setMinNbrRooms, value: String(minRooms) },
+            { condition: data.maxNbrRooms, setter: setMaxNbrRooms, value: String(maxRooms) },
+        ];
+
+        const arrayUpdates = [
+            { condition: data.typeProperty?.length, setter: setTypeProperty, value: data.typeProperty },
+            { condition: data.tags?.length, setter: setTags, value: data.tags },
+        ];
+
+        contextUpdates.forEach(({ condition, setter, value }) => {
+            if (condition) setter(value as string);
+        });
+
+        arrayUpdates.forEach(({ condition, setter, value }) => {
+            if (condition) setter(value as string[]);
+        });
+    };
+
+    // Fonction pour construire les paramètres URL
+    const buildUrlParams = (data: FormFilterSchemaType, normalizedValues: ReturnType<typeof normalizeValues>) => {
+        const { minPrice, maxPrice, minArea, maxArea, minRooms, maxRooms } = normalizedValues;
         const params = new URLSearchParams();
-        if (searchText) params.append("query", searchText);
-        if (data.city) params.append("city", data.city);
-        if (data.street) params.append("street", data.street);
-        if (minPrice) params.append("minPrice", String(minPrice));
-        if (maxPrice && maxPrice !== Infinity) params.append("maxPrice", String(maxPrice));
-        if (minArea) params.append("minArea", String(minArea));
-        if (maxArea) params.append("maxArea", String(maxArea));
-        if (minRooms) params.append("minNbrRooms", String(minRooms));
-        if (maxRooms) params.append("maxNbrRooms", String(maxRooms));
-        if (data.typeProperty?.length) params.append("typeProperty", data.typeProperty.join(","));
-        if (data.tags?.length) params.append("tags", data.tags.join(","));
 
+        const paramMappings = [
+            { condition: searchText, key: "query", value: searchText },
+            { condition: data.province, key: "province", value: data.province },
+            { condition: data.city, key: "city", value: data.city },
+            { condition: data.street, key: "street", value: data.street },
+            { condition: minPrice, key: "minPrice", value: String(minPrice) },
+            { condition: maxPrice && maxPrice !== Infinity, key: "maxPrice", value: String(maxPrice) },
+            { condition: minArea, key: "minArea", value: String(minArea) },
+            { condition: maxArea, key: "maxArea", value: String(maxArea) },
+            { condition: minRooms, key: "minNbrRooms", value: String(minRooms) },
+            { condition: maxRooms, key: "maxNbrRooms", value: String(maxRooms) },
+            { condition: data.typeProperty?.length, key: "typeProperty", value: data.typeProperty?.join(",") },
+            { condition: data.tags?.length, key: "tags", value: data.tags?.join(",") },
+        ];
+
+        paramMappings.forEach(({ condition, key, value }) => {
+            if (condition && value) params.append(key, value);
+        });
+
+        return params;
+    };
+
+    const onSubmit = (data: FormFilterSchemaType) => {
+        const normalizedValues = normalizeValues(data);
+        updateContext(data, normalizedValues);
+        
+        const params = buildUrlParams(data, normalizedValues);
         router.push(`/search?${params.toString()}`);
     };
+
     return (
         <div className='flex p-5'>
             <div className="w-1/4 border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 relative">
@@ -184,6 +323,7 @@ export default function SearchDesktopPage() {
                                         Secteur recherché
                                     </h2>
                                     <SelectFormApp
+                                        key={`province-${formKey}`}
                                         control={form.control}
                                         id="province"
                                         name="province"
@@ -192,6 +332,7 @@ export default function SearchDesktopPage() {
                                         placeholder="Sélectionnez une province"
                                     />
                                     <SelectFormApp
+                                        key={`city-${formKey}`}
                                         control={form.control}
                                         id="city"
                                         name="city"
@@ -201,6 +342,7 @@ export default function SearchDesktopPage() {
                                         disabled={!selectedProvince}
                                     />
                                     <SelectFormApp
+                                        key={`street-${formKey}`}
                                         control={form.control}
                                         id="street"
                                         name="street"
@@ -259,10 +401,13 @@ export default function SearchDesktopPage() {
                                 <MultiSelectFormApp
                                     control={form.control}
                                     name="typeProperty"
-                                    options={Object.values(TypeProperty).map(type => ({
-                                        label: type,
-                                        value: getTypePropertyKey(type)!
-                                    }))}
+                                    options={Object.values(TypeProperty)
+                                        .map(type => ({
+                                            label: type,
+                                            value: getTypePropertyKey(type)!
+                                        }))
+                                        .sort((a, b) => a.label.localeCompare(b.label))
+                                    }
                                     placeholder="Types de propriété"
                                     className='rounded-full p-2 h-14 bg-gray-50 dark:bg-gray-900 dark:text-white'
                                 />
@@ -275,10 +420,13 @@ export default function SearchDesktopPage() {
                                 <MultiSelectFormApp
                                     control={form.control}
                                     name="tags"
-                                    options={tagsList.map(tag => ({
-                                        label: tag.tagName,
-                                        value: tag.tagName
-                                    }))}
+                                    options={tagsList
+                                        .map(tag => ({
+                                            label: tag.tagName,
+                                            value: tag.tagName
+                                        }))
+                                        .sort((a, b) => a.label.localeCompare(b.label))
+                                    }
                                     placeholder="Sélectionnez les tags"
                                     className='rounded-full p-2 h-14 bg-gray-50 dark:bg-gray-900 dark:text-white'
                                 />
@@ -330,7 +478,7 @@ export default function SearchDesktopPage() {
                         <>
                             <div className="mb-6 flex items-center justify-between bg-white dark:bg-gray-800 p-4 rounded-xl shadow-sm">
                                 <h2 className="text-lg font-medium text-gray-900 dark:text-white">
-                                    {items.length} {items.length > 1 ? 'propriétés trouvées' : 'propriété trouvée'}
+                                    {nbHits} {nbHits > 1 ? 'propriétés trouvées' : 'propriété trouvée'}
                                 </h2>
                             </div>
 

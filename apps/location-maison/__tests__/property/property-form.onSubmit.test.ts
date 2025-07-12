@@ -1,7 +1,7 @@
 import { createFile } from '@/db/file.db';
 import { createProperty, updateProperty } from '@/db/property.db';
 import { updateOrCreateSuggestion } from '@/db/suggestion.db';
-import { renderHook, waitFor } from '@testing-library/react';
+import { renderHook } from '@testing-library/react';
 import { useForm } from 'react-hook-form';
 import { Property } from '@/models/annonce';
 import { act } from 'react-dom/test-utils';
@@ -57,7 +57,7 @@ describe('PropertyForm onSubmit', () => {
       id: 'property-id',
     } as unknown as Property;
 
-    const { result } = renderHook(() =>
+    renderHook(() =>
       useForm({
         defaultValues: {
           ...property,
@@ -91,7 +91,7 @@ describe('PropertyForm onSubmit', () => {
   it('should call updateProperty when updating an existing property', async () => {
     const propertyToUpdate = { ...MOCK_PROPERTIES[0], id: 'property-id' };
 
-    const { result } = renderHook(() =>
+    renderHook(() =>
       useForm({
         defaultValues: {
           ...propertyToUpdate,

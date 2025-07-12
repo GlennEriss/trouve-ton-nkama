@@ -5,7 +5,7 @@
 'use client'
 
 import React, { useState, useEffect } from 'react'
-import { X, Package, Smartphone, Loader2, CheckCircle, AlertCircle } from 'lucide-react'
+import { X, Package, Loader2, CheckCircle, AlertCircle } from 'lucide-react'
 /* import { useCreditsPurchase } from '@/hooks/use-credits-purchase' */
 import { useVerifyCode } from '@/hooks/use-verify-code'
 import { useToast } from '@/hooks/use-toast'
@@ -54,9 +54,8 @@ const CREDIT_PACKS: CreditPack[] = [
   }
 ]
 
-export default function PurchaseModal({ isOpen, onClose, preselectedPack }: PurchaseModalProps) {
+export default function PurchaseModal({ isOpen, onClose, preselectedPack }: Readonly<PurchaseModalProps>) {
   const [selectedPack, setSelectedPack] = useState<CreditPack | null>(null)
-  const [phoneNumber, setPhoneNumber] = useState('')
   const [code, setCode] = useState('')
   const [step, setStep] = useState<'select' | 'instructions' | 'code'>('select')
   
@@ -70,15 +69,24 @@ export default function PurchaseModal({ isOpen, onClose, preselectedPack }: Purc
   } = useVerifyCode()
   const { toast } = useToast()
 
-  // Effet pour gérer le pack présélectionné
+  // Effet pour initialiser le modal avec le pack présélectionné
   useEffect(() => {
-    if (preselectedPack && isOpen) {
+    initializeWithPreselectedPack()
+  }, [preselectedPack])
+
+  // Méthode pour initialiser le modal avec le pack présélectionné
+  const initializeWithPreselectedPack = () => {
+    if (preselectedPack) {
       setSelectedPack(preselectedPack)
       setStep('instructions')
-    } else if (!preselectedPack && isOpen) {
-      setStep('select')
+    } else {
+      // Réinitialiser si pas de pack présélectionné
+      setSelectedPack(null)
+      if (step !== 'select') {
+        setStep('select')
+      }
     }
-  }, [preselectedPack, isOpen])
+  }
 
   const handlePackSelect = (pack: CreditPack) => {
     setSelectedPack(pack)
@@ -112,7 +120,7 @@ export default function PurchaseModal({ isOpen, onClose, preselectedPack }: Purc
           
           toast({
             title: "❌ Erreur de validation",
-            description: error.message || 'Une erreur est survenue lors de la validation du code',
+            description: error.message ?? 'Une erreur est survenue lors de la validation du code',
             variant: "destructive"
           })
         }
@@ -120,31 +128,8 @@ export default function PurchaseModal({ isOpen, onClose, preselectedPack }: Purc
     }
   }
 
-/*   const formatPhoneNumber = (value: string) => {
-    // Nettoyer et formater le numéro
-    const cleaned = value.replace(/\D/g, '')
-    
-    // Format: +241 XX XX XX XX
-    if (cleaned.length <= 3) return cleaned
-    if (cleaned.length <= 5) return `${cleaned.slice(0, 3)} ${cleaned.slice(3)}`
-    if (cleaned.length <= 7) return `${cleaned.slice(0, 3)} ${cleaned.slice(3, 5)} ${cleaned.slice(5)}`
-    return `${cleaned.slice(0, 3)} ${cleaned.slice(3, 5)} ${cleaned.slice(5, 7)} ${cleaned.slice(7, 9)}`
-  }
-
-  const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = e.target.value
-    const formatted = formatPhoneNumber(value)
-    setPhoneNumber(formatted)
-  }
-
-  const isValidPhone = () => {
-    const cleaned = phoneNumber.replace(/\D/g, '')
-    return cleaned.length >= 8 && (cleaned.startsWith('241') || cleaned.length === 8)
-  }
- */
   const resetModal = () => {
     setSelectedPack(null)
-    setPhoneNumber('')
     setCode('')
     setStep('select')
   }
@@ -152,6 +137,13 @@ export default function PurchaseModal({ isOpen, onClose, preselectedPack }: Purc
   const handleClose = () => {
     resetModal()
     onClose()
+  }
+
+  const handleKeyDown = (event: React.KeyboardEvent, pack: CreditPack) => {
+    if (event.key === 'Enter' || event.key === ' ') {
+      event.preventDefault()
+      handlePackSelect(pack)
+    }
   }
 
   if (!isOpen) return null
@@ -182,10 +174,12 @@ export default function PurchaseModal({ isOpen, onClose, preselectedPack }: Purc
               
               <div className="space-y-3">
                 {CREDIT_PACKS.map((pack) => (
-                  <div
+                  <button
                     key={pack.id}
                     onClick={() => handlePackSelect(pack)}
-                    className="border border-gray-200 dark:border-gray-700 rounded-xl p-4 cursor-pointer hover:border-[#146B67] hover:bg-[#146B67]/5 transition-all duration-200"
+                    onKeyDown={(e) => handleKeyDown(e, pack)}
+                    className="w-full text-left border border-gray-200 dark:border-gray-700 rounded-xl p-4 cursor-pointer hover:border-[#146B67] hover:bg-[#146B67]/5 focus:outline-none focus:ring-2 focus:ring-[#146B67] focus:ring-offset-2 transition-all duration-200"
+                    aria-label={`Sélectionner le pack ${pack.name} - ${pack.credits} crédits pour ${pack.price} FCFA`}
                   >
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-3">
@@ -211,7 +205,7 @@ export default function PurchaseModal({ isOpen, onClose, preselectedPack }: Purc
                         )}
                       </div>
                     </div>
-                  </div>
+                  </button>
                 ))}
               </div>
             </div>
@@ -270,10 +264,11 @@ export default function PurchaseModal({ isOpen, onClose, preselectedPack }: Purc
               </div>
 
               <div className="space-y-3">
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                <label htmlFor="payment-code-input" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
                   Code de paiement
                 </label>
                 <input
+                  id="payment-code-input"
                   type="text"
                   value={code}
                   onChange={(e) => setCode(e.target.value)}
@@ -303,7 +298,7 @@ export default function PurchaseModal({ isOpen, onClose, preselectedPack }: Purc
               {hasError && (
                 <div className="flex items-center gap-2 text-red-600 dark:text-red-400">
                   <AlertCircle className="w-5 h-5" />
-                  <span className="text-sm">{verifyError?.message || 'Erreur lors de la validation du code'}</span>
+                  <span className="text-sm">{verifyError?.message ?? 'Erreur lors de la validation du code'}</span>
                 </div>
               )}
 
@@ -317,7 +312,7 @@ export default function PurchaseModal({ isOpen, onClose, preselectedPack }: Purc
                 </button>
                 <button
                   onClick={handlePurchase}
-                  disabled={isVerifying || !code.trim()}
+                  disabled={Boolean(isVerifying) || Boolean(!code.trim())}
                   className="flex-1 py-3 bg-[#146B67] text-white rounded-xl font-medium hover:bg-[#125A56] disabled:opacity-50 transition-colors"
                 >
                   Valider le code
@@ -329,4 +324,4 @@ export default function PurchaseModal({ isOpen, onClose, preselectedPack }: Purc
       </div>
     </div>
   )
-} 
+}

@@ -49,8 +49,8 @@ export default function ProfilDetails() {
     return size.width < 768 ? (
         <div className='space-y-5'>
             {
-                menu.map((item, index) => (
-                    <div key={index} className='flex flex-col gap-5'>
+                menu.map((item) => (
+                    <div key={item.title} className='flex flex-col gap-5'>
                         <Link href={item.link} className='flex items-center gap-3'>
                             <item.icon />
                             <span>{item.title}</span>
@@ -65,8 +65,8 @@ export default function ProfilDetails() {
     ) : (
         <div className='grid gap-3 lg:grid-cols-2'>
             {
-                menu.map((item, index) => (
-                    <Link href={item.link} key={index} className='border p-5 space-y-3 rounded-xl shadow'>
+                menu.map((item) => (
+                    <Link href={item.link} key={item.title} className='border p-5 space-y-3 rounded-xl shadow'>
                         <div className='flex gap-3 items-center'>
                             <item.icon size={30} />
                             <h1 className='font-bold text-xl'>{item.title}</h1>

@@ -6,7 +6,7 @@ import { Share2 } from 'lucide-react'
 import ButtonShareToWhatsapp from './ButtonShareToWhatsapp'
 import ButtonShareToFacebook from './ButtonShareToFacebook'
 
-export default function ButtonShare({ property }: { property: Property }) {
+export default function ButtonShare({ property }: Readonly<{ property: Property }>) {
   const [isOpen, setIsOpen] = useState(false)
 
   const toggleShare = () => {

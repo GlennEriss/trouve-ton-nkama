@@ -85,7 +85,7 @@ export default function CardUserProfil() {
                 <div className='text-sm space-x-1'>
                     <strong>Téléphone:</strong>
                     {user?.phoneNumbers && user?.phoneNumbers.length > 0 ? (
-                        user?.phoneNumbers.map((phone: string, index: number) => <span key={index}>{phone}</span>)
+                        user?.phoneNumbers.map((phone: string) => <span key={phone}>{phone}</span>)
                     ) : (
                         <span>Indisponible</span>
                     )}

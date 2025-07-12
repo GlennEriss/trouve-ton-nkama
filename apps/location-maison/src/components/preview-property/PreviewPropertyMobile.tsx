@@ -12,14 +12,12 @@ import { Inter } from 'next/font/google'
 import { cn } from '@/lib/utils'
 import { FaPhoneAlt, FaWhatsapp } from 'react-icons/fa'
 import Link from 'next/link'
-import { Button } from '../ui/button'
-import { AiOutlineMail } from 'react-icons/ai'
 import Tag from './Tag'
 import { MapSection } from './MapSection'
-import DetailsProperty from './DetailsProperty'
 import { DetailsPropertyMobile } from './DetailsPropertyMobile'
 import ButtonShareToFacebook from './ButtonShareToFacebook'
 import ButtonShareToWhatsapp from './ButtonShareToWhatsapp'
+import { AlertTriangle } from 'lucide-react'
 
 const inter = Inter({
     subsets: ['latin'],
@@ -44,8 +42,8 @@ export const PreviewPropertyMobile: React.FC<PreviewPropertyMobileProps> = ({ pr
                         <div className='flex flex-wrap gap-3 items-center mt-1.5'>
                             <Tag name={tagSatus[property.status as string]} />
                             {
-                                property.tags.map((tag, key) => (
-                                    <Tag key={key} name={tag} />
+                                property.tags.map((tag) => (
+                                    <Tag key={tag} name={tag} />
                                 ))
                             }
                         </div>
@@ -72,6 +70,26 @@ export const PreviewPropertyMobile: React.FC<PreviewPropertyMobileProps> = ({ pr
                     </p>
                 </div>
             </section>
+            
+            {/* Alerte propriété archivée */}
+            {property.state === 'ARCHIVED' && (
+                <section className="px-2">
+                    <div className="flex items-center gap-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-4 shadow-md">
+                        <div className="flex-shrink-0">
+                            <AlertTriangle className="h-6 w-6 text-red-600 dark:text-red-400" />
+                        </div>
+                        <div className="flex-1">
+                            <h3 className="text-lg font-semibold text-red-800 dark:text-red-200">
+                                Propriété non disponible
+                            </h3>
+                            <p className="text-red-700 dark:text-red-300 text-sm mt-1">
+                                Cette propriété n'est plus disponible à la location ou à la vente.
+                            </p>
+                        </div>
+                    </div>
+                </section>
+            )}
+            
             <Separator />
             <section className='flex items-center justify-between px-2'>
                 <div className='flex gap-2'>
@@ -94,7 +112,7 @@ export const PreviewPropertyMobile: React.FC<PreviewPropertyMobileProps> = ({ pr
                 </div>
                 <div className='flex gap-3'>
                     <Link
-                        href={property?.contact || user?.phoneNumbers?.[0] ? `https://wa.me/${property.contact ? property.contact : user?.phoneNumbers[0]}?text=${encodeURIComponent(
+                        href={property?.contact ?? user?.phoneNumbers?.[0] ? `https://wa.me/${property.contact ?? user?.phoneNumbers[0]}?text=${encodeURIComponent(
                             `Bonjour, je suis intéressé par votre annonce "${property.title}" au prix de ${property.price.toLocaleString('fr-FR')} FCFA. Voici le lien de l'annonce : https://www.logi-market.com/houseDetails/${property.id}`
                         )}` : '#'}
                         target="_blank"
@@ -106,7 +124,7 @@ export const PreviewPropertyMobile: React.FC<PreviewPropertyMobileProps> = ({ pr
                         </div>
                     </Link>
                     <a
-                        href={property?.contact || user?.phoneNumbers?.[0] ? `tel:${property.contact ? property.contact : user?.phoneNumbers[0]}` : '#'}
+                        href={property?.contact ?? user?.phoneNumbers?.[0] ? `tel:${property.contact ?? user?.phoneNumbers[0]}` : '#'}
                         target="_blank"
                         rel="noopener noreferrer"
                         title="Appeler"
@@ -127,7 +145,7 @@ export const PreviewPropertyMobile: React.FC<PreviewPropertyMobileProps> = ({ pr
             </section>
             <section className='px-2 space-y-3'>
                 <h1 className='font-bold text-xl'>Aperçu</h1>
-                <DetailsPropertyMobile property={property as any} />
+                <DetailsPropertyMobile property={property} />
             </section>
             <section className='px-2 space-y-3'>
                 <h1 className='font-bold text-xl'>Partager l'annonce</h1>

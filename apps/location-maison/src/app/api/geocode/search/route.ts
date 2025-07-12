@@ -7,7 +7,7 @@ const CACHE_DURATION_MS = 1000 * 60 * 60; // 1 heure
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
   const query = searchParams.get('q');
-  const countryCode = searchParams.get('countrycodes') || 'GA';
+  const countryCode = searchParams.get('countrycodes') ?? 'GA';
 
   if (!query) {
     return NextResponse.json(

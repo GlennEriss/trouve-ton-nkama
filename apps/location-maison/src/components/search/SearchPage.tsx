@@ -16,10 +16,10 @@ import { TypeProperty } from "@/constantes/property-type";
 function FilterTag({
   children,
   onRemove,
-}: {
+}: Readonly<{
   children: React.ReactNode;
   onRemove?: () => void;
-}) {
+}>) {
   return (
     <span className="flex items-center space-x-1 px-2 py-1 text-md font-medium bg-blue-100 text-blue-600 dark:bg-blue-800 dark:text-blue-200 rounded-full">
       <span>{children}</span>
@@ -40,6 +40,7 @@ export default function SearchPage() {
   // 1. destructuration du contexte
   const {
     searchText, setSearchText,
+    province, setProvince,
     city, setCity,
     street, setStreet,
     minPrice, setMinPrice,
@@ -55,6 +56,7 @@ export default function SearchPage() {
   // 2. Au montage, lire l'URL et initialiser le contexte
   useEffect(() => {
     const queryVal = searchParams.get("query") ?? "";
+    const provinceVal = searchParams.get("province") ?? "";
     const cityVal = searchParams.get("city") ?? "";
     const streetVal = searchParams.get("street") ?? "";
     const minPriceVal = searchParams.get("minPrice") ?? "";
@@ -66,22 +68,31 @@ export default function SearchPage() {
     const typePropRaw = searchParams.get("typeProperty");
     const tagsRaw = searchParams.get("tags");
 
-    setSearchText(queryVal);
-    setCity(cityVal);
-    setStreet(streetVal);
-    setMinPrice(minPriceVal);
-    setMaxPrice(maxPriceVal);
-    setMinArea(minAreaVal);
-    setMaxArea(maxAreaVal);
-    setMinNbrRooms(minRoomsVal);
-    setMaxNbrRooms(maxRoomsVal);
-    setTypeProperty(typePropRaw ? typePropRaw.split(",").map(s => s.trim()) : []);
-    setTags(tagsRaw ? tagsRaw.split(",").map(s => s.trim()) : []);
-  }, [searchParams.toString()]);
+    // Mettre à jour le contexte Algolia avec délai pour s'assurer de la stabilité
+    setTimeout(() => {
+      setSearchText(queryVal);
+      setProvince(provinceVal);
+      setCity(cityVal);
+      setStreet(streetVal);
+      setMinPrice(minPriceVal);
+      setMaxPrice(maxPriceVal);
+      setMinArea(minAreaVal);
+      setMaxArea(maxAreaVal);
+      setMinNbrRooms(minRoomsVal);
+      setMaxNbrRooms(maxRoomsVal);
+      setTypeProperty(typePropRaw ? typePropRaw.split(",").map(s => s.trim()) : []);
+      setTags(tagsRaw ? tagsRaw.split(",").map(s => s.trim()) : []);
+    }, 50);
+  }, [searchParams.toString(), setSearchText, setProvince, setCity, setStreet, setMinPrice, setMaxPrice, setMinArea, setMaxArea, setMinNbrRooms, setMaxNbrRooms, setTypeProperty, setTags]);
 
   // 3. Construire la string de filtres
   const filtersString = useMemo(() => {
     const f: string[] = [];
+    
+    // Filtre constant pour ne récupérer que les propriétés en cours
+    f.push(`state:"IN_PROGRESS"`);
+    
+    const provinceVal = searchParams.get("province") ?? "";
     const cityVal = searchParams.get("city") ?? "";
     const streetVal = searchParams.get("street") ?? "";
     const minPriceVal = searchParams.get("minPrice") ?? "";
@@ -93,6 +104,7 @@ export default function SearchPage() {
     const typePropRaw = searchParams.get("typeProperty") ?? "";
     const tagsRaw = searchParams.get("tags") ?? "";
 
+    if (provinceVal) f.push(`province:"${provinceVal}"`);
     if (cityVal) f.push(`city:"${cityVal}"`);
     if (streetVal) f.push(`street:"${streetVal}"`);
     if (minPriceVal) f.push(`price >= ${minPriceVal}`);
@@ -128,10 +140,10 @@ export default function SearchPage() {
 
   // 4. Recherche texte
   const { refine: refineQuery } = useSearchBox();
-  const queryVal = searchParams.get("query") ?? "";
   useEffect(() => {
-    refineQuery(queryVal);
-  }, [queryVal]);
+    const queryValue = searchParams.get("query") ?? "";
+    refineQuery(queryValue);
+  }, [searchParams, refineQuery]);
 
   // 5. Infinite hits + intersection observer
   const { items, isLastPage, showMore } = useInfiniteHits();
@@ -175,6 +187,11 @@ export default function SearchPage() {
         {searchText && (
           <FilterTag onRemove={() => setSearchText("")} key={`search-${searchText}`}>
             Recherche : {searchText}
+          </FilterTag>
+        )}
+        {province && (
+          <FilterTag onRemove={() => setProvince("")} key={`province-${province}`}>
+            Province : {province}
           </FilterTag>
         )}
         {city && (
@@ -238,7 +255,7 @@ export default function SearchPage() {
         ))}
       </div>
 
-      {/* Si pas de résultats, on affiche l’illustration */}
+      {/* Si pas de résultats, on affiche l'illustration */}
       {items.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-20">
           <Image
@@ -254,6 +271,7 @@ export default function SearchPage() {
           <button
             onClick={() => {
               setSearchText("");
+              setProvince("");
               setCity("");
               setStreet("");
               setMinPrice("");
@@ -275,14 +293,14 @@ export default function SearchPage() {
           {/* Grille de résultats */}
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 xl:grid-cols-6 gap-4">
             {items.map((propertyData, i) => (
-              <PropertyCard key={i} property={propertyData} index={i} />
+              <PropertyCard key={propertyData.objectID} property={propertyData} index={i} />
             ))}
           </div>
 
           {/* Sentinel pour infinite scroll */}
           <div ref={sentinelRef} />
 
-          {/* Bouton “Voir plus” */}
+          {/* Bouton "Voir plus" */}
           {!isLastPage && (
             <div className="text-center mt-6">
               <button

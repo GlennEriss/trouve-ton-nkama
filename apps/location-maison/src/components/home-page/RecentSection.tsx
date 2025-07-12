@@ -9,7 +9,7 @@ import { useInfiniteQuery } from '@tanstack/react-query'
 export default function RecentSection() {
     const fetchInfiniteProperties = async ({ pageParam }: { pageParam: any }) => {
         const { limitPerPage, lastDoc } = pageParam;
-        const url = `/api/property/list?limit=${limitPerPage}&lastDoc=${lastDoc || ''}`;
+        const url = `/api/property/list?limit=${limitPerPage}&lastDoc=${lastDoc ?? ''}`;
         const response = await fetch(url, {
             headers: {
                 'Cache-Control': 'public, s-maxage=600, stale-while-revalidate=600',
@@ -21,13 +21,13 @@ export default function RecentSection() {
         const data = await response.json();
         return data;
     };
-    const { data, isPending, isFetching, fetchNextPage, error, isError } = useInfiniteQuery({
+    const { data } = useInfiniteQuery({
         queryKey: [queryKeys.propertie_carousel],
         queryFn: fetchInfiniteProperties,
         initialPageParam: { limitPerPage: PROPERTY_ITEM_PER_PAGE_CAROUSEL, lastDoc: null },
         getNextPageParam: (lastPage, allPages, pageParam) => {
             const { limitPerPage } = pageParam;
-            const lastDoc = allPages[allPages.length - 1]?.lastDoc || null;
+            const lastDoc = allPages[allPages.length - 1]?.lastDoc ?? null;
             return { limitPerPage, lastDoc };
         },
         staleTime: 1000 * 60 * 10, // 10 minutes
@@ -48,7 +48,7 @@ export default function RecentSection() {
             <h1 className='text-xl lg:text-2xl xl:text-3xl leading-tight font-bold text-center text-[#146B67]'>
                 Logements récents
             </h1>
-            <PropertyCarousel properties={data?.pages[0]?.properties || []} />
+            <PropertyCarousel properties={data?.pages[0]?.properties ?? []} />
         </section>
     )
 }

@@ -1,9 +1,9 @@
 import { NextResponse } from 'next/server';
 import { getServerCountByProvince } from '@/db/property.db';
+import redis from '@/redis/client'
 
-// Add the in-memory cache
-const propertyCountByProvinceCache = new Map<string, { count: number; expiry: number }>();
-const cacheDuration = 1000 * 60 * 10; // 10 minutes
+// TTL du cache (en secondes) pour les compteurs – configurable via REDIS_CATALOG_TTL (défaut 600)
+const CACHE_TTL_SECONDS = parseInt(process.env.REDIS_CATALOG_TTL ?? '600', 10);
 
 export async function GET(request: Request) {
     const url = new URL(request.url);
@@ -14,14 +14,12 @@ export async function GET(request: Request) {
     }
 
     // Check if the count is in the cache
-    const cached = propertyCountByProvinceCache.get(province);
-    const now = Date.now();
+    const cached = await redis.get<number>(`propertyCountByProvince:${province}`);
 
-    if (cached && cached.expiry > now) {
-        //console.log(`Serving property count for province ${province} from cache`);
-        return NextResponse.json({ count: cached.count }, {
+    if (typeof cached === 'number') {
+        return NextResponse.json({ count: cached }, {
             headers: {
-                'Cache-Control': 'public, s-maxage=600, stale-while-revalidate=600',
+                'Cache-Control': `public, s-maxage=${CACHE_TTL_SECONDS}, stale-while-revalidate=${CACHE_TTL_SECONDS}`,
             },
         });
     }
@@ -30,12 +28,12 @@ export async function GET(request: Request) {
         // Fetch the count from Firestore
         const count = await getServerCountByProvince(province);
 
-        // Cache the count
-        propertyCountByProvinceCache.set(province, { count, expiry: now + cacheDuration });
+        // Mettre en cache le nombre
+        await redis.set(`propertyCountByProvince:${province}`, count, { ex: CACHE_TTL_SECONDS });
 
         return NextResponse.json({ count }, {
             headers: {
-                'Cache-Control': 'public, s-maxage=600, stale-while-revalidate=600',
+                'Cache-Control': `public, s-maxage=${CACHE_TTL_SECONDS}, stale-while-revalidate=${CACHE_TTL_SECONDS}`,
             },
         });
     } catch (error) {

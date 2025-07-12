@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import React from "react";
 import * as SliderPrimitive from "@radix-ui/react-slider";
 import {
   Dialog,
@@ -13,126 +13,41 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { ChevronLeft } from "lucide-react";
 import { BiFilter } from "react-icons/bi";
-import { useRouter } from "next/navigation";
-import { useAlgoliaContext } from "@/providers/AlgoliaContext";
 import { tags as tagsList } from "@/constantes";
-import { useAlgoliaRefinements } from "@/providers/AlgoliaRefinementsContext";
 import { TypeProperty, getTypePropertyKey } from "@/constantes/property-type";
+import { useFilterModal } from "@/hooks/use-filter-modal";
 
 const PRICE_MIN = 0;
-const PRICE_MAX = 1_000_000_000;
 const AREA_MIN = 0;
 const AREA_MAX = 1000;
 const ROOMS_MIN = 0;
 const ROOMS_MAX = 10;
 
 export const FilterModal = () => {
-  const router = useRouter();
-  const { refineTags } = useAlgoliaRefinements();
   const {
-    searchText,
-    city, setCity,
-    street, setStreet,
-    minPrice, setMinPrice,
-    maxPrice, setMaxPrice,
-    minArea, setMinArea,
-    maxArea, setMaxArea,
-    minNbrRooms, setMinNbrRooms,
-    maxNbrRooms, setMaxNbrRooms,
-    typeProperty, setTypeProperty,
-    tags, setTags,
-    clearFilters,
-  } = useAlgoliaContext();
-
-  const [open, setOpen] = useState(false);
-
-  const [localCity, setLocalCity] = useState(city);
-  const [localStreet, setLocalStreet] = useState(street);
-  const [localMinPrice, setLocalMinPrice] = useState(minPrice);
-  const [localMaxPrice, setLocalMaxPrice] = useState(maxPrice);
-  const [localMinArea, setLocalMinArea] = useState(minArea);
-  const [localMaxArea, setLocalMaxArea] = useState(maxArea);
-  const [localMinRooms, setLocalMinRooms] = useState(minNbrRooms);
-  const [localMaxRooms, setLocalMaxRooms] = useState(maxNbrRooms);
-  const [localTypes, setLocalTypes] = useState<string[]>(typeProperty);
-  const [localTags, setLocalTags] = useState<string[]>(tags);
-
-  useEffect(() => {
-    if (open) {
-      setLocalCity(city);
-      setLocalStreet(street);
-      setLocalMinPrice(minPrice);
-      setLocalMaxPrice(maxPrice);
-      setLocalMinArea(minArea);
-      setLocalMaxArea(maxArea);
-      setLocalMinRooms(minNbrRooms);
-      setLocalMaxRooms(maxNbrRooms);
-      setLocalTypes(typeProperty);
-      setLocalTags(tags);
-    }
-  }, [open]);
-
-  const clearLocalFilters = () => {
-    setLocalCity("");
-    setLocalStreet("");
-    setLocalMinPrice("");
-    setLocalMaxPrice("");
-    setLocalMinArea("");
-    setLocalMaxArea("");
-    setLocalMinRooms("");
-    setLocalMaxRooms("");
-    setLocalTypes([]);
-    setLocalTags([]);
-  };
+    // États
+    open, setOpen,
+    localProvince, setLocalProvince,
+    localCity, setLocalCity,
+    localStreet, setLocalStreet,
+    localMinPrice, setLocalMinPrice,
+    localMaxPrice, setLocalMaxPrice,
+    localMinArea, setLocalMinArea,
+    localMaxArea, setLocalMaxArea,
+    localMinRooms, setLocalMinRooms,
+    localMaxRooms, setLocalMaxRooms,
+    localTypes, setLocalTypes,
+    localTags, setLocalTags,
+    
+    // Actions
+    clearLocalFilters,
+    onApply,
+    toggleLocal,
+  } = useFilterModal();
 
   const onClear = () => {
     clearLocalFilters();
   };
-
-  const onApply = () => {
-    let minP = Math.max(0, Number(localMinPrice) || 0);
-    let maxP = Math.max(0, Number(localMaxPrice) || 0);
-    if (minP >= maxP) {
-      maxP = PRICE_MAX;
-      setLocalMaxPrice(String(PRICE_MAX));
-    }
-    let minA = Math.max(0, Number(localMinArea) || 0);
-    let maxA = Math.max(0, Number(localMaxArea) || 0);
-    let minR = Math.max(0, Number(localMinRooms) || 0);
-    let maxR = Math.max(0, Number(localMaxRooms) || 0);
-
-    if (localCity) setCity(localCity);
-    if (localStreet) setStreet(localStreet);
-    if (localMinPrice) setMinPrice(String(minP));
-    if (localMaxPrice) setMaxPrice(String(maxP));
-    if (localMinArea) setMinArea(String(minA));
-    if (localMaxArea) setMaxArea(String(maxA));
-    if (localMinRooms) setMinNbrRooms(String(minR));
-    if (localMaxRooms) setMaxNbrRooms(String(maxR));
-    if (localTypes.length) setTypeProperty(localTypes);
-    if (localTags.length) setTags(localTags);
-
-    const params = new URLSearchParams();
-    if (searchText) params.append("query", searchText);
-    if (localCity) params.append("city", localCity);
-    if (localStreet) params.append("street", localStreet);
-    if (localMinPrice) params.append("minPrice", String(minP));
-    if (localMaxPrice) params.append("maxPrice", String(maxP));
-    if (localMinArea) params.append("minArea", localMinArea);
-    if (localMaxArea) params.append("maxArea", localMaxArea);
-    if (localMinRooms) params.append("minNbrRooms", localMinRooms);
-    if (localMaxRooms) params.append("maxNbrRooms", localMaxRooms);
-    if (localTypes.length) params.append("typeProperty", localTypes.join(","));
-    if (localTags.length) params.append("tags", localTags.join(","));
-    router.push(`/search?${params.toString()}`);
-
-    setOpen(false);
-  };
-
-  const toggleLocal = (list: string[], item: string, setter: (v: string[]) => void) =>
-    setter(list.includes(item) ? list.filter(i => i !== item) : [...list, item]);
-
-  const priceInvalid = Number(localMinPrice) < 0 || Number(localMaxPrice) < 0;
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
@@ -161,21 +76,35 @@ export const FilterModal = () => {
         <div className="flex-1 overflow-auto p-6 grid grid-cols-1 lg:grid-cols-2 gap-8">
           {/* Colonne Gauche */}
           <div className="space-y-6">
-            {/* Ville & Quartier */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            {/* Province, Ville & Quartier */}
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
               <div>
-                <label className="block font-semibold mb-1">Ville</label>
+                <label htmlFor="province-input" className="block font-semibold mb-1">Province</label>
                 <Input
-                  value={localCity}
-                  onChange={e => setLocalCity(e.target.value)}
+                  key={`province-${localProvince[0] || ''}`}
+                  id="province-input"
+                  value={localProvince[0] || ''}
+                  onChange={e => setLocalProvince([e.target.value])}
+                  placeholder="Entrez une province"
+                />
+              </div>
+              <div>
+                <label htmlFor="city-input" className="block font-semibold mb-1">Ville</label>
+                <Input
+                  key={`city-${localCity[0] || ''}`}
+                  id="city-input"
+                  value={localCity[0] || ''}
+                  onChange={e => setLocalCity([e.target.value])}
                   placeholder="Entrez une ville"
                 />
               </div>
               <div>
-                <label className="block font-semibold mb-1">Quartier</label>
+                <label htmlFor="street-input" className="block font-semibold mb-1">Quartier</label>
                 <Input
-                  value={localStreet}
-                  onChange={e => setLocalStreet(e.target.value)}
+                  key={`street-${localStreet[0] || ''}`}
+                  id="street-input"
+                  value={localStreet[0] || ''}
+                  onChange={e => setLocalStreet([e.target.value])}
                   placeholder="Entrez un quartier"
                 />
               </div>
@@ -183,11 +112,12 @@ export const FilterModal = () => {
 
             {/* Prix */}
             <div className="space-y-2">
-              <label className="block font-semibold mb-1">Prix (F CFA)</label>
+              <label htmlFor="price-range" className="block font-semibold mb-1">Prix (F CFA)</label>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <label htmlFor="min-price" className="text-sm">Prix min</label>
                   <Input
+                    key={`min-price-${localMinPrice}`}
                     id="min-price"
                     type="number"
                     min={0}
@@ -201,6 +131,7 @@ export const FilterModal = () => {
                 <div>
                   <label htmlFor="max-price" className="text-sm">Prix max</label>
                   <Input
+                    key={`max-price-${localMaxPrice}`}
                     id="max-price"
                     type="number"
                     min={0}
@@ -216,9 +147,14 @@ export const FilterModal = () => {
 
             {/* Surface */}
             <div>
-              <label className="block font-semibold mb-2">Surface (m²)</label>
+              <label htmlFor="area-slider" className="block font-semibold mb-2">Surface (m²)</label>
               <SliderPrimitive.Root
-                value={[Number(localMinArea) || AREA_MIN, Number(localMaxArea) || AREA_MAX]}
+                key={`area-slider-${localMinArea}-${localMaxArea}`}
+                id="area-slider"
+                value={[
+                  localMinArea ? Number(localMinArea) : AREA_MIN, 
+                  localMaxArea ? Number(localMaxArea) : AREA_MAX
+                ]}
                 onValueChange={([low, high]) => {
                   setLocalMinArea(low.toString());
                   setLocalMaxArea(high.toString());
@@ -240,9 +176,14 @@ export const FilterModal = () => {
 
             {/* Chambres */}
             <div>
-              <label className="block font-semibold mb-2">Chambres</label>
+              <label htmlFor="rooms-slider" className="block font-semibold mb-2">Chambres</label>
               <SliderPrimitive.Root
-                value={[Number(localMinRooms) || ROOMS_MIN, Number(localMaxRooms) || ROOMS_MAX]}
+                key={`rooms-slider-${localMinRooms}-${localMaxRooms}`}
+                id="rooms-slider"
+                value={[
+                  localMinRooms ? Number(localMinRooms) : ROOMS_MIN, 
+                  localMaxRooms ? Number(localMaxRooms) : ROOMS_MAX
+                ]}
                 onValueChange={([low, high]) => {
                   setLocalMinRooms(low.toString());
                   setLocalMaxRooms(high.toString());
@@ -267,14 +208,14 @@ export const FilterModal = () => {
           <div className="space-y-6">
             {/* Type de propriété */}
             <div>
-              <label className="block font-semibold mb-2">Type de propriété</label>
-              <div className="flex flex-wrap gap-2">
+              <label htmlFor="property-types" className="block font-semibold mb-2">Type de propriété</label>
+              <div id="property-types" className="flex flex-wrap gap-2">
                 {Object.values(TypeProperty).map(type => {
                   const key = getTypePropertyKey(type)!;
                   const sel = localTypes.includes(key);
                   return (
                     <Button
-                      key={key}
+                      key={`type-${key}-${sel}`}
                       variant="outline"
                       onClick={() => toggleLocal(localTypes, key, setLocalTypes)}
                       className={`px-3 py-1 rounded-full font-medium transition ${sel ? "bg-red-800 text-white" : "border-gray-400 text-gray-600"
@@ -291,13 +232,13 @@ export const FilterModal = () => {
 
             {/* Tags */}
             <div>
-              <label className="block font-semibold mb-2">Tags</label>
-              <div className="flex flex-wrap gap-2">
+              <label htmlFor="tags-list" className="block font-semibold mb-2">Tags</label>
+              <div id="tags-list" className="flex flex-wrap gap-2">
                 {tagsList.map(tag => {
                   const sel = localTags.includes(tag.tagName);
                   return (
                     <Button
-                      key={tag.tagName}
+                      key={`tag-${tag.tagName}-${sel}`}
                       variant="outline"
                       onClick={() => {
                         toggleLocal(localTags, tag.tagName, setLocalTags);

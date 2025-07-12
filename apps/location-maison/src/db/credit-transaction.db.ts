@@ -5,6 +5,13 @@ import { CreditTransaction, CreditTransactionInput, GetHistoryOptions, HistoryRe
 const getFirestore = () => import("@/firebase/firestore");
 
 /**
+ * Génère le suffixe d'annonce si propertyId est présent
+ */
+function generatePropertySuffix(propertyId?: string): string {
+  return propertyId ? ` - Annonce ${propertyId}` : '';
+}
+
+/**
  * Récupère l'historique des transactions de crédits pour un utilisateur
  */
 export async function getCreditHistoryByUserId(
@@ -55,10 +62,10 @@ export async function getCreditHistoryByUserId(
           id: doc.id,
           ...data,
           // S'assurer que le type est défini pour l'historique
-          type: data.type || (data.packId ? 'purchase' : 'spend'),
+          type: data.type ?? (data.packId ? 'purchase' : 'spend'),
           // Mapper les anciens champs Airtel Money
-          transactionId: data.transactionId || data.airtelTransactionId,
-          description: data.description || generateDescription(data)
+          transactionId: data.transactionId ?? data.airtelTransactionId,
+          description: data.description ?? generateDescription(data)
         } as CreditTransaction);
         lastVisible = doc;
       }
@@ -95,11 +102,11 @@ function generateDescription(data: any): string {
       'advanced': 'Pack Avancé',
       'premium': 'Pack Premium'
     };
-    return `Achat ${packNames[data.packId] || 'pack de crédits'}`;
+    return `Achat ${packNames[data.packId] ?? 'pack de crédits'}`;
   }
   
   if (data.service) {
-    return `${data.service}${data.propertyId ? ` - Annonce ${data.propertyId}` : ''}`;
+    return data.service + generatePropertySuffix(data.propertyId);
   }
   
   return data.credits > 0 ? 'Achat de crédits' : 'Utilisation de crédits';
@@ -195,9 +202,9 @@ export async function getCreditTransactionById(transactionId: string): Promise<C
       return {
         id: docSnap.id,
         ...data,
-        type: data.type || (data.packId ? 'purchase' : 'spend'),
-        transactionId: data.transactionId || data.airtelTransactionId,
-        description: data.description || generateDescription(data)
+        type: data.type ?? (data.packId ? 'purchase' : 'spend'),
+        transactionId: data.transactionId ?? data.airtelTransactionId,
+        description: data.description ?? generateDescription(data)
       } as CreditTransaction;
     }
 
@@ -233,7 +240,7 @@ export async function getCreditTransactionStats(userId: string): Promise<{
       const transaction = doc.data() as CreditTransaction;
       
       if (transaction.status === 'success') {
-        const type = transaction.type || (transaction.packId ? 'purchase' : 'spend');
+        const type = transaction.type ?? (transaction.packId ? 'purchase' : 'spend');
         
         if (type === 'purchase') {
           totalPurchases += transaction.credits;
@@ -275,13 +282,15 @@ export async function createSpendTransaction(
   description?: string
 ): Promise<string> {
   try {
+    const defaultDescription = service + generatePropertySuffix(propertyId);
+    
     const transactionData: CreditTransactionInput = {
       uid: userId,
       type: 'spend',
       credits: -Math.abs(credits), // Négatif pour les dépenses
       service,
       status: 'success', // Les dépenses sont immédiates
-      description: description || `${service}${propertyId ? ` - Annonce ${propertyId}` : ''}`,
+      description: description ?? defaultDescription,
       propertyId
     };
 
@@ -323,7 +332,7 @@ export async function deductCreditsWithTransaction(
       
       const userDoc = userSnapshot.docs[0];
       const userData = userDoc.data();
-      const currentCredits = userData.credits || 0;
+      const currentCredits = userData.credits ?? 0;
       
       console.log('💰 Crédits actuels:', currentCredits, 'Crédits à déduire:', credits);
       
@@ -342,13 +351,15 @@ export async function deductCreditsWithTransaction(
       });
       
       // Créer la transaction de dépense
+      const defaultDescription = service + generatePropertySuffix(propertyId);
+      
       const transactionData: CreditTransactionInput = {
         uid: userId,
         type: 'spend',
         credits: -Math.abs(credits),
         service,
         status: 'success',
-        description: description || `${service}${propertyId ? ` - Annonce ${propertyId}` : ''}`
+        description: description ?? defaultDescription
       };
 
       // Ajouter propertyId seulement s'il est défini

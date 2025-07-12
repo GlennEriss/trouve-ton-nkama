@@ -9,9 +9,11 @@ import "slick-carousel/slick/slick-theme.css";
 import PropertyCard from "../home-page/PropertyCard";
 import { useWindowSize } from "@/hooks/useSize";
 import { Property } from "@/models/annonce";
+import { cn } from "@/lib/utils";
 
 interface CarouselProps {
-  properties?: Property[];
+  properties?: Property[]; // Optionnel maintenant
+  isRecommendation?: boolean;
 }
 
 /* Flèche réutilisable (précédent / suivant) */
@@ -32,7 +34,7 @@ const ArrowButton: React.FC<{ direction: "prev" | "next"; onClick?: () => void }
   );
 };
 
-const PropertyCarousel: React.FC<CarouselProps> = ({ properties = [] }) => {
+const PropertyCarousel: React.FC<CarouselProps> = ({ properties = [], isRecommendation = false }) => {
   const router = useRouter();
   const { width } = useWindowSize();
 
@@ -92,28 +94,42 @@ const PropertyCarousel: React.FC<CarouselProps> = ({ properties = [] }) => {
       {hasMultiple ? (
         <Slider {...settings}>
           {properties.map((p) => (
-            <div
-              key={p.id || `property-${Math.random()}`}
-              className="p-3"
+            <button
+              key={p.id ?? `property-${Math.random()}`}
+              type="button"
+              className="p-3 w-full text-left focus:outline-none focus:ring-2 focus:ring-[#146B67] focus:ring-offset-2 rounded-lg transition-all duration-200"
               style={shouldCenter ? { width: 320 } : undefined}
               onClick={() => handleCardClick(p.id)}
+              aria-label={`Voir les détails de ${p.title}`}
             >
               <PropertyCard property={p} />
-            </div>
+            </button>
           ))}
         </Slider>
       ) : (
         /* 1 seule carte : largeur contrôlée */
         properties[0] && (
-          <div
-            className="mx-auto"
-            style={{ width: "100%", maxWidth: 320 }}
+          <button
+            type="button"
+            className="mx-auto block focus:outline-none focus:ring-2 focus:ring-[#146B67] focus:ring-offset-2 rounded-lg transition-all duration-200"
+            /* 100 % en mobile, 320 px max en desktop */
+            style={{ width: "100%", maxWidth: 280 }}
             onClick={() => handleCardClick(properties[0].id)}
+            aria-label={`Voir les détails de ${properties[0].title}`}
           >
             <PropertyCard property={properties[0]} />
-          </div>
+          </button>
         )
       )}
+      {/* Bouton « voir plus » toujours présent */}
+      <div className={cn("mt-8 flex justify-center", isRecommendation ? 'hidden' : '')}>
+        <button
+          onClick={() => router.push("/search")}
+          className="px-8 py-3 rounded-xl bg-gradient-to-r from-[#146B67] via-[#1FA89B] to-[#146B67] hover:scale-[1.02] text-white font-semibold transition-all duration-300 shadow-lg hover:shadow-xl"
+        >
+          Voir plus d'annonces
+        </button>
+      </div>
     </div>
   );
 };

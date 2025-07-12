@@ -31,13 +31,21 @@ import clsx from 'clsx';
 import imageCompression from 'browser-image-compression';
 import { useToast } from '@/hooks/use-toast';
 
+// Fonction utilitaire pour générer une clé unique pour les images
+const generateImageKey = (image: File | string, index: number): string => {
+  if (typeof image === 'string') {
+    return `image-url-${image.slice(-10)}-${index}`;
+  }
+  return `image-file-${image.name}-${image.size}-${index}`;
+};
+
 //Images
 export const ImagesComponent = ({ field }: { field: any }) => {
     return (
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-2 gap-3">
             <ImageUploader field={field} />
             {field.value?.map((image: File | string, index: number) => (
-                <ImageComponent key={index} index={index} field={field} />
+                <ImageComponent key={generateImageKey(image, index)} index={index} field={field} />
             ))}
         </div>
     )
@@ -45,9 +53,10 @@ export const ImagesComponent = ({ field }: { field: any }) => {
 
 export const ImageUploader = ({ field }: { field: any }) => {
     const { toast } = useToast();
+    const [isUploading, setIsUploading] = React.useState(false);
 
     const { getInputProps, getRootProps, isDragActive } = useDropzone({
-        maxFiles: 6,
+        maxFiles: 10,
         multiple: true,
         accept: {
             'image/png': ['.png'],
@@ -55,8 +64,9 @@ export const ImageUploader = ({ field }: { field: any }) => {
             'image/webp': ['.webp'],
         },
         onDrop: async (acceptedFiles) => {
+            setIsUploading(true);
             const maxSizeInBytes = 300 * 1024;
-            const currentFiles = field.value || [];
+            const currentFiles = field.value ?? [];
             const compressedFiles: File[] = [];
 
             for (const file of acceptedFiles) {
@@ -81,23 +91,28 @@ export const ImageUploader = ({ field }: { field: any }) => {
                     toast({
                         duration: 5000,
                         title: "Erreur",
-                        description: error.message || "Une erreur est survenue.",
+                        description: error.message ?? "Une erreur est survenue.",
                         variant: "destructive",
                     });
                 }
             }
 
-            const newFiles = [...currentFiles, ...compressedFiles].slice(0, 6);
+            const newFiles = [...currentFiles, ...compressedFiles].slice(0, 10);
             field.onChange(newFiles);
-            console.log('field',field)
-            console.log('newFiles',newFiles)
+            setIsUploading(false);
         },
+        disabled: isUploading,
     });
 
     return (
-        <div {...getRootProps()} className='border border-dashed h-40 md:h-[240px] flex justify-center items-center cursor-pointer'>
-            <Input {...getInputProps()} />
-            {isDragActive ? (
+        <div {...getRootProps()} className={`border border-dashed h-40 md:h-[240px] flex justify-center items-center cursor-pointer ${isUploading ? 'opacity-60 pointer-events-none' : ''}`}>
+            <Input {...getInputProps()} disabled={isUploading} />
+            {isUploading ? (
+                <svg className="animate-spin w-10 h-10 text-gray-400" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z" />
+                </svg>
+            ) : isDragActive ? (
                 <p className="text-gray-500">Déposez vos images ici...</p>
             ) : (
                 <AiOutlineCamera size={50} className='text-gray-500' />
@@ -107,7 +122,7 @@ export const ImageUploader = ({ field }: { field: any }) => {
 };
 
 export const ImageComponent = ({ field, index }: { field: any, index: number }) => {
-    const image: File | string | undefined = field.value && field.value[index];
+    const image: File | string | undefined = field.value?.[index];
 
     return (
         <div className='border border-dashed h-40 md:h-[240px] flex justify-center items-center'>
@@ -118,7 +133,7 @@ export const ImageComponent = ({ field, index }: { field: any, index: number }) 
 
 export const RenderImage = ({ image, field, index }: { image: File | string | undefined, field: any, index: number }) => {
     const handleDeleteImage = () => {
-        const currentFiles = field.value as any[] || [];
+        const currentFiles = field.value as any[] ?? [];
         const newFiles = currentFiles.slice(); // Copie du tableau
         newFiles.splice(index, 1); // Supprime l'image à cet index
         field.onChange(newFiles);
@@ -142,7 +157,7 @@ export const RenderImage = ({ image, field, index }: { image: File | string | un
                         </div>
                         <div className='h-[150px] w-full md:h-[230px]'>
                             <Image
-                                src={typeof image === 'string' ? image : URL.createObjectURL(image as File)}
+                                src={typeof image === 'string' ? image : URL.createObjectURL(image)}
                                 alt="Selected Image"
                                 sizes="100vw"
                                 width={0}
@@ -181,8 +196,8 @@ export const StatusComponent = ({ field }: { field: any }) => {
             className="flex gap-5"
         >
             {
-                status.map((item, key) =>
-                    <FormItem key={key} className="flex items-center space-x-3 space-y-0">
+                status.map((item) =>
+                    <FormItem key={item.value} className="flex items-center space-x-3 space-y-0">
                         <FormControl>
                             <RadioGroupItem value={item.value} />
                         </FormControl>
@@ -201,8 +216,8 @@ export const TagsComponent = ({ field }: { field: any }) => {
     return (
         <div className='grid grid-cols-3 gap-2'>
             {
-                tags.map((tag, key) => (
-                    <TagItem key={key} tag={tag} field={field} />
+                [...tags].sort((a, b) => a.tagName.localeCompare(b.tagName, 'fr')).map((tag) => (
+                    <TagItem key={tag.tagName} tag={tag} field={field} />
                 ))
             }
         </div>
@@ -213,27 +228,33 @@ export const TagItem = ({ tag, field }: { tag: { tagName: string, tagIcon: IconT
     const [isActived, setIsActived] = useState(false)
 
     useEffect(() => {
-        setIsActived(field.value?.includes(tag.tagName) || false)
+        setIsActived(field.value?.includes(tag.tagName) ?? false)
     }, [field.value, tag.tagName])
 
     const handleSelectIcon = () => {
         const active = !isActived
         if (active) {
             if (field.value?.length < 6) {
-                field.onChange([...(field.value || []), tag.tagName])
+                field.onChange([...(field.value ?? []), tag.tagName])
             }
         } else {
-            field.onChange((field.value || []).filter((item: string) => item !== tag.tagName))
+            field.onChange((field.value ?? []).filter((item: string) => item !== tag.tagName))
         }
     }
 
     return (
-        <div className={clsx({
-            "flex items-center gap-2 cursor-pointer text-gray-500": !isActived,
-            "flex items-center gap-2 text-[#e7c873] cursor-pointer": isActived,
-        })} onClick={handleSelectIcon}>
+        <button
+            type="button"
+            className={clsx({
+                "flex items-center gap-2 cursor-pointer text-gray-500 border-none bg-transparent p-2 rounded-md hover:bg-gray-100 dark:hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-all duration-200": !isActived,
+                "flex items-center gap-2 text-[#e7c873] cursor-pointer border-none bg-transparent p-2 rounded-md hover:bg-gray-100 dark:hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:ring-offset-2 transition-all duration-200": isActived,
+            })}
+            onClick={handleSelectIcon}
+            aria-label={`${isActived ? 'Désélectionner' : 'Sélectionner'} le tag ${tag.tagName}`}
+            aria-pressed={isActived}
+        >
             <tag.tagIcon size={20} />
             <h2 className='text-[0.6rem] xl:text-lg'>{tag.tagName}</h2>
-        </div>
+        </button>
     )
 }

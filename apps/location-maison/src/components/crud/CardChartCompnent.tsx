@@ -8,9 +8,9 @@ export default function CardChartCompnent() {
     return (
         <div className='grid grid-cols-3 gap-2 lg:flex lg:justify-end'>
             {
-                stats.map((stat, key) => (
+                stats.map((stat) => (
                     <CardChart
-                        key={key}
+                        key={stat.title}
                         title={stat.title}
                         total={stat.total}
                         color={stat.color}

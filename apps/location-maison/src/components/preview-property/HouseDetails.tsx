@@ -14,7 +14,7 @@ export default function HouseDetails() {
     if (!id) {
         notFound()
     }
-    const { data: property, isLoading, error, isFetching, isStale } = useProperty(id)
+    const { data: property, isLoading, error } = useProperty(id)
 
     if (isLoading) {
         return (

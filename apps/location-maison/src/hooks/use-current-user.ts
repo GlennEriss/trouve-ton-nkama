@@ -12,15 +12,13 @@ interface UseCurrentUserReturn {
 
 export const useCurrentUser = (): UseCurrentUserReturn => {
   const { data: session, status } = useSession();
-  const [user, setUser] = useState(session?.user || undefined);
+  const [user, setUser] = useState(session?.user ?? undefined);
   const [isLoading, setIsLoading] = useState(false);
   const [isFirebaseConnected, setIsFirebaseConnected] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   // Fonction pour connecter à Firebase
   const connectToFirebase = useCallback(async (uid: string) => {
-    //console.log('🚀 Connexion Firebase pour UID:', uid);
-    
     setIsLoading(true);
     setError(null);
 
@@ -36,7 +34,7 @@ export const useCurrentUser = (): UseCurrentUserReturn => {
 
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.details || `Erreur ${response.status}: ${response.statusText}`);
+        throw new Error(errorData.details ?? `Erreur ${response.status}: ${response.statusText}`);
       }
 
       const { token } = await response.json();
@@ -44,11 +42,9 @@ export const useCurrentUser = (): UseCurrentUserReturn => {
       // 2. Se connecter à Firebase avec le custom token
       await signInWithCustomToken(auth, token);
       setIsFirebaseConnected(true);
-      //console.log('✅ Connexion Firebase réussie');
 
     } catch (err: any) {
-      const errorMessage = err.message || 'Erreur de connexion Firebase';
-      //console.error('❌ Erreur Firebase Auth:', errorMessage);
+      const errorMessage = err.message ?? 'Erreur de connexion Firebase';
       setError(errorMessage);
       setIsFirebaseConnected(false);
     } finally {
@@ -58,12 +54,6 @@ export const useCurrentUser = (): UseCurrentUserReturn => {
 
   // Effet principal pour gérer l'authentification
   useEffect(() => {
-    /* console.log('🔍 État session:', { 
-      status, 
-      hasUser: !!session?.user, 
-      hasFirebaseUser: !!auth.currentUser 
-    }); */
-
     if (status === "authenticated" && session?.user) {
       setUser(session.user);
       
@@ -72,10 +62,8 @@ export const useCurrentUser = (): UseCurrentUserReturn => {
       
       // Connecter à Firebase si pas encore connecté et si on a un UID
       if (!auth.currentUser && uid) {
-        //console.log('🚀 Initiation de la connexion Firebase...');
         connectToFirebase(uid);
       } else if (auth.currentUser) {
-        //console.log('✅ Firebase déjà connecté');
         setIsFirebaseConnected(true);
       } else {
         console.warn('⚠️ Pas d\'UID disponible dans la session');
@@ -83,7 +71,6 @@ export const useCurrentUser = (): UseCurrentUserReturn => {
     }
 
     if (status === "unauthenticated") {
-      //console.log('🔓 Déconnexion détectée');
       setUser(undefined);
       setIsFirebaseConnected(false);
       setError(null);
@@ -104,7 +91,6 @@ export const useCurrentUser = (): UseCurrentUserReturn => {
     return () => clearInterval(interval);
   }, [isFirebaseConnected]);
 
-  //console.log('user', auth.currentUser)
   return { 
     user, 
     setUser, 

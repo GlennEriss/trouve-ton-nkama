@@ -201,8 +201,8 @@ export default function PrivacyPolicyClientPage() {
 
                       {section.list && (
                         <ul className="space-y-3">
-                          {section.list.map((item, i) => (
-                            <li key={i} className="flex items-start gap-3 text-gray-600">
+                          {section.list.map((item) => (
+                            <li key={item} className="flex items-start gap-3 text-gray-600">
                               <span className="mt-2 w-1.5 h-1.5 rounded-full bg-[#1FA89B]" />
                               <span>{item}</span>
                             </li>
@@ -218,6 +218,7 @@ export default function PrivacyPolicyClientPage() {
                   <div className="text-center space-y-4 mt-8">
                     <p className="text-gray-600">
                       Pour toute question concernant cette politique, contactez-nous à :
+                      {" "}
                       <a
                         href={`mailto:${process.env.NEXT_PUBLIC_EMAIL_SUPPORT}`}
                         className="ml-2 font-medium text-[#146B67] hover:text-[#1FA89B] transition-colors"

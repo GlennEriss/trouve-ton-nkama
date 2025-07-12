@@ -22,7 +22,7 @@ export const FormRegisterSchema = z.object({
     .string()
     .min(8, { message: 'Le mot de passe doit contenir au moins 8 caractères' })
     .regex(/[A-Z]/, { message: 'Le mot de passe doit contenir une majuscule' })
-    .regex(/[0-9]/, { message: 'Le mot de passe doit contenir un chiffre' }),
+    .regex(/\d/, { message: 'Le mot de passe doit contenir un chiffre' }),
   passwordConfirm: z.string(),
   birthdate: z.string()
     .regex(/^\d{4}-\d{2}-\d{2}$/, 'La date de naissance doit être au format AAAA-MM-JJ')
@@ -77,6 +77,7 @@ export const PropertySchema = z.object({
   street: z.string().min(1, "Le nom de la rue est obligatoire"),
   city: z.string().min(1, "Le nom de la ville est obligatoire"),
   province: z.string().min(1, "Le nom de la province est obligatoire"),
+  contact: z.string().min(1, "Le numéro de téléphone est obligatoire"),
   additionalInformation: z.string().optional(),
   longitude: z
     .number()

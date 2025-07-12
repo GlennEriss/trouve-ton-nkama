@@ -1,7 +1,7 @@
 'use client'
 
 import React, { useState, useRef, useEffect } from 'react';
-import { Send, X, CreditCard, Sparkles, Download, RefreshCw, Wand2 } from 'lucide-react';
+import { Send, CreditCard, Sparkles, RefreshCw } from 'lucide-react';
 import {
   Dialog,
   DialogContent,
@@ -35,7 +35,7 @@ const WELCOME_MESSAGES = [
 // Fonction pour sauvegarder les données dans le localStorage
 const saveFormDataToLocalStorage = (data: any) => {
   try {
-    const savedData = JSON.parse(localStorage.getItem('property_form_draft') || '{}');
+    const savedData = JSON.parse(localStorage.getItem('property_form_draft') ?? '{}');
     const updatedData = { ...savedData, ...data };
     localStorage.setItem('property_form_draft', JSON.stringify(updatedData));
     console.log('Données sauvegardées:', updatedData);
@@ -47,11 +47,63 @@ const saveFormDataToLocalStorage = (data: any) => {
 // Fonction pour lire les données du localStorage
 const getFromLocalStorage = () => {
   try {
-    return JSON.parse(localStorage.getItem('property_form_draft') || '{}');
+    return JSON.parse(localStorage.getItem('property_form_draft') ?? '{}');
   } catch (error) {
     console.error('Erreur lors de la lecture du localStorage:', error);
     return {};
   }
+};
+
+// Générateur d'ID unique pour les messages
+const generateMessageId = () => {
+  return `msg-${Date.now()}-${Math.random().toString(36).substring(2, 11)}`;
+};
+
+// Fonction utilitaire pour créer un message
+const createMessage = (
+  type: 'user' | 'assistant' | 'system' | 'error',
+  content: string,
+  options?: {
+    creditsUsed?: number;
+    creditsRemaining?: number;
+  }
+): Message => ({
+  id: generateMessageId(),
+  type,
+  content,
+  timestamp: new Date(),
+  ...(options?.creditsUsed && { creditsUsed: options.creditsUsed }),
+  ...(options?.creditsRemaining !== undefined && { creditsRemaining: options.creditsRemaining })
+});
+
+// Fonction utilitaire pour gérer les réponses de l'IA
+const handleAIResponse = (
+  result: any,
+  setMessages: React.Dispatch<React.SetStateAction<Message[]>>
+) => {
+  if (result.success) {
+    const assistantMessage = createMessage('assistant', result.response ?? '', {
+      creditsUsed: 1,
+      creditsRemaining: result.creditsRemaining
+    });
+    setMessages(prev => [...prev, assistantMessage]);
+    return true;
+  } else {
+    const errorMessage = createMessage('error', result.error ?? 'Une erreur est survenue');
+    setMessages(prev => [...prev, errorMessage]);
+    return false;
+  }
+};
+
+// Fonction utilitaire pour gérer les erreurs de try/catch
+const handleTryCatchError = (
+  error: any,
+  setMessages: React.Dispatch<React.SetStateAction<Message[]>>,
+  customMessage?: string
+) => {
+  console.error('Erreur:', error);
+  const errorMessage = createMessage('error', customMessage ?? 'Erreur inattendue');
+  setMessages(prev => [...prev, errorMessage]);
 };
 
 const AssistantChatModal: React.FC<AssistantChatModalProps> = ({
@@ -87,36 +139,22 @@ const AssistantChatModal: React.FC<AssistantChatModalProps> = ({
   // Initialisation des messages de bienvenue
   useEffect(() => {
     if (isOpen && !isInitialized) {
-      const welcomeMessages: Message[] = WELCOME_MESSAGES.map((content, index) => ({
-        id: `welcome-${index}`,
-        type: 'system',
-        content,
-        timestamp: new Date()
-      }));
+      const welcomeMessages: Message[] = WELCOME_MESSAGES.map((content, index) => 
+        createMessage('system', content)
+      );
       
       setMessages(welcomeMessages);
       setIsInitialized(true);
     }
   }, [isOpen, isInitialized]);
 
-  // Générateur d'ID unique pour les messages
-  const generateMessageId = () => {
-    return `msg-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
-  };
-
   // Envoyer un message à l'IA
   const handleSendMessage = async () => {
     if (!inputValue.trim() || isLoading) return;
 
-    const userMessage: Message = {
-      id: generateMessageId(),
-      type: 'user',
-      content: inputValue.trim(),
-      timestamp: new Date()
-    };
-
-    // Ajouter le message utilisateur
+    const userMessage = createMessage('user', inputValue.trim());
     setMessages(prev => [...prev, userMessage]);
+    
     const currentInput = inputValue.trim();
     setInputValue('');
 
@@ -125,69 +163,35 @@ const AssistantChatModal: React.FC<AssistantChatModalProps> = ({
     const contextData = {
       ...formContext,
       currentFormData,
-      currentStep: formContext?.activeStep || 0,
+      currentStep: formContext?.activeStep ?? 0,
       availableCredits: creditsAvailable
     };
 
     try {
-      // Envoyer à l'IA
       const result = await sendMessage(currentInput, contextData);
+      const success = handleAIResponse(result, setMessages);
 
-      if (result.success) {
-        const assistantMessage: Message = {
-          id: generateMessageId(),
-          type: 'assistant',
-          content: result.response || '',
-          timestamp: new Date(),
-          creditsUsed: 1,
-          creditsRemaining: result.creditsRemaining
-        };
-
-        setMessages(prev => [...prev, assistantMessage]);
-
+      if (success) {
         // Analyser la réponse pour des suggestions de remplissage automatique
-        await handleAutoFillSuggestions(result.response || '', currentFormData);
-      } else {
-        const errorMessage: Message = {
-          id: generateMessageId(),
-          type: 'error',
-          content: result.error || 'Une erreur est survenue',
-          timestamp: new Date()
-        };
-
-        setMessages(prev => [...prev, errorMessage]);
+        await handleAutoFillSuggestions(result.response ?? '', currentFormData);
       }
     } catch (error) {
-      console.error('Erreur lors de l\'envoi du message:', error);
-      
-      const errorMessage: Message = {
-        id: generateMessageId(),
-        type: 'error',
-        content: 'Erreur inattendue lors de la communication avec l\'assistant',
-        timestamp: new Date()
-      };
-
-      setMessages(prev => [...prev, errorMessage]);
+      handleTryCatchError(error, setMessages, 'Erreur inattendue lors de la communication avec l\'assistant');
     }
   };
 
   // Analyser les réponses de l'IA pour des suggestions de remplissage
   const handleAutoFillSuggestions = async (response: string, currentData: any) => {
-    // Ici on pourrait implémenter une logique plus sophistiquée
-    // pour parser la réponse de l'IA et extraire des suggestions de champs à remplir
-    
     // Exemple simple : si l'IA mentionne "superficie: X m²", on peut l'extraire
-    const areaMatch = response.match(/superficie[:\s]*(\d+)\s*m²/i);
+    const areaRegex = /superficie[:\s]*(\d+)\s*m²/i;
+    const areaMatch = areaRegex.exec(response);
     if (areaMatch && !currentData.area) {
       const suggestedArea = parseInt(areaMatch[1]);
       
-      // Proposer une suggestion via un message système
-      const suggestionMessage: Message = {
-        id: generateMessageId(),
-        type: 'system',
-        content: `💡 Suggestion détectée : Souhaitez-vous définir la superficie à ${suggestedArea} m² ?`,
-        timestamp: new Date()
-      };
+      const suggestionMessage = createMessage(
+        'system', 
+        `💡 Suggestion détectée : Souhaitez-vous définir la superficie à ${suggestedArea} m² ?`
+      );
       
       setMessages(prev => [...prev, suggestionMessage]);
     }
@@ -206,38 +210,16 @@ const AssistantChatModal: React.FC<AssistantChatModalProps> = ({
     const currentData = getFromLocalStorage();
     const analysisPrompt = `Analyse les données actuelles du formulaire : ${JSON.stringify(currentData)}. Donne-moi des suggestions d'amélioration et identifie les champs manquants importants.`;
     
-    const userMessage: Message = {
-      id: generateMessageId(),
-      type: 'user',
-      content: '📊 Analyser mon formulaire actuel',
-      timestamp: new Date()
-    };
-
+    const userMessage = createMessage('user', '📊 Analyser mon formulaire actuel');
     setMessages(prev => [...prev, userMessage]);
 
-    const result = await sendMessage(analysisPrompt, formContext);
-    
-    if (result.success) {
-      const assistantMessage: Message = {
-        id: generateMessageId(),
-        type: 'assistant',
-        content: result.response || '',
-        timestamp: new Date(),
-        creditsUsed: 1,
-        creditsRemaining: result.creditsRemaining
-      };
-
-      setMessages(prev => [...prev, assistantMessage]);
+    try {
+      const result = await sendMessage(analysisPrompt, formContext);
+      handleAIResponse(result, setMessages);
+    } catch (error) {
+      handleTryCatchError(error, setMessages);
     }
   };
-
-  // Suggestions rapides
-  const quickSuggestions = [
-    "Comment bien décrire ma propriété ?",
-    "Quels tags recommanderiez-vous ?",
-    "Quel prix proposer ?",
-    "Analyser mon formulaire"
-  ];
 
   const handleQuickSuggestion = (suggestion: string) => {
     // Vérifier si c'est une demande de génération automatique
@@ -259,18 +241,13 @@ const AssistantChatModal: React.FC<AssistantChatModalProps> = ({
 
     setShowAutoFillModal(false);
 
-    // Message utilisateur
-    const userMessage: Message = {
-      id: generateMessageId(),
-      type: 'user',
-      content: `🪄 Génération automatique pour ${propertyLabel}: "${description}"`,
-      timestamp: new Date()
-    };
-
+    const userMessage = createMessage(
+      'user', 
+      `🪄 Génération automatique pour ${propertyLabel}: "${description}"`
+    );
     setMessages(prev => [...prev, userMessage]);
 
     try {
-      // Créer le prompt spécialisé
       const prompt = AIPromptsService.getAutoFillPrompt(
         propertyType,
         propertyLabel,
@@ -281,29 +258,70 @@ const AssistantChatModal: React.FC<AssistantChatModalProps> = ({
       const result = await sendMessage(prompt, formContext);
 
       if (result.success && result.response) {
-        try {
-          // Parser la réponse JSON de l'IA
-          const cleanedResponse = result.response.replace(/```json\n?|\n?```/g, '').trim();
-          const generatedData = JSON.parse(cleanedResponse);
+        await processAutoFillResponse(result);
+      } else {
+        handleAIResponse(result, setMessages);
+      }
+    } catch (error) {
+      handleTryCatchError(error, setMessages, 'Erreur inattendue lors de la génération automatique');
+    }
+  };
 
-          // Sauvegarder dans localStorage
-          const formData = {
-            title: generatedData.title,
-            description: generatedData.description,
-            area: generatedData.area,
-            price: generatedData.price,
-            tags: generatedData.tags,
-            status: 'FOR_RENT', // Valeur par défaut
-            ...generatedData.propertyDetails
-          };
+  // Traiter la réponse de génération automatique
+  const processAutoFillResponse = async (result: any) => {
+    try {
+      const cleanedResponse = result.response?.replace(/```json\n?|\n?```/g, '').trim() ?? '';
+      const generatedData = JSON.parse(cleanedResponse);
 
-          saveFormDataToLocalStorage(formData);
+      // Post-traitement : prix en FCFA, superficie à 0 si absente ou invalide
+      let price = generatedData.price;
+      if (typeof price === 'string') {
+        price = parseInt(price.replace(/[^0-9]/g, ''), 10);
+      }
+      if (!price || isNaN(price) || price < 0) price = 0;
+      let area = generatedData.area;
+      if (!area || isNaN(area) || area < 0) area = 0;
 
-          // Message de succès avec résumé
-          const successMessage: Message = {
-            id: generateMessageId(),
-            type: 'assistant',
-            content: `✅ **Formulaire généré avec succès !**
+      // Sauvegarder dans localStorage
+      const formData = {
+        title: generatedData.title,
+        description: generatedData.description,
+        area,
+        price,
+        tags: generatedData.tags,
+        status: 'FOR_RENT',
+        ...generatedData.propertyDetails
+      };
+
+      saveFormDataToLocalStorage(formData);
+
+      // Message de succès avec résumé
+      const successContent = createAutoFillSuccessMessage(generatedData);
+      const successMessage = createMessage('assistant', successContent, {
+        creditsUsed: 1,
+        creditsRemaining: result.creditsRemaining
+      });
+
+      setMessages(prev => [...prev, successMessage]);
+
+      // Rafraîchir la page pour afficher les nouvelles données
+      setTimeout(() => {
+        window.location.reload();
+      }, 2000);
+
+    } catch (parseError) {
+      console.error('Erreur parsing JSON:', parseError);
+      const errorMessage = createMessage(
+        'error',
+        `Erreur lors de l'analyse de la réponse de l'IA. Réponse reçue: ${result.response ?? ''}`
+      );
+      setMessages(prev => [...prev, errorMessage]);
+    }
+  };
+
+  // Créer le message de succès pour la génération automatique
+  const createAutoFillSuccessMessage = (generatedData: any) => {
+    return `✅ **Formulaire généré avec succès !**
 
 **Titre :** ${generatedData.title}
 
@@ -317,52 +335,9 @@ const AssistantChatModal: React.FC<AssistantChatModalProps> = ({
 **Confiance :** ${generatedData.confidence}%
 
 **Suggestions :**
-${generatedData.suggestions?.map((s: string) => `• ${s}`).join('\n') || ''}
+${generatedData.suggestions?.map((s: string) => `• ${s}`).join('\n') ?? ''}
 
-📝 *Le formulaire a été automatiquement rempli ! Vous pouvez maintenant le réviser et l'ajuster selon vos besoins.*`,
-            timestamp: new Date(),
-            creditsUsed: 1,
-            creditsRemaining: result.creditsRemaining
-          };
-
-          setMessages(prev => [...prev, successMessage]);
-
-          // Rafraîchir la page pour afficher les nouvelles données
-          setTimeout(() => {
-            window.location.reload();
-          }, 2000);
-
-        } catch (parseError) {
-          console.error('Erreur parsing JSON:', parseError);
-          
-          const errorMessage: Message = {
-            id: generateMessageId(),
-            type: 'error',
-            content: `Erreur lors de l'analyse de la réponse de l'IA. Réponse reçue: ${result.response}`,
-            timestamp: new Date()
-          };
-          setMessages(prev => [...prev, errorMessage]);
-        }
-      } else {
-        const errorMessage: Message = {
-          id: generateMessageId(),
-          type: 'error',
-          content: result.error || 'Erreur lors de la génération automatique',
-          timestamp: new Date()
-        };
-        setMessages(prev => [...prev, errorMessage]);
-      }
-    } catch (error) {
-      console.error('Erreur génération automatique:', error);
-      
-      const errorMessage: Message = {
-        id: generateMessageId(),
-        type: 'error',
-        content: 'Erreur inattendue lors de la génération automatique',
-        timestamp: new Date()
-      };
-      setMessages(prev => [...prev, errorMessage]);
-    }
+📝 *Le formulaire a été automatiquement rempli ! Vous pouvez maintenant le réviser et l'ajuster selon vos besoins.*`;
   };
 
   return (
@@ -462,7 +437,7 @@ ${generatedData.suggestions?.map((s: string) => `• ${s}`).join('\n') || ''}
       <AutoFillModal
         isOpen={showAutoFillModal}
         onClose={() => setShowAutoFillModal(false)}
-        propertyLabel={propertyLabel || 'propriété'}
+        propertyLabel={propertyLabel ?? 'propriété'}
         requiredFields={requiredFields}
         onGenerate={handleAutoFillProperty}
         creditsAvailable={creditsAvailable}

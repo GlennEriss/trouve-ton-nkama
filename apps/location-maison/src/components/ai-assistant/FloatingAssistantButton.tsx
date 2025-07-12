@@ -2,7 +2,6 @@
 
 import React, { useState } from 'react';
 import { Bot } from 'lucide-react';
-import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
 import useAIAssistant from '@/hooks/useAIAssistant';
 import usePropertyType from '@/hooks/usePropertyType';
@@ -128,17 +127,26 @@ const FloatingAssistantButton: React.FC<FloatingAssistantButtonProps> = ({ formC
       if (result.success && result.response) {
         try {
           // Parser la réponse JSON de l'IA
-          const cleanedResponse = result.response.replace(/```json\n?|\n?```/g, '').trim();
+          const cleanedResponse = result.response?.replace(/```json\n?|\n?```/g, '').trim() ?? '';
           const generatedData = JSON.parse(cleanedResponse);
+
+          // Post-traitement : prix en FCFA, superficie à 0 si absente ou invalide
+          let price = generatedData.price;
+          if (typeof price === 'string') {
+            price = parseInt(price.replace(/[^0-9]/g, ''), 10);
+          }
+          if (!price || isNaN(price) || price < 0) price = 0;
+          let area = generatedData.area;
+          if (!area || isNaN(area) || area < 0) area = 0;
 
           // Créer la structure de données conforme au localStorage attendu
           const formData = {
-            typeProperty: PROPERTY_TYPE_MAPPING[propertyType] || 'Home',
-            title: generatedData.title || '',
-            description: generatedData.description || '',
-            price: generatedData.price || 0,
-            area: generatedData.area || 0,
-            tags: generatedData.tags || [],
+            typeProperty: PROPERTY_TYPE_MAPPING[propertyType] ?? 'Home',
+            title: generatedData.title ?? '',
+            description: generatedData.description ?? '',
+            price,
+            area,
+            tags: generatedData.tags ?? [],
             street: '',
             city: '',
             province: '',
@@ -162,18 +170,13 @@ const FloatingAssistantButton: React.FC<FloatingAssistantButtonProps> = ({ formC
             description: (
               <div className="space-y-1">
                 <p><strong>Titre:</strong> {generatedData.title}</p>
-                <p><strong>Superficie:</strong> {generatedData.area} m²</p>
-                <p><strong>Prix:</strong> {generatedData.price?.toLocaleString()} €</p>
+                <p><strong>Superficie:</strong> {area} m²</p>
+                <p><strong>Prix:</strong> {price?.toLocaleString()} FCFA</p>
                 <p className="text-sm text-gray-600 mt-2">La page va se recharger pour afficher les nouvelles données.</p>
               </div>
             ),
             variant: "success",
           });
-
-          // Rafraîchir la page après un délai pour laisser le temps au toast d'être lu
-          setTimeout(() => {
-            window.location.reload();
-          }, 3000);
 
         } catch (parseError) {
           console.error('Erreur parsing JSON:', parseError);
@@ -186,7 +189,7 @@ const FloatingAssistantButton: React.FC<FloatingAssistantButtonProps> = ({ formC
       } else {
         toast({
           title: "❌ Erreur de génération",
-          description: result.error || "Une erreur s'est produite lors de la génération automatique.",
+          description: result.error ?? "Une erreur s'est produite lors de la génération automatique.",
           variant: "destructive",
         });
       }
@@ -230,29 +233,50 @@ const FloatingAssistantButton: React.FC<FloatingAssistantButtonProps> = ({ formC
 
         {/* Conteneur du bouton - aligné à droite */}
         <div className="flex justify-end">
-          <Button
-            type='button'
+          <button
+            type="button"
             onClick={handleOpenModal}
-            disabled={creditsAvailable <= 0}
+            disabled={creditsAvailable <= 0 || isLoading}
             className={`
-              relative rounded-full w-16 h-16 shadow-lg transition-all duration-300 hover:scale-105
-              ${creditsAvailable <= 0 
-                ? 'bg-gray-300 hover:bg-gray-300 cursor-not-allowed' 
-                : 'hover:opacity-90 active:scale-95'
-              }
+              group relative p-0 border-none bg-transparent focus:outline-none
+              ${creditsAvailable <= 0 || isLoading ? 'opacity-50 cursor-not-allowed' : 'hover:scale-105 active:scale-95'}
             `}
-            style={{
-              backgroundColor: creditsAvailable > 0 ? '#156B66' : undefined
-            }}
-            size="lg"
+            style={{}}
           >
-            <div className="relative">
-              <Bot className="w-7 h-7 text-white" />
-              {creditsAvailable > 0 && (
-                <div className="absolute -bottom-1 -right-1 w-3 h-3 bg-green-400 rounded-full animate-pulse" />
+            <span
+              className={`
+                inline-flex items-center justify-center
+                transition-all duration-300
+                drop-shadow-lg
+                ${creditsAvailable > 0 && !isLoading ? 'hover:drop-shadow-2xl' : ''}
+              `}
+              style={{
+                filter: 'drop-shadow(0 4px 16px rgba(21,107,102,0.25))',
+              }}
+            >
+              {isLoading ? (
+                // Animation de réflexion pendant le chargement
+                <svg className="animate-spin w-16 h-16 text-[#156B66]" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z" />
+                </svg>
+              ) : (
+                <Bot
+                  className="w-16 h-16"
+                  style={{
+                    background: 'linear-gradient(135deg, #1de9b6 0%, #156B66 100%)',
+                    borderRadius: '50%',
+                    boxShadow: '0 6px 24px 0 rgba(21,107,102,0.25)',
+                    padding: '12px',
+                    color: 'white',
+                  }}
+                />
               )}
-            </div>
-          </Button>
+              {creditsAvailable > 0 && !isLoading && (
+                <span className="absolute -bottom-1 -right-1 w-3 h-3 bg-green-400 rounded-full animate-pulse border-2 border-white" />
+              )}
+            </span>
+          </button>
         </div>
       </div>
 

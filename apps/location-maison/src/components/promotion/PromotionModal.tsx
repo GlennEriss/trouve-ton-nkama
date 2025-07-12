@@ -5,7 +5,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '../ui/dialog'
 import { Button } from '../ui/button'
 import { Badge } from '../ui/badge'
 import { Property, PromotionType } from '@/models/annonce'
-import { Megaphone, TrendingUp, ArrowUpCircle, Clock, Coins, Calendar, CheckCircle2, CreditCard } from 'lucide-react'
+import { Megaphone, TrendingUp, ArrowUpCircle, Clock, Coins, CheckCircle2, CreditCard } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { usePromotion } from '@/hooks/use-promotion'
 
@@ -28,7 +28,20 @@ interface PremiumService {
   disabled?: boolean
 }
 
-export function PromotionModal({ property, isOpen, onClose }: PromotionModalProps) {
+function getPromotionTypeName(promotionType: PromotionType | undefined): string {
+  if (promotionType === 'featured') {
+    return 'à la une';
+  }
+  if (promotionType === 'trending-7d') {
+    return 'en tendance (7j)';
+  }
+  if (promotionType === 'trending-3d') {
+    return 'en tendance (3j)';
+  }
+  return 'boostée';
+}
+
+export function PromotionModal({ property, isOpen, onClose }: Readonly<PromotionModalProps>) {
   const [selectedPromotion, setSelectedPromotion] = useState<PromotionType>(null)
   
   const { 
@@ -155,12 +168,7 @@ export function PromotionModal({ property, isOpen, onClose }: PromotionModalProp
                   Promotion active
                 </h3>
                 <p className="text-sm text-emerald-700 dark:text-emerald-400">
-                  Votre annonce est actuellement {
-                    currentPromotionType === 'featured' ? 'à la une' :
-                    currentPromotionType === 'trending-7d' ? 'en tendance (7j)' :
-                    currentPromotionType === 'trending-3d' ? 'en tendance (3j)' :
-                    'boostée'
-                  }
+                  Votre annonce est actuellement {getPromotionTypeName(currentPromotionType)}
                   {promotionStatus.daysLeft > 0 && (
                     <span> - {promotionStatus.daysLeft} jour{promotionStatus.daysLeft > 1 ? 's' : ''} restant{promotionStatus.daysLeft > 1 ? 's' : ''}</span>
                   )}
@@ -182,21 +190,25 @@ export function PromotionModal({ property, isOpen, onClose }: PromotionModalProp
             const isCurrentPromotion = currentPromotionType === service.id && hasActivePromotion
             
             return (
-              <div
+              <button
                 key={service.id}
+                type="button"
                 className={cn(
-                  "relative border-2 rounded-2xl p-6 cursor-pointer transition-all duration-300",
+                  "relative border-2 rounded-2xl p-6 transition-all duration-300 text-left",
                   selectedPromotion === service.id
                     ? "border-[#146B67] bg-[#146B67]/5 dark:bg-[#146B67]/10"
                     : "border-gray-200 dark:border-gray-700 hover:border-[#146B67]/50",
                   service.disabled && "opacity-50 cursor-not-allowed",
-                  !hasEnoughCredits && "border-red-200 dark:border-red-800"
+                  !hasEnoughCredits && "border-red-200 dark:border-red-800",
+                  (!service.disabled && hasEnoughCredits) && "hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-[#146B67] focus:ring-offset-2"
                 )}
                 onClick={() => {
                   if (!service.disabled && hasEnoughCredits) {
                     setSelectedPromotion(service.id)
                   }
                 }}
+                disabled={service.disabled || !hasEnoughCredits}
+                aria-label={`Sélectionner ${service.name} - ${service.credits} crédits`}
               >
                 {isCurrentPromotion && (
                   <div className="absolute top-3 right-3">
@@ -275,8 +287,8 @@ export function PromotionModal({ property, isOpen, onClose }: PromotionModalProp
                       Avantages :
                     </div>
                     <ul className="space-y-1">
-                      {service.benefits.slice(0, 2).map((benefit, index) => (
-                        <li key={index} className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
+                      {service.benefits.slice(0, 2).map((benefit) => (
+                        <li key={benefit} className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
                           <div className="w-1.5 h-1.5 bg-[#146B67] dark:bg-[#1FA89B] rounded-full flex-shrink-0" />
                           {benefit}
                         </li>
@@ -284,7 +296,7 @@ export function PromotionModal({ property, isOpen, onClose }: PromotionModalProp
                     </ul>
                   </div>
                 </div>
-              </div>
+              </button>
             )
           })}
         </div>

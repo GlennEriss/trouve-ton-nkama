@@ -5,7 +5,7 @@ import { usePathname } from 'next/navigation'
 import { cn } from '@/lib/utils'
 import { routes } from '@/constantes/routes'
 
-export default function PublicLayout({ children }: { children: React.ReactNode }) {
+export default function PublicLayout({ children }: Readonly<{ children: React.ReactNode }>) {
     const pathname = usePathname()
     const isSearchPage = pathname === routes.public.search_property
     return (

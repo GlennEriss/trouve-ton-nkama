@@ -1,6 +1,7 @@
 import * as React from "react";
 import { CheckIcon, ChevronsUpDown } from "lucide-react";
 import * as RPNInput from "react-phone-number-input";
+import PhoneNumberInput from "react-phone-number-input";
 import flags from "react-phone-number-input/flags";
 
 import { Button } from "@/components/ui/button";
@@ -25,22 +26,37 @@ export type PhoneInputProps = Omit<
     React.ComponentProps<"input">,
     "onChange" | "value" | "ref"
 > &
-    Omit<RPNInput.Props<typeof RPNInput.default>, "onChange"> & {
+    Omit<RPNInput.Props<typeof PhoneNumberInput>, "onChange"> & {
         onChange?: (value: RPNInput.Value) => void;
         triggerClassName?: string;
     };
 
+type CountrySelectWrapperProps = {
+    triggerClassName?: string;
+} & React.ComponentProps<typeof CountrySelect>;
+
+const CountrySelectWrapper: React.FC<CountrySelectWrapperProps> = ({ triggerClassName, ...props }) => (
+    <CountrySelect {...props} triggerClassName={triggerClassName} />
+);
+
+const createCountrySelectComponent = (triggerClassName?: string) => (selectProps: any) => (
+    <CountrySelectWrapper {...selectProps} triggerClassName={triggerClassName} />
+);
+
 const PhoneInput: React.ForwardRefExoticComponent<PhoneInputProps> =
-    React.forwardRef<React.ElementRef<typeof RPNInput.default>, PhoneInputProps>(
+    React.forwardRef<React.ElementRef<typeof PhoneNumberInput>, PhoneInputProps>(
         ({ className, onChange, triggerClassName, ...props }, ref) => {
+            const countrySelectComponent = React.useMemo(
+                () => createCountrySelectComponent(triggerClassName),
+                [triggerClassName]
+            );
+
             return (
-                <RPNInput.default
+                <PhoneNumberInput
                     ref={ref}
                     className={cn("flex", className)}
                     flagComponent={FlagComponent}
-                    countrySelectComponent={(props) => (
-                        <CountrySelect {...props} triggerClassName={triggerClassName} />
-                    )}
+                    countrySelectComponent={countrySelectComponent}
                     inputComponent={InputComponent}
                     smartCaret={false}
                     /**
@@ -52,7 +68,7 @@ const PhoneInput: React.ForwardRefExoticComponent<PhoneInputProps> =
                      *
                      * @param {E164Number | undefined} value - The entered value
                      */
-                    onChange={(value) => onChange?.(value || ("" as RPNInput.Value))}
+                    onChange={(value) => onChange?.(value ?? ("" as RPNInput.Value))}
                     {...props}
                 />
             );

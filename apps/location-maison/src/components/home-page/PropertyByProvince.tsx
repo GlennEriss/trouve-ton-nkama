@@ -54,19 +54,55 @@ const provinces = [
 
 export default function PropertyByProvince() {
     const router = useRouter()
+    
+    // Appeler les hooks pour toutes les provinces au niveau du composant
+    const estuaireData = useServerCountByProvince('Estuaire')
+    const hautOgooueData = useServerCountByProvince('Haut-Ogooué')
+    const moyenOgooueData = useServerCountByProvince('Moyen-Ogooué')
+    const ngnounieData = useServerCountByProvince('Ngounié')
+    const nyangaData = useServerCountByProvince('Nyanga')
+    const ogooueIvindoData = useServerCountByProvince('Ogooué-Ivindo')
+    const ogooueLolooData = useServerCountByProvince('Ogooué-Lolo')
+    const ogooueMaritimeData = useServerCountByProvince('Ogooué-Maritime')
+    const woleuNtemData = useServerCountByProvince('Woleu-Ntem')
+
+    // Créer le mapping des données
+    const provinceData: Record<string, { data: number | undefined; isLoading: boolean }> = {
+        'Estuaire': estuaireData,
+        'Haut-Ogooué': hautOgooueData,
+        'Moyen-Ogooué': moyenOgooueData,
+        'Ngounié': ngnounieData,
+        'Nyanga': nyangaData,
+        'Ogooué-Ivindo': ogooueIvindoData,
+        'Ogooué-Lolo': ogooueLolooData,
+        'Ogooué-Maritime': ogooueMaritimeData,
+        'Woleu-Ntem': woleuNtemData,
+    }
+
     return (
         <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5'>
             {
-                provinces.map((province, index) => {
-                    const { data: count, isLoading } = useServerCountByProvince(province.name)
+                provinces.map((province) => {
+                    const { data: count, isLoading } = provinceData[province.name]
 
                     return (
-                        <div
-                            key={index}
-                            className='relative rounded-xl overflow-hidden w-full h-[340px] group cursor-pointer'
+                        <button
+                            key={province.name}
+                            className='relative rounded-xl overflow-hidden w-full h-[340px] group cursor-pointer border-none bg-transparent p-0'
                             onClick={() => {
-                                router.push(`${routes.public.search_property}?province=${province.name}`)
+                                const params = new URLSearchParams()
+                                params.append("province", province.name)
+                                router.push(`${routes.public.search_property}?${params.toString()}`)
                             }}
+                            onKeyDown={(e) => {
+                                if (e.key === 'Enter' || e.key === ' ') {
+                                    e.preventDefault();
+                                    const params = new URLSearchParams()
+                                    params.append("province", province.name)
+                                    router.push(`${routes.public.search_property}?${params.toString()}`);
+                                }
+                            }}
+                            aria-label={`Rechercher des propriétés dans la province ${province.name}`}
                         >
                             <Image
                                 src={`/assets/home-page/${province.img}`}
@@ -86,7 +122,7 @@ export default function PropertyByProvince() {
                                             <span className='text-white'>Chargement...</span>
                                         </div>
                                     ) : (
-                                        <h3 className='text-white'>{(count || 0) > 0 ? `${count} Propriété(s)` : 'Aucune propriété'}</h3>
+                                        <h3 className='text-white'>{(count ?? 0) > 0 ? `${count} Propriété(s)` : 'Aucune propriété'}</h3>
                                     )}
                                 </div>
                                 <div className="ml-auto relative h-14 w-14">
@@ -99,7 +135,7 @@ export default function PropertyByProvince() {
                                 </div>
 
                             </div>
-                        </div>
+                        </button>
                     )
                 })
             }

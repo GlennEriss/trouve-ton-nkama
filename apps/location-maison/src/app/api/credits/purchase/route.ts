@@ -32,8 +32,7 @@ export async function POST(request: NextRequest): Promise<NextResponse<PurchaseR
     const token = authHeader.split('Bearer ')[1]
 
     // Vérifier le token Firebase
-    const decodedToken = await adminAuth.verifyIdToken(token)
-    const userId = decodedToken.uid
+    await adminAuth.verifyIdToken(token)
 
     // Parser le body de la requête
     const body: PurchaseRequestBody = await request.json()
@@ -76,7 +75,7 @@ export async function POST(request: NextRequest): Promise<NextResponse<PurchaseR
       
       return NextResponse.json({
         success: false,
-        message: errorData.error || 'Erreur lors de l\'initiation du paiement',
+        message: errorData.error ?? 'Erreur lors de l\'initiation du paiement',
         error: process.env.NODE_ENV === 'development' ? `Cloud Function error: ${cloudFunctionResponse.status}` : undefined
       }, { status: 500 })
     }

@@ -19,6 +19,22 @@ export const RegisterSuccess: React.FC<RegisterSuccessProps> = ({ uid }) => {
   const [resendStatus, setResendStatus] = useState(false);
   const [countdown, setCountdown] = useState(0); // État pour le compte à rebours
 
+  // Fonction pour gérer l'affichage du contenu du bouton de renvoi
+  const getResendButtonContent = () => {
+    if (resendStatus) {
+      return `Veuillez patienter... (${countdown}s)`;
+    }
+    if (isPending) {
+      return (
+        <>
+          <Loader2 className="animate-spin mr-2 w-5 h-5" />
+          Renvoi en cours...
+        </>
+      );
+    }
+    return "Renvoyer l'email de confirmation";
+  };
+
   // Fetch verification status
   const fetchUserVerificationStatus = async () => {
     try {
@@ -117,46 +133,35 @@ export const RegisterSuccess: React.FC<RegisterSuccessProps> = ({ uid }) => {
   return (
     <div className="flex items-center justify-center min-h-screen p-4 bg-gray-100">
       <div className="bg-white p-8 rounded-lg shadow-md max-w-md w-full">
-        <React.Fragment>
-          <h1 className="text-2xl font-bold mb-4 text-center">
-            Inscription réussie !
-          </h1>
-          <p className="text-gray-600 text-center mb-6">
-            {isEmailVerified
-              ? "Votre email a été vérifié. Vous pouvez maintenant vous connecter."
-              : "Un email de confirmation a été envoyé à votre adresse email. Veuillez vérifier votre boîte de réception."}
-          </p>
-          <div className="flex flex-col justify-center">
+        <h1 className="text-2xl font-bold mb-4 text-center">
+          Inscription réussie !
+        </h1>
+        <p className="text-gray-600 text-center mb-6">
+          {isEmailVerified
+            ? "Votre email a été vérifié. Vous pouvez maintenant vous connecter."
+            : "Un email de confirmation a été envoyé à votre adresse email. Veuillez vérifier votre boîte de réception."}
+        </p>
+        <div className="flex flex-col justify-center">
 
-            {!isEmailVerified &&
-              <Button
-                onClick={handleResendEmail}
-                disabled={resendStatus || isPending}
-                className={cn(
-                  "w-full flex items-center justify-center",
-                  (resendStatus || isPending) && "opacity-75"
-                )}
-              >
-                {resendStatus ? (
-                  `Veuillez patienter... (${countdown}s)`
-                ) : isPending ? (
-                  <>
-                    <Loader2 className="animate-spin mr-2 w-5 h-5" />
-                    Renvoi en cours...
-                  </>
-                ) : (
-                  "Renvoyer l'email de confirmation"
-                )}
-              </Button>
-            }
-            <Link
-              href={routes.public.signin}
-              className="mt-4 text-sm text-blue-600 dark:text-blue-400 hover:underline text-center"
+          {!isEmailVerified &&
+            <Button
+              onClick={handleResendEmail}
+              disabled={Boolean(resendStatus) || Boolean(isPending)}
+              className={cn(
+                "w-full flex items-center justify-center",
+                (resendStatus || isPending) && "opacity-75"
+              )}
             >
-              Aller à la page de connexion
-            </Link>
-          </div>
-        </React.Fragment>
+              {getResendButtonContent()}
+            </Button>
+          }
+          <Link
+            href={routes.public.signin}
+            className="mt-4 text-sm text-blue-600 dark:text-blue-400 hover:underline text-center"
+          >
+            Aller à la page de connexion
+          </Link>
+        </div>
       </div>
     </div>
   );

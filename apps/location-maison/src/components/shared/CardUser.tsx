@@ -1,5 +1,5 @@
 import React from 'react'
-import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from '../ui/card'
+import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '../ui/card'
 import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar'
 import { FaUserCircle } from 'react-icons/fa'
 import { BiBuilding } from 'react-icons/bi'
@@ -37,8 +37,8 @@ export default function CardUser() {
             </CardHeader>
             <CardContent className='hidden md:block md:space-y-2'>
                 {
-                    menu.map((item, key) => (
-                        <Button variant='outline' asChild className='w-full justify-start text-white hover:text-[#1B4D5B]'>
+                    menu.map((item) => (
+                        <Button key={item.link} variant='outline' asChild className='w-full justify-start text-white hover:text-[#1B4D5B]'>
                             <Link href={item.link} className='flex gap-2'>
                                 <item.icon />
                                 <span>
