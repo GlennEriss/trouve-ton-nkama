@@ -94,3 +94,27 @@ export async function updateUser(uid: string, updates: Partial<User>): Promise<b
         return false;
     }
 }
+
+export async function findUserByPhoneNumber(phoneNumber: string) {
+    try {
+        const { getDocs, where, query, collection, db } = await getFirestore();
+        const docSnapshot = await getDocs(
+            query(
+                collection(db, firebaseCollectionNames.users),
+                where("phoneNumbers", "array-contains", phoneNumber)
+            )
+        );
+        if (docSnapshot.empty) {
+            return null;
+        }
+        const userDetailsDoc = docSnapshot.docs[0];
+        const userDetails = {
+            id: userDetailsDoc.id,
+            ...userDetailsDoc.data() as User,
+        };
+        return userDetails;
+    } catch (error) {
+        console.error("Error retrieving user by phone number:", error);
+        throw error;
+    }
+}

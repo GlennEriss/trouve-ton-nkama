@@ -1,6 +1,6 @@
 'use client'
 import { routes } from '@/constantes/routes'
-import { createUser } from '@/db/user.db'
+import { createUser, findUserByPhoneNumber } from '@/db/user.db'
 import { useToast } from '@/hooks/use-toast'
 import { transformToPerson } from '@/lib/transformToPerson'
 import { cn } from '@/lib/utils'
@@ -46,6 +46,13 @@ export const SignupMobileComponent = () => {
     }
     const onRegister = async (user: Partial<User>) => {
         try {
+            // Vérification du numéro de téléphone
+            if (user.phoneNumbers && user.phoneNumbers.length > 0) {
+                const existingUser = await findUserByPhoneNumber(user.phoneNumbers[0]);
+                if (existingUser) {
+                    throw new Error("Un numéro est déjà associé à un compte.");
+                }
+            }
             const getAuth = () => import("@/firebase/auth");
             const { createUserWithEmailAndPassword, sendEmailVerification, auth, signOut } = await getAuth();
             const userCred = await createUserWithEmailAndPassword(

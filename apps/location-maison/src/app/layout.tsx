@@ -21,6 +21,7 @@ export default async function RootLayout({
     <html lang="en" suppressHydrationWarning>
       <head>
         <meta name="google-site-verification" content="owGLe__J-ZZiJvB-iZzlfxianxrwoO8vdRyxKFfSkTk" />
+        <meta name="google-site-verification" content="RJWLkFimD2EEl5ocQ9ZmhdfjCg4CKWW19qwKFUSu8b8" />
         <meta name="google-adsense-account" content="ca-pub-2799688336707362" />
       </head>
       <body
