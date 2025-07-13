@@ -29,7 +29,7 @@ const PropertyCard = ({ property }: any) => {
             handleCardClick();
           }
         }}
-        className="h-[460px] md:h-[450px] relative cursor-pointer rounded-2xl shadow-lg overflow-hidden transition-transform duration-200 ease-out hover:scale-[1.02] bg-white dark:bg-gray-800 hover:shadow-xl flex flex-col group will-change-transform w-full text-left border-none p-0"
+        className="h-[480px] md:h-[450px] relative cursor-pointer rounded-2xl shadow-lg overflow-hidden transition-transform duration-200 ease-out hover:scale-[1.02] bg-white dark:bg-gray-800 hover:shadow-xl flex flex-col group will-change-transform w-full text-left border-none p-0"
         aria-label={`Voir les détails de ${property.title ?? "la propriété"}`}
       >
         {/* Image principale */}
@@ -50,21 +50,21 @@ const PropertyCard = ({ property }: any) => {
 
         <div className="flex flex-col flex-grow p-5">
           {/* Titre */}
-          <div className="h-[60px]">
+          <div className="h-[50px]">
             <h3 className="text-lg font-bold text-gray-900 dark:text-white line-clamp-2 group-hover:text-[#146B67] transition-colors">
               {property.title ?? "Propriété"}
             </h3>
           </div>
 
           {/* Prix */}
-          <div className="h-[48px]">
-            <p className="text-lg font-bold text-[#146B67] dark:text-blue-300">
+          <div className="h-[40px]">
+            <p className="text-lg pt-2 font-bold text-[#146B67] dark:text-blue-300">
               {property.status === "FOR_RENT" ? "À louer" : "À vendre"} - {property.price.toLocaleString()} F CFA
             </p>
           </div>
 
           {/* Adresse */}
-          <div className="h-[30px]">
+          <div className="h-[25px]">
             {property.street && (
               <p className="text-sm text-gray-500 dark:text-gray-400 truncate italic">
                 {property.city}, {property.province}, {property.street}
@@ -110,7 +110,7 @@ const PropertyCard = ({ property }: any) => {
           </div>
 
           {/* Date de publication */}
-          <div className="mt-1 pt-3 border-t border-gray-200 dark:border-gray-700">
+          <div className="mt-2 pt-2 border-t border-gray-200 dark:border-gray-700">
             <p className="text-xs text-gray-500 dark:text-gray-400 italic">
               Publiée {formatPublicationDate(property.createdAt)}
             </p>
