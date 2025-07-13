@@ -30,13 +30,13 @@ const PropertyCard = ({ property }: any) => {
           }
         }}
         className="h-[480px] md:h-[450px] relative cursor-pointer rounded-2xl shadow-lg overflow-hidden transition-transform duration-200 ease-out hover:scale-[1.02] bg-white dark:bg-gray-800 hover:shadow-xl flex flex-col group will-change-transform w-full text-left border-none p-0"
-        aria-label={`Voir les détails de ${property.title ?? "la propriété"}`}
+        aria-label={`Voir les détails de ${property.title ?? "l'annonce"}`}
       >
         {/* Image principale */}
         <div className="relative w-full aspect-[3/2] bg-gray-200">
           <Image
             src={property.images?.[0]?.fileURL ?? "/home.png"}
-            alt={property.title ?? "Image de la propriété"}
+            alt={property.title ?? "Image de l'annonce"}
             fill
             className="object-cover"
           />
@@ -52,7 +52,7 @@ const PropertyCard = ({ property }: any) => {
           {/* Titre */}
           <div className="h-[50px]">
             <h3 className="text-lg font-bold text-gray-900 dark:text-white line-clamp-2 group-hover:text-[#146B67] transition-colors">
-              {property.title ?? "Propriété"}
+              {property.title ?? "Annonce"}
             </h3>
           </div>
 

@@ -61,7 +61,7 @@ export default function PropertyList() {
                                         Mes Annonces
                                     </h1>
                                     <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
-                                        Gérez vos propriétés immobilières
+                                        Gérez vos annonces immobilières
                                     </p>
                                 </div>
                             </div>

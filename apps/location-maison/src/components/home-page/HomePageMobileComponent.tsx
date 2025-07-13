@@ -112,7 +112,7 @@ export default function HomePageMobileComponent() {
                     </Form>
                 </section>
 
-                <section className='space-y-5 m-5'>
+                {/* <section className='space-y-5 m-5'>
                     <h1 className='text-xl font-bold text-center text-[#146B67]'>Mettez votre logement en valeur</h1>
                     <div className='rounded-xl flex'>
                         <div className='w-2/3 bg-[#146B67] rounded-l-xl py-5 px-3 flex flex-col gap-3'>
@@ -138,19 +138,19 @@ export default function HomePageMobileComponent() {
                             priority
                         />
                     </div>
-                </section>
+                </section> */}
                 <FeaturedSection />
 
                 <section className='space-y-5 bg-green-50 p-5 py-16'>
                     <h1 className='text-xl font-bold text-center text-[#146B67]'>Quels sont vos besoins ?</h1>
                     <div className='flex gap-2'>
                         <Link href={user ? routes.protected.add_property : routes.public.signinSignup} className='w-1/2 bg-[#146B67] text-white font-bold py-3 rounded-xl flex justify-center items-center'>Publier une annonce</Link>
-                        <Link href={routes.public.search_property} className='w-1/2 bg-white border border-[#146B67] text-[#146B67] font-bold py-3 rounded-xl flex justify-center items-center text-center'>Rechercher un logement</Link>
+                        <Link href={routes.public.search_property} className='w-1/2 bg-white border border-[#146B67] text-[#146B67] font-bold py-3 rounded-xl flex justify-center items-center text-center'>Rechercher une annonce</Link>
                     </div>
                 </section>
 
                 <section className='space-y-5 p-5'>
-                    <h1 className='text-xl text-center font-bold text-[#146B67]'>Type de propriétés</h1>
+                    <h1 className='text-xl text-center font-bold text-[#146B67]'>Types d'annonces</h1>
                     <CarouselPropertyType />
                 </section>
 

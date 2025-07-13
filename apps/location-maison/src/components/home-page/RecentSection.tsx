@@ -46,7 +46,7 @@ export default function RecentSection() {
                 />
             </div>
             <h1 className='text-xl lg:text-2xl xl:text-3xl leading-tight font-bold text-center text-[#146B67]'>
-                Logements récents
+                Annonces récentes
             </h1>
             <PropertyCarousel properties={data?.pages[0]?.properties ?? []} />
         </section>

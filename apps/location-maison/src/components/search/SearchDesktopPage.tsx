@@ -478,11 +478,11 @@ export default function SearchDesktopPage() {
                         <>
                             <div className="mb-6 flex items-center justify-between bg-white dark:bg-gray-800 p-4 rounded-xl shadow-sm">
                                 <h2 className="text-lg font-medium text-gray-900 dark:text-white">
-                                    {nbHits} {nbHits > 1 ? 'propriétés trouvées' : 'propriété trouvée'}
+                                    {nbHits} {nbHits > 1 ? 'annonces trouvées' : 'annonce trouvée'}
                                 </h2>
                             </div>
 
-                            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 gap-6 pb-20">
+                            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 gap-6 pb-20">
                                 {items.map((propertyData, i) => (
                                     <div 
                                         key={propertyData.objectID}
@@ -506,7 +506,7 @@ export default function SearchDesktopPage() {
                                 onClick={showMore}
                                 className="px-8 py-3 bg-gradient-to-r from-[#146B67] via-[#1FA89B] to-[#146B67] text-white rounded-full font-medium hover:brightness-110 transition-all duration-300 shadow-md hover:shadow-lg flex items-center gap-2"
                             >
-                                <span>Voir plus de propriétés</span>
+                                <span>Voir plus d'annonces</span>
                                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                                 </svg>

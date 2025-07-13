@@ -111,7 +111,7 @@ export const SignupMobileComponent = () => {
     return (
         <div className={cn('p-4 md:p-20', inter.className)}>
             <div>
-                <Link href={routes.public.signinSignup}>
+                <Link href={routes.public.signin}>
                     <ChevronLeft color='gray' size={30} />
                 </Link>
             </div>

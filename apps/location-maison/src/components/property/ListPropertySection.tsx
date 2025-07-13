@@ -98,11 +98,11 @@ export default function ListPropertySection() {
                     <div className="absolute -bottom-2 -left-2 w-6 h-6 bg-gray-400 dark:bg-gray-500 rounded-full opacity-40"></div>
                 </div>
                 <h2 className="text-2xl font-bold text-gray-800 dark:text-gray-200 mb-3 text-center">
-                    Aucune propriété trouvée
+                    Aucune annonce trouvée
                 </h2>
                 <p className="text-gray-500 dark:text-gray-400 text-center max-w-md leading-relaxed">
-                    Il n'y a actuellement aucune propriété qui correspond à vos critères. 
-                    Ajoutez des propriétés pour enrichir votre catalogue.
+                    Il n'y a actuellement aucune annonce qui correspond à vos critères. 
+                    Ajoutez des annonces pour enrichir votre catalogue.
                 </p>
             </div>
         );

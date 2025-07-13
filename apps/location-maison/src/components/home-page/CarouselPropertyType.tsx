@@ -106,7 +106,7 @@ export default function CarouselPropertyType() {
                                         {TypeProperty[property.type]}
                                     </h1>
                                     <CardDescription className="text-sm text-gray-500 dark:text-gray-400">
-                                        {count} Propriété{count > 1 ? 's' : ''}
+                                        {count} Annonce{count > 1 ? 's' : ''}
                                     </CardDescription>
                                 </CardContent>
                             </Card>
