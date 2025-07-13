@@ -102,7 +102,7 @@ export default function SigninMobileComponent() {
       <section className='mt-8 md:mt-10'>
         <h1 className='text-2xl font-bold text-[#187872]'>Bienvenue sur Trouve Ton Nkama !</h1>
         <p className='text-gray-500'>
-          Trouvez facilement votre logement de rêve grâce à notre plateforme.
+        Trouvez facilement votre maison, appartement, terrain ou local commercial grâce à notre plateforme intuitive.
         </p>
       </section>
       <Form {...form}>
