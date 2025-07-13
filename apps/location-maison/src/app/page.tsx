@@ -3,19 +3,19 @@ import type { Metadata } from "next";
 import HomePageComponent from "@/components/home-page/HomePageComponent";
 
 export const metadata: Metadata = {
-    title: "LogisGabon - Trouvez ou publiez un logement au Gabon",
-    description: "Découvrez les meilleures annonces immobilières au Gabon. Louez ou vendez votre logement facilement avec LogisGabon.",
+    title: "Trouve Ton Nkama - Trouvez ou publiez un logement au Gabon",
+    description: "Découvrez les meilleures annonces immobilières au Gabon. Louez ou vendez votre logement facilement avec Trouve Ton Nkama.",
     openGraph: {
-        title: "LogisGabon - Immobilier au Gabon",
-        description: "Explorez un large choix de logements à louer ou à vendre au Gabon. Publiez vos annonces ou trouvez votre futur chez-vous avec LogisGabon.",
+        title: "Trouve Ton Nkama - Immobilier au Gabon",
+        description: "Explorez un large choix de logements à louer ou à vendre au Gabon. Publiez vos annonces ou trouvez votre futur chez-vous avec Trouve Ton Nkama.",
         url: `${process.env.NEXT_PUBLIC_HOST}`,
         type: "website",
         images: [
             {
-                url: `${process.env.NEXT_PUBLIC_HOST}/logo.png`,
+                url: `${process.env.NEXT_PUBLIC_HOST}/logo.webp`,
                 width: 1200,
                 height: 630,
-                alt: "LogisGabon Accueil",
+                alt: "Trouve Ton Nkama Accueil",
             },
         ],
     },

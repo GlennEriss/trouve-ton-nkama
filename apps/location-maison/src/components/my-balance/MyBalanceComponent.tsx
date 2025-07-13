@@ -48,7 +48,7 @@ export default function MyBalanceComponent() {
           </h1>
         </div>
         <p className="text-sm md:text-base text-gray-600 dark:text-gray-400 max-w-2xl mx-auto px-4">
-          Gérez vos crédits et accédez aux services premium LogisGabon pour booster la visibilité de vos annonces
+          Gérez vos crédits et accédez aux services premium Trouve Ton Nkama pour booster la visibilité de vos annonces
         </p>
       </div>
 

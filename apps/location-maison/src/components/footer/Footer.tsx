@@ -55,7 +55,7 @@ export default function Footer({ isHide = false }: Readonly<{ isHide?: boolean }
 
                 <hr className="my-6 border-gray-700 sm:mx-auto lg:my-8" />
                 <span className="block text-sm text-white text-center">
-                    © 2023 <a href={routes.public.homePage} className="hover:underline">LogisGabon</a>. All Rights Reserved.
+                    © 2023 <a href={routes.public.homePage} className="hover:underline">Trouve Ton Nkama</a>. All Rights Reserved.
                 </span>
             </div>
         </footer>

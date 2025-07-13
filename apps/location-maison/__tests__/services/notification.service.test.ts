@@ -21,7 +21,7 @@ describe('Notification Service Tests', () => {
   describe('createNotification', () => {
     test('devrait créer une notification de bienvenue', async () => {
       const welcomeNotification = {
-        title: 'Bienvenue sur LogisGabon 👋',
+        title: 'Bienvenue sur Trouve Ton Nkama 👋',
         message: 'Merci de vous être inscrit. Vous pouvez maintenant publier ou consulter des annonces immobilières au Gabon.',
         createdFor: 'user-123',
         isRead: false,
@@ -175,7 +175,7 @@ describe('Notification Service Tests', () => {
         {
           type: 'Bienvenue nouvel utilisateur',
           notification: {
-            title: 'Bienvenue sur LogisGabon 👋',
+            title: 'Bienvenue sur Trouve Ton Nkama 👋',
             message: 'Merci de vous être inscrit.',
             type: 'SECURITY'
           }
@@ -270,7 +270,7 @@ describe('Notification Service Tests', () => {
 
       // 1. Notification de bienvenue
       const welcomeNotif = {
-        title: 'Bienvenue sur LogisGabon 👋',
+        title: 'Bienvenue sur Trouve Ton Nkama 👋',
         message: 'Merci de vous être inscrit.',
         createdFor: 'new-user-123',
         isRead: false,

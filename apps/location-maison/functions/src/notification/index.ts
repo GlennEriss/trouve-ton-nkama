@@ -9,7 +9,7 @@ export const onUserCreate = functions.firestore
     const userId = user.uid;
 
     const notification: Notification = {
-      title: 'Bienvenue sur LogisGabon 👋',
+      title: 'Bienvenue sur Trouve Ton Nkama 👋',
       message: 'Merci de vous être inscrit. Vous pouvez maintenant publier ou consulter des annonces immobilières au Gabon.',
       createdFor: userId,
       isRead: false,

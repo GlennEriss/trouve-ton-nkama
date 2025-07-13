@@ -117,9 +117,9 @@ export const SignupMobileComponent = () => {
             </div>
 
             <section className='mt-8 md:mt-10'>
-                <h1 className='text-2xl font-bold text-[#187872]'>Explorons ensemble avec LogisGabon !</h1>
+                <h1 className='text-2xl font-bold text-[#187872]'>Explorons ensemble avec Trouve Ton Nkama !</h1>
                 <p className='text-gray-500'>
-                    Créez votre compte LogisGabon pour trouver votre logement de rêve partout au Gabon !
+                    Créez votre compte Trouve Ton Nkama pour trouver votre logement de rêve partout au Gabon !
                 </p>
             </section>
             <Form {...form}>

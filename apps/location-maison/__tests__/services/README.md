@@ -1,6 +1,6 @@
 # Tests des Services - Application Immobilière
 
-Ce répertoire contient les tests unitaires et d'intégration pour tous les services de l'application immobilière LogisGabon.
+Ce répertoire contient les tests unitaires et d'intégration pour tous les services de l'application immobilière Trouve Ton Nkama.
 
 ## 📁 Structure des Tests
 
@@ -283,5 +283,5 @@ npm test __tests__/services/ --runInBand --no-cache
 ---
 
 **Dernière mise à jour** : Décembre 2024  
-**Mainteneur** : Équipe LogisGabon  
+**Mainteneur** : Équipe Trouve Ton Nkama  
 **Contact** : dev@logisgabon.com
