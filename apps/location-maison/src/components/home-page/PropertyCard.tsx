@@ -57,16 +57,16 @@ const PropertyCard = ({ property }: any) => {
           </div>
 
           {/* Prix */}
-          <div className="h-[40px]">
-            <p className="text-lg pt-2 font-bold text-[#146B67] dark:text-blue-300">
+          <div className="min-h-[40px]">
+            <p className="text-lg pt-2 font-bold text-[#146B67] dark:text-blue-300 break-words">
               {property.status === "FOR_RENT" ? "À louer" : "À vendre"} - {property.price.toLocaleString()} F CFA
             </p>
           </div>
 
           {/* Adresse */}
-          <div className="h-[25px]">
+          <div className="min-h-[25px]">
             {property.street && (
-              <p className="text-sm text-gray-500 dark:text-gray-400 truncate italic">
+              <p className="text-sm text-gray-500 dark:text-gray-400 italic break-words">
                 {property.city}, {property.province}, {property.street}
               </p>
             )}
