@@ -13,7 +13,7 @@ export const contentType = 'image/png'
 export default async function Image({ params }: { params: { id: string } }) {
   const post = await getPropertyById(params.id)
   const imageURL = post?.images?.[0]?.fileURL ?? process.env.NEXT_PUBLIC_HOST+'/assets/og_img.png'
-  const title = post?.title ?? 'Découvrez une annonce immobilière sur LogisGabon'
+  const title = post?.title ?? 'Découvrez une annonce immobilière sur Trouve Ton Nkama'
 
   return new ImageResponse(
     (

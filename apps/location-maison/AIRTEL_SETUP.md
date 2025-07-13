@@ -24,7 +24,7 @@
 Créez le fichier `.env.local` à la racine du projet avec ce contenu :
 
 ```bash
-# 🔐 Variables d'environnement - LogisGabon
+# 🔐 Variables d'environnement - Trouve Ton Nkama
 # ⚠️  NE PAS COMMITER CE FICHIER
 
 # === AIRTEL MONEY CONFIGURATION (UAT/Staging) ===

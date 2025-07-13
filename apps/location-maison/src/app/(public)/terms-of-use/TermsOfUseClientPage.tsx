@@ -13,17 +13,17 @@ const sections = [
   {
     id: "introduction",
     title: "Introduction",
-    description: "Bienvenue sur LogisGabon. En accédant et en utilisant notre plateforme, vous acceptez nos conditions d'utilisation."
+    description: "Bienvenue sur Trouve Ton Nkama. En accédant et en utilisant notre plateforme, vous acceptez nos conditions d'utilisation."
   },
   {
     id: "utilisation",
     title: "Utilisation de la plateforme",
-    description: "LogisGabon est une plateforme permettant aux utilisateurs de publier et consulter des annonces de location immobilière. L'utilisation du site doit être conforme aux lois en vigueur et aux règles éthiques de la communauté."
+    description: "Trouve Ton Nkama est une plateforme permettant aux utilisateurs de publier et consulter des annonces de location immobilière. L'utilisation du site doit être conforme aux lois en vigueur et aux règles éthiques de la communauté."
   },
   {
     id: "contenu",
     title: "Contenu et responsabilité",
-    description: "Chaque utilisateur est responsable du contenu qu'il publie sur LogisGabon. Les annonces ne doivent contenir ni informations trompeuses ni contenu illégal."
+    description: "Chaque utilisateur est responsable du contenu qu'il publie sur Trouve Ton Nkama. Les annonces ne doivent contenir ni informations trompeuses ni contenu illégal."
   },
   {
     id: "confidentialite",
@@ -210,7 +210,7 @@ export default function TermsOfUseClientPage() {
                     {/* Section Contact */}
                     <div className="text-center space-y-4 mt-8">
                       <p className="text-sm text-gray-400">
-                        © 2025 LogisGabon. Tous droits réservés.
+                        © 2025 Trouve Ton Nkama. Tous droits réservés.
                       </p>
                     </div>
                   </CardContent>

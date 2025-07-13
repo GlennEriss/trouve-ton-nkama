@@ -227,7 +227,7 @@ export default function PrivacyPolicyClientPage() {
                       </a>
                     </p>
                     <p className="text-sm text-gray-400">
-                      © 2025 LogisGabon. Tous droits réservés.
+                      © 2025 Trouve Ton Nkama. Tous droits réservés.
                     </p>
                   </div>
                 </CardContent>

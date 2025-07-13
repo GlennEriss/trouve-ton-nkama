@@ -1,6 +1,6 @@
-# Tests des Hooks React - LogisGabon
+# Tests des Hooks React - Trouve Ton Nkama
 
-Ce répertoire contient les tests unitaires pour tous les hooks React personnalisés de l'application LogisGabon.
+Ce répertoire contient les tests unitaires pour tous les hooks React personnalisés de l'application Trouve Ton Nkama.
 
 ## Structure des Tests
 
@@ -307,4 +307,4 @@ Pour questions ou améliorations concernant les tests des hooks :
 3. **Documentation** : Mettre à jour ce README pour tout nouveau hook
 
 **Dernière mise à jour** : Décembre 2024
-**Mainteneur** : Équipe Frontend LogisGabon
+**Mainteneur** : Équipe Frontend Trouve Ton Nkama

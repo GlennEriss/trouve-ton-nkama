@@ -40,12 +40,15 @@ export const LayoutAuth: React.FC<LayoutAuthProps> = ({ children, type, setIsOth
                 {/* Left Side: Branding/Message */}
                 <div className="hidden md:block md:w-1/2 bg-gradient-to-br from-[#146B67] via-[#1FA89B] to-[#146B67] text-white p-8">
                     <div className="flex flex-col h-full">
-                        <Link href={routes.public.homePage}>
-                            <Logo color='white' />
-                        </Link>
-                        <h1 className="text-2xl font-bold">
-                            Bienvenue sur LogisGabon
-                        </h1>
+                        <div className="flex items-center">
+                            <Link href={routes.public.homePage}>
+                                <Logo color='white' />
+                            </Link>
+                            <h1 className="text-2xl font-bold">
+                                Trouve Ton Nkama
+                            </h1>
+                        </div>
+
                         <p className="mt-4 text-lg">
                             Trouvez facilement votre maison ou appartement de rêve grâce à notre plateforme intuitive.
                         </p>

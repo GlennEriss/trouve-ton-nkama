@@ -83,11 +83,11 @@ export default function HomePageMobileComponent() {
             <div className={cn('text-sm space-y-5', user && width < 768 ? 'mb-20' : '')}>
                 <section className='space-y-4 m-5' ref={searchSectionRef}>
                     <div className='space-y-1 '>
-                        <h1 className='text-gray-500 text-[11px]'>Votre futur chez-vous grâce à LogisGabon</h1>
+                        <h1 className='text-gray-500 text-[11px]'>Votre futur chez-vous grâce à Trouve Ton Nkama</h1>
                         <div className='flex text-xl font-bold text-[#146B67] items-center gap-2'>
                             <MapPin size={25} color='#146B67' />
                             <h1>
-                                Rechercher sur LogisGabon
+                                Rechercher sur Trouve Ton Nkama
                             </h1>
                         </div>
                     </div>

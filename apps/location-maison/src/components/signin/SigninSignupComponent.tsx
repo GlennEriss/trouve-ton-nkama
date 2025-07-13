@@ -41,7 +41,7 @@ export default function SigninSignupComponent() {
             <section className="w-full max-w-[400px] md:max-w-[600px] transition-opacity duration-500 ease-in-out">
                 <Image
                     src="/assets/auth/welcome-mobile-img.png"
-                    alt="Bienvenue sur LogisGabon"
+                    alt="Bienvenue sur Trouve Ton Nkama"
                     width={400}
                     height={400}
                     className="w-full h-auto mx-auto transition-all duration-500 ease-in-out transform"
@@ -64,7 +64,7 @@ export default function SigninSignupComponent() {
                             'text-center text-md text-gray-500 flex flex-col md:text-xl transition-colors duration-300',
                             size.height < 700 ? 'dark:text-[#277874]' : ''
                         )}>
-                            <span>LogisGabon, votre nouveau départ.</span>
+                            <span>Trouve Ton Nkama, votre nouveau départ.</span>
                             <span>Trouvez votre futur logement dès aujourd'hui.</span>
                         </p>
                     </div>
