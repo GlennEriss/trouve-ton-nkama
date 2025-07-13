@@ -396,7 +396,7 @@ export default function SearchDesktopPage() {
 
                             <section className='space-y-5 p-5'>
                                 <h2 className='text-lg font-semibold text-[#146B67] dark:text-[#1FA89B]'>
-                                    Types de propriété
+                                    Types d'annonces
                                 </h2>
                                 <MultiSelectFormApp
                                     control={form.control}
@@ -408,7 +408,7 @@ export default function SearchDesktopPage() {
                                         }))
                                         .sort((a, b) => a.label.localeCompare(b.label))
                                     }
-                                    placeholder="Types de propriété"
+                                    placeholder="Types d'annonces"
                                     className='rounded-full p-2 h-14 bg-gray-50 dark:bg-gray-900 dark:text-white'
                                 />
                             </section>
