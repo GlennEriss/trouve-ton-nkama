@@ -152,7 +152,7 @@ export default function HomePageDesktopComponent() {
       </section>
 
       <section className='space-y-5 m-5'>
-        <h1 className='text-xl lg:text-2xl xl:text-3xl leading-tight font-bold text-center text-[#146B67] my-10'>Logements par province</h1>
+        <h1 className='text-xl lg:text-2xl xl:text-3xl leading-tight font-bold text-center text-[#146B67] my-10'>Annonces par province</h1>
         <PropertyByProvince />
       </section>
 
