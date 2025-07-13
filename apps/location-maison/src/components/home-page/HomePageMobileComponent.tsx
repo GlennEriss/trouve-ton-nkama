@@ -112,7 +112,7 @@ export default function HomePageMobileComponent() {
                     </Form>
                 </section>
 
-                <section className='space-y-5 m-5'>
+                {/* <section className='space-y-5 m-5'>
                     <h1 className='text-xl font-bold text-center text-[#146B67]'>Mettez votre logement en valeur</h1>
                     <div className='rounded-xl flex'>
                         <div className='w-2/3 bg-[#146B67] rounded-l-xl py-5 px-3 flex flex-col gap-3'>
@@ -138,7 +138,7 @@ export default function HomePageMobileComponent() {
                             priority
                         />
                     </div>
-                </section>
+                </section> */}
                 <FeaturedSection />
 
                 <section className='space-y-5 bg-green-50 p-5 py-16'>
