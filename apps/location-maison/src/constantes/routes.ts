@@ -31,9 +31,14 @@ export const routes = {
         signup: '/signup',
         homePage: '/',
         reset_password: '/password-reset',
+        passwordResetRequest: '/request-password-reset',
+        passwordResetFailure: '/password-reset-failure',
+        emailAlreadyVerified: '/email-already-verified',
+        emailVerificationSuccess: '/email-verification-success',
         confidentiality: '/privacy-policy',
         terms_of_use: '/terms-of-use',
         data_deletion: '/data-deletion',
+        search: '/search',
         search_property: '/search'
     }
 }
