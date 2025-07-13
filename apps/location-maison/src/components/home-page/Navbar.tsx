@@ -7,23 +7,44 @@ import InputSearchNavbar from "./InputSearchNavbar";
 import { Button } from "@/components/ui/button";
 import { routes } from "@/constantes/routes";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { NavigationMenu, NavigationMenuList, NavigationMenuItem, NavigationMenuLink } from "@/components/ui/navigation-menu"
 import MenuProfil from "@/components/navbar/MenuProfil";
 
 export default function Navbar() {
   const { width } = useWindowSize();
-  const { user } = useCurrentUser()
+  const { user } = useCurrentUser();
+  const pathname = usePathname();
+  
+  // Vérifier si on est sur une route protégée
+  const isProtectedRoute = Object.values(routes.protected).some(route => 
+    pathname.startsWith(route)
+  );
+
   if (width < 768) {
     if (user) {
       return null
     }
     return (
       <nav className="border-b border-gray-300 dark:border-gray-700 sticky top-0 left-0 right-0 z-[9999] bg-white dark:bg-gray-900 text-black dark:text-white px-4 py-4 flex items-center justify-between shadow-md dark:shadow-gray-900/50">
-        <div className="flex items-center">
+        <div className="flex items-center gap-2">
           <LogoNavigation />
+          <a href="/" rel="noopener noreferrer">
+            <div className="flex flex-col items-start justify-center leading-none hover:opacity-80 transition-opacity cursor-pointer">
+              <span className="text-[#146B67] dark:text-[#1FA89B] font-black text-xs drop-shadow-sm">
+                Trouve
+              </span>
+              <span className="text-[#146B67] dark:text-[#1FA89B] font-black text-xs drop-shadow-sm">
+                Ton
+              </span>
+              <span className="text-[#146B67] dark:text-[#1FA89B] font-black text-xs drop-shadow-sm">
+                Nkama
+              </span>
+            </div>
+          </a>
         </div>
         <div className="flex items-center gap-4">
-          <InputSearchNavbar />
+          {!isProtectedRoute && <InputSearchNavbar />}
           {user ? (
             <div className="flex items-center">
               <Link href={routes.protected.add_property}>
@@ -41,10 +62,25 @@ export default function Navbar() {
   }
   return (
     <div className="rounded-full bg-[#f4f9f9] dark:bg-gray-900 flex shadow dark:shadow-gray-900/50 sticky top-0 z-[9999]">
-      <LogoNavigation />
+      <div className="flex items-center gap-2">
+        <LogoNavigation />
+        <a href="/" rel="noopener noreferrer">
+          <div className="flex flex-col items-start justify-center leading-none hover:opacity-80 transition-opacity cursor-pointer">
+            <span className="text-[#146B67] dark:text-[#1FA89B] font-black text-sm drop-shadow-sm">
+              Trouve
+            </span>
+            <span className="text-[#146B67] dark:text-[#1FA89B] font-black text-sm drop-shadow-sm">
+              Ton
+            </span>
+            <span className="text-[#146B67] dark:text-[#1FA89B] font-black text-sm drop-shadow-sm">
+              Nkama
+            </span>
+          </div>
+        </a>
+      </div>
       <div className="ml-auto flex items-center gap-4 mr-5">
         <NavigationMenuNavbar />
-        <InputSearchNavbar />
+        {!isProtectedRoute && <InputSearchNavbar />}
         {user ? (
           <div>
             <MenuProfil />
