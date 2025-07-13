@@ -50,7 +50,7 @@ export const LayoutAuth: React.FC<LayoutAuthProps> = ({ children, type, setIsOth
                         </div>
 
                         <p className="mt-4 text-lg">
-                            Trouvez facilement votre maison ou appartement de rêve grâce à notre plateforme intuitive.
+                        Trouvez facilement votre maison, appartement, terrain ou local commercial grâce à notre plateforme intuitive.
                         </p>
                     </div>
                 </div>
