@@ -93,7 +93,7 @@ export default function InputSearchNavbar() {
                             <Input
                                 value={searchText}
                                 onChange={(e) => setSearchText(e.target.value)}
-                                placeholder="Rechercher une propriété..."
+                                placeholder="Rechercher une annonce..."
                                 className="w-full bg-neutral-100 dark:bg-neutral-900 text-black dark:text-white placeholder:text-gray-500 border-none focus-visible:ring-1 focus-visible:ring-[#146B67]/50 dark:focus-visible:ring-[#1FA89B]/50 min-h-[50px] rounded-full pl-12 shadow-inner"
                                 onKeyDown={(e) => {
                                     if (e.key === 'Enter') {

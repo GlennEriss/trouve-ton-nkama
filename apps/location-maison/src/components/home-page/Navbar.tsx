@@ -138,7 +138,7 @@ const NavigationMenuNavbar = () => {
   const menu = [
     {
       link: user ? routes.protected.properties : routes.public.signin,
-      label: user ? "Mes logements" : ""
+      label: user ? "Mes annonces" : ""
     },
     {
       link: routes.public.search_property,

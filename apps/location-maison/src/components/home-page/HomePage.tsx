@@ -122,12 +122,12 @@ const HomePage = () => {
           Trouvez votre maison de rêve
         </motion.h1>
         <motion.p
-          className="text-lg mb-8"
+          className="text-lg text-gray-700 dark:text-gray-300 mb-8 text-center"
           initial={{ opacity: 0, y: 50 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8, delay: 0.3 }}
         >
-          Explorez des milliers de propriétés adaptées à vos besoins.
+          Explorez des milliers d'annonces adaptées à vos besoins.
         </motion.p>
         <motion.div
           initial={{ scale: 0.8 }}
@@ -203,7 +203,7 @@ const HomePage = () => {
       {/* Section de la map */}
       {/* <section className="mb-16">
         <h2 className="text-3xl font-semibold text-center mb-6 text-gray-800 dark:text-gray-200">
-          Trouvez votre propriété sur la carte
+          Trouvez votre annonce sur la carte
         </h2>
         <div className="w-full h-96 rounded-lg shadow-lg overflow-hidden">
           <MapComponent houses={houseMocks} neighborhoods={neighborhoods} />
@@ -222,7 +222,7 @@ const HomePage = () => {
       {/* Call-to-action */}
       <section className="bg-blue-500 text-white text-center py-12 rounded-lg shadow-lg">
         <h2 className="text-4xl font-bold mb-4">
-          Vous avez une propriété à louer ou vendre ?
+          Vous avez une annonce à publier ?
         </h2>
         <p className="text-lg mb-6">
           Créez votre annonce dès maintenant et atteignez des milliers de

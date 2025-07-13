@@ -132,14 +132,14 @@ export default function HomePageDesktopComponent() {
               href={routes.public.search_property}
               className='flex-1 group relative overflow-hidden bg-white text-[#146B67] font-semibold py-4 px-8 rounded-xl flex items-center justify-center gap-3 shadow-lg hover:shadow-xl transition-all duration-300 hover:-translate-y-1 border-2 border-[#146B67]/10 hover:border-[#146B67]/30'
             >
-              <span>Rechercher un logement</span>
+              <span>Rechercher une annonce</span>
             </Link>
           </div>
         </div>
       </section>
 
       <section className='space-y-5 p-5 mb-8'>
-        <h1 className='text-xl lg:text-2xl xl:text-3xl leading-tight text-center font-bold text-[#146B67] my-5'>Type de propriétés</h1>
+        <h1 className='text-xl lg:text-2xl xl:text-3xl leading-tight text-center font-bold text-[#146B67] my-5'>Types d'annonces</h1>
         <CarouselPropertyType />
       </section>
 

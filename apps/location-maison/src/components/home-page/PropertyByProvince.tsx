@@ -122,7 +122,7 @@ export default function PropertyByProvince() {
                                             <span className='text-white'>Chargement...</span>
                                         </div>
                                     ) : (
-                                        <h3 className='text-white'>{(count ?? 0) > 0 ? `${count} Propriété(s)` : 'Aucune propriété'}</h3>
+                                        <h3 className='text-white'>{(count ?? 0) > 0 ? `${count} Annonce(s)` : 'Aucune annonce'}</h3>
                                     )}
                                 </div>
                                 <div className="ml-auto relative h-14 w-14">

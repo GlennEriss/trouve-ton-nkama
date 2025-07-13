@@ -88,7 +88,7 @@ export default function SearchMobilePage() {
         <div className='p-5 space-y-5 h-full pb-20' ref={topRef}>
             <section className='md:hidden'>
                 <h1 className='text-2xl font-bold text-[#146B67]'>
-                    Rechercher un logement
+                    Rechercher une annonce
                 </h1>
                 <p className='text-sm text-gray-500'>
                     Trouvez le logement de vos rêves parmi nos annonces immobilières.
