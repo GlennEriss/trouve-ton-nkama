@@ -4,30 +4,21 @@ export async function GET(request: NextRequest) {
   const params = request.nextUrl.searchParams;
   const oobCode = params.get('oobCode');
 
+  console.log('🔍 Lien de réinitialisation cliqué, oobCode:', oobCode?.substring(0, 10) + '...');
+
   if (!oobCode) {
+    console.log('❌ Aucun oobCode trouvé dans les paramètres');
     const redirectUrl = new URL('/password-reset-failure', request.url);
     return NextResponse.redirect(redirectUrl);
   }
 
-  try {
-    // Vérifier la validité du code OOB
-    const response = await verifyOobCode(oobCode);
-    const result = await response.json();
-
-    if (result.error) {
-      throw new Error(result.error.message);
-    }
-
-    // Rediriger vers la page de réinitialisation avec le code
-    const params = new URLSearchParams();
-    params.set('oobCode', oobCode);
-    const redirectUrl = new URL(`/password-reset?${params.toString()}`, request.url);
-    return NextResponse.redirect(redirectUrl);
-  } catch (error: any) {
-    console.error('Erreur lors de la vérification du code OOB:', error);
-    const redirectUrl = new URL('/password-reset-failure', request.url);
-    return NextResponse.redirect(redirectUrl);
-  }
+  // Redirection directe vers la page de réinitialisation
+  // La validation du code OOB se fera lors de la soumission du nouveau mot de passe
+  console.log('✅ Redirection vers /password-reset');
+  const newParams = new URLSearchParams();
+  newParams.set('oobCode', oobCode);
+  const redirectUrl = new URL(`/password-reset?${newParams.toString()}`, request.url);
+  return NextResponse.redirect(redirectUrl);
 }
 
 export async function POST(request: NextRequest) {
@@ -42,15 +33,8 @@ export async function POST(request: NextRequest) {
     }
 
     try {
-      // Vérifier la validité du code OOB
-      const verifyResponse = await verifyOobCode(oobCode);
-      const verifyResult = await verifyResponse.json();
-
-      if (verifyResult.error) {
-        throw new Error(verifyResult.error.message);
-      }
-
-      // Confirmer la réinitialisation du mot de passe
+      // Réinitialiser directement le mot de passe
+      // Firebase validera automatiquement le code OOB
       const confirmResponse = await confirmPasswordReset(oobCode, newPassword);
       const confirmResult = await confirmResponse.json();
 
@@ -100,21 +84,7 @@ export async function POST(request: NextRequest) {
   }
 }
 
-async function verifyOobCode(oobCode: string) {
-  const params = new URLSearchParams();
-  params.set('key', process.env.NEXT_PUBLIC_FIREBASE_API_KEY!);
-  
-  return await fetch(
-    `https://identitytoolkit.googleapis.com/v1/accounts:resetPassword?${params.toString()}`,
-    {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ oobCode }),
-    }
-  );
-}
+
 
 async function confirmPasswordReset(oobCode: string, newPassword: string) {
   const params = new URLSearchParams();

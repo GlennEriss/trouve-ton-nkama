@@ -4,12 +4,29 @@ import { adminAuth } from '@/firebase/admin';
 export async function GET(request: NextRequest) {
   const params = request.nextUrl.searchParams;
   const uid = params.get('uid');
+  const expires = params.get('expires');
 
   if (!uid) {
     return NextResponse.json(
       { error: 'UID utilisateur requis' },
       { status: 400 }
     );
+  }
+
+  // Vérifier l'expiration du lien
+  if (expires) {
+    const expirationTime = parseInt(expires);
+    const currentTime = Date.now();
+    
+    if (currentTime > expirationTime) {
+      // Lien expiré - rediriger vers une page d'expiration
+      const redirectUrl = new URL('/email-verification-expired', request.url);
+      return NextResponse.redirect(redirectUrl);
+    }
+  } else {
+    // Pas d'expiration spécifiée (anciens liens) - considérer comme expiré
+    const redirectUrl = new URL('/email-verification-expired', request.url);
+    return NextResponse.redirect(redirectUrl);
   }
 
   try {
@@ -69,6 +86,8 @@ export async function POST(request: NextRequest) {
           alreadyVerified: true,
         });
       } else {
+        // Pour l'API POST, ne pas vérifier l'expiration car c'est utilisé 
+        // pour la vérification manuelle du statut
         // Marquer l'email comme vérifié
         await adminAuth.updateUser(uid, {
           emailVerified: true,
