@@ -78,7 +78,7 @@ export const Signin = () => {
                         placeholder='*******'
                         className='p-5'
                     />
-                    <Link href={routes.public.reset_password} className='text-red-500 flex justify-end text-sm'>
+                    <Link href={routes.public.passwordResetRequest} className='text-red-500 flex justify-end text-sm'>
                         Mot de passe oublié?
                     </Link>
                     <ButtonLoading

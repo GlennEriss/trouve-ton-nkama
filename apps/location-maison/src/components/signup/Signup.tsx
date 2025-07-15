@@ -24,12 +24,23 @@ export const Signup: React.FC = () => {
     const router = useRouter()
     const { toast } = useToast()
     const [isOtherMethodConnection, setIsOtherMethodConnection] = React.useState(false)
+    const [isRegistering, setIsRegistering] = React.useState(false)
+    
     const form = useForm<FormRegisterSchemaType>({
         resolver: zodResolver(FormRegisterSchema),
         defaultValues: {
-            country: 'GA'
+            firstname: '',
+            lastname: '',
+            email: '',
+            password: '',
+            passwordConfirm: '',
+            birthdate: '',
+            country: 'GA',
+            phone: '',
+            termsOfPrivacyPolicy: false
         }
     })
+    
     const onRegister = async (user: Partial<User>) => {
         try {
             if (user.phoneNumbers && user.phoneNumbers.length > 0) {
@@ -39,13 +50,33 @@ export const Signup: React.FC = () => {
                 }
             }
             const getAuth = () => import("@/firebase/auth");
-            const { createUserWithEmailAndPassword, sendEmailVerification, auth, signOut } = await getAuth();
+            const { createUserWithEmailAndPassword, auth, signOut } = await getAuth();
             const userCred = await createUserWithEmailAndPassword(
                 auth,
                 user.login!,
                 user.password!
             );
-            await sendEmailVerification(userCred.user);
+            
+            // Envoyer l'email de vérification via notre API
+            try {
+                const emailResponse = await fetch('/api/auth/send-verification-email', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        email: user.login!,
+                    }),
+                });
+                
+                if (!emailResponse.ok) {
+                    console.warn('Erreur lors de l\'envoi de l\'email de vérification, mais le compte a été créé');
+                }
+            } catch (emailError) {
+                console.warn('Erreur lors de l\'envoi de l\'email de vérification:', emailError);
+                // Ne pas faire échouer l'inscription si l'email ne peut pas être envoyé
+            }
+            
             const { password, ...userDetails } = user
             const notificationParameter: NotificationParameter = {
                 isNew: true,
@@ -68,32 +99,41 @@ export const Signup: React.FC = () => {
             throw error;
         }
     }
-    const onSubmit = (values: FormRegisterSchemaType) => {
-        const user = transformToPerson(values)
-        onRegister(user)
-            .then((uid) => {
-                toast({
-                    duration: 5000,
-                    title: 'Création de compte',
-                    description: "Votre compte a été créé avec succès!",
-                    variant: 'success',
-                });
-                router.push('/signup/success?uid=' + uid)
-            })
-            .catch(error => {
-                console.error(error)
-                toast({
-                    duration: 5000,
-                    title: 'Création de compte',
-                    description: "L'adresse email est déjà utilisé!",
-                    variant: 'destructive',
-                });
-            })
+    
+    const onSubmit = async (values: FormRegisterSchemaType) => {
+        setIsRegistering(true)
+        try {
+            const user = transformToPerson(values)
+            const uid = await onRegister(user)
+            
+            toast({
+                duration: 5000,
+                title: 'Création de compte',
+                description: "Votre compte a été créé avec succès!",
+                variant: 'success',
+            });
+            
+            router.push('/signup/success?uid=' + uid)
+        } catch (error) {
+            console.error(error)
+            toast({
+                duration: 5000,
+                title: 'Création de compte',
+                description: "L'adresse email est déjà utilisé!",
+                variant: 'destructive',
+            });
+        } finally {
+            setIsRegistering(false)
+        }
     }
+    
+    const isLoading = isRegistering || form.formState.isSubmitting || isOtherMethodConnection
+    
     return (
         <LayoutAuth
             type='Signup'
             setIsOtherMethodConnection={setIsOtherMethodConnection}
+            isFormLoading={isLoading}
         >
             <Form {...form}>
                 <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-3">
@@ -180,9 +220,9 @@ export const Signup: React.FC = () => {
                     />
                     <ButtonLoading
                         type='submit'
-                        disabled={Boolean(form.formState.isSubmitting) || Boolean(form.formState.isLoading) || Boolean(isOtherMethodConnection)}
+                        disabled={isLoading}
                         className='w-full bg-gradient-to-r from-[#146B67] via-[#1FA89B] to-[#146B67]'>
-                        S'enregistrer
+                        {isLoading ? 'Création en cours...' : 'S\'enregistrer'}
                     </ButtonLoading>
                 </form>
             </Form>

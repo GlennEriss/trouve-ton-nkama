@@ -38,7 +38,7 @@ const PasswordReset: React.FC = () => {
   const [showConfirmPassword, setShowConfirmPassword] = React.useState(false)
   const [isSuccess, setIsSuccess] = React.useState(false)
 
-  const token = searchParams.get('token')
+  const oobCode = searchParams.get('oobCode')
 
   const form = useForm<PasswordResetForm>({
     resolver: zodResolver(passwordResetSchema),
@@ -48,12 +48,15 @@ const PasswordReset: React.FC = () => {
     }
   })
 
-  // Vérifier si le token est présent au chargement
+  // Vérifier si le code OOB est présent au chargement
   React.useEffect(() => {
-    if (!token) {
+    if (!oobCode) {
+      console.log('❌ Aucun oobCode trouvé dans les paramètres URL, redirection vers échec');
       router.push(routes.public.passwordResetFailure)
+    } else {
+      console.log('✅ oobCode trouvé:', oobCode.substring(0, 10) + '...');
     }
-  }, [token, router])
+  }, [oobCode, router])
 
   const onSubmit = async (values: PasswordResetForm) => {
     startTransition(async () => {
@@ -65,7 +68,7 @@ const PasswordReset: React.FC = () => {
           },
           body: JSON.stringify({
             newPassword: values.password,
-            oobCode: token,
+            oobCode: oobCode,
           }),
         })
 

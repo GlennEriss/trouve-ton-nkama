@@ -9,10 +9,16 @@ import { signInWithFacebook } from "@/actions/signin-with-facebook";
 
 type LayoutAuthProps = React.PropsWithChildren & {
     type: "Signin" | "Signup";
-    setIsOtherMethodConnection: React.Dispatch<React.SetStateAction<boolean>>
+    setIsOtherMethodConnection: React.Dispatch<React.SetStateAction<boolean>>;
+    isFormLoading?: boolean; // Nouvel état pour désactiver les boutons pendant l'inscription
 };
 
-export const LayoutAuth: React.FC<LayoutAuthProps> = ({ children, type, setIsOtherMethodConnection }) => {
+export const LayoutAuth: React.FC<LayoutAuthProps> = ({ 
+    children, 
+    type, 
+    setIsOtherMethodConnection,
+    isFormLoading = false
+}) => {
     const [isPending, startTransition] = React.useTransition()
     const handleConnection = (method: 'FACEBOOK' | 'GOOGLE') => {
         switch (method) {
@@ -33,6 +39,10 @@ export const LayoutAuth: React.FC<LayoutAuthProps> = ({ children, type, setIsOth
     React.useEffect(() => {
         setIsOtherMethodConnection(isPending)
     }, [isPending])
+    
+    // Désactiver les boutons si l'inscription est en cours OU si les boutons sociaux sont en cours
+    const buttonsDisabled = isPending || isFormLoading;
+    
     return (
         <div className="min-h-screen bg-gray-100 dark:bg-gray-900 flex justify-center items-center py-5">
             {/* Container */}
@@ -75,7 +85,7 @@ export const LayoutAuth: React.FC<LayoutAuthProps> = ({ children, type, setIsOth
                                         type="button"
                                         className="w-12 h-12 rounded-full bg-gray-100 dark:bg-gray-700 flex items-center justify-center hover:bg-gray-200 dark:hover:bg-gray-600 transition duration-200"
                                         onClick={() => handleConnection(connection.method)}
-                                        disabled={isPending}
+                                        disabled={buttonsDisabled}
                                         colorSpinner="blue"
                                     >
                                         <connection.icon size={24} color={connection?.colorIcon} />

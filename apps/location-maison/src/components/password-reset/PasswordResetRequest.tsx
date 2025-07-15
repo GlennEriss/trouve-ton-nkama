@@ -24,6 +24,8 @@ const PasswordResetRequest: React.FC = () => {
   const { toast } = useToast()
   const [isPending, startTransition] = React.useTransition()
   const [isEmailSent, setIsEmailSent] = React.useState(false)
+  const [isRateLimited, setIsRateLimited] = React.useState(false)
+  const [countdown, setCountdown] = React.useState(0)
 
   const form = useForm<PasswordResetForm>({
     resolver: zodResolver(passwordResetSchema),
@@ -31,6 +33,27 @@ const PasswordResetRequest: React.FC = () => {
       email: ''
     }
   })
+
+  // Effet pour gérer le countdown
+  React.useEffect(() => {
+    let interval: NodeJS.Timeout | null = null
+    
+    if (countdown > 0) {
+      interval = setInterval(() => {
+        setCountdown((prev) => {
+          if (prev <= 1) {
+            setIsRateLimited(false)
+            return 0
+          }
+          return prev - 1
+        })
+      }, 1000)
+    }
+
+    return () => {
+      if (interval) clearInterval(interval)
+    }
+  }, [countdown])
 
   const onSubmit = async (values: PasswordResetForm) => {
     startTransition(async () => {
@@ -57,13 +80,47 @@ const PasswordResetRequest: React.FC = () => {
             variant: 'success',
           })
         } else {
-          throw new Error(data.error || 'Erreur lors de l\'envoi de l\'email')
+          // Gestion spécifique de l'erreur de limite de débit
+          if (response.status === 429 && data.code === 'RATE_LIMIT_EXCEEDED') {
+            const retryAfter = data.retryAfter || 300 // 5 minutes par défaut
+            setIsRateLimited(true)
+            setCountdown(retryAfter)
+            toast({
+              duration: 8000,
+              title: 'Trop de tentatives',
+              description: `Vous avez fait trop de demandes. Veuillez attendre ${Math.ceil(retryAfter / 60)} minutes avant de réessayer.`,
+              variant: 'destructive',
+            })
+            return
+          }
+
+          // Gestion des autres erreurs spécifiques
+          let errorMessage = data.error || 'Erreur lors de l\'envoi de l\'email'
+          let errorTitle = 'Erreur'
+
+          if (response.status === 404) {
+            errorTitle = 'Compte non trouvé'
+            errorMessage = 'Aucun compte n\'est associé à cette adresse email.'
+          } else if (response.status === 403) {
+            errorTitle = 'Compte désactivé'
+            errorMessage = 'Ce compte a été désactivé. Veuillez contacter le support.'
+          } else if (response.status === 503) {
+            errorTitle = 'Service indisponible'
+            errorMessage = 'Le service est temporairement indisponible. Veuillez réessayer dans quelques minutes.'
+          }
+
+          toast({
+            duration: 7000,
+            title: errorTitle,
+            description: errorMessage,
+            variant: 'destructive',
+          })
         }
       } catch (error: any) {
         toast({
           duration: 5000,
-          title: 'Erreur',
-          description: error.message || 'Une erreur est survenue. Veuillez réessayer.',
+          title: 'Erreur de connexion',
+          description: 'Impossible de se connecter au serveur. Vérifiez votre connexion internet.',
           variant: 'destructive',
         })
       }
@@ -184,12 +241,36 @@ const PasswordResetRequest: React.FC = () => {
                 </p>
               </div>
 
+              {/* Message de limitation de débit */}
+              {isRateLimited && countdown > 0 && (
+                <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-4">
+                  <div className="flex items-center gap-3">
+                    <div className="flex-shrink-0">
+                      <div className="w-8 h-8 bg-red-100 dark:bg-red-800 rounded-full flex items-center justify-center">
+                        <Lock className="w-4 h-4 text-red-600 dark:text-red-400" />
+                      </div>
+                    </div>
+                    <div className="flex-1">
+                      <p className="text-red-700 dark:text-red-300 text-sm font-medium">
+                        Trop de tentatives détectées
+                      </p>
+                      <p className="text-red-600 dark:text-red-400 text-xs mt-1">
+                        Veuillez attendre encore {Math.floor(countdown / 60)}:{(countdown % 60).toString().padStart(2, '0')} avant de réessayer
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              )}
+
               <ButtonLoading
                 type="submit"
-                className="w-full h-12 bg-gradient-to-r from-[#146B67] to-[#1FA89B] hover:from-[#0f5853] hover:to-[#1a9688] text-white font-semibold rounded-lg transition-all duration-200 shadow-lg"
-                disabled={isPending}
+                className="w-full h-12 bg-gradient-to-r from-[#146B67] to-[#1FA89B] hover:from-[#0f5853] hover:to-[#1a9688] text-white font-semibold rounded-lg transition-all duration-200 shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
+                disabled={isPending || isRateLimited}
               >
-                Envoyer le lien de réinitialisation
+                {isRateLimited 
+                  ? `Attendre ${Math.floor(countdown / 60)}:${(countdown % 60).toString().padStart(2, '0')}`
+                  : 'Envoyer le lien de réinitialisation'
+                }
               </ButtonLoading>
             </form>
           </Form>

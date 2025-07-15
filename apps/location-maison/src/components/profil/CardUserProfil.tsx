@@ -25,14 +25,14 @@ export default function CardUserProfil() {
                         {user?.firstname?.at(0)}
                     </AvatarFallback>
                 </Avatar>
-                <p className='flex flex-col items-center'>
+                <div className='flex flex-col items-center'>
                     <h1 className='font-bold text-xl'>
                         {user?.firstname} {user?.lastname}
                     </h1>
                     <span className='text-gray-500'>
                         {user?.email}
                     </span>
-                </p>
+                </div>
                 <Separator className='mt-6'/>
             </div>
         )
