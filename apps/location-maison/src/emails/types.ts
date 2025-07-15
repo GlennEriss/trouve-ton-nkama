@@ -141,8 +141,22 @@ export interface ExpirationReminderProps extends BaseEmailProps {
   };
 }
 
+// Interface pour l'email générique de test
+export interface GenericEmailProps extends BaseEmailProps {
+  actionLink?: string;
+  texts: BaseEmailProps['texts'] & {
+    title: string;
+    subtitle: string;
+    mainMessage: string;
+    buttonText?: string;
+    footerMessage: string;
+    additionalInfo?: string;
+  };
+}
+
 // Type union pour tous les types d'emails
 export type EmailProps = 
+  | GenericEmailProps
   | EmailVerificationProps 
   | PasswordResetProps 
   | WelcomeEmailProps 
@@ -153,6 +167,7 @@ export type EmailProps =
 
 // Énumération des types d'emails
 export enum EmailType {
+  GENERIC = 'generic',
   EMAIL_VERIFICATION = 'email_verification',
   PASSWORD_RESET = 'password_reset',
   WELCOME = 'welcome',

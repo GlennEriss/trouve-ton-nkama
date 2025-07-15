@@ -9,10 +9,12 @@ import { Section } from "@react-email/section";
 import { Row } from "@react-email/row";
 import { Hr } from "@react-email/hr";
 import theme from "./theme";
+import { emailLogos } from "../../public/emails/config";
 
 interface LayoutProps {
   children: ReactNode;
   logoUrl?: string;
+  footerLogoUrl?: string;
   websiteUrl?: string;
   supportEmail?: string;
   socialLinks?: {
@@ -27,7 +29,8 @@ interface LayoutProps {
 
 const Layout = ({ 
   children, 
-  logoUrl = "https://tonnkama.com/emails/logo-email.png", // PNG optimisé pour les emails
+  logoUrl = emailLogos.production.header, // Logo header optimisé (200x200px)
+  footerLogoUrl = emailLogos.production.footer, // Logo footer optimisé (80x80px)
   websiteUrl = "https://tonnkama.com",
   supportEmail = "support@tonnkama.com",
   socialLinks = {},
@@ -36,28 +39,75 @@ const Layout = ({
 }: LayoutProps) => {
   return (
     <Html style={styleHTML} lang="fr">
-      <Container style={styleContainer}>
+      {/* CSS Media Queries pour mobile */}
+      <style>
+        {`
+          @media only screen and (max-width: 600px) {
+            .mobile-container {
+              width: 100% !important;
+              max-width: none !important;
+              margin: 0 !important;
+              border-radius: 0 !important;
+            }
+            .mobile-padding {
+              padding: 15px 10px !important;
+            }
+            .mobile-header {
+              padding: 20px 15px !important;
+            }
+            .mobile-content {
+              padding: 20px 15px !important;
+            }
+            .mobile-footer {
+              padding: 20px 15px !important;
+            }
+            .mobile-logo-header {
+              width: 60px !important;
+              height: 60px !important;
+            }
+            .mobile-text-small {
+              font-size: 12px !important;
+            }
+            .mobile-button {
+              width: 100% !important;
+              max-width: 280px !important;
+              padding: 14px 20px !important;
+              font-size: 16px !important;
+            }
+            .mobile-section {
+              padding: 15px 10px !important;
+              margin: 10px 0 !important;
+            }
+          }
+        `}
+      </style>
+      <Container style={styleContainer} className="mobile-container">
         {/* Header professionnel avec logo et branding */}
-        <Section style={styleHeader}>
+        <Section style={styleHeader} className="mobile-header">
           <Row>
-            <Column align="center">
-              <Row style={styleHeaderContent}>
-                <Column style={styleLogoColumn}>
-                  <Img
-                    src={logoUrl}
-                    alt="Logo Trouve Ton Nkama"
-                    style={styleHeaderLogo}
-                  />
-                </Column>
-                <Column style={styleBrandingColumn}>
-                  <Text style={styleHeaderTitle}>
-                    Trouve Ton Nkama
-                  </Text>
-                  <Text style={styleHeaderSubtitle}>
-                    Votre plateforme immobilière de référence au Gabon
-                  </Text>
-                </Column>
-              </Row>
+            {/* Logo à gauche */}
+            <Column style={styleLogoColumn}>
+              <img
+                src={logoUrl}
+                alt="Logo Trouve Ton Nkama"
+                style={styleHeaderLogo}
+                className="mobile-logo-header"
+              />
+            </Column>
+            
+            {/* Texte centré */}
+            <Column style={styleBrandingColumn}>
+              <Text style={styleHeaderTitle}>
+                Trouve Ton Nkama
+              </Text>
+              <Text style={styleHeaderSubtitle} className="mobile-text-small">
+                Votre plateforme immobilière de référence au Gabon
+              </Text>
+            </Column>
+            
+            {/* Colonne vide pour équilibrer */}
+            <Column style={styleEmptyColumn}>
+              &nbsp;
             </Column>
           </Row>
         </Section>
@@ -65,48 +115,33 @@ const Layout = ({
         {/* Contenu principal avec bordure professionnelle */}
         <Section style={styleContent}>
           <Row>
-            <Column style={styleContentColumn}>
+            <Column style={styleContentColumn} className="mobile-content">
               {children}
             </Column>
           </Row>
         </Section>
 
         {/* Footer professionnel */}
-        <Section style={styleFooter}>
+        <Section style={styleFooter} className="mobile-footer">
           <Hr style={styleHr} />
           
           {/* Logo footer */}
           <Row>
             <Column align="center">
-              <Img
-                src={logoUrl}
+              <img
+                src={footerLogoUrl}
                 alt="Logo Trouve Ton Nkama"
                 style={styleFooterLogo}
               />
             </Column>
           </Row>
           
-          {/* Liens utiles */}
+          {/* Lien vers le site */}
           <Row>
             <Column align="center">
-              <Text style={styleFooterTitle}>
-                Liens utiles
-              </Text>
               <Text style={styleFooterLinks}>
                 <Link href={websiteUrl} style={styleFooterLink}>
-                  🏠 Accueil
-                </Link>
-                {" • "}
-                <Link href={`${websiteUrl}/search`} style={styleFooterLink}>
-                  🔍 Rechercher
-                </Link>
-                {" • "}
-                <Link href={`${websiteUrl}/property/add`} style={styleFooterLink}>
-                  📝 Publier
-                </Link>
-                {" • "}
-                <Link href={`mailto:${supportEmail}`} style={styleFooterLink}>
-                  📧 Support
+                  🌐 Visitez notre site web
                 </Link>
               </Text>
             </Column>
@@ -192,44 +227,50 @@ const styleHTML: CSSProperties = {
 const styleContainer: CSSProperties = {
   backgroundColor: "#ffffff",
   maxWidth: "600px",
+  width: "100%", // Responsive par défaut
   margin: "0 auto",
   padding: "0",
   boxShadow: "0 4px 6px rgba(0, 0, 0, 0.1)",
   borderRadius: "8px",
   overflow: "hidden",
+  // Tables HTML email responsive
+  tableLayout: "fixed" as const,
 };
 
 const styleHeader: CSSProperties = {
   backgroundColor: theme.colors.primary,
   backgroundImage: `linear-gradient(135deg, ${theme.colors.primary} 0%, ${theme.colors.secondary} 100%)`,
-  padding: "30px 20px",
+  padding: "25px 15px", // Réduit pour mobile par défaut
   borderRadius: "0",
-};
-
-const styleHeaderContent: CSSProperties = {
-  display: "flex",
-  alignItems: "center",
-  justifyContent: "center",
-  gap: "20px",
+  width: "100%",
 };
 
 const styleLogoColumn: CSSProperties = {
-  width: "80px",
-  verticalAlign: "middle",
-};
-
-const styleBrandingColumn: CSSProperties = {
+  width: "120px",
   verticalAlign: "middle",
   textAlign: "left" as const,
 };
 
+const styleBrandingColumn: CSSProperties = {
+  verticalAlign: "middle",
+  textAlign: "center" as const,
+  width: "auto",
+};
+
+const styleEmptyColumn: CSSProperties = {
+  width: "120px",
+  verticalAlign: "middle",
+};
+
 const styleHeaderLogo: CSSProperties = {
-  width: "60px",
-  height: "60px",
+  width: "80px",
+  height: "80px",
   borderRadius: "8px",
   backgroundColor: "#ffffff",
   padding: "8px",
   boxShadow: "0 2px 4px rgba(0, 0, 0, 0.1)",
+  display: "block",
+  border: "2px solid #ffffff",
 };
 
 const styleHeaderTitle: CSSProperties = {
@@ -255,7 +296,8 @@ const styleContent: CSSProperties = {
 };
 
 const styleContentColumn: CSSProperties = {
-  padding: "40px 30px",
+  padding: "30px 20px", // Réduit pour mobile par défaut
+  width: "100%",
 };
 
 const styleFooter: CSSProperties = {
@@ -268,7 +310,12 @@ const styleFooterLogo: CSSProperties = {
   width: "40px",
   height: "40px",
   margin: "0 0 20px 0",
-  opacity: "0.8",
+  opacity: "0.9",
+  display: "block",
+  backgroundColor: "#ffffff",
+  padding: "4px",
+  borderRadius: "6px",
+  border: "1px solid #e1e5e9",
 };
 
 const styleHr: CSSProperties = {

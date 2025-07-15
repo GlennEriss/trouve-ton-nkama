@@ -1,5 +1,10 @@
+// Import du logo Base64
+import { LOGO_BASE64 } from './logo-base64';
+
 // Export des templates d'emails
+export { default as GenericEmail } from './GenericEmail';
 export { default as EmailVerification } from './EmailVerification';
+export { LOGO_BASE64 } from './logo-base64';
 export { default as PasswordReset } from './PasswordReset';
 export { default as WelcomeEmail } from './WelcomeEmail';
 export { default as PropertyPublished } from './PropertyPublished';
@@ -22,7 +27,9 @@ export class EmailService {
     supportEmail: 'support@tonnkama.com',
     websiteUrl: 'https://tonnkama.com',
     //unsubscribeUrl: 'https://tonnkama.com/unsubscribe',
-    logoUrl: 'https://tonnkama.com/logo.png',
+    logoUrl: process.env.NODE_ENV === 'development' 
+      ? LOGO_BASE64 // Logo intégré en Base64 pour le développement
+      : 'https://tonnkama.com/emails/logo-email.png',
     socialLinks: {
       facebook: 'https://facebook.com/trouve.ton.nkama',
       twitter: 'https://twitter.com/trouve_ton_nkama',
@@ -44,19 +51,19 @@ export class EmailService {
 
     // Vérification d'email
     emailVerification: {
-      instruction: 'Merci de vous être inscrit(e) sur Trouve Ton Nkama ! Pour activer votre compte, veuillez cliquer sur le bouton ci-dessous pour vérifier votre adresse email.',
-      buttonText: 'Vérifier mon email',
-      additionalInfo: 'Une fois votre email vérifié, vous pourrez accéder à toutes les fonctionnalités de notre plateforme immobilière.',
-      expirationInfo: 'Ce lien expire dans 24 heures pour des raisons de sécurité.',
+      instruction: '🎉 Félicitations ! Votre compte Trouve Ton Nkama a été créé avec succès ! Pour publier vos annonces immobilières sur notre plateforme, vous devez d\'abord vérifier votre adresse email.',
+      buttonText: 'Vérifier mon email et activer mon compte',
+      additionalInfo: 'Une fois votre email vérifié, vous pourrez publier et gérer vos annonces immobilières en toute sécurité.',
+      expirationInfo: '⚠️ IMPORTANT : Ce lien de vérification expire dans exactement 24 heures à compter de maintenant pour votre sécurité. Pensez à cliquer dessus rapidement !',
     },
 
     // Réinitialisation de mot de passe
     passwordReset: {
-      instruction: 'Vous avez demandé la réinitialisation de votre mot de passe. Cliquez sur le bouton ci-dessous pour créer un nouveau mot de passe.',
-      buttonText: 'Réinitialiser mon mot de passe',
-      additionalInfo: 'Si vous n\'avez pas demandé cette réinitialisation, ignorez ce message. Votre mot de passe actuel reste inchangé.',
-      expirationInfo: 'Ce lien expire dans 1 heure pour des raisons de sécurité.',
-      securityInfo: 'Pour votre sécurité, ce lien ne peut être utilisé qu\'une seule fois.',
+      instruction: 'Vous avez demandé la réinitialisation de votre mot de passe pour votre compte Trouve Ton Nkama. Cliquez sur le bouton ci-dessous pour créer un nouveau mot de passe sécurisé.',
+      buttonText: 'Réinitialiser mon mot de passe maintenant',
+      additionalInfo: 'Si vous n\'avez pas demandé cette réinitialisation, ignorez ce message. Votre mot de passe actuel reste inchangé et votre compte est en sécurité.',
+      expirationInfo: '⚠️ URGENT : Ce lien de réinitialisation expire dans 1 heure seulement pour votre sécurité. Utilisez-le rapidement !',
+      securityInfo: '🔒 Pour votre protection, ce lien ne peut être utilisé qu\'une seule fois. Après utilisation, il devient automatiquement invalide.',
     },
 
     // Email de bienvenue
@@ -120,6 +127,32 @@ export class EmailService {
       ],
     },
   };
+
+  /**
+   * Génère les props pour l'email générique de test
+   */
+  static generateGenericEmailProps(
+    name: string,
+    email: string,
+    actionLink?: string,
+    customTexts?: Partial<typeof EmailService.defaultTexts>
+  ) {
+    const texts = { ...EmailService.defaultTexts, ...customTexts };
+    return {
+      name,
+      email,
+      actionLink,
+      texts: {
+        ...texts,
+        title: 'Email de Test',
+        subtitle: 'Trouve Ton Nkama',
+        mainMessage: 'Ceci est un email de test pour vérifier l\'affichage du logo et la mise en page. Tous les éléments visuels devraient s\'afficher correctement dans votre client email.',
+        buttonText: actionLink ? 'Visiter Trouve Ton Nkama' : undefined,
+        footerMessage: 'Cet email a été envoyé pour tester l\'affichage des templates.',
+        additionalInfo: 'Email de test - aucune action requise.',
+      },
+    };
+  }
 
   /**
    * Génère les props pour le template EmailVerification
