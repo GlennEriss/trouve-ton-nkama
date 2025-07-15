@@ -197,7 +197,7 @@ const authConfig = {
                         //...userCredential.user,
                         ...user,
                         emailVerified: userCredential.user.emailVerified,
-                    }
+                    } as any
                 } catch (error) {
                     console.error("Erreur d'authentification", error);
                     return null
@@ -233,7 +233,7 @@ const authConfig = {
             if (user) {
                 const userDetails = await findUserByEmail(user.email ?? '')
                 if (userDetails) {
-                    user = userDetails
+                    user = userDetails as any
                 }
                 token = {
                     ...token,

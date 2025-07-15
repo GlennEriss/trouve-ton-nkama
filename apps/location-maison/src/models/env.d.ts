@@ -6,6 +6,11 @@ namespace NodeJS {
     GOOGLE_REFRESH_TOKEN: string;
     GOOGLE_EMAIL: string;
     GMAIL_USER: string;
+    //GMAIL OAuth2
+    GMAIL_SENDER_EMAIL: string;
+    GMAIL_OAUTH_CLIENT_ID: string;
+    GMAIL_OAUTH_CLIENT_SECRET: string;
+    GMAIL_OAUTH_REFRESH_TOKEN: string;
     //NEXT_AUTH
     NEXTAUTH_SECRET: string;
     //FIREBASE
