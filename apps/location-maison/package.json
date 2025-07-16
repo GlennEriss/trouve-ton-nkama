@@ -23,6 +23,10 @@
     "test:email:signup": "node scripts/test-signup-flow.js",
     "test:email:complete": "node scripts/test-complete-system.js",
     "test:email:force": "node scripts/test-real-emails.js",
+    "test:sms": "node scripts/test-sms-verification.js",
+    "test:sms:page": "echo '🌐 Page de test SMS disponible sur: http://localhost:3000/test-sms'",
+    "check:firebase": "node scripts/check-firebase-config.js",
+    "help:sms": "echo '📱 Guides SMS disponibles:' && echo '  - PHONE_VERIFICATION_IMPLEMENTATION.md (Implémentation complète)' && echo '  - PHONE_VERIFICATION_USAGE_GUIDE.md (Guide d'utilisation)' && echo '  - Test en ligne: http://localhost:3000/test-sms'",
     "help:gmail": "echo '📚 Guides disponibles:' && echo '  - NOUVEAU_CLIENT_OAUTH2.md (Guide de création client OAuth2)' && echo '  - ENV_VARIABLES.md (Nouvelles variables environnement)' && echo '  - GMAIL_SETUP_GUIDE.md (Guide complet)' && echo '  - EMAIL_SETUP.md (Documentation technique)'"
   },
   "dependencies": {
@@ -57,6 +61,7 @@
     "@react-email/section": "^0.0.16",
     "@react-email/text": "^0.1.5",
     "@tanstack/react-query": "^5.62.8",
+
     "@upstash/redis": "^1.35.0",
     "@vercel/analytics": "^1.5.0",
     "algoliasearch": "^5.18.0",
@@ -97,6 +102,7 @@
     "slick-carousel": "^1.8.1",
     "tailwind-merge": "^2.5.5",
     "tailwindcss-animate": "^1.0.7",
+
     "zod": "^3.24.1"
   },
   "devDependencies": {
