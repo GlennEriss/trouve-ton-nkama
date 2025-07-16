@@ -3,7 +3,7 @@ export async function GET() {
         `User-agent: *
 Allow: /
 
-Sitemap: https://location-maison-gabon.vercel.app/sitemap.xml
+Sitemap: ${process.env.NEXT_PUBLIC_HOST}/sitemap.xml
 `,
         {
             headers: {

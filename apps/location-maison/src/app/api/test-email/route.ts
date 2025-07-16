@@ -5,6 +5,7 @@ import PasswordReset from '@/emails/PasswordReset';
 import EmailVerification from '@/emails/EmailVerification';
 import { emailService, EmailService as EmailTransportService } from '@/services/email.service';
 import { EmailService as EmailTemplateService } from '@/emails/index';
+import { supportContact } from "@/constantes";
 
 export async function POST(request: NextRequest) {
   try {
@@ -44,7 +45,7 @@ export async function POST(request: NextRequest) {
         footerMessage: 'Cet email a été envoyé pour tester l\'affichage des templates.',
         additionalInfo: 'Email de test - aucune action requise.',
         copyRight: '© 2024 Trouve Ton Nkama. Tous droits réservés.',
-        supportEmail: 'support@tonnkama.com',
+        supportEmail: supportContact.email,
         websiteUrl: process.env.NEXT_PUBLIC_HOST || 'http://localhost:3000',
         visitSocialNetworks: 'Suivez-nous sur nos réseaux sociaux',
       };
