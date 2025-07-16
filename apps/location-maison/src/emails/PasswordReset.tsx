@@ -25,10 +25,10 @@ const PasswordReset: React.FC<PasswordResetProps> = ({
       <Section>
         <Row>
           <Column>
-            <Text style={styleGreeting}>
+            <Text style={styleGreeting} className="mobile-text-large">
               {texts.greeting} {name} 🔒
             </Text>
-            <Text style={styleMainText}>
+            <Text style={styleMainText} className="mobile-text-medium">
               {texts.instruction}
             </Text>
           </Column>
@@ -54,7 +54,7 @@ const PasswordReset: React.FC<PasswordResetProps> = ({
       <Section className="mobile-section">
         <Row>
           <Column>
-            <Text style={styleExpirationInfo}>
+            <Text style={styleExpirationInfo} className="mobile-text-medium">
               ⏰ {texts.expirationInfo}
             </Text>
           </Column>
@@ -65,7 +65,7 @@ const PasswordReset: React.FC<PasswordResetProps> = ({
       <Section>
         <Row>
           <Column>
-            <Text style={styleSecurityInfo}>
+            <Text style={styleSecurityInfo} className="mobile-text-medium">
               🔐 {texts.securityInfo}
             </Text>
           </Column>
@@ -78,10 +78,10 @@ const PasswordReset: React.FC<PasswordResetProps> = ({
       <Section>
         <Row>
           <Column>
-            <Text style={styleSecondaryText}>
+            <Text style={styleSecondaryText} className="mobile-text-small">
               🔗 Si le bouton ne fonctionne pas, copiez et collez ce lien dans votre navigateur :
             </Text>
-            <Text style={styleLinkText}>
+            <Text style={styleLinkText} className="mobile-text-small">
               {resetLink}
             </Text>
           </Column>
@@ -92,7 +92,7 @@ const PasswordReset: React.FC<PasswordResetProps> = ({
       <Section>
         <Row>
           <Column>
-            <Text style={styleAdditionalInfo}>
+            <Text style={styleAdditionalInfo} className="mobile-text-small">
               {texts.additionalInfo}
             </Text>
           </Column>
@@ -103,10 +103,10 @@ const PasswordReset: React.FC<PasswordResetProps> = ({
       <Section>
         <Row>
           <Column>
-            <Text style={styleSecurityTips}>
+            <Text style={styleSecurityTips} className="mobile-text-medium">
               🛡️ <strong>Conseils de sécurité :</strong>
             </Text>
-            <Text style={styleSecurityTipsList}>
+            <Text style={styleSecurityTipsList} className="mobile-text-small">
               • Choisissez un mot de passe fort avec au moins 8 caractères<br/>
               • Utilisez une combinaison de lettres, chiffres et symboles<br/>
               • Ne partagez jamais votre mot de passe avec qui que ce soit<br/>
@@ -122,7 +122,7 @@ const PasswordReset: React.FC<PasswordResetProps> = ({
       <Section>
         <Row>
           <Column>
-            <Text style={styleHelpText}>
+            <Text style={styleHelpText} className="mobile-text-small">
               ⚠️ Vous n'avez pas demandé cette réinitialisation ? Contactez immédiatement notre équipe support à{" "}
               <a href={`mailto:${texts.supportEmail}`} style={styleEmailLink}>
                 {texts.supportEmail}
@@ -137,52 +137,52 @@ const PasswordReset: React.FC<PasswordResetProps> = ({
 
 export default PasswordReset;
 
-// Styles améliorés pour une meilleure visibilité
+// Styles optimisés pour mobile
 const styleGreeting: CSSProperties = {
-  fontSize: "20px", // Réduit pour cohérence
+  fontSize: "18px", // Réduit de 20px à 18px
   fontWeight: "bold",
   color: "#111827", // Noir pour maximum de contraste
-  margin: `0 0 20px 0`,
+  margin: `0 0 15px 0`, // Réduit de 20px à 15px
   lineHeight: "1.3",
   textAlign: "center",
   fontFamily: "Arial, sans-serif",
 };
 
 const styleMainText: CSSProperties = {
-  fontSize: "14px", // Réduit pour cohérence
+  fontSize: "13px", // Réduit de 14px à 13px
   fontWeight: "normal",
   color: "#1f2937", // Plus foncé pour meilleure lisibilité
-  margin: `0 0 20px 0`,
-  lineHeight: "1.6",
+  margin: `0 0 15px 0`, // Réduit de 20px à 15px
+  lineHeight: "1.5", // Réduit de 1.6 à 1.5
   textAlign: "center",
   fontFamily: "Arial, sans-serif",
 };
 
 const styleButtonSection: CSSProperties = {
   backgroundColor: "#eff6ff",
-  padding: "20px 15px",
-  borderRadius: "8px",
-  margin: "20px 0",
-  border: "2px solid #93c5fd",
+  padding: "15px 12px", // Réduit de 20px 15px à 15px 12px
+  borderRadius: "6px", // Réduit de 8px à 6px
+  margin: "15px 0", // Réduit de 20px à 15px
+  border: "1px solid #93c5fd", // Réduit de 2px à 1px
 };
 
 const styleButton: CSSProperties = {
   backgroundColor: "#2563eb", // Bleu rassurant pour la sécurité
-  borderRadius: "8px",
+  borderRadius: "6px", // Réduit de 8px à 6px
   color: "#ffffff",
-  fontSize: "16px",
+  fontSize: "14px", // Réduit de 16px à 14px
   fontWeight: "600",
-  padding: "14px 28px", // Légèrement plus grand pour mobile
+  padding: "12px 20px", // Réduit de 14px 28px à 12px 20px
   textDecoration: "none",
   display: "inline-block",
-  margin: "8px 0",
-  boxShadow: "0 4px 8px rgba(37, 99, 235, 0.2)",
-  border: "2px solid #1d4ed8",
+  margin: "6px 0", // Réduit de 8px à 6px
+  boxShadow: "0 3px 6px rgba(37, 99, 235, 0.2)", // Réduit l'ombre
+  border: "1px solid #1d4ed8", // Réduit de 2px à 1px
   cursor: "pointer",
   transition: "all 0.3s ease",
-  minWidth: "220px", // Légèrement plus large pour toucher mobile
+  minWidth: "200px", // Réduit de 220px à 200px
   width: "auto", // Adaptable
-  maxWidth: "90%", // Responsive par défaut
+  maxWidth: "100%", // Responsive par défaut
   textAlign: "center",
   textTransform: "uppercase",
   letterSpacing: "0.5px",
@@ -190,31 +190,31 @@ const styleButton: CSSProperties = {
 };
 
 const styleExpirationInfo: CSSProperties = {
-  fontSize: "14px",
+  fontSize: "13px", // Réduit de 14px à 13px
   fontWeight: "700", // Plus gras pour meilleure visibilité
   color: "#ffffff", // Blanc pour contraste maximum
-  margin: `0 0 20px 0`,
-  lineHeight: "1.5",
+  margin: `0 0 15px 0`, // Réduit de 20px à 15px
+  lineHeight: "1.4", // Réduit de 1.5 à 1.4
   backgroundColor: "#d97706", // Orange/ambre moins alarmant que le rouge
-  padding: "15px 20px",
-  borderRadius: "8px",
-  border: "2px solid #b45309",
+  padding: "12px 15px", // Réduit de 15px 20px à 12px 15px
+  borderRadius: "6px", // Réduit de 8px à 6px
+  border: "1px solid #b45309", // Réduit de 2px à 1px
   textAlign: "center",
   fontFamily: "Arial, sans-serif",
-  textShadow: "2px 2px 4px rgba(0,0,0,0.9)", // Ombre plus prononcée
-  letterSpacing: "0.5px", // Espacement pour clarté
+  textShadow: "1px 1px 3px rgba(0,0,0,0.9)", // Ombre réduite
+  letterSpacing: "0.3px", // Réduit l'espacement
 };
 
 const styleSecurityInfo: CSSProperties = {
-  fontSize: "14px", // Réduit pour cohérence
+  fontSize: "13px", // Réduit de 14px à 13px
   fontWeight: "600",
   color: "#0369a1", // Bleu vif pour l'info
-  margin: `0 0 20px 0`,
-  lineHeight: "1.5",
+  margin: `0 0 15px 0`, // Réduit de 20px à 15px
+  lineHeight: "1.4", // Réduit de 1.5 à 1.4
   backgroundColor: "#eff6ff",
-  padding: "15px 20px",
-  borderRadius: "8px",
-  border: "2px solid #bfdbfe",
+  padding: "12px 15px", // Réduit de 15px 20px à 12px 15px
+  borderRadius: "6px", // Réduit de 8px à 6px
+  border: "1px solid #bfdbfe", // Réduit de 2px à 1px
   textAlign: "center",
   fontFamily: "Arial, sans-serif",
 };
@@ -222,82 +222,82 @@ const styleSecurityInfo: CSSProperties = {
 const styleHr: CSSProperties = {
   border: "none",
   borderTop: `1px solid #d1d5db`,
-  margin: `25px 0`,
+  margin: `20px 0`, // Réduit de 25px à 20px
 };
 
 const styleSecondaryText: CSSProperties = {
-  fontSize: "13px", // Réduit pour cohérence
+  fontSize: "12px", // Réduit de 13px à 12px
   fontWeight: "500",
   color: "#374151", // Plus foncé
-  margin: `0 0 8px 0`,
-  lineHeight: "1.5",
+  margin: `0 0 6px 0`, // Réduit de 8px à 6px
+  lineHeight: "1.4", // Réduit de 1.5 à 1.4
   textAlign: "center",
   fontFamily: "Arial, sans-serif",
 };
 
 const styleLinkText: CSSProperties = {
-  fontSize: "12px",
+  fontSize: "11px", // Réduit de 12px à 11px
   fontWeight: "normal",
   color: "#2563eb",
-  margin: `0 0 20px 0`,
-  lineHeight: "1.4",
+  margin: `0 0 15px 0`, // Réduit de 20px à 15px
+  lineHeight: "1.3", // Réduit de 1.4 à 1.3
   wordBreak: "break-all",
   backgroundColor: "#eff6ff",
-  padding: "10px 15px",
-  borderRadius: "6px",
+  padding: "8px 12px", // Réduit de 10px 15px à 8px 12px
+  borderRadius: "5px", // Réduit de 6px à 5px
   border: `1px solid #2563eb`,
   fontFamily: "monospace",
   textAlign: "center",
 };
 
 const styleAdditionalInfo: CSSProperties = {
-  fontSize: "13px", // Réduit pour cohérence
+  fontSize: "12px", // Réduit de 13px à 12px
   fontWeight: "normal",
   color: "#374151", // Plus foncé
-  margin: `0 0 20px 0`,
-  lineHeight: "1.6",
+  margin: `0 0 15px 0`, // Réduit de 20px à 15px
+  lineHeight: "1.5", // Réduit de 1.6 à 1.5
   textAlign: "center",
   backgroundColor: "#f8fafc",
-  padding: "15px",
-  borderRadius: "6px",
+  padding: "12px", // Réduit de 15px à 12px
+  borderRadius: "5px", // Réduit de 6px à 5px
   border: "1px solid #e2e8f0",
   fontFamily: "Arial, sans-serif",
 };
 
 const styleSecurityTips: CSSProperties = {
-  fontSize: "14px", // Réduit pour cohérence
+  fontSize: "13px", // Réduit de 14px à 13px
   fontWeight: "600",
   color: "#1f2937", // Plus foncé
-  margin: `0 0 10px 0`,
-  lineHeight: "1.5",
+  margin: `0 0 8px 0`, // Réduit de 10px à 8px
+  lineHeight: "1.4", // Réduit de 1.5 à 1.4
   textAlign: "center",
   fontFamily: "Arial, sans-serif",
 };
 
 const styleSecurityTipsList: CSSProperties = {
-  fontSize: "13px", // Réduit pour cohérence
+  fontSize: "12px", // Réduit de 13px à 12px
   fontWeight: "normal",
   color: "#374151", // Plus foncé
-  margin: `0 0 20px 0`,
-  lineHeight: "1.6",
+  margin: `0 0 15px 0`, // Réduit de 20px à 15px
+  lineHeight: "1.5", // Réduit de 1.6 à 1.5
   backgroundColor: "#f8f9fa",
-  padding: "15px",
-  borderRadius: "6px",
+  padding: "12px", // Réduit de 15px à 12px
+  borderRadius: "5px", // Réduit de 6px à 5px
   border: `1px solid #d1d5db`,
   textAlign: "left",
   fontFamily: "Arial, sans-serif",
 };
 
 const styleHelpText: CSSProperties = {
-  fontSize: "13px", // Réduit pour cohérence
+  fontSize: "12px", // Réduit de 13px à 12px
   fontWeight: "600",
   color: "#d97706", // Orange pour attirer l'attention sans être alarmant
   margin: "0",
-  lineHeight: "1.6",
+  lineHeight: "1.5", // Réduit de 1.6 à 1.5
   textAlign: "center",
   backgroundColor: "#fef3c7",
-  padding: "15px",
-  borderRadius: "6px",
+  padding: "12px", // Réduit de 15px à 12px
+  borderRadius: "5px", // Réduit de 6px à 5px
   border: "1px solid #fbbf24",
   fontFamily: "Arial, sans-serif",
 };

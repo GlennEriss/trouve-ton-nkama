@@ -25,13 +25,13 @@ const EmailVerification: React.FC<EmailVerificationProps> = ({
       <Section>
         <Row>
           <Column>
-            <Text style={styleGreeting}>
+            <Text style={styleGreeting} className="mobile-text-large">
               {texts.greeting} {name} 👋
             </Text>
-            <Text style={styleWelcomeMessage}>
+            <Text style={styleWelcomeMessage} className="mobile-text-medium">
               🎉 Félicitations ! Votre compte a été créé avec succès !
             </Text>
-            <Text style={styleMainText}>
+            <Text style={styleMainText} className="mobile-text-medium">
               {texts.instruction}
             </Text>
           </Column>
@@ -57,7 +57,7 @@ const EmailVerification: React.FC<EmailVerificationProps> = ({
       <Section style={styleExpirationSection} className="mobile-section">
         <Row>
           <Column>
-            <Text style={styleExpirationInfo}>
+            <Text style={styleExpirationInfo} className="mobile-text-medium">
               {texts.expirationInfo}
             </Text>
           </Column>
@@ -68,7 +68,7 @@ const EmailVerification: React.FC<EmailVerificationProps> = ({
       <Section>
         <Row>
           <Column>
-            <Text style={styleAdditionalInfo}>
+            <Text style={styleAdditionalInfo} className="mobile-text-small">
               {texts.additionalInfo}
             </Text>
           </Column>
@@ -81,10 +81,10 @@ const EmailVerification: React.FC<EmailVerificationProps> = ({
       <Section>
         <Row>
           <Column>
-            <Text style={styleSecondaryText}>
+            <Text style={styleSecondaryText} className="mobile-text-small">
               🔗 Si le bouton ne fonctionne pas, copiez et collez ce lien dans votre navigateur :
             </Text>
-            <Text style={styleLinkText}>
+            <Text style={styleLinkText} className="mobile-text-small">
               {verificationLink}
             </Text>
           </Column>
@@ -95,7 +95,7 @@ const EmailVerification: React.FC<EmailVerificationProps> = ({
       <Section>
         <Row>
           <Column>
-            <Text style={styleHelpText}>
+            <Text style={styleHelpText} className="mobile-text-small">
               💬 Vous avez des questions ? Contactez notre équipe support à{" "}
               <a href={`mailto:${texts.supportEmail}`} style={styleEmailLink}>
                 {texts.supportEmail}
@@ -110,36 +110,36 @@ const EmailVerification: React.FC<EmailVerificationProps> = ({
 
 export default EmailVerification;
 
-// Styles corrigés avec tailles réduites
+// Styles optimisés pour mobile
 const styleGreeting: CSSProperties = {
-  fontSize: "20px", // Réduit de 28px à 20px
+  fontSize: "18px", // Réduit de 20px à 18px
   fontWeight: "bold",
   color: "#000000",
-  margin: `0 0 15px 0`,
+  margin: `0 0 12px 0`, // Réduit de 15px à 12px
   lineHeight: "1.3",
   textAlign: "center",
   fontFamily: "Arial, sans-serif",
 };
 
 const styleWelcomeMessage: CSSProperties = {
-  fontSize: "16px", // Réduit de 22px à 16px
+  fontSize: "14px", // Réduit de 16px à 14px
   fontWeight: "bold",
   color: "#065f46",
-  margin: `0 0 20px 0`,
+  margin: `0 0 15px 0`, // Réduit de 20px à 15px
   lineHeight: "1.4",
   textAlign: "center",
   backgroundColor: "#ecfdf5",
-  padding: "12px 16px", // Réduit le padding
-  borderRadius: "8px", // Réduit de 12px à 8px
-  border: "2px solid #059669",
+  padding: "10px 12px", // Réduit le padding
+  borderRadius: "6px", // Réduit de 8px à 6px
+  border: "1px solid #059669", // Réduit de 2px à 1px
   fontFamily: "Arial, sans-serif",
 };
 
 const styleMainText: CSSProperties = {
-  fontSize: "14px", // Réduit de 18px à 14px
+  fontSize: "13px", // Réduit de 14px à 13px
   fontWeight: "normal",
   color: "#1f2937",
-  margin: `0 0 20px 0`,
+  margin: `0 0 15px 0`, // Réduit de 20px à 15px
   lineHeight: "1.5",
   textAlign: "center",
   fontFamily: "Arial, sans-serif",
@@ -147,38 +147,38 @@ const styleMainText: CSSProperties = {
 
 const styleExpirationSection: CSSProperties = {
   backgroundColor: "#dc2626", // Rouge vif pour contraste maximum avec texte blanc
-  padding: "15px",
-  borderRadius: "8px",
-  margin: "15px 0",
-  border: "2px solid #b91c1c", // Bordure rouge plus foncée
-  boxShadow: "0 2px 8px rgba(220, 38, 38, 0.3)", // Ombre rouge
+  padding: "12px", // Réduit de 15px à 12px
+  borderRadius: "6px", // Réduit de 8px à 6px
+  margin: "12px 0", // Réduit de 15px à 12px
+  border: "1px solid #b91c1c", // Réduit de 2px à 1px
+  boxShadow: "0 2px 6px rgba(220, 38, 38, 0.3)", // Ombre rouge
 };
 
 const styleButtonSection: CSSProperties = {
   backgroundColor: "#f0fdf4",
-  padding: "20px 15px", // Réduit le padding
-  borderRadius: "8px",
-  margin: "20px 0",
-  border: "2px solid #22c55e",
+  padding: "15px 12px", // Réduit le padding
+  borderRadius: "6px", // Réduit de 8px à 6px
+  margin: "15px 0", // Réduit de 20px à 15px
+  border: "1px solid #22c55e", // Réduit de 2px à 1px
 };
 
 const styleButton: CSSProperties = {
   backgroundColor: "#16a34a",
-  borderRadius: "8px",
+  borderRadius: "6px", // Réduit de 8px à 6px
   color: "#ffffff",
-  fontSize: "16px",
+  fontSize: "14px", // Réduit de 16px à 14px
   fontWeight: "600",
-  padding: "14px 28px", // Légèrement plus grand pour mobile
+  padding: "12px 20px", // Réduit le padding
   textDecoration: "none",
   display: "inline-block",
-  margin: "8px 0",
-  boxShadow: "0 4px 8px rgba(22, 163, 74, 0.2)",
-  border: "2px solid #15803d",
+  margin: "6px 0", // Réduit de 8px à 6px
+  boxShadow: "0 3px 6px rgba(22, 163, 74, 0.2)", // Réduit l'ombre
+  border: "1px solid #15803d", // Réduit de 2px à 1px
   cursor: "pointer",
   transition: "all 0.3s ease",
-  minWidth: "220px", // Légèrement plus large pour toucher mobile
+  minWidth: "200px", // Réduit de 220px à 200px
   width: "auto", // Adaptable
-  maxWidth: "90%", // Responsive par défaut
+  maxWidth: "100%", // Responsive par défaut
   textAlign: "center",
   textTransform: "uppercase",
   letterSpacing: "0.5px",
@@ -186,73 +186,73 @@ const styleButton: CSSProperties = {
 };
 
 const styleAdditionalInfo: CSSProperties = {
-  fontSize: "13px", // Réduit de 16px à 13px
+  fontSize: "12px", // Réduit de 13px à 12px
   fontWeight: "normal",
   color: "#374151",
-  margin: `20px 0 10px 0`, // Réduit les marges
+  margin: `15px 0 8px 0`, // Réduit les marges
   lineHeight: "1.5",
   textAlign: "center",
   backgroundColor: "#f8fafc",
-  padding: "15px", // Réduit de 20px à 15px
-  borderRadius: "6px", // Réduit de 8px à 6px
+  padding: "12px", // Réduit de 15px à 12px
+  borderRadius: "5px", // Réduit de 6px à 5px
   border: "1px solid #e2e8f0",
   fontFamily: "Arial, sans-serif",
 };
 
 const styleExpirationInfo: CSSProperties = {
-  fontSize: "14px",
+  fontSize: "13px", // Réduit de 14px à 13px
   fontWeight: "700", // Plus gras pour meilleure visibilité
   color: "#ffffff", // Blanc pour contraste maximum sur fond rouge
   margin: `0`,
-  lineHeight: "1.5", // Plus d'espace pour lisibilité
+  lineHeight: "1.4", // Réduit de 1.5 à 1.4
   textAlign: "center",
   fontFamily: "Arial, sans-serif",
   display: "block",
-  textShadow: "2px 2px 4px rgba(0,0,0,0.9)", // Ombre plus prononcée
-  letterSpacing: "0.5px", // Espacement pour clarté
+  textShadow: "1px 1px 3px rgba(0,0,0,0.9)", // Ombre réduite
+  letterSpacing: "0.3px", // Réduit l'espacement
 };
 
 const styleHr: CSSProperties = {
   border: "none",
   borderTop: `1px solid #d1d5db`, // Réduit de 2px à 1px
-  margin: `25px 0`, // Réduit de 40px à 25px
+  margin: `20px 0`, // Réduit de 25px à 20px
 };
 
 const styleSecondaryText: CSSProperties = {
-  fontSize: "13px", // Réduit de 15px à 13px
+  fontSize: "12px", // Réduit de 13px à 12px
   fontWeight: "500",
   color: "#374151",
-  margin: `0 0 8px 0`, // Réduit de 10px à 8px
+  margin: `0 0 6px 0`, // Réduit de 8px à 6px
   lineHeight: "1.4",
   textAlign: "center",
   fontFamily: "Arial, sans-serif",
 };
 
 const styleLinkText: CSSProperties = {
-  fontSize: "12px", // Réduit de 14px à 12px
+  fontSize: "11px", // Réduit de 12px à 11px
   fontWeight: "normal",
   color: "#1f2937",
-  margin: `0 0 20px 0`, // Réduit de 30px à 20px
+  margin: `0 0 15px 0`, // Réduit de 20px à 15px
   lineHeight: "1.3",
   wordBreak: "break-all",
   backgroundColor: "#f8f9fa",
-  padding: "10px 15px", // Réduit de 15px 20px à 10px 15px
-  borderRadius: "6px", // Réduit de 8px à 6px
+  padding: "8px 12px", // Réduit de 10px 15px à 8px 12px
+  borderRadius: "5px", // Réduit de 6px à 5px
   border: `1px solid #6b7280`, // Réduit de 2px à 1px
   fontFamily: "monospace",
   textAlign: "center",
 };
 
 const styleHelpText: CSSProperties = {
-  fontSize: "13px", // Réduit de 15px à 13px
+  fontSize: "12px", // Réduit de 13px à 12px
   fontWeight: "normal",
   color: "#374151",
   margin: "0",
   lineHeight: "1.5",
   textAlign: "center",
-  backgroundColor: "#f8f9fa",
-  padding: "15px", // Réduit de 20px à 15px
-  borderRadius: "6px", // Réduit de 8px à 6px
+  backgroundColor: "#f8fafc",
+  padding: "12px", // Réduit de 15px à 12px
+  borderRadius: "5px", // Réduit de 6px à 5px
   border: "1px solid #e9ecef",
   fontFamily: "Arial, sans-serif",
 };

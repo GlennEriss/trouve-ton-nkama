@@ -1,5 +1,6 @@
 // Import du logo Base64
 import { LOGO_BASE64 } from './logo-base64';
+import { supportContact } from '../constantes';
 
 // Export des templates d'emails
 export { default as GenericEmail } from './GenericEmail';
@@ -23,20 +24,46 @@ export class EmailService {
    */
   static defaultConfig = {
     from: 'noreply@tonnkama.com',
-    replyTo: 'support@tonnkama.com',
-    supportEmail: 'support@tonnkama.com',
+    replyTo: supportContact.email,
+    supportEmail: supportContact.email,
     websiteUrl: 'https://tonnkama.com',
     //unsubscribeUrl: 'https://tonnkama.com/unsubscribe',
-    logoUrl: process.env.NODE_ENV === 'development' 
-      ? LOGO_BASE64 // Logo intégré en Base64 pour le développement
-      : 'https://tonnkama.com/emails/logo-email.png',
-    socialLinks: {
-      facebook: 'https://facebook.com/trouve.ton.nkama',
-      twitter: 'https://twitter.com/trouve_ton_nkama',
-      instagram: 'https://instagram.com/trouve.ton.nkama',
-      linkedin: 'https://linkedin.com/company/trouve-ton-nkama',
-    },
   };
+
+  static validateEmailInput(emailData: { to: string; subject: string }) {
+    const { to, subject } = emailData;
+
+    if (!to || !subject) {
+      throw new Error('Email "to" and "subject" are required');
+    }
+
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(to)) {
+      throw new Error('Invalid email format');
+    }
+
+    return true;
+  }
+
+  // Send verification email
+  static async sendEmailVerificationLink(emailData: EmailVerificationData) {
+    try {
+      this.validateEmailInput(emailData);
+
+      const { render } = await import('@react-email/render');
+      const { default: EmailVerification } = await import('./EmailVerification');
+
+      const emailConfig = {
+        ...this.defaultConfig,
+        supportEmail: supportContact.email,
+      };
+
+      // ... existing code ...
+    } catch (error) {
+      console.error('Error sending email verification link:', error);
+      throw error;
+    }
+  }
 
   /**
    * Textes par défaut en français pour les emails
@@ -46,7 +73,7 @@ export class EmailService {
     greeting: 'Bonjour',
     copyRight: '© 2024 Trouve Ton Nkama. Tous droits réservés.',
     visitSocialNetworks: 'Suivez-nous sur les réseaux sociaux',
-    supportEmail: 'support@tonnkama.com',
+    supportEmail: supportContact.email,
     websiteUrl: 'https://tonnkama.com',
 
     // Vérification d'email

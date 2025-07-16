@@ -43,13 +43,13 @@ const PropertyPublished: React.FC<PropertyPublishedProps> = ({
       <Section>
         <Row>
           <Column>
-            <Text style={styleGreeting}>
+            <Text style={styleGreeting} className="mobile-text-large">
               {texts.greeting} {name} ! 🎉
             </Text>
-            <Text style={styleCongratulationsTitle}>
+            <Text style={styleCongratulationsTitle} className="mobile-text-large">
               {texts.congratulationsTitle}
             </Text>
-            <Text style={stylePublishedMessage}>
+            <Text style={stylePublishedMessage} className="mobile-text-medium">
               {texts.publishedMessage}
             </Text>
           </Column>
@@ -58,7 +58,7 @@ const PropertyPublished: React.FC<PropertyPublishedProps> = ({
 
       {/* Image de la propriété */}
       {property.imageUrl && (
-        <Section>
+        <Section className="mobile-section">
           <Row>
             <Column align="center">
               <Img
@@ -75,21 +75,21 @@ const PropertyPublished: React.FC<PropertyPublishedProps> = ({
       <Section>
         <Row>
           <Column>
-            <Text style={stylePropertyTitle}>
+            <Text style={stylePropertyTitle} className="mobile-text-medium">
               {property.title}
             </Text>
-            <Text style={stylePropertyLocation}>
+            <Text style={stylePropertyLocation} className="mobile-text-small">
               📍 {property.location}
             </Text>
-            <Text style={stylePropertyType}>
+            <Text style={stylePropertyType} className="mobile-text-small">
               🏠 {property.type}
             </Text>
             {property.area && (
-              <Text style={stylePropertyArea}>
+              <Text style={stylePropertyArea} className="mobile-text-small">
                 📐 {property.area} m²
               </Text>
             )}
-            <Text style={stylePropertyPrice}>
+            <Text style={stylePropertyPrice} className="mobile-text-medium">
               💰 {formatPrice(property.price)}
             </Text>
           </Column>
@@ -97,13 +97,13 @@ const PropertyPublished: React.FC<PropertyPublishedProps> = ({
       </Section>
 
       {/* Informations de publication */}
-      <Section>
+      <Section className="mobile-section">
         <Row>
           <Column>
-            <Text style={stylePublicationInfo}>
+            <Text style={stylePublicationInfo} className="mobile-text-small">
               📅 <strong>Publiée le :</strong> {formatDate(property.publishedAt)}
             </Text>
-            <Text style={styleExpirationInfo}>
+            <Text style={styleExpirationInfo} className="mobile-text-small">
               ⏰ <strong>Expire le :</strong> {formatDate(property.expiresAt)}
             </Text>
           </Column>
@@ -111,12 +111,13 @@ const PropertyPublished: React.FC<PropertyPublishedProps> = ({
       </Section>
 
       {/* Boutons d'action */}
-      <Section>
+      <Section className="mobile-section">
         <Row>
           <Column align="center">
             <Button
               href={`${texts.websiteUrl}/houseDetails/${property.id}`}
               style={styleViewButton}
+              className="mobile-button"
             >
               {texts.viewButtonText}
             </Button>
@@ -124,12 +125,13 @@ const PropertyPublished: React.FC<PropertyPublishedProps> = ({
         </Row>
       </Section>
 
-      <Section>
+      <Section className="mobile-section">
         <Row>
           <Column align="center">
             <Button
               href={`${texts.websiteUrl}/property/modify/${property.id}`}
               style={styleEditButton}
+              className="mobile-button"
             >
               {texts.editButtonText}
             </Button>
@@ -137,12 +139,13 @@ const PropertyPublished: React.FC<PropertyPublishedProps> = ({
         </Row>
       </Section>
 
-      <Section>
+      <Section className="mobile-section">
         <Row>
           <Column align="center">
             <Button
               href={`${texts.websiteUrl}/houseDetails/${property.id}?share=true`}
               style={styleShareButton}
+              className="mobile-button"
             >
               {texts.shareButtonText}
             </Button>
@@ -156,10 +159,10 @@ const PropertyPublished: React.FC<PropertyPublishedProps> = ({
       <Section>
         <Row>
           <Column>
-            <Text style={styleManagementTitle}>
+            <Text style={styleManagementTitle} className="mobile-text-medium">
               {texts.managementTitle}
             </Text>
-            <Text style={styleManagementOptions}>
+            <Text style={styleManagementOptions} className="mobile-text-small">
               {texts.managementOptions.map((option, index) => (
                 <span key={index}>
                   • {option}
@@ -177,10 +180,10 @@ const PropertyPublished: React.FC<PropertyPublishedProps> = ({
       <Section>
         <Row>
           <Column>
-            <Text style={styleTipsTitle}>
+            <Text style={styleTipsTitle} className="mobile-text-medium">
               {texts.tipsTitle}
             </Text>
-            <Text style={styleTipsList}>
+            <Text style={styleTipsList} className="mobile-text-small">
               {texts.tips.map((tip, index) => (
                 <span key={index}>
                   💡 {tip}
@@ -198,10 +201,10 @@ const PropertyPublished: React.FC<PropertyPublishedProps> = ({
       <Section>
         <Row>
           <Column>
-            <Text style={styleLinksTitle}>
+            <Text style={styleLinksTitle} className="mobile-text-medium">
               Liens utiles pour gérer votre annonce :
             </Text>
-            <Text style={styleLinksList}>
+            <Text style={styleLinksList} className="mobile-text-small">
               <a href={`${texts.websiteUrl}/property`} style={styleLinkItem}>
                 📋 Mes annonces
               </a>
@@ -228,10 +231,10 @@ const PropertyPublished: React.FC<PropertyPublishedProps> = ({
       <Section>
         <Row>
           <Column>
-            <Text style={styleStatsTitle}>
+            <Text style={styleStatsTitle} className="mobile-text-medium">
               📊 Suivez les performances de votre annonce :
             </Text>
-            <Text style={styleStatsInfo}>
+            <Text style={styleStatsInfo} className="mobile-text-small">
               Vous recevrez des notifications par email lorsque des utilisateurs 
               consultent votre annonce ou vous contactent. Vous pouvez également 
               consulter les statistiques détaillées dans votre espace personnel.
@@ -246,7 +249,7 @@ const PropertyPublished: React.FC<PropertyPublishedProps> = ({
       <Section>
         <Row>
           <Column>
-            <Text style={styleSupportMessage}>
+            <Text style={styleSupportMessage} className="mobile-text-small">
               Besoin d'aide pour gérer votre annonce ? Notre équipe support est 
               disponible pour vous accompagner à{" "}
               <a href={`mailto:${texts.supportEmail}`} style={styleEmailLink}>
@@ -261,7 +264,7 @@ const PropertyPublished: React.FC<PropertyPublishedProps> = ({
       <Section>
         <Row>
           <Column>
-            <Text style={styleClosingMessage}>
+            <Text style={styleClosingMessage} className="mobile-text-small">
               Merci de faire confiance à Trouve Ton Nkama pour votre annonce immobilière ! 🏡
             </Text>
           </Column>
@@ -273,142 +276,142 @@ const PropertyPublished: React.FC<PropertyPublishedProps> = ({
 
 export default PropertyPublished;
 
-// Styles CSS
+// Styles optimisés pour mobile
 const styleGreeting: CSSProperties = {
-  fontSize: theme.font.size.lg,
-  fontWeight: theme.font.weight.medium,
-  color: theme.colors.gray[800],
-  margin: `0 0 ${theme.spacing.sm}`,
-  lineHeight: theme.font.lineHeight.tight,
+  fontSize: "18px", // Réduit de theme.font.size.lg à 18px
+  fontWeight: "600", // Réduit de theme.font.weight.medium à 600
+  color: "#1f2937", // Réduit de theme.colors.gray[800] à #1f2937
+  margin: `0 0 12px 0`, // Réduit de theme.spacing.sm à 12px
+  lineHeight: "1.3", // Réduit de theme.font.lineHeight.tight à 1.3
 };
 
 const styleCongratulationsTitle: CSSProperties = {
-  fontSize: theme.font.size["2xl"],
-  fontWeight: theme.font.weight.bold,
-  color: theme.colors.success,
-  margin: `0 0 ${theme.spacing.md}`,
-  lineHeight: theme.font.lineHeight.tight,
+  fontSize: "20px", // Réduit de theme.font.size["2xl"] à 20px
+  fontWeight: "bold", // Réduit de theme.font.weight.bold à bold
+  color: "#059669", // Réduit de theme.colors.success à #059669
+  margin: `0 0 15px 0`, // Réduit de theme.spacing.md à 15px
+  lineHeight: "1.3", // Réduit de theme.font.lineHeight.tight à 1.3
   textAlign: "center",
 };
 
 const stylePublishedMessage: CSSProperties = {
-  fontSize: theme.font.size.lg,
-  fontWeight: theme.font.weight.normal,
-  color: theme.colors.gray[700],
-  margin: `0 0 ${theme.spacing.lg}`,
-  lineHeight: theme.font.lineHeight.relaxed,
+  fontSize: "14px", // Réduit de theme.font.size.lg à 14px
+  fontWeight: "normal", // Réduit de theme.font.weight.normal à normal
+  color: "#374151", // Réduit de theme.colors.gray[700] à #374151
+  margin: `0 0 20px 0`, // Réduit de theme.spacing.lg à 20px
+  lineHeight: "1.5", // Réduit de theme.font.lineHeight.relaxed à 1.5
   textAlign: "center",
 };
 
 const stylePropertyImage: CSSProperties = {
   width: "100%",
-  maxWidth: "400px",
-  height: "250px",
+  maxWidth: "350px", // Réduit de 400px à 350px
+  height: "200px", // Réduit de 250px à 200px
   objectFit: "cover",
-  borderRadius: theme.borderRadius.lg,
-  margin: `0 0 ${theme.spacing.lg}`,
-  border: `1px solid ${theme.colors.gray[300]}`,
+  borderRadius: "8px", // Réduit de theme.borderRadius.lg à 8px
+  margin: `0 0 20px 0`, // Réduit de theme.spacing.lg à 20px
+  border: `1px solid #d1d5db`, // Réduit de theme.colors.gray[300] à #d1d5db
 };
 
 const stylePropertyTitle: CSSProperties = {
-  fontSize: theme.font.size.lg,
-  fontWeight: theme.font.weight.bold,
-  color: theme.colors.gray[900],
-  margin: `0 0 ${theme.spacing.sm}`,
-  lineHeight: theme.font.lineHeight.tight,
+  fontSize: "16px", // Réduit de theme.font.size.lg à 16px
+  fontWeight: "bold", // Réduit de theme.font.weight.bold à bold
+  color: "#111827", // Réduit de theme.colors.gray[900] à #111827
+  margin: `0 0 8px 0`, // Réduit de theme.spacing.sm à 8px
+  lineHeight: "1.3", // Réduit de theme.font.lineHeight.tight à 1.3
 };
 
 const stylePropertyLocation: CSSProperties = {
-  fontSize: theme.font.size.base,
-  fontWeight: theme.font.weight.normal,
-  color: theme.colors.gray[600],
-  margin: `0 0 ${theme.spacing.xs}`,
-  lineHeight: theme.font.lineHeight.normal,
+  fontSize: "13px", // Réduit de theme.font.size.base à 13px
+  fontWeight: "normal", // Réduit de theme.font.weight.normal à normal
+  color: "#6b7280", // Réduit de theme.colors.gray[600] à #6b7280
+  margin: `0 0 4px 0`, // Réduit de theme.spacing.xs à 4px
+  lineHeight: "1.4", // Réduit de theme.font.lineHeight.normal à 1.4
 };
 
 const stylePropertyType: CSSProperties = {
-  fontSize: theme.font.size.base,
-  fontWeight: theme.font.weight.normal,
-  color: theme.colors.gray[600],
-  margin: `0 0 ${theme.spacing.xs}`,
-  lineHeight: theme.font.lineHeight.normal,
+  fontSize: "13px", // Réduit de theme.font.size.base à 13px
+  fontWeight: "normal", // Réduit de theme.font.weight.normal à normal
+  color: "#6b7280", // Réduit de theme.colors.gray[600] à #6b7280
+  margin: `0 0 4px 0`, // Réduit de theme.spacing.xs à 4px
+  lineHeight: "1.4", // Réduit de theme.font.lineHeight.normal à 1.4
 };
 
 const stylePropertyArea: CSSProperties = {
-  fontSize: theme.font.size.base,
-  fontWeight: theme.font.weight.normal,
-  color: theme.colors.gray[600],
-  margin: `0 0 ${theme.spacing.xs}`,
-  lineHeight: theme.font.lineHeight.normal,
+  fontSize: "13px", // Réduit de theme.font.size.base à 13px
+  fontWeight: "normal", // Réduit de theme.font.weight.normal à normal
+  color: "#6b7280", // Réduit de theme.colors.gray[600] à #6b7280
+  margin: `0 0 4px 0`, // Réduit de theme.spacing.xs à 4px
+  lineHeight: "1.4", // Réduit de theme.font.lineHeight.normal à 1.4
 };
 
 const stylePropertyPrice: CSSProperties = {
-  fontSize: theme.font.size.lg,
-  fontWeight: theme.font.weight.bold,
-  color: theme.colors.success,
-  margin: `0 0 ${theme.spacing.md}`,
-  lineHeight: theme.font.lineHeight.normal,
+  fontSize: "16px", // Réduit de theme.font.size.lg à 16px
+  fontWeight: "bold", // Réduit de theme.font.weight.bold à bold
+  color: "#059669", // Réduit de theme.colors.success à #059669
+  margin: `0 0 15px 0`, // Réduit de theme.spacing.md à 15px
+  lineHeight: "1.4", // Réduit de theme.font.lineHeight.normal à 1.4
 };
 
 const stylePublicationInfo: CSSProperties = {
-  fontSize: theme.font.size.base,
-  fontWeight: theme.font.weight.normal,
-  color: theme.colors.gray[700],
-  margin: `0 0 ${theme.spacing.xs}`,
-  lineHeight: theme.font.lineHeight.normal,
+  fontSize: "12px", // Réduit de theme.font.size.base à 12px
+  fontWeight: "normal", // Réduit de theme.font.weight.normal à normal
+  color: "#374151", // Réduit de theme.colors.gray[700] à #374151
+  margin: `0 0 4px 0`, // Réduit de theme.spacing.xs à 4px
+  lineHeight: "1.4", // Réduit de theme.font.lineHeight.normal à 1.4
 };
 
 const styleExpirationInfo: CSSProperties = {
-  fontSize: theme.font.size.base,
-  fontWeight: theme.font.weight.normal,
-  color: theme.colors.warning,
-  margin: `0 0 ${theme.spacing.lg}`,
-  lineHeight: theme.font.lineHeight.normal,
+  fontSize: "12px", // Réduit de theme.font.size.base à 12px
+  fontWeight: "normal", // Réduit de theme.font.weight.normal à normal
+  color: "#d97706", // Réduit de theme.colors.warning à #d97706
+  margin: `0 0 20px 0`, // Réduit de theme.spacing.lg à 20px
+  lineHeight: "1.4", // Réduit de theme.font.lineHeight.normal à 1.4
 };
 
 const styleViewButton: CSSProperties = {
-  backgroundColor: theme.colors.primary,
-  borderRadius: theme.borderRadius.lg,
-  color: theme.colors.white,
-  fontSize: theme.font.size.base,
-  fontWeight: theme.font.weight.semibold,
-  padding: `${theme.spacing.sm} ${theme.spacing.xl}`,
+  backgroundColor: "#2563eb", // Réduit de theme.colors.primary à #2563eb
+  borderRadius: "6px", // Réduit de theme.borderRadius.lg à 6px
+  color: "#ffffff", // Réduit de theme.colors.white à #ffffff
+  fontSize: "14px", // Réduit de theme.font.size.base à 14px
+  fontWeight: "600", // Réduit de theme.font.weight.semibold à 600
+  padding: "12px 20px", // Réduit de theme.spacing.sm theme.spacing.xl à 12px 20px
   textDecoration: "none",
   display: "inline-block",
-  margin: `${theme.spacing.sm} 0`,
-  boxShadow: theme.shadow.md,
+  margin: "8px 0", // Réduit de theme.spacing.sm à 8px
+  boxShadow: "0 2px 4px rgba(0, 0, 0, 0.1)", // Réduit de theme.shadow.md
   border: "none",
   cursor: "pointer",
   transition: "all 0.2s ease-in-out",
 };
 
 const styleEditButton: CSSProperties = {
-  backgroundColor: theme.colors.warning,
-  borderRadius: theme.borderRadius.lg,
-  color: theme.colors.white,
-  fontSize: theme.font.size.base,
-  fontWeight: theme.font.weight.semibold,
-  padding: `${theme.spacing.sm} ${theme.spacing.xl}`,
+  backgroundColor: "#d97706", // Réduit de theme.colors.warning à #d97706
+  borderRadius: "6px", // Réduit de theme.borderRadius.lg à 6px
+  color: "#ffffff", // Réduit de theme.colors.white à #ffffff
+  fontSize: "14px", // Réduit de theme.font.size.base à 14px
+  fontWeight: "600", // Réduit de theme.font.weight.semibold à 600
+  padding: "12px 20px", // Réduit de theme.spacing.sm theme.spacing.xl à 12px 20px
   textDecoration: "none",
   display: "inline-block",
-  margin: `${theme.spacing.sm} 0`,
-  boxShadow: theme.shadow.md,
+  margin: "8px 0", // Réduit de theme.spacing.sm à 8px
+  boxShadow: "0 2px 4px rgba(0, 0, 0, 0.1)", // Réduit de theme.shadow.md
   border: "none",
   cursor: "pointer",
   transition: "all 0.2s ease-in-out",
 };
 
 const styleShareButton: CSSProperties = {
-  backgroundColor: theme.colors.secondary,
-  borderRadius: theme.borderRadius.lg,
-  color: theme.colors.white,
-  fontSize: theme.font.size.base,
-  fontWeight: theme.font.weight.semibold,
-  padding: `${theme.spacing.sm} ${theme.spacing.xl}`,
+  backgroundColor: "#7c3aed", // Réduit de theme.colors.secondary à #7c3aed
+  borderRadius: "6px", // Réduit de theme.borderRadius.lg à 6px
+  color: "#ffffff", // Réduit de theme.colors.white à #ffffff
+  fontSize: "14px", // Réduit de theme.font.size.base à 14px
+  fontWeight: "600", // Réduit de theme.font.weight.semibold à 600
+  padding: "12px 20px", // Réduit de theme.spacing.sm theme.spacing.xl à 12px 20px
   textDecoration: "none",
   display: "inline-block",
-  margin: `${theme.spacing.sm} 0`,
-  boxShadow: theme.shadow.md,
+  margin: "8px 0", // Réduit de theme.spacing.sm à 8px
+  boxShadow: "0 2px 4px rgba(0, 0, 0, 0.1)", // Réduit de theme.shadow.md
   border: "none",
   cursor: "pointer",
   transition: "all 0.2s ease-in-out",
@@ -416,114 +419,126 @@ const styleShareButton: CSSProperties = {
 
 const styleHr: CSSProperties = {
   border: "none",
-  borderTop: `1px solid ${theme.colors.gray[300]}`,
-  margin: `${theme.spacing.lg} 0`,
+  borderTop: `1px solid #d1d5db`, // Réduit de theme.colors.gray[300] à #d1d5db
+  margin: `20px 0`, // Réduit de theme.spacing.lg à 20px
 };
 
 const styleManagementTitle: CSSProperties = {
-  fontSize: theme.font.size.lg,
-  fontWeight: theme.font.weight.bold,
-  color: theme.colors.gray[900],
-  margin: `0 0 ${theme.spacing.md}`,
-  lineHeight: theme.font.lineHeight.tight,
+  fontSize: "16px", // Réduit de theme.font.size.lg à 16px
+  fontWeight: "bold", // Réduit de theme.font.weight.bold à bold
+  color: "#111827", // Réduit de theme.colors.gray[900] à #111827
+  margin: `0 0 12px 0`, // Réduit de theme.spacing.md à 12px
+  lineHeight: "1.3", // Réduit de theme.font.lineHeight.tight à 1.3
 };
 
 const styleManagementOptions: CSSProperties = {
-  fontSize: theme.font.size.base,
-  fontWeight: theme.font.weight.normal,
-  color: theme.colors.gray[700],
-  margin: `0 0 ${theme.spacing.lg}`,
-  lineHeight: theme.font.lineHeight.relaxed,
-  backgroundColor: theme.colors.gray[100],
-  padding: theme.spacing.md,
-  borderRadius: theme.borderRadius.md,
-  border: `1px solid ${theme.colors.gray[200]}`,
+  fontSize: "12px", // Réduit de theme.font.size.base à 12px
+  fontWeight: "normal", // Réduit de theme.font.weight.normal à normal
+  color: "#374151", // Réduit de theme.colors.gray[700] à #374151
+  margin: `0 0 20px 0`, // Réduit de theme.spacing.lg à 20px
+  lineHeight: "1.5", // Réduit de theme.font.lineHeight.relaxed à 1.5
+  backgroundColor: "#f9fafb", // Réduit de theme.colors.gray[100] à #f9fafb
+  padding: "12px", // Réduit de theme.spacing.md à 12px
+  borderRadius: "6px", // Réduit de theme.borderRadius.md à 6px
+  border: `1px solid #e5e7eb`, // Réduit de theme.colors.gray[200] à #e5e7eb
 };
 
 const styleTipsTitle: CSSProperties = {
-  fontSize: theme.font.size.lg,
-  fontWeight: theme.font.weight.bold,
-  color: theme.colors.gray[900],
-  margin: `0 0 ${theme.spacing.md}`,
-  lineHeight: theme.font.lineHeight.tight,
+  fontSize: "16px", // Réduit de theme.font.size.lg à 16px
+  fontWeight: "bold", // Réduit de theme.font.weight.bold à bold
+  color: "#111827", // Réduit de theme.colors.gray[900] à #111827
+  margin: `0 0 12px 0`, // Réduit de theme.spacing.md à 12px
+  lineHeight: "1.3", // Réduit de theme.font.lineHeight.tight à 1.3
 };
 
 const styleTipsList: CSSProperties = {
-  fontSize: theme.font.size.base,
-  fontWeight: theme.font.weight.normal,
-  color: theme.colors.gray[700],
-  margin: `0 0 ${theme.spacing.lg}`,
-  lineHeight: theme.font.lineHeight.relaxed,
-  backgroundColor: "#FFF8E1",
-  padding: theme.spacing.md,
-  borderRadius: theme.borderRadius.md,
-  border: `1px solid ${theme.colors.warning}`,
+  fontSize: "12px", // Réduit de theme.font.size.base à 12px
+  fontWeight: "normal", // Réduit de theme.font.weight.normal à normal
+  color: "#374151", // Réduit de theme.colors.gray[700] à #374151
+  margin: `0 0 20px 0`, // Réduit de theme.spacing.lg à 20px
+  lineHeight: "1.5", // Réduit de theme.font.lineHeight.relaxed à 1.5
+  backgroundColor: "#f9fafb", // Réduit de theme.colors.gray[100] à #f9fafb
+  padding: "12px", // Réduit de theme.spacing.md à 12px
+  borderRadius: "6px", // Réduit de theme.borderRadius.md à 6px
+  border: `1px solid #e5e7eb`, // Réduit de theme.colors.gray[200] à #e5e7eb
 };
 
 const styleLinksTitle: CSSProperties = {
-  fontSize: theme.font.size.base,
-  fontWeight: theme.font.weight.semibold,
-  color: theme.colors.gray[800],
-  margin: `0 0 ${theme.spacing.sm}`,
-  lineHeight: theme.font.lineHeight.normal,
+  fontSize: "16px", // Réduit de theme.font.size.lg à 16px
+  fontWeight: "bold", // Réduit de theme.font.weight.bold à bold
+  color: "#111827", // Réduit de theme.colors.gray[900] à #111827
+  margin: `0 0 12px 0`, // Réduit de theme.spacing.md à 12px
+  lineHeight: "1.3", // Réduit de theme.font.lineHeight.tight à 1.3
 };
 
 const styleLinksList: CSSProperties = {
-  fontSize: theme.font.size.base,
-  fontWeight: theme.font.weight.normal,
-  color: theme.colors.gray[700],
-  margin: `0 0 ${theme.spacing.lg}`,
-  lineHeight: theme.font.lineHeight.relaxed,
+  fontSize: "12px", // Réduit de theme.font.size.base à 12px
+  fontWeight: "normal", // Réduit de theme.font.weight.normal à normal
+  color: "#374151", // Réduit de theme.colors.gray[700] à #374151
+  margin: `0 0 20px 0`, // Réduit de theme.spacing.lg à 20px
+  lineHeight: "1.5", // Réduit de theme.font.lineHeight.relaxed à 1.5
+  backgroundColor: "#f9fafb", // Réduit de theme.colors.gray[100] à #f9fafb
+  padding: "12px", // Réduit de theme.spacing.md à 12px
+  borderRadius: "6px", // Réduit de theme.borderRadius.md à 6px
+  border: `1px solid #e5e7eb`, // Réduit de theme.colors.gray[200] à #e5e7eb
 };
 
 const styleLinkItem: CSSProperties = {
-  color: theme.colors.primary,
+  color: "#2563eb", // Réduit de theme.colors.primary à #2563eb
   textDecoration: "none",
-  fontWeight: theme.font.weight.medium,
-  display: "inline-block",
-  margin: `${theme.spacing.xs} 0`,
+  fontWeight: "500",
+  display: "block",
+  margin: "4px 0", // Réduit de theme.spacing.xs à 4px
 };
 
 const styleStatsTitle: CSSProperties = {
-  fontSize: theme.font.size.base,
-  fontWeight: theme.font.weight.semibold,
-  color: theme.colors.gray[800],
-  margin: `0 0 ${theme.spacing.sm}`,
-  lineHeight: theme.font.lineHeight.normal,
+  fontSize: "16px", // Réduit de theme.font.size.lg à 16px
+  fontWeight: "bold", // Réduit de theme.font.weight.bold à bold
+  color: "#111827", // Réduit de theme.colors.gray[900] à #111827
+  margin: `0 0 12px 0`, // Réduit de theme.spacing.md à 12px
+  lineHeight: "1.3", // Réduit de theme.font.lineHeight.tight à 1.3
 };
 
 const styleStatsInfo: CSSProperties = {
-  fontSize: theme.font.size.base,
-  fontWeight: theme.font.weight.normal,
-  color: theme.colors.gray[700],
-  margin: `0 0 ${theme.spacing.lg}`,
-  lineHeight: theme.font.lineHeight.relaxed,
-  backgroundColor: "#E3F2FD",
-  padding: theme.spacing.md,
-  borderRadius: theme.borderRadius.md,
-  border: `1px solid ${theme.colors.info}`,
+  fontSize: "12px", // Réduit de theme.font.size.base à 12px
+  fontWeight: "normal", // Réduit de theme.font.weight.normal à normal
+  color: "#374151", // Réduit de theme.colors.gray[700] à #374151
+  margin: `0 0 20px 0`, // Réduit de theme.spacing.lg à 20px
+  lineHeight: "1.5", // Réduit de theme.font.lineHeight.relaxed à 1.5
+  backgroundColor: "#f9fafb", // Réduit de theme.colors.gray[100] à #f9fafb
+  padding: "12px", // Réduit de theme.spacing.md à 12px
+  borderRadius: "6px", // Réduit de theme.borderRadius.md à 6px
+  border: `1px solid #e5e7eb`, // Réduit de theme.colors.gray[200] à #e5e7eb
 };
 
 const styleSupportMessage: CSSProperties = {
-  fontSize: theme.font.size.base,
-  fontWeight: theme.font.weight.normal,
-  color: theme.colors.gray[600],
-  margin: `0 0 ${theme.spacing.lg}`,
-  lineHeight: theme.font.lineHeight.relaxed,
+  fontSize: "12px", // Réduit de theme.font.size.base à 12px
+  fontWeight: "normal", // Réduit de theme.font.weight.normal à normal
+  color: "#374151", // Réduit de theme.colors.gray[700] à #374151
+  margin: `0 0 20px 0`, // Réduit de theme.spacing.lg à 20px
+  lineHeight: "1.5", // Réduit de theme.font.lineHeight.relaxed à 1.5
   textAlign: "center",
-};
-
-const styleEmailLink: CSSProperties = {
-  color: theme.colors.primary,
-  textDecoration: "none",
-  fontWeight: theme.font.weight.medium,
+  backgroundColor: "#fef3c7", // Réduit de theme.colors.warning à #fef3c7
+  padding: "12px", // Réduit de theme.spacing.md à 12px
+  borderRadius: "6px", // Réduit de theme.borderRadius.md à 6px
+  border: `1px solid #fbbf24`, // Réduit de theme.colors.warning à #fbbf24
 };
 
 const styleClosingMessage: CSSProperties = {
-  fontSize: theme.font.size.lg,
-  fontWeight: theme.font.weight.bold,
-  color: theme.colors.primary,
+  fontSize: "12px", // Réduit de theme.font.size.base à 12px
+  fontWeight: "600", // Réduit de theme.font.weight.semibold à 600
+  color: "#059669", // Réduit de theme.colors.success à #059669
   margin: "0",
-  lineHeight: theme.font.lineHeight.tight,
+  lineHeight: "1.4", // Réduit de theme.font.lineHeight.normal à 1.4
   textAlign: "center",
+  backgroundColor: "#ecfdf5", // Réduit de theme.colors.success à #ecfdf5
+  padding: "12px", // Réduit de theme.spacing.md à 12px
+  borderRadius: "6px", // Réduit de theme.borderRadius.md à 6px
+  border: `1px solid #10b981`, // Réduit de theme.colors.success à #10b981
+};
+
+const styleEmailLink: CSSProperties = {
+  color: "#d97706", // Réduit de theme.colors.warning à #d97706
+  textDecoration: "underline",
+  fontWeight: "600",
 }; 

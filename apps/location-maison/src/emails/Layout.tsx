@@ -10,6 +10,7 @@ import { Row } from "@react-email/row";
 import { Hr } from "@react-email/hr";
 import theme from "./theme";
 import { emailLogos } from "../../public/emails/config";
+import { supportContact } from "../constantes";
 
 interface LayoutProps {
   children: ReactNode;
@@ -32,61 +33,107 @@ const Layout = ({
   logoUrl = emailLogos.production.header, // Logo header optimisé (200x200px)
   footerLogoUrl = emailLogos.production.footer, // Logo footer optimisé (80x80px)
   websiteUrl = "https://tonnkama.com",
-  supportEmail = "support@tonnkama.com",
+  supportEmail = supportContact.email,
   socialLinks = {},
   copyRight,
   unsubscribeUrl
 }: LayoutProps) => {
   return (
     <Html style={styleHTML} lang="fr">
-      {/* CSS Media Queries pour mobile */}
+      {/* CSS Media Queries améliorées pour mobile */}
       <style>
         {`
           @media only screen and (max-width: 600px) {
             .mobile-container {
               width: 100% !important;
-              max-width: none !important;
+              max-width: 100% !important;
               margin: 0 !important;
               border-radius: 0 !important;
+              box-shadow: none !important;
             }
             .mobile-padding {
-              padding: 15px 10px !important;
+              padding: 10px 8px !important;
             }
             .mobile-header {
-              padding: 20px 15px !important;
+              padding: 15px 10px !important;
             }
             .mobile-content {
-              padding: 20px 15px !important;
+              padding: 15px 10px !important;
             }
             .mobile-footer {
-              padding: 20px 15px !important;
+              padding: 15px 10px !important;
             }
             .mobile-logo-header {
-              width: 60px !important;
-              height: 60px !important;
+              width: 50px !important;
+              height: 50px !important;
             }
             .mobile-text-small {
-              font-size: 12px !important;
+              font-size: 11px !important;
+            }
+            .mobile-text-medium {
+              font-size: 13px !important;
+            }
+            .mobile-text-large {
+              font-size: 16px !important;
             }
             .mobile-button {
               width: 100% !important;
-              max-width: 280px !important;
-              padding: 14px 20px !important;
-              font-size: 16px !important;
+              max-width: 100% !important;
+              padding: 12px 16px !important;
+              font-size: 14px !important;
+              min-width: auto !important;
             }
             .mobile-section {
-              padding: 15px 10px !important;
-              margin: 10px 0 !important;
+              padding: 10px 8px !important;
+              margin: 8px 0 !important;
+            }
+            .mobile-header-title {
+              font-size: 20px !important;
+            }
+            .mobile-header-subtitle {
+              font-size: 12px !important;
+            }
+            .mobile-header-layout {
+              display: block !important;
+            }
+            .mobile-header-logo {
+              text-align: center !important;
+              margin-bottom: 10px !important;
+            }
+            .mobile-header-text {
+              text-align: center !important;
+            }
+          }
+          
+          @media only screen and (max-width: 480px) {
+            .mobile-container {
+              padding: 0 !important;
+            }
+            .mobile-content {
+              padding: 12px 8px !important;
+            }
+            .mobile-button {
+              font-size: 13px !important;
+              padding: 10px 14px !important;
+            }
+            .mobile-text-small {
+              font-size: 10px !important;
+            }
+            .mobile-text-medium {
+              font-size: 12px !important;
+            }
+            .mobile-text-large {
+              font-size: 15px !important;
             }
           }
         `}
       </style>
       <Container style={styleContainer} className="mobile-container">
-        {/* Header professionnel avec logo et branding */}
+        {/* Header optimisé pour mobile */}
         <Section style={styleHeader} className="mobile-header">
-          <Row>
-            {/* Logo à gauche */}
-            <Column style={styleLogoColumn}>
+          <Row className="mobile-header-layout">
+            {/* Logo centré pour mobile */}
+            <Column style={styleLogoColumn} className="mobile-header-logo">
               <img
                 src={logoUrl}
                 alt="Logo Trouve Ton Nkama"
@@ -96,18 +143,13 @@ const Layout = ({
             </Column>
             
             {/* Texte centré */}
-            <Column style={styleBrandingColumn}>
-              <Text style={styleHeaderTitle}>
+            <Column style={styleBrandingColumn} className="mobile-header-text">
+              <Text style={styleHeaderTitle} className="mobile-header-title">
                 Trouve Ton Nkama
               </Text>
-              <Text style={styleHeaderSubtitle} className="mobile-text-small">
+              <Text style={styleHeaderSubtitle} className="mobile-header-subtitle">
                 Votre plateforme immobilière de référence au Gabon
               </Text>
-            </Column>
-            
-            {/* Colonne vide pour équilibrer */}
-            <Column style={styleEmptyColumn}>
-              &nbsp;
             </Column>
           </Row>
         </Section>
@@ -226,7 +268,7 @@ const styleHTML: CSSProperties = {
 
 const styleContainer: CSSProperties = {
   backgroundColor: "#ffffff",
-  maxWidth: "600px",
+  maxWidth: "580px", // Réduit de 600px à 580px
   width: "100%", // Responsive par défaut
   margin: "0 auto",
   padding: "0",
@@ -240,13 +282,13 @@ const styleContainer: CSSProperties = {
 const styleHeader: CSSProperties = {
   backgroundColor: theme.colors.primary,
   backgroundImage: `linear-gradient(135deg, ${theme.colors.primary} 0%, ${theme.colors.secondary} 100%)`,
-  padding: "25px 15px", // Réduit pour mobile par défaut
+  padding: "20px 15px", // Réduit pour mobile par défaut
   borderRadius: "0",
   width: "100%",
 };
 
 const styleLogoColumn: CSSProperties = {
-  width: "120px",
+  width: "100px", // Réduit de 120px à 100px
   verticalAlign: "middle",
   textAlign: "left" as const,
 };
@@ -257,17 +299,12 @@ const styleBrandingColumn: CSSProperties = {
   width: "auto",
 };
 
-const styleEmptyColumn: CSSProperties = {
-  width: "120px",
-  verticalAlign: "middle",
-};
-
 const styleHeaderLogo: CSSProperties = {
-  width: "80px",
-  height: "80px",
+  width: "70px", // Réduit de 80px à 70px
+  height: "70px", // Réduit de 80px à 70px
   borderRadius: "8px",
   backgroundColor: "#ffffff",
-  padding: "8px",
+  padding: "6px", // Réduit de 8px à 6px
   boxShadow: "0 2px 4px rgba(0, 0, 0, 0.1)",
   display: "block",
   border: "2px solid #ffffff",
@@ -275,7 +312,7 @@ const styleHeaderLogo: CSSProperties = {
 
 const styleHeaderTitle: CSSProperties = {
   color: "#ffffff",
-  fontSize: "28px",
+  fontSize: "24px", // Réduit de 28px à 24px
   fontWeight: "bold",
   margin: "0 0 5px 0",
   fontFamily: theme.fonts.heading,
@@ -284,7 +321,7 @@ const styleHeaderTitle: CSSProperties = {
 
 const styleHeaderSubtitle: CSSProperties = {
   color: "#ffffff",
-  fontSize: "14px",
+  fontSize: "13px", // Réduit de 14px à 13px
   margin: "0",
   opacity: "0.9",
   fontFamily: theme.fonts.body,
@@ -296,24 +333,24 @@ const styleContent: CSSProperties = {
 };
 
 const styleContentColumn: CSSProperties = {
-  padding: "30px 20px", // Réduit pour mobile par défaut
+  padding: "25px 15px", // Réduit pour mobile par défaut
   width: "100%",
 };
 
 const styleFooter: CSSProperties = {
   backgroundColor: "#f8f9fa",
-  padding: "30px 20px",
+  padding: "25px 15px", // Réduit
   borderTop: `3px solid ${theme.colors.primary}`,
 };
 
 const styleFooterLogo: CSSProperties = {
-  width: "40px",
-  height: "40px",
-  margin: "0 0 20px 0",
+  width: "35px", // Réduit de 40px à 35px
+  height: "35px", // Réduit de 40px à 35px
+  margin: "0 0 15px 0", // Réduit de 20px à 15px
   opacity: "0.9",
   display: "block",
   backgroundColor: "#ffffff",
-  padding: "4px",
+  padding: "3px", // Réduit de 4px à 3px
   borderRadius: "6px",
   border: "1px solid #e1e5e9",
 };
@@ -321,20 +358,20 @@ const styleFooterLogo: CSSProperties = {
 const styleHr: CSSProperties = {
   border: "none",
   borderTop: `1px solid ${theme.colors.muted}`,
-  margin: "0 0 20px 0",
+  margin: "0 0 15px 0", // Réduit de 20px à 15px
 };
 
 const styleFooterTitle: CSSProperties = {
   color: theme.colors.primary,
-  fontSize: "16px",
+  fontSize: "15px", // Réduit de 16px à 15px
   fontWeight: "600",
-  margin: "0 0 10px 0",
+  margin: "0 0 8px 0", // Réduit de 10px à 8px
   fontFamily: theme.fonts.heading,
 };
 
 const styleFooterLinks: CSSProperties = {
-  fontSize: "14px",
-  margin: "0 0 20px 0",
+  fontSize: "13px", // Réduit de 14px à 13px
+  margin: "0 0 15px 0", // Réduit de 20px à 15px
   lineHeight: "1.5",
   color: theme.colors.textSecondary,
 };
@@ -346,7 +383,7 @@ const styleFooterLink: CSSProperties = {
 };
 
 const styleSocialRow: CSSProperties = {
-  marginTop: "10px",
+  marginTop: "8px", // Réduit de 10px à 8px
 };
 
 const styleSocialLink: CSSProperties = {
@@ -356,23 +393,23 @@ const styleSocialLink: CSSProperties = {
 };
 
 const styleFooterContact: CSSProperties = {
-  fontSize: "13px",
+  fontSize: "12px", // Réduit de 13px à 12px
   color: theme.colors.textSecondary,
-  margin: "0 0 8px 0",
+  margin: "0 0 6px 0", // Réduit de 8px à 6px
   lineHeight: "1.4",
 };
 
 const styleFooterCopyright: CSSProperties = {
-  fontSize: "12px",
+  fontSize: "11px", // Réduit de 12px à 11px
   color: theme.colors.textSecondary,
-  margin: "20px 0 0 0",
+  margin: "15px 0 0 0", // Réduit de 20px à 15px
   fontStyle: "italic",
 };
 
 const styleUnsubscribe: CSSProperties = {
-  fontSize: "12px",
-  margin: "20px 0 0 0",
-  padding: "10px 0",
+  fontSize: "11px", // Réduit de 12px à 11px
+  margin: "15px 0 0 0", // Réduit de 20px à 15px
+  padding: "8px 0", // Réduit de 10px à 8px
   borderTop: "1px solid #e9ecef",
 };
 
