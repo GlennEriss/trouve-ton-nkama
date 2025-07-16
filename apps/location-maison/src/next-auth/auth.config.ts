@@ -38,21 +38,31 @@ const handleNewGoogleUser = async (user: any, account: any, profile: any, creden
     const firebaseUser = await signInWithCredential(auth, credential);
     const uid = firebaseUser.user.uid;
     
+    // Toujours rediriger vers la page de complétion pour les nouveaux utilisateurs Google
+    // car les informations Google peuvent être fausses ou incomplètes
     const userData = {
         uid,
-        firstname: profile?.given_name ?? '',
-        lastname: profile?.family_name ?? '',
+        firstname: '', // Sera complété par l'utilisateur
+        lastname: '', // Sera complété par l'utilisateur
         email: user?.email ?? '',
         image: profile?.picture ?? '',
-        phoneNumbers: firebaseUser.user.phoneNumber ? [firebaseUser.user.phoneNumber] : [],
+        phoneNumbers: [], // Sera complété par l'utilisateur
+        phoneNumberVerified: false,
+        birthDate: '', // Sera complété par l'utilisateur
         role: ["Announcer"],
-        searchableName: firebaseUser.user?.displayName ?? '',
+        searchableName: '',
         providers: ['GOOGLE' as ProviderType],
-        metadata: { idToken: account.id_token },
+        metadata: { 
+            idToken: account.id_token,
+            needsProfileCompletion: true // Toujours true pour les nouveaux utilisateurs Google
+        },
         notificationParameter: createDefaultNotificationParameter()
     };
     
     await createUser(userData);
+    
+    // Toujours rediriger vers la page de complétion
+    return routes.public.completeProfile;
 };
 
 // Fonction pour gérer la connexion Google d'un utilisateur existant
@@ -105,6 +115,7 @@ const handleNewFacebookUser = async (user: any, account: any, profile: any, cred
         email: user?.email ?? '',
         image: profile?.picture?.data?.url ?? '',
         phoneNumbers: firebaseUser.user.phoneNumber ? [firebaseUser.user.phoneNumber] : [],
+        phoneNumberVerified: false,
         role: ["Announcer"],
         searchableName: profile?.name ?? '',
         providers: ['FACEBOOK' as ProviderType],
@@ -219,7 +230,12 @@ const authConfig = {
             
             // Gestion de la connexion Google
             if (account?.provider === "google") {
-                return await handleGoogleSignIn(user, account, profile, userExists);
+                const result = await handleGoogleSignIn(user, account, profile, userExists);
+                // Si le résultat est une URL, c'est une redirection vers la page de complétion
+                if (typeof result === 'string') {
+                    return result;
+                }
+                return result;
             }
             
             // Gestion de la connexion Facebook
@@ -234,6 +250,17 @@ const authConfig = {
                 const userDetails = await findUserByEmail(user.email ?? '')
                 if (userDetails) {
                     user = userDetails as any
+                    
+                    // Vérifier si l'utilisateur a besoin de compléter son profil
+                    const hasCompleteInfo = user?.firstname && 
+                                           user?.lastname && 
+                                           user?.phoneNumbers?.[0] && 
+                                           user?.birthDate;
+                    
+                    // Mettre à jour le flag needsProfileCompletion
+                    if (user.metadata) {
+                        user.metadata.needsProfileCompletion = !hasCompleteInfo;
+                    }
                 }
                 token = {
                     ...token,
