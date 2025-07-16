@@ -45,5 +45,7 @@ namespace NodeJS {
     VAULT_ADDR: string;
     VAULT_TOKEN: string;
     VAULT_PATH: string;
+    //COUNTRIES
+    NEXT_PUBLIC_ENABLED_PHONE_COUNTRIES: string;
   }
 }
