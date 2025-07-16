@@ -1,20 +1,22 @@
-import * as userDb from '@/db/user.db'
-import * as notificationDb from '@/db/notification.db'
 import { User } from '@/models/authentication';
+import * as userDb from '@/db/user.db';
+import * as notificationDb from '@/db/notification.db';
+import { FormRegisterSchema } from '@/models/schema';
 
+// Mock des modules Firebase
 jest.mock('@/firebase/auth', () => ({
   createUserWithEmailAndPassword: jest.fn(),
   sendEmailVerification: jest.fn(),
   signOut: jest.fn(),
-  auth: {}
 }));
 
 jest.mock('@/db/user.db', () => ({
-  createUser: jest.fn()
+  createUser: jest.fn(),
+  findUserByPhoneNumber: jest.fn(),
 }));
 
 jest.mock('@/db/notification.db', () => ({
-  createNotification: jest.fn()
+  createNotification: jest.fn(),
 }));
 
 describe('Signup', () => {
@@ -36,6 +38,7 @@ describe('Signup', () => {
   };
 
   const mockedCreateUser = userDb.createUser as jest.Mock;
+  const mockedFindUserByPhoneNumber = userDb.findUserByPhoneNumber as jest.Mock;
   const mockedCreateNotification = notificationDb.createNotification as jest.Mock;
 
   const onRegister = async (user: Partial<User>) => {
@@ -56,6 +59,10 @@ describe('Signup', () => {
     return result.user.uid;
   };
 
+  beforeEach(() => {
+    jest.clearAllMocks();
+  });
+
   it('should register a user successfully', async () => {
     const { createUserWithEmailAndPassword, sendEmailVerification, signOut } = require('@/firebase/auth');
     createUserWithEmailAndPassword.mockResolvedValueOnce({ user: { uid: '123', email: mockUserData.email } });
@@ -69,6 +76,7 @@ describe('Signup', () => {
       createdFor: '123'
     });
     signOut.mockResolvedValueOnce(undefined);
+    mockedFindUserByPhoneNumber.mockResolvedValueOnce(null); // Aucun utilisateur avec ce numéro
 
     const uid = await onRegister(mockUserData);
 
@@ -87,10 +95,101 @@ describe('Signup', () => {
     await expect(onRegister(mockUserData)).rejects.toThrow('auth/email-already-in-use');
   });
 
+  it('should throw error if phone number is missing', async () => {
+    const userWithoutPhone = { ...mockUserData, phoneNumbers: [] };
+    
+    await expect(onRegister(userWithoutPhone)).rejects.toThrow('Le numéro de téléphone est obligatoire.');
+  });
+
+  it('should throw error if phone number is empty', async () => {
+    const userWithEmptyPhone = { ...mockUserData, phoneNumbers: [''] };
+    
+    await expect(onRegister(userWithEmptyPhone)).rejects.toThrow('Le numéro de téléphone est obligatoire.');
+  });
+
+  it('should throw error if phone number already exists', async () => {
+    mockedFindUserByPhoneNumber.mockResolvedValueOnce({ id: 'existing-user', email: 'existing@example.com' });
+    
+    await expect(onRegister(mockUserData)).rejects.toThrow('Un numéro est déjà associé à un compte.');
+  });
+
   it('should throw unexpected error', async () => {
     const { createUserWithEmailAndPassword } = require('@/firebase/auth');
     createUserWithEmailAndPassword.mockRejectedValueOnce(new Error('Unexpected error'));
 
     await expect(onRegister(mockUserData)).rejects.toThrow('Unexpected error');
+  });
+
+  it('should validate phone number format', async () => {
+    const userWithInvalidPhone = { ...mockUserData, phoneNumbers: ['invalid-phone'] };
+    
+    // Le test vérifie que la validation du format est gérée par le schéma Zod
+    // et que l'erreur est remontée correctement
+    await expect(onRegister(userWithInvalidPhone)).rejects.toThrow();
+  });
+});
+
+describe('FormRegisterSchema validation messages', () => {
+  it('should return correct error message for missing phone', () => {
+    const invalidData = {
+      firstname: 'John',
+      lastname: 'Doe',
+      email: 'test@example.com',
+      password: 'TestPassword123!',
+      passwordConfirm: 'TestPassword123!',
+      birthdate: '1990-01-01',
+      country: 'GA',
+      phone: '', // Numéro vide
+      termsOfPrivacyPolicy: true
+    };
+
+    const result = FormRegisterSchema.safeParse(invalidData);
+    expect(result.success).toBe(false);
+    if (!result.success) {
+      const phoneError = result.error.errors.find(error => 
+        error.path.includes('phone')
+      );
+      expect(phoneError?.message).toBe('Le numéro de téléphone est obligatoire');
+    }
+  });
+
+  it('should return correct error message for invalid phone format', () => {
+    const invalidData = {
+      firstname: 'John',
+      lastname: 'Doe',
+      email: 'test@example.com',
+      password: 'TestPassword123!',
+      passwordConfirm: 'TestPassword123!',
+      birthdate: '1990-01-01',
+      country: 'GA',
+      phone: 'invalid-phone', // Format invalide
+      termsOfPrivacyPolicy: true
+    };
+
+    const result = FormRegisterSchema.safeParse(invalidData);
+    expect(result.success).toBe(false);
+    if (!result.success) {
+      const phoneError = result.error.errors.find(error => 
+        error.path.includes('phone')
+      );
+      expect(phoneError?.message).toBe('Le numéro de téléphone est invalide');
+    }
+  });
+
+  it('should accept valid phone number', () => {
+    const validData = {
+      firstname: 'John',
+      lastname: 'Doe',
+      email: 'test@example.com',
+      password: 'TestPassword123!',
+      passwordConfirm: 'TestPassword123!',
+      birthdate: '1990-01-01',
+      country: 'GA',
+      phone: '+24101234567', // Format valide
+      termsOfPrivacyPolicy: true
+    };
+
+    const result = FormRegisterSchema.safeParse(validData);
+    expect(result.success).toBe(true);
   });
 });
