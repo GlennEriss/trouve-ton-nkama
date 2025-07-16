@@ -1,5 +1,5 @@
-namespace NodeJS {
-  interface ProcessEnv extends NodeJS.ProcessEnv {
+declare namespace NodeJS {
+  interface ProcessEnv {
     //GOOGLE
     GOOGLE_CLIENT_ID: string;
     GOOGLE_CLIENT_SECRET: string;
@@ -40,5 +40,7 @@ namespace NodeJS {
     VAULT_ADDR: string;
     VAULT_TOKEN: string;
     VAULT_PATH: string;
+    //COUNTRIES
+    NEXT_PUBLIC_ENABLED_PHONE_COUNTRIES: string;
   }
 }
