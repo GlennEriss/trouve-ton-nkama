@@ -3,6 +3,8 @@ import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, For
 import { PhoneInput } from '../ui/phone-input'
 import { FieldValues, UseFormReturn, Path } from 'react-hook-form'
 import { cn } from '@/lib/utils'
+import { PhoneValidationMessage } from './PhoneValidationMessage'
+import { getEnabledCountries } from '@/lib/phoneValidation'
 
 type PhoneNumberFormProps<T extends FieldValues> = {
     form: UseFormReturn<T>;
@@ -28,6 +30,10 @@ export const PhoneNumberForm = <T extends FieldValues>({
     classNameControl,
     classNameDescription
 }: PhoneNumberFormProps<T>) => {
+    // Obtenir le premier pays activé comme pays par défaut
+    const enabledCountries = getEnabledCountries();
+    const defaultCountry = enabledCountries.length > 0 ? enabledCountries[0].code as any : 'GA';
+
     return (
         <Form {...form}>
             <FormField
@@ -38,13 +44,20 @@ export const PhoneNumberForm = <T extends FieldValues>({
                         <FormLabel className={cn(classNameLabel, "text-left")}>{label}</FormLabel>
                         <FormControl className={cn(classNameControl, "w-full")}>
                             <div className='border rounded-lg'>
-                                <PhoneInput defaultCountry='GA' disabled={isSubmitting} className={className} placeholder={placeholder} {...field} />
+                                <PhoneInput 
+                                    defaultCountry={defaultCountry} 
+                                    disabled={isSubmitting} 
+                                    className={className} 
+                                    placeholder={placeholder} 
+                                    {...field} 
+                                />
                             </div>
                         </FormControl>
                         <FormDescription className={cn(classNameDescription, "text-left")}>
                             {description}
                         </FormDescription>
                         <FormMessage />
+                        <PhoneValidationMessage phoneNumber={field.value} />
                     </FormItem>
                 )}
             />

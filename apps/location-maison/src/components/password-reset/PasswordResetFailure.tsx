@@ -7,6 +7,7 @@ import { routes } from '@/constantes/routes'
 import Logo from '@/components/logo/Logo'
 import { useRouter } from 'next/navigation'
 import { XCircle } from 'lucide-react'
+import { supportContact } from "@/constantes";
 
 const PasswordResetFailure: React.FC = () => {
   const router = useRouter()
@@ -152,10 +153,10 @@ const PasswordResetFailure: React.FC = () => {
               </p>
               <div className="flex flex-col sm:flex-row gap-2 text-sm">
                 <a 
-                  href="mailto:support@tonnkama.com" 
+                  href={`mailto:${supportContact.email}`} 
                   className="text-[#146B67] hover:text-[#1FA89B] font-medium"
                 >
-                  support@tonnkama.com
+                  {supportContact.email}
                 </a>
                 <span className="hidden sm:inline text-gray-400">•</span>
                 <a 

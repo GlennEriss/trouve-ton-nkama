@@ -20,7 +20,7 @@ import { ButtonApp } from '../shared/ui/ButtonApp'
 import { signIn } from 'next-auth/react'
 import { Button } from '../ui/button'
 import { SelectFormApp } from '../shared/form/SelectFormApp'
-import { countries } from '@/constantes/country'
+
 import { PhoneNumberFormApp } from '../shared/form/PhoneNumberFormApp'
 import { CheckboxFormApp } from '../shared/form/CheckboxFormApp'
 
@@ -44,7 +44,6 @@ export const SignupMobileComponent = () => {
             password: '',
             passwordConfirm: '',
             birthdate: '',
-            country: 'GA',
             phone: '',
             termsOfPrivacyPolicy: false
         }
@@ -63,13 +62,17 @@ export const SignupMobileComponent = () => {
     
     const onRegister = async (user: Partial<User>) => {
         try {
-            // Vérification du numéro de téléphone
-            if (user.phoneNumbers && user.phoneNumbers.length > 0) {
-                const existingUser = await findUserByPhoneNumber(user.phoneNumbers[0]);
-                if (existingUser) {
-                    throw new Error("Un numéro est déjà associé à un compte.");
-                }
+            // Vérification obligatoire du numéro de téléphone
+            if (!user.phoneNumbers || user.phoneNumbers.length === 0 || !user.phoneNumbers[0]) {
+                throw new Error("Le numéro de téléphone est obligatoire.");
             }
+            
+            // Vérification si le numéro est déjà associé à un compte
+            const existingUser = await findUserByPhoneNumber(user.phoneNumbers[0]);
+            if (existingUser) {
+                throw new Error("Un numéro est déjà associé à un compte.");
+            }
+            
             const getAuth = () => import("@/firebase/auth");
             const { createUserWithEmailAndPassword, auth, signOut } = await getAuth();
             const userCred = await createUserWithEmailAndPassword(
@@ -78,25 +81,23 @@ export const SignupMobileComponent = () => {
                 user.password!
             );
             
-            // Envoyer l'email de vérification via notre API
-            try {
-                const emailResponse = await fetch('/api/auth/send-verification-email', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({
-                        email: user.login!,
-                    }),
-                });
-                
-                if (!emailResponse.ok) {
+            // Envoyer l'email de vérification en arrière-plan (non-bloquant)
+            fetch('/api/auth/send-verification-email', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    email: user.login!,
+                }),
+            }).then(response => {
+                if (!response.ok) {
                     console.warn('Erreur lors de l\'envoi de l\'email de vérification, mais le compte a été créé');
                 }
-            } catch (emailError) {
-                console.warn('Erreur lors de l\'envoi de l\'email de vérification:', emailError);
-                // Ne pas faire échouer l'inscription si l'email ne peut pas être envoyé
-            }
+            }).catch(error => {
+                console.warn('Erreur lors de l\'envoi de l\'email de vérification:', error);
+                // L'email peut échouer sans affecter l'inscription
+            });
             
             const { password, ...userDetails } = user
             const notificationParameter: NotificationParameter = {
@@ -115,27 +116,66 @@ export const SignupMobileComponent = () => {
             })
             await signOut(auth)
             return userCred.user.uid
-        } catch (error) {
-            console.error("Error during registration:", error);
-            throw error;
+        } catch (error: any) {
+            console.error(error)
+            
+            // Gestion spécifique des erreurs Firebase
+            let errorMessage = "Une erreur est survenue lors de la création du compte."
+            let errorTitle = "Création de compte"
+            
+            if (error.code === 'auth/email-already-in-use') {
+                errorMessage = "Cette adresse email est déjà utilisée par un autre compte."
+                errorTitle = "Email déjà utilisé"
+            } else if (error.code === 'auth/invalid-email') {
+                errorMessage = "L'adresse email fournie n'est pas valide."
+                errorTitle = "Email invalide"
+            } else if (error.code === 'auth/weak-password') {
+                errorMessage = "Le mot de passe est trop faible. Il doit contenir au moins 6 caractères."
+                errorTitle = "Mot de passe faible"
+            } else if (error.code === 'auth/operation-not-allowed') {
+                errorMessage = "L'inscription par email/mot de passe n'est pas activée."
+                errorTitle = "Méthode non autorisée"
+            } else if (error.code === 'auth/too-many-requests') {
+                errorMessage = "Trop de tentatives. Veuillez attendre quelques minutes avant de réessayer."
+                errorTitle = "Trop de tentatives"
+            } else if (error.message && error.message.includes("numéro est déjà associé")) {
+                errorMessage = error.message
+                errorTitle = "Numéro déjà utilisé"
+            } else if (error.message && error.message.includes("numéro de téléphone est obligatoire")) {
+                errorMessage = error.message
+                errorTitle = "Numéro de téléphone manquant"
+            } else {
+                // Pour les autres erreurs, utiliser le message d'erreur original
+                errorMessage = error.message || "Une erreur inattendue s'est produite."
+            }
+            
+            toast({
+                duration: 5000,
+                title: errorTitle,
+                description: errorMessage,
+                variant: 'destructive',
+            });
+        } finally {
+            setIsRegistering(false)
         }
     }
-    
+
     const onSubmit = async (values: FormRegisterSchemaType) => {
         const validateFields = FormRegisterSchema.safeParse(values)
         if (!validateFields.success) {
+            // Utiliser les messages d'erreur du schéma
+            const firstError = validateFields.error.errors[0]
             return toast({
                 duration: 5000,
                 title: 'Information invalide!',
-                description: "Des éléments du formulaire sont invalides",
+                description: firstError.message || "Des éléments du formulaire sont invalides",
                 variant: 'destructive',
             });
         }
         
         setIsRegistering(true)
         try {
-            const userDetails = validateFields.data
-            const user = transformToPerson(userDetails)
+            const user = transformToPerson(validateFields.data)
             const uid = await onRegister(user)
             
             toast({
@@ -146,12 +186,46 @@ export const SignupMobileComponent = () => {
             });
             
             router.push('/signup/success?uid=' + uid)
-        } catch (error) {
+        } catch (error: any) {
             console.error(error)
+            
+            // Gestion spécifique des erreurs Firebase
+            let errorMessage = "Une erreur est survenue lors de la création du compte."
+            let errorTitle = "Création de compte"
+            
+            if (error.code === 'auth/email-already-in-use') {
+                errorMessage = "Cette adresse email est déjà utilisée par un autre compte."
+                errorTitle = "Email déjà utilisé"
+            } else if (error.code === 'auth/invalid-email') {
+                errorMessage = "L'adresse email fournie n'est pas valide."
+                errorTitle = "Email invalide"
+            } else if (error.code === 'auth/weak-password') {
+                errorMessage = "Le mot de passe est trop faible. Il doit contenir au moins 6 caractères."
+                errorTitle = "Mot de passe faible"
+            } else if (error.code === 'auth/operation-not-allowed') {
+                errorMessage = "L'inscription par email/mot de passe n'est pas activée."
+                errorTitle = "Méthode non autorisée"
+            } else if (error.code === 'auth/too-many-requests') {
+                errorMessage = "Trop de tentatives. Veuillez attendre quelques minutes avant de réessayer."
+                errorTitle = "Trop de tentatives"
+            } else if (error.message && error.message.includes("numéro est déjà associé")) {
+                errorMessage = error.message
+                errorTitle = "Numéro déjà utilisé"
+            } else if (error.message && error.message.includes("numéro de téléphone est obligatoire")) {
+                errorMessage = "Le numéro de téléphone est obligatoire"
+                errorTitle = "Numéro de téléphone manquant"
+            } else if (error.message && error.message.includes("numéro de téléphone est invalide")) {
+                errorMessage = "Le numéro de téléphone est invalide"
+                errorTitle = "Numéro de téléphone invalide"
+            } else {
+                // Pour les autres erreurs, utiliser le message d'erreur original
+                errorMessage = error.message || "Une erreur inattendue s'est produite."
+            }
+            
             toast({
                 duration: 5000,
-                title: 'Création de compte',
-                description: "L'adresse email est déjà utilisé!",
+                title: errorTitle,
+                description: errorMessage,
                 variant: 'destructive',
             });
         } finally {
@@ -219,24 +293,18 @@ export const SignupMobileComponent = () => {
                             IconColor='gray'
                             placeholder='Saisissez votre date de naissance'
                         />
-                        <SelectFormApp
-                            control={form.control}
-                            name='country'
-                            label='Votre pays'
-                            placeholder='Sélectionner un pays'
-                            options={countries.map(
-                                country => ({
-                                    value: country.code,
-                                    label: country.name
-                                })
-                            )}
-                        />
-                        <PhoneNumberFormApp
-                            control={form.control}
-                            name='phone'
-                            label='Téléphone'
-                            placeholder='Saisissez votre numéro de téléphone'
-                        />
+
+                        <div className="space-y-2">
+                            <label className="text-sm font-medium text-gray-700">
+                                Téléphone *
+                            </label>
+                            <PhoneNumberFormApp
+                                control={form.control}
+                                name='phone'
+                                label=''
+                                placeholder='Saisissez votre numéro de téléphone'
+                            />
+                        </div>
                         <InputFormApp
                             control={form.control}
                             name='password'

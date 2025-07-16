@@ -10,6 +10,7 @@ import { TypeProperty } from "@/constantes/property-type";
 // Import des icônes
 import { IoMdBed } from "react-icons/io";
 import { MdOutlineBathtub, MdOutlineSquareFoot } from "react-icons/md";
+import { CheckCircle } from "lucide-react";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const PropertyCard = ({ property }: any) => {
@@ -44,6 +45,14 @@ const PropertyCard = ({ property }: any) => {
           {property.typeProperty && (
             <div className="absolute top-4 left-4 px-4 py-2 text-sm font-semibold bg-white/90 dark:bg-gray-800/90 text-[#146B67] dark:text-white rounded-full backdrop-blur-sm">
               {TypeProperty[property.typeProperty]}
+            </div>
+          )}
+          
+          {/* Indicateur de vérification du numéro de téléphone */}
+          {property.createdBy && property.createdBy.phoneNumberVerified && (
+            <div className="absolute top-4 right-4 flex items-center gap-1 px-2 py-1 text-xs font-medium bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300 rounded-full backdrop-blur-sm border border-green-200 dark:border-green-700">
+              <CheckCircle className="w-3 h-3" />
+              <span>Numéro vérifié</span>
             </div>
           )}
         </div>

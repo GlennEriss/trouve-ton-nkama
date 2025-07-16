@@ -13,6 +13,7 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '
 import { useToast } from '@/hooks/use-toast'
 import { ButtonLoading } from '@/components/buttons/ButtonLoading'
 import { Mail, Lock } from 'lucide-react'
+import { supportContact } from '@/constantes'
 
 const passwordResetSchema = z.object({
   email: z.string().email('Veuillez entrer une adresse email valide')
@@ -290,8 +291,8 @@ const PasswordResetRequest: React.FC = () => {
             <div className="pt-4 border-t border-gray-200 dark:border-gray-600">
               <p className="text-xs text-gray-500 dark:text-gray-400">
                 Besoin d'aide ? Contactez notre support à{' '}
-                <a href="mailto:support@tonnkama.com" className="text-[#146B67] hover:text-[#1FA89B] font-medium">
-                  support@tonnkama.com
+                <a href={`mailto:${supportContact.email}`} className="text-[#146B67] hover:text-[#1FA89B] font-medium">
+                  {supportContact.email}
                 </a>
               </p>
             </div>

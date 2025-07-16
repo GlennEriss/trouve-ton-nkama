@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button'
 import { routes } from '@/constantes/routes'
 import Logo from '@/components/logo/Logo'
 import { CheckCircle } from 'lucide-react'
+import { supportContact } from "@/constantes";
 
 const EmailAlreadyVerified: React.FC = () => {
   return (
@@ -98,8 +99,8 @@ const EmailAlreadyVerified: React.FC = () => {
           <div className="mt-8 pt-6 border-t border-gray-200 dark:border-gray-600">
             <p className="text-sm text-gray-500 dark:text-gray-400">
               Vous rencontrez des difficultés ? Contactez notre support à{' '}
-              <a href="mailto:support@tonnkama.com" className="text-[#146B67] hover:text-[#1FA89B] font-medium">
-                support@tonnkama.com
+              <a href={`mailto:${supportContact.email}`} className="text-[#146B67] hover:text-[#1FA89B] font-medium">
+                {supportContact.email}
               </a>
             </p>
           </div>

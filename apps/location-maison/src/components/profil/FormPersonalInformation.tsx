@@ -6,7 +6,7 @@ import { Form } from '../ui/form'
 import { FormUserProfilSchemaType, FormUserProfilSchema } from '@/models/schema'
 import { InputForm } from '../forms/InputForm'
 import { useCurrentUser } from '@/hooks/use-current-user'
-import { countries } from '@/constantes/country'
+
 import { PhoneNumberForm } from '../forms/PhoneNumberForm'
 import { SelectForm } from '../forms/SelectForm'
 import { ButtonLoading } from '../buttons/ButtonLoading'
@@ -29,11 +29,13 @@ export default function FormPersonalInformation() {
     const form = useForm<FormUserProfilSchemaType>({
         resolver: zodResolver(FormUserProfilSchema),
     })
+    
     const onSubmit = async (values: FormUserProfilSchemaType) => {
-        // Ne mettre à jour que le numéro de téléphone
+        // Ne mettre à jour que le numéro de téléphone avec Gabon par défaut
         const userUpdated = {
             ...user,
-            phoneNumbers: values.phoneNumbers ? [values.phoneNumbers] : []
+            phoneNumbers: values.phoneNumbers ? [values.phoneNumbers] : [],
+            country: { code: 'GA', name: 'Gabon' }
         }
         const isUpdated = await updateUser(user?.uid ?? '', userUpdated)
         if (isUpdated) {
@@ -55,13 +57,13 @@ export default function FormPersonalInformation() {
             });
         }
     }
+
     React.useEffect(() => {
         if (user) {
             form.setValue('firstname', user.firstname)
             form.setValue('lastname', user.lastname)
             form.setValue('email', user.email ?? '')
             form.setValue('birthDate', user?.birthDate ?? '')
-            form.setValue('country', user?.country?.code ?? '')
             form.setValue('phoneNumbers', user.phoneNumbers.length > 0 ? user.phoneNumbers[0] : '')
         }
     }, [user])
@@ -71,7 +73,10 @@ export default function FormPersonalInformation() {
             <div className='px-4 pb-5'>
                 <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-3 mb-4">
                     <p className="text-sm text-blue-800 dark:text-blue-200">
-                        ℹ️ Seul votre numéro de téléphone peut être modifié. Les autres informations sont protégées pour des raisons de sécurité.
+                        ℹ️ {user?.phoneNumberVerified ? 
+                            "Votre numéro de téléphone est vérifié et ne peut plus être modifié." : 
+                            "Seul votre numéro de téléphone non vérifié peut être modifié. Les autres informations sont protégées."
+                        }
                     </p>
                 </div>
                 <Form {...form}>
@@ -109,34 +114,25 @@ export default function FormPersonalInformation() {
                             placeholder='Saisissez votre date de naissance'
                             disabled={true}
                         />
-                        <SelectFormApp
-                            control={form.control}
-                            name='country'
-                            label='Votre pays'
-                            placeholder='Sélectionner un pays'
-                            options={countries.map(
-                                country => ({
-                                    value: country.code,
-                                    label: country.name
-                                })
-                            )}
-                            disabled={true}
-                        />
+
                         <PhoneNumberFormApp
                             control={form.control}
                             name='phoneNumbers'
                             label='Téléphone'
                             placeholder='Saisissez votre numéro de téléphone'
+                            disabled={user?.phoneNumberVerified}
                         />
-                        <div className='flex flex-col items-center gap-3'>
-                            <ButtonApp
-                                type='submit'
-                                disabled={Boolean(form.formState.isSubmitting) || Boolean(form.formState.isLoading)}
-                                isLoading={Boolean(form.formState.isSubmitting) || Boolean(form.formState.isLoading)}
-                                className='bg-gradient-to-b from-[#1FA89B] to-[#146B67] md:py-7 mt-5'
-                                title='Modifier le téléphone'
-                            />
-                        </div>
+                        {!user?.phoneNumberVerified && (
+                            <div className='flex flex-col items-center gap-3'>
+                                <ButtonApp
+                                    type='submit'
+                                    disabled={Boolean(form.formState.isSubmitting) || Boolean(form.formState.isLoading)}
+                                    isLoading={Boolean(form.formState.isSubmitting) || Boolean(form.formState.isLoading)}
+                                    className='bg-gradient-to-b from-[#1FA89B] to-[#146B67] md:py-7 mt-5'
+                                    title='Modifier le téléphone'
+                                />
+                            </div>
+                        )}
                     </form>
                 </Form>
             </div>
@@ -146,7 +142,10 @@ export default function FormPersonalInformation() {
         <div className='md:w-2/3 md:mx-auto lg:w-3/5'>
             <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4 mb-6">
                 <p className="text-sm text-blue-800 dark:text-blue-200">
-                    ℹ️ Seul votre numéro de téléphone peut être modifié. Les autres informations personnelles sont protégées pour des raisons de sécurité.
+                    ℹ️ {user?.phoneNumberVerified ? 
+                        "Votre numéro de téléphone est vérifié et ne peut plus être modifié." : 
+                        "Seul votre numéro de téléphone non vérifié peut être modifié. Les autres informations sont protégées."
+                    }
                 </p>
             </div>
             <Form {...form}>
@@ -179,35 +178,26 @@ export default function FormPersonalInformation() {
                         className='p-5'
                         disabled={true}
                     />
-                    <SelectForm
-                        form={form}
-                        name='country'
-                        label='Pays'
-                        placeholder='Sélectionner un pays'
-                        options={countries.map(
-                            country => ({
-                                value: country.code,
-                                label: country.name
-                            })
-                        )}
-                        disabled={true}
-                    />
+
                     <PhoneNumberForm
                         form={form}
                         label='Téléphone'
                         name='phoneNumbers'
+                        disabled={user?.phoneNumberVerified}
                     />
-                    <ButtonLoading
-                        type="submit"
-                        className="w-full bg-black text-white font-bold border border-transparent 
-              dark:bg-gray-900 dark:text-white dark:border-gray-700 
-              hover:bg-gray-800 dark:hover:bg-gray-700 
-              focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 
-              disabled:opacity-50 disabled:cursor-not-allowed"
-                        disabled={Boolean(form.formState.isLoading) || Boolean(form.formState.isSubmitting)}
-                    >
-                        Modifier le numéro de téléphone
-                    </ButtonLoading>
+                    {!user?.phoneNumberVerified && (
+                        <ButtonLoading
+                            type="submit"
+                            className="w-full bg-black text-white font-bold border border-transparent 
+                  dark:bg-gray-900 dark:text-white dark:border-gray-700 
+                  hover:bg-gray-800 dark:hover:bg-gray-700 
+                  focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 
+                  disabled:opacity-50 disabled:cursor-not-allowed"
+                            disabled={Boolean(form.formState.isLoading) || Boolean(form.formState.isSubmitting)}
+                        >
+                            Modifier le numéro de téléphone
+                        </ButtonLoading>
+                    )}
                 </form>
             </Form>
         </div>
