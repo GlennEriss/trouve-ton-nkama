@@ -3,7 +3,7 @@ import { render } from '@react-email/render';
 import GenericEmail from '@/emails/GenericEmail';
 import PasswordReset from '@/emails/PasswordReset';
 import EmailVerification from '@/emails/EmailVerification';
-import { emailService, EmailService as EmailTransportService } from '@/services/email.service';
+import { emailService, EmailService } from '@/services/email.service';
 import { EmailService as EmailTemplateService } from '@/emails/index';
 import { supportContact } from "@/constantes";
 
@@ -113,7 +113,7 @@ export async function POST(request: NextRequest) {
 
     // Données de l'email
     const emailData = {
-      from: EmailTransportService.getDefaultFromAddress(),
+      from: EmailService.getDefaultFromAddress(),
       to: email,
       subject,
       text: emailText,
