@@ -2,6 +2,7 @@ import { FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/comp
 import { PhoneInput, PhoneInputProps } from '@/components/ui/phone-input'
 import React from 'react'
 import { Control, FieldValues, Path } from 'react-hook-form'
+import { getEnabledCountries } from '@/lib/phoneValidation'
 
 type PhoneNumberFormAppProps<T extends FieldValues> = {
     control: Control<T>,
@@ -14,6 +15,10 @@ export const PhoneNumberFormApp = <T extends FieldValues>({
     label,
     ...props
 }: PhoneNumberFormAppProps<T>) => {
+    // Obtenir le premier pays activé comme pays par défaut
+    const enabledCountries = getEnabledCountries();
+    const defaultCountry = enabledCountries.length > 0 ? enabledCountries[0].code as any : 'GA';
+
     return (
         <FormField
             control={control}
@@ -24,7 +29,7 @@ export const PhoneNumberFormApp = <T extends FieldValues>({
                     <div className='border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900 p-2 rounded-full focus-within:border-[#1FA89B] focus-within:bg-[#ebf6f5] dark:focus-within:bg-gray-800'>
                         <FormControl>
                             <PhoneInput
-                                defaultCountry='GA'
+                                defaultCountry={defaultCountry}
                                 disabled={isSubmitting}
                                 triggerClassName=' border-none shadow-none rounded-full'
                                 className='border-none shadow-none focus-visible:ring-0 rounded-full dark:text-white dark:placeholder:text-gray-500 bg-transparent'

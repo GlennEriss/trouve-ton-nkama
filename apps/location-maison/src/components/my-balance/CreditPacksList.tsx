@@ -1,7 +1,7 @@
 'use client'
 
 import React from 'react'
-import { Package } from 'lucide-react'
+import { Package, Info } from 'lucide-react'
 import CreditPackCard from './CreditPackCard'
 import Image from 'next/image'
 
@@ -98,6 +98,12 @@ export default function CreditPacksList({ onOpenModal, onPackSelect }: Readonly<
         <p className="text-sm md:text-base text-gray-600 dark:text-gray-400 max-w-2xl mx-auto px-4">
           Rechargez votre solde et profitez d'économies progressives. Plus vous achetez, plus vous économisez !
         </p>
+        <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-3 max-w-2xl mx-auto">
+          <div className="flex items-center gap-2 text-sm text-blue-800 dark:text-blue-200">
+            <Info className="w-4 h-4 flex-shrink-0" />
+            <p>Les fonctionnalités de recharge seront bientôt disponibles pour offrir de meilleures visibilités à vos annonces.</p>
+          </div>
+        </div>
       </div>
 
       {/* Packs Grid */}

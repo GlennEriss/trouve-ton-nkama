@@ -1,6 +1,6 @@
 'use client'
 import { routes } from '@/constantes/routes'
-import { createUser } from '@/db/user.db'
+import { createUser, findUserByPhoneNumber } from '@/db/user.db'
 import { useToast } from '@/hooks/use-toast'
 import { transformToPerson } from '@/lib/transformToPerson'
 import { cn } from '@/lib/utils'
@@ -20,7 +20,7 @@ import { ButtonApp } from '../shared/ui/ButtonApp'
 import { signIn } from 'next-auth/react'
 import { Button } from '../ui/button'
 import { SelectFormApp } from '../shared/form/SelectFormApp'
-import { countries } from '@/constantes/country'
+
 import { PhoneNumberFormApp } from '../shared/form/PhoneNumberFormApp'
 import { CheckboxFormApp } from '../shared/form/CheckboxFormApp'
 
@@ -33,27 +33,73 @@ export const SignupMobileComponent = () => {
     const router = useRouter()
     const { toast } = useToast()
     const [isOtherMethodConnection, setIsOtherMethodConnection] = React.useState(false)
+    const [isRegistering, setIsRegistering] = React.useState(false)
+    
     const form = useForm<FormRegisterSchemaType>({
         resolver: zodResolver(FormRegisterSchema),
         defaultValues: {
-            country: 'GA'
+            firstname: '',
+            lastname: '',
+            email: '',
+            password: '',
+            passwordConfirm: '',
+            birthdate: '',
+            phone: '',
+            country: 'GA',
+            termsOfPrivacyPolicy: false
         }
     })
+    
     const handleSigninWithGoogle = async () => {
         setIsOtherMethodConnection(true)
-        await signIn('google')
-        setIsOtherMethodConnection(false)
+        try {
+            await signIn('google')
+        } catch (error) {
+            console.error('Erreur lors de la connexion Google:', error)
+        } finally {
+            setIsOtherMethodConnection(false)
+        }
     }
+    
     const onRegister = async (user: Partial<User>) => {
         try {
+            // Vérification obligatoire du numéro de téléphone
+            if (!user.phoneNumbers || user.phoneNumbers.length === 0 || !user.phoneNumbers[0]) {
+                throw new Error("Le numéro de téléphone est obligatoire.");
+            }
+            
+            // Vérification si le numéro est déjà associé à un compte
+            const existingUser = await findUserByPhoneNumber(user.phoneNumbers[0]);
+            if (existingUser) {
+                throw new Error("Un numéro est déjà associé à un compte.");
+            }
+            
             const getAuth = () => import("@/firebase/auth");
-            const { createUserWithEmailAndPassword, sendEmailVerification, auth, signOut } = await getAuth();
+            const { createUserWithEmailAndPassword, auth, signOut } = await getAuth();
             const userCred = await createUserWithEmailAndPassword(
                 auth,
                 user.login!,
                 user.password!
             );
-            await sendEmailVerification(userCred.user);
+            
+            // Envoyer l'email de vérification en arrière-plan (non-bloquant)
+            fetch('/api/auth/send-verification-email', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        email: user.login!,
+                    }),
+            }).then(response => {
+                if (!response.ok) {
+                    console.warn('Erreur lors de l\'envoi de l\'email de vérification, mais le compte a été créé');
+                }
+            }).catch(error => {
+                console.warn('Erreur lors de l\'envoi de l\'email de vérification:', error);
+                // L'email peut échouer sans affecter l'inscription
+            });
+            
             const { password, ...userDetails } = user
             const notificationParameter: NotificationParameter = {
                 isNew: true,
@@ -71,55 +117,138 @@ export const SignupMobileComponent = () => {
             })
             await signOut(auth)
             return userCred.user.uid
-        } catch (error) {
-            console.error("Error during registration:", error);
-            throw error;
+        } catch (error: any) {
+            console.error(error)
+            
+            // Gestion spécifique des erreurs Firebase
+            let errorMessage = "Une erreur est survenue lors de la création du compte."
+            let errorTitle = "Création de compte"
+            
+            if (error.code === 'auth/email-already-in-use') {
+                errorMessage = "Cette adresse email est déjà utilisée par un autre compte."
+                errorTitle = "Email déjà utilisé"
+            } else if (error.code === 'auth/invalid-email') {
+                errorMessage = "L'adresse email fournie n'est pas valide."
+                errorTitle = "Email invalide"
+            } else if (error.code === 'auth/weak-password') {
+                errorMessage = "Le mot de passe est trop faible. Il doit contenir au moins 6 caractères."
+                errorTitle = "Mot de passe faible"
+            } else if (error.code === 'auth/operation-not-allowed') {
+                errorMessage = "L'inscription par email/mot de passe n'est pas activée."
+                errorTitle = "Méthode non autorisée"
+            } else if (error.code === 'auth/too-many-requests') {
+                errorMessage = "Trop de tentatives. Veuillez attendre quelques minutes avant de réessayer."
+                errorTitle = "Trop de tentatives"
+            } else if (error.message && error.message.includes("numéro est déjà associé")) {
+                errorMessage = error.message
+                errorTitle = "Numéro déjà utilisé"
+            } else if (error.message && error.message.includes("numéro de téléphone est obligatoire")) {
+                errorMessage = error.message
+                errorTitle = "Numéro de téléphone manquant"
+            } else {
+                // Pour les autres erreurs, utiliser le message d'erreur original
+                errorMessage = error.message || "Une erreur inattendue s'est produite."
+            }
+            
+            toast({
+                duration: 5000,
+                title: errorTitle,
+                description: errorMessage,
+                variant: 'destructive',
+            });
+        } finally {
+            setIsRegistering(false)
         }
     }
-    const onSubmit = (values: FormRegisterSchemaType) => {
+
+    const onSubmit = async (values: FormRegisterSchemaType) => {
         const validateFields = FormRegisterSchema.safeParse(values)
         if (!validateFields.success) {
+            // Utiliser les messages d'erreur du schéma
+            const firstError = validateFields.error.errors[0]
             return toast({
                 duration: 5000,
                 title: 'Information invalide!',
-                description: "Des éléments du formulaire sont invalides",
+                description: firstError.message || "Des éléments du formulaire sont invalides",
                 variant: 'destructive',
             });
         }
-        const userDetails = validateFields.data
-        const user = transformToPerson(userDetails)
-        onRegister(user)
-            .then((uid) => {
-                toast({
-                    duration: 5000,
-                    title: 'Création de compte',
-                    description: "Votre compte a été créé avec succès!",
-                    variant: 'success',
-                });
-                router.push('/signup/success?uid=' + uid)
-            })
-            .catch(error => {
-                console.error(error)
-                toast({
-                    duration: 5000,
-                    title: 'Création de compte',
-                    description: "L'adresse email est déjà utilisé!",
-                    variant: 'destructive',
-                });
-            })
+        
+        setIsRegistering(true)
+        try {
+            const user = transformToPerson(validateFields.data)
+            const uid = await onRegister(user)
+            
+            toast({
+                duration: 5000,
+                title: 'Création de compte',
+                description: "Votre compte a été créé avec succès!",
+                variant: 'success',
+            });
+            
+            router.push('/signup/success?uid=' + uid)
+        } catch (error: any) {
+            console.error(error)
+            
+            // Gestion spécifique des erreurs Firebase
+            let errorMessage = "Une erreur est survenue lors de la création du compte."
+            let errorTitle = "Création de compte"
+            
+            if (error.code === 'auth/email-already-in-use') {
+                errorMessage = "Cette adresse email est déjà utilisée par un autre compte."
+                errorTitle = "Email déjà utilisé"
+            } else if (error.code === 'auth/invalid-email') {
+                errorMessage = "L'adresse email fournie n'est pas valide."
+                errorTitle = "Email invalide"
+            } else if (error.code === 'auth/weak-password') {
+                errorMessage = "Le mot de passe est trop faible. Il doit contenir au moins 6 caractères."
+                errorTitle = "Mot de passe faible"
+            } else if (error.code === 'auth/operation-not-allowed') {
+                errorMessage = "L'inscription par email/mot de passe n'est pas activée."
+                errorTitle = "Méthode non autorisée"
+            } else if (error.code === 'auth/too-many-requests') {
+                errorMessage = "Trop de tentatives. Veuillez attendre quelques minutes avant de réessayer."
+                errorTitle = "Trop de tentatives"
+            } else if (error.message && error.message.includes("numéro est déjà associé")) {
+                errorMessage = error.message
+                errorTitle = "Numéro déjà utilisé"
+            } else if (error.message && error.message.includes("numéro de téléphone est obligatoire")) {
+                errorMessage = "Le numéro de téléphone est obligatoire"
+                errorTitle = "Numéro de téléphone manquant"
+            } else if (error.message && error.message.includes("numéro de téléphone est invalide")) {
+                errorMessage = "Le numéro de téléphone est invalide"
+                errorTitle = "Numéro de téléphone invalide"
+            } else {
+                // Pour les autres erreurs, utiliser le message d'erreur original
+                errorMessage = error.message || "Une erreur inattendue s'est produite."
+            }
+            
+            toast({
+                duration: 5000,
+                title: errorTitle,
+                description: errorMessage,
+                variant: 'destructive',
+            });
+        } finally {
+            setIsRegistering(false)
+        }
     }
+    
+    const isFormLoading = isRegistering || form.formState.isSubmitting
+    const isGoogleLoading = isOtherMethodConnection
+    
     return (
         <div className={cn('p-4 md:p-20', inter.className)}>
             <div>
-                <Link href={routes.public.signinSignup}>
+                <Link href={routes.public.signin}>
                     <ChevronLeft color='gray' size={30} />
                 </Link>
             </div>
 
             <section className='mt-8 md:mt-10'>
-                <h1 className='text-2xl font-bold text-[#187872]'>Explorons ensemble avec LogisGabon !</h1>
+                <h1 className='text-2xl font-bold text-[#187872]'>Explorons ensemble avec Trouve Ton Nkama !</h1>
                 <p className='text-gray-500'>
-                    Créez votre compte LogisGabon pour trouver votre logement de rêve partout au Gabon !
+                    Créez votre compte Trouve Ton Nkama pour trouver votre logement de rêve partout au Gabon !
                 </p>
             </section>
             <Form {...form}>
@@ -165,24 +294,18 @@ export const SignupMobileComponent = () => {
                             IconColor='gray'
                             placeholder='Saisissez votre date de naissance'
                         />
-                        <SelectFormApp
-                            control={form.control}
-                            name='country'
-                            label='Votre pays'
-                            placeholder='Sélectionner un pays'
-                            options={countries.map(
-                                country => ({
-                                    value: country.code,
-                                    label: country.name
-                                })
-                            )}
-                        />
-                        <PhoneNumberFormApp
-                            control={form.control}
-                            name='phone'
-                            label='Téléphone'
-                            placeholder='Saisissez votre numéro de téléphone'
-                        />
+
+                        <div className="space-y-2">
+                            <label className="text-sm font-medium text-gray-700">
+                                Téléphone *
+                            </label>
+                            <PhoneNumberFormApp
+                                control={form.control}
+                                name='phone'
+                                label=''
+                                placeholder='Saisissez votre numéro de téléphone'
+                            />
+                        </div>
                         <InputFormApp
                             control={form.control}
                             name='password'
@@ -222,10 +345,10 @@ export const SignupMobileComponent = () => {
                         <div className='flex flex-col items-center gap-3'>
                             <ButtonApp
                                 type='submit'
-                                disabled={Boolean(form.formState.isSubmitting) || Boolean(form.formState.isLoading) || Boolean(isOtherMethodConnection)}
-                                isLoading={Boolean(form.formState.isSubmitting) || Boolean(form.formState.isLoading) || Boolean(isOtherMethodConnection)}
+                                disabled={isFormLoading || isGoogleLoading}
+                                isLoading={isFormLoading}
                                 className='bg-gradient-to-b from-[#1FA89B] to-[#146B67] md:py-7 mt-5'
-                                title='Créer un compte'
+                                title={isFormLoading ? 'Création en cours...' : 'Créer un compte'}
                             />
                         </div>
                     </form>
@@ -241,10 +364,19 @@ export const SignupMobileComponent = () => {
                     <Button
                         onClick={handleSigninWithGoogle}
                         variant='outline'
-                        disabled={Boolean(form.formState.isSubmitting) || Boolean(form.formState.isLoading) || Boolean(isOtherMethodConnection)}
+                        disabled={isFormLoading || isGoogleLoading}
                         className="w-full flex justify-center items-center gap-2 bg-white dark:bg-gray-900 border border-gray-300 rounded-full p-6 text-md font-medium text-gray-800 dark:text-white hover:bg-gray-200 focus:outline-none focus:ring-offset-2 focus:ring-gray-500">
-                        <svg className="h-6 w-6 mr-2" xmlns="http://www.w3.org/2000/svg" xmlnsXlink="http://www.w3.org/1999/xlink" width="800px" height="800px" viewBox="-0.5 0 48 48" version="1.1"> <title>Google-color</title> <desc>Created with Sketch.</desc> <defs> </defs> <g id="Icons" stroke="none" strokeWidth="1" fill="none" fillRule="evenodd"> <g id="Color-" transform="translate(-401.000000, -860.000000)"> <g id="Google" transform="translate(401.000000, 860.000000)"> <path d="M9.82727273,24 C9.82727273,22.4757333 10.0804318,21.0144 10.5322727,19.6437333 L2.62345455,13.6042667 C1.08206818,16.7338667 0.213636364,20.2602667 0.213636364,24 C0.213636364,27.7365333 1.081,31.2608 2.62025,34.3882667 L10.5247955,28.3370667 C10.0772273,26.9728 9.82727273,25.5168 9.82727273,24" id="Fill-1" fill="#FBBC05"> </path> <path d="M23.7136364,10.1333333 C27.025,10.1333333 30.0159091,11.3066667 32.3659091,13.2266667 L39.2022727,6.4 C35.0363636,2.77333333 29.6954545,0.533333333 23.7136364,0.533333333 C14.4268636,0.533333333 6.44540909,5.84426667 2.62345455,13.6042667 L10.5322727,19.6437333 C12.3545909,14.112 17.5491591,10.1333333 23.7136364,10.1333333" id="Fill-2" fill="#EB4335"> </path> <path d="M23.7136364,37.8666667 C17.5491591,37.8666667 12.3545909,33.888 10.5322727,28.3562667 L2.62345455,34.3946667 C6.44540909,42.1557333 14.4268636,47.4666667 23.7136364,47.4666667 C29.4455,47.4666667 34.9177955,45.4314667 39.0249545,41.6181333 L31.5177727,35.8144 C29.3995682,37.1488 26.7323182,37.8666667 23.7136364,37.8666667" id="Fill-3" fill="#34A853"> </path> <path d="M46.1454545,24 C46.1454545,22.6133333 45.9318182,21.12 45.6113636,19.7333333 L23.7136364,19.7333333 L23.7136364,28.8 L36.3181818,28.8 C35.6879545,31.8912 33.9724545,34.2677333 31.5177727,35.8144 L39.0249545,41.6181333 C43.3393409,37.6138667 46.1454545,31.6490667 46.1454545,24" id="Fill-4" fill="#4285F4"> </path> </g> </g> </g> </svg>
-                        <span>Continuer avec Google</span>
+                        {isGoogleLoading ? (
+                            <>
+                                <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-gray-900 dark:border-white"></div>
+                                <span>Connexion en cours...</span>
+                            </>
+                        ) : (
+                            <>
+                                <svg className="h-6 w-6 mr-2" xmlns="http://www.w3.org/2000/svg" xmlnsXlink="http://www.w3.org/1999/xlink" width="800px" height="800px" viewBox="-0.5 0 48 48" version="1.1"> <title>Google-color</title> <desc>Created with Sketch.</desc> <defs> </defs> <g id="Icons" stroke="none" strokeWidth="1" fill="none" fillRule="evenodd"> <g id="Color-" transform="translate(-401.000000, -860.000000)"> <g id="Google" transform="translate(401.000000, 860.000000)"> <path d="M9.82727273,24 C9.82727273,22.4757333 10.0804318,21.0144 10.5322727,19.6437333 L2.62345455,13.6042667 C1.08206818,16.7338667 0.213636364,20.2602667 0.213636364,24 C0.213636364,27.7365333 1.081,31.2608 2.62025,34.3882667 L10.5247955,28.3370667 C10.0772273,26.9728 9.82727273,25.5168 9.82727273,24" id="Fill-1" fill="#FBBC05"> </path> <path d="M23.7136364,10.1333333 C27.025,10.1333333 30.0159091,11.3066667 32.3659091,13.2266667 L39.2022727,6.4 C35.0363636,2.77333333 29.6954545,0.533333333 23.7136364,0.533333333 C14.4268636,0.533333333 6.44540909,5.84426667 2.62345455,13.6042667 L10.5322727,19.6437333 C12.3545909,14.112 17.5491591,10.1333333 23.7136364,10.1333333" id="Fill-2" fill="#EB4335"> </path> <path d="M23.7136364,37.8666667 C17.5491591,37.8666667 12.3545909,33.888 10.5322727,28.3562667 L2.62345455,34.3946667 C6.44540909,42.1557333 14.4268636,47.4666667 23.7136364,47.4666667 C29.4455,47.4666667 34.9177955,45.4314667 39.0249545,41.6181333 L31.5177727,35.8144 C29.3995682,37.1488 26.7323182,37.8666667 23.7136364,37.8666667" id="Fill-3" fill="#34A853"> </path> <path d="M46.1454545,24 C46.1454545,22.6133333 45.9318182,21.12 45.6113636,19.7333333 L23.7136364,19.7333333 L23.7136364,28.8 L36.3181818,28.8 C35.6879545,31.8912 33.9724545,34.2677333 31.5177727,35.8144 L39.0249545,41.6181333 C43.3393409,37.6138667 46.1454545,31.6490667 46.1454545,24" id="Fill-4" fill="#4285F4"> </path> </g> </g> </g> </svg>
+                                <span>Continuer avec Google</span>
+                            </>
+                        )}
                     </Button>
                 </div>
             </Form>

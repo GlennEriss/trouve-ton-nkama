@@ -3,19 +3,19 @@ import { Metadata } from "next";
 import React from "react";
 
 export const metadata: Metadata = {
-  title: "Politique de confidentialité - LogisGabon",
-  description: "Consultez notre politique de confidentialité pour comprendre comment LogisGabon collecte, utilise et protège vos données personnelles.",
+  title: "Politique de confidentialité - Trouve Ton Nkama",
+  description: "Consultez notre politique de confidentialité pour comprendre comment Trouve Ton Nkama collecte, utilise et protège vos données personnelles.",
   openGraph: {
-    title: "Politique de confidentialité - LogisGabon",
-    description: "Apprenez comment LogisGabon respecte votre vie privée et protège vos informations personnelles conformément aux réglementations en vigueur.",
+    title: "Politique de confidentialité - Trouve Ton Nkama",
+    description: "Apprenez comment Trouve Ton Nkama respecte votre vie privée et protège vos informations personnelles conformément aux réglementations en vigueur.",
     url: `${process.env.NEXT_PUBLIC_HOST}/privacy-policy`,
     type: "website",
     images: [
       {
-        url: `${process.env.NEXT_PUBLIC_HOST}/logo.png`,
+        url: `${process.env.NEXT_PUBLIC_HOST}/logo.webp`,
         width: 1200,
         height: 630,
-        alt: "Politique de confidentialité LogisGabon",
+        alt: "Politique de confidentialité Trouve Ton Nkama",
       },
     ],
   },

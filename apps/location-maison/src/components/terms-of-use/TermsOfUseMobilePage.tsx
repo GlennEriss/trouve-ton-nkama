@@ -19,21 +19,21 @@ export default function TermsOfUseMobilePage() {
                 <section id="introduction" className="mb-6">
                     <h2 className="text-xl font-semibold mb-2 text-[#494949] dark:text-white">1. Introduction</h2>
                     <p className="text-gray-700 dark:text-gray-300">
-                        Bienvenue sur <strong className='text-[#1FA89B]'>LogisGabon</strong>. En accédant et en utilisant notre plateforme, vous acceptez nos conditions d&apos;utilisation.
+                        Bienvenue sur <strong className='text-[#1FA89B]'>Trouve Ton Nkama</strong>. En accédant et en utilisant notre plateforme, vous acceptez nos conditions d&apos;utilisation.
                     </p>
                 </section>
 
                 <section id="utilisation" className="mb-6">
                     <h2 className="text-xl font-semibold mb-2 text-[#494949] dark:text-white">2. Utilisation de la plateforme</h2>
                     <p className="text-gray-700 dark:text-gray-300">
-                        LogisGabon est une plateforme permettant aux utilisateurs de publier et consulter des annonces de location immobilière. Les utilisateurs doivent être âgés d'au moins 18 ans pour créer un compte sur notre plateforme. L&apos;utilisation du site doit être conforme aux lois en vigueur et aux règles éthiques de la communauté.
+                        Trouve Ton Nkama est une plateforme permettant aux utilisateurs de publier et consulter des annonces de location immobilière. Les utilisateurs doivent être âgés d'au moins 18 ans pour créer un compte sur notre plateforme. L&apos;utilisation du site doit être conforme aux lois en vigueur et aux règles éthiques de la communauté.
                     </p>
                 </section>
 
                 <section id="contenu" className="mb-6">
                     <h2 className="text-xl font-semibold mb-2 text-[#494949] dark:text-white">3. Contenu et responsabilité</h2>
                     <p className="text-gray-700 dark:text-gray-300">
-                        Chaque utilisateur est responsable du contenu qu&apos;il publie sur LogisGabon. Les annonces ne doivent contenir ni informations
+                        Chaque utilisateur est responsable du contenu qu&apos;il publie sur Trouve Ton Nkama. Les annonces ne doivent contenir ni informations
                         trompeuses ni contenu illégal.
                     </p>
                 </section>

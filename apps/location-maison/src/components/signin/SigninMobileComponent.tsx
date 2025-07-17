@@ -94,15 +94,15 @@ export default function SigninMobileComponent() {
   return (
     <div className={cn('p-4 md:p-20', inter.className)}>
       <div>
-        <Link href={routes.public.signinSignup}>
+        <Link href={routes.public.homePage}>
           <ChevronLeft color='gray' size={30} />
         </Link>
       </div>
 
       <section className='mt-8 md:mt-10'>
-        <h1 className='text-2xl font-bold text-[#187872]'>Bienvenue sur LogisGabon !</h1>
+        <h1 className='text-2xl font-bold text-[#187872]'>Bienvenue sur Trouve Ton Nkama !</h1>
         <p className='text-gray-500'>
-          Trouvez facilement votre logement de rêve grâce à notre plateforme.
+        Trouvez facilement votre maison, appartement, terrain ou local commercial grâce à notre plateforme intuitive.
         </p>
       </section>
       <Form {...form}>
@@ -136,7 +136,7 @@ export default function SigninMobileComponent() {
                 className='bg-gradient-to-b from-[#1FA89B] to-[#146B67] md:py-7 mt-5'
                 title='Connexion'
               />
-              <Link href={routes.public.reset_password} className='text-gray-500'>
+              <Link href={routes.public.passwordResetRequest} className='text-[#146B67] dark:text-[#1FA89B] hover:underline font-medium'>
                 Mot de passe oublié?
               </Link>
             </div>
@@ -160,6 +160,19 @@ export default function SigninMobileComponent() {
           </Button>
         </div>
       </Form>
+      
+      {/* Section pour proposer l'enregistrement */}
+      <div className="mt-6 md:mt-8 text-center px-4">
+        <p className="text-base md:text-sm text-gray-500 dark:text-gray-400">
+          Vous n'avez pas de compte?{" "}
+          <Link
+            href={routes.public.signup}
+            className="text-[#146B67] dark:text-[#1FA89B] hover:underline font-medium"
+          >
+            S'enregistrer
+          </Link>
+        </p>
+      </div>
     </div>
   )
 }

@@ -21,6 +21,7 @@ import {
 } from "@/components/ui/popover";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { cn } from "@/lib/utils";
+import { getEnabledCountries, isCountryEnabled } from "@/lib/phoneValidation";
 
 export type PhoneInputProps = Omit<
     React.ComponentProps<"input">,
@@ -51,6 +52,10 @@ const PhoneInput: React.ForwardRefExoticComponent<PhoneInputProps> =
                 [triggerClassName]
             );
 
+            // Filtrer les pays selon ceux qui sont activés
+            const enabledCountries = getEnabledCountries();
+            const allowedCountries = enabledCountries.map(country => country.code as RPNInput.Country);
+
             return (
                 <PhoneNumberInput
                     ref={ref}
@@ -59,6 +64,7 @@ const PhoneInput: React.ForwardRefExoticComponent<PhoneInputProps> =
                     countrySelectComponent={countrySelectComponent}
                     inputComponent={InputComponent}
                     smartCaret={false}
+                    countries={allowedCountries}
                     /**
                      * Handles the onChange event.
                      *
@@ -105,6 +111,12 @@ const CountrySelect = ({
     onChange,
     triggerClassName,
 }: CountrySelectProps) => {
+    // Filtrer les options selon les pays activés
+    const enabledCountries = getEnabledCountries();
+    const filteredOptions = countryList.filter(({ value }) => 
+        value && isCountryEnabled(value)
+    );
+
     return (
         <Popover>
             <PopoverTrigger asChild className={triggerClassName}>
@@ -133,7 +145,7 @@ const CountrySelect = ({
                         <ScrollArea className="h-72">
                             <CommandEmpty>No country found.</CommandEmpty>
                             <CommandGroup>
-                                {countryList.map(({ value, label }) =>
+                                {filteredOptions.map(({ value, label }) =>
                                     value ? (
                                         <CountrySelectOption
                                             key={value}

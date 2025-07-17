@@ -4,15 +4,61 @@ import { Search } from 'lucide-react';
 import { Input } from '../ui/input';
 import { FilterModalHomePage } from '../home-page/FilterModalHomePage';
 import { useAlgoliaContext } from '@/providers/AlgoliaContext';
-import { useInfiniteHits } from 'react-instantsearch';
+import { useInfiniteHits, useStats } from 'react-instantsearch';
 import PropertyCard from '../home-page/PropertyCard';
 import Image from 'next/image';
+import { useSearchParams } from 'next/navigation';
 
 export default function SearchMobilePage() {
-    const { searchText, setSearchText, setCity, setStreet, setMinPrice, setMaxPrice, setMinArea, setMaxArea, setMinNbrRooms, setMaxNbrRooms, setTypeProperty, setTags } = useAlgoliaContext()
+    const { searchText, setSearchText, setProvince, setCity, setStreet, setMinPrice, setMaxPrice, setMinArea, setMaxArea, setMinNbrRooms, setMaxNbrRooms, setTypeProperty, setTags } = useAlgoliaContext()
     const topRef = React.useRef<HTMLDivElement>(null);
     const sentinelRef = React.useRef<HTMLDivElement>(null);
     const { items, isLastPage, showMore } = useInfiniteHits();
+    const { nbHits } = useStats();
+    const searchParams = useSearchParams();
+
+    // Synchronisation URL → Contexte Algolia au chargement initial
+    React.useEffect(() => {
+        const queryVal = searchParams.get("query") ?? "";
+        const provinceVal = searchParams.get("province") ?? "";
+        const cityVal = searchParams.get("city") ?? "";
+        const streetVal = searchParams.get("street") ?? "";
+        const minPriceVal = searchParams.get("minPrice") ?? "";
+        const maxPriceVal = searchParams.get("maxPrice") ?? "";
+        const minAreaVal = searchParams.get("minArea") ?? "";
+        const maxAreaVal = searchParams.get("maxArea") ?? "";
+        const minRoomsVal = searchParams.get("minNbrRooms") ?? "";
+        const maxRoomsVal = searchParams.get("maxNbrRooms") ?? "";
+        const typePropRaw = searchParams.get("typeProperty");
+        const tagsRaw = searchParams.get("tags");
+
+        // Debug log pour vérifier la synchronisation
+        // console.log('📱 Mobile - Synchronisation URL→Context:', { 
+        //     queryVal, provinceVal, cityVal, minPriceVal, maxPriceVal 
+        // });
+
+        // Mettre à jour le contexte Algolia avec délai pour s'assurer de la stabilité
+        setTimeout(() => {
+            setSearchText(queryVal);
+            setProvince(provinceVal);
+            setCity(cityVal);
+            setStreet(streetVal);
+            setMinPrice(minPriceVal);
+            setMaxPrice(maxPriceVal);
+            setMinArea(minAreaVal);
+            setMaxArea(maxAreaVal);
+            setMinNbrRooms(minRoomsVal);
+            setMaxNbrRooms(maxRoomsVal);
+            setTypeProperty(typePropRaw ? typePropRaw.split(",").map(s => s.trim()) : []);
+            setTags(tagsRaw ? tagsRaw.split(",").map(s => s.trim()) : []);
+
+            // console.log('📱 Mobile - Contexte mis à jour:', {
+            //     searchText: queryVal,
+            //     province: provinceVal,
+            //     city: cityVal
+            // });
+        }, 50);
+    }, [searchParams.toString(), setSearchText, setProvince, setCity, setStreet, setMinPrice, setMaxPrice, setMinArea, setMaxArea, setMinNbrRooms, setMaxNbrRooms, setTypeProperty, setTags]);
 
     // Scroll handlers
     const scrollToTop = () => {
@@ -42,7 +88,7 @@ export default function SearchMobilePage() {
         <div className='p-5 space-y-5 h-full pb-20' ref={topRef}>
             <section className='md:hidden'>
                 <h1 className='text-2xl font-bold text-[#146B67]'>
-                    Rechercher un logement
+                    Rechercher une annonce
                 </h1>
                 <p className='text-sm text-gray-500'>
                     Trouvez le logement de vos rêves parmi nos annonces immobilières.
@@ -75,7 +121,7 @@ export default function SearchMobilePage() {
                             Résultats de la recherche
                         </h1>
                         <p className='text-sm text-gray-500'>
-                            {items.length} résultats trouvés
+                            {nbHits} résultats trouvés
                         </p>
                     </div>
                     <button
@@ -102,6 +148,7 @@ export default function SearchMobilePage() {
                             <button
                                 onClick={() => {
                                     setSearchText("");
+                                    setProvince("");
                                     setCity("");
                                     setStreet("");
                                     setMinPrice("");

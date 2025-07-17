@@ -9,10 +9,16 @@ import { signInWithFacebook } from "@/actions/signin-with-facebook";
 
 type LayoutAuthProps = React.PropsWithChildren & {
     type: "Signin" | "Signup";
-    setIsOtherMethodConnection: React.Dispatch<React.SetStateAction<boolean>>
+    setIsOtherMethodConnection: React.Dispatch<React.SetStateAction<boolean>>;
+    isFormLoading?: boolean; // Nouvel état pour désactiver les boutons pendant l'inscription
 };
 
-export const LayoutAuth: React.FC<LayoutAuthProps> = ({ children, type, setIsOtherMethodConnection }) => {
+export const LayoutAuth: React.FC<LayoutAuthProps> = ({ 
+    children, 
+    type, 
+    setIsOtherMethodConnection,
+    isFormLoading = false
+}) => {
     const [isPending, startTransition] = React.useTransition()
     const handleConnection = (method: 'FACEBOOK' | 'GOOGLE') => {
         switch (method) {
@@ -33,6 +39,10 @@ export const LayoutAuth: React.FC<LayoutAuthProps> = ({ children, type, setIsOth
     React.useEffect(() => {
         setIsOtherMethodConnection(isPending)
     }, [isPending])
+    
+    // Désactiver les boutons si l'inscription est en cours OU si les boutons sociaux sont en cours
+    const buttonsDisabled = isPending || isFormLoading;
+    
     return (
         <div className="min-h-screen bg-gray-100 dark:bg-gray-900 flex justify-center items-center py-5">
             {/* Container */}
@@ -40,14 +50,17 @@ export const LayoutAuth: React.FC<LayoutAuthProps> = ({ children, type, setIsOth
                 {/* Left Side: Branding/Message */}
                 <div className="hidden md:block md:w-1/2 bg-gradient-to-br from-[#146B67] via-[#1FA89B] to-[#146B67] text-white p-8">
                     <div className="flex flex-col h-full">
-                        <Link href={routes.public.homePage}>
-                            <Logo color='white' />
-                        </Link>
-                        <h1 className="text-2xl font-bold">
-                            Bienvenue sur LogisGabon
-                        </h1>
+                        <div className="flex items-center">
+                            <Link href={routes.public.homePage}>
+                                <Logo color='white' />
+                            </Link>
+                            <h1 className="text-2xl font-bold">
+                                Trouve Ton Nkama
+                            </h1>
+                        </div>
+
                         <p className="mt-4 text-lg">
-                            Trouvez facilement votre maison ou appartement de rêve grâce à notre plateforme intuitive.
+                        Trouvez facilement votre maison, appartement, terrain ou local commercial grâce à notre plateforme intuitive.
                         </p>
                     </div>
                 </div>
@@ -72,7 +85,7 @@ export const LayoutAuth: React.FC<LayoutAuthProps> = ({ children, type, setIsOth
                                         type="button"
                                         className="w-12 h-12 rounded-full bg-gray-100 dark:bg-gray-700 flex items-center justify-center hover:bg-gray-200 dark:hover:bg-gray-600 transition duration-200"
                                         onClick={() => handleConnection(connection.method)}
-                                        disabled={isPending}
+                                        disabled={buttonsDisabled}
                                         colorSpinner="blue"
                                     >
                                         <connection.icon size={24} color={connection?.colorIcon} />

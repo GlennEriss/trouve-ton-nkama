@@ -224,13 +224,17 @@ CONSIGNES STRICTES:
 4. Choisis 3-5 tags pertinents maximum
 5. Le prix doit être cohérent avec la superficie et le type de bien
 6. Tous les nombres doivent être des entiers positifs
+7. Le prix doit TOUJOURS être exprimé en FCFA (jamais en euro ou autre devise)
+8. Si la superficie n'est pas donnée, mets 0 (n'invente jamais de valeur)
+9. Si le prix est donné dans la description utilisateur, tu dois le reprendre tel quel (en FCFA). N'invente jamais un autre prix.
+10. Si la superficie est donnée dans la description utilisateur, tu dois la reprendre telle quelle.
 
 FORMAT DE RÉPONSE OBLIGATOIRE (JSON strict):
 {
   "title": "Titre attractif pour l'annonce",
   "description": "Description détaillée et professionnelle (100-200 mots)",
-  "area": nombre_entier_superficie_en_m2,
-  "price": nombre_entier_prix_en_euros,
+  "area": superficie_donnée_par_l_utilisateur_ou_0_si_absente,
+  "price": prix_en_fcfa_donné_par_l_utilisateur_ou_0_si_absent,
   "tags": ["tag1", "tag2", "tag3"],
   "propertyDetails": {
     ${this.getPropertyDetailsFormat(propertyType)}
@@ -247,6 +251,10 @@ IMPORTANT:
 - Assure-toi que tous les champs numériques sont des nombres entiers
 - Les tags doivent être choisis UNIQUEMENT dans la liste autorisée
 - Si des informations cruciales manquent, indique-le dans les suggestions
+- Le prix doit TOUJOURS être en FCFA, jamais en euro ou autre devise
+- Si la superficie n'est pas donnée, mets 0 (n'invente jamais de valeur)
+- Si le prix est donné dans la description utilisateur, tu dois le reprendre tel quel (en FCFA). N'invente jamais un autre prix.
+- Si la superficie est donnée dans la description utilisateur, tu dois la reprendre telle quelle.
     `;
   }
 
@@ -338,7 +346,10 @@ IMPORTANT:
       contextInfo += `\nDONNÉES DU FORMULAIRE:\n${JSON.stringify(context.currentFormData, null, 2)}\n`;
     }
 
-    return `${systemPrompt}\n${contextInfo}\nQUESTION UTILISATEUR: ${userMessage}\n\nRéponds de manière utile et précise:`;
+    // Ajout des règles strictes pour la superficie et la devise
+    const rules = `\n\nRègles importantes :\n- Si la superficie n'est pas précisée par l'utilisateur, indique 0 pour la superficie (n'invente jamais de valeur).\n- Le prix doit toujours être exprimé en FCFA, jamais en euro ou autre devise.\n`;
+
+    return `${systemPrompt}\n${contextInfo}${rules}\nQUESTION UTILISATEUR: ${userMessage}\n\nRéponds de manière utile et précise:`;
   }
 }
 

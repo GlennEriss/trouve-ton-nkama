@@ -18,7 +18,7 @@ export default function PrivacyPolicyMobile() {
             <div className='p-5 pb-28'>
                 <h2 className="text-xl font-semibold text-[#494949] dark:text-white mt-4">Introduction</h2>
                 <p className="text-gray-700 dark:text-gray-300 text-md leading-relaxed">
-                    Bienvenue sur LogisGabon, votre plateforme de publication d'annonces de logements à louer.
+                    Bienvenue sur Trouve Ton Nkama, votre plateforme de publication d'annonces de logements à louer.
                     Nous nous engageons à protéger votre vie privée et à assurer la transparence quant à la collecte,
                     l'utilisation et la protection de vos données personnelles.
                 </p>

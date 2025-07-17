@@ -1,5 +1,6 @@
 "use client";
 
+import React from "react";
 import * as SliderPrimitive from "@radix-ui/react-slider";
 import {
     Dialog,
@@ -12,22 +13,44 @@ import { Button } from "@/components/ui/button";
 import { ChevronLeft, SlidersHorizontal } from "lucide-react";
 import { tags as tagsList } from "@/constantes";
 import { DialogDescription } from "@radix-ui/react-dialog";
-import { InputApp } from "../shared/ui/InputApp";
 import { InputNumberApp } from "../shared/ui/InputNumberApp";
 import { TypeProperty, getTypePropertyKey } from "@/constantes/property-type";
 import { useFilterModal } from "@/hooks/use-filter-modal";
+import { SelectFormApp } from "../shared/form/SelectFormApp";
+import { useLocation } from "@/hooks/use-location";
+import { useWatch } from "react-hook-form";
+import { NumberInputRHF } from "../shared/ui/NumberInputRHF";
+import { MultiSelect } from '@/components/shared/ui/MultiSelectApp';
 
 const AREA_MIN = 0;
 const AREA_MAX = 1000;
 const ROOMS_MIN = 0;
 const ROOMS_MAX = 10;
 
+interface OptionType {
+    label: string;
+    value: string;
+}
+
+// Trie la liste des tags par ordre alphabétique
+const sortedTagsList = [...tagsList].sort((a, b) => a.tagName.localeCompare(b.tagName));
+
+// Trie la liste des types de propriété par ordre alphabétique
+const sortedTypePropertyList = Object.values(TypeProperty)
+    .map(type => ({
+        label: type,
+        value: getTypePropertyKey(type)!
+    }))
+    .sort((a, b) => a.label.localeCompare(b.label));
+
 export const FilterModalHomePage = () => {
+    const { data: locations } = useLocation();
     const {
         // États
         open, setOpen,
+        localProvince, setLocalProvince,
         localCity, setLocalCity,
-        localStreet, setLocalStreet,
+        localStreet, setLocalStreet, 
         localMinPrice, setLocalMinPrice,
         localMaxPrice, setLocalMaxPrice,
         localMinArea, setLocalMinArea,
@@ -36,12 +59,50 @@ export const FilterModalHomePage = () => {
         localMaxRooms, setLocalMaxRooms,
         localTypes, setLocalTypes,
         localTags, setLocalTags,
-        
+
         // Actions
         clearLocalFilters,
         onApply,
         clearFilters,
     } = useFilterModal();
+
+    // Provinces triées
+    const provinceOptions = React.useMemo(() => {
+        if (!locations) return [];
+        return Object.keys(locations)
+            .sort((a, b) => a.localeCompare(b, 'fr'))
+            .map(province => ({
+                label: province,
+                value: province
+            }));
+    }, [locations]);
+
+    // Villes triées selon la province sélectionnée
+    const cityOptions = React.useMemo(() => {
+        if (!locations || localProvince.length === 0) return [];
+        const province = localProvince[0];
+        if (!province || !locations[province]) return [];
+        return Object.keys(locations[province])
+            .sort((a, b) => a.localeCompare(b, 'fr'))
+            .map(city => ({
+                label: city,
+                value: city
+            }));
+    }, [locations, localProvince]);
+
+    // Quartiers triés selon la ville sélectionnée
+    const streetOptions = React.useMemo(() => {
+        if (!locations || localProvince.length === 0 || localCity.length === 0) return [];
+        const province = localProvince[0];
+        const city = localCity[0];
+        if (!province || !city || !locations[province][city]) return [];
+        return locations[province][city]
+            .sort((a: string, b: string) => a.localeCompare(b, 'fr'))
+            .map((street: string) => ({
+                label: street,
+                value: street
+            }));
+    }, [locations, localProvince, localCity]);
 
     const onClear = () => {
         clearLocalFilters();
@@ -86,27 +147,41 @@ export const FilterModalHomePage = () => {
                 <div className="flex-1 overflow-auto px-2 grid grid-cols-1 lg:grid-cols-2 gap-8">
                     {/* Colonne Gauche */}
                     <div className="space-y-6">
-                        {/* Ville & Quartier */}
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                            <h1 className="text-lg mb-1 text-[#1FA89B] font-bold">Secteur recherché</h1>
+                        {/* Province, Ville & Quartier */}
+                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                            <h1 className="text-lg mb-1 text-[#1FA89B] font-bold col-span-full">Secteur recherché</h1>
                             <div className="space-y-2">
-                                <label htmlFor="city-input-home" className="text-gray-600">Saisissez une Ville</label>
-                                <InputApp
-                                    id="city-input-home"
-                                    value={localCity}
-                                    onChange={e => setLocalCity(e.target.value)}
-                                    placeholder="Entrez une ville"
+                                <label htmlFor="province-input-home" className="text-gray-600">Province</label>
+                                <MultiSelect
+                                    key={localProvince.join('-')}
+                                    options={provinceOptions}
+                                    defaultValue={localProvince}
+                                    onValueChange={setLocalProvince}
+                                    placeholder="Sélectionnez une province"
                                 />
                             </div>
                             <div className="space-y-2">
-                                <label htmlFor="street-input-home" className="text-gray-600">Saisissez un quartier</label>
-                                <InputApp
-                                    id="street-input-home"
-                                    value={localStreet}
-                                    onChange={e => setLocalStreet(e.target.value)}
-                                    placeholder="Entrez un quartier"
+                                <label htmlFor="city-input-home" className="text-gray-600">Ville</label>
+                                <MultiSelect
+                                    key={localCity.join('-')}
+                                    options={cityOptions}
+                                    defaultValue={localCity}
+                                    onValueChange={setLocalCity}
+                                    placeholder="Sélectionnez une ville"
+                                    disabled={localProvince.length === 0}
                                 />
                             </div>
+                            <div className="space-y-2">
+                                <label htmlFor="street-input-home" className="text-gray-600">Quartier</label>
+                                <MultiSelect
+                                    key={localStreet.join('-')}
+                                    options={streetOptions}
+                                    defaultValue={localStreet}
+                                    onValueChange={setLocalStreet}
+                                    placeholder="Sélectionnez un quartier"
+                                    disabled={localCity.length === 0}
+                                />
+                            </div> 
                         </div>
 
                         {/* Prix */}
@@ -115,15 +190,17 @@ export const FilterModalHomePage = () => {
                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                 <div>
                                     <label htmlFor="min-price" className="text-gray-600">Prix min</label>
-                                    <InputNumberApp
+                                    <NumberInputRHF
                                         id="min-price"
                                         type="number"
                                         min={0}
                                         step={10000}
-                                        defaultValue={Number(localMinPrice)}
+                                        value={localMinPrice === '' ? '' : Number(localMinPrice)}
                                         onChange={(value) => {
-                                            if (typeof value === 'number') {
-                                                setLocalMinPrice(String(Math.max(0, value)));
+                                            if (isNaN(value)) {
+                                                setLocalMinPrice('');
+                                            } else {
+                                                setLocalMinPrice(String(value));
                                             }
                                         }}
                                         placeholder="0"
@@ -131,15 +208,18 @@ export const FilterModalHomePage = () => {
                                 </div>
                                 <div>
                                     <label htmlFor="max-price" className="text-gray-600">Prix max</label>
-                                    <InputNumberApp
+                                    <NumberInputRHF
+                                        key={`max-price-home-${localMaxPrice}`}
                                         id="max-price"
                                         type="number"
                                         min={0}
                                         step={10000}
-                                        defaultValue={Number(localMaxPrice)}
+                                        value={localMaxPrice === '' ? '' : Number(localMaxPrice)}
                                         onChange={(value) => {
-                                            if (typeof value === 'number') {
-                                                setLocalMaxPrice(String(Math.max(0, value)));
+                                            if (isNaN(value)) {
+                                                setLocalMaxPrice('');
+                                            } else {
+                                                setLocalMaxPrice(String(value));
                                             }
                                         }}
                                         placeholder="1 000 000 000"
@@ -153,9 +233,10 @@ export const FilterModalHomePage = () => {
                             <h1 className="text-lg mb-1 text-[#1FA89B] font-bold">Détails</h1>
                             <label htmlFor="area-slider-home" className="text-gray-600">Surface (m²)</label>
                             <SliderPrimitive.Root
+                                key={`area-slider-home-${localMinArea}-${localMaxArea}`}
                                 id="area-slider-home"
                                 value={[
-                                    localMinArea ? Number(localMinArea) : AREA_MIN, 
+                                    localMinArea ? Number(localMinArea) : AREA_MIN,
                                     localMaxArea ? Number(localMaxArea) : AREA_MAX
                                 ]}
                                 onValueChange={([low, high]) => {
@@ -181,9 +262,10 @@ export const FilterModalHomePage = () => {
                         <div className="space-y-3">
                             <label htmlFor="rooms-slider-home" className="text-gray-600">Chambres</label>
                             <SliderPrimitive.Root
+                                key={`rooms-slider-home-${localMinRooms}-${localMaxRooms}`}
                                 id="rooms-slider-home"
                                 value={[
-                                    localMinRooms ? Number(localMinRooms) : ROOMS_MIN, 
+                                    localMinRooms ? Number(localMinRooms) : ROOMS_MIN,
                                     localMaxRooms ? Number(localMaxRooms) : ROOMS_MAX
                                 ]}
                                 onValueChange={([low, high]) => {
@@ -212,18 +294,17 @@ export const FilterModalHomePage = () => {
                         <div className="space-y-3">
                             <h1 className="text-lg mb-1 text-[#1FA89B] font-bold">Type de propriété</h1>
                             <div className="flex flex-wrap gap-2">
-                                {Object.values(TypeProperty).map(type => {
-                                    const key = getTypePropertyKey(type)!;
-                                    const sel = localTypes.includes(key);
+                                {sortedTypePropertyList.map(type => {
+                                    const sel = localTypes.includes(type.value);
                                     return (
                                         <Button
-                                            key={key}
+                                            key={`type-home-${type.value}-${sel}`}
                                             variant="outline"
-                                            onClick={() => toggleLocal(key, setLocalTypes)}
+                                            onClick={() => toggleLocal(type.value, setLocalTypes)}
                                             className={`px-3 py-1 rounded-full font-medium transition ${sel ? "bg-[#146B67] text-white" : "bg-gray-100 text-gray-700 border"
                                                 }`}
                                         >
-                                            {type}
+                                            {type.label}
                                         </Button>
                                     );
                                 })}
@@ -234,11 +315,11 @@ export const FilterModalHomePage = () => {
                         <div className="space-y-3">
                             <h1 className="text-lg mb-1 text-[#1FA89B] font-bold">Tags</h1>
                             <div className="flex flex-wrap gap-2">
-                                {tagsList.map(tag => {
+                                {sortedTagsList.map(tag => {
                                     const sel = localTags.includes(tag.tagName);
                                     return (
                                         <Button
-                                            key={tag.tagName}
+                                            key={`tag-home-${tag.tagName}-${sel}`}
                                             variant="outline"
                                             onClick={() => toggleLocal(tag.tagName, setLocalTags)}
                                             className={`px-3 py-1 hover:bg-[#146B67] hover:text-white rounded-full font-medium transition ${sel ? "bg-[#146B67] text-white" : "bg-gray-100 text-gray-700 border"

@@ -3,6 +3,8 @@ import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, For
 import { PhoneInput } from '../ui/phone-input'
 import { FieldValues, UseFormReturn, Path } from 'react-hook-form'
 import { cn } from '@/lib/utils'
+import { PhoneValidationMessage } from './PhoneValidationMessage'
+import { getEnabledCountries } from '@/lib/phoneValidation'
 
 type PhoneNumberFormProps<T extends FieldValues> = {
     form: UseFormReturn<T>;
@@ -15,6 +17,7 @@ type PhoneNumberFormProps<T extends FieldValues> = {
     classNameLabel?: string;
     classNameControl?: string;
     classNameDescription?: string;
+    disabled?: boolean;
 }
 export const PhoneNumberForm = <T extends FieldValues>({
     form,
@@ -26,8 +29,13 @@ export const PhoneNumberForm = <T extends FieldValues>({
     classNameItem,
     classNameLabel,
     classNameControl,
-    classNameDescription
+    classNameDescription,
+    disabled
 }: PhoneNumberFormProps<T>) => {
+    // Obtenir le premier pays activé comme pays par défaut
+    const enabledCountries = getEnabledCountries();
+    const defaultCountry = enabledCountries.length > 0 ? enabledCountries[0].code as any : 'GA';
+
     return (
         <Form {...form}>
             <FormField
@@ -37,14 +45,19 @@ export const PhoneNumberForm = <T extends FieldValues>({
                     <FormItem className={cn(classNameItem, "flex flex-col items-start")}>
                         <FormLabel className={cn(classNameLabel, "text-left")}>{label}</FormLabel>
                         <FormControl className={cn(classNameControl, "w-full")}>
-                            <div className='border rounded-lg'>
-                                <PhoneInput defaultCountry='GA' disabled={isSubmitting} className={className} placeholder={placeholder} {...field} />
-                            </div>
+                            <PhoneInput 
+                                defaultCountry={defaultCountry} 
+                                disabled={isSubmitting || disabled} 
+                                className={cn(className, 'border rounded-lg')} 
+                                placeholder={placeholder} 
+                                {...field} 
+                            />
                         </FormControl>
                         <FormDescription className={cn(classNameDescription, "text-left")}>
                             {description}
                         </FormDescription>
                         <FormMessage />
+                        <PhoneValidationMessage phoneNumber={field.value} />
                     </FormItem>
                 )}
             />

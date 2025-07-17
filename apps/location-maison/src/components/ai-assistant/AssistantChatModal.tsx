@@ -273,12 +273,21 @@ const AssistantChatModal: React.FC<AssistantChatModalProps> = ({
       const cleanedResponse = result.response?.replace(/```json\n?|\n?```/g, '').trim() ?? '';
       const generatedData = JSON.parse(cleanedResponse);
 
+      // Post-traitement : prix en FCFA, superficie à 0 si absente ou invalide
+      let price = generatedData.price;
+      if (typeof price === 'string') {
+        price = parseInt(price.replace(/[^0-9]/g, ''), 10);
+      }
+      if (!price || isNaN(price) || price < 0) price = 0;
+      let area = generatedData.area;
+      if (!area || isNaN(area) || area < 0) area = 0;
+
       // Sauvegarder dans localStorage
       const formData = {
         title: generatedData.title,
         description: generatedData.description,
-        area: generatedData.area,
-        price: generatedData.price,
+        area,
+        price,
         tags: generatedData.tags,
         status: 'FOR_RENT',
         ...generatedData.propertyDetails

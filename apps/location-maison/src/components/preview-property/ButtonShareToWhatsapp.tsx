@@ -4,7 +4,7 @@ import { FaWhatsapp } from 'react-icons/fa'
 
 export default function ButtonShareToWhatsapp({ property }: Readonly<{ property: Property }>) {
   const handleShare = () => {
-    const message = `🏠 Découvrez cette annonce sur LogisGabon :
+    const message = `🏠 Découvrez cette annonce sur Trouve Ton Nkama :
 ${property.title}
 ${property.description?.slice(0, 100)}...
 📍 https://www.logi-market.com/houseDetails/${property.id}`

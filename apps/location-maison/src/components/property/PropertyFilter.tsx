@@ -65,7 +65,7 @@ export const PropertyFilter = () => {
                     Filtrer par type
                 </h3>
                 <p className="text-sm text-gray-500 dark:text-gray-400">
-                    Glissez pour explorer les différents types de propriétés
+                    Glissez pour explorer les différents types de d'annonces
                 </p>
             </div>
 

@@ -78,10 +78,30 @@ export function NotificationProvider({ children }: Readonly<{ children: React.Re
             limit(50)
         );
     
-        // Exécuter les requêtes
-        const unsubscribeUnread = onSnapshot(unreadQuery, handleUnreadSnapshot(recentQuery));
+        // Exécuter les requêtes avec gestion d'erreur
+        let unsubscribeUnread: (() => void) | undefined;
+        
+        try {
+            unsubscribeUnread = onSnapshot(
+                unreadQuery, 
+                handleUnreadSnapshot(recentQuery),
+                (error) => {
+                    console.warn("Erreur lors de l'écoute des notifications non lues:", error);
+                    // En cas d'erreur de permission, on arrête d'écouter
+                    if (error.code === 'permission-denied') {
+                        console.warn("Permissions insuffisantes pour les notifications");
+                    }
+                }
+            );
+        } catch (error) {
+            console.warn("Erreur lors de l'initialisation des listeners de notifications:", error);
+        }
     
-        return () => unsubscribeUnread();
+        return () => {
+            if (unsubscribeUnread) {
+                unsubscribeUnread();
+            }
+        };
     }, [user]);
 
     // Mise à jour du nombre de notifications non lues
@@ -100,8 +120,18 @@ export function NotificationProvider({ children }: Readonly<{ children: React.Re
                     notif.id === id ? { ...notif, isRead: true } : notif
                 )
             );
-        } catch (error) {
+        } catch (error: any) {
             console.error("Erreur lors de la mise à jour de la notification :", error);
+            // Si c'est une erreur de permission, on peut quand même mettre à jour l'état local
+            if (error.code === 'permission-denied') {
+                console.warn("Permissions insuffisantes pour marquer la notification comme lue");
+                // Mettre à jour l'état local même en cas d'erreur de permission
+                setNotifications((prev) =>
+                    prev.map((notif) =>
+                        notif.id === id ? { ...notif, isRead: true } : notif
+                    )
+                );
+            }
         }
     };
 
@@ -120,8 +150,16 @@ export function NotificationProvider({ children }: Readonly<{ children: React.Re
             setNotifications((prev) =>
                 prev.map((notif) => ({ ...notif, isRead: true }))
             );
-        } catch (error) {
+        } catch (error: any) {
             console.error("Erreur lors de la mise à jour des notifications :", error);
+            // Si c'est une erreur de permission, on peut quand même mettre à jour l'état local
+            if (error.code === 'permission-denied') {
+                console.warn("Permissions insuffisantes pour marquer toutes les notifications comme lues");
+                // Mettre à jour l'état local même en cas d'erreur de permission
+                setNotifications((prev) =>
+                    prev.map((notif) => ({ ...notif, isRead: true }))
+                );
+            }
         }
     };
 

@@ -1,11 +1,10 @@
 import { routes } from '@/constantes/routes'
 
 export async function GET() {
-  const baseUrl = 'https://location-maison-gabon.vercel.app'
+  const baseUrl = process.env.NEXT_PUBLIC_HOST
 
   const pages = [
-    ...Object.values(routes.public),
-    ...Object.values(routes.protected),
+    ...Object.values(routes.public_google),
   ]
 
   const sitemap = `<?xml version="1.0" encoding="UTF-8"?>

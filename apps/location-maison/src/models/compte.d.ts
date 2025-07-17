@@ -18,6 +18,7 @@ export type Person = ICreation & {
     email?: string | null,
     country?: Country,
     phoneNumbers: string[]
+    phoneNumberVerified?: boolean
     image?: string | null,
     notificationParameter?: NotificationParameter,
     darkMode?: boolean

@@ -90,12 +90,16 @@ export default function PropertyByProvince() {
                             key={province.name}
                             className='relative rounded-xl overflow-hidden w-full h-[340px] group cursor-pointer border-none bg-transparent p-0'
                             onClick={() => {
-                                router.push(`${routes.public.search_property}?province=${province.name}`)
+                                const params = new URLSearchParams()
+                                params.append("province", province.name)
+                                router.push(`${routes.public.search_property}?${params.toString()}`)
                             }}
                             onKeyDown={(e) => {
                                 if (e.key === 'Enter' || e.key === ' ') {
                                     e.preventDefault();
-                                    router.push(`${routes.public.search_property}?province=${province.name}`);
+                                    const params = new URLSearchParams()
+                                    params.append("province", province.name)
+                                    router.push(`${routes.public.search_property}?${params.toString()}`);
                                 }
                             }}
                             aria-label={`Rechercher des propriétés dans la province ${province.name}`}
@@ -118,7 +122,7 @@ export default function PropertyByProvince() {
                                             <span className='text-white'>Chargement...</span>
                                         </div>
                                     ) : (
-                                        <h3 className='text-white'>{(count ?? 0) > 0 ? `${count} Propriété(s)` : 'Aucune propriété'}</h3>
+                                        <h3 className='text-white'>{(count ?? 0) > 0 ? `${count} Annonce(s)` : 'Aucune annonce'}</h3>
                                     )}
                                 </div>
                                 <div className="ml-auto relative h-14 w-14">

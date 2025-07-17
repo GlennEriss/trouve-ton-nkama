@@ -1,13 +1,15 @@
 import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useAlgoliaContext } from "@/providers/AlgoliaContext";
 
 const PRICE_MAX = 1_000_000_000;
 
 export const useFilterModal = () => {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const {
     searchText,
+    province, setProvince,
     city, setCity,
     street, setStreet,
     minPrice, setMinPrice,
@@ -22,8 +24,9 @@ export const useFilterModal = () => {
   } = useAlgoliaContext();
 
   const [open, setOpen] = useState(false);
-  const [localCity, setLocalCity] = useState(city);
-  const [localStreet, setLocalStreet] = useState(street);
+  const [localProvince, setLocalProvince] = useState<string[]>([]);
+  const [localCity, setLocalCity] = useState<string[]>([]);
+  const [localStreet, setLocalStreet] = useState<string[]>([]);
   const [localMinPrice, setLocalMinPrice] = useState(minPrice);
   const [localMaxPrice, setLocalMaxPrice] = useState(maxPrice);
   const [localMinArea, setLocalMinArea] = useState(minArea);
@@ -33,24 +36,66 @@ export const useFilterModal = () => {
   const [localTypes, setLocalTypes] = useState<string[]>(typeProperty);
   const [localTags, setLocalTags] = useState<string[]>(tags);
 
+  // Synchronisation des paramètres URL → États locaux
   useEffect(() => {
     if (open) {
-      setLocalCity(city);
-      setLocalStreet(street);
-      setLocalMinPrice(minPrice);
-      setLocalMaxPrice(maxPrice);
-      setLocalMinArea(minArea);
-      setLocalMaxArea(maxArea);
-      setLocalMinRooms(minNbrRooms);
-      setLocalMaxRooms(maxNbrRooms);
-      setLocalTypes(typeProperty);
-      setLocalTags(tags);
+      // Récupérer les valeurs depuis l'URL
+      const provinceVal = searchParams.get("province") ?? "";
+      const cityVal = searchParams.get("city") ?? "";
+      const streetVal = searchParams.get("street") ?? "";
+      const minPriceVal = searchParams.get("minPrice") ?? "";
+      const maxPriceVal = searchParams.get("maxPrice") ?? "";
+      const minAreaVal = searchParams.get("minArea") ?? "";
+      const maxAreaVal = searchParams.get("maxArea") ?? "";
+      const minRoomsVal = searchParams.get("minNbrRooms") ?? "";
+      const maxRoomsVal = searchParams.get("maxNbrRooms") ?? "";
+      const typePropRaw = searchParams.get("typeProperty");
+      const tagsRaw = searchParams.get("tags");
+
+      // Debug log pour tracer la synchronisation
+      // console.log('🔄 FilterModal - Synchronisation URL→États locaux:', {
+      //   provinceVal, cityVal, streetVal, minPriceVal, maxPriceVal,
+      //   minAreaVal, maxAreaVal, minRoomsVal, maxRoomsVal,
+      //   typePropRaw, tagsRaw
+      // });
+
+      // Mise à jour des états locaux avec délai pour assurer la stabilité
+      setTimeout(() => {
+        // console.log('⏳ FilterModal - Application des valeurs...');
+        
+        setLocalProvince(provinceVal.split(","));
+        setLocalCity(cityVal.split(","));
+        setLocalStreet(streetVal.split(","));
+        setLocalMinPrice(minPriceVal);
+        setLocalMaxPrice(maxPriceVal);
+        setLocalMinArea(minAreaVal);
+        setLocalMaxArea(maxAreaVal);
+        setLocalMinRooms(minRoomsVal);
+        setLocalMaxRooms(maxRoomsVal);
+        setLocalTypes(typePropRaw ? typePropRaw.split(",").map(s => s.trim()) : []);
+        setLocalTags(tagsRaw ? tagsRaw.split(",").map(s => s.trim()) : []);
+
+        // console.log('✅ FilterModal - États locaux synchronisés:', {
+        //   localProvince: provinceVal,
+        //   localCity: cityVal,
+        //   localStreet: streetVal,
+        //   localMinPrice: minPriceVal,
+        //   localMaxPrice: maxPriceVal,
+        //   localMinArea: minAreaVal,
+        //   localMaxArea: maxAreaVal,
+        //   localMinRooms: minRoomsVal,
+        //   localMaxRooms: maxRoomsVal,
+        //   localTypes: typePropRaw ? typePropRaw.split(",").map(s => s.trim()) : [],
+        //   localTags: tagsRaw ? tagsRaw.split(",").map(s => s.trim()) : []
+        // });
+      }, 50);
     }
-  }, [open]);
+  }, [open, searchParams.toString()]);
 
   const clearLocalFilters = () => {
-    setLocalCity("");
-    setLocalStreet("");
+    setLocalProvince([]);
+    setLocalCity([]);
+    setLocalStreet([]);
     setLocalMinPrice("");
     setLocalMaxPrice("");
     setLocalMinArea("");
@@ -85,8 +130,9 @@ export const useFilterModal = () => {
     
     // Mises à jour des états string
     const stringUpdates = [
-      { condition: localCity, setter: setCity, value: localCity },
-      { condition: localStreet, setter: setStreet, value: localStreet },
+      { condition: localProvince.length, setter: setProvince, value: localProvince.join(",") },
+      { condition: localCity.length, setter: setCity, value: localCity.join(",") },
+      { condition: localStreet.length, setter: setStreet, value: localStreet.join(",") },
       { condition: localMinPrice, setter: setMinPrice, value: String(minP) },
       { condition: localMaxPrice, setter: setMaxPrice, value: String(maxP) },
       { condition: localMinArea, setter: setMinArea, value: String(minA) },
@@ -117,8 +163,9 @@ export const useFilterModal = () => {
     
     const paramMappings = [
       { condition: searchText, key: "query", value: searchText },
-      { condition: localCity, key: "city", value: localCity },
-      { condition: localStreet, key: "street", value: localStreet },
+      { condition: localProvince.length, key: "province", value: localProvince.join(",") },
+      { condition: localCity.length, key: "city", value: localCity.join(",") },
+      { condition: localStreet.length, key: "street", value: localStreet.join(",") },
       { condition: localMinPrice, key: "minPrice", value: String(minP) },
       { condition: localMaxPrice, key: "maxPrice", value: String(maxP) },
       { condition: localMinArea, key: "minArea", value: localMinArea },
@@ -152,6 +199,7 @@ export const useFilterModal = () => {
   return {
     // États
     open, setOpen,
+    localProvince, setLocalProvince,
     localCity, setLocalCity,
     localStreet, setLocalStreet,
     localMinPrice, setLocalMinPrice,

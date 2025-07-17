@@ -10,38 +10,60 @@ import Link from 'next/link';
 import { ButtonLoading } from '../buttons/ButtonLoading';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useToast } from '@/hooks/use-toast';
-import { login } from '@/actions/login';
+import { signIn } from "next-auth/react"
 import { routes } from '@/constantes/routes';
 
 export const Signin = () => {
     const router = useRouter()
     const searchParams = useSearchParams();
-    const [isPending, startTransition] = React.useTransition()
     const [isOtherMethodConnection, setIsOtherMethodConnection] = React.useState(false)
     const { toast } = useToast()
     const form = useForm<FormLoginSchemaType>({
         resolver: zodResolver(FormLoginSchema)
     })
     const onSubmit = async (values: FormLoginSchemaType) => {
-        startTransition(async () => {
-            const result = await login(values)
-            if (result?.error) {
-                toast({
+        const validateFields = FormLoginSchema.safeParse(values)
+        if (!validateFields.success) {
+            return toast({
+                duration: 5000,
+                title: 'Erreur de connexion',
+                description: "Email ou mot de passe incorrect!",
+                variant: 'destructive',
+            });
+        }
+        const user = {
+            login: validateFields.data.email,
+            password: validateFields.data.password
+        }
+        try {
+            const result = await signIn('credentials', {
+                ...user,
+                redirect: false
+            })
+            if (!result?.ok || result?.error !== null) {
+                return toast({
                     duration: 5000,
                     title: 'Erreur de connexion',
                     description: "Email ou mot de passe incorrect!",
                     variant: 'destructive',
                 });
-            } else {
-                toast({
-                    duration: 5000,
-                    title: 'Connexion réussie',
-                    description: "Vous vous êtes connectés avec succès!",
-                    variant: 'success',
-                });
-                router.push(routes.protected.properties); // Redirection après succès
             }
-        })
+            toast({
+                duration: 5000,
+                title: 'Connexion réussie',
+                description: "Vous vous êtes connectés avec succès!",
+                variant: 'success',
+            });
+            return router.push(routes.protected.properties)
+        } catch (error) {
+            console.error('Authentication Error:', error);
+            return toast({
+                duration: 5000,
+                title: 'Erreur de connexion',
+                description: "Email ou mot de passe incorrect!",
+                variant: 'destructive',
+            });
+        }
     }
     React.useEffect(() => {
         const error = searchParams.get("error");
@@ -78,12 +100,12 @@ export const Signin = () => {
                         placeholder='*******'
                         className='p-5'
                     />
-                    <Link href={routes.public.reset_password} className='text-red-500 flex justify-end text-sm'>
+                    <Link href={routes.public.passwordResetRequest} className='text-red-500 flex justify-end text-sm'>
                         Mot de passe oublié?
                     </Link>
                     <ButtonLoading
                         type='submit'
-                        disabled={Boolean(form.formState.isSubmitting) || Boolean(form.formState.isLoading) || Boolean(isOtherMethodConnection) || Boolean(isPending)}
+                        disabled={Boolean(form.formState.isSubmitting) || Boolean(form.formState.isLoading) || Boolean(isOtherMethodConnection)}
                         className='w-full bg-gradient-to-r from-[#146B67] via-[#1FA89B] to-[#146B67]'>
                         Se connecter
                     </ButtonLoading>

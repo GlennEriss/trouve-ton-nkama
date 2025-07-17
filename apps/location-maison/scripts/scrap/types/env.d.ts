@@ -1,0 +1,46 @@
+declare namespace NodeJS {
+  interface ProcessEnv {
+    //GOOGLE
+    GOOGLE_CLIENT_ID: string;
+    GOOGLE_CLIENT_SECRET: string;
+    GOOGLE_REFRESH_TOKEN: string;
+    GOOGLE_EMAIL: string;
+    GMAIL_USER: string;
+    //NEXT_AUTH
+    NEXTAUTH_SECRET: string;
+    //FIREBASE
+    NEXT_PUBLIC_FIREBASE_PROJECT_ID: string;
+    NEXT_PUBLIC_FIREBASE_API_KEY: string;
+    NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN: string;
+    NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET: string;
+    NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID: string;
+    NEXT_PUBLIC_FIREBASE_APP_ID: string;
+    NEXT_PUBLIC_FIREBASE_FCM_VAPID_KEY: string;
+    FIREBASE_CLIENT_EMAIL: string;
+    FIREBASE_PRIVATE_KEY: string;
+    FIREBASE_PROJECT_ID: string;
+    //HOST_URL
+    NEXT_PUBLIC_HOST: string;
+    //ALGOLIA
+    NEXT_PUBLIC_ALGOLIA_APP_ID: string;
+    NEXT_PUBLIC_ALGOLIA_SEARCH_API_KEY: string;
+    //FACEBOOK
+    FACEBOOK_CLIENT_ID: string;
+    FACEBOOK_CLIENT_SECRET: string;
+    //SUPPORT
+    NEXT_PUBLIC_EMAIL_SUPPORT: string
+    NEXT_PUBLIC_AGENT_CODE_AIRTEL: string
+    //REDIS / UPSTASH
+    UPSTASH_REDIS_REST_URL: string;
+    UPSTASH_REDIS_REST_TOKEN: string;
+    // TTL optionnels (en secondes)
+    REDIS_CATALOG_TTL?: string;
+    REDIS_PROPERTY_TTL?: string;
+    //VAULT
+    VAULT_ADDR: string;
+    VAULT_TOKEN: string;
+    VAULT_PATH: string;
+    //COUNTRIES
+    NEXT_PUBLIC_ENABLED_PHONE_COUNTRIES: string;
+  }
+}

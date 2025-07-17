@@ -3,6 +3,7 @@
  */
 import { isValidPhoneNumber } from 'react-phone-number-input';
 import { z } from 'zod';
+import { validatePhoneNumberForSupportedCountries } from '@/lib/phoneValidation';
 
 export const FormLoginSchema = z.object({
   email: z
@@ -43,8 +44,11 @@ export const FormRegisterSchema = z.object({
   country: z.string().min(1, { message: 'Le pays est requis' }),
   phone: z
     .string()
-    .refine(isValidPhoneNumber, { message: "Le numéro de téléphone est invalide" })
-    .or(z.literal("")),
+    .min(1, { message: 'Le numéro de téléphone est obligatoire' })
+    .refine((value) => {
+      const validation = validatePhoneNumberForSupportedCountries(value);
+      return validation.isValid;
+    }, { message: "Le numéro de téléphone est invalide" }),
   termsOfPrivacyPolicy: z
     .boolean()
     .refine((value) => value === true, 'errors.terms_required'),
@@ -77,6 +81,7 @@ export const PropertySchema = z.object({
   street: z.string().min(1, "Le nom de la rue est obligatoire"),
   city: z.string().min(1, "Le nom de la ville est obligatoire"),
   province: z.string().min(1, "Le nom de la province est obligatoire"),
+  contact: z.string().min(1, "Le numéro de téléphone est obligatoire"),
   additionalInformation: z.string().optional(),
   longitude: z
     .number()
@@ -231,7 +236,11 @@ export const FormUserProfilSchema = z.object({
   email: z.string().email("L'email est invalide"),
   phoneNumbers: z
     .string()
-    .refine(isValidPhoneNumber, { message: "Le numéro de téléphone est invalide" })
+    .refine((value) => {
+      if (!value) return true; // Optionnel
+      const validation = validatePhoneNumberForSupportedCountries(value);
+      return validation.isValid;
+    }, { message: "Le numéro de téléphone est invalide" })
     .optional(),
   country: z.string().min(1, { message: 'Le pays est requis' }),
   birthDate: z.string().regex(

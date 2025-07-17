@@ -1,6 +1,6 @@
 'use client'
 import React from 'react'
-import { ChevronRight, Lock, Settings, ShieldCheck, FileText, Coins } from 'lucide-react';
+import { ChevronRight, Lock, Settings, ShieldCheck, FileText, Coins, Phone } from 'lucide-react';
 import Link from 'next/link';
 import { useWindowSize } from '@/hooks/useSize';
 import { routes } from '@/constantes/routes';
@@ -12,6 +12,12 @@ const menu = [
         icon: Coins,
         link: routes.protected.my_balance,
         description: 'Consultez votre solde de crédits, rechargez votre compte et accédez à l\'historique de vos transactions pour utiliser nos services premium.'
+    },
+    {
+        title: 'Vérifier mon numéro de téléphone',
+        icon: Phone,
+        link: routes.protected.verify_phone,
+        description: 'Vérifiez votre numéro de téléphone en recevant un code de confirmation par SMS pour sécuriser votre compte.'
     },
     {
         title: 'Paramètre',
