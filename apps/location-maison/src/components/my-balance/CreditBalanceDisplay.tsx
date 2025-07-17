@@ -142,15 +142,15 @@ export default function CreditBalanceDisplay({
           )}
         </div>
 
-        {/* Action Button */}
+        {/* Action Button - Temporairement désactivé */}
         <div className="text-center">
-          <button
-            onClick={handleRecharge}
-            className="bg-gradient-to-r from-[#146B67] via-[#1FA89B] to-[#146B67] text-white px-6 md:px-8 py-2.5 md:py-3 rounded-full font-semibold hover:brightness-110 transition-all duration-300 shadow-lg hover:shadow-xl flex items-center gap-2 mx-auto text-sm md:text-base"
-          >
+          <div className="bg-gray-300 dark:bg-gray-600 text-gray-500 dark:text-gray-400 px-6 md:px-8 py-2.5 md:py-3 rounded-full font-semibold inline-flex items-center gap-2 text-sm md:text-base cursor-not-allowed opacity-75">
             <Zap className="w-4 h-4 md:w-5 md:h-5" />
             Recharger mon solde
-          </button>
+          </div>
+          <p className="text-xs text-gray-500 dark:text-gray-400 mt-2">
+            Bientôt disponible pour de meilleures visibilités
+          </p>
         </div>
 
         {/* Quick stats */}

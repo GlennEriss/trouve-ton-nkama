@@ -45,17 +45,14 @@ export default function CreditPackCard({ pack, onSelect, isLoading = false }: Re
   const pricePerCredit = pack.price / pack.credits
 
   return (
-    <button className={`
-      relative bg-white dark:bg-gray-800 border-2 rounded-2xl p-6 transition-all duration-300 cursor-pointer text-left w-full
-      ${pack.popular ? 'border-[#1FA89B] shadow-lg scale-105' : 'border-gray-200 dark:border-gray-700 hover:border-[#146B67] dark:hover:border-[#1FA89B]'}
+    <div className={`
+      relative bg-white dark:bg-gray-800 border-2 rounded-2xl p-6 transition-all duration-300 text-left w-full
+      ${pack.popular ? 'border-[#1FA89B] shadow-lg scale-105' : 'border-gray-200 dark:border-gray-700'}
       ${pack.bestValue ? 'border-gradient-to-r from-yellow-400 to-orange-500' : ''}
-      hover:shadow-xl hover:scale-105 focus:outline-none focus:ring-2 focus:ring-[#1FA89B] focus:ring-offset-2
-      ${isLoading ? 'opacity-50 cursor-not-allowed' : ''}
+      ${isLoading ? 'opacity-50' : 'opacity-75'}
+      cursor-not-allowed
     `} 
-    onClick={handleSelect}
-    onKeyDown={handleKeyDown}
-    disabled={isLoading}
-    aria-label={`Sélectionner le pack ${pack.name} - ${pack.credits} crédits pour ${pack.price} FCFA`}
+    aria-label={`Pack ${pack.name} - ${pack.credits} crédits pour ${pack.price} FCFA (bientôt disponible)`}
     >
       
       {/* Badge */}
@@ -127,27 +124,19 @@ export default function CreditPackCard({ pack, onSelect, isLoading = false }: Re
           </div>
         )}
 
-        {/* Action Button */}
-        <button 
+        {/* Action Button - Temporairement désactivé */}
+        <div 
           className={`
-            w-full py-3 px-6 rounded-xl font-semibold transition-all duration-300
-            ${pack.popular 
-              ? 'bg-gradient-to-r from-[#146B67] via-[#1FA89B] to-[#146B67] text-white hover:brightness-110 shadow-lg' 
-              : 'bg-[#146B67] hover:bg-[#1FA89B] text-white'
-            }
-            ${isLoading ? 'cursor-not-allowed' : 'hover:shadow-lg'}
+            w-full py-3 px-6 rounded-xl font-semibold transition-all duration-300 text-center
+            bg-gray-300 dark:bg-gray-600 text-gray-500 dark:text-gray-400
+            cursor-not-allowed
           `}
-          disabled={isLoading}
         >
-          {isLoading ? (
-            <div className="flex items-center justify-center gap-2">
-              <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
-              Traitement...
-            </div>
-          ) : (
-            'Choisir ce pack'
-          )}
-        </button>
+          Choisir ce pack
+        </div>
+        <p className="text-xs text-gray-500 dark:text-gray-400 text-center mt-2">
+          Bientôt disponible pour de meilleures visibilités
+        </p>
 
         {/* Savings highlight */}
         {pack.savings && pack.savings > 0 && (
@@ -156,6 +145,6 @@ export default function CreditPackCard({ pack, onSelect, isLoading = false }: Re
           </div>
         )}
       </div>
-    </button>
+    </div>
   )
 } 

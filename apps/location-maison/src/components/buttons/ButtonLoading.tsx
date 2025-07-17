@@ -16,8 +16,9 @@ export const ButtonLoading: React.FC<ButtonLoadingProps> = ({
     <Button {...buttonProps} disabled={disabled}>
       {/* Affichage dynamique du contenu */}
       {disabled ? (
-        <div className="flex items-center space-x-2">
+        <div className="flex items-center justify-center space-x-2">
           <Loader2 className="animate-spin" color={colorSpinner} size={16} />
+          {children && <span>{children}</span>}
         </div>
       ) : (
         children

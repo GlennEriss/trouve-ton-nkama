@@ -174,7 +174,6 @@ export const countries = [
     { name: "Syrie", code: "SY" },
     { name: "Tadjikistan", code: "TJ" },
     { name: "Tanzanie", code: "TZ" },
-    { name: "Tchad", code: "TD" },
     { name: "Thaïlande", code: "TH" },
     { name: "Timor oriental", code: "TL" },
     { name: "Togo", code: "TG" },

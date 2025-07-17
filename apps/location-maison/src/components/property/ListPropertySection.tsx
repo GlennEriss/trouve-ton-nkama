@@ -19,7 +19,7 @@ import { routes } from '@/constantes/routes';
 import { Property, Apartment, Building, Desk, Home, Studio, Villa, Logement, Shop, Kiosk, Room, TypeProperty } from '@/models/annonce';
 import { cn } from '@/lib/utils';
 import { capitalizeFirstLetter } from '@/lib/capitalizeFirstLetter';
-import { ChevronLeft, ChevronRight, MapPin, Eye, Edit3 } from 'lucide-react'
+import { ChevronLeft, ChevronRight, MapPin, Eye, Edit3, CheckCircle } from 'lucide-react'
 import { getCountStatisticsByPropertyType, getProperties, updateProperty } from '@/db/property.db';
 import { PROPERTY_ITEM_PER_PAGE } from '@/constantes/item-per-page';
 import queryKeys from '@/constantes/react-query-keys';
@@ -254,6 +254,14 @@ export const CardPropertyCrud = ({ property }: { property: Property }) => {
                     </div>
                     <PromotionBadge property={property} />
                 </div>
+                
+                {/* Indicateur de vérification du numéro de téléphone */}
+                {user?.phoneNumberVerified && (
+                    <div className="absolute top-3 right-3 flex items-center gap-1 px-2 py-1 text-xs font-medium bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300 rounded-full backdrop-blur-sm border border-green-200 dark:border-green-700">
+                        <CheckCircle className="w-3 h-3" />
+                        <span>Numéro vérifié</span>
+                    </div>
+                )}
                 
                 {/* Actions rapides - Visibles au hover */}
                 <div className="absolute top-3 right-3 opacity-0 group-hover:opacity-100 transition-opacity duration-300">

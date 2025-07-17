@@ -24,16 +24,31 @@ export const routes = {
         notifications: '/settings',
         notification_list: '/list-notifications',
         my_balance: '/my-balance',
+        verify_phone: '/verify-phone',
     },
     public: {
         signinSignup: '/signin-signup',
         signin: '/signin',
         signup: '/signup',
+        completeProfile: '/complete-profile',
         homePage: '/',
         reset_password: '/password-reset',
+        passwordResetRequest: '/request-password-reset',
+        passwordResetFailure: '/password-reset-failure',
+        emailAlreadyVerified: '/email-already-verified',
+        emailVerificationSuccess: '/email-verification-success',
         confidentiality: '/privacy-policy',
         terms_of_use: '/terms-of-use',
         data_deletion: '/data-deletion',
+        search: '/search',
         search_property: '/search'
+    },
+    public_google: {
+        homePage: '/',
+        signin: '/signin',
+        signup: '/signup',
+        confidentiality: '/privacy-policy',
+        terms_of_use: '/terms-of-use',
+        search: '/search',
     }
 }

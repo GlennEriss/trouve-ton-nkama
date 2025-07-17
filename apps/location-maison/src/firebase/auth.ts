@@ -22,5 +22,10 @@ export {
   type Auth,
   type User,
   GoogleAuthProvider,
-  type Unsubscribe
+  type Unsubscribe,
+  // Phone auth exports
+  RecaptchaVerifier,
+  signInWithPhoneNumber,
+  PhoneAuthProvider,
+  type ConfirmationResult
 } from "firebase/auth";

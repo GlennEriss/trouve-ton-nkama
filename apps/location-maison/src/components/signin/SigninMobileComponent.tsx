@@ -136,7 +136,7 @@ export default function SigninMobileComponent() {
                 className='bg-gradient-to-b from-[#1FA89B] to-[#146B67] md:py-7 mt-5'
                 title='Connexion'
               />
-              <Link href={routes.public.reset_password} className='text-[#146B67] dark:text-[#1FA89B] hover:underline font-medium'>
+              <Link href={routes.public.passwordResetRequest} className='text-[#146B67] dark:text-[#1FA89B] hover:underline font-medium'>
                 Mot de passe oublié?
               </Link>
             </div>
