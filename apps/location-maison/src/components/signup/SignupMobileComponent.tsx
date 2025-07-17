@@ -45,6 +45,7 @@ export const SignupMobileComponent = () => {
             passwordConfirm: '',
             birthdate: '',
             phone: '',
+            country: 'GA',
             termsOfPrivacyPolicy: false
         }
     })
@@ -83,13 +84,13 @@ export const SignupMobileComponent = () => {
             
             // Envoyer l'email de vérification en arrière-plan (non-bloquant)
             fetch('/api/auth/send-verification-email', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                    email: user.login!,
-                }),
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        email: user.login!,
+                    }),
             }).then(response => {
                 if (!response.ok) {
                     console.warn('Erreur lors de l\'envoi de l\'email de vérification, mais le compte a été créé');
