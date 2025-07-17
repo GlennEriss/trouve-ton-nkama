@@ -1,5 +1,4 @@
 import nodemailer from 'nodemailer';
-import { google } from 'googleapis';
 
 interface EmailOptions {
   from: string;
@@ -17,44 +16,20 @@ export class EmailService {
   }
 
   /**
-   * Crée le transporteur Nodemailer avec OAuth2
+   * Crée le transporteur Nodemailer avec Hostinger SMTP
    */
   private async createTransporter(): Promise<nodemailer.Transporter> {
     if (this.transporter) {
       return this.transporter;
     }
 
-    const OAuth2 = google.auth.OAuth2;
-
-    const oauth2Client = new OAuth2(
-      process.env.GMAIL_OAUTH_CLIENT_ID,
-      process.env.GMAIL_OAUTH_CLIENT_SECRET,
-      'https://developers.google.com/oauthplayground'
-    );
-
-    oauth2Client.setCredentials({
-      refresh_token: process.env.GMAIL_OAUTH_REFRESH_TOKEN,
-    });
-
-    const accessToken = await new Promise<string>((resolve, reject) => {
-      oauth2Client.getAccessToken((err, token) => {
-        if (err) {
-          reject(err);
-        } else {
-          resolve(token as string);
-        }
-      });
-    });
-
     this.transporter = nodemailer.createTransport({
-      service: 'gmail',
+      host: 'smtp.hostinger.com',
+      port: 465,
+      secure: true,
       auth: {
-        type: 'OAuth2',
-        user: process.env.GMAIL_SENDER_EMAIL,
-        clientId: process.env.GMAIL_OAUTH_CLIENT_ID,
-        clientSecret: process.env.GMAIL_OAUTH_CLIENT_SECRET,
-        refreshToken: process.env.GMAIL_OAUTH_REFRESH_TOKEN,
-        accessToken: accessToken,
+        user: process.env.HOSTINGER_EMAIL_USER || 'ton.email@tondomaine.com',
+        pass: process.env.HOSTINGER_EMAIL_PASS || 'tonMotDePasse',
       },
     });
 
@@ -70,7 +45,7 @@ export class EmailService {
     
     // En développement, on affiche juste le lien de debug (sauf si forcé)
     if (process.env.NODE_ENV === 'development' && !forceRealEmail) {
-      console.log('📧 Email simulé avec Gmail:', {
+      console.log('📧 Email simulé avec Hostinger SMTP:', {
         from: options.from,
         to: options.to,
         subject: options.subject,
@@ -92,8 +67,8 @@ export class EmailService {
         text: options.text,
       });
     } catch (error) {
-      console.error('Erreur lors de l\'envoi d\'email avec Gmail:', error);
-      throw new Error('Impossible d\'envoyer l\'email via Gmail');
+      console.error('Erreur lors de l\'envoi d\'email avec Hostinger SMTP:', error);
+      throw new Error('Impossible d\'envoyer l\'email via Hostinger SMTP');
     }
   }
 
@@ -101,7 +76,7 @@ export class EmailService {
    * Obtient l'adresse email d'expédition par défaut avec le nom d'affichage
    */
   static getDefaultFromAddress(): string {
-    const email = process.env.GMAIL_SENDER_EMAIL || 'noreply@tonnkama.com';
+    const email = process.env.HOSTINGER_EMAIL_USER || 'ton.email@tondomaine.com';
     const displayName = process.env.EMAIL_DISPLAY_NAME || 'Trouve Ton Nkama';
     return `"${displayName}" <${email}>`;
   }
@@ -110,7 +85,7 @@ export class EmailService {
    * Obtient seulement l'adresse email sans nom d'affichage
    */
   static getEmailOnly(): string {
-    return process.env.GMAIL_SENDER_EMAIL || 'noreply@tonnkama.com';
+    return process.env.HOSTINGER_EMAIL_USER || 'ton.email@tondomaine.com';
   }
 
   /**
@@ -122,14 +97,12 @@ export class EmailService {
   }
 
   /**
-   * Vérifie si la configuration Gmail OAuth2 est complète
+   * Vérifie si la configuration Hostinger SMTP est complète
    */
-  static checkGmailConfiguration(): boolean {
+  static checkHostingerConfiguration(): boolean {
     const requiredEnvVars = [
-      'GMAIL_SENDER_EMAIL',
-      'GMAIL_OAUTH_CLIENT_ID',
-      'GMAIL_OAUTH_CLIENT_SECRET',
-      'GMAIL_OAUTH_REFRESH_TOKEN'
+      'HOSTINGER_EMAIL_USER',
+      'HOSTINGER_EMAIL_PASS'
     ];
 
     return requiredEnvVars.every(envVar => process.env[envVar]);
