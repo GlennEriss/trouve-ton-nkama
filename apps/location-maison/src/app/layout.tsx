@@ -24,13 +24,13 @@ export default async function RootLayout({
 
         <meta name="google-adsense-account" content="ca-pub-2799688336707362" />
 
-        <link rel="canonical" href="https://www.tonnkama.com/" />
+        {/* <link rel="canonical" href="https://www.tonnkama.com/" />
 
         <link rel="icon" href="/favicon.ico" sizes="any" />
 
         <link rel="icon" type="image/svg+xml" href="/logo.svg"/>
 
-        <link rel="apple-touch-icon" href="/apple-touch-icon.png" sizes="180x180" />
+        <link rel="apple-touch-icon" href="/apple-touch-icon.png" sizes="180x180" /> */}
       </head>
 
       <body
