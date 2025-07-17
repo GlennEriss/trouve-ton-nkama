@@ -45,8 +45,8 @@ export const routes = {
     },
     public_google: {
         homePage: '/',
+        search: '/search',
         confidentiality: '/privacy-policy',
         terms_of_use: '/terms-of-use',
-        search: '/search',
     }
 }
