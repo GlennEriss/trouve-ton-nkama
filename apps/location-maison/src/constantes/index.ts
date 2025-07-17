@@ -134,6 +134,6 @@ export const collectionFirebaseNames = {
 }
 
 export const supportContact = {
-  email: 'glenneriss@gmail.com',
-  phone: '+241 XX XX XX XX'
+  email: 'contact@tonnkama.com',
+  phone: '+221776960463'
 }

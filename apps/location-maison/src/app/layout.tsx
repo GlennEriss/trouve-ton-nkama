@@ -27,6 +27,9 @@ export default async function RootLayout({
         <link rel="icon" type="image/x-icon" href="/logo.ico" />
         <link rel="icon" type="image/svg+xml" href="/logo.svg" />
         <link rel="apple-touch-icon" href="/logo.ico" />
+        <link rel="shortcut icon" href="/logo.ico" />
+        <link rel="icon" sizes="16x16" href="/logo.ico" />
+        <link rel="icon" sizes="32x32" href="/logo.ico" />
       </head>
       <body
         className={cn('antialiased overscroll-y-none', inter.className)}

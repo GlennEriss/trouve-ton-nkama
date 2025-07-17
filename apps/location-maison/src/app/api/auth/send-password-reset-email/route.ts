@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { adminAuth } from '@/firebase/admin';
 import { render } from '@react-email/render';
 import PasswordReset from '@/emails/PasswordReset';
-import { emailService, EmailService as EmailTransportService } from '@/services/email.service';
+import { emailService, EmailService } from '@/services/email.service';
 import { EmailService as EmailTemplateService } from '@/emails/index';
 
 export async function POST(request: NextRequest) {
@@ -73,7 +73,7 @@ export async function POST(request: NextRequest) {
 
       // Données de l'email
       const emailData = {
-        from: EmailTransportService.getDefaultFromAddress(),
+        from: EmailService.getDefaultFromAddress(),
         to: email,
         subject: subject || 'Réinitialisez votre mot de passe - Trouve Ton Nkama',
         text: emailText,
