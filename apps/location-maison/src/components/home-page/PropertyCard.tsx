@@ -22,7 +22,7 @@ const PropertyCard = ({ property }: any) => {
 
   return (
     <div key={property.id} className="">
-      <button
+      <div
         onClick={() => handleCardClick()}
         onKeyDown={(e) => {
           if (e.key === 'Enter' || e.key === ' ') {
@@ -32,6 +32,8 @@ const PropertyCard = ({ property }: any) => {
         }}
         className="h-[480px] md:h-[450px] relative cursor-pointer rounded-2xl shadow-lg overflow-hidden transition-transform duration-200 ease-out hover:scale-[1.02] bg-white dark:bg-gray-800 hover:shadow-xl flex flex-col group will-change-transform w-full text-left border-none p-0"
         aria-label={`Voir les détails de ${property.title ?? "l'annonce"}`}
+        role="button"
+        tabIndex={0}
       >
         {/* Image principale */}
         <div className="relative w-full aspect-[3/2] bg-gray-200">
@@ -125,7 +127,7 @@ const PropertyCard = ({ property }: any) => {
             </p>
           </div>
         </div>
-      </button>
+      </div>
     </div>
   );
 };

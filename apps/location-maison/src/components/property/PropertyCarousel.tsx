@@ -94,31 +94,44 @@ const PropertyCarousel: React.FC<CarouselProps> = ({ properties = [], isRecommen
       {hasMultiple ? (
         <Slider {...settings}>
           {properties.map((p) => (
-            <button
+            <div
               key={p.id ?? `property-${Math.random()}`}
-              type="button"
               className="p-3 w-full text-left focus:outline-none focus:ring-2 focus:ring-[#146B67] focus:ring-offset-2 rounded-lg transition-all duration-200"
               style={shouldCenter ? { width: 320 } : undefined}
               onClick={() => handleCardClick(p.id)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                  e.preventDefault();
+                  handleCardClick(p.id);
+                }
+              }}
+              role="button"
+              tabIndex={0}
               aria-label={`Voir les détails de ${p.title}`}
             >
               <PropertyCard property={p} />
-            </button>
+            </div>
           ))}
         </Slider>
       ) : (
         /* 1 seule carte : largeur contrôlée */
         properties[0] && (
-          <button
-            type="button"
+          <div
             className="mx-auto block focus:outline-none focus:ring-2 focus:ring-[#146B67] focus:ring-offset-2 rounded-lg transition-all duration-200"
-            /* 100 % en mobile, 320 px max en desktop */
-            style={{ width: "100%", maxWidth: 280 }}
+            style={{ width: '100%', maxWidth: 320 }}
             onClick={() => handleCardClick(properties[0].id)}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                handleCardClick(properties[0].id);
+              }
+            }}
+            role="button"
+            tabIndex={0}
             aria-label={`Voir les détails de ${properties[0].title}`}
           >
             <PropertyCard property={properties[0]} />
-          </button>
+          </div>
         )
       )}
       {/* Bouton « voir plus » toujours présent */}
