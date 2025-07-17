@@ -197,18 +197,7 @@ export async function GET() {
             templateType: 'verification'
           }
         },
-        {
-          description: 'Test email générique (layout de base)',
-          body: {
-            email: 'test@example.com',
-            templateType: 'generic'
-          }
-        }
       ]
-    },
-    endpoints: {
-      'POST /api/test-email': 'Envoie un email de test',
-      'GET /api/test-email': 'Affiche cette documentation'
     }
   });
 } 
