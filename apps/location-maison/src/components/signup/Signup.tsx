@@ -37,6 +37,7 @@ export const Signup: React.FC = () => {
             passwordConfirm: '',
             birthdate: '',
             phone: '',
+            country: 'GA',
             termsOfPrivacyPolicy: false
         }
     })
@@ -47,6 +48,7 @@ export const Signup: React.FC = () => {
     
     const onRegister = async (user: Partial<User>) => {
         try {
+            console.log("OnRegister",user)
             // Vérification obligatoire du numéro de téléphone
             if (!user.phoneNumbers || user.phoneNumbers.length === 0 || !user.phoneNumbers[0]) {
                 throw new Error("Le numéro de téléphone est obligatoire.");
@@ -113,7 +115,11 @@ export const Signup: React.FC = () => {
     }
 
     const onSubmit = async (values: FormRegisterSchemaType) => {
+        console.log("OnRegister",values)
+
         const validateFields = FormRegisterSchema.safeParse(values)
+        console.log("OnRegister after",values)
+
         if (!validateFields.success) {
             // Utiliser les messages d'erreur du schéma
             const firstError = validateFields.error.errors[0]
@@ -277,6 +283,7 @@ export const Signup: React.FC = () => {
                         className='w-full bg-gradient-to-r from-[#146B67] via-[#1FA89B] to-[#146B67]'>
                         {isFormLoading ? 'Création en cours...' : 'S\'enregistrer'}
                     </ButtonLoading>
+                    
                 </form>
             </Form>
         </LayoutAuth>

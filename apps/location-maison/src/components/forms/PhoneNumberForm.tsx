@@ -45,15 +45,13 @@ export const PhoneNumberForm = <T extends FieldValues>({
                     <FormItem className={cn(classNameItem, "flex flex-col items-start")}>
                         <FormLabel className={cn(classNameLabel, "text-left")}>{label}</FormLabel>
                         <FormControl className={cn(classNameControl, "w-full")}>
-                            <div className='border rounded-lg'>
-                                <PhoneInput 
-                                    defaultCountry={defaultCountry} 
-                                    disabled={isSubmitting || disabled} 
-                                    className={className} 
-                                    placeholder={placeholder} 
-                                    {...field} 
-                                />
-                            </div>
+                            <PhoneInput 
+                                defaultCountry={defaultCountry} 
+                                disabled={isSubmitting || disabled} 
+                                className={cn(className, 'border rounded-lg')} 
+                                placeholder={placeholder} 
+                                {...field} 
+                            />
                         </FormControl>
                         <FormDescription className={cn(classNameDescription, "text-left")}>
                             {description}

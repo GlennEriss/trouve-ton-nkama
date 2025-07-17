@@ -288,7 +288,7 @@ const styleHeader: CSSProperties = {
 };
 
 const styleLogoColumn: CSSProperties = {
-  width: "100px", // Réduit de 120px à 100px
+  width: "60px", // Réduit de 120px à 100px
   verticalAlign: "middle",
   textAlign: "left" as const,
 };
@@ -303,18 +303,19 @@ const styleHeaderLogo: CSSProperties = {
   width: "70px", // Réduit de 80px à 70px
   height: "70px", // Réduit de 80px à 70px
   borderRadius: "8px",
-  backgroundColor: "#ffffff",
-  padding: "6px", // Réduit de 8px à 6px
-  boxShadow: "0 2px 4px rgba(0, 0, 0, 0.1)",
+  backgroundColor: "transparent",
+  padding: "0", // Supprimé le padding
+  boxShadow: "none", // Supprimé l'ombre
   display: "block",
-  border: "2px solid #ffffff",
+  border: "none", // Supprimé la bordure
+  filter: "brightness(0) invert(1)", // Rend le logo blanc
 };
 
 const styleHeaderTitle: CSSProperties = {
   color: "#ffffff",
   fontSize: "24px", // Réduit de 28px à 24px
   fontWeight: "bold",
-  margin: "0 0 5px 0",
+  margin: "0 0 0 0",
   fontFamily: theme.fonts.heading,
   textShadow: "0 1px 2px rgba(0, 0, 0, 0.1)",
 };
@@ -349,10 +350,11 @@ const styleFooterLogo: CSSProperties = {
   margin: "0 0 15px 0", // Réduit de 20px à 15px
   opacity: "0.9",
   display: "block",
-  backgroundColor: "#ffffff",
-  padding: "3px", // Réduit de 4px à 3px
-  borderRadius: "6px",
-  border: "1px solid #e1e5e9",
+  backgroundColor: "transparent",
+  padding: "0", // Supprimé le padding
+  borderRadius: "0", // Supprimé le border-radius
+  border: "none", // Supprimé la bordure
+  filter: "brightness(0) invert(1)", // Rend le logo blanc
 };
 
 const styleHr: CSSProperties = {
