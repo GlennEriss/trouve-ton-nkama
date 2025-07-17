@@ -17,6 +17,7 @@ type PhoneNumberFormProps<T extends FieldValues> = {
     classNameLabel?: string;
     classNameControl?: string;
     classNameDescription?: string;
+    disabled?: boolean;
 }
 export const PhoneNumberForm = <T extends FieldValues>({
     form,
@@ -28,7 +29,8 @@ export const PhoneNumberForm = <T extends FieldValues>({
     classNameItem,
     classNameLabel,
     classNameControl,
-    classNameDescription
+    classNameDescription,
+    disabled
 }: PhoneNumberFormProps<T>) => {
     // Obtenir le premier pays activé comme pays par défaut
     const enabledCountries = getEnabledCountries();
@@ -46,7 +48,7 @@ export const PhoneNumberForm = <T extends FieldValues>({
                             <div className='border rounded-lg'>
                                 <PhoneInput 
                                     defaultCountry={defaultCountry} 
-                                    disabled={isSubmitting} 
+                                    disabled={isSubmitting || disabled} 
                                     className={className} 
                                     placeholder={placeholder} 
                                     {...field} 

@@ -1,6 +1,7 @@
 // Import du logo Base64
 import { LOGO_BASE64 } from './logo-base64';
 import { supportContact } from '../constantes';
+import { EmailVerificationProps } from './types';
 
 // Export des templates d'emails
 export { default as GenericEmail } from './GenericEmail';
@@ -46,9 +47,9 @@ export class EmailService {
   }
 
   // Send verification email
-  static async sendEmailVerificationLink(emailData: EmailVerificationData) {
+  static async sendEmailVerificationLink(emailData: EmailVerificationProps) {
     try {
-      this.validateEmailInput(emailData);
+      this.validateEmailInput({ to: emailData.email, subject: 'Vérification email' });
 
       const { render } = await import('@react-email/render');
       const { default: EmailVerification } = await import('./EmailVerification');
@@ -71,7 +72,7 @@ export class EmailService {
   static defaultTexts = {
     // Textes communs
     greeting: 'Bonjour',
-    copyRight: '© 2024 Trouve Ton Nkama. Tous droits réservés.',
+    copyRight: '© 2025 Trouve Ton Nkama. Tous droits réservés.',
     visitSocialNetworks: 'Suivez-nous sur les réseaux sociaux',
     supportEmail: supportContact.email,
     websiteUrl: 'https://tonnkama.com',

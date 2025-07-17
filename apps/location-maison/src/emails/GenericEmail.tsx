@@ -29,7 +29,7 @@ const GenericEmail: React.FC<GenericEmailProps> = ({
               {texts.greeting} {name} 🔒
             </Text>
             <Text style={styleMainText} className="mobile-text-medium">
-              {texts.instruction}
+              {texts.mainMessage}
             </Text>
           </Column>
         </Row>
@@ -51,7 +51,7 @@ const GenericEmail: React.FC<GenericEmailProps> = ({
       </Section>
 
       {/* Informations d'expiration */}
-      <Section className="mobile-section">
+      {/* <Section className="mobile-section">
         <Row>
           <Column>
             <Text style={styleExpirationInfo} className="mobile-text-medium">
@@ -59,10 +59,10 @@ const GenericEmail: React.FC<GenericEmailProps> = ({
             </Text>
           </Column>
         </Row>
-      </Section>
+      </Section> */}
 
       {/* Informations de sécurité */}
-      <Section>
+      {/* <Section>
         <Row>
           <Column>
             <Text style={styleSecurityInfo} className="mobile-text-medium">
@@ -70,7 +70,7 @@ const GenericEmail: React.FC<GenericEmailProps> = ({
             </Text>
           </Column>
         </Row>
-      </Section>
+      </Section> */}
 
       <Hr style={styleHr} />
 
@@ -337,7 +337,7 @@ const styleEmailLink: CSSProperties = {
 
 // Styles pour la section de debug
 const styleDivider: CSSProperties = {
-  borderColor: theme.colors.border,
+  borderColor: theme.colors.gray[300],
   margin: "25px 0", // Réduit de 32px à 25px
 };
 
