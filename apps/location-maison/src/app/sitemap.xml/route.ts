@@ -2,9 +2,15 @@ import { routes } from '@/constantes/routes'
 
 export async function GET() {
   const rawBase = process.env.NEXT_PUBLIC_HOST ?? ''
-  const baseUrl  = rawBase.replace(/\/$/, '')
+  const baseUrl = rawBase.replace(/\/$/, '')
 
-  // Tableau ordonné : home d’abord, puis les autres
+  // Vérifier que l'URL de base est valide
+  if (!baseUrl || !baseUrl.startsWith('http')) {
+    console.error('NEXT_PUBLIC_HOST invalide:', process.env.NEXT_PUBLIC_HOST)
+    return new Response('Sitemap non disponible', { status: 500 })
+  }
+
+  // Tableau ordonné : home d'abord, puis les autres
   const pages = [
     routes.public_google.homePage,          
     routes.public_google.confidentiality,
@@ -24,7 +30,7 @@ ${pages
 
   return new Response(sitemap, {
     headers: {
-      'Content-Type': 'application/xml',
+      'Content-Type': 'application/xml; charset=utf-8',
     },
   })
 }
