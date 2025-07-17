@@ -9,7 +9,6 @@ export async function GET() {
     routes.public_google.homePage,          
     routes.public_google.confidentiality,
     routes.public_google.terms_of_use,    
-    routes.public_google.search,  
   ]
 
   const todayISO = new Date().toISOString()
