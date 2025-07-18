@@ -26,7 +26,7 @@ export default async function RootLayout({
 
         <link rel="canonical" href="https://www.tonnkama.com/" />
 
-        <link rel="icon" href="/favicon.ico" sizes="any" />
+        <link rel="icon" href="https://www.tonnkama.com/favicon.ico" sizes="any" />
 
         <link rel="icon" type="image/svg+xml" href="/logo.svg"/>
 
