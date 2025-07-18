@@ -44,7 +44,7 @@ export const LayoutAuth: React.FC<LayoutAuthProps> = ({
     const buttonsDisabled = isPending || isFormLoading;
     
     return (
-        <div className="min-h-screen bg-gray-100 dark:bg-gray-900 flex justify-center items-center py-5">
+        <div className={`min-h-screen bg-gray-100 dark:bg-gray-900 flex justify-center items-center py-5 ${type === "CompleteProfile" ? "pb-20 md:pb-5" : ""}`}>
             {/* Container */}
             <div className="w-full max-w-4xl mx-4 bg-white dark:bg-gray-800 shadow-lg dark:shadow-gray-900/50 rounded-lg flex flex-col md:flex-row overflow-hidden">
                 {/* Left Side: Branding/Message */}
