@@ -144,7 +144,7 @@ export default function HomePageMobileComponent() {
                 <section className='space-y-5 bg-green-50 p-5 py-16'>
                     <h1 className='text-xl font-bold text-center text-[#146B67]'>Quels sont vos besoins ?</h1>
                     <div className='flex gap-2'>
-                        <Link href={user ? routes.protected.add_property : routes.public.signinSignup} className='w-1/2 bg-[#146B67] text-white font-bold py-3 rounded-xl flex justify-center items-center'>Publier une annonce</Link>
+                        <Link href={user ? routes.protected.add_property : routes.public.signin} className='w-1/2 bg-[#146B67] text-white font-bold py-3 rounded-xl flex justify-center items-center'>Publier une annonce</Link>
                         <Link href={routes.public.search_property} className='w-1/2 bg-white border border-[#146B67] text-[#146B67] font-bold py-3 rounded-xl flex justify-center items-center text-center'>Rechercher une annonce</Link>
                     </div>
                 </section>

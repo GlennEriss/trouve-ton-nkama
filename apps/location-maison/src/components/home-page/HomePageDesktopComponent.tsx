@@ -122,7 +122,7 @@ export default function HomePageDesktopComponent() {
           </div>
           <div className='flex flex-col md:flex-row gap-4 max-w-2xl mx-auto'>
             <Link
-              href={user ? routes.protected.add_property : routes.public.signinSignup}
+              href={user ? routes.protected.add_property : routes.public.signin}
               className='flex-1 group relative overflow-hidden bg-gradient-to-r from-[#146B67] to-[#1FA89B] text-white font-semibold py-4 px-8 rounded-xl flex items-center justify-center gap-3 shadow-lg hover:shadow-xl transition-all duration-300 hover:-translate-y-1'
             >
               <span className='relative z-10'>Publier une annonce</span>
