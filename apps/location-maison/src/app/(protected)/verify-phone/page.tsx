@@ -14,10 +14,12 @@ import { updateUser } from '@/db/user.db'
 import { getUserByUID } from '@/db/user.db'
 import { getEnabledCountries } from '@/lib/phoneValidation'
 import { SUPPORTED_COUNTRIES, type SupportedCountry } from '@/lib/phoneValidation'
+import { useSession } from 'next-auth/react'
 
 export default function VerifyPhonePage() {
     const { user, setUser } = useCurrentUser()
     const { toast } = useToast()
+    const { data: session, update: updateSession } = useSession()
     const [step, setStep] = useState<'phone' | 'otp' | 'success' | 'already-verified'>('phone')
     const [phone, setPhone] = useState(user?.phoneNumbers?.[0] || '')
     const [otp, setOtp] = useState('')
@@ -184,13 +186,13 @@ export default function VerifyPhonePage() {
             } else if (err.code === 'auth/too-many-requests') {
                 errorMessage = "Trop de tentatives. Réessayez plus tard.";
             } else if (err.code === 'auth/quota-exceeded') {
-                errorMessage = "Quota SMS dépassé. Contactez l'administrateur.";
+                errorMessage = "Service temporairement indisponible. Réessayez plus tard.";
             } else if (err.code === 'auth/invalid-app-credential') {
                 errorMessage = "Erreur de configuration. Veuillez réessayer dans quelques instants.";
             } else if (err.message && err.message.includes('Timeout')) {
                 errorMessage = "Délai d'attente dépassé. Veuillez réessayer.";
             } else if (err.message && err.message.includes('recaptcha')) {
-                errorMessage = "Erreur reCAPTCHA. Veuillez réessayer.";
+                errorMessage = "Erreur de sécurité. Veuillez réessayer.";
             } else if (err.message) {
                 errorMessage = err.message;
             }
@@ -278,11 +280,23 @@ export default function VerifyPhonePage() {
             
             // Mettre à jour l'état local de l'utilisateur
             if (setUser && user) {
-                setUser({
+                const updatedUser = {
                     ...user,
                     phoneNumbers: [phone],
                     phoneNumberVerified: true
-                });
+                };
+                setUser(updatedUser);
+                
+                // Mettre à jour la session NextAuth
+                try {
+                    await updateSession({
+                        ...session,
+                        user: updatedUser
+                    });
+                    console.log("Session NextAuth mise à jour avec succès");
+                } catch (sessionError) {
+                    console.warn("Erreur lors de la mise à jour de la session:", sessionError);
+                }
             }
             
             // Envoyer une notification pour informer l'utilisateur
@@ -291,7 +305,7 @@ export default function VerifyPhonePage() {
                     ? `Votre numéro de téléphone a été modifié vers ${phone} et vérifié avec succès.`
                     : `Votre numéro de téléphone ${phone} a été vérifié avec succès et est maintenant actif sur votre compte.`;
                 
-                await createNotification({
+                const notificationResult = await createNotification({
                     title: isPhoneChanged ? 'Numéro de téléphone modifié ✅' : 'Numéro de téléphone vérifié ✅',
                     message: notificationMessage,
                     type: 'SECURITY',
@@ -299,7 +313,12 @@ export default function VerifyPhonePage() {
                     isRead: false,
                     actionUrl: '/profil'
                 });
-                console.log("Notification envoyée pour la vérification du numéro de téléphone");
+                
+                if (notificationResult) {
+                    console.log("Notification envoyée avec succès pour la vérification du numéro de téléphone");
+                } else {
+                    console.warn("Échec de l'envoi de la notification");
+                }
             } catch (notificationError) {
                 console.warn("Erreur lors de l'envoi de la notification:", notificationError);
                 // Ne pas faire échouer le processus si la notification ne peut pas être envoyée
@@ -320,7 +339,7 @@ export default function VerifyPhonePage() {
             let errorMessage = "Code incorrect ou expiré";
             
             if (err.code === 'auth/invalid-verification-code') {
-                errorMessage = "Code de vérification invalide";
+                errorMessage = "Code de vérification incorrect";
             } else if (err.code === 'auth/code-expired') {
                 errorMessage = "Code de vérification expiré";
             } else if (err.message) {
@@ -546,9 +565,6 @@ export default function VerifyPhonePage() {
                         Votre numéro de téléphone <strong>{phone}</strong> a été vérifié et est maintenant actif sur votre compte.
                     </p>
                     <div className="bg-green-50 p-4 rounded-lg">
-                        <p className="text-sm text-green-700">
-                            <strong>Statut mis à jour :</strong> phoneNumberVerified = true
-                        </p>
                         <p className="text-sm text-green-600 mt-2 flex items-center gap-2">
                             <Phone className="w-4 h-4" />
                             Une notification a été envoyée pour confirmer cette modification.

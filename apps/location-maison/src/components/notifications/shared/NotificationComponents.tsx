@@ -208,6 +208,7 @@ export function NotificationButton({
         variant="outline" 
         className={`relative ${className}`} 
         aria-label="Ouvrir les notifications"
+        type="button"
       >
         <BellIcon size={iconSize} aria-hidden="true" />
         {unreadCount > 0 && (

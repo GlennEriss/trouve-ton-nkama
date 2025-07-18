@@ -21,7 +21,7 @@ export async function POST(request: NextRequest): Promise<NextResponse<VerifyCod
   try {
     if (!adminApp) {
       return NextResponse.json(
-        { success: false, message: 'Erreur de configuration Firebase' },
+        { success: false, message: 'Erreur de configuration du système' },
         { status: 500 }
       )
     }
