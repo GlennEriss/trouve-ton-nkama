@@ -40,7 +40,7 @@ export default function TrendingSection() {
         <p className="text-center text-sm text-gray-600 dark:text-gray-400 mb-4">
           Les annonces les plus populaires du moment
         </p>
-        <PropertyCarousel properties={(trendingProperties ?? []).filter(p => p.id) as any} />
+        <PropertyCarousel properties={(trendingProperties ?? []).filter(p => p.id) as any} hideDate={true} />
       </div>
     </section>
   )

@@ -23,6 +23,12 @@ export const useCurrentUser = (): UseCurrentUserReturn => {
     setError(null);
 
     try {
+      // Vérifier si on est déjà connecté
+      if (auth.currentUser) {
+        setIsFirebaseConnected(true);
+        return;
+      }
+
       // 1. Générer un custom token
       const response = await fetch('/api/generate-token', {
         method: 'POST',
@@ -44,9 +50,13 @@ export const useCurrentUser = (): UseCurrentUserReturn => {
       setIsFirebaseConnected(true);
 
     } catch (err: any) {
+      console.warn('⚠️ Erreur de connexion Firebase:', err);
       const errorMessage = err.message ?? 'Erreur de connexion Firebase';
       setError(errorMessage);
       setIsFirebaseConnected(false);
+      
+      // Ne pas bloquer l'application si Firebase échoue
+      // L'utilisateur peut continuer avec NextAuth
     } finally {
       setIsLoading(false);
     }
@@ -74,11 +84,23 @@ export const useCurrentUser = (): UseCurrentUserReturn => {
       setUser(undefined);
       setIsFirebaseConnected(false);
       setError(null);
+      
+      // Déconnecter de Firebase si l'utilisateur n'est plus connecté
+      if (auth.currentUser) {
+        auth.signOut().catch(err => {
+          console.warn('⚠️ Erreur lors de la déconnexion Firebase:', err);
+        });
+      }
     }
   }, [session, status, connectToFirebase]);
 
   // Vérifier périodiquement la connexion Firebase
   useEffect(() => {
+    // Ne vérifier que si l'utilisateur est connecté
+    if (status !== "authenticated") {
+      return;
+    }
+
     const checkFirebaseConnection = () => {
       const isConnected = !!auth.currentUser;
       if (isConnected !== isFirebaseConnected) {
@@ -89,7 +111,7 @@ export const useCurrentUser = (): UseCurrentUserReturn => {
     const interval = setInterval(checkFirebaseConnection, 5000); // Vérifier toutes les 5 secondes
     
     return () => clearInterval(interval);
-  }, [isFirebaseConnected]);
+  }, [isFirebaseConnected, status]);
 
   return { 
     user, 

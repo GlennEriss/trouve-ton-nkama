@@ -14,6 +14,7 @@ import { cn } from "@/lib/utils";
 interface CarouselProps {
   properties?: Property[]; // Optionnel maintenant
   isRecommendation?: boolean;
+  hideDate?: boolean;
 }
 
 /* Flèche réutilisable (précédent / suivant) */
@@ -34,7 +35,7 @@ const ArrowButton: React.FC<{ direction: "prev" | "next"; onClick?: () => void }
   );
 };
 
-const PropertyCarousel: React.FC<CarouselProps> = ({ properties = [], isRecommendation = false }) => {
+const PropertyCarousel: React.FC<CarouselProps> = ({ properties = [], isRecommendation = false, hideDate = false }) => {
   const router = useRouter();
   const { width } = useWindowSize();
 
@@ -109,7 +110,7 @@ const PropertyCarousel: React.FC<CarouselProps> = ({ properties = [], isRecommen
               tabIndex={0}
               aria-label={`Voir les détails de ${p.title}`}
             >
-              <PropertyCard property={p} />
+              <PropertyCard property={p} hideDate={hideDate} />
             </div>
           ))}
         </Slider>
@@ -130,7 +131,7 @@ const PropertyCarousel: React.FC<CarouselProps> = ({ properties = [], isRecommen
             tabIndex={0}
             aria-label={`Voir les détails de ${properties[0].title}`}
           >
-            <PropertyCard property={properties[0]} />
+            <PropertyCard property={properties[0]} hideDate={hideDate} />
           </div>
         )
       )}
