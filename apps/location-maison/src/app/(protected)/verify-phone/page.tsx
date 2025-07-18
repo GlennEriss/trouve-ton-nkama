@@ -4,7 +4,7 @@ import { useCurrentUser } from '@/hooks/use-current-user'
 import { useToast } from '@/hooks/use-toast'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { ChevronLeft, CheckCircle, AlertTriangle, Phone, Clock, RefreshCw } from 'lucide-react'
+import { ChevronLeft, CheckCircle, AlertTriangle, Phone, Clock, RefreshCw, ChevronDown } from 'lucide-react'
 import Link from 'next/link'
 import { routes } from '@/constantes/routes'
 import { doc, updateDoc, getDoc } from 'firebase/firestore'
@@ -12,9 +12,8 @@ import { db } from '@/firebase/firestore'
 import { createNotification } from '@/db/notification.db'
 import { updateUser } from '@/db/user.db'
 import { getUserByUID } from '@/db/user.db'
-import { PhoneNumberForm } from '@/components/forms/PhoneNumberForm'
-import { useForm } from 'react-hook-form'
-import { Form } from '@/components/ui/form'
+import { getEnabledCountries } from '@/lib/phoneValidation'
+import { SUPPORTED_COUNTRIES, type SupportedCountry } from '@/lib/phoneValidation'
 
 export default function VerifyPhonePage() {
     const { user, setUser } = useCurrentUser()
@@ -27,21 +26,34 @@ export default function VerifyPhonePage() {
     const [error, setError] = useState<string | null>(null)
     const [confirmationResult, setConfirmationResult] = useState<any>(null)
     const [isCheckingVerification, setIsCheckingVerification] = useState(true)
+    const [selectedCountry, setSelectedCountry] = useState<SupportedCountry>('GA')
+    const [phoneNumber, setPhoneNumber] = useState('')
+    const [showCountrySelector, setShowCountrySelector] = useState(false)
 
-    // Formulaire pour le numéro de téléphone
-    const form = useForm({
-        defaultValues: {
-            phone: user?.phoneNumbers?.[0] || ''
-        }
-    })
+    // Pays disponibles avec données complètes
+    const enabledCountries = getEnabledCountries()
+    const countryFlags: Record<SupportedCountry, string> = { GA: '🇬🇦', SN: '🇸🇳' }
 
-    // Mettre à jour le numéro de téléphone quand l'utilisateur change
+    // Extraire le numéro local et le pays à partir du numéro existant
     useEffect(() => {
-        if (user?.phoneNumbers?.[0]) {
-            setPhone(user.phoneNumbers[0]);
-            form.setValue('phone', user.phoneNumbers[0]);
+        if (user?.phoneNumbers?.[0] && !phoneNumber) { // Seulement si pas déjà chargé
+            const existingPhone = user.phoneNumbers[0];
+            setPhone(existingPhone);
+            
+            // Extraire le pays et le numéro local
+            const country = enabledCountries.find(c => existingPhone.startsWith(SUPPORTED_COUNTRIES[c.code].countryCode));
+            if (country) {
+                setSelectedCountry(country.code);
+                const localNumber = existingPhone.replace(SUPPORTED_COUNTRIES[country.code].countryCode, '');
+                setPhoneNumber(localNumber);
+            } else {
+                // Par défaut Gabon si pas trouvé
+                setSelectedCountry('GA');
+                const localNumber = existingPhone.replace('+241', '');
+                setPhoneNumber(localNumber);
+            }
         }
-    }, [user?.phoneNumbers, form]);
+    }, [user?.phoneNumbers, enabledCountries, phoneNumber]);
 
     // Vérifier si le numéro est déjà vérifié
     useEffect(() => {
@@ -93,12 +105,17 @@ export default function VerifyPhonePage() {
         return () => clearInterval(timer);
     }, [step, timeLeft, toast]);
 
-
+    // Construire le numéro complet avec l'indicatif
+    const getFullPhoneNumber = () => {
+        const country = enabledCountries.find(c => c.code === selectedCountry);
+        if (!country || !phoneNumber) return '';
+        return `${SUPPORTED_COUNTRIES[country.code].countryCode}${phoneNumber}`;
+    };
 
     // Envoi du code OTP
     const handleSendOTP = async () => {
-        const phoneValue = form.getValues('phone');
-        if (!phoneValue) {
+        const fullPhone = getFullPhoneNumber();
+        if (!fullPhone) {
             toast({
                 duration: 5000,
                 title: 'Numéro manquant',
@@ -110,7 +127,7 @@ export default function VerifyPhonePage() {
 
         // Vérifier si le numéro a été modifié
         const originalPhone = user?.phoneNumbers?.[0] || '';
-        const isPhoneChanged = phoneValue !== originalPhone;
+        const isPhoneChanged = fullPhone !== originalPhone;
 
         setLoading(true);
         setError(null);
@@ -138,14 +155,14 @@ export default function VerifyPhonePage() {
 
             const result = await signInWithPhoneNumber(
                 auth,
-                phoneValue,
+                fullPhone,
                 recaptchaVerifier
             );
             
             setConfirmationResult(result);
             setTimeLeft(600);
             setStep("otp");
-            setPhone(phoneValue); // Mettre à jour l'état local
+            setPhone(fullPhone); // Mettre à jour l'état local
             
             // Message différent selon si le numéro a été modifié
             const message = isPhoneChanged 
@@ -168,6 +185,8 @@ export default function VerifyPhonePage() {
                 errorMessage = "Trop de tentatives. Réessayez plus tard.";
             } else if (err.code === 'auth/quota-exceeded') {
                 errorMessage = "Quota SMS dépassé. Contactez l'administrateur.";
+            } else if (err.code === 'auth/invalid-app-credential') {
+                errorMessage = "Erreur de configuration. Veuillez réessayer dans quelques instants.";
             } else if (err.message && err.message.includes('Timeout')) {
                 errorMessage = "Délai d'attente dépassé. Veuillez réessayer.";
             } else if (err.message && err.message.includes('recaptcha')) {
@@ -181,8 +200,6 @@ export default function VerifyPhonePage() {
             setLoading(false);
         }
     };
-
-
 
     // Vérification du code OTP
     const handleVerifyOTP = async () => {
@@ -328,7 +345,7 @@ export default function VerifyPhonePage() {
             <h1 className="text-2xl font-bold mb-6">Vérifier mon numéro de téléphone</h1>
 
             {/* Container pour reCAPTCHA */}
-            <div id="recaptcha-container" />
+            <div id="recaptcha-container" className="flex justify-center mb-4" />
 
             {isCheckingVerification && (
                 <div className="text-center space-y-4">
@@ -353,33 +370,83 @@ export default function VerifyPhonePage() {
                             </p>
                         </div>
                     )}
-                    <Form {...form}>
-                        <div className="space-y-2">
-                            <label className="text-sm font-medium text-gray-700">
-                                Numéro de téléphone
-                            </label>
-                            <PhoneNumberForm
-                                form={form}
-                                label=''
-                                name='phone'
-                            />
-                            <div className="text-sm text-gray-500 mt-1">
-                                <p>Numéro actuel : {user?.phoneNumbers?.[0] || 'Non renseigné'}</p>
-                                {user?.phoneNumberVerified && (
-                                    <p className="text-green-600 font-medium flex items-center gap-2">
-                                        <CheckCircle className="w-4 h-4" />
-                                        Ce numéro est déjà vérifié
-                                    </p>
-                                )}
-                                {user?.phoneNumbers?.[0] && !user?.phoneNumberVerified && (
-                                    <p className="text-orange-600 font-medium flex items-center gap-2">
-                                        <AlertTriangle className="w-4 h-4" />
-                                        Ce numéro n'est pas encore vérifié
-                                    </p>
+                    
+                    <div className="space-y-2">
+                        <label className="text-sm font-medium text-gray-700">
+                            Numéro de téléphone
+                        </label>
+                        
+                        {/* Sélecteur de pays et saisie du numéro */}
+                        <div className="flex border rounded-lg overflow-hidden">
+                            {/* Sélecteur de pays */}
+                            <div className="relative">
+                                <button
+                                    type="button"
+                                    onClick={() => setShowCountrySelector(!showCountrySelector)}
+                                    className="flex items-center gap-2 px-3 py-2 bg-gray-50 border-r text-sm font-medium"
+                                >
+                                    <span>{countryFlags[selectedCountry] || '🇬🇦'}</span>
+                                    <span>{SUPPORTED_COUNTRIES[selectedCountry]?.countryCode}</span>
+                                    <ChevronDown className="w-4 h-4" />
+                                </button>
+                                
+                                {/* Dropdown des pays */}
+                                {showCountrySelector && (
+                                    <div className="absolute top-full left-0 z-10 w-48 bg-white border rounded-lg shadow-lg max-h-48 overflow-y-auto">
+                                        {enabledCountries.map((country) => (
+                                            <button
+                                                key={country.code}
+                                                type="button"
+                                                onClick={() => {
+                                                    setSelectedCountry(country.code);
+                                                    setShowCountrySelector(false);
+                                                }}
+                                                className="w-full flex items-center gap-2 px-3 py-2 text-left hover:bg-gray-50"
+                                            >
+                                                <span>{countryFlags[country.code] || '🇬🇦'}</span>
+                                                <span className="flex-1">{country.name}</span>
+                                                <span className="text-gray-500">{SUPPORTED_COUNTRIES[country.code].countryCode}</span>
+                                            </button>
+                                        ))}
+                                    </div>
                                 )}
                             </div>
+                            
+                            {/* Saisie du numéro */}
+                            <Input
+                                type="tel"
+                                value={phoneNumber}
+                                onChange={(e) => setPhoneNumber(e.target.value)}
+                                placeholder="Votre numéro de téléphone"
+                                className="flex-1 border-0 focus-visible:ring-0"
+                            />
                         </div>
-                    </Form>
+                        
+
+                        
+                        {/* Aperçu du numéro complet */}
+                        {phoneNumber && (
+                            <div className="text-sm text-gray-500">
+                                <p>Numéro complet : <span className="font-mono">{getFullPhoneNumber()}</span></p>
+                            </div>
+                        )}
+                        
+                        <div className="text-sm text-gray-500 mt-1">
+                            <p>Numéro actuel : {user?.phoneNumbers?.[0] || 'Non renseigné'}</p>
+                            {user?.phoneNumberVerified && (
+                                <p className="text-green-600 font-medium flex items-center gap-2">
+                                    <CheckCircle className="w-4 h-4" />
+                                    Ce numéro est déjà vérifié
+                                </p>
+                            )}
+                            {user?.phoneNumbers?.[0] && !user?.phoneNumberVerified && (
+                                <p className="text-orange-600 font-medium flex items-center gap-2">
+                                    <AlertTriangle className="w-4 h-4" />
+                                    Ce numéro n'est pas encore vérifié
+                                </p>
+                            )}
+                        </div>
+                    </div>
                     
                     {error && (
                         <div className="text-red-600 text-sm p-3 bg-red-50 rounded">
@@ -389,7 +456,7 @@ export default function VerifyPhonePage() {
                     
                     <Button
                         onClick={handleSendOTP}
-                        disabled={loading || !form.getValues('phone')}
+                        disabled={loading || !phoneNumber}
                         className="w-full bg-gradient-to-r from-[#146B67] via-[#1FA89B] to-[#146B67]"
                     >
                         {loading ? "Envoi en cours..." : "Envoyer le code de vérification"}
@@ -414,8 +481,6 @@ export default function VerifyPhonePage() {
                         </div>
                     </div>
                     
-
-                    
                     <div>
                         <label className="block text-sm font-medium text-gray-700 mb-2">
                             Code de vérification
@@ -425,7 +490,7 @@ export default function VerifyPhonePage() {
                             value={otp}
                             onChange={(e) => setOtp(e.target.value)}
                             placeholder="Saisissez le code reçu par SMS"
-                            className="p-3"
+                            className="p-3 font-mono text-center text-lg"
                             maxLength={6}
                         />
                     </div>
@@ -466,8 +531,6 @@ export default function VerifyPhonePage() {
                             Renvoyer le code
                         </button>
                     </div>
-                    
-
                 </div>
             )}
 
