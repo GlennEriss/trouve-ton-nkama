@@ -9,6 +9,25 @@ import PropertyCard from '../home-page/PropertyCard';
 import Image from 'next/image';
 import { useSearchParams } from 'next/navigation';
 
+// Hook personnalisé pour gérer le scroll
+const useScrollPosition = () => {
+    const [scrollY, setScrollY] = React.useState(0);
+    const [isScrolled, setIsScrolled] = React.useState(false);
+
+    React.useEffect(() => {
+        const handleScroll = () => {
+            const currentScrollY = window.scrollY;
+            setScrollY(currentScrollY);
+            setIsScrolled(currentScrollY > 100); // Se fixe après 100px de scroll
+        };
+
+        window.addEventListener('scroll', handleScroll, { passive: true });
+        return () => window.removeEventListener('scroll', handleScroll);
+    }, []);
+
+    return { scrollY, isScrolled };
+};
+
 export default function SearchMobilePage() {
     const { searchText, setSearchText, setProvince, setCity, setStreet, setMinPrice, setMaxPrice, setMinArea, setMaxArea, setMinNbrRooms, setMaxNbrRooms, setTypeProperty, setTags } = useAlgoliaContext()
     const topRef = React.useRef<HTMLDivElement>(null);
@@ -16,6 +35,7 @@ export default function SearchMobilePage() {
     const { items, isLastPage, showMore } = useInfiniteHits();
     const { nbHits } = useStats();
     const searchParams = useSearchParams();
+    const { isScrolled } = useScrollPosition();
 
     // Synchronisation URL → Contexte Algolia au chargement initial
     React.useEffect(() => {
@@ -83,18 +103,20 @@ export default function SearchMobilePage() {
         return () => obs.disconnect();
     }, [sentinelRef, isLastPage, showMore]);
 
-
-    return (
-        <div className='p-5 space-y-5 h-full pb-20' ref={topRef}>
-            <section className='md:hidden'>
-                <h1 className='text-2xl font-bold text-[#146B67]'>
-                    Rechercher une annonce
+    // Composant de barre de recherche
+    const SearchBar = ({ isFixed = false }: { isFixed?: boolean }) => (
+        <section className={`${isFixed ? 'fixed top-0 left-0 right-0 z-50 bg-white dark:bg-gray-800 shadow-md border-b border-gray-200 dark:border-gray-700' : ''} md:hidden`}>
+            <div className={`${isFixed ? 'p-3' : ''}`}>
+                <h1 className={`text-2xl font-bold text-[#146B67] ${isFixed ? 'text-lg' : ''}`}>
+                    {isFixed ? 'Rechercher' : 'Rechercher une annonce'}
                 </h1>
-                <p className='text-sm text-gray-500'>
-                    Trouvez le logement de vos rêves parmi nos annonces immobilières.
-                </p>
+                {!isFixed && (
+                    <p className='text-sm text-gray-500'>
+                        Trouvez le logement de vos rêves parmi nos annonces immobilières.
+                    </p>
+                )}
                 <Form action="/search">
-                    <div className="flex items-center border rounded-full p-2 px-4 bg-gray-100 focus-within:border-[#1FA89B]">
+                    <div className="flex items-center border rounded-full p-2 px-4 bg-gray-100 focus-within:border-[#1FA89B] mt-2">
                         <button
                             type='submit'
                         >
@@ -112,7 +134,17 @@ export default function SearchMobilePage() {
                         </div>
                     </div>
                 </Form>
-            </section>
+            </div>
+        </section>
+    );
+
+    return (
+        <div className='p-5 space-y-5 h-full pb-20' ref={topRef}>
+            {/* Barre de recherche fixe (visible lors du scroll) */}
+            {isScrolled && <SearchBar isFixed={true} />}
+            
+            {/* Barre de recherche normale */}
+            <SearchBar />
 
             <section className='space-y-5'>
                 <div className='flex items-center justify-between'>
