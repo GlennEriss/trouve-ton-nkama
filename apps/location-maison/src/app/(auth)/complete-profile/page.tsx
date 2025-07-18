@@ -130,7 +130,7 @@ export default function CompleteProfilePage() {
             }
 
             // Mettre à jour la session
-            await update({
+            const sessionUpdateResult = await update({
                 ...session,
                 user: {
                     ...user,
@@ -147,6 +147,10 @@ export default function CompleteProfilePage() {
                 }
             })
 
+            if (!sessionUpdateResult) {
+                console.warn('Session update failed, but user was updated in Firestore')
+            }
+
             toast({
                 duration: 5000,
                 title: 'Profil complété !',
@@ -154,9 +158,24 @@ export default function CompleteProfilePage() {
                 variant: 'success',
             })
 
-            // Garder le chargement affiché pendant la redirection
-            // Ne pas remettre setIsSubmitting(false) ici
-            router.push(routes.protected.properties)
+            // Attendre un peu pour que le toast s'affiche
+            await new Promise(resolve => setTimeout(resolve, 1000))
+
+            // Rediriger vers la page des propriétés avec une vérification
+            try {
+                router.push(routes.protected.properties)
+                // Fallback si la redirection échoue
+                setTimeout(() => {
+                    if (window.location.pathname !== routes.protected.properties) {
+                        window.location.href = routes.protected.properties
+                    }
+                }, 2000)
+            } catch (redirectError) {
+                console.error('Erreur lors de la redirection:', redirectError)
+                // Fallback direct
+                window.location.href = routes.protected.properties
+            }
+            
         } catch (error) {
             console.error('Erreur lors de la mise à jour du profil:', error)
             toast({
@@ -165,7 +184,8 @@ export default function CompleteProfilePage() {
                 description: 'Une erreur est survenue lors de la mise à jour de votre profil.',
                 variant: 'destructive',
             })
-            // Remettre le chargement à false seulement en cas d'erreur
+        } finally {
+            // Toujours remettre le chargement à false
             setIsSubmitting(false)
         }
     }
