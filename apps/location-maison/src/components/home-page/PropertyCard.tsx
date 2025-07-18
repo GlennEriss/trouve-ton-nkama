@@ -17,7 +17,13 @@ const PropertyCard = ({ property, hideDate = false }: { property: any; hideDate?
   const router = useRouter();
 
   const handleCardClick = () => {
-    router.push(`/houseDetails/${property.path.replace("properties/", "")}`);
+    if (property.path) {
+      router.push(`/houseDetails/${property.path.replace("properties/", "")}`);
+    } else {
+      // Fallback si path n'existe pas, utiliser objectID ou id
+      const propertyId = property.objectID || property.id || property.path;
+      router.push(`/houseDetails/${propertyId}`);
+    }
   };
 
   return (
