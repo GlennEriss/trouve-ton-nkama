@@ -11,7 +11,7 @@ export const metadata: Metadata = {
     type: "website",
     images: [
       {
-        url: `${process.env.NEXT_PUBLIC_HOST}/logo.webp`,
+        url: `${process.env.NEXT_PUBLIC_HOST}/logo.svg`,
         width: 1200,
         height: 630,
         alt: "Conditions d'utilisation Trouve Ton Nkama",
