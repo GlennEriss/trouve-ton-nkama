@@ -46,7 +46,7 @@ const twilioClient = twilio(
 );
 
 // Configuration de l'entreprise
-const COMPANY_NAME = 'Logis Gabon';
+const COMPANY_NAME = 'Trouve Ton Nkama';
 const WEBSITE_URL = process.env.WEBSITE_URL;
 
 // Fonction pour envoyer le SMS via Twilio
