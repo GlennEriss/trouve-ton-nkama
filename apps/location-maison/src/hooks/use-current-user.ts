@@ -94,6 +94,13 @@ export const useCurrentUser = (): UseCurrentUserReturn => {
     }
   }, [session, status, connectToFirebase]);
 
+  // Effet pour synchroniser l'état local avec la session
+  useEffect(() => {
+    if (session?.user) {
+      setUser(session.user);
+    }
+  }, [session?.user]);
+
   // Vérifier périodiquement la connexion Firebase
   useEffect(() => {
     // Ne vérifier que si l'utilisateur est connecté
