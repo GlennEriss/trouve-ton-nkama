@@ -246,37 +246,17 @@ export default function VerifyPhonePage() {
             const originalPhone = user?.phoneNumbers?.[0] || '';
             const isPhoneChanged = phone !== originalPhone;
             
-            if (isPhoneChanged) {
-                // Utiliser updateUser pour la modification de numéro
-                console.log("Mise à jour du numéro de téléphone avec updateUser...");
-                const updateSuccess = await updateUser(user.uid, {
-                    phoneNumbers: [phone],
-                    phoneNumberVerified: true
-                });
-                
-                if (!updateSuccess) {
-                    throw new Error("Erreur lors de la mise à jour du numéro de téléphone");
-                }
-                console.log("Numéro de téléphone mis à jour avec updateUser");
-            } else {
-                // Utiliser la mise à jour directe Firestore pour la première vérification
-                console.log("Mise à jour du numéro de téléphone dans Firestore...");
-                const userRef = doc(db, 'users', user.uid);
-                
-                // Vérifier que l'utilisateur existe dans Firestore
-                const userDoc = await getDoc(userRef);
-                
-                if (!userDoc.exists()) {
-                    throw new Error("Utilisateur non trouvé dans la base de données");
-                }
-                
-                await updateDoc(userRef, {
-                    phoneNumbers: [phone],
-                    phoneNumberVerified: true,
-                    updatedAt: new Date()
-                });
-                console.log("Numéro de téléphone mis à jour dans Firestore");
+            // Utiliser updateUser pour toutes les mises à jour (plus sûr)
+            console.log("Mise à jour du numéro de téléphone avec updateUser...");
+            const updateSuccess = await updateUser(user.uid, {
+                phoneNumbers: [phone],
+                phoneNumberVerified: true
+            });
+            
+            if (!updateSuccess) {
+                throw new Error("Erreur lors de la mise à jour du numéro de téléphone");
             }
+            console.log("Numéro de téléphone mis à jour avec succès");
             
             // Mettre à jour l'état local de l'utilisateur
             if (setUser && user) {
@@ -353,7 +333,7 @@ export default function VerifyPhonePage() {
     };
 
     return (
-        <div className="max-w-md mx-auto mt-10 p-6">
+        <div className="max-w-md mx-auto mt-2 md:mt-10 p-6">
             <div className="mb-6">
                 <Link href={routes.protected.profil} className="flex items-center text-gray-600 hover:text-gray-800">
                     <ChevronLeft size={20} />
@@ -377,19 +357,6 @@ export default function VerifyPhonePage() {
 
             {!isCheckingVerification && step === 'phone' && (
                 <div className="space-y-4">
-                    {user?.phoneNumberVerified && (
-                        <div className="mb-4 p-3 bg-yellow-50 rounded text-sm">
-                            <p className="font-semibold text-yellow-800 flex items-center gap-2">
-                                <AlertTriangle className="w-4 h-4" />
-                                Information importante :
-                            </p>
-                            <p className="text-yellow-700">
-                                Votre numéro de téléphone est déjà vérifié. Si vous le modifiez, 
-                                vous devrez le vérifier à nouveau. Une fois vérifié, le numéro ne pourra plus être modifié.
-                            </p>
-                        </div>
-                    )}
-                    
                     <div className="space-y-2">
                         <label className="text-sm font-medium text-gray-700">
                             Numéro de téléphone
@@ -452,18 +419,6 @@ export default function VerifyPhonePage() {
                         
                         <div className="text-sm text-gray-500 mt-1">
                             <p>Numéro actuel : {user?.phoneNumbers?.[0] || 'Non renseigné'}</p>
-                            {user?.phoneNumberVerified && (
-                                <p className="text-green-600 font-medium flex items-center gap-2">
-                                    <CheckCircle className="w-4 h-4" />
-                                    Ce numéro est déjà vérifié
-                                </p>
-                            )}
-                            {user?.phoneNumbers?.[0] && !user?.phoneNumberVerified && (
-                                <p className="text-orange-600 font-medium flex items-center gap-2">
-                                    <AlertTriangle className="w-4 h-4" />
-                                    Ce numéro n'est pas encore vérifié
-                                </p>
-                            )}
                         </div>
                     </div>
                     

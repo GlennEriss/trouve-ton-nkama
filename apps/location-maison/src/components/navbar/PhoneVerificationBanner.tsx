@@ -7,7 +7,12 @@ import { Phone, X } from 'lucide-react'
 import { useState } from 'react'
 import { usePathname } from 'next/navigation'
 
+// Temporairement caché - Problèmes de vérification téléphonique
 export default function PhoneVerificationBanner() {
+    // Retourner null pour cacher complètement la bannière
+    return null;
+    
+    /*
     const { user } = useCurrentUser()
     const pathname = usePathname()
     const [isVisible, setIsVisible] = useState(true)
@@ -63,4 +68,5 @@ export default function PhoneVerificationBanner() {
             </div>
         </div>
     )
+    */
 } 
