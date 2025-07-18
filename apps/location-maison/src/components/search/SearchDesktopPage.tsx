@@ -490,7 +490,6 @@ export default function SearchDesktopPage() {
                                     >
                                         <PropertyCard 
                                             property={propertyData} 
-                                            index={i} 
                                         />
                                     </div>
                                 ))}
