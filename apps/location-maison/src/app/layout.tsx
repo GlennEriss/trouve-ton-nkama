@@ -33,7 +33,7 @@ export const metadata: Metadata = {
     siteName: 'Trouve Ton Nkama',
     images: [
       {
-        url: '/logo.webp',
+        url: '/logo.svg',
         width: 1200,
         height: 630,
         alt: 'Trouve Ton Nkama Accueil',
@@ -46,7 +46,7 @@ export const metadata: Metadata = {
     card: 'summary_large_image',
     title: 'Trouve Ton Nkama - Immobilier au Gabon',
     description: 'Explorez un large choix de logements à louer ou à vendre au Gabon. Publiez vos annonces ou trouvez votre futur chez-vous avec Trouve Ton Nkama.',
-    images: ['/logo.webp'],
+    images: ['/logo.svg'],
   },
   robots: {
     index: true,
