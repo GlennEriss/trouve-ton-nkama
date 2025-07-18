@@ -2,7 +2,7 @@
 import React from 'react'
 import Logo from '../logo/Logo'
 import { routes } from '@/constantes/routes'
-import { MapPin, Mail } from "lucide-react";
+import { MapPin, Mail, Facebook, MessageCircle } from "lucide-react";
 import { usePathname } from 'next/navigation';
 import { useCurrentUser } from '@/hooks/use-current-user';
 import { useWindowSize } from '@/hooks/useSize';
@@ -45,6 +45,14 @@ export default function Footer({ isHide = false }: Readonly<{ isHide?: boolean }
                         <div className="flex items-center space-x-2">
                             <Mail size={16} />
                             <a href={`mailto:${process.env.NEXT_PUBLIC_EMAIL_SUPPORT}`} className="hover:underline">{process.env.NEXT_PUBLIC_EMAIL_SUPPORT}</a>
+                        </div>
+                        <div className="flex items-center space-x-2">
+                            <Facebook size={16} />
+                            <a href="https://www.facebook.com/share/16beeh915e/" target="_blank" rel="noopener noreferrer" className="hover:underline">Suivez-nous sur Facebook</a>
+                        </div>
+                        <div className="flex items-center space-x-2">
+                            <MessageCircle size={16} />
+                            <a href="https://wa.me/221776960463?text=Bonjour%20!%20Je%20souhaite%20obtenir%20plus%20d'informations%20sur%20Trouve%20Ton%20Nkama." target="_blank" rel="noopener noreferrer" className="hover:underline">Contactez-nous sur WhatsApp</a>
                         </div>
                     </div>
                     <div className='ml-auto md:hidden mt-auto'>
