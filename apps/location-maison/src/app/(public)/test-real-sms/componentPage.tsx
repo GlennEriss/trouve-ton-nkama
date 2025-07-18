@@ -149,11 +149,11 @@ const TestRealSmsPage: React.FC = () => {
       } else if (err.code === 'auth/invalid-verification-code') {
         errorMessage = "Code incorrect ou expiré";
       } else if (err.code === 'auth/invalid-app-credential') {
-        errorMessage = "Configuration Firebase incorrecte. Vérifiez reCAPTCHA.";
+        errorMessage = "Configuration incorrecte. Veuillez réessayer dans quelques instants.";
       } else if (err.message && err.message.includes('Timeout')) {
         errorMessage = "Délai d'attente dépassé. Veuillez réessayer.";
       } else if (err.message && err.message.includes('recaptcha')) {
-        errorMessage = "Erreur reCAPTCHA. Veuillez réessayer.";
+        errorMessage = "Erreur de sécurité. Veuillez réessayer.";
       } else if (err.message) {
         errorMessage = err.message;
       }
@@ -267,9 +267,9 @@ const TestRealSmsPage: React.FC = () => {
   return (
     <div className="container mx-auto p-6 max-w-4xl">
       <div className="mb-8">
-        <h1 className="text-3xl font-bold mb-2">Test SMS Réel - Firebase Auth</h1>
-        <p className="text-gray-600">
-          Test de vérification des numéros de téléphone avec Firebase Phone Authentication
+        <h1 className="text-3xl font-bold mb-2">Test SMS Réel - Vérification de téléphone</h1>
+        <p className="text-gray-600 mb-6">
+            Test de vérification des numéros de téléphone avec authentification par SMS
         </p>
       </div>
 
@@ -496,12 +496,12 @@ const TestRealSmsPage: React.FC = () => {
         <CardContent>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
             <div>
-              <h4 className="font-medium mb-2">Firebase Console</h4>
-              <ul className="space-y-1 text-gray-600">
-                <li>• Phone Authentication activé</li>
-                <li>• reCAPTCHA Enterprise configuré</li>
-                <li>• Plan Blaze pour SMS réels</li>
-                <li>• Domaines autorisés ajoutés</li>
+              <h4 className="font-medium mb-2">Configuration requise</h4>
+              <ul className="text-sm text-gray-600 space-y-1">
+                  <li>• Variables d'environnement configurées</li>
+                  <li>• Service SMS activé</li>
+                  <li>• Protection de sécurité configurée</li>
+                  <li>• Autres paramètres système</li>
               </ul>
             </div>
             <div>
