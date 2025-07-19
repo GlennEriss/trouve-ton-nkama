@@ -5,6 +5,7 @@ import { useToast } from '@/hooks/use-toast';
 import { useRouter } from 'next/navigation';
 import { routes } from '@/constantes/routes';
 import { signOut } from "next-auth/react"
+import { LogOut } from 'lucide-react';
 
 const getAuth = () => import("@/firebase/auth");
 
@@ -12,6 +13,7 @@ export default function Logout() {
     const { toast } = useToast();
     const router = useRouter()
     const [isLoading, setIsLoading] = React.useState(false)
+    
     const handleClientSignout = async () => {
         setIsLoading(true)
         try {
@@ -37,12 +39,19 @@ export default function Logout() {
             });
         }
     }
+    
     return (
         <div className='md:hidden'>
-            <Button onClick={handleClientSignout} variant='outline' className='w-full text-md border-red-500 text-red-500 hover:text-red-500'>
+            <Button 
+                onClick={handleClientSignout} 
+                variant='outline' 
+                className='w-full text-md border-red-500 text-red-500 hover:text-red-500 hover:bg-red-50 transition-colors'
+                disabled={isLoading}
+            >
+                <LogOut className="mr-2" size={20} />
                 {
                     isLoading ? (
-                        <div className="w-5 h-5 border-4 border-red-500 rounded-full animate-spin border-t-transparent"></div>
+                        <div className="w-5 h-5 border-2 border-red-500 rounded-full animate-spin border-t-transparent"></div>
                     ) : (
                         <span>Se déconnecter</span>
                     )
