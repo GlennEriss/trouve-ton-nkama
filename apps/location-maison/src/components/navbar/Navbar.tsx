@@ -14,7 +14,7 @@ export default function Navbar() {
 
             {/* Logo */}
             <Link href={routes.public.homePage}>
-                <Logo className='text-xl' />
+                <Logo className='text-xl' width="64px" height="64px" />
             </Link>
 
             {/* Icônes à droite */}

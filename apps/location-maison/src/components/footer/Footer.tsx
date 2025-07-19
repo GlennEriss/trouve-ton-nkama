@@ -20,7 +20,7 @@ export default function Footer({ isHide = false }: Readonly<{ isHide?: boolean }
             <div className="w-full max-w-screen-xl mx-auto p-4 md:py-8">
                 <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
                     <div className='hidden md:block'>
-                        <Logo className="text-black mb-4 sm:mb-0" />
+                        <Logo className="text-black mb-4 sm:mb-0" width="64px" height="64px" />
                     </div>
                     <ul className="flex flex-col sm:flex-row items-center mb-4 sm:mb-0 text-sm font-medium text-white space-y-2 sm:space-y-0 sm:space-x-6">
                         <li>
@@ -56,7 +56,7 @@ export default function Footer({ isHide = false }: Readonly<{ isHide?: boolean }
                         </div>
                     </div>
                     <div className='ml-auto md:hidden mt-auto'>
-                        <Logo className="text-black mb-4 sm:mb-0" />
+                        <Logo className="text-black mb-4 sm:mb-0" width="64px" height="64px" />
                     </div>
                 </div>
 

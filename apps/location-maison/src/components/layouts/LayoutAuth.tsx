@@ -52,7 +52,7 @@ export const LayoutAuth: React.FC<LayoutAuthProps> = ({
                     <div className="flex flex-col h-full">
                         <div className="flex items-center">
                             <Link href={routes.public.homePage}>
-                                <Logo color='white' />
+                                <Logo width="64px" height="64px" />
                             </Link>
                             <h1 className="text-2xl font-bold">
                                 Trouve Ton Nkama
