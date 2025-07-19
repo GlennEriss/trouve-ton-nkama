@@ -1,6 +1,6 @@
 import React from 'react'
 
-export default function Logo({ className, color }: Readonly<{ className?: string, color?: string }>) {
+export default function Logo({ className, color, width, height}: Readonly<{ className?: string, color?: string, width?: string, height?: string }>) {
   return (
     <svg 
       version="1.1" 
@@ -8,13 +8,14 @@ export default function Logo({ className, color }: Readonly<{ className?: string
       xmlnsXlink="http://www.w3.org/1999/xlink" 
       x="0px" 
       y="0px"
-      width="100%" 
+      width={width ?? "48px"}
+      height={height ?? "48px"}
       viewBox="0 0 1181 1181" 
       enableBackground="new 0 0 1181 1181" 
       xmlSpace="preserve"
       className={className}
     >
-      <path fill={color ?? "#156B68"} opacity="1.000000" stroke="none" 
+      <path fill={"#156B68"} opacity="1.000000" stroke="none" 
         d="M519.250366,229.713287 
           C514.761169,221.235092 510.043091,212.866745 505.895203,204.224747 
           C504.230652,200.756607 503.203461,196.723511 502.975372,192.882889 

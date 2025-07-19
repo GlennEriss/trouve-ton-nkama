@@ -18,7 +18,7 @@ const EmailAlreadyVerified: React.FC = () => {
         <div className="bg-gradient-to-br from-[#146B67] via-[#1FA89B] to-[#146B67] text-white p-8 text-center">
           <div className="flex items-center justify-center mb-4">
             <Link href={routes.public.homePage}>
-              <Logo color='white' />
+              <Logo width="64px" height="64px" />
             </Link>
             <h1 className="text-2xl font-bold ml-3">
               Trouve Ton Nkama

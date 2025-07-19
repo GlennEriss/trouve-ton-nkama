@@ -103,7 +103,7 @@ const LogoNavigation = () => {
   return (
     <div className="rounded-full bg-[#f4f9f9] dark:bg-gray-900 shadow dark:shadow-gray-900/50">
       <a href="/" rel="noopener noreferrer">
-        <Logo />
+        <Logo width="64px" height="64px" />
       </a>
     </div>
   )
