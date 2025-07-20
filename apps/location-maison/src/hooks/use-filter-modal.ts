@@ -63,17 +63,17 @@ export const useFilterModal = () => {
       setTimeout(() => {
         // console.log('⏳ FilterModal - Application des valeurs...');
         
-        setLocalProvince(provinceVal.split(","));
-        setLocalCity(cityVal.split(","));
-        setLocalStreet(streetVal.split(","));
+        setLocalProvince(provinceVal ? provinceVal.split(",").filter(p => p.trim()) : []);
+        setLocalCity(cityVal ? cityVal.split(",").filter(c => c.trim()) : []);
+        setLocalStreet(streetVal ? streetVal.split(",").filter(s => s.trim()) : []);
         setLocalMinPrice(minPriceVal);
         setLocalMaxPrice(maxPriceVal);
         setLocalMinArea(minAreaVal);
         setLocalMaxArea(maxAreaVal);
         setLocalMinRooms(minRoomsVal);
         setLocalMaxRooms(maxRoomsVal);
-        setLocalTypes(typePropRaw ? typePropRaw.split(",").map(s => s.trim()) : []);
-        setLocalTags(tagsRaw ? tagsRaw.split(",").map(s => s.trim()) : []);
+        setLocalTypes(typePropRaw ? typePropRaw.split(",").map(s => s.trim()).filter(t => t) : []);
+        setLocalTags(tagsRaw ? tagsRaw.split(",").map(s => s.trim()).filter(t => t) : []);
 
         // console.log('✅ FilterModal - États locaux synchronisés:', {
         //   localProvince: provinceVal,

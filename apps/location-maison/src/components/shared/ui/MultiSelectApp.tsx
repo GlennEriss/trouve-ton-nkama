@@ -115,6 +115,12 @@ interface MultiSelectProps
    * Optional, can be used to add custom styles.
    */
   className?: string;
+
+  /**
+   * If true, the multi-select component will be disabled and non-interactive.
+   * Optional, defaults to false.
+   */
+  disabled?: boolean;
 }
 
 export const MultiSelect = React.forwardRef<
@@ -133,6 +139,7 @@ export const MultiSelect = React.forwardRef<
       modalPopover = false,
       asChild = false,
       className,
+      disabled = false,
       ...props
     },
     ref
@@ -156,6 +163,7 @@ export const MultiSelect = React.forwardRef<
     };
 
     const toggleOption = (option: string) => {
+      if (disabled) return;
       const newSelectedValues = selectedValues.includes(option)
         ? selectedValues.filter((value) => value !== option)
         : [...selectedValues, option];
@@ -164,21 +172,25 @@ export const MultiSelect = React.forwardRef<
     };
 
     const handleClear = () => {
+      if (disabled) return;
       setSelectedValues([]);
       onValueChange([]);
     };
 
     const handleTogglePopover = () => {
+      if (disabled) return;
       setIsPopoverOpen((prev) => !prev);
     };
 
     const clearExtraOptions = () => {
+      if (disabled) return;
       const newSelectedValues = selectedValues.slice(0, maxCount);
       setSelectedValues(newSelectedValues);
       onValueChange(newSelectedValues);
     };
 
     const toggleAll = () => {
+      if (disabled) return;
       if (selectedValues.length === options.length) {
         handleClear();
       } else {
@@ -190,8 +202,8 @@ export const MultiSelect = React.forwardRef<
 
     return (
       <Popover
-        open={isPopoverOpen}
-        onOpenChange={setIsPopoverOpen}
+        open={disabled ? false : isPopoverOpen}
+        onOpenChange={disabled ? undefined : setIsPopoverOpen}
         modal={modalPopover}
       >
         <PopoverTrigger asChild>
@@ -199,8 +211,10 @@ export const MultiSelect = React.forwardRef<
             ref={ref}
             {...props}
             onClick={handleTogglePopover}
+            disabled={disabled}
             className={cn(
               "flex w-full p-1 rounded-md border min-h-10 h-auto items-center justify-between bg-inherit hover:bg-inherit [&_svg]:pointer-events-auto",
+              disabled && "opacity-50 cursor-not-allowed",
               className
             )}
           >
@@ -226,6 +240,7 @@ export const MultiSelect = React.forwardRef<
                         <XCircle
                           className="ml-2 h-4 w-4 cursor-pointer"
                           onClick={(event) => {
+                            if (disabled) return;
                             event.stopPropagation();
                             toggleOption(value);
                           }}
@@ -246,6 +261,7 @@ export const MultiSelect = React.forwardRef<
                       <XCircle
                         className="ml-2 h-4 w-4 cursor-pointer"
                         onClick={(event) => {
+                          if (disabled) return;
                           event.stopPropagation();
                           clearExtraOptions();
                         }}
@@ -257,6 +273,7 @@ export const MultiSelect = React.forwardRef<
                   <XIcon
                     className="h-4 mx-2 cursor-pointer text-muted-foreground"
                     onClick={(event) => {
+                      if (disabled) return;
                       event.stopPropagation();
                       handleClear();
                     }}

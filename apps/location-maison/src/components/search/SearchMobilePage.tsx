@@ -9,7 +9,7 @@ import PropertyCard from '../home-page/PropertyCard';
 import { useSearchParams } from 'next/navigation';
 
 export default function SearchMobilePage() {
-    const { searchText, setSearchText, setProvince, setCity, setStreet, setMinPrice, setMaxPrice, setMinArea, setMaxArea, setMinNbrRooms, setMaxNbrRooms, setTypeProperty, setTags } = useAlgoliaContext()
+    const { searchText, setSearchText, province, city, street, minPrice, maxPrice, minArea, maxArea, minNbrRooms, maxNbrRooms, typeProperty, tags, setProvince, setCity, setStreet, setMinPrice, setMaxPrice, setMinArea, setMaxArea, setMinNbrRooms, setMaxNbrRooms, setTypeProperty, setTags } = useAlgoliaContext()
     const topRef = React.useRef<HTMLDivElement>(null);
     const sentinelRef = React.useRef<HTMLDivElement>(null);
     const { items, isLastPage, showMore } = useInfiniteHits();
@@ -87,6 +87,28 @@ export default function SearchMobilePage() {
                     <div className="flex items-center border rounded-full p-2 px-4 bg-gray-100 focus-within:border-[#1FA89B]">
                         <button
                             type='submit'
+                            onClick={(e) => {
+                                e.preventDefault();
+                                // Construire l'URL avec tous les filtres actifs
+                                const params = new URLSearchParams();
+                                if (searchText) params.append("query", searchText);
+                                if (province) params.append("province", province);
+                                if (city) params.append("city", city);
+                                if (street) params.append("street", street);
+                                if (minPrice) params.append("minPrice", minPrice);
+                                if (maxPrice) params.append("maxPrice", maxPrice);
+                                if (minArea) params.append("minArea", minArea);
+                                if (maxArea) params.append("maxArea", maxArea);
+                                if (minNbrRooms) params.append("minNbrRooms", minNbrRooms);
+                                if (maxNbrRooms) params.append("maxNbrRooms", maxNbrRooms);
+                                if (typeProperty && typeProperty.length > 0) {
+                                    params.append("typeProperty", typeProperty.join(","));
+                                }
+                                if (tags && tags.length > 0) {
+                                    params.append("tags", tags.join(","));
+                                }
+                                window.location.href = `/search?${params.toString()}`;
+                            }}
                         >
                             <Search size={25} className='hover:stroke-[#1FA89B]' />
                         </button>
