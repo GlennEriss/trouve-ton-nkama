@@ -209,8 +209,19 @@ const authConfig = {
                         ...user,
                         emailVerified: userCredential.user.emailVerified,
                     } as any
-                } catch (error) {
+                } catch (error: any) {
                     console.error("Erreur d'authentification", error);
+                    
+                    // Transmettre les erreurs Firebase spécifiques
+                    if (error.code) {
+                        throw new Error(error.code);
+                    }
+                    
+                    // Pour les erreurs personnalisées (comme 'Email is not verified')
+                    if (error.message) {
+                        throw new Error(error.message);
+                    }
+                    
                     return null
                 }
             }
