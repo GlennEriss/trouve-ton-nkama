@@ -6,27 +6,7 @@ import { FilterModalHomePage } from '../home-page/FilterModalHomePage';
 import { useAlgoliaContext } from '@/providers/AlgoliaContext';
 import { useInfiniteHits, useStats } from 'react-instantsearch';
 import PropertyCard from '../home-page/PropertyCard';
-import Image from 'next/image';
 import { useSearchParams } from 'next/navigation';
-
-// Hook personnalisé pour gérer le scroll
-const useScrollPosition = () => {
-    const [scrollY, setScrollY] = React.useState(0);
-    const [isScrolled, setIsScrolled] = React.useState(false);
-
-    React.useEffect(() => {
-        const handleScroll = () => {
-            const currentScrollY = window.scrollY;
-            setScrollY(currentScrollY);
-            setIsScrolled(currentScrollY > 100); // Se fixe après 100px de scroll
-        };
-
-        window.addEventListener('scroll', handleScroll, { passive: true });
-        return () => window.removeEventListener('scroll', handleScroll);
-    }, []);
-
-    return { scrollY, isScrolled };
-};
 
 export default function SearchMobilePage() {
     const { searchText, setSearchText, setProvince, setCity, setStreet, setMinPrice, setMaxPrice, setMinArea, setMaxArea, setMinNbrRooms, setMaxNbrRooms, setTypeProperty, setTags } = useAlgoliaContext()
@@ -35,7 +15,6 @@ export default function SearchMobilePage() {
     const { items, isLastPage, showMore } = useInfiniteHits();
     const { nbHits } = useStats();
     const searchParams = useSearchParams();
-    const { isScrolled } = useScrollPosition();
 
     // Synchronisation URL → Contexte Algolia au chargement initial
     React.useEffect(() => {
@@ -52,11 +31,6 @@ export default function SearchMobilePage() {
         const typePropRaw = searchParams.get("typeProperty");
         const tagsRaw = searchParams.get("tags");
 
-        // Debug log pour vérifier la synchronisation
-        // console.log('📱 Mobile - Synchronisation URL→Context:', { 
-        //     queryVal, provinceVal, cityVal, minPriceVal, maxPriceVal 
-        // });
-
         // Mettre à jour le contexte Algolia avec délai pour s'assurer de la stabilité
         setTimeout(() => {
             setSearchText(queryVal);
@@ -71,22 +45,8 @@ export default function SearchMobilePage() {
             setMaxNbrRooms(maxRoomsVal);
             setTypeProperty(typePropRaw ? typePropRaw.split(",").map(s => s.trim()) : []);
             setTags(tagsRaw ? tagsRaw.split(",").map(s => s.trim()) : []);
-
-            // console.log('📱 Mobile - Contexte mis à jour:', {
-            //     searchText: queryVal,
-            //     province: provinceVal,
-            //     city: cityVal
-            // });
         }, 50);
     }, [searchParams.toString(), setSearchText, setProvince, setCity, setStreet, setMinPrice, setMaxPrice, setMinArea, setMaxArea, setMinNbrRooms, setMaxNbrRooms, setTypeProperty, setTags]);
-
-    // Scroll handlers
-    const scrollToTop = () => {
-        topRef.current?.scrollIntoView({ behavior: "smooth" });
-    };
-    const scrollToBottom = () => {
-        sentinelRef.current?.scrollIntoView({ behavior: "smooth" });
-    };
 
     // Infinite hits + intersection observer
     React.useEffect(() => {
@@ -103,20 +63,28 @@ export default function SearchMobilePage() {
         return () => obs.disconnect();
     }, [sentinelRef, isLastPage, showMore]);
 
-    // Composant de barre de recherche
-    const SearchBar = ({ isFixed = false }: { isFixed?: boolean }) => (
-        <section className={`${isFixed ? 'fixed top-0 left-0 right-0 z-50 bg-white dark:bg-gray-800 shadow-md border-b border-gray-200 dark:border-gray-700' : ''} md:hidden`}>
-            <div className={`${isFixed ? 'p-3' : ''}`}>
-                <h1 className={`text-2xl font-bold text-[#146B67] ${isFixed ? 'text-lg' : ''}`}>
-                    {isFixed ? 'Rechercher' : 'Rechercher une annonce'}
-                </h1>
-                {!isFixed && (
-                    <p className='text-sm text-gray-500'>
-                        Trouvez le logement de vos rêves parmi nos annonces immobilières.
-                    </p>
-                )}
+    // Scroll handlers
+    const scrollToTop = () => {
+        topRef.current?.scrollIntoView({ behavior: "smooth" });
+    };
+    const scrollToBottom = () => {
+        sentinelRef.current?.scrollIntoView({ behavior: "smooth" });
+    };
+
+    return (
+        <div className='p-5 space-y-5 h-full pb-20' ref={topRef}>
+            {/* Barre de recherche identique à la homepage */}
+            <section className='space-y-4'>
+                <div className='space-y-1'>
+                    <h1 className='text-gray-500 text-[11px]'>Votre futur chez-vous grâce à Trouve Ton Nkama</h1>
+                    <div className='flex text-xl font-bold text-[#146B67] items-center gap-2'>
+                        <h1>
+                            Rechercher sur Trouve Ton Nkama
+                        </h1>
+                    </div>
+                </div>
                 <Form action="/search">
-                    <div className="flex items-center border rounded-full p-2 px-4 bg-gray-100 focus-within:border-[#1FA89B] mt-2">
+                    <div className="flex items-center border rounded-full p-2 px-4 bg-gray-100 focus-within:border-[#1FA89B]">
                         <button
                             type='submit'
                         >
@@ -134,17 +102,7 @@ export default function SearchMobilePage() {
                         </div>
                     </div>
                 </Form>
-            </div>
-        </section>
-    );
-
-    return (
-        <div className='p-5 space-y-5 h-full pb-20' ref={topRef}>
-            {/* Barre de recherche fixe (visible lors du scroll) */}
-            {isScrolled && <SearchBar isFixed={true} />}
-            
-            {/* Barre de recherche normale */}
-            <SearchBar />
+            </section>
 
             <section className='space-y-5'>
                 <div className='flex items-center justify-between'>
@@ -164,38 +122,10 @@ export default function SearchMobilePage() {
                     </button>
                 </div>
 
-                <div>
+                <div className="space-y-4">
                     {items.length === 0 ? (
-                        <div className="flex flex-col items-center justify-center py-20">
-                            <Image
-                                src="/no-favorites.svg"
-                                alt="Aucun résultat trouvé"
-                                width={240}
-                                height={240}
-                                className="opacity-70"
-                            />
-                            <p className="mt-4 text-gray-600 dark:text-gray-400 text-lg">
-                                Aucun bien ne correspond à ces critères.
-                            </p>
-                            <button
-                                onClick={() => {
-                                    setSearchText("");
-                                    setProvince("");
-                                    setCity("");
-                                    setStreet("");
-                                    setMinPrice("");
-                                    setMaxPrice("");
-                                    setMinArea("");
-                                    setMaxArea("");
-                                    setMinNbrRooms("");
-                                    setMaxNbrRooms("");
-                                    setTypeProperty([]);
-                                    setTags([]);
-                                }}
-                                className="mt-4 px-4 py-2 bg-gradient-to-r from-[#146B67] via-[#1FA89B] to-[#146B67] text-white rounded hover:brightness-110 transition"
-                            >
-                                Réinitialiser les filtres
-                            </button>
+                        <div className="text-center py-8">
+                            <p className="text-gray-500">Aucun résultat trouvé</p>
                         </div>
                     ) : (
                         <>
@@ -223,6 +153,8 @@ export default function SearchMobilePage() {
                         </>
                     )}
                 </div>
+
+                {/* Boutons de scroll haut/bas */}
                 <div className="fixed bottom-24 right-6 flex flex-col gap-2 z-50">
                     <button
                         onClick={scrollToTop}
