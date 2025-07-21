@@ -10,14 +10,14 @@ export const metadata: Metadata = {
     description: 'Rejoignez Trouve Ton Nkama pour publier vos biens, trouver votre maison idéale, et profiter d’un espace personnel sécurisé.',
     url: `${process.env.NEXT_PUBLIC_HOST}/signin`,
     type: 'website',
-    images: [
-      {
-        url: `${process.env.NEXT_PUBLIC_HOST}/logo.svg`,
-        width: 1200,
-        height: 630,
-        alt: 'Connexion Trouve Ton Nkama',
-      },
-    ],
+            images: [
+            {
+                url: `${process.env.NEXT_PUBLIC_HOST}/linkedin-og.jpg`,
+                width: 1200,
+                height: 630,
+                alt: 'Connexion Trouve Ton Nkama',
+            },
+        ],
   },
 }
 

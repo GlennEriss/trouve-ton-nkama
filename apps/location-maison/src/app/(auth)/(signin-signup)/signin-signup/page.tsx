@@ -12,7 +12,7 @@ export const metadata: Metadata = {
         type: 'website',
         images: [
             {
-                url: `${process.env.NEXT_PUBLIC_HOST}/logo.svg`,
+                url: `${process.env.NEXT_PUBLIC_HOST}/linkedin-og.jpg`,
                 width: 1200,
                 height: 630,
                 alt: 'Connexion ou Inscription Trouve Ton Nkama',

@@ -10,14 +10,14 @@ export const metadata: Metadata = {
     description: "Apprenez comment Trouve Ton Nkama respecte votre vie privée et protège vos informations personnelles conformément aux réglementations en vigueur.",
     url: `${process.env.NEXT_PUBLIC_HOST}/privacy-policy`,
     type: "website",
-    images: [
-      {
-        url: `${process.env.NEXT_PUBLIC_HOST}/logo.svg`,
-        width: 1200,
-        height: 630,
-        alt: "Politique de confidentialité Trouve Ton Nkama",
-      },
-    ],
+            images: [
+            {
+                url: `${process.env.NEXT_PUBLIC_HOST}/linkedin-og.jpg`,
+                width: 1200,
+                height: 630,
+                alt: "Politique de confidentialité Trouve Ton Nkama",
+            },
+        ],
   },
 };
 

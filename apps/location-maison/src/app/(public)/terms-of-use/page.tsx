@@ -9,14 +9,14 @@ export const metadata: Metadata = {
     description: "Prenez connaissance des règles et obligations applicables lors de l’utilisation du site Trouve Ton Nkama, votre plateforme de référence pour l'immobilier au Gabon.",
     url: `${process.env.NEXT_PUBLIC_HOST}/terms-of-use`,
     type: "website",
-    images: [
-      {
-        url: `${process.env.NEXT_PUBLIC_HOST}/logo.svg`,
-        width: 1200,
-        height: 630,
-        alt: "Conditions d'utilisation Trouve Ton Nkama",
-      },
-    ],
+            images: [
+            {
+                url: `${process.env.NEXT_PUBLIC_HOST}/linkedin-og.jpg`,
+                width: 1200,
+                height: 630,
+                alt: "Conditions d'utilisation Trouve Ton Nkama",
+            },
+        ],
   },
 };
 export default function TermsOfUsePage() {
