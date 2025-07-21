@@ -38,7 +38,13 @@ export const metadata: Metadata = {
     siteName: 'Trouve Ton Nkama',
     images: [
       {
-        url: '/og-image.png',
+        url: '/og-image.jpg?v=1',
+        width: 1200,
+        height: 630,
+        alt: 'Trouve Ton Nkama Accueil',
+      },
+      {
+        url: '/og-image.png?v=2',
         width: 1200,
         height: 630,
         alt: 'Trouve Ton Nkama Accueil',
@@ -70,6 +76,12 @@ export default async function RootLayout({
         <meta name="google-site-verification" content="owGLe__J-ZZiJvB-iZzlfxianxrwoO8vdRyxKFfSkTk" />
         <meta name="google-adsense-account" content="ca-pub-2799688336707362" />
         <link rel="canonical" href="https://www.tonnkama.com/" />
+        
+        {/* Métadonnées spécifiques pour LinkedIn */}
+        <meta property="og:image:width" content="1200" />
+        <meta property="og:image:height" content="630" />
+        <meta property="og:image:type" content="image/png" />
+        <meta property="og:image:alt" content="Trouve Ton Nkama - Plateforme immobilière au Gabon" />
       </head>
 
       <body
