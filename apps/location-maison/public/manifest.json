@@ -12,24 +12,33 @@
   "dir": "ltr",
   "icons": [
     {
+      "src": "/favicon.ico",
+      "sizes": "32x32",
+      "type": "image/x-icon"
+    },
+    {
       "src": "/favicon.webp",
       "sizes": "32x32",
-      "type": "image/webp"
+      "type": "image/webp",
+      "purpose": "any"
     },
     {
       "src": "/icon-64.webp",
       "sizes": "64x64",
-      "type": "image/webp"
+      "type": "image/webp",
+      "purpose": "any"
     },
     {
       "src": "/icon-128.webp",
       "sizes": "128x128",
-      "type": "image/webp"
+      "type": "image/webp",
+      "purpose": "any"
     },
     {
       "src": "/icon-256.webp",
       "sizes": "256x256",
-      "type": "image/webp"
+      "type": "image/webp",
+      "purpose": "any"
     },
     {
       "src": "/icon-512.webp",
