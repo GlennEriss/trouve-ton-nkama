@@ -9,14 +9,14 @@ export const metadata: Metadata = {
     description: "Consultez notre politique concernant la suppression de vos données personnelles. Trouve Ton Nkama s'engage à respecter votre vie privée et vos droits.",
     url: `${process.env.NEXT_PUBLIC_HOST}/charte-suppression-donnees`,
     type: 'website',
-    images: [
-      {
-        url: `${process.env.NEXT_PUBLIC_HOST}/logo.svg`,
-        width: 1200,
-        height: 630,
-        alt: 'Suppression Données Trouve Ton Nkama',
-      },
-    ],
+            images: [
+            {
+                url: `${process.env.NEXT_PUBLIC_HOST}/linkedin-og.jpg`,
+                width: 1200,
+                height: 630,
+                alt: 'Suppression Données Trouve Ton Nkama',
+            },
+        ],
   },
 };
 
