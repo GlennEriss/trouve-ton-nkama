@@ -20,7 +20,12 @@ export const metadata: Metadata = {
   icons: {
     icon: [
       { url: '/favicon.ico' },
-      { url: '/logo.svg', type: 'image/svg+xml' }
+      { url: '/logo.webp', type: 'image/webp' },
+      { url: '/icon-512.webp', type: 'image/webp', sizes: '512x512' },
+      { url: '/icon-256.webp', type: 'image/webp', sizes: '256x256' },
+      { url: '/icon-128.webp', type: 'image/webp', sizes: '128x128' },
+      { url: '/icon-64.webp', type: 'image/webp', sizes: '64x64' },
+      { url: '/favicon.webp', type: 'image/webp', sizes: '32x32' }
     ],
     shortcut: '/favicon.ico',
     apple: '/apple-touch-icon.png',
@@ -33,7 +38,7 @@ export const metadata: Metadata = {
     siteName: 'Trouve Ton Nkama',
     images: [
       {
-        url: '/logo.svg',
+        url: '/og-image.png',
         width: 1200,
         height: 630,
         alt: 'Trouve Ton Nkama Accueil',
@@ -46,7 +51,7 @@ export const metadata: Metadata = {
     card: 'summary_large_image',
     title: 'Trouve Ton Nkama - Immobilier au Gabon',
     description: 'Explorez un large choix de logements à louer ou à vendre au Gabon. Publiez vos annonces ou trouvez votre futur chez-vous avec Trouve Ton Nkama.',
-    images: ['/logo.svg'],
+    images: ['/og-image.png'],
   },
   robots: {
     index: true,

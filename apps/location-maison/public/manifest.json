@@ -12,21 +12,36 @@
   "dir": "ltr",
   "icons": [
     {
-      "src": "/favicon.ico",
-      "sizes": "16x16 32x32",
-      "type": "image/x-icon"
+      "src": "/favicon.webp",
+      "sizes": "32x32",
+      "type": "image/webp"
     },
     {
-      "src": "/logo.svg",
-      "sizes": "any",
-      "type": "image/svg+xml",
-      "purpose": "any"
+      "src": "/icon-64.webp",
+      "sizes": "64x64",
+      "type": "image/webp"
     },
     {
-      "src": "/apple-touch-icon.png",
-      "sizes": "180x180",
-      "type": "image/png",
+      "src": "/icon-128.webp",
+      "sizes": "128x128",
+      "type": "image/webp"
+    },
+    {
+      "src": "/icon-256.webp",
+      "sizes": "256x256",
+      "type": "image/webp"
+    },
+    {
+      "src": "/icon-512.webp",
+      "sizes": "512x512",
+      "type": "image/webp",
       "purpose": "any maskable"
+    },
+    {
+      "src": "/logo.webp",
+      "sizes": "1024x1024",
+      "type": "image/webp",
+      "purpose": "any"
     }
   ],
   "categories": ["business", "lifestyle", "productivity"]
