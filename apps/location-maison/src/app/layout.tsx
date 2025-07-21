@@ -19,13 +19,13 @@ export const metadata: Metadata = {
   metadataBase: new URL('https://www.tonnkama.com'),
   icons: {
     icon: [
-      { url: '/favicon.ico' },
-      { url: '/logo.webp', type: 'image/webp' },
-      { url: '/icon-512.webp', type: 'image/webp', sizes: '512x512' },
-      { url: '/icon-256.webp', type: 'image/webp', sizes: '256x256' },
-      { url: '/icon-128.webp', type: 'image/webp', sizes: '128x128' },
+      { url: '/favicon.ico', type: 'image/x-icon' },
+      { url: '/favicon.webp', type: 'image/webp', sizes: '32x32' },
       { url: '/icon-64.webp', type: 'image/webp', sizes: '64x64' },
-      { url: '/favicon.webp', type: 'image/webp', sizes: '32x32' }
+      { url: '/icon-128.webp', type: 'image/webp', sizes: '128x128' },
+      { url: '/icon-256.webp', type: 'image/webp', sizes: '256x256' },
+      { url: '/icon-512.webp', type: 'image/webp', sizes: '512x512' },
+      { url: '/logo.webp', type: 'image/webp', sizes: '1024x1024' }
     ],
     shortcut: '/favicon.ico',
     apple: '/apple-touch-icon.png',
