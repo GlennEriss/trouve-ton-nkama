@@ -2,7 +2,7 @@
  * @module constantes
  */
 
-import { FaBriefcase, FaHome, FaHeart, FaBuilding, FaUsers, FaCouch, FaTree, FaMountain, FaSwimmingPool, FaDog, FaShoppingCart, FaBus, FaCar, FaWifi, FaShieldAlt, FaBicycle, FaRunning, FaChild, FaWheelchair, FaGraduationCap, FaUmbrellaBeach, FaPeace, FaColumns, FaWarehouse } from 'react-icons/fa';
+import { FaBriefcase, FaHome, FaHeart, FaBuilding, FaUsers, FaCouch, FaTree, FaMountain, FaSwimmingPool, FaDog, FaShoppingCart, FaBus, FaCar, FaWifi, FaShieldAlt, FaBicycle, FaRunning, FaChild, FaWheelchair, FaGraduationCap, FaUmbrellaBeach, FaPeace, FaColumns, FaWarehouse, FaRegClock } from 'react-icons/fa';
 
 
 export const tags = [
@@ -125,7 +125,11 @@ export const tags = [
   {
     tagName: 'Garage',
     tagIcon: FaCar, // Icon for properties with garage
-  }
+  },
+  {
+    tagName: 'Court séjour',
+    tagIcon: FaRegClock, // Icone pour court séjour
+  },
 ];
 
 export const collectionFirebaseNames = {

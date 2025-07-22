@@ -9,7 +9,8 @@ import {
   DialogFooter,
   DialogClose
 } from "@/components/ui/dialog";
-import { Download, Smartphone, X, Sparkles, Zap, Heart } from "lucide-react";
+import { Download, X, Sparkles, Zap, Heart } from "lucide-react";
+import Image from "next/image";
 
 export default function InstallPWAButton() {
   const [deferredPrompt, setDeferredPrompt] = useState<Event | null>(null);
@@ -66,9 +67,12 @@ export default function InstallPWAButton() {
             {/* Icon container avec effet glow */}
             <div className="relative inline-flex items-center justify-center w-20 h-20 rounded-full bg-gradient-to-r from-emerald-500 to-blue-500 shadow-lg">
               <div className="absolute inset-0 rounded-full bg-gradient-to-r from-emerald-500 to-blue-500 animate-ping opacity-20" />
-              <Smartphone 
-                size={40} 
-                className="text-white relative z-10 animate-bounce" 
+              <Image
+                src="/logo.svg"
+                alt="Logo Trouve Ton Nkama"
+                width={40}
+                height={40}
+                className="relative z-10 animate-bounce"
                 style={{ animationDuration: '2s' }}
               />
               {/* Particules flottantes */}
@@ -96,27 +100,6 @@ export default function InstallPWAButton() {
             Accédez rapidement à toutes vos recherches immobilières avec une application native ultra-rapide !
           </DialogDescription>
         </DialogHeader>
-
-        {/* Features list */}
-        <div className="px-6 py-4 space-y-3">
-          {[
-            { icon: "⚡", text: "Accès instantané" },
-            { icon: "📱", text: "Interface native" },  
-            { icon: "🔔", text: "Notifications push" },
-            { icon: "💾", text: "Fonctionne hors ligne" }
-          ].map((feature, index) => (
-            <div 
-              key={feature.text}
-              className="flex items-center gap-3 p-2 rounded-xl hover:bg-gray-50/80 transition-all duration-300"
-              style={{ 
-                animation: `slideInUp 0.6s ease-out ${index * 0.1}s both`
-              }}
-            >
-              <span className="text-2xl">{feature.icon}</span>
-              <span className="text-gray-700 font-medium">{feature.text}</span>
-            </div>
-          ))}
-        </div>
 
         <DialogFooter className="flex-col sm:flex-row gap-3 p-6 pt-2">
           <button
