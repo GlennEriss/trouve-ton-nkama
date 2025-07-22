@@ -209,7 +209,6 @@ export const FilterModalHomePage = () => {
                                 <div>
                                     <label htmlFor="max-price" className="text-gray-600">Prix max</label>
                                     <NumberInputRHF
-                                        key={`max-price-home-${localMaxPrice}`}
                                         id="max-price"
                                         type="number"
                                         min={0}

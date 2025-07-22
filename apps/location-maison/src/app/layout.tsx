@@ -14,9 +14,9 @@ const inter = Inter({
 })
 
 export const metadata: Metadata = {
-  title: 'Trouve Ton Nkama - Immobilier Libreville, Port-Gentil, Gabon | Location & Vente',
-  description: 'Trouvez votre logement au Gabon : maisons, appartements, villas à Libreville, Port-Gentil, Akanda. Publiez vos annonces immobilières gratuitement. Prix en FCFA, photos réelles, contact direct propriétaire.',
-  keywords: 'immobilier Gabon, location maison Libreville, vente appartement Port-Gentil, villa Akanda, terrain Gabon, prix immobilier Libreville, agence immobilière Gabon, logement étudiant Libreville, maison meublée Gabon, appartement centre-ville Libreville, location courte durée Gabon, investissement immobilier Libreville, quartier résidentiel Port-Gentil, maison sous barrière Gabon, studio étudiant Libreville',
+  title: 'Trouve Ton Nkama - Immobilier Gabon | Location & Vente Maisons, Appartements',
+  description: 'Trouvez votre logement au Gabon : maisons, appartements, villas à Libreville, Port-Gentil, Franceville, Oyem, Mouila et partout au Gabon. Publiez vos annonces immobilières gratuitement. Prix en FCFA, photos réelles, contact direct propriétaire.',
+  keywords: 'immobilier Gabon, location maison Libreville, vente appartement Port-Gentil, villa Akanda, terrain Gabon, prix immobilier Libreville, agence immobilière Gabon, logement étudiant Libreville, maison meublée Gabon, appartement centre-ville Libreville, location courte durée Gabon, investissement immobilier Libreville, quartier résidentiel Port-Gentil, maison sous barrière Gabon, studio étudiant Libreville, immobilier Franceville, location maison Franceville, vente appartement Franceville, immobilier Oyem, location maison Oyem, vente appartement Oyem, immobilier Mouila, location maison Mouila, vente appartement Mouila, immobilier Lambaréne, location maison Lambaréne, vente appartement Lambaréne, immobilier Tchibanga, location maison Tchibanga, vente appartement Tchibanga, immobilier Makokou, location maison Makokou, vente appartement Makokou, immobilier Koulamoutou, location maison Koulamoutou, vente appartement Koulamoutou, immobilier Bitam, location maison Bitam, vente appartement Bitam, immobilier Moanda, location maison Moanda, vente appartement Moanda, immobilier Ntoum, location maison Ntoum, vente appartement Ntoum, immobilier Owendo, location maison Owendo, vente appartement Owendo, immobilier Ndjolé, location maison Ndjolé, vente appartement Ndjolé, immobilier Estuaire, immobilier Ogooué-Maritime, immobilier Haut-Ogooué, immobilier Woleu-Ntem, immobilier Ngounié, immobilier Moyen-Ogooué, immobilier Nyanga, immobilier Ogooué-Ivindo, immobilier Ogooué-Lolo',
   metadataBase: new URL(process.env.NEXT_PUBLIC_HOST || 'https://www.tonnkama.com'),
   icons: {
     icon: [
@@ -33,8 +33,8 @@ export const metadata: Metadata = {
   },
   manifest: '/manifest.json',
   openGraph: {
-    title: 'Immobilier Gabon - Trouve Ton Nkama | Location & Vente Libreville, Port-Gentil',
-    description: 'Plateforme immobilière #1 au Gabon. Maisons, appartements, villas à Libreville, Port-Gentil, Akanda. Prix en FCFA, annonces vérifiées, contact direct propriétaire. Publiez gratuitement vos annonces.',
+    title: 'Immobilier Gabon - Trouve Ton Nkama | Location & Vente Maisons, Appartements',
+    description: 'Plateforme immobilière #1 au Gabon. Maisons, appartements, villas à Libreville, Port-Gentil, Franceville, Oyem, Mouila et partout au Gabon. Prix en FCFA, annonces vérifiées, contact direct propriétaire. Publiez gratuitement vos annonces.',
     url: process.env.NEXT_PUBLIC_HOST || 'https://www.tonnkama.com',
     siteName: 'Trouve Ton Nkama - Immobilier Gabon',
     images: [
@@ -51,7 +51,7 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'Immobilier Gabon - Trouve Ton Nkama | Libreville, Port-Gentil',
+    title: 'Immobilier Gabon - Trouve Ton Nkama | Location & Vente',
     description: 'Trouvez votre logement au Gabon : maisons, appartements, villas. Prix en FCFA, annonces vérifiées, contact direct propriétaire.',
     images: ['/og-image.jpg'],
   },
@@ -74,8 +74,8 @@ export default async function RootLayout({
         <link rel="canonical" href={`${process.env.NEXT_PUBLIC_HOST || 'https://www.tonnkama.com'}/`} />
         
         {/* Métadonnées Open Graph optimisées pour mobile et WhatsApp */}
-        <meta property="og:title" content="Immobilier Gabon - Trouve Ton Nkama | Location & Vente Libreville, Port-Gentil" />
-        <meta property="og:description" content="Plateforme immobilière #1 au Gabon. Maisons, appartements, villas à Libreville, Port-Gentil, Akanda. Prix en FCFA, annonces vérifiées, contact direct propriétaire." />
+        <meta property="og:title" content="Immobilier Gabon - Trouve Ton Nkama | Location & Vente Maisons, Appartements" />
+        <meta property="og:description" content="Plateforme immobilière #1 au Gabon. Maisons, appartements, villas à Libreville, Port-Gentil, Franceville, Oyem, Mouila et partout au Gabon. Prix en FCFA, annonces vérifiées, contact direct propriétaire." />
         <meta property="og:url" content={process.env.NEXT_PUBLIC_HOST || 'https://www.tonnkama.com'} />
         <meta property="og:type" content="website" />
         <meta property="og:site_name" content="Trouve Ton Nkama" />
@@ -89,7 +89,7 @@ export default async function RootLayout({
         
         {/* Métadonnées Twitter Card */}
         <meta name="twitter:card" content="summary_large_image" />
-        <meta name="twitter:title" content="Immobilier Gabon - Trouve Ton Nkama | Libreville, Port-Gentil" />
+        <meta name="twitter:title" content="Immobilier Gabon - Trouve Ton Nkama | Location & Vente" />
         <meta name="twitter:description" content="Trouvez votre logement au Gabon : maisons, appartements, villas. Prix en FCFA, annonces vérifiées, contact direct propriétaire." />
         <meta name="twitter:image" content={`${process.env.NEXT_PUBLIC_HOST || 'https://www.tonnkama.com'}/og-image.jpg`} />
         
