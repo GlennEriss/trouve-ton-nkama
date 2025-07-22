@@ -1,17 +1,25 @@
 'use client'
-import React from 'react'
+import React, { useState } from 'react'
 import { useWindowSize } from '@/hooks/useSize';
 import HomePageMobileComponent from './HomePageMobileComponent';
 import HomePageDesktopComponent from './HomePageDesktopComponent';
+import InstallPWAButton, { InstallPWAButtonTrigger } from "@/components/pwa/InstallPWAButton";
 
 export default function HomePageComponent() {
     const { width } = useWindowSize();
-    if (width < 768) {
-        return (
-            <HomePageMobileComponent />
-        )
-    }
+    const [showModal, setShowModal] = useState(false);
+
+    const composantMobileOuPc = () => (
+        width < 768
+            ? <HomePageMobileComponent />
+            : <HomePageDesktopComponent />
+    );
+
     return (
-        <HomePageDesktopComponent />
-    )
+        <>
+            {composantMobileOuPc()}
+            <InstallPWAButton forceOpen={showModal} />
+            <InstallPWAButtonTrigger onClick={() => setShowModal(true)} />
+        </>
+    );
 }
