@@ -111,9 +111,12 @@ export default function ListPropertySection() {
         <div className="px-4 py-6">
             {/* Grid des propriétés */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-4 gap-6 mb-8">
-                {data?.pages[currentPage].properties.map((item) => (
-                    <CardPropertyCrud key={item.id} property={item} />
-                ))}
+                {data?.pages[currentPage]?.properties
+                  ? data.pages[currentPage].properties.map((item) => (
+                      <CardPropertyCrud key={item.id} property={item} />
+                    ))
+                  : <div className="col-span-full text-center text-gray-500">Aucune propriété à afficher pour cette page.</div>
+                }
             </div>
 
             {/* Pagination améliorée */}
@@ -134,7 +137,7 @@ export default function ListPropertySection() {
                         <span className="hidden sm:inline">Précédent</span>
                     </Button>
                     
-                    <div className="flex items-center gap-1 px-2">
+                    {/* <div className="flex items-center gap-1 px-2">
                         {Array.from({ length: Math.min(totalPage, 5) }, (_, i) => {
                             let pageIndex;
                             if (totalPage <= 5) {
@@ -146,11 +149,15 @@ export default function ListPropertySection() {
                             } else {
                                 pageIndex = currentPage - 2 + i;
                             }
-                            
                             return (
                                 <button
                                     key={pageIndex}
-                                    onClick={() => setCurrentPage(pageIndex)}
+                                    onClick={async () => {
+                                        if (!data.pages[pageIndex]) {
+                                            await fetchNextPage();
+                                        }
+                                        setCurrentPage(pageIndex);
+                                    }}
                                     className={cn(
                                         "w-8 h-8 rounded-md text-sm font-medium transition-all duration-200",
                                         pageIndex === currentPage
@@ -162,8 +169,7 @@ export default function ListPropertySection() {
                                 </button>
                             );
                         })}
-                    </div>
-                    
+                    </div> */}
                     <Button
                         variant="outline"
                         size="sm"
