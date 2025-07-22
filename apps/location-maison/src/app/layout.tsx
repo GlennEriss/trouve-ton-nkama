@@ -14,8 +14,9 @@ const inter = Inter({
 })
 
 export const metadata: Metadata = {
-  title: 'Trouve Ton Nkama - Trouvez ou publiez un logement au Gabon',
-  description: 'Découvrez les meilleures annonces immobilières au Gabon. Louez ou vendez votre logement facilement avec Trouve Ton Nkama.',
+  title: 'Trouve Ton Nkama - Immobilier Libreville, Port-Gentil, Gabon | Location & Vente',
+  description: 'Trouvez votre logement au Gabon : maisons, appartements, villas à Libreville, Port-Gentil, Akanda. Publiez vos annonces immobilières gratuitement. Prix en FCFA, photos réelles, contact direct propriétaire.',
+  keywords: 'immobilier Gabon, location maison Libreville, vente appartement Port-Gentil, villa Akanda, terrain Gabon, prix immobilier Libreville, agence immobilière Gabon, logement étudiant Libreville, maison meublée Gabon, appartement centre-ville Libreville, location courte durée Gabon, investissement immobilier Libreville, quartier résidentiel Port-Gentil, maison sous barrière Gabon, studio étudiant Libreville',
   metadataBase: new URL('https://www.tonnkama.com'),
   icons: {
     icon: [
@@ -32,10 +33,10 @@ export const metadata: Metadata = {
   },
   manifest: '/manifest.json',
   openGraph: {
-    title: 'Trouve Ton Nkama - Immobilier au Gabon',
-    description: 'Explorez un large choix de logements à louer ou à vendre au Gabon. Publiez vos annonces ou trouvez votre futur chez-vous avec Trouve Ton Nkama.',
+    title: 'Immobilier Gabon - Trouve Ton Nkama | Location & Vente Libreville, Port-Gentil',
+    description: 'Plateforme immobilière #1 au Gabon. Maisons, appartements, villas à Libreville, Port-Gentil, Akanda. Prix en FCFA, annonces vérifiées, contact direct propriétaire. Publiez gratuitement vos annonces.',
     url: 'https://www.tonnkama.com',
-    siteName: 'Trouve Ton Nkama',
+    siteName: 'Trouve Ton Nkama - Immobilier Gabon',
     images: [
       {
         url: 'https://www.tonnkama.com/linkedin-og.jpg?v=1',
@@ -61,8 +62,8 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'Trouve Ton Nkama - Immobilier au Gabon',
-    description: 'Explorez un large choix de logements à louer ou à vendre au Gabon. Publiez vos annonces ou trouvez votre futur chez-vous avec Trouve Ton Nkama.',
+    title: 'Immobilier Gabon - Trouve Ton Nkama | Libreville, Port-Gentil',
+    description: 'Trouvez votre logement au Gabon : maisons, appartements, villas. Prix en FCFA, annonces vérifiées, contact direct propriétaire.',
     images: ['/og-image.png'],
   },
   robots: {
@@ -82,6 +83,81 @@ export default async function RootLayout({
         <meta name="google-site-verification" content="owGLe__J-ZZiJvB-iZzlfxianxrwoO8vdRyxKFfSkTk" />
         <meta name="google-adsense-account" content="ca-pub-2799688336707362" />
         <link rel="canonical" href="https://www.tonnkama.com/" />
+        
+        {/* Schema.org - Local Business */}
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify({
+              "@context": "https://schema.org",
+              "@type": "RealEstateAgent",
+              "name": "Trouve Ton Nkama",
+              "description": "Plateforme immobilière de référence au Gabon. Location et vente de maisons, appartements, villas à Libreville, Port-Gentil, Akanda.",
+              "url": "https://www.tonnkama.com",
+              "logo": "https://www.tonnkama.com/logo.webp",
+              "image": "https://www.tonnkama.com/og-image.jpg",
+              "telephone": "+24101234567",
+              "email": "contact@tonnkama.com",
+              "address": {
+                "@type": "PostalAddress",
+                "addressCountry": "GA",
+                "addressRegion": "Estuaire",
+                "addressLocality": "Libreville"
+              },
+              "geo": {
+                "@type": "GeoCoordinates",
+                "latitude": 0.4162,
+                "longitude": 9.4673
+              },
+              "areaServed": [
+                {
+                  "@type": "City",
+                  "name": "Libreville",
+                  "addressRegion": "Estuaire",
+                  "addressCountry": "GA"
+                },
+                {
+                  "@type": "City", 
+                  "name": "Port-Gentil",
+                  "addressRegion": "Ogooué-Maritime",
+                  "addressCountry": "GA"
+                },
+                {
+                  "@type": "City",
+                  "name": "Akanda", 
+                  "addressRegion": "Estuaire",
+                  "addressCountry": "GA"
+                }
+              ],
+              "serviceType": ["Location immobilière", "Vente immobilière", "Gestion locative"],
+              "priceRange": "$$",
+              "openingHours": "Mo-Su 00:00-23:59",
+              "sameAs": [
+                "https://www.facebook.com/tonnkama",
+                "https://www.linkedin.com/company/tonnkama"
+              ]
+            })
+          }}
+        />
+        
+        {/* Schema.org - WebSite */}
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify({
+              "@context": "https://schema.org",
+              "@type": "WebSite",
+              "name": "Trouve Ton Nkama",
+              "url": "https://www.tonnkama.com",
+              "description": "Plateforme immobilière Gabon - Location et vente de logements",
+              "potentialAction": {
+                "@type": "SearchAction",
+                "target": "https://www.tonnkama.com/search?query={search_term_string}",
+                "query-input": "required name=search_term_string"
+              }
+            })
+          }}
+        />
         
         {/* Métadonnées spécifiques pour LinkedIn */}
         <meta property="og:image:width" content="1200" />

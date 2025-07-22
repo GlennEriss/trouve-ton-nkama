@@ -27,10 +27,16 @@ export default function Footer({ isHide = false }: Readonly<{ isHide?: boolean }
                             <a href="https://www.facebook.com/profile.php?id=61574099562451" className="hover:underline">À propos</a>
                         </li>
                         <li>
+                            <a href={routes.public.blog} className="hover:underline">Blog</a>
+                        </li>
+                        <li>
+                            <a href={routes.public.guide_immobilier_gabon} className="hover:underline">Guide Immobilier</a>
+                        </li>
+                        <li>
                             <a href={routes.public.confidentiality} className="hover:underline">Politique de confidentialité</a>
                         </li>
                         <li>
-                            <a href={routes.public.terms_of_use} className="hover:underline">Conditions d'utilisation</a>
+                            <a href={routes.public.terms_of_use} className="hover:underline">Conditions d&apos;utilisation</a>
                         </li>
                     </ul>
                 </div>
