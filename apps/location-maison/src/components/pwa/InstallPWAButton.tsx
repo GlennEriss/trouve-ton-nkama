@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import {
   Dialog,
   DialogContent,
@@ -12,10 +12,14 @@ import {
 import { Download, X, Sparkles, Zap, Heart } from "lucide-react";
 import Image from "next/image";
 
-export default function InstallPWAButton() {
+const MODAL_CACHE_KEY = "pwa-modal-dismissed-at";
+const MODAL_DELAY = 4 * 60 * 60 * 1000; // 4h en ms
+
+export default function InstallPWAButton({ forceOpen = false }: { forceOpen?: boolean }) {
   const [deferredPrompt, setDeferredPrompt] = useState<Event | null>(null);
   const [open, setOpen] = useState(false);
   const [isAnimating, setIsAnimating] = useState(false);
+  const [shouldShow, setShouldShow] = useState(false);
 
   useEffect(() => {
     const handler = (e: any) => {
@@ -27,6 +31,21 @@ export default function InstallPWAButton() {
     window.addEventListener("beforeinstallprompt", handler);
     return () => window.removeEventListener("beforeinstallprompt", handler);
   }, []);
+
+  // Gestion du cache pour l'affichage automatique
+  useEffect(() => {
+    if (forceOpen) {
+      setOpen(true);
+      setShouldShow(true);
+      return;
+    }
+    const lastDismissed = localStorage.getItem(MODAL_CACHE_KEY);
+    const now = Date.now();
+    if (!lastDismissed || now - parseInt(lastDismissed, 10) > MODAL_DELAY) {
+      setOpen(true);
+      setShouldShow(true);
+    }
+  }, [forceOpen]);
 
   const handleInstall = async () => {
     setIsAnimating(true);
@@ -46,7 +65,15 @@ export default function InstallPWAButton() {
     }
   };
 
-  if (!deferredPrompt) return null;
+  // Quand l'utilisateur ferme le modal ("Plus tard")
+  const handleClose = useCallback(() => {
+    setOpen(false);
+    setShouldShow(false);
+    localStorage.setItem(MODAL_CACHE_KEY, Date.now().toString());
+  }, []);
+
+  if (!deferredPrompt && !forceOpen) return null;
+  if (!shouldShow && !forceOpen) return null;
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
@@ -134,7 +161,7 @@ export default function InstallPWAButton() {
           </button>
           
           <DialogClose asChild>
-            <button className="w-full sm:w-auto px-6 py-4 border-2 border-gray-200 bg-white/80 backdrop-blur text-gray-700 font-semibold text-lg rounded-full hover:bg-gray-50 hover:border-gray-300 hover:scale-105 transition-all duration-300">
+            <button onClick={handleClose} className="w-full sm:w-auto px-6 py-4 border-2 border-gray-200 bg-white/80 backdrop-blur text-gray-700 font-semibold text-lg rounded-full hover:bg-gray-50 hover:border-gray-300 hover:scale-105 transition-all duration-300">
               Plus tard
             </button>
           </DialogClose>
@@ -181,5 +208,17 @@ export default function InstallPWAButton() {
         }
       `}</style>
     </Dialog>
+  );
+}
+
+// Bouton permanent pour la homepage
+export function InstallPWAButtonTrigger({ onClick }: { onClick: () => void }) {
+  return (
+    <button
+      onClick={onClick}
+      className="fixed bottom-8 left-1/2 -translate-x-1/2 z-50 bg-gradient-to-r from-emerald-500 to-blue-500 text-white font-bold px-6 py-3 rounded-full shadow-xl hover:scale-105 transition-all duration-300"
+    >
+      Installer l'application
+    </button>
   );
 }

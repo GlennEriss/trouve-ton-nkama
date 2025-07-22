@@ -12,7 +12,7 @@ export default function Footer({ isHide = false }: Readonly<{ isHide?: boolean }
     const pathname = usePathname()
     const { user } = useCurrentUser()
     const { width } = useWindowSize()
-    if (isHide || pathname === routes.public.signin || pathname === routes.public.signup || pathname === routes.public.signinSignup || (user && width < 768)) {
+    if (isHide || pathname === routes.public.signin || pathname === routes.public.signup || pathname === routes.public.signinSignup || (user && width < 768 && pathname !== routes.public.homePage)) {
         return null
     }
     return (
