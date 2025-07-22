@@ -1,30 +1,12 @@
-import PasswordReset from '@/components/password-reset/PasswordReset'
-import { Metadata } from 'next'
-import React from 'react'
+import type { Metadata } from "next";
+import React from 'react';
+import PasswordReset from "@/components/password-reset/PasswordReset";
 
 export const metadata: Metadata = {
-  title: 'Nouveau mot de passe - Trouve Ton Nkama',
-  description: "Créez un nouveau mot de passe sécurisé pour votre compte Trouve Ton Nkama. Choisissez un mot de passe fort pour protéger vos données.",
-  openGraph: {
-    title: 'Nouveau mot de passe - Trouve Ton Nkama',
-    description: 'Définissez un nouveau mot de passe sécurisé pour retrouver l\'accès à votre compte Trouve Ton Nkama.',
-    url: `${process.env.NEXT_PUBLIC_HOST}/password-reset`,
-    type: 'website',
-    images: [
-      {
-        url: `${process.env.NEXT_PUBLIC_HOST}/emails/logo-email.png`,
-        width: 200,
-        height: 200,
-        alt: 'Nouveau mot de passe Trouve Ton Nkama',
-      },
-    ],
-  },
-}
+  title: "Réinitialisation de Mot de Passe - Trouve Ton Nkama",
+  description: "Réinitialisez votre mot de passe Trouve Ton Nkama. Procédure sécurisée pour créer un nouveau mot de passe et accéder à votre compte.",
+};
 
-function PasswordResetPage() {
-  return (
-    <PasswordReset />
-  )
-}
-
-export default PasswordResetPage 
+export default function PasswordResetPage() {
+  return <PasswordReset />;
+} 

@@ -13,8 +13,27 @@ export async function GET() {
   // Tableau ordonné : home d'abord, puis les autres
   const pages = [
     routes.public_google.homePage,          
+    routes.public_google.search,
+    routes.public_google.blog,
+    routes.public_google.blog_tendances_marche,
+    routes.public_google.blog_financement,
+    routes.public_google.blog_commissions_demarcheurs,
+    routes.public_google.blog_structurer_annonces,
+    routes.public_google.blog_proptech,
+    // Nouvelles pages de blog ajoutées
+    routes.public_google.blog_guide_quartiers_libreville,
+    routes.public_google.blog_guide_quartiers_port_gentil,
+    routes.public_google.blog_rentabilite_immobiliere,
+    routes.public_google.blog_actualites_immobilieres,
+    routes.public_google.blog_conseils_negociation,
+    routes.public_google.blog_demarches_administratives,
+    routes.public_google.guide_immobilier_gabon,
     routes.public_google.confidentiality,
     routes.public_google.terms_of_use,    
+    routes.public.data_deletion,    
+    routes.public.signin,
+    routes.public.signup,
+    routes.public.property,
   ]
 
   const todayISO = new Date().toISOString()
