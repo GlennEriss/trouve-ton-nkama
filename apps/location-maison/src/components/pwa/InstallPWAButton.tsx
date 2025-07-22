@@ -70,8 +70,8 @@ export default function InstallPWAButton() {
               <Image
                 src="/logo.svg"
                 alt="Logo Trouve Ton Nkama"
-                width={40}
-                height={40}
+                width={80}
+                height={80}
                 className="relative z-10 animate-bounce"
                 style={{ animationDuration: '2s' }}
               />
@@ -106,7 +106,7 @@ export default function InstallPWAButton() {
             onClick={handleInstall}
             disabled={isAnimating}
             className={`
-              relative w-full sm:flex-1 group overflow-hidden rounded-2xl px-6 py-4 
+              relative w-full sm:flex-1 group overflow-hidden rounded-full px-6 py-4 
               bg-gradient-to-r from-emerald-500 to-blue-500 
               text-white font-bold text-lg shadow-xl
               hover:shadow-2xl hover:scale-105 
@@ -134,7 +134,7 @@ export default function InstallPWAButton() {
           </button>
           
           <DialogClose asChild>
-            <button className="w-full sm:w-auto px-6 py-4 border-2 border-gray-200 bg-white/80 backdrop-blur text-gray-700 font-semibold text-lg rounded-2xl hover:bg-gray-50 hover:border-gray-300 hover:scale-105 transition-all duration-300">
+            <button className="w-full sm:w-auto px-6 py-4 border-2 border-gray-200 bg-white/80 backdrop-blur text-gray-700 font-semibold text-lg rounded-full hover:bg-gray-50 hover:border-gray-300 hover:scale-105 transition-all duration-300">
               Plus tard
             </button>
           </DialogClose>
