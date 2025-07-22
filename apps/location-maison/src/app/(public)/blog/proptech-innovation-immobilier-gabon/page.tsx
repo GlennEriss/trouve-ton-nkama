@@ -4,26 +4,12 @@ import Link from 'next/link';
 import { routes } from '@/constantes/routes';
 
 export const metadata: Metadata = {
-  title: "PropTech Gabon - Innovation au Service de l'Immobilier | Trouve Ton Nkama",
-  description: "Découvrez l'innovation PropTech au Gabon : plateformes en ligne, IA, Google My Business, outils de monitoring. L'avenir de l'immobilier gabonais passe par le digital.",
-  keywords: "PropTech Gabon, plateforme immo en ligne Gabon, SEO immobilier Gabon, innovation immobilière Gabon, digital immobilier Libreville, outils monitoring immobilier",
-  openGraph: {
-    title: "PropTech Gabon - Innovation au Service de l'Immobilier",
-    description: "Découvrez l'innovation PropTech au Gabon : plateformes en ligne, IA, Google My Business. L'avenir de l'immobilier gabonais passe par le digital.",
-    url: `${process.env.NEXT_PUBLIC_HOST}/blog/proptech-innovation-immobilier-gabon`,
-    type: "article",
-    images: [
-      {
-        url: `${process.env.NEXT_PUBLIC_HOST}/linkedin-og.jpg`,
-        width: 1200,
-        height: 630,
-        alt: "PropTech Innovation Immobilier Gabon",
-      },
-    ],
-  },
+  title: "Digital & PropTech : L'Innovation au Service de l'Immobilier Gabonais | Trouve Ton Nkama",
+  description: "Découvrez l'innovation PropTech au Gabon : plateformes en ligne, IA, Google My Business, outils de monitoring. L'avenir de l'immobilier gabonais.",
+  keywords: "proptech Gabon, innovation immobilier Gabon, plateformes en ligne Gabon, IA immobilier, Google My Business Gabon, digital immobilier Gabon",
 };
 
-export default function PropTechInnovationImmobilierGabonPage() {
+export default function PropTechInnovationPage() {
   return (
     <div className="container mx-auto px-4 py-8">
       <div className="max-w-4xl mx-auto">

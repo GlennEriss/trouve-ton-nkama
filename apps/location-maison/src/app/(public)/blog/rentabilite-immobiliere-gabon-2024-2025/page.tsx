@@ -4,26 +4,12 @@ import Link from 'next/link';
 import { routes } from '@/constantes/routes';
 
 export const metadata: Metadata = {
-  title: "Rentabilité Immobilière Gabon 2024-2025 - ROI, Cash-Flow, Stratégies | Trouve Ton Nkama",
-  description: "Guide complet rentabilité immobilière Gabon 2024-2025 : ROI par ville, cash-flow, stratégies investissement, plus-value, rentabilité locative. Conseils experts pour investir au Gabon.",
-  keywords: "rentabilité immobilière Gabon 2024, ROI immobilier Gabon, cash-flow immobilier, investissement immobilier Gabon, plus-value immobilière, rentabilité locative Gabon",
-  openGraph: {
-    title: "Rentabilité Immobilière Gabon 2024-2025 - ROI & Stratégies",
-    description: "Guide complet rentabilité immobilière Gabon : ROI, cash-flow, stratégies investissement. Conseils experts pour investir au Gabon.",
-    url: `${process.env.NEXT_PUBLIC_HOST}/blog/rentabilite-immobiliere-gabon-2024-2025`,
-    type: "article",
-    images: [
-      {
-        url: `${process.env.NEXT_PUBLIC_HOST}/linkedin-og.jpg`,
-        width: 1200,
-        height: 630,
-        alt: "Rentabilité Immobilière Gabon 2024-2025",
-      },
-    ],
-  },
+  title: "Rentabilité Immobilière Gabon 2024-2025 : ROI, Investissement, Conseils | Trouve Ton Nkama",
+  description: "Guide complet rentabilité immobilière Gabon 2024-2025 : calcul ROI, investissement Libreville, Port-Gentil, conseils experts, analyse marché, plus-values.",
+  keywords: "rentabilité immobilière Gabon, ROI immobilier Libreville, investissement immobilier Gabon, plus-value immobilier, calcul rentabilité Gabon",
 };
 
-export default function RentabiliteImmobiliereGabon2024Page() {
+export default function RentabiliteImmobilierePage() {
   return (
     <div className="container mx-auto px-4 py-8">
       <div className="max-w-4xl mx-auto">

@@ -17,7 +17,7 @@ export const metadata: Metadata = {
   title: 'Trouve Ton Nkama - Immobilier Libreville, Port-Gentil, Gabon | Location & Vente',
   description: 'Trouvez votre logement au Gabon : maisons, appartements, villas à Libreville, Port-Gentil, Akanda. Publiez vos annonces immobilières gratuitement. Prix en FCFA, photos réelles, contact direct propriétaire.',
   keywords: 'immobilier Gabon, location maison Libreville, vente appartement Port-Gentil, villa Akanda, terrain Gabon, prix immobilier Libreville, agence immobilière Gabon, logement étudiant Libreville, maison meublée Gabon, appartement centre-ville Libreville, location courte durée Gabon, investissement immobilier Libreville, quartier résidentiel Port-Gentil, maison sous barrière Gabon, studio étudiant Libreville',
-  metadataBase: new URL('https://www.tonnkama.com'),
+  metadataBase: new URL(process.env.NEXT_PUBLIC_HOST || 'https://www.tonnkama.com'),
   icons: {
     icon: [
       { url: '/favicon.ico', type: 'image/x-icon' },
@@ -35,26 +35,15 @@ export const metadata: Metadata = {
   openGraph: {
     title: 'Immobilier Gabon - Trouve Ton Nkama | Location & Vente Libreville, Port-Gentil',
     description: 'Plateforme immobilière #1 au Gabon. Maisons, appartements, villas à Libreville, Port-Gentil, Akanda. Prix en FCFA, annonces vérifiées, contact direct propriétaire. Publiez gratuitement vos annonces.',
-    url: 'https://www.tonnkama.com',
+    url: process.env.NEXT_PUBLIC_HOST || 'https://www.tonnkama.com',
     siteName: 'Trouve Ton Nkama - Immobilier Gabon',
     images: [
       {
-        url: 'https://www.tonnkama.com/linkedin-og.jpg?v=1',
+        url: '/og-image.jpg',
         width: 1200,
         height: 630,
-        alt: 'Trouve Ton Nkama Accueil',
-      },
-      {
-        url: 'https://www.tonnkama.com/og-image.jpg?v=2',
-        width: 1200,
-        height: 630,
-        alt: 'Trouve Ton Nkama Accueil',
-      },
-      {
-        url: 'https://www.tonnkama.com/og-image.png?v=3',
-        width: 1200,
-        height: 630,
-        alt: 'Trouve Ton Nkama Accueil',
+        alt: 'Trouve Ton Nkama - Plateforme immobilière au Gabon',
+        type: 'image/jpeg',
       }
     ],
     locale: 'fr_FR',
@@ -64,7 +53,7 @@ export const metadata: Metadata = {
     card: 'summary_large_image',
     title: 'Immobilier Gabon - Trouve Ton Nkama | Libreville, Port-Gentil',
     description: 'Trouvez votre logement au Gabon : maisons, appartements, villas. Prix en FCFA, annonces vérifiées, contact direct propriétaire.',
-    images: ['/og-image.png'],
+    images: ['/og-image.jpg'],
   },
   robots: {
     index: true,
@@ -82,7 +71,27 @@ export default async function RootLayout({
       <head>
         <meta name="google-site-verification" content="owGLe__J-ZZiJvB-iZzlfxianxrwoO8vdRyxKFfSkTk" />
         <meta name="google-adsense-account" content="ca-pub-2799688336707362" />
-        <link rel="canonical" href="https://www.tonnkama.com/" />
+        <link rel="canonical" href={`${process.env.NEXT_PUBLIC_HOST || 'https://www.tonnkama.com'}/`} />
+        
+        {/* Métadonnées Open Graph optimisées pour mobile et WhatsApp */}
+        <meta property="og:title" content="Immobilier Gabon - Trouve Ton Nkama | Location & Vente Libreville, Port-Gentil" />
+        <meta property="og:description" content="Plateforme immobilière #1 au Gabon. Maisons, appartements, villas à Libreville, Port-Gentil, Akanda. Prix en FCFA, annonces vérifiées, contact direct propriétaire." />
+        <meta property="og:url" content={process.env.NEXT_PUBLIC_HOST || 'https://www.tonnkama.com'} />
+        <meta property="og:type" content="website" />
+        <meta property="og:site_name" content="Trouve Ton Nkama" />
+        <meta property="og:locale" content="fr_FR" />
+        <meta property="og:image" content={`${process.env.NEXT_PUBLIC_HOST || 'https://www.tonnkama.com'}/og-image.jpg`} />
+        <meta property="og:image:width" content="1200" />
+        <meta property="og:image:height" content="630" />
+        <meta property="og:image:type" content="image/jpeg" />
+        <meta property="og:image:alt" content="Trouve Ton Nkama - Plateforme immobilière au Gabon" />
+        <meta property="og:image:secure_url" content={`${process.env.NEXT_PUBLIC_HOST || 'https://www.tonnkama.com'}/og-image.jpg`} />
+        
+        {/* Métadonnées Twitter Card */}
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:title" content="Immobilier Gabon - Trouve Ton Nkama | Libreville, Port-Gentil" />
+        <meta name="twitter:description" content="Trouvez votre logement au Gabon : maisons, appartements, villas. Prix en FCFA, annonces vérifiées, contact direct propriétaire." />
+        <meta name="twitter:image" content={`${process.env.NEXT_PUBLIC_HOST || 'https://www.tonnkama.com'}/og-image.jpg`} />
         
         {/* Schema.org - Local Business */}
         <script
@@ -93,10 +102,10 @@ export default async function RootLayout({
               "@type": "RealEstateAgent",
               "name": "Trouve Ton Nkama",
               "description": "Plateforme immobilière de référence au Gabon. Location et vente de maisons, appartements, villas à Libreville, Port-Gentil, Akanda.",
-              "url": "https://www.tonnkama.com",
-              "logo": "https://www.tonnkama.com/logo.webp",
-              "image": "https://www.tonnkama.com/og-image.jpg",
-              "telephone": "+24101234567",
+              "url": process.env.NEXT_PUBLIC_HOST || 'https://www.tonnkama.com',
+              "logo": `${process.env.NEXT_PUBLIC_HOST || 'https://www.tonnkama.com'}/logo.webp`,
+              "image": `${process.env.NEXT_PUBLIC_HOST || 'https://www.tonnkama.com'}/og-image.jpg`,
+              "telephone": "+24166597408",
               "email": "contact@tonnkama.com",
               "address": {
                 "@type": "PostalAddress",
@@ -124,8 +133,80 @@ export default async function RootLayout({
                 },
                 {
                   "@type": "City",
-                  "name": "Akanda", 
+                  "name": "Franceville",
+                  "addressRegion": "Haut-Ogooué",
+                  "addressCountry": "GA"
+                },
+                {
+                  "@type": "City",
+                  "name": "Oyem",
+                  "addressRegion": "Woleu-Ntem",
+                  "addressCountry": "GA"
+                },
+                {
+                  "@type": "City",
+                  "name": "Mouila",
+                  "addressRegion": "Ngounié",
+                  "addressCountry": "GA"
+                },
+                {
+                  "@type": "City",
+                  "name": "Lambaréne",
+                  "addressRegion": "Moyen-Ogooué",
+                  "addressCountry": "GA"
+                },
+                {
+                  "@type": "City",
+                  "name": "Tchibanga",
+                  "addressRegion": "Nyanga",
+                  "addressCountry": "GA"
+                },
+                {
+                  "@type": "City",
+                  "name": "Makokou",
+                  "addressRegion": "Ogooué-Ivindo",
+                  "addressCountry": "GA"
+                },
+                {
+                  "@type": "City",
+                  "name": "Koulamoutou",
+                  "addressRegion": "Ogooué-Lolo",
+                  "addressCountry": "GA"
+                },
+                {
+                  "@type": "City",
+                  "name": "Akanda",
                   "addressRegion": "Estuaire",
+                  "addressCountry": "GA"
+                },
+                {
+                  "@type": "City",
+                  "name": "Bitam",
+                  "addressRegion": "Woleu-Ntem",
+                  "addressCountry": "GA"
+                },
+                {
+                  "@type": "City",
+                  "name": "Moanda",
+                  "addressRegion": "Haut-Ogooué",
+                  "addressCountry": "GA"
+                },
+                {
+                  "@type": "City",
+                  "name": "Ntoum",
+                  "addressRegion": "Estuaire",
+                  "addressCountry": "GA"
+                },
+                {
+                  "@type": "City",
+                  "name": "Owendo",
+                  "addressRegion": "Estuaire",
+                  "addressCountry": "GA"
+                },
+                {
+                  "@type": "City",
+                  "name": "Ndjolé",
+                  "addressRegion": "Moyen-Ogooué",
                   "addressCountry": "GA"
                 }
               ],
@@ -133,8 +214,8 @@ export default async function RootLayout({
               "priceRange": "$$",
               "openingHours": "Mo-Su 00:00-23:59",
               "sameAs": [
-                "https://www.facebook.com/tonnkama",
-                "https://www.linkedin.com/company/tonnkama"
+                "https://www.facebook.com/share/16beeh915e/",
+                //"https://www.linkedin.com/company/tonnkama"
               ]
             })
           }}
@@ -148,34 +229,16 @@ export default async function RootLayout({
               "@context": "https://schema.org",
               "@type": "WebSite",
               "name": "Trouve Ton Nkama",
-              "url": "https://www.tonnkama.com",
+              "url": process.env.NEXT_PUBLIC_HOST || 'https://www.tonnkama.com',
               "description": "Plateforme immobilière Gabon - Location et vente de logements",
               "potentialAction": {
                 "@type": "SearchAction",
-                "target": "https://www.tonnkama.com/search?query={search_term_string}",
+                "target": `${process.env.NEXT_PUBLIC_HOST || 'https://www.tonnkama.com'}/search?query={search_term_string}`,
                 "query-input": "required name=search_term_string"
               }
             })
           }}
         />
-        
-        {/* Métadonnées spécifiques pour LinkedIn */}
-        <meta property="og:image:width" content="1200" />
-        <meta property="og:image:height" content="630" />
-        <meta property="og:image:type" content="image/png" />
-        <meta property="og:image:alt" content="Trouve Ton Nkama - Plateforme immobilière au Gabon" />
-        
-        {/* Métadonnées supplémentaires pour une meilleure compatibilité */}
-        <meta property="og:type" content="website" />
-        <meta property="og:site_name" content="Trouve Ton Nkama" />
-        <meta property="og:locale" content="fr_FR" />
-        <meta property="og:image:secure_url" content="https://www.tonnkama.com/og-image.jpg" />
-        
-        {/* Métadonnées spécifiques LinkedIn */}
-        <meta property="og:image" content="https://www.tonnkama.com/linkedin-og.jpg" />
-        <meta property="og:image:width" content="1200" />
-        <meta property="og:image:height" content="630" />
-        <meta property="og:image:type" content="image/jpeg" />
       </head>
 
       <body

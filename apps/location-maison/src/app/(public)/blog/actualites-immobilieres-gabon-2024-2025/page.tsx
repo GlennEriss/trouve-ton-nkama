@@ -4,26 +4,12 @@ import Link from 'next/link';
 import { routes } from '@/constantes/routes';
 
 export const metadata: Metadata = {
-  title: "Actualités Immobilières Gabon 2024-2025 - Projets, Lois, Tendances | Trouve Ton Nkama",
-  description: "Actualités immobilières Gabon 2024-2025 : nouveaux projets, lois immobilières, tendances marché, investissements, développement urbain. Toute l'actualité immobilière du Gabon.",
-  keywords: "actualités immobilières Gabon 2024, projets immobiliers Gabon, lois immobilières Gabon, tendances marché immobilier Gabon, investissements immobiliers Gabon",
-  openGraph: {
-    title: "Actualités Immobilières Gabon 2024-2025 - Projets & Tendances",
-    description: "Actualités immobilières Gabon : nouveaux projets, lois, tendances marché. Toute l'actualité immobilière du Gabon.",
-    url: `${process.env.NEXT_PUBLIC_HOST}/blog/actualites-immobilieres-gabon-2024-2025`,
-    type: "article",
-    images: [
-      {
-        url: `${process.env.NEXT_PUBLIC_HOST}/linkedin-og.jpg`,
-        width: 1200,
-        height: 630,
-        alt: "Actualités Immobilières Gabon 2024-2025",
-      },
-    ],
-  },
+  title: "Actualités Immobilières Gabon 2024-2025 : Projets, Lois, Tendances | Trouve Ton Nkama",
+  description: "Actualités immobilières Gabon 2024-2025 : nouveaux projets, lois, tendances marché, investissements. Suivez l'évolution de l'immobilier au Gabon.",
+  keywords: "actualités immobilières Gabon 2024, projets immobilier Libreville, lois immobilier Gabon, tendances marché Gabon, investissement immobilier Gabon",
 };
 
-export default function ActualitesImmobilieresGabon2024Page() {
+export default function ActualitesImmobilieresPage() {
   return (
     <div className="container mx-auto px-4 py-8">
       <div className="max-w-4xl mx-auto">

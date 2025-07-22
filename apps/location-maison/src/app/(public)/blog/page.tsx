@@ -7,20 +7,6 @@ export const metadata: Metadata = {
   title: "Blog Immobilier Gabon - Conseils, Actualités, Prix | Trouve Ton Nkama",
   description: "Blog immobilier Gabon : conseils d'investissement, prix du marché Libreville, Port-Gentil, quartiers tendance, guide achat location. Actualités immobilières Gabon.",
   keywords: "blog immobilier Gabon, conseils immobilier Libreville, prix immobilier Port-Gentil, guide investissement Gabon, actualités immobilières Gabon, quartiers Libreville",
-  openGraph: {
-    title: "Blog Immobilier Gabon - Conseils & Actualités | Trouve Ton Nkama",
-    description: "Conseils immobilier Gabon, prix du marché Libreville, quartiers tendance, guide investissement. Blog spécialisé immobilier Gabon.",
-    url: `${process.env.NEXT_PUBLIC_HOST}/blog`,
-    type: "website",
-    images: [
-      {
-        url: `${process.env.NEXT_PUBLIC_HOST}/linkedin-og.jpg`,
-        width: 1200,
-        height: 630,
-        alt: "Blog Immobilier Gabon Trouve Ton Nkama",
-      },
-    ],
-  },
 };
 
 export default function BlogPage() {

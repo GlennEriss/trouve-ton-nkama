@@ -4,26 +4,12 @@ import Link from 'next/link';
 import { routes } from '@/constantes/routes';
 
 export const metadata: Metadata = {
-  title: "Financement Immobilier Gabon 2024 - Crédit, Refinancement, Solutions | Trouve Ton Nkama",
-  description: "Guide complet financement immobilier Gabon 2024 : crédit immobilier, refinancement hypothécaire, micro-crédit, épargne. Solutions pour financer son logement au Gabon. Banques, taux, conditions.",
-  keywords: "crédit immobilier Gabon, refinancement hypothécaire Gabon, financer son logement au Gabon, banques Gabon, taux crédit immobilier, micro-crédit Gabon, épargne logement Gabon, PPP logement Gabon",
-  openGraph: {
-    title: "Financement Immobilier Gabon 2024 - Crédit & Solutions",
-    description: "Guide complet financement immobilier Gabon : crédit, refinancement hypothécaire, micro-crédit, épargne. Solutions pour financer son logement au Gabon.",
-    url: `${process.env.NEXT_PUBLIC_HOST}/blog/financement-immobilier-gabon`,
-    type: "article",
-    images: [
-      {
-        url: `${process.env.NEXT_PUBLIC_HOST}/linkedin-og.jpg`,
-        width: 1200,
-        height: 630,
-        alt: "Financement Immobilier Gabon 2024",
-      },
-    ],
-  },
+  title: "Financement Immobilier au Gabon : État des Lieux et Solutions 2024 | Trouve Ton Nkama",
+  description: "Guide complet financement immobilier Gabon : crédit immobilier, refinancement hypothécaire, micro-crédit, épargne. Solutions pour financer son logement au Gabon.",
+  keywords: "financement immobilier Gabon, crédit immobilier Libreville, micro-crédit Gabon, refinancement hypothécaire, épargne immobilier Gabon, banques Gabon",
 };
 
-export default function FinancementImmobilierGabonPage() {
+export default function FinancementImmobilierPage() {
   return (
     <div className="container mx-auto px-4 py-8">
       <div className="max-w-4xl mx-auto">

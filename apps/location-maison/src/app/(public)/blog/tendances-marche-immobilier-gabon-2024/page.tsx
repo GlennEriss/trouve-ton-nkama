@@ -4,26 +4,12 @@ import Link from 'next/link';
 import { routes } from '@/constantes/routes';
 
 export const metadata: Metadata = {
-  title: "Tendances Marché Immobilier Gabon 2024 - Libreville, Port-Gentil | Trouve Ton Nkama",
-  description: "Analyse complète du marché immobilier Gabon 2024 : croissance Libreville, Port-Gentil, prix, investissement, projet Libreville 2, logements sociaux. Conseils experts pour investir au Gabon.",
-  keywords: "marché immobilier Gabon, acheter à Libreville, investissement immobilier Port-Gentil, prix immobilier Gabon 2024, projet Libreville 2, logements sociaux Gabon, investir immobilier Libreville",
-  openGraph: {
-    title: "Tendances Marché Immobilier Gabon 2024 - Libreville, Port-Gentil",
-    description: "Analyse complète du marché immobilier Gabon 2024 : croissance, prix, investissement, projet Libreville 2. Conseils experts pour investir au Gabon.",
-    url: `${process.env.NEXT_PUBLIC_HOST}/blog/tendances-marche-immobilier-gabon-2024`,
-    type: "article",
-    images: [
-      {
-        url: `${process.env.NEXT_PUBLIC_HOST}/linkedin-og.jpg`,
-        width: 1200,
-        height: 630,
-        alt: "Tendances Marché Immobilier Gabon 2024",
-      },
-    ],
-  },
+  title: "Tendances du Marché Immobilier au Gabon 2024 - Analyse Complète | Trouve Ton Nkama",
+  description: "Analyse complète du marché immobilier gabonais 2024 : croissance Libreville, Port-Gentil, projet Libreville 2, logements sociaux. Conseils experts pour investir au Gabon.",
+  keywords: "marché immobilier Gabon 2024, tendances immobilier Libreville, Port-Gentil immobilier, investissement immobilier Gabon, prix immobilier Libreville, projet Libreville 2",
 };
 
-export default function TendancesMarcheImmobilierGabonPage() {
+export default function TendancesMarchePage() {
   return (
     <div className="container mx-auto px-4 py-8">
       <div className="max-w-4xl mx-auto">

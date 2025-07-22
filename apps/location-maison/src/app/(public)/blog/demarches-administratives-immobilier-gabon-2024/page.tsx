@@ -4,26 +4,12 @@ import Link from 'next/link';
 import { routes } from '@/constantes/routes';
 
 export const metadata: Metadata = {
-  title: "Démarches Administratives Immobilier Gabon 2024 - Guide Complet | Trouve Ton Nkama",
-  description: "Guide complet démarches administratives immobilier Gabon 2024 : achat, location, titre foncier, cadastre, notaire, taxes, procédures légales. Tout savoir sur les formalités immobilières.",
-  keywords: "démarches administratives immobilier Gabon 2024, titre foncier Gabon, cadastre Gabon, notaire immobilier Gabon, taxes immobilières Gabon, procédures légales immobilier Gabon",
-  openGraph: {
-    title: "Démarches Administratives Immobilier Gabon 2024 - Guide Complet",
-    description: "Guide complet démarches administratives immobilier Gabon : achat, location, titre foncier, cadastre, notaire, taxes. Tout savoir sur les formalités.",
-    url: `${process.env.NEXT_PUBLIC_HOST}/blog/demarches-administratives-immobilier-gabon-2024`,
-    type: "article",
-    images: [
-      {
-        url: `${process.env.NEXT_PUBLIC_HOST}/linkedin-og.jpg`,
-        width: 1200,
-        height: 630,
-        alt: "Démarches Administratives Immobilier Gabon 2024",
-      },
-    ],
-  },
+  title: "Démarches Administratives Immobilier Gabon 2024 : Guide Complet | Trouve Ton Nkama",
+  description: "Guide complet démarches administratives immobilier Gabon 2024 : titre foncier, cadastre, service domanial, certificat urbanisme, acte notarié. Procédures légales achat vente.",
+  keywords: "démarches administratives immobilier Gabon, titre foncier Gabon, cadastre Gabon, service domanial Gabon, certificat urbanisme Gabon, acte notarié Gabon",
 };
 
-export default function DemarchesAdministrativesImmobilierGabon2024Page() {
+export default function DemarchesAdministrativesPage() {
   return (
     <div className="container mx-auto px-4 py-8">
       <div className="max-w-4xl mx-auto">

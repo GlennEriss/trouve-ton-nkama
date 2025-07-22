@@ -4,26 +4,12 @@ import Link from 'next/link';
 import { routes } from '@/constantes/routes';
 
 export const metadata: Metadata = {
-  title: "Commissions Démarcheurs Logements Gabon - Problèmes & Solutions | Trouve Ton Nkama",
+  title: "Commissions Élevées des Démarcheurs de Logements au Gabon : Problèmes et Solutions | Trouve Ton Nkama",
   description: "Découvrez les problèmes des commissions élevées des démarcheurs au Gabon : pratiques abusives, solutions alternatives, plateformes en ligne. Guide pour éviter les frais excessifs.",
-  keywords: "commissions démarcheurs Gabon, frais immobilier Libreville, démarcheurs logements Port-Gentil, plateforme immo en ligne Gabon, éviter commissions démarcheurs, immobilier Gabon sans intermédiaire",
-  openGraph: {
-    title: "Commissions Démarcheurs Logements Gabon - Problèmes & Solutions",
-    description: "Découvrez les problèmes des commissions élevées des démarcheurs au Gabon et les solutions alternatives pour éviter les frais excessifs.",
-    url: `${process.env.NEXT_PUBLIC_HOST}/blog/commissions-demarcheurs-logements-gabon`,
-    type: "article",
-    images: [
-      {
-        url: `${process.env.NEXT_PUBLIC_HOST}/linkedin-og.jpg`,
-        width: 1200,
-        height: 630,
-        alt: "Commissions Démarcheurs Logements Gabon",
-      },
-    ],
-  },
+  keywords: "commissions démarcheurs Gabon, frais excessifs immobilier Gabon, plateformes en ligne Gabon, solutions alternatives immobilier, éviter frais démarcheurs",
 };
 
-export default function CommissionsDemarcheursLogementsGabonPage() {
+export default function CommissionsDemarcheursPage() {
   return (
     <div className="container mx-auto px-4 py-8">
       <div className="max-w-4xl mx-auto">

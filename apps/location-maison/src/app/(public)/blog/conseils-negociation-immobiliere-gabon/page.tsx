@@ -4,26 +4,12 @@ import Link from 'next/link';
 import { routes } from '@/constantes/routes';
 
 export const metadata: Metadata = {
-  title: "Conseils Négociation Immobilière Gabon - Techniques et Astuces | Trouve Ton Nkama",
-  description: "Guide complet négociation immobilière Gabon : techniques, astuces, erreurs à éviter, préparation, argumentation, conclusion. Conseils experts pour négocier le meilleur prix.",
-  keywords: "négociation immobilière Gabon, techniques négociation immobilier, astuces négociation Gabon, erreurs négociation immobilier, préparation négociation Gabon",
-  openGraph: {
-    title: "Conseils Négociation Immobilière Gabon - Techniques & Astuces",
-    description: "Guide complet négociation immobilière Gabon : techniques, astuces, erreurs à éviter. Conseils experts pour négocier le meilleur prix.",
-    url: `${process.env.NEXT_PUBLIC_HOST}/blog/conseils-negociation-immobiliere-gabon`,
-    type: "article",
-    images: [
-      {
-        url: `${process.env.NEXT_PUBLIC_HOST}/linkedin-og.jpg`,
-        width: 1200,
-        height: 630,
-        alt: "Conseils Négociation Immobilière Gabon",
-      },
-    ],
-  },
+  title: "Conseils Négociation Immobilière Gabon : Techniques, Stratégies | Trouve Ton Nkama",
+  description: "Guide complet négociation immobilière Gabon : techniques, stratégies, conseils experts pour acheter ou vendre au meilleur prix. Négociation efficace immobilier Libreville, Port-Gentil.",
+  keywords: "négociation immobilière Gabon, techniques négociation Libreville, stratégies achat immobilier Gabon, conseils vente immobilier, négociation prix immobilier",
 };
 
-export default function ConseilsNegociationImmobiliereGabonPage() {
+export default function ConseilsNegociationPage() {
   return (
     <div className="container mx-auto px-4 py-8">
       <div className="max-w-4xl mx-auto">

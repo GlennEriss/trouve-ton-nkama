@@ -4,26 +4,12 @@ import Link from 'next/link';
 import { routes } from '@/constantes/routes';
 
 export const metadata: Metadata = {
-  title: "Structurer Vos Annonces Immobilières Gabon - Maximiser l'Engagement | Trouve Ton Nkama",
-  description: "Guide complet pour structurer vos annonces immobilières au Gabon : titres accrocheurs, descriptions optimisées, photos professionnelles, CTAs efficaces. Conseils pour maximiser l'engagement.",
-  keywords: "rédaction annonce immobilière Gabon, titre annonce immobilier efficace, description annonce Libreville, photos annonce immobilier, CTA annonce Gabon, engagement annonce immobilier",
-  openGraph: {
-    title: "Structurer Vos Annonces Immobilières Gabon - Maximiser l'Engagement",
-    description: "Guide complet pour structurer vos annonces immobilières : titres accrocheurs, descriptions optimisées, photos professionnelles. Conseils pour maximiser l'engagement au Gabon.",
-    url: `${process.env.NEXT_PUBLIC_HOST}/blog/structurer-annonces-engagement`,
-    type: "article",
-    images: [
-      {
-        url: `${process.env.NEXT_PUBLIC_HOST}/linkedin-og.jpg`,
-        width: 1200,
-        height: 630,
-        alt: "Structurer Annonces Immobilières Gabon",
-      },
-    ],
-  },
+  title: "Comment Structurer Vos Annonces pour Maximiser l'Engagement | Trouve Ton Nkama",
+  description: "Guide complet pour structurer vos annonces immobilières au Gabon : titres accrocheurs, descriptions optimisées, photos professionnelles, CTAs efficaces. Maximisez votre engagement.",
+  keywords: "structurer annonces immobilier Gabon, titres accrocheurs, descriptions optimisées, photos professionnelles, engagement annonces, marketing immobilier Gabon",
 };
 
-export default function StructurerAnnoncesEngagementPage() {
+export default function StructurerAnnoncesPage() {
   return (
     <div className="container mx-auto px-4 py-8">
       <div className="max-w-4xl mx-auto">

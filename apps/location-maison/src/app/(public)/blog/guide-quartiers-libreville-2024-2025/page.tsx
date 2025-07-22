@@ -7,23 +7,9 @@ export const metadata: Metadata = {
   title: "Guide Quartiers Libreville 2024-2025 - Prix, Ambiance, Services | Trouve Ton Nkama",
   description: "Guide complet quartiers Libreville 2024-2025 : prix par quartier, ambiance, services, écoles, commerces. Glass, Akébé, Louis, Nzeng-Ayong, Bellevue, Owendo. Conseils pour choisir son quartier.",
   keywords: "quartiers Libreville 2024, prix immobilier Libreville, Glass Libreville, Akébé Libreville, Louis Libreville, Nzeng-Ayong Libreville, Bellevue Libreville, Owendo Libreville, ambiance quartiers Libreville",
-  openGraph: {
-    title: "Guide Quartiers Libreville 2024-2025 - Prix & Ambiance",
-    description: "Guide complet quartiers Libreville : prix, ambiance, services, écoles, commerces. Conseils pour choisir son quartier idéal.",
-    url: `${process.env.NEXT_PUBLIC_HOST}/blog/guide-quartiers-libreville-2024-2025`,
-    type: "article",
-    images: [
-      {
-        url: `${process.env.NEXT_PUBLIC_HOST}/linkedin-og.jpg`,
-        width: 1200,
-        height: 630,
-        alt: "Guide Quartiers Libreville 2024-2025",
-      },
-    ],
-  },
 };
 
-export default function GuideQuartiersLibreville2024Page() {
+export default function GuideQuartiersLibrevillePage() {
   return (
     <div className="container mx-auto px-4 py-8">
       <div className="max-w-4xl mx-auto">

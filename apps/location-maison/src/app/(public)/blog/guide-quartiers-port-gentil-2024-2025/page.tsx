@@ -5,25 +5,11 @@ import { routes } from '@/constantes/routes';
 
 export const metadata: Metadata = {
   title: "Guide Quartiers Port-Gentil 2024-2025 - Prix, Ambiance, Services | Trouve Ton Nkama",
-  description: "Guide complet quartiers Port-Gentil 2024-2025 : prix par quartier, ambiance, services, écoles, commerces. Matanda, Montagne Sainte, Olowé, Port-Gentil Centre. Conseils pour choisir son quartier.",
-  keywords: "quartiers Port-Gentil 2024, prix immobilier Port-Gentil, Matanda Port-Gentil, Montagne Sainte Port-Gentil, Olowé Port-Gentil, Port-Gentil Centre, ambiance quartiers Port-Gentil",
-  openGraph: {
-    title: "Guide Quartiers Port-Gentil 2024-2025 - Prix & Ambiance",
-    description: "Guide complet quartiers Port-Gentil : prix, ambiance, services, écoles, commerces. Conseils pour choisir son quartier idéal.",
-    url: `${process.env.NEXT_PUBLIC_HOST}/blog/guide-quartiers-port-gentil-2024-2025`,
-    type: "article",
-    images: [
-      {
-        url: `${process.env.NEXT_PUBLIC_HOST}/linkedin-og.jpg`,
-        width: 1200,
-        height: 630,
-        alt: "Guide Quartiers Port-Gentil 2024-2025",
-      },
-    ],
-  },
+  description: "Guide complet quartiers Port-Gentil 2024-2025 : prix par quartier, ambiance, services, écoles, commerces. Matanda, Montagne Sainte, Olowé. Conseils pour choisir son quartier.",
+  keywords: "quartiers Port-Gentil 2024, prix immobilier Port-Gentil, Matanda Port-Gentil, Montagne Sainte Port-Gentil, Olowé Port-Gentil, ambiance quartiers Port-Gentil",
 };
 
-export default function GuideQuartiersPortGentil2024Page() {
+export default function GuideQuartiersPortGentilPage() {
   return (
     <div className="container mx-auto px-4 py-8">
       <div className="max-w-4xl mx-auto">
