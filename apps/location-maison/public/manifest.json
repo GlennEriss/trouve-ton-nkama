@@ -1,6 +1,6 @@
 {
-  "name": "Trouve ton Nkama",
-  "short_name": "Nkama",
+  "name": "Trouve Ton Nkama",
+  "short_name": "Trouve Ton Nkama",
   "description": "Trouvez votre maison idéale au Gabon",
   "start_url": "/",
   "display": "standalone",
