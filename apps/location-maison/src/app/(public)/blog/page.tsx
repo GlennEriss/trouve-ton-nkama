@@ -2,6 +2,16 @@ import type { Metadata } from "next";
 import React from 'react';
 import Link from 'next/link';
 import { routes } from '@/constantes/routes';
+import { 
+  TrendingUp, 
+  CreditCard, 
+  Smartphone, 
+  Megaphone, 
+  MapPin, 
+  DollarSign, 
+  Newspaper, 
+  BookOpen 
+} from 'lucide-react';
 
 export const metadata: Metadata = {
   title: "Blog Immobilier Gabon - Conseils, Actualités, Prix | Trouve Ton Nkama",
@@ -293,18 +303,22 @@ export default function BlogPage() {
             </h3>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
               {[
-                { name: "Marché immobilier", count: 2, icon: "" },
-                { name: "Financement", count: 1, icon: "" },
-                { name: "PropTech", count: 1, icon: "" },
-                { name: "Marketing immobilier", count: 1, icon: "" },
-                { name: "Quartiers", count: 2, icon: "" },
-                { name: "Investissement", count: 1, icon: "" },
-                { name: "Actualités", count: 1, icon: "" },
-                { name: "Conseils pratiques", count: 2, icon: "" }
+                { name: "Marché immobilier", count: 2, icon: <TrendingUp className="text-4xl text-[#146B67]" /> },
+                { name: "Financement", count: 1, icon: <CreditCard className="text-4xl text-[#146B67]" /> },
+                { name: "PropTech", count: 1, icon: <Smartphone className="text-4xl text-[#146B67]" /> },
+                { name: "Marketing immobilier", count: 1, icon: <Megaphone className="text-4xl text-[#146B67]" /> },
+                { name: "Quartiers", count: 2, icon: <MapPin className="text-4xl text-[#146B67]" /> },
+                { name: "Investissement", count: 1, icon: <DollarSign className="text-4xl text-[#146B67]" /> },
+                { name: "Actualités", count: 1, icon: <Newspaper className="text-4xl text-[#146B67]" /> },
+                { name: "Conseils pratiques", count: 2, icon: <BookOpen className="text-4xl text-[#146B67]" /> }
               ].map((category) => (
-                <div key={category.name} className="bg-white p-4 rounded-lg text-center hover:shadow-md transition-shadow">
-                  <div className="text-2xl mb-2">{category.icon}</div>
-                  <h4 className="font-semibold text-gray-900">{category.name}</h4>
+                <div key={category.name} className="bg-white p-6 rounded-xl text-center hover:shadow-lg transition-all duration-300 hover:scale-105 border border-gray-100">
+                  <div className="flex justify-center mb-4">
+                    <div className="p-3 bg-gradient-to-br from-[#C1DEE8] to-[#FBD9B9] rounded-full">
+                      {category.icon}
+                    </div>
+                  </div>
+                  <h4 className="font-semibold text-gray-900 mb-2">{category.name}</h4>
                   <p className="text-sm text-gray-500">{category.count} article{category.count !== 1 ? 's' : ''}</p>
                 </div>
               ))}
