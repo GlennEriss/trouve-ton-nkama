@@ -7,6 +7,7 @@ import {
   DialogDescription,
   DialogFooter,
 } from '@/components/ui/dialog';
+import { Download } from 'lucide-react';
 
 const LOCALSTORAGE_KEY = 'pwa-modal-dismissed-at';
 const HOUR_MS = 60 * 60 * 1000;
@@ -90,16 +91,17 @@ export default function ModalPWAInstall() {
         <DialogFooter>
           <button
             onClick={handleLater}
-            className="bg-gray-200 text-gray-800 font-medium px-4 py-2 rounded hover:bg-gray-300 transition"
+            className="flex-1 bg-gray-100 hover:bg-gray-200 text-gray-700 font-medium py-3 px-4 rounded-full transition-all duration-200 hover:scale-[0.98]"
           >
             Plus tard
           </button>
           {!isIOSDevice && (
             <button
               onClick={handleInstall}
-              className="bg-gradient-to-r from-[#1FA89B] to-[#146B67] text-white font-bold px-4 py-2 rounded shadow hover:scale-105 transition-all"
+              className="flex-1 bg-gradient-to-r from-[#1FA89B] to-[#146B67] hover:from-[#1c9690] hover:to-[#125c59] text-white font-bold py-3 px-4 rounded-full shadow-lg hover:shadow-xl transition-all duration-200 hover:scale-[1.02] flex items-center justify-center space-x-2"
             >
-              Installer maintenant
+              <Download className="w-4 h-4" />
+              <span>Installer maintenant</span>
             </button>
           )}
         </DialogFooter>
