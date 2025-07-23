@@ -1,5 +1,5 @@
 'use client'
-import React from 'react'
+import React, { useEffect, useState } from 'react'
 import Logo from '../logo/Logo'
 import { routes } from '@/constantes/routes'
 import { MapPin, Mail, Facebook, MessageCircle } from "lucide-react";
@@ -7,12 +7,28 @@ import { usePathname } from 'next/navigation';
 import { useCurrentUser } from '@/hooks/use-current-user';
 import { useWindowSize } from '@/hooks/useSize';
 import { cn } from '@/lib/utils';
+import PWAInstallButton from '@/components/pwa/PWAInstallButton';
 
 export default function Footer({ isHide = false }: Readonly<{ isHide?: boolean }>) {
     const pathname = usePathname()
     const { user } = useCurrentUser()
     const { width } = useWindowSize()
-    if (isHide || pathname === routes.public.signin || pathname === routes.public.signup || pathname === routes.public.signinSignup || (user && width < 768)) {
+    const [isPWAInstalled, setIsPWAInstalled] = useState(false);
+
+    useEffect(() => {
+        const checkPWA = () => {
+            if (typeof window !== "undefined") {
+                const isStandalone = window.matchMedia('(display-mode: standalone)').matches
+                    || (window.navigator as any).standalone === true;
+                setIsPWAInstalled(isStandalone);
+            }
+        };
+        checkPWA();
+        window.addEventListener('appinstalled', checkPWA);
+        return () => window.removeEventListener('appinstalled', checkPWA);
+    }, []);
+
+    if (isHide || pathname === routes.public.signin || pathname === routes.public.signup || pathname === routes.public.signinSignup || (user && width < 768 && pathname !== routes.public.homePage)) {
         return null
     }
     return (
@@ -66,6 +82,8 @@ export default function Footer({ isHide = false }: Readonly<{ isHide?: boolean }
                     </div>
                 </div>
 
+                {/* Bouton d'installation PWA, non flottant */}
+                <PWAInstallButton />
 
                 <hr className="my-6 border-gray-700 sm:mx-auto lg:my-8" />
                 <span className="block text-sm text-white text-center">

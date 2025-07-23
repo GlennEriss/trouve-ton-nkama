@@ -7,7 +7,6 @@ import Form from 'next/form'
 import Link from 'next/link';
 import { routes } from '@/constantes/routes';
 import { useCurrentUser } from '@/hooks/use-current-user';
-import Image from 'next/image';
 import Navbar from './Navbar';
 import { FilterModalHomePage } from './FilterModalHomePage';
 import PropertyByProvince from './PropertyByProvince';

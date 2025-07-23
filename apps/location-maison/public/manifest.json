@@ -12,39 +12,25 @@
   "dir": "ltr",
   "icons": [
     {
-      "src": "/favicon.ico",
-      "sizes": "32x32",
-      "type": "image/x-icon"
-    },
-    {
-      "src": "/favicon.webp",
-      "sizes": "32x32",
-      "type": "image/webp",
+      "src": "/logo.svg",
+      "sizes": "1024x1024",
+      "type": "image/svg+xml",
       "purpose": "any"
     },
     {
-      "src": "/icon-64.webp",
+      "src": "/icons/icon-32x32.png",
+      "sizes": "32x32",
+      "type": "image/png"
+    },
+    {
+      "src": "/icons/icon-64x64.png",
       "sizes": "64x64",
-      "type": "image/webp",
-      "purpose": "any"
+      "type": "image/png"
     },
     {
-      "src": "/icon-128.webp",
+      "src": "/icons/icon-128x128.png",
       "sizes": "128x128",
-      "type": "image/webp",
-      "purpose": "any"
-    },
-    {
-      "src": "/icon-256.webp",
-      "sizes": "256x256",
-      "type": "image/webp",
-      "purpose": "any"
-    },
-    {
-      "src": "/icon-512.webp",
-      "sizes": "512x512",
-      "type": "image/webp",
-      "purpose": "any maskable"
+      "type": "image/png"
     },
     {
       "src": "/icons/icon-192x192.png",
@@ -52,15 +38,20 @@
       "type": "image/png"
     },
     {
-      "src": "/icons/icon-512x512.png",
-      "sizes": "512x512",
+      "src": "/icons/icon-256x256.png",
+      "sizes": "256x256",
       "type": "image/png"
     },
     {
-      "src": "/logo.webp",
+      "src": "/icons/icon-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icons/icon-1024x1024.png",
       "sizes": "1024x1024",
-      "type": "image/webp",
-      "purpose": "any"
+      "type": "image/png"
     }
   ],
   "categories": ["business", "lifestyle", "productivity"]
