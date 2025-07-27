@@ -9,7 +9,7 @@ import PropertyCard from '../home-page/PropertyCard';
 import { useSearchParams } from 'next/navigation';
 
 export default function SearchMobilePage() {
-    const { searchText, setSearchText, province, city, street, minPrice, maxPrice, minArea, maxArea, minNbrRooms, maxNbrRooms, typeProperty, tags, setProvince, setCity, setStreet, setMinPrice, setMaxPrice, setMinArea, setMaxArea, setMinNbrRooms, setMaxNbrRooms, setTypeProperty, setTags } = useAlgoliaContext()
+    const { searchText, setSearchText, province, city, street, minPrice, maxPrice, minArea, maxArea, minNbrRooms, maxNbrRooms, typeProperty, status, tags, setProvince, setCity, setStreet, setMinPrice, setMaxPrice, setMinArea, setMaxArea, setMinNbrRooms, setMaxNbrRooms, setTypeProperty, setStatus, setTags } = useAlgoliaContext()
     const topRef = React.useRef<HTMLDivElement>(null);
     const sentinelRef = React.useRef<HTMLDivElement>(null);
     const { items, isLastPage, showMore } = useInfiniteHits();

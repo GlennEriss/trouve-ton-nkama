@@ -260,6 +260,7 @@ export const FormFilterSchema = z.object({
   minNbrRooms: z.number().optional(),
   maxNbrRooms: z.number().optional(),
   typeProperty: z.array(z.string()).optional(),
+  status: z.array(z.string()).optional(),
   tags: z.array(z.string()).optional(),
 });
 //Types

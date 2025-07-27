@@ -52,6 +52,9 @@ interface AlgoliaContextType {
   typeProperty: string[];
   setTypeProperty: React.Dispatch<React.SetStateAction<string[]>>;
 
+  status: string[];
+  setStatus: React.Dispatch<React.SetStateAction<string[]>>;
+
   tags: string[];
   setTags: React.Dispatch<React.SetStateAction<string[]>>;
 
@@ -95,6 +98,7 @@ export const AlgoliaProvider: React.FC<AlgoliaProviderProps> = ({
 
   // Sélections multiples
   const [typeProperty, setTypeProperty] = useState<string[]>([]);
+  const [status, setStatus] = useState<string[]>([]);
   const [tags, setTags] = useState<string[]>([]);
 
   // Résultats filtrés (optionnel)
@@ -119,6 +123,7 @@ export const AlgoliaProvider: React.FC<AlgoliaProviderProps> = ({
     setMinNbrChickens("");
     setMaxNbrChickens("");
     setTypeProperty([]);
+    setStatus([]);
     setTags([]);
   };
 
@@ -152,6 +157,8 @@ export const AlgoliaProvider: React.FC<AlgoliaProviderProps> = ({
     setMaxNbrChickens,
     typeProperty,
     setTypeProperty,
+    status,
+    setStatus,
     tags,
     setTags,
     filteredResults,
@@ -175,6 +182,7 @@ export const AlgoliaProvider: React.FC<AlgoliaProviderProps> = ({
     minNbrChickens,
     maxNbrChickens,
     typeProperty,
+    status,
     tags,
     filteredResults,
     searchText,
