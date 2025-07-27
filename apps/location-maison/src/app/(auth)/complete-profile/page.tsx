@@ -1,6 +1,6 @@
 'use client'
 import React, { useState, useEffect } from 'react'
-import { useSession } from 'next-auth/react'
+import { useSession, signOut } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
@@ -9,6 +9,7 @@ import { LayoutAuth } from '@/components/layouts/LayoutAuth'
 import { InputForm } from '@/components/forms/InputForm'
 import { Form } from '@/components/ui/form'
 import { PhoneNumberForm } from '@/components/forms/PhoneNumberForm'
+import { DateSelectForm } from '@/components/forms/DateSelectForm'
 import { ButtonLoading } from '@/components/buttons/ButtonLoading'
 import { useToast } from '@/hooks/use-toast'
 import { routes } from '@/constantes/routes'
@@ -20,20 +21,42 @@ const CompleteProfileSchema = z.object({
     firstname: z.string().min(2, 'Le prénom doit contenir au moins 2 caractères'),
     lastname: z.string().min(2, 'Le nom doit contenir au moins 2 caractères'),
     phone: z.string().min(10, 'Le numéro de téléphone doit contenir au moins 10 chiffres'),
-    birthDate: z.string().min(1, 'La date de naissance est obligatoire')
-        .refine((date) => {
-            const birthDate = new Date(date);
-            const today = new Date();
-            const age = today.getFullYear() - birthDate.getFullYear();
-            const monthDiff = today.getMonth() - birthDate.getMonth();
-            
-            // Ajuster l'âge si l'anniversaire n'est pas encore passé cette année
-            const actualAge = monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate()) 
-                ? age - 1 
-                : age;
-            
-            return actualAge >= 18;
-        }, 'Vous devez avoir au moins 18 ans pour utiliser cette plateforme'),
+    birthDate: z.object({
+        day: z.string().min(1, { message: 'Le jour est requis' }),
+        month: z.string().min(1, { message: 'Le mois est requis' }),
+        year: z.string().min(1, { message: 'L\'année est requise' })
+    }).refine((date) => {
+        // Vérifier si au moins un champ est rempli pour déclencher la validation
+        if (!date.day && !date.month && !date.year) {
+            return true; // Aucun champ rempli, pas d'erreur
+        }
+        
+        // Si au moins un champ est rempli mais pas tous, afficher l'erreur d'âge
+        if (!date.day || !date.month || !date.year) {
+            return false;
+        }
+        
+        const day = parseInt(date.day);
+        const month = parseInt(date.month);
+        const year = parseInt(date.year);
+        
+        // Vérifier que la date est valide
+        const birthDate = new Date(year, month - 1, day);
+        if (birthDate.getFullYear() !== year || birthDate.getMonth() !== month - 1 || birthDate.getDate() !== day) {
+            return false;
+        }
+        
+        // Vérifier l'âge (18 ans minimum)
+        const today = new Date();
+        const age = today.getFullYear() - year;
+        const m = today.getMonth() - (month - 1);
+        const d = today.getDate() - day;
+
+        const actualAge = m < 0 || (m === 0 && d < 0) ? age - 1 : age;
+        return actualAge >= 18;
+    }, {
+        message: 'Vous devez avoir au moins 18 ans pour compléter votre profil',
+    }),
 })
 
 type CompleteProfileFormType = z.infer<typeof CompleteProfileSchema>
@@ -47,11 +70,16 @@ export default function CompleteProfilePage() {
 
     const form = useForm<CompleteProfileFormType>({
         resolver: zodResolver(CompleteProfileSchema),
+        mode: 'onChange', // Validation en temps réel
         defaultValues: {
             firstname: '',
             lastname: '',
             phone: '',
-            birthDate: '',
+            birthDate: {
+                day: '',
+                month: '',
+                year: ''
+            },
         }
     })
 
@@ -109,15 +137,23 @@ export default function CompleteProfilePage() {
     const onSubmit = async (values: CompleteProfileFormType) => {
         if (!user?.uid) return
 
+        // La validation se fait automatiquement via react-hook-form et zodResolver
+        // Pas besoin de faire safeParse manuellement
+        
         setIsSubmitting(true)
         try {
+            // Convertir la structure de date en format string
+            const birthDateString = values.birthDate ? 
+                `${values.birthDate.year}-${values.birthDate.month}-${values.birthDate.day}` : 
+                '';
+
             // Mettre à jour l'utilisateur dans Firestore
             const updateSuccess = await updateUser(user.uid, {
                 firstname: values.firstname,
                 lastname: values.lastname,
                 phoneNumbers: [values.phone],
                 phoneNumberVerified: false, // Sera vérifié plus tard
-                birthDate: values.birthDate,
+                birthDate: birthDateString,
                 searchableName: `${values.firstname} ${values.lastname}`,
                 metadata: {
                     ...user.metadata,
@@ -138,7 +174,7 @@ export default function CompleteProfilePage() {
                     lastname: values.lastname,
                     phoneNumbers: [values.phone],
                     phoneNumberVerified: false,
-                    birthDate: values.birthDate,
+                    birthDate: birthDateString,
                     searchableName: `${values.firstname} ${values.lastname}`,
                     metadata: {
                         ...user.metadata,
@@ -251,11 +287,10 @@ export default function CompleteProfilePage() {
                         />
                     </div>
 
-                    <InputForm
+                    <DateSelectForm
                         form={form}
                         name='birthDate'
                         label='Date de naissance'
-                        type='date'
                         className='p-5'
                         disabled={isSubmitting}
                     />
@@ -266,6 +301,15 @@ export default function CompleteProfilePage() {
                         className='w-full bg-gradient-to-r from-[#146B67] via-[#1FA89B] to-[#146B67]'>
                         {isSubmitting ? 'Enregistrement en cours...' : 'Compléter mon profil'}
                     </ButtonLoading>
+                    
+                    <div className="pt-4 border-t border-gray-200">
+                        <button
+                            type='button'
+                            onClick={() => signOut({ callbackUrl: routes.public.signin })}
+                            className='w-full py-3 px-4 text-gray-500 border border-gray-300 rounded-full hover:bg-gray-50 transition-colors text-sm'>
+                            Se déconnecter
+                        </button>
+                    </div>
                 </form>
             </Form>
         </LayoutAuth>

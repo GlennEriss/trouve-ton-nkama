@@ -9,10 +9,15 @@ export function transformToPerson(values: FormRegisterSchemaType): Partial<User>
         name: 'Gabon',
     };
 
+    // Convertir la structure de date en format string
+    const birthDate = values.birthdate ? 
+        `${values.birthdate.year}-${values.birthdate.month}-${values.birthdate.day}` : 
+        '';
+
     return {
         firstname: values.firstname,
         lastname: values.lastname,
-        birthDate: values.birthdate,
+        birthDate: birthDate,
         email: values.email,
         country: country,
         phoneNumbers: [values.phone],

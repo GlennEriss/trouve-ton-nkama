@@ -24,12 +24,6 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
     return {
       title: property.title,
       description: property.description,
-      openGraph: {
-        title: property.title,
-        description: property.description,
-        url: `${process.env.NEXT_PUBLIC_HOST}/houseDetails/${property.id}`,
-        type: 'website',
-      },
     };
   } catch (error) {
     console.error("Error fetching metadata:", error);

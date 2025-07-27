@@ -9,7 +9,7 @@ import { useForm, useWatch } from 'react-hook-form'
 import { useLocation } from '@/hooks/use-location'
 import InputFormNumberApp from '../shared/form/InputFormNumberApp'
 import MultiSelectFormApp from '../shared/form/MultiSelectFormApp'
-import { tags as tagsList } from "@/constantes";
+import { tags as tagsList, statusOptions } from "@/constantes";
 import { Button } from '../ui/button'
 import { useAlgoliaContext } from "@/providers/AlgoliaContext";
 import { useInfiniteHits, useStats } from 'react-instantsearch'
@@ -43,6 +43,7 @@ export default function SearchDesktopPage() {
         setMinNbrRooms,
         setMaxNbrRooms,
         setTypeProperty,
+        setStatus,
         setTags,
         clearFilters,
     } = useAlgoliaContext();
@@ -70,6 +71,7 @@ export default function SearchDesktopPage() {
         const minRoomsVal = searchParams.get("minNbrRooms") ?? "";
         const maxRoomsVal = searchParams.get("maxNbrRooms") ?? "";
         const typePropRaw = searchParams.get("typeProperty");
+        const statusRaw = searchParams.get("status");
         const tagsRaw = searchParams.get("tags");
 
         // Debug log pour vérifier la synchronisation
@@ -86,6 +88,7 @@ export default function SearchDesktopPage() {
         setMinNbrRooms(minRoomsVal);
         setMaxNbrRooms(maxRoomsVal);
         setTypeProperty(typePropRaw ? typePropRaw.split(",").map(s => s.trim()) : []);
+        setStatus(statusRaw ? statusRaw.split(",").map(s => s.trim()) : []);
         setTags(tagsRaw ? tagsRaw.split(",").map(s => s.trim()) : []);
 
         // Mettre à jour le formulaire avec un délai pour s'assurer que le render est terminé
@@ -106,6 +109,7 @@ export default function SearchDesktopPage() {
             form.setValue('minNbrRooms', minRoomsVal ? Number(minRoomsVal) : undefined);
             form.setValue('maxNbrRooms', maxRoomsVal ? Number(maxRoomsVal) : undefined);
             form.setValue('typeProperty', typePropRaw ? typePropRaw.split(",").map(s => s.trim()) : []);
+            form.setValue('status', statusRaw ? statusRaw.split(",").map(s => s.trim()) : []);
             form.setValue('tags', tagsRaw ? tagsRaw.split(",").map(s => s.trim()) : []);
             
             // Marquer le chargement initial comme terminé et forcer re-render
@@ -259,6 +263,7 @@ export default function SearchDesktopPage() {
 
         const arrayUpdates = [
             { condition: data.typeProperty?.length, setter: setTypeProperty, value: data.typeProperty },
+            { condition: data.status?.length, setter: setStatus, value: data.status },
             { condition: data.tags?.length, setter: setTags, value: data.tags },
         ];
 
@@ -288,6 +293,7 @@ export default function SearchDesktopPage() {
             { condition: minRooms, key: "minNbrRooms", value: String(minRooms) },
             { condition: maxRooms, key: "maxNbrRooms", value: String(maxRooms) },
             { condition: data.typeProperty?.length, key: "typeProperty", value: data.typeProperty?.join(",") },
+            { condition: data.status?.length, key: "status", value: data.status?.join(",") },
             { condition: data.tags?.length, key: "tags", value: data.tags?.join(",") },
         ];
 
@@ -352,6 +358,19 @@ export default function SearchDesktopPage() {
                                         disabled={!selectedCity}
                                     />
                                 </div>
+                            </section>
+
+                            <section className='space-y-5 p-5'>
+                                <h2 className='text-lg font-semibold text-[#146B67] dark:text-[#1FA89B]'>
+                                    Statut
+                                </h2>
+                                <MultiSelectFormApp
+                                    control={form.control}
+                                    name="status"
+                                    options={statusOptions}
+                                    placeholder="Sélectionnez le statut"
+                                    className='rounded-full p-2 h-14 bg-gray-50 dark:bg-gray-900 dark:text-white'
+                                />
                             </section>
 
                             <section className='space-y-5 p-5'>

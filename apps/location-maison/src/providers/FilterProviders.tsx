@@ -30,6 +30,7 @@ export default function FilterProviders({ children }: Readonly<{ children: React
         const minRoomsVal = searchParams.get("minNbrRooms") ?? "";
         const maxRoomsVal = searchParams.get("maxNbrRooms") ?? "";
         const typePropRaw = searchParams.get("typeProperty") ?? "";
+        const statusRaw = searchParams.get("status") ?? "";
         const tagsRaw = searchParams.get("tags") ?? "";
 
         if (cityVal) f.push(`city:"${cityVal}"`);
@@ -47,6 +48,16 @@ export default function FilterProviders({ children }: Readonly<{ children: React
                 typePropRaw
                     .split(",")
                     .map((t) => `typeProperty:"${t.trim()}"`)
+                    .join(" OR ") +
+                ")"
+            );
+        }
+        if (statusRaw) {
+            f.push(
+                "(" +
+                statusRaw
+                    .split(",")
+                    .map((s) => `status:"${s.trim()}"`)
                     .join(" OR ") +
                 ")"
             );

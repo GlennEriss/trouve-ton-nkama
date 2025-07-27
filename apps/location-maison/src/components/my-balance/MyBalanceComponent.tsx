@@ -38,7 +38,7 @@ export default function MyBalanceComponent() {
   }
 
   return (
-    <div className="container mx-auto px-4 md:px-6 py-4 md:py-6 space-y-6 md:space-y-8 max-w-6xl">
+    <div className="container mx-auto px-4 md:px-6 py-4 md:py-6 space-y-6 md:space-y-8 max-w-[1280px] 2xl:max-w-[1440px]">
       {/* Header Section */}
       <div className="text-center space-y-3 md:space-y-4">
         <div className="flex items-center justify-center gap-2 md:gap-3">

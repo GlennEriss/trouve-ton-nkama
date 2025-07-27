@@ -41,12 +41,44 @@ export const routes = {
         terms_of_use: '/terms-of-use',
         data_deletion: '/data-deletion',
         search: '/search',
-        search_property: '/search'
+        search_property: '/search',
+        // Nouvelles routes blog et guide
+        blog: '/blog',
+        blog_tendances_marche: '/blog/tendances-marche-immobilier-gabon-2024',
+        blog_financement: '/blog/financement-immobilier-gabon',
+        blog_commissions_demarcheurs: '/blog/commissions-demarcheurs-logements-gabon',
+        blog_structurer_annonces: '/blog/structurer-annonces-engagement',
+        blog_proptech: '/blog/proptech-innovation-immobilier-gabon',
+        // Nouvelles routes blog ajoutées
+        blog_guide_quartiers_libreville: '/blog/guide-quartiers-libreville-2024-2025',
+        blog_guide_quartiers_port_gentil: '/blog/guide-quartiers-port-gentil-2024-2025',
+        blog_rentabilite_immobiliere: '/blog/rentabilite-immobiliere-gabon-2024-2025',
+        blog_actualites_immobilieres: '/blog/actualites-immobilieres-gabon-2024-2025',
+        blog_conseils_negociation: '/blog/conseils-negociation-immobiliere-gabon',
+        blog_demarches_administratives: '/blog/demarches-administratives-immobilier-gabon-2024',
+        guide_immobilier_gabon: '/guide-immobilier-gabon',
+        property: '/property',
     },
     public_google: {
         homePage: '/',
         search: '/search',
         confidentiality: '/privacy-policy',
         terms_of_use: '/terms-of-use',
+        // Routes importantes pour Google
+        blog: '/blog',
+        blog_tendances_marche: '/blog/tendances-marche-immobilier-gabon-2024',
+        blog_financement: '/blog/financement-immobilier-gabon',
+        blog_commissions_demarcheurs: '/blog/commissions-demarcheurs-logements-gabon',
+        blog_structurer_annonces: '/blog/structurer-annonces-engagement',
+        blog_proptech: '/blog/proptech-innovation-immobilier-gabon',
+        // Nouvelles routes blog ajoutées
+        blog_guide_quartiers_libreville: '/blog/guide-quartiers-libreville-2024-2025',
+        blog_guide_quartiers_port_gentil: '/blog/guide-quartiers-port-gentil-2024-2025',
+        blog_rentabilite_immobiliere: '/blog/rentabilite-immobiliere-gabon-2024-2025',
+        blog_actualites_immobilieres: '/blog/actualites-immobilieres-gabon-2024-2025',
+        blog_conseils_negociation: '/blog/conseils-negociation-immobiliere-gabon',
+        blog_demarches_administratives: '/blog/demarches-administratives-immobilier-gabon-2024',
+        guide_immobilier_gabon: '/guide-immobilier-gabon',
+        property: '/property',
     }
 }

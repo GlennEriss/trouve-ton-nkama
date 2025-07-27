@@ -144,7 +144,7 @@ export function validateProperty(property: Property): ValidationResult {
   // Validation des champs obligatoires
   if (!property.title) errors.push('Titre manquant');
   if (!property.description) errors.push('Description manquante');
-  if (!property.typeProperty) errors.push('Type de propriété manquant');
+  if (!property.typeProperty) errors.push("Type d'annonce manquant");
   if (!property.status) errors.push('Statut manquant');
   if (property.price === undefined || property.price === null) {
     errors.push('Prix manquant');

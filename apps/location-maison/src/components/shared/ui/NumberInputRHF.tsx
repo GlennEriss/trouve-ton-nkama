@@ -69,7 +69,7 @@ export const NumberInputRHF = React.forwardRef<HTMLInputElement, NumberInputRHFP
         <input
           type="number"
           ref={ref}
-          className={cn('pr-20', inputNumberNoSpin, className)}
+          className={cn('pr-20 w-full min-w-0', inputNumberNoSpin, className)}
           value={numericValue === undefined || isNaN(numericValue) ? '' : numericValue}
           onChange={handleInputChange}
           min={min}

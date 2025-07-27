@@ -1,30 +1,12 @@
-import PasswordResetFailure from '@/components/password-reset/PasswordResetFailure'
-import { Metadata } from 'next'
-import React from 'react'
+import type { Metadata } from "next";
+import React from 'react';
+import PasswordResetFailure from "@/components/password-reset/PasswordResetFailure";
 
 export const metadata: Metadata = {
-  title: 'Réinitialisation échouée - Trouve Ton Nkama',
-  description: "Le lien de réinitialisation de mot de passe a expiré ou est invalide. Demandez un nouveau lien pour récupérer l'accès à votre compte Trouve Ton Nkama.",
-  openGraph: {
-    title: 'Erreur de réinitialisation - Trouve Ton Nkama',
-    description: 'Lien expiré ou invalide. Obtenez un nouveau lien de réinitialisation pour accéder à votre compte.',
-    url: `${process.env.NEXT_PUBLIC_HOST}/password-reset-failure`,
-    type: 'website',
-    images: [
-      {
-        url: `${process.env.NEXT_PUBLIC_HOST}/emails/logo-email.png`,
-        width: 200,
-        height: 200,
-        alt: 'Erreur réinitialisation Trouve Ton Nkama',
-      },
-    ],
-  },
-}
+  title: "Échec de la Réinitialisation - Trouve Ton Nkama",
+  description: "La réinitialisation de votre mot de passe a échoué. Contactez notre support pour obtenir de l'aide.",
+};
 
-function PasswordResetFailurePage() {
-  return (
-    <PasswordResetFailure />
-  )
-}
-
-export default PasswordResetFailurePage 
+export default function PasswordResetFailurePage() {
+  return <PasswordResetFailure />;
+} 
