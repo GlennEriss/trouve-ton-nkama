@@ -81,8 +81,11 @@ const PropertyCarousel: React.FC<CarouselProps> = ({ properties = [], isRecommen
                   centerMode: false,
                 },
               },
-              { breakpoint: 1024, settings: { slidesToShow: Math.min(count, 2) } },
-              { breakpoint: 640, settings: { slidesToShow: 1 } },
+              { breakpoint: 1024, settings: { slidesToShow: Math.min(count, 3) } },
+              { breakpoint: 912, settings: { slidesToShow: Math.min(count, 3) } },
+              { breakpoint: 820, settings: { slidesToShow: Math.min(count, 2) } },
+              { breakpoint: 540, settings: { slidesToShow: Math.min(count, 2) } },
+              { breakpoint: 539, settings: { slidesToShow: 1 } },
             ],
           }
         : undefined,
