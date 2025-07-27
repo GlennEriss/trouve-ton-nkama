@@ -74,7 +74,7 @@ export default function Footer({ isHide = false }: Readonly<{ isHide?: boolean }
                         </div>
                         <div className="flex items-center space-x-2">
                             <MessageCircle size={16} />
-                            <a href="https://wa.me/221776960463?text=Bonjour%20!%20Je%20souhaite%20obtenir%20plus%20d'informations%20sur%20Trouve%20Ton%20Nkama." target="_blank" rel="noopener noreferrer" className="hover:underline">Contactez-nous sur WhatsApp</a>
+                            <a href={`https://wa.me/${process.env.NEXT_PUBLIC_CONTACT_SUPPORT?.replace('+', '').replace(/^00/, '')}?text=Bonjour%20!%20Je%20souhaite%20obtenir%20plus%20d'informations%20sur%20Trouve%20Ton%20Nkama.`} target="_blank" rel="noopener noreferrer" className="hover:underline">Contactez-nous sur WhatsApp</a>
                         </div>
                     </div>
                     <div className='sm:hidden mt-4 flex justify-center'>
