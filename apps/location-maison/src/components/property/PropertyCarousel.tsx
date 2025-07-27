@@ -91,7 +91,7 @@ const PropertyCarousel: React.FC<CarouselProps> = ({ properties = [], isRecommen
 
   /* ----- Rendu ----- */
   return (
-    <div className="container mx-auto px-4 relative max-w-[1440px]">
+    <div className="container mx-auto px-4 relative max-w-[1280px] 2xl:max-w-[1440px]">
       {hasMultiple ? (
         <Slider {...settings}>
           {properties.map((p) => (
