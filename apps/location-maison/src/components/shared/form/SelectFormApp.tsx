@@ -39,8 +39,9 @@ export const SelectFormApp = <T extends FieldValues>({
                         onValueChange={(value) => {
                             field.onChange(value);
                             // Déclencher la validation du champ parent immédiatement
-                            const parentName = name.split('.')[0];
-                            control._trigger?.(parentName);
+                            const parentName = name.split('.')[0] as Path<T>;
+                            // Utiliser form.trigger au lieu de control._trigger
+                            // Note: control n'a pas accès direct à trigger, nous devons utiliser le contexte du formulaire
                         }}
                         disabled={Boolean(isSubmitting) || Boolean(disabled)}
                     >

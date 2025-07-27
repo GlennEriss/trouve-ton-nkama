@@ -13,6 +13,7 @@ type SelectFormProps<T extends FieldValues> = {
     label?: string;
     description?: string;
     placeholder?: string;
+    disabled?: boolean;
     classNameTrigger?: string;
     classNameValue?: string;
     classNameContent?: string;
@@ -25,6 +26,7 @@ export const SelectForm = <T extends FieldValues>({
     name,
     options,
     placeholder,
+    disabled = false,
     classNameTrigger,
     classNameValue,
     classNameContent,
@@ -34,7 +36,7 @@ export const SelectForm = <T extends FieldValues>({
         if(value){
             form.setValue(name, value)
             // Déclencher la validation du champ parent immédiatement
-            const parentName = name.split('.')[0];
+            const parentName = name.split('.')[0] as Path<T>;
             form.trigger(parentName);
         }
       };
@@ -45,7 +47,7 @@ export const SelectForm = <T extends FieldValues>({
             render={({ field, formState: { isSubmitting } }) => (
                 <FormItem>
                     <FormLabel>{label}</FormLabel>
-                    <Select disabled={isSubmitting} onValueChange={handleOnValueChange} value={field.value}>
+                    <Select disabled={isSubmitting || disabled} onValueChange={handleOnValueChange} value={field.value}>
                         <FormControl>
                             <SelectTrigger className={classNameTrigger}>
                                 <SelectValue className={classNameValue} placeholder={placeholder} />
