@@ -180,12 +180,12 @@ export const SelectStreetComponent = ({ field }: Readonly<{ field: any }>) => {
     
     // Si un quartier est sélectionné mais n'existe pas dans les options,
     // l'ajouter temporairement
-    if (selectedStreet && !streets.some(s => s.value === selectedStreet)) {
+    if (selectedStreet && !streets.some((s: OptionType) => s.value === selectedStreet)) {
       streets.push({
         label: selectedStreet,
         value: selectedStreet
       })
-      streets.sort((a, b) => a.label.localeCompare(b.label, 'fr'))
+      streets.sort((a: OptionType, b: OptionType) => a.label.localeCompare(b.label, 'fr'))
     }
     
     return streets
