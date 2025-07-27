@@ -32,8 +32,8 @@ export default function Footer({ isHide = false }: Readonly<{ isHide?: boolean }
         return null
     }
     return (
-        <footer className={cn("shadow md:block dark:bg-gray-900 text-white dark:border-gray-900 dark:border-2 bg-black md:bg-[#282828] md:text-black", pathname === routes.public.search_property && "lg:hidden")}>
-            <div className="w-full max-w-screen-xl mx-auto p-4 md:py-8">
+        <footer className={cn("w-full shadow md:block dark:bg-gray-900 text-white dark:border-gray-900 dark:border-2 bg-black md:bg-[#282828] md:text-black", pathname === routes.public.search_property && "lg:hidden")}>
+            <div className="max-w-[1280px] 2xl:max-w-[1440px] mx-auto p-4 md:py-8">
                 <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
                     <div className='hidden md:block'>
                         <Logo className="text-black mb-4 sm:mb-0" width="64px" height="64px" />

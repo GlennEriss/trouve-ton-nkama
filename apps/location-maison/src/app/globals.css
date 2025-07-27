@@ -70,11 +70,7 @@ body {
     @apply bg-background text-foreground;
   }
   
-  /* Largeur maximale globale */
-  html, body {
-    max-width: 1440px;
-    margin: 0 auto;
-  }
+
 }
 
 
@@ -94,6 +90,19 @@ body {
   top: 0px !important;
   left: 0px !important;
   z-index: 99999;
+}
+
+/* Classes personnalisées pour la grille des provinces */
+@media (min-width: 540px) and (max-width: 911px) {
+  .grid-provinces {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (min-width: 912px) {
+  .grid-provinces {
+    grid-template-columns: repeat(3, 1fr);
+  }
 }
 
 /* Map component css */

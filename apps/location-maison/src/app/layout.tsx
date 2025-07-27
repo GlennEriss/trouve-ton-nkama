@@ -249,7 +249,7 @@ export default async function RootLayout({
       <body
         className={cn('antialiased overscroll-y-none', inter.className)}
       >
-        <div className="max-w-[1440px] mx-auto">
+        <div className="mx-auto">
           <Providers>
             {children}
             <BottomNavigation />
