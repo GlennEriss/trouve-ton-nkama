@@ -1,0 +1,5 @@
+plan: free
+requete_par_mois: 50
+appel_api_par_min: 10
+start_time: '2024-06-01T00:00:00Z'
+posts_par_page: 10 

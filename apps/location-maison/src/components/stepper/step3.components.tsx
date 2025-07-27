@@ -1,216 +1,255 @@
+// src/components/location/UpdatedSelectComponents.tsx
 "use client"
 
 import * as React from "react"
-import { Input } from "../ui/input"
 import { useFormContext } from "react-hook-form"
-import Select from 'react-select';
-import { useQuery } from "@tanstack/react-query"
-import { SelectFormApp } from "../shared/form/SelectFormApp";
-import { useLocation } from "@/hooks/use-location";
-
-const invalidAddressTypes = ["administrative"];
-export function ComboboxComponent({ field }: Readonly<{ field: any }>) {
-  const [inputValue, setInputValue] = React.useState('');
-  const { setValue } = useFormContext()
-  const { data, isPending } = useQuery({
-    queryKey: ['locations', inputValue],
-    queryFn: async () => {
-      const response = await fetch(
-        `https://nominatim.openstreetmap.org/search?q=${inputValue}&format=json&addressdetails=1&limit=10&countrycodes=GA`
-      );
-      const data = await response.json();
-      const formattedOptions = data
-        .filter((item: any) => !invalidAddressTypes.includes(item.addresstype))
-        .map((location: any) => ({
-          value: location.display_name,
-          label: location.display_name,
-          longitude: location.lon,
-          latitude: location.lat,
-          street: location.name,
-          city: location.address?.city ?? location.address?.county,
-          province: location.address.state,
-          country: location.address.country,
-          countryCode: location.address.country_code,
-        }));
-      return formattedOptions
-    }
-  })
-  const handleSelectLocation = (value: any) => {
-    setInputValue(value)
-  };
-  const handleSetField = (option: any) => {
-    const { street, city, province, longitude, latitude, country, countryCode } = option
-    field.onChange(street)
-    setValue('city', city)
-    setValue('province', province)
-    setValue('longitude', longitude)
-    setValue('latitude', latitude)
-    setValue('country', country)
-    setValue('countryCode', countryCode)
-  }
-  return (
-    <Select
-      isSearchable
-      isLoading={isPending}
-      options={data ?? []}
-      onInputChange={handleSelectLocation}
-      onChange={handleSetField}
-      defaultValue={{ value: field.value.street, label: field.value.street }}
-      placeholder="Rechercher une localisation..."
-      noOptionsMessage={() => 'Aucun résultat trouvé'}
-    />
-  );
-}
-
-export const LocationSearch = ({ field, index, location }: Readonly<{ field: any, index: number, location: Location }>) => {
-  const [inputValue, setInputValue] = React.useState('');
-  const { data, isPending } = useQuery({
-    queryKey: ['locations', inputValue],
-    queryFn: async () => {
-      const response = await fetch(
-        `https://nominatim.openstreetmap.org/search?q=${inputValue}&format=json&addressdetails=1&limit=10&countrycodes=GA`
-      );
-      const data = await response.json();
-      const formattedOptions = data.map((location: any) => ({
-        value: location.display_name,
-        label: location.display_name,
-        longitude: location.lon,
-        latitude: location.lat
-      }));
-      return formattedOptions
-    }
-  })
-  const handleSelectLocation = (value: any) => {
-    setInputValue(value)
-  };
-  const handleSetField = (option: any) => {
-
-  }
-  return (
-    <Select
-      isSearchable
-      isLoading={isPending}
-      options={data ?? []}
-      onInputChange={handleSelectLocation}
-      onChange={handleSetField}
-      defaultInputValue={field.value[index].address}
-      placeholder="Rechercher une localisation..."
-      noOptionsMessage={() => 'Aucun résultat trouvé'}
-    />
-  );
-}
-
-export const InputDisabledComponent = ({ field }: Readonly<{ field: any }>) => {
-  return (
-    <Input {...field} value={field.value} disabled={true} />
-  )
-}
-
-const searchAddress = async (inputValue: string) => {
-  try {
-    const response = await fetch(`/api/geocode/search?q=${encodeURIComponent(inputValue)}`);
-
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
-    }
-
-    const data = await response.json();
-    return data;
-  } catch (error) {
-    console.error('Erreur lors de la recherche:', error);
-    return [];
-  }
-};
+import { SelectFormApp } from "../shared/form/SelectFormApp"
+import { useLocationSync } from "@/hooks/use-location-sync"
+import { Badge } from "@/components/ui/badge"
+import { Database, MapPin, Building } from "lucide-react"
+import { cn } from "@/lib/utils"
 
 interface OptionType {
-  label: string;
-  value: string;
+  label: string
+  value: string
 }
+
+/**
+ * Composant Select pour les provinces avec synchronisation automatique
+ */
 export const SelectProvinceComponent = ({ field }: Readonly<{ field: any }>) => {
-  const { data: locations } = useLocation();
+  const { watch } = useFormContext()
+  const { locations, isLoading } = useLocationSync()
+  
+  // Observer les changements pour détecter les nouvelles sélections
+  const selectedProvince = watch('province')
+  const selectedCity = watch('city')
+  const selectedStreet = watch('street')
+  
+  // Générer les options des provinces
   const provinceOptions = React.useMemo((): OptionType[] => {
-    if (!locations) return [];
-    return Object.keys(locations)
+    if (!locations) return []
+    
+    const provinces = Object.keys(locations)
       .sort((a: string, b: string) => a.localeCompare(b, 'fr'))
       .map((province: string): OptionType => ({
         label: province,
         value: province
-      }));
-  }, [locations]);
+      }))
+    
+    // Si une province est sélectionnée mais n'existe pas dans les options,
+    // l'ajouter temporairement (sera synchronisée via le hook)
+    if (selectedProvince && !provinces.some(p => p.value === selectedProvince)) {
+      provinces.push({
+        label: selectedProvince,
+        value: selectedProvince
+      })
+      provinces.sort((a, b) => a.label.localeCompare(b.label, 'fr'))
+    }
+    
+    return provinces
+  }, [locations, selectedProvince])
+  
+  // Déterminer si la province actuelle est nouvelle
+  const isNewProvince = selectedProvince && locations && !locations[selectedProvince]
+  
   return (
-    <SelectFormApp
-      key={`province`}
-      control={field.control}
-      id="province"
-      name="province"
-      options={provinceOptions}
-      placeholder="Sélectionnez une province"
-      value={field.value}
-    />
+    <div className="space-y-2">
+      <SelectFormApp
+        key={`province-${selectedProvince}`} // Force re-render si changement
+        control={field.control}
+        id="province"
+        name="province"
+        options={provinceOptions}
+        placeholder="Sélectionnez une province"
+        value={field.value}
+        disabled={isLoading}
+      />
+      
+      {/* Indicateur de nouvelle province */}
+      {isNewProvince && (
+        <div className="flex items-center space-x-2 text-xs">
+          <Badge variant="secondary" className="bg-blue-100 text-blue-700 flex items-center space-x-1">
+            <Database className="w-3 h-3" />
+            <span>Nouvelle province</span>
+          </Badge>
+          <span className="text-gray-500">Sera ajoutée aux suggestions</span>
+        </div>
+      )}
+    </div>
   )
 }
 
+/**
+ * Composant Select pour les villes avec synchronisation automatique
+ */
 export const SelectCityComponent = ({ field }: Readonly<{ field: any }>) => {
-  const { data: locations } = useLocation();
-  const { watch } = useFormContext();
-  const selectedProvince = watch('province');
+  const { watch } = useFormContext()
+  const { locations, isLoading } = useLocationSync()
+  
+  const selectedProvince = watch('province')
+  const selectedCity = watch('city')
+  
+  // Générer les options des villes
   const cityOptions = React.useMemo((): OptionType[] => {
-    if (!locations || !selectedProvince || !locations[selectedProvince]) {
-      return [];
-    }
-    return Object.keys(locations[selectedProvince])
+    if (!locations || !selectedProvince) return []
+    
+    const provinceData = locations[selectedProvince] || {}
+    const cities = Object.keys(provinceData)
       .sort((a: string, b: string) => a.localeCompare(b, 'fr'))
       .map((city: string): OptionType => ({
         label: city,
         value: city
-      }));
-  }, [locations, selectedProvince]);
+      }))
+    
+    // Si une ville est sélectionnée mais n'existe pas dans les options,
+    // l'ajouter temporairement
+    if (selectedCity && !cities.some(c => c.value === selectedCity)) {
+      cities.push({
+        label: selectedCity,
+        value: selectedCity
+      })
+      cities.sort((a, b) => a.label.localeCompare(b.label, 'fr'))
+    }
+    
+    return cities
+  }, [locations, selectedProvince, selectedCity])
+  
+  // Déterminer si la ville actuelle est nouvelle
+  const isNewCity = selectedProvince && selectedCity && 
+    locations && locations[selectedProvince] && 
+    !locations[selectedProvince][selectedCity]
+  
   return (
-    <SelectFormApp
-      key={`city`}
-      control={field.control}
-      id="city"
-      name="city"
-      options={cityOptions}
-      placeholder="Sélectionnez une ville"
-      value={field.value}
-    />
+    <div className="space-y-2">
+      <SelectFormApp
+        key={`city-${selectedProvince}-${selectedCity}`}
+        control={field.control}
+        id="city"
+        name="city"
+        options={cityOptions}
+        placeholder={selectedProvince ? "Sélectionnez une ville" : "Sélectionnez d'abord une province"}
+        value={field.value}
+        disabled={!selectedProvince || isLoading}
+      />
+      
+      {/* Indicateur de nouvelle ville */}
+      {isNewCity && (
+        <div className="flex items-center space-x-2 text-xs">
+          <Badge variant="secondary" className="bg-green-100 text-green-700 flex items-center space-x-1">
+            <Building className="w-3 h-3" />
+            <span>Nouvelle ville</span>
+          </Badge>
+          <span className="text-gray-500">Sera ajoutée aux suggestions</span>
+        </div>
+      )}
+      
+      {/* Message d'aide conditionnel */}
+      {!selectedProvince && (
+        <p className="text-xs text-gray-500 flex items-center space-x-1">
+          <MapPin className="w-3 h-3" />
+          <span>Sélectionnez une province pour voir les villes disponibles</span>
+        </p>
+      )}
+    </div>
   )
 }
 
+/**
+ * Composant Select pour les quartiers/rues avec synchronisation automatique
+ */
 export const SelectStreetComponent = ({ field }: Readonly<{ field: any }>) => {
-  const { data: locations } = useLocation();
-  const { watch } = useFormContext();
-  const selectedProvince = watch('province');
-  const selectedCity = watch('city');
+  const { watch } = useFormContext()
+  const { locations, isLoading } = useLocationSync()
+  
+  const selectedProvince = watch('province')
+  const selectedCity = watch('city')
+  const selectedStreet = watch('street')
+  
+  // Générer les options des quartiers/rues
   const streetOptions = React.useMemo((): OptionType[] => {
-    if (
-      !locations ||
-      !selectedProvince ||
-      !locations[selectedProvince] ||
-      !selectedCity ||
-      !locations[selectedProvince][selectedCity]
-    ) {
-      return [];
-    }
-    return locations[selectedProvince][selectedCity]
+    if (!locations || !selectedProvince || !selectedCity) return []
+    
+    const cityData = locations[selectedProvince]?.[selectedCity] || []
+    const streets = cityData
       .sort((a: string, b: string) => a.localeCompare(b, 'fr'))
       .map((street: string): OptionType => ({
         label: street,
         value: street
-      }));
-  }, [locations, selectedProvince, selectedCity]);
-
+      }))
+    
+    // Si un quartier est sélectionné mais n'existe pas dans les options,
+    // l'ajouter temporairement
+    if (selectedStreet && !streets.some((s: OptionType) => s.value === selectedStreet)) {
+      streets.push({
+        label: selectedStreet,
+        value: selectedStreet
+      })
+      streets.sort((a: OptionType, b: OptionType) => a.label.localeCompare(b.label, 'fr'))
+    }
+    
+    return streets
+  }, [locations, selectedProvince, selectedCity, selectedStreet])
+  
+  // Déterminer si le quartier actuel est nouveau
+  const isNewStreet = selectedProvince && selectedCity && selectedStreet &&
+    locations && locations[selectedProvince] && locations[selectedProvince][selectedCity] &&
+    !locations[selectedProvince][selectedCity].includes(selectedStreet)
+  
+  // Calculer le nombre total de quartiers disponibles
+  const totalStreets = selectedProvince && selectedCity && locations && 
+    locations[selectedProvince] && locations[selectedProvince][selectedCity] ?
+    locations[selectedProvince][selectedCity].length : 0
+  
   return (
-    <SelectFormApp
-      key={`street`}
-      control={field.control}
-      id="street"
-      name="street"
-      options={streetOptions}
-      placeholder="Sélectionnez un quartier"
-      disabled={!selectedCity}
-      value={field.value}
-    />
+    <div className="space-y-2">
+      <SelectFormApp
+        key={`street-${selectedProvince}-${selectedCity}-${selectedStreet}`}
+        control={field.control}
+        id="street"
+        name="street"
+        options={streetOptions}
+        placeholder={
+          !selectedProvince ? "Sélectionnez d'abord une province" :
+          !selectedCity ? "Sélectionnez d'abord une ville" :
+          "Sélectionnez un quartier"
+        }
+        value={field.value}
+        disabled={!selectedCity || isLoading}
+      />
+      
+      {/* Indicateur de nouveau quartier */}
+      {isNewStreet && (
+        <div className="flex items-center space-x-2 text-xs">
+          <Badge variant="secondary" className="bg-purple-100 text-purple-700 flex items-center space-x-1">
+            <MapPin className="w-3 h-3" />
+            <span>Nouveau quartier</span>
+          </Badge>
+          <span className="text-gray-500">Sera ajouté aux suggestions</span>
+        </div>
+      )}
+      
+      {/* Informations contextuelles */}
+      {selectedCity && totalStreets > 0 && (
+        <p className="text-xs text-gray-500 flex items-center space-x-1">
+          <MapPin className="w-3 h-3" />
+          <span>{totalStreets} quartier{totalStreets > 1 ? 's' : ''} disponible{totalStreets > 1 ? 's' : ''} dans {selectedCity}</span>
+        </p>
+      )}
+      
+      {selectedCity && totalStreets === 0 && !selectedStreet && (
+        <p className="text-xs text-orange-600 flex items-center space-x-1">
+          <MapPin className="w-3 h-3" />
+          <span>Aucun quartier enregistré pour {selectedCity}. Utilisez la recherche ci-dessus.</span>
+        </p>
+      )}
+      
+      {!selectedProvince && (
+        <p className="text-xs text-gray-500 flex items-center space-x-1">
+          <MapPin className="w-3 h-3" />
+          <span>Sélectionnez une province et une ville pour voir les quartiers</span>
+        </p>
+      )}
+    </div>
   )
 }

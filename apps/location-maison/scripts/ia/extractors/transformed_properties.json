@@ -1,0 +1,202 @@
+[
+  {
+    "typeProperty": "studio",
+    "title": "Studio à louer à Okala",
+    "description": "Studio à louer à Okala, climatisé, à 15min de la voie principale. 1 chambre spacieuse + placards, 1 douche + wc, 1 cuisine américaine avec Hotte aspirante, 1 compteur courant et eau personnel, 1 chauffe eau, 1 gardien 24h/24, Eau en permanence, 1 parking.",
+    "price": 220000,
+    "status": "FOR_RENT",
+    "contact": "074406355",
+    "street": "Okala",
+    "city": "Okala",
+    "province": "Moyen-Ogooué",
+    "country": "Gabon",
+    "countryCode": "GA",
+    "longitude": 9.4016334,
+    "latitude": 0.4846902,
+    "area": 0,
+    "tags": [
+      "Travail",
+      "Couple",
+      "Sous barrière",
+      "Climatisé",
+      "Commerces proches",
+      "Transport proche",
+      "Parking",
+      "Sécurisé",
+      "Calme et tranquillité"
+    ],
+    "images": [],
+    "nbrRooms": 1,
+    "nbrBathrooms": 1,
+    "nbrToilets": 1,
+    "nbrChickens": 0
+  },
+  {
+    "images": []
+  },
+  {
+    "typeProperty": "land",
+    "title": "Terrain à vendre",
+    "description": "TERRAIN A VENDRE 500 METTRE CARRÉ DERRIÈRE LE STADE AGONDJE ROUTE SECONDAIRE ACCESSIBLE. DOCUMENT : TITRE FONCIER. NB: TERRAIN PLAT PRÊT À CONSTRUIRE",
+    "price": 10000000,
+    "status": "FOR_SALE",
+    "contact": "074 70 83 44",
+    "street": "Derrière le stade Agondje",
+    "city": "Libreville",
+    "province": "Estuaire",
+    "country": "Gabon",
+    "countryCode": "GA",
+    "longitude": 9.392935904996314,
+    "latitude": 0.5218802,
+    "area": 500,
+    "tags": [
+      "Terrain plat",
+      "Prêt à construire"
+    ],
+    "images": [
+      "https://scontent.fmnl3-1.fna.fbcdn.net/v/t1.6435-9/197739614_4016237825163863_1270096459216063870_n.jpg?_nc_cat=107&ccb=1-7&_nc_sid=833d8c&_nc_ohc=3Mstm1CvOLYQ7kNvwFA1Z7m&_nc_oc=AdncdRcC8CI7ukt_0XjA8lWtyVCyQ3ZCmBzOvBdh1f5nLudm9VpqoTbYVCTrRttSAHg&_nc_zt=23&_nc_ht=scontent.fmnl3-1.fna&_nc_gid=WHYUrv_uU-ZBA21eJNaBBA&oh=00_AfTkK0n-f20EIJ4UJJbf9Byo7DQZH8VvhFyeXI5I0vnB_g&oe=68A99209"
+    ],
+    "nbrRooms": 0,
+    "nbrBathrooms": 0,
+    "nbrToilets": 0,
+    "nbrChickens": 0
+  },
+  {
+    "images": []
+  },
+  {
+    "typeProperty": "studio",
+    "title": "Studio meublé à louer",
+    "description": "Studio meublé à louer au centre-ville de Libreville",
+    "price": 250000,
+    "status": "FOR_RENT",
+    "contact": "065444444",
+    "street": "Rue de la République",
+    "city": "Libreville",
+    "province": "Estuaire",
+    "country": "Gabon",
+    "countryCode": "GA",
+    "longitude": 9.4321155,
+    "latitude": 0.4276813,
+    "area": 0,
+    "tags": [
+      "Centre-ville",
+      "Meublé",
+      "Travail"
+    ],
+    "images": [
+      "https://scontent.fcdg2-1.fna.fbcdn.net/v/t39.30808-6/407444954_343515878454273_8769419991603548558_n.jpg?_nc_cat=104&ccb=1-7&_nc_sid=6ee11a&_nc_ohc=1JBn_pIT6e0Q7kNvwGeiOVr&_nc_oc=Adn96UX-BIHMa0ddFL8A3VSnzgA-7ERjqTfR6eptjRzUUsqFg5HNRujwtvO9F8jjcik&_nc_zt=23&_nc_ht=scontent.fcdg2-1.fna&_nc_gid=xcJ5nqEPbhGYhmcjnKFsXQ&oh=00_AfSbknRkogEHcZUpcGnS3vBgSxJFHjgljBcMB763IR7lCA&oe=6887CEC0"
+    ],
+    "nbrRooms": 0,
+    "nbrBathrooms": 0,
+    "nbrToilets": 0,
+    "nbrChickens": 0
+  },
+  {
+    "typeProperty": "studio",
+    "title": "Studio à louer à Okala",
+    "description": "Studio climatisé à louer à Okala, à 15 minutes de la voie principale. Il dispose d'une chambre spacieuse avec placards, d'une douche et d'un wc, d'une cuisine américaine avec hotte aspirante, d'un compteur courant et eau personnel, d'un chauffe-eau, et d'un gardien 24h/24. L'eau est disponible en permanence et un parking est à disposition.",
+    "price": 220000,
+    "status": "FOR_RENT",
+    "contact": "074406355",
+    "street": "Okala",
+    "city": "Okala",
+    "province": "Moyen-Ogooué",
+    "country": "Gabon",
+    "countryCode": "GA",
+    "longitude": 9.4016334,
+    "latitude": 0.4846902,
+    "area": 0,
+    "tags": [
+      "Centre-ville",
+      "Sécurisé",
+      "Parking",
+      "Travail",
+      "Famille",
+      "Couple"
+    ],
+    "images": [],
+    "nbrRooms": 1,
+    "nbrBathrooms": 1,
+    "nbrToilets": 1,
+    "nbrChickens": 0
+  },
+  {
+    "typeProperty": "studio",
+    "title": "",
+    "description": "",
+    "price": 0,
+    "status": "",
+    "contact": "",
+    "street": "",
+    "city": "",
+    "province": "",
+    "country": "Gabon",
+    "countryCode": "GA",
+    "longitude": 0,
+    "latitude": 0,
+    "area": 0,
+    "tags": [],
+    "images": [],
+    "nbrRooms": 0,
+    "nbrBathrooms": 0,
+    "nbrToilets": 0,
+    "nbrChickens": 0
+  },
+  {
+    "typeProperty": "land",
+    "title": "Terrain à vendre",
+    "description": "TERRAIN A VENDRE 500 METTRE CARRÉ DERRIÈRE LE STADE AGONDJE ROUTE SECONDAIRE ACCESSIBLE. DOCUMENT : TITRE FONCIER. TERRAIN PLAT PRÊT À CONSTRUIRE",
+    "price": 10000000,
+    "status": "FOR_SALE",
+    "contact": "074 70 83 44",
+    "street": "Derrière le stade Agondje",
+    "city": "Libreville",
+    "province": "Estuaire",
+    "country": "Gabon",
+    "countryCode": "GA",
+    "longitude": 9.392935904996314,
+    "latitude": 0.5218802,
+    "area": 500,
+    "tags": [
+      "Sous barrière",
+      "Nature",
+      "Tranquillité",
+      "Terrain plat"
+    ],
+    "images": [
+      "https://scontent-iad3-1.xx.fbcdn.net/v/t1.6435-9/197739614_4016237825163863_1270096459216063870_n.jpg?_nc_cat=107&ccb=1-7&_nc_sid=833d8c&_nc_ohc=3Mstm1CvOLYQ7kNvwHUkIjv&_nc_oc=Adl7jtkvUETPmdk8h3R1MieujRVUf0yXMcLYs_9vtFgJqnVp-7rTPlS1Vp8JGx5DJCCTPldX-azG3uq19nT1nZsY&_nc_zt=23&_nc_ht=scontent-iad3-1.xx&_nc_gid=aVQKWfkXICEgwf3zCJ2q7w&oh=00_AfSQDF04iWZYie1mN6KmNlYY6ifDjqE4AP_mmQqsNRPCMg&oe=68A99209"
+    ],
+    "nbrRooms": 0,
+    "nbrBathrooms": 0,
+    "nbrToilets": 0,
+    "nbrChickens": 0
+  },
+  {
+    "images": []
+  },
+  {
+    "typeProperty": "home",
+    "title": "Villa à vendre",
+    "description": "Villa à vendre au Gabon",
+    "price": 0,
+    "status": "FOR_SALE",
+    "contact": "",
+    "street": "",
+    "city": "",
+    "province": "",
+    "country": "Gabon",
+    "countryCode": "GA",
+    "longitude": 0,
+    "latitude": 0,
+    "area": 0,
+    "tags": [],
+    "images": [
+      "https://scontent-itm1-1.xx.fbcdn.net/v/t39.30808-6/407444954_343515878454273_8769419991603548558_n.jpg?_nc_cat=104&ccb=1-7&_nc_sid=6ee11a&_nc_ohc=1JBn_pIT6e0Q7kNvwHDVh7o&_nc_oc=AdkjxJ0Ls-dglwZg4Kzng9jKJCsGPSMgj_eCS_Yp8_HzSVGFL47j7DP9vNCk4o_LXA0&_nc_zt=23&_nc_ht=scontent-itm1-1.xx&_nc_gid=qS-cIh0MvNpfi31EB4SWaw&oh=00_AfTe02dQhsawjxfNwxKBIJDeTtGP0LSBGQv7Ixctlpkd-A&oe=6887CEC0"
+    ],
+    "nbrRooms": 0,
+    "nbrBathrooms": 0,
+    "nbrToilets": 0,
+    "nbrChickens": 0
+  }
+]

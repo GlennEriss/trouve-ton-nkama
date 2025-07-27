@@ -25,42 +25,22 @@ export const FormRegisterSchema = z.object({
     .regex(/[A-Z]/, { message: 'Le mot de passe doit contenir une majuscule' })
     .regex(/\d/, { message: 'Le mot de passe doit contenir un chiffre' }),
   passwordConfirm: z.string(),
-  birthdate: z.object({
-    day: z.string().min(1, { message: 'Le jour est requis' }),
-    month: z.string().min(1, { message: 'Le mois est requis' }),
-    year: z.string().min(1, { message: 'L\'année est requise' })
-  }).refine((date) => {
-    // Vérifier si au moins un champ est rempli pour déclencher la validation
-    if (!date.day && !date.month && !date.year) {
-      return true; // Aucun champ rempli, pas d'erreur
-    }
-    
-    // Si au moins un champ est rempli mais pas tous, afficher l'erreur d'âge
-    if (!date.day || !date.month || !date.year) {
-      return false;
-    }
-    
-    const day = parseInt(date.day);
-    const month = parseInt(date.month);
-    const year = parseInt(date.year);
-    
-    // Vérifier que la date est valide
-    const birthDate = new Date(year, month - 1, day);
-    if (birthDate.getFullYear() !== year || birthDate.getMonth() !== month - 1 || birthDate.getDate() !== day) {
-      return false;
-    }
-    
-    // Vérifier l'âge (18 ans minimum)
-    const today = new Date();
-    const age = today.getFullYear() - year;
-    const m = today.getMonth() - (month - 1);
-    const d = today.getDate() - day;
+  birthdate: z.string()
+    .regex(/^\d{4}-\d{2}-\d{2}$/, 'La date de naissance doit être au format AAAA-MM-JJ')
+    .refine((dateString) => {
+      const birthDate = new Date(dateString);
+      const today = new Date();
+      const age = today.getFullYear() - birthDate.getFullYear();
+      const m = today.getMonth() - birthDate.getMonth();
+      const d = today.getDate() - birthDate.getDate();
 
-    const actualAge = m < 0 || (m === 0 && d < 0) ? age - 1 : age;
-    return actualAge >= 18;
-  }, {
-    message: 'Vous devez avoir au moins 18 ans pour vous inscrire',
-  }),
+      if (m < 0 || (m === 0 && d < 0)) {
+        return age - 1 >= 18; // pas encore son anniversaire
+      }
+      return age >= 18;
+    }, {
+      message: 'Vous devez avoir au moins 18 ans',
+    }),
   country: z.string().min(1, { message: 'Le pays est requis' }),
   phone: z
     .string()
@@ -263,42 +243,10 @@ export const FormUserProfilSchema = z.object({
     }, { message: "Le numéro de téléphone est invalide" })
     .optional(),
   country: z.string().min(1, { message: 'Le pays est requis' }),
-  birthDate: z.object({
-    day: z.string().min(1, { message: 'Le jour est requis' }),
-    month: z.string().min(1, { message: 'Le mois est requis' }),
-    year: z.string().min(1, { message: 'L\'année est requise' })
-  }).refine((date) => {
-    // Vérifier si au moins un champ est rempli pour déclencher la validation
-    if (!date.day && !date.month && !date.year) {
-      return true; // Aucun champ rempli, pas d'erreur
-    }
-    
-    // Si au moins un champ est rempli mais pas tous, afficher l'erreur d'âge
-    if (!date.day || !date.month || !date.year) {
-      return false;
-    }
-    
-    const day = parseInt(date.day);
-    const month = parseInt(date.month);
-    const year = parseInt(date.year);
-    
-    // Vérifier que la date est valide
-    const birthDate = new Date(year, month - 1, day);
-    if (birthDate.getFullYear() !== year || birthDate.getMonth() !== month - 1 || birthDate.getDate() !== day) {
-      return false;
-    }
-    
-    // Vérifier l'âge (18 ans minimum)
-    const today = new Date();
-    const age = today.getFullYear() - year;
-    const m = today.getMonth() - (month - 1);
-    const d = today.getDate() - day;
-
-    const actualAge = m < 0 || (m === 0 && d < 0) ? age - 1 : age;
-    return actualAge >= 18;
-  }, {
-    message: 'Vous devez avoir au moins 18 ans pour utiliser cette plateforme',
-  }),
+  birthDate: z.string().regex(
+    /^\d{4}-\d{2}-\d{2}$/,
+    'La date de naissance doit être au format AAAA-MM-JJ'
+  ),
 });
 
 export const FormFilterSchema = z.object({
@@ -312,7 +260,6 @@ export const FormFilterSchema = z.object({
   minNbrRooms: z.number().optional(),
   maxNbrRooms: z.number().optional(),
   typeProperty: z.array(z.string()).optional(),
-  status: z.array(z.string()).optional(),
   tags: z.array(z.string()).optional(),
 });
 //Types

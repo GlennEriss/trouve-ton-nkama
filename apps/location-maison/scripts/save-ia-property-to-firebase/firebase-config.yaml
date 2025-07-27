@@ -1,0 +1,62 @@
+# Configuration Firebase pour sauvegarde des propriétés IA
+firebase:
+  project_id: "location-maison-gabon"
+  collection_name: "ai_properties"
+  batch_size: 500  # Nombre de documents par batch
+  
+  # Configuration des champs à indexer
+  indexes:
+    - field: "typeProperty"
+      order: "asc"
+    - field: "city"
+      order: "asc"
+    - field: "price"
+      order: "desc"
+    - field: "status"
+      order: "asc"
+    - field: "createdAt"
+      order: "desc"
+
+# Configuration de transformation
+transformation:
+  # Champs obligatoires
+  required_fields:
+    - "typeProperty"
+    - "title"
+    - "description"
+    - "price"
+    - "status"
+    - "city"
+    - "country"
+  
+  # Champs optionnels avec valeurs par défaut
+  default_values:
+    longitude: 0
+    latitude: 0
+    area: 0
+    nbrRooms: 0
+    nbrBathrooms: 0
+    nbrToilets: 0
+    nbrChickens: 0
+    images: []
+    tags: []
+  
+  # Validation des types
+  type_validation:
+    typeProperty: ["Studio", "Apartment", "Home", "Building", "Desk", "Shop", "Kiosk", "Room", "Land"]
+    status: ["FOR_RENT", "FOR_SALE"]
+    country: ["Gabon"]
+    countryCode: ["GA"]
+
+# Configuration des métadonnées
+metadata:
+  source: "facebook_ai_transformation"
+  version: "1.0.0"
+  created_by: "ai_property_mapper"
+  
+# Configuration de sauvegarde
+backup:
+  enabled: true
+  backup_collection: "ai_properties_backup"
+  max_backups: 10
+  auto_cleanup: true 
