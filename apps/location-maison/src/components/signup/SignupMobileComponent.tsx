@@ -23,6 +23,7 @@ import { SelectFormApp } from '../shared/form/SelectFormApp'
 
 import { PhoneNumberFormApp } from '../shared/form/PhoneNumberFormApp'
 import { CheckboxFormApp } from '../shared/form/CheckboxFormApp'
+import { DateSelect } from '../shared/form/DateSelect'
 
 const inter = Inter({
     subsets: ['latin'],
@@ -37,13 +38,18 @@ export const SignupMobileComponent = () => {
     
     const form = useForm<FormRegisterSchemaType>({
         resolver: zodResolver(FormRegisterSchema),
+        mode: 'onChange', // Validation en temps réel
         defaultValues: {
             firstname: '',
             lastname: '',
             email: '',
             password: '',
             passwordConfirm: '',
-            birthdate: '',
+            birthdate: {
+                day: '',
+                month: '',
+                year: ''
+            },
             phone: '',
             country: 'GA',
             termsOfPrivacyPolicy: false
@@ -162,21 +168,12 @@ export const SignupMobileComponent = () => {
     }
 
     const onSubmit = async (values: FormRegisterSchemaType) => {
-        const validateFields = FormRegisterSchema.safeParse(values)
-        if (!validateFields.success) {
-            // Utiliser les messages d'erreur du schéma
-            const firstError = validateFields.error.errors[0]
-            return toast({
-                duration: 5000,
-                title: 'Information invalide!',
-                description: firstError.message || "Des éléments du formulaire sont invalides",
-                variant: 'destructive',
-            });
-        }
+        // La validation se fait automatiquement via react-hook-form et zodResolver
+        // Pas besoin de faire safeParse manuellement
         
         setIsRegistering(true)
         try {
-            const user = transformToPerson(validateFields.data)
+            const user = transformToPerson(values)
             const uid = await onRegister(user)
             
             toast({
@@ -284,15 +281,10 @@ export const SignupMobileComponent = () => {
                             IconColor='gray'
                             placeholder='Saisissez votre email'
                         />
-                        <InputFormApp
+                        <DateSelect
                             control={form.control}
                             name='birthdate'
                             label='Date de naissance'
-                            type='date'
-                            IconLucide={Calendar}
-                            IconColorFill={'none'}
-                            IconColor='gray'
-                            placeholder='Saisissez votre date de naissance'
                         />
 
                         <div className="space-y-2">

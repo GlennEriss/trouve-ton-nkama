@@ -208,7 +208,7 @@ export const FilterModal = () => {
           <div className="space-y-6">
             {/* Type de propriété */}
             <div>
-              <label htmlFor="property-types" className="block font-semibold mb-2">Type de propriété</label>
+              <label htmlFor="property-types" className="block font-semibold mb-2">Types d'annonces</label>
               <div id="property-types" className="flex flex-wrap gap-2">
                 {Object.values(TypeProperty).map(type => {
                   const key = getTypePropertyKey(type)!;

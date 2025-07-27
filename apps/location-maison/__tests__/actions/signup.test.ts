@@ -127,6 +127,33 @@ describe('Signup', () => {
     // et que l'erreur est remontée correctement
     await expect(onRegister(userWithInvalidPhone)).rejects.toThrow();
   });
+
+  it('should create user with 3 default credits', async () => {
+    const { createUserWithEmailAndPassword, sendEmailVerification, signOut } = require('@/firebase/auth');
+    createUserWithEmailAndPassword.mockResolvedValueOnce({ user: { uid: '123', email: mockUserData.email } });
+    sendEmailVerification.mockResolvedValueOnce(undefined);
+    mockedCreateUser.mockResolvedValueOnce({ ...mockUserData, credits: 3 });
+    mockedCreateNotification.mockResolvedValueOnce({
+      type: 'SECURITY',
+      title: 'Bienvenue sur la plateforme',
+      message: 'Votre compte a été créé avec succès. Veuillez vérifier votre email.',
+      isRead: false,
+      createdFor: '123'
+    });
+    signOut.mockResolvedValueOnce(undefined);
+    mockedFindUserByPhoneNumber.mockResolvedValueOnce(null);
+
+    const uid = await onRegister(mockUserData);
+
+    expect(uid).toBe('123');
+    expect(mockedCreateUser).toHaveBeenCalledWith(
+      expect.objectContaining({
+        ...mockUserData,
+        uid: '123',
+        credits: 3
+      })
+    );
+  });
 });
 
 describe('FormRegisterSchema validation messages', () => {

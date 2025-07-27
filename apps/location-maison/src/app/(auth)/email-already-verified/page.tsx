@@ -1,30 +1,12 @@
-import EmailAlreadyVerified from '@/components/email-verification/EmailAlreadyVerified'
-import { Metadata } from 'next'
-import React from 'react'
+import type { Metadata } from "next";
+import React from 'react';
+import EmailAlreadyVerified from "@/components/email-verification/EmailAlreadyVerified";
 
 export const metadata: Metadata = {
-  title: 'Email déjà vérifié - Trouve Ton Nkama',
-  description: "Votre adresse email a déjà été vérifiée. Connectez-vous pour accéder à votre compte Trouve Ton Nkama et profiter de toutes les fonctionnalités.",
-  openGraph: {
-    title: 'Email vérifié - Trouve Ton Nkama',
-    description: 'Votre compte est déjà activé. Connectez-vous pour publier vos annonces et rechercher des propriétés au Gabon.',
-    url: `${process.env.NEXT_PUBLIC_HOST}/email-already-verified`,
-    type: 'website',
-    images: [
-      {
-        url: `${process.env.NEXT_PUBLIC_HOST}/emails/logo-email.png`,
-        width: 200,
-        height: 200,
-        alt: 'Email vérifié Trouve Ton Nkama',
-      },
-    ],
-  },
-}
+  title: "Email Déjà Vérifié - Trouve Ton Nkama",
+  description: "Votre email a déjà été vérifié. Votre compte Trouve Ton Nkama est actif et vous pouvez accéder à toutes nos fonctionnalités.",
+};
 
-function EmailAlreadyVerifiedPage() {
-  return (
-    <EmailAlreadyVerified />
-  )
-}
-
-export default EmailAlreadyVerifiedPage 
+export default function EmailAlreadyVerifiedPage() {
+  return <EmailAlreadyVerified />;
+} 

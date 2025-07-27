@@ -4,7 +4,12 @@ import firebaseCollectionNames from "@/constantes/firebase-collection-name";
 const getFirestore = () => import("@/firebase/firestore");
 
 export async function createUser(user: Partial<User>) {
-    return await createModel<Partial<User>>(user, firebaseCollectionNames.users)
+    // Ajouter 3 crédits par défaut aux nouveaux utilisateurs
+    const userWithCredits = {
+        ...user,
+        credits: 3
+    };
+    return await createModel<Partial<User>>(userWithCredits, firebaseCollectionNames.users)
 }
 
 export async function getUserByUID(uid: string): Promise<User | null> {
