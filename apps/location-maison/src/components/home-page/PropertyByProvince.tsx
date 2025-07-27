@@ -104,36 +104,32 @@ export default function PropertyByProvince() {
                             }}
                             aria-label={`Rechercher des propriétés dans la province ${province.name}`}
                         >
-                            <Image
-                                src={`/assets/home-page/${province.img}`}
-                                alt={province.name}
-                                fill
-                                className="transition-transform duration-300 ease-in-out group-hover:scale-110 group-focus:scale-110"
-                            />
-                            <div className='absolute inset-0 bg-[#093836] bg-opacity-60 transition-opacity duration-300 group-hover:bg-opacity-70 p-5 flex'>
-                                <div className='mt-1'>
-                                    <h1 className='text-xl font-bold text-white'>{province.name}</h1>
+                            {/* Logo comme image principale */}
+                            <div className="relative w-full h-full bg-gradient-to-br from-blue-50 to-gray-100">
+                                <Image
+                                    src={`/assets/home-page/${province.logo}`}
+                                    alt={`Logo ${province.name}`}
+                                    fill
+                                    className="transition-transform duration-300 ease-in-out group-hover:scale-105 group-focus:scale-105 object-contain p-8"
+                                />
+                            </div>
+                            
+                            {/* Overlay avec informations */}
+                            <div className='absolute inset-0 bg-gradient-to-t from-[#093836] via-[#093836]/80 to-transparent transition-opacity duration-300 group-hover:from-[#093836]/90 group-hover:via-[#093836]/85 p-5 flex flex-col justify-end'>
+                                <div className='mb-2'>
+                                    <h1 className='text-xl font-bold text-white mb-2'>{province.name}</h1>
                                     {isLoading ? (
                                         <div className='flex items-center gap-2'>
                                             <svg className="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                                                 <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                                                 <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"></path>
                                             </svg>
-                                            <span className='text-white'>Chargement...</span>
+                                            <span className='text-white text-sm'>Chargement...</span>
                                         </div>
                                     ) : (
-                                        <h3 className='text-white'>{(count ?? 0) > 0 ? `${count} Annonce(s)` : 'Aucune annonce'}</h3>
+                                        <h3 className='text-white text-sm font-medium'>{(count ?? 0) > 0 ? `${count} Annonce(s)` : 'Aucune annonce'}</h3>
                                     )}
                                 </div>
-                                <div className="ml-auto relative h-14 w-14">
-                                    <Image
-                                        src={`/assets/home-page/${province.logo}`}
-                                        alt={province.name}
-                                        fill
-                                        objectFit='contain'
-                                    />
-                                </div>
-
                             </div>
                         </button>
                     )
