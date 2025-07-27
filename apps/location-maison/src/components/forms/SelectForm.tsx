@@ -33,6 +33,9 @@ export const SelectForm = <T extends FieldValues>({
     const handleOnValueChange = (value: any) => {
         if(value){
             form.setValue(name, value)
+            // Déclencher la validation du champ parent immédiatement
+            const parentName = name.split('.')[0];
+            form.trigger(parentName);
         }
       };
     return (
