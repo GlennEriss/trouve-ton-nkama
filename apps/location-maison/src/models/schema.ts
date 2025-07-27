@@ -16,17 +16,17 @@ export const FormLoginSchema = z.object({
 });
 
 export const FormRegisterSchema = z.object({
-  firstname: z.string().min(1, { message: 'Veuillez saisir votre prénom' }),
-  lastname: z.string().min(1, { message: 'Veuillez saisir votre nom de famille' }),
-  email: z.string().email({ message: 'Veuillez saisir une adresse email valide (ex: john@example.com)' }),
+  firstname: z.string().min(1, { message: 'Le prénom est requis' }),
+  lastname: z.string().min(1, { message: 'Le nom est requis' }),
+  email: z.string().email({ message: 'L\'email n\'est pas valide' }),
   password: z
     .string()
     .min(8, { message: 'Le mot de passe doit contenir au moins 8 caractères' })
-    .regex(/[A-Z]/, { message: 'Le mot de passe doit contenir au moins une lettre majuscule' })
-    .regex(/\d/, { message: 'Le mot de passe doit contenir au moins un chiffre' }),
-  passwordConfirm: z.string().min(1, { message: 'Veuillez confirmer votre mot de passe' }),
+    .regex(/[A-Z]/, { message: 'Le mot de passe doit contenir une majuscule' })
+    .regex(/\d/, { message: 'Le mot de passe doit contenir un chiffre' }),
+  passwordConfirm: z.string(),
   birthdate: z.string()
-    .regex(/^\d{4}-\d{2}-\d{2}$/, 'Veuillez saisir votre date de naissance au format AAAA-MM-JJ (ex: 1990-05-15)')
+    .regex(/^\d{4}-\d{2}-\d{2}$/, 'La date de naissance doit être au format AAAA-MM-JJ')
     .refine((dateString) => {
       const birthDate = new Date(dateString);
       const today = new Date();
@@ -39,124 +39,124 @@ export const FormRegisterSchema = z.object({
       }
       return age >= 18;
     }, {
-      message: 'Vous devez avoir au moins 18 ans pour créer un compte',
+      message: 'Vous devez avoir au moins 18 ans',
     }),
-  country: z.string().min(1, { message: 'Veuillez sélectionner votre pays' }),
+  country: z.string().min(1, { message: 'Le pays est requis' }),
   phone: z
     .string()
-    .min(1, { message: 'Veuillez saisir votre numéro de téléphone' })
+    .min(1, { message: 'Le numéro de téléphone est obligatoire' })
     .refine((value) => {
       const validation = validatePhoneNumberForSupportedCountries(value);
       return validation.isValid;
-    }, { message: "Veuillez saisir un numéro de téléphone valide pour votre pays" }),
+    }, { message: "Le numéro de téléphone est invalide" }),
   termsOfPrivacyPolicy: z
     .boolean()
-    .refine((value) => value === true, 'Vous devez accepter les conditions d\'utilisation et la politique de confidentialité'),
+    .refine((value) => value === true, 'errors.terms_required'),
 }).refine((data) => data.password === data.passwordConfirm, {
   path: ['passwordConfirm'],
-  message: 'Les mots de passe ne correspondent pas. Veuillez les saisir à nouveau',
+  message: 'Les mots de passe ne correspondent pas',
 });
 
 //Property Schemas
 export const LocationSchema = z.object({
-  street: z.string().min(1, "Veuillez saisir le nom de la rue ou du quartier"),
-  city: z.string().min(1, "Veuillez saisir le nom de la ville"),
-  province: z.string().min(1, "Veuillez sélectionner la province"),
+  street: z.string().min(1, "Le nom de la rue est obligatoire"),
+  city: z.string().min(1, "Le nom de la ville est obligatoire"),
+  province: z.string().min(1, "Le nom de la province est obligatoire"),
   additionalInformation: z.string().optional(),
-  longitude: z.number().min(-180).max(180, "La longitude doit être comprise entre -180 et 180"),
-  latitude: z.number().min(-90).max(90, "La latitude doit être comprise entre -90 et 90"),
-  country: z.string().min(1, "Veuillez sélectionner le pays"),
-  countryCode: z.string().min(1, "Le code pays est requis"),
+  longitude: z.number().min(-180).max(180, "Longitude invalide"),
+  latitude: z.number().min(-90).max(90, "Latitude invalide"),
+  country: z.string().min(1, "Le pays est obligatoire"),
+  countryCode: z.string().min(1, "Le code pays est obligatoire"),
 });
 export const PropertySchema = z.object({
-  title: z.string().min(1, "Veuillez saisir un titre pour votre annonce"),
-  description: z.string().min(10, "La description doit contenir au moins 10 caractères pour être informative"),
-  price: z.number().min(0, "Le prix doit être un nombre positif ou égal à zéro"),
-  area: z.number().min(0, "La superficie doit être un nombre positif ou égal à zéro"),
-  images: z.array(z.any()).nonempty("Veuillez ajouter au moins une photo de votre bien"),
+  title: z.string().min(1, "Le titre est obligatoire"),
+  description: z.string().min(1, "La description doit contenir au moins 10 caractères"),
+  price: z.number().min(0, "Le prix doit être un nombre positif"),
+  area: z.number().min(0, "La superficie doit être un nombre positif"),
+  images: z.array(z.any()).nonempty("Au moins une image est requise"),
   status: z.enum(["FOR_RENT", "FOR_SALE"]),
-  tags: z.array(z.string().min(1, "Chaque mot-clé doit contenir au moins 1 caractère"))
-    .nonempty("Veuillez ajouter au moins un mot-clé pour décrire votre bien")
-    .max(6, "Vous pouvez ajouter maximum 6 mots-clés"),
-  street: z.string().min(1, "Veuillez saisir le nom de la rue ou du quartier"),
-  city: z.string().min(1, "Veuillez saisir le nom de la ville"),
-  province: z.string().min(1, "Veuillez sélectionner la province"),
-  contact: z.string().min(1, "Veuillez saisir un numéro de téléphone de contact"),
+  tags: z.array(z.string().min(1, "Chaque tag doit contenir au moins 1 caractère"))
+    .nonempty("Vous devez ajouter au moins un tag")
+    .max(6, "Vous pouvez ajouter jusqu'à 6 tags seulement"),
+  street: z.string().min(1, "Le nom de la rue est obligatoire"),
+  city: z.string().min(1, "Le nom de la ville est obligatoire"),
+  province: z.string().min(1, "Le nom de la province est obligatoire"),
+  contact: z.string().min(1, "Le numéro de téléphone est obligatoire"),
   additionalInformation: z.string().optional(),
   longitude: z
     .number()
-    .refine(val => val >= -180 && val <= 180, "La longitude doit être comprise entre -180 et 180"),
+    .refine(val => val >= -180 && val <= 180, "Longitude invalide"),
   latitude: z
     .number()
-    .refine(val => val >= -90 && val <= 90, "La latitude doit être comprise entre -90 et 90"),
-  country: z.string().min(1, "Veuillez sélectionner le pays"),
-  countryCode: z.string().min(2, "Le code pays est requis"),
+    .refine(val => val >= -90 && val <= 90, "Latitude invalide"),
+  country: z.string().min(1, "Le pays est obligatoire"),
+  countryCode: z.string().min(2, "Le code pays est obligatoire"),
 });
 export const LogementSchema = PropertySchema.extend({
-  nbrRooms: z.number().min(0, "Le nombre de chambres doit être un nombre positif ou égal à zéro"),
-  nbrChickens: z.number().min(0, "Le nombre de cuisines doit être un nombre positif ou égal à zéro"),
-  nbrBathrooms: z.number().min(0, "Le nombre de salles de bain doit être un nombre positif ou égal à zéro"),
-  nbrToilets: z.number().min(0, "Le nombre de toilettes doit être un nombre positif ou égal à zéro"),
+  nbrRooms: z.number().min(0, "Le nombre de chambres doit être un nombre positif"),
+  nbrChickens: z.number().min(0, "Le nombre de cuisines doit être un nombre positif"),
+  nbrBathrooms: z.number().min(0, "Le nombre de salles de bain doit être un nombre positif"),
+  nbrToilets: z.number().min(0, "Le nombre de toilettes doit être un nombre positif"),
 });
 export const HomeSchema = LogementSchema.extend({
-  nbrGarages: z.number().min(0, "Le nombre de garages doit être un nombre positif ou égal à zéro"),
-  nbrFloors: z.number().min(0, "Le nombre d'étages doit être un nombre positif ou égal à zéro"),
-  nbrLivingRoom: z.number().min(0, "Le nombre de salons doit être un nombre positif ou égal à zéro"),
+  nbrGarages: z.number().min(0, "Le nombre de garages doit être positif ou nul"),
+  nbrFloors: z.number().min(0, "Le nombre d'étages doit être un nombre positif"),
+  nbrLivingRoom: z.number().min(0, "Le nombre de salon doit être un nombre positif"),
 });
 export const StudioSchema = LogementSchema.extend({
-  nbrFloorStudio: z.number().min(0, "Le numéro d'étage doit être un nombre positif ou égal à zéro"),
-  numeroStudio: z.string().min(1, "Veuillez saisir le numéro du studio"),
+  nbrFloorStudio: z.number().min(0, "Le numéro d'étage doit être un nombre positif"),
+  numeroStudio: z.string().min(1, "Le numéro du studio est obligatoire"),
 });
 export const ApartmentSchema = LogementSchema.extend({
-  nbrFloorApartment: z.number().min(0, "Le numéro d'étage doit être un nombre positif ou égal à zéro"),
-  numeroApartment: z.string().min(1, "Veuillez saisir le numéro de l'appartement"),
+  nbrFloorApartment: z.number().min(0, "Le numéro d'étage de l'appartement doit être un nombre positif"),
+  numeroApartment: z.string().min(1, "Le numéro de l'appartement est obligatoire"),
 });
 export const VillaSchema = LogementSchema.extend({
-  nbrFloors: z.number().min(0, "Le nombre d'étages doit être un nombre positif ou égal à zéro"),
-  nbrPiscine: z.number().min(0, "Le nombre de piscines doit être un nombre positif ou égal à zéro"),
-  nbrGarages: z.number().min(0, "Le nombre de garages doit être un nombre positif ou égal à zéro"),
+  nbrFloors: z.number().min(0, "Le nombre d'étages doit être un nombre positif"),
+  nbrPiscine: z.number().min(0, "Le nombre de piscines doit être un nombre positif"),
+  nbrGarages: z.number().min(0, "Le nombre de garages doit être un nombre positif"),
 });
 export const DeskSchema = PropertySchema.extend({
-  nbrToilets: z.number().min(0, "Le nombre de toilettes doit être un nombre positif ou égal à zéro"),
-  nbrRooms: z.number().min(0, "Le nombre de salles doit être un nombre positif ou égal à zéro"),
+  nbrToilets: z.number().min(0, "Le nombre de toilettes doit être un nombre positif"),
+  nbrRooms: z.number().min(0, "Le nombre de salles doit être un nombre positif"),
 });
 export const BuildingSchema = PropertySchema.extend({
-  nbrApartments: z.number().min(0, "Le nombre d'appartements doit être un nombre positif ou égal à zéro"),
-  nbrFloors: z.number().min(0, "Le nombre d'étages doit être un nombre positif ou égal à zéro"),
-  hasParking: z.boolean({ required_error: "Veuillez indiquer si le bâtiment dispose d'un parking" }),
+  nbrApartments: z.number().min(0, "Le nombre d'appartements doit être un nombre positif"),
+  nbrFloors: z.number().min(0, "Le nombre d'étages doit être un nombre positif"),
+  hasParking: z.boolean({ required_error: "Le champ parking est requis" }),
 });
 
 export const KioskSchema = PropertySchema.extend({
-  kioskType: z.string().min(1, "Veuillez sélectionner le type de kiosque"),
+  kioskType: z.string().min(1, "Le type de kiosque est obligatoire"),
 });
 
 export const RoomSchema = PropertySchema.extend({
-  roomType: z.string().min(1, "Veuillez sélectionner le type de chambre"),
+  roomType: z.string().min(1, "Le type de chambre est obligatoire"),
 });
 
 export const ShopSchema = PropertySchema.extend({
-  nbrRooms: z.number().min(0, "Le nombre de pièces doit être un nombre positif ou égal à zéro"),
-  nbrToilet: z.number().min(0, "Le nombre de toilettes doit être un nombre positif ou égal à zéro"),
+  nbrRooms: z.number().min(0, "Le nombre de pièces doit être un nombre positif"),
+  nbrToilet: z.number().min(0, "Le nombre de toilettes doit être un nombre positif"),
 });
 //Steps schemas
 export const Step1Schema = z.object({
-  images: z.array(z.any()).nonempty("Veuillez ajouter au moins une photo de votre bien"),
-  title: z.string().min(1, "Veuillez saisir un titre pour votre annonce"),
-  description: z.string().min(10, "La description doit contenir au moins 10 caractères pour être informative"),
-  area: z.number().min(0, "La superficie doit être un nombre positif ou égal à zéro"),
-  price: z.number().min(0, "Le prix doit être un nombre positif ou égal à zéro"),
+  images: z.array(z.any()).nonempty("Au moins une image est requise"),
+  title: z.string().min(1, "Le titre est obligatoire"),
+  description: z.string().min(10, "La description doit contenir au moins 10 caractères"),
+  area: z.number().min(0, "La superficie doit être un nombre positif"),
+  price: z.number().min(0, "Le prix doit être un nombre positif"),
   status: z.enum(["FOR_RENT", "FOR_SALE"]),
-  tags: z.array(z.string().min(1, "Chaque mot-clé doit contenir au moins 1 caractère")).nonempty("Veuillez ajouter au moins un mot-clé pour décrire votre bien"),
+  tags: z.array(z.string().min(1, "Chaque tag doit contenir au moins 1 caractère")).nonempty("Vous devez ajouter au moins un tag"),
 });
 export const Step3Schema = z.object({
-  street: z.string().min(1, "Veuillez saisir le nom de la rue ou du quartier"),
-  city: z.string().min(1, "Veuillez saisir le nom de la ville"),
-  province: z.string().min(1, "Veuillez sélectionner la province"),
+  street: z.string().min(1, "Le nom de la rue est obligatoire"),
+  city: z.string().min(1, "Le nom de la ville est obligatoire"),
+  province: z.string().min(1, "Le nom de la province est obligatoire"),
   additionalInformation: z.string().optional(),
-  longitude: z.string().min(1, "Veuillez saisir la longitude").transform(val => parseFloat(val)).refine(val => val >= -180 && val <= 180, "La longitude doit être comprise entre -180 et 180"),
-  latitude: z.string().min(1, "Veuillez saisir la latitude").transform(val => parseFloat(val)).refine(val => val >= -90 && val <= 90, "La latitude doit être comprise entre -90 et 90"),
-  country: z.string().min(1, "Veuillez sélectionner le pays"),
-  countryCode: z.string().min(2, "Le code pays est requis"),
+  longitude: z.string().min(1).transform(val => parseFloat(val)).refine(val => val >= -180 && val <= 180, "Longitude invalide"),
+  latitude: z.string().min(1).transform(val => parseFloat(val)).refine(val => val >= -90 && val <= 90, "Latitude invalide"),
+  country: z.string().min(1, "Le pays est obligatoire"),
+  countryCode: z.string().min(2, "Le code pays est obligatoire"),
 });
 
 export const PropertyTypeEnum = z.enum([
@@ -171,46 +171,46 @@ export const Step2SchemaBase = z.object({
   propertyType: PropertyTypeEnum,
 });
 export const HomeStep2Schema = z.object({
-  nbrRooms: z.number().min(0, "Le nombre de chambres doit être un nombre positif ou égal à zéro"),
-  nbrChickens: z.number().min(0, "Le nombre de cuisines doit être un nombre positif ou égal à zéro"),
-  nbrBathrooms: z.number().min(0, "Le nombre de salles de bain doit être un nombre positif ou égal à zéro"),
-  nbrToilets: z.number().min(0, "Le nombre de toilettes doit être un nombre positif ou égal à zéro"),
-  nbrGarages: z.number().min(0, "Le nombre de garages doit être un nombre positif ou égal à zéro"),
-  nbrFloors: z.number().min(0, "Le nombre d'étages doit être un nombre positif ou égal à zéro"),
+  nbrRooms: z.number().min(0, "Le nombre de chambres doit être un nombre positif"),
+  nbrChickens: z.number().min(0, "Le nombre de cuisines doit être un nombre positif"),
+  nbrBathrooms: z.number().min(0, "Le nombre de salles de bain doit être un nombre positif"),
+  nbrToilets: z.number().min(0, "Le nombre de toilettes doit être un nombre positif"),
+  nbrGarages: z.number().min(0, "Le nombre de garages doit être un nombre positif"),
+  nbrFloors: z.number().min(0, "Le nombre d'étages doit être un nombre positif"),
 });
 export const StudioStep2Schema = z.object({
-  nbrRooms: z.number().min(0, "Le nombre de chambres doit être un nombre positif ou égal à zéro"),
-  nbrChickens: z.number().min(0, "Le nombre de cuisines doit être un nombre positif ou égal à zéro"),
-  nbrBathrooms: z.number().min(0, "Le nombre de salles de bain doit être un nombre positif ou égal à zéro"),
-  nbrToilets: z.number().min(0, "Le nombre de toilettes doit être un nombre positif ou égal à zéro"),
-  nbrFloorStudio: z.number().min(0, "Le numéro d'étage doit être un nombre positif ou égal à zéro"),
-  numeroStudio: z.string().min(1, "Veuillez saisir le numéro du studio"),
+  nbrRooms: z.number().min(0, "Le nombre de chambres doit être un nombre positif"),
+  nbrChickens: z.number().min(0, "Le nombre de cuisines doit être un nombre positif"),
+  nbrBathrooms: z.number().min(0, "Le nombre de salles de bain doit être un nombre positif"),
+  nbrToilets: z.number().min(0, "Le nombre de toilettes doit être un nombre positif"),
+  nbrFloorStudio: z.number().min(0, "Le numéro d'étage doit être un nombre positif"),
+  numeroStudio: z.string().min(1, "Le numéro du studio est obligatoire"),
 });
 export const ApartmentStep2Schema = z.object({
-  nbrRooms: z.number().min(0, "Le nombre de chambres doit être un nombre positif ou égal à zéro"),
-  nbrChickens: z.number().min(0, "Le nombre de cuisines doit être un nombre positif ou égal à zéro"),
-  nbrBathrooms: z.number().min(0, "Le nombre de salles de bain doit être un nombre positif ou égal à zéro"),
-  nbrToilets: z.number().min(0, "Le nombre de toilettes doit être un nombre positif ou égal à zéro"),
-  nbrFloorApartment: z.number().min(0, "Le numéro d'étage doit être un nombre positif ou égal à zéro"),
-  numeroApartment: z.string().min(1, "Veuillez saisir le numéro de l'appartement"),
+  nbrRooms: z.number().min(0, "Le nombre de chambres doit être un nombre positif"),
+  nbrChickens: z.number().min(0, "Le nombre de cuisines doit être un nombre positif"),
+  nbrBathrooms: z.number().min(0, "Le nombre de salles de bain doit être un nombre positif"),
+  nbrToilets: z.number().min(0, "Le nombre de toilettes doit être un nombre positif"),
+  nbrFloorApartment: z.number().min(0, "Le numéro d'étage de l'appartement doit être un nombre positif"),
+  numeroApartment: z.string().min(1, "Le numéro de l'appartement est obligatoire"),
 });
 export const VillaStep2Schema = z.object({
-  nbrRooms: z.number().min(0, "Le nombre de chambres doit être un nombre positif ou égal à zéro"),
-  nbrChickens: z.number().min(0, "Le nombre de cuisines doit être un nombre positif ou égal à zéro"),
-  nbrBathrooms: z.number().min(0, "Le nombre de salles de bain doit être un nombre positif ou égal à zéro"),
-  nbrToilets: z.number().min(0, "Le nombre de toilettes doit être un nombre positif ou égal à zéro"),
-  nbrFloors: z.number().min(0, "Le nombre d'étages doit être un nombre positif ou égal à zéro"),
-  nbrPiscine: z.number().min(0, "Le nombre de piscines doit être un nombre positif ou égal à zéro"),
-  nbrGarages: z.number().min(0, "Le nombre de garages doit être un nombre positif ou égal à zéro"),
+  nbrRooms: z.number().min(0, "Le nombre de chambres doit être un nombre positif"),
+  nbrChickens: z.number().min(0, "Le nombre de cuisines doit être un nombre positif"),
+  nbrBathrooms: z.number().min(0, "Le nombre de salles de bain doit être un nombre positif"),
+  nbrToilets: z.number().min(0, "Le nombre de toilettes doit être un nombre positif"),
+  nbrFloors: z.number().min(0, "Le nombre d'étages doit être un nombre positif"),
+  nbrPiscine: z.number().min(0, "Le nombre de piscines doit être un nombre positif"),
+  nbrGarages: z.number().min(0, "Le nombre de garages doit être un nombre positif"),
 });
 export const DeskStep2Schema = z.object({
-  nbrToilets: z.number().min(0, "Le nombre de toilettes doit être un nombre positif ou égal à zéro"),
-  nbrRooms: z.number().min(0, "Le nombre de salles doit être un nombre positif ou égal à zéro"),
+  nbrToilets: z.number().min(0, "Le nombre de toilettes doit être un nombre positif"),
+  nbrRooms: z.number().min(0, "Le nombre de salles doit être un nombre positif"),
 });
 export const BuildingStep2Schema = z.object({
-  nbrAppartement: z.number().min(0, "Le nombre d'appartements doit être un nombre positif ou égal à zéro"),
-  nbrFloors: z.number().min(0, "Le nombre d'étages doit être un nombre positif ou égal à zéro"),
-  hasParking: z.number().min(0, "Le nombre de places de parking doit être un nombre positif ou égal à zéro"),
+  nbrAppartement: z.number().min(0, "Le nombre d'appartements doit être un nombre positif"),
+  nbrFloors: z.number().min(0, "Le nombre d'étages doit être un nombre positif"),
+  hasParking: z.number().min(0, "Le nombre de places de parking doit être un nombre positif"),
 });
 export const Step2Schema = Step2SchemaBase.refine((data) => {
   switch (data.propertyType) {
@@ -231,21 +231,21 @@ export const Step2Schema = Step2SchemaBase.refine((data) => {
   }
 });
 export const FormUserProfilSchema = z.object({
-  firstname: z.string().min(1, "Veuillez saisir votre prénom"),
-  lastname: z.string().min(1, "Veuillez saisir votre nom de famille"),
-  email: z.string().email("Veuillez saisir une adresse email valide"),
+  firstname: z.string().min(1, "Le prénom est requis"),
+  lastname: z.string().min(1, "Le nom est requis"),
+  email: z.string().email("L'email est invalide"),
   phoneNumbers: z
     .string()
     .refine((value) => {
       if (!value) return true; // Optionnel
       const validation = validatePhoneNumberForSupportedCountries(value);
       return validation.isValid;
-    }, { message: "Veuillez saisir un numéro de téléphone valide pour votre pays" })
+    }, { message: "Le numéro de téléphone est invalide" })
     .optional(),
-  country: z.string().min(1, { message: 'Veuillez sélectionner votre pays' }),
+  country: z.string().min(1, { message: 'Le pays est requis' }),
   birthDate: z.string().regex(
     /^\d{4}-\d{2}-\d{2}$/,
-    'Veuillez saisir votre date de naissance au format AAAA-MM-JJ (ex: 1990-05-15)'
+    'La date de naissance doit être au format AAAA-MM-JJ'
   ),
 });
 
@@ -260,7 +260,6 @@ export const FormFilterSchema = z.object({
   minNbrRooms: z.number().optional(),
   maxNbrRooms: z.number().optional(),
   typeProperty: z.array(z.string()).optional(),
-  status: z.array(z.string()).optional(),
   tags: z.array(z.string()).optional(),
 });
 //Types
