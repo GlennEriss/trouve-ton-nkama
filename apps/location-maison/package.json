@@ -30,6 +30,7 @@
     "help:gmail": "echo '📚 Guides disponibles:' && echo '  - NOUVEAU_CLIENT_OAUTH2.md (Guide de création client OAuth2)' && echo '  - ENV_VARIABLES.md (Nouvelles variables environnement)' && echo '  - GMAIL_SETUP_GUIDE.md (Guide complet)' && echo '  - EMAIL_SETUP.md (Documentation technique)'"
   },
   "dependencies": {
+    "@ducanh2912/next-pwa": "^10.2.9",
     "@google/generative-ai": "^0.24.1",
     "@hookform/resolvers": "^3.9.1",
     "@radix-ui/react-avatar": "^1.1.2",
@@ -61,10 +62,10 @@
     "@react-email/section": "^0.0.16",
     "@react-email/text": "^0.1.5",
     "@tanstack/react-query": "^5.62.8",
-
     "@upstash/redis": "^1.35.0",
     "@vercel/analytics": "^1.5.0",
     "algoliasearch": "^5.18.0",
+    "axios": "^1.11.0",
     "browser-image-compression": "^2.0.2",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
@@ -99,10 +100,10 @@
     "react-slick": "^0.30.3",
     "react-swipeable": "^7.0.2",
     "screenfull": "^6.0.2",
+    "sharp": "^0.34.3",
     "slick-carousel": "^1.8.1",
     "tailwind-merge": "^2.5.5",
     "tailwindcss-animate": "^1.0.7",
-
     "zod": "^3.24.1"
   },
   "devDependencies": {

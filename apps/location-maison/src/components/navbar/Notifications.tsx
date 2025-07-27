@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { useNotifications } from "@/providers/NotificationProvider";
 import { useCurrentUser } from "@/hooks/use-current-user";
@@ -41,11 +42,14 @@ export default function Notifications() {
   const { notifications, unreadCount, markAllAsRead, markAsRead } = useNotifications();
   const { user } = useCurrentUser();
   const avatarBackground = generateColorFromName(user?.firstname);
+  const [isOpen, setIsOpen] = useState(false);
 
   return (
-    <Popover>
+    <Popover open={isOpen} onOpenChange={setIsOpen}>
       <PopoverTrigger asChild>
-        <NotificationButton unreadCount={unreadCount} />
+        <div className="cursor-pointer" onClick={() => setIsOpen(!isOpen)}>
+          <NotificationButton unreadCount={unreadCount} />
+        </div>
       </PopoverTrigger>
 
       <PopoverContent className={`w-80 p-1 ${NOTIFICATION_CSS_CLASSES.bg.content}`}>

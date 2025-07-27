@@ -13,11 +13,17 @@ import { MdOutlineBathtub, MdOutlineSquareFoot } from "react-icons/md";
 import { CheckCircle } from "lucide-react";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-const PropertyCard = ({ property }: any) => {
+const PropertyCard = ({ property, hideDate = false }: { property: any; hideDate?: boolean }) => {
   const router = useRouter();
 
   const handleCardClick = () => {
-    router.push(`/houseDetails/${property.path.replace("properties/", "")}`);
+    if (property.path) {
+      router.push(`/houseDetails/${property.path.replace("properties/", "")}`);
+    } else {
+      // Fallback si path n'existe pas, utiliser objectID ou id
+      const propertyId = property.objectID || property.id || property.path;
+      router.push(`/houseDetails/${propertyId}`);
+    }
   };
 
   return (
@@ -121,11 +127,13 @@ const PropertyCard = ({ property }: any) => {
           </div>
 
           {/* Date de publication */}
-          <div className="mt-2 pt-2 border-t border-gray-200 dark:border-gray-700">
-            <p className="text-xs text-gray-500 dark:text-gray-400 italic">
-              Publiée {formatPublicationDate(property.createdAt)}
-            </p>
-          </div>
+          {!hideDate && (
+            <div className="mt-2 pt-2 border-t border-gray-200 dark:border-gray-700">
+              <p className="text-xs text-gray-500 dark:text-gray-400 italic">
+                Publiée {formatPublicationDate(property.createdAt)}
+              </p>
+            </div>
+          )}
         </div>
       </div>
     </div>

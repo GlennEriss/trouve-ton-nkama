@@ -10,6 +10,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { NavigationMenu, NavigationMenuList, NavigationMenuItem, NavigationMenuLink } from "@/components/ui/navigation-menu"
 import MenuProfil from "@/components/navbar/MenuProfil";
+import Notifications from "@/components/navbar/Notifications";
 
 export default function Navbar() {
   const { width } = useWindowSize();
@@ -45,14 +46,15 @@ export default function Navbar() {
         </div>
         <div className="flex items-center gap-4">
           {!isProtectedRoute && <InputSearchNavbar />}
-          {user ? (
-            <div className="flex items-center">
-              <Link href={routes.protected.add_property}>
-                <button className="bg-gradient-to-r from-[#146B67] via-[#1FA89B] to-[#146B67] text-white rounded-lg text-[10px] px-3 py-2 font-semibold hover:brightness-110 hover:shadow-md transition-all duration-300 hover:scale-105 dark:hover:shadow-[#1FA89B]/20">
-                  Poster une annonce
-                </button>
-              </Link>
-            </div>
+                  {user ? (
+          <div className="flex items-center gap-2">
+            <Notifications />
+            <Link href={routes.protected.add_property}>
+              <button className="bg-gradient-to-r from-[#146B67] via-[#1FA89B] to-[#146B67] text-white rounded-lg text-[10px] px-3 py-2 font-semibold hover:brightness-110 hover:shadow-md transition-all duration-300 hover:scale-105 dark:hover:shadow-[#1FA89B]/20">
+                Poster une annonce
+              </button>
+            </Link>
+          </div>
           ) : (
             <ButtonLogin />
           )}
@@ -82,7 +84,8 @@ export default function Navbar() {
         <NavigationMenuNavbar />
         {!isProtectedRoute && <InputSearchNavbar />}
         {user ? (
-          <div>
+          <div className="flex items-center gap-8">
+            <Notifications />
             <MenuProfil />
           </div>
         ) : (
@@ -100,7 +103,7 @@ const LogoNavigation = () => {
   return (
     <div className="rounded-full bg-[#f4f9f9] dark:bg-gray-900 shadow dark:shadow-gray-900/50">
       <a href="/" rel="noopener noreferrer">
-        <Logo />
+        <Logo width="64px" height="64px" />
       </a>
     </div>
   )

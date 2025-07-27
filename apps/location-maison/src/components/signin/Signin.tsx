@@ -41,10 +41,52 @@ export const Signin = () => {
                 redirect: false
             })
             if (!result?.ok || result?.error !== null) {
+                // Gestion spécifique des erreurs Firebase Auth
+                let errorMessage = "Email ou mot de passe incorrect!";
+                let errorTitle = "Erreur de connexion";
+                let duration = 5000;
+                
+                switch (result?.error) {
+                    case 'Email is not verified':
+                        errorMessage = "Veuillez vérifier votre email avant de vous connecter. Vérifiez votre boîte de réception et cliquez sur le lien de vérification.";
+                        errorTitle = "Email non vérifié";
+                        duration = 7000;
+                        break;
+                    case 'auth/user-not-found':
+                        errorMessage = "Aucun compte associé à cette adresse email.";
+                        errorTitle = "Compte non trouvé";
+                        break;
+                    case 'auth/wrong-password':
+                        errorMessage = "Mot de passe incorrect.";
+                        errorTitle = "Mot de passe incorrect";
+                        break;
+                    case 'auth/invalid-email':
+                        errorMessage = "Format d'email invalide.";
+                        errorTitle = "Email invalide";
+                        break;
+                    case 'auth/user-disabled':
+                        errorMessage = "Ce compte a été désactivé. Veuillez contacter le support.";
+                        errorTitle = "Compte désactivé";
+                        break;
+                    case 'auth/too-many-requests':
+                        errorMessage = "Trop de tentatives de connexion. Veuillez attendre quelques minutes avant de réessayer.";
+                        errorTitle = "Trop de tentatives";
+                        duration = 8000;
+                        break;
+                    case 'auth/network-request-failed':
+                        errorMessage = "Erreur de connexion réseau. Vérifiez votre connexion internet.";
+                        errorTitle = "Erreur réseau";
+                        break;
+                    default:
+                        // Message générique pour les autres erreurs
+                        errorMessage = "Email ou mot de passe incorrect!";
+                        errorTitle = "Erreur de connexion";
+                }
+                
                 return toast({
-                    duration: 5000,
-                    title: 'Erreur de connexion',
-                    description: "Email ou mot de passe incorrect!",
+                    duration,
+                    title: errorTitle,
+                    description: errorMessage,
                     variant: 'destructive',
                 });
             }

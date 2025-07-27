@@ -10,7 +10,7 @@ export async function GET(request: Request) {
   const lng = searchParams.get('lng');
 
   if (!lat || !lng) {
-    console.log('Missing coordinates:', { lat, lng });
+    //console.log('Missing coordinates:', { lat, lng });
     return NextResponse.json(
       { error: 'Latitude and longitude are required' },
       {
@@ -30,7 +30,7 @@ export async function GET(request: Request) {
   const now = Date.now();
 
   if (cached && cached.expiry > now) {
-    console.log('Serving from cache:', cacheKey);
+    //console.log('Serving from cache:', cacheKey);
     return NextResponse.json(cached.data, {
       headers: {
         'Access-Control-Allow-Origin': '*',
@@ -42,7 +42,7 @@ export async function GET(request: Request) {
   }
 
   try {
-    console.log('Fetching from Nominatim with coordinates:', { lat, lng });
+    //console.log('Fetching from Nominatim with coordinates:', { lat, lng });
     const response = await fetch(
       `https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lng}&format=json`,
       {
@@ -58,7 +58,7 @@ export async function GET(request: Request) {
     }
 
     const data = await response.json();
-    console.log('Nominatim API response:', data);
+    //console.log('Nominatim API response:', data);
 
     // Mettre en cache la réponse
     geocodeCache.set(cacheKey, { data, expiry: now + CACHE_DURATION_MS });

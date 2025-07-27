@@ -6,6 +6,7 @@ import { InputApp } from "@/components/shared/ui/InputApp";
 import { InputNumberApp } from "@/components/shared/ui/InputNumberApp";
 import TextareaApp from "@/components/shared/ui/TextareaApp";
 import MapForm from "@/components/stepper/MapForm";
+import SearchLocationForm from "@/components/stepper/SearchLocationForm";
 import { ImagesComponent, StatusComponent, TagsComponent } from "@/components/stepper/step1.components";
 import { SelectCityComponent, SelectProvinceComponent, SelectStreetComponent } from '@/components/stepper/step3.components';
 import { PhoneInput } from '@/components/ui/phone-input'
@@ -102,9 +103,9 @@ export abstract class PropertyFormBuilder {
             },
             {
                 name: "map",
-                label: "Saisissez la localité de votre logement",
+                label: "Saisissez le quartier de votre logement",
                 description: "Saisissez puis sélectionnez un quartier",
-                component: (field: any) => <MapForm />,
+                component: (field: any) => <SearchLocationForm />,
                 step: 3
             },
             {

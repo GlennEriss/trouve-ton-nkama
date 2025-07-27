@@ -10,7 +10,7 @@ export const onUserCreate = functions.firestore
 
     const notification: Notification = {
       title: 'Bienvenue sur Trouve Ton Nkama 👋',
-      message: 'Merci de vous être inscrit. Vous pouvez maintenant publier ou consulter des annonces immobilières au Gabon.',
+      message: 'Merci de vous être inscrit ! Vous avez reçu 3 crédits gratuits pour commencer. Vous pouvez maintenant publier ou consulter des annonces immobilières au Gabon.',
       createdFor: userId,
       isRead: false,
       type: 'SECURITY',

@@ -6,11 +6,10 @@ import { FilterModalHomePage } from '../home-page/FilterModalHomePage';
 import { useAlgoliaContext } from '@/providers/AlgoliaContext';
 import { useInfiniteHits, useStats } from 'react-instantsearch';
 import PropertyCard from '../home-page/PropertyCard';
-import Image from 'next/image';
 import { useSearchParams } from 'next/navigation';
 
 export default function SearchMobilePage() {
-    const { searchText, setSearchText, setProvince, setCity, setStreet, setMinPrice, setMaxPrice, setMinArea, setMaxArea, setMinNbrRooms, setMaxNbrRooms, setTypeProperty, setTags } = useAlgoliaContext()
+    const { searchText, setSearchText, province, city, street, minPrice, maxPrice, minArea, maxArea, minNbrRooms, maxNbrRooms, typeProperty, status, tags, setProvince, setCity, setStreet, setMinPrice, setMaxPrice, setMinArea, setMaxArea, setMinNbrRooms, setMaxNbrRooms, setTypeProperty, setStatus, setTags } = useAlgoliaContext()
     const topRef = React.useRef<HTMLDivElement>(null);
     const sentinelRef = React.useRef<HTMLDivElement>(null);
     const { items, isLastPage, showMore } = useInfiniteHits();
@@ -32,11 +31,6 @@ export default function SearchMobilePage() {
         const typePropRaw = searchParams.get("typeProperty");
         const tagsRaw = searchParams.get("tags");
 
-        // Debug log pour vérifier la synchronisation
-        // console.log('📱 Mobile - Synchronisation URL→Context:', { 
-        //     queryVal, provinceVal, cityVal, minPriceVal, maxPriceVal 
-        // });
-
         // Mettre à jour le contexte Algolia avec délai pour s'assurer de la stabilité
         setTimeout(() => {
             setSearchText(queryVal);
@@ -51,22 +45,8 @@ export default function SearchMobilePage() {
             setMaxNbrRooms(maxRoomsVal);
             setTypeProperty(typePropRaw ? typePropRaw.split(",").map(s => s.trim()) : []);
             setTags(tagsRaw ? tagsRaw.split(",").map(s => s.trim()) : []);
-
-            // console.log('📱 Mobile - Contexte mis à jour:', {
-            //     searchText: queryVal,
-            //     province: provinceVal,
-            //     city: cityVal
-            // });
         }, 50);
     }, [searchParams.toString(), setSearchText, setProvince, setCity, setStreet, setMinPrice, setMaxPrice, setMinArea, setMaxArea, setMinNbrRooms, setMaxNbrRooms, setTypeProperty, setTags]);
-
-    // Scroll handlers
-    const scrollToTop = () => {
-        topRef.current?.scrollIntoView({ behavior: "smooth" });
-    };
-    const scrollToBottom = () => {
-        sentinelRef.current?.scrollIntoView({ behavior: "smooth" });
-    };
 
     // Infinite hits + intersection observer
     React.useEffect(() => {
@@ -83,20 +63,52 @@ export default function SearchMobilePage() {
         return () => obs.disconnect();
     }, [sentinelRef, isLastPage, showMore]);
 
+    // Scroll handlers
+    const scrollToTop = () => {
+        topRef.current?.scrollIntoView({ behavior: "smooth" });
+    };
+    const scrollToBottom = () => {
+        sentinelRef.current?.scrollIntoView({ behavior: "smooth" });
+    };
 
     return (
         <div className='p-5 space-y-5 h-full pb-20' ref={topRef}>
-            <section className='md:hidden'>
-                <h1 className='text-2xl font-bold text-[#146B67]'>
-                    Rechercher une annonce
-                </h1>
-                <p className='text-sm text-gray-500'>
-                    Trouvez le logement de vos rêves parmi nos annonces immobilières.
-                </p>
+            {/* Barre de recherche identique à la homepage */}
+            <section className='space-y-4'>
+                <div className='space-y-1'>
+                    <h1 className='text-gray-500 text-[11px]'>Votre futur chez-vous grâce à Trouve Ton Nkama</h1>
+                    <div className='flex text-xl font-bold text-[#146B67] items-center gap-2'>
+                        <h1>
+                            Rechercher sur Trouve Ton Nkama
+                        </h1>
+                    </div>
+                </div>
                 <Form action="/search">
                     <div className="flex items-center border rounded-full p-2 px-4 bg-gray-100 focus-within:border-[#1FA89B]">
                         <button
                             type='submit'
+                            onClick={(e) => {
+                                e.preventDefault();
+                                // Construire l'URL avec tous les filtres actifs
+                                const params = new URLSearchParams();
+                                if (searchText) params.append("query", searchText);
+                                if (province) params.append("province", province);
+                                if (city) params.append("city", city);
+                                if (street) params.append("street", street);
+                                if (minPrice) params.append("minPrice", minPrice);
+                                if (maxPrice) params.append("maxPrice", maxPrice);
+                                if (minArea) params.append("minArea", minArea);
+                                if (maxArea) params.append("maxArea", maxArea);
+                                if (minNbrRooms) params.append("minNbrRooms", minNbrRooms);
+                                if (maxNbrRooms) params.append("maxNbrRooms", maxNbrRooms);
+                                if (typeProperty && typeProperty.length > 0) {
+                                    params.append("typeProperty", typeProperty.join(","));
+                                }
+                                if (tags && tags.length > 0) {
+                                    params.append("tags", tags.join(","));
+                                }
+                                window.location.href = `/search?${params.toString()}`;
+                            }}
                         >
                             <Search size={25} className='hover:stroke-[#1FA89B]' />
                         </button>
@@ -132,45 +144,17 @@ export default function SearchMobilePage() {
                     </button>
                 </div>
 
-                <div>
+                <div className="space-y-4">
                     {items.length === 0 ? (
-                        <div className="flex flex-col items-center justify-center py-20">
-                            <Image
-                                src="/no-favorites.svg"
-                                alt="Aucun résultat trouvé"
-                                width={240}
-                                height={240}
-                                className="opacity-70"
-                            />
-                            <p className="mt-4 text-gray-600 dark:text-gray-400 text-lg">
-                                Aucun bien ne correspond à ces critères.
-                            </p>
-                            <button
-                                onClick={() => {
-                                    setSearchText("");
-                                    setProvince("");
-                                    setCity("");
-                                    setStreet("");
-                                    setMinPrice("");
-                                    setMaxPrice("");
-                                    setMinArea("");
-                                    setMaxArea("");
-                                    setMinNbrRooms("");
-                                    setMaxNbrRooms("");
-                                    setTypeProperty([]);
-                                    setTags([]);
-                                }}
-                                className="mt-4 px-4 py-2 bg-gradient-to-r from-[#146B67] via-[#1FA89B] to-[#146B67] text-white rounded hover:brightness-110 transition"
-                            >
-                                Réinitialiser les filtres
-                            </button>
+                        <div className="text-center py-8">
+                            <p className="text-gray-500">Aucun résultat trouvé</p>
                         </div>
                     ) : (
                         <>
                             {/* Grille de résultats */}
                             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 xl:grid-cols-6 gap-4">
                                 {items.map((propertyData, i) => (
-                                    <PropertyCard key={propertyData.objectID} property={propertyData} index={i} />
+                                    <PropertyCard key={propertyData.objectID} property={propertyData} />
                                 ))}
                             </div>
 
@@ -191,6 +175,8 @@ export default function SearchMobilePage() {
                         </>
                     )}
                 </div>
+
+                {/* Boutons de scroll haut/bas */}
                 <div className="fixed bottom-24 right-6 flex flex-col gap-2 z-50">
                     <button
                         onClick={scrollToTop}

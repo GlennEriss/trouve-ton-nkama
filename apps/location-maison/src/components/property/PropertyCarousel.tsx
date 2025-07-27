@@ -14,6 +14,7 @@ import { cn } from "@/lib/utils";
 interface CarouselProps {
   properties?: Property[]; // Optionnel maintenant
   isRecommendation?: boolean;
+  hideDate?: boolean;
 }
 
 /* Flèche réutilisable (précédent / suivant) */
@@ -34,7 +35,7 @@ const ArrowButton: React.FC<{ direction: "prev" | "next"; onClick?: () => void }
   );
 };
 
-const PropertyCarousel: React.FC<CarouselProps> = ({ properties = [], isRecommendation = false }) => {
+const PropertyCarousel: React.FC<CarouselProps> = ({ properties = [], isRecommendation = false, hideDate = false }) => {
   const router = useRouter();
   const { width } = useWindowSize();
 
@@ -80,8 +81,11 @@ const PropertyCarousel: React.FC<CarouselProps> = ({ properties = [], isRecommen
                   centerMode: false,
                 },
               },
-              { breakpoint: 1024, settings: { slidesToShow: Math.min(count, 2) } },
-              { breakpoint: 640, settings: { slidesToShow: 1 } },
+              { breakpoint: 1024, settings: { slidesToShow: Math.min(count, 3) } },
+              { breakpoint: 912, settings: { slidesToShow: Math.min(count, 3) } },
+              { breakpoint: 820, settings: { slidesToShow: Math.min(count, 2) } },
+              { breakpoint: 540, settings: { slidesToShow: Math.min(count, 2) } },
+              { breakpoint: 539, settings: { slidesToShow: 1 } },
             ],
           }
         : undefined,
@@ -90,7 +94,7 @@ const PropertyCarousel: React.FC<CarouselProps> = ({ properties = [], isRecommen
 
   /* ----- Rendu ----- */
   return (
-    <div className="container mx-auto px-4 relative">
+    <div className="container mx-auto px-4 relative max-w-[1280px] 2xl:max-w-[1440px]">
       {hasMultiple ? (
         <Slider {...settings}>
           {properties.map((p) => (
@@ -109,7 +113,7 @@ const PropertyCarousel: React.FC<CarouselProps> = ({ properties = [], isRecommen
               tabIndex={0}
               aria-label={`Voir les détails de ${p.title}`}
             >
-              <PropertyCard property={p} />
+              <PropertyCard property={p} hideDate={hideDate} />
             </div>
           ))}
         </Slider>
@@ -130,7 +134,7 @@ const PropertyCarousel: React.FC<CarouselProps> = ({ properties = [], isRecommen
             tabIndex={0}
             aria-label={`Voir les détails de ${properties[0].title}`}
           >
-            <PropertyCard property={properties[0]} />
+            <PropertyCard property={properties[0]} hideDate={hideDate} />
           </div>
         )
       )}

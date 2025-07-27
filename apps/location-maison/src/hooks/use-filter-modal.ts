@@ -19,6 +19,7 @@ export const useFilterModal = () => {
     minNbrRooms, setMinNbrRooms,
     maxNbrRooms, setMaxNbrRooms,
     typeProperty, setTypeProperty,
+    status, setStatus,
     tags, setTags,
     clearFilters,
   } = useAlgoliaContext();
@@ -34,6 +35,7 @@ export const useFilterModal = () => {
   const [localMinRooms, setLocalMinRooms] = useState(minNbrRooms);
   const [localMaxRooms, setLocalMaxRooms] = useState(maxNbrRooms);
   const [localTypes, setLocalTypes] = useState<string[]>(typeProperty);
+  const [localStatus, setLocalStatus] = useState<string[]>(status);
   const [localTags, setLocalTags] = useState<string[]>(tags);
 
   // Synchronisation des paramètres URL → États locaux
@@ -50,6 +52,7 @@ export const useFilterModal = () => {
       const minRoomsVal = searchParams.get("minNbrRooms") ?? "";
       const maxRoomsVal = searchParams.get("maxNbrRooms") ?? "";
       const typePropRaw = searchParams.get("typeProperty");
+      const statusRaw = searchParams.get("status");
       const tagsRaw = searchParams.get("tags");
 
       // Debug log pour tracer la synchronisation
@@ -63,17 +66,18 @@ export const useFilterModal = () => {
       setTimeout(() => {
         // console.log('⏳ FilterModal - Application des valeurs...');
         
-        setLocalProvince(provinceVal.split(","));
-        setLocalCity(cityVal.split(","));
-        setLocalStreet(streetVal.split(","));
+        setLocalProvince(provinceVal ? provinceVal.split(",").filter(p => p.trim()) : []);
+        setLocalCity(cityVal ? cityVal.split(",").filter(c => c.trim()) : []);
+        setLocalStreet(streetVal ? streetVal.split(",").filter(s => s.trim()) : []);
         setLocalMinPrice(minPriceVal);
         setLocalMaxPrice(maxPriceVal);
         setLocalMinArea(minAreaVal);
         setLocalMaxArea(maxAreaVal);
         setLocalMinRooms(minRoomsVal);
         setLocalMaxRooms(maxRoomsVal);
-        setLocalTypes(typePropRaw ? typePropRaw.split(",").map(s => s.trim()) : []);
-        setLocalTags(tagsRaw ? tagsRaw.split(",").map(s => s.trim()) : []);
+        setLocalTypes(typePropRaw ? typePropRaw.split(",").map(s => s.trim()).filter(t => t) : []);
+        setLocalStatus(statusRaw ? statusRaw.split(",").map(s => s.trim()).filter(t => t) : []);
+        setLocalTags(tagsRaw ? tagsRaw.split(",").map(s => s.trim()).filter(t => t) : []);
 
         // console.log('✅ FilterModal - États locaux synchronisés:', {
         //   localProvince: provinceVal,
@@ -103,6 +107,7 @@ export const useFilterModal = () => {
     setLocalMinRooms("");
     setLocalMaxRooms("");
     setLocalTypes([]);
+    setLocalStatus([]);
     setLocalTags([]);
   };
 
@@ -144,6 +149,7 @@ export const useFilterModal = () => {
     // Mises à jour des états array
     const arrayUpdates = [
       { condition: localTypes.length, setter: setTypeProperty, value: localTypes },
+      { condition: localStatus.length, setter: setStatus, value: localStatus },
       { condition: localTags.length, setter: setTags, value: localTags },
     ];
 
@@ -173,6 +179,7 @@ export const useFilterModal = () => {
       { condition: localMinRooms, key: "minNbrRooms", value: localMinRooms },
       { condition: localMaxRooms, key: "maxNbrRooms", value: localMaxRooms },
       { condition: localTypes.length, key: "typeProperty", value: localTypes.join(",") },
+      { condition: localStatus.length, key: "status", value: localStatus.join(",") },
       { condition: localTags.length, key: "tags", value: localTags.join(",") },
     ];
 
@@ -209,6 +216,7 @@ export const useFilterModal = () => {
     localMinRooms, setLocalMinRooms,
     localMaxRooms, setLocalMaxRooms,
     localTypes, setLocalTypes,
+    localStatus, setLocalStatus,
     localTags, setLocalTags,
     
     // Actions

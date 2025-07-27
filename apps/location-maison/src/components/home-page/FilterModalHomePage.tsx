@@ -11,7 +11,7 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { ChevronLeft, SlidersHorizontal } from "lucide-react";
-import { tags as tagsList } from "@/constantes";
+import { tags as tagsList, statusOptions } from "@/constantes";
 import { DialogDescription } from "@radix-ui/react-dialog";
 import { InputNumberApp } from "../shared/ui/InputNumberApp";
 import { TypeProperty, getTypePropertyKey } from "@/constantes/property-type";
@@ -58,6 +58,7 @@ export const FilterModalHomePage = () => {
         localMinRooms, setLocalMinRooms,
         localMaxRooms, setLocalMaxRooms,
         localTypes, setLocalTypes,
+        localStatus, setLocalStatus,
         localTags, setLocalTags,
 
         // Actions
@@ -128,7 +129,7 @@ export const FilterModalHomePage = () => {
 
             <DialogContent isDefaultIconClose={false} className="shadow-xl h-[90vh] max-w-[95%] md:max-w-4xl mx-auto flex flex-col rounded-2xl bg-white dark:bg-black overflow-hidden">
                 {/* Header fixe */}
-                <DialogHeader className="justify-between p-4 border-b bg-white dark:bg-black w-[98%]">
+                <DialogHeader className="justify-between p-4 border-b bg-white dark:bg-black w-full">
                     <div className="flex items-center gap-3">
                         <ChevronLeft
                             className="w-6 h-6 rounded-full border border-gray-500 cursor-pointer text-gray-600 dark:text-gray-300 hover:text-gray-800 dark:hover:text-white"
@@ -144,11 +145,11 @@ export const FilterModalHomePage = () => {
                 </DialogHeader>
 
                 {/* Contenu défilant */}
-                <div className="flex-1 overflow-auto px-2 grid grid-cols-1 lg:grid-cols-2 gap-8">
+                <div className="flex-1 overflow-auto overflow-x-hidden px-4 grid grid-cols-1 lg:grid-cols-2 gap-4 lg:gap-8">
                     {/* Colonne Gauche */}
                     <div className="space-y-6">
                         {/* Province, Ville & Quartier */}
-                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                        <div className="grid grid-cols-1 gap-3">
                             <h1 className="text-lg mb-1 text-[#1FA89B] font-bold col-span-full">Secteur recherché</h1>
                             <div className="space-y-2">
                                 <label htmlFor="province-input-home" className="text-gray-600">Province</label>
@@ -184,11 +185,32 @@ export const FilterModalHomePage = () => {
                             </div> 
                         </div>
 
+                        {/* Statut (À vendre/À louer) */}
+                        <div className="space-y-3">
+                            <h1 className="text-lg mb-1 text-[#1FA89B] font-bold">Statut</h1>
+                            <div className="flex flex-wrap gap-2">
+                                {statusOptions.map(status => {
+                                    const sel = localStatus.includes(status.value);
+                                    return (
+                                        <Button
+                                            key={`status-home-${status.value}-${sel}`}
+                                            variant="outline"
+                                            onClick={() => toggleLocal(status.value, setLocalStatus)}
+                                            className={`px-3 py-1 rounded-full font-medium transition ${sel ? "bg-[#146B67] text-white" : "bg-gray-100 text-gray-700 border"
+                                                }`}
+                                        >
+                                            {status.label}
+                                        </Button>
+                                    );
+                                })}
+                            </div>
+                        </div>
+
                         {/* Prix */}
                         <div className="space-y-2">
                             <h1 className="text-lg mb-1 text-[#1FA89B] font-bold">Prix (FCFA)</h1>
-                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                                <div>
+                            <div className="grid grid-cols-1 gap-4">
+                                <div className="w-full">
                                     <label htmlFor="min-price" className="text-gray-600">Prix min</label>
                                     <NumberInputRHF
                                         id="min-price"
@@ -204,12 +226,12 @@ export const FilterModalHomePage = () => {
                                             }
                                         }}
                                         placeholder="0"
+                                        className="w-full"
                                     />
                                 </div>
-                                <div>
+                                <div className="w-full">
                                     <label htmlFor="max-price" className="text-gray-600">Prix max</label>
                                     <NumberInputRHF
-                                        key={`max-price-home-${localMaxPrice}`}
                                         id="max-price"
                                         type="number"
                                         min={0}
@@ -223,6 +245,7 @@ export const FilterModalHomePage = () => {
                                             }
                                         }}
                                         placeholder="1 000 000 000"
+                                        className="w-full"
                                     />
                                 </div>
                             </div>
@@ -292,7 +315,7 @@ export const FilterModalHomePage = () => {
                     <div className="space-y-6">
                         {/* Type de propriété */}
                         <div className="space-y-3">
-                            <h1 className="text-lg mb-1 text-[#1FA89B] font-bold">Type de propriété</h1>
+                            <h1 className="text-lg mb-1 text-[#1FA89B] font-bold">Type d'annonces</h1>
                             <div className="flex flex-wrap gap-2">
                                 {sortedTypePropertyList.map(type => {
                                     const sel = localTypes.includes(type.value);
@@ -335,18 +358,18 @@ export const FilterModalHomePage = () => {
                 </div>
 
                 {/* Footer fixe */}
-                <div className="flex justify-end items-center gap-4 p-4 border-t bg-white dark:bg-black sticky bottom-0 z-20">
+                <div className="flex justify-end items-center gap-2 sm:gap-4 p-4 border-t bg-white dark:bg-black sticky bottom-0 z-20">
                     <Button
                         variant="outline"
                         onClick={onClear}
-                        className="w-full sm:w-auto border-[#146B67] text-[#146B67] hover:bg-[#1FA89B]/10 rounded-full"
+                        className="w-full sm:w-auto border-[#146B67] text-[#146B67] hover:bg-[#1FA89B]/10 rounded-full text-sm"
                     >
                         Effacer
                     </Button>
                     <Button
                         variant="default"
                         onClick={onApply}
-                        className="w-full sm:w-auto bg-[#146B67] hover:bg-[#1FA89B] text-white rounded-full"
+                        className="w-full sm:w-auto bg-[#146B67] hover:bg-[#1FA89B] text-white rounded-full text-sm"
                     >
                         Appliquer
                     </Button>

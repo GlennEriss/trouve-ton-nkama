@@ -50,6 +50,7 @@ export default function SearchPage() {
     minNbrRooms, setMinNbrRooms,
     maxNbrRooms, setMaxNbrRooms,
     typeProperty, setTypeProperty,
+    status, setStatus,
     tags, setTags,
   } = useAlgoliaContext();
 
@@ -66,6 +67,7 @@ export default function SearchPage() {
     const minRoomsVal = searchParams.get("minNbrRooms") ?? "";
     const maxRoomsVal = searchParams.get("maxNbrRooms") ?? "";
     const typePropRaw = searchParams.get("typeProperty");
+    const statusRaw = searchParams.get("status");
     const tagsRaw = searchParams.get("tags");
 
     // Mettre à jour le contexte Algolia avec délai pour s'assurer de la stabilité
@@ -81,6 +83,7 @@ export default function SearchPage() {
       setMinNbrRooms(minRoomsVal);
       setMaxNbrRooms(maxRoomsVal);
       setTypeProperty(typePropRaw ? typePropRaw.split(",").map(s => s.trim()) : []);
+      setStatus(statusRaw ? statusRaw.split(",").map(s => s.trim()) : []);
       setTags(tagsRaw ? tagsRaw.split(",").map(s => s.trim()) : []);
     }, 50);
   }, [searchParams.toString(), setSearchText, setProvince, setCity, setStreet, setMinPrice, setMaxPrice, setMinArea, setMaxArea, setMinNbrRooms, setMaxNbrRooms, setTypeProperty, setTags]);
@@ -102,6 +105,7 @@ export default function SearchPage() {
     const minRoomsVal = searchParams.get("minNbrRooms") ?? "";
     const maxRoomsVal = searchParams.get("maxNbrRooms") ?? "";
     const typePropRaw = searchParams.get("typeProperty") ?? "";
+    const statusRaw = searchParams.get("status") ?? "";
     const tagsRaw = searchParams.get("tags") ?? "";
 
     if (provinceVal) f.push(`province:"${provinceVal}"`);
@@ -119,6 +123,16 @@ export default function SearchPage() {
           typePropRaw
             .split(",")
             .map((t) => `typeProperty:"${t.trim()}"`)
+            .join(" OR ") +
+          ")"
+      );
+    }
+    if (statusRaw) {
+      f.push(
+        "(" +
+          statusRaw
+            .split(",")
+            .map((s) => `status:"${s.trim()}"`)
             .join(" OR ") +
           ")"
       );
@@ -293,7 +307,7 @@ export default function SearchPage() {
           {/* Grille de résultats */}
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 xl:grid-cols-6 gap-4">
             {items.map((propertyData, i) => (
-              <PropertyCard key={propertyData.objectID} property={propertyData} index={i} />
+              <PropertyCard key={propertyData.objectID} property={propertyData} />
             ))}
           </div>
 

@@ -13,12 +13,14 @@ const menu = [
         link: routes.protected.my_balance,
         description: 'Consultez votre solde de crédits, rechargez votre compte et accédez à l\'historique de vos transactions pour utiliser nos services premium.'
     },
+    /* Temporairement caché - Problèmes de vérification
     {
         title: 'Vérifier mon numéro de téléphone',
         icon: Phone,
         link: routes.protected.verify_phone,
         description: 'Vérifiez votre numéro de téléphone en recevant un code de confirmation par SMS pour sécuriser votre compte.'
     },
+    */
     {
         title: 'Paramètre',
         icon: Settings,
@@ -50,8 +52,10 @@ const menu = [
         description: 'Contactez l'assistance ou signalez un bug pour nous aider à améliorer votre expérience.'
     }, */
 ];
+
 export default function ProfilDetails() {
     const size = useWindowSize()
+
     return size.width < 768 ? (
         <div className='space-y-5'>
             {
@@ -64,7 +68,6 @@ export default function ProfilDetails() {
                         </Link>
                         <Separator className='md:hidden' />
                     </div>
-
                 ))
             }
         </div>

@@ -4,7 +4,7 @@ import React, { useState } from "react";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Loader2 } from "lucide-react";
+import { Loader2, Eye, EyeOff } from "lucide-react";
 
 type PasswordModalProps = {
   isOpen: boolean;
@@ -16,6 +16,7 @@ export default function PasswordModal({ isOpen, onClose, onConfirm }: Readonly<P
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
 
   const handleConfirm = async () => {
     if (!password.trim()) {
@@ -48,12 +49,26 @@ export default function PasswordModal({ isOpen, onClose, onConfirm }: Readonly<P
           <p className="text-gray-600 dark:text-gray-300 text-sm">
             Pour lier un compte supplémentaire, veuillez entrer votre mot de passe pour vérification.
           </p>
-          <Input
-            type="password"
-            placeholder="Entrez votre mot de passe"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-          />
+          <div className="relative">
+            <Input
+              type={showPassword ? "text" : "password"}
+              placeholder="Entrez votre mot de passe"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              className="pr-10"
+            />
+            <button
+              type="button"
+              className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-600"
+              onClick={() => setShowPassword(!showPassword)}
+            >
+              {showPassword ? (
+                <EyeOff size={20} />
+              ) : (
+                <Eye size={20} />
+              )}
+            </button>
+          </div>
           {error && <p className="text-red-500 text-sm">{error}</p>}
         </div>
         <DialogFooter>

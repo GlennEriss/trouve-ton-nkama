@@ -29,7 +29,7 @@ const PasswordResetFailure: React.FC = () => {
         <div className="bg-gradient-to-br from-red-600 via-red-500 to-red-600 text-white p-8 text-center">
           <div className="flex items-center justify-center mb-4">
             <Link href={routes.public.homePage}>
-              <Logo color='white' />
+              <Logo width="64px" height="64px" />
             </Link>
             <h1 className="text-2xl font-bold ml-3">
               Trouve Ton Nkama

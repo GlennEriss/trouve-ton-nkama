@@ -19,6 +19,9 @@ import { Calendar, CircleUser } from 'lucide-react'
 import { SelectFormApp } from '../shared/form/SelectFormApp'
 import { PhoneNumberFormApp } from '../shared/form/PhoneNumberFormApp'
 import { ButtonApp } from '../shared/ui/ButtonApp'
+import { parseDateString } from '@/lib/dateUtils'
+import { DateSelect } from '../shared/form/DateSelect'
+import { DateSelectForm } from '../forms/DateSelectForm'
 
 
 export default function FormPersonalInformation() {
@@ -63,7 +66,10 @@ export default function FormPersonalInformation() {
             form.setValue('firstname', user.firstname)
             form.setValue('lastname', user.lastname)
             form.setValue('email', user.email ?? '')
+            
+            // Utiliser directement la date string du schéma
             form.setValue('birthDate', user?.birthDate ?? '')
+            
             form.setValue('phoneNumbers', user.phoneNumbers.length > 0 ? user.phoneNumbers[0] : '')
         }
     }, [user])
@@ -71,14 +77,6 @@ export default function FormPersonalInformation() {
     if (size.width < 768) {
         return (
             <div className='px-4 pb-5'>
-                <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-3 mb-4">
-                    <p className="text-sm text-blue-800 dark:text-blue-200">
-                        ℹ️ {user?.phoneNumberVerified ? 
-                            "Votre numéro de téléphone est vérifié et ne peut plus être modifié." : 
-                            "Seul votre numéro de téléphone non vérifié peut être modifié. Les autres informations sont protégées."
-                        }
-                    </p>
-                </div>
                 <Form {...form}>
                     <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-3 mt-5">
                         <InputFormApp
@@ -103,15 +101,10 @@ export default function FormPersonalInformation() {
                             placeholder='Saisissez votre prénom'
                             disabled={true}
                         />
-                        <InputFormApp
+                        <DateSelect
                             control={form.control}
                             name='birthDate'
                             label='Date de naissance'
-                            type='date'
-                            IconLucide={Calendar}
-                            IconColorFill={'none'}
-                            IconColor='gray'
-                            placeholder='Saisissez votre date de naissance'
                             disabled={true}
                         />
 
@@ -140,14 +133,6 @@ export default function FormPersonalInformation() {
     }
     return (
         <div className='md:w-2/3 md:mx-auto lg:w-3/5'>
-            <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4 mb-6">
-                <p className="text-sm text-blue-800 dark:text-blue-200">
-                    ℹ️ {user?.phoneNumberVerified ? 
-                        "Votre numéro de téléphone est vérifié et ne peut plus être modifié." : 
-                        "Seul votre numéro de téléphone non vérifié peut être modifié. Les autres informations sont protégées."
-                    }
-                </p>
-            </div>
             <Form {...form}>
                 <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-3 mt-5">
                     <InputForm
@@ -169,12 +154,10 @@ export default function FormPersonalInformation() {
                         type='email'
                         disabled={true}
                     />
-                    <InputForm
-                        key={3}
+                    <DateSelectForm
                         form={form}
                         name='birthDate'
                         label='Date de naissance'
-                        type='date'
                         className='p-5'
                         disabled={true}
                     />

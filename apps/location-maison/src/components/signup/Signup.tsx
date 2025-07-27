@@ -7,6 +7,7 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { InputForm } from '../forms/InputForm'
 import { Form } from '../ui/form'
 import { SelectForm } from '../forms/SelectForm'
+import { DateSelectForm } from '../forms/DateSelectForm'
 
 import { PhoneNumberForm } from '../forms/PhoneNumberForm'
 import { CheckboxForm } from '../forms/CheckboxForm'
@@ -29,13 +30,18 @@ export const Signup: React.FC = () => {
     
     const form = useForm<FormRegisterSchemaType>({
         resolver: zodResolver(FormRegisterSchema),
+        mode: 'onChange', // Validation en temps réel
         defaultValues: {
             firstname: '',
             lastname: '',
             email: '',
             password: '',
             passwordConfirm: '',
-            birthdate: '',
+            birthdate: {
+                day: '',
+                month: '',
+                year: ''
+            },
             phone: '',
             country: 'GA',
             termsOfPrivacyPolicy: false
@@ -117,23 +123,12 @@ export const Signup: React.FC = () => {
     const onSubmit = async (values: FormRegisterSchemaType) => {
         console.log("OnRegister",values)
 
-        const validateFields = FormRegisterSchema.safeParse(values)
-        console.log("OnRegister after",values)
-
-        if (!validateFields.success) {
-            // Utiliser les messages d'erreur du schéma
-            const firstError = validateFields.error.errors[0]
-            return toast({
-                duration: 5000,
-                title: 'Information invalide!',
-                description: firstError.message || "Des éléments du formulaire sont invalides",
-                variant: 'destructive',
-            });
-        }
+        // La validation se fait automatiquement via react-hook-form et zodResolver
+        // Pas besoin de faire safeParse manuellement
         
         setIsRegistering(true)
         try {
-            const user = transformToPerson(validateFields.data)
+            const user = transformToPerson(values)
             const uid = await onRegister(user)
             
             toast({
@@ -227,11 +222,10 @@ export const Signup: React.FC = () => {
                         placeholder='johndoe@mail.test'
                         className='p-5'
                     />
-                    <InputForm
+                    <DateSelectForm
                         form={form}
                         name='birthdate'
                         label='Date de naissance'
-                        type='date'
                         className='p-5'
                     />
 
