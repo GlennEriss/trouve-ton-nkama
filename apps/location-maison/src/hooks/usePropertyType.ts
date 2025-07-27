@@ -22,45 +22,45 @@ export const PROPERTY_TYPE_LABELS: Record<PropertyType, string> = {
 // Champs requis par type de propriété
 export const PROPERTY_REQUIRED_FIELDS: Record<PropertyType, string[]> = {
   home: [
-    'titre', 'description', 'superficie (m²)', 'prix (€)', 'nombre de chambres', 
+    'titre', 'description', 'superficie (m²)', 'prix (FCFA)', 'nombre de chambres', 
     'nombre de cuisines', 'nombre de salles de bain', 'nombre de toilettes', 
     'nombre de garages', 'nombre d\'étages', 'nombre de salons'
   ],
   apartment: [
-    'titre', 'description', 'superficie (m²)', 'prix (€)', 'nombre de chambres',
+    'titre', 'description', 'superficie (m²)', 'prix (FCFA)', 'nombre de chambres',
     'nombre de cuisines', 'nombre de salles de bain', 'nombre de toilettes',
     'numéro d\'étage', 'numéro d\'appartement'
   ],
   villa: [
-    'titre', 'description', 'superficie (m²)', 'prix (€)', 'nombre de chambres',
+    'titre', 'description', 'superficie (m²)', 'prix (FCFA)', 'nombre de chambres',
     'nombre de cuisines', 'nombre de salles de bain', 'nombre de toilettes',
     'nombre d\'étages', 'nombre de piscines', 'nombre de garages'
   ],
   studio: [
-    'titre', 'description', 'superficie (m²)', 'prix (€)', 'nombre de chambres',
+    'titre', 'description', 'superficie (m²)', 'prix (FCFA)', 'nombre de chambres',
     'nombre de cuisines', 'nombre de salles de bain', 'nombre de toilettes',
     'numéro d\'étage', 'numéro de studio'
   ],
   building: [
-    'titre', 'description', 'superficie (m²)', 'prix (€)', 'nombre d\'appartements',
+    'titre', 'description', 'superficie (m²)', 'prix (FCFA)', 'nombre d\'appartements',
     'nombre d\'étages', 'parking disponible (oui/non)'
   ],
   desk: [
-    'titre', 'description', 'superficie (m²)', 'prix (€)', 'nombre de toilettes',
+    'titre', 'description', 'superficie (m²)', 'prix (FCFA)', 'nombre de toilettes',
     'nombre de pièces/salles'
   ],
   shop: [
-    'titre', 'description', 'superficie (m²)', 'prix (€)', 'nombre de pièces',
+    'titre', 'description', 'superficie (m²)', 'prix (FCFA)', 'nombre de pièces',
     'nombre de toilettes'
   ],
   kiosk: [
-    'titre', 'description', 'superficie (m²)', 'prix (€)', 'type de kiosque'
+    'titre', 'description', 'superficie (m²)', 'prix (FCFA)', 'type de kiosque'
   ],
   room: [
-    'titre', 'description', 'superficie (m²)', 'prix (€)', 'type de chambre'
+    'titre', 'description', 'superficie (m²)', 'prix (FCFA)', 'type de chambre'
   ],
   land: [
-    'titre', 'description', 'superficie (m²)', 'prix (€)', 'type de terrain'
+    'titre', 'description', 'superficie (m²)', 'prix (FCFA)', 'type de terrain'
   ]
 };
 

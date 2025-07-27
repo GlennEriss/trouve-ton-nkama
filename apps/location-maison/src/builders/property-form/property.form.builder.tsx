@@ -103,7 +103,7 @@ export abstract class PropertyFormBuilder {
             },
             {
                 name: "map",
-                label: "Saisissez la localité de votre logement",
+                label: "Saisissez le quartier de votre logement",
                 description: "Saisissez puis sélectionnez un quartier",
                 component: (field: any) => <SearchLocationForm />,
                 step: 3

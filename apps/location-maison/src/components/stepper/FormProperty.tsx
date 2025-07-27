@@ -7,7 +7,7 @@ import Step1 from './Step1';
 import Step2 from './Step2';
 import Step3 from './Step3';
 import PreviewProperty from '../preview-property/PreviewProperty';
-import FloatingAssistantButton from '../ai-assistant/FloatingAssistantButton';
+import FlatBotAssistant from '../ai-assistant/FlatBotAssistant';
 
 type Constructor<T> = new () => T;
 
@@ -51,7 +51,7 @@ export const FormProperty = <T extends PropertyFormBuilderFactory>
             {currentStep()}
             
             {/* Assistant IA flottant */}
-            <FloatingAssistantButton formContext={formContext} />
+            <FlatBotAssistant formContext={formContext} />
         </React.Fragment>
     )
 }
