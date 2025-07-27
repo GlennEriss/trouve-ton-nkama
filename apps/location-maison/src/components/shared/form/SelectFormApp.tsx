@@ -1,4 +1,4 @@
-import { FormControl, FormField, FormItem, FormLabel } from '@/components/ui/form'
+import { FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { cn } from '@/lib/utils'
 import React from 'react'
@@ -36,7 +36,12 @@ export const SelectFormApp = <T extends FieldValues>({
                         open={isOpen}
                         onOpenChange={setIsOpen}
                         value={field.value}
-                        onValueChange={field.onChange}
+                        onValueChange={(value) => {
+                            field.onChange(value);
+                            // Déclencher la validation du champ parent immédiatement
+                            const parentName = name.split('.')[0];
+                            control._trigger?.(parentName);
+                        }}
                         disabled={Boolean(isSubmitting) || Boolean(disabled)}
                     >
                         <FormControl>
@@ -62,6 +67,7 @@ export const SelectFormApp = <T extends FieldValues>({
                             }
                         </SelectContent>
                     </Select>
+                    <FormMessage />
                 </FormItem>
             )} />
     )

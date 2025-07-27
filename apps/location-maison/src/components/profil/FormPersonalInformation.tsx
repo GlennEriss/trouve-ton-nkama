@@ -19,6 +19,9 @@ import { Calendar, CircleUser } from 'lucide-react'
 import { SelectFormApp } from '../shared/form/SelectFormApp'
 import { PhoneNumberFormApp } from '../shared/form/PhoneNumberFormApp'
 import { ButtonApp } from '../shared/ui/ButtonApp'
+import { parseDateString } from '@/lib/dateUtils'
+import { DateSelect } from '../shared/form/DateSelect'
+import { DateSelectForm } from '../forms/DateSelectForm'
 
 
 export default function FormPersonalInformation() {
@@ -63,7 +66,15 @@ export default function FormPersonalInformation() {
             form.setValue('firstname', user.firstname)
             form.setValue('lastname', user.lastname)
             form.setValue('email', user.email ?? '')
-            form.setValue('birthDate', user?.birthDate ?? '')
+            
+            // Convertir la date string en objet pour le formulaire
+            const birthDateObj = parseDateString(user?.birthDate ?? '')
+            if (birthDateObj) {
+                form.setValue('birthDate', birthDateObj)
+            } else {
+                form.setValue('birthDate', { day: '', month: '', year: '' })
+            }
+            
             form.setValue('phoneNumbers', user.phoneNumbers.length > 0 ? user.phoneNumbers[0] : '')
         }
     }, [user])
@@ -95,15 +106,10 @@ export default function FormPersonalInformation() {
                             placeholder='Saisissez votre prénom'
                             disabled={true}
                         />
-                        <InputFormApp
+                        <DateSelect
                             control={form.control}
                             name='birthDate'
                             label='Date de naissance'
-                            type='date'
-                            IconLucide={Calendar}
-                            IconColorFill={'none'}
-                            IconColor='gray'
-                            placeholder='Saisissez votre date de naissance'
                             disabled={true}
                         />
 
@@ -153,12 +159,10 @@ export default function FormPersonalInformation() {
                         type='email'
                         disabled={true}
                     />
-                    <InputForm
-                        key={3}
+                    <DateSelectForm
                         form={form}
                         name='birthDate'
                         label='Date de naissance'
-                        type='date'
                         className='p-5'
                         disabled={true}
                     />

@@ -5,6 +5,17 @@
 import { FaBriefcase, FaHome, FaHeart, FaBuilding, FaUsers, FaCouch, FaTree, FaMountain, FaSwimmingPool, FaDog, FaShoppingCart, FaBus, FaCar, FaWifi, FaShieldAlt, FaBicycle, FaRunning, FaChild, FaWheelchair, FaGraduationCap, FaUmbrellaBeach, FaPeace, FaColumns, FaWarehouse, FaRegClock } from 'react-icons/fa';
 
 
+export const statusOptions = [
+  {
+    label: 'À vendre',
+    value: 'FOR_SALE'
+  },
+  {
+    label: 'À louer',
+    value: 'FOR_RENT'
+  }
+];
+
 export const tags = [
   {
     tagName: 'Travail',

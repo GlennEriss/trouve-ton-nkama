@@ -30,7 +30,7 @@ const detailssection2 = [
 export default function HomePageDesktopComponent() {
   const { user } = useCurrentUser()
   return (
-    <div className='container p-5 mx-auto 2xl:max-w-[1530px] relative'>
+    <div className='container p-5 mx-auto max-w-[1440px] relative'>
       {/* Forme 1 - Derrière navbar et première section */}
       <div className="absolute top-0 -left-[30vw] w-full h-[530px] -z-10">
         <Image

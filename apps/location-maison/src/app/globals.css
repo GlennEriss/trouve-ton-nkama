@@ -69,6 +69,12 @@ body {
   body {
     @apply bg-background text-foreground;
   }
+  
+  /* Largeur maximale globale */
+  html, body {
+    max-width: 1440px;
+    margin: 0 auto;
+  }
 }
 
 

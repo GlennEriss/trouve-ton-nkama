@@ -38,28 +38,28 @@ export default function Footer({ isHide = false }: Readonly<{ isHide?: boolean }
                     <div className='hidden md:block'>
                         <Logo className="text-black mb-4 sm:mb-0" width="64px" height="64px" />
                     </div>
-                    <ul className="flex flex-col sm:flex-row items-center mb-4 sm:mb-0 text-sm font-medium text-white space-y-2 sm:space-y-0 sm:space-x-6">
+                    <ul className="flex flex-col sm:flex-row items-center mb-4 sm:mb-0 text-sm font-medium text-white space-y-3 sm:space-y-0 sm:space-x-6">
                         <li>
-                            <a href="https://www.facebook.com/profile.php?id=61574099562451" className="hover:underline">À propos</a>
+                            <a href="https://www.facebook.com/profile.php?id=61574099562451" className="hover:underline py-1">À propos</a>
                         </li>
                         <li>
-                            <a href={routes.public.blog} className="hover:underline">Blog</a>
+                            <a href={routes.public.blog} className="hover:underline py-1">Blog</a>
                         </li>
                         <li>
-                            <a href={routes.public.guide_immobilier_gabon} className="hover:underline">Guide Immobilier</a>
+                            <a href={routes.public.guide_immobilier_gabon} className="hover:underline py-1">Guide Immobilier</a>
                         </li>
                         <li>
-                            <a href={routes.public.confidentiality} className="hover:underline">Politique de confidentialité</a>
+                            <a href={routes.public.confidentiality} className="hover:underline py-1">Politique de confidentialité</a>
                         </li>
                         <li>
-                            <a href={routes.public.terms_of_use} className="hover:underline">Conditions d&apos;utilisation</a>
+                            <a href={routes.public.terms_of_use} className="hover:underline py-1">Conditions d&apos;utilisation</a>
                         </li>
                     </ul>
                 </div>
 
                 {/* Section Contacts */}
-                <div className="flex">
-                    <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mt-4 text-white space-y-4 sm:space-y-0 sm:space-x-6">
+                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mt-6">
+                    <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between text-white space-y-4 sm:space-y-0 sm:space-x-6">
                         <div className="flex items-center space-x-2">
                             <MapPin size={16} />
                             <span>Libreville, Gabon</span>
@@ -77,8 +77,8 @@ export default function Footer({ isHide = false }: Readonly<{ isHide?: boolean }
                             <a href="https://wa.me/221776960463?text=Bonjour%20!%20Je%20souhaite%20obtenir%20plus%20d'informations%20sur%20Trouve%20Ton%20Nkama." target="_blank" rel="noopener noreferrer" className="hover:underline">Contactez-nous sur WhatsApp</a>
                         </div>
                     </div>
-                    <div className='ml-auto md:hidden mt-auto'>
-                        <Logo className="text-black mb-4 sm:mb-0" width="64px" height="64px" />
+                    <div className='sm:hidden mt-4 flex justify-center'>
+                        <Logo className="text-white" width="64px" height="64px" />
                     </div>
                 </div>
 
