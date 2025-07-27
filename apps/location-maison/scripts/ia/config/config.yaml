@@ -1,0 +1,60 @@
+# Configuration IA pour transformation des données Facebook
+api:
+  openrouter:
+    url: "https://openrouter.ai/api/v1/chat/completions"
+    model: "meta-llama/llama-3.3-70b-instruct:free"
+    max_tokens: 512
+    stream: false
+  
+  keys:
+    - "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"
+    - "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"
+    - "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"
+    - "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"
+    - "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"
+    - "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"
+    - "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"
+    - "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"
+
+limits:
+  rate_limit_per_key: 50  # Limite par clé par jour
+  request_delay: 2000     # Délai entre les requêtes en ms
+  retry_delay: 3000       # Délai avant retry en cas d'erreur
+  max_retries: 8          # Nombre max de tentatives (une par clé)
+
+tags:
+  available_tags:
+    - "Travail"
+    - "Famille"
+    - "Couple"
+    - "Sous barrière"
+    - "Meublé"
+    - "Centre-ville"
+    - "Vacances"
+    - "Nature"
+    - "Montagne"
+    - "Piscine"
+    - "Animaux admis"
+    - "Commerces proches"
+    - "Transport proche"
+    - "Parking"
+    - "Wi-Fi"
+    - "Sécurisé"
+    - "Vélo"
+    - "Activités sportives"
+    - "Adapté aux enfants"
+    - "Accessible handicapés"
+    - "Étudiant"
+    - "Calme et tranquillité"
+    - "Proche de la plage"
+
+files:
+  input: "../../axesso/property.json"
+  output: "transformed_properties.json"
+  stats: "key_usage_stats.json"
+  progress: "progress_state.json"
+
+logging:
+  level: "info"  # debug, info, warn, error
+  save_stats: true
+  show_detailed_progress: true 

@@ -1,0 +1,1131 @@
+{
+  "0": {
+    "keyIndex": 1,
+    "keyId": "sk-or-v1-56752a6b1fb...",
+    "dateFirstUsed": "2025-07-26T15:50:08.251Z",
+    "dateLastUsed": "2025-07-26T18:32:44.433Z",
+    "totalRequests": 1,
+    "sessionsHistory": [
+      {
+        "sessionStart": "2025-07-26T15:50:08.251Z",
+        "sessionEnd": "2025-07-26T15:50:26.079Z",
+        "requestsInSession": 1,
+        "reason": "Rate limit reached",
+        "date": "26/07/2025",
+        "time": "15:50:26"
+      }
+    ]
+  },
+  "1": {
+    "keyIndex": 2,
+    "keyId": "sk-or-v1-dfc1c32551f...",
+    "dateFirstUsed": "2025-07-26T18:39:43.926Z",
+    "dateLastUsed": "2025-07-26T18:39:43.926Z",
+    "totalRequests": 0,
+    "sessionsHistory": [
+      {
+        "sessionEnd": "2025-07-26T15:50:35.993Z",
+        "requestsInSession": 0,
+        "reason": "Rate limit reached",
+        "date": "26/07/2025",
+        "time": "15:50:35"
+      }
+    ]
+  },
+  "2": {
+    "keyIndex": 3,
+    "keyId": "sk-or-v1-a183b344f25...",
+    "dateFirstUsed": "2025-07-26T18:41:52.759Z",
+    "dateLastUsed": "2025-07-26T18:41:52.759Z",
+    "totalRequests": 0,
+    "sessionsHistory": [
+      {
+        "sessionEnd": "2025-07-26T15:50:45.795Z",
+        "requestsInSession": 0,
+        "reason": "Rate limit reached",
+        "date": "26/07/2025",
+        "time": "15:50:45"
+      }
+    ]
+  },
+  "3": {
+    "keyIndex": 4,
+    "keyId": "sk-or-v1-decd865f617...",
+    "dateFirstUsed": "2025-07-26T18:33:58.707Z",
+    "dateLastUsed": "2025-07-26T18:33:58.707Z",
+    "totalRequests": 0,
+    "sessionsHistory": [
+      {
+        "sessionEnd": "2025-07-26T15:50:54.491Z",
+        "requestsInSession": 0,
+        "reason": "Rate limit reached",
+        "date": "26/07/2025",
+        "time": "15:50:54"
+      }
+    ]
+  },
+  "4": {
+    "keyIndex": 5,
+    "keyId": "sk-or-v1-4f1f15742c2...",
+    "dateFirstUsed": "2025-07-26T15:51:04.079Z",
+    "dateLastUsed": "2025-07-26T18:34:55.211Z",
+    "totalRequests": 1,
+    "sessionsHistory": [
+      {
+        "sessionStart": "2025-07-26T15:51:04.079Z",
+        "sessionEnd": "2025-07-26T15:51:19.376Z",
+        "requestsInSession": 1,
+        "reason": "Rate limit reached",
+        "date": "26/07/2025",
+        "time": "15:51:19"
+      }
+    ]
+  },
+  "5": {
+    "keyIndex": 6,
+    "keyId": "sk-or-v1-cc6a777ae30...",
+    "dateFirstUsed": "2025-07-26T18:36:00.031Z",
+    "dateLastUsed": "2025-07-26T18:36:00.031Z",
+    "totalRequests": 0,
+    "sessionsHistory": [
+      {
+        "sessionEnd": "2025-07-26T15:51:24.941Z",
+        "requestsInSession": 0,
+        "reason": "Rate limit reached",
+        "date": "26/07/2025",
+        "time": "15:51:24"
+      }
+    ]
+  },
+  "6": {
+    "keyIndex": 7,
+    "keyId": "sk-or-v1-ce58fe42c9e...",
+    "dateFirstUsed": "2025-07-26T18:37:54.979Z",
+    "dateLastUsed": "2025-07-26T18:37:54.979Z",
+    "totalRequests": 0,
+    "sessionsHistory": [
+      {
+        "sessionEnd": "2025-07-26T15:51:34.481Z",
+        "requestsInSession": 0,
+        "reason": "Rate limit reached",
+        "date": "26/07/2025",
+        "time": "15:51:34"
+      }
+    ]
+  },
+  "7": {
+    "keyIndex": 8,
+    "keyId": "sk-or-v1-3c68659876f...",
+    "dateFirstUsed": "2025-07-26T15:52:06.534Z",
+    "dateLastUsed": "2025-07-26T16:10:39.226Z",
+    "totalRequests": 4,
+    "sessionsHistory": [
+      {
+        "sessionEnd": "2025-07-26T15:51:46.913Z",
+        "requestsInSession": 0,
+        "reason": "Rate limit reached",
+        "date": "26/07/2025",
+        "time": "15:51:46"
+      },
+      {
+        "sessionEnd": "2025-07-26T15:51:54.311Z",
+        "requestsInSession": 0,
+        "reason": "Rate limit reached",
+        "date": "26/07/2025",
+        "time": "15:51:54"
+      },
+      {
+        "sessionStart": "2025-07-26T15:52:06.534Z",
+        "sessionEnd": "2025-07-26T15:55:18.171Z",
+        "requestsInSession": 3,
+        "reason": "Rate limit reached",
+        "date": "26/07/2025",
+        "time": "15:55:18"
+      },
+      {
+        "sessionStart": "2025-07-26T15:52:06.534Z",
+        "sessionEnd": "2025-07-26T15:55:44.202Z",
+        "requestsInSession": 0,
+        "reason": "Rate limit reached",
+        "date": "26/07/2025",
+        "time": "15:55:44"
+      },
+      {
+        "sessionStart": "2025-07-26T15:52:06.534Z",
+        "sessionEnd": "2025-07-26T15:55:59.488Z",
+        "requestsInSession": 0,
+        "reason": "Rate limit reached",
+        "date": "26/07/2025",
+        "time": "15:55:59"
+      },
+      {
+        "sessionStart": "2025-07-26T15:56:06.779Z",
+        "sessionEnd": "2025-07-26T15:56:24.609Z",
+        "requestsInSession": 1,
+        "reason": "Rate limit reached",
+        "date": "26/07/2025",
+        "time": "15:56:24"
+      },
+      {
+        "sessionStart": "2025-07-26T15:56:06.779Z",
+        "sessionEnd": "2025-07-26T15:56:40.106Z",
+        "requestsInSession": 0,
+        "reason": "Rate limit reached",
+        "date": "26/07/2025",
+        "time": "15:56:40"
+      },
+      {
+        "sessionStart": "2025-07-26T15:56:06.779Z",
+        "sessionEnd": "2025-07-26T15:56:47.375Z",
+        "requestsInSession": 0,
+        "reason": "Rate limit reached",
+        "date": "26/07/2025",
+        "time": "15:56:47"
+      },
+      {
+        "sessionStart": "2025-07-26T15:56:06.779Z",
+        "sessionEnd": "2025-07-26T15:56:54.666Z",
+        "requestsInSession": 0,
+        "reason": "Rate limit reached",
+        "date": "26/07/2025",
+        "time": "15:56:54"
+      },
+      {
+        "sessionStart": "2025-07-26T15:56:06.779Z",
+        "sessionEnd": "2025-07-26T15:57:01.814Z",
+        "requestsInSession": 0,
+        "reason": "Rate limit reached",
+        "date": "26/07/2025",
+        "time": "15:57:01"
+      },
+      {
+        "sessionStart": "2025-07-26T15:56:06.779Z",
+        "sessionEnd": "2025-07-26T15:57:08.894Z",
+        "requestsInSession": 0,
+        "reason": "Rate limit reached",
+        "date": "26/07/2025",
+        "time": "15:57:08"
+      },
+      {
+        "sessionStart": "2025-07-26T15:56:06.779Z",
+        "sessionEnd": "2025-07-26T15:57:16.066Z",
+        "requestsInSession": 0,
+        "reason": "Rate limit reached",
+        "date": "26/07/2025",
+        "time": "15:57:16"
+      },
+      {
+        "sessionStart": "2025-07-26T15:56:06.779Z",
+        "sessionEnd": "2025-07-26T15:57:23.161Z",
+        "requestsInSession": 0,
+        "reason": "Rate limit reached",
+        "date": "26/07/2025",
+        "time": "15:57:23"
+      },
+      {
+        "sessionStart": "2025-07-26T15:56:06.779Z",
+        "sessionEnd": "2025-07-26T15:57:30.293Z",
+        "requestsInSession": 0,
+        "reason": "Rate limit reached",
+        "date": "26/07/2025",
+        "time": "15:57:30"
+      },
+      {
+        "sessionStart": "2025-07-26T15:56:06.779Z",
+        "sessionEnd": "2025-07-26T15:57:36.475Z",
+        "requestsInSession": 0,
+        "reason": "Rate limit reached",
+        "date": "26/07/2025",
+        "time": "15:57:36"
+      },
+      {
+        "sessionStart": "2025-07-26T15:56:06.779Z",
+        "sessionEnd": "2025-07-26T15:57:43.695Z",
+        "requestsInSession": 0,
+        "reason": "Rate limit reached",
+        "date": "26/07/2025",
+        "time": "15:57:43"
+      },
+      {
+        "sessionStart": "2025-07-26T15:56:06.779Z",
+        "sessionEnd": "2025-07-26T15:57:50.913Z",
+        "requestsInSession": 0,
+        "reason": "Rate limit reached",
+        "date": "26/07/2025",
+        "time": "15:57:50"
+      },
+      {
+        "sessionStart": "2025-07-26T15:56:06.779Z",
+        "sessionEnd": "2025-07-26T15:57:58.117Z",
+        "requestsInSession": 0,
+        "reason": "Rate limit reached",
+        "date": "26/07/2025",
+        "time": "15:57:58"
+      },
+      {
+        "sessionStart": "2025-07-26T15:56:06.779Z",
+        "sessionEnd": "2025-07-26T15:58:05.303Z",
+        "requestsInSession": 0,
+        "reason": "Rate limit reached",
+        "date": "26/07/2025",
+        "time": "15:58:05"
+      },
+      {
+        "sessionStart": "2025-07-26T15:56:06.779Z",
+        "sessionEnd": "2025-07-26T15:58:12.448Z",
+        "requestsInSession": 0,
+        "reason": "Rate limit reached",
+        "date": "26/07/2025",
+        "time": "15:58:12"
+      },
+      {
+        "sessionStart": "2025-07-26T15:56:06.779Z",
+        "sessionEnd": "2025-07-26T15:58:19.582Z",
+        "requestsInSession": 0,
+        "reason": "Rate limit reached",
+        "date": "26/07/2025",
+        "time": "15:58:19"
+      },
+      {
+        "sessionStart": "2025-07-26T15:56:06.779Z",
+        "sessionEnd": "2025-07-26T15:58:26.704Z",
+        "requestsInSession": 0,
+        "reason": "Rate limit reached",
+        "date": "26/07/2025",
+        "time": "15:58:26"
+      },
+      {
+        "sessionStart": "2025-07-26T15:56:06.779Z",
+        "sessionEnd": "2025-07-26T15:58:32.779Z",
+        "requestsInSession": 0,
+        "reason": "Rate limit reached",
+        "date": "26/07/2025",
+        "time": "15:58:32"
+      },
+      {
+        "sessionStart": "2025-07-26T15:56:06.779Z",
+        "sessionEnd": "2025-07-26T15:58:40.016Z",
+        "requestsInSession": 0,
+        "reason": "Rate limit reached",
+        "date": "26/07/2025",
+        "time": "15:58:40"
+      },
+      {
+        "sessionStart": "2025-07-26T15:56:06.779Z",
+        "sessionEnd": "2025-07-26T15:58:47.122Z",
+        "requestsInSession": 0,
+        "reason": "Rate limit reached",
+        "date": "26/07/2025",
+        "time": "15:58:47"
+      },
+      {
+        "sessionStart": "2025-07-26T15:56:06.779Z",
+        "sessionEnd": "2025-07-26T15:58:54.241Z",
+        "requestsInSession": 0,
+        "reason": "Rate limit reached",
+        "date": "26/07/2025",
+        "time": "15:58:54"
+      },
+      {
+        "sessionStart": "2025-07-26T15:56:06.779Z",
+        "sessionEnd": "2025-07-26T15:59:01.331Z",
+        "requestsInSession": 0,
+        "reason": "Rate limit reached",
+        "date": "26/07/2025",
+        "time": "15:59:01"
+      },
+      {
+        "sessionStart": "2025-07-26T15:56:06.779Z",
+        "sessionEnd": "2025-07-26T15:59:08.381Z",
+        "requestsInSession": 0,
+        "reason": "Rate limit reached",
+        "date": "26/07/2025",
+        "time": "15:59:08"
+      },
+      {
+        "sessionStart": "2025-07-26T15:56:06.779Z",
+        "sessionEnd": "2025-07-26T15:59:15.397Z",
+        "requestsInSession": 0,
+        "reason": "Rate limit reached",
+        "date": "26/07/2025",
+        "time": "15:59:15"
+      },
+      {
+        "sessionStart": "2025-07-26T15:56:06.779Z",
+        "sessionEnd": "2025-07-26T15:59:22.600Z",
+        "requestsInSession": 0,
+        "reason": "Rate limit reached",
+        "date": "26/07/2025",
+        "time": "15:59:22"
+      },
+      {
+        "sessionStart": "2025-07-26T15:56:06.779Z",
+        "sessionEnd": "2025-07-26T15:59:28.739Z",
+        "requestsInSession": 0,
+        "reason": "Rate limit reached",
+        "date": "26/07/2025",
+        "time": "15:59:28"
+      },
+      {
+        "sessionStart": "2025-07-26T15:56:06.779Z",
+        "sessionEnd": "2025-07-26T15:59:35.927Z",
+        "requestsInSession": 0,
+        "reason": "Rate limit reached",
+        "date": "26/07/2025",
+        "time": "15:59:35"
+      },
+      {
+        "sessionStart": "2025-07-26T15:56:06.779Z",
+        "sessionEnd": "2025-07-26T15:59:43.006Z",
+        "requestsInSession": 0,
+        "reason": "Rate limit reached",
+        "date": "26/07/2025",
+        "time": "15:59:43"
+      },
+      {
+        "sessionStart": "2025-07-26T15:56:06.779Z",
+        "sessionEnd": "2025-07-26T15:59:50.112Z",
+        "requestsInSession": 0,
+        "reason": "Rate limit reached",
+        "date": "26/07/2025",
+        "time": "15:59:50"
+      },
+      {
+        "sessionStart": "2025-07-26T15:56:06.779Z",
+        "sessionEnd": "2025-07-26T15:59:57.221Z",
+        "requestsInSession": 0,
+        "reason": "Rate limit reached",
+        "date": "26/07/2025",
+        "time": "15:59:57"
+      },
+      {
+        "sessionStart": "2025-07-26T15:56:06.779Z",
+        "sessionEnd": "2025-07-26T16:00:04.322Z",
+        "requestsInSession": 0,
+        "reason": "Rate limit reached",
+        "date": "26/07/2025",
+        "time": "16:00:04"
+      },
+      {
+        "sessionStart": "2025-07-26T15:56:06.779Z",
+        "sessionEnd": "2025-07-26T16:00:11.538Z",
+        "requestsInSession": 0,
+        "reason": "Rate limit reached",
+        "date": "26/07/2025",
+        "time": "16:00:11"
+      },
+      {
+        "sessionStart": "2025-07-26T15:56:06.779Z",
+        "sessionEnd": "2025-07-26T16:00:19.003Z",
+        "requestsInSession": 0,
+        "reason": "Rate limit reached",
+        "date": "26/07/2025",
+        "time": "16:00:19"
+      },
+      {
+        "sessionStart": "2025-07-26T15:56:06.779Z",
+        "sessionEnd": "2025-07-26T16:00:25.245Z",
+        "requestsInSession": 0,
+        "reason": "Rate limit reached",
+        "date": "26/07/2025",
+        "time": "16:00:25"
+      },
+      {
+        "sessionStart": "2025-07-26T15:56:06.779Z",
+        "sessionEnd": "2025-07-26T16:00:32.381Z",
+        "requestsInSession": 0,
+        "reason": "Rate limit reached",
+        "date": "26/07/2025",
+        "time": "16:00:32"
+      },
+      {
+        "sessionStart": "2025-07-26T15:56:06.779Z",
+        "sessionEnd": "2025-07-26T16:00:39.475Z",
+        "requestsInSession": 0,
+        "reason": "Rate limit reached",
+        "date": "26/07/2025",
+        "time": "16:00:39"
+      },
+      {
+        "sessionStart": "2025-07-26T15:56:06.779Z",
+        "sessionEnd": "2025-07-26T16:00:46.564Z",
+        "requestsInSession": 0,
+        "reason": "Rate limit reached",
+        "date": "26/07/2025",
+        "time": "16:00:46"
+      },
+      {
+        "sessionStart": "2025-07-26T15:56:06.779Z",
+        "sessionEnd": "2025-07-26T16:00:53.680Z",
+        "requestsInSession": 0,
+        "reason": "Rate limit reached",
+        "date": "26/07/2025",
+        "time": "16:00:53"
+      },
+      {
+        "sessionStart": "2025-07-26T15:56:06.779Z",
+        "sessionEnd": "2025-07-26T16:01:00.806Z",
+        "requestsInSession": 0,
+        "reason": "Rate limit reached",
+        "date": "26/07/2025",
+        "time": "16:01:00"
+      },
+      {
+        "sessionStart": "2025-07-26T15:56:06.779Z",
+        "sessionEnd": "2025-07-26T16:01:07.909Z",
+        "requestsInSession": 0,
+        "reason": "Rate limit reached",
+        "date": "26/07/2025",
+        "time": "16:01:07"
+      },
+      {
+        "sessionStart": "2025-07-26T15:56:06.779Z",
+        "sessionEnd": "2025-07-26T16:01:15.050Z",
+        "requestsInSession": 0,
+        "reason": "Rate limit reached",
+        "date": "26/07/2025",
+        "time": "16:01:15"
+      },
+      {
+        "sessionStart": "2025-07-26T15:56:06.779Z",
+        "sessionEnd": "2025-07-26T16:01:21.231Z",
+        "requestsInSession": 0,
+        "reason": "Rate limit reached",
+        "date": "26/07/2025",
+        "time": "16:01:21"
+      },
+      {
+        "sessionStart": "2025-07-26T15:56:06.779Z",
+        "sessionEnd": "2025-07-26T16:01:28.344Z",
+        "requestsInSession": 0,
+        "reason": "Rate limit reached",
+        "date": "26/07/2025",
+        "time": "16:01:28"
+      },
+      {
+        "sessionStart": "2025-07-26T15:56:06.779Z",
+        "sessionEnd": "2025-07-26T16:01:35.478Z",
+        "requestsInSession": 0,
+        "reason": "Rate limit reached",
+        "date": "26/07/2025",
+        "time": "16:01:35"
+      },
+      {
+        "sessionStart": "2025-07-26T15:56:06.779Z",
+        "sessionEnd": "2025-07-26T16:01:42.636Z",
+        "requestsInSession": 0,
+        "reason": "Rate limit reached",
+        "date": "26/07/2025",
+        "time": "16:01:42"
+      },
+      {
+        "sessionStart": "2025-07-26T15:56:06.779Z",
+        "sessionEnd": "2025-07-26T16:01:49.731Z",
+        "requestsInSession": 0,
+        "reason": "Rate limit reached",
+        "date": "26/07/2025",
+        "time": "16:01:49"
+      },
+      {
+        "sessionStart": "2025-07-26T15:56:06.779Z",
+        "sessionEnd": "2025-07-26T16:01:56.968Z",
+        "requestsInSession": 0,
+        "reason": "Rate limit reached",
+        "date": "26/07/2025",
+        "time": "16:01:56"
+      },
+      {
+        "sessionStart": "2025-07-26T15:56:06.779Z",
+        "sessionEnd": "2025-07-26T16:02:04.029Z",
+        "requestsInSession": 0,
+        "reason": "Rate limit reached",
+        "date": "26/07/2025",
+        "time": "16:02:04"
+      },
+      {
+        "sessionStart": "2025-07-26T15:56:06.779Z",
+        "sessionEnd": "2025-07-26T16:02:11.371Z",
+        "requestsInSession": 0,
+        "reason": "Rate limit reached",
+        "date": "26/07/2025",
+        "time": "16:02:11"
+      },
+      {
+        "sessionStart": "2025-07-26T15:56:06.779Z",
+        "sessionEnd": "2025-07-26T16:02:17.616Z",
+        "requestsInSession": 0,
+        "reason": "Rate limit reached",
+        "date": "26/07/2025",
+        "time": "16:02:17"
+      },
+      {
+        "sessionStart": "2025-07-26T15:56:06.779Z",
+        "sessionEnd": "2025-07-26T16:02:24.761Z",
+        "requestsInSession": 0,
+        "reason": "Rate limit reached",
+        "date": "26/07/2025",
+        "time": "16:02:24"
+      },
+      {
+        "sessionStart": "2025-07-26T15:56:06.779Z",
+        "sessionEnd": "2025-07-26T16:02:31.844Z",
+        "requestsInSession": 0,
+        "reason": "Rate limit reached",
+        "date": "26/07/2025",
+        "time": "16:02:31"
+      },
+      {
+        "sessionStart": "2025-07-26T15:56:06.779Z",
+        "sessionEnd": "2025-07-26T16:02:38.951Z",
+        "requestsInSession": 0,
+        "reason": "Rate limit reached",
+        "date": "26/07/2025",
+        "time": "16:02:38"
+      },
+      {
+        "sessionStart": "2025-07-26T15:56:06.779Z",
+        "sessionEnd": "2025-07-26T16:02:46.166Z",
+        "requestsInSession": 0,
+        "reason": "Rate limit reached",
+        "date": "26/07/2025",
+        "time": "16:02:46"
+      },
+      {
+        "sessionStart": "2025-07-26T15:56:06.779Z",
+        "sessionEnd": "2025-07-26T16:02:53.456Z",
+        "requestsInSession": 0,
+        "reason": "Rate limit reached",
+        "date": "26/07/2025",
+        "time": "16:02:53"
+      },
+      {
+        "sessionStart": "2025-07-26T15:56:06.779Z",
+        "sessionEnd": "2025-07-26T16:03:00.666Z",
+        "requestsInSession": 0,
+        "reason": "Rate limit reached",
+        "date": "26/07/2025",
+        "time": "16:03:00"
+      },
+      {
+        "sessionStart": "2025-07-26T15:56:06.779Z",
+        "sessionEnd": "2025-07-26T16:03:07.779Z",
+        "requestsInSession": 0,
+        "reason": "Rate limit reached",
+        "date": "26/07/2025",
+        "time": "16:03:07"
+      },
+      {
+        "sessionStart": "2025-07-26T15:56:06.779Z",
+        "sessionEnd": "2025-07-26T16:03:13.856Z",
+        "requestsInSession": 0,
+        "reason": "Rate limit reached",
+        "date": "26/07/2025",
+        "time": "16:03:13"
+      },
+      {
+        "sessionStart": "2025-07-26T15:56:06.779Z",
+        "sessionEnd": "2025-07-26T16:03:21.002Z",
+        "requestsInSession": 0,
+        "reason": "Rate limit reached",
+        "date": "26/07/2025",
+        "time": "16:03:21"
+      },
+      {
+        "sessionStart": "2025-07-26T15:56:06.779Z",
+        "sessionEnd": "2025-07-26T16:03:28.227Z",
+        "requestsInSession": 0,
+        "reason": "Rate limit reached",
+        "date": "26/07/2025",
+        "time": "16:03:28"
+      },
+      {
+        "sessionStart": "2025-07-26T15:56:06.779Z",
+        "sessionEnd": "2025-07-26T16:03:35.353Z",
+        "requestsInSession": 0,
+        "reason": "Rate limit reached",
+        "date": "26/07/2025",
+        "time": "16:03:35"
+      },
+      {
+        "sessionStart": "2025-07-26T15:56:06.779Z",
+        "sessionEnd": "2025-07-26T16:03:42.507Z",
+        "requestsInSession": 0,
+        "reason": "Rate limit reached",
+        "date": "26/07/2025",
+        "time": "16:03:42"
+      },
+      {
+        "sessionStart": "2025-07-26T15:56:06.779Z",
+        "sessionEnd": "2025-07-26T16:03:49.601Z",
+        "requestsInSession": 0,
+        "reason": "Rate limit reached",
+        "date": "26/07/2025",
+        "time": "16:03:49"
+      },
+      {
+        "sessionStart": "2025-07-26T15:56:06.779Z",
+        "sessionEnd": "2025-07-26T16:03:56.824Z",
+        "requestsInSession": 0,
+        "reason": "Rate limit reached",
+        "date": "26/07/2025",
+        "time": "16:03:56"
+      },
+      {
+        "sessionStart": "2025-07-26T15:56:06.779Z",
+        "sessionEnd": "2025-07-26T16:04:04.005Z",
+        "requestsInSession": 0,
+        "reason": "Rate limit reached",
+        "date": "26/07/2025",
+        "time": "16:04:04"
+      },
+      {
+        "sessionStart": "2025-07-26T15:56:06.779Z",
+        "sessionEnd": "2025-07-26T16:04:10.097Z",
+        "requestsInSession": 0,
+        "reason": "Rate limit reached",
+        "date": "26/07/2025",
+        "time": "16:04:10"
+      },
+      {
+        "sessionStart": "2025-07-26T15:56:06.779Z",
+        "sessionEnd": "2025-07-26T16:04:17.323Z",
+        "requestsInSession": 0,
+        "reason": "Rate limit reached",
+        "date": "26/07/2025",
+        "time": "16:04:17"
+      },
+      {
+        "sessionStart": "2025-07-26T15:56:06.779Z",
+        "sessionEnd": "2025-07-26T16:04:24.366Z",
+        "requestsInSession": 0,
+        "reason": "Rate limit reached",
+        "date": "26/07/2025",
+        "time": "16:04:24"
+      },
+      {
+        "sessionStart": "2025-07-26T15:56:06.779Z",
+        "sessionEnd": "2025-07-26T16:04:31.526Z",
+        "requestsInSession": 0,
+        "reason": "Rate limit reached",
+        "date": "26/07/2025",
+        "time": "16:04:31"
+      },
+      {
+        "sessionStart": "2025-07-26T15:56:06.779Z",
+        "sessionEnd": "2025-07-26T16:04:38.627Z",
+        "requestsInSession": 0,
+        "reason": "Rate limit reached",
+        "date": "26/07/2025",
+        "time": "16:04:38"
+      },
+      {
+        "sessionStart": "2025-07-26T15:56:06.779Z",
+        "sessionEnd": "2025-07-26T16:04:45.691Z",
+        "requestsInSession": 0,
+        "reason": "Rate limit reached",
+        "date": "26/07/2025",
+        "time": "16:04:45"
+      },
+      {
+        "sessionStart": "2025-07-26T15:56:06.779Z",
+        "sessionEnd": "2025-07-26T16:04:52.763Z",
+        "requestsInSession": 0,
+        "reason": "Rate limit reached",
+        "date": "26/07/2025",
+        "time": "16:04:52"
+      },
+      {
+        "sessionStart": "2025-07-26T15:56:06.779Z",
+        "sessionEnd": "2025-07-26T16:04:59.920Z",
+        "requestsInSession": 0,
+        "reason": "Rate limit reached",
+        "date": "26/07/2025",
+        "time": "16:04:59"
+      },
+      {
+        "sessionStart": "2025-07-26T15:56:06.779Z",
+        "sessionEnd": "2025-07-26T16:05:06.167Z",
+        "requestsInSession": 0,
+        "reason": "Rate limit reached",
+        "date": "26/07/2025",
+        "time": "16:05:06"
+      },
+      {
+        "sessionStart": "2025-07-26T15:56:06.779Z",
+        "sessionEnd": "2025-07-26T16:05:13.410Z",
+        "requestsInSession": 0,
+        "reason": "Rate limit reached",
+        "date": "26/07/2025",
+        "time": "16:05:13"
+      },
+      {
+        "sessionStart": "2025-07-26T15:56:06.779Z",
+        "sessionEnd": "2025-07-26T16:05:20.592Z",
+        "requestsInSession": 0,
+        "reason": "Rate limit reached",
+        "date": "26/07/2025",
+        "time": "16:05:20"
+      },
+      {
+        "sessionStart": "2025-07-26T15:56:06.779Z",
+        "sessionEnd": "2025-07-26T16:05:27.847Z",
+        "requestsInSession": 0,
+        "reason": "Rate limit reached",
+        "date": "26/07/2025",
+        "time": "16:05:27"
+      },
+      {
+        "sessionStart": "2025-07-26T15:56:06.779Z",
+        "sessionEnd": "2025-07-26T16:05:35.148Z",
+        "requestsInSession": 0,
+        "reason": "Rate limit reached",
+        "date": "26/07/2025",
+        "time": "16:05:35"
+      },
+      {
+        "sessionStart": "2025-07-26T15:56:06.779Z",
+        "sessionEnd": "2025-07-26T16:05:42.409Z",
+        "requestsInSession": 0,
+        "reason": "Rate limit reached",
+        "date": "26/07/2025",
+        "time": "16:05:42"
+      },
+      {
+        "sessionStart": "2025-07-26T15:56:06.779Z",
+        "sessionEnd": "2025-07-26T16:05:49.691Z",
+        "requestsInSession": 0,
+        "reason": "Rate limit reached",
+        "date": "26/07/2025",
+        "time": "16:05:49"
+      },
+      {
+        "sessionStart": "2025-07-26T15:56:06.779Z",
+        "sessionEnd": "2025-07-26T16:05:56.959Z",
+        "requestsInSession": 0,
+        "reason": "Rate limit reached",
+        "date": "26/07/2025",
+        "time": "16:05:56"
+      },
+      {
+        "sessionStart": "2025-07-26T15:56:06.779Z",
+        "sessionEnd": "2025-07-26T16:06:03.066Z",
+        "requestsInSession": 0,
+        "reason": "Rate limit reached",
+        "date": "26/07/2025",
+        "time": "16:06:03"
+      },
+      {
+        "sessionStart": "2025-07-26T15:56:06.779Z",
+        "sessionEnd": "2025-07-26T16:06:10.392Z",
+        "requestsInSession": 0,
+        "reason": "Rate limit reached",
+        "date": "26/07/2025",
+        "time": "16:06:10"
+      },
+      {
+        "sessionStart": "2025-07-26T15:56:06.779Z",
+        "sessionEnd": "2025-07-26T16:06:17.636Z",
+        "requestsInSession": 0,
+        "reason": "Rate limit reached",
+        "date": "26/07/2025",
+        "time": "16:06:17"
+      },
+      {
+        "sessionStart": "2025-07-26T15:56:06.779Z",
+        "sessionEnd": "2025-07-26T16:06:24.789Z",
+        "requestsInSession": 0,
+        "reason": "Rate limit reached",
+        "date": "26/07/2025",
+        "time": "16:06:24"
+      },
+      {
+        "sessionStart": "2025-07-26T15:56:06.779Z",
+        "sessionEnd": "2025-07-26T16:06:32.049Z",
+        "requestsInSession": 0,
+        "reason": "Rate limit reached",
+        "date": "26/07/2025",
+        "time": "16:06:32"
+      },
+      {
+        "sessionStart": "2025-07-26T15:56:06.779Z",
+        "sessionEnd": "2025-07-26T16:06:39.196Z",
+        "requestsInSession": 0,
+        "reason": "Rate limit reached",
+        "date": "26/07/2025",
+        "time": "16:06:39"
+      },
+      {
+        "sessionStart": "2025-07-26T15:56:06.779Z",
+        "sessionEnd": "2025-07-26T16:06:46.335Z",
+        "requestsInSession": 0,
+        "reason": "Rate limit reached",
+        "date": "26/07/2025",
+        "time": "16:06:46"
+      },
+      {
+        "sessionStart": "2025-07-26T15:56:06.779Z",
+        "sessionEnd": "2025-07-26T16:06:53.482Z",
+        "requestsInSession": 0,
+        "reason": "Rate limit reached",
+        "date": "26/07/2025",
+        "time": "16:06:53"
+      },
+      {
+        "sessionStart": "2025-07-26T15:56:06.779Z",
+        "sessionEnd": "2025-07-26T16:06:59.628Z",
+        "requestsInSession": 0,
+        "reason": "Rate limit reached",
+        "date": "26/07/2025",
+        "time": "16:06:59"
+      },
+      {
+        "sessionStart": "2025-07-26T15:56:06.779Z",
+        "sessionEnd": "2025-07-26T16:07:06.707Z",
+        "requestsInSession": 0,
+        "reason": "Rate limit reached",
+        "date": "26/07/2025",
+        "time": "16:07:06"
+      },
+      {
+        "sessionStart": "2025-07-26T15:56:06.779Z",
+        "sessionEnd": "2025-07-26T16:07:13.964Z",
+        "requestsInSession": 0,
+        "reason": "Rate limit reached",
+        "date": "26/07/2025",
+        "time": "16:07:13"
+      },
+      {
+        "sessionStart": "2025-07-26T15:56:06.779Z",
+        "sessionEnd": "2025-07-26T16:07:21.131Z",
+        "requestsInSession": 0,
+        "reason": "Rate limit reached",
+        "date": "26/07/2025",
+        "time": "16:07:21"
+      },
+      {
+        "sessionStart": "2025-07-26T15:56:06.779Z",
+        "sessionEnd": "2025-07-26T16:07:28.312Z",
+        "requestsInSession": 0,
+        "reason": "Rate limit reached",
+        "date": "26/07/2025",
+        "time": "16:07:28"
+      },
+      {
+        "sessionStart": "2025-07-26T15:56:06.779Z",
+        "sessionEnd": "2025-07-26T16:07:35.455Z",
+        "requestsInSession": 0,
+        "reason": "Rate limit reached",
+        "date": "26/07/2025",
+        "time": "16:07:35"
+      },
+      {
+        "sessionStart": "2025-07-26T15:56:06.779Z",
+        "sessionEnd": "2025-07-26T16:07:42.555Z",
+        "requestsInSession": 0,
+        "reason": "Rate limit reached",
+        "date": "26/07/2025",
+        "time": "16:07:42"
+      },
+      {
+        "sessionStart": "2025-07-26T15:56:06.779Z",
+        "sessionEnd": "2025-07-26T16:07:49.765Z",
+        "requestsInSession": 0,
+        "reason": "Rate limit reached",
+        "date": "26/07/2025",
+        "time": "16:07:49"
+      },
+      {
+        "sessionStart": "2025-07-26T15:56:06.779Z",
+        "sessionEnd": "2025-07-26T16:07:55.913Z",
+        "requestsInSession": 0,
+        "reason": "Rate limit reached",
+        "date": "26/07/2025",
+        "time": "16:07:55"
+      },
+      {
+        "sessionStart": "2025-07-26T15:56:06.779Z",
+        "sessionEnd": "2025-07-26T16:08:03.093Z",
+        "requestsInSession": 0,
+        "reason": "Rate limit reached",
+        "date": "26/07/2025",
+        "time": "16:08:03"
+      },
+      {
+        "sessionStart": "2025-07-26T15:56:06.779Z",
+        "sessionEnd": "2025-07-26T16:08:10.269Z",
+        "requestsInSession": 0,
+        "reason": "Rate limit reached",
+        "date": "26/07/2025",
+        "time": "16:08:10"
+      },
+      {
+        "sessionStart": "2025-07-26T15:56:06.779Z",
+        "sessionEnd": "2025-07-26T16:08:17.422Z",
+        "requestsInSession": 0,
+        "reason": "Rate limit reached",
+        "date": "26/07/2025",
+        "time": "16:08:17"
+      },
+      {
+        "sessionStart": "2025-07-26T15:56:06.779Z",
+        "sessionEnd": "2025-07-26T16:08:24.620Z",
+        "requestsInSession": 0,
+        "reason": "Rate limit reached",
+        "date": "26/07/2025",
+        "time": "16:08:24"
+      },
+      {
+        "sessionStart": "2025-07-26T15:56:06.779Z",
+        "sessionEnd": "2025-07-26T16:08:31.835Z",
+        "requestsInSession": 0,
+        "reason": "Rate limit reached",
+        "date": "26/07/2025",
+        "time": "16:08:31"
+      },
+      {
+        "sessionStart": "2025-07-26T15:56:06.779Z",
+        "sessionEnd": "2025-07-26T16:08:39.204Z",
+        "requestsInSession": 0,
+        "reason": "Rate limit reached",
+        "date": "26/07/2025",
+        "time": "16:08:39"
+      },
+      {
+        "sessionStart": "2025-07-26T15:56:06.779Z",
+        "sessionEnd": "2025-07-26T16:08:46.386Z",
+        "requestsInSession": 0,
+        "reason": "Rate limit reached",
+        "date": "26/07/2025",
+        "time": "16:08:46"
+      },
+      {
+        "sessionStart": "2025-07-26T15:56:06.779Z",
+        "sessionEnd": "2025-07-26T16:08:52.576Z",
+        "requestsInSession": 0,
+        "reason": "Rate limit reached",
+        "date": "26/07/2025",
+        "time": "16:08:52"
+      },
+      {
+        "sessionStart": "2025-07-26T15:56:06.779Z",
+        "sessionEnd": "2025-07-26T16:08:59.846Z",
+        "requestsInSession": 0,
+        "reason": "Rate limit reached",
+        "date": "26/07/2025",
+        "time": "16:08:59"
+      },
+      {
+        "sessionStart": "2025-07-26T15:56:06.779Z",
+        "sessionEnd": "2025-07-26T16:09:07.015Z",
+        "requestsInSession": 0,
+        "reason": "Rate limit reached",
+        "date": "26/07/2025",
+        "time": "16:09:07"
+      },
+      {
+        "sessionStart": "2025-07-26T15:56:06.779Z",
+        "sessionEnd": "2025-07-26T16:09:14.175Z",
+        "requestsInSession": 0,
+        "reason": "Rate limit reached",
+        "date": "26/07/2025",
+        "time": "16:09:14"
+      },
+      {
+        "sessionStart": "2025-07-26T15:56:06.779Z",
+        "sessionEnd": "2025-07-26T16:09:21.250Z",
+        "requestsInSession": 0,
+        "reason": "Rate limit reached",
+        "date": "26/07/2025",
+        "time": "16:09:21"
+      },
+      {
+        "sessionStart": "2025-07-26T15:56:06.779Z",
+        "sessionEnd": "2025-07-26T16:09:28.287Z",
+        "requestsInSession": 0,
+        "reason": "Rate limit reached",
+        "date": "26/07/2025",
+        "time": "16:09:28"
+      },
+      {
+        "sessionStart": "2025-07-26T15:56:06.779Z",
+        "sessionEnd": "2025-07-26T16:09:35.484Z",
+        "requestsInSession": 0,
+        "reason": "Rate limit reached",
+        "date": "26/07/2025",
+        "time": "16:09:35"
+      },
+      {
+        "sessionStart": "2025-07-26T15:56:06.779Z",
+        "sessionEnd": "2025-07-26T16:09:42.956Z",
+        "requestsInSession": 0,
+        "reason": "Rate limit reached",
+        "date": "26/07/2025",
+        "time": "16:09:42"
+      },
+      {
+        "sessionStart": "2025-07-26T15:56:06.779Z",
+        "sessionEnd": "2025-07-26T16:09:49.045Z",
+        "requestsInSession": 0,
+        "reason": "Rate limit reached",
+        "date": "26/07/2025",
+        "time": "16:09:49"
+      },
+      {
+        "sessionStart": "2025-07-26T15:56:06.779Z",
+        "sessionEnd": "2025-07-26T16:09:56.382Z",
+        "requestsInSession": 0,
+        "reason": "Rate limit reached",
+        "date": "26/07/2025",
+        "time": "16:09:56"
+      },
+      {
+        "sessionStart": "2025-07-26T15:56:06.779Z",
+        "sessionEnd": "2025-07-26T16:10:03.474Z",
+        "requestsInSession": 0,
+        "reason": "Rate limit reached",
+        "date": "26/07/2025",
+        "time": "16:10:03"
+      },
+      {
+        "sessionStart": "2025-07-26T15:56:06.779Z",
+        "sessionEnd": "2025-07-26T16:10:10.746Z",
+        "requestsInSession": 0,
+        "reason": "Rate limit reached",
+        "date": "26/07/2025",
+        "time": "16:10:10"
+      },
+      {
+        "sessionStart": "2025-07-26T15:56:06.779Z",
+        "sessionEnd": "2025-07-26T16:10:17.892Z",
+        "requestsInSession": 0,
+        "reason": "Rate limit reached",
+        "date": "26/07/2025",
+        "time": "16:10:17"
+      },
+      {
+        "sessionStart": "2025-07-26T15:56:06.779Z",
+        "sessionEnd": "2025-07-26T16:10:25.003Z",
+        "requestsInSession": 0,
+        "reason": "Rate limit reached",
+        "date": "26/07/2025",
+        "time": "16:10:25"
+      },
+      {
+        "sessionStart": "2025-07-26T15:56:06.779Z",
+        "sessionEnd": "2025-07-26T16:10:32.114Z",
+        "requestsInSession": 0,
+        "reason": "Rate limit reached",
+        "date": "26/07/2025",
+        "time": "16:10:32"
+      },
+      {
+        "sessionStart": "2025-07-26T15:56:06.779Z",
+        "sessionEnd": "2025-07-26T16:10:39.226Z",
+        "requestsInSession": 0,
+        "reason": "Rate limit reached",
+        "date": "26/07/2025",
+        "time": "16:10:39"
+      }
+    ]
+  }
+}
