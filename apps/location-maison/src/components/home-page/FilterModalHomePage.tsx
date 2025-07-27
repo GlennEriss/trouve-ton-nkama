@@ -315,7 +315,7 @@ export const FilterModalHomePage = () => {
                     <div className="space-y-6">
                         {/* Type de propriété */}
                         <div className="space-y-3">
-                            <h1 className="text-lg mb-1 text-[#1FA89B] font-bold">Type de propriété</h1>
+                            <h1 className="text-lg mb-1 text-[#1FA89B] font-bold">Type d'annonces</h1>
                             <div className="flex flex-wrap gap-2">
                                 {sortedTypePropertyList.map(type => {
                                     const sel = localTypes.includes(type.value);
