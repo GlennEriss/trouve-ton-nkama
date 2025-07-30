@@ -1,0 +1,2476 @@
+[
+    {
+      "facebookUrl": "https://www.facebook.com/groups/4264469556912052/",
+      "text": "",
+      "user": {
+        "id": "pfbid032qkhwtbXgEyquGDEpQzmD4bpLf7DEsGCjWswJdNC76NrokiRNJLw7g8Ay4jTUWSpl",
+        "name": "Gauthier Immo"
+      },
+      "likesCount": 0,
+      "commentsCount": 0
+    },
+    {
+      "facebookUrl": "https://www.facebook.com/groups/4264469556912052/",
+      "text": "",
+      "user": {
+        "id": "pfbid032qkhwtbXgEyquGDEpQzmD4bpLf7DEsGCjWswJdNC76NrokiRNJLw7g8Ay4jTUWSpl",
+        "name": "Gauthier Immo"
+      },
+      "likesCount": 0,
+      "commentsCount": 0
+    },
+    {
+      "facebookUrl": "https://www.facebook.com/groups/4264469556912052/",
+      "text": "Maison à vendre a akanda, derrière le marché du premier campement.\n3 chambres, 2 salles de bains, Salon, cuisine, terrasse.\nPrix : 33.000.000f\nContacts : 077933932/ 066100817.\nAgent immobilier",
+      "attachments": [
+        {
+          "mediaset_token": "pcb.31539340565664916",
+          "url": "https://www.facebook.com/media/set/?set=pcb.31539340565664916&type=1",
+          "comet_product_tag_feed_overlay_renderer": null
+        },
+        {
+          "thumbnail": "https://scontent-fra5-1.xx.fbcdn.net/v/t39.30808-6/518138578_1411725013371057_6857521701270325247_n.jpg?stp=dst-jpg_s600x600_tt6&_nc_cat=110&ccb=1-7&_nc_sid=aa7b47&_nc_ohc=39BweT5abWoQ7kNvwGBeDB7&_nc_oc=AdmLmJMJ0IWR9o8y2OvPJtm4PjOogtd2gLfjfXumMCk1anBuRalA_iTX64Wed68XBbw&_nc_zt=23&_nc_ht=scontent-fra5-1.xx&_nc_gid=Q91j30N4y4skAsb--VRADA&oh=00_AfQenoj36oYVPa0AmVj7gPUuctFKsUqagmWKv3fr_5h1aw&oe=688D7B26",
+          "__typename": "Photo",
+          "is_playable": false,
+          "image": {
+            "uri": "https://scontent-fra5-1.xx.fbcdn.net/v/t39.30808-6/518138578_1411725013371057_6857521701270325247_n.jpg?stp=dst-jpg_s600x600_tt6&_nc_cat=110&ccb=1-7&_nc_sid=aa7b47&_nc_ohc=39BweT5abWoQ7kNvwGBeDB7&_nc_oc=AdmLmJMJ0IWR9o8y2OvPJtm4PjOogtd2gLfjfXumMCk1anBuRalA_iTX64Wed68XBbw&_nc_zt=23&_nc_ht=scontent-fra5-1.xx&_nc_gid=Q91j30N4y4skAsb--VRADA&oh=00_AfQenoj36oYVPa0AmVj7gPUuctFKsUqagmWKv3fr_5h1aw&oe=688D7B26",
+            "height": 600,
+            "width": 337
+          },
+          "id": "1411725006704391",
+          "__isMedia": "Photo",
+          "photo_cix_screen": null,
+          "copyright_banner_info": null,
+          "owner": {
+            "__typename": "User",
+            "id": "pfbid032qkhwtbXgEyquGDEpQzmD4bpLf7DEsGCjWswJdNC76NrokiRNJLw7g8Ay4jTUWSpl"
+          },
+          "ocrText": "May be an image of lighting, living room and indoors"
+        },
+        {
+          "thumbnail": "https://scontent-fra3-1.xx.fbcdn.net/v/t39.30808-6/515070038_1411725000037725_1738985404534241085_n.jpg?stp=dst-jpg_s600x600_tt6&_nc_cat=108&ccb=1-7&_nc_sid=aa7b47&_nc_ohc=gLCmnTY3TqoQ7kNvwE0A74d&_nc_oc=AdkR-oB2nI6mkrqVzopv7gSSH8-jccxkXfsY23g4znDObGqJTlr_6zN3szhNLKYrTe8&_nc_zt=23&_nc_ht=scontent-fra3-1.xx&_nc_gid=Q91j30N4y4skAsb--VRADA&oh=00_AfQADlw-BKrq0N0b7BLxv2KtiA7dAOmNozRgdhY32Kh14Q&oe=688D6963",
+          "__typename": "Photo",
+          "is_playable": false,
+          "image": {
+            "uri": "https://scontent-fra3-1.xx.fbcdn.net/v/t39.30808-6/515070038_1411725000037725_1738985404534241085_n.jpg?stp=dst-jpg_s600x600_tt6&_nc_cat=108&ccb=1-7&_nc_sid=aa7b47&_nc_ohc=gLCmnTY3TqoQ7kNvwE0A74d&_nc_oc=AdkR-oB2nI6mkrqVzopv7gSSH8-jccxkXfsY23g4znDObGqJTlr_6zN3szhNLKYrTe8&_nc_zt=23&_nc_ht=scontent-fra3-1.xx&_nc_gid=Q91j30N4y4skAsb--VRADA&oh=00_AfQADlw-BKrq0N0b7BLxv2KtiA7dAOmNozRgdhY32Kh14Q&oe=688D6963",
+            "height": 600,
+            "width": 337
+          },
+          "id": "1411724983371060",
+          "__isMedia": "Photo",
+          "photo_cix_screen": null,
+          "copyright_banner_info": null,
+          "owner": {
+            "__typename": "User",
+            "id": "pfbid032qkhwtbXgEyquGDEpQzmD4bpLf7DEsGCjWswJdNC76NrokiRNJLw7g8Ay4jTUWSpl"
+          },
+          "ocrText": "May be an image of living room"
+        },
+        {
+          "thumbnail": "https://scontent-fra5-2.xx.fbcdn.net/v/t39.30808-6/514412370_1411725066704385_3824261868623484883_n.jpg?stp=dst-jpg_s600x600_tt6&_nc_cat=107&ccb=1-7&_nc_sid=aa7b47&_nc_ohc=BtxJ75XZk48Q7kNvwEIaiH7&_nc_oc=Adl7J_pVWLhWfcIcMK1sV8lg2j2VTXXlhW-6nCxtIKjrstooVB3RBO5I9qnxl90ukSc&_nc_zt=23&_nc_ht=scontent-fra5-2.xx&_nc_gid=Q91j30N4y4skAsb--VRADA&oh=00_AfR0KsMAFXZ1tjlkpjiCmM9wRhHyMhxs5zONF9VMdeIA3w&oe=688D7AE7",
+          "__typename": "Photo",
+          "is_playable": false,
+          "image": {
+            "uri": "https://scontent-fra5-2.xx.fbcdn.net/v/t39.30808-6/514412370_1411725066704385_3824261868623484883_n.jpg?stp=dst-jpg_s600x600_tt6&_nc_cat=107&ccb=1-7&_nc_sid=aa7b47&_nc_ohc=BtxJ75XZk48Q7kNvwEIaiH7&_nc_oc=Adl7J_pVWLhWfcIcMK1sV8lg2j2VTXXlhW-6nCxtIKjrstooVB3RBO5I9qnxl90ukSc&_nc_zt=23&_nc_ht=scontent-fra5-2.xx&_nc_gid=Q91j30N4y4skAsb--VRADA&oh=00_AfR0KsMAFXZ1tjlkpjiCmM9wRhHyMhxs5zONF9VMdeIA3w&oe=688D7AE7",
+            "height": 600,
+            "width": 337
+          },
+          "id": "1411725063371052",
+          "__isMedia": "Photo",
+          "photo_cix_screen": null,
+          "copyright_banner_info": null,
+          "owner": {
+            "__typename": "User",
+            "id": "pfbid032qkhwtbXgEyquGDEpQzmD4bpLf7DEsGCjWswJdNC76NrokiRNJLw7g8Ay4jTUWSpl"
+          },
+          "ocrText": "No photo description available."
+        },
+        {
+          "thumbnail": "https://scontent-fra3-2.xx.fbcdn.net/v/t39.30808-6/525060080_1411725010037724_6251267519713750278_n.jpg?stp=dst-jpg_s600x600_tt6&_nc_cat=104&ccb=1-7&_nc_sid=aa7b47&_nc_ohc=X86BEe1rcZMQ7kNvwHtlp1x&_nc_oc=AdmYn9L_CfkOkaDJl5ZzFkyqZ1BiqwZXa9dTfwXjvpxxV1oKARE6mhTLaRjQiU6wPFo&_nc_zt=23&_nc_ht=scontent-fra3-2.xx&_nc_gid=Q91j30N4y4skAsb--VRADA&oh=00_AfR9RruHx1kdTtRrQDPO1nbyw1eDiw4aPY1zr1LzlHYKjQ&oe=688D726D",
+          "__typename": "Photo",
+          "is_playable": false,
+          "image": {
+            "uri": "https://scontent-fra3-2.xx.fbcdn.net/v/t39.30808-6/525060080_1411725010037724_6251267519713750278_n.jpg?stp=dst-jpg_s600x600_tt6&_nc_cat=104&ccb=1-7&_nc_sid=aa7b47&_nc_ohc=X86BEe1rcZMQ7kNvwHtlp1x&_nc_oc=AdmYn9L_CfkOkaDJl5ZzFkyqZ1BiqwZXa9dTfwXjvpxxV1oKARE6mhTLaRjQiU6wPFo&_nc_zt=23&_nc_ht=scontent-fra3-2.xx&_nc_gid=Q91j30N4y4skAsb--VRADA&oh=00_AfR9RruHx1kdTtRrQDPO1nbyw1eDiw4aPY1zr1LzlHYKjQ&oe=688D726D",
+            "height": 600,
+            "width": 337
+          },
+          "id": "1411724996704392",
+          "__isMedia": "Photo",
+          "photo_cix_screen": null,
+          "copyright_banner_info": null,
+          "owner": {
+            "__typename": "User",
+            "id": "pfbid032qkhwtbXgEyquGDEpQzmD4bpLf7DEsGCjWswJdNC76NrokiRNJLw7g8Ay4jTUWSpl"
+          },
+          "ocrText": "No photo description available."
+        },
+        {
+          "thumbnail": "https://scontent-fra5-1.xx.fbcdn.net/v/t39.30808-6/515490272_1411725096704382_5268327931130343676_n.jpg?stp=dst-jpg_s600x600_tt6&_nc_cat=100&ccb=1-7&_nc_sid=aa7b47&_nc_ohc=LSQKcaqyZm4Q7kNvwFGrGQj&_nc_oc=AdmBseJAxFRJ-YmtisqZO7xusQllXqWDJI-LsL_8GV5pS6rCIU_FDvdnOQOHxwUcEq4&_nc_zt=23&_nc_ht=scontent-fra5-1.xx&_nc_gid=Q91j30N4y4skAsb--VRADA&oh=00_AfT0cpUTeFMELn7oBq-Gu-lX35HzDqLZhKszCT34ffyULg&oe=688D5738",
+          "__typename": "Photo",
+          "is_playable": false,
+          "image": {
+            "uri": "https://scontent-fra5-1.xx.fbcdn.net/v/t39.30808-6/515490272_1411725096704382_5268327931130343676_n.jpg?stp=dst-jpg_s600x600_tt6&_nc_cat=100&ccb=1-7&_nc_sid=aa7b47&_nc_ohc=LSQKcaqyZm4Q7kNvwFGrGQj&_nc_oc=AdmBseJAxFRJ-YmtisqZO7xusQllXqWDJI-LsL_8GV5pS6rCIU_FDvdnOQOHxwUcEq4&_nc_zt=23&_nc_ht=scontent-fra5-1.xx&_nc_gid=Q91j30N4y4skAsb--VRADA&oh=00_AfT0cpUTeFMELn7oBq-Gu-lX35HzDqLZhKszCT34ffyULg&oe=688D5738",
+            "height": 600,
+            "width": 337
+          },
+          "id": "1411725083371050",
+          "__isMedia": "Photo",
+          "photo_cix_screen": null,
+          "copyright_banner_info": null,
+          "owner": {
+            "__typename": "User",
+            "id": "pfbid032qkhwtbXgEyquGDEpQzmD4bpLf7DEsGCjWswJdNC76NrokiRNJLw7g8Ay4jTUWSpl"
+          },
+          "ocrText": "No photo description available."
+        }
+      ],
+      "user": {
+        "id": "pfbid032qkhwtbXgEyquGDEpQzmD4bpLf7DEsGCjWswJdNC76NrokiRNJLw7g8Ay4jTUWSpl",
+        "name": "Gauthier Immo"
+      },
+      "likesCount": 0,
+      "commentsCount": 0
+    },
+    {
+      "facebookUrl": "https://www.facebook.com/groups/4264469556912052/",
+      "text": "",
+      "user": {
+        "id": "pfbid032qkhwtbXgEyquGDEpQzmD4bpLf7DEsGCjWswJdNC76NrokiRNJLw7g8Ay4jTUWSpl",
+        "name": "Gauthier Immo"
+      },
+      "likesCount": 0,
+      "commentsCount": 0
+    },
+    {
+      "facebookUrl": "https://www.facebook.com/groups/4264469556912052/",
+      "text": "Appartement à louer à ambowè, en bordure de route.\n2 chambres, 2 salles de bains, Salon, cuisine, grande terrasse.\nPrix : 230.000f\nContacts : 077933932/ 066100817.\nAgent immobilier",
+      "attachments": [
+        {
+          "mediaset_token": "pcb.31537749705824002",
+          "url": "https://www.facebook.com/media/set/?set=pcb.31537749705824002&type=1",
+          "comet_product_tag_feed_overlay_renderer": null
+        },
+        {
+          "thumbnail": "https://scontent-mad2-1.xx.fbcdn.net/v/t39.30808-6/522797404_1411640473379511_640612163052689695_n.jpg?stp=dst-jpg_s600x600_tt6&_nc_cat=111&ccb=1-7&_nc_sid=aa7b47&_nc_ohc=539slWIRx3gQ7kNvwENRCw-&_nc_oc=AdmDicQEjMu5pI2GXePsyDBKnsYq74auqABSbOFLO8NQ2Sjfkln68ErUgQW8EcgNI5I&_nc_zt=23&_nc_ht=scontent-mad2-1.xx&_nc_gid=f4Ryj-9MIex6cPtOoUUSTQ&oh=00_AfT4AwGCXlmUfCqN2U8hammMUgI3AE9wPzaOXFsk-hys_A&oe=688D6217",
+          "__typename": "Photo",
+          "is_playable": false,
+          "image": {
+            "uri": "https://scontent-mad2-1.xx.fbcdn.net/v/t39.30808-6/522797404_1411640473379511_640612163052689695_n.jpg?stp=dst-jpg_s600x600_tt6&_nc_cat=111&ccb=1-7&_nc_sid=aa7b47&_nc_ohc=539slWIRx3gQ7kNvwENRCw-&_nc_oc=AdmDicQEjMu5pI2GXePsyDBKnsYq74auqABSbOFLO8NQ2Sjfkln68ErUgQW8EcgNI5I&_nc_zt=23&_nc_ht=scontent-mad2-1.xx&_nc_gid=f4Ryj-9MIex6cPtOoUUSTQ&oh=00_AfT4AwGCXlmUfCqN2U8hammMUgI3AE9wPzaOXFsk-hys_A&oe=688D6217",
+            "height": 600,
+            "width": 600
+          },
+          "id": "1411640456712846",
+          "__isMedia": "Photo",
+          "photo_cix_screen": null,
+          "copyright_banner_info": null,
+          "owner": {
+            "__typename": "User",
+            "id": "pfbid032qkhwtbXgEyquGDEpQzmD4bpLf7DEsGCjWswJdNC76NrokiRNJLw7g8Ay4jTUWSpl"
+          },
+          "ocrText": "No photo description available."
+        },
+        {
+          "thumbnail": "https://scontent-mad1-1.xx.fbcdn.net/v/t39.30808-6/525654848_1411640520046173_2054662229797288294_n.jpg?stp=dst-jpg_s600x600_tt6&_nc_cat=103&ccb=1-7&_nc_sid=aa7b47&_nc_ohc=c5OncE9e_BEQ7kNvwEP_VuZ&_nc_oc=AdmAZWrJeIAJRu09i6ItJ7jWEtUR1ODf1XzBy00DYWC7RXhrKc_E6St6sRzyKo3bsvg&_nc_zt=23&_nc_ht=scontent-mad1-1.xx&_nc_gid=f4Ryj-9MIex6cPtOoUUSTQ&oh=00_AfSuarUBZkocQC4jjxXN_Qu5REOn2m8Vq3ywKni3TOCpYg&oe=688D53A4",
+          "__typename": "Photo",
+          "is_playable": false,
+          "image": {
+            "uri": "https://scontent-mad1-1.xx.fbcdn.net/v/t39.30808-6/525654848_1411640520046173_2054662229797288294_n.jpg?stp=dst-jpg_s600x600_tt6&_nc_cat=103&ccb=1-7&_nc_sid=aa7b47&_nc_ohc=c5OncE9e_BEQ7kNvwEP_VuZ&_nc_oc=AdmAZWrJeIAJRu09i6ItJ7jWEtUR1ODf1XzBy00DYWC7RXhrKc_E6St6sRzyKo3bsvg&_nc_zt=23&_nc_ht=scontent-mad1-1.xx&_nc_gid=f4Ryj-9MIex6cPtOoUUSTQ&oh=00_AfSuarUBZkocQC4jjxXN_Qu5REOn2m8Vq3ywKni3TOCpYg&oe=688D53A4",
+            "height": 600,
+            "width": 600
+          },
+          "id": "1411640483379510",
+          "__isMedia": "Photo",
+          "photo_cix_screen": null,
+          "copyright_banner_info": null,
+          "owner": {
+            "__typename": "User",
+            "id": "pfbid032qkhwtbXgEyquGDEpQzmD4bpLf7DEsGCjWswJdNC76NrokiRNJLw7g8Ay4jTUWSpl"
+          },
+          "ocrText": "No photo description available."
+        },
+        {
+          "thumbnail": "https://scontent-mad1-1.xx.fbcdn.net/v/t39.30808-6/514285372_1411640533379505_6257946246121586199_n.jpg?stp=dst-jpg_s600x600_tt6&_nc_cat=101&ccb=1-7&_nc_sid=aa7b47&_nc_ohc=ccxaYw3hX7wQ7kNvwHIy0Bv&_nc_oc=AdnhpjpsICu1CrwI5ZHW8rhioXljKS5NHh4rIMpIAI9LtVh5ZMGIREwg8ZJnPCotA6A&_nc_zt=23&_nc_ht=scontent-mad1-1.xx&_nc_gid=f4Ryj-9MIex6cPtOoUUSTQ&oh=00_AfRUOwWrDlXK8N4-6_S2Rz3jxUNTMtgfubJfyy3qG0tbCg&oe=688D8701",
+          "__typename": "Photo",
+          "is_playable": false,
+          "image": {
+            "uri": "https://scontent-mad1-1.xx.fbcdn.net/v/t39.30808-6/514285372_1411640533379505_6257946246121586199_n.jpg?stp=dst-jpg_s600x600_tt6&_nc_cat=101&ccb=1-7&_nc_sid=aa7b47&_nc_ohc=ccxaYw3hX7wQ7kNvwHIy0Bv&_nc_oc=AdnhpjpsICu1CrwI5ZHW8rhioXljKS5NHh4rIMpIAI9LtVh5ZMGIREwg8ZJnPCotA6A&_nc_zt=23&_nc_ht=scontent-mad1-1.xx&_nc_gid=f4Ryj-9MIex6cPtOoUUSTQ&oh=00_AfRUOwWrDlXK8N4-6_S2Rz3jxUNTMtgfubJfyy3qG0tbCg&oe=688D8701",
+            "height": 600,
+            "width": 600
+          },
+          "id": "1411640500046175",
+          "__isMedia": "Photo",
+          "photo_cix_screen": null,
+          "copyright_banner_info": null,
+          "owner": {
+            "__typename": "User",
+            "id": "pfbid032qkhwtbXgEyquGDEpQzmD4bpLf7DEsGCjWswJdNC76NrokiRNJLw7g8Ay4jTUWSpl"
+          },
+          "ocrText": "No photo description available."
+        },
+        {
+          "thumbnail": "https://scontent-mad1-1.xx.fbcdn.net/v/t39.30808-6/525086535_1411640526712839_145019811925050646_n.jpg?stp=dst-jpg_s600x600_tt6&_nc_cat=107&ccb=1-7&_nc_sid=aa7b47&_nc_ohc=slFujYQjqLQQ7kNvwEKvBsB&_nc_oc=Adnf_NqqKG97KKEhN3N8AESUKg484lqVRWqAMPUpa-r911Zj54EGBUQn8iTW_--RN7k&_nc_zt=23&_nc_ht=scontent-mad1-1.xx&_nc_gid=f4Ryj-9MIex6cPtOoUUSTQ&oh=00_AfQJ7V8lBxqSr9LHgr-uYLJ6AWzvRYhY5ldiii7dTvuiQA&oe=688D88DD",
+          "__typename": "Photo",
+          "is_playable": false,
+          "image": {
+            "uri": "https://scontent-mad1-1.xx.fbcdn.net/v/t39.30808-6/525086535_1411640526712839_145019811925050646_n.jpg?stp=dst-jpg_s600x600_tt6&_nc_cat=107&ccb=1-7&_nc_sid=aa7b47&_nc_ohc=slFujYQjqLQQ7kNvwEKvBsB&_nc_oc=Adnf_NqqKG97KKEhN3N8AESUKg484lqVRWqAMPUpa-r911Zj54EGBUQn8iTW_--RN7k&_nc_zt=23&_nc_ht=scontent-mad1-1.xx&_nc_gid=f4Ryj-9MIex6cPtOoUUSTQ&oh=00_AfQJ7V8lBxqSr9LHgr-uYLJ6AWzvRYhY5ldiii7dTvuiQA&oe=688D88DD",
+            "height": 600,
+            "width": 600
+          },
+          "id": "1411640503379508",
+          "__isMedia": "Photo",
+          "photo_cix_screen": null,
+          "copyright_banner_info": null,
+          "owner": {
+            "__typename": "User",
+            "id": "pfbid032qkhwtbXgEyquGDEpQzmD4bpLf7DEsGCjWswJdNC76NrokiRNJLw7g8Ay4jTUWSpl"
+          },
+          "ocrText": "No photo description available."
+        },
+        {
+          "thumbnail": "https://scontent-mad2-1.xx.fbcdn.net/v/t39.30808-6/514414640_1411640460046179_8183514833734336624_n.jpg?stp=dst-jpg_s600x600_tt6&_nc_cat=100&ccb=1-7&_nc_sid=aa7b47&_nc_ohc=p2Z_0Ox1cSAQ7kNvwEcamnk&_nc_oc=AdlbOcpArJ_ZIhHGOTl-Qy_xiExCnv--Oa2QLNgLG5xrMilLN6R6wnGD8s6iZnwS3Zo&_nc_zt=23&_nc_ht=scontent-mad2-1.xx&_nc_gid=f4Ryj-9MIex6cPtOoUUSTQ&oh=00_AfTnT78mMgd_Tu5bCw58sqt2HwXwop781gOQafKZFvPdbw&oe=688D6F72",
+          "__typename": "Photo",
+          "is_playable": false,
+          "image": {
+            "uri": "https://scontent-mad2-1.xx.fbcdn.net/v/t39.30808-6/514414640_1411640460046179_8183514833734336624_n.jpg?stp=dst-jpg_s600x600_tt6&_nc_cat=100&ccb=1-7&_nc_sid=aa7b47&_nc_ohc=p2Z_0Ox1cSAQ7kNvwEcamnk&_nc_oc=AdlbOcpArJ_ZIhHGOTl-Qy_xiExCnv--Oa2QLNgLG5xrMilLN6R6wnGD8s6iZnwS3Zo&_nc_zt=23&_nc_ht=scontent-mad2-1.xx&_nc_gid=f4Ryj-9MIex6cPtOoUUSTQ&oh=00_AfTnT78mMgd_Tu5bCw58sqt2HwXwop781gOQafKZFvPdbw&oe=688D6F72",
+            "height": 600,
+            "width": 600
+          },
+          "id": "1411640446712847",
+          "__isMedia": "Photo",
+          "photo_cix_screen": null,
+          "copyright_banner_info": null,
+          "owner": {
+            "__typename": "User",
+            "id": "pfbid032qkhwtbXgEyquGDEpQzmD4bpLf7DEsGCjWswJdNC76NrokiRNJLw7g8Ay4jTUWSpl"
+          },
+          "ocrText": "No photo description available."
+        }
+      ],
+      "user": {
+        "id": "pfbid032qkhwtbXgEyquGDEpQzmD4bpLf7DEsGCjWswJdNC76NrokiRNJLw7g8Ay4jTUWSpl",
+        "name": "Gauthier Immo"
+      },
+      "likesCount": 3,
+      "commentsCount": 0
+    },
+    {
+      "facebookUrl": "https://www.facebook.com/groups/4264469556912052/",
+      "text": "",
+      "user": {
+        "id": "pfbid032qkhwtbXgEyquGDEpQzmD4bpLf7DEsGCjWswJdNC76NrokiRNJLw7g8Ay4jTUWSpl",
+        "name": "Gauthier Immo"
+      },
+      "likesCount": 1,
+      "commentsCount": 0
+    },
+    {
+      "facebookUrl": "https://www.facebook.com/groups/4264469556912052/",
+      "text": "Appartement bon standing à louer à ndzeng ayong, en bordure de route.\n2 chambres, 2 salles de bains, Salon, cuisine, terrasse, parking.\nPrix : 350.000f\nContacts : 077933932/ 066100817.\nAgent immobilier",
+      "attachments": [
+        {
+          "mediaset_token": "pcb.31523898303875809",
+          "url": "https://www.facebook.com/media/set/?set=pcb.31523898303875809&type=1",
+          "comet_product_tag_feed_overlay_renderer": null
+        },
+        {
+          "thumbnail": "https://scontent.fslz12-1.fna.fbcdn.net/v/t39.30808-6/514356411_1410913383452220_344084116900974841_n.jpg?stp=dst-jpg_s600x600_tt6&_nc_cat=110&ccb=1-7&_nc_sid=aa7b47&_nc_ohc=00iIelp6gwMQ7kNvwFYVz-n&_nc_oc=AdmwCqW-30u01EFM9IiDXa7FyEnuwL5v9UtXDvVpzezEpJ5gZ4tPRd4RDBMFaDmUY74&_nc_zt=23&_nc_ht=scontent.fslz12-1.fna&_nc_gid=x_pheEfQCLow91_SO78fLQ&oh=00_AfRABYVYD4zqKRBiktGKhRe5xKq8tsAMCbQJb_cifDyp1g&oe=688D7CEB",
+          "__typename": "Photo",
+          "is_playable": false,
+          "image": {
+            "uri": "https://scontent.fslz12-1.fna.fbcdn.net/v/t39.30808-6/514356411_1410913383452220_344084116900974841_n.jpg?stp=dst-jpg_s600x600_tt6&_nc_cat=110&ccb=1-7&_nc_sid=aa7b47&_nc_ohc=00iIelp6gwMQ7kNvwFYVz-n&_nc_oc=AdmwCqW-30u01EFM9IiDXa7FyEnuwL5v9UtXDvVpzezEpJ5gZ4tPRd4RDBMFaDmUY74&_nc_zt=23&_nc_ht=scontent.fslz12-1.fna&_nc_gid=x_pheEfQCLow91_SO78fLQ&oh=00_AfRABYVYD4zqKRBiktGKhRe5xKq8tsAMCbQJb_cifDyp1g&oe=688D7CEB",
+            "height": 600,
+            "width": 450
+          },
+          "id": "1410913370118888",
+          "__isMedia": "Photo",
+          "photo_cix_screen": null,
+          "copyright_banner_info": null,
+          "owner": {
+            "__typename": "User",
+            "id": "pfbid032qkhwtbXgEyquGDEpQzmD4bpLf7DEsGCjWswJdNC76NrokiRNJLw7g8Ay4jTUWSpl"
+          },
+          "ocrText": "No photo description available."
+        },
+        {
+          "thumbnail": "https://scontent.fslz12-1.fna.fbcdn.net/v/t39.30808-6/518252839_1410913453452213_9045156378171418016_n.jpg?stp=dst-jpg_s600x600_tt6&_nc_cat=108&ccb=1-7&_nc_sid=aa7b47&_nc_ohc=NwiZ7BdDQC4Q7kNvwGFsQD_&_nc_oc=Adl4RQThHJz2KmwiTSwECbWN1pwrGTvBzsAR37QkCfrePRWW3kBlhvAy-kjVbknRfOQ&_nc_zt=23&_nc_ht=scontent.fslz12-1.fna&_nc_gid=x_pheEfQCLow91_SO78fLQ&oh=00_AfT855PP7zsqcxDO-4UryyEgFRfnYtKtI-SDgfaDlu_sRQ&oe=688D87FD",
+          "__typename": "Photo",
+          "is_playable": false,
+          "image": {
+            "uri": "https://scontent.fslz12-1.fna.fbcdn.net/v/t39.30808-6/518252839_1410913453452213_9045156378171418016_n.jpg?stp=dst-jpg_s600x600_tt6&_nc_cat=108&ccb=1-7&_nc_sid=aa7b47&_nc_ohc=NwiZ7BdDQC4Q7kNvwGFsQD_&_nc_oc=Adl4RQThHJz2KmwiTSwECbWN1pwrGTvBzsAR37QkCfrePRWW3kBlhvAy-kjVbknRfOQ&_nc_zt=23&_nc_ht=scontent.fslz12-1.fna&_nc_gid=x_pheEfQCLow91_SO78fLQ&oh=00_AfT855PP7zsqcxDO-4UryyEgFRfnYtKtI-SDgfaDlu_sRQ&oe=688D87FD",
+            "height": 600,
+            "width": 450
+          },
+          "id": "1410913443452214",
+          "__isMedia": "Photo",
+          "photo_cix_screen": null,
+          "copyright_banner_info": null,
+          "owner": {
+            "__typename": "User",
+            "id": "pfbid032qkhwtbXgEyquGDEpQzmD4bpLf7DEsGCjWswJdNC76NrokiRNJLw7g8Ay4jTUWSpl"
+          },
+          "ocrText": "May be an image of sink"
+        },
+        {
+          "thumbnail": "https://scontent.fslz12-1.fna.fbcdn.net/v/t39.30808-6/524697862_1410913426785549_2342932053594699771_n.jpg?stp=dst-jpg_s600x600_tt6&_nc_cat=104&ccb=1-7&_nc_sid=aa7b47&_nc_ohc=mFGBdqu0QGoQ7kNvwEpwdzV&_nc_oc=AdlehIljIJZksJhtbStzuoYOv7CEMiFewhhipF69-D_gIh2YIMr6Yx8K9zfNYAHsvwU&_nc_zt=23&_nc_ht=scontent.fslz12-1.fna&_nc_gid=x_pheEfQCLow91_SO78fLQ&oh=00_AfT-mTLO9Nj-kv8abCzXGYtsZf048BpYaIOa-eh7AXJSLA&oe=688D6D5E",
+          "__typename": "Photo",
+          "is_playable": false,
+          "image": {
+            "uri": "https://scontent.fslz12-1.fna.fbcdn.net/v/t39.30808-6/524697862_1410913426785549_2342932053594699771_n.jpg?stp=dst-jpg_s600x600_tt6&_nc_cat=104&ccb=1-7&_nc_sid=aa7b47&_nc_ohc=mFGBdqu0QGoQ7kNvwEpwdzV&_nc_oc=AdlehIljIJZksJhtbStzuoYOv7CEMiFewhhipF69-D_gIh2YIMr6Yx8K9zfNYAHsvwU&_nc_zt=23&_nc_ht=scontent.fslz12-1.fna&_nc_gid=x_pheEfQCLow91_SO78fLQ&oh=00_AfT-mTLO9Nj-kv8abCzXGYtsZf048BpYaIOa-eh7AXJSLA&oe=688D6D5E",
+            "height": 600,
+            "width": 450
+          },
+          "id": "1410913420118883",
+          "__isMedia": "Photo",
+          "photo_cix_screen": null,
+          "copyright_banner_info": null,
+          "owner": {
+            "__typename": "User",
+            "id": "pfbid032qkhwtbXgEyquGDEpQzmD4bpLf7DEsGCjWswJdNC76NrokiRNJLw7g8Ay4jTUWSpl"
+          },
+          "ocrText": "No photo description available."
+        },
+        {
+          "thumbnail": "https://scontent.fslz12-1.fna.fbcdn.net/v/t39.30808-6/521581727_1410913386785553_7570183324794540081_n.jpg?stp=dst-jpg_s600x600_tt6&_nc_cat=105&ccb=1-7&_nc_sid=aa7b47&_nc_ohc=VKJgUVBpZ4UQ7kNvwEVYy5h&_nc_oc=AdmcxJRHnCtxFa940ALJLuT8VYC51KVp_Wazhsbz8A89FQGz8EavOEeuwfNfs2Nbh_U&_nc_zt=23&_nc_ht=scontent.fslz12-1.fna&_nc_gid=x_pheEfQCLow91_SO78fLQ&oh=00_AfTLi1br5SRqaiAwbdGBzd1Oema7uuuymhwfaYiW2ADxQQ&oe=688D8610",
+          "__typename": "Photo",
+          "is_playable": false,
+          "image": {
+            "uri": "https://scontent.fslz12-1.fna.fbcdn.net/v/t39.30808-6/521581727_1410913386785553_7570183324794540081_n.jpg?stp=dst-jpg_s600x600_tt6&_nc_cat=105&ccb=1-7&_nc_sid=aa7b47&_nc_ohc=VKJgUVBpZ4UQ7kNvwEVYy5h&_nc_oc=AdmcxJRHnCtxFa940ALJLuT8VYC51KVp_Wazhsbz8A89FQGz8EavOEeuwfNfs2Nbh_U&_nc_zt=23&_nc_ht=scontent.fslz12-1.fna&_nc_gid=x_pheEfQCLow91_SO78fLQ&oh=00_AfTLi1br5SRqaiAwbdGBzd1Oema7uuuymhwfaYiW2ADxQQ&oe=688D8610",
+            "height": 600,
+            "width": 450
+          },
+          "id": "1410913376785554",
+          "__isMedia": "Photo",
+          "photo_cix_screen": null,
+          "copyright_banner_info": null,
+          "owner": {
+            "__typename": "User",
+            "id": "pfbid032qkhwtbXgEyquGDEpQzmD4bpLf7DEsGCjWswJdNC76NrokiRNJLw7g8Ay4jTUWSpl"
+          },
+          "ocrText": "May be an image of indoors"
+        },
+        {
+          "thumbnail": "https://scontent.fslz12-1.fna.fbcdn.net/v/t39.30808-6/524149916_1410913470118878_7863598368787772272_n.jpg?stp=dst-jpg_s600x600_tt6&_nc_cat=108&ccb=1-7&_nc_sid=aa7b47&_nc_ohc=xRKnyzcdDrEQ7kNvwGeiV7b&_nc_oc=AdmXWHG74PT4fNzLM81X5nuw2QCwnPSrS-UCb6dr_MH4tUlrd933OFA3FRXHclujcLA&_nc_zt=23&_nc_ht=scontent.fslz12-1.fna&_nc_gid=x_pheEfQCLow91_SO78fLQ&oh=00_AfT5KHe5hjwZnlwICMKSr3xAZFtYf__s-ZMlN2Y1fXDnGQ&oe=688D656B",
+          "__typename": "Photo",
+          "is_playable": false,
+          "image": {
+            "uri": "https://scontent.fslz12-1.fna.fbcdn.net/v/t39.30808-6/524149916_1410913470118878_7863598368787772272_n.jpg?stp=dst-jpg_s600x600_tt6&_nc_cat=108&ccb=1-7&_nc_sid=aa7b47&_nc_ohc=xRKnyzcdDrEQ7kNvwGeiV7b&_nc_oc=AdmXWHG74PT4fNzLM81X5nuw2QCwnPSrS-UCb6dr_MH4tUlrd933OFA3FRXHclujcLA&_nc_zt=23&_nc_ht=scontent.fslz12-1.fna&_nc_gid=x_pheEfQCLow91_SO78fLQ&oh=00_AfT5KHe5hjwZnlwICMKSr3xAZFtYf__s-ZMlN2Y1fXDnGQ&oe=688D656B",
+            "height": 600,
+            "width": 450
+          },
+          "id": "1410913460118879",
+          "__isMedia": "Photo",
+          "photo_cix_screen": null,
+          "copyright_banner_info": null,
+          "owner": {
+            "__typename": "User",
+            "id": "pfbid032qkhwtbXgEyquGDEpQzmD4bpLf7DEsGCjWswJdNC76NrokiRNJLw7g8Ay4jTUWSpl"
+          },
+          "ocrText": "No photo description available."
+        }
+      ],
+      "user": {
+        "id": "pfbid032qkhwtbXgEyquGDEpQzmD4bpLf7DEsGCjWswJdNC76NrokiRNJLw7g8Ay4jTUWSpl",
+        "name": "Gauthier Immo"
+      },
+      "likesCount": 0,
+      "commentsCount": 0
+    },
+    {
+      "facebookUrl": "https://www.facebook.com/groups/4264469556912052/",
+      "text": "",
+      "attachments": [
+        {
+          "description": {
+            "delight_ranges": [],
+            "image_ranges": [],
+            "inline_style_ranges": [],
+            "aggregated_ranges": [],
+            "ranges": [],
+            "color_ranges": [],
+            "text": "When this happens, it's usually because the owner only shared it with a small group of people, changed who can see it or it's been deleted."
+          },
+          "title_with_entities": {
+            "delight_ranges": [],
+            "image_ranges": [],
+            "inline_style_ranges": [],
+            "aggregated_ranges": [],
+            "ranges": [],
+            "color_ranges": [],
+            "text": "This content isn't available right now"
+          }
+        }
+      ],
+      "user": {
+        "id": "pfbid032qkhwtbXgEyquGDEpQzmD4bpLf7DEsGCjWswJdNC76NrokiRNJLw7g8Ay4jTUWSpl",
+        "name": "Gauthier Immo"
+      },
+      "likesCount": 1,
+      "commentsCount": 0
+    },
+    {
+      "facebookUrl": "https://www.facebook.com/groups/4264469556912052/",
+      "text": "",
+      "attachments": [
+        {
+          "description": {
+            "delight_ranges": [],
+            "image_ranges": [],
+            "inline_style_ranges": [],
+            "aggregated_ranges": [],
+            "ranges": [],
+            "color_ranges": [],
+            "text": "When this happens, it's usually because the owner only shared it with a small group of people, changed who can see it or it's been deleted."
+          },
+          "title_with_entities": {
+            "delight_ranges": [],
+            "image_ranges": [],
+            "inline_style_ranges": [],
+            "aggregated_ranges": [],
+            "ranges": [],
+            "color_ranges": [],
+            "text": "This content isn't available right now"
+          }
+        }
+      ],
+      "user": {
+        "id": "pfbid032qkhwtbXgEyquGDEpQzmD4bpLf7DEsGCjWswJdNC76NrokiRNJLw7g8Ay4jTUWSpl",
+        "name": "Gauthier Immo"
+      },
+      "likesCount": 0,
+      "commentsCount": 0
+    },
+    {
+      "facebookUrl": "https://www.facebook.com/groups/4264469556912052/",
+      "text": "",
+      "attachments": [
+        {
+          "description": {
+            "delight_ranges": [],
+            "image_ranges": [],
+            "inline_style_ranges": [],
+            "aggregated_ranges": [],
+            "ranges": [],
+            "color_ranges": [],
+            "text": "When this happens, it's usually because the owner only shared it with a small group of people, changed who can see it or it's been deleted."
+          },
+          "title_with_entities": {
+            "delight_ranges": [],
+            "image_ranges": [],
+            "inline_style_ranges": [],
+            "aggregated_ranges": [],
+            "ranges": [],
+            "color_ranges": [],
+            "text": "This content isn't available right now"
+          }
+        }
+      ],
+      "user": {
+        "id": "pfbid032qkhwtbXgEyquGDEpQzmD4bpLf7DEsGCjWswJdNC76NrokiRNJLw7g8Ay4jTUWSpl",
+        "name": "Gauthier Immo"
+      },
+      "likesCount": 0,
+      "commentsCount": 0
+    },
+    {
+      "facebookUrl": "https://www.facebook.com/groups/4264469556912052/",
+      "text": "Box commercial à louer à ndzeng ayong, bordure de route.\nPrix : 250.000f\nContacts : 077933932/ 066100817.\nAgent immobilier",
+      "attachments": [
+        {
+          "mediaset_token": "pcb.31509748621957444",
+          "url": "https://www.facebook.com/media/set/?set=pcb.31509748621957444&type=1",
+          "comet_product_tag_feed_overlay_renderer": null
+        },
+        {
+          "thumbnail": "https://scontent.fcpv12-1.fna.fbcdn.net/v/t39.30808-6/514282634_1410157516861140_4333087734546218648_n.jpg?stp=dst-jpg_s600x600_tt6&_nc_cat=111&ccb=1-7&_nc_sid=aa7b47&_nc_ohc=quBsnvxqi2gQ7kNvwE9FvnJ&_nc_oc=AdmUYoHelMPg5XAUq3QUqRf9ip_jmUSO5ycccAjOPV6GG1W4QK17W61hyMCZxbKMwsc&_nc_zt=23&_nc_ht=scontent.fcpv12-1.fna&_nc_gid=rDd_TymjbGLZPO6JKqN6tw&oh=00_AfQ2JoxMLiqeC5g0fIrJ_fX5Wsqq0aqeZket6x-CixUF1g&oe=688D546E",
+          "__typename": "Photo",
+          "is_playable": false,
+          "image": {
+            "uri": "https://scontent.fcpv12-1.fna.fbcdn.net/v/t39.30808-6/514282634_1410157516861140_4333087734546218648_n.jpg?stp=dst-jpg_s600x600_tt6&_nc_cat=111&ccb=1-7&_nc_sid=aa7b47&_nc_ohc=quBsnvxqi2gQ7kNvwE9FvnJ&_nc_oc=AdmUYoHelMPg5XAUq3QUqRf9ip_jmUSO5ycccAjOPV6GG1W4QK17W61hyMCZxbKMwsc&_nc_zt=23&_nc_ht=scontent.fcpv12-1.fna&_nc_gid=rDd_TymjbGLZPO6JKqN6tw&oh=00_AfQ2JoxMLiqeC5g0fIrJ_fX5Wsqq0aqeZket6x-CixUF1g&oe=688D546E",
+            "height": 450,
+            "width": 600
+          },
+          "id": "1410157503527808",
+          "__isMedia": "Photo",
+          "photo_cix_screen": null,
+          "copyright_banner_info": null,
+          "owner": {
+            "__typename": "User",
+            "id": "pfbid032qkhwtbXgEyquGDEpQzmD4bpLf7DEsGCjWswJdNC76NrokiRNJLw7g8Ay4jTUWSpl"
+          },
+          "ocrText": "May be an image of text"
+        },
+        {
+          "thumbnail": "https://scontent.fcpv12-1.fna.fbcdn.net/v/t39.30808-6/514415066_1410157463527812_532410511508927182_n.jpg?stp=dst-jpg_s600x600_tt6&_nc_cat=109&ccb=1-7&_nc_sid=aa7b47&_nc_ohc=L07floCQfk8Q7kNvwE2HrKl&_nc_oc=AdkxTI0sCjiAsw1gT5nXkdFruqGvOMjA9rcA376pxzUfF8JaHN3ODEbzeVbG6s5pFRc&_nc_zt=23&_nc_ht=scontent.fcpv12-1.fna&_nc_gid=rDd_TymjbGLZPO6JKqN6tw&oh=00_AfSysRGxK4TCVmo0mbs4gMxTSpO15vytT6zZ1Ge5TcBcgA&oe=688D7C9B",
+          "__typename": "Photo",
+          "is_playable": false,
+          "image": {
+            "uri": "https://scontent.fcpv12-1.fna.fbcdn.net/v/t39.30808-6/514415066_1410157463527812_532410511508927182_n.jpg?stp=dst-jpg_s600x600_tt6&_nc_cat=109&ccb=1-7&_nc_sid=aa7b47&_nc_ohc=L07floCQfk8Q7kNvwE2HrKl&_nc_oc=AdkxTI0sCjiAsw1gT5nXkdFruqGvOMjA9rcA376pxzUfF8JaHN3ODEbzeVbG6s5pFRc&_nc_zt=23&_nc_ht=scontent.fcpv12-1.fna&_nc_gid=rDd_TymjbGLZPO6JKqN6tw&oh=00_AfSysRGxK4TCVmo0mbs4gMxTSpO15vytT6zZ1Ge5TcBcgA&oe=688D7C9B",
+            "height": 600,
+            "width": 450
+          },
+          "id": "1410157456861146",
+          "__isMedia": "Photo",
+          "photo_cix_screen": null,
+          "copyright_banner_info": null,
+          "owner": {
+            "__typename": "User",
+            "id": "pfbid032qkhwtbXgEyquGDEpQzmD4bpLf7DEsGCjWswJdNC76NrokiRNJLw7g8Ay4jTUWSpl"
+          },
+          "ocrText": "May be an image of text that says 'DDitel S18 itelS18 4G'"
+        },
+        {
+          "thumbnail": "https://scontent.fcpv12-1.fna.fbcdn.net/v/t39.30808-6/524728573_1410157493527809_5094769967062927780_n.jpg?stp=dst-jpg_s600x600_tt6&_nc_cat=111&ccb=1-7&_nc_sid=aa7b47&_nc_ohc=pBgvF-UrfFMQ7kNvwE_9UPw&_nc_oc=AdkHTpty-rYC-VAuKtb7eAw59DB4IGmj-uA13H3L_HiARSFkBtyYwOKNLqaUrcZ7Uak&_nc_zt=23&_nc_ht=scontent.fcpv12-1.fna&_nc_gid=rDd_TymjbGLZPO6JKqN6tw&oh=00_AfSQ-rWo-pxkJv8EP5k_3-Xfkl78EHiu5VkrqGXxWCOoUA&oe=688D56E6",
+          "__typename": "Photo",
+          "is_playable": false,
+          "image": {
+            "uri": "https://scontent.fcpv12-1.fna.fbcdn.net/v/t39.30808-6/524728573_1410157493527809_5094769967062927780_n.jpg?stp=dst-jpg_s600x600_tt6&_nc_cat=111&ccb=1-7&_nc_sid=aa7b47&_nc_ohc=pBgvF-UrfFMQ7kNvwE_9UPw&_nc_oc=AdkHTpty-rYC-VAuKtb7eAw59DB4IGmj-uA13H3L_HiARSFkBtyYwOKNLqaUrcZ7Uak&_nc_zt=23&_nc_ht=scontent.fcpv12-1.fna&_nc_gid=rDd_TymjbGLZPO6JKqN6tw&oh=00_AfSQ-rWo-pxkJv8EP5k_3-Xfkl78EHiu5VkrqGXxWCOoUA&oe=688D56E6",
+            "height": 450,
+            "width": 600
+          },
+          "id": "1410157483527810",
+          "__isMedia": "Photo",
+          "photo_cix_screen": null,
+          "copyright_banner_info": null,
+          "owner": {
+            "__typename": "User",
+            "id": "pfbid032qkhwtbXgEyquGDEpQzmD4bpLf7DEsGCjWswJdNC76NrokiRNJLw7g8Ay4jTUWSpl"
+          },
+          "ocrText": "May be an image of text that says 'itelS18 Ditel S18'"
+        },
+        {
+          "thumbnail": "https://scontent.fcpv12-1.fna.fbcdn.net/v/t39.30808-6/515042645_1410157520194473_1706219014547329060_n.jpg?stp=dst-jpg_s600x600_tt6&_nc_cat=101&ccb=1-7&_nc_sid=aa7b47&_nc_ohc=52OOjOzGL9cQ7kNvwGYko3D&_nc_oc=Adl9nPp_UnN97YeUcXAp_rY0wP1DKF5jYBU78SF6-Hbk67aRHntn-pNFeb-BHpg-7pQ&_nc_zt=23&_nc_ht=scontent.fcpv12-1.fna&_nc_gid=rDd_TymjbGLZPO6JKqN6tw&oh=00_AfQLtylXxXGujU3buZ1hWFS_J3Jv9Iqni-iYmIAvsHgPbw&oe=688D5549",
+          "__typename": "Photo",
+          "is_playable": false,
+          "image": {
+            "uri": "https://scontent.fcpv12-1.fna.fbcdn.net/v/t39.30808-6/515042645_1410157520194473_1706219014547329060_n.jpg?stp=dst-jpg_s600x600_tt6&_nc_cat=101&ccb=1-7&_nc_sid=aa7b47&_nc_ohc=52OOjOzGL9cQ7kNvwGYko3D&_nc_oc=Adl9nPp_UnN97YeUcXAp_rY0wP1DKF5jYBU78SF6-Hbk67aRHntn-pNFeb-BHpg-7pQ&_nc_zt=23&_nc_ht=scontent.fcpv12-1.fna&_nc_gid=rDd_TymjbGLZPO6JKqN6tw&oh=00_AfQLtylXxXGujU3buZ1hWFS_J3Jv9Iqni-iYmIAvsHgPbw&oe=688D5549",
+            "height": 450,
+            "width": 600
+          },
+          "id": "1410157513527807",
+          "__isMedia": "Photo",
+          "photo_cix_screen": null,
+          "copyright_banner_info": null,
+          "owner": {
+            "__typename": "User",
+            "id": "pfbid032qkhwtbXgEyquGDEpQzmD4bpLf7DEsGCjWswJdNC76NrokiRNJLw7g8Ay4jTUWSpl"
+          },
+          "ocrText": "May be an image of text that says 'Ditel S18 OitelS18 4G'"
+        },
+        {
+          "thumbnail": "https://scontent.fcpv12-1.fna.fbcdn.net/v/t39.30808-6/524658036_1410157473527811_8800196545720961671_n.jpg?stp=dst-jpg_s600x600_tt6&_nc_cat=102&ccb=1-7&_nc_sid=aa7b47&_nc_ohc=Xt2Ng-8q89kQ7kNvwGRFbjV&_nc_oc=AdkFgrJopH9z5GRpAE3Z0M2JkdrmepEbLpWvfx_6UQPCO8byY2hk_uHkyPIWDpgBpfs&_nc_zt=23&_nc_ht=scontent.fcpv12-1.fna&_nc_gid=rDd_TymjbGLZPO6JKqN6tw&oh=00_AfTYzB_lpFVQijSOlwc4hEv8Nh6Q-jXWz2WIQMM5nwzHhA&oe=688D626B",
+          "__typename": "Photo",
+          "is_playable": false,
+          "image": {
+            "uri": "https://scontent.fcpv12-1.fna.fbcdn.net/v/t39.30808-6/524658036_1410157473527811_8800196545720961671_n.jpg?stp=dst-jpg_s600x600_tt6&_nc_cat=102&ccb=1-7&_nc_sid=aa7b47&_nc_ohc=Xt2Ng-8q89kQ7kNvwGRFbjV&_nc_oc=AdkFgrJopH9z5GRpAE3Z0M2JkdrmepEbLpWvfx_6UQPCO8byY2hk_uHkyPIWDpgBpfs&_nc_zt=23&_nc_ht=scontent.fcpv12-1.fna&_nc_gid=rDd_TymjbGLZPO6JKqN6tw&oh=00_AfTYzB_lpFVQijSOlwc4hEv8Nh6Q-jXWz2WIQMM5nwzHhA&oe=688D626B",
+            "height": 450,
+            "width": 600
+          },
+          "id": "1410157470194478",
+          "__isMedia": "Photo",
+          "photo_cix_screen": null,
+          "copyright_banner_info": null,
+          "owner": {
+            "__typename": "User",
+            "id": "pfbid032qkhwtbXgEyquGDEpQzmD4bpLf7DEsGCjWswJdNC76NrokiRNJLw7g8Ay4jTUWSpl"
+          },
+          "ocrText": "May be an image of text"
+        }
+      ],
+      "user": {
+        "id": "pfbid032qkhwtbXgEyquGDEpQzmD4bpLf7DEsGCjWswJdNC76NrokiRNJLw7g8Ay4jTUWSpl",
+        "name": "Gauthier Immo"
+      },
+      "likesCount": 0,
+      "commentsCount": 0
+    },
+    {
+      "facebookUrl": "https://www.facebook.com/groups/4264469556912052/",
+      "text": "",
+      "attachments": [
+        {
+          "description": {
+            "delight_ranges": [],
+            "image_ranges": [],
+            "inline_style_ranges": [],
+            "aggregated_ranges": [],
+            "ranges": [],
+            "color_ranges": [],
+            "text": "When this happens, it's usually because the owner only shared it with a small group of people, changed who can see it or it's been deleted."
+          },
+          "title_with_entities": {
+            "delight_ranges": [],
+            "image_ranges": [],
+            "inline_style_ranges": [],
+            "aggregated_ranges": [],
+            "ranges": [],
+            "color_ranges": [],
+            "text": "This content isn't available right now"
+          }
+        }
+      ],
+      "user": {
+        "id": "pfbid032qkhwtbXgEyquGDEpQzmD4bpLf7DEsGCjWswJdNC76NrokiRNJLw7g8Ay4jTUWSpl",
+        "name": "Gauthier Immo"
+      },
+      "likesCount": 0,
+      "commentsCount": 0
+    },
+    {
+      "facebookUrl": "https://www.facebook.com/groups/4264469556912052/",
+      "text": "",
+      "user": {
+        "id": "pfbid032qkhwtbXgEyquGDEpQzmD4bpLf7DEsGCjWswJdNC76NrokiRNJLw7g8Ay4jTUWSpl",
+        "name": "Gauthier Immo"
+      },
+      "likesCount": 0,
+      "commentsCount": 1
+    },
+    {
+      "facebookUrl": "https://www.facebook.com/groups/4264469556912052/",
+      "text": "Appartement à louer à alibandeng, trois manguier, eau en permanence.\n2 chambres, 2 salles de bains, Salon, cuisine, terrasse.\nPrix : 180.000f\nContacts : 077933932/ 066100817.\nAgent immobilier",
+      "attachments": [
+        {
+          "mediaset_token": "pcb.31498528106412829",
+          "url": "https://www.facebook.com/media/set/?set=pcb.31498528106412829&type=1",
+          "comet_product_tag_feed_overlay_renderer": null
+        },
+        {
+          "thumbnail": "https://scontent.fftk1-1.fna.fbcdn.net/v/t39.30808-6/516356544_1409554816921410_6810354391719842332_n.jpg?stp=dst-jpg_s600x600_tt6&_nc_cat=104&ccb=1-7&_nc_sid=aa7b47&_nc_ohc=zGyta9Dw0vgQ7kNvwHr6Fd4&_nc_oc=AdkmJqlqHCr4OsaYgPROWWtyeEBxddj7VYgkCJYOarZ8sJr3yzQde9Tfs4fAG3zB4Bs&_nc_zt=23&_nc_ht=scontent.fftk1-1.fna&_nc_gid=XdBZDDaxnCQqD-7vaytTtQ&oh=00_AfTEZYiAVpiOyNhpJXVzM0lXxoEphqHwaAiSc2Px1Le-4A&oe=688D6F6D",
+          "__typename": "Photo",
+          "is_playable": false,
+          "image": {
+            "uri": "https://scontent.fftk1-1.fna.fbcdn.net/v/t39.30808-6/516356544_1409554816921410_6810354391719842332_n.jpg?stp=dst-jpg_s600x600_tt6&_nc_cat=104&ccb=1-7&_nc_sid=aa7b47&_nc_ohc=zGyta9Dw0vgQ7kNvwHr6Fd4&_nc_oc=AdkmJqlqHCr4OsaYgPROWWtyeEBxddj7VYgkCJYOarZ8sJr3yzQde9Tfs4fAG3zB4Bs&_nc_zt=23&_nc_ht=scontent.fftk1-1.fna&_nc_gid=XdBZDDaxnCQqD-7vaytTtQ&oh=00_AfTEZYiAVpiOyNhpJXVzM0lXxoEphqHwaAiSc2Px1Le-4A&oe=688D6F6D",
+            "height": 600,
+            "width": 450
+          },
+          "id": "1409554813588077",
+          "__isMedia": "Photo",
+          "photo_cix_screen": null,
+          "copyright_banner_info": null,
+          "owner": {
+            "__typename": "User",
+            "id": "pfbid032qkhwtbXgEyquGDEpQzmD4bpLf7DEsGCjWswJdNC76NrokiRNJLw7g8Ay4jTUWSpl"
+          },
+          "ocrText": "No photo description available."
+        },
+        {
+          "thumbnail": "https://scontent.fftk1-1.fna.fbcdn.net/v/t39.30808-6/514415096_1409554893588069_7966069714635138383_n.jpg?stp=dst-jpg_s600x600_tt6&_nc_cat=111&ccb=1-7&_nc_sid=aa7b47&_nc_ohc=mLX8h8dhisIQ7kNvwG153_E&_nc_oc=AdnNdSjEiKOnuC2U9OkK0rTHgoPqY3bFe2lesrjQ5t-_2MbluJpFkGhMdAlriIN6tQQ&_nc_zt=23&_nc_ht=scontent.fftk1-1.fna&_nc_gid=XdBZDDaxnCQqD-7vaytTtQ&oh=00_AfQlCNnElEen7YqGzVnNQ_UrJFn5b8FogThe86lpTHEHGA&oe=688D84AC",
+          "__typename": "Photo",
+          "is_playable": false,
+          "image": {
+            "uri": "https://scontent.fftk1-1.fna.fbcdn.net/v/t39.30808-6/514415096_1409554893588069_7966069714635138383_n.jpg?stp=dst-jpg_s600x600_tt6&_nc_cat=111&ccb=1-7&_nc_sid=aa7b47&_nc_ohc=mLX8h8dhisIQ7kNvwG153_E&_nc_oc=AdnNdSjEiKOnuC2U9OkK0rTHgoPqY3bFe2lesrjQ5t-_2MbluJpFkGhMdAlriIN6tQQ&_nc_zt=23&_nc_ht=scontent.fftk1-1.fna&_nc_gid=XdBZDDaxnCQqD-7vaytTtQ&oh=00_AfQlCNnElEen7YqGzVnNQ_UrJFn5b8FogThe86lpTHEHGA&oe=688D84AC",
+            "height": 600,
+            "width": 450
+          },
+          "id": "1409554880254737",
+          "__isMedia": "Photo",
+          "photo_cix_screen": null,
+          "copyright_banner_info": null,
+          "owner": {
+            "__typename": "User",
+            "id": "pfbid032qkhwtbXgEyquGDEpQzmD4bpLf7DEsGCjWswJdNC76NrokiRNJLw7g8Ay4jTUWSpl"
+          },
+          "ocrText": "May be an image of tree and grass"
+        },
+        {
+          "thumbnail": "https://scontent.fftk1-1.fna.fbcdn.net/v/t39.30808-6/523507801_1409554833588075_716162379895960012_n.jpg?stp=dst-jpg_s600x600_tt6&_nc_cat=109&ccb=1-7&_nc_sid=aa7b47&_nc_ohc=-5cDfq9gZP8Q7kNvwGpJ_6n&_nc_oc=AdmnGao2kNNU_TI2fIaDveJTpdDwXySxaa9bQQvhjB5YFYtpbSDW2567mN3xtRzM3nM&_nc_zt=23&_nc_ht=scontent.fftk1-1.fna&_nc_gid=XdBZDDaxnCQqD-7vaytTtQ&oh=00_AfRNczg4H7hxfGht-69yDhT3M5fBUZbd7DpG7mFdCbvs0Q&oe=688D7710",
+          "__typename": "Photo",
+          "is_playable": false,
+          "image": {
+            "uri": "https://scontent.fftk1-1.fna.fbcdn.net/v/t39.30808-6/523507801_1409554833588075_716162379895960012_n.jpg?stp=dst-jpg_s600x600_tt6&_nc_cat=109&ccb=1-7&_nc_sid=aa7b47&_nc_ohc=-5cDfq9gZP8Q7kNvwGpJ_6n&_nc_oc=AdmnGao2kNNU_TI2fIaDveJTpdDwXySxaa9bQQvhjB5YFYtpbSDW2567mN3xtRzM3nM&_nc_zt=23&_nc_ht=scontent.fftk1-1.fna&_nc_gid=XdBZDDaxnCQqD-7vaytTtQ&oh=00_AfRNczg4H7hxfGht-69yDhT3M5fBUZbd7DpG7mFdCbvs0Q&oe=688D7710",
+            "height": 600,
+            "width": 450
+          },
+          "id": "1409554830254742",
+          "__isMedia": "Photo",
+          "photo_cix_screen": null,
+          "copyright_banner_info": null,
+          "owner": {
+            "__typename": "User",
+            "id": "pfbid032qkhwtbXgEyquGDEpQzmD4bpLf7DEsGCjWswJdNC76NrokiRNJLw7g8Ay4jTUWSpl"
+          },
+          "ocrText": "No photo description available."
+        },
+        {
+          "thumbnail": "https://scontent.fftk1-1.fna.fbcdn.net/v/t39.30808-6/522194352_1409554846921407_2127231995438164617_n.jpg?stp=dst-jpg_s600x600_tt6&_nc_cat=106&ccb=1-7&_nc_sid=aa7b47&_nc_ohc=90xMFzu5JccQ7kNvwEHQ5qx&_nc_oc=Adlnmsi9_yAQzEkfEpt-e0vCuH2gEy12Fbg46-c4XkrULmR7zKlkfyLDGD8AM2MUiiI&_nc_zt=23&_nc_ht=scontent.fftk1-1.fna&_nc_gid=XdBZDDaxnCQqD-7vaytTtQ&oh=00_AfSI5PHCtpypTym_I-89bjd_vchCLxwTIiiNhc4l-F8kIQ&oe=688D7889",
+          "__typename": "Photo",
+          "is_playable": false,
+          "image": {
+            "uri": "https://scontent.fftk1-1.fna.fbcdn.net/v/t39.30808-6/522194352_1409554846921407_2127231995438164617_n.jpg?stp=dst-jpg_s600x600_tt6&_nc_cat=106&ccb=1-7&_nc_sid=aa7b47&_nc_ohc=90xMFzu5JccQ7kNvwEHQ5qx&_nc_oc=Adlnmsi9_yAQzEkfEpt-e0vCuH2gEy12Fbg46-c4XkrULmR7zKlkfyLDGD8AM2MUiiI&_nc_zt=23&_nc_ht=scontent.fftk1-1.fna&_nc_gid=XdBZDDaxnCQqD-7vaytTtQ&oh=00_AfSI5PHCtpypTym_I-89bjd_vchCLxwTIiiNhc4l-F8kIQ&oe=688D7889",
+            "height": 600,
+            "width": 450
+          },
+          "id": "1409554843588074",
+          "__isMedia": "Photo",
+          "photo_cix_screen": null,
+          "copyright_banner_info": null,
+          "owner": {
+            "__typename": "User",
+            "id": "pfbid032qkhwtbXgEyquGDEpQzmD4bpLf7DEsGCjWswJdNC76NrokiRNJLw7g8Ay4jTUWSpl"
+          },
+          "ocrText": "May be an image of sink"
+        },
+        {
+          "thumbnail": "https://scontent.fftk1-1.fna.fbcdn.net/v/t39.30808-6/520398159_1409554903588068_2414987402878008706_n.jpg?stp=dst-jpg_s600x600_tt6&_nc_cat=103&ccb=1-7&_nc_sid=aa7b47&_nc_ohc=pW91YYHhWzQQ7kNvwF-jCX1&_nc_oc=AdlBkBVKAZKdI4ZVgevY5yvGqYxjYei_x-L0tFMtoNepCwihZosgCmPNUXg10Fzo-L0&_nc_zt=23&_nc_ht=scontent.fftk1-1.fna&_nc_gid=XdBZDDaxnCQqD-7vaytTtQ&oh=00_AfSFt9ixrOF8dM9dMxp93-6xPf_1QOx-SnQvs3d9Jxu2bg&oe=688D7690",
+          "__typename": "Photo",
+          "is_playable": false,
+          "image": {
+            "uri": "https://scontent.fftk1-1.fna.fbcdn.net/v/t39.30808-6/520398159_1409554903588068_2414987402878008706_n.jpg?stp=dst-jpg_s600x600_tt6&_nc_cat=103&ccb=1-7&_nc_sid=aa7b47&_nc_ohc=pW91YYHhWzQQ7kNvwF-jCX1&_nc_oc=AdlBkBVKAZKdI4ZVgevY5yvGqYxjYei_x-L0tFMtoNepCwihZosgCmPNUXg10Fzo-L0&_nc_zt=23&_nc_ht=scontent.fftk1-1.fna&_nc_gid=XdBZDDaxnCQqD-7vaytTtQ&oh=00_AfSFt9ixrOF8dM9dMxp93-6xPf_1QOx-SnQvs3d9Jxu2bg&oe=688D7690",
+            "height": 600,
+            "width": 450
+          },
+          "id": "1409554873588071",
+          "__isMedia": "Photo",
+          "photo_cix_screen": null,
+          "copyright_banner_info": null,
+          "owner": {
+            "__typename": "User",
+            "id": "pfbid032qkhwtbXgEyquGDEpQzmD4bpLf7DEsGCjWswJdNC76NrokiRNJLw7g8Ay4jTUWSpl"
+          },
+          "ocrText": "No photo description available."
+        }
+      ],
+      "user": {
+        "id": "pfbid032qkhwtbXgEyquGDEpQzmD4bpLf7DEsGCjWswJdNC76NrokiRNJLw7g8Ay4jTUWSpl",
+        "name": "Gauthier Immo"
+      },
+      "likesCount": 0,
+      "commentsCount": 0
+    },
+    {
+      "facebookUrl": "https://www.facebook.com/groups/4264469556912052/",
+      "text": "",
+      "attachments": [
+        {
+          "description": {
+            "delight_ranges": [],
+            "image_ranges": [],
+            "inline_style_ranges": [],
+            "aggregated_ranges": [],
+            "ranges": [],
+            "color_ranges": [],
+            "text": "When this happens, it's usually because the owner only shared it with a small group of people, changed who can see it or it's been deleted."
+          },
+          "title_with_entities": {
+            "delight_ranges": [],
+            "image_ranges": [],
+            "inline_style_ranges": [],
+            "aggregated_ranges": [],
+            "ranges": [],
+            "color_ranges": [],
+            "text": "This content isn't available right now"
+          }
+        }
+      ],
+      "user": {
+        "id": "pfbid032qkhwtbXgEyquGDEpQzmD4bpLf7DEsGCjWswJdNC76NrokiRNJLw7g8Ay4jTUWSpl",
+        "name": "Gauthier Immo"
+      },
+      "likesCount": 1,
+      "commentsCount": 0
+    },
+    {
+      "facebookUrl": "https://www.facebook.com/groups/4264469556912052/",
+      "text": "",
+      "user": {
+        "id": "pfbid032qkhwtbXgEyquGDEpQzmD4bpLf7DEsGCjWswJdNC76NrokiRNJLw7g8Ay4jTUWSpl",
+        "name": "Gauthier Immo"
+      },
+      "likesCount": 3,
+      "commentsCount": 0
+    },
+    {
+      "facebookUrl": "https://www.facebook.com/groups/4264469556912052/",
+      "text": "",
+      "user": {
+        "id": "pfbid032qkhwtbXgEyquGDEpQzmD4bpLf7DEsGCjWswJdNC76NrokiRNJLw7g8Ay4jTUWSpl",
+        "name": "Gauthier Immo"
+      },
+      "likesCount": 0,
+      "commentsCount": 0
+    },
+    {
+      "facebookUrl": "https://www.facebook.com/groups/4264469556912052/",
+      "text": "Appartement bon standing à louer au haut de guégué, cité kalikak.\n2 chambres, 2 salles de bains, Salon, cuisine, terrasse, parking.\nPrix : 270.000f avec eau.\nContacts : 077933932/ 066100817.\nAgent immobilier",
+      "attachments": [
+        {
+          "mediaset_token": "pcb.31495603663371940",
+          "url": "https://www.facebook.com/media/set/?set=pcb.31495603663371940&type=1",
+          "comet_product_tag_feed_overlay_renderer": null
+        },
+        {
+          "thumbnail": "https://scontent-lga3-2.xx.fbcdn.net/v/t39.30808-6/514246767_1409398736937018_7752363128816212873_n.jpg?stp=dst-jpg_s600x600_tt6&_nc_cat=101&ccb=1-7&_nc_sid=aa7b47&_nc_ohc=yXX5Z33oAs8Q7kNvwEdz7X1&_nc_oc=Adn-wgmqQNX4Wx4ypRB1EDO9X0XL9WGn-2NGXnMGt-SsMH8tTEtQNyhm91YvIzIp_I4&_nc_zt=23&_nc_ht=scontent-lga3-2.xx&_nc_gid=7reLEogB9Rd7qsAMBNHwGA&oh=00_AfRnSS0y3OpG6PAVcPpYjB-9tOkE8Q1Wvs44upZzpREnZQ&oe=688D700E",
+          "__typename": "Photo",
+          "is_playable": false,
+          "image": {
+            "uri": "https://scontent-lga3-2.xx.fbcdn.net/v/t39.30808-6/514246767_1409398736937018_7752363128816212873_n.jpg?stp=dst-jpg_s600x600_tt6&_nc_cat=101&ccb=1-7&_nc_sid=aa7b47&_nc_ohc=yXX5Z33oAs8Q7kNvwEdz7X1&_nc_oc=Adn-wgmqQNX4Wx4ypRB1EDO9X0XL9WGn-2NGXnMGt-SsMH8tTEtQNyhm91YvIzIp_I4&_nc_zt=23&_nc_ht=scontent-lga3-2.xx&_nc_gid=7reLEogB9Rd7qsAMBNHwGA&oh=00_AfRnSS0y3OpG6PAVcPpYjB-9tOkE8Q1Wvs44upZzpREnZQ&oe=688D700E",
+            "height": 600,
+            "width": 600
+          },
+          "id": "1409398730270352",
+          "__isMedia": "Photo",
+          "photo_cix_screen": null,
+          "copyright_banner_info": null,
+          "owner": {
+            "__typename": "User",
+            "id": "pfbid032qkhwtbXgEyquGDEpQzmD4bpLf7DEsGCjWswJdNC76NrokiRNJLw7g8Ay4jTUWSpl"
+          },
+          "ocrText": "No photo description available."
+        },
+        {
+          "thumbnail": "https://scontent-lga3-1.xx.fbcdn.net/v/t39.30808-6/515917598_1409398790270346_2616747946500773689_n.jpg?stp=dst-jpg_s600x600_tt6&_nc_cat=103&ccb=1-7&_nc_sid=aa7b47&_nc_ohc=rRnCmVbPHQkQ7kNvwEMqMW7&_nc_oc=AdkblzqfwgQYbWTAFawe0V5tnMzDWDI4krDxBiMMe5n9tnSjR_TUtkcNxMu_yDXXf7k&_nc_zt=23&_nc_ht=scontent-lga3-1.xx&_nc_gid=7reLEogB9Rd7qsAMBNHwGA&oh=00_AfQOVyQh-O8yml6tBPLY32yaZsCE9WVSfu1mTowKB9mLog&oe=688D6AEF",
+          "__typename": "Photo",
+          "is_playable": false,
+          "image": {
+            "uri": "https://scontent-lga3-1.xx.fbcdn.net/v/t39.30808-6/515917598_1409398790270346_2616747946500773689_n.jpg?stp=dst-jpg_s600x600_tt6&_nc_cat=103&ccb=1-7&_nc_sid=aa7b47&_nc_ohc=rRnCmVbPHQkQ7kNvwEMqMW7&_nc_oc=AdkblzqfwgQYbWTAFawe0V5tnMzDWDI4krDxBiMMe5n9tnSjR_TUtkcNxMu_yDXXf7k&_nc_zt=23&_nc_ht=scontent-lga3-1.xx&_nc_gid=7reLEogB9Rd7qsAMBNHwGA&oh=00_AfQOVyQh-O8yml6tBPLY32yaZsCE9WVSfu1mTowKB9mLog&oe=688D6AEF",
+            "height": 600,
+            "width": 600
+          },
+          "id": "1409398780270347",
+          "__isMedia": "Photo",
+          "photo_cix_screen": null,
+          "copyright_banner_info": null,
+          "owner": {
+            "__typename": "User",
+            "id": "pfbid032qkhwtbXgEyquGDEpQzmD4bpLf7DEsGCjWswJdNC76NrokiRNJLw7g8Ay4jTUWSpl"
+          },
+          "ocrText": "May be an image of lighting"
+        },
+        {
+          "thumbnail": "https://scontent-lga3-2.xx.fbcdn.net/v/t39.30808-6/523124774_1409398720270353_5396966516824029593_n.jpg?stp=dst-jpg_s600x600_tt6&_nc_cat=100&ccb=1-7&_nc_sid=aa7b47&_nc_ohc=Gw3W9_CX_cMQ7kNvwETAPYn&_nc_oc=Admzd-JmBtrQQXcQVq4ZUqq2xIzesnIVz0i-JxOaulAsc9UK7aKGC3VrM85-Gt0AddM&_nc_zt=23&_nc_ht=scontent-lga3-2.xx&_nc_gid=7reLEogB9Rd7qsAMBNHwGA&oh=00_AfSRXD5Te3-q47s2W_Z1A7aIR-7__Ul24B6-idrrxUqZlg&oe=688D6B9A",
+          "__typename": "Photo",
+          "is_playable": false,
+          "image": {
+            "uri": "https://scontent-lga3-2.xx.fbcdn.net/v/t39.30808-6/523124774_1409398720270353_5396966516824029593_n.jpg?stp=dst-jpg_s600x600_tt6&_nc_cat=100&ccb=1-7&_nc_sid=aa7b47&_nc_ohc=Gw3W9_CX_cMQ7kNvwETAPYn&_nc_oc=Admzd-JmBtrQQXcQVq4ZUqq2xIzesnIVz0i-JxOaulAsc9UK7aKGC3VrM85-Gt0AddM&_nc_zt=23&_nc_ht=scontent-lga3-2.xx&_nc_gid=7reLEogB9Rd7qsAMBNHwGA&oh=00_AfSRXD5Te3-q47s2W_Z1A7aIR-7__Ul24B6-idrrxUqZlg&oe=688D6B9A",
+            "height": 600,
+            "width": 600
+          },
+          "id": "1409398716937020",
+          "__isMedia": "Photo",
+          "photo_cix_screen": null,
+          "copyright_banner_info": null,
+          "owner": {
+            "__typename": "User",
+            "id": "pfbid032qkhwtbXgEyquGDEpQzmD4bpLf7DEsGCjWswJdNC76NrokiRNJLw7g8Ay4jTUWSpl"
+          },
+          "ocrText": "No photo description available."
+        },
+        {
+          "thumbnail": "https://scontent-lga3-1.xx.fbcdn.net/v/t39.30808-6/522125400_1409398756937016_5322137753471225698_n.jpg?stp=dst-jpg_s600x600_tt6&_nc_cat=102&ccb=1-7&_nc_sid=aa7b47&_nc_ohc=BpnH6ze264sQ7kNvwH1u3ty&_nc_oc=Adluy0eDy4MwtIZH6tVu-g3M2jbfDHkOAtSKItnXwv9d6bGNclnq_60fXcNf6DrlUME&_nc_zt=23&_nc_ht=scontent-lga3-1.xx&_nc_gid=7reLEogB9Rd7qsAMBNHwGA&oh=00_AfTKxRyuViUz1MRSqopumB9MsMEjqIhKXHM4shhCVrlUWA&oe=688D8032",
+          "__typename": "Photo",
+          "is_playable": false,
+          "image": {
+            "uri": "https://scontent-lga3-1.xx.fbcdn.net/v/t39.30808-6/522125400_1409398756937016_5322137753471225698_n.jpg?stp=dst-jpg_s600x600_tt6&_nc_cat=102&ccb=1-7&_nc_sid=aa7b47&_nc_ohc=BpnH6ze264sQ7kNvwH1u3ty&_nc_oc=Adluy0eDy4MwtIZH6tVu-g3M2jbfDHkOAtSKItnXwv9d6bGNclnq_60fXcNf6DrlUME&_nc_zt=23&_nc_ht=scontent-lga3-1.xx&_nc_gid=7reLEogB9Rd7qsAMBNHwGA&oh=00_AfTKxRyuViUz1MRSqopumB9MsMEjqIhKXHM4shhCVrlUWA&oe=688D8032",
+            "height": 600,
+            "width": 600
+          },
+          "id": "1409398753603683",
+          "__isMedia": "Photo",
+          "photo_cix_screen": null,
+          "copyright_banner_info": null,
+          "owner": {
+            "__typename": "User",
+            "id": "pfbid032qkhwtbXgEyquGDEpQzmD4bpLf7DEsGCjWswJdNC76NrokiRNJLw7g8Ay4jTUWSpl"
+          },
+          "ocrText": "May be an image of 1 person and indoors"
+        },
+        {
+          "thumbnail": "https://scontent-lga3-3.xx.fbcdn.net/v/t39.30808-6/514280026_1409398786937013_8991376010787177358_n.jpg?stp=dst-jpg_s600x600_tt6&_nc_cat=108&ccb=1-7&_nc_sid=aa7b47&_nc_ohc=odE6hNngvk0Q7kNvwHEjjSP&_nc_oc=AdnkmiaW3pVE0ZvTr61C5Ec9a8hRzHbgzCMEgMlPRa1vqU2hzAmZaZ12feuimlPhVvM&_nc_zt=23&_nc_ht=scontent-lga3-3.xx&_nc_gid=7reLEogB9Rd7qsAMBNHwGA&oh=00_AfSoAET1ALBMTp3EKn87kOU-elhGOqPnytcdN9bMecHVag&oe=688D5930",
+          "__typename": "Photo",
+          "is_playable": false,
+          "image": {
+            "uri": "https://scontent-lga3-3.xx.fbcdn.net/v/t39.30808-6/514280026_1409398786937013_8991376010787177358_n.jpg?stp=dst-jpg_s600x600_tt6&_nc_cat=108&ccb=1-7&_nc_sid=aa7b47&_nc_ohc=odE6hNngvk0Q7kNvwHEjjSP&_nc_oc=AdnkmiaW3pVE0ZvTr61C5Ec9a8hRzHbgzCMEgMlPRa1vqU2hzAmZaZ12feuimlPhVvM&_nc_zt=23&_nc_ht=scontent-lga3-3.xx&_nc_gid=7reLEogB9Rd7qsAMBNHwGA&oh=00_AfSoAET1ALBMTp3EKn87kOU-elhGOqPnytcdN9bMecHVag&oe=688D5930",
+            "height": 600,
+            "width": 600
+          },
+          "id": "1409398773603681",
+          "__isMedia": "Photo",
+          "photo_cix_screen": null,
+          "copyright_banner_info": null,
+          "owner": {
+            "__typename": "User",
+            "id": "pfbid032qkhwtbXgEyquGDEpQzmD4bpLf7DEsGCjWswJdNC76NrokiRNJLw7g8Ay4jTUWSpl"
+          },
+          "ocrText": "May be an image of sink"
+        }
+      ],
+      "user": {
+        "id": "pfbid032qkhwtbXgEyquGDEpQzmD4bpLf7DEsGCjWswJdNC76NrokiRNJLw7g8Ay4jTUWSpl",
+        "name": "Gauthier Immo"
+      },
+      "likesCount": 6,
+      "commentsCount": 0
+    },
+    {
+      "facebookUrl": "https://www.facebook.com/groups/4264469556912052/",
+      "text": "Studio à louer au Camp de Gaulle, eau en permanence.\nChambre, Salon, cuisine ouverte, salle de bain.\nPrix : 135.000f\nContacts : 077933932/ 066100817.\nAgent immobilier",
+      "attachments": [
+        {
+          "mediaset_token": "pcb.31495589853373321",
+          "url": "https://www.facebook.com/media/set/?set=pcb.31495589853373321&type=1",
+          "comet_product_tag_feed_overlay_renderer": null
+        },
+        {
+          "thumbnail": "https://scontent.fzyl5-1.fna.fbcdn.net/v/t39.30808-6/520986402_1409397846937107_1209975567667311984_n.jpg?stp=dst-jpg_s600x600_tt6&_nc_cat=104&ccb=1-7&_nc_sid=aa7b47&_nc_ohc=TX_59obf3E4Q7kNvwE0nOeY&_nc_oc=Adld_DadViw5-ndsaLnmw-3oVK6elEvPlreZSAdQBz0hUU-c0HrfHNW3HnjT2n_OzGA&_nc_zt=23&_nc_ht=scontent.fzyl5-1.fna&_nc_gid=J_cCQDFGeoL3ceRa1TqQXw&oh=00_AfQnz4vFhgXBWrDOx8d8LfX3Bfe4l9DZwJ1qEEA3IB2CBw&oe=688D5D38",
+          "__typename": "Photo",
+          "is_playable": false,
+          "image": {
+            "uri": "https://scontent.fzyl5-1.fna.fbcdn.net/v/t39.30808-6/520986402_1409397846937107_1209975567667311984_n.jpg?stp=dst-jpg_s600x600_tt6&_nc_cat=104&ccb=1-7&_nc_sid=aa7b47&_nc_ohc=TX_59obf3E4Q7kNvwE0nOeY&_nc_oc=Adld_DadViw5-ndsaLnmw-3oVK6elEvPlreZSAdQBz0hUU-c0HrfHNW3HnjT2n_OzGA&_nc_zt=23&_nc_ht=scontent.fzyl5-1.fna&_nc_gid=J_cCQDFGeoL3ceRa1TqQXw&oh=00_AfQnz4vFhgXBWrDOx8d8LfX3Bfe4l9DZwJ1qEEA3IB2CBw&oe=688D5D38",
+            "height": 600,
+            "width": 450
+          },
+          "id": "1409397840270441",
+          "__isMedia": "Photo",
+          "photo_cix_screen": null,
+          "copyright_banner_info": null,
+          "owner": {
+            "__typename": "User",
+            "id": "pfbid032qkhwtbXgEyquGDEpQzmD4bpLf7DEsGCjWswJdNC76NrokiRNJLw7g8Ay4jTUWSpl"
+          },
+          "ocrText": "May be an image of cooker hood and indoors"
+        },
+        {
+          "thumbnail": "https://scontent.fzyl5-1.fna.fbcdn.net/v/t39.30808-6/521963337_1409397843603774_55266726266163874_n.jpg?stp=dst-jpg_s600x600_tt6&_nc_cat=104&ccb=1-7&_nc_sid=aa7b47&_nc_ohc=uozcnI8Xym8Q7kNvwG7C5__&_nc_oc=AdnTNmOjyLTFUnz5nTrMRQHt-230SOmqbiXum9hRDtih1Iy3t_0h1rXwxTfX13sHEV8&_nc_zt=23&_nc_ht=scontent.fzyl5-1.fna&_nc_gid=J_cCQDFGeoL3ceRa1TqQXw&oh=00_AfTIajCMUnU3e3k4GJymYVB_ujQlM9-dFhBVQyYHLBkLzQ&oe=688D824E",
+          "__typename": "Photo",
+          "is_playable": false,
+          "image": {
+            "uri": "https://scontent.fzyl5-1.fna.fbcdn.net/v/t39.30808-6/521963337_1409397843603774_55266726266163874_n.jpg?stp=dst-jpg_s600x600_tt6&_nc_cat=104&ccb=1-7&_nc_sid=aa7b47&_nc_ohc=uozcnI8Xym8Q7kNvwG7C5__&_nc_oc=AdnTNmOjyLTFUnz5nTrMRQHt-230SOmqbiXum9hRDtih1Iy3t_0h1rXwxTfX13sHEV8&_nc_zt=23&_nc_ht=scontent.fzyl5-1.fna&_nc_gid=J_cCQDFGeoL3ceRa1TqQXw&oh=00_AfTIajCMUnU3e3k4GJymYVB_ujQlM9-dFhBVQyYHLBkLzQ&oe=688D824E",
+            "height": 600,
+            "width": 450
+          },
+          "id": "1409397833603775",
+          "__isMedia": "Photo",
+          "photo_cix_screen": null,
+          "copyright_banner_info": null,
+          "owner": {
+            "__typename": "User",
+            "id": "pfbid032qkhwtbXgEyquGDEpQzmD4bpLf7DEsGCjWswJdNC76NrokiRNJLw7g8Ay4jTUWSpl"
+          },
+          "ocrText": "May be an image of indoors"
+        },
+        {
+          "thumbnail": "https://scontent.fzyl5-2.fna.fbcdn.net/v/t39.30808-6/520332428_1409397863603772_89700668861512224_n.jpg?stp=dst-jpg_s600x600_tt6&_nc_cat=100&ccb=1-7&_nc_sid=aa7b47&_nc_ohc=hUD0XMoZyYkQ7kNvwHnOpCb&_nc_oc=AdkbxDRzLxlczLoi2oVjHu8fBerC4WeDDYklZ6qlNm3ge0HrDhTboq99i8KlpdPHD4w&_nc_zt=23&_nc_ht=scontent.fzyl5-2.fna&_nc_gid=J_cCQDFGeoL3ceRa1TqQXw&oh=00_AfS1n5nIXRXUXAxChw38A9NJQxSKQt6qBoAP8xCQo92ycw&oe=688D5A0C",
+          "__typename": "Photo",
+          "is_playable": false,
+          "image": {
+            "uri": "https://scontent.fzyl5-2.fna.fbcdn.net/v/t39.30808-6/520332428_1409397863603772_89700668861512224_n.jpg?stp=dst-jpg_s600x600_tt6&_nc_cat=100&ccb=1-7&_nc_sid=aa7b47&_nc_ohc=hUD0XMoZyYkQ7kNvwHnOpCb&_nc_oc=AdkbxDRzLxlczLoi2oVjHu8fBerC4WeDDYklZ6qlNm3ge0HrDhTboq99i8KlpdPHD4w&_nc_zt=23&_nc_ht=scontent.fzyl5-2.fna&_nc_gid=J_cCQDFGeoL3ceRa1TqQXw&oh=00_AfS1n5nIXRXUXAxChw38A9NJQxSKQt6qBoAP8xCQo92ycw&oe=688D5A0C",
+            "height": 600,
+            "width": 450
+          },
+          "id": "1409397860270439",
+          "__isMedia": "Photo",
+          "photo_cix_screen": null,
+          "copyright_banner_info": null,
+          "owner": {
+            "__typename": "User",
+            "id": "pfbid032qkhwtbXgEyquGDEpQzmD4bpLf7DEsGCjWswJdNC76NrokiRNJLw7g8Ay4jTUWSpl"
+          },
+          "ocrText": "No photo description available."
+        },
+        {
+          "thumbnail": "https://scontent.fzyl5-1.fna.fbcdn.net/v/t39.30808-6/515141654_1409397893603769_9082057073852224633_n.jpg?stp=dst-jpg_s600x600_tt6&_nc_cat=103&ccb=1-7&_nc_sid=aa7b47&_nc_ohc=ZD2Rch_gep4Q7kNvwENhDoP&_nc_oc=AdlYM_yfMUv7y0nzq0pe_C9d-thGypKPMJ7CvGnj_cNyYIpieyP6fp1psNMKUKwctWU&_nc_zt=23&_nc_ht=scontent.fzyl5-1.fna&_nc_gid=J_cCQDFGeoL3ceRa1TqQXw&oh=00_AfSYfr6d4HGKj7y9ItiTPFXvCPxR9JjhnKhlxSdVJfMtyA&oe=688D5D0C",
+          "__typename": "Photo",
+          "is_playable": false,
+          "image": {
+            "uri": "https://scontent.fzyl5-1.fna.fbcdn.net/v/t39.30808-6/515141654_1409397893603769_9082057073852224633_n.jpg?stp=dst-jpg_s600x600_tt6&_nc_cat=103&ccb=1-7&_nc_sid=aa7b47&_nc_ohc=ZD2Rch_gep4Q7kNvwENhDoP&_nc_oc=AdlYM_yfMUv7y0nzq0pe_C9d-thGypKPMJ7CvGnj_cNyYIpieyP6fp1psNMKUKwctWU&_nc_zt=23&_nc_ht=scontent.fzyl5-1.fna&_nc_gid=J_cCQDFGeoL3ceRa1TqQXw&oh=00_AfSYfr6d4HGKj7y9ItiTPFXvCPxR9JjhnKhlxSdVJfMtyA&oe=688D5D0C",
+            "height": 600,
+            "width": 450
+          },
+          "id": "1409397890270436",
+          "__isMedia": "Photo",
+          "photo_cix_screen": null,
+          "copyright_banner_info": null,
+          "owner": {
+            "__typename": "User",
+            "id": "pfbid032qkhwtbXgEyquGDEpQzmD4bpLf7DEsGCjWswJdNC76NrokiRNJLw7g8Ay4jTUWSpl"
+          },
+          "ocrText": "No photo description available."
+        },
+        {
+          "thumbnail": "https://scontent.fzyl5-2.fna.fbcdn.net/v/t39.30808-6/522225178_1409397943603764_8215776678843622231_n.jpg?stp=dst-jpg_s600x600_tt6&_nc_cat=109&ccb=1-7&_nc_sid=aa7b47&_nc_ohc=_A58rcG_jS8Q7kNvwEGbUXy&_nc_oc=Adk5zp5kmRUl8QelV7Df3-iLNBffVtwOgdI68MxTaClkhxu8dZATXG1TXsHLiNGgG5o&_nc_zt=23&_nc_ht=scontent.fzyl5-2.fna&_nc_gid=J_cCQDFGeoL3ceRa1TqQXw&oh=00_AfQ4-R-ZorRYvlaHm0trpgI_q_xSybhfOpG2ILbcC6favg&oe=688D580C",
+          "__typename": "Photo",
+          "is_playable": false,
+          "image": {
+            "uri": "https://scontent.fzyl5-2.fna.fbcdn.net/v/t39.30808-6/522225178_1409397943603764_8215776678843622231_n.jpg?stp=dst-jpg_s600x600_tt6&_nc_cat=109&ccb=1-7&_nc_sid=aa7b47&_nc_ohc=_A58rcG_jS8Q7kNvwEGbUXy&_nc_oc=Adk5zp5kmRUl8QelV7Df3-iLNBffVtwOgdI68MxTaClkhxu8dZATXG1TXsHLiNGgG5o&_nc_zt=23&_nc_ht=scontent.fzyl5-2.fna&_nc_gid=J_cCQDFGeoL3ceRa1TqQXw&oh=00_AfQ4-R-ZorRYvlaHm0trpgI_q_xSybhfOpG2ILbcC6favg&oe=688D580C",
+            "height": 600,
+            "width": 450
+          },
+          "id": "1409397940270431",
+          "__isMedia": "Photo",
+          "photo_cix_screen": null,
+          "copyright_banner_info": null,
+          "owner": {
+            "__typename": "User",
+            "id": "pfbid032qkhwtbXgEyquGDEpQzmD4bpLf7DEsGCjWswJdNC76NrokiRNJLw7g8Ay4jTUWSpl"
+          },
+          "ocrText": "No photo description available."
+        }
+      ],
+      "user": {
+        "id": "pfbid032qkhwtbXgEyquGDEpQzmD4bpLf7DEsGCjWswJdNC76NrokiRNJLw7g8Ay4jTUWSpl",
+        "name": "Gauthier Immo"
+      },
+      "likesCount": 9,
+      "commentsCount": 3
+    },
+    {
+      "facebookUrl": "https://www.facebook.com/groups/4264469556912052/",
+      "text": "Studio à louer à alibandeng, première main.\nChambre, Salon, cuisine ouverte, terrasse avec grille.\nPrix : 130.000f\nContacts : 077933932/ 066100817.\nAgent immobilier",
+      "attachments": [
+        {
+          "mediaset_token": "pcb.31484774261121547",
+          "url": "https://www.facebook.com/media/set/?set=pcb.31484774261121547&type=1",
+          "comet_product_tag_feed_overlay_renderer": null
+        },
+        {
+          "thumbnail": "https://scontent.fzyl5-2.fna.fbcdn.net/v/t39.30808-6/514253229_1408842283659330_5473602725210156753_n.jpg?stp=dst-jpg_s600x600_tt6&_nc_cat=100&ccb=1-7&_nc_sid=aa7b47&_nc_ohc=t7Z0SaBBCkQQ7kNvwEGaEUC&_nc_oc=Adm0nomjubfMdqyGarjcIaMsPtkNL4KDMxuF3nsAHTG6ZKiN5t0r23BA1MceWhtHK74&_nc_zt=23&_nc_ht=scontent.fzyl5-2.fna&_nc_gid=J_cCQDFGeoL3ceRa1TqQXw&oh=00_AfTB3ZJN5FZ9kjymjylATOyx1y6PtBfeBJ9hVbYbHsL_eA&oe=688D7DE2",
+          "__typename": "Photo",
+          "is_playable": false,
+          "image": {
+            "uri": "https://scontent.fzyl5-2.fna.fbcdn.net/v/t39.30808-6/514253229_1408842283659330_5473602725210156753_n.jpg?stp=dst-jpg_s600x600_tt6&_nc_cat=100&ccb=1-7&_nc_sid=aa7b47&_nc_ohc=t7Z0SaBBCkQQ7kNvwEGaEUC&_nc_oc=Adm0nomjubfMdqyGarjcIaMsPtkNL4KDMxuF3nsAHTG6ZKiN5t0r23BA1MceWhtHK74&_nc_zt=23&_nc_ht=scontent.fzyl5-2.fna&_nc_gid=J_cCQDFGeoL3ceRa1TqQXw&oh=00_AfTB3ZJN5FZ9kjymjylATOyx1y6PtBfeBJ9hVbYbHsL_eA&oe=688D7DE2",
+            "height": 600,
+            "width": 450
+          },
+          "id": "1408842276992664",
+          "__isMedia": "Photo",
+          "photo_cix_screen": null,
+          "copyright_banner_info": null,
+          "owner": {
+            "__typename": "User",
+            "id": "pfbid032qkhwtbXgEyquGDEpQzmD4bpLf7DEsGCjWswJdNC76NrokiRNJLw7g8Ay4jTUWSpl"
+          },
+          "ocrText": "No photo description available."
+        },
+        {
+          "thumbnail": "https://scontent.fzyl5-1.fna.fbcdn.net/v/t39.30808-6/520822591_1408842240326001_1870180183571983346_n.jpg?stp=dst-jpg_s600x600_tt6&_nc_cat=108&ccb=1-7&_nc_sid=aa7b47&_nc_ohc=sdxavUEMSOAQ7kNvwFSEaJ6&_nc_oc=Adkw380jcl2YTnH3EMYDusGxdWyKzUkENJElHhcW_1SWjT60XVp_1lJc0olPpiKo0UA&_nc_zt=23&_nc_ht=scontent.fzyl5-1.fna&_nc_gid=J_cCQDFGeoL3ceRa1TqQXw&oh=00_AfQoTiwQboKWx5wMzHV1G1AVaDbHHNLSmQSBev_kNJclww&oe=688D8422",
+          "__typename": "Photo",
+          "is_playable": false,
+          "image": {
+            "uri": "https://scontent.fzyl5-1.fna.fbcdn.net/v/t39.30808-6/520822591_1408842240326001_1870180183571983346_n.jpg?stp=dst-jpg_s600x600_tt6&_nc_cat=108&ccb=1-7&_nc_sid=aa7b47&_nc_ohc=sdxavUEMSOAQ7kNvwFSEaJ6&_nc_oc=Adkw380jcl2YTnH3EMYDusGxdWyKzUkENJElHhcW_1SWjT60XVp_1lJc0olPpiKo0UA&_nc_zt=23&_nc_ht=scontent.fzyl5-1.fna&_nc_gid=J_cCQDFGeoL3ceRa1TqQXw&oh=00_AfQoTiwQboKWx5wMzHV1G1AVaDbHHNLSmQSBev_kNJclww&oe=688D8422",
+            "height": 600,
+            "width": 450
+          },
+          "id": "1408842236992668",
+          "__isMedia": "Photo",
+          "photo_cix_screen": null,
+          "copyright_banner_info": null,
+          "owner": {
+            "__typename": "User",
+            "id": "pfbid032qkhwtbXgEyquGDEpQzmD4bpLf7DEsGCjWswJdNC76NrokiRNJLw7g8Ay4jTUWSpl"
+          },
+          "ocrText": "May be an image of indoors"
+        },
+        {
+          "thumbnail": "https://scontent.fzyl5-2.fna.fbcdn.net/v/t39.30808-6/522116217_1408842253659333_8763177619525398325_n.jpg?stp=dst-jpg_s600x600_tt6&_nc_cat=107&ccb=1-7&_nc_sid=aa7b47&_nc_ohc=-DKFbZ6bwL0Q7kNvwEaKBT2&_nc_oc=Adn7EphRPVmqXcGu1dpxgbf4iqi6LSZgHy2ZgZLq0GM3MzHKxBKNjNIljLxWA24BVhU&_nc_zt=23&_nc_ht=scontent.fzyl5-2.fna&_nc_gid=J_cCQDFGeoL3ceRa1TqQXw&oh=00_AfS1fpnZHVQFN6xJDMaizHWD4cpCmZgszBGdWcoeI6E7sg&oe=688D7026",
+          "__typename": "Photo",
+          "is_playable": false,
+          "image": {
+            "uri": "https://scontent.fzyl5-2.fna.fbcdn.net/v/t39.30808-6/522116217_1408842253659333_8763177619525398325_n.jpg?stp=dst-jpg_s600x600_tt6&_nc_cat=107&ccb=1-7&_nc_sid=aa7b47&_nc_ohc=-DKFbZ6bwL0Q7kNvwEaKBT2&_nc_oc=Adn7EphRPVmqXcGu1dpxgbf4iqi6LSZgHy2ZgZLq0GM3MzHKxBKNjNIljLxWA24BVhU&_nc_zt=23&_nc_ht=scontent.fzyl5-2.fna&_nc_gid=J_cCQDFGeoL3ceRa1TqQXw&oh=00_AfS1fpnZHVQFN6xJDMaizHWD4cpCmZgszBGdWcoeI6E7sg&oe=688D7026",
+            "height": 600,
+            "width": 450
+          },
+          "id": "1408842250326000",
+          "__isMedia": "Photo",
+          "photo_cix_screen": null,
+          "copyright_banner_info": null,
+          "owner": {
+            "__typename": "User",
+            "id": "pfbid032qkhwtbXgEyquGDEpQzmD4bpLf7DEsGCjWswJdNC76NrokiRNJLw7g8Ay4jTUWSpl"
+          },
+          "ocrText": "May be an image of sink"
+        },
+        {
+          "thumbnail": "https://scontent.fzyl5-2.fna.fbcdn.net/v/t39.30808-6/514352788_1408842280325997_7732895218582365319_n.jpg?stp=dst-jpg_s600x600_tt6&_nc_cat=102&ccb=1-7&_nc_sid=aa7b47&_nc_ohc=w2XTal4YgoAQ7kNvwGNlxOt&_nc_oc=AdlmnYuIzEedPAGC3shLsStZ5lbHd7DTZsAM55n5LreNze0_CR4wNLXUWxCJbyGe5Pg&_nc_zt=23&_nc_ht=scontent.fzyl5-2.fna&_nc_gid=J_cCQDFGeoL3ceRa1TqQXw&oh=00_AfSwicGRP_NNThpTonTiMwUoAigfXSzxr3J4ihOS5BOkxA&oe=688D86D0",
+          "__typename": "Photo",
+          "is_playable": false,
+          "image": {
+            "uri": "https://scontent.fzyl5-2.fna.fbcdn.net/v/t39.30808-6/514352788_1408842280325997_7732895218582365319_n.jpg?stp=dst-jpg_s600x600_tt6&_nc_cat=102&ccb=1-7&_nc_sid=aa7b47&_nc_ohc=w2XTal4YgoAQ7kNvwGNlxOt&_nc_oc=AdlmnYuIzEedPAGC3shLsStZ5lbHd7DTZsAM55n5LreNze0_CR4wNLXUWxCJbyGe5Pg&_nc_zt=23&_nc_ht=scontent.fzyl5-2.fna&_nc_gid=J_cCQDFGeoL3ceRa1TqQXw&oh=00_AfSwicGRP_NNThpTonTiMwUoAigfXSzxr3J4ihOS5BOkxA&oe=688D86D0",
+            "height": 600,
+            "width": 450
+          },
+          "id": "1408842270325998",
+          "__isMedia": "Photo",
+          "photo_cix_screen": null,
+          "copyright_banner_info": null,
+          "owner": {
+            "__typename": "User",
+            "id": "pfbid032qkhwtbXgEyquGDEpQzmD4bpLf7DEsGCjWswJdNC76NrokiRNJLw7g8Ay4jTUWSpl"
+          },
+          "ocrText": "No photo description available."
+        }
+      ],
+      "user": {
+        "id": "pfbid032qkhwtbXgEyquGDEpQzmD4bpLf7DEsGCjWswJdNC76NrokiRNJLw7g8Ay4jTUWSpl",
+        "name": "Gauthier Immo"
+      },
+      "likesCount": 22,
+      "commentsCount": 6
+    },
+    {
+      "facebookUrl": "https://www.facebook.com/groups/4264469556912052/",
+      "text": "",
+      "user": {
+        "id": "pfbid032qkhwtbXgEyquGDEpQzmD4bpLf7DEsGCjWswJdNC76NrokiRNJLw7g8Ay4jTUWSpl",
+        "name": "Gauthier Immo"
+      },
+      "likesCount": 1,
+      "commentsCount": 0
+    },
+    {
+      "facebookUrl": "https://www.facebook.com/groups/4264469556912052/",
+      "text": "",
+      "user": {
+        "id": "pfbid032qkhwtbXgEyquGDEpQzmD4bpLf7DEsGCjWswJdNC76NrokiRNJLw7g8Ay4jTUWSpl",
+        "name": "Gauthier Immo"
+      },
+      "likesCount": 4,
+      "commentsCount": 1
+    },
+    {
+      "facebookUrl": "https://www.facebook.com/groups/4264469556912052/",
+      "text": "studio bon standing à louer à alibandeng igad, eau en permanence.\nchambre, Salon, cuisine, salle de bain, grande terrasse.\nprix : 130.000f avec eau.\nContacts : 077933932/ 066100817.\nagent immobilier",
+      "attachments": [
+        {
+          "mediaset_token": "pcb.31472416289024011",
+          "url": "https://www.facebook.com/media/set/?set=pcb.31472416289024011&type=1",
+          "comet_product_tag_feed_overlay_renderer": null
+        },
+        {
+          "thumbnail": "https://scontent-atl3-2.xx.fbcdn.net/v/t39.30808-6/520263996_1408221257054766_6445748985684441514_n.jpg?stp=dst-jpg_s600x600_tt6&_nc_cat=102&ccb=1-7&_nc_sid=aa7b47&_nc_ohc=67437i0AEnMQ7kNvwFMcXH7&_nc_oc=AdkaxUM_NqbLI6dDYOtGRhZPCxwFHV4L41ZM9ccHARujbI3aqqh9CDwMBqTq1ImqMas&_nc_zt=23&_nc_ht=scontent-atl3-2.xx&_nc_gid=qKEoCF32FmG91nLke9ap9g&oh=00_AfRgLy8lHFec_KG_dvjQljWBlBq4K10ixtXjUixbXpspiQ&oe=688D8B21",
+          "__typename": "Photo",
+          "is_playable": false,
+          "image": {
+            "uri": "https://scontent-atl3-2.xx.fbcdn.net/v/t39.30808-6/520263996_1408221257054766_6445748985684441514_n.jpg?stp=dst-jpg_s600x600_tt6&_nc_cat=102&ccb=1-7&_nc_sid=aa7b47&_nc_ohc=67437i0AEnMQ7kNvwFMcXH7&_nc_oc=AdkaxUM_NqbLI6dDYOtGRhZPCxwFHV4L41ZM9ccHARujbI3aqqh9CDwMBqTq1ImqMas&_nc_zt=23&_nc_ht=scontent-atl3-2.xx&_nc_gid=qKEoCF32FmG91nLke9ap9g&oh=00_AfRgLy8lHFec_KG_dvjQljWBlBq4K10ixtXjUixbXpspiQ&oe=688D8B21",
+            "height": 600,
+            "width": 450
+          },
+          "id": "1408221253721433",
+          "__isMedia": "Photo",
+          "photo_cix_screen": null,
+          "copyright_banner_info": null,
+          "owner": {
+            "__typename": "User",
+            "id": "pfbid032qkhwtbXgEyquGDEpQzmD4bpLf7DEsGCjWswJdNC76NrokiRNJLw7g8Ay4jTUWSpl"
+          },
+          "ocrText": "No photo description available."
+        },
+        {
+          "thumbnail": "https://scontent-atl3-1.xx.fbcdn.net/v/t39.30808-6/514285546_1408221347054757_63321604662793561_n.jpg?stp=dst-jpg_s600x600_tt6&_nc_cat=108&ccb=1-7&_nc_sid=aa7b47&_nc_ohc=2iACbu12BQQQ7kNvwE5CgL1&_nc_oc=AdlMHx8jLQYCe3tNeHrcj5Vn-XvnlYmeXPXM3C9lMIzVvACx6eyV_SsC5F9Y6lcJ_TY&_nc_zt=23&_nc_ht=scontent-atl3-1.xx&_nc_gid=qKEoCF32FmG91nLke9ap9g&oh=00_AfSdPbCPPDoB4cuTugFL_u-SWQHwM9_cyZ262f1PzFuzqQ&oe=688D61C1",
+          "__typename": "Photo",
+          "is_playable": false,
+          "image": {
+            "uri": "https://scontent-atl3-1.xx.fbcdn.net/v/t39.30808-6/514285546_1408221347054757_63321604662793561_n.jpg?stp=dst-jpg_s600x600_tt6&_nc_cat=108&ccb=1-7&_nc_sid=aa7b47&_nc_ohc=2iACbu12BQQQ7kNvwE5CgL1&_nc_oc=AdlMHx8jLQYCe3tNeHrcj5Vn-XvnlYmeXPXM3C9lMIzVvACx6eyV_SsC5F9Y6lcJ_TY&_nc_zt=23&_nc_ht=scontent-atl3-1.xx&_nc_gid=qKEoCF32FmG91nLke9ap9g&oh=00_AfSdPbCPPDoB4cuTugFL_u-SWQHwM9_cyZ262f1PzFuzqQ&oe=688D61C1",
+            "height": 600,
+            "width": 450
+          },
+          "id": "1408221340388091",
+          "__isMedia": "Photo",
+          "photo_cix_screen": null,
+          "copyright_banner_info": null,
+          "owner": {
+            "__typename": "User",
+            "id": "pfbid032qkhwtbXgEyquGDEpQzmD4bpLf7DEsGCjWswJdNC76NrokiRNJLw7g8Ay4jTUWSpl"
+          },
+          "ocrText": "No photo description available."
+        },
+        {
+          "thumbnail": "https://scontent-atl3-1.xx.fbcdn.net/v/t39.30808-6/522926743_1408221333721425_3749523682385861075_n.jpg?stp=dst-jpg_s600x600_tt6&_nc_cat=103&ccb=1-7&_nc_sid=aa7b47&_nc_ohc=xTpeR_TjOfoQ7kNvwFqMtbg&_nc_oc=AdkryXyo5lxZsE53dv-h7j7wRLUUSkPo4ZBYN_oe706KMf6X9owUek0I1ULEABOcpFI&_nc_zt=23&_nc_ht=scontent-atl3-1.xx&_nc_gid=qKEoCF32FmG91nLke9ap9g&oh=00_AfR33aBgXDUxRZLRrx-BOjRPZzTl53easb34U7GhqBbYIw&oe=688D75BE",
+          "__typename": "Photo",
+          "is_playable": false,
+          "image": {
+            "uri": "https://scontent-atl3-1.xx.fbcdn.net/v/t39.30808-6/522926743_1408221333721425_3749523682385861075_n.jpg?stp=dst-jpg_s600x600_tt6&_nc_cat=103&ccb=1-7&_nc_sid=aa7b47&_nc_ohc=xTpeR_TjOfoQ7kNvwFqMtbg&_nc_oc=AdkryXyo5lxZsE53dv-h7j7wRLUUSkPo4ZBYN_oe706KMf6X9owUek0I1ULEABOcpFI&_nc_zt=23&_nc_ht=scontent-atl3-1.xx&_nc_gid=qKEoCF32FmG91nLke9ap9g&oh=00_AfR33aBgXDUxRZLRrx-BOjRPZzTl53easb34U7GhqBbYIw&oe=688D75BE",
+            "height": 600,
+            "width": 450
+          },
+          "id": "1408221327054759",
+          "__isMedia": "Photo",
+          "photo_cix_screen": null,
+          "copyright_banner_info": null,
+          "owner": {
+            "__typename": "User",
+            "id": "pfbid032qkhwtbXgEyquGDEpQzmD4bpLf7DEsGCjWswJdNC76NrokiRNJLw7g8Ay4jTUWSpl"
+          },
+          "ocrText": "No photo description available."
+        },
+        {
+          "thumbnail": "https://scontent-atl3-2.xx.fbcdn.net/v/t39.30808-6/519635313_1408221273721431_5260259070195478108_n.jpg?stp=dst-jpg_s600x600_tt6&_nc_cat=101&ccb=1-7&_nc_sid=aa7b47&_nc_ohc=WpG7mn_mklYQ7kNvwF3uC2I&_nc_oc=Adls0JPmObREx6QS9AOk7eMz7V42bRTJTIkdrHCg-7tkDEV3NuSmUTXgZfsj2jVyG3A&_nc_zt=23&_nc_ht=scontent-atl3-2.xx&_nc_gid=qKEoCF32FmG91nLke9ap9g&oh=00_AfQQSMth9rr_XxysTxqYGEXskXtK_wWZsnWIoBUUr5yNrw&oe=688D77B5",
+          "__typename": "Photo",
+          "is_playable": false,
+          "image": {
+            "uri": "https://scontent-atl3-2.xx.fbcdn.net/v/t39.30808-6/519635313_1408221273721431_5260259070195478108_n.jpg?stp=dst-jpg_s600x600_tt6&_nc_cat=101&ccb=1-7&_nc_sid=aa7b47&_nc_ohc=WpG7mn_mklYQ7kNvwF3uC2I&_nc_oc=Adls0JPmObREx6QS9AOk7eMz7V42bRTJTIkdrHCg-7tkDEV3NuSmUTXgZfsj2jVyG3A&_nc_zt=23&_nc_ht=scontent-atl3-2.xx&_nc_gid=qKEoCF32FmG91nLke9ap9g&oh=00_AfQQSMth9rr_XxysTxqYGEXskXtK_wWZsnWIoBUUr5yNrw&oe=688D77B5",
+            "height": 600,
+            "width": 450
+          },
+          "id": "1408221267054765",
+          "__isMedia": "Photo",
+          "photo_cix_screen": null,
+          "copyright_banner_info": null,
+          "owner": {
+            "__typename": "User",
+            "id": "pfbid032qkhwtbXgEyquGDEpQzmD4bpLf7DEsGCjWswJdNC76NrokiRNJLw7g8Ay4jTUWSpl"
+          },
+          "ocrText": "No photo description available."
+        },
+        {
+          "thumbnail": "https://scontent-atl3-1.xx.fbcdn.net/v/t39.30808-6/520258689_1408221283721430_4452233588554074564_n.jpg?stp=dst-jpg_s600x600_tt6&_nc_cat=100&ccb=1-7&_nc_sid=aa7b47&_nc_ohc=DP5Nl5WJaoEQ7kNvwE0_NCn&_nc_oc=Adl3Z4T3xGCETkgPkt3fj8JjKtjSGgGylixFNXGSbsqwixukNlwAA8PQbZHgIPxzAlM&_nc_zt=23&_nc_ht=scontent-atl3-1.xx&_nc_gid=qKEoCF32FmG91nLke9ap9g&oh=00_AfTvJMXFFOnYQ3aDAcErS5mzn65-7_EEH3eA2wOB3aCvMQ&oe=688D658B",
+          "__typename": "Photo",
+          "is_playable": false,
+          "image": {
+            "uri": "https://scontent-atl3-1.xx.fbcdn.net/v/t39.30808-6/520258689_1408221283721430_4452233588554074564_n.jpg?stp=dst-jpg_s600x600_tt6&_nc_cat=100&ccb=1-7&_nc_sid=aa7b47&_nc_ohc=DP5Nl5WJaoEQ7kNvwE0_NCn&_nc_oc=Adl3Z4T3xGCETkgPkt3fj8JjKtjSGgGylixFNXGSbsqwixukNlwAA8PQbZHgIPxzAlM&_nc_zt=23&_nc_ht=scontent-atl3-1.xx&_nc_gid=qKEoCF32FmG91nLke9ap9g&oh=00_AfTvJMXFFOnYQ3aDAcErS5mzn65-7_EEH3eA2wOB3aCvMQ&oe=688D658B",
+            "height": 600,
+            "width": 450
+          },
+          "id": "1408221280388097",
+          "__isMedia": "Photo",
+          "photo_cix_screen": null,
+          "copyright_banner_info": null,
+          "owner": {
+            "__typename": "User",
+            "id": "pfbid032qkhwtbXgEyquGDEpQzmD4bpLf7DEsGCjWswJdNC76NrokiRNJLw7g8Ay4jTUWSpl"
+          },
+          "ocrText": "May be an image of indoors"
+        }
+      ],
+      "user": {
+        "id": "pfbid032qkhwtbXgEyquGDEpQzmD4bpLf7DEsGCjWswJdNC76NrokiRNJLw7g8Ay4jTUWSpl",
+        "name": "Gauthier Immo"
+      },
+      "likesCount": 6,
+      "commentsCount": 7
+    },
+    {
+      "facebookUrl": "https://www.facebook.com/groups/4264469556912052/",
+      "text": "",
+      "user": {
+        "id": "pfbid032qkhwtbXgEyquGDEpQzmD4bpLf7DEsGCjWswJdNC76NrokiRNJLw7g8Ay4jTUWSpl",
+        "name": "Gauthier Immo"
+      },
+      "likesCount": 1,
+      "commentsCount": 2
+    },
+    {
+      "facebookUrl": "https://www.facebook.com/groups/4264469556912052/",
+      "text": "",
+      "user": {
+        "id": "pfbid032qkhwtbXgEyquGDEpQzmD4bpLf7DEsGCjWswJdNC76NrokiRNJLw7g8Ay4jTUWSpl",
+        "name": "Gauthier Immo"
+      },
+      "likesCount": 1,
+      "commentsCount": 1
+    },
+    {
+      "facebookUrl": "https://www.facebook.com/groups/4264469556912052/",
+      "text": "",
+      "user": {
+        "id": "pfbid032qkhwtbXgEyquGDEpQzmD4bpLf7DEsGCjWswJdNC76NrokiRNJLw7g8Ay4jTUWSpl",
+        "name": "Gauthier Immo"
+      },
+      "likesCount": 0,
+      "commentsCount": 1
+    },
+    {
+      "facebookUrl": "https://www.facebook.com/groups/4264469556912052/",
+      "text": "",
+      "user": {
+        "id": "pfbid032qkhwtbXgEyquGDEpQzmD4bpLf7DEsGCjWswJdNC76NrokiRNJLw7g8Ay4jTUWSpl",
+        "name": "Gauthier Immo"
+      },
+      "likesCount": 0,
+      "commentsCount": 0
+    },
+    {
+      "facebookUrl": "https://www.facebook.com/groups/4264469556912052/",
+      "text": "Villa bon standing à louer au charbonnage, zone résidentiel, eau en permanence, gardien 24/24.\n3 chambres, 3 salles de bains, Salon, cuisine, terrasse, loge gardien, espace vert.\nprix : 1.200.000f.\nContacts : 077933932/ 066100817.\nagent immobilier",
+      "attachments": [
+        {
+          "mediaset_token": "pcb.31459833640282276",
+          "url": "https://www.facebook.com/media/set/?set=pcb.31459833640282276&type=1",
+          "comet_product_tag_feed_overlay_renderer": null
+        },
+        {
+          "thumbnail": "https://scontent-atl3-3.xx.fbcdn.net/v/t39.30808-6/514255723_1407623640447861_481156203864220297_n.jpg?stp=dst-jpg_s600x600_tt6&_nc_cat=107&ccb=1-7&_nc_sid=aa7b47&_nc_ohc=uq1J_fASTOAQ7kNvwGox5a-&_nc_oc=AdkXtP57c7El-zkZy2KZhbPu8DmLgzytBNCFfu-ZCtwA8e7PKH0UJ9Isitra5LUK4tM&_nc_zt=23&_nc_ht=scontent-atl3-3.xx&_nc_gid=feRls_DU517CWbRJHlSaXg&oh=00_AfSmuSX1-Csi9glReXDnklDg57ejfUqZkDDO5UojtBQq8g&oe=688D609A",
+          "__typename": "Photo",
+          "is_playable": false,
+          "image": {
+            "uri": "https://scontent-atl3-3.xx.fbcdn.net/v/t39.30808-6/514255723_1407623640447861_481156203864220297_n.jpg?stp=dst-jpg_s600x600_tt6&_nc_cat=107&ccb=1-7&_nc_sid=aa7b47&_nc_ohc=uq1J_fASTOAQ7kNvwGox5a-&_nc_oc=AdkXtP57c7El-zkZy2KZhbPu8DmLgzytBNCFfu-ZCtwA8e7PKH0UJ9Isitra5LUK4tM&_nc_zt=23&_nc_ht=scontent-atl3-3.xx&_nc_gid=feRls_DU517CWbRJHlSaXg&oh=00_AfSmuSX1-Csi9glReXDnklDg57ejfUqZkDDO5UojtBQq8g&oe=688D609A",
+            "height": 600,
+            "width": 450
+          },
+          "id": "1407623627114529",
+          "__isMedia": "Photo",
+          "photo_cix_screen": null,
+          "copyright_banner_info": null,
+          "owner": {
+            "__typename": "User",
+            "id": "pfbid032qkhwtbXgEyquGDEpQzmD4bpLf7DEsGCjWswJdNC76NrokiRNJLw7g8Ay4jTUWSpl"
+          },
+          "ocrText": "May be an image of 1 person and grass"
+        },
+        {
+          "thumbnail": "https://scontent-atl3-2.xx.fbcdn.net/v/t39.30808-6/514409303_1407623683781190_4497599023560095294_n.jpg?stp=dst-jpg_s600x600_tt6&_nc_cat=105&ccb=1-7&_nc_sid=aa7b47&_nc_ohc=ORzk6fWrfcQQ7kNvwFoWqSN&_nc_oc=AdnO6VYYATPsIejfQJLPeGWnqzYZWhPetADHgxQesNqqnatJ0FNgZlT1Drn_sFHtFZo&_nc_zt=23&_nc_ht=scontent-atl3-2.xx&_nc_gid=feRls_DU517CWbRJHlSaXg&oh=00_AfSE3R7hFr-EXSz_mRQ8twzjo5ooNYdkNGFvMnMxHvvTyQ&oe=688D83DB",
+          "__typename": "Photo",
+          "is_playable": false,
+          "image": {
+            "uri": "https://scontent-atl3-2.xx.fbcdn.net/v/t39.30808-6/514409303_1407623683781190_4497599023560095294_n.jpg?stp=dst-jpg_s600x600_tt6&_nc_cat=105&ccb=1-7&_nc_sid=aa7b47&_nc_ohc=ORzk6fWrfcQQ7kNvwFoWqSN&_nc_oc=AdnO6VYYATPsIejfQJLPeGWnqzYZWhPetADHgxQesNqqnatJ0FNgZlT1Drn_sFHtFZo&_nc_zt=23&_nc_ht=scontent-atl3-2.xx&_nc_gid=feRls_DU517CWbRJHlSaXg&oh=00_AfSE3R7hFr-EXSz_mRQ8twzjo5ooNYdkNGFvMnMxHvvTyQ&oe=688D83DB",
+            "height": 600,
+            "width": 450
+          },
+          "id": "1407623673781191",
+          "__isMedia": "Photo",
+          "photo_cix_screen": null,
+          "copyright_banner_info": null,
+          "owner": {
+            "__typename": "User",
+            "id": "pfbid032qkhwtbXgEyquGDEpQzmD4bpLf7DEsGCjWswJdNC76NrokiRNJLw7g8Ay4jTUWSpl"
+          },
+          "ocrText": "May be an image of tree and grass"
+        },
+        {
+          "thumbnail": "https://scontent-atl3-1.xx.fbcdn.net/v/t39.30808-6/518405693_1407623597114532_7124272102644415620_n.jpg?stp=dst-jpg_s600x600_tt6&_nc_cat=110&ccb=1-7&_nc_sid=aa7b47&_nc_ohc=0UnJ_I7LVLwQ7kNvwHzTmSX&_nc_oc=Adl6OT8ejBSRrVgkIDcowwSr16of9gbE4hCTkPvU5p0q9WEmHXLBxs00z0y6NDF5Vvc&_nc_zt=23&_nc_ht=scontent-atl3-1.xx&_nc_gid=feRls_DU517CWbRJHlSaXg&oh=00_AfRrv9gW3fHj2UpptMzHsdPKEMzz_Lgk5L7y0Y-9lE8W3A&oe=688D6B11",
+          "__typename": "Photo",
+          "is_playable": false,
+          "image": {
+            "uri": "https://scontent-atl3-1.xx.fbcdn.net/v/t39.30808-6/518405693_1407623597114532_7124272102644415620_n.jpg?stp=dst-jpg_s600x600_tt6&_nc_cat=110&ccb=1-7&_nc_sid=aa7b47&_nc_ohc=0UnJ_I7LVLwQ7kNvwHzTmSX&_nc_oc=Adl6OT8ejBSRrVgkIDcowwSr16of9gbE4hCTkPvU5p0q9WEmHXLBxs00z0y6NDF5Vvc&_nc_zt=23&_nc_ht=scontent-atl3-1.xx&_nc_gid=feRls_DU517CWbRJHlSaXg&oh=00_AfRrv9gW3fHj2UpptMzHsdPKEMzz_Lgk5L7y0Y-9lE8W3A&oe=688D6B11",
+            "height": 600,
+            "width": 450
+          },
+          "id": "1407623593781199",
+          "__isMedia": "Photo",
+          "photo_cix_screen": null,
+          "copyright_banner_info": null,
+          "owner": {
+            "__typename": "User",
+            "id": "pfbid032qkhwtbXgEyquGDEpQzmD4bpLf7DEsGCjWswJdNC76NrokiRNJLw7g8Ay4jTUWSpl"
+          },
+          "ocrText": "May be an image of range hood, kitchen island and indoors"
+        },
+        {
+          "thumbnail": "https://scontent-atl3-2.xx.fbcdn.net/v/t39.30808-6/520979000_1407623580447867_7703969248459560693_n.jpg?stp=dst-jpg_s600x600_tt6&_nc_cat=102&ccb=1-7&_nc_sid=aa7b47&_nc_ohc=xeTOcu7UsKEQ7kNvwH0LvoH&_nc_oc=Adl5uxzpCdgol-a_AvqERqFLBw8UkOLDSLpGAsgtk_Bv-qiJIdDuS0u2E7FIEpyQxtA&_nc_zt=23&_nc_ht=scontent-atl3-2.xx&_nc_gid=feRls_DU517CWbRJHlSaXg&oh=00_AfQGgeYXYbUz_WjLZj8SpjyPgiz8N2qkUiwKz5dZQlyvmQ&oe=688D7381",
+          "__typename": "Photo",
+          "is_playable": false,
+          "image": {
+            "uri": "https://scontent-atl3-2.xx.fbcdn.net/v/t39.30808-6/520979000_1407623580447867_7703969248459560693_n.jpg?stp=dst-jpg_s600x600_tt6&_nc_cat=102&ccb=1-7&_nc_sid=aa7b47&_nc_ohc=xeTOcu7UsKEQ7kNvwH0LvoH&_nc_oc=Adl5uxzpCdgol-a_AvqERqFLBw8UkOLDSLpGAsgtk_Bv-qiJIdDuS0u2E7FIEpyQxtA&_nc_zt=23&_nc_ht=scontent-atl3-2.xx&_nc_gid=feRls_DU517CWbRJHlSaXg&oh=00_AfQGgeYXYbUz_WjLZj8SpjyPgiz8N2qkUiwKz5dZQlyvmQ&oe=688D7381",
+            "height": 600,
+            "width": 450
+          },
+          "id": "1407623567114535",
+          "__isMedia": "Photo",
+          "photo_cix_screen": null,
+          "copyright_banner_info": null,
+          "owner": {
+            "__typename": "User",
+            "id": "pfbid032qkhwtbXgEyquGDEpQzmD4bpLf7DEsGCjWswJdNC76NrokiRNJLw7g8Ay4jTUWSpl"
+          },
+          "ocrText": "May be an image of indoors"
+        },
+        {
+          "thumbnail": "https://scontent-atl3-1.xx.fbcdn.net/v/t39.30808-6/520378970_1407623583781200_3502990926185979045_n.jpg?stp=dst-jpg_s600x600_tt6&_nc_cat=103&ccb=1-7&_nc_sid=aa7b47&_nc_ohc=V66Rsl-AP7sQ7kNvwFBmOJu&_nc_oc=AdmIFDYVUHepspzGIZBTlHnR6rNDqrpgXMDobdCcBJlcnduwYahtd50XKMxbZPxjgWU&_nc_zt=23&_nc_ht=scontent-atl3-1.xx&_nc_gid=feRls_DU517CWbRJHlSaXg&oh=00_AfRSlw-lEw655AZB2_VRIXgQWKR9K2gbn1M0XTthWJHn0A&oe=688D7DC4",
+          "__typename": "Photo",
+          "is_playable": false,
+          "image": {
+            "uri": "https://scontent-atl3-1.xx.fbcdn.net/v/t39.30808-6/520378970_1407623583781200_3502990926185979045_n.jpg?stp=dst-jpg_s600x600_tt6&_nc_cat=103&ccb=1-7&_nc_sid=aa7b47&_nc_ohc=V66Rsl-AP7sQ7kNvwFBmOJu&_nc_oc=AdmIFDYVUHepspzGIZBTlHnR6rNDqrpgXMDobdCcBJlcnduwYahtd50XKMxbZPxjgWU&_nc_zt=23&_nc_ht=scontent-atl3-1.xx&_nc_gid=feRls_DU517CWbRJHlSaXg&oh=00_AfRSlw-lEw655AZB2_VRIXgQWKR9K2gbn1M0XTthWJHn0A&oe=688D7DC4",
+            "height": 600,
+            "width": 450
+          },
+          "id": "1407623577114534",
+          "__isMedia": "Photo",
+          "photo_cix_screen": null,
+          "copyright_banner_info": null,
+          "owner": {
+            "__typename": "User",
+            "id": "pfbid032qkhwtbXgEyquGDEpQzmD4bpLf7DEsGCjWswJdNC76NrokiRNJLw7g8Ay4jTUWSpl"
+          },
+          "ocrText": "No photo description available."
+        }
+      ],
+      "user": {
+        "id": "pfbid032qkhwtbXgEyquGDEpQzmD4bpLf7DEsGCjWswJdNC76NrokiRNJLw7g8Ay4jTUWSpl",
+        "name": "Gauthier Immo"
+      },
+      "likesCount": 1,
+      "commentsCount": 0
+    },
+    {
+      "facebookUrl": "https://www.facebook.com/groups/4264469556912052/",
+      "text": "",
+      "user": {
+        "id": "pfbid032qkhwtbXgEyquGDEpQzmD4bpLf7DEsGCjWswJdNC76NrokiRNJLw7g8Ay4jTUWSpl",
+        "name": "Gauthier Immo"
+      },
+      "likesCount": 2,
+      "commentsCount": 1
+    },
+    {
+      "facebookUrl": "https://www.facebook.com/groups/4264469556912052/",
+      "text": "",
+      "user": {
+        "id": "pfbid032qkhwtbXgEyquGDEpQzmD4bpLf7DEsGCjWswJdNC76NrokiRNJLw7g8Ay4jTUWSpl",
+        "name": "Gauthier Immo"
+      },
+      "likesCount": 1,
+      "commentsCount": 1
+    },
+    {
+      "facebookUrl": "https://www.facebook.com/groups/4264469556912052/",
+      "text": "appartement à louer à alibandeng avec intimité, splité, eau en permanence.\n2 chambres, salon, cuisine, salle de bain, terrasse.\nprix : 180.000f avec charges eau et courant.\nContacts : 077933932/ 066100817.\nagent immobilier",
+      "attachments": [
+        {
+          "mediaset_token": "pcb.31453257667606540",
+          "url": "https://www.facebook.com/media/set/?set=pcb.31453257667606540&type=1",
+          "comet_product_tag_feed_overlay_renderer": null
+        },
+        {
+          "thumbnail": "https://scontent.fplv1-2.fna.fbcdn.net/v/t39.30808-6/520462917_1407276723815886_6537837187536771107_n.jpg?stp=dst-jpg_s600x600_tt6&_nc_cat=104&ccb=1-7&_nc_sid=aa7b47&_nc_ohc=AIlFVd3FwkEQ7kNvwEPjcNv&_nc_oc=AdmdG-TzYLhPDCyQEdXKM6A6k80FCfqPwE0ymGkvFXrwkc7Xa4v2PI90rO3Z10v-M-w&_nc_zt=23&_nc_ht=scontent.fplv1-2.fna&_nc_gid=yrElel5ji8Q4s-VDeMLOhA&oh=00_AfT1_YzsOTyApiKU66wia2FhvywnDhXDhqqIFdZCsruMwQ&oe=688D5586",
+          "__typename": "Photo",
+          "is_playable": false,
+          "image": {
+            "uri": "https://scontent.fplv1-2.fna.fbcdn.net/v/t39.30808-6/520462917_1407276723815886_6537837187536771107_n.jpg?stp=dst-jpg_s600x600_tt6&_nc_cat=104&ccb=1-7&_nc_sid=aa7b47&_nc_ohc=AIlFVd3FwkEQ7kNvwEPjcNv&_nc_oc=AdmdG-TzYLhPDCyQEdXKM6A6k80FCfqPwE0ymGkvFXrwkc7Xa4v2PI90rO3Z10v-M-w&_nc_zt=23&_nc_ht=scontent.fplv1-2.fna&_nc_gid=yrElel5ji8Q4s-VDeMLOhA&oh=00_AfT1_YzsOTyApiKU66wia2FhvywnDhXDhqqIFdZCsruMwQ&oe=688D5586",
+            "height": 600,
+            "width": 450
+          },
+          "id": "1407276720482553",
+          "__isMedia": "Photo",
+          "photo_cix_screen": null,
+          "copyright_banner_info": null,
+          "owner": {
+            "__typename": "User",
+            "id": "pfbid032qkhwtbXgEyquGDEpQzmD4bpLf7DEsGCjWswJdNC76NrokiRNJLw7g8Ay4jTUWSpl"
+          },
+          "ocrText": "No photo description available."
+        },
+        {
+          "thumbnail": "https://scontent.fplv1-2.fna.fbcdn.net/v/t39.30808-6/518396177_1407276750482550_1787219768286458077_n.jpg?stp=dst-jpg_s600x600_tt6&_nc_cat=105&ccb=1-7&_nc_sid=aa7b47&_nc_ohc=O7gbi80ihlAQ7kNvwGDxhbg&_nc_oc=Adn4ypoEedlKxePn3uNheUn6IYTETTTJ8EwTYyWb-rW3DWvfmU1DT3Yddt4BN33SwBQ&_nc_zt=23&_nc_ht=scontent.fplv1-2.fna&_nc_gid=yrElel5ji8Q4s-VDeMLOhA&oh=00_AfRCpWfklal_N5of7ejzil-U7Tz3Q9IhKF17W-vp37ypWQ&oe=688D62E0",
+          "__typename": "Photo",
+          "is_playable": false,
+          "image": {
+            "uri": "https://scontent.fplv1-2.fna.fbcdn.net/v/t39.30808-6/518396177_1407276750482550_1787219768286458077_n.jpg?stp=dst-jpg_s600x600_tt6&_nc_cat=105&ccb=1-7&_nc_sid=aa7b47&_nc_ohc=O7gbi80ihlAQ7kNvwGDxhbg&_nc_oc=Adn4ypoEedlKxePn3uNheUn6IYTETTTJ8EwTYyWb-rW3DWvfmU1DT3Yddt4BN33SwBQ&_nc_zt=23&_nc_ht=scontent.fplv1-2.fna&_nc_gid=yrElel5ji8Q4s-VDeMLOhA&oh=00_AfRCpWfklal_N5of7ejzil-U7Tz3Q9IhKF17W-vp37ypWQ&oe=688D62E0",
+            "height": 600,
+            "width": 450
+          },
+          "id": "1407276737149218",
+          "__isMedia": "Photo",
+          "photo_cix_screen": null,
+          "copyright_banner_info": null,
+          "owner": {
+            "__typename": "User",
+            "id": "pfbid032qkhwtbXgEyquGDEpQzmD4bpLf7DEsGCjWswJdNC76NrokiRNJLw7g8Ay4jTUWSpl"
+          },
+          "ocrText": "No photo description available."
+        },
+        {
+          "thumbnail": "https://scontent.fplv1-2.fna.fbcdn.net/v/t39.30808-6/515490041_1407276747149217_3224874041004525929_n.jpg?stp=dst-jpg_s600x600_tt6&_nc_cat=105&ccb=1-7&_nc_sid=aa7b47&_nc_ohc=XLRF-16ML8QQ7kNvwFel52l&_nc_oc=AdlebLedMHjrE5ah_OGQFwByLMeWmdEpmtbw9Y0wEKtbE9BfddcFRwmM5GoFXLSsLF8&_nc_zt=23&_nc_ht=scontent.fplv1-2.fna&_nc_gid=yrElel5ji8Q4s-VDeMLOhA&oh=00_AfTvYA4K8r6AwHSL1oobmJnOZi8jq-_0NPHSAsknSyHa3w&oe=688D83D9",
+          "__typename": "Photo",
+          "is_playable": false,
+          "image": {
+            "uri": "https://scontent.fplv1-2.fna.fbcdn.net/v/t39.30808-6/515490041_1407276747149217_3224874041004525929_n.jpg?stp=dst-jpg_s600x600_tt6&_nc_cat=105&ccb=1-7&_nc_sid=aa7b47&_nc_ohc=XLRF-16ML8QQ7kNvwFel52l&_nc_oc=AdlebLedMHjrE5ah_OGQFwByLMeWmdEpmtbw9Y0wEKtbE9BfddcFRwmM5GoFXLSsLF8&_nc_zt=23&_nc_ht=scontent.fplv1-2.fna&_nc_gid=yrElel5ji8Q4s-VDeMLOhA&oh=00_AfTvYA4K8r6AwHSL1oobmJnOZi8jq-_0NPHSAsknSyHa3w&oe=688D83D9",
+            "height": 600,
+            "width": 450
+          },
+          "id": "1407276743815884",
+          "__isMedia": "Photo",
+          "photo_cix_screen": null,
+          "copyright_banner_info": null,
+          "owner": {
+            "__typename": "User",
+            "id": "pfbid032qkhwtbXgEyquGDEpQzmD4bpLf7DEsGCjWswJdNC76NrokiRNJLw7g8Ay4jTUWSpl"
+          },
+          "ocrText": "No photo description available."
+        },
+        {
+          "thumbnail": "https://scontent.fplv1-1.fna.fbcdn.net/v/t39.30808-6/519977253_1407276797149212_8018372279743053899_n.jpg?stp=dst-jpg_s600x600_tt6&_nc_cat=106&ccb=1-7&_nc_sid=aa7b47&_nc_ohc=kKd6s4x_tYYQ7kNvwE5Q06R&_nc_oc=AdkNePUJcYEUj_baiu6ndxPWIVcEHmrP9dH0E8Xp653LKYBv-YdipSQbmSD8yI-V97o&_nc_zt=23&_nc_ht=scontent.fplv1-1.fna&_nc_gid=yrElel5ji8Q4s-VDeMLOhA&oh=00_AfSLfODWG-2StwrurqoWOjgLhwLnphDo-JztvJsOtCSjrg&oe=688D6FB6",
+          "__typename": "Photo",
+          "is_playable": false,
+          "image": {
+            "uri": "https://scontent.fplv1-1.fna.fbcdn.net/v/t39.30808-6/519977253_1407276797149212_8018372279743053899_n.jpg?stp=dst-jpg_s600x600_tt6&_nc_cat=106&ccb=1-7&_nc_sid=aa7b47&_nc_ohc=kKd6s4x_tYYQ7kNvwE5Q06R&_nc_oc=AdkNePUJcYEUj_baiu6ndxPWIVcEHmrP9dH0E8Xp653LKYBv-YdipSQbmSD8yI-V97o&_nc_zt=23&_nc_ht=scontent.fplv1-1.fna&_nc_gid=yrElel5ji8Q4s-VDeMLOhA&oh=00_AfSLfODWG-2StwrurqoWOjgLhwLnphDo-JztvJsOtCSjrg&oe=688D6FB6",
+            "height": 600,
+            "width": 450
+          },
+          "id": "1407276793815879",
+          "__isMedia": "Photo",
+          "photo_cix_screen": null,
+          "copyright_banner_info": null,
+          "owner": {
+            "__typename": "User",
+            "id": "pfbid032qkhwtbXgEyquGDEpQzmD4bpLf7DEsGCjWswJdNC76NrokiRNJLw7g8Ay4jTUWSpl"
+          },
+          "ocrText": "No photo description available."
+        },
+        {
+          "thumbnail": "https://scontent.fplv1-2.fna.fbcdn.net/v/t39.30808-6/518397246_1407276863815872_5537701681462064666_n.jpg?stp=dst-jpg_s600x600_tt6&_nc_cat=102&ccb=1-7&_nc_sid=aa7b47&_nc_ohc=QX8hXLlWxKIQ7kNvwFDE72V&_nc_oc=AdlNbOLeZwgqUAvsRr1jvFUPAC3gZluLJw-rBvlEXTcy2KMtONKiB3pv-CyEq_T-OZk&_nc_zt=23&_nc_ht=scontent.fplv1-2.fna&_nc_gid=yrElel5ji8Q4s-VDeMLOhA&oh=00_AfQ3KDaF_3lUkWhEupBus75PtBdaKBPGJj299NFjakYXAA&oe=688D89AE",
+          "__typename": "Photo",
+          "is_playable": false,
+          "image": {
+            "uri": "https://scontent.fplv1-2.fna.fbcdn.net/v/t39.30808-6/518397246_1407276863815872_5537701681462064666_n.jpg?stp=dst-jpg_s600x600_tt6&_nc_cat=102&ccb=1-7&_nc_sid=aa7b47&_nc_ohc=QX8hXLlWxKIQ7kNvwFDE72V&_nc_oc=AdlNbOLeZwgqUAvsRr1jvFUPAC3gZluLJw-rBvlEXTcy2KMtONKiB3pv-CyEq_T-OZk&_nc_zt=23&_nc_ht=scontent.fplv1-2.fna&_nc_gid=yrElel5ji8Q4s-VDeMLOhA&oh=00_AfQ3KDaF_3lUkWhEupBus75PtBdaKBPGJj299NFjakYXAA&oe=688D89AE",
+            "height": 600,
+            "width": 450
+          },
+          "id": "1407276853815873",
+          "__isMedia": "Photo",
+          "photo_cix_screen": null,
+          "copyright_banner_info": null,
+          "owner": {
+            "__typename": "User",
+            "id": "pfbid032qkhwtbXgEyquGDEpQzmD4bpLf7DEsGCjWswJdNC76NrokiRNJLw7g8Ay4jTUWSpl"
+          },
+          "ocrText": "May be an image of grass and tree"
+        }
+      ],
+      "user": {
+        "id": "pfbid032qkhwtbXgEyquGDEpQzmD4bpLf7DEsGCjWswJdNC76NrokiRNJLw7g8Ay4jTUWSpl",
+        "name": "Gauthier Immo"
+      },
+      "likesCount": 12,
+      "commentsCount": 3
+    },
+    {
+      "facebookUrl": "https://www.facebook.com/groups/4264469556912052/",
+      "text": "",
+      "user": {
+        "id": "pfbid032qkhwtbXgEyquGDEpQzmD4bpLf7DEsGCjWswJdNC76NrokiRNJLw7g8Ay4jTUWSpl",
+        "name": "Gauthier Immo"
+      },
+      "likesCount": 1,
+      "commentsCount": 0
+    },
+    {
+      "facebookUrl": "https://www.facebook.com/groups/4264469556912052/",
+      "text": "appartement bon standing première main en finition à louer à alibandeng, bordure de route.\n3 chambres, 2 salles de bains, Salon, cuisine, terrasse, parking.\nprix : 300.000f\nContacts : 077933932/ 066100817.\nagent immobilier",
+      "attachments": [
+        {
+          "mediaset_token": "pcb.31443360611929579",
+          "url": "https://www.facebook.com/media/set/?set=pcb.31443360611929579&type=1",
+          "comet_product_tag_feed_overlay_renderer": null
+        },
+        {
+          "thumbnail": "https://scontent.fplv1-2.fna.fbcdn.net/v/t39.30808-6/520281761_1406793823864176_7013328440936964230_n.jpg?stp=dst-jpg_s600x600_tt6&_nc_cat=105&ccb=1-7&_nc_sid=aa7b47&_nc_ohc=uiiXEoUqTWUQ7kNvwGTsUu3&_nc_oc=AdmGhc5vDTRlDlsLssp3MRzdbu10CUuCAR7n_1ajbJkJeqUS53_vDxxKf_OGYvGFCbk&_nc_zt=23&_nc_ht=scontent.fplv1-2.fna&_nc_gid=yrElel5ji8Q4s-VDeMLOhA&oh=00_AfSPh3kskb5b_L5SLPkxSE3VSVlOsxjc_ksKo7vPLo6uOA&oe=688D5CA8",
+          "__typename": "Photo",
+          "is_playable": false,
+          "image": {
+            "uri": "https://scontent.fplv1-2.fna.fbcdn.net/v/t39.30808-6/520281761_1406793823864176_7013328440936964230_n.jpg?stp=dst-jpg_s600x600_tt6&_nc_cat=105&ccb=1-7&_nc_sid=aa7b47&_nc_ohc=uiiXEoUqTWUQ7kNvwGTsUu3&_nc_oc=AdmGhc5vDTRlDlsLssp3MRzdbu10CUuCAR7n_1ajbJkJeqUS53_vDxxKf_OGYvGFCbk&_nc_zt=23&_nc_ht=scontent.fplv1-2.fna&_nc_gid=yrElel5ji8Q4s-VDeMLOhA&oh=00_AfSPh3kskb5b_L5SLPkxSE3VSVlOsxjc_ksKo7vPLo6uOA&oe=688D5CA8",
+            "height": 600,
+            "width": 450
+          },
+          "id": "1406793810530844",
+          "__isMedia": "Photo",
+          "photo_cix_screen": null,
+          "copyright_banner_info": null,
+          "owner": {
+            "__typename": "User",
+            "id": "pfbid032qkhwtbXgEyquGDEpQzmD4bpLf7DEsGCjWswJdNC76NrokiRNJLw7g8Ay4jTUWSpl"
+          },
+          "ocrText": "May be an image of 1 person, table and indoors"
+        },
+        {
+          "thumbnail": "https://scontent.fplv1-2.fna.fbcdn.net/v/t39.30808-6/520169571_1406793867197505_5460418548652291165_n.jpg?stp=dst-jpg_s600x600_tt6&_nc_cat=104&ccb=1-7&_nc_sid=aa7b47&_nc_ohc=Sc0ad4J-1WoQ7kNvwEI3zdv&_nc_oc=AdlHVT-A4oIX6d9GEPVAl9K4ySufLQAHYiVl7cp_duSuh09TLybMHdjGJCEcPBQ0K9Y&_nc_zt=23&_nc_ht=scontent.fplv1-2.fna&_nc_gid=yrElel5ji8Q4s-VDeMLOhA&oh=00_AfRqRTzDJgDqyaIiP1g732NjZMTOo2TCU2S7BaRyHuvUDA&oe=688D60D2",
+          "__typename": "Photo",
+          "is_playable": false,
+          "image": {
+            "uri": "https://scontent.fplv1-2.fna.fbcdn.net/v/t39.30808-6/520169571_1406793867197505_5460418548652291165_n.jpg?stp=dst-jpg_s600x600_tt6&_nc_cat=104&ccb=1-7&_nc_sid=aa7b47&_nc_ohc=Sc0ad4J-1WoQ7kNvwEI3zdv&_nc_oc=AdlHVT-A4oIX6d9GEPVAl9K4ySufLQAHYiVl7cp_duSuh09TLybMHdjGJCEcPBQ0K9Y&_nc_zt=23&_nc_ht=scontent.fplv1-2.fna&_nc_gid=yrElel5ji8Q4s-VDeMLOhA&oh=00_AfRqRTzDJgDqyaIiP1g732NjZMTOo2TCU2S7BaRyHuvUDA&oe=688D60D2",
+            "height": 600,
+            "width": 450
+          },
+          "id": "1406793863864172",
+          "__isMedia": "Photo",
+          "photo_cix_screen": null,
+          "copyright_banner_info": null,
+          "owner": {
+            "__typename": "User",
+            "id": "pfbid032qkhwtbXgEyquGDEpQzmD4bpLf7DEsGCjWswJdNC76NrokiRNJLw7g8Ay4jTUWSpl"
+          },
+          "ocrText": "May be an image of sink and indoors"
+        },
+        {
+          "thumbnail": "https://scontent.fplv1-1.fna.fbcdn.net/v/t39.30808-6/514272381_1406793853864173_4933260593429429260_n.jpg?stp=dst-jpg_s600x600_tt6&_nc_cat=100&ccb=1-7&_nc_sid=aa7b47&_nc_ohc=s2iy7XW_n9AQ7kNvwF8a3uq&_nc_oc=AdmoP3QzBX33CTcFTsNhH0Wd8X0AokutcAcYzifAcjrlV425nxiPinqN7zB0p0lJq3g&_nc_zt=23&_nc_ht=scontent.fplv1-1.fna&_nc_gid=yrElel5ji8Q4s-VDeMLOhA&oh=00_AfRp6xnIRJ294UKyP1m2w3OjS2akr-HsvWechLwHwPKEkg&oe=688D6560",
+          "__typename": "Photo",
+          "is_playable": false,
+          "image": {
+            "uri": "https://scontent.fplv1-1.fna.fbcdn.net/v/t39.30808-6/514272381_1406793853864173_4933260593429429260_n.jpg?stp=dst-jpg_s600x600_tt6&_nc_cat=100&ccb=1-7&_nc_sid=aa7b47&_nc_ohc=s2iy7XW_n9AQ7kNvwF8a3uq&_nc_oc=AdmoP3QzBX33CTcFTsNhH0Wd8X0AokutcAcYzifAcjrlV425nxiPinqN7zB0p0lJq3g&_nc_zt=23&_nc_ht=scontent.fplv1-1.fna&_nc_gid=yrElel5ji8Q4s-VDeMLOhA&oh=00_AfRp6xnIRJ294UKyP1m2w3OjS2akr-HsvWechLwHwPKEkg&oe=688D6560",
+            "height": 600,
+            "width": 450
+          },
+          "id": "1406793850530840",
+          "__isMedia": "Photo",
+          "photo_cix_screen": null,
+          "copyright_banner_info": null,
+          "owner": {
+            "__typename": "User",
+            "id": "pfbid032qkhwtbXgEyquGDEpQzmD4bpLf7DEsGCjWswJdNC76NrokiRNJLw7g8Ay4jTUWSpl"
+          },
+          "ocrText": "May be an image of bedroom"
+        },
+        {
+          "thumbnail": "https://scontent.fplv1-2.fna.fbcdn.net/v/t39.30808-6/514248618_1406793960530829_218310332555883539_n.jpg?stp=dst-jpg_s600x600_tt6&_nc_cat=109&ccb=1-7&_nc_sid=aa7b47&_nc_ohc=IDgq-mGNbWIQ7kNvwGDiDEm&_nc_oc=AdnwhQVN6gN2-XoRax1V4hwy7dP2ZznG03mUAFDsq6QyzoVMnXVbDjopDfWFygp_u2A&_nc_zt=23&_nc_ht=scontent.fplv1-2.fna&_nc_gid=yrElel5ji8Q4s-VDeMLOhA&oh=00_AfR6G3KTI0r3x3L4jf0atjChFai7GRV8WikhJqn5oC-DSA&oe=688D71D9",
+          "__typename": "Photo",
+          "is_playable": false,
+          "image": {
+            "uri": "https://scontent.fplv1-2.fna.fbcdn.net/v/t39.30808-6/514248618_1406793960530829_218310332555883539_n.jpg?stp=dst-jpg_s600x600_tt6&_nc_cat=109&ccb=1-7&_nc_sid=aa7b47&_nc_ohc=IDgq-mGNbWIQ7kNvwGDiDEm&_nc_oc=AdnwhQVN6gN2-XoRax1V4hwy7dP2ZznG03mUAFDsq6QyzoVMnXVbDjopDfWFygp_u2A&_nc_zt=23&_nc_ht=scontent.fplv1-2.fna&_nc_gid=yrElel5ji8Q4s-VDeMLOhA&oh=00_AfR6G3KTI0r3x3L4jf0atjChFai7GRV8WikhJqn5oC-DSA&oe=688D71D9",
+            "height": 600,
+            "width": 450
+          },
+          "id": "1406793957197496",
+          "__isMedia": "Photo",
+          "photo_cix_screen": null,
+          "copyright_banner_info": null,
+          "owner": {
+            "__typename": "User",
+            "id": "pfbid032qkhwtbXgEyquGDEpQzmD4bpLf7DEsGCjWswJdNC76NrokiRNJLw7g8Ay4jTUWSpl"
+          },
+          "ocrText": "May be an image of lighting, table and indoors"
+        },
+        {
+          "thumbnail": "https://scontent.fplv1-2.fna.fbcdn.net/v/t39.30808-6/514271772_1406793827197509_7900428524488342464_n.jpg?stp=dst-jpg_s600x600_tt6&_nc_cat=102&ccb=1-7&_nc_sid=aa7b47&_nc_ohc=BLKMV2BkOdMQ7kNvwHYTLb0&_nc_oc=Adn1yIdyGm1LFqDdLXHF-XRMj8b9P11-gRZrD9zsq2TJEE6j03pXlGCoZZnrTu5hln4&_nc_zt=23&_nc_ht=scontent.fplv1-2.fna&_nc_gid=yrElel5ji8Q4s-VDeMLOhA&oh=00_AfQKdrKmeBl2kpm8AYzhudkH6-nUFd3mzxMPX-WRfvwlyA&oe=688D5EA1",
+          "__typename": "Photo",
+          "is_playable": false,
+          "image": {
+            "uri": "https://scontent.fplv1-2.fna.fbcdn.net/v/t39.30808-6/514271772_1406793827197509_7900428524488342464_n.jpg?stp=dst-jpg_s600x600_tt6&_nc_cat=102&ccb=1-7&_nc_sid=aa7b47&_nc_ohc=BLKMV2BkOdMQ7kNvwHYTLb0&_nc_oc=Adn1yIdyGm1LFqDdLXHF-XRMj8b9P11-gRZrD9zsq2TJEE6j03pXlGCoZZnrTu5hln4&_nc_zt=23&_nc_ht=scontent.fplv1-2.fna&_nc_gid=yrElel5ji8Q4s-VDeMLOhA&oh=00_AfQKdrKmeBl2kpm8AYzhudkH6-nUFd3mzxMPX-WRfvwlyA&oe=688D5EA1",
+            "height": 600,
+            "width": 450
+          },
+          "id": "1406793817197510",
+          "__isMedia": "Photo",
+          "photo_cix_screen": null,
+          "copyright_banner_info": null,
+          "owner": {
+            "__typename": "User",
+            "id": "pfbid032qkhwtbXgEyquGDEpQzmD4bpLf7DEsGCjWswJdNC76NrokiRNJLw7g8Ay4jTUWSpl"
+          },
+          "ocrText": "No photo description available."
+        }
+      ],
+      "user": {
+        "id": "pfbid032qkhwtbXgEyquGDEpQzmD4bpLf7DEsGCjWswJdNC76NrokiRNJLw7g8Ay4jTUWSpl",
+        "name": "Gauthier Immo"
+      },
+      "likesCount": 5,
+      "commentsCount": 0
+    },
+    {
+      "facebookUrl": "https://www.facebook.com/groups/4264469556912052/",
+      "text": "",
+      "user": {
+        "id": "pfbid032qkhwtbXgEyquGDEpQzmD4bpLf7DEsGCjWswJdNC76NrokiRNJLw7g8Ay4jTUWSpl",
+        "name": "Gauthier Immo"
+      },
+      "likesCount": 2,
+      "commentsCount": 0
+    },
+    {
+      "facebookUrl": "https://www.facebook.com/groups/4264469556912052/",
+      "text": "",
+      "user": {
+        "id": "pfbid032qkhwtbXgEyquGDEpQzmD4bpLf7DEsGCjWswJdNC76NrokiRNJLw7g8Ay4jTUWSpl",
+        "name": "Gauthier Immo"
+      },
+      "likesCount": 5,
+      "commentsCount": 0
+    },
+    {
+      "facebookUrl": "https://www.facebook.com/groups/4264469556912052/",
+      "text": "",
+      "user": {
+        "id": "pfbid032qkhwtbXgEyquGDEpQzmD4bpLf7DEsGCjWswJdNC76NrokiRNJLw7g8Ay4jTUWSpl",
+        "name": "Gauthier Immo"
+      },
+      "likesCount": 1,
+      "commentsCount": 0
+    },
+    {
+      "facebookUrl": "https://www.facebook.com/groups/4264469556912052/",
+      "text": "",
+      "user": {
+        "id": "pfbid032qkhwtbXgEyquGDEpQzmD4bpLf7DEsGCjWswJdNC76NrokiRNJLw7g8Ay4jTUWSpl",
+        "name": "Gauthier Immo"
+      },
+      "likesCount": 0,
+      "commentsCount": 0
+    },
+    {
+      "facebookUrl": "https://www.facebook.com/groups/4264469556912052/",
+      "text": "",
+      "user": {
+        "id": "pfbid032qkhwtbXgEyquGDEpQzmD4bpLf7DEsGCjWswJdNC76NrokiRNJLw7g8Ay4jTUWSpl",
+        "name": "Gauthier Immo"
+      },
+      "likesCount": 3,
+      "commentsCount": 0
+    },
+    {
+      "facebookUrl": "https://www.facebook.com/groups/4264469556912052/",
+      "text": "chambre américaine a louer a alibandeng, en bordure de route, eau en permanence.\nchambre, coin cuisine, salle de bain, parking.\nprix : 90.000f avec eau.\nContacts : 077933932/ 066100817.\nagent immobilier",
+      "attachments": [
+        {
+          "mediaset_token": "pcb.31423120410620266",
+          "url": "https://www.facebook.com/media/set/?set=pcb.31423120410620266&type=1",
+          "comet_product_tag_feed_overlay_renderer": null
+        },
+        {
+          "thumbnail": "https://scontent-phx1-1.xx.fbcdn.net/v/t39.30808-6/518396433_1405679493975609_5862248294477324335_n.jpg?stp=dst-jpg_s600x600_tt6&_nc_cat=105&ccb=1-7&_nc_sid=aa7b47&_nc_ohc=3rqbV3hg08MQ7kNvwFounbu&_nc_oc=AdmBVjhQo-wc5t9lqnzAo3Px31GeT8zbym3dRaN-7pmEMaHmOcsFD3ZNYBJf1HBn6Zth1dD3sfEHV1rjizGRF25C&_nc_zt=23&_nc_ht=scontent-phx1-1.xx&_nc_gid=QxZnlE-ehCCGZZhZD1a5dg&oh=00_AfRQHr9ffwBFZrNMgEcUY3uhpKq38J94qugI78QkMfbXjA&oe=688D869B",
+          "__typename": "Photo",
+          "is_playable": false,
+          "image": {
+            "uri": "https://scontent-phx1-1.xx.fbcdn.net/v/t39.30808-6/518396433_1405679493975609_5862248294477324335_n.jpg?stp=dst-jpg_s600x600_tt6&_nc_cat=105&ccb=1-7&_nc_sid=aa7b47&_nc_ohc=3rqbV3hg08MQ7kNvwFounbu&_nc_oc=AdmBVjhQo-wc5t9lqnzAo3Px31GeT8zbym3dRaN-7pmEMaHmOcsFD3ZNYBJf1HBn6Zth1dD3sfEHV1rjizGRF25C&_nc_zt=23&_nc_ht=scontent-phx1-1.xx&_nc_gid=QxZnlE-ehCCGZZhZD1a5dg&oh=00_AfRQHr9ffwBFZrNMgEcUY3uhpKq38J94qugI78QkMfbXjA&oe=688D869B",
+            "height": 600,
+            "width": 450
+          },
+          "id": "1405679477308944",
+          "__isMedia": "Photo",
+          "photo_cix_screen": null,
+          "copyright_banner_info": null,
+          "owner": {
+            "__typename": "User",
+            "id": "pfbid032qkhwtbXgEyquGDEpQzmD4bpLf7DEsGCjWswJdNC76NrokiRNJLw7g8Ay4jTUWSpl"
+          },
+          "ocrText": "No photo description available."
+        },
+        {
+          "thumbnail": "https://scontent-phx1-1.xx.fbcdn.net/v/t39.30808-6/518381959_1405679483975610_9051939513006148039_n.jpg?stp=dst-jpg_s600x600_tt6&_nc_cat=104&ccb=1-7&_nc_sid=aa7b47&_nc_ohc=Knd2DbMBq9kQ7kNvwHWr6Ow&_nc_oc=AdmK8IDA-A1rk3NHAPysDhRJ-yd5vL53TuQW93HtFHS11hPsNIe22_niZlrs1Ffm2Pfvy3Bu9aNc0jn0ZQx3nz_C&_nc_zt=23&_nc_ht=scontent-phx1-1.xx&_nc_gid=QxZnlE-ehCCGZZhZD1a5dg&oh=00_AfSfmUhVfDPSLgiUonYtVo0fesjUCVRTYZY5x_ztxmDmQQ&oe=688D7B3D",
+          "__typename": "Photo",
+          "is_playable": false,
+          "image": {
+            "uri": "https://scontent-phx1-1.xx.fbcdn.net/v/t39.30808-6/518381959_1405679483975610_9051939513006148039_n.jpg?stp=dst-jpg_s600x600_tt6&_nc_cat=104&ccb=1-7&_nc_sid=aa7b47&_nc_ohc=Knd2DbMBq9kQ7kNvwHWr6Ow&_nc_oc=AdmK8IDA-A1rk3NHAPysDhRJ-yd5vL53TuQW93HtFHS11hPsNIe22_niZlrs1Ffm2Pfvy3Bu9aNc0jn0ZQx3nz_C&_nc_zt=23&_nc_ht=scontent-phx1-1.xx&_nc_gid=QxZnlE-ehCCGZZhZD1a5dg&oh=00_AfSfmUhVfDPSLgiUonYtVo0fesjUCVRTYZY5x_ztxmDmQQ&oe=688D7B3D",
+            "height": 600,
+            "width": 450
+          },
+          "id": "1405679467308945",
+          "__isMedia": "Photo",
+          "photo_cix_screen": null,
+          "copyright_banner_info": null,
+          "owner": {
+            "__typename": "User",
+            "id": "pfbid032qkhwtbXgEyquGDEpQzmD4bpLf7DEsGCjWswJdNC76NrokiRNJLw7g8Ay4jTUWSpl"
+          },
+          "ocrText": "No photo description available."
+        },
+        {
+          "thumbnail": "https://scontent-phx1-1.xx.fbcdn.net/v/t39.30808-6/518417793_1405679497308942_522566974949685689_n.jpg?stp=dst-jpg_s600x600_tt6&_nc_cat=105&ccb=1-7&_nc_sid=aa7b47&_nc_ohc=4gNco5vJXRUQ7kNvwGi2UJ6&_nc_oc=Adl6vFeDiFKHaTSx-9gsQBhfluTjL_0i3w0Rbw9luBj_KL4x2jWcYFzA5tpq5AOZHM_IYWjo8Tz1a6tSu7c8MiXh&_nc_zt=23&_nc_ht=scontent-phx1-1.xx&_nc_gid=QxZnlE-ehCCGZZhZD1a5dg&oh=00_AfS2Dp6mv8clAYepIzPqL-H2qF8R3Cg4gGEybEooIqIfcQ&oe=688D72A6",
+          "__typename": "Photo",
+          "is_playable": false,
+          "image": {
+            "uri": "https://scontent-phx1-1.xx.fbcdn.net/v/t39.30808-6/518417793_1405679497308942_522566974949685689_n.jpg?stp=dst-jpg_s600x600_tt6&_nc_cat=105&ccb=1-7&_nc_sid=aa7b47&_nc_ohc=4gNco5vJXRUQ7kNvwGi2UJ6&_nc_oc=Adl6vFeDiFKHaTSx-9gsQBhfluTjL_0i3w0Rbw9luBj_KL4x2jWcYFzA5tpq5AOZHM_IYWjo8Tz1a6tSu7c8MiXh&_nc_zt=23&_nc_ht=scontent-phx1-1.xx&_nc_gid=QxZnlE-ehCCGZZhZD1a5dg&oh=00_AfS2Dp6mv8clAYepIzPqL-H2qF8R3Cg4gGEybEooIqIfcQ&oe=688D72A6",
+            "height": 600,
+            "width": 450
+          },
+          "id": "1405679490642276",
+          "__isMedia": "Photo",
+          "photo_cix_screen": null,
+          "copyright_banner_info": null,
+          "owner": {
+            "__typename": "User",
+            "id": "pfbid032qkhwtbXgEyquGDEpQzmD4bpLf7DEsGCjWswJdNC76NrokiRNJLw7g8Ay4jTUWSpl"
+          },
+          "ocrText": "No photo description available."
+        },
+        {
+          "thumbnail": "https://scontent-phx1-1.xx.fbcdn.net/v/t39.30808-6/514260151_1405679517308940_508486038027874652_n.jpg?stp=dst-jpg_s600x600_tt6&_nc_cat=105&ccb=1-7&_nc_sid=aa7b47&_nc_ohc=N59OCfN4nQcQ7kNvwEd5nA0&_nc_oc=AdkXgKUcpfDl7ninTRbQyFPYpXPb8W61KFsFN9kZW3JNupZ4rCJQdDu3DV49_3RgWSnpejBDp9j7MIuDnIMQDJOC&_nc_zt=23&_nc_ht=scontent-phx1-1.xx&_nc_gid=QxZnlE-ehCCGZZhZD1a5dg&oh=00_AfS7wbmBTeZ1d_OrKzgZaGE7DGHnflUx9N02nCiEkVH-XA&oe=688D59A6",
+          "__typename": "Photo",
+          "is_playable": false,
+          "image": {
+            "uri": "https://scontent-phx1-1.xx.fbcdn.net/v/t39.30808-6/514260151_1405679517308940_508486038027874652_n.jpg?stp=dst-jpg_s600x600_tt6&_nc_cat=105&ccb=1-7&_nc_sid=aa7b47&_nc_ohc=N59OCfN4nQcQ7kNvwEd5nA0&_nc_oc=AdkXgKUcpfDl7ninTRbQyFPYpXPb8W61KFsFN9kZW3JNupZ4rCJQdDu3DV49_3RgWSnpejBDp9j7MIuDnIMQDJOC&_nc_zt=23&_nc_ht=scontent-phx1-1.xx&_nc_gid=QxZnlE-ehCCGZZhZD1a5dg&oh=00_AfS7wbmBTeZ1d_OrKzgZaGE7DGHnflUx9N02nCiEkVH-XA&oe=688D59A6",
+            "height": 600,
+            "width": 450
+          },
+          "id": "1405679513975607",
+          "__isMedia": "Photo",
+          "photo_cix_screen": null,
+          "copyright_banner_info": null,
+          "owner": {
+            "__typename": "User",
+            "id": "pfbid032qkhwtbXgEyquGDEpQzmD4bpLf7DEsGCjWswJdNC76NrokiRNJLw7g8Ay4jTUWSpl"
+          },
+          "ocrText": "No photo description available."
+        }
+      ],
+      "user": {
+        "id": "pfbid032qkhwtbXgEyquGDEpQzmD4bpLf7DEsGCjWswJdNC76NrokiRNJLw7g8Ay4jTUWSpl",
+        "name": "Gauthier Immo"
+      },
+      "likesCount": 5,
+      "commentsCount": 0
+    },
+    {
+      "facebookUrl": "https://www.facebook.com/groups/4264469556912052/",
+      "text": "",
+      "user": {
+        "id": "pfbid032qkhwtbXgEyquGDEpQzmD4bpLf7DEsGCjWswJdNC76NrokiRNJLw7g8Ay4jTUWSpl",
+        "name": "Gauthier Immo"
+      },
+      "likesCount": 2,
+      "commentsCount": 0
+    },
+    {
+      "facebookUrl": "https://www.facebook.com/groups/4264469556912052/",
+      "text": "",
+      "user": {
+        "id": "pfbid032qkhwtbXgEyquGDEpQzmD4bpLf7DEsGCjWswJdNC76NrokiRNJLw7g8Ay4jTUWSpl",
+        "name": "Gauthier Immo"
+      },
+      "likesCount": 1,
+      "commentsCount": 0
+    },
+    {
+      "facebookUrl": "https://www.facebook.com/groups/4264469556912052/",
+      "text": "appartement à louer derrière camp de Gaulle.\n2 chambres, salon, cuisine, salle de bain, terrasse, parking.\nprix : 200.000f\nContacts : 077933932/ 066100817.\nagent immobilier",
+      "attachments": [
+        {
+          "mediaset_token": "pcb.31416488254616815",
+          "url": "https://www.facebook.com/media/set/?set=pcb.31416488254616815&type=1",
+          "comet_product_tag_feed_overlay_renderer": null
+        },
+        {
+          "thumbnail": "https://scontent.fagc1-2.fna.fbcdn.net/v/t39.30808-6/517695674_1405352774008281_4216197598948651732_n.jpg?stp=dst-jpg_s600x600_tt6&_nc_cat=111&ccb=1-7&_nc_sid=aa7b47&_nc_ohc=NPvgcIRjtLgQ7kNvwEVmKe3&_nc_oc=AdmfAO5O9AnvetLW9ga5RzqET7gBN6O8UZvjmzpDpLk5W2aH7JXgzDseaLX9a7eOq25C3riNAekJtKn_fwwWeqyW&_nc_zt=23&_nc_ht=scontent.fagc1-2.fna&_nc_gid=ilzIiS4t4gvDcwhT820pKg&oh=00_AfREKGgw3HJyIKCksuLlsw-F1p8PpZFxIZI9ADzXUTuy_Q&oe=688D7A94",
+          "__typename": "Photo",
+          "is_playable": false,
+          "image": {
+            "uri": "https://scontent.fagc1-2.fna.fbcdn.net/v/t39.30808-6/517695674_1405352774008281_4216197598948651732_n.jpg?stp=dst-jpg_s600x600_tt6&_nc_cat=111&ccb=1-7&_nc_sid=aa7b47&_nc_ohc=NPvgcIRjtLgQ7kNvwEVmKe3&_nc_oc=AdmfAO5O9AnvetLW9ga5RzqET7gBN6O8UZvjmzpDpLk5W2aH7JXgzDseaLX9a7eOq25C3riNAekJtKn_fwwWeqyW&_nc_zt=23&_nc_ht=scontent.fagc1-2.fna&_nc_gid=ilzIiS4t4gvDcwhT820pKg&oh=00_AfREKGgw3HJyIKCksuLlsw-F1p8PpZFxIZI9ADzXUTuy_Q&oe=688D7A94",
+            "height": 600,
+            "width": 450
+          },
+          "id": "1405352767341615",
+          "__isMedia": "Photo",
+          "photo_cix_screen": null,
+          "copyright_banner_info": null,
+          "owner": {
+            "__typename": "User",
+            "id": "pfbid032qkhwtbXgEyquGDEpQzmD4bpLf7DEsGCjWswJdNC76NrokiRNJLw7g8Ay4jTUWSpl"
+          },
+          "ocrText": "No photo description available."
+        },
+        {
+          "thumbnail": "https://scontent.fagc1-1.fna.fbcdn.net/v/t39.30808-6/514255495_1405352690674956_7473883564446788140_n.jpg?stp=dst-jpg_s600x600_tt6&_nc_cat=106&ccb=1-7&_nc_sid=aa7b47&_nc_ohc=hLogTr3lvUMQ7kNvwHJL3OR&_nc_oc=Adk0Bwvu1_4TUClruEiNpiPB_90HNGM6Atya8L6QoBvC-apwhHOVLe52qimGYlBV_rJyMcE4irbTebUDeOSw64hO&_nc_zt=23&_nc_ht=scontent.fagc1-1.fna&_nc_gid=ilzIiS4t4gvDcwhT820pKg&oh=00_AfR9N8LtB4YRJ0_wB9PuI9q0nEBTSXFosT4D1QGnRWbKVQ&oe=688D55FC",
+          "__typename": "Photo",
+          "is_playable": false,
+          "image": {
+            "uri": "https://scontent.fagc1-1.fna.fbcdn.net/v/t39.30808-6/514255495_1405352690674956_7473883564446788140_n.jpg?stp=dst-jpg_s600x600_tt6&_nc_cat=106&ccb=1-7&_nc_sid=aa7b47&_nc_ohc=hLogTr3lvUMQ7kNvwHJL3OR&_nc_oc=Adk0Bwvu1_4TUClruEiNpiPB_90HNGM6Atya8L6QoBvC-apwhHOVLe52qimGYlBV_rJyMcE4irbTebUDeOSw64hO&_nc_zt=23&_nc_ht=scontent.fagc1-1.fna&_nc_gid=ilzIiS4t4gvDcwhT820pKg&oh=00_AfR9N8LtB4YRJ0_wB9PuI9q0nEBTSXFosT4D1QGnRWbKVQ&oe=688D55FC",
+            "height": 600,
+            "width": 450
+          },
+          "id": "1405352684008290",
+          "__isMedia": "Photo",
+          "photo_cix_screen": null,
+          "copyright_banner_info": null,
+          "owner": {
+            "__typename": "User",
+            "id": "pfbid032qkhwtbXgEyquGDEpQzmD4bpLf7DEsGCjWswJdNC76NrokiRNJLw7g8Ay4jTUWSpl"
+          },
+          "ocrText": "No photo description available."
+        },
+        {
+          "thumbnail": "https://scontent.fagc1-1.fna.fbcdn.net/v/t39.30808-6/520002957_1405352687341623_2772610736782088308_n.jpg?stp=dst-jpg_s600x600_tt6&_nc_cat=101&ccb=1-7&_nc_sid=aa7b47&_nc_ohc=vL33W62hx64Q7kNvwHpPUVr&_nc_oc=AdlW-EssEhgO3f_nnnsJGwOm-H9KkuOUNmVKwoTEfMRxckWSohYePC3v_h00xWgF2gUiHRmoTm2P0f9QfM7P9Ty8&_nc_zt=23&_nc_ht=scontent.fagc1-1.fna&_nc_gid=ilzIiS4t4gvDcwhT820pKg&oh=00_AfSREk8oTiXfhGrZoMigh57uPEcz7Xly734cXb4_28yQBw&oe=688D869C",
+          "__typename": "Photo",
+          "is_playable": false,
+          "image": {
+            "uri": "https://scontent.fagc1-1.fna.fbcdn.net/v/t39.30808-6/520002957_1405352687341623_2772610736782088308_n.jpg?stp=dst-jpg_s600x600_tt6&_nc_cat=101&ccb=1-7&_nc_sid=aa7b47&_nc_ohc=vL33W62hx64Q7kNvwHpPUVr&_nc_oc=AdlW-EssEhgO3f_nnnsJGwOm-H9KkuOUNmVKwoTEfMRxckWSohYePC3v_h00xWgF2gUiHRmoTm2P0f9QfM7P9Ty8&_nc_zt=23&_nc_ht=scontent.fagc1-1.fna&_nc_gid=ilzIiS4t4gvDcwhT820pKg&oh=00_AfSREk8oTiXfhGrZoMigh57uPEcz7Xly734cXb4_28yQBw&oe=688D869C",
+            "height": 600,
+            "width": 450
+          },
+          "id": "1405352674008291",
+          "__isMedia": "Photo",
+          "photo_cix_screen": null,
+          "copyright_banner_info": null,
+          "owner": {
+            "__typename": "User",
+            "id": "pfbid032qkhwtbXgEyquGDEpQzmD4bpLf7DEsGCjWswJdNC76NrokiRNJLw7g8Ay4jTUWSpl"
+          },
+          "ocrText": "No photo description available."
+        },
+        {
+          "thumbnail": "https://scontent.fagc1-2.fna.fbcdn.net/v/t39.30808-6/518417155_1405352660674959_1722681828534541462_n.jpg?stp=dst-jpg_s600x600_tt6&_nc_cat=104&ccb=1-7&_nc_sid=aa7b47&_nc_ohc=JZXCyjaW7UMQ7kNvwG_VgDg&_nc_oc=AdmHXurjllChM3gpWFrXEU14lT0n1vA0_Dahs3hJ0-apJWeq5n72TM3-bP4LpzZbDdZymMYkiuIN_3bi3-Pa9Czy&_nc_zt=23&_nc_ht=scontent.fagc1-2.fna&_nc_gid=ilzIiS4t4gvDcwhT820pKg&oh=00_AfRrTMTWOfO6ArvNyj2ZLNpY5l5dPM3YT2U6VTdEiTjl3w&oe=688D709C",
+          "__typename": "Photo",
+          "is_playable": false,
+          "image": {
+            "uri": "https://scontent.fagc1-2.fna.fbcdn.net/v/t39.30808-6/518417155_1405352660674959_1722681828534541462_n.jpg?stp=dst-jpg_s600x600_tt6&_nc_cat=104&ccb=1-7&_nc_sid=aa7b47&_nc_ohc=JZXCyjaW7UMQ7kNvwG_VgDg&_nc_oc=AdmHXurjllChM3gpWFrXEU14lT0n1vA0_Dahs3hJ0-apJWeq5n72TM3-bP4LpzZbDdZymMYkiuIN_3bi3-Pa9Czy&_nc_zt=23&_nc_ht=scontent.fagc1-2.fna&_nc_gid=ilzIiS4t4gvDcwhT820pKg&oh=00_AfRrTMTWOfO6ArvNyj2ZLNpY5l5dPM3YT2U6VTdEiTjl3w&oe=688D709C",
+            "height": 600,
+            "width": 450
+          },
+          "id": "1405352657341626",
+          "__isMedia": "Photo",
+          "photo_cix_screen": null,
+          "copyright_banner_info": null,
+          "owner": {
+            "__typename": "User",
+            "id": "pfbid032qkhwtbXgEyquGDEpQzmD4bpLf7DEsGCjWswJdNC76NrokiRNJLw7g8Ay4jTUWSpl"
+          },
+          "ocrText": "No photo description available."
+        },
+        {
+          "thumbnail": "https://scontent.fagc1-1.fna.fbcdn.net/v/t39.30808-6/518399414_1405352754008283_8822412361937240439_n.jpg?stp=dst-jpg_s600x600_tt6&_nc_cat=102&ccb=1-7&_nc_sid=aa7b47&_nc_ohc=zBkoYsiuoUwQ7kNvwFMPX1F&_nc_oc=AdnweIzIRVZhY4_qM3YvHrdcNWYY8YCQ6sCzhcc9xcRyOfzwRwyxxvbcW7ZTrHDeSbg025yX0daiFIuI8LG-i-GT&_nc_zt=23&_nc_ht=scontent.fagc1-1.fna&_nc_gid=ilzIiS4t4gvDcwhT820pKg&oh=00_AfTmMWxY0ZU3ERJ_xgU6AkRMC8afpmnGs0RQLvjAEtct_w&oe=688D6622",
+          "__typename": "Photo",
+          "is_playable": false,
+          "image": {
+            "uri": "https://scontent.fagc1-1.fna.fbcdn.net/v/t39.30808-6/518399414_1405352754008283_8822412361937240439_n.jpg?stp=dst-jpg_s600x600_tt6&_nc_cat=102&ccb=1-7&_nc_sid=aa7b47&_nc_ohc=zBkoYsiuoUwQ7kNvwFMPX1F&_nc_oc=AdnweIzIRVZhY4_qM3YvHrdcNWYY8YCQ6sCzhcc9xcRyOfzwRwyxxvbcW7ZTrHDeSbg025yX0daiFIuI8LG-i-GT&_nc_zt=23&_nc_ht=scontent.fagc1-1.fna&_nc_gid=ilzIiS4t4gvDcwhT820pKg&oh=00_AfTmMWxY0ZU3ERJ_xgU6AkRMC8afpmnGs0RQLvjAEtct_w&oe=688D6622",
+            "height": 600,
+            "width": 450
+          },
+          "id": "1405352744008284",
+          "__isMedia": "Photo",
+          "photo_cix_screen": null,
+          "copyright_banner_info": null,
+          "owner": {
+            "__typename": "User",
+            "id": "pfbid032qkhwtbXgEyquGDEpQzmD4bpLf7DEsGCjWswJdNC76NrokiRNJLw7g8Ay4jTUWSpl"
+          },
+          "ocrText": "No photo description available."
+        }
+      ],
+      "user": {
+        "id": "pfbid032qkhwtbXgEyquGDEpQzmD4bpLf7DEsGCjWswJdNC76NrokiRNJLw7g8Ay4jTUWSpl",
+        "name": "Gauthier Immo"
+      },
+      "likesCount": 10,
+      "commentsCount": 7
+    },
+    {
+      "facebookUrl": "https://www.facebook.com/groups/4264469556912052/",
+      "text": "studio à louer à alibandeng, entièrement climatisé.\nchambre, Salon, coin cuisine, salle de bain, parking.\nprix : 150.000f\nContacts : 077933932/ 066100817.\nagent immobilier",
+      "attachments": [
+        {
+          "mediaset_token": "pcb.31416446687954305",
+          "url": "https://www.facebook.com/media/set/?set=pcb.31416446687954305&type=1",
+          "comet_product_tag_feed_overlay_renderer": null
+        },
+        {
+          "thumbnail": "https://scontent.fmux3-1.fna.fbcdn.net/v/t39.30808-6/515103140_1405350210675204_4002630856457416141_n.jpg?stp=dst-jpg_s600x600_tt6&_nc_cat=107&ccb=1-7&_nc_sid=aa7b47&_nc_ohc=7JcCoGcZcoYQ7kNvwFM88TA&_nc_oc=AdkuizLJPnAutzQXZp_SWyV0nIL6ZP1Y68qu3HajjEgI1_HKEVHeaQP_G7IZyiluCMw&_nc_zt=23&_nc_ht=scontent.fmux3-1.fna&_nc_gid=_Np7D7H9BimQ_flZKB11Ag&oh=00_AfQgjaKIlSJTETPPZ_NlVYPapp_76tP7RHyGg4bbRU-ysQ&oe=688D613B",
+          "__typename": "Photo",
+          "is_playable": false,
+          "image": {
+            "uri": "https://scontent.fmux3-1.fna.fbcdn.net/v/t39.30808-6/515103140_1405350210675204_4002630856457416141_n.jpg?stp=dst-jpg_s600x600_tt6&_nc_cat=107&ccb=1-7&_nc_sid=aa7b47&_nc_ohc=7JcCoGcZcoYQ7kNvwFM88TA&_nc_oc=AdkuizLJPnAutzQXZp_SWyV0nIL6ZP1Y68qu3HajjEgI1_HKEVHeaQP_G7IZyiluCMw&_nc_zt=23&_nc_ht=scontent.fmux3-1.fna&_nc_gid=_Np7D7H9BimQ_flZKB11Ag&oh=00_AfQgjaKIlSJTETPPZ_NlVYPapp_76tP7RHyGg4bbRU-ysQ&oe=688D613B",
+            "height": 600,
+            "width": 450
+          },
+          "id": "1405350204008538",
+          "__isMedia": "Photo",
+          "photo_cix_screen": null,
+          "copyright_banner_info": null,
+          "owner": {
+            "__typename": "User",
+            "id": "pfbid032qkhwtbXgEyquGDEpQzmD4bpLf7DEsGCjWswJdNC76NrokiRNJLw7g8Ay4jTUWSpl"
+          },
+          "ocrText": "May be an image of indoors"
+        },
+        {
+          "thumbnail": "https://scontent.fmux3-1.fna.fbcdn.net/v/t39.30808-6/518400317_1405350190675206_550027077087984421_n.jpg?stp=dst-jpg_s600x600_tt6&_nc_cat=103&ccb=1-7&_nc_sid=aa7b47&_nc_ohc=YxAOa5I1IisQ7kNvwGJV2O-&_nc_oc=Adkz4E8Oh6nv7EFTpMweLNOy6f6it6d_juBVZkHT4ls6ryQalgzhJg0dkUsnevkZ_Gc&_nc_zt=23&_nc_ht=scontent.fmux3-1.fna&_nc_gid=_Np7D7H9BimQ_flZKB11Ag&oh=00_AfRBvszuRYVOtP-ZcTrA1qmmmFGdbwsjt3lRdp86eksmTA&oe=688D74A6",
+          "__typename": "Photo",
+          "is_playable": false,
+          "image": {
+            "uri": "https://scontent.fmux3-1.fna.fbcdn.net/v/t39.30808-6/518400317_1405350190675206_550027077087984421_n.jpg?stp=dst-jpg_s600x600_tt6&_nc_cat=103&ccb=1-7&_nc_sid=aa7b47&_nc_ohc=YxAOa5I1IisQ7kNvwGJV2O-&_nc_oc=Adkz4E8Oh6nv7EFTpMweLNOy6f6it6d_juBVZkHT4ls6ryQalgzhJg0dkUsnevkZ_Gc&_nc_zt=23&_nc_ht=scontent.fmux3-1.fna&_nc_gid=_Np7D7H9BimQ_flZKB11Ag&oh=00_AfRBvszuRYVOtP-ZcTrA1qmmmFGdbwsjt3lRdp86eksmTA&oe=688D74A6",
+            "height": 450,
+            "width": 600
+          },
+          "id": "1405350180675207",
+          "__isMedia": "Photo",
+          "photo_cix_screen": null,
+          "copyright_banner_info": null,
+          "owner": {
+            "__typename": "User",
+            "id": "pfbid032qkhwtbXgEyquGDEpQzmD4bpLf7DEsGCjWswJdNC76NrokiRNJLw7g8Ay4jTUWSpl"
+          },
+          "ocrText": "No photo description available."
+        },
+        {
+          "thumbnail": "https://scontent.fmux3-1.fna.fbcdn.net/v/t39.30808-6/514263059_1405350250675200_8907357923720722488_n.jpg?stp=dst-jpg_s600x600_tt6&_nc_cat=109&ccb=1-7&_nc_sid=aa7b47&_nc_ohc=FrK9O0cTjhwQ7kNvwHF75gL&_nc_oc=Adlp57symRFdxWjQb_ZAFGzBJ9jXmXagmHKzjAb80eKvnkD7WgsXn5cMQp-qmgIaZcQ&_nc_zt=23&_nc_ht=scontent.fmux3-1.fna&_nc_gid=_Np7D7H9BimQ_flZKB11Ag&oh=00_AfSEWdHrh_QyWcP6ZKQZWAwyaCrOo5oYFBRK95iX0Vkj9w&oe=688D842E",
+          "__typename": "Photo",
+          "is_playable": false,
+          "image": {
+            "uri": "https://scontent.fmux3-1.fna.fbcdn.net/v/t39.30808-6/514263059_1405350250675200_8907357923720722488_n.jpg?stp=dst-jpg_s600x600_tt6&_nc_cat=109&ccb=1-7&_nc_sid=aa7b47&_nc_ohc=FrK9O0cTjhwQ7kNvwHF75gL&_nc_oc=Adlp57symRFdxWjQb_ZAFGzBJ9jXmXagmHKzjAb80eKvnkD7WgsXn5cMQp-qmgIaZcQ&_nc_zt=23&_nc_ht=scontent.fmux3-1.fna&_nc_gid=_Np7D7H9BimQ_flZKB11Ag&oh=00_AfSEWdHrh_QyWcP6ZKQZWAwyaCrOo5oYFBRK95iX0Vkj9w&oe=688D842E",
+            "height": 600,
+            "width": 450
+          },
+          "id": "1405350237341868",
+          "__isMedia": "Photo",
+          "photo_cix_screen": null,
+          "copyright_banner_info": null,
+          "owner": {
+            "__typename": "User",
+            "id": "pfbid032qkhwtbXgEyquGDEpQzmD4bpLf7DEsGCjWswJdNC76NrokiRNJLw7g8Ay4jTUWSpl"
+          },
+          "ocrText": "May be an image of indoors"
+        },
+        {
+          "thumbnail": "https://scontent.fmux3-1.fna.fbcdn.net/v/t39.30808-6/522084609_1405350310675194_1846002271377535045_n.jpg?stp=dst-jpg_s600x600_tt6&_nc_cat=104&ccb=1-7&_nc_sid=aa7b47&_nc_ohc=cfg_8BIpQzUQ7kNvwHTHmKP&_nc_oc=Adn0UiXIar6SqjCXG2xkgtSh138TTjXEoMw421zIDsQSfsp3veYjKXXJ7uYm7ONK1kE&_nc_zt=23&_nc_ht=scontent.fmux3-1.fna&_nc_gid=_Np7D7H9BimQ_flZKB11Ag&oh=00_AfSJ5b78Vf5J-H0Hg_5hODztlbMdXgQtSZn9UbPcCrtICA&oe=688D5369",
+          "__typename": "Photo",
+          "is_playable": false,
+          "image": {
+            "uri": "https://scontent.fmux3-1.fna.fbcdn.net/v/t39.30808-6/522084609_1405350310675194_1846002271377535045_n.jpg?stp=dst-jpg_s600x600_tt6&_nc_cat=104&ccb=1-7&_nc_sid=aa7b47&_nc_ohc=cfg_8BIpQzUQ7kNvwHTHmKP&_nc_oc=Adn0UiXIar6SqjCXG2xkgtSh138TTjXEoMw421zIDsQSfsp3veYjKXXJ7uYm7ONK1kE&_nc_zt=23&_nc_ht=scontent.fmux3-1.fna&_nc_gid=_Np7D7H9BimQ_flZKB11Ag&oh=00_AfSJ5b78Vf5J-H0Hg_5hODztlbMdXgQtSZn9UbPcCrtICA&oe=688D5369",
+            "height": 600,
+            "width": 450
+          },
+          "id": "1405350304008528",
+          "__isMedia": "Photo",
+          "photo_cix_screen": null,
+          "copyright_banner_info": null,
+          "owner": {
+            "__typename": "User",
+            "id": "pfbid032qkhwtbXgEyquGDEpQzmD4bpLf7DEsGCjWswJdNC76NrokiRNJLw7g8Ay4jTUWSpl"
+          },
+          "ocrText": "May be an image of indoors"
+        },
+        {
+          "thumbnail": "https://scontent.fmux3-1.fna.fbcdn.net/v/t39.30808-6/519782223_1405350330675192_5267775300843759044_n.jpg?stp=dst-jpg_s600x600_tt6&_nc_cat=105&ccb=1-7&_nc_sid=aa7b47&_nc_ohc=tBpeWOzPIJIQ7kNvwF4_BRz&_nc_oc=Adl1IUoF2vWCqicg7k3ANGayP-i8DV27rPVmk0UtvZxeUhqK2v6zk7KOucM5WSiXg-I&_nc_zt=23&_nc_ht=scontent.fmux3-1.fna&_nc_gid=_Np7D7H9BimQ_flZKB11Ag&oh=00_AfRFlm44SaaTqVrEMmu2jSVpC5R-wJNsn2JSFFz86ZFZmw&oe=688D71C4",
+          "__typename": "Photo",
+          "is_playable": false,
+          "image": {
+            "uri": "https://scontent.fmux3-1.fna.fbcdn.net/v/t39.30808-6/519782223_1405350330675192_5267775300843759044_n.jpg?stp=dst-jpg_s600x600_tt6&_nc_cat=105&ccb=1-7&_nc_sid=aa7b47&_nc_ohc=tBpeWOzPIJIQ7kNvwF4_BRz&_nc_oc=Adl1IUoF2vWCqicg7k3ANGayP-i8DV27rPVmk0UtvZxeUhqK2v6zk7KOucM5WSiXg-I&_nc_zt=23&_nc_ht=scontent.fmux3-1.fna&_nc_gid=_Np7D7H9BimQ_flZKB11Ag&oh=00_AfRFlm44SaaTqVrEMmu2jSVpC5R-wJNsn2JSFFz86ZFZmw&oe=688D71C4",
+            "height": 600,
+            "width": 450
+          },
+          "id": "1405350317341860",
+          "__isMedia": "Photo",
+          "photo_cix_screen": null,
+          "copyright_banner_info": null,
+          "owner": {
+            "__typename": "User",
+            "id": "pfbid032qkhwtbXgEyquGDEpQzmD4bpLf7DEsGCjWswJdNC76NrokiRNJLw7g8Ay4jTUWSpl"
+          },
+          "ocrText": "No photo description available."
+        }
+      ],
+      "user": {
+        "id": "pfbid032qkhwtbXgEyquGDEpQzmD4bpLf7DEsGCjWswJdNC76NrokiRNJLw7g8Ay4jTUWSpl",
+        "name": "Gauthier Immo"
+      },
+      "likesCount": 33,
+      "commentsCount": 7
+    },
+    {
+      "facebookUrl": "https://www.facebook.com/groups/4264469556912052/",
+      "text": "",
+      "user": {
+        "id": "pfbid032qkhwtbXgEyquGDEpQzmD4bpLf7DEsGCjWswJdNC76NrokiRNJLw7g8Ay4jTUWSpl",
+        "name": "Gauthier Immo"
+      },
+      "likesCount": 1,
+      "commentsCount": 0
+    },
+    {
+      "facebookUrl": "https://www.facebook.com/groups/4264469556912052/",
+      "text": "",
+      "user": {
+        "id": "pfbid032qkhwtbXgEyquGDEpQzmD4bpLf7DEsGCjWswJdNC76NrokiRNJLw7g8Ay4jTUWSpl",
+        "name": "Gauthier Immo"
+      },
+      "likesCount": 1,
+      "commentsCount": 0
+    },
+    {
+      "facebookUrl": "https://www.facebook.com/groups/4264469556912052/",
+      "text": "Appartement première main en finition a louer a angodjé disponible fin Août, en bordure de route.\n2 chambres, 2 salles de bains, wc visiteur, Salon, cuisine, terrasse, parking .\nPrix : 260.000f\nContacts : 077933932/ 066100817.\nAgent immobilier",
+      "attachments": [
+        {
+          "mediaset_token": "pcb.31411135215152119",
+          "url": "https://www.facebook.com/media/set/?set=pcb.31411135215152119&type=1",
+          "comet_product_tag_feed_overlay_renderer": null
+        },
+        {
+          "thumbnail": "https://scontent.fcgh4-1.fna.fbcdn.net/v/t39.30808-6/518384326_1405009990709226_7890726744333888257_n.jpg?stp=dst-jpg_s600x600_tt6&_nc_cat=108&ccb=1-7&_nc_sid=aa7b47&_nc_ohc=U-E5o2l8BVoQ7kNvwGnEWgK&_nc_oc=AdnSeiiMUaMcg1vgyeghvtf7yLkTNYCuQzUMYZs_gim5unVWt8H8Ea0xyjoeXB1Ag_4&_nc_zt=23&_nc_ht=scontent.fcgh4-1.fna&_nc_gid=WkcLY-7yTPE4BRFxScyagQ&oh=00_AfSrRm2rTx-a-vQF_diwRbGc475YvGOzoQ5sAjOpcMlsEQ&oe=688D711C",
+          "__typename": "Photo",
+          "is_playable": false,
+          "image": {
+            "uri": "https://scontent.fcgh4-1.fna.fbcdn.net/v/t39.30808-6/518384326_1405009990709226_7890726744333888257_n.jpg?stp=dst-jpg_s600x600_tt6&_nc_cat=108&ccb=1-7&_nc_sid=aa7b47&_nc_ohc=U-E5o2l8BVoQ7kNvwGnEWgK&_nc_oc=AdnSeiiMUaMcg1vgyeghvtf7yLkTNYCuQzUMYZs_gim5unVWt8H8Ea0xyjoeXB1Ag_4&_nc_zt=23&_nc_ht=scontent.fcgh4-1.fna&_nc_gid=WkcLY-7yTPE4BRFxScyagQ&oh=00_AfSrRm2rTx-a-vQF_diwRbGc475YvGOzoQ5sAjOpcMlsEQ&oe=688D711C",
+            "height": 600,
+            "width": 450
+          },
+          "id": "1405009984042560",
+          "__isMedia": "Photo",
+          "photo_cix_screen": null,
+          "copyright_banner_info": null,
+          "owner": {
+            "__typename": "User",
+            "id": "pfbid032qkhwtbXgEyquGDEpQzmD4bpLf7DEsGCjWswJdNC76NrokiRNJLw7g8Ay4jTUWSpl"
+          },
+          "ocrText": "No photo description available."
+        },
+        {
+          "thumbnail": "https://scontent.fcgh4-1.fna.fbcdn.net/v/t39.30808-6/514357945_1405010047375887_1919773705909605722_n.jpg?stp=dst-jpg_s600x600_tt6&_nc_cat=108&ccb=1-7&_nc_sid=aa7b47&_nc_ohc=5jVWq0B4kP8Q7kNvwFZ8zGN&_nc_oc=AdkIPauyWYYf8laRMWZeV6apeijRG_VfLBPxzz-2SGLTy_LzYr6fDqotv8VqVzyhFuw&_nc_zt=23&_nc_ht=scontent.fcgh4-1.fna&_nc_gid=WkcLY-7yTPE4BRFxScyagQ&oh=00_AfTRmme330sGnlAu6YcFGce95KBUy20CULek0Xoj66Xy5A&oe=688D7DC8",
+          "__typename": "Photo",
+          "is_playable": false,
+          "image": {
+            "uri": "https://scontent.fcgh4-1.fna.fbcdn.net/v/t39.30808-6/514357945_1405010047375887_1919773705909605722_n.jpg?stp=dst-jpg_s600x600_tt6&_nc_cat=108&ccb=1-7&_nc_sid=aa7b47&_nc_ohc=5jVWq0B4kP8Q7kNvwFZ8zGN&_nc_oc=AdkIPauyWYYf8laRMWZeV6apeijRG_VfLBPxzz-2SGLTy_LzYr6fDqotv8VqVzyhFuw&_nc_zt=23&_nc_ht=scontent.fcgh4-1.fna&_nc_gid=WkcLY-7yTPE4BRFxScyagQ&oh=00_AfTRmme330sGnlAu6YcFGce95KBUy20CULek0Xoj66Xy5A&oe=688D7DC8",
+            "height": 600,
+            "width": 450
+          },
+          "id": "1405010040709221",
+          "__isMedia": "Photo",
+          "photo_cix_screen": null,
+          "copyright_banner_info": null,
+          "owner": {
+            "__typename": "User",
+            "id": "pfbid032qkhwtbXgEyquGDEpQzmD4bpLf7DEsGCjWswJdNC76NrokiRNJLw7g8Ay4jTUWSpl"
+          },
+          "ocrText": "No photo description available."
+        },
+        {
+          "thumbnail": "https://scontent.fcgh4-2.fna.fbcdn.net/v/t39.30808-6/518396334_1405010004042558_6588237638094432095_n.jpg?stp=dst-jpg_s600x600_tt6&_nc_cat=109&ccb=1-7&_nc_sid=aa7b47&_nc_ohc=0ew0ZO1FY4IQ7kNvwEDiK_c&_nc_oc=AdmONgFpr1UXT7NTB1KFm2ry0bo9EFEl8oB33JFZ--Fi46dJSbLlk6qqZgZXgK3Wl5o&_nc_zt=23&_nc_ht=scontent.fcgh4-2.fna&_nc_gid=WkcLY-7yTPE4BRFxScyagQ&oh=00_AfS-7lCmVB9KRGOfLhcZHLNAuE6ZQtPgfKQ_oqT4tHm5-Q&oe=688D71E0",
+          "__typename": "Photo",
+          "is_playable": false,
+          "image": {
+            "uri": "https://scontent.fcgh4-2.fna.fbcdn.net/v/t39.30808-6/518396334_1405010004042558_6588237638094432095_n.jpg?stp=dst-jpg_s600x600_tt6&_nc_cat=109&ccb=1-7&_nc_sid=aa7b47&_nc_ohc=0ew0ZO1FY4IQ7kNvwEDiK_c&_nc_oc=AdmONgFpr1UXT7NTB1KFm2ry0bo9EFEl8oB33JFZ--Fi46dJSbLlk6qqZgZXgK3Wl5o&_nc_zt=23&_nc_ht=scontent.fcgh4-2.fna&_nc_gid=WkcLY-7yTPE4BRFxScyagQ&oh=00_AfS-7lCmVB9KRGOfLhcZHLNAuE6ZQtPgfKQ_oqT4tHm5-Q&oe=688D71E0",
+            "height": 600,
+            "width": 450
+          },
+          "id": "1405009997375892",
+          "__isMedia": "Photo",
+          "photo_cix_screen": null,
+          "copyright_banner_info": null,
+          "owner": {
+            "__typename": "User",
+            "id": "pfbid032qkhwtbXgEyquGDEpQzmD4bpLf7DEsGCjWswJdNC76NrokiRNJLw7g8Ay4jTUWSpl"
+          },
+          "ocrText": "May be an image of water heater"
+        },
+        {
+          "thumbnail": "https://scontent.fcgh4-2.fna.fbcdn.net/v/t39.30808-6/514248512_1405010020709223_4371000121850450311_n.jpg?stp=dst-jpg_s600x600_tt6&_nc_cat=109&ccb=1-7&_nc_sid=aa7b47&_nc_ohc=SxwR1U4bgUwQ7kNvwGFrEFf&_nc_oc=AdmIkV722Upt4hpAQITk29u2k35XO0hm9Q2Wc6jPPlK6-gUWOV458QAB_xAY5mwFkiE&_nc_zt=23&_nc_ht=scontent.fcgh4-2.fna&_nc_gid=WkcLY-7yTPE4BRFxScyagQ&oh=00_AfSsjtfd2eJ_1DyWzuwlvekDwmZ9dJzmTAydHoFT2Y9lxA&oe=688D876E",
+          "__typename": "Photo",
+          "is_playable": false,
+          "image": {
+            "uri": "https://scontent.fcgh4-2.fna.fbcdn.net/v/t39.30808-6/514248512_1405010020709223_4371000121850450311_n.jpg?stp=dst-jpg_s600x600_tt6&_nc_cat=109&ccb=1-7&_nc_sid=aa7b47&_nc_ohc=SxwR1U4bgUwQ7kNvwGFrEFf&_nc_oc=AdmIkV722Upt4hpAQITk29u2k35XO0hm9Q2Wc6jPPlK6-gUWOV458QAB_xAY5mwFkiE&_nc_zt=23&_nc_ht=scontent.fcgh4-2.fna&_nc_gid=WkcLY-7yTPE4BRFxScyagQ&oh=00_AfSsjtfd2eJ_1DyWzuwlvekDwmZ9dJzmTAydHoFT2Y9lxA&oe=688D876E",
+            "height": 600,
+            "width": 450
+          },
+          "id": "1405010014042557",
+          "__isMedia": "Photo",
+          "photo_cix_screen": null,
+          "copyright_banner_info": null,
+          "owner": {
+            "__typename": "User",
+            "id": "pfbid032qkhwtbXgEyquGDEpQzmD4bpLf7DEsGCjWswJdNC76NrokiRNJLw7g8Ay4jTUWSpl"
+          },
+          "ocrText": "No photo description available."
+        },
+        {
+          "thumbnail": "https://scontent.fcgh4-1.fna.fbcdn.net/v/t39.30808-6/520258689_1405010074042551_9139704908489428049_n.jpg?stp=dst-jpg_s600x600_tt6&_nc_cat=108&ccb=1-7&_nc_sid=aa7b47&_nc_ohc=s8hUM9nF2igQ7kNvwE0PXHv&_nc_oc=AdlaTGjxzlnv-OeOEMJYSCJm1X8pcEpwB0tLSiZfFx2OyeDjEVna2OrGqTD9e0yfbqU&_nc_zt=23&_nc_ht=scontent.fcgh4-1.fna&_nc_gid=WkcLY-7yTPE4BRFxScyagQ&oh=00_AfT_zaqlmHO_v1DutimA57kNy9RC32ChkQL2Bc49vV-8pQ&oe=688D5F7B",
+          "__typename": "Photo",
+          "is_playable": false,
+          "image": {
+            "uri": "https://scontent.fcgh4-1.fna.fbcdn.net/v/t39.30808-6/520258689_1405010074042551_9139704908489428049_n.jpg?stp=dst-jpg_s600x600_tt6&_nc_cat=108&ccb=1-7&_nc_sid=aa7b47&_nc_ohc=s8hUM9nF2igQ7kNvwE0PXHv&_nc_oc=AdlaTGjxzlnv-OeOEMJYSCJm1X8pcEpwB0tLSiZfFx2OyeDjEVna2OrGqTD9e0yfbqU&_nc_zt=23&_nc_ht=scontent.fcgh4-1.fna&_nc_gid=WkcLY-7yTPE4BRFxScyagQ&oh=00_AfT_zaqlmHO_v1DutimA57kNy9RC32ChkQL2Bc49vV-8pQ&oe=688D5F7B",
+            "height": 600,
+            "width": 450
+          },
+          "id": "1405010070709218",
+          "__isMedia": "Photo",
+          "photo_cix_screen": null,
+          "copyright_banner_info": null,
+          "owner": {
+            "__typename": "User",
+            "id": "pfbid032qkhwtbXgEyquGDEpQzmD4bpLf7DEsGCjWswJdNC76NrokiRNJLw7g8Ay4jTUWSpl"
+          },
+          "ocrText": "No photo description available."
+        }
+      ],
+      "user": {
+        "id": "pfbid032qkhwtbXgEyquGDEpQzmD4bpLf7DEsGCjWswJdNC76NrokiRNJLw7g8Ay4jTUWSpl",
+        "name": "Gauthier Immo"
+      },
+      "likesCount": 2,
+      "commentsCount": 0
+    },
+    {
+      "facebookUrl": "https://www.facebook.com/groups/4264469556912052/",
+      "text": "À louer – Appartement meublé 2 chambres à Batterie 4\n\nDécouvrez ce magnifique appartement meublé situé dans le quartier résidentiel de Batterie 4, offrant confort, tranquillité et une superbe vue sur mer.\n\n◾️Caractéristiques \n- 2 chambres climatisées avec salles d’eau privatives  \n- Toilette visiteur  \n- Cuisine ouverte entièrement équipée  \n- Terrasse aménagée  \n- Internet haut débit inclus  \n- Service de ménage disponible  \n- Résidence sécurisée\n\nParfait pour vos séjours professionnels ou de détente.\n\nModalités : 100.000 F CFA / nuitée. \n\nNe laissez pas passer cette opportunité !\n☎️ : 074.49.44.45/ 060.03.37.60\n#immobilier #libreville #immobilierdeluxe #airbnb #Location",
+      "attachments": [
+        {
+          "thumbnail": "https://scontent.fcgh4-2.fna.fbcdn.net/v/t15.5256-10/521296704_1266849238175953_1108238336616632972_n.jpg?stp=dst-jpg_s960x960_tt6&_nc_cat=105&ccb=1-7&_nc_sid=117846&_nc_ohc=bydxQ3W2k_sQ7kNvwGDrLUa&_nc_oc=Admnew56zByjUx1mHAhEBx8qvZqWm2sAIS10YgMi4lw62Re9F6thrUwAcemqzcw6Phw&_nc_zt=23&_nc_ht=scontent.fcgh4-2.fna&_nc_gid=WkcLY-7yTPE4BRFxScyagQ&oh=00_AfQJF1frgaxYCrPh3jrk7np3pocMQxp4M1KTjSOWDbGPPQ&oe=688D7AF4",
+          "__typename": "Video",
+          "thumbnailImage": {
+            "uri": "https://scontent.fcgh4-2.fna.fbcdn.net/v/t15.5256-10/521296704_1266849238175953_1108238336616632972_n.jpg?stp=dst-jpg_s960x960_tt6&_nc_cat=105&ccb=1-7&_nc_sid=117846&_nc_ohc=bydxQ3W2k_sQ7kNvwGDrLUa&_nc_oc=Admnew56zByjUx1mHAhEBx8qvZqWm2sAIS10YgMi4lw62Re9F6thrUwAcemqzcw6Phw&_nc_zt=23&_nc_ht=scontent.fcgh4-2.fna&_nc_gid=WkcLY-7yTPE4BRFxScyagQ&oh=00_AfQJF1frgaxYCrPh3jrk7np3pocMQxp4M1KTjSOWDbGPPQ&oe=688D7AF4"
+          },
+          "id": "2146129682529389",
+          "is_clipping_enabled": false,
+          "live_rewind_enabled": false,
+          "owner": {
+            "__typename": "User",
+            "id": "pfbid02aLJ2pjSL64cbK4qgp6CVWdQuea6bYZV254XG8JuybvKiH2QXte8syrc511chHx8Wl",
+            "__isVideoOwner": "User",
+            "has_professional_features_for_watch": false
+          },
+          "playable_duration_in_ms": 19780,
+          "is_huddle": false,
+          "url": "https://www.facebook.com/marlyn.nto/videos/2146129682529389/?idorvanity=4264469556912052",
+          "if_viewer_can_use_latency_menu": null,
+          "if_viewer_can_use_latency_menu_toggle": null,
+          "captions_url": null,
+          "video_available_captions_locales": [],
+          "if_viewer_can_see_community_moderation_tools": null,
+          "if_viewer_can_use_live_rewind": null,
+          "if_viewer_can_use_clipping": null,
+          "if_viewer_can_see_costreaming_tools": null,
+          "video_player_scrubber_preview_renderer": {
+            "__typename": "XFBVideoPlayerScrubberDefaultPreviewRenderer",
+            "video": {
+              "scrubber_preview_thumbnail_information": {
+                "sprite_uris": [
+                  "https://scontent.fcgh4-1.fna.fbcdn.net/v/t15.5256-10/521166139_1304795754379289_579063470022733695_n.jpg?_nc_cat=110&ccb=1-7&_nc_sid=62976d&_nc_ohc=9J2yQmqi4NwQ7kNvwH-MVI4&_nc_oc=AdlG2Tg_SF8sGShnktqkrSAWqf3O9pEE68h3NsT3ZngiqnvDNuFFXkb1ny_dKgd0xpg&_nc_zt=23&_nc_ht=scontent.fcgh4-1.fna&_nc_gid=WkcLY-7yTPE4BRFxScyagQ&oh=00_AfQ0OVjnobUlDyM_hnjSLtPONcJV-3LGHrLhbUTRvO13JA&oe=688D8290"
+                ],
+                "thumbnail_width": 100,
+                "thumbnail_height": 176,
+                "has_preview_thumbnails": true,
+                "num_images_per_row": 10,
+                "max_number_of_images_per_sprite": 100,
+                "time_interval_between_image": 1
+              },
+              "id": "2146129682529389"
+            },
+            "__module_operation_VideoPlayerScrubberPreview_video": {
+              "__dr": "VideoPlayerScrubberDefaultPreview_video$normalization.graphql"
+            },
+            "__module_component_VideoPlayerScrubberPreview_video": {
+              "__dr": "VideoPlayerScrubberDefaultPreview.react"
+            }
+          },
+          "video_player_scrubber_base_content_renderer": null,
+          "recipient_group": {
+            "__typename": "Group",
+            "id": "4264469556912052"
+          },
+          "music_attachment_metadata": null,
+          "video_container_type": "GROUP_POST",
+          "breakingStatus": false,
+          "videoId": "2146129682529389",
+          "isPremiere": false,
+          "liveViewerCount": 0,
+          "rehearsalInfo": null,
+          "is_gaming_video": false,
+          "is_live_audio_room_v2_broadcast": false,
+          "publish_time": 1752850181,
+          "live_speaker_count_indicator": null,
+          "can_viewer_share": true,
+          "end_cards_channel_info": null,
+          "is_soundbites_video": false,
+          "is_looping": false,
+          "info": null,
+          "animated_image_caption": null,
+          "width": 576,
+          "height": 1024,
+          "broadcaster_origin": null,
+          "broadcast_id": null,
+          "broadcast_status": null,
+          "is_live_streaming": false,
+          "is_live_trace_enabled": false,
+          "is_video_broadcast": false,
+          "is_podcast_video": false,
+          "loop_count": 0,
+          "is_spherical": false,
+          "is_spherical_enabled": true,
+          "unsupported_browser_message": null,
+          "pmv_metadata": null,
+          "latency_sensitive_config": null,
+          "live_playback_instrumentation_configs": null,
+          "is_ncsr": false,
+          "permalink_url": "https://www.facebook.com/marlyn.nto/videos/2146129682529389/?idorvanity=4264469556912052",
+          "dash_prefetch_experimental": [
+            "1172219071610691v",
+            "24315835791379770a"
+          ],
+          "video_status_type": "OK",
+          "can_use_oz": true,
+          "playlist": "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<MPD xmlns=\"urn:mpeg:dash:schema:mpd:2011\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xsi:schemaLocation=\"urn:mpeg:dash:schema:mpd:2011 DASH-MPD.xsd\" profiles=\"urn:mpeg:dash:profile:isoff-on-demand:2011\" minBufferTime=\"PT2S\" type=\"static\" mediaPresentationDuration=\"PT19.783401S\" FBTagsetUsed=\"gen2hwbasicvp9\" FBManifestIdentifier=\"FgAYDmdlbjJod2Jhc2ljdnA5GTaG/eXVkIiVBKzls47Inf8H9LSYrPbHsVYiGBBhdWRpb19hYWNfbG5fdmJyIgA=\"><Period id=\"0\" duration=\"PT19.783401S\"><AdaptationSet id=\"0\" contentType=\"video\" frameRate=\"29919/1000\" subsegmentAlignment=\"true\" par=\"9:16\" FBUnifiedUploadResolutionMos=\"360:68.2,480:68.2,720:68.2,1080:68.2\"><Representation id=\"1172219071610691v\" bandwidth=\"436532\" codecs=\"vp09.00.21.08.00.01.01.01.00\" mimeType=\"video/mp4\" sar=\"1:1\" FBEncodingTag=\"dash_vp9-basic-gen2_360p\" FBPlaybackResolutionMos=\"0:100,360:75.6,480:71.6,576:68.5\" FBPlaybackResolutionMosConfidenceLevel=\"high\" FBPlaybackResolutionCsvqm=\"0:100,360:90,480:86.3,576:83.3\" width=\"360\" height=\"640\" FBDefaultQuality=\"1\" FBQualityClass=\"sd\" FBQualityLabel=\"360p\"><BaseURL>https://video.fcgh4-2.fna.fbcdn.net/o1/v/t2/f2/m366/AQNwpxeZVEofJxO7GJSa6115W4qQrQzUm6KYyfhq1aSTWi7gfUqtEuBSZE6StvnQm-pSlZ4C5TfpG7Sws-VBaLdxhAPPwGOccwCU7uwHpY-KFQ.mp4?_nc_cat=107&amp;_nc_oc=Adk1nXzVUPH5SgIuRSpZlur8Ny9oSxa5qVoSiaGGKY60twQgyao3-Fse3swZ5XsVQc8&amp;_nc_sid=9ca052&amp;_nc_ht=video.fcgh4-2.fna.fbcdn.net&amp;_nc_ohc=e0FDha2okEsQ7kNvwEXUzvl&amp;efg=eyJ2ZW5jb2RlX3RhZyI6ImRhc2hfdnA5LWJhc2ljLWdlbjJfMzYwcCIsInZpZGVvX2lkIjoyMTQ2MTI5NjgyNTI5Mzg5LCJvaWxfdXJsZ2VuX2FwcF9pZCI6MCwiY2xpZW50X25hbWUiOiJ1bmtub3duIiwieHB2X2Fzc2V0X2lkIjoxMjgyODk2MTA2NTI0NTI2LCJ2aV91c2VjYXNlX2lkIjoxMDEyMSwiZHVyYXRpb25fcyI6MTksInVybGdlbl9zb3VyY2UiOiJ3d3cifQ%3D%3D&amp;ccb=17-1&amp;_nc_zt=28&amp;oh=00_AfRH7I5IPjTE5JOAsZZoLxVki0FsDJjZ3lNszHCg2t-r0w&amp;oe=688D5D05</BaseURL><SegmentBase indexRange=\"818-897\" timescale=\"29919\" FBFirstSegmentRange=\"898-274468\"><Initialization range=\"0-817\"/></SegmentBase></Representation><Representation id=\"2250108685416790v\" bandwidth=\"2194137\" codecs=\"vp09.00.31.08.00.01.01.01.00\" mimeType=\"video/mp4\" sar=\"1:1\" FBEncodingTag=\"dash_vp9-basic-gen2_720p\" FBPlaybackResolutionMos=\"0:100,360:94.2,480:92.4,576:89.9\" FBPlaybackResolutionMosConfidenceLevel=\"high\" FBPlaybackResolutionCsvqm=\"0:100,360:97.9,480:97.2,576:96.4\" width=\"576\" height=\"1024\" FBQualityClass=\"sd\" FBQualityLabel=\"540p\"><BaseURL>https://video.fcgh4-2.fna.fbcdn.net/o1/v/t2/f2/m366/AQOdFURc1OfUyC0a9XRLiqw4pxroD6gpPJQ7i0mWS8G8G6cu52omrVcCSYGODyB1PGUueJUE19Sadlpbv1cGbeIB5wjKTB0ejRkSXy7F1-lKgQ.mp4?_nc_cat=105&amp;_nc_oc=AdnlatzkmE2YsCQFgR0y4WPFIJmfRR5NryZkTvzCyio1ax6_rcbzVbRkOUVBx90DG6I&amp;_nc_sid=9ca052&amp;_nc_ht=video.fcgh4-2.fna.fbcdn.net&amp;_nc_ohc=STGWY96bEcwQ7kNvwGrbF0j&amp;efg=eyJ2ZW5jb2RlX3RhZyI6ImRhc2hfdnA5LWJhc2ljLWdlbjJfNzIwcCIsInZpZGVvX2lkIjoyMTQ2MTI5NjgyNTI5Mzg5LCJvaWxfdXJsZ2VuX2FwcF9pZCI6MCwiY2xpZW50X25hbWUiOiJ1bmtub3duIiwieHB2X2Fzc2V0X2lkIjoxMjgyODk2MTA2NTI0NTI2LCJ2aV91c2VjYXNlX2lkIjoxMDEyMSwiZHVyYXRpb25fcyI6MTksInVybGdlbl9zb3VyY2UiOiJ3d3cifQ%3D%3D&amp;ccb=17-1&amp;_nc_zt=28&amp;oh=00_AfSH6PmfbeWIqEHf0UdCDO6IBXUvWl8dJcWSq7_3BjTl9g&amp;oe=688D7E57</BaseURL><SegmentBase indexRange=\"818-897\" timescale=\"29919\" FBFirstSegmentRange=\"898-1375945\"><Initialization range=\"0-817\"/></SegmentBase></Representation></AdaptationSet><AdaptationSet id=\"1\" contentType=\"audio\" subsegmentStartsWithSAP=\"1\" subsegmentAlignment=\"true\"><Representation id=\"24315835791379770a\" bandwidth=\"59007\" codecs=\"mp4a.40.5\" mimeType=\"audio/mp4\" FBAvgBitrate=\"59007\" audioSamplingRate=\"44100\" FBEncodingTag=\"dash_ln_heaac_vbr3_audio\" FBDefaultQuality=\"1\"><AudioChannelConfiguration schemeIdUri=\"urn:mpeg:dash:23003:3:audio_channel_configuration:2011\" value=\"2\"/><BaseURL>https://video.fcgh4-2.fna.fbcdn.net/o1/v/t2/f2/m412/AQMt6yBHWAAScOdh4Ib0s-SLnD_xaZ8T_yDS6BBfiE9MzeS_9UwO7uS0-5aloJzZx089zmOqGWrGOMDJrF0GmObXyFovhuPKTBdRzog.mp4?_nc_cat=109&amp;_nc_oc=Adkr4aZP2CsomQgwau4EYD-GTf79JOQyvD6IzLEYFWRTBWEQMwhXHnk75ram_KDrRRs&amp;_nc_sid=9ca052&amp;_nc_ht=video.fcgh4-2.fna.fbcdn.net&amp;_nc_ohc=NMVYo_1eKUwQ7kNvwEqf_bX&amp;efg=eyJ2ZW5jb2RlX3RhZyI6ImRhc2hfbG5faGVhYWNfdmJyM19hdWRpbyIsInZpZGVvX2lkIjoyMTQ2MTI5NjgyNTI5Mzg5LCJvaWxfdXJsZ2VuX2FwcF9pZCI6MCwiY2xpZW50X25hbWUiOiJ1bmtub3duIiwieHB2X2Fzc2V0X2lkIjoxMjgyODk2MTA2NTI0NTI2LCJ2aV91c2VjYXNlX2lkIjoxMDEyMSwiZHVyYXRpb25fcyI6MTksInVybGdlbl9zb3VyY2UiOiJ3d3cifQ%3D%3D&amp;ccb=17-1&amp;_nc_zt=28&amp;oh=00_AfQGKbMqOSWzrzo1DK7YFiVbJMeutkecqGtbbrQLC31WAg&amp;oe=688D75DA</BaseURL><SegmentBase indexRange=\"824-975\" timescale=\"44100\" FBFirstSegmentRange=\"976-15864\"><Initialization range=\"0-823\"/></SegmentBase></Representation></AdaptationSet></Period></MPD>\n",
+          "dash_manifest_url": "https://www.facebook.com/dash_mpd_debug.mpd?v=2146129682529389&dummy=.mpd",
+          "min_quality_preference": null,
+          "audio_user_preferred_language": "en",
+          "browser_native_sd_url": "https://video.fcgh4-2.fna.fbcdn.net/o1/v/t2/f2/m412/AQPyOBIsG7AxALjri8OH5J1sRHaZvTj3zD6zhDm-KaGSkR6VSVdUk1ILYeII--s47L7RQXDn9Pzt2EG_IdS0XxVEbW_7YcG9UZ0EbhuJFw.mp4?_nc_cat=109&_nc_oc=AdkBp4XI-oupuiysp4wQHNldDxBv-hJ3qZ2GwwpYe8pCnppxsBI0_sdlIxi3AZoPXwM&_nc_sid=8bf8fe&_nc_ht=video.fcgh4-2.fna.fbcdn.net&_nc_ohc=-xqXxqWPbz0Q7kNvwFxbs3Y&efg=eyJ2ZW5jb2RlX3RhZyI6Inhwdl9wcm9ncmVzc2l2ZS5GQUNFQk9PSy4uQzMuMzYwLnN2ZV9zZCIsInhwdl9hc3NldF9pZCI6MTI4Mjg5NjEwNjUyNDUyNiwidmlfdXNlY2FzZV9pZCI6MTAxMjEsImR1cmF0aW9uX3MiOjE5LCJ1cmxnZW5fc291cmNlIjoid3d3In0%3D&ccb=17-1&_nc_zt=28&oh=00_AfSMEEIOsGpXufzqjYrh6Oy875_d6JZwe54ghy-Yfd_rlA&oe=688D89C1",
+          "browser_native_hd_url": "https://video.fcgh4-1.fna.fbcdn.net/o1/v/t2/f2/m366/AQPvVwWEM4azcai69jXkVRVQewaP2BPm6Ys1pkBrTKGODuIXXofrmnwEsoYWvkJpb-J7Svx-7hfuM5DronVK4NyBcC5WaJcGWK0JuEo7ICNCaw.mp4?_nc_cat=103&_nc_oc=AdmWgGES0v4dbeDzeDiUGrxNvM_EKdrWGRiPMxWCiVSQUDCyPko39IZAslTytD_j-fg&_nc_sid=5e9851&_nc_ht=video.fcgh4-1.fna.fbcdn.net&_nc_ohc=_la9aXHUClcQ7kNvwHBOfWh&efg=eyJ2ZW5jb2RlX3RhZyI6Inhwdl9wcm9ncmVzc2l2ZS5GQUNFQk9PSy4uQzMuNTc2LmRhc2hfaDI2NC1iYXNpYy1nZW4yXzcyMHAiLCJ4cHZfYXNzZXRfaWQiOjEyODI4OTYxMDY1MjQ1MjYsInZpX3VzZWNhc2VfaWQiOjEwMTIxLCJkdXJhdGlvbl9zIjoxOSwidXJsZ2VuX3NvdXJjZSI6Ind3dyJ9&ccb=17-1&vs=dba1c72421af01ae&_nc_vs=HBksFQIYRWZiX2VwaGVtZXJhbC9CNTQwNTgzMTRDN0M4QjJFOTM0MTE3QTcyQUE2NDRCNF9tdF8xX3ZpZGVvX2Rhc2hpbml0Lm1wNBUAAsgBEgAVAhhFZmJfZXBoZW1lcmFsLzdENDFCMzYyMjIzOTc2NzZCRTlCOTMxODcxNkFBNjgxX210XzBfYXVkaW9fZGFzaGluaXQubXA0FQICyAESACgAGAAbAogHdXNlX29pbAExEnByb2dyZXNzaXZlX3JlY2lwZQExFQAAJty9tOuwsscEFQIoAkMzLBdAM7gQYk3S8hgZZGFzaF9oMjY0LWJhc2ljLWdlbjJfNzIwcBEAdQJlkp4BAA&_nc_zt=28&oh=00_AfQryuzQH1odKHgPBBdDTKpXB-q74342tBHxqNNIsTOTpg&oe=688D8085",
+          "spherical_video_fallback_urls": null,
+          "comet_video_player_nextgendash_availability": "AVAILABLE",
+          "is_latency_menu_enabled": false,
+          "fbls_tier": null,
+          "is_latency_sensitive_broadcast": false,
+          "comet_video_player_static_config": "{}",
+          "comet_video_player_context_sensitive_config": "{}",
+          "video_player_shaka_performance_logger_init": {
+            "__typename": "VideoPlayerShakaPerformanceLoggerInit",
+            "__module_operation_useVideoPlayerShakaPerformanceLoggerRelayImpl_video": {
+              "__dr": "useVideoPlayerShakaPerformanceLoggerRelayImpl_init$normalization.graphql"
+            },
+            "__module_component_useVideoPlayerShakaPerformanceLoggerRelayImpl_video": {
+              "__dr": "VideoPlayerShakaPerformanceLogger"
+            }
+          },
+          "video_player_shaka_performance_logger_should_sample": false,
+          "video_player_shaka_performance_logger_init2": {
+            "__typename": "VideoPlayerShakaPerformanceLoggerInit",
+            "__module_operation_useVideoPlayerShakaPerformanceLoggerBuilder_video": {
+              "__dr": "useVideoPlayerShakaPerformanceLoggerBuilder_init$normalization.graphql"
+            },
+            "__module_component_useVideoPlayerShakaPerformanceLoggerBuilder_video": {
+              "__dr": "VideoPlayerShakaPerformanceLoggerBuilder"
+            },
+            "per_session_sampling_rate": null
+          },
+          "autoplay_gating_result": "ugc_default_allowed",
+          "viewer_autoplay_setting": "default_autoplay",
+          "can_autoplay": true,
+          "drm_info": "{\"video_license_uri_map\":{},\"graph_api_video_license_uri\":null,\"fairplay_cert\":null,\"widevine_cert\":\"CsECCAMSEBcFuRfMEgSGiwYzOi93KowYgrSCkgUijgIwggEKAoIBAQCZ7Vs7Mn2rXiTvw7YqlbWYUgrVvMs3UD4GRbgU2Ha430BRBEGtjOOtsRu4jE5yWl5KngeVKR1YWEAjp+GvDjipEnk5MAhhC28VjIeMfiG\\/+\\/7qd+EBnh5XgeikX0YmPRTmDoBYqGB63OBPrIRXsTeo1nzN6zNwXZg6IftO7L1KEMpHSQykfqpdQ4IY3brxyt4zkvE9b\\/tkQv0x4b9AsMYE0cS6TJUgpL+X7r1gkpr87vVbuvVk4tDnbNfFXHOggrmWEguDWe3OJHBwgmgNb2fG2CxKxfMTRJCnTuw3r0svAQxZ6ChD4lgvC2ufXbD8Xm7fZPvTCLRxG88SUAGcn1oJAgMBAAE6FGxpY2Vuc2Uud2lkZXZpbmUuY29tEoADrjRzFLWoNSl\\/JxOI+3u4y1J30kmCPN3R2jC5MzlRHrPMveoEuUS5J8EhNG79verJ1BORfm7BdqEEOEYKUDvBlSubpOTOD8S\\/wgqYCKqvS\\/zRnB3PzfV0zKwo0bQQQWz53ogEMBy9szTK\\/NDUCXhCOmQuVGE98K\\/PlspKkknYVeQrOnA+8XZ\\/apvTbWv4K+drvwy6T95Z0qvMdv62Qke4XEMfvKUiZrYZ\\/DaXlUP8qcu9u\\/r6DhpV51Wjx7zmVflkb1gquc9wqgi5efhn9joLK3\\/bNixbxOzVVdhbyqnFk8ODyFfUnaq3fkC3hR3f0kmYgI41sljnXXjqwMoW9wRzBMINk+3k6P8cbxfmJD4\\/Paj8FwmHDsRfuoI6Jj8M76H3CTsZCZKDJjM3BQQ6Kb2m+bQ0LMjfVDyxoRgvfF\\/\\/M\\/EEkPrKWyU2C3YBXpxaBquO4C8A0ujVmGEEqsxN1HX9lu6c5OMm8huDxwWFd7OHMs3avGpr7RP7DUnTikXrh6X0\"}",
+          "p2p_settings": null,
+          "audio_settings": null,
+          "captions_settings": null,
+          "broadcast_low_latency_config": null,
+          "audio_availability": "AVAILABLE",
+          "muted_segments": [],
+          "spherical_video_renderer": null,
+          "preferred_thumbnail": {
+            "image": {
+              "uri": "https://scontent.fcgh4-2.fna.fbcdn.net/v/t15.5256-10/521296704_1266849238175953_1108238336616632972_n.jpg?stp=dst-jpg_s960x960_tt6&_nc_cat=105&ccb=1-7&_nc_sid=50ce42&_nc_ohc=bydxQ3W2k_sQ7kNvwGDrLUa&_nc_oc=Admnew56zByjUx1mHAhEBx8qvZqWm2sAIS10YgMi4lw62Re9F6thrUwAcemqzcw6Phw&_nc_zt=23&_nc_ht=scontent.fcgh4-2.fna&_nc_gid=WkcLY-7yTPE4BRFxScyagQ&oh=00_AfQJF1frgaxYCrPh3jrk7np3pocMQxp4M1KTjSOWDbGPPQ&oe=688D7AF4"
+            },
+            "image_preview_payload": null,
+            "id": "1077612634347979"
+          },
+          "video_imf_data": null,
+          "original_width": 576,
+          "original_height": 1024,
+          "original_rotation": "NO_ROTATE",
+          "comet_video_player_audio_overlay_renderer": null,
+          "comet_video_player_audio_background_renderer": null,
+          "comet_video_player_music_sprout_background_renderer": null,
+          "clip_fallback_cover": null,
+          "is_clip": false,
+          "matcha_related_keywords_links": [
+            ""
+          ],
+          "is_music_clip": false,
+          "video_collaborator_page_or_delegate_page": null,
+          "video_anchor_tag_info": null,
+          "image": {
+            "uri": "https://scontent.fcgh4-2.fna.fbcdn.net/v/t15.5256-10/521296704_1266849238175953_1108238336616632972_n.jpg?stp=dst-jpg_p296x100_tt6&_nc_cat=105&ccb=1-7&_nc_sid=117846&_nc_ohc=bydxQ3W2k_sQ7kNvwGDrLUa&_nc_oc=Admnew56zByjUx1mHAhEBx8qvZqWm2sAIS10YgMi4lw62Re9F6thrUwAcemqzcw6Phw&_nc_zt=23&_nc_ht=scontent.fcgh4-2.fna&_nc_gid=WkcLY-7yTPE4BRFxScyagQ&oh=00_AfRRrzRtyOo5k6NxUPLLr7OeprEEr9bY8dIf_PfIZQXO5w&oe=688D7AF4"
+          },
+          "canonical_uri_with_fallback": "https://www.facebook.com/1282354390/videos/%C3%A0-louer-appartement-meubl%C3%A9-2-chambres-%C3%A0-batterie-4d%C3%A9couvrez-ce-magnifique-appart/2146129682529389/"
+        }
+      ],
+      "user": {
+        "id": "pfbid02aLJ2pjSL64cbK4qgp6CVWdQuea6bYZV254XG8JuybvKiH2QXte8syrc511chHx8Wl",
+        "name": "Marlyn Nto"
+      },
+      "likesCount": 3,
+      "commentsCount": 1
+    },
+    {
+      "facebookUrl": "https://www.facebook.com/groups/4264469556912052/",
+      "text": "",
+      "user": {
+        "id": "pfbid032qkhwtbXgEyquGDEpQzmD4bpLf7DEsGCjWswJdNC76NrokiRNJLw7g8Ay4jTUWSpl",
+        "name": "Gauthier Immo"
+      },
+      "likesCount": 1,
+      "commentsCount": 0
+    },
+    {
+      "facebookUrl": "https://www.facebook.com/groups/4264469556912052/",
+      "text": "Appartement bon standing à louer à ambowè, zone calme et résidentiel.\n3 chambres, Salon, cuisine, 2 salles de bains, terrasse, parking.\nPrix : 350.000f\nContacts : 077933932/ 066100817.\nAgent immobilier",
+      "attachments": [
+        {
+          "mediaset_token": "pcb.31399578789641095",
+          "url": "https://www.facebook.com/media/set/?set=pcb.31399578789641095&type=1",
+          "comet_product_tag_feed_overlay_renderer": null
+        },
+        {
+          "thumbnail": "https://scontent.fsdu7-1.fna.fbcdn.net/v/t39.30808-6/518390274_1404404347436457_4227842923002269169_n.jpg?stp=dst-jpg_s600x600_tt6&_nc_cat=111&ccb=1-7&_nc_sid=aa7b47&_nc_ohc=O1T3H3W6FkMQ7kNvwGUAmpI&_nc_oc=AdlCypkeX4sULQ5U6tPjOce-tgKZrWdrntHG0dbxSPkA12IBMVqm1lJ8BItOnQgr1uQgznw25Tn3SFXZEXPK2LOG&_nc_zt=23&_nc_ht=scontent.fsdu7-1.fna&_nc_gid=Uo4zwB5-vjChREXzimYVuA&oh=00_AfRVCODjGGkIB0wGqmsOUiyQUAXPLvmwrwcnpmsMx2sQCw&oe=688D7E0A",
+          "__typename": "Photo",
+          "is_playable": false,
+          "image": {
+            "uri": "https://scontent.fsdu7-1.fna.fbcdn.net/v/t39.30808-6/518390274_1404404347436457_4227842923002269169_n.jpg?stp=dst-jpg_s600x600_tt6&_nc_cat=111&ccb=1-7&_nc_sid=aa7b47&_nc_ohc=O1T3H3W6FkMQ7kNvwGUAmpI&_nc_oc=AdlCypkeX4sULQ5U6tPjOce-tgKZrWdrntHG0dbxSPkA12IBMVqm1lJ8BItOnQgr1uQgznw25Tn3SFXZEXPK2LOG&_nc_zt=23&_nc_ht=scontent.fsdu7-1.fna&_nc_gid=Uo4zwB5-vjChREXzimYVuA&oh=00_AfRVCODjGGkIB0wGqmsOUiyQUAXPLvmwrwcnpmsMx2sQCw&oe=688D7E0A",
+            "height": 600,
+            "width": 450
+          },
+          "id": "1404404340769791",
+          "__isMedia": "Photo",
+          "photo_cix_screen": null,
+          "copyright_banner_info": null,
+          "owner": {
+            "__typename": "User",
+            "id": "pfbid032qkhwtbXgEyquGDEpQzmD4bpLf7DEsGCjWswJdNC76NrokiRNJLw7g8Ay4jTUWSpl"
+          },
+          "ocrText": "No photo description available."
+        },
+        {
+          "thumbnail": "https://scontent.fsdu7-1.fna.fbcdn.net/v/t39.30808-6/519672303_1404404297436462_4185782077682786292_n.jpg?stp=dst-jpg_s600x600_tt6&_nc_cat=109&ccb=1-7&_nc_sid=aa7b47&_nc_ohc=GP_JNBxXzr4Q7kNvwFEhTEZ&_nc_oc=AdmjYv73fybONDJisXLQ-0YrL1BQpoolxGlgw_eOz6xtnj6-xlBcwa-Jbpx27gNDMoWgJ2z-CSmmN8c3ke_f2d0N&_nc_zt=23&_nc_ht=scontent.fsdu7-1.fna&_nc_gid=Uo4zwB5-vjChREXzimYVuA&oh=00_AfROUK7UcMJwEkD0oBa-5mQlFHwpoiS45g5htHMxUI436w&oe=688D7B61",
+          "__typename": "Photo",
+          "is_playable": false,
+          "image": {
+            "uri": "https://scontent.fsdu7-1.fna.fbcdn.net/v/t39.30808-6/519672303_1404404297436462_4185782077682786292_n.jpg?stp=dst-jpg_s600x600_tt6&_nc_cat=109&ccb=1-7&_nc_sid=aa7b47&_nc_ohc=GP_JNBxXzr4Q7kNvwFEhTEZ&_nc_oc=AdmjYv73fybONDJisXLQ-0YrL1BQpoolxGlgw_eOz6xtnj6-xlBcwa-Jbpx27gNDMoWgJ2z-CSmmN8c3ke_f2d0N&_nc_zt=23&_nc_ht=scontent.fsdu7-1.fna&_nc_gid=Uo4zwB5-vjChREXzimYVuA&oh=00_AfROUK7UcMJwEkD0oBa-5mQlFHwpoiS45g5htHMxUI436w&oe=688D7B61",
+            "height": 600,
+            "width": 450
+          },
+          "id": "1404404277436464",
+          "__isMedia": "Photo",
+          "photo_cix_screen": null,
+          "copyright_banner_info": null,
+          "owner": {
+            "__typename": "User",
+            "id": "pfbid032qkhwtbXgEyquGDEpQzmD4bpLf7DEsGCjWswJdNC76NrokiRNJLw7g8Ay4jTUWSpl"
+          },
+          "ocrText": "No photo description available."
+        },
+        {
+          "thumbnail": "https://scontent.fsdu7-1.fna.fbcdn.net/v/t39.30808-6/520346532_1404404314103127_8838705499245347641_n.jpg?stp=dst-jpg_s600x600_tt6&_nc_cat=106&ccb=1-7&_nc_sid=aa7b47&_nc_ohc=SAuHB0HSXBYQ7kNvwFI7DX1&_nc_oc=AdlRoI8krKZakEPKoVgNO9fqYWUGq1uCfrlZgMrAY7PQORYKdxnQP5P25ONlUlZhXknjT1KLzfr61ygZ7V33yBCa&_nc_zt=23&_nc_ht=scontent.fsdu7-1.fna&_nc_gid=Uo4zwB5-vjChREXzimYVuA&oh=00_AfT9JPe6Vykj3SzD4lXith-fqUtlxzjk5iPWBsotT6uTiw&oe=688D7E35",
+          "__typename": "Photo",
+          "is_playable": false,
+          "image": {
+            "uri": "https://scontent.fsdu7-1.fna.fbcdn.net/v/t39.30808-6/520346532_1404404314103127_8838705499245347641_n.jpg?stp=dst-jpg_s600x600_tt6&_nc_cat=106&ccb=1-7&_nc_sid=aa7b47&_nc_ohc=SAuHB0HSXBYQ7kNvwFI7DX1&_nc_oc=AdlRoI8krKZakEPKoVgNO9fqYWUGq1uCfrlZgMrAY7PQORYKdxnQP5P25ONlUlZhXknjT1KLzfr61ygZ7V33yBCa&_nc_zt=23&_nc_ht=scontent.fsdu7-1.fna&_nc_gid=Uo4zwB5-vjChREXzimYVuA&oh=00_AfT9JPe6Vykj3SzD4lXith-fqUtlxzjk5iPWBsotT6uTiw&oe=688D7E35",
+            "height": 600,
+            "width": 450
+          },
+          "id": "1404404290769796",
+          "__isMedia": "Photo",
+          "photo_cix_screen": null,
+          "copyright_banner_info": null,
+          "owner": {
+            "__typename": "User",
+            "id": "pfbid032qkhwtbXgEyquGDEpQzmD4bpLf7DEsGCjWswJdNC76NrokiRNJLw7g8Ay4jTUWSpl"
+          },
+          "ocrText": "No photo description available."
+        },
+        {
+          "thumbnail": "https://scontent.fsdu7-1.fna.fbcdn.net/v/t39.30808-6/514258181_1404404294103129_5744324469179689777_n.jpg?stp=dst-jpg_s600x600_tt6&_nc_cat=111&ccb=1-7&_nc_sid=aa7b47&_nc_ohc=UEj_ryG6qpEQ7kNvwE2yr-U&_nc_oc=AdnNHUj9BQtEFpYOFV8bzZ61WXtoRFqbDu1JOG7VxNQEjozWsd_esHQKWAOLcyx6lyv7TqK-lDUsXsQsLKt_uUJb&_nc_zt=23&_nc_ht=scontent.fsdu7-1.fna&_nc_gid=Uo4zwB5-vjChREXzimYVuA&oh=00_AfSNyp4-Cg5StbaH2N5Y-uOLV1qaDY7k-9y6LH_KWwYrcQ&oe=688D70E9",
+          "__typename": "Photo",
+          "is_playable": false,
+          "image": {
+            "uri": "https://scontent.fsdu7-1.fna.fbcdn.net/v/t39.30808-6/514258181_1404404294103129_5744324469179689777_n.jpg?stp=dst-jpg_s600x600_tt6&_nc_cat=111&ccb=1-7&_nc_sid=aa7b47&_nc_ohc=UEj_ryG6qpEQ7kNvwE2yr-U&_nc_oc=AdnNHUj9BQtEFpYOFV8bzZ61WXtoRFqbDu1JOG7VxNQEjozWsd_esHQKWAOLcyx6lyv7TqK-lDUsXsQsLKt_uUJb&_nc_zt=23&_nc_ht=scontent.fsdu7-1.fna&_nc_gid=Uo4zwB5-vjChREXzimYVuA&oh=00_AfSNyp4-Cg5StbaH2N5Y-uOLV1qaDY7k-9y6LH_KWwYrcQ&oe=688D70E9",
+            "height": 600,
+            "width": 450
+          },
+          "id": "1404404267436465",
+          "__isMedia": "Photo",
+          "photo_cix_screen": null,
+          "copyright_banner_info": null,
+          "owner": {
+            "__typename": "User",
+            "id": "pfbid032qkhwtbXgEyquGDEpQzmD4bpLf7DEsGCjWswJdNC76NrokiRNJLw7g8Ay4jTUWSpl"
+          },
+          "ocrText": "No photo description available."
+        },
+        {
+          "thumbnail": "https://scontent.fsdu7-1.fna.fbcdn.net/v/t39.30808-6/514413030_1404404317436460_3661526021110453440_n.jpg?stp=dst-jpg_s600x600_tt6&_nc_cat=108&ccb=1-7&_nc_sid=aa7b47&_nc_ohc=b9vUhah7EGgQ7kNvwFNAgKf&_nc_oc=AdmaKR65x3g-oGhOWSBwfJwrvAF1Tpnpe9d8Ul192lozEy0-XtilZL_kfiUuJXZO_wmL8fQARZ9yODD1lCN-j4Ze&_nc_zt=23&_nc_ht=scontent.fsdu7-1.fna&_nc_gid=Uo4zwB5-vjChREXzimYVuA&oh=00_AfSMNhrawmWCtU2RYczPOu_sjfRdjAtEhXi9VyyQn7CP5w&oe=688D6B36",
+          "__typename": "Photo",
+          "is_playable": false,
+          "image": {
+            "uri": "https://scontent.fsdu7-1.fna.fbcdn.net/v/t39.30808-6/514413030_1404404317436460_3661526021110453440_n.jpg?stp=dst-jpg_s600x600_tt6&_nc_cat=108&ccb=1-7&_nc_sid=aa7b47&_nc_ohc=b9vUhah7EGgQ7kNvwFNAgKf&_nc_oc=AdmaKR65x3g-oGhOWSBwfJwrvAF1Tpnpe9d8Ul192lozEy0-XtilZL_kfiUuJXZO_wmL8fQARZ9yODD1lCN-j4Ze&_nc_zt=23&_nc_ht=scontent.fsdu7-1.fna&_nc_gid=Uo4zwB5-vjChREXzimYVuA&oh=00_AfSMNhrawmWCtU2RYczPOu_sjfRdjAtEhXi9VyyQn7CP5w&oe=688D6B36",
+            "height": 600,
+            "width": 450
+          },
+          "id": "1404404304103128",
+          "__isMedia": "Photo",
+          "photo_cix_screen": null,
+          "copyright_banner_info": null,
+          "owner": {
+            "__typename": "User",
+            "id": "pfbid032qkhwtbXgEyquGDEpQzmD4bpLf7DEsGCjWswJdNC76NrokiRNJLw7g8Ay4jTUWSpl"
+          },
+          "ocrText": "May be an image of sliding door"
+        }
+      ],
+      "user": {
+        "id": "pfbid032qkhwtbXgEyquGDEpQzmD4bpLf7DEsGCjWswJdNC76NrokiRNJLw7g8Ay4jTUWSpl",
+        "name": "Gauthier Immo"
+      },
+      "likesCount": 6,
+      "commentsCount": 2
+    },
+    {
+      "facebookUrl": "https://www.facebook.com/groups/4264469556912052/",
+      "text": "",
+      "user": {
+        "id": "pfbid032qkhwtbXgEyquGDEpQzmD4bpLf7DEsGCjWswJdNC76NrokiRNJLw7g8Ay4jTUWSpl",
+        "name": "Gauthier Immo"
+      },
+      "likesCount": 0,
+      "commentsCount": 0
+    }
+  ]

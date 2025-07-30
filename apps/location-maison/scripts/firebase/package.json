@@ -1,0 +1,34 @@
+{
+  "name": "firebase-property-uploader",
+  "version": "1.0.0",
+  "description": "Script pour uploader les propriétés Facebook vers Firebase",
+  "main": "upload-properties.js",
+  "scripts": {
+    "start": "node upload-properties.js",
+    "test": "node test-contact-processing.js",
+    "test:single": "node test-single-property.js",
+    "verify:images": "node verify-images.js",
+    "sync:cross-env": "node sync-cross-environment.js",
+    "smart-deploy": "node smart-deploy.js",
+    "fix:state": "node fix-missing-state.js",
+    "verify:icreation": "node verify-icreation-compliance.js",
+    "fix:states": "node fix-invalid-states.js",
+    "test:image-structure": "node test-image-structure.js",
+    "migrate:images": "node migrate-image-structure.js",
+    "dev": "npm run copy:env:dev && node smart-deploy.js",
+    "prod": "npm run copy:env:prod && node smart-deploy.js",
+    "upload:force": "node upload-properties.js",
+    "copy:env:dev": "cp .env.dev .env",
+    "copy:env:prod": "cp .env.prod .env",
+    "upload": "node upload-properties.js",
+    "test:connection": "node test-firebase-connection.js",
+    "check": "node check-env.js"
+  },
+  "dependencies": {
+    "dotenv": "^16.6.1",
+    "firebase-admin": "^12.0.0"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}

@@ -51,16 +51,16 @@ export const FormRegisterSchema = z.object({
     }
     
     // Vérifier l'âge (18 ans minimum)
-    const today = new Date();
+      const today = new Date();
     const age = today.getFullYear() - year;
     const m = today.getMonth() - (month - 1);
     const d = today.getDate() - day;
 
     const actualAge = m < 0 || (m === 0 && d < 0) ? age - 1 : age;
     return actualAge >= 18;
-  }, {
+    }, {
     message: 'Vous devez avoir au moins 18 ans pour créer un compte',
-  }),
+    }),
   country: z.string().min(1, { message: 'Le pays est requis' }),
   phone: z
     .string()

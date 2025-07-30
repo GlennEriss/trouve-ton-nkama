@@ -1,0 +1,265 @@
+const admin = require('firebase-admin');
+const fs = require('fs').promises;
+const path = require('path');
+
+class FirebasePropertyUploader {
+  constructor() {
+    this.baseDir = __dirname;
+    this.inputFile = path.join(__dirname, '..', 'download-img', 'properties-with-local-images.json');
+    this.imagesDir = path.join(__dirname, '..', 'download-img', 'images');
+    this.outputFile = path.join(this.baseDir, 'processed-properties.json');
+    
+    // Statistiques
+    this.uploadedImages = 0;
+    this.savedProperties = 0;
+    this.errors = 0;
+    this.processedContacts = 0;
+  }
+
+  async initialize() {
+    console.log('🚀 Initialisation Firebase Admin...\n');
+    
+    try {
+      // Charger les variables d'environnement
+      require('dotenv').config();
+      
+      // Vérifier et afficher l'environnement
+      const serviceAccount = require('./firebase-config.js');
+      const projectId = serviceAccount.projectId;
+      const isProduction = projectId === 'location-maison-prod-167da';
+      const isDevelopment = projectId?.includes('-dev');
+      
+      console.log('🌍 ENVIRONNEMENT DÉTECTÉ:');
+      console.log(`   Project ID: ${projectId}`);
+      console.log(`   Mode: ${isProduction ? '🔴 PRODUCTION' : isDevelopment ? '🟡 DÉVELOPPEMENT' : '❓ INCONNU'}`);
+      console.log(`   Storage: ${process.env.FIREBASE_STORAGE_BUCKET}\n`);
+      
+      if (!projectId || !serviceAccount.clientEmail || !serviceAccount.privateKey) {
+        throw new Error('❌ Configuration Firebase incomplète - vérifiez le fichier .env');
+      }
+      
+      // Confirmation pour la production
+      if (isProduction) {
+        console.log('⚠️  ATTENTION: Vous êtes sur la PRODUCTION !');
+        console.log('   Les données seront sauvegardées dans la base de données réelle.\n');
+      }
+      
+      // Initialiser Firebase Admin
+      if (!admin.apps.length) {
+        admin.initializeApp({
+          credential: admin.credential.cert(serviceAccount),
+          storageBucket: process.env.FIREBASE_STORAGE_BUCKET || 'location-maison-prod-167da.firebasestorage.app'
+        });
+      }
+      
+      this.db = admin.firestore();
+      this.bucket = admin.storage().bucket();
+      
+      console.log('✅ Firebase Admin initialisé avec succès');
+    } catch (error) {
+      console.error('❌ Erreur initialisation Firebase:', error.message);
+      throw error;
+    }
+  }
+
+  async loadProperties() {
+    console.log('📄 Chargement du fichier JSON...');
+    const data = await fs.readFile(this.inputFile, 'utf8');
+    const properties = JSON.parse(data);
+    console.log(`✅ ${properties.length} propriétés trouvées\n`);
+    return properties;
+  }
+
+  processContact(contactStr) {
+    if (!contactStr || contactStr.trim() === '' || contactStr === 'non précisé') {
+      return { contact: '', contacts: [] };
+    }
+
+    // Supprimer les espaces
+    const cleanContact = contactStr.replace(/\s+/g, '');
+    
+    // Détecter plusieurs numéros (séparés par /, - ou d'autres caractères)
+    const numbers = cleanContact.split(/[\/\-,;|]+/).filter(num => num.trim().length > 0);
+    
+    if (numbers.length <= 1) {
+      return {
+        contact: cleanContact,
+        contacts: []
+      };
+    } else {
+      this.processedContacts++;
+      return {
+        contact: numbers[0], // Premier numéro
+        contacts: numbers    // Tous les numéros
+      };
+    }
+  }
+
+  async uploadImage(localImagePath, propertyIndex, imageIndex) {
+    try {
+      const localPath = path.join(this.imagesDir, path.basename(localImagePath));
+      
+      // Vérifier que le fichier existe
+      await fs.access(localPath);
+      
+      // Nom du fichier dans Firebase Storage
+      const fileName = `properties/${propertyIndex}_${imageIndex}_${Date.now()}.jpg`;
+      const file = this.bucket.file(fileName);
+      
+      // Upload du fichier
+      await file.save(await fs.readFile(localPath), {
+        metadata: {
+          contentType: 'image/jpeg',
+          metadata: {
+            propertyIndex: propertyIndex.toString(),
+            imageIndex: imageIndex.toString()
+          }
+        }
+      });
+      
+      // Rendre le fichier public
+      await file.makePublic();
+      
+      // CORRECTION: Retourner un objet avec filePATH et fileURL
+      const filePATH = fileName;
+      const fileURL = `https://storage.googleapis.com/${this.bucket.name}/${fileName}`;
+      
+      this.uploadedImages++;
+      
+      console.log(`\n   🔧 FilePATH: ${filePATH}`);
+      console.log(`   🔧 FileURL: ${fileURL.substring(0, 80)}...`);
+      
+      return {
+        filePATH: filePATH,
+        fileURL: fileURL
+      };
+      
+    } catch (error) {
+      console.log(`   ❌ Erreur upload image ${localImagePath}: ${error.message}`);
+      this.errors++;
+      return null;
+    }
+  }
+
+  async processProperty(property, propertyIndex) {
+    console.log(`📝 [${propertyIndex + 1}] Traitement: ${property.title}`);
+    
+    // 1. Traiter les contacts
+    const { contact, contacts } = this.processContact(property.contact);
+    
+    // 2. Upload des images
+    const firebaseImages = [];
+    
+    if (property.images && property.images.length > 0) {
+      console.log(`   📸 Upload de ${property.images.length} images...`);
+      
+      for (let i = 0; i < property.images.length; i++) {
+        const localImagePath = property.images[i];
+        
+        // Si c'est déjà une URL, on la transforme en objet
+        if (localImagePath.startsWith('http')) {
+          firebaseImages.push({
+            filePATH: `external/${propertyIndex}_${i}_external.jpg`,
+            fileURL: localImagePath
+          });
+          continue;
+        }
+        
+        const imageObject = await this.uploadImage(localImagePath, propertyIndex, i);
+        if (imageObject) {
+          firebaseImages.push(imageObject);
+          process.stdout.write('.');
+        }
+      }
+      console.log(`\n   ✅ ${firebaseImages.length}/${property.images.length} images uploadées`);
+    }
+
+    // 3. Préparer la propriété pour Firestore avec les types ICreation
+    const processedProperty = {
+      ...property,
+      contact: contact,
+      contacts: contacts,
+      images: firebaseImages, // URLs Firebase après upload
+      createdAt: admin.firestore.FieldValue.serverTimestamp(),
+      updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+      createdBy: process.env.CREATED_BY || 'facebook_import_script',
+      source: 'facebook_import',
+      state: 'IN_PROGRESS', // StateCreation
+      isActive: true
+    };
+
+    // 4. Sauvegarder dans Firestore
+    try {
+      const docRef = await this.db.collection('properties').add(processedProperty);
+      console.log(`   ✅ Propriété sauvegardée: ${docRef.id}\n`);
+      this.savedProperties++;
+      
+      return {
+        ...processedProperty,
+        id: docRef.id
+      };
+      
+    } catch (error) {
+      console.log(`   ❌ Erreur sauvegarde Firestore: ${error.message}\n`);
+      this.errors++;
+      return null;
+    }
+  }
+
+  async processAllProperties() {
+    const properties = await this.loadProperties();
+    const processedProperties = [];
+    
+    console.log('🔥 Début du traitement Firebase...\n');
+    
+    for (let i = 0; i < properties.length; i++) {
+      const property = properties[i];
+      const processed = await this.processProperty(property, i);
+      
+      if (processed) {
+        processedProperties.push(processed);
+      }
+      
+      // Pause pour éviter la surcharge
+      if (i % 5 === 0 && i > 0) {
+        console.log('⏳ Pause de 2 secondes...\n');
+        await new Promise(resolve => setTimeout(resolve, 2000));
+      }
+    }
+    
+    return processedProperties;
+  }
+
+  async saveProcessedData(properties) {
+    console.log('💾 Sauvegarde des données traitées...');
+    const jsonData = JSON.stringify(properties, null, 2);
+    await fs.writeFile(this.outputFile, jsonData, 'utf8');
+    console.log(`✅ Fichier sauvegardé: ${this.outputFile}\n`);
+  }
+
+  async run() {
+    try {
+      await this.initialize();
+      const properties = await this.processAllProperties();
+      await this.saveProcessedData(properties);
+      
+      console.log('📊 RÉSULTATS FINAUX:');
+      console.log(`✅ Propriétés sauvegardées: ${this.savedProperties}`);
+      console.log(`📸 Images uploadées: ${this.uploadedImages}`);
+      console.log(`📞 Contacts traités: ${this.processedContacts}`);
+      console.log(`❌ Erreurs: ${this.errors}`);
+      console.log(`🔥 Collection: properties`);
+      console.log(`📁 Stockage: Firebase Storage/properties/`);
+      console.log(`📄 Données traitées: ${this.outputFile}`);
+      console.log('\n🎉 Upload Firebase terminé !');
+      
+    } catch (error) {
+      console.error('❌ Erreur fatale:', error.message);
+      process.exit(1);
+    }
+  }
+}
+
+// Lancement du script
+const uploader = new FirebasePropertyUploader();
+uploader.run(); 
