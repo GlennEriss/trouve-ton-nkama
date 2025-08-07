@@ -51,16 +51,16 @@ export const FormRegisterSchema = z.object({
     }
     
     // Vérifier l'âge (18 ans minimum)
-    const today = new Date();
+      const today = new Date();
     const age = today.getFullYear() - year;
     const m = today.getMonth() - (month - 1);
     const d = today.getDate() - day;
 
     const actualAge = m < 0 || (m === 0 && d < 0) ? age - 1 : age;
     return actualAge >= 18;
-  }, {
-    message: 'Vous devez avoir au moins 18 ans pour vous inscrire',
-  }),
+    }, {
+    message: 'Vous devez avoir au moins 18 ans pour créer un compte',
+    }),
   country: z.string().min(1, { message: 'Le pays est requis' }),
   phone: z
     .string()
@@ -263,42 +263,10 @@ export const FormUserProfilSchema = z.object({
     }, { message: "Le numéro de téléphone est invalide" })
     .optional(),
   country: z.string().min(1, { message: 'Le pays est requis' }),
-  birthDate: z.object({
-    day: z.string().min(1, { message: 'Le jour est requis' }),
-    month: z.string().min(1, { message: 'Le mois est requis' }),
-    year: z.string().min(1, { message: 'L\'année est requise' })
-  }).refine((date) => {
-    // Vérifier si au moins un champ est rempli pour déclencher la validation
-    if (!date.day && !date.month && !date.year) {
-      return true; // Aucun champ rempli, pas d'erreur
-    }
-    
-    // Si au moins un champ est rempli mais pas tous, afficher l'erreur d'âge
-    if (!date.day || !date.month || !date.year) {
-      return false;
-    }
-    
-    const day = parseInt(date.day);
-    const month = parseInt(date.month);
-    const year = parseInt(date.year);
-    
-    // Vérifier que la date est valide
-    const birthDate = new Date(year, month - 1, day);
-    if (birthDate.getFullYear() !== year || birthDate.getMonth() !== month - 1 || birthDate.getDate() !== day) {
-      return false;
-    }
-    
-    // Vérifier l'âge (18 ans minimum)
-    const today = new Date();
-    const age = today.getFullYear() - year;
-    const m = today.getMonth() - (month - 1);
-    const d = today.getDate() - day;
-
-    const actualAge = m < 0 || (m === 0 && d < 0) ? age - 1 : age;
-    return actualAge >= 18;
-  }, {
-    message: 'Vous devez avoir au moins 18 ans pour utiliser cette plateforme',
-  }),
+  birthDate: z.string().regex(
+    /^\d{4}-\d{2}-\d{2}$/,
+    'La date de naissance doit être au format AAAA-MM-JJ'
+  ),
 });
 
 export const FormFilterSchema = z.object({

@@ -67,13 +67,8 @@ export default function FormPersonalInformation() {
             form.setValue('lastname', user.lastname)
             form.setValue('email', user.email ?? '')
             
-            // Convertir la date string en objet pour le formulaire
-            const birthDateObj = parseDateString(user?.birthDate ?? '')
-            if (birthDateObj) {
-                form.setValue('birthDate', birthDateObj)
-            } else {
-                form.setValue('birthDate', { day: '', month: '', year: '' })
-            }
+            // Utiliser directement la date string du schéma
+            form.setValue('birthDate', user?.birthDate ?? '')
             
             form.setValue('phoneNumbers', user.phoneNumbers.length > 0 ? user.phoneNumbers[0] : '')
         }
