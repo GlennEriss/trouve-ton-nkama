@@ -82,6 +82,22 @@ async function main() {
     
     if (successful.length > 0) {
       console.log(`📁 Fichier de sortie : facebook-transformed-properties.json`);
+      
+      // 10.5. Déduplication automatique
+      console.log('\n🔄 DÉMARRAGE DE LA DÉDUPLICATION...');
+      const { PropertyDeduplicator } = require('./deduplicate-properties');
+      const deduplicator = new PropertyDeduplicator();
+      
+      // Charger et dédupliquer
+      const propertiesData = await fs.readFile('facebook-transformed-properties.json', 'utf8');
+      const properties = JSON.parse(propertiesData);
+      const uniqueProperties = await deduplicator.deduplicateProperties(properties);
+      
+      // Sauvegarder la version dédupliquée
+      await fs.writeFile('facebook-transformed-properties-deduplicated.json', JSON.stringify(uniqueProperties, null, 2), 'utf8');
+      
+      console.log(`✅ Fichier dédupliqué sauvegardé : facebook-transformed-properties-deduplicated.json`);
+      console.log(`📊 ${properties.length} → ${uniqueProperties.length} propriétés (${properties.length - uniqueProperties.length} doublons supprimés)`);
     }
     
     // 11. Arrêter le script proprement

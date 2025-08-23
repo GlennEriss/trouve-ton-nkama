@@ -44,12 +44,45 @@ class FacebookPostProcessor {
         return;
       }
       
-      // Extraire les images des attachments
+      // Extraire les images des attachments et all_subattachments
       const images = [];
       if (post.attachments) {
         post.attachments.forEach(attachment => {
+          // Vérifier les photos directes dans attachments
           if (attachment.__typename === 'Photo' && attachment.image?.uri) {
             images.push(attachment.image.uri);
+          }
+          
+          // Vérifier les photos dans all_subattachments.nodes
+          if (attachment.all_subattachments && attachment.all_subattachments.nodes) {
+            attachment.all_subattachments.nodes.forEach(subAttachment => {
+              if (subAttachment.media && 
+                  subAttachment.media.__typename === 'Photo' && 
+                  subAttachment.media.image?.uri) {
+                images.push(subAttachment.media.image.uri);
+              }
+            });
+          }
+          
+          // Vérifier les photos dans la structure d'album (images[])
+          if (attachment.type === 'album' && attachment.images) {
+            attachment.images.forEach(image => {
+              if (image.url) {
+                images.push(image.url);
+              }
+            });
+          }
+          
+          // Vérifier les photos dans media.image
+          if (attachment.media && 
+              attachment.media.__typename === 'Photo' && 
+              attachment.media.image?.uri) {
+            images.push(attachment.media.image.uri);
+          }
+          
+          // Vérifier les photos dans viewer_image
+          if (attachment.viewer_image && attachment.viewer_image.uri) {
+            images.push(attachment.viewer_image.uri);
           }
         });
       }

@@ -7,7 +7,7 @@ class ImageDownloader {
   constructor() {
     this.baseDir = __dirname;
     this.imagesDir = path.join(this.baseDir, 'images');
-    this.inputFile = path.join(__dirname, '..', 'apify', 'facebook-transformed-properties.json');
+    this.inputFile = path.join(__dirname, '..', 'apify', 'facebook-transformed-properties-deduplicated.json');
     this.outputFile = path.join(this.baseDir, 'properties-with-local-images.json');
     this.downloadedCount = 0;
     this.failedCount = 0;
