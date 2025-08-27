@@ -6,6 +6,7 @@ namespace NodeJS {
     GOOGLE_REFRESH_TOKEN: string;
     GOOGLE_EMAIL: string;
     GMAIL_USER: string;
+    GOOGLE_MAP_API_KEY: string;
     //HOSTINGER SMTP
     HOSTINGER_EMAIL_USER: string;
     HOSTINGER_EMAIL_PASS: string;
