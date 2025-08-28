@@ -13,6 +13,7 @@ import {
   Trees
 } from 'lucide-react';
 import { Button } from '../ui/button';
+import { TypeProperty, TypePropertyEnum } from '@/constantes/property-type';
 
 type GoogleMapViewerProps = {
   lat: number;
@@ -67,6 +68,31 @@ function normalizeType(t?: string) {
   if (k === 'studio') return 'studio';
   if (k === 'appartement') return 'apartment';
   return k;
+}
+
+// Fonction pour traduire le type de propriété en français
+function translatePropertyType(type?: string): string {
+  if (!type) return 'Non spécifié';
+  
+  const normalizedType = normalizeType(type);
+  
+  // Mappage des types normalisés vers les traductions françaises
+  const typeTranslations: Record<string, string> = {
+    'home': 'Maison',
+    'villa': 'Villa',
+    'logement': 'Logement',
+    'property': 'Propriété',
+    'apartment': 'Appartement',
+    'building': 'Immeuble',
+    'studio': 'Studio',
+    'room': 'Chambre',
+    'shop': 'Magasin',
+    'kiosk': 'Kiosque',
+    'desk': 'Bureau',
+    'land': 'Terrain'
+  };
+  
+  return typeTranslations[normalizedType] || normalizedType;
 }
 
 function shortPrice(p?: number) {
@@ -147,7 +173,7 @@ export default function GoogleMapViewer({ lat, lng, open, onOpenChange }: Google
       }
       const script = document.createElement('script');
       // ⚠️ ajouter 'marker' pour AdvancedMarkerElement
-      script.src = `https://maps.googleapis.com/maps/api/js?key=${process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY}&libraries=marker,places`;
+      script.src = `https://maps.googleapis.com/maps/api/js?key=${process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY}&libraries=places`;
       script.async = true;
       script.defer = true;
       script.onload = initializeMap;
@@ -325,7 +351,7 @@ export default function GoogleMapViewer({ lat, lng, open, onOpenChange }: Google
                 {selectedProperty.images?.[0] && (
                   <div className="mb-4">
                     <img
-                      src={selectedProperty.images[0]}
+                      src={selectedProperty.images[0].fileURL}
                       alt={selectedProperty.title || selectedProperty.name}
                       className="w-full h-32 object-cover rounded-lg"
                     />
@@ -336,7 +362,7 @@ export default function GoogleMapViewer({ lat, lng, open, onOpenChange }: Google
                   <div className="flex justify-between">
                     <span className="text-sm text-gray-600">Type</span>
                     <span className="text-sm font-medium capitalize">
-                      {normalizeType(selectedProperty.typeProperty)}
+                      {translatePropertyType(selectedProperty.typeProperty)}
                     </span>
                   </div>
 
