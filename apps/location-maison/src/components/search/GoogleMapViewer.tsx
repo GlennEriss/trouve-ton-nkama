@@ -20,6 +20,7 @@ import { useRouter } from 'next/navigation';
 import { Loader } from '@googlemaps/js-api-loader';
 import { useLocation } from '@/hooks/use-location';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '../ui/accordion';
+import { useSearchParams } from 'next/navigation';
 
 type GoogleMapViewerProps = {
   lat: number;
@@ -119,6 +120,7 @@ export default function GoogleMapViewer({ lat, lng, open, onOpenChange }: Google
   const router = useRouter();
   const { searchText, setSearchText, setProvince, setCity, setStreet } = useAlgoliaContext();
   const { data: locations } = useLocation();
+  const searchParams = useSearchParams();
 
   // État pour les filtres de localisation
   const [selectedProvince, setSelectedProvince] = useState<string>('');
@@ -129,6 +131,30 @@ export default function GoogleMapViewer({ lat, lng, open, onOpenChange }: Google
   const [provinceOptions, setProvinceOptions] = useState<Array<{label: string, value: string}>>([]);
   const [cityOptions, setCityOptions] = useState<Array<{label: string, value: string}>>([]);
   const [streetOptions, setStreetOptions] = useState<Array<{label: string, value: string}>>([]);
+
+  // Synchronisation URL → Filtres au chargement initial
+  useEffect(() => {
+    if (locations) {
+      const provinceVal = searchParams.get("province") ?? "";
+      const cityVal = searchParams.get("city") ?? "";
+      const streetVal = searchParams.get("street") ?? "";
+
+      // Mettre à jour les états locaux
+      setSelectedProvince(provinceVal);
+      setSelectedCity(cityVal);
+      setSelectedStreet(streetVal);
+
+      // Mettre à jour le contexte Algolia
+      setProvince(provinceVal);
+      setCity(cityVal);
+      setStreet(streetVal);
+
+      // Naviguer vers la localisation si elle existe
+      if (provinceVal || cityVal || streetVal) {
+        navigateToLocation(provinceVal, cityVal, streetVal);
+      }
+    }
+  }, [locations, searchParams, setProvince, setCity, setStreet]);
 
   // Coordonnées géographiques des provinces du Gabon
   const provinceCoordinates: Record<string, { lat: number; lng: number; zoom: number }> = {
@@ -209,6 +235,32 @@ export default function GoogleMapViewer({ lat, lng, open, onOpenChange }: Google
     }
   };
 
+  // Fonction pour mettre à jour l'URL avec les filtres
+  const updateURL = (province: string, city: string, street: string) => {
+    const params = new URLSearchParams(searchParams.toString());
+    
+    if (province) {
+      params.set('province', province);
+    } else {
+      params.delete('province');
+    }
+    
+    if (city) {
+      params.set('city', city);
+    } else {
+      params.delete('city');
+    }
+    
+    if (street) {
+      params.set('street', street);
+    } else {
+      params.delete('street');
+    }
+
+    const newURL = `/search?${params.toString()}`;
+    router.replace(newURL);
+  };
+
   // Générer les options de localisation
   useEffect(() => {
     if (locations) {
@@ -231,6 +283,9 @@ export default function GoogleMapViewer({ lat, lng, open, onOpenChange }: Google
       
       // Naviguer vers la province sélectionnée
       navigateToLocation(selectedProvince);
+      
+      // Mettre à jour l'URL
+      updateURL(selectedProvince, '', '');
     } else {
       setCityOptions([]);
       setStreetOptions([]);
@@ -248,6 +303,9 @@ export default function GoogleMapViewer({ lat, lng, open, onOpenChange }: Google
       
       // Naviguer vers la ville sélectionnée
       navigateToLocation(selectedProvince, selectedCity);
+      
+      // Mettre à jour l'URL
+      updateURL(selectedProvince, selectedCity, '');
     } else {
       setStreetOptions([]);
     }
@@ -261,6 +319,9 @@ export default function GoogleMapViewer({ lat, lng, open, onOpenChange }: Google
     
     // Naviguer vers la localisation finale
     navigateToLocation(selectedProvince, selectedCity, selectedStreet);
+    
+    // Mettre à jour l'URL
+    updateURL(selectedProvince, selectedCity, selectedStreet);
   };
 
   // Effacer les filtres de localisation
@@ -277,6 +338,9 @@ export default function GoogleMapViewer({ lat, lng, open, onOpenChange }: Google
       mapInstanceRef.current.setCenter({ lat, lng });
       mapInstanceRef.current.setZoom(11);
     }
+    
+    // Mettre à jour l'URL
+    updateURL('', '', '');
   };
 
   // Style markers (une fois)
