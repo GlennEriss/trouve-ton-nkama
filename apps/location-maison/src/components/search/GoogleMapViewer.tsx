@@ -10,10 +10,14 @@ import {
   Store,
   Bed,
   Briefcase,
-  Trees
+  Trees,
+  Search
 } from 'lucide-react';
 import { Button } from '../ui/button';
-import { TypeProperty, TypePropertyEnum } from '@/constantes/property-type';
+import { Input } from '../ui/input';
+import { useAlgoliaContext } from '@/providers/AlgoliaContext';
+import { useRouter } from 'next/navigation';
+import { Loader } from '@googlemaps/js-api-loader';
 
 type GoogleMapViewerProps = {
   lat: number;
@@ -24,33 +28,22 @@ type GoogleMapViewerProps = {
 
 type MarkerHandle = {
   marker: any;
-  root: Root;
-  el: HTMLDivElement;
+  root: Root | null;
+  el: HTMLDivElement | null;
 };
 
 const TYPE_ICON_MAP: Record<string, any> = {
-  // logements
   home: HomeIcon,
   villa: HomeIcon,
   logement: HomeIcon,
   property: HomeIcon,
-
-  // habitat collectif
   apartment: Building2,
   building: Building2,
-
-  // petites surfaces / chambre
   studio: Bed,
   room: Bed,
-
-  // commerce
   shop: Store,
   kiosk: Store,
-
-  // bureau
   desk: Briefcase,
-
-  // terrain
   land: Trees
 };
 
@@ -70,28 +63,23 @@ function normalizeType(t?: string) {
   return k;
 }
 
-// Fonction pour traduire le type de propriété en français
 function translatePropertyType(type?: string): string {
   if (!type) return 'Non spécifié';
-  
   const normalizedType = normalizeType(type);
-  
-  // Mappage des types normalisés vers les traductions françaises
   const typeTranslations: Record<string, string> = {
-    'home': 'Maison',
-    'villa': 'Villa',
-    'logement': 'Logement',
-    'property': 'Propriété',
-    'apartment': 'Appartement',
-    'building': 'Immeuble',
-    'studio': 'Studio',
-    'room': 'Chambre',
-    'shop': 'Magasin',
-    'kiosk': 'Kiosque',
-    'desk': 'Bureau',
-    'land': 'Terrain'
+    home: 'Maison',
+    villa: 'Villa',
+    logement: 'Logement',
+    property: 'Propriété',
+    apartment: 'Appartement',
+    building: 'Immeuble',
+    studio: 'Studio',
+    room: 'Chambre',
+    shop: 'Magasin',
+    kiosk: 'Kiosque',
+    desk: 'Bureau',
+    land: 'Terrain'
   };
-  
   return typeTranslations[normalizedType] || normalizedType;
 }
 
@@ -105,143 +93,130 @@ function shortPrice(p?: number) {
   return `${p}`;
 }
 
+// --- Singleton du loader pour éviter le double-chargement
+let mapsLoader: Loader | null = null;
+function getMapsLoader() {
+  if (!mapsLoader) {
+    mapsLoader = new Loader({
+      apiKey: process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY as string,
+      version: 'weekly',
+      libraries: ['places', 'marker'], // <-- IMPORTANT
+    });
+  }
+  return mapsLoader;
+}
+
 export default function GoogleMapViewer({ lat, lng, open, onOpenChange }: GoogleMapViewerProps) {
   const { items } = useInfiniteHits();
   const [selectedProperty, setSelectedProperty] = useState<any>(null);
+  const [isSearching, setIsSearching] = useState(false);
   const mapRef = useRef<HTMLDivElement>(null);
   const mapInstanceRef = useRef<any>(null);
   const markersRef = useRef<MarkerHandle[]>([]);
   const styleInjected = useRef(false);
+  const router = useRouter();
+  const { searchText, setSearchText } = useAlgoliaContext();
 
-  // Injecte le style des markers (une seule fois)
+  // Style markers (une fois)
   useEffect(() => {
     if (styleInjected.current) return;
     const style = document.createElement('style');
     style.textContent = `
       .lg-marker {
-        display: inline-flex;
-        align-items: center;
-        gap: 6px;
-        padding: 6px 10px;
-        border-radius: 9999px;
-        background: #fff;
-        border: 1px solid rgba(0,0,0,0.08);
+        display: inline-flex; align-items: center; gap: 6px;
+        padding: 6px 10px; border-radius: 9999px;
+        background: #fff; border: 1px solid rgba(0,0,0,0.08);
         box-shadow: 0 6px 18px rgba(0,0,0,0.12);
         font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, 'Helvetica Neue', Arial, 'Noto Sans', 'Apple Color Emoji', 'Segoe UI Emoji';
-        color: #111827;
-        transform: translateY(-8px);
-        cursor: pointer;
-        user-select: none;
+        color: #111827; transform: translateY(-8px);
+        cursor: pointer; user-select: none;
       }
-      .lg-marker .price {
-        font-weight: 700;
-        font-size: 12px;
-        line-height: 1;
-        letter-spacing: .2px;
-      }
-      .lg-marker .unit {
-        font-weight: 600;
-        font-size: 10px;
-        opacity: .6;
-        margin-left: 2px;
-      }
-      .lg-marker .icon {
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        width: 18px;
-        height: 18px;
-        color: #146B67;
-      }
-      .lg-marker:hover {
-        border-color: rgba(20,107,103,0.35);
-        box-shadow: 0 10px 24px rgba(20,107,103,0.20);
-      }
+      .lg-marker .price { font-weight: 700; font-size: 12px; line-height: 1; letter-spacing: .2px; }
+      .lg-marker .unit { font-weight: 600; font-size: 10px; opacity: .6; margin-left: 2px; }
+      .lg-marker .icon { display: inline-flex; align-items: center; justify-content: center; width: 18px; height: 18px; color: #146B67; }
+      .lg-marker:hover { border-color: rgba(20,107,103,0.35); box-shadow: 0 10px 24px rgba(20,107,103,0.20); }
     `;
     document.head.appendChild(style);
     styleInjected.current = true;
   }, []);
 
-  // Charger l'API Google Maps
+  // Init carte quand la modal s’ouvre
   useEffect(() => {
     if (!open || !mapRef.current) return;
 
-    const loadGoogleMaps = async () => {
-      if ((window as any).google?.maps) {
-        initializeMap();
-        return;
+    const init = async () => {
+      try {
+        const loader = getMapsLoader();
+        // Charge l’API (une fois) – évite les scripts manuels
+        await loader.load();
+        if (!(window as any).google?.maps) throw new Error('Google Maps introuvable après chargement.');
+
+        // Vérifie la présence d’AdvancedMarkerElement
+        const AdvancedMarkerElement = (window as any).google?.maps?.marker?.AdvancedMarkerElement;
+        if (!AdvancedMarkerElement) {
+          throw new Error('AdvancedMarkerElement indisponible. Vérifie `libraries: [\'marker\']` et la version.');
+        }
+
+        // Crée la carte
+        const map = new (window as any).google.maps.Map(mapRef.current, {
+          center: { lat, lng },
+          zoom: 11,
+          mapId: process.env.NEXT_PUBLIC_GOOGLE_MAP_ID, // Style de carte personnalisé
+          mapTypeId: (window as any).google.maps.MapTypeId.ROADMAP,
+          zoomControl: true,
+          mapTypeControl: true,
+          streetViewControl: true,
+          fullscreenControl: true,
+          gestureHandling: 'greedy',
+          scrollwheel: true,
+          draggable: true,
+          clickableIcons: true,
+          keyboardShortcuts: true
+        });
+
+        mapInstanceRef.current = map;
+        (mapInstanceRef as any).AdvancedMarkerElement = AdvancedMarkerElement;
+
+        addMarkers(map, AdvancedMarkerElement);
+      } catch (err) {
+        console.error('Erreur lors de l’initialisation de la carte:', err);
       }
-      const script = document.createElement('script');
-      // ⚠️ ajouter 'marker' pour AdvancedMarkerElement
-      script.src = `https://maps.googleapis.com/maps/api/js?key=${process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY}&libraries=places`;
-      script.async = true;
-      script.defer = true;
-      script.onload = initializeMap;
-      document.head.appendChild(script);
     };
 
-    loadGoogleMaps();
+    init();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open, lat, lng]);
 
-  const initializeMap = () => {
-    if (!mapRef.current || !(window as any).google) return;
-
-    const map = new (window as any).google.maps.Map(mapRef.current, {
-      center: { lat, lng },
-      zoom: 11,
-      mapTypeId: (window as any).google.maps.MapTypeId.ROADMAP,
-      zoomControl: true,
-      mapTypeControl: true,
-      streetViewControl: true,
-      fullscreenControl: true,
-      gestureHandling: 'greedy',
-      scrollwheel: true,
-      draggable: true,
-      clickableIcons: true,
-      keyboardShortcuts: true
-    });
-
-    mapInstanceRef.current = map;
-    addMarkers(map);
-  };
-
-  // Recrée les markers quand les résultats évoluent
+  // Recrée les markers à chaque changement d’items
   useEffect(() => {
     if (!mapInstanceRef.current) return;
-    addMarkers(mapInstanceRef.current);
+    const AdvancedMarkerElement = (mapInstanceRef as any).AdvancedMarkerElement;
+    if (AdvancedMarkerElement) addMarkers(mapInstanceRef.current, AdvancedMarkerElement);
   }, [items]);
 
+  // Nettoyage markers
   const clearMarkers = () => {
     markersRef.current.forEach(({ marker, root, el }) => {
-      try {
-        marker?.map && marker.map(null);
-      } catch {}
-      try {
-        root?.unmount();
-      } catch {}
-      try {
-        el?.remove();
-      } catch {}
+      try { if (marker) marker.map = null; } catch {}
+      try { root?.unmount(); } catch {}
+      try { el?.remove(); } catch {}
     });
     markersRef.current = [];
   };
 
-  const addMarkers = (map: any) => {
+  // Ajout markers (AdvancedMarkerElement only)
+  const addMarkers = (map: any, AdvancedMarkerElement: any) => {
     clearMarkers();
-
-    const google = (window as any).google;
-    const AdvancedMarker = google.maps.marker?.AdvancedMarkerElement;
+    if (!AdvancedMarkerElement) return;
 
     items.forEach((property: any) => {
-      const lat = Number(property.latitude);
-      const lng = Number(property.longitude);
-      if (!lat || !lng) return;
+      const plat = Number(property.latitude);
+      const plng = Number(property.longitude);
+      if (!plat || !plng) return;
 
       const t = normalizeType(property.typeProperty || property.type || property.category);
       const IconCmp = TYPE_ICON_MAP[t] || HomeIcon;
 
-      // contenu HTML du marker
       const el = document.createElement('div');
       el.className = 'lg-marker';
       el.setAttribute('role', 'button');
@@ -261,42 +236,33 @@ export default function GoogleMapViewer({ lat, lng, open, onOpenChange }: Google
       unitSpan.textContent = property.price ? 'FCFA' : '';
       el.appendChild(unitSpan);
 
-      // on rend l'icône Lucide dans le span
       const root = createRoot(iconSpan);
       root.render(<IconCmp size={18} strokeWidth={2} />);
 
-      // AdvancedMarker pour contenu custom
-      let marker: any;
-
-      if (AdvancedMarker) {
-        marker = new AdvancedMarker({
-          map,
-          position: { lat, lng },
-          title: property.title || property.name || '',
-          content: el,
-          gmpClickable: true
-        });
-      } else {
-        // fallback classique si pas de lib 'marker'
-        marker = new google.maps.Marker({
-          position: { lat, lng },
-          map,
-          title: property.title || property.name || '',
-          // on met l'HTML dans un label minimaliste (sans icône)
-          label: {
-            text: `${shortPrice(property.price)} FCFA`,
-            className: 'text-xs font-semibold bg-white px-2 py-1 rounded-lg border shadow'
-          }
-        });
-      }
+      const marker = new AdvancedMarkerElement({
+        map,
+        position: { lat: plat, lng: plng },
+        title: property.title || property.name || '',
+        content: el,
+        gmpClickable: true
+      });
 
       marker.addListener('click', () => setSelectedProperty(property));
-
       markersRef.current.push({ marker, root, el });
     });
   };
 
-  // Gérer la touche Escape pour fermer
+  // Recherche
+  const handleSearch = (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsSearching(true);
+    const params = new URLSearchParams();
+    if (searchText) params.append('query', searchText);
+    router.replace(`/search?${params.toString()}`);
+    setTimeout(() => setIsSearching(false), 500);
+  };
+
+  // ESC pour fermer
   useEffect(() => {
     if (!open) return;
     const handleEsc = (e: KeyboardEvent) => {
@@ -310,29 +276,58 @@ export default function GoogleMapViewer({ lat, lng, open, onOpenChange }: Google
 
   return (
     <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4">
-      {/* Modal principal */}
       <div className="bg-white rounded-xl shadow-2xl w-[95vw] h-[90vh] flex flex-col">
-        {/* En-tête */}
-        <div className="flex items-center justify-between p-6 border-b border-gray-200">
-          <div className="flex items-center gap-3">
-            <h2 className="text-2xl font-bold text-gray-900">🗺️ Carte des biens</h2>
-            <span className="text-sm text-gray-500 bg-gray-100 px-3 py-1 rounded-full">
-              {items.filter((p: any) => p.latitude && p.longitude).length} biens localisés
-            </span>
+        {/* Header */}
+        <div className="border-b border-gray-200">
+          <div className="flex items-center justify-between p-6">
+            <div className="flex items-center gap-3">
+              <h2 className="text-2xl font-bold text-gray-900">🗺️ Carte des biens</h2>
+              <span className="text-sm text-gray-500 bg-gray-100 px-3 py-1 rounded-full">
+                {items.filter((p: any) => p.latitude && p.longitude).length} biens localisés
+              </span>
+            </div>
+            <button
+              onClick={() => onOpenChange(false)}
+              className="p-2 hover:bg-gray-100 rounded-full transition-colors"
+            >
+              <X size={24} className="text-gray-500" />
+            </button>
           </div>
-          <button
-            onClick={() => onOpenChange(false)}
-            className="p-2 hover:bg-gray-100 rounded-full transition-colors"
-          >
-            <X size={24} className="text-gray-500" />
-          </button>
+
+          {/* Recherche */}
+          <div className="px-6 pb-6">
+            <form onSubmit={handleSearch} className="flex gap-3">
+              <div className="flex-1 relative">
+                <div className="flex items-center border rounded-full p-2 px-4 bg-gray-100 focus-within:border-[#1FA89B]">
+                  <button
+                    type="submit"
+                    disabled={isSearching}
+                    className="p-1 hover:stroke-[#1FA89B] disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    {isSearching ? (
+                      <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-[#1FA89B]"></div>
+                    ) : (
+                      <Search size={25} className="hover:stroke-[#1FA89B]" />
+                    )}
+                  </button>
+                  <Input
+                    type="text"
+                    placeholder="Logement, ville, quartier..."
+                    value={searchText}
+                    onChange={(e) => setSearchText(e.target.value)}
+                    className="border-none bg-transparent shadow-none focus-visible:ring-0 flex-1 ml-2"
+                  />
+                </div>
+              </div>
+            </form>
+          </div>
         </div>
 
         {/* Carte */}
         <div className="flex-1 relative">
           <div ref={mapRef} className="w-full h-full" style={{ minHeight: '400px' }} />
 
-          {/* Panneau de détails */}
+          {/* Panneau détails */}
           {selectedProperty && (
             <div className="absolute bottom-6 right-6 w-80 bg-white rounded-xl shadow-xl border border-gray-200">
               <div className="p-6">
@@ -387,7 +382,10 @@ export default function GoogleMapViewer({ lat, lng, open, onOpenChange }: Google
                   <Button className="flex-1 bg-[#146B67] hover:bg-[#1FA89B] text-white">
                     Voir les détails
                   </Button>
-                  <Button variant="outline" className="flex-1 border-[#146B67] text-[#146B67] hover:bg-[#1FA89B] hover:text-white">
+                  <Button
+                    variant="outline"
+                    className="flex-1 border-[#146B67] text-[#146B67] hover:bg-[#1FA89B] hover:text-white"
+                  >
                     Contacter
                   </Button>
                 </div>
