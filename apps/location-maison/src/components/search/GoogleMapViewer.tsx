@@ -18,6 +18,8 @@ import { Input } from '../ui/input';
 import { useAlgoliaContext } from '@/providers/AlgoliaContext';
 import { useRouter } from 'next/navigation';
 import { Loader } from '@googlemaps/js-api-loader';
+import { useLocation } from '@/hooks/use-location';
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '../ui/accordion';
 
 type GoogleMapViewerProps = {
   lat: number;
@@ -115,7 +117,167 @@ export default function GoogleMapViewer({ lat, lng, open, onOpenChange }: Google
   const markersRef = useRef<MarkerHandle[]>([]);
   const styleInjected = useRef(false);
   const router = useRouter();
-  const { searchText, setSearchText } = useAlgoliaContext();
+  const { searchText, setSearchText, setProvince, setCity, setStreet } = useAlgoliaContext();
+  const { data: locations } = useLocation();
+
+  // État pour les filtres de localisation
+  const [selectedProvince, setSelectedProvince] = useState<string>('');
+  const [selectedCity, setSelectedCity] = useState<string>('');
+  const [selectedStreet, setSelectedStreet] = useState<string>('');
+
+  // Options pour les filtres de localisation
+  const [provinceOptions, setProvinceOptions] = useState<Array<{label: string, value: string}>>([]);
+  const [cityOptions, setCityOptions] = useState<Array<{label: string, value: string}>>([]);
+  const [streetOptions, setStreetOptions] = useState<Array<{label: string, value: string}>>([]);
+
+  // Coordonnées géographiques des provinces du Gabon
+  const provinceCoordinates: Record<string, { lat: number; lng: number; zoom: number }> = {
+    'Estuaire': { lat: 0.4162, lng: 9.4673, zoom: 9 }, // Libreville
+    'Haut-Ogooué': { lat: -1.6333, lng: 13.5833, zoom: 8 }, // Franceville
+    'Moyen-Ogooué': { lat: -0.7833, lng: 10.2167, zoom: 8 }, // Lambaréné
+    'Ngounié': { lat: -1.5833, lng: 11.0333, zoom: 8 }, // Mouila
+    'Nyanga': { lat: -2.9167, lng: 10.7000, zoom: 8 }, // Tchibanga
+    'Ogooué-Ivindo': { lat: 0.7167, lng: 12.8667, zoom: 8 }, // Makokou
+    'Ogooué-Lolo': { lat: -1.1333, lng: 12.4667, zoom: 8 }, // Koulamoutou
+    'Ogooué-Maritime': { lat: -1.8667, lng: 9.7667, zoom: 8 }, // Port-Gentil
+    'Woleu-Ntem': { lat: 2.1333, lng: 11.3167, zoom: 8 }, // Oyem
+  };
+
+  // Coordonnées des principales villes (approximatives)
+  const cityCoordinates: Record<string, Record<string, { lat: number; lng: number; zoom: number }>> = {
+    'Estuaire': {
+      'Libreville': { lat: 0.4162, lng: 9.4673, zoom: 12 },
+      'Akanda': { lat: 0.5500, lng: 9.5500, zoom: 11 },
+      'Owendo': { lat: 0.3000, lng: 9.5000, zoom: 11 },
+      'Ntoum': { lat: 0.3833, lng: 9.7833, zoom: 11 },
+    },
+    'Haut-Ogooué': {
+      'Franceville': { lat: -1.6333, lng: 13.5833, zoom: 12 },
+      'Moanda': { lat: -1.5667, lng: 13.2000, zoom: 11 },
+      'Lékoni': { lat: -1.5833, lng: 14.2167, zoom: 11 },
+    },
+    'Moyen-Ogooué': {
+      'Lambaréné': { lat: -0.7833, lng: 10.2167, zoom: 12 },
+      'Ndjolé': { lat: -0.1833, lng: 10.6833, zoom: 11 },
+    },
+    'Ngounié': {
+      'Mouila': { lat: -1.5833, lng: 11.0333, zoom: 12 },
+      'Ndendé': { lat: -2.4000, lng: 11.3500, zoom: 11 },
+    },
+    'Nyanga': {
+      'Tchibanga': { lat: -2.9167, lng: 10.7000, zoom: 12 },
+    },
+    'Ogooué-Ivindo': {
+      'Makokou': { lat: 0.7167, lng: 12.8667, zoom: 12 },
+      'Booué': { lat: -0.1000, lng: 11.9333, zoom: 11 },
+    },
+    'Ogooué-Lolo': {
+      'Koulamoutou': { lat: -1.1333, lng: 12.4667, zoom: 12 },
+      'Lastoursville': { lat: -0.8167, lng: 12.7167, zoom: 11 },
+    },
+    'Ogooué-Maritime': {
+      'Port-Gentil': { lat: -0.7167, lng: 8.7833, zoom: 12 },
+      'Gamba': { lat: -2.7833, lng: 9.9833, zoom: 11 },
+    },
+    'Woleu-Ntem': {
+      'Oyem': { lat: 1.6167, lng: 11.5667, zoom: 12 },
+      'Bitam': { lat: 2.0833, lng: 11.4833, zoom: 11 },
+    },
+  };
+
+  // Fonction pour naviguer vers une localisation
+  const navigateToLocation = (province?: string, city?: string, street?: string) => {
+    if (!mapInstanceRef.current) return;
+
+    let targetCoords: { lat: number; lng: number; zoom: number } | null = null;
+
+    if (street && city && province && cityCoordinates[province]?.[city]) {
+      // Pour un quartier, on utilise les coordonnées de la ville avec un zoom plus élevé
+      const cityCoords = cityCoordinates[province][city];
+      targetCoords = { ...cityCoords, zoom: Math.min(cityCoords.zoom + 2, 16) };
+    } else if (city && province && cityCoordinates[province]?.[city]) {
+      // Pour une ville
+      targetCoords = cityCoordinates[province][city];
+    } else if (province && provinceCoordinates[province]) {
+      // Pour une province
+      targetCoords = provinceCoordinates[province];
+    }
+
+    if (targetCoords) {
+      mapInstanceRef.current.setCenter({ lat: targetCoords.lat, lng: targetCoords.lng });
+      mapInstanceRef.current.setZoom(targetCoords.zoom);
+    }
+  };
+
+  // Générer les options de localisation
+  useEffect(() => {
+    if (locations) {
+      const provinces = Object.keys(locations)
+        .sort((a: string, b: string) => a.localeCompare(b, 'fr'))
+        .map(province => ({ label: province, value: province }));
+      setProvinceOptions(provinces);
+    }
+  }, [locations]);
+
+  // Mettre à jour les villes quand la province change
+  useEffect(() => {
+    if (selectedProvince && locations?.[selectedProvince]) {
+      const cities = Object.keys(locations[selectedProvince])
+        .sort((a: string, b: string) => a.localeCompare(b, 'fr'))
+        .map(city => ({ label: city, value: city }));
+      setCityOptions(cities);
+      setSelectedCity('');
+      setSelectedStreet('');
+      
+      // Naviguer vers la province sélectionnée
+      navigateToLocation(selectedProvince);
+    } else {
+      setCityOptions([]);
+      setStreetOptions([]);
+    }
+  }, [selectedProvince, locations]);
+
+  // Mettre à jour les quartiers quand la ville change
+  useEffect(() => {
+    if (selectedProvince && selectedCity && locations?.[selectedProvince]?.[selectedCity]) {
+      const streets = locations[selectedProvince][selectedCity]
+        .sort((a: string, b: string) => a.localeCompare(b, 'fr'))
+        .map((street: string) => ({ label: street, value: street }));
+      setStreetOptions(streets);
+      setSelectedStreet('');
+      
+      // Naviguer vers la ville sélectionnée
+      navigateToLocation(selectedProvince, selectedCity);
+    } else {
+      setStreetOptions([]);
+    }
+  }, [selectedCity, locations, selectedProvince]);
+
+  // Appliquer les filtres de localisation
+  const applyLocationFilters = () => {
+    setProvince(selectedProvince);
+    setCity(selectedCity);
+    setStreet(selectedStreet);
+    
+    // Naviguer vers la localisation finale
+    navigateToLocation(selectedProvince, selectedCity, selectedStreet);
+  };
+
+  // Effacer les filtres de localisation
+  const clearLocationFilters = () => {
+    setSelectedProvince('');
+    setSelectedCity('');
+    setSelectedStreet('');
+    setProvince('');
+    setCity('');
+    setStreet('');
+    
+    // Retourner au centre initial
+    if (mapInstanceRef.current) {
+      mapInstanceRef.current.setCenter({ lat, lng });
+      mapInstanceRef.current.setZoom(11);
+    }
+  };
 
   // Style markers (une fois)
   useEffect(() => {
@@ -296,29 +458,115 @@ export default function GoogleMapViewer({ lat, lng, open, onOpenChange }: Google
 
           {/* Recherche */}
           <div className="px-6 pb-6">
-            <form onSubmit={handleSearch} className="flex gap-3">
-              <div className="flex-1 relative">
-                <div className="flex items-center border rounded-full p-2 px-4 bg-gray-100 focus-within:border-[#1FA89B]">
-                  <button
-                    type="submit"
-                    disabled={isSearching}
-                    className="p-1 hover:stroke-[#1FA89B] disabled:opacity-50 disabled:cursor-not-allowed"
-                  >
-                    {isSearching ? (
-                      <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-[#1FA89B]"></div>
-                    ) : (
-                      <Search size={25} className="hover:stroke-[#1FA89B]" />
-                    )}
-                  </button>
-                  <Input
-                    type="text"
-                    placeholder="Logement, ville, quartier..."
-                    value={searchText}
-                    onChange={(e) => setSearchText(e.target.value)}
-                    className="border-none bg-transparent shadow-none focus-visible:ring-0 flex-1 ml-2"
-                  />
+            <form onSubmit={handleSearch} className="space-y-4">
+              {/* Barre de recherche */}
+              <div className="flex gap-3">
+                <div className="flex-1 relative">
+                  <div className="flex items-center border rounded-full p-2 px-4 bg-gray-100 focus-within:border-[#1FA89B]">
+                    <button
+                      type="submit"
+                      disabled={isSearching}
+                      className="p-1 hover:stroke-[#1FA89B] disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      {isSearching ? (
+                        <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-[#1FA89B]"></div>
+                      ) : (
+                        <Search size={25} className="hover:stroke-[#1FA89B]" />
+                      )}
+                    </button>
+                    <Input
+                      type="text"
+                      placeholder="Logement, ville, quartier..."
+                      value={searchText}
+                      onChange={(e) => setSearchText(e.target.value)}
+                      className="border-none bg-transparent shadow-none focus-visible:ring-0 flex-1 ml-2"
+                    />
+                  </div>
                 </div>
               </div>
+
+              {/* Filtres de localisation dans un accordéon */}
+              <Accordion type="single" collapsible className="w-full">
+                <AccordionItem value="location-filters" className="border border-gray-200 rounded-lg">
+                  <AccordionTrigger className="px-4 hover:no-underline">
+                    <span className="text-sm font-medium text-gray-700">📍 Filtres de localisation</span>
+                  </AccordionTrigger>
+                  <AccordionContent className="px-4 pb-4">
+                    <div className="space-y-4">
+                      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div className="space-y-2">
+                          <label className="text-sm font-medium text-gray-700">Province</label>
+                          <select
+                            value={selectedProvince}
+                            onChange={(e) => setSelectedProvince(e.target.value)}
+                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#1FA89B] focus:border-transparent"
+                          >
+                            <option value="">Sélectionnez une province</option>
+                            {provinceOptions.map((option) => (
+                              <option key={option.value} value={option.value}>
+                                {option.label}
+                              </option>
+                            ))}
+                          </select>
+                        </div>
+                        
+                        <div className="space-y-2">
+                          <label className="text-sm font-medium text-gray-700">Ville</label>
+                          <select
+                            value={selectedCity}
+                            onChange={(e) => setSelectedCity(e.target.value)}
+                            disabled={!selectedProvince}
+                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#1FA89B] focus:border-transparent disabled:bg-gray-100 disabled:cursor-not-allowed"
+                          >
+                            <option value="">Sélectionnez une ville</option>
+                            {cityOptions.map((option) => (
+                              <option key={option.value} value={option.value}>
+                                {option.label}
+                              </option>
+                            ))}
+                          </select>
+                        </div>
+                        
+                        <div className="space-y-2">
+                          <label className="text-sm font-medium text-gray-700">Quartier</label>
+                          <select
+                            value={selectedStreet}
+                            onChange={(e) => setSelectedStreet(e.target.value)}
+                            disabled={!selectedCity}
+                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#1FA89B] focus:border-transparent disabled:bg-gray-100 disabled:cursor-not-allowed"
+                          >
+                            <option value="">Sélectionnez un quartier</option>
+                            {streetOptions.map((option) => (
+                              <option key={option.value} value={option.value}>
+                                {option.label}
+                              </option>
+                            ))}
+                          </select>
+                        </div>
+                      </div>
+
+                      {/* Boutons d'action */}
+                      <div className="flex items-center gap-3">
+                        <Button
+                          type="button"
+                          onClick={applyLocationFilters}
+                          className="bg-[#146B67] hover:bg-[#1FA89B] text-white px-6"
+                        >
+                          Appliquer les filtres
+                        </Button>
+                        <Button
+                          type="button"
+                          variant="outline"
+                          onClick={clearLocationFilters}
+                          className="border-[#146B67] text-[#146B67] hover:bg-[#146B67] hover:text-white"
+                        >
+                          Effacer
+                        </Button>
+                      </div>
+                    </div>
+                  </AccordionContent>
+                </AccordionItem>
+              </Accordion>
             </form>
           </div>
         </div>
