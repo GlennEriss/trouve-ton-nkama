@@ -11,15 +11,14 @@ import {
   Bed,
   Briefcase,
   Trees,
-  Search
+  Search,
+  ChevronDown
 } from 'lucide-react';
 import { Button } from '../ui/button';
-import { Input } from '../ui/input';
 import { useAlgoliaContext } from '@/providers/AlgoliaContext';
 import { useRouter } from 'next/navigation';
 import { Loader } from '@googlemaps/js-api-loader';
 import { useLocation } from '@/hooks/use-location';
-import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '../ui/accordion';
 import { useSearchParams } from 'next/navigation';
 
 type GoogleMapViewerProps = {
@@ -113,10 +112,13 @@ export default function GoogleMapViewer({ lat, lng, open, onOpenChange }: Google
   const { items } = useInfiniteHits();
   const [selectedProperty, setSelectedProperty] = useState<any>(null);
   const [isSearching, setIsSearching] = useState(false);
+  const [isFullscreen, setIsFullscreen] = useState(false);
+  const [showFloatingDropdown, setShowFloatingDropdown] = useState(false);
   const mapRef = useRef<HTMLDivElement>(null);
   const mapInstanceRef = useRef<any>(null);
   const markersRef = useRef<MarkerHandle[]>([]);
   const styleInjected = useRef(false);
+  const floatingSearchRef = useRef<HTMLDivElement>(null);
   const router = useRouter();
   const { searchText, setSearchText, setProvince, setCity, setStreet } = useAlgoliaContext();
   const { data: locations } = useLocation();
@@ -128,9 +130,108 @@ export default function GoogleMapViewer({ lat, lng, open, onOpenChange }: Google
   const [selectedStreet, setSelectedStreet] = useState<string>('');
 
   // Options pour les filtres de localisation
-  const [provinceOptions, setProvinceOptions] = useState<Array<{label: string, value: string}>>([]);
-  const [cityOptions, setCityOptions] = useState<Array<{label: string, value: string}>>([]);
-  const [streetOptions, setStreetOptions] = useState<Array<{label: string, value: string}>>([]);
+  const [provinceOptions, setProvinceOptions] = useState<Array<{ label: string, value: string }>>([]);
+  const [cityOptions, setCityOptions] = useState<Array<{ label: string, value: string }>>([]);
+  const [streetOptions, setStreetOptions] = useState<Array<{ label: string, value: string }>>([]);
+
+  // Détection robuste du plein écran Google Maps
+  useEffect(() => {
+    const mapEl = mapRef.current;
+    if (!mapEl) return;
+
+    // Le div racine rendu par Google à l'intérieur du conteneur
+    const getGmRoot = () =>
+      (mapEl.querySelector('.gm-style') as HTMLElement | null) || null;
+
+    const getFullscreenEl = () =>
+      (document.fullscreenElement ||
+        (document as any).webkitFullscreenElement ||
+        (document as any).mozFullScreenElement ||
+        (document as any).msFullscreenElement) as Element | null;
+
+    const computeIsFullscreen = () => {
+      const fsEl = getFullscreenEl();
+      const gmRoot = getGmRoot();
+
+      // 1) Détection via l'API Fullscreen : l'élément FS est-il dans notre carte ?
+      const byApi =
+        !!fsEl &&
+        !!(
+          mapEl.contains(fsEl) ||
+          (gmRoot && (fsEl === gmRoot || fsEl.contains(gmRoot)))
+        );
+
+      if (byApi) return true;
+
+      // 2) Fallback par dimensions (Google peut "simuler" le FS)
+      const el = gmRoot ?? mapEl;
+      const r = el.getBoundingClientRect();
+      const bySize =
+        Math.abs(r.width - window.innerWidth) < 4 &&
+        Math.abs(r.height - window.innerHeight) < 4;
+
+      return bySize;
+    };
+
+    const update = () => setIsFullscreen(computeIsFullscreen());
+
+    // Écouteurs Fullscreen API (tous préfixes)
+    const fsEvents = [
+      'fullscreenchange',
+      'webkitfullscreenchange',
+      'mozfullscreenchange',
+      'MSFullscreenChange',
+    ];
+    fsEvents.forEach((ev) => document.addEventListener(ev, update));
+
+    // Redimensionnement : utile quand Google simule le plein écran
+    window.addEventListener('resize', update);
+
+    // MutationObserver : Google change les styles/classes au toggle
+    const moTarget = getGmRoot() ?? mapEl;
+    const observer = new MutationObserver(() => update());
+    observer.observe(moTarget, { attributes: true, attributeFilter: ['class', 'style'] });
+
+    // Bouton natif de Google (sécurité en plus)
+    const fsBtn = mapEl.querySelector('.gm-fullscreen-control') as HTMLElement | null;
+    const clickUpdate = () => setTimeout(update, 0);
+    fsBtn?.addEventListener('click', clickUpdate);
+
+    // État initial
+    update();
+
+    return () => {
+      fsEvents.forEach((ev) => document.removeEventListener(ev, update));
+      window.removeEventListener('resize', update);
+      observer.disconnect();
+      fsBtn?.removeEventListener('click', clickUpdate);
+    };
+  }, [open]);
+
+  // Fermer le dropdown flottant en mode plein écran quand on clique à l'extérieur
+  useEffect(() => {
+    if (!isFullscreen || !showFloatingDropdown) return;
+
+    const handleClickOutside = (event: MouseEvent) => {
+      if (floatingSearchRef.current && !floatingSearchRef.current.contains(event.target as Node)) {
+        setShowFloatingDropdown(false);
+      }
+    };
+
+    const handleEscape = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        setShowFloatingDropdown(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    document.addEventListener('keydown', handleEscape);
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener('keydown', handleEscape);
+    };
+  }, [isFullscreen, showFloatingDropdown]);
 
   // Synchronisation URL → Filtres au chargement initial
   useEffect(() => {
@@ -238,19 +339,19 @@ export default function GoogleMapViewer({ lat, lng, open, onOpenChange }: Google
   // Fonction pour mettre à jour l'URL avec les filtres
   const updateURL = (province: string, city: string, street: string) => {
     const params = new URLSearchParams(searchParams.toString());
-    
+
     if (province) {
       params.set('province', province);
     } else {
       params.delete('province');
     }
-    
+
     if (city) {
       params.set('city', city);
     } else {
       params.delete('city');
     }
-    
+
     if (street) {
       params.set('street', street);
     } else {
@@ -280,10 +381,10 @@ export default function GoogleMapViewer({ lat, lng, open, onOpenChange }: Google
       setCityOptions(cities);
       setSelectedCity('');
       setSelectedStreet('');
-      
+
       // Naviguer vers la province sélectionnée
       navigateToLocation(selectedProvince);
-      
+
       // Mettre à jour l'URL
       updateURL(selectedProvince, '', '');
     } else {
@@ -300,10 +401,10 @@ export default function GoogleMapViewer({ lat, lng, open, onOpenChange }: Google
         .map((street: string) => ({ label: street, value: street }));
       setStreetOptions(streets);
       setSelectedStreet('');
-      
+
       // Naviguer vers la ville sélectionnée
       navigateToLocation(selectedProvince, selectedCity);
-      
+
       // Mettre à jour l'URL
       updateURL(selectedProvince, selectedCity, '');
     } else {
@@ -316,12 +417,17 @@ export default function GoogleMapViewer({ lat, lng, open, onOpenChange }: Google
     setProvince(selectedProvince);
     setCity(selectedCity);
     setStreet(selectedStreet);
-    
+
     // Naviguer vers la localisation finale
     navigateToLocation(selectedProvince, selectedCity, selectedStreet);
-    
+
     // Mettre à jour l'URL
     updateURL(selectedProvince, selectedCity, selectedStreet);
+
+    // Fermer le dropdown en mode plein écran
+    if (isFullscreen) {
+      setShowFloatingDropdown(false);
+    }
   };
 
   // Effacer les filtres de localisation
@@ -332,15 +438,20 @@ export default function GoogleMapViewer({ lat, lng, open, onOpenChange }: Google
     setProvince('');
     setCity('');
     setStreet('');
-    
+
     // Retourner au centre initial
     if (mapInstanceRef.current) {
       mapInstanceRef.current.setCenter({ lat, lng });
       mapInstanceRef.current.setZoom(11);
     }
-    
+
     // Mettre à jour l'URL
     updateURL('', '', '');
+
+    // Fermer le dropdown en mode plein écran
+    if (isFullscreen) {
+      setShowFloatingDropdown(false);
+    }
   };
 
   // Style markers (une fois)
@@ -366,18 +477,18 @@ export default function GoogleMapViewer({ lat, lng, open, onOpenChange }: Google
     styleInjected.current = true;
   }, []);
 
-  // Init carte quand la modal s’ouvre
+  // Init carte quand la modal s'ouvre
   useEffect(() => {
     if (!open || !mapRef.current) return;
 
     const init = async () => {
       try {
         const loader = getMapsLoader();
-        // Charge l’API (une fois) – évite les scripts manuels
+        // Charge l'API (une fois) – évite les scripts manuels
         await loader.load();
         if (!(window as any).google?.maps) throw new Error('Google Maps introuvable après chargement.');
 
-        // Vérifie la présence d’AdvancedMarkerElement
+        // Vérifie la présence d'AdvancedMarkerElement
         const AdvancedMarkerElement = (window as any).google?.maps?.marker?.AdvancedMarkerElement;
         if (!AdvancedMarkerElement) {
           throw new Error('AdvancedMarkerElement indisponible. Vérifie `libraries: [\'marker\']` et la version.');
@@ -405,7 +516,7 @@ export default function GoogleMapViewer({ lat, lng, open, onOpenChange }: Google
 
         addMarkers(map, AdvancedMarkerElement);
       } catch (err) {
-        console.error('Erreur lors de l’initialisation de la carte:', err);
+        console.error('Error during map initialization:', err);
       }
     };
 
@@ -413,7 +524,7 @@ export default function GoogleMapViewer({ lat, lng, open, onOpenChange }: Google
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open, lat, lng]);
 
-  // Recrée les markers à chaque changement d’items
+  // Recrée les markers à chaque changement d'items
   useEffect(() => {
     if (!mapInstanceRef.current) return;
     const AdvancedMarkerElement = (mapInstanceRef as any).AdvancedMarkerElement;
@@ -423,9 +534,9 @@ export default function GoogleMapViewer({ lat, lng, open, onOpenChange }: Google
   // Nettoyage markers
   const clearMarkers = () => {
     markersRef.current.forEach(({ marker, root, el }) => {
-      try { if (marker) marker.map = null; } catch {}
-      try { root?.unmount(); } catch {}
-      try { el?.remove(); } catch {}
+      try { if (marker) marker.map = null; } catch { }
+      try { root?.unmount(); } catch { }
+      try { el?.remove(); } catch { }
     });
     markersRef.current = [];
   };
@@ -503,141 +614,276 @@ export default function GoogleMapViewer({ lat, lng, open, onOpenChange }: Google
   return (
     <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4">
       <div className="bg-white rounded-xl shadow-2xl w-[95vw] h-[90vh] flex flex-col">
-        {/* Header */}
-        <div className="border-b border-gray-200">
-          <div className="flex items-center justify-between p-6">
-            <div className="flex items-center gap-3">
-              <h2 className="text-2xl font-bold text-gray-900">🗺️ Carte des biens</h2>
-              <span className="text-sm text-gray-500 bg-gray-100 px-3 py-1 rounded-full">
-                {items.filter((p: any) => p.latitude && p.longitude).length} biens localisés
-              </span>
-            </div>
+        {/* Header - caché en mode plein écran */}
+        {!isFullscreen && (
+          <div className="flex flex-col border-b border-gray-200 p-2">
             <button
-              onClick={() => onOpenChange(false)}
-              className="p-2 hover:bg-gray-100 rounded-full transition-colors"
-            >
-              <X size={24} className="text-gray-500" />
-            </button>
-          </div>
-
-          {/* Recherche */}
-          <div className="px-6 pb-6">
-            <form onSubmit={handleSearch} className="space-y-4">
-              {/* Barre de recherche */}
-              <div className="flex gap-3">
-                <div className="flex-1 relative">
-                  <div className="flex items-center border rounded-full p-2 px-4 bg-gray-100 focus-within:border-[#1FA89B]">
+                onClick={() => onOpenChange(false)}
+                className="lg:hidden hover:bg-gray-100 rounded-full transition-colors ml-auto"
+              >
+                <X size={24} className="text-gray-500" />
+              </button>
+            <div className="flex md:flex-row items-center justify-between p-2 lg:p-6">
+              <div className="flex flex-col md:flex-row items-center justify-between gap-3">
+                {/* Composant de recherche flottante */}
+                <div className="relative">
+                  <form onSubmit={handleSearch} className="flex items-center bg-white rounded-full shadow-lg border border-gray-200 px-4 py-3 min-w-[320px]">
                     <button
                       type="submit"
                       disabled={isSearching}
-                      className="p-1 hover:stroke-[#1FA89B] disabled:opacity-50 disabled:cursor-not-allowed"
+                      className="p-1 hover:stroke-[#1FA89B] disabled:opacity-50 disabled:cursor-not-allowed mr-3"
                     >
                       {isSearching ? (
-                        <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-[#1FA89B]"></div>
+                        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-[#1FA89B]"></div>
                       ) : (
-                        <Search size={25} className="hover:stroke-[#1FA89B]" />
+                        <Search size={20} className="text-gray-500 hover:stroke-[#1FA89B]" />
                       )}
                     </button>
-                    <Input
+                    <input
                       type="text"
                       placeholder="Logement, ville, quartier..."
                       value={searchText}
                       onChange={(e) => setSearchText(e.target.value)}
-                      className="border-none bg-transparent shadow-none focus-visible:ring-0 flex-1 ml-2"
+                      className="flex-1 border-none outline-none text-sm text-gray-700 placeholder-gray-500"
                     />
-                  </div>
-                </div>
-              </div>
+                    <button
+                      type="button"
+                      onClick={() => setShowFloatingDropdown(!showFloatingDropdown)}
+                      className="ml-3 flex items-center gap-2 px-3 py-1.5 bg-gray-100 hover:bg-gray-200 rounded-full text-xs font-medium text-gray-700 transition-colors"
+                      aria-expanded={showFloatingDropdown}
+                    >
+                      Filtres
+                      <ChevronDown
+                        size={14}
+                        className={`transition-transform ${showFloatingDropdown ? 'rotate-180' : ''}`}
+                      />
+                    </button>
+                  </form>
 
-              {/* Filtres de localisation dans un accordéon */}
-              <Accordion type="single" collapsible className="w-full">
-                <AccordionItem value="location-filters" className="border border-gray-200 rounded-lg">
-                  <AccordionTrigger className="px-4 hover:no-underline">
-                    <span className="text-sm font-medium text-gray-700">📍 Filtres de localisation</span>
-                  </AccordionTrigger>
-                  <AccordionContent className="px-4 pb-4">
-                    <div className="space-y-4">
-                      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                        <div className="space-y-2">
-                          <label className="text-sm font-medium text-gray-700">Province</label>
-                          <select
-                            value={selectedProvince}
-                            onChange={(e) => setSelectedProvince(e.target.value)}
-                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#1FA89B] focus:border-transparent"
-                          >
-                            <option value="">Sélectionnez une province</option>
-                            {provinceOptions.map((option) => (
-                              <option key={option.value} value={option.value}>
-                                {option.label}
-                              </option>
-                            ))}
-                          </select>
-                        </div>
-                        
-                        <div className="space-y-2">
-                          <label className="text-sm font-medium text-gray-700">Ville</label>
-                          <select
-                            value={selectedCity}
-                            onChange={(e) => setSelectedCity(e.target.value)}
-                            disabled={!selectedProvince}
-                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#1FA89B] focus:border-transparent disabled:bg-gray-100 disabled:cursor-not-allowed"
-                          >
-                            <option value="">Sélectionnez une ville</option>
-                            {cityOptions.map((option) => (
-                              <option key={option.value} value={option.value}>
-                                {option.label}
-                              </option>
-                            ))}
-                          </select>
-                        </div>
-                        
-                        <div className="space-y-2">
-                          <label className="text-sm font-medium text-gray-700">Quartier</label>
-                          <select
-                            value={selectedStreet}
-                            onChange={(e) => setSelectedStreet(e.target.value)}
-                            disabled={!selectedCity}
-                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#1FA89B] focus:border-transparent disabled:bg-gray-100 disabled:cursor-not-allowed"
-                          >
-                            <option value="">Sélectionnez un quartier</option>
-                            {streetOptions.map((option) => (
-                              <option key={option.value} value={option.value}>
-                                {option.label}
-                              </option>
-                            ))}
-                          </select>
-                        </div>
-                      </div>
+                  {/* Dropdown des filtres */}
+                  {showFloatingDropdown && (
+                    <div className="absolute top-full -right-1 md:right-0 md:left-0 mt-2 w-96 bg-white rounded-xl shadow-xl border border-gray-200 z-20">
+                      {/* Flèche vers le haut */}
+                      <div className="absolute -top-2 md:left-6 right-8 w-4 h-4 bg-white border-l border-t border-gray-200 transform rotate-45"></div>
 
-                      {/* Boutons d'action */}
-                      <div className="flex items-center gap-3">
-                        <Button
-                          type="button"
-                          onClick={applyLocationFilters}
-                          className="bg-[#146B67] hover:bg-[#1FA89B] text-white px-6"
-                        >
-                          Appliquer les filtres
-                        </Button>
-                        <Button
-                          type="button"
-                          variant="outline"
-                          onClick={clearLocationFilters}
-                          className="border-[#146B67] text-[#146B67] hover:bg-[#146B67] hover:text-white"
-                        >
-                          Effacer
-                        </Button>
+                      <div className="p-4">
+                        <h3 className="text-sm font-semibold text-gray-900 mb-4">📍 Filtres de localisation</h3>
+
+                        <div className="space-y-4">
+                          <div className="grid grid-cols-1 gap-4">
+                            <div className="space-y-2">
+                              <label className="text-sm font-medium text-gray-700">Province</label>
+                              <select
+                                value={selectedProvince}
+                                onChange={(e) => setSelectedProvince(e.target.value)}
+                                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#1FA89B] focus:border-transparent text-sm"
+                              >
+                                <option value="">Sélectionnez une province</option>
+                                {provinceOptions.map((option) => (
+                                  <option key={option.value} value={option.value}>
+                                    {option.label}
+                                  </option>
+                                ))}
+                              </select>
+                            </div>
+
+                            <div className="space-y-2">
+                              <label className="text-sm font-medium text-gray-700">Ville</label>
+                              <select
+                                value={selectedCity}
+                                onChange={(e) => setSelectedCity(e.target.value)}
+                                disabled={!selectedProvince}
+                                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#1FA89B] focus:border-transparent disabled:bg-gray-100 disabled:cursor-not-allowed text-sm"
+                              >
+                                <option value="">Sélectionnez une ville</option>
+                                {cityOptions.map((option) => (
+                                  <option key={option.value} value={option.value}>
+                                    {option.label}
+                                  </option>
+                                ))}
+                              </select>
+                            </div>
+
+                            <div className="space-y-2">
+                              <label className="text-sm font-medium text-gray-700">Quartier</label>
+                              <select
+                                value={selectedStreet}
+                                onChange={(e) => setSelectedStreet(e.target.value)}
+                                disabled={!selectedCity}
+                                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#1FA89B] focus:border-transparent disabled:bg-gray-100 disabled:cursor-not-allowed text-sm"
+                              >
+                                <option value="">Sélectionnez un quartier</option>
+                                {streetOptions.map((option) => (
+                                  <option key={option.value} value={option.value}>
+                                    {option.label}
+                                  </option>
+                                ))}
+                              </select>
+                            </div>
+                          </div>
+
+                          {/* Boutons d'action */}
+                          <div className="flex items-center gap-3 pt-2">
+                            <Button
+                              type="button"
+                              onClick={applyLocationFilters}
+                              className="bg-[#146B67] hover:bg-[#1FA89B] text-white px-4 py-2 text-sm"
+                            >
+                              Appliquer
+                            </Button>
+                            <Button
+                              type="button"
+                              variant="outline"
+                              onClick={clearLocationFilters}
+                              className="border-[#146B67] text-[#146B67] hover:bg-[#146B67] hover:text-white px-4 py-2 text-sm"
+                            >
+                              Effacer
+                            </Button>
+                          </div>
+                        </div>
                       </div>
                     </div>
-                  </AccordionContent>
-                </AccordionItem>
-              </Accordion>
-            </form>
+                  )}
+                </div>
+
+                <span className="text-sm text-gray-500 bg-gray-100 px-3 py-1 rounded-full">
+                  {items.filter((p: any) => p.latitude && p.longitude).length} biens localisés
+                </span>
+              </div>
+              <button
+                onClick={() => onOpenChange(false)}
+                className="lg:block hidden hover:bg-gray-100 rounded-full transition-colors ml-auto"
+              >
+                <X size={24} className="text-gray-500" />
+              </button>
+            </div>
+
+
           </div>
-        </div>
+        )}
 
         {/* Carte */}
         <div className="flex-1 relative">
           <div ref={mapRef} className="w-full h-full" style={{ minHeight: '400px' }} />
+
+          {/* Recherche flottante en mode plein écran */}
+          {isFullscreen && (
+            <div
+              ref={floatingSearchRef}
+              className="absolute top-6 left-6 sm:top-6 sm:left-6 z-[1000]"
+            >
+              {/* Pill de recherche */}
+              <div className="relative">
+                <div className="flex items-center bg-white rounded-full shadow-lg border border-gray-200 px-4 py-3 min-w-[320px]">
+                  <Search size={20} className="text-gray-500 mr-3" />
+                  <input
+                    type="text"
+                    placeholder="Logement, ville, quartier..."
+                    value={searchText}
+                    onChange={(e) => setSearchText(e.target.value)}
+                    className="flex-1 border-none outline-none text-sm text-gray-700 placeholder-gray-500"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowFloatingDropdown(!showFloatingDropdown)}
+                    className="ml-3 flex items-center gap-2 px-3 py-1.5 bg-gray-100 hover:bg-gray-200 rounded-full text-xs font-medium text-gray-700 transition-colors"
+                    aria-expanded={showFloatingDropdown}
+                  >
+                    Filtres
+                    <ChevronDown
+                      size={14}
+                      className={`transition-transform ${showFloatingDropdown ? 'rotate-180' : ''}`}
+                    />
+                  </button>
+                </div>
+
+                {/* Dropdown des filtres */}
+                {showFloatingDropdown && (
+                  <div className="absolute top-full left-0 mt-2 w-96 bg-white rounded-xl shadow-xl border border-gray-200 z-20">
+                    {/* Flèche vers le haut */}
+                    <div className="absolute -top-2 left-6 w-4 h-4 bg-white border-l border-t border-gray-200 transform rotate-45"></div>
+
+                    <div className="p-4">
+                      <h3 className="text-sm font-semibold text-gray-900 mb-4">📍 Filtres de localisation</h3>
+
+                      <div className="space-y-4">
+                        <div className="grid grid-cols-1 gap-4">
+                          <div className="space-y-2">
+                            <label className="text-sm font-medium text-gray-700">Province</label>
+                            <select
+                              value={selectedProvince}
+                              onChange={(e) => setSelectedProvince(e.target.value)}
+                              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#1FA89B] focus:border-transparent text-sm"
+                            >
+                              <option value="">Sélectionnez une province</option>
+                              {provinceOptions.map((option) => (
+                                <option key={option.value} value={option.value}>
+                                  {option.label}
+                                </option>
+                              ))}
+                            </select>
+                          </div>
+
+                          <div className="space-y-2">
+                            <label className="text-sm font-medium text-gray-700">Ville</label>
+                            <select
+                              value={selectedCity}
+                              onChange={(e) => setSelectedCity(e.target.value)}
+                              disabled={!selectedProvince}
+                              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#1FA89B] focus:border-transparent disabled:bg-gray-100 disabled:cursor-not-allowed text-sm"
+                            >
+                              <option value="">Sélectionnez une ville</option>
+                              {cityOptions.map((option) => (
+                                <option key={option.value} value={option.value}>
+                                  {option.label}
+                                </option>
+                              ))}
+                            </select>
+                          </div>
+
+                          <div className="space-y-2">
+                            <label className="text-sm font-medium text-gray-700">Quartier</label>
+                            <select
+                              value={selectedStreet}
+                              onChange={(e) => setSelectedStreet(e.target.value)}
+                              disabled={!selectedCity}
+                              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#1FA89B] focus:border-transparent disabled:bg-gray-100 disabled:cursor-not-allowed text-sm"
+                            >
+                              <option value="">Sélectionnez un quartier</option>
+                              {streetOptions.map((option) => (
+                                <option key={option.value} value={option.value}>
+                                  {option.label}
+                                </option>
+                              ))}
+                            </select>
+                          </div>
+                        </div>
+
+                        {/* Boutons d'action */}
+                        <div className="flex items-center gap-3 pt-2">
+                          <Button
+                            type="button"
+                            onClick={applyLocationFilters}
+                            className="bg-[#146B67] hover:bg-[#1FA89B] text-white px-4 py-2 text-sm"
+                          >
+                            Appliquer
+                          </Button>
+                          <Button
+                            type="button"
+                            variant="outline"
+                            onClick={clearLocationFilters}
+                            className="border-[#146B67] text-[#146B67] hover:bg-[#146B67] hover:text-white px-4 py-2 text-sm"
+                          >
+                            Effacer
+                          </Button>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
 
           {/* Panneau détails */}
           {selectedProperty && (
@@ -696,7 +942,7 @@ export default function GoogleMapViewer({ lat, lng, open, onOpenChange }: Google
                   </Button>
                   <Button
                     variant="outline"
-                    className="flex-1 border-[#146B67] text-[#146B67] hover:bg-[#1FA89B] hover:text-white"
+                    className="flex-1 border-[#146B67] text-[#146B67] hover:bg-[#146B67] hover:text-white"
                   >
                     Contacter
                   </Button>
