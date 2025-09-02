@@ -15,10 +15,10 @@ import {
 import { Button } from '../ui/button';
 import { useAlgoliaContext } from '@/providers/AlgoliaContext';
 import { useRouter } from 'next/navigation';
-import { Loader } from '@googlemaps/js-api-loader';
 import { useLocation } from '@/hooks/use-location';
 import { useSearchParams } from 'next/navigation';
 import GoogleMapViewerHeader from './GoogleMapViewerHeader';
+import { googleMapsSingleton } from '@/singleton';
 
 type GoogleMapViewerProps = {
   lat: number;
@@ -94,23 +94,11 @@ function shortPrice(p?: number) {
   return `${p}`;
 }
 
-// --- Singleton du loader pour éviter le double-chargement
-let mapsLoader: Loader | null = null;
-function getMapsLoader() {
-  if (!mapsLoader) {
-    mapsLoader = new Loader({
-      apiKey: process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY as string,
-      version: 'weekly',
-      libraries: ['places', 'marker'], // <-- IMPORTANT
-    });
-  }
-  return mapsLoader;
-}
+
 
 export default function GoogleMapViewer({ lat, lng, open, onOpenChange }: GoogleMapViewerProps) {
   const { items } = useInfiniteHits();
   const [selectedProperty, setSelectedProperty] = useState<any>(null);
-  const [isSearching, setIsSearching] = useState(false);
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [showFloatingDropdown, setShowFloatingDropdown] = useState(false);
   const mapRef = useRef<HTMLDivElement>(null);
@@ -119,7 +107,7 @@ export default function GoogleMapViewer({ lat, lng, open, onOpenChange }: Google
   const styleInjected = useRef(false);
   const floatingSearchRef = useRef<HTMLDivElement>(null);
   const router = useRouter();
-  const { searchText, setSearchText, setProvince, setCity, setStreet } = useAlgoliaContext();
+  const { setProvince, setCity, setStreet } = useAlgoliaContext();
   const { data: locations } = useLocation();
   const searchParams = useSearchParams();
 
@@ -411,48 +399,6 @@ export default function GoogleMapViewer({ lat, lng, open, onOpenChange }: Google
     }
   }, [selectedCity, locations, selectedProvince]);
 
-  // Appliquer les filtres de localisation
-  const applyLocationFilters = () => {
-    setProvince(selectedProvince);
-    setCity(selectedCity);
-    setStreet(selectedStreet);
-
-    // Naviguer vers la localisation finale
-    navigateToLocation(selectedProvince, selectedCity, selectedStreet);
-
-    // Mettre à jour l'URL
-    updateURL(selectedProvince, selectedCity, selectedStreet);
-
-    // Fermer le dropdown en mode plein écran
-    if (isFullscreen) {
-      setShowFloatingDropdown(false);
-    }
-  };
-
-  // Effacer les filtres de localisation
-  const clearLocationFilters = () => {
-    setSelectedProvince('');
-    setSelectedCity('');
-    setSelectedStreet('');
-    setProvince('');
-    setCity('');
-    setStreet('');
-
-    // Retourner au centre initial
-    if (mapInstanceRef.current) {
-      mapInstanceRef.current.setCenter({ lat, lng });
-      mapInstanceRef.current.setZoom(11);
-    }
-
-    // Mettre à jour l'URL
-    updateURL('', '', '');
-
-    // Fermer le dropdown en mode plein écran
-    if (isFullscreen) {
-      setShowFloatingDropdown(false);
-    }
-  };
-
   // Style markers (une fois)
   useEffect(() => {
     if (styleInjected.current) return;
@@ -482,37 +428,19 @@ export default function GoogleMapViewer({ lat, lng, open, onOpenChange }: Google
 
     const init = async () => {
       try {
-        const loader = getMapsLoader();
-        // Charge l'API (une fois) – évite les scripts manuels
-        await loader.load();
-        if (!(window as any).google?.maps) throw new Error('Google Maps introuvable après chargement.');
-
-        // Vérifie la présence d'AdvancedMarkerElement
-        const AdvancedMarkerElement = (window as any).google?.maps?.marker?.AdvancedMarkerElement;
-        if (!AdvancedMarkerElement) {
-          throw new Error('AdvancedMarkerElement indisponible. Vérifie `libraries: [\'marker\']` et la version.');
-        }
-
-        // Crée la carte
-        const map = new (window as any).google.maps.Map(mapRef.current, {
+        // Initialise l'API Google Maps via le singleton
+        await googleMapsSingleton.initializeMapsAPI();
+        
+        // Crée la carte via le singleton
+        const map = googleMapsSingleton.createMap(mapRef.current!, {
           center: { lat, lng },
           zoom: 11,
-          mapId: process.env.NEXT_PUBLIC_GOOGLE_MAP_ID, // Style de carte personnalisé
-          mapTypeId: (window as any).google.maps.MapTypeId.ROADMAP,
-          zoomControl: true,
-          mapTypeControl: true,
-          streetViewControl: true,
-          fullscreenControl: true,
-          gestureHandling: 'greedy',
-          scrollwheel: true,
-          draggable: true,
-          clickableIcons: true,
-          keyboardShortcuts: true
         });
 
         mapInstanceRef.current = map;
-        (mapInstanceRef as any).AdvancedMarkerElement = AdvancedMarkerElement;
 
+        // Ajoute les markers
+        const AdvancedMarkerElement = googleMapsSingleton.getAdvancedMarkerElement();
         addMarkers(map, AdvancedMarkerElement);
       } catch (err) {
         console.error('Error during map initialization:', err);
@@ -526,7 +454,7 @@ export default function GoogleMapViewer({ lat, lng, open, onOpenChange }: Google
   // Recrée les markers à chaque changement d'items
   useEffect(() => {
     if (!mapInstanceRef.current) return;
-    const AdvancedMarkerElement = (mapInstanceRef as any).AdvancedMarkerElement;
+    const AdvancedMarkerElement = googleMapsSingleton.getAdvancedMarkerElement();
     if (AdvancedMarkerElement) addMarkers(mapInstanceRef.current, AdvancedMarkerElement);
   }, [items]);
 
