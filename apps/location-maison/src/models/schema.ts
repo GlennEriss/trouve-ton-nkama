@@ -283,6 +283,15 @@ export const FormFilterSchema = z.object({
   status: z.array(z.string()).optional(),
   tags: z.array(z.string()).optional(),
 });
+
+// Schéma de validation pour le formulaire de recherche du GoogleMapViewerHeader
+export const SearchFormSchema = z.object({
+  searchText: z.string().optional(),
+  province: z.string().optional(),
+  city: z.string().optional(),
+  street: z.string().optional(),
+});
+
 //Types
 export type DeskSchemaType = z.infer<typeof DeskSchema>;
 export type BuildingSchemaType = z.infer<typeof BuildingSchema>;
@@ -303,3 +312,4 @@ export type KioskSchemaType = z.infer<typeof KioskSchema>;
 export type RoomSchemaType = z.infer<typeof RoomSchema>;
 export type ShopSchemaType = z.infer<typeof ShopSchema>;
 export type FormFilterSchemaType = z.infer<typeof FormFilterSchema>;
+export type SearchFormSchemaType = z.infer<typeof SearchFormSchema>;

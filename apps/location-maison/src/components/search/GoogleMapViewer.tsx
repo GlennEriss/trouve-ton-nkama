@@ -11,8 +11,6 @@ import {
   Bed,
   Briefcase,
   Trees,
-  Search,
-  ChevronDown
 } from 'lucide-react';
 import { Button } from '../ui/button';
 import { useAlgoliaContext } from '@/providers/AlgoliaContext';
@@ -20,6 +18,7 @@ import { useRouter } from 'next/navigation';
 import { Loader } from '@googlemaps/js-api-loader';
 import { useLocation } from '@/hooks/use-location';
 import { useSearchParams } from 'next/navigation';
+import GoogleMapViewerHeader from './GoogleMapViewerHeader';
 
 type GoogleMapViewerProps = {
   lat: number;
@@ -589,14 +588,36 @@ export default function GoogleMapViewer({ lat, lng, open, onOpenChange }: Google
     });
   };
 
-  // Recherche
-  const handleSearch = (e: React.FormEvent) => {
-    e.preventDefault();
-    setIsSearching(true);
+  // Gestionnaires pour le composant header
+  const handleSearch = (values: any) => {
     const params = new URLSearchParams();
-    if (searchText) params.append('query', searchText);
+    if (values.searchText) params.append('query', values.searchText);
+    if (values.province) params.append('province', values.province);
+    if (values.city) params.append('city', values.city);
+    if (values.street) params.append('street', values.street);
     router.replace(`/search?${params.toString()}`);
-    setTimeout(() => setIsSearching(false), 500);
+  };
+
+  const handleLocationFilter = (values: any) => {
+    setProvince(values.province || '');
+    setCity(values.city || '');
+    setStreet(values.street || '');
+    navigateToLocation(values.province, values.city, values.street);
+    updateURL(values.province || '', values.city || '', values.street || '');
+  };
+
+  const handleClearFilters = () => {
+    setProvince('');
+    setCity('');
+    setStreet('');
+    
+    // Retourner au centre initial
+    if (mapInstanceRef.current) {
+      mapInstanceRef.current.setCenter({ lat, lng });
+      mapInstanceRef.current.setZoom(11);
+    }
+    
+    updateURL('', '', '');
   };
 
   // ESC pour fermer
@@ -614,276 +635,27 @@ export default function GoogleMapViewer({ lat, lng, open, onOpenChange }: Google
   return (
     <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4">
       <div className="bg-white rounded-xl shadow-2xl w-[95vw] h-[90vh] flex flex-col">
-        {/* Header - caché en mode plein écran */}
-        {!isFullscreen && (
-          <div className="flex flex-col border-b border-gray-200 p-2">
-            <button
-                onClick={() => onOpenChange(false)}
-                className="lg:hidden hover:bg-gray-100 rounded-full transition-colors ml-auto"
-              >
-                <X size={24} className="text-gray-500" />
-              </button>
-            <div className="flex md:flex-row items-center justify-between p-2 lg:p-6">
-              <div className="flex flex-col md:flex-row items-center justify-between gap-3">
-                {/* Composant de recherche flottante */}
-                <div className="relative">
-                  <form onSubmit={handleSearch} className="flex items-center bg-white rounded-full shadow-lg border border-gray-200 px-4 py-3 min-w-[320px]">
-                    <button
-                      type="submit"
-                      disabled={isSearching}
-                      className="p-1 hover:stroke-[#1FA89B] disabled:opacity-50 disabled:cursor-not-allowed mr-3"
-                    >
-                      {isSearching ? (
-                        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-[#1FA89B]"></div>
-                      ) : (
-                        <Search size={20} className="text-gray-500 hover:stroke-[#1FA89B]" />
-                      )}
-                    </button>
-                    <input
-                      type="text"
-                      placeholder="Logement, ville, quartier..."
-                      value={searchText}
-                      onChange={(e) => setSearchText(e.target.value)}
-                      className="flex-1 border-none outline-none text-sm text-gray-700 placeholder-gray-500"
-                    />
-                    <button
-                      type="button"
-                      onClick={() => setShowFloatingDropdown(!showFloatingDropdown)}
-                      className="ml-3 flex items-center gap-2 px-3 py-1.5 bg-gray-100 hover:bg-gray-200 rounded-full text-xs font-medium text-gray-700 transition-colors"
-                      aria-expanded={showFloatingDropdown}
-                    >
-                      Filtres
-                      <ChevronDown
-                        size={14}
-                        className={`transition-transform ${showFloatingDropdown ? 'rotate-180' : ''}`}
-                      />
-                    </button>
-                  </form>
+        {/* Header */}
+        <div className="flex flex-col border-b border-gray-200 p-2">
+          <button
+            onClick={() => onOpenChange(false)}
+            className="lg:hidden hover:bg-gray-100 rounded-full transition-colors ml-auto"
+          >
+            <X size={24} className="text-gray-500" />
+          </button>
+          <GoogleMapViewerHeader
+            items={items}
+            onOpenChange={onOpenChange}
+            onSearch={handleSearch}
+            onLocationFilter={handleLocationFilter}
+            onClearFilters={handleClearFilters}
+          />
+        </div>
 
-                  {/* Dropdown des filtres */}
-                  {showFloatingDropdown && (
-                    <div className="absolute top-full -right-1 md:right-0 md:left-0 mt-2 w-96 bg-white rounded-xl shadow-xl border border-gray-200 z-20">
-                      {/* Flèche vers le haut */}
-                      <div className="absolute -top-2 md:left-6 right-8 w-4 h-4 bg-white border-l border-t border-gray-200 transform rotate-45"></div>
-
-                      <div className="p-4">
-                        <h3 className="text-sm font-semibold text-gray-900 mb-4">📍 Filtres de localisation</h3>
-
-                        <div className="space-y-4">
-                          <div className="grid grid-cols-1 gap-4">
-                            <div className="space-y-2">
-                              <label className="text-sm font-medium text-gray-700">Province</label>
-                              <select
-                                value={selectedProvince}
-                                onChange={(e) => setSelectedProvince(e.target.value)}
-                                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#1FA89B] focus:border-transparent text-sm"
-                              >
-                                <option value="">Sélectionnez une province</option>
-                                {provinceOptions.map((option) => (
-                                  <option key={option.value} value={option.value}>
-                                    {option.label}
-                                  </option>
-                                ))}
-                              </select>
-                            </div>
-
-                            <div className="space-y-2">
-                              <label className="text-sm font-medium text-gray-700">Ville</label>
-                              <select
-                                value={selectedCity}
-                                onChange={(e) => setSelectedCity(e.target.value)}
-                                disabled={!selectedProvince}
-                                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#1FA89B] focus:border-transparent disabled:bg-gray-100 disabled:cursor-not-allowed text-sm"
-                              >
-                                <option value="">Sélectionnez une ville</option>
-                                {cityOptions.map((option) => (
-                                  <option key={option.value} value={option.value}>
-                                    {option.label}
-                                  </option>
-                                ))}
-                              </select>
-                            </div>
-
-                            <div className="space-y-2">
-                              <label className="text-sm font-medium text-gray-700">Quartier</label>
-                              <select
-                                value={selectedStreet}
-                                onChange={(e) => setSelectedStreet(e.target.value)}
-                                disabled={!selectedCity}
-                                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#1FA89B] focus:border-transparent disabled:bg-gray-100 disabled:cursor-not-allowed text-sm"
-                              >
-                                <option value="">Sélectionnez un quartier</option>
-                                {streetOptions.map((option) => (
-                                  <option key={option.value} value={option.value}>
-                                    {option.label}
-                                  </option>
-                                ))}
-                              </select>
-                            </div>
-                          </div>
-
-                          {/* Boutons d'action */}
-                          <div className="flex items-center gap-3 pt-2">
-                            <Button
-                              type="button"
-                              onClick={applyLocationFilters}
-                              className="bg-[#146B67] hover:bg-[#1FA89B] text-white px-4 py-2 text-sm"
-                            >
-                              Appliquer
-                            </Button>
-                            <Button
-                              type="button"
-                              variant="outline"
-                              onClick={clearLocationFilters}
-                              className="border-[#146B67] text-[#146B67] hover:bg-[#146B67] hover:text-white px-4 py-2 text-sm"
-                            >
-                              Effacer
-                            </Button>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  )}
-                </div>
-
-                <span className="text-sm text-gray-500 bg-gray-100 px-3 py-1 rounded-full">
-                  {items.filter((p: any) => p.latitude && p.longitude).length} biens localisés
-                </span>
-              </div>
-              <button
-                onClick={() => onOpenChange(false)}
-                className="lg:block hidden hover:bg-gray-100 rounded-full transition-colors ml-auto"
-              >
-                <X size={24} className="text-gray-500" />
-              </button>
-            </div>
-
-
-          </div>
-        )}
 
         {/* Carte */}
         <div className="flex-1 relative">
           <div ref={mapRef} className="w-full h-full" style={{ minHeight: '400px' }} />
-
-          {/* Recherche flottante en mode plein écran */}
-          {isFullscreen && (
-            <div
-              ref={floatingSearchRef}
-              className="absolute top-6 left-6 sm:top-6 sm:left-6 z-[1000]"
-            >
-              {/* Pill de recherche */}
-              <div className="relative">
-                <div className="flex items-center bg-white rounded-full shadow-lg border border-gray-200 px-4 py-3 min-w-[320px]">
-                  <Search size={20} className="text-gray-500 mr-3" />
-                  <input
-                    type="text"
-                    placeholder="Logement, ville, quartier..."
-                    value={searchText}
-                    onChange={(e) => setSearchText(e.target.value)}
-                    className="flex-1 border-none outline-none text-sm text-gray-700 placeholder-gray-500"
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setShowFloatingDropdown(!showFloatingDropdown)}
-                    className="ml-3 flex items-center gap-2 px-3 py-1.5 bg-gray-100 hover:bg-gray-200 rounded-full text-xs font-medium text-gray-700 transition-colors"
-                    aria-expanded={showFloatingDropdown}
-                  >
-                    Filtres
-                    <ChevronDown
-                      size={14}
-                      className={`transition-transform ${showFloatingDropdown ? 'rotate-180' : ''}`}
-                    />
-                  </button>
-                </div>
-
-                {/* Dropdown des filtres */}
-                {showFloatingDropdown && (
-                  <div className="absolute top-full left-0 mt-2 w-96 bg-white rounded-xl shadow-xl border border-gray-200 z-20">
-                    {/* Flèche vers le haut */}
-                    <div className="absolute -top-2 left-6 w-4 h-4 bg-white border-l border-t border-gray-200 transform rotate-45"></div>
-
-                    <div className="p-4">
-                      <h3 className="text-sm font-semibold text-gray-900 mb-4">📍 Filtres de localisation</h3>
-
-                      <div className="space-y-4">
-                        <div className="grid grid-cols-1 gap-4">
-                          <div className="space-y-2">
-                            <label className="text-sm font-medium text-gray-700">Province</label>
-                            <select
-                              value={selectedProvince}
-                              onChange={(e) => setSelectedProvince(e.target.value)}
-                              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#1FA89B] focus:border-transparent text-sm"
-                            >
-                              <option value="">Sélectionnez une province</option>
-                              {provinceOptions.map((option) => (
-                                <option key={option.value} value={option.value}>
-                                  {option.label}
-                                </option>
-                              ))}
-                            </select>
-                          </div>
-
-                          <div className="space-y-2">
-                            <label className="text-sm font-medium text-gray-700">Ville</label>
-                            <select
-                              value={selectedCity}
-                              onChange={(e) => setSelectedCity(e.target.value)}
-                              disabled={!selectedProvince}
-                              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#1FA89B] focus:border-transparent disabled:bg-gray-100 disabled:cursor-not-allowed text-sm"
-                            >
-                              <option value="">Sélectionnez une ville</option>
-                              {cityOptions.map((option) => (
-                                <option key={option.value} value={option.value}>
-                                  {option.label}
-                                </option>
-                              ))}
-                            </select>
-                          </div>
-
-                          <div className="space-y-2">
-                            <label className="text-sm font-medium text-gray-700">Quartier</label>
-                            <select
-                              value={selectedStreet}
-                              onChange={(e) => setSelectedStreet(e.target.value)}
-                              disabled={!selectedCity}
-                              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#1FA89B] focus:border-transparent disabled:bg-gray-100 disabled:cursor-not-allowed text-sm"
-                            >
-                              <option value="">Sélectionnez un quartier</option>
-                              {streetOptions.map((option) => (
-                                <option key={option.value} value={option.value}>
-                                  {option.label}
-                                </option>
-                              ))}
-                            </select>
-                          </div>
-                        </div>
-
-                        {/* Boutons d'action */}
-                        <div className="flex items-center gap-3 pt-2">
-                          <Button
-                            type="button"
-                            onClick={applyLocationFilters}
-                            className="bg-[#146B67] hover:bg-[#1FA89B] text-white px-4 py-2 text-sm"
-                          >
-                            Appliquer
-                          </Button>
-                          <Button
-                            type="button"
-                            variant="outline"
-                            onClick={clearLocationFilters}
-                            className="border-[#146B67] text-[#146B67] hover:bg-[#146B67] hover:text-white px-4 py-2 text-sm"
-                          >
-                            Effacer
-                          </Button>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                )}
-              </div>
-            </div>
-          )}
 
           {/* Panneau détails */}
           {selectedProperty && (
