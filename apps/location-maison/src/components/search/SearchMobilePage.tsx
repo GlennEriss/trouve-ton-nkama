@@ -1,3 +1,5 @@
+'use client'
+
 import React from 'react'
 import Form from 'next/form'
 import { Search, MapPin } from 'lucide-react';
@@ -7,7 +9,17 @@ import { useAlgoliaContext } from '@/providers/AlgoliaContext';
 import { useInfiniteHits, useStats } from 'react-instantsearch';
 import PropertyCard from '../home-page/PropertyCard';
 import { useSearchParams } from 'next/navigation';
-import GoogleMapViewer from './GoogleMapViewer';
+import dynamic from 'next/dynamic'
+
+// Lazy loading du composant GoogleMapViewer
+const GoogleMapViewer = dynamic(() => import('./GoogleMapViewer'), {
+  loading: () => (
+    <div className="flex items-center justify-center h-64 bg-gray-100 rounded-lg">
+      <div className="text-gray-500">Chargement de la carte...</div>
+    </div>
+  ),
+  ssr: false // Désactive le SSR car Google Maps nécessite window
+})
 
 export default function SearchMobilePage() {
     const { searchText, setSearchText, province, city, street, minPrice, maxPrice, minArea, maxArea, minNbrRooms, maxNbrRooms, typeProperty, status, tags, setProvince, setCity, setStreet, setMinPrice, setMaxPrice, setMinArea, setMaxArea, setMinNbrRooms, setMaxNbrRooms, setTypeProperty, setStatus, setTags } = useAlgoliaContext()
