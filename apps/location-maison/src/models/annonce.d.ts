@@ -54,7 +54,7 @@ export type Location = {
     latitude: number,
     country: string,
     countryCode: string,
-    isLocExact: boolean
+    isLocExact?: boolean
 }
 export type Logement = Property & {
     nbrRooms: number,
