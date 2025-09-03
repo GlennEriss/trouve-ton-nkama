@@ -127,6 +127,13 @@ export default function LocationPicker({ form }: LocationPickerProps) {
   // Debounce la recherche
   const debouncedQuery = useDebounce(districtQuery, 500)
 
+  // Initialiser les coordonnées principales et isLocExact au chargement
+  useEffect(() => {
+    setValue('longitude', 0)
+    setValue('latitude', 0)
+    setValue('isLocExact', false)
+  }, [setValue])
+
   // Fonction pour rechercher avec Photon API
   const searchWithPhoton = useCallback(async (query: string) => {
     if (!query || query.length < 2) {
@@ -181,14 +188,18 @@ export default function LocationPicker({ form }: LocationPickerProps) {
     // Mettre à jour les coordonnées de la carte
     setMapCoordinates(geometry.coordinates)
 
-         // Remplir automatiquement les champs disponibles
-     setValue('address.district', properties.name)
-     setValue('address.city', properties.city || properties.suburb || '')
-     setValue('address.province', properties.state || '')
-           // Coordonées principales du schéma
-      const [lon, lat] = geometry.coordinates
-      setValue('longitude', lon)
-      setValue('latitude', lat)
+    // Remplir automatiquement les champs disponibles
+    setValue('address.district', properties.name)
+    setValue('address.city', properties.city || properties.suburb || '')
+    setValue('address.province', properties.state || '')
+    
+    // Coordonées principales du schéma - Utiliser les coordonnées du quartier sélectionné
+    const [lon, lat] = geometry.coordinates
+    setValue('longitude', lon)
+    setValue('latitude', lat)
+    
+    // Marquer comme localisation non exacte
+    setValue('isLocExact', false)
      // Coordonées par niveau
      setValue('streetLon', lon)
      setValue('streetLat', lat)
@@ -252,16 +263,20 @@ export default function LocationPicker({ form }: LocationPickerProps) {
                  setValue('address.district', properties.name)
                  setValue('address.city', properties.city || properties.suburb || '')
                  setValue('address.province', properties.state || '')
-                 // Renseigner les coordonnées principales du schéma
-                 setValue('longitude', longitude)
-                 setValue('latitude', latitude)
-                 // Renseigner les coordonnées par niveau via GPS
-                 setValue('streetLon', longitude)
-                 setValue('streetLat', latitude)
-                 setValue('cityLon', longitude)
-                 setValue('cityLat', latitude)
-                 setValue('provinceLon', longitude)
-                 setValue('provinceLat', latitude)
+                                   // Renseigner les coordonnées principales du schéma
+                  setValue('longitude', longitude)
+                  setValue('latitude', latitude)
+                  
+                  // Marquer comme localisation exacte
+                  setValue('isLocExact', true)
+                  
+                  // Renseigner les coordonnées par niveau via GPS
+                  setValue('streetLon', longitude)
+                  setValue('streetLat', latitude)
+                  setValue('cityLon', longitude)
+                  setValue('cityLat', latitude)
+                  setValue('provinceLon', longitude)
+                  setValue('provinceLat', latitude)
                 
                 console.log('Localisation automatique:', properties)
                 

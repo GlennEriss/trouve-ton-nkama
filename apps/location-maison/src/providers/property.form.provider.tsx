@@ -219,9 +219,22 @@ export const PropertyFormComponentProvider = ({ children, isUpdate, propertyToUp
         const images = await Promise.all(promiseFiles)
         //Create Property
         const { provinceLon, provinceLat, cityLon, cityLat, streetLon, streetLat, ...othersData } = data
+        
+        // Retirer longitude et latitude si leurs valeurs sont à 0
+        let finalData = { ...othersData }
+        if(data.longitude === 0 && data.latitude === 0){
+           const { longitude, latitude, ...dataWithoutCoords } = finalData
+           finalData = dataWithoutCoords
+        }
+        
+        // S'assurer que isLocExact est présent (par défaut false si non défini)
+        if (finalData.isLocExact === undefined) {
+          finalData.isLocExact = false
+        }
+        
         const propertyMutate: Property = {
             ...property,
-            ...othersData,
+            ...finalData,
             images: [...images, ...imgUplaods],
             createdBy: user?.uid
         }
