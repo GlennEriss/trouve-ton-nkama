@@ -18,6 +18,18 @@ import PropertyCard from '../home-page/PropertyCard'
 import { useRouter } from 'next/navigation'
 import { useSearchParams } from 'next/navigation'
 import { TypeProperty, getTypePropertyKey } from '@/constantes/property-type'
+import { MapPin } from 'lucide-react'
+import dynamic from 'next/dynamic'
+
+// Lazy loading du composant GoogleMapViewer
+const GoogleMapViewer = dynamic(() => import('./GoogleMapViewer'), {
+  loading: () => (
+    <div className="flex items-center justify-center h-64 bg-gray-100 rounded-lg">
+      <div className="text-gray-500">Chargement de la carte...</div>
+    </div>
+  ),
+  ssr: false // Désactive le SSR car Google Maps nécessite window
+})
 
 interface OptionType {
     label: string;
@@ -55,6 +67,10 @@ export default function SearchDesktopPage() {
     const [isInitialLoad, setIsInitialLoad] = React.useState(true);
     // Key pour forcer le re-render des selects quand les valeurs sont synchronisées
     const [formKey, setFormKey] = React.useState(0);
+    
+    // État pour la carte en plein écran
+    const [showMap, setShowMap] = React.useState(false);
+    const [mapCenter, setMapCenter] = React.useState({ lat: 0.3476, lng: 9.4523 }); // Libreville par défaut
 
     // Synchronisation URL → Contexte Algolia au chargement initial
     React.useEffect(() => {
@@ -313,14 +329,27 @@ export default function SearchDesktopPage() {
     };
 
     return (
+        <>
         <div className='flex p-5'>
             <div className="w-1/4 border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 relative">
                 <Form {...form}>
                     <form onSubmit={form.handleSubmit(onSubmit)} className="h-[calc(100vh-40px)] flex flex-col">
-                        <div className='border-b border-gray-200 dark:border-gray-700 p-5 flex items-center justify-center'>
-                            <h1 className='text-2xl font-bold text-[#146B67] dark:text-[#1FA89B] text-center'>
-                                Filtres de recherches
-                            </h1>
+                        <div className='border-b border-gray-200 dark:border-gray-700 p-5'>
+                            <div className='flex items-center justify-center mb-3'>
+                                <h1 className='text-2xl font-bold text-[#146B67] dark:text-[#1FA89B] text-center'>
+                                    Filtres de recherches
+                                </h1>
+                            </div>
+                            <div className='flex justify-center'>
+                                <Button
+                                    variant="outline"
+                                    onClick={() => setShowMap(true)}
+                                    className="border-[#146B67] dark:border-[#1FA89B] text-[#146B67] dark:text-[#1FA89B] hover:bg-[#1FA89B]/10 dark:hover:bg-[#1FA89B]/20 rounded-full px-6 py-2 flex items-center gap-2"
+                                >
+                                    <MapPin className="w-4 h-4" />
+                                    Voir sur la carte
+                                </Button>
+                            </div>
                         </div>
                         <div className="flex-1 overflow-auto mb-20">
                             <section>
@@ -535,5 +564,13 @@ export default function SearchDesktopPage() {
             </div>
         </div>
 
-    )
+            {/* Carte en modal */}
+            <GoogleMapViewer
+                lat={mapCenter.lat}
+                lng={mapCenter.lng}
+                open={showMap}
+                onOpenChange={setShowMap}
+            />
+        </>
+    );
 }

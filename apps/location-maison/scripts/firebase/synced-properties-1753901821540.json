@@ -1,0 +1,1906 @@
+[
+  {
+    "typeProperty": "Home",
+    "title": "Maison 3 chambres à vendre à Akanda",
+    "description": "Maison avec 3 chambres, 2 salles de bains, salon, cuisine et terrasse à Akanda.",
+    "price": 33000000,
+    "status": "FOR_SALE",
+    "contact": "077933932",
+    "street": "Derrière le marché du premier campement",
+    "city": "Akanda",
+    "province": "Province de l'Estuaire",
+    "country": "Gabon",
+    "countryCode": "GA",
+    "longitude": 0,
+    "latitude": 0,
+    "area": 0,
+    "images": [
+      {
+        "filePATH": "properties/0_0_1753901599940.jpg",
+        "fileURL": "https://storage.googleapis.com/location-maison-prod-167da.firebasestorage.app/properties/0_0_1753901599940.jpg"
+      },
+      {
+        "filePATH": "properties/0_1_1753901601642.jpg",
+        "fileURL": "https://storage.googleapis.com/location-maison-prod-167da.firebasestorage.app/properties/0_1_1753901601642.jpg"
+      },
+      {
+        "filePATH": "properties/0_2_1753901602403.jpg",
+        "fileURL": "https://storage.googleapis.com/location-maison-prod-167da.firebasestorage.app/properties/0_2_1753901602403.jpg"
+      },
+      {
+        "filePATH": "properties/0_3_1753901603238.jpg",
+        "fileURL": "https://storage.googleapis.com/location-maison-prod-167da.firebasestorage.app/properties/0_3_1753901603238.jpg"
+      },
+      {
+        "filePATH": "properties/0_4_1753901603997.jpg",
+        "fileURL": "https://storage.googleapis.com/location-maison-prod-167da.firebasestorage.app/properties/0_4_1753901603997.jpg"
+      }
+    ],
+    "tags": [
+      "Villa",
+      "Sous barrière",
+      "Centre-ville",
+      "Commerces proches",
+      "Transport proche",
+      "Parking",
+      "Sécurisé",
+      "Terrasse"
+    ],
+    "nbrRooms": 3,
+    "nbrChickens": 0,
+    "nbrBathrooms": 2,
+    "nbrToilets": 2,
+    "contacts": [
+      "077933932",
+      "066100817"
+    ],
+    "createdAt": {},
+    "updatedAt": {},
+    "createdBy": "cf3H6p5myIh11BVE9NSR55dN01y2",
+    "source": "facebook_import",
+    "state": "IN_PROGRESS",
+    "isActive": true,
+    "id": "cfW1oorvttNnKKSNJdN2",
+    "lastSync": {},
+    "syncEnvironment": "location-maison-prod-167da"
+  },
+  {
+    "typeProperty": "Shop",
+    "title": "Box commerciale à louer à Ndzeng-Ayong",
+    "description": "Box commerciale située à Ndzeng-Ayong, bordure de route, disponible à la location.",
+    "price": 250000,
+    "status": "FOR_RENT",
+    "contact": "077933932",
+    "street": "Bordure de route",
+    "city": "Libreville",
+    "province": "Estuaire",
+    "country": "Gabon",
+    "countryCode": "GA",
+    "longitude": 0,
+    "latitude": 0,
+    "area": 0,
+    "images": [
+      {
+        "filePATH": "properties/1_0_1753901605333.jpg",
+        "fileURL": "https://storage.googleapis.com/location-maison-prod-167da.firebasestorage.app/properties/1_0_1753901605333.jpg"
+      },
+      {
+        "filePATH": "properties/1_1_1753901606148.jpg",
+        "fileURL": "https://storage.googleapis.com/location-maison-prod-167da.firebasestorage.app/properties/1_1_1753901606148.jpg"
+      },
+      {
+        "filePATH": "properties/1_2_1753901606947.jpg",
+        "fileURL": "https://storage.googleapis.com/location-maison-prod-167da.firebasestorage.app/properties/1_2_1753901606947.jpg"
+      },
+      {
+        "filePATH": "properties/1_3_1753901607708.jpg",
+        "fileURL": "https://storage.googleapis.com/location-maison-prod-167da.firebasestorage.app/properties/1_3_1753901607708.jpg"
+      },
+      {
+        "filePATH": "properties/1_4_1753901608471.jpg",
+        "fileURL": "https://storage.googleapis.com/location-maison-prod-167da.firebasestorage.app/properties/1_4_1753901608471.jpg"
+      }
+    ],
+    "tags": [
+      "Commerces proches",
+      "Transport proche"
+    ],
+    "nbrRooms": 0,
+    "nbrChickens": 0,
+    "nbrBathrooms": 0,
+    "nbrToilets": 0,
+    "contacts": [
+      "077933932",
+      "066100817"
+    ],
+    "createdAt": {},
+    "updatedAt": {},
+    "createdBy": "cf3H6p5myIh11BVE9NSR55dN01y2",
+    "source": "facebook_import",
+    "state": "IN_PROGRESS",
+    "isActive": true,
+    "id": "yJ66OaUeQTiofNAqoTAM",
+    "lastSync": {},
+    "syncEnvironment": "location-maison-prod-167da"
+  },
+  {
+    "typeProperty": "Apartment",
+    "title": "Appartement 2 chambres à louer à Guégé",
+    "description": "Appartement de bon standing avec 2 chambres, 2 salles de bains, salon, cuisine et terrasse",
+    "price": 270000,
+    "status": "FOR_RENT",
+    "contact": "077933932",
+    "street": "Cité Kalikak",
+    "city": "Libreville",
+    "province": "Estuaire",
+    "country": "Gabon",
+    "countryCode": "GA",
+    "longitude": 9.4531,
+    "latitude": 0.3889,
+    "area": 100,
+    "images": [
+      {
+        "filePATH": "properties/2_0_1753901609385.jpg",
+        "fileURL": "https://storage.googleapis.com/location-maison-prod-167da.firebasestorage.app/properties/2_0_1753901609385.jpg"
+      },
+      {
+        "filePATH": "properties/2_1_1753901610161.jpg",
+        "fileURL": "https://storage.googleapis.com/location-maison-prod-167da.firebasestorage.app/properties/2_1_1753901610161.jpg"
+      },
+      {
+        "filePATH": "properties/2_2_1753901611012.jpg",
+        "fileURL": "https://storage.googleapis.com/location-maison-prod-167da.firebasestorage.app/properties/2_2_1753901611012.jpg"
+      },
+      {
+        "filePATH": "properties/2_3_1753901611835.jpg",
+        "fileURL": "https://storage.googleapis.com/location-maison-prod-167da.firebasestorage.app/properties/2_3_1753901611835.jpg"
+      },
+      {
+        "filePATH": "properties/2_4_1753901612647.jpg",
+        "fileURL": "https://storage.googleapis.com/location-maison-prod-167da.firebasestorage.app/properties/2_4_1753901612647.jpg"
+      }
+    ],
+    "tags": [
+      "Travail",
+      "Famille",
+      "Couple",
+      "Villa",
+      "Centre-ville",
+      "Piscine",
+      "Commerces proches",
+      "Transport proche",
+      "Parking",
+      "Wi-Fi",
+      "Sécurisé"
+    ],
+    "nbrRooms": 2,
+    "nbrChickens": 0,
+    "nbrBathrooms": 2,
+    "nbrToilets": 2,
+    "contacts": [
+      "077933932",
+      "066100817"
+    ],
+    "createdAt": {},
+    "updatedAt": {},
+    "createdBy": "cf3H6p5myIh11BVE9NSR55dN01y2",
+    "source": "facebook_import",
+    "state": "IN_PROGRESS",
+    "isActive": true,
+    "id": "4c11hP8lHVSHbqrwyTXA",
+    "lastSync": {},
+    "syncEnvironment": "location-maison-prod-167da"
+  },
+  {
+    "typeProperty": "Studio",
+    "title": "Studio meublé à Alibandeng",
+    "description": "Studio de bon standing avec chambre, salon, cuisine et salle de bain à Alibandeng",
+    "price": 130000,
+    "status": "FOR_RENT",
+    "contact": "077933932",
+    "street": "Alibandeng",
+    "city": "Libreville",
+    "province": "Estuaire",
+    "country": "Gabon",
+    "countryCode": "GA",
+    "longitude": 9.4533,
+    "latitude": 0.3933,
+    "area": 50,
+    "images": [
+      {
+        "filePATH": "properties/3_0_1753901613563.jpg",
+        "fileURL": "https://storage.googleapis.com/location-maison-prod-167da.firebasestorage.app/properties/3_0_1753901613563.jpg"
+      },
+      {
+        "filePATH": "properties/3_1_1753901614380.jpg",
+        "fileURL": "https://storage.googleapis.com/location-maison-prod-167da.firebasestorage.app/properties/3_1_1753901614380.jpg"
+      },
+      {
+        "filePATH": "properties/3_2_1753901615127.jpg",
+        "fileURL": "https://storage.googleapis.com/location-maison-prod-167da.firebasestorage.app/properties/3_2_1753901615127.jpg"
+      },
+      {
+        "filePATH": "properties/3_3_1753901615892.jpg",
+        "fileURL": "https://storage.googleapis.com/location-maison-prod-167da.firebasestorage.app/properties/3_3_1753901615892.jpg"
+      },
+      {
+        "filePATH": "properties/3_4_1753901616622.jpg",
+        "fileURL": "https://storage.googleapis.com/location-maison-prod-167da.firebasestorage.app/properties/3_4_1753901616622.jpg"
+      }
+    ],
+    "tags": [
+      "Meublé",
+      "Centre-ville",
+      "Eau en permanence",
+      "Terrasse"
+    ],
+    "nbrRooms": 1,
+    "nbrChickens": 0,
+    "nbrBathrooms": 1,
+    "nbrToilets": 1,
+    "contacts": [
+      "077933932",
+      "066100817"
+    ],
+    "createdAt": {},
+    "updatedAt": {},
+    "createdBy": "cf3H6p5myIh11BVE9NSR55dN01y2",
+    "source": "facebook_import",
+    "state": "IN_PROGRESS",
+    "isActive": true,
+    "id": "GMJTBb7P0Uo9lMISAGuo",
+    "lastSync": {},
+    "syncEnvironment": "location-maison-prod-167da"
+  },
+  {
+    "typeProperty": "Home",
+    "title": "Villa 3 chambres à louer à Charbonnage",
+    "description": "Villa de bon standing avec eau en permanence et gardien 24/24.",
+    "price": 1200000,
+    "status": "FOR_RENT",
+    "contact": "077933932",
+    "street": "Charbonnage",
+    "city": "Libreville",
+    "province": "Estuaire",
+    "country": "Gabon",
+    "countryCode": "GA",
+    "longitude": 9.44917,
+    "latitude": 0.39329,
+    "area": 200,
+    "images": [
+      {
+        "filePATH": "properties/4_0_1753901617524.jpg",
+        "fileURL": "https://storage.googleapis.com/location-maison-prod-167da.firebasestorage.app/properties/4_0_1753901617524.jpg"
+      },
+      {
+        "filePATH": "properties/4_1_1753901618362.jpg",
+        "fileURL": "https://storage.googleapis.com/location-maison-prod-167da.firebasestorage.app/properties/4_1_1753901618362.jpg"
+      },
+      {
+        "filePATH": "properties/4_2_1753901619226.jpg",
+        "fileURL": "https://storage.googleapis.com/location-maison-prod-167da.firebasestorage.app/properties/4_2_1753901619226.jpg"
+      },
+      {
+        "filePATH": "properties/4_3_1753901620026.jpg",
+        "fileURL": "https://storage.googleapis.com/location-maison-prod-167da.firebasestorage.app/properties/4_3_1753901620026.jpg"
+      },
+      {
+        "filePATH": "properties/4_4_1753901620802.jpg",
+        "fileURL": "https://storage.googleapis.com/location-maison-prod-167da.firebasestorage.app/properties/4_4_1753901620802.jpg"
+      }
+    ],
+    "tags": [
+      "Villa",
+      "Sous barrière",
+      "Sécurisé",
+      "Travail",
+      "Famille"
+    ],
+    "nbrRooms": 3,
+    "nbrChickens": 0,
+    "nbrBathrooms": 3,
+    "nbrToilets": 3,
+    "contacts": [
+      "077933932",
+      "066100817"
+    ],
+    "createdAt": {},
+    "updatedAt": {},
+    "createdBy": "cf3H6p5myIh11BVE9NSR55dN01y2",
+    "source": "facebook_import",
+    "state": "IN_PROGRESS",
+    "isActive": true,
+    "id": "P5cvzdYZazqu5OIxqZN6",
+    "lastSync": {},
+    "syncEnvironment": "location-maison-prod-167da"
+  },
+  {
+    "typeProperty": "Apartment",
+    "title": "Appartement 2 chambres à louer à Alibandeng",
+    "description": "Appartement avec intimité, split, eau permanente, 2 chambres, salon, cuisine, salle de bain et terrasse.",
+    "price": 180000,
+    "status": "FOR_RENT",
+    "contact": "077933932",
+    "street": "Alibandeng",
+    "city": "Libreville",
+    "province": "Estuaire",
+    "country": "Gabon",
+    "countryCode": "GA",
+    "longitude": 9.4531,
+    "latitude": 0.3889,
+    "area": 100,
+    "images": [
+      {
+        "filePATH": "properties/5_0_1753901621742.jpg",
+        "fileURL": "https://storage.googleapis.com/location-maison-prod-167da.firebasestorage.app/properties/5_0_1753901621742.jpg"
+      },
+      {
+        "filePATH": "properties/5_1_1753901622474.jpg",
+        "fileURL": "https://storage.googleapis.com/location-maison-prod-167da.firebasestorage.app/properties/5_1_1753901622474.jpg"
+      },
+      {
+        "filePATH": "properties/5_2_1753901623233.jpg",
+        "fileURL": "https://storage.googleapis.com/location-maison-prod-167da.firebasestorage.app/properties/5_2_1753901623233.jpg"
+      },
+      {
+        "filePATH": "properties/5_3_1753901623961.jpg",
+        "fileURL": "https://storage.googleapis.com/location-maison-prod-167da.firebasestorage.app/properties/5_3_1753901623961.jpg"
+      },
+      {
+        "filePATH": "properties/5_4_1753901624749.jpg",
+        "fileURL": "https://storage.googleapis.com/location-maison-prod-167da.firebasestorage.app/properties/5_4_1753901624749.jpg"
+      }
+    ],
+    "tags": [
+      "Travail",
+      "Famille",
+      "Couple",
+      "Sous barrière",
+      "Meublé",
+      "Centre-ville",
+      "Commerces proches",
+      "Transport proche",
+      "Parking",
+      "Wi-Fi",
+      "Sécurisé",
+      "Terrasse"
+    ],
+    "nbrRooms": 2,
+    "nbrChickens": 0,
+    "nbrBathrooms": 1,
+    "nbrToilets": 1,
+    "contacts": [
+      "077933932",
+      "066100817"
+    ],
+    "createdAt": {},
+    "updatedAt": {},
+    "createdBy": "cf3H6p5myIh11BVE9NSR55dN01y2",
+    "source": "facebook_import",
+    "state": "IN_PROGRESS",
+    "isActive": true,
+    "id": "E5r65v4jx8OYz6bePHea",
+    "lastSync": {},
+    "syncEnvironment": "location-maison-prod-167da"
+  },
+  {
+    "typeProperty": "Apartment",
+    "title": "Appartement 3 chambres à louer à Alibandeng",
+    "description": "Appartement de bon standing en location à Alibandeng, avec terrasse et parking.",
+    "price": 300000,
+    "status": "FOR_RENT",
+    "contact": "077933932",
+    "street": "Bordure de route",
+    "city": "Alibandeng",
+    "province": "Province de l'Estuaire",
+    "country": "Gabon",
+    "countryCode": "GA",
+    "longitude": 0,
+    "latitude": 0,
+    "area": 0,
+    "images": [
+      {
+        "filePATH": "properties/6_0_1753901627735.jpg",
+        "fileURL": "https://storage.googleapis.com/location-maison-prod-167da.firebasestorage.app/properties/6_0_1753901627735.jpg"
+      },
+      {
+        "filePATH": "properties/6_1_1753901628478.jpg",
+        "fileURL": "https://storage.googleapis.com/location-maison-prod-167da.firebasestorage.app/properties/6_1_1753901628478.jpg"
+      },
+      {
+        "filePATH": "properties/6_2_1753901629232.jpg",
+        "fileURL": "https://storage.googleapis.com/location-maison-prod-167da.firebasestorage.app/properties/6_2_1753901629232.jpg"
+      },
+      {
+        "filePATH": "properties/6_3_1753901629984.jpg",
+        "fileURL": "https://storage.googleapis.com/location-maison-prod-167da.firebasestorage.app/properties/6_3_1753901629984.jpg"
+      },
+      {
+        "filePATH": "properties/6_4_1753901630749.jpg",
+        "fileURL": "https://storage.googleapis.com/location-maison-prod-167da.firebasestorage.app/properties/6_4_1753901630749.jpg"
+      }
+    ],
+    "tags": [
+      "Travail",
+      "Famille",
+      "Couple",
+      "Terrasse",
+      "Parking",
+      "Sécurisé"
+    ],
+    "nbrRooms": 3,
+    "nbrChickens": 0,
+    "nbrBathrooms": 2,
+    "nbrToilets": 2,
+    "contacts": [
+      "077933932",
+      "066100817"
+    ],
+    "createdAt": {},
+    "updatedAt": {},
+    "createdBy": "cf3H6p5myIh11BVE9NSR55dN01y2",
+    "source": "facebook_import",
+    "state": "IN_PROGRESS",
+    "isActive": true,
+    "id": "8zd6oV9vqFzsxUpMouQP",
+    "lastSync": {},
+    "syncEnvironment": "location-maison-prod-167da"
+  },
+  {
+    "typeProperty": "Studio",
+    "title": "Studio climatisé à louer à Alibandeng",
+    "description": "Studio entièrement climatisé avec chambre, salon, coin cuisine et salle de bain à Alibandeng.",
+    "price": 150000,
+    "status": "FOR_RENT",
+    "contact": "077933932",
+    "street": "",
+    "city": "Alibandeng",
+    "province": "",
+    "country": "Gabon",
+    "countryCode": "GA",
+    "longitude": 0,
+    "latitude": 0,
+    "area": 0,
+    "images": [
+      {
+        "filePATH": "properties/7_0_1753901631604.jpg",
+        "fileURL": "https://storage.googleapis.com/location-maison-prod-167da.firebasestorage.app/properties/7_0_1753901631604.jpg"
+      },
+      {
+        "filePATH": "properties/7_1_1753901632379.jpg",
+        "fileURL": "https://storage.googleapis.com/location-maison-prod-167da.firebasestorage.app/properties/7_1_1753901632379.jpg"
+      },
+      {
+        "filePATH": "properties/7_2_1753901633123.jpg",
+        "fileURL": "https://storage.googleapis.com/location-maison-prod-167da.firebasestorage.app/properties/7_2_1753901633123.jpg"
+      },
+      {
+        "filePATH": "properties/7_3_1753901633902.jpg",
+        "fileURL": "https://storage.googleapis.com/location-maison-prod-167da.firebasestorage.app/properties/7_3_1753901633902.jpg"
+      },
+      {
+        "filePATH": "properties/7_4_1753901634658.jpg",
+        "fileURL": "https://storage.googleapis.com/location-maison-prod-167da.firebasestorage.app/properties/7_4_1753901634658.jpg"
+      }
+    ],
+    "tags": [
+      "Travail",
+      "Famille",
+      "Couple",
+      "Centre-ville",
+      "Commerces proches",
+      "Transport proche",
+      "Parking",
+      "Wi-Fi",
+      "Sécurisé"
+    ],
+    "nbrRooms": 1,
+    "nbrChickens": 0,
+    "nbrBathrooms": 1,
+    "nbrToilets": 1,
+    "contacts": [
+      "077933932",
+      "066100817"
+    ],
+    "createdAt": {},
+    "updatedAt": {},
+    "createdBy": "cf3H6p5myIh11BVE9NSR55dN01y2",
+    "source": "facebook_import",
+    "state": "IN_PROGRESS",
+    "isActive": true,
+    "id": "xadOcSCiGq4QvqEN1bFH",
+    "lastSync": {},
+    "syncEnvironment": "location-maison-prod-167da"
+  },
+  {
+    "typeProperty": "Apartment",
+    "title": "Appartement 2 chambres à Angondjé",
+    "description": "Appartement en location à Angondjé, disponible fin août, avec terrasse et parking.",
+    "price": 260000,
+    "status": "FOR_RENT",
+    "contact": "077933932",
+    "street": "Bordure de route",
+    "city": "Libreville",
+    "province": "Estuaire",
+    "country": "Gabon",
+    "countryCode": "GA",
+    "longitude": 9.7,
+    "latitude": 0.4,
+    "area": 100,
+    "images": [
+      {
+        "filePATH": "properties/8_0_1753901635711.jpg",
+        "fileURL": "https://storage.googleapis.com/location-maison-prod-167da.firebasestorage.app/properties/8_0_1753901635711.jpg"
+      },
+      {
+        "filePATH": "properties/8_1_1753901636455.jpg",
+        "fileURL": "https://storage.googleapis.com/location-maison-prod-167da.firebasestorage.app/properties/8_1_1753901636455.jpg"
+      },
+      {
+        "filePATH": "properties/8_2_1753901637193.jpg",
+        "fileURL": "https://storage.googleapis.com/location-maison-prod-167da.firebasestorage.app/properties/8_2_1753901637193.jpg"
+      },
+      {
+        "filePATH": "properties/8_3_1753901637947.jpg",
+        "fileURL": "https://storage.googleapis.com/location-maison-prod-167da.firebasestorage.app/properties/8_3_1753901637947.jpg"
+      },
+      {
+        "filePATH": "properties/8_4_1753901638790.jpg",
+        "fileURL": "https://storage.googleapis.com/location-maison-prod-167da.firebasestorage.app/properties/8_4_1753901638790.jpg"
+      }
+    ],
+    "tags": [
+      "Travail",
+      "Famille",
+      "Couple",
+      "Centre-ville",
+      "Commerces proches",
+      "Transport proche",
+      "Parking",
+      "Terrasse"
+    ],
+    "nbrRooms": 2,
+    "nbrChickens": 0,
+    "nbrBathrooms": 2,
+    "nbrToilets": 1,
+    "contacts": [
+      "077933932",
+      "066100817"
+    ],
+    "createdAt": {},
+    "updatedAt": {},
+    "createdBy": "cf3H6p5myIh11BVE9NSR55dN01y2",
+    "source": "facebook_import",
+    "state": "IN_PROGRESS",
+    "isActive": true,
+    "id": "5g0jd2S7B1pouqEx7HgG",
+    "lastSync": {},
+    "syncEnvironment": "location-maison-prod-167da"
+  },
+  {
+    "typeProperty": "Apartment",
+    "title": "Appartement 3 chambres à louer à Ambowè",
+    "description": "Appartement de bon standing avec terrasse et parking dans zone calme",
+    "price": 350000,
+    "status": "FOR_RENT",
+    "contact": "077933932",
+    "street": "Ambowè",
+    "city": "Libreville",
+    "province": "Estuaire",
+    "country": "Gabon",
+    "countryCode": "GA",
+    "longitude": 9.7833,
+    "latitude": 0.3833,
+    "area": 150,
+    "images": [
+      {
+        "filePATH": "properties/9_0_1753901639782.jpg",
+        "fileURL": "https://storage.googleapis.com/location-maison-prod-167da.firebasestorage.app/properties/9_0_1753901639782.jpg"
+      },
+      {
+        "filePATH": "properties/9_1_1753901640624.jpg",
+        "fileURL": "https://storage.googleapis.com/location-maison-prod-167da.firebasestorage.app/properties/9_1_1753901640624.jpg"
+      },
+      {
+        "filePATH": "properties/9_2_1753901641399.jpg",
+        "fileURL": "https://storage.googleapis.com/location-maison-prod-167da.firebasestorage.app/properties/9_2_1753901641399.jpg"
+      },
+      {
+        "filePATH": "properties/9_3_1753901642158.jpg",
+        "fileURL": "https://storage.googleapis.com/location-maison-prod-167da.firebasestorage.app/properties/9_3_1753901642158.jpg"
+      },
+      {
+        "filePATH": "properties/9_4_1753901642933.jpg",
+        "fileURL": "https://storage.googleapis.com/location-maison-prod-167da.firebasestorage.app/properties/9_4_1753901642933.jpg"
+      }
+    ],
+    "tags": [
+      "Travail",
+      "Famille",
+      "Couple",
+      "Villa",
+      "Centre-ville",
+      "Calme et tranquillité",
+      "Parking",
+      "Terrasse"
+    ],
+    "nbrRooms": 3,
+    "nbrChickens": 0,
+    "nbrBathrooms": 2,
+    "nbrToilets": 2,
+    "contacts": [
+      "077933932",
+      "066100817"
+    ],
+    "createdAt": {},
+    "updatedAt": {},
+    "createdBy": "cf3H6p5myIh11BVE9NSR55dN01y2",
+    "source": "facebook_import",
+    "state": "IN_PROGRESS",
+    "isActive": true,
+    "id": "uS86kjcoI8Rq8NFaB6m9",
+    "lastSync": {},
+    "syncEnvironment": "location-maison-prod-167da"
+  },
+  {
+    "typeProperty": "Apartment",
+    "title": "Appartement 1 chambre à Charbonnage",
+    "description": "Appartement avec une chambre et un salon, situé à Charbonnage, à louer mois plus caution et frais de visite.",
+    "price": 160000,
+    "status": "FOR_RENT",
+    "contact": "074514577",
+    "street": "",
+    "city": "Libreville",
+    "province": "Estuaire",
+    "country": "Gabon",
+    "countryCode": "GA",
+    "longitude": 9.44917,
+    "latitude": 0.39328,
+    "area": 0,
+    "images": [
+      {
+        "filePATH": "properties/10_0_1753901643872.jpg",
+        "fileURL": "https://storage.googleapis.com/location-maison-prod-167da.firebasestorage.app/properties/10_0_1753901643872.jpg"
+      },
+      {
+        "filePATH": "properties/10_1_1753901644692.jpg",
+        "fileURL": "https://storage.googleapis.com/location-maison-prod-167da.firebasestorage.app/properties/10_1_1753901644692.jpg"
+      },
+      {
+        "filePATH": "properties/10_2_1753901645427.jpg",
+        "fileURL": "https://storage.googleapis.com/location-maison-prod-167da.firebasestorage.app/properties/10_2_1753901645427.jpg"
+      },
+      {
+        "filePATH": "properties/10_3_1753901646204.jpg",
+        "fileURL": "https://storage.googleapis.com/location-maison-prod-167da.firebasestorage.app/properties/10_3_1753901646204.jpg"
+      },
+      {
+        "filePATH": "properties/10_4_1753901646981.jpg",
+        "fileURL": "https://storage.googleapis.com/location-maison-prod-167da.firebasestorage.app/properties/10_4_1753901646981.jpg"
+      }
+    ],
+    "tags": [
+      "Travail",
+      "Famille",
+      "Couple",
+      "Centre-ville",
+      "Commerces proches",
+      "Transport proche"
+    ],
+    "nbrRooms": 1,
+    "nbrChickens": 0,
+    "nbrBathrooms": 1,
+    "nbrToilets": 1,
+    "contacts": [],
+    "createdAt": {},
+    "updatedAt": {},
+    "createdBy": "cf3H6p5myIh11BVE9NSR55dN01y2",
+    "source": "facebook_import",
+    "state": "IN_PROGRESS",
+    "isActive": true,
+    "id": "Zb5FbFvwwIOXAe7zwRck",
+    "lastSync": {},
+    "syncEnvironment": "location-maison-prod-167da"
+  },
+  {
+    "typeProperty": "Studio",
+    "title": "Studio meublé à louer à Nzeng-Ayong",
+    "description": "Studio avec chambre, salon, coin cuisine, douche et WC à louer.",
+    "price": 120000,
+    "status": "FOR_RENT",
+    "contact": "077226522",
+    "street": "Derrière le stade de Nzeng-Ayong",
+    "city": "Libreville",
+    "province": "Estuaire",
+    "country": "Gabon",
+    "countryCode": "GA",
+    "longitude": 9.4531,
+    "latitude": 0.3933,
+    "area": 0,
+    "images": [
+      {
+        "filePATH": "properties/11_0_1753901649932.jpg",
+        "fileURL": "https://storage.googleapis.com/location-maison-prod-167da.firebasestorage.app/properties/11_0_1753901649932.jpg"
+      },
+      {
+        "filePATH": "properties/11_1_1753901650677.jpg",
+        "fileURL": "https://storage.googleapis.com/location-maison-prod-167da.firebasestorage.app/properties/11_1_1753901650677.jpg"
+      },
+      {
+        "filePATH": "properties/11_2_1753901651444.jpg",
+        "fileURL": "https://storage.googleapis.com/location-maison-prod-167da.firebasestorage.app/properties/11_2_1753901651444.jpg"
+      },
+      {
+        "filePATH": "properties/11_3_1753901652321.jpg",
+        "fileURL": "https://storage.googleapis.com/location-maison-prod-167da.firebasestorage.app/properties/11_3_1753901652321.jpg"
+      }
+    ],
+    "tags": [
+      "Travail",
+      "Couple",
+      "Centre-ville",
+      "Commerces proches",
+      "Transport proche"
+    ],
+    "nbrRooms": 1,
+    "nbrChickens": 0,
+    "nbrBathrooms": 1,
+    "nbrToilets": 1,
+    "contacts": [],
+    "createdAt": {},
+    "updatedAt": {},
+    "createdBy": "cf3H6p5myIh11BVE9NSR55dN01y2",
+    "source": "facebook_import",
+    "state": "IN_PROGRESS",
+    "isActive": true,
+    "id": "m5KxNUjgRAxd4t1rg12E",
+    "lastSync": {},
+    "syncEnvironment": "location-maison-prod-167da"
+  },
+  {
+    "typeProperty": "Voiture",
+    "title": "Mitsubishi Pajero GLS essence à vendre",
+    "description": "Véhicule automatique climatisé avec caméra de moteur, boîte impeccable, nécessite un voilage de peinture.",
+    "price": 7300000,
+    "status": "FOR_SALE",
+    "contact": "077773873",
+    "street": "",
+    "city": "Libreville",
+    "province": "Estuaire",
+    "country": "Gabon",
+    "countryCode": "GA",
+    "longitude": 0,
+    "latitude": 0,
+    "area": 0,
+    "images": [
+      {
+        "filePATH": "properties/12_0_1753901653216.jpg",
+        "fileURL": "https://storage.googleapis.com/location-maison-prod-167da.firebasestorage.app/properties/12_0_1753901653216.jpg"
+      },
+      {
+        "filePATH": "properties/12_1_1753901653979.jpg",
+        "fileURL": "https://storage.googleapis.com/location-maison-prod-167da.firebasestorage.app/properties/12_1_1753901653979.jpg"
+      },
+      {
+        "filePATH": "properties/12_2_1753901654769.jpg",
+        "fileURL": "https://storage.googleapis.com/location-maison-prod-167da.firebasestorage.app/properties/12_2_1753901654769.jpg"
+      }
+    ],
+    "tags": [
+      "Véhicule"
+    ],
+    "nbrRooms": 0,
+    "nbrChickens": 0,
+    "nbrBathrooms": 0,
+    "nbrToilets": 0,
+    "contacts": [],
+    "createdAt": {},
+    "updatedAt": {},
+    "createdBy": "cf3H6p5myIh11BVE9NSR55dN01y2",
+    "source": "facebook_import",
+    "state": "IN_PROGRESS",
+    "isActive": true,
+    "id": "cFwVpMK4IYsJXTOWHeu8",
+    "lastSync": {},
+    "syncEnvironment": "location-maison-prod-167da"
+  },
+  {
+    "typeProperty": "Appartment",
+    "title": "Appartement meublé centre-ville Libreville",
+    "description": "Appartement meublé de 2 chambres à louer à Libreville",
+    "price": 250000,
+    "status": "FOR_RENT",
+    "contact": "077773873",
+    "street": "Rue de la République",
+    "city": "Libreville",
+    "province": "Estuaire",
+    "country": "Gabon",
+    "countryCode": "GA",
+    "longitude": 9.4534,
+    "latitude": 0.3843,
+    "area": 100,
+    "images": [
+      {
+        "filePATH": "properties/13_0_1753901655690.jpg",
+        "fileURL": "https://storage.googleapis.com/location-maison-prod-167da.firebasestorage.app/properties/13_0_1753901655690.jpg"
+      },
+      {
+        "filePATH": "properties/13_1_1753901656448.jpg",
+        "fileURL": "https://storage.googleapis.com/location-maison-prod-167da.firebasestorage.app/properties/13_1_1753901656448.jpg"
+      },
+      {
+        "filePATH": "properties/13_2_1753901657218.jpg",
+        "fileURL": "https://storage.googleapis.com/location-maison-prod-167da.firebasestorage.app/properties/13_2_1753901657218.jpg"
+      },
+      {
+        "filePATH": "properties/13_3_1753901658067.jpg",
+        "fileURL": "https://storage.googleapis.com/location-maison-prod-167da.firebasestorage.app/properties/13_3_1753901658067.jpg"
+      },
+      {
+        "filePATH": "properties/13_4_1753901658831.jpg",
+        "fileURL": "https://storage.googleapis.com/location-maison-prod-167da.firebasestorage.app/properties/13_4_1753901658831.jpg"
+      }
+    ],
+    "tags": [
+      "Centre-ville",
+      "Meublé",
+      "Travail",
+      "Famille"
+    ],
+    "nbrRooms": 2,
+    "nbrChickens": 0,
+    "nbrBathrooms": 1,
+    "nbrToilets": 1,
+    "contacts": [],
+    "createdAt": {},
+    "updatedAt": {},
+    "createdBy": "cf3H6p5myIh11BVE9NSR55dN01y2",
+    "source": "facebook_import",
+    "state": "IN_PROGRESS",
+    "isActive": true,
+    "id": "68ZHhDCMrMh6AP9Sp8FG",
+    "lastSync": {},
+    "syncEnvironment": "location-maison-prod-167da"
+  },
+  {
+    "typeProperty": "Studio",
+    "title": "Studio meublé à louer à Libreville",
+    "description": "Studio avec une chambre, salon, coin cuisine, douche, WC et terrasse. Eau en permanence.",
+    "price": 120000,
+    "status": "FOR_RENT",
+    "contact": "077226522",
+    "street": "",
+    "city": "Libreville",
+    "province": "",
+    "country": "Gabon",
+    "countryCode": "GA",
+    "longitude": 0,
+    "latitude": 0,
+    "area": 0,
+    "images": [
+      {
+        "filePATH": "properties/14_0_1753901659736.jpg",
+        "fileURL": "https://storage.googleapis.com/location-maison-prod-167da.firebasestorage.app/properties/14_0_1753901659736.jpg"
+      },
+      {
+        "filePATH": "properties/14_1_1753901660493.jpg",
+        "fileURL": "https://storage.googleapis.com/location-maison-prod-167da.firebasestorage.app/properties/14_1_1753901660493.jpg"
+      },
+      {
+        "filePATH": "properties/14_2_1753901661253.jpg",
+        "fileURL": "https://storage.googleapis.com/location-maison-prod-167da.firebasestorage.app/properties/14_2_1753901661253.jpg"
+      },
+      {
+        "filePATH": "properties/14_3_1753901661984.jpg",
+        "fileURL": "https://storage.googleapis.com/location-maison-prod-167da.firebasestorage.app/properties/14_3_1753901661984.jpg"
+      }
+    ],
+    "tags": [
+      "Travail",
+      "Couple",
+      "Centre-ville",
+      "Commerces proches",
+      "Transport proche",
+      "Wi-Fi",
+      "Sécurisé"
+    ],
+    "nbrRooms": 1,
+    "nbrChickens": 0,
+    "nbrBathrooms": 1,
+    "nbrToilets": 1,
+    "contacts": [],
+    "createdAt": {},
+    "updatedAt": {},
+    "createdBy": "cf3H6p5myIh11BVE9NSR55dN01y2",
+    "source": "facebook_import",
+    "state": "IN_PROGRESS",
+    "isActive": true,
+    "id": "N2STpUZpsoxiLOS3DART",
+    "lastSync": {},
+    "syncEnvironment": "location-maison-prod-167da"
+  },
+  {
+    "typeProperty": "Studio",
+    "title": "Studio à louer derrière le tribunal",
+    "description": "Studio meublé avec cuisine, salle de bain et parking.",
+    "price": 175000,
+    "status": "FOR_RENT",
+    "contact": "074673707",
+    "street": "Derrière le tribunal",
+    "city": "Libreville",
+    "province": "Estuaire",
+    "country": "Gabon",
+    "countryCode": "GA",
+    "longitude": 9.4531,
+    "latitude": 0.3889,
+    "area": 50,
+    "images": [
+      {
+        "filePATH": "properties/15_0_1753901662928.jpg",
+        "fileURL": "https://storage.googleapis.com/location-maison-prod-167da.firebasestorage.app/properties/15_0_1753901662928.jpg"
+      },
+      {
+        "filePATH": "properties/15_1_1753901663733.jpg",
+        "fileURL": "https://storage.googleapis.com/location-maison-prod-167da.firebasestorage.app/properties/15_1_1753901663733.jpg"
+      },
+      {
+        "filePATH": "properties/15_2_1753901664495.jpg",
+        "fileURL": "https://storage.googleapis.com/location-maison-prod-167da.firebasestorage.app/properties/15_2_1753901664495.jpg"
+      },
+      {
+        "filePATH": "properties/15_3_1753901665267.jpg",
+        "fileURL": "https://storage.googleapis.com/location-maison-prod-167da.firebasestorage.app/properties/15_3_1753901665267.jpg"
+      },
+      {
+        "filePATH": "properties/15_4_1753901666051.jpg",
+        "fileURL": "https://storage.googleapis.com/location-maison-prod-167da.firebasestorage.app/properties/15_4_1753901666051.jpg"
+      }
+    ],
+    "tags": [
+      "Meublé",
+      "Centre-ville",
+      "Parking",
+      "Sécurisé"
+    ],
+    "nbrRooms": 1,
+    "nbrChickens": 0,
+    "nbrBathrooms": 1,
+    "nbrToilets": 1,
+    "contacts": [
+      "074673707",
+      "060130196"
+    ],
+    "createdAt": {},
+    "updatedAt": {},
+    "createdBy": "cf3H6p5myIh11BVE9NSR55dN01y2",
+    "source": "facebook_import",
+    "state": "IN_PROGRESS",
+    "isActive": true,
+    "id": "AbxHIcYE4WH7NtUxynf8",
+    "lastSync": {},
+    "syncEnvironment": "location-maison-prod-167da"
+  },
+  {
+    "typeProperty": "Apartment",
+    "title": "Appartement 2 chambres à louer à Angondjé",
+    "description": "Appartement de bon standing avec 2 chambres, salon, cuisine américaine et terrasse à Angondjé.",
+    "price": 270000,
+    "status": "FOR_RENT",
+    "contact": "241074673707",
+    "street": "Cité Parlementaire",
+    "city": "Libreville",
+    "province": "Estuaire",
+    "country": "Gabon",
+    "countryCode": "GA",
+    "longitude": 9.4531,
+    "latitude": 0.3889,
+    "area": 100,
+    "images": [
+      {
+        "filePATH": "properties/16_0_1753901669028.jpg",
+        "fileURL": "https://storage.googleapis.com/location-maison-prod-167da.firebasestorage.app/properties/16_0_1753901669028.jpg"
+      },
+      {
+        "filePATH": "properties/16_1_1753901669759.jpg",
+        "fileURL": "https://storage.googleapis.com/location-maison-prod-167da.firebasestorage.app/properties/16_1_1753901669759.jpg"
+      },
+      {
+        "filePATH": "properties/16_2_1753901670506.jpg",
+        "fileURL": "https://storage.googleapis.com/location-maison-prod-167da.firebasestorage.app/properties/16_2_1753901670506.jpg"
+      },
+      {
+        "filePATH": "properties/16_3_1753901671284.jpg",
+        "fileURL": "https://storage.googleapis.com/location-maison-prod-167da.firebasestorage.app/properties/16_3_1753901671284.jpg"
+      },
+      {
+        "filePATH": "properties/16_4_1753901672035.jpg",
+        "fileURL": "https://storage.googleapis.com/location-maison-prod-167da.firebasestorage.app/properties/16_4_1753901672035.jpg"
+      }
+    ],
+    "tags": [
+      "Travail",
+      "Famille",
+      "Centre-ville",
+      "Piscine",
+      "Commerces proches",
+      "Transport proche",
+      "Parking",
+      "Wi-Fi",
+      "Sécurisé",
+      "Terrasse"
+    ],
+    "nbrRooms": 2,
+    "nbrChickens": 0,
+    "nbrBathrooms": 2,
+    "nbrToilets": 2,
+    "contacts": [],
+    "createdAt": {},
+    "updatedAt": {},
+    "createdBy": "cf3H6p5myIh11BVE9NSR55dN01y2",
+    "source": "facebook_import",
+    "state": "IN_PROGRESS",
+    "isActive": true,
+    "id": "SmKljjObGfj93L6IT6E8",
+    "lastSync": {},
+    "syncEnvironment": "location-maison-prod-167da"
+  },
+  {
+    "typeProperty": "Home",
+    "title": "Maison 4 chambres à Bikelé",
+    "description": "Maison à vendre avec 4 chambres, 3 douches et WC visiteurs, à Bikelé.",
+    "price": 45000000,
+    "status": "FOR_SALE",
+    "contact": "074673707",
+    "street": "Cité de Bikelé",
+    "city": "Libreville",
+    "province": "Estuaire",
+    "country": "Gabon",
+    "countryCode": "GA",
+    "longitude": 9.4497,
+    "latitude": 0.3933,
+    "area": 200,
+    "images": [
+      {
+        "filePATH": "properties/17_0_1753901672991.jpg",
+        "fileURL": "https://storage.googleapis.com/location-maison-prod-167da.firebasestorage.app/properties/17_0_1753901672991.jpg"
+      },
+      {
+        "filePATH": "properties/17_1_1753901673848.jpg",
+        "fileURL": "https://storage.googleapis.com/location-maison-prod-167da.firebasestorage.app/properties/17_1_1753901673848.jpg"
+      },
+      {
+        "filePATH": "properties/17_2_1753901674654.jpg",
+        "fileURL": "https://storage.googleapis.com/location-maison-prod-167da.firebasestorage.app/properties/17_2_1753901674654.jpg"
+      },
+      {
+        "filePATH": "properties/17_3_1753901675485.jpg",
+        "fileURL": "https://storage.googleapis.com/location-maison-prod-167da.firebasestorage.app/properties/17_3_1753901675485.jpg"
+      },
+      {
+        "filePATH": "properties/17_4_1753901676295.jpg",
+        "fileURL": "https://storage.googleapis.com/location-maison-prod-167da.firebasestorage.app/properties/17_4_1753901676295.jpg"
+      }
+    ],
+    "tags": [
+      "Villa",
+      "Sous barrière",
+      "Sécurisé",
+      "Wi-Fi",
+      "Vélo",
+      "Transport proche"
+    ],
+    "nbrRooms": 4,
+    "nbrChickens": 0,
+    "nbrBathrooms": 3,
+    "nbrToilets": 4,
+    "contacts": [
+      "074673707",
+      "060130196"
+    ],
+    "createdAt": {},
+    "updatedAt": {},
+    "createdBy": "cf3H6p5myIh11BVE9NSR55dN01y2",
+    "source": "facebook_import",
+    "state": "IN_PROGRESS",
+    "isActive": true,
+    "id": "lM4F5hTRWBr69RA5Y6PJ",
+    "lastSync": {},
+    "syncEnvironment": "location-maison-prod-167da"
+  },
+  {
+    "typeProperty": "Studio",
+    "title": "Canapé 2 places à vendre à Libreville",
+    "description": "Canapé deux places disponible à la vente, livraison offerte.",
+    "price": 80000,
+    "status": "FOR_SALE",
+    "contact": "066320334",
+    "street": "",
+    "city": "Libreville",
+    "province": "",
+    "country": "Gabon",
+    "countryCode": "GA",
+    "longitude": 0,
+    "latitude": 0,
+    "area": 0,
+    "images": [
+      {
+        "filePATH": "properties/18_0_1753901677198.jpg",
+        "fileURL": "https://storage.googleapis.com/location-maison-prod-167da.firebasestorage.app/properties/18_0_1753901677198.jpg"
+      },
+      {
+        "filePATH": "properties/18_1_1753901678036.jpg",
+        "fileURL": "https://storage.googleapis.com/location-maison-prod-167da.firebasestorage.app/properties/18_1_1753901678036.jpg"
+      },
+      {
+        "filePATH": "properties/18_2_1753901678846.jpg",
+        "fileURL": "https://storage.googleapis.com/location-maison-prod-167da.firebasestorage.app/properties/18_2_1753901678846.jpg"
+      }
+    ],
+    "tags": [
+      "Meublé",
+      "Centre-ville",
+      "Livraison offerte"
+    ],
+    "nbrRooms": 0,
+    "nbrChickens": 0,
+    "nbrBathrooms": 0,
+    "nbrToilets": 0,
+    "contacts": [],
+    "createdAt": {},
+    "updatedAt": {},
+    "createdBy": "cf3H6p5myIh11BVE9NSR55dN01y2",
+    "source": "facebook_import",
+    "state": "IN_PROGRESS",
+    "isActive": true,
+    "id": "jcxYhIs9J7NgcKO7ZH8x",
+    "lastSync": {},
+    "syncEnvironment": "location-maison-prod-167da"
+  },
+  {
+    "typeProperty": "Studio",
+    "title": "Studio à louer à Engondjé Beaulieu",
+    "description": "Mini studio avec chambre, salon, douche, cuisine et parking.",
+    "price": 120000,
+    "status": "FOR_RENT",
+    "contact": "077180050",
+    "street": "Engondjé Beaulieu",
+    "city": "Libreville",
+    "province": "Estuaire",
+    "country": "Gabon",
+    "countryCode": "GA",
+    "longitude": 9.7,
+    "latitude": 0.3833,
+    "area": 20,
+    "images": [
+      {
+        "filePATH": "properties/19_0_1753901679780.jpg",
+        "fileURL": "https://storage.googleapis.com/location-maison-prod-167da.firebasestorage.app/properties/19_0_1753901679780.jpg"
+      },
+      {
+        "filePATH": "properties/19_1_1753901680534.jpg",
+        "fileURL": "https://storage.googleapis.com/location-maison-prod-167da.firebasestorage.app/properties/19_1_1753901680534.jpg"
+      },
+      {
+        "filePATH": "properties/19_2_1753901681285.jpg",
+        "fileURL": "https://storage.googleapis.com/location-maison-prod-167da.firebasestorage.app/properties/19_2_1753901681285.jpg"
+      },
+      {
+        "filePATH": "properties/19_3_1753901682096.jpg",
+        "fileURL": "https://storage.googleapis.com/location-maison-prod-167da.firebasestorage.app/properties/19_3_1753901682096.jpg"
+      },
+      {
+        "filePATH": "properties/19_4_1753901682854.jpg",
+        "fileURL": "https://storage.googleapis.com/location-maison-prod-167da.firebasestorage.app/properties/19_4_1753901682854.jpg"
+      }
+    ],
+    "tags": [
+      "Travail",
+      "Couple",
+      "Centre-ville",
+      "Parking",
+      "Sécurisé"
+    ],
+    "nbrRooms": 1,
+    "nbrChickens": 0,
+    "nbrBathrooms": 1,
+    "nbrToilets": 1,
+    "contacts": [
+      "077180050",
+      "066174494"
+    ],
+    "createdAt": {},
+    "updatedAt": {},
+    "createdBy": "cf3H6p5myIh11BVE9NSR55dN01y2",
+    "source": "facebook_import",
+    "state": "IN_PROGRESS",
+    "isActive": true,
+    "id": "LsInJXIGE7KdudO9q23x",
+    "lastSync": {},
+    "syncEnvironment": "location-maison-prod-167da"
+  },
+  {
+    "typeProperty": "Apartment",
+    "title": "Appartement 2 chambres à louer à Libreville",
+    "description": "Appartement haut standing avec 2 chambres et terrasses à Libreville",
+    "price": 250000,
+    "status": "FOR_RENT",
+    "contact": "0123456789",
+    "street": "Derrière la pédiatre",
+    "city": "Libreville",
+    "province": "Estuaire",
+    "country": "Gabon",
+    "countryCode": "GA",
+    "longitude": 9.4492,
+    "latitude": 0.3933,
+    "area": 150,
+    "images": [
+      {
+        "filePATH": "properties/20_0_1753901683769.jpg",
+        "fileURL": "https://storage.googleapis.com/location-maison-prod-167da.firebasestorage.app/properties/20_0_1753901683769.jpg"
+      },
+      {
+        "filePATH": "properties/20_1_1753901684577.jpg",
+        "fileURL": "https://storage.googleapis.com/location-maison-prod-167da.firebasestorage.app/properties/20_1_1753901684577.jpg"
+      },
+      {
+        "filePATH": "properties/20_2_1753901685388.jpg",
+        "fileURL": "https://storage.googleapis.com/location-maison-prod-167da.firebasestorage.app/properties/20_2_1753901685388.jpg"
+      },
+      {
+        "filePATH": "properties/20_3_1753901686180.jpg",
+        "fileURL": "https://storage.googleapis.com/location-maison-prod-167da.firebasestorage.app/properties/20_3_1753901686180.jpg"
+      },
+      {
+        "filePATH": "properties/20_4_1753901686953.jpg",
+        "fileURL": "https://storage.googleapis.com/location-maison-prod-167da.firebasestorage.app/properties/20_4_1753901686953.jpg"
+      }
+    ],
+    "tags": [
+      "Travail",
+      "Famille",
+      "Centre-ville",
+      "Sécurisé",
+      "Terrasse"
+    ],
+    "nbrRooms": 2,
+    "nbrChickens": 0,
+    "nbrBathrooms": 2,
+    "nbrToilets": 3,
+    "contacts": [],
+    "createdAt": {},
+    "updatedAt": {},
+    "createdBy": "cf3H6p5myIh11BVE9NSR55dN01y2",
+    "source": "facebook_import",
+    "state": "IN_PROGRESS",
+    "isActive": true,
+    "id": "4IHIfRsvEfri5xI524r6",
+    "lastSync": {},
+    "syncEnvironment": "location-maison-prod-167da"
+  },
+  {
+    "typeProperty": "Room",
+    "title": "Chambre de 1 pièce à Nzeng-Ayong",
+    "description": "Chambre américaine avec terrasse, cuisine et douche/WC. Eau en permanence.",
+    "price": 100000,
+    "status": "FOR_RENT",
+    "contact": "+241066",
+    "street": "Voie secondaire près de l'hôtel les Julevier",
+    "city": "Libreville",
+    "province": "Estuaire",
+    "country": "Gabon",
+    "countryCode": "GA",
+    "longitude": 9.4531,
+    "latitude": 0.3933,
+    "area": 20,
+    "images": [
+      {
+        "filePATH": "properties/21_0_1753901689881.jpg",
+        "fileURL": "https://storage.googleapis.com/location-maison-prod-167da.firebasestorage.app/properties/21_0_1753901689881.jpg"
+      },
+      {
+        "filePATH": "properties/21_1_1753901690646.jpg",
+        "fileURL": "https://storage.googleapis.com/location-maison-prod-167da.firebasestorage.app/properties/21_1_1753901690646.jpg"
+      },
+      {
+        "filePATH": "properties/21_2_1753901691418.jpg",
+        "fileURL": "https://storage.googleapis.com/location-maison-prod-167da.firebasestorage.app/properties/21_2_1753901691418.jpg"
+      },
+      {
+        "filePATH": "properties/21_3_1753901692224.jpg",
+        "fileURL": "https://storage.googleapis.com/location-maison-prod-167da.firebasestorage.app/properties/21_3_1753901692224.jpg"
+      },
+      {
+        "filePATH": "properties/21_4_1753901692974.jpg",
+        "fileURL": "https://storage.googleapis.com/location-maison-prod-167da.firebasestorage.app/properties/21_4_1753901692974.jpg"
+      }
+    ],
+    "tags": [
+      "Travail",
+      "Famille",
+      "Couple",
+      "Sous barrière",
+      "Meublé",
+      "Centre-ville",
+      "Commerces proches",
+      "Transport proche",
+      "Sécurisé"
+    ],
+    "nbrRooms": 1,
+    "nbrChickens": 0,
+    "nbrBathrooms": 1,
+    "nbrToilets": 1,
+    "contacts": [
+      "+241066",
+      "917",
+      "069",
+      "+241077",
+      "015",
+      "315"
+    ],
+    "createdAt": {},
+    "updatedAt": {},
+    "createdBy": "cf3H6p5myIh11BVE9NSR55dN01y2",
+    "source": "facebook_import",
+    "state": "IN_PROGRESS",
+    "isActive": true,
+    "id": "O0YH5KLQmGS2gjsX7BtA",
+    "lastSync": {},
+    "syncEnvironment": "location-maison-prod-167da"
+  },
+  {
+    "typeProperty": "Apartment",
+    "title": "Appartement 2 chambres à louer à Nzeng-Ayong",
+    "description": "Grand appartement avec 2 chambres, 2 terrasses, parking et gardien. Eau en permanence, placards et chauffe-eau.",
+    "price": 280000,
+    "status": "FOR_RENT",
+    "contact": "+241066",
+    "street": "",
+    "city": "Libreville",
+    "province": "Estuaire",
+    "country": "Gabon",
+    "countryCode": "GA",
+    "longitude": 0,
+    "latitude": 0,
+    "area": 0,
+    "images": [
+      {
+        "filePATH": "properties/22_0_1753901693855.jpg",
+        "fileURL": "https://storage.googleapis.com/location-maison-prod-167da.firebasestorage.app/properties/22_0_1753901693855.jpg"
+      },
+      {
+        "filePATH": "properties/22_1_1753901694588.jpg",
+        "fileURL": "https://storage.googleapis.com/location-maison-prod-167da.firebasestorage.app/properties/22_1_1753901694588.jpg"
+      },
+      {
+        "filePATH": "properties/22_2_1753901695351.jpg",
+        "fileURL": "https://storage.googleapis.com/location-maison-prod-167da.firebasestorage.app/properties/22_2_1753901695351.jpg"
+      },
+      {
+        "filePATH": "properties/22_3_1753901696085.jpg",
+        "fileURL": "https://storage.googleapis.com/location-maison-prod-167da.firebasestorage.app/properties/22_3_1753901696085.jpg"
+      },
+      {
+        "filePATH": "properties/22_4_1753901696842.jpg",
+        "fileURL": "https://storage.googleapis.com/location-maison-prod-167da.firebasestorage.app/properties/22_4_1753901696842.jpg"
+      }
+    ],
+    "tags": [
+      "Travail",
+      "Famille",
+      "Couple",
+      "Sous barrière",
+      "Meublé",
+      "Centre-ville",
+      "Commerces proches",
+      "Transport proche",
+      "Parking",
+      "Sécurisé"
+    ],
+    "nbrRooms": 2,
+    "nbrChickens": 0,
+    "nbrBathrooms": 2,
+    "nbrToilets": 3,
+    "contacts": [
+      "+241066",
+      "917",
+      "069",
+      "+241077",
+      "015",
+      "315"
+    ],
+    "createdAt": {},
+    "updatedAt": {},
+    "createdBy": "cf3H6p5myIh11BVE9NSR55dN01y2",
+    "source": "facebook_import",
+    "state": "IN_PROGRESS",
+    "isActive": true,
+    "id": "t39reg4ow1N9cZabdf3p",
+    "lastSync": {},
+    "syncEnvironment": "location-maison-prod-167da"
+  },
+  {
+    "typeProperty": "Home",
+    "title": "Maison 3 chambres à vendre à Libreville",
+    "description": "Maison avec 3 chambres, salon, cuisine, douche et WC, grande terrasse et cour.",
+    "price": 77000000,
+    "status": "FOR_SALE",
+    "contact": "074673707",
+    "street": "PK10 Cité Horizon",
+    "city": "Libreville",
+    "province": "Estuaire",
+    "country": "Gabon",
+    "countryCode": "GA",
+    "longitude": 9.44917,
+    "latitude": 0.39328,
+    "area": 200,
+    "images": [
+      {
+        "filePATH": "properties/23_0_1753901697756.jpg",
+        "fileURL": "https://storage.googleapis.com/location-maison-prod-167da.firebasestorage.app/properties/23_0_1753901697756.jpg"
+      },
+      {
+        "filePATH": "properties/23_1_1753901698570.jpg",
+        "fileURL": "https://storage.googleapis.com/location-maison-prod-167da.firebasestorage.app/properties/23_1_1753901698570.jpg"
+      },
+      {
+        "filePATH": "properties/23_2_1753901699372.jpg",
+        "fileURL": "https://storage.googleapis.com/location-maison-prod-167da.firebasestorage.app/properties/23_2_1753901699372.jpg"
+      }
+    ],
+    "tags": [
+      "Villa",
+      "Sous barrière",
+      "Centre-ville",
+      "Commerces proches",
+      "Transport proche",
+      "Parking",
+      "Sécurisé",
+      "Terrasse",
+      "Famille"
+    ],
+    "nbrRooms": 3,
+    "nbrChickens": 0,
+    "nbrBathrooms": 1,
+    "nbrToilets": 1,
+    "contacts": [
+      "074673707",
+      "060130196"
+    ],
+    "createdAt": {},
+    "updatedAt": {},
+    "createdBy": "cf3H6p5myIh11BVE9NSR55dN01y2",
+    "source": "facebook_import",
+    "state": "IN_PROGRESS",
+    "isActive": true,
+    "id": "SRq8m0CTYlL2N7HHBkEa",
+    "lastSync": {},
+    "syncEnvironment": "location-maison-prod-167da"
+  },
+  {
+    "typeProperty": "Apartment",
+    "title": "Appartement 2 chambres à Owendo",
+    "description": "Appartement avec 2 chambres, cuisine, balcon et terrasse à Owendo.",
+    "price": 250000,
+    "status": "FOR_RENT",
+    "contact": "",
+    "street": "non précisée",
+    "city": "Libreville",
+    "province": "Estuaire",
+    "country": "Gabon",
+    "countryCode": "GA",
+    "longitude": 9.4333,
+    "latitude": 0.3833,
+    "area": 100,
+    "images": [
+      {
+        "filePATH": "properties/24_0_1753901700289.jpg",
+        "fileURL": "https://storage.googleapis.com/location-maison-prod-167da.firebasestorage.app/properties/24_0_1753901700289.jpg"
+      },
+      {
+        "filePATH": "properties/24_1_1753901701083.jpg",
+        "fileURL": "https://storage.googleapis.com/location-maison-prod-167da.firebasestorage.app/properties/24_1_1753901701083.jpg"
+      },
+      {
+        "filePATH": "properties/24_2_1753901701882.jpg",
+        "fileURL": "https://storage.googleapis.com/location-maison-prod-167da.firebasestorage.app/properties/24_2_1753901701882.jpg"
+      },
+      {
+        "filePATH": "properties/24_3_1753901702654.jpg",
+        "fileURL": "https://storage.googleapis.com/location-maison-prod-167da.firebasestorage.app/properties/24_3_1753901702654.jpg"
+      },
+      {
+        "filePATH": "properties/24_4_1753901703434.jpg",
+        "fileURL": "https://storage.googleapis.com/location-maison-prod-167da.firebasestorage.app/properties/24_4_1753901703434.jpg"
+      }
+    ],
+    "tags": [
+      "Travail",
+      "Famille",
+      "Couple",
+      "Centre-ville",
+      "Commerces proches",
+      "Transport proche",
+      "Parking",
+      "Sécurisé",
+      "Balcon",
+      "Terrasse"
+    ],
+    "nbrRooms": 2,
+    "nbrChickens": 0,
+    "nbrBathrooms": 2,
+    "nbrToilets": 1,
+    "contacts": [],
+    "createdAt": {},
+    "updatedAt": {},
+    "createdBy": "cf3H6p5myIh11BVE9NSR55dN01y2",
+    "source": "facebook_import",
+    "state": "IN_PROGRESS",
+    "isActive": true,
+    "id": "z7VTyS80K7WirXkIeV6h",
+    "lastSync": {},
+    "syncEnvironment": "location-maison-prod-167da"
+  },
+  {
+    "typeProperty": "Apartment",
+    "title": "Appartement 3 chambres à louer à Angondjé",
+    "description": "Appartement de 3 chambres, salon, salle à manger, cuisine, 2 salles de bains, 2 terrasses et parking.",
+    "price": 300000,
+    "status": "FOR_RENT",
+    "contact": "066174494",
+    "street": "Voie secondaire",
+    "city": "Libreville",
+    "province": "Estuaire",
+    "country": "Gabon",
+    "countryCode": "GA",
+    "longitude": 9.44917,
+    "latitude": 0.39329,
+    "area": 150,
+    "images": [
+      {
+        "filePATH": "properties/25_0_1753901704318.jpg",
+        "fileURL": "https://storage.googleapis.com/location-maison-prod-167da.firebasestorage.app/properties/25_0_1753901704318.jpg"
+      },
+      {
+        "filePATH": "properties/25_1_1753901705082.jpg",
+        "fileURL": "https://storage.googleapis.com/location-maison-prod-167da.firebasestorage.app/properties/25_1_1753901705082.jpg"
+      },
+      {
+        "filePATH": "properties/25_2_1753901705814.jpg",
+        "fileURL": "https://storage.googleapis.com/location-maison-prod-167da.firebasestorage.app/properties/25_2_1753901705814.jpg"
+      },
+      {
+        "filePATH": "properties/25_3_1753901706586.jpg",
+        "fileURL": "https://storage.googleapis.com/location-maison-prod-167da.firebasestorage.app/properties/25_3_1753901706586.jpg"
+      },
+      {
+        "filePATH": "properties/25_4_1753901707322.jpg",
+        "fileURL": "https://storage.googleapis.com/location-maison-prod-167da.firebasestorage.app/properties/25_4_1753901707322.jpg"
+      }
+    ],
+    "tags": [
+      "Travail",
+      "Famille",
+      "Couple",
+      "Centre-ville",
+      "Commerces proches",
+      "Transport proche",
+      "Parking",
+      "Sécurisé"
+    ],
+    "nbrRooms": 3,
+    "nbrChickens": 0,
+    "nbrBathrooms": 2,
+    "nbrToilets": 2,
+    "contacts": [],
+    "createdAt": {},
+    "updatedAt": {},
+    "createdBy": "cf3H6p5myIh11BVE9NSR55dN01y2",
+    "source": "facebook_import",
+    "state": "IN_PROGRESS",
+    "isActive": true,
+    "id": "oyMzfJFlhH7b2wXUA5zV",
+    "lastSync": {},
+    "syncEnvironment": "location-maison-prod-167da"
+  },
+  {
+    "typeProperty": "Apartment",
+    "title": "Appartement haut standing à louer à Libreville",
+    "description": "Appartement de 2 chambres avec terrasses et cuisine moderne",
+    "price": 250000,
+    "status": "FOR_RENT",
+    "contact": "",
+    "street": "Derrière la pédiatre",
+    "city": "Libreville",
+    "province": "Estuaire",
+    "country": "Gabon",
+    "countryCode": "GA",
+    "longitude": 0,
+    "latitude": 0,
+    "area": 100,
+    "images": [
+      {
+        "filePATH": "properties/26_0_1753901710242.jpg",
+        "fileURL": "https://storage.googleapis.com/location-maison-prod-167da.firebasestorage.app/properties/26_0_1753901710242.jpg"
+      },
+      {
+        "filePATH": "properties/26_1_1753901711170.jpg",
+        "fileURL": "https://storage.googleapis.com/location-maison-prod-167da.firebasestorage.app/properties/26_1_1753901711170.jpg"
+      },
+      {
+        "filePATH": "properties/26_2_1753901711931.jpg",
+        "fileURL": "https://storage.googleapis.com/location-maison-prod-167da.firebasestorage.app/properties/26_2_1753901711931.jpg"
+      },
+      {
+        "filePATH": "properties/26_3_1753901712692.jpg",
+        "fileURL": "https://storage.googleapis.com/location-maison-prod-167da.firebasestorage.app/properties/26_3_1753901712692.jpg"
+      },
+      {
+        "filePATH": "properties/26_4_1753901713442.jpg",
+        "fileURL": "https://storage.googleapis.com/location-maison-prod-167da.firebasestorage.app/properties/26_4_1753901713442.jpg"
+      }
+    ],
+    "tags": [
+      "Travail",
+      "Famille",
+      "Couple",
+      "Centre-ville",
+      "Sécurisé",
+      "Terrasse"
+    ],
+    "nbrRooms": 2,
+    "nbrChickens": 0,
+    "nbrBathrooms": 2,
+    "nbrToilets": 3,
+    "contacts": [],
+    "createdAt": {},
+    "updatedAt": {},
+    "createdBy": "cf3H6p5myIh11BVE9NSR55dN01y2",
+    "source": "facebook_import",
+    "state": "IN_PROGRESS",
+    "isActive": true,
+    "id": "KplmpRQHYAWgGG7G7lJV",
+    "lastSync": {},
+    "syncEnvironment": "location-maison-prod-167da"
+  },
+  {
+    "typeProperty": "Home",
+    "title": "Maison moderne à Agondje",
+    "description": "Maison moderne avec 3 chambres à Agondje",
+    "price": 60000000,
+    "status": "FOR_SALE",
+    "contact": "074673707",
+    "street": "Voie secondaire",
+    "city": "Libreville",
+    "province": "Estuaire",
+    "country": "Gabon",
+    "countryCode": "GA",
+    "longitude": 0,
+    "latitude": 0,
+    "area": 700,
+    "images": [
+      {
+        "filePATH": "properties/27_0_1753901714315.jpg",
+        "fileURL": "https://storage.googleapis.com/location-maison-prod-167da.firebasestorage.app/properties/27_0_1753901714315.jpg"
+      },
+      {
+        "filePATH": "properties/27_1_1753901715115.jpg",
+        "fileURL": "https://storage.googleapis.com/location-maison-prod-167da.firebasestorage.app/properties/27_1_1753901715115.jpg"
+      },
+      {
+        "filePATH": "properties/27_2_1753901715882.jpg",
+        "fileURL": "https://storage.googleapis.com/location-maison-prod-167da.firebasestorage.app/properties/27_2_1753901715882.jpg"
+      },
+      {
+        "filePATH": "properties/27_3_1753901716603.jpg",
+        "fileURL": "https://storage.googleapis.com/location-maison-prod-167da.firebasestorage.app/properties/27_3_1753901716603.jpg"
+      },
+      {
+        "filePATH": "properties/27_4_1753901717345.jpg",
+        "fileURL": "https://storage.googleapis.com/location-maison-prod-167da.firebasestorage.app/properties/27_4_1753901717345.jpg"
+      }
+    ],
+    "tags": [
+      "Sécurisé",
+      "Parking",
+      "Famille"
+    ],
+    "nbrRooms": 3,
+    "nbrChickens": 0,
+    "nbrBathrooms": 2,
+    "nbrToilets": 2,
+    "contacts": [
+      "074673707",
+      "060130196"
+    ],
+    "createdAt": {},
+    "updatedAt": {},
+    "createdBy": "cf3H6p5myIh11BVE9NSR55dN01y2",
+    "source": "facebook_import",
+    "state": "IN_PROGRESS",
+    "isActive": true,
+    "id": "1Ocg8LiWmzRnOYsoe0pH",
+    "lastSync": {},
+    "syncEnvironment": "location-maison-prod-167da"
+  },
+  {
+    "typeProperty": "Apartment",
+    "title": "Appartement 3 chambres à louer à Angondjé",
+    "description": "Appartement de 3 chambres, salon, salle à manger, cuisine, 2 salles de bains et 2 terrasses à Angondjé.",
+    "price": 300000,
+    "status": "FOR_RENT",
+    "contact": "24174673707",
+    "street": "Voie secondaire",
+    "city": "Libreville",
+    "province": "Estuaire",
+    "country": "Gabon",
+    "countryCode": "GA",
+    "longitude": 9.7673,
+    "latitude": 0.3967,
+    "area": 150,
+    "images": [
+      {
+        "filePATH": "properties/28_0_1753901718213.jpg",
+        "fileURL": "https://storage.googleapis.com/location-maison-prod-167da.firebasestorage.app/properties/28_0_1753901718213.jpg"
+      },
+      {
+        "filePATH": "properties/28_1_1753901718974.jpg",
+        "fileURL": "https://storage.googleapis.com/location-maison-prod-167da.firebasestorage.app/properties/28_1_1753901718974.jpg"
+      },
+      {
+        "filePATH": "properties/28_2_1753901719740.jpg",
+        "fileURL": "https://storage.googleapis.com/location-maison-prod-167da.firebasestorage.app/properties/28_2_1753901719740.jpg"
+      },
+      {
+        "filePATH": "properties/28_3_1753901720471.jpg",
+        "fileURL": "https://storage.googleapis.com/location-maison-prod-167da.firebasestorage.app/properties/28_3_1753901720471.jpg"
+      },
+      {
+        "filePATH": "properties/28_4_1753901721231.jpg",
+        "fileURL": "https://storage.googleapis.com/location-maison-prod-167da.firebasestorage.app/properties/28_4_1753901721231.jpg"
+      }
+    ],
+    "tags": [
+      "Famille",
+      "Travail",
+      "Sécurisé",
+      "Parking",
+      "Commerces proches",
+      "Transport proche"
+    ],
+    "nbrRooms": 3,
+    "nbrChickens": 0,
+    "nbrBathrooms": 2,
+    "nbrToilets": 2,
+    "contacts": [
+      "24174673707",
+      "060130196"
+    ],
+    "createdAt": {},
+    "updatedAt": {},
+    "createdBy": "cf3H6p5myIh11BVE9NSR55dN01y2",
+    "source": "facebook_import",
+    "state": "IN_PROGRESS",
+    "isActive": true,
+    "id": "FdnXNfKRwV4DXJPUvz16",
+    "lastSync": {},
+    "syncEnvironment": "location-maison-prod-167da"
+  },
+  {
+    "typeProperty": "Studio",
+    "title": "Studio meublé à louer à Sobraga",
+    "description": "Studio composé d'une chambre, salon, cuisine et douche, disponible immédiatement.",
+    "price": 95000,
+    "status": "FOR_RENT",
+    "contact": "066696444",
+    "street": "Sobraga",
+    "city": "Libreville",
+    "province": "Estuaire",
+    "country": "Gabon",
+    "countryCode": "GA",
+    "longitude": 9.449,
+    "latitude": 0.393,
+    "area": 50,
+    "images": [
+      {
+        "filePATH": "properties/29_0_1753901722110.jpg",
+        "fileURL": "https://storage.googleapis.com/location-maison-prod-167da.firebasestorage.app/properties/29_0_1753901722110.jpg"
+      },
+      {
+        "filePATH": "properties/29_1_1753901722843.jpg",
+        "fileURL": "https://storage.googleapis.com/location-maison-prod-167da.firebasestorage.app/properties/29_1_1753901722843.jpg"
+      },
+      {
+        "filePATH": "properties/29_2_1753901723591.jpg",
+        "fileURL": "https://storage.googleapis.com/location-maison-prod-167da.firebasestorage.app/properties/29_2_1753901723591.jpg"
+      },
+      {
+        "filePATH": "properties/29_3_1753901724321.jpg",
+        "fileURL": "https://storage.googleapis.com/location-maison-prod-167da.firebasestorage.app/properties/29_3_1753901724321.jpg"
+      },
+      {
+        "filePATH": "properties/29_4_1753901725068.jpg",
+        "fileURL": "https://storage.googleapis.com/location-maison-prod-167da.firebasestorage.app/properties/29_4_1753901725068.jpg"
+      }
+    ],
+    "tags": [
+      "Meublé",
+      "Sécurisé",
+      "Travail",
+      "Centre-ville"
+    ],
+    "nbrRooms": 1,
+    "nbrChickens": 0,
+    "nbrBathrooms": 1,
+    "nbrToilets": 1,
+    "contacts": [
+      "066696444",
+      "074275517"
+    ],
+    "createdAt": {},
+    "updatedAt": {},
+    "createdBy": "cf3H6p5myIh11BVE9NSR55dN01y2",
+    "source": "facebook_import",
+    "state": "IN_PROGRESS",
+    "isActive": true,
+    "id": "SB7D3NbMmiiqdrg6Gzfe",
+    "lastSync": {},
+    "syncEnvironment": "location-maison-prod-167da"
+  },
+  {
+    "typeProperty": "Land",
+    "title": "Terrain 1200m2 à Mindoubé",
+    "description": "Grand terrain de 1200m2 carré à vendre à Mindoubé, prêt à construire",
+    "price": 40000000,
+    "status": "FOR_SALE",
+    "contact": "077937611",
+    "street": "",
+    "city": "Mindoubé",
+    "province": "",
+    "country": "Gabon",
+    "countryCode": "GA",
+    "longitude": 0,
+    "latitude": 0,
+    "area": 1200,
+    "images": [
+      {
+        "filePATH": "properties/30_0_1753901725927.jpg",
+        "fileURL": "https://storage.googleapis.com/location-maison-prod-167da.firebasestorage.app/properties/30_0_1753901725927.jpg"
+      },
+      {
+        "filePATH": "properties/30_1_1753901726700.jpg",
+        "fileURL": "https://storage.googleapis.com/location-maison-prod-167da.firebasestorage.app/properties/30_1_1753901726700.jpg"
+      },
+      {
+        "filePATH": "properties/30_2_1753901727524.jpg",
+        "fileURL": "https://storage.googleapis.com/location-maison-prod-167da.firebasestorage.app/properties/30_2_1753901727524.jpg"
+      },
+      {
+        "filePATH": "properties/30_3_1753901728384.jpg",
+        "fileURL": "https://storage.googleapis.com/location-maison-prod-167da.firebasestorage.app/properties/30_3_1753901728384.jpg"
+      },
+      {
+        "filePATH": "properties/30_4_1753901729166.jpg",
+        "fileURL": "https://storage.googleapis.com/location-maison-prod-167da.firebasestorage.app/properties/30_4_1753901729166.jpg"
+      }
+    ],
+    "tags": [
+      "Terrain",
+      "Vente",
+      "Construire"
+    ],
+    "nbrRooms": 0,
+    "nbrChickens": 0,
+    "nbrBathrooms": 0,
+    "nbrToilets": 0,
+    "contacts": [],
+    "createdAt": {},
+    "updatedAt": {},
+    "createdBy": "cf3H6p5myIh11BVE9NSR55dN01y2",
+    "source": "facebook_import",
+    "state": "IN_PROGRESS",
+    "isActive": true,
+    "id": "xFKq0j1PMvLoDqgrZhrQ",
+    "lastSync": {},
+    "syncEnvironment": "location-maison-prod-167da"
+  }
+]

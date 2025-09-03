@@ -10,19 +10,21 @@ import SearchLocationForm from "@/components/stepper/SearchLocationForm";
 import { ImagesComponent, StatusComponent, TagsComponent } from "@/components/stepper/step1.components";
 import { SelectCityComponent, SelectProvinceComponent, SelectStreetComponent } from '@/components/stepper/step3.components';
 import { PhoneInput } from '@/components/ui/phone-input'
+import { LocationPicker } from '@/components/location';
+import { UseFormReturn } from 'react-hook-form';
 
 /**
  * @typedef {Object} FormElement
  * @property {string} name - The unique name of the form field.
  * @property {string} label - The label to be displayed for the form field.
- * @property {(field: any) => React.JSX.Element} component - The React component used to render the field.
+ * @property {(field: any, form?: UseFormReturn<any>) => React.JSX.Element} component - The React component used to render the field.
  * @property {number} step - The step number this field belongs to in the form.
  */
 export type FormElement = {
     name: string,
     label: string,
     description: string,
-    component: (field: any) => React.JSX.Element,
+    component: (field: any, form?: UseFormReturn<any>) => React.JSX.Element,
     step: number
 }
 
@@ -102,31 +104,10 @@ export abstract class PropertyFormBuilder {
                 step: 1
             },
             {
-                name: "map",
-                label: "Saisissez le quartier de votre logement",
-                description: "Saisissez puis sélectionnez un quartier",
-                component: (field: any) => <SearchLocationForm />,
-                step: 3
-            },
-            {
-                name: "province",
-                label: "Province",
-                description: "",
-                component: (field: any) => <SelectProvinceComponent field={field} />,
-                step: 3
-            },
-            {
-                name: "city",
-                label: "Ville",
-                description: "",
-                component: (field: any) => <SelectCityComponent field={field} />,
-                step: 3
-            },
-            {
-                name: "street",
-                label: "Quartier",
-                description: "Saisissez puis sélectionnez un quartier",
-                component: (field: any) => <SelectStreetComponent field={field} />,
+                name: "location",
+                label: "Localisation du bien",
+                description: "Recherchez votre quartier et visualisez la localisation sur la carte",
+                component: (field: any, form?: UseFormReturn<any>) => <LocationPicker form={form!} />,
                 step: 3
             },
             {

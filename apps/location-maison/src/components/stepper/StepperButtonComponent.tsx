@@ -136,7 +136,7 @@ export default function StepperButtonComponent() {
               <p className="font-medium">Veuillez corriger les erreurs suivantes :</p>
               <div className="text-sm space-y-1">
                 {error.errors.map((err, index) => (
-                  <p key={index} className="text-red-600">
+                  <p key={index} className="text-white">
                     • {err.path.join('.')}: {err.message}
                   </p>
                 ))}
@@ -186,6 +186,7 @@ export default function StepperButtonComponent() {
       activeStep === 2 &&
       Object.keys(formState.errors).length > 0
     ) {
+      console.log('formState.errors', formState.errors)
       toast({
         duration: 5000,
         title: "Erreur dans le formulaire",

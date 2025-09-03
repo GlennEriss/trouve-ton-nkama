@@ -1,0 +1,106 @@
+[
+  {
+    "typeProperty": "Home",
+    "title": "Maison 2 chambres à louer Port-Gentil",
+    "description": "Maison avec 2 chambres, 1 salon, 1 cuisine et 2 salles de bain à Port-Gentil",
+    "price": 210000,
+    "status": "FOR_RENT",
+    "contact": "066096241",
+    "street": "Centre Social",
+    "city": "Port-Gentil",
+    "province": "Ogooué-Maritime",
+    "country": "Gabon",
+    "countryCode": "GA",
+    "longitude": 0,
+    "latitude": 0,
+    "area": 0,
+    "images": [
+      "images/property_0_image_0.jpg",
+      "images/property_0_image_1.jpg",
+      "images/property_0_image_2.jpg",
+      "images/property_0_image_3.jpg",
+      "images/property_0_image_4.jpg"
+    ],
+    "tags": [
+      "Travail",
+      "Famille",
+      "Centre-ville",
+      "Commerces proches",
+      "Transport proche",
+      "Sécurisé"
+    ],
+    "nbrRooms": 2,
+    "nbrChickens": 0,
+    "nbrBathrooms": 2,
+    "nbrToilets": 2
+  },
+  {
+    "typeProperty": "Apartment",
+    "title": "Appartement 2 chambres à louer à Tsanguettes",
+    "description": "Appartement avec 2 chambres, 2 douches, WC, grand salon, cuisine et terrasse. Parking disponible.",
+    "price": 260000,
+    "status": "FOR_RENT",
+    "contact": "066-52-26-33, 077404022",
+    "street": "Tsanguettes",
+    "city": "Libreville",
+    "province": "Estuaire",
+    "country": "Gabon",
+    "countryCode": "GA",
+    "longitude": 9.4522,
+    "latitude": 0.3928,
+    "area": 100,
+    "images": [
+      "images/property_1_image_0.jpg",
+      "images/property_1_image_1.jpg",
+      "images/property_1_image_2.jpg",
+      "images/property_1_image_3.jpg",
+      "images/property_1_image_4.jpg"
+    ],
+    "tags": [
+      "Travail",
+      "Famille",
+      "Couple",
+      "Sous barrière",
+      "Centre-ville",
+      "Commerces proches",
+      "Transport proche",
+      "Parking",
+      "Sécurisé"
+    ],
+    "nbrRooms": 2,
+    "nbrChickens": 0,
+    "nbrBathrooms": 2,
+    "nbrToilets": 1
+  },
+  {
+    "typeProperty": "Room",
+    "title": "Chambre à louer à Akournam",
+    "description": "Grande chambre américaine à louer avec sécurité et possibilité de garer vos véhicules",
+    "price": 100000,
+    "status": "FOR_RENT",
+    "contact": "077132499/077160796/066461902",
+    "street": "Akournam Rouguié",
+    "city": "Libreville",
+    "province": "Estuaire",
+    "country": "Gabon",
+    "countryCode": "GA",
+    "longitude": 9.7673,
+    "latitude": 0.3833,
+    "area": 0,
+    "images": [
+      "images/property_2_image_0.jpg",
+      "images/property_2_image_1.jpg",
+      "images/property_2_image_2.jpg",
+      "images/property_2_image_3.jpg"
+    ],
+    "tags": [
+      "Sécurisé",
+      "Parking",
+      "Travail"
+    ],
+    "nbrRooms": 1,
+    "nbrChickens": 0,
+    "nbrBathrooms": 0,
+    "nbrToilets": 0
+  }
+]

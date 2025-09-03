@@ -21,7 +21,7 @@ export default function Step3({ data }: Readonly<Step3Props>) {
                             <FormItem>
                                 <FormLabel className='text-lg text-[#1B4D5B] font-bold'>{item.label}</FormLabel>
                                 <FormControl>
-                                    {item.component(field)}
+                                    {item.component(field, form)}
                                 </FormControl>
                                 <FormDescription>
                                     {item.description}
