@@ -1,124 +1,137 @@
-# Script de Transformation des Posts Facebook JSON via Apify
+# Transformation des Posts Facebook avec IA et Déduplication
 
-Ce script traite les fichiers JSON contenant des posts Facebook scrappés via Apify et les transforme en propriétés immobilières via l'IA.
+Ce script permet de transformer automatiquement les posts Facebook immobiliers en propriétés structurées en utilisant l'intelligence artificielle, avec déduplication automatique des annonces en double.
 
-## Objectif
+## 🚀 Fonctionnalités
 
-Transformer les posts Facebook (format JSON Apify) en objets propriétés structurés en filtrant les posts ayant au moins 2 photos.
+- **Filtrage intelligent** : Sélectionne uniquement les posts avec minimum 2 photos
+- **Transformation IA** : Convertit le texte brut en JSON structuré avec titres et descriptions nettoyés
+- **Validation des tags** : Utilise uniquement les tags autorisés de `src/constantes/index.ts`
+- **Déduplication automatique** : Supprime les annonces en double basées sur plusieurs critères
+- **Formatage professionnel** : Corrige l'orthographe, supprime les emojis, structure les descriptions
 
-## Structure
+## 📁 Structure des fichiers
 
-- `transform-facebook-posts.ts` : Script principal
-- `extractors/facebook-json-extractor.ts` : Extraction et filtrage des posts JSON
-- `mappers/ai-property-mapper.ts` : Transformation IA des posts en propriétés
-- `facebook-posts/` : Dossier contenant les fichiers JSON sources
-
-## Prérequis
-
-1. **Configuration IA** : Le script utilise la configuration du dossier `../ia/config/`
-2. **Clés API OpenAI** : Configurées via le KeyManager du script IA
-3. **Fichiers JSON** : Fichiers `property-*.json` dans le dossier `facebook-posts/`
-
-## Critères de Filtrage
-
-### Posts Valides
-- ✅ Au moins 2 photos dans les attachments
-- ✅ Texte d'au moins 10 caractères
-- ✅ Attachments de type "Photo" avec URLs d'images
-
-### Posts Rejetés
-- ❌ 0 ou 1 photo seulement
-- ❌ Pas de texte ou texte trop court
-- ❌ Pas d'attachments de type "Photo"
-
-## Utilisation
-
-### 1. Préparation
-```bash
-# S'assurer que la configuration IA est prête
-cd ../ia/config/
-# Vérifier config.yaml
-
-# S'assurer que les fichiers JSON sont dans facebook-posts/
-cd ../../apify/facebook-posts/
-ls property-*.json
-
-# Retourner au dossier apify
-cd ../
+```
+facebook-posts/           # Dossier contenant les JSON Facebook
+├── property-*.json       # Fichiers JSON des posts Facebook
 ```
 
-### 2. Exécution
-```bash
-# Avec TypeScript directement
-npx ts-node transform-facebook-posts.ts
+## 🔧 Utilisation
 
-# Ou avec le script de lancement
-node run.js
+### Lancement du script principal
+```bash
+cd scripts/apify
+node transform-facebook-posts.js
 ```
 
-## Flux de Traitement
+### Lancement de la déduplication seule
+```bash
+cd scripts/apify
+node deduplicate-properties.js
+```
 
-1. **Chargement** : Lecture de tous les fichiers `property-*.json` du dossier `facebook-posts/`
-2. **Extraction** : Parse des posts et extraction des métadonnées
-3. **Filtrage** : Sélection des posts avec ≥2 photos
-4. **Transformation IA** : Conversion en objets propriétés
-5. **Sauvegarde** : Export vers `facebook-transformed-properties.json`
+## 📊 Workflow complet
 
-## Format de Sortie
+1. **Chargement** : Lecture des fichiers `property-*.json`
+2. **Filtrage** : Garde uniquement les posts avec ≥2 photos et texte suffisant
+3. **Transformation IA** : Conversion en propriétés structurées
+4. **Déduplication automatique** : Suppression des doublons
+5. **Sauvegarde** : Export des résultats
+
+## 📄 Fichiers de sortie
+
+- `facebook-transformed-properties.json` : Propriétés transformées (avec doublons)
+- `facebook-transformed-properties-deduplicated.json` : Propriétés uniques (recommandé)
+
+## 🔍 Critères de déduplication
+
+Le script identifie les doublons basés sur :
+
+- **Contact identique** + similarité titre/description > 80%
+- **Même ville + même nombre de chambres** + prix similaire + contenu similaire
+- **Tolérance prix** : ±10% ou ±50,000F
+
+### Sélection de la meilleure propriété
+Parmi les doublons, le script garde celle avec :
+1. Coordonnées géographiques renseignées
+2. Description la plus détaillée  
+3. Plus d'images
+4. Contact non-générique
+5. Province/rue renseignées
+
+## ⚙️ Configuration
+
+### Critères de filtrage
+- **Photos minimum** : 2
+- **Texte minimum** : 10 caractères
+
+### IA et formatage
+- **Correction orthographique** : Automatique
+- **Suppression emojis** : Automatique  
+- **Tags** : Uniquement ceux de `src/constantes/index.ts`
+- **Format descriptions** : 200 caractères max, bien rédigées
+
+### Gestion des clés API
+- **Rotation automatique** : En cas de limite de taux
+- **Suivi des utilisations** : Statistiques sauvegardées
+- **8 clés disponibles** : Charge répartie
+
+## 📈 Statistiques
+
+Le script affiche :
+- Nombre de posts traités
+- Propriétés générées avec succès
+- Échecs avec raisons
+- Doublons détectés et supprimés
+- Groupes de doublons avec détails
+
+## 🐛 Dépannage
+
+### Erreurs API courantes
+- **503 Service Unavailable** : Service IA temporairement indisponible
+- **500 Internal Server Error** : Erreur interne de l'API
+- **429 Rate Limit** : Limite atteinte → basculement automatique
+
+### Problèmes de déduplication
+- **Seuil trop strict** : Modifier `duplicateThreshold` dans `deduplicate-properties.js`
+- **Contacts mal normalisés** : Vérifier la fonction `normalizeContact`
+
+### Fichiers manquants
+```bash
+# Vérifier la présence des fichiers
+ls facebook-posts/property-*.json
+```
+
+## ⏭️ Étapes suivantes
+
+Après ce script, utiliser :
+1. `scripts/download-img/download-images.js` : Téléchargement des images
+2. `scripts/firebase/upload-properties.js` : Upload vers Firebase
+
+## 🔧 Structure des propriétés générées
 
 ```json
 {
-  "typeProperty": "Home",
-  "title": "Maison 3 chambres Akanda",
-  "description": "Belle maison à vendre...",
-  "price": 33000000,
-  "status": "FOR_SALE",
-  "contact": "077933932",
-  "street": "Derrière le marché",
-  "city": "Akanda",
-  "province": "Estuaire", 
+  "typeProperty": "Apartment",
+  "title": "Appartement 2 chambres à louer à Nzeng-Ayong",
+  "description": "Appartement de bon standing avec 2 chambres...",
+  "price": 250000,
+  "status": "FOR_RENT",
+  "contact": "077933932/066100817",
+  "street": "Nzeng-Ayong",
+  "city": "Libreville",
+  "province": "Estuaire",
   "country": "Gabon",
   "countryCode": "GA",
-  "longitude": 0,
-  "latitude": 0,
-  "area": 150,
-  "images": ["url1", "url2", "url3"],
-  "tags": ["maison", "3chambres", "akanda"],
-  "nbrRooms": 3,
+  "longitude": 9.4531,
+  "latitude": 0.3889,
+  "area": 100,
+  "images": ["url1", "url2"],
+  "tags": ["Famille", "Parking"],
+  "nbrRooms": 2,
   "nbrChickens": 1,
-  "nbrBathrooms": 2,
+  "nbrBathrooms": 1,
   "nbrToilets": 1
 }
-```
-
-## Statistiques
-
-Le script affiche :
-- Nombre de fichiers JSON traités
-- Posts par fichier
-- Répartition par nombre de photos
-- Taux de succès de transformation IA
-- Posts rejetés et raisons
-
-## Gestion des Erreurs
-
-- **Rate limiting** : Pause automatique entre les requêtes
-- **Clés API limitées** : Rotation automatique via KeyManager
-- **JSON invalide** : Logs détaillés des erreurs de parsing
-- **Posts partiels** : Sauvegarde même en cas d'échecs partiels
-
-## Organisation des Dossiers
-
-```
-scripts/apify/
-├── transform-facebook-posts.ts    # Script principal
-├── run.js                         # Script de lancement
-├── README.md                      # Cette documentation
-├── extractors/
-│   └── facebook-json-extractor.ts # Extracteur JSON
-├── mappers/
-│   └── ai-property-mapper.ts      # Mapper IA
-└── facebook-posts/                # Fichiers JSON sources
-    ├── property-*.json            # Données Facebook Apify
-    └── (autres fichiers JSON)
 ``` 

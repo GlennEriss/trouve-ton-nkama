@@ -12,6 +12,9 @@ import { createFile } from "@/db/file.db"
 import { useCurrentUser } from "@/hooks/use-current-user"
 import { useMutation, useQueryClient } from "@tanstack/react-query"
 import { createProperty, updateProperty } from "@/db/property.db"
+import { createProvince } from "@/db/province.db"
+import { createCity } from "@/db/city.db"
+import { createStreet } from "@/db/street.db"
 import useLastpath from "@/hooks/use-lastpath"
 import queryKeys from "@/constantes/react-query-keys"
 import { routes } from "@/constantes/routes"
@@ -215,11 +218,72 @@ export const PropertyFormComponentProvider = ({ children, isUpdate, propertyToUp
         });
         const images = await Promise.all(promiseFiles)
         //Create Property
+        const { provinceLon, provinceLat, cityLon, cityLat, streetLon, streetLat, ...othersData } = data
+        
+        // Retirer longitude et latitude si leurs valeurs sont à 0
+        let finalData = { ...othersData }
+        if(data.longitude === 0 && data.latitude === 0){
+           const { longitude, latitude, ...dataWithoutCoords } = finalData
+           finalData = dataWithoutCoords
+        }
+        
+        // S'assurer que isLocExact est présent (par défaut false si non défini)
+        if (finalData.isLocExact === undefined) {
+          finalData.isLocExact = false
+        }
+        
         const propertyMutate: Property = {
             ...property,
-            ...data,
+            ...finalData,
             images: [...images, ...imgUplaods],
             createdBy: user?.uid
+        }
+        //create province
+        let provinceId: string | null = null;
+        try {
+            provinceId = await createProvince({
+                name: propertyMutate.province,
+                country: propertyMutate.country,
+                countryCode: propertyMutate.countryCode,
+                longitude: provinceLon,
+                latitude: provinceLat
+            });
+        } catch (error) {
+            console.error("Failed to create province:", error);
+        }
+        
+        //create city
+        let cityId: string | null = null;
+        try {
+            cityId = await createCity({
+                name: propertyMutate.city,
+                provinceId: provinceId || null,
+                provinceName: propertyMutate.province,
+                country: propertyMutate.country,
+                countryCode: propertyMutate.countryCode,
+                longitude: cityLon,
+                latitude: cityLat
+            });
+        } catch (error) {
+            console.error("Failed to create city:", error);
+        }
+        
+        //create street
+        let streetId: string | null = null;
+        try {
+            streetId = await createStreet({
+                name: propertyMutate.street,
+                cityId: cityId || null,
+                cityName: propertyMutate.city,
+                provinceId: provinceId || null,
+                provinceName: propertyMutate.province,
+                country: propertyMutate.country,
+                countryCode: propertyMutate.countryCode,
+                longitude: streetLon,
+                latitude: streetLat
+            });
+        } catch (error) {
+            console.error("Failed to create street:", error);
         }
         mutation.mutate(propertyMutate)
         if (!isUpdate) {

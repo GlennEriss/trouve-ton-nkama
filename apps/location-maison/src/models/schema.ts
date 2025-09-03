@@ -88,7 +88,7 @@ export const LocationSchema = z.object({
   country: z.string().min(1, "Le pays est obligatoire"),
   countryCode: z.string().min(1, "Le code pays est obligatoire"),
 });
-export const PropertySchema = z.object({
+export const PropertySchemaBase = z.object({
   title: z.string().min(1, "Le titre est obligatoire"),
   description: z.string().min(1, "La description doit contenir au moins 10 caractères"),
   price: z.number().min(0, "Le prix doit être un nombre positif"),
@@ -98,9 +98,11 @@ export const PropertySchema = z.object({
   tags: z.array(z.string().min(1, "Chaque tag doit contenir au moins 1 caractère"))
     .nonempty("Vous devez ajouter au moins un tag")
     .max(6, "Vous pouvez ajouter jusqu'à 6 tags seulement"),
-  street: z.string().min(1, "Le nom de la rue est obligatoire"),
-  city: z.string().min(1, "Le nom de la ville est obligatoire"),
-  province: z.string().min(1, "Le nom de la province est obligatoire"),
+  address: z.object({
+    district: z.string().min(1, "Le nom du quartier est obligatoire"),
+    city: z.string().min(1, "Le nom de la ville est obligatoire"),
+    province: z.string().min(1, "Le nom de la province est obligatoire"),
+  }),
   contact: z.string().min(1, "Le numéro de téléphone est obligatoire"),
   additionalInformation: z.string().optional(),
   longitude: z
@@ -111,53 +113,135 @@ export const PropertySchema = z.object({
     .refine(val => val >= -90 && val <= 90, "Latitude invalide"),
   country: z.string().min(1, "Le pays est obligatoire"),
   countryCode: z.string().min(2, "Le code pays est obligatoire"),
+  provinceLon: z.number().optional(),
+  provinceLat: z.number().optional(),
+  cityLon: z.number().optional(),
+  cityLat: z.number().optional(),
+  streetLon: z.number().optional(),
+  streetLat: z.number().optional(),
+  isLocExact: z.boolean().default(false),
 });
-export const LogementSchema = PropertySchema.extend({
+
+export const PropertySchema = PropertySchemaBase.transform((data) => ({
+  ...data,
+  // Mapper les champs address vers les champs attendus par le provider
+  street: data.address.district,
+  city: data.address.city,
+  province: data.address.province,
+}));
+export const LogementSchemaBase = PropertySchemaBase.extend({
   nbrRooms: z.number().min(0, "Le nombre de chambres doit être un nombre positif"),
   nbrChickens: z.number().min(0, "Le nombre de cuisines doit être un nombre positif"),
   nbrBathrooms: z.number().min(0, "Le nombre de salles de bain doit être un nombre positif"),
   nbrToilets: z.number().min(0, "Le nombre de toilettes doit être un nombre positif"),
 });
-export const HomeSchema = LogementSchema.extend({
+
+export const LogementSchema = LogementSchemaBase.transform((data) => ({
+  ...data,
+  // Mapper les champs address vers les champs attendus par le provider
+  street: data.address.district,
+  city: data.address.city,
+  province: data.address.province,
+}));
+
+export const HomeSchema = LogementSchemaBase.extend({
   nbrGarages: z.number().min(0, "Le nombre de garages doit être positif ou nul"),
   nbrFloors: z.number().min(0, "Le nombre d'étages doit être un nombre positif"),
   nbrLivingRoom: z.number().min(0, "Le nombre de salon doit être un nombre positif"),
-});
-export const StudioSchema = LogementSchema.extend({
+}).transform((data) => ({
+  ...data,
+  // Mapper les champs address vers les champs attendus par le provider
+  street: data.address.district,
+  city: data.address.city,
+  province: data.address.province,
+}));
+
+export const StudioSchema = LogementSchemaBase.extend({
   nbrFloorStudio: z.number().min(0, "Le numéro d'étage doit être un nombre positif"),
   numeroStudio: z.string().min(1, "Le numéro du studio est obligatoire"),
-});
-export const ApartmentSchema = LogementSchema.extend({
+}).transform((data) => ({
+  ...data,
+  // Mapper les champs address vers les champs attendus par le provider
+  street: data.address.district,
+  city: data.address.city,
+  province: data.address.province,
+}));
+
+export const ApartmentSchema = LogementSchemaBase.extend({
   nbrFloorApartment: z.number().min(0, "Le numéro d'étage de l'appartement doit être un nombre positif"),
   numeroApartment: z.string().min(1, "Le numéro de l'appartement est obligatoire"),
-});
-export const VillaSchema = LogementSchema.extend({
+}).transform((data) => ({
+  ...data,
+  // Mapper les champs address vers les champs attendus par le provider
+  street: data.address.district,
+  city: data.address.city,
+  province: data.address.province,
+}));
+
+export const VillaSchema = LogementSchemaBase.extend({
   nbrFloors: z.number().min(0, "Le nombre d'étages doit être un nombre positif"),
   nbrPiscine: z.number().min(0, "Le nombre de piscines doit être un nombre positif"),
   nbrGarages: z.number().min(0, "Le nombre de garages doit être un nombre positif"),
-});
-export const DeskSchema = PropertySchema.extend({
+}).transform((data) => ({
+  ...data,
+  // Mapper les champs address vers les champs attendus par le provider
+  street: data.address.district,
+  city: data.address.city,
+  province: data.address.province,
+}));
+export const DeskSchema = PropertySchemaBase.extend({
   nbrToilets: z.number().min(0, "Le nombre de toilettes doit être un nombre positif"),
   nbrRooms: z.number().min(0, "Le nombre de salles doit être un nombre positif"),
-});
-export const BuildingSchema = PropertySchema.extend({
+}).transform((data) => ({
+  ...data,
+  // Mapper les champs address vers les champs attendus par le provider
+  street: data.address.district,
+  city: data.address.city,
+  province: data.address.province,
+}));
+
+export const BuildingSchema = PropertySchemaBase.extend({
   nbrApartments: z.number().min(0, "Le nombre d'appartements doit être un nombre positif"),
   nbrFloors: z.number().min(0, "Le nombre d'étages doit être un nombre positif"),
   hasParking: z.boolean({ required_error: "Le champ parking est requis" }),
-});
+}).transform((data) => ({
+  ...data,
+  // Mapper les champs address vers les champs attendus par le provider
+  street: data.address.district,
+  city: data.address.city,
+  province: data.address.province,
+}));
 
-export const KioskSchema = PropertySchema.extend({
+export const KioskSchema = PropertySchemaBase.extend({
   kioskType: z.string().min(1, "Le type de kiosque est obligatoire"),
-});
+}).transform((data) => ({
+  ...data,
+  // Mapper les champs address vers les champs attendus par le provider
+  street: data.address.district,
+  city: data.address.city,
+  province: data.address.province,
+}));
 
-export const RoomSchema = PropertySchema.extend({
+export const RoomSchema = PropertySchemaBase.extend({
   roomType: z.string().min(1, "Le type de chambre est obligatoire"),
-});
+}).transform((data) => ({
+  ...data,
+  // Mapper les champs address vers les champs attendus par le provider
+  street: data.address.district,
+  city: data.address.city,
+  province: data.address.province,
+}));
 
-export const ShopSchema = PropertySchema.extend({
+export const ShopSchema = PropertySchemaBase.extend({
   nbrRooms: z.number().min(0, "Le nombre de pièces doit être un nombre positif"),
   nbrToilet: z.number().min(0, "Le nombre de toilettes doit être un nombre positif"),
-});
+}).transform((data) => ({
+  ...data,
+  // Mapper les champs address vers les champs attendus par le provider
+  street: data.address.district,
+  city: data.address.city,
+  province: data.address.province,
+}));
 //Steps schemas
 export const Step1Schema = z.object({
   images: z.array(z.any()).nonempty("Au moins une image est requise"),
@@ -169,15 +253,29 @@ export const Step1Schema = z.object({
   tags: z.array(z.string().min(1, "Chaque tag doit contenir au moins 1 caractère")).nonempty("Vous devez ajouter au moins un tag"),
 });
 export const Step3Schema = z.object({
-  street: z.string().min(1, "Le nom de la rue est obligatoire"),
-  city: z.string().min(1, "Le nom de la ville est obligatoire"),
-  province: z.string().min(1, "Le nom de la province est obligatoire"),
+  address: z.object({
+    district: z.string().min(1, "Le nom du quartier est obligatoire"),
+    city: z.string().min(1, "Le nom de la ville est obligatoire"),
+    province: z.string().min(1, "Le nom de la province est obligatoire"),
+  }),
   additionalInformation: z.string().optional(),
   longitude: z.string().min(1).transform(val => parseFloat(val)).refine(val => val >= -180 && val <= 180, "Longitude invalide"),
   latitude: z.string().min(1).transform(val => parseFloat(val)).refine(val => val >= -90 && val <= 90, "Latitude invalide"),
+  provinceLon: z.number().optional(),
+  provinceLat: z.number().optional(),
+  cityLon: z.number().optional(),
+  cityLat: z.number().optional(),
+  streetLon: z.number().optional(),
+  streetLat: z.number().optional(),
   country: z.string().min(1, "Le pays est obligatoire"),
   countryCode: z.string().min(2, "Le code pays est obligatoire"),
-});
+}).transform((data) => ({
+  ...data,
+  // Mapper les champs address vers les champs attendus par le provider
+  street: data.address.district,
+  city: data.address.city,
+  province: data.address.province,
+}));
 
 export const PropertyTypeEnum = z.enum([
   'home',
@@ -283,6 +381,15 @@ export const FormFilterSchema = z.object({
   status: z.array(z.string()).optional(),
   tags: z.array(z.string()).optional(),
 });
+
+// Schéma de validation pour le formulaire de recherche du GoogleMapViewerHeader
+export const SearchFormSchema = z.object({
+  searchText: z.string().optional(),
+  province: z.string().optional(),
+  city: z.string().optional(),
+  street: z.string().optional(),
+});
+
 //Types
 export type DeskSchemaType = z.infer<typeof DeskSchema>;
 export type BuildingSchemaType = z.infer<typeof BuildingSchema>;
@@ -303,3 +410,4 @@ export type KioskSchemaType = z.infer<typeof KioskSchema>;
 export type RoomSchemaType = z.infer<typeof RoomSchema>;
 export type ShopSchemaType = z.infer<typeof ShopSchema>;
 export type FormFilterSchemaType = z.infer<typeof FormFilterSchema>;
+export type SearchFormSchemaType = z.infer<typeof SearchFormSchema>;

@@ -25,6 +25,7 @@ export const MOCK_PROPERTIES = [
     latitude: 0.39,
     country: "Gabon",
     countryCode: "GA",
+    isLocExact: false,
     status: "FOR_RENT",
     nbrRooms: 3,
     nbrChickens: 0,
@@ -55,6 +56,7 @@ export const MOCK_PROPERTIES = [
     latitude: 0.40,
     country: "Gabon",
     countryCode: "GA",
+    isLocExact: false,
     status: "FOR_SALE",
     nbrApartments: 20,
     nbrFloors: 5,
@@ -82,6 +84,7 @@ export const MOCK_PROPERTIES = [
     latitude: 0.41,
     country: "Gabon",
     countryCode: "GA",
+    isLocExact: false,
     status: "FOR_RENT"
   },
   {
@@ -106,6 +109,7 @@ export const MOCK_PROPERTIES = [
     latitude: 0.42,
     country: "Gabon",
     countryCode: "GA",
+    isLocExact: false,
     status: "FOR_RENT",
     nbrRooms: 4,
     nbrChickens: 0,
@@ -136,6 +140,7 @@ export const MOCK_PROPERTIES = [
     latitude: 0.43,
     country: "Gabon",
     countryCode: "GA",
+    isLocExact: false,
     status: "FOR_RENT",
     nbrRooms: 1,
     nbrChickens: 0,
@@ -166,6 +171,7 @@ export const MOCK_PROPERTIES = [
     latitude: 0.44,
     country: "Gabon",
     countryCode: "GA",
+    isLocExact: false,
     status: "FOR_RENT",
     nbrRooms: 1,
     nbrToilet: 1
@@ -192,6 +198,7 @@ export const MOCK_PROPERTIES = [
     latitude: 0.45,
     country: "Gabon",
     countryCode: "GA",
+    isLocExact: false,
     status: "FOR_SALE",
     kioskType: "alimentation"
   },
@@ -217,6 +224,7 @@ export const MOCK_PROPERTIES = [
     latitude: 0.46,
     country: "Gabon",
     countryCode: "GA",
+    isLocExact: false,
     status: "FOR_RENT",
     roomType: "étudiant"
   }

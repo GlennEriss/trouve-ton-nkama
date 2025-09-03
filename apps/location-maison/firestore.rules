@@ -56,5 +56,20 @@ service cloud.firestore {
       // Mise à jour de transaction
       allow update: if isSignedIn() && request.auth.uid == resource.data.uid;
     }
+    
+    match /provinces/{provinceId} {
+      allow read: if true;
+      allow create, update: if isSignedIn();
+    }
+    
+    match /cities/{cityId} {
+      allow read: if true;
+      allow create, update: if isSignedIn();
+    }
+    
+    match /streets/{streetId} {
+      allow read: if true;
+      allow create, update: if isSignedIn();
+    }
   }
 } 

@@ -6,7 +6,10 @@ const firebaseCollectionNames = {
     users: "users",
     properties: "properties",
     credit_transactions: "credit_transactions",
-    notifications: 'notifications'
+    notifications: 'notifications',
+    provinces: 'provinces',
+    cities: 'cities',
+    streets: 'streets'
 }
 
 export default firebaseCollectionNames
