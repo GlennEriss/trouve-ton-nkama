@@ -47,6 +47,7 @@ export abstract class PropertyBuilder {
             latitude: 0,
             countryCode: 'ga',
             country: 'Gabon',
+            isLocExact: false,
             /* createdAt: new Date(),
             updatedAt: new Date(), */
             state: 'IN_PROGRESS',

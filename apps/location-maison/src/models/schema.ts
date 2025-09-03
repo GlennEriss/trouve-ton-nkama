@@ -119,6 +119,7 @@ export const PropertySchemaBase = z.object({
   cityLat: z.number().optional(),
   streetLon: z.number().optional(),
   streetLat: z.number().optional(),
+  isLocExact: z.boolean().default(false),
 });
 
 export const PropertySchema = PropertySchemaBase.transform((data) => ({
