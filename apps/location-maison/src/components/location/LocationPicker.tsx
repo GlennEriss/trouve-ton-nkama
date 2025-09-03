@@ -75,6 +75,37 @@ const useDebounce = (value: string, delay: number) => {
   return debouncedValue
 }
 
+// Fonction pour détecter le navigateur et donner les instructions appropriées
+const getBrowserInstructions = (): string[] => {
+  const userAgent = navigator.userAgent;
+  
+  if (userAgent.includes('Chrome') || userAgent.includes('Edge')) {
+    return [
+      'Cliquez sur l\'icône 🔒 ou 📍 dans la barre d\'adresse',
+      'Sélectionnez "Autoriser" pour la localisation',
+      'Ou allez dans Paramètres > Confidentialité et sécurité > Autorisations de site'
+    ];
+  } else if (userAgent.includes('Firefox')) {
+    return [
+      'Cliquez sur l\'icône 📍 dans la barre d\'adresse',
+      'Sélectionnez "Autoriser"',
+      'Ou allez dans Préférences > Confidentialité et sécurité > Permissions > Localisation'
+    ];
+  } else if (userAgent.includes('Safari')) {
+    return [
+      'Allez dans Préférences > Confidentialité > Services de localisation',
+      'Activez la localisation pour ce site',
+      'Ou cliquez sur Safari > Préférences > Sites web > Localisation'
+    ];
+  } else {
+    return [
+      'Recherchez les paramètres de confidentialité de votre navigateur',
+      'Activez l\'autorisation de localisation pour ce site',
+      'Ou cliquez sur l\'icône de localisation dans la barre d\'adresse'
+    ];
+  }
+};
+
 export default function LocationPicker({ form }: LocationPickerProps) {
   const [districtQuery, setDistrictQuery] = useState('')
   const [searchResults, setSearchResults] = useState<PhotonResult[]>([])
@@ -150,22 +181,25 @@ export default function LocationPicker({ form }: LocationPickerProps) {
     // Mettre à jour les coordonnées de la carte
     setMapCoordinates(geometry.coordinates)
 
-    // Remplir automatiquement les champs disponibles
-    setValue('address.district', properties.name)
-    setValue('address.city', properties.city || properties.suburb || '')
-    setValue('address.province', properties.state || '')
-    // Coordonées par niveau
-    const [lon, lat] = geometry.coordinates
-    setValue('streetLon', lon)
-    setValue('streetLat', lat)
-    if (properties.city || properties.suburb) {
-      setValue('cityLon', lon)
-      setValue('cityLat', lat)
-    }
-    if (properties.state) {
-      setValue('provinceLon', lon)
-      setValue('provinceLat', lat)
-    }
+         // Remplir automatiquement les champs disponibles
+     setValue('address.district', properties.name)
+     setValue('address.city', properties.city || properties.suburb || '')
+     setValue('address.province', properties.state || '')
+           // Coordonées principales du schéma
+      const [lon, lat] = geometry.coordinates
+      setValue('longitude', lon)
+      setValue('latitude', lat)
+     // Coordonées par niveau
+     setValue('streetLon', lon)
+     setValue('streetLat', lat)
+     if (properties.city || properties.suburb) {
+       setValue('cityLon', lon)
+       setValue('cityLat', lat)
+     }
+     if (properties.state) {
+       setValue('provinceLon', lon)
+       setValue('provinceLat', lat)
+     }
   }
 
   // Fonction pour formater l'affichage des résultats
@@ -209,15 +243,18 @@ export default function LocationPicker({ form }: LocationPickerProps) {
               const result = data.features[0]
               const { properties } = result
               
-                             // Vérifier que c'est bien au Gabon
-               if (properties.country === 'Gabon' || properties.country === 'GA') {
-                 setSelectedLocation(result)
-                 setDistrictQuery(properties.name)
-                 
-                 // Remplir automatiquement les champs
+              // Vérifier que c'est bien au Gabon
+              if (properties.country === 'Gabon' || properties.country === 'GA') {
+                setSelectedLocation(result)
+                setDistrictQuery(properties.name)
+                
+                                 // Remplir automatiquement les champs
                  setValue('address.district', properties.name)
                  setValue('address.city', properties.city || properties.suburb || '')
                  setValue('address.province', properties.state || '')
+                 // Renseigner les coordonnées principales du schéma
+                 setValue('longitude', longitude)
+                 setValue('latitude', latitude)
                  // Renseigner les coordonnées par niveau via GPS
                  setValue('streetLon', longitude)
                  setValue('streetLat', latitude)
@@ -225,51 +262,94 @@ export default function LocationPicker({ form }: LocationPickerProps) {
                  setValue('cityLat', latitude)
                  setValue('provinceLon', longitude)
                  setValue('provinceLat', latitude)
-                 
-                 console.log('Localisation automatique:', properties)
-                 
-                 toast({
-                   duration: 5000,
-                   title: 'Localisation détectée',
-                   description: 'Votre position GPS a été utilisée pour remplir automatiquement les champs.',
-                   variant: 'success',
-                 })
-               } else {
-                 toast({
-                   duration: 5000,
-                   title: 'Position hors du Gabon',
-                   description: 'Votre position GPS ne semble pas être au Gabon. Veuillez utiliser la recherche manuelle.',
-                   variant: 'destructive',
-                 })
-               }
+                
+                console.log('Localisation automatique:', properties)
+                
+                toast({
+                  duration: 5000,
+                  title: 'Localisation détectée',
+                  description: 'Votre position GPS a été utilisée pour remplir automatiquement les champs.',
+                  variant: 'success',
+                })
+              } else {
+                toast({
+                  duration: 5000,
+                  title: 'Position hors du Gabon',
+                  description: 'Votre position GPS ne semble pas être au Gabon. Veuillez utiliser la recherche manuelle.',
+                  variant: 'destructive',
+                })
+              }
             }
           }
-                 } catch (error) {
-           console.error('Erreur lors de la récupération des informations de localisation:', error)
-           toast({
-             duration: 5000,
-             title: 'Erreur de localisation',
-             description: 'Impossible de récupérer les informations de localisation. Veuillez utiliser la recherche manuelle.',
-             variant: 'destructive',
-           })
-         }
-             } catch (error) {
-         console.error('Erreur GPS:', error)
-         toast({
-           duration: 5000,
-           title: 'Erreur GPS',
-           description: 'Impossible d\'obtenir votre position GPS. Veuillez utiliser la recherche manuelle.',
-           variant: 'destructive',
-         })
-       }
-     } else {
-       toast({
-         duration: 5000,
-         title: 'Géolocalisation non supportée',
-         description: 'La géolocalisation n\'est pas supportée par votre navigateur. Veuillez utiliser la recherche manuelle.',
-         variant: 'destructive',
-       })
-     }
+        } catch (error) {
+          console.error('Erreur lors de la récupération des informations de localisation:', error)
+          toast({
+            duration: 5000,
+            title: 'Erreur de localisation',
+            description: 'Impossible de récupérer les informations de localisation. Veuillez utiliser la recherche manuelle.',
+            variant: 'destructive',
+          })
+        }
+      } catch (error: any) {
+        console.error('Erreur GPS:', error)
+        
+        // Gérer les différents types d'erreurs de géolocalisation
+        if (error.code === 1) {
+          // Permission denied - L'utilisateur a refusé l'autorisation
+          const browserInstructions = getBrowserInstructions();
+          toast({
+            duration: 10000,
+            title: 'Autorisation de géolocalisation refusée',
+            description: (
+              <div className="space-y-2">
+                <p>Pour utiliser la localisation exacte, vous devez autoriser l'accès à votre position.</p>
+                <div className="bg-blue-50 p-3 rounded-lg border border-blue-200">
+                  <p className="text-sm font-medium text-blue-800 mb-1">Instructions :</p>
+                  <div className="text-xs text-blue-700 space-y-1">
+                    {browserInstructions.map((instruction: string, index: number) => (
+                      <p key={index}>• {instruction}</p>
+                    ))}
+                  </div>
+                </div>
+                <p className="text-xs text-gray-600">Après avoir réactivé l'autorisation, cliquez à nouveau sur le bouton GPS.</p>
+              </div>
+            ),
+            variant: 'destructive',
+          })
+        } else if (error.code === 2) {
+          // Position unavailable - Position non disponible
+          toast({
+            duration: 5000,
+            title: 'Position non disponible',
+            description: 'Votre position GPS n\'est pas disponible actuellement. Veuillez utiliser la recherche manuelle.',
+            variant: 'destructive',
+          })
+        } else if (error.code === 3) {
+          // Timeout - Délai d'attente dépassé
+          toast({
+            duration: 5000,
+            title: 'Délai d\'attente dépassé',
+            description: 'La récupération de votre position GPS a pris trop de temps. Veuillez réessayer ou utiliser la recherche manuelle.',
+            variant: 'destructive',
+          })
+        } else {
+          // Erreur générique
+          toast({
+            duration: 5000,
+            title: 'Erreur GPS',
+            description: 'Impossible d\'obtenir votre position GPS. Veuillez utiliser la recherche manuelle.',
+            variant: 'destructive',
+          })
+        }
+      }
+    } else {
+      toast({
+        duration: 5000,
+        title: 'Géolocalisation non supportée',
+        description: 'La géolocalisation n\'est pas supportée par votre navigateur. Veuillez utiliser la recherche manuelle.',
+        variant: 'destructive',
+      })
+    }
   }
 
   return (
@@ -315,21 +395,31 @@ export default function LocationPicker({ form }: LocationPickerProps) {
          <LocationMap coordinates={mapCoordinates} districtName={selectedLocation?.properties.name} />
        </div>
 
-       {/* Bouton de localisation exacte */}
-       <div className="text-center space-y-3">
-         <p className="text-[#224D62]/70 text-xs font-medium max-w-md mx-auto">
-           Cliquez ici pour utiliser votre position GPS actuelle. Le quartier, la ville et la province seront automatiquement remplis.
-         </p>
-                   <Button
-            type="button"
-            size="lg"
-            onClick={handleGPSLocation}
-            className="bg-[#156B68] hover:bg-[#156B68]/90 text-white font-semibold px-8 py-3 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105 border-0"
-          >
-            <Crosshair className="w-5 h-5 mr-3 text-white" />
-            Utiliser ma position actuelle
-          </Button>
-       </div>
+               {/* Bouton de localisation exacte */}
+        <div className="text-center space-y-4">
+          <div className="bg-gradient-to-r from-[#156B68]/10 to-[#156B68]/5 rounded-lg p-4 border border-[#156B68]/20">
+            <p className="text-[#224D62]/80 text-sm font-medium mb-2">
+              📍 Utilisez votre position GPS actuelle
+            </p>
+            <p className="text-[#224D62]/60 text-xs mb-3">
+              Le quartier, la ville et la province seront automatiquement remplis.
+            </p>
+            <div className="space-y-2">
+              <Button
+                type="button"
+                size="lg"
+                onClick={handleGPSLocation}
+                className="bg-[#156B68] hover:bg-[#156B68]/90 text-white font-semibold px-8 py-3 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105 border-0"
+              >
+                <Crosshair className="w-5 h-5 mr-3 text-white" />
+                Utiliser ma position actuelle
+              </Button>
+              <p className="text-[#224D62]/50 text-xs">
+                💡 Si l'autorisation a été refusée, suivez les instructions dans le message d'erreur
+              </p>
+            </div>
+          </div>
+        </div>
 
        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 w-full">
         {/* Colonne de gauche - Recherche de quartier */}
