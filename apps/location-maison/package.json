@@ -5,6 +5,7 @@
   "scripts": {
     "dev": "next dev --turbopack",
     "build": "NODE_OPTIONS='--max-old-space-size=4096' next build",
+    "build:windows": "cross-env NODE_OPTIONS=\"--max-old-space-size=8096\" next build",
     "start": "next start",
     "dev:local": "cp .env.local.dev .env.local && next dev --turbopack",
     "build:local": "mv .env.local .env.local.backup && cp .env.local.prod .env.local && next build && mv .env.local.backup .env.local",

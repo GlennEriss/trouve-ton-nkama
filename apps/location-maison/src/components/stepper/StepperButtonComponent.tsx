@@ -136,7 +136,7 @@ export default function StepperButtonComponent() {
               <p className="font-medium">Veuillez corriger les erreurs suivantes :</p>
               <div className="text-sm space-y-1">
                 {error.errors.map((err, index) => (
-                  <p key={index} className="text-red-600">
+                  <p key={index} className="text-white">
                     • {err.path.join('.')}: {err.message}
                   </p>
                 ))}
