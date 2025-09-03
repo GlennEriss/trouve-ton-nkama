@@ -23,9 +23,15 @@ export async function findCityByName(name: string, provinceName?: string): Promi
 }
 
 export async function createCityIfNotExists(city: Omit<City, 'id' | 'createdAt' | 'updatedAt' | 'state'>): Promise<string | null> {
-    const existing = await findCityByName(city.name, city.provinceName);
-    if (existing) return existing.id;
-    return await createModel<Omit<City, 'id'>>(city as any, firebaseCollectionNames.cities);
+    try {
+        const existing = await findCityByName(city.name, city.provinceName);
+        if (existing) return existing.id;
+        const result = await createModel<Omit<City, 'id'>>(city as any, firebaseCollectionNames.cities);
+        return result;
+    } catch (error) {
+        console.error("Error creating city:", error);
+        return null;
+    }
 }
 
 export async function createCity(city: Omit<City, 'id' | 'createdAt' | 'updatedAt' | 'state'>): Promise<string | null> {

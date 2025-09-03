@@ -226,37 +226,52 @@ export const PropertyFormComponentProvider = ({ children, isUpdate, propertyToUp
             createdBy: user?.uid
         }
         //create province
-        const provinceId = await createProvince({
-            name: propertyMutate.province,
-            country: propertyMutate.country,
-            countryCode: propertyMutate.countryCode,
-            longitude: provinceLon,
-            latitude: provinceLat
-        })
+        let provinceId: string | null = null;
+        try {
+            provinceId = await createProvince({
+                name: propertyMutate.province,
+                country: propertyMutate.country,
+                countryCode: propertyMutate.countryCode,
+                longitude: provinceLon,
+                latitude: provinceLat
+            });
+        } catch (error) {
+            console.error("Failed to create province:", error);
+        }
         
         //create city
-        const cityId = await createCity({
-            name: propertyMutate.city,
-            provinceId: provinceId || undefined,
-            provinceName: propertyMutate.province,
-            country: propertyMutate.country,
-            countryCode: propertyMutate.countryCode,
-            longitude: cityLon,
-            latitude: cityLat
-        })
+        let cityId: string | null = null;
+        try {
+            cityId = await createCity({
+                name: propertyMutate.city,
+                provinceId: provinceId || null,
+                provinceName: propertyMutate.province,
+                country: propertyMutate.country,
+                countryCode: propertyMutate.countryCode,
+                longitude: cityLon,
+                latitude: cityLat
+            });
+        } catch (error) {
+            console.error("Failed to create city:", error);
+        }
         
         //create street
-        const streetId = await createStreet({
-            name: propertyMutate.street,
-            cityId: cityId || undefined,
-            cityName: propertyMutate.city,
-            provinceId: provinceId || undefined,
-            provinceName: propertyMutate.province,
-            country: propertyMutate.country,
-            countryCode: propertyMutate.countryCode,
-            longitude: streetLon,
-            latitude: streetLat
-        })
+        let streetId: string | null = null;
+        try {
+            streetId = await createStreet({
+                name: propertyMutate.street,
+                cityId: cityId || null,
+                cityName: propertyMutate.city,
+                provinceId: provinceId || null,
+                provinceName: propertyMutate.province,
+                country: propertyMutate.country,
+                countryCode: propertyMutate.countryCode,
+                longitude: streetLon,
+                latitude: streetLat
+            });
+        } catch (error) {
+            console.error("Failed to create street:", error);
+        }
         mutation.mutate(propertyMutate)
         if (!isUpdate) {
             clearFormLocalStorage()

@@ -26,9 +26,15 @@ export async function findStreetByName(name: string, cityName?: string, province
 }
 
 export async function createStreetIfNotExists(street: Omit<Street, 'id' | 'createdAt' | 'updatedAt' | 'state'>): Promise<string | null> {
-    const existing = await findStreetByName(street.name, street.cityName, street.provinceName);
-    if (existing) return existing.id;
-    return await createModel<Omit<Street, 'id'>>(street as any, firebaseCollectionNames.streets);
+    try {
+        const existing = await findStreetByName(street.name, street.cityName, street.provinceName);
+        if (existing) return existing.id;
+        const result = await createModel<Omit<Street, 'id'>>(street as any, firebaseCollectionNames.streets);
+        return result;
+    } catch (error) {
+        console.error("Error creating street:", error);
+        return null;
+    }
 }
 
 export async function createStreet(street: Omit<Street, 'id' | 'createdAt' | 'updatedAt' | 'state'>): Promise<string | null> {

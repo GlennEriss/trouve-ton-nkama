@@ -20,9 +20,15 @@ export async function findProvinceByName(name: string): Promise<{ id: string, da
 }
 
 export async function createProvinceIfNotExists(province: Omit<Province, 'id' | 'createdAt' | 'updatedAt' | 'state'>): Promise<string | null> {
-    const existing = await findProvinceByName(province.name);
-    if (existing) return existing.id;
-    return await createModel<Omit<Province, 'id'>>(province as any, firebaseCollectionNames.provinces);
+    try {
+        const existing = await findProvinceByName(province.name);
+        if (existing) return existing.id;
+        const result = await createModel<Omit<Province, 'id'>>(province as any, firebaseCollectionNames.provinces);
+        return result;
+    } catch (error) {
+        console.error("Error creating province:", error);
+        return null;
+    }
 }
 
 export async function createProvince(province: Omit<Province, 'id' | 'createdAt' | 'updatedAt' | 'state'>): Promise<string | null> {
