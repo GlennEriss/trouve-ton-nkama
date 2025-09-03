@@ -154,6 +154,18 @@ export default function LocationPicker({ form }: LocationPickerProps) {
     setValue('address.district', properties.name)
     setValue('address.city', properties.city || properties.suburb || '')
     setValue('address.province', properties.state || '')
+    // Coordonées par niveau
+    const [lon, lat] = geometry.coordinates
+    setValue('streetLon', lon)
+    setValue('streetLat', lat)
+    if (properties.city || properties.suburb) {
+      setValue('cityLon', lon)
+      setValue('cityLat', lat)
+    }
+    if (properties.state) {
+      setValue('provinceLon', lon)
+      setValue('provinceLat', lat)
+    }
   }
 
   // Fonction pour formater l'affichage des résultats
@@ -206,6 +218,13 @@ export default function LocationPicker({ form }: LocationPickerProps) {
                  setValue('address.district', properties.name)
                  setValue('address.city', properties.city || properties.suburb || '')
                  setValue('address.province', properties.state || '')
+                 // Renseigner les coordonnées par niveau via GPS
+                 setValue('streetLon', longitude)
+                 setValue('streetLat', latitude)
+                 setValue('cityLon', longitude)
+                 setValue('cityLat', latitude)
+                 setValue('provinceLon', longitude)
+                 setValue('provinceLat', latitude)
                  
                  console.log('Localisation automatique:', properties)
                  

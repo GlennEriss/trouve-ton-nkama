@@ -175,6 +175,12 @@ export const Step3Schema = z.object({
   additionalInformation: z.string().optional(),
   longitude: z.string().min(1).transform(val => parseFloat(val)).refine(val => val >= -180 && val <= 180, "Longitude invalide"),
   latitude: z.string().min(1).transform(val => parseFloat(val)).refine(val => val >= -90 && val <= 90, "Latitude invalide"),
+  provinceLon: z.number().optional(),
+  provinceLat: z.number().optional(),
+  cityLon: z.number().optional(),
+  cityLat: z.number().optional(),
+  streetLon: z.number().optional(),
+  streetLat: z.number().optional(),
   country: z.string().min(1, "Le pays est obligatoire"),
   countryCode: z.string().min(2, "Le code pays est obligatoire"),
 });

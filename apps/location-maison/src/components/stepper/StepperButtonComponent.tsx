@@ -186,6 +186,7 @@ export default function StepperButtonComponent() {
       activeStep === 2 &&
       Object.keys(formState.errors).length > 0
     ) {
+      console.log('formState.errors', formState.errors)
       toast({
         duration: 5000,
         title: "Erreur dans le formulaire",

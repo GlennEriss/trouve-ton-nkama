@@ -12,6 +12,9 @@ import { createFile } from "@/db/file.db"
 import { useCurrentUser } from "@/hooks/use-current-user"
 import { useMutation, useQueryClient } from "@tanstack/react-query"
 import { createProperty, updateProperty } from "@/db/property.db"
+import { createProvince } from "@/db/province.db"
+import { createCity } from "@/db/city.db"
+import { createStreet } from "@/db/street.db"
 import useLastpath from "@/hooks/use-lastpath"
 import queryKeys from "@/constantes/react-query-keys"
 import { routes } from "@/constantes/routes"
@@ -215,12 +218,45 @@ export const PropertyFormComponentProvider = ({ children, isUpdate, propertyToUp
         });
         const images = await Promise.all(promiseFiles)
         //Create Property
+        const { provinceLon, provinceLat, cityLon, cityLat, streetLon, streetLat, ...othersData } = data
         const propertyMutate: Property = {
             ...property,
-            ...data,
+            ...othersData,
             images: [...images, ...imgUplaods],
             createdBy: user?.uid
         }
+        //create province
+        const provinceId = await createProvince({
+            name: propertyMutate.province,
+            country: propertyMutate.country,
+            countryCode: propertyMutate.countryCode,
+            longitude: provinceLon,
+            latitude: provinceLat
+        })
+        
+        //create city
+        const cityId = await createCity({
+            name: propertyMutate.city,
+            provinceId: provinceId || undefined,
+            provinceName: propertyMutate.province,
+            country: propertyMutate.country,
+            countryCode: propertyMutate.countryCode,
+            longitude: cityLon,
+            latitude: cityLat
+        })
+        
+        //create street
+        const streetId = await createStreet({
+            name: propertyMutate.street,
+            cityId: cityId || undefined,
+            cityName: propertyMutate.city,
+            provinceId: provinceId || undefined,
+            provinceName: propertyMutate.province,
+            country: propertyMutate.country,
+            countryCode: propertyMutate.countryCode,
+            longitude: streetLon,
+            latitude: streetLat
+        })
         mutation.mutate(propertyMutate)
         if (!isUpdate) {
             clearFormLocalStorage()
