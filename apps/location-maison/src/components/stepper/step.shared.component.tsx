@@ -15,11 +15,6 @@
 import { Input } from "../ui/input"
 import { Textarea } from "../ui/textarea"
 
-//Types
-export type OptionType = {
-    label: string,
-    value: string
-}
 //Texte
 export const TextComponent = ({ field }: { field: any }) => {
     return (

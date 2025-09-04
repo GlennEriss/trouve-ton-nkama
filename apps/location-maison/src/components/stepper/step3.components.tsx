@@ -7,12 +7,7 @@ import { SelectFormApp } from "../shared/form/SelectFormApp"
 import { useLocationSync } from "@/hooks/use-location-sync"
 import { Badge } from "@/components/ui/badge"
 import { Database, MapPin, Building } from "lucide-react"
-import { cn } from "@/lib/utils"
-
-interface OptionType {
-  label: string
-  value: string
-}
+import { OptionType } from "@/models/OptionType"
 
 /**
  * Composant Select pour les provinces avec synchronisation automatique

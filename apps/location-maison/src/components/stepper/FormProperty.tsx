@@ -3,11 +3,46 @@ import { usePropertyFormComponentContext } from '@/providers/property.form.provi
 import React from 'react'
 import { PropertyFormDirector } from '@/directors/property.form.director';
 import { PropertyFormBuilderFactory } from '../../factories/property-form/property.form.factory';
-import Step1 from './Step1';
-import Step2 from './Step2';
-import Step3 from './Step3';
-import PreviewProperty from '../preview-property/PreviewProperty';
+import dynamic from 'next/dynamic';
 import FlatBotAssistant from '../ai-assistant/FlatBotAssistant';
+
+// Lazy loading de PreviewProperty
+const PreviewProperty = dynamic(() => import('../preview-property/PreviewProperty'), {
+    loading: () => (
+        <div className="flex items-center justify-center h-64 bg-gray-50 dark:bg-gray-800 rounded-lg">
+            <div className="text-gray-500 dark:text-gray-400">Chargement de l'aperçu...</div>
+        </div>
+    ),
+    ssr: true
+});
+
+// Lazy loading des steps
+const Step1 = dynamic(() => import('./Step1'), {
+    loading: () => (
+        <div className="flex items-center justify-center h-64 bg-gray-50 dark:bg-gray-800 rounded-lg">
+            <div className="text-gray-500 dark:text-gray-400">Chargement de l'étape 1...</div>
+        </div>
+    ),
+    ssr: true
+});
+
+const Step2 = dynamic(() => import('./Step2'), {
+    loading: () => (
+        <div className="flex items-center justify-center h-64 bg-gray-50 dark:bg-gray-800 rounded-lg">
+            <div className="text-gray-500 dark:text-gray-400">Chargement de l'étape 2...</div>
+        </div>
+    ),
+    ssr: true
+});
+
+const Step3 = dynamic(() => import('./Step3'), {
+    loading: () => (
+        <div className="flex items-center justify-center h-64 bg-gray-50 dark:bg-gray-800 rounded-lg">
+            <div className="text-gray-500 dark:text-gray-400">Chargement de l'étape 3...</div>
+        </div>
+    ),
+    ssr: false // Désactive le SSR pour Step3 car il contient la carte
+});
 
 type Constructor<T> = new () => T;
 

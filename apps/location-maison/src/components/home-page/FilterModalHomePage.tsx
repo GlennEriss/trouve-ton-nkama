@@ -13,12 +13,9 @@ import { Button } from "@/components/ui/button";
 import { ChevronLeft, SlidersHorizontal } from "lucide-react";
 import { tags as tagsList, statusOptions } from "@/constantes";
 import { DialogDescription } from "@radix-ui/react-dialog";
-import { InputNumberApp } from "../shared/ui/InputNumberApp";
 import { TypeProperty, getTypePropertyKey } from "@/constantes/property-type";
 import { useFilterModal } from "@/hooks/use-filter-modal";
-import { SelectFormApp } from "../shared/form/SelectFormApp";
 import { useLocation } from "@/hooks/use-location";
-import { useWatch } from "react-hook-form";
 import { NumberInputRHF } from "../shared/ui/NumberInputRHF";
 import { MultiSelect } from '@/components/shared/ui/MultiSelectApp';
 
@@ -26,11 +23,6 @@ const AREA_MIN = 0;
 const AREA_MAX = 1000;
 const ROOMS_MIN = 0;
 const ROOMS_MAX = 10;
-
-interface OptionType {
-    label: string;
-    value: string;
-}
 
 // Trie la liste des tags par ordre alphabétique
 const sortedTagsList = [...tagsList].sort((a, b) => a.tagName.localeCompare(b.tagName));

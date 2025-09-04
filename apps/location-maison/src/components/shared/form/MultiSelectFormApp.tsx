@@ -2,11 +2,8 @@ import { FormMessage, FormControl, FormField, FormItem, FormLabel } from '@/comp
 import { MultiSelect } from '@/components/shared/ui/MultiSelectApp'
 import React from 'react'
 import { Control, FieldValues, Path } from 'react-hook-form'
+import { OptionType } from '@/models/OptionType'
 
-type OptionType = {
-    label: string,
-    value: string
-}
 type MultiSelectFormAppProps<T extends FieldValues> = {
     control: Control<T>,
     name: Path<T>,
