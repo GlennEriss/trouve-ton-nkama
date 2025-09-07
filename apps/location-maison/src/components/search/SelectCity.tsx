@@ -1,14 +1,9 @@
 import React from 'react'
-import { SelectFilterLocationMediatorFactory } from '@/factories/mediator/SelectFilterLocationMediatorFactory';
 import { SelectFormApp } from '../shared/form/SelectFormApp';
-import { useCities } from '@/hooks/use-cities';
+import { useSelectFilterLocationMediator } from '@/hooks/useSelectFilterLocationMediator';
 
 export default function SelectCity() {
-    const mediator = SelectFilterLocationMediatorFactory.getInstance();
-    const { data: cities = [], isLoading: citiesLoading } = useCities(
-        mediator.getForm().getValues('province') ? mediator.getProvinces().find(p => p.name === mediator.getForm().getValues('province'))?.id : undefined
-    );
-    mediator.setCities(cities);
+    const { mediator, citiesLoading } = useSelectFilterLocationMediator()
     return (
         <SelectFormApp
             control={mediator.getForm().control}
