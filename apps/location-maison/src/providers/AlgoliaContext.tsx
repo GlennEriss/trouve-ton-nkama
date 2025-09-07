@@ -11,7 +11,7 @@ const searchClient = algoliasearch(
 );
 
 // Typage du contexte Algolia
-interface AlgoliaContextType {
+export interface AlgoliaContextType {
   indexName: string;
 
   // Champs textuels / numériques

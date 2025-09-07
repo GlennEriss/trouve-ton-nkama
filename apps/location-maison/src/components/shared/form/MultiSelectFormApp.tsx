@@ -24,7 +24,7 @@ export default function MultiSelectFormApp<T extends FieldValues>({ control, nam
                         <MultiSelect
                             options={options}
                             onValueChange={field.onChange}
-                            defaultValue={field.value}
+                            value={field.value}
                             placeholder={placeholder}
                             variant="inverted"
                             animation={2}

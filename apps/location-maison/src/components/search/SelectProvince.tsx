@@ -1,12 +1,9 @@
 import React from 'react'
-import { SelectFilterLocationMediatorFactory } from '@/factories/mediator/SelectFilterLocationMediatorFactory';
 import { SelectFormApp } from '../shared/form/SelectFormApp';
-import { useProvinces } from '@/hooks/use-provinces';
+import { useSelectFilterLocationMediator } from '@/hooks/useSelectFilterLocationMediator';
 
 export default function SelectProvince() {
-    const { data: provinces = [], isLoading: provincesLoading } = useProvinces();
-    const mediator = SelectFilterLocationMediatorFactory.getInstance();
-    mediator.setProvinces(provinces);
+    const { mediator, provincesLoading } = useSelectFilterLocationMediator()
     return (
         <SelectFormApp
             control={mediator.getForm().control}
