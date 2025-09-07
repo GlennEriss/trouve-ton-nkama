@@ -78,6 +78,9 @@ interface MultiSelectProps
 
   /** The default selected values when the component mounts. */
   defaultValue?: string[];
+  
+  /** The current selected values (controlled). */
+  value?: string[];
 
   /**
    * Placeholder text to be displayed when no values are selected.
@@ -133,6 +136,7 @@ export const MultiSelect = React.forwardRef<
       onValueChange,
       variant,
       defaultValue = [],
+      value,
       placeholder = "Select options",
       animation = 0,
       maxCount = 3,
@@ -145,7 +149,14 @@ export const MultiSelect = React.forwardRef<
     ref
   ) => {
     const [selectedValues, setSelectedValues] =
-      React.useState<string[]>(defaultValue);
+      React.useState<string[]>(value || defaultValue);
+    
+    // Mettre à jour l'état interne quand la prop value change
+    React.useEffect(() => {
+      if (value !== undefined) {
+        setSelectedValues(value);
+      }
+    }, [value]);
     const [isPopoverOpen, setIsPopoverOpen] = React.useState(false);
     const [isAnimating, setIsAnimating] = React.useState(false);
 
