@@ -11,7 +11,7 @@ export default function SelectCity() {
             name="city"
             label="Ville"
             options={mediator.getCityOptions()}
-            placeholder="Sélectionnez une ville"
+            placeholder={citiesLoading ? "Chargement des villes..." : "Sélectionnez une ville"}
             disabled={citiesLoading || !mediator.getForm().getValues('province')}
             onValueChange={mediator.onCityChange}
         />

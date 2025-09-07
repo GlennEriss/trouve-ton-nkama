@@ -11,7 +11,7 @@ export default function SelectStreet() {
             name="street"
             label="Quartier"
             options={mediator.getStreetOptions()}
-            placeholder="Sélectionnez un quartier"
+            placeholder={streetsLoading ? "Chargement des quartiers..." : "Sélectionnez un quartier"}
             disabled={streetsLoading || !mediator.getForm().getValues('city')}
             onValueChange={mediator.onStreetChange}
         />

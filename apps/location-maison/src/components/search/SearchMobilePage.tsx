@@ -13,12 +13,12 @@ import dynamic from 'next/dynamic'
 
 // Lazy loading du composant GoogleMapViewer
 const GoogleMapViewer = dynamic(() => import('./GoogleMapViewer'), {
-  loading: () => (
-    <div className="flex items-center justify-center h-64 bg-gray-100 rounded-lg">
-      <div className="text-gray-500">Chargement de la carte...</div>
-    </div>
-  ),
-  ssr: false // Désactive le SSR car Google Maps nécessite window
+    loading: () => (
+        <div className="flex items-center justify-center h-64 bg-gray-100 rounded-lg">
+            <div className="text-gray-500">Chargement de la carte...</div>
+        </div>
+    ),
+    ssr: false // Désactive le SSR car Google Maps nécessite window
 })
 
 export default function SearchMobilePage() {

@@ -11,7 +11,7 @@ export default function SelectProvince() {
             name="province"
             label="Province"
             options={mediator.getProvinceOptions()}
-            placeholder="Sélectionnez une province"
+            placeholder={provincesLoading ? "Chargement des provinces..." : "Sélectionnez une province"}
             disabled={provincesLoading}
         />
     )

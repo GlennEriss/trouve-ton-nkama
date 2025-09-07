@@ -9,7 +9,8 @@ import PropertyCard from '../home-page/PropertyCard'
 import { useSearchParams } from 'next/navigation'
 import FilterSearchDesktopPageSection from './FilterSearchDesktopPageSection'
 
-export default function SearchDesktopPage() {
+export default function 
+SearchDesktopPage() {
     const { items, isLastPage, showMore } = useInfiniteHits();
     const { nbHits } = useStats();
     const searchParams = useSearchParams();
