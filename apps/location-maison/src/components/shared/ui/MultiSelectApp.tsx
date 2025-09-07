@@ -155,6 +155,8 @@ export const MultiSelect = React.forwardRef<
     React.useEffect(() => {
       if (value !== undefined) {
         setSelectedValues(value);
+      } else {
+        setSelectedValues([]);
       }
     }, [value]);
     const [isPopoverOpen, setIsPopoverOpen] = React.useState(false);

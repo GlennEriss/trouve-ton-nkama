@@ -105,6 +105,7 @@ export class FormFilterSearchMediator {
             minNbrRooms: undefined,
             maxNbrRooms: undefined,
             typeProperty: [],
+            status: [],
             tags: []
         });
         this.algolia.clearFilters();
