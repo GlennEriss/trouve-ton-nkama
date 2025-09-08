@@ -19,6 +19,7 @@ import useLastpath from "@/hooks/use-lastpath"
 import queryKeys from "@/constantes/react-query-keys"
 import { routes } from "@/constantes/routes"
 import { updateOrCreateSuggestion } from "@/db/suggestion.db"
+import { useStep1FormPropertyMediatorWithForm } from "@/hooks/useStep1FormPropertyMediator"
 
 type PropertyFormComponent = {
     form: any,

@@ -17,7 +17,6 @@
  */
 
 'use client'
-import { useDropzone } from 'react-dropzone'
 import { Input } from "../ui/input"
 import React, { useState, useEffect } from "react"
 import { AiOutlineCamera, AiOutlineCloseCircle } from "react-icons/ai";
@@ -28,80 +27,48 @@ import { FormItem, FormControl, FormLabel } from '../ui/form';
 import { tags } from '@/constantes';
 import { IconType } from 'react-icons/lib';
 import clsx from 'clsx';
-import imageCompression from 'browser-image-compression';
 import { useToast } from '@/hooks/use-toast';
+import { useStep1FormPropertyMediator } from '@/hooks/useStep1FormPropertyMediator';
+import { useFormContext } from 'react-hook-form';
+import { useImageDropzone } from "@/hooks/useImageDropzone";
 
 // Fonction utilitaire pour générer une clé unique pour les images
 const generateImageKey = (image: File | string, index: number): string => {
-  if (typeof image === 'string') {
-    return `image-url-${image.slice(-10)}-${index}`;
-  }
-  return `image-file-${image.name}-${image.size}-${index}`;
+    if (typeof image === 'string') {
+        return `image-url-${image.slice(-10)}-${index}`;
+    }
+    return `image-file-${image.name}-${image.size}-${index}`;
 };
 
 //Images
-export const ImagesComponent = ({ field }: { field: any }) => {
+export const ImagesComponent = () => {
+    const { watch } = useFormContext();
+    const images = watch("images") ?? [];
     return (
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-2 gap-3">
-            <ImageUploader field={field} />
-            {field.value?.map((image: File | string, index: number) => (
-                <ImageComponent key={generateImageKey(image, index)} index={index} field={field} />
+            <ImageUploader />
+            {images.map((image: File | string, index: number) => (
+                <ImageComponent key={generateImageKey(image, index)} index={index} />
             ))}
         </div>
     )
 }
 
-export const ImageUploader = ({ field }: { field: any }) => {
+export const ImageUploader = () => {
     const { toast } = useToast();
+    const mediator = useStep1FormPropertyMediator();
     const [isUploading, setIsUploading] = React.useState(false);
-
-    const { getInputProps, getRootProps, isDragActive } = useDropzone({
-        maxFiles: 10,
-        multiple: true,
-        accept: {
-            'image/png': ['.png'],
-            'image/jpeg': ['.jpg', '.jpeg'],
-            'image/webp': ['.webp'],
-        },
-        onDrop: async (acceptedFiles) => {
-            setIsUploading(true);
-            const maxSizeInBytes = 300 * 1024;
-            const currentFiles = field.value ?? [];
-            const compressedFiles: File[] = [];
-
-            for (const file of acceptedFiles) {
-                try {
-                    const compressedFile = await imageCompression(file, {
-                        maxSizeMB: 0.3,
-                        maxWidthOrHeight: 1920,
-                        useWebWorker: true,
-                    });
-
-                    if (compressedFile.size <= maxSizeInBytes) {
-                        compressedFiles.push(compressedFile);
-                    } else {
-                        toast({
-                            duration: 5000,
-                            title: "Erreur",
-                            description: `L'image "${file.name}" dépasse 300 Ko même après compression.`,
-                            variant: "destructive",
-                        });
-                    }
-                } catch (error: any) {
-                    toast({
-                        duration: 5000,
-                        title: "Erreur",
-                        description: error.message ?? "Une erreur est survenue.",
-                        variant: "destructive",
-                    });
-                }
+    const { getInputProps, getRootProps, isDragActive } = useImageDropzone({
+        onFiles: (files) => {
+            try {
+                setIsUploading(true);
+                mediator.setImages([...mediator.getImages(), ...files]);
+            } catch (e) {
+                toast({ title: "Erreur", description: "Impossible d'ajouter les images", variant: "destructive" });
+            } finally {
+                setIsUploading(false);
             }
-
-            const newFiles = [...currentFiles, ...compressedFiles].slice(0, 10);
-            field.onChange(newFiles);
-            setIsUploading(false);
-        },
-        disabled: isUploading,
+        }
     });
 
     return (
@@ -109,8 +76,8 @@ export const ImageUploader = ({ field }: { field: any }) => {
             <Input {...getInputProps()} disabled={isUploading} />
             {isUploading ? (
                 <svg className="animate-spin w-10 h-10 text-gray-400" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z" />
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z" />
                 </svg>
             ) : isDragActive ? (
                 <p className="text-gray-500">Déposez vos images ici...</p>
@@ -121,23 +88,17 @@ export const ImageUploader = ({ field }: { field: any }) => {
     );
 };
 
-export const ImageComponent = ({ field, index }: { field: any, index: number }) => {
-    const image: File | string | undefined = field.value?.[index];
-
+export const ImageComponent = ({ index }: { index: number }) => {
     return (
         <div className='border border-dashed h-40 md:h-[240px] flex justify-center items-center'>
-            <RenderImage image={image} field={field} index={index} />
+            <RenderImage index={index} />
         </div>
     );
 }
 
-export const RenderImage = ({ image, field, index }: { image: File | string | undefined, field: any, index: number }) => {
-    const handleDeleteImage = () => {
-        const currentFiles = field.value as any[] ?? [];
-        const newFiles = currentFiles.slice(); // Copie du tableau
-        newFiles.splice(index, 1); // Supprime l'image à cet index
-        field.onChange(newFiles);
-    };
+export const RenderImage = ({ index }: { index: number }) => {
+    const mediator = useStep1FormPropertyMediator();
+    const image = mediator.getImageAt(index);
     return (
         <React.Fragment>
             {
@@ -150,7 +111,7 @@ export const RenderImage = ({ image, field, index }: { image: File | string | un
                                 className='p-1'
                                 onClick={(event) => {
                                     event.stopPropagation();
-                                    handleDeleteImage();
+                                    mediator.removeImage(index);
                                 }}>
                                 <AiOutlineCloseCircle color='red' size={25} />
                             </Button>
