@@ -15,7 +15,10 @@ import {
   Search,
   Loader2,
   MapPinIcon,
-  Crosshair
+  Crosshair,
+  Edit3,
+  Check,
+  X
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import dynamic from 'next/dynamic'
@@ -47,14 +50,18 @@ export default function LocationPicker() {
     selectedLocation,
     districtQuery,
     setDistrictQuery,
-    mapCoordinates
+    mapCoordinates,
+    isEditingDistrict,
+    handleEnableDistrictEdit,
+    handleConfirmDistrictEdit,
+    handleCancelDistrictEdit
   } = useLocationHandlers()
 
   // Recherche Photon via hook
   const { results, isLoading } = usePhotonSearch(districtQuery, 500)
   
-  // State dérivé - fermer les résultats si une location est sélectionnée
-  const showResults = !!districtQuery && results.length > 0 && !selectedLocation
+  // State dérivé - fermer les résultats si une location est sélectionnée ou en cours d'édition
+  const showResults = !!districtQuery && results.length > 0 && !selectedLocation && !isEditingDistrict
 
   // Fonction pour formater l'affichage des résultats
   const formatResultDisplay = (result: PhotonResult) => {
@@ -210,16 +217,71 @@ export default function LocationPicker() {
           </div>
 
           {/* Informations automatiques */}
-          {selectedLocation && (
+          {selectedLocation && !isEditingDistrict && (
             <div className="p-4 bg-[#CBB171]/5 rounded-lg border border-[#CBB171]/20">
-              <div className="flex items-center space-x-2 mb-2">
+              <div className="flex items-center justify-between mb-2">
+                <div className="flex items-center space-x-2">
                 <CheckCircle className="w-4 h-4 text-[#CBB171]" />
                 <span className="text-sm font-medium text-[#224D62]">
                   Localisation détectée
                 </span>
               </div>
-              <div className="text-xs text-[#224D62]/80">
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  onClick={handleEnableDistrictEdit}
+                  className="text-[#224D62] hover:bg-[#224D62]/10 h-8 px-2"
+                >
+                  <Edit3 className="w-3 h-3 mr-1" />
+                  Modifier
+                </Button>
+              </div>
+              <div className="text-xs text-[#224D62]/80 mb-2">
                 {selectedLocation && formatResultDisplay(selectedLocation)}
+              </div>
+              <div className="text-xs text-[#224D62]/60 bg-blue-50 p-2 rounded border-l-2 border-blue-200">
+                💡 Le quartier "<strong>{districtQuery || selectedLocation.properties.name}</strong>" 
+                {districtQuery && districtQuery !== selectedLocation.properties.name 
+                  ? " a été personnalisé" 
+                  : " a été détecté"}. 
+                Si ce nom est correct, continuez. Sinon, cliquez sur "Modifier" pour le personnaliser.
+              </div>
+            </div>
+          )}
+
+          {/* Mode édition du quartier */}
+          {selectedLocation && isEditingDistrict && (
+            <div className="p-4 bg-yellow-50 rounded-lg border border-yellow-200">
+              <div className="flex items-center space-x-2 mb-3">
+                <Edit3 className="w-4 h-4 text-yellow-600" />
+                <span className="text-sm font-medium text-yellow-800">
+                  Modification du nom du quartier
+                </span>
+              </div>
+              <div className="text-xs text-yellow-700 mb-3">
+                Personnalisez le nom du quartier si nécessaire :
+              </div>
+              <div className="flex space-x-2">
+                <Button
+                  type="button"
+                  size="sm"
+                  onClick={handleConfirmDistrictEdit}
+                  className="bg-green-600 hover:bg-green-700 text-white"
+                >
+                  <Check className="w-3 h-3 mr-1" />
+                  Confirmer
+                </Button>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={handleCancelDistrictEdit}
+                  className="border-gray-300 text-gray-700 hover:bg-gray-50"
+                >
+                  <X className="w-3 h-3 mr-1" />
+                  Annuler
+                </Button>
               </div>
             </div>
           )}
@@ -265,21 +327,38 @@ export default function LocationPicker() {
             </div>
           </div>
 
-          {/* Quartier (automatique) */}
+          {/* Quartier (conditionnellement éditable) */}
           <div className="space-y-2">
             <Label className="text-sm font-medium text-[#224D62]">
               Quartier <span className="text-red-500">*</span>
-              <Badge variant="secondary" className="ml-2 bg-[#224D62]/10 text-[#224D62] text-xs">
-                Automatique
-              </Badge>
+              {!isEditingDistrict && (
+                <Badge variant="secondary" className="ml-2 bg-[#224D62]/10 text-[#224D62] text-xs">
+                  Automatique
+                </Badge>
+              )}
+              {isEditingDistrict && (
+                <Badge variant="secondary" className="ml-2 bg-yellow-100 text-yellow-800 text-xs">
+                  Édition
+                </Badge>
+              )}
             </Label>
             <div className="relative w-full">
-              <MapPin className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
+              <MapPin className={cn(
+                "absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4",
+                isEditingDistrict ? "text-[#CBB171]" : "text-gray-400"
+              )} />
               <Input
                 {...register('address.district')}
-                disabled
-                placeholder="Sélectionnez d'abord un quartier"
-                className="pl-10 bg-gray-50 text-gray-600 border-gray-200 cursor-not-allowed w-full"
+                value={districtQuery || (selectedLocation?.properties.name || '')}
+                onChange={isEditingDistrict ? (e) => setDistrictQuery(e.target.value) : undefined}
+                disabled={!isEditingDistrict}
+                placeholder={isEditingDistrict ? "Tapez le nom du quartier..." : "Sélectionnez d'abord un quartier"}
+                className={cn(
+                  "pl-10 w-full",
+                  isEditingDistrict 
+                    ? "border-[#CBB171]/30 focus:border-[#224D62] focus:ring-[#224D62]/20 bg-white" 
+                    : "bg-gray-50 text-gray-600 border-gray-200 cursor-not-allowed"
+                )}
               />
             </div>
           </div>

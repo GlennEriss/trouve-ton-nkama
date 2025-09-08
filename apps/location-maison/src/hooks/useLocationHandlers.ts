@@ -12,6 +12,7 @@ export function useLocationHandlers() {
   const [selectedLocation, setSelectedLocation] = useState<PhotonResult | null>(null)
   const [districtQuery, setDistrictQuery] = useState('')
   const [mapCoordinates, setMapCoordinates] = useState<[number, number] | null>(null)
+  const [isEditingDistrict, setIsEditingDistrict] = useState(false)
 
   const handleLocationSelect = (result: PhotonResult) => {
     const { properties, geometry } = result
@@ -131,8 +132,33 @@ export function useLocationHandlers() {
   const handleDistrictQueryChange = (value: string) => {
     setDistrictQuery(value)
     // Si l'utilisateur modifie le query après avoir sélectionné, on réinitialise la sélection
-    if (selectedLocation && value !== selectedLocation.properties.name) {
+    if (selectedLocation && value !== selectedLocation.properties.name && !isEditingDistrict) {
       setSelectedLocation(null)
+    }
+  }
+
+  // Handler pour activer l'édition du quartier
+  const handleEnableDistrictEdit = () => {
+    setIsEditingDistrict(true)
+  }
+
+  // Handler pour confirmer l'édition du quartier
+  const handleConfirmDistrictEdit = () => {
+    setIsEditingDistrict(false)
+    // Mettre à jour le formulaire avec le nouveau nom
+    if (selectedLocation && districtQuery) {
+      mediator.setDistrict(districtQuery)
+      // S'assurer que districtQuery garde la valeur confirmée
+      // (pas besoin de modifier districtQuery, il garde déjà la bonne valeur)
+    }
+  }
+
+  // Handler pour annuler l'édition du quartier
+  const handleCancelDistrictEdit = () => {
+    setIsEditingDistrict(false)
+    // Restaurer le nom original
+    if (selectedLocation) {
+      setDistrictQuery(selectedLocation.properties.name)
     }
   }
 
@@ -142,6 +168,10 @@ export function useLocationHandlers() {
     selectedLocation,
     districtQuery,
     setDistrictQuery: handleDistrictQueryChange,
-    mapCoordinates
+    mapCoordinates,
+    isEditingDistrict,
+    handleEnableDistrictEdit,
+    handleConfirmDistrictEdit,
+    handleCancelDistrictEdit
   }
 }
