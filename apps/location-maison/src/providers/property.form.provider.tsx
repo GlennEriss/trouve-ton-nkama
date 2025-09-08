@@ -59,7 +59,8 @@ const saveFormToLocalStorage = (data: any) => {
 const getFormFromLocalStorage = () => {
     if (typeof window !== 'undefined') {
         const saved = localStorage.getItem(STORAGE_KEY)
-        return saved ? JSON.parse(saved) : null
+        const parsed = saved ? JSON.parse(saved) : null;
+        return parsed;
     }
     return null
 }
@@ -301,7 +302,29 @@ export const PropertyFormComponentProvider = ({ children, isUpdate, propertyToUp
             clearFormLocalStorage()
         }
     }
+    // Sauvegarder automatiquement les changements dans localStorage
     React.useEffect(() => {
+        if (!isUpdate) {
+            const subscription = form.watch((data) => {
+                // Filtrer les données pour ne sauvegarder que les champs valides
+                const filteredData = Object.entries(data).reduce((acc, [key, value]) => {
+                    if (value !== undefined && value !== null) {
+                        acc[key] = value;
+                    }
+                    return acc;
+                }, {} as any);
+                
+                if (Object.keys(filteredData).length > 0) {
+                    saveFormToLocalStorage(filteredData);
+                }
+            });
+
+            return () => subscription.unsubscribe();
+        }
+    }, [isUpdate]);
+
+    React.useEffect(() => {
+        
         if(user && user?.phoneNumbers.length > 0){
             form.setValue('contact', user.phoneNumbers[0])
         }
@@ -316,10 +339,16 @@ export const PropertyFormComponentProvider = ({ children, isUpdate, propertyToUp
                 form.setValue('images', imgList)
             }
         } else if (!isUpdate) {
-            // Charger les données du localStorage si elles existent
+            // Charger les données du localStorage si elles existent SEULEMENT au premier chargement
             const savedData = getFormFromLocalStorage()
             if (savedData) {
+                // Ne pas écraser les valeurs actuelles si elles sont différentes de 0
                 Object.entries(savedData).forEach(([key, value]) => {
+                    const currentValue = form.getValues(key as any);
+                    // Si la valeur actuelle est différente de 0 et que la valeur sauvegardée est 0, ne pas l'écraser
+                    if ((key === 'price' || key === 'area') && currentValue !== 0 && value === 0) {
+                        return;
+                    }
                     form.setValue(key as any, value);
                 });
             }

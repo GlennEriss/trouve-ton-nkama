@@ -18,11 +18,10 @@
 
 'use client'
 import { Input } from "../ui/input"
-import React, { useState, useEffect } from "react"
+import React from "react"
 import { AiOutlineCamera, AiOutlineCloseCircle } from "react-icons/ai";
 import Image from 'next/image'
 import { Button } from '../ui/button';
-import { RadioGroup, RadioGroupItem } from '../ui/radio-group';
 import { FormItem, FormControl, FormLabel } from '../ui/form';
 import { tags, MAX_TAGS } from '@/constantes';
 import { IconType } from 'react-icons/lib';
@@ -33,6 +32,9 @@ import { useFormContext } from 'react-hook-form';
 import { useImageDropzone } from "@/hooks/useImageDropzone";
 import { useBlobUrl } from "@/hooks/useBlobUrl";
 import { MAX_IMAGES_UPLOAD } from "@/constantes";
+import { InputApp } from "../shared/ui/InputApp";
+import TextareaApp from "../shared/ui/TextareaApp";
+import { InputNumberApp } from "../shared/ui/InputNumberApp";
 
 // Fonction utilitaire pour générer une clé unique pour les images
 const generateImageKey = (image: File | string, index: number): string => {
@@ -54,7 +56,7 @@ export const ImagesComponent = () => {
                 </span>
             </div>
             <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-2 gap-4">
-            <ImageUploader />
+                <ImageUploader />
                 {images.length > 0 && (
                     <ImageComponent key={generateImageKey(images[0], 0)} index={0} />
                 )}
@@ -74,7 +76,7 @@ export const ImageUploader = () => {
         onFiles: (files) => {
             try {
                 mediator.addImages(files);
-                        toast({
+                toast({
                     title: "Images ajoutées",
                     description: `${files.length} image(s) ajoutée(s) avec succès`,
                     variant: "default"
@@ -119,7 +121,7 @@ export const ImageUploader = () => {
                             </p>
                         </div>
                     </>
-            ) : isDragActive ? (
+                ) : isDragActive ? (
                     <>
                         <div className="w-10 h-10 md:w-12 md:h-12 bg-[#156B68]/10 dark:bg-[#156B68]/20 rounded-full flex items-center justify-center animate-pulse">
                             <AiOutlineCamera className="w-5 h-5 md:w-6 md:h-6 text-[#156B68] dark:text-[#156B68]/80" />
@@ -171,30 +173,30 @@ export const RenderImage = ({ index }: { index: number }) => {
             {image ? (
                 <div className="relative w-full h-full">
                     {/* Bouton de suppression */}
-                            <Button
-                                type='button'
-                                variant={'ghost'}
+                    <Button
+                        type='button'
+                        variant={'ghost'}
                         size="sm"
                         className="absolute top-2 right-2 z-10 opacity-0 group-hover:opacity-100 transition-opacity duration-200 bg-red-500/90 hover:bg-red-600 text-white p-1 h-8 w-8 rounded-full shadow-lg"
-                                onClick={(event) => {
-                                    event.stopPropagation();
-                                    mediator.removeImage(index);
+                        onClick={(event) => {
+                            event.stopPropagation();
+                            mediator.removeImage(index);
                         }}
                     >
                         <AiOutlineCloseCircle size={16} />
-                            </Button>
+                    </Button>
 
                     {/* Image */}
                     <div className="w-full h-full">
-                            <Image
+                        <Image
                             src={typeof image === 'string' ? image : blobUrl || ''}
                             alt={`Image ${index + 1}`}
                             fill
                             sizes="(max-width: 768px) 50vw, (max-width: 1024px) 33vw, 25vw"
                             style={{ objectFit: 'cover' }}
                             className="transition-transform duration-200 group-hover:scale-105"
-                            />
-                        </div>
+                        />
+                    </div>
 
                     {/* Overlay au survol */}
                     <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors duration-200" />
@@ -258,8 +260,8 @@ export const StatusComponent = () => {
                                 </div>
                                 <div className="flex-1">
                                     <FormLabel className="font-medium text-gray-900 dark:text-gray-100 cursor-pointer">
-                            {item.label}
-                        </FormLabel>
+                                        {item.label}
+                                    </FormLabel>
                                     <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
                                         {item.value === 'FOR_RENT'
                                             ? 'Propriété disponible à la location'
@@ -346,7 +348,7 @@ export const TagItem = ({ tag, isActive, onToggle }: TagItemProps) => {
                     "bg-gray-100 dark:bg-gray-700 group-hover:bg-[#156B68]/10": !isActive,
                 }
             )}>
-            <tag.tagIcon size={20} />
+                <tag.tagIcon size={20} />
             </div>
 
             {/* Nom du tag */}
@@ -369,3 +371,49 @@ export const TagItem = ({ tag, isActive, onToggle }: TagItemProps) => {
         </button>
     );
 };
+
+export const TitleComponent = () => {
+    const mediator = useStep1FormPropertyMediator();
+    const { watch } = useFormContext();
+    const title = watch("title");
+    return (
+        <InputApp value={title} onChange={(e) => mediator.setTitle(e.target.value)} />
+    )
+}
+
+export const DescriptionComponent = () => {
+    const mediator = useStep1FormPropertyMediator();
+    const { watch } = useFormContext();
+    const description = watch("description");
+    return (
+        <TextareaApp value={description} onChange={(e) => mediator.setDescription(e.target.value)} />
+    )
+}
+
+export const AreaComponent = () => {
+    const mediator = useStep1FormPropertyMediator();
+    const { watch } = useFormContext();
+    const area = watch("area");
+    return (
+        <InputNumberApp
+            step={10}
+            value={area}
+            onChange={(value) => mediator.setArea(Number(value))}
+        />
+    )
+}
+
+export const PriceComponent = () => {
+    const mediator = useStep1FormPropertyMediator();
+    const { watch } = useFormContext();
+    const price = watch("price");
+    return (
+        <InputNumberApp
+            step={10000}
+            value={price}
+            onChange={(value) => {
+                mediator.setPrice(Number(value));
+            }}
+        />
+    )
+}

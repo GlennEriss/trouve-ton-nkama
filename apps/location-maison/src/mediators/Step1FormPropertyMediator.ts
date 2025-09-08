@@ -7,12 +7,31 @@ export class Step1FormPropertyMediator {
     constructor(form: UseFormReturn<any>) {
         this.form = form;
     }
+    /** ===================== TITLE ===================== */
+    getTitle = (): string => this.form.getValues("title") ?? "";
+    setTitle = (title: string) => this.form.setValue("title", title);
 
+    /** ===================== DESCRIPTION ===================== */
+    getDescription = (): string => this.form.getValues("description") ?? "";
+    setDescription = (desc: string) => this.form.setValue("description", desc);
+
+    /** ===================== AREA ===================== */
+    getArea = (): number => this.form.getValues("area") ?? 0;
+    setArea = (area: number) => this.form.setValue("area", area);
+
+    /** ===================== PRICE ===================== */
+    getPrice = (): number => {
+        const value = this.form.getValues("price") ?? 0;
+        return value;
+    };
+    setPrice = (price: number) => {
+        this.form.setValue("price", price);
+    };
     /** ===================== IMAGES ===================== */
     getImages = (): (File | string)[] => {
         return this.form.getValues("images") ?? [];
     };
-    
+
     getImageAt = (index: number): File | string | undefined => {
         return this.getImages()[index];
     };
@@ -57,7 +76,7 @@ export class Step1FormPropertyMediator {
         } else if (current.length < MAX_TAGS) {
             const newTags = [...current, tag];
             this.form.setValue("tags", newTags, { shouldDirty: true, shouldTouch: true, shouldValidate: true });
-        } 
+        }
         // Force trigger pour s'assurer que le composant se re-render
         this.form.trigger("tags");
     };

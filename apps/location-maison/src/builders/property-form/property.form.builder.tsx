@@ -2,11 +2,7 @@
  * @module Builders/property-form
  */
 
-import { InputApp } from "@/components/shared/ui/InputApp";
-import { InputNumberApp } from "@/components/shared/ui/InputNumberApp";
-import TextareaApp from "@/components/shared/ui/TextareaApp";
-import { ImagesComponent, StatusComponent, TagsComponent } from "@/components/stepper/step1.components";
-import { PhoneInput } from '@/components/ui/phone-input'
+import { AreaComponent, DescriptionComponent, ImagesComponent, PriceComponent, StatusComponent, TagsComponent, TitleComponent } from "@/components/stepper/step1.components";
 import { LocationPicker } from '@/components/location';
 import { MAX_IMAGES_UPLOAD, MAX_TAGS } from "@/constantes";
 import { UseFormReturn } from 'react-hook-form';
@@ -64,28 +60,28 @@ export abstract class PropertyFormBuilder {
                 name: "title",
                 label: "Titre",
                 description: "Entrez un titre pour décrire le bien (ex: Maison familiale spacieuse).",
-                component: (field: any) => <InputApp {...field} />,
+                component: (field: any) => <TitleComponent />,
                 step: 1
             },
             {
                 name: "description",
                 label: "Description",
                 description: "Décrivez les caractéristiques principales du bien immobilier.",
-                component: (field: any) => <TextareaApp {...field} />,
+                component: (field: any) => <DescriptionComponent />,
                 step: 1
             },
             {
                 name: "area",
                 label: "Superficie",
                 description: "Indiquez la superficie du bien en mètres carrés.",
-                component: (field: any) => <InputNumberApp step={10} {...field} />,
+                component: (field: any) => <AreaComponent />,
                 step: 1
             },
             {
                 name: "price",
                 label: "Prix (FCFA)",
                 description: "Entrez le prix du bien immobilier ou le loyer attendu.",
-                component: (field: any) => <InputNumberApp step={10000} {...field} />,
+                component: (field: any) => <PriceComponent />,
                 step: 1
             },
             {
