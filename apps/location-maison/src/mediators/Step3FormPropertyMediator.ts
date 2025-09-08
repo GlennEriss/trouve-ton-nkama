@@ -53,6 +53,16 @@ export class Step3FormPropertyMediator {
   isLocExact = (): boolean => this.form.getValues("isLocExact") ?? false;
   setIsLocExact = (val: boolean) => this.form.setValue("isLocExact", val);
 
+  /** ===================== ADDITIONAL INFORMATION ===================== */
+  getAdditionalInformation = (): string =>
+    this.form.getValues("additionnalInformation") ?? "";
+  setAdditionalInformation = (info: string) =>
+    this.form.setValue("additionnalInformation", info);
+
+  /** ===================== CONTACT ===================== */
+  getContact = (): string => this.form.getValues("contact") ?? "";
+  setContact = (contact: string) => this.form.setValue("contact", contact);
+
   /** ===================== HELPERS ===================== */
   resetLocation = () => {
     this.form.setValue("address.district", "");

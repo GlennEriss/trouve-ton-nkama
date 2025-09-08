@@ -10,6 +10,7 @@ import { PhoneInput } from '@/components/ui/phone-input'
 import { LocationPicker } from '@/components/location';
 import { MAX_IMAGES_UPLOAD, MAX_TAGS } from "@/constantes";
 import { UseFormReturn } from 'react-hook-form';
+import { AdditionalInformationComponent, ContactComponent } from "@/components/stepper/step3.components";
 
 /**
  * @typedef {Object} FormElement
@@ -105,14 +106,14 @@ export abstract class PropertyFormBuilder {
                 name: "location",
                 label: "Localisation du bien",
                 description: "Recherchez votre quartier et visualisez la localisation sur la carte",
-                component: (field: any, form?: UseFormReturn<any>) => <LocationPicker form={form!} />,
+                component: (field: any, form?: UseFormReturn<any>) => <LocationPicker />,
                 step: 3
             },
             {
                 name: "additionnalInformation",
                 label: "Informations complémentaires",
                 description: "Ex: Terminus Awoungou en face de...",
-                component: (field: any) => <TextareaApp rows={3} {...field} />,
+                component: (field: any) => <AdditionalInformationComponent />,
                 step: 3
             },
             {
@@ -120,15 +121,7 @@ export abstract class PropertyFormBuilder {
                 label: "Numéro de téléphone",
                 description: "Ex: +241 06 97 00 00 00",
                 component: (field: any) => (
-                    <div className='border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900 p-2 rounded-full focus-within:border-[#1FA89B] focus-within:bg-[#ebf6f5] dark:focus-within:bg-gray-800'>
-                        <PhoneInput
-                            defaultCountry='GA'
-                            triggerClassName=' border-none shadow-none rounded-full'
-                            className='border-none shadow-none focus-visible:ring-0 rounded-full dark:text-white dark:placeholder:text-gray-500 bg-transparent'
-                            onChange={(value) => field.onChange(value)}
-                            value={field.value}
-                        />
-                    </div>
+                    <ContactComponent />
                 ),
                 step: 3
             }
