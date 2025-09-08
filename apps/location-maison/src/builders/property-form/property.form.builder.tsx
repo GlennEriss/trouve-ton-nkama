@@ -8,6 +8,7 @@ import TextareaApp from "@/components/shared/ui/TextareaApp";
 import { ImagesComponent, StatusComponent, TagsComponent } from "@/components/stepper/step1.components";
 import { PhoneInput } from '@/components/ui/phone-input'
 import { LocationPicker } from '@/components/location';
+import { MAX_IMAGES_UPLOAD } from "@/constantes";
 import { UseFormReturn } from 'react-hook-form';
 
 /**
@@ -54,8 +55,8 @@ export abstract class PropertyFormBuilder {
             {
                 name: "images",
                 label: "Sélectionnez plusieurs images",
-                description: "Ajoutez des images de bonne qualité du bien immobilier. (Max 6)",
-                component: (field: any) => <ImagesComponent field={field} />,
+                description: `Ajoutez des images de bonne qualité du bien immobilier. (Max ${MAX_IMAGES_UPLOAD})`,
+                component: (field: any) => <ImagesComponent />,
                 step: 1
             },
             {

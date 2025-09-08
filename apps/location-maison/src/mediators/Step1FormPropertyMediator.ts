@@ -1,4 +1,5 @@
 import { UseFormReturn } from "react-hook-form";
+import { MAX_IMAGES_UPLOAD } from "@/constantes";
 
 export class Step1FormPropertyMediator {
     private form: UseFormReturn<any>;
@@ -18,11 +19,11 @@ export class Step1FormPropertyMediator {
 
     addImages = (files: File[]) => {
         const current = this.getImages();
-        this.form.setValue("images", [...current, ...files].slice(0, 6)); // max 6 images
+        this.form.setValue("images", [...current, ...files].slice(0, MAX_IMAGES_UPLOAD)); // max images
     };
 
     setImages = (files: (File | string)[]) => {
-        this.form.setValue("images", files.slice(0, 6));
+        this.form.setValue("images", files.slice(0, MAX_IMAGES_UPLOAD));
     };
 
     removeImage = (index: number) => {

@@ -152,3 +152,6 @@ export const supportContact = {
   email: 'contact@tonnkama.com',
   phone: '+221776960463'
 }
+
+// Limites d'upload
+export const MAX_IMAGES_UPLOAD = 10;

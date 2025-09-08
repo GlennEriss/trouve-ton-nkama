@@ -31,6 +31,7 @@ import { useToast } from '@/hooks/use-toast';
 import { useStep1FormPropertyMediator } from '@/hooks/useStep1FormPropertyMediator';
 import { useFormContext } from 'react-hook-form';
 import { useImageDropzone } from "@/hooks/useImageDropzone";
+import { useBlobUrl } from "@/hooks/useBlobUrl";
 
 // Fonction utilitaire pour générer une clé unique pour les images
 const generateImageKey = (image: File | string, index: number): string => {
@@ -57,24 +58,21 @@ export const ImagesComponent = () => {
 export const ImageUploader = () => {
     const { toast } = useToast();
     const mediator = useStep1FormPropertyMediator();
-    const [isUploading, setIsUploading] = React.useState(false);
-    const { getInputProps, getRootProps, isDragActive } = useImageDropzone({
+    
+    const { getInputProps, getRootProps, isDragActive, isProcessing } = useImageDropzone({
         onFiles: (files) => {
             try {
-                setIsUploading(true);
-                mediator.setImages([...mediator.getImages(), ...files]);
+                mediator.addImages(files);
             } catch (e) {
                 toast({ title: "Erreur", description: "Impossible d'ajouter les images", variant: "destructive" });
-            } finally {
-                setIsUploading(false);
             }
         }
     });
 
     return (
-        <div {...getRootProps()} className={`border border-dashed h-40 md:h-[240px] flex justify-center items-center cursor-pointer ${isUploading ? 'opacity-60 pointer-events-none' : ''}`}>
-            <Input {...getInputProps()} disabled={isUploading} />
-            {isUploading ? (
+        <div {...getRootProps()} className={`border border-dashed h-40 md:h-[240px] flex justify-center items-center cursor-pointer ${isProcessing ? 'opacity-60 pointer-events-none' : ''}`}>
+            <Input {...getInputProps()} disabled={isProcessing} />
+            {isProcessing ? (
                 <svg className="animate-spin w-10 h-10 text-gray-400" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                     <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
                     <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z" />
@@ -99,6 +97,8 @@ export const ImageComponent = ({ index }: { index: number }) => {
 export const RenderImage = ({ index }: { index: number }) => {
     const mediator = useStep1FormPropertyMediator();
     const image = mediator.getImageAt(index);
+    const blobUrl = useBlobUrl(typeof image === "object" ? image : null);
+
     return (
         <React.Fragment>
             {
@@ -118,12 +118,12 @@ export const RenderImage = ({ index }: { index: number }) => {
                         </div>
                         <div className='h-[150px] w-full md:h-[230px]'>
                             <Image
-                                src={typeof image === 'string' ? image : URL.createObjectURL(image)}
+                                src={typeof image === 'string' ? image : blobUrl || ''}
                                 alt="Selected Image"
                                 sizes="100vw"
                                 width={0}
                                 height={0}
-                                objectFit='fill'
+                                style={{ objectFit: 'fill' }}
                                 className='w-full h-full'
                             />
                         </div>
