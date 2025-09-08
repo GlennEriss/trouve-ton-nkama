@@ -32,6 +32,7 @@ import { useStep1FormPropertyMediator } from '@/hooks/useStep1FormPropertyMediat
 import { useFormContext } from 'react-hook-form';
 import { useImageDropzone } from "@/hooks/useImageDropzone";
 import { useBlobUrl } from "@/hooks/useBlobUrl";
+import { MAX_IMAGES_UPLOAD } from "@/constantes";
 
 // Fonction utilitaire pour générer une clé unique pour les images
 const generateImageKey = (image: File | string, index: number): string => {
@@ -46,11 +47,21 @@ export const ImagesComponent = () => {
     const { watch } = useFormContext();
     const images = watch("images") ?? [];
     return (
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-2 gap-3">
+        <div className="space-y-4">
+            <div className="flex items-center justify-between">
+                <span className="text-sm text-gray-500 dark:text-gray-400">
+                    {images.length}/{MAX_IMAGES_UPLOAD} images
+                </span>
+            </div>
+            <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-2 gap-4">
             <ImageUploader />
-            {images.map((image: File | string, index: number) => (
-                <ImageComponent key={generateImageKey(image, index)} index={index} />
-            ))}
+                {images.length > 0 && (
+                    <ImageComponent key={generateImageKey(images[0], 0)} index={0} />
+                )}
+                {images.slice(1).map((image: File | string, index: number) => (
+                    <ImageComponent key={generateImageKey(image, index + 1)} index={index + 1} />
+                ))}
+            </div>
         </div>
     )
 }
@@ -63,6 +74,11 @@ export const ImageUploader = () => {
         onFiles: (files) => {
             try {
                 mediator.addImages(files);
+                        toast({
+                    title: "Images ajoutées", 
+                    description: `${files.length} image(s) ajoutée(s) avec succès`, 
+                    variant: "default" 
+                });
             } catch (e) {
                 toast({ title: "Erreur", description: "Impossible d'ajouter les images", variant: "destructive" });
             }
@@ -70,25 +86,76 @@ export const ImageUploader = () => {
     });
 
     return (
-        <div {...getRootProps()} className={`border border-dashed h-40 md:h-[240px] flex justify-center items-center cursor-pointer ${isProcessing ? 'opacity-60 pointer-events-none' : ''}`}>
-            <Input {...getInputProps()} disabled={isProcessing} />
-            {isProcessing ? (
-                <svg className="animate-spin w-10 h-10 text-gray-400" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z" />
-                </svg>
-            ) : isDragActive ? (
-                <p className="text-gray-500">Déposez vos images ici...</p>
-            ) : (
-                <AiOutlineCamera size={50} className='text-gray-500' />
+        <div 
+            {...getRootProps()} 
+            className={clsx(
+                "group relative border-2 border-dashed rounded-xl transition-all duration-300 ease-in-out",
+                "hover:border-[#156B68] hover:bg-[#156B68]/5 dark:hover:bg-[#156B68]/10",
+                "focus-within:ring-2 focus-within:ring-[#156B68] focus-within:ring-offset-2",
+                "min-h-[160px] md:min-h-[180px] lg:min-h-[200px] flex flex-col justify-center items-center cursor-pointer",
+                "bg-gray-50/50 dark:bg-gray-800/50",
+                {
+                    "border-[#156B68] bg-[#156B68]/5 dark:bg-[#156B68]/10": isDragActive,
+                    "opacity-60 pointer-events-none": isProcessing,
+                    "border-gray-300 dark:border-gray-600": !isDragActive && !isProcessing
+                }
             )}
+        >
+            <Input {...getInputProps()} disabled={isProcessing} className="sr-only" />
+            
+            <div className="flex flex-col items-center space-y-3 p-4 md:p-6">
+                {isProcessing ? (
+                    <>
+                        <div className="relative">
+                            <div className="w-10 h-10 md:w-12 md:h-12 border-4 border-[#156B68]/20 border-t-[#156B68] rounded-full animate-spin"></div>
+                            <AiOutlineCamera className="absolute inset-0 m-auto w-5 h-5 md:w-6 md:h-6 text-[#156B68]" />
+                        </div>
+                        <div className="text-center">
+                            <p className="text-sm font-medium text-[#156B68] dark:text-[#156B68]/80">
+                                Traitement en cours...
+                            </p>
+                            <p className="text-xs text-[#156B68]/70 dark:text-[#156B68]/60 mt-1">
+                                Compression des images
+                            </p>
+                        </div>
+                    </>
+                ) : isDragActive ? (
+                    <>
+                        <div className="w-10 h-10 md:w-12 md:h-12 bg-[#156B68]/10 dark:bg-[#156B68]/20 rounded-full flex items-center justify-center animate-pulse">
+                            <AiOutlineCamera className="w-5 h-5 md:w-6 md:h-6 text-[#156B68] dark:text-[#156B68]/80" />
+                        </div>
+                        <div className="text-center">
+                            <p className="text-sm font-medium text-[#156B68] dark:text-[#156B68]/80">
+                                Déposez vos images ici
+                            </p>
+                            <p className="text-xs text-[#156B68]/70 dark:text-[#156B68]/60 mt-1">
+                                Relâchez pour ajouter
+                            </p>
+                        </div>
+                    </>
+                ) : (
+                    <>
+                        <div className="w-10 h-10 md:w-12 md:h-12 bg-gray-100 dark:bg-gray-700 rounded-full flex items-center justify-center group-hover:bg-[#156B68]/10 dark:group-hover:bg-[#156B68]/20 group-hover:scale-110 transition-all duration-200">
+                            <AiOutlineCamera className="w-5 h-5 md:w-6 md:h-6 text-gray-500 dark:text-gray-400 group-hover:text-[#156B68] dark:group-hover:text-[#156B68]/80 transition-colors" />
+                        </div>
+                        <div className="text-center">
+                            <p className="hidden lg:block text-xs md:text-sm font-medium text-gray-700 dark:text-gray-300 group-hover:text-[#156B68] dark:group-hover:text-[#156B68]/80 transition-colors">
+                                Ajouter des images
+                            </p>
+                            <p className="text-xs text-gray-500 dark:text-gray-400 mt-1 group-hover:text-[#156B68]/70 dark:group-hover:text-[#156B68]/60 transition-colors">
+                                Cliquez ou glissez-déposez
+                            </p>
+                        </div>
+                    </>
+                )}
+            </div>
         </div>
     );
 };
 
 export const ImageComponent = ({ index }: { index: number }) => {
     return (
-        <div className='border border-dashed h-40 md:h-[240px] flex justify-center items-center'>
+        <div className="group relative aspect-square rounded-xl overflow-hidden bg-gray-100 dark:bg-gray-800 shadow-sm hover:shadow-md transition-shadow duration-200">
             <RenderImage index={index} />
         </div>
     );
@@ -101,39 +168,48 @@ export const RenderImage = ({ index }: { index: number }) => {
 
     return (
         <React.Fragment>
-            {
-                image ? (
-                    <div className='relative'>
-                        <div className="absolute flex justify-end w-full" >
+            {image ? (
+                <div className="relative w-full h-full">
+                    {/* Bouton de suppression */}
                             <Button
                                 type='button'
                                 variant={'ghost'}
-                                className='p-1'
+                        size="sm"
+                        className="absolute top-2 right-2 z-10 opacity-0 group-hover:opacity-100 transition-opacity duration-200 bg-red-500/90 hover:bg-red-600 text-white p-1 h-8 w-8 rounded-full shadow-lg"
                                 onClick={(event) => {
                                     event.stopPropagation();
                                     mediator.removeImage(index);
-                                }}>
-                                <AiOutlineCloseCircle color='red' size={25} />
+                        }}
+                    >
+                        <AiOutlineCloseCircle size={16} />
                             </Button>
-                        </div>
-                        <div className='h-[150px] w-full md:h-[230px]'>
+                    
+                    {/* Image */}
+                    <div className="w-full h-full">
                             <Image
-                                src={typeof image === 'string' ? image : blobUrl || ''}
-                                alt="Selected Image"
-                                sizes="100vw"
-                                width={0}
-                                height={0}
-                                style={{ objectFit: 'fill' }}
-                                className='w-full h-full'
+                            src={typeof image === 'string' ? image : blobUrl || ''}
+                            alt={`Image ${index + 1}`}
+                            fill
+                            sizes="(max-width: 768px) 50vw, (max-width: 1024px) 33vw, 25vw"
+                            style={{ objectFit: 'cover' }}
+                            className="transition-transform duration-200 group-hover:scale-105"
                             />
                         </div>
 
+                    {/* Overlay au survol */}
+                    <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors duration-200" />
+                    
+                    {/* Numéro de l'image */}
+                    <div className="absolute bottom-2 left-2 bg-black/70 text-white text-xs px-2 py-1 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+                        {index + 1}
                     </div>
-
-                ) : (
-                    <AiOutlineCamera size={50} className='text-gray-500' />
-                )
-            }
+                </div>
+            ) : (
+                <div className="w-full h-full flex flex-col items-center justify-center text-gray-400 dark:text-gray-500">
+                    <AiOutlineCamera size={32} />
+                    <span className="text-xs mt-2">Image manquante</span>
+                </div>
+            )}
         </React.Fragment>
     )
 }
