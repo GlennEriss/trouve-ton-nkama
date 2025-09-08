@@ -1,13 +1,11 @@
 'use client'
 
-import React, { useState, useCallback, useEffect } from 'react'
+import React from 'react'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { Textarea } from '@/components/ui/textarea'
 import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { 
   MapPin, 
   Home, 
@@ -21,8 +19,10 @@ import {
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import dynamic from 'next/dynamic'
-import { UseFormReturn } from 'react-hook-form'
-import { useToast } from '@/hooks/use-toast'
+import { usePhotonSearch } from '@/hooks/usePhotonSearch'
+import { useFormContext } from 'react-hook-form'
+import { PhotonResult } from '@/models/PhotonResult'
+import { useLocationHandlers } from '@/hooks/useLocationHandlers'
 
 // Import dynamique de la carte pour éviter les erreurs SSR
 const LocationMap = dynamic(() => import('./LocationMap'), {
@@ -34,184 +34,27 @@ const LocationMap = dynamic(() => import('./LocationMap'), {
   )
 })
 
-interface LocationPickerProps {
-  form: UseFormReturn<any>
-}
-
-interface PhotonResult {
-  properties: {
-    name: string
-    city?: string
-    state?: string
-    country: string
-    district?: string
-    suburb?: string
-    neighbourhood?: string
-    osm_key: string
-    osm_value: string
-    type?: string
-  }
-  geometry: {
-    coordinates: [number, number]
-  }
-}
 
 
 
-// Fonction pour debounce
-const useDebounce = (value: string, delay: number) => {
-  const [debouncedValue, setDebouncedValue] = useState(value)
+export default function LocationPicker() {
+  const { register, formState: { errors } } = useFormContext<any>()
 
-  useEffect(() => {
-    const handler = setTimeout(() => {
-      setDebouncedValue(value)
-    }, delay)
+  // Handlers et états de logique métier centralisés
+  const { 
+    handleLocationSelect, 
+    handleGPSLocation,
+    selectedLocation,
+    districtQuery,
+    setDistrictQuery,
+    mapCoordinates
+  } = useLocationHandlers()
 
-    return () => {
-      clearTimeout(handler)
-    }
-  }, [value, delay])
-
-  return debouncedValue
-}
-
-// Fonction pour détecter le navigateur et donner les instructions appropriées
-const getBrowserInstructions = (): string[] => {
-  const userAgent = navigator.userAgent;
+  // Recherche Photon via hook
+  const { results, isLoading } = usePhotonSearch(districtQuery, 500)
   
-  if (userAgent.includes('Chrome') || userAgent.includes('Edge')) {
-    return [
-      'Cliquez sur l\'icône 🔒 ou 📍 dans la barre d\'adresse',
-      'Sélectionnez "Autoriser" pour la localisation',
-      'Ou allez dans Paramètres > Confidentialité et sécurité > Autorisations de site'
-    ];
-  } else if (userAgent.includes('Firefox')) {
-    return [
-      'Cliquez sur l\'icône 📍 dans la barre d\'adresse',
-      'Sélectionnez "Autoriser"',
-      'Ou allez dans Préférences > Confidentialité et sécurité > Permissions > Localisation'
-    ];
-  } else if (userAgent.includes('Safari')) {
-    return [
-      'Allez dans Préférences > Confidentialité > Services de localisation',
-      'Activez la localisation pour ce site',
-      'Ou cliquez sur Safari > Préférences > Sites web > Localisation'
-    ];
-  } else {
-    return [
-      'Recherchez les paramètres de confidentialité de votre navigateur',
-      'Activez l\'autorisation de localisation pour ce site',
-      'Ou cliquez sur l\'icône de localisation dans la barre d\'adresse'
-    ];
-  }
-};
-
-export default function LocationPicker({ form }: LocationPickerProps) {
-  const [districtQuery, setDistrictQuery] = useState('')
-  const [searchResults, setSearchResults] = useState<PhotonResult[]>([])
-  const [isSearching, setIsSearching] = useState(false)
-  const [showResults, setShowResults] = useState(false)
-  const [selectedLocation, setSelectedLocation] = useState<PhotonResult | null>(null)
-  const [mapCoordinates, setMapCoordinates] = useState<[number, number] | null>(null)
-
-  const { register, watch, setValue, formState: { errors }, clearErrors } = form
-  const { toast } = useToast()
-
-  // Watch pour les animations
-  const watchedFields = watch([
-    'address.district',
-    'address.city',
-    'address.province'
-  ])
-
-  // Debounce la recherche
-  const debouncedQuery = useDebounce(districtQuery, 500)
-
-  // Initialiser les coordonnées principales et isLocExact au chargement
-  useEffect(() => {
-    setValue('longitude', 0)
-    setValue('latitude', 0)
-    setValue('isLocExact', false)
-  }, [setValue])
-
-  // Fonction pour rechercher avec Photon API
-  const searchWithPhoton = useCallback(async (query: string) => {
-    if (!query || query.length < 2) {
-      setSearchResults([])
-      return
-    }
-
-    setIsSearching(true)
-    try {
-      // Bounding box du Gabon: [ouest, sud, est, nord]
-      const gabonBbox = '8.5,-4.0,14.8,2.3'
-      
-      const response = await fetch(
-        `https://photon.komoot.io/api?q=${encodeURIComponent(query)}&bbox=${gabonBbox}&limit=8&lang=fr`
-      )
-      
-      if (response.ok) {
-        const data = await response.json()
-        // Filtrer pour ne garder que les résultats du Gabon
-        const gabonResults = data.features.filter((result: PhotonResult) => 
-          result.properties.country === 'Gabon' || result.properties.country === 'GA'
-        )
-        setSearchResults(gabonResults)
-      }
-    } catch (error) {
-      console.error('Erreur lors de la recherche Photon:', error)
-      setSearchResults([])
-    } finally {
-      setIsSearching(false)
-    }
-  }, [])
-
-  // Effet pour déclencher la recherche
-  useEffect(() => {
-    if (debouncedQuery) {
-      searchWithPhoton(debouncedQuery)
-      setShowResults(true)
-    } else {
-      setSearchResults([])
-      setShowResults(false)
-    }
-  }, [debouncedQuery, searchWithPhoton])
-
-  // Fonction pour sélectionner un résultat
-  const handleLocationSelect = (result: PhotonResult) => {
-    const { properties, geometry } = result
-    
-    setSelectedLocation(result)
-    setDistrictQuery(properties.name)
-    setShowResults(false)
-    
-    // Mettre à jour les coordonnées de la carte
-    setMapCoordinates(geometry.coordinates)
-
-    // Remplir automatiquement les champs disponibles
-    setValue('address.district', properties.name)
-    setValue('address.city', properties.city || properties.suburb || '')
-    setValue('address.province', properties.state || '')
-    
-    // Coordonées principales du schéma - Utiliser les coordonnées du quartier sélectionné
-    const [lon, lat] = geometry.coordinates
-    setValue('longitude', lon)
-    setValue('latitude', lat)
-    
-    // Marquer comme localisation non exacte
-    setValue('isLocExact', false)
-     // Coordonées par niveau
-     setValue('streetLon', lon)
-     setValue('streetLat', lat)
-     if (properties.city || properties.suburb) {
-       setValue('cityLon', lon)
-       setValue('cityLat', lat)
-     }
-     if (properties.state) {
-       setValue('provinceLon', lon)
-       setValue('provinceLat', lat)
-     }
-  }
+  // State dérivé - fermer les résultats si une location est sélectionnée
+  const showResults = !!districtQuery && results.length > 0 && !selectedLocation
 
   // Fonction pour formater l'affichage des résultats
   const formatResultDisplay = (result: PhotonResult) => {
@@ -223,148 +66,6 @@ export default function LocationPicker({ form }: LocationPickerProps) {
     ].filter(Boolean)
     
     return parts.join(', ')
-  }
-
-  // Fonction pour la géolocalisation GPS avec remplissage automatique
-  const handleGPSLocation = async () => {
-    if (navigator.geolocation) {
-      try {
-        const position = await new Promise<GeolocationPosition>((resolve, reject) => {
-          navigator.geolocation.getCurrentPosition(resolve, reject, {
-            enableHighAccuracy: true,
-            timeout: 10000,
-            maximumAge: 60000
-          })
-        })
-
-        const { latitude, longitude } = position.coords
-        setMapCoordinates([longitude, latitude])
-        console.log('GPS Location:', { latitude, longitude })
-
-        // Remplir automatiquement les champs avec la géolocalisation
-        try {
-          // Utiliser Photon pour obtenir les informations de localisation
-          const response = await fetch(
-            `https://photon.komoot.io/reverse?lon=${longitude}&lat=${latitude}&limit=1&lang=fr`
-          )
-          
-          if (response.ok) {
-            const data = await response.json()
-            if (data.features && data.features.length > 0) {
-              const result = data.features[0]
-              const { properties } = result
-              
-              // Vérifier que c'est bien au Gabon
-              if (properties.country === 'Gabon' || properties.country === 'GA') {
-                setSelectedLocation(result)
-                setDistrictQuery(properties.name)
-                
-                                 // Remplir automatiquement les champs
-                 setValue('address.district', properties.name)
-                 setValue('address.city', properties.city || properties.suburb || '')
-                 setValue('address.province', properties.state || '')
-                                   // Renseigner les coordonnées principales du schéma
-                  setValue('longitude', longitude)
-                  setValue('latitude', latitude)
-                  
-                  // Marquer comme localisation exacte
-                  setValue('isLocExact', true)
-                  
-                  // Renseigner les coordonnées par niveau via GPS
-                  setValue('streetLon', longitude)
-                  setValue('streetLat', latitude)
-                  setValue('cityLon', longitude)
-                  setValue('cityLat', latitude)
-                  setValue('provinceLon', longitude)
-                  setValue('provinceLat', latitude)
-                
-                console.log('Localisation automatique:', properties)
-                
-                toast({
-                  duration: 5000,
-                  title: 'Localisation détectée',
-                  description: 'Votre position GPS a été utilisée pour remplir automatiquement les champs.',
-                  variant: 'success',
-                })
-              } else {
-                toast({
-                  duration: 5000,
-                  title: 'Position hors du Gabon',
-                  description: 'Votre position GPS ne semble pas être au Gabon. Veuillez utiliser la recherche manuelle.',
-                  variant: 'destructive',
-                })
-              }
-            }
-          }
-        } catch (error) {
-          console.error('Erreur lors de la récupération des informations de localisation:', error)
-          toast({
-            duration: 5000,
-            title: 'Erreur de localisation',
-            description: 'Impossible de récupérer les informations de localisation. Veuillez utiliser la recherche manuelle.',
-            variant: 'destructive',
-          })
-        }
-      } catch (error: any) {
-        console.error('Erreur GPS:', error)
-        
-        // Gérer les différents types d'erreurs de géolocalisation
-        if (error.code === 1) {
-          // Permission denied - L'utilisateur a refusé l'autorisation
-          const browserInstructions = getBrowserInstructions();
-          toast({
-            duration: 10000,
-            title: 'Autorisation de géolocalisation refusée',
-            description: (
-              <div className="space-y-2">
-                <p>Pour utiliser la localisation exacte, vous devez autoriser l'accès à votre position.</p>
-                <div className="bg-blue-50 p-3 rounded-lg border border-blue-200">
-                  <p className="text-sm font-medium text-blue-800 mb-1">Instructions :</p>
-                  <div className="text-xs text-blue-700 space-y-1">
-                    {browserInstructions.map((instruction: string, index: number) => (
-                      <p key={index}>• {instruction}</p>
-                    ))}
-                  </div>
-                </div>
-                <p className="text-xs text-gray-600">Après avoir réactivé l'autorisation, cliquez à nouveau sur le bouton GPS.</p>
-              </div>
-            ),
-            variant: 'destructive',
-          })
-        } else if (error.code === 2) {
-          // Position unavailable - Position non disponible
-          toast({
-            duration: 5000,
-            title: 'Position non disponible',
-            description: 'Votre position GPS n\'est pas disponible actuellement. Veuillez utiliser la recherche manuelle.',
-            variant: 'destructive',
-          })
-        } else if (error.code === 3) {
-          // Timeout - Délai d'attente dépassé
-          toast({
-            duration: 5000,
-            title: 'Délai d\'attente dépassé',
-            description: 'La récupération de votre position GPS a pris trop de temps. Veuillez réessayer ou utiliser la recherche manuelle.',
-            variant: 'destructive',
-          })
-        } else {
-          // Erreur générique
-          toast({
-            duration: 5000,
-            title: 'Erreur GPS',
-            description: 'Impossible d\'obtenir votre position GPS. Veuillez utiliser la recherche manuelle.',
-            variant: 'destructive',
-          })
-        }
-      }
-    } else {
-      toast({
-        duration: 5000,
-        title: 'Géolocalisation non supportée',
-        description: 'La géolocalisation n\'est pas supportée par votre navigateur. Veuillez utiliser la recherche manuelle.',
-        variant: 'destructive',
-      })
-    }
   }
 
   return (
@@ -459,21 +160,21 @@ export default function LocationPicker({ form }: LocationPickerProps) {
               />
               
               {/* Loading spinner */}
-              {isSearching && (
+              {isLoading && (
                 <Loader2 className="absolute right-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-[#CBB171] animate-spin z-10" />
               )}
               
               {/* Success checkmark */}
-              {selectedLocation && !isSearching && (
+              {selectedLocation && !isLoading && (
                 <CheckCircle className="absolute right-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-[#CBB171] z-10" />
               )}
 
               {/* Résultats de recherche */}
-              {showResults && searchResults.length > 0 && (
+              {showResults && results.length > 0 && (
                 <Card className="absolute top-full left-0 right-0 mt-1 z-20 border border-[#CBB171]/30 shadow-lg w-full max-h-64 overflow-y-auto">
                   <CardContent className="p-2">
                     <div className="space-y-1">
-                      {searchResults.map((result, index) => (
+                      {results.map((result: PhotonResult, index: number) => (
                         <Button
                           key={index}
                           variant="ghost"
@@ -582,10 +283,6 @@ export default function LocationPicker({ form }: LocationPickerProps) {
               />
             </div>
           </div>
-
-          
-
-          
         </div>
       </div>
     </div>

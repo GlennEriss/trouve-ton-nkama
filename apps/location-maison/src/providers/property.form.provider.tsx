@@ -19,7 +19,6 @@ import useLastpath from "@/hooks/use-lastpath"
 import queryKeys from "@/constantes/react-query-keys"
 import { routes } from "@/constantes/routes"
 import { updateOrCreateSuggestion } from "@/db/suggestion.db"
-import { useStep1FormPropertyMediatorWithForm } from "@/hooks/useStep1FormPropertyMediator"
 
 type PropertyFormComponent = {
     form: any,
@@ -158,6 +157,15 @@ export const PropertyFormComponentProvider = ({ children, isUpdate, propertyToUp
             images: [],
             tags: [],
             status: 'FOR_RENT',
+            longitude: 0,
+            latitude: 0,
+            isLocExact: false,
+            provinceLon: null,
+            provinceLat: null,
+            cityLon: null,
+            cityLat: null,
+            streetLon: null,
+            streetLat: null,
         },
     })
     //Mutation
