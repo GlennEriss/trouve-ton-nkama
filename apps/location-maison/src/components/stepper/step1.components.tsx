@@ -24,7 +24,7 @@ import Image from 'next/image'
 import { Button } from '../ui/button';
 import { RadioGroup, RadioGroupItem } from '../ui/radio-group';
 import { FormItem, FormControl, FormLabel } from '../ui/form';
-import { tags } from '@/constantes';
+import { tags, MAX_TAGS } from '@/constantes';
 import { IconType } from 'react-icons/lib';
 import clsx from 'clsx';
 import { useToast } from '@/hooks/use-toast';
@@ -229,7 +229,7 @@ export const StatusComponent = () => {
     const mediator = useStep1FormPropertyMediator();
     const { watch } = useFormContext();
     const currentStatus = watch("status");
-    
+
     return (
         <div className="space-y-4">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -245,16 +245,13 @@ export const StatusComponent = () => {
                                         "border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800": currentStatus !== item.value
                                     }
                                 )}
-                                onClick={() => {
-                                    console.log('Card clicked:', item.value);
-                                    mediator.setStatus(item.value);
-                                }}
+                                onClick={() => mediator.setStatus(item.value)}
                             >
                                 <div className="w-4 h-4 rounded-full border-2 flex items-center justify-center"
-                                     style={{
-                                         borderColor: currentStatus === item.value ? '#156B68' : '#d1d5db',
-                                         backgroundColor: currentStatus === item.value ? '#156B68' : 'transparent'
-                                     }}>
+                                    style={{
+                                        borderColor: currentStatus === item.value ? '#156B68' : '#d1d5db',
+                                        backgroundColor: currentStatus === item.value ? '#156B68' : 'transparent'
+                                    }}>
                                     {currentStatus === item.value && (
                                         <div className="w-2 h-2 bg-white rounded-full"></div>
                                     )}
@@ -264,8 +261,8 @@ export const StatusComponent = () => {
                                         {item.label}
                                     </FormLabel>
                                     <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
-                                        {item.value === 'FOR_RENT' 
-                                            ? 'Propriété disponible à la location' 
+                                        {item.value === 'FOR_RENT'
+                                            ? 'Propriété disponible à la location'
                                             : 'Propriété disponible à la vente'
                                         }
                                     </p>
@@ -285,49 +282,90 @@ export const StatusComponent = () => {
 }
 
 //Tags
-export const TagsComponent = ({ field }: { field: any }) => {
+export const TagsComponent = () => {
+    const mediator = useStep1FormPropertyMediator();
+    const { watch } = useFormContext();
+    const selectedTags = watch("tags") ?? [];
+
     return (
-        <div className='grid grid-cols-3 gap-2'>
-            {
-                [...tags].sort((a, b) => a.tagName.localeCompare(b.tagName, 'fr')).map((tag) => (
-                    <TagItem key={tag.tagName} tag={tag} field={field} />
-                ))
-            }
+        <div className="space-y-4">
+            <div className="flex items-center justify-between">
+                <span className="text-sm text-gray-500 dark:text-gray-400">
+                    {selectedTags.length}/{MAX_TAGS} sélectionnés
+                </span>
+            </div>
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
+                {[...tags]
+                    .sort((a, b) => a.tagName.localeCompare(b.tagName, "fr"))
+                    .map((tag) => (
+                        <TagItem
+                            key={tag.tagName}
+                            tag={tag}
+                            isActive={selectedTags.includes(tag.tagName)}
+                            onToggle={() => {
+                                console.log('Tag clicked:', tag.tagName);
+                                console.log('Current selectedTags:', selectedTags);
+                                mediator.toggleTag(tag.tagName);
+                            }}
+                        />
+                    ))}
+            </div>
         </div>
-    )
-}
+    );
+};
 
-export const TagItem = ({ tag, field }: { tag: { tagName: string, tagIcon: IconType }, field: any }) => {
-    const [isActived, setIsActived] = useState(false)
+type TagItemProps = {
+    tag: { tagName: string; tagIcon: IconType };
+    isActive: boolean;
+    onToggle: () => void;
+};
 
-    useEffect(() => {
-        setIsActived(field.value?.includes(tag.tagName) ?? false)
-    }, [field.value, tag.tagName])
-
-    const handleSelectIcon = () => {
-        const active = !isActived
-        if (active) {
-            if (field.value?.length < 6) {
-                field.onChange([...(field.value ?? []), tag.tagName])
-            }
-        } else {
-            field.onChange((field.value ?? []).filter((item: string) => item !== tag.tagName))
-        }
-    }
-
+export const TagItem = ({ tag, isActive, onToggle }: TagItemProps) => {
     return (
         <button
             type="button"
-            className={clsx({
-                "flex items-center gap-2 cursor-pointer text-gray-500 border-none bg-transparent p-2 rounded-md hover:bg-gray-100 dark:hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-all duration-200": !isActived,
-                "flex items-center gap-2 text-[#e7c873] cursor-pointer border-none bg-transparent p-2 rounded-md hover:bg-gray-100 dark:hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:ring-offset-2 transition-all duration-200": isActived,
-            })}
-            onClick={handleSelectIcon}
-            aria-label={`${isActived ? 'Désélectionner' : 'Sélectionner'} le tag ${tag.tagName}`}
-            aria-pressed={isActived}
+            className={clsx(
+                "relative flex flex-col items-center gap-2 p-3 rounded-xl border-2 transition-all duration-200 cursor-pointer group",
+                "hover:scale-105 hover:shadow-md focus:outline-none focus:ring-2 focus:ring-offset-2",
+                {
+                    // État actif
+                    "border-[#156B68] bg-[#156B68]/10 text-[#156B68] shadow-sm": isActive,
+                    // État inactif
+                    "border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-400 hover:border-[#156B68]/50 hover:bg-[#156B68]/5": !isActive,
+                }
+            )}
+            onClick={onToggle}
+            aria-label={`${isActive ? "Désélectionner" : "Sélectionner"} le tag ${tag.tagName}`}
+            aria-pressed={isActive}
         >
-            <tag.tagIcon size={20} />
-            <h2 className='text-[0.6rem] xl:text-lg'>{tag.tagName}</h2>
+            {/* Icône */}
+            <div className={clsx(
+                "p-2 rounded-lg transition-colors duration-200",
+                {
+                    "bg-[#156B68]/20": isActive,
+                    "bg-gray-100 dark:bg-gray-700 group-hover:bg-[#156B68]/10": !isActive,
+                }
+            )}>
+                <tag.tagIcon size={20} />
+            </div>
+
+            {/* Nom du tag */}
+            <span className={clsx(
+                "text-xs font-medium text-center leading-tight",
+                {
+                    "text-[#156B68]": isActive,
+                    "text-gray-600 dark:text-gray-400 group-hover:text-[#156B68]": !isActive,
+                }
+            )}>
+                {tag.tagName}
+            </span>
+
+            {/* Indicateur de sélection */}
+            {isActive && (
+                <div className="absolute -top-1 -right-1 w-4 h-4 bg-[#156B68] rounded-full flex items-center justify-center">
+                    <div className="w-2 h-2 bg-white rounded-full"></div>
+                </div>
+            )}
         </button>
-    )
-}
+    );
+};

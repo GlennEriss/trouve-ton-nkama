@@ -1,5 +1,5 @@
 import { UseFormReturn } from "react-hook-form";
-import { MAX_IMAGES_UPLOAD } from "@/constantes";
+import { MAX_IMAGES_UPLOAD, MAX_TAGS } from "@/constantes";
 
 export class Step1FormPropertyMediator {
     private form: UseFormReturn<any>;
@@ -52,10 +52,14 @@ export class Step1FormPropertyMediator {
     toggleTag = (tag: string) => {
         const current = this.getTags();
         if (current.includes(tag)) {
-            this.form.setValue("tags", current.filter((t) => t !== tag));
-        } else if (current.length < 6) {
-            this.form.setValue("tags", [...current, tag]);
-        }
+            const newTags = current.filter((t) => t !== tag);
+            this.form.setValue("tags", newTags, { shouldDirty: true, shouldTouch: true, shouldValidate: true });
+        } else if (current.length < MAX_TAGS) {
+            const newTags = [...current, tag];
+            this.form.setValue("tags", newTags, { shouldDirty: true, shouldTouch: true, shouldValidate: true });
+        } 
+        // Force trigger pour s'assurer que le composant se re-render
+        this.form.trigger("tags");
     };
 
     clearTags = () => {

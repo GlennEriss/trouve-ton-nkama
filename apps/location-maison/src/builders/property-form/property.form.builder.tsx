@@ -8,7 +8,7 @@ import TextareaApp from "@/components/shared/ui/TextareaApp";
 import { ImagesComponent, StatusComponent, TagsComponent } from "@/components/stepper/step1.components";
 import { PhoneInput } from '@/components/ui/phone-input'
 import { LocationPicker } from '@/components/location';
-import { MAX_IMAGES_UPLOAD } from "@/constantes";
+import { MAX_IMAGES_UPLOAD, MAX_TAGS } from "@/constantes";
 import { UseFormReturn } from 'react-hook-form';
 
 /**
@@ -91,14 +91,14 @@ export abstract class PropertyFormBuilder {
                 name: "status",
                 label: "Statut",
                 description: "Choisissez si le bien est à vendre ou à louer.",
-                component: (field: any) => <StatusComponent field={field} />,
+                component: (field: any) => <StatusComponent />,
                 step: 1
             },
             {
                 name: "tags",
                 label: "Tags",
-                description: "Ajoutez des tags pour décrire le bien (ex: moderne, familial).",
-                component: (field: any) => <TagsComponent field={field} />,
+                description: `Ajoutez des tags pour décrire le bien (ex: moderne, familial). (Max ${MAX_TAGS})`,
+                component: (field: any) => <TagsComponent />,
                 step: 1
             },
             {

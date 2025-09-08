@@ -156,6 +156,8 @@ export const PropertyFormComponentProvider = ({ children, isUpdate, propertyToUp
         defaultValues: {
             ...property,
             images: [],
+            tags: [],
+            status: 'FOR_RENT',
         },
     })
     //Mutation

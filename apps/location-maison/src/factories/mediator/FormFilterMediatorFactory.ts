@@ -4,26 +4,11 @@ import { FormFilterSchemaType } from "@/models/schema";
 import { FormFilterSearchMediator } from "@/mediators/FormFilterSearchMediator";
 
 export class FormFilterMediatorFactory {
-  private static instance: FormFilterSearchMediator | null = null;
-
+  // Plus de singleton: renvoie une nouvelle instance liée aux dépendances courantes
   static create(
     form: UseFormReturn<FormFilterSchemaType>,
     algolia: ConstructorParameters<typeof FormFilterSearchMediator>[1]
   ): FormFilterSearchMediator {
-    if (!FormFilterMediatorFactory.instance || !form) {
-      FormFilterMediatorFactory.instance = new FormFilterSearchMediator(form, algolia);
-    }
-    return FormFilterMediatorFactory.instance;
-  }
-
-  static getInstance(): FormFilterSearchMediator {
-    if (!FormFilterMediatorFactory.instance) {
-      throw new Error("FormFilterMediator non créé. Utilise FormFilterMediatorFactory.create d'abord.");
-    }
-    return FormFilterMediatorFactory.instance;
-  }
-
-  static reset() {
-    FormFilterMediatorFactory.instance = null;
+    return new FormFilterSearchMediator(form, algolia);
   }
 }

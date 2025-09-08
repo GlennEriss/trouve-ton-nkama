@@ -2,8 +2,11 @@
  * @module constantes
  */
 
-import { FaBriefcase, FaHome, FaHeart, FaBuilding, FaUsers, FaCouch, FaTree, FaMountain, FaSwimmingPool, FaDog, FaShoppingCart, FaBus, FaCar, FaWifi, FaShieldAlt, FaBicycle, FaRunning, FaChild, FaWheelchair, FaGraduationCap, FaUmbrellaBeach, FaPeace, FaColumns, FaWarehouse, FaRegClock } from 'react-icons/fa';
+import { FaBriefcase, FaHome, FaHeart, FaBuilding, FaUsers, FaCouch, FaTree, FaMountain, FaSwimmingPool, FaDog, FaShoppingCart, FaBus, FaCar, FaWifi, FaShieldAlt, FaBicycle, FaRunning, FaChild, FaWheelchair, FaGraduationCap, FaUmbrellaBeach, FaPeace, FaColumns, FaWarehouse, FaRegClock, FaUserTie, FaStore } from 'react-icons/fa';
 
+// Constants
+export const MAX_IMAGES_UPLOAD = 10;
+export const MAX_TAGS = 6;
 
 export const statusOptions = [
   {
@@ -141,6 +144,14 @@ export const tags = [
     tagName: 'Court séjour',
     tagIcon: FaRegClock, // Icone pour court séjour
   },
+  {
+    tagName: 'Propriétaire',
+    tagIcon: FaUserTie, // Icon for property owner
+  },
+  {
+    tagName: 'Agence',
+    tagIcon: FaStore, // Icon for real estate agency
+  },
 ];
 
 export const collectionFirebaseNames = {
@@ -152,6 +163,3 @@ export const supportContact = {
   email: 'contact@tonnkama.com',
   phone: '+221776960463'
 }
-
-// Limites d'upload
-export const MAX_IMAGES_UPLOAD = 10;
