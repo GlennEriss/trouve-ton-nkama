@@ -2,8 +2,8 @@
  * @module Builders/property-form
  */
 
+import { BathroomsComponent, KitchensComponent, RoomsComponent, ToiletsComponent } from "@/components/stepper/step2.components";
 import { PropertyFormBuilder } from "./property.form.builder";
-import { InputNumberApp } from "@/components/shared/ui/InputNumberApp";
 
 /**
  * LogementFormBuilder Class for Property Forms.
@@ -35,28 +35,28 @@ export abstract class LogementFormBuilder extends PropertyFormBuilder {
                 name: "nbrRooms",
                 label: "Nombre de chambres",
                 description: "Indiquez le nombre de chambres disponibles dans la propriété.",
-                component: (field: any) => <InputNumberApp {...field} />,
+                component: (field: any) => <RoomsComponent />,
                 step: 2
             },
             {
                 name: "nbrChickens",
                 label: "Nombre de Cuisines",
                 description: "Entrez le nombre de cuisines présentes dans la propriété.",
-                component: (field: any) => <InputNumberApp {...field} />,
+                component: (field: any) => <KitchensComponent />,
                 step: 2
             },
             {
                 name: "nbrBathrooms",
                 label: "Nombre de douches",
                 description: "Spécifiez combien de douches sont disponibles dans la propriété.",
-                component: (field: any) => <InputNumberApp {...field} />,
+                component: (field: any) => <BathroomsComponent />,
                 step: 2
             },
             {
                 name: "nbrToilets",
                 label: "Nombre de toilettes",
                 description: "Entrez le nombre de toilettes dans la propriété.",
-                component: (field: any) => <InputNumberApp {...field} />,
+                component: (field: any) => <ToiletsComponent />,
                 step: 2
             },
         )

@@ -2,8 +2,8 @@
  * @module Builders/property-form
  */
 
-import { TextComponent } from "@/components/stepper/step.shared.component";
 import { PropertyFormBuilder } from "./property.form.builder";
+import { RoomTypeComponent } from "@/components/stepper/step2.components";
 
 /**
  * RoomFormBuilder class is a concrete builder class for creating a form related to rooms.
@@ -13,7 +13,7 @@ import { PropertyFormBuilder } from "./property.form.builder";
  * @extends PropertyFormBuilder
  */
 export class RoomFormBuilder extends PropertyFormBuilder {
-    
+
     /**
      * Private constructor that initializes form elements specific to rooms for Step 2.
      * It adds the following field:
@@ -30,7 +30,7 @@ export class RoomFormBuilder extends PropertyFormBuilder {
                 name: "roomType",
                 label: "Type de chambre",
                 description: "Spécifiez le type de chambre (ex: Chambre américaine).",
-                component: (field: any) => <TextComponent field={field} />,
+                component: (field: any) => <RoomTypeComponent />,
                 step: 2
             }
         );
