@@ -35,28 +35,28 @@ export abstract class LogementFormBuilder extends PropertyFormBuilder {
                 name: "nbrRooms",
                 label: "Nombre de chambres",
                 description: "Indiquez le nombre de chambres disponibles dans la propriété.",
-                component: (field: any) => <RoomsComponent />,
+                component: RoomsComponent,
                 step: 2
             },
             {
                 name: "nbrChickens",
                 label: "Nombre de Cuisines",
                 description: "Entrez le nombre de cuisines présentes dans la propriété.",
-                component: (field: any) => <KitchensComponent />,
+                component: KitchensComponent,
                 step: 2
             },
             {
                 name: "nbrBathrooms",
                 label: "Nombre de douches",
                 description: "Spécifiez combien de douches sont disponibles dans la propriété.",
-                component: (field: any) => <BathroomsComponent />,
+                component: BathroomsComponent,
                 step: 2
             },
             {
                 name: "nbrToilets",
                 label: "Nombre de toilettes",
                 description: "Entrez le nombre de toilettes dans la propriété.",
-                component: (field: any) => <ToiletsComponent />,
+                component: ToiletsComponent,
                 step: 2
             },
         )

@@ -30,7 +30,7 @@ export class KioskFormBuilder extends PropertyFormBuilder {
                 name: "kioskType",
                 label: "Type de kiosque",
                 description: "Spécifiez le type de kiosque (ex: Alimentaire, Presse, Électronique).",
-                component: (field: any) => <KioskTypeComponent />,
+                component: KioskTypeComponent,
                 step: 2
             }
         );

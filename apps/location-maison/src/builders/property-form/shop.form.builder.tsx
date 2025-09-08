@@ -31,14 +31,14 @@ export class ShopFormBuilder extends PropertyFormBuilder {
                 name: "nbrRooms",
                 label: "Nombre de pièces",
                 description: "Indiquez le nombre total de pièces dans le magasin.",
-                component: (field: any) => <ShopRoomsComponent />,
+                component: ShopRoomsComponent,
                 step: 2
             },
             {
                 name: "nbrToilet",
                 label: "Nombre de toilettes",
                 description: "Indiquez le nombre total de toilettes disponibles dans le magasin.",
-                component: (field: any) => <ShopToiletsComponent />,
+                component: ShopToiletsComponent,
                 step: 2
             }
         );

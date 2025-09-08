@@ -53,72 +53,70 @@ export abstract class PropertyFormBuilder {
                 name: "images",
                 label: "Sélectionnez plusieurs images",
                 description: `Ajoutez des images de bonne qualité du bien immobilier. (Max ${MAX_IMAGES_UPLOAD})`,
-                component: (field: any) => <ImagesComponent />,
+                component: ImagesComponent,
                 step: 1
             },
             {
                 name: "title",
                 label: "Titre",
                 description: "Entrez un titre pour décrire le bien (ex: Maison familiale spacieuse).",
-                component: (field: any) => <TitleComponent />,
+                component: TitleComponent,
                 step: 1
             },
             {
                 name: "description",
                 label: "Description",
                 description: "Décrivez les caractéristiques principales du bien immobilier.",
-                component: (field: any) => <DescriptionComponent />,
+                component: DescriptionComponent,
                 step: 1
             },
             {
                 name: "area",
                 label: "Superficie",
                 description: "Indiquez la superficie du bien en mètres carrés.",
-                component: (field: any) => <AreaComponent />,
+                component: AreaComponent,
                 step: 1
             },
             {
                 name: "price",
                 label: "Prix (FCFA)",
                 description: "Entrez le prix du bien immobilier ou le loyer attendu.",
-                component: (field: any) => <PriceComponent />,
+                component: PriceComponent,
                 step: 1
             },
             {
                 name: "status",
                 label: "Statut",
                 description: "Choisissez si le bien est à vendre ou à louer.",
-                component: (field: any) => <StatusComponent />,
+                component: StatusComponent,
                 step: 1
             },
             {
                 name: "tags",
                 label: "Tags",
                 description: `Ajoutez des tags pour décrire le bien (ex: moderne, familial). (Max ${MAX_TAGS})`,
-                component: (field: any) => <TagsComponent />,
+                component: TagsComponent,
                 step: 1
             },
             {
                 name: "location",
                 label: "Localisation du bien",
                 description: "Recherchez votre quartier et visualisez la localisation sur la carte",
-                component: (field: any, form?: UseFormReturn<any>) => <LocationPicker />,
+                component: LocationPicker,
                 step: 3
             },
             {
                 name: "additionnalInformation",
                 label: "Informations complémentaires",
                 description: "Ex: Terminus Awoungou en face de...",
-                component: (field: any) => <AdditionalInformationComponent />,
+                component: AdditionalInformationComponent,
                 step: 3
             },
             {
                 name: "contact",
                 label: "Numéro de téléphone",
                 description: "Ex: +241 06 97 00 00 00",
-                component: (field: any) => (
-                    <ContactComponent />
-                ),
+                component: ContactComponent,
                 step: 3
             }
         )

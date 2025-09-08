@@ -31,14 +31,14 @@ export class ApartmentFormBuilder extends LogementFormBuilder {
                 name: "nbrFloorApartment",
                 label: "Numero d'étage",
                 description: "Indiquez l'étage de l'appartement",
-                component: (field: any) => <ApartmentFloorComponent />,
+                component: ApartmentFloorComponent,
                 step: 2
             },
             {
                 name: "numeroApartment",
                 label: "Numéro de l'appartement",
                 description: "Entrez le numéro de l'appartement ou situez le à partir de son étage ex: 23, pour Etage 2, appart 3",
-                component: (field: any) => <ApartmentNumberComponent />,
+                component: ApartmentNumberComponent,
                 step: 2
             },
         )

@@ -33,21 +33,21 @@ export class VillaFormBuilder extends LogementFormBuilder {
                 name: "nbrFloors",
                 label: "Nombre d'étages",
                 description: "Indiquez le nombre total d'étages dans la propriété.",
-                component: (field: any) => <VillaFloorsComponent />,
+                component: VillaFloorsComponent,
                 step: 2
             },
             {
                 name: "nbrGarages",
                 label: "Nombre de garages",
                 description: "Entrez le nombre de garages disponibles sur la propriété.",
-                component: (field: any) => <VillaGaragesComponent />,
+                component: VillaGaragesComponent,
                 step: 2
             },
             {
                 name: "nbrPiscine",
                 label: "Nombre de piscine",
                 description: "Spécifiez le nombre de piscines présentes dans la propriété.",
-                component: (field: any) => <VillaPiscinesComponent />,
+                component: VillaPiscinesComponent,
                 step: 2
             },
         );

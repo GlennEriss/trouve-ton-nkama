@@ -39,14 +39,14 @@ export class HomeFormBuilder extends LogementFormBuilder {
                 name: "nbrLivingRoom",
                 label: "Nombre de salons",
                 description: "Indiquez le nombre total de salons disponibles dans la propriété.",
-                component: (field: any) => <NbrLivingRoomsComponent />,
+                component: NbrLivingRoomsComponent,
                 step: 2
             },
             {
                 name: "nbrGarages",
                 label: "Nombre de garages",
                 description: "Indiquez le nombre total de garages disponibles dans la propriété.",
-                component: (field: any) => <NbrGaragesComponent />,
+                component: NbrGaragesComponent,
                 step: 2
             },
         );

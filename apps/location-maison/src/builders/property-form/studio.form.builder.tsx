@@ -32,14 +32,14 @@ export class StudioFormBuilder extends LogementFormBuilder {
                 name: "nbrFloorStudio",
                 label: "Numero d'étage",
                 description: "Indiquez le numéro d'étage où se situe le studio.",
-                component: (field: any) => <StudioFloorComponent />,
+                component: StudioFloorComponent,
                 step: 2
             },
             {
                 name: "numeroStudio",
                 label: "Numéro du studio",
                 description: "Saisissez le numéro du studio ou à partir de son étage Ex: 12 pour étage 1 studio 2.",
-                component: (field: any) => <StudioNumberComponent />,
+                component: StudioNumberComponent,
                 step: 2
             },
         );

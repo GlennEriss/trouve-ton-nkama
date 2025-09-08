@@ -31,14 +31,14 @@ export class DeskFormBuilder extends PropertyFormBuilder {
                 name: "nbrToilets",
                 label: "Nombre de toilettes",
                 description: "Indiquez le nombre total de toilettes disponibles dans la propriété.",
-                component: (field: any) => <NbrToiletsComponent />,
+                component: NbrToiletsComponent,
                 step: 2
             },
             {
                 name: "nbrRooms",
                 label: "Nombre de salles",
                 description: "Indiquez le nombre total de pièces dans la propriété.",
-                component: (field: any) => <NbrRoomsComponent />,
+                component: NbrRoomsComponent,
                 step: 2
             }
         );

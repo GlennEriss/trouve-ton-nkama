@@ -32,14 +32,14 @@ export class BuildingFormBuilder extends PropertyFormBuilder {
                 name: "nbrApartments",
                 label: "Nombre d'appartements",
                 description: "Indiquez le nombre total d'appartements dans ce bâtiment.",
-                component: (field: any) => <NbrApartmentsComponent />,
+                component: NbrApartmentsComponent,
                 step: 2
             },
             {
                 name: "nbrFloors",
                 label: "Nombre d'étages",
                 description: "Indiquez le nombre d'étages que contient le bâtiment.",
-                component: (field: any) => <NbrFloorsComponent />,
+                component: NbrFloorsComponent,
                 step: 2
             },
             /* {
@@ -53,7 +53,7 @@ export class BuildingFormBuilder extends PropertyFormBuilder {
                 name: "hasParking",
                 label: "Parking",
                 description: "L'immeuble possède t'il un parking ?",
-                component: (field: any) => <HasParkingComponent />,
+                component: HasParkingComponent,
                 step: 2
             },
         )
