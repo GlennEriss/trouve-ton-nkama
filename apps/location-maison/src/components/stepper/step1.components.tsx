@@ -54,7 +54,7 @@ export const ImagesComponent = () => {
                 </span>
             </div>
             <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-2 gap-4">
-            <ImageUploader />
+                <ImageUploader />
                 {images.length > 0 && (
                     <ImageComponent key={generateImageKey(images[0], 0)} index={0} />
                 )}
@@ -69,15 +69,15 @@ export const ImagesComponent = () => {
 export const ImageUploader = () => {
     const { toast } = useToast();
     const mediator = useStep1FormPropertyMediator();
-    
+
     const { getInputProps, getRootProps, isDragActive, isProcessing } = useImageDropzone({
         onFiles: (files) => {
             try {
                 mediator.addImages(files);
-                        toast({
-                    title: "Images ajoutées", 
-                    description: `${files.length} image(s) ajoutée(s) avec succès`, 
-                    variant: "default" 
+                toast({
+                    title: "Images ajoutées",
+                    description: `${files.length} image(s) ajoutée(s) avec succès`,
+                    variant: "default"
                 });
             } catch (e) {
                 toast({ title: "Erreur", description: "Impossible d'ajouter les images", variant: "destructive" });
@@ -86,8 +86,8 @@ export const ImageUploader = () => {
     });
 
     return (
-        <div 
-            {...getRootProps()} 
+        <div
+            {...getRootProps()}
             className={clsx(
                 "group relative border-2 border-dashed rounded-xl transition-all duration-300 ease-in-out",
                 "hover:border-[#156B68] hover:bg-[#156B68]/5 dark:hover:bg-[#156B68]/10",
@@ -102,7 +102,7 @@ export const ImageUploader = () => {
             )}
         >
             <Input {...getInputProps()} disabled={isProcessing} className="sr-only" />
-            
+
             <div className="flex flex-col items-center space-y-3 p-4 md:p-6">
                 {isProcessing ? (
                     <>
@@ -171,34 +171,34 @@ export const RenderImage = ({ index }: { index: number }) => {
             {image ? (
                 <div className="relative w-full h-full">
                     {/* Bouton de suppression */}
-                            <Button
-                                type='button'
-                                variant={'ghost'}
+                    <Button
+                        type='button'
+                        variant={'ghost'}
                         size="sm"
                         className="absolute top-2 right-2 z-10 opacity-0 group-hover:opacity-100 transition-opacity duration-200 bg-red-500/90 hover:bg-red-600 text-white p-1 h-8 w-8 rounded-full shadow-lg"
-                                onClick={(event) => {
-                                    event.stopPropagation();
-                                    mediator.removeImage(index);
+                        onClick={(event) => {
+                            event.stopPropagation();
+                            mediator.removeImage(index);
                         }}
                     >
                         <AiOutlineCloseCircle size={16} />
-                            </Button>
-                    
+                    </Button>
+
                     {/* Image */}
                     <div className="w-full h-full">
-                            <Image
+                        <Image
                             src={typeof image === 'string' ? image : blobUrl || ''}
                             alt={`Image ${index + 1}`}
                             fill
                             sizes="(max-width: 768px) 50vw, (max-width: 1024px) 33vw, 25vw"
                             style={{ objectFit: 'cover' }}
                             className="transition-transform duration-200 group-hover:scale-105"
-                            />
-                        </div>
+                        />
+                    </div>
 
                     {/* Overlay au survol */}
                     <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors duration-200" />
-                    
+
                     {/* Numéro de l'image */}
                     <div className="absolute bottom-2 left-2 bg-black/70 text-white text-xs px-2 py-1 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-200">
                         {index + 1}
@@ -225,26 +225,62 @@ const status = [
         label: 'A vendre'
     }
 ]
-export const StatusComponent = ({ field }: { field: any }) => {
+export const StatusComponent = () => {
+    const mediator = useStep1FormPropertyMediator();
+    const { watch } = useFormContext();
+    const currentStatus = watch("status");
+    
     return (
-        <RadioGroup
-            onValueChange={field.onChange}
-            value={field.value}
-            className="flex gap-5"
-        >
-            {
-                status.map((item) =>
-                    <FormItem key={item.value} className="flex items-center space-x-3 space-y-0">
+        <div className="space-y-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {status.map((item) => (
+                    <FormItem key={item.value} className="space-y-0">
                         <FormControl>
-                            <RadioGroupItem value={item.value} />
+                            <div
+                                className={clsx(
+                                    "relative flex items-center space-x-3 rounded-xl border-2 p-4 cursor-pointer transition-all duration-200",
+                                    "hover:border-[#156B68] hover:bg-[#156B68]/5 dark:hover:bg-[#156B68]/10",
+                                    {
+                                        "border-[#156B68] bg-[#156B68]/5 dark:bg-[#156B68]/10": currentStatus === item.value,
+                                        "border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800": currentStatus !== item.value
+                                    }
+                                )}
+                                onClick={() => {
+                                    console.log('Card clicked:', item.value);
+                                    mediator.setStatus(item.value);
+                                }}
+                            >
+                                <div className="w-4 h-4 rounded-full border-2 flex items-center justify-center"
+                                     style={{
+                                         borderColor: currentStatus === item.value ? '#156B68' : '#d1d5db',
+                                         backgroundColor: currentStatus === item.value ? '#156B68' : 'transparent'
+                                     }}>
+                                    {currentStatus === item.value && (
+                                        <div className="w-2 h-2 bg-white rounded-full"></div>
+                                    )}
+                                </div>
+                                <div className="flex-1">
+                                    <FormLabel className="font-medium text-gray-900 dark:text-gray-100 cursor-pointer">
+                                        {item.label}
+                                    </FormLabel>
+                                    <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+                                        {item.value === 'FOR_RENT' 
+                                            ? 'Propriété disponible à la location' 
+                                            : 'Propriété disponible à la vente'
+                                        }
+                                    </p>
+                                </div>
+                                {currentStatus === item.value && (
+                                    <div className="absolute top-2 right-2">
+                                        <div className="w-2 h-2 bg-[#156B68] rounded-full"></div>
+                                    </div>
+                                )}
+                            </div>
                         </FormControl>
-                        <FormLabel className="font-normal">
-                            {item.label}
-                        </FormLabel>
                     </FormItem>
-                )
-            }
-        </RadioGroup>
+                ))}
+            </div>
+        </div>
     )
 }
 
