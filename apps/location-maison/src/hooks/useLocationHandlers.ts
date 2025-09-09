@@ -1,4 +1,4 @@
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { useToast } from "@/hooks/use-toast"
 import { PhotonResult } from "@/models/PhotonResult"
 import { useStep3FormPropertyMediator } from "@/hooks/useStep3FormPropertyMediator"
@@ -13,6 +13,36 @@ export function useLocationHandlers() {
   const [districtQuery, setDistrictQuery] = useState('')
   const [mapCoordinates, setMapCoordinates] = useState<[number, number] | null>(null)
   const [isEditingDistrict, setIsEditingDistrict] = useState(false)
+
+  // Initialiser les états depuis le formulaire au montage du composant
+  useEffect(() => {
+    const district = mediator.getDistrict()
+    const city = mediator.getCity()
+    const province = mediator.getProvince()
+    const coords = mediator.getCoordinates()
+    
+    // Si on a des données de localisation dans le formulaire, les restaurer
+    if (district && city && province && coords.lon && coords.lat) {
+      setDistrictQuery(district)
+      setMapCoordinates([coords.lon, coords.lat])
+      
+      // Reconstituer l'objet PhotonResult pour selectedLocation
+      const restoredLocation: PhotonResult = {
+        properties: {
+          name: district,
+          city: city,
+          state: province,
+          country: "Gabon",
+          osm_key: "place",
+          osm_value: "district"
+        },
+        geometry: {
+          coordinates: [coords.lon, coords.lat]
+        }
+      }
+      setSelectedLocation(restoredLocation)
+    }
+  }, []) // Seulement au montage
 
   const handleLocationSelect = (result: PhotonResult) => {
     const { properties, geometry } = result
