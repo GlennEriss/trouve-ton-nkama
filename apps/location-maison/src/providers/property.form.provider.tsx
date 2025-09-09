@@ -3,22 +3,19 @@ import React, { createContext, useContext, useState, useEffect, useMemo } from "
 import { Form } from "@/components/ui/form"
 import { useForm } from "react-hook-form"
 import { zodResolver } from '@hookform/resolvers/zod'
-import { ApartmentSchema, BuildingSchema, DeskSchema, HomeSchema, StudioSchema, VillaSchema, KioskSchema, RoomSchema, ShopSchema, PropertySchema } from "@/models/schema"
 import { Property, TypeProperty, Image } from "@/models/annonce"
 import { DirectorFactory } from "@/directors/factory.director"
 import { useToast } from "@/hooks/use-toast"
 import { usePathname, useRouter } from "next/navigation"
-import { createFile } from "@/db/file.db"
 import { useCurrentUser } from "@/hooks/use-current-user"
 import { useMutation, useQueryClient } from "@tanstack/react-query"
 import { createProperty, updateProperty } from "@/db/property.db"
-import { createProvince } from "@/db/province.db"
-import { createCity } from "@/db/city.db"
-import { createStreet } from "@/db/street.db"
+import { updateOrCreateSuggestion } from "@/db/suggestion.db"
+import { useOnSubmitFormProperty } from "@/hooks/useOnSubmitFormProperty"
+import { usePropertyFormSchema } from "@/hooks/usePropertyFormSchema"
 import useLastpath from "@/hooks/use-lastpath"
 import queryKeys from "@/constantes/react-query-keys"
 import { routes } from "@/constantes/routes"
-import { updateOrCreateSuggestion } from "@/db/suggestion.db"
 
 type PropertyFormComponent = {
     form: any,
@@ -26,6 +23,7 @@ type PropertyFormComponent = {
     setActiveStep: React.Dispatch<React.SetStateAction<number>>,
     propertyPreview: Property | undefined,
     setPropertyPreview: React.Dispatch<React.SetStateAction<Property | undefined>>,
+    currentStepSchema: any,
 }
 
 export const PropertyFormComponentContext = createContext<PropertyFormComponent>({
@@ -34,6 +32,7 @@ export const PropertyFormComponentContext = createContext<PropertyFormComponent>
     setActiveStep: () => { },
     propertyPreview: undefined,
     setPropertyPreview: () => { },
+    currentStepSchema: null,
 })
 
 export const usePropertyFormComponentContext = () => {
@@ -127,32 +126,12 @@ export const PropertyFormComponentProvider = ({ children, isUpdate, propertyToUp
     //Form
     const director = DirectorFactory.createDirectorProperty(typeProperty)
     const property = director.build()
-    const getSchema = () => {
-        switch (typeProperty) {
-            case 'Apartment':
-                return ApartmentSchema
-            case 'Building':
-                return BuildingSchema
-            case 'Desk':
-                return DeskSchema
-            case 'Home':
-                return HomeSchema
-            case 'Studio':
-                return StudioSchema
-            case 'Shop':
-                return ShopSchema
-            case 'Kiosk':
-                return KioskSchema
-            case 'Room':
-                return RoomSchema
-            case 'Villa':
-                return VillaSchema
-            default: 
-                return PropertySchema
-        }
-    }
+
+    // Hook pour gérer les schémas
+    const { fullSchema, currentStepSchema } = usePropertyFormSchema(activeStep, typeProperty)
+    
     const form = useForm<any>({
-        resolver: zodResolver(getSchema()),
+        resolver: zodResolver(currentStepSchema), // Utiliser le schéma de l'étape actuelle
         defaultValues: {
             ...property,
             images: [],
@@ -169,6 +148,11 @@ export const PropertyFormComponentProvider = ({ children, isUpdate, propertyToUp
             streetLat: null,
         },
     })
+
+    // Mettre à jour le resolver quand l'étape change
+    React.useEffect(() => {
+        form.clearErrors() // Nettoyer les erreurs précédentes
+    }, [activeStep, form])
     //Mutation
     const queryClient = useQueryClient()
     const mutation = useMutation({
@@ -210,96 +194,52 @@ export const PropertyFormComponentProvider = ({ children, isUpdate, propertyToUp
             })
         }
     });
+    // Hook pour gérer la soumission du formulaire
+    const { onSubmit: onSubmitForm } = useOnSubmitFormProperty(
+        property,
+        imagesAlreadyUplaod,
+        isUpdate,
+        clearFormLocalStorage
+    )
+
     //Submit
     const onSubmit = async (data: any) => {
-        //Get images already uplaod:
-        const imgStringList = data.images.filter((img: File | Blob | string | undefined) => typeof img === "string")
-        const imgUplaods = imagesAlreadyUplaod.filter(img => imgStringList.includes(img.fileURL))
+        if (activeStep === 2) {
+            // Si on est au step 2 (dernière étape), valider avec le schéma complet puis soumettre
+            try {
+                // Valider avec le schéma complet pour la soumission finale
+                fullSchema.parse(data)
+                
+                const propertyMutate = await onSubmitForm(data)
 
-        // Create Images
-        const filesUpload = data.images.filter((img: File | Blob | string | undefined) =>
-            img instanceof File || img instanceof Blob
-        ) as (File | Blob)[];
+                // Créer la suggestion
+                const { province, city, street } = propertyMutate
+                await updateOrCreateSuggestion({ province, city, street })
 
-        const promiseFiles = filesUpload.map(async (img: File | Blob, index) => {
-            const file = img instanceof File ? img : new File([img], `image_${index}.jpeg`, {
-                type: img.type || 'image/jpeg',
-                lastModified: Date.now(),
-            });
-            return await createFile(file, user?.uid, 'property');
-        });
-        const images = await Promise.all(promiseFiles)
-        //Create Property
-        const { provinceLon, provinceLat, cityLon, cityLat, streetLon, streetLat, ...othersData } = data
-        
-        // Retirer longitude et latitude si leurs valeurs sont à 0
-        let finalData = { ...othersData }
-        if(data.longitude === 0 && data.latitude === 0){
-           const { longitude, latitude, ...dataWithoutCoords } = finalData
-           finalData = dataWithoutCoords
-        }
-        
-        // S'assurer que isLocExact est présent (par défaut false si non défini)
-        if (finalData.isLocExact === undefined) {
-          finalData.isLocExact = false
-        }
-        
-        const propertyMutate: Property = {
-            ...property,
-            ...finalData,
-            images: [...images, ...imgUplaods],
-            createdBy: user?.uid
-        }
-        //create province
-        let provinceId: string | null = null;
-        try {
-            provinceId = await createProvince({
-                name: propertyMutate.province,
-                country: propertyMutate.country,
-                countryCode: propertyMutate.countryCode,
-                longitude: provinceLon,
-                latitude: provinceLat
-            });
-        } catch (error) {
-            console.error("Failed to create province:", error);
-        }
-        
-        //create city
-        let cityId: string | null = null;
-        try {
-            cityId = await createCity({
-                name: propertyMutate.city,
-                provinceId: provinceId || null,
-                provinceName: propertyMutate.province,
-                country: propertyMutate.country,
-                countryCode: propertyMutate.countryCode,
-                longitude: cityLon,
-                latitude: cityLat
-            });
-        } catch (error) {
-            console.error("Failed to create city:", error);
-        }
-        
-        //create street
-        let streetId: string | null = null;
-        try {
-            streetId = await createStreet({
-                name: propertyMutate.street,
-                cityId: cityId || null,
-                cityName: propertyMutate.city,
-                provinceId: provinceId || null,
-                provinceName: propertyMutate.province,
-                country: propertyMutate.country,
-                countryCode: propertyMutate.countryCode,
-                longitude: streetLon,
-                latitude: streetLat
-            });
-        } catch (error) {
-            console.error("Failed to create street:", error);
-        }
-        mutation.mutate(propertyMutate)
-        if (!isUpdate) {
-            clearFormLocalStorage()
+                // Lancer la mutation
+                mutation.mutate(propertyMutate)
+            } catch (error) {
+                toast({
+                    duration: 3000,
+                    title: "Validation finale échouée",
+                    description: "Veuillez vérifier tous les champs avant de soumettre.",
+                    variant: "destructive"
+                })
+            }
+        } else {
+            // Si on est au step 0 ou 1, valider l'étape actuelle et passer à la suivante
+            const isValid = await form.trigger()
+            
+            if (isValid) {
+                setActiveStep(prev => prev + 1)
+            } else {
+                toast({
+                    duration: 3000,
+                    title: "Validation échouée",
+                    description: "Veuillez remplir tous les champs obligatoires avant de continuer.",
+                    variant: "destructive"
+                })
+            }
         }
     }
     // Sauvegarder automatiquement les changements dans localStorage
@@ -313,7 +253,7 @@ export const PropertyFormComponentProvider = ({ children, isUpdate, propertyToUp
                     }
                     return acc;
                 }, {} as any);
-                
+
                 if (Object.keys(filteredData).length > 0) {
                     saveFormToLocalStorage(filteredData);
                 }
@@ -324,8 +264,8 @@ export const PropertyFormComponentProvider = ({ children, isUpdate, propertyToUp
     }, [isUpdate]);
 
     React.useEffect(() => {
-        
-        if(user && user?.phoneNumbers.length > 0){
+
+        if (user && user?.phoneNumbers.length > 0) {
             form.setValue('contact', user.phoneNumbers[0])
         }
         if (propertyToUpdated) {
@@ -360,8 +300,9 @@ export const PropertyFormComponentProvider = ({ children, isUpdate, propertyToUp
         setActiveStep,
         form,
         propertyPreview,
-        setPropertyPreview
-    }), [activeStep, form, propertyPreview]);
+        setPropertyPreview,
+        currentStepSchema
+    }), [activeStep, form, propertyPreview, currentStepSchema]);
 
     return (
         <PropertyFormComponentContext.Provider value={contextValue}>

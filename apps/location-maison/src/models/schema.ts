@@ -248,7 +248,7 @@ export const Step1Schema = z.object({
   title: z.string().min(1, "Le titre est obligatoire"),
   description: z.string().min(10, "La description doit contenir au moins 10 caractères"),
   area: z.number().min(0, "La superficie doit être un nombre positif"),
-  price: z.number().min(0, "Le prix doit être un nombre positif"),
+  price: z.number().min(1, "Le prix doit être un nombre positif supérieur à 0"),
   status: z.enum(["FOR_RENT", "FOR_SALE"]),
   tags: z.array(z.string().min(1, "Chaque tag doit contenir au moins 1 caractère")).nonempty("Vous devez ajouter au moins un tag"),
 });

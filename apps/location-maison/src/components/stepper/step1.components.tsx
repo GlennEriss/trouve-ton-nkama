@@ -305,8 +305,6 @@ export const TagsComponent = () => {
                             tag={tag}
                             isActive={selectedTags.includes(tag.tagName)}
                             onToggle={() => {
-                                console.log('Tag clicked:', tag.tagName);
-                                console.log('Current selectedTags:', selectedTags);
                                 mediator.toggleTag(tag.tagName);
                             }}
                         />
