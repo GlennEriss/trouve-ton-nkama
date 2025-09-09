@@ -121,8 +121,9 @@ export default function LocationPicker() {
                {/* Bouton de localisation exacte */}
         <div className="text-center space-y-4">
           <div className="bg-gradient-to-r from-[#156B68]/10 to-[#156B68]/5 rounded-lg p-4 border border-[#156B68]/20">
-            <p className="text-[#224D62]/80 text-sm font-medium mb-2">
-              📍 Utilisez votre position GPS actuelle
+            <p className="text-[#224D62]/80 text-sm font-medium mb-2 flex items-center justify-center">
+              <MapPin className="w-4 h-4 mr-2" />
+              Utilisez votre position GPS actuelle
             </p>
             <p className="text-[#224D62]/60 text-xs mb-3">
               Le quartier, la ville et la province seront automatiquement remplis.
