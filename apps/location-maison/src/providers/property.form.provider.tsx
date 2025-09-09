@@ -231,7 +231,12 @@ export const PropertyFormComponentProvider = ({ children, isUpdate, propertyToUp
             const isValid = await form.trigger()
             
             if (isValid) {
-                setActiveStep(prev => prev + 1)
+                // Vérifier si c'est une propriété de type "land" et qu'on est au step 0
+                if (typeProperty === 'Land' && activeStep === 0) {
+                    setActiveStep(prev => prev + 2) // Sauter le step 1 pour les terrains
+                } else {
+                    setActiveStep(prev => prev + 1) // Navigation normale
+                }
             } else {
                 toast({
                     duration: 3000,
