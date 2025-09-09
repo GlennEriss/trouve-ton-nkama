@@ -16,7 +16,7 @@ export const ChoiceComponent: React.FC<ChoiceComponentProps> = ({ field, data, o
     return (
         <RadioGroup
             onValueChange={onValueChange || field?.onChange}
-            defaultValue={value || field?.value}
+            value={value !== undefined ? value : field?.value}
             className="flex gap-5"
         >
             {
@@ -44,10 +44,10 @@ export const RoomsComponent = () => {
 
 export const KitchensComponent = () => {
     const mediator = useStep2FormPropertyMediator()
-    const { watch } = useFormContext()
-    const kitchens = watch("nbrKitchens")
+    //const { watch } = useFormContext()
+    //const kitchens = watch("nbrChickens")
     return (
-        <InputNumberApp value={kitchens} onChange={(value) => mediator.setKitchens(Number(value))} />
+        <InputNumberApp value={mediator.getKitchens()} onChange={(value) => mediator.setKitchens(Number(value))} />
     )
 }
 
@@ -75,7 +75,7 @@ export const ApartmentFloorComponent = () => {
 export const ApartmentNumberComponent = () => {
     const mediator = useStep2FormPropertyMediator()
     return (
-        <InputApp value={mediator.getApartmentNumber()} onChange={(value) => mediator.setApartmentNumber(value.toString())} />
+        <InputApp value={mediator.getApartmentNumber()} onChange={(e) => mediator.setApartmentNumber(e.target.value)} />
     )
 }
 
@@ -97,7 +97,7 @@ export const HasParkingComponent = () => {
     const mediator = useStep2FormPropertyMediator()
     return (
         <ChoiceComponent
-            onValueChange={(value) => mediator.setHasParking(value)}
+            onValueChange={(value) => mediator.setHasParking(Boolean(value))}
             value={mediator.hasParking()}
             data={[{ label: 'Oui', value: true }, { label: 'Non', value: false }]}
         />
@@ -142,7 +142,7 @@ export const NbrGaragesComponent = () => {
 export const KioskTypeComponent = () => {
     const mediator = useStep2FormPropertyMediator()
     return (
-        <InputApp value={mediator.getKioskType()} onChange={(value) => mediator.setKioskType(value.toString())} />
+        <InputApp value={mediator.getKioskType()} onChange={(e) => mediator.setKioskType(e.target.value)} />
     )
 }
 
@@ -177,7 +177,7 @@ export const StudioFloorComponent = () => {
 export const StudioNumberComponent = () => {
     const mediator = useStep2FormPropertyMediator()
     return (
-        <InputApp type='text' value={mediator.getStudioNumber()} onChange={(value) => mediator.setStudioNumber(value.toString())} />
+        <InputApp type='text' value={mediator.getStudioNumber()} onChange={(e) => mediator.setStudioNumber(e.target.value)} />
     )
 }
 

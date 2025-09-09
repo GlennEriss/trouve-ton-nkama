@@ -13,8 +13,8 @@ export class Step2FormPropertyMediator {
     setRooms = (rooms: number) => this.form.setValue("nbrRooms", rooms);
 
     /** ===================== KITCHENS ===================== */
-    getKitchens = (): number => this.form.getValues("nbrKitchens") ?? 0;
-    setKitchens = (kitchens: number) => this.form.setValue("nbrKitchens", kitchens);
+    getKitchens = (): number => this.form.getValues("nbrChickens") ?? 0;
+    setKitchens = (kitchens: number) => this.form.setValue("nbrChickens", kitchens);
 
     /** ===================== BATHROOMS ===================== */
     getBathrooms = (): number => this.form.getValues("nbrBathrooms") ?? 0;
