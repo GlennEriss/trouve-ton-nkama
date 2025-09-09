@@ -4,6 +4,7 @@ import { FormItem, FormControl, FormLabel } from '../ui/form'
 import { InputNumberApp } from '../shared/ui/InputNumberApp'
 import { useStep2FormPropertyMediator } from '@/hooks/useStep2FormPropertyMediator'
 import { InputApp } from '../shared/ui/InputApp'
+import { useFormContext } from 'react-hook-form'
 
 type ChoiceComponentProps = {
     field?: any,
@@ -43,8 +44,10 @@ export const RoomsComponent = () => {
 
 export const KitchensComponent = () => {
     const mediator = useStep2FormPropertyMediator()
+    const { watch } = useFormContext()
+    const kitchens = watch("nbrKitchens")
     return (
-        <InputNumberApp value={mediator.getKitchens()} onChange={(value) => mediator.setKitchens(Number(value))} />
+        <InputNumberApp value={kitchens} onChange={(value) => mediator.setKitchens(Number(value))} />
     )
 }
 
