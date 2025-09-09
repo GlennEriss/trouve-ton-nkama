@@ -149,7 +149,7 @@ export const KioskTypeComponent = () => {
 export const RoomTypeComponent = () => {
     const mediator = useStep2FormPropertyMediator()
     return (
-        <InputApp value={mediator.getRoomType()} onChange={(value) => mediator.setRoomType(value.toString())} />
+        <InputApp value={mediator.getRoomType()} onChange={(e) => mediator.setRoomType(e.target.value)} />
     )
 }
 
