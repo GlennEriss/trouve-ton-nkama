@@ -73,7 +73,6 @@ export const PropertyFormComponentProvider = ({ children, isUpdate, propertyToUp
     //States
     const [activeStep, setActiveStep] = useState(0)
     const [propertyPreview, setPropertyPreview] = useState<Property | undefined>(undefined)
-
     //Form
     const director = DirectorFactory.createDirectorProperty(typeProperty)
     const property = director.build()
@@ -117,6 +116,7 @@ export const PropertyFormComponentProvider = ({ children, isUpdate, propertyToUp
     const form = useForm<any>({
         resolver: zodResolver(currentStepSchema), // Utiliser le schéma de l'étape actuelle
         defaultValues: getDefaultValues(),
+        shouldUnregister: false, // Conserver les valeurs des champs démontés (steps précédents)
     })
 
     // Hook pour gérer le localStorage
@@ -178,19 +178,31 @@ export const PropertyFormComponentProvider = ({ children, isUpdate, propertyToUp
     //Submit
     const onSubmit = async (data: any) => {
         if (activeStep === 2) {
-            // Si on est au step 2 (dernière étape), valider avec le schéma complet puis soumettre
+            // Récupérer toutes les valeurs (y compris celles des steps démontés)
+            const allValues = form.getValues()
+            // Valider avec le schéma complet (applique aussi les transforms) puis soumettre
             try {
-                // Valider avec le schéma complet pour la soumission finale
-                fullSchema.parse(data)
-                
-                const propertyMutate = await onSubmitForm(data)
+                const parsed = fullSchema.parse(allValues)
 
-                // Créer la suggestion
-                const { province, city, street } = propertyMutate
-                await updateOrCreateSuggestion({ province, city, street })
+                const propertyMutate = await onSubmitForm(parsed)
+
+                // Nettoyer les champs undefined (Firestore ne supporte pas undefined)
+                const sanitize = (obj: any): any => {
+                    if (Array.isArray(obj)) return obj.map(sanitize)
+                    if (obj && typeof obj === 'object') {
+                        return Object.fromEntries(
+                            Object.entries(obj)
+                                .filter(([, v]) => v !== undefined)
+                                .map(([k, v]) => [k, sanitize(v)])
+                        )
+                    }
+                    return obj
+                }
+
+                const sanitized = sanitize(propertyMutate)
 
                 // Lancer la mutation
-                mutation.mutate(propertyMutate)
+                mutation.mutate(sanitized)
             } catch (error) {
                 toast({
                     duration: 3000,
@@ -221,6 +233,16 @@ export const PropertyFormComponentProvider = ({ children, isUpdate, propertyToUp
         }
     }
 
+    // Gestionnaire d'erreurs de validation pour la soumission
+    const onInvalid = (errors: any) => {
+        toast({
+            duration: 3000,
+            title: "Validation finale échouée",
+            description: "Corrigez les erreurs du formulaire avant de soumettre.",
+            variant: "destructive"
+        })
+    }
+
 
     const contextValue = useMemo(() => ({
         activeStep,
@@ -236,7 +258,7 @@ export const PropertyFormComponentProvider = ({ children, isUpdate, propertyToUp
             <Form {...form}>
                 <form
                     className='flex flex-col'
-                    onSubmit={form.handleSubmit(onSubmit)}>
+                    onSubmit={form.handleSubmit(onSubmit, onInvalid)}>
                     {children}
                 </form>
             </Form>

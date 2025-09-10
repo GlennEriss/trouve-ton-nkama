@@ -7,12 +7,12 @@ import { useStepperNavigation } from '@/hooks/useStepperNavigation'
 
 export default function StepperButtonComponent() {
   const { formState } = useFormContext()
-  const { 
+  const {
     isFirstStep,
     isLastStep,
     isFinalScreen,
     submitButtonText,
-    handlePreviousStep 
+    handlePreviousStep
   } = useStepperNavigation()
 
   if (isFinalScreen) return null

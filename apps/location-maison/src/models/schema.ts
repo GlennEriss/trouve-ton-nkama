@@ -259,8 +259,12 @@ export const Step3Schema = z.object({
     province: z.string().min(1, "Le nom de la province est obligatoire"),
   }),
   additionalInformation: z.string().optional(),
-  longitude: z.string().min(1).transform(val => parseFloat(val)).refine(val => val >= -180 && val <= 180, "Longitude invalide"),
-  latitude: z.string().min(1).transform(val => parseFloat(val)).refine(val => val >= -90 && val <= 90, "Latitude invalide"),
+  longitude: z.coerce
+    .number()
+    .refine(val => !Number.isNaN(val) && val >= -180 && val <= 180, "Longitude invalide"),
+  latitude: z.coerce
+    .number()
+    .refine(val => !Number.isNaN(val) && val >= -90 && val <= 90, "Latitude invalide"),
   provinceLon: z.number().optional(),
   provinceLat: z.number().optional(),
   cityLon: z.number().optional(),
