@@ -45,6 +45,11 @@ export function usePropertyFormStorage(
 
   // Charger les données au montage et sauvegarder automatiquement les changements
   useEffect(() => {
+    // Vérifier que form est valide et a les méthodes nécessaires
+    if (!form || typeof form.watch !== 'function' || typeof form.getValues !== 'function' || typeof form.setValue !== 'function') {
+      return
+    }
+
     if (!isUpdate) {
       // Charger les données sauvegardées au montage
       const savedData = getFormFromLocalStorage()
