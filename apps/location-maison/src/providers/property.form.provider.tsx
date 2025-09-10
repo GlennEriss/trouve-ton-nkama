@@ -1,18 +1,20 @@
 'use client'
-import React, { createContext, useContext, useState, useEffect, useMemo } from "react"
+import React, { createContext, useContext, useState, useMemo } from "react"
 import { Form } from "@/components/ui/form"
 import { useForm } from "react-hook-form"
 import { zodResolver } from '@hookform/resolvers/zod'
-import { Property, TypeProperty, Image } from "@/models/annonce"
+import { Property, Image } from "@/models/annonce"
 import { DirectorFactory } from "@/directors/factory.director"
 import { useToast } from "@/hooks/use-toast"
-import { usePathname, useRouter } from "next/navigation"
+import { useRouter } from "next/navigation"
 import { useCurrentUser } from "@/hooks/use-current-user"
 import { useMutation, useQueryClient } from "@tanstack/react-query"
 import { createProperty, updateProperty } from "@/db/property.db"
 import { updateOrCreateSuggestion } from "@/db/suggestion.db"
 import { useOnSubmitFormProperty } from "@/hooks/useOnSubmitFormProperty"
 import { usePropertyFormSchema } from "@/hooks/usePropertyFormSchema"
+import { useFormPropertyType } from "@/hooks/useFormPropertyType"
+import { usePropertyFormStorage } from "@/hooks/usePropertyFormStorage"
 import useLastpath from "@/hooks/use-lastpath"
 import queryKeys from "@/constantes/react-query-keys"
 import { routes } from "@/constantes/routes"
@@ -45,30 +47,6 @@ export const steps = [
     { label: 'Third', description: 'Select Rooms' },
 ]
 
-const STORAGE_KEY = 'property_form_draft'
-
-const saveFormToLocalStorage = (data: any) => {
-    if (typeof window !== 'undefined') {
-        // On crée une copie des données sans les images
-        const { images, ...dataWithoutImages } = data
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(dataWithoutImages))
-    }
-}
-
-const getFormFromLocalStorage = () => {
-    if (typeof window !== 'undefined') {
-        const saved = localStorage.getItem(STORAGE_KEY)
-        const parsed = saved ? JSON.parse(saved) : null;
-        return parsed;
-    }
-    return null
-}
-
-const clearFormLocalStorage = () => {
-    if (typeof window !== 'undefined') {
-        localStorage.removeItem(STORAGE_KEY)
-    }
-}
 
 export const PropertyFormComponentProvider = ({ children, isUpdate, propertyToUpdated }: {
     children: React.ReactNode,
@@ -79,43 +57,16 @@ export const PropertyFormComponentProvider = ({ children, isUpdate, propertyToUp
     const { user } = useCurrentUser()
     //Router
     const router = useRouter()
-    //pathnames
-    const pathname = usePathname()
     // Hook appelé toujours, puis utilisé conditionnellement
     const lastPathValue = useLastpath()
     const id = isUpdate ? lastPathValue : null
-    //Images already uplaod
-    const [imagesAlreadyUplaod, setImagesAlreadyUplaod] = useState<Image[]>([])
-    //Type Property
-    const getTypeProperty = () => {
-        const pathnames = pathname.split('/')
-        const type = pathnames[pathnames.length - 1]
-        switch (type) {
-            case 'apartment':
-                return 'Apartment' as TypeProperty
-            case 'building':
-                return 'Building' as TypeProperty
-            case 'desk':
-                return 'Desk' as TypeProperty
-            case 'home':
-                return 'Home' as TypeProperty
-            case 'studio':
-                return 'Studio' as TypeProperty
-            case 'shop':
-                return 'Shop' as TypeProperty
-            case 'kiosk':
-                return 'Kiosk' as TypeProperty
-            case 'room':
-                return 'Room' as TypeProperty
-            case 'land':
-                return 'Land' as TypeProperty
-            case 'villa':
-                return 'Villa' as TypeProperty
-            default:
-                return 'Property' as TypeProperty
-        }
-    }
-    const typeProperty = propertyToUpdated ? propertyToUpdated.typeProperty as TypeProperty : getTypeProperty()
+    // Hook pour gérer le type de propriété
+    const { typeProperty } = useFormPropertyType(propertyToUpdated)
+    
+    //Images already uplaod - initialiser avec les images de la propriété à mettre à jour
+    const [imagesAlreadyUplaod, setImagesAlreadyUplaod] = useState<Image[]>(
+        propertyToUpdated?.images || []
+    )
     //Toast
     const { toast } = useToast()
 
@@ -130,9 +81,9 @@ export const PropertyFormComponentProvider = ({ children, isUpdate, propertyToUp
     // Hook pour gérer les schémas
     const { fullSchema, currentStepSchema } = usePropertyFormSchema(activeStep, typeProperty)
     
-    const form = useForm<any>({
-        resolver: zodResolver(currentStepSchema), // Utiliser le schéma de l'étape actuelle
-        defaultValues: {
+    // Calculer les valeurs par défaut en fonction des props
+    const getDefaultValues = () => {
+        const baseValues = {
             ...property,
             images: [],
             tags: [],
@@ -146,8 +97,30 @@ export const PropertyFormComponentProvider = ({ children, isUpdate, propertyToUp
             cityLat: null,
             streetLon: null,
             streetLat: null,
-        },
+            // Définir le contact directement dans les defaultValues
+            contact: user?.phoneNumbers?.[0] || '',
+        }
+
+        // Si on met à jour une propriété existante, utiliser ses valeurs
+        if (propertyToUpdated) {
+            const { images, ...othersData } = propertyToUpdated
+            return {
+                ...baseValues,
+                ...othersData,
+                images: images ? images.map(img => img.fileURL) : [],
+            }
+        }
+
+        return baseValues
+    }
+
+    const form = useForm<any>({
+        resolver: zodResolver(currentStepSchema), // Utiliser le schéma de l'étape actuelle
+        defaultValues: getDefaultValues(),
     })
+
+    // Hook pour gérer le localStorage
+    const { clearFormLocalStorage } = usePropertyFormStorage(form, isUpdate, typeProperty)
 
     // Mettre à jour le resolver quand l'étape change
     React.useEffect(() => {
@@ -247,58 +220,7 @@ export const PropertyFormComponentProvider = ({ children, isUpdate, propertyToUp
             }
         }
     }
-    // Sauvegarder automatiquement les changements dans localStorage
-    React.useEffect(() => {
-        if (!isUpdate) {
-            const subscription = form.watch((data) => {
-                // Filtrer les données pour ne sauvegarder que les champs valides
-                const filteredData = Object.entries(data).reduce((acc, [key, value]) => {
-                    if (value !== undefined && value !== null) {
-                        acc[key] = value;
-                    }
-                    return acc;
-                }, {} as any);
 
-                if (Object.keys(filteredData).length > 0) {
-                    saveFormToLocalStorage(filteredData);
-                }
-            });
-
-            return () => subscription.unsubscribe();
-        }
-    }, [isUpdate]);
-
-    React.useEffect(() => {
-
-        if (user && user?.phoneNumbers.length > 0) {
-            form.setValue('contact', user.phoneNumbers[0])
-        }
-        if (propertyToUpdated) {
-            const { images, ...othersData } = propertyToUpdated
-            Object.entries(othersData).forEach(([key, value]) => {
-                form.setValue(key as any, value);
-            });
-            if (images) {
-                const imgList = images.map(img => img.fileURL)
-                setImagesAlreadyUplaod(images)
-                form.setValue('images', imgList)
-            }
-        } else if (!isUpdate) {
-            // Charger les données du localStorage si elles existent SEULEMENT au premier chargement
-            const savedData = getFormFromLocalStorage()
-            if (savedData) {
-                // Ne pas écraser les valeurs actuelles si elles sont différentes de 0
-                Object.entries(savedData).forEach(([key, value]) => {
-                    const currentValue = form.getValues(key as any);
-                    // Si la valeur actuelle est différente de 0 et que la valeur sauvegardée est 0, ne pas l'écraser
-                    if ((key === 'price' || key === 'area') && currentValue !== 0 && value === 0) {
-                        return;
-                    }
-                    form.setValue(key as any, value);
-                });
-            }
-        }
-    }, [propertyToUpdated, user])
 
     const contextValue = useMemo(() => ({
         activeStep,
