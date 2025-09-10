@@ -8,14 +8,10 @@ import WelcomeMessage from './WelcomeMessage';
 import AssistantModal from './AssistantModal';
 
 interface FlatBotAssistantProps {
-    formContext?: any;
-    form?: any; // React Hook Form instance
     isUpdate?: boolean;
 }
 
 const FlatBotAssistant: React.FC<FlatBotAssistantProps> = ({ 
-    formContext, 
-    form, 
     isUpdate = false 
 }) => {
     const [isModalOpen, setIsModalOpen] = useState(false);
@@ -33,8 +29,6 @@ const FlatBotAssistant: React.FC<FlatBotAssistantProps> = ({
         propertyType: propertyType || '',
         propertyLabel: propertyLabel || '',
         requiredFields: requiredFields || [],
-        formContext,
-        form,
         isUpdate
     });
 

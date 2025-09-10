@@ -120,7 +120,18 @@ export const PropertyFormComponentProvider = ({ children, isUpdate, propertyToUp
     })
 
     // Hook pour gérer le localStorage
-    const { clearFormLocalStorage } = usePropertyFormStorage(form, isUpdate, typeProperty)
+    const { clearFormLocalStorage, loadFormFromStorage } = usePropertyFormStorage(form, isUpdate, typeProperty)
+
+    // Charger les données du localStorage après l'initialisation du formulaire
+    React.useEffect(() => {
+        if (!isUpdate) {
+            // Attendre que le formulaire soit complètement initialisé
+            const timer = setTimeout(() => {
+                loadFormFromStorage()
+            }, 100)
+            return () => clearTimeout(timer)
+        }
+    }, [loadFormFromStorage, isUpdate])
 
     // Mettre à jour le resolver quand l'étape change
     React.useEffect(() => {

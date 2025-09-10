@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { useFormContext } from 'react-hook-form'
 import { useToast } from '@/hooks/use-toast'
 import { usePropertyFormStorage } from '@/hooks/usePropertyFormStorage'
 import { ProcessedFormData } from '@/services/ai-form.service'
@@ -9,8 +10,6 @@ interface UseFormAIHandlerProps {
   propertyType: string
   propertyLabel: string
   requiredFields: string[]
-  formContext?: any
-  form?: any // React Hook Form instance
   isUpdate?: boolean
 }
 
@@ -18,16 +17,17 @@ export function useFormAIHandler({
   propertyType,
   propertyLabel,
   requiredFields,
-  formContext,
-  form,
   isUpdate = false
 }: UseFormAIHandlerProps) {
   const [isGenerating, setIsGenerating] = useState(false)
   const { toast } = useToast()
   const { sendMessage, creditsAvailable, isLoading } = useAIAssistant()
   
+  // Utiliser le formContext pour accéder au formulaire
+  const form = useFormContext()
+  
   // Utiliser le hook de stockage existant
-  const { saveFormToLocalStorage } = usePropertyFormStorage(form, isUpdate, propertyType as any)
+  const { saveFormToLocalStorage, saveCurrentFormData } = usePropertyFormStorage(form, isUpdate, propertyType as any)
 
   const generateFormData = async (description: string): Promise<ProcessedFormData | null> => {
     if (!description.trim() || !propertyType || !propertyLabel) {
@@ -65,11 +65,26 @@ export function useFormAIHandler({
     try {
       const formData = await generateFormData(description)
 
-      if (formData) {
+      if (formData && form) {
+        // Debug : afficher les données générées par l'IA
+        
+        // Appliquer les données générées au formulaire
+        Object.entries(formData).forEach(([key, value]) => {
+          if (value !== undefined && value !== null) {
+            form.setValue(key as any, value)
+          }
+        })
+
+        // Déclencher la validation pour mettre à jour l'état du formulaire
+        form.trigger()
+
+        // Sauvegarder les données actuelles du formulaire dans localStorage
+        saveCurrentFormData()
+
         // Afficher un toast de succès
         toast({
           title: "✅ Formulaire généré avec succès !",
-          description: `Titre: ${formData.title} | Superficie: ${formData.area} m² | Prix: ${formData.price?.toLocaleString()} FCFA. La page va se recharger pour afficher les nouvelles données.`,
+          description: `Titre: ${formData.title} | Superficie: ${formData.area} m² | Prix: ${formData.price?.toLocaleString()} FCFA. Les données ont été appliquées au formulaire.`,
           variant: "success",
         })
 

@@ -14,7 +14,7 @@ export function usePropertyFormStorage(
 ) {
   // Générer la clé de stockage basée sur le type de propriété
   const getStorageKey = useCallback(() => {
-    return typeProperty ? `${STORAGE_KEY}_${typeProperty}` : STORAGE_KEY
+    return typeProperty ? `${STORAGE_KEY}_${typeProperty.toLowerCase()}` : STORAGE_KEY
   }, [typeProperty])
 
   // Sauvegarder les données dans localStorage
@@ -43,15 +43,14 @@ export function usePropertyFormStorage(
   }, [getStorageKey])
 
 
-  // Charger les données au montage et sauvegarder automatiquement les changements
-  useEffect(() => {
-    // Vérifier que form est valide et a les méthodes nécessaires
-    if (!form || typeof form.watch !== 'function' || typeof form.getValues !== 'function' || typeof form.setValue !== 'function') {
+  // Fonction pour charger les données du localStorage et les appliquer au formulaire
+  const loadFormFromStorage = useCallback(() => {
+    if (!form || typeof form.getValues !== 'function' || typeof form.setValue !== 'function') {
       return
     }
 
     if (!isUpdate) {
-      // Charger les données sauvegardées au montage
+      // Charger les données sauvegardées
       const savedData = getFormFromLocalStorage()
       if (savedData) {
         // Ne pas écraser les valeurs actuelles si elles sont différentes de 0
@@ -64,29 +63,34 @@ export function usePropertyFormStorage(
           form.setValue(key as any, value)
         })
       }
-
-      // Sauvegarder automatiquement les changements
-      const subscription = form.watch((data) => {
-        // Filtrer les données pour ne sauvegarder que les champs valides
-        const filteredData = Object.entries(data).reduce((acc, [key, value]) => {
-          if (value !== undefined && value !== null) {
-            acc[key] = value
-          }
-          return acc
-        }, {} as any)
-
-        if (Object.keys(filteredData).length > 0) {
-          saveFormToLocalStorage(filteredData)
-        }
-      })
-
-      return () => subscription.unsubscribe()
     }
-  }, [form, isUpdate, saveFormToLocalStorage, getFormFromLocalStorage])
+  }, [form, isUpdate, getFormFromLocalStorage])
+
+  // Fonction pour sauvegarder manuellement les données actuelles du formulaire
+  const saveCurrentFormData = useCallback(() => {
+    if (!form || typeof form.getValues !== 'function') {
+      return
+    }
+
+    const currentData = form.getValues()
+    // Filtrer les données pour ne sauvegarder que les champs valides
+    const filteredData = Object.entries(currentData).reduce((acc, [key, value]) => {
+      if (value !== undefined && value !== null) {
+        acc[key] = value
+      }
+      return acc
+    }, {} as any)
+
+    if (Object.keys(filteredData).length > 0) {
+      saveFormToLocalStorage(filteredData)
+    }
+  }, [form, saveFormToLocalStorage])
 
   return {
     saveFormToLocalStorage,
     getFormFromLocalStorage,
-    clearFormLocalStorage
+    clearFormLocalStorage,
+    saveCurrentFormData,
+    loadFormFromStorage
   }
 }

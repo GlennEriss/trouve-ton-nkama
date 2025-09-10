@@ -11,22 +11,22 @@ export interface AIFormData {
 }
 
 export interface ProcessedFormData {
-  typeProperty: string
   title: string
   description: string
   price: number
   area: number
   tags: string[]
-  street: string
-  city: string
-  province: string
-  additionnalInformation: string
+  status: string
+  address: {
+    district: string
+    city: string
+    province: string
+  }
   longitude: number
   latitude: number
   countryCode: string
   country: string
-  state: string
-  status: string
+  additionalInformation: string
   [key: string]: any
 }
 
@@ -106,22 +106,31 @@ export class AIFormService {
     propertyType: string
   ): ProcessedFormData {
     return {
-      typeProperty: PROPERTY_TYPE_MAPPING[propertyType] ?? 'Home',
+      // Champs principaux du formulaire
       title: data.title,
       description: data.description,
       price: data.price,
       area: data.area,
       tags: data.tags,
-      street: '',
-      city: '',
-      province: '',
-      additionnalInformation: '',
+      status: 'FOR_SALE', // Valeur par défaut
+      
+      // Structure address pour le formulaire
+      address: {
+        district: '',
+        city: '',
+        province: ''
+      },
+      
+      // Champs de localisation
       longitude: 0,
       latitude: 0,
-      countryCode: 'ga',
+      countryCode: 'GA',
       country: 'Gabon',
-      state: 'IN_PROGRESS',
-      status: 'FOR_RENT',
+      
+      // Informations additionnelles
+      additionalInformation: '',
+      
+      // Détails spécifiques à la propriété
       ...data.propertyDetails
     }
   }
