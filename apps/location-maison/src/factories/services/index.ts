@@ -1,1 +1,1 @@
-.export { default as AIFormServiceFactory } from './AIFormServiceFactory';
+export { default as AIFormServiceFactory } from './AIFormServiceFactory';
