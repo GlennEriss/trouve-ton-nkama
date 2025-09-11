@@ -4,8 +4,8 @@ import AIPromptsService from './ai-prompts.service'
 export interface AIFormData {
   title: string
   description: string
-  price: number
-  area: number
+  price: number | string
+  area: number | string
   tags: string[]
   propertyDetails: Record<string, any>
 }
@@ -82,19 +82,30 @@ export class AIFormService {
    * Post-traite les données (prix, superficie, etc.)
    */
   postProcessData(data: AIFormData): AIFormData {
-    let price = data.price
-    if (typeof price === 'string') {
-      price = parseInt(price.replace(/[^0-9]/g, ''), 10)
+    // Normaliser le prix
+    let priceNum: number
+    if (typeof data.price === 'string') {
+      const cleaned = data.price.replace(/[^0-9]/g, '')
+      priceNum = parseInt(cleaned || '0', 10)
+    } else {
+      priceNum = data.price
     }
-    if (!price || isNaN(price) || price < 0) price = 0
+    if (!Number.isFinite(priceNum) || priceNum < 0) priceNum = 0
 
-    let area = data.area
-    if (!area || isNaN(area) || area < 0) area = 0
+    // Normaliser la surface
+    let areaNum: number
+    if (typeof data.area === 'string') {
+      const cleanedArea = String(data.area).replace(/[^0-9.]/g, '')
+      areaNum = parseFloat(cleanedArea || '0')
+    } else {
+      areaNum = data.area
+    }
+    if (!Number.isFinite(areaNum) || areaNum < 0) areaNum = 0
 
     return {
       ...data,
-      price,
-      area
+      price: priceNum,
+      area: areaNum
     }
   }
 
@@ -105,12 +116,21 @@ export class AIFormService {
     data: AIFormData,
     propertyType: string
   ): ProcessedFormData {
+    // S'assurer que price et area sont des nombres au moment de la transformation
+    const normalizedPrice = typeof data.price === 'string'
+      ? parseInt(data.price.replace(/[^0-9]/g, '') || '0', 10)
+      : (Number.isFinite(data.price) ? data.price : 0)
+
+    const normalizedArea = typeof data.area === 'string'
+      ? parseFloat(String(data.area).replace(/[^0-9.]/g, '') || '0')
+      : (Number.isFinite(data.area) ? data.area : 0)
+
     return {
       // Champs principaux du formulaire
       title: data.title,
       description: data.description,
-      price: data.price,
-      area: data.area,
+      price: normalizedPrice,
+      area: normalizedArea,
       tags: data.tags,
       status: 'FOR_SALE', // Valeur par défaut
       
