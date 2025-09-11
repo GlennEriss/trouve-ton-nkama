@@ -82,6 +82,16 @@ export const PropertyFormComponentProvider = ({ children, isUpdate, propertyToUp
     // Hook pour gérer les schémas
     const { fullSchema, currentStepSchema } = usePropertyFormSchema(activeStep, typeProperty)
     
+    // Normaliser les champs de localisation pouvant être null lors d'une modification
+    const sanitizeLocationFields = (data: any) => ({
+        provinceLon: data?.provinceLon ?? 0,
+        provinceLat: data?.provinceLat ?? 0,
+        cityLon: data?.cityLon ?? 0,
+        cityLat: data?.cityLat ?? 0,
+        streetLon: data?.streetLon ?? 0,
+        streetLat: data?.streetLat ?? 0,
+    })
+
     // Calculer les valeurs par défaut en fonction des props
     const getDefaultValues = () => {
         const baseValues = {
@@ -108,6 +118,8 @@ export const PropertyFormComponentProvider = ({ children, isUpdate, propertyToUp
             return {
                 ...baseValues,
                 ...othersData,
+                // Écraser d'éventuels null par 0 pour éviter les erreurs de validation
+                ...sanitizeLocationFields(othersData as any),
                 images: images ? images.map(img => img.fileURL) : [],
             }
         }
