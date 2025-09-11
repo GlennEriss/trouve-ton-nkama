@@ -2,10 +2,8 @@
  * @module Builders/property-form
  */
 
-import { InputNumberApp } from "@/components/shared/ui/InputNumberApp";
 import { PropertyFormBuilder } from "./property.form.builder";
-import { ChoiceComponent } from "@/components/stepper/step2.components";
-
+import { NbrApartmentsComponent, NbrFloorsComponent, HasParkingComponent } from "@/components/stepper/step2.components";
 /**
  * A concrete builder class responsible for constructing forms related to buildings.
  * This builder extends `LogementFormBuilder` and adds specific fields for buildings, such as 
@@ -34,14 +32,14 @@ export class BuildingFormBuilder extends PropertyFormBuilder {
                 name: "nbrApartments",
                 label: "Nombre d'appartements",
                 description: "Indiquez le nombre total d'appartements dans ce bâtiment.",
-                component: (field: any) => <InputNumberApp {...field} />,
+                component: NbrApartmentsComponent,
                 step: 2
             },
             {
                 name: "nbrFloors",
                 label: "Nombre d'étages",
                 description: "Indiquez le nombre d'étages que contient le bâtiment.",
-                component: (field: any) => <InputNumberApp {...field} />,
+                component: NbrFloorsComponent,
                 step: 2
             },
             /* {
@@ -55,7 +53,7 @@ export class BuildingFormBuilder extends PropertyFormBuilder {
                 name: "hasParking",
                 label: "Parking",
                 description: "L'immeuble possède t'il un parking ?",
-                component: (field: any) => <ChoiceComponent field={field} data={[{label: 'Oui', value: true}, {label: 'Non', value: false}]} />,
+                component: HasParkingComponent,
                 step: 2
             },
         )

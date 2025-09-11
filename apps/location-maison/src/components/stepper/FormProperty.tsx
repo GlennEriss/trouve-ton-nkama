@@ -86,7 +86,7 @@ export const FormProperty = <T extends PropertyFormBuilderFactory>
             {currentStep()}
             
             {/* Assistant IA flottant */}
-            <FlatBotAssistant formContext={formContext} />
+            <FlatBotAssistant />
         </React.Fragment>
     )
 }

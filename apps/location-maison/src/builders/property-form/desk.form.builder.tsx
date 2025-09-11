@@ -2,7 +2,7 @@
  * @module Builders/property-form
  */
 
-import { InputNumberApp } from "@/components/shared/ui/InputNumberApp";
+import { NbrRoomsComponent, NbrToiletsComponent } from "@/components/stepper/step2.components";
 import { PropertyFormBuilder } from "./property.form.builder";
 
 /**
@@ -31,14 +31,14 @@ export class DeskFormBuilder extends PropertyFormBuilder {
                 name: "nbrToilets",
                 label: "Nombre de toilettes",
                 description: "Indiquez le nombre total de toilettes disponibles dans la propriété.",
-                component: (field: any) => <InputNumberApp {...field} />,
+                component: NbrToiletsComponent,
                 step: 2
             },
             {
                 name: "nbrRooms",
                 label: "Nombre de salles",
                 description: "Indiquez le nombre total de pièces dans la propriété.",
-                component: (field: any) => <InputNumberApp {...field} />,
+                component: NbrRoomsComponent,
                 step: 2
             }
         );

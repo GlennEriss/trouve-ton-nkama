@@ -7,14 +7,19 @@ const getFirestore = () => import("@/firebase/firestore");
 export async function findStreetByName(name: string, cityName?: string, provinceName?: string): Promise<{ id: string, data: Street } | null> {
     try {
         const { collection, db, getDocs, query, where } = await getFirestore();
+        const { and } = await import("firebase/firestore");
         const collectionRef = collection(db, firebaseCollectionNames.streets);
-        let q = query(collectionRef, where("name", "==", name));
+        
+        // Construire les conditions de manière cumulative
+        const conditions = [where("name", "==", name)];
         if (cityName) {
-            q = query(collectionRef, where("name", "==", name), where("cityName", "==", cityName));
+            conditions.push(where("cityName", "==", cityName));
         }
         if (provinceName) {
-            q = query(collectionRef, where("name", "==", name), where("provinceName", "==", provinceName));
+            conditions.push(where("provinceName", "==", provinceName));
         }
+        
+        const q = query(collectionRef, and(...conditions));
         const querySnapshot = await getDocs(q);
         if (querySnapshot.empty) return null;
         const doc = querySnapshot.docs[0];

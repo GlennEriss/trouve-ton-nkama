@@ -2,16 +2,11 @@
  * @module Builders/property-form
  */
 
-import { InputApp } from "@/components/shared/ui/InputApp";
-import { InputNumberApp } from "@/components/shared/ui/InputNumberApp";
-import TextareaApp from "@/components/shared/ui/TextareaApp";
-import MapForm from "@/components/stepper/MapForm";
-import SearchLocationForm from "@/components/stepper/SearchLocationForm";
-import { ImagesComponent, StatusComponent, TagsComponent } from "@/components/stepper/step1.components";
-import { SelectCityComponent, SelectProvinceComponent, SelectStreetComponent } from '@/components/stepper/step3.components';
-import { PhoneInput } from '@/components/ui/phone-input'
+import { AreaComponent, DescriptionComponent, ImagesComponent, PriceComponent, StatusComponent, TagsComponent, TitleComponent } from "@/components/stepper/step1.components";
 import { LocationPicker } from '@/components/location';
+import { MAX_IMAGES_UPLOAD, MAX_TAGS } from "@/constantes";
 import { UseFormReturn } from 'react-hook-form';
+import { AdditionalInformationComponent, ContactComponent } from "@/components/stepper/step3.components";
 
 /**
  * @typedef {Object} FormElement
@@ -57,81 +52,71 @@ export abstract class PropertyFormBuilder {
             {
                 name: "images",
                 label: "Sélectionnez plusieurs images",
-                description: "Ajoutez des images de bonne qualité du bien immobilier. (Max 6)",
-                component: (field: any) => <ImagesComponent field={field} />,
+                description: `Ajoutez des images de bonne qualité du bien immobilier. (Max ${MAX_IMAGES_UPLOAD})`,
+                component: ImagesComponent,
                 step: 1
             },
             {
                 name: "title",
                 label: "Titre",
                 description: "Entrez un titre pour décrire le bien (ex: Maison familiale spacieuse).",
-                component: (field: any) => <InputApp {...field} />,
+                component: TitleComponent,
                 step: 1
             },
             {
                 name: "description",
                 label: "Description",
                 description: "Décrivez les caractéristiques principales du bien immobilier.",
-                component: (field: any) => <TextareaApp {...field} />,
+                component: DescriptionComponent,
                 step: 1
             },
             {
                 name: "area",
                 label: "Superficie",
                 description: "Indiquez la superficie du bien en mètres carrés.",
-                component: (field: any) => <InputNumberApp step={10} {...field} />,
+                component: AreaComponent,
                 step: 1
             },
             {
                 name: "price",
                 label: "Prix (FCFA)",
                 description: "Entrez le prix du bien immobilier ou le loyer attendu.",
-                component: (field: any) => <InputNumberApp step={10000} {...field} />,
+                component: PriceComponent,
                 step: 1
             },
             {
                 name: "status",
                 label: "Statut",
                 description: "Choisissez si le bien est à vendre ou à louer.",
-                component: (field: any) => <StatusComponent field={field} />,
+                component: StatusComponent,
                 step: 1
             },
             {
                 name: "tags",
                 label: "Tags",
-                description: "Ajoutez des tags pour décrire le bien (ex: moderne, familial).",
-                component: (field: any) => <TagsComponent field={field} />,
+                description: `Ajoutez des tags pour décrire le bien (ex: moderne, familial). (Max ${MAX_TAGS})`,
+                component: TagsComponent,
                 step: 1
             },
             {
                 name: "location",
                 label: "Localisation du bien",
                 description: "Recherchez votre quartier et visualisez la localisation sur la carte",
-                component: (field: any, form?: UseFormReturn<any>) => <LocationPicker form={form!} />,
+                component: LocationPicker,
                 step: 3
             },
             {
                 name: "additionnalInformation",
                 label: "Informations complémentaires",
                 description: "Ex: Terminus Awoungou en face de...",
-                component: (field: any) => <TextareaApp rows={3} {...field} />,
+                component: AdditionalInformationComponent,
                 step: 3
             },
             {
                 name: "contact",
                 label: "Numéro de téléphone",
                 description: "Ex: +241 06 97 00 00 00",
-                component: (field: any) => (
-                    <div className='border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900 p-2 rounded-full focus-within:border-[#1FA89B] focus-within:bg-[#ebf6f5] dark:focus-within:bg-gray-800'>
-                        <PhoneInput
-                            defaultCountry='GA'
-                            triggerClassName=' border-none shadow-none rounded-full'
-                            className='border-none shadow-none focus-visible:ring-0 rounded-full dark:text-white dark:placeholder:text-gray-500 bg-transparent'
-                            onChange={(value) => field.onChange(value)}
-                            value={field.value}
-                        />
-                    </div>
-                ),
+                component: ContactComponent,
                 step: 3
             }
         )

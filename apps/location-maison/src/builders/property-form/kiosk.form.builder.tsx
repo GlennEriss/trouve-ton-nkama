@@ -2,7 +2,7 @@
  * @module Builders/property-form
  */
 
-import { TextComponent } from "@/components/stepper/step.shared.component";
+import { KioskTypeComponent } from "@/components/stepper/step2.components";
 import { PropertyFormBuilder } from "./property.form.builder";
 
 /**
@@ -30,7 +30,7 @@ export class KioskFormBuilder extends PropertyFormBuilder {
                 name: "kioskType",
                 label: "Type de kiosque",
                 description: "Spécifiez le type de kiosque (ex: Alimentaire, Presse, Électronique).",
-                component: (field: any) => <TextComponent field={field} />,
+                component: KioskTypeComponent,
                 step: 2
             }
         );

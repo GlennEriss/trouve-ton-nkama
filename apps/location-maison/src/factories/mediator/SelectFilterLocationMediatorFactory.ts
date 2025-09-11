@@ -4,25 +4,8 @@ import { FormFilterSchemaType } from "@/models/schema";
 import { SelectFilterLocationMediator } from "@/mediators/SelectFilterLocationMediator";
 
 export class SelectFilterLocationMediatorFactory {
-  private static instance: SelectFilterLocationMediator | null = null;
-
+  // Plus de singleton: toujours créer une nouvelle instance liée au form courant
   static create(form: UseFormReturn<FormFilterSchemaType>): SelectFilterLocationMediator {
-    if (!SelectFilterLocationMediatorFactory.instance) {
-      SelectFilterLocationMediatorFactory.instance = new SelectFilterLocationMediator(form);
-    }
-    return SelectFilterLocationMediatorFactory.instance;
-  }
-
-  static getInstance(): SelectFilterLocationMediator {
-    if (!SelectFilterLocationMediatorFactory.instance) {
-      throw new Error(
-        "FilterMediator non créé. Utiliser d'abord FilterMediatorFactory.create(form)."
-      );
-    }
-    return SelectFilterLocationMediatorFactory.instance;
-  }
-
-  static reset(): void {
-    SelectFilterLocationMediatorFactory.instance = null;
+    return new SelectFilterLocationMediator(form);
   }
 }

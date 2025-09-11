@@ -16,13 +16,15 @@ export const InputNumberApp = React.forwardRef<HTMLInputElement, InputNumberAppP
     ({ className, type, onChange, value, step, ...props }, ref) => {
         const increment = () => {
             if (typeof value === 'number') {
-                onChange?.((value as number) + (step || 1));
+                const newValue = (value as number) + (step || 1);
+                onChange?.(newValue);
             }
         };
 
         const decrement = () => {
             if (typeof value === 'number') {
-                onChange?.(Math.max(0, (value as number) - (step || 1)));
+                const newValue = Math.max(0, (value as number) - (step || 1));
+                onChange?.(newValue);
             }
         };
 
@@ -36,7 +38,14 @@ export const InputNumberApp = React.forwardRef<HTMLInputElement, InputNumberAppP
                     )}
                     ref={ref}
                     value={value === undefined ? '' : value}
-                    onChange={onChange}
+                    onChange={(e) => {
+                        const numValue = parseFloat(e.target.value);
+                        if (!isNaN(numValue)) {
+                            onChange?.(numValue);
+                        } else if (e.target.value === '') {
+                            onChange?.(0);
+                        }
+                    }}
                     {...props}
                 />
                 <div className="absolute inset-y-0 right-0 flex items-center">
