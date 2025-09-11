@@ -92,12 +92,12 @@ export const PropertyFormComponentProvider = ({ children, isUpdate, propertyToUp
             longitude: 0,
             latitude: 0,
             isLocExact: false,
-            provinceLon: null,
-            provinceLat: null,
-            cityLon: null,
-            cityLat: null,
-            streetLon: null,
-            streetLat: null,
+            provinceLon: 0,
+            provinceLat: 0,
+            cityLon: 0,
+            cityLat: 0,
+            streetLon: 0,
+            streetLat: 0,
             // Définir le contact directement dans les defaultValues
             contact: user?.phoneNumbers?.[0] || '',
         }
@@ -216,7 +216,7 @@ export const PropertyFormComponentProvider = ({ children, isUpdate, propertyToUp
 
                 // Lancer la mutation
                 mutation.mutate(sanitized)
-            } catch (error) {
+        } catch (error) {
                 toast({
                     duration: 3000,
                     title: "Validation finale échouée",
@@ -248,6 +248,7 @@ export const PropertyFormComponentProvider = ({ children, isUpdate, propertyToUp
 
     // Gestionnaire d'erreurs de validation pour la soumission
     const onInvalid = (errors: any) => {
+        console.log('errors', errors)
         toast({
             duration: 3000,
             title: "Validation finale échouée",
