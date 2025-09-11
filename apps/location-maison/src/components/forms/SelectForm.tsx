@@ -2,10 +2,8 @@ import React from 'react'
 import { FormField, FormItem, FormLabel, FormControl, FormDescription, FormMessage } from '../ui/form'
 import { FieldValues, Path, UseFormReturn } from 'react-hook-form';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../ui/select';
-type OptionType = {
-    value: string,
-    label: string
-}
+import { OptionType } from '@/models/OptionType';
+
 type SelectFormProps<T extends FieldValues> = {
     form: UseFormReturn<T>;
     name: Path<T>;

@@ -7,12 +7,10 @@ import { SelectFormApp } from "../shared/form/SelectFormApp"
 import { useLocationSync } from "@/hooks/use-location-sync"
 import { Badge } from "@/components/ui/badge"
 import { Database, MapPin, Building } from "lucide-react"
-import { cn } from "@/lib/utils"
-
-interface OptionType {
-  label: string
-  value: string
-}
+import { OptionType } from "@/models/OptionType"
+import { useStep3FormPropertyMediator } from "@/hooks/useStep3FormPropertyMediator"
+import TextareaApp from "../shared/ui/TextareaApp"
+import { PhoneInput } from "../ui/phone-input"
 
 /**
  * Composant Select pour les provinces avec synchronisation automatique
@@ -20,23 +18,23 @@ interface OptionType {
 export const SelectProvinceComponent = ({ field }: Readonly<{ field: any }>) => {
   const { watch } = useFormContext()
   const { locations, isLoading } = useLocationSync()
-  
+
   // Observer les changements pour détecter les nouvelles sélections
   const selectedProvince = watch('province')
   const selectedCity = watch('city')
   const selectedStreet = watch('street')
-  
+
   // Générer les options des provinces
   const provinceOptions = React.useMemo((): OptionType[] => {
     if (!locations) return []
-    
+
     const provinces = Object.keys(locations)
       .sort((a: string, b: string) => a.localeCompare(b, 'fr'))
       .map((province: string): OptionType => ({
         label: province,
         value: province
       }))
-    
+
     // Si une province est sélectionnée mais n'existe pas dans les options,
     // l'ajouter temporairement (sera synchronisée via le hook)
     if (selectedProvince && !provinces.some(p => p.value === selectedProvince)) {
@@ -46,13 +44,13 @@ export const SelectProvinceComponent = ({ field }: Readonly<{ field: any }>) => 
       })
       provinces.sort((a, b) => a.label.localeCompare(b.label, 'fr'))
     }
-    
+
     return provinces
   }, [locations, selectedProvince])
-  
+
   // Déterminer si la province actuelle est nouvelle
   const isNewProvince = selectedProvince && locations && !locations[selectedProvince]
-  
+
   return (
     <div className="space-y-2">
       <SelectFormApp
@@ -65,7 +63,7 @@ export const SelectProvinceComponent = ({ field }: Readonly<{ field: any }>) => 
         value={field.value}
         disabled={isLoading}
       />
-      
+
       {/* Indicateur de nouvelle province */}
       {isNewProvince && (
         <div className="flex items-center space-x-2 text-xs">
@@ -86,14 +84,14 @@ export const SelectProvinceComponent = ({ field }: Readonly<{ field: any }>) => 
 export const SelectCityComponent = ({ field }: Readonly<{ field: any }>) => {
   const { watch } = useFormContext()
   const { locations, isLoading } = useLocationSync()
-  
+
   const selectedProvince = watch('province')
   const selectedCity = watch('city')
-  
+
   // Générer les options des villes
   const cityOptions = React.useMemo((): OptionType[] => {
     if (!locations || !selectedProvince) return []
-    
+
     const provinceData = locations[selectedProvince] || {}
     const cities = Object.keys(provinceData)
       .sort((a: string, b: string) => a.localeCompare(b, 'fr'))
@@ -101,7 +99,7 @@ export const SelectCityComponent = ({ field }: Readonly<{ field: any }>) => {
         label: city,
         value: city
       }))
-    
+
     // Si une ville est sélectionnée mais n'existe pas dans les options,
     // l'ajouter temporairement
     if (selectedCity && !cities.some(c => c.value === selectedCity)) {
@@ -111,15 +109,15 @@ export const SelectCityComponent = ({ field }: Readonly<{ field: any }>) => {
       })
       cities.sort((a, b) => a.label.localeCompare(b.label, 'fr'))
     }
-    
+
     return cities
   }, [locations, selectedProvince, selectedCity])
-  
+
   // Déterminer si la ville actuelle est nouvelle
-  const isNewCity = selectedProvince && selectedCity && 
-    locations && locations[selectedProvince] && 
+  const isNewCity = selectedProvince && selectedCity &&
+    locations && locations[selectedProvince] &&
     !locations[selectedProvince][selectedCity]
-  
+
   return (
     <div className="space-y-2">
       <SelectFormApp
@@ -132,7 +130,7 @@ export const SelectCityComponent = ({ field }: Readonly<{ field: any }>) => {
         value={field.value}
         disabled={!selectedProvince || isLoading}
       />
-      
+
       {/* Indicateur de nouvelle ville */}
       {isNewCity && (
         <div className="flex items-center space-x-2 text-xs">
@@ -143,7 +141,7 @@ export const SelectCityComponent = ({ field }: Readonly<{ field: any }>) => {
           <span className="text-gray-500">Sera ajoutée aux suggestions</span>
         </div>
       )}
-      
+
       {/* Message d'aide conditionnel */}
       {!selectedProvince && (
         <p className="text-xs text-gray-500 flex items-center space-x-1">
@@ -161,15 +159,15 @@ export const SelectCityComponent = ({ field }: Readonly<{ field: any }>) => {
 export const SelectStreetComponent = ({ field }: Readonly<{ field: any }>) => {
   const { watch } = useFormContext()
   const { locations, isLoading } = useLocationSync()
-  
+
   const selectedProvince = watch('province')
   const selectedCity = watch('city')
   const selectedStreet = watch('street')
-  
+
   // Générer les options des quartiers/rues
   const streetOptions = React.useMemo((): OptionType[] => {
     if (!locations || !selectedProvince || !selectedCity) return []
-    
+
     const cityData = locations[selectedProvince]?.[selectedCity] || []
     const streets = cityData
       .sort((a: string, b: string) => a.localeCompare(b, 'fr'))
@@ -177,7 +175,7 @@ export const SelectStreetComponent = ({ field }: Readonly<{ field: any }>) => {
         label: street,
         value: street
       }))
-    
+
     // Si un quartier est sélectionné mais n'existe pas dans les options,
     // l'ajouter temporairement
     if (selectedStreet && !streets.some((s: OptionType) => s.value === selectedStreet)) {
@@ -187,20 +185,20 @@ export const SelectStreetComponent = ({ field }: Readonly<{ field: any }>) => {
       })
       streets.sort((a: OptionType, b: OptionType) => a.label.localeCompare(b.label, 'fr'))
     }
-    
+
     return streets
   }, [locations, selectedProvince, selectedCity, selectedStreet])
-  
+
   // Déterminer si le quartier actuel est nouveau
   const isNewStreet = selectedProvince && selectedCity && selectedStreet &&
     locations && locations[selectedProvince] && locations[selectedProvince][selectedCity] &&
     !locations[selectedProvince][selectedCity].includes(selectedStreet)
-  
+
   // Calculer le nombre total de quartiers disponibles
-  const totalStreets = selectedProvince && selectedCity && locations && 
+  const totalStreets = selectedProvince && selectedCity && locations &&
     locations[selectedProvince] && locations[selectedProvince][selectedCity] ?
     locations[selectedProvince][selectedCity].length : 0
-  
+
   return (
     <div className="space-y-2">
       <SelectFormApp
@@ -211,13 +209,13 @@ export const SelectStreetComponent = ({ field }: Readonly<{ field: any }>) => {
         options={streetOptions}
         placeholder={
           !selectedProvince ? "Sélectionnez d'abord une province" :
-          !selectedCity ? "Sélectionnez d'abord une ville" :
-          "Sélectionnez un quartier"
+            !selectedCity ? "Sélectionnez d'abord une ville" :
+              "Sélectionnez un quartier"
         }
         value={field.value}
         disabled={!selectedCity || isLoading}
       />
-      
+
       {/* Indicateur de nouveau quartier */}
       {isNewStreet && (
         <div className="flex items-center space-x-2 text-xs">
@@ -228,7 +226,7 @@ export const SelectStreetComponent = ({ field }: Readonly<{ field: any }>) => {
           <span className="text-gray-500">Sera ajouté aux suggestions</span>
         </div>
       )}
-      
+
       {/* Informations contextuelles */}
       {selectedCity && totalStreets > 0 && (
         <p className="text-xs text-gray-500 flex items-center space-x-1">
@@ -236,20 +234,45 @@ export const SelectStreetComponent = ({ field }: Readonly<{ field: any }>) => {
           <span>{totalStreets} quartier{totalStreets > 1 ? 's' : ''} disponible{totalStreets > 1 ? 's' : ''} dans {selectedCity}</span>
         </p>
       )}
-      
+
       {selectedCity && totalStreets === 0 && !selectedStreet && (
         <p className="text-xs text-orange-600 flex items-center space-x-1">
           <MapPin className="w-3 h-3" />
           <span>Aucun quartier enregistré pour {selectedCity}. Utilisez la recherche ci-dessus.</span>
         </p>
       )}
-      
+
       {!selectedProvince && (
         <p className="text-xs text-gray-500 flex items-center space-x-1">
           <MapPin className="w-3 h-3" />
           <span>Sélectionnez une province et une ville pour voir les quartiers</span>
         </p>
       )}
+    </div>
+  )
+}
+
+export const AdditionalInformationComponent = () => {
+  const mediator = useStep3FormPropertyMediator()
+  return (
+    <TextareaApp rows={3}
+      value={mediator.getAdditionalInformation()}
+      onChange={(e) => mediator.setAdditionalInformation(e.target.value)}
+    />
+  )
+}
+
+export const ContactComponent = () => {
+  const mediator = useStep3FormPropertyMediator()
+  return (
+    <div className='border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900 p-2 rounded-full focus-within:border-[#1FA89B] focus-within:bg-[#ebf6f5] dark:focus-within:bg-gray-800'>
+      <PhoneInput
+        value={mediator.getContact()}
+        onChange={(value) => mediator.setContact(value)}
+        defaultCountry='GA'
+        triggerClassName=' border-none shadow-none rounded-full'
+        className='border-none shadow-none focus-visible:ring-0 rounded-full dark:text-white dark:placeholder:text-gray-500 bg-transparent'
+      />
     </div>
   )
 }

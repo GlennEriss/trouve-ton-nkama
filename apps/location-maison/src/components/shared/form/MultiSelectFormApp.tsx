@@ -2,11 +2,8 @@ import { FormMessage, FormControl, FormField, FormItem, FormLabel } from '@/comp
 import { MultiSelect } from '@/components/shared/ui/MultiSelectApp'
 import React from 'react'
 import { Control, FieldValues, Path } from 'react-hook-form'
+import { OptionType } from '@/models/OptionType'
 
-type OptionType = {
-    label: string,
-    value: string
-}
 type MultiSelectFormAppProps<T extends FieldValues> = {
     control: Control<T>,
     name: Path<T>,
@@ -27,7 +24,7 @@ export default function MultiSelectFormApp<T extends FieldValues>({ control, nam
                         <MultiSelect
                             options={options}
                             onValueChange={field.onChange}
-                            defaultValue={field.value}
+                            value={field.value}
                             placeholder={placeholder}
                             variant="inverted"
                             animation={2}

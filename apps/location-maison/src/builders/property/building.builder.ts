@@ -30,7 +30,7 @@ export class BuildingBuilder extends PropertyBuilder {
             typeProperty: 'Building',
             nbrApartments: 0,
             nbrFloors: 0,
-            hasParking: false
+            hasParking: false,
         } as Building;
     }
 
