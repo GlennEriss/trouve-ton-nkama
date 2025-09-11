@@ -26,6 +26,7 @@ type PropertyFormComponent = {
     propertyPreview: Property | undefined,
     setPropertyPreview: React.Dispatch<React.SetStateAction<Property | undefined>>,
     currentStepSchema: any,
+    typeProperty: string,
 }
 
 export const PropertyFormComponentContext = createContext<PropertyFormComponent>({
@@ -35,6 +36,7 @@ export const PropertyFormComponentContext = createContext<PropertyFormComponent>
     propertyPreview: undefined,
     setPropertyPreview: () => { },
     currentStepSchema: null,
+    typeProperty: '',
 })
 
 export const usePropertyFormComponentContext = () => {
@@ -261,8 +263,9 @@ export const PropertyFormComponentProvider = ({ children, isUpdate, propertyToUp
         form,
         propertyPreview,
         setPropertyPreview,
-        currentStepSchema
-    }), [activeStep, form, propertyPreview, currentStepSchema]);
+        currentStepSchema,
+        typeProperty
+    }), [activeStep, form, propertyPreview, currentStepSchema, typeProperty]);
 
     return (
         <PropertyFormComponentContext.Provider value={contextValue}>

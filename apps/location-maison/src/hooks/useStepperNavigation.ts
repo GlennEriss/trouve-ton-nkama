@@ -7,11 +7,14 @@ import { TypePropertyEnum } from '@/constantes/property-type'
  * Extrait la logique de navigation et les états du StepperButtonComponent
  */
 export function useStepperNavigation() {
-  const { activeStep, setActiveStep } = usePropertyFormComponentContext()
+  const { activeStep, setActiveStep, typeProperty } = usePropertyFormComponentContext()
   const propertyTypeId = useLastpath()
 
   const handlePreviousStep = () => {
-    if (propertyTypeId === 'land' && activeStep === 2) {
+    // Utiliser le typeProperty du contexte (pour les modifications) ou de l'URL (pour les créations)
+    const currentTypeProperty = typeProperty || propertyTypeId
+        
+    if (currentTypeProperty.toLowerCase() === 'land' && activeStep === 2) {
       setActiveStep(0)
     } else {
       setActiveStep(prev => prev - 1)
