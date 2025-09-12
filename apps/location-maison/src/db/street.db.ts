@@ -1,6 +1,6 @@
 import { Street } from "@/models/street";
 import firebaseCollectionNames from "@/constantes/firebase-collection-name";
-import { createModel } from "./generic.db";
+import { createModel, createModelWithCustomId, LocationIdGenerator } from "./generic.db";
 
 const getFirestore = () => import("@/firebase/firestore");
 
@@ -34,7 +34,17 @@ export async function createStreetIfNotExists(street: Omit<Street, 'id' | 'creat
     try {
         const existing = await findStreetByName(street.name, street.cityName, street.provinceName);
         if (existing) return existing.id;
-        const result = await createModel<Omit<Street, 'id'>>(street as any, firebaseCollectionNames.streets);
+        
+        // Générer l'ID personnalisé avec les coordonnées
+        let customId: string;
+        if (street.longitude && street.latitude) {
+            customId = LocationIdGenerator.generateStreet(street.name, street.longitude, street.latitude);
+        } else {
+            // Fallback si pas de coordonnées
+            customId = street.name.toLowerCase().replace(/\s+/g, '') + '_0.00000_0.00000';
+        }
+        
+        const result = await createModelWithCustomId<Omit<Street, 'id' | 'createdAt' | 'updatedAt'>>(street as any, firebaseCollectionNames.streets, customId);
         return result;
     } catch (error) {
         console.error("Error creating street:", error);
