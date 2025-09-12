@@ -10,20 +10,14 @@ import {
   FormControl,
   FormField,
   FormItem,
-  FormLabel,
   FormMessage,
 } from '@/components/ui/form';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
 import { Input } from '@/components/ui/input';
-import { useLocation } from '@/hooks/use-location';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { SearchFormSchema, SearchFormSchemaType } from '@/models/schema';
+import SelectProvince from './SelectProvince';
+import SelectCity from './SelectCity';
+import SelectStreet from './SelectStreet';
 
 interface GoogleMapViewerHeaderProps {
   items: any[];
@@ -43,12 +37,6 @@ export default function GoogleMapViewerHeader({
   const [showFloatingDropdown, setShowFloatingDropdown] = useState(false);
   const router = useRouter();
   const searchParams = useSearchParams();
-  const { data: locations } = useLocation();
-
-  // Options pour les filtres de localisation
-  const [provinceOptions, setProvinceOptions] = useState<Array<{ label: string, value: string }>>([]);
-  const [cityOptions, setCityOptions] = useState<Array<{ label: string, value: string }>>([]);
-  const [streetOptions, setStreetOptions] = useState<Array<{ label: string, value: string }>>([]);
 
   // Initialisation du formulaire avec react-hook-form
   const form = useForm<SearchFormSchemaType>({
@@ -75,57 +63,6 @@ export default function GoogleMapViewerHeader({
     return value === '' ? 'none' : value;
   };
 
-  // Synchronisation URL → Filtres au chargement initial
-  useEffect(() => {
-    if (locations) {
-      const provinceVal = searchParams.get("province") ?? "";
-      const cityVal = searchParams.get("city") ?? "";
-      const streetVal = searchParams.get("street") ?? "";
-
-      // Mettre à jour les valeurs du formulaire
-      setValue('province', provinceVal);
-      setValue('city', cityVal);
-      setValue('street', streetVal);
-    }
-  }, [locations, searchParams, setValue]);
-
-  // Générer les options de localisation
-  useEffect(() => {
-    if (locations) {
-      const provinces = Object.keys(locations)
-        .sort((a: string, b: string) => a.localeCompare(b, 'fr'))
-        .map(province => ({ label: province, value: province }));
-      setProvinceOptions(provinces);
-    }
-  }, [locations]);
-
-  // Mettre à jour les villes quand la province change
-  useEffect(() => {
-    if (watchedProvince && watchedProvince !== 'none' && locations?.[watchedProvince]) {
-      const cities = Object.keys(locations[watchedProvince])
-        .sort((a: string, b: string) => a.localeCompare(b, 'fr'))
-        .map(city => ({ label: city, value: city }));
-      setCityOptions(cities);
-      setValue('city', '');
-      setValue('street', '');
-    } else {
-      setCityOptions([]);
-      setStreetOptions([]);
-    }
-  }, [watchedProvince, locations, setValue]);
-
-  // Mettre à jour les quartiers quand la ville change
-  useEffect(() => {
-    if (watchedProvince && watchedProvince !== 'none' && watchedCity && watchedCity !== 'none' && locations?.[watchedProvince]?.[watchedCity]) {
-      const streets = locations[watchedProvince][watchedCity]
-        .sort((a: string, b: string) => a.localeCompare(b, 'fr'))
-        .map((street: string) => ({ label: street, value: street }));
-      setStreetOptions(streets);
-      setValue('street', '');
-    } else {
-      setStreetOptions([]);
-    }
-  }, [watchedCity, locations, watchedProvince, setValue]);
 
   // Fonction de soumission du formulaire de recherche
   const onSubmit = async (values: SearchFormSchemaType) => {
@@ -144,7 +81,7 @@ export default function GoogleMapViewerHeader({
         if (cleanValue(values.province || '')) params.append('province', cleanValue(values.province || ''));
         if (cleanValue(values.city || '')) params.append('city', cleanValue(values.city || ''));
         if (cleanValue(values.street || '')) params.append('street', cleanValue(values.street || ''));
-        router.replace(`/search?${params.toString()}`);
+        //router.replace(`/search?${params.toString()}`);
       }
     } catch (error) {
       console.error('Erreur lors de la recherche:', error);
@@ -177,11 +114,11 @@ export default function GoogleMapViewerHeader({
       city: '',
       street: '',
     });
-    
+
     if (onClearFilters) {
       onClearFilters();
     }
-    
+
     setShowFloatingDropdown(false);
   };
 
@@ -203,7 +140,7 @@ export default function GoogleMapViewerHeader({
                   <Search size={20} className="text-gray-500 hover:stroke-[#1FA89B]" />
                 )}
               </button>
-              
+
               <FormField
                 control={form.control}
                 name="searchText"
@@ -221,7 +158,7 @@ export default function GoogleMapViewerHeader({
                   </FormItem>
                 )}
               />
-              
+
               <button
                 type="button"
                 onClick={() => setShowFloatingDropdown(!showFloatingDropdown)}
@@ -249,91 +186,9 @@ export default function GoogleMapViewerHeader({
                 <Form {...form}>
                   <form onSubmit={form.handleSubmit(applyLocationFilters)} className="space-y-4">
                     <div className="grid grid-cols-1 gap-4">
-                      <FormField
-                        control={form.control}
-                        name="province"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel className="text-sm font-medium text-gray-700">Province</FormLabel>
-                            <Select onValueChange={field.onChange} value={getDisplayValue(field.value || '')}>
-                              <FormControl>
-                                <SelectTrigger className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#1FA89B] focus:border-transparent text-sm">
-                                  <SelectValue placeholder="Sélectionnez une province" />
-                                </SelectTrigger>
-                              </FormControl>
-                              <SelectContent>
-                                <SelectItem value="none">Sélectionnez une province</SelectItem>
-                                {provinceOptions.map((option) => (
-                                  <SelectItem key={option.value} value={option.value}>
-                                    {option.label}
-                                  </SelectItem>
-                                ))}
-                              </SelectContent>
-                            </Select>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-
-                      <FormField
-                        control={form.control}
-                        name="city"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel className="text-sm font-medium text-gray-700">Ville</FormLabel>
-                            <Select 
-                              onValueChange={field.onChange} 
-                              value={getDisplayValue(field.value || '')}
-                              disabled={!watchedProvince || watchedProvince === 'none'}
-                            >
-                              <FormControl>
-                                <SelectTrigger className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#1FA89B] focus:border-transparent disabled:bg-gray-100 disabled:cursor-not-allowed text-sm">
-                                  <SelectValue placeholder="Sélectionnez une ville" />
-                                </SelectTrigger>
-                              </FormControl>
-                              <SelectContent>
-                                <SelectItem value="none">Sélectionnez une ville</SelectItem>
-                                {cityOptions.map((option) => (
-                                  <SelectItem key={option.value} value={option.value}>
-                                    {option.label}
-                                  </SelectItem>
-                                ))}
-                              </SelectContent>
-                            </Select>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-
-                      <FormField
-                        control={form.control}
-                        name="street"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel className="text-sm font-medium text-gray-700">Quartier</FormLabel>
-                            <Select 
-                              onValueChange={field.onChange} 
-                              value={getDisplayValue(field.value || '')}
-                              disabled={!watchedCity || watchedCity === 'none'}
-                            >
-                              <FormControl>
-                                <SelectTrigger className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#1FA89B] focus:border-transparent disabled:bg-gray-100 disabled:cursor-not-allowed text-sm">
-                                  <SelectValue placeholder="Sélectionnez un quartier" />
-                                </SelectTrigger>
-                              </FormControl>
-                              <SelectContent>
-                                <SelectItem value="none">Sélectionnez un quartier</SelectItem>
-                                {streetOptions.map((option) => (
-                                  <SelectItem key={option.value} value={option.value}>
-                                    {option.label}
-                                  </SelectItem>
-                                ))}
-                              </SelectContent>
-                            </Select>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
+                      <SelectProvince />
+                      <SelectCity />
+                      <SelectStreet />
                     </div>
 
                     {/* Boutons d'action */}
