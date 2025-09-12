@@ -9,6 +9,7 @@ import {
 import GoogleMapViewerHeader from './GoogleMapViewerHeader';
 import { useGoogleMapInstance } from '@/hooks/google-map/use-google-map-instance';
 import { googleMapsSingleton } from '@/singleton';
+import { useLocationGoogle } from '@/hooks/google-map/use-location-google';
 // Import dynamic du composant PropertyDetailsPanel
 const PropertyDetailsPanel = dynamic(() => import('./PropertyDetailsPanel'), {
   ssr: false,
@@ -43,6 +44,21 @@ export default function GoogleMapViewer({ lat, lng, open, onOpenChange }: Google
   const { items } = useInfiniteHits();
   const [selectedProperty, setSelectedProperty] = useState<any>(null);
   const { mapReady, setMapReady, mapRef, mapInstanceRef, initializeMap } = useGoogleMapInstance(lat, lng);
+  const { mediator } = useLocationGoogle();
+  const lastFocusKeyRef = useRef<string | null>(null);
+  const [locationVersion, setLocationVersion] = useState<string>('');
+
+  // Poll léger pour détecter les changements du médiateur (pas de listener)
+  useEffect(() => {
+    if (!open) return;
+    const update = () => {
+      const v = `${mediator.getProvinceLon() ?? ''}|${mediator.getProvinceLat() ?? ''}|${mediator.getCityLon() ?? ''}|${mediator.getCityLat() ?? ''}|${mediator.getStreetLon() ?? ''}|${mediator.getStreetLat() ?? ''}`;
+      setLocationVersion((prev) => (prev !== v ? v : prev));
+    };
+    update();
+    const id = setInterval(update, 300);
+    return () => clearInterval(id);
+  }, [open, mediator]);
 
   // Initialiser la carte quand la modal s'ouvre
   if (open && !mapInstanceRef.current) {
@@ -59,6 +75,41 @@ export default function GoogleMapViewer({ lat, lng, open, onOpenChange }: Google
       console.warn('Error cleaning up map instance:', error);
     }
   }
+
+  // Focus automatique selon les coordonnées du médiateur (priorité rue > ville > province)
+  useEffect(() => {
+    if (!open || !mapReady || !mapInstanceRef.current) return;
+
+    const zoomByType: Record<string, number> = { province: 9, city: 12, street: 15 };
+
+    const streetLon = mediator.getStreetLon();
+    const streetLat = mediator.getStreetLat();
+    const cityLon = mediator.getCityLon();
+    const cityLat = mediator.getCityLat();
+    const provLon = mediator.getProvinceLon();
+    const provLat = mediator.getProvinceLat();
+
+    let target: { lat: number; lng: number; type: 'street'|'city'|'province' } | null = null;
+    if (typeof streetLon === 'number' && typeof streetLat === 'number') {
+      target = { lat: streetLat, lng: streetLon, type: 'street' };
+    } else if (typeof cityLon === 'number' && typeof cityLat === 'number') {
+      target = { lat: cityLat, lng: cityLon, type: 'city' };
+    } else if (typeof provLon === 'number' && typeof provLat === 'number') {
+      target = { lat: provLat, lng: provLon, type: 'province' };
+    }
+
+    if (!target) return;
+
+    const key = `${target.type}:${target.lat},${target.lng}`;
+    if (lastFocusKeyRef.current === key) return;
+    lastFocusKeyRef.current = key;
+
+    try {
+      mapInstanceRef.current.setCenter({ lat: target.lat, lng: target.lng });
+      mapInstanceRef.current.setZoom(zoomByType[target.type]);
+    } catch {}
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [open, mapReady, locationVersion]);
 
   // ESC pour fermer
   useEffect(() => {
