@@ -1,8 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
+import React, { useState } from 'react';
 import { Search, ChevronDown, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
@@ -13,98 +11,25 @@ import {
   FormMessage,
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
-import { useRouter, useSearchParams } from 'next/navigation';
-import { SearchFormSchema, SearchFormSchemaType } from '@/models/schema';
+import { SearchFormSchemaType } from '@/models/schema';
 import SelectProvince from './SelectProvince';
 import SelectCity from './SelectCity';
 import SelectStreet from './SelectStreet';
+import { useFormGoogleLocation } from '@/hooks/google-map/use-form-google-location';
 
 interface GoogleMapViewerHeaderProps {
-  items: any[];
+  length: number;
   onOpenChange: (open: boolean) => void;
-  onSearch?: (values: SearchFormSchemaType) => void;
-  onLocationFilter?: (values: SearchFormSchemaType) => void;
-  onClearFilters?: () => void;
 }
 
 export default function GoogleMapViewerHeader({
-  items,
+  length,
   onOpenChange,
-  onSearch,
-  onLocationFilter,
-  onClearFilters,
 }: GoogleMapViewerHeaderProps) {
   const [showFloatingDropdown, setShowFloatingDropdown] = useState(false);
-  const router = useRouter();
-  const searchParams = useSearchParams();
+  const {form} = useFormGoogleLocation();
 
-  // Initialisation du formulaire avec react-hook-form
-  const form = useForm<SearchFormSchemaType>({
-    resolver: zodResolver(SearchFormSchema),
-    defaultValues: {
-      searchText: '',
-      province: '',
-      city: '',
-      street: '',
-    },
-  });
-
-  const { watch, setValue, reset, formState: { isSubmitting } } = form;
-  const watchedProvince = watch('province');
-  const watchedCity = watch('city');
-
-  // Fonction pour nettoyer les valeurs (remplacer les valeurs vides par des chaînes vides)
-  const cleanValue = (value: string) => {
-    return value === 'none' ? '' : value;
-  };
-
-  // Fonction pour obtenir la valeur d'affichage (remplacer les chaînes vides par 'none')
-  const getDisplayValue = (value: string) => {
-    return value === '' ? 'none' : value;
-  };
-
-
-  // Fonction de soumission du formulaire de recherche
-  const onSubmit = async (values: SearchFormSchemaType) => {
-    try {
-      if (onSearch) {
-        await onSearch({
-          ...values,
-          province: cleanValue(values.province || ''),
-          city: cleanValue(values.city || ''),
-          street: cleanValue(values.street || ''),
-        });
-      } else {
-        // Comportement par défaut : navigation vers la page de recherche
-        const params = new URLSearchParams();
-        if (values.searchText) params.append('query', values.searchText);
-        if (cleanValue(values.province || '')) params.append('province', cleanValue(values.province || ''));
-        if (cleanValue(values.city || '')) params.append('city', cleanValue(values.city || ''));
-        if (cleanValue(values.street || '')) params.append('street', cleanValue(values.street || ''));
-        //router.replace(`/search?${params.toString()}`);
-      }
-    } catch (error) {
-      console.error('Erreur lors de la recherche:', error);
-    }
-  };
-
-  // Fonction pour appliquer les filtres de localisation
-  const applyLocationFilters = async (values: SearchFormSchemaType) => {
-    try {
-      if (onLocationFilter) {
-        await onLocationFilter({
-          ...values,
-          province: cleanValue(values.province || ''),
-          city: cleanValue(values.city || ''),
-          street: cleanValue(values.street || ''),
-        });
-      }
-    } catch (error) {
-      console.error('Erreur lors de l\'application des filtres:', error);
-    } finally {
-      setShowFloatingDropdown(false);
-    }
-  };
+  const { reset, formState: { isSubmitting } } = form;
 
   // Fonction pour effacer les filtres
   const clearLocationFilters = () => {
@@ -115,13 +40,11 @@ export default function GoogleMapViewerHeader({
       street: '',
     });
 
-    if (onClearFilters) {
-      onClearFilters();
-    }
-
     setShowFloatingDropdown(false);
   };
-
+  const onSubmit = (values: SearchFormSchemaType) => {
+    console.log('values', values);
+  }
   return (
     <div className="flex md:flex-row items-center justify-between p-2 lg:p-6">
       <div className="flex flex-col md:flex-row items-center justify-between gap-3 lg:w-full">
@@ -184,7 +107,7 @@ export default function GoogleMapViewerHeader({
                 <h3 className="text-sm font-semibold text-gray-900 mb-4">📍 Filtres de localisation</h3>
 
                 <Form {...form}>
-                  <form onSubmit={form.handleSubmit(applyLocationFilters)} className="space-y-4">
+                  <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
                     <div className="grid grid-cols-1 gap-4">
                       <SelectProvince />
                       <SelectCity />
@@ -216,7 +139,7 @@ export default function GoogleMapViewerHeader({
         </div>
 
         <span className="text-sm text-gray-500 bg-gray-100 px-3 py-1 rounded-full lg:ml-auto">
-          {items.filter((p: any) => p.latitude && p.longitude).length} biens localisés
+          {length} biens localisés
         </span>
       </div>
       <button
