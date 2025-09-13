@@ -1,6 +1,6 @@
 import { Province } from "@/models/province";
 import firebaseCollectionNames from "@/constantes/firebase-collection-name";
-import { createModel } from "./generic.db";
+import { createModel, createModelWithCustomId, LocationIdGenerator } from "./generic.db";
 
 const getFirestore = () => import("@/firebase/firestore");
 
@@ -23,7 +23,17 @@ export async function createProvinceIfNotExists(province: Omit<Province, 'id' | 
     try {
         const existing = await findProvinceByName(province.name);
         if (existing) return existing.id;
-        const result = await createModel<Omit<Province, 'id'>>(province as any, firebaseCollectionNames.provinces);
+        
+        // Générer l'ID personnalisé avec les coordonnées
+        let customId: string;
+        if (province.longitude && province.latitude) {
+            customId = LocationIdGenerator.generateProvince(province.name, province.longitude, province.latitude);
+        } else {
+            // Fallback si pas de coordonnées
+            customId = province.name.toLowerCase().replace(/\s+/g, '') + '_0.00000_0.00000';
+        }
+        
+        const result = await createModelWithCustomId<Omit<Province, 'id' | 'createdAt' | 'updatedAt'>>(province as any, firebaseCollectionNames.provinces, customId);
         return result;
     } catch (error) {
         console.error("Error creating province:", error);
