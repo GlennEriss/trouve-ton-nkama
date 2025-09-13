@@ -14,11 +14,13 @@ import {
 import { Input } from '@/components/ui/input';
 import { SearchFormSchemaType } from '@/models/schema';
 import { useFormGoogleLocation } from '@/hooks/google-map/use-form-google-location';
+import { useRouter } from 'next/navigation';
+import { routes } from '@/constantes/routes';
 
 // Import dynamique du composant LocationFiltersDropdown
 const LocationFiltersDropdown = dynamic(
   () => import('./LocationFiltersDropdown'),
-  { 
+  {
     ssr: false,
     loading: () => (
       <div className="absolute top-full left-1/2 transform -translate-x-1/2 md:left-0 md:transform-none mt-2 w-[calc(100vw-2rem)] md:w-96 bg-white rounded-xl shadow-xl border border-gray-200 z-20 p-4">
@@ -49,8 +51,8 @@ export default function GoogleMapViewerHeader({
   onOpenChange,
 }: GoogleMapViewerHeaderProps) {
   const [showFloatingDropdown, setShowFloatingDropdown] = useState(false);
-  const {form} = useFormGoogleLocation();
-
+  const { form } = useFormGoogleLocation();
+  const router = useRouter();
   const { reset, formState: { isSubmitting } } = form;
 
   // Fonction pour effacer les filtres
@@ -61,11 +63,15 @@ export default function GoogleMapViewerHeader({
       city: '',
       street: '',
     });
-
-    setShowFloatingDropdown(false);
+    router.replace(routes.public.search);
   };
   const onSubmit = (values: SearchFormSchemaType) => {
-    console.log('values', values);
+    const params = new URLSearchParams();
+    if (values.searchText) params.append("query", values.searchText);
+    if (values.province) params.append("province", values.province);
+    if (values.city) params.append("city", values.city);
+    if (values.street) params.append("street", values.street);
+    router.replace(routes.public.search + `?${params.toString()}`);
   }
   return (
     <div className="flex md:flex-row items-center justify-between p-2 lg:p-6">
