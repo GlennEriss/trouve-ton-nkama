@@ -53,7 +53,7 @@ export default function GoogleMapViewerHeader({
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="flex items-center bg-white rounded-full shadow-lg border border-gray-200 px-4 py-3 min-w-[320px]">
               <button
-                type="submit"
+                type="button"
                 disabled={isSubmitting}
                 className="p-1 hover:stroke-[#1FA89B] disabled:opacity-50 disabled:cursor-not-allowed mr-3"
               >
