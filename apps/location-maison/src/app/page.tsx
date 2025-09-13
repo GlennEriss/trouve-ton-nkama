@@ -1,5 +1,6 @@
 import React from "react";
 import type { Metadata } from "next";
+import Script from "next/script";
 import HomePageComponent from "@/components/home-page/HomePageComponent";
 
 export const metadata: Metadata = {
@@ -25,6 +26,12 @@ export const metadata: Metadata = {
 export default async function Home() {
     return (
         <>
+            <Script
+                async
+                src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-2799688336707362"
+                crossOrigin="anonymous"
+                strategy="beforeInteractive"
+            />
             <script
                 type="application/ld+json"
                 dangerouslySetInnerHTML={{
