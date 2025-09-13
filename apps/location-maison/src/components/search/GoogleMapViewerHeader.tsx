@@ -73,7 +73,7 @@ export default function GoogleMapViewerHeader({
         {/* Composant de recherche flottante */}
         <div className="relative">
           <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="flex items-center bg-white rounded-full shadow-lg border border-gray-200 px-4 py-3 min-w-[320px]">
+            <div className="flex items-center bg-white rounded-full shadow-lg border border-gray-200 px-4 py-3 min-w-[320px]">
               <button
                 type="button"
                 disabled={isSubmitting}
@@ -97,6 +97,12 @@ export default function GoogleMapViewerHeader({
                         type="text"
                         placeholder="Logement, ville, quartier..."
                         className="border-none outline-none text-sm text-gray-700 placeholder-gray-500 bg-transparent focus-visible:ring-0"
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter') {
+                            e.preventDefault();
+                            form.handleSubmit(onSubmit)();
+                          }
+                        }}
                       />
                     </FormControl>
                     <FormMessage />
@@ -104,7 +110,7 @@ export default function GoogleMapViewerHeader({
                 )}
               />
 
-              <button
+              <Button
                 type="button"
                 onClick={() => setShowFloatingDropdown(!showFloatingDropdown)}
                 className="ml-3 flex items-center gap-2 px-3 py-1.5 bg-gray-100 hover:bg-gray-200 rounded-full text-xs font-medium text-gray-700 transition-colors"
@@ -115,8 +121,8 @@ export default function GoogleMapViewerHeader({
                   size={14}
                   className={`transition-transform ${showFloatingDropdown ? 'rotate-180' : ''}`}
                 />
-              </button>
-            </form>
+              </Button>
+            </div>
           </Form>
 
           {/* Dropdown des filtres */}

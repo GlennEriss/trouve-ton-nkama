@@ -30,7 +30,7 @@ export default function LocationFiltersDropdown({
         <h3 className="text-sm font-semibold text-gray-900 mb-4">📍 Filtres de localisation</h3>
 
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+          <div className="space-y-4">
             <div className="grid grid-cols-1 gap-4">
               <SelectProvince />
               <SelectCity />
@@ -40,7 +40,8 @@ export default function LocationFiltersDropdown({
             {/* Boutons d'action */}
             <div className="flex items-center gap-3 pt-2">
               <Button
-                type="submit"
+                type="button"
+                onClick={() => form.handleSubmit(onSubmit)()}
                 className="bg-[#146B67] hover:bg-[#1FA89B] text-white px-4 py-2 text-sm"
               >
                 Appliquer
@@ -54,7 +55,7 @@ export default function LocationFiltersDropdown({
                 Effacer
               </Button>
             </div>
-          </form>
+          </div>
         </Form>
       </div>
     </div>
