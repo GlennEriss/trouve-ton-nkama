@@ -26,38 +26,36 @@ export const metadata: Metadata = {
 export default async function Home() {
     return (
         <>
-            <head>
-                <Script
-                    async
-                    src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-2799688336707362"
-                    crossOrigin="anonymous"
-                    strategy="afterInteractive"
-                />
-                <script
-                    type="application/ld+json"
-                    dangerouslySetInnerHTML={{
-                        __html: JSON.stringify({
-                            "@context": "https://schema.org",
-                            "@type": "WebSite",
-                            "name": "Trouve Ton Nkama",
-                            "description": "Plateforme immobilière de référence au Gabon. Location et vente de maisons, appartements, villas à Libreville, Port-Gentil, Franceville.",
-                            "url": process.env.NEXT_PUBLIC_HOST || 'https://www.tonnkama.com',
-                            "potentialAction": {
-                                "@type": "SearchAction",
-                                "target": {
-                                    "@type": "EntryPoint",
-                                    "urlTemplate": `${process.env.NEXT_PUBLIC_HOST || 'https://www.tonnkama.com'}/search?q={search_term_string}`
-                                },
-                                "query-input": "required name=search_term_string"
+            <Script
+                async
+                src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-2799688336707362"
+                crossOrigin="anonymous"
+                strategy="afterInteractive"
+            />
+            <script
+                type="application/ld+json"
+                dangerouslySetInnerHTML={{
+                    __html: JSON.stringify({
+                        "@context": "https://schema.org",
+                        "@type": "WebSite",
+                        "name": "Trouve Ton Nkama",
+                        "description": "Plateforme immobilière de référence au Gabon. Location et vente de maisons, appartements, villas à Libreville, Port-Gentil, Franceville.",
+                        "url": process.env.NEXT_PUBLIC_HOST || 'https://www.tonnkama.com',
+                        "potentialAction": {
+                            "@type": "SearchAction",
+                            "target": {
+                                "@type": "EntryPoint",
+                                "urlTemplate": `${process.env.NEXT_PUBLIC_HOST || 'https://www.tonnkama.com'}/search?q={search_term_string}`
                             },
-                            "sameAs": [
-                                "https://www.facebook.com/tonnkama",
-                                "https://www.instagram.com/tonnkama"
-                            ]
-                        })
-                    }}
-                />
-            </head>
+                            "query-input": "required name=search_term_string"
+                        },
+                        "sameAs": [
+                            "https://www.facebook.com/tonnkama",
+                            "https://www.instagram.com/tonnkama"
+                        ]
+                    })
+                }}
+            />
             <HomePageComponent />
         </>
     )
