@@ -30,7 +30,7 @@ export default async function Home() {
                 async
                 src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-2799688336707362"
                 crossOrigin="anonymous"
-                strategy="afterInteractive"
+                strategy="beforeInteractive"
             />
             <script
                 type="application/ld+json"
