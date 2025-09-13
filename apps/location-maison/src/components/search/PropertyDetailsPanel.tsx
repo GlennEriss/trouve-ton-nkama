@@ -2,6 +2,7 @@
 
 import { X } from 'lucide-react';
 import { Button } from '../ui/button';
+import { useRouter } from 'next/navigation';
 
 interface PropertyDetailsPanelProps {
   selectedProperty: any;
@@ -10,10 +11,11 @@ interface PropertyDetailsPanelProps {
 
 export default function PropertyDetailsPanel({ selectedProperty, onClose }: PropertyDetailsPanelProps) {
   if (!selectedProperty) return null;
+  const router = useRouter();
 
   function translatePropertyType(type?: string): string {
     if (!type) return 'Non spécifié';
-    
+
     const typeTranslations: Record<string, string> = {
       home: 'Maison',
       villa: 'Villa',
@@ -28,11 +30,10 @@ export default function PropertyDetailsPanel({ selectedProperty, onClose }: Prop
       desk: 'Bureau',
       land: 'Terrain'
     };
-    
+
     const normalizedType = String(type).toLowerCase().trim();
     return typeTranslations[normalizedType] || normalizedType;
   }
-
   return (
     <div className="absolute bottom-6 right-6 w-80 bg-white rounded-xl shadow-xl border border-gray-200">
       <div className="p-6">
@@ -84,15 +85,17 @@ export default function PropertyDetailsPanel({ selectedProperty, onClose }: Prop
         </div>
 
         <div className="flex gap-3">
-          <Button className="flex-1 bg-[#146B67] hover:bg-[#1FA89B] text-white">
+          <Button
+            onClick={() => router.push(`/houseDetails/${selectedProperty.objectID}`)}
+            className="flex-1 bg-[#146B67] hover:bg-[#1FA89B] text-white">
             Voir les détails
           </Button>
-          <Button
+          {/* <Button
             variant="outline"
             className="flex-1 border-[#146B67] text-[#146B67] hover:bg-[#146B67] hover:text-white"
           >
             Contacter
-          </Button>
+          </Button> */}
         </div>
       </div>
     </div>
