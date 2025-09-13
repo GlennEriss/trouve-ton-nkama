@@ -2,7 +2,7 @@
 
 import React from 'react'
 import Form from 'next/form'
-import { Search, MapPin } from 'lucide-react';
+import { Search, MapPin, ChevronUp, ChevronDown } from 'lucide-react';
 import { Input } from '../ui/input';
 import { FilterModalHomePage } from '../home-page/FilterModalHomePage';
 import { useAlgoliaContext } from '@/providers/AlgoliaContext';
@@ -211,14 +211,14 @@ export default function SearchMobilePage() {
                             className="p-2 bg-gray-200 dark:bg-gray-700 rounded-full shadow hover:bg-gray-300 dark:hover:bg-gray-600 transition"
                             aria-label="Aller en haut"
                         >
-                            ↑
+                            <ChevronUp size={20} />
                         </button>
                         <button
                             onClick={scrollToBottom}
                             className="p-2 bg-gray-200 dark:bg-gray-700 rounded-full shadow hover:bg-gray-300 dark:hover:bg-gray-600 transition"
                             aria-label="Aller en bas"
                         >
-                            ↓
+                            <ChevronDown size={20} />
                         </button>
                     </div>
                 </section>
