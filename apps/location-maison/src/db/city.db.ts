@@ -1,6 +1,6 @@
 import { City } from "@/models/city";
 import firebaseCollectionNames from "@/constantes/firebase-collection-name";
-import { createModel } from "./generic.db";
+import { createModel, createModelWithCustomId, LocationIdGenerator } from "./generic.db";
 
 const getFirestore = () => import("@/firebase/firestore");
 
@@ -31,7 +31,17 @@ export async function createCityIfNotExists(city: Omit<City, 'id' | 'createdAt' 
     try {
         const existing = await findCityByName(city.name, city.provinceName);
         if (existing) return existing.id;
-        const result = await createModel<Omit<City, 'id'>>(city as any, firebaseCollectionNames.cities);
+        
+        // Générer l'ID personnalisé avec les coordonnées
+        let customId: string;
+        if (city.longitude && city.latitude) {
+            customId = LocationIdGenerator.generateCity(city.name, city.longitude, city.latitude);
+        } else {
+            // Fallback si pas de coordonnées
+            customId = city.name.toLowerCase().replace(/\s+/g, '') + '_0.00000_0.00000';
+        }
+        
+        const result = await createModelWithCustomId<Omit<City, 'id' | 'createdAt' | 'updatedAt'>>(city as any, firebaseCollectionNames.cities, customId);
         return result;
     } catch (error) {
         console.error("Error creating city:", error);
