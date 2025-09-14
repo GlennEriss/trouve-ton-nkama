@@ -56,7 +56,17 @@ export default function Footer({ isHide = false }: Readonly<{ isHide?: boolean }
                         </li>
                     </ul>
                 </div>
-
+                <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-2799688336707362"
+                    crossOrigin="anonymous"></script>
+                <ins className="adsbygoogle"
+                    style={{ display: 'block' }}
+                    data-ad-client="ca-pub-2799688336707362"
+                    data-ad-slot="7503013398"
+                    data-ad-format="auto"
+                    data-full-width-responsive="true"></ins>
+                <script>
+                    (adsbygoogle = window.adsbygoogle || []).push({ });
+                </script>
                 {/* Section Contacts */}
                 <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mt-6">
                     <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between text-white space-y-4 sm:space-y-0 sm:space-x-6">
