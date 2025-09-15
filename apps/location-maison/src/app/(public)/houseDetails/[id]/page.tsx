@@ -1,4 +1,6 @@
 import HouseDetails from '@/components/preview-property/HouseDetails'
+import Head from 'next/head';
+import Script from 'next/script';
 //import { getPropertyById } from '@/db/property.db'
 import React from 'react'
 
@@ -33,6 +35,16 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
 
 export default async function page({ params }: { params: Promise<{ id: string }> }) {
   return (
-    <HouseDetails/>
+    <>
+      <Head>
+        <Script
+          async
+          src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-2799688336707362"
+          crossOrigin="anonymous"
+          strategy="beforeInteractive"
+        />
+      </Head>
+      <HouseDetails />
+    </>
   )
 }
