@@ -69,7 +69,6 @@ export default function Footer({ isHide = false }: Readonly<{ isHide?: boolean }
                         (adsbygoogle = window.adsbygoogle || []).push({ });
                     </script>
                 </div>
-
                 {/* Section Contacts */}
                 <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mt-6">
                     <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between text-white space-y-4 sm:space-y-0 sm:space-x-6">
