@@ -2,9 +2,15 @@
 import React from 'react';
 import { Property } from '@/models/annonce';
 import { FaFacebookF } from 'react-icons/fa';
+import { useTrackPropertyInteraction } from "@/hooks/use-track-property-interaction";
 
 export default function ButtonShareToFacebook({ property }: Readonly<{ property: Property }>) {
+    const { trackInteraction } = useTrackPropertyInteraction(property.id)
+
     const handleShare = () => {
+        // Tracker le partage Facebook
+        trackInteraction('facebook_share');
+
         const url = `${process.env.NEXT_PUBLIC_HOST}/houseDetails/${property.id}`;
         const fbUrl = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}`;
         window.open(fbUrl, '_blank', 'width=600,height=400');

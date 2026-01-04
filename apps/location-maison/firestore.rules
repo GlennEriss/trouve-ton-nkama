@@ -68,8 +68,23 @@ service cloud.firestore {
     }
     
     match /streets/{streetId} {
-      allow read: if true;
-      allow create, update: if isSignedIn();
+      allow read: if true;           
+      allow create, update: if isSignedIn();  
+    }
+
+    match /property_statistics/{statisticsId} {
+      // Tracking : création publique pour permettre le tracking des vues/interactions
+      allow create: if true;
+      
+      // Lecture : uniquement pour le propriétaire de la propriété
+      allow read: if isSignedIn() && request.auth.uid == resource.data.propertyOwnerId;
+      
+      // Mise à jour : uniquement le système (via Cloud Functions ou Admin SDK)
+      // Les mises à jour se font via les API routes qui vérifient l'authentification côté serveur
+      allow update: if false; // Désactivé côté client, uniquement via API routes/Admin SDK
+      
+      // Suppression : uniquement le propriétaire
+      allow delete: if isSignedIn() && request.auth.uid == resource.data.propertyOwnerId;
     }
   }
-} 
+}

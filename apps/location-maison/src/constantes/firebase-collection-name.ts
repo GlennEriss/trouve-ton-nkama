@@ -9,7 +9,8 @@ const firebaseCollectionNames = {
     notifications: 'notifications',
     provinces: 'provinces',
     cities: 'cities',
-    streets: 'streets'
+    streets: 'streets',
+    property_statistics: 'property_statistics'
 }
 
 export default firebaseCollectionNames

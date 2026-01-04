@@ -7,6 +7,7 @@ import { useProperty } from "@/hooks/use-property"
 import { notFound, useParams } from "next/navigation"
 import HouseDetailSkeleton from "./HouseDetailSkeleton"
 import RecommendationSection from "./RecommendationSection"
+import { useTrackPropertyView } from "@/hooks/use-track-property-view"
 
 export default function HouseDetails() {
     const size = useWindowSize()
@@ -15,6 +16,9 @@ export default function HouseDetails() {
         notFound()
     }
     const { data: property, isLoading, error } = useProperty(id)
+    
+    // Tracking des vues sur la page publique
+    useTrackPropertyView(id)
 
     if (isLoading) {
         return (

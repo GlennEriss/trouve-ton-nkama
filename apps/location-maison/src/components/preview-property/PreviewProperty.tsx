@@ -1,3 +1,4 @@
+'use client'
 import React from 'react'
 import Tag from './Tag'
 import { GoLocation } from 'react-icons/go'
@@ -9,8 +10,13 @@ import ContactSection from './ContactSection'
 import { MapSection } from './MapSection'
 import ButtonShare from './ButtonShare'
 import { AlertTriangle } from 'lucide-react'
+import PropertyStatisticsSummary from '@/components/property/PropertyStatisticsSummary'
+import { useCurrentUser } from '@/hooks/use-current-user'
 
 export default function PreviewProperty({ property }: Readonly<{ property: Property }>) {
+  const { user } = useCurrentUser()
+  const isOwner = property.createdBy === user?.uid
+  
   const tagSatus: Record<string, string> = {
     "FOR_RENT": "A LOUER",
     "FOR_SALE": "A VENDRE"
@@ -120,6 +126,14 @@ export default function PreviewProperty({ property }: Readonly<{ property: Prope
           longitude={property.longitude}
           countryCode={property.countryCode}
         />
+
+        {/* Section Statistiques - Visible uniquement pour le propriétaire */}
+        {isOwner && property.id && (
+          <PropertyStatisticsSummary 
+            propertyId={property.id}
+            property={property}
+          />
+        )}
       </section>
     </div>
   )

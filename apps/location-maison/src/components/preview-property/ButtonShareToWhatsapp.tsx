@@ -1,9 +1,16 @@
+'use client'
 import { Property } from '@/models/annonce'
 import React from 'react'
 import { FaWhatsapp } from 'react-icons/fa'
+import { useTrackPropertyInteraction } from "@/hooks/use-track-property-interaction"
 
 export default function ButtonShareToWhatsapp({ property }: Readonly<{ property: Property }>) {
+  const { trackInteraction } = useTrackPropertyInteraction(property.id)
+
   const handleShare = () => {
+    // Tracker le partage WhatsApp
+    trackInteraction('whatsapp_share');
+
     const message = `🏠 Découvrez cette annonce sur Trouve Ton Nkama :
 ${property.title}
 ${property.description?.slice(0, 100)}...
