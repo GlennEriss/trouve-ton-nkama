@@ -1,0 +1,696 @@
+{
+  "metadata": {
+    "source": "Facebook Group",
+    "totalPosts": 200,
+    "propertiesExtracted": 14,
+    "extractionDate": "2026-01-05T08:45:31.518Z"
+  },
+  "properties": [
+    {
+      "typeProperty": "room",
+      "title": "📍 *À 5 min de la route principale*",
+      "description": "📍 *À 5 min de la route principale*\n\n🔹 *Étage 😗 1er  \n🔹 *2 chambres* avec placards  \n🔹 *Salon spacieux*  \n🔹 *Cuisine*  \n🔹 *1 douche + WC*  \n🔹 *Grille de sécurité*  \n🔹 *Clôturé*\n\n💧 *Eau incluse dans le loyer*\n\n💵 *Prix : 210 000 FCFA/mois*  \n📞 *Contact : 074953601 – Johan Solutions*  \n📌 *Loyer + Caution + Frais d’agence*  \n👀 *Visite payante*",
+      "images": [
+        {
+          "filePATH": "facebook/100067401866344_26_0.jpg",
+          "fileURL": "https://scontent.fmli2-1.fna.fbcdn.net/v/t39.30808-6/608861622_1201115082145209_6135799409874905586_n.jpg?stp=dst-jpg_s590x590_tt6&_nc_cat=103&ccb=1-7&_nc_sid=aa7b47&_nc_ohc=6N0OkAAaaksQ7kNvwEDjOlx&_nc_oc=Adl4PYS9yLFv_SrkPDdnZT5fBboW1ybLwxAN8o9FYnW_GLS17afud-THCY0Khtysxi0&_nc_zt=23&_nc_ht=scontent.fmli2-1.fna&_nc_gid=Xzgv7jhzb_5HkmSvwOaieQ&oh=00_AfppRvibbjQzlw7nHVM_eYcrbtMGUxBWhVO6H_suORBd2w&oe=696138FF"
+        },
+        {
+          "filePATH": "facebook/100067401866344_26_1.jpg",
+          "fileURL": "https://scontent.fmli2-1.fna.fbcdn.net/v/t39.30808-6/608870750_1201115178811866_7383759022944321117_n.jpg?stp=dst-jpg_s590x590_tt6&_nc_cat=101&ccb=1-7&_nc_sid=aa7b47&_nc_ohc=icJUAY6j4wEQ7kNvwHg9RKJ&_nc_oc=AdnmfpYtItxyhkBZPtZxTcK5nLoJoy8NVDYPXvMON61AVPNxmXo1AR18rTJObsAgJRM&_nc_zt=23&_nc_ht=scontent.fmli2-1.fna&_nc_gid=Xzgv7jhzb_5HkmSvwOaieQ&oh=00_AfqojZxN5GFJ3NCOBpCVQ4oRxuj8AJxrQvIMQUoC4rXSpg&oe=69616327"
+        },
+        {
+          "filePATH": "facebook/100067401866344_26_2.jpg",
+          "fileURL": "https://scontent.fmli2-1.fna.fbcdn.net/v/t39.30808-6/607964410_1201115568811827_703440420271355576_n.jpg?stp=dst-jpg_s590x590_tt6&_nc_cat=100&ccb=1-7&_nc_sid=aa7b47&_nc_ohc=qkxF0FuzIDYQ7kNvwFMZjsE&_nc_oc=AdleBBlowqy2l8GDYUYZdnCA0yJY-RMkXIplvBBFZNnUVRWc8RXkbqya3QfFFlAqZbY&_nc_zt=23&_nc_ht=scontent.fmli2-1.fna&_nc_gid=Xzgv7jhzb_5HkmSvwOaieQ&oh=00_AfqApbiuXsY_f9JClnR-aSL5H-PYiWTOKxr3h5sGlvMr8Q&oe=69613F99"
+        },
+        {
+          "filePATH": "facebook/100067401866344_26_3.jpg",
+          "fileURL": "https://scontent.fmli2-1.fna.fbcdn.net/v/t39.30808-6/608390929_1201115392145178_3191660316735558129_n.jpg?stp=dst-jpg_s590x590_tt6&_nc_cat=101&ccb=1-7&_nc_sid=aa7b47&_nc_ohc=0Kjs3jFgxBYQ7kNvwFA-tFH&_nc_oc=AdmrP9fst4EqoK604ifJSEptz-lkMATbSfE0-td1QsFpuJsMWbZUeLjPIj9OiggLYWc&_nc_zt=23&_nc_ht=scontent.fmli2-1.fna&_nc_gid=Xzgv7jhzb_5HkmSvwOaieQ&oh=00_AfotRdprt7i10occGcoYSlPaEIiz1xollDRpE2Gr70QYSA&oe=696147D9"
+        },
+        {
+          "filePATH": "facebook/100067401866344_26_4.jpg",
+          "fileURL": "https://scontent.fmli2-1.fna.fbcdn.net/v/t39.30808-6/611600894_1201115238811860_8236322363503619847_n.jpg?stp=dst-jpg_s590x590_tt6&_nc_cat=104&ccb=1-7&_nc_sid=aa7b47&_nc_ohc=r8fp5PcykXYQ7kNvwEWuC_h&_nc_oc=Adn1-7trMEU4KxKoWbPjEFhp0TZBjp5knwiS65hpjvoZ1jqGymK5qE8xiO-NPKqFi1U&_nc_zt=23&_nc_ht=scontent.fmli2-1.fna&_nc_gid=Xzgv7jhzb_5HkmSvwOaieQ&oh=00_AfpoggoWd8iMb8Y9lC7qWtd5it9HY4cXe1TNusnXgaiyEA&oe=69613737"
+        }
+      ],
+      "price": 210,
+      "area": 0,
+      "status": "FOR_RENT",
+      "tags": [],
+      "contact": "",
+      "street": "",
+      "city": "Libreville",
+      "province": "Estuaire",
+      "country": "Gabon",
+      "countryCode": "GA",
+      "longitude": 9.4672676,
+      "latitude": 0.4161976,
+      "isLocExact": false,
+      "_source": {
+        "facebookUrl": "https://www.facebook.com/groups/953208923179218",
+        "userId": "100067401866344",
+        "userName": "Johan solution",
+        "likesCount": 3,
+        "commentsCount": 0
+      }
+    },
+    {
+      "typeProperty": "studio",
+      "title": "JOLIE STUDIO",
+      "description": "JOLIE STUDIO \nSALON AMÉRICAIN AVEC CUISINE, CHAMBRE DOUCHE TOILETTE TERASSE LAVABO SECHE LINGE \nEAUX EN PERMANENCE.\nDANS UNE RÉSIDENCE CALME AVEC GARDIEN \nSITUÉ A IAI AU GOLF PRATIQUEMENT EN BORDURE DE ROUTE \nPRIX.135000FCFA CHARGE D'EAU ET COURANT INCLUS A\nvisite.5000mil\nfrais a payé \nTEL.074530543",
+      "images": [
+        {
+          "filePATH": "facebook/pfbid031WrMKByXN8jYH5Fsr9EAgy1hUPVdkGwCx18sWVjBqbapZBBbTGrfQDJCNa6eNwHtl_47_0.jpg",
+          "fileURL": "https://scontent-hou1-1.xx.fbcdn.net/v/t39.30808-6/611152012_4172339889687023_890413878048088175_n.jpg?stp=dst-jpg_s590x590_tt6&_nc_cat=110&ccb=1-7&_nc_sid=aa7b47&_nc_ohc=huHVulsf8QIQ7kNvwHGVb4y&_nc_oc=AdkhVippyuyTmwA8hHvWc_THf8cn8m2Ba_H9wPv3UjJ1MD6Itbtc7pkWKyWnIIZm8XY&_nc_zt=23&_nc_ht=scontent-hou1-1.xx&_nc_gid=PknFEoY5JEzNkJ2vvvDJRw&oh=00_AfqxGitDnRLxPykkzeNwtMEtNOdSGLYZk-POnQ8G00C6Dg&oe=696135FB"
+        },
+        {
+          "filePATH": "facebook/pfbid031WrMKByXN8jYH5Fsr9EAgy1hUPVdkGwCx18sWVjBqbapZBBbTGrfQDJCNa6eNwHtl_47_1.jpg",
+          "fileURL": "https://scontent-hou1-1.xx.fbcdn.net/v/t39.30808-6/610889487_4172340363020309_7397563820421572973_n.jpg?stp=dst-jpg_s590x590_tt6&_nc_cat=103&ccb=1-7&_nc_sid=aa7b47&_nc_ohc=h1n8wRpOPUEQ7kNvwHpZTi_&_nc_oc=AdmeENHfGpXRoxbylom2SD-BWkyKOHVQdkgEI64y72FzxX2UGWxij9zwpF2pBzRPFzE&_nc_zt=23&_nc_ht=scontent-hou1-1.xx&_nc_gid=PknFEoY5JEzNkJ2vvvDJRw&oh=00_Afry11_qv4II2DOWB8hog4Ynp1FBMJezyxpQd55wPhxlwg&oe=69615D4B"
+        },
+        {
+          "filePATH": "facebook/pfbid031WrMKByXN8jYH5Fsr9EAgy1hUPVdkGwCx18sWVjBqbapZBBbTGrfQDJCNa6eNwHtl_47_2.jpg",
+          "fileURL": "https://scontent-hou1-1.xx.fbcdn.net/v/t39.30808-6/608971559_4172340289686983_3652483717829386767_n.jpg?stp=dst-jpg_s590x590_tt6&_nc_cat=103&ccb=1-7&_nc_sid=aa7b47&_nc_ohc=usPwnpAcOq8Q7kNvwHaECXm&_nc_oc=Adl1QDbrwmweOutjU631UJQmPX6CphfxyNi_i_pehybWNIZ3Tv0RfpbqxSdhOfUhZXw&_nc_zt=23&_nc_ht=scontent-hou1-1.xx&_nc_gid=PknFEoY5JEzNkJ2vvvDJRw&oh=00_AfpVi03P2R56zLEd84FGZKmy6iegpxypJsRoHOCr__A_FQ&oe=6961500D"
+        },
+        {
+          "filePATH": "facebook/pfbid031WrMKByXN8jYH5Fsr9EAgy1hUPVdkGwCx18sWVjBqbapZBBbTGrfQDJCNa6eNwHtl_47_3.jpg",
+          "fileURL": "https://scontent-hou1-1.xx.fbcdn.net/v/t39.30808-6/611143000_4172340319686980_3348558327892944018_n.jpg?stp=dst-jpg_s590x590_tt6&_nc_cat=103&ccb=1-7&_nc_sid=aa7b47&_nc_ohc=eWWc71v14oEQ7kNvwGflf13&_nc_oc=AdlXfEMNrAmtTUzJUefn5cbVn15kRcUmVM05e99cLTEuXDDWz6PCQ1AXKQLHg-6LSO4&_nc_zt=23&_nc_ht=scontent-hou1-1.xx&_nc_gid=PknFEoY5JEzNkJ2vvvDJRw&oh=00_AfrHBVY9ePq204OL5uKK2FwOWibLe_JfXNdR34b7ulx7RQ&oe=696142D4"
+        },
+        {
+          "filePATH": "facebook/pfbid031WrMKByXN8jYH5Fsr9EAgy1hUPVdkGwCx18sWVjBqbapZBBbTGrfQDJCNa6eNwHtl_47_4.jpg",
+          "fileURL": "https://scontent-hou1-1.xx.fbcdn.net/v/t39.30808-6/611652840_4172340213020324_3486703018955224822_n.jpg?stp=dst-jpg_s590x590_tt6&_nc_cat=111&ccb=1-7&_nc_sid=aa7b47&_nc_ohc=joXKh-3Nf7sQ7kNvwEGS6QM&_nc_oc=Admb9-NfQae83seE7eRH2qDVBxwhetJ1kmeEJAAuWLozV2PCzfKnU41_uYCX6AHz3tI&_nc_zt=23&_nc_ht=scontent-hou1-1.xx&_nc_gid=PknFEoY5JEzNkJ2vvvDJRw&oh=00_Afr_CpryRVitvXunyqRdeMR-GXJ45v-xUDt_Un-ZaXvxjw&oe=696142E3"
+        }
+      ],
+      "price": 5000,
+      "area": 0,
+      "status": "FOR_RENT",
+      "tags": [],
+      "contact": "",
+      "street": "",
+      "city": "Libreville",
+      "province": "Estuaire",
+      "country": "Gabon",
+      "countryCode": "GA",
+      "longitude": 9.4672676,
+      "latitude": 0.4161976,
+      "isLocExact": false,
+      "nbrRooms": 0,
+      "nbrBathrooms": 0,
+      "nbrToilets": 0,
+      "nbrChickens": 0,
+      "_source": {
+        "facebookUrl": "https://www.facebook.com/groups/953208923179218",
+        "userId": "pfbid031WrMKByXN8jYH5Fsr9EAgy1hUPVdkGwCx18sWVjBqbapZBBbTGrfQDJCNa6eNwHtl",
+        "userName": "Marc Antoine",
+        "likesCount": 5,
+        "commentsCount": 0
+      }
+    },
+    {
+      "typeProperty": "home",
+      "title": "À vendre: Conteneur préfabriqué de 5 douches. Modifiable et aménageable. 650.000F. 065.80.20.99 / 07",
+      "description": "À vendre: Conteneur préfabriqué de 5 douches. Modifiable et aménageable. 650.000F. 065.80.20.99 / 077.26.33.69",
+      "images": [
+        {
+          "filePATH": "facebook/pfbid0244HZa1mS6eJ1HtXFcLc3t7WUCdq1RS228XCJWQNijTCd6mw9M8Eiha5XBJ72eh4cl_48_0.jpg",
+          "fileURL": "https://scontent-hou1-1.xx.fbcdn.net/v/t39.30808-6/610973501_122149044224724893_1977975317141649640_n.jpg?stp=dst-jpg_s590x590_tt6&_nc_cat=103&ccb=1-7&_nc_sid=aa7b47&_nc_ohc=719fmXVvy6wQ7kNvwGXNVOJ&_nc_oc=AdmbvtsMUdVa7cBE5MSTmcvJHOaNOIUJekRLy0ajmkYkd7sLC9nYWK9dDSVZmY42wc0&_nc_zt=23&_nc_ht=scontent-hou1-1.xx&_nc_gid=PknFEoY5JEzNkJ2vvvDJRw&oh=00_Afo5NEOHCH1fYD9IqwNBJSmZl4Hn7L5lciL2m199otyx_A&oe=69612E88"
+        },
+        {
+          "filePATH": "facebook/pfbid0244HZa1mS6eJ1HtXFcLc3t7WUCdq1RS228XCJWQNijTCd6mw9M8Eiha5XBJ72eh4cl_48_1.jpg",
+          "fileURL": "https://scontent-hou1-1.xx.fbcdn.net/v/t39.30808-6/610978461_122149044218724893_163273165256768719_n.jpg?stp=dst-jpg_s590x590_tt6&_nc_cat=106&ccb=1-7&_nc_sid=aa7b47&_nc_ohc=AJTylm0zh_sQ7kNvwEzoFZo&_nc_oc=AdkPrM4N6tc8ZU907wQhj8uj01eV9JuLO6DOtPHRlqJBhAZyX4K90haiLvdH9vQfQ8c&_nc_zt=23&_nc_ht=scontent-hou1-1.xx&_nc_gid=PknFEoY5JEzNkJ2vvvDJRw&oh=00_AfrPKm1GEYpWDergUf8AhbSpFo1n-Vgpf_MG_AF-j53mag&oe=696160F2"
+        }
+      ],
+      "price": 0,
+      "area": 0,
+      "status": "FOR_SALE",
+      "tags": [],
+      "contact": "",
+      "street": "",
+      "city": "Libreville",
+      "province": "Estuaire",
+      "country": "Gabon",
+      "countryCode": "GA",
+      "longitude": 9.4672676,
+      "latitude": 0.4161976,
+      "isLocExact": false,
+      "nbrRooms": 0,
+      "nbrBathrooms": 5,
+      "nbrToilets": 5,
+      "nbrChickens": 0,
+      "_source": {
+        "facebookUrl": "https://www.facebook.com/groups/953208923179218",
+        "userId": "pfbid0244HZa1mS6eJ1HtXFcLc3t7WUCdq1RS228XCJWQNijTCd6mw9M8Eiha5XBJ72eh4cl",
+        "userName": "Jean Ndaki",
+        "likesCount": 0,
+        "commentsCount": 0
+      }
+    },
+    {
+      "typeProperty": "home",
+      "title": "Très grand local pour bar à louer à nzeng ayong cité rose avec grande terrasse et toilettes extérieu",
+      "description": "Très grand local pour bar à louer à nzeng ayong cité rose avec grande terrasse et toilettes extérieurs modernes.\nPrix : 100 milles avec la charge d'eau compteur de courant personnel \nModalités : loyer+ caution+ frais de commission \nVisite payante \nPour plus d'informations : 066595202",
+      "images": [
+        {
+          "filePATH": "facebook/100001881658065_50_0.jpg",
+          "fileURL": "https://scontent-atl3-2.xx.fbcdn.net/v/t39.30808-6/611756950_33248151004830860_6439153436258348970_n.jpg?stp=dst-jpg_s590x590_tt6&_nc_cat=102&ccb=1-7&_nc_sid=aa7b47&_nc_ohc=-DocsMyADv0Q7kNvwFepY-W&_nc_oc=AdlGixSJVSmOaKYsZrhZ4XeEy0yBdHaMP56bkEdY2MflCEGREHiSu5w-LAaZe1Ii-ucy_wSaXCer8GW8tepgtYGW&_nc_zt=23&_nc_ht=scontent-atl3-2.xx&_nc_gid=_7rtB3SWEE-hJI9ab_utCg&oh=00_AfqEGPhy1QvRlEosERjMck-g0_pLiR85AWPPLLn2SFW8Tg&oe=696140EA"
+        },
+        {
+          "filePATH": "facebook/100001881658065_50_1.jpg",
+          "fileURL": "https://scontent-atl3-3.xx.fbcdn.net/v/t39.30808-6/611816449_33248151094830851_1246281994280716343_n.jpg?stp=dst-jpg_s590x590_tt6&_nc_cat=110&ccb=1-7&_nc_sid=aa7b47&_nc_ohc=qezoYDiSMt8Q7kNvwHYmJyf&_nc_oc=Adno74DcG_KiEn4p5Im-IZF-OflXl69Obk8LqHD3ftD6u6LrFdMAc6PCXQuS32P4FQypkfHZQpk6T3JmySAdv_DS&_nc_zt=23&_nc_ht=scontent-atl3-3.xx&_nc_gid=_7rtB3SWEE-hJI9ab_utCg&oh=00_Afor1XuOsr-IACuonZffTVHTSlGzRBNnvYy_AjU2CHYjRw&oe=69613FDF"
+        },
+        {
+          "filePATH": "facebook/100001881658065_50_2.jpg",
+          "fileURL": "https://scontent-atl3-3.xx.fbcdn.net/v/t39.30808-6/611071652_33248151101497517_5241836024452880202_n.jpg?stp=dst-jpg_s590x590_tt6&_nc_cat=110&ccb=1-7&_nc_sid=aa7b47&_nc_ohc=IP6VVqfoPTYQ7kNvwHwGbuH&_nc_oc=AdlSysqoANFzdW_IiUUPM8cbvA6QO-npU3EyH-01pJpkIOd2VR0m7_afV4mbLhAhy0dlElQjVUmrC2jR3V_ALMIw&_nc_zt=23&_nc_ht=scontent-atl3-3.xx&_nc_gid=_7rtB3SWEE-hJI9ab_utCg&oh=00_AfrlmxMbSCzogbUEaoOO9LU6H4DGpU6_7rD5y37T_A6tHg&oe=69615CD8"
+        },
+        {
+          "filePATH": "facebook/100001881658065_50_3.jpg",
+          "fileURL": "https://scontent-atl3-3.xx.fbcdn.net/v/t39.30808-6/611004495_33248150918164202_2117191651921999544_n.jpg?stp=dst-jpg_s590x590_tt6&_nc_cat=107&ccb=1-7&_nc_sid=aa7b47&_nc_ohc=sOe-n7zfXV8Q7kNvwEkknlR&_nc_oc=AdkkbAW0Wzkygat66tWcAcmdL6Q4L9U4wCsnWvpJAY6u0WxekZJrazVX7ublF29m7Zi8ptPf4Jo3djfnV-9kdqcf&_nc_zt=23&_nc_ht=scontent-atl3-3.xx&_nc_gid=_7rtB3SWEE-hJI9ab_utCg&oh=00_AfrrGyhK9M9DvJMIA6eYJ6oDSYYxJThmFTPsO2qHDNgdfQ&oe=69613D19"
+        }
+      ],
+      "price": 100000,
+      "area": 0,
+      "status": "FOR_RENT",
+      "tags": [],
+      "contact": "",
+      "street": "",
+      "city": "Libreville",
+      "province": "Estuaire",
+      "country": "Gabon",
+      "countryCode": "GA",
+      "longitude": 9.4672676,
+      "latitude": 0.4161976,
+      "isLocExact": false,
+      "nbrRooms": 0,
+      "nbrBathrooms": 0,
+      "nbrToilets": 0,
+      "nbrChickens": 0,
+      "_source": {
+        "facebookUrl": "https://www.facebook.com/groups/953208923179218",
+        "userId": "100001881658065",
+        "userName": "Marius Essame",
+        "likesCount": 0,
+        "commentsCount": 0
+      }
+    },
+    {
+      "typeProperty": "room",
+      "title": "SITUÉ AU PK 7",
+      "description": "SITUÉ AU PK 7\n\n*CARACTÉRISTIQUES*\n\n1 CHAMBRES\n\n1 SALON\n\nUNE CUISINE\n\nUNE TERRASSE\n\n*LOYER MENSUEL*/ 110MILLES AVC\n\nCHARGE D'EAU\nAlex Rama • 26 min •\n*CONDITIONS 5000 MIL LA VISITE DE PAIEMENT*/ CAUTION + LOYER +LES FRAIS\n074275857",
+      "images": [
+        {
+          "filePATH": "facebook/pfbid02dfo81qYJRNvTos969u5MkGXAukpKTQy1BQZCku4UcS37hpCmfe1Bd7WTovpV5j1bl_51_0.jpg",
+          "fileURL": "https://scontent-atl3-2.xx.fbcdn.net/v/t39.30808-6/606063261_1183973880612089_3792991239542181023_n.jpg?stp=dst-jpg_s590x590_tt6&_nc_cat=102&ccb=1-7&_nc_sid=aa7b47&_nc_ohc=ma3kYYd4688Q7kNvwGN-KMX&_nc_oc=Admo3g7_1eV2XKp2VWHZA5NQE3BEKGKGowH0uHDbfP5YGOl1yvITut0oRtxR7uC7ov_oUAvV1ixHyyQMKYA77HGz&_nc_zt=23&_nc_ht=scontent-atl3-2.xx&_nc_gid=_7rtB3SWEE-hJI9ab_utCg&oh=00_AfpiGYLzITL1wHHNNcHCUZmCuvw1X8N72gFO9V71lYFbEg&oe=69615534"
+        },
+        {
+          "filePATH": "facebook/pfbid02dfo81qYJRNvTos969u5MkGXAukpKTQy1BQZCku4UcS37hpCmfe1Bd7WTovpV5j1bl_51_1.jpg",
+          "fileURL": "https://scontent-atl3-2.xx.fbcdn.net/v/t39.30808-6/607438979_1183973940612083_3264284967302203795_n.jpg?stp=dst-jpg_s590x590_tt6&_nc_cat=104&ccb=1-7&_nc_sid=aa7b47&_nc_ohc=r8Jj0hMDz1oQ7kNvwE-PXqW&_nc_oc=AdmJmpQMsFVYzyqN0ScvZQ9hI2-7h5R3yf_1HEZ2Vot-2WprWsfBYzmJ1Q-_y2LjPQXDVjeS4yF18i657Mxj5m2f&_nc_zt=23&_nc_ht=scontent-atl3-2.xx&_nc_gid=_7rtB3SWEE-hJI9ab_utCg&oh=00_AfqJwizEk8hG6RI09KdqFq18ZXLAC5_e-NHPi9N4q1oL1w&oe=6961342C"
+        },
+        {
+          "filePATH": "facebook/pfbid02dfo81qYJRNvTos969u5MkGXAukpKTQy1BQZCku4UcS37hpCmfe1Bd7WTovpV5j1bl_51_2.jpg",
+          "fileURL": "https://scontent-atl3-2.xx.fbcdn.net/v/t39.30808-6/607166916_1183973917278752_7449367551984869142_n.jpg?stp=dst-jpg_s590x590_tt6&_nc_cat=102&ccb=1-7&_nc_sid=aa7b47&_nc_ohc=xNlNzLQAOmkQ7kNvwF_hWqp&_nc_oc=Adk6mj1_Jq9_u1cZ_vYh8z1UwXHhaUk0yXKChQQUZUYzPaDJMO2ChFtl9klnW-XjTcBbEgmr47rONcrbJFC_zdSk&_nc_zt=23&_nc_ht=scontent-atl3-2.xx&_nc_gid=_7rtB3SWEE-hJI9ab_utCg&oh=00_Afpeetrzr8M8LST5_A1Gpd3kagFDBw3r5vUYgTKuJ9ixEw&oe=696144D8"
+        },
+        {
+          "filePATH": "facebook/pfbid02dfo81qYJRNvTos969u5MkGXAukpKTQy1BQZCku4UcS37hpCmfe1Bd7WTovpV5j1bl_51_3.jpg",
+          "fileURL": "https://scontent-atl3-3.xx.fbcdn.net/v/t39.30808-6/606446648_1183973890612088_8451368830920831297_n.jpg?stp=dst-jpg_s590x590_tt6&_nc_cat=107&ccb=1-7&_nc_sid=aa7b47&_nc_ohc=b8NjRnpamGYQ7kNvwEu46e6&_nc_oc=AdntiRZm_A9TzmTzBrpwhKPnVwqiXGfbyIu0bYwI88I-r7ixhjWKMJ80_T55QI8_HlgNTDaStpjzF3g6eRtrl8UR&_nc_zt=23&_nc_ht=scontent-atl3-3.xx&_nc_gid=_7rtB3SWEE-hJI9ab_utCg&oh=00_AfpjTJhYyMwQ-neTRaJyo8qkgyFj_vcm-Q0Bv47iYvH3Cg&oe=69614435"
+        },
+        {
+          "filePATH": "facebook/pfbid02dfo81qYJRNvTos969u5MkGXAukpKTQy1BQZCku4UcS37hpCmfe1Bd7WTovpV5j1bl_51_4.jpg",
+          "fileURL": "https://scontent-atl3-3.xx.fbcdn.net/v/t39.30808-6/607882024_1183973910612086_7686935067793671865_n.jpg?stp=dst-jpg_s590x590_tt6&_nc_cat=107&ccb=1-7&_nc_sid=aa7b47&_nc_ohc=TMNzwiAYkKgQ7kNvwFHxf88&_nc_oc=Adl0VQMv5rGzijViEDDj5UVjCIILdKGaoclzYRIEBVPrkyNzkDjWcpP7bIUgaXWowkHvsmmWSu3mTesRtw-Y1HKH&_nc_zt=23&_nc_ht=scontent-atl3-3.xx&_nc_gid=_7rtB3SWEE-hJI9ab_utCg&oh=00_AfoyHmnDDlrlqYv0DLqVvEgimANC6tZ_MQXPk04gh_uqRg&oe=69613083"
+        }
+      ],
+      "price": 110000,
+      "area": 0,
+      "status": "FOR_RENT",
+      "tags": [],
+      "contact": "",
+      "street": "",
+      "city": "Libreville",
+      "province": "Estuaire",
+      "country": "Gabon",
+      "countryCode": "GA",
+      "longitude": 9.4672676,
+      "latitude": 0.4161976,
+      "isLocExact": false,
+      "_source": {
+        "facebookUrl": "https://www.facebook.com/groups/953208923179218",
+        "userId": "pfbid02dfo81qYJRNvTos969u5MkGXAukpKTQy1BQZCku4UcS37hpCmfe1Bd7WTovpV5j1bl",
+        "userName": "Alex Rama",
+        "likesCount": 1,
+        "commentsCount": 2
+      }
+    },
+    {
+      "typeProperty": "studio",
+      "title": "JOLIE STUDIO",
+      "description": "JOLIE STUDIO \nSALON AMÉRICAIN AVEC CUISINE, CHAMBRE DOUCHE TOILETTE TERASSE LAVABO SECHE LINGE \nEAUX EN PERMANENCE.\nDANS UNE RÉSIDENCE CALME AVEC GARDIEN \nSITUÉ A IAI AU GOLF PRATIQUEMENT EN BORDURE DE ROUTE \nPRIX.135000FCFA CHARGE D'EAU ET COURANT INCLUS A\nvisite.5000mil\nfrais a payé \nTEL.074530543",
+      "images": [
+        {
+          "filePATH": "facebook/pfbid031WrMKByXN8jYH5Fsr9EAgy1hUPVdkGwCx18sWVjBqbapZBBbTGrfQDJCNa6eNwHtl_54_0.jpg",
+          "fileURL": "https://scontent-atl3-1.xx.fbcdn.net/v/t39.30808-6/610875567_4172309149690097_5565819691052575261_n.jpg?stp=dst-jpg_s590x590_tt6&_nc_cat=103&ccb=1-7&_nc_sid=aa7b47&_nc_ohc=VZ8aw7TlLQUQ7kNvwE8DqnW&_nc_oc=AdlUArBKaFbxEBf9uq1t1BsjpUjD_ZKGYLAvBTbrHEAFMkk5shTS6SgXshtA4ay9wkM&_nc_zt=23&_nc_ht=scontent-atl3-1.xx&_nc_gid=qbeoKsdX9siL2q-TQ17SEQ&oh=00_AfpyNyUECScLcJA3f_kuMt5DsRen5GRZt_3Fgk14dX8XJA&oe=69615FC6"
+        },
+        {
+          "filePATH": "facebook/pfbid031WrMKByXN8jYH5Fsr9EAgy1hUPVdkGwCx18sWVjBqbapZBBbTGrfQDJCNa6eNwHtl_54_1.jpg",
+          "fileURL": "https://scontent-atl3-3.xx.fbcdn.net/v/t39.30808-6/611146484_4172309236356755_3420038460205429302_n.jpg?stp=dst-jpg_s590x590_tt6&_nc_cat=107&ccb=1-7&_nc_sid=aa7b47&_nc_ohc=eHsmd0xzYTcQ7kNvwEjUKuk&_nc_oc=AdlhW9WhEEG5HiMXKVgdG7Z8Be5ajCANZM8gG3TBg57a_7e1MQjyIDYRF7Vw4CxfoxI&_nc_zt=23&_nc_ht=scontent-atl3-3.xx&_nc_gid=qbeoKsdX9siL2q-TQ17SEQ&oh=00_Afq2N2TYWz8u9aHbbW3Pmplpa-uz3FA8rwTLPrvrslgVJQ&oe=696130E8"
+        },
+        {
+          "filePATH": "facebook/pfbid031WrMKByXN8jYH5Fsr9EAgy1hUPVdkGwCx18sWVjBqbapZBBbTGrfQDJCNa6eNwHtl_54_2.jpg",
+          "fileURL": "https://scontent-atl3-1.xx.fbcdn.net/v/t39.30808-6/611648425_4172309196356759_4298202306321176628_n.jpg?stp=dst-jpg_s590x590_tt6&_nc_cat=103&ccb=1-7&_nc_sid=aa7b47&_nc_ohc=Fsb8WuF-kO8Q7kNvwESQl1t&_nc_oc=Adn0calIGWOxuNR2ybw4QYiyndvCFzeJBLUasz_L3KMEywzc477gBAt_-gjUuAfP348&_nc_zt=23&_nc_ht=scontent-atl3-1.xx&_nc_gid=qbeoKsdX9siL2q-TQ17SEQ&oh=00_AfrYKq_gspKgHKG1yJgLCLe-r3KTD_AXifBIvrcJmsVBwQ&oe=696143E7"
+        },
+        {
+          "filePATH": "facebook/pfbid031WrMKByXN8jYH5Fsr9EAgy1hUPVdkGwCx18sWVjBqbapZBBbTGrfQDJCNa6eNwHtl_54_3.jpg",
+          "fileURL": "https://scontent-atl3-3.xx.fbcdn.net/v/t39.30808-6/608885257_4172309029690109_724211921633592415_n.jpg?stp=dst-jpg_s590x590_tt6&_nc_cat=109&ccb=1-7&_nc_sid=aa7b47&_nc_ohc=8lDunnogxtcQ7kNvwErH3u5&_nc_oc=AdnrSxakY0AVpAIiY3VXP9le81_OvD8KlwLOa7hTwGUx9kfpo-rBDXPCyjklDp7ZsxE&_nc_zt=23&_nc_ht=scontent-atl3-3.xx&_nc_gid=qbeoKsdX9siL2q-TQ17SEQ&oh=00_AfoibjRBfbhrEmvcgnM-ldPVzAiV9XASUw_oWoXR2WSVkQ&oe=69613C82"
+        },
+        {
+          "filePATH": "facebook/pfbid031WrMKByXN8jYH5Fsr9EAgy1hUPVdkGwCx18sWVjBqbapZBBbTGrfQDJCNa6eNwHtl_54_4.jpg",
+          "fileURL": "https://scontent-atl3-3.xx.fbcdn.net/v/t39.30808-6/611099194_4172308989690113_4850052302340547278_n.jpg?stp=dst-jpg_s590x590_tt6&_nc_cat=109&ccb=1-7&_nc_sid=aa7b47&_nc_ohc=ioLoBYavDMoQ7kNvwGC26in&_nc_oc=Adn09QhyB2TWQIvzWN328hRHr1oaaw-0Fd5I5Er8gB8IGJLvD-iH4fmRLIgQAVp9AAQ&_nc_zt=23&_nc_ht=scontent-atl3-3.xx&_nc_gid=qbeoKsdX9siL2q-TQ17SEQ&oh=00_AfqT9opNP_dHUnvRg-GAOS2zhOAh2iC5do-cQGg7t-lB0A&oe=6961632E"
+        }
+      ],
+      "price": 5000,
+      "area": 0,
+      "status": "FOR_RENT",
+      "tags": [],
+      "contact": "",
+      "street": "",
+      "city": "Libreville",
+      "province": "Estuaire",
+      "country": "Gabon",
+      "countryCode": "GA",
+      "longitude": 9.4672676,
+      "latitude": 0.4161976,
+      "isLocExact": false,
+      "nbrRooms": 0,
+      "nbrBathrooms": 0,
+      "nbrToilets": 0,
+      "nbrChickens": 0,
+      "_source": {
+        "facebookUrl": "https://www.facebook.com/groups/953208923179218",
+        "userId": "pfbid031WrMKByXN8jYH5Fsr9EAgy1hUPVdkGwCx18sWVjBqbapZBBbTGrfQDJCNa6eNwHtl",
+        "userName": "Marc Antoine",
+        "likesCount": 6,
+        "commentsCount": 0
+      }
+    },
+    {
+      "typeProperty": "home",
+      "title": "Maison à louer à nzeng ayong fromager à 3 minutes du goudron dans la barrière avec parking juste à c",
+      "description": "Maison à louer à nzeng ayong fromager à 3 minutes du goudron dans la barrière avec parking juste à côté accès véhicule. 2 chambres avec douche chacune 1 wc au couloir 1 grand salon cuisine grilles de sécurité \nPrix : 190 milles avec toutes les charges \nModalités : loyer+ caution+ frais de commission \nVisite payante \nContact : 066595202",
+      "images": [
+        {
+          "filePATH": "facebook/100001881658065_65_0.jpg",
+          "fileURL": "https://scontent-hou1-1.xx.fbcdn.net/v/t39.30808-6/611599822_33247183591594268_6677273425593730877_n.jpg?stp=dst-jpg_s590x590_tt6&_nc_cat=108&ccb=1-7&_nc_sid=aa7b47&_nc_ohc=iz-smkbbjiAQ7kNvwETlaoy&_nc_oc=Adkp25HfgR8zpiS-gz_YKE1tU_rrZ3NstLHhWsTsEGOGEXlhRyNL-KT0YMtOkKLBtiQ&_nc_zt=23&_nc_ht=scontent-hou1-1.xx&_nc_gid=52Cjo8hMUuAbFx00xkwCMw&oh=00_Afp5xB7ZAORbvYt5yh_AD2_5eZxHw_3AW9NnUe-4pWxINA&oe=69613936"
+        },
+        {
+          "filePATH": "facebook/100001881658065_65_1.jpg",
+          "fileURL": "https://scontent-hou1-1.xx.fbcdn.net/v/t39.30808-6/610980126_33247183201594307_4048690506645425645_n.jpg?stp=dst-jpg_s590x590_tt6&_nc_cat=111&ccb=1-7&_nc_sid=aa7b47&_nc_ohc=J4gnGvRijMIQ7kNvwGR8EAf&_nc_oc=AdkvGRehUN-k6odNS6rk2yOQ-wsSk1q015rPUBaHcXBLMr-V92m-3Jd-p3rqu4P-1sg&_nc_zt=23&_nc_ht=scontent-hou1-1.xx&_nc_gid=52Cjo8hMUuAbFx00xkwCMw&oh=00_Afoho3enI5yAkOhqqpMW_zULw736Bq2ggyvga6XSJvVp9A&oe=696131E6"
+        },
+        {
+          "filePATH": "facebook/100001881658065_65_2.jpg",
+          "fileURL": "https://scontent-hou1-1.xx.fbcdn.net/v/t39.30808-6/611149824_33247182871594340_5328259500583087186_n.jpg?stp=dst-jpg_s590x590_tt6&_nc_cat=110&ccb=1-7&_nc_sid=aa7b47&_nc_ohc=gf0d2X5UpfgQ7kNvwEdqEgz&_nc_oc=Adk6dd92uxeoupv6JXjfSrWLUqm6iioIJFpzfpfEYDSbb8lkq5l43tl8zlsPEdSYImU&_nc_zt=23&_nc_ht=scontent-hou1-1.xx&_nc_gid=52Cjo8hMUuAbFx00xkwCMw&oh=00_AfpA5IqdhUd6_QLvVsO4fkRkLhXc0A50OCpTgscJgFStNg&oe=69614CD3"
+        },
+        {
+          "filePATH": "facebook/100001881658065_65_3.jpg",
+          "fileURL": "https://scontent-hou1-1.xx.fbcdn.net/v/t39.30808-6/611291938_33247182934927667_1331704671752348123_n.jpg?stp=dst-jpg_s590x590_tt6&_nc_cat=110&ccb=1-7&_nc_sid=aa7b47&_nc_ohc=nSz5vjw5JJMQ7kNvwE1IJ6K&_nc_oc=AdkwCb3RI3p7dq3cXmIuE0d_9IUSVrzjxQN23QZNCNrIWXv5Zrvi2r2jrWI2ACd2cjo&_nc_zt=23&_nc_ht=scontent-hou1-1.xx&_nc_gid=52Cjo8hMUuAbFx00xkwCMw&oh=00_AfrhTYsdeCWPqNfRhONPUXc0LvW3nzRYWsj5SwOIcgTA3w&oe=696139B3"
+        },
+        {
+          "filePATH": "facebook/100001881658065_65_4.jpg",
+          "fileURL": "https://scontent-hou1-1.xx.fbcdn.net/v/t39.30808-6/611593256_33247182818261012_7809673329643917964_n.jpg?stp=dst-jpg_s590x590_tt6&_nc_cat=110&ccb=1-7&_nc_sid=aa7b47&_nc_ohc=2FpcdfDw9_8Q7kNvwFv-TG3&_nc_oc=Adm8-NjbIpuv0o5rh5KbHuEgbP2rlzIBb9XjGghoQNyI81IOVbv31SmIeSQb7d9nwNI&_nc_zt=23&_nc_ht=scontent-hou1-1.xx&_nc_gid=52Cjo8hMUuAbFx00xkwCMw&oh=00_AfrCoOjhV6wrhAp1pHHPEs0DQj8mcz4-mkr3NMT4bd_KLA&oe=69613C6B"
+        }
+      ],
+      "price": 190000,
+      "area": 0,
+      "status": "FOR_RENT",
+      "tags": [],
+      "contact": "",
+      "street": "",
+      "city": "Libreville",
+      "province": "Estuaire",
+      "country": "Gabon",
+      "countryCode": "GA",
+      "longitude": 9.4672676,
+      "latitude": 0.4161976,
+      "isLocExact": false,
+      "nbrRooms": 2,
+      "nbrBathrooms": 1,
+      "nbrToilets": 1,
+      "nbrChickens": 0,
+      "_source": {
+        "facebookUrl": "https://www.facebook.com/groups/953208923179218",
+        "userId": "100001881658065",
+        "userName": "Marius Essame",
+        "likesCount": 4,
+        "commentsCount": 2
+      }
+    },
+    {
+      "typeProperty": "home",
+      "title": "À vendre sur Libreville",
+      "description": "À vendre sur Libreville \n\n🚨🚨 Regarde bien, quelques meubles peuvent t'intéresser. \n\n🚨🚨🚨 Pour le prix, on discute. \n\n'' ce n'est pas la pharmacie ''\n\nNB : Les pas intéressés, s'abstenir \n\nPlus d'informations, contact : +241 62293350 WhatsApp uniquement",
+      "images": [
+        {
+          "filePATH": "facebook/61577239904413_81_0.jpg",
+          "fileURL": "https://scontent-atl3-3.xx.fbcdn.net/v/t39.30808-6/611659297_122159339438907996_6669056495144738299_n.jpg?stp=dst-jpg_s590x590_tt6&_nc_cat=111&ccb=1-7&_nc_sid=aa7b47&_nc_ohc=fcq7xU8X-fEQ7kNvwHhBxtC&_nc_oc=AdlMScbRTfpsJXg8kbjQi7-aGFoITScdY7iKbLbcb04rx2Q0FlTWkvdtygd28WUfsdk&_nc_zt=23&_nc_ht=scontent-atl3-3.xx&_nc_gid=A_dWLXzzAA9yib0uKJ7qJg&oh=00_Afq-CRhWDHCgyG-nBliEAdBdpBE5BLVRQpPP5GzQTG3JOA&oe=6961591C"
+        },
+        {
+          "filePATH": "facebook/61577239904413_81_1.jpg",
+          "fileURL": "https://scontent-atl3-2.xx.fbcdn.net/v/t39.30808-6/611395068_122159339462907996_7996958577944821870_n.jpg?stp=dst-jpg_s590x590_tt6&_nc_cat=104&ccb=1-7&_nc_sid=aa7b47&_nc_ohc=PAwbhhfp9wkQ7kNvwEIUCXV&_nc_oc=AdmHdnaJ_gLc9oPhBUxP67LAXK3Rerp97UA0MUEJW8GLQSX4njiXR7W8ic7G9Hhp-_s&_nc_zt=23&_nc_ht=scontent-atl3-2.xx&_nc_gid=A_dWLXzzAA9yib0uKJ7qJg&oh=00_Afol9hpCGscHj0--qmQXFnCpHYSlA4vR-MXzKjlkN_nS7g&oe=696137A4"
+        },
+        {
+          "filePATH": "facebook/61577239904413_81_2.jpg",
+          "fileURL": "https://scontent-atl3-3.xx.fbcdn.net/v/t39.30808-6/610668526_122159339540907996_4032715954255142681_n.jpg?stp=dst-jpg_s590x590_tt6&_nc_cat=108&ccb=1-7&_nc_sid=aa7b47&_nc_ohc=FwvwbwZQabAQ7kNvwF10y5-&_nc_oc=AdnPXL9tJnTIa3BWhVXa4YIDudfrbkL3i9zn5QhfxH226nLegtjCde0IifKBx4cE4Sw&_nc_zt=23&_nc_ht=scontent-atl3-3.xx&_nc_gid=A_dWLXzzAA9yib0uKJ7qJg&oh=00_Afo5O5CRD3q538-ENrBoYeeo_muNu_bwoIY5JV3jA0NyIg&oe=69614A5B"
+        },
+        {
+          "filePATH": "facebook/61577239904413_81_3.jpg",
+          "fileURL": "https://scontent-atl3-2.xx.fbcdn.net/v/t39.30808-6/611640332_122159339582907996_8904396588384607692_n.jpg?stp=dst-jpg_s590x590_tt6&_nc_cat=105&ccb=1-7&_nc_sid=aa7b47&_nc_ohc=_cbz8o18jR0Q7kNvwHfCziQ&_nc_oc=AdkQ6HP2JyJtBoBSSgoSykO1q0MHCdiEUCN2cZTwvyru1nHo07VThZkMiX3I6cp2Ttw&_nc_zt=23&_nc_ht=scontent-atl3-2.xx&_nc_gid=A_dWLXzzAA9yib0uKJ7qJg&oh=00_AfrgIgURRdyOeUw5U3p2k6EiWLSzDhkuE-jg5FdIzNEW6w&oe=69614722"
+        },
+        {
+          "filePATH": "facebook/61577239904413_81_4.jpg",
+          "fileURL": "https://scontent-atl3-3.xx.fbcdn.net/v/t39.30808-6/611035323_122159339708907996_6060457069073172344_n.jpg?stp=dst-jpg_s590x590_tt6&_nc_cat=109&ccb=1-7&_nc_sid=aa7b47&_nc_ohc=eIDlQ_hKsP0Q7kNvwH6nFaP&_nc_oc=Adn_tG60W_waqSy-Oj9VkS9z4TyQTwkZr9FUrCAkLXR7fTM694Qfnys_SmB83NMeyE8&_nc_zt=23&_nc_ht=scontent-atl3-3.xx&_nc_gid=A_dWLXzzAA9yib0uKJ7qJg&oh=00_AfpfQtgF7d25z-9b51tuXP7iefg_PtwjjyNy3hjCOAGvLg&oe=6961476B"
+        }
+      ],
+      "price": 0,
+      "area": 0,
+      "status": "FOR_SALE",
+      "tags": [],
+      "contact": "",
+      "street": "",
+      "city": "Libreville",
+      "province": "Estuaire",
+      "country": "Gabon",
+      "countryCode": "GA",
+      "longitude": 9.4672676,
+      "latitude": 0.4161976,
+      "isLocExact": false,
+      "nbrRooms": 0,
+      "nbrBathrooms": 0,
+      "nbrToilets": 0,
+      "nbrChickens": 0,
+      "_source": {
+        "facebookUrl": "https://www.facebook.com/groups/953208923179218",
+        "userId": "61577239904413",
+        "userName": "Buy All",
+        "likesCount": 0,
+        "commentsCount": 0
+      }
+    },
+    {
+      "typeProperty": "apartment",
+      "title": "🏡 *APPARTEMENT À LOUER – ANGONDJÉ BEAULIEU*",
+      "description": "🏡 *APPARTEMENT À LOUER – ANGONDJÉ BEAULIEU*  \n📍 *À 5 min de la route principale*\n\n🔹 *Étage 😗 1er  \n🔹 *2 chambres* avec placards  \n🔹 *Salon spacieux*  \n🔹 *Cuisine*  \n🔹 *1 douche + WC*  \n🔹 *Grille de sécurité*  \n🔹 *Clôturé*\n\n💧 *Eau incluse dans le loyer*\n\n💵 *Prix : 210 000 FCFA/mois*  \n📞 *Contact : 074953601 – Johan Solutions*  \n📌 *Loyer + Caution + Frais d’agence*  \n👀 *Visite payante*",
+      "images": [
+        {
+          "filePATH": "facebook/100067401866344_104_0.jpg",
+          "fileURL": "https://scontent.fagc1-2.fna.fbcdn.net/v/t39.30808-6/611665675_1200967365493314_2101301136342488017_n.jpg?stp=dst-jpg_s590x590_tt6&_nc_cat=109&ccb=1-7&_nc_sid=aa7b47&_nc_ohc=K2kphAupxFUQ7kNvwGGlBO-&_nc_oc=AdlhdUBwl1pNmjFRf_hFYCB7SoryFTt5jL6DOqDqddyZ_XRlTiaY3zG7Ey8MWXe9P8A&_nc_zt=23&_nc_ht=scontent.fagc1-2.fna&_nc_gid=neLVj-PU6xoZ94ZwqdIDBg&oh=00_AfpCtedNmd6fBjP14cVjDWjXjrtMBFy5W4U7GULg6BXBKQ&oe=69614E53"
+        },
+        {
+          "filePATH": "facebook/100067401866344_104_1.jpg",
+          "fileURL": "https://scontent.fagc1-2.fna.fbcdn.net/v/t39.30808-6/608451995_1200967375493313_7812561269881626164_n.jpg?stp=dst-jpg_s590x590_tt6&_nc_cat=111&ccb=1-7&_nc_sid=aa7b47&_nc_ohc=QC-H5lpJfUAQ7kNvwGTGlUc&_nc_oc=AdniYp-ofMFood-0iwMwtXFsMWfxtiCKaBANjGkUUOFG8t0LxpxOnZQGTs5eLtXV680&_nc_zt=23&_nc_ht=scontent.fagc1-2.fna&_nc_gid=neLVj-PU6xoZ94ZwqdIDBg&oh=00_AfqqaMjaAf5lq6YohHjLGkryREcCBvHXAQoM9uEMV_ZHcA&oe=6961367B"
+        },
+        {
+          "filePATH": "facebook/100067401866344_104_2.jpg",
+          "fileURL": "https://scontent.fagc1-1.fna.fbcdn.net/v/t39.30808-6/605947860_1200967632159954_9179313060172775408_n.jpg?stp=dst-jpg_s590x590_tt6&_nc_cat=110&ccb=1-7&_nc_sid=aa7b47&_nc_ohc=zZODuZSqcQ0Q7kNvwGvxZ7I&_nc_oc=AdllFrBnW7v-rqWdjjnop8yyOhEKjDon2-2b_Mg1lYs66M09p0y89IBQs1LJbjXoMvs&_nc_zt=23&_nc_ht=scontent.fagc1-1.fna&_nc_gid=neLVj-PU6xoZ94ZwqdIDBg&oh=00_Afp5H_fSldsoYDudXdRaBM8ARd7trY24lFxRIxWlRp62GA&oe=69614D5C"
+        },
+        {
+          "filePATH": "facebook/100067401866344_104_3.jpg",
+          "fileURL": "https://scontent.fagc1-2.fna.fbcdn.net/v/t39.30808-6/608423387_1200967552159962_7852673285922742949_n.jpg?stp=dst-jpg_s590x590_tt6&_nc_cat=107&ccb=1-7&_nc_sid=aa7b47&_nc_ohc=guxZF8QBeMMQ7kNvwEWzeam&_nc_oc=AdlW0dA2lqo9WP7xt-nNwx81euKQUSEArtJKsFx1Xv2SEELmlJrnShgmqgsdoVi97_M&_nc_zt=23&_nc_ht=scontent.fagc1-2.fna&_nc_gid=neLVj-PU6xoZ94ZwqdIDBg&oh=00_Afqpl74V9nHR0pk_LVW6z2SxGE7a3JVIHyUB5YRo3_5mnQ&oe=69613D25"
+        },
+        {
+          "filePATH": "facebook/100067401866344_104_4.jpg",
+          "fileURL": "https://scontent.fagc1-2.fna.fbcdn.net/v/t39.30808-6/607416416_1200967522159965_8924503610930479477_n.jpg?stp=dst-jpg_s590x590_tt6&_nc_cat=104&ccb=1-7&_nc_sid=aa7b47&_nc_ohc=XDMZwE0Qy6wQ7kNvwGjbYdt&_nc_oc=Adkm3hZcwDfqdKvb86YPuC1sp45cL0Wz-DiIjjiCwKjQC5QL_y5GvZPlBNah8iIzKEc&_nc_zt=23&_nc_ht=scontent.fagc1-2.fna&_nc_gid=neLVj-PU6xoZ94ZwqdIDBg&oh=00_Afp9_cPUKP3FlF0ovotj_ObpH8DL_MeL2dhTm0Yf7BhjZQ&oe=69614CA8"
+        }
+      ],
+      "price": 210,
+      "area": 0,
+      "status": "FOR_RENT",
+      "tags": [],
+      "contact": "",
+      "street": "",
+      "city": "Libreville",
+      "province": "Estuaire",
+      "country": "Gabon",
+      "countryCode": "GA",
+      "longitude": 9.4672676,
+      "latitude": 0.4161976,
+      "isLocExact": false,
+      "nbrRooms": 2,
+      "nbrBathrooms": 1,
+      "nbrToilets": 1,
+      "nbrChickens": 0,
+      "_source": {
+        "facebookUrl": "https://www.facebook.com/groups/953208923179218",
+        "userId": "100067401866344",
+        "userName": "Johan solution",
+        "likesCount": 0,
+        "commentsCount": 0
+      }
+    },
+    {
+      "typeProperty": "home",
+      "title": "Maison habitable de suite à louer à nzeng ayong non loin de la mairie à 1 minute des pavés dans une",
+      "description": "Maison habitable de suite à louer à nzeng ayong non loin de la mairie à 1 minute des pavés dans une concession sécurisée eau en permanence. 3 chambres 2 douches wc salon cuisine terrasse \nPrix : 230 milles avec la charge d'eau compteur de courant personnel \nModalités : loyer+ caution+ frais de commission \nVisite payante \nPour plus d'informations : 066595202",
+      "images": [
+        {
+          "filePATH": "facebook/100001881658065_113_0.jpg",
+          "fileURL": "https://scontent-hou1-1.xx.fbcdn.net/v/t39.30808-6/610924195_33245946225051338_7582504198878176588_n.jpg?stp=dst-jpg_s590x590_tt6&_nc_cat=104&ccb=1-7&_nc_sid=aa7b47&_nc_ohc=HRvbBTOpyBgQ7kNvwG_QRMP&_nc_oc=AdmKjzwbUXCoW15oVMxk7SKBR7qeGO37rgF_cVzaesQhHiFswPfcKbbikCij1WRv2A4&_nc_zt=23&_nc_ht=scontent-hou1-1.xx&_nc_gid=x5RKf4hoBM6_IpJiJ4CZNg&oh=00_AfoVUHndDcXMCbTE2ezu91JgO8E2sotjaSDK4Fy7wnlmjQ&oe=6961586F"
+        },
+        {
+          "filePATH": "facebook/100001881658065_113_1.jpg",
+          "fileURL": "https://scontent-hou1-1.xx.fbcdn.net/v/t39.30808-6/611336877_33245946281717999_5890107026850558421_n.jpg?stp=dst-jpg_s590x590_tt6&_nc_cat=103&ccb=1-7&_nc_sid=aa7b47&_nc_ohc=iQuA5pr7VPsQ7kNvwH1hTCJ&_nc_oc=Adn1r0VqYAdIzyGoeX_CNO4OOvlaerM9QbokEEy-iPP8gS1ZR_o366EfNyqIPb6LW_4&_nc_zt=23&_nc_ht=scontent-hou1-1.xx&_nc_gid=x5RKf4hoBM6_IpJiJ4CZNg&oh=00_AfoMhLLTJKAhZyV6SWNkTQdHg224b4blGqZ0vf-VLrkGeg&oe=6961414E"
+        },
+        {
+          "filePATH": "facebook/100001881658065_113_2.jpg",
+          "fileURL": "https://scontent-hou1-1.xx.fbcdn.net/v/t39.30808-6/610864197_33245946075051353_1219646951017835426_n.jpg?stp=dst-jpg_s590x590_tt6&_nc_cat=101&ccb=1-7&_nc_sid=aa7b47&_nc_ohc=XDzSVfGNHTsQ7kNvwFKf-wT&_nc_oc=AdlkLZbNbzwE9gIeOhnUA15YAkGtPLnXP-dz2rVVAZ4Tit2vIXKerVVKlS52XDQHOYo&_nc_zt=23&_nc_ht=scontent-hou1-1.xx&_nc_gid=x5RKf4hoBM6_IpJiJ4CZNg&oh=00_Afr_A7WbziIgwgjVVAaekNKpqar0ruOJl84nedmv3-41qQ&oe=69614D59"
+        },
+        {
+          "filePATH": "facebook/100001881658065_113_3.jpg",
+          "fileURL": "https://scontent-hou1-1.xx.fbcdn.net/v/t39.30808-6/611692694_33245946105051350_6705964155713465873_n.jpg?stp=dst-jpg_s590x590_tt6&_nc_cat=101&ccb=1-7&_nc_sid=aa7b47&_nc_ohc=fZTlkXvk3bgQ7kNvwF0cFDO&_nc_oc=Adlu3qrJiV5EfwHm-LG29dvaC0gKHFWzkvU1Kn6j-0YNsgXFO0O2YAbilyeQaOa7EC8&_nc_zt=23&_nc_ht=scontent-hou1-1.xx&_nc_gid=x5RKf4hoBM6_IpJiJ4CZNg&oh=00_AfpCA-bglEesLOmqlIOYL9quBJM___BF2S5ogO5EDyeppw&oe=69615FEF"
+        },
+        {
+          "filePATH": "facebook/100001881658065_113_4.jpg",
+          "fileURL": "https://scontent-hou1-1.xx.fbcdn.net/v/t39.30808-6/611725102_33245946158384678_6859111200628701878_n.jpg?stp=dst-jpg_s590x590_tt6&_nc_cat=104&ccb=1-7&_nc_sid=aa7b47&_nc_ohc=nyqW8TbCa0QQ7kNvwGOa6c1&_nc_oc=Admqs3aZaCai9FGQB-aYUcA06Z6SzCNsTT5LLSz6cKnEiDTy_gtS9rkdkxOjJTNZ49w&_nc_zt=23&_nc_ht=scontent-hou1-1.xx&_nc_gid=x5RKf4hoBM6_IpJiJ4CZNg&oh=00_AfrjbLMJlWVhJol4fnJl2Ehagv4AXGqxgz2OyMxrAlUuJA&oe=69615436"
+        }
+      ],
+      "price": 230000,
+      "area": 0,
+      "status": "FOR_RENT",
+      "tags": [],
+      "contact": "",
+      "street": "",
+      "city": "Libreville",
+      "province": "Estuaire",
+      "country": "Gabon",
+      "countryCode": "GA",
+      "longitude": 9.4672676,
+      "latitude": 0.4161976,
+      "isLocExact": false,
+      "nbrRooms": 3,
+      "nbrBathrooms": 2,
+      "nbrToilets": 2,
+      "nbrChickens": 0,
+      "_source": {
+        "facebookUrl": "https://www.facebook.com/groups/953208923179218",
+        "userId": "100001881658065",
+        "userName": "Marius Essame",
+        "likesCount": 0,
+        "commentsCount": 0
+      }
+    },
+    {
+      "typeProperty": "apartment",
+      "title": "🤠👉 #APAPPARTEMENT #ALOUER  1ERE MAIN 🤲 BON STANDING",
+      "description": "🤠👉 #APAPPARTEMENT #ALOUER  1ERE MAIN 🤲 BON STANDING \n................................................................................. 🛑\n2 CHAMBRES, 2 SALLES D'EAU , 1 SÉJOUR \nCUISINE , SALLE A MANGER,WC VISITEUR PLACARDS SPLITTER CHAUFFE-EAU  BUANDERIE \n\nDANS LA BARRIÈRE, PARKING, GARDIEN \nQUARTIER : #OKALA_CANAL7 \n\n#EAU H24  SPACIEUX . #CAMÉRA DE SURVEILLANCE.  #WIFI \n\n#LOYER: 380.000 CFA( AVEC CHARGE D'EAU,GARDIENNAGE,WI-FI ET RAMASSAGE D'ORDURES INCLUS)\n#USAGE : HABITATION  ⚠️ \n\n☎️077-22-11-95 WHATSAPP OU APPEL POUR PLUS D'INFORMATIONS #FLYP #RBNB #BANQUE #BUREAUX #JIKAIMMO #OVENDO #EUROPE #IMMOBILIER",
+      "images": [
+        {
+          "filePATH": "facebook/61572376899405_126_0.jpg",
+          "fileURL": "https://scontent.ffyv1-1.fna.fbcdn.net/v/t39.30808-6/607446609_122175634874745896_1215528352919763062_n.jpg?stp=dst-jpg_s590x590_tt6&_nc_cat=102&ccb=1-7&_nc_sid=aa7b47&_nc_ohc=byRuz2RTZTkQ7kNvwE1GMzv&_nc_oc=AdmWDUE0K9stblsGrDnOX56rPR3h11fIa5Xo-EFEJc5LSegIYHtrhO5rUS1_pggdbTs&_nc_zt=23&_nc_ht=scontent.ffyv1-1.fna&_nc_gid=QLw9UbPeJN7UxmnAksMaaw&oh=00_AfqoUE__C61h61r_ADsPL3rkuGB0ar2ZYxA1_G-ZyDYoQw&oe=696144D6"
+        },
+        {
+          "filePATH": "facebook/61572376899405_126_1.jpg",
+          "fileURL": "https://scontent.ffyv1-1.fna.fbcdn.net/v/t39.30808-6/611551046_122175634928745896_4997684332555747291_n.jpg?stp=dst-jpg_s590x590_tt6&_nc_cat=102&ccb=1-7&_nc_sid=aa7b47&_nc_ohc=-79nZrJvNsAQ7kNvwF_7VEx&_nc_oc=AdlNSvGqqKA-s4no3TJCEqXQB3mP96-7_OZ_ZRRfKeDREStY3_omSHYxhJWq6oQ_QcM&_nc_zt=23&_nc_ht=scontent.ffyv1-1.fna&_nc_gid=QLw9UbPeJN7UxmnAksMaaw&oh=00_Afqbn0Bnr4qnsqtMGqHJfAyrsWURjnulxY36s3YUDDIn8w&oe=69615D52"
+        },
+        {
+          "filePATH": "facebook/61572376899405_126_2.jpg",
+          "fileURL": "https://scontent.ffyv1-1.fna.fbcdn.net/v/t39.30808-6/607451756_122175634976745896_4869563491029984400_n.jpg?stp=dst-jpg_s590x590_tt6&_nc_cat=102&ccb=1-7&_nc_sid=aa7b47&_nc_ohc=oii65msUqDcQ7kNvwFoWFL9&_nc_oc=Admwe_NKwccz5q88WLs_i7yqiNNnWAdXvszncw75x_BBAzuMrip5XqYKuyU7KYyv5uQ&_nc_zt=23&_nc_ht=scontent.ffyv1-1.fna&_nc_gid=QLw9UbPeJN7UxmnAksMaaw&oh=00_AfqXd02vIRgYVAgeeCaXX_K6vanh0gOeWjv3lVqBejSgWQ&oe=69614551"
+        },
+        {
+          "filePATH": "facebook/61572376899405_126_3.jpg",
+          "fileURL": "https://scontent.ffyv1-1.fna.fbcdn.net/v/t39.30808-6/608836048_122175635024745896_4498517501782971618_n.jpg?stp=dst-jpg_s590x590_tt6&_nc_cat=106&ccb=1-7&_nc_sid=aa7b47&_nc_ohc=eVVUrfTa4XcQ7kNvwHXMWmz&_nc_oc=Adlfxkq4_0O7NR0dPSn0wheKZkv3O0cnb6GLjfdvgNLC6PmZXJax5loDV6qO1eAEA2g&_nc_zt=23&_nc_ht=scontent.ffyv1-1.fna&_nc_gid=QLw9UbPeJN7UxmnAksMaaw&oh=00_AfpQ0h2hP62WSbYNvb84OMvmWRueUBAI-SSOMuuoEk3Hmg&oe=69615000"
+        },
+        {
+          "filePATH": "facebook/61572376899405_126_4.jpg",
+          "fileURL": "https://scontent.ffyv1-1.fna.fbcdn.net/v/t39.30808-6/608556262_122175635066745896_2986865041449717471_n.jpg?stp=dst-jpg_s590x590_tt6&_nc_cat=109&ccb=1-7&_nc_sid=aa7b47&_nc_ohc=XBKZDld7058Q7kNvwFhOXbO&_nc_oc=AdkypQvfNDpLpqSc2v9v5vSGuWPurHTTf8iUO39qB7WnGTfQn4ub9b9gnyaI9aE9SX4&_nc_zt=23&_nc_ht=scontent.ffyv1-1.fna&_nc_gid=QLw9UbPeJN7UxmnAksMaaw&oh=00_AfooiQefGhkeX_rrwjmHpm4iRjjcE-fIosHeqJIWlL3qRA&oe=696158BA"
+        }
+      ],
+      "price": 380,
+      "area": 0,
+      "status": "FOR_RENT",
+      "tags": [],
+      "contact": "",
+      "street": "",
+      "city": "Libreville",
+      "province": "Estuaire",
+      "country": "Gabon",
+      "countryCode": "GA",
+      "longitude": 9.4672676,
+      "latitude": 0.4161976,
+      "isLocExact": false,
+      "nbrRooms": 2,
+      "nbrBathrooms": 0,
+      "nbrToilets": 0,
+      "nbrChickens": 0,
+      "_source": {
+        "facebookUrl": "https://www.facebook.com/groups/953208923179218",
+        "userId": "61572376899405",
+        "userName": "Larsen Yanga",
+        "likesCount": 1,
+        "commentsCount": 0
+      }
+    },
+    {
+      "typeProperty": "home",
+      "title": "🏡 *MAISON À VENDRE – SANTACLARA*",
+      "description": "🏡 *MAISON À VENDRE – SANTACLARA*  \n📍 *À 10 min du goudron*  \n📐 *Superficie : 500 m²*  \n🏠 *Maison de 2 chambres*  \n➕ *Soubassement à côté pour extension*\n\n📝 *Documents : Cession*  \n💵 *Prix : 30 millions FCFA*\n\n📞 *Contact : 074953601 – Johan Solutions*  \n*Votre partenaire immobilier de confiance*",
+      "images": [
+        {
+          "filePATH": "facebook/100067401866344_143_0.jpg",
+          "fileURL": "https://scontent-msp1-1.xx.fbcdn.net/v/t39.30808-6/607979577_1200920865497964_1928168623387400136_n.jpg?stp=dst-jpg_s590x590_tt6&_nc_cat=111&ccb=1-7&_nc_sid=aa7b47&_nc_ohc=9suFm_fKlWoQ7kNvwGCpyE9&_nc_oc=AdkIwxYrsynIh58yOsgiiUAQDhSFACLZLbIendaj_R6jAHa47R0gXN_AP7_2zeIzWI4&_nc_zt=23&_nc_ht=scontent-msp1-1.xx&_nc_gid=XcSNE8xTFQGGnDe_qcKBzw&oh=00_AfpkCcd46kyU3yoleqA-W2Kk0ILMbnshgBC-Y76dZIrUQQ&oe=69613605"
+        },
+        {
+          "filePATH": "facebook/100067401866344_143_1.jpg",
+          "fileURL": "https://scontent-msp1-1.xx.fbcdn.net/v/t39.30808-6/608081614_1200920988831285_8948048596807096620_n.jpg?stp=dst-jpg_s590x590_tt6&_nc_cat=105&ccb=1-7&_nc_sid=aa7b47&_nc_ohc=bpp1CMtxM5cQ7kNvwFY7quR&_nc_oc=AdnGkCRFgku7_OfL-ZKjRnTf8EQcZn3F9inkiOkz9oKELmeD5fdkqjfFZXgDqHbcIdA&_nc_zt=23&_nc_ht=scontent-msp1-1.xx&_nc_gid=XcSNE8xTFQGGnDe_qcKBzw&oh=00_AfpAl1O9vT_CQLOM1wZONTFScv-zJPnmoB6dtATSEGQt2A&oe=69613BB6"
+        },
+        {
+          "filePATH": "facebook/100067401866344_143_2.jpg",
+          "fileURL": "https://scontent-msp1-1.xx.fbcdn.net/v/t39.30808-6/611767714_1200921025497948_657964385531103271_n.jpg?stp=dst-jpg_s590x590_tt6&_nc_cat=110&ccb=1-7&_nc_sid=aa7b47&_nc_ohc=GCmOd6abUmIQ7kNvwFuIDNt&_nc_oc=Adn4CJSoKwETmcCKDShP01m49wuWM78y6lM0s_h3wVLgtkWiDqJ2GkfgaNiG1SXBfgs&_nc_zt=23&_nc_ht=scontent-msp1-1.xx&_nc_gid=XcSNE8xTFQGGnDe_qcKBzw&oh=00_Afq4HFvaBoNADZNMoGbX_2XxOFhXjpOuZSJasHwJ7ShhWw&oe=696165EE"
+        },
+        {
+          "filePATH": "facebook/100067401866344_143_3.jpg",
+          "fileURL": "https://scontent-msp1-1.xx.fbcdn.net/v/t39.30808-6/608907457_1200920942164623_4915323528554301679_n.jpg?stp=dst-jpg_s590x590_tt6&_nc_cat=102&ccb=1-7&_nc_sid=aa7b47&_nc_ohc=pAtQhaJ2OKgQ7kNvwFZkIGe&_nc_oc=Adl01mfOVXZfZiKz5JEhPoPCC6P1Y6odu-zA9jrmb0FSU7jtfEl-jLddorWbfnZkL68&_nc_zt=23&_nc_ht=scontent-msp1-1.xx&_nc_gid=XcSNE8xTFQGGnDe_qcKBzw&oh=00_AfoRIDATHqOgYsGg142czUMehYWB7cqt9Oz4iOhYW7zwgA&oe=69615C51"
+        },
+        {
+          "filePATH": "facebook/100067401866344_143_4.jpg",
+          "fileURL": "https://scontent-msp1-1.xx.fbcdn.net/v/t39.30808-6/607722158_1200920868831297_5038720627511283247_n.jpg?stp=dst-jpg_s590x590_tt6&_nc_cat=103&ccb=1-7&_nc_sid=aa7b47&_nc_ohc=bLuX3IODPJAQ7kNvwH80ivp&_nc_oc=Adk_LI-Rez4w3e5rgbQ_BDQrGz8xUV4adjbjT2Gns4XQEgfKxlrJij8_v9yay1Ft-ls&_nc_zt=23&_nc_ht=scontent-msp1-1.xx&_nc_gid=XcSNE8xTFQGGnDe_qcKBzw&oh=00_Afro9WrIbl3mgfBEYr5WJ0fIeVRB-NYIMOCGnIGsdY9K3A&oe=6961444F"
+        }
+      ],
+      "price": 30000,
+      "area": 500,
+      "status": "FOR_SALE",
+      "tags": [],
+      "contact": "",
+      "street": "",
+      "city": "Libreville",
+      "province": "Estuaire",
+      "country": "Gabon",
+      "countryCode": "GA",
+      "longitude": 9.4672676,
+      "latitude": 0.4161976,
+      "isLocExact": false,
+      "nbrRooms": 2,
+      "nbrBathrooms": 0,
+      "nbrToilets": 0,
+      "nbrChickens": 0,
+      "_source": {
+        "facebookUrl": "https://www.facebook.com/groups/953208923179218",
+        "userId": "100067401866344",
+        "userName": "Johan solution",
+        "likesCount": 0,
+        "commentsCount": 0
+      }
+    },
+    {
+      "typeProperty": "room",
+      "title": "Annonce 151",
+      "description": "-Chambre \n\n-Cuisine \n\n-Douche\n\n80000f sans charge \n\nMois d'avance et caution \n\nLieu : Beau séjour bangos ( derrière la salle des fêtes) \n\nTel : 062-13-60-03",
+      "images": [
+        {
+          "filePATH": "facebook/1202362138005223_150_0.jpg",
+          "fileURL": "https://scontent-iad3-1.xx.fbcdn.net/v/t39.30808-6/611268965_2991855021203882_7485628835035527271_n.jpg?stp=dst-jpg_s590x590_tt6&_nc_cat=109&ccb=1-7&_nc_sid=aa7b47&_nc_ohc=wUK8AKikj-IQ7kNvwGcrkrm&_nc_oc=AdkXyaTJIrHOx69vMpgNZvD1oKIZ6RBHdbhYu10godUAiXXBW7Mf7HFofb-ABBhboII&_nc_zt=23&_nc_ht=scontent-iad3-1.xx&_nc_gid=Q1GgIBIiFqKLnjg_knvXwQ&oh=00_AfoTRNS9qfuguLbiYSc7MVDCBxwTKwnympBUJ5BwjZbe8g&oe=696164A8"
+        },
+        {
+          "filePATH": "facebook/1202362138005223_150_1.jpg",
+          "fileURL": "https://scontent-iad3-1.xx.fbcdn.net/v/t39.30808-6/611242962_2991855071203877_3986255699903916416_n.jpg?stp=dst-jpg_s590x590_tt6&_nc_cat=102&ccb=1-7&_nc_sid=aa7b47&_nc_ohc=QZ_26liXYl4Q7kNvwEBijKT&_nc_oc=Adnqf9q82TI6FZDBYBDw7Amp0ZKG7qZBAfOEZkaAgk07cHSUoUSY9nsiAssBu5jmINI&_nc_zt=23&_nc_ht=scontent-iad3-1.xx&_nc_gid=Q1GgIBIiFqKLnjg_knvXwQ&oh=00_Afr42uXizHiMGFcjKKVY3qGQpNODcd5viDBCkNBjfUO5ew&oe=69613A27"
+        },
+        {
+          "filePATH": "facebook/1202362138005223_150_2.jpg",
+          "fileURL": "https://scontent-iad3-1.xx.fbcdn.net/v/t39.30808-6/610886697_2991855114537206_6453444178487082123_n.jpg?stp=dst-jpg_s590x590_tt6&_nc_cat=104&ccb=1-7&_nc_sid=aa7b47&_nc_ohc=dRDhrr5Skq8Q7kNvwHelS9g&_nc_oc=AdkChgME1qaoHeBVe8ykQTjysTkwoEEVTZWS9FPWzSL6hCTMXu_OvxEipw2bsmr7Ic4&_nc_zt=23&_nc_ht=scontent-iad3-1.xx&_nc_gid=Q1GgIBIiFqKLnjg_knvXwQ&oh=00_AfpNH_Uq6uLQEB9yMbLsbNlo5jPIbwyvLFk33gtBdSq26w&oe=6961607F"
+        },
+        {
+          "filePATH": "facebook/1202362138005223_150_3.jpg",
+          "fileURL": "https://scontent-iad3-1.xx.fbcdn.net/v/t39.30808-6/611389649_2991855151203869_4526518223218104302_n.jpg?stp=dst-jpg_s590x590_tt6&_nc_cat=102&ccb=1-7&_nc_sid=aa7b47&_nc_ohc=KD-KgQT8fAYQ7kNvwGcV-B9&_nc_oc=AdkkpIJqY4G_ez3aJKYC9DglDn5AxJ-2035cUr8-npPvKfEd_9GYFKZKxPZJPTuqzwU&_nc_zt=23&_nc_ht=scontent-iad3-1.xx&_nc_gid=Q1GgIBIiFqKLnjg_knvXwQ&oh=00_AfoTMFH-EGkoAHGtFtbPXRCJ3EEHVN8wbaeVBd5tbSiw8g&oe=6961597E"
+        },
+        {
+          "filePATH": "facebook/1202362138005223_150_4.jpg",
+          "fileURL": "https://scontent-iad3-2.xx.fbcdn.net/v/t39.30808-6/610893806_2991855187870532_8513751736283839156_n.jpg?stp=dst-jpg_s590x590_tt6&_nc_cat=103&ccb=1-7&_nc_sid=aa7b47&_nc_ohc=VYwwtoiMsGUQ7kNvwFjSOxT&_nc_oc=Admcw6Y-5yYFS5WOMjH4V0FWxezsaKKCdlgHhr9ZUP7ZXjM1ZRPAR2IjEjsRTT1g7Ys&_nc_zt=23&_nc_ht=scontent-iad3-2.xx&_nc_gid=Q1GgIBIiFqKLnjg_knvXwQ&oh=00_AfrCtoaJPkDtJ-u_s7eX_Af_Doddiq5sz29tEEYVerrUWg&oe=69614244"
+        }
+      ],
+      "price": 0,
+      "area": 0,
+      "status": "FOR_RENT",
+      "tags": [],
+      "contact": "",
+      "street": "",
+      "city": "Libreville",
+      "province": "Estuaire",
+      "country": "Gabon",
+      "countryCode": "GA",
+      "longitude": 9.4672676,
+      "latitude": 0.4161976,
+      "isLocExact": false,
+      "_source": {
+        "facebookUrl": "https://www.facebook.com/groups/953208923179218",
+        "userId": "1202362138005223",
+        "userName": "Anonymous participant",
+        "likesCount": 3,
+        "commentsCount": 3
+      }
+    },
+    {
+      "typeProperty": "home",
+      "title": "Local commercial à louer à nzeng ayong betsaïda en bordure de route principale avec terrasse et toil",
+      "description": "Local commercial à louer à nzeng ayong betsaïda en bordure de route principale avec terrasse et toilettes extérieur. \nPrix : 80 milles/ mois \nModalités : loyer+ caution+ frais de commission \nVisite payante \nContact : 066595202",
+      "images": [
+        {
+          "filePATH": "facebook/100001881658065_180_0.jpg",
+          "fileURL": "https://scontent.fdet3-1.fna.fbcdn.net/v/t39.30808-6/611247578_33244028775243083_454865377266068761_n.jpg?stp=dst-jpg_s590x590_tt6&_nc_cat=110&ccb=1-7&_nc_sid=aa7b47&_nc_ohc=TDmWxHgMGdYQ7kNvwGBQzh2&_nc_oc=AdlXBPglVozbfqZz3b7uJwAtJV1egqNOb82bpOt0Wk93ojdjMWRcFfXy9AmD4ylenT4&_nc_zt=23&_nc_ht=scontent.fdet3-1.fna&_nc_gid=4taurTe-D7WLDIdmZeuLAQ&oh=00_Afpn0dh_Tl_43V-raGqSv8uJzJ_jnJFVjLpSay1h_RukpA&oe=696147AB"
+        },
+        {
+          "filePATH": "facebook/100001881658065_180_1.jpg",
+          "fileURL": "https://scontent.fdet3-1.fna.fbcdn.net/v/t39.30808-6/611306711_33244028718576422_88898876076167951_n.jpg?stp=dst-jpg_s590x590_tt6&_nc_cat=108&ccb=1-7&_nc_sid=aa7b47&_nc_ohc=iuheA_ju9p4Q7kNvwEan-P8&_nc_oc=AdkqpMydJBDavud_kUv21dcGYuv3GwbbV9S3LNWLRLKf7E7zAeke6TfxNOG50WzhOZA&_nc_zt=23&_nc_ht=scontent.fdet3-1.fna&_nc_gid=4taurTe-D7WLDIdmZeuLAQ&oh=00_Afo4rn3AhB7EI54Ey__MhFRffxbX31iuydl9xqI-vZKDiw&oe=69616148"
+        },
+        {
+          "filePATH": "facebook/100001881658065_180_2.jpg",
+          "fileURL": "https://scontent.fdet3-1.fna.fbcdn.net/v/t39.30808-6/610963398_33244028711909756_5055552449873228528_n.jpg?stp=dst-jpg_s590x590_tt6&_nc_cat=107&ccb=1-7&_nc_sid=aa7b47&_nc_ohc=aupy9963AAMQ7kNvwH87Eei&_nc_oc=AdnWANSGrbpd6HJHp6lUtM8bcG_PlGxp3XlNiN9EUzSEuxZGmBtziTsSZOGXNx0q5dg&_nc_zt=23&_nc_ht=scontent.fdet3-1.fna&_nc_gid=4taurTe-D7WLDIdmZeuLAQ&oh=00_AfoC-FlH0QQyai0mKPZMu3mvRsKF4bs2QoTX6JUP7ezn7w&oe=6961536B"
+        },
+        {
+          "filePATH": "facebook/100001881658065_180_3.jpg",
+          "fileURL": "https://scontent.fdet3-1.fna.fbcdn.net/v/t39.30808-6/610878929_33244028665243094_1182870453658900637_n.jpg?stp=dst-jpg_s590x590_tt6&_nc_cat=100&ccb=1-7&_nc_sid=aa7b47&_nc_ohc=g3sZLbkwtuYQ7kNvwFtM8XQ&_nc_oc=AdnxYgChIK_hNyKs3WvUqpMgBjsD0zVKZ9GL_AKPAcF5anTcLv8sT7Uy52yIZmZhhhI&_nc_zt=23&_nc_ht=scontent.fdet3-1.fna&_nc_gid=4taurTe-D7WLDIdmZeuLAQ&oh=00_AfpnE_3sfeU2KIKvlFiMaBJCEO5CJU5-jyUgnvQjgJj0sA&oe=696130DC"
+        },
+        {
+          "filePATH": "facebook/100001881658065_180_4.jpg",
+          "fileURL": "https://scontent.fdet3-1.fna.fbcdn.net/v/t39.30808-6/611630719_33244028545243106_8772439511236744981_n.jpg?stp=dst-jpg_s590x590_tt6&_nc_cat=100&ccb=1-7&_nc_sid=aa7b47&_nc_ohc=eKetfKnUAQ4Q7kNvwHkO-HP&_nc_oc=AdnJM2y0i8u49bMGfYMILiZ9V89mtDPzfW1GC7pgeYjd4L-v5l2yH9ok9ALhapd_Ebo&_nc_zt=23&_nc_ht=scontent.fdet3-1.fna&_nc_gid=4taurTe-D7WLDIdmZeuLAQ&oh=00_AfrwhZKYv5ZmYD-c9qb_ilUawWE1ohKDCjkbK5GV2tP9GA&oe=69615B32"
+        }
+      ],
+      "price": 80000,
+      "area": 0,
+      "status": "FOR_RENT",
+      "tags": [],
+      "contact": "",
+      "street": "",
+      "city": "Libreville",
+      "province": "Estuaire",
+      "country": "Gabon",
+      "countryCode": "GA",
+      "longitude": 9.4672676,
+      "latitude": 0.4161976,
+      "isLocExact": false,
+      "nbrRooms": 0,
+      "nbrBathrooms": 0,
+      "nbrToilets": 0,
+      "nbrChickens": 0,
+      "_source": {
+        "facebookUrl": "https://www.facebook.com/groups/953208923179218",
+        "userId": "100001881658065",
+        "userName": "Marius Essame",
+        "likesCount": 2,
+        "commentsCount": 0
+      }
+    }
+  ]
+}

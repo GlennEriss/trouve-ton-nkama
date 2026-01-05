@@ -1,0 +1,186 @@
+{
+  "metadata": {
+    "source": "Facebook Group",
+    "totalPosts": 50,
+    "propertiesExtracted": 4,
+    "extractionDate": "2026-01-05T09:57:59.861Z"
+  },
+  "properties": [
+    {
+      "typeProperty": "home",
+      "title": "À vendre pk7 plus d'informations appelé le 062726971",
+      "description": "À vendre pk7 plus d'informations appelé le 062726971",
+      "images": [
+        {
+          "filePATH": "facebook/1883788645833638_21_0.jpg",
+          "fileURL": "https://scontent-iad3-1.xx.fbcdn.net/v/t39.30808-6/608516466_1400881381695365_6853375603957098223_n.jpg?stp=dst-jpg_s590x590_tt6&_nc_cat=108&ccb=1-7&_nc_sid=aa7b47&_nc_ohc=xXy7gjyoZBIQ7kNvwEpgo0d&_nc_oc=Adm5HkiIZQn3-HQsRn7RcKdB9-o9K1R9XQZaUJnrEyH7kre10VwQHF4KfSg05Ofy1Uk&_nc_zt=23&_nc_ht=scontent-iad3-1.xx&_nc_gid=9bfWZxj-V3zUlwhsLwyOCg&oh=00_AfpC8wN4B6omF5AaPghqjvWuAxltgm2su9jWIKdN1h0K5g&oe=69614F7F"
+        },
+        {
+          "filePATH": "facebook/1883788645833638_21_1.jpg",
+          "fileURL": "https://scontent-iad3-1.xx.fbcdn.net/v/t39.30808-6/611248746_1400881378362032_4830867200173532789_n.jpg?stp=dst-jpg_s590x590_tt6&_nc_cat=102&ccb=1-7&_nc_sid=aa7b47&_nc_ohc=fi5T_5QtVHMQ7kNvwFIqj-X&_nc_oc=AdlkALu-zT_xVhWxWs13yE9NJZeMFPTxptO8620J9cob8Mzmv5Cno0pesq2usoeoYDM&_nc_zt=23&_nc_ht=scontent-iad3-1.xx&_nc_gid=9bfWZxj-V3zUlwhsLwyOCg&oh=00_AfosdrveiGxkgOq0oaug44ipe3ru_I1huUMOG1J6G-eWDw&oe=69614E99"
+        }
+      ],
+      "price": 0,
+      "area": 0,
+      "status": "FOR_SALE",
+      "tags": [],
+      "contact": "",
+      "street": "",
+      "city": "Libreville",
+      "province": "Estuaire",
+      "country": "Gabon",
+      "countryCode": "GA",
+      "longitude": 9.4672676,
+      "latitude": 0.4161976,
+      "isLocExact": false,
+      "nbrRooms": 0,
+      "nbrBathrooms": 0,
+      "nbrToilets": 0,
+      "nbrChickens": 0,
+      "_source": {
+        "facebookUrl": "https://www.facebook.com/groups/1227810011219532",
+        "userId": "1883788645833638",
+        "userName": "Anonymous participant",
+        "likesCount": 0,
+        "commentsCount": 0
+      }
+    },
+    {
+      "typeProperty": "room",
+      "title": "Grande chambre à louer 65mil avec charge d’eau et de courant à cocotiers ruelle des pavés de la fonc",
+      "description": "Grande chambre à louer 65mil avec charge d’eau et de courant à cocotiers ruelle des pavés de la fonction publique dans la barrière en bordure de route. Douche et toilette extérieur\nVisite: 3mil\nModalité: mois+ caution \nNb: les traces d’eau sur le mur résulte d’un déficit à la toiture, des travaux ont été fait donc il n’y a aucun soucis.\nContact: 077.95.73.97 appel et 062198097 watsapp",
+      "images": [
+        {
+          "filePATH": "facebook/29337595405839256_22_0.jpg",
+          "fileURL": "https://scontent-iad3-2.xx.fbcdn.net/v/t39.30808-6/611096916_25340956835555184_900704890009376031_n.jpg?stp=dst-jpg_s590x590_tt6&_nc_cat=105&ccb=1-7&_nc_sid=aa7b47&_nc_ohc=Ljdm9N4oo0MQ7kNvwEAP9-C&_nc_oc=AdnhHL2-Z6EPUsBtmPeF8HjCl4AWjW21gLqrGaxpVE1ByUPYpPhUilQqFJF2FAxWwZ0&_nc_zt=23&_nc_ht=scontent-iad3-2.xx&_nc_gid=9bfWZxj-V3zUlwhsLwyOCg&oh=00_AfqwwdHDg43QShs516Ieg7adY1sIQkY8Iifz-zFwBGgBzQ&oe=696150AE"
+        },
+        {
+          "filePATH": "facebook/29337595405839256_22_1.jpg",
+          "fileURL": "https://scontent-iad3-1.xx.fbcdn.net/v/t39.30808-6/608625155_25340956862221848_8265376791884816399_n.jpg?stp=dst-jpg_s590x590_tt6&_nc_cat=108&ccb=1-7&_nc_sid=aa7b47&_nc_ohc=2cNRHTQ2um4Q7kNvwH_NT24&_nc_oc=AdnT9ippvkOGSNHwt8dD-uHzw6CuBip4V0xTUXoefbU8mE26_Vd508UA7Miy_t3K7Dc&_nc_zt=23&_nc_ht=scontent-iad3-1.xx&_nc_gid=9bfWZxj-V3zUlwhsLwyOCg&oh=00_Afo7dUz9ReJxJEPQjwiSVGBWqWxoEaQ-Z06uwvhUi8QCxw&oe=69614220"
+        },
+        {
+          "filePATH": "facebook/29337595405839256_22_2.jpg",
+          "fileURL": "https://scontent-iad3-1.xx.fbcdn.net/v/t39.30808-6/607198832_25340957042221830_8086314642864181063_n.jpg?stp=dst-jpg_s590x590_tt6&_nc_cat=104&ccb=1-7&_nc_sid=aa7b47&_nc_ohc=RZLQbrIYbqoQ7kNvwHMVwcb&_nc_oc=Admp_BHI1dxDxe1ep2LoOXtfL-5HtJu1-BsQvNYt6Ie0SMV9wTCweG6R5eYyuW2k6JQ&_nc_zt=23&_nc_ht=scontent-iad3-1.xx&_nc_gid=9bfWZxj-V3zUlwhsLwyOCg&oh=00_Afob3OcDQlMF6zQc4ed8FAF5VPUhEQ6XvQgrx8s8ktUPEw&oe=69616A52"
+        }
+      ],
+      "price": 65000,
+      "area": 0,
+      "status": "FOR_RENT",
+      "tags": [],
+      "contact": "",
+      "street": "",
+      "city": "Libreville",
+      "province": "Estuaire",
+      "country": "Gabon",
+      "countryCode": "GA",
+      "longitude": 9.4672676,
+      "latitude": 0.4161976,
+      "isLocExact": false,
+      "_source": {
+        "facebookUrl": "https://www.facebook.com/groups/1227810011219532",
+        "userId": "29337595405839256",
+        "userName": "Anonymous participant",
+        "likesCount": 1,
+        "commentsCount": 0
+      }
+    },
+    {
+      "typeProperty": "apartment",
+      "title": "A LOUER AU PK12 (du côté de la ruelle longeant la Martinière) :",
+      "description": "A LOUER AU PK12 (du côté de la ruelle longeant la Martinière) :\n\n1 Appartement de :\n* 1 Chambre + Salon + Cuisine + Douche/WC + Terrasse avec installation machine à laver + compteur d'électricité individuel\n* NB. PAS DE CAUTION / PAS DE FRAIS DE DEMARCHEUR / PAS DE FRAIS DE VISITE\n* PRIX : 140.000 FCFA SANS CAUTION\n* Contacts : 060.06.79.77 / 077.97.94.17 / 076.49.67.51",
+      "images": [
+        {
+          "filePATH": "facebook/pfbid02a7VsLEV8a7sJoeS9UwYNnhxCE3Gjjn15hudgqdVmKWAUQzQH16bdqUTKEhh1eHrDl_25_0.jpg",
+          "fileURL": "https://scontent-hou1-1.xx.fbcdn.net/v/t39.30808-6/611162476_122205971840331490_9207985654940369020_n.jpg?stp=dst-jpg_s590x590_tt6&_nc_cat=101&ccb=1-7&_nc_sid=aa7b47&_nc_ohc=8TeCH9NZqK4Q7kNvwFpVpxa&_nc_oc=AdlrWnOUGRnUYj-QycSueUDE4UqxW2xPyme7MAdgqQeYTN7F0tmPihKFByWgLsrOkgg&_nc_zt=23&_nc_ht=scontent-hou1-1.xx&_nc_gid=oQ95OmV_WHwsz6Hqg0JzjA&oh=00_Afo5fBMlV33wbEjUmnkKSumh5pUlPe-HVcNTlbRcPdoW8Q&oe=69616C4C"
+        },
+        {
+          "filePATH": "facebook/pfbid02a7VsLEV8a7sJoeS9UwYNnhxCE3Gjjn15hudgqdVmKWAUQzQH16bdqUTKEhh1eHrDl_25_1.jpg",
+          "fileURL": "https://scontent-hou1-1.xx.fbcdn.net/v/t39.30808-6/611160690_122205971858331490_9143777737054872256_n.jpg?stp=dst-jpg_s590x590_tt6&_nc_cat=109&ccb=1-7&_nc_sid=aa7b47&_nc_ohc=dXccSgXPo_cQ7kNvwEF5GNl&_nc_oc=AdmX8hk29HbEYRENNRQcYq-1nPGusTMu_HwcXecyGR_4sItnKqpRrFXeLbuNfHCeJfA&_nc_zt=23&_nc_ht=scontent-hou1-1.xx&_nc_gid=oQ95OmV_WHwsz6Hqg0JzjA&oh=00_Afo1FeMg8PXdfbLmlpt4_DuvJiZAA9UTSyO8BtjfF4Pb6g&oe=696160B7"
+        },
+        {
+          "filePATH": "facebook/pfbid02a7VsLEV8a7sJoeS9UwYNnhxCE3Gjjn15hudgqdVmKWAUQzQH16bdqUTKEhh1eHrDl_25_2.jpg",
+          "fileURL": "https://scontent-hou1-1.xx.fbcdn.net/v/t39.30808-6/611171876_122205971888331490_4931396250883443442_n.jpg?stp=dst-jpg_s590x590_tt6&_nc_cat=102&ccb=1-7&_nc_sid=aa7b47&_nc_ohc=_N4wroCt_HIQ7kNvwG9ibAR&_nc_oc=AdmLI2WJRExK-DB6tilkgqpN3uIyJpFULXuoiwBhMDOUa2OewK80QsYb7enrXsqSCHs&_nc_zt=23&_nc_ht=scontent-hou1-1.xx&_nc_gid=oQ95OmV_WHwsz6Hqg0JzjA&oh=00_Afpn4v33CT-OLR-ZSKASLKVf0tyGEmDnaNvvPTOcBg_fdg&oe=69615D0E"
+        },
+        {
+          "filePATH": "facebook/pfbid02a7VsLEV8a7sJoeS9UwYNnhxCE3Gjjn15hudgqdVmKWAUQzQH16bdqUTKEhh1eHrDl_25_3.jpg",
+          "fileURL": "https://scontent-hou1-1.xx.fbcdn.net/v/t39.30808-6/611174101_122205971966331490_1057963361253975785_n.jpg?stp=dst-jpg_s590x590_tt6&_nc_cat=102&ccb=1-7&_nc_sid=aa7b47&_nc_ohc=iaz66v6kOl0Q7kNvwG5j03d&_nc_oc=AdlsWeiqyqbsFQvszKVguBIXY511ySJTnCv96YVUqX-uehjwFRfE8IsfpzKmfipqJbU&_nc_zt=23&_nc_ht=scontent-hou1-1.xx&_nc_gid=oQ95OmV_WHwsz6Hqg0JzjA&oh=00_AfqWtQkDKWLwqwACI1fife4yQsazHIeA2VjU-rH6uXmo6g&oe=69616B04"
+        }
+      ],
+      "price": 140,
+      "area": 0,
+      "status": "FOR_RENT",
+      "tags": [],
+      "contact": "",
+      "street": "",
+      "city": "Libreville",
+      "province": "Estuaire",
+      "country": "Gabon",
+      "countryCode": "GA",
+      "longitude": 9.4672676,
+      "latitude": 0.4161976,
+      "isLocExact": false,
+      "nbrRooms": 1,
+      "nbrBathrooms": 0,
+      "nbrToilets": 0,
+      "nbrChickens": 0,
+      "_source": {
+        "facebookUrl": "https://www.facebook.com/groups/1227810011219532",
+        "userId": "pfbid02a7VsLEV8a7sJoeS9UwYNnhxCE3Gjjn15hudgqdVmKWAUQzQH16bdqUTKEhh1eHrDl",
+        "userName": "Grâce Théo Bibang",
+        "likesCount": 15,
+        "commentsCount": 19
+      }
+    },
+    {
+      "typeProperty": "studio",
+      "title": "1 studio à louer première main neufs à Amissa transfo 3 antennes à 3min des pavés. En zone habitée.",
+      "description": "1 studio à louer première main neufs à Amissa transfo 3 antennes à 3min des pavés. En zone habitée.\n\nCaractéristiques: en briques de terre cuite traitées, avec un grand salon et un coin cuisine, une douche avec wc, un petit couloir, une grande chambre, une petite terrasse. Un compteur électrique individuel et un forage d'eau avec distribution dans chaque studio.\n\nLoyer mensuel: 160000fcf charge d'eau comprise.\n\nConditions: caution et loyer au prorata de la date d'entrée.\n\nContact: +24107298413",
+      "images": [
+        {
+          "filePATH": "facebook/pfbid0BqyqkhtZ764NJ2FFGYqR4JMr64Jh5GXkaHQFWSayRgcFPhE7yk8KvQvjogomHLd7l_49_0.jpg",
+          "fileURL": "https://scontent-hou1-1.xx.fbcdn.net/v/t39.30808-6/611252350_25532148963118069_7085901437788706106_n.jpg?stp=dst-jpg_s590x590_tt6&_nc_cat=109&ccb=1-7&_nc_sid=aa7b47&_nc_ohc=9bXuaEUBWHEQ7kNvwE-kf7_&_nc_oc=Adn3ZMkDgqg61hoZKuoehMPYiVrJk3NcdfbsSmbZDMgn59IxeZonHse20Wzo-io7wVcFZoglFDWx8jCh-iiP_OLa&_nc_zt=23&_nc_ht=scontent-hou1-1.xx&_nc_gid=sd7xG1ii6I2xc32Vpi5VHA&oh=00_AfodWSUTsBRcJWOAob1g8itEFLeGRoDvX7nWjQHi0uxnpg&oe=696167AF"
+        },
+        {
+          "filePATH": "facebook/pfbid0BqyqkhtZ764NJ2FFGYqR4JMr64Jh5GXkaHQFWSayRgcFPhE7yk8KvQvjogomHLd7l_49_1.jpg",
+          "fileURL": "https://scontent-hou1-1.xx.fbcdn.net/v/t39.30808-6/612051285_25532149103118055_752943142518701138_n.jpg?stp=dst-jpg_s590x590_tt6&_nc_cat=101&ccb=1-7&_nc_sid=aa7b47&_nc_ohc=cTAz3rNBUGoQ7kNvwE5qFVF&_nc_oc=AdlpKa9e_QKpO8UGn0V4ViK3UmHSCb20nsB6nlnB5gMEnC0aSKWG11keMXQ663sjE6zBycnFHFTW1jIwwf754Zjr&_nc_zt=23&_nc_ht=scontent-hou1-1.xx&_nc_gid=sd7xG1ii6I2xc32Vpi5VHA&oh=00_AfruWI2Tf4CKYagqzRUtt7Kvh5Ht7oDBhjKrVHabHfSXXA&oe=69616609"
+        },
+        {
+          "filePATH": "facebook/pfbid0BqyqkhtZ764NJ2FFGYqR4JMr64Jh5GXkaHQFWSayRgcFPhE7yk8KvQvjogomHLd7l_49_2.jpg",
+          "fileURL": "https://scontent-hou1-1.xx.fbcdn.net/v/t39.30808-6/610983836_25532149236451375_4366743732342194226_n.jpg?stp=dst-jpg_s590x590_tt6&_nc_cat=102&ccb=1-7&_nc_sid=aa7b47&_nc_ohc=zqCD5BdLR5oQ7kNvwHi0Kvv&_nc_oc=AdmFsVXBLk3wWOoRX9SFBfY5AreUrqlWB66AJ7IXwkvtcqmR7XVm-tDYT6HNDj2a-56etyyKsiv6aRmGv1Zj-gpw&_nc_zt=23&_nc_ht=scontent-hou1-1.xx&_nc_gid=sd7xG1ii6I2xc32Vpi5VHA&oh=00_Afqm9Gm-zntM_8-GVm1wIt8uMh2O3pRpRy99aTMGArBH3g&oe=696166D4"
+        },
+        {
+          "filePATH": "facebook/pfbid0BqyqkhtZ764NJ2FFGYqR4JMr64Jh5GXkaHQFWSayRgcFPhE7yk8KvQvjogomHLd7l_49_3.jpg",
+          "fileURL": "https://scontent-hou1-1.xx.fbcdn.net/v/t39.30808-6/611271175_25532149436451355_3393174498455745177_n.jpg?stp=dst-jpg_s590x590_tt6&_nc_cat=102&ccb=1-7&_nc_sid=aa7b47&_nc_ohc=zv13M0gaslcQ7kNvwEVxBLM&_nc_oc=Adn_6fYuivPSk4c60ukBnP7WwmVGigOi0ixcDX3vGRjaLJGTeYeXLVzpSDvdLQ6xeeGQ0DccNC6m6yDJ3ilKmvVa&_nc_zt=23&_nc_ht=scontent-hou1-1.xx&_nc_gid=sd7xG1ii6I2xc32Vpi5VHA&oh=00_AfpoB34FJhpj7nu9LTz7i1CP4_6mxtvMINdkT5J_su5IGQ&oe=69614D18"
+        },
+        {
+          "filePATH": "facebook/pfbid0BqyqkhtZ764NJ2FFGYqR4JMr64Jh5GXkaHQFWSayRgcFPhE7yk8KvQvjogomHLd7l_49_4.jpg",
+          "fileURL": "https://scontent-hou1-1.xx.fbcdn.net/v/t39.30808-6/611118157_25532149573118008_4477188806678141280_n.jpg?stp=dst-jpg_s590x590_tt6&_nc_cat=100&ccb=1-7&_nc_sid=aa7b47&_nc_ohc=qAVmmsX3-yQQ7kNvwFAexoO&_nc_oc=AdkA3qZyJTO2d1hQkpIVtfXSoBKCbsCrAjBEtIOt83dIT_bo0tfQ6PUXGWi9Mza5ir9afLmYKo_qf3MJnwEVn7Hr&_nc_zt=23&_nc_ht=scontent-hou1-1.xx&_nc_gid=sd7xG1ii6I2xc32Vpi5VHA&oh=00_AfrlnK2eNj2gbaGGf93xDnGDbI-4CHi0YEXk018EjliqgQ&oe=69614AC1"
+        }
+      ],
+      "price": 0,
+      "area": 0,
+      "status": "FOR_RENT",
+      "tags": [],
+      "contact": "",
+      "street": "Amissa",
+      "city": "Libreville",
+      "province": "Estuaire",
+      "country": "Gabon",
+      "countryCode": "GA",
+      "longitude": 9.4672676,
+      "latitude": 0.4161976,
+      "isLocExact": false,
+      "nbrRooms": 0,
+      "nbrBathrooms": 0,
+      "nbrToilets": 0,
+      "nbrChickens": 0,
+      "_source": {
+        "facebookUrl": "https://www.facebook.com/groups/1227810011219532",
+        "userId": "pfbid0BqyqkhtZ764NJ2FFGYqR4JMr64Jh5GXkaHQFWSayRgcFPhE7yk8KvQvjogomHLd7l",
+        "userName": "Lovys O'neil",
+        "likesCount": 8,
+        "commentsCount": 0
+      }
+    }
+  ]
+}

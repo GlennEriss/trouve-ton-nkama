@@ -1,0 +1,112 @@
+{
+  "metadata": {
+    "source": "Facebook Group",
+    "totalPosts": 50,
+    "propertiesExtracted": 2,
+    "extractionDate": "2026-01-05T10:09:49.600Z"
+  },
+  "properties": [
+    {
+      "typeProperty": "studio",
+      "title": "Studio à louer sise à Angondje , dans une concession commune clôturée avec parking. 1 chambre, 1 sal",
+      "description": "Studio à louer sise à Angondje , dans une concession commune clôturée avec parking. 1 chambre, 1 salon, 1 cuisine, 1 douche et 1 toilette. Prix:250.000XAF. \nVisite payante \nMODALITÉS:1 MOIS DE LOYER, 1 MOIS DE CAUTION + HONORAIRES D’agence\nCONTACT : 066566844",
+      "images": [
+        {
+          "filePATH": "facebook/pfbid018aJAHopqs3xgD5ttDNvEEPLbyL5NZRgNmW316TADU7u16HFdPGnoMZHjKnMVTnsl_12_0.jpg",
+          "fileURL": "https://scontent-lga3-2.xx.fbcdn.net/v/t39.30808-6/606072755_2405581556552398_1250561958052457429_n.jpg?stp=dst-jpg_s590x590_tt6&_nc_cat=105&ccb=1-7&_nc_sid=aa7b47&_nc_ohc=sUbaFhsNKpoQ7kNvwG5Nx_c&_nc_oc=Adna1Qe_97gghdrW1SRgXaQVUkLoGn9Hu40wQAPFu1Jxt3vdKSOiGaRlyhrPi1sX6G0&_nc_zt=23&_nc_ht=scontent-lga3-2.xx&_nc_gid=OUf7UICBj9CHy9KXG2E7ew&oh=00_AfqrNwLJZIYhsfxqKTmUOaRTMDsFT-_bWl32QM8ySjOyfQ&oe=69614038"
+        },
+        {
+          "filePATH": "facebook/pfbid018aJAHopqs3xgD5ttDNvEEPLbyL5NZRgNmW316TADU7u16HFdPGnoMZHjKnMVTnsl_12_1.jpg",
+          "fileURL": "https://scontent-lga3-2.xx.fbcdn.net/v/t39.30808-6/607641645_2405581939885693_6937207217108741442_n.jpg?stp=dst-jpg_s590x590_tt6&_nc_cat=107&ccb=1-7&_nc_sid=aa7b47&_nc_ohc=XME0l3VMPdkQ7kNvwGHJp_X&_nc_oc=AdkfzaePY3HAFpJHtaSIlppVAY2PiQLzy_b2kz2aDAFGYxRDSN_2JE0iI0sQwMeHAu4&_nc_zt=23&_nc_ht=scontent-lga3-2.xx&_nc_gid=OUf7UICBj9CHy9KXG2E7ew&oh=00_AfpuOZxYGlnlKidwK376N-c7wveXDCNRaULBO9k4YqzHLA&oe=696161CD"
+        },
+        {
+          "filePATH": "facebook/pfbid018aJAHopqs3xgD5ttDNvEEPLbyL5NZRgNmW316TADU7u16HFdPGnoMZHjKnMVTnsl_12_2.jpg",
+          "fileURL": "https://scontent-lga3-2.xx.fbcdn.net/v/t39.30808-6/606036654_2405581683219052_7017191103537715712_n.jpg?stp=dst-jpg_s590x590_tt6&_nc_cat=107&ccb=1-7&_nc_sid=aa7b47&_nc_ohc=vBGJETdpmpAQ7kNvwEsjAgN&_nc_oc=Adk27Nu9qqUsX1YZfmPyE-Tw2lZKTbsunUO5U9JfzZM_iAMtmz_4s_5TiqClvDaFJfw&_nc_zt=23&_nc_ht=scontent-lga3-2.xx&_nc_gid=OUf7UICBj9CHy9KXG2E7ew&oh=00_AfpBL0FD4ThF00QbuySfyO2RV1TID-8nzSjzQx4SyZbE-w&oe=6961670B"
+        },
+        {
+          "filePATH": "facebook/pfbid018aJAHopqs3xgD5ttDNvEEPLbyL5NZRgNmW316TADU7u16HFdPGnoMZHjKnMVTnsl_12_3.jpg",
+          "fileURL": "https://scontent-lga3-2.xx.fbcdn.net/v/t39.30808-6/605723103_2405581636552390_9057773592277122849_n.jpg?stp=dst-jpg_s590x590_tt6&_nc_cat=105&ccb=1-7&_nc_sid=aa7b47&_nc_ohc=pAYuc3cEoz4Q7kNvwHGJG9H&_nc_oc=Adl4k60sAsET-vx_L_XpQ0058ZiIjMdaf3GZgv0E6cOaVUO1JqpMcuhtI_n4lYx7SAY&_nc_zt=23&_nc_ht=scontent-lga3-2.xx&_nc_gid=OUf7UICBj9CHy9KXG2E7ew&oh=00_AfpwbOXl7LvY4O57GOywceUBMS6htXZdvlKuSzXjvdinYQ&oe=69614F87"
+        },
+        {
+          "filePATH": "facebook/pfbid018aJAHopqs3xgD5ttDNvEEPLbyL5NZRgNmW316TADU7u16HFdPGnoMZHjKnMVTnsl_12_4.jpg",
+          "fileURL": "https://scontent-lga3-1.xx.fbcdn.net/v/t39.30808-6/608957924_2405581766552377_4554845827869446784_n.jpg?stp=dst-jpg_s590x590_tt6&_nc_cat=111&ccb=1-7&_nc_sid=aa7b47&_nc_ohc=zSR_gjT3XegQ7kNvwEicWwj&_nc_oc=AdmSRUjqRAXNKok14tr33GwpwXSZ2Ak4Yr6R8H3-Cz9-8FRqXN1olnIWXhNtDE0xnus&_nc_zt=23&_nc_ht=scontent-lga3-1.xx&_nc_gid=OUf7UICBj9CHy9KXG2E7ew&oh=00_Afpoz-Y_VNb3LyBYSyNLjykAJQ4CB8hU87eqmYdCV0Mi1A&oe=69614EF0"
+        }
+      ],
+      "price": 250,
+      "area": 0,
+      "status": "FOR_RENT",
+      "tags": [],
+      "contact": "",
+      "street": "Angondje",
+      "city": "Libreville",
+      "province": "Estuaire",
+      "country": "Gabon",
+      "countryCode": "GA",
+      "longitude": 9.4672676,
+      "latitude": 0.4161976,
+      "isLocExact": false,
+      "nbrRooms": 1,
+      "nbrBathrooms": 1,
+      "nbrToilets": 1,
+      "nbrChickens": 0,
+      "_source": {
+        "facebookUrl": "https://www.facebook.com/groups/1227810011219532",
+        "userId": "pfbid018aJAHopqs3xgD5ttDNvEEPLbyL5NZRgNmW316TADU7u16HFdPGnoMZHjKnMVTnsl",
+        "userName": "Crystal Immo Gabon",
+        "likesCount": 4,
+        "commentsCount": 0
+      }
+    },
+    {
+      "typeProperty": "studio",
+      "title": "Très grand et jolie studio haut standing à louer dans un immeuble dans la barrière avec parking sécu",
+      "description": "Très grand et jolie studio haut standing à louer dans un immeuble dans la barrière avec parking sécurisé à yassa derrière les logements sociaux yassa \n\n    Prix 70 mille non discutable\n\n1 grand salon staffé \n1 grande chambre avec placard\n1 grande cuisine avec coffre et balcon\n1 grande douche bien equipé\nEau forage lumière prépayé\nGardien de nuit \nIntéressé 659726011",
+      "images": [
+        {
+          "filePATH": "facebook/pfbid0ZYqyud5aadukrvK3YUXDYYbnZbvx2DwiW8MhzLVFYT9aYA7fbfY9FcgHK2rwuD1Vl_15_0.jpg",
+          "fileURL": "https://scontent.ford4-1.fna.fbcdn.net/v/t39.30808-6/611178440_122124585153015143_7217050414905451082_n.jpg?stp=dst-jpg_s590x590_tt6&_nc_cat=104&ccb=1-7&_nc_sid=aa7b47&_nc_ohc=ezAdErQO6bIQ7kNvwGSARXa&_nc_oc=AdkihrfIV-c89vIea6U85oJceklEPe0opTkx5HkGC7IvuhJGsUHlM4sjpXFfT2z12EM&_nc_zt=23&_nc_ht=scontent.ford4-1.fna&_nc_gid=VMESNJlChEE0VaBkLTsMAQ&oh=00_AfqjGXrzPRJTJ_UBy-4c9y2-2dokV47oCjDJtv-iom3G4A&oe=69614FEA"
+        },
+        {
+          "filePATH": "facebook/pfbid0ZYqyud5aadukrvK3YUXDYYbnZbvx2DwiW8MhzLVFYT9aYA7fbfY9FcgHK2rwuD1Vl_15_1.jpg",
+          "fileURL": "https://scontent.ford4-1.fna.fbcdn.net/v/t39.30808-6/607613875_122124585243015143_3554568701614805199_n.jpg?stp=dst-jpg_s590x590_tt6&_nc_cat=105&ccb=1-7&_nc_sid=aa7b47&_nc_ohc=oa2AttcqcgQQ7kNvwHF9vkO&_nc_oc=AdnXElWKkpUffAyDh08L7t5xrOv5nycv8eHiYLniQbg79nda_UOBJWNmNv2z3b6YIww&_nc_zt=23&_nc_ht=scontent.ford4-1.fna&_nc_gid=VMESNJlChEE0VaBkLTsMAQ&oh=00_AfpHeox3pk2V2YV_Rq0qQTZ0gcUYACXHtghBD-nIAvOA1w&oe=69616DCF"
+        },
+        {
+          "filePATH": "facebook/pfbid0ZYqyud5aadukrvK3YUXDYYbnZbvx2DwiW8MhzLVFYT9aYA7fbfY9FcgHK2rwuD1Vl_15_2.jpg",
+          "fileURL": "https://scontent.ford4-1.fna.fbcdn.net/v/t39.30808-6/608762530_122124585303015143_8432411844707471317_n.jpg?stp=dst-jpg_s590x590_tt6&_nc_cat=106&ccb=1-7&_nc_sid=aa7b47&_nc_ohc=y8qKl90UmC4Q7kNvwFo5piv&_nc_oc=Admws6QU4Tryuj5u99DrYLXJgFwipg-6O4senbHVsTcpFLlQvBWD6YYzJDqSpAD2VPQ&_nc_zt=23&_nc_ht=scontent.ford4-1.fna&_nc_gid=VMESNJlChEE0VaBkLTsMAQ&oh=00_AfrAdaAtYOPTCHaQIzm7zJvh6F2549GjNmHwFFNf6p8mxQ&oe=6961449C"
+        },
+        {
+          "filePATH": "facebook/pfbid0ZYqyud5aadukrvK3YUXDYYbnZbvx2DwiW8MhzLVFYT9aYA7fbfY9FcgHK2rwuD1Vl_15_3.jpg",
+          "fileURL": "https://scontent.ford4-1.fna.fbcdn.net/v/t39.30808-6/608637475_122124585345015143_4351325933046963130_n.jpg?stp=dst-jpg_s590x590_tt6&_nc_cat=111&ccb=1-7&_nc_sid=aa7b47&_nc_ohc=UaxlKSy0DKwQ7kNvwF0Zuy8&_nc_oc=AdkhczGy_w_PyOFuPGb3gTPN5GJPcPfh3-NCY_unwvSrB8uipreE5Ei8yHFg5dwQK_M&_nc_zt=23&_nc_ht=scontent.ford4-1.fna&_nc_gid=VMESNJlChEE0VaBkLTsMAQ&oh=00_AfpcOXUiRzylh3ZyPt5Ipz72DikRZi459lDZZH13XTnMVg&oe=69616BCC"
+        },
+        {
+          "filePATH": "facebook/pfbid0ZYqyud5aadukrvK3YUXDYYbnZbvx2DwiW8MhzLVFYT9aYA7fbfY9FcgHK2rwuD1Vl_15_4.jpg",
+          "fileURL": "https://scontent.ford4-1.fna.fbcdn.net/v/t39.30808-6/606897943_122124585405015143_6830031806948404961_n.jpg?stp=dst-jpg_s590x590_tt6&_nc_cat=107&ccb=1-7&_nc_sid=aa7b47&_nc_ohc=2_zT69hUlskQ7kNvwFCjlx7&_nc_oc=AdkPYDP5-1CXnVjPstbE0fVPzQ_x-OqwJc2e0CLqiLfJyHdy9ibOnrkfIeGGizJODZ4&_nc_zt=23&_nc_ht=scontent.ford4-1.fna&_nc_gid=VMESNJlChEE0VaBkLTsMAQ&oh=00_Afp5d1PDF6wD0EpHMVY5E9UoEJTcToLYwqWTOKZM8s6CzA&oe=69616FBC"
+        }
+      ],
+      "price": 70000,
+      "area": 0,
+      "status": "FOR_RENT",
+      "tags": [],
+      "contact": "659726011",
+      "street": "",
+      "city": "Libreville",
+      "province": "Estuaire",
+      "country": "Gabon",
+      "countryCode": "GA",
+      "longitude": 9.4672676,
+      "latitude": 0.4161976,
+      "isLocExact": false,
+      "nbrRooms": 0,
+      "nbrBathrooms": 0,
+      "nbrToilets": 0,
+      "nbrChickens": 0,
+      "_source": {
+        "facebookUrl": "https://www.facebook.com/groups/1227810011219532",
+        "userId": "pfbid0ZYqyud5aadukrvK3YUXDYYbnZbvx2DwiW8MhzLVFYT9aYA7fbfY9FcgHK2rwuD1Vl",
+        "userName": "Dieudonné Kondi Samuel",
+        "likesCount": 0,
+        "commentsCount": 0
+      }
+    }
+  ]
+}
