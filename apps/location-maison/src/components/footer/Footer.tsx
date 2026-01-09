@@ -99,7 +99,7 @@ export default function Footer({ isHide = false }: Readonly<{ isHide?: boolean }
 
                 <hr className="my-6 border-gray-700 sm:mx-auto lg:my-8" />
                 <span className="block text-sm text-white text-center">
-                    © 2025 <a href={routes.public.homePage} className="hover:underline">Trouve Ton Nkama</a>. Tous droits réservés.
+                    © {new Date().getFullYear()} <a href={routes.public.homePage} className="hover:underline">Trouve Ton Nkama</a>. Tous droits réservés.
                 </span>
             </div>
         </footer>
