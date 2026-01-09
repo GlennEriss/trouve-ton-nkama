@@ -210,7 +210,7 @@ export default function TermsOfUseClientPage() {
                     {/* Section Contact */}
                     <div className="text-center space-y-4 mt-8">
                       <p className="text-sm text-gray-400">
-                        © 2025 Trouve Ton Nkama. Tous droits réservés.
+                        © {new Date().getFullYear()} Trouve Ton Nkama. Tous droits réservés.
                       </p>
                     </div>
                   </CardContent>

@@ -72,7 +72,7 @@ export class EmailService {
   static defaultTexts = {
     // Textes communs
     greeting: 'Bonjour',
-    copyRight: '© 2025 Trouve Ton Nkama. Tous droits réservés.',
+    copyRight: `© ${new Date().getFullYear()} Trouve Ton Nkama. Tous droits réservés.`,
     visitSocialNetworks: 'Suivez-nous sur les réseaux sociaux',
     supportEmail: supportContact.email,
     websiteUrl: 'https://tonnkama.com',

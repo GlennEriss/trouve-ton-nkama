@@ -54,7 +54,6 @@ export const Signup: React.FC = () => {
     
     const onRegister = async (user: Partial<User>) => {
         try {
-            console.log("OnRegister",user)
             // Vérification obligatoire du numéro de téléphone
             if (!user.phoneNumbers || user.phoneNumbers.length === 0 || !user.phoneNumbers[0]) {
                 throw new Error("Le numéro de téléphone est obligatoire.");
@@ -77,7 +76,7 @@ export const Signup: React.FC = () => {
             // Supprimer le numéro de téléphone de Firebase Auth après création du compte
             // Note: Le numéro de téléphone est vérifié par OTP mais reste dans notre base de données
             // Firebase Auth utilise email/mot de passe pour l'authentification
-            console.log("Numéro de téléphone vérifié et stocké dans la base de données");
+            //console.log("Numéro de téléphone vérifié et stocké dans la base de données");
             
             // Envoyer l'email de vérification en arrière-plan (non-bloquant)
             fetch('/api/auth/send-verification-email', {

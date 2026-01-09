@@ -27599,6 +27599,102 @@
           "lat": -1.4468074,
           "lon": 9.1078531
         }
+      },
+      {
+        "osm": {
+          "type": "node",
+          "id": 9999999999
+        },
+        "name": "Carrefour Soduco",
+        "names": {
+          "fr": "Carrefour Soduco",
+          "en": null,
+          "local": null
+        },
+        "tags": {
+          "name": "Carrefour Soduco",
+          "name:fr": "Carrefour Soduco",
+          "place": "locality",
+          "addr:suburb": "I.A.I-Golf",
+          "addr:city": "Libreville",
+          "source": "manual_addition"
+        },
+        "center": {
+          "lat": 0.3697535,
+          "lon": 9.4803887
+        }
+      },
+      {
+        "osm": {
+          "type": "way",
+          "id": 1359798760
+        },
+        "name": "Société Nationale Immobilière",
+        "names": {
+          "fr": "Société Nationale Immobilière",
+          "en": null,
+          "local": null
+        },
+        "tags": {
+          "name": "Société Nationale Immobilière",
+          "short_name": "SNI",
+          "place": "locality",
+          "addr:city": "Libreville",
+          "source": "manual_from_nominatim"
+        },
+        "center": {
+          "lat": 0.3864682,
+          "lon": 9.4555396
+        }
+      },
+      {
+        "osm": {
+          "type": "manual",
+          "id": "carrefour_sni_owendo"
+        },
+        "name": "Carrefour SNI",
+        "names": {
+          "fr": "Carrefour SNI",
+          "en": null,
+          "local": null
+        },
+        "tags": {
+          "name": "Carrefour SNI",
+          "name:fr": "Carrefour SNI",
+          "place": "locality",
+          "addr:city": "Owendo",
+          "source": "manual_from_osm_nearby_poi",
+          "note": "Coordonnées approximatives basées sur des POIs OSM voisins dont addr:street mentionne 'Carrefour SNI'"
+        },
+        "center": {
+          "lat": 0.331318,
+          "lon": 9.4868901
+        }
+      },
+      {
+        "osm": {
+          "type": "manual",
+          "id": "derriere_la_pediatrie_owendo"
+        },
+        "name": "Derrière la pédiatrie",
+        "names": {
+          "fr": "Derrière la pédiatrie",
+          "en": null,
+          "local": null
+        },
+        "tags": {
+          "name": "Derrière la pédiatrie",
+          "name:fr": "Derrière la pédiatrie",
+          "place": "locality",
+          "addr:city": "Owendo",
+          "source": "manual_from_overpass_nearby_healthcare",
+          "reference_healthcare_name": "PROCCL Clinique de l'Espoir et de l'Esperance",
+          "reference_healthcare_osm": "node/5884911047"
+        },
+        "center": {
+          "lat": 0.3310753,
+          "lon": 9.4959982
+        }
       }
     ]
   }

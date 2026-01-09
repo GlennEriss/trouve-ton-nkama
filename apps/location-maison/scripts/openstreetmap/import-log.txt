@@ -1,0 +1,17 @@
+[dotenv@17.2.0] injecting env (5) from scripts/firebase/.env (tip: ⚙️  write to custom object with { processEnv: myObject })
+🔎 Import OSM -> Firestore
+- dryRun: NON
+- only: ALL
+- limit: NONE
+- input_total(admin+places): 1338 (admin=26, places=1312)
+
+### Provinces: 9
+✅ upsert provinces: 9
+
+### Cities: 57
+✅ upsert cities: 57
+
+### Streets: 1272
+✅ upsert streets: 1272
+
+🎉 Import terminé

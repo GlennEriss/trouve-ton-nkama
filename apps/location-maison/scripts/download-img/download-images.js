@@ -7,8 +7,8 @@ class ImageDownloader {
   constructor() {
     this.baseDir = __dirname;
     this.imagesDir = path.join(this.baseDir, 'images');
-    this.inputFile = path.join(__dirname, '..', 'apify', 'facebook-transformed-properties-deduplicated.json');
-    this.outputFile = path.join(this.baseDir, 'properties-with-local-images.json');
+    this.inputFile = path.join(__dirname, '..', 'apify-facebook-cursor', 'properties-extracted-combined.json');
+    this.outputFile = path.join(__dirname, '..', 'apify-facebook-cursor', 'properties-extracted-combined-with-local-images.json');
     this.downloadedCount = 0;
     this.failedCount = 0;
   }
@@ -28,9 +28,11 @@ class ImageDownloader {
   async loadProperties() {
     console.log('📄 Chargement du fichier JSON...');
     const data = await fs.readFile(this.inputFile, 'utf8');
-    const properties = JSON.parse(data);
+    const jsonData = JSON.parse(data);
+    // Le fichier peut avoir une structure { properties: [...] } ou être directement un tableau
+    const properties = jsonData.properties || jsonData;
     console.log(`✅ ${properties.length} propriétés trouvées\n`);
-    return properties;
+    return { properties, metadata: jsonData.metadata };
   }
 
   async downloadImage(imageUrl, propertyIndex, imageIndex) {
@@ -89,24 +91,46 @@ class ImageDownloader {
     console.log(`   📸 ${property.images.length} images à télécharger`);
     
     const localImages = [];
+    const failedBefore = this.failedCount;
     
     for (let i = 0; i < property.images.length; i++) {
-      const imageUrl = property.images[i];
+      const image = property.images[i];
+      // Support des deux formats : string (URL) ou objet { fileURL, filePATH }
+      const imageUrl = typeof image === 'string' ? image : image.fileURL;
+      
+      if (!imageUrl) {
+        console.log(`\n   ⚠️  Image ${i + 1}: pas d'URL disponible`);
+        localImages.push(image); // Garder l'objet original
+        continue;
+      }
       
       try {
         const localPath = await this.downloadImage(imageUrl, propertyIndex, i);
-        localImages.push(localPath);
+        // Conserver la structure originale si c'est un objet, sinon créer un objet
+        if (typeof image === 'object') {
+          localImages.push({
+            ...image,
+            filePATH: localPath,
+            fileURL: imageUrl // Garder l'URL originale aussi
+          });
+        } else {
+          localImages.push({
+            filePATH: localPath,
+            fileURL: imageUrl
+          });
+        }
         process.stdout.write('.');
       } catch (error) {
         console.log(`\n   ❌ Échec téléchargement image ${i + 1}: ${error.message}`);
-        // On garde l'URL originale en cas d'échec
-        localImages.push(imageUrl);
+        // On garde l'objet/URL originale en cas d'échec
+        localImages.push(image);
       }
     }
     
-    console.log(`\n   ✅ ${property.images.length - this.failedCount} images téléchargées\n`);
+    const successCount = property.images.length - (this.failedCount - failedBefore);
+    console.log(`\n   ✅ ${successCount}/${property.images.length} images téléchargées\n`);
     
-    // Remplacer les URLs par les chemins locaux
+    // Remplacer les images par les chemins locaux
     return {
       ...property,
       images: localImages
@@ -114,7 +138,7 @@ class ImageDownloader {
   }
 
   async processAllProperties() {
-    const properties = await this.loadProperties();
+    const { properties, metadata } = await this.loadProperties();
     const processedProperties = [];
     
     console.log('🖼️  Début du téléchargement...\n');
@@ -126,17 +150,17 @@ class ImageDownloader {
         const processedProperty = await this.processProperty(property, i);
         processedProperties.push(processedProperty);
       } else {
-        console.log(`⚠️  [${i + 1}] ${property.title} - Aucune image`);
+        console.log(`⚠️  [${i + 1}] ${property.title || 'Sans titre'} - Aucune image`);
         processedProperties.push(property);
       }
     }
     
-    return processedProperties;
+    return { properties: processedProperties, metadata };
   }
 
-  async saveResults(properties) {
+  async saveResults(data) {
     console.log('💾 Sauvegarde du nouveau JSON...');
-    const jsonData = JSON.stringify(properties, null, 2);
+    const jsonData = JSON.stringify(data, null, 2);
     await fs.writeFile(this.outputFile, jsonData, 'utf8');
     console.log(`✅ Fichier sauvegardé: ${this.outputFile}\n`);
   }
@@ -144,8 +168,8 @@ class ImageDownloader {
   async run() {
     try {
       await this.initialize();
-      const properties = await this.processAllProperties();
-      await this.saveResults(properties);
+      const data = await this.processAllProperties();
+      await this.saveResults(data);
       
       console.log('📊 RÉSULTATS:');
       console.log(`✅ Images téléchargées: ${this.downloadedCount}`);
@@ -156,6 +180,7 @@ class ImageDownloader {
       
     } catch (error) {
       console.error('❌ Erreur:', error.message);
+      console.error(error.stack);
       process.exit(1);
     }
   }

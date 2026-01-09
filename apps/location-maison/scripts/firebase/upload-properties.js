@@ -5,7 +5,8 @@ const path = require('path');
 class FirebasePropertyUploader {
   constructor() {
     this.baseDir = __dirname;
-    this.inputFile = path.join(__dirname, '..', 'download-img', 'properties-with-local-images.json');
+    // Utiliser le nouveau fichier avec les images locales
+    this.inputFile = path.join(__dirname, '..', 'apify-facebook-cursor', 'properties-extracted-combined-with-local-images.json');
     this.imagesDir = path.join(__dirname, '..', 'download-img', 'images');
     this.outputFile = path.join(this.baseDir, 'processed-properties.json');
     
@@ -65,7 +66,9 @@ class FirebasePropertyUploader {
   async loadProperties() {
     console.log('📄 Chargement du fichier JSON...');
     const data = await fs.readFile(this.inputFile, 'utf8');
-    const properties = JSON.parse(data);
+    const jsonData = JSON.parse(data);
+    // Le fichier peut avoir une structure { properties: [...] } ou être directement un tableau
+    const properties = jsonData.properties || jsonData;
     console.log(`✅ ${properties.length} propriétés trouvées\n`);
     return properties;
   }
@@ -97,17 +100,27 @@ class FirebasePropertyUploader {
 
   async uploadImage(localImagePath, propertyIndex, imageIndex) {
     try {
-      const localPath = path.join(this.imagesDir, path.basename(localImagePath));
+      // Support des deux formats : string (chemin relatif) ou objet { filePATH, fileURL }
+      let actualLocalPath;
+      if (typeof localImagePath === 'string') {
+        // Format string : "images/property_0_image_0.jpg"
+        actualLocalPath = path.join(this.imagesDir, path.basename(localImagePath));
+      } else if (localImagePath && localImagePath.filePATH) {
+        // Format objet : { filePATH: "images/...", fileURL: "..." }
+        actualLocalPath = path.join(this.imagesDir, path.basename(localImagePath.filePATH));
+      } else {
+        throw new Error('Format d\'image non supporté');
+      }
       
       // Vérifier que le fichier existe
-      await fs.access(localPath);
+      await fs.access(actualLocalPath);
       
       // Nom du fichier dans Firebase Storage
       const fileName = `properties/${propertyIndex}_${imageIndex}_${Date.now()}.jpg`;
       const file = this.bucket.file(fileName);
       
       // Upload du fichier
-      await file.save(await fs.readFile(localPath), {
+      await file.save(await fs.readFile(actualLocalPath), {
         metadata: {
           contentType: 'image/jpeg',
           metadata: {
@@ -120,14 +133,11 @@ class FirebasePropertyUploader {
       // Rendre le fichier public
       await file.makePublic();
       
-      // CORRECTION: Retourner un objet avec filePATH et fileURL
+      // Retourner un objet avec filePATH et fileURL
       const filePATH = fileName;
       const fileURL = `https://storage.googleapis.com/${this.bucket.name}/${fileName}`;
       
       this.uploadedImages++;
-      
-      console.log(`\n   🔧 FilePATH: ${filePATH}`);
-      console.log(`   🔧 FileURL: ${fileURL.substring(0, 80)}...`);
       
       return {
         filePATH: filePATH,
@@ -154,21 +164,58 @@ class FirebasePropertyUploader {
       console.log(`   📸 Upload de ${property.images.length} images...`);
       
       for (let i = 0; i < property.images.length; i++) {
-        const localImagePath = property.images[i];
+        const image = property.images[i];
         
-        // Si c'est déjà une URL, on la transforme en objet
-        if (localImagePath.startsWith('http')) {
-          firebaseImages.push({
-            filePATH: `external/${propertyIndex}_${i}_external.jpg`,
-            fileURL: localImagePath
-          });
-          continue;
+        // Support des deux formats : string ou objet { filePATH, fileURL }
+        let localImagePath = null;
+        let externalUrl = null;
+        
+        if (typeof image === 'string') {
+          // Format string : chemin local ou URL
+          if (image.startsWith('http')) {
+            externalUrl = image;
+          } else {
+            localImagePath = image;
+          }
+        } else if (image && typeof image === 'object') {
+          // Format objet : { filePATH, fileURL }
+          // Prioriser filePATH (chemin local) pour l'upload
+          localImagePath = image.filePATH && !image.filePATH.startsWith('http') ? image.filePATH : null;
+          externalUrl = image.fileURL;
         }
         
-        const imageObject = await this.uploadImage(localImagePath, propertyIndex, i);
-        if (imageObject) {
-          firebaseImages.push(imageObject);
-          process.stdout.write('.');
+        // Si on a un fichier local, toujours l'uploader vers Firebase Storage
+        if (localImagePath) {
+          const imageObject = await this.uploadImage(localImagePath, propertyIndex, i);
+          if (imageObject) {
+            firebaseImages.push(imageObject);
+            process.stdout.write('.');
+          } else {
+            // En cas d'échec, garder l'URL externe si disponible
+            firebaseImages.push({
+              filePATH: `external/${propertyIndex}_${i}_external.jpg`,
+              fileURL: externalUrl || localImagePath
+            });
+          }
+        } else if (externalUrl && externalUrl.startsWith('http') && !externalUrl.includes('storage.googleapis.com')) {
+          // Pas de fichier local, garder l'URL externe
+          firebaseImages.push({
+            filePATH: `external/${propertyIndex}_${i}_external.jpg`,
+            fileURL: externalUrl
+          });
+        } else {
+          // Fallback : essayer d'uploader avec ce qu'on a
+          const imageObject = await this.uploadImage(image, propertyIndex, i);
+          if (imageObject) {
+            firebaseImages.push(imageObject);
+            process.stdout.write('.');
+          } else {
+            // En cas d'échec total, garder l'image originale
+            firebaseImages.push(typeof image === 'object' ? image : {
+              filePATH: `external/${propertyIndex}_${i}_external.jpg`,
+              fileURL: externalUrl || String(image)
+            });
+          }
         }
       }
       console.log(`\n   ✅ ${firebaseImages.length}/${property.images.length} images uploadées`);
