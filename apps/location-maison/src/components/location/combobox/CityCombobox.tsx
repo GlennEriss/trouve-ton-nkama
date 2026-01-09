@@ -47,13 +47,17 @@ export function CityCombobox({ onSelect, disabled }: CityComboboxProps) {
 
     // Mettre à jour le formulaire
     setValue('address.city', city.name)
-    setValue('address.cityLat', city.lat)
-    setValue('address.cityLon', city.lon)
+    // Coordonnées au niveau racine (utilisées par useOnSubmitFormProperty)
+    setValue('cityLat', city.lat)
+    setValue('cityLon', city.lon)
     
     // Réinitialiser quartier lors du changement de ville
     setValue('address.district', '')
-    setValue('address.streetLat', 0)
-    setValue('address.streetLon', 0)
+    setValue('streetLat', 0)
+    setValue('streetLon', 0)
+    // Réinitialiser longitude et latitude (seront remis à jour lors de la sélection du quartier)
+    setValue('longitude', 0)
+    setValue('latitude', 0)
 
     // Callback personnalisé
     onSelect?.(city.name)

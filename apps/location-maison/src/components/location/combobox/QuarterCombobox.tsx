@@ -51,8 +51,13 @@ export function QuarterCombobox({ onSelect, disabled }: QuarterComboboxProps) {
 
     // Mettre à jour le formulaire
     setValue('address.district', quarter.name)
-    setValue('address.streetLat', quarter.lat)
-    setValue('address.streetLon', quarter.lon)
+    // Coordonnées au niveau racine (utilisées par useOnSubmitFormProperty et la carte)
+    setValue('streetLat', quarter.lat)
+    setValue('streetLon', quarter.lon)
+    
+    // IMPORTANT: Mettre à jour longitude et latitude (utilisés par la carte sur la page de détails)
+    setValue('longitude', quarter.lon)
+    setValue('latitude', quarter.lat)
 
     // Callback personnalisé
     onSelect?.(quarter.name)

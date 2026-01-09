@@ -39,16 +39,20 @@ export function ProvinceCombobox({ onSelect, disabled }: ProvinceComboboxProps) 
 
     // Mettre à jour le formulaire
     setValue('address.province', province.name)
-    setValue('address.provinceLat', province.lat)
-    setValue('address.provinceLon', province.lon)
+    // Coordonnées au niveau racine (utilisées par useOnSubmitFormProperty)
+    setValue('provinceLat', province.lat)
+    setValue('provinceLon', province.lon)
     
     // Réinitialiser ville et quartier lors du changement de province
     setValue('address.city', '')
-    setValue('address.cityLat', 0)
-    setValue('address.cityLon', 0)
+    setValue('cityLat', 0)
+    setValue('cityLon', 0)
     setValue('address.district', '')
-    setValue('address.streetLat', 0)
-    setValue('address.streetLon', 0)
+    setValue('streetLat', 0)
+    setValue('streetLon', 0)
+    // Réinitialiser longitude et latitude (seront remis à jour lors de la sélection du quartier)
+    setValue('longitude', 0)
+    setValue('latitude', 0)
 
     // Callback personnalisé
     onSelect?.(province.name)
