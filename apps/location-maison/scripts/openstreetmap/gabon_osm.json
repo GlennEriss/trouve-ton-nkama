@@ -3,11 +3,16 @@
     "name": "Gabon",
     "iso2": "GA"
   },
-  "generated_at": "2026-01-04T15:27:10.596Z",
+  "generated_at": "2026-01-09T10:33:14.832Z",
   "source": {
     "provider": "OpenStreetMap",
     "method": "Overpass API",
-    "endpoint": "https://overpass-api.de/api/interpreter"
+    "endpoint": [
+      "https://overpass-api.de/api/interpreter",
+      "https://overpass.kumi.systems/api/interpreter",
+      "https://overpass.nchc.org.tw/api/interpreter",
+      "https://overpass.openstreetmap.ru/api/interpreter"
+    ]
   },
   "admin_boundaries": {
     "4": [
@@ -599,65 +604,6 @@
           "lat": -1.5275336,
           "lon": 9.5454638
         }
-      },
-      {
-        "osm": {
-          "type": "relation",
-          "id": 3728364
-        },
-        "name": "Litoral",
-        "names": {
-          "fr": "Litoral",
-          "en": null,
-          "local": null
-        },
-        "tags": {
-          "ISO3166-2": "GQ-LI",
-          "admin_level": "4",
-          "boundary": "administrative",
-          "name": "Litoral",
-          "name:ar": "ليتورال",
-          "name:bg": "Литорал",
-          "name:br": "Litoral",
-          "name:ca": "Província Litoral",
-          "name:ceb": "Provincia de Litoral",
-          "name:de": "Litoral",
-          "name:es": "Provincia Litoral",
-          "name:eu": "Kostaldea",
-          "name:fi": "Litoralin provinssi",
-          "name:fr": "Litoral",
-          "name:frr": "Litoral",
-          "name:hr": "Primorje",
-          "name:it": "Provincia Litorale",
-          "name:ja": "リトラル県",
-          "name:ka": "ლიტორალის პროვინცია",
-          "name:ko": "리토랄주",
-          "name:lt": "Litoralės provincija",
-          "name:nl": "Litoral",
-          "name:no": "Litoral",
-          "name:pl": "Prowincja Nadmorska",
-          "name:pt": "Litoral",
-          "name:ro": "Provincia Litoral",
-          "name:ru": "Литораль",
-          "name:sco": "Litoral Province",
-          "name:sv": "Litoral",
-          "name:uk": "Літорал",
-          "name:ur": "لیتورال",
-          "name:zh": "滨海省",
-          "name:zh-Hans": "滨海省",
-          "name:zu": "Litoral",
-          "official_name": "Province du Litoral",
-          "official_name:ar": "مقاطعة ليتورال",
-          "official_name:en": "Litoral Province",
-          "official_name:fr": "Province du Litoral",
-          "type": "boundary",
-          "wikidata": "Q203873",
-          "wikipedia": "fr:Litoral (Guinée équatoriale)"
-        },
-        "center": {
-          "lat": 1.6188731,
-          "lon": 9.7622886
-        }
       }
     ],
     "6": [
@@ -912,67 +858,9 @@
           "lat": 1.365319,
           "lon": 11.905278
         }
-      },
-      {
-        "osm": {
-          "type": "relation",
-          "id": 12718966
-        },
-        "name": "Cogo",
-        "names": {
-          "fr": null,
-          "en": null,
-          "local": null
-        },
-        "tags": {
-          "admin_level": "6",
-          "alt_name": "Kogo",
-          "alt_name:es": "Kogo",
-          "boundary": "administrative",
-          "name": "Cogo",
-          "name:es": "Cogo",
-          "old_name": "Puerto Iradier",
-          "old_name:es": "Puerto Iradier",
-          "type": "boundary",
-          "wikidata": "Q2549060",
-          "wikipedia": "es:Cogo"
-        },
-        "center": {
-          "lat": 1.1779981,
-          "lon": 9.781685
-        }
       }
     ],
     "8": [
-      {
-        "osm": {
-          "type": "relation",
-          "id": 12719076
-        },
-        "name": "Cogo",
-        "names": {
-          "fr": null,
-          "en": null,
-          "local": null
-        },
-        "tags": {
-          "admin_level": "8",
-          "alt_name": "Kogo",
-          "alt_name:es": "Kogo",
-          "boundary": "administrative",
-          "name": "Cogo",
-          "name:es": "Cogo",
-          "old_name": "Puerto Iradier",
-          "old_name:es": "Puerto Iradier",
-          "type": "boundary",
-          "wikidata": "Q2549060",
-          "wikipedia": "es:Cogo"
-        },
-        "center": {
-          "lat": 1.1779981,
-          "lon": 9.8843264
-        }
-      },
       {
         "osm": {
           "type": "relation",
@@ -7265,14 +7153,15 @@
           "type": "node",
           "id": 6727132929
         },
-        "name": "Obindji",
+        "name": "Mokabou",
         "names": {
           "fr": null,
           "en": null,
           "local": null
         },
         "tags": {
-          "name": "Obindji",
+          "name": "Mokabou",
+          "old_name": "Obindji",
           "place": "village"
         },
         "center": {
@@ -7570,8 +7459,8 @@
           "place": "village"
         },
         "center": {
-          "lat": -1.7104588,
-          "lon": 9.877975
+          "lat": -1.7099548,
+          "lon": 9.8775888
         }
       },
       {
@@ -25689,6 +25578,30 @@
           "lat": 0.5074491,
           "lon": 9.4101913
         }
+      },
+      {
+        "osm": {
+          "type": "manual",
+          "id": "marseille_2_akanda"
+        },
+        "name": "Marseille 2",
+        "names": {
+          "fr": "Marseille 2",
+          "en": null,
+          "local": null
+        },
+        "tags": {
+          "name": "Marseille 2",
+          "place": "suburb",
+          "addr:city": "Akanda",
+          "source": "manual_from_google_maps",
+          "source:url": "https://www.google.com/maps/place/Akanda,+Gabon/@0.606005,9.28619,14z/data=!4m10!1m2!2m1!1smarseille+2+akanda+gabon!3m6!1s0x107ed7ce5ff2d70b:0x8ba0e9fb0a16620!8m2!3d0.6112932!4d9.3226158!15sChhtYXJzZWlsbGUgMiBha2FuZGEgZ2Fib26SAQhsb2NhbGl0eeABAA!16s%2Fg%2F11bwkbw2bg?entry=ttu&g_ep=EgoyMDI2MDEwNi4wIKXMDSoKLDEwMDc5MjA3M0gBUAM%3D",
+          "note": "Coordonnées reprises du lien Google Maps fourni; à affiner si besoin avec un point exact Marseille 2."
+        },
+        "center": {
+          "lat": 0.6112932,
+          "lon": 9.3226158
+        }
       }
     ],
     "neighbourhood": [
@@ -27598,102 +27511,6 @@
         "center": {
           "lat": -1.4468074,
           "lon": 9.1078531
-        }
-      },
-      {
-        "osm": {
-          "type": "node",
-          "id": 9999999999
-        },
-        "name": "Carrefour Soduco",
-        "names": {
-          "fr": "Carrefour Soduco",
-          "en": null,
-          "local": null
-        },
-        "tags": {
-          "name": "Carrefour Soduco",
-          "name:fr": "Carrefour Soduco",
-          "place": "locality",
-          "addr:suburb": "I.A.I-Golf",
-          "addr:city": "Libreville",
-          "source": "manual_addition"
-        },
-        "center": {
-          "lat": 0.3697535,
-          "lon": 9.4803887
-        }
-      },
-      {
-        "osm": {
-          "type": "way",
-          "id": 1359798760
-        },
-        "name": "Société Nationale Immobilière",
-        "names": {
-          "fr": "Société Nationale Immobilière",
-          "en": null,
-          "local": null
-        },
-        "tags": {
-          "name": "Société Nationale Immobilière",
-          "short_name": "SNI",
-          "place": "locality",
-          "addr:city": "Libreville",
-          "source": "manual_from_nominatim"
-        },
-        "center": {
-          "lat": 0.3864682,
-          "lon": 9.4555396
-        }
-      },
-      {
-        "osm": {
-          "type": "manual",
-          "id": "carrefour_sni_owendo"
-        },
-        "name": "Carrefour SNI",
-        "names": {
-          "fr": "Carrefour SNI",
-          "en": null,
-          "local": null
-        },
-        "tags": {
-          "name": "Carrefour SNI",
-          "name:fr": "Carrefour SNI",
-          "place": "locality",
-          "addr:city": "Owendo",
-          "source": "manual_from_osm_nearby_poi",
-          "note": "Coordonnées approximatives basées sur des POIs OSM voisins dont addr:street mentionne 'Carrefour SNI'"
-        },
-        "center": {
-          "lat": 0.331318,
-          "lon": 9.4868901
-        }
-      },
-      {
-        "osm": {
-          "type": "manual",
-          "id": "derriere_la_pediatrie_owendo"
-        },
-        "name": "Derrière la pédiatrie",
-        "names": {
-          "fr": "Derrière la pédiatrie",
-          "en": null,
-          "local": null
-        },
-        "tags": {
-          "name": "Derrière la pédiatrie",
-          "name:fr": "Derrière la pédiatrie",
-          "place": "locality",
-          "addr:city": "Owendo",
-          "source": "manual_from_overpass_nearby_healthcare",
-          "reference_healthcare_name": "PROCCL Clinique de l'Espoir et de l'Esperance",
-          "reference_healthcare_osm": "node/5884911047"
-        },
-        "center": {
-          "lat": 0.3310753,
-          "lon": 9.4959982
         }
       }
     ]
