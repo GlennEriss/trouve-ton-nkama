@@ -82,7 +82,7 @@ export const LocationSchema = z.object({
   street: z.string().min(1, "Le nom de la rue est obligatoire"),
   city: z.string().min(1, "Le nom de la ville est obligatoire"),
   province: z.string().min(1, "Le nom de la province est obligatoire"),
-  additionalInformation: z.string().optional(),
+  additionnalInformation: z.string().optional(),
   longitude: z.number().min(-180).max(180, "Longitude invalide"),
   latitude: z.number().min(-90).max(90, "Latitude invalide"),
   country: z.string().min(1, "Le pays est obligatoire"),
@@ -104,7 +104,7 @@ export const PropertySchemaBase = z.object({
     province: z.string().min(1, "Le nom de la province est obligatoire"),
   }),
   contact: z.string().min(1, "Le numéro de téléphone est obligatoire"),
-  additionalInformation: z.string().optional(),
+  additionnalInformation: z.string().optional(),
   longitude: z
     .number()
     .refine(val => val >= -180 && val <= 180, "Longitude invalide"),
@@ -258,7 +258,7 @@ export const Step3Schema = z.object({
     city: z.string().min(1, "Le nom de la ville est obligatoire"),
     province: z.string().min(1, "Le nom de la province est obligatoire"),
   }),
-  additionalInformation: z.string().optional(),
+  additionnalInformation: z.string().optional(),
   longitude: z.coerce
     .number()
     .refine(val => !Number.isNaN(val) && val >= -180 && val <= 180, "Longitude invalide"),

@@ -26,7 +26,7 @@ export interface ProcessedFormData {
   latitude: number
   countryCode: string
   country: string
-  additionalInformation: string
+  additionnalInformation: string
   [key: string]: any
 }
 
@@ -148,7 +148,7 @@ export class AIFormService {
       country: 'Gabon',
       
       // Informations additionnelles
-      additionalInformation: '',
+      additionnalInformation: '',
       
       // Détails spécifiques à la propriété
       ...data.propertyDetails

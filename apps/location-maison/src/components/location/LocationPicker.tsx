@@ -17,10 +17,10 @@ export default function LocationPicker() {
           <MapPin className="w-6 h-6 text-[#224D62]" />
           <span className="text-[#224D62] font-bold text-lg">Localisation du bien</span>
         </div>
-        <p className="text-[#224D62]/80 text-sm font-medium">
-          Choisissez votre méthode de localisation préférée
-        </p>
-      </div>
+                 <p className="text-[#224D62]/80 text-sm font-medium">
+           Choisissez votre méthode de localisation préférée
+         </p>
+       </div>
 
       {/* Tabs */}
       <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as 'local' | 'smart')} className="w-full">
