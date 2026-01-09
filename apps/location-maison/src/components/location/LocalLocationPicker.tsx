@@ -24,15 +24,19 @@ export default function LocalLocationPicker() {
   const { isLoading, error } = useOSMLocations()
   const { watch } = useFormContext<any>()
 
-  // Récupérer les coordonnées pour la carte depuis les champs du formulaire
-  const provinceLat = watch('address.provinceLat') || 0
-  const provinceLon = watch('address.provinceLon') || 0
-  const cityLat = watch('address.cityLat') || 0
-  const cityLon = watch('address.cityLon') || 0
-  const streetLat = watch('address.streetLat') || 0
-  const streetLon = watch('address.streetLon') || 0
+  // Récupérer les coordonnées pour la carte depuis les champs du formulaire (niveau racine)
+  const provinceLat = watch('provinceLat') || 0
+  const provinceLon = watch('provinceLon') || 0
+  const cityLat = watch('cityLat') || 0
+  const cityLon = watch('cityLon') || 0
+  const streetLat = watch('streetLat') || 0
+  const streetLon = watch('streetLon') || 0
+  
+  // Fallback: utiliser longitude et latitude si les coordonnées spécifiques ne sont pas disponibles
+  const longitude = watch('longitude') || 0
+  const latitude = watch('latitude') || 0
 
-  // Déterminer les coordonnées de la carte (priorité: quartier > ville > province)
+  // Déterminer les coordonnées de la carte (priorité: quartier > ville > province > longitude/latitude)
   const getMapCoords = (): [number, number] | null => {
     if (streetLat && streetLon) {
       return [streetLon, streetLat]; // [lon, lat]
@@ -42,6 +46,10 @@ export default function LocalLocationPicker() {
     }
     if (provinceLat && provinceLon) {
       return [provinceLon, provinceLat]; // [lon, lat]
+    }
+    // Fallback: utiliser longitude/latitude si disponibles (pour les anciennes données)
+    if (longitude && latitude) {
+      return [longitude, latitude]; // [lon, lat]
     }
     return [11.5, 0.5]; // Centre du Gabon par défaut [lon, lat]
   }

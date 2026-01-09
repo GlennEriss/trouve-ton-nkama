@@ -83,13 +83,15 @@ export const PropertyFormComponentProvider = ({ children, isUpdate, propertyToUp
     const { fullSchema, currentStepSchema } = usePropertyFormSchema(activeStep, typeProperty)
     
     // Normaliser les champs de localisation pouvant être null lors d'une modification
+    // Utiliser longitude/latitude comme fallback pour les anciennes propriétés
     const sanitizeLocationFields = (data: any) => ({
         provinceLon: data?.provinceLon ?? 0,
         provinceLat: data?.provinceLat ?? 0,
         cityLon: data?.cityLon ?? 0,
         cityLat: data?.cityLat ?? 0,
-        streetLon: data?.streetLon ?? 0,
-        streetLat: data?.streetLat ?? 0,
+        // Utiliser longitude/latitude comme fallback si streetLon/streetLat ne sont pas disponibles
+        streetLon: data?.streetLon ?? data?.longitude ?? 0,
+        streetLat: data?.streetLat ?? data?.latitude ?? 0,
     })
 
     // Calculer les valeurs par défaut en fonction des props
