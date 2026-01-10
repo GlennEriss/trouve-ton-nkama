@@ -8,8 +8,11 @@ import { routes } from '@/constantes/routes'
 export default function PublicLayout({ children }: Readonly<{ children: React.ReactNode }>) {
     const pathname = usePathname()
     const isSearchPage = pathname === routes.public.search_property
+    const isMapPage = pathname === '/map'
+    const isFullHeightPage = isSearchPage || isMapPage
+    
     return (
-        <main className={cn('', isSearchPage && 'lg:overflow-hidden lg:h-screen')}>
+        <main className={cn('', isFullHeightPage && 'lg:overflow-hidden lg:h-screen')}>
             <div className="md:p-5 sticky top-0 z-50">
                 <Navbar />
             </div>

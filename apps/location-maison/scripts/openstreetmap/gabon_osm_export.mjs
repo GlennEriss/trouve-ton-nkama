@@ -159,6 +159,20 @@ const MANUAL_PLACE_ITEMS = [
     },
     center: { lat: 0.6112932, lon: 9.3226158 },
   },
+  {
+    osm: { type: "manual", id: "1er_campement_akanda" },
+    name: "1er Campement",
+    names: { fr: "1er Campement", en: null, local: null },
+    tags: {
+      name: "1er Campement",
+      place: "suburb",
+      "addr:city": "Akanda",
+      source: "manual_from_overpass",
+      "source:osm": "relation/17207110 (also relation/17208241)",
+      note: "Basé sur l'objet OSM 'Cité des ailes-1er campement' trouvé via Overpass autour d'Akanda.",
+    },
+    center: { lat: 0.5032194, lon: 9.3854418 },
+  },
 ];
 
 function injectManualPlaces(placesGrouped) {

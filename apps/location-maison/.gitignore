@@ -47,3 +47,6 @@ init.txt
 # Scripts
 /scripts/scrap/images
 /scripts/download-img/images
+
+# Large GeoJSON files
+/public/data/gabon_polygons.geojson

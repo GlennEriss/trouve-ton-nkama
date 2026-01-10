@@ -11,12 +11,14 @@ export default function layout({ children }: Readonly<{ children: React.ReactNod
                 <TitleComponent />
             </div>
             <PropertyFormComponentProvider>
-                <div className='flex flex-col gap-4 px-6 pb-20'>
+                <div className='flex flex-col gap-4 px-6 pb-20 max-w-full overflow-x-hidden'>
                     <div className="hidden md:block">
                         <TitleComponent />
                     </div>
                     <StepperComponent />
-                    {children}
+                    <div className='max-w-full overflow-x-hidden'>
+                        {children}
+                    </div>
                     <StepperButtonComponent />
                 </div>
             </PropertyFormComponentProvider>
