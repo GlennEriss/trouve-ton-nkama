@@ -1,5 +1,5 @@
 'use client'
-import React, { createContext, useContext, useState, useMemo } from "react"
+import React, { createContext, useContext, useState, useMemo, useEffect } from "react"
 import { Form } from "@/components/ui/form"
 import { useForm } from "react-hook-form"
 import { zodResolver } from '@hookform/resolvers/zod'
@@ -271,6 +271,10 @@ export const PropertyFormComponentProvider = ({ children, isUpdate, propertyToUp
         })
     }
 
+    // Scroll vers le haut lors du changement d'étape
+    useEffect(() => {
+        window.scrollTo({ top: 0, behavior: 'smooth' })
+    }, [activeStep])
 
     const contextValue = useMemo(() => ({
         activeStep,
