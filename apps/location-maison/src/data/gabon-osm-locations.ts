@@ -5,9 +5,8 @@
 
 import { calculateDistance, findNearestLocation } from '@/lib/geo-haversine';
 
-// Import du fichier OSM - chemin relatif depuis src/data/
-// @ts-ignore - Next.js permet d'importer JSON mais TypeScript peut se plaindre
-import osmData from '../../scripts/openstreetmap/gabon_osm.json';
+// Import du fichier OSM local
+import osmData from './gabon_osm.json';
 
 export interface OSMLocation {
   name: string;

@@ -4,7 +4,6 @@ import { FormFilterSchemaType } from '@/models/schema';
 import { useForm, FormProvider } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { FormFilterSchema } from '@/models/schema';
-import MapViewerModal from './MapViewerModal';
 import SelectProvince from './SelectProvince';
 import SelectCity from './SelectCity';
 import SelectStreet from './SelectStreet';
@@ -32,7 +31,6 @@ export default function FilterSearchDesktopPageSection() {
                                 Filtres de recherches
                             </h1>
                         </div>
-                        <MapViewerModal />
                     </div>
                     <div className="flex-1 overflow-auto mb-20">
                         <section>

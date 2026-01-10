@@ -92,7 +92,7 @@ SearchDesktopPage() {
                             </div>
                         ) : (
                             <>
-                                <div className="mb-6 flex items-center justify-between bg-white dark:bg-gray-800 p-4 rounded-xl shadow-sm">
+                                <div className="mb-6 bg-white dark:bg-gray-800 p-4 rounded-xl shadow-sm">
                                     <h2 className="text-lg font-medium text-gray-900 dark:text-white">
                                         {nbHits} {nbHits > 1 ? 'annonces trouvées' : 'annonce trouvée'}
                                     </h2>

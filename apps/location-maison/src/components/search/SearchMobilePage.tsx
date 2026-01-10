@@ -2,6 +2,7 @@
 
 import React from 'react'
 import Form from 'next/form'
+import Link from 'next/link'
 import { Search, MapPin, ChevronUp, ChevronDown } from 'lucide-react';
 import { Input } from '../ui/input';
 import { FilterModalHomePage } from '../home-page/FilterModalHomePage';
@@ -9,17 +10,6 @@ import { useAlgoliaContext } from '@/providers/AlgoliaContext';
 import { useInfiniteHits, useStats } from 'react-instantsearch';
 import PropertyCard from '../home-page/PropertyCard';
 import { useSearchParams } from 'next/navigation';
-import dynamic from 'next/dynamic'
-
-// Lazy loading du composant GoogleMapViewer
-const GoogleMapViewer = dynamic(() => import('./GoogleMapViewer'), {
-    loading: () => (
-        <div className="flex items-center justify-center h-64 bg-gray-100 rounded-lg">
-            <div className="text-gray-500">Chargement de la carte...</div>
-        </div>
-    ),
-    ssr: false // Désactive le SSR car Google Maps nécessite window
-})
 
 export default function SearchMobilePage() {
     const { searchText, setSearchText, province, city, street, minPrice, maxPrice, minArea, maxArea, minNbrRooms, maxNbrRooms, typeProperty, status, tags, setProvince, setCity, setStreet, setMinPrice, setMaxPrice, setMinArea, setMaxArea, setMinNbrRooms, setMaxNbrRooms, setTypeProperty, setStatus, setTags } = useAlgoliaContext()
@@ -28,10 +18,6 @@ export default function SearchMobilePage() {
     const { items, isLastPage, showMore } = useInfiniteHits();
     const { nbHits } = useStats();
     const searchParams = useSearchParams();
-
-    // État pour la carte en plein écran
-    const [showMap, setShowMap] = React.useState(false);
-    const [mapCenter, setMapCenter] = React.useState({ lat: 0.3476, lng: 9.4523 }); // Libreville par défaut
 
     // Synchronisation URL → Contexte Algolia au chargement initial
     React.useEffect(() => {
@@ -157,14 +143,6 @@ export default function SearchMobilePage() {
                         <div className='flex items-center gap-2'>
                             <button
                                 type='button'
-                                onClick={() => setShowMap(true)}
-                                className='flex items-center gap-2 px-4 py-2 bg-[#146B67] text-white rounded-full text-sm font-medium hover:bg-[#1FA89B] transition-colors'
-                            >
-                                <MapPin className="w-4 h-4" />
-                                Carte
-                            </button>
-                            <button
-                                type='button'
                                 className='hidden md:flex items-center gap-2'
                             >
                                 <FilterModalHomePage />
@@ -223,14 +201,6 @@ export default function SearchMobilePage() {
                     </div>
                 </section>
             </div>
-
-            {/* Carte en modal */}
-            <GoogleMapViewer
-                lat={mapCenter.lat}
-                lng={mapCenter.lng}
-                open={showMap}
-                onOpenChange={setShowMap}
-            />
         </>
     );
 }
