@@ -1,0 +1,187 @@
+@startuml Register-Sequence-Diagram
+skinparam backgroundColor #FEFEFE
+skinparam sequence {
+    ArrowColor #146B67
+    ActorBorderColor #146B67
+    LifeLineBorderColor #1FA89B
+    LifeLineBackgroundColor #E8F4F8
+}
+
+title Diagramme de Séquence - Inscription (Register) Améliorée
+caption Plateforme Location Maison Gabon - FEATURE-001
+
+actor "Visiteur" as Visitor #LightBlue
+participant "SignupForm\n(UI)" as Form #LightGreen
+participant "useSignup\n(Hook)" as Hook #LightYellow
+participant "AuthService\n(Service)" as Service #Orange
+participant "UserRepository\n(Repository)" as Repo #Pink
+participant "Firebase Auth" as FirebaseAuth #LightGray
+participant "Firestore" as Firestore #LightGray
+participant "EmailService\n(API)" as EmailAPI #LightCoral
+
+== 1. Affichage et Validation ==
+
+Visitor -> Form: Accède à la page d'inscription
+activate Form
+Form -> Visitor: Affiche formulaire
+
+Visitor -> Form: Remplit le formulaire
+Form -> Form: Validation Zod (côté client)
+
+alt Validation échoue
+    Form -> Visitor: Affiche erreurs de validation
+    deactivate Form
+else Validation réussie
+    Visitor -> Form: Soumet le formulaire
+    Form -> Hook: signup(formData)
+    activate Hook
+end
+
+== 2. Vérifications d'Unicité ==
+
+Hook -> Service: signup(signupData)
+activate Service
+
+Service -> Repo: findByPhoneNumber(phoneNumber)
+activate Repo
+Repo -> Firestore: Query users where phoneNumbers array-contains
+activate Firestore
+Firestore -> Repo: Résultat (User | null)
+deactivate Firestore
+
+alt Numéro déjà utilisé
+    Repo -> Service: Retourne User existant
+    deactivate Repo
+    Service -> Service: Lancer erreur PHONE_ALREADY_IN_USE
+    Service -> Hook: throw SignupError
+    deactivate Service
+    Hook -> Form: error = PHONE_ALREADY_IN_USE
+    deactivate Hook
+    Form -> Visitor: Affiche "Numéro déjà utilisé"
+    deactivate Form
+else Numéro disponible
+    Repo -> Service: Retourne null
+    deactivate Repo
+    
+    Service -> Repo: findByEmail(email)
+    activate Repo
+    Repo -> Firestore: Query users where email ==
+    activate Firestore
+    Firestore -> Repo: Résultat (User | null)
+    deactivate Firestore
+    
+    alt Email déjà utilisé
+        Repo -> Service: Retourne User existant
+        deactivate Repo
+        Service -> Service: Lancer erreur EMAIL_ALREADY_IN_USE
+        Service -> Hook: throw SignupError
+        deactivate Service
+        Hook -> Form: error = EMAIL_ALREADY_IN_USE
+        deactivate Hook
+        Form -> Visitor: Affiche "Email déjà utilisé"
+        deactivate Form
+    else Email disponible
+        Repo -> Service: Retourne null
+        deactivate Repo
+    end
+end
+
+== 3. Création Compte Firebase Auth ==
+
+Service -> FirebaseAuth: createUserWithEmailAndPassword(email, password)
+activate FirebaseAuth
+
+alt Création échoue
+    FirebaseAuth -> Service: throw FirebaseError
+    deactivate FirebaseAuth
+    Service -> Service: Transformer en SignupError
+    Service -> Hook: throw SignupError
+    deactivate Service
+    Hook -> Form: error = WEAK_PASSWORD | INVALID_EMAIL | etc.
+    deactivate Hook
+    Form -> Visitor: Affiche erreur appropriée
+    deactivate Form
+else Création réussie
+    FirebaseAuth -> Service: UserCredential (uid)
+    deactivate FirebaseAuth
+end
+
+== 4. Création Utilisateur Firestore ==
+
+Service -> Service: Transformer signupData → User
+note right
+  - Rôle par défaut: 'User' (pas 'Announcer')
+  - Créer CreditWallet avec 3 crédits
+  - Ne PAS stocker le mot de passe
+end note
+
+Service -> Repo: create(user)
+activate Repo
+Repo -> Firestore: Create document in 'users' collection
+activate Firestore
+
+alt Création Firestore échoue
+    Firestore -> Repo: throw FirestoreError
+    deactivate Firestore
+    Repo -> Service: throw RepositoryError
+    deactivate Repo
+    Service -> FirebaseAuth: deleteUser(uid) [Rollback]
+    activate FirebaseAuth
+    FirebaseAuth -> Service: User supprimé
+    deactivate FirebaseAuth
+    Service -> Hook: throw SignupError
+    deactivate Service
+    Hook -> Form: error = NETWORK_ERROR
+    deactivate Hook
+    Form -> Visitor: Affiche "Erreur lors de la création"
+    deactivate Form
+else Création réussie
+    Firestore -> Repo: Document créé (userId)
+    deactivate Firestore
+    Repo -> Service: Retourne User créé
+    deactivate Repo
+end
+
+== 5. Envoi Email de Vérification (Non-bloquant) ==
+
+Service -> EmailAPI: POST /api/auth/send-verification-email\n(email, uid)
+activate EmailAPI
+EmailAPI -> EmailAPI: Générer lien de vérification
+EmailAPI -> EmailAPI: Envoyer email (Gmail OAuth2)
+EmailAPI -> Service: Response (success/error)
+deactivate EmailAPI
+
+note right of EmailAPI
+  **Non-bloquant:**
+  - L'inscription continue même si
+    l'email échoue
+  - L'utilisateur peut demander un
+    nouvel email plus tard
+end note
+
+== 6. Retour et Navigation ==
+
+Service -> Hook: Retourne SignupResult { success: true, userId }
+deactivate Service
+
+Hook -> Hook: isSuccess = true\nisLoading = false
+Hook -> Form: isSuccess = true
+deactivate Hook
+
+Form -> Visitor: Affiche toast "Compte créé avec succès"
+Form -> Form: router.push('/signup/success?uid=' + userId)
+deactivate Form
+
+== 7. Page de Succès ==
+
+Visitor -> Visitor: Redirigé vers /signup/success
+note right
+  **Page de succès:**
+  - Affiche message de confirmation
+  - Lien pour renvoyer l'email
+    de vérification si nécessaire
+  - Lien vers connexion
+end note
+
+@enduml
+

@@ -20,6 +20,8 @@ Refactoriser la fonctionnalité d'inscription selon l'architecture proposée, av
 
 ## 🔍 Analyse du Code Actuel
 
+> **📄 Analyse détaillée** : Voir [`ANALYSE_CODE_EXISTANT.md`](./ANALYSE_CODE_EXISTANT.md)
+
 ### Fichiers existants
 
 1. **`src/components/signup/Signup.tsx`**
@@ -220,8 +222,10 @@ interface UseSignupReturn {
 - [ ] Couverture >= 80%
 
 ### Phase 7 : Documentation
+- [x] Analyse du code existant (`ANALYSE_CODE_EXISTANT.md`)
+- [x] Diagramme d'activité (`register-activity-diagram.puml`)
+- [x] Diagramme de séquence (`register-sequence-diagram.puml`)
 - [ ] README dans `documentation/feature/auth/`
-- [ ] Diagrammes si nécessaire
 - [ ] Exemples d'utilisation
 
 ### Phase 8 : PR
