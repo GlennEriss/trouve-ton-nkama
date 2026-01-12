@@ -11,7 +11,7 @@ Le projet utilise **3 environnements Firebase** distincts :
 | Environnement | Nom du Projet | Usage |
 |---------------|---------------|-------|
 | **DEV** | `location-maison-dev-67c13` | Développement local avec émulateurs |
-| **PREPROD** | `location-maison-gabon-preprod` | Tests UAT, démos, validation avant prod |
+| **PREPROD** | `location-maison-preprod` | Tests UAT, démos, validation avant prod |
 | **PROD** | `location-maison-prod-167da` | Production (existant) |
 
 ---
@@ -31,9 +31,11 @@ Le projet utilise **3 environnements Firebase** distincts :
 ### 1.2) Créer le projet PREPROD
 
 1. Cliquer sur **"Ajouter un projet"**
-2. Nom du projet : `location-maison-gabon-preprod`
+2. Nom du projet : `location-maison-preprod` ✅ **Déjà créé**
 3. Activer Google Analytics (recommandé pour suivre les tests)
 4. Cliquer sur **"Créer le projet"**
+
+> ✅ **Le projet PREPROD est déjà créé** : `location-maison-preprod`
 
 ### 1.3) Vérifier le projet PROD
 
@@ -154,13 +156,13 @@ NEXT_PUBLIC_APP_ENV=preprod
 NEXT_PUBLIC_APP_URL=https://location-maison-preprod.vercel.app
 
 # Firebase PREPROD
-NEXT_PUBLIC_FIREBASE_API_KEY=<API_KEY_PREPROD>
-NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN=location-maison-gabon-preprod.firebaseapp.com
-NEXT_PUBLIC_FIREBASE_PROJECT_ID=location-maison-gabon-preprod
-NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET=location-maison-gabon-preprod.appspot.com
-NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID=<SENDER_ID_PREPROD>
-NEXT_PUBLIC_FIREBASE_APP_ID=<APP_ID_PREPROD>
-NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID=<MEASUREMENT_ID_PREPROD>
+NEXT_PUBLIC_FIREBASE_API_KEY=AIzaSyAq5GXaMLMgHdMvmqyo769pdpltFgWehZg
+NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN=location-maison-preprod.firebaseapp.com
+NEXT_PUBLIC_FIREBASE_PROJECT_ID=location-maison-preprod
+NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET=location-maison-preprod.firebasestorage.app
+NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID=791490726
+NEXT_PUBLIC_FIREBASE_APP_ID=1:791490726:web:3866c9af063f87bbcbc467
+NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID=G-2KMNF03HJF
 
 # Algolia
 NEXT_PUBLIC_ALGOLIA_APP_ID=<ALGOLIA_APP_ID>
@@ -189,9 +191,9 @@ Le fichier `.firebaserc` a déjà été mis à jour avec les 3 projets :
 ```json
 {
   "projects": {
-    "default": "location-maison-prod-167da",
-    "dev": "location-maison-gabon-dev",
-    "preprod": "location-maison-gabon-preprod",
+    "default": "location-maison-dev-67c13",
+    "dev": "location-maison-dev-67c13",
+    "preprod": "location-maison-preprod",
     "prod": "location-maison-prod-167da"
   }
 }
@@ -288,7 +290,7 @@ Pour **chaque projet**, configurer les domaines autorisés :
 - [ ] Test de connexion réussi
 
 ### Projet PREPROD
-- [ ] Projet créé : `location-maison-gabon-preprod`
+- [x] Projet créé : `location-maison-preprod` ✅
 - [ ] Services activés (Auth, Firestore, Storage, Functions)
 - [ ] Configuration récupérée
 - [ ] `.env.local.preprod` créé avec les bonnes valeurs
