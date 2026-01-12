@@ -166,7 +166,9 @@ router.push('/signup/success?uid=' + uid)
 - ❌ Gestion d'erreurs inconsistante
 
 ### 2. Logique Métier
-- ❌ Tous les utilisateurs créés avec rôle 'Announcer' (devrait être 'User' par défaut)
+- ❌ **PROBLÈME MAJEUR** : Tous les utilisateurs créés avec rôle 'Announcer' (ligne 27 `transformToPerson.ts`)
+  - **Devrait être** : Rôle 'User' par défaut
+  - **Raison** : Un utilisateur devient Annonceur uniquement s'il souhaite publier des annonces (migration séparée)
 - ❌ Crédits ajoutés dans repository (devrait être dans service)
 - ❌ Déconnexion automatique après inscription (pourquoi ?)
 

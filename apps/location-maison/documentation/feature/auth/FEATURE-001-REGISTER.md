@@ -304,7 +304,11 @@ interface UseSignupReturn {
 
 ## 📝 Notes
 
+- **Rôle par défaut** : L'utilisateur créé a le rôle **'User'** (pas 'Announcer')
+  - Il peut devenir Annonceur plus tard via la migration (voir use cases Utilisateur)
+  - Les crédits sont nécessaires uniquement pour les Annonceurs qui publient des annonces
 - **Crédits de bienvenue** : Attribuer 3 crédits lors de l'inscription (voir class diagram)
+  - Les crédits sont stockés dans `CreditWallet`, pas dans `User.credits`
 - **Email de vérification** : Envoyer en arrière-plan (non-bloquant)
 - **Numéro de téléphone** : Obligatoire et unique
 - **Conditions** : Acceptation obligatoire

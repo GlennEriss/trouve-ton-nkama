@@ -110,7 +110,13 @@ end
 
 Service -> Service: Transformer signupData → User
 note right
-  - Rôle par défaut: 'User' (pas 'Announcer')
+  **Rôle par défaut: 'User'**
+  (pas 'Announcer')
+  
+  L'utilisateur devient Annonceur
+  uniquement s'il souhaite publier
+  des annonces (migration séparée)
+  
   - Créer CreditWallet avec 3 crédits
   - Ne PAS stocker le mot de passe
 end note

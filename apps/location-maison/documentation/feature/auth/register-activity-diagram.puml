@@ -89,6 +89,13 @@ endif
 
 partition Repository {
     :Transformer données formulaire → User;
+    note right
+      **Rôle par défaut: 'User'**
+      (pas 'Announcer')
+      L'utilisateur deviendra Annonceur
+      plus tard s'il souhaite publier
+      des annonces
+    end note
     :Créer CreditWallet avec 3 crédits de bienvenue;
     :create(user);
 }
