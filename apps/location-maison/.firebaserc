@@ -1,7 +1,7 @@
 {
   "projects": {
     "default": "location-maison-prod-167da",
-    "dev": "location-maison-gabon-dev",
+    "dev": "location-maison-dev-67c13",
     "preprod": "location-maison-gabon-preprod",
     "prod": "location-maison-prod-167da"
   }

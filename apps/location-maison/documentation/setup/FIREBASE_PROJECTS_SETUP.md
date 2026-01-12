@@ -10,7 +10,7 @@ Le projet utilise **3 environnements Firebase** distincts :
 
 | Environnement | Nom du Projet | Usage |
 |---------------|---------------|-------|
-| **DEV** | `location-maison-gabon-dev` | Développement local avec émulateurs |
+| **DEV** | `location-maison-dev-67c13` | Développement local avec émulateurs |
 | **PREPROD** | `location-maison-gabon-preprod` | Tests UAT, démos, validation avant prod |
 | **PROD** | `location-maison-prod-167da` | Production (existant) |
 
@@ -22,9 +22,11 @@ Le projet utilise **3 environnements Firebase** distincts :
 
 1. Aller sur [Firebase Console](https://console.firebase.google.com/)
 2. Cliquer sur **"Ajouter un projet"**
-3. Nom du projet : `location-maison-gabon-dev`
+3. Nom du projet : `location-maison-dev-67c13` ✅ **Déjà créé**
 4. Désactiver Google Analytics (optionnel pour dev)
 5. Cliquer sur **"Créer le projet"**
+
+> ✅ **Le projet DEV est déjà créé** : `location-maison-dev-67c13`
 
 ### 1.2) Créer le projet PREPROD
 
@@ -94,7 +96,14 @@ const firebaseConfig = {
 
 ### 4.1) Fichier `.env.local.dev` (Développement)
 
+**Template disponible** : `documentation/setup/env.local.dev.template`
+
 Créer le fichier `.env.local.dev` à la racine du projet :
+
+```bash
+# Copier le template
+cp documentation/setup/env.local.dev.template .env.local.dev
+```
 
 ```bash
 # ============================================
@@ -104,13 +113,13 @@ NEXT_PUBLIC_APP_ENV=development
 NEXT_PUBLIC_APP_URL=http://localhost:3000
 
 # Firebase DEV
-NEXT_PUBLIC_FIREBASE_API_KEY=<API_KEY_DEV>
-NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN=location-maison-gabon-dev.firebaseapp.com
-NEXT_PUBLIC_FIREBASE_PROJECT_ID=location-maison-gabon-dev
-NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET=location-maison-gabon-dev.appspot.com
-NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID=<SENDER_ID_DEV>
-NEXT_PUBLIC_FIREBASE_APP_ID=<APP_ID_DEV>
-NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID=<MEASUREMENT_ID_DEV>
+NEXT_PUBLIC_FIREBASE_API_KEY=AIzaSyC97_d7da8-Dgupckhg_mOfQhXhcJICUt4
+NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN=location-maison-dev-67c13.firebaseapp.com
+NEXT_PUBLIC_FIREBASE_PROJECT_ID=location-maison-dev-67c13
+NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET=location-maison-dev-67c13.firebasestorage.app
+NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID=232480750602
+NEXT_PUBLIC_FIREBASE_APP_ID=1:232480750602:web:87819b86a153de7493b3f3
+NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID=G-ELD9M7GK4B
 
 # Algolia (utiliser les mêmes clés pour tous les environnements ou créer des index séparés)
 NEXT_PUBLIC_ALGOLIA_APP_ID=<ALGOLIA_APP_ID>
@@ -128,7 +137,14 @@ NEXT_PUBLIC_UI_VERSION=v1
 
 ### 4.2) Fichier `.env.local.preprod` (Préproduction)
 
-Créer le fichier `.env.local.preprod` :
+**Template disponible** : `documentation/setup/env.local.preprod.template`
+
+Créer le fichier `.env.local.preprod` à la racine du projet :
+
+```bash
+# Copier le template
+cp documentation/setup/env.local.preprod.template .env.local.preprod
+```
 
 ```bash
 # ============================================
@@ -264,7 +280,7 @@ Pour **chaque projet**, configurer les domaines autorisés :
 ## 📝 Checklist de configuration
 
 ### Projet DEV
-- [ ] Projet créé : `location-maison-gabon-dev`
+- [x] Projet créé : `location-maison-dev-67c13` ✅
 - [ ] Services activés (Auth, Firestore, Storage, Functions)
 - [ ] Configuration récupérée
 - [ ] `.env.local.dev` créé avec les bonnes valeurs
