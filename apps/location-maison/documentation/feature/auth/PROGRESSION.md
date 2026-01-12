@@ -73,24 +73,75 @@
 
 ---
 
-## 🔄 Phase 3 : Service - EN COURS
+## ✅ Phase 3 : Service - TERMINÉE
 
-### À faire
+### Fichiers créés
 
-- [ ] Créer `src/features/auth/services/auth.service.ts`
-- [ ] Implémenter `signup(data: SignupData): Promise<SignupResult>`
-- [ ] Intégration avec Firebase Auth
-- [ ] Intégration avec UserRepository
-- [ ] Gestion d'erreurs cohérente
-- [ ] Tests unitaires (100% couverture)
+1. **`src/features/auth/services/auth.service.interface.ts`**
+   - Interface `AuthService`
+   - Types `SignupData`, `SignupResult`, `SignupError`
+   - Enum `SignupErrorCode`
+   - Classe `AuthServiceError`
+
+2. **`src/features/auth/services/auth.service.ts`**
+   - Implémentation `AuthServiceImpl`
+   - Méthode `signup` complète
+   - Intégration Firebase Auth
+   - Intégration UserRepository
+   - Rollback si Firestore échoue
+   - Envoi email vérification (non-bloquant)
+
+3. **`src/features/auth/services/__tests__/auth.service.test.ts`**
+   - Tests unitaires complets (TDD)
+   - Couverture cible : 100%
+   - Tous les scénarios testés
+
+4. **`src/features/auth/services/index.ts`**
+   - Exports centralisés
+
+### Fonctionnalités implémentées
+
+- ✅ Validation des conditions d'utilisation
+- ✅ Validation des conditions annonceur (si applicable)
+- ✅ Vérification unicité téléphone
+- ✅ Vérification unicité email
+- ✅ Création compte Firebase Auth
+- ✅ Transformation SignupData → User
+- ✅ Création utilisateur Firestore
+- ✅ Rollback si échec Firestore
+- ✅ Envoi email vérification (non-bloquant)
+- ✅ Gestion d'erreurs Firebase Auth
+- ✅ Support User et Announcer
+
+### Tests créés
+
+- ✅ Inscription réussie
+- ✅ Téléphone déjà utilisé
+- ✅ Email déjà utilisé
+- ✅ Conditions non acceptées
+- ✅ Conditions annonceur non acceptées
+- ✅ Erreur mot de passe faible
+- ✅ Erreur email invalide
+- ✅ Erreur email déjà utilisé (Firebase)
+- ✅ Rollback si Firestore échoue
+- ✅ Création avec rôle User
+- ✅ Création avec rôle Announcer
+- ✅ Envoi email vérification
+- ✅ Email échoue (ne bloque pas)
+- ✅ Erreurs repository
+
+**Total** : 14 tests unitaires
 
 ---
 
-## ⏳ Phase 4 : Hook - EN ATTENTE
+## 🔄 Phase 4 : Hook - EN COURS
+
+### À faire
 
 - [ ] Créer `src/features/auth/hooks/useSignup.ts`
-- [ ] Intégration avec service
+- [ ] Intégration avec authService
 - [ ] Gestion état (loading/error/success)
+- [ ] Navigation après succès
 - [ ] Tests unitaires (100% couverture)
 
 ---
