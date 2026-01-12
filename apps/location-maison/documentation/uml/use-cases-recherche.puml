@@ -1,0 +1,247 @@
+@startuml Use-Cases-Recherche
+skinparam backgroundColor #FEFEFE
+skinparam actorStyle awesome
+
+title Diagramme de Cas d'Utilisation - Fonctionnalités de Recherche
+caption Plateforme Location Maison Gabon - v2.1
+
+' =====================================
+' ACTEURS
+' =====================================
+actor "Utilisateur\n(Membre)" as Utilisateur #LightGreen
+actor "Visiteur" as Visiteur #LightGray
+actor "Annonceur" as Annonceur #Orange
+
+' Héritage
+Visiteur <|-- Utilisateur
+Utilisateur <|-- Annonceur
+
+' =====================================
+' NOTE SUR LES ACTEURS
+' =====================================
+note as ActorNote
+  **Ces fonctionnalités sont disponibles pour:**
+  
+  • **Visiteur** : Recherche basique uniquement
+  • **Utilisateur** : Recherche complète + Favoris + Alertes
+  • **Annonceur** : Tout ce qu'un Utilisateur peut
+  
+  La recherche n'est PAS réservée à un acteur spécifique.
+  Tous les utilisateurs authentifiés ont accès à ces
+  fonctionnalités.
+end note
+
+' =====================================
+' SYSTÈME
+' =====================================
+rectangle "Plateforme Location Maison Gabon" {
+    
+    ' --- RECHERCHE BASIQUE (Visiteur) ---
+    package "Recherche Basique" #LightGray {
+        usecase "Rechercher des propriétés" as UC_Search
+        usecase "Voir liste des résultats" as UC_ViewResults
+        usecase "Voir détails d'une annonce" as UC_ViewDetails
+        usecase "Filtrer par type de bien" as UC_FilterType
+        usecase "Filtrer par localisation" as UC_FilterLocation
+        usecase "Filtrer par prix" as UC_FilterPrice
+    }
+    
+    ' --- RECHERCHE AVANCÉE (Utilisateur) ---
+    package "Recherche Avancée" #LightGreen {
+        usecase "Filtrer par superficie" as UC_FilterArea
+        usecase "Filtrer par nombre de pièces" as UC_FilterRooms
+        usecase "Filtrer par caractéristiques" as UC_FilterFeatures
+        usecase "Rechercher par province/ville/quartier" as UC_SearchLocation
+        usecase "Sauvegarder une recherche" as UC_SaveSearch
+        usecase "Consulter recherches sauvegardées" as UC_ViewSavedSearches
+        usecase "Supprimer recherche sauvegardée" as UC_DeleteSavedSearch
+    }
+    
+    ' --- NAVIGATION CARTE ---
+    package "Navigation Carte" #LightGreen {
+        usecase "Explorer la carte interactive" as UC_ExploreMap
+        usecase "Voir propriétés sur la carte" as UC_ViewMapProperties
+        usecase "Filtrer par zone sur carte" as UC_FilterMapZone
+        usecase "Voir délimitations de quartiers" as UC_ViewQuarterBoundaries
+        usecase "Centrer sur ma position" as UC_CenterOnMe
+    }
+    
+    ' --- FAVORIS (Utilisateur uniquement) ---
+    package "Gestion des Favoris" #LightGreen {
+        usecase "Ajouter aux favoris" as UC_AddFavorite
+        usecase "Retirer des favoris" as UC_RemoveFavorite
+        usecase "Consulter ses favoris" as UC_ViewFavorites
+        usecase "Trier ses favoris" as UC_SortFavorites
+    }
+    
+    ' --- ALERTES (Utilisateur uniquement) ---
+    package "Alertes & Notifications" #LightGreen {
+        usecase "Créer une alerte de recherche" as UC_CreateAlert
+        usecase "Recevoir alertes nouveaux biens" as UC_AlertNew
+        usecase "Recevoir alertes prix réduits" as UC_AlertPriceDrop
+        usecase "Configurer préférences alertes" as UC_ConfigAlerts
+        usecase "Désactiver une alerte" as UC_DisableAlert
+        usecase "Voir historique des alertes" as UC_ViewAlertHistory
+    }
+    
+    ' --- COMPARAISON ---
+    package "Comparaison de Propriétés" #LightGreen {
+        usecase "Comparer des propriétés" as UC_Compare
+        usecase "Ajouter à la comparaison" as UC_AddToCompare
+        usecase "Retirer de la comparaison" as UC_RemoveFromCompare
+        usecase "Voir tableau comparatif" as UC_ViewComparison
+        usecase "Exporter la comparaison" as UC_ExportComparison
+    }
+    
+    ' --- CONTACT ---
+    package "Contact Annonceur" #LightGreen {
+        usecase "Contacter l'annonceur" as UC_ContactOwner
+        usecase "Voir coordonnées de contact" as UC_ViewContact
+        usecase "Envoyer un message" as UC_SendMessage
+        usecase "Partager annonce" as UC_ShareAd
+    }
+}
+
+' =====================================
+' RELATIONS VISITEUR (Recherche basique)
+' =====================================
+Visiteur --> UC_Search
+Visiteur --> UC_ViewResults
+Visiteur --> UC_ViewDetails
+
+' =====================================
+' RELATIONS UTILISATEUR
+' =====================================
+Utilisateur --> UC_Search
+Utilisateur --> UC_ExploreMap
+Utilisateur --> UC_AddFavorite
+Utilisateur --> UC_CreateAlert
+Utilisateur --> UC_Compare
+Utilisateur --> UC_ContactOwner
+
+' =====================================
+' RELATIONS INCLUDE / EXTEND
+' =====================================
+
+' Recherche basique
+UC_Search ..> UC_ViewResults : <<include>>
+UC_Search ..> UC_FilterType : <<extend>>
+UC_Search ..> UC_FilterLocation : <<extend>>
+UC_Search ..> UC_FilterPrice : <<extend>>
+UC_ViewResults ..> UC_ViewDetails : <<extend>>
+
+' Recherche avancée
+UC_Search ..> UC_FilterArea : <<extend>>
+UC_Search ..> UC_FilterRooms : <<extend>>
+UC_Search ..> UC_FilterFeatures : <<extend>>
+UC_Search ..> UC_SaveSearch : <<extend>>
+UC_FilterLocation ..> UC_SearchLocation : <<include>>
+UC_SaveSearch ..> UC_ViewSavedSearches : <<extend>>
+UC_ViewSavedSearches ..> UC_DeleteSavedSearch : <<extend>>
+
+' Carte
+UC_ExploreMap ..> UC_ViewMapProperties : <<include>>
+UC_ExploreMap ..> UC_FilterMapZone : <<extend>>
+UC_ExploreMap ..> UC_ViewQuarterBoundaries : <<extend>>
+UC_ExploreMap ..> UC_CenterOnMe : <<extend>>
+
+' Favoris
+UC_ViewFavorites ..> UC_RemoveFavorite : <<extend>>
+UC_ViewFavorites ..> UC_SortFavorites : <<extend>>
+
+' Alertes
+UC_CreateAlert ..> UC_ConfigAlerts : <<include>>
+UC_ConfigAlerts ..> UC_AlertNew : <<include>>
+UC_ConfigAlerts ..> UC_AlertPriceDrop : <<extend>>
+UC_CreateAlert ..> UC_DisableAlert : <<extend>>
+UC_CreateAlert ..> UC_ViewAlertHistory : <<extend>>
+
+' Comparaison
+UC_Compare ..> UC_AddToCompare : <<include>>
+UC_Compare ..> UC_RemoveFromCompare : <<extend>>
+UC_Compare ..> UC_ViewComparison : <<include>>
+UC_ViewComparison ..> UC_ExportComparison : <<extend>>
+
+' Contact
+UC_ContactOwner ..> UC_ViewContact : <<include>>
+UC_ContactOwner ..> UC_SendMessage : <<extend>>
+UC_ContactOwner ..> UC_ShareAd : <<extend>>
+
+' =====================================
+' NOTES
+' =====================================
+note right of UC_SaveSearch
+  **Recherches sauvegardées:**
+  Permet de sauvegarder
+  des critères de recherche
+  pour y revenir facilement
+  et recevoir des alertes.
+  
+  **Nécessite d'être connecté.**
+end note
+
+note right of UC_CreateAlert
+  **Alertes de recherche:**
+  L'utilisateur reçoit une
+  notification quand une
+  nouvelle propriété correspond
+  à ses critères.
+  
+  **Alertes possibles:**
+  - Nouveaux biens
+  - Baisse de prix
+  - Propriété favorite mise à jour
+end note
+
+note right of UC_Compare
+  **Comparaison:**
+  Permet de comparer
+  jusqu'à **4 propriétés**
+  côte à côte pour faciliter
+  la décision.
+  
+  **Critères comparés:**
+  - Prix
+  - Superficie
+  - Nombre de pièces
+  - Localisation
+  - Caractéristiques
+end note
+
+note bottom of Utilisateur
+  **Utilisateur authentifié:**
+  Accès à toutes les fonctionnalités
+  de recherche, favoris, alertes
+  et comparaison.
+  
+  **Ces fonctionnalités ne nécessitent
+  PAS d'être Annonceur.**
+end note
+
+note bottom of Visiteur
+  **Visiteur non authentifié:**
+  Accès limité à la recherche
+  basique et consultation.
+  
+  Pour sauvegarder des recherches,
+  ajouter aux favoris ou recevoir
+  des alertes, il doit s'inscrire.
+end note
+
+' =====================================
+' LÉGENDE
+' =====================================
+legend bottom left
+  |= Relation |= Description |
+  | → | Utilisation directe |
+  | <<include>> | Cas d'utilisation obligatoire |
+  | <<extend>> | Cas d'utilisation optionnel |
+  | ◁— | Héritage (spécialisation) |
+  
+  |= Couleur Package |= Accès |
+  | Gris | Visiteur (non connecté) |
+  | Vert | Utilisateur (connecté) |
+endlegend
+
+@enduml
+

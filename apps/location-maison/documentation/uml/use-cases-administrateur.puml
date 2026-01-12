@@ -1,0 +1,195 @@
+@startuml Use-Cases-Administrateur
+skinparam backgroundColor #FEFEFE
+skinparam actorStyle awesome
+
+title Diagramme de Cas d'Utilisation - Administrateur
+caption Plateforme Location Maison Gabon
+
+' =====================================
+' ACTEURS
+' =====================================
+actor "Administrateur" as Admin #Red
+actor "Utilisateur\n(Membre)" as Utilisateur #LightGreen
+
+' Héritage (optionnel - l'admin peut aussi être un utilisateur)
+Utilisateur <|-- Admin
+
+' =====================================
+' SYSTÈME
+' =====================================
+rectangle "Plateforme Location Maison Gabon" {
+    
+    ' --- CONFIGURATION SYSTÈME ---
+    package "Configuration Système" {
+        usecase "Accéder au panneau d'administration" as UC_AdminPanel
+        usecase "Configurer les pays supportés" as UC_ConfigCountries
+        usecase "Gérer la validation des téléphones" as UC_ConfigPhones
+        usecase "Ajouter un pays supporté" as UC_AddCountry
+        usecase "Retirer un pays supporté" as UC_RemoveCountry
+        usecase "Modifier les règles de validation" as UC_EditValidation
+    }
+    
+    ' --- GESTION DES DONNÉES ---
+    package "Gestion des Données" {
+        usecase "Gérer les provinces" as UC_ManageProvinces
+        usecase "Gérer les villes" as UC_ManageCities
+        usecase "Gérer les quartiers" as UC_ManageStreets
+        usecase "Importer données de localisation" as UC_ImportLocations
+        usecase "Mettre à jour les données géographiques" as UC_UpdateGeo
+    }
+    
+    ' --- MAINTENANCE ---
+    package "Maintenance" {
+        usecase "Exécuter scripts de maintenance" as UC_Maintenance
+        usecase "Migrer les données" as UC_MigrateData
+        usecase "Nettoyer les données obsolètes" as UC_CleanData
+        usecase "Vérifier l'intégrité des données" as UC_CheckIntegrity
+    }
+    
+    ' --- MONITORING ---
+    package "Monitoring & Rapports" {
+        usecase "Consulter les statistiques globales" as UC_GlobalStats
+        usecase "Voir nombre d'annonces par province" as UC_StatsByProvince
+        usecase "Voir nombre d'annonces par type" as UC_StatsByType
+        usecase "Surveiller les transactions" as UC_MonitorTransactions
+        usecase "Analyser les performances système" as UC_AnalyzePerf
+    }
+    
+    ' --- GESTION EMAILS ---
+    package "Gestion des Communications" {
+        usecase "Configurer les emails" as UC_ConfigEmails
+        usecase "Tester l'envoi d'emails" as UC_TestEmails
+        usecase "Diagnostiquer les problèmes d'emails" as UC_DiagnoseEmails
+    }
+}
+
+' =====================================
+' ACTEURS SECONDAIRES
+' =====================================
+actor "Firebase\nAdmin SDK" as FirebaseAdmin <<Système>> #LightGray
+actor "Scripts\nde Maintenance" as Scripts <<Système>> #LightGray
+
+' =====================================
+' RELATIONS PRINCIPALES
+' =====================================
+Admin --> UC_AdminPanel
+Admin --> UC_GlobalStats
+Admin --> UC_Maintenance
+Admin --> UC_ConfigEmails
+
+' =====================================
+' RELATIONS CONFIGURATION
+' =====================================
+UC_AdminPanel ..> UC_ConfigCountries : <<include>>
+UC_ConfigCountries ..> UC_ConfigPhones : <<include>>
+UC_ConfigPhones ..> UC_AddCountry : <<extend>>
+UC_ConfigPhones ..> UC_RemoveCountry : <<extend>>
+UC_ConfigPhones ..> UC_EditValidation : <<extend>>
+
+' =====================================
+' RELATIONS DONNÉES
+' =====================================
+UC_AdminPanel ..> UC_ManageProvinces : <<extend>>
+UC_AdminPanel ..> UC_ManageCities : <<extend>>
+UC_AdminPanel ..> UC_ManageStreets : <<extend>>
+UC_ManageProvinces ..> UC_ImportLocations : <<extend>>
+UC_ManageCities ..> UC_ImportLocations : <<extend>>
+UC_ManageStreets ..> UC_ImportLocations : <<extend>>
+UC_ImportLocations ..> UC_UpdateGeo : <<include>>
+
+' =====================================
+' RELATIONS MAINTENANCE
+' =====================================
+UC_Maintenance ..> UC_MigrateData : <<extend>>
+UC_Maintenance ..> UC_CleanData : <<extend>>
+UC_Maintenance ..> UC_CheckIntegrity : <<extend>>
+
+' =====================================
+' RELATIONS MONITORING
+' =====================================
+UC_GlobalStats ..> UC_StatsByProvince : <<include>>
+UC_GlobalStats ..> UC_StatsByType : <<include>>
+UC_GlobalStats ..> UC_MonitorTransactions : <<extend>>
+UC_GlobalStats ..> UC_AnalyzePerf : <<extend>>
+
+' =====================================
+' RELATIONS EMAILS
+' =====================================
+UC_ConfigEmails ..> UC_TestEmails : <<extend>>
+UC_ConfigEmails ..> UC_DiagnoseEmails : <<extend>>
+
+' =====================================
+' RELATIONS SYSTÈMES EXTERNES
+' =====================================
+UC_Maintenance --> FirebaseAdmin : utilise
+UC_MigrateData --> Scripts : exécute
+UC_ImportLocations --> Scripts : exécute
+
+' =====================================
+' NOTES
+' =====================================
+note right of UC_ConfigPhones
+  **Configuration des téléphones:**
+  Gère les pays autorisés pour
+  la validation des numéros:
+  - Gabon (GA)
+  - Cameroun (CM)
+  - Congo (CG)
+  - France (FR)
+  - etc.
+end note
+
+note right of UC_ImportLocations
+  **Sources de données:**
+  - OpenStreetMap (OSM)
+  - Données manuelles
+  - Fichiers GeoJSON
+end note
+
+note right of UC_GlobalStats
+  **Statistiques disponibles:**
+  - Nombre total d'annonces
+  - Annonces par province
+  - Annonces par type de bien
+  - Utilisateurs actifs
+  - Transactions crédits
+end note
+
+note right of UC_ConfigEmails
+  **Services email supportés:**
+  - Gmail SMTP
+  - Hostinger SMTP
+  - Configuration SPF/DKIM
+end note
+
+note bottom of Admin
+  **Responsabilités de l'Administrateur:**
+  - Configuration du système
+  - Maintenance des données
+  - Monitoring et reporting
+  - Support technique
+end note
+
+note right of Scripts
+  **Scripts disponibles:**
+  - Migration Firebase
+  - Import OSM
+  - Nettoyage données
+  - Tests automatisés
+  - Diagnostic emails
+end note
+
+' =====================================
+' LÉGENDE
+' =====================================
+legend bottom left
+  |= Relation |= Description |
+  | → | Utilisation directe |
+  | <<include>> | Cas d'utilisation obligatoire |
+  | <<extend>> | Cas d'utilisation optionnel |
+  | ◁— | Héritage (spécialisation) |
+  | ---> | Interaction système |
+endlegend
+
+@enduml
+

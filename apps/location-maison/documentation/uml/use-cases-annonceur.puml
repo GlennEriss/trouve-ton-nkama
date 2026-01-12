@@ -1,0 +1,315 @@
+@startuml Use-Cases-Annonceur
+skinparam backgroundColor #FEFEFE
+skinparam actorStyle awesome
+
+title Diagramme de Cas d'Utilisation - Annonceur
+caption Plateforme Location Maison Gabon - v2.0
+
+' =====================================
+' ACTEURS
+' =====================================
+actor "Annonceur" as Annonceur #Orange
+actor "Utilisateur\n(Membre)" as Utilisateur #LightGreen
+
+' Héritage - L'Annonceur EST UN Utilisateur avec le rôle "Announcer"
+Utilisateur <|-- Annonceur
+
+' =====================================
+' SYSTÈME
+' =====================================
+rectangle "Plateforme Location Maison Gabon" {
+    
+    ' =====================================
+    ' FONCTIONNALITÉS EXCLUSIVES ANNONCEUR
+    ' =====================================
+    
+    ' --- CRÉATION D'ANNONCES ---
+    package "Création d'Annonces" #LightOrange {
+        usecase "Créer une nouvelle annonce" as UC_Create
+        usecase "Sélectionner le type de bien" as UC_SelectType
+        usecase "Renseigner informations générales\n(Étape 1)" as UC_Step1
+        usecase "Renseigner caractéristiques\n(Étape 2)" as UC_Step2
+        usecase "Renseigner localisation\n(Étape 3)" as UC_Step3
+        usecase "Ajouter des photos" as UC_AddPhotos
+        usecase "Définir le prix" as UC_SetPrice
+        usecase "Choisir le statut (Location/Vente)" as UC_SetStatus
+        usecase "Ajouter des tags" as UC_AddTags
+        usecase "Utiliser l'assistant IA" as UC_UseAI
+        usecase "Générer description avec IA" as UC_GenerateDesc
+        usecase "Positionner sur la carte" as UC_SetLocation
+    }
+    
+    ' --- TYPES DE BIENS ---
+    package "Types de Biens" #LightOrange {
+        usecase "Créer annonce Maison" as UC_Home
+        usecase "Créer annonce Appartement" as UC_Apartment
+        usecase "Créer annonce Studio" as UC_Studio
+        usecase "Créer annonce Villa" as UC_Villa
+        usecase "Créer annonce Immeuble" as UC_Building
+        usecase "Créer annonce Bureau" as UC_Desk
+        usecase "Créer annonce Boutique" as UC_Shop
+        usecase "Créer annonce Kiosque" as UC_Kiosk
+        usecase "Créer annonce Chambre" as UC_Room
+        usecase "Créer annonce Terrain" as UC_Land
+    }
+    
+    ' --- GESTION DES ANNONCES ---
+    package "Gestion des Annonces" #LightOrange {
+        usecase "Consulter mes annonces" as UC_ViewMyAds
+        usecase "Modifier une annonce" as UC_EditAd
+        usecase "Supprimer une annonce" as UC_DeleteAd
+        usecase "Archiver une annonce" as UC_ArchiveAd
+        usecase "Voir détails d'une annonce" as UC_ViewAdDetails
+        usecase "Dupliquer une annonce" as UC_DuplicateAd
+    }
+    
+    ' --- STATISTIQUES ---
+    package "Statistiques & Suivi" #LightOrange {
+        usecase "Consulter les statistiques" as UC_ViewStats
+        usecase "Voir nombre de vues" as UC_ViewCount
+        usecase "Voir interactions (contacts)" as UC_ViewInteractions
+        usecase "Analyser performances par type" as UC_AnalyzeType
+        usecase "Exporter les statistiques" as UC_ExportStats
+    }
+    
+    ' --- PROMOTION ---
+    package "Promotion des Annonces" #LightOrange {
+        usecase "Promouvoir une annonce" as UC_Promote
+        usecase "Mettre en avant (Featured)" as UC_Featured
+        usecase "Mettre en tendance 7 jours" as UC_Trending7
+        usecase "Mettre en tendance 3 jours" as UC_Trending3
+        usecase "Booster une annonce" as UC_Boost
+        usecase "Voir promotions actives" as UC_ViewActivePromos
+    }
+    
+    ' --- CRÉDITS & PAIEMENTS ---
+    package "Gestion des Crédits" #Gold {
+        usecase "Consulter son solde de crédits" as UC_ViewBalance
+        usecase "Acheter des crédits" as UC_BuyCredits
+        usecase "Sélectionner un pack de crédits" as UC_SelectPack
+        usecase "Payer via Airtel Money" as UC_PayAirtel
+        usecase "Consulter l'historique des transactions" as UC_ViewHistory
+        usecase "Filtrer historique (Achats/Dépenses)" as UC_FilterHistory
+        usecase "Voir détail d'une transaction" as UC_ViewTransaction
+    }
+    
+    ' --- PROFIL ANNONCEUR ---
+    package "Profil Annonceur" #LightOrange {
+        usecase "Modifier profil public annonceur" as UC_EditPublicProfile
+        usecase "Ajouter logo/photo entreprise" as UC_AddLogo
+        usecase "Renseigner description professionnelle" as UC_AddBio
+        usecase "Ajouter liens réseaux sociaux" as UC_AddSocials
+    }
+}
+
+' =====================================
+' RELATIONS PRINCIPALES
+' =====================================
+Annonceur --> UC_Create
+Annonceur --> UC_ViewMyAds
+Annonceur --> UC_ViewStats
+Annonceur --> UC_Promote
+Annonceur --> UC_ViewBalance
+Annonceur --> UC_BuyCredits
+Annonceur --> UC_EditPublicProfile
+
+' =====================================
+' RELATIONS CRÉATION D'ANNONCE
+' =====================================
+UC_Create ..> UC_SelectType : <<include>>
+UC_Create ..> UC_Step1 : <<include>>
+UC_Create ..> UC_Step2 : <<include>>
+UC_Create ..> UC_Step3 : <<include>>
+
+UC_Step1 ..> UC_AddPhotos : <<include>>
+UC_Step1 ..> UC_SetPrice : <<include>>
+UC_Step1 ..> UC_SetStatus : <<include>>
+UC_Step1 ..> UC_AddTags : <<extend>>
+UC_Step1 ..> UC_UseAI : <<extend>>
+
+UC_Step3 ..> UC_SetLocation : <<include>>
+
+UC_UseAI ..> UC_GenerateDesc : <<include>>
+
+' =====================================
+' RELATIONS TYPES DE BIENS
+' =====================================
+UC_SelectType ..> UC_Home : <<extend>>
+UC_SelectType ..> UC_Apartment : <<extend>>
+UC_SelectType ..> UC_Studio : <<extend>>
+UC_SelectType ..> UC_Villa : <<extend>>
+UC_SelectType ..> UC_Building : <<extend>>
+UC_SelectType ..> UC_Desk : <<extend>>
+UC_SelectType ..> UC_Shop : <<extend>>
+UC_SelectType ..> UC_Kiosk : <<extend>>
+UC_SelectType ..> UC_Room : <<extend>>
+UC_SelectType ..> UC_Land : <<extend>>
+
+' =====================================
+' RELATIONS GESTION
+' =====================================
+UC_ViewMyAds ..> UC_ViewAdDetails : <<extend>>
+UC_ViewMyAds ..> UC_EditAd : <<extend>>
+UC_ViewMyAds ..> UC_DeleteAd : <<extend>>
+UC_ViewMyAds ..> UC_ArchiveAd : <<extend>>
+UC_ViewMyAds ..> UC_DuplicateAd : <<extend>>
+
+' =====================================
+' RELATIONS STATISTIQUES
+' =====================================
+UC_ViewStats ..> UC_ViewCount : <<include>>
+UC_ViewStats ..> UC_ViewInteractions : <<include>>
+UC_ViewStats ..> UC_AnalyzeType : <<extend>>
+UC_ViewStats ..> UC_ExportStats : <<extend>>
+
+' =====================================
+' RELATIONS PROMOTION
+' =====================================
+UC_Promote ..> UC_Featured : <<extend>>
+UC_Promote ..> UC_Trending7 : <<extend>>
+UC_Promote ..> UC_Trending3 : <<extend>>
+UC_Promote ..> UC_Boost : <<extend>>
+UC_ViewMyAds ..> UC_ViewActivePromos : <<extend>>
+
+' =====================================
+' RELATIONS CRÉDITS
+' =====================================
+UC_BuyCredits ..> UC_SelectPack : <<include>>
+UC_BuyCredits ..> UC_PayAirtel : <<include>>
+UC_ViewBalance ..> UC_ViewHistory : <<extend>>
+UC_ViewHistory ..> UC_FilterHistory : <<extend>>
+UC_ViewHistory ..> UC_ViewTransaction : <<extend>>
+
+' =====================================
+' RELATIONS PROFIL ANNONCEUR
+' =====================================
+UC_EditPublicProfile ..> UC_AddLogo : <<extend>>
+UC_EditPublicProfile ..> UC_AddBio : <<extend>>
+UC_EditPublicProfile ..> UC_AddSocials : <<extend>>
+
+' =====================================
+' NOTES
+' =====================================
+note right of UC_Step1
+  **Étape 1 - Informations générales:**
+  - Titre de l'annonce
+  - Description (ou génération IA)
+  - Photos (min 1, max 10)
+  - Prix en FCFA
+  - Superficie en m²
+  - Statut (Location/Vente)
+  - Tags (optionnel)
+end note
+
+note right of UC_Step2
+  **Étape 2 - Caractéristiques:**
+  Varie selon le type de bien:
+  - numberOfRooms (chambres)
+  - numberOfKitchens (cuisines)
+  - numberOfBathrooms (SdB)
+  - numberOfToilets (WC)
+  - numberOfFloors (étages)
+  - numberOfGarages (garages)
+  - numberOfPools (piscines - Villa)
+end note
+
+note right of UC_Step3
+  **Étape 3 - Localisation:**
+  - Province (obligatoire)
+  - Ville (obligatoire)
+  - Quartier (obligatoire)
+  - Position GPS (carte)
+  - Informations additionnelles
+end note
+
+note right of UC_UseAI
+  **Assistant IA (FlatBot):**
+  Génère automatiquement:
+  - Titre optimisé SEO
+  - Description attractive
+  
+  **Coût: 1 crédit par génération**
+end note
+
+note right of UC_Promote
+  **Options de promotion:**
+  
+  | Type | Crédits | Durée |
+  |------|---------|-------|
+  | Featured | 10 | 7 jours |
+  | Trending 7j | 7 | 7 jours |
+  | Trending 3j | 4 | 3 jours |
+  | Boost | 2 | 24h |
+  
+  Nécessite des crédits suffisants.
+end note
+
+note right of UC_SelectPack
+  **Packs de crédits:**
+  
+  | Pack | Crédits | Prix |
+  |------|---------|------|
+  | Starter | 5 | 5,000 XAF |
+  | Basic | 15 | 12,000 XAF |
+  | Pro | 50 | 35,000 XAF |
+  | Premium | 100 | 60,000 XAF |
+  
+  **Crédits de bienvenue:**
+  3 crédits offerts lors de la
+  migration vers Annonceur.
+end note
+
+note as AnnouncerNote
+  **🔸 L'Annonceur est un Utilisateur**
+  **   avec le rôle "Announcer"**
+  
+  **Prérequis pour devenir Annonceur:**
+  ✓ Être un Utilisateur inscrit
+  ✓ Email vérifié
+  ✓ Téléphone vérifié
+  ✓ Accepter les CGU Annonceur
+  
+  **Fonctionnalités EXCLUSIVES:**
+  • Créer et gérer des annonces
+  • Acheter des crédits
+  • Promouvoir des annonces
+  • Utiliser l'assistant IA
+  • Consulter les statistiques
+  • Profil public annonceur
+  
+  **Types d'annonceurs:**
+  • Particulier (propriétaire)
+  • Agence immobilière
+  • Démarcheur / Agent
+  • Mandataire
+end note
+
+note bottom of Utilisateur
+  **L'Utilisateur conserve:**
+  - Gestion du profil personnel
+  - Recherche de propriétés
+  - Gestion des favoris
+  - Notifications
+  - Contacter des annonceurs
+  
+  Il peut devenir Annonceur
+  à tout moment via
+  "Devenir Annonceur".
+end note
+
+' =====================================
+' LÉGENDE
+' =====================================
+legend bottom left
+  |= Relation |= Description |
+  | → | Utilisation directe |
+  | <<include>> | Cas d'utilisation obligatoire |
+  | <<extend>> | Cas d'utilisation optionnel |
+  | ◁— | Héritage (spécialisation) |
+  
+  |= Couleur Package |= Signification |
+  | Orange clair | Fonctionnalités Annonceur |
+  | Or/Jaune | Gestion des Crédits |
+endlegend
+
+@enduml

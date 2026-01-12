@@ -1,0 +1,202 @@
+@startuml Context-Diagram-Location-Maison
+skinparam backgroundColor #FEFEFE
+skinparam handwritten false
+
+title Diagramme de Contexte - Plateforme Location Maison Gabon
+caption Version 2.1 - Séparation claire Utilisateur/Annonceur
+
+' =====================================
+' ACTEURS PRIMAIRES (à gauche)
+' =====================================
+actor "Visiteur" as Visiteur <<Acteur Primaire>>
+actor "Utilisateur\n(Membre)" as Utilisateur <<Acteur Primaire>>
+actor "Annonceur" as Annonceur <<Acteur Primaire>>
+actor "Administrateur" as Admin <<Acteur Primaire>>
+
+' =====================================
+' SYSTÈME CENTRAL
+' =====================================
+rectangle "**Plateforme Location Maison Gabon**\n\n//Application web de location et vente immobilière\nau Gabon//" as Systeme {
+    usecase "Gestion des\nAnnonces" as UC_Annonces
+    usecase "Recherche &\nNavigation" as UC_Recherche
+    usecase "Authentification\n& Profils" as UC_Auth
+    usecase "Paiements\n& Crédits" as UC_Paiements
+    usecase "Notifications" as UC_Notif
+    usecase "Administration" as UC_Admin
+    usecase "Migration\nUtilisateur→Annonceur" as UC_Migration
+}
+
+' =====================================
+' ACTEURS SECONDAIRES (à droite)
+' =====================================
+actor "Firebase\n(Backend)" as Firebase <<Acteur Secondaire>> #LightGray
+actor "Google Maps /\nOpenStreetMap" as Maps <<Acteur Secondaire>> #LightGray
+actor "Airtel Money\n(Paiement Mobile)" as Airtel <<Acteur Secondaire>> #LightGray
+actor "Service Email\n(Hostinger/Gmail)" as Email <<Acteur Secondaire>> #LightGray
+actor "Service IA\n(Génération Contenu)" as IA <<Acteur Secondaire>> #LightGray
+actor "Google/Facebook\nOAuth" as OAuth <<Acteur Secondaire>> #LightGray
+
+' =====================================
+' RELATIONS ACTEURS PRIMAIRES
+' =====================================
+' Visiteur
+Visiteur --> UC_Recherche : Consulte\nannonces
+Visiteur --> UC_Auth : S'inscrit
+
+' Utilisateur (SANS rôle Announcer)
+Utilisateur --> UC_Recherche : Recherche\navancée
+Utilisateur --> UC_Auth : Gère profil\n& favoris
+Utilisateur --> UC_Notif : Reçoit\nalerts
+Utilisateur --> UC_Migration : Demande à\ndevenir Annonceur
+
+' Annonceur (Utilisateur AVEC rôle Announcer)
+Annonceur --> UC_Annonces : Publie/Gère\nannonces
+Annonceur --> UC_Paiements : Achète crédits\n& Promeut
+Annonceur --> UC_Recherche : Consulte\nstatistiques
+
+' Admin
+Admin --> UC_Admin : Configure\nsystème
+
+' =====================================
+' RELATIONS ACTEURS SECONDAIRES
+' =====================================
+UC_Annonces --> Firebase : Stocke données
+UC_Auth --> Firebase : Authentification
+UC_Recherche --> Firebase : Requêtes
+UC_Migration --> Firebase : Mise à jour rôle
+
+UC_Recherche --> Maps : Géolocalisation\n& Carte
+
+UC_Paiements --> Airtel : Transactions\nmobiles
+
+UC_Auth --> Email : Emails de\nvérification
+UC_Notif --> Email : Notifications\npar email
+UC_Migration --> Email : Confirmation\nmigration
+
+UC_Annonces --> IA : Génération\nautomatique
+
+UC_Auth --> OAuth : Connexion\nsociale
+
+' =====================================
+' NOTES
+' =====================================
+note right of Firebase
+  **Firebase Services:**
+  - Firestore (Base de données)
+  - Authentication
+  - Storage (Images)
+  - Cloud Functions
+end note
+
+note right of Maps
+  **Services de cartographie:**
+  - Affichage carte interactive
+  - Géocodage adresses
+  - Recherche de quartiers
+end note
+
+note left of Visiteur
+  **Visiteur:**
+  Utilisateur non authentifié
+  qui navigue sur le site.
+  
+  Peut s'inscrire pour
+  devenir Utilisateur.
+end note
+
+note left of Utilisateur
+  **Utilisateur (Membre):**
+  Utilisateur authentifié
+  **SANS** rôle "Announcer".
+  
+  **Peut:**
+  ✓ Rechercher des biens
+  ✓ Ajouter aux favoris
+  ✓ Recevoir notifications
+  ✓ Contacter annonceurs
+  ✓ Demander à devenir Annonceur
+  
+  **Ne peut PAS:**
+  ✗ Publier des annonces
+  ✗ Acheter des crédits
+end note
+
+note left of Annonceur
+  **Annonceur:**
+  Utilisateur **AVEC** rôle "Announcer".
+  
+  **Types d'annonceurs:**
+  - Particulier (propriétaire)
+  - Agence immobilière
+  - Démarcheur
+  - Mandataire
+  
+  **Peut tout ce qu'un Utilisateur
+  peut, PLUS:**
+  ✓ Publier des annonces
+  ✓ Acheter des crédits
+  ✓ Promouvoir ses annonces
+  ✓ Utiliser l'assistant IA
+  ✓ Voir ses statistiques
+end note
+
+note bottom of UC_Migration
+  **Migration Utilisateur → Annonceur:**
+  
+  1. L'Utilisateur demande à devenir Annonceur
+  2. Il accepte les CGU Annonceur
+  3. Il vérifie son téléphone
+  4. Il choisit son type d'annonceur
+  5. Le rôle "Announcer" est attribué
+  6. Un CreditWallet est créé (3 crédits)
+  7. Un AnnouncerProfile est créé
+  
+  **La migration est irréversible.**
+end note
+
+' =====================================
+' SCHÉMA DE HIÉRARCHIE
+' =====================================
+note as HierarchyNote
+  **📊 Hiérarchie des Acteurs**
+  
+  ┌─────────────────────────────────┐
+  │         VISITEUR                │
+  │    (Non authentifié)            │
+  └─────────────┬───────────────────┘
+                │ Inscription
+                ▼
+  ┌─────────────────────────────────┐
+  │        UTILISATEUR              │
+  │    (Authentifié, pas Announcer) │
+  │    Recherche, Favoris, Contact  │
+  └─────────────┬───────────────────┘
+                │ "Devenir Annonceur"
+                ▼
+  ┌─────────────────────────────────┐
+  │         ANNONCEUR               │
+  │    (Authentifié + Announcer)    │
+  │  Publie, Crédits, Promotions    │
+  └─────────────────────────────────┘
+  
+  **Note:** Un Annonceur conserve
+  toutes les fonctionnalités
+  d'un Utilisateur.
+end note
+
+' =====================================
+' LÉGENDE
+' =====================================
+legend bottom
+  |= Type |= Description |
+  | **Acteur Primaire** | Utilisateur direct du système |
+  | **Acteur Secondaire** | Système externe |
+  
+  |= Acteur |= Rôle Firebase |
+  | Visiteur | Non authentifié |
+  | Utilisateur | Authentifié (roles: []) |
+  | Annonceur | Authentifié (roles: ["Announcer"]) |
+  | Admin | Authentifié (roles: ["Admin"]) |
+endlegend
+
+@enduml

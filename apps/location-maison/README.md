@@ -68,8 +68,40 @@ ngrok http 8090
 ```
 location-maison/
 ├── src/                    # Code source de l'application
+├── documentation/          # Documentation complète du projet
+│   ├── workflow/          # Workflow d'implémentation
+│   ├── uml/               # Diagrammes UML
+│   ├── feature/           # Documentation des features
+│   ├── setup/             # Guides de configuration
+│   ├── email/             # Documentation email
+│   ├── phone/             # Documentation téléphone/SMS
+│   ├── api/               # Documentation API
+│   ├── config/            # Configuration
+│   ├── seo/               # Documentation SEO
+│   ├── migration/         # Migrations
+│   └── troubleshooting/   # Dépannage
 ├── jenkins/               # Configuration Jenkins
 ├── scripts/vault/         # Scripts et configuration Vault  
 ├── functions/             # Firebase Functions
 └── docker-compose.yml     # Configuration Docker
 ```
+
+## 📚 Documentation
+
+Toute la documentation du projet est organisée dans le dossier [`documentation/`](./documentation/).
+
+### Documentation principale
+- **[Workflow d'implémentation](./documentation/workflow/WORKFLOW.md)** : Processus complet de développement
+- **[Diagrammes UML](./documentation/uml/README.md)** : Architecture et cas d'utilisation
+- **[Annuaire des features](./documentation/feature/ANNUAIRE.md)** : Suivi des features
+
+### Guides de configuration
+- **[Setup](./documentation/setup/)** : Configuration des services (Airtel, Email, Firebase, etc.)
+- **[Variables d'environnement](./documentation/config/ENV_VARIABLES.md)** : Configuration projet
+
+### Dépannage
+- **[Troubleshooting](./documentation/troubleshooting/)** : Guides de diagnostic
+- **[Email](./documentation/email/)** : Problèmes d'email
+- **[Téléphone](./documentation/phone/)** : Problèmes SMS/téléphone
+
+Voir le [README principal de la documentation](./documentation/README.md) pour une vue d'ensemble complète.

@@ -1,0 +1,564 @@
+@startuml Class-Diagram-Location-Maison
+skinparam backgroundColor #FEFEFE
+skinparam classAttributeIconSize 0
+skinparam linetype ortho
+
+title Diagramme de Classes - Plateforme Location Maison Gabon
+caption Version 2.1 - Séparation Utilisateur/Annonceur
+
+' =====================================
+' ÉNUMÉRATIONS
+' =====================================
+enum EntityState {
+    ARCHIVED
+    IN_PROGRESS
+}
+
+enum PropertyStatus {
+    FOR_RENT
+    FOR_SALE
+}
+
+enum PropertyType <<SCREAMING_CASE>> {
+    HOME
+    APARTMENT
+    STUDIO
+    VILLA
+    BUILDING
+    DESK
+    SHOP
+    KIOSK
+    ROOM
+    LAND
+}
+
+enum PromotionType {
+    FEATURED
+    TRENDING_7D
+    TRENDING_3D
+    BOOST
+}
+
+enum NotificationType {
+    BOOKMARKING
+    SECURITY
+    SYSTEM
+    ROLE_UPGRADE
+}
+
+enum PurchaseStatus {
+    PENDING
+    PROCESSING
+    COMPLETED
+    FAILED
+    REFUNDED
+}
+
+enum PaymentMethod {
+    AIRTEL_MONEY
+    FREE_CREDITS
+    ADMIN_GRANT
+}
+
+enum ExpenseService {
+    PROPERTY_PUBLISH
+    PROMOTION_FEATURED
+    PROMOTION_TRENDING
+    PROMOTION_BOOST
+    AI_GENERATION
+}
+
+enum AuthProvider {
+    GOOGLE
+    FACEBOOK
+    CREDENTIALS
+}
+
+enum UserRole {
+    Admin
+    Announcer
+}
+
+' =====================================
+' 🆕 TYPES D'ANNONCEURS
+' =====================================
+enum AnnouncerType {
+    INDIVIDUAL
+    AGENCY
+    BROKER
+    AGENT
+}
+
+note right of AnnouncerType
+  **Types d'annonceurs:**
+  - INDIVIDUAL: Particulier/Propriétaire
+  - AGENCY: Agence immobilière
+  - BROKER: Démarcheur
+  - AGENT: Mandataire/Agent
+end note
+
+' =====================================
+' INTERFACES / CLASSES DE BASE
+' =====================================
+abstract class BaseEntity <<interface>> {
+    +id: string
+    +createdAt: Timestamp
+    +updatedAt: Timestamp
+    +searchableName: string
+    +state: EntityState
+}
+
+class Image {
+    +filePath: string
+    +fileUrl: string
+}
+
+class Country {
+    +name: string
+    +code: string
+}
+
+' =====================================
+' GESTION DES UTILISATEURS
+' =====================================
+class Person {
+    +firstName: string
+    +lastName: string
+    +birthDate: string
+    +email: string
+    +country: Country
+    +phoneNumbers: string[]
+    +phoneNumberVerified: boolean
+    +avatarUrl: string
+    +notificationSettings: NotificationSettings
+    +darkMode: boolean
+}
+
+class User {
+    +uid: string
+    +login: string
+    +password: string
+    +roles: UserRole[]
+    +emailVerified: boolean
+    +providers: AuthProvider[]
+    +metadata: UserMetadata
+    +favorites: string[]
+    --
+    ' 🆕 Méthodes de rôle
+    +isAnnouncer(): boolean
+    +isAdmin(): boolean
+    +canPublishProperty(): boolean
+}
+
+note right of User
+  **Séparation des rôles:**
+  
+  Un **User** sans rôle "Announcer"
+  est un simple **Utilisateur**:
+  - Peut rechercher
+  - Peut ajouter aux favoris
+  - Peut contacter annonceurs
+  - ❌ Ne peut PAS publier
+  
+  Un **User** avec rôle "Announcer"
+  est un **Annonceur**:
+  - Tout ce qu'un Utilisateur peut
+  - ✅ Peut publier des annonces
+  - ✅ Peut acheter des crédits
+  - ✅ Peut promouvoir
+end note
+
+' =====================================
+' 🆕 PROFIL ANNONCEUR
+' =====================================
+class AnnouncerProfile {
+    +userId: string
+    +announcerType: AnnouncerType
+    +businessName: string
+    +businessDescription: string
+    +logoUrl: string
+    +websiteUrl: string
+    +socialLinks: SocialLinks
+    +acceptedTermsAt: Timestamp
+    +becameAnnouncerAt: Timestamp
+    +isVerified: boolean
+    +totalProperties: number
+    +totalViews: number
+    --
+    +getDisplayName(): string
+    +getPublicProfile(): object
+}
+
+class SocialLinks {
+    +facebook: string
+    +instagram: string
+    +whatsapp: string
+    +linkedin: string
+}
+
+note left of AnnouncerProfile
+  **Profil Annonceur:**
+  Créé lors de la migration
+  Utilisateur → Annonceur.
+  
+  Contient les informations
+  publiques de l'annonceur
+  visibles sur ses annonces.
+  
+  **becameAnnouncerAt:**
+  Date de la migration,
+  permet de tracer l'historique.
+end note
+
+class NotificationSettings {
+    +isNew: boolean
+    +isAccountActivity: boolean
+    +isNewAnnouncement: boolean
+    +isFavorites: boolean
+    +isPersonalizedSuggestions: boolean
+    +isSystemUpdated: boolean
+}
+
+class Notification {
+    +propertyId: string
+    +type: NotificationType
+    +title: string
+    +message: string
+    +isRead: boolean
+    +createdFor: string
+    +actionUrl: string
+}
+
+' =====================================
+' GESTION DES CRÉDITS (ANNONCEURS UNIQUEMENT)
+' =====================================
+class CreditWallet {
+    +userId: string
+    +balance: number
+    +totalPurchased: number
+    +totalSpent: number
+    +lastUpdated: Timestamp
+    +welcomeCreditsReceived: boolean
+    --
+    +addCredits(amount: number): void
+    +deductCredits(amount: number): boolean
+    +hasEnough(amount: number): boolean
+}
+
+note right of CreditWallet
+  **CreditWallet:**
+  Créé UNIQUEMENT pour les Annonceurs.
+  
+  Un Utilisateur simple n'a pas
+  de CreditWallet (n'en a pas besoin).
+  
+  Créé lors de la migration
+  avec 3 crédits de bienvenue.
+end note
+
+class CreditPack {
+    +id: string
+    +name: string
+    +credits: number
+    +priceXAF: number
+    +discount: number
+    +isActive: boolean
+}
+
+class CreditPurchase {
+    +id: string
+    +userId: string
+    +packId: string
+    +credits: number
+    +amountXAF: number
+    +status: PurchaseStatus
+    +paymentMethod: PaymentMethod
+    +paymentReference: string
+    +phoneNumber: string
+    +createdAt: Timestamp
+    +completedAt: Timestamp
+    +failureReason: string
+}
+
+class CreditExpense {
+    +id: string
+    +userId: string
+    +credits: number
+    +service: ExpenseService
+    +referenceId: string
+    +description: string
+    +createdAt: Timestamp
+}
+
+' =====================================
+' GESTION DE LA LOCALISATION
+' =====================================
+class Location {
+    +street: string
+    +city: string
+    +province: string
+    +additionalInfo: string
+    +longitude: number
+    +latitude: number
+    +country: string
+    +countryCode: string
+    +isLocationExact: boolean
+}
+
+class Province {
+    +name: string
+    +country: string
+    +countryCode: string
+    +latitude: number
+    +longitude: number
+}
+
+class City {
+    +name: string
+    +provinceId: string
+    +provinceName: string
+    +country: string
+    +countryCode: string
+    +latitude: number
+    +longitude: number
+}
+
+class Street {
+    +name: string
+    +cityId: string
+    +cityName: string
+    +provinceId: string
+    +provinceName: string
+    +country: string
+    +countryCode: string
+    +latitude: number
+    +longitude: number
+}
+
+' =====================================
+' GESTION DES PROMOTIONS
+' =====================================
+class Promotion {
+    +type: PromotionType
+    +startDate: Timestamp
+    +endDate: Timestamp
+    +isActive: boolean
+    +creditsUsed: number
+}
+
+' =====================================
+' GESTION DES ANNONCES (BIENS IMMOBILIERS)
+' =====================================
+class Property {
+    +propertyType: PropertyType
+    +images: Image[]
+    +title: string
+    +description: string
+    +areaSquareMeters: number
+    +priceXAF: number
+    +tags: string[]
+    +createdBy: string
+    +status: PropertyStatus
+    +contactPhone: string
+    +currentPromotion: Promotion
+    +promotionHistory: Promotion[]
+    +lastBoostedAt: Timestamp
+    +isPromoted: boolean
+    +viewCount: number
+    +contactCount: number
+}
+
+class Dwelling {
+    +numberOfRooms: number
+    +numberOfKitchens: number
+    +numberOfBathrooms: number
+    +numberOfToilets: number
+}
+
+class Apartment {
+    +floorNumber: number
+    +apartmentNumber: string
+}
+
+class Studio {
+    +floorNumber: number
+    +studioNumber: string
+}
+
+class Home {
+    +numberOfFloors: number
+    +numberOfGarages: number
+    +numberOfLivingRooms: number
+}
+
+class Villa {
+    +numberOfPools: number
+}
+
+class Building {
+    +numberOfApartments: number
+    +numberOfFloors: number
+    +hasParking: boolean
+}
+
+class Desk {
+    +numberOfToilets: number
+    +numberOfRooms: number
+}
+
+class Shop {
+    +numberOfRooms: number
+    +numberOfToilets: number
+}
+
+class Kiosk {
+    +kioskType: string
+}
+
+class Room {
+    +roomType: string
+}
+
+class Land {
+    ' Land - inherits only from Property
+}
+
+' =====================================
+' RELATIONS D'HÉRITAGE
+' =====================================
+BaseEntity <|-- Person
+BaseEntity <|-- Notification
+BaseEntity <|-- Province
+BaseEntity <|-- City
+BaseEntity <|-- Street
+BaseEntity <|-- AnnouncerProfile
+
+Person <|-- User
+
+Location <|-- Property
+BaseEntity <|-- Property
+
+Property <|-- Dwelling
+Property <|-- Building
+Property <|-- Desk
+Property <|-- Shop
+Property <|-- Kiosk
+Property <|-- Room
+Property <|-- Land
+
+Dwelling <|-- Apartment
+Dwelling <|-- Studio
+Dwelling <|-- Home
+
+Home <|-- Villa
+
+' =====================================
+' RELATIONS DE COMPOSITION / AGRÉGATION
+' =====================================
+
+' 🆕 Relations Utilisateur/Annonceur
+User "1" o-- "0..1" AnnouncerProfile : hasProfile >
+User "1" o-- "0..1" CreditWallet : owns >
+AnnouncerProfile "1" *-- "0..1" SocialLinks : socialLinks >
+
+' Relations existantes
+User "1" *-- "0..*" Notification : receives >
+User "1" *-- "0..*" CreditPurchase : makes >
+User "1" *-- "0..*" CreditExpense : makes >
+User "1" o-- "0..*" Property : publishes >
+User "1" o-- "0..*" Property : favorites >
+
+Property "1" *-- "1..*" Image : contains >
+Property "1" o-- "0..1" Promotion : current >
+Property "1" *-- "0..*" Promotion : history >
+
+Person "1" *-- "0..1" Country : livesIn >
+Person "1" *-- "0..1" NotificationSettings : settings >
+
+CreditPurchase "0..*" -- "1" CreditPack : uses >
+
+Province "1" o-- "0..*" City : contains >
+City "1" o-- "0..*" Street : contains >
+
+' =====================================
+' NOTES IMPORTANTES
+' =====================================
+note as MigrationNote
+  **🔄 Flux de Migration Utilisateur → Annonceur**
+  
+  ┌─────────────────────────────────────────────────┐
+  │  1. Utilisateur demande "Devenir Annonceur"     │
+  │  2. Accepte les CGU Annonceur                   │
+  │  3. Vérifie son téléphone (si pas déjà fait)    │
+  │  4. Choisit son type (INDIVIDUAL, AGENCY, etc.) │
+  │  5. Remplit infos professionnelles (optionnel)  │
+  └─────────────────────────────────────────────────┘
+                        │
+                        ▼
+  ┌─────────────────────────────────────────────────┐
+  │  SYSTÈME CRÉE:                                  │
+  │  ✓ Rôle "Announcer" ajouté à User.roles         │
+  │  ✓ AnnouncerProfile créé                        │
+  │  ✓ CreditWallet créé avec 3 crédits            │
+  │  ✓ Notification de confirmation envoyée         │
+  └─────────────────────────────────────────────────┘
+                        │
+                        ▼
+  ┌─────────────────────────────────────────────────┐
+  │  L'UTILISATEUR EST MAINTENANT ANNONCEUR:        │
+  │  • Peut publier des annonces                    │
+  │  • Peut acheter des crédits                     │
+  │  • Peut promouvoir ses annonces                 │
+  │  • Conserve toutes ses fonctionnalités          │
+  └─────────────────────────────────────────────────┘
+end note
+
+note as RoleNote
+  **📊 Récapitulatif des Rôles**
+  
+  | Fonctionnalité | Utilisateur | Annonceur |
+  |----------------|-------------|-----------|
+  | Rechercher     | ✅          | ✅        |
+  | Favoris        | ✅          | ✅        |
+  | Notifications  | ✅          | ✅        |
+  | Contacter      | ✅          | ✅        |
+  | Publier        | ❌          | ✅        |
+  | Crédits        | ❌          | ✅        |
+  | Promouvoir     | ❌          | ✅        |
+  | Assistant IA   | ❌          | ✅        |
+  | Statistiques   | ❌          | ✅        |
+  
+  **Un Annonceur EST un Utilisateur**
+  **avec des droits supplémentaires.**
+end note
+
+note bottom of Property
+  **Property.createdBy:**
+  ID de l'Annonceur (User avec rôle Announcer)
+  qui a créé cette annonce.
+  
+  Seuls les Annonceurs peuvent
+  créer des Property.
+end note
+
+' =====================================
+' LÉGENDE
+' =====================================
+legend bottom
+  |= Symbol |= Description |
+  | ◁— | Inheritance (extends) |
+  | ◆— | Composition (strong dependency) |
+  | ◇— | Aggregation (weak dependency) |
+  | — | Simple association |
+  
+  |= Cardinalité |= Signification |
+  | 0..1 | Optionnel (0 ou 1) |
+  | 0..* | Zéro ou plusieurs |
+  | 1 | Exactement un |
+  | 1..* | Un ou plusieurs |
+  
+  **Convention : Anglais uniquement**
+  **Version : 2.1**
+endlegend
+
+@enduml

@@ -1,0 +1,231 @@
+@startuml Use-Cases-Utilisateur
+skinparam backgroundColor #FEFEFE
+skinparam actorStyle awesome
+
+title Diagramme de Cas d'Utilisation - Utilisateur (Membre)
+caption Plateforme Location Maison Gabon - v2.0
+
+' =====================================
+' ACTEURS
+' =====================================
+actor "Utilisateur\n(Membre)" as Utilisateur #LightGreen
+actor "Visiteur" as Visiteur #LightBlue
+
+' Héritage
+Visiteur <|-- Utilisateur
+
+' =====================================
+' SYSTÈME
+' =====================================
+rectangle "Plateforme Location Maison Gabon" {
+    
+    ' --- GESTION DU PROFIL ---
+    package "Gestion du Profil" {
+        usecase "Consulter son profil" as UC_ViewProfile
+        usecase "Modifier ses informations" as UC_EditProfile
+        usecase "Modifier son prénom/nom" as UC_EditName
+        usecase "Modifier sa date de naissance" as UC_EditBirthdate
+        usecase "Modifier son numéro de téléphone" as UC_EditPhone
+        usecase "Modifier son pays" as UC_EditCountry
+        usecase "Changer son mot de passe" as UC_ChangePwd
+        usecase "Gérer la sécurité du compte" as UC_Security
+        usecase "Ajouter/Modifier photo de profil" as UC_Avatar
+    }
+    
+    ' --- FAVORIS ---
+    package "Gestion des Favoris" {
+        usecase "Ajouter une annonce aux favoris" as UC_AddFavorite
+        usecase "Retirer une annonce des favoris" as UC_RemoveFavorite
+        usecase "Consulter ses favoris" as UC_ViewFavorites
+    }
+    
+    ' --- NOTIFICATIONS ---
+    package "Notifications" {
+        usecase "Consulter ses notifications" as UC_ViewNotif
+        usecase "Marquer notification comme lue" as UC_MarkRead
+        usecase "Configurer les préférences de notification" as UC_ConfigNotif
+        usecase "Recevoir alertes nouveaux biens" as UC_AlertNew
+        usecase "Recevoir alertes favoris" as UC_AlertFavorite
+    }
+    
+    ' --- RECHERCHE (Hérité du Visiteur) ---
+    package "Recherche Basique" {
+        usecase "Rechercher des propriétés" as UC_Search
+        usecase "Filtrer les résultats" as UC_Filter
+        usecase "Voir détails d'une annonce" as UC_ViewDetails
+        usecase "Contacter un annonceur" as UC_Contact
+    }
+    
+    ' --- SESSION ---
+    package "Session" {
+        usecase "Se déconnecter" as UC_Logout
+        usecase "Vérifier son email" as UC_VerifyEmail
+        usecase "Compléter son profil" as UC_CompleteProfile
+    }
+    
+    ' =====================================
+    ' 🆕 MIGRATION VERS ANNONCEUR
+    ' =====================================
+    package "Devenir Annonceur" #LightYellow {
+        usecase "Demander à devenir Annonceur" as UC_BecomeAnnouncer
+        usecase "Accepter les conditions d'annonceur" as UC_AcceptTerms
+        usecase "Renseigner informations professionnelles" as UC_ProfessionalInfo
+        usecase "Choisir le type d'annonceur" as UC_SelectAnnouncerType
+        usecase "Vérifier son numéro de téléphone" as UC_VerifyPhone
+        usecase "Recevoir confirmation de rôle" as UC_ReceiveRole
+    }
+}
+
+' =====================================
+' RELATIONS PRINCIPALES
+' =====================================
+Utilisateur --> UC_ViewProfile
+Utilisateur --> UC_Search
+Utilisateur --> UC_ViewFavorites
+Utilisateur --> UC_AddFavorite
+Utilisateur --> UC_ViewNotif
+Utilisateur --> UC_Logout
+Utilisateur --> UC_BecomeAnnouncer
+
+' =====================================
+' RELATIONS INCLUDE / EXTEND
+' =====================================
+
+' Profil
+UC_ViewProfile ..> UC_EditProfile : <<extend>>
+UC_EditProfile ..> UC_EditName : <<include>>
+UC_EditProfile ..> UC_EditBirthdate : <<include>>
+UC_EditProfile ..> UC_EditPhone : <<include>>
+UC_EditProfile ..> UC_EditCountry : <<include>>
+UC_EditProfile ..> UC_Avatar : <<extend>>
+UC_ViewProfile ..> UC_ChangePwd : <<extend>>
+UC_ViewProfile ..> UC_Security : <<extend>>
+
+' Favoris
+UC_ViewFavorites ..> UC_RemoveFavorite : <<extend>>
+
+' Notifications
+UC_ViewNotif ..> UC_MarkRead : <<extend>>
+UC_ViewNotif ..> UC_ConfigNotif : <<extend>>
+UC_ConfigNotif ..> UC_AlertNew : <<include>>
+UC_ConfigNotif ..> UC_AlertFavorite : <<include>>
+
+' Recherche
+UC_Search ..> UC_Filter : <<extend>>
+UC_Search ..> UC_ViewDetails : <<extend>>
+UC_ViewDetails ..> UC_Contact : <<extend>>
+
+' Session
+UC_Logout ..> UC_VerifyEmail : <<extend>>
+
+' =====================================
+' RELATIONS MIGRATION ANNONCEUR
+' =====================================
+UC_BecomeAnnouncer ..> UC_AcceptTerms : <<include>>
+UC_BecomeAnnouncer ..> UC_SelectAnnouncerType : <<include>>
+UC_BecomeAnnouncer ..> UC_ProfessionalInfo : <<extend>>
+UC_BecomeAnnouncer ..> UC_VerifyPhone : <<include>>
+UC_AcceptTerms ..> UC_ReceiveRole : <<include>>
+
+' =====================================
+' NOTES
+' =====================================
+note right of UC_ConfigNotif
+  **Types de notifications:**
+  - Activité du compte
+  - Nouvelles annonces
+  - Favoris mis à jour
+  - Suggestions personnalisées
+  - Mises à jour système
+end note
+
+note right of UC_BecomeAnnouncer
+  **Flux de migration:**
+  1. L'utilisateur demande à devenir Annonceur
+  2. Il accepte les CGU Annonceur
+  3. Il choisit son type (Particulier, Agence, Démarcheur)
+  4. Il vérifie son numéro de téléphone
+  5. Il renseigne ses infos professionnelles (optionnel)
+  6. Le rôle "Announcer" est attribué
+  7. Il reçoit 3 crédits de bienvenue
+  
+  **Pré-conditions:**
+  - Email vérifié
+  - Profil complété (nom, prénom)
+  
+  **Post-conditions:**
+  - Rôle "Announcer" ajouté
+  - CreditWallet créé avec 3 crédits
+  - Accès aux fonctionnalités Annonceur
+end note
+
+note right of UC_SelectAnnouncerType
+  **Types d'annonceurs:**
+  - Particulier (propriétaire)
+  - Agence immobilière
+  - Démarcheur / Agent
+  - Mandataire
+  
+  Permet de personnaliser
+  l'affichage du profil public.
+end note
+
+note bottom of Utilisateur
+  **L'Utilisateur de base peut:**
+  - Gérer son profil
+  - Rechercher des propriétés
+  - Gérer ses favoris
+  - Recevoir des notifications
+  - Contacter des annonceurs
+  
+  **⚠️ Il NE PEUT PAS:**
+  - Publier des annonces
+  - Acheter des crédits
+  - Promouvoir des annonces
+  
+  **Pour ces fonctionnalités,**
+  **il doit devenir Annonceur.**
+end note
+
+note as RoleSeparation
+  **Séparation claire des rôles:**
+  
+  ┌─────────────────┐
+  │    Visiteur     │ ← Non authentifié
+  └────────┬────────┘
+           │
+           ▼
+  ┌─────────────────┐
+  │   Utilisateur   │ ← Authentifié (compte créé)
+  │    (Membre)     │   Peut rechercher, favoris, etc.
+  └────────┬────────┘
+           │
+           │ "Devenir Annonceur"
+           ▼
+  ┌─────────────────┐
+  │   Annonceur     │ ← Rôle "Announcer" attribué
+  │                 │   Peut publier, crédits, etc.
+  └─────────────────┘
+  
+  **Un utilisateur peut:**
+  - Rester simple Utilisateur
+  - Devenir Annonceur à tout moment
+  - Un Annonceur garde les droits Utilisateur
+end note
+
+' =====================================
+' LÉGENDE
+' =====================================
+legend bottom left
+  |= Relation |= Description |
+  | → | Utilisation directe |
+  | <<include>> | Cas d'utilisation obligatoire |
+  | <<extend>> | Cas d'utilisation optionnel |
+  | ◁— | Héritage (spécialisation) |
+  
+  |= Couleur Package |= Signification |
+  | Blanc | Fonctionnalités Utilisateur |
+  | Jaune | Migration vers Annonceur |
+endlegend
+
+@enduml

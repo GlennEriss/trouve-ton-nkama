@@ -1,0 +1,144 @@
+@startuml Use-Cases-Visiteur
+skinparam backgroundColor #FEFEFE
+skinparam actorStyle awesome
+
+title Diagramme de Cas d'Utilisation - Visiteur
+caption Plateforme Location Maison Gabon
+
+' =====================================
+' ACTEUR
+' =====================================
+actor "Visiteur" as Visiteur #LightBlue
+
+' =====================================
+' SYSTÈME
+' =====================================
+rectangle "Plateforme Location Maison Gabon" {
+    
+    ' --- NAVIGATION & CONSULTATION ---
+    package "Navigation & Consultation" {
+        usecase "Consulter la page d'accueil" as UC_Home
+        usecase "Parcourir les annonces" as UC_Browse
+        usecase "Voir les détails d'une annonce" as UC_Details
+        usecase "Visualiser les photos" as UC_Photos
+        usecase "Voir la localisation sur carte" as UC_Map
+        usecase "Accéder à la carte interactive" as UC_InteractiveMap
+    }
+    
+    ' --- RECHERCHE ---
+    package "Recherche" {
+        usecase "Rechercher des propriétés" as UC_Search
+        usecase "Filtrer par type de bien" as UC_FilterType
+        usecase "Filtrer par localisation" as UC_FilterLocation
+        usecase "Filtrer par prix" as UC_FilterPrice
+        usecase "Filtrer par superficie" as UC_FilterArea
+        usecase "Filtrer par nombre de pièces" as UC_FilterRooms
+        usecase "Rechercher par province/ville/quartier" as UC_SearchLocation
+    }
+    
+    ' --- BLOG & INFORMATIONS ---
+    package "Blog & Informations" {
+        usecase "Lire les articles du blog" as UC_Blog
+        usecase "Consulter le guide immobilier" as UC_Guide
+        usecase "Lire les conditions d'utilisation" as UC_Terms
+        usecase "Lire la politique de confidentialité" as UC_Privacy
+    }
+    
+    ' --- AUTHENTIFICATION ---
+    package "Authentification" {
+        usecase "S'inscrire" as UC_Signup
+        usecase "Se connecter" as UC_Login
+        usecase "S'inscrire avec Google" as UC_Google
+        usecase "S'inscrire avec Facebook" as UC_Facebook
+        usecase "Demander réinitialisation mot de passe" as UC_ResetPwd
+    }
+    
+    ' --- CONTACT ---
+    package "Contact" {
+        usecase "Partager annonce sur WhatsApp" as UC_ShareWA
+        usecase "Partager annonce sur Facebook" as UC_ShareFB
+    }
+}
+
+' =====================================
+' RELATIONS PRINCIPALES
+' =====================================
+Visiteur --> UC_Home
+Visiteur --> UC_Browse
+Visiteur --> UC_Search
+Visiteur --> UC_InteractiveMap
+Visiteur --> UC_Blog
+Visiteur --> UC_Signup
+Visiteur --> UC_Login
+
+' =====================================
+' RELATIONS INCLUDE
+' =====================================
+UC_Browse ..> UC_Details : <<include>>
+UC_Details ..> UC_Photos : <<include>>
+UC_Details ..> UC_Map : <<include>>
+
+UC_Search ..> UC_FilterType : <<extend>>
+UC_Search ..> UC_FilterLocation : <<extend>>
+UC_Search ..> UC_FilterPrice : <<extend>>
+UC_Search ..> UC_FilterArea : <<extend>>
+UC_Search ..> UC_FilterRooms : <<extend>>
+
+UC_FilterLocation ..> UC_SearchLocation : <<include>>
+
+UC_Details ..> UC_ShareWA : <<extend>>
+UC_Details ..> UC_ShareFB : <<extend>>
+
+' =====================================
+' RELATIONS EXTEND AUTHENTIFICATION
+' =====================================
+UC_Signup ..> UC_Google : <<extend>>
+UC_Signup ..> UC_Facebook : <<extend>>
+UC_Login ..> UC_Google : <<extend>>
+UC_Login ..> UC_Facebook : <<extend>>
+UC_Login ..> UC_ResetPwd : <<extend>>
+
+' =====================================
+' NOTES
+' =====================================
+note right of UC_FilterType
+  **Types de biens:**
+  - Maison
+  - Appartement
+  - Studio
+  - Villa
+  - Immeuble
+  - Bureau
+  - Boutique
+  - Kiosque
+  - Chambre
+  - Terrain
+end note
+
+note right of UC_FilterLocation
+  **Localisation:**
+  - Province (Estuaire, etc.)
+  - Ville (Libreville, etc.)
+  - Quartier
+end note
+
+note bottom of UC_Blog
+  **Articles du blog:**
+  - Actualités immobilières
+  - Guide des quartiers
+  - Conseils de négociation
+  - Tendances du marché
+end note
+
+' =====================================
+' LÉGENDE
+' =====================================
+legend bottom left
+  |= Relation |= Description |
+  | → | Utilisation directe |
+  | <<include>> | Cas d'utilisation obligatoire |
+  | <<extend>> | Cas d'utilisation optionnel |
+endlegend
+
+@enduml
+

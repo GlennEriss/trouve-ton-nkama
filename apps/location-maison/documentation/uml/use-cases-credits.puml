@@ -1,0 +1,233 @@
+@startuml Use-Cases-Credits
+skinparam backgroundColor #FEFEFE
+skinparam actorStyle awesome
+
+title Diagramme de Cas d'Utilisation - Système de Crédits
+caption Plateforme Location Maison Gabon - Version 2.0
+
+' =====================================
+' ACTEURS
+' =====================================
+actor "Utilisateur\n(Membre)" as User #LightGreen
+actor "Annonceur\n(Propriétaire/Agence)" as Announcer #Orange
+actor "Administrateur" as Admin #Red
+
+' Héritage
+User <|-- Announcer
+
+' Acteurs secondaires
+actor "Airtel Money\n(Paiement)" as Airtel <<Secondary>> #LightGray
+actor "Firebase\n(Backend)" as Firebase <<Secondary>> #LightGray
+
+' =====================================
+' SYSTÈME
+' =====================================
+rectangle "Système de Crédits" {
+    
+    ' --- PORTEFEUILLE ---
+    package "Gestion du Portefeuille" {
+        usecase "Consulter mon solde" as UC_Balance
+        usecase "Voir l'historique des transactions" as UC_History
+        usecase "Filtrer par type\n(Achats / Dépenses)" as UC_FilterHistory
+    }
+    
+    ' --- ACHAT DE CRÉDITS ---
+    package "Achat de Crédits" {
+        usecase "Acheter des crédits" as UC_BuyCredits
+        usecase "Sélectionner un pack" as UC_SelectPack
+        usecase "Choisir le moyen de paiement" as UC_SelectPayment
+        usecase "Payer via Airtel Money" as UC_PayAirtel
+        usecase "Confirmer le paiement\nsur téléphone" as UC_ConfirmPayment
+        usecase "Recevoir confirmation\nd'achat" as UC_ReceiveConfirmation
+    }
+    
+    ' --- DÉPENSE DE CRÉDITS ---
+    package "Dépense de Crédits" {
+        usecase "Dépenser des crédits" as UC_SpendCredits
+        usecase "Publier une annonce" as UC_PublishProperty
+        usecase "Promouvoir une annonce" as UC_PromoteProperty
+        usecase "Utiliser l'assistant IA" as UC_UseAI
+        usecase "Booster une annonce" as UC_Boost
+    }
+    
+    ' --- ADMINISTRATION ---
+    package "Administration Crédits" {
+        usecase "Gérer les packs de crédits" as UC_ManagePacks
+        usecase "Créer un pack" as UC_CreatePack
+        usecase "Modifier un pack" as UC_EditPack
+        usecase "Désactiver un pack" as UC_DisablePack
+        usecase "Attribuer des crédits\nmanuellement" as UC_GrantCredits
+        usecase "Voir toutes les transactions" as UC_ViewAllTransactions
+        usecase "Gérer les remboursements" as UC_Refunds
+    }
+}
+
+' =====================================
+' RELATIONS UTILISATEUR
+' =====================================
+User --> UC_Balance
+User --> UC_History
+
+' =====================================
+' RELATIONS ANNONCEUR
+' =====================================
+Announcer --> UC_BuyCredits
+Announcer --> UC_SpendCredits
+
+' =====================================
+' RELATIONS ADMINISTRATEUR
+' =====================================
+Admin --> UC_ManagePacks
+Admin --> UC_GrantCredits
+Admin --> UC_ViewAllTransactions
+Admin --> UC_Refunds
+
+' =====================================
+' RELATIONS INTERNES - PORTEFEUILLE
+' =====================================
+UC_History ..> UC_FilterHistory : <<extend>>
+
+' =====================================
+' RELATIONS INTERNES - ACHAT
+' =====================================
+UC_BuyCredits ..> UC_SelectPack : <<include>>
+UC_BuyCredits ..> UC_SelectPayment : <<include>>
+UC_SelectPayment ..> UC_PayAirtel : <<extend>>
+UC_PayAirtel ..> UC_ConfirmPayment : <<include>>
+UC_ConfirmPayment ..> UC_ReceiveConfirmation : <<include>>
+
+' =====================================
+' RELATIONS INTERNES - DÉPENSE
+' =====================================
+UC_SpendCredits ..> UC_PublishProperty : <<extend>>
+UC_SpendCredits ..> UC_PromoteProperty : <<extend>>
+UC_SpendCredits ..> UC_UseAI : <<extend>>
+UC_PromoteProperty ..> UC_Boost : <<extend>>
+
+' =====================================
+' RELATIONS INTERNES - ADMIN
+' =====================================
+UC_ManagePacks ..> UC_CreatePack : <<extend>>
+UC_ManagePacks ..> UC_EditPack : <<extend>>
+UC_ManagePacks ..> UC_DisablePack : <<extend>>
+
+' =====================================
+' RELATIONS ACTEURS SECONDAIRES
+' =====================================
+UC_PayAirtel --> Airtel : initie paiement
+Airtel --> UC_ConfirmPayment : callback
+UC_BuyCredits --> Firebase : enregistre transaction
+UC_SpendCredits --> Firebase : met à jour solde
+
+' =====================================
+' NOTES EXPLICATIVES
+' =====================================
+note right of UC_BuyCredits
+  **Flux d'achat complet:**
+  1. L'annonceur accède à "Mon solde"
+  2. Clique sur "Acheter des crédits"
+  3. Choisit un pack (Starter, Pro, etc.)
+  4. Sélectionne Airtel Money
+  5. Entre son numéro de téléphone
+  6. Reçoit notification Airtel
+  7. Confirme le paiement
+  8. Les crédits sont ajoutés
+  
+  **Pré-condition:**
+  - Être authentifié
+  - Avoir le rôle Annonceur
+  
+  **Post-condition:**
+  - Crédits ajoutés au portefeuille
+  - Transaction enregistrée
+end note
+
+note left of UC_SelectPack
+  **Packs disponibles:**
+  | Pack | Crédits | Prix |
+  |------|---------|------|
+  | Starter | 5 | 5,000 XAF |
+  | Basic | 15 | 12,000 XAF |
+  | Pro | 50 | 35,000 XAF |
+  | Premium | 100 | 60,000 XAF |
+  
+  (Économies sur les gros packs)
+end note
+
+note bottom of UC_SpendCredits
+  **Coût en crédits:**
+  | Service | Crédits |
+  |---------|---------|
+  | Publier annonce | 0 (gratuit) |
+  | Promotion Featured | 10 |
+  | Trending 7 jours | 7 |
+  | Trending 3 jours | 4 |
+  | Boost | 2 |
+  | Assistant IA | 1 |
+end note
+
+note right of UC_GrantCredits
+  **Attribution manuelle:**
+  Réservé aux administrateurs.
+  Utilisé pour:
+  - Gestes commerciaux
+  - Correction d'erreurs
+  - Crédits de bienvenue
+end note
+
+note bottom of Announcer
+  **L'Annonceur hérite de l'Utilisateur**
+  Il peut:
+  - Consulter son solde
+  - Voir son historique
+  - Acheter des crédits
+  - Dépenser des crédits
+end note
+
+' =====================================
+' ÉTATS DE TRANSACTION
+' =====================================
+note as TransactionStates
+  **États d'une transaction d'achat:**
+  
+  ┌─────────────────────────────────────────┐
+  │                                         │
+  │  [PENDING] ───► [PROCESSING] ───► [COMPLETED]
+  │      │              │                   │
+  │      │              │                   │
+  │      ▼              ▼                   ▼
+  │  [CANCELLED]    [FAILED]           (Succès)
+  │                     │
+  │                     ▼
+  │               [REFUNDED]
+  │                                         │
+  └─────────────────────────────────────────┘
+  
+  - PENDING: En attente de paiement
+  - PROCESSING: Paiement en cours
+  - COMPLETED: Crédits ajoutés
+  - FAILED: Paiement échoué
+  - CANCELLED: Annulé par l'utilisateur
+  - REFUNDED: Remboursé par admin
+end note
+
+' =====================================
+' LÉGENDE
+' =====================================
+legend bottom left
+  |= Relation |= Description |
+  | → | Utilisation directe |
+  | <<include>> | Cas obligatoire |
+  | <<extend>> | Cas optionnel |
+  | ◁— | Héritage |
+  
+  **Acteurs:**
+  | Couleur | Type |
+  | Vert | Utilisateur de base |
+  | Orange | Annonceur |
+  | Rouge | Administrateur |
+  | Gris | Système externe |
+endlegend
+
+@enduml
+
