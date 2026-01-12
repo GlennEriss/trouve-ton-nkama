@@ -50,3 +50,9 @@ init.txt
 
 # Large GeoJSON files
 /public/data/gabon_polygons.geojson
+
+# Firebase Service Account files (sensitive credentials)
+# Ignore all JSON files but allow README.md
+/services-account-firebase/**/*.json
+/services-account-firebase/**/*.key
+/services-account-firebase/**/*.pem
