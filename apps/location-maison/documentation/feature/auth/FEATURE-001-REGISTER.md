@@ -185,9 +185,9 @@ interface UseSignupReturn {
 ## ✅ Checklist de Refactoring
 
 ### Phase 1 : Préparation
-- [ ] Créer branche `feature/FEATURE-001-register`
-- [ ] Analyser code existant en détail
-- [ ] Identifier toutes les dépendances
+- [x] Créer branche `feature/FEATURE-001-register`
+- [x] Analyser code existant en détail
+- [x] Identifier toutes les dépendances
 
 ### Phase 2 : Repository
 - [ ] Créer `user.repository.ts`
@@ -225,6 +225,8 @@ interface UseSignupReturn {
 - [x] Analyse du code existant (`ANALYSE_CODE_EXISTANT.md`)
 - [x] Diagramme d'activité (`register-activity-diagram.puml`)
 - [x] Diagramme de séquence (`register-sequence-diagram.puml`)
+- [x] Spécifications UX (`ux.md`)
+- [x] Spécifications UI (`ui.md`)
 - [ ] README dans `documentation/feature/auth/`
 - [ ] Exemples d'utilisation
 
