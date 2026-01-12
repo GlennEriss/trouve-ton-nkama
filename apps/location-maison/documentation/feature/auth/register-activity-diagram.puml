@@ -69,7 +69,7 @@ endif
 
 :Service: Créer compte Firebase Auth;
 
-partition Firebase Auth {
+partition "Firebase Auth" {
     :createUserWithEmailAndPassword(email, password);
 }
 
@@ -103,7 +103,7 @@ endif
 :Service: Envoyer email de vérification
 (en arrière-plan, non-bloquant);
 
-partition Email Service {
+partition "Email Service" {
     :POST /api/auth/send-verification-email;
     :Générer lien de vérification;
     :Envoyer email;
