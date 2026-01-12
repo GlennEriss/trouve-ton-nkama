@@ -4,6 +4,9 @@ Ce dossier contient tous les guides de configuration et d'installation des servi
 
 ## 📄 Fichiers
 
+### Firebase
+- **FIREBASE_PROJECTS_SETUP.md** : 🆕 Configuration des projets Firebase (dev, preprod, prod)
+
 ### Paiements
 - **AIRTEL_SETUP.md** : Configuration Airtel Money pour les paiements de crédits
 

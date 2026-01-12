@@ -1,7 +1,8 @@
 {
   "projects": {
     "default": "location-maison-prod-167da",
-    "production": "location-maison-prod-167da",
-    "development": "home-rent-1534e"
+    "dev": "location-maison-gabon-dev",
+    "preprod": "location-maison-gabon-preprod",
+    "prod": "location-maison-prod-167da"
   }
 }
