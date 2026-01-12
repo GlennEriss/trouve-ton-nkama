@@ -1,4 +1,4 @@
-@startuml Register-Activity-Diagram
+@startuml Register-Activity-Diagram-Annonceur
 skinparam backgroundColor #FEFEFE
 skinparam activity {
     BackgroundColor #E8F4F8
@@ -9,8 +9,8 @@ skinparam arrow {
     Color #146B67
 }
 
-title Diagramme d'Activité - Inscription (Register) Améliorée
-caption Plateforme Location Maison Gabon - FEATURE-001
+title Diagramme d'Activité - Inscription Directe Annonceur
+caption Plateforme Location Maison Gabon - FEATURE-001 (Variante Annonceur)
 
 start
 
@@ -39,27 +39,20 @@ if (Conditions non acceptées ?) then (oui)
 else (non)
 endif
 
-:Visiteur choisit le type de compte:
-- Utilisateur simple (par défaut)
-- Annonceur (direct);
+:Visiteur choisit "Créer un compte Annonceur";
 
-if (Type de compte = Annonceur ?) then (oui)
-    :Rediriger vers flux inscription Annonceur;
-    note right
-      **Voir diagramme séparé:**
-      register-activity-diagram-annonceur.puml
-      
-      Étapes supplémentaires:
-      - Acceptation CGU Annonceur
-      - Vérification téléphone (OTP)
-      - Choix type d'annonceur
-      - Création AnnouncerProfile
-    end note
+:Affichage des conditions spécifiques Annonceur
+(CGU Annonceur, règles de publication, etc.);
+
+:Visiteur accepte les CGU Annonceur;
+
+if (CGU Annonceur non acceptées ?) then (oui)
+    :Afficher erreur "CGU Annonceur obligatoires";
     stop
 else (non)
 endif
 
-:Appeler useSignup hook (type: 'User');
+:Appeler useSignup hook (avec type: 'Announcer');
 
 :Service: Vérifier l'unicité du numéro de téléphone;
 
@@ -87,6 +80,29 @@ if (Email déjà utilisé ?) then (oui)
 else (non)
 endif
 
+:Service: Vérifier le numéro de téléphone
+(via OTP - One Time Password);
+
+partition "Phone Verification" {
+    :Envoyer code OTP par SMS;
+    :Visiteur saisit le code OTP;
+    :Vérifier le code OTP;
+}
+
+if (Vérification téléphone échoue ?) then (oui)
+    :Afficher erreur "Vérification téléphone requise";
+    stop
+else (non)
+endif
+
+:Service: Demander le type d'annonceur;
+
+:Visiteur choisit son type d'annonceur:
+- Propriétaire (INDIVIDUAL)
+- Agence (AGENCY)
+- Démarcheur (BROKER)
+- Mandataire (AGENT);
+
 :Service: Créer compte Firebase Auth;
 
 partition "Firebase Auth" {
@@ -105,16 +121,16 @@ if (Création échoue ?) then (oui)
 else (non)
 endif
 
-:Service: Créer utilisateur dans Firestore;
+:Service: Créer utilisateur dans Firestore
+avec rôle 'Announcer';
 
 partition Repository {
     :Transformer données formulaire → User;
     note right
-      **Rôle par défaut: 'User'**
-      (pas 'Announcer')
-      L'utilisateur deviendra Annonceur
-      plus tard s'il souhaite publier
-      des annonces
+      **Rôle: 'Announcer'**
+      (pas 'User')
+      L'utilisateur est directement
+      créé comme Annonceur
     end note
     :Créer CreditWallet avec 3 crédits de bienvenue;
     :create(user);
@@ -123,6 +139,26 @@ partition Repository {
 if (Création Firestore échoue ?) then (oui)
     :Rollback: Supprimer compte Firebase Auth;
     :Afficher erreur "Erreur lors de la création du compte";
+    stop
+else (non)
+endif
+
+:Service: Créer AnnouncerProfile;
+
+partition Repository {
+    :Créer AnnouncerProfile {
+      userId,
+      announcerType (INDIVIDUAL/AGENCY/BROKER/AGENT),
+      acceptedTermsAt,
+      becameAnnouncerAt,
+      isVerified: true (téléphone vérifié)
+    };
+}
+
+if (Création AnnouncerProfile échoue ?) then (oui)
+    :Rollback: Supprimer compte Firebase Auth;
+    :Rollback: Supprimer utilisateur Firestore;
+    :Afficher erreur "Erreur lors de la création du profil";
     stop
 else (non)
 endif
@@ -147,9 +183,10 @@ end note
 
 :Hook: Gérer état success;
 
-:Composant: Afficher toast de succès;
+:Composant: Afficher toast de succès
+"Compte Annonceur créé avec succès!";
 
-:Rediriger vers /signup/success?uid=xxx;
+:Rediriger vers /signup/success?uid=xxx&type=announcer;
 
 stop
 
