@@ -17,11 +17,18 @@ service cloud.firestore {
     }
     
     match /users/{userId} {
-      allow read, create: if true;
+      // Lecture : l'utilisateur peut lire son propre profil, ou lecture publique pour vérification
+      allow read: if true;
+      
+      // Création : lors de l'inscription, l'utilisateur authentifié peut créer son propre document
+      // L'uid dans les données doit correspondre à l'utilisateur authentifié
+      allow create: if isSignedIn() && request.auth.uid == request.resource.data.uid;
+      
+      // Mise à jour : l'utilisateur peut mettre à jour son propre profil
       allow update: if isSignedIn() && (
         // Soit l'utilisateur est le propriétaire
         request.auth.uid == resource.data.uid ||
-        // Soit c'est une transaction atomique
+        // Soit c'est une transaction atomique (pour les crédits)
         (isTransactionOperation() && request.auth.uid == request.resource.data.uid)
       );
     }

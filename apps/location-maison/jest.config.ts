@@ -65,7 +65,9 @@ const config: Config = {
   
   transform: {
     '^.+\\.tsx?$': ['ts-jest', {
-      tsconfig: 'tsconfig.json',
+      tsconfig: {
+        jsx: 'react-jsx', // Use react-jsx transform for JSX
+      },
     }],
   },
   

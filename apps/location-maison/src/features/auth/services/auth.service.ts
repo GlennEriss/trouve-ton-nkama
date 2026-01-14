@@ -163,9 +163,11 @@ export class AuthServiceImpl implements AuthService {
     const now = Timestamp.now();
 
     // Determine roles based on account type
+    // Note: 'User' is not a role in the system, users without 'Announcer' role are just regular users
+    // For now, we use an empty array for regular users, or we can add 'User' to the Role type if needed
     const roles: ('Admin' | 'Announcer')[] = data.accountType === 'Announcer' 
       ? ['Announcer'] 
-      : ['User'];
+      : [];
 
     return {
       uid,
@@ -180,6 +182,7 @@ export class AuthServiceImpl implements AuthService {
       roles,
       emailVerified: false,
       providers: ['CREDENTIALS'],
+      metadata: {}, // Required by User type
       favoris: [],
       credits: 3, // Welcome credits (will be migrated to CreditWallet later)
       state: 'IN_PROGRESS',

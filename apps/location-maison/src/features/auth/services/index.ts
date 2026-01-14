@@ -2,6 +2,7 @@
  * AuthService Exports
  */
 
-export { AuthService, SignupData, SignupResult, SignupError, SignupErrorCode, AuthServiceError } from './auth.service.interface';
+export type { AuthService, SignupData, SignupResult, SignupError, AuthServiceError } from './auth.service.interface';
+export { SignupErrorCode } from './auth.service.interface';
 export { AuthServiceImpl, authService } from './auth.service';
 

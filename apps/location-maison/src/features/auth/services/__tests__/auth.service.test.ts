@@ -29,7 +29,7 @@ jest.mock('@/firebase/auth', () => ({
 }));
 
 // Mock Email API
-global.fetch = jest.fn();
+global.fetch = jest.fn() as jest.MockedFunction<typeof fetch>;
 
 // Helper to create mock User
 function createMockUser(overrides: Partial<User> = {}): User {
@@ -95,12 +95,12 @@ describe('AuthService', () => {
       
       mockUserRepository.findByPhoneNumber.mockResolvedValue(null);
       mockUserRepository.findByEmail.mockResolvedValue(null);
-      (createUserWithEmailAndPassword as jest.Mock).mockResolvedValue({
+      (createUserWithEmailAndPassword as any).mockResolvedValue({
         user: { uid: 'uid-123', email: signupData.email },
       });
       mockUserRepository.create.mockResolvedValue(createMockUser({ uid: 'uid-123' }));
-      (fetch as jest.Mock).mockResolvedValue({ ok: true });
-      (signOut as jest.Mock).mockResolvedValue(undefined);
+      (fetch as any).mockResolvedValue({ ok: true });
+      (signOut as any).mockResolvedValue(undefined);
 
       // Act
       const result = await authService.signup(signupData);
@@ -165,7 +165,7 @@ describe('AuthService', () => {
       mockUserRepository.findByEmail.mockResolvedValue(null);
       
       const firebaseError = { code: 'auth/weak-password', message: 'Password should be at least 6 characters' };
-      (createUserWithEmailAndPassword as jest.Mock).mockRejectedValue(firebaseError);
+      (createUserWithEmailAndPassword as any).mockRejectedValue(firebaseError);
 
       // Act
       const result = await authService.signup(signupData);
@@ -184,7 +184,7 @@ describe('AuthService', () => {
       mockUserRepository.findByEmail.mockResolvedValue(null);
       
       const firebaseError = { code: 'auth/invalid-email', message: 'The email address is badly formatted' };
-      (createUserWithEmailAndPassword as jest.Mock).mockRejectedValue(firebaseError);
+      (createUserWithEmailAndPassword as any).mockRejectedValue(firebaseError);
 
       // Act
       const result = await authService.signup(signupData);
@@ -203,7 +203,7 @@ describe('AuthService', () => {
       mockUserRepository.findByEmail.mockResolvedValue(null);
       
       const firebaseError = { code: 'auth/email-already-in-use', message: 'The email address is already in use' };
-      (createUserWithEmailAndPassword as jest.Mock).mockRejectedValue(firebaseError);
+      (createUserWithEmailAndPassword as any).mockRejectedValue(firebaseError);
 
       // Act
       const result = await authService.signup(signupData);
@@ -220,11 +220,11 @@ describe('AuthService', () => {
       
       mockUserRepository.findByPhoneNumber.mockResolvedValue(null);
       mockUserRepository.findByEmail.mockResolvedValue(null);
-      (createUserWithEmailAndPassword as jest.Mock).mockResolvedValue({
+      (createUserWithEmailAndPassword as any).mockResolvedValue({
         user: { uid: 'uid-123', email: signupData.email },
       });
       mockUserRepository.create.mockRejectedValue(new RepositoryError('Firestore error', 'ERROR'));
-      (signOut as jest.Mock).mockResolvedValue(undefined);
+      (signOut as any).mockResolvedValue(undefined);
 
       // Act
       const result = await authService.signup(signupData);
@@ -236,18 +236,18 @@ describe('AuthService', () => {
       // For now, we just verify signOut is called
     });
 
-    it('should create user with role User by default', async () => {
+    it('should create user with empty roles array by default (User = no specific role)', async () => {
       // Arrange
       const signupData = createSignupData({ accountType: 'User' });
       const { createUserWithEmailAndPassword } = await import('@/firebase/auth');
       
       mockUserRepository.findByPhoneNumber.mockResolvedValue(null);
       mockUserRepository.findByEmail.mockResolvedValue(null);
-      (createUserWithEmailAndPassword as jest.Mock).mockResolvedValue({
+      (createUserWithEmailAndPassword as any).mockResolvedValue({
         user: { uid: 'uid-123', email: signupData.email },
       });
       mockUserRepository.create.mockResolvedValue(createMockUser());
-      (fetch as jest.Mock).mockResolvedValue({ ok: true });
+      (fetch as any).mockResolvedValue({ ok: true });
 
       // Act
       await authService.signup(signupData);
@@ -255,7 +255,7 @@ describe('AuthService', () => {
       // Assert
       expect(mockUserRepository.create).toHaveBeenCalledWith(
         expect.objectContaining({
-          roles: ['User'],
+          roles: [], // User = no specific role (empty array)
         })
       );
     });
@@ -272,11 +272,11 @@ describe('AuthService', () => {
       
       mockUserRepository.findByPhoneNumber.mockResolvedValue(null);
       mockUserRepository.findByEmail.mockResolvedValue(null);
-      (createUserWithEmailAndPassword as jest.Mock).mockResolvedValue({
+      (createUserWithEmailAndPassword as any).mockResolvedValue({
         user: { uid: 'uid-123', email: signupData.email },
       });
       mockUserRepository.create.mockResolvedValue(createMockUser());
-      (fetch as jest.Mock).mockResolvedValue({ ok: true });
+      (fetch as any).mockResolvedValue({ ok: true });
 
       // Act
       await authService.signup(signupData);
@@ -289,6 +289,96 @@ describe('AuthService', () => {
       );
     });
 
+    it('should fail if announcer terms are not accepted', async () => {
+      // Arrange
+      const signupData = createSignupData({
+        accountType: 'Announcer',
+        acceptAnnouncerTerms: false, // Not accepted
+      });
+
+      // Act
+      const result = await authService.signup(signupData);
+
+      // Assert
+      expect(result.success).toBe(false);
+      expect(result.error?.code).toBe(SignupErrorCode.ANNOUNCER_TERMS_NOT_ACCEPTED);
+      expect(result.error?.message).toContain('conditions d\'annonceur');
+    });
+
+    it('should handle repository error when checking email', async () => {
+      // Arrange
+      const signupData = createSignupData();
+      
+      mockUserRepository.findByPhoneNumber.mockResolvedValue(null);
+      mockUserRepository.findByEmail.mockRejectedValue(new RepositoryError('Database error', 'ERROR'));
+
+      // Act
+      const result = await authService.signup(signupData);
+
+      // Assert
+      expect(result.success).toBe(false);
+      expect(result.error?.code).toBe(SignupErrorCode.NETWORK_ERROR);
+      expect(result.error?.message).toContain('vérification de l\'email');
+    });
+
+    it('should handle rollback error when Firestore creation fails', async () => {
+      // Arrange
+      const signupData = createSignupData();
+      const { createUserWithEmailAndPassword, signOut } = await import('@/firebase/auth');
+      
+      mockUserRepository.findByPhoneNumber.mockResolvedValue(null);
+      mockUserRepository.findByEmail.mockResolvedValue(null);
+      (createUserWithEmailAndPassword as any).mockResolvedValue({
+        user: { uid: 'uid-123', email: signupData.email },
+      });
+      mockUserRepository.create.mockRejectedValue(new RepositoryError('Firestore error', 'ERROR'));
+      // Mock signOut to throw an error (rollback fails)
+      (signOut as any).mockRejectedValue(new Error('SignOut failed'));
+
+      // Act
+      const result = await authService.signup(signupData);
+
+      // Assert
+      expect(result.success).toBe(false);
+      expect(result.error?.code).toBe(SignupErrorCode.NETWORK_ERROR);
+      // Verify signOut was called (even if it failed)
+      expect(signOut).toHaveBeenCalled();
+    });
+
+    it('should handle email verification API failure (response not ok)', async () => {
+      // Arrange
+      const signupData = createSignupData();
+      const { createUserWithEmailAndPassword } = await import('@/firebase/auth');
+      
+      mockUserRepository.findByPhoneNumber.mockResolvedValue(null);
+      mockUserRepository.findByEmail.mockResolvedValue(null);
+      (createUserWithEmailAndPassword as any).mockResolvedValue({
+        user: { uid: 'uid-123', email: signupData.email },
+      });
+      mockUserRepository.create.mockResolvedValue(createMockUser());
+      // Mock fetch to return error (not ok) - this will throw in sendVerificationEmail
+      (fetch as any).mockResolvedValue({
+        ok: false,
+        statusText: 'Internal Server Error',
+        status: 500,
+      });
+
+      // Act
+      // The email sending is called with .catch(), so errors are handled
+      const result = await authService.signup(signupData);
+      
+      // Assert
+      // Should still succeed even if email fails (non-blocking, errors caught)
+      expect(result.success).toBe(true);
+      expect(result.userId).toBe('uid-123');
+      
+      // Wait a bit for the async email call to complete and throw
+      await new Promise(resolve => setTimeout(resolve, 100));
+      
+      // Verify fetch was called
+      expect(fetch).toHaveBeenCalled();
+    });
+
     it('should send verification email in background (non-blocking)', async () => {
       // Arrange
       const signupData = createSignupData();
@@ -296,11 +386,11 @@ describe('AuthService', () => {
       
       mockUserRepository.findByPhoneNumber.mockResolvedValue(null);
       mockUserRepository.findByEmail.mockResolvedValue(null);
-      (createUserWithEmailAndPassword as jest.Mock).mockResolvedValue({
+      (createUserWithEmailAndPassword as any).mockResolvedValue({
         user: { uid: 'uid-123', email: signupData.email },
       });
       mockUserRepository.create.mockResolvedValue(createMockUser());
-      (fetch as jest.Mock).mockResolvedValue({ ok: true });
+      (fetch as any).mockResolvedValue({ ok: true });
 
       // Act
       await authService.signup(signupData);
@@ -321,11 +411,11 @@ describe('AuthService', () => {
       
       mockUserRepository.findByPhoneNumber.mockResolvedValue(null);
       mockUserRepository.findByEmail.mockResolvedValue(null);
-      (createUserWithEmailAndPassword as jest.Mock).mockResolvedValue({
+      (createUserWithEmailAndPassword as any).mockResolvedValue({
         user: { uid: 'uid-123', email: signupData.email },
       });
       mockUserRepository.create.mockResolvedValue(createMockUser());
-      (fetch as jest.Mock).mockRejectedValue(new Error('Email service unavailable'));
+      (fetch as any).mockRejectedValue(new Error('Email service unavailable'));
 
       // Act
       const result = await authService.signup(signupData);
@@ -349,6 +439,29 @@ describe('AuthService', () => {
       // Assert
       expect(result.success).toBe(false);
       expect(result.error?.code).toBe(SignupErrorCode.NETWORK_ERROR);
+    });
+
+    it('should use country code as name if country not in mapping (getCountryName)', async () => {
+      // Arrange
+      const signupData = createSignupData({ country: 'XX' }); // Unknown country code
+      const { createUserWithEmailAndPassword } = await import('@/firebase/auth');
+      
+      mockUserRepository.findByPhoneNumber.mockResolvedValue(null);
+      mockUserRepository.findByEmail.mockResolvedValue(null);
+      (createUserWithEmailAndPassword as any).mockResolvedValue({
+        user: { uid: 'uid-123', email: signupData.email },
+      });
+      mockUserRepository.create.mockResolvedValue(createMockUser());
+      (fetch as any).mockResolvedValue({ ok: true });
+
+      // Act
+      await authService.signup(signupData);
+
+      // Assert
+      // Verify that country name is set to code if not in mapping
+      expect(mockUserRepository.create).toHaveBeenCalled();
+      const callArgs = (mockUserRepository.create as any).mock.calls[0];
+      expect(callArgs[0].country.name).toBe('XX'); // Should use code as name
     });
   });
 });

@@ -1,0 +1,68 @@
+# Page snapshot
+
+```yaml
+- generic [active] [ref=e1]:
+  - generic [ref=e2]:
+    - contentinfo [ref=e5]:
+      - generic [ref=e6]:
+        - list [ref=e8]:
+          - listitem [ref=e9]:
+            - link "À propos" [ref=e10] [cursor=pointer]:
+              - /url: https://www.facebook.com/profile.php?id=61574099562451
+          - listitem [ref=e11]:
+            - link "Blog" [ref=e12] [cursor=pointer]:
+              - /url: /blog
+          - listitem [ref=e13]:
+            - link "Guide Immobilier" [ref=e14] [cursor=pointer]:
+              - /url: /guide-immobilier-gabon
+          - listitem [ref=e15]:
+            - link "Politique de confidentialité" [ref=e16] [cursor=pointer]:
+              - /url: /privacy-policy
+          - listitem [ref=e17]:
+            - link "Conditions d'utilisation" [ref=e18] [cursor=pointer]:
+              - /url: /terms-of-use
+        - generic:
+          - insertion
+        - generic [ref=e19]:
+          - generic [ref=e20]:
+            - generic [ref=e21]:
+              - img [ref=e22]
+              - generic [ref=e25]: Libreville, Gabon
+            - generic [ref=e26]:
+              - img [ref=e27]
+              - link:
+                - /url: mailto:undefined
+            - generic [ref=e30]:
+              - img [ref=e31]
+              - link "Suivez-nous sur Facebook" [ref=e33] [cursor=pointer]:
+                - /url: https://www.facebook.com/share/16beeh915e/
+            - generic [ref=e34]:
+              - img [ref=e35]
+              - link "Contactez-nous sur WhatsApp" [ref=e37] [cursor=pointer]:
+                - /url: https://wa.me/undefined?text=Bonjour%20!%20Je%20souhaite%20obtenir%20plus%20d'informations%20sur%20Trouve%20Ton%20Nkama.
+          - img [ref=e39]
+        - separator [ref=e49]
+        - generic [ref=e50]:
+          - text: © 2026
+          - link "Trouve Ton Nkama" [ref=e51] [cursor=pointer]:
+            - /url: /
+          - text: . Tous droits réservés.
+    - region "Notifications (F8)":
+      - list
+  - generic:
+    - generic [ref=e54] [cursor=pointer]:
+      - img [ref=e55]
+      - generic [ref=e57]: 4 errors
+      - button "Hide Errors" [ref=e58]:
+        - img [ref=e59]
+    - status [ref=e62]:
+      - generic [ref=e63]:
+        - img [ref=e65]
+        - generic [ref=e67]:
+          - text: Static route
+          - button "Hide static indicator" [ref=e68] [cursor=pointer]:
+            - img [ref=e69]
+  - alert [ref=e72]
+  - iframe [ref=e73]:
+    
+```

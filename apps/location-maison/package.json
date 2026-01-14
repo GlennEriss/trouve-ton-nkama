@@ -15,6 +15,8 @@
     "test:unit": "jest --testPathPattern='__tests__/(unit|actions|db|hooks|lib|services|property)'",
     "test:integration": "jest --testPathPattern='__tests__/integration'",
     "test:e2e": "playwright test",
+    "test:e2e:setup": "node -e \"const fs = require('fs'); if (fs.existsSync('.env.local.dev')) { fs.copyFileSync('.env.local.dev', '.env.local'); console.log('✅ .env.local.dev copied to .env.local'); } else { console.error('❌ .env.local.dev not found'); process.exit(1); }\"",
+    "test:e2e:dev": "npm run test:e2e:setup && npm run dev",
     "test:coverage": "jest --coverage --coverageReporters=text --coverageReporters=lcov --coverageReporters=html --coverageReporters=json-summary",
     "test:ci": "jest --ci --coverage --reporters=default",
     "test:watch": "jest --watch",
@@ -117,6 +119,7 @@
     "zod": "^3.24.1"
   },
   "devDependencies": {
+    "@playwright/test": "^1.57.0",
     "@testing-library/dom": "^10.4.0",
     "@testing-library/jest-dom": "^6.6.3",
     "@testing-library/react": "^16.2.0",

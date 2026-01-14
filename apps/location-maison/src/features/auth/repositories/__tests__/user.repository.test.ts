@@ -14,6 +14,11 @@ import { Timestamp } from 'firebase/firestore';
 // Note: Firestore is already mocked in jest.setup.ts
 // We just need to import the mocked functions
 
+// Helper to type mocks correctly
+function mockFunction<T extends (...args: any[]) => any>(fn: T): jest.MockedFunction<T> {
+  return fn as jest.MockedFunction<T>;
+}
+
 // Helper to create mock User
 function createMockUser(overrides: Partial<User> = {}): User {
   const now = Timestamp.now();
@@ -54,8 +59,8 @@ describe('UserRepository', () => {
       const firestore = await import('@/firebase/firestore');
       const { addDoc, collection } = firestore;
       const mockDocRef = { id: 'user-123' };
-      (addDoc as jest.Mock).mockResolvedValue(mockDocRef);
-      (collection as jest.Mock).mockReturnValue({});
+      (addDoc as any).mockResolvedValue(mockDocRef);
+      (collection as any).mockReturnValue({});
 
       // Act
       const result = await repository.create(mockUser);
@@ -78,8 +83,8 @@ describe('UserRepository', () => {
       const firestore = await import('@/firebase/firestore');
       const { addDoc, collection } = firestore;
       const firestoreError = new Error('Firestore permission denied');
-      (collection as jest.Mock).mockReturnValue({});
-      (addDoc as jest.Mock).mockRejectedValue(firestoreError);
+      (collection as any).mockReturnValue({});
+      (addDoc as any).mockRejectedValue(firestoreError);
 
       // Act & Assert
       await expect(repository.create(mockUser)).rejects.toThrow(RepositoryError);
@@ -91,15 +96,15 @@ describe('UserRepository', () => {
       const firestore = await import('@/firebase/firestore');
       const { addDoc, collection } = firestore;
       const mockDocRef = { id: 'user-123' };
-      (collection as jest.Mock).mockReturnValue({});
-      (addDoc as jest.Mock).mockResolvedValue(mockDocRef);
+      mockFunction(collection).mockReturnValue({} as any);
+      mockFunction(addDoc).mockResolvedValue(mockDocRef as any);
 
       const fullUser: User = createMockUser({
         firstname: 'John',
         lastname: 'Doe',
         email: 'john@example.com',
         phoneNumbers: ['+241123456789'],
-        roles: ['User'],
+        roles: ['User' as 'Admin' | 'Announcer'],
         credits: 3,
       });
 
@@ -134,10 +139,10 @@ describe('UserRepository', () => {
         empty: false,
         docs: [mockDoc],
       };
-      (collection as jest.Mock).mockReturnValue({});
-      (where as jest.Mock).mockReturnValue({});
-      (query as jest.Mock).mockReturnValue({});
-      (getDocs as jest.Mock).mockResolvedValue(mockSnapshot);
+      (collection as any).mockReturnValue({});
+      (where as any).mockReturnValue({});
+      (query as any).mockReturnValue({});
+      (getDocs as any).mockResolvedValue(mockSnapshot);
 
       // Act
       const result = await repository.findByPhoneNumber('+241123456789');
@@ -157,10 +162,10 @@ describe('UserRepository', () => {
         empty: true,
         docs: [],
       };
-      (collection as jest.Mock).mockReturnValue({});
-      (where as jest.Mock).mockReturnValue({});
-      (query as jest.Mock).mockReturnValue({});
-      (getDocs as jest.Mock).mockResolvedValue(mockSnapshot);
+      (collection as any).mockReturnValue({});
+      (where as any).mockReturnValue({});
+      (query as any).mockReturnValue({});
+      (getDocs as any).mockResolvedValue(mockSnapshot);
 
       // Act
       const result = await repository.findByPhoneNumber('+241999999999');
@@ -174,10 +179,10 @@ describe('UserRepository', () => {
       const firestore = await import('@/firebase/firestore');
       const { getDocs, query, collection, where } = firestore;
       const firestoreError = new Error('Firestore query failed');
-      (collection as jest.Mock).mockReturnValue({});
-      (where as jest.Mock).mockReturnValue({});
-      (query as jest.Mock).mockReturnValue({});
-      (getDocs as jest.Mock).mockRejectedValue(firestoreError);
+      (collection as any).mockReturnValue({});
+      (where as any).mockReturnValue({});
+      (query as any).mockReturnValue({});
+      (getDocs as any).mockRejectedValue(firestoreError);
 
       // Act & Assert
       await expect(repository.findByPhoneNumber('+241123456789')).rejects.toThrow(RepositoryError);
@@ -198,10 +203,10 @@ describe('UserRepository', () => {
         empty: false,
         docs: [mockDoc],
       };
-      (collection as jest.Mock).mockReturnValue({});
-      (where as jest.Mock).mockReturnValue({});
-      (query as jest.Mock).mockReturnValue({});
-      (getDocs as jest.Mock).mockResolvedValue(mockSnapshot);
+      (collection as any).mockReturnValue({});
+      (where as any).mockReturnValue({});
+      (query as any).mockReturnValue({});
+      (getDocs as any).mockResolvedValue(mockSnapshot);
 
       // Act
       const result = await repository.findByEmail('john@example.com');
@@ -221,10 +226,10 @@ describe('UserRepository', () => {
         empty: true,
         docs: [],
       };
-      (collection as jest.Mock).mockReturnValue({});
-      (where as jest.Mock).mockReturnValue({});
-      (query as jest.Mock).mockReturnValue({});
-      (getDocs as jest.Mock).mockResolvedValue(mockSnapshot);
+      (collection as any).mockReturnValue({});
+      (where as any).mockReturnValue({});
+      (query as any).mockReturnValue({});
+      (getDocs as any).mockResolvedValue(mockSnapshot);
 
       // Act
       const result = await repository.findByEmail('notfound@example.com');
@@ -238,10 +243,10 @@ describe('UserRepository', () => {
       const firestore = await import('@/firebase/firestore');
       const { getDocs, query, collection, where } = firestore;
       const firestoreError = new Error('Firestore query failed');
-      (collection as jest.Mock).mockReturnValue({});
-      (where as jest.Mock).mockReturnValue({});
-      (query as jest.Mock).mockReturnValue({});
-      (getDocs as jest.Mock).mockRejectedValue(firestoreError);
+      (collection as any).mockReturnValue({});
+      (where as any).mockReturnValue({});
+      (query as any).mockReturnValue({});
+      (getDocs as any).mockRejectedValue(firestoreError);
 
       // Act & Assert
       await expect(repository.findByEmail('john@example.com')).rejects.toThrow(RepositoryError);
@@ -262,10 +267,10 @@ describe('UserRepository', () => {
         empty: false,
         docs: [mockDoc],
       };
-      (collection as jest.Mock).mockReturnValue({});
-      (where as jest.Mock).mockReturnValue({});
-      (query as jest.Mock).mockReturnValue({});
-      (getDocs as jest.Mock).mockResolvedValue(mockSnapshot);
+      (collection as any).mockReturnValue({});
+      (where as any).mockReturnValue({});
+      (query as any).mockReturnValue({});
+      (getDocs as any).mockResolvedValue(mockSnapshot);
 
       // Act
       const result = await repository.findById('uid-123');
@@ -285,10 +290,10 @@ describe('UserRepository', () => {
         empty: true,
         docs: [],
       };
-      (collection as jest.Mock).mockReturnValue({});
-      (where as jest.Mock).mockReturnValue({});
-      (query as jest.Mock).mockReturnValue({});
-      (getDocs as jest.Mock).mockResolvedValue(mockSnapshot);
+      (collection as any).mockReturnValue({});
+      (where as any).mockReturnValue({});
+      (query as any).mockReturnValue({});
+      (getDocs as any).mockResolvedValue(mockSnapshot);
 
       // Act
       const result = await repository.findById('non-existent-uid');
@@ -302,10 +307,10 @@ describe('UserRepository', () => {
       const firestore = await import('@/firebase/firestore');
       const { getDocs, query, collection, where } = firestore;
       const firestoreError = new Error('Firestore query failed');
-      (collection as jest.Mock).mockReturnValue({});
-      (where as jest.Mock).mockReturnValue({});
-      (query as jest.Mock).mockReturnValue({});
-      (getDocs as jest.Mock).mockRejectedValue(firestoreError);
+      (collection as any).mockReturnValue({});
+      (where as any).mockReturnValue({});
+      (query as any).mockReturnValue({});
+      (getDocs as any).mockRejectedValue(firestoreError);
 
       // Act & Assert
       await expect(repository.findById('uid-123')).rejects.toThrow(RepositoryError);
@@ -317,7 +322,7 @@ describe('UserRepository', () => {
     it('should update user successfully', async () => {
       // Arrange
       const firestore = await import('@/firebase/firestore');
-      const { getDocs, updateDoc, doc, collection, where } = firestore;
+      const { getDocs, updateDoc, doc, collection, where, query } = firestore;
       const mockDoc = {
         id: 'user-123',
         data: () => ({ ...mockUser, uid: 'uid-123' }),
@@ -326,12 +331,12 @@ describe('UserRepository', () => {
         empty: false,
         docs: [mockDoc],
       };
-      (collection as jest.Mock).mockReturnValue({});
-      (where as jest.Mock).mockReturnValue({});
-      (query as jest.Mock).mockReturnValue({});
-      (getDocs as jest.Mock).mockResolvedValue(mockSnapshot);
-      (doc as jest.Mock).mockReturnValue({});
-      (updateDoc as jest.Mock).mockResolvedValue(undefined);
+      (collection as any).mockReturnValue({});
+      (where as any).mockReturnValue({});
+      (query as any).mockReturnValue({});
+      (getDocs as any).mockResolvedValue(mockSnapshot);
+      (doc as any).mockReturnValue({});
+      (updateDoc as any).mockResolvedValue(undefined);
 
       // Act
       const result = await repository.update('uid-123', { firstname: 'Jane' });
@@ -358,10 +363,10 @@ describe('UserRepository', () => {
         empty: true,
         docs: [],
       };
-      (collection as jest.Mock).mockReturnValue({});
-      (where as jest.Mock).mockReturnValue({});
-      (query as jest.Mock).mockReturnValue({});
-      (getDocs as jest.Mock).mockResolvedValue(mockSnapshot);
+      (collection as any).mockReturnValue({});
+      (where as any).mockReturnValue({});
+      (query as any).mockReturnValue({});
+      (getDocs as any).mockResolvedValue(mockSnapshot);
 
       // Act & Assert
       await expect(repository.update('non-existent-uid', { firstname: 'Jane' })).rejects.toThrow(RepositoryError);
@@ -380,13 +385,13 @@ describe('UserRepository', () => {
         empty: false,
         docs: [mockDoc],
       };
-      (collection as jest.Mock).mockReturnValue({});
-      (where as jest.Mock).mockReturnValue({});
-      (query as jest.Mock).mockReturnValue({});
-      (getDocs as jest.Mock).mockResolvedValue(mockSnapshot);
-      (doc as jest.Mock).mockReturnValue({});
+      (collection as any).mockReturnValue({});
+      (where as any).mockReturnValue({});
+      (query as any).mockReturnValue({});
+      (getDocs as any).mockResolvedValue(mockSnapshot);
+      (doc as any).mockReturnValue({});
       const firestoreError = new Error('Firestore update failed');
-      (updateDoc as jest.Mock).mockRejectedValue(firestoreError);
+      (updateDoc as any).mockRejectedValue(firestoreError);
 
       // Act & Assert
       await expect(repository.update('uid-123', { firstname: 'Jane' })).rejects.toThrow(RepositoryError);
@@ -405,15 +410,15 @@ describe('UserRepository', () => {
         empty: false,
         docs: [mockDoc],
       };
-      (collection as jest.Mock).mockReturnValue({});
-      (where as jest.Mock).mockReturnValue({});
-      (query as jest.Mock).mockReturnValue({});
-      (getDocs as jest.Mock).mockResolvedValue(mockSnapshot);
-      (doc as jest.Mock).mockReturnValue({});
-      (updateDoc as jest.Mock).mockResolvedValue(undefined);
+      (collection as any).mockReturnValue({});
+      (where as any).mockReturnValue({});
+      (query as any).mockReturnValue({});
+      (getDocs as any).mockResolvedValue(mockSnapshot);
+      (doc as any).mockReturnValue({});
+      (updateDoc as any).mockResolvedValue(undefined);
 
       // Act
-      await repository.update('uid-123', { firstname: 'Jane', createdAt: new Date() });
+      await repository.update('uid-123', { firstname: 'Jane', createdAt: Timestamp.now() });
 
       // Assert
       expect(updateDoc).toHaveBeenCalledWith(
@@ -436,12 +441,12 @@ describe('UserRepository', () => {
         empty: false,
         docs: [mockDoc],
       };
-      (collection as jest.Mock).mockReturnValue({});
-      (where as jest.Mock).mockReturnValue({});
-      (query as jest.Mock).mockReturnValue({});
-      (getDocs as jest.Mock).mockResolvedValue(mockSnapshot);
-      (doc as jest.Mock).mockReturnValue({});
-      (updateDoc as jest.Mock).mockResolvedValue(undefined);
+      (collection as any).mockReturnValue({});
+      (where as any).mockReturnValue({});
+      (query as any).mockReturnValue({});
+      (getDocs as any).mockResolvedValue(mockSnapshot);
+      (doc as any).mockReturnValue({});
+      (updateDoc as any).mockResolvedValue(undefined);
 
       // Act
       await repository.delete('uid-123');
@@ -465,10 +470,10 @@ describe('UserRepository', () => {
         empty: true,
         docs: [],
       };
-      (collection as jest.Mock).mockReturnValue({});
-      (where as jest.Mock).mockReturnValue({});
-      (query as jest.Mock).mockReturnValue({});
-      (getDocs as jest.Mock).mockResolvedValue(mockSnapshot);
+      (collection as any).mockReturnValue({});
+      (where as any).mockReturnValue({});
+      (query as any).mockReturnValue({});
+      (getDocs as any).mockResolvedValue(mockSnapshot);
 
       // Act & Assert
       await expect(repository.delete('non-existent-uid')).rejects.toThrow(RepositoryError);
@@ -487,13 +492,13 @@ describe('UserRepository', () => {
         empty: false,
         docs: [mockDoc],
       };
-      (collection as jest.Mock).mockReturnValue({});
-      (where as jest.Mock).mockReturnValue({});
-      (query as jest.Mock).mockReturnValue({});
-      (getDocs as jest.Mock).mockResolvedValue(mockSnapshot);
-      (doc as jest.Mock).mockReturnValue({});
+      (collection as any).mockReturnValue({});
+      (where as any).mockReturnValue({});
+      (query as any).mockReturnValue({});
+      (getDocs as any).mockResolvedValue(mockSnapshot);
+      (doc as any).mockReturnValue({});
       const firestoreError = new Error('Firestore update failed');
-      (updateDoc as jest.Mock).mockRejectedValue(firestoreError);
+      (updateDoc as any).mockRejectedValue(firestoreError);
 
       // Act & Assert
       await expect(repository.delete('uid-123')).rejects.toThrow(RepositoryError);

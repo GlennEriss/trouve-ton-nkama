@@ -1,0 +1,61 @@
+# Page snapshot
+
+```yaml
+- generic [active] [ref=e1]:
+  - generic [ref=e2]:
+    - contentinfo [ref=e5]:
+      - generic [ref=e6]:
+        - list [ref=e8]:
+          - listitem [ref=e9]:
+            - link "À propos" [ref=e10]:
+              - /url: https://www.facebook.com/profile.php?id=61574099562451
+          - listitem [ref=e11]:
+            - link "Blog" [ref=e12]:
+              - /url: /blog
+          - listitem [ref=e13]:
+            - link "Guide Immobilier" [ref=e14]:
+              - /url: /guide-immobilier-gabon
+          - listitem [ref=e15]:
+            - link "Politique de confidentialité" [ref=e16]:
+              - /url: /privacy-policy
+          - listitem [ref=e17]:
+            - link "Conditions d'utilisation" [ref=e18]:
+              - /url: /terms-of-use
+        - generic:
+          - insertion
+        - generic [ref=e19]:
+          - generic [ref=e20]:
+            - generic [ref=e21]:
+              - img [ref=e22]
+              - generic [ref=e25]: Libreville, Gabon
+            - generic [ref=e26]:
+              - img [ref=e27]
+              - link:
+                - /url: mailto:undefined
+            - generic [ref=e30]:
+              - img [ref=e31]
+              - link "Suivez-nous sur Facebook" [ref=e33]:
+                - /url: https://www.facebook.com/share/16beeh915e/
+            - generic [ref=e34]:
+              - img [ref=e35]
+              - link "Contactez-nous sur WhatsApp" [ref=e37]:
+                - /url: https://wa.me/undefined?text=Bonjour%20!%20Je%20souhaite%20obtenir%20plus%20d'informations%20sur%20Trouve%20Ton%20Nkama.
+          - img [ref=e39]
+        - generic [ref=e50]: Pour installer l'application sur votre iPhone, ouvrez le menu de partage de Safari puis sélectionnez « Sur l'écran d'accueil ».
+        - separator [ref=e51]
+        - generic [ref=e52]:
+          - text: © 2026
+          - link "Trouve Ton Nkama" [ref=e53]:
+            - /url: /
+          - text: . Tous droits réservés.
+    - region "Notifications (F8)":
+      - list
+  - generic [ref=e56] [cursor=pointer]:
+    - img [ref=e57]
+    - generic [ref=e59]: 3 errors
+    - button "Hide Errors" [ref=e60]:
+      - img [ref=e61]
+  - alert [ref=e64]
+  - iframe [ref=e65]:
+    
+```
