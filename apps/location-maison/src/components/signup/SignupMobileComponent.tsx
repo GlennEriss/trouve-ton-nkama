@@ -125,43 +125,9 @@ export const SignupMobileComponent = () => {
             return userCred.user.uid
         } catch (error: any) {
             console.error(error)
-            
-            // Gestion spécifique des erreurs Firebase
-            let errorMessage = "Une erreur est survenue lors de la création du compte."
-            let errorTitle = "Création de compte"
-            
-            if (error.code === 'auth/email-already-in-use') {
-                errorMessage = "Cette adresse email est déjà utilisée par un autre compte."
-                errorTitle = "Email déjà utilisé"
-            } else if (error.code === 'auth/invalid-email') {
-                errorMessage = "L'adresse email fournie n'est pas valide."
-                errorTitle = "Email invalide"
-            } else if (error.code === 'auth/weak-password') {
-                errorMessage = "Le mot de passe est trop faible. Il doit contenir au moins 6 caractères."
-                errorTitle = "Mot de passe faible"
-            } else if (error.code === 'auth/operation-not-allowed') {
-                errorMessage = "L'inscription par email/mot de passe n'est pas activée."
-                errorTitle = "Méthode non autorisée"
-            } else if (error.code === 'auth/too-many-requests') {
-                errorMessage = "Trop de tentatives. Veuillez attendre quelques minutes avant de réessayer."
-                errorTitle = "Trop de tentatives"
-            } else if (error.message && error.message.includes("numéro est déjà associé")) {
-                errorMessage = error.message
-                errorTitle = "Numéro déjà utilisé"
-            } else if (error.message && error.message.includes("numéro de téléphone est obligatoire")) {
-                errorMessage = error.message
-                errorTitle = "Numéro de téléphone manquant"
-            } else {
-                // Pour les autres erreurs, utiliser le message d'erreur original
-                errorMessage = error.message || "Une erreur inattendue s'est produite."
-            }
-            
-            toast({
-                duration: 5000,
-                title: errorTitle,
-                description: errorMessage,
-                variant: 'destructive',
-            });
+            // Re-throw the error so onSubmit can handle it properly
+            // The error will be handled in onSubmit where the toast is displayed
+            throw error;
         } finally {
             setIsRegistering(false)
         }
