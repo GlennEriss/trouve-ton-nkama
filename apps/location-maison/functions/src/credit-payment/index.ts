@@ -1,7 +1,7 @@
 import { onRequest } from 'firebase-functions/v2/https';
 import { adminDB } from '../admin';
 import { FieldValue } from 'firebase-admin/firestore';
-import twilio from 'twilio';
+// import twilio from 'twilio'; // Commenté pour l'instant
 
 // Montants autorisés pour les packs de crédits
 const CREDIT_PACKS = [
@@ -39,11 +39,11 @@ interface CreditPaymentResponse {
   code?: string;
 }
 
-// Initialisation du client Twilio
-const twilioClient = twilio(
-  process.env.TWILIO_ACCOUNT_SID,
-  process.env.TWILIO_AUTH_TOKEN
-);
+// Initialisation du client Twilio (commenté pour l'instant)
+// const twilioClient = twilio(
+//   process.env.TWILIO_ACCOUNT_SID,
+//   process.env.TWILIO_AUTH_TOKEN
+// );
 
 // Configuration de l'entreprise
 const COMPANY_NAME = 'Trouve Ton Nkama';

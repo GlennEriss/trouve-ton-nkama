@@ -22,7 +22,7 @@ import { Button } from '@/components/ui/button';
 import { routes } from '@/constantes/routes';
 import { InputFormApp } from '@/components/shared/form/InputFormApp';
 import { DateSelect } from '@/components/shared/form/DateSelect';
-import { PhoneNumberFormApp } from '@/components/shared/form/PhoneNumberFormApp';
+import { PhoneNumberFormAppSimple } from '@/components/shared/form/PhoneNumberFormAppSimple';
 import { CheckboxFormApp } from '@/components/shared/form/CheckboxFormApp';
 import { ButtonApp } from '@/components/shared/ui/ButtonApp';
 import { signIn } from 'next-auth/react';
@@ -46,11 +46,12 @@ import {
  * Transform FormRegisterSchemaType to SignupData
  */
 function transformFormDataToSignupData(values: FormRegisterSchemaType): SignupData {
-  const birthDate = values.birthdate
+  console.log('🔄 Transforming birthdate:', values.birthdate);
+  const birthDate = values.birthdate && values.birthdate.day && values.birthdate.month && values.birthdate.year
     ? `${values.birthdate.year}-${String(values.birthdate.month).padStart(2, '0')}-${String(values.birthdate.day).padStart(2, '0')}`
     : '';
 
-  return {
+  const signupData: SignupData = {
     email: values.email,
     password: values.password,
     firstName: values.firstname,
@@ -61,6 +62,9 @@ function transformFormDataToSignupData(values: FormRegisterSchemaType): SignupDa
     acceptTerms: values.termsOfPrivacyPolicy,
     accountType: 'User',
   };
+  
+  console.log('🔄 Transformed signup data:', signupData);
+  return signupData;
 }
 
 // Step configuration
@@ -156,11 +160,34 @@ export const SignupFormModern: React.FC = () => {
 
   // Handle form submission
   const onSubmit = async (values: FormRegisterSchemaType) => {
+    console.log('📝 Form submitted with values:', values);
+    console.log('📝 Form errors:', form.formState.errors);
+    console.log('📝 Form isValid:', form.formState.isValid);
+    
+    // Validate all fields before submitting
+    const isValid = await form.trigger();
+    console.log('📝 Form validation result:', isValid);
+    
+    if (!isValid) {
+      console.error('❌ Form validation failed');
+      toast({
+        duration: 5000,
+        title: 'Erreur de validation',
+        description: 'Veuillez corriger les erreurs dans le formulaire.',
+        variant: 'destructive',
+      });
+      return;
+    }
+    
     try {
+      console.log('🔄 Transforming form data...');
       const signupData = transformFormDataToSignupData(values);
+      console.log('🔄 Calling signup with data:', signupData);
       const result = await signup(signupData);
+      console.log('✅ Signup result:', result);
 
       if (result.success && result.userId) {
+        console.log('🎉 Success! Redirecting to /signup/success?uid=' + result.userId);
         toast({
           duration: 5000,
           title: '🎉 Bienvenue !',
@@ -169,15 +196,41 @@ export const SignupFormModern: React.FC = () => {
         });
         router.push(`/signup/success?uid=${result.userId}`);
       } else {
-        const errorMessage = result.error?.message || 'Une erreur est survenue.';
+        console.error('❌ Signup failed:', result.error);
+        const errorCode = result.error?.code;
+        let errorTitle = 'Erreur';
+        let errorMessage = result.error?.message || 'Une erreur est survenue.';
+        
+        // Personnaliser le message selon le type d'erreur
+        if (errorCode === 'EMAIL_ALREADY_IN_USE') {
+          errorTitle = 'Email déjà utilisé';
+          errorMessage = 'Cette adresse email est déjà associée à un compte existant. Si c\'est votre compte, veuillez vous connecter. Sinon, utilisez une autre adresse email.';
+        } else if (errorCode === 'PHONE_ALREADY_IN_USE') {
+          errorTitle = 'Numéro de téléphone déjà utilisé';
+          errorMessage = 'Ce numéro de téléphone est déjà associé à un compte existant. Veuillez utiliser un autre numéro.';
+        } else if (errorCode === 'WEAK_PASSWORD') {
+          errorTitle = 'Mot de passe trop faible';
+          errorMessage = 'Votre mot de passe doit contenir au moins 8 caractères, une majuscule et un chiffre.';
+        } else if (errorCode === 'INVALID_EMAIL') {
+          errorTitle = 'Email invalide';
+          errorMessage = 'L\'adresse email fournie n\'est pas valide. Veuillez vérifier votre saisie.';
+        } else if (errorCode === 'TERMS_NOT_ACCEPTED') {
+          errorTitle = 'Conditions non acceptées';
+          errorMessage = 'Vous devez accepter les conditions d\'utilisation et la politique de confidentialité pour créer un compte.';
+        } else if (errorCode === 'NETWORK_ERROR') {
+          errorTitle = 'Erreur de connexion';
+          errorMessage = 'Une erreur de connexion est survenue. Veuillez vérifier votre connexion internet et réessayer.';
+        }
+        
         toast({
           duration: 5000,
-          title: 'Erreur',
+          title: errorTitle,
           description: errorMessage,
           variant: 'destructive',
         });
       }
     } catch (error) {
+      console.error('💥 Unexpected error during signup:', error);
       toast({
         duration: 5000,
         title: 'Erreur',
@@ -423,11 +476,11 @@ export const SignupFormModern: React.FC = () => {
                         <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
                           Numéro de téléphone
                         </label>
-                        <PhoneNumberFormApp
+                        <PhoneNumberFormAppSimple
                           control={form.control}
                           name="phone"
                           label=""
-                          placeholder="+241 XX XX XX XX"
+                          placeholder="06 12 34 56 78"
                         />
                       </div>
                     </>
@@ -529,7 +582,7 @@ export const SignupFormModern: React.FC = () => {
                 ) : (
                   <ButtonApp
                     type="submit"
-                    disabled={isFormLoading || !form.formState.isValid}
+                    disabled={isFormLoading}
                     isLoading={isFormLoading}
                     className="flex-1 h-12 bg-gradient-to-r from-[#146B67] to-[#1FA89B] hover:from-[#125b57] hover:to-[#1a9589] shadow-lg shadow-teal-500/25"
                     title={isFormLoading ? 'Création en cours...' : 'Créer mon compte'}

@@ -130,7 +130,8 @@ export class AuthServiceImpl implements AuthService {
       }
 
       // 8. Send verification email (non-blocking, in background)
-      this.sendVerificationEmail(data.email).catch((error) => {
+      // Use UID instead of email for more reliable user identification
+      this.sendVerificationEmail(uid).catch((error) => {
         // Log but don't fail the signup
         console.warn('Failed to send verification email:', error);
       });
@@ -227,19 +228,42 @@ export class AuthServiceImpl implements AuthService {
 
   /**
    * Send verification email (non-blocking)
+   * 
+   * Utilise la Cloud Function Firebase au lieu de la route API Next.js pour :
+   * 1. Séparation des responsabilités : l'envoi d'email est isolé du serveur web
+   * 2. Scalabilité indépendante : la Cloud Function scale indépendamment
+   * 3. Réutilisabilité : peut être appelée depuis d'autres services ou déclenchée par des événements Firestore
+   * 4. Isolation des erreurs : si l'email échoue, cela n'affecte pas le serveur web
+   * 5. Coûts optimisés : paye uniquement pour l'exécution (pas de serveur toujours actif)
+   * 
+   * @param uidOrEmail - User UID (preferred) or email address
    */
-  private async sendVerificationEmail(email: string): Promise<void> {
+  private async sendVerificationEmail(uidOrEmail: string): Promise<void> {
     try {
-      const response = await fetch('/api/auth/send-verification-email', {
+      // Determine if it's a UID (typically longer and doesn't contain @) or email
+      const isUid = !uidOrEmail.includes('@');
+      
+      // Utiliser la Cloud Function Firebase si disponible, sinon fallback sur la route API Next.js
+      const functionUrl = process.env.NEXT_PUBLIC_FIREBASE_FUNCTION_URL || 
+        `https://us-central1-${process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID || 'location-maison-dev'}.cloudfunctions.net/sendVerificationEmail`;
+      
+      const response = await fetch(functionUrl, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ email }),
+        body: JSON.stringify(
+          isUid 
+            ? { uid: uidOrEmail }
+            : { email: uidOrEmail }
+        ),
       });
 
       if (!response.ok) {
-        throw new Error(`Failed to send verification email: ${response.statusText}`);
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(
+          `Failed to send verification email: ${response.statusText}. ${errorData.error || ''}`
+        );
       }
     } catch (error) {
       // Re-throw to be caught by caller

@@ -1,3 +1,14 @@
+# Règles Firestore à déployer
+
+## Instructions
+
+1. Allez dans la console Firebase : https://console.firebase.google.com/project/location-maison-dev/firestore/rules
+2. Remplacez les règles actuelles (`allow read, write: if false;`) par les règles ci-dessous
+3. Cliquez sur "Publier" (Publish)
+
+## Règles complètes
+
+```javascript
 rules_version = '2';
 
 service cloud.firestore {
@@ -5,6 +16,10 @@ service cloud.firestore {
     
     function isSignedIn() {
       return request.auth != null;
+    }
+    
+    function isOwner(userId) {
+      return isSignedIn() && request.auth.uid == userId;
     }
     
     function isTransactionOperation() {
@@ -91,3 +106,62 @@ service cloud.firestore {
     }
   }
 }
+```
+
+## Explication des règles pour les utilisateurs
+
+La règle importante pour la création d'utilisateurs est :
+
+```javascript
+match /users/{userId} {
+  allow read: if true;  // Lecture publique (pour vérification)
+  
+  // Création : l'utilisateur authentifié peut créer son propre document
+  // Condition : l'UID dans les données doit correspondre à l'UID de l'utilisateur authentifié
+  allow create: if isSignedIn() && request.auth.uid == request.resource.data.uid;
+  
+  // Mise à jour : l'utilisateur peut mettre à jour son propre profil
+  allow update: if isSignedIn() && (
+    request.auth.uid == resource.data.uid ||
+    (isTransactionOperation() && request.auth.uid == request.resource.data.uid)
+  );
+}
+```
+
+**Comment ça fonctionne :**
+1. L'utilisateur s'inscrit avec Firebase Auth → obtient un UID
+2. L'utilisateur est maintenant authentifié (`isSignedIn()` retourne `true`)
+3. L'utilisateur peut créer un document dans `/users/{userId}` si :
+   - Il est authentifié (`isSignedIn()`)
+   - L'UID dans les données (`request.resource.data.uid`) correspond à son UID d'authentification (`request.auth.uid`)
+4. Le document ID (`{userId}`) doit correspondre à l'UID (c'est pourquoi nous utilisons `setDoc` avec l'UID comme ID de document)
+
+## Alternative : Déploiement via CLI
+
+Pour déployer via CLI :
+
+```bash
+firebase use dev
+firebase deploy --only firestore:rules
+```
+
+Ou pour tous les environnements :
+
+```bash
+# Dev
+firebase use dev && firebase deploy --only firestore:rules
+
+# Preprod
+firebase use preprod && firebase deploy --only firestore:rules
+
+# Prod
+firebase use prod && firebase deploy --only firestore:rules
+```
+
+## Script de déploiement
+
+Un script interactif est disponible : `scripts/deploy-firestore-rules.sh`
+
+```bash
+./scripts/deploy-firestore-rules.sh
+```

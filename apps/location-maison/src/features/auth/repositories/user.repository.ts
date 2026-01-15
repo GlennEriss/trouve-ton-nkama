@@ -12,7 +12,8 @@ import {
   query,
   where,
   getDocs,
-  addDoc,
+  getDoc,
+  setDoc,
   updateDoc,
   doc,
   serverTimestamp,
@@ -37,7 +38,18 @@ export class UserRepositoryImpl implements UserRepository {
 
   async create(user: User): Promise<User> {
     try {
-      const collectionRef = collection(db, this.collectionName);
+      // Use UID as document ID for consistency with Firestore rules
+      // Rules check: request.auth.uid == request.resource.data.uid
+      // Using UID as doc ID makes it easier to find users and aligns with security rules
+      if (!user.uid) {
+        throw new RepositoryError(
+          'User UID is required',
+          'USER_UID_REQUIRED',
+          undefined
+        );
+      }
+
+      const userRef = doc(db, this.collectionName, user.uid);
       
       // Prepare user data for Firestore
       const userData = {
@@ -47,14 +59,15 @@ export class UserRepositoryImpl implements UserRepository {
         updatedAt: serverTimestamp(),
       };
 
-      // Remove id from data (Firestore will generate it)
+      // Remove id from data (we use uid as document ID)
       const { id, ...dataWithoutId } = userData;
 
-      const docRef = await addDoc(collectionRef, dataWithoutId);
+      // Use setDoc with UID as document ID
+      await setDoc(userRef, dataWithoutId);
 
       return {
         ...user,
-        id: docRef.id,
+        id: user.uid, // Return UID as id for consistency
       };
     } catch (error) {
       throw new RepositoryError(
@@ -99,7 +112,18 @@ export class UserRepositoryImpl implements UserRepository {
         return null;
       }
 
-      const userDoc = querySnapshot.docs[0];
+      // Filter out archived users (soft deleted)
+      // Firestore doesn't support != in queries, so we filter after fetching
+      const activeUsers = querySnapshot.docs.filter(doc => {
+        const data = doc.data();
+        return data.state !== 'ARCHIVED';
+      });
+
+      if (activeUsers.length === 0) {
+        return null;
+      }
+
+      const userDoc = activeUsers[0];
       return this.toUser(userDoc);
     } catch (error) {
       throw new RepositoryError(
@@ -112,16 +136,25 @@ export class UserRepositoryImpl implements UserRepository {
 
   async findById(uid: string): Promise<User | null> {
     try {
-      const collectionRef = collection(db, this.collectionName);
-      const q = query(collectionRef, where('uid', '==', uid));
-      const querySnapshot = await getDocs(q);
+      // Since we use UID as document ID, we can directly get the document
+      const userRef = doc(db, this.collectionName, uid);
+      const docSnapshot = await getDoc(userRef);
+      
+      if (!docSnapshot.exists()) {
+        // Fallback to query if document doesn't exist (for backward compatibility)
+        const collectionRef = collection(db, this.collectionName);
+        const q = query(collectionRef, where('uid', '==', uid));
+        const querySnapshot = await getDocs(q);
 
-      if (querySnapshot.empty) {
-        return null;
+        if (querySnapshot.empty) {
+          return null;
+        }
+
+        const userDocFromQuery = querySnapshot.docs[0];
+        return this.toUser(userDocFromQuery);
       }
 
-      const userDoc = querySnapshot.docs[0];
-      return this.toUser(userDoc);
+      return this.toUser(docSnapshot as QueryDocumentSnapshot);
     } catch (error) {
       throw new RepositoryError(
         'Failed to find user by ID',
@@ -133,21 +166,43 @@ export class UserRepositoryImpl implements UserRepository {
 
   async update(uid: string, data: Partial<User>): Promise<User> {
     try {
-      // First, find the user document by UID
-      const collectionRef = collection(db, this.collectionName);
-      const q = query(collectionRef, where('uid', '==', uid));
-      const querySnapshot = await getDocs(q);
+      // Use UID as document ID
+      const userRef = doc(db, this.collectionName, uid);
+      
+      // Check if document exists
+      const docSnapshot = await getDoc(userRef);
+      if (!docSnapshot.exists()) {
+        // Fallback: try to find by uid field (for backward compatibility)
+        const collectionRef = collection(db, this.collectionName);
+        const q = query(collectionRef, where('uid', '==', uid));
+        const querySnapshot = await getDocs(q);
 
-      if (querySnapshot.empty) {
-        throw new RepositoryError(
-          'User not found',
-          'USER_NOT_FOUND',
-          undefined
-        );
+        if (querySnapshot.empty) {
+          throw new RepositoryError(
+            'User not found',
+            'USER_NOT_FOUND',
+            undefined
+          );
+        }
+
+        const userDoc = querySnapshot.docs[0];
+        const userRefFromQuery = doc(db, this.collectionName, userDoc.id);
+        
+        // Exclude createdAt and id from updates
+        const { createdAt, id, ...updates } = data;
+
+        await updateDoc(userRefFromQuery, {
+          ...updates,
+          updatedAt: serverTimestamp(),
+        });
+
+        // Return updated user
+        const updatedUser = this.toUser(userDoc);
+        return {
+          ...updatedUser,
+          ...updates,
+        } as User;
       }
-
-      const userDoc = querySnapshot.docs[0];
-      const userRef = doc(db, this.collectionName, userDoc.id);
 
       // Exclude createdAt and id from updates
       const { createdAt, id, ...updates } = data;
@@ -158,7 +213,7 @@ export class UserRepositoryImpl implements UserRepository {
       });
 
       // Return updated user
-      const updatedUser = this.toUser(userDoc);
+      const updatedUser = this.toUser(docSnapshot as QueryDocumentSnapshot);
       return {
         ...updatedUser,
         ...updates,
@@ -177,21 +232,35 @@ export class UserRepositoryImpl implements UserRepository {
 
   async delete(uid: string): Promise<void> {
     try {
-      // Find the user document by UID
-      const collectionRef = collection(db, this.collectionName);
-      const q = query(collectionRef, where('uid', '==', uid));
-      const querySnapshot = await getDocs(q);
+      // Use UID as document ID
+      const userRef = doc(db, this.collectionName, uid);
+      
+      // Check if document exists
+      const docSnapshot = await getDoc(userRef);
+      if (!docSnapshot.exists()) {
+        // Fallback: try to find by uid field (for backward compatibility)
+        const collectionRef = collection(db, this.collectionName);
+        const q = query(collectionRef, where('uid', '==', uid));
+        const querySnapshot = await getDocs(q);
 
-      if (querySnapshot.empty) {
-        throw new RepositoryError(
-          'User not found',
-          'USER_NOT_FOUND',
-          undefined
-        );
+        if (querySnapshot.empty) {
+          throw new RepositoryError(
+            'User not found',
+            'USER_NOT_FOUND',
+            undefined
+          );
+        }
+
+        const userDoc = querySnapshot.docs[0];
+        const userRefFromQuery = doc(db, this.collectionName, userDoc.id);
+        
+        // Soft delete: set state to ARCHIVED
+        await updateDoc(userRefFromQuery, {
+          state: 'ARCHIVED',
+          updatedAt: serverTimestamp(),
+        });
+        return;
       }
-
-      const userDoc = querySnapshot.docs[0];
-      const userRef = doc(db, this.collectionName, userDoc.id);
 
       // Soft delete: set state to ARCHIVED
       await updateDoc(userRef, {
