@@ -92,34 +92,91 @@ export function validatePhoneNumberForSupportedCountries(phone: string): {
   }
 
   const cleanPhone = cleanPhoneNumber(phone);
-  const country = getCountryFromNumber(cleanPhone);
-
-  if (!country) {
-    const enabledCountriesList = ENABLED_COUNTRIES.map(code => SUPPORTED_COUNTRIES[code].name).join(' ou ');
-    return {
-      isValid: false,
-      country: null,
-      message: `Numéro invalide. Seuls les numéros ${enabledCountriesList} sont acceptés.`
-    };
-  }
-
-  const config = SUPPORTED_COUNTRIES[country];
   
-  // Validation spécifique au pays
-  for (const pattern of config.patterns) {
-    if (pattern.test(cleanPhone)) {
+  // Vérifier d'abord si c'est un numéro gabonais (code pays +241)
+  // Accepter les formats: +241XXXXXXXX, 241XXXXXXXX, 0XXXXXXXX, ou XXXXXXXX
+  let localNumber = cleanPhone;
+  let detectedCountry: SupportedCountry | null = null;
+  
+  // Si le numéro commence par 241 (avec ou sans +)
+  if (cleanPhone.startsWith('241')) {
+    localNumber = cleanPhone.substring(3); // Enlever le code pays
+    detectedCountry = 'GA';
+  } else if (cleanPhone.startsWith('221')) {
+    localNumber = cleanPhone.substring(3);
+    detectedCountry = 'SN';
+  } else if (cleanPhone.startsWith('0')) {
+    // Format local avec 0 initial (Gabon ou Sénégal)
+    // Pour le Gabon, garder le 0 si le numéro a 9 chiffres, sinon l'enlever
+    // Exemples: 066893836 (9 chiffres) -> garder, 06893836 (8 chiffres) -> enlever le 0
+    if (cleanPhone.length === 9 && ENABLED_COUNTRIES.includes('GA')) {
+      // Format avec 0 initial et 9 chiffres: garder tel quel
+      localNumber = cleanPhone;
+      detectedCountry = 'GA';
+    } else {
+      // Format avec 0 initial et 8 chiffres ou moins: enlever le 0
+      localNumber = cleanPhone.substring(1);
+      detectedCountry = ENABLED_COUNTRIES.includes('GA') ? 'GA' : (ENABLED_COUNTRIES[0] || null);
+    }
+  } else {
+    // Format sans préfixe, utiliser le pays par défaut
+    localNumber = cleanPhone;
+    detectedCountry = ENABLED_COUNTRIES[0] || null;
+  }
+  
+  // Validation simplifiée : accepter 8 à 9 chiffres pour le Gabon
+  if (detectedCountry === 'GA') {
+    // Accepter entre 8 et 9 chiffres pour le numéro local
+    // Formats acceptés: 
+    // - +241066893836 -> 066893836 (9 chiffres) ✅
+    // - +24106893836 -> 06893836 (8 chiffres) ✅
+    // - +24166893836 -> 66893836 (8 chiffres) ✅
+    // - 066893836 -> 066893836 (9 chiffres) ✅
+    // - 06893836 -> 6893836 (7 chiffres après enlèvement du 0) -> vérifier avec 0
+    // - 66893836 -> 66893836 (8 chiffres) ✅
+    
+    // Vérifier que le numéro local a entre 8 et 9 chiffres
+    if (localNumber.length >= 8 && localNumber.length <= 9 && /^\d+$/.test(localNumber)) {
       return {
         isValid: true,
-        country,
-        message: `Numéro ${config.name} valide`
+        country: 'GA',
+        message: 'Numéro Gabon valide'
       };
     }
+    // Si le numéro a 7 chiffres et commence par 0, vérifier avec le 0
+    if (localNumber.length === 7 && cleanPhone.startsWith('0') && cleanPhone.length === 8) {
+      // Format: 06893836 (8 chiffres avec 0 initial)
+      if (/^\d+$/.test(cleanPhone)) {
+        return {
+          isValid: true,
+          country: 'GA',
+          message: 'Numéro Gabon valide'
+        };
+      }
+    }
+  } else if (detectedCountry === 'SN') {
+    // Pour le Sénégal, garder la validation existante
+    const country = getCountryFromNumber(cleanPhone);
+    if (country === 'SN') {
+      const config = SUPPORTED_COUNTRIES[country];
+      for (const pattern of config.patterns) {
+        if (pattern.test(cleanPhone)) {
+          return {
+            isValid: true,
+            country: 'SN',
+            message: 'Numéro Sénégal valide'
+          };
+        }
+      }
+    }
   }
-
+  
+  // Si aucun pays détecté ou validation échouée
+  const enabledCountriesList = ENABLED_COUNTRIES.map(code => SUPPORTED_COUNTRIES[code].name).join(' ou ');
   return {
     isValid: false,
-    country,
-    message: config.message
+    country: detectedCountry,
+    message: `Numéro invalide. Seuls les numéros ${enabledCountriesList} sont acceptés.`
   };
 }
 

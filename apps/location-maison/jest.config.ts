@@ -65,7 +65,9 @@ const config: Config = {
   
   transform: {
     '^.+\\.tsx?$': ['ts-jest', {
-      tsconfig: 'tsconfig.json',
+      tsconfig: {
+        jsx: 'react-jsx', // Use react-jsx transform for JSX
+      },
     }],
   },
   
@@ -84,6 +86,9 @@ const config: Config = {
     '**/__tests__/property/**/*.test.[jt]s?(x)',
     '**/__tests__/components/**/*.test.[jt]s?(x)',
     '**/__tests__/api/**/*.test.[jt]s?(x)',
+    // Tests features (nouvelle structure)
+    '**/features/**/__tests__/**/*.test.[jt]s?(x)',
+    '**/features/**/repositories/**/__tests__/**/*.test.[jt]s?(x)',
     // Tests d'intégration
     '**/__tests__/integration/**/*.test.[jt]s?(x)',
   ],

@@ -12,6 +12,9 @@ export { onUserCreate, onUserFavorisUpdate } from './notification';
 export { initiatePurchase } from './payments/airtel';
 export { createCreditPayment } from './credit-payment';
 
+// Fonctions d'email
+export { sendVerificationEmail } from './email/verification';
+
 // Exemple de fonction (à décommenter si nécessaire)
 // export const helloWorld = onRequest((request, response) => {
 //   logger.info("Hello logs!", {structuredData: true});

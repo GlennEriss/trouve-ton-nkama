@@ -25,6 +25,7 @@ namespace NodeJS {
     NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID: string;
     NEXT_PUBLIC_FIREBASE_APP_ID: string;
     NEXT_PUBLIC_FIREBASE_FCM_VAPID_KEY: string;
+    NEXT_PUBLIC_FIREBASE_FUNCTION_URL?: string; // URL de la Cloud Function d'envoi d'email
     FIREBASE_CLIENT_EMAIL: string;
     FIREBASE_PRIVATE_KEY: string;
     FIREBASE_PROJECT_ID: string;

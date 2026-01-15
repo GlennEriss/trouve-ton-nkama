@@ -17,7 +17,7 @@ export default function layout({ children }: Readonly<{ children: React.ReactNod
                     </div>
                     <StepperComponent />
                     <div className='max-w-full overflow-x-hidden'>
-                        {children}
+                    {children}
                     </div>
                     <StepperButtonComponent />
                 </div>

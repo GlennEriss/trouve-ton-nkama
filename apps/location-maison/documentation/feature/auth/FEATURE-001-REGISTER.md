@@ -1,4 +1,4 @@
-# FEATURE-001 : Inscription (Register)
+00# FEATURE-001 : Inscription (Register)
 
 > **Phase 1.1** - Authentification & Base Utilisateur
 
@@ -19,6 +19,8 @@ Refactoriser la fonctionnalité d'inscription selon l'architecture proposée, av
 ---
 
 ## 🔍 Analyse du Code Actuel
+
+> **📄 Analyse détaillée** : Voir [`ANALYSE_CODE_EXISTANT.md`](./ANALYSE_CODE_EXISTANT.md)
 
 ### Fichiers existants
 
@@ -183,9 +185,9 @@ interface UseSignupReturn {
 ## ✅ Checklist de Refactoring
 
 ### Phase 1 : Préparation
-- [ ] Créer branche `feature/FEATURE-001-register`
-- [ ] Analyser code existant en détail
-- [ ] Identifier toutes les dépendances
+- [x] Créer branche `feature/FEATURE-001-register`
+- [x] Analyser code existant en détail
+- [x] Identifier toutes les dépendances
 
 ### Phase 2 : Repository
 - [ ] Créer `user.repository.ts`
@@ -220,8 +222,12 @@ interface UseSignupReturn {
 - [ ] Couverture >= 80%
 
 ### Phase 7 : Documentation
+- [x] Analyse du code existant (`ANALYSE_CODE_EXISTANT.md`)
+- [x] Diagramme d'activité (`register-activity-diagram.puml`)
+- [x] Diagramme de séquence (`register-sequence-diagram.puml`)
+- [x] Spécifications UX (`ux.md`)
+- [x] Spécifications UI (`ui.md`)
 - [ ] README dans `documentation/feature/auth/`
-- [ ] Diagrammes si nécessaire
 - [ ] Exemples d'utilisation
 
 ### Phase 8 : PR
@@ -300,7 +306,11 @@ interface UseSignupReturn {
 
 ## 📝 Notes
 
+- **Rôle par défaut** : L'utilisateur créé a le rôle **'User'** (pas 'Announcer')
+  - Il peut devenir Annonceur plus tard via la migration (voir use cases Utilisateur)
+  - Les crédits sont nécessaires uniquement pour les Annonceurs qui publient des annonces
 - **Crédits de bienvenue** : Attribuer 3 crédits lors de l'inscription (voir class diagram)
+  - Les crédits sont stockés dans `CreditWallet`, pas dans `User.credits`
 - **Email de vérification** : Envoyer en arrière-plan (non-bloquant)
 - **Numéro de téléphone** : Obligatoire et unique
 - **Conditions** : Acceptation obligatoire
