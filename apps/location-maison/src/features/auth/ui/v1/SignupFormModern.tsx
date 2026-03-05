@@ -67,6 +67,9 @@ function transformFormDataToSignupData(values: FormRegisterSchemaType): SignupDa
   return signupData;
 }
 
+// Left panel decorative background image (from /public)
+const LEFT_PANEL_BG_IMAGE = '/auth-image.png';
+
 // Step configuration
 const steps = [
   { id: 1, title: 'Identité', icon: User, fields: ['firstname', 'lastname'] },
@@ -267,18 +270,16 @@ export const SignupFormModern: React.FC = () => {
       <div className="hidden lg:flex lg:w-1/2 xl:w-[45%] relative overflow-hidden">
         {/* Background gradient */}
         <div className="absolute inset-0 bg-gradient-to-br from-[#146B67] via-[#1a8a83] to-[#1FA89B]" />
-        
-        {/* Pattern overlay */}
-        <div className="absolute inset-0 opacity-10">
-          <svg className="w-full h-full" viewBox="0 0 100 100" preserveAspectRatio="none">
-            <defs>
-              <pattern id="grid" width="10" height="10" patternUnits="userSpaceOnUse">
-                <circle cx="1" cy="1" r="0.5" fill="white" />
-              </pattern>
-            </defs>
-            <rect width="100" height="100" fill="url(#grid)" />
-          </svg>
-        </div>
+
+        {/* Decorative background image — blends with gradient, does not reduce readability */}
+        <div
+          className="absolute inset-0 bg-cover bg-no-repeat opacity-20 mix-blend-overlay blur-[1px] pointer-events-none"
+          style={{
+            backgroundImage: `url(${LEFT_PANEL_BG_IMAGE})`,
+            backgroundPosition: 'center bottom',
+          }}
+          aria-hidden
+        />
 
         {/* Floating shapes */}
         <motion.div
