@@ -1,26 +1,56 @@
 import { describe, test, expect, jest, beforeEach } from '@jest/globals';
 
+type DecodedToken = { uid: string };
+type VerifyIdTokenFn = (token: string) => Promise<DecodedToken>;
+type QueryDoc = {
+  id: string;
+  data: () => Record<string, unknown>;
+};
+type QuerySnapshot = {
+  docs: QueryDoc[];
+};
+type QueryGetFn = () => Promise<QuerySnapshot>;
+type FirestoreDocRef = {
+  get: () => Promise<unknown>;
+  set: (data: Record<string, unknown>) => Promise<void>;
+  update: (data: Record<string, unknown>) => Promise<void>;
+};
+type FirestoreQueryRef = {
+  orderBy: () => FirestoreQueryRef;
+  limit: () => FirestoreQueryRef;
+  get: QueryGetFn;
+};
+type FirestoreCollectionRef = {
+  doc: (id?: string) => FirestoreDocRef;
+  add: (data: Record<string, unknown>) => Promise<{ id: string }>;
+  where: () => FirestoreQueryRef;
+  orderBy: () => FirestoreQueryRef;
+  limit: () => FirestoreQueryRef;
+  get: QueryGetFn;
+};
+type NotificationsApiResponse = { status: number; data: any };
+
 // Mock Firebase Admin
 const mockAdminAuth = {
-  verifyIdToken: jest.fn()
+  verifyIdToken: jest.fn() as jest.MockedFunction<VerifyIdTokenFn>,
 };
 
-const mockGet = jest.fn();
-const mockSet = jest.fn();
-const mockAdd = jest.fn();
-const mockUpdate = jest.fn();
-const mockWhere = jest.fn();
-const mockOrderBy = jest.fn();
-const mockLimit = jest.fn();
-const mockQuerySnapshot = jest.fn();
+const mockGet = jest.fn() as jest.MockedFunction<() => Promise<unknown>>;
+const mockSet = jest.fn() as jest.MockedFunction<(data: Record<string, unknown>) => Promise<void>>;
+const mockAdd = jest.fn() as jest.MockedFunction<(data: Record<string, unknown>) => Promise<{ id: string }>>;
+const mockUpdate = jest.fn() as jest.MockedFunction<(data: Record<string, unknown>) => Promise<void>>;
+const mockWhere = jest.fn() as jest.MockedFunction<() => FirestoreQueryRef>;
+const mockOrderBy = jest.fn() as jest.MockedFunction<() => FirestoreQueryRef>;
+const mockLimit = jest.fn() as jest.MockedFunction<() => FirestoreQueryRef>;
+const mockQuerySnapshot = jest.fn() as jest.MockedFunction<QueryGetFn>;
 
-const mockDoc = jest.fn(() => ({
+const mockDoc = jest.fn<(id?: string) => FirestoreDocRef>(() => ({
   get: mockGet,
   set: mockSet,
   update: mockUpdate
 }));
 
-const mockCollection = jest.fn(() => ({
+const mockCollection = jest.fn<(name?: string) => FirestoreCollectionRef>(() => ({
   doc: mockDoc,
   add: mockAdd,
   where: mockWhere,
@@ -37,11 +67,14 @@ mockWhere.mockImplementation(() => ({
 }));
 
 mockOrderBy.mockImplementation(() => ({
+  orderBy: mockOrderBy,
   limit: mockLimit,
   get: mockQuerySnapshot
 }));
 
 mockLimit.mockImplementation(() => ({
+  orderBy: mockOrderBy,
+  limit: mockLimit,
   get: mockQuerySnapshot
 }));
 
@@ -65,7 +98,7 @@ class MockNotificationsAPIService {
       .replace(/'/g, "&#039;");
   }
 
-  async get(authToken: string, options: { unreadOnly?: boolean; limit?: number } = {}) {
+  async get(authToken: string, options: { unreadOnly?: boolean; limit?: number } = {}): Promise<NotificationsApiResponse> {
     try {
       // Validation du token
       if (!authToken || !authToken.startsWith('Bearer ')) {
@@ -85,11 +118,11 @@ class MockNotificationsAPIService {
       }
       
       // Vérification du token Firebase
-      const decodedToken = await mockAdminAuth.verifyIdToken(token);
+      const decodedToken: DecodedToken = await mockAdminAuth.verifyIdToken(token);
       const uid = decodedToken.uid;
 
       // Récupération des notifications
-      const notificationsSnapshot = await mockFirestore.collection().where().orderBy().limit().get();
+      const notificationsSnapshot: QuerySnapshot = await mockFirestore.collection().where().orderBy().limit().get();
       const notifications = notificationsSnapshot.docs.map((doc: any) => ({
         id: doc.id,
         ...doc.data()
@@ -105,15 +138,16 @@ class MockNotificationsAPIService {
           totalCount: count
         }
       };
-    } catch (error: any) {
-      if (error.code === 'auth/id-token-expired') {
+    } catch (error: unknown) {
+      const errorCode = (error as { code?: string }).code;
+      if (errorCode === 'auth/id-token-expired') {
         return {
           status: 401,
           data: { error: 'Token expiré' }
         };
       }
 
-      if (error.code === 'auth/argument-error') {
+      if (errorCode === 'auth/argument-error') {
         return {
           status: 401,
           data: { error: 'Token invalide' }
@@ -127,7 +161,7 @@ class MockNotificationsAPIService {
     }
   }
 
-  async post(authToken: string, notificationData: any) {
+  async post(authToken: string, notificationData: any): Promise<NotificationsApiResponse> {
     try {
       // Validation du token
       if (!authToken || !authToken.startsWith('Bearer ')) {
@@ -173,7 +207,7 @@ class MockNotificationsAPIService {
       }
 
       // Vérification du token Firebase
-      const decodedToken = await mockAdminAuth.verifyIdToken(token);
+      const decodedToken: DecodedToken = await mockAdminAuth.verifyIdToken(token);
       const uid = decodedToken.uid;
 
              // Échapper les caractères dangereux
@@ -187,7 +221,7 @@ class MockNotificationsAPIService {
        };
 
              // Ajout de la notification
-       const docRef = await mockFirestore.collection().add(escapedData);
+       const docRef: { id: string } = await mockFirestore.collection().add(escapedData);
 
        return {
          status: 201,
@@ -196,15 +230,16 @@ class MockNotificationsAPIService {
            message: 'Notification créée avec succès'
          }
        };
-    } catch (error: any) {
-      if (error.code === 'auth/id-token-expired') {
+    } catch (error: unknown) {
+      const errorCode = (error as { code?: string }).code;
+      if (errorCode === 'auth/id-token-expired') {
         return {
           status: 401,
           data: { error: 'Token expiré' }
         };
       }
 
-      if (error.code === 'auth/argument-error') {
+      if (errorCode === 'auth/argument-error') {
         return {
           status: 401,
           data: { error: 'Token invalide' }
@@ -218,7 +253,7 @@ class MockNotificationsAPIService {
     }
   }
 
-  async patch(authToken: string, notificationId: string) {
+  async patch(authToken: string, notificationId: string): Promise<NotificationsApiResponse> {
     try {
       // Validation du token
       if (!authToken || !authToken.startsWith('Bearer ')) {
@@ -246,7 +281,7 @@ class MockNotificationsAPIService {
       }
 
       // Vérification du token Firebase
-      const decodedToken = await mockAdminAuth.verifyIdToken(token);
+      const decodedToken: DecodedToken = await mockAdminAuth.verifyIdToken(token);
       const uid = decodedToken.uid;
 
       // Mise à jour de la notification
@@ -265,15 +300,16 @@ class MockNotificationsAPIService {
           message: 'Notification marquée comme lue'
         }
       };
-    } catch (error: any) {
-      if (error.code === 'auth/id-token-expired') {
+    } catch (error: unknown) {
+      const errorCode = (error as { code?: string }).code;
+      if (errorCode === 'auth/id-token-expired') {
         return {
           status: 401,
           data: { error: 'Token expiré' }
         };
       }
 
-      if (error.code === 'auth/argument-error') {
+      if (errorCode === 'auth/argument-error') {
         return {
           status: 401,
           data: { error: 'Token invalide' }
@@ -396,8 +432,9 @@ describe('Notifications API Tests', () => {
     });
 
     test('devrait gérer les tokens expirés', async () => {
-      const expiredError = new Error('Token expired');
-      expiredError.code = 'auth/id-token-expired';
+      const expiredError = Object.assign(new Error('Token expired'), {
+        code: 'auth/id-token-expired',
+      });
 
       mockAdminAuth.verifyIdToken.mockRejectedValue(expiredError);
 

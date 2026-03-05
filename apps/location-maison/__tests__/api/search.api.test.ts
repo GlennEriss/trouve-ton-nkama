@@ -480,7 +480,7 @@ describe('Search API Tests', () => {
         json: async () => {
           throw new Error('Invalid JSON');
         }
-      } as Response);
+      } as unknown as Response);
 
       const response = await mockGeocodeAPI({ lat: '-0.3976', lng: '9.4673' });
 

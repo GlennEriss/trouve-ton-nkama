@@ -1,17 +1,39 @@
 import { describe, test, expect, jest, beforeEach } from '@jest/globals';
 
+type DecodedToken = { uid: string };
+type VerifyIdTokenFn = (token: string) => Promise<DecodedToken>;
+type CreditUserData = {
+  credits?: number | string;
+  lastCreditUpdate?: Date;
+  [key: string]: unknown;
+};
+type FirestoreUserDoc = {
+  exists: boolean;
+  data: () => CreditUserData;
+};
+type FirestoreGetFn = () => Promise<FirestoreUserDoc>;
+type FirestoreSetFn = (data: Record<string, unknown>) => Promise<void>;
+type FirestoreDocRef = {
+  get: FirestoreGetFn;
+  set: FirestoreSetFn;
+};
+type FirestoreCollectionRef = {
+  doc: (id?: string) => FirestoreDocRef;
+};
+type CreditsApiResponse = { status: number; data: any };
+
 // Mock Firebase Admin
 const mockAdminAuth = {
-  verifyIdToken: jest.fn()
+  verifyIdToken: jest.fn() as jest.MockedFunction<VerifyIdTokenFn>,
 };
 
-const mockGet = jest.fn();
-const mockSet = jest.fn();
+const mockGet = jest.fn() as jest.MockedFunction<FirestoreGetFn>;
+const mockSet = jest.fn() as jest.MockedFunction<FirestoreSetFn>;
 const mockDoc = jest.fn(() => ({
   get: mockGet,
   set: mockSet
 }));
-const mockCollection = jest.fn(() => ({
+const mockCollection = jest.fn<(name?: string) => FirestoreCollectionRef>(() => ({
   doc: mockDoc
 }));
 
@@ -26,7 +48,7 @@ jest.mock('@/firebase/admin', () => ({
 
 // Mock de l'API Credits Service
 class MockCreditsAPIService {
-  async getBalance(authToken: string) {
+  async getBalance(authToken: string): Promise<CreditsApiResponse> {
     try {
       // Validation du token
       if (!authToken || !authToken.startsWith('Bearer ')) {
@@ -47,11 +69,11 @@ class MockCreditsAPIService {
       }
       
       // Vérification du token Firebase
-      const decodedToken = await mockAdminAuth.verifyIdToken(token);
+      const decodedToken: DecodedToken = await mockAdminAuth.verifyIdToken(token);
       const uid = decodedToken.uid;
 
       // Récupération du document utilisateur
-      const userDoc = await mockFirestore.collection().doc().get();
+      const userDoc: FirestoreUserDoc = await mockFirestore.collection().doc().get();
       
       if (!userDoc.exists) {
         // Créer un nouvel utilisateur avec 3 crédits de bienvenue
@@ -70,7 +92,7 @@ class MockCreditsAPIService {
         };
       }
 
-      const userData = userDoc.data();
+      const userData: CreditUserData = userDoc.data();
       const credits = typeof userData?.credits === 'number' ? userData.credits : 0;
 
       return {
@@ -80,15 +102,16 @@ class MockCreditsAPIService {
           lastUpdate: userData?.lastCreditUpdate
         }
       };
-    } catch (error: any) {
-      if (error.code === 'auth/id-token-expired') {
+    } catch (error: unknown) {
+      const errorCode = (error as { code?: string }).code;
+      if (errorCode === 'auth/id-token-expired') {
         return {
           status: 401,
           data: { error: 'Token expiré' }
         };
       }
 
-      if (error.code === 'auth/argument-error') {
+      if (errorCode === 'auth/argument-error') {
         return {
           status: 401,
           data: { error: 'Token invalide' }
@@ -138,7 +161,8 @@ describe('Credits API Tests', () => {
 
       mockAdminAuth.verifyIdToken.mockResolvedValue(mockDecodedToken);
       mockGet.mockResolvedValue({
-        exists: false
+        exists: false,
+        data: () => ({})
       });
       mockSet.mockResolvedValue(undefined);
 
@@ -174,8 +198,9 @@ describe('Credits API Tests', () => {
     });
 
     test('devrait gérer les tokens expirés', async () => {
-      const expiredError = new Error('Token expired');
-      expiredError.code = 'auth/id-token-expired';
+      const expiredError = Object.assign(new Error('Token expired'), {
+        code: 'auth/id-token-expired',
+      });
 
       mockAdminAuth.verifyIdToken.mockRejectedValue(expiredError);
 
@@ -186,8 +211,9 @@ describe('Credits API Tests', () => {
     });
 
     test('devrait gérer les tokens invalides', async () => {
-      const invalidError = new Error('Invalid token');
-      invalidError.code = 'auth/argument-error';
+      const invalidError = Object.assign(new Error('Invalid token'), {
+        code: 'auth/argument-error',
+      });
 
       mockAdminAuth.verifyIdToken.mockRejectedValue(invalidError);
 
@@ -270,8 +296,9 @@ describe('Credits API Tests', () => {
       ];
 
       for (const token of dangerousTokens) {
-        const invalidError = new Error('Invalid token');
-        invalidError.code = 'auth/argument-error';
+        const invalidError = Object.assign(new Error('Invalid token'), {
+          code: 'auth/argument-error',
+        });
         mockAdminAuth.verifyIdToken.mockRejectedValue(invalidError);
 
         const result = await mockCreditsAPIService.getBalance(token);
@@ -284,8 +311,9 @@ describe('Credits API Tests', () => {
     test('devrait limiter la longueur des tokens', async () => {
       const veryLongToken = 'Bearer ' + 'a'.repeat(10000);
 
-      const invalidError = new Error('Token too long');
-      invalidError.code = 'auth/argument-error';
+      const invalidError = Object.assign(new Error('Token too long'), {
+        code: 'auth/argument-error',
+      });
       mockAdminAuth.verifyIdToken.mockRejectedValue(invalidError);
 
       const result = await mockCreditsAPIService.getBalance(veryLongToken);
@@ -337,8 +365,9 @@ describe('Credits API Tests', () => {
     });
 
     test('devrait gérer les erreurs réseau Firebase', async () => {
-      const networkError = new Error('Network error');
-      networkError.code = 'network-request-failed';
+      const networkError = Object.assign(new Error('Network error'), {
+        code: 'network-request-failed',
+      });
 
       mockAdminAuth.verifyIdToken.mockRejectedValue(networkError);
 

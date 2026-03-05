@@ -1,20 +1,54 @@
 import { describe, test, expect, jest, beforeEach } from '@jest/globals';
 
+type PropertyRecord = {
+  id?: string;
+  title?: string;
+  description?: string;
+  price?: number;
+  location?: string;
+  type?: string;
+  area?: number;
+  bedrooms?: number;
+  images?: string[];
+  [key: string]: unknown;
+};
+type PropertiesListData = {
+  properties: PropertyRecord[];
+  hasMore: boolean;
+  lastDoc?: string | null;
+};
+type PropertyApiResponse = { status: number; data: any };
+
+type RedisGetFn = (key: string) => Promise<any>;
+type RedisSetFn = (
+  key: string,
+  value: any,
+  options: { ex: number }
+) => Promise<void>;
+type RedisDelFn = (key: string) => Promise<number>;
+type RedisPingFn = () => Promise<string>;
+type GetPropertiesFn = (params: {
+  limitPerPage: number;
+  lastDoc: string | null;
+}) => Promise<any>;
+
 // Mock de Redis
 const mockRedis = {
-  get: jest.fn(),
-  set: jest.fn(),
-  del: jest.fn(),
-  ping: jest.fn()
+  get: jest.fn() as jest.MockedFunction<RedisGetFn>,
+  set: jest.fn() as jest.MockedFunction<RedisSetFn>,
+  del: jest.fn() as jest.MockedFunction<RedisDelFn>,
+  ping: jest.fn() as jest.MockedFunction<RedisPingFn>,
 };
 
 jest.mock('@/redis/client', () => mockRedis);
 
 // Mock des fonctions de base de données
-const mockGetProperties = jest.fn();
-const mockGetPropertyById = jest.fn();
-const mockGetPropertiesCount = jest.fn();
-const mockGetPromotedProperties = jest.fn();
+const mockGetProperties = jest.fn() as jest.MockedFunction<GetPropertiesFn>;
+const mockGetPropertyById = jest.fn() as jest.MockedFunction<(id: string) => Promise<unknown>>;
+const mockGetPropertiesCount = jest.fn() as jest.MockedFunction<() => Promise<number>>;
+const mockGetPromotedProperties = jest.fn() as jest.MockedFunction<
+  (limit?: number) => Promise<PropertyRecord[]>
+>;
 
 jest.mock('@/db/property.db', () => ({
   getProperties: mockGetProperties,
@@ -25,7 +59,7 @@ jest.mock('@/db/property.db', () => ({
 
 // Mock de l'API Property Service au lieu d'importer les vraies routes
 class MockPropertyAPIService {
-  async getPropertiesList(params: any) {
+  async getPropertiesList(params: any): Promise<PropertyApiResponse> {
     try {
       const { limitPerPage = 10, lastDoc = null } = params;
       
@@ -33,7 +67,7 @@ class MockPropertyAPIService {
       const cacheKey = `properties:list:${limitPerPage}:${lastDoc || 'first'}`;
       
       try {
-        const cached = await mockRedis.get(cacheKey);
+        const cached: PropertiesListData | null = await mockRedis.get(cacheKey);
         if (cached) {
           return {
             status: 200,
@@ -45,7 +79,7 @@ class MockPropertyAPIService {
       }
 
       // Récupération depuis la base de données
-      const dbResult = await mockGetProperties({
+      const dbResult: PropertiesListData = await mockGetProperties({
         limitPerPage: Number(limitPerPage) || 10,
         lastDoc: lastDoc || null
       });
@@ -301,7 +335,7 @@ describe('Property API Tests', () => {
       expect(result.status).toBe(200);
       expect(result.data.properties).toHaveLength(4);
       
-      const types = result.data.properties.map(p => p.type);
+	      const types = result.data.properties.map((p: PropertyRecord) => p.type);
       expect(types).toContain('villa');
       expect(types).toContain('apartment');
       expect(types).toContain('home');
