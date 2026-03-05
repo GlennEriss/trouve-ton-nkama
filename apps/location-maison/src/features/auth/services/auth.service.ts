@@ -8,9 +8,12 @@
 import { AuthService, SignupData, SignupResult, SignupError, SignupErrorCode, AuthServiceError } from './auth.service.interface';
 import { userRepository } from '../repositories/user.repository';
 import { createUserWithEmailAndPassword, signOut, auth } from '@/firebase/auth';
-import { User } from '@/models/authentication';
+import { Role, User } from '@/models/authentication';
 import { Country } from '@/models/compte';
 import { Timestamp } from 'firebase/firestore';
+import { createLogger } from '@/lib/logger';
+
+const logger = createLogger('auth.service');
 
 export class AuthServiceImpl implements AuthService {
   /**
@@ -53,12 +56,16 @@ export class AuthServiceImpl implements AuthService {
           };
         }
       } catch (error) {
+        logger.warn('Phone uniqueness check failed', {
+          phoneNumber: data.phoneNumber,
+          error,
+        });
         // Repository error - treat as network error
         return {
           success: false,
           error: {
             code: SignupErrorCode.NETWORK_ERROR,
-            message: 'Erreur lors de la vérification du numéro de téléphone',
+            message: 'Erreur lors du contrôle du numéro de téléphone',
           },
         };
       }
@@ -76,6 +83,10 @@ export class AuthServiceImpl implements AuthService {
           };
         }
       } catch (error) {
+        logger.warn('Email uniqueness check failed', {
+          email: data.email,
+          error,
+        });
         // Repository error - treat as network error
         return {
           success: false,
@@ -95,6 +106,11 @@ export class AuthServiceImpl implements AuthService {
           data.password
         );
       } catch (error: any) {
+        logger.warn('Firebase Auth account creation failed', {
+          email: data.email,
+          code: error?.code,
+          error,
+        });
         // Map Firebase Auth errors to SignupError
         return {
           success: false,
@@ -111,13 +127,21 @@ export class AuthServiceImpl implements AuthService {
       try {
         await userRepository.create(user);
       } catch (error) {
+        logger.error('Failed to create user in repository after auth creation', {
+          uid,
+          email: data.email,
+          error,
+        });
         // Rollback: Delete Firebase Auth account
         try {
           await signOut(auth);
           // Note: In production, we should use Firebase Admin SDK to delete the user
           // For now, we just sign out (the user will need to be cleaned up manually)
         } catch (rollbackError) {
-          console.error('Failed to rollback Firebase Auth account:', rollbackError);
+          logger.error('Failed to rollback Firebase Auth account', {
+            uid,
+            rollbackError,
+          });
         }
 
         return {
@@ -133,7 +157,10 @@ export class AuthServiceImpl implements AuthService {
       // Use UID instead of email for more reliable user identification
       this.sendVerificationEmail(uid).catch((error) => {
         // Log but don't fail the signup
-        console.warn('Failed to send verification email:', error);
+        logger.warn('Failed to send verification email', {
+          uid,
+          error,
+        });
       });
 
       return {
@@ -142,6 +169,10 @@ export class AuthServiceImpl implements AuthService {
       };
     } catch (error) {
       // Unexpected error
+      logger.error('Unexpected signup error', {
+        email: data.email,
+        error,
+      });
       return {
         success: false,
         error: {
@@ -163,12 +194,12 @@ export class AuthServiceImpl implements AuthService {
 
     const now = Timestamp.now();
 
-    // Determine roles based on account type
-    // Note: 'User' is not a role in the system, users without 'Announcer' role are just regular users
-    // For now, we use an empty array for regular users, or we can add 'User' to the Role type if needed
-    const roles: ('Admin' | 'Announcer')[] = data.accountType === 'Announcer' 
-      ? ['Announcer'] 
-      : [];
+    // Business rule:
+    // - User account => ['User']
+    // - Announcer account => ['User', 'Announcer']
+    const roles: Role[] = data.accountType === 'Announcer'
+      ? ['User', 'Announcer']
+      : ['User'];
 
     return {
       uid,
@@ -179,7 +210,6 @@ export class AuthServiceImpl implements AuthService {
       email: data.email,
       country,
       phoneNumbers: [data.phoneNumber],
-      phoneNumberVerified: data.accountType === 'Announcer' ? !!data.phoneVerificationCode : false,
       roles,
       emailVerified: false,
       providers: ['CREDENTIALS'],
@@ -229,12 +259,8 @@ export class AuthServiceImpl implements AuthService {
   /**
    * Send verification email (non-blocking)
    * 
-   * Utilise la Cloud Function Firebase au lieu de la route API Next.js pour :
-   * 1. Séparation des responsabilités : l'envoi d'email est isolé du serveur web
-   * 2. Scalabilité indépendante : la Cloud Function scale indépendamment
-   * 3. Réutilisabilité : peut être appelée depuis d'autres services ou déclenchée par des événements Firestore
-   * 4. Isolation des erreurs : si l'email échoue, cela n'affecte pas le serveur web
-   * 5. Coûts optimisés : paye uniquement pour l'exécution (pas de serveur toujours actif)
+   * Utilise la route API Next.js same-origin pour éviter les problèmes CORS
+   * (notamment sur mobile / LAN en dev) et centraliser la logique d'envoi.
    * 
    * @param uidOrEmail - User UID (preferred) or email address
    */
@@ -242,12 +268,8 @@ export class AuthServiceImpl implements AuthService {
     try {
       // Determine if it's a UID (typically longer and doesn't contain @) or email
       const isUid = !uidOrEmail.includes('@');
-      
-      // Utiliser la Cloud Function Firebase si disponible, sinon fallback sur la route API Next.js
-      const functionUrl = process.env.NEXT_PUBLIC_FIREBASE_FUNCTION_URL || 
-        `https://us-central1-${process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID || 'location-maison-dev'}.cloudfunctions.net/sendVerificationEmail`;
-      
-      const response = await fetch(functionUrl, {
+
+      const response = await fetch('/api/auth/send-verification-email', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -261,11 +283,20 @@ export class AuthServiceImpl implements AuthService {
 
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
+        logger.warn('Verification email endpoint responded with non-OK status', {
+          status: response.status,
+          statusText: response.statusText,
+          errorData,
+        });
         throw new Error(
           `Failed to send verification email: ${response.statusText}. ${errorData.error || ''}`
         );
       }
     } catch (error) {
+      logger.warn('Verification email send operation failed', {
+        uidOrEmail,
+        error,
+      });
       // Re-throw to be caught by caller
       throw error;
     }
@@ -286,4 +317,3 @@ export class AuthServiceImpl implements AuthService {
 
 // Export singleton instance
 export const authService: AuthService = new AuthServiceImpl();
-

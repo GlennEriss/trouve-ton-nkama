@@ -63,23 +63,16 @@
    - Affichage des conditions spécifiques Annonceur (CGU Annonceur)
    - Checkbox supplémentaire : "J'accepte les conditions d'annonceur"
 
-2. **Vérification téléphone (OTP)**
-   - Envoi automatique d'un code OTP par SMS
-   - Champ "Code de vérification" apparaît
-   - Visiteur saisit le code reçu
-   - Validation du code (3 tentatives maximum)
-
-3. **Choix du type d'annonceur**
+2. **Choix du type d'annonceur**
    - Radio buttons ou Select :
      - Propriétaire (INDIVIDUAL)
      - Agence immobilière (AGENCY)
      - Démarcheur (BROKER)
      - Mandataire (AGENT)
 
-4. **Soumission**
+3. **Soumission**
    - Même processus que l'inscription utilisateur
    - Création avec rôle 'Announcer'
-   - Création AnnouncerProfile
    - Redirection vers `/signup/success?uid=xxx&type=announcer`
 
 ---
@@ -237,4 +230,3 @@
 ---
 
 *Dernière mise à jour : 2026-01-12*
-

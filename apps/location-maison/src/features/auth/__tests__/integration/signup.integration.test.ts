@@ -165,7 +165,7 @@ describe('Signup Integration Tests', () => {
         lastname: 'Doe',
         email: 'test@example.com',
         phoneNumbers: ['+24101234567'],
-        roles: [],
+        roles: ['User'],
         credits: 3,
       };
       (mockUserRepository.create as jest.MockedFunction<typeof mockUserRepository.create>).mockResolvedValue(mockUser as any);
@@ -205,7 +205,7 @@ describe('Signup Integration Tests', () => {
         '/api/auth/send-verification-email',
         expect.objectContaining({
           method: 'POST',
-          body: JSON.stringify({ email: 'test@example.com' }),
+          body: JSON.stringify({ uid: 'user-123' }),
         })
       );
     });
@@ -277,7 +277,7 @@ describe('Signup Integration Tests', () => {
       expect(result.error?.code).toBe(SignupErrorCode.TERMS_NOT_ACCEPTED);
     });
 
-    it('should create user with default role (User)', async () => {
+    it('should create user with User role', async () => {
       const signupData: SignupData = {
         email: 'test@example.com',
         password: 'Password123!',
@@ -297,7 +297,7 @@ describe('Signup Integration Tests', () => {
       const mockCreatedUser = {
         id: 'user-123',
         uid: 'user-123',
-        roles: [],
+        roles: ['User'],
       };
       mockUserRepository.create.mockResolvedValue(mockCreatedUser as any);
       mockFetch.mockResolvedValue({ ok: true } as Response);
@@ -306,15 +306,15 @@ describe('Signup Integration Tests', () => {
 
       expect(result.success).toBe(true);
       expect(result.userId).toBe('user-123');
-      // Verify user was created with empty roles array (User = no specific role)
+      // Verify user was created with User role
       expect(mockUserRepository.create).toHaveBeenCalled();
       const callArgs = (mockUserRepository.create as jest.MockedFunction<typeof mockUserRepository.create>).mock.calls[0];
       expect(callArgs[0]).toMatchObject({
-        roles: [],
+        roles: ['User'],
       });
     });
 
-    it('should create announcer with Announcer role', async () => {
+    it('should create announcer with User and Announcer roles', async () => {
       const signupData: SignupData = {
         email: 'announcer@example.com',
         password: 'Password123!',
@@ -327,7 +327,6 @@ describe('Signup Integration Tests', () => {
         accountType: 'Announcer',
         announcerType: 'INDIVIDUAL',
         acceptAnnouncerTerms: true,
-        phoneVerificationCode: '123456',
       };
 
       mockCreateUserWithEmailAndPassword.mockResolvedValue({
@@ -337,7 +336,7 @@ describe('Signup Integration Tests', () => {
       const mockCreatedUser = {
         id: 'announcer-456',
         uid: 'announcer-456',
-        roles: ['Announcer'],
+        roles: ['User', 'Announcer'],
       };
       mockUserRepository.create.mockResolvedValue(mockCreatedUser as any);
       mockFetch.mockResolvedValue({ ok: true } as Response);
@@ -348,7 +347,7 @@ describe('Signup Integration Tests', () => {
       expect(result.userId).toBe('announcer-456');
       const callArgs = (mockUserRepository.create as jest.MockedFunction<typeof mockUserRepository.create>).mock.calls[0];
       expect(callArgs[0]).toMatchObject({
-        roles: ['Announcer'],
+        roles: ['User', 'Announcer'],
       });
     });
 

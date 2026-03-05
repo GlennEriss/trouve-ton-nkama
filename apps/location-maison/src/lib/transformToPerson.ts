@@ -14,6 +14,10 @@ export function transformToPerson(values: FormRegisterSchemaType): Partial<User>
         `${values.birthdate.year}-${values.birthdate.month}-${values.birthdate.day}` : 
         '';
 
+    const roles: User['roles'] = values.accountType === 'Announcer'
+        ? ['User', 'Announcer']
+        : ['User'];
+
     return {
         firstname: values.firstname,
         lastname: values.lastname,
@@ -21,9 +25,8 @@ export function transformToPerson(values: FormRegisterSchemaType): Partial<User>
         email: values.email,
         country: country,
         phoneNumbers: [values.phone],
-        phoneNumberVerified: false,
         login: values.email,
         password: values.password,
-        roles: ['Announcer']
+        roles
     };
 }

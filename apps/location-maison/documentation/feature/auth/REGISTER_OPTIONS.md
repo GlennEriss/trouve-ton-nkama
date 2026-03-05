@@ -4,145 +4,101 @@
 
 ---
 
-## 📋 Vue d'ensemble
+## Vue d'ensemble
 
-Il existe **2 façons** de créer un compte sur la plateforme :
+Il existe 2 facons de creer un compte sur la plateforme:
 
-1. **Inscription Utilisateur Simple** (par défaut)
-2. **Inscription Annonceur Directe** (optionnelle)
+1. **Inscription Utilisateur** (par defaut)
+2. **Inscription Annonceur directe** (optionnelle)
+
+Dans les 2 cas:
+- verification email declenchee a l'inscription
 
 ---
 
-## 1️⃣ Inscription Utilisateur Simple
+## 1. Inscription Utilisateur
 
 ### Flux
-- Création avec rôle **'User'**
-- Pas de vérification téléphone obligatoire (optionnelle)
-- Pas de CGU Annonceur
-- Pas de création `AnnouncerProfile`
-- **3 crédits de bienvenue** (mais pas utilisables tant qu'il n'est pas Annonceur)
+- Creation avec profil utilisateur standard
+- Roles attribues: `['User']`
+- Pas de conditions annonceur
+- Pas de creation immediate d'`AnnouncerProfile`
 
 ### Diagramme
-Voir : [`register-activity-diagram.puml`](./register-activity-diagram.puml)
+Voir: [`register-activity-diagram.puml`](./register-activity-diagram.puml)
 
 ### Utilisation
-- Utilisateur qui veut juste **rechercher** des propriétés
-- Utilisateur qui veut **consulter** des annonces
-- Utilisateur qui veut **ajouter aux favoris**
+- Consulter des annonces
+- Rechercher des biens
+- Gerer ses favoris
 
-### Migration ultérieure
-L'utilisateur peut **devenir Annonceur** plus tard via :
-- Use Case : `UC_BecomeAnnouncer` (Utilisateur)
-- Voir : Phase 3 du plan de refactoring
+### Evolution
+L'utilisateur peut devenir annonceur plus tard via le flux de migration dedie.
 
 ---
 
-## 2️⃣ Inscription Annonceur Directe
+## 2. Inscription Annonceur directe
 
 ### Flux
-- Création avec rôle **'Announcer'** directement
-- **Vérification téléphone obligatoire** (OTP)
-- Acceptation **CGU Annonceur** obligatoire
-- Choix du **type d'annonceur** (INDIVIDUAL, AGENCY, BROKER, AGENT)
-- Création **AnnouncerProfile** immédiate
-- **3 crédits de bienvenue** (utilisables immédiatement)
+- Creation compte annonceur
+- Roles attribues: `['User', 'Announcer']`
+- Acceptation des conditions annonceur obligatoire
+- Verification email declenchee a l'inscription
 
 ### Diagramme
-Voir : [`register-activity-diagram-annonceur.puml`](./register-activity-diagram-annonceur.puml)
+Voir: [`register-activity-diagram-annonceur.puml`](./register-activity-diagram-annonceur.puml)
 
-### Étapes supplémentaires
-1. **Acceptation CGU Annonceur**
-   - Conditions spécifiques pour les annonceurs
-   - Règles de publication
-   - Responsabilités
+### Etapes specifiques
+1. **Acceptation des conditions annonceur**
+   - obligations de publication
+   - responsabilites de l'annonceur
 
-2. **Vérification téléphone (OTP)**
-   - Envoi code OTP par SMS
-   - Vérification obligatoire
-   - `phoneNumberVerified: true`
-
-3. **Choix type d'annonceur**
-   - **INDIVIDUAL** : Propriétaire individuel
-   - **AGENCY** : Agence immobilière
-   - **BROKER** : Démarcheur
-   - **AGENT** : Mandataire
-
-4. **Création AnnouncerProfile**
-   - `userId`
-   - `announcerType`
-   - `acceptedTermsAt`
-   - `becameAnnouncerAt`
-   - `isVerified: true`
-
-### Utilisation
-- Propriétaire qui veut **publier** des annonces immédiatement
-- Agence qui veut **gérer** plusieurs propriétés
-- Démarcheur qui veut **promouvoir** des biens
+2. **Creation compte annonceur**
+   - compte auth + document user
+   - roles `User + Announcer` appliques au signup
 
 ---
 
-## 🔄 Comparaison
+## Comparaison
 
-| Critère | Utilisateur Simple | Annonceur Direct |
-|---------|-------------------|-----------------|
-| **Rôle** | `User` | `Announcer` |
-| **Vérification téléphone** | Optionnelle | **Obligatoire (OTP)** |
-| **CGU Annonceur** | Non | **Oui** |
-| **Type d'annonceur** | Non | **Oui (choix)** |
-| **AnnouncerProfile** | Non | **Oui (créé)** |
-| **Crédits utilisables** | Non (pas Annonceur) | **Oui (3 crédits)** |
-| **Peut publier** | Non | **Oui (immédiatement)** |
-| **Migration nécessaire** | Oui (pour publier) | Non |
+| Critere | Utilisateur | Annonceur direct |
+|---------|-------------|------------------|
+| Type de compte au signup | `User` | `Announcer` |
+| Conditions annonceur | Non | Oui |
+| Verification email | Oui | Oui |
+| Peut publier immediatement | Non | Oui |
 
 ---
 
-## 🎯 Recommandation
-
-### Pour l'utilisateur
-- **Utilisateur simple** : Si vous voulez juste rechercher/consulter
-- **Annonceur direct** : Si vous voulez publier des annonces immédiatement
-
-### Pour le développement
-- **Implémenter les 2 flux** :
-  1. Flux Utilisateur Simple (par défaut)
-  2. Flux Annonceur Direct (optionnel, avec étapes supplémentaires)
-
-- **Bouton de choix** dans le formulaire d'inscription :
-  ```
-  [ ] Je veux créer un compte Utilisateur
-  [ ] Je veux créer un compte Annonceur
-  ```
-
----
-
-## 📝 Notes d'Implémentation
+## Notes d'implementation
 
 ### Service Layer
 ```typescript
 interface SignupData {
-  // ... champs communs
-  accountType: 'User' | 'Announcer'
+  email: string
+  password: string
+  firstName: string
+  lastName: string
+  birthDate: string
+  phoneNumber: string
+  country: string
+  acceptTerms: boolean
+  accountType?: 'User' | 'Announcer'
   announcerType?: 'INDIVIDUAL' | 'AGENCY' | 'BROKER' | 'AGENT'
   acceptAnnouncerTerms?: boolean
-  phoneVerificationCode?: string
 }
 ```
 
 ### Logique conditionnelle
 ```typescript
 if (signupData.accountType === 'Announcer') {
-  // Vérifier téléphone (OTP)
-  // Vérifier CGU Annonceur acceptées
-  // Créer avec rôle 'Announcer'
-  // Créer AnnouncerProfile
+  // Verifier les conditions annonceur
+  // Creer avec roles ['User', 'Announcer']
 } else {
-  // Créer avec rôle 'User'
-  // Pas de vérification téléphone obligatoire
-  // Pas d'AnnouncerProfile
+  // Creer avec role ['User']
 }
 ```
 
 ---
 
-*Dernière mise à jour : 2026-01-12*
-
+*Derniere mise a jour : 2026-03-05*

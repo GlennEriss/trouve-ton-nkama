@@ -7,7 +7,7 @@
 
 'use client';
 
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useRouter } from 'next/navigation';
@@ -15,7 +15,6 @@ import Link from 'next/link';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useToast } from '@/hooks/use-toast';
 import { FormRegisterSchemaType, FormRegisterSchema } from '@/models/schema';
-import { SignupData } from '../../services/auth.service.interface';
 import { useSignup } from '../../hooks';
 import { Form } from '@/components/ui/form';
 import { Button } from '@/components/ui/button';
@@ -31,7 +30,6 @@ import {
   User,
   Mail,
   KeyRound,
-  Phone,
   Calendar,
   ChevronRight,
   ChevronLeft,
@@ -39,32 +37,18 @@ import {
   Home,
   Shield,
   Sparkles,
-  ArrowRight,
+  Building2,
 } from 'lucide-react';
+import { createLogger } from '@/lib/logger';
+import { mapRegisterFormToSignupData } from './signup.mapper';
+
+const logger = createLogger('auth.signup-form-modern');
 
 /**
  * Transform FormRegisterSchemaType to SignupData
  */
-function transformFormDataToSignupData(values: FormRegisterSchemaType): SignupData {
-  console.log('🔄 Transforming birthdate:', values.birthdate);
-  const birthDate = values.birthdate && values.birthdate.day && values.birthdate.month && values.birthdate.year
-    ? `${values.birthdate.year}-${String(values.birthdate.month).padStart(2, '0')}-${String(values.birthdate.day).padStart(2, '0')}`
-    : '';
-
-  const signupData: SignupData = {
-    email: values.email,
-    password: values.password,
-    firstName: values.firstname,
-    lastName: values.lastname,
-    birthDate,
-    phoneNumber: values.phone,
-    country: values.country || 'GA',
-    acceptTerms: values.termsOfPrivacyPolicy,
-    accountType: 'User',
-  };
-  
-  console.log('🔄 Transformed signup data:', signupData);
-  return signupData;
+function transformFormDataToSignupData(values: FormRegisterSchemaType) {
+  return mapRegisterFormToSignupData(values);
 }
 
 // Left panel decorative background image (from /public)
@@ -72,7 +56,7 @@ const LEFT_PANEL_BG_IMAGE = '/auth-image.png';
 
 // Step configuration
 const steps = [
-  { id: 1, title: 'Identité', icon: User, fields: ['firstname', 'lastname'] },
+  { id: 1, title: 'Identité', icon: User, fields: ['accountType', 'firstname', 'lastname'] },
   { id: 2, title: 'Contact', icon: Mail, fields: ['email', 'phone'] },
   { id: 3, title: 'Naissance', icon: Calendar, fields: ['birthdate'] },
   { id: 4, title: 'Sécurité', icon: KeyRound, fields: ['password', 'passwordConfirm', 'termsOfPrivacyPolicy'] },
@@ -108,6 +92,8 @@ export const SignupFormModern: React.FC = () => {
     resolver: zodResolver(FormRegisterSchema),
     mode: 'onChange',
     defaultValues: {
+      accountType: 'User',
+      acceptAnnouncerTerms: false,
       firstname: '',
       lastname: '',
       email: '',
@@ -119,6 +105,7 @@ export const SignupFormModern: React.FC = () => {
       termsOfPrivacyPolicy: false,
     },
   });
+  const selectedAccountType = form.watch('accountType') || 'User';
 
   // Get current step fields for validation
   const currentStepConfig = steps[currentStep - 1];
@@ -129,10 +116,14 @@ export const SignupFormModern: React.FC = () => {
     const values = form.getValues();
     
     for (const field of currentStepConfig.fields) {
-      if (field === 'birthdate') {
+      if (field === 'accountType') {
+        if (!values.accountType) return false;
+      } else if (field === 'birthdate') {
         const bd = values.birthdate;
         if (!bd?.day || !bd?.month || !bd?.year) return false;
         if (errors.birthdate) return false;
+      } else if (field === 'acceptAnnouncerTerms') {
+        if (values.accountType === 'Announcer' && !values.acceptAnnouncerTerms) return false;
       } else if (field === 'termsOfPrivacyPolicy') {
         if (!values.termsOfPrivacyPolicy) return false;
       } else {
@@ -140,6 +131,10 @@ export const SignupFormModern: React.FC = () => {
         if (!value || (typeof value === 'string' && value.trim() === '')) return false;
         if (errors[field as keyof typeof errors]) return false;
       }
+    }
+
+    if (currentStep === 4 && values.accountType === 'Announcer' && !values.acceptAnnouncerTerms) {
+      return false;
     }
     return true;
   };
@@ -163,16 +158,20 @@ export const SignupFormModern: React.FC = () => {
 
   // Handle form submission
   const onSubmit = async (values: FormRegisterSchemaType) => {
-    console.log('📝 Form submitted with values:', values);
-    console.log('📝 Form errors:', form.formState.errors);
-    console.log('📝 Form isValid:', form.formState.isValid);
+    logger.debug('Signup form submit requested', {
+      values,
+      errors: form.formState.errors,
+      isValid: form.formState.isValid,
+    });
     
     // Validate all fields before submitting
     const isValid = await form.trigger();
-    console.log('📝 Form validation result:', isValid);
+    logger.debug('Signup form validation completed', { isValid });
     
     if (!isValid) {
-      console.error('❌ Form validation failed');
+      logger.warn('Signup form validation failed', {
+        errors: form.formState.errors,
+      });
       toast({
         duration: 5000,
         title: 'Erreur de validation',
@@ -183,14 +182,15 @@ export const SignupFormModern: React.FC = () => {
     }
     
     try {
-      console.log('🔄 Transforming form data...');
       const signupData = transformFormDataToSignupData(values);
-      console.log('🔄 Calling signup with data:', signupData);
+      logger.debug('Calling signup service from form', { signupData });
       const result = await signup(signupData);
-      console.log('✅ Signup result:', result);
+      logger.debug('Signup service returned result', { result });
 
       if (result.success && result.userId) {
-        console.log('🎉 Success! Redirecting to /signup/success?uid=' + result.userId);
+        logger.info('Signup successful, redirecting to success page', {
+          userId: result.userId,
+        });
         toast({
           duration: 5000,
           title: '🎉 Bienvenue !',
@@ -199,7 +199,9 @@ export const SignupFormModern: React.FC = () => {
         });
         router.push(`/signup/success?uid=${result.userId}`);
       } else {
-        console.error('❌ Signup failed:', result.error);
+        logger.warn('Signup failed with business error', {
+          error: result.error,
+        });
         const errorCode = result.error?.code;
         let errorTitle = 'Erreur';
         let errorMessage = result.error?.message || 'Une erreur est survenue.';
@@ -220,6 +222,9 @@ export const SignupFormModern: React.FC = () => {
         } else if (errorCode === 'TERMS_NOT_ACCEPTED') {
           errorTitle = 'Conditions non acceptées';
           errorMessage = 'Vous devez accepter les conditions d\'utilisation et la politique de confidentialité pour créer un compte.';
+        } else if (errorCode === 'ANNOUNCER_TERMS_NOT_ACCEPTED') {
+          errorTitle = 'Conditions annonceur non acceptées';
+          errorMessage = 'Vous devez accepter les conditions annonceur pour créer un compte annonceur.';
         } else if (errorCode === 'NETWORK_ERROR') {
           errorTitle = 'Erreur de connexion';
           errorMessage = 'Une erreur de connexion est survenue. Veuillez vérifier votre connexion internet et réessayer.';
@@ -233,7 +238,7 @@ export const SignupFormModern: React.FC = () => {
         });
       }
     } catch (error) {
-      console.error('💥 Unexpected error during signup:', error);
+      logger.error('Unexpected error during signup flow', { error });
       toast({
         duration: 5000,
         title: 'Erreur',
@@ -249,7 +254,7 @@ export const SignupFormModern: React.FC = () => {
     try {
       await signIn('google');
     } catch (error) {
-      console.error('Google sign in error:', error);
+      logger.error('Google sign-in failed from signup form', { error });
     } finally {
       setIsGoogleLoading(false);
     }
@@ -440,6 +445,53 @@ export const SignupFormModern: React.FC = () => {
                   {/* Step 1: Identity */}
                   {currentStep === 1 && (
                     <>
+                      <div className="mb-3">
+                        <p className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                          Type de compte
+                        </p>
+                        <div className="grid grid-cols-2 gap-3">
+                          <button
+                            type="button"
+                            onClick={() =>
+                              form.setValue('accountType', 'User', {
+                                shouldDirty: true,
+                                shouldValidate: true,
+                              })
+                            }
+                            className={`rounded-2xl border p-3 text-left transition ${
+                              selectedAccountType === 'User'
+                                ? 'border-[#1FA89B] bg-teal-50 dark:bg-teal-900/20'
+                                : 'border-gray-200 dark:border-gray-700'
+                            }`}
+                          >
+                            <div className="flex items-center gap-2 font-semibold text-sm">
+                              <User className="w-4 h-4" />
+                              Utilisateur
+                            </div>
+                            <p className="text-xs text-gray-500 mt-1">Chercher un logement</p>
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() =>
+                              form.setValue('accountType', 'Announcer', {
+                                shouldDirty: true,
+                                shouldValidate: true,
+                              })
+                            }
+                            className={`rounded-2xl border p-3 text-left transition ${
+                              selectedAccountType === 'Announcer'
+                                ? 'border-[#1FA89B] bg-teal-50 dark:bg-teal-900/20'
+                                : 'border-gray-200 dark:border-gray-700'
+                            }`}
+                          >
+                            <div className="flex items-center gap-2 font-semibold text-sm">
+                              <Building2 className="w-4 h-4" />
+                              Annonceur
+                            </div>
+                            <p className="text-xs text-gray-500 mt-1">Publier des annonces</p>
+                          </button>
+                        </div>
+                      </div>
                       <InputFormApp
                         control={form.control}
                         name="firstname"
@@ -524,6 +576,19 @@ export const SignupFormModern: React.FC = () => {
                         placeholder="Confirmez votre mot de passe"
                       />
                       <div className="pt-2">
+                        {selectedAccountType === 'Announcer' && (
+                          <div className="mb-3">
+                            <CheckboxFormApp
+                              control={form.control}
+                              name="acceptAnnouncerTerms"
+                              label={
+                                <span className="text-sm text-gray-600 dark:text-gray-400">
+                                  J&apos;accepte les conditions annonceur.
+                                </span>
+                              }
+                            />
+                          </div>
+                        )}
                         <CheckboxFormApp
                           control={form.control}
                           name="termsOfPrivacyPolicy"

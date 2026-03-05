@@ -42,7 +42,6 @@ function createMockUser(overrides: Partial<User> = {}): User {
     lastname: 'Doe',
     email: 'test@example.com',
     phoneNumbers: ['+241123456789'],
-    phoneNumberVerified: false,
     roles: ['User'],
     emailVerified: false,
     providers: ['CREDENTIALS'],
@@ -236,7 +235,7 @@ describe('AuthService', () => {
       // For now, we just verify signOut is called
     });
 
-    it('should create user with empty roles array by default (User = no specific role)', async () => {
+    it('should create user with User role by default', async () => {
       // Arrange
       const signupData = createSignupData({ accountType: 'User' });
       const { createUserWithEmailAndPassword } = await import('@/firebase/auth');
@@ -255,18 +254,17 @@ describe('AuthService', () => {
       // Assert
       expect(mockUserRepository.create).toHaveBeenCalledWith(
         expect.objectContaining({
-          roles: [], // User = no specific role (empty array)
+          roles: ['User'],
         })
       );
     });
 
-    it('should create user with role Announcer if accountType is Announcer', async () => {
+    it('should create user with User and Announcer roles if accountType is Announcer', async () => {
       // Arrange
       const signupData = createSignupData({
         accountType: 'Announcer',
         announcerType: 'INDIVIDUAL',
         acceptAnnouncerTerms: true,
-        phoneVerificationCode: '123456',
       });
       const { createUserWithEmailAndPassword } = await import('@/firebase/auth');
       
@@ -284,7 +282,7 @@ describe('AuthService', () => {
       // Assert
       expect(mockUserRepository.create).toHaveBeenCalledWith(
         expect.objectContaining({
-          roles: ['Announcer'],
+          roles: ['User', 'Announcer'],
         })
       );
     });
@@ -397,9 +395,10 @@ describe('AuthService', () => {
 
       // Assert
       expect(fetch).toHaveBeenCalledWith(
-        expect.stringContaining('/api/auth/send-verification-email'),
+        '/api/auth/send-verification-email',
         expect.objectContaining({
           method: 'POST',
+          body: JSON.stringify({ uid: 'uid-123' }),
         })
       );
     });
@@ -465,4 +464,3 @@ describe('AuthService', () => {
     });
   });
 });
-

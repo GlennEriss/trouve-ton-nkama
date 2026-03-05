@@ -1,39 +1,29 @@
-/**
- * UserRepository Unit Tests
- * 
- * TDD Approach: Tests written before implementation
- * Target: 100% code coverage
- */
-
 import { describe, it, expect, beforeEach, jest } from '@jest/globals';
-import { UserRepository, RepositoryError } from '../user.repository.interface';
-import { UserRepositoryImpl } from '../user.repository';
-import { User } from '@/models/authentication';
 import { Timestamp } from 'firebase/firestore';
+import { User } from '@/models/authentication';
+import { UserRepositoryImpl } from '../user.repository';
+import { RepositoryError } from '../user.repository.interface';
 
-// Note: Firestore is already mocked in jest.setup.ts
-// We just need to import the mocked functions
+type FirestoreSnapshot = {
+  id: string;
+  exists: () => boolean;
+  data: () => Record<string, unknown>;
+};
 
-// Helper to type mocks correctly
-function mockFunction<T extends (...args: any[]) => any>(fn: T): jest.MockedFunction<T> {
-  return fn as jest.MockedFunction<T>;
-}
-
-// Helper to create mock User
 function createMockUser(overrides: Partial<User> = {}): User {
   const now = Timestamp.now();
   return {
-    id: 'user-123',
+    id: 'uid-123',
     uid: 'uid-123',
     login: 'test@example.com',
     firstname: 'John',
     lastname: 'Doe',
     email: 'test@example.com',
     phoneNumbers: ['+241123456789'],
-    phoneNumberVerified: false,
     roles: ['User'],
     emailVerified: false,
     providers: ['CREDENTIALS'],
+    metadata: {},
     favoris: [],
     credits: 3,
     state: 'IN_PROGRESS',
@@ -43,467 +33,285 @@ function createMockUser(overrides: Partial<User> = {}): User {
   } as User;
 }
 
-describe('UserRepository', () => {
-  let repository: UserRepository;
-  let mockUser: User;
+function createSnapshot(user: User, exists = true, id = user.uid): FirestoreSnapshot {
+  return {
+    id,
+    exists: () => exists,
+    data: () => ({ ...user }),
+  };
+}
+
+describe('UserRepositoryImpl', () => {
+  let repository: UserRepositoryImpl;
 
   beforeEach(() => {
     repository = new UserRepositoryImpl();
-    mockUser = createMockUser();
     jest.clearAllMocks();
   });
 
   describe('create', () => {
-    it('should create a user successfully', async () => {
-      // Arrange
+    it('creates a user using uid as Firestore document id', async () => {
       const firestore = await import('@/firebase/firestore');
-      const { addDoc, collection } = firestore;
-      const mockDocRef = { id: 'user-123' };
-      (addDoc as any).mockResolvedValue(mockDocRef);
-      (collection as any).mockReturnValue({});
+      const userRef = { id: 'uid-123' };
+      (firestore.doc as any).mockReturnValue(userRef);
+      (firestore.setDoc as any).mockResolvedValue(undefined);
 
-      // Act
-      const result = await repository.create(mockUser);
+      const result = await repository.create(createMockUser());
 
-      // Assert
-      expect(collection).toHaveBeenCalled();
-      expect(addDoc).toHaveBeenCalledWith(
-        expect.anything(),
+      const [dbArg, collectionName, docId] = (firestore.doc as any).mock.calls[0];
+      expect(collectionName).toBe('users');
+      expect(docId).toBe('uid-123');
+      expect(dbArg).toBeUndefined();
+      expect(firestore.setDoc).toHaveBeenCalledWith(
+        userRef,
         expect.objectContaining({
-          uid: mockUser.uid,
-          email: mockUser.email,
+          uid: 'uid-123',
+          email: 'test@example.com',
+          state: 'IN_PROGRESS',
         })
       );
-      expect(result.id).toBe('user-123');
-      expect(result.uid).toBe(mockUser.uid);
+      expect(result.id).toBe('uid-123');
     });
 
-    it('should throw RepositoryError if Firestore addDoc fails', async () => {
-      // Arrange
+    it('throws RepositoryError when setDoc fails', async () => {
       const firestore = await import('@/firebase/firestore');
-      const { addDoc, collection } = firestore;
-      const firestoreError = new Error('Firestore permission denied');
-      (collection as any).mockReturnValue({});
-      (addDoc as any).mockRejectedValue(firestoreError);
+      (firestore.doc as any).mockReturnValue({ id: 'uid-123' });
+      (firestore.setDoc as any).mockRejectedValue(new Error('permission-denied'));
 
-      // Act & Assert
-      await expect(repository.create(mockUser)).rejects.toThrow(RepositoryError);
-      await expect(repository.create(mockUser)).rejects.toThrow('Failed to create user');
+      await expect(repository.create(createMockUser())).rejects.toThrow(RepositoryError);
+      await expect(repository.create(createMockUser())).rejects.toThrow('Failed to create user');
     });
 
-    it('should include all user fields when creating', async () => {
-      // Arrange
-      const firestore = await import('@/firebase/firestore');
-      const { addDoc, collection } = firestore;
-      const mockDocRef = { id: 'user-123' };
-      mockFunction(collection).mockReturnValue({} as any);
-      mockFunction(addDoc).mockResolvedValue(mockDocRef as any);
-
-      const fullUser: User = createMockUser({
-        firstname: 'John',
-        lastname: 'Doe',
-        email: 'john@example.com',
-        phoneNumbers: ['+241123456789'],
-        roles: ['User' as 'Admin' | 'Announcer'],
-        credits: 3,
-      });
-
-      // Act
-      await repository.create(fullUser);
-
-      // Assert
-      expect(addDoc).toHaveBeenCalledWith(
-        expect.anything(),
-        expect.objectContaining({
-          firstname: 'John',
-          lastname: 'Doe',
-          email: 'john@example.com',
-          phoneNumbers: ['+241123456789'],
-          roles: ['User'],
-          credits: 3,
-        })
-      );
+    it('throws RepositoryError when uid is missing', async () => {
+      await expect(repository.create(createMockUser({ uid: '' }))).rejects.toThrow(RepositoryError);
+      await expect(repository.create(createMockUser({ uid: '' }))).rejects.toThrow('Failed to create user');
     });
   });
 
   describe('findByPhoneNumber', () => {
-    it('should return user if found by phone number', async () => {
-      // Arrange
+    it('returns user when found', async () => {
       const firestore = await import('@/firebase/firestore');
-      const { getDocs, query, collection, where } = firestore;
-      const mockDoc = {
-        id: 'user-123',
-        data: () => ({ ...mockUser, uid: 'uid-123' }),
-      };
-      const mockSnapshot = {
+      const user = createMockUser();
+      (firestore.collection as any).mockReturnValue({});
+      (firestore.where as any).mockReturnValue({});
+      (firestore.query as any).mockReturnValue({});
+      (firestore.getDocs as any).mockResolvedValue({
         empty: false,
-        docs: [mockDoc],
-      };
-      (collection as any).mockReturnValue({});
-      (where as any).mockReturnValue({});
-      (query as any).mockReturnValue({});
-      (getDocs as any).mockResolvedValue(mockSnapshot);
+        docs: [{ id: user.uid, data: () => ({ ...user }) }],
+      });
 
-      // Act
-      const result = await repository.findByPhoneNumber('+241123456789');
+      const result = await repository.findByPhoneNumber(user.phoneNumbers[0]);
 
-      // Assert
-      expect(collection).toHaveBeenCalled();
-      expect(where).toHaveBeenCalledWith('phoneNumbers', 'array-contains', '+241123456789');
-      expect(result).not.toBeNull();
-      expect(result?.uid).toBe('uid-123');
+      expect(result?.uid).toBe(user.uid);
+      expect(firestore.where).toHaveBeenCalledWith('phoneNumbers', 'array-contains', user.phoneNumbers[0]);
     });
 
-    it('should return null if no user found', async () => {
-      // Arrange
+    it('returns null when no user found', async () => {
       const firestore = await import('@/firebase/firestore');
-      const { getDocs, query, collection, where } = firestore;
-      const mockSnapshot = {
-        empty: true,
-        docs: [],
-      };
-      (collection as any).mockReturnValue({});
-      (where as any).mockReturnValue({});
-      (query as any).mockReturnValue({});
-      (getDocs as any).mockResolvedValue(mockSnapshot);
+      (firestore.collection as any).mockReturnValue({});
+      (firestore.where as any).mockReturnValue({});
+      (firestore.query as any).mockReturnValue({});
+      (firestore.getDocs as any).mockResolvedValue({ empty: true, docs: [] });
 
-      // Act
       const result = await repository.findByPhoneNumber('+241999999999');
-
-      // Assert
       expect(result).toBeNull();
     });
 
-    it('should throw RepositoryError if query fails', async () => {
-      // Arrange
+    it('throws RepositoryError when query fails', async () => {
       const firestore = await import('@/firebase/firestore');
-      const { getDocs, query, collection, where } = firestore;
-      const firestoreError = new Error('Firestore query failed');
-      (collection as any).mockReturnValue({});
-      (where as any).mockReturnValue({});
-      (query as any).mockReturnValue({});
-      (getDocs as any).mockRejectedValue(firestoreError);
+      (firestore.collection as any).mockReturnValue({});
+      (firestore.where as any).mockReturnValue({});
+      (firestore.query as any).mockReturnValue({});
+      (firestore.getDocs as any).mockRejectedValue(new Error('query error'));
 
-      // Act & Assert
       await expect(repository.findByPhoneNumber('+241123456789')).rejects.toThrow(RepositoryError);
       await expect(repository.findByPhoneNumber('+241123456789')).rejects.toThrow('Failed to find user by phone number');
     });
   });
 
   describe('findByEmail', () => {
-    it('should return user if found by email', async () => {
-      // Arrange
+    it('returns active user when found', async () => {
       const firestore = await import('@/firebase/firestore');
-      const { getDocs, query, collection, where } = firestore;
-      const mockDoc = {
-        id: 'user-123',
-        data: () => ({ ...mockUser, email: 'john@example.com', uid: 'uid-123' }),
-      };
-      const mockSnapshot = {
+      const user = createMockUser({ email: 'john@example.com' });
+      const archived = createMockUser({ uid: 'uid-archived', email: 'john@example.com', state: 'ARCHIVED' });
+      (firestore.collection as any).mockReturnValue({});
+      (firestore.where as any).mockReturnValue({});
+      (firestore.query as any).mockReturnValue({});
+      (firestore.getDocs as any).mockResolvedValue({
         empty: false,
-        docs: [mockDoc],
-      };
-      (collection as any).mockReturnValue({});
-      (where as any).mockReturnValue({});
-      (query as any).mockReturnValue({});
-      (getDocs as any).mockResolvedValue(mockSnapshot);
+        docs: [
+          { id: archived.uid, data: () => ({ ...archived }) },
+          { id: user.uid, data: () => ({ ...user }) },
+        ],
+      });
 
-      // Act
       const result = await repository.findByEmail('john@example.com');
 
-      // Assert
-      expect(collection).toHaveBeenCalled();
-      expect(where).toHaveBeenCalledWith('email', '==', 'john@example.com');
-      expect(result).not.toBeNull();
-      expect(result?.email).toBe('john@example.com');
+      expect(result?.uid).toBe(user.uid);
+      expect(result?.state).toBe('IN_PROGRESS');
     });
 
-    it('should return null if no user found', async () => {
-      // Arrange
+    it('returns null when only archived users are found', async () => {
       const firestore = await import('@/firebase/firestore');
-      const { getDocs, query, collection, where } = firestore;
-      const mockSnapshot = {
-        empty: true,
-        docs: [],
-      };
-      (collection as any).mockReturnValue({});
-      (where as any).mockReturnValue({});
-      (query as any).mockReturnValue({});
-      (getDocs as any).mockResolvedValue(mockSnapshot);
+      const archived = createMockUser({ state: 'ARCHIVED', email: 'archived@example.com' });
+      (firestore.collection as any).mockReturnValue({});
+      (firestore.where as any).mockReturnValue({});
+      (firestore.query as any).mockReturnValue({});
+      (firestore.getDocs as any).mockResolvedValue({
+        empty: false,
+        docs: [{ id: archived.uid, data: () => ({ ...archived }) }],
+      });
 
-      // Act
-      const result = await repository.findByEmail('notfound@example.com');
-
-      // Assert
+      const result = await repository.findByEmail('archived@example.com');
       expect(result).toBeNull();
-    });
-
-    it('should throw RepositoryError if query fails', async () => {
-      // Arrange
-      const firestore = await import('@/firebase/firestore');
-      const { getDocs, query, collection, where } = firestore;
-      const firestoreError = new Error('Firestore query failed');
-      (collection as any).mockReturnValue({});
-      (where as any).mockReturnValue({});
-      (query as any).mockReturnValue({});
-      (getDocs as any).mockRejectedValue(firestoreError);
-
-      // Act & Assert
-      await expect(repository.findByEmail('john@example.com')).rejects.toThrow(RepositoryError);
-      await expect(repository.findByEmail('john@example.com')).rejects.toThrow('Failed to find user by email');
     });
   });
 
   describe('findById', () => {
-    it('should return user if found by UID', async () => {
-      // Arrange
+    it('returns user from direct document lookup', async () => {
       const firestore = await import('@/firebase/firestore');
-      const { getDocs, query, collection, where } = firestore;
-      const mockDoc = {
-        id: 'user-123',
-        data: () => ({ ...mockUser, uid: 'uid-123' }),
-      };
-      const mockSnapshot = {
+      const user = createMockUser();
+      (firestore.doc as any).mockReturnValue({ id: user.uid });
+      (firestore.getDoc as any).mockResolvedValue(createSnapshot(user, true, user.uid));
+
+      const result = await repository.findById(user.uid);
+      expect(result?.uid).toBe(user.uid);
+      expect(firestore.getDocs).not.toHaveBeenCalled();
+    });
+
+    it('falls back to query by uid when direct lookup misses', async () => {
+      const firestore = await import('@/firebase/firestore');
+      const user = createMockUser({ uid: 'uid-fallback' });
+      (firestore.doc as any).mockReturnValue({ id: user.uid });
+      (firestore.getDoc as any).mockResolvedValue(createSnapshot(user, false, user.uid));
+      (firestore.collection as any).mockReturnValue({});
+      (firestore.where as any).mockReturnValue({});
+      (firestore.query as any).mockReturnValue({});
+      (firestore.getDocs as any).mockResolvedValue({
         empty: false,
-        docs: [mockDoc],
-      };
-      (collection as any).mockReturnValue({});
-      (where as any).mockReturnValue({});
-      (query as any).mockReturnValue({});
-      (getDocs as any).mockResolvedValue(mockSnapshot);
+        docs: [{ id: 'legacy-doc-id', data: () => ({ ...user }) }],
+      });
 
-      // Act
-      const result = await repository.findById('uid-123');
+      const result = await repository.findById(user.uid);
 
-      // Assert
-      expect(collection).toHaveBeenCalled();
-      expect(where).toHaveBeenCalledWith('uid', '==', 'uid-123');
-      expect(result).not.toBeNull();
-      expect(result?.uid).toBe('uid-123');
+      expect(result?.uid).toBe(user.uid);
+      expect(firestore.where).toHaveBeenCalledWith('uid', '==', user.uid);
     });
 
-    it('should return null if no user found', async () => {
-      // Arrange
+    it('returns null when user does not exist', async () => {
       const firestore = await import('@/firebase/firestore');
-      const { getDocs, query, collection, where } = firestore;
-      const mockSnapshot = {
-        empty: true,
-        docs: [],
-      };
-      (collection as any).mockReturnValue({});
-      (where as any).mockReturnValue({});
-      (query as any).mockReturnValue({});
-      (getDocs as any).mockResolvedValue(mockSnapshot);
+      const user = createMockUser();
+      (firestore.doc as any).mockReturnValue({ id: user.uid });
+      (firestore.getDoc as any).mockResolvedValue(createSnapshot(user, false, user.uid));
+      (firestore.collection as any).mockReturnValue({});
+      (firestore.where as any).mockReturnValue({});
+      (firestore.query as any).mockReturnValue({});
+      (firestore.getDocs as any).mockResolvedValue({ empty: true, docs: [] });
 
-      // Act
-      const result = await repository.findById('non-existent-uid');
-
-      // Assert
+      const result = await repository.findById(user.uid);
       expect(result).toBeNull();
-    });
-
-    it('should throw RepositoryError if query fails', async () => {
-      // Arrange
-      const firestore = await import('@/firebase/firestore');
-      const { getDocs, query, collection, where } = firestore;
-      const firestoreError = new Error('Firestore query failed');
-      (collection as any).mockReturnValue({});
-      (where as any).mockReturnValue({});
-      (query as any).mockReturnValue({});
-      (getDocs as any).mockRejectedValue(firestoreError);
-
-      // Act & Assert
-      await expect(repository.findById('uid-123')).rejects.toThrow(RepositoryError);
-      await expect(repository.findById('uid-123')).rejects.toThrow('Failed to find user by ID');
     });
   });
 
   describe('update', () => {
-    it('should update user successfully', async () => {
-      // Arrange
+    it('updates user through direct document path', async () => {
       const firestore = await import('@/firebase/firestore');
-      const { getDocs, updateDoc, doc, collection, where, query } = firestore;
-      const mockDoc = {
-        id: 'user-123',
-        data: () => ({ ...mockUser, uid: 'uid-123' }),
-      };
-      const mockSnapshot = {
-        empty: false,
-        docs: [mockDoc],
-      };
-      (collection as any).mockReturnValue({});
-      (where as any).mockReturnValue({});
-      (query as any).mockReturnValue({});
-      (getDocs as any).mockResolvedValue(mockSnapshot);
-      (doc as any).mockReturnValue({});
-      (updateDoc as any).mockResolvedValue(undefined);
+      const user = createMockUser();
+      const userRef = { id: user.uid };
+      (firestore.doc as any).mockReturnValue(userRef);
+      (firestore.getDoc as any).mockResolvedValue(createSnapshot(user, true, user.uid));
+      (firestore.updateDoc as any).mockResolvedValue(undefined);
 
-      // Act
-      const result = await repository.update('uid-123', { firstname: 'Jane' });
+      const result = await repository.update(user.uid, { firstname: 'Jane' });
 
-      // Assert
-      expect(collection).toHaveBeenCalled();
-      expect(where).toHaveBeenCalledWith('uid', '==', 'uid-123');
-      expect(updateDoc).toHaveBeenCalledWith(
-        expect.anything(),
+      expect(firestore.updateDoc).toHaveBeenCalledWith(
+        userRef,
         expect.objectContaining({
           firstname: 'Jane',
           updatedAt: expect.anything(),
         })
       );
       expect(result.firstname).toBe('Jane');
-      expect(result.uid).toBe('uid-123');
     });
 
-    it('should throw RepositoryError if user not found', async () => {
-      // Arrange
+    it('throws RepositoryError when user is not found', async () => {
       const firestore = await import('@/firebase/firestore');
-      const { getDocs, query, collection, where } = firestore;
-      const mockSnapshot = {
-        empty: true,
-        docs: [],
-      };
-      (collection as any).mockReturnValue({});
-      (where as any).mockReturnValue({});
-      (query as any).mockReturnValue({});
-      (getDocs as any).mockResolvedValue(mockSnapshot);
+      const uid = 'uid-not-found';
+      (firestore.doc as any).mockReturnValue({ id: uid });
+      (firestore.getDoc as any).mockResolvedValue({
+        id: uid,
+        exists: () => false,
+        data: () => ({}),
+      });
+      (firestore.collection as any).mockReturnValue({});
+      (firestore.where as any).mockReturnValue({});
+      (firestore.query as any).mockReturnValue({});
+      (firestore.getDocs as any).mockResolvedValue({ empty: true, docs: [] });
 
-      // Act & Assert
-      await expect(repository.update('non-existent-uid', { firstname: 'Jane' })).rejects.toThrow(RepositoryError);
-      await expect(repository.update('non-existent-uid', { firstname: 'Jane' })).rejects.toThrow('User not found');
+      await expect(repository.update(uid, { firstname: 'Jane' })).rejects.toThrow(RepositoryError);
+      await expect(repository.update(uid, { firstname: 'Jane' })).rejects.toThrow('User not found');
     });
 
-    it('should throw RepositoryError if update fails', async () => {
-      // Arrange
+    it('does not persist createdAt or id in update payload', async () => {
       const firestore = await import('@/firebase/firestore');
-      const { getDocs, updateDoc, doc, collection, where, query } = firestore;
-      const mockDoc = {
-        id: 'user-123',
-        data: () => ({ ...mockUser, uid: 'uid-123' }),
-      };
-      const mockSnapshot = {
-        empty: false,
-        docs: [mockDoc],
-      };
-      (collection as any).mockReturnValue({});
-      (where as any).mockReturnValue({});
-      (query as any).mockReturnValue({});
-      (getDocs as any).mockResolvedValue(mockSnapshot);
-      (doc as any).mockReturnValue({});
-      const firestoreError = new Error('Firestore update failed');
-      (updateDoc as any).mockRejectedValue(firestoreError);
+      const user = createMockUser();
+      const userRef = { id: user.uid };
+      (firestore.doc as any).mockReturnValue(userRef);
+      (firestore.getDoc as any).mockResolvedValue(createSnapshot(user, true, user.uid));
+      (firestore.updateDoc as any).mockResolvedValue(undefined);
 
-      // Act & Assert
-      await expect(repository.update('uid-123', { firstname: 'Jane' })).rejects.toThrow(RepositoryError);
-      await expect(repository.update('uid-123', { firstname: 'Jane' })).rejects.toThrow('Failed to update user');
-    });
+      await repository.update(user.uid, {
+        firstname: 'Jane',
+        id: 'should-be-ignored' as any,
+        createdAt: Timestamp.now() as any,
+      });
 
-    it('should exclude createdAt from updates', async () => {
-      // Arrange
-      const firestore = await import('@/firebase/firestore');
-      const { getDocs, updateDoc, doc, collection, where, query } = firestore;
-      const mockDoc = {
-        id: 'user-123',
-        data: () => ({ ...mockUser, uid: 'uid-123' }),
-      };
-      const mockSnapshot = {
-        empty: false,
-        docs: [mockDoc],
-      };
-      (collection as any).mockReturnValue({});
-      (where as any).mockReturnValue({});
-      (query as any).mockReturnValue({});
-      (getDocs as any).mockResolvedValue(mockSnapshot);
-      (doc as any).mockReturnValue({});
-      (updateDoc as any).mockResolvedValue(undefined);
-
-      // Act
-      await repository.update('uid-123', { firstname: 'Jane', createdAt: Timestamp.now() });
-
-      // Assert
-      expect(updateDoc).toHaveBeenCalledWith(
-        expect.anything(),
-        expect.not.objectContaining({ createdAt: expect.anything() })
+      expect(firestore.updateDoc).toHaveBeenCalledWith(
+        userRef,
+        expect.not.objectContaining({
+          createdAt: expect.anything(),
+          id: expect.anything(),
+        })
       );
     });
   });
 
   describe('delete', () => {
-    it('should soft delete user by setting state to ARCHIVED', async () => {
-      // Arrange
+    it('soft deletes user by setting ARCHIVED state', async () => {
       const firestore = await import('@/firebase/firestore');
-      const { getDocs, updateDoc, doc, collection, where, query } = firestore;
-      const mockDoc = {
-        id: 'user-123',
-        data: () => ({ ...mockUser, uid: 'uid-123' }),
-      };
-      const mockSnapshot = {
-        empty: false,
-        docs: [mockDoc],
-      };
-      (collection as any).mockReturnValue({});
-      (where as any).mockReturnValue({});
-      (query as any).mockReturnValue({});
-      (getDocs as any).mockResolvedValue(mockSnapshot);
-      (doc as any).mockReturnValue({});
-      (updateDoc as any).mockResolvedValue(undefined);
+      const user = createMockUser();
+      const userRef = { id: user.uid };
+      (firestore.doc as any).mockReturnValue(userRef);
+      (firestore.getDoc as any).mockResolvedValue(createSnapshot(user, true, user.uid));
+      (firestore.updateDoc as any).mockResolvedValue(undefined);
 
-      // Act
-      await repository.delete('uid-123');
+      await repository.delete(user.uid);
 
-      // Assert
-      expect(collection).toHaveBeenCalled();
-      expect(where).toHaveBeenCalledWith('uid', '==', 'uid-123');
-      expect(updateDoc).toHaveBeenCalledWith(
-        expect.anything(),
+      expect(firestore.updateDoc).toHaveBeenCalledWith(
+        userRef,
         expect.objectContaining({
           state: 'ARCHIVED',
+          updatedAt: expect.anything(),
         })
       );
     });
 
-    it('should throw RepositoryError if user not found', async () => {
-      // Arrange
+    it('throws RepositoryError when user is not found', async () => {
       const firestore = await import('@/firebase/firestore');
-      const { getDocs, query, collection, where } = firestore;
-      const mockSnapshot = {
-        empty: true,
-        docs: [],
-      };
-      (collection as any).mockReturnValue({});
-      (where as any).mockReturnValue({});
-      (query as any).mockReturnValue({});
-      (getDocs as any).mockResolvedValue(mockSnapshot);
+      const uid = 'uid-not-found';
+      (firestore.doc as any).mockReturnValue({ id: uid });
+      (firestore.getDoc as any).mockResolvedValue({
+        id: uid,
+        exists: () => false,
+        data: () => ({}),
+      });
+      (firestore.collection as any).mockReturnValue({});
+      (firestore.where as any).mockReturnValue({});
+      (firestore.query as any).mockReturnValue({});
+      (firestore.getDocs as any).mockResolvedValue({ empty: true, docs: [] });
 
-      // Act & Assert
-      await expect(repository.delete('non-existent-uid')).rejects.toThrow(RepositoryError);
-      await expect(repository.delete('non-existent-uid')).rejects.toThrow('User not found');
-    });
-
-    it('should throw RepositoryError if delete fails', async () => {
-      // Arrange
-      const firestore = await import('@/firebase/firestore');
-      const { getDocs, updateDoc, doc, collection, where, query } = firestore;
-      const mockDoc = {
-        id: 'user-123',
-        data: () => ({ ...mockUser, uid: 'uid-123' }),
-      };
-      const mockSnapshot = {
-        empty: false,
-        docs: [mockDoc],
-      };
-      (collection as any).mockReturnValue({});
-      (where as any).mockReturnValue({});
-      (query as any).mockReturnValue({});
-      (getDocs as any).mockResolvedValue(mockSnapshot);
-      (doc as any).mockReturnValue({});
-      const firestoreError = new Error('Firestore update failed');
-      (updateDoc as any).mockRejectedValue(firestoreError);
-
-      // Act & Assert
-      await expect(repository.delete('uid-123')).rejects.toThrow(RepositoryError);
-      await expect(repository.delete('uid-123')).rejects.toThrow('Failed to delete user');
+      await expect(repository.delete(uid)).rejects.toThrow(RepositoryError);
+      await expect(repository.delete(uid)).rejects.toThrow('User not found');
     });
   });
 });
-

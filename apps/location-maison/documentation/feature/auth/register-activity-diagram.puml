@@ -51,7 +51,6 @@ if (Type de compte = Annonceur ?) then (oui)
       
       Étapes supplémentaires:
       - Acceptation CGU Annonceur
-      - Vérification téléphone (OTP)
       - Choix type d'annonceur
       - Création AnnouncerProfile
     end note
@@ -154,4 +153,3 @@ end note
 stop
 
 @enduml
-

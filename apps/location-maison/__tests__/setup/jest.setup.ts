@@ -44,6 +44,7 @@ jest.mock('firebase/firestore', () => ({
   collection: jest.fn(),
   doc: jest.fn(),
   getDoc: jest.fn(),
+  setDoc: jest.fn(),
   getDocs: jest.fn(),
   addDoc: jest.fn(),
   updateDoc: jest.fn(),
@@ -171,4 +172,3 @@ declare global {
 }
 
 export {};
-

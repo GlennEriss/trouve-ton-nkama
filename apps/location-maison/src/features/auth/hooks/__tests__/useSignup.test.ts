@@ -106,7 +106,6 @@ describe('useSignup', () => {
         accountType: 'Announcer',
         announcerType: 'INDIVIDUAL',
         acceptAnnouncerTerms: true,
-        phoneVerificationCode: '123456',
       };
 
       const mockResult: SignupResult = {

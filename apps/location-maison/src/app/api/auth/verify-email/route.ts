@@ -1,35 +1,37 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { adminAuth } from '@/firebase/admin';
+import { createLogger } from '@/lib/logger';
+import { assertStringField, handleApiError } from '@/lib/api/error-response';
+import { ValidationError } from '@/lib/errors/app-error';
+
+const logger = createLogger('api.auth.verify-email');
 
 export async function GET(request: NextRequest) {
-  const params = request.nextUrl.searchParams;
-  const uid = params.get('uid');
-  const expires = params.get('expires');
+  try {
+    const params = request.nextUrl.searchParams;
+    const uid = params.get('uid');
+    const expires = params.get('expires');
 
-  if (!uid) {
-    return NextResponse.json(
-      { error: 'UID utilisateur requis' },
-      { status: 400 }
-    );
-  }
+    if (!uid) {
+      throw new ValidationError('UID utilisateur requis', { field: 'uid' });
+    }
 
-  // Vérifier l'expiration du lien
-  if (expires) {
-    const expirationTime = parseInt(expires);
-    const currentTime = Date.now();
-    
-    if (currentTime > expirationTime) {
-      // Lien expiré - rediriger vers une page d'expiration
+    // Vérifier l'expiration du lien
+    if (expires) {
+      const expirationTime = parseInt(expires, 10);
+      const currentTime = Date.now();
+
+      if (currentTime > expirationTime) {
+        // Lien expiré - rediriger vers une page d'expiration
+        const redirectUrl = new URL('/email-verification-expired', request.url);
+        return NextResponse.redirect(redirectUrl);
+      }
+    } else {
+      // Pas d'expiration spécifiée (anciens liens) - considérer comme expiré
       const redirectUrl = new URL('/email-verification-expired', request.url);
       return NextResponse.redirect(redirectUrl);
     }
-  } else {
-    // Pas d'expiration spécifiée (anciens liens) - considérer comme expiré
-    const redirectUrl = new URL('/email-verification-expired', request.url);
-    return NextResponse.redirect(redirectUrl);
-  }
 
-  try {
     // Récupérer l'utilisateur par son UID
     const user = await adminAuth.getUser(uid);
 
@@ -47,78 +49,63 @@ export async function GET(request: NextRequest) {
       const redirectUrl = new URL('/email-verification-success', request.url);
       return NextResponse.redirect(redirectUrl);
     }
-  } catch (error: any) {
-    console.error('Erreur lors de la vérification de l\'email:', error);
-    
-    if (error.code === 'auth/user-not-found') {
-      return NextResponse.json(
-        { error: 'Utilisateur non trouvé' },
-        { status: 404 }
-      );
-    }
-    
-    return NextResponse.json(
-      { error: 'Erreur lors de la vérification de l\'email' },
-      { status: 500 }
-    );
+  } catch (error) {
+    return handleApiError(error, {
+      logger,
+      route: '/api/auth/verify-email:GET',
+      fallbackMessage: 'Erreur lors de la vérification de l\'email',
+      knownCodes: {
+        'auth/user-not-found': {
+          status: 404,
+          code: 'USER_NOT_FOUND',
+          message: 'Utilisateur non trouvé',
+        },
+      },
+    });
   }
 }
 
 export async function POST(request: NextRequest) {
   try {
-    const { uid } = await request.json();
+    const body = await request.json();
+    const { uid } = body || {};
+    assertStringField(uid, 'uid', 'UID utilisateur requis');
 
-    if (!uid) {
-      return NextResponse.json(
-        { error: 'UID utilisateur requis' },
-        { status: 400 }
-      );
+    // Récupérer l'utilisateur par son UID
+    const user = await adminAuth.getUser(uid);
+
+    if (user.emailVerified) {
+      return NextResponse.json({
+        success: true,
+        message: 'Email déjà vérifié',
+        alreadyVerified: true,
+      });
     }
 
-    try {
-      // Récupérer l'utilisateur par son UID
-      const user = await adminAuth.getUser(uid);
+    // Pour l'API POST, ne pas vérifier l'expiration car c'est utilisé
+    // pour la vérification manuelle du statut
+    await adminAuth.updateUser(uid, {
+      emailVerified: true,
+    });
 
-      if (user.emailVerified) {
-        return NextResponse.json({
-          success: true,
-          message: 'Email déjà vérifié',
-          alreadyVerified: true,
-        });
-      } else {
-        // Pour l'API POST, ne pas vérifier l'expiration car c'est utilisé 
-        // pour la vérification manuelle du statut
-        // Marquer l'email comme vérifié
-        await adminAuth.updateUser(uid, {
-          emailVerified: true,
-        });
-
-        return NextResponse.json({
-          success: true,
-          message: 'Email vérifié avec succès',
-          alreadyVerified: false,
-        });
-      }
-    } catch (error: any) {
-      console.error('Erreur lors de la vérification de l\'email:', error);
-      
-      if (error.code === 'auth/user-not-found') {
-        return NextResponse.json(
-          { error: 'Utilisateur non trouvé' },
-          { status: 404 }
-        );
-      }
-      
-      return NextResponse.json(
-        { error: 'Erreur lors de la vérification de l\'email' },
-        { status: 500 }
-      );
-    }
+    logger.info('Email marked as verified', { uid });
+    return NextResponse.json({
+      success: true,
+      message: 'Email vérifié avec succès',
+      alreadyVerified: false,
+    });
   } catch (error) {
-    console.error('Erreur générale:', error);
-    return NextResponse.json(
-      { error: 'Erreur interne du serveur' },
-      { status: 500 }
-    );
+    return handleApiError(error, {
+      logger,
+      route: '/api/auth/verify-email:POST',
+      fallbackMessage: 'Erreur lors de la vérification de l\'email',
+      knownCodes: {
+        'auth/user-not-found': {
+          status: 404,
+          code: 'USER_NOT_FOUND',
+          message: 'Utilisateur non trouvé',
+        },
+      },
+    });
   }
-} 
+}

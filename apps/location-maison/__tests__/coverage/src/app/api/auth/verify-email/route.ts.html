@@ -25,7 +25,7 @@
             <div class='fl pad1y space-right2'>
                 <span class="strong">0% </span>
                 <span class="quiet">Statements</span>
-                <span class='fraction'>0/124</span>
+                <span class='fraction'>0/111</span>
             </div>
         
             
@@ -46,7 +46,7 @@
             <div class='fl pad1y space-right2'>
                 <span class="strong">0% </span>
                 <span class="quiet">Lines</span>
-                <span class='fraction'>0/124</span>
+                <span class='fraction'>0/111</span>
             </div>
         
             
@@ -174,19 +174,7 @@
 <a name='L109'></a><a href='#L109'>109</a>
 <a name='L110'></a><a href='#L110'>110</a>
 <a name='L111'></a><a href='#L111'>111</a>
-<a name='L112'></a><a href='#L112'>112</a>
-<a name='L113'></a><a href='#L113'>113</a>
-<a name='L114'></a><a href='#L114'>114</a>
-<a name='L115'></a><a href='#L115'>115</a>
-<a name='L116'></a><a href='#L116'>116</a>
-<a name='L117'></a><a href='#L117'>117</a>
-<a name='L118'></a><a href='#L118'>118</a>
-<a name='L119'></a><a href='#L119'>119</a>
-<a name='L120'></a><a href='#L120'>120</a>
-<a name='L121'></a><a href='#L121'>121</a>
-<a name='L122'></a><a href='#L122'>122</a>
-<a name='L123'></a><a href='#L123'>123</a>
-<a name='L124'></a><a href='#L124'>124</a></td><td class="line-coverage quiet"><span class="cline-any cline-no">&nbsp;</span>
+<a name='L112'></a><a href='#L112'>112</a></td><td class="line-coverage quiet"><span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
@@ -297,50 +285,40 @@
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span></td><td class="text"><pre class="prettyprint lang-js"><span class="cstat-no" title="statement not covered" ><span class="fstat-no" title="function not covered" ><span class="branch-0 cbranch-no" title="branch not covered" >import { NextRequest, NextResponse } from 'next/server';</span></span></span>
+<span class="cline-any cline-neutral">&nbsp;</span></td><td class="text"><pre class="prettyprint lang-js"><span class="cstat-no" title="statement not covered" ><span class="fstat-no" title="function not covered" ><span class="branch-0 cbranch-no" title="branch not covered" >import { NextRequest, NextResponse } from 'next/server';</span></span></span>
 <span class="cstat-no" title="statement not covered" >import { adminAuth } from '@/firebase/admin';</span>
+<span class="cstat-no" title="statement not covered" >import { createLogger } from '@/lib/logger';</span>
+<span class="cstat-no" title="statement not covered" >import { assertStringField, handleApiError } from '@/lib/api/error-response';</span>
+<span class="cstat-no" title="statement not covered" >import { ValidationError } from '@/lib/errors/app-error';</span>
+<span class="cstat-no" title="statement not covered" ></span>
+<span class="cstat-no" title="statement not covered" >const logger = createLogger('api.auth.verify-email');</span>
 <span class="cstat-no" title="statement not covered" ></span>
 <span class="cstat-no" title="statement not covered" >export async function GET(request: NextRequest) {</span>
-<span class="cstat-no" title="statement not covered" >  const params = request.nextUrl.searchParams;</span>
-<span class="cstat-no" title="statement not covered" >  const uid = params.get('uid');</span>
-<span class="cstat-no" title="statement not covered" >  const expires = params.get('expires');</span>
+<span class="cstat-no" title="statement not covered" >  try {</span>
+<span class="cstat-no" title="statement not covered" >    const params = request.nextUrl.searchParams;</span>
+<span class="cstat-no" title="statement not covered" >    const uid = params.get('uid');</span>
+<span class="cstat-no" title="statement not covered" >    const expires = params.get('expires');</span>
 <span class="cstat-no" title="statement not covered" ></span>
-<span class="cstat-no" title="statement not covered" >  if (!uid) {</span>
-<span class="cstat-no" title="statement not covered" >    return NextResponse.json(</span>
-<span class="cstat-no" title="statement not covered" >      { error: 'UID utilisateur requis' },</span>
-<span class="cstat-no" title="statement not covered" >      { status: 400 }</span>
-<span class="cstat-no" title="statement not covered" >    );</span>
-<span class="cstat-no" title="statement not covered" >  }</span>
+<span class="cstat-no" title="statement not covered" >    if (!uid) {</span>
+<span class="cstat-no" title="statement not covered" >      throw new ValidationError('UID utilisateur requis', { field: 'uid' });</span>
+<span class="cstat-no" title="statement not covered" >    }</span>
 <span class="cstat-no" title="statement not covered" ></span>
-<span class="cstat-no" title="statement not covered" >  // Vérifier l'expiration du lien</span>
-<span class="cstat-no" title="statement not covered" >  if (expires) {</span>
-<span class="cstat-no" title="statement not covered" >    const expirationTime = parseInt(expires);</span>
-<span class="cstat-no" title="statement not covered" >    const currentTime = Date.now();</span>
-<span class="cstat-no" title="statement not covered" >    </span>
-<span class="cstat-no" title="statement not covered" >    if (currentTime &gt; expirationTime) {</span>
-<span class="cstat-no" title="statement not covered" >      // Lien expiré - rediriger vers une page d'expiration</span>
+<span class="cstat-no" title="statement not covered" >    // Vérifier l'expiration du lien</span>
+<span class="cstat-no" title="statement not covered" >    if (expires) {</span>
+<span class="cstat-no" title="statement not covered" >      const expirationTime = parseInt(expires, 10);</span>
+<span class="cstat-no" title="statement not covered" >      const currentTime = Date.now();</span>
+<span class="cstat-no" title="statement not covered" ></span>
+<span class="cstat-no" title="statement not covered" >      if (currentTime &gt; expirationTime) {</span>
+<span class="cstat-no" title="statement not covered" >        // Lien expiré - rediriger vers une page d'expiration</span>
+<span class="cstat-no" title="statement not covered" >        const redirectUrl = new URL('/email-verification-expired', request.url);</span>
+<span class="cstat-no" title="statement not covered" >        return NextResponse.redirect(redirectUrl);</span>
+<span class="cstat-no" title="statement not covered" >      }</span>
+<span class="cstat-no" title="statement not covered" >    } else {</span>
+<span class="cstat-no" title="statement not covered" >      // Pas d'expiration spécifiée (anciens liens) - considérer comme expiré</span>
 <span class="cstat-no" title="statement not covered" >      const redirectUrl = new URL('/email-verification-expired', request.url);</span>
 <span class="cstat-no" title="statement not covered" >      return NextResponse.redirect(redirectUrl);</span>
 <span class="cstat-no" title="statement not covered" >    }</span>
-<span class="cstat-no" title="statement not covered" >  } else {</span>
-<span class="cstat-no" title="statement not covered" >    // Pas d'expiration spécifiée (anciens liens) - considérer comme expiré</span>
-<span class="cstat-no" title="statement not covered" >    const redirectUrl = new URL('/email-verification-expired', request.url);</span>
-<span class="cstat-no" title="statement not covered" >    return NextResponse.redirect(redirectUrl);</span>
-<span class="cstat-no" title="statement not covered" >  }</span>
 <span class="cstat-no" title="statement not covered" ></span>
-<span class="cstat-no" title="statement not covered" >  try {</span>
 <span class="cstat-no" title="statement not covered" >    // Récupérer l'utilisateur par son UID</span>
 <span class="cstat-no" title="statement not covered" >    const user = await adminAuth.getUser(uid);</span>
 <span class="cstat-no" title="statement not covered" ></span>
@@ -358,88 +336,74 @@
 <span class="cstat-no" title="statement not covered" >      const redirectUrl = new URL('/email-verification-success', request.url);</span>
 <span class="cstat-no" title="statement not covered" >      return NextResponse.redirect(redirectUrl);</span>
 <span class="cstat-no" title="statement not covered" >    }</span>
-<span class="cstat-no" title="statement not covered" >  } catch (error: any) {</span>
-<span class="cstat-no" title="statement not covered" >    console.error('Erreur lors de la vérification de l\'email:', error);</span>
-<span class="cstat-no" title="statement not covered" >    </span>
-<span class="cstat-no" title="statement not covered" >    if (error.code === 'auth/user-not-found') {</span>
-<span class="cstat-no" title="statement not covered" >      return NextResponse.json(</span>
-<span class="cstat-no" title="statement not covered" >        { error: 'Utilisateur non trouvé' },</span>
-<span class="cstat-no" title="statement not covered" >        { status: 404 }</span>
-<span class="cstat-no" title="statement not covered" >      );</span>
-<span class="cstat-no" title="statement not covered" >    }</span>
-<span class="cstat-no" title="statement not covered" >    </span>
-<span class="cstat-no" title="statement not covered" >    return NextResponse.json(</span>
-<span class="cstat-no" title="statement not covered" >      { error: 'Erreur lors de la vérification de l\'email' },</span>
-<span class="cstat-no" title="statement not covered" >      { status: 500 }</span>
-<span class="cstat-no" title="statement not covered" >    );</span>
+<span class="cstat-no" title="statement not covered" >  } catch (error) {</span>
+<span class="cstat-no" title="statement not covered" >    return handleApiError(error, {</span>
+<span class="cstat-no" title="statement not covered" >      logger,</span>
+<span class="cstat-no" title="statement not covered" >      route: '/api/auth/verify-email:GET',</span>
+<span class="cstat-no" title="statement not covered" >      fallbackMessage: 'Erreur lors de la vérification de l\'email',</span>
+<span class="cstat-no" title="statement not covered" >      knownCodes: {</span>
+<span class="cstat-no" title="statement not covered" >        'auth/user-not-found': {</span>
+<span class="cstat-no" title="statement not covered" >          status: 404,</span>
+<span class="cstat-no" title="statement not covered" >          code: 'USER_NOT_FOUND',</span>
+<span class="cstat-no" title="statement not covered" >          message: 'Utilisateur non trouvé',</span>
+<span class="cstat-no" title="statement not covered" >        },</span>
+<span class="cstat-no" title="statement not covered" >      },</span>
+<span class="cstat-no" title="statement not covered" >    });</span>
 <span class="cstat-no" title="statement not covered" >  }</span>
 <span class="cstat-no" title="statement not covered" >}</span>
 <span class="cstat-no" title="statement not covered" ></span>
 <span class="cstat-no" title="statement not covered" >export async function POST(request: NextRequest) {</span>
 <span class="cstat-no" title="statement not covered" >  try {</span>
-<span class="cstat-no" title="statement not covered" >    const { uid } = await request.json();</span>
+<span class="cstat-no" title="statement not covered" >    const body = await request.json();</span>
+<span class="cstat-no" title="statement not covered" >    const { uid } = body || {};</span>
+<span class="cstat-no" title="statement not covered" >    assertStringField(uid, 'uid', 'UID utilisateur requis');</span>
 <span class="cstat-no" title="statement not covered" ></span>
-<span class="cstat-no" title="statement not covered" >    if (!uid) {</span>
-<span class="cstat-no" title="statement not covered" >      return NextResponse.json(</span>
-<span class="cstat-no" title="statement not covered" >        { error: 'UID utilisateur requis' },</span>
-<span class="cstat-no" title="statement not covered" >        { status: 400 }</span>
-<span class="cstat-no" title="statement not covered" >      );</span>
+<span class="cstat-no" title="statement not covered" >    // Récupérer l'utilisateur par son UID</span>
+<span class="cstat-no" title="statement not covered" >    const user = await adminAuth.getUser(uid);</span>
+<span class="cstat-no" title="statement not covered" ></span>
+<span class="cstat-no" title="statement not covered" >    if (user.emailVerified) {</span>
+<span class="cstat-no" title="statement not covered" >      return NextResponse.json({</span>
+<span class="cstat-no" title="statement not covered" >        success: true,</span>
+<span class="cstat-no" title="statement not covered" >        message: 'Email déjà vérifié',</span>
+<span class="cstat-no" title="statement not covered" >        alreadyVerified: true,</span>
+<span class="cstat-no" title="statement not covered" >      });</span>
 <span class="cstat-no" title="statement not covered" >    }</span>
 <span class="cstat-no" title="statement not covered" ></span>
-<span class="cstat-no" title="statement not covered" >    try {</span>
-<span class="cstat-no" title="statement not covered" >      // Récupérer l'utilisateur par son UID</span>
-<span class="cstat-no" title="statement not covered" >      const user = await adminAuth.getUser(uid);</span>
+<span class="cstat-no" title="statement not covered" >    // Pour l'API POST, ne pas vérifier l'expiration car c'est utilisé</span>
+<span class="cstat-no" title="statement not covered" >    // pour la vérification manuelle du statut</span>
+<span class="cstat-no" title="statement not covered" >    await adminAuth.updateUser(uid, {</span>
+<span class="cstat-no" title="statement not covered" >      emailVerified: true,</span>
+<span class="cstat-no" title="statement not covered" >    });</span>
 <span class="cstat-no" title="statement not covered" ></span>
-<span class="cstat-no" title="statement not covered" >      if (user.emailVerified) {</span>
-<span class="cstat-no" title="statement not covered" >        return NextResponse.json({</span>
-<span class="cstat-no" title="statement not covered" >          success: true,</span>
-<span class="cstat-no" title="statement not covered" >          message: 'Email déjà vérifié',</span>
-<span class="cstat-no" title="statement not covered" >          alreadyVerified: true,</span>
-<span class="cstat-no" title="statement not covered" >        });</span>
-<span class="cstat-no" title="statement not covered" >      } else {</span>
-<span class="cstat-no" title="statement not covered" >        // Pour l'API POST, ne pas vérifier l'expiration car c'est utilisé </span>
-<span class="cstat-no" title="statement not covered" >        // pour la vérification manuelle du statut</span>
-<span class="cstat-no" title="statement not covered" >        // Marquer l'email comme vérifié</span>
-<span class="cstat-no" title="statement not covered" >        await adminAuth.updateUser(uid, {</span>
-<span class="cstat-no" title="statement not covered" >          emailVerified: true,</span>
-<span class="cstat-no" title="statement not covered" >        });</span>
-<span class="cstat-no" title="statement not covered" ></span>
-<span class="cstat-no" title="statement not covered" >        return NextResponse.json({</span>
-<span class="cstat-no" title="statement not covered" >          success: true,</span>
-<span class="cstat-no" title="statement not covered" >          message: 'Email vérifié avec succès',</span>
-<span class="cstat-no" title="statement not covered" >          alreadyVerified: false,</span>
-<span class="cstat-no" title="statement not covered" >        });</span>
-<span class="cstat-no" title="statement not covered" >      }</span>
-<span class="cstat-no" title="statement not covered" >    } catch (error: any) {</span>
-<span class="cstat-no" title="statement not covered" >      console.error('Erreur lors de la vérification de l\'email:', error);</span>
-<span class="cstat-no" title="statement not covered" >      </span>
-<span class="cstat-no" title="statement not covered" >      if (error.code === 'auth/user-not-found') {</span>
-<span class="cstat-no" title="statement not covered" >        return NextResponse.json(</span>
-<span class="cstat-no" title="statement not covered" >          { error: 'Utilisateur non trouvé' },</span>
-<span class="cstat-no" title="statement not covered" >          { status: 404 }</span>
-<span class="cstat-no" title="statement not covered" >        );</span>
-<span class="cstat-no" title="statement not covered" >      }</span>
-<span class="cstat-no" title="statement not covered" >      </span>
-<span class="cstat-no" title="statement not covered" >      return NextResponse.json(</span>
-<span class="cstat-no" title="statement not covered" >        { error: 'Erreur lors de la vérification de l\'email' },</span>
-<span class="cstat-no" title="statement not covered" >        { status: 500 }</span>
-<span class="cstat-no" title="statement not covered" >      );</span>
-<span class="cstat-no" title="statement not covered" >    }</span>
+<span class="cstat-no" title="statement not covered" >    logger.info('Email marked as verified', { uid });</span>
+<span class="cstat-no" title="statement not covered" >    return NextResponse.json({</span>
+<span class="cstat-no" title="statement not covered" >      success: true,</span>
+<span class="cstat-no" title="statement not covered" >      message: 'Email vérifié avec succès',</span>
+<span class="cstat-no" title="statement not covered" >      alreadyVerified: false,</span>
+<span class="cstat-no" title="statement not covered" >    });</span>
 <span class="cstat-no" title="statement not covered" >  } catch (error) {</span>
-<span class="cstat-no" title="statement not covered" >    console.error('Erreur générale:', error);</span>
-<span class="cstat-no" title="statement not covered" >    return NextResponse.json(</span>
-<span class="cstat-no" title="statement not covered" >      { error: 'Erreur interne du serveur' },</span>
-<span class="cstat-no" title="statement not covered" >      { status: 500 }</span>
-<span class="cstat-no" title="statement not covered" >    );</span>
+<span class="cstat-no" title="statement not covered" >    return handleApiError(error, {</span>
+<span class="cstat-no" title="statement not covered" >      logger,</span>
+<span class="cstat-no" title="statement not covered" >      route: '/api/auth/verify-email:POST',</span>
+<span class="cstat-no" title="statement not covered" >      fallbackMessage: 'Erreur lors de la vérification de l\'email',</span>
+<span class="cstat-no" title="statement not covered" >      knownCodes: {</span>
+<span class="cstat-no" title="statement not covered" >        'auth/user-not-found': {</span>
+<span class="cstat-no" title="statement not covered" >          status: 404,</span>
+<span class="cstat-no" title="statement not covered" >          code: 'USER_NOT_FOUND',</span>
+<span class="cstat-no" title="statement not covered" >          message: 'Utilisateur non trouvé',</span>
+<span class="cstat-no" title="statement not covered" >        },</span>
+<span class="cstat-no" title="statement not covered" >      },</span>
+<span class="cstat-no" title="statement not covered" >    });</span>
 <span class="cstat-no" title="statement not covered" >  }</span>
-<span class="cstat-no" title="statement not covered" >} </span></pre></td></tr></table></pre>
+<span class="cstat-no" title="statement not covered" >}</span>
+&nbsp;</pre></td></tr></table></pre>
 
                 <div class='push'></div><!-- for sticky footer -->
             </div><!-- /wrapper -->
             <div class='footer quiet pad2 space-top1 center small'>
                 Code coverage generated by
                 <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
-                at 2026-01-13T11:36:03.714Z
+                at 2026-03-05T17:16:35.554Z
             </div>
         <script src="../../../../../prettify.js"></script>
         <script>

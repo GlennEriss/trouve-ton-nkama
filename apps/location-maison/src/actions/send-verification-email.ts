@@ -1,6 +1,9 @@
 'use server'
 
 import { revalidatePath } from 'next/cache'
+import { createLogger } from '@/lib/logger'
+
+const logger = createLogger('actions.send-auth-email')
 
 export async function sendVerificationEmail(email: string) {
   try {
@@ -30,7 +33,7 @@ export async function sendVerificationEmail(email: string) {
       }
     }
   } catch (error: any) {
-    console.error('Erreur lors de l\'envoi de l\'email de vérification:', error)
+    logger.error('Failed to send verification email action', { error, email })
     return {
       success: false,
       error: 'Erreur lors de l\'envoi de l\'email de vérification',
@@ -66,7 +69,7 @@ export async function sendPasswordResetEmail(email: string) {
       }
     }
   } catch (error: any) {
-    console.error('Erreur lors de l\'envoi de l\'email de réinitialisation:', error)
+    logger.error('Failed to send password reset email action', { error, email })
     return {
       success: false,
       error: 'Erreur lors de l\'envoi de l\'email de réinitialisation',
