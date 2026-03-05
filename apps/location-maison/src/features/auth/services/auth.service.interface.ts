@@ -16,7 +16,6 @@ export interface SignupData {
   accountType?: 'User' | 'Announcer';
   announcerType?: 'INDIVIDUAL' | 'AGENCY' | 'BROKER' | 'AGENT';
   acceptAnnouncerTerms?: boolean;
-  phoneVerificationCode?: string;
 }
 
 export interface SignupResult {
@@ -64,9 +63,6 @@ export enum SignupErrorCode {
   INVALID_EMAIL = 'INVALID_EMAIL',
   TERMS_NOT_ACCEPTED = 'TERMS_NOT_ACCEPTED',
   ANNOUNCER_TERMS_NOT_ACCEPTED = 'ANNOUNCER_TERMS_NOT_ACCEPTED',
-  PHONE_VERIFICATION_REQUIRED = 'PHONE_VERIFICATION_REQUIRED',
-  PHONE_VERIFICATION_FAILED = 'PHONE_VERIFICATION_FAILED',
   NETWORK_ERROR = 'NETWORK_ERROR',
   UNKNOWN_ERROR = 'UNKNOWN_ERROR',
 }
-

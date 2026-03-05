@@ -16,6 +16,8 @@ export const FormLoginSchema = z.object({
 });
 
 export const FormRegisterSchema = z.object({
+  accountType: z.enum(['User', 'Announcer']).optional(),
+  acceptAnnouncerTerms: z.boolean().optional(),
   firstname: z.string().min(1, { message: 'Le prénom est requis' }),
   lastname: z.string().min(1, { message: 'Le nom est requis' }),
   email: z.string().email({ message: 'L\'email n\'est pas valide' }),
@@ -72,10 +74,18 @@ export const FormRegisterSchema = z.object({
   termsOfPrivacyPolicy: z
     .boolean()
     .refine((value) => value === true, 'errors.terms_required'),
-}).refine((data) => data.password === data.passwordConfirm, {
-  path: ['passwordConfirm'],
-  message: 'Les mots de passe ne correspondent pas',
-});
+})
+  .refine((data) => data.password === data.passwordConfirm, {
+    path: ['passwordConfirm'],
+    message: 'Les mots de passe ne correspondent pas',
+  })
+  .refine(
+    (data) => data.accountType !== 'Announcer' || data.acceptAnnouncerTerms === true,
+    {
+      path: ['acceptAnnouncerTerms'],
+      message: "Vous devez accepter les conditions d'annonceur",
+    }
+  );
 
 //Property Schemas
 export const LocationSchema = z.object({

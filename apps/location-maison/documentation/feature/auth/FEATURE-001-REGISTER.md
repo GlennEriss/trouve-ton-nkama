@@ -1,4 +1,4 @@
-00# FEATURE-001 : Inscription (Register)
+# FEATURE-001 : Inscription (Register)
 
 > **Phase 1.1** - Authentification & Base Utilisateur
 
@@ -190,34 +190,35 @@ interface UseSignupReturn {
 - [x] Identifier toutes les dépendances
 
 ### Phase 2 : Repository
-- [ ] Créer `user.repository.ts`
-- [ ] Implémenter `create`, `findByPhoneNumber`, `findByEmail`, `findById`
-- [ ] Gestion d'erreurs cohérente (toujours throw)
-- [ ] Tests unitaires repository
+- [x] Créer `user.repository.ts`
+- [x] Implémenter `create`, `findByPhoneNumber`, `findByEmail`, `findById`
+- [x] Gestion d'erreurs cohérente (toujours throw)
+- [x] Tests unitaires repository
 
 ### Phase 3 : Service
-- [ ] Créer `auth.service.ts`
-- [ ] Implémenter `signup`
-- [ ] Intégration avec Firebase Auth
-- [ ] Intégration avec repository
-- [ ] Gestion d'erreurs cohérente
-- [ ] Tests unitaires service
+- [x] Créer `auth.service.ts`
+- [x] Implémenter `signup`
+- [x] Intégration avec Firebase Auth
+- [x] Intégration avec repository
+- [x] Gestion d'erreurs cohérente
+- [x] Tests unitaires service
 
 ### Phase 4 : Hook
-- [ ] Créer `useSignup.ts`
-- [ ] Intégration avec service
-- [ ] Gestion état (loading/error/success)
-- [ ] Tests unitaires hook
+- [x] Créer `useSignup.ts`
+- [x] Intégration avec service
+- [x] Gestion état (loading/error/success)
+- [x] Tests unitaires hook
 
 ### Phase 5 : Composant
-- [ ] Refactorer `SignupForm.tsx` (UI uniquement)
-- [ ] Utiliser `useSignup` hook
-- [ ] Validation Zod côté client
-- [ ] Tests unitaires composant (React Testing Library)
+- [x] Refactorer `SignupForm.tsx` (UI uniquement)
+- [x] Utiliser `useSignup` hook
+- [x] Validation Zod côté client
+- [x] Tests unitaires composant (React Testing Library)
 
 ### Phase 6 : Tests
-- [ ] Tests unitaires (Jest)
-- [ ] Tests d'intégration (Firebase Emulator)
+- [x] Tests unitaires (Jest)
+- [x] Tests d'intégration signup (service/repository avec mocks)
+- [ ] Tests d'intégration avec Firebase Emulator (à compléter)
 - [ ] Tests E2E (Playwright)
 - [ ] Couverture >= 80%
 
@@ -263,27 +264,27 @@ interface UseSignupReturn {
 
 ### Tests d'Intégration
 
-1. **Service + Repository + Firebase Emulator** :
+1. **Service + Repository (mocks actuels)** :
    - ✅ Inscription complète (Auth + Firestore)
    - ✅ Vérification unicité téléphone
-   - ✅ Création utilisateur avec crédits initiaux (3 crédits)
+   - ✅ Envoi email de vérification via endpoint API
 
 ### Tests E2E (Playwright)
 
 1. **Workflow complet** :
-   - ✅ Remplir formulaire
-   - ✅ Soumettre
-   - ✅ Vérifier création compte
-   - ✅ Vérifier email de vérification envoyé
-   - ✅ Vérifier redirection
+   - ⬜ Remplir formulaire (desktop + mobile)
+   - ⬜ Soumettre
+   - ⬜ Vérifier création compte
+   - ⬜ Vérifier email de vérification envoyé
+   - ⬜ Vérifier redirection
 
 ---
 
 ## 📊 Métriques de Succès
 
 - [ ] **Couverture de tests** : >= 80%
-- [ ] **Gestion d'erreurs** : 100% cohérente (toujours throw)
-- [ ] **Séparation UI/Logique** : 100% (pas de logique dans composants)
+- [x] **Gestion d'erreurs** : centralisation service/repository/API en place
+- [x] **Séparation UI/Logique** : service + hook utilisés dans les composants signup
 - [ ] **Pas de duplication** : 0 duplication de code
 - [ ] **Performance** : Temps de réponse < 2s
 - [ ] **Accessibilité** : WCAG 2.1 AA
@@ -306,9 +307,12 @@ interface UseSignupReturn {
 
 ## 📝 Notes
 
-- **Rôle par défaut** : L'utilisateur créé a le rôle **'User'** (pas 'Announcer')
-  - Il peut devenir Annonceur plus tard via la migration (voir use cases Utilisateur)
-  - Les crédits sont nécessaires uniquement pour les Annonceurs qui publient des annonces
+- **Règle de rôles au signup** :
+  - compte `User` => rôles `['User']`
+  - compte `Announcer` => rôles `['User', 'Announcer']`
+- **Hors scope FEATURE-001 (signup)** :
+  - gestion détaillée des profils (`User`/`Announcer`) dans la feature profil dédiée
+  - `AnnouncerProfile` n'est pas créé par le flux signup
 - **Crédits de bienvenue** : Attribuer 3 crédits lors de l'inscription (voir class diagram)
   - Les crédits sont stockés dans `CreditWallet`, pas dans `User.credits`
 - **Email de vérification** : Envoyer en arrière-plan (non-bloquant)
@@ -317,5 +321,4 @@ interface UseSignupReturn {
 
 ---
 
-*Dernière mise à jour : 2026-01-12*
-
+*Dernière mise à jour : 2026-03-05*

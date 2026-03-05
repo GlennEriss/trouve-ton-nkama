@@ -13,7 +13,6 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { useRouter } from 'next/navigation';
 import { useToast } from '@/hooks/use-toast';
 import { FormRegisterSchemaType, FormRegisterSchema } from '@/models/schema';
-import { SignupData } from '../../services/auth.service.interface';
 import { useSignup } from '../../hooks';
 import { InputForm } from '@/components/forms/InputForm';
 import { DateSelectForm } from '@/components/forms/DateSelectForm';
@@ -22,28 +21,11 @@ import { CheckboxForm } from '@/components/forms/CheckboxForm';
 import { ButtonLoading } from '@/components/buttons/ButtonLoading';
 import { Form } from '@/components/ui/form';
 import { routes } from '@/constantes/routes';
+import { mapRegisterFormToSignupData } from './signup.mapper';
+import { createLogger } from '@/lib/logger';
+import { Building2, CircleUser } from 'lucide-react';
 
-/**
- * Transform FormRegisterSchemaType to SignupData
- */
-function transformFormDataToSignupData(values: FormRegisterSchemaType): SignupData {
-  // Convert birthdate structure to string format (YYYY-MM-DD)
-  const birthDate = values.birthdate
-    ? `${values.birthdate.year}-${String(values.birthdate.month).padStart(2, '0')}-${String(values.birthdate.day).padStart(2, '0')}`
-    : '';
-
-  return {
-    email: values.email,
-    password: values.password,
-    firstName: values.firstname,
-    lastName: values.lastname,
-    birthDate,
-    phoneNumber: values.phone,
-    country: values.country || 'GA',
-    acceptTerms: values.termsOfPrivacyPolicy,
-    accountType: 'User', // Default to User (simple user)
-  };
-}
+const logger = createLogger('auth.signup-form');
 
 /**
  * SignupForm Props
@@ -70,6 +52,8 @@ export const SignupForm: React.FC<SignupFormProps> = ({ onLoadingChange }) => {
     resolver: zodResolver(FormRegisterSchema),
     mode: 'onChange', // Real-time validation
     defaultValues: {
+      accountType: 'User',
+      acceptAnnouncerTerms: false,
       firstname: '',
       lastname: '',
       email: '',
@@ -85,6 +69,7 @@ export const SignupForm: React.FC<SignupFormProps> = ({ onLoadingChange }) => {
       termsOfPrivacyPolicy: false,
     },
   });
+  const selectedAccountType = form.watch('accountType') || 'User';
 
   /**
    * Handle form submission
@@ -92,7 +77,7 @@ export const SignupForm: React.FC<SignupFormProps> = ({ onLoadingChange }) => {
   const onSubmit = async (values: FormRegisterSchemaType) => {
     try {
       // Transform form data to SignupData
-      const signupData = transformFormDataToSignupData(values);
+      const signupData = mapRegisterFormToSignupData(values);
 
       // Call the signup hook
       const result = await signup(signupData);
@@ -126,7 +111,7 @@ export const SignupForm: React.FC<SignupFormProps> = ({ onLoadingChange }) => {
       }
     } catch (error) {
       // Unexpected error
-      console.error('Unexpected error during signup:', error);
+      logger.error('Unexpected error during signup', { error });
       toast({
         duration: 5000,
         title: 'Erreur',
@@ -170,6 +155,52 @@ export const SignupForm: React.FC<SignupFormProps> = ({ onLoadingChange }) => {
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-3">
         <h1 className="text-lg">Créer un compte pour commencer à poster des annonces</h1>
+
+        <div className="space-y-2">
+          <label className="text-sm font-medium text-gray-700">Type de compte</label>
+          <div className="grid grid-cols-2 gap-2">
+            <button
+              type="button"
+              onClick={() =>
+                form.setValue('accountType', 'User', {
+                  shouldDirty: true,
+                  shouldValidate: true,
+                })
+              }
+              className={`rounded-xl border p-3 text-left ${
+                selectedAccountType === 'User'
+                  ? 'border-[#1FA89B] bg-teal-50'
+                  : 'border-gray-200'
+              }`}
+            >
+              <div className="flex items-center gap-2 font-semibold text-sm">
+                <CircleUser size={16} />
+                Utilisateur
+              </div>
+              <p className="text-xs text-gray-500 mt-1">Chercher un logement</p>
+            </button>
+            <button
+              type="button"
+              onClick={() =>
+                form.setValue('accountType', 'Announcer', {
+                  shouldDirty: true,
+                  shouldValidate: true,
+                })
+              }
+              className={`rounded-xl border p-3 text-left ${
+                selectedAccountType === 'Announcer'
+                  ? 'border-[#1FA89B] bg-teal-50'
+                  : 'border-gray-200'
+              }`}
+            >
+              <div className="flex items-center gap-2 font-semibold text-sm">
+                <Building2 size={16} />
+                Annonceur
+              </div>
+              <p className="text-xs text-gray-500 mt-1">Publier des annonces</p>
+            </button>
+          </div>
+        </div>
         
         <InputForm
           form={form}
@@ -261,6 +292,13 @@ export const SignupForm: React.FC<SignupFormProps> = ({ onLoadingChange }) => {
             </>
           }
         />
+        {selectedAccountType === 'Announcer' && (
+          <CheckboxForm
+            form={form}
+            name="acceptAnnouncerTerms"
+            labelElement={<>J&apos;accepte les conditions annonceur.</>}
+          />
+        )}
         
         <ButtonLoading
           type="submit"

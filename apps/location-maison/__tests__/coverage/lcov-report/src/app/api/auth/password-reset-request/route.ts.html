@@ -25,7 +25,7 @@
             <div class='fl pad1y space-right2'>
                 <span class="strong">0% </span>
                 <span class="quiet">Statements</span>
-                <span class='fraction'>0/72</span>
+                <span class='fraction'>0/64</span>
             </div>
         
             
@@ -46,7 +46,7 @@
             <div class='fl pad1y space-right2'>
                 <span class="strong">0% </span>
                 <span class="quiet">Lines</span>
-                <span class='fraction'>0/72</span>
+                <span class='fraction'>0/64</span>
             </div>
         
             
@@ -127,14 +127,7 @@
 <a name='L62'></a><a href='#L62'>62</a>
 <a name='L63'></a><a href='#L63'>63</a>
 <a name='L64'></a><a href='#L64'>64</a>
-<a name='L65'></a><a href='#L65'>65</a>
-<a name='L66'></a><a href='#L66'>66</a>
-<a name='L67'></a><a href='#L67'>67</a>
-<a name='L68'></a><a href='#L68'>68</a>
-<a name='L69'></a><a href='#L69'>69</a>
-<a name='L70'></a><a href='#L70'>70</a>
-<a name='L71'></a><a href='#L71'>71</a>
-<a name='L72'></a><a href='#L72'>72</a></td><td class="line-coverage quiet"><span class="cline-any cline-no">&nbsp;</span>
+<a name='L65'></a><a href='#L65'>65</a></td><td class="line-coverage quiet"><span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
@@ -198,92 +191,78 @@
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span></td><td class="text"><pre class="prettyprint lang-js"><span class="cstat-no" title="statement not covered" ><span class="fstat-no" title="function not covered" ><span class="branch-0 cbranch-no" title="branch not covered" >import { NextRequest, NextResponse } from 'next/server';</span></span></span>
+<span class="cline-any cline-neutral">&nbsp;</span></td><td class="text"><pre class="prettyprint lang-js"><span class="cstat-no" title="statement not covered" ><span class="fstat-no" title="function not covered" ><span class="branch-0 cbranch-no" title="branch not covered" >import { NextRequest, NextResponse } from 'next/server';</span></span></span>
 <span class="cstat-no" title="statement not covered" >import { adminAuth } from '@/firebase/admin';</span>
+<span class="cstat-no" title="statement not covered" >import { createLogger } from '@/lib/logger';</span>
+<span class="cstat-no" title="statement not covered" >import { assertStringField, handleApiError } from '@/lib/api/error-response';</span>
+<span class="cstat-no" title="statement not covered" >import { AppError } from '@/lib/errors/app-error';</span>
+<span class="cstat-no" title="statement not covered" ></span>
+<span class="cstat-no" title="statement not covered" >const logger = createLogger('api.auth.password-reset-request');</span>
 <span class="cstat-no" title="statement not covered" ></span>
 <span class="cstat-no" title="statement not covered" >export async function POST(request: NextRequest) {</span>
 <span class="cstat-no" title="statement not covered" >  try {</span>
-<span class="cstat-no" title="statement not covered" >    const { email } = await request.json();</span>
-<span class="cstat-no" title="statement not covered" ></span>
-<span class="cstat-no" title="statement not covered" >    if (!email) {</span>
-<span class="cstat-no" title="statement not covered" >      return NextResponse.json(</span>
-<span class="cstat-no" title="statement not covered" >        { error: 'Email est requis' },</span>
-<span class="cstat-no" title="statement not covered" >        { status: 400 }</span>
-<span class="cstat-no" title="statement not covered" >      );</span>
-<span class="cstat-no" title="statement not covered" >    }</span>
+<span class="cstat-no" title="statement not covered" >    const body = await request.json();</span>
+<span class="cstat-no" title="statement not covered" >    const { email } = body || {};</span>
+<span class="cstat-no" title="statement not covered" >    assertStringField(email, 'email', 'Email est requis');</span>
 <span class="cstat-no" title="statement not covered" ></span>
 <span class="cstat-no" title="statement not covered" >    const actionCodeSettings = {</span>
 <span class="cstat-no" title="statement not covered" >      url: `${process.env.NEXT_PUBLIC_HOST || 'http://localhost:3000'}/request-password-reset`,</span>
 <span class="cstat-no" title="statement not covered" >      handleCodeInApp: false,</span>
 <span class="cstat-no" title="statement not covered" >    };</span>
 <span class="cstat-no" title="statement not covered" ></span>
-<span class="cstat-no" title="statement not covered" >    try {</span>
-<span class="cstat-no" title="statement not covered" >      // Vérifier si l'utilisateur existe</span>
-<span class="cstat-no" title="statement not covered" >      const user = await adminAuth.getUserByEmail(email);</span>
-<span class="cstat-no" title="statement not covered" >      </span>
-<span class="cstat-no" title="statement not covered" >      // Générer le lien de réinitialisation</span>
-<span class="cstat-no" title="statement not covered" >      const resetLink = await adminAuth.generatePasswordResetLink(</span>
-<span class="cstat-no" title="statement not covered" >        email,</span>
-<span class="cstat-no" title="statement not covered" >        actionCodeSettings</span>
-<span class="cstat-no" title="statement not covered" >      );</span>
+<span class="cstat-no" title="statement not covered" >    // Vérifier si l'utilisateur existe</span>
+<span class="cstat-no" title="statement not covered" >    await adminAuth.getUserByEmail(email);</span>
 <span class="cstat-no" title="statement not covered" ></span>
-<span class="cstat-no" title="statement not covered" >      // Extraire l'oobCode du lien</span>
-<span class="cstat-no" title="statement not covered" >      const url = new URL(resetLink);</span>
-<span class="cstat-no" title="statement not covered" >      const oobCode = url.searchParams.get('oobCode');</span>
-<span class="cstat-no" title="statement not covered" ></span>
-<span class="cstat-no" title="statement not covered" >      if (oobCode) {</span>
-<span class="cstat-no" title="statement not covered" >        const params = new URLSearchParams();</span>
-<span class="cstat-no" title="statement not covered" >        params.set('oobCode', oobCode);</span>
-<span class="cstat-no" title="statement not covered" >        const customResetLink = `${process.env.NEXT_PUBLIC_HOST || 'http://localhost:3000'}/api/auth/password-reset?${params.toString()}`;</span>
-<span class="cstat-no" title="statement not covered" ></span>
-<span class="cstat-no" title="statement not covered" >        // TODO: Envoyer l'email avec le lien de réinitialisation</span>
-<span class="cstat-no" title="statement not covered" >        // Pour l'instant, on retourne juste le succès</span>
-<span class="cstat-no" title="statement not covered" >        </span>
-<span class="cstat-no" title="statement not covered" >        return NextResponse.json({</span>
-<span class="cstat-no" title="statement not covered" >          success: true,</span>
-<span class="cstat-no" title="statement not covered" >          message: 'Email de réinitialisation envoyé avec succès',</span>
-<span class="cstat-no" title="statement not covered" >          resetLink: customResetLink, // Pour les tests seulement</span>
-<span class="cstat-no" title="statement not covered" >        });</span>
-<span class="cstat-no" title="statement not covered" >      } else {</span>
-<span class="cstat-no" title="statement not covered" >        throw new Error('Impossible de générer le lien de réinitialisation');</span>
-<span class="cstat-no" title="statement not covered" >      }</span>
-<span class="cstat-no" title="statement not covered" >    } catch (error: any) {</span>
-<span class="cstat-no" title="statement not covered" >      console.error('Erreur lors de la génération du lien:', error);</span>
-<span class="cstat-no" title="statement not covered" >      </span>
-<span class="cstat-no" title="statement not covered" >      if (error.code === 'auth/user-not-found') {</span>
-<span class="cstat-no" title="statement not covered" >        return NextResponse.json(</span>
-<span class="cstat-no" title="statement not covered" >          { error: 'Aucun compte associé à cette adresse email' },</span>
-<span class="cstat-no" title="statement not covered" >          { status: 404 }</span>
-<span class="cstat-no" title="statement not covered" >        );</span>
-<span class="cstat-no" title="statement not covered" >      }</span>
-<span class="cstat-no" title="statement not covered" >      </span>
-<span class="cstat-no" title="statement not covered" >      return NextResponse.json(</span>
-<span class="cstat-no" title="statement not covered" >        { error: 'Erreur lors de la génération du lien de réinitialisation' },</span>
-<span class="cstat-no" title="statement not covered" >        { status: 500 }</span>
-<span class="cstat-no" title="statement not covered" >      );</span>
-<span class="cstat-no" title="statement not covered" >    }</span>
-<span class="cstat-no" title="statement not covered" >  } catch (error) {</span>
-<span class="cstat-no" title="statement not covered" >    console.error('Erreur générale:', error);</span>
-<span class="cstat-no" title="statement not covered" >    return NextResponse.json(</span>
-<span class="cstat-no" title="statement not covered" >      { error: 'Erreur interne du serveur' },</span>
-<span class="cstat-no" title="statement not covered" >      { status: 500 }</span>
+<span class="cstat-no" title="statement not covered" >    // Générer le lien de réinitialisation</span>
+<span class="cstat-no" title="statement not covered" >    const resetLink = await adminAuth.generatePasswordResetLink(</span>
+<span class="cstat-no" title="statement not covered" >      email,</span>
+<span class="cstat-no" title="statement not covered" >      actionCodeSettings</span>
 <span class="cstat-no" title="statement not covered" >    );</span>
+<span class="cstat-no" title="statement not covered" ></span>
+<span class="cstat-no" title="statement not covered" >    // Extraire l'oobCode du lien</span>
+<span class="cstat-no" title="statement not covered" >    const url = new URL(resetLink);</span>
+<span class="cstat-no" title="statement not covered" >    const oobCode = url.searchParams.get('oobCode');</span>
+<span class="cstat-no" title="statement not covered" ></span>
+<span class="cstat-no" title="statement not covered" >    if (!oobCode) {</span>
+<span class="cstat-no" title="statement not covered" >      throw new AppError('Impossible de générer le lien de réinitialisation', {</span>
+<span class="cstat-no" title="statement not covered" >        code: 'PASSWORD_RESET_LINK_GENERATION_FAILED',</span>
+<span class="cstat-no" title="statement not covered" >        status: 500,</span>
+<span class="cstat-no" title="statement not covered" >      });</span>
+<span class="cstat-no" title="statement not covered" >    }</span>
+<span class="cstat-no" title="statement not covered" ></span>
+<span class="cstat-no" title="statement not covered" >    const params = new URLSearchParams();</span>
+<span class="cstat-no" title="statement not covered" >    params.set('oobCode', oobCode);</span>
+<span class="cstat-no" title="statement not covered" >    const customResetLink = `${process.env.NEXT_PUBLIC_HOST || 'http://localhost:3000'}/api/auth/password-reset?${params.toString()}`;</span>
+<span class="cstat-no" title="statement not covered" ></span>
+<span class="cstat-no" title="statement not covered" >    logger.info('Password reset request link generated', { email });</span>
+<span class="cstat-no" title="statement not covered" >    return NextResponse.json({</span>
+<span class="cstat-no" title="statement not covered" >      success: true,</span>
+<span class="cstat-no" title="statement not covered" >      message: 'Email de réinitialisation envoyé avec succès',</span>
+<span class="cstat-no" title="statement not covered" >      resetLink: customResetLink, // For tests/debug only</span>
+<span class="cstat-no" title="statement not covered" >    });</span>
+<span class="cstat-no" title="statement not covered" >  } catch (error) {</span>
+<span class="cstat-no" title="statement not covered" >    return handleApiError(error, {</span>
+<span class="cstat-no" title="statement not covered" >      logger,</span>
+<span class="cstat-no" title="statement not covered" >      route: '/api/auth/password-reset-request',</span>
+<span class="cstat-no" title="statement not covered" >      fallbackMessage: 'Erreur lors de la génération du lien de réinitialisation',</span>
+<span class="cstat-no" title="statement not covered" >      knownCodes: {</span>
+<span class="cstat-no" title="statement not covered" >        'auth/user-not-found': {</span>
+<span class="cstat-no" title="statement not covered" >          status: 404,</span>
+<span class="cstat-no" title="statement not covered" >          code: 'USER_NOT_FOUND',</span>
+<span class="cstat-no" title="statement not covered" >          message: 'Aucun compte associé à cette adresse email',</span>
+<span class="cstat-no" title="statement not covered" >        },</span>
+<span class="cstat-no" title="statement not covered" >      },</span>
+<span class="cstat-no" title="statement not covered" >    });</span>
 <span class="cstat-no" title="statement not covered" >  }</span>
-<span class="cstat-no" title="statement not covered" >} </span></pre></td></tr></table></pre>
+<span class="cstat-no" title="statement not covered" >}</span>
+&nbsp;</pre></td></tr></table></pre>
 
                 <div class='push'></div><!-- for sticky footer -->
             </div><!-- /wrapper -->
             <div class='footer quiet pad2 space-top1 center small'>
                 Code coverage generated by
                 <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
-                at 2026-01-13T11:35:56.330Z
+                at 2026-03-05T17:16:34.541Z
             </div>
         <script src="../../../../../prettify.js"></script>
         <script>

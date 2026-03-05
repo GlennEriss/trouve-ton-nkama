@@ -1,178 +1,142 @@
 # Progression FEATURE-001 : Register
 
 > **Branche** : `feature/FEATURE-001-register`  
-> **Objectif** : 100% de couverture de tests
+> **Objectif** : parcours signup cohérent (User / Announcer), testable, observable
 
 ---
 
-## ✅ Phase 1 : Préparation - TERMINÉE
+## Synthèse
 
-- [x] Créer branche `feature/FEATURE-001-register`
-- [x] Analyser code existant en détail (`ANALYSE_CODE_EXISTANT.md`)
-- [x] Identifier toutes les dépendances
-- [x] Diagramme d'activité (`register-activity-diagram.puml`)
-- [x] Diagramme de séquence (`register-sequence-diagram.puml`)
-- [x] Spécifications UX (`ux.md`)
-- [x] Spécifications UI (`ui.md`)
+### Ce qui est fait
 
----
+- Inscription desktop/tablette: `SignupFormModern` + `useSignup`
+- Inscription mobile: `SignupMobileComponent` branché sur `useSignup`
+- Service auth: `AuthServiceImpl` (validations, rollback, mapping erreurs)
+- Repository user: `UserRepositoryImpl` (UID comme docId Firestore)
+- Hook: `useSignup` (loading/error/success)
+- Distinction compte `User` / `Announcer` active dans les formulaires signup (desktop/mobile)
+- Validation conditionnelle des conditions annonceur (`acceptAnnouncerTerms`)
+- Envoi email de vérification: endpoint dédié et flux non bloquant
+- Logger centralisé: `src/lib/logger.ts` intégré au flux auth
+- Gestion d’erreurs API auth centralisée: `src/lib/api/error-response.ts`
 
-## ✅ Phase 2 : Repository - TERMINÉE
+### Ce qui manque
 
-### Fichiers créés
+- [ ] Tests d’intégration signup avec Firebase Emulator
+- [ ] E2E signup complets (User + Announcer)
+- [ ] Couverture auth >= 80%
 
-1. **`src/features/auth/repositories/user.repository.interface.ts`**
-   - Interface `UserRepository`
-   - Classe `RepositoryError` pour gestion d'erreurs cohérente
+### Hors périmètre signup
 
-2. **`src/features/auth/repositories/user.repository.ts`**
-   - Implémentation `UserRepositoryImpl`
-   - Méthodes : `create`, `findByPhoneNumber`, `findByEmail`, `findById`, `update`, `delete`
-   - Gestion d'erreurs : Toujours `throw RepositoryError` (jamais null/false)
-
-3. **`src/features/auth/repositories/__tests__/user.repository.test.ts`**
-   - Tests unitaires complets (TDD)
-   - Couverture cible : 100%
-   - Tous les scénarios testés (succès, erreurs, cas limites)
-
-4. **`src/features/auth/repositories/index.ts`**
-   - Exports centralisés
-
-### Méthodes implémentées
-
-- ✅ `create(user: User): Promise<User>`
-- ✅ `findByPhoneNumber(phoneNumber: string): Promise<User | null>`
-- ✅ `findByEmail(email: string): Promise<User | null>`
-- ✅ `findById(uid: string): Promise<User | null>`
-- ✅ `update(uid: string, data: Partial<User>): Promise<User>`
-- ✅ `delete(uid: string): Promise<void>` (soft delete)
-
-### Tests créés
-
-- ✅ `create` - Succès
-- ✅ `create` - Erreur Firestore
-- ✅ `create` - Tous les champs inclus
-- ✅ `findByPhoneNumber` - Utilisateur trouvé
-- ✅ `findByPhoneNumber` - Aucun utilisateur
-- ✅ `findByPhoneNumber` - Erreur query
-- ✅ `findByEmail` - Utilisateur trouvé
-- ✅ `findByEmail` - Aucun utilisateur
-- ✅ `findByEmail` - Erreur query
-- ✅ `findById` - Utilisateur trouvé
-- ✅ `findById` - Aucun utilisateur
-- ✅ `findById` - Erreur query
-- ✅ `update` - Succès
-- ✅ `update` - Utilisateur non trouvé
-- ✅ `update` - Erreur update
-- ✅ `update` - Exclusion createdAt
-- ✅ `delete` - Soft delete (ARCHIVED)
-- ✅ `delete` - Utilisateur non trouvé
-- ✅ `delete` - Erreur delete
-
-**Total** : 19 tests unitaires
+- Gestion des profils (User/Annonceur), incluant `AnnouncerProfile` : traitée dans une feature dédiée profil
 
 ---
 
-## ✅ Phase 3 : Service - TERMINÉE
+## Phases
 
-### Fichiers créés
+## ✅ Phase 1 : Préparation
 
-1. **`src/features/auth/services/auth.service.interface.ts`**
-   - Interface `AuthService`
-   - Types `SignupData`, `SignupResult`, `SignupError`
-   - Enum `SignupErrorCode`
-   - Classe `AuthServiceError`
+- Analyse existant
+- Spécifications UX/UI
+- Diagrammes de séquence et d’activité
 
-2. **`src/features/auth/services/auth.service.ts`**
-   - Implémentation `AuthServiceImpl`
-   - Méthode `signup` complète
-   - Intégration Firebase Auth
-   - Intégration UserRepository
-   - Rollback si Firestore échoue
-   - Envoi email vérification (non-bloquant)
+## ✅ Phase 2 : Repository
 
-3. **`src/features/auth/services/__tests__/auth.service.test.ts`**
-   - Tests unitaires complets (TDD)
-   - Couverture cible : 100%
-   - Tous les scénarios testés
+Fichiers:
 
-4. **`src/features/auth/services/index.ts`**
-   - Exports centralisés
+- `src/features/auth/repositories/user.repository.interface.ts`
+- `src/features/auth/repositories/user.repository.ts`
+- `src/features/auth/repositories/__tests__/user.repository.test.ts`
 
-### Fonctionnalités implémentées
+Points clés:
 
-- ✅ Validation des conditions d'utilisation
-- ✅ Validation des conditions annonceur (si applicable)
-- ✅ Vérification unicité téléphone
-- ✅ Vérification unicité email
-- ✅ Création compte Firebase Auth
-- ✅ Transformation SignupData → User
-- ✅ Création utilisateur Firestore
-- ✅ Rollback si échec Firestore
-- ✅ Envoi email vérification (non-bloquant)
-- ✅ Gestion d'erreurs Firebase Auth
-- ✅ Support User et Announcer
+- CRUD utilisateur + soft delete
+- erreurs repository uniformisées via `RepositoryError`
+- UID utilisé comme ID de document principal
 
-### Tests créés
+## ✅ Phase 3 : Service
 
-- ✅ Inscription réussie
-- ✅ Téléphone déjà utilisé
-- ✅ Email déjà utilisé
-- ✅ Conditions non acceptées
-- ✅ Conditions annonceur non acceptées
-- ✅ Erreur mot de passe faible
-- ✅ Erreur email invalide
-- ✅ Erreur email déjà utilisé (Firebase)
-- ✅ Rollback si Firestore échoue
-- ✅ Création avec rôle User
-- ✅ Création avec rôle Announcer
-- ✅ Envoi email vérification
-- ✅ Email échoue (ne bloque pas)
-- ✅ Erreurs repository
+Fichiers:
 
-**Total** : 14 tests unitaires
+- `src/features/auth/services/auth.service.interface.ts`
+- `src/features/auth/services/auth.service.ts`
+- `src/features/auth/services/__tests__/auth.service.test.ts`
 
----
+Points clés:
 
-## 🔄 Phase 4 : Hook - EN COURS
+- validations métier (`acceptTerms`, conditions annonceur)
+- unicité email/téléphone
+- création Firebase Auth + persistance Firestore
+- rollback `signOut` si échec Firestore
+- envoi email de vérification non bloquant
 
-### À faire
+## ✅ Phase 4 : Hook
 
-- [ ] Créer `src/features/auth/hooks/useSignup.ts`
-- [ ] Intégration avec authService
-- [ ] Gestion état (loading/error/success)
-- [ ] Navigation après succès
-- [ ] Tests unitaires (100% couverture)
+Fichier:
 
----
+- `src/features/auth/hooks/useSignup.ts`
 
-## ⏳ Phase 5 : Composant - EN ATTENTE
+Points clés:
 
-- [ ] Refactorer `SignupForm.tsx` (UI uniquement)
-- [ ] Utiliser `useSignup` hook
-- [ ] Validation Zod côté client
-- [ ] Tests composant (React Testing Library, 100% couverture)
+- encapsulation d’appel `authService.signup`
+- état local standardisé (`isLoading`, `error`, `userId`, `reset`)
 
----
+## ✅ Phase 5 : UI signup
 
-## ⏳ Phase 6 : Tests - EN ATTENTE
+Fichiers:
 
-- [ ] Tests d'intégration (Firebase Emulator)
-- [ ] Tests E2E (Playwright)
-- [ ] Vérifier couverture >= 100%
+- `src/features/auth/ui/v1/SignupFormModern.tsx`
+- `src/features/auth/ui/v1/SignupForm.tsx`
+- `src/components/signup/SignupMobileComponent.tsx`
+- `src/features/auth/ui/v1/signup.mapper.ts`
 
----
+Points clés:
 
-## 📊 Métriques
+- mapping formulaire -> `SignupData` factorisé
+- mobile aligné sur le même service auth que desktop
+- suppression de la logique d’inscription legacy côté mobile
 
-### Couverture actuelle
-- **Repository** : Tests créés (à exécuter pour vérifier 100%)
+## ✅ Phase 6 : Observabilité + erreurs centralisées
 
-### Prochaines étapes
-1. Exécuter les tests du repository pour vérifier la couverture
-2. Passer à la Phase 3 : Service
+Fichiers:
+
+- `src/lib/logger.ts`
+- `src/lib/errors/app-error.ts`
+- `src/lib/api/error-response.ts`
+
+Routes auth alignées:
+
+- `src/app/api/auth/send-verification-email/route.ts`
+- `src/app/api/auth/send-password-reset-email/route.ts`
+- `src/app/api/auth/password-reset-request/route.ts`
+- `src/app/api/auth/password-reset/route.ts`
+- `src/app/api/auth/verify-email/route.ts`
+
+Points clés:
+
+- logs JSON structurés + redaction des clés sensibles
+- réponse d’erreur API uniforme (`success:false`, `error.code`, `error.message`, `error.details`)
+- mapping des codes d’erreurs externes (Firebase) vers codes projet stables
+
+## ⏳ Phase 7 : Tests restants
+
+- compléter les tests UI signup avancés (navigation multi-step complète)
+- compléter E2E signup (desktop + mobile, user + announcer)
+- confirmer la couverture cible globale projet
 
 ---
 
-*Dernière mise à jour : 2026-01-12*
+## Validation test (batch auth)
 
+Suites exécutées et passantes:
+
+- `src/features/auth/services/__tests__/auth.service.test.ts`
+- `src/features/auth/__tests__/integration/signup.integration.test.ts`
+- `src/features/auth/hooks/__tests__/useSignup.test.ts`
+- `src/features/auth/repositories/__tests__/user.repository.test.ts`
+- `src/features/auth/ui/v1/__tests__/SignupForm.test.tsx`
+- `src/features/auth/ui/v1/__tests__/SignupFormModern.test.tsx`
+
+---
+
+*Dernière mise à jour : 2026-03-05*

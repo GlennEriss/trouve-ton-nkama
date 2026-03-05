@@ -12,7 +12,7 @@
 
 1. ❌ **Logique métier dans le composant** :
    - Fonction `onRegister` (lignes 55-120) contient toute la logique
-   - Vérification téléphone, création compte Firebase, création Firestore, envoi email
+   - Validation et unicité téléphone, création compte Firebase, création Firestore, envoi email
 
 2. ❌ **Gestion d'erreurs inconsistante** :
    - Mélange de `throw new Error()` et gestion d'erreurs Firebase
@@ -27,7 +27,7 @@
 **Flux actuel** :
 ```
 onSubmit → transformToPerson → onRegister → 
-  - Vérifier téléphone
+  - Vérifier unicité téléphone
   - Créer Firebase Auth
   - Envoyer email (fetch API)
   - Créer Firestore
@@ -108,7 +108,7 @@ onRegister(user)
 ```
 onRegister()
   ↓
-1. Vérifier téléphone obligatoire
+1. Vérifier numéro de téléphone présent
   ↓
 2. findUserByPhoneNumber() → Vérifier unicité
   ↓
@@ -219,4 +219,3 @@ router.push('/signup/success?uid=' + uid)
 ---
 
 *Dernière mise à jour : 2026-01-12*
-

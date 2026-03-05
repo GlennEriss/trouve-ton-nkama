@@ -25,7 +25,7 @@
             <div class='fl pad1y space-right2'>
                 <span class="strong">0% </span>
                 <span class="quiet">Statements</span>
-                <span class='fraction'>0/161</span>
+                <span class='fraction'>0/137</span>
             </div>
         
             
@@ -46,7 +46,7 @@
             <div class='fl pad1y space-right2'>
                 <span class="strong">0% </span>
                 <span class="quiet">Lines</span>
-                <span class='fraction'>0/161</span>
+                <span class='fraction'>0/137</span>
             </div>
         
             
@@ -200,30 +200,7 @@
 <a name='L135'></a><a href='#L135'>135</a>
 <a name='L136'></a><a href='#L136'>136</a>
 <a name='L137'></a><a href='#L137'>137</a>
-<a name='L138'></a><a href='#L138'>138</a>
-<a name='L139'></a><a href='#L139'>139</a>
-<a name='L140'></a><a href='#L140'>140</a>
-<a name='L141'></a><a href='#L141'>141</a>
-<a name='L142'></a><a href='#L142'>142</a>
-<a name='L143'></a><a href='#L143'>143</a>
-<a name='L144'></a><a href='#L144'>144</a>
-<a name='L145'></a><a href='#L145'>145</a>
-<a name='L146'></a><a href='#L146'>146</a>
-<a name='L147'></a><a href='#L147'>147</a>
-<a name='L148'></a><a href='#L148'>148</a>
-<a name='L149'></a><a href='#L149'>149</a>
-<a name='L150'></a><a href='#L150'>150</a>
-<a name='L151'></a><a href='#L151'>151</a>
-<a name='L152'></a><a href='#L152'>152</a>
-<a name='L153'></a><a href='#L153'>153</a>
-<a name='L154'></a><a href='#L154'>154</a>
-<a name='L155'></a><a href='#L155'>155</a>
-<a name='L156'></a><a href='#L156'>156</a>
-<a name='L157'></a><a href='#L157'>157</a>
-<a name='L158'></a><a href='#L158'>158</a>
-<a name='L159'></a><a href='#L159'>159</a>
-<a name='L160'></a><a href='#L160'>160</a>
-<a name='L161'></a><a href='#L161'>161</a></td><td class="line-coverage quiet"><span class="cline-any cline-no">&nbsp;</span>
+<a name='L138'></a><a href='#L138'>138</a></td><td class="line-coverage quiet"><span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
@@ -360,197 +337,151 @@
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span></td><td class="text"><pre class="prettyprint lang-js"><span class="cstat-no" title="statement not covered" ><span class="fstat-no" title="function not covered" ><span class="branch-0 cbranch-no" title="branch not covered" >import { NextRequest, NextResponse } from 'next/server';</span></span></span>
+<span class="cline-any cline-neutral">&nbsp;</span></td><td class="text"><pre class="prettyprint lang-js"><span class="cstat-no" title="statement not covered" ><span class="fstat-no" title="function not covered" ><span class="branch-0 cbranch-no" title="branch not covered" >import { NextRequest, NextResponse } from 'next/server';</span></span></span>
 <span class="cstat-no" title="statement not covered" >import { adminAuth } from '@/firebase/admin';</span>
 <span class="cstat-no" title="statement not covered" >import { render } from '@react-email/render';</span>
 <span class="cstat-no" title="statement not covered" >import PasswordReset from '@/emails/PasswordReset';</span>
 <span class="cstat-no" title="statement not covered" >import { emailService, EmailService } from '@/services/email.service';</span>
 <span class="cstat-no" title="statement not covered" >import { EmailService as EmailTemplateService } from '@/emails/index';</span>
+<span class="cstat-no" title="statement not covered" >import { createLogger } from '@/lib/logger';</span>
+<span class="cstat-no" title="statement not covered" >import { assertStringField, handleApiError, jsonApiError } from '@/lib/api/error-response';</span>
+<span class="cstat-no" title="statement not covered" >import { AppError } from '@/lib/errors/app-error';</span>
+<span class="cstat-no" title="statement not covered" ></span>
+<span class="cstat-no" title="statement not covered" >const logger = createLogger('api.auth.send-password-reset-email');</span>
 <span class="cstat-no" title="statement not covered" ></span>
 <span class="cstat-no" title="statement not covered" >export async function POST(request: NextRequest) {</span>
 <span class="cstat-no" title="statement not covered" >  try {</span>
-<span class="cstat-no" title="statement not covered" >    const { email, subject, texts } = await request.json();</span>
-<span class="cstat-no" title="statement not covered" ></span>
-<span class="cstat-no" title="statement not covered" >    if (!email) {</span>
-<span class="cstat-no" title="statement not covered" >      return NextResponse.json(</span>
-<span class="cstat-no" title="statement not covered" >        { error: 'Email est requis' },</span>
-<span class="cstat-no" title="statement not covered" >        { status: 400 }</span>
-<span class="cstat-no" title="statement not covered" >      );</span>
-<span class="cstat-no" title="statement not covered" >    }</span>
+<span class="cstat-no" title="statement not covered" >    const body = await request.json();</span>
+<span class="cstat-no" title="statement not covered" >    const { email, subject, texts } = body || {};</span>
+<span class="cstat-no" title="statement not covered" >    assertStringField(email, 'email', 'Email est requis');</span>
 <span class="cstat-no" title="statement not covered" ></span>
 <span class="cstat-no" title="statement not covered" >    const actionCodeSettings = {</span>
 <span class="cstat-no" title="statement not covered" >      url: `${process.env.NEXT_PUBLIC_HOST || 'http://localhost:3000'}/request-password-reset`,</span>
 <span class="cstat-no" title="statement not covered" >      handleCodeInApp: false,</span>
 <span class="cstat-no" title="statement not covered" >    };</span>
 <span class="cstat-no" title="statement not covered" ></span>
-<span class="cstat-no" title="statement not covered" >    try {</span>
-<span class="cstat-no" title="statement not covered" >      // Récupérer l'utilisateur par son email</span>
-<span class="cstat-no" title="statement not covered" >      const user = await adminAuth.getUserByEmail(email);</span>
-<span class="cstat-no" title="statement not covered" >      </span>
-<span class="cstat-no" title="statement not covered" >      // Générer le lien de réinitialisation Firebase</span>
-<span class="cstat-no" title="statement not covered" >      const firebaseResetLink = await adminAuth.generatePasswordResetLink(</span>
-<span class="cstat-no" title="statement not covered" >        email,</span>
-<span class="cstat-no" title="statement not covered" >        actionCodeSettings</span>
-<span class="cstat-no" title="statement not covered" >      );</span>
+<span class="cstat-no" title="statement not covered" >    // Récupérer l'utilisateur par son email</span>
+<span class="cstat-no" title="statement not covered" >    const user = await adminAuth.getUserByEmail(email);</span>
 <span class="cstat-no" title="statement not covered" ></span>
-<span class="cstat-no" title="statement not covered" >      // Extraire l'oobCode du lien Firebase</span>
-<span class="cstat-no" title="statement not covered" >      const url = new URL(firebaseResetLink);</span>
-<span class="cstat-no" title="statement not covered" >      const oobCode = url.searchParams.get('oobCode');</span>
+<span class="cstat-no" title="statement not covered" >    // Générer le lien de réinitialisation Firebase</span>
+<span class="cstat-no" title="statement not covered" >    const firebaseResetLink = await adminAuth.generatePasswordResetLink(</span>
+<span class="cstat-no" title="statement not covered" >      email,</span>
+<span class="cstat-no" title="statement not covered" >      actionCodeSettings</span>
+<span class="cstat-no" title="statement not covered" >    );</span>
 <span class="cstat-no" title="statement not covered" ></span>
-<span class="cstat-no" title="statement not covered" >      console.log('🔍 Lien Firebase original:', firebaseResetLink);</span>
-<span class="cstat-no" title="statement not covered" >      console.log('🔍 oobCode extrait:', oobCode);</span>
+<span class="cstat-no" title="statement not covered" >    // Extraire l'oobCode du lien Firebase</span>
+<span class="cstat-no" title="statement not covered" >    const url = new URL(firebaseResetLink);</span>
+<span class="cstat-no" title="statement not covered" >    const oobCode = url.searchParams.get('oobCode');</span>
+<span class="cstat-no" title="statement not covered" >    logger.debug('Password reset oobCode extracted', {</span>
+<span class="cstat-no" title="statement not covered" >      email,</span>
+<span class="cstat-no" title="statement not covered" >      hasOobCode: !!oobCode,</span>
+<span class="cstat-no" title="statement not covered" >    });</span>
 <span class="cstat-no" title="statement not covered" ></span>
-<span class="cstat-no" title="statement not covered" >      if (!oobCode) {</span>
-<span class="cstat-no" title="statement not covered" >        throw new Error('Impossible de générer le code de réinitialisation');</span>
-<span class="cstat-no" title="statement not covered" >      }</span>
-<span class="cstat-no" title="statement not covered" ></span>
-<span class="cstat-no" title="statement not covered" >      // Créer notre lien personnalisé</span>
-<span class="cstat-no" title="statement not covered" >      const params = new URLSearchParams();</span>
-<span class="cstat-no" title="statement not covered" >      params.set('oobCode', oobCode);</span>
-<span class="cstat-no" title="statement not covered" >      const resetLink = `${process.env.NEXT_PUBLIC_HOST || 'http://localhost:3000'}/api/auth/password-reset?${params.toString()}`;</span>
-<span class="cstat-no" title="statement not covered" >      </span>
-<span class="cstat-no" title="statement not covered" >      console.log('🔍 Lien personnalisé généré:', resetLink);</span>
-<span class="cstat-no" title="statement not covered" ></span>
-<span class="cstat-no" title="statement not covered" >      // Préparer les données pour l'email</span>
-<span class="cstat-no" title="statement not covered" >      const name = user.displayName?.split(' ')[0] || email.split('@')[0];</span>
-<span class="cstat-no" title="statement not covered" >      </span>
-<span class="cstat-no" title="statement not covered" >      // Utiliser les textes par défaut du EmailService qui incluent expirationInfo</span>
-<span class="cstat-no" title="statement not covered" >      const emailProps = EmailTemplateService.generatePasswordResetProps(</span>
-<span class="cstat-no" title="statement not covered" >        name,</span>
-<span class="cstat-no" title="statement not covered" >        email,</span>
-<span class="cstat-no" title="statement not covered" >        resetLink,</span>
-<span class="cstat-no" title="statement not covered" >        texts</span>
-<span class="cstat-no" title="statement not covered" >      );</span>
-<span class="cstat-no" title="statement not covered" ></span>
-<span class="cstat-no" title="statement not covered" >      // Générer l'email HTML</span>
-<span class="cstat-no" title="statement not covered" >      const emailHtml = await render(</span>
-<span class="cstat-no" title="statement not covered" >        PasswordReset(emailProps)</span>
-<span class="cstat-no" title="statement not covered" >      );</span>
-<span class="cstat-no" title="statement not covered" ></span>
-<span class="cstat-no" title="statement not covered" >      // Générer l'email en texte brut</span>
-<span class="cstat-no" title="statement not covered" >      const emailText = await render(</span>
-<span class="cstat-no" title="statement not covered" >        PasswordReset(emailProps),</span>
-<span class="cstat-no" title="statement not covered" >        { plainText: true }</span>
-<span class="cstat-no" title="statement not covered" >      );</span>
-<span class="cstat-no" title="statement not covered" ></span>
-<span class="cstat-no" title="statement not covered" >      // Données de l'email</span>
-<span class="cstat-no" title="statement not covered" >      const emailData = {</span>
-<span class="cstat-no" title="statement not covered" >        from: EmailService.getDefaultFromAddress(),</span>
-<span class="cstat-no" title="statement not covered" >        to: email,</span>
-<span class="cstat-no" title="statement not covered" >        subject: subject || 'Réinitialisez votre mot de passe - Trouve Ton Nkama',</span>
-<span class="cstat-no" title="statement not covered" >        text: emailText,</span>
-<span class="cstat-no" title="statement not covered" >        html: emailHtml,</span>
-<span class="cstat-no" title="statement not covered" >      };</span>
-<span class="cstat-no" title="statement not covered" ></span>
-<span class="cstat-no" title="statement not covered" >      // Envoyer l'email avec le service centralisé</span>
-<span class="cstat-no" title="statement not covered" >      await emailService.sendEmail(emailData, resetLink);</span>
-<span class="cstat-no" title="statement not covered" >      </span>
-<span class="cstat-no" title="statement not covered" >      return NextResponse.json({</span>
-<span class="cstat-no" title="statement not covered" >        success: true,</span>
-<span class="cstat-no" title="statement not covered" >        message: 'Email de réinitialisation envoyé avec succès',</span>
-<span class="cstat-no" title="statement not covered" >        ...(process.env.NODE_ENV === 'development' &amp;&amp; { resetLink }),</span>
+<span class="cstat-no" title="statement not covered" >    if (!oobCode) {</span>
+<span class="cstat-no" title="statement not covered" >      throw new AppError('Impossible de générer le code de réinitialisation', {</span>
+<span class="cstat-no" title="statement not covered" >        code: 'PASSWORD_RESET_LINK_GENERATION_FAILED',</span>
+<span class="cstat-no" title="statement not covered" >        status: 500,</span>
 <span class="cstat-no" title="statement not covered" >      });</span>
-<span class="cstat-no" title="statement not covered" >    } catch (error: any) {</span>
-<span class="cstat-no" title="statement not covered" >      console.error('Erreur lors de l\'envoi de l\'email:', error);</span>
-<span class="cstat-no" title="statement not covered" >      </span>
-<span class="cstat-no" title="statement not covered" >      // Gestion spécifique des erreurs Firebase Auth</span>
-<span class="cstat-no" title="statement not covered" >      if (error.code === 'auth/user-not-found') {</span>
-<span class="cstat-no" title="statement not covered" >        return NextResponse.json(</span>
-<span class="cstat-no" title="statement not covered" >          { error: 'Aucun compte associé à cette adresse email' },</span>
-<span class="cstat-no" title="statement not covered" >          { status: 404 }</span>
-<span class="cstat-no" title="statement not covered" >        );</span>
-<span class="cstat-no" title="statement not covered" >      }</span>
-<span class="cstat-no" title="statement not covered" >      </span>
-<span class="cstat-no" title="statement not covered" >      if (error.code === 'auth/invalid-email') {</span>
-<span class="cstat-no" title="statement not covered" >        return NextResponse.json(</span>
-<span class="cstat-no" title="statement not covered" >          { error: 'Adresse email invalide' },</span>
-<span class="cstat-no" title="statement not covered" >          { status: 400 }</span>
-<span class="cstat-no" title="statement not covered" >        );</span>
-<span class="cstat-no" title="statement not covered" >      }</span>
-<span class="cstat-no" title="statement not covered" >      </span>
-<span class="cstat-no" title="statement not covered" >      if (error.code === 'auth/user-disabled') {</span>
-<span class="cstat-no" title="statement not covered" >        return NextResponse.json(</span>
-<span class="cstat-no" title="statement not covered" >          { error: 'Ce compte a été désactivé. Veuillez contacter le support.' },</span>
-<span class="cstat-no" title="statement not covered" >          { status: 403 }</span>
-<span class="cstat-no" title="statement not covered" >        );</span>
-<span class="cstat-no" title="statement not covered" >      }</span>
-<span class="cstat-no" title="statement not covered" >      </span>
-<span class="cstat-no" title="statement not covered" >      // Gestion de l'erreur RESET_PASSWORD_EXCEED_LIMIT</span>
-<span class="cstat-no" title="statement not covered" >      if (error.message &amp;&amp; error.message.includes('RESET_PASSWORD_EXCEED_LIMIT')) {</span>
-<span class="cstat-no" title="statement not covered" >        return NextResponse.json(</span>
-<span class="cstat-no" title="statement not covered" >          { </span>
-<span class="cstat-no" title="statement not covered" >            error: 'Trop de tentatives de réinitialisation. Veuillez attendre quelques minutes avant de réessayer.',</span>
-<span class="cstat-no" title="statement not covered" >            code: 'RATE_LIMIT_EXCEEDED',</span>
-<span class="cstat-no" title="statement not covered" >            retryAfter: 300 // 5 minutes en secondes</span>
-<span class="cstat-no" title="statement not covered" >          },</span>
-<span class="cstat-no" title="statement not covered" >          { status: 429 }</span>
-<span class="cstat-no" title="statement not covered" >        );</span>
-<span class="cstat-no" title="statement not covered" >      }</span>
-<span class="cstat-no" title="statement not covered" >      </span>
-<span class="cstat-no" title="statement not covered" >      // Gestion des erreurs de quota/limite</span>
-<span class="cstat-no" title="statement not covered" >      if (error.message &amp;&amp; (</span>
-<span class="cstat-no" title="statement not covered" >        error.message.includes('QUOTA_EXCEEDED') ||</span>
-<span class="cstat-no" title="statement not covered" >        error.message.includes('RATE_LIMITED')</span>
-<span class="cstat-no" title="statement not covered" >      )) {</span>
-<span class="cstat-no" title="statement not covered" >        return NextResponse.json(</span>
-<span class="cstat-no" title="statement not covered" >          { </span>
-<span class="cstat-no" title="statement not covered" >            error: 'Service temporairement indisponible. Veuillez réessayer dans quelques minutes.',</span>
-<span class="cstat-no" title="statement not covered" >            code: 'SERVICE_UNAVAILABLE'</span>
-<span class="cstat-no" title="statement not covered" >          },</span>
-<span class="cstat-no" title="statement not covered" >          { status: 503 }</span>
-<span class="cstat-no" title="statement not covered" >        );</span>
-<span class="cstat-no" title="statement not covered" >      }</span>
-<span class="cstat-no" title="statement not covered" >      </span>
-<span class="cstat-no" title="statement not covered" >      // Log détaillé pour les autres erreurs</span>
-<span class="cstat-no" title="statement not covered" >      console.error('Erreur Firebase Auth détaillée:', {</span>
-<span class="cstat-no" title="statement not covered" >        code: error.code,</span>
-<span class="cstat-no" title="statement not covered" >        message: error.message,</span>
-<span class="cstat-no" title="statement not covered" >        details: error.errorInfo || error</span>
-<span class="cstat-no" title="statement not covered" >      });</span>
-<span class="cstat-no" title="statement not covered" >      </span>
-<span class="cstat-no" title="statement not covered" >      return NextResponse.json(</span>
-<span class="cstat-no" title="statement not covered" >        { error: 'Erreur lors de l\'envoi de l\'email de réinitialisation' },</span>
-<span class="cstat-no" title="statement not covered" >        { status: 500 }</span>
+<span class="cstat-no" title="statement not covered" >    }</span>
+<span class="cstat-no" title="statement not covered" ></span>
+<span class="cstat-no" title="statement not covered" >    // Créer notre lien personnalisé</span>
+<span class="cstat-no" title="statement not covered" >    const params = new URLSearchParams();</span>
+<span class="cstat-no" title="statement not covered" >    params.set('oobCode', oobCode);</span>
+<span class="cstat-no" title="statement not covered" >    const resetLink = `${process.env.NEXT_PUBLIC_HOST || 'http://localhost:3000'}/api/auth/password-reset?${params.toString()}`;</span>
+<span class="cstat-no" title="statement not covered" ></span>
+<span class="cstat-no" title="statement not covered" >    // Préparer les données pour l'email</span>
+<span class="cstat-no" title="statement not covered" >    const name = user.displayName?.split(' ')[0] || email.split('@')[0];</span>
+<span class="cstat-no" title="statement not covered" ></span>
+<span class="cstat-no" title="statement not covered" >    // Utiliser les textes par défaut du EmailService qui incluent expirationInfo</span>
+<span class="cstat-no" title="statement not covered" >    const emailProps = EmailTemplateService.generatePasswordResetProps(</span>
+<span class="cstat-no" title="statement not covered" >      name,</span>
+<span class="cstat-no" title="statement not covered" >      email,</span>
+<span class="cstat-no" title="statement not covered" >      resetLink,</span>
+<span class="cstat-no" title="statement not covered" >      texts</span>
+<span class="cstat-no" title="statement not covered" >    );</span>
+<span class="cstat-no" title="statement not covered" ></span>
+<span class="cstat-no" title="statement not covered" >    // Générer l'email HTML</span>
+<span class="cstat-no" title="statement not covered" >    const emailHtml = await render(</span>
+<span class="cstat-no" title="statement not covered" >      PasswordReset(emailProps)</span>
+<span class="cstat-no" title="statement not covered" >    );</span>
+<span class="cstat-no" title="statement not covered" ></span>
+<span class="cstat-no" title="statement not covered" >    // Générer l'email en texte brut</span>
+<span class="cstat-no" title="statement not covered" >    const emailText = await render(</span>
+<span class="cstat-no" title="statement not covered" >      PasswordReset(emailProps),</span>
+<span class="cstat-no" title="statement not covered" >      { plainText: true }</span>
+<span class="cstat-no" title="statement not covered" >    );</span>
+<span class="cstat-no" title="statement not covered" ></span>
+<span class="cstat-no" title="statement not covered" >    // Données de l'email</span>
+<span class="cstat-no" title="statement not covered" >    const emailData = {</span>
+<span class="cstat-no" title="statement not covered" >      from: EmailService.getDefaultFromAddress(),</span>
+<span class="cstat-no" title="statement not covered" >      to: email,</span>
+<span class="cstat-no" title="statement not covered" >      subject: subject || 'Réinitialisez votre mot de passe - Trouve Ton Nkama',</span>
+<span class="cstat-no" title="statement not covered" >      text: emailText,</span>
+<span class="cstat-no" title="statement not covered" >      html: emailHtml,</span>
+<span class="cstat-no" title="statement not covered" >    };</span>
+<span class="cstat-no" title="statement not covered" ></span>
+<span class="cstat-no" title="statement not covered" >    // Envoyer l'email avec le service centralisé</span>
+<span class="cstat-no" title="statement not covered" >    await emailService.sendEmail(emailData, resetLink);</span>
+<span class="cstat-no" title="statement not covered" ></span>
+<span class="cstat-no" title="statement not covered" >    logger.info('Password reset email sent', { email });</span>
+<span class="cstat-no" title="statement not covered" >    return NextResponse.json({</span>
+<span class="cstat-no" title="statement not covered" >      success: true,</span>
+<span class="cstat-no" title="statement not covered" >      message: 'Email de réinitialisation envoyé avec succès',</span>
+<span class="cstat-no" title="statement not covered" >      ...(process.env.NODE_ENV === 'development' &amp;&amp; { resetLink }),</span>
+<span class="cstat-no" title="statement not covered" >    });</span>
+<span class="cstat-no" title="statement not covered" >  } catch (error) {</span>
+<span class="cstat-no" title="statement not covered" >    const message = error instanceof Error ? error.message : '';</span>
+<span class="cstat-no" title="statement not covered" >    if (message.includes('RESET_PASSWORD_EXCEED_LIMIT')) {</span>
+<span class="cstat-no" title="statement not covered" >      logger.warn('Password reset rate limit exceeded', { error });</span>
+<span class="cstat-no" title="statement not covered" >      return jsonApiError(</span>
+<span class="cstat-no" title="statement not covered" >        429,</span>
+<span class="cstat-no" title="statement not covered" >        'RATE_LIMIT_EXCEEDED',</span>
+<span class="cstat-no" title="statement not covered" >        'Trop de tentatives de réinitialisation. Veuillez attendre quelques minutes avant de réessayer.',</span>
+<span class="cstat-no" title="statement not covered" >        { retryAfter: 300 }</span>
 <span class="cstat-no" title="statement not covered" >      );</span>
 <span class="cstat-no" title="statement not covered" >    }</span>
-<span class="cstat-no" title="statement not covered" >  } catch (error) {</span>
-<span class="cstat-no" title="statement not covered" >    console.error('Erreur générale:', error);</span>
-<span class="cstat-no" title="statement not covered" >    return NextResponse.json(</span>
-<span class="cstat-no" title="statement not covered" >      { error: 'Erreur interne du serveur' },</span>
-<span class="cstat-no" title="statement not covered" >      { status: 500 }</span>
-<span class="cstat-no" title="statement not covered" >    );</span>
+<span class="cstat-no" title="statement not covered" ></span>
+<span class="cstat-no" title="statement not covered" >    if (message.includes('QUOTA_EXCEEDED') || message.includes('RATE_LIMITED')) {</span>
+<span class="cstat-no" title="statement not covered" >      logger.warn('Password reset provider quota exceeded', { error });</span>
+<span class="cstat-no" title="statement not covered" >      return jsonApiError(</span>
+<span class="cstat-no" title="statement not covered" >        503,</span>
+<span class="cstat-no" title="statement not covered" >        'SERVICE_UNAVAILABLE',</span>
+<span class="cstat-no" title="statement not covered" >        'Service temporairement indisponible. Veuillez réessayer dans quelques minutes.'</span>
+<span class="cstat-no" title="statement not covered" >      );</span>
+<span class="cstat-no" title="statement not covered" >    }</span>
+<span class="cstat-no" title="statement not covered" ></span>
+<span class="cstat-no" title="statement not covered" >    return handleApiError(error, {</span>
+<span class="cstat-no" title="statement not covered" >      logger,</span>
+<span class="cstat-no" title="statement not covered" >      route: '/api/auth/send-password-reset-email',</span>
+<span class="cstat-no" title="statement not covered" >      fallbackMessage: 'Erreur lors de l\'envoi de l\'email de réinitialisation',</span>
+<span class="cstat-no" title="statement not covered" >      knownCodes: {</span>
+<span class="cstat-no" title="statement not covered" >        'auth/user-not-found': {</span>
+<span class="cstat-no" title="statement not covered" >          status: 404,</span>
+<span class="cstat-no" title="statement not covered" >          code: 'USER_NOT_FOUND',</span>
+<span class="cstat-no" title="statement not covered" >          message: 'Aucun compte associé à cette adresse email',</span>
+<span class="cstat-no" title="statement not covered" >        },</span>
+<span class="cstat-no" title="statement not covered" >        'auth/invalid-email': {</span>
+<span class="cstat-no" title="statement not covered" >          status: 400,</span>
+<span class="cstat-no" title="statement not covered" >          code: 'INVALID_EMAIL',</span>
+<span class="cstat-no" title="statement not covered" >          message: 'Adresse email invalide',</span>
+<span class="cstat-no" title="statement not covered" >        },</span>
+<span class="cstat-no" title="statement not covered" >        'auth/user-disabled': {</span>
+<span class="cstat-no" title="statement not covered" >          status: 403,</span>
+<span class="cstat-no" title="statement not covered" >          code: 'USER_DISABLED',</span>
+<span class="cstat-no" title="statement not covered" >          message: 'Ce compte a été désactivé. Veuillez contacter le support.',</span>
+<span class="cstat-no" title="statement not covered" >        },</span>
+<span class="cstat-no" title="statement not covered" >      },</span>
+<span class="cstat-no" title="statement not covered" >    });</span>
 <span class="cstat-no" title="statement not covered" >  }</span>
-<span class="cstat-no" title="statement not covered" >} </span></pre></td></tr></table></pre>
+<span class="cstat-no" title="statement not covered" >}</span>
+&nbsp;</pre></td></tr></table></pre>
 
                 <div class='push'></div><!-- for sticky footer -->
             </div><!-- /wrapper -->
             <div class='footer quiet pad2 space-top1 center small'>
                 Code coverage generated by
                 <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
-                at 2026-01-13T11:35:56.330Z
+                at 2026-03-05T17:16:34.541Z
             </div>
         <script src="../../../../../prettify.js"></script>
         <script>
