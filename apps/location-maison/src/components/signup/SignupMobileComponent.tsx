@@ -280,7 +280,13 @@ export const SignupMobileComponent = () => {
                                 control={form.control}
                                 name='acceptAnnouncerTerms'
                                 label={
-                                    <>J'accepte les conditions annonceur.</>
+                                    <>
+                                        J&apos;accepte les{" "}
+                                        <a href={routes.public.announcer_terms} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">
+                                            conditions annonceur
+                                        </a>
+                                        .
+                                    </>
                                 }
                             />
                         )}

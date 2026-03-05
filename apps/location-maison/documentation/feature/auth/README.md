@@ -29,3 +29,23 @@ Cette section centralise la documentation des features d’authentification.
 - Progression register/signin: `PROGRESSION.md`
 - Options register: `REGISTER_OPTIONS.md`
 - Analyse existant: `ANALYSE_CODE_EXISTANT.md`
+
+## Routage et protection d'accès
+
+La protection des pages est centralisée dans:
+
+- `src/middleware.ts`
+
+### Catégories de routes
+
+1. `protected` (connexion requise): préfixes `/property`, `/profil`, `/favoris`, `/settings`, `/list-notifications`, `/my-balance`, `/login-and-security`, `/verify-phone`, `/admin`.
+2. `guest-only` (interdit si connecté): `/signin`, `/signup`, `/signin-signup`.
+3. `profile-completion`: `/complete-profile` (accessible seulement si connecté).
+
+### Règles de redirection
+
+1. Non connecté + route protected => redirection `/signin?callbackUrl=<page demandée>`.
+2. Non connecté + `/complete-profile` => redirection `/signin`.
+3. Connecté + route guest-only => redirection `/property`.
+4. Connecté mais profil incomplet + route protected/guest-only => redirection `/complete-profile`.
+5. Connecté avec profil complet + `/complete-profile` => redirection `/property`.

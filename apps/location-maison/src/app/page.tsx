@@ -1,8 +1,6 @@
 import React from "react";
 import type { Metadata } from "next";
-import Script from "next/script";
 import HomePageComponent from "@/components/home-page/HomePageComponent";
-import Head from "next/head";
 
 export const metadata: Metadata = {
     title: "Immobilier Gabon - Trouve Ton Nkama | Location & Vente Maisons, Appartements Libreville",
@@ -27,15 +25,6 @@ export const metadata: Metadata = {
 export default async function Home() {
     return (
         <>
-        <Head>
-            <Script
-                async
-                src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-2799688336707362"
-                crossOrigin="anonymous"
-                strategy="beforeInteractive"
-            />
-        </Head>
-            
             <script
                 type="application/ld+json"
                 dangerouslySetInnerHTML={{

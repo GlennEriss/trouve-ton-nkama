@@ -30,6 +30,7 @@ export async function GET() {
     routes.public_google.guide_immobilier_gabon,
     routes.public_google.confidentiality,
     routes.public_google.terms_of_use,    
+    routes.public_google.announcer_terms,
     routes.public.data_deletion,    
     routes.public.signin,
     routes.public.signup,

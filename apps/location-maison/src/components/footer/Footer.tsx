@@ -54,6 +54,9 @@ export default function Footer({ isHide = false }: Readonly<{ isHide?: boolean }
                         <li>
                             <a href={routes.public.terms_of_use} className="hover:underline py-1">Conditions d&apos;utilisation</a>
                         </li>
+                        <li>
+                            <a href={routes.public.announcer_terms} className="hover:underline py-1">Conditions annonceur</a>
+                        </li>
                     </ul>
                 </div>
                 <div>

@@ -94,6 +94,24 @@ La feature 003 standardise complètement le signin:
 
 ---
 
+## 🛡️ Garde des routes (middleware)
+
+Le contrôle d'accès route est centralisé dans `src/middleware.ts`.
+
+- `protected`: nécessite une session active.
+- `guest-only`: interdit si session active.
+- `complete-profile`: requis pour les comptes incomplets.
+
+Règles appliquées:
+
+1. non connecté + protected => redirect `/signin?callbackUrl=...`
+2. non connecté + `/complete-profile` => redirect `/signin`
+3. connecté + guest-only (`/signin`, `/signup`, `/signin-signup`) => redirect `/property`
+4. connecté + profil incomplet + protected/guest-only => redirect `/complete-profile`
+5. connecté + profil complet + `/complete-profile` => redirect `/property`
+
+---
+
 ## 🔐 Modèle token/session
 
 ## JWT interne (serveur)

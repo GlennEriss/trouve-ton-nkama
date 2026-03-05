@@ -296,7 +296,20 @@ export const SignupForm: React.FC<SignupFormProps> = ({ onLoadingChange }) => {
           <CheckboxForm
             form={form}
             name="acceptAnnouncerTerms"
-            labelElement={<>J&apos;accepte les conditions annonceur.</>}
+            labelElement={
+              <>
+                J&apos;accepte les{" "}
+                <a
+                  href={routes.public.announcer_terms}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-blue-600 hover:underline"
+                >
+                  conditions annonceur
+                </a>
+                .
+              </>
+            }
           />
         )}
         

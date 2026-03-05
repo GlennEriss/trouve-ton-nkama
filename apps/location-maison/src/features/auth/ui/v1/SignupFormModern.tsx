@@ -583,7 +583,16 @@ export const SignupFormModern: React.FC = () => {
                               name="acceptAnnouncerTerms"
                               label={
                                 <span className="text-sm text-gray-600 dark:text-gray-400">
-                                  J&apos;accepte les conditions annonceur.
+                                  J&apos;accepte les{" "}
+                                  <a
+                                    href={routes.public.announcer_terms}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="text-[#1FA89B] hover:underline font-medium"
+                                  >
+                                    conditions annonceur
+                                  </a>
+                                  .
                                 </span>
                               }
                             />
