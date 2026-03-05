@@ -301,3 +301,96 @@ npm test -- --coverage=false src/features/auth/services/__tests__/oauth-google.s
 - Diagramme d’activité: `signin-activity-diagram.puml`
 - UX: `signin-ux.md`
 - UI: `signin-ui.md`
+
+---
+
+## 🧩 Plan de Refactorisation Proposé: `/complete-profile` (Google)
+
+> **Statut**: implémentation démarrée (phases A à D réalisées, tests à finaliser)  
+> **But**: aligner l’onboarding Google avec le design `signin/signup` et intégrer le choix du type de compte.
+
+### 1. Constat actuel
+
+- La page `src/app/(auth)/complete-profile/page.tsx` utilise un layout legacy (`LayoutAuth`) non aligné avec `SigninFormModern` / `SignupFormModern`.
+- La logique de mise à jour passe par `updateUser` (`src/db/user.db.ts`) au lieu du repository/service auth refactoré.
+- Le flux n’intègre pas le choix explicite `User` vs `Announcer` après connexion Google.
+
+### 2. Cible UX/UI
+
+Refondre la page avec le même langage visuel que `/signin` et `/signup`:
+
+- même shell visuel (left panel branding + right panel form moderne),
+- formulaire centré, mêmes composants UI (`InputFormApp`, `PhoneNumberFormAppSimple`, `DateSelect`),
+- email Google affiché en lecture seule,
+- aucun champ mot de passe (OAuth),
+- ajout d’un bloc "Type de compte" (cartes cliquables):
+  - `Compte utilisateur` (rôle final: `['User']`)
+  - `Compte annonceur` (rôle final: `['User', 'Announcer']`)
+- si `Announcer` sélectionné: case `acceptAnnouncerTerms` obligatoire.
+
+### 3. Règles métier proposées
+
+1. Connexion Google crée toujours un compte minimal au départ (`roles: ['User']`, `metadata.needsProfileCompletion: true`).
+2. Au moment de `/complete-profile`, l’utilisateur choisit son type de compte.
+3. À la soumission:
+   - choix `User` => rôles enregistrés `['User']`
+   - choix `Announcer` => rôles enregistrés `['User', 'Announcer']`
+4. `metadata.needsProfileCompletion` passe à `false` uniquement si la mise à jour profil est complète.
+5. La gestion détaillée du profil annonceur reste hors scope (pas de `AnnouncerProfile` ici).
+
+### 4. Cible technique
+
+- Créer un composant dédié: `src/features/auth/ui/v1/CompleteProfileFormModern.tsx`.
+- Garder la route `src/app/(auth)/complete-profile/page.tsx` comme wrapper simple.
+- Introduire un hook: `src/features/auth/hooks/useCompleteProfile.ts`.
+- Introduire un service dédié: `completeProfile` dans la couche auth (`src/features/auth/services`).
+- Réutiliser `UserRepository` (éviter `src/db/user.db.ts` dans ce flux).
+- Centraliser les erreurs via un mapping (même stratégie que `useSignin` / `useSignup`).
+- Logger structuré:
+  - scope UI: `auth.complete-profile-form-modern`
+  - scope hook: `auth.use-complete-profile`
+  - scope service: `auth.complete-profile-service`
+
+### 5. Plan d’implémentation (phases)
+
+#### Phase A - Cadrage
+
+- [x] Valider règle produit: choix compte dans `/complete-profile` Google.
+- [x] Mettre à jour FEATURE-002 pour refléter cette règle.
+
+#### Phase B - UI/UX moderne
+
+- [x] Créer `CompleteProfileFormModern` (desktop/mobile cohérents).
+- [x] Réutiliser le style signin/signup (panneau gauche, gradients, animations légères).
+- [x] Ajouter le bloc choix `User` / `Announcer`.
+
+#### Phase C - Domaine et service
+
+- [x] Créer schéma Zod dédié (infos profil + `accountType` + `acceptAnnouncerTerms` conditionnel).
+- [x] Ajouter service `completeProfile` basé repository.
+- [x] Mettre à jour rôles en fonction du choix compte.
+- [x] Basculer `needsProfileCompletion` à `false`.
+
+#### Phase D - Observabilité et erreurs
+
+- [x] Ajouter logs structurés sur succès/échec.
+- [x] Mapper erreurs métier/techniques vers messages UX cohérents.
+- [x] Supprimer les `console.error`/`console.warn` legacy de ce flux.
+
+#### Phase E - Tests
+
+- [ ] Unit tests service `completeProfile`.
+- [ ] Unit tests hook `useCompleteProfile`.
+- [ ] Component tests `CompleteProfileFormModern` (RTL).
+- [ ] E2E:
+  - [ ] Google new user -> complete-profile -> User
+  - [ ] Google new user -> complete-profile -> Announcer
+  - [ ] erreur update profil -> message UX + log
+
+### 6. Critères d’acceptation proposés
+
+1. `/complete-profile` est visuellement alignée avec `/signin` et `/signup`.
+2. Le formulaire Google ne demande jamais email/mot de passe.
+3. Le choix du type de compte est explicite et persistant.
+4. Les rôles finaux sont corrects (`User` ou `User + Announcer`).
+5. Les erreurs sont centralisées et loggées sans fuite de données sensibles.

@@ -21,20 +21,21 @@ Définir un flux Google cohérent avec la stratégie auth actuelle:
 
 ### 1) Si un utilisateur crée un compte avec Google, quel type de compte est créé ?
 
-**Décision** : un compte Google créé pour la première fois est un compte **`User`**.
+**Décision** : un compte Google créé pour la première fois est créé en mode provisoire **`User`**, puis finalisé sur `/complete-profile`.
 
-- rôles créés : `['User']`
+- rôles initiaux : `['User']`
 - provider initial : `['GOOGLE']`
-- complétion de profil obligatoire (`/complete-profile`) si infos manquantes
+- complétion de profil obligatoire (`/complete-profile`)
+- choix du type de compte au moment de la complétion (`User` ou `Announcer`)
 
 ### 2) Si un annonceur veut créer son compte avec Google, que propose-t-on ?
 
-**Décision** : parcours en 2 temps.
+**Décision** : parcours en 2 temps dans la même feature auth.
 
 1. authentification Google + création de compte en `User`
-2. activation du rôle annonceur via la feature dédiée (migration / gestion profil annonceur), hors scope de FEATURE-002
+2. sélection `Compte annonceur` sur `/complete-profile` => rôles finaux `['User', 'Announcer']`
 
-Ce choix évite de mélanger OAuth, obligations annonceur et gestion de profil dans un seul flux.
+La gestion détaillée du profil annonceur reste hors scope de FEATURE-002.
 
 ---
 
@@ -44,10 +45,11 @@ Ce choix évite de mélanger OAuth, obligations annonceur et gestion de profil d
 
 1. clic "Continuer avec Google" (signin/signup)
 2. callback NextAuth Google
-3. si email inexistant: création compte auth + document user minimal
+3. si email inexistant: création compte auth + document user minimal (`roles: ['User']`)
 4. session ouverte
 5. middleware redirige vers `/complete-profile` tant que profil incomplet
-6. après complétion: accès au parcours normal
+6. utilisateur choisit son type (`User` / `Announcer`) et complète identité + téléphone + naissance
+7. après complétion: accès au parcours normal
 
 ### Flux B - Compte existant déjà lié à Google
 
@@ -74,8 +76,8 @@ Ce choix évite de mélanger OAuth, obligations annonceur et gestion de profil d
 ## 📐 Règles métier à respecter
 
 - FEATURE-002 ne crée pas `AnnouncerProfile`.
-- FEATURE-002 ne déclenche pas la migration `User -> Announcer`.
-- un compte `Announcer` conserve toujours les capacités `User` (rôles `['User', 'Announcer']`) mais cette attribution n'est pas gérée ici.
+- FEATURE-002 peut attribuer le rôle `Announcer` via `/complete-profile`.
+- un compte `Announcer` conserve toujours les capacités `User` (rôles `['User', 'Announcer']`).
 
 ---
 
@@ -86,7 +88,8 @@ Fichier principal: `src/next-auth/auth.config.ts`
 État après refactor en cours:
 
 - logique Google extraite dans `src/features/auth/services/oauth-google.service.ts`
-- création Google alignée sur `roles: ['User']`
+- création Google initiale alignée sur `roles: ['User']`
+- complétion profil modernisée via `src/features/auth/ui/v1/CompleteProfileFormModern.tsx`
 - callback NextAuth Google aligné sur `features/auth/repositories/user.repository`
 - flux Facebook reste partiellement sur `src/db/user.db.ts` (hors scope immédiat FEATURE-002)
 
@@ -120,6 +123,9 @@ src/features/auth/
 - `roles: ['User']`
 - `providers: ['GOOGLE']`
 - `metadata.needsProfileCompletion: true` tant que profil incomplet
+- à la complétion:
+  - choix `User` => `roles: ['User']`
+  - choix `Announcer` => `roles: ['User', 'Announcer']`
 - jamais de création `AnnouncerProfile` dans ce flux
 
 ---
@@ -128,8 +134,8 @@ src/features/auth/
 
 ### Phase 1 - Cadrage
 
-- [x] Règle métier `Google => User` validée
-- [x] Règle métier "Announcer via Google = migration dédiée" validée
+- [x] Règle métier `Google => User` initial validée
+- [x] Règle métier "choix User/Announcer à la complétion" validée
 - [x] Hors scope `AnnouncerProfile` explicité
 
 ### Phase 2 - Refactor OAuth Google
@@ -144,6 +150,7 @@ src/features/auth/
 - [x] Uniformiser les erreurs `wrong_provider` (codes + messages)
 - [x] Ajouter un message explicite "connectez-vous puis liez Google dans Login & Security"
 - [x] Garder la redirection `/complete-profile` pour données manquantes
+- [x] Introduire le choix de type de compte dans `/complete-profile`
 
 ### Phase 4 - Tests
 
@@ -156,7 +163,8 @@ src/features/auth/
 
 ## 🧪 Critères d'acceptation
 
-- un nouvel utilisateur Google n'est jamais créé directement annonceur
+- un nouvel utilisateur Google est créé en `User` puis choisit son type à `/complete-profile`
+- un utilisateur choisissant `Announcer` obtient `roles: ['User', 'Announcer']`
 - un annonceur existant peut lier Google sans perdre ses rôles
 - aucun flux Google ne crée `AnnouncerProfile`
 - les cas `wrong_provider` sont gérés de manière compréhensible côté UI
