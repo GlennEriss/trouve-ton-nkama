@@ -22,9 +22,13 @@
 
 ### Ce qui manque
 
-- Migration post-inscription "Devenir Annonceur"
-- Création `AnnouncerProfile` à la création d’un compte annonceur
-- E2E signup complets (User + Announcer)
+- [ ] Tests d’intégration signup avec Firebase Emulator
+- [ ] E2E signup complets (User + Announcer)
+- [ ] Couverture auth >= 80%
+
+### Hors périmètre signup
+
+- Gestion des profils (User/Annonceur), incluant `AnnouncerProfile` : traitée dans une feature dédiée profil
 
 ---
 

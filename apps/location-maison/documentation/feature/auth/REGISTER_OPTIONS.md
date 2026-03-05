@@ -22,7 +22,7 @@ Dans les 2 cas:
 - Creation avec profil utilisateur standard
 - Roles attribues: `['User']`
 - Pas de conditions annonceur
-- Pas de creation immediate d'`AnnouncerProfile`
+- Gestion du profil annonceur (`AnnouncerProfile`) hors scope du signup
 
 ### Diagramme
 Voir: [`register-activity-diagram.puml`](./register-activity-diagram.puml)
@@ -32,8 +32,8 @@ Voir: [`register-activity-diagram.puml`](./register-activity-diagram.puml)
 - Rechercher des biens
 - Gerer ses favoris
 
-### Evolution
-L'utilisateur peut devenir annonceur plus tard via le flux de migration dedie.
+### Hors scope signup
+La gestion detaillee du profil (User/Annonceur) est traitee par la feature dediee au profil.
 
 ---
 

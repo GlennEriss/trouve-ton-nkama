@@ -51,8 +51,8 @@ if (Type de compte = Annonceur ?) then (oui)
       
       Étapes supplémentaires:
       - Acceptation CGU Annonceur
-      - Choix type d'annonceur
-      - Création AnnouncerProfile
+      - Attribution des rôles User + Announcer
+      - Gestion du profil annonceur hors scope signup
     end note
     stop
 else (non)

@@ -80,14 +80,6 @@ if (Email déjà utilisé ?) then (oui)
 else (non)
 endif
 
-:Service: Demander le type d'annonceur;
-
-:Visiteur choisit son type d'annonceur:
-- Propriétaire (INDIVIDUAL)
-- Agence (AGENCY)
-- Démarcheur (BROKER)
-- Mandataire (AGENT);
-
 :Service: Créer compte Firebase Auth;
 
 partition "Firebase Auth" {
@@ -107,15 +99,14 @@ else (non)
 endif
 
 :Service: Créer utilisateur dans Firestore
-avec rôle 'Announcer';
+avec rôles 'User' + 'Announcer';
 
 partition Repository {
     :Transformer données formulaire → User;
     note right
-      **Rôle: 'Announcer'**
-      (pas 'User')
-      L'utilisateur est directement
-      créé comme Annonceur
+      **Rôles: ['User', 'Announcer']**
+      Le compte annonceur garde
+      aussi les capacités User
     end note
     :Créer CreditWallet avec 3 crédits de bienvenue;
     :create(user);
@@ -124,26 +115,6 @@ partition Repository {
 if (Création Firestore échoue ?) then (oui)
     :Rollback: Supprimer compte Firebase Auth;
     :Afficher erreur "Erreur lors de la création du compte";
-    stop
-else (non)
-endif
-
-:Service: Créer AnnouncerProfile;
-
-partition Repository {
-    :Créer AnnouncerProfile {
-      userId,
-      announcerType (INDIVIDUAL/AGENCY/BROKER/AGENT),
-      acceptedTermsAt,
-      becameAnnouncerAt,
-      isVerified: false (telephone non verifie)
-    };
-}
-
-if (Création AnnouncerProfile échoue ?) then (oui)
-    :Rollback: Supprimer compte Firebase Auth;
-    :Rollback: Supprimer utilisateur Firestore;
-    :Afficher erreur "Erreur lors de la création du profil";
     stop
 else (non)
 endif
@@ -171,7 +142,7 @@ end note
 :Composant: Afficher toast de succès
 "Compte Annonceur créé avec succès!";
 
-:Rediriger vers /signup/success?uid=xxx&type=announcer;
+:Rediriger vers /signup/success?uid=xxx;
 
 stop
 
