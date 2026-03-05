@@ -40,6 +40,7 @@ La feature 003 standardise complètement le signin:
 - Gestion détaillée du profil (feature profil dédiée).
 - OTP téléphone (feature dédiée).
 - Refonte complète du flow Facebook (seule la robustesse d’erreurs a été améliorée ici).
+- Politique cookies + bandeau de consentement: reportés à une feature conformité dédiée (implémentation plus tard).
 
 ---
 
