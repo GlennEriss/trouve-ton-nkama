@@ -133,16 +133,48 @@ async function handleExistingGoogleUser(
     }
 
     providers.push('GOOGLE');
+  } else {
+    // Ensure Firestore client writes have an authenticated Firebase context
+    // when this callback runs in a server runtime.
+    try {
+      await signInWithCredential(auth, credential);
+    } catch (error) {
+      logger.warn('Google credential re-auth failed before user metadata update', {
+        uid: userExists.uid,
+        email: userExists.email,
+        error,
+      });
+    }
   }
 
-  await userRepository.update(userExists.uid, {
-    ...(userExists as object),
-    metadata: {
-      ...metadata,
-      idToken: account.id_token,
-    },
-    providers,
-  } as Partial<User>);
+  try {
+    await userRepository.update(userExists.uid, {
+      metadata: {
+        ...metadata,
+        idToken: account.id_token,
+      },
+      providers,
+    } as Partial<User>);
+  } catch (error: any) {
+    const errorCode = error?.code as string | undefined;
+    const message = error?.message as string | undefined;
+    const isPermissionError =
+      errorCode === 'permission-denied' ||
+      message?.includes('PERMISSION_DENIED') ||
+      message?.includes('Missing or insufficient permissions');
+
+    if (isPermissionError) {
+      // Metadata refresh should not block signin for existing accounts.
+      logger.warn('Skipping Google user metadata update due to Firestore permissions', {
+        uid: userExists.uid,
+        email: userExists.email,
+        error,
+      });
+      return;
+    }
+
+    throw error;
+  }
 }
 
 export async function handleGoogleSignIn(

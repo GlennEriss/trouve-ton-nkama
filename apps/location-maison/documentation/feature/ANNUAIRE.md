@@ -12,10 +12,10 @@
 
 | Feature | Statut | Branche | Date | Notes |
 |---------|--------|---------|------|-------|
-| Se connecter | ✅ | - | - | Existant |
+| Se connecter | 🔄 | feature/FEATURE-003-signin | 2026-03-05 | Refactor en cours (UI signin + gestion token/refresh token) |
 | S'inscrire | ✅ | - | - | Existant |
 | Se déconnecter | ✅ | - | - | Existant |
-| Connexion Google | 🔄 | feature/FEATURE-002-google-oauth | 2026-03-05 | Refactor en cours (règle cible: Google crée un compte `User`) |
+| Connexion Google | 🔄 | feature/FEATURE-003-signin | 2026-03-05 | Stabilisation OAuth (erreurs contrôlées + refresh token session) |
 | Connexion Facebook | ✅ | - | - | Existant |
 | Vérification email | ✅ | - | - | Existant |
 | Réinitialisation mot de passe | ✅ | - | - | Existant |
