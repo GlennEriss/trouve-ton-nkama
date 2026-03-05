@@ -4,8 +4,9 @@
  * Tests for the SignupFormWrapper component (V1)
  */
 
-import { describe, it, expect, beforeEach, jest } from '@jest/globals';
+import { describe, it, beforeEach, jest } from '@jest/globals';
 import { render, screen } from '@testing-library/react';
+import '@testing-library/jest-dom';
 import { SignupFormWrapper } from '../SignupFormWrapper';
 
 // Mock LayoutAuth

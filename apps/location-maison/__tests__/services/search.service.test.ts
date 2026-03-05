@@ -1,7 +1,22 @@
 import { describe, test, expect, jest, beforeEach } from '@jest/globals';
 
+type SearchRequest = {
+  indexName: string;
+  query: string;
+  params?: Record<string, unknown>;
+};
+
+type SearchResponse = {
+  results: Array<{
+    hits: Array<Record<string, any>>;
+    [key: string]: any;
+  }>;
+};
+
 // Mock du client Algolia
-const mockSearch = jest.fn();
+const mockSearch: jest.MockedFunction<
+  (requests: SearchRequest[]) => Promise<SearchResponse>
+> = jest.fn();
 const mockSetUiState = jest.fn();
 const mockGetUiState = jest.fn();
 

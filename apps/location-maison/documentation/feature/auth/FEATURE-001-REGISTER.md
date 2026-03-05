@@ -228,7 +228,7 @@ interface UseSignupReturn {
 - [x] Diagramme de séquence (`register-sequence-diagram.puml`)
 - [x] Spécifications UX (`ux.md`)
 - [x] Spécifications UI (`ui.md`)
-- [ ] README dans `documentation/feature/auth/`
+- [x] README dans `documentation/feature/auth/`
 - [ ] Exemples d'utilisation
 
 ### Phase 8 : PR

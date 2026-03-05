@@ -295,7 +295,18 @@ class MockAuthService {
 class MockSearchService {
   async geocodeLocation(query: string) {
     // Simuler l'API de géolocalisation
-    const mockResults = {
+    const mockResults: Record<
+      string,
+      {
+        lat: number;
+        lng: number;
+        address: {
+          city: string;
+          country: string;
+          display_name: string;
+        };
+      }
+    > = {
       'Libreville': {
         lat: -0.3976,
         lng: 9.4673,

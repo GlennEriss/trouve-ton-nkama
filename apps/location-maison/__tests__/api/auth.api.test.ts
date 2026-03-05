@@ -1,9 +1,15 @@
 import { describe, test, expect, jest, beforeEach } from '@jest/globals';
 
+type DecodedToken = { uid: string };
+type CreateCustomTokenFn = (uid: string) => Promise<string>;
+type VerifyIdTokenFn = (token: string) => Promise<DecodedToken>;
+
+type GenerateTokenResponse = { status: number; data: any };
+
 // Mock Firebase Admin
 const mockAdminAuth = {
-  createCustomToken: jest.fn(),
-  verifyIdToken: jest.fn()
+  createCustomToken: jest.fn() as jest.MockedFunction<CreateCustomTokenFn>,
+  verifyIdToken: jest.fn() as jest.MockedFunction<VerifyIdTokenFn>,
 };
 
 jest.mock('@/firebase/admin', () => ({
@@ -11,7 +17,7 @@ jest.mock('@/firebase/admin', () => ({
 }));
 
 // Mock simplifié pour simuler le comportement de l'API
-const mockGenerateTokenAPI = async (requestData: { uid?: string }) => {
+const mockGenerateTokenAPI = async (requestData: { uid?: string | null }): Promise<GenerateTokenResponse> => {
   try {
     const { uid } = requestData;
 

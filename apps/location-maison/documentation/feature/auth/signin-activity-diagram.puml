@@ -1,0 +1,55 @@
+@startuml
+title FEATURE-003 Signin - Diagramme d'activite
+
+start
+
+:Utilisateur ouvre /signin;
+
+if (Method?) then (Credentials)
+  :Saisie email + mot de passe;
+  :Validation formulaire;
+  if (Form valide?) then (Oui)
+    :NextAuth signIn(credentials);
+    if (Auth OK?) then (Oui)
+      :Hydrate user session;
+      :Redirect /property;
+      stop
+    else (Non)
+      :Map error code -> message UX;
+      :Afficher toast erreur;
+      stop
+    endif
+  else (Non)
+    :Afficher erreur validation;
+    stop
+  endif
+else (Google/Facebook)
+  :Click provider OAuth;
+  :NextAuth callback signIn(provider);
+  if (wrong_provider?) then (Oui)
+    :Redirect /signin?error=wrong_provider;
+    :Afficher message guidance;
+    stop
+  else (Non)
+    if (provider disabled?) then (Oui)
+      :Redirect /signin?error=provider_disabled;
+      :Afficher message actionnable;
+      stop
+    else (Non)
+      :Session ouverte;
+      :JWT callback stocke access token;
+      if (Google and token expiring soon?) then (Oui)
+        :Refresh access token;
+        if (Refresh failed?) then (Oui)
+          :tokenStatus=refresh_failed;
+        else (Non)
+          :tokenStatus=valid;
+        endif
+      endif
+      :Redirect selon middleware;
+      stop
+    endif
+  endif
+endif
+
+@enduml

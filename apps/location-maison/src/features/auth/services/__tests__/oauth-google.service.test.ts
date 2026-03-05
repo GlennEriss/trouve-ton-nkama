@@ -183,5 +183,26 @@ describe('oauth-google.service', () => {
 
       expect(result).toBe('/signin?error=google_provider_disabled');
     });
+
+    it('does not fail sign-in when user metadata update is denied by Firestore rules', async () => {
+      mockUpdateUser.mockRejectedValueOnce({
+        code: 'permission-denied',
+        message: 'Missing or insufficient permissions',
+      });
+
+      const result = await handleGoogleSignIn(
+        { email: 'existing@example.com' },
+        { id_token: 'google-token' },
+        {},
+        {
+          uid: 'uid-existing',
+          email: 'existing@example.com',
+          providers: ['GOOGLE'],
+          metadata: { idToken: 'old-id-token' },
+        }
+      );
+
+      expect(result).toBe(true);
+    });
   });
 });

@@ -5,3 +5,5 @@
  */
 
 export { useSignup, type UseSignupReturn, type UseSignupState } from './useSignup';
+export { useSignin, mapSigninError, type SigninCredentials, type SigninError, type SigninResult, type UseSigninReturn } from './useSignin';
+export { useAuthSession, type UseAuthSessionReturn, type AuthSessionState } from './useAuthSession';

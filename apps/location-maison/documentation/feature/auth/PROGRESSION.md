@@ -126,6 +126,27 @@ Points clés:
 
 ---
 
+## 🚀 Phase suivante : FEATURE-003 Signin (démarrée)
+
+Objectif:
+- refactor `/signin` (desktop/mobile) avec design aligné sur `/signup`
+- centraliser les erreurs de connexion
+- gérer token + refresh token OAuth Google dans NextAuth
+- exposer l’état session/token via hook dédié
+
+État:
+- [x] callback `signIn` NextAuth: Google service + logging + erreurs contrôlées
+- [x] callback `jwt`: stockage token OAuth + refresh automatique
+- [x] callback `session`: exposition `session.auth` (status token)
+- [x] hook `useSignin` (credentials + Google + mapping erreurs)
+- [x] hook `useAuthSession` + enrichissement `useCurrentUser`
+- [x] nouveau `SigninFormModern` + mobile branché sur `useSignin`
+- [x] documentation complète FEATURE-003 (`FEATURE-003-SIGNIN.md`, `signin-sequence-diagram.puml`, `signin-activity-diagram.puml`, `signin-ux.md`, `signin-ui.md`)
+- [x] tests unitaires `useSignin`
+- [ ] E2E signin complets (credentials + Google + erreurs provider)
+
+---
+
 ## Validation test (batch auth)
 
 Suites exécutées et passantes:
@@ -136,6 +157,7 @@ Suites exécutées et passantes:
 - `src/features/auth/repositories/__tests__/user.repository.test.ts`
 - `src/features/auth/ui/v1/__tests__/SignupForm.test.tsx`
 - `src/features/auth/ui/v1/__tests__/SignupFormModern.test.tsx`
+- `src/features/auth/hooks/__tests__/useSignin.test.ts`
 
 ---
 

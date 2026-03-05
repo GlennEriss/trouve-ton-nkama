@@ -311,9 +311,9 @@ describe('File DB Integration Tests', () => {
       const mockUploadBytes = require('@/firebase/storage').uploadBytes;
       const mockGetDownloadURL = require('@/firebase/storage').getDownloadURL;
 
-      mockRef.mockImplementation((storage, path) => ({ fullPath: path }));
+      mockRef.mockImplementation((_storage: unknown, path: string) => ({ fullPath: path }));
       mockUploadBytes.mockResolvedValue(undefined);
-      mockGetDownloadURL.mockImplementation((ref) => 
+      mockGetDownloadURL.mockImplementation((ref: { fullPath: string }) => 
         Promise.resolve(`https://storage.com/${ref.fullPath}`)
       );
 
@@ -375,7 +375,7 @@ describe('File DB Integration Tests', () => {
       const mockUploadBytes = require('@/firebase/storage').uploadBytes;
       const mockGetDownloadURL = require('@/firebase/storage').getDownloadURL;
 
-      mockRef.mockImplementation((storage, path) => ({ fullPath: path }));
+      mockRef.mockImplementation((_storage: unknown, path: string) => ({ fullPath: path }));
       mockUploadBytes.mockResolvedValue(undefined);
       mockGetDownloadURL.mockResolvedValue('https://storage.com/test.jpg');
 

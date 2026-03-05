@@ -1,7 +1,7 @@
 import { describe, test, expect, jest, beforeEach } from '@jest/globals';
 
 // Mock global fetch
-global.fetch = jest.fn();
+global.fetch = jest.fn() as jest.MockedFunction<typeof fetch>;
 
 describe('Geocoding Service Tests', () => {
   const mockFetch = global.fetch as jest.MockedFunction<typeof fetch>;

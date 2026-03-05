@@ -1,7 +1,7 @@
 # FEATURE-002 : Connexion Google (OAuth)
 
 > **Périmètre** : authentification Google via NextAuth + Firebase Auth  
-> **Statut** : cadrage validé (implémentation/refactor à enchaîner)  
+> **Statut** : implémentation principale terminée, validation E2E à compléter  
 > **Dernière mise à jour** : 2026-03-05
 
 ---

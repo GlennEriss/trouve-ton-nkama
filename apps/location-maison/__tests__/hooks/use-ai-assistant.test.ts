@@ -1,8 +1,32 @@
 import { describe, test, expect, jest, beforeEach } from '@jest/globals';
 import { renderHook, act, waitFor } from '@testing-library/react';
 
+type SessionUser = {
+  uid: string;
+  email: string;
+  credits: number;
+};
+
+type SessionState = {
+  data: { user: SessionUser } | null;
+  status: 'authenticated' | 'unauthenticated' | 'loading';
+  update: jest.Mock;
+};
+
+type GeneratedContentResult = {
+  response: {
+    text: () => string;
+  };
+};
+
+type DeductCreditsResult = {
+  success: boolean;
+  transactionId?: string;
+  error?: string;
+};
+
 // Mock de next-auth
-const mockSession = {
+const mockSession: SessionState = {
   data: {
     user: {
       uid: 'user-123',
@@ -21,7 +45,7 @@ jest.mock('next-auth/react', () => ({
 // Mock du service de prompts IA
 const mockAIPromptsService = {
   getSystemPrompt: jest.fn(() => 'Vous êtes un assistant immobilier au Gabon.'),
-  buildContextualPrompt: jest.fn((message, context) => `Contexte: ${JSON.stringify(context)}\nMessage: ${message}`)
+  buildContextualPrompt: jest.fn((message: string, context: unknown) => `Contexte: ${JSON.stringify(context)}\nMessage: ${message}`)
 };
 
 jest.mock('@/services/ai-prompts.service', () => ({
@@ -29,8 +53,11 @@ jest.mock('@/services/ai-prompts.service', () => ({
 }));
 
 // Mock de Firebase AI
+const mockGenerateContent = jest.fn() as jest.MockedFunction<
+  (prompt: string) => Promise<GeneratedContentResult>
+>;
 const mockModel = {
-  generateContent: jest.fn()
+  generateContent: mockGenerateContent
 };
 
 jest.mock('@/firebase/ai', () => ({
@@ -38,7 +65,14 @@ jest.mock('@/firebase/ai', () => ({
 }));
 
 // Mock de la déduction de crédits
-const mockDeductCreditsWithTransaction = jest.fn();
+const mockDeductCreditsWithTransaction = jest.fn() as jest.MockedFunction<
+  (input: {
+    userId: string;
+    amount: number;
+    type: string;
+    description: string;
+  }) => Promise<DeductCreditsResult>
+>;
 
 jest.mock('@/db/credit-transaction.db', () => ({
   deductCreditsWithTransaction: mockDeductCreditsWithTransaction
@@ -47,7 +81,7 @@ jest.mock('@/db/credit-transaction.db', () => ({
 // Mock du hook useAIAssistant avec une implémentation simple
 const mockUseAIAssistant = () => ({
   creditsAvailable: mockSession.data?.user?.credits || 0,
-  sendMessage: async (message: string, context?: any) => {
+  sendMessage: async (message: string, context?: unknown) => {
     if (!mockSession.data) {
       return {
         success: false,
