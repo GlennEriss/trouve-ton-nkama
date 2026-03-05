@@ -15,7 +15,7 @@
 | Se connecter | ✅ | - | - | Existant |
 | S'inscrire | ✅ | - | - | Existant |
 | Se déconnecter | ✅ | - | - | Existant |
-| Connexion Google | ✅ | - | - | Existant |
+| Connexion Google | 🔄 | feature/FEATURE-002-google-oauth | 2026-03-05 | Refactor en cours (règle cible: Google crée un compte `User`) |
 | Connexion Facebook | ✅ | - | - | Existant |
 | Vérification email | ✅ | - | - | Existant |
 | Réinitialisation mot de passe | ✅ | - | - | Existant |
@@ -152,4 +152,3 @@
 ---
 
 *Dernière mise à jour : 2026-01-12*
-

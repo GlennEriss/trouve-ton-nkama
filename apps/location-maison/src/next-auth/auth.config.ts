@@ -1,13 +1,18 @@
-import { createUser, findUserByEmail, getUserByUID, updateUser } from "@/db/user.db";
+import { createUser, updateUser } from "@/db/user.db";
 import { auth, GoogleAuthProvider } from "@/firebase/auth";
-import { ProviderType } from "@/models/authentication";
 import { FacebookAuthProvider, linkWithCredential, signInWithCredential } from "firebase/auth";
-import { NextAuthConfig } from "next-auth"
+import type { NextAuthConfig } from "next-auth"
 import Credentials from "next-auth/providers/credentials"
 import GoogleProvider from "next-auth/providers/google";
 import FacebookProvider from "next-auth/providers/facebook";
-import { routes } from "@/constantes/routes";
 import { NotificationParameter } from "@/models/notification";
+import { userRepository } from "@/features/auth/repositories/user.repository";
+import {
+    handleGoogleSignIn,
+    validateCredentialsUserForOAuth,
+} from "@/features/auth/services/oauth-google.service";
+
+type ProviderType = 'GOOGLE' | 'FACEBOOK' | 'CREDENTIALS';
 
 const getAuth = () => import('@/firebase/auth')
 
@@ -20,88 +25,6 @@ const createDefaultNotificationParameter = (): NotificationParameter => ({
     isPersonalizedSuggestions: true,
     isSystemUpdated: true
 });
-
-// Fonction pour valider les credentials
-const validateCredentialsUser = (userExists: any, credentials: any) => {
-    const hasOnlyCredentials = userExists?.providers?.includes('CREDENTIALS') &&
-        !userExists?.providers?.includes('FACEBOOK') &&
-        !userExists?.providers?.includes('GOOGLE');
-    
-    if (hasOnlyCredentials) {
-        return credentials ? true : routes.public.signin + "?error=wrong_provider";
-    }
-    return null;
-};
-
-// Fonction pour gérer la connexion Google d'un nouvel utilisateur
-const handleNewGoogleUser = async (user: any, account: any, profile: any, credential: any) => {
-    const firebaseUser = await signInWithCredential(auth, credential);
-    const uid = firebaseUser.user.uid;
-    
-    // Toujours rediriger vers la page de complétion pour les nouveaux utilisateurs Google
-    // car les informations Google peuvent être fausses ou incomplètes
-    const userData = {
-        uid,
-        firstname: '', // Sera complété par l'utilisateur
-        lastname: '', // Sera complété par l'utilisateur
-        email: user?.email ?? '',
-        image: profile?.picture ?? '',
-        phoneNumbers: [], // Sera complété par l'utilisateur
-        phoneNumberVerified: false,
-        birthDate: '', // Sera complété par l'utilisateur
-        role: ["Announcer"],
-        searchableName: '',
-        providers: ['GOOGLE' as ProviderType],
-        metadata: { 
-            idToken: account.id_token,
-            needsProfileCompletion: true // Toujours true pour les nouveaux utilisateurs Google
-        },
-        notificationParameter: createDefaultNotificationParameter()
-    };
-    
-    await createUser(userData);
-    
-    // Toujours rediriger vers la page de complétion
-    return routes.public.completeProfile;
-};
-
-// Fonction pour gérer la connexion Google d'un utilisateur existant
-const handleExistingGoogleUser = async (userExists: any, account: any, credential: any) => {
-    const providers = userExists?.providers ?? [];
-    
-    if (!providers.includes('GOOGLE')) {
-        const facebookCredential = FacebookAuthProvider.credential(userExists.metadata.accessToken);
-        const facebookUser = await signInWithCredential(auth, facebookCredential);
-        await linkWithCredential(facebookUser.user, credential);
-        providers.push('GOOGLE');
-    }
-    
-    await updateUser(userExists.uid, {
-        ...userExists,
-        metadata: {
-            ...userExists.metadata,
-            idToken: account.id_token
-        },
-        providers
-    });
-};
-
-// Fonction pour gérer la connexion Google
-const handleGoogleSignIn = async (user: any, account: any, profile: any, userExists: any) => {
-    const credential = GoogleAuthProvider.credential(account.id_token);
-    
-    try {
-        if (!userExists) {
-            await handleNewGoogleUser(user, account, profile, credential);
-        } else {
-            await handleExistingGoogleUser(userExists, account, credential);
-        }
-        return true;
-    } catch (error) {
-        console.error("Erreur lors de la connexion avec Firebase:", error);
-        return false;
-    }
-};
 
 // Fonction pour gérer la connexion Facebook d'un nouvel utilisateur
 const handleNewFacebookUser = async (user: any, account: any, profile: any, credential: any) => {
@@ -116,10 +39,11 @@ const handleNewFacebookUser = async (user: any, account: any, profile: any, cred
         image: profile?.picture?.data?.url ?? '',
         phoneNumbers: firebaseUser.user.phoneNumber ? [firebaseUser.user.phoneNumber] : [],
         phoneNumberVerified: false,
-        role: ["Announcer"],
+        roles: ["User"],
         searchableName: profile?.name ?? '',
         providers: ['FACEBOOK' as ProviderType],
         metadata: { accessToken: account.access_token },
+        favoris: [],
         notificationParameter: createDefaultNotificationParameter()
     };
     
@@ -200,7 +124,7 @@ const authConfig = {
                     if (!userCredential.user) {
                         throw new Error('User not found')
                     }
-                    const user = await getUserByUID(userCredential.user.uid)
+                    const user = await userRepository.findById(userCredential.user.uid)
                     if (!user) {
                         throw new Error('User not found')
                     }
@@ -229,11 +153,13 @@ const authConfig = {
     ],
     callbacks: {
         async signIn({ user, account, profile, credentials }) {
-            const userExists = await findUserByEmail(user?.email ?? '');
+            const userExists = user?.email
+                ? await userRepository.findByEmail(user.email)
+                : null;
             
             // Validation pour les utilisateurs avec credentials uniquement
             if (userExists) {
-                const credentialsValidation = validateCredentialsUser(userExists, credentials);
+                const credentialsValidation = validateCredentialsUserForOAuth(userExists, credentials);
                 if (credentialsValidation !== null) {
                     return credentialsValidation;
                 }
@@ -258,7 +184,9 @@ const authConfig = {
         },
         async jwt({ token, user, trigger, session }) {
             if (user) {
-                const userDetails = await findUserByEmail(user.email ?? '')
+                const userDetails = user.email
+                    ? await userRepository.findByEmail(user.email)
+                    : null;
                 if (userDetails) {
                     user = userDetails as any
                     

@@ -128,7 +128,21 @@ export default function SigninMobileComponent() {
       toast({
         duration: 5000,
         title: "Erreur de connexion",
-        description: "Ce compte est associé à un autre mode de connexion.",
+        description: "Ce compte est associé à un autre mode de connexion. Connectez-vous d'abord avec votre méthode habituelle, puis liez Google dans « Login & Security ».",
+        variant: "destructive",
+      });
+    } else if (error === "google_provider_disabled") {
+      toast({
+        duration: 7000,
+        title: "Google indisponible",
+        description: "La connexion Google n'est pas activée sur cet environnement. Active le provider Google dans Firebase Auth > Sign-in method.",
+        variant: "destructive",
+      });
+    } else if (error === "google_signin_failed") {
+      toast({
+        duration: 5000,
+        title: "Connexion Google échouée",
+        description: "Impossible de finaliser la connexion Google pour le moment. Réessayez ou utilisez email/mot de passe.",
         variant: "destructive",
       });
     }
