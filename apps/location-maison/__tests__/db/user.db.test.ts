@@ -32,8 +32,10 @@ describe('User DB Integration Tests', () => {
       const mockUser = {
         uid: testUserUID,
         email: testEmail,
-        displayName: 'Test User',
-        photoURL: 'https://example.com/photo.jpg'
+        firstname: 'Test',
+        lastname: 'User',
+        phoneNumbers: ['+24101122334'],
+        image: 'https://example.com/photo.jpg'
       };
 
       // Mock de addDoc pour retourner un ID
@@ -67,8 +69,10 @@ describe('User DB Integration Tests', () => {
       const mockUserData = {
         uid: testUserUID,
         email: testEmail,
-        displayName: 'Test User',
-        photoURL: 'https://example.com/photo.jpg'
+        firstname: 'Test',
+        lastname: 'User',
+        phoneNumbers: ['+24101122334'],
+        image: 'https://example.com/photo.jpg'
       };
 
       // Mock de getDocs
@@ -119,9 +123,9 @@ describe('User DB Integration Tests', () => {
       const mockUserData = {
         uid: testUserUID,
         email: testEmail,
-        displayName: 'Test User',
-        phone: '+241123456789',
-        address: 'Libreville, Gabon'
+        firstname: 'Test',
+        lastname: 'User',
+        phoneNumbers: ['+241123456789']
       };
 
       // Mock de getDocs
@@ -168,7 +172,9 @@ describe('User DB Integration Tests', () => {
       const mockUserData = {
         uid: testUserUID,
         email: testEmail,
-        displayName: 'Test User'
+        firstname: 'Test',
+        lastname: 'User',
+        phoneNumbers: ['+24101122334']
       };
 
       // Mock de getDocs
@@ -215,9 +221,8 @@ describe('User DB Integration Tests', () => {
   describe('updateUser', () => {
     test('devrait mettre à jour un utilisateur avec succès', async () => {
       const updates = {
-        displayName: 'Nom Mis À Jour',
-        phone: '+241987654321',
-        address: 'Port-Gentil, Gabon'
+        firstname: 'Nom Mis À Jour',
+        phoneNumbers: ['+241987654321']
       };
 
       // Mock de getDocs pour trouver l'utilisateur
@@ -242,7 +247,7 @@ describe('User DB Integration Tests', () => {
 
     test('devrait retourner false pour un utilisateur inexistant', async () => {
       const updates = {
-        displayName: 'Nouveau Nom'
+        firstname: 'Nouveau Nom'
       };
 
       // Mock de getDocs pour aucun résultat
@@ -259,7 +264,7 @@ describe('User DB Integration Tests', () => {
 
     test('devrait exclure createdAt des mises à jour', async () => {
       const updates = {
-        displayName: 'Nouveau Nom',
+        firstname: 'Nouveau Nom',
         createdAt: new Date(), // Ceci devrait être exclu
         email: 'new@example.com'
       };
@@ -284,14 +289,14 @@ describe('User DB Integration Tests', () => {
       // Vérifier que createdAt n'est pas inclus dans l'appel
       const updateCall = mockUpdateDoc.mock.calls[0][1];
       expect(updateCall).not.toHaveProperty('createdAt');
-      expect(updateCall).toHaveProperty('displayName', 'Nouveau Nom');
+      expect(updateCall).toHaveProperty('firstname', 'Nouveau Nom');
       expect(updateCall).toHaveProperty('email', 'new@example.com');
       expect(updateCall).toHaveProperty('updatedAt');
     });
 
     test('devrait retourner false en cas d\'erreur de mise à jour', async () => {
       const updates = {
-        displayName: 'Nom avec erreur'
+        firstname: 'Nom avec erreur'
       };
 
       // Mock de getDocs pour trouver l'utilisateur
@@ -319,8 +324,10 @@ describe('User DB Integration Tests', () => {
       const newUser = {
         uid: testUserUID,
         email: testEmail,
-        displayName: 'Utilisateur Test',
-        photoURL: 'https://example.com/photo.jpg'
+        firstname: 'Utilisateur',
+        lastname: 'Test',
+        phoneNumbers: ['+24101122334'],
+        image: 'https://example.com/photo.jpg'
       };
 
       const mockAddDoc = require('@/firebase/firestore').addDoc;
@@ -341,7 +348,7 @@ describe('User DB Integration Tests', () => {
 
       const retrievedUser = await getUserByUID(testUserUID);
       expect(retrievedUser?.email).toBe(testEmail);
-      expect(retrievedUser?.displayName).toBe('Utilisateur Test');
+      expect(retrievedUser?.firstname).toBe('Utilisateur');
 
       // 3. Mettre à jour l'utilisateur
       mockGetDocs.mockResolvedValue({
@@ -355,8 +362,8 @@ describe('User DB Integration Tests', () => {
       mockUpdateDoc.mockResolvedValue(undefined);
 
       const updates = {
-        displayName: 'Utilisateur Mis À Jour',
-        phone: '+241123456789'
+        firstname: 'Utilisateur Mis À Jour',
+        phoneNumbers: ['+241123456789']
       };
 
       const updateResult = await updateUser(testUserUID, updates);
@@ -377,7 +384,7 @@ describe('User DB Integration Tests', () => {
       });
 
       const userByEmail = await findUserByEmail(testEmail);
-      expect(userByEmail?.displayName).toBe('Utilisateur Mis À Jour');
+      expect(userByEmail?.firstname).toBe('Utilisateur Mis À Jour');
     });
   });
 }); 
