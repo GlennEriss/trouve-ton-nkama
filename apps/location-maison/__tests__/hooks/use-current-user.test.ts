@@ -19,7 +19,7 @@ jest.doMock('@/firebase/auth', () => ({
 }));
 
 // Mock global fetch
-global.fetch = jest.fn();
+global.fetch = jest.fn() as jest.MockedFunction<typeof fetch>;
 
 describe('useCurrentUser Hook Tests', () => {
   const mockFetch = global.fetch as jest.MockedFunction<typeof fetch>;
