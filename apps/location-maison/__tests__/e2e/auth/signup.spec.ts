@@ -541,14 +541,15 @@ test.describe('User Registration Flow', () => {
     const googleButton = page.locator('button').filter({ hasText: /google/i }).first();
     await expect(googleButton).toBeVisible({ timeout: 5000 });
 
-    // Click Google button (will redirect to OAuth)
+    // Ensure the NextAuth Google endpoint is triggered.
+    const googleAuthRequest = page.waitForRequest((request) =>
+      request.url().includes('/api/auth/signin/google')
+    );
+
     await googleButton.click();
 
-    // Should redirect to Google OAuth or show loading
-    // This test may need adjustment based on actual OAuth flow
-    await page.waitForURL(/google|oauth|accounts\.google/i, { timeout: 5000 }).catch(() => {
-      // OAuth might open in popup, which is fine
-    });
+    const request = await googleAuthRequest;
+    expect(request.url()).toContain('/api/auth/signin/google');
   });
 
   test('should be responsive on mobile viewport', async ({ page }) => {

@@ -1,0 +1,74 @@
+@startuml Google-Signin-Sequence
+skinparam backgroundColor #FEFEFE
+skinparam sequence {
+  ArrowColor #146B67
+  LifeLineBorderColor #146B67
+  ParticipantBorderColor #146B67
+  ParticipantBackgroundColor #E8F4F8
+  ActorBorderColor #146B67
+  ActorBackgroundColor #E8F4F8
+}
+
+title Diagramme de Sequence - Connexion Google (FEATURE-002)
+caption Plateforme Location Maison Gabon - Flux OAuth Google
+
+actor Visiteur as User
+participant "UI Auth\n(Signin/Signup)" as UI
+participant "NextAuth\n(signIn callback)" as NA
+participant "Google OAuth" as Google
+participant "Firebase Auth" as FA
+participant "User Repository" as Repo
+database "Firestore" as FS
+participant "Middleware" as MW
+participant "Complete Profile Page" as CP
+
+User -> UI: Cliquer "Continuer avec Google"
+UI -> NA: signIn('google')
+NA -> Google: OAuth consent
+Google --> NA: id_token + profile
+
+NA -> Repo: findByEmail(email)
+Repo -> FS: Query users by email
+FS --> Repo: user | null
+Repo --> NA: user | null
+
+alt Nouvel utilisateur
+  NA -> FA: signInWithCredential(googleCredential)
+  FA --> NA: firebase user (uid)
+  NA -> Repo: create({uid, roles:['User'], providers:['GOOGLE'], metadata.needsProfileCompletion:true})
+  Repo -> FS: Create user document
+  FS --> Repo: ok
+  Repo --> NA: ok
+else Utilisateur existant deja lie a Google
+  NA -> Repo: update metadata token (si besoin)
+  Repo -> FS: update user document
+  FS --> Repo: ok
+  Repo --> NA: ok
+else Utilisateur existant credentials-only
+  NA --> UI: redirect /signin?error=wrong_provider
+  UI --> User: Afficher erreur + CTA liaison provider
+end
+
+NA --> UI: session active
+UI -> MW: Navigation vers route protegee
+
+alt Profil incomplet
+  MW --> UI: Redirect /complete-profile
+  User -> CP: Completer prenom/nom/phone/date
+  CP -> Repo: update profile + needsProfileCompletion:false
+  Repo -> FS: update user document
+  FS --> Repo: ok
+  Repo --> CP: ok
+  CP --> User: Redirect vers espace protege
+else Profil complet
+  MW --> UI: Autoriser navigation
+end
+
+note over NA,Repo
+FEATURE-002 decision:
+- Google cree un compte User par defaut
+- AnnouncerProfile hors scope signup/oauth
+- Migration User -> Announcer dans une feature dediee
+end note
+
+@enduml
