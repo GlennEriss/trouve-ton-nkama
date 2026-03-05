@@ -4,8 +4,9 @@
  * Tests for the SignupComponentModern component (V1)
  */
 
-import { describe, it, expect, beforeEach, jest } from '@jest/globals';
+import { describe, it, beforeEach, jest } from '@jest/globals';
 import { render, screen } from '@testing-library/react';
+import '@testing-library/jest-dom';
 import { SignupComponentModern } from '../SignupComponentModern';
 
 // Mock useWindowSize

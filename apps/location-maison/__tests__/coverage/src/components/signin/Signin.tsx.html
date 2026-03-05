@@ -25,7 +25,7 @@
             <div class='fl pad1y space-right2'>
                 <span class="strong">0% </span>
                 <span class="quiet">Statements</span>
-                <span class='fraction'>0/158</span>
+                <span class='fraction'>0/172</span>
             </div>
         
             
@@ -46,7 +46,7 @@
             <div class='fl pad1y space-right2'>
                 <span class="strong">0% </span>
                 <span class="quiet">Lines</span>
-                <span class='fraction'>0/158</span>
+                <span class='fraction'>0/172</span>
             </div>
         
             
@@ -221,7 +221,35 @@
 <a name='L156'></a><a href='#L156'>156</a>
 <a name='L157'></a><a href='#L157'>157</a>
 <a name='L158'></a><a href='#L158'>158</a>
-<a name='L159'></a><a href='#L159'>159</a></td><td class="line-coverage quiet"><span class="cline-any cline-no">&nbsp;</span>
+<a name='L159'></a><a href='#L159'>159</a>
+<a name='L160'></a><a href='#L160'>160</a>
+<a name='L161'></a><a href='#L161'>161</a>
+<a name='L162'></a><a href='#L162'>162</a>
+<a name='L163'></a><a href='#L163'>163</a>
+<a name='L164'></a><a href='#L164'>164</a>
+<a name='L165'></a><a href='#L165'>165</a>
+<a name='L166'></a><a href='#L166'>166</a>
+<a name='L167'></a><a href='#L167'>167</a>
+<a name='L168'></a><a href='#L168'>168</a>
+<a name='L169'></a><a href='#L169'>169</a>
+<a name='L170'></a><a href='#L170'>170</a>
+<a name='L171'></a><a href='#L171'>171</a>
+<a name='L172'></a><a href='#L172'>172</a>
+<a name='L173'></a><a href='#L173'>173</a></td><td class="line-coverage quiet"><span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
@@ -494,7 +522,21 @@
 <span class="cstat-no" title="statement not covered" >            toast({</span>
 <span class="cstat-no" title="statement not covered" >                duration: 5000,</span>
 <span class="cstat-no" title="statement not covered" >                title: "Erreur de connexion",</span>
-<span class="cstat-no" title="statement not covered" >                description: "Ce compte est associé à un autre mode de connexion.",</span>
+<span class="cstat-no" title="statement not covered" >                description: "Ce compte est associé à un autre mode de connexion. Connectez-vous d'abord avec votre méthode habituelle, puis liez Google dans « Login &amp; Security ».",</span>
+<span class="cstat-no" title="statement not covered" >                variant: "destructive",</span>
+<span class="cstat-no" title="statement not covered" >            });</span>
+<span class="cstat-no" title="statement not covered" >        } else if (error === "google_provider_disabled") {</span>
+<span class="cstat-no" title="statement not covered" >            toast({</span>
+<span class="cstat-no" title="statement not covered" >                duration: 7000,</span>
+<span class="cstat-no" title="statement not covered" >                title: "Google indisponible",</span>
+<span class="cstat-no" title="statement not covered" >                description: "La connexion Google n'est pas activée sur cet environnement. Active le provider Google dans Firebase Auth &gt; Sign-in method.",</span>
+<span class="cstat-no" title="statement not covered" >                variant: "destructive",</span>
+<span class="cstat-no" title="statement not covered" >            });</span>
+<span class="cstat-no" title="statement not covered" >        } else if (error === "google_signin_failed") {</span>
+<span class="cstat-no" title="statement not covered" >            toast({</span>
+<span class="cstat-no" title="statement not covered" >                duration: 5000,</span>
+<span class="cstat-no" title="statement not covered" >                title: "Connexion Google échouée",</span>
+<span class="cstat-no" title="statement not covered" >                description: "Impossible de finaliser la connexion Google pour le moment. Réessayez ou utilisez email/mot de passe.",</span>
 <span class="cstat-no" title="statement not covered" >                variant: "destructive",</span>
 <span class="cstat-no" title="statement not covered" >            });</span>
 <span class="cstat-no" title="statement not covered" >        }</span>
@@ -544,7 +586,7 @@
             <div class='footer quiet pad2 space-top1 center small'>
                 Code coverage generated by
                 <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
-                at 2026-03-05T17:16:35.554Z
+                at 2026-03-05T19:52:47.214Z
             </div>
         <script src="../../../prettify.js"></script>
         <script>

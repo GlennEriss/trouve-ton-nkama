@@ -87,6 +87,11 @@ const mockCollection = collection as jest.MockedFunction<typeof collection>;
 const mockQuery = query as jest.MockedFunction<typeof query>;
 const mockWhere = where as jest.MockedFunction<typeof where>;
 const mockFetch = global.fetch as jest.MockedFunction<typeof fetch>;
+const createHttpResponse = (status = 200): Response =>
+  ({
+    ok: status >= 200 && status < 300,
+    status,
+  } as unknown as Response);
 
 // Get the mocked repository - access the mocked methods directly
 const mockUserRepository = userRepository as jest.Mocked<typeof userRepository>;
@@ -101,9 +106,9 @@ describe('Signup Integration Tests', () => {
     // Default mocks for repository (no existing users)
     // The mock functions are created by jest.mock, so we can safely cast them
     // CRITICAL: Must reset and configure mocks BEFORE service is created
-    const findByPhoneMock = mockUserRepository.findByPhoneNumber as jest.MockedFunction<typeof mockUserRepository.findByPhoneNumber>;
-    const findByEmailMock = mockUserRepository.findByEmail as jest.MockedFunction<typeof mockUserRepository.findByEmail>;
-    const createMock = mockUserRepository.create as jest.MockedFunction<typeof mockUserRepository.create>;
+    const findByPhoneMock = mockUserRepository.findByPhoneNumber;
+    const findByEmailMock = mockUserRepository.findByEmail;
+    const createMock = mockUserRepository.create;
     
     // Reset mocks first
     findByPhoneMock.mockReset();
@@ -115,13 +120,10 @@ describe('Signup Integration Tests', () => {
     findByEmailMock.mockResolvedValue(null);
     
     // Default mocks for Firebase Auth
-    (mockSignOut as jest.Mock).mockResolvedValue(undefined);
+    mockSignOut.mockResolvedValue(undefined);
     
     // Mock successful email API call (default)
-    (mockFetch as jest.Mock).mockResolvedValue({
-      ok: true,
-      status: 200,
-    } as Response);
+    mockFetch.mockResolvedValue(createHttpResponse(200));
 
     // Create service instance AFTER mocks are set up
     authService = new AuthServiceImpl();
@@ -152,9 +154,9 @@ describe('Signup Integration Tests', () => {
         },
       };
       // Reset and configure the mock
-      (mockCreateUserWithEmailAndPassword as jest.Mock).mockReset();
-      (mockCreateUserWithEmailAndPassword as jest.Mock).mockResolvedValue(mockUserCredential as any);
-      (mockSignOut as jest.Mock).mockResolvedValue(undefined);
+      mockCreateUserWithEmailAndPassword.mockReset();
+      mockCreateUserWithEmailAndPassword.mockResolvedValue(mockUserCredential as any);
+      mockSignOut.mockResolvedValue(undefined);
 
       // Mock repository - create user
       const mockUser = {
@@ -168,8 +170,8 @@ describe('Signup Integration Tests', () => {
         roles: ['User'],
         credits: 3,
       };
-      (mockUserRepository.create as jest.MockedFunction<typeof mockUserRepository.create>).mockResolvedValue(mockUser as any);
-      (mockFetch as jest.Mock).mockResolvedValue({ ok: true } as Response);
+      mockUserRepository.create.mockResolvedValue(mockUser as any);
+      mockFetch.mockResolvedValue(createHttpResponse(200));
 
       const result = await authService.signup(signupData);
 
@@ -177,15 +179,15 @@ describe('Signup Integration Tests', () => {
       if (!result.success) {
         console.error('Signup failed:', JSON.stringify(result.error, null, 2));
         console.error('Mock calls:', {
-          findByPhoneNumber: (mockUserRepository.findByPhoneNumber as jest.Mock).mock.calls.length,
-          findByEmail: (mockUserRepository.findByEmail as jest.Mock).mock.calls.length,
-          create: (mockUserRepository.create as jest.Mock).mock.calls.length,
-          createUserWithEmailAndPassword: (mockCreateUserWithEmailAndPassword as jest.Mock).mock.calls.length,
+          findByPhoneNumber: mockUserRepository.findByPhoneNumber.mock.calls.length,
+          findByEmail: mockUserRepository.findByEmail.mock.calls.length,
+          create: mockUserRepository.create.mock.calls.length,
+          createUserWithEmailAndPassword: mockCreateUserWithEmailAndPassword.mock.calls.length,
         });
         // Check if mocks threw errors
-        const findByPhoneResults = (mockUserRepository.findByPhoneNumber as jest.Mock).mock.results;
-        const findByEmailResults = (mockUserRepository.findByEmail as jest.Mock).mock.results;
-        const createUserResults = (mockCreateUserWithEmailAndPassword as jest.Mock).mock.results;
+        const findByPhoneResults = mockUserRepository.findByPhoneNumber.mock.results;
+        const findByEmailResults = mockUserRepository.findByEmail.mock.results;
+        const createUserResults = mockCreateUserWithEmailAndPassword.mock.results;
         console.error('Mock results:', {
           findByPhoneNumber: findByPhoneResults.map(r => r.type),
           findByEmail: findByEmailResults.map(r => r.type),
@@ -251,7 +253,7 @@ describe('Signup Integration Tests', () => {
         id: 'existing-user',
         phoneNumbers: ['+24101234567'],
       };
-      (mockUserRepository.findByPhoneNumber as jest.MockedFunction<typeof mockUserRepository.findByPhoneNumber>).mockResolvedValue(existingUser as any);
+      mockUserRepository.findByPhoneNumber.mockResolvedValue(existingUser as any);
 
       const result = await authService.signup(signupData);
 
@@ -300,7 +302,7 @@ describe('Signup Integration Tests', () => {
         roles: ['User'],
       };
       mockUserRepository.create.mockResolvedValue(mockCreatedUser as any);
-      mockFetch.mockResolvedValue({ ok: true } as Response);
+      mockFetch.mockResolvedValue(createHttpResponse(200));
 
       const result = await authService.signup(signupData);
 
@@ -308,7 +310,7 @@ describe('Signup Integration Tests', () => {
       expect(result.userId).toBe('user-123');
       // Verify user was created with User role
       expect(mockUserRepository.create).toHaveBeenCalled();
-      const callArgs = (mockUserRepository.create as jest.MockedFunction<typeof mockUserRepository.create>).mock.calls[0];
+      const callArgs = mockUserRepository.create.mock.calls[0];
       expect(callArgs[0]).toMatchObject({
         roles: ['User'],
       });
@@ -339,13 +341,13 @@ describe('Signup Integration Tests', () => {
         roles: ['User', 'Announcer'],
       };
       mockUserRepository.create.mockResolvedValue(mockCreatedUser as any);
-      mockFetch.mockResolvedValue({ ok: true } as Response);
+      mockFetch.mockResolvedValue(createHttpResponse(200));
 
       const result = await authService.signup(signupData);
 
       expect(result.success).toBe(true);
       expect(result.userId).toBe('announcer-456');
-      const callArgs = (mockUserRepository.create as jest.MockedFunction<typeof mockUserRepository.create>).mock.calls[0];
+      const callArgs = mockUserRepository.create.mock.calls[0];
       expect(callArgs[0]).toMatchObject({
         roles: ['User', 'Announcer'],
       });
@@ -373,12 +375,12 @@ describe('Signup Integration Tests', () => {
         credits: 3,
       };
       mockUserRepository.create.mockResolvedValue(mockCreatedUser as any);
-      mockFetch.mockResolvedValue({ ok: true } as Response);
+      mockFetch.mockResolvedValue(createHttpResponse(200));
 
       const result = await authService.signup(signupData);
 
       expect(result.success).toBe(true);
-      const callArgs = (mockUserRepository.create as jest.MockedFunction<typeof mockUserRepository.create>).mock.calls[0];
+      const callArgs = mockUserRepository.create.mock.calls[0];
       expect(callArgs[0]).toMatchObject({
         credits: 3, // Welcome credits
       });
@@ -426,8 +428,8 @@ describe('Signup Integration Tests', () => {
       // Mock repository to throw RepositoryError on create (this triggers rollback)
       // The error must be a RepositoryError to be caught in the try-catch block
       const repositoryError = new RepositoryError('Firestore error', 'ERROR');
-      (mockUserRepository.create as jest.MockedFunction<typeof mockUserRepository.create>).mockRejectedValue(repositoryError);
-      (mockSignOut as jest.Mock).mockResolvedValue(undefined);
+      mockUserRepository.create.mockRejectedValue(repositoryError);
+      mockSignOut.mockResolvedValue(undefined);
 
       const result = await authService.signup(signupData);
 
