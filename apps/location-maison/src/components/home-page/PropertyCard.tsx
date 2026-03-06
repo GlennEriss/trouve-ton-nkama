@@ -36,13 +36,13 @@ const PropertyCard = ({ property, hideDate = false }: { property: any; hideDate?
             handleCardClick();
           }
         }}
-        className="h-[480px] md:h-[450px] relative cursor-pointer rounded-2xl shadow-lg overflow-hidden transition-transform duration-200 ease-out hover:scale-[1.02] bg-white dark:bg-gray-800 hover:shadow-xl flex flex-col group will-change-transform w-full text-left border-none p-0"
+        className="h-full min-h-[500px] relative cursor-pointer rounded-2xl shadow-lg overflow-hidden transition-transform duration-200 ease-out hover:scale-[1.02] bg-white dark:bg-gray-800 hover:shadow-xl flex flex-col group will-change-transform w-full text-left border-none p-0"
         aria-label={`Voir les détails de ${property.title ?? "l'annonce"}`}
         role="button"
         tabIndex={0}
       >
         {/* Image principale */}
-        <div className="relative w-full aspect-[3/2] bg-gray-200">
+        <div className="relative w-full h-[220px] sm:h-[230px] xl:h-[240px] bg-gray-200">
           <Image
             src={property.images?.[0]?.fileURL ?? "/home.png"}
             alt={property.title ?? "Image de l'annonce"}
@@ -65,32 +65,32 @@ const PropertyCard = ({ property, hideDate = false }: { property: any; hideDate?
           )}
         </div>
 
-        <div className="flex flex-col flex-grow p-5">
+        <div className="flex flex-col flex-1 p-5">
           {/* Titre */}
-          <div className="h-[50px]">
+          <div className="min-h-[68px]">
             <h3 className="text-lg font-bold text-gray-900 dark:text-white line-clamp-2 group-hover:text-[#146B67] transition-colors">
               {property.title ?? "Annonce"}
             </h3>
           </div>
 
           {/* Prix */}
-          <div className="min-h-[40px]">
+          <div className="min-h-[44px]">
             <p className="text-lg pt-2 font-bold text-[#146B67] dark:text-blue-300 break-words">
               {property.status === "FOR_RENT" ? "À louer" : "À vendre"} - {property.price.toLocaleString()} F CFA
             </p>
           </div>
 
           {/* Adresse */}
-          <div className="min-h-[25px]">
+          <div className="min-h-[50px]">
             {property.street && (
-              <p className="text-sm text-gray-500 dark:text-gray-400 italic break-words">
+              <p className="text-sm text-gray-500 dark:text-gray-400 italic break-words line-clamp-2">
                 {property.city}, {property.province}, {property.street}
               </p>
             )}
           </div>
 
           {/* Section d'icônes et chiffres */}
-          <div className={`flex flex-wrap gap-4 mt-auto pt-3 text-gray-600 dark:text-gray-400 text-sm ${(property.area > 0 ||
+          <div className={`flex flex-wrap gap-4 mt-auto pt-3 text-gray-600 dark:text-gray-400 text-sm min-h-[40px] ${(property.area > 0 ||
               ("nbrRooms" in property && property.nbrRooms > 0) ||
               ("nbrBathrooms" in property && property.nbrBathrooms > 0))
               ? "border-t" : ""
@@ -128,8 +128,8 @@ const PropertyCard = ({ property, hideDate = false }: { property: any; hideDate?
 
           {/* Date de publication */}
           {!hideDate && (
-            <div className="mt-2 pt-2 border-t border-gray-200 dark:border-gray-700">
-              <p className="text-xs text-gray-500 dark:text-gray-400 italic">
+            <div className="mt-3 pt-3 border-t border-gray-200 dark:border-gray-700 min-h-[36px]">
+              <p className="text-xs text-gray-500 dark:text-gray-400 italic leading-5">
                 Publiée {formatPublicationDate(property.createdAt)}
               </p>
             </div>

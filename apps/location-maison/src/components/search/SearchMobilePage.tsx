@@ -2,8 +2,7 @@
 
 import React from 'react'
 import Form from 'next/form'
-import Link from 'next/link'
-import { Search, MapPin, ChevronUp, ChevronDown } from 'lucide-react';
+import { Search, ChevronUp, ChevronDown } from 'lucide-react';
 import { Input } from '../ui/input';
 import { FilterModalHomePage } from '../home-page/FilterModalHomePage';
 import { useAlgoliaContext } from '@/providers/AlgoliaContext';
@@ -12,12 +11,15 @@ import PropertyCard from '../home-page/PropertyCard';
 import { useSearchParams } from 'next/navigation';
 
 export default function SearchMobilePage() {
-    const { searchText, setSearchText, province, city, street, minPrice, maxPrice, minArea, maxArea, minNbrRooms, maxNbrRooms, typeProperty, status, tags, setProvince, setCity, setStreet, setMinPrice, setMaxPrice, setMinArea, setMaxArea, setMinNbrRooms, setMaxNbrRooms, setTypeProperty, setStatus, setTags } = useAlgoliaContext()
+    const { searchText, setSearchText, province, city, street, minPrice, maxPrice, minArea, maxArea, minNbrRooms, maxNbrRooms, typeProperty, tags, setProvince, setCity, setStreet, setMinPrice, setMaxPrice, setMinArea, setMaxArea, setMinNbrRooms, setMaxNbrRooms, setTypeProperty, setStatus, setTags } = useAlgoliaContext()
     const topRef = React.useRef<HTMLDivElement>(null);
     const sentinelRef = React.useRef<HTMLDivElement>(null);
     const { items, isLastPage, showMore } = useInfiniteHits();
     const { nbHits } = useStats();
     const searchParams = useSearchParams();
+    const [isLoadingMore, setIsLoadingMore] = React.useState(false);
+    const [lastItemsCount, setLastItemsCount] = React.useState(0);
+    const [newItemsLoaded, setNewItemsLoaded] = React.useState(0);
 
     // Synchronisation URL → Contexte Algolia au chargement initial
     React.useEffect(() => {
@@ -49,22 +51,48 @@ export default function SearchMobilePage() {
             setTypeProperty(typePropRaw ? typePropRaw.split(",").map(s => s.trim()) : []);
             setTags(tagsRaw ? tagsRaw.split(",").map(s => s.trim()) : []);
         }, 50);
-    }, [searchParams.toString(), setSearchText, setProvince, setCity, setStreet, setMinPrice, setMaxPrice, setMinArea, setMaxArea, setMinNbrRooms, setMaxNbrRooms, setTypeProperty, setTags]);
+    }, [searchParams.toString(), setSearchText, setProvince, setCity, setStreet, setMinPrice, setMaxPrice, setMinArea, setMaxArea, setMinNbrRooms, setMaxNbrRooms, setTypeProperty, setStatus, setTags]);
+
+    const requestMore = React.useCallback(() => {
+        if (isLastPage || isLoadingMore) return;
+        setLastItemsCount(items.length);
+        setIsLoadingMore(true);
+        showMore();
+    }, [isLastPage, isLoadingMore, items.length, showMore]);
 
     // Infinite hits + intersection observer
     React.useEffect(() => {
         if (!sentinelRef.current) return;
         const obs = new IntersectionObserver(
             ([entry]) => {
-                if (entry.isIntersecting && !isLastPage) {
-                    showMore();
+                if (entry.isIntersecting && !isLastPage && !isLoadingMore) {
+                    requestMore();
                 }
             },
             { rootMargin: "200px" }
         );
         obs.observe(sentinelRef.current);
         return () => obs.disconnect();
-    }, [sentinelRef, isLastPage, showMore]);
+    }, [sentinelRef, isLastPage, isLoadingMore, requestMore]);
+
+    React.useEffect(() => {
+        if (!isLoadingMore) return;
+
+        if (items.length > lastItemsCount) {
+            const delta = items.length - lastItemsCount;
+            setNewItemsLoaded(delta);
+            setIsLoadingMore(false);
+
+            const timeoutId = window.setTimeout(() => setNewItemsLoaded(0), 1800);
+            return () => window.clearTimeout(timeoutId);
+        }
+
+        const guardTimeout = window.setTimeout(() => {
+            setIsLoadingMore(false);
+        }, 5000);
+
+        return () => window.clearTimeout(guardTimeout);
+    }, [items, isLoadingMore, lastItemsCount]);
 
     // Scroll handlers
     const scrollToTop = () => {
@@ -158,24 +186,41 @@ export default function SearchMobilePage() {
                         ) : (
                             <>
                                 {/* Grille de résultats */}
-                                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 xl:grid-cols-6 gap-4">
-                                    {items.map((propertyData, i) => (
-                                        <PropertyCard key={propertyData.objectID} property={propertyData} />
+                                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 xl:grid-cols-6 gap-4 auto-rows-fr">
+                                    {items.map((propertyData) => (
+                                        <div
+                                            key={propertyData.objectID}
+                                            className="h-full animate-fade-in-up transition-all duration-300"
+                                        >
+                                            <PropertyCard property={propertyData} />
+                                        </div>
                                     ))}
                                 </div>
 
                                 {/* Sentinel pour infinite scroll */}
                                 <div ref={sentinelRef} />
 
-                                {/* Bouton "Voir plus" */}
                                 {!isLastPage && (
-                                    <div className="text-center mt-6">
-                                        <button
-                                            onClick={showMore}
-                                            className="bg-gradient-to-r from-[#146B67] via-[#1FA89B] to-[#146B67] text-white rounded-lg px-3 py-2 font-semibold hover:brightness-110 hover:shadow-md transition"
-                                        >
-                                            Voir plus
-                                        </button>
+                                    <div className="py-4 text-center text-sm text-gray-500">
+                                        {isLoadingMore ? (
+                                            <span className="inline-flex items-center gap-2">
+                                                <svg className="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
+                                                    <circle className="opacity-30" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                                                    <path className="opacity-90" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"></path>
+                                                </svg>
+                                                Chargement des annonces...
+                                            </span>
+                                        ) : (
+                                            "Défilez vers le bas pour charger plus d'annonces"
+                                        )}
+                                    </div>
+                                )}
+
+                                {newItemsLoaded > 0 && (
+                                    <div className="mb-5 text-center">
+                                        <span className="text-xs text-[#146B67] bg-[#E6F8F5] border border-[#B8ECE4] rounded-full px-3 py-1 animate-fade-in-up">
+                                            +{newItemsLoaded} nouvelles annonces ajoutées
+                                        </span>
                                     </div>
                                 )}
                             </>
