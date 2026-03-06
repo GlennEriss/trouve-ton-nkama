@@ -12,10 +12,10 @@
 | Analyse de l'existant | ✅ | — |
 | Probleme design desktop identifies | ✅ | — |
 | Plan de refactoring documente | ✅ | — |
-| Service `profile-management` | — | ⬜ |
-| Hook `useProfileInformationUpdate` | — | ⬜ |
-| UI moderne responsive | — | ⬜ |
-| Tests unitaires/integration | — | ⬜ |
+| Service `profile-management` | ✅ | — |
+| Hook `useProfileInformationUpdate` | ✅ | — |
+| UI moderne responsive | ✅ | — |
+| Tests unitaires/integration | ✅ unitaires service | ⬜ integration |
 
 ---
 
@@ -26,18 +26,17 @@
 - [x] definir scope/hors-scope
 
 2. Refactoring technique
-- [ ] implementer service + hook feature-based
-- [ ] debrancher logique metier du composant legacy
+- [x] implementer service + hook feature-based
+- [x] debrancher logique metier du composant legacy
 
 3. Refactoring UI/UX
-- [ ] creer version modern desktop/tablette/mobile
-- [ ] harmoniser avec design signin/signup
+- [x] creer version modern desktop/tablette/mobile
+- [x] harmoniser avec design signin/signup
 
 4. Qualite
-- [ ] tests unitaires service/hook
+- [x] tests unitaires service
 - [ ] tests integration formulaire
 
 ---
 
 *Derniere mise a jour : 2026-03-06*
-

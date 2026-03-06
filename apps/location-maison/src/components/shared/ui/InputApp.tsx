@@ -25,7 +25,7 @@ export const InputApp: React.FC<InputAppProps> = ({
             {IconLucide && (
                 <IconLucide
                     size={30}
-                    fill={IconColorFill}
+                    fill={IconColorFill ?? 'none'}
                     color={IconColor}
                     className='transition-colors group-focus-within:stroke-[#1FA89B]'
                 />
