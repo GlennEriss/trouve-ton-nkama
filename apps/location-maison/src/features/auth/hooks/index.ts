@@ -13,3 +13,14 @@ export {
   type CompleteProfileUiError,
   type UseCompleteProfileReturn,
 } from './useCompleteProfile';
+export {
+  usePasswordResetRequest,
+  mapPasswordResetRequestError,
+  type PasswordResetUiError,
+  type UsePasswordResetRequestReturn,
+} from './usePasswordResetRequest';
+export {
+  usePasswordReset,
+  mapPasswordResetConfirmError,
+  type UsePasswordResetReturn,
+} from './usePasswordReset';

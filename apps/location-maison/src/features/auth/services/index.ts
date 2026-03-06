@@ -15,3 +15,15 @@ export type {
 } from './complete-profile.service.interface';
 export { CompleteProfileServiceError, CompleteProfileErrorCode } from './complete-profile.service.interface';
 export { CompleteProfileServiceImpl, completeProfileService } from './complete-profile.service';
+export type {
+  PasswordResetError,
+  PasswordResetRequestResult,
+  PasswordResetConfirmResult,
+  PasswordResetService,
+} from './password-reset.service.interface';
+export {
+  PasswordResetServiceError,
+  PasswordResetRequestErrorCode,
+  PasswordResetConfirmErrorCode,
+} from './password-reset.service.interface';
+export { PasswordResetServiceImpl, passwordResetService } from './password-reset.service';

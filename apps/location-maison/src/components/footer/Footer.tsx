@@ -14,6 +14,15 @@ export default function Footer({ isHide = false }: Readonly<{ isHide?: boolean }
     const { user } = useCurrentUser()
     const { width } = useWindowSize()
     const [isPWAInstalled, setIsPWAInstalled] = useState(false);
+    const hiddenFooterRoutes = [
+        routes.public.signin,
+        routes.public.signup,
+        routes.public.signinSignup,
+        routes.public.completeProfile,
+        routes.public.passwordResetRequest,
+        routes.public.reset_password,
+        routes.public.passwordResetFailure,
+    ];
 
     useEffect(() => {
         const checkPWA = () => {
@@ -28,7 +37,7 @@ export default function Footer({ isHide = false }: Readonly<{ isHide?: boolean }
         return () => window.removeEventListener('appinstalled', checkPWA);
     }, []);
 
-    if (isHide || pathname === routes.public.signin || pathname === routes.public.signup || pathname === routes.public.signinSignup || (user && width < 768 && pathname !== routes.public.homePage)) {
+    if (isHide || hiddenFooterRoutes.includes(pathname) || (user && width < 768 && pathname !== routes.public.homePage)) {
         return null
     }
     return (

@@ -1,345 +1,375 @@
-'use client'
+'use client';
 
-import React from 'react'
-import Link from 'next/link'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { routes } from '@/constantes/routes'
-import Logo from '@/components/logo/Logo'
-import { useForm } from 'react-hook-form'
-import { zodResolver } from '@hookform/resolvers/zod'
-import { z } from 'zod'
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form'
-import { useToast } from '@/hooks/use-toast'
-import { ButtonLoading } from '@/components/buttons/ButtonLoading'
-import { useRouter, useSearchParams } from 'next/navigation'
-import { Eye, EyeOff, CheckCircle, Key } from 'lucide-react'
+import React from 'react';
+import Link from 'next/link';
+import { z } from 'zod';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { useForm } from 'react-hook-form';
+import { motion } from 'framer-motion';
+import { ArrowLeft, CheckCircle2, Home, KeyRound, Shield, Sparkles, Timer } from 'lucide-react';
+import { useRouter, useSearchParams } from 'next/navigation';
+import Logo from '@/components/logo/Logo';
+import { Form } from '@/components/ui/form';
+import { Button } from '@/components/ui/button';
+import { InputFormApp } from '@/components/shared/form/InputFormApp';
+import { ButtonApp } from '@/components/shared/ui/ButtonApp';
+import { routes } from '@/constantes/routes';
+import { supportContact } from '@/constantes';
+import { useToast } from '@/hooks/use-toast';
+import { createLogger } from '@/lib/logger';
+import { usePasswordReset } from '@/features/auth/hooks';
 
-const passwordResetSchema = z.object({
-  password: z.string()
-    .min(8, 'Le mot de passe doit contenir au moins 8 caractères')
-    .regex(/[A-Z]/, 'Le mot de passe doit contenir au moins une majuscule')
-    .regex(/[a-z]/, 'Le mot de passe doit contenir au moins une minuscule')
-    .regex(/[0-9]/, 'Le mot de passe doit contenir au moins un chiffre'),
-  confirmPassword: z.string()
-}).refine((data) => data.password === data.confirmPassword, {
-  message: "Les mots de passe ne correspondent pas",
-  path: ["confirmPassword"],
-})
+const logger = createLogger('auth.password-reset-ui');
+const LEFT_PANEL_BG_IMAGE = '/auth-image.png';
 
-type PasswordResetForm = z.infer<typeof passwordResetSchema>
+const passwordResetSchema = z
+  .object({
+    password: z
+      .string()
+      .min(8, 'Le mot de passe doit contenir au moins 8 caractères')
+      .regex(/[A-Z]/, 'Le mot de passe doit contenir au moins une majuscule')
+      .regex(/[a-z]/, 'Le mot de passe doit contenir au moins une minuscule')
+      .regex(/[0-9]/, 'Le mot de passe doit contenir au moins un chiffre'),
+    confirmPassword: z.string(),
+  })
+  .refine((data) => data.password === data.confirmPassword, {
+    message: 'Les mots de passe ne correspondent pas',
+    path: ['confirmPassword'],
+  });
+
+type PasswordResetFormValues = z.infer<typeof passwordResetSchema>;
+
+const featureVariants = {
+  initial: { opacity: 0, y: 20 },
+  animate: (i: number) => ({
+    opacity: 1,
+    y: 0,
+    transition: { delay: i * 0.08, duration: 0.4 },
+  }),
+};
+
+const features = [
+  {
+    icon: Shield,
+    title: 'Sécurité renforcée',
+    desc: 'Votre mot de passe est modifié via un lien unique.',
+  },
+  {
+    icon: Timer,
+    title: 'Lien temporaire',
+    desc: 'Le lien de réinitialisation expire automatiquement.',
+  },
+  {
+    icon: Sparkles,
+    title: 'Flux simplifié',
+    desc: 'Même expérience sur mobile, tablette et desktop.',
+  },
+];
+
+function getPasswordStrength(password: string): number {
+  let strength = 0;
+  if (password.length >= 8) strength += 1;
+  if (/[A-Z]/.test(password)) strength += 1;
+  if (/[a-z]/.test(password)) strength += 1;
+  if (/[0-9]/.test(password)) strength += 1;
+  if (/[^A-Za-z0-9]/.test(password)) strength += 1;
+  return strength;
+}
+
+function getStrengthColor(strength: number): string {
+  if (strength <= 2) return 'bg-red-500';
+  if (strength <= 3) return 'bg-amber-500';
+  return 'bg-emerald-500';
+}
+
+function getStrengthText(strength: number): string {
+  if (strength <= 2) return 'Faible';
+  if (strength <= 3) return 'Moyen';
+  return 'Fort';
+}
 
 const PasswordReset: React.FC = () => {
-  const { toast } = useToast()
-  const router = useRouter()
-  const searchParams = useSearchParams()
-  const [isPending, startTransition] = React.useTransition()
-  const [showPassword, setShowPassword] = React.useState(false)
-  const [showConfirmPassword, setShowConfirmPassword] = React.useState(false)
-  const [isSuccess, setIsSuccess] = React.useState(false)
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const { toast } = useToast();
+  const { confirmReset, clearError, isLoading, isSuccess, lastError, shouldRedirectToFailure } = usePasswordReset();
 
-  const oobCode = searchParams.get('oobCode')
+  const oobCode = searchParams.get('oobCode');
 
-  const form = useForm<PasswordResetForm>({
+  const form = useForm<PasswordResetFormValues>({
     resolver: zodResolver(passwordResetSchema),
+    mode: 'onChange',
     defaultValues: {
       password: '',
-      confirmPassword: ''
-    }
-  })
+      confirmPassword: '',
+    },
+  });
 
-  // Vérifier si le code OOB est présent au chargement
+  const passwordValue = form.watch('password') ?? '';
+  const strength = getPasswordStrength(passwordValue);
+
   React.useEffect(() => {
-    if (!oobCode) {
-      console.log('❌ Aucun oobCode trouvé dans les paramètres URL, redirection vers échec');
-      router.push(routes.public.passwordResetFailure)
-    } else {
-      console.log('✅ oobCode trouvé:', oobCode.substring(0, 10) + '...');
+    if (oobCode) {
+      return;
     }
-  }, [oobCode, router])
+    logger.warn('Password reset page opened without oobCode');
+    router.replace(routes.public.passwordResetFailure);
+  }, [oobCode, router]);
 
-  const onSubmit = async (values: PasswordResetForm) => {
-    startTransition(async () => {
-      try {
-        const response = await fetch('/api/auth/password-reset', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            newPassword: values.password,
-            oobCode: oobCode,
-          }),
-        })
+  React.useEffect(() => {
+    if (!lastError) {
+      return;
+    }
 
-        const data = await response.json()
+    if (shouldRedirectToFailure) {
+      logger.warn('Redirecting to password reset failure page', {
+        code: lastError.code,
+      });
+      router.replace(routes.public.passwordResetFailure);
+      return;
+    }
 
-        if (response.ok && data.success) {
-          setIsSuccess(true)
-          toast({
-            duration: 5000,
-            title: 'Mot de passe modifié !',
-            description: 'Votre nouveau mot de passe a été enregistré avec succès.',
-            variant: 'success',
-          })
-        } else {
-          throw new Error(data.error || 'Erreur lors de la réinitialisation du mot de passe')
-        }
-      } catch (error: any) {
-        toast({
-          duration: 5000,
-          title: 'Erreur',
-          description: error.message || 'Une erreur est survenue. Veuillez réessayer.',
-          variant: 'destructive',
-        })
-        
-        // Si le token est invalide ou expiré, rediriger vers la page d'échec
-        if (error.message.includes('expiré') || error.message.includes('invalide')) {
-          router.push(routes.public.passwordResetFailure)
-        }
-      }
-    })
-  }
+    toast({
+      duration: lastError.duration,
+      title: lastError.title,
+      description: lastError.message,
+      variant: 'destructive',
+    });
+    clearError();
+  }, [clearError, lastError, router, shouldRedirectToFailure, toast]);
 
-  const getPasswordStrength = (password: string) => {
-    let strength = 0
-    if (password.length >= 8) strength++
-    if (/[A-Z]/.test(password)) strength++
-    if (/[a-z]/.test(password)) strength++
-    if (/[0-9]/.test(password)) strength++
-    if (/[^A-Za-z0-9]/.test(password)) strength++
-    return strength
-  }
+  const onSubmit = async (values: PasswordResetFormValues) => {
+    if (!oobCode) {
+      logger.warn('Password reset submission blocked because oobCode is missing');
+      router.replace(routes.public.passwordResetFailure);
+      return;
+    }
 
-  const getStrengthColor = (strength: number) => {
-    if (strength <= 2) return 'bg-red-500'
-    if (strength <= 3) return 'bg-yellow-500'
-    return 'bg-green-500'
-  }
+    const success = await confirmReset(oobCode, values.password);
+    if (!success) {
+      return;
+    }
 
-  const getStrengthText = (strength: number) => {
-    if (strength <= 2) return 'Faible'
-    if (strength <= 3) return 'Moyen'
-    return 'Fort'
-  }
-
-  if (isSuccess) {
-    return (
-      <div className="min-h-screen bg-gray-100 dark:bg-gray-900 flex justify-center items-center py-5">
-        <div className="w-full max-w-lg mx-4 bg-white dark:bg-gray-800 shadow-lg dark:shadow-gray-900/50 rounded-lg overflow-hidden">
-          
-          {/* Header avec gradient */}
-          <div className="bg-gradient-to-br from-green-600 via-green-500 to-green-600 text-white p-8 text-center">
-            <div className="flex items-center justify-center mb-4">
-              <Link href={routes.public.homePage}>
-                <Logo width="64px" height="64px" />
-              </Link>
-              <h1 className="text-2xl font-bold ml-3">
-                Trouve Ton Nkama
-              </h1>
-            </div>
-            <div className="text-6xl mb-4">
-            <CheckCircle className="w-16 h-16 mx-auto text-white" />
-          </div>
-            <h2 className="text-2xl font-bold mb-2">
-              Succès !
-            </h2>
-            <p className="text-lg opacity-90">
-              Votre mot de passe a été modifié
-            </p>
-          </div>
-
-          <div className="p-8 text-center">
-            <p className="text-gray-600 dark:text-gray-300 mb-6">
-              Votre nouveau mot de passe a été enregistré avec succès. 
-              Vous pouvez maintenant vous connecter avec votre nouveau mot de passe.
-            </p>
-            
-            <div className="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg p-4 mb-6">
-              <p className="text-green-700 dark:text-green-300 text-sm">
-                Pour votre sécurité, vous devrez vous reconnecter sur tous vos appareils.
-              </p>
-            </div>
-
-            <Link href={routes.public.signin}>
-              <Button className="w-full bg-gradient-to-r from-[#146B67] to-[#1FA89B] hover:from-[#0f5853] hover:to-[#1a9688] text-white font-semibold px-8 py-3 rounded-lg transition-all duration-200 shadow-lg">
-                Se connecter
-              </Button>
-            </Link>
-          </div>
-        </div>
-      </div>
-    )
-  }
+    toast({
+      duration: 5000,
+      title: 'Mot de passe modifié',
+      description: 'Votre nouveau mot de passe a été enregistré avec succès.',
+      variant: 'success',
+    });
+    logger.info('Password reset completed');
+  };
 
   return (
-    <div className="min-h-screen bg-gray-100 dark:bg-gray-900 flex justify-center items-center py-5">
-      {/* Container */}
-      <div className="w-full max-w-lg mx-4 bg-white dark:bg-gray-800 shadow-lg dark:shadow-gray-900/50 rounded-lg overflow-hidden">
-        
-        {/* Header avec gradient */}
-        <div className="bg-gradient-to-br from-[#146B67] via-[#1FA89B] to-[#146B67] text-white p-8 text-center">
-          <div className="flex items-center justify-center mb-4">
-            <Link href={routes.public.homePage}>
-              <Logo width="64px" height="64px" />
-            </Link>
-            <h1 className="text-2xl font-bold ml-3">
-              Trouve Ton Nkama
-            </h1>
-          </div>
-          <div className="text-5xl mb-4">
-            <Key className="w-16 h-16 mx-auto text-white" />
-          </div>
-          <h2 className="text-xl font-bold mb-2">
-            Nouveau mot de passe
-          </h2>
-          <p className="opacity-90">
-            Choisissez un mot de passe sécurisé
-          </p>
-        </div>
+    <div className="min-h-screen flex bg-gradient-to-br from-slate-50 via-white to-teal-50/30 dark:from-gray-950 dark:via-gray-900 dark:to-gray-950">
+      <div className="hidden lg:flex lg:w-1/2 xl:w-[45%] relative overflow-hidden">
+        <div className="absolute inset-0 bg-gradient-to-br from-[#146B67] via-[#1a8a83] to-[#1FA89B]" />
 
-        {/* Formulaire */}
-        <div className="p-8">
-          <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-              <FormField
-                control={form.control}
-                name="password"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel className="text-gray-700 dark:text-gray-300 font-medium">
-                      Nouveau mot de passe
-                    </FormLabel>
-                    <FormControl>
-                      <div className="relative">
-                        <Input
-                          placeholder="Entrez votre nouveau mot de passe"
-                          type={showPassword ? "text" : "password"}
-                          className="h-12 border-gray-300 dark:border-gray-600 focus:border-[#146B67] focus:ring-[#146B67] pr-12"
-                          {...field}
-                          disabled={isPending}
-                        />
-                        <button
-                          type="button"
-                          className="absolute inset-y-0 right-0 pr-3 flex items-center"
-                          onClick={() => setShowPassword(!showPassword)}
-                        >
-                          {showPassword ? (
-                            <EyeOff className="h-5 w-5 text-gray-400" />
-                          ) : (
-                            <Eye className="h-5 w-5 text-gray-400" />
-                          )}
-                        </button>
-                      </div>
-                    </FormControl>
-                    <FormMessage />
-                    
-                    {/* Indicateur de force du mot de passe */}
-                    {field.value && (
-                      <div className="mt-2">
-                        <div className="flex items-center space-x-2">
-                          <div className="flex-1 h-2 bg-gray-200 rounded-full overflow-hidden">
-                            <div 
-                              className={`h-full transition-all duration-300 ${getStrengthColor(getPasswordStrength(field.value))}`}
-                              style={{ width: `${(getPasswordStrength(field.value) / 5) * 100}%` }}
+        <div
+          className="absolute inset-0 bg-cover bg-no-repeat opacity-20 mix-blend-overlay blur-[1px] pointer-events-none"
+          style={{
+            backgroundImage: `url(${LEFT_PANEL_BG_IMAGE})`,
+            backgroundPosition: 'center bottom',
+          }}
+          aria-hidden
+        />
+
+        <motion.div
+          className="absolute top-20 right-20 w-64 h-64 bg-white/10 rounded-full blur-3xl"
+          animate={{ scale: [1, 1.2, 1], opacity: [0.3, 0.5, 0.3] }}
+          transition={{ duration: 8, repeat: Infinity }}
+        />
+        <motion.div
+          className="absolute bottom-40 left-10 w-48 h-48 bg-teal-300/20 rounded-full blur-2xl"
+          animate={{ scale: [1, 1.3, 1], opacity: [0.2, 0.4, 0.2] }}
+          transition={{ duration: 6, repeat: Infinity, delay: 2 }}
+        />
+
+        <div className="relative z-10 flex flex-col justify-between p-12 xl:p-16 text-white w-full">
+          <div>
+            <Link href={routes.public.homePage} className="flex items-center gap-3 mb-12 group">
+              <motion.div whileHover={{ rotate: 10 }} transition={{ type: 'spring', stiffness: 300 }}>
+                <Logo width="56px" height="56px" />
+              </motion.div>
+              <span className="text-2xl font-bold tracking-tight">Trouve Ton Nkama</span>
+            </Link>
+
+            <motion.h1
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6 }}
+              className="text-4xl xl:text-5xl font-bold leading-tight mb-6"
+            >
+              Choisissez
+              <br />
+              <span className="text-teal-200">un nouveau mot de passe</span>
+            </motion.h1>
+
+            <motion.p
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, delay: 0.1 }}
+              className="text-lg text-white/80 max-w-md"
+            >
+              Protégez votre compte avec un mot de passe robuste et unique.
+            </motion.p>
+          </div>
+
+          <div className="space-y-6">
+            {features.map((feature, index) => (
+              <motion.div
+                key={feature.title}
+                custom={index}
+                initial="initial"
+                animate="animate"
+                variants={featureVariants}
+                className="flex items-center gap-4 p-4 rounded-2xl bg-white/10 backdrop-blur-sm border border-white/10"
+              >
+                <div className="p-3 rounded-xl bg-white/20">
+                  <feature.icon className="w-6 h-6" />
+                </div>
+                <div>
+                  <h3 className="font-semibold">{feature.title}</h3>
+                  <p className="text-sm text-white/70">{feature.desc}</p>
+                </div>
+              </motion.div>
+            ))}
+          </div>
+
+          <p className="text-sm text-white/50">© 2026 Trouve Ton Nkama. Tous droits réservés.</p>
+        </div>
+      </div>
+
+      <div className="flex-1 flex items-center justify-center p-6 lg:p-12">
+        <div className="w-full max-w-lg">
+          <div className="lg:hidden flex items-center justify-center gap-3 mb-8">
+            <Logo width="48px" height="48px" />
+            <span className="text-xl font-bold text-[#146B67]">Trouve Ton Nkama</span>
+          </div>
+
+          <div className="bg-white dark:bg-gray-900 rounded-3xl shadow-2xl shadow-gray-200/50 dark:shadow-black/30 p-8 lg:p-10 border border-gray-100 dark:border-gray-800">
+            {isSuccess ? (
+              <div className="text-center">
+                <div className="mx-auto mb-4 h-14 w-14 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center">
+                  <CheckCircle2 className="w-8 h-8" />
+                </div>
+                <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
+                  Mot de passe modifié
+                </h1>
+                <p className="text-gray-600 dark:text-gray-400 mb-6">
+                  Votre nouveau mot de passe est actif. Vous pouvez maintenant vous connecter.
+                </p>
+
+                <div className="rounded-2xl border border-emerald-200 bg-emerald-50 p-4 mb-6 text-sm text-emerald-800">
+                  Pour votre sécurité, reconnectez-vous sur vos appareils ouverts.
+                </div>
+
+                <div className="space-y-3">
+                  <ButtonApp
+                    title="Aller à la connexion"
+                    className="bg-gradient-to-r from-[#146B67] to-[#1FA89B]"
+                    onClick={() => router.push(routes.public.signin)}
+                  />
+                  <Link
+                    href={routes.public.homePage}
+                    className="inline-flex items-center gap-2 text-sm text-gray-500 hover:text-[#146B67]"
+                  >
+                    <Home className="w-4 h-4" />
+                    Retour à l&apos;accueil
+                  </Link>
+                </div>
+              </div>
+            ) : (
+              <>
+                <Link
+                  href={routes.public.signin}
+                  className="inline-flex items-center gap-2 text-sm text-gray-500 hover:text-[#146B67] mb-6"
+                >
+                  <ArrowLeft className="w-4 h-4" />
+                  Retour à la connexion
+                </Link>
+
+                <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
+                  Nouveau mot de passe
+                </h1>
+                <p className="text-gray-600 dark:text-gray-400 mb-8">
+                  Choisissez un mot de passe sécurisé pour finaliser la réinitialisation.
+                </p>
+
+                <Form {...form}>
+                  <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-5">
+                    <InputFormApp
+                      control={form.control}
+                      name="password"
+                      label="Nouveau mot de passe"
+                      type="password"
+                      placeholder="Entrez votre nouveau mot de passe"
+                      IconLucide={KeyRound}
+                      IconColor="gray"
+                    />
+
+                    {passwordValue && (
+                      <div className="space-y-2">
+                        <div className="flex items-center gap-2">
+                          <div className="h-2 flex-1 rounded-full bg-gray-200 dark:bg-gray-700 overflow-hidden">
+                            <div
+                              className={`h-full transition-all duration-300 ${getStrengthColor(strength)}`}
+                              style={{ width: `${(strength / 5) * 100}%` }}
                             />
                           </div>
-                          <span className="text-sm text-gray-600 dark:text-gray-400">
-                            {getStrengthText(getPasswordStrength(field.value))}
+                          <span className="text-xs font-semibold text-gray-600 dark:text-gray-300">
+                            {getStrengthText(strength)}
                           </span>
                         </div>
                       </div>
                     )}
-                  </FormItem>
-                )}
-              />
 
-              <FormField
-                control={form.control}
-                name="confirmPassword"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel className="text-gray-700 dark:text-gray-300 font-medium">
-                      Confirmer le mot de passe
-                    </FormLabel>
-                    <FormControl>
-                      <div className="relative">
-                        <Input
-                          placeholder="Confirmez votre nouveau mot de passe"
-                          type={showConfirmPassword ? "text" : "password"}
-                          className="h-12 border-gray-300 dark:border-gray-600 focus:border-[#146B67] focus:ring-[#146B67] pr-12"
-                          {...field}
-                          disabled={isPending}
-                        />
-                        <button
-                          type="button"
-                          className="absolute inset-y-0 right-0 pr-3 flex items-center"
-                          onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                        >
-                          {showConfirmPassword ? (
-                            <EyeOff className="h-5 w-5 text-gray-400" />
-                          ) : (
-                            <Eye className="h-5 w-5 text-gray-400" />
-                          )}
-                        </button>
-                      </div>
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+                    <InputFormApp
+                      control={form.control}
+                      name="confirmPassword"
+                      label="Confirmer le mot de passe"
+                      type="password"
+                      placeholder="Confirmez le mot de passe"
+                      IconLucide={KeyRound}
+                      IconColor="gray"
+                    />
 
-              {/* Critères de sécurité */}
-              <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
-                <h3 className="font-medium text-blue-700 dark:text-blue-300 mb-2">
-                  Critères de sécurité
-                </h3>
-                <ul className="text-blue-600 dark:text-blue-400 space-y-1 text-sm">
-                  <li className="flex items-center">
-                    <span className={`w-2 h-2 rounded-full mr-2 ${form.watch('password')?.length >= 8 ? 'bg-green-500' : 'bg-gray-300'}`} />
-                    Au moins 8 caractères
-                  </li>
-                  <li className="flex items-center">
-                    <span className={`w-2 h-2 rounded-full mr-2 ${/[A-Z]/.test(form.watch('password') || '') ? 'bg-green-500' : 'bg-gray-300'}`} />
-                    Une majuscule
-                  </li>
-                  <li className="flex items-center">
-                    <span className={`w-2 h-2 rounded-full mr-2 ${/[a-z]/.test(form.watch('password') || '') ? 'bg-green-500' : 'bg-gray-300'}`} />
-                    Une minuscule
-                  </li>
-                  <li className="flex items-center">
-                    <span className={`w-2 h-2 rounded-full mr-2 ${/[0-9]/.test(form.watch('password') || '') ? 'bg-green-500' : 'bg-gray-300'}`} />
-                    Un chiffre
-                  </li>
-                </ul>
-              </div>
+                    <div className="rounded-2xl border border-blue-200 bg-blue-50/80 p-4 text-blue-800 text-sm">
+                      Le mot de passe doit contenir au minimum 8 caractères, 1 majuscule, 1 minuscule et 1 chiffre.
+                    </div>
 
-              <ButtonLoading
-                type="submit"
-                className="w-full h-12 bg-gradient-to-r from-[#146B67] to-[#1FA89B] hover:from-[#0f5853] hover:to-[#1a9688] text-white font-semibold rounded-lg transition-all duration-200 shadow-lg"
-                disabled={isPending}
-              >
-                Modifier mon mot de passe
-              </ButtonLoading>
-            </form>
-          </Form>
+                    <ButtonApp
+                      type="submit"
+                      title={isLoading ? 'Mise à jour en cours...' : 'Modifier mon mot de passe'}
+                      isLoading={isLoading}
+                      disabled={isLoading || !oobCode}
+                      className="bg-gradient-to-r from-[#146B67] to-[#1FA89B] h-12"
+                    />
+                  </form>
+                </Form>
 
-          {/* Conseils de sécurité */}
-          <div className="mt-6 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg p-4">
-            <h3 className="font-medium text-yellow-700 dark:text-yellow-300 mb-2">
-              Conseils de sécurité
-            </h3>
-            <ul className="text-yellow-600 dark:text-yellow-400 space-y-1 text-sm">
-              <li>• N'utilisez pas d'informations personnelles</li>
-              <li>• Choisissez un mot de passe unique</li>
-              <li>• Conservez-le en lieu sûr</li>
-              <li>• Ne le partagez jamais</li>
-            </ul>
+                <div className="mt-8 pt-6 border-t border-gray-200 dark:border-gray-800 text-center">
+                  <p className="text-sm text-gray-500 dark:text-gray-400">
+                    Besoin d&apos;aide?{' '}
+                    <a href={`mailto:${supportContact.email}`} className="text-[#146B67] hover:underline font-medium">
+                      {supportContact.email}
+                    </a>
+                  </p>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    onClick={() => router.push(routes.public.passwordResetRequest)}
+                    className="mt-3 text-[#146B67] hover:text-[#0f5853]"
+                  >
+                    Demander un nouveau lien
+                  </Button>
+                </div>
+              </>
+            )}
           </div>
         </div>
       </div>
     </div>
-  )
-}
+  );
+};
 
-export default PasswordReset 
+export default PasswordReset;

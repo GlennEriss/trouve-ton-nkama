@@ -75,11 +75,16 @@ export async function POST(request: NextRequest) {
     };
 
     // Envoyer l'email avec le service centralisé
-    await emailService.sendEmail(emailData, verificationLink);
+    const emailSendResult = await emailService.sendEmail(emailData, verificationLink);
 
     logger.info('Verification email sent', {
       uid: user.uid,
       email: userEmail,
+      simulated: emailSendResult.simulated,
+      messageId: emailSendResult.messageId,
+      acceptedCount: emailSendResult.accepted.length,
+      rejectedCount: emailSendResult.rejected.length,
+      rejected: emailSendResult.rejected,
     });
 
     return NextResponse.json({
