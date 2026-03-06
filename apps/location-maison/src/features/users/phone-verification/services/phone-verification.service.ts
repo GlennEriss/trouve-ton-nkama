@@ -9,6 +9,7 @@ import {
 } from '@/firebase/auth';
 import { createLogger } from '@/lib/logger';
 import { validatePhoneNumberForSupportedCountries } from '@/lib/phoneValidation';
+import { PHONE_NUMBER_CHANGE_LOCK_MS } from '@/lib/phoneVerificationPolicy';
 import {
   PhoneVerificationErrorCode,
   type ConfirmPhoneOtpData,
@@ -332,16 +333,38 @@ export class PhoneVerificationServiceImpl implements PhoneVerificationService {
 
       const previousPhone = currentUser.phoneNumbers?.[0] ?? '';
       const isPhoneChanged = previousPhone !== phoneNumber;
+      const now = new Date();
+      const lockUntil = new Date(now.getTime() + PHONE_NUMBER_CHANGE_LOCK_MS);
+      const currentMetadata =
+        currentUser.metadata && typeof currentUser.metadata === 'object'
+          ? (currentUser.metadata as Record<string, unknown>)
+          : {};
+      const currentPhoneVerificationMetadata =
+        currentMetadata.phoneVerification &&
+        typeof currentMetadata.phoneVerification === 'object'
+          ? (currentMetadata.phoneVerification as Record<string, unknown>)
+          : {};
+      const nextMetadata = {
+        ...currentMetadata,
+        phoneVerification: {
+          ...currentPhoneVerificationMetadata,
+          verifiedAt: now.toISOString(),
+          lockUntil: lockUntil.toISOString(),
+          lastVerifiedPhoneNumber: phoneNumber,
+        },
+      };
 
       const updatedUser = await userRepository.update(uid, {
         phoneNumbers: [phoneNumber],
         phoneNumberVerified: true,
+        metadata: nextMetadata,
       });
 
       logger.info('Phone verification persisted', {
         uid,
         phoneNumber,
         isPhoneChanged,
+        lockUntil: lockUntil.toISOString(),
       });
 
       return {

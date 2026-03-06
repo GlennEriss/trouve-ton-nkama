@@ -3,6 +3,7 @@ import { userRepository } from '@/features/auth/repositories/user.repository';
 import { RepositoryError } from '@/features/auth/repositories/user.repository.interface';
 import { createLogger } from '@/lib/logger';
 import { validatePhoneNumberForSupportedCountries } from '@/lib/phoneValidation';
+import { PHONE_NUMBER_CHANGE_LOCK_DAYS } from '@/lib/phoneVerificationPolicy';
 import {
   ProfileInformationErrorCode,
   type ProfileInformationService,
@@ -11,6 +12,33 @@ import {
 } from './profile-information.service.interface';
 
 const logger = createLogger('users.profile-information-service');
+
+function parseDateLike(value: unknown): Date | null {
+  if (!value) {
+    return null;
+  }
+
+  if (value instanceof Date && !Number.isNaN(value.getTime())) {
+    return value;
+  }
+
+  if (typeof value === 'string' || typeof value === 'number') {
+    const parsed = new Date(value);
+    return Number.isNaN(parsed.getTime()) ? null : parsed;
+  }
+
+  if (typeof value === 'object' && value !== null) {
+    const seconds = (value as { seconds?: unknown }).seconds;
+    const nanoseconds = (value as { nanoseconds?: unknown }).nanoseconds;
+    if (typeof seconds === 'number') {
+      const ms = seconds * 1000 + (typeof nanoseconds === 'number' ? nanoseconds / 1_000_000 : 0);
+      const parsed = new Date(ms);
+      return Number.isNaN(parsed.getTime()) ? null : parsed;
+    }
+  }
+
+  return null;
+}
 
 function parseBirthDate(value: string): {
   ok: true;
@@ -81,6 +109,8 @@ function mapErrorMessage(code: ProfileInformationErrorCode): string {
       return 'Le pays sélectionné est invalide.';
     case ProfileInformationErrorCode.PHONE_ALREADY_IN_USE:
       return 'Ce numéro de téléphone est déjà utilisé.';
+    case ProfileInformationErrorCode.PHONE_CHANGE_LOCKED:
+      return `Ce numéro vérifié ne peut pas être modifié pour le moment (délai de ${PHONE_NUMBER_CHANGE_LOCK_DAYS} jours).`;
     case ProfileInformationErrorCode.USER_NOT_FOUND:
       return 'Utilisateur introuvable.';
     case ProfileInformationErrorCode.UPDATE_FAILED:
@@ -188,6 +218,40 @@ export class ProfileInformationServiceImpl implements ProfileInformationService 
 
       const previousPhone = currentUser.phoneNumbers?.[0] ?? '';
       const phoneChanged = previousPhone !== phoneNumber;
+      const currentMetadata =
+        currentUser.metadata && typeof currentUser.metadata === 'object'
+          ? (currentUser.metadata as Record<string, unknown>)
+          : {};
+      const currentPhoneVerificationMetadata =
+        currentMetadata.phoneVerification &&
+        typeof currentMetadata.phoneVerification === 'object'
+          ? (currentMetadata.phoneVerification as Record<string, unknown>)
+          : {};
+      const lockUntil = parseDateLike(currentPhoneVerificationMetadata.lockUntil);
+      const now = new Date();
+
+      if (phoneChanged && currentUser.phoneNumberVerified && lockUntil && lockUntil.getTime() > now.getTime()) {
+        return {
+          success: false,
+          error: {
+            code: ProfileInformationErrorCode.PHONE_CHANGE_LOCKED,
+            message: `Numéro vérifié verrouillé jusqu'au ${lockUntil.toLocaleDateString(
+              'fr-FR'
+            )}. Vous pourrez le modifier après cette date.`,
+          },
+        };
+      }
+
+      const nextMetadata = phoneChanged
+        ? {
+          ...currentMetadata,
+          phoneVerification: {
+            ...currentPhoneVerificationMetadata,
+            lockUntil: null,
+            phoneChangedAt: now.toISOString(),
+          },
+        }
+        : currentMetadata;
 
       const updatedUser = await userRepository.update(uid, {
         firstname,
@@ -200,6 +264,7 @@ export class ProfileInformationServiceImpl implements ProfileInformationService 
         },
         searchableName: `${firstname} ${lastname}`.trim(),
         phoneNumberVerified: phoneChanged ? false : currentUser.phoneNumberVerified,
+        metadata: nextMetadata,
       });
 
       logger.info('Profile information updated', {

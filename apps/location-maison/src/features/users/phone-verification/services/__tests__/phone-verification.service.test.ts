@@ -127,10 +127,13 @@ describe('PhoneVerificationService', () => {
     expect(result.user?.phoneNumberVerified).toBe(true);
     expect(result.isPhoneChanged).toBe(true);
     expect(confirmationResult.confirm).toHaveBeenCalledWith('123456');
-    expect(mockedUpdate).toHaveBeenCalledWith('uid-1', {
-      phoneNumbers: ['+241077654321'],
-      phoneNumberVerified: true,
-    });
+    expect(mockedUpdate).toHaveBeenCalledWith(
+      'uid-1',
+      expect.objectContaining({
+        phoneNumbers: ['+241077654321'],
+        phoneNumberVerified: true,
+      })
+    );
   });
 
   it('maps invalid verification code error', async () => {

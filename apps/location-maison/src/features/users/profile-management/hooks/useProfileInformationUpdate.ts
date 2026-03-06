@@ -84,6 +84,12 @@ const ERROR_MAP: Record<string, ProfileInformationUiError> = {
     message: 'Ce numéro est déjà utilisé par un autre compte.',
     duration: 7000,
   },
+  [ProfileInformationErrorCode.PHONE_CHANGE_LOCKED]: {
+    code: ProfileInformationErrorCode.PHONE_CHANGE_LOCKED,
+    title: 'Changement temporairement verrouillé',
+    message: 'Un numéro vérifié ne peut être modifié qu’après 30 jours.',
+    duration: 8000,
+  },
   [ProfileInformationErrorCode.USER_NOT_FOUND]: {
     code: ProfileInformationErrorCode.USER_NOT_FOUND,
     title: 'Compte introuvable',
@@ -176,4 +182,3 @@ export function useProfileInformationUpdate(): UseProfileInformationUpdateReturn
     clearError,
   };
 }
-

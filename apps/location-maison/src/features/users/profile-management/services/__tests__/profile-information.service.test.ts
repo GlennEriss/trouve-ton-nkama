@@ -182,6 +182,35 @@ describe('ProfileInformationService', () => {
     expect(mockedUpdate).not.toHaveBeenCalled();
   });
 
+  it('rejects changing a verified phone before lock expiration', async () => {
+    const lockUntil = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString();
+    mockedFindById.mockResolvedValue(
+      createMockUser({
+        uid: 'uid-1',
+        phoneNumberVerified: true,
+        metadata: {
+          phoneVerification: {
+            lockUntil,
+          },
+        },
+      })
+    );
+    mockedFindByPhoneNumber.mockResolvedValue(null);
+
+    const result = await service.updateProfileInformation({
+      uid: 'uid-1',
+      firstname: 'Paul',
+      lastname: 'Ngoma',
+      birthDate: '1989-01-10',
+      phoneNumber: '+241077654321',
+      countryCode: 'GA',
+    });
+
+    expect(result.success).toBe(false);
+    expect(result.error?.code).toBe(ProfileInformationErrorCode.PHONE_CHANGE_LOCKED);
+    expect(mockedUpdate).not.toHaveBeenCalled();
+  });
+
   it('maps repository update error to UPDATE_FAILED', async () => {
     mockedFindById.mockResolvedValue(createMockUser({ uid: 'uid-1' }));
     mockedFindByPhoneNumber.mockResolvedValue(null);
