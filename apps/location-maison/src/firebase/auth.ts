@@ -16,6 +16,7 @@ export {
   updateEmail,
   signOut,
   signInWithPopup,
+  linkWithPhoneNumber,
   EmailAuthProvider,
   fetchSignInMethodsForEmail,
   linkWithCredential,

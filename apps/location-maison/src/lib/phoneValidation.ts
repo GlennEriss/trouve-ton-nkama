@@ -32,9 +32,9 @@ export const SUPPORTED_COUNTRIES = {
     code: 'SN',
     countryCode: '+221',
     patterns: [
-      /^\+221[67]\d{7}$/, // Format international
-      /^221[67]\d{7}$/, // Format sans +
-      /^[67]\d{7}$/, // Format local
+      /^\+221[67]\d{8}$/, // Format international (9 chiffres locaux)
+      /^221[67]\d{8}$/, // Format sans +
+      /^[67]\d{8}$/, // Format local
     ],
     validPrefixes: ['70', '71', '72', '73', '74', '75', '76', '77', '78', '79'],
     length: 9, // Longueur sans le code pays
@@ -45,9 +45,37 @@ export const SUPPORTED_COUNTRIES = {
 export type SupportedCountry = keyof typeof SUPPORTED_COUNTRIES;
 
 // Configuration globale (peut être modifiée via variable d'environnement)
-const ENABLED_COUNTRIES: SupportedCountry[] = process.env.NEXT_PUBLIC_ENABLED_PHONE_COUNTRIES 
-  ? (process.env.NEXT_PUBLIC_ENABLED_PHONE_COUNTRIES.split(',') as SupportedCountry[])
-  : ['GA']; // Par défaut, seulement Gabon
+function parseEnabledCountriesFromEnv(): SupportedCountry[] | null {
+  const raw = process.env.NEXT_PUBLIC_ENABLED_PHONE_COUNTRIES;
+  if (!raw) {
+    return null;
+  }
+
+  const parsed = raw
+    .split(',')
+    .map((value) => value.trim().toUpperCase())
+    .filter((value): value is SupportedCountry => value in SUPPORTED_COUNTRIES);
+
+  return parsed.length > 0 ? parsed : null;
+}
+
+const DEFAULT_ENABLED_COUNTRIES: SupportedCountry[] =
+  process.env.NODE_ENV === 'development' ? ['GA', 'SN'] : ['GA'];
+
+const fromEnv = parseEnabledCountriesFromEnv();
+
+const ENABLED_COUNTRIES: SupportedCountry[] = (() => {
+  if (!fromEnv) {
+    return DEFAULT_ENABLED_COUNTRIES;
+  }
+
+  // En mode dev, on force l'activation du Sénégal pour faciliter les tests OTP.
+  if (process.env.NODE_ENV === 'development' && !fromEnv.includes('SN')) {
+    return [...fromEnv, 'SN'];
+  }
+
+  return fromEnv;
+})();
 
 /**
  * Nettoie un numéro de téléphone

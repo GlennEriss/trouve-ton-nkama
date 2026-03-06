@@ -90,8 +90,9 @@
 
 | Feature | Statut | Branche | Date | Notes |
 |---------|--------|---------|------|-------|
-| Gestion du profil (refactoring feature-based) | 🔄 | develop | 2026-03-06 | Cadrage cree dans `documentation/feature/users/gestion-du-profil/` |
-| Modifier ses informations (refonte UX/UI desktop + architecture) | 🔄 | develop | 2026-03-06 | Analyse creee dans `documentation/feature/users/gestion-du-profil/modifier-ses-informations/` |
+| Gestion du profil (refactoring feature-based) | 🔄 | feature/FEATURE-007-phone-verification | 2026-03-06 | Sous-features decoupees et documentees |
+| Modifier ses informations (refonte UX/UI desktop + architecture) | ✅ | feature/FEATURE-006-modifier-profil | 2026-03-06 | V1 livree (edition telephone+pays, warning perte statut verifie) |
+| Verifier numero de telephone (OTP Firebase) | 🔄 | feature/FEATURE-007-phone-verification | 2026-03-06 | Doc + refactor feature-based + tests service; validation manuelle OTP restante |
 | Consulter son profil | ✅ | - | - | Existant |
 | Modifier ses informations | ✅ | - | - | Existant |
 | Changer son mot de passe | ✅ | - | - | Existant |

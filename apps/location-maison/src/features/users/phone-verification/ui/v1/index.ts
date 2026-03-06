@@ -1,0 +1,1 @@
+export { PhoneVerificationPageModern } from './PhoneVerificationPageModern';

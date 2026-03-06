@@ -59,8 +59,9 @@ NEXT_PUBLIC_FIREBASE_APP_ID=your_app_id
 # Environment
 NODE_ENV=production
 
-# reCAPTCHA (optionnel - géré automatiquement par Firebase)
-NEXT_PUBLIC_RECAPTCHA_SITE_KEY=your_recaptcha_site_key
+# reCAPTCHA v3 (si App Check n'est pas géré exclusivement par Firebase Console)
+NEXT_PUBLIC_RECAPTCHA_V3_SITE_KEY=your_recaptcha_v3_site_key
+RECAPTCHA_V3_SECRET_KEY=your_recaptcha_v3_secret_key
 ```
 
 ### Fichier `.env.local` (développement)

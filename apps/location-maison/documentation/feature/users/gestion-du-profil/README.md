@@ -7,6 +7,7 @@
 - Diagramme de sequence: `gestion-profil-sequence-diagram.puml`
 - Diagramme d'activite: `gestion-profil-activity-diagram.puml`
 - Sous-feature modifier ses informations: `modifier-ses-informations/README.md`
+- Sous-feature verifier numero de telephone: `verifier-numero-telephone/README.md`
 
 ## Perimetre
 

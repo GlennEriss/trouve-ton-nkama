@@ -25,7 +25,7 @@
             <div class='fl pad1y space-right2'>
                 <span class="strong">0% </span>
                 <span class="quiet">Statements</span>
-                <span class='fraction'>0/172</span>
+                <span class='fraction'>0/177</span>
             </div>
         
             
@@ -46,7 +46,7 @@
             <div class='fl pad1y space-right2'>
                 <span class="strong">0% </span>
                 <span class="quiet">Lines</span>
-                <span class='fraction'>0/172</span>
+                <span class='fraction'>0/177</span>
             </div>
         
             
@@ -234,7 +234,13 @@
 <a name='L169'></a><a href='#L169'>169</a>
 <a name='L170'></a><a href='#L170'>170</a>
 <a name='L171'></a><a href='#L171'>171</a>
-<a name='L172'></a><a href='#L172'>172</a></td><td class="line-coverage quiet"><span class="cline-any cline-no">&nbsp;</span>
+<a name='L172'></a><a href='#L172'>172</a>
+<a name='L173'></a><a href='#L173'>173</a>
+<a name='L174'></a><a href='#L174'>174</a>
+<a name='L175'></a><a href='#L175'>175</a>
+<a name='L176'></a><a href='#L176'>176</a>
+<a name='L177'></a><a href='#L177'>177</a>
+<a name='L178'></a><a href='#L178'>178</a></td><td class="line-coverage quiet"><span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
@@ -405,7 +411,13 @@
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span></td><td class="text"><pre class="prettyprint lang-js"><span class="cstat-no" title="statement not covered" ><span class="fstat-no" title="function not covered" ><span class="branch-0 cbranch-no" title="branch not covered" >"use client";</span></span></span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span></td><td class="text"><pre class="prettyprint lang-js"><span class="cstat-no" title="statement not covered" ><span class="fstat-no" title="function not covered" ><span class="branch-0 cbranch-no" title="branch not covered" >"use client";</span></span></span>
 <span class="cstat-no" title="statement not covered" ></span>
 <span class="cstat-no" title="statement not covered" >import { useWindowSize } from "@/hooks/useSize";</span>
 <span class="cstat-no" title="statement not covered" >import Logo from "../logo/Logo";</span>
@@ -423,6 +435,7 @@
 <span class="cstat-no" title="statement not covered" >  const { width } = useWindowSize();</span>
 <span class="cstat-no" title="statement not covered" >  const { user } = useCurrentUser();</span>
 <span class="cstat-no" title="statement not covered" >  const pathname = usePathname();</span>
+<span class="cstat-no" title="statement not covered" >  const isAnnouncer = Array.isArray(user?.roles) &amp;&amp; user.roles.includes('Announcer');</span>
 <span class="cstat-no" title="statement not covered" >  </span>
 <span class="cstat-no" title="statement not covered" >  // Vérifier si on est sur une route protégée</span>
 <span class="cstat-no" title="statement not covered" >  const isProtectedRoute = Object.values(routes.protected).some(route =&gt; </span>
@@ -453,7 +466,7 @@
 <span class="cstat-no" title="statement not covered" >        &lt;/div&gt;</span>
 <span class="cstat-no" title="statement not covered" >        &lt;div className="flex items-center gap-4"&gt;</span>
 <span class="cstat-no" title="statement not covered" >          {!isProtectedRoute &amp;&amp; &lt;InputSearchNavbar /&gt;}</span>
-<span class="cstat-no" title="statement not covered" >                  {user ? (</span>
+<span class="cstat-no" title="statement not covered" >                  {user &amp;&amp; isAnnouncer ? (</span>
 <span class="cstat-no" title="statement not covered" >          &lt;div className="flex items-center gap-2"&gt;</span>
 <span class="cstat-no" title="statement not covered" >            &lt;Notifications /&gt;</span>
 <span class="cstat-no" title="statement not covered" >            &lt;Link href={routes.protected.add_property}&gt;</span>
@@ -545,19 +558,23 @@
 <span class="cstat-no" title="statement not covered" ></span>
 <span class="cstat-no" title="statement not covered" >const NavigationMenuNavbar = () =&gt; {</span>
 <span class="cstat-no" title="statement not covered" >  const { user } = useCurrentUser()</span>
+<span class="cstat-no" title="statement not covered" >  const isAnnouncer = Array.isArray(user?.roles) &amp;&amp; user.roles.includes('Announcer')</span>
 <span class="cstat-no" title="statement not covered" >  const menu = [</span>
-<span class="cstat-no" title="statement not covered" >    {</span>
-<span class="cstat-no" title="statement not covered" >      link: user ? routes.protected.properties : routes.public.signin,</span>
-<span class="cstat-no" title="statement not covered" >      label: user ? "Mes annonces" : ""</span>
-<span class="cstat-no" title="statement not covered" >    },</span>
+<span class="cstat-no" title="statement not covered" >    ...(isAnnouncer ? [{</span>
+<span class="cstat-no" title="statement not covered" >      link: routes.protected.properties,</span>
+<span class="cstat-no" title="statement not covered" >      label: "Mes annonces"</span>
+<span class="cstat-no" title="statement not covered" >    }] : []),</span>
 <span class="cstat-no" title="statement not covered" >    {</span>
 <span class="cstat-no" title="statement not covered" >      link: routes.public.search_property,</span>
 <span class="cstat-no" title="statement not covered" >      label: "Catalogue"</span>
 <span class="cstat-no" title="statement not covered" >    },</span>
-<span class="cstat-no" title="statement not covered" >    {</span>
-<span class="cstat-no" title="statement not covered" >      link: user ? routes.protected.add_property : routes.public.signin,</span>
+<span class="cstat-no" title="statement not covered" >    ...(isAnnouncer ? [{</span>
+<span class="cstat-no" title="statement not covered" >      link: routes.protected.add_property,</span>
 <span class="cstat-no" title="statement not covered" >      label: "Poster une annonce"</span>
-<span class="cstat-no" title="statement not covered" >    },</span>
+<span class="cstat-no" title="statement not covered" >    }] : user ? [] : [{</span>
+<span class="cstat-no" title="statement not covered" >      link: routes.public.signin,</span>
+<span class="cstat-no" title="statement not covered" >      label: "Poster une annonce"</span>
+<span class="cstat-no" title="statement not covered" >    }]),</span>
 <span class="cstat-no" title="statement not covered" >  ]</span>
 <span class="cstat-no" title="statement not covered" >  return (</span>
 <span class="cstat-no" title="statement not covered" >    &lt;NavigationMenu&gt;</span>
@@ -576,14 +593,15 @@
 <span class="cstat-no" title="statement not covered" >      &lt;/NavigationMenuList&gt;</span>
 <span class="cstat-no" title="statement not covered" >    &lt;/NavigationMenu&gt;</span>
 <span class="cstat-no" title="statement not covered" >  )</span>
-<span class="cstat-no" title="statement not covered" >}</span></pre></td></tr></table></pre>
+<span class="cstat-no" title="statement not covered" >}</span>
+&nbsp;</pre></td></tr></table></pre>
 
                 <div class='push'></div><!-- for sticky footer -->
             </div><!-- /wrapper -->
             <div class='footer quiet pad2 space-top1 center small'>
                 Code coverage generated by
                 <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
-                at 2026-03-06T00:06:23.748Z
+                at 2026-03-06T14:16:11.121Z
             </div>
         <script src="../../../prettify.js"></script>
         <script>
