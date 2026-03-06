@@ -13,9 +13,10 @@
 | Ecrans profil existants | ✅ | — |
 | Mapping UML -> scope feature | ✅ | — |
 | Sous-feature `modifier-ses-informations` documentee | ✅ | — |
-| Edition complete des informations (nom/prenom/date/pays/tel) | — | ⬜ |
-| Refactor vers `src/features/users/profile-management` | — | ⬜ |
-| Tests unitaires module profil | — | ⬜ |
+| Sous-feature `verifier-numero-telephone` documentee | ✅ | — |
+| Edition informations (V1: telephone + pays) | ✅ | — |
+| Refactor vers `src/features/users/profile-management` | ✅ | — |
+| Tests unitaires module profil | ✅ | — |
 | Tests integration parcours profil | — | ⬜ |
 
 ---

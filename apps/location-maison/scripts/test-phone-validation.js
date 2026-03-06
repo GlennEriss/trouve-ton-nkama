@@ -91,10 +91,10 @@ function runTests() {
   // Tests Sénégal
   log('🇸🇳 Tests Sénégal', 'bold');
   const senegalTests = [
-    { number: '+22170123456', valid: true, country: 'SN' },
-    { number: '+22171123456', valid: true, country: 'SN' },
-    { number: '22170123456', valid: true, country: 'SN' },
-    { number: '70123456', valid: true, country: 'SN' },
+    { number: '+221701234567', valid: true, country: 'SN' },
+    { number: '+221711234567', valid: true, country: 'SN' },
+    { number: '221701234567', valid: true, country: 'SN' },
+    { number: '701234567', valid: true, country: 'SN' },
     { number: '+221 70 123 45 67', valid: true, country: 'SN' }
   ];
 
@@ -110,7 +110,9 @@ function runTests() {
     { number: '+2410612345', valid: false },  // Trop court
     { number: '+241061234567', valid: false }, // Trop long
     { number: '+24206123456', valid: false },  // Mauvais code pays
-    { number: '+22160123456', valid: false },  // Préfixe 60 non supporté
+    { number: '+221601234567', valid: false },  // Préfixe 60 non supporté
+    { number: '+22170123456', valid: false },  // Trop court
+    { number: '+2217012345678', valid: false }, // Trop long
     { number: 'invalid', valid: false },
     { number: '', valid: false },
     { number: null, valid: false },

@@ -54,7 +54,8 @@ Cas d'utilisation cibles (extraits UML):
 
 ## 5. Hors scope V1
 
-- verification OTP telephone (feature dediee, deja sortie du scope auth signup/signin).
+- verification OTP telephone pendant signup/signin (feature dediee).
+- verification OTP profil: voir `verifier-numero-telephone/FEATURE-003-VERIFIER-NUMERO-TELEPHONE.md`.
 - migration "devenir annonceur".
 - moderation / administration profil.
 
@@ -125,4 +126,3 @@ Principe:
 - `updateUser` (DB layer)
 - schemas Zod de profil
 - middleware d'authentification/routage
-

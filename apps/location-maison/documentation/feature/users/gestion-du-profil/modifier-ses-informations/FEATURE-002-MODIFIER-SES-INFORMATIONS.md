@@ -58,8 +58,12 @@ Impact:
 ## 4. Cible fonctionnelle V1
 
 1. Edition profil couvrant le use case UML
-- prenom, nom, date de naissance, telephone, pays.
+- V1 produit: edition du telephone + pays.
+- prenom, nom, email, date de naissance affiches en lecture seule.
 - email affiché en lecture seule (geré par auth provider), avec mention claire.
+- regle metier telephone:
+  - si le numero est deja verifie et est modifie, `phoneNumberVerified` repasse a `false`
+  - un message d'avertissement explicite doit prevenir la perte du statut "numero verifie"
 
 2. Validation et erreurs
 - validation schema unique (Zod) pour la feature.
@@ -136,4 +140,3 @@ Phase D - Migration progressive
 - devenir annonceur
 - administration des profils
 - refonte complete de tout `/profil` (hors ecran informations)
-

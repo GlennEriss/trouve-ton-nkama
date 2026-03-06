@@ -13,14 +13,12 @@ const menu = [
         link: routes.protected.my_balance,
         description: 'Consultez votre solde de crédits, rechargez votre compte et accédez à l\'historique de vos transactions pour utiliser nos services premium.'
     },
-    /* Temporairement caché - Problèmes de vérification
     {
         title: 'Vérifier mon numéro de téléphone',
         icon: Phone,
         link: routes.protected.verify_phone,
         description: 'Vérifiez votre numéro de téléphone en recevant un code de confirmation par SMS pour sécuriser votre compte.'
     },
-    */
     {
         title: 'Paramètre',
         icon: Settings,

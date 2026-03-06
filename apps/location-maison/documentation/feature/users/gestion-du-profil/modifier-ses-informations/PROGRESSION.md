@@ -15,6 +15,8 @@
 | Service `profile-management` | ✅ | — |
 | Hook `useProfileInformationUpdate` | ✅ | — |
 | UI moderne responsive | ✅ | — |
+| Champs edition limites (`telephone` + `pays`) | ✅ | — |
+| Regle perte statut verifie si numero change | ✅ | — |
 | Tests unitaires/integration | ✅ unitaires service | ⬜ integration |
 
 ---

@@ -60,8 +60,9 @@ NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET=your_project.appspot.com
 NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID=your_sender_id
 NEXT_PUBLIC_FIREBASE_APP_ID=your_app_id
 
-# reCAPTCHA (optionnel)
-NEXT_PUBLIC_RECAPTCHA_SITE_KEY=your_recaptcha_site_key
+# reCAPTCHA v3 (Firebase App Check)
+NEXT_PUBLIC_RECAPTCHA_V3_SITE_KEY=your_recaptcha_v3_site_key
+RECAPTCHA_V3_SECRET_KEY=your_recaptcha_v3_secret_key
 ```
 
 ## 🧪 Test de Configuration
@@ -88,8 +89,11 @@ npm run test:sms
 ## 🚨 Erreurs Courantes
 
 ### 1. "auth/invalid-app-credential"
-**Cause :** Phone Authentication non activé ou Recaptcha mal configuré
-**Solution :** Activer Phone Authentication dans Firebase Console
+**Cause :** Phone Authentication non activé, domaine non autorisé, ou exécution depuis `localhost` avec un vrai numéro.
+**Solution :**
+- Activer Phone Authentication dans Firebase Console
+- Ajouter le domaine dans **Authentication > Settings > Authorized domains**
+- Pour SMS réels Web, tester depuis un domaine HTTPS (preprod/prod ou tunnel type ngrok), pas depuis `localhost`
 
 ### 2. "auth/invalid-phone-number"
 **Cause :** Numéro non autorisé

@@ -53,5 +53,8 @@ namespace NodeJS {
     VAULT_PATH: string;
     //COUNTRIES
     NEXT_PUBLIC_ENABLED_PHONE_COUNTRIES: string;
+    //RECAPTCHA v3 (Firebase App Check)
+    NEXT_PUBLIC_RECAPTCHA_V3_SITE_KEY?: string;
+    RECAPTCHA_V3_SECRET_KEY?: string;
   }
 }

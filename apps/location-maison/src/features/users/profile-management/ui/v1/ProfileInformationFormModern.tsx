@@ -9,7 +9,7 @@ import { useToast } from '@/hooks/use-toast';
 import { createLogger } from '@/lib/logger';
 import { generateColorFromName } from '@/lib/generateColorFromName';
 import { firebaseTimestampToDate } from '@/lib/firebaseTimestampToDate';
-import { CalendarDays, ChevronLeft, Mail, ShieldCheck, UserCircle } from 'lucide-react';
+import { AlertTriangle, CalendarDays, ChevronLeft, Mail, ShieldCheck, UserCircle } from 'lucide-react';
 import Link from 'next/link';
 import { useEffect } from 'react';
 import { useForm } from 'react-hook-form';
@@ -108,11 +108,19 @@ export function ProfileInformationFormModern() {
       uid: user.uid,
     });
 
+    const previousPhone = (user.phoneNumbers?.[0] ?? '').trim();
+    const nextPhone = values.phoneNumber.trim();
+    const phoneChangedFromVerified = Boolean(
+      user.phoneNumberVerified && nextPhone && previousPhone !== nextPhone
+    );
+
     toast({
       title: 'Informations mises à jour',
-      description: 'Votre profil a été mis à jour avec succès.',
+      description: phoneChangedFromVerified
+        ? 'Numéro modifié: le statut "numéro vérifié" a été retiré. Vérifiez à nouveau votre numéro.'
+        : 'Votre profil a été mis à jour avec succès.',
       duration: 5000,
-      variant: 'success',
+      variant: phoneChangedFromVerified ? 'warning' : 'success',
     });
   };
 
@@ -127,6 +135,13 @@ export function ProfileInformationFormModern() {
   const createdAt = firebaseTimestampToDate(user?.createdAt?.seconds, user?.createdAt?.nanoseconds);
   const updatedAt = firebaseTimestampToDate(user?.updatedAt?.seconds, user?.updatedAt?.nanoseconds);
   const avatarBackground = generateColorFromName(user?.firstname);
+  const currentPhoneNumber = (user.phoneNumbers?.[0] ?? '').trim();
+  const watchedPhoneNumber = (form.watch('phoneNumber') ?? '').trim();
+  const willLoseVerifiedStatus = Boolean(
+    user.phoneNumberVerified &&
+    watchedPhoneNumber &&
+    watchedPhoneNumber !== currentPhoneNumber
+  );
 
   return (
     <div className="pb-20 md:pb-8 px-4 lg:px-0">
@@ -258,6 +273,19 @@ export function ProfileInformationFormModern() {
                 label="Numéro de téléphone"
                 placeholder="66 12 34 56"
               />
+
+              {willLoseVerifiedStatus && (
+                <div className="rounded-xl border border-amber-200 bg-amber-50 p-3 text-sm text-amber-800 dark:border-amber-900/60 dark:bg-amber-950/30 dark:text-amber-300">
+                  <p className="inline-flex items-center gap-2 font-medium">
+                    <AlertTriangle className="h-4 w-4" />
+                    Attention
+                  </p>
+                  <p className="mt-1">
+                    En changeant votre numéro, vous perdrez le statut "numéro vérifié" et devrez
+                    refaire la vérification OTP.
+                  </p>
+                </div>
+              )}
 
               <div className="pt-2">
                 <ButtonApp
