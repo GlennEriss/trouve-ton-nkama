@@ -8,6 +8,13 @@ interface EmailOptions {
   text: string;
 }
 
+export interface EmailSendResult {
+  simulated: boolean;
+  messageId?: string;
+  accepted: string[];
+  rejected: string[];
+}
+
 export class EmailService {
   private transporter: nodemailer.Transporter | null = null;
 
@@ -39,7 +46,7 @@ export class EmailService {
   /**
    * Envoie un email avec gestion du mode développement/production
    */
-  async sendEmail(options: EmailOptions, debugLink?: string): Promise<void> {
+  async sendEmail(options: EmailOptions, debugLink?: string): Promise<EmailSendResult> {
     // Vérifier si l'envoi réel est forcé ou si on est en production
     const forceRealEmail = process.env.FORCE_REAL_EMAILS === 'true';
     
@@ -52,20 +59,31 @@ export class EmailService {
         debugLink: debugLink || 'N/A'
       });
       console.log('💡 Pour envoyer des emails réels en dev, ajoutez: FORCE_REAL_EMAILS=true');
-      return;
+      return {
+        simulated: true,
+        accepted: [options.to],
+        rejected: [],
+      };
     }
 
     // En production, envoyer l'email réel
     try {
       const transporter = await this.createTransporter();
       
-      await transporter.sendMail({
+      const info = await transporter.sendMail({
         from: options.from,
         to: options.to,
         subject: options.subject,
         html: options.html,
         text: options.text,
       });
+
+      return {
+        simulated: false,
+        messageId: info.messageId,
+        accepted: Array.isArray(info.accepted) ? info.accepted.map(String) : [],
+        rejected: Array.isArray(info.rejected) ? info.rejected.map(String) : [],
+      };
     } catch (error) {
       console.error('Erreur lors de l\'envoi d\'email avec Hostinger SMTP:', error);
       throw new Error('Impossible d\'envoyer l\'email via Hostinger SMTP');

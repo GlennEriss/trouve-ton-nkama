@@ -147,6 +147,26 @@ Objectif:
 
 ---
 
+## 🚀 Phase suivante : FEATURE-004 Password Reset (démarrée)
+
+Objectif:
+- refactor complet du flux reset password (`/request-password-reset`, `/password-reset`, `/password-reset-failure`)
+- alignement design mobile/tablette/desktop avec signin/signup modernes
+- séparation architecture UI/hook/service (suppression des `fetch` directs dans la vue)
+- standardisation des erreurs + observabilité
+
+État:
+- [x] branche `feature/FEATURE-004-password-reset` créée depuis `develop`
+- [x] documentation complète FEATURE-004 (`FEATURE-004-PASSWORD-RESET.md`)
+- [x] diagrammes ajoutés (`password-reset-sequence-diagram.puml`, `password-reset-activity-diagram.puml`)
+- [x] implémentation refactor UI/hook/service
+- [x] pages reset password alignées visuellement avec signin/signup (mobile/tablette/desktop)
+- [x] suppression des `fetch` directs dans les composants reset
+- [ ] tests unitaires/hooks/ui du flux reset
+- [ ] validation E2E du parcours reset
+
+---
+
 ## Validation test (batch auth)
 
 Suites exécutées et passantes:
@@ -161,4 +181,4 @@ Suites exécutées et passantes:
 
 ---
 
-*Dernière mise à jour : 2026-03-05*
+*Dernière mise à jour : 2026-03-06*

@@ -35,7 +35,7 @@ export async function POST(request: NextRequest) {
     const oobCode = url.searchParams.get('oobCode');
     logger.debug('Password reset oobCode extracted', {
       email,
-      hasOobCode: !!oobCode,
+      hasResetCode: !!oobCode,
     });
 
     if (!oobCode) {
@@ -82,9 +82,16 @@ export async function POST(request: NextRequest) {
     };
 
     // Envoyer l'email avec le service centralisé
-    await emailService.sendEmail(emailData, resetLink);
+    const emailSendResult = await emailService.sendEmail(emailData, resetLink);
 
-    logger.info('Password reset email sent', { email });
+    logger.info('Password reset email sent', {
+      email,
+      simulated: emailSendResult.simulated,
+      messageId: emailSendResult.messageId,
+      acceptedCount: emailSendResult.accepted.length,
+      rejectedCount: emailSendResult.rejected.length,
+      rejected: emailSendResult.rejected,
+    });
     return NextResponse.json({
       success: true,
       message: 'Email de réinitialisation envoyé avec succès',

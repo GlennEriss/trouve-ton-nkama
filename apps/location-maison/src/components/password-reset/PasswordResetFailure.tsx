@@ -1,169 +1,199 @@
-'use client'
+'use client';
 
-import React from 'react'
-import Link from 'next/link'
-import { Button } from '@/components/ui/button'
-import { routes } from '@/constantes/routes'
-import Logo from '@/components/logo/Logo'
-import { useRouter } from 'next/navigation'
-import { XCircle } from 'lucide-react'
-import { supportContact } from "@/constantes";
+import React from 'react';
+import Link from 'next/link';
+import { motion } from 'framer-motion';
+import { AlertTriangle, ArrowLeft, Home, LifeBuoy, RefreshCw, ShieldAlert } from 'lucide-react';
+import { useRouter } from 'next/navigation';
+import Logo from '@/components/logo/Logo';
+import { routes } from '@/constantes/routes';
+import { supportContact } from '@/constantes';
+import { Button } from '@/components/ui/button';
+import { ButtonApp } from '@/components/shared/ui/ButtonApp';
+
+const LEFT_PANEL_BG_IMAGE = '/auth-image.png';
+
+const featureVariants = {
+  initial: { opacity: 0, y: 20 },
+  animate: (i: number) => ({
+    opacity: 1,
+    y: 0,
+    transition: { delay: i * 0.08, duration: 0.4 },
+  }),
+};
+
+const features = [
+  {
+    icon: ShieldAlert,
+    title: 'Lien non valide',
+    desc: 'Le code de réinitialisation est expiré ou déjà utilisé.',
+  },
+  {
+    icon: RefreshCw,
+    title: 'Nouvelle tentative',
+    desc: 'Générez un nouveau lien de réinitialisation sécurisé.',
+  },
+  {
+    icon: LifeBuoy,
+    title: 'Support disponible',
+    desc: "L'équipe support peut vous assister si le problème persiste.",
+  },
+];
+
+const causes = [
+  "Le lien a expiré (durée limitée).",
+  'Le lien a déjà été utilisé.',
+  "L'URL a été tronquée ou modifiée.",
+  'Un lien plus récent a été généré.',
+];
 
 const PasswordResetFailure: React.FC = () => {
-  const router = useRouter()
-
-  const redirectToLogin = () => {
-    router.push(routes.public.signin)
-  }
-
-  const redirectToResetRequest = () => {
-    router.push(routes.public.passwordResetRequest)
-  }
+  const router = useRouter();
 
   return (
-    <div className="min-h-screen bg-gray-100 dark:bg-gray-900 flex justify-center items-center py-5">
-      {/* Container */}
-      <div className="w-full max-w-lg mx-4 bg-white dark:bg-gray-800 shadow-lg dark:shadow-gray-900/50 rounded-lg overflow-hidden">
-        
-        {/* Header avec gradient */}
-        <div className="bg-gradient-to-br from-red-600 via-red-500 to-red-600 text-white p-8 text-center">
-          <div className="flex items-center justify-center mb-4">
-            <Link href={routes.public.homePage}>
-              <Logo width="64px" height="64px" />
-            </Link>
-            <h1 className="text-2xl font-bold ml-3">
-              Trouve Ton Nkama
-            </h1>
-          </div>
-          <div className="text-6xl mb-4">
-            <XCircle className="w-16 h-16 mx-auto text-white" />
-          </div>
-          <h2 className="text-2xl font-bold mb-2">
-            Réinitialisation échouée
-          </h2>
-          <p className="text-lg opacity-90">
-            Le lien de réinitialisation n'est plus valide
-          </p>
-        </div>
+    <div className="min-h-screen flex bg-gradient-to-br from-slate-50 via-white to-rose-50/30 dark:from-gray-950 dark:via-gray-900 dark:to-gray-950">
+      <div className="hidden lg:flex lg:w-1/2 xl:w-[45%] relative overflow-hidden">
+        <div className="absolute inset-0 bg-gradient-to-br from-[#7f1d1d] via-[#b91c1c] to-[#ef4444]" />
 
-        {/* Contenu principal */}
-        <div className="p-8 text-center">
-          <div className="mb-6">
-            <p className="text-gray-600 dark:text-gray-300 text-lg mb-6">
-              Le lien de réinitialisation de mot de passe que vous avez utilisé a expiré ou est invalide.
+        <div
+          className="absolute inset-0 bg-cover bg-no-repeat opacity-15 mix-blend-overlay blur-[1px] pointer-events-none"
+          style={{
+            backgroundImage: `url(${LEFT_PANEL_BG_IMAGE})`,
+            backgroundPosition: 'center bottom',
+          }}
+          aria-hidden
+        />
+
+        <motion.div
+          className="absolute top-20 right-20 w-64 h-64 bg-white/10 rounded-full blur-3xl"
+          animate={{ scale: [1, 1.2, 1], opacity: [0.2, 0.4, 0.2] }}
+          transition={{ duration: 8, repeat: Infinity }}
+        />
+        <motion.div
+          className="absolute bottom-40 left-10 w-48 h-48 bg-red-300/20 rounded-full blur-2xl"
+          animate={{ scale: [1, 1.3, 1], opacity: [0.2, 0.35, 0.2] }}
+          transition={{ duration: 6, repeat: Infinity, delay: 2 }}
+        />
+
+        <div className="relative z-10 flex flex-col justify-between p-12 xl:p-16 text-white w-full">
+          <div>
+            <Link href={routes.public.homePage} className="flex items-center gap-3 mb-12 group">
+              <motion.div whileHover={{ rotate: 10 }} transition={{ type: 'spring', stiffness: 300 }}>
+                <Logo width="56px" height="56px" />
+              </motion.div>
+              <span className="text-2xl font-bold tracking-tight">Trouve Ton Nkama</span>
+            </Link>
+
+            <motion.h1
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6 }}
+              className="text-4xl xl:text-5xl font-bold leading-tight mb-6"
+            >
+              Réinitialisation
+              <br />
+              <span className="text-rose-200">non aboutie</span>
+            </motion.h1>
+
+            <motion.p
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, delay: 0.1 }}
+              className="text-lg text-white/80 max-w-md"
+            >
+              Le lien utilisé n&apos;est plus exploitable. Vous pouvez générer un nouveau lien en quelques secondes.
+            </motion.p>
+          </div>
+
+          <div className="space-y-6">
+            {features.map((feature, index) => (
+              <motion.div
+                key={feature.title}
+                custom={index}
+                initial="initial"
+                animate="animate"
+                variants={featureVariants}
+                className="flex items-center gap-4 p-4 rounded-2xl bg-white/10 backdrop-blur-sm border border-white/10"
+              >
+                <div className="p-3 rounded-xl bg-white/20">
+                  <feature.icon className="w-6 h-6" />
+                </div>
+                <div>
+                  <h3 className="font-semibold">{feature.title}</h3>
+                  <p className="text-sm text-white/70">{feature.desc}</p>
+                </div>
+              </motion.div>
+            ))}
+          </div>
+
+          <p className="text-sm text-white/50">© 2026 Trouve Ton Nkama. Tous droits réservés.</p>
+        </div>
+      </div>
+
+      <div className="flex-1 flex items-center justify-center p-6 lg:p-12">
+        <div className="w-full max-w-lg">
+          <div className="lg:hidden flex items-center justify-center gap-3 mb-8">
+            <Logo width="48px" height="48px" />
+            <span className="text-xl font-bold text-[#146B67]">Trouve Ton Nkama</span>
+          </div>
+
+          <div className="bg-white dark:bg-gray-900 rounded-3xl shadow-2xl shadow-gray-200/50 dark:shadow-black/30 p-8 lg:p-10 border border-gray-100 dark:border-gray-800">
+            <div className="mx-auto mb-4 h-14 w-14 rounded-full bg-red-100 text-red-600 flex items-center justify-center">
+              <AlertTriangle className="w-8 h-8" />
+            </div>
+
+            <h1 className="text-2xl font-bold text-gray-900 dark:text-white text-center mb-2">
+              Lien invalide ou expiré
+            </h1>
+            <p className="text-gray-600 dark:text-gray-400 text-center mb-6">
+              Impossible de finaliser la réinitialisation avec ce lien.
             </p>
-            
-            {/* Raisons possibles */}
-            <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-6 mb-6">
-              <h3 className="font-semibold text-red-700 dark:text-red-300 mb-3">
-                Raisons possibles :
-              </h3>
-              <ul className="text-left text-red-600 dark:text-red-400 space-y-2 text-sm">
-                <li className="flex items-start">
-                  <span className="w-2 h-2 bg-red-500 rounded-full mr-3 mt-2"></span>
-                  Le lien a expiré (valide pendant 24h uniquement)
-                </li>
-                <li className="flex items-start">
-                  <span className="w-2 h-2 bg-red-500 rounded-full mr-3 mt-2"></span>
-                  Le lien a déjà été utilisé
-                </li>
-                <li className="flex items-start">
-                  <span className="w-2 h-2 bg-red-500 rounded-full mr-3 mt-2"></span>
-                  L'URL est incomplète ou incorrecte
-                </li>
-                <li className="flex items-start">
-                  <span className="w-2 h-2 bg-red-500 rounded-full mr-3 mt-2"></span>
-                  Votre compte a été modifié entre temps
-                </li>
+
+            <div className="rounded-2xl border border-red-200 bg-red-50/80 p-4 mb-6">
+              <p className="text-sm font-semibold text-red-800 mb-2">Causes possibles</p>
+              <ul className="space-y-1 text-sm text-red-700">
+                {causes.map((cause) => (
+                  <li key={cause}>• {cause}</li>
+                ))}
               </ul>
             </div>
 
-            {/* Solutions */}
-            <div className="text-left bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-6 mb-6">
-              <h3 className="font-semibold text-blue-700 dark:text-blue-300 mb-3 text-center">
-                Solutions recommandées
-              </h3>
-              <ol className="text-blue-600 dark:text-blue-400 space-y-3 text-sm">
-                <li className="flex items-start">
-                  <span className="flex-shrink-0 w-6 h-6 bg-blue-500 text-white rounded-full flex items-center justify-center text-xs font-bold mr-3">
-                    1
-                  </span>
-                  <div>
-                    <div className="font-medium">Demander un nouveau lien</div>
-                    <div className="text-xs">Générer un nouveau lien de réinitialisation</div>
-                  </div>
-                </li>
-                <li className="flex items-start">
-                  <span className="flex-shrink-0 w-6 h-6 bg-blue-500 text-white rounded-full flex items-center justify-center text-xs font-bold mr-3">
-                    2
-                  </span>
-                  <div>
-                    <div className="font-medium">Vérifier votre email</div>
-                    <div className="text-xs">Consultez votre boîte de réception pour un email plus récent</div>
-                  </div>
-                </li>
-                <li className="flex items-start">
-                  <span className="flex-shrink-0 w-6 h-6 bg-blue-500 text-white rounded-full flex items-center justify-center text-xs font-bold mr-3">
-                    3
-                  </span>
-                  <div>
-                    <div className="font-medium">Essayer de vous connecter</div>
-                    <div className="text-xs">Votre mot de passe n'a peut-être pas changé</div>
-                  </div>
-                </li>
-              </ol>
-            </div>
-          </div>
+            <div className="space-y-3">
+              <ButtonApp
+                title="Demander un nouveau lien"
+                className="bg-gradient-to-r from-[#146B67] to-[#1FA89B]"
+                onClick={() => router.push(routes.public.passwordResetRequest)}
+              />
 
-          {/* Boutons d'action */}
-          <div className="flex flex-col gap-4">
-            <Button
-              onClick={redirectToResetRequest}
-              className="w-full bg-gradient-to-r from-[#146B67] to-[#1FA89B] hover:from-[#0f5853] hover:to-[#1a9688] text-white font-semibold px-8 py-3 rounded-lg transition-all duration-200 shadow-lg"
-            >
-              Demander un nouveau lien
-            </Button>
-            
-            <Button
-              variant="outline"
-              onClick={redirectToLogin}
-              className="w-full border-[#146B67] text-[#146B67] hover:bg-[#146B67] hover:text-white px-8 py-3 rounded-lg transition-all duration-200"
-            >
-              Essayer de me connecter
-            </Button>
-            
-            <Link href={routes.public.homePage}>
               <Button
-                variant="ghost"
-                className="w-full text-gray-600 hover:text-gray-800 dark:text-gray-400 dark:hover:text-gray-200"
+                type="button"
+                variant="outline"
+                className="w-full rounded-full h-12"
+                onClick={() => router.push(routes.public.signin)}
               >
-                Retour à l'accueil
+                <ArrowLeft className="w-4 h-4 mr-2" />
+                Retour à la connexion
               </Button>
-            </Link>
-          </div>
 
-          {/* Message d'aide */}
-          <div className="mt-8 pt-6 border-t border-gray-200 dark:border-gray-600">
-            <div className="bg-gray-50 dark:bg-gray-700 rounded-lg p-4">
-              <h4 className="font-medium text-gray-800 dark:text-gray-200 mb-2">
-                Besoin d'aide supplémentaire ?
-              </h4>
-              <p className="text-sm text-gray-600 dark:text-gray-400 mb-3">
-                Si vous continuez à rencontrer des difficultés, notre équipe support est là pour vous aider.
+              <Link
+                href={routes.public.homePage}
+                className="inline-flex items-center gap-2 justify-center w-full text-sm text-gray-500 hover:text-[#146B67]"
+              >
+                <Home className="w-4 h-4" />
+                Retour à l&apos;accueil
+              </Link>
+            </div>
+
+            <div className="mt-8 pt-6 border-t border-gray-200 dark:border-gray-800 text-center">
+              <p className="text-sm text-gray-500 dark:text-gray-400 mb-2">
+                Besoin d&apos;aide?
               </p>
-              <div className="flex flex-col sm:flex-row gap-2 text-sm">
-                <a 
-                  href={`mailto:${supportContact.email}`} 
-                  className="text-[#146B67] hover:text-[#1FA89B] font-medium"
-                >
+              <div className="text-sm space-y-1">
+                <a href={`mailto:${supportContact.email}`} className="block text-[#146B67] hover:underline font-medium">
                   {supportContact.email}
                 </a>
-                <span className="hidden sm:inline text-gray-400">•</span>
-                <a 
-                  href="tel:+24101020304" 
-                  className="text-[#146B67] hover:text-[#1FA89B] font-medium"
-                >
-                  +241 01 02 03 04
+                <a href={`tel:${supportContact.phone}`} className="block text-[#146B67] hover:underline font-medium">
+                  {supportContact.phone}
                 </a>
               </div>
             </div>
@@ -171,7 +201,7 @@ const PasswordResetFailure: React.FC = () => {
         </div>
       </div>
     </div>
-  )
-}
+  );
+};
 
-export default PasswordResetFailure 
+export default PasswordResetFailure;

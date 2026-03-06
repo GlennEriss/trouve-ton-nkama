@@ -7,6 +7,7 @@ Cette section centralise la documentation des features d’authentification.
 - FEATURE-001 Register: `FEATURE-001-REGISTER.md`
 - FEATURE-002 Google OAuth: `FEATURE-002-GOOGLE-CONNEXION.md`
 - FEATURE-003 Signin complet: `FEATURE-003-SIGNIN.md`
+- FEATURE-004 Password Reset complet: `FEATURE-004-PASSWORD-RESET.md`
 
 ## Diagrammes
 
@@ -16,6 +17,8 @@ Cette section centralise la documentation des features d’authentification.
 - Google signin sequence: `google-signin-sequence-diagram.puml`
 - Signin sequence: `signin-sequence-diagram.puml`
 - Signin activity: `signin-activity-diagram.puml`
+- Password reset sequence: `password-reset-sequence-diagram.puml`
+- Password reset activity: `password-reset-activity-diagram.puml`
 
 ## UX / UI
 
