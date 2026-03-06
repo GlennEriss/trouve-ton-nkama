@@ -1,306 +1,306 @@
-'use client'
+'use client';
 
-import React from 'react'
-import Link from 'next/link'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { routes } from '@/constantes/routes'
-import Logo from '@/components/logo/Logo'
-import { useForm } from 'react-hook-form'
-import { zodResolver } from '@hookform/resolvers/zod'
-import { z } from 'zod'
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form'
-import { useToast } from '@/hooks/use-toast'
-import { ButtonLoading } from '@/components/buttons/ButtonLoading'
-import { Mail, Lock } from 'lucide-react'
-import { supportContact } from '@/constantes'
+import React from 'react';
+import Link from 'next/link';
+import { z } from 'zod';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { useForm } from 'react-hook-form';
+import { Form } from '@/components/ui/form';
+import { Button } from '@/components/ui/button';
+import { ButtonApp } from '@/components/shared/ui/ButtonApp';
+import { InputFormApp } from '@/components/shared/form/InputFormApp';
+import Logo from '@/components/logo/Logo';
+import { routes } from '@/constantes/routes';
+import { supportContact } from '@/constantes';
+import { useToast } from '@/hooks/use-toast';
+import { usePasswordResetRequest } from '@/features/auth/hooks';
+import { Mail, Shield, Timer, ArrowLeft, CheckCircle2, Home, Sparkles } from 'lucide-react';
+import { motion } from 'framer-motion';
+import { useRouter } from 'next/navigation';
+
+const LEFT_PANEL_BG_IMAGE = '/auth-image.png';
 
 const passwordResetSchema = z.object({
-  email: z.string().email('Veuillez entrer une adresse email valide')
-})
+  email: z.string().email('Veuillez entrer une adresse email valide'),
+});
 
-type PasswordResetForm = z.infer<typeof passwordResetSchema>
+type PasswordResetRequestFormValues = z.infer<typeof passwordResetSchema>;
+
+const featureVariants = {
+  initial: { opacity: 0, y: 20 },
+  animate: (i: number) => ({
+    opacity: 1,
+    y: 0,
+    transition: { delay: i * 0.08, duration: 0.4 },
+  }),
+};
+
+const features = [
+  {
+    icon: Shield,
+    title: 'Lien sécurisé',
+    desc: 'Chaque lien est limité dans le temps.',
+  },
+  {
+    icon: Timer,
+    title: 'Réinitialisation rapide',
+    desc: 'Recevez le lien en quelques instants.',
+  },
+  {
+    icon: Sparkles,
+    title: 'Flux simplifié',
+    desc: 'Un parcours clair sur mobile et desktop.',
+  },
+];
 
 const PasswordResetRequest: React.FC = () => {
-  const { toast } = useToast()
-  const [isPending, startTransition] = React.useTransition()
-  const [isEmailSent, setIsEmailSent] = React.useState(false)
-  const [isRateLimited, setIsRateLimited] = React.useState(false)
-  const [countdown, setCountdown] = React.useState(0)
+  const router = useRouter();
+  const { toast } = useToast();
+  const {
+    requestReset,
+    resetState,
+    isLoading,
+    isSuccess,
+    submittedEmail,
+    isRateLimited,
+    countdown,
+    lastError,
+  } = usePasswordResetRequest();
 
-  const form = useForm<PasswordResetForm>({
+  const form = useForm<PasswordResetRequestFormValues>({
     resolver: zodResolver(passwordResetSchema),
+    mode: 'onChange',
     defaultValues: {
-      email: ''
-    }
-  })
+      email: '',
+    },
+  });
 
-  // Effet pour gérer le countdown
   React.useEffect(() => {
-    let interval: NodeJS.Timeout | null = null
-    
-    if (countdown > 0) {
-      interval = setInterval(() => {
-        setCountdown((prev) => {
-          if (prev <= 1) {
-            setIsRateLimited(false)
-            return 0
-          }
-          return prev - 1
-        })
-      }, 1000)
+    if (!lastError) {
+      return;
+    }
+    toast({
+      duration: lastError.duration,
+      title: lastError.title,
+      description: lastError.message,
+      variant: 'destructive',
+    });
+  }, [lastError, toast]);
+
+  const onSubmit = async (values: PasswordResetRequestFormValues) => {
+    const success = await requestReset(values.email);
+    if (!success) {
+      return;
     }
 
-    return () => {
-      if (interval) clearInterval(interval)
-    }
-  }, [countdown])
+    toast({
+      duration: 5000,
+      title: 'Email envoyé',
+      description: `Un lien de réinitialisation a été envoyé à ${values.email}.`,
+      variant: 'success',
+    });
+  };
 
-  const onSubmit = async (values: PasswordResetForm) => {
-    startTransition(async () => {
-      try {
-        const response = await fetch('/api/auth/send-password-reset-email', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            email: values.email,
-            subject: 'Réinitialisez votre mot de passe - Trouve Ton Nkama',
-          }),
-        })
-
-        const data = await response.json()
-
-        if (response.ok && data.success) {
-          setIsEmailSent(true)
-          toast({
-            duration: 5000,
-            title: 'Email envoyé !',
-            description: `Un lien de réinitialisation a été envoyé à ${values.email}`,
-            variant: 'success',
-          })
-        } else {
-          // Gestion spécifique de l'erreur de limite de débit
-          if (response.status === 429 && data.code === 'RATE_LIMIT_EXCEEDED') {
-            const retryAfter = data.retryAfter || 300 // 5 minutes par défaut
-            setIsRateLimited(true)
-            setCountdown(retryAfter)
-            toast({
-              duration: 8000,
-              title: 'Trop de tentatives',
-              description: `Vous avez fait trop de demandes. Veuillez attendre ${Math.ceil(retryAfter / 60)} minutes avant de réessayer.`,
-              variant: 'destructive',
-            })
-            return
-          }
-
-          // Gestion des autres erreurs spécifiques
-          let errorMessage = data.error || 'Erreur lors de l\'envoi de l\'email'
-          let errorTitle = 'Erreur'
-
-          if (response.status === 404) {
-            errorTitle = 'Compte non trouvé'
-            errorMessage = 'Aucun compte n\'est associé à cette adresse email.'
-          } else if (response.status === 403) {
-            errorTitle = 'Compte désactivé'
-            errorMessage = 'Ce compte a été désactivé. Veuillez contacter le support.'
-          } else if (response.status === 503) {
-            errorTitle = 'Service indisponible'
-            errorMessage = 'Le service est temporairement indisponible. Veuillez réessayer dans quelques minutes.'
-          }
-
-          toast({
-            duration: 7000,
-            title: errorTitle,
-            description: errorMessage,
-            variant: 'destructive',
-          })
-        }
-      } catch (error: any) {
-        toast({
-          duration: 5000,
-          title: 'Erreur de connexion',
-          description: 'Impossible de se connecter au serveur. Vérifiez votre connexion internet.',
-          variant: 'destructive',
-        })
-      }
-    })
-  }
-
-  if (isEmailSent) {
-    return (
-      <div className="min-h-screen bg-gray-100 dark:bg-gray-900 flex justify-center items-center py-5">
-        <div className="w-full max-w-lg mx-4 bg-white dark:bg-gray-800 shadow-lg dark:shadow-gray-900/50 rounded-lg overflow-hidden">
-          
-          {/* Header avec gradient */}
-          <div className="bg-gradient-to-br from-[#146B67] via-[#1FA89B] to-[#146B67] text-white p-8 text-center">
-            <div className="flex items-center justify-center mb-4">
-              <Link href={routes.public.homePage}>
-                <Logo width="64px" height="64px" />
-              </Link>
-              <h1 className="text-2xl font-bold ml-3">
-                Trouve Ton Nkama
-              </h1>
-            </div>
-            <div className="text-5xl mb-4">
-              <Mail className="w-16 h-16 mx-auto text-white" />
-            </div>
-            <h2 className="text-xl font-bold mb-2">
-              Email envoyé !
-            </h2>
-          </div>
-
-          <div className="p-8 text-center">
-            <p className="text-gray-600 dark:text-gray-300 mb-6">
-              Nous avons envoyé un lien de réinitialisation à votre adresse email. 
-              Consultez votre boîte de réception et suivez les instructions.
-            </p>
-            
-            <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4 mb-6">
-              <p className="text-blue-700 dark:text-blue-300 text-sm">
-                N'oubliez pas de vérifier votre dossier spam si vous ne voyez pas l'email.
-              </p>
-            </div>
-
-            <div className="flex flex-col gap-3">
-              <Link href={routes.public.signin}>
-                <Button className="w-full bg-gradient-to-r from-[#146B67] to-[#1FA89B] hover:from-[#0f5853] hover:to-[#1a9688] text-white">
-                  Retour à la connexion
-                </Button>
-              </Link>
-              
-              <Button 
-                variant="outline" 
-                onClick={() => setIsEmailSent(false)}
-                className="w-full border-[#146B67] text-[#146B67] hover:bg-[#146B67] hover:text-white"
-              >
-                Renvoyer l'email
-              </Button>
-            </div>
-          </div>
-        </div>
-      </div>
-    )
-  }
+  const countdownText = `${Math.floor(countdown / 60)}:${(countdown % 60).toString().padStart(2, '0')}`;
 
   return (
-    <div className="min-h-screen bg-gray-100 dark:bg-gray-900 flex justify-center items-center py-5">
-      {/* Container */}
-      <div className="w-full max-w-lg mx-4 bg-white dark:bg-gray-800 shadow-lg dark:shadow-gray-900/50 rounded-lg overflow-hidden">
-        
-        {/* Header avec gradient */}
-        <div className="bg-gradient-to-br from-[#146B67] via-[#1FA89B] to-[#146B67] text-white p-8 text-center">
-          <div className="flex items-center justify-center mb-4">
-            <Link href={routes.public.homePage}>
-              <Logo width="64px" height="64px" />
+    <div className="min-h-[100dvh] md:min-h-screen flex bg-gradient-to-br from-slate-50 via-white to-teal-50/30 dark:from-gray-950 dark:via-gray-900 dark:to-gray-950">
+      <div className="hidden lg:flex lg:w-1/2 xl:w-[45%] relative overflow-hidden">
+        <div className="absolute inset-0 bg-gradient-to-br from-[#146B67] via-[#1a8a83] to-[#1FA89B]" />
+
+        <div
+          className="absolute inset-0 bg-cover bg-no-repeat opacity-20 mix-blend-overlay blur-[1px] pointer-events-none"
+          style={{
+            backgroundImage: `url(${LEFT_PANEL_BG_IMAGE})`,
+            backgroundPosition: 'center bottom',
+          }}
+          aria-hidden
+        />
+
+        <motion.div
+          className="absolute top-20 right-20 w-64 h-64 bg-white/10 rounded-full blur-3xl"
+          animate={{ scale: [1, 1.2, 1], opacity: [0.3, 0.5, 0.3] }}
+          transition={{ duration: 8, repeat: Infinity }}
+        />
+        <motion.div
+          className="absolute bottom-40 left-10 w-48 h-48 bg-teal-300/20 rounded-full blur-2xl"
+          animate={{ scale: [1, 1.3, 1], opacity: [0.2, 0.4, 0.2] }}
+          transition={{ duration: 6, repeat: Infinity, delay: 2 }}
+        />
+
+        <div className="relative z-10 flex flex-col justify-between p-12 xl:p-16 text-white w-full">
+          <div>
+            <Link href={routes.public.homePage} className="flex items-center gap-3 mb-12 group">
+              <motion.div whileHover={{ rotate: 10 }} transition={{ type: 'spring', stiffness: 300 }}>
+                <Logo width="56px" height="56px" />
+              </motion.div>
+              <span className="text-2xl font-bold tracking-tight">Trouve Ton Nkama</span>
             </Link>
-            <h1 className="text-2xl font-bold ml-3">
-              Trouve Ton Nkama
-            </h1>
+
+            <motion.h1
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6 }}
+              className="text-4xl xl:text-5xl font-bold leading-tight mb-6"
+            >
+              Récupérez
+              <br />
+              <span className="text-teal-200">l&apos;accès à votre compte</span>
+            </motion.h1>
+
+            <motion.p
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, delay: 0.1 }}
+              className="text-lg text-white/80 max-w-md"
+            >
+              Nous vous envoyons un lien de réinitialisation sécurisé pour changer votre mot de passe.
+            </motion.p>
           </div>
-          <div className="text-5xl mb-4">
-            <Lock className="w-16 h-16 mx-auto text-white" />
-          </div>
-          <h2 className="text-xl font-bold mb-2">
-            Réinitialiser votre mot de passe
-          </h2>
-          <p className="opacity-90">
-            Entrez votre email pour recevoir un lien de réinitialisation
-          </p>
-        </div>
 
-        {/* Formulaire */}
-        <div className="p-8">
-          <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-              <FormField
-                control={form.control}
-                name="email"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel className="text-gray-700 dark:text-gray-300 font-medium">
-                      Adresse email
-                    </FormLabel>
-                    <FormControl>
-                      <Input
-                        placeholder="votre@email.com"
-                        type="email"
-                        className="h-12 border-gray-300 dark:border-gray-600 focus:border-[#146B67] focus:ring-[#146B67]"
-                        {...field}
-                        disabled={isPending}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <div className="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg p-4">
-                <p className="text-yellow-700 dark:text-yellow-300 text-sm">
-                  Assurez-vous que cette adresse email est associée à votre compte Trouve Ton Nkama.
-                </p>
-              </div>
-
-              {/* Message de limitation de débit */}
-              {isRateLimited && countdown > 0 && (
-                <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-4">
-                  <div className="flex items-center gap-3">
-                    <div className="flex-shrink-0">
-                      <div className="w-8 h-8 bg-red-100 dark:bg-red-800 rounded-full flex items-center justify-center">
-                        <Lock className="w-4 h-4 text-red-600 dark:text-red-400" />
-                      </div>
-                    </div>
-                    <div className="flex-1">
-                      <p className="text-red-700 dark:text-red-300 text-sm font-medium">
-                        Trop de tentatives détectées
-                      </p>
-                      <p className="text-red-600 dark:text-red-400 text-xs mt-1">
-                        Veuillez attendre encore {Math.floor(countdown / 60)}:{(countdown % 60).toString().padStart(2, '0')} avant de réessayer
-                      </p>
-                    </div>
-                  </div>
-                </div>
-              )}
-
-              <ButtonLoading
-                type="submit"
-                className="w-full h-12 bg-gradient-to-r from-[#146B67] to-[#1FA89B] hover:from-[#0f5853] hover:to-[#1a9688] text-white font-semibold rounded-lg transition-all duration-200 shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
-                disabled={isPending || isRateLimited}
+          <div className="space-y-6">
+            {features.map((feature, index) => (
+              <motion.div
+                key={feature.title}
+                custom={index}
+                initial="initial"
+                animate="animate"
+                variants={featureVariants}
+                className="flex items-center gap-4 p-4 rounded-2xl bg-white/10 backdrop-blur-sm border border-white/10"
               >
-                {isRateLimited 
-                  ? `Attendre ${Math.floor(countdown / 60)}:${(countdown % 60).toString().padStart(2, '0')}`
-                  : 'Envoyer le lien de réinitialisation'
-                }
-              </ButtonLoading>
-            </form>
-          </Form>
+                <div className="p-3 rounded-xl bg-white/20">
+                  <feature.icon className="w-6 h-6" />
+                </div>
+                <div>
+                  <h3 className="font-semibold">{feature.title}</h3>
+                  <p className="text-sm text-white/70">{feature.desc}</p>
+                </div>
+              </motion.div>
+            ))}
+          </div>
 
-          {/* Liens utiles */}
-          <div className="mt-6 text-center space-y-3">
-            <div className="text-sm text-gray-500 dark:text-gray-400">
-              Vous vous souvenez de votre mot de passe ?
-            </div>
-            
-            <Link href={routes.public.signin}>
-              <Button variant="outline" className="w-full border-[#146B67] text-[#146B67] hover:bg-[#146B67] hover:text-white">
-                Retour à la connexion
-              </Button>
-            </Link>
-            
-            <div className="pt-4 border-t border-gray-200 dark:border-gray-600">
-              <p className="text-xs text-gray-500 dark:text-gray-400">
-                Besoin d'aide ? Contactez notre support à{' '}
-                <a href={`mailto:${supportContact.email}`} className="text-[#146B67] hover:text-[#1FA89B] font-medium">
-                  {supportContact.email}
-                </a>
-              </p>
-            </div>
+          <p className="text-sm text-white/50">© 2026 Trouve Ton Nkama. Tous droits réservés.</p>
+        </div>
+      </div>
+
+      <div className="flex-1 flex items-start lg:items-center justify-center p-4 sm:p-6 lg:p-12 pt-8 sm:pt-10 lg:pt-12">
+        <div className="w-full max-w-lg">
+          <div className="lg:hidden flex items-center justify-center gap-2 mb-6">
+            <Logo width="40px" height="40px" />
+            <span className="text-lg font-bold text-[#146B67]">Trouve Ton Nkama</span>
+          </div>
+
+          <div className="bg-white dark:bg-gray-900 rounded-2xl sm:rounded-3xl shadow-xl sm:shadow-2xl shadow-gray-200/50 dark:shadow-black/30 p-6 sm:p-8 lg:p-10 border border-gray-100 dark:border-gray-800">
+            {isSuccess ? (
+              <div className="text-center">
+                <div className="mx-auto mb-4 h-14 w-14 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center">
+                  <CheckCircle2 className="w-8 h-8" />
+                </div>
+                <h1 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white mb-2">
+                  Email envoyé
+                </h1>
+                <p className="text-gray-600 dark:text-gray-400 mb-6">
+                  {submittedEmail
+                    ? `Un lien de réinitialisation a été envoyé à ${submittedEmail}.`
+                    : 'Un lien de réinitialisation a été envoyé.'}
+                </p>
+                <div className="space-y-3">
+                  <ButtonApp
+                    title="Retour à la connexion"
+                    className="bg-gradient-to-r from-[#146B67] to-[#1FA89B]"
+                    onClick={() => router.push(routes.public.signin)}
+                  />
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => {
+                      resetState();
+                      form.reset();
+                    }}
+                    className="w-full rounded-full h-12"
+                  >
+                    Renvoyer un email
+                  </Button>
+                </div>
+              </div>
+            ) : (
+              <>
+                <Link
+                  href={routes.public.signin}
+                  className="inline-flex items-center gap-2 text-xs sm:text-sm text-gray-500 hover:text-[#146B67] mb-5 sm:mb-6"
+                >
+                  <ArrowLeft className="w-4 h-4" />
+                  Retour à la connexion
+                </Link>
+
+                <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white mb-2">
+                  Mot de passe oublié
+                </h1>
+                <p className="text-gray-600 dark:text-gray-400 mb-6 sm:mb-8 text-sm sm:text-base">
+                  Entrez votre adresse email pour recevoir un lien de réinitialisation.
+                </p>
+
+                <Form {...form}>
+                  <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-5">
+                    <InputFormApp
+                      control={form.control}
+                      name="email"
+                      label="Adresse email"
+                      type="email"
+                      placeholder="votre@email.com"
+                      IconLucide={Mail}
+                      IconColor="gray"
+                    />
+
+                    <div className="rounded-2xl border border-amber-200 bg-amber-50/70 p-4 text-amber-800 text-sm">
+                      Assurez-vous d&apos;utiliser l&apos;email lié à votre compte Trouve Ton Nkama.
+                    </div>
+
+                    {isRateLimited && countdown > 0 && (
+                      <div className="rounded-2xl border border-red-200 bg-red-50 p-4">
+                        <p className="text-red-700 font-medium text-sm">Trop de tentatives détectées</p>
+                        <p className="text-red-600 text-sm mt-1">
+                          Veuillez patienter encore {countdownText} avant de réessayer.
+                        </p>
+                      </div>
+                    )}
+
+                    <ButtonApp
+                      type="submit"
+                      title={
+                        isRateLimited && countdown > 0
+                          ? `Attendre ${countdownText}`
+                          : 'Envoyer le lien de réinitialisation'
+                      }
+                      isLoading={isLoading}
+                      disabled={isLoading || isRateLimited}
+                      className="bg-gradient-to-r from-[#146B67] to-[#1FA89B] h-12"
+                    />
+                  </form>
+                </Form>
+
+                <div className="mt-8 pt-6 border-t border-gray-200 dark:border-gray-800 text-center">
+                  <p className="text-sm text-gray-500 dark:text-gray-400">
+                    Besoin d&apos;aide?{' '}
+                    <a href={`mailto:${supportContact.email}`} className="text-[#146B67] hover:underline font-medium">
+                      {supportContact.email}
+                    </a>
+                  </p>
+                  <Link
+                    href={routes.public.homePage}
+                    className="mt-3 inline-flex items-center gap-2 text-sm text-gray-500 hover:text-[#146B67]"
+                  >
+                    <Home className="w-4 h-4" />
+                    Retour à l&apos;accueil
+                  </Link>
+                </div>
+              </>
+            )}
           </div>
         </div>
       </div>
     </div>
-  )
-}
+  );
+};
 
-export default PasswordResetRequest 
+export default PasswordResetRequest;

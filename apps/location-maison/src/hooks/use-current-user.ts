@@ -1,4 +1,5 @@
 import { auth, signInWithCustomToken } from "@/firebase/auth";
+import { createLogger } from "@/lib/logger";
 import { useSession } from "next-auth/react";
 import { useEffect, useState, useCallback } from "react";
 
@@ -8,10 +9,20 @@ interface UseCurrentUserReturn {
   isLoading: boolean
   isFirebaseConnected: boolean
   error: string | null
+  auth: {
+    provider: "google" | "facebook" | null
+    accessTokenExpiresAt: number | null
+    tokenStatus: "none" | "valid" | "expired" | "refresh_failed"
+    tokenRefreshError: string | null
+    hasRefreshToken: boolean
+  } | null
+  refreshSession: () => Promise<void>
 }
 
+const logger = createLogger("auth.use-current-user");
+
 export const useCurrentUser = (): UseCurrentUserReturn => {
-  const { data: session, status } = useSession();
+  const { data: session, status, update } = useSession();
   const [user, setUser] = useState(session?.user ?? undefined);
   const [isLoading, setIsLoading] = useState(false);
   const [isFirebaseConnected, setIsFirebaseConnected] = useState(false);
@@ -50,7 +61,7 @@ export const useCurrentUser = (): UseCurrentUserReturn => {
       setIsFirebaseConnected(true);
 
     } catch (err: any) {
-      console.warn('⚠️ Erreur de connexion Firebase:', err);
+      logger.warn("Firebase custom-token sign-in failed", { err });
       const errorMessage = err.message ?? 'Erreur de connexion Firebase';
       setError(errorMessage);
       setIsFirebaseConnected(false);
@@ -76,7 +87,7 @@ export const useCurrentUser = (): UseCurrentUserReturn => {
       } else if (auth.currentUser) {
         setIsFirebaseConnected(true);
       } else {
-        console.warn('⚠️ Pas d\'UID disponible dans la session');
+        logger.warn("No UID found in authenticated session");
       }
     }
 
@@ -88,7 +99,9 @@ export const useCurrentUser = (): UseCurrentUserReturn => {
       // Déconnecter de Firebase si l'utilisateur n'est plus connecté
       if (auth.currentUser) {
         auth.signOut().catch(err => {
-          console.warn('⚠️ Erreur lors de la déconnexion Firebase:', err);
+          logger.warn("Firebase signOut failed during unauthenticated transition", {
+            err,
+          });
         });
       }
     }
@@ -120,11 +133,43 @@ export const useCurrentUser = (): UseCurrentUserReturn => {
     return () => clearInterval(interval);
   }, [isFirebaseConnected, status]);
 
+  const refreshSession = useCallback(async () => {
+    try {
+      await update();
+      logger.info("Session refresh requested from useCurrentUser");
+    } catch (err) {
+      logger.warn("Session refresh failed from useCurrentUser", { err });
+    }
+  }, [update]);
+
+  const authState = (session as any)?.auth
+    ? {
+        provider: (session as any).auth.provider ?? null,
+        accessTokenExpiresAt:
+          typeof (session as any).auth.accessTokenExpiresAt === "number"
+            ? (session as any).auth.accessTokenExpiresAt
+            : null,
+        tokenStatus:
+          ((session as any).auth.tokenStatus as
+            | "none"
+            | "valid"
+            | "expired"
+            | "refresh_failed") ?? "none",
+        tokenRefreshError:
+          typeof (session as any).auth.tokenRefreshError === "string"
+            ? (session as any).auth.tokenRefreshError
+            : null,
+        hasRefreshToken: Boolean((session as any).auth.hasRefreshToken),
+      }
+    : null;
+
   return { 
     user, 
     setUser, 
     isLoading,
     isFirebaseConnected,
-    error
+    error,
+    auth: authState,
+    refreshSession,
   };
 };

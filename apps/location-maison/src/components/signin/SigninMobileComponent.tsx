@@ -1,184 +1,163 @@
-'use client'
-import React from 'react'
-import { ChevronLeft, CircleUser, KeyRound } from 'lucide-react';
-import { useForm } from 'react-hook-form';
+'use client';
+
+import { routes } from '@/constantes/routes';
+import { useSignin, mapSigninError } from '@/features/auth/hooks';
+import { useToast } from '@/hooks/use-toast';
+import { cn } from '@/lib/utils';
 import { FormLoginSchema, FormLoginSchemaType } from '@/models/schema';
 import { zodResolver } from '@hookform/resolvers/zod';
+import { ChevronLeft, CircleUser, KeyRound } from 'lucide-react';
+import { Inter } from 'next/font/google';
+import Link from 'next/link';
+import { useRouter, useSearchParams } from 'next/navigation';
+import React, { useEffect } from 'react';
+import { useForm } from 'react-hook-form';
 import { Form } from '../ui/form';
 import { InputFormApp } from '../shared/form/InputFormApp';
 import { ButtonApp } from '../shared/ui/ButtonApp';
-import { Inter } from 'next/font/google';
-import { cn } from '@/lib/utils';
-import Link from 'next/link';
-import { routes } from '@/constantes/routes';
-import { useToast } from '@/hooks/use-toast';
-import { signIn } from "next-auth/react"
 import { Button } from '../ui/button';
-import { useRouter, useSearchParams } from 'next/navigation';
 
 const inter = Inter({
   subsets: ['latin'],
   weight: ['400'],
-})
+});
 
 export default function SigninMobileComponent() {
-  const router = useRouter()
+  const router = useRouter();
   const searchParams = useSearchParams();
-  const { toast } = useToast()
-  const [isOtherMethodConnection, setIsOtherMethodConnection] = React.useState(false)
+  const { toast } = useToast();
+  const {
+    signinWithCredentials,
+    signinWithGoogle,
+    isLoading,
+    isCredentialsLoading,
+    isGoogleLoading,
+    lastError,
+    clearError,
+  } = useSignin();
 
   const form = useForm<FormLoginSchemaType>({
-    resolver: zodResolver(FormLoginSchema)
-  })
-  const handleSigninWithGoogle = async () => {
-    setIsOtherMethodConnection(true)
-    await signIn('google')
-    setIsOtherMethodConnection(false)
-  }
-  const onSubmit = async (values: FormLoginSchemaType) => {
-    const validateFields = FormLoginSchema.safeParse(values)
-    if (!validateFields.success) {
-      return toast({
-        duration: 5000,
-        title: 'Erreur de connexion',
-        description: "Email ou mot de passe incorrect!",
-        variant: 'destructive',
-      });
-    }
-    const user = {
-      login: validateFields.data.email,
-      password: validateFields.data.password
-    }
-    try {
-      const result = await signIn('credentials', {
-        ...user,
-        redirect: false
-      })
-      if (!result?.ok || result?.error !== null) {
-        // Gestion spécifique des erreurs Firebase Auth
-        let errorMessage = "Email ou mot de passe incorrect!";
-        let errorTitle = "Erreur de connexion";
-        let duration = 5000;
-        
-        switch (result?.error) {
-          case 'Email is not verified':
-            errorMessage = "Veuillez vérifier votre email avant de vous connecter. Vérifiez votre boîte de réception et cliquez sur le lien de vérification.";
-            errorTitle = "Email non vérifié";
-            duration = 7000;
-            break;
-          case 'auth/user-not-found':
-            errorMessage = "Aucun compte associé à cette adresse email.";
-            errorTitle = "Compte non trouvé";
-            break;
-          case 'auth/wrong-password':
-            errorMessage = "Mot de passe incorrect.";
-            errorTitle = "Mot de passe incorrect";
-            break;
-          case 'auth/invalid-email':
-            errorMessage = "Format d'email invalide.";
-            errorTitle = "Email invalide";
-            break;
-          case 'auth/user-disabled':
-            errorMessage = "Ce compte a été désactivé. Veuillez contacter le support.";
-            errorTitle = "Compte désactivé";
-            break;
-          case 'auth/too-many-requests':
-            errorMessage = "Trop de tentatives de connexion. Veuillez attendre quelques minutes avant de réessayer.";
-            errorTitle = "Trop de tentatives";
-            duration = 8000;
-            break;
-          case 'auth/network-request-failed':
-            errorMessage = "Erreur de connexion réseau. Vérifiez votre connexion internet.";
-            errorTitle = "Erreur réseau";
-            break;
-          default:
-            // Message générique pour les autres erreurs
-            errorMessage = "Email ou mot de passe incorrect!";
-            errorTitle = "Erreur de connexion";
-        }
-        
-        return toast({
-          duration,
-          title: errorTitle,
-          description: errorMessage,
-          variant: 'destructive',
-        });
-      }
-      toast({
-        duration: 5000,
-        title: 'Connexion réussie',
-        description: "Vous vous êtes connectés avec succès!",
-        variant: 'success',
-      });
-      return router.push(routes.protected.properties)
-    } catch (error) {
-      console.error('Authentication Error:', error);
-      return toast({
-        duration: 5000,
-        title: 'Erreur de connexion',
-        description: "Email ou mot de passe incorrect!",
-        variant: 'destructive',
-      });
-    }
-  }
+    resolver: zodResolver(FormLoginSchema),
+    mode: 'onChange',
+    defaultValues: {
+      email: '',
+      password: '',
+    },
+  });
 
-  React.useEffect(() => {
-    const error = searchParams.get("error");
-    if (error === "wrong_provider") {
+  const onSubmit = async (values: FormLoginSchemaType) => {
+    const parsed = FormLoginSchema.safeParse(values);
+    if (!parsed.success) {
+      const error = mapSigninError();
       toast({
-        duration: 5000,
-        title: "Erreur de connexion",
-        description: "Ce compte est associé à un autre mode de connexion.",
-        variant: "destructive",
+        duration: error.duration,
+        title: error.title,
+        description: error.message,
+        variant: 'destructive',
       });
+      return;
     }
-  }, [searchParams, toast]);
+
+    const result = await signinWithCredentials(parsed.data);
+    if (!result.success) {
+      const error = result.error ?? mapSigninError();
+      toast({
+        duration: error.duration,
+        title: error.title,
+        description: error.message,
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    toast({
+      duration: 5000,
+      title: 'Connexion réussie',
+      description: 'Vous vous êtes connectés avec succès!',
+      variant: 'success',
+    });
+    router.push(routes.protected.properties);
+  };
+
+  useEffect(() => {
+    const error = searchParams.get('error');
+    if (!error) {
+      return;
+    }
+    const mapped = mapSigninError(error);
+    toast({
+      duration: mapped.duration,
+      title: mapped.title,
+      description: mapped.message,
+      variant: 'destructive',
+    });
+    router.replace(routes.public.signin);
+  }, [router, searchParams, toast]);
+
+  useEffect(() => {
+    if (!lastError) {
+      return;
+    }
+    toast({
+      duration: lastError.duration,
+      title: lastError.title,
+      description: lastError.message,
+      variant: 'destructive',
+    });
+    clearError();
+  }, [clearError, lastError, toast]);
+
   return (
     <div className={cn('p-4 md:p-20', inter.className)}>
       <div>
         <Link href={routes.public.homePage}>
-          <ChevronLeft color='gray' size={30} />
+          <ChevronLeft color="gray" size={30} />
         </Link>
       </div>
 
-      <section className='mt-8 md:mt-10'>
-        <h1 className='text-2xl font-bold text-[#187872]'>Bienvenue sur Trouve Ton Nkama !</h1>
-        <p className='text-gray-500'>
-        Trouvez facilement votre maison, appartement, terrain ou local commercial grâce à notre plateforme intuitive.
+      <section className="mt-8 md:mt-10">
+        <h1 className="text-2xl font-bold text-[#187872]">Bienvenue sur Trouve Ton Nkama !</h1>
+        <p className="text-gray-500">
+          Connectez-vous pour retrouver vos annonces, favoris et paramètres de compte.
         </p>
       </section>
+
       <Form {...form}>
-        <section className='mt-8 md:mt-10'>
+        <section className="mt-8 md:mt-10">
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-3">
             <InputFormApp
               control={form.control}
-              name='email'
-              label='Email'
-              type='email'
+              name="email"
+              label="Email"
+              type="email"
               IconLucide={CircleUser}
-              IconColorFill={'none'}
-              IconColor='gray'
-              placeholder='Saisissez votre email'
+              IconColorFill="none"
+              IconColor="gray"
+              placeholder="Saisissez votre email"
             />
             <InputFormApp
               control={form.control}
-              name='password'
-              label='Mot de passe'
-              type='password'
+              name="password"
+              label="Mot de passe"
+              type="password"
               IconLucide={KeyRound}
-              IconColorFill='none'
-              IconColor='gray'
-              placeholder='Saisissez votre mot de passe'
+              IconColorFill="none"
+              IconColor="gray"
+              placeholder="Saisissez votre mot de passe"
             />
-            <div className='flex flex-col items-center gap-3'>
+
+            <div className="flex flex-col items-center gap-3">
               <ButtonApp
-                type='submit'
-                disabled={Boolean(form.formState.isSubmitting) || Boolean(form.formState.isLoading) || Boolean(isOtherMethodConnection)}
-                isLoading={Boolean(form.formState.isSubmitting) || Boolean(form.formState.isLoading) || Boolean(isOtherMethodConnection)}
-                className='bg-gradient-to-b from-[#1FA89B] to-[#146B67] md:py-7 mt-5'
-                title='Connexion'
+                type="submit"
+                disabled={isLoading}
+                isLoading={isCredentialsLoading}
+                className="bg-gradient-to-b from-[#1FA89B] to-[#146B67] md:py-7 mt-5"
+                title={isCredentialsLoading ? 'Connexion en cours...' : 'Connexion'}
               />
-              <Link href={routes.public.passwordResetRequest} className='text-[#146B67] dark:text-[#1FA89B] hover:underline font-medium'>
+              <Link
+                href={routes.public.passwordResetRequest}
+                className="text-[#146B67] dark:text-[#1FA89B] hover:underline font-medium"
+              >
                 Mot de passe oublié?
               </Link>
             </div>
@@ -193,28 +172,54 @@ export default function SigninMobileComponent() {
 
         <div className="flex items-center justify-center md:mt-10">
           <Button
-            onClick={handleSigninWithGoogle}
-            variant='outline'
-            disabled={Boolean(form.formState.isSubmitting) || Boolean(form.formState.isLoading) || Boolean(isOtherMethodConnection)}
-            className="w-full flex justify-center items-center gap-2 bg-white dark:bg-gray-900 border border-gray-300 rounded-full p-6 text-md font-medium text-gray-800 dark:text-white hover:bg-gray-200 focus:outline-none focus:ring-offset-2 focus:ring-gray-500">
-            <svg className="h-6 w-6 mr-2" xmlns="http://www.w3.org/2000/svg" xmlnsXlink="http://www.w3.org/1999/xlink" width="800px" height="800px" viewBox="-0.5 0 48 48" version="1.1"> <title>Google-color</title> <desc>Created with Sketch.</desc> <defs> </defs> <g id="Icons" stroke="none" strokeWidth="1" fill="none" fillRule="evenodd"> <g id="Color-" transform="translate(-401.000000, -860.000000)"> <g id="Google" transform="translate(401.000000, 860.000000)"> <path d="M9.82727273,24 C9.82727273,22.4757333 10.0804318,21.0144 10.5322727,19.6437333 L2.62345455,13.6042667 C1.08206818,16.7338667 0.213636364,20.2602667 0.213636364,24 C0.213636364,27.7365333 1.081,31.2608 2.62025,34.3882667 L10.5247955,28.3370667 C10.0772273,26.9728 9.82727273,25.5168 9.82727273,24" id="Fill-1" fill="#FBBC05"> </path> <path d="M23.7136364,10.1333333 C27.025,10.1333333 30.0159091,11.3066667 32.3659091,13.2266667 L39.2022727,6.4 C35.0363636,2.77333333 29.6954545,0.533333333 23.7136364,0.533333333 C14.4268636,0.533333333 6.44540909,5.84426667 2.62345455,13.6042667 L10.5322727,19.6437333 C12.3545909,14.112 17.5491591,10.1333333 23.7136364,10.1333333" id="Fill-2" fill="#EB4335"> </path> <path d="M23.7136364,37.8666667 C17.5491591,37.8666667 12.3545909,33.888 10.5322727,28.3562667 L2.62345455,34.3946667 C6.44540909,42.1557333 14.4268636,47.4666667 23.7136364,47.4666667 C29.4455,47.4666667 34.9177955,45.4314667 39.0249545,41.6181333 L31.5177727,35.8144 C29.3995682,37.1488 26.7323182,37.8666667 23.7136364,37.8666667" id="Fill-3" fill="#34A853"> </path> <path d="M46.1454545,24 C46.1454545,22.6133333 45.9318182,21.12 45.6113636,19.7333333 L23.7136364,19.7333333 L23.7136364,28.8 L36.3181818,28.8 C35.6879545,31.8912 33.9724545,34.2677333 31.5177727,35.8144 L39.0249545,41.6181333 C43.3393409,37.6138667 46.1454545,31.6490667 46.1454545,24" id="Fill-4" fill="#4285F4"> </path> </g> </g> </g> </svg>
-            <span>Continuer avec Google</span>
+            onClick={signinWithGoogle}
+            variant="outline"
+            disabled={isLoading}
+            className="w-full flex justify-center items-center gap-2 bg-white dark:bg-gray-900 border border-gray-300 rounded-full p-6 text-md font-medium text-gray-800 dark:text-white hover:bg-gray-200 focus:outline-none focus:ring-offset-2 focus:ring-gray-500"
+          >
+            {isGoogleLoading ? (
+              <>
+                <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-gray-900 dark:border-white"></div>
+                <span>Connexion en cours...</span>
+              </>
+            ) : (
+              <>
+                <svg className="h-6 w-6 mr-2" viewBox="0 0 24 24">
+                  <path
+                    fill="#4285F4"
+                    d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
+                  />
+                  <path
+                    fill="#34A853"
+                    d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"
+                  />
+                  <path
+                    fill="#FBBC05"
+                    d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"
+                  />
+                  <path
+                    fill="#EA4335"
+                    d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
+                  />
+                </svg>
+                <span>Continuer avec Google</span>
+              </>
+            )}
           </Button>
         </div>
       </Form>
-      
-      {/* Section pour proposer l'enregistrement */}
+
       <div className="mt-6 md:mt-8 text-center px-4">
         <p className="text-base md:text-sm text-gray-500 dark:text-gray-400">
-          Vous n'avez pas de compte?{" "}
+          Vous n&apos;avez pas de compte?{' '}
           <Link
             href={routes.public.signup}
             className="text-[#146B67] dark:text-[#1FA89B] hover:underline font-medium"
           >
-            S'enregistrer
+            S&apos;enregistrer
           </Link>
         </p>
       </div>
     </div>
-  )
+  );
 }

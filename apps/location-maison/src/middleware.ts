@@ -5,39 +5,82 @@ import { routes } from './constantes/routes'
 
 const { auth } = NextAuth(authConfig)
 
+const GUEST_ONLY_ROUTES = [
+    routes.public.signin,
+    routes.public.signup,
+    routes.public.signinSignup,
+] as const
+
+const PROTECTED_ROUTE_PREFIXES = [
+    '/property',
+    '/profil',
+    '/favoris',
+    '/settings',
+    '/list-notifications',
+    '/my-balance',
+    '/login-and-security',
+    '/verify-phone',
+    '/admin',
+] as const
+
+type SessionUser = {
+    firstname?: string
+    lastname?: string
+    phoneNumbers?: string[]
+    birthDate?: string
+    metadata?: Record<string, unknown>
+}
+
+function isExactOrSubPath(pathname: string, prefix: string): boolean {
+    return pathname === prefix || pathname.startsWith(`${prefix}/`)
+}
+
+function isProtectedRoute(pathname: string): boolean {
+    return PROTECTED_ROUTE_PREFIXES.some((prefix) => isExactOrSubPath(pathname, prefix))
+}
+
+function hasCompleteProfile(user: SessionUser | null | undefined): boolean {
+    return Boolean(
+        user?.firstname &&
+        user?.lastname &&
+        user?.phoneNumbers?.[0] &&
+        user?.birthDate
+    )
+}
+
+function needsProfileCompletion(user: SessionUser | null | undefined): boolean {
+    const metadataFlag = user?.metadata?.needsProfileCompletion === true
+    return metadataFlag || !hasCompleteProfile(user)
+}
+
 export default auth(async (req) => {
     const { nextUrl } = req
-    const isLoggedIn = !!req.auth
-    const authRoute = [routes.public.signin, routes.public.signup]
-    const isAuthRoute = authRoute.includes(nextUrl.pathname)
-    const isCompleteProfileRoute = nextUrl.pathname === routes.public.completeProfile
-    const isProtectedRoute = Object.values(routes.protected).includes(nextUrl.pathname)
+    const pathname = nextUrl.pathname
+    const isLoggedIn = Boolean(req.auth?.user)
+    const user = req.auth?.user as SessionUser | undefined
+    const isGuestOnlyRoute = GUEST_ONLY_ROUTES.includes(pathname as (typeof GUEST_ONLY_ROUTES)[number])
+    const isProfileCompletionRoute = pathname === routes.public.completeProfile
+    const requiresAuth = isProtectedRoute(pathname)
+    const userNeedsProfileCompletion = isLoggedIn && needsProfileCompletion(user)
 
-    if (isLoggedIn && isAuthRoute) {
+    if (!isLoggedIn && (requiresAuth || isProfileCompletionRoute)) {
+        const signinUrl = new URL(routes.public.signin, nextUrl)
+        signinUrl.searchParams.set('callbackUrl', `${pathname}${nextUrl.search}`)
+        return NextResponse.redirect(signinUrl)
+    }
+
+    if (userNeedsProfileCompletion && !isProfileCompletionRoute) {
+        if (requiresAuth || isGuestOnlyRoute) {
+            return NextResponse.redirect(new URL(routes.public.completeProfile, nextUrl))
+        }
+    }
+
+    if (isLoggedIn && isProfileCompletionRoute && !userNeedsProfileCompletion) {
         return NextResponse.redirect(new URL(routes.protected.properties, nextUrl))
     }
-    
-    if (!isLoggedIn && isProtectedRoute) {
-        return NextResponse.redirect(new URL(routes.public.homePage, nextUrl))
-    }
 
-    // Rediriger vers la page de complétion si l'utilisateur a besoin de compléter son profil
-    if (isLoggedIn && !isCompleteProfileRoute) {
-        const user = req.auth?.user as any
-        
-        // Vérifier si l'utilisateur a toutes les informations requises
-        const hasCompleteInfo = user?.firstname && 
-                               user?.lastname && 
-                               user?.phoneNumbers?.[0] && 
-                               user?.birthDate;
-        
-        // Si l'utilisateur n'a pas toutes les infos, le bloquer sur la page de complétion
-        if (!hasCompleteInfo) {
-            // Permettre l'accès à la page de complétion et aux pages publiques
-            if (isProtectedRoute || isAuthRoute) {
-                return NextResponse.redirect(new URL(routes.public.completeProfile, nextUrl))
-            }
-        }
+    if (isLoggedIn && isGuestOnlyRoute) {
+        return NextResponse.redirect(new URL(routes.protected.properties, nextUrl))
     }
 
     return NextResponse.next()

@@ -1,0 +1,149 @@
+@startuml Register-Activity-Diagram-Annonceur
+skinparam backgroundColor #FEFEFE
+skinparam activity {
+    BackgroundColor #E8F4F8
+    BorderColor #146B67
+    FontColor #000000
+}
+skinparam arrow {
+    Color #146B67
+}
+
+title Diagramme d'Activité - Inscription Directe Annonceur
+caption Plateforme Location Maison Gabon - FEATURE-001 (Variante Annonceur)
+
+start
+
+:Visiteur accède à la page d'inscription;
+
+:Affichage du formulaire d'inscription;
+
+:Visiteur remplit le formulaire
+(prénom, nom, email, mot de passe,
+date de naissance, téléphone, pays);
+
+:Validation côté client (Zod);
+
+if (Validation échoue ?) then (oui)
+    :Afficher erreurs de validation;
+    stop
+else (non)
+endif
+
+:Visiteur accepte les conditions
+d'utilisation et politique de confidentialité;
+
+if (Conditions non acceptées ?) then (oui)
+    :Afficher erreur "Conditions obligatoires";
+    stop
+else (non)
+endif
+
+:Visiteur choisit "Créer un compte Annonceur";
+
+:Affichage des conditions spécifiques Annonceur
+(CGU Annonceur, règles de publication, etc.);
+
+:Visiteur accepte les CGU Annonceur;
+
+if (CGU Annonceur non acceptées ?) then (oui)
+    :Afficher erreur "CGU Annonceur obligatoires";
+    stop
+else (non)
+endif
+
+:Appeler useSignup hook (avec type: 'Announcer');
+
+:Service: Vérifier l'unicité du numéro de téléphone;
+
+partition Repository {
+    :findByPhoneNumber(phoneNumber);
+}
+
+if (Numéro déjà utilisé ?) then (oui)
+    :Lancer erreur PHONE_ALREADY_IN_USE;
+    :Afficher erreur "Numéro déjà utilisé";
+    stop
+else (non)
+endif
+
+:Service: Vérifier l'unicité de l'email;
+
+partition Repository {
+    :findByEmail(email);
+}
+
+if (Email déjà utilisé ?) then (oui)
+    :Lancer erreur EMAIL_ALREADY_IN_USE;
+    :Afficher erreur "Email déjà utilisé";
+    stop
+else (non)
+endif
+
+:Service: Créer compte Firebase Auth;
+
+partition "Firebase Auth" {
+    :createUserWithEmailAndPassword(email, password);
+}
+
+if (Création échoue ?) then (oui)
+    if (Erreur WEAK_PASSWORD ?) then (oui)
+        :Afficher erreur "Mot de passe trop faible";
+    else if (Erreur INVALID_EMAIL ?) then (oui)
+        :Afficher erreur "Email invalide";
+    else (autre)
+        :Afficher erreur générique;
+    endif
+    stop
+else (non)
+endif
+
+:Service: Créer utilisateur dans Firestore
+avec rôles 'User' + 'Announcer';
+
+partition Repository {
+    :Transformer données formulaire → User;
+    note right
+      **Rôles: ['User', 'Announcer']**
+      Le compte annonceur garde
+      aussi les capacités User
+    end note
+    :Créer CreditWallet avec 3 crédits de bienvenue;
+    :create(user);
+}
+
+if (Création Firestore échoue ?) then (oui)
+    :Rollback: Supprimer compte Firebase Auth;
+    :Afficher erreur "Erreur lors de la création du compte";
+    stop
+else (non)
+endif
+
+:Service: Envoyer email de vérification
+(en arrière-plan, non-bloquant);
+
+partition "Email Service" {
+    :POST /api/auth/send-verification-email;
+    :Générer lien de vérification;
+    :Envoyer email;
+}
+
+note right
+  **Email envoyé en arrière-plan:**
+  - Ne bloque pas l'inscription
+  - Si échec, l'utilisateur peut
+    demander un nouvel email
+end note
+
+:Service: Retourner userId;
+
+:Hook: Gérer état success;
+
+:Composant: Afficher toast de succès
+"Compte Annonceur créé avec succès!";
+
+:Rediriger vers /signup/success?uid=xxx;
+
+stop
+
+@enduml

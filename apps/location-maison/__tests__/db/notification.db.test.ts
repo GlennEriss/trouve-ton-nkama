@@ -21,7 +21,7 @@ describe('Notification DB Integration Tests', () => {
         userId: testUserId,
         title: 'Nouvelle notification',
         message: 'Votre propriété a été approuvée',
-        type: 'property_approved',
+        type: 'BOOKMARKING' as const,
         isRead: false,
         data: {
           propertyId: 'prop-123',
@@ -53,7 +53,7 @@ describe('Notification DB Integration Tests', () => {
         userId: testUserId,
         title: 'Paiement confirmé',
         message: 'Votre achat de 100 crédits a été confirmé',
-        type: 'payment_success',
+        type: 'SECURITY' as const,
         isRead: false,
         data: {
           transactionId: 'tx-456',
@@ -131,22 +131,22 @@ describe('Notification DB Integration Tests', () => {
     test('devrait gérer différents types de notifications', async () => {
       const notificationTypes = [
         {
-          type: 'property_approved',
+          type: 'BOOKMARKING' as const,
           title: 'Propriété approuvée',
           message: 'Votre propriété a été approuvée'
         },
         {
-          type: 'property_rejected',
+          type: 'BOOKMARKING' as const,
           title: 'Propriété rejetée',
           message: 'Votre propriété a été rejetée'
         },
         {
-          type: 'credit_purchased',
+          type: 'SECURITY' as const,
           title: 'Crédits achetés',
           message: 'Vos crédits ont été ajoutés'
         },
         {
-          type: 'promotion_activated',
+          type: 'BOOKMARKING' as const,
           title: 'Promotion activée',
           message: 'Votre propriété est maintenant promue'
         }
@@ -220,7 +220,7 @@ describe('Notification DB Integration Tests', () => {
         userId: testUserId,
         title: 'Propriété soumise',
         message: 'Votre propriété a été soumise pour révision',
-        type: 'property_submitted',
+        type: 'BOOKMARKING' as const,
         data: { propertyId: 'prop-123' }
       };
 
@@ -232,7 +232,7 @@ describe('Notification DB Integration Tests', () => {
         userId: testUserId,
         title: 'Propriété approuvée',
         message: 'Votre propriété a été approuvée et est maintenant visible',
-        type: 'property_approved',
+        type: 'BOOKMARKING' as const,
         data: { propertyId: 'prop-123' }
       };
 
@@ -255,7 +255,7 @@ describe('Notification DB Integration Tests', () => {
         userId: testUserId,
         title: 'Paiement en cours',
         message: 'Votre paiement est en cours de traitement',
-        type: 'payment_pending',
+        type: 'SECURITY' as const,
         data: { transactionId: 'tx-789', amount: 500 }
       };
 
@@ -267,7 +267,7 @@ describe('Notification DB Integration Tests', () => {
         userId: testUserId,
         title: 'Paiement confirmé',
         message: 'Votre paiement a été confirmé avec succès',
-        type: 'payment_success',
+        type: 'SECURITY' as const,
         data: { transactionId: 'tx-789', amount: 500, credits: 50 }
       };
 

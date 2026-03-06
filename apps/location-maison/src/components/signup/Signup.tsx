@@ -74,9 +74,9 @@ export const Signup: React.FC = () => {
             );
             
             // Supprimer le numéro de téléphone de Firebase Auth après création du compte
-            // Note: Le numéro de téléphone est vérifié par OTP mais reste dans notre base de données
+            // Note: Le numéro de téléphone reste dans notre base de données
             // Firebase Auth utilise email/mot de passe pour l'authentification
-            //console.log("Numéro de téléphone vérifié et stocké dans la base de données");
+            //console.log("Numéro de téléphone stocké dans la base de données");
             
             // Envoyer l'email de vérification en arrière-plan (non-bloquant)
             fetch('/api/auth/send-verification-email', {

@@ -5,8 +5,8 @@ import { Providers } from "@/providers/providers";
 import { BottomNavigation } from "@/components/shared/BottomNavigation";
 import Footer from "@/components/footer/Footer";
 import { cn } from "@/lib/utils";
-import { Analytics } from "@vercel/analytics/next";
 import { Metadata } from 'next'
+import { Analytics } from "@vercel/analytics/next";
 
 const inter = Inter({
   subsets: ['latin'],

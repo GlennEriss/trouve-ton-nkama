@@ -16,4 +16,4 @@ export type User = Person & {
     credits: number
 }
 
-export type Role = 'Admin' | 'Announcer'
+export type Role = 'Admin' | 'User' | 'Announcer'

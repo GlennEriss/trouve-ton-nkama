@@ -1,0 +1,51 @@
+@startuml
+title FEATURE-003 Signin - Token et Refresh Token
+
+actor User
+participant "Signin UI\n(/signin)" as UI
+participant "useSignin" as Hook
+participant "NextAuth\nsignIn callback" as NextAuth
+participant "OAuth Google Service" as GoogleService
+participant "JWT callback" as JWT
+participant "Google Token Endpoint" as GoogleToken
+database "Firestore User Repo" as Repo
+
+== Credentials Signin ==
+User -> UI: Saisit email + mot de passe
+UI -> Hook: signinWithCredentials()
+Hook -> NextAuth: signIn('credentials')
+NextAuth -> Repo: findById(uid)
+Repo --> NextAuth: user
+NextAuth --> Hook: success / error code
+Hook --> UI: SigninResult
+UI --> User: Toast + redirect /property
+
+== Google Signin ==
+User -> UI: Clique "Continuer avec Google"
+UI -> Hook: signinWithGoogle()
+Hook -> NextAuth: signIn('google')
+NextAuth -> GoogleService: handleGoogleSignIn()
+GoogleService -> Repo: create/update user
+Repo --> GoogleService: ok
+GoogleService --> NextAuth: true or redirect error
+
+== Token Management ==
+NextAuth -> JWT: jwt(account, user)
+JWT -> JWT: store oauthAccessToken\nstore oauthRefreshToken\nstore oauthAccessTokenExpiresAt
+
+== Automatic Refresh ==
+JWT -> JWT: if expires soon?
+alt access token expires soon
+  JWT -> GoogleToken: POST /token (refresh_token)
+  GoogleToken --> JWT: new access_token + expires_in
+  JWT -> JWT: update oauthAccessToken\nupdate oauthAccessTokenExpiresAt
+else token still valid
+  JWT -> JWT: keep current token
+end
+
+== Session Exposure ==
+JWT -> NextAuth: token with oauth state
+NextAuth -> UI: session.auth {provider, tokenStatus, expiresAt, ...}
+UI --> User: App consumes useAuthSession/useCurrentUser
+
+@enduml

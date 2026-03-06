@@ -12,10 +12,10 @@
 
 | Feature | Statut | Branche | Date | Notes |
 |---------|--------|---------|------|-------|
-| Se connecter | ✅ | - | - | Existant |
+| Se connecter | 🔄 | feature/FEATURE-003-signin | 2026-03-05 | Implémentation principale terminée (UI + hook + gestion token/refresh), validation E2E restante |
 | S'inscrire | ✅ | - | - | Existant |
 | Se déconnecter | ✅ | - | - | Existant |
-| Connexion Google | ✅ | - | - | Existant |
+| Connexion Google | 🔄 | feature/FEATURE-003-signin | 2026-03-05 | Flux OAuth stabilisé (erreurs contrôlées + refresh token session), validation E2E restante |
 | Connexion Facebook | ✅ | - | - | Existant |
 | Vérification email | ✅ | - | - | Existant |
 | Réinitialisation mot de passe | ✅ | - | - | Existant |
@@ -151,5 +151,4 @@
 
 ---
 
-*Dernière mise à jour : 2026-01-12*
-
+*Dernière mise à jour : 2026-03-05*

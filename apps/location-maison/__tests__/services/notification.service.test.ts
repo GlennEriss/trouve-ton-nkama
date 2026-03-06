@@ -1,5 +1,9 @@
 import { describe, test, expect, jest } from '@jest/globals';
 import { createNotification } from '@/db/notification.db';
+import type { TypeNotification } from '@/models/notification';
+
+const SECURITY_TYPE: TypeNotification = 'SECURITY';
+const BOOKMARKING_TYPE: TypeNotification = 'BOOKMARKING';
 
 // Mock des dépendances Firebase
 jest.mock('@/firebase/firestore', () => ({
@@ -25,7 +29,7 @@ describe('Notification Service Tests', () => {
         message: 'Merci de vous être inscrit. Vous pouvez maintenant publier ou consulter des annonces immobilières au Gabon.',
         createdFor: 'user-123',
         isRead: false,
-        type: 'SECURITY'
+        type: SECURITY_TYPE
       };
 
       mockCreateNotification.mockResolvedValue('notification-welcome-123');
@@ -39,7 +43,7 @@ describe('Notification Service Tests', () => {
     test('devrait créer une notification de propriété en favoris', async () => {
       const bookmarkNotification = {
         idProperty: 'property-456',
-        type: 'BOOKMARKING',
+        type: BOOKMARKING_TYPE,
         title: 'Belle maison familiale',
         isRead: false,
         createdFor: 'owner-789',
@@ -61,7 +65,7 @@ describe('Notification Service Tests', () => {
         message: 'Votre achat de 100 crédits pour 5000 FCFA a été confirmé avec succès.',
         createdFor: 'user-123',
         isRead: false,
-        type: 'SECURITY',
+        type: SECURITY_TYPE,
         data: {
           transactionId: 'tx-789',
           amount: 5000,
@@ -85,7 +89,7 @@ describe('Notification Service Tests', () => {
         message: 'Votre annonce "Villa moderne Libreville" a été approuvée et est maintenant visible.',
         createdFor: 'user-456',
         isRead: false,
-        type: 'SECURITY',
+        type: SECURITY_TYPE,
         actionUrl: '/property/property-123'
       };
 
@@ -103,7 +107,7 @@ describe('Notification Service Tests', () => {
         message: 'Ajoutez vos informations personnelles pour profiter pleinement de la plateforme.',
         createdFor: 'user-789',
         isRead: false,
-        type: 'SECURITY',
+        type: SECURITY_TYPE,
         actionUrl: '/profil/informations'
       };
 
@@ -121,7 +125,7 @@ describe('Notification Service Tests', () => {
         message: 'Cette notification va échouer',
         createdFor: 'user-error',
         isRead: false,
-        type: 'SECURITY'
+        type: SECURITY_TYPE
       };
 
       mockCreateNotification.mockResolvedValue(null);
@@ -140,7 +144,7 @@ describe('Notification Service Tests', () => {
           scenario: 'Ajout aux favoris par un autre utilisateur',
           notification: {
             idProperty: 'prop-001',
-            type: 'BOOKMARKING',
+            type: BOOKMARKING_TYPE,
             title: 'Appartement centre-ville',
             message: 'Marie Martin a ajouté votre annonce à ses favoris',
             createdFor: 'owner-001',
@@ -151,7 +155,7 @@ describe('Notification Service Tests', () => {
           scenario: 'Ajout aux favoris par le propriétaire lui-même',
           notification: {
             idProperty: 'prop-002',
-            type: 'BOOKMARKING',
+            type: BOOKMARKING_TYPE,
             title: 'Villa bord de mer',
             message: 'Une annonce a été ajoutée à vos favoris',
             createdFor: 'owner-002',
@@ -177,7 +181,7 @@ describe('Notification Service Tests', () => {
           notification: {
             title: 'Bienvenue sur Trouve Ton Nkama 👋',
             message: 'Merci de vous être inscrit.',
-            type: 'SECURITY'
+            type: SECURITY_TYPE
           }
         },
         {
@@ -185,7 +189,7 @@ describe('Notification Service Tests', () => {
           notification: {
             title: 'Complétez votre profil ✍️',
             message: 'Ajoutez vos informations personnelles.',
-            type: 'SECURITY',
+            type: SECURITY_TYPE,
             actionUrl: '/profil/informations'
           }
         },
@@ -194,7 +198,7 @@ describe('Notification Service Tests', () => {
           notification: {
             title: 'Paiement confirmé ✅',
             message: 'Votre achat a été confirmé.',
-            type: 'SECURITY'
+            type: SECURITY_TYPE
           }
         },
         {
@@ -202,7 +206,7 @@ describe('Notification Service Tests', () => {
           notification: {
             title: 'Propriété approuvée',
             message: 'Votre annonce a été approuvée.',
-            type: 'SECURITY'
+            type: SECURITY_TYPE
           }
         }
       ];
@@ -228,7 +232,7 @@ describe('Notification Service Tests', () => {
         message: 'Message simple',
         createdFor: 'user-minimal',
         isRead: false,
-        type: 'SECURITY'
+        type: SECURITY_TYPE
       };
 
       mockCreateNotification.mockResolvedValue('minimal-id');
@@ -246,7 +250,7 @@ describe('Notification Service Tests', () => {
         message: 'Message avec métadonnées',
         createdFor: 'user-extended',
         isRead: false,
-        type: 'BOOKMARKING',
+        type: BOOKMARKING_TYPE,
         actionUrl: '/property/property-extended',
         customData: {
           priority: 'high',
@@ -274,7 +278,7 @@ describe('Notification Service Tests', () => {
         message: 'Merci de vous être inscrit.',
         createdFor: 'new-user-123',
         isRead: false,
-        type: 'SECURITY'
+        type: SECURITY_TYPE
       };
 
       await createNotification(welcomeNotif);
@@ -285,7 +289,7 @@ describe('Notification Service Tests', () => {
         message: 'Ajoutez vos informations personnelles.',
         createdFor: 'new-user-123',
         isRead: false,
-        type: 'SECURITY',
+        type: SECURITY_TYPE,
         actionUrl: '/profil/informations'
       };
 
@@ -306,7 +310,7 @@ describe('Notification Service Tests', () => {
       // 1. Notification pour le propriétaire
       const ownerNotif = {
         idProperty: propertyId,
-        type: 'BOOKMARKING',
+        type: BOOKMARKING_TYPE,
         title: 'Villa moderne Estuaire',
         isRead: false,
         createdFor: ownerId,
@@ -319,7 +323,7 @@ describe('Notification Service Tests', () => {
       // 2. Notification pour l'utilisateur qui a ajouté aux favoris
       const userNotif = {
         idProperty: propertyId,
-        type: 'BOOKMARKING',
+        type: BOOKMARKING_TYPE,
         title: 'Villa moderne Estuaire',
         isRead: false,
         createdFor: userId,
@@ -346,7 +350,7 @@ describe('Notification Service Tests', () => {
         message: 'Votre paiement de 5000 FCFA est en cours de traitement.',
         createdFor: userId,
         isRead: false,
-        type: 'SECURITY',
+        type: SECURITY_TYPE,
         data: {
           transactionId,
           status: 'pending',
@@ -362,7 +366,7 @@ describe('Notification Service Tests', () => {
         message: 'Votre achat de 100 crédits a été confirmé avec succès.',
         createdFor: userId,
         isRead: false,
-        type: 'SECURITY',
+        type: SECURITY_TYPE,
         data: {
           transactionId,
           status: 'success',

@@ -23,6 +23,7 @@ Bienvenue dans la documentation complète de la plateforme de location et vente 
 - **[feature/](./feature/)** : Documentation des features
   - Annuaire des features
   - Spécifications par feature (UX, UI, UML)
+  - Auth (index): [feature/auth/README.md](./feature/auth/README.md)
 
 ### ⚙️ Configuration & Setup
 - **[setup/](./setup/)** : Guides de configuration
@@ -107,4 +108,3 @@ Bienvenue dans la documentation complète de la plateforme de location et vente 
 ---
 
 *Dernière mise à jour : 2026-01-12*
-

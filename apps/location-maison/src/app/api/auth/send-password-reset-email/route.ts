@@ -4,158 +4,141 @@ import { render } from '@react-email/render';
 import PasswordReset from '@/emails/PasswordReset';
 import { emailService, EmailService } from '@/services/email.service';
 import { EmailService as EmailTemplateService } from '@/emails/index';
+import { createLogger } from '@/lib/logger';
+import { assertStringField, handleApiError, jsonApiError } from '@/lib/api/error-response';
+import { AppError } from '@/lib/errors/app-error';
+
+const logger = createLogger('api.auth.send-password-reset-email');
 
 export async function POST(request: NextRequest) {
   try {
-    const { email, subject, texts } = await request.json();
-
-    if (!email) {
-      return NextResponse.json(
-        { error: 'Email est requis' },
-        { status: 400 }
-      );
-    }
+    const body = await request.json();
+    const { email, subject, texts } = body || {};
+    assertStringField(email, 'email', 'Email est requis');
 
     const actionCodeSettings = {
       url: `${process.env.NEXT_PUBLIC_HOST || 'http://localhost:3000'}/request-password-reset`,
       handleCodeInApp: false,
     };
 
-    try {
-      // Récupérer l'utilisateur par son email
-      const user = await adminAuth.getUserByEmail(email);
-      
-      // Générer le lien de réinitialisation Firebase
-      const firebaseResetLink = await adminAuth.generatePasswordResetLink(
-        email,
-        actionCodeSettings
-      );
+    // Récupérer l'utilisateur par son email
+    const user = await adminAuth.getUserByEmail(email);
 
-      // Extraire l'oobCode du lien Firebase
-      const url = new URL(firebaseResetLink);
-      const oobCode = url.searchParams.get('oobCode');
+    // Générer le lien de réinitialisation Firebase
+    const firebaseResetLink = await adminAuth.generatePasswordResetLink(
+      email,
+      actionCodeSettings
+    );
 
-      console.log('🔍 Lien Firebase original:', firebaseResetLink);
-      console.log('🔍 oobCode extrait:', oobCode);
+    // Extraire l'oobCode du lien Firebase
+    const url = new URL(firebaseResetLink);
+    const oobCode = url.searchParams.get('oobCode');
+    logger.debug('Password reset oobCode extracted', {
+      email,
+      hasResetCode: !!oobCode,
+    });
 
-      if (!oobCode) {
-        throw new Error('Impossible de générer le code de réinitialisation');
-      }
-
-      // Créer notre lien personnalisé
-      const params = new URLSearchParams();
-      params.set('oobCode', oobCode);
-      const resetLink = `${process.env.NEXT_PUBLIC_HOST || 'http://localhost:3000'}/api/auth/password-reset?${params.toString()}`;
-      
-      console.log('🔍 Lien personnalisé généré:', resetLink);
-
-      // Préparer les données pour l'email
-      const name = user.displayName?.split(' ')[0] || email.split('@')[0];
-      
-      // Utiliser les textes par défaut du EmailService qui incluent expirationInfo
-      const emailProps = EmailTemplateService.generatePasswordResetProps(
-        name,
-        email,
-        resetLink,
-        texts
-      );
-
-      // Générer l'email HTML
-      const emailHtml = await render(
-        PasswordReset(emailProps)
-      );
-
-      // Générer l'email en texte brut
-      const emailText = await render(
-        PasswordReset(emailProps),
-        { plainText: true }
-      );
-
-      // Données de l'email
-      const emailData = {
-        from: EmailService.getDefaultFromAddress(),
-        to: email,
-        subject: subject || 'Réinitialisez votre mot de passe - Trouve Ton Nkama',
-        text: emailText,
-        html: emailHtml,
-      };
-
-      // Envoyer l'email avec le service centralisé
-      await emailService.sendEmail(emailData, resetLink);
-      
-      return NextResponse.json({
-        success: true,
-        message: 'Email de réinitialisation envoyé avec succès',
-        ...(process.env.NODE_ENV === 'development' && { resetLink }),
+    if (!oobCode) {
+      throw new AppError('Impossible de générer le code de réinitialisation', {
+        code: 'PASSWORD_RESET_LINK_GENERATION_FAILED',
+        status: 500,
       });
-    } catch (error: any) {
-      console.error('Erreur lors de l\'envoi de l\'email:', error);
-      
-      // Gestion spécifique des erreurs Firebase Auth
-      if (error.code === 'auth/user-not-found') {
-        return NextResponse.json(
-          { error: 'Aucun compte associé à cette adresse email' },
-          { status: 404 }
-        );
-      }
-      
-      if (error.code === 'auth/invalid-email') {
-        return NextResponse.json(
-          { error: 'Adresse email invalide' },
-          { status: 400 }
-        );
-      }
-      
-      if (error.code === 'auth/user-disabled') {
-        return NextResponse.json(
-          { error: 'Ce compte a été désactivé. Veuillez contacter le support.' },
-          { status: 403 }
-        );
-      }
-      
-      // Gestion de l'erreur RESET_PASSWORD_EXCEED_LIMIT
-      if (error.message && error.message.includes('RESET_PASSWORD_EXCEED_LIMIT')) {
-        return NextResponse.json(
-          { 
-            error: 'Trop de tentatives de réinitialisation. Veuillez attendre quelques minutes avant de réessayer.',
-            code: 'RATE_LIMIT_EXCEEDED',
-            retryAfter: 300 // 5 minutes en secondes
-          },
-          { status: 429 }
-        );
-      }
-      
-      // Gestion des erreurs de quota/limite
-      if (error.message && (
-        error.message.includes('QUOTA_EXCEEDED') ||
-        error.message.includes('RATE_LIMITED')
-      )) {
-        return NextResponse.json(
-          { 
-            error: 'Service temporairement indisponible. Veuillez réessayer dans quelques minutes.',
-            code: 'SERVICE_UNAVAILABLE'
-          },
-          { status: 503 }
-        );
-      }
-      
-      // Log détaillé pour les autres erreurs
-      console.error('Erreur Firebase Auth détaillée:', {
-        code: error.code,
-        message: error.message,
-        details: error.errorInfo || error
-      });
-      
-      return NextResponse.json(
-        { error: 'Erreur lors de l\'envoi de l\'email de réinitialisation' },
-        { status: 500 }
+    }
+
+    // Créer notre lien personnalisé
+    const params = new URLSearchParams();
+    params.set('oobCode', oobCode);
+    const resetLink = `${process.env.NEXT_PUBLIC_HOST || 'http://localhost:3000'}/api/auth/password-reset?${params.toString()}`;
+
+    // Préparer les données pour l'email
+    const name = user.displayName?.split(' ')[0] || email.split('@')[0];
+
+    // Utiliser les textes par défaut du EmailService qui incluent expirationInfo
+    const emailProps = EmailTemplateService.generatePasswordResetProps(
+      name,
+      email,
+      resetLink,
+      texts
+    );
+
+    // Générer l'email HTML
+    const emailHtml = await render(
+      PasswordReset(emailProps)
+    );
+
+    // Générer l'email en texte brut
+    const emailText = await render(
+      PasswordReset(emailProps),
+      { plainText: true }
+    );
+
+    // Données de l'email
+    const emailData = {
+      from: EmailService.getDefaultFromAddress(),
+      to: email,
+      subject: subject || 'Réinitialisez votre mot de passe - Trouve Ton Nkama',
+      text: emailText,
+      html: emailHtml,
+    };
+
+    // Envoyer l'email avec le service centralisé
+    const emailSendResult = await emailService.sendEmail(emailData, resetLink);
+
+    logger.info('Password reset email sent', {
+      email,
+      simulated: emailSendResult.simulated,
+      messageId: emailSendResult.messageId,
+      acceptedCount: emailSendResult.accepted.length,
+      rejectedCount: emailSendResult.rejected.length,
+      rejected: emailSendResult.rejected,
+    });
+    return NextResponse.json({
+      success: true,
+      message: 'Email de réinitialisation envoyé avec succès',
+      ...(process.env.NODE_ENV === 'development' && { resetLink }),
+    });
+  } catch (error) {
+    const message = error instanceof Error ? error.message : '';
+    if (message.includes('RESET_PASSWORD_EXCEED_LIMIT')) {
+      logger.warn('Password reset rate limit exceeded', { error });
+      return jsonApiError(
+        429,
+        'RATE_LIMIT_EXCEEDED',
+        'Trop de tentatives de réinitialisation. Veuillez attendre quelques minutes avant de réessayer.',
+        { retryAfter: 300 }
       );
     }
-  } catch (error) {
-    console.error('Erreur générale:', error);
-    return NextResponse.json(
-      { error: 'Erreur interne du serveur' },
-      { status: 500 }
-    );
+
+    if (message.includes('QUOTA_EXCEEDED') || message.includes('RATE_LIMITED')) {
+      logger.warn('Password reset provider quota exceeded', { error });
+      return jsonApiError(
+        503,
+        'SERVICE_UNAVAILABLE',
+        'Service temporairement indisponible. Veuillez réessayer dans quelques minutes.'
+      );
+    }
+
+    return handleApiError(error, {
+      logger,
+      route: '/api/auth/send-password-reset-email',
+      fallbackMessage: 'Erreur lors de l\'envoi de l\'email de réinitialisation',
+      knownCodes: {
+        'auth/user-not-found': {
+          status: 404,
+          code: 'USER_NOT_FOUND',
+          message: 'Aucun compte associé à cette adresse email',
+        },
+        'auth/invalid-email': {
+          status: 400,
+          code: 'INVALID_EMAIL',
+          message: 'Adresse email invalide',
+        },
+        'auth/user-disabled': {
+          status: 403,
+          code: 'USER_DISABLED',
+          message: 'Ce compte a été désactivé. Veuillez contacter le support.',
+        },
+      },
+    });
   }
-} 
+}

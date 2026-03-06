@@ -29,6 +29,8 @@ npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 .pnpm-debug.log*
+firebase-debug.log
+firebase-debug.*.log
 
 # env files (can opt-in for committing if needed)
 .env*
@@ -50,3 +52,9 @@ init.txt
 
 # Large GeoJSON files
 /public/data/gabon_polygons.geojson
+
+# Firebase Service Account files (sensitive credentials)
+# Ignore all JSON files but allow README.md
+/services-account-firebase/**/*.json
+/services-account-firebase/**/*.key
+/services-account-firebase/**/*.pem

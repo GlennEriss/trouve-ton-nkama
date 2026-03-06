@@ -56,7 +56,14 @@ const nextConfig: NextConfig = {
   },
 };
 
-export default withPWA({
+const withPwaConfig = withPWA({
   dest: 'public',
   disable: process.env.NODE_ENV === 'development',
-})(nextConfig);
+});
+
+// Turbopack warns when `webpack` is configured but `turbo` is not.
+// next-pwa injects a webpack function even when disabled in development,
+// so we only apply the plugin outside development.
+export default process.env.NODE_ENV === 'development'
+  ? nextConfig
+  : withPwaConfig(nextConfig);

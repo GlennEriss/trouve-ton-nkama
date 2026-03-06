@@ -34,5 +34,6 @@ export const USER_MOCK: User = {
     idToken: "fake-id-token",
     accessToken: "fake-access-token"
   },
-  favoris: ["property1", "property2"]
+  favoris: ["property1", "property2"],
+  credits: 3
 }

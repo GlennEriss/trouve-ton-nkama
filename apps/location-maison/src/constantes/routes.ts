@@ -39,6 +39,7 @@ export const routes = {
         emailVerificationSuccess: '/email-verification-success',
         confidentiality: '/privacy-policy',
         terms_of_use: '/terms-of-use',
+        announcer_terms: '/announcer-terms',
         data_deletion: '/data-deletion',
         search: '/search',
         search_property: '/search',
@@ -64,6 +65,7 @@ export const routes = {
         search: '/search',
         confidentiality: '/privacy-policy',
         terms_of_use: '/terms-of-use',
+        announcer_terms: '/announcer-terms',
         // Routes importantes pour Google
         blog: '/blog',
         blog_tendances_marche: '/blog/tendances-marche-immobilier-gabon-2024',

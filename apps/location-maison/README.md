@@ -1,107 +1,149 @@
-# Location Maison - Plateforme de Location Immobilière
+# Location Maison - Plateforme de location immobilière
 
-## 🚀 Démarrage du projet
-
-Pour lancer le projet, consultez la section `scripts` dans le fichier `package.json`.
+## Démarrage rapide
 
 ```bash
+npm install
 npm run dev
 ```
 
-## 🔐 Configuration Vault
+Le projet démarre en mode Turbopack via `next dev --turbopack`.
 
-Pour lancer Vault, entrez dans le dossier vault et exécutez :
+## Prérequis
+
+- Node.js (version projet)
+- npm
+- Docker (si usage Jenkins local)
+- Vault (optionnel)
+
+## Observabilité: logs et incidents
+
+### Logger applicatif (standard)
+
+Le logger centralisé est dans `src/lib/logger.ts`.
+
+- API: `createLogger('scope').debug|info|warn|error(message, context?)`
+- Format: JSON structuré (timestamp, level, scope, message, context)
+- Sécurité: redaction automatique des clés sensibles (`password`, `token`, `authorization`, `cookie`, `oobCode`, etc.)
+- Niveaux:
+  - `LOG_LEVEL`
+  - `NEXT_PUBLIC_LOG_LEVEL`
+  - fallback: `debug` en développement, `info` sinon
+
+Exemple:
+
+```ts
+import { createLogger } from '@/lib/logger';
+
+const logger = createLogger('auth.service');
+logger.warn('Phone uniqueness check failed', { phoneNumber, error });
+```
+
+### Gestion d’erreurs centralisée
+
+#### Côté application
+
+- Erreurs métiers/API partagées: `src/lib/errors/app-error.ts`
+  - `AppError`
+  - `ValidationError`
+  - `UnauthorizedError`
+  - `NotFoundError`
+
+#### Côté API Next.js
+
+- Couche commune: `src/lib/api/error-response.ts`
+  - `assertStringField(...)`: validation de payload
+  - `jsonApiError(...)`: réponse JSON homogène
+  - `handleApiError(...)`: mapping/normalisation/logging
+
+Format standard de réponse d’erreur:
+
+```json
+{
+  "success": false,
+  "error": {
+    "code": "ERROR_CODE",
+    "message": "Message lisible",
+    "details": {}
+  }
+}
+```
+
+Routes auth déjà alignées:
+
+- `POST /api/auth/send-verification-email`
+- `POST /api/auth/send-password-reset-email`
+- `POST /api/auth/password-reset-request`
+- `GET|POST /api/auth/password-reset`
+- `GET|POST /api/auth/verify-email`
+
+### Incident: comment être averti et investiguer
+
+État actuel:
+
+- ✅ Logs structurés disponibles (app + routes auth)
+- ✅ Logs functions consultables
+- ❌ Pas d’alerte on-call centralisée implémentée dans le repo (Slack/PagerDuty/Email alerting automatisé)
+
+Consultation des incidents:
+
+1. Application Next.js locale:
+```bash
+NEXT_PUBLIC_LOG_LEVEL=debug npm run dev
+```
+2. Cloud Functions Firebase (emails/auth):
+```bash
+firebase functions:log --project <project-id> --only sendVerificationEmail --follow
+```
+3. Déploiement Vercel (si utilisé):
+```bash
+vercel logs <deployment-url>
+```
+
+Recommandation minimale pour alerting:
+
+1. Activer alertes Vercel (erreurs runtime/latence)
+2. Activer alertes Firebase/GCP (Functions errors rate)
+3. Router vers un canal unique (Slack / email astreinte)
+
+## Feature Auth: état actuel (register)
+
+Référence: `documentation/feature/auth/PROGRESSION.md`
+
+- Fait:
+  - repository `UserRepository` + tests
+  - service `AuthServiceImpl` + rollback + tests
+  - hook `useSignup` + tests
+  - formulaire signup (desktop/mobile) branché sur `useSignup`
+  - distinction signup `Utilisateur` / `Annonceur` avec validation des conditions annonceur
+  - envoi email de vérification via endpoint dédié
+  - logger intégré dans le flux auth
+  - standardisation des erreurs API auth
+- Manque:
+  - migration "Devenir Annonceur" post-inscription
+  - création `AnnouncerProfile` à la création annonceur
+  - E2E signup complets (User + Announcer) et couverture cible projet
+
+## Vault (optionnel)
 
 ```bash
 cd scripts/vault
 vault server -config=vault.hcl
 ```
 
-Vault sera accessible sur : `http://localhost:8200`
+Vault: `http://localhost:8200`
 
-## 🏗️ Jenkins & CI/CD
-
-### Démarrage de Jenkins
-Pour lancer Jenkins avec Docker :
+## Jenkins local
 
 ```bash
 docker compose up --build
 ```
 
-Jenkins sera accessible sur : `http://localhost:8090`
+Jenkins: `http://localhost:8090`
 
-### Exposition publique avec ngrok
+## Documentation projet
 
-Pour rendre Jenkins accessible publiquement via Internet :
-
-```bash
-# Lancer ngrok avec URL auto-générée (plan gratuit)
-ngrok http 8090
-```
-
-#### Processus complet
-1. **Démarrer Jenkins** :
-   ```bash
-   docker compose up -d
-   ```
-
-2. **Attendre que Jenkins soit prêt** (vérifier sur http://localhost:8090)
-
-3. **Lancer ngrok** :
-   ```bash
-   ngrok http 8090
-   ```
-
-4. **Récupérer l'URL publique** :
-   - Interface ngrok : http://localhost:4040
-   - L'URL publique sera affichée dans le terminal ngrok (ex: `https://abc123.ngrok.io`)
-
-## 🔧 Prérequis
-
-- Node.js 
-- Docker & Docker Compose
-- ngrok (installé sur la machine hôte)
-- Vault (optionnel)
-
-## 📁 Structure du projet
-
-```
-location-maison/
-├── src/                    # Code source de l'application
-├── documentation/          # Documentation complète du projet
-│   ├── workflow/          # Workflow d'implémentation
-│   ├── uml/               # Diagrammes UML
-│   ├── feature/           # Documentation des features
-│   ├── setup/             # Guides de configuration
-│   ├── email/             # Documentation email
-│   ├── phone/             # Documentation téléphone/SMS
-│   ├── api/               # Documentation API
-│   ├── config/            # Configuration
-│   ├── seo/               # Documentation SEO
-│   ├── migration/         # Migrations
-│   └── troubleshooting/   # Dépannage
-├── jenkins/               # Configuration Jenkins
-├── scripts/vault/         # Scripts et configuration Vault  
-├── functions/             # Firebase Functions
-└── docker-compose.yml     # Configuration Docker
-```
-
-## 📚 Documentation
-
-Toute la documentation du projet est organisée dans le dossier [`documentation/`](./documentation/).
-
-### Documentation principale
-- **[Workflow d'implémentation](./documentation/workflow/WORKFLOW.md)** : Processus complet de développement
-- **[Diagrammes UML](./documentation/uml/README.md)** : Architecture et cas d'utilisation
-- **[Annuaire des features](./documentation/feature/ANNUAIRE.md)** : Suivi des features
-
-### Guides de configuration
-- **[Setup](./documentation/setup/)** : Configuration des services (Airtel, Email, Firebase, etc.)
-- **[Variables d'environnement](./documentation/config/ENV_VARIABLES.md)** : Configuration projet
-
-### Dépannage
-- **[Troubleshooting](./documentation/troubleshooting/)** : Guides de diagnostic
-- **[Email](./documentation/email/)** : Problèmes d'email
-- **[Téléphone](./documentation/phone/)** : Problèmes SMS/téléphone
-
-Voir le [README principal de la documentation](./documentation/README.md) pour une vue d'ensemble complète.
+- Documentation globale: `documentation/README.md`
+- Workflow: `documentation/workflow/WORKFLOW.md`
+- Annuaire des features: `documentation/feature/ANNUAIRE.md`
+- Feature Auth: `documentation/feature/auth/`

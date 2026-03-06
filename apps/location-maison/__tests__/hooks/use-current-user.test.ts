@@ -1,16 +1,35 @@
 import { describe, test, expect, jest, beforeEach, afterEach } from '@jest/globals';
 import { renderHook, waitFor } from '@testing-library/react';
 
+type SessionUser = {
+  uid?: string;
+  email?: string;
+  name?: string;
+  credits?: number;
+};
+
+type SessionResult = {
+  data: { user: SessionUser } | null;
+  status: 'authenticated' | 'unauthenticated' | 'loading' | 'test';
+  update: jest.Mock;
+};
+
+type SignInWithCustomTokenFn = (
+  auth: unknown,
+  token: string
+) => Promise<{ user: { uid: string } }>;
+
 // Mock de next-auth
-const mockUseSession = jest.fn();
+const mockUseSession = jest.fn() as jest.MockedFunction<() => SessionResult>;
 jest.doMock('next-auth/react', () => ({
   useSession: mockUseSession
 }));
 
 // Mock de Firebase Auth
+const mockSignInWithCustomToken = jest.fn() as jest.MockedFunction<SignInWithCustomTokenFn>;
 const mockAuth = {
-  currentUser: null,
-  signInWithCustomToken: jest.fn()
+  currentUser: null as { uid: string } | null,
+  signInWithCustomToken: mockSignInWithCustomToken
 };
 
 jest.doMock('@/firebase/auth', () => ({
@@ -19,7 +38,7 @@ jest.doMock('@/firebase/auth', () => ({
 }));
 
 // Mock global fetch
-global.fetch = jest.fn();
+global.fetch = jest.fn() as jest.MockedFunction<typeof fetch>;
 
 describe('useCurrentUser Hook Tests', () => {
   const mockFetch = global.fetch as jest.MockedFunction<typeof fetch>;
@@ -109,7 +128,7 @@ describe('useCurrentUser Hook Tests', () => {
     });
 
     test('devrait gérer les différents états d\'authentification', () => {
-      const authStates = [
+      const authStates: Array<Pick<SessionResult, 'status' | 'data'>> = [
         { status: 'loading', data: null },
         { status: 'authenticated', data: { user: { uid: 'user-1' } } },
         { status: 'unauthenticated', data: null }
@@ -144,7 +163,7 @@ describe('useCurrentUser Hook Tests', () => {
     });
 
     test('devrait simuler la connexion Firebase', async () => {
-      const mockSignIn = jest.fn();
+      const mockSignIn = jest.fn() as jest.MockedFunction<SignInWithCustomTokenFn>;
       mockAuth.signInWithCustomToken = mockSignIn;
 
       // Simuler un token valide
@@ -157,7 +176,7 @@ describe('useCurrentUser Hook Tests', () => {
     });
 
     test('devrait gérer les erreurs Firebase Auth', async () => {
-      const mockSignIn = jest.fn();
+      const mockSignIn = jest.fn() as jest.MockedFunction<SignInWithCustomTokenFn>;
       mockAuth.signInWithCustomToken = mockSignIn;
 
       mockSignIn.mockRejectedValue(new Error('Firebase Auth error'));
@@ -301,7 +320,8 @@ describe('useCurrentUser Hook Tests', () => {
       expect(tokenData.token).toBe('integration-token');
 
       // 5. Connexion Firebase
-      const mockSignIn = jest.fn().mockResolvedValue({ user: { uid: user.uid } });
+      const mockSignIn = jest.fn() as jest.MockedFunction<SignInWithCustomTokenFn>;
+      mockSignIn.mockResolvedValue({ user: { uid: user.uid } });
       mockAuth.signInWithCustomToken = mockSignIn;
 
       await mockSignIn(mockAuth, tokenData.token);

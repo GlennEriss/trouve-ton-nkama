@@ -17,16 +17,16 @@ const COLLECTION_USERS = "users";
 
 // Configuration de l'utilisateur à créer
 const USER_DATA = {
-  login: "jikaimmo@ttn.ga",
-  password: "jikaimmo",
+  login: "patrickghislain@ttn.ga",
+  password: "patrickghislain",
   roles: ["Announcer"],
   provider: ["CREDENTIALS"],
-  credits: 25,
-  firstname: "Jika",
-  lastname: "Immo",
+  credits: 100,
+  firstname: "Patrick",
+  lastname: "Ghislain",
   country: { name: "Gabon", code: "GA" },
-  phoneNumbers: ["+24166569534"],
-  searchableName: "jika immo",
+  phoneNumbers: ["+24177531657"], // Format nettoyé : +241 77 53 16 57 -> +24177531657
+  searchableName: "patrick ghislain",
 };
 
 // Paramètres de notification par défaut

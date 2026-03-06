@@ -1,14 +1,11 @@
 'use client'
 import { routes } from '@/constantes/routes'
-import { createUser, findUserByPhoneNumber } from '@/db/user.db'
 import { useToast } from '@/hooks/use-toast'
-import { transformToPerson } from '@/lib/transformToPerson'
+import { createLogger } from '@/lib/logger'
 import { cn } from '@/lib/utils'
-import { User } from '@/models/authentication'
-import { NotificationParameter } from '@/models/notification'
 import { FormRegisterSchema, FormRegisterSchemaType } from '@/models/schema'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { Calendar, ChevronLeft, CircleUser, KeyRound, Mail } from 'lucide-react'
+import { Building2, ChevronLeft, CircleUser, KeyRound, Mail } from 'lucide-react'
 import { Inter } from 'next/font/google'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
@@ -19,27 +16,31 @@ import { InputFormApp } from '../shared/form/InputFormApp'
 import { ButtonApp } from '../shared/ui/ButtonApp'
 import { signIn } from 'next-auth/react'
 import { Button } from '../ui/button'
-import { SelectFormApp } from '../shared/form/SelectFormApp'
-
 import { PhoneNumberFormApp } from '../shared/form/PhoneNumberFormApp'
 import { CheckboxFormApp } from '../shared/form/CheckboxFormApp'
 import { DateSelect } from '../shared/form/DateSelect'
+import { useSignup } from '@/features/auth/hooks'
+import { mapRegisterFormToSignupData } from '@/features/auth/ui/v1/signup.mapper'
 
 const inter = Inter({
     subsets: ['latin'],
     weight: ['400'],
 })
 
+const logger = createLogger('auth.signup-mobile')
+
 export const SignupMobileComponent = () => {
     const router = useRouter()
     const { toast } = useToast()
     const [isOtherMethodConnection, setIsOtherMethodConnection] = React.useState(false)
-    const [isRegistering, setIsRegistering] = React.useState(false)
+    const { signup, isLoading } = useSignup()
     
     const form = useForm<FormRegisterSchemaType>({
         resolver: zodResolver(FormRegisterSchema),
         mode: 'onChange', // Validation en temps réel
         defaultValues: {
+            accountType: 'User',
+            acceptAnnouncerTerms: false,
             firstname: '',
             lastname: '',
             email: '',
@@ -55,183 +56,78 @@ export const SignupMobileComponent = () => {
             termsOfPrivacyPolicy: false
         }
     })
+    const selectedAccountType = form.watch('accountType') || 'User'
     
     const handleSigninWithGoogle = async () => {
         setIsOtherMethodConnection(true)
         try {
             await signIn('google')
         } catch (error) {
-            console.error('Erreur lors de la connexion Google:', error)
+            logger.error('Google sign-in failed from mobile signup', { error })
         } finally {
             setIsOtherMethodConnection(false)
         }
     }
-    
-    const onRegister = async (user: Partial<User>) => {
-        try {
-            // Vérification obligatoire du numéro de téléphone
-            if (!user.phoneNumbers || user.phoneNumbers.length === 0 || !user.phoneNumbers[0]) {
-                throw new Error("Le numéro de téléphone est obligatoire.");
-            }
-            
-            // Vérification si le numéro est déjà associé à un compte
-            const existingUser = await findUserByPhoneNumber(user.phoneNumbers[0]);
-            if (existingUser) {
-                throw new Error("Un numéro est déjà associé à un compte.");
-            }
-            
-            const getAuth = () => import("@/firebase/auth");
-            const { createUserWithEmailAndPassword, auth, signOut } = await getAuth();
-            const userCred = await createUserWithEmailAndPassword(
-                auth,
-                user.login!,
-                user.password!
-            );
-            
-            // Envoyer l'email de vérification en arrière-plan (non-bloquant)
-            fetch('/api/auth/send-verification-email', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({
-                        email: user.login!,
-                    }),
-            }).then(response => {
-                if (!response.ok) {
-                    console.warn('Erreur lors de l\'envoi de l\'email de vérification, mais le compte a été créé');
-                }
-            }).catch(error => {
-                console.warn('Erreur lors de l\'envoi de l\'email de vérification:', error);
-                // L'email peut échouer sans affecter l'inscription
-            });
-            
-            const { password, ...userDetails } = user
-            const notificationParameter: NotificationParameter = {
-                isNew: true,
-                isAccountActivity: true,
-                isNewAnnouncement: true,
-                isFavoris: true,
-                isPersonalizedSuggestions: true,
-                isSystemUpdated: true
-            }
-            await createUser({
-                ...userDetails,
-                uid: userCred.user.uid,
-                notificationParameter,
-                providers: ['CREDENTIALS']
-            })
-            await signOut(auth)
-            return userCred.user.uid
-        } catch (error: any) {
-            console.error(error)
-            
-            // Gestion spécifique des erreurs Firebase
-            let errorMessage = "Une erreur est survenue lors de la création du compte."
-            let errorTitle = "Création de compte"
-            
-            if (error.code === 'auth/email-already-in-use') {
-                errorMessage = "Cette adresse email est déjà utilisée par un autre compte."
-                errorTitle = "Email déjà utilisé"
-            } else if (error.code === 'auth/invalid-email') {
-                errorMessage = "L'adresse email fournie n'est pas valide."
-                errorTitle = "Email invalide"
-            } else if (error.code === 'auth/weak-password') {
-                errorMessage = "Le mot de passe est trop faible. Il doit contenir au moins 6 caractères."
-                errorTitle = "Mot de passe faible"
-            } else if (error.code === 'auth/operation-not-allowed') {
-                errorMessage = "L'inscription par email/mot de passe n'est pas activée."
-                errorTitle = "Méthode non autorisée"
-            } else if (error.code === 'auth/too-many-requests') {
-                errorMessage = "Trop de tentatives. Veuillez attendre quelques minutes avant de réessayer."
-                errorTitle = "Trop de tentatives"
-            } else if (error.message && error.message.includes("numéro est déjà associé")) {
-                errorMessage = error.message
-                errorTitle = "Numéro déjà utilisé"
-            } else if (error.message && error.message.includes("numéro de téléphone est obligatoire")) {
-                errorMessage = error.message
-                errorTitle = "Numéro de téléphone manquant"
-            } else {
-                // Pour les autres erreurs, utiliser le message d'erreur original
-                errorMessage = error.message || "Une erreur inattendue s'est produite."
-            }
-            
-            toast({
-                duration: 5000,
-                title: errorTitle,
-                description: errorMessage,
-                variant: 'destructive',
-            });
-        } finally {
-            setIsRegistering(false)
-        }
-    }
 
     const onSubmit = async (values: FormRegisterSchemaType) => {
-        // La validation se fait automatiquement via react-hook-form et zodResolver
-        // Pas besoin de faire safeParse manuellement
-        
-        setIsRegistering(true)
         try {
-            const user = transformToPerson(values)
-            const uid = await onRegister(user)
+            const signupData = mapRegisterFormToSignupData(values)
+            const result = await signup(signupData)
             
-            toast({
-                duration: 5000,
-                title: 'Création de compte',
-                description: "Votre compte a été créé avec succès!",
-                variant: 'success',
-            });
-            
-            router.push('/signup/success?uid=' + uid)
-        } catch (error: any) {
-            console.error(error)
-            
-            // Gestion spécifique des erreurs Firebase
-            let errorMessage = "Une erreur est survenue lors de la création du compte."
-            let errorTitle = "Création de compte"
-            
-            if (error.code === 'auth/email-already-in-use') {
-                errorMessage = "Cette adresse email est déjà utilisée par un autre compte."
-                errorTitle = "Email déjà utilisé"
-            } else if (error.code === 'auth/invalid-email') {
-                errorMessage = "L'adresse email fournie n'est pas valide."
-                errorTitle = "Email invalide"
-            } else if (error.code === 'auth/weak-password') {
-                errorMessage = "Le mot de passe est trop faible. Il doit contenir au moins 6 caractères."
-                errorTitle = "Mot de passe faible"
-            } else if (error.code === 'auth/operation-not-allowed') {
-                errorMessage = "L'inscription par email/mot de passe n'est pas activée."
-                errorTitle = "Méthode non autorisée"
-            } else if (error.code === 'auth/too-many-requests') {
-                errorMessage = "Trop de tentatives. Veuillez attendre quelques minutes avant de réessayer."
-                errorTitle = "Trop de tentatives"
-            } else if (error.message && error.message.includes("numéro est déjà associé")) {
-                errorMessage = error.message
-                errorTitle = "Numéro déjà utilisé"
-            } else if (error.message && error.message.includes("numéro de téléphone est obligatoire")) {
-                errorMessage = "Le numéro de téléphone est obligatoire"
-                errorTitle = "Numéro de téléphone manquant"
-            } else if (error.message && error.message.includes("numéro de téléphone est invalide")) {
-                errorMessage = "Le numéro de téléphone est invalide"
-                errorTitle = "Numéro de téléphone invalide"
+            if (result.success && result.userId) {
+                toast({
+                    duration: 5000,
+                    title: 'Création de compte',
+                    description: "Votre compte a été créé avec succès!",
+                    variant: 'success',
+                });
+                router.push('/signup/success?uid=' + result.userId)
             } else {
-                // Pour les autres erreurs, utiliser le message d'erreur original
-                errorMessage = error.message || "Une erreur inattendue s'est produite."
+                const code = result.error?.code
+                let errorMessage = result.error?.message || "Une erreur est survenue lors de la création du compte."
+                let errorTitle = "Création de compte"
+
+                if (code === 'EMAIL_ALREADY_IN_USE') {
+                    errorMessage = "Cette adresse email est déjà utilisée par un autre compte."
+                    errorTitle = "Email déjà utilisé"
+                } else if (code === 'INVALID_EMAIL') {
+                    errorMessage = "L'adresse email fournie n'est pas valide."
+                    errorTitle = "Email invalide"
+                } else if (code === 'WEAK_PASSWORD') {
+                    errorMessage = "Le mot de passe est trop faible. Il doit contenir au moins 8 caractères."
+                    errorTitle = "Mot de passe faible"
+                } else if (code === 'PHONE_ALREADY_IN_USE') {
+                    errorMessage = "Ce numéro de téléphone est déjà associé à un compte."
+                    errorTitle = "Numéro déjà utilisé"
+                } else if (code === 'TERMS_NOT_ACCEPTED') {
+                    errorMessage = "Vous devez accepter les conditions pour créer un compte."
+                    errorTitle = "Conditions non acceptées"
+                } else if (code === 'ANNOUNCER_TERMS_NOT_ACCEPTED') {
+                    errorMessage = "Vous devez accepter les conditions annonceur pour créer un compte annonceur."
+                    errorTitle = "Conditions annonceur non acceptées"
+                }
+
+                toast({
+                    duration: 5000,
+                    title: errorTitle,
+                    description: errorMessage,
+                    variant: 'destructive',
+                });
             }
-            
+        } catch (error) {
+            logger.error('Unexpected error during mobile signup', { error })
             toast({
                 duration: 5000,
-                title: errorTitle,
-                description: errorMessage,
+                title: "Erreur",
+                description: "Une erreur inattendue s'est produite.",
                 variant: 'destructive',
-            });
+            })
         } finally {
-            setIsRegistering(false)
+            // no-op: state handled by useSignup + RHF
         }
     }
     
-    const isFormLoading = isRegistering || form.formState.isSubmitting
+    const isFormLoading = isLoading || form.formState.isSubmitting
     const isGoogleLoading = isOtherMethodConnection
     
     return (
@@ -251,6 +147,51 @@ export const SignupMobileComponent = () => {
             <Form {...form}>
                 <section className='mt-8 md:mt-10'>
                     <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-3">
+                        <div className="space-y-2">
+                            <label className="text-sm font-medium text-gray-700">Type de compte</label>
+                            <div className="grid grid-cols-2 gap-2">
+                                <button
+                                    type="button"
+                                    onClick={() =>
+                                        form.setValue('accountType', 'User', {
+                                            shouldDirty: true,
+                                            shouldValidate: true,
+                                        })
+                                    }
+                                    className={`rounded-xl border p-3 text-left ${
+                                        selectedAccountType === 'User'
+                                            ? 'border-[#1FA89B] bg-teal-50'
+                                            : 'border-gray-200'
+                                    }`}
+                                >
+                                    <div className="flex items-center gap-2 font-semibold text-sm">
+                                        <CircleUser size={16} />
+                                        Utilisateur
+                                    </div>
+                                    <p className="text-xs text-gray-500 mt-1">Chercher un logement</p>
+                                </button>
+                                <button
+                                    type="button"
+                                    onClick={() =>
+                                        form.setValue('accountType', 'Announcer', {
+                                            shouldDirty: true,
+                                            shouldValidate: true,
+                                        })
+                                    }
+                                    className={`rounded-xl border p-3 text-left ${
+                                        selectedAccountType === 'Announcer'
+                                            ? 'border-[#1FA89B] bg-teal-50'
+                                            : 'border-gray-200'
+                                    }`}
+                                >
+                                    <div className="flex items-center gap-2 font-semibold text-sm">
+                                        <Building2 size={16} />
+                                        Annonceur
+                                    </div>
+                                    <p className="text-xs text-gray-500 mt-1">Publier des annonces</p>
+                                </button>
+                            </div>
+                        </div>
                         <InputFormApp
                             control={form.control}
                             name='firstname'
@@ -334,6 +275,21 @@ export const SignupMobileComponent = () => {
                                 </>
                             }
                         />
+                        {selectedAccountType === 'Announcer' && (
+                            <CheckboxFormApp
+                                control={form.control}
+                                name='acceptAnnouncerTerms'
+                                label={
+                                    <>
+                                        J&apos;accepte les{" "}
+                                        <a href={routes.public.announcer_terms} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">
+                                            conditions annonceur
+                                        </a>
+                                        .
+                                    </>
+                                }
+                            />
+                        )}
                         <div className='flex flex-col items-center gap-3'>
                             <ButtonApp
                                 type='submit'
