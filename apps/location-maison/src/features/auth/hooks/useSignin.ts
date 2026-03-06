@@ -2,7 +2,8 @@
 
 import { routes } from '@/constantes/routes';
 import { createLogger } from '@/lib/logger';
-import { signIn } from 'next-auth/react';
+import { getPostAuthRedirectPath } from '@/lib/auth/role-routing';
+import { getSession, signIn } from 'next-auth/react';
 import { useCallback, useState } from 'react';
 
 export interface SigninCredentials {
@@ -20,6 +21,7 @@ export interface SigninError {
 export interface SigninResult {
   success: boolean;
   error?: SigninError;
+  redirectTo?: string;
 }
 
 export interface UseSigninReturn {
@@ -189,7 +191,9 @@ export function useSignin(): UseSigninReturn {
         logger.info('Credentials signin succeeded', {
           email: credentials.email,
         });
-        return { success: true };
+        const session = await getSession();
+        const redirectTo = getPostAuthRedirectPath(session?.user ?? null);
+        return { success: true, redirectTo };
       } catch (error) {
         logger.error('Credentials signin crashed', {
           email: credentials.email,

@@ -11,14 +11,6 @@ import { useCurrentUser } from '@/hooks/use-current-user';
 import { Inter } from 'next/font/google';
 import { cn } from '@/lib/utils';
 
-const menu = [
-    { title: 'Logements', icon: House, link: routes.protected.properties },
-    { title: 'Favoris', icon: Heart, link: routes.protected.favoris },
-    { title: 'Explorer', icon: Search, link: routes.public.homePage },
-    { title: 'Notification', icon: Bell, link: routes.protected.notification_list },
-    { title: 'Profil', icon: UserCircle, link: '/profil' },
-];
-
 const inter = Inter({
     subsets: ['latin'],
     weight: ['400'],
@@ -30,6 +22,19 @@ export const BottomNavigation: React.FC<BottomNavigationProps> = () => {
     const { user } = useCurrentUser()
     const pathnames = usePathname();
     const { unreadCount } = useNotifications();
+    const isAnnouncer = Array.isArray(user?.roles) && user.roles.includes('Announcer');
+
+    const menu = [
+        {
+            title: isAnnouncer ? 'Logements' : 'Catalogue',
+            icon: House,
+            link: isAnnouncer ? routes.protected.properties : routes.public.search_property,
+        },
+        { title: 'Favoris', icon: Heart, link: routes.protected.favoris },
+        { title: 'Explorer', icon: Search, link: routes.public.homePage },
+        { title: 'Notification', icon: Bell, link: routes.protected.notification_list },
+        { title: 'Profil', icon: UserCircle, link: routes.protected.profil },
+    ];
     
     if (!user) return null;
 

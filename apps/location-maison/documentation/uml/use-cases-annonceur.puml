@@ -3,7 +3,7 @@ skinparam backgroundColor #FEFEFE
 skinparam actorStyle awesome
 
 title Diagramme de Cas d'Utilisation - Annonceur
-caption Plateforme Location Maison Gabon - v2.0
+caption Plateforme Location Maison Gabon - v2.0 - Périmètre RBAC: User/Announcer (Admin hors scope)
 
 ' =====================================
 ' ACTEURS
@@ -271,7 +271,7 @@ note as AnnouncerNote
   
   **Fonctionnalités EXCLUSIVES:**
   • Créer et gérer des annonces
-  • Acheter des crédits
+  • Utiliser les crédits pour services annonceur
   • Promouvoir des annonces
   • Utiliser l'assistant IA
   • Consulter les statistiques

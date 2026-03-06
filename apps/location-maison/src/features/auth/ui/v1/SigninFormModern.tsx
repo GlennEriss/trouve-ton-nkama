@@ -84,7 +84,7 @@ export const SigninFormModern: React.FC = () => {
       description: 'Vous êtes connecté avec succès.',
       variant: 'success',
     });
-    router.push(routes.protected.properties);
+    router.push(result.redirectTo ?? routes.public.search_property);
   };
 
   useEffect(() => {

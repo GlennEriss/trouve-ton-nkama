@@ -24,6 +24,12 @@ export default function HomePageMobileComponent() {
     } = useAlgoliaContext();
 
     const { user } = useCurrentUser()
+    const isAnnouncer = Array.isArray(user?.roles) && user.roles.includes('Announcer')
+    const publishLink = !user
+        ? routes.public.signin
+        : isAnnouncer
+            ? routes.protected.add_property
+            : routes.public.search_property
     const { width } = useWindowSize()
     // Porte de garage: gestion de la navbar animée
     const [navbarVisible, setNavbarVisible] = React.useState(false);
@@ -143,7 +149,7 @@ export default function HomePageMobileComponent() {
                 <section className='space-y-5 bg-green-50 p-5 py-16'>
                     <h1 className='text-xl font-bold text-center text-[#146B67]'>Quels sont vos besoins ?</h1>
                     <div className='flex gap-2'>
-                        <Link href={user ? routes.protected.add_property : routes.public.signin} className='w-1/2 bg-[#146B67] text-white font-bold py-3 rounded-xl flex justify-center items-center'>Publier une annonce</Link>
+                        <Link href={publishLink} className='w-1/2 bg-[#146B67] text-white font-bold py-3 rounded-xl flex justify-center items-center'>Publier une annonce</Link>
                         <Link href={routes.public.search_property} className='w-1/2 bg-white border border-[#146B67] text-[#146B67] font-bold py-3 rounded-xl flex justify-center items-center text-center'>Rechercher une annonce</Link>
                     </div>
                 </section>

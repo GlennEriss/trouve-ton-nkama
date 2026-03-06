@@ -19,6 +19,7 @@ import { CheckboxFormApp } from '@/components/shared/form/CheckboxFormApp';
 import { useToast } from '@/hooks/use-toast';
 import { routes } from '@/constantes/routes';
 import { createLogger } from '@/lib/logger';
+import { getPostAuthRedirectPath } from '@/lib/auth/role-routing';
 import type { User as AuthUser } from '@/models/authentication';
 import { useCompleteProfile, mapCompleteProfileError } from '@/features/auth/hooks';
 import { CompleteProfileSchema, type CompleteProfileSchemaType } from './complete-profile.schema';
@@ -112,7 +113,7 @@ export const CompleteProfileFormModern: React.FC = () => {
       hasCompleteProfile(sessionUser) &&
       sessionUser?.metadata?.needsProfileCompletion !== true
     ) {
-      router.replace(routes.protected.properties);
+      router.replace(getPostAuthRedirectPath(sessionUser));
       return;
     }
 
@@ -203,7 +204,7 @@ export const CompleteProfileFormModern: React.FC = () => {
       variant: 'success',
     });
 
-    router.push(routes.protected.properties);
+    router.push(getPostAuthRedirectPath(updatedUser));
   };
 
   const features = [

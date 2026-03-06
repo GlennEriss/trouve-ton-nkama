@@ -90,6 +90,8 @@
 
 | Feature | Statut | Branche | Date | Notes |
 |---------|--------|---------|------|-------|
+| Gestion du profil (refactoring feature-based) | 🔄 | develop | 2026-03-06 | Cadrage cree dans `documentation/feature/users/gestion-du-profil/` |
+| Modifier ses informations (refonte UX/UI desktop + architecture) | 🔄 | develop | 2026-03-06 | Analyse creee dans `documentation/feature/users/gestion-du-profil/modifier-ses-informations/` |
 | Consulter son profil | ✅ | - | - | Existant |
 | Modifier ses informations | ✅ | - | - | Existant |
 | Changer son mot de passe | ✅ | - | - | Existant |
@@ -151,4 +153,4 @@
 
 ---
 
-*Dernière mise à jour : 2026-03-05*
+*Dernière mise à jour : 2026-03-06*

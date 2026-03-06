@@ -1,0 +1,34 @@
+@startuml modifier-informations-sequence
+title Sequence - Modifier ses informations profil
+
+actor User as Utilisateur
+participant "Page /profil/informations" as Page
+participant "Profile Hook\n(useProfileInformationUpdate)" as Hook
+participant "Profile Service\n(profile-management.service)" as Service
+database "Firestore users/{uid}" as DB
+participant "NextAuth Session" as Session
+
+Utilisateur -> Page: Ouvre la page
+Page -> Hook: charger profil courant
+Hook --> Page: valeurs initiales formulaire
+
+Utilisateur -> Page: Modifie les informations
+Utilisateur -> Page: Clique "Enregistrer"
+Page -> Hook: submit(data)
+Hook -> Service: updateProfile(uid, data)
+Service -> DB: update users/{uid}
+DB --> Service: OK
+Service --> Hook: UserUpdated
+Hook -> Session: update(session.user)
+Session --> Hook: OK
+Hook --> Page: success
+Page --> Utilisateur: toast succes + UI rafraichie
+
+alt erreur metier/validation
+  Service --> Hook: error(code, message)
+  Hook --> Page: error mapped
+  Page --> Utilisateur: message clair
+end
+
+@enduml
+

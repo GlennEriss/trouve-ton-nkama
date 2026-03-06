@@ -76,7 +76,7 @@ export default function SigninMobileComponent() {
       description: 'Vous vous êtes connectés avec succès!',
       variant: 'success',
     });
-    router.push(routes.protected.properties);
+    router.push(result.redirectTo ?? routes.public.search_property);
   };
 
   useEffect(() => {

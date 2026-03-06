@@ -16,6 +16,7 @@ export default function Navbar() {
   const { width } = useWindowSize();
   const { user } = useCurrentUser();
   const pathname = usePathname();
+  const isAnnouncer = Array.isArray(user?.roles) && user.roles.includes('Announcer');
   
   // Vérifier si on est sur une route protégée
   const isProtectedRoute = Object.values(routes.protected).some(route => 
@@ -46,7 +47,7 @@ export default function Navbar() {
         </div>
         <div className="flex items-center gap-4">
           {!isProtectedRoute && <InputSearchNavbar />}
-                  {user ? (
+                  {user && isAnnouncer ? (
           <div className="flex items-center gap-2">
             <Notifications />
             <Link href={routes.protected.add_property}>
@@ -138,19 +139,23 @@ const ButtonRegister = () => {
 
 const NavigationMenuNavbar = () => {
   const { user } = useCurrentUser()
+  const isAnnouncer = Array.isArray(user?.roles) && user.roles.includes('Announcer')
   const menu = [
-    {
-      link: user ? routes.protected.properties : routes.public.signin,
-      label: user ? "Mes annonces" : ""
-    },
+    ...(isAnnouncer ? [{
+      link: routes.protected.properties,
+      label: "Mes annonces"
+    }] : []),
     {
       link: routes.public.search_property,
       label: "Catalogue"
     },
-    {
-      link: user ? routes.protected.add_property : routes.public.signin,
+    ...(isAnnouncer ? [{
+      link: routes.protected.add_property,
       label: "Poster une annonce"
-    },
+    }] : user ? [] : [{
+      link: routes.public.signin,
+      label: "Poster une annonce"
+    }]),
   ]
   return (
     <NavigationMenu>

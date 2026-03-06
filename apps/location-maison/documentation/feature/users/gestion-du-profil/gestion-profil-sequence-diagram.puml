@@ -1,0 +1,33 @@
+@startuml gestion-profil-sequence
+title Sequence - Gestion du profil utilisateur
+
+actor Utilisateur
+participant "UI Profil\n(/profil, /profil/informations)" as UI
+participant "Middleware" as MW
+participant "Hook Session\n(useCurrentUser/useSession)" as Session
+participant "Service Profil\n(profile-management)" as Service
+database "Firestore\nusers/{uid}" as DB
+
+Utilisateur -> UI: Ouvrir page profil
+UI -> MW: Requete page protegee
+MW --> UI: Autorise si utilisateur connecte
+
+UI -> Session: Charger session utilisateur
+Session --> UI: Donnees user (roles, profil)
+
+Utilisateur -> UI: Soumettre modifications profil
+UI -> Service: updateProfile(payload)
+Service -> DB: update users/{uid}
+DB --> Service: OK
+Service --> UI: Success + user mis a jour
+UI -> Session: update(session.user)
+Session --> UI: Session synchronisee
+UI --> Utilisateur: Toast succes + profil rafraichi
+
+alt Erreur validation
+  Service --> UI: Erreur metier
+  UI --> Utilisateur: Message erreur lisible
+end
+
+@enduml
+

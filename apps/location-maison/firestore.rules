@@ -11,6 +11,16 @@ service cloud.firestore {
       return request.resource != null && 
              request.resource.data.diff(resource.data).affectedKeys().hasOnly(['credits', 'updatedAt']);
     }
+
+    function currentUserPath() {
+      return /databases/$(database)/documents/users/$(request.auth.uid);
+    }
+
+    function isAnnouncer() {
+      return isSignedIn() &&
+             exists(currentUserPath()) &&
+             get(currentUserPath()).data.roles.hasAny(['Announcer']);
+    }
     
     match /users/{userId} {
       // Lecture : l'utilisateur peut lire son propre profil, ou lecture publique pour vérification
@@ -35,8 +45,8 @@ service cloud.firestore {
     
     match /properties/{propertyId} {
       allow read: if true;
-      allow create: if isSignedIn();
-      allow update, delete: if isSignedIn() && request.auth.uid == resource.data.uid;
+      allow create: if isAnnouncer();
+      allow update, delete: if isAnnouncer() && request.auth.uid == resource.data.uid;
     }
     
     match /suggestions/{suggestionId} {
