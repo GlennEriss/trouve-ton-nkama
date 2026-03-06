@@ -9,6 +9,7 @@ export enum ProfileInformationErrorCode {
   INVALID_PHONE = 'INVALID_PHONE',
   INVALID_COUNTRY = 'INVALID_COUNTRY',
   PHONE_ALREADY_IN_USE = 'PHONE_ALREADY_IN_USE',
+  PHONE_CHANGE_LOCKED = 'PHONE_CHANGE_LOCKED',
   USER_NOT_FOUND = 'USER_NOT_FOUND',
   UPDATE_FAILED = 'UPDATE_FAILED',
   UNKNOWN_ERROR = 'UNKNOWN_ERROR',
@@ -39,4 +40,3 @@ export interface ProfileInformationService {
     data: UpdateProfileInformationData
   ): Promise<UpdateProfileInformationResult>;
 }
-

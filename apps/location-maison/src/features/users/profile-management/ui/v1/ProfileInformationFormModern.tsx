@@ -11,7 +11,7 @@ import { generateColorFromName } from '@/lib/generateColorFromName';
 import { firebaseTimestampToDate } from '@/lib/firebaseTimestampToDate';
 import { AlertTriangle, CalendarDays, ChevronLeft, Mail, ShieldCheck, UserCircle } from 'lucide-react';
 import Link from 'next/link';
-import { useEffect } from 'react';
+import { useEffect, useMemo } from 'react';
 import { useForm } from 'react-hook-form';
 import { Form } from '@/components/ui/form';
 import { ButtonApp } from '@/components/shared/ui/ButtonApp';
@@ -27,16 +27,72 @@ import {
 
 const logger = createLogger('users.profile-information-form-modern');
 const INPUT_ICON_COLOR = '#1FA89B';
+const DAY_MS = 24 * 60 * 60 * 1000;
 
 const countryOptions = countries.map((country) => ({
   label: country.name,
   value: country.code,
 }));
 
+function parseDateLike(value: unknown): Date | null {
+  if (!value) {
+    return null;
+  }
+
+  if (value instanceof Date && !Number.isNaN(value.getTime())) {
+    return value;
+  }
+
+  if (typeof value === 'string' || typeof value === 'number') {
+    const parsed = new Date(value);
+    return Number.isNaN(parsed.getTime()) ? null : parsed;
+  }
+
+  if (typeof value === 'object' && value !== null) {
+    const seconds = (value as { seconds?: unknown }).seconds;
+    const nanoseconds = (value as { nanoseconds?: unknown }).nanoseconds;
+    if (typeof seconds === 'number') {
+      const ms = seconds * 1000 + (typeof nanoseconds === 'number' ? nanoseconds / 1_000_000 : 0);
+      const parsed = new Date(ms);
+      return Number.isNaN(parsed.getTime()) ? null : parsed;
+    }
+  }
+
+  return null;
+}
+
+function getPhoneChangeLockInfo(user: unknown): {
+  isLocked: boolean;
+  lockUntil: Date | null;
+  daysRemaining: number;
+} {
+  const lockUntilRaw = (user as { metadata?: { phoneVerification?: { lockUntil?: unknown } } })?.metadata
+    ?.phoneVerification?.lockUntil;
+  const lockUntil = parseDateLike(lockUntilRaw);
+  const isVerified = Boolean((user as { phoneNumberVerified?: boolean })?.phoneNumberVerified);
+
+  if (!isVerified || !lockUntil) {
+    return { isLocked: false, lockUntil: null, daysRemaining: 0 };
+  }
+
+  const now = Date.now();
+  const remainingMs = lockUntil.getTime() - now;
+  if (remainingMs <= 0) {
+    return { isLocked: false, lockUntil, daysRemaining: 0 };
+  }
+
+  return {
+    isLocked: true,
+    lockUntil,
+    daysRemaining: Math.ceil(remainingMs / DAY_MS),
+  };
+}
+
 export function ProfileInformationFormModern() {
   const { user } = useCurrentUser();
   const { toast } = useToast();
   const { updateProfileInformation, isLoading, lastError, clearError } = useProfileInformationUpdate();
+  const phoneChangeLockInfo = useMemo(() => getPhoneChangeLockInfo(user), [user]);
 
   const form = useForm<ProfileInformationSchemaType>({
     resolver: zodResolver(ProfileInformationSchema),
@@ -91,6 +147,23 @@ export function ProfileInformationFormModern() {
       return;
     }
 
+    const previousPhone = (user.phoneNumbers?.[0] ?? '').trim();
+    const nextPhone = values.phoneNumber.trim();
+    const phoneChangedFromVerified = Boolean(
+      user.phoneNumberVerified && nextPhone && previousPhone !== nextPhone
+    );
+
+    if (phoneChangeLockInfo.isLocked && phoneChangedFromVerified) {
+      const lockDateLabel = phoneChangeLockInfo.lockUntil?.toLocaleDateString('fr-FR') ?? 'date inconnue';
+      toast({
+        title: 'Changement de numéro verrouillé',
+        description: `Numéro vérifié verrouillé jusqu'au ${lockDateLabel}.`,
+        duration: 8000,
+        variant: 'warning',
+      });
+      return;
+    }
+
     const result = await updateProfileInformation({
       uid: user.uid,
       firstname: values.firstname,
@@ -107,12 +180,6 @@ export function ProfileInformationFormModern() {
     logger.info('Profile information saved from UI', {
       uid: user.uid,
     });
-
-    const previousPhone = (user.phoneNumbers?.[0] ?? '').trim();
-    const nextPhone = values.phoneNumber.trim();
-    const phoneChangedFromVerified = Boolean(
-      user.phoneNumberVerified && nextPhone && previousPhone !== nextPhone
-    );
 
     toast({
       title: 'Informations mises à jour',
@@ -135,12 +202,15 @@ export function ProfileInformationFormModern() {
   const createdAt = firebaseTimestampToDate(user?.createdAt?.seconds, user?.createdAt?.nanoseconds);
   const updatedAt = firebaseTimestampToDate(user?.updatedAt?.seconds, user?.updatedAt?.nanoseconds);
   const avatarBackground = generateColorFromName(user?.firstname);
+  const isPhoneChangeLocked = phoneChangeLockInfo.isLocked;
+  const phoneLockUntilLabel = phoneChangeLockInfo.lockUntil?.toLocaleDateString('fr-FR') ?? '';
   const currentPhoneNumber = (user.phoneNumbers?.[0] ?? '').trim();
   const watchedPhoneNumber = (form.watch('phoneNumber') ?? '').trim();
   const willLoseVerifiedStatus = Boolean(
     user.phoneNumberVerified &&
     watchedPhoneNumber &&
-    watchedPhoneNumber !== currentPhoneNumber
+    watchedPhoneNumber !== currentPhoneNumber &&
+    !isPhoneChangeLocked
   );
 
   return (
@@ -189,6 +259,11 @@ export function ProfileInformationFormModern() {
                 {user.phoneNumberVerified ? 'Vérifié' : 'Non vérifié'}
               </Badge>
             </div>
+            {isPhoneChangeLocked && (
+              <p className="text-xs text-amber-700 dark:text-amber-300">
+                Changement de numéro possible après le {phoneLockUntilLabel}.
+              </p>
+            )}
             {createdAt && (
               <div className="flex items-center justify-between">
                 <span>Membre depuis</span>
@@ -272,7 +347,21 @@ export function ProfileInformationFormModern() {
                 name="phoneNumber"
                 label="Numéro de téléphone"
                 placeholder="66 12 34 56"
+                disabled={isPhoneChangeLocked}
               />
+
+              {isPhoneChangeLocked && (
+                <div className="rounded-xl border border-amber-200 bg-amber-50 p-3 text-sm text-amber-800 dark:border-amber-900/60 dark:bg-amber-950/30 dark:text-amber-300">
+                  <p className="inline-flex items-center gap-2 font-medium">
+                    <AlertTriangle className="h-4 w-4" />
+                    Numéro verrouillé temporairement
+                  </p>
+                  <p className="mt-1">
+                    Ce numéro est vérifié. Il pourra être modifié dans {phoneChangeLockInfo.daysRemaining} jour
+                    {phoneChangeLockInfo.daysRemaining > 1 ? 's' : ''} (à partir du {phoneLockUntilLabel}).
+                  </p>
+                </div>
+              )}
 
               {willLoseVerifiedStatus && (
                 <div className="rounded-xl border border-amber-200 bg-amber-50 p-3 text-sm text-amber-800 dark:border-amber-900/60 dark:bg-amber-950/30 dark:text-amber-300">
