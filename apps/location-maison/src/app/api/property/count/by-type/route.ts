@@ -13,15 +13,20 @@ export async function GET(request: Request) {
         return NextResponse.json({ error: 'Property type is required' }, { status: 400 });
     }
 
-    // Vérifier le cache
-    const cached = await redis.get<number>(`propertyCountByType:${type}`);
+    const cacheKey = `propertyCountByType:${type}`;
 
-    if (typeof cached === 'number') {
-        return NextResponse.json({ count: cached }, {
-            headers: {
-                'Cache-Control': `public, s-maxage=${CACHE_TTL_SECONDS}, stale-while-revalidate=${CACHE_TTL_SECONDS}`,
-            },
-        });
+    try {
+        const cached = await redis.get<number>(cacheKey);
+
+        if (typeof cached === 'number') {
+            return NextResponse.json({ count: cached }, {
+                headers: {
+                    'Cache-Control': `public, s-maxage=${CACHE_TTL_SECONDS}, stale-while-revalidate=${CACHE_TTL_SECONDS}`,
+                },
+            });
+        }
+    } catch (error) {
+        console.error('Redis GET error (property count by type):', error);
     }
 
     try {
@@ -29,7 +34,11 @@ export async function GET(request: Request) {
         const count = await getServerCountByPropertyType(type);
 
         // Mettre en cache le comptage
-        await redis.set(`propertyCountByType:${type}`, count, { ex: CACHE_TTL_SECONDS });
+        try {
+            await redis.set(cacheKey, count, { ex: CACHE_TTL_SECONDS });
+        } catch (error) {
+            console.error('Redis SET error (property count by type):', error);
+        }
 
         return NextResponse.json({ count }, {
             headers: {

@@ -13,15 +13,20 @@ export async function GET(request: Request) {
         return NextResponse.json({ error: 'Province is required' }, { status: 400 });
     }
 
-    // Check if the count is in the cache
-    const cached = await redis.get<number>(`propertyCountByProvince:${province}`);
+    const cacheKey = `propertyCountByProvince:${province}`;
 
-    if (typeof cached === 'number') {
-        return NextResponse.json({ count: cached }, {
-            headers: {
-                'Cache-Control': `public, s-maxage=${CACHE_TTL_SECONDS}, stale-while-revalidate=${CACHE_TTL_SECONDS}`,
-            },
-        });
+    try {
+        const cached = await redis.get<number>(cacheKey);
+
+        if (typeof cached === 'number') {
+            return NextResponse.json({ count: cached }, {
+                headers: {
+                    'Cache-Control': `public, s-maxage=${CACHE_TTL_SECONDS}, stale-while-revalidate=${CACHE_TTL_SECONDS}`,
+                },
+            });
+        }
+    } catch (error) {
+        console.error('Redis GET error (property count by province):', error);
     }
 
     try {
@@ -29,7 +34,11 @@ export async function GET(request: Request) {
         const count = await getServerCountByProvince(province);
 
         // Mettre en cache le nombre
-        await redis.set(`propertyCountByProvince:${province}`, count, { ex: CACHE_TTL_SECONDS });
+        try {
+            await redis.set(cacheKey, count, { ex: CACHE_TTL_SECONDS });
+        } catch (error) {
+            console.error('Redis SET error (property count by province):', error);
+        }
 
         return NextResponse.json({ count }, {
             headers: {

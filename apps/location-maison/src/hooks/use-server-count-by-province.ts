@@ -12,6 +12,15 @@ export function useServerCountByProvince(province: string | undefined) {
       if (!province) throw new Error('Province is required to fetch property count.');
       const res = await fetch(`/api/property/count/by-province?province=${province}`);
       const data = await res.json();
+
+      if (!res.ok) {
+        throw new Error(data?.error ?? 'Failed to fetch property count by province.');
+      }
+
+      if (typeof data?.count !== 'number') {
+        throw new Error('Invalid province count response.');
+      }
+
       return data.count;
     },
     enabled: !!province,

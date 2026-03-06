@@ -8,6 +8,7 @@ import { GrCircleInformation } from 'react-icons/gr';
 import { Button } from '../ui/button';
 import { deleteProperty } from '@/db/property.db';
 import { useRouter } from 'next/navigation';
+import { invalidatePropertyCountCache } from '@/lib/invalidate-property-count-cache';
 
 export interface RemovePropertyProps {
     id: string;
@@ -27,6 +28,7 @@ export const RemoveProperty = ({ id }: RemovePropertyProps) => {
         },
         onSuccess: (data, variables, context) => {
             queryClient.invalidateQueries({ queryKey: [queryKeys.properties] });
+            void invalidatePropertyCountCache();
             toast({
                 duration: 5000,
                 title: "Suppression d'un logement",
@@ -103,4 +105,3 @@ export const RemoveProperty = ({ id }: RemovePropertyProps) => {
         </div>
     );
 }
-

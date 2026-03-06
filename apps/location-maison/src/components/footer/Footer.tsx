@@ -1,5 +1,5 @@
 'use client'
-import React, { useEffect, useState } from 'react'
+import React from 'react'
 import Logo from '../logo/Logo'
 import { routes } from '@/constantes/routes'
 import { MapPin, Mail, Facebook, MessageCircle } from "lucide-react";
@@ -13,7 +13,6 @@ export default function Footer({ isHide = false }: Readonly<{ isHide?: boolean }
     const pathname = usePathname()
     const { user } = useCurrentUser()
     const { width } = useWindowSize()
-    const [isPWAInstalled, setIsPWAInstalled] = useState(false);
     const hiddenFooterRoutes = [
         routes.public.signin,
         routes.public.signup,
@@ -24,51 +23,75 @@ export default function Footer({ isHide = false }: Readonly<{ isHide?: boolean }
         routes.public.passwordResetFailure,
     ];
 
-    useEffect(() => {
-        const checkPWA = () => {
-            if (typeof window !== "undefined") {
-                const isStandalone = window.matchMedia('(display-mode: standalone)').matches
-                    || (window.navigator as any).standalone === true;
-                setIsPWAInstalled(isStandalone);
-            }
-        };
-        checkPWA();
-        window.addEventListener('appinstalled', checkPWA);
-        return () => window.removeEventListener('appinstalled', checkPWA);
-    }, []);
-
     if (isHide || hiddenFooterRoutes.includes(pathname) || (user && width < 768 && pathname !== routes.public.homePage)) {
         return null
     }
+
+    const supportEmail = process.env.NEXT_PUBLIC_EMAIL_SUPPORT ?? 'support@tonnkama.com'
+    const whatsappNumber = process.env.NEXT_PUBLIC_CONTACT_SUPPORT?.replace('+', '').replace(/^00/, '')
+    const whatsappUrl = whatsappNumber
+        ? `https://wa.me/${whatsappNumber}?text=Bonjour%20!%20Je%20souhaite%20obtenir%20plus%20d'informations%20sur%20Trouve%20Ton%20Nkama.`
+        : '#'
+
     return (
-        <footer className={cn("w-full shadow md:block dark:bg-gray-900 text-white dark:border-gray-900 dark:border-2 bg-black md:bg-[#282828] md:text-black", pathname === routes.public.search_property && "lg:hidden")}>
-            <div className="max-w-[1280px] 2xl:max-w-[1440px] mx-auto p-4 md:py-8">
-                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
-                    <div className='hidden md:block'>
-                        <Logo className="text-black mb-4 sm:mb-0" width="64px" height="64px" />
+        <footer className={cn("w-full border-t border-[#1d3d3a] bg-[#0f1f1e] text-white", pathname === routes.public.search_property && "lg:hidden")}>
+            <div className="max-w-[1280px] 2xl:max-w-[1440px] mx-auto p-4 py-10 md:py-12">
+                <div className="grid grid-cols-1 gap-8 md:grid-cols-12 md:gap-10">
+                    <div className='md:col-span-4 lg:col-span-3 space-y-4'>
+                        <Logo className="text-white" width="64px" height="64px" />
+                        <p className='text-sm text-white/75 leading-relaxed max-w-xs'>
+                            Trouve Ton Nkama simplifie la recherche, la location et la vente de biens immobiliers au Gabon.
+                        </p>
                     </div>
-                    <ul className="flex flex-col sm:flex-row items-center mb-4 sm:mb-0 text-sm font-medium text-white space-y-3 sm:space-y-0 sm:space-x-6">
-                        <li>
-                            <a href="https://www.facebook.com/profile.php?id=61574099562451" className="hover:underline py-1">À propos</a>
-                        </li>
-                        <li>
-                            <a href={routes.public.blog} className="hover:underline py-1">Blog</a>
-                        </li>
-                        <li>
-                            <a href={routes.public.guide_immobilier_gabon} className="hover:underline py-1">Guide Immobilier</a>
-                        </li>
-                        <li>
-                            <a href={routes.public.confidentiality} className="hover:underline py-1">Politique de confidentialité</a>
-                        </li>
-                        <li>
-                            <a href={routes.public.terms_of_use} className="hover:underline py-1">Conditions d&apos;utilisation</a>
-                        </li>
-                        <li>
-                            <a href={routes.public.announcer_terms} className="hover:underline py-1">Conditions annonceur</a>
-                        </li>
-                    </ul>
+
+                    <nav className="md:col-span-4 lg:col-span-5">
+                        <h2 className='text-sm font-semibold uppercase tracking-wide text-white/70'>Liens utiles</h2>
+                        <ul className="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-3 text-sm font-medium text-white/90">
+                            <li>
+                                <a href="https://www.facebook.com/profile.php?id=61574099562451" className="hover:underline py-1">À propos</a>
+                            </li>
+                            <li>
+                                <a href={routes.public.blog} className="hover:underline py-1">Blog</a>
+                            </li>
+                            <li>
+                                <a href={routes.public.guide_immobilier_gabon} className="hover:underline py-1">Guide Immobilier</a>
+                            </li>
+                            <li>
+                                <a href={routes.public.confidentiality} className="hover:underline py-1">Politique de confidentialité</a>
+                            </li>
+                            <li>
+                                <a href={routes.public.terms_of_use} className="hover:underline py-1">Conditions d&apos;utilisation</a>
+                            </li>
+                            <li>
+                                <a href={routes.public.announcer_terms} className="hover:underline py-1">Conditions annonceur</a>
+                            </li>
+                        </ul>
+                    </nav>
+
+                    <div className="md:col-span-4 lg:col-span-4">
+                        <h2 className='text-sm font-semibold uppercase tracking-wide text-white/70'>Contact</h2>
+                        <div className="mt-4 flex flex-col gap-3 text-white/90 text-sm">
+                            <div className="flex items-center gap-2">
+                                <MapPin size={16} className='text-[#4DBEA4]' />
+                                <span>Libreville, Gabon</span>
+                            </div>
+                            <div className="flex items-center gap-2">
+                                <Mail size={16} className='text-[#4DBEA4]' />
+                                <a href={`mailto:${supportEmail}`} className="hover:underline break-all">{supportEmail}</a>
+                            </div>
+                            <div className="flex items-center gap-2">
+                                <Facebook size={16} className='text-[#4DBEA4]' />
+                                <a href="https://www.facebook.com/share/16beeh915e/" target="_blank" rel="noopener noreferrer" className="hover:underline">Suivez-nous sur Facebook</a>
+                            </div>
+                            <div className="flex items-center gap-2">
+                                <MessageCircle size={16} className='text-[#4DBEA4]' />
+                                <a href={whatsappUrl} target="_blank" rel="noopener noreferrer" className="hover:underline">Contactez-nous sur WhatsApp</a>
+                            </div>
+                        </div>
+                    </div>
                 </div>
-                <div>
+
+                <div className='mt-8 rounded-2xl border border-white/10 bg-white/[0.03] p-3 md:p-4'>
                     <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-2799688336707362"
                         crossOrigin="anonymous"></script>
                     <ins className="adsbygoogle"
@@ -81,36 +104,13 @@ export default function Footer({ isHide = false }: Readonly<{ isHide?: boolean }
                         (adsbygoogle = window.adsbygoogle || []).push({ });
                     </script>
                 </div>
-                {/* Section Contacts */}
-                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mt-6">
-                    <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between text-white space-y-4 sm:space-y-0 sm:space-x-6">
-                        <div className="flex items-center space-x-2">
-                            <MapPin size={16} />
-                            <span>Libreville, Gabon</span>
-                        </div>
-                        <div className="flex items-center space-x-2">
-                            <Mail size={16} />
-                            <a href={`mailto:${process.env.NEXT_PUBLIC_EMAIL_SUPPORT}`} className="hover:underline">{process.env.NEXT_PUBLIC_EMAIL_SUPPORT}</a>
-                        </div>
-                        <div className="flex items-center space-x-2">
-                            <Facebook size={16} />
-                            <a href="https://www.facebook.com/share/16beeh915e/" target="_blank" rel="noopener noreferrer" className="hover:underline">Suivez-nous sur Facebook</a>
-                        </div>
-                        <div className="flex items-center space-x-2">
-                            <MessageCircle size={16} />
-                            <a href={`https://wa.me/${process.env.NEXT_PUBLIC_CONTACT_SUPPORT?.replace('+', '').replace(/^00/, '')}?text=Bonjour%20!%20Je%20souhaite%20obtenir%20plus%20d'informations%20sur%20Trouve%20Ton%20Nkama.`} target="_blank" rel="noopener noreferrer" className="hover:underline">Contactez-nous sur WhatsApp</a>
-                        </div>
-                    </div>
-                    <div className='sm:hidden mt-4 flex justify-center'>
-                        <Logo className="text-white" width="64px" height="64px" />
-                    </div>
+
+                <div className='mt-6'>
+                    <PWAInstallButton />
                 </div>
 
-                {/* Bouton d'installation PWA, non flottant */}
-                <PWAInstallButton />
-
-                <hr className="my-6 border-gray-700 sm:mx-auto lg:my-8" />
-                <span className="block text-sm text-white text-center">
+                <hr className="my-6 border-white/15 sm:mx-auto lg:my-8" />
+                <span className="block text-sm text-white/80 text-center">
                     © {new Date().getFullYear()} <a href={routes.public.homePage} className="hover:underline">Trouve Ton Nkama</a>. Tous droits réservés.
                 </span>
             </div>
