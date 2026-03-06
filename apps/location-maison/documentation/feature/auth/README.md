@@ -8,6 +8,7 @@ Cette section centralise la documentation des features d’authentification.
 - FEATURE-002 Google OAuth: `FEATURE-002-GOOGLE-CONNEXION.md`
 - FEATURE-003 Signin complet: `FEATURE-003-SIGNIN.md`
 - FEATURE-004 Password Reset complet: `FEATURE-004-PASSWORD-RESET.md`
+- FEATURE-005 Phone Number Policy (Gabon): `FEATURE-005-PHONE-NUMBER-POLICY.md`
 
 ## Diagrammes
 

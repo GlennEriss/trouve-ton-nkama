@@ -76,9 +76,9 @@ describe('Phone Validation Tests', () => {
   describe('Senegal Phone Numbers', () => {
     test('should validate Senegal numbers', () => {
       const validNumbers = [
-        '+22170123456',
-        '22170123456',
-        '70123456'
+        '+221701234567',
+        '221701234567',
+        '701234567'
       ];
 
       validNumbers.forEach(number => {
@@ -90,10 +90,10 @@ describe('Phone Validation Tests', () => {
 
     test('should reject invalid Senegal numbers', () => {
       const invalidNumbers = [
-        '+22160123456', // Préfixe 60 non supporté
-        '+2217012345',  // Trop court
-        '+221701234567', // Trop long
-        '+24170123456',  // Mauvais code pays
+        '+221601234567', // Préfixe 60 non supporté
+        '+22170123456',  // Trop court
+        '+2217012345678', // Trop long
+        '+241701234567',  // Mauvais code pays
       ];
 
       invalidNumbers.forEach(number => {
@@ -119,9 +119,9 @@ describe('Phone Validation Tests', () => {
 
     test('should format Senegal numbers correctly', () => {
       const testCases = [
-        { input: '+22170123456', expected: '+221 70 123 45 67' },
-        { input: '22170123456', expected: '+221 70 123 45 67' },
-        { input: '70123456', expected: '+221 70 123 45 67' }
+        { input: '+221701234567', expected: '+221 70 123 45 67' },
+        { input: '221701234567', expected: '+221 70 123 45 67' },
+        { input: '701234567', expected: '+221 70 123 45 67' }
       ];
 
       testCases.forEach(({ input, expected }) => {
@@ -147,9 +147,9 @@ describe('Phone Validation Tests', () => {
 
     test('should normalize Senegal numbers for Firebase', () => {
       const testCases = [
-        { input: '70123456', expected: '+22170123456' },
-        { input: '+22170123456', expected: '+22170123456' },
-        { input: '22170123456', expected: '+22170123456' }
+        { input: '701234567', expected: '+221701234567' },
+        { input: '+221701234567', expected: '+221701234567' },
+        { input: '221701234567', expected: '+221701234567' }
       ];
 
       testCases.forEach(({ input, expected }) => {

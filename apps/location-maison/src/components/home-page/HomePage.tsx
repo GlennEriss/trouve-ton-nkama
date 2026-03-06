@@ -74,6 +74,12 @@ const HomePage = () => {
     setTypeProperty,
   } = useAlgoliaContext();
   const { user } = useCurrentUser();
+  const isAnnouncer = Array.isArray(user?.roles) && user.roles.includes('Announcer');
+  const publishLink = !user
+    ? routes.public.signin
+    : isAnnouncer
+      ? routes.protected.add_property
+      : routes.public.search_property;
 
   const toggleSelection = useCallback(
     (list: string[], item: string, setter: (val: string[]) => void) => {
@@ -228,7 +234,7 @@ const HomePage = () => {
           Créez votre annonce dès maintenant et atteignez des milliers de
           clients potentiels.
         </p>
-        <Link href={user ? routes.protected.add_property : routes.public.signin}>
+        <Link href={publishLink}>
           <Button className="bg-white text-blue-500 px-6 py-3 rounded-full hover:bg-gray-100">
             Poster une annonce
           </Button>

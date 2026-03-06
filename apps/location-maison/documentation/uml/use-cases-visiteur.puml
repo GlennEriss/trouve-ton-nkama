@@ -3,7 +3,7 @@ skinparam backgroundColor #FEFEFE
 skinparam actorStyle awesome
 
 title Diagramme de Cas d'Utilisation - Visiteur
-caption Plateforme Location Maison Gabon
+caption Plateforme Location Maison Gabon - Périmètre RBAC: User/Announcer (Admin hors scope)
 
 ' =====================================
 ' ACTEUR
@@ -141,4 +141,3 @@ legend bottom left
 endlegend
 
 @enduml
-

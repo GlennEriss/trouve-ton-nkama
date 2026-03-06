@@ -1,0 +1,39 @@
+@startuml gestion-profil-activity
+title Activite - Gestion du profil utilisateur
+
+start
+
+:Utilisateur connecte ouvre /profil;
+if (Session valide ?) then (Oui)
+  :Afficher hub profil;
+else (Non)
+  :Rediriger vers /signin;
+  stop
+endif
+
+:Utilisateur choisit une action;
+
+if (Consulter profil) then (Oui)
+  :Afficher informations courantes;
+endif
+
+if (Modifier informations) then (Oui)
+  :Ouvrir formulaire /profil/informations;
+  :Valider donnees;
+  if (Validation OK ?) then (Oui)
+    :Sauvegarder en base;
+    :Mettre a jour session;
+    :Afficher succes;
+  else (Non)
+    :Afficher erreurs formulaire;
+  endif
+endif
+
+if (Connexion et securite) then (Oui)
+  :Ouvrir /login-and-security;
+  :Changer mot de passe ou lier provider;
+endif
+
+stop
+@enduml
+

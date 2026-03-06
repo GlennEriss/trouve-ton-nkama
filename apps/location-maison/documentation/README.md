@@ -24,6 +24,7 @@ Bienvenue dans la documentation complète de la plateforme de location et vente 
   - Annuaire des features
   - Spécifications par feature (UX, UI, UML)
   - Auth (index): [feature/auth/README.md](./feature/auth/README.md)
+  - Users (index): [feature/users/README.md](./feature/users/README.md)
 
 ### ⚙️ Configuration & Setup
 - **[setup/](./setup/)** : Guides de configuration

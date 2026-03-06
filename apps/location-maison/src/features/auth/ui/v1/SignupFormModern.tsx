@@ -533,7 +533,7 @@ export const SignupFormModern: React.FC = () => {
                           control={form.control}
                           name="phone"
                           label=""
-                          placeholder="06 12 34 56 78"
+                          placeholder="Ex: 66 12 34 56 (sans 0)"
                         />
                       </div>
                     </>

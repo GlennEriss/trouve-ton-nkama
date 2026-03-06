@@ -236,6 +236,7 @@ export const Signup: React.FC = () => {
                             form={form}
                             label=''
                             name='phone'
+                            placeholder='Ex: 66 12 34 56 (sans 0)'
                         />
                     </div>
                     <InputForm

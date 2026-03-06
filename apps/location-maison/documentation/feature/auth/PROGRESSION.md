@@ -25,6 +25,7 @@
 - [ ] Tests d’intégration signup avec Firebase Emulator
 - [ ] E2E signup complets (User + Announcer)
 - [ ] Couverture auth >= 80%
+- [ ] FEATURE-005: politique téléphone Gabon (format canonique + unicité atomique + anti-usurpation)
 
 ### Hors périmètre signup
 

@@ -1,0 +1,46 @@
+@startuml
+title Verification Numero Telephone (OTP Firebase)
+
+actor User
+participant "Page /verify-phone" as UI
+participant "Hook usePhoneVerification" as Hook
+participant "Service PhoneVerification" as Service
+participant "Firebase Auth\n(OTP + reCAPTCHA)" as FirebaseAuth
+participant "Firestore Users" as Firestore
+participant "NextAuth Session" as Session
+
+User -> UI : Ouvre /verify-phone
+UI -> Hook : init(uid)
+Hook -> Service : checkVerificationStatus(uid)
+Service -> Firestore : findById(uid)
+Firestore --> Service : user(phone, phoneNumberVerified)
+Service --> Hook : status(initialStep)
+Hook --> UI : step=phone|already-verified
+
+User -> UI : Saisit numero + demande OTP
+UI -> Hook : sendOtp()
+Hook -> Service : buildAndValidatePhone(...)
+Service --> Hook : fullPhone
+Hook -> FirebaseAuth : signInWithPhoneNumber(fullPhone, recaptcha)
+FirebaseAuth --> Hook : confirmationResult
+Hook --> UI : step=otp
+
+User -> UI : Saisit code OTP
+UI -> Hook : verifyOtp(code)
+Hook -> FirebaseAuth : confirmationResult.confirm(code)
+FirebaseAuth --> Hook : success
+Hook -> Service : persistVerifiedPhone(uid, fullPhone)
+Service -> Firestore : update(phoneNumbers, phoneNumberVerified=true)
+Firestore --> Service : updated user
+Service --> Hook : success + isPhoneChanged
+Hook -> Session : update(session.user)
+Hook --> UI : step=success
+UI --> User : Numero verifie
+
+note over UI,Firestore
+Si le numero est modifie dans /profil/informations:
+phoneNumberVerified est repasse a false
+et un avertissement est affiche avant sauvegarde.
+end note
+
+@enduml

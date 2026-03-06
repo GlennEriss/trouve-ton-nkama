@@ -3,7 +3,7 @@ skinparam backgroundColor #FEFEFE
 skinparam actorStyle awesome
 
 title Diagramme de Cas d'Utilisation - Utilisateur (Membre)
-caption Plateforme Location Maison Gabon - v2.0
+caption Plateforme Location Maison Gabon - v2.0 - Périmètre RBAC: User/Announcer (Admin hors scope)
 
 ' =====================================
 ' ACTEURS
@@ -55,12 +55,25 @@ rectangle "Plateforme Location Maison Gabon" {
         usecase "Voir détails d'une annonce" as UC_ViewDetails
         usecase "Contacter un annonceur" as UC_Contact
     }
+
+    ' --- CRÉDITS (USER) ---
+    package "Gestion des Crédits" #LightYellow {
+        usecase "Consulter son solde de crédits" as UC_ViewBalance
+        usecase "Consulter l'historique des crédits" as UC_ViewCreditHistory
+        usecase "Acheter des crédits" as UC_BuyCredits
+    }
     
     ' --- SESSION ---
     package "Session" {
         usecase "Se déconnecter" as UC_Logout
         usecase "Vérifier son email" as UC_VerifyEmail
         usecase "Compléter son profil" as UC_CompleteProfile
+    }
+
+    ' --- VÉRIFICATION TÉLÉPHONE (FEATURE DÉDIÉE) ---
+    package "Vérification Téléphone (Feature dédiée)" #LightBlue {
+        usecase "Vérifier son numéro de téléphone (OTP)" as UC_VerifyPhone
+        usecase "Obtenir badge 'Numéro vérifié'" as UC_PhoneBadge
     }
     
     ' =====================================
@@ -71,7 +84,6 @@ rectangle "Plateforme Location Maison Gabon" {
         usecase "Accepter les conditions d'annonceur" as UC_AcceptTerms
         usecase "Renseigner informations professionnelles" as UC_ProfessionalInfo
         usecase "Choisir le type d'annonceur" as UC_SelectAnnouncerType
-        usecase "Vérifier son numéro de téléphone" as UC_VerifyPhone
         usecase "Recevoir confirmation de rôle" as UC_ReceiveRole
     }
 }
@@ -85,6 +97,11 @@ Utilisateur --> UC_ViewFavorites
 Utilisateur --> UC_AddFavorite
 Utilisateur --> UC_ViewNotif
 Utilisateur --> UC_Logout
+Utilisateur --> UC_VerifyEmail
+Utilisateur --> UC_CompleteProfile
+Utilisateur --> UC_VerifyPhone
+Utilisateur --> UC_ViewBalance
+Utilisateur --> UC_BuyCredits
 Utilisateur --> UC_BecomeAnnouncer
 
 ' =====================================
@@ -115,8 +132,15 @@ UC_Search ..> UC_Filter : <<extend>>
 UC_Search ..> UC_ViewDetails : <<extend>>
 UC_ViewDetails ..> UC_Contact : <<extend>>
 
+' Crédits
+UC_ViewBalance ..> UC_ViewCreditHistory : <<extend>>
+
 ' Session
-UC_Logout ..> UC_VerifyEmail : <<extend>>
+
+' Vérification téléphone (feature dédiée)
+UC_VerifyPhone ..> UC_PhoneBadge : <<include>>
+UC_EditPhone ..> UC_VerifyPhone : <<extend>>
+UC_Security ..> UC_VerifyPhone : <<extend>>
 
 ' =====================================
 ' RELATIONS MIGRATION ANNONCEUR
@@ -124,8 +148,7 @@ UC_Logout ..> UC_VerifyEmail : <<extend>>
 UC_BecomeAnnouncer ..> UC_AcceptTerms : <<include>>
 UC_BecomeAnnouncer ..> UC_SelectAnnouncerType : <<include>>
 UC_BecomeAnnouncer ..> UC_ProfessionalInfo : <<extend>>
-UC_BecomeAnnouncer ..> UC_VerifyPhone : <<include>>
-UC_AcceptTerms ..> UC_ReceiveRole : <<include>>
+UC_BecomeAnnouncer ..> UC_ReceiveRole : <<include>>
 
 ' =====================================
 ' NOTES
@@ -139,15 +162,25 @@ note right of UC_ConfigNotif
   - Mises à jour système
 end note
 
+note right of UC_ViewBalance
+  **Crédits côté User:**
+  - Solde consultable
+  - Historique consultable
+  - Achat de crédits possible
+  
+  Les usages détaillés des crédits
+  côté User seront enrichis
+  dans des features futures.
+end note
+
 note right of UC_BecomeAnnouncer
   **Flux de migration:**
   1. L'utilisateur demande à devenir Annonceur
   2. Il accepte les CGU Annonceur
   3. Il choisit son type (Particulier, Agence, Démarcheur)
-  4. Il vérifie son numéro de téléphone
-  5. Il renseigne ses infos professionnelles (optionnel)
-  6. Le rôle "Announcer" est attribué
-  7. Il reçoit 3 crédits de bienvenue
+  4. Il renseigne ses infos professionnelles (optionnel)
+  5. Le rôle "Announcer" est attribué
+  6. Il reçoit 3 crédits de bienvenue
   
   **Pré-conditions:**
   - Email vérifié
@@ -157,6 +190,14 @@ note right of UC_BecomeAnnouncer
   - Rôle "Announcer" ajouté
   - CreditWallet créé avec 3 crédits
   - Accès aux fonctionnalités Annonceur
+end note
+
+note right of UC_VerifyPhone
+  **Feature séparée du signup/signin:**
+  - Vérification OTP dans l'espace compte
+  - Numéro au signup = déclaré (non vérifié)
+  - Le badge "Numéro vérifié" est attribué
+    après validation OTP réussie
 end note
 
 note right of UC_SelectAnnouncerType
@@ -180,7 +221,6 @@ note bottom of Utilisateur
   
   **⚠️ Il NE PEUT PAS:**
   - Publier des annonces
-  - Acheter des crédits
   - Promouvoir des annonces
   
   **Pour ces fonctionnalités,**
@@ -226,6 +266,7 @@ legend bottom left
   |= Couleur Package |= Signification |
   | Blanc | Fonctionnalités Utilisateur |
   | Jaune | Migration vers Annonceur |
+  | Bleu clair | Vérification téléphone (feature dédiée) |
 endlegend
 
 @enduml

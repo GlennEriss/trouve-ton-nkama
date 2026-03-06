@@ -29,6 +29,12 @@ const detailssection2 = [
 ]
 export default function HomePageDesktopComponent() {
   const { user } = useCurrentUser()
+  const isAnnouncer = Array.isArray(user?.roles) && user.roles.includes('Announcer')
+  const publishLink = !user
+    ? routes.public.signin
+    : isAnnouncer
+      ? routes.protected.add_property
+      : routes.public.search_property
   return (
     <div className='container p-5 mx-auto max-w-[1280px] 2xl:max-w-[1440px] relative'>
       {/* Forme 1 - Derrière navbar et première section */}
@@ -122,7 +128,7 @@ export default function HomePageDesktopComponent() {
           </div>
           <div className='flex flex-col md:flex-row gap-4 max-w-2xl mx-auto'>
             <Link
-              href={user ? routes.protected.add_property : routes.public.signin}
+              href={publishLink}
               className='flex-1 group relative overflow-hidden bg-gradient-to-r from-[#146B67] to-[#1FA89B] text-white font-semibold py-4 px-8 rounded-xl flex items-center justify-center gap-3 shadow-lg hover:shadow-xl transition-all duration-300 hover:-translate-y-1'
             >
               <span className='relative z-10'>Publier une annonce</span>

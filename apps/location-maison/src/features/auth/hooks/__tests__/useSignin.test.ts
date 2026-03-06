@@ -1,10 +1,11 @@
 import { act, renderHook } from '@testing-library/react';
 import { describe, expect, it, beforeEach, jest } from '@jest/globals';
 import { mapSigninError, useSignin } from '../useSignin';
-import { signIn } from 'next-auth/react';
+import { getSession, signIn } from 'next-auth/react';
 
 jest.mock('next-auth/react', () => ({
   signIn: jest.fn(),
+  getSession: jest.fn(),
 }));
 
 jest.mock('@/lib/logger', () => ({
@@ -17,10 +18,16 @@ jest.mock('@/lib/logger', () => ({
 }));
 
 const mockSignIn = signIn as jest.MockedFunction<typeof signIn>;
+const mockGetSession = getSession as jest.MockedFunction<typeof getSession>;
 
 describe('useSignin', () => {
   beforeEach(() => {
     jest.clearAllMocks();
+    mockGetSession.mockResolvedValue({
+      user: {
+        roles: ['User'],
+      },
+    } as any);
   });
 
   it('returns default state on init', () => {
@@ -52,11 +59,40 @@ describe('useSignin', () => {
     });
 
     expect(signinResult.success).toBe(true);
+    expect(signinResult.redirectTo).toBe('/search');
     expect(mockSignIn).toHaveBeenCalledWith('credentials', {
       login: 'john@example.com',
       password: 'Password123',
       redirect: false,
     });
+  });
+
+  it('redirects announcer credentials signin to properties', async () => {
+    mockSignIn.mockResolvedValueOnce({
+      ok: true,
+      error: null,
+      status: 200,
+      url: null,
+      code: null,
+    } as any);
+    mockGetSession.mockResolvedValueOnce({
+      user: {
+        roles: ['User', 'Announcer'],
+      },
+    } as any);
+
+    const { result } = renderHook(() => useSignin());
+    let signinResult: any;
+
+    await act(async () => {
+      signinResult = await result.current.signinWithCredentials({
+        email: 'announcer@example.com',
+        password: 'Password123',
+      });
+    });
+
+    expect(signinResult.success).toBe(true);
+    expect(signinResult.redirectTo).toBe('/property');
   });
 
   it('maps credentials signin errors', async () => {
