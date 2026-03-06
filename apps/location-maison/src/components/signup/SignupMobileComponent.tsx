@@ -236,7 +236,7 @@ export const SignupMobileComponent = () => {
                                 control={form.control}
                                 name='phone'
                                 label=''
-                                placeholder='Saisissez votre numéro de téléphone'
+                                placeholder='Ex: 66 12 34 56 (sans 0)'
                             />
                         </div>
                         <InputFormApp

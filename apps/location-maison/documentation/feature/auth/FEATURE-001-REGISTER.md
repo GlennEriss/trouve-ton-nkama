@@ -180,6 +180,36 @@ interface UseSignupReturn {
 
 **Pas de logique métier** : Tout est dans le hook/service
 
+### 5. Politique Téléphone (Gabon) - Signup
+
+Référence architecture: `FEATURE-005-PHONE-NUMBER-POLICY.md`.
+
+#### Format UI retenu (champ split)
+
+- `dialCode`: `+241` (fixe, non éditable)
+- `localNumber`: numéro saisi sans indicatif (exemple: `62123456`)
+
+#### Opérateurs mobiles et préfixes autorisés
+
+- Libertis: `62`, `66`
+- Moov: `65`
+- Airtel: `74`, `77`
+
+#### Regex de référence
+
+- Champ `localNumber` (strict): `^(62|65|66|74|77)\d{6}$`
+- Champ `localNumber` (mode tolérant migration): `^0?(62|65|66|74|77)\d{6}$`
+- Stockage canonique E.164: `^\+241(62|65|66|74|77)\d{6}$`
+
+#### Règles de normalisation
+
+1. Nettoyer espaces/tirets.
+2. Retirer le `0` initial si présent (si mode tolérant activé).
+3. Construire `phone.canonical = +241 + localNumber`.
+4. Comparer l'unicité uniquement sur `phone.canonical`.
+
+Règle stricte: ne jamais persister `+2410...`.
+
 ---
 
 ## ✅ Checklist de Refactoring
@@ -318,7 +348,8 @@ interface UseSignupReturn {
 - **Email de vérification** : Envoyer en arrière-plan (non-bloquant)
 - **Numéro de téléphone** : Obligatoire et unique
 - **Conditions** : Acceptation obligatoire
+- **Politique téléphone** : voir `FEATURE-005-PHONE-NUMBER-POLICY.md` (source de vérité)
 
 ---
 
-*Dernière mise à jour : 2026-03-05*
+*Dernière mise à jour : 2026-03-06*
