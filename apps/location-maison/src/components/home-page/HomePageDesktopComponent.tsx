@@ -9,6 +9,7 @@ import PropertyByProvince from './PropertyByProvince'
 import FeaturedSection from './FeaturedSection'
 import TrendingSection from './TrendingSection'
 import RecentSection from './RecentSection'
+import { motion, useReducedMotion } from 'framer-motion'
 
 const detailssection2 = [
   {
@@ -30,13 +31,30 @@ const detailssection2 = [
 export default function HomePageDesktopComponent() {
   const { user } = useCurrentUser()
   const isAnnouncer = Array.isArray(user?.roles) && user.roles.includes('Announcer')
+  const shouldReduceMotion = useReducedMotion()
   const publishLink = !user
     ? routes.public.signin
     : isAnnouncer
       ? routes.protected.add_property
       : routes.public.search_property
+
+  const getRevealProps = (delay = 0) =>
+    shouldReduceMotion
+      ? {}
+      : {
+        initial: { opacity: 0, y: 24 },
+        whileInView: { opacity: 1, y: 0 },
+        viewport: { once: true, amount: 0.2 },
+        transition: { duration: 0.55, delay, ease: [0.22, 1, 0.36, 1] },
+      }
+
   return (
-    <div className='container p-5 mx-auto max-w-[1280px] 2xl:max-w-[1440px] relative'>
+    <motion.div
+      className='container p-5 mx-auto max-w-[1280px] 2xl:max-w-[1440px] relative'
+      initial={shouldReduceMotion ? false : { opacity: 0 }}
+      animate={shouldReduceMotion ? {} : { opacity: 1 }}
+      transition={{ duration: 0.35 }}
+    >
       {/* Forme 1 - Derrière navbar et première section */}
       <div className="absolute top-0 -left-[30vw] w-full h-[530px] -z-10">
         <Image
@@ -48,7 +66,10 @@ export default function HomePageDesktopComponent() {
       </div>
 
       <Navbar />
-      <section className='mt-5 bg-gradient-to-r h-[330px] xl:h-[430px] from-[#C1DEE8] to-[#FBD9B9] p-8 rounded-xl flex xl:items-center relative'>
+      <motion.section
+        className='mt-5 bg-gradient-to-r h-[330px] xl:h-[430px] from-[#C1DEE8] to-[#FBD9B9] p-8 rounded-xl flex xl:items-center relative'
+        {...getRevealProps(0.05)}
+      >
         <div className='flex flex-col gap-3 max-w-3xl lg:gap-5 xl:ml-10'>
           <span className="text-base text-[#146B67] font-medium">
             La référence immobilière au Gabon
@@ -62,7 +83,15 @@ export default function HomePageDesktopComponent() {
             qui révolutionne l'immobilier au Gabon
           </p>
         </div>
-        <div className="absolute -bottom-10 right-0 lg:-bottom-20">
+        <motion.div
+          className="absolute -bottom-10 right-0 lg:-bottom-20"
+          animate={shouldReduceMotion ? {} : { y: [0, -8, 0] }}
+          transition={
+            shouldReduceMotion
+              ? {}
+              : { duration: 3.6, repeat: Infinity, ease: 'easeInOut' }
+          }
+        >
           <Image
             src="/assets/home-page/Group-2.webp"
             alt="Home Page Desktop Component"
@@ -70,11 +99,11 @@ export default function HomePageDesktopComponent() {
             height={0}
             className="object-contain w-[350px] h-[350px] lg:w-[450px] lg:h-[450px] xl:w-[550px] xl:h-[550px]"
           />
-        </div>
-      </section>
-      <section className='mb-8 mt-10'>
+        </motion.div>
+      </motion.section>
+      <motion.section className='mb-8 mt-10' {...getRevealProps(0.08)}>
         <FeaturedSection />
-      </section>
+      </motion.section>
       {/* <section className='mt-10 lg:my-20'>
         <h1 className="text-xl lg:text-2xl xl:text-3xl font-bold leading-tight text-center text-[#146B67] dark:text-[#1FA89B]">
           Développez votre activité immobilière en toute simplicité.
@@ -111,7 +140,10 @@ export default function HomePageDesktopComponent() {
         </div>
       </section> */}
 
-      <section className='relative overflow-hidden bg-gradient-to-r from-[#146B67]/5 via-[#1FA89B]/10 to-[#146B67]/5 p-8 py-16 rounded-3xl'>
+      <motion.section
+        className='relative overflow-hidden bg-gradient-to-r from-[#146B67]/5 via-[#1FA89B]/10 to-[#146B67]/5 p-8 py-16 rounded-3xl'
+        {...getRevealProps(0.1)}
+      >
         {/* Forme 2 - Derrière la 3ème section */}
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full h-full -z-10 overflow-hidden">
           <Image
@@ -142,27 +174,30 @@ export default function HomePageDesktopComponent() {
             </Link>
           </div>
         </div>
-      </section>
+      </motion.section>
 
-      <section className='space-y-5 p-5 mb-8'>
+      <motion.section className='space-y-5 p-5 mb-8' {...getRevealProps(0.12)}>
         <h1 className='text-xl lg:text-2xl xl:text-3xl leading-tight text-center font-bold text-[#146B67] my-5'>Types d'annonces</h1>
         <CarouselPropertyType />
-      </section>
+      </motion.section>
 
-      <section className='mb-8'>
+      <motion.section className='mb-8' {...getRevealProps(0.14)}>
         <TrendingSection />
-      </section>
+      </motion.section>
 
-      <section className='mb-8'>
+      <motion.section className='mb-8' {...getRevealProps(0.16)}>
         <RecentSection />
-      </section>
+      </motion.section>
 
-      <section className='space-y-5 m-5'>
+      <motion.section className='space-y-5 m-5' {...getRevealProps(0.18)}>
         <h1 className='text-xl lg:text-2xl xl:text-3xl leading-tight font-bold text-center text-[#146B67] my-10'>Annonces par province</h1>
         <PropertyByProvince />
-      </section>
+      </motion.section>
 
-      <section className='rounded-3xl bg-gradient-to-r from-[#C1DEE8] to-[#FBD9B9] p-8 lg:p-12 relative mt-10 overflow-visible mb-32 lg:mb-40'>
+      <motion.section
+        className='rounded-3xl bg-gradient-to-r from-[#C1DEE8] to-[#FBD9B9] p-8 lg:p-12 relative mt-10 overflow-visible mb-32 lg:mb-40'
+        {...getRevealProps(0.2)}
+      >
         <div className='flex flex-col gap-5 max-w-xl'>
           <h1 className='text-2xl lg:text-3xl xl:text-4xl text-[#146B67] font-bold flex flex-col gap-1'>
             <span>Vous recherchez</span>
@@ -198,7 +233,7 @@ export default function HomePageDesktopComponent() {
             className="object-contain"
           />
         </div>
-      </section>
-    </div>
+      </motion.section>
+    </motion.div>
   )
 }

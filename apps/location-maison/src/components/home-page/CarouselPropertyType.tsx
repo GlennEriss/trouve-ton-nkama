@@ -3,40 +3,24 @@ import React from 'react'
 import { propertyTypesList } from './PropertyTypeList'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../ui/card'
 import { TypeProperty } from '@/constantes/property-type'
-import { useServerCountByPropertyType } from '@/hooks/use-server-count-property-by-type'
+import { useServerPropertyCountSummary } from '@/hooks/use-server-property-count-summary'
 import { useAlgoliaContext } from '@/providers/AlgoliaContext'
 import { useRouter } from 'next/navigation'
 import Slider from 'react-slick'
+import { motion, useReducedMotion } from 'framer-motion'
 import 'slick-carousel/slick/slick.css'
 import 'slick-carousel/slick/slick-theme.css'
+import { HomePropertyTypeKey } from '@/constantes/home-page'
 
 export default function CarouselPropertyType() {
     const { setTypeProperty } = useAlgoliaContext()
     const router = useRouter()
-
-    // Appeler les hooks individuellement au niveau du composant (conforme aux règles React)
-    const homeCount = useServerCountByPropertyType("Home")
-    const studioCount = useServerCountByPropertyType("Studio")
-    const apartmentCount = useServerCountByPropertyType("Apartment")
-    const buildingCount = useServerCountByPropertyType("Building")
-    const deskCount = useServerCountByPropertyType("Desk")
-    const roomCount = useServerCountByPropertyType("Room")
-    const kioskCount = useServerCountByPropertyType("Kiosk")
-    const shopCount = useServerCountByPropertyType("Shop")
-    const landCount = useServerCountByPropertyType("Land")
-
-    // Créer le mapping des données
-    const propertyCounts: Record<string, number> = {
-        "Home": homeCount.data ?? 0,
-        "Studio": studioCount.data ?? 0,
-        "Apartment": apartmentCount.data ?? 0,
-        "Building": buildingCount.data ?? 0,
-        "Desk": deskCount.data ?? 0,
-        "Room": roomCount.data ?? 0,
-        "Kiosk": kioskCount.data ?? 0,
-        "Shop": shopCount.data ?? 0,
-        "Land": landCount.data ?? 0,
-    }
+    const {
+        data: summary,
+        isLoading,
+        isError,
+    } = useServerPropertyCountSummary()
+    const shouldReduceMotion = useReducedMotion()
 
     const handleClick = (propertyType: string) => {
         setTypeProperty([propertyType])
@@ -83,11 +67,27 @@ export default function CarouselPropertyType() {
     return (
         <div className="px-4 md:px-8">
             <Slider {...settings} className="my-8">
-                {propertyTypesList.map((property) => {
-                    const count = propertyCounts[property.type]
+                {propertyTypesList.map((property, index) => {
+                    const typeKey = property.type as HomePropertyTypeKey
+                    const count = summary?.byType?.[typeKey]
+
+                    const countLabel = isLoading
+                        ? 'Chargement...'
+                        : isError
+                            ? 'Indisponible'
+                            : typeof count === 'number'
+                                ? `${count} Annonce${count > 1 ? 's' : ''}`
+                                : '—'
 
                     return (
-                        <div key={property.type} className="px-2">
+                        <motion.div
+                            key={property.type}
+                            className="px-2"
+                            initial={shouldReduceMotion ? false : { opacity: 0, y: 18 }}
+                            whileInView={shouldReduceMotion ? {} : { opacity: 1, y: 0 }}
+                            viewport={{ once: true, amount: 0.3 }}
+                            transition={{ duration: 0.35, delay: index * 0.04 }}
+                        >
                             <Card
                                 className="group flex flex-col items-center cursor-pointer bg-white dark:bg-gray-800 transition-all duration-300 hover:shadow-lg"
                                 onClick={() => handleClick(property.type)}
@@ -106,11 +106,18 @@ export default function CarouselPropertyType() {
                                         {TypeProperty[property.type]}
                                     </h1>
                                     <CardDescription className="text-sm text-gray-500 dark:text-gray-400">
-                                        {count} Annonce{count > 1 ? 's' : ''}
+                                        {isLoading ? (
+                                            <span className="inline-flex items-center gap-2">
+                                                <span className="h-2 w-14 rounded-full bg-gray-300/80 animate-pulse" />
+                                                <span>Chargement...</span>
+                                            </span>
+                                        ) : (
+                                            countLabel
+                                        )}
                                     </CardDescription>
                                 </CardContent>
                             </Card>
-                        </div>
+                        </motion.div>
                     )
                 })}
             </Slider>

@@ -1,92 +1,38 @@
 import { routes } from '@/constantes/routes'
-import { useServerCountByProvince } from '@/hooks/use-server-count-by-province'
+import { HOME_PROVINCES, HomeProvinceName } from '@/constantes/home-page'
+import { useServerPropertyCountSummary } from '@/hooks/use-server-property-count-summary'
+import { motion, useReducedMotion } from 'framer-motion'
 import Image from 'next/image'
 import { useRouter } from 'next/navigation'
 import React from 'react'
 
-const provinces = [
-    {
-        name: 'Estuaire',
-        img: 'estuaire.webp',
-        logo: 'g1.webp'
-    },
-    {
-        name: 'Haut-Ogooué',
-        img: 'haut-ogooue.webp',
-        logo: 'g2.webp'
-    },
-    {
-        name: 'Moyen-Ogooué',
-        img: 'moyen-ogooue.webp',
-        logo: 'g3.webp'
-    },
-    {
-        name: 'Ngounié',
-        img: 'ngounié.webp',
-        logo: 'g4.webp'
-    },
-    {
-        name: 'Nyanga',
-        img: 'nyanga.webp',
-        logo: 'g5.webp'
-    },
-    {
-        name: 'Ogooué-Ivindo',
-        img: 'ogooue-ivindo.webp',
-        logo: 'g6.webp'
-    },
-    {
-        name: 'Ogooué-Lolo',
-        img: 'ogooue-lolo.webp',
-        logo: 'g7.webp'
-    },
-    {
-        name: 'Ogooué-Maritime',
-        img: 'ogooue-maritime.webp',
-        logo: 'g8.webp'
-    },
-    {
-        name: 'Woleu-Ntem',
-        img: 'woleu-ntem.webp',
-        logo: 'g9.webp'
-    }
-]
-
 export default function PropertyByProvince() {
     const router = useRouter()
-    
-    // Appeler les hooks pour toutes les provinces au niveau du composant
-    const estuaireData = useServerCountByProvince('Estuaire')
-    const hautOgooueData = useServerCountByProvince('Haut-Ogooué')
-    const moyenOgooueData = useServerCountByProvince('Moyen-Ogooué')
-    const ngnounieData = useServerCountByProvince('Ngounié')
-    const nyangaData = useServerCountByProvince('Nyanga')
-    const ogooueIvindoData = useServerCountByProvince('Ogooué-Ivindo')
-    const ogooueLolooData = useServerCountByProvince('Ogooué-Lolo')
-    const ogooueMaritimeData = useServerCountByProvince('Ogooué-Maritime')
-    const woleuNtemData = useServerCountByProvince('Woleu-Ntem')
-
-    // Créer le mapping des données
-    const provinceData: Record<string, { data: number | undefined; isLoading: boolean }> = {
-        'Estuaire': estuaireData,
-        'Haut-Ogooué': hautOgooueData,
-        'Moyen-Ogooué': moyenOgooueData,
-        'Ngounié': ngnounieData,
-        'Nyanga': nyangaData,
-        'Ogooué-Ivindo': ogooueIvindoData,
-        'Ogooué-Lolo': ogooueLolooData,
-        'Ogooué-Maritime': ogooueMaritimeData,
-        'Woleu-Ntem': woleuNtemData,
-    }
+    const {
+        data: summary,
+        isLoading,
+        isError,
+    } = useServerPropertyCountSummary()
+    const shouldReduceMotion = useReducedMotion()
 
     return (
         <div className='grid grid-cols-1 gap-5 grid-provinces'>
             {
-                provinces.map((province) => {
-                    const { data: count, isLoading } = provinceData[province.name]
+                HOME_PROVINCES.map((province, index) => {
+                    const provinceName = province.name as HomeProvinceName
+                    const count = summary?.byProvince?.[provinceName]
+                    const label = isLoading
+                        ? 'Chargement...'
+                        : isError
+                            ? 'Indisponible'
+                            : typeof count === 'number'
+                                ? count > 0
+                                    ? `${count} Annonce(s)`
+                                    : 'Aucune annonce'
+                                : '—'
 
                     return (
-                        <button
+                        <motion.button
                             key={province.name}
                             className='relative rounded-xl overflow-hidden w-full h-[340px] group cursor-pointer border-none bg-transparent p-0'
                             onClick={() => {
@@ -103,6 +49,10 @@ export default function PropertyByProvince() {
                                 }
                             }}
                             aria-label={`Rechercher des propriétés dans la province ${province.name}`}
+                            initial={shouldReduceMotion ? false : { opacity: 0, y: 18 }}
+                            whileInView={shouldReduceMotion ? {} : { opacity: 1, y: 0 }}
+                            viewport={{ once: true, amount: 0.25 }}
+                            transition={{ duration: 0.35, delay: index * 0.04 }}
                         >
                             {/* Logo comme image principale */}
                             <div className="relative w-full h-full bg-gradient-to-br from-blue-50 to-gray-100">
@@ -127,11 +77,11 @@ export default function PropertyByProvince() {
                                             <span className='text-white text-sm'>Chargement...</span>
                                         </div>
                                     ) : (
-                                        <h3 className='text-white text-sm font-medium'>{(count ?? 0) > 0 ? `${count} Annonce(s)` : 'Aucune annonce'}</h3>
+                                        <h3 className='text-white text-sm font-medium'>{label}</h3>
                                     )}
                                 </div>
                             </div>
-                        </button>
+                        </motion.button>
                     )
                 })
             }

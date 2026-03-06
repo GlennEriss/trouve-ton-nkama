@@ -18,6 +18,7 @@ import { usePropertyFormStorage } from "@/hooks/usePropertyFormStorage"
 import useLastpath from "@/hooks/use-lastpath"
 import queryKeys from "@/constantes/react-query-keys"
 import { routes } from "@/constantes/routes"
+import { invalidatePropertyCountCache } from "@/lib/invalidate-property-count-cache"
 
 type PropertyFormComponent = {
     form: any,
@@ -176,6 +177,7 @@ export const PropertyFormComponentProvider = ({ children, isUpdate, propertyToUp
         },
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: [queryKeys.properties] })
+            void invalidatePropertyCountCache()
             toast({
                 duration: 5000,
                 title: id ? "Modification d'une propriété" : "Ajout d'une propriété",

@@ -16,6 +16,7 @@ import { cn } from '@/lib/utils';
 import FeaturedSection from './FeaturedSection';
 import TrendingSection from './TrendingSection';
 import RecentSection from './RecentSection';
+import { motion, useReducedMotion } from 'framer-motion';
 
 export default function HomePageMobileComponent() {
     const {
@@ -31,6 +32,7 @@ export default function HomePageMobileComponent() {
             ? routes.protected.add_property
             : routes.public.search_property
     const { width } = useWindowSize()
+    const shouldReduceMotion = useReducedMotion()
     // Porte de garage: gestion de la navbar animée
     const [navbarVisible, setNavbarVisible] = React.useState(false);
     const [navbarHeight, setNavbarHeight] = React.useState(0);
@@ -68,6 +70,16 @@ export default function HomePageMobileComponent() {
         }
     }, [navbarRef.current]);
 
+    const getRevealProps = (delay = 0) =>
+        shouldReduceMotion
+            ? {}
+            : {
+                initial: { opacity: 0, y: 18 },
+                whileInView: { opacity: 1, y: 0 },
+                viewport: { once: true, amount: 0.2 },
+                transition: { duration: 0.45, delay, ease: [0.22, 1, 0.36, 1] },
+            }
+
     return (
         <>
             <div
@@ -86,7 +98,7 @@ export default function HomePageMobileComponent() {
                 <Navbar />
             </div>
             <div className={cn('text-sm space-y-5', user && width < 768 ? 'mb-20' : '')}>
-                <section className='space-y-4 m-5' ref={searchSectionRef}>
+                <motion.section className='space-y-4 m-5' ref={searchSectionRef} {...getRevealProps(0.03)}>
                     <div className='space-y-1 '>
                         <h1 className='text-gray-500 text-[11px]'>Votre futur chez-vous grâce à Trouve Ton Nkama</h1>
                         <div className='flex text-xl font-bold text-[#146B67] items-center gap-2'>
@@ -115,7 +127,7 @@ export default function HomePageMobileComponent() {
                             </div>
                         </div>
                     </Form>
-                </section>
+                </motion.section>
 
                 {/* <section className='space-y-5 m-5'>
                     <h1 className='text-xl font-bold text-center text-[#146B67]'>Mettez votre logement en valeur</h1>
@@ -144,35 +156,37 @@ export default function HomePageMobileComponent() {
                         />
                     </div>
                 </section> */}
-                <FeaturedSection />
+                <motion.div {...getRevealProps(0.05)}>
+                    <FeaturedSection />
+                </motion.div>
 
-                <section className='space-y-5 bg-green-50 p-5 py-16'>
+                <motion.section className='space-y-5 bg-green-50 p-5 py-16' {...getRevealProps(0.07)}>
                     <h1 className='text-xl font-bold text-center text-[#146B67]'>Quels sont vos besoins ?</h1>
                     <div className='flex gap-2'>
                         <Link href={publishLink} className='w-1/2 bg-[#146B67] text-white font-bold py-3 rounded-xl flex justify-center items-center'>Publier une annonce</Link>
                         <Link href={routes.public.search_property} className='w-1/2 bg-white border border-[#146B67] text-[#146B67] font-bold py-3 rounded-xl flex justify-center items-center text-center'>Rechercher une annonce</Link>
                     </div>
-                </section>
+                </motion.section>
 
-                <section className='space-y-5 p-5'>
+                <motion.section className='space-y-5 p-5' {...getRevealProps(0.09)}>
                     <h1 className='text-xl text-center font-bold text-[#146B67]'>Types d'annonces</h1>
                     <CarouselPropertyType />
-                </section>
+                </motion.section>
 
 
 
-                <section className='space-y-5'>
+                <motion.section className='space-y-5' {...getRevealProps(0.11)}>
                     {/* Sections des annonces promues */}
                     <TrendingSection /> 
                     <RecentSection />
-                </section>
+                </motion.section>
 
-                <section className='space-y-5 m-5'>
+                <motion.section className='space-y-5 m-5' {...getRevealProps(0.13)}>
                     <h1 className='text-xl font-bold text-center text-[#146B67]'>Logements par province</h1>
                     <PropertyByProvince />
-                </section>
+                </motion.section>
 
-                <section className='bg-green-50 py-5'>
+                <motion.section className='bg-green-50 py-5' {...getRevealProps(0.15)}>
                     <div className='m-5 bg-gradient-to-r to-[#146B67] from-[#1FA89B] rounded-xl py-5 px-3 flex flex-col gap-3 items-center'>
                         <h1 className='text-xl text-white font-bold text-center flex flex-col'>
                             <span>Vous recherchez</span>
@@ -199,7 +213,7 @@ export default function HomePageMobileComponent() {
                             Explorez
                         </Link>
                     </div>
-                </section>
+                </motion.section>
             </div>
         </>
 
