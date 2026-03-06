@@ -14,6 +14,11 @@ SearchDesktopPage() {
     const { items, isLastPage, showMore } = useInfiniteHits();
     const { nbHits } = useStats();
     const searchParams = useSearchParams();
+    const resultsContainerRef = React.useRef<HTMLDivElement>(null);
+    const sentinelRef = React.useRef<HTMLDivElement>(null);
+    const [isLoadingMore, setIsLoadingMore] = React.useState(false);
+    const [lastItemsCount, setLastItemsCount] = React.useState(0);
+    const [newItemsLoaded, setNewItemsLoaded] = React.useState(0);
 
     const {
         setProvince,
@@ -64,13 +69,60 @@ SearchDesktopPage() {
         setTypeProperty(typePropRaw ? typePropRaw.split(",").map(s => s.trim()) : []);
         setStatus(statusRaw ? statusRaw.split(",").map(s => s.trim()) : []);
         setTags(tagsRaw ? tagsRaw.split(",").map(s => s.trim()) : []);
-    }, [searchParams.toString(), provinces, setProvince, setCity, setStreet, setMinPrice, setMaxPrice, setMinArea, setMaxArea, setMinNbrRooms, setMaxNbrRooms, setTypeProperty, setTags]);
+    }, [searchParams.toString(), provinces, setProvince, setCity, setStreet, setMinPrice, setMaxPrice, setMinArea, setMaxArea, setMinNbrRooms, setMaxNbrRooms, setTypeProperty, setStatus, setTags]);
+
+    const requestMore = React.useCallback(() => {
+        if (isLastPage || isLoadingMore) return;
+        setLastItemsCount(items.length);
+        setIsLoadingMore(true);
+        showMore();
+    }, [isLastPage, isLoadingMore, items.length, showMore]);
+
+    React.useEffect(() => {
+        if (!sentinelRef.current || !resultsContainerRef.current) return;
+
+        const observer = new IntersectionObserver(
+            ([entry]) => {
+                if (entry.isIntersecting && !isLastPage && !isLoadingMore) {
+                    requestMore();
+                }
+            },
+            {
+                root: resultsContainerRef.current,
+                rootMargin: '220px',
+                threshold: 0.01,
+            },
+        );
+
+        observer.observe(sentinelRef.current);
+        return () => observer.disconnect();
+    }, [isLastPage, isLoadingMore, requestMore]);
+
+    React.useEffect(() => {
+        if (!isLoadingMore) return;
+
+        if (items.length > lastItemsCount) {
+            const delta = items.length - lastItemsCount;
+            setNewItemsLoaded(delta);
+            setIsLoadingMore(false);
+
+            const timeoutId = window.setTimeout(() => setNewItemsLoaded(0), 1800);
+            return () => window.clearTimeout(timeoutId);
+        }
+
+        const guardTimeout = window.setTimeout(() => {
+            setIsLoadingMore(false);
+        }, 5000);
+
+        return () => window.clearTimeout(guardTimeout);
+    }, [items, isLoadingMore, lastItemsCount]);
+
     return (
         <>
             <div className='flex p-5'>
                 <FilterSearchDesktopPageSection />
                 <div className="w-3/4 flex flex-col h-screen pb-20">
-                    <div className="p-5 flex-1 overflow-auto">
+                    <div ref={resultsContainerRef} className="p-5 flex-1 overflow-auto">
                         {items.length === 0 ? (
                             <div className="flex flex-col items-center justify-center h-full bg-gray-50 dark:bg-gray-800 rounded-xl p-8">
                                 <Image
@@ -98,11 +150,11 @@ SearchDesktopPage() {
                                     </h2>
                                 </div>
 
-                                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 gap-6 pb-20">
-                                    {items.map((propertyData, i) => (
+                                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 gap-6 pb-20 auto-rows-fr">
+                                    {items.map((propertyData) => (
                                         <div
                                             key={propertyData.objectID}
-                                            className="transform transition-all duration-300 hover:translate-y-[-4px]"
+                                            className="h-full animate-fade-in-up transform transition-all duration-300 hover:translate-y-[-4px]"
                                         >
                                             <PropertyCard
                                                 property={propertyData}
@@ -110,25 +162,35 @@ SearchDesktopPage() {
                                         </div>
                                     ))}
                                 </div>
+
+                                <div ref={sentinelRef} className="h-5" />
+
+                                {!isLastPage && (
+                                    <div className="py-4 text-center text-sm text-gray-500">
+                                        {isLoadingMore ? (
+                                            <span className="inline-flex items-center gap-2">
+                                                <svg className="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
+                                                    <circle className="opacity-30" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                                                    <path className="opacity-90" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"></path>
+                                                </svg>
+                                                Chargement des annonces...
+                                            </span>
+                                        ) : (
+                                            "Défilez vers le bas pour charger plus d'annonces"
+                                        )}
+                                    </div>
+                                )}
+
+                                {newItemsLoaded > 0 && (
+                                    <div className="mb-5 text-center">
+                                        <span className="text-xs text-[#146B67] bg-[#E6F8F5] border border-[#B8ECE4] rounded-full px-3 py-1 animate-fade-in-up">
+                                            +{newItemsLoaded} nouvelles annonces ajoutées
+                                        </span>
+                                    </div>
+                                )}
                             </>
                         )}
                     </div>
-
-                    {!isLastPage && items.length > 0 && (
-                        <div className="sticky bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-white via-white to-transparent dark:from-gray-900 dark:via-gray-900">
-                            <div className="flex justify-center">
-                                <button
-                                    onClick={showMore}
-                                    className="px-8 py-3 bg-gradient-to-r from-[#146B67] via-[#1FA89B] to-[#146B67] text-white rounded-full font-medium hover:brightness-110 transition-all duration-300 shadow-md hover:shadow-lg flex items-center gap-2"
-                                >
-                                    <span>Voir plus d'annonces</span>
-                                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                                    </svg>
-                                </button>
-                            </div>
-                        </div>
-                    )}
                 </div>
             </div>
         </>
