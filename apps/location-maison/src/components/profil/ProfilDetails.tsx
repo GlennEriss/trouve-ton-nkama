@@ -1,12 +1,13 @@
 'use client'
 import React from 'react'
-import { ChevronRight, Lock, Settings, ShieldCheck, FileText, Coins, Phone } from 'lucide-react';
+import { ChevronRight, Lock, Settings, ShieldCheck, FileText, Coins, Phone, Building2 } from 'lucide-react';
 import Link from 'next/link';
 import { useWindowSize } from '@/hooks/useSize';
 import { routes } from '@/constantes/routes';
 import { Separator } from '../ui/separator';
+import { useCurrentUser } from '@/hooks/use-current-user';
 
-const menu = [
+const baseMenu = [
     {
         title: 'Mon solde',
         icon: Coins,
@@ -53,6 +54,18 @@ const menu = [
 
 export default function ProfilDetails() {
     const size = useWindowSize()
+    const { user } = useCurrentUser();
+    const isAnnouncer = Array.isArray(user?.roles) && user.roles.includes('Announcer');
+
+    const menu = [
+        ...(!isAnnouncer ? [{
+            title: 'Devenir annonceur',
+            icon: Building2,
+            link: routes.protected.become_announcer,
+            description: 'Activez le rôle annonceur pour publier des annonces tout en conservant les droits utilisateur.'
+        }] : []),
+        ...baseMenu,
+    ];
 
     return size.width < 768 ? (
         <div className='space-y-5'>

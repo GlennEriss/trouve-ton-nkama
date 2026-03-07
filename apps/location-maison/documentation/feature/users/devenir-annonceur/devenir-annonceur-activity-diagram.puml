@@ -1,0 +1,40 @@
+@startuml
+title Activite - Devenir Annonceur
+
+start
+
+:Utilisateur connecte ouvre /profil/devenir-annonceur;
+
+if (Session valide ?) then (oui)
+  :Afficher benefices + obligations;
+  :Demander acceptation conditions annonceur;
+
+  if (Conditions acceptees ?) then (oui)
+    :Soumettre demande de migration role;
+    :Verifier etat role utilisateur;
+
+    if (Contient deja Announcer ?) then (oui)
+      :Retour idempotent ALREADY_ANNOUNCER;
+      :Afficher message informatif;
+      stop
+    else (non)
+      :Ajouter role Announcer;
+      :Conserver role User;
+      :Persister en base;
+      :Mettre a jour session;
+      :Afficher succes;
+      :Rediriger vers espace annonceur;
+      stop
+    endif
+
+  else (non)
+    :Afficher erreur ANNOUNCER_TERMS_REQUIRED;
+    stop
+  endif
+
+else (non)
+  :Rediriger vers signin;
+  stop
+endif
+
+@enduml
