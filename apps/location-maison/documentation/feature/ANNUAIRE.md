@@ -30,7 +30,7 @@
 | Créer une annonce | ✅ | - | - | Existant (à refactoriser selon nouvelle architecture) |
 | Modifier une annonce | ✅ | - | - | Existant |
 | Supprimer une annonce | ✅ | - | - | Existant |
-| Consulter mes annonces | ✅ | - | - | Existant |
+| Consulter mes annonces (refonte cockpit `/property`) | 🔄 | feature/FEATURE-009-gestion-annonces-annonceur | 2026-03-07 | Implémentation UI/API livrée (recherche, filtres, tri, stats, pagination), tests à compléter |
 | Utiliser l'assistant IA | ✅ | - | - | Existant |
 | Promouvoir une annonce (Featured) | ⬜ | - | - | À implémenter |
 | Promouvoir une annonce (Trending) | ⬜ | - | - | À implémenter |
@@ -154,4 +154,4 @@
 
 ---
 
-*Dernière mise à jour : 2026-03-06*
+*Dernière mise à jour : 2026-03-07*
