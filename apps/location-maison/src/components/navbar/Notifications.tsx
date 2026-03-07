@@ -47,7 +47,7 @@ export default function Notifications() {
   return (
     <Popover open={isOpen} onOpenChange={setIsOpen}>
       <PopoverTrigger asChild>
-        <div className="cursor-pointer" onClick={() => setIsOpen(!isOpen)}>
+        <div className="cursor-pointer">
           <NotificationButton unreadCount={unreadCount} />
         </div>
       </PopoverTrigger>

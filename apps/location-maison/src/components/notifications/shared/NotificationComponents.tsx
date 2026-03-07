@@ -3,6 +3,7 @@ import { BellIcon } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 import Link from "next/link";
 import { NOTIFICATION_CSS_CLASSES, formatNotificationDate } from "./notification-utils";
 
@@ -199,23 +200,34 @@ export function NotificationButton({
 }) {
   const buttonClass = variant === "floating" 
     ? "fixed bottom-4 right-4"
-    : "relative";
+    : "relative inline-flex";
+
+  const iconVariantClass =
+    "h-11 w-11 rounded-full border border-[#D6ECE9] bg-white text-[#146B67] shadow-sm transition-all duration-300 hover:-translate-y-0.5 hover:border-[#1FA89B] hover:bg-[#ECF8F6] hover:text-[#0f5a56] hover:shadow-md focus-visible:ring-2 focus-visible:ring-[#1FA89B]/30 dark:border-gray-700 dark:bg-gray-900 dark:text-[#9FE2DB] dark:hover:border-[#1FA89B]/70 dark:hover:bg-gray-800";
+
+  const floatingVariantClass =
+    "h-12 w-12 rounded-full border border-[#1FA89B]/30 bg-gradient-to-r from-[#146B67] to-[#1FA89B] text-white shadow-lg hover:brightness-110";
 
   return (
     <div className={buttonClass}>
       <Button 
         size="icon" 
-        variant="outline" 
-        className={`relative ${className}`} 
+        variant={variant === "floating" ? "default" : "outline"}
+        className={cn(
+          "relative",
+          variant === "floating" ? floatingVariantClass : iconVariantClass,
+          unreadCount > 0 && variant !== "floating" && "ring-2 ring-[#1FA89B]/25 ring-offset-1",
+          className
+        )}
         aria-label="Ouvrir les notifications"
         type="button"
       >
         <BellIcon size={iconSize} aria-hidden="true" />
         {unreadCount > 0 && (
-          <Badge className={`absolute min-w-5 rounded-full px-1 flex justify-center ${
+          <Badge className={`absolute min-w-5 rounded-full border border-white px-1 flex justify-center ${
             variant === "floating" 
               ? "-top-2 right-0"
-              : "-top-2 left-full -translate-x-1/2"
+              : "-top-1.5 left-full -translate-x-1/2 bg-red-500 text-white"
           }`}>
             {unreadCount > 99 ? "99+" : unreadCount}
           </Badge>

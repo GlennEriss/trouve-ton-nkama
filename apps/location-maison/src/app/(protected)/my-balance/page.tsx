@@ -1,10 +1,6 @@
-import React from 'react'
-import MyBalanceComponent from '@/components/my-balance/MyBalanceComponent'
+import { redirect } from 'next/navigation'
+import { routes } from '@/constantes/routes'
 
 export default function MyBalancePage() {
-  return (
-    <div>
-      <MyBalanceComponent />
-    </div>
-  )
-} 
+  redirect(routes.protected.my_balance_history)
+}

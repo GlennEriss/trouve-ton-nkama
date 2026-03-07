@@ -12,7 +12,7 @@ const baseMenu = [
         title: 'Mon solde',
         icon: Coins,
         link: routes.protected.my_balance,
-        description: 'Consultez votre solde de crédits, rechargez votre compte et accédez à l\'historique de vos transactions pour utiliser nos services premium.'
+        description: 'Accédez aux pages dédiées pour consulter votre historique de crédits et gérer la recharge manuelle de votre compte.'
     },
     {
         title: 'Vérifier mon numéro de téléphone',

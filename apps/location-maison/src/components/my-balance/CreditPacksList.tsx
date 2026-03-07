@@ -18,7 +18,7 @@ interface CreditPack {
 }
 
 interface CreditPacksListProps {
-  onOpenModal: () => void
+  onOpenModal?: () => void
   onPackSelect?: (pack: CreditPack) => void
 }
 
@@ -82,7 +82,7 @@ export default function CreditPacksList({ onOpenModal, onPackSelect }: Readonly<
       onPackSelect(pack)
     }
     // Ouvrir le modal du parent
-    onOpenModal()
+    onOpenModal?.()
   }
 
   return (
@@ -101,7 +101,7 @@ export default function CreditPacksList({ onOpenModal, onPackSelect }: Readonly<
         <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-3 max-w-2xl mx-auto">
           <div className="flex items-center gap-2 text-sm text-blue-800 dark:text-blue-200">
             <Info className="w-4 h-4 flex-shrink-0" />
-            <p>Les fonctionnalités de recharge seront bientôt disponibles pour offrir de meilleures visibilités à vos annonces.</p>
+            <p>Recharge actuellement manuelle: contactez le support WhatsApp après dépôt pour créditement du compte.</p>
           </div>
         </div>
       </div>
@@ -113,7 +113,7 @@ export default function CreditPacksList({ onOpenModal, onPackSelect }: Readonly<
             key={pack.id}
             pack={pack}
             onSelect={handlePackSelect}
-            isLoading={false}
+            isLoading={true}
           />
         ))}
       </div>

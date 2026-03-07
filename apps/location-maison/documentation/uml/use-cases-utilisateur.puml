@@ -167,6 +167,9 @@ note right of UC_ViewBalance
   - Solde consultable
   - Historique consultable
   - Achat de crédits possible
+  - Pages séparées:
+    `/my-balance/history` et
+    `/my-balance/recharge`
   
   Les usages détaillés des crédits
   côté User seront enrichis
@@ -180,7 +183,6 @@ note right of UC_BecomeAnnouncer
   3. Il choisit son type (Particulier, Agence, Démarcheur)
   4. Il renseigne ses infos professionnelles (optionnel)
   5. Le rôle "Announcer" est attribué
-  6. Il reçoit 3 crédits de bienvenue
   
   **Pré-conditions:**
   - Email vérifié
@@ -188,7 +190,8 @@ note right of UC_BecomeAnnouncer
   
   **Post-conditions:**
   - Rôle "Announcer" ajouté
-  - CreditWallet créé avec 3 crédits
+  - Solde de crédits existant conservé
+  - Pas de bonus crédit additionnel automatique
   - Accès aux fonctionnalités Annonceur
 end note
 

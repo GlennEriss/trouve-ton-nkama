@@ -84,7 +84,7 @@ Un nouveau diagramme dédié au système de crédits : **[use-cases-credits.puml
 | Notifications | ✅ | ✅ |
 | Contacter annonceurs | ✅ | ✅ |
 | **Publier des annonces** | ❌ | ✅ |
-| **Acheter des crédits** | ❌ | ✅ |
+| **Acheter des crédits (mode manuel)** | ✅ | ✅ |
 | **Promouvoir annonces** | ❌ | ✅ |
 | **Assistant IA** | ❌ | ✅ |
 | **Statistiques** | ❌ | ✅ |
@@ -95,7 +95,7 @@ Un nouveau diagramme dédié au système de crédits : **[use-cases-credits.puml
 |---------|------|
 | **Firebase** | Backend (Firestore, Authentication, Storage, Cloud Functions) |
 | **Google Maps / OpenStreetMap** | Géolocalisation et cartographie |
-| **Airtel Money** | Paiement mobile pour l'achat de crédits |
+| **Support WhatsApp + OM/MoMo** | Recharge manuelle (dépôt externe + créditement manuel) |
 | **Service Email** | Envoi d'emails (vérification, notifications) |
 | **Service IA** | Génération automatique de contenu pour les annonces |
 | **Google/Facebook OAuth** | Authentification sociale |
@@ -112,7 +112,7 @@ Un **Utilisateur** peut devenir **Annonceur** à tout moment via le flux suivant
 6. **Activation** : Le système crée :
    - Rôle "Announcer" ajouté à `User.roles`
    - `AnnouncerProfile` créé
-   - `CreditWallet` créé avec **3 crédits de bienvenue**
+   - Solde de crédits existant conservé
    - Notification de confirmation
 
 > ⚠️ La migration est **irréversible** : un Annonceur ne peut pas redevenir simple Utilisateur.
@@ -175,7 +175,7 @@ Property (base class)
 | `use-cases-utilisateur.puml` | Utilisateur | Profil, favoris, notifications, **devenir annonceur** |
 | `use-cases-recherche.puml` | **Tous** | Recherche avancée, alertes, comparaison, carte |
 | `use-cases-annonceur.puml` | Annonceur | Publication, gestion, promotion, statistiques |
-| `use-cases-credits.puml` | Annonceur/Admin | Achat, dépense, gestion crédits |
+| `use-cases-credits.puml` | Utilisateur/Annonceur/Admin | Historique, recharge manuelle, dépense, gestion crédits |
 | `use-cases-administrateur.puml` | Admin | Configuration, maintenance |
 
 ---
@@ -208,16 +208,13 @@ Property (base class)
 ### Flux d'Achat
 
 ```
-1. Annonceur → Consulte solde
-2. Annonceur → Sélectionne pack (5, 15, 50, 100 crédits)
-3. Annonceur → Choisit Airtel Money
-4. Système → Initie transaction (status: PENDING)
-5. Airtel Money → Envoie notification téléphone
-6. Annonceur → Confirme sur téléphone
-7. Airtel Money → Callback confirmation
-8. Système → Met à jour status: COMPLETED
-9. Système → Crédite CreditWallet
-10. Système → Affiche confirmation
+1. Utilisateur/Annonceur → Ouvre `/my-balance/recharge`
+2. Sélectionne un pack (5, 10, 25, 50 crédits)
+3. Contacte le support sur WhatsApp
+4. Effectue un dépôt OM/MoMo (hors plateforme)
+5. Envoie la référence de dépôt
+6. Support → crédite manuellement le compte
+7. Solde + historique mis à jour sur `/my-balance/history`
 ```
 
 ### Coûts en Crédits
@@ -225,10 +222,10 @@ Property (base class)
 | Service | Crédits |
 |---------|---------|
 | Publier annonce | 0 (gratuit) |
-| Promotion Featured | 10 |
-| Trending 7 jours | 7 |
-| Trending 3 jours | 4 |
-| Boost | 2 |
+| Promotion Featured | 15 |
+| Trending 7 jours | 10 |
+| Trending 3 jours | 5 |
+| Boost | 3 |
 | Assistant IA | 1 |
 
 ---

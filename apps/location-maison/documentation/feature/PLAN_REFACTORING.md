@@ -229,8 +229,11 @@ Refactoriser l'application selon l'architecture proposée dans `ANALYSE_PROBLEME
   - `src/db/credit-transaction.db.ts`
 
 #### 7.2) Achat de crédits - **FEATURE-028**
-- **Use Case** : `UC_SelectPack`, `UC_PayAirtel` (Annonceur)
-- **Note** : Paiement Airtel Money (non fonctionnel actuellement)
+- **Use Case** : `UC_SelectPack`, `UC_RequestManualTopup` (Annonceur)
+- **Note** : Recharge manuelle active via WhatsApp + dépôt OM/MoMo ; intégration API opérateur à venir
+- **Pages** :
+  - `/my-balance/history` (solde + historique)
+  - `/my-balance/recharge` (packs + procédure manuelle)
 
 #### 7.3) Historique des transactions - **FEATURE-029**
 - **Use Case** : `UC_ViewHistory` (Annonceur)
@@ -356,4 +359,3 @@ Voir : `documentation/feature/auth/FEATURE-001-REGISTER.md` (à créer)
 ---
 
 *Dernière mise à jour : 2026-01-12*
-
