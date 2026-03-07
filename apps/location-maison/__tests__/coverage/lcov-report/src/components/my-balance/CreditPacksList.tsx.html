@@ -226,7 +226,8 @@
 <a name='L161'></a><a href='#L161'>161</a>
 <a name='L162'></a><a href='#L162'>162</a>
 <a name='L163'></a><a href='#L163'>163</a>
-<a name='L164'></a><a href='#L164'>164</a></td><td class="line-coverage quiet"><span class="cline-any cline-no">&nbsp;</span>
+<a name='L164'></a><a href='#L164'>164</a>
+<a name='L165'></a><a href='#L165'>165</a></td><td class="line-coverage quiet"><span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
@@ -389,7 +390,8 @@
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span></td><td class="text"><pre class="prettyprint lang-js"><span class="cstat-no" title="statement not covered" ><span class="fstat-no" title="function not covered" ><span class="branch-0 cbranch-no" title="branch not covered" >'use client'</span></span></span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span></td><td class="text"><pre class="prettyprint lang-js"><span class="cstat-no" title="statement not covered" ><span class="fstat-no" title="function not covered" ><span class="branch-0 cbranch-no" title="branch not covered" >'use client'</span></span></span>
 <span class="cstat-no" title="statement not covered" ></span>
 <span class="cstat-no" title="statement not covered" >import React from 'react'</span>
 <span class="cstat-no" title="statement not covered" >import { Package, Info } from 'lucide-react'</span>
@@ -409,7 +411,7 @@
 <span class="cstat-no" title="statement not covered" >}</span>
 <span class="cstat-no" title="statement not covered" ></span>
 <span class="cstat-no" title="statement not covered" >interface CreditPacksListProps {</span>
-<span class="cstat-no" title="statement not covered" >  onOpenModal: () =&gt; void</span>
+<span class="cstat-no" title="statement not covered" >  onOpenModal?: () =&gt; void</span>
 <span class="cstat-no" title="statement not covered" >  onPackSelect?: (pack: CreditPack) =&gt; void</span>
 <span class="cstat-no" title="statement not covered" >}</span>
 <span class="cstat-no" title="statement not covered" ></span>
@@ -473,7 +475,7 @@
 <span class="cstat-no" title="statement not covered" >      onPackSelect(pack)</span>
 <span class="cstat-no" title="statement not covered" >    }</span>
 <span class="cstat-no" title="statement not covered" >    // Ouvrir le modal du parent</span>
-<span class="cstat-no" title="statement not covered" >    onOpenModal()</span>
+<span class="cstat-no" title="statement not covered" >    onOpenModal?.()</span>
 <span class="cstat-no" title="statement not covered" >  }</span>
 <span class="cstat-no" title="statement not covered" ></span>
 <span class="cstat-no" title="statement not covered" >  return (</span>
@@ -492,7 +494,7 @@
 <span class="cstat-no" title="statement not covered" >        &lt;div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-3 max-w-2xl mx-auto"&gt;</span>
 <span class="cstat-no" title="statement not covered" >          &lt;div className="flex items-center gap-2 text-sm text-blue-800 dark:text-blue-200"&gt;</span>
 <span class="cstat-no" title="statement not covered" >            &lt;Info className="w-4 h-4 flex-shrink-0" /&gt;</span>
-<span class="cstat-no" title="statement not covered" >            &lt;p&gt;Les fonctionnalités de recharge seront bientôt disponibles pour offrir de meilleures visibilités à vos annonces.&lt;/p&gt;</span>
+<span class="cstat-no" title="statement not covered" >            &lt;p&gt;Recharge actuellement manuelle: contactez le support WhatsApp après dépôt pour créditement du compte.&lt;/p&gt;</span>
 <span class="cstat-no" title="statement not covered" >          &lt;/div&gt;</span>
 <span class="cstat-no" title="statement not covered" >        &lt;/div&gt;</span>
 <span class="cstat-no" title="statement not covered" >      &lt;/div&gt;</span>
@@ -504,7 +506,7 @@
 <span class="cstat-no" title="statement not covered" >            key={pack.id}</span>
 <span class="cstat-no" title="statement not covered" >            pack={pack}</span>
 <span class="cstat-no" title="statement not covered" >            onSelect={handlePackSelect}</span>
-<span class="cstat-no" title="statement not covered" >            isLoading={false}</span>
+<span class="cstat-no" title="statement not covered" >            isLoading={true}</span>
 <span class="cstat-no" title="statement not covered" >          /&gt;</span>
 <span class="cstat-no" title="statement not covered" >        ))}</span>
 <span class="cstat-no" title="statement not covered" >      &lt;/div&gt;</span>
@@ -552,14 +554,15 @@
 <span class="cstat-no" title="statement not covered" >      &lt;/div&gt;</span>
 <span class="cstat-no" title="statement not covered" >    &lt;/div&gt;</span>
 <span class="cstat-no" title="statement not covered" >  )</span>
-<span class="cstat-no" title="statement not covered" >} </span></pre></td></tr></table></pre>
+<span class="cstat-no" title="statement not covered" >} </span>
+&nbsp;</pre></td></tr></table></pre>
 
                 <div class='push'></div><!-- for sticky footer -->
             </div><!-- /wrapper -->
             <div class='footer quiet pad2 space-top1 center small'>
                 Code coverage generated by
                 <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
-                at 2026-03-06T16:36:05.060Z
+                at 2026-03-07T12:46:39.516Z
             </div>
         <script src="../../../prettify.js"></script>
         <script>

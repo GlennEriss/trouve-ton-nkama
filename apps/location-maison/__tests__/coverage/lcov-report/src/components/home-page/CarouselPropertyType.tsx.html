@@ -25,7 +25,7 @@
             <div class='fl pad1y space-right2'>
                 <span class="strong">0% </span>
                 <span class="quiet">Statements</span>
-                <span class='fraction'>0/119</span>
+                <span class='fraction'>0/126</span>
             </div>
         
             
@@ -46,7 +46,7 @@
             <div class='fl pad1y space-right2'>
                 <span class="strong">0% </span>
                 <span class="quiet">Lines</span>
-                <span class='fraction'>0/119</span>
+                <span class='fraction'>0/126</span>
             </div>
         
             
@@ -182,7 +182,21 @@
 <a name='L117'></a><a href='#L117'>117</a>
 <a name='L118'></a><a href='#L118'>118</a>
 <a name='L119'></a><a href='#L119'>119</a>
-<a name='L120'></a><a href='#L120'>120</a></td><td class="line-coverage quiet"><span class="cline-any cline-no">&nbsp;</span>
+<a name='L120'></a><a href='#L120'>120</a>
+<a name='L121'></a><a href='#L121'>121</a>
+<a name='L122'></a><a href='#L122'>122</a>
+<a name='L123'></a><a href='#L123'>123</a>
+<a name='L124'></a><a href='#L124'>124</a>
+<a name='L125'></a><a href='#L125'>125</a>
+<a name='L126'></a><a href='#L126'>126</a>
+<a name='L127'></a><a href='#L127'>127</a></td><td class="line-coverage quiet"><span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
@@ -306,40 +320,24 @@
 <span class="cstat-no" title="statement not covered" >import { propertyTypesList } from './PropertyTypeList'</span>
 <span class="cstat-no" title="statement not covered" >import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../ui/card'</span>
 <span class="cstat-no" title="statement not covered" >import { TypeProperty } from '@/constantes/property-type'</span>
-<span class="cstat-no" title="statement not covered" >import { useServerCountByPropertyType } from '@/hooks/use-server-count-property-by-type'</span>
+<span class="cstat-no" title="statement not covered" >import { useServerPropertyCountSummary } from '@/hooks/use-server-property-count-summary'</span>
 <span class="cstat-no" title="statement not covered" >import { useAlgoliaContext } from '@/providers/AlgoliaContext'</span>
 <span class="cstat-no" title="statement not covered" >import { useRouter } from 'next/navigation'</span>
 <span class="cstat-no" title="statement not covered" >import Slider from 'react-slick'</span>
+<span class="cstat-no" title="statement not covered" >import { motion, useReducedMotion } from 'framer-motion'</span>
 <span class="cstat-no" title="statement not covered" >import 'slick-carousel/slick/slick.css'</span>
 <span class="cstat-no" title="statement not covered" >import 'slick-carousel/slick/slick-theme.css'</span>
+<span class="cstat-no" title="statement not covered" >import { HomePropertyTypeKey } from '@/constantes/home-page'</span>
 <span class="cstat-no" title="statement not covered" ></span>
 <span class="cstat-no" title="statement not covered" >export default function CarouselPropertyType() {</span>
 <span class="cstat-no" title="statement not covered" >    const { setTypeProperty } = useAlgoliaContext()</span>
 <span class="cstat-no" title="statement not covered" >    const router = useRouter()</span>
-<span class="cstat-no" title="statement not covered" ></span>
-<span class="cstat-no" title="statement not covered" >    // Appeler les hooks individuellement au niveau du composant (conforme aux règles React)</span>
-<span class="cstat-no" title="statement not covered" >    const homeCount = useServerCountByPropertyType("Home")</span>
-<span class="cstat-no" title="statement not covered" >    const studioCount = useServerCountByPropertyType("Studio")</span>
-<span class="cstat-no" title="statement not covered" >    const apartmentCount = useServerCountByPropertyType("Apartment")</span>
-<span class="cstat-no" title="statement not covered" >    const buildingCount = useServerCountByPropertyType("Building")</span>
-<span class="cstat-no" title="statement not covered" >    const deskCount = useServerCountByPropertyType("Desk")</span>
-<span class="cstat-no" title="statement not covered" >    const roomCount = useServerCountByPropertyType("Room")</span>
-<span class="cstat-no" title="statement not covered" >    const kioskCount = useServerCountByPropertyType("Kiosk")</span>
-<span class="cstat-no" title="statement not covered" >    const shopCount = useServerCountByPropertyType("Shop")</span>
-<span class="cstat-no" title="statement not covered" >    const landCount = useServerCountByPropertyType("Land")</span>
-<span class="cstat-no" title="statement not covered" ></span>
-<span class="cstat-no" title="statement not covered" >    // Créer le mapping des données</span>
-<span class="cstat-no" title="statement not covered" >    const propertyCounts: Record&lt;string, number&gt; = {</span>
-<span class="cstat-no" title="statement not covered" >        "Home": homeCount.data ?? 0,</span>
-<span class="cstat-no" title="statement not covered" >        "Studio": studioCount.data ?? 0,</span>
-<span class="cstat-no" title="statement not covered" >        "Apartment": apartmentCount.data ?? 0,</span>
-<span class="cstat-no" title="statement not covered" >        "Building": buildingCount.data ?? 0,</span>
-<span class="cstat-no" title="statement not covered" >        "Desk": deskCount.data ?? 0,</span>
-<span class="cstat-no" title="statement not covered" >        "Room": roomCount.data ?? 0,</span>
-<span class="cstat-no" title="statement not covered" >        "Kiosk": kioskCount.data ?? 0,</span>
-<span class="cstat-no" title="statement not covered" >        "Shop": shopCount.data ?? 0,</span>
-<span class="cstat-no" title="statement not covered" >        "Land": landCount.data ?? 0,</span>
-<span class="cstat-no" title="statement not covered" >    }</span>
+<span class="cstat-no" title="statement not covered" >    const {</span>
+<span class="cstat-no" title="statement not covered" >        data: summary,</span>
+<span class="cstat-no" title="statement not covered" >        isLoading,</span>
+<span class="cstat-no" title="statement not covered" >        isError,</span>
+<span class="cstat-no" title="statement not covered" >    } = useServerPropertyCountSummary()</span>
+<span class="cstat-no" title="statement not covered" >    const shouldReduceMotion = useReducedMotion()</span>
 <span class="cstat-no" title="statement not covered" ></span>
 <span class="cstat-no" title="statement not covered" >    const handleClick = (propertyType: string) =&gt; {</span>
 <span class="cstat-no" title="statement not covered" >        setTypeProperty([propertyType])</span>
@@ -386,11 +384,27 @@
 <span class="cstat-no" title="statement not covered" >    return (</span>
 <span class="cstat-no" title="statement not covered" >        &lt;div className="px-4 md:px-8"&gt;</span>
 <span class="cstat-no" title="statement not covered" >            &lt;Slider {...settings} className="my-8"&gt;</span>
-<span class="cstat-no" title="statement not covered" >                {propertyTypesList.map((property) =&gt; {</span>
-<span class="cstat-no" title="statement not covered" >                    const count = propertyCounts[property.type]</span>
+<span class="cstat-no" title="statement not covered" >                {propertyTypesList.map((property, index) =&gt; {</span>
+<span class="cstat-no" title="statement not covered" >                    const typeKey = property.type as HomePropertyTypeKey</span>
+<span class="cstat-no" title="statement not covered" >                    const count = summary?.byType?.[typeKey]</span>
+<span class="cstat-no" title="statement not covered" ></span>
+<span class="cstat-no" title="statement not covered" >                    const countLabel = isLoading</span>
+<span class="cstat-no" title="statement not covered" >                        ? 'Chargement...'</span>
+<span class="cstat-no" title="statement not covered" >                        : isError</span>
+<span class="cstat-no" title="statement not covered" >                            ? 'Indisponible'</span>
+<span class="cstat-no" title="statement not covered" >                            : typeof count === 'number'</span>
+<span class="cstat-no" title="statement not covered" >                                ? `${count} Annonce${count &gt; 1 ? 's' : ''}`</span>
+<span class="cstat-no" title="statement not covered" >                                : '—'</span>
 <span class="cstat-no" title="statement not covered" ></span>
 <span class="cstat-no" title="statement not covered" >                    return (</span>
-<span class="cstat-no" title="statement not covered" >                        &lt;div key={property.type} className="px-2"&gt;</span>
+<span class="cstat-no" title="statement not covered" >                        &lt;motion.div</span>
+<span class="cstat-no" title="statement not covered" >                            key={property.type}</span>
+<span class="cstat-no" title="statement not covered" >                            className="px-2"</span>
+<span class="cstat-no" title="statement not covered" >                            initial={shouldReduceMotion ? false : { opacity: 0, y: 18 }}</span>
+<span class="cstat-no" title="statement not covered" >                            whileInView={shouldReduceMotion ? {} : { opacity: 1, y: 0 }}</span>
+<span class="cstat-no" title="statement not covered" >                            viewport={{ once: true, amount: 0.3 }}</span>
+<span class="cstat-no" title="statement not covered" >                            transition={{ duration: 0.35, delay: index * 0.04 }}</span>
+<span class="cstat-no" title="statement not covered" >                        &gt;</span>
 <span class="cstat-no" title="statement not covered" >                            &lt;Card</span>
 <span class="cstat-no" title="statement not covered" >                                className="group flex flex-col items-center cursor-pointer bg-white dark:bg-gray-800 transition-all duration-300 hover:shadow-lg"</span>
 <span class="cstat-no" title="statement not covered" >                                onClick={() =&gt; handleClick(property.type)}</span>
@@ -409,11 +423,18 @@
 <span class="cstat-no" title="statement not covered" >                                        {TypeProperty[property.type]}</span>
 <span class="cstat-no" title="statement not covered" >                                    &lt;/h1&gt;</span>
 <span class="cstat-no" title="statement not covered" >                                    &lt;CardDescription className="text-sm text-gray-500 dark:text-gray-400"&gt;</span>
-<span class="cstat-no" title="statement not covered" >                                        {count} Annonce{count &gt; 1 ? 's' : ''}</span>
+<span class="cstat-no" title="statement not covered" >                                        {isLoading ? (</span>
+<span class="cstat-no" title="statement not covered" >                                            &lt;span className="inline-flex items-center gap-2"&gt;</span>
+<span class="cstat-no" title="statement not covered" >                                                &lt;span className="h-2 w-14 rounded-full bg-gray-300/80 animate-pulse" /&gt;</span>
+<span class="cstat-no" title="statement not covered" >                                                &lt;span&gt;Chargement...&lt;/span&gt;</span>
+<span class="cstat-no" title="statement not covered" >                                            &lt;/span&gt;</span>
+<span class="cstat-no" title="statement not covered" >                                        ) : (</span>
+<span class="cstat-no" title="statement not covered" >                                            countLabel</span>
+<span class="cstat-no" title="statement not covered" >                                        )}</span>
 <span class="cstat-no" title="statement not covered" >                                    &lt;/CardDescription&gt;</span>
 <span class="cstat-no" title="statement not covered" >                                &lt;/CardContent&gt;</span>
 <span class="cstat-no" title="statement not covered" >                            &lt;/Card&gt;</span>
-<span class="cstat-no" title="statement not covered" >                        &lt;/div&gt;</span>
+<span class="cstat-no" title="statement not covered" >                        &lt;/motion.div&gt;</span>
 <span class="cstat-no" title="statement not covered" >                    )</span>
 <span class="cstat-no" title="statement not covered" >                })}</span>
 <span class="cstat-no" title="statement not covered" >            &lt;/Slider&gt;</span>
@@ -427,7 +448,7 @@
             <div class='footer quiet pad2 space-top1 center small'>
                 Code coverage generated by
                 <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
-                at 2026-03-06T16:36:05.060Z
+                at 2026-03-07T12:46:39.516Z
             </div>
         <script src="../../../prettify.js"></script>
         <script>
