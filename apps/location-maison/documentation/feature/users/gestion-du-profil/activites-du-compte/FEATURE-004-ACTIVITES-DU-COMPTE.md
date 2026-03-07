@@ -81,17 +81,18 @@ Semantique:
 
 ## 5. Architecture cible (feature-based)
 
-Module cible:
+Module implemente:
 
 - `src/features/users/account-activity-notifications/`
 
-Sous-structure proposee:
+Sous-structure:
 
-- `services/account-activity-notification.service.ts`
-- `services/account-activity-policy.ts`
-- `services/account-activity-dispatcher.ts`
-- `repositories/account-activity.repository.ts`
-- `__tests__/`
+- `src/features/users/account-activity-notifications/services/account-activity-notification.service.interface.ts`
+- `src/features/users/account-activity-notifications/services/account-activity-policy.ts`
+- `src/features/users/account-activity-notifications/services/account-activity.server.service.ts`
+- `src/features/users/account-activity-notifications/services/account-activity.client.service.ts`
+- `src/features/users/account-activity-notifications/services/__tests__/account-activity-policy.test.ts`
+- `src/app/api/users/account-activity/notify/route.ts`
 
 Composants existants reutilises:
 
@@ -156,15 +157,17 @@ Regle:
 
 ## 9. Plan d'implementation
 
-1. Definir types d'evenements et policy centrale.
-2. Implementer dispatcher unique (in-app + email).
-3. Brancher les triggers dans services metier existants:
+1. [x] Definir types d'evenements et policy centrale.
+2. [x] Implementer dispatcher unique (in-app + email).
+3. [x] Brancher les triggers dans services metier existants:
 - profile management
 - login/security
 - oauth link/unlink
 - phone verification
-4. Ajouter templates email "account activity" (critique).
-5. Ajouter tests unitaires + integration sur cas critiques.
+- password reset
+4. [x] Ajouter template email "account activity" (critique) via `emailService`.
+5. [x] Ajouter tests unitaires policy + services relies.
+6. [ ] Ajouter tests integration end-to-end sur tous les canaux.
 
 ---
 
@@ -173,4 +176,3 @@ Regle:
 - Notifications push PWA (traitees au point 3)
 - Moteur de recommandations personnalisees (point 5)
 - Campagnes admin "nouveautes plateforme" (point 1)
-

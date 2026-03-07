@@ -20,6 +20,7 @@ import {
   type SendPhoneOtpData,
   type SendPhoneOtpResult,
 } from './phone-verification.service.interface';
+import { dispatchAccountActivityFromClient } from '@/features/users/account-activity-notifications/services/account-activity.client.service';
 
 const logger = createLogger('users.phone-verification.service');
 
@@ -366,6 +367,36 @@ export class PhoneVerificationServiceImpl implements PhoneVerificationService {
         isPhoneChanged,
         lockUntil: lockUntil.toISOString(),
       });
+
+      dispatchAccountActivityFromClient({
+        eventType: 'ACCOUNT_PHONE_VERIFIED',
+        eventId: `phone-verified:${uid}:${Date.now()}`,
+        context: {
+          source: 'verify-phone',
+          actionUrl: '/verify-phone',
+        },
+      }).catch((error) => {
+        logger.warn('Account activity dispatch failed after phone verification', {
+          uid,
+          error,
+        });
+      });
+
+      if (isPhoneChanged) {
+        dispatchAccountActivityFromClient({
+          eventType: 'ACCOUNT_PHONE_CHANGED',
+          eventId: `phone-change:${uid}:${Date.now()}`,
+          context: {
+            source: 'verify-phone',
+            actionUrl: '/verify-phone',
+          },
+        }).catch((error) => {
+          logger.warn('Account activity dispatch failed after verified phone change', {
+            uid,
+            error,
+          });
+        });
+      }
 
       return {
         success: true,

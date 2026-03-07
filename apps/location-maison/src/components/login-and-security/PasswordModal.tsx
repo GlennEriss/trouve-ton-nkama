@@ -9,7 +9,7 @@ import { Loader2, Eye, EyeOff } from "lucide-react";
 type PasswordModalProps = {
   isOpen: boolean;
   onClose: () => void;
-  onConfirm: (password: string) => void;
+  onConfirm: (password: string) => void | Promise<void>;
 };
 
 export default function PasswordModal({ isOpen, onClose, onConfirm }: Readonly<PasswordModalProps>) {
@@ -28,7 +28,7 @@ export default function PasswordModal({ isOpen, onClose, onConfirm }: Readonly<P
     setError("");
 
     try {
-      onConfirm(password);
+      await onConfirm(password);
       setPassword(""); // Réinitialisation après succès
       onClose();
     } catch (err) {
