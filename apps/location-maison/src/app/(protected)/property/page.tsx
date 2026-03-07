@@ -1,8 +1,5 @@
-import PropertyList from '@/components/property/PropertyList'
-import React from 'react'
+import { AdManagementPage } from '@/features/announcer/ad-management/ui';
 
 export default function page() {
-  return (
-    <PropertyList/>
-  )
+  return <AdManagementPage />;
 }

@@ -1,0 +1,55 @@
+@startuml gestion-annonces-sequence
+title Sequence - Gestion des annonces annonceur (/property)
+
+actor "Annonceur" as User
+participant "PropertyPage (/property)" as UI
+participant "useAdManagement" as Hook
+participant "AdManagementService" as Service
+participant "API /api/property/list" as API
+database "Firestore" as DB
+
+== Chargement initial ==
+User -> UI: Ouvre /property
+UI -> Hook: init(filters, sort, pagination)
+Hook -> Service: loadAds(query)
+Service -> API: GET /api/property/list?...params
+API -> DB: query annonces createdBy + filtres
+DB --> API: items + nextCursor + total
+API --> Service: payload
+Service --> Hook: adsPage
+Hook --> UI: render list + stats
+
+== Recherche/Filtres ==
+User -> UI: Saisit recherche / modifie filtre
+UI -> Hook: updateQuery(newParams)
+Hook -> Service: loadAds(newParams)
+Service -> API: GET /api/property/list?...newParams
+API -> DB: query mise a jour
+DB --> API: nouveau resultat
+API --> Service: payload
+Service --> Hook: adsPage
+Hook --> UI: refresh liste
+
+== Action annonce ==
+User -> UI: Active/Archive/Edite/Supprime
+UI -> Hook: runAction(adId, action)
+Hook -> Service: updateAdState(adId, action)
+Service -> API: PATCH/DELETE /api/property/{id}
+API -> DB: update document
+DB --> API: ok
+API --> Service: success
+Service --> Hook: success
+Hook --> UI: toast + update optimiste + refresh stats
+
+== Pagination ==
+User -> UI: Scroll / clique "Voir plus"
+UI -> Hook: loadNextPage(cursor)
+Hook -> Service: loadAds(cursor)
+Service -> API: GET /api/property/list?cursor=...
+API -> DB: query startAfter(cursor)
+DB --> API: next items + nextCursor
+API --> Service: payload
+Service --> Hook: append items
+Hook --> UI: render page suivante
+
+@enduml
