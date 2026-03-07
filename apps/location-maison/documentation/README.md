@@ -80,6 +80,12 @@ Bienvenue dans la documentation complète de la plateforme de location et vente 
 ### 📊 Statistiques
 - **[statistics/](./statistics/)** : Documentation statistiques
 
+### 📈 Trackers
+- **[trackers/](./trackers/)** : Plan d'implementation tracking produit
+  - Taxonomie des evenements
+  - Couche technique de tracking
+  - Dashboards et exploitation metrics
+
 ---
 
 ## 🚀 Démarrage Rapide
@@ -109,4 +115,4 @@ Bienvenue dans la documentation complète de la plateforme de location et vente 
 
 ---
 
-*Dernière mise à jour : 2026-01-12*
+*Dernière mise à jour : 2026-03-07*

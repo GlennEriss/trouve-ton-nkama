@@ -41,6 +41,7 @@ import {
 } from 'lucide-react';
 import { createLogger } from '@/lib/logger';
 import { mapRegisterFormToSignupData } from './signup.mapper';
+import { trackingEvents, useTrackEvent } from '@/features/analytics/tracking';
 
 const logger = createLogger('auth.signup-form-modern');
 
@@ -85,6 +86,7 @@ export const SignupFormModern: React.FC = () => {
   const router = useRouter();
   const { toast } = useToast();
   const { signup, isLoading } = useSignup();
+  const { trackEvent } = useTrackEvent();
   const [currentStep, setCurrentStep] = useState(1);
   const [isGoogleLoading, setIsGoogleLoading] = useState(false);
 
@@ -158,6 +160,12 @@ export const SignupFormModern: React.FC = () => {
 
   // Handle form submission
   const onSubmit = async (values: FormRegisterSchemaType) => {
+    trackEvent(trackingEvents.CTA_AUTH_SIGNUP_CLICK, {
+      method: 'credentials',
+      account_type: values.accountType,
+      entry_point: 'signup_form',
+    });
+
     logger.debug('Signup form submit requested', {
       values,
       errors: form.formState.errors,
@@ -190,6 +198,10 @@ export const SignupFormModern: React.FC = () => {
       if (result.success && result.userId) {
         logger.info('Signup successful, redirecting to success page', {
           userId: result.userId,
+        });
+        trackEvent(trackingEvents.BUSINESS_AUTH_SIGNUP_SUCCESS, {
+          account_type: values.accountType,
+          signup_provider: 'credentials',
         });
         toast({
           duration: 5000,
@@ -250,6 +262,9 @@ export const SignupFormModern: React.FC = () => {
 
   // Handle Google sign in
   const handleGoogleSignIn = async () => {
+    trackEvent(trackingEvents.CTA_AUTH_GOOGLE_CLICK, {
+      entry_point: 'signup_form',
+    });
     setIsGoogleLoading(true);
     try {
       await signIn('google');
