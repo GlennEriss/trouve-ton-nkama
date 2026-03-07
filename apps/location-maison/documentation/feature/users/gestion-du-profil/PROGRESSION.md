@@ -16,6 +16,7 @@
 | Sous-feature `verifier-numero-telephone` documentee | ✅ | — |
 | Sous-feature `activites-du-compte` documentee | ✅ | — |
 | Sous-feature `nouvelles-annonces` documentee | ✅ | — |
+| Sous-feature `favoris-annonces` documentee | ✅ | — |
 | Edition informations (V1: telephone + pays) | ✅ | — |
 | Refactor vers `src/features/users/profile-management` | ✅ | — |
 | Tests unitaires module profil | ✅ | — |
@@ -49,4 +50,4 @@
 
 ---
 
-*Derniere mise a jour : 2026-03-06*
+*Derniere mise a jour : 2026-03-07*

@@ -6,6 +6,7 @@ import {
   type RawPropertyRecord,
   type RawUserRecord,
 } from './new-announcement-policy';
+import { getChangedFavoritePropertyFields } from './favoris-property-policy';
 
 const NEW_ANNOUNCEMENT_DISPATCH_COLLECTION = 'new_announcement_dispatch';
 
@@ -211,6 +212,174 @@ export const onPropertyCreateNewAnnouncement = functions.firestore
       recipientsMatched,
       notificationsCreated,
       recipientsSkipped,
+    });
+
+    return null;
+  });
+
+type RawFavorisUserRecord = {
+  uid?: string;
+  notificationParameter?: { isFavoris?: boolean };
+};
+
+function buildFavoriteUpdateMessage(
+  propertyTitle: string,
+  changedFields: string[]
+): string {
+  const changeLabel = changedFields.slice(0, 3).join(', ');
+  const suffix = changedFields.length > 3 ? ', ...' : '';
+  return `L'annonce "${propertyTitle}" de vos favoris a été mise à jour (${changeLabel}${suffix}).`;
+}
+
+export const onPropertyFavorisUpdate = functions.firestore
+  .document('properties/{propertyId}')
+  .onUpdate(async (change, context) => {
+    const propertyId = context.params.propertyId as string;
+    const before = change.before.data() as Record<string, unknown>;
+    const after = change.after.data() as Record<string, unknown>;
+    const changedFields = getChangedFavoritePropertyFields(before, after);
+
+    if (!propertyId || changedFields.length === 0) {
+      return null;
+    }
+
+    const usersSnapshot = await adminDB
+      .collection('users')
+      .where('favoris', 'array-contains', propertyId)
+      .get();
+
+    const title =
+      typeof after.title === 'string' && after.title.trim().length > 0
+        ? after.title.trim()
+        : 'Annonce';
+
+    let notificationsCreated = 0;
+    let recipientsSkipped = 0;
+
+    for (const userDoc of usersSnapshot.docs) {
+      const user = userDoc.data() as RawFavorisUserRecord;
+      const uid = typeof user.uid === 'string' ? user.uid.trim() : '';
+      const isFavorisEnabled = Boolean(user.notificationParameter?.isFavoris);
+
+      if (!uid || !isFavorisEnabled) {
+        recipientsSkipped += 1;
+        continue;
+      }
+
+      const notification: Notification = {
+        idProperty: propertyId,
+        type: 'BOOKMARKING',
+        title,
+        message: buildFavoriteUpdateMessage(title, changedFields),
+        isRead: false,
+        createdFor: uid,
+        actionUrl: `/houseDetails/${propertyId}`,
+        state: 'IN_PROGRESS',
+        createdAt: admin.firestore.FieldValue.serverTimestamp() as any,
+      };
+
+      try {
+        await adminDB.collection('notifications').add(notification);
+        notificationsCreated += 1;
+      } catch (error) {
+        functions.logger.error('Failed to create favorite update notification', {
+          propertyId,
+          uid,
+          changedFields,
+          error,
+        });
+        recipientsSkipped += 1;
+      }
+    }
+
+    functions.logger.info('Favorite property update notifications completed', {
+      propertyId,
+      changedFields,
+      notificationsCreated,
+      recipientsSkipped,
+    });
+
+    return null;
+  });
+
+export const onPropertyFavorisDelete = functions.firestore
+  .document('properties/{propertyId}')
+  .onDelete(async (snapshot, context) => {
+    const propertyId = context.params.propertyId as string;
+    const property = snapshot.data() as Record<string, unknown>;
+
+    if (!propertyId) {
+      return null;
+    }
+
+    const usersSnapshot = await adminDB
+      .collection('users')
+      .where('favoris', 'array-contains', propertyId)
+      .get();
+
+    const title =
+      typeof property.title === 'string' && property.title.trim().length > 0
+        ? property.title.trim()
+        : 'Annonce';
+
+    let notificationsCreated = 0;
+    let recipientsSkipped = 0;
+    let favorisCleaned = 0;
+
+    for (const userDoc of usersSnapshot.docs) {
+      const user = userDoc.data() as RawFavorisUserRecord;
+      const uid = typeof user.uid === 'string' ? user.uid.trim() : '';
+      const isFavorisEnabled = Boolean(user.notificationParameter?.isFavoris);
+
+      try {
+        await userDoc.ref.update({
+          favoris: admin.firestore.FieldValue.arrayRemove(propertyId),
+          updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+        });
+        favorisCleaned += 1;
+      } catch (error) {
+        functions.logger.error('Failed to cleanup deleted property from favoris', {
+          propertyId,
+          uid,
+          error,
+        });
+      }
+
+      if (!uid || !isFavorisEnabled) {
+        recipientsSkipped += 1;
+        continue;
+      }
+
+      const notification: Notification = {
+        idProperty: propertyId,
+        type: 'BOOKMARKING',
+        title,
+        message: `L'annonce "${title}" de vos favoris n'est plus disponible.`,
+        isRead: false,
+        createdFor: uid,
+        actionUrl: '/favoris',
+        state: 'IN_PROGRESS',
+        createdAt: admin.firestore.FieldValue.serverTimestamp() as any,
+      };
+
+      try {
+        await adminDB.collection('notifications').add(notification);
+        notificationsCreated += 1;
+      } catch (error) {
+        functions.logger.error('Failed to create favorite delete notification', {
+          propertyId,
+          uid,
+          error,
+        });
+        recipientsSkipped += 1;
+      }
+    }
+
+    functions.logger.info('Favorite property delete notifications completed', {
+      propertyId,
+      notificationsCreated,
+      recipientsSkipped,
+      favorisCleaned,
     });
 
     return null;

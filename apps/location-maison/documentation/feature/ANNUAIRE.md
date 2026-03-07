@@ -85,6 +85,7 @@
 | Configurer les préférences | ✅ | - | - | Existant |
 | Activites du compte (in-app + email securite) | ✅ | feature/FEATURE-010-account-activity-notifications | 2026-03-07 | Policy + dispatcher + triggers metier implementes (profil/securite/reset/telephone) |
 | Nouvelles annonces (in-app region/criteres) | ✅ | feature/FEATURE-010-account-activity-notifications | 2026-03-07 | Trigger Cloud Function `onCreate(properties)` + dedupe + notification in-app |
+| Favoris annonces (update/suppression) | 🔄 | develop | 2026-03-07 | Triggers Cloud Functions `onUpdate/onDelete(properties)` + cleanup favoris + tests unitaires policy; tests integration a finaliser |
 
 ---
 

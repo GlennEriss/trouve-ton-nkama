@@ -1,0 +1,49 @@
+@startuml
+title Favoris - Notification update/suppression annonce
+
+actor Announcer as A
+participant "Property Service" as Property
+participant "Cloud Function favoris triggers" as CF
+database "Firestore properties" as Properties
+database "Firestore users" as Users
+database "Firestore notifications" as Notifications
+
+A -> Property : Modifier ou supprimer annonce
+Property -> Properties : update/delete(propertyId)
+
+alt update annonce
+  Properties -> CF : onUpdate(propertyId)
+  CF -> CF : detecter champs pertinents modifies
+  alt changement pertinent
+    CF -> Users : query favoris array-contains propertyId
+    loop pour chaque user
+      CF -> CF : verifier isFavoris
+      alt isFavoris = true
+        CF -> Notifications : add BOOKMARKING (update)
+      else isFavoris = false
+        CF -> CF : skip notification
+      end
+    end
+  else aucun changement pertinent
+    CF -> CF : skip
+  end
+else suppression annonce
+  Properties -> CF : onDelete(propertyId)
+  CF -> Users : query favoris array-contains propertyId
+  loop pour chaque user
+    CF -> Users : arrayRemove(propertyId)
+    CF -> CF : verifier isFavoris
+    alt isFavoris = true
+      CF -> Notifications : add BOOKMARKING (delete)
+    else isFavoris = false
+      CF -> CF : skip notification
+    end
+  end
+end
+
+note right of CF
+  Les erreurs de notification
+  ne bloquent pas le flux principal.
+end note
+
+@enduml
