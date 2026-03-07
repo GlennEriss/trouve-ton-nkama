@@ -17,6 +17,7 @@ import { Form } from '@/components/ui/form';
 import { InputFormApp } from '@/components/shared/form/InputFormApp';
 import { Button } from '@/components/ui/button';
 import { ButtonApp } from '@/components/shared/ui/ButtonApp';
+import { trackingEvents, useTrackEvent } from '@/features/analytics/tracking';
 
 const logger = createLogger('auth.signin-form-modern');
 const LEFT_PANEL_BG_IMAGE = '/auth-image.png';
@@ -34,6 +35,7 @@ export const SigninFormModern: React.FC = () => {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { toast } = useToast();
+  const { trackEvent } = useTrackEvent();
   const {
     signinWithCredentials,
     signinWithGoogle,
@@ -54,6 +56,11 @@ export const SigninFormModern: React.FC = () => {
   });
 
   const onSubmit = async (values: FormLoginSchemaType) => {
+    trackEvent(trackingEvents.CTA_AUTH_SIGNIN_CLICK, {
+      method: 'credentials',
+      entry_point: 'signin_form',
+    });
+
     const parsed = FormLoginSchema.safeParse(values);
     if (!parsed.success) {
       const mappedError = mapSigninError();
@@ -84,7 +91,17 @@ export const SigninFormModern: React.FC = () => {
       description: 'Vous êtes connecté avec succès.',
       variant: 'success',
     });
+    trackEvent(trackingEvents.BUSINESS_AUTH_SIGNIN_SUCCESS, {
+      method: 'credentials',
+    });
     router.push(result.redirectTo ?? routes.public.search_property);
+  };
+
+  const handleGoogleSigninClick = async () => {
+    trackEvent(trackingEvents.CTA_AUTH_GOOGLE_CLICK, {
+      entry_point: 'signin_form',
+    });
+    await signinWithGoogle();
   };
 
   useEffect(() => {
@@ -281,7 +298,7 @@ export const SigninFormModern: React.FC = () => {
           <Button
             type="button"
             variant="outline"
-            onClick={signinWithGoogle}
+            onClick={handleGoogleSigninClick}
             disabled={isLoading}
             className="w-full h-12 rounded-full border-2 hover:bg-gray-50 dark:hover:bg-gray-800 transition-all duration-200"
           >

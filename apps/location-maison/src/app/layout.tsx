@@ -6,7 +6,7 @@ import { BottomNavigation } from "@/components/shared/BottomNavigation";
 import Footer from "@/components/footer/Footer";
 import { cn } from "@/lib/utils";
 import { Metadata } from 'next'
-import { Analytics } from "@vercel/analytics/next";
+import { FirebaseAnalyticsTracker } from '@/features/analytics/tracking';
 
 const inter = Inter({
   subsets: ['latin'],
@@ -254,9 +254,9 @@ export default async function RootLayout({
             {children}
             <BottomNavigation />
             <Footer />
+            <FirebaseAnalyticsTracker />
           </Providers>
         </div>
-        <Analytics />
       </body>
     </html>
   );
