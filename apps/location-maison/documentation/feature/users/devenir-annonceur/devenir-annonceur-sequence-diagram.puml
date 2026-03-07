@@ -1,0 +1,43 @@
+@startuml
+title Devenir Annonceur (User -> User + Announcer)
+
+actor User
+participant "Page /profil/devenir-annonceur" as UI
+participant "Hook useBecomeAnnouncer" as Hook
+participant "API /api/users/become-announcer" as API
+participant "BecomeAnnouncerService" as Service
+participant "Firestore Users" as Firestore
+participant "NextAuth Session" as Session
+
+User -> UI : Ouvre le parcours
+UI -> Hook : init()
+Hook --> UI : Etat initial
+
+User -> UI : Accepte conditions annonceur
+User -> UI : Clique "Devenir annonceur"
+UI -> Hook : submit(acceptAnnouncerTerms=true)
+Hook -> API : POST /api/users/become-announcer
+
+API -> Service : becomeAnnouncer(uid, acceptAnnouncerTerms)
+Service -> Firestore : findById(uid)
+Firestore --> Service : user(roles)
+
+alt user deja annonceur
+  Service --> API : ALREADY_ANNOUNCER (idempotent)
+  API --> Hook : 200/409 + code
+  Hook --> UI : Message informatif
+else user valide
+  Service -> Firestore : update roles => [User, Announcer]
+  Firestore --> Service : updated user
+  Service --> API : BECOME_ANNOUNCER_SUCCESS + roles
+  API --> Hook : success
+  Hook -> Session : update(session.user.roles)
+  Hook --> UI : success
+  UI --> User : Redirection espace annonceur
+else preconditions KO
+  Service --> API : ANNOUNCER_TERMS_REQUIRED / FORBIDDEN_ROLE_STATE
+  API --> Hook : error
+  Hook --> UI : message erreur metier
+end
+
+@enduml

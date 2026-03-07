@@ -20,6 +20,7 @@ export const routes = {
         favoris: '/favoris',
         profil: '/profil',
         profil_informations: '/profil/informations',
+        become_announcer: '/profil/devenir-annonceur',
         login_and_security: '/login-and-security',
         notifications: '/settings',
         notification_list: '/list-notifications',
