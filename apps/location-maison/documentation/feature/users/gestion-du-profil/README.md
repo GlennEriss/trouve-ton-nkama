@@ -21,5 +21,5 @@ Cette sous-feature couvre la gestion du profil `User` (et donc aussi `Announcer`
 ## Hors perimetre
 
 - verification OTP du telephone (feature dediee)
-- "devenir annonceur" (feature dediee)
+- "devenir annonceur" (feature dediee: `../devenir-annonceur/README.md`)
 - administration
