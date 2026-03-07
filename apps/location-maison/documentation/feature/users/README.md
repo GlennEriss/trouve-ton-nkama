@@ -7,6 +7,7 @@ Cette section centralise la documentation des features liees au domaine `users`.
 - Gestion du profil: `gestion-du-profil/README.md`
 - Modifier ses informations: `gestion-du-profil/modifier-ses-informations/README.md`
 - Verifier numero de telephone: `gestion-du-profil/verifier-numero-telephone/README.md`
+- Activites du compte: `gestion-du-profil/activites-du-compte/README.md`
 - Devenir annonceur: `devenir-annonceur/README.md`
 
 ## Rappel RBAC (scope courant)

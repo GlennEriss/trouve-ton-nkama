@@ -83,6 +83,7 @@
 | Consulter ses notifications | ✅ | - | - | Existant |
 | Marquer comme lue | ✅ | - | - | Existant |
 | Configurer les préférences | ✅ | - | - | Existant |
+| Activites du compte (in-app + email securite) | 🔄 | develop | 2026-03-07 | Documentation feature completee, implementation a lancer |
 
 ---
 

@@ -1,0 +1,46 @@
+@startuml
+title Activites Du Compte - Notification (In-App + Email Critique)
+
+actor User
+participant "UI (Profil / Login&Security)" as UI
+participant "Service metier\n(profile/security/oauth/phone)" as DomainService
+participant "AccountActivityDispatcher" as Dispatcher
+participant "Policy Service" as Policy
+participant "Notifications DB" as NotificationDB
+participant "Email Service" as Email
+participant "Logger" as Logger
+
+User -> UI : Effectue une action compte
+UI -> DomainService : submit(action)
+DomainService -> DomainService : execute action principale
+DomainService --> UI : succes action principale
+
+DomainService -> Dispatcher : emitAccountActivityEvent(event)
+Dispatcher -> Policy : resolveChannels(event, userPreferences)
+Policy --> Dispatcher : channels + criticality
+
+alt Channel in-app autorise
+  Dispatcher -> NotificationDB : createNotification(...)
+  NotificationDB --> Dispatcher : ok
+else in-app non autorise
+  Dispatcher -> Logger : info("in-app skipped by policy")
+end
+
+alt Channel email requis
+  Dispatcher -> Email : sendAccountActivityEmail(...)
+  Email --> Dispatcher : ok
+else email non requis
+  Dispatcher -> Logger : info("email skipped by policy")
+end
+
+Dispatcher -> Logger : info("account activity dispatched")
+
+note over Dispatcher,Policy
+Regle metier:
+- Evenements critiques securite => envoi force
+- Evenements non critiques => respect isAccountActivity
+- Echec de dispatch = non bloquant pour action principale
+end note
+
+@enduml
+
