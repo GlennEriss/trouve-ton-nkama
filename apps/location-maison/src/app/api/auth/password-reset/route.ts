@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createLogger } from '@/lib/logger';
 import { assertStringField, handleApiError, jsonApiError } from '@/lib/api/error-response';
+import { adminAuth } from '@/firebase/admin';
+import { accountActivityNotificationServerService } from '@/features/users/account-activity-notifications';
 
 const logger = createLogger('api.auth.password-reset');
 
@@ -38,10 +40,34 @@ export async function POST(request: NextRequest) {
       // Réinitialiser directement le mot de passe
       // Firebase validera automatiquement le code OOB
       const confirmResponse = await confirmPasswordReset(oobCode, newPassword);
-      const confirmResult = await confirmResponse.json();
+      const confirmResult = (await confirmResponse.json()) as {
+        error?: { message?: string };
+        email?: string;
+      };
 
       if (confirmResult.error) {
         throw new Error(confirmResult.error.message);
+      }
+
+      const resetEmail = typeof confirmResult.email === 'string' ? confirmResult.email : '';
+      if (resetEmail) {
+        try {
+          const userRecord = await adminAuth.getUserByEmail(resetEmail);
+          await accountActivityNotificationServerService.dispatch({
+            uid: userRecord.uid,
+            eventType: 'ACCOUNT_PASSWORD_CHANGED',
+            eventId: `password-reset:${userRecord.uid}:${Date.now()}`,
+            context: {
+              source: 'api.auth.password-reset',
+              actionUrl: '/login-and-security',
+            },
+          });
+        } catch (activityError) {
+          logger.warn('Password reset activity notification failed', {
+            resetEmail,
+            error: activityError,
+          });
+        }
       }
 
       return NextResponse.json({

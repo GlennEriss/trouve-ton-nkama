@@ -176,7 +176,7 @@ Property (base class)
 | `use-cases-recherche.puml` | **Tous** | Recherche avancée, alertes, comparaison, carte |
 | `use-cases-annonceur.puml` | Annonceur | Publication, gestion, promotion, statistiques |
 | `use-cases-credits.puml` | Utilisateur/Annonceur/Admin | Historique, recharge manuelle, dépense, gestion crédits |
-| `use-cases-administrateur.puml` | Admin | Configuration, maintenance |
+| `use-cases-administrateur.puml` | Admin | Configuration, maintenance, diffusion des nouveautés plateforme |
 
 ---
 

@@ -387,13 +387,13 @@
 <span class="cstat-no" title="statement not covered" >            handleCardClick();</span>
 <span class="cstat-no" title="statement not covered" >          }</span>
 <span class="cstat-no" title="statement not covered" >        }}</span>
-<span class="cstat-no" title="statement not covered" >        className="h-[480px] md:h-[450px] relative cursor-pointer rounded-2xl shadow-lg overflow-hidden transition-transform duration-200 ease-out hover:scale-[1.02] bg-white dark:bg-gray-800 hover:shadow-xl flex flex-col group will-change-transform w-full text-left border-none p-0"</span>
+<span class="cstat-no" title="statement not covered" >        className="h-full min-h-[500px] relative cursor-pointer rounded-2xl shadow-lg overflow-hidden transition-transform duration-200 ease-out hover:scale-[1.02] bg-white dark:bg-gray-800 hover:shadow-xl flex flex-col group will-change-transform w-full text-left border-none p-0"</span>
 <span class="cstat-no" title="statement not covered" >        aria-label={`Voir les détails de ${property.title ?? "l'annonce"}`}</span>
 <span class="cstat-no" title="statement not covered" >        role="button"</span>
 <span class="cstat-no" title="statement not covered" >        tabIndex={0}</span>
 <span class="cstat-no" title="statement not covered" >      &gt;</span>
 <span class="cstat-no" title="statement not covered" >        {/* Image principale */}</span>
-<span class="cstat-no" title="statement not covered" >        &lt;div className="relative w-full aspect-[3/2] bg-gray-200"&gt;</span>
+<span class="cstat-no" title="statement not covered" >        &lt;div className="relative w-full h-[220px] sm:h-[230px] xl:h-[240px] bg-gray-200"&gt;</span>
 <span class="cstat-no" title="statement not covered" >          &lt;Image</span>
 <span class="cstat-no" title="statement not covered" >            src={property.images?.[0]?.fileURL ?? "/home.png"}</span>
 <span class="cstat-no" title="statement not covered" >            alt={property.title ?? "Image de l'annonce"}</span>
@@ -416,32 +416,32 @@
 <span class="cstat-no" title="statement not covered" >          )}</span>
 <span class="cstat-no" title="statement not covered" >        &lt;/div&gt;</span>
 <span class="cstat-no" title="statement not covered" ></span>
-<span class="cstat-no" title="statement not covered" >        &lt;div className="flex flex-col flex-grow p-5"&gt;</span>
+<span class="cstat-no" title="statement not covered" >        &lt;div className="flex flex-col flex-1 p-5"&gt;</span>
 <span class="cstat-no" title="statement not covered" >          {/* Titre */}</span>
-<span class="cstat-no" title="statement not covered" >          &lt;div className="h-[50px]"&gt;</span>
+<span class="cstat-no" title="statement not covered" >          &lt;div className="min-h-[68px]"&gt;</span>
 <span class="cstat-no" title="statement not covered" >            &lt;h3 className="text-lg font-bold text-gray-900 dark:text-white line-clamp-2 group-hover:text-[#146B67] transition-colors"&gt;</span>
 <span class="cstat-no" title="statement not covered" >              {property.title ?? "Annonce"}</span>
 <span class="cstat-no" title="statement not covered" >            &lt;/h3&gt;</span>
 <span class="cstat-no" title="statement not covered" >          &lt;/div&gt;</span>
 <span class="cstat-no" title="statement not covered" ></span>
 <span class="cstat-no" title="statement not covered" >          {/* Prix */}</span>
-<span class="cstat-no" title="statement not covered" >          &lt;div className="min-h-[40px]"&gt;</span>
+<span class="cstat-no" title="statement not covered" >          &lt;div className="min-h-[44px]"&gt;</span>
 <span class="cstat-no" title="statement not covered" >            &lt;p className="text-lg pt-2 font-bold text-[#146B67] dark:text-blue-300 break-words"&gt;</span>
 <span class="cstat-no" title="statement not covered" >              {property.status === "FOR_RENT" ? "À louer" : "À vendre"} - {property.price.toLocaleString()} F CFA</span>
 <span class="cstat-no" title="statement not covered" >            &lt;/p&gt;</span>
 <span class="cstat-no" title="statement not covered" >          &lt;/div&gt;</span>
 <span class="cstat-no" title="statement not covered" ></span>
 <span class="cstat-no" title="statement not covered" >          {/* Adresse */}</span>
-<span class="cstat-no" title="statement not covered" >          &lt;div className="min-h-[25px]"&gt;</span>
+<span class="cstat-no" title="statement not covered" >          &lt;div className="min-h-[50px]"&gt;</span>
 <span class="cstat-no" title="statement not covered" >            {property.street &amp;&amp; (</span>
-<span class="cstat-no" title="statement not covered" >              &lt;p className="text-sm text-gray-500 dark:text-gray-400 italic break-words"&gt;</span>
+<span class="cstat-no" title="statement not covered" >              &lt;p className="text-sm text-gray-500 dark:text-gray-400 italic break-words line-clamp-2"&gt;</span>
 <span class="cstat-no" title="statement not covered" >                {property.city}, {property.province}, {property.street}</span>
 <span class="cstat-no" title="statement not covered" >              &lt;/p&gt;</span>
 <span class="cstat-no" title="statement not covered" >            )}</span>
 <span class="cstat-no" title="statement not covered" >          &lt;/div&gt;</span>
 <span class="cstat-no" title="statement not covered" ></span>
 <span class="cstat-no" title="statement not covered" >          {/* Section d'icônes et chiffres */}</span>
-<span class="cstat-no" title="statement not covered" >          &lt;div className={`flex flex-wrap gap-4 mt-auto pt-3 text-gray-600 dark:text-gray-400 text-sm ${(property.area &gt; 0 ||</span>
+<span class="cstat-no" title="statement not covered" >          &lt;div className={`flex flex-wrap gap-4 mt-auto pt-3 text-gray-600 dark:text-gray-400 text-sm min-h-[40px] ${(property.area &gt; 0 ||</span>
 <span class="cstat-no" title="statement not covered" >              ("nbrRooms" in property &amp;&amp; property.nbrRooms &gt; 0) ||</span>
 <span class="cstat-no" title="statement not covered" >              ("nbrBathrooms" in property &amp;&amp; property.nbrBathrooms &gt; 0))</span>
 <span class="cstat-no" title="statement not covered" >              ? "border-t" : ""</span>
@@ -479,8 +479,8 @@
 <span class="cstat-no" title="statement not covered" ></span>
 <span class="cstat-no" title="statement not covered" >          {/* Date de publication */}</span>
 <span class="cstat-no" title="statement not covered" >          {!hideDate &amp;&amp; (</span>
-<span class="cstat-no" title="statement not covered" >            &lt;div className="mt-2 pt-2 border-t border-gray-200 dark:border-gray-700"&gt;</span>
-<span class="cstat-no" title="statement not covered" >              &lt;p className="text-xs text-gray-500 dark:text-gray-400 italic"&gt;</span>
+<span class="cstat-no" title="statement not covered" >            &lt;div className="mt-3 pt-3 border-t border-gray-200 dark:border-gray-700 min-h-[36px]"&gt;</span>
+<span class="cstat-no" title="statement not covered" >              &lt;p className="text-xs text-gray-500 dark:text-gray-400 italic leading-5"&gt;</span>
 <span class="cstat-no" title="statement not covered" >                Publiée {formatPublicationDate(property.createdAt)}</span>
 <span class="cstat-no" title="statement not covered" >              &lt;/p&gt;</span>
 <span class="cstat-no" title="statement not covered" >            &lt;/div&gt;</span>
@@ -499,7 +499,7 @@
             <div class='footer quiet pad2 space-top1 center small'>
                 Code coverage generated by
                 <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
-                at 2026-03-06T16:36:06.250Z
+                at 2026-03-07T12:46:39.974Z
             </div>
         <script src="../../../prettify.js"></script>
         <script>

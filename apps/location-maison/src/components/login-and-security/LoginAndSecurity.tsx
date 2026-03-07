@@ -14,6 +14,10 @@ import { updateUser } from '@/db/user.db';
 import { EmailAuthCredential, EmailAuthProvider, FacebookAuthProvider, GoogleAuthProvider, linkWithPopup, signInWithCredential } from 'firebase/auth';
 import { auth } from '@/firebase/auth';
 import { useSession } from 'next-auth/react';
+import { dispatchAccountActivityFromClient } from '@/features/users/account-activity-notifications/services/account-activity.client.service';
+import { createLogger } from '@/lib/logger';
+
+const logger = createLogger('users.login-and-security');
 
 export default function LoginAndSecurity() {
     const { user } = useCurrentUser();
@@ -47,52 +51,89 @@ export default function LoginAndSecurity() {
             return;
         }
         if (pendingProvider === 'GOOGLE') {
-            const googleProvider = new GoogleAuthProvider();
-            const emailAuthCred: EmailAuthCredential = EmailAuthProvider.credential(email, password);
+            try {
+                const googleProvider = new GoogleAuthProvider();
+                const emailAuthCred: EmailAuthCredential = EmailAuthProvider.credential(email, password);
 
-            // 🔹 Authentifier l'utilisateur avec son email/mot de passe
-            const userCredential = await signInWithCredential(auth, emailAuthCred);
-            const firebaseUserCred = userCredential.user;
+                // Authentifier l'utilisateur avec son email/mot de passe
+                const userCredential = await signInWithCredential(auth, emailAuthCred);
+                const firebaseUserCred = userCredential.user;
 
-            // 🔹 Lier le compte Google
-            linkWithPopup(firebaseUserCred, googleProvider)
-                .then(async (result) => {
-                    const googleCredential = GoogleAuthProvider.credentialFromResult(result);
-                    const userUpdated: Partial<UserModel> = {
-                        ...user,
-                        metadata: { ...user.metadata, idToken: googleCredential?.idToken },
-                        providers: [...user.providers, 'GOOGLE']
+                // Lier le compte Google
+                const result = await linkWithPopup(firebaseUserCred, googleProvider);
+                const googleCredential = GoogleAuthProvider.credentialFromResult(result);
+                const userUpdated: Partial<UserModel> = {
+                    ...user,
+                    metadata: { ...user.metadata, idToken: googleCredential?.idToken },
+                    providers: [...user.providers, 'GOOGLE']
+                }
+                await updateUser(user.uid, userUpdated);
+                await update({
+                    user: {
+                        ...userUpdated
                     }
-                    await updateUser(user.uid, userUpdated);
-                    update({
-                        user: {
-                            ...userUpdated
-                        }
-                    });
-                })
-                .catch((error) => {
-                    console.error("Erreur lors de la liaison avec Google :", error);
                 });
-        } else if (pendingProvider === 'FACEBOOK') {
-            const facebookProvider = new FacebookAuthProvider();
-            const emailAuthCred: EmailAuthCredential = EmailAuthProvider.credential(email, password);
-            const userCredential = await signInWithCredential(auth, emailAuthCred);
-            const firebaseUserCred = userCredential.user;
-            linkWithPopup(firebaseUserCred, facebookProvider)
-                .then(async (result) => {
-                    const facebookCredential = FacebookAuthProvider.credentialFromResult(result);
-                    const userUpdated: Partial<UserModel> = {
-                        ...user,
-                        metadata: { ...user.metadata, accessToken: facebookCredential?.accessToken },
-                        providers: [...user.providers, 'FACEBOOK']
-                    }
-                    await updateUser(user.uid, userUpdated);
-                    update({
-                        user: {
-                            ...userUpdated
-                        }
+
+                dispatchAccountActivityFromClient({
+                    eventType: 'ACCOUNT_PROVIDER_LINKED',
+                    eventId: `provider-linked:${user.uid}:GOOGLE:${Date.now()}`,
+                    context: {
+                        provider: 'GOOGLE',
+                        source: 'login-and-security',
+                        actionUrl: '/login-and-security',
+                    },
+                }).catch((error) => {
+                    logger.warn('Account activity dispatch failed after Google provider link', {
+                        uid: user.uid,
+                        error,
                     });
-                })
+                });
+            } catch (error) {
+                logger.error('Google provider linking failed', {
+                    uid: user.uid,
+                    error,
+                });
+            }
+        } else if (pendingProvider === 'FACEBOOK') {
+            try {
+                const facebookProvider = new FacebookAuthProvider();
+                const emailAuthCred: EmailAuthCredential = EmailAuthProvider.credential(email, password);
+                const userCredential = await signInWithCredential(auth, emailAuthCred);
+                const firebaseUserCred = userCredential.user;
+                const result = await linkWithPopup(firebaseUserCred, facebookProvider);
+                const facebookCredential = FacebookAuthProvider.credentialFromResult(result);
+                const userUpdated: Partial<UserModel> = {
+                    ...user,
+                    metadata: { ...user.metadata, accessToken: facebookCredential?.accessToken },
+                    providers: [...user.providers, 'FACEBOOK']
+                }
+                await updateUser(user.uid, userUpdated);
+                await update({
+                    user: {
+                        ...userUpdated
+                    }
+                });
+
+                dispatchAccountActivityFromClient({
+                    eventType: 'ACCOUNT_PROVIDER_LINKED',
+                    eventId: `provider-linked:${user.uid}:FACEBOOK:${Date.now()}`,
+                    context: {
+                        provider: 'FACEBOOK',
+                        source: 'login-and-security',
+                        actionUrl: '/login-and-security',
+                    },
+                }).catch((error) => {
+                    logger.warn('Account activity dispatch failed after Facebook provider link', {
+                        uid: user.uid,
+                        error,
+                    });
+                });
+            } catch (error) {
+                logger.error('Facebook provider linking failed', {
+                    uid: user.uid,
+                    error,
+                });
+            }
         }
     };
 

@@ -14,6 +14,8 @@
 | Mapping UML -> scope feature | ✅ | — |
 | Sous-feature `modifier-ses-informations` documentee | ✅ | — |
 | Sous-feature `verifier-numero-telephone` documentee | ✅ | — |
+| Sous-feature `activites-du-compte` documentee | ✅ | — |
+| Sous-feature `nouvelles-annonces` documentee | ✅ | — |
 | Edition informations (V1: telephone + pays) | ✅ | — |
 | Refactor vers `src/features/users/profile-management` | ✅ | — |
 | Tests unitaires module profil | ✅ | — |

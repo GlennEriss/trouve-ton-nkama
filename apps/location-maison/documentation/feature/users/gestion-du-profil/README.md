@@ -8,6 +8,8 @@
 - Diagramme d'activite: `gestion-profil-activity-diagram.puml`
 - Sous-feature modifier ses informations: `modifier-ses-informations/README.md`
 - Sous-feature verifier numero de telephone: `verifier-numero-telephone/README.md`
+- Sous-feature activites du compte: `activites-du-compte/README.md`
+- Sous-feature nouvelles annonces: `nouvelles-annonces/README.md`
 
 ## Perimetre
 
@@ -21,5 +23,7 @@ Cette sous-feature couvre la gestion du profil `User` (et donc aussi `Announcer`
 ## Hors perimetre
 
 - verification OTP du telephone (feature dediee)
+- notifications "activites du compte" (feature dediee)
+- notifications "nouvelles annonces" (feature dediee)
 - "devenir annonceur" (feature dediee: `../devenir-annonceur/README.md`)
 - administration

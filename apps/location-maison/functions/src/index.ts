@@ -11,7 +11,7 @@
 import './config/env';
 
 // Fonctions de notification
-export { onUserCreate, onUserFavorisUpdate } from './notification';
+export { onUserCreate, onUserFavorisUpdate, onPropertyCreateNewAnnouncement } from './notification';
 
 // Fonctions de paiement
 export { initiatePurchase } from './payments/airtel';

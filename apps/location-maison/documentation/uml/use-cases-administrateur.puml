@@ -60,6 +60,12 @@ rectangle "Plateforme Location Maison Gabon" {
         usecase "Configurer les emails" as UC_ConfigEmails
         usecase "Tester l'envoi d'emails" as UC_TestEmails
         usecase "Diagnostiquer les problèmes d'emails" as UC_DiagnoseEmails
+        usecase "Publier une mise à jour plateforme" as UC_PublishPlatformUpdate
+        usecase "Rédiger une note de version" as UC_WriteReleaseNote
+        usecase "Segmenter l'audience nouveautés" as UC_SegmentUpdateAudience
+        usecase "Diffuser la mise à jour (in-app)" as UC_SendInAppUpdate
+        usecase "Diffuser la mise à jour (email digest)" as UC_SendEmailUpdate
+        usecase "Suivre le taux de diffusion" as UC_TrackUpdateDelivery
     }
 }
 
@@ -76,6 +82,7 @@ Admin --> UC_AdminPanel
 Admin --> UC_GlobalStats
 Admin --> UC_Maintenance
 Admin --> UC_ConfigEmails
+Admin --> UC_PublishPlatformUpdate
 
 ' =====================================
 ' RELATIONS CONFIGURATION
@@ -117,6 +124,11 @@ UC_GlobalStats ..> UC_AnalyzePerf : <<extend>>
 ' =====================================
 UC_ConfigEmails ..> UC_TestEmails : <<extend>>
 UC_ConfigEmails ..> UC_DiagnoseEmails : <<extend>>
+UC_PublishPlatformUpdate ..> UC_WriteReleaseNote : <<include>>
+UC_PublishPlatformUpdate ..> UC_SegmentUpdateAudience : <<include>>
+UC_PublishPlatformUpdate ..> UC_SendInAppUpdate : <<include>>
+UC_PublishPlatformUpdate ..> UC_SendEmailUpdate : <<extend>>
+UC_PublishPlatformUpdate ..> UC_TrackUpdateDelivery : <<extend>>
 
 ' =====================================
 ' RELATIONS SYSTÈMES EXTERNES
@@ -162,12 +174,26 @@ note right of UC_ConfigEmails
   - Configuration SPF/DKIM
 end note
 
+note right of UC_PublishPlatformUpdate
+  **Cas d'usage Produit (Settings > "Nouveautés"):**
+  - L'admin publie une nouveauté (titre, résumé, lien)
+  - Diffusion in-app vers utilisateurs opt-in (`isNew=true`)
+  - Email en option (digest recommandé)
+  - Traçabilité: date, audience, statut diffusion
+  
+  **Architecture cible:**
+  Dashboard Admin séparé
+  (application Next.js dédiée)
+  + API/Jobs de diffusion.
+end note
+
 note bottom of Admin
   **Responsabilités de l'Administrateur:**
   - Configuration du système
   - Maintenance des données
   - Monitoring et reporting
   - Support technique
+  - Pilotage des communications produit
 end note
 
 note right of Scripts
@@ -192,4 +218,3 @@ legend bottom left
 endlegend
 
 @enduml
-

@@ -25,7 +25,7 @@
             <div class='fl pad1y space-right2'>
                 <span class="strong">0% </span>
                 <span class="quiet">Statements</span>
-                <span class='fraction'>0/89</span>
+                <span class='fraction'>0/102</span>
             </div>
         
             
@@ -46,7 +46,7 @@
             <div class='fl pad1y space-right2'>
                 <span class="strong">0% </span>
                 <span class="quiet">Lines</span>
-                <span class='fraction'>0/89</span>
+                <span class='fraction'>0/102</span>
             </div>
         
             
@@ -152,7 +152,33 @@
 <a name='L87'></a><a href='#L87'>87</a>
 <a name='L88'></a><a href='#L88'>88</a>
 <a name='L89'></a><a href='#L89'>89</a>
-<a name='L90'></a><a href='#L90'>90</a></td><td class="line-coverage quiet"><span class="cline-any cline-no">&nbsp;</span>
+<a name='L90'></a><a href='#L90'>90</a>
+<a name='L91'></a><a href='#L91'>91</a>
+<a name='L92'></a><a href='#L92'>92</a>
+<a name='L93'></a><a href='#L93'>93</a>
+<a name='L94'></a><a href='#L94'>94</a>
+<a name='L95'></a><a href='#L95'>95</a>
+<a name='L96'></a><a href='#L96'>96</a>
+<a name='L97'></a><a href='#L97'>97</a>
+<a name='L98'></a><a href='#L98'>98</a>
+<a name='L99'></a><a href='#L99'>99</a>
+<a name='L100'></a><a href='#L100'>100</a>
+<a name='L101'></a><a href='#L101'>101</a>
+<a name='L102'></a><a href='#L102'>102</a>
+<a name='L103'></a><a href='#L103'>103</a></td><td class="line-coverage quiet"><span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
@@ -243,18 +269,19 @@
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span></td><td class="text"><pre class="prettyprint lang-js"><span class="cstat-no" title="statement not covered" ><span class="fstat-no" title="function not covered" ><span class="branch-0 cbranch-no" title="branch not covered" >'use client'</span></span></span>
 <span class="cstat-no" title="statement not covered" >import React from 'react'</span>
-<span class="cstat-no" title="statement not covered" >import { ChevronRight, Lock, Settings, ShieldCheck, FileText, Coins, Phone } from 'lucide-react';</span>
+<span class="cstat-no" title="statement not covered" >import { ChevronRight, Lock, Settings, ShieldCheck, FileText, Coins, Phone, Building2 } from 'lucide-react';</span>
 <span class="cstat-no" title="statement not covered" >import Link from 'next/link';</span>
 <span class="cstat-no" title="statement not covered" >import { useWindowSize } from '@/hooks/useSize';</span>
 <span class="cstat-no" title="statement not covered" >import { routes } from '@/constantes/routes';</span>
 <span class="cstat-no" title="statement not covered" >import { Separator } from '../ui/separator';</span>
+<span class="cstat-no" title="statement not covered" >import { useCurrentUser } from '@/hooks/use-current-user';</span>
 <span class="cstat-no" title="statement not covered" ></span>
-<span class="cstat-no" title="statement not covered" >const menu = [</span>
+<span class="cstat-no" title="statement not covered" >const baseMenu = [</span>
 <span class="cstat-no" title="statement not covered" >    {</span>
 <span class="cstat-no" title="statement not covered" >        title: 'Mon solde',</span>
 <span class="cstat-no" title="statement not covered" >        icon: Coins,</span>
 <span class="cstat-no" title="statement not covered" >        link: routes.protected.my_balance,</span>
-<span class="cstat-no" title="statement not covered" >        description: 'Consultez votre solde de crédits, rechargez votre compte et accédez à l\'historique de vos transactions pour utiliser nos services premium.'</span>
+<span class="cstat-no" title="statement not covered" >        description: 'Accédez aux pages dédiées pour consulter votre historique de crédits et gérer la recharge manuelle de votre compte.'</span>
 <span class="cstat-no" title="statement not covered" >    },</span>
 <span class="cstat-no" title="statement not covered" >    {</span>
 <span class="cstat-no" title="statement not covered" >        title: 'Vérifier mon numéro de téléphone',</span>
@@ -296,6 +323,18 @@
 <span class="cstat-no" title="statement not covered" ></span>
 <span class="cstat-no" title="statement not covered" >export default function ProfilDetails() {</span>
 <span class="cstat-no" title="statement not covered" >    const size = useWindowSize()</span>
+<span class="cstat-no" title="statement not covered" >    const { user } = useCurrentUser();</span>
+<span class="cstat-no" title="statement not covered" >    const isAnnouncer = Array.isArray(user?.roles) &amp;&amp; user.roles.includes('Announcer');</span>
+<span class="cstat-no" title="statement not covered" ></span>
+<span class="cstat-no" title="statement not covered" >    const menu = [</span>
+<span class="cstat-no" title="statement not covered" >        ...(!isAnnouncer ? [{</span>
+<span class="cstat-no" title="statement not covered" >            title: 'Devenir annonceur',</span>
+<span class="cstat-no" title="statement not covered" >            icon: Building2,</span>
+<span class="cstat-no" title="statement not covered" >            link: routes.protected.become_announcer,</span>
+<span class="cstat-no" title="statement not covered" >            description: 'Activez le rôle annonceur pour publier des annonces tout en conservant les droits utilisateur.'</span>
+<span class="cstat-no" title="statement not covered" >        }] : []),</span>
+<span class="cstat-no" title="statement not covered" >        ...baseMenu,</span>
+<span class="cstat-no" title="statement not covered" >    ];</span>
 <span class="cstat-no" title="statement not covered" ></span>
 <span class="cstat-no" title="statement not covered" >    return size.width &lt; 768 ? (</span>
 <span class="cstat-no" title="statement not covered" >        &lt;div className='space-y-5'&gt;</span>
@@ -337,7 +376,7 @@
             <div class='footer quiet pad2 space-top1 center small'>
                 Code coverage generated by
                 <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
-                at 2026-03-06T16:36:06.250Z
+                at 2026-03-07T12:46:39.974Z
             </div>
         <script src="../../../prettify.js"></script>
         <script>

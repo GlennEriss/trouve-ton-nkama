@@ -50,7 +50,6 @@ export const steps = [
     { label: 'Third', description: 'Select Rooms' },
 ]
 
-
 export const PropertyFormComponentProvider = ({ children, isUpdate, propertyToUpdated }: {
     children: React.ReactNode,
     isUpdate?: boolean,
@@ -167,9 +166,8 @@ export const PropertyFormComponentProvider = ({ children, isUpdate, propertyToUp
             } else {
                 const idP = await createProperty(data)
                 if (idP) {
-                    const propertyCreate = { ...data, idP }
-                    setPropertyPreview(propertyCreate)
-
+                    const propertyCreate = { ...data, id: idP }
+                    setPropertyPreview(propertyCreate as Property)
                 }
             }
             await updateOrCreateSuggestion({ province, city, street });

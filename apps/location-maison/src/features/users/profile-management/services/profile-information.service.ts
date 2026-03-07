@@ -4,6 +4,7 @@ import { RepositoryError } from '@/features/auth/repositories/user.repository.in
 import { createLogger } from '@/lib/logger';
 import { validatePhoneNumberForSupportedCountries } from '@/lib/phoneValidation';
 import { PHONE_NUMBER_CHANGE_LOCK_DAYS } from '@/lib/phoneVerificationPolicy';
+import { dispatchAccountActivityFromClient } from '@/features/users/account-activity-notifications/services/account-activity.client.service';
 import {
   ProfileInformationErrorCode,
   type ProfileInformationService,
@@ -218,6 +219,23 @@ export class ProfileInformationServiceImpl implements ProfileInformationService 
 
       const previousPhone = currentUser.phoneNumbers?.[0] ?? '';
       const phoneChanged = previousPhone !== phoneNumber;
+      const changedFields: string[] = [];
+
+      if (currentUser.firstname !== firstname) {
+        changedFields.push('prénom');
+      }
+      if (currentUser.lastname !== lastname) {
+        changedFields.push('nom');
+      }
+      if ((currentUser.birthDate ?? '') !== birthDate) {
+        changedFields.push('date de naissance');
+      }
+      if ((currentUser.country?.code ?? '') !== country.code) {
+        changedFields.push('pays');
+      }
+      if (phoneChanged) {
+        changedFields.push('numéro de téléphone');
+      }
       const currentMetadata =
         currentUser.metadata && typeof currentUser.metadata === 'object'
           ? (currentUser.metadata as Record<string, unknown>)
@@ -270,8 +288,44 @@ export class ProfileInformationServiceImpl implements ProfileInformationService 
       logger.info('Profile information updated', {
         uid,
         phoneChanged,
+        changedFields,
         countryCode: data.countryCode,
       });
+
+      const sourceContext = {
+        source: 'profile.informations',
+        actionUrl: '/profil/informations',
+      } as const;
+
+      if (phoneChanged) {
+        dispatchAccountActivityFromClient({
+          eventType: 'ACCOUNT_PHONE_CHANGED',
+          eventId: `phone-change:${uid}:${Date.now()}`,
+          context: sourceContext,
+        }).catch((error) => {
+          logger.warn('Account activity dispatch failed after phone change', {
+            uid,
+            error,
+          });
+        });
+      }
+
+      if (changedFields.length > 0) {
+        dispatchAccountActivityFromClient({
+          eventType: 'ACCOUNT_PROFILE_UPDATED',
+          eventId: `profile-update:${uid}:${Date.now()}`,
+          context: {
+            ...sourceContext,
+            changedFields,
+          },
+        }).catch((error) => {
+          logger.warn('Account activity dispatch failed after profile update', {
+            uid,
+            changedFields,
+            error,
+          });
+        });
+      }
 
       return {
         success: true,

@@ -302,7 +302,7 @@
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span></td><td class="text"><pre class="prettyprint lang-js"><span class="cstat-no" title="statement not covered" ><span class="fstat-no" title="function not covered" ><span class="branch-0 cbranch-no" title="branch not covered" >'use client'</span></span></span>
-<span class="cstat-no" title="statement not covered" >import React, { useEffect, useState } from 'react'</span>
+<span class="cstat-no" title="statement not covered" >import React from 'react'</span>
 <span class="cstat-no" title="statement not covered" >import Logo from '../logo/Logo'</span>
 <span class="cstat-no" title="statement not covered" >import { routes } from '@/constantes/routes'</span>
 <span class="cstat-no" title="statement not covered" >import { MapPin, Mail, Facebook, MessageCircle } from "lucide-react";</span>
@@ -316,7 +316,6 @@
 <span class="cstat-no" title="statement not covered" >    const pathname = usePathname()</span>
 <span class="cstat-no" title="statement not covered" >    const { user } = useCurrentUser()</span>
 <span class="cstat-no" title="statement not covered" >    const { width } = useWindowSize()</span>
-<span class="cstat-no" title="statement not covered" >    const [isPWAInstalled, setIsPWAInstalled] = useState(false);</span>
 <span class="cstat-no" title="statement not covered" >    const hiddenFooterRoutes = [</span>
 <span class="cstat-no" title="statement not covered" >        routes.public.signin,</span>
 <span class="cstat-no" title="statement not covered" >        routes.public.signup,</span>
@@ -327,51 +326,75 @@
 <span class="cstat-no" title="statement not covered" >        routes.public.passwordResetFailure,</span>
 <span class="cstat-no" title="statement not covered" >    ];</span>
 <span class="cstat-no" title="statement not covered" ></span>
-<span class="cstat-no" title="statement not covered" >    useEffect(() =&gt; {</span>
-<span class="cstat-no" title="statement not covered" >        const checkPWA = () =&gt; {</span>
-<span class="cstat-no" title="statement not covered" >            if (typeof window !== "undefined") {</span>
-<span class="cstat-no" title="statement not covered" >                const isStandalone = window.matchMedia('(display-mode: standalone)').matches</span>
-<span class="cstat-no" title="statement not covered" >                    || (window.navigator as any).standalone === true;</span>
-<span class="cstat-no" title="statement not covered" >                setIsPWAInstalled(isStandalone);</span>
-<span class="cstat-no" title="statement not covered" >            }</span>
-<span class="cstat-no" title="statement not covered" >        };</span>
-<span class="cstat-no" title="statement not covered" >        checkPWA();</span>
-<span class="cstat-no" title="statement not covered" >        window.addEventListener('appinstalled', checkPWA);</span>
-<span class="cstat-no" title="statement not covered" >        return () =&gt; window.removeEventListener('appinstalled', checkPWA);</span>
-<span class="cstat-no" title="statement not covered" >    }, []);</span>
-<span class="cstat-no" title="statement not covered" ></span>
 <span class="cstat-no" title="statement not covered" >    if (isHide || hiddenFooterRoutes.includes(pathname) || (user &amp;&amp; width &lt; 768 &amp;&amp; pathname !== routes.public.homePage)) {</span>
 <span class="cstat-no" title="statement not covered" >        return null</span>
 <span class="cstat-no" title="statement not covered" >    }</span>
+<span class="cstat-no" title="statement not covered" ></span>
+<span class="cstat-no" title="statement not covered" >    const supportEmail = process.env.NEXT_PUBLIC_EMAIL_SUPPORT ?? 'support@tonnkama.com'</span>
+<span class="cstat-no" title="statement not covered" >    const whatsappNumber = process.env.NEXT_PUBLIC_CONTACT_SUPPORT?.replace('+', '').replace(/^00/, '')</span>
+<span class="cstat-no" title="statement not covered" >    const whatsappUrl = whatsappNumber</span>
+<span class="cstat-no" title="statement not covered" >        ? `https://wa.me/${whatsappNumber}?text=Bonjour%20!%20Je%20souhaite%20obtenir%20plus%20d'informations%20sur%20Trouve%20Ton%20Nkama.`</span>
+<span class="cstat-no" title="statement not covered" >        : '#'</span>
+<span class="cstat-no" title="statement not covered" ></span>
 <span class="cstat-no" title="statement not covered" >    return (</span>
-<span class="cstat-no" title="statement not covered" >        &lt;footer className={cn("w-full shadow md:block dark:bg-gray-900 text-white dark:border-gray-900 dark:border-2 bg-black md:bg-[#282828] md:text-black", pathname === routes.public.search_property &amp;&amp; "lg:hidden")}&gt;</span>
-<span class="cstat-no" title="statement not covered" >            &lt;div className="max-w-[1280px] 2xl:max-w-[1440px] mx-auto p-4 md:py-8"&gt;</span>
-<span class="cstat-no" title="statement not covered" >                &lt;div className="flex flex-col sm:flex-row sm:items-center sm:justify-between"&gt;</span>
-<span class="cstat-no" title="statement not covered" >                    &lt;div className='hidden md:block'&gt;</span>
-<span class="cstat-no" title="statement not covered" >                        &lt;Logo className="text-black mb-4 sm:mb-0" width="64px" height="64px" /&gt;</span>
+<span class="cstat-no" title="statement not covered" >        &lt;footer className={cn("w-full border-t border-[#1d3d3a] bg-[#0f1f1e] text-white", pathname === routes.public.search_property &amp;&amp; "lg:hidden")}&gt;</span>
+<span class="cstat-no" title="statement not covered" >            &lt;div className="max-w-[1280px] 2xl:max-w-[1440px] mx-auto p-4 py-10 md:py-12"&gt;</span>
+<span class="cstat-no" title="statement not covered" >                &lt;div className="grid grid-cols-1 gap-8 md:grid-cols-12 md:gap-10"&gt;</span>
+<span class="cstat-no" title="statement not covered" >                    &lt;div className='md:col-span-4 lg:col-span-3 space-y-4'&gt;</span>
+<span class="cstat-no" title="statement not covered" >                        &lt;Logo className="text-white" width="64px" height="64px" /&gt;</span>
+<span class="cstat-no" title="statement not covered" >                        &lt;p className='text-sm text-white/75 leading-relaxed max-w-xs'&gt;</span>
+<span class="cstat-no" title="statement not covered" >                            Trouve Ton Nkama simplifie la recherche, la location et la vente de biens immobiliers au Gabon.</span>
+<span class="cstat-no" title="statement not covered" >                        &lt;/p&gt;</span>
 <span class="cstat-no" title="statement not covered" >                    &lt;/div&gt;</span>
-<span class="cstat-no" title="statement not covered" >                    &lt;ul className="flex flex-col sm:flex-row items-center mb-4 sm:mb-0 text-sm font-medium text-white space-y-3 sm:space-y-0 sm:space-x-6"&gt;</span>
-<span class="cstat-no" title="statement not covered" >                        &lt;li&gt;</span>
-<span class="cstat-no" title="statement not covered" >                            &lt;a href="https://www.facebook.com/profile.php?id=61574099562451" className="hover:underline py-1"&gt;À propos&lt;/a&gt;</span>
-<span class="cstat-no" title="statement not covered" >                        &lt;/li&gt;</span>
-<span class="cstat-no" title="statement not covered" >                        &lt;li&gt;</span>
-<span class="cstat-no" title="statement not covered" >                            &lt;a href={routes.public.blog} className="hover:underline py-1"&gt;Blog&lt;/a&gt;</span>
-<span class="cstat-no" title="statement not covered" >                        &lt;/li&gt;</span>
-<span class="cstat-no" title="statement not covered" >                        &lt;li&gt;</span>
-<span class="cstat-no" title="statement not covered" >                            &lt;a href={routes.public.guide_immobilier_gabon} className="hover:underline py-1"&gt;Guide Immobilier&lt;/a&gt;</span>
-<span class="cstat-no" title="statement not covered" >                        &lt;/li&gt;</span>
-<span class="cstat-no" title="statement not covered" >                        &lt;li&gt;</span>
-<span class="cstat-no" title="statement not covered" >                            &lt;a href={routes.public.confidentiality} className="hover:underline py-1"&gt;Politique de confidentialité&lt;/a&gt;</span>
-<span class="cstat-no" title="statement not covered" >                        &lt;/li&gt;</span>
-<span class="cstat-no" title="statement not covered" >                        &lt;li&gt;</span>
-<span class="cstat-no" title="statement not covered" >                            &lt;a href={routes.public.terms_of_use} className="hover:underline py-1"&gt;Conditions d&amp;apos;utilisation&lt;/a&gt;</span>
-<span class="cstat-no" title="statement not covered" >                        &lt;/li&gt;</span>
-<span class="cstat-no" title="statement not covered" >                        &lt;li&gt;</span>
-<span class="cstat-no" title="statement not covered" >                            &lt;a href={routes.public.announcer_terms} className="hover:underline py-1"&gt;Conditions annonceur&lt;/a&gt;</span>
-<span class="cstat-no" title="statement not covered" >                        &lt;/li&gt;</span>
-<span class="cstat-no" title="statement not covered" >                    &lt;/ul&gt;</span>
+<span class="cstat-no" title="statement not covered" ></span>
+<span class="cstat-no" title="statement not covered" >                    &lt;nav className="md:col-span-4 lg:col-span-5"&gt;</span>
+<span class="cstat-no" title="statement not covered" >                        &lt;h2 className='text-sm font-semibold uppercase tracking-wide text-white/70'&gt;Liens utiles&lt;/h2&gt;</span>
+<span class="cstat-no" title="statement not covered" >                        &lt;ul className="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-3 text-sm font-medium text-white/90"&gt;</span>
+<span class="cstat-no" title="statement not covered" >                            &lt;li&gt;</span>
+<span class="cstat-no" title="statement not covered" >                                &lt;a href="https://www.facebook.com/profile.php?id=61574099562451" className="hover:underline py-1"&gt;À propos&lt;/a&gt;</span>
+<span class="cstat-no" title="statement not covered" >                            &lt;/li&gt;</span>
+<span class="cstat-no" title="statement not covered" >                            &lt;li&gt;</span>
+<span class="cstat-no" title="statement not covered" >                                &lt;a href={routes.public.blog} className="hover:underline py-1"&gt;Blog&lt;/a&gt;</span>
+<span class="cstat-no" title="statement not covered" >                            &lt;/li&gt;</span>
+<span class="cstat-no" title="statement not covered" >                            &lt;li&gt;</span>
+<span class="cstat-no" title="statement not covered" >                                &lt;a href={routes.public.guide_immobilier_gabon} className="hover:underline py-1"&gt;Guide Immobilier&lt;/a&gt;</span>
+<span class="cstat-no" title="statement not covered" >                            &lt;/li&gt;</span>
+<span class="cstat-no" title="statement not covered" >                            &lt;li&gt;</span>
+<span class="cstat-no" title="statement not covered" >                                &lt;a href={routes.public.confidentiality} className="hover:underline py-1"&gt;Politique de confidentialité&lt;/a&gt;</span>
+<span class="cstat-no" title="statement not covered" >                            &lt;/li&gt;</span>
+<span class="cstat-no" title="statement not covered" >                            &lt;li&gt;</span>
+<span class="cstat-no" title="statement not covered" >                                &lt;a href={routes.public.terms_of_use} className="hover:underline py-1"&gt;Conditions d&amp;apos;utilisation&lt;/a&gt;</span>
+<span class="cstat-no" title="statement not covered" >                            &lt;/li&gt;</span>
+<span class="cstat-no" title="statement not covered" >                            &lt;li&gt;</span>
+<span class="cstat-no" title="statement not covered" >                                &lt;a href={routes.public.announcer_terms} className="hover:underline py-1"&gt;Conditions annonceur&lt;/a&gt;</span>
+<span class="cstat-no" title="statement not covered" >                            &lt;/li&gt;</span>
+<span class="cstat-no" title="statement not covered" >                        &lt;/ul&gt;</span>
+<span class="cstat-no" title="statement not covered" >                    &lt;/nav&gt;</span>
+<span class="cstat-no" title="statement not covered" ></span>
+<span class="cstat-no" title="statement not covered" >                    &lt;div className="md:col-span-4 lg:col-span-4"&gt;</span>
+<span class="cstat-no" title="statement not covered" >                        &lt;h2 className='text-sm font-semibold uppercase tracking-wide text-white/70'&gt;Contact&lt;/h2&gt;</span>
+<span class="cstat-no" title="statement not covered" >                        &lt;div className="mt-4 flex flex-col gap-3 text-white/90 text-sm"&gt;</span>
+<span class="cstat-no" title="statement not covered" >                            &lt;div className="flex items-center gap-2"&gt;</span>
+<span class="cstat-no" title="statement not covered" >                                &lt;MapPin size={16} className='text-[#4DBEA4]' /&gt;</span>
+<span class="cstat-no" title="statement not covered" >                                &lt;span&gt;Libreville, Gabon&lt;/span&gt;</span>
+<span class="cstat-no" title="statement not covered" >                            &lt;/div&gt;</span>
+<span class="cstat-no" title="statement not covered" >                            &lt;div className="flex items-center gap-2"&gt;</span>
+<span class="cstat-no" title="statement not covered" >                                &lt;Mail size={16} className='text-[#4DBEA4]' /&gt;</span>
+<span class="cstat-no" title="statement not covered" >                                &lt;a href={`mailto:${supportEmail}`} className="hover:underline break-all"&gt;{supportEmail}&lt;/a&gt;</span>
+<span class="cstat-no" title="statement not covered" >                            &lt;/div&gt;</span>
+<span class="cstat-no" title="statement not covered" >                            &lt;div className="flex items-center gap-2"&gt;</span>
+<span class="cstat-no" title="statement not covered" >                                &lt;Facebook size={16} className='text-[#4DBEA4]' /&gt;</span>
+<span class="cstat-no" title="statement not covered" >                                &lt;a href="https://www.facebook.com/share/16beeh915e/" target="_blank" rel="noopener noreferrer" className="hover:underline"&gt;Suivez-nous sur Facebook&lt;/a&gt;</span>
+<span class="cstat-no" title="statement not covered" >                            &lt;/div&gt;</span>
+<span class="cstat-no" title="statement not covered" >                            &lt;div className="flex items-center gap-2"&gt;</span>
+<span class="cstat-no" title="statement not covered" >                                &lt;MessageCircle size={16} className='text-[#4DBEA4]' /&gt;</span>
+<span class="cstat-no" title="statement not covered" >                                &lt;a href={whatsappUrl} target="_blank" rel="noopener noreferrer" className="hover:underline"&gt;Contactez-nous sur WhatsApp&lt;/a&gt;</span>
+<span class="cstat-no" title="statement not covered" >                            &lt;/div&gt;</span>
+<span class="cstat-no" title="statement not covered" >                        &lt;/div&gt;</span>
+<span class="cstat-no" title="statement not covered" >                    &lt;/div&gt;</span>
 <span class="cstat-no" title="statement not covered" >                &lt;/div&gt;</span>
-<span class="cstat-no" title="statement not covered" >                &lt;div&gt;</span>
+<span class="cstat-no" title="statement not covered" ></span>
+<span class="cstat-no" title="statement not covered" >                &lt;div className='mt-8 rounded-2xl border border-white/10 bg-white/[0.03] p-3 md:p-4'&gt;</span>
 <span class="cstat-no" title="statement not covered" >                    &lt;script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-2799688336707362"</span>
 <span class="cstat-no" title="statement not covered" >                        crossOrigin="anonymous"&gt;&lt;/script&gt;</span>
 <span class="cstat-no" title="statement not covered" >                    &lt;ins className="adsbygoogle"</span>
@@ -384,36 +407,13 @@
 <span class="cstat-no" title="statement not covered" >                        (adsbygoogle = window.adsbygoogle || []).push({ });</span>
 <span class="cstat-no" title="statement not covered" >                    &lt;/script&gt;</span>
 <span class="cstat-no" title="statement not covered" >                &lt;/div&gt;</span>
-<span class="cstat-no" title="statement not covered" >                {/* Section Contacts */}</span>
-<span class="cstat-no" title="statement not covered" >                &lt;div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mt-6"&gt;</span>
-<span class="cstat-no" title="statement not covered" >                    &lt;div className="flex flex-col sm:flex-row items-start sm:items-center justify-between text-white space-y-4 sm:space-y-0 sm:space-x-6"&gt;</span>
-<span class="cstat-no" title="statement not covered" >                        &lt;div className="flex items-center space-x-2"&gt;</span>
-<span class="cstat-no" title="statement not covered" >                            &lt;MapPin size={16} /&gt;</span>
-<span class="cstat-no" title="statement not covered" >                            &lt;span&gt;Libreville, Gabon&lt;/span&gt;</span>
-<span class="cstat-no" title="statement not covered" >                        &lt;/div&gt;</span>
-<span class="cstat-no" title="statement not covered" >                        &lt;div className="flex items-center space-x-2"&gt;</span>
-<span class="cstat-no" title="statement not covered" >                            &lt;Mail size={16} /&gt;</span>
-<span class="cstat-no" title="statement not covered" >                            &lt;a href={`mailto:${process.env.NEXT_PUBLIC_EMAIL_SUPPORT}`} className="hover:underline"&gt;{process.env.NEXT_PUBLIC_EMAIL_SUPPORT}&lt;/a&gt;</span>
-<span class="cstat-no" title="statement not covered" >                        &lt;/div&gt;</span>
-<span class="cstat-no" title="statement not covered" >                        &lt;div className="flex items-center space-x-2"&gt;</span>
-<span class="cstat-no" title="statement not covered" >                            &lt;Facebook size={16} /&gt;</span>
-<span class="cstat-no" title="statement not covered" >                            &lt;a href="https://www.facebook.com/share/16beeh915e/" target="_blank" rel="noopener noreferrer" className="hover:underline"&gt;Suivez-nous sur Facebook&lt;/a&gt;</span>
-<span class="cstat-no" title="statement not covered" >                        &lt;/div&gt;</span>
-<span class="cstat-no" title="statement not covered" >                        &lt;div className="flex items-center space-x-2"&gt;</span>
-<span class="cstat-no" title="statement not covered" >                            &lt;MessageCircle size={16} /&gt;</span>
-<span class="cstat-no" title="statement not covered" >                            &lt;a href={`https://wa.me/${process.env.NEXT_PUBLIC_CONTACT_SUPPORT?.replace('+', '').replace(/^00/, '')}?text=Bonjour%20!%20Je%20souhaite%20obtenir%20plus%20d'informations%20sur%20Trouve%20Ton%20Nkama.`} target="_blank" rel="noopener noreferrer" className="hover:underline"&gt;Contactez-nous sur WhatsApp&lt;/a&gt;</span>
-<span class="cstat-no" title="statement not covered" >                        &lt;/div&gt;</span>
-<span class="cstat-no" title="statement not covered" >                    &lt;/div&gt;</span>
-<span class="cstat-no" title="statement not covered" >                    &lt;div className='sm:hidden mt-4 flex justify-center'&gt;</span>
-<span class="cstat-no" title="statement not covered" >                        &lt;Logo className="text-white" width="64px" height="64px" /&gt;</span>
-<span class="cstat-no" title="statement not covered" >                    &lt;/div&gt;</span>
+<span class="cstat-no" title="statement not covered" ></span>
+<span class="cstat-no" title="statement not covered" >                &lt;div className='mt-6'&gt;</span>
+<span class="cstat-no" title="statement not covered" >                    &lt;PWAInstallButton /&gt;</span>
 <span class="cstat-no" title="statement not covered" >                &lt;/div&gt;</span>
 <span class="cstat-no" title="statement not covered" ></span>
-<span class="cstat-no" title="statement not covered" >                {/* Bouton d'installation PWA, non flottant */}</span>
-<span class="cstat-no" title="statement not covered" >                &lt;PWAInstallButton /&gt;</span>
-<span class="cstat-no" title="statement not covered" ></span>
-<span class="cstat-no" title="statement not covered" >                &lt;hr className="my-6 border-gray-700 sm:mx-auto lg:my-8" /&gt;</span>
-<span class="cstat-no" title="statement not covered" >                &lt;span className="block text-sm text-white text-center"&gt;</span>
+<span class="cstat-no" title="statement not covered" >                &lt;hr className="my-6 border-white/15 sm:mx-auto lg:my-8" /&gt;</span>
+<span class="cstat-no" title="statement not covered" >                &lt;span className="block text-sm text-white/80 text-center"&gt;</span>
 <span class="cstat-no" title="statement not covered" >                    © {new Date().getFullYear()} &lt;a href={routes.public.homePage} className="hover:underline"&gt;Trouve Ton Nkama&lt;/a&gt;. Tous droits réservés.</span>
 <span class="cstat-no" title="statement not covered" >                &lt;/span&gt;</span>
 <span class="cstat-no" title="statement not covered" >            &lt;/div&gt;</span>
@@ -427,7 +427,7 @@
             <div class='footer quiet pad2 space-top1 center small'>
                 Code coverage generated by
                 <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
-                at 2026-03-06T16:36:06.250Z
+                at 2026-03-07T12:46:39.974Z
             </div>
         <script src="../../../prettify.js"></script>
         <script>

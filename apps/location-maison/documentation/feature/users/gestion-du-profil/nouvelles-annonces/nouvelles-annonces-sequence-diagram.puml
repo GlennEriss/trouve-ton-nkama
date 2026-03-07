@@ -1,0 +1,39 @@
+@startuml
+title Nouvelles Annonces - Notification In-App
+
+actor Announcer as A
+participant "Property Form" as Form
+participant "Cloud Function onPropertyCreateNewAnnouncement" as CF
+database "Firestore properties" as Properties
+database "Firestore users" as Users
+database "Firestore notifications" as Notifications
+database "new_announcement_dispatch" as Dedupe
+
+A -> Form : Publier annonce
+Form -> Properties : createProperty(...)
+Properties --> Form : propertyId
+
+Properties -> CF : onCreate(propertyId)
+CF -> Properties : read property
+CF -> Users : list users (isNewAnnouncement=true)
+
+loop pour chaque user candidat
+  CF -> CF : match region/criteres
+  alt eligible
+    CF -> Dedupe : create(propertyId:uid)
+    alt not duplicate
+      CF -> Notifications : add in-app notification
+    else duplicate
+      CF -> CF : skip
+    end
+  else not eligible
+    CF -> CF : skip
+  end
+end
+
+note right of CF
+  Le flux de publication n'est pas bloque
+  si la notification echoue.
+end note
+
+@enduml
