@@ -56,6 +56,7 @@ Cas d'utilisation cibles (extraits UML):
 
 - verification OTP telephone pendant signup/signin (feature dediee).
 - verification OTP profil: voir `verifier-numero-telephone/FEATURE-003-VERIFIER-NUMERO-TELEPHONE.md`.
+- notifications favoris (mise a jour/suppression annonce): voir `favoris-annonces/FEATURE-006-FAVORIS-ANNONCES.md`.
 - migration "devenir annonceur".
 - moderation / administration profil.
 
