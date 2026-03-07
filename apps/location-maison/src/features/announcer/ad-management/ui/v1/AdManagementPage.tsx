@@ -2,6 +2,14 @@
 
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -13,7 +21,7 @@ import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
 import type { Property } from '@/models/annonce';
 import Link from 'next/link';
-import { useCallback, useEffect, useMemo, useRef } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { ComponentType } from 'react';
 import {
   Archive,
@@ -90,12 +98,48 @@ function toDate(value: unknown): Date | null {
   }
 
   if (typeof value === 'object' && value !== null) {
-    const seconds = (value as { seconds?: unknown }).seconds;
-    const nanoseconds = (value as { nanoseconds?: unknown }).nanoseconds;
-    if (typeof seconds === 'number') {
-      const millis = seconds * 1000 + (typeof nanoseconds === 'number' ? nanoseconds / 1_000_000 : 0);
-      const parsed = new Date(millis);
-      return Number.isNaN(parsed.getTime()) ? null : parsed;
+    const objectValue = value as {
+      toDate?: unknown;
+      toMillis?: unknown;
+      seconds?: unknown;
+      nanoseconds?: unknown;
+      _seconds?: unknown;
+      _nanoseconds?: unknown;
+    };
+
+    if (typeof objectValue.toDate === 'function') {
+      try {
+        const parsed = objectValue.toDate() as Date;
+        if (parsed instanceof Date && !Number.isNaN(parsed.getTime())) {
+          return parsed;
+        }
+      } catch {
+        // no-op
+      }
+    }
+
+    if (typeof objectValue.toMillis === 'function') {
+      try {
+        const millis = Number(objectValue.toMillis());
+        if (Number.isFinite(millis)) {
+          const parsed = new Date(millis);
+          return Number.isNaN(parsed.getTime()) ? null : parsed;
+        }
+      } catch {
+        // no-op
+      }
+    }
+
+    const secondsRaw = objectValue.seconds ?? objectValue._seconds;
+    const nanosRaw = objectValue.nanoseconds ?? objectValue._nanoseconds;
+    const seconds = Number(secondsRaw);
+    const nanoseconds = Number(nanosRaw ?? 0);
+    if (Number.isFinite(seconds)) {
+      const millis = seconds * 1000 + (Number.isFinite(nanoseconds) ? nanoseconds / 1_000_000 : 0);
+      if (Number.isFinite(millis)) {
+        const parsed = new Date(millis);
+        return Number.isNaN(parsed.getTime()) ? null : parsed;
+      }
     }
   }
 
@@ -170,8 +214,8 @@ function StatCard({ title, value, icon: Icon, tone = 'neutral' }: StatCardProps)
 
 type AdCardProps = {
   ad: Property;
-  onToggleState: (ad: Property) => Promise<void>;
-  onDelete: (id: string) => Promise<void>;
+  onToggleState: (ad: Property) => void;
+  onDelete: (ad: Property) => void;
   actionLoading: boolean;
 };
 
@@ -183,10 +227,21 @@ function AdCard({ ad, onToggleState, onDelete, actionLoading }: AdCardProps) {
   const mainImage = ad.images?.[0]?.fileURL || '/fallback-image.jpg';
 
   return (
-    <Card className="flex h-full flex-col overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm transition-all duration-300 hover:-translate-y-0.5 hover:shadow-md dark:border-gray-800 dark:bg-gray-900">
-      <div className="relative h-40 w-full overflow-hidden bg-gray-100 dark:bg-gray-800">
+    <Card
+      className="flex h-full flex-col overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm transition-all duration-300 hover:-translate-y-0.5 hover:shadow-md dark:border-gray-800 dark:bg-gray-900"
+      style={{ minHeight: 500 }}
+    >
+      <div
+        className="relative w-full overflow-hidden bg-gray-100 dark:bg-gray-800"
+        style={{ height: 200, minHeight: 200, maxHeight: 200 }}
+      >
         {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img src={mainImage} alt={ad.title} className="h-full w-full object-cover" />
+        <img
+          src={mainImage}
+          alt={ad.title}
+          className="h-full w-full"
+          style={{ objectFit: 'cover' }}
+        />
         <div className="absolute left-3 top-3 flex flex-wrap items-center gap-2">
           <span className="rounded-full bg-white/90 px-2.5 py-1 text-xs font-semibold text-gray-900 backdrop-blur">
             {statusLabel}
@@ -249,7 +304,7 @@ function AdCard({ ad, onToggleState, onDelete, actionLoading }: AdCardProps) {
             <Button
               variant="outline"
               className="h-9 rounded-full"
-              onClick={() => void onToggleState(ad)}
+              onClick={() => onToggleState(ad)}
               disabled={actionLoading}
             >
               <Archive className="mr-1.5 h-4 w-4" />
@@ -258,7 +313,7 @@ function AdCard({ ad, onToggleState, onDelete, actionLoading }: AdCardProps) {
             <Button
               variant="outline"
               className="h-9 rounded-full text-red-600 hover:bg-red-50 hover:text-red-700 dark:text-red-400 dark:hover:bg-red-950/20"
-              onClick={() => ad.id && void onDelete(ad.id)}
+              onClick={() => onDelete(ad)}
               disabled={actionLoading}
             >
               <Trash2 className="mr-1.5 h-4 w-4" />
@@ -307,6 +362,8 @@ export function AdManagementPage() {
   } = useAdManagement();
   const { toast } = useToast();
   const sentinelRef = useRef<HTMLDivElement | null>(null);
+  const [toggleStateCandidate, setToggleStateCandidate] = useState<Property | null>(null);
+  const [deleteCandidate, setDeleteCandidate] = useState<Property | null>(null);
 
   useEffect(() => {
     const element = sentinelRef.current;
@@ -371,11 +428,6 @@ export function AdManagementPage() {
 
   const handleDelete = useCallback(
     async (adId: string) => {
-      const confirmed = window.confirm('Confirmez-vous la suppression définitive de cette annonce ?');
-      if (!confirmed) {
-        return;
-      }
-
       await removeAd(adId);
       toast({
         title: 'Annonce supprimée',
@@ -386,6 +438,39 @@ export function AdManagementPage() {
     },
     [removeAd, toast]
   );
+
+  const requestToggleState = useCallback((ad: Property) => {
+    setToggleStateCandidate(ad);
+  }, []);
+
+  const requestDelete = useCallback((ad: Property) => {
+    setDeleteCandidate(ad);
+  }, []);
+
+  const confirmToggleState = useCallback(async () => {
+    if (!toggleStateCandidate) {
+      return;
+    }
+
+    try {
+      await handleToggleState(toggleStateCandidate);
+    } finally {
+      setToggleStateCandidate(null);
+    }
+  }, [handleToggleState, toggleStateCandidate]);
+
+  const confirmDelete = useCallback(async () => {
+    if (!deleteCandidate?.id) {
+      setDeleteCandidate(null);
+      return;
+    }
+
+    try {
+      await handleDelete(deleteCandidate.id);
+    } finally {
+      setDeleteCandidate(null);
+    }
+  }, [deleteCandidate, handleDelete]);
 
   return (
     <div className="space-y-6 px-4 pb-20 pt-2 md:px-0 md:pb-8">
@@ -627,8 +712,8 @@ export function AdManagementPage() {
             <AdCard
               key={ad.id}
               ad={ad}
-              onToggleState={handleToggleState}
-              onDelete={handleDelete}
+              onToggleState={requestToggleState}
+              onDelete={requestDelete}
               actionLoading={isTogglingState || isRemoving}
             />
           ))}
@@ -655,6 +740,91 @@ export function AdManagementPage() {
           Session indisponible. Reconnectez-vous pour gérer vos annonces.
         </section>
       )}
+
+      <Dialog
+        open={Boolean(toggleStateCandidate)}
+        onOpenChange={(open) => {
+          if (!open) {
+            setToggleStateCandidate(null);
+          }
+        }}
+      >
+        <DialogContent className="max-w-md rounded-2xl border-gray-200 p-6 dark:border-gray-800" isDefaultIconClose={!isTogglingState}>
+          <DialogHeader>
+            <DialogTitle>
+              {toggleStateCandidate?.state === 'IN_PROGRESS'
+                ? 'Archiver cette annonce ?'
+                : 'Réactiver cette annonce ?'}
+            </DialogTitle>
+            <DialogDescription>
+              {toggleStateCandidate?.state === 'IN_PROGRESS'
+                ? 'Cette annonce ne sera plus visible dans vos annonces actives.'
+                : 'Cette annonce redeviendra visible dans vos annonces actives.'}
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter className="gap-2 sm:gap-2">
+            <Button
+              type="button"
+              variant="outline"
+              className="rounded-full"
+              onClick={() => setToggleStateCandidate(null)}
+              disabled={isTogglingState}
+            >
+              Annuler
+            </Button>
+            <Button
+              type="button"
+              className="rounded-full bg-gradient-to-r from-[#146B67] to-[#1FA89B] hover:from-[#115a56] hover:to-[#1a9388]"
+              onClick={() => void confirmToggleState()}
+              disabled={isTogglingState}
+            >
+              {isTogglingState
+                ? 'Traitement...'
+                : toggleStateCandidate?.state === 'IN_PROGRESS'
+                  ? 'Archiver'
+                  : 'Réactiver'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog
+        open={Boolean(deleteCandidate)}
+        onOpenChange={(open) => {
+          if (!open) {
+            setDeleteCandidate(null);
+          }
+        }}
+      >
+        <DialogContent className="max-w-md rounded-2xl border-gray-200 p-6 dark:border-gray-800" isDefaultIconClose={!isRemoving}>
+          <DialogHeader>
+            <DialogTitle>Supprimer cette annonce ?</DialogTitle>
+            <DialogDescription>
+              Cette action est définitive. L’annonce sera supprimée de votre compte.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter className="gap-2 sm:gap-2">
+            <Button
+              type="button"
+              variant="outline"
+              className="rounded-full"
+              onClick={() => setDeleteCandidate(null)}
+              disabled={isRemoving}
+            >
+              Annuler
+            </Button>
+            <Button
+              type="button"
+              variant="destructive"
+              className="rounded-full"
+              onClick={() => void confirmDelete()}
+              disabled={isRemoving}
+            >
+              {isRemoving ? 'Suppression...' : 'Supprimer'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
