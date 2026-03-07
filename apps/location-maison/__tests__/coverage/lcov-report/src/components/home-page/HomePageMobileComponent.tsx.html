@@ -25,7 +25,7 @@
             <div class='fl pad1y space-right2'>
                 <span class="strong">0% </span>
                 <span class="quiet">Statements</span>
-                <span class='fraction'>0/207</span>
+                <span class='fraction'>0/221</span>
             </div>
         
             
@@ -46,7 +46,7 @@
             <div class='fl pad1y space-right2'>
                 <span class="strong">0% </span>
                 <span class="quiet">Lines</span>
-                <span class='fraction'>0/207</span>
+                <span class='fraction'>0/221</span>
             </div>
         
             
@@ -270,7 +270,35 @@
 <a name='L205'></a><a href='#L205'>205</a>
 <a name='L206'></a><a href='#L206'>206</a>
 <a name='L207'></a><a href='#L207'>207</a>
-<a name='L208'></a><a href='#L208'>208</a></td><td class="line-coverage quiet"><span class="cline-any cline-no">&nbsp;</span>
+<a name='L208'></a><a href='#L208'>208</a>
+<a name='L209'></a><a href='#L209'>209</a>
+<a name='L210'></a><a href='#L210'>210</a>
+<a name='L211'></a><a href='#L211'>211</a>
+<a name='L212'></a><a href='#L212'>212</a>
+<a name='L213'></a><a href='#L213'>213</a>
+<a name='L214'></a><a href='#L214'>214</a>
+<a name='L215'></a><a href='#L215'>215</a>
+<a name='L216'></a><a href='#L216'>216</a>
+<a name='L217'></a><a href='#L217'>217</a>
+<a name='L218'></a><a href='#L218'>218</a>
+<a name='L219'></a><a href='#L219'>219</a>
+<a name='L220'></a><a href='#L220'>220</a>
+<a name='L221'></a><a href='#L221'>221</a>
+<a name='L222'></a><a href='#L222'>222</a></td><td class="line-coverage quiet"><span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
@@ -495,6 +523,7 @@
 <span class="cstat-no" title="statement not covered" >import FeaturedSection from './FeaturedSection';</span>
 <span class="cstat-no" title="statement not covered" >import TrendingSection from './TrendingSection';</span>
 <span class="cstat-no" title="statement not covered" >import RecentSection from './RecentSection';</span>
+<span class="cstat-no" title="statement not covered" >import { motion, useReducedMotion } from 'framer-motion';</span>
 <span class="cstat-no" title="statement not covered" ></span>
 <span class="cstat-no" title="statement not covered" >export default function HomePageMobileComponent() {</span>
 <span class="cstat-no" title="statement not covered" >    const {</span>
@@ -510,6 +539,7 @@
 <span class="cstat-no" title="statement not covered" >            ? routes.protected.add_property</span>
 <span class="cstat-no" title="statement not covered" >            : routes.public.search_property</span>
 <span class="cstat-no" title="statement not covered" >    const { width } = useWindowSize()</span>
+<span class="cstat-no" title="statement not covered" >    const shouldReduceMotion = useReducedMotion()</span>
 <span class="cstat-no" title="statement not covered" >    // Porte de garage: gestion de la navbar animée</span>
 <span class="cstat-no" title="statement not covered" >    const [navbarVisible, setNavbarVisible] = React.useState(false);</span>
 <span class="cstat-no" title="statement not covered" >    const [navbarHeight, setNavbarHeight] = React.useState(0);</span>
@@ -547,6 +577,16 @@
 <span class="cstat-no" title="statement not covered" >        }</span>
 <span class="cstat-no" title="statement not covered" >    }, [navbarRef.current]);</span>
 <span class="cstat-no" title="statement not covered" ></span>
+<span class="cstat-no" title="statement not covered" >    const getRevealProps = (delay = 0) =&gt;</span>
+<span class="cstat-no" title="statement not covered" >        shouldReduceMotion</span>
+<span class="cstat-no" title="statement not covered" >            ? {}</span>
+<span class="cstat-no" title="statement not covered" >            : {</span>
+<span class="cstat-no" title="statement not covered" >                initial: { opacity: 0, y: 18 },</span>
+<span class="cstat-no" title="statement not covered" >                whileInView: { opacity: 1, y: 0 },</span>
+<span class="cstat-no" title="statement not covered" >                viewport: { once: true, amount: 0.2 },</span>
+<span class="cstat-no" title="statement not covered" >                transition: { duration: 0.45, delay, ease: [0.22, 1, 0.36, 1] },</span>
+<span class="cstat-no" title="statement not covered" >            }</span>
+<span class="cstat-no" title="statement not covered" ></span>
 <span class="cstat-no" title="statement not covered" >    return (</span>
 <span class="cstat-no" title="statement not covered" >        &lt;&gt;</span>
 <span class="cstat-no" title="statement not covered" >            &lt;div</span>
@@ -565,7 +605,7 @@
 <span class="cstat-no" title="statement not covered" >                &lt;Navbar /&gt;</span>
 <span class="cstat-no" title="statement not covered" >            &lt;/div&gt;</span>
 <span class="cstat-no" title="statement not covered" >            &lt;div className={cn('text-sm space-y-5', user &amp;&amp; width &lt; 768 ? 'mb-20' : '')}&gt;</span>
-<span class="cstat-no" title="statement not covered" >                &lt;section className='space-y-4 m-5' ref={searchSectionRef}&gt;</span>
+<span class="cstat-no" title="statement not covered" >                &lt;motion.section className='space-y-4 m-5' ref={searchSectionRef} {...getRevealProps(0.03)}&gt;</span>
 <span class="cstat-no" title="statement not covered" >                    &lt;div className='space-y-1 '&gt;</span>
 <span class="cstat-no" title="statement not covered" >                        &lt;h1 className='text-gray-500 text-[11px]'&gt;Votre futur chez-vous grâce à Trouve Ton Nkama&lt;/h1&gt;</span>
 <span class="cstat-no" title="statement not covered" >                        &lt;div className='flex text-xl font-bold text-[#146B67] items-center gap-2'&gt;</span>
@@ -594,7 +634,7 @@
 <span class="cstat-no" title="statement not covered" >                            &lt;/div&gt;</span>
 <span class="cstat-no" title="statement not covered" >                        &lt;/div&gt;</span>
 <span class="cstat-no" title="statement not covered" >                    &lt;/Form&gt;</span>
-<span class="cstat-no" title="statement not covered" >                &lt;/section&gt;</span>
+<span class="cstat-no" title="statement not covered" >                &lt;/motion.section&gt;</span>
 <span class="cstat-no" title="statement not covered" ></span>
 <span class="cstat-no" title="statement not covered" >                {/* &lt;section className='space-y-5 m-5'&gt;</span>
 <span class="cstat-no" title="statement not covered" >                    &lt;h1 className='text-xl font-bold text-center text-[#146B67]'&gt;Mettez votre logement en valeur&lt;/h1&gt;</span>
@@ -623,35 +663,37 @@
 <span class="cstat-no" title="statement not covered" >                        /&gt;</span>
 <span class="cstat-no" title="statement not covered" >                    &lt;/div&gt;</span>
 <span class="cstat-no" title="statement not covered" >                &lt;/section&gt; */}</span>
-<span class="cstat-no" title="statement not covered" >                &lt;FeaturedSection /&gt;</span>
+<span class="cstat-no" title="statement not covered" >                &lt;motion.div {...getRevealProps(0.05)}&gt;</span>
+<span class="cstat-no" title="statement not covered" >                    &lt;FeaturedSection /&gt;</span>
+<span class="cstat-no" title="statement not covered" >                &lt;/motion.div&gt;</span>
 <span class="cstat-no" title="statement not covered" ></span>
-<span class="cstat-no" title="statement not covered" >                &lt;section className='space-y-5 bg-green-50 p-5 py-16'&gt;</span>
+<span class="cstat-no" title="statement not covered" >                &lt;motion.section className='space-y-5 bg-green-50 p-5 py-16' {...getRevealProps(0.07)}&gt;</span>
 <span class="cstat-no" title="statement not covered" >                    &lt;h1 className='text-xl font-bold text-center text-[#146B67]'&gt;Quels sont vos besoins ?&lt;/h1&gt;</span>
 <span class="cstat-no" title="statement not covered" >                    &lt;div className='flex gap-2'&gt;</span>
 <span class="cstat-no" title="statement not covered" >                        &lt;Link href={publishLink} className='w-1/2 bg-[#146B67] text-white font-bold py-3 rounded-xl flex justify-center items-center'&gt;Publier une annonce&lt;/Link&gt;</span>
 <span class="cstat-no" title="statement not covered" >                        &lt;Link href={routes.public.search_property} className='w-1/2 bg-white border border-[#146B67] text-[#146B67] font-bold py-3 rounded-xl flex justify-center items-center text-center'&gt;Rechercher une annonce&lt;/Link&gt;</span>
 <span class="cstat-no" title="statement not covered" >                    &lt;/div&gt;</span>
-<span class="cstat-no" title="statement not covered" >                &lt;/section&gt;</span>
+<span class="cstat-no" title="statement not covered" >                &lt;/motion.section&gt;</span>
 <span class="cstat-no" title="statement not covered" ></span>
-<span class="cstat-no" title="statement not covered" >                &lt;section className='space-y-5 p-5'&gt;</span>
+<span class="cstat-no" title="statement not covered" >                &lt;motion.section className='space-y-5 p-5' {...getRevealProps(0.09)}&gt;</span>
 <span class="cstat-no" title="statement not covered" >                    &lt;h1 className='text-xl text-center font-bold text-[#146B67]'&gt;Types d'annonces&lt;/h1&gt;</span>
 <span class="cstat-no" title="statement not covered" >                    &lt;CarouselPropertyType /&gt;</span>
-<span class="cstat-no" title="statement not covered" >                &lt;/section&gt;</span>
+<span class="cstat-no" title="statement not covered" >                &lt;/motion.section&gt;</span>
 <span class="cstat-no" title="statement not covered" ></span>
 <span class="cstat-no" title="statement not covered" ></span>
 <span class="cstat-no" title="statement not covered" ></span>
-<span class="cstat-no" title="statement not covered" >                &lt;section className='space-y-5'&gt;</span>
+<span class="cstat-no" title="statement not covered" >                &lt;motion.section className='space-y-5' {...getRevealProps(0.11)}&gt;</span>
 <span class="cstat-no" title="statement not covered" >                    {/* Sections des annonces promues */}</span>
 <span class="cstat-no" title="statement not covered" >                    &lt;TrendingSection /&gt; </span>
 <span class="cstat-no" title="statement not covered" >                    &lt;RecentSection /&gt;</span>
-<span class="cstat-no" title="statement not covered" >                &lt;/section&gt;</span>
+<span class="cstat-no" title="statement not covered" >                &lt;/motion.section&gt;</span>
 <span class="cstat-no" title="statement not covered" ></span>
-<span class="cstat-no" title="statement not covered" >                &lt;section className='space-y-5 m-5'&gt;</span>
+<span class="cstat-no" title="statement not covered" >                &lt;motion.section className='space-y-5 m-5' {...getRevealProps(0.13)}&gt;</span>
 <span class="cstat-no" title="statement not covered" >                    &lt;h1 className='text-xl font-bold text-center text-[#146B67]'&gt;Logements par province&lt;/h1&gt;</span>
 <span class="cstat-no" title="statement not covered" >                    &lt;PropertyByProvince /&gt;</span>
-<span class="cstat-no" title="statement not covered" >                &lt;/section&gt;</span>
+<span class="cstat-no" title="statement not covered" >                &lt;/motion.section&gt;</span>
 <span class="cstat-no" title="statement not covered" ></span>
-<span class="cstat-no" title="statement not covered" >                &lt;section className='bg-green-50 py-5'&gt;</span>
+<span class="cstat-no" title="statement not covered" >                &lt;motion.section className='bg-green-50 py-5' {...getRevealProps(0.15)}&gt;</span>
 <span class="cstat-no" title="statement not covered" >                    &lt;div className='m-5 bg-gradient-to-r to-[#146B67] from-[#1FA89B] rounded-xl py-5 px-3 flex flex-col gap-3 items-center'&gt;</span>
 <span class="cstat-no" title="statement not covered" >                        &lt;h1 className='text-xl text-white font-bold text-center flex flex-col'&gt;</span>
 <span class="cstat-no" title="statement not covered" >                            &lt;span&gt;Vous recherchez&lt;/span&gt;</span>
@@ -678,7 +720,7 @@
 <span class="cstat-no" title="statement not covered" >                            Explorez</span>
 <span class="cstat-no" title="statement not covered" >                        &lt;/Link&gt;</span>
 <span class="cstat-no" title="statement not covered" >                    &lt;/div&gt;</span>
-<span class="cstat-no" title="statement not covered" >                &lt;/section&gt;</span>
+<span class="cstat-no" title="statement not covered" >                &lt;/motion.section&gt;</span>
 <span class="cstat-no" title="statement not covered" >            &lt;/div&gt;</span>
 <span class="cstat-no" title="statement not covered" >        &lt;/&gt;</span>
 <span class="cstat-no" title="statement not covered" ></span>
@@ -691,7 +733,7 @@
             <div class='footer quiet pad2 space-top1 center small'>
                 Code coverage generated by
                 <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
-                at 2026-03-06T16:36:05.060Z
+                at 2026-03-07T12:46:39.516Z
             </div>
         <script src="../../../prettify.js"></script>
         <script>
