@@ -87,7 +87,8 @@ rectangle "Plateforme Location Maison Gabon" {
         usecase "Consulter son solde de crédits" as UC_ViewBalance
         usecase "Acheter des crédits" as UC_BuyCredits
         usecase "Sélectionner un pack de crédits" as UC_SelectPack
-        usecase "Payer via Airtel Money" as UC_PayAirtel
+        usecase "Demander recharge manuelle (WhatsApp)" as UC_RequestManualRecharge
+        usecase "Effectuer dépôt OM/MoMo (hors plateforme)" as UC_DepositOutside
         usecase "Consulter l'historique des transactions" as UC_ViewHistory
         usecase "Filtrer historique (Achats/Dépenses)" as UC_FilterHistory
         usecase "Voir détail d'une transaction" as UC_ViewTransaction
@@ -175,7 +176,8 @@ UC_ViewMyAds ..> UC_ViewActivePromos : <<extend>>
 ' RELATIONS CRÉDITS
 ' =====================================
 UC_BuyCredits ..> UC_SelectPack : <<include>>
-UC_BuyCredits ..> UC_PayAirtel : <<include>>
+UC_BuyCredits ..> UC_RequestManualRecharge : <<include>>
+UC_RequestManualRecharge ..> UC_DepositOutside : <<include>>
 UC_ViewBalance ..> UC_ViewHistory : <<extend>>
 UC_ViewHistory ..> UC_FilterHistory : <<extend>>
 UC_ViewHistory ..> UC_ViewTransaction : <<extend>>
@@ -236,10 +238,10 @@ note right of UC_Promote
   
   | Type | Crédits | Durée |
   |------|---------|-------|
-  | Featured | 10 | 7 jours |
-  | Trending 7j | 7 | 7 jours |
-  | Trending 3j | 4 | 3 jours |
-  | Boost | 2 | 24h |
+  | Featured | 15 | 7 jours |
+  | Trending 7j | 10 | 7 jours |
+  | Trending 3j | 5 | 3 jours |
+  | Boost | 3 | 24h |
   
   Nécessite des crédits suffisants.
 end note
@@ -249,14 +251,14 @@ note right of UC_SelectPack
   
   | Pack | Crédits | Prix |
   |------|---------|------|
-  | Starter | 5 | 5,000 XAF |
-  | Basic | 15 | 12,000 XAF |
-  | Pro | 50 | 35,000 XAF |
-  | Premium | 100 | 60,000 XAF |
+  | Starter | 5 | 2,000 XAF |
+  | Standard | 10 | 3,500 XAF |
+  | Avancé | 25 | 7,500 XAF |
+  | Premium | 50 | 12,500 XAF |
   
-  **Crédits de bienvenue:**
-  3 crédits offerts lors de la
-  migration vers Annonceur.
+  **Mode actuel:**
+  Recharge manuelle via WhatsApp
+  + dépôt OM/MoMo puis créditement.
 end note
 
 note as AnnouncerNote

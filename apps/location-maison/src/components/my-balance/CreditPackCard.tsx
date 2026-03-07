@@ -17,13 +17,13 @@ interface CreditPack {
 
 interface CreditPackCardProps {
   pack: CreditPack
-  onSelect: (pack: CreditPack) => void
+  onSelect?: (pack: CreditPack) => void
   isLoading?: boolean
 }
 
 export default function CreditPackCard({ pack, onSelect, isLoading = false }: Readonly<CreditPackCardProps>) {
   const handleSelect = () => {
-    if (!isLoading) {
+    if (!isLoading && onSelect) {
       onSelect(pack)
     }
   }
@@ -50,9 +50,9 @@ export default function CreditPackCard({ pack, onSelect, isLoading = false }: Re
       ${pack.popular ? 'border-[#1FA89B] shadow-lg scale-105' : 'border-gray-200 dark:border-gray-700'}
       ${pack.bestValue ? 'border-gradient-to-r from-yellow-400 to-orange-500' : ''}
       ${isLoading ? 'opacity-50' : 'opacity-75'}
-      cursor-not-allowed
+      ${isLoading ? 'cursor-not-allowed' : 'cursor-pointer'}
     `} 
-    aria-label={`Pack ${pack.name} - ${pack.credits} crédits pour ${pack.price} FCFA (bientôt disponible)`}
+    aria-label={`Pack ${pack.name} - ${pack.credits} crédits pour ${pack.price} FCFA (recharge manuelle)`}
     >
       
       {/* Badge */}
@@ -125,17 +125,19 @@ export default function CreditPackCard({ pack, onSelect, isLoading = false }: Re
         )}
 
         {/* Action Button - Temporairement désactivé */}
-        <div 
+        <div
           className={`
             w-full py-3 px-6 rounded-xl font-semibold transition-all duration-300 text-center
             bg-gray-300 dark:bg-gray-600 text-gray-500 dark:text-gray-400
-            cursor-not-allowed
+            ${isLoading ? 'cursor-not-allowed' : 'cursor-pointer'}
           `}
         >
-          Choisir ce pack
+          {isLoading ? 'Recharge manuelle' : 'Choisir ce pack'}
         </div>
         <p className="text-xs text-gray-500 dark:text-gray-400 text-center mt-2">
-          Bientôt disponible pour de meilleures visibilités
+          {isLoading
+            ? 'Contactez le support WhatsApp pour ce pack'
+            : 'Disponible'}
         </p>
 
         {/* Savings highlight */}

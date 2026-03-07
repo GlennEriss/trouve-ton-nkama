@@ -3,7 +3,7 @@ skinparam backgroundColor #FEFEFE
 skinparam actorStyle awesome
 
 title Diagramme de Cas d'Utilisation - Système de Crédits
-caption Plateforme Location Maison Gabon - Version 2.0
+caption Plateforme Location Maison Gabon - Version 2.1 (flux manuel opérationnel)
 
 ' =====================================
 ' ACTEURS
@@ -16,40 +16,43 @@ actor "Administrateur" as Admin #Red
 User <|-- Announcer
 
 ' Acteurs secondaires
-actor "Airtel Money\n(Paiement)" as Airtel <<Secondary>> #LightGray
+actor "Support WhatsApp\n(Équipe plateforme)" as Support <<Secondary>> #LightGray
+actor "Opérateur Mobile Money\n(OM/MoMo - hors plateforme)" as MobileMoney <<Secondary>> #LightGray
 actor "Firebase\n(Backend)" as Firebase <<Secondary>> #LightGray
 
 ' =====================================
 ' SYSTÈME
 ' =====================================
 rectangle "Système de Crédits" {
-    
+
     ' --- PORTEFEUILLE ---
-    package "Gestion du Portefeuille" {
+    package "Portefeuille & Historique" {
+        usecase "Accéder à la page\n/my-balance/history" as UC_OpenHistoryPage
         usecase "Consulter mon solde" as UC_Balance
         usecase "Voir l'historique des transactions" as UC_History
         usecase "Filtrer par type\n(Achats / Dépenses)" as UC_FilterHistory
     }
-    
-    ' --- ACHAT DE CRÉDITS ---
-    package "Achat de Crédits" {
-        usecase "Acheter des crédits" as UC_BuyCredits
+
+    ' --- RECHARGE MANUELLE ---
+    package "Recharge Manuelle de Crédits" {
+        usecase "Accéder à la page\n/my-balance/recharge" as UC_OpenRechargePage
+        usecase "Acheter / recharger des crédits" as UC_BuyCredits
         usecase "Sélectionner un pack" as UC_SelectPack
-        usecase "Choisir le moyen de paiement" as UC_SelectPayment
-        usecase "Payer via Airtel Money" as UC_PayAirtel
-        usecase "Confirmer le paiement\nsur téléphone" as UC_ConfirmPayment
-        usecase "Recevoir confirmation\nd'achat" as UC_ReceiveConfirmation
+        usecase "Demander une recharge\nvia WhatsApp" as UC_RequestManualRecharge
+        usecase "Effectuer un dépôt\nOM/MoMo (hors plateforme)" as UC_DepositOutside
+        usecase "Transmettre la référence\nde dépôt" as UC_ShareReference
+        usecase "Créditement manuel\ndu compte" as UC_ManualCredit
+        usecase "Recevoir confirmation\nde recharge" as UC_ReceiveConfirmation
     }
-    
+
     ' --- DÉPENSE DE CRÉDITS ---
     package "Dépense de Crédits" {
         usecase "Dépenser des crédits" as UC_SpendCredits
-        usecase "Publier une annonce" as UC_PublishProperty
         usecase "Promouvoir une annonce" as UC_PromoteProperty
         usecase "Utiliser l'assistant IA" as UC_UseAI
         usecase "Booster une annonce" as UC_Boost
     }
-    
+
     ' --- ADMINISTRATION ---
     package "Administration Crédits" {
         usecase "Gérer les packs de crédits" as UC_ManagePacks
@@ -65,13 +68,13 @@ rectangle "Système de Crédits" {
 ' =====================================
 ' RELATIONS UTILISATEUR
 ' =====================================
-User --> UC_Balance
-User --> UC_History
+User --> UC_OpenHistoryPage
+User --> UC_OpenRechargePage
+User --> UC_BuyCredits
 
 ' =====================================
 ' RELATIONS ANNONCEUR
 ' =====================================
-Announcer --> UC_BuyCredits
 Announcer --> UC_SpendCredits
 
 ' =====================================
@@ -85,21 +88,24 @@ Admin --> UC_Refunds
 ' =====================================
 ' RELATIONS INTERNES - PORTEFEUILLE
 ' =====================================
+UC_OpenHistoryPage ..> UC_Balance : <<include>>
+UC_OpenHistoryPage ..> UC_History : <<include>>
 UC_History ..> UC_FilterHistory : <<extend>>
 
 ' =====================================
-' RELATIONS INTERNES - ACHAT
+' RELATIONS INTERNES - RECHARGE
 ' =====================================
-UC_BuyCredits ..> UC_SelectPack : <<include>>
-UC_BuyCredits ..> UC_SelectPayment : <<include>>
-UC_SelectPayment ..> UC_PayAirtel : <<extend>>
-UC_PayAirtel ..> UC_ConfirmPayment : <<include>>
-UC_ConfirmPayment ..> UC_ReceiveConfirmation : <<include>>
+UC_BuyCredits ..> UC_OpenRechargePage : <<include>>
+UC_OpenRechargePage ..> UC_SelectPack : <<include>>
+UC_OpenRechargePage ..> UC_RequestManualRecharge : <<include>>
+UC_RequestManualRecharge ..> UC_DepositOutside : <<include>>
+UC_RequestManualRecharge ..> UC_ShareReference : <<include>>
+UC_RequestManualRecharge ..> UC_ManualCredit : <<include>>
+UC_ManualCredit ..> UC_ReceiveConfirmation : <<include>>
 
 ' =====================================
 ' RELATIONS INTERNES - DÉPENSE
 ' =====================================
-UC_SpendCredits ..> UC_PublishProperty : <<extend>>
 UC_SpendCredits ..> UC_PromoteProperty : <<extend>>
 UC_SpendCredits ..> UC_UseAI : <<extend>>
 UC_PromoteProperty ..> UC_Boost : <<extend>>
@@ -114,44 +120,55 @@ UC_ManagePacks ..> UC_DisablePack : <<extend>>
 ' =====================================
 ' RELATIONS ACTEURS SECONDAIRES
 ' =====================================
-UC_PayAirtel --> Airtel : initie paiement
-Airtel --> UC_ConfirmPayment : callback
-UC_BuyCredits --> Firebase : enregistre transaction
-UC_SpendCredits --> Firebase : met à jour solde
+UC_RequestManualRecharge --> Support : demande de traitement
+Support --> UC_ManualCredit : validation + créditement
+UC_DepositOutside --> MobileMoney : dépôt externe
+UC_ManualCredit --> Firebase : met à jour solde + transaction
+UC_SpendCredits --> Firebase : débite solde + transaction
 
 ' =====================================
 ' NOTES EXPLICATIVES
 ' =====================================
+note right of UC_OpenHistoryPage
+  **Page Historique (opérationnelle):**
+  - URL: `/my-balance/history`
+  - Solde actuel
+  - Historique des opérations
+  - Filtre achats/dépenses
+end note
+
+note right of UC_OpenRechargePage
+  **Page Recharge (opérationnelle):**
+  - URL: `/my-balance/recharge`
+  - Affichage des packs
+  - Procédure manuelle WhatsApp/OM
+  - Pas d'encaissement API opérateur direct
+end note
+
 note right of UC_BuyCredits
-  **Flux d'achat complet:**
-  1. L'annonceur accède à "Mon solde"
-  2. Clique sur "Acheter des crédits"
-  3. Choisit un pack (Starter, Pro, etc.)
-  4. Sélectionne Airtel Money
-  5. Entre son numéro de téléphone
-  6. Reçoit notification Airtel
-  7. Confirme le paiement
-  8. Les crédits sont ajoutés
-  
+  **Flux réel de recharge:**
+  1. L'utilisateur choisit un pack
+  2. Contacte le support sur WhatsApp
+  3. Effectue le dépôt OM/MoMo
+  4. Envoie la référence au support
+  5. Le support crédite manuellement le compte
+  6. Le solde + historique sont mis à jour
+
   **Pré-condition:**
   - Être authentifié
-  - Avoir le rôle Annonceur
-  
-  **Post-condition:**
-  - Crédits ajoutés au portefeuille
-  - Transaction enregistrée
 end note
 
 note left of UC_SelectPack
   **Packs disponibles:**
   | Pack | Crédits | Prix |
   |------|---------|------|
-  | Starter | 5 | 5,000 XAF |
-  | Basic | 15 | 12,000 XAF |
-  | Pro | 50 | 35,000 XAF |
-  | Premium | 100 | 60,000 XAF |
-  
-  (Économies sur les gros packs)
+  | Starter | 5 | 2,000 XAF |
+  | Standard | 10 | 3,500 XAF |
+  | Avancé | 25 | 7,500 XAF |
+  | Premium | 50 | 12,500 XAF |
+
+  **Crédits de bienvenue:**
+  - 3 crédits à la création de compte
 end note
 
 note bottom of UC_SpendCredits
@@ -159,10 +176,10 @@ note bottom of UC_SpendCredits
   | Service | Crédits |
   |---------|---------|
   | Publier annonce | 0 (gratuit) |
-  | Promotion Featured | 10 |
-  | Trending 7 jours | 7 |
-  | Trending 3 jours | 4 |
-  | Boost | 2 |
+  | Promotion Featured | 15 |
+  | Trending 7 jours | 10 |
+  | Trending 3 jours | 5 |
+  | Boost | 3 |
   | Assistant IA | 1 |
 end note
 
@@ -170,45 +187,26 @@ note right of UC_GrantCredits
   **Attribution manuelle:**
   Réservé aux administrateurs.
   Utilisé pour:
-  - Gestes commerciaux
-  - Correction d'erreurs
-  - Crédits de bienvenue
-end note
-
-note bottom of Announcer
-  **L'Annonceur hérite de l'Utilisateur**
-  Il peut:
-  - Consulter son solde
-  - Voir son historique
-  - Acheter des crédits
-  - Dépenser des crédits
+  - gestes commerciaux
+  - correction d'erreurs
+  - opérations de support
 end note
 
 ' =====================================
-' ÉTATS DE TRANSACTION
+' ÉTATS OPÉRATIONNELS (MODE MANUEL)
 ' =====================================
 note as TransactionStates
-  **États d'une transaction d'achat:**
-  
-  ┌─────────────────────────────────────────┐
-  │                                         │
-  │  [PENDING] ───► [PROCESSING] ───► [COMPLETED]
-  │      │              │                   │
-  │      │              │                   │
-  │      ▼              ▼                   ▼
-  │  [CANCELLED]    [FAILED]           (Succès)
-  │                     │
-  │                     ▼
-  │               [REFUNDED]
-  │                                         │
-  └─────────────────────────────────────────┘
-  
-  - PENDING: En attente de paiement
-  - PROCESSING: Paiement en cours
-  - COMPLETED: Crédits ajoutés
-  - FAILED: Paiement échoué
-  - CANCELLED: Annulé par l'utilisateur
-  - REFUNDED: Remboursé par admin
+  **États d'une recharge manuelle:**
+
+  [REQUESTED] -> [WAITING_DEPOSIT] -> [WAITING_REFERENCE] -> [CREDITED]
+       |                                   |
+       +--------------> [REJECTED] <-------+
+
+  - REQUESTED: demande initiée
+  - WAITING_DEPOSIT: dépôt attendu
+  - WAITING_REFERENCE: référence en attente
+  - CREDITED: solde crédité
+  - REJECTED: demande refusée/annulée
 end note
 
 ' =====================================
@@ -220,7 +218,7 @@ legend bottom left
   | <<include>> | Cas obligatoire |
   | <<extend>> | Cas optionnel |
   | ◁— | Héritage |
-  
+
   **Acteurs:**
   | Couleur | Type |
   | Vert | Utilisateur de base |
@@ -230,4 +228,3 @@ legend bottom left
 endlegend
 
 @enduml
-

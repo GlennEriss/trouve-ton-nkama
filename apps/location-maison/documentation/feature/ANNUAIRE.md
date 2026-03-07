@@ -67,12 +67,12 @@
 
 | Feature | Statut | Branche | Date | Notes |
 |---------|--------|---------|------|-------|
-| Consulter son solde | ⬜ | - | - | À implémenter (nouveau système) |
-| Acheter des crédits | ⬜ | - | - | À implémenter (Airtel Money) |
-| Sélectionner un pack | ⬜ | - | - | À implémenter |
-| Payer via Airtel Money | ⬜ | - | - | À implémenter |
-| Consulter l'historique | ⬜ | - | - | À implémenter |
-| Filtrer historique (Achats/Dépenses) | ⬜ | - | - | À implémenter |
+| Consulter son solde | ✅ | feature/FEATURE-009-gestion-annonces-annonceur | 2026-03-07 | Disponible sur `/my-balance/history` |
+| Acheter des crédits | 🔄 | feature/FEATURE-009-gestion-annonces-annonceur | 2026-03-07 | Flux manuel actif via WhatsApp + dépôt OM/MoMo, API opérateur non activée |
+| Sélectionner un pack | ✅ | feature/FEATURE-009-gestion-annonces-annonceur | 2026-03-07 | Packs affichés sur `/my-balance/recharge` |
+| Initier recharge manuelle (WhatsApp + OM/MoMo) | ✅ | feature/FEATURE-009-gestion-annonces-annonceur | 2026-03-07 | CTA WhatsApp + procédure manuelle de recharge |
+| Consulter l'historique | ✅ | feature/FEATURE-009-gestion-annonces-annonceur | 2026-03-07 | Historique disponible sur page dédiée |
+| Filtrer historique (Achats/Dépenses) | ✅ | feature/FEATURE-009-gestion-annonces-annonceur | 2026-03-07 | Filtre par type disponible |
 
 ---
 
@@ -116,7 +116,7 @@
 | Feature | Statut | Branche | Date | Notes |
 |---------|--------|---------|------|-------|
 | Gérer les packs de crédits | ⬜ | - | - | À implémenter |
-| Attribuer des crédits manuellement | ⬜ | - | - | À implémenter |
+| Attribuer des crédits manuellement | 🔄 | - | - | Process opérationnel côté support, back-office admin dédié à implémenter |
 | Voir toutes les transactions | ⬜ | - | - | À implémenter |
 | Gérer les remboursements | ⬜ | - | - | À implémenter |
 | Configuration pays supportés | ✅ | - | - | Existant |

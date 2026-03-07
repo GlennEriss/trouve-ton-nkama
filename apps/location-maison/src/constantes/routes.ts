@@ -24,7 +24,9 @@ export const routes = {
         login_and_security: '/login-and-security',
         notifications: '/settings',
         notification_list: '/list-notifications',
-        my_balance: '/my-balance',
+        my_balance: '/my-balance/history',
+        my_balance_history: '/my-balance/history',
+        my_balance_recharge: '/my-balance/recharge',
         verify_phone: '/verify-phone',
     },
     public: {
