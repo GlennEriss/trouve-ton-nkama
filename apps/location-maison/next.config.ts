@@ -31,13 +31,19 @@ const nextConfig: NextConfig = {
         protocol: 'https',
         hostname: 'firebasestorage.googleapis.com',
         port: '',
-        pathname: '/v0/b/home-rent-1534e.appspot.com/o/*',
+        pathname: '/v0/b/**/o/**',
       },
       {
         protocol: 'https',
-        hostname: 'firebasestorage.googleapis.com',
+        hostname: 'storage.googleapis.com',
         port: '',
-        pathname: '/v0/b/location-maison-prod-167da.firebasestorage.app/o/*',
+        pathname: '/**',
+      },
+      {
+        protocol: 'https',
+        hostname: 'lh3.googleusercontent.com',
+        port: '',
+        pathname: '/**',
       },
       {
         protocol: 'https',

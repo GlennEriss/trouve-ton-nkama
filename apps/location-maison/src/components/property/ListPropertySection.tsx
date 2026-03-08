@@ -236,13 +236,17 @@ export const CardPropertyCrud = ({ property }: { property: Property }) => {
         setLocalState(newState);
         setIsLoading(false);
     }
+    const primaryImageSrc =
+        typeof images[0]?.fileURL === 'string' && images[0].fileURL.trim().length > 0
+            ? images[0].fileURL
+            : '/fallback-image.jpg';
     
     return (
         <Card className="group relative overflow-hidden bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-2xl shadow-sm hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
             {/* Section Image - Hauteur fixe uniforme */}
             <div className="relative w-full h-48 overflow-hidden rounded-t-2xl bg-gray-100 dark:bg-gray-800">
                 <Image
-                    src={images[0]?.fileURL ?? '/fallback-image.jpg'}
+                    src={primaryImageSrc}
                     alt={title}
                     fill
                     className="object-cover transition-transform duration-500 group-hover:scale-110"

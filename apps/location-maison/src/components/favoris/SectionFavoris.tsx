@@ -84,7 +84,14 @@ export default function SectionFavoris() {
     return (
         <div className='px-5'>
             <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5'>
-                {data?.pages[0].properties.map((property) => (
+                {data?.pages[0].properties.map((property) => {
+                    const primaryImageSrc =
+                        typeof property.images?.[0]?.fileURL === "string" &&
+                        property.images[0].fileURL.trim().length > 0
+                            ? property.images[0].fileURL
+                            : "/home.png";
+
+                    return (
                     <div key={property.id} className="p-2 rounded-lg">
                         <button
                             onClick={() => property.id && handleCardClick(property.id)}
@@ -101,7 +108,7 @@ export default function SectionFavoris() {
                             {/* Image principale */}
                             <div className="relative w-full h-52 overflow-hidden">
                                 <Image
-                                    src={property.images?.[0]?.fileURL ?? "/home.png"}
+                                    src={primaryImageSrc}
                                     alt={property.title ?? "Image de la propriété"}
                                     fill
                                     className="object-cover transform transition-transform duration-500 hover:scale-110"
@@ -153,7 +160,8 @@ export default function SectionFavoris() {
                             )}
                         </button>
                     </div>
-                ))}
+                    );
+                })}
             </div>
             {
                 totalPage > 1 && (

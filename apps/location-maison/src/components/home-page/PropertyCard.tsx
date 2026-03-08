@@ -18,6 +18,10 @@ const PropertyCard = ({ property, hideDate = false }: { property: any; hideDate?
   const router = useRouter();
   const pathname = usePathname();
   const { trackEvent } = useTrackEvent();
+  const primaryImageSrc =
+    typeof property.images?.[0]?.fileURL === "string" && property.images[0].fileURL.trim().length > 0
+      ? property.images[0].fileURL
+      : "/home.png";
 
   const handleCardClick = () => {
     const propertyId = property.objectID || property.id || property.path;
@@ -54,7 +58,7 @@ const PropertyCard = ({ property, hideDate = false }: { property: any; hideDate?
         {/* Image principale */}
         <div className="relative w-full h-[220px] sm:h-[230px] xl:h-[240px] bg-gray-200">
           <Image
-            src={property.images?.[0]?.fileURL ?? "/home.png"}
+            src={primaryImageSrc}
             alt={property.title ?? "Image de l'annonce"}
             fill
             className="object-cover"
