@@ -1,6 +1,9 @@
 import { User } from "@/models/authentication";
 import { createModel } from "./generic.db";
 import firebaseCollectionNames from "@/constantes/firebase-collection-name";
+import { createLogger } from '@/lib/logger';
+
+const logger = createLogger('db.user');
 const getFirestore = () => import("@/firebase/firestore");
 
 export async function createUser(user: Partial<User>) {
@@ -20,14 +23,14 @@ export async function getUserByUID(uid: string): Promise<User | null> {
         const querySnapshot = await getDocs(q);
 
         if (querySnapshot.empty) {
-            console.error(`No user found with UID: ${uid}`);
+            logger.warn('No user found with UID', { uid });
             return null;
         }
 
         const userDoc = querySnapshot.docs[0];
         return { ...userDoc.data(), id: userDoc.id } as User;
     } catch (error) {
-        console.error("Error fetching user by UID:", error);
+        logger.error('Error fetching user by UID', { uid, error });
         return null;
     }
 }
@@ -47,7 +50,7 @@ export async function findUserDetailsByUserID(uid: string) {
         };
         return userDetails;
     } catch (error) {
-        console.error("Error retrieving userDetails:", error);
+        logger.error('Error retrieving userDetails', { uid, error });
         return null
     }
 }
@@ -68,7 +71,7 @@ export async function findUserByEmail(email: string) {
         };
         return userDetails;
     } catch (error) {
-        console.error("Error retrieving userDetails by email:", error);
+        logger.error('Error retrieving userDetails by email', { email, error });
         throw error;
     }
 }
@@ -81,7 +84,7 @@ export async function updateUser(uid: string, updates: Partial<User>): Promise<b
         const querySnapshot = await getDocs(q);
 
         if (querySnapshot.empty) {
-            console.error(`No user found with UID: ${uid}`);
+            logger.warn('No user found with UID for update', { uid });
             return false;
         }
 
@@ -95,7 +98,7 @@ export async function updateUser(uid: string, updates: Partial<User>): Promise<b
         });
         return true;
     } catch (error) {
-        console.error("Error updating user:", error);
+        logger.error('Error updating user', { uid, error });
         return false;
     }
 }
@@ -119,7 +122,7 @@ export async function findUserByPhoneNumber(phoneNumber: string) {
         };
         return userDetails;
     } catch (error) {
-        console.error("Error retrieving user by phone number:", error);
+        logger.error('Error retrieving user by phone number', { phoneNumber, error });
         throw error;
     }
 }

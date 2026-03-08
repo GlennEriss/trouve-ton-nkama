@@ -4,6 +4,9 @@
  */
 
 import { Loader } from '@googlemaps/js-api-loader';
+import { createLogger } from '@/lib/logger';
+
+const logger = createLogger('singleton.google-maps');
 
 interface GoogleMapsInstance {
   map: any;
@@ -79,7 +82,7 @@ class GoogleMapsSingleton {
 
       return this.mapsInstance;
     } catch (error) {
-      console.error('Erreur lors de l\'initialisation de Google Maps:', error);
+      logger.error('Erreur lors de l\'initialisation de Google Maps', { error });
       throw error;
     }
   }

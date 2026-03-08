@@ -6,6 +6,9 @@
 
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { auth } from '@/firebase/auth'
+import { createLogger } from '@/lib/logger'
+
+const logger = createLogger('hooks.use-verify-code')
 
 interface VerifyCodeRequest {
   code: string
@@ -19,7 +22,10 @@ interface VerifyCodeResponse {
   error?: string
 }
 
-// Fonction pour vérifier le code via l'API
+function extractErrorMessage(payload: any, fallback: string): string {
+  return payload?.message ?? payload?.error?.message ?? fallback
+}
+
 export async function verifyCodeAPI(data: VerifyCodeRequest): Promise<VerifyCodeResponse> {
   const user = auth.currentUser
   if (!user) {
@@ -27,7 +33,7 @@ export async function verifyCodeAPI(data: VerifyCodeRequest): Promise<VerifyCode
   }
 
   const token = await user.getIdToken()
-  
+
   const response = await fetch('/api/credits/verify-code', {
     method: 'POST',
     headers: {
@@ -37,13 +43,13 @@ export async function verifyCodeAPI(data: VerifyCodeRequest): Promise<VerifyCode
     body: JSON.stringify(data)
   })
 
-  const responseData = await response.json()
-  
+  const responseData = await response.json().catch(() => null)
+
   if (!response.ok) {
-    throw new Error(responseData.message ?? 'Erreur lors de la vérification du code')
+    throw new Error(extractErrorMessage(responseData, 'Erreur lors de la vérification du code'))
   }
 
-  return responseData
+  return responseData as VerifyCodeResponse
 }
 
 export function useVerifyCode() {
@@ -52,19 +58,16 @@ export function useVerifyCode() {
   return useMutation({
     mutationFn: verifyCodeAPI,
     onSuccess: async (data) => {
-      // Invalider le cache du solde pour forcer un refresh
       await queryClient.invalidateQueries({ queryKey: ['credits-balance'] })
-      
-      // Invalider l'historique des transactions
       await queryClient.invalidateQueries({ queryKey: ['credits-history'] })
-
-      // Forcer un rafraîchissement immédiat des données
       await queryClient.refetchQueries({ queryKey: ['credits-balance'] })
-      
-      console.log('Code vérifié avec succès:', data)
+
+      logger.info('Payment code verified', {
+        credits: data.credits,
+      })
     },
     onError: (error: Error) => {
-      console.error('Erreur lors de la vérification du code:', error.message)
+      logger.error('Payment code verification failed', { error })
     }
   })
-} 
+}

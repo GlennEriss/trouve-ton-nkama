@@ -2,6 +2,9 @@
 
 import React, { useState } from 'react'
 import { Wand2, X, Send } from 'lucide-react'
+import { createLogger } from '@/lib/logger'
+
+const logger = createLogger('components.ai-assistant-modal')
 
 interface AssistantModalProps {
   isOpen: boolean
@@ -33,7 +36,7 @@ export default function AssistantModal({
       onClose()
     } catch (error) {
       // L'erreur est gérée dans le hook
-      console.error('Erreur lors de la génération:', error)
+      logger.error('Erreur lors de la génération', { error })
     }
   }
 

@@ -1,79 +1,82 @@
-// src/app/api/location/search/route.ts
-import { NextRequest, NextResponse } from 'next/server'
-import redis from '@/redis/client'
-import { z } from 'zod'
+import { NextRequest, NextResponse } from 'next/server';
+import redis from '@/redis/client';
+import { z } from 'zod';
+import { AppError } from '@/lib/errors/app-error';
+import { createLogger } from '@/lib/logger';
+import { handleApiError, jsonApiError } from '@/lib/api/error-response';
 
-// Schéma de validation pour les paramètres de recherche
+const logger = createLogger('api.location.search');
+
 const searchParamsSchema = z.object({
   q: z.string().min(2, 'La recherche doit contenir au moins 2 caractères').max(100),
-  limit: z.string().optional().transform(val => val ? parseInt(val) : 8)
-})
+  limit: z.string().optional().transform((val) => (val ? parseInt(val, 10) : 8)),
+});
 
-// Types pour les résultats Photon
 interface PhotonResult {
   geometry: {
-    coordinates: [number, number]
-  }
+    coordinates: [number, number];
+  };
   properties: {
-    name: string
-    city?: string
-    state?: string
-    country?: string
-    countrycode?: string
-    osm_type?: string
-    osm_key?: string
-    osm_value?: string
-  }
+    name: string;
+    city?: string;
+    state?: string;
+    country?: string;
+    countrycode?: string;
+    osm_type?: string;
+    osm_key?: string;
+    osm_value?: string;
+  };
 }
 
 interface PhotonResponse {
-  features: PhotonResult[]
+  features: PhotonResult[];
 }
 
 interface CachedSearchResult {
-  results: PhotonResult[]
-  timestamp: number
-  query: string
+  results: PhotonResult[];
+  timestamp: number;
+  query: string;
 }
 
-// Configuration Redis
 const REDIS_KEYS = {
   SEARCH_CACHE: (query: string) => `photon:search:${query.toLowerCase()}`,
   AUTOCOMPLETE: 'gabon:autocomplete',
   POPULAR_SEARCHES: 'gabon:popular',
-  SEARCH_COUNT: (query: string) => `search:count:${query.toLowerCase()}`
-} as const
+} as const;
 
-const CACHE_TTL = 7 * 24 * 60 * 60 // 7 jours en secondes
-const POPULAR_SEARCHES_LIMIT = 50
+const CACHE_TTL = 7 * 24 * 60 * 60;
+const POPULAR_SEARCHES_LIMIT = 50;
 
-// Fonction pour appeler l'API Photon
-async function fetchFromPhoton(query: string, limit: number = 8): Promise<PhotonResult[]> {
-  const searchQuery = `${query.trim()} Gabon`
-  
+async function fetchFromPhoton(query: string, limit = 8): Promise<PhotonResult[]> {
+  const searchQuery = `${query.trim()} Gabon`;
+
   try {
     const response = await fetch(
       `https://photon.komoot.io/api/?q=${encodeURIComponent(searchQuery)}&lat=0.7&lon=11.5&limit=${limit}`,
       {
         headers: {
-          'User-Agent': 'Location-Search-App/1.0'
-        }
+          'User-Agent': 'Location-Search-App/1.0',
+        },
       }
-    )
-    
+    );
+
     if (!response.ok) {
-      throw new Error(`Photon API error: ${response.status}`)
+      throw new AppError(`Photon API error: ${response.status}`, {
+        code: 'PHOTON_API_ERROR',
+        status: 502,
+        details: { status: response.status },
+      });
     }
-    
-    const data: PhotonResponse = await response.json()
-    
-    // Filtrer pour le Gabon uniquement et nettoyer les données
+
+    const data: PhotonResponse = await response.json();
+
     return data.features
-      .filter(feature => 
-        feature.properties.countrycode === 'ga' ||
-        feature.properties.country?.toLowerCase().includes('gabon')
+      .filter(
+        (feature) =>
+          feature.properties.countrycode === 'ga' ||
+          feature.properties.country?.toLowerCase().includes('gabon')
       )
-      .map(feature => ({
+      .map((feature) => ({
         geometry: feature.geometry,
         properties: {
           name: feature.properties.name?.trim() || '',
@@ -83,179 +86,156 @@ async function fetchFromPhoton(query: string, limit: number = 8): Promise<Photon
           countrycode: feature.properties.countrycode?.toLowerCase(),
           osm_type: feature.properties.osm_type,
           osm_key: feature.properties.osm_key,
-          osm_value: feature.properties.osm_value
-        }
+          osm_value: feature.properties.osm_value,
+        },
       }))
-      .filter(feature => feature.properties.name) // Éliminer les résultats sans nom
-    
+      .filter((feature) => feature.properties.name);
   } catch (error) {
-    console.error('Erreur lors de l\'appel à Photon:', error)
-    throw new Error('Service de géolocalisation temporairement indisponible')
+    logger.error('Photon fetch failed', { query, limit, error });
+    if (error instanceof AppError) {
+      throw error;
+    }
+    throw new AppError('Service de géolocalisation temporairement indisponible', {
+      code: 'PHOTON_TEMPORARY_UNAVAILABLE',
+      status: 503,
+    });
   }
 }
 
-// Fonction pour mettre à jour les suggestions d'auto-complétion
 async function updateAutocomplete(query: string, results: PhotonResult[]) {
   try {
-    // Ajouter la recherche aux suggestions d'auto-complétion
     await redis.zadd(REDIS_KEYS.AUTOCOMPLETE, {
       score: Date.now(),
-      member: query.toLowerCase()
-    })
-    
-    // Limiter le nombre de suggestions stockées (garder les 1000 plus récentes)
-    await redis.zremrangebyrank(REDIS_KEYS.AUTOCOMPLETE, 0, -1001)
-    
-    // Ajouter les noms de lieux trouvés pour enrichir l'auto-complétion
+      member: query.toLowerCase(),
+    });
+
+    await redis.zremrangebyrank(REDIS_KEYS.AUTOCOMPLETE, 0, -1001);
+
     const locationNames = results
-      .map(r => r.properties.name?.toLowerCase())
-      .filter(Boolean)
-    
+      .map((r) => r.properties.name?.toLowerCase())
+      .filter(Boolean);
+
     if (locationNames.length > 0) {
-      const members = locationNames.map(name => ({
+      const members = locationNames.map((name) => ({
         score: Date.now(),
-        member: name
-      }))
-      
+        member: name,
+      }));
+
       for (const member of members) {
-        await redis.zadd(REDIS_KEYS.AUTOCOMPLETE, member)
+        await redis.zadd(REDIS_KEYS.AUTOCOMPLETE, member as { score: number; member: string });
       }
     }
-    
   } catch (error) {
-    console.warn('Erreur lors de la mise à jour de l\'auto-complétion:', error)
-    // Ne pas faire échouer la recherche pour autant
+    logger.warn('Autocomplete update failed', { query, error });
   }
 }
 
-// Fonction pour suivre la popularité des recherches
 async function trackSearchPopularity(query: string) {
   try {
-    await redis.zincrby(REDIS_KEYS.POPULAR_SEARCHES, 1, query.toLowerCase())
-    
-    // Garder seulement les top recherches
-    await redis.zremrangebyrank(REDIS_KEYS.POPULAR_SEARCHES, 0, -(POPULAR_SEARCHES_LIMIT + 1))
-    
+    await redis.zincrby(REDIS_KEYS.POPULAR_SEARCHES, 1, query.toLowerCase());
+    await redis.zremrangebyrank(REDIS_KEYS.POPULAR_SEARCHES, 0, -(POPULAR_SEARCHES_LIMIT + 1));
   } catch (error) {
-    console.warn('Erreur lors du tracking de popularité:', error)
+    logger.warn('Search popularity tracking failed', { query, error });
   }
 }
 
 export async function GET(request: NextRequest) {
   try {
-    // Validation des paramètres
-    const { searchParams } = new URL(request.url)
+    const { searchParams } = new URL(request.url);
     const validation = searchParamsSchema.safeParse({
       q: searchParams.get('q'),
-      limit: searchParams.get('limit')
-    })
-    
+      limit: searchParams.get('limit'),
+    });
+
     if (!validation.success) {
-      return NextResponse.json(
-        { error: 'Paramètres invalides', details: validation.error.issues },
-        { status: 400 }
-      )
+      return jsonApiError(400, 'VALIDATION_ERROR', 'Paramètres invalides', {
+        issues: validation.error.issues,
+      });
     }
-    
-    const { q: query, limit } = validation.data
-    const normalizedQuery = query.toLowerCase().trim()
-    const cacheKey = REDIS_KEYS.SEARCH_CACHE(normalizedQuery)
-    
-    // 1. Vérifier le cache Redis
+
+    const { q: query, limit } = validation.data;
+    const normalizedQuery = query.toLowerCase().trim();
+    const cacheKey = REDIS_KEYS.SEARCH_CACHE(normalizedQuery);
+
     try {
-      const cachedResult = await redis.get(cacheKey)
-      
+      const cachedResult = await redis.get(cacheKey);
+
       if (cachedResult) {
-        const parsed: CachedSearchResult = JSON.parse(cachedResult as string)
-        
-        // Incrémenter le compteur de popularité
-        await trackSearchPopularity(normalizedQuery)
-        
+        const parsed: CachedSearchResult = JSON.parse(cachedResult as string);
+        await trackSearchPopularity(normalizedQuery);
+
         return NextResponse.json({
           results: parsed.results,
           cached: true,
           timestamp: parsed.timestamp,
-          query: parsed.query
-        })
+          query: parsed.query,
+        });
       }
     } catch (redisError) {
-      console.warn('Erreur Redis lors de la lecture du cache:', redisError)
-      // Continuer sans cache
+      logger.warn('Redis read cache failed for location search', {
+        cacheKey,
+        error: redisError,
+      });
     }
-    
-    // 2. Cache miss - Appeler Photon
-    const results = await fetchFromPhoton(query, limit)
-    
-    // 3. Mettre en cache le résultat
+
+    const results = await fetchFromPhoton(query, limit);
+
     const cacheData: CachedSearchResult = {
       results,
       timestamp: Date.now(),
-      query: normalizedQuery
-    }
-    
+      query: normalizedQuery,
+    };
+
     try {
-      // Stocker dans Redis avec TTL
-      await redis.setex(cacheKey, CACHE_TTL, JSON.stringify(cacheData))
-      
-      // Mettre à jour l'auto-complétion et la popularité en parallèle
-      await Promise.all([
-        updateAutocomplete(normalizedQuery, results),
-        trackSearchPopularity(normalizedQuery)
-      ])
-      
+      await redis.setex(cacheKey, CACHE_TTL, JSON.stringify(cacheData));
+
+      await Promise.all([updateAutocomplete(normalizedQuery, results), trackSearchPopularity(normalizedQuery)]);
     } catch (redisError) {
-      console.warn('Erreur Redis lors de la mise en cache:', redisError)
-      // Retourner les résultats même si le cache échoue
+      logger.warn('Redis write cache failed for location search', {
+        cacheKey,
+        error: redisError,
+      });
     }
-    
+
     return NextResponse.json({
       results,
       cached: false,
       timestamp: Date.now(),
-      query: normalizedQuery
-    })
-    
+      query: normalizedQuery,
+    });
   } catch (error) {
-    console.error('Erreur dans l\'API de recherche:', error)
-    
-    return NextResponse.json(
-      { 
-        error: error instanceof Error ? error.message : 'Erreur interne du serveur',
-        results: [],
-        cached: false
-      },
-      { status: 500 }
-    )
+    return handleApiError(error, {
+      logger,
+      route: '/api/location/search',
+      fallbackMessage: "Erreur dans l'API de recherche",
+    });
   }
 }
 
-// Optionnel : Support de la méthode POST pour des recherches plus complexes
 export async function POST(request: NextRequest) {
   try {
-    const body = await request.json()
-    const validation = searchParamsSchema.safeParse(body)
-    
+    const body = await request.json();
+    const validation = searchParamsSchema.safeParse(body);
+
     if (!validation.success) {
-      return NextResponse.json(
-        { error: 'Données invalides', details: validation.error.issues },
-        { status: 400 }
-      )
+      return jsonApiError(400, 'VALIDATION_ERROR', 'Données invalides', {
+        issues: validation.error.issues,
+      });
     }
-    
-    // Rediriger vers la logique GET
+
     const searchParams = new URLSearchParams({
       q: validation.data.q,
-      limit: validation.data.limit.toString()
-    })
-    const url = new URL(`${request.url}?${searchParams}`)
-    const newRequest = new NextRequest(url, { method: 'GET' })
-    
-    return GET(newRequest)
-    
+      limit: String(validation.data.limit),
+    });
+    const url = new URL(`${request.url}?${searchParams}`);
+    const newRequest = new NextRequest(url, { method: 'GET' });
+
+    return GET(newRequest);
   } catch (error) {
-    return NextResponse.json(
-      { error: 'Erreur lors du parsing de la requête' },
-      { status: 400 }
-    )
+    return handleApiError(error, {
+      logger,
+      route: '/api/location/search',
+      fallbackMessage: 'Erreur lors du parsing de la requête',
+    });
   }
 }

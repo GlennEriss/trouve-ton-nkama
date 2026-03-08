@@ -7,6 +7,9 @@ import { cn } from "@/lib/utils";
 import { useToast } from "@/hooks/use-toast";
 import Link from "next/link";
 import { routes } from '@/constantes/routes';
+import { createLogger } from '@/lib/logger';
+
+const logger = createLogger('components.signup.register-success');
 
 type RegisterSuccessProps = {
   uid: string;
@@ -42,10 +45,10 @@ export const RegisterSuccess: React.FC<RegisterSuccessProps> = ({ uid }) => {
           });
         }
       } else {
-        console.error("Error checking email status:", data.error);
+        logger.warn('Error checking email status', { error: data?.error });
       }
     } catch (error) {
-      console.error("Failed to check email verification status:", error);
+      logger.error('Failed to check email verification status', { error });
     } finally {
       setIsCheckingStatus(false);
     }

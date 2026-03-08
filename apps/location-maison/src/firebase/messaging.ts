@@ -1,5 +1,8 @@
 import { getMessaging, getToken, isSupported } from "firebase/messaging";
 import { app } from "./app";
+import { createLogger } from '@/lib/logger';
+
+const logger = createLogger('firebase.messaging');
 
 export const messaging = async () => {
     const supported = await isSupported();
@@ -17,7 +20,7 @@ export const fetchToken = async () => {
         }
         return null;
     } catch (err) {
-        console.error("An error occurred while fetching the token:", err);
+        logger.error('An error occurred while fetching the token', { err });
         return null;
     }
 };

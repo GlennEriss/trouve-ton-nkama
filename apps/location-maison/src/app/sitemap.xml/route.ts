@@ -1,4 +1,7 @@
 import { routes } from '@/constantes/routes'
+import { createLogger } from '@/lib/logger'
+
+const logger = createLogger('app.sitemap')
 
 export async function GET() {
   const rawBase = process.env.NEXT_PUBLIC_HOST ?? ''
@@ -6,7 +9,7 @@ export async function GET() {
 
   // Vérifier que l'URL de base est valide
   if (!baseUrl || !baseUrl.startsWith('http')) {
-    console.error('NEXT_PUBLIC_HOST invalide:', process.env.NEXT_PUBLIC_HOST)
+    logger.error('NEXT_PUBLIC_HOST invalide', { host: process.env.NEXT_PUBLIC_HOST })
     return new Response('Sitemap non disponible', { status: 500 })
   }
 

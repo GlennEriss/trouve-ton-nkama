@@ -4,6 +4,9 @@ import { createProvince } from '@/db/province.db'
 import { createCity } from '@/db/city.db'
 import { createStreet } from '@/db/street.db'
 import { Property, Image } from '@/models/annonce'
+import { createLogger } from '@/lib/logger'
+
+const logger = createLogger('hooks.use-on-submit-form-property')
 
 /**
  * Hook pour gérer la logique de soumission du formulaire de propriété
@@ -117,7 +120,7 @@ async function createLocationEntities(
       latitude: coordinates.provinceLat ?? undefined
     })
   } catch (error) {
-    console.error("Failed to create province:", error)
+    logger.warn('Failed to create province', { error, province: property.province })
   }
   
   // Créer la ville
@@ -133,7 +136,7 @@ async function createLocationEntities(
       latitude: coordinates.cityLat ?? undefined
     })
   } catch (error) {
-    console.error("Failed to create city:", error)
+    logger.warn('Failed to create city', { error, city: property.city })
   }
   
   // Créer la rue
@@ -150,6 +153,6 @@ async function createLocationEntities(
       latitude: coordinates.streetLat ?? undefined
     })
   } catch (error) {
-    console.error("Failed to create street:", error)
+    logger.warn('Failed to create street', { error, street: property.street })
   }
 }

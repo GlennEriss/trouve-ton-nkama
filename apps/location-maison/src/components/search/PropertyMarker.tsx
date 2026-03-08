@@ -1,6 +1,9 @@
 'use client';
 
 import { useRef, useEffect } from 'react';
+import { createLogger } from '@/lib/logger';
+
+const logger = createLogger('components.property-marker');
 
 type Property = {
   id: string;
@@ -123,7 +126,7 @@ function PropertyMarker({
           markerRef.current = null;
         }
       } catch (error) {
-        console.warn('Error cleaning up marker:', error);
+        logger.warn('Error cleaning up marker', { error, propertyId: property.id });
       }
     };
   }, [property, map, AdvancedMarkerElement, onPropertyClick]);
@@ -154,4 +157,3 @@ if (typeof document !== 'undefined' && !document.getElementById('lg-marker-style
   `;
   document.head.appendChild(style);
 }
-

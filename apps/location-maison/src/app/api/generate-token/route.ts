@@ -1,45 +1,49 @@
-// /app/api/auth/generate-token/route.ts
-import { NextResponse, NextRequest } from "next/server";
+import { NextRequest, NextResponse } from 'next/server';
+import { createLogger } from '@/lib/logger';
+import { handleApiError, jsonApiError } from '@/lib/api/error-response';
+
+const logger = createLogger('api.generate-token');
 
 export async function POST(req: NextRequest) {
-    try {
-        const { adminAuth } = await import('@/firebase/admin');
+  try {
+    const { adminAuth } = await import('@/firebase/admin');
 
-        // Check if request has a body
-        const contentLength = req.headers.get('content-length');
-        if (!contentLength || contentLength === '0') {
-            return NextResponse.json({ error: "Corps de la requête requis" }, { status: 400 });
-        }
-
-        // Check content type
-        const contentType = req.headers.get('content-type');
-        if (!contentType || !contentType.includes('application/json')) {
-            return NextResponse.json({ error: "Content-Type doit être application/json" }, { status: 400 });
-        }
-
-        let body;
-        try {
-            body = await req.json();
-        } catch (jsonError) {
-            console.error("Erreur de parsing JSON :", jsonError);
-            return NextResponse.json({ error: "Format JSON invalide" }, { status: 400 });
-        }
-
-        const { uid } = body;
-
-        if (!uid) {
-            return NextResponse.json({ error: "UID requis" }, { status: 400 });
-        }
-
-        if (typeof uid !== 'string' || uid.trim().length === 0) {
-            return NextResponse.json({ error: "UID doit être une chaîne non vide" }, { status: 400 });
-        }
-
-        // Créer un custom token pour l'utilisateur
-        const customToken = await adminAuth.createCustomToken(uid);
-        return NextResponse.json({ token: customToken });
-    } catch (error) {
-        console.error("Erreur lors de la génération du token :", error);
-        return NextResponse.json({ error: "Impossible de générer le token" }, { status: 500 });
+    const contentLength = req.headers.get('content-length');
+    if (!contentLength || contentLength === '0') {
+      return jsonApiError(400, 'VALIDATION_ERROR', 'Corps de la requête requis', {
+        field: 'body',
+      });
     }
+
+    const contentType = req.headers.get('content-type');
+    if (!contentType || !contentType.includes('application/json')) {
+      return jsonApiError(400, 'VALIDATION_ERROR', 'Content-Type doit être application/json', {
+        field: 'content-type',
+      });
+    }
+
+    let body: any;
+    try {
+      body = await req.json();
+    } catch (error) {
+      logger.warn('JSON body parsing failed', { error });
+      return jsonApiError(400, 'INVALID_JSON', 'Format JSON invalide');
+    }
+
+    const uid = typeof body?.uid === 'string' ? body.uid.trim() : '';
+    if (!uid) {
+      return jsonApiError(400, 'VALIDATION_ERROR', 'UID requis', {
+        field: 'uid',
+      });
+    }
+
+    const customToken = await adminAuth.createCustomToken(uid);
+    return NextResponse.json({ token: customToken });
+  } catch (error) {
+    return handleApiError(error, {
+      logger,
+      route: '/api/generate-token',
+      fallbackMessage: 'Impossible de générer le token.',
+    });
+  }
 }

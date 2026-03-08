@@ -1,5 +1,8 @@
 import { googleMapsSingleton } from '@/singleton';
 import { useState, useRef } from 'react';
+import { createLogger } from '@/lib/logger';
+
+const logger = createLogger('hooks.google-map.instance');
 
 export const useGoogleMapInstance = (lat: number, lng: number) => {
     const [mapReady, setMapReady] = useState(false);
@@ -23,7 +26,7 @@ export const useGoogleMapInstance = (lat: number, lng: number) => {
         mapInstanceRef.current = map;
         setMapReady(true);
       } catch (err) {
-        console.error('Error during map initialization:', err);
+        logger.error('Error during map initialization', { err, lat, lng });
         setMapReady(false);
       }
     };

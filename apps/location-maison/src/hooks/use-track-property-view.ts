@@ -2,6 +2,9 @@
 
 import { useEffect, useRef } from 'react';
 import { useCurrentUser } from './use-current-user';
+import { createLogger } from '@/lib/logger';
+
+const logger = createLogger('hooks.use-track-property-view');
 
 interface ViewMetadata {
   userId?: string;
@@ -118,7 +121,9 @@ export function useTrackPropertyView(propertyId: string | undefined) {
           },
           body: data,
           keepalive: true, // Permet d'envoyer même si la page se ferme
-        }).catch(console.error);
+        }).catch((error) => {
+          logger.error('Failed to track property view', { propertyId, error });
+        });
       }
     };
 
@@ -150,4 +155,3 @@ export function useTrackPropertyView(propertyId: string | undefined) {
     };
   }, [propertyId, user?.uid]);
 }
-

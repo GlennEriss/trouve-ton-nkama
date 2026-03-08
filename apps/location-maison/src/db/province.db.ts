@@ -1,6 +1,9 @@
 import { Province } from "@/models/province";
 import firebaseCollectionNames from "@/constantes/firebase-collection-name";
 import { createModel, createModelWithCustomId, LocationIdGenerator } from "./generic.db";
+import { createLogger } from '@/lib/logger';
+
+const logger = createLogger('db.province');
 
 const getFirestore = () => import("@/firebase/firestore");
 
@@ -14,7 +17,7 @@ export async function findProvinceByName(name: string): Promise<{ id: string, da
         const doc = querySnapshot.docs[0];
         return { id: doc.id, data: doc.data() as Province };
     } catch (error) {
-        console.error("Error finding province by name:", error);
+        logger.error('Error finding province by name', { error });
         return null;
     }
 }
@@ -36,7 +39,7 @@ export async function createProvinceIfNotExists(province: Omit<Province, 'id' | 
         const result = await createModelWithCustomId<Omit<Province, 'id' | 'createdAt' | 'updatedAt'>>(province as any, firebaseCollectionNames.provinces, customId);
         return result;
     } catch (error) {
-        console.error("Error creating province:", error);
+        logger.error('Error creating province', { error });
         return null;
     }
 }
@@ -44,5 +47,4 @@ export async function createProvinceIfNotExists(province: Omit<Province, 'id' | 
 export async function createProvince(province: Omit<Province, 'id' | 'createdAt' | 'updatedAt' | 'state'>): Promise<string | null> {
     return await createProvinceIfNotExists(province);
 }
-
 

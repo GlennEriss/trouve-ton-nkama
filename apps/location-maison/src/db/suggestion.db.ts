@@ -1,4 +1,7 @@
 import { db, doc, getDoc, setDoc } from "@/firebase/firestore";
+import { createLogger } from '@/lib/logger';
+
+const logger = createLogger('db.suggestion');
 
 type Suggestion = {
     province: string;
@@ -28,7 +31,7 @@ export const updateOrCreateSuggestion = async ({ province, city, street }: Sugge
             [province]: updatedProvince,
         });
     } catch (error) {
-        console.error("Erreur lors de la mise à jour ou création de suggestion :", error);
+        logger.error('Erreur lors de la mise à jour ou création de suggestion', { error, province, city, street });
     }
 };
 

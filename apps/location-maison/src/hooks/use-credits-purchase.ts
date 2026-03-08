@@ -7,6 +7,9 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { auth } from '@/firebase/auth'
 import { useCurrentUser } from '@/hooks/use-current-user'
+import { createLogger } from '@/lib/logger'
+
+const logger = createLogger('hooks.use-credits-purchase')
 
 interface PurchaseRequest {
   packId: string
@@ -21,6 +24,10 @@ interface PurchaseResponse {
   error?: string
 }
 
+function extractErrorMessage(payload: any, fallback: string): string {
+  return payload?.message ?? payload?.error?.message ?? fallback
+}
+
 async function purchaseCredits(data: PurchaseRequest): Promise<PurchaseResponse> {
   const user = auth.currentUser
   if (!user) {
@@ -28,7 +35,7 @@ async function purchaseCredits(data: PurchaseRequest): Promise<PurchaseResponse>
   }
 
   const token = await user.getIdToken()
-  
+
   const response = await fetch('/api/credits/purchase', {
     method: 'POST',
     headers: {
@@ -38,12 +45,13 @@ async function purchaseCredits(data: PurchaseRequest): Promise<PurchaseResponse>
     body: JSON.stringify(data)
   })
 
+  const payload = await response.json().catch(() => null)
+
   if (!response.ok) {
-    const errorData = await response.json()
-    throw new Error(errorData.message ?? 'Erreur lors de l\'initiation du paiement')
+    throw new Error(extractErrorMessage(payload, 'Erreur lors de l\'initiation du paiement'))
   }
 
-  return response.json()
+  return payload as PurchaseResponse
 }
 
 export function useCreditsPurchase() {
@@ -53,18 +61,17 @@ export function useCreditsPurchase() {
   return useMutation({
     mutationFn: purchaseCredits,
     onSuccess: (data) => {
-      // Invalider le cache du solde pour forcer un refresh
       queryClient.invalidateQueries({ queryKey: ['credits-balance'] })
-      
-      // Invalider l'historique des transactions
       queryClient.invalidateQueries({ queryKey: ['credits-history'] })
-      
-      console.log('Achat initié avec succès:', data)
+
+      logger.info('Credit purchase initiated', {
+        transactionId: data.transactionId,
+        hasCheckoutUrl: Boolean(data.checkoutUrl),
+      })
     },
     onError: (error: Error) => {
-      console.error('Erreur lors de l\'achat:', error.message)
+      logger.error('Credit purchase failed', { error })
     },
-    // Désactiver la mutation si l'utilisateur n'est pas connecté
     mutationKey: ['purchase-credits', user?.uid]
   })
-} 
+}

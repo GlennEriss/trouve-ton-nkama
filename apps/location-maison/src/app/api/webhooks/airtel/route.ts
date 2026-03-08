@@ -2,38 +2,31 @@
  * Webhook Airtel Money - Réception des notifications de paiement
  */
 
-import { NextRequest, NextResponse } from 'next/server'
+import { NextRequest, NextResponse } from 'next/server';
+import { createLogger } from '@/lib/logger';
+
+const logger = createLogger('api.webhooks.airtel');
 
 interface AirtelWebhookPayload {
   transaction: {
-    airtel_money_id: string
-    id: string  // Notre transaction ID
-    message: string
-    status: string  // SUCCESS, FAILED, PENDING, etc.
-    amount: number
-    currency: string
-  }
-  reference: string
-  timestamp: string
-  signature?: string
+    airtel_money_id: string;
+    id: string;
+    message: string;
+    status: string;
+    amount: number;
+    currency: string;
+  };
+  reference: string;
+  timestamp: string;
+  signature?: string;
 }
 
-/**
- * Vérifie la signature du webhook (à implémenter en Phase 2)
- */
 function verifyWebhookSignature(payload: string, signature: string): boolean {
-  // const expectedSignature = crypto.createHmac('sha256', process.env.AIRTEL_WEBHOOK_SECRET!)
-  //   .update(payload)
-  //   .digest('hex')
-  // return signature === expectedSignature
-  
-  // Pour l'instant, on accepte tout (développement uniquement)
-  return true
+  void payload;
+  void signature;
+  return true;
 }
 
-/**
- * Met à jour le solde utilisateur après paiement réussi
- */
 async function addCreditsToUser(
   db: any,
   FieldValue: any,
@@ -41,39 +34,28 @@ async function addCreditsToUser(
   credits: number,
   transactionId: string
 ) {
-  // Trouver le document utilisateur par UID
-  const usersSnapshot = await db
-    .collection('users')
-    .where('uid', '==', userId)
-    .limit(1)
-    .get()
+  const usersSnapshot = await db.collection('users').where('uid', '==', userId).limit(1).get();
 
   if (usersSnapshot.empty) {
-    throw new Error(`Utilisateur introuvable: ${userId}`)
+    throw new Error(`Utilisateur introuvable: ${userId}`);
   }
 
-  const userDoc = usersSnapshot.docs[0]
-  const currentCredits = userDoc.data()?.credits ?? 0
-  const newCredits = currentCredits + credits
+  const userDoc = usersSnapshot.docs[0];
+  const currentCredits = userDoc.data()?.credits ?? 0;
+  const newCredits = currentCredits + credits;
 
-  // Transaction atomique
   await db.runTransaction(async (transaction: any) => {
-    // Mettre à jour le solde utilisateur
     transaction.update(userDoc.ref, {
       credits: newCredits,
-      updatedAt: FieldValue.serverTimestamp()
-    })
+      updatedAt: FieldValue.serverTimestamp(),
+    });
 
-    // Marquer la transaction comme réussie
-    transaction.update(
-      db.collection('credit_transactions').doc(transactionId),
-      {
-        status: 'success',
-        completedAt: FieldValue.serverTimestamp(),
-        updatedAt: FieldValue.serverTimestamp()
-      }
-    )
-  })
+    transaction.update(db.collection('credit_transactions').doc(transactionId), {
+      status: 'success',
+      completedAt: FieldValue.serverTimestamp(),
+      updatedAt: FieldValue.serverTimestamp(),
+    });
+  });
 }
 
 export async function POST(request: NextRequest): Promise<NextResponse> {
@@ -84,132 +66,120 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     ]);
 
     if (!adminApp) {
-      return NextResponse.json(
-        { error: 'Firebase admin is not initialized' },
-        { status: 500 }
-      );
+      return NextResponse.json({ error: 'Firebase admin is not initialized' }, { status: 500 });
     }
 
     const db = getFirestore(adminApp as any);
 
-    console.log('🔔 Webhook Airtel Money reçu')
-    
-    const body = await request.text()
-    const payload: AirtelWebhookPayload = JSON.parse(body)
-    
-    console.log('📄 Payload webhook:', payload)
+    logger.info('Airtel webhook received');
 
-    // Vérification de la signature (développement: désactivé)
-    const signature = request.headers.get('x-airtel-signature') ?? ''
+    const body = await request.text();
+    const payload: AirtelWebhookPayload = JSON.parse(body);
+
+    logger.info('Airtel webhook payload parsed', {
+      transactionId: payload?.transaction?.id,
+      status: payload?.transaction?.status,
+      amount: payload?.transaction?.amount,
+      reference: payload?.reference,
+    });
+
+    const signature = request.headers.get('x-airtel-signature') ?? '';
     if (!verifyWebhookSignature(body, signature)) {
-      console.error('❌ Signature webhook invalide')
-      return NextResponse.json(
-        { error: 'Signature invalide' },
-        { status: 401 }
-      )
+      logger.warn('Invalid Airtel webhook signature');
+      return NextResponse.json({ error: 'Signature invalide' }, { status: 401 });
     }
 
-    const { transaction } = payload
-    const transactionId = transaction.id
+    const { transaction } = payload;
+    const transactionId = transaction.id;
 
-    // Récupérer la transaction en base
-    const transactionDoc = await db
-      .collection('credit_transactions')
-      .doc(transactionId)
-      .get()
+    const transactionDoc = await db.collection('credit_transactions').doc(transactionId).get();
 
     if (!transactionDoc.exists) {
-      console.error('❌ Transaction introuvable:', transactionId)
-      return NextResponse.json(
-        { error: 'Transaction introuvable' },
-        { status: 404 }
-      )
+      logger.warn('Credit transaction not found for webhook', { transactionId });
+      return NextResponse.json({ error: 'Transaction introuvable' }, { status: 404 });
     }
 
-    const transactionData = transactionDoc.data()!
-    const userId = transactionData.userId
-    const credits = transactionData.credits
+    const transactionData = transactionDoc.data()!;
+    const userId = transactionData.userId;
+    const credits = transactionData.credits;
 
-    console.log(`🔄 Traitement transaction ${transactionId} - Status: ${transaction.status}`)
+    logger.info('Processing Airtel transaction status', {
+      transactionId,
+      status: transaction.status,
+      userId,
+      credits,
+    });
 
-    // Traitement selon le statut
     switch (transaction.status.toUpperCase()) {
       case 'SUCCESS':
-        console.log(`✅ Paiement réussi - Ajout de ${credits} crédits à l'utilisateur ${userId}`)
-        
-        // Ajouter les crédits au solde utilisateur
-        await addCreditsToUser(db, FieldValue, userId, credits, transactionId)
-        
-        // Mettre à jour la transaction avec les infos Airtel
+        await addCreditsToUser(db, FieldValue, userId, credits, transactionId);
+
         await db.collection('credit_transactions').doc(transactionId).update({
           status: 'success',
           airtelMoneyId: transaction.airtel_money_id,
           completedAt: FieldValue.serverTimestamp(),
-          updatedAt: FieldValue.serverTimestamp()
-        })
-        
-        console.log(`🎉 Crédits ajoutés avec succès !`)
-        break
+          updatedAt: FieldValue.serverTimestamp(),
+        });
+
+        logger.info('Airtel payment success handled', { transactionId, userId, credits });
+        break;
 
       case 'FAILED':
-        console.log(`❌ Paiement échoué pour la transaction ${transactionId}`)
-        
         await db.collection('credit_transactions').doc(transactionId).update({
           status: 'failed',
           airtelMoneyId: transaction.airtel_money_id,
           failureReason: transaction.message,
-          updatedAt: FieldValue.serverTimestamp()
-        })
-        break
+          updatedAt: FieldValue.serverTimestamp(),
+        });
+        logger.warn('Airtel payment failed', { transactionId, reason: transaction.message });
+        break;
 
       case 'CANCELLED':
-        console.log(`🚫 Paiement annulé pour la transaction ${transactionId}`)
-        
         await db.collection('credit_transactions').doc(transactionId).update({
           status: 'cancelled',
           airtelMoneyId: transaction.airtel_money_id,
-          failureReason: 'Paiement annulé par l\'utilisateur',
-          updatedAt: FieldValue.serverTimestamp()
-        })
-        break
+          failureReason: "Paiement annulé par l'utilisateur",
+          updatedAt: FieldValue.serverTimestamp(),
+        });
+        logger.warn('Airtel payment cancelled', { transactionId });
+        break;
 
       case 'PENDING':
-        console.log(`⏳ Paiement en attente pour la transaction ${transactionId}`)
-        
         await db.collection('credit_transactions').doc(transactionId).update({
           airtelMoneyId: transaction.airtel_money_id,
-          updatedAt: FieldValue.serverTimestamp()
-        })
-        break
+          updatedAt: FieldValue.serverTimestamp(),
+        });
+        logger.info('Airtel payment pending', { transactionId });
+        break;
 
       default:
-        console.log(`❓ Statut inconnu: ${transaction.status}`)
-        break
+        logger.warn('Unknown Airtel payment status', {
+          transactionId,
+          status: transaction.status,
+        });
+        break;
     }
 
-    // Réponse à Airtel Money (important !)
-    return NextResponse.json({ 
+    return NextResponse.json({
       status: 'success',
-      message: 'Webhook traité avec succès' 
-    })
-
+      message: 'Webhook traité avec succès',
+    });
   } catch (error: any) {
-    console.error('💥 Erreur webhook Airtel Money:', error)
-    
+    logger.error('Airtel webhook processing failed', { error });
+
     return NextResponse.json(
-      { 
+      {
         error: 'Erreur interne du serveur',
-        message: process.env.NODE_ENV === 'development' ? error.message : undefined
+        message: process.env.NODE_ENV === 'development' ? error.message : undefined,
       },
       { status: 500 }
-    )
+    );
   }
 }
 
-// Méthode GET pour test
 export async function GET(): Promise<NextResponse> {
   return NextResponse.json({
     message: 'Webhook Airtel Money opérationnel',
-    timestamp: new Date().toISOString()
-  })
-} 
+    timestamp: new Date().toISOString(),
+  });
+}

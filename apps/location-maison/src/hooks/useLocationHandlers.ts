@@ -3,6 +3,9 @@ import { useToast } from "@/hooks/use-toast"
 import { PhotonResult } from "@/models/PhotonResult"
 import { useStep3FormPropertyMediator } from "@/hooks/useStep3FormPropertyMediator"
 import { reversePhoton } from "@/lib/photonUtils"
+import { createLogger } from "@/lib/logger"
+
+const logger = createLogger('hooks.use-location-handlers')
 
 export function useLocationHandlers() {
   const mediator = useStep3FormPropertyMediator()
@@ -127,7 +130,7 @@ export function useLocationHandlers() {
           })
         }
       } catch (reverseError) {
-        console.error('Erreur lors de la récupération des informations de localisation:', reverseError)
+        logger.error('Failed to reverse geocode GPS position', { reverseError, longitude, latitude })
         toast({
           title: "Erreur de localisation",
           description: "Impossible de récupérer les informations de localisation. Veuillez utiliser la recherche manuelle.",
@@ -135,7 +138,7 @@ export function useLocationHandlers() {
         })
       }
     } catch (error: any) {
-      console.error('Erreur GPS:', error)
+      logger.error('GPS retrieval failed', { error })
       
       let title = "Erreur GPS"
       let description = "Impossible d'obtenir votre position GPS. Veuillez utiliser la recherche manuelle."

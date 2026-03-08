@@ -6,6 +6,9 @@ import EmailVerification from '@/emails/EmailVerification';
 import { emailService, EmailService } from '@/services/email.service';
 import { EmailService as EmailTemplateService } from '@/emails/index';
 import { supportContact } from "@/constantes";
+import { createLogger } from '@/lib/logger';
+
+const logger = createLogger('api.test-email');
 
 export async function POST(request: NextRequest) {
   try {
@@ -141,7 +144,7 @@ export async function POST(request: NextRequest) {
     });
 
   } catch (error: any) {
-    console.error('Erreur lors de l\'envoi de l\'email de test:', error);
+    logger.error('Erreur lors de l\'envoi de l\'email de test', { error });
     
     // Gestion des erreurs d'email service
     if (error.message && error.message.includes('Gmail API')) {

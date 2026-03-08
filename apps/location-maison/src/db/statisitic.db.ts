@@ -3,6 +3,9 @@
  */
 
 import { collectionFirebaseNames } from "@/constantes";
+import { createLogger } from '@/lib/logger';
+
+const logger = createLogger('db.statistics');
 
 const getFirestore = () => import("@/firebase/firestore");
 
@@ -39,7 +42,7 @@ export async function countDocumentsWithFilters(
 
         return snapshot.data().count;
     } catch (error) {
-        console.error("Error counting documents:", error);
+        logger.error('Error counting documents', { collectionName, filters, error });
         throw new Error("Failed to count documents.");
     }
 }

@@ -1,46 +1,39 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { createLogger } from '@/lib/logger';
+import { handleApiError, jsonApiError } from '@/lib/api/error-response';
+
+const logger = createLogger('api.verify-email-status');
 
 export async function POST(request: NextRequest) {
   try {
     const { adminAuth } = await import('@/firebase/admin');
-
-    const { uid } = await request.json();
+    const payload = await request.json().catch(() => null);
+    const uid = typeof payload?.uid === 'string' ? payload.uid.trim() : '';
 
     if (!uid) {
-      return NextResponse.json(
-        { error: 'UID utilisateur requis' },
-        { status: 400 }
-      );
-    }
-
-    try {
-      // Récupérer l'utilisateur par son UID
-      const user = await adminAuth.getUser(uid);
-
-      return NextResponse.json({
-        success: true,
-        emailVerified: user.emailVerified,
+      return jsonApiError(400, 'VALIDATION_ERROR', 'UID utilisateur requis', {
+        field: 'uid',
       });
-    } catch (error: any) {
-      console.error('Erreur lors de la vérification du statut de l\'email:', error);
-      
-      if (error.code === 'auth/user-not-found') {
-        return NextResponse.json(
-          { error: 'Utilisateur non trouvé' },
-          { status: 404 }
-        );
-      }
-      
-      return NextResponse.json(
-        { error: 'Erreur lors de la vérification du statut de l\'email' },
-        { status: 500 }
-      );
     }
+
+    const user = await adminAuth.getUser(uid);
+
+    return NextResponse.json({
+      success: true,
+      emailVerified: user.emailVerified,
+    });
   } catch (error) {
-    console.error('Erreur générale:', error);
-    return NextResponse.json(
-      { error: 'Erreur interne du serveur' },
-      { status: 500 }
-    );
+    return handleApiError(error, {
+      logger,
+      route: '/api/verify-email',
+      fallbackMessage: "Erreur lors de la vérification du statut de l'email.",
+      knownCodes: {
+        'auth/user-not-found': {
+          status: 404,
+          code: 'USER_NOT_FOUND',
+          message: 'Utilisateur non trouvé.',
+        },
+      },
+    });
   }
-} 
+}

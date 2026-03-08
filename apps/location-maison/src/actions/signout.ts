@@ -1,6 +1,9 @@
 'use server'
 
 import { signOut as nextAuthSignOut } from '@/next-auth/auth'
+import { createLogger } from '@/lib/logger';
+
+const logger = createLogger('actions.signout');
 
 const getAuth = () => import("@/firebase/auth");
 
@@ -16,7 +19,7 @@ export const signout = async () => {
         await nextAuthSignOut({ redirect: false });
         return true
     } catch (error) {
-        console.error('Erreur lors de la déconnexion:', error);
+        logger.error('Erreur lors de la déconnexion', { error });
         return false
     }
 };

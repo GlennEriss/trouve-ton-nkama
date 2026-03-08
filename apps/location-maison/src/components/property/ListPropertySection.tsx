@@ -29,6 +29,9 @@ import { Switch } from '../ui/switch';
 import { useQueryClient, useInfiniteQuery } from '@tanstack/react-query';
 import PromotionButton from '../promotion/PromotionButton';
 import PromotionBadge from '../promotion/PromotionBadge';
+import { createLogger } from '@/lib/logger';
+
+const logger = createLogger('components.property.list-section');
 
 export default function ListPropertySection() {
     const searchParams = useSearchParams();
@@ -74,7 +77,7 @@ export default function ListPropertySection() {
             })
     }, [user, type])
     if (isError) {
-        console.log(error)
+        logger.error('Failed to fetch properties list', { error, type, uid: user?.uid })
     }
     if (isPending || isFetching) {
         return (

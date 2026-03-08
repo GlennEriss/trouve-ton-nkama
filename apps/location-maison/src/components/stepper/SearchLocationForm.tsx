@@ -19,6 +19,9 @@ import {
 import { cn } from '@/lib/utils'
 import { useLocationSearch, useLocationSuggestions, type PhotonResult } from '@/hooks/use-location-search'
 import { useLocationSync } from '@/hooks/use-location-sync'
+import { createLogger } from '@/lib/logger'
+
+const logger = createLogger('components.stepper.search-location-form')
 
 export default function SearchLocationForm() {
   const [searchTerm, setSearchTerm] = useState('')
@@ -104,9 +107,13 @@ export default function SearchLocationForm() {
       if (!locationExists(targetProvince, targetCity, targetStreet)) {
         try {
           await forceSync(targetProvince, targetCity, targetStreet)
-          console.log(`🔄 Nouvelle localité synchronisée: ${targetProvince} > ${targetCity} > ${targetStreet}`)
+          logger.info('Nouvelle localité synchronisée', {
+            province: targetProvince,
+            city: targetCity,
+            street: targetStreet,
+          })
         } catch (error) {
-          console.warn('⚠️ Synchronisation Firebase échouée:', error)
+          logger.warn('Synchronisation Firebase échouée', { error })
           // L'erreur est gérée dans le hook, on continue normalement
         }
       }

@@ -4,6 +4,9 @@
  */
 
 import type { FeatureCollection, Feature, Polygon, MultiPolygon } from 'geojson';
+import { createLogger } from '@/lib/logger';
+
+const logger = createLogger('data.gabon-boundaries-loader');
 
 // Types
 export interface QuarterFeatureProperties {
@@ -63,7 +66,7 @@ async function fetchBoundaries(): Promise<QuarterFeatureCollection> {
     const data = await response.json();
     return data as QuarterFeatureCollection;
   } catch (error) {
-    console.error('Error loading Gabon boundaries:', error);
+    logger.error('Error loading Gabon boundaries', { error });
     // Retourner une collection vide en cas d'erreur
     return {
       type: 'FeatureCollection',

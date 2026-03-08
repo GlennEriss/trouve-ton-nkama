@@ -9,6 +9,9 @@ import { Separator } from "@/components/ui/separator";
 import { useToast } from "@/hooks/use-toast";
 import { Phone, MessageSquare, CheckCircle, XCircle, AlertCircle, Loader2, RefreshCw, Clock } from "lucide-react";
 import { auth } from "@/firebase/auth";
+import { createLogger } from '@/lib/logger';
+
+const logger = createLogger('app.test-real-sms');
 
 const TestRealSmsPage: React.FC = () => {
   const { toast } = useToast();
@@ -87,7 +90,7 @@ const TestRealSmsPage: React.FC = () => {
         {
           size: "normal", // Changé de "invisible" à "normal"
           callback: () => {
-            console.log("reCAPTCHA résolu");
+            logger.info('reCAPTCHA résolu');
             addTestResult({
               type: "RECAPTCHA",
               success: true,
@@ -96,7 +99,7 @@ const TestRealSmsPage: React.FC = () => {
             });
           },
           "expired-callback": () => {
-            console.log("reCAPTCHA expiré");
+            logger.warn('reCAPTCHA expiré');
             addTestResult({
               type: "RECAPTCHA",
               success: false,
@@ -136,7 +139,7 @@ const TestRealSmsPage: React.FC = () => {
       });
 
     } catch (err: any) {
-      console.error("Erreur OTP:", err);
+      logger.error('Erreur OTP', { err });
       let errorMessage = "Erreur lors de l'envoi du code";
       
       // Gestion spécifique des erreurs Firebase
@@ -216,7 +219,7 @@ const TestRealSmsPage: React.FC = () => {
       });
 
     } catch (err: any) {
-      console.error("Erreur vérification:", err);
+      logger.error('Erreur vérification OTP', { err });
       
       let errorMessage = "Code incorrect ou expiré";
       if (err.code === 'auth/invalid-verification-code') {

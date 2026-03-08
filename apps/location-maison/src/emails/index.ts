@@ -2,6 +2,9 @@
 import { LOGO_BASE64 } from './logo-base64';
 import { supportContact } from '../constantes';
 import { EmailVerificationProps } from './types';
+import { createLogger } from '@/lib/logger';
+
+const logger = createLogger('emails.index');
 
 // Export des templates d'emails
 export { default as GenericEmail } from './GenericEmail';
@@ -61,7 +64,7 @@ export class EmailService {
 
       // ... existing code ...
     } catch (error) {
-      console.error('Error sending email verification link:', error);
+      logger.error('Error sending email verification link', { error });
       throw error;
     }
   }

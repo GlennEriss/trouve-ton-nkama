@@ -3,8 +3,10 @@ import { Timestamp } from "firebase/firestore";
 import { getPropertyById } from "./property.db";
 import { adminApp } from "@/firebase/admin";
 import { getFirestore as getAdminFirestore } from "firebase-admin/firestore";
+import { createLogger } from '@/lib/logger';
 
 const getFirestore = () => import("@/firebase/firestore");
+const logger = createLogger('db.property-statistics');
 
 const getFirestoreAdmin = () => {
   if (!adminApp) {
@@ -171,7 +173,7 @@ async function getOrCreateStatistics(propertyId: string, propertyOwnerId: string
     // Fallback : retourner null si on ne peut pas récupérer le document
     return null;
   } catch (error) {
-    console.error("Error getting or creating statistics:", error);
+    logger.error('Error getting or creating statistics', { propertyId, error });
     return null;
   }
 }
@@ -333,7 +335,7 @@ export async function trackPropertyView(
     
     return true;
   } catch (error) {
-    console.error("Error tracking property view:", error);
+    logger.error('Error tracking property view', { propertyId, error });
     return false;
   }
 }
@@ -408,7 +410,7 @@ export async function trackPropertyInteraction(
     
     return true;
   } catch (error) {
-    console.error("Error tracking property interaction:", error);
+    logger.error('Error tracking property interaction', { propertyId, type, error });
     return false;
   }
 }
@@ -448,7 +450,7 @@ export async function getPropertyStatistics(
     
     return { id: statsSnap.id, ...data } as PropertyStatistics;
   } catch (error) {
-    console.error("Error getting property statistics:", error);
+    logger.error('Error getting property statistics', { propertyId, ownerId, error });
     return null;
   }
 }
@@ -489,6 +491,6 @@ async function calculateMetrics(propertyId: string): Promise<void> {
       updatedAt: FieldValue.serverTimestamp(),
     });
   } catch (error) {
-    console.error("Error calculating metrics:", error);
+    logger.error('Error calculating metrics', { propertyId, error });
   }
 }

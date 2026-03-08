@@ -15,6 +15,10 @@ interface BalanceResponse {
   error?: string
 }
 
+function extractErrorMessage(payload: any, fallback: string): string {
+  return payload?.message ?? payload?.error?.message ?? fallback
+}
+
 async function fetchCreditsBalance(): Promise<BalanceResponse> {
   const user = auth.currentUser
   if (!user) {
@@ -22,7 +26,7 @@ async function fetchCreditsBalance(): Promise<BalanceResponse> {
   }
 
   const token = await user.getIdToken()
-  
+
   const response = await fetch('/api/credits/balance', {
     method: 'GET',
     headers: {
@@ -31,12 +35,13 @@ async function fetchCreditsBalance(): Promise<BalanceResponse> {
     }
   })
 
+  const payload = await response.json().catch(() => null)
+
   if (!response.ok) {
-    const errorData = await response.json()
-    throw new Error(errorData.message ?? 'Erreur lors de la récupération du solde')
+    throw new Error(extractErrorMessage(payload, 'Erreur lors de la récupération du solde'))
   }
 
-  return response.json()
+  return payload as BalanceResponse
 }
 
 export function useCreditsBalance() {
@@ -46,19 +51,17 @@ export function useCreditsBalance() {
     queryKey: ['credits-balance', user?.uid],
     queryFn: fetchCreditsBalance,
     enabled: !!user?.uid && isFirebaseConnected && !authLoading,
-    staleTime: 1000 * 60 * 5, // 5 minutes
-    gcTime: 1000 * 60 * 10,   // 10 minutes
+    staleTime: 1000 * 60 * 5,
+    gcTime: 1000 * 60 * 10,
     refetchOnWindowFocus: true,
     retry: (failureCount, error: any) => {
-      // Ne pas retry si c'est une erreur d'authentification
       if (error.message?.includes('authentification') || error.message?.includes('token')) {
         return false
       }
-      // Ne pas retry si l'auth est en erreur
       if (authError) {
         return false
       }
       return failureCount < 3
     }
   })
-} 
+}

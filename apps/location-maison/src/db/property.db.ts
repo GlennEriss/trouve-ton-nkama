@@ -2,6 +2,9 @@ import firebaseCollectionNames from "@/constantes/firebase-collection-name";
 import { Property, TypeProperty } from "@/models/annonce";
 import { createModel, deleteModel, updateModel } from "./generic.db";
 import { collectionFirebaseNames } from "@/constantes";
+import { createLogger } from '@/lib/logger';
+
+const logger = createLogger('db.property');
 
 const getFirestore = () => import("@/firebase/firestore");
 
@@ -98,7 +101,7 @@ export async function getCountStatisticsByPropertyType(createdBy: string, type?:
 
         return snapshot.data().count; // Retourner le nombre total
     } catch (error) {
-        console.error("Error fetching property count:", error);
+        logger.error('Error fetching property count', { createdBy, type, error });
         throw new Error("Failed to fetch property count");
     }
 }
@@ -128,7 +131,7 @@ export async function getPropertyById(id: string): Promise<Property | null> {
             return null;
         }
     } catch (error) {
-        console.error("Error fetching property by ID:", error);
+        logger.error('Error fetching property by ID', { id, error });
         throw new Error(`Failed to fetch property with ID ${id}: ${error}`);
     }
 }
@@ -158,7 +161,7 @@ export async function getServerCountByProvince(province: string): Promise<number
 
         return snapshot.data().count; // Retourner le nombre total
     } catch (error) {
-        console.error("Error fetching property count by province:", error);
+        logger.error('Error fetching property count by province', { province, error });
         throw new Error("Failed to fetch property count by province");
     }
 }
@@ -184,7 +187,7 @@ export async function getServerCountByPropertyType(type: string): Promise<number
 
         return snapshot.data().count; // Retourner le nombre total
     } catch (error) {
-        console.error("Error fetching property count by type:", error);
+        logger.error('Error fetching property count by type', { type, error });
         throw new Error("Failed to fetch property count by type");
     }
 }

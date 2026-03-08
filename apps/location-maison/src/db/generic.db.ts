@@ -1,4 +1,7 @@
 const getFirestore = () => import("@/firebase/firestore");
+import { createLogger } from '@/lib/logger';
+
+const logger = createLogger('db.generic');
 
 export async function createModel<T>(model: T, collectionName: string): Promise<string | null> {
     try {
@@ -12,7 +15,7 @@ export async function createModel<T>(model: T, collectionName: string): Promise<
         });
         return docRef.id
     } catch (error) {
-        console.error("Error creating model:", error);
+        logger.error('Error creating model', { collectionName, error });
         return null;
     }
 }
@@ -24,7 +27,7 @@ export async function deleteModel(id: string, collectionName: string): Promise<b
         await deleteDoc(docRef);
         return true;
     } catch (error) {
-        console.error("Error deleting model:", error);
+        logger.error('Error deleting model', { collectionName, id, error });
         return false;
     }
 }
@@ -41,7 +44,7 @@ export async function updateModel<T>(id: string, updates: Partial<T>, collection
 
         return true;
     } catch (error) {
-        console.error("Error updating model:", error);
+        logger.error('Error updating model', { collectionName, id, error });
         return false;
     }
 }
@@ -58,7 +61,7 @@ export async function createModelWithCustomId<T>(model: T, collectionName: strin
         });
         return customId;
     } catch (error) {
-        console.error("Error creating model with custom ID:", error);
+        logger.error('Error creating model with custom ID', { collectionName, customId, error });
         return null;
     }
 }

@@ -21,6 +21,9 @@ import { NotificationParameter } from '@/models/notification'
 import { routes } from '@/constantes/routes'
 import { Button } from '../ui/button'
 import { Input } from '../ui/input'
+import { createLogger } from '@/lib/logger'
+
+const logger = createLogger('components.signup')
 
 export const Signup: React.FC = () => {
     const router = useRouter()
@@ -89,10 +92,10 @@ export const Signup: React.FC = () => {
                 }),
             }).then(response => {
                 if (!response.ok) {
-                    console.warn('Erreur lors de l\'envoi de l\'email de vérification, mais le compte a été créé');
+                    logger.warn('Verification email send failed after account creation');
                 }
             }).catch(error => {
-                console.warn('Erreur lors de l\'envoi de l\'email de vérification:', error);
+                logger.warn('Verification email send failed', { error });
                 // L'email peut échouer sans affecter l'inscription
             });
             
@@ -114,13 +117,13 @@ export const Signup: React.FC = () => {
             await signOut(auth)
             return userCred.user.uid
         } catch (error) {
-            console.error("Error during registration:", error);
+            logger.error('Error during registration', { error });
             throw error;
         }
     }
 
     const onSubmit = async (values: FormRegisterSchemaType) => {
-        console.log("OnRegister",values)
+        logger.debug('Signup submit', { email: values.email, country: values.country })
 
         // La validation se fait automatiquement via react-hook-form et zodResolver
         // Pas besoin de faire safeParse manuellement
@@ -139,7 +142,7 @@ export const Signup: React.FC = () => {
             
             router.push('/signup/success?uid=' + uid)
         } catch (error: any) {
-            console.error(error)
+            logger.error('Signup failed', { error })
             
             // Gestion spécifique des erreurs Firebase
             let errorMessage = "Une erreur est survenue lors de la création du compte."
