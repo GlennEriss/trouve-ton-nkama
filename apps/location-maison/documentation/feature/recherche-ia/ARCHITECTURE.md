@@ -23,20 +23,25 @@
 - Orchestration: agent, debit credits, analytics, observabilite.
 - Enforcement des policies (scope, refus, paliers credits, limites).
 
-4. `Agent Runtime (Algolia Agent Studio)`
-- Comprend la demande.
-- Declenche les appels de recherche.
-- Retourne une reponse structuree (texte + actions + metadata usage).
+4. `Conversation Runtime (serveur applicatif)`
+- Genere la reponse conversationnelle IA cote serveur (aucun appel modele IA en front).
+- Applique guardrails et fallback deterministe.
+- Ne peut pas debiter de credits sans transaction backend.
 
-5. `Credit Service`
+5. `Algolia Search + Analytics`
+- Execute les requetes de logements.
+- Expose les metriques analytiques de recherche (top recherches, no result, filtres, clics).
+- Recoit les evenements clics/resultats pour enrichir l'analytics.
+
+6. `Credit Service`
 - Debit atomique via transaction.
 - Journal d'historique des depenses.
 
-6. `Analytics & Cost Store`
+7. `Analytics & Cost Store`
 - Stocke sessions/tours avec tokens, appels recherche, cout estime, revenu estime.
 - Sert aux rapports quotidiens et alertes.
 
-7. `Admin Read APIs`
+8. `Admin Read APIs`
 - Expose les metriques (produit, finance, marge) en lecture seule.
 
 ## 3. Contrat d'API recommande
@@ -123,6 +128,7 @@ Voir: `ia-recherche-sequence-diagram.puml`
 
 1. Introduire un feature flag `ai_search_assistant_enabled`.
 2. Isoler l'orchestration IA dans une API backend (pas de debit direct en front).
-3. Centraliser les constantes de pricing dans une config server.
-4. Mettre en place un job quotidien de calcul marge (`daily_margin_report`).
-5. Garder `/search` simple et router les usages IA vers `/search-with-ia`.
+3. Garder Algolia comme moteur unique de recherche + analytics.
+4. Centraliser les constantes de pricing dans une config server.
+5. Mettre en place un job quotidien de calcul marge (`daily_margin_report`).
+6. Garder `/search` simple et router les usages IA vers `/search-with-ia`.

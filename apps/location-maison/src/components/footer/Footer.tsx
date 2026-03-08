@@ -33,8 +33,10 @@ export default function Footer({ isHide = false }: Readonly<{ isHide?: boolean }
         ? `https://wa.me/${whatsappNumber}?text=Bonjour%20!%20Je%20souhaite%20obtenir%20plus%20d'informations%20sur%20Trouve%20Ton%20Nkama.`
         : '#'
 
+    const isImmersiveSearchPage = pathname === routes.public.search_property || pathname === routes.public.search_with_ia
+
     return (
-        <footer className={cn("w-full border-t border-[#1d3d3a] bg-[#0f1f1e] text-white", pathname === routes.public.search_property && "lg:hidden")}>
+        <footer className={cn("w-full border-t border-[#1d3d3a] bg-[#0f1f1e] text-white", isImmersiveSearchPage && "lg:hidden")}>
             <div className="max-w-[1280px] 2xl:max-w-[1440px] mx-auto p-4 py-10 md:py-12">
                 <div className="grid grid-cols-1 gap-8 md:grid-cols-12 md:gap-10">
                     <div className='md:col-span-4 lg:col-span-3 space-y-4'>

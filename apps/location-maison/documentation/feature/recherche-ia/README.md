@@ -29,6 +29,13 @@ Cette sous-feature definit un assistant IA conversationnel sur `/search-with-ia`
 - Debit au premier appel de recherche, puis par paliers d'usage.
 - Suivi quotidien des couts tokens/requetes et de la marge.
 
+## Decision technique validee (mars 2026)
+
+- Production: conserver l'architecture applicative actuelle (orchestration backend interne).
+- Recherche + analytics: Algolia reste la source officielle (query, filtres, no-results, clics).
+- Conversation IA: couche serveur uniquement (aucun appel modele IA direct depuis le client).
+- `/search-with-ia` est reserve aux utilisateurs connectes.
+
 ## References UML
 
 - Use cases recherche: `../../uml/use-cases-recherche.puml`
