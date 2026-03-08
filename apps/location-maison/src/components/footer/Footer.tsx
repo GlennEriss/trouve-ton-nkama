@@ -8,11 +8,41 @@ import { useCurrentUser } from '@/hooks/use-current-user';
 import { useWindowSize } from '@/hooks/useSize';
 import { cn } from '@/lib/utils';
 import PWAInstallButton from '@/components/pwa/PWAInstallButton';
+import Script from 'next/script';
+import { createLogger } from '@/lib/logger';
+
+const ADSENSE_CLIENT = 'ca-pub-2799688336707362';
+const ADSENSE_SLOT = '7503013398';
+
+const logger = createLogger('components.footer.ads');
 
 export default function Footer({ isHide = false }: Readonly<{ isHide?: boolean }>) {
     const pathname = usePathname()
     const { user } = useCurrentUser()
     const { width } = useWindowSize()
+    const adInitializedRef = React.useRef(false);
+
+    const initializeAds = React.useCallback(() => {
+        if (typeof window === 'undefined' || adInitializedRef.current) {
+            return;
+        }
+
+        try {
+            const adsWindow = window as Window & { adsbygoogle?: Array<Record<string, unknown>> };
+            adsWindow.adsbygoogle = adsWindow.adsbygoogle || [];
+            adsWindow.adsbygoogle.push({});
+            adInitializedRef.current = true;
+        } catch (error) {
+            logger.error('Failed to initialize AdSense block', { error, pathname });
+        }
+    }, [pathname]);
+
+    React.useEffect(() => {
+        const adsWindow = window as Window & { adsbygoogle?: Array<Record<string, unknown>> };
+        if (adsWindow.adsbygoogle && !adInitializedRef.current) {
+            initializeAds();
+        }
+    }, [initializeAds]);
     const hiddenFooterRoutes = [
         routes.public.signin,
         routes.public.signup,
@@ -94,17 +124,20 @@ export default function Footer({ isHide = false }: Readonly<{ isHide?: boolean }
                 </div>
 
                 <div className='mt-8 rounded-2xl border border-white/10 bg-white/[0.03] p-3 md:p-4'>
-                    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-2799688336707362"
-                        crossOrigin="anonymous"></script>
+                    <Script
+                        id="adsense-loader-footer"
+                        strategy="afterInteractive"
+                        async
+                        crossOrigin="anonymous"
+                        src={`https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=${ADSENSE_CLIENT}`}
+                        onLoad={initializeAds}
+                    />
                     <ins className="adsbygoogle"
                         style={{ display: 'block' }}
-                        data-ad-client="ca-pub-2799688336707362"
-                        data-ad-slot="7503013398"
+                        data-ad-client={ADSENSE_CLIENT}
+                        data-ad-slot={ADSENSE_SLOT}
                         data-ad-format="auto"
                         data-full-width-responsive="true"></ins>
-                    <script>
-                        (adsbygoogle = window.adsbygoogle || []).push({ });
-                    </script>
                 </div>
 
                 <div className='mt-6'>

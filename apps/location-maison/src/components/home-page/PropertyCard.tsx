@@ -7,6 +7,7 @@ import { usePathname, useRouter } from "next/navigation";
 import { formatPublicationDate } from "@/lib/utils";
 import { TypeProperty } from "@/constantes/property-type";
 import { trackingEvents, useTrackEvent } from '@/features/analytics/tracking';
+import { logImageError, logImageFallback, logImageLoad } from "@/lib/image-debug";
 
 // Import des icônes
 import { IoMdBed } from "react-icons/io";
@@ -18,9 +19,26 @@ const PropertyCard = ({ property, hideDate = false }: { property: any; hideDate?
   const router = useRouter();
   const pathname = usePathname();
   const { trackEvent } = useTrackEvent();
+  const propertyId = property.objectID || property.id || property.path || "unknown";
+  const rawPrimaryImageUrl = property.images?.[0]?.fileURL;
+  const hasPrimaryImageUrl =
+    typeof rawPrimaryImageUrl === "string" && rawPrimaryImageUrl.trim().length > 0;
+  const primaryImageSrc = hasPrimaryImageUrl ? rawPrimaryImageUrl : "/home.png";
+
+  React.useEffect(() => {
+    if (hasPrimaryImageUrl) {
+      return;
+    }
+    logImageFallback({
+      component: "PropertyCard",
+      propertyId,
+      title: property.title,
+      rawFileUrl: rawPrimaryImageUrl,
+      resolvedSrc: primaryImageSrc,
+    });
+  }, [hasPrimaryImageUrl, primaryImageSrc, property.title, propertyId, rawPrimaryImageUrl]);
 
   const handleCardClick = () => {
-    const propertyId = property.objectID || property.id || property.path;
     trackEvent(trackingEvents.CTA_PROPERTY_CARD_CLICK, {
       source: pathname ?? 'unknown',
       property_id: propertyId ?? '',
@@ -54,10 +72,28 @@ const PropertyCard = ({ property, hideDate = false }: { property: any; hideDate?
         {/* Image principale */}
         <div className="relative w-full h-[220px] sm:h-[230px] xl:h-[240px] bg-gray-200">
           <Image
-            src={property.images?.[0]?.fileURL ?? "/home.png"}
+            src={primaryImageSrc}
             alt={property.title ?? "Image de l'annonce"}
             fill
             className="object-cover"
+            onLoad={() =>
+              logImageLoad({
+                component: "PropertyCard",
+                propertyId,
+                title: property.title,
+                rawFileUrl: rawPrimaryImageUrl,
+                resolvedSrc: primaryImageSrc,
+              })
+            }
+            onError={() =>
+              logImageError({
+                component: "PropertyCard",
+                propertyId,
+                title: property.title,
+                rawFileUrl: rawPrimaryImageUrl,
+                resolvedSrc: primaryImageSrc,
+              })
+            }
           />
           {/* Type de propriété */}
           {property.typeProperty && (

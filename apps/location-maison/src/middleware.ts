@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server'
 import NextAuth from 'next-auth'
-import authConfig from './next-auth/auth.config'
+import authConfig from './next-auth/auth.edge.config'
 import { routes } from './constantes/routes'
 import { getPostAuthRedirectPath, hasRole, isAnnouncer } from './lib/auth/role-routing'
 import type { Role } from './models/authentication'
