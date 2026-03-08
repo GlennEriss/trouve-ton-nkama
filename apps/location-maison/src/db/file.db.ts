@@ -3,6 +3,9 @@
  */
 
 import { Image } from "@/models/annonce";
+import { createLogger } from '@/lib/logger';
+
+const logger = createLogger('db.file');
 
 const getStorage = () => import("@/firebase/storage");
 
@@ -58,7 +61,7 @@ export async function createFile(file: File, ownerId: string, location: string):
 
         return { fileURL, filePATH };
     } catch (error) {
-        console.error("File upload failed:", error);
+        logger.error('File upload failed', { error });
         throw new Error("Failed to upload file");
     }
 }
@@ -91,7 +94,7 @@ export async function updateFile(filePath: string): Promise<void> {
         // Apply the updated metadata to the file
         await updateMetadata(fileRef, newMetadata);
     } catch (error) {
-        console.error("Failed to update file status:", error);
+        logger.error('Failed to update file status', { error, filePath });
         throw new Error("Failed to update file metadata");
     }
 }

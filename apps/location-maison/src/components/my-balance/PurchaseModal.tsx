@@ -9,6 +9,9 @@ import { X, Package, Loader2, CheckCircle, AlertCircle } from 'lucide-react'
 /* import { useCreditsPurchase } from '@/hooks/use-credits-purchase' */
 import { useVerifyCode } from '@/hooks/use-verify-code'
 import { useToast } from '@/hooks/use-toast'
+import { createLogger } from '@/lib/logger'
+
+const logger = createLogger('components.purchase-modal')
 
 interface CreditPack {
   id: string
@@ -104,7 +107,7 @@ export default function PurchaseModal({ isOpen, onClose, preselectedPack }: Read
         amount: selectedPack.price
       }, {
         onSuccess: (response) => {
-          console.log('Code vérifié:', response)
+          logger.info('Code vérifié', { response })
           
           toast({
             title: "✅ Code validé !",
@@ -116,7 +119,7 @@ export default function PurchaseModal({ isOpen, onClose, preselectedPack }: Read
           setStep('instructions')
         },
         onError: (error) => {
-          console.error('Erreur vérification:', error)
+          logger.error('Erreur vérification du code', { error })
           
           toast({
             title: "❌ Erreur de validation",

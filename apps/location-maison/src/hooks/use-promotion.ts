@@ -10,6 +10,9 @@ import { routes } from '@/constantes/routes'
 import { useToast } from './use-toast'
 import { Timestamp } from 'firebase/firestore'
 import { useSession } from 'next-auth/react'
+import { createLogger } from '@/lib/logger'
+
+const logger = createLogger('hooks.use-promotion')
 
 interface UsePromotionProps {
   property: Property
@@ -131,7 +134,7 @@ export const usePromotion = ({ property, onSuccess }: UsePromotionProps) => {
         }
 
       } catch (error) {
-        console.error('Erreur lors de la promotion:', error)
+        logger.error('Promotion mutation step failed', { error, promotionType, propertyId: property.id })
         throw error
       }
     },
@@ -151,7 +154,7 @@ export const usePromotion = ({ property, onSuccess }: UsePromotionProps) => {
         variant: "default"
       })
 
-      console.log(`Promotion activée - Transaction ID: ${transactionId}`)
+      logger.info('Promotion activated', { promotionType, transactionId, propertyId: property.id })
 
       // Invalider les caches liés aux propriétés promues
       queryClient.invalidateQueries({ queryKey: ['promoted-properties'] })
@@ -161,7 +164,7 @@ export const usePromotion = ({ property, onSuccess }: UsePromotionProps) => {
       onSuccess?.()
     },
     onError: (error: Error) => {
-      console.error('Erreur lors de la promotion:', error)
+      logger.error('Promotion activation failed', { error, propertyId: property.id })
       
       if (error.name === 'INSUFFICIENT_CREDITS') {
         toast({

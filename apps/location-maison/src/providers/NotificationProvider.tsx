@@ -5,6 +5,9 @@ import { Notification } from "@/models/notification";
 import { collection, query, where, onSnapshot, doc, updateDoc, Timestamp, orderBy, limit, Query, QuerySnapshot, DocumentData } from 'firebase/firestore';
 import { useCurrentUser } from "@/hooks/use-current-user";
 import { db } from "@/firebase/firestore";
+import { createLogger } from '@/lib/logger';
+
+const logger = createLogger('providers.notification');
 
 type NotificationContextType = {
     notifications: Notification[];
@@ -86,15 +89,15 @@ export function NotificationProvider({ children }: Readonly<{ children: React.Re
                 unreadQuery, 
                 handleUnreadSnapshot(recentQuery),
                 (error) => {
-                    console.warn("Erreur lors de l'écoute des notifications non lues:", error);
+                    logger.warn("Erreur lors de l'écoute des notifications non lues", { error });
                     // En cas d'erreur de permission, on arrête d'écouter
                     if (error.code === 'permission-denied') {
-                        console.warn("Permissions insuffisantes pour les notifications");
+                        logger.warn("Permissions insuffisantes pour les notifications");
                     }
                 }
             );
         } catch (error) {
-            console.warn("Erreur lors de l'initialisation des listeners de notifications:", error);
+            logger.warn("Erreur lors de l'initialisation des listeners de notifications", { error });
         }
     
         return () => {
@@ -121,10 +124,10 @@ export function NotificationProvider({ children }: Readonly<{ children: React.Re
                 )
             );
         } catch (error: any) {
-            console.error("Erreur lors de la mise à jour de la notification :", error);
+            logger.error("Erreur lors de la mise à jour de la notification", { error, id });
             // Si c'est une erreur de permission, on peut quand même mettre à jour l'état local
             if (error.code === 'permission-denied') {
-                console.warn("Permissions insuffisantes pour marquer la notification comme lue");
+                logger.warn("Permissions insuffisantes pour marquer la notification comme lue");
                 // Mettre à jour l'état local même en cas d'erreur de permission
                 setNotifications((prev) =>
                     prev.map((notif) =>
@@ -151,10 +154,10 @@ export function NotificationProvider({ children }: Readonly<{ children: React.Re
                 prev.map((notif) => ({ ...notif, isRead: true }))
             );
         } catch (error: any) {
-            console.error("Erreur lors de la mise à jour des notifications :", error);
+            logger.error("Erreur lors de la mise à jour des notifications", { error });
             // Si c'est une erreur de permission, on peut quand même mettre à jour l'état local
             if (error.code === 'permission-denied') {
-                console.warn("Permissions insuffisantes pour marquer toutes les notifications comme lues");
+                logger.warn("Permissions insuffisantes pour marquer toutes les notifications comme lues");
                 // Mettre à jour l'état local même en cas d'erreur de permission
                 setNotifications((prev) =>
                     prev.map((notif) => ({ ...notif, isRead: true }))

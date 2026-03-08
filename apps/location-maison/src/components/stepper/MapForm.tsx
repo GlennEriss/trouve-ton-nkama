@@ -7,6 +7,9 @@ import { useFormContext } from "react-hook-form";
 import { useQueryClient } from '@tanstack/react-query';
 import { useLocation } from '@/hooks/use-location';
 import { AiOutlineLoading3Quarters } from 'react-icons/ai';
+import { createLogger } from '@/lib/logger';
+
+const logger = createLogger('components.stepper.map-form');
 
 const MapForm = () => {
     // Accès aux méthodes de react-hook-form
@@ -27,7 +30,7 @@ const MapForm = () => {
                 const parsed = JSON.parse(rawCache);
                 searchCache = new Map(Object.entries(parsed));
             } catch (err) {
-                console.warn("❌ Erreur de parsing du cache localStorage", err);
+                logger.warn('Erreur de parsing du cache localStorage', { err });
             }
         }
     }, []);
@@ -64,7 +67,7 @@ const MapForm = () => {
                 setError("Localité introuvable. Essayez une autre recherche.");
             }
         } catch (err) {
-            console.error("Erreur lors de la recherche de localisation:", err);
+            logger.error('Erreur lors de la recherche de localisation', { err, query });
             setError("Erreur de connexion. Vérifiez votre connexion internet.");
         } finally {
             setIsLoading(false);

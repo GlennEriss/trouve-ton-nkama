@@ -1,6 +1,9 @@
 import { City } from "@/models/city";
 import firebaseCollectionNames from "@/constantes/firebase-collection-name";
 import { createModel, createModelWithCustomId, LocationIdGenerator } from "./generic.db";
+import { createLogger } from '@/lib/logger';
+
+const logger = createLogger('db.city');
 
 const getFirestore = () => import("@/firebase/firestore");
 
@@ -22,7 +25,7 @@ export async function findCityByName(name: string, provinceName?: string): Promi
         const doc = querySnapshot.docs[0];
         return { id: doc.id, data: doc.data() as City };
     } catch (error) {
-        console.error("Error finding city by name:", error);
+        logger.error('Error finding city by name', { error });
         return null;
     }
 }
@@ -44,7 +47,7 @@ export async function createCityIfNotExists(city: Omit<City, 'id' | 'createdAt' 
         const result = await createModelWithCustomId<Omit<City, 'id' | 'createdAt' | 'updatedAt'>>(city as any, firebaseCollectionNames.cities, customId);
         return result;
     } catch (error) {
-        console.error("Error creating city:", error);
+        logger.error('Error creating city', { error });
         return null;
     }
 }
@@ -52,5 +55,4 @@ export async function createCityIfNotExists(city: Omit<City, 'id' | 'createdAt' 
 export async function createCity(city: Omit<City, 'id' | 'createdAt' | 'updatedAt' | 'state'>): Promise<string | null> {
     return await createCityIfNotExists(city);
 }
-
 

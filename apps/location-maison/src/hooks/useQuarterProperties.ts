@@ -4,6 +4,9 @@
 
 import { useState, useCallback } from 'react';
 import { useMapCache, type Property } from '@/providers/MapCacheProvider';
+import { createLogger } from '@/lib/logger';
+
+const logger = createLogger('hooks.use-quarter-properties');
 
 interface UseQuarterPropertiesReturn {
   properties: Property[];
@@ -33,7 +36,10 @@ export function useQuarterProperties(): UseQuarterPropertiesReturn {
     const cached = cache.get(quarterName);
     
     if (cached) {
-      console.log(`[Cache HIT] ${quarterName} - ${cached.properties.length} propriétés`);
+      logger.debug('Quarter properties cache hit', {
+        quarterName,
+        count: cached.properties.length,
+      });
       setProperties(cached.properties);
       setTotalCount(cached.totalCount);
       setError(null);
@@ -41,7 +47,7 @@ export function useQuarterProperties(): UseQuarterPropertiesReturn {
     }
 
     // 2. Si pas en cache, faire la requête API
-    console.log(`[Cache MISS] ${quarterName} - Requête serveur...`);
+    logger.debug('Quarter properties cache miss', { quarterName });
     setIsLoading(true);
     setError(null);
 
@@ -60,7 +66,7 @@ export function useQuarterProperties(): UseQuarterPropertiesReturn {
       setProperties(data.properties || []);
       setTotalCount(data.totalCount || 0);
     } catch (e) {
-      console.error('Error fetching properties:', e);
+      logger.error('Failed to fetch quarter properties', { quarterName, error: e });
       setError(e instanceof Error ? e : new Error('Failed to fetch properties'));
       setProperties([]);
       setTotalCount(0);

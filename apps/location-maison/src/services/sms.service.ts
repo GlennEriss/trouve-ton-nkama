@@ -5,6 +5,10 @@ export interface SMSResult {
   error?: string;
 }
 
+import { createLogger } from '@/lib/logger';
+
+const logger = createLogger('services.sms');
+
 export class SMSService {
   private static instance: SMSService;
 
@@ -31,7 +35,7 @@ export class SMSService {
       const message = `Votre code de vérification est: ${code}`;
 
       // Simulation de l'envoi de SMS
-      console.log('📱 SMS simulé:', {
+      logger.info('SMS simulé', {
         to: phoneNumber,
         message: message,
         code: code
@@ -47,7 +51,7 @@ export class SMSService {
       };
 
     } catch (error: any) {
-      console.error('Erreur lors de l\'envoi du SMS:', error);
+      logger.error('Erreur lors de l\'envoi du SMS', { error });
       
       return {
         success: false,

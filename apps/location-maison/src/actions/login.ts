@@ -3,6 +3,9 @@
 import { FormLoginSchemaType } from '@/models/schema';
 import { signIn } from '@/next-auth/auth'
 import { AuthError } from 'next-auth'
+import { createLogger } from '@/lib/logger';
+
+const logger = createLogger('actions.login');
 
 export const login = async (user: FormLoginSchemaType) => {
   const { email, password } = user;
@@ -15,7 +18,7 @@ export const login = async (user: FormLoginSchemaType) => {
   });
     return { error: false, success: true, message: 'Login successful' };
   } catch (error) {
-    console.error('Authentication Error:', error);
+    logger.error('Authentication error', { error });
     if (error instanceof AuthError) {
       return { error: true, success: false, message: 'Invalid credentials' };
     }

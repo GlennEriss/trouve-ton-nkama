@@ -1,5 +1,8 @@
 import { Property } from "@/models/annonce";
 import { collectionFirebaseNames } from "@/constantes";
+import { createLogger } from '@/lib/logger';
+
+const logger = createLogger('db.recommend');
 
 const getFirestore = () => import("@/firebase/firestore");
 
@@ -47,7 +50,7 @@ export async function getRecommendedProperties({
 
         return properties;
     } catch (error) {
-        console.error('Error fetching recommended properties:', error);
+        logger.error('Error fetching recommended properties', { error, type, location });
         throw new Error('Failed to fetch recommended properties');
     }
 } 

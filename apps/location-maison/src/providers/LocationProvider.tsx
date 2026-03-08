@@ -1,5 +1,8 @@
 "use client";
 import React, { createContext, useContext, useState, useEffect, useMemo } from 'react';
+import { createLogger } from '@/lib/logger';
+
+const logger = createLogger('providers.location');
 
 interface Neighborhood {
   name: string;
@@ -109,7 +112,7 @@ export const LocationProvider: React.FC<LocationProviderProps> = ({
         return data;
       }
     } catch (error) {
-      console.error('Erreur lors de la récupération des données', error);
+      logger.error('Erreur lors de la récupération des données', { error });
       setAddress('Adresse non trouvée');
     }
   };
@@ -135,11 +138,11 @@ export const LocationProvider: React.FC<LocationProviderProps> = ({
           getAddressFromCoordinates(latitude, longitude);
         },
         (error) => {
-          console.error(error);
+          logger.error('Erreur de géolocalisation utilisateur', { error });
         }
       );
     } else {
-      console.error("La géolocalisation n'est pas prise en charge");
+      logger.error("La géolocalisation n'est pas prise en charge");
     }
   };
 
@@ -155,7 +158,7 @@ export const LocationProvider: React.FC<LocationProviderProps> = ({
             resolve({ latitude, longitude });
           },
           (error) => {
-            console.error(error);
+            logger.error("Erreur lors de l'obtention de la position géographique", { error });
             reject(
               new Error(
                 "Erreur lors de l'obtention de la position géographique"
@@ -166,7 +169,7 @@ export const LocationProvider: React.FC<LocationProviderProps> = ({
       });
     } else {
       const errorMessage = "La géolocalisation n'est pas prise en charge";
-      console.error(errorMessage);
+      logger.error(errorMessage);
       throw new Error(errorMessage);
     }
   };
@@ -185,7 +188,7 @@ export const LocationProvider: React.FC<LocationProviderProps> = ({
         coordinates: item.geojson.coordinates[0],
       }));
     } catch (error) {
-      console.error("Erreur lors de la récupération des quartiers", error);
+      logger.error("Erreur lors de la récupération des quartiers", { error });
       return [];
     }
   };
@@ -227,7 +230,7 @@ export const LocationProvider: React.FC<LocationProviderProps> = ({
           coordinates: element.geometry?.map((point: any) => [point.lat, point.lon]) ?? [],
         }));
     } catch (error) {
-      console.error("Erreur lors de la récupération des quartiers :", error);
+      logger.error("Erreur lors de la récupération des quartiers via Overpass", { error });
       return [];
     }
   };
@@ -258,7 +261,7 @@ export const LocationProvider: React.FC<LocationProviderProps> = ({
       const data = await response.json();
       return data;
     } catch (error) {
-      console.error('Erreur lors de la recherche:', error);
+      logger.error('Erreur lors de la recherche', { error });
       return [];
     }
   };

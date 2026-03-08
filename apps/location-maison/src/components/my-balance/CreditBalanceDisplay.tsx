@@ -5,6 +5,9 @@ import { Wallet, Zap, Gift, Loader2, AlertCircle } from 'lucide-react'
 import { useCreditsBalance } from '@/hooks/use-credits-balance'
 import { useCurrentUser } from '@/hooks/use-current-user'
 import { useSession } from 'next-auth/react'
+import { createLogger } from '@/lib/logger'
+
+const logger = createLogger('components.credit-balance-display')
 
 interface CreditBalanceDisplayProps {
   onRecharge?: () => void
@@ -52,7 +55,7 @@ export default function CreditBalanceDisplay({
     if (onRecharge) {
       onRecharge()
     } else {
-      console.log('Recharger le solde')
+      logger.info('Recharge action clicked without handler')
     }
   }
 

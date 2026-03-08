@@ -1,8 +1,25 @@
 import { NextResponse } from 'next/server';
+import { AppError } from '@/lib/errors/app-error';
+import { createLogger } from '@/lib/logger';
+import { handleApiError, jsonApiError } from '@/lib/api/error-response';
 
-// Cache pour les requêtes de géocodage
+const logger = createLogger('api.geocode.reverse');
+
 const geocodeCache = new Map<string, { data: any; expiry: number }>();
-const CACHE_DURATION_MS = 1000 * 60 * 60; // 1 heure
+const CACHE_DURATION_MS = 1000 * 60 * 60;
+
+const CORS_HEADERS = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Methods': 'GET, OPTIONS',
+  'Access-Control-Allow-Headers': 'Content-Type',
+};
+
+function withCors(response: NextResponse) {
+  Object.entries(CORS_HEADERS).forEach(([key, value]) => {
+    response.headers.set(key, value);
+  });
+  return response;
+}
 
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
@@ -10,91 +27,58 @@ export async function GET(request: Request) {
   const lng = searchParams.get('lng');
 
   if (!lat || !lng) {
-    //console.log('Missing coordinates:', { lat, lng });
-    return NextResponse.json(
-      { error: 'Latitude and longitude are required' },
-      {
-        status: 400,
-        headers: {
-          'Access-Control-Allow-Origin': '*',
-          'Access-Control-Allow-Methods': 'GET, OPTIONS',
-          'Access-Control-Allow-Headers': 'Content-Type',
-        },
-      }
+    return withCors(
+      jsonApiError(400, 'VALIDATION_ERROR', 'Latitude and longitude are required', {
+        missing: [!lat ? 'lat' : null, !lng ? 'lng' : null].filter(Boolean),
+      })
     );
   }
 
-  // Vérifier le cache
   const cacheKey = `${lat},${lng}`;
   const cached = geocodeCache.get(cacheKey);
   const now = Date.now();
 
   if (cached && cached.expiry > now) {
-    //console.log('Serving from cache:', cacheKey);
-    return NextResponse.json(cached.data, {
-      headers: {
-        'Access-Control-Allow-Origin': '*',
-        'Access-Control-Allow-Methods': 'GET, OPTIONS',
-        'Access-Control-Allow-Headers': 'Content-Type',
-        'Cache-Control': 'public, s-maxage=3600, stale-while-revalidate=3600',
-      },
-    });
+    const response = withCors(NextResponse.json(cached.data));
+    response.headers.set('Cache-Control', 'public, s-maxage=3600, stale-while-revalidate=3600');
+    return response;
   }
 
   try {
-    //console.log('Fetching from Nominatim with coordinates:', { lat, lng });
-    const response = await fetch(
-      `https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lng}&format=json`,
-      {
-        headers: {
-          'User-Agent': 'LocationMaison/1.0',
-        },
-      }
-    );
+    const response = await fetch(`https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lng}&format=json`, {
+      headers: {
+        'User-Agent': 'LocationMaison/1.0',
+      },
+    });
 
     if (!response.ok) {
-      console.error('Nominatim API error:', response.status);
-      throw new Error(`HTTP error! status: ${response.status}`);
+      throw new AppError(`Nominatim API error (${response.status})`, {
+        code: 'NOMINATIM_UPSTREAM_ERROR',
+        status: 502,
+        details: { status: response.status },
+      });
     }
 
     const data = await response.json();
-    //console.log('Nominatim API response:', data);
-
-    // Mettre en cache la réponse
     geocodeCache.set(cacheKey, { data, expiry: now + CACHE_DURATION_MS });
 
-    return NextResponse.json(data, {
-      headers: {
-        'Access-Control-Allow-Origin': '*',
-        'Access-Control-Allow-Methods': 'GET, OPTIONS',
-        'Access-Control-Allow-Headers': 'Content-Type',
-        'Cache-Control': 'public, s-maxage=3600, stale-while-revalidate=3600',
-      },
-    });
+    const json = withCors(NextResponse.json(data));
+    json.headers.set('Cache-Control', 'public, s-maxage=3600, stale-while-revalidate=3600');
+    return json;
   } catch (error) {
-    console.error('Error fetching from Nominatim API:', error);
-    return NextResponse.json(
-      { error: 'Failed to fetch data from Nominatim API' },
-      {
-        status: 500,
-        headers: {
-          'Access-Control-Allow-Origin': '*',
-          'Access-Control-Allow-Methods': 'GET, OPTIONS',
-          'Access-Control-Allow-Headers': 'Content-Type',
-        },
-      }
+    return withCors(
+      handleApiError(error, {
+        logger,
+        route: '/api/geocode',
+        fallbackMessage: 'Failed to fetch data from Nominatim API',
+      })
     );
   }
 }
 
-// Gérer les requêtes OPTIONS pour CORS
 export async function OPTIONS() {
   return new NextResponse(null, {
     status: 204,
-    headers: {
-      'Access-Control-Allow-Origin': '*',
-      'Access-Control-Allow-Methods': 'GET, OPTIONS',
-      'Access-Control-Allow-Headers': 'Content-Type',
-    },
+    headers: CORS_HEADERS,
   });
-} 
+}

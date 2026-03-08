@@ -6,6 +6,9 @@ import { useRouter } from 'next/navigation';
 import { routes } from '@/constantes/routes';
 import { signOut } from "next-auth/react"
 import { LogOut } from 'lucide-react';
+import { createLogger } from '@/lib/logger';
+
+const logger = createLogger('components.logout');
 
 const getAuth = () => import("@/firebase/auth");
 
@@ -29,7 +32,7 @@ export default function Logout() {
             setIsLoading(false)
             router.push(routes.public.homePage)
         } catch (error) {
-            console.error('Erreur lors de la déconnexion :', error);
+            logger.error('Logout failed', { error });
             setIsLoading(false)
             toast({
                 duration: 5000,

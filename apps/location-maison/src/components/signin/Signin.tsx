@@ -12,6 +12,9 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { useToast } from '@/hooks/use-toast';
 import { signIn } from "next-auth/react"
 import { routes } from '@/constantes/routes';
+import { createLogger } from '@/lib/logger';
+
+const logger = createLogger('components.signin');
 
 export const Signin = () => {
     const router = useRouter()
@@ -98,7 +101,7 @@ export const Signin = () => {
             });
             return router.push(routes.protected.properties)
         } catch (error) {
-            console.error('Authentication Error:', error);
+            logger.error('Authentication error', { error });
             return toast({
                 duration: 5000,
                 title: 'Erreur de connexion',

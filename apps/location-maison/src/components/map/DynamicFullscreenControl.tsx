@@ -1,5 +1,8 @@
 import React, { useEffect, useState } from "react";
 import "leaflet.fullscreen/Control.FullScreen.css"; // Import Fullscreen Control CSS
+import { createLogger } from '@/lib/logger';
+
+const logger = createLogger('components.dynamic-fullscreen-control');
 
 const DynamicFullscreenControl: React.FC<{ position: "topright" | "topleft" | "bottomright" | "bottomleft" }> = ({ position }) => {
   const [FullscreenControl, setFullscreenControl] = useState<React.ComponentType<any> | null>(null);
@@ -12,7 +15,7 @@ const DynamicFullscreenControl: React.FC<{ position: "topright" | "topleft" | "b
           const module = await import("react-leaflet-fullscreen");
           setFullscreenControl(() => module.FullscreenControl);
         } catch (error) {
-          console.error("Error loading FullscreenControl module:", error);
+          logger.error('Error loading FullscreenControl module', { error });
         }
       }
     };

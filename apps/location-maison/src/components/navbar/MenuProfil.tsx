@@ -10,6 +10,9 @@ import { useToast } from '@/hooks/use-toast'
 import { useRouter } from 'next/navigation'
 import { signOut } from 'next-auth/react'
 import { User, Coins, Heart, LogOut, ChevronDown } from 'lucide-react'
+import { createLogger } from '@/lib/logger'
+
+const logger = createLogger('components.menu-profil')
 const getAuth = () => import("@/firebase/auth");
 
 const menu = [
@@ -57,7 +60,7 @@ export default function MenuProfil() {
             setIsLoading(false)
             router.push(routes.public.homePage)
         } catch (error) {
-            console.error('Erreur lors de la déconnexion :', error);
+            logger.error('Logout failed from profile menu', { error });
             setIsLoading(false)
             toast({
                 duration: 5000,

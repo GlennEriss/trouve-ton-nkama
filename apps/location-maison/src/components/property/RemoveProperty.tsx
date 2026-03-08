@@ -9,6 +9,9 @@ import { Button } from '../ui/button';
 import { deleteProperty } from '@/db/property.db';
 import { useRouter } from 'next/navigation';
 import { invalidatePropertyCountCache } from '@/lib/invalidate-property-count-cache';
+import { createLogger } from '@/lib/logger';
+
+const logger = createLogger('components.remove-property');
 
 export interface RemovePropertyProps {
     id: string;
@@ -39,7 +42,7 @@ export const RemoveProperty = ({ id }: RemovePropertyProps) => {
             setIsModalOpen(false);
         },
         onError: (error) => {
-            console.error('Error delete property:', error);
+            logger.error('Delete property failed', { id, error });
             toast({
                 duration: 5000,
                 title: "Suppression d'un logement",

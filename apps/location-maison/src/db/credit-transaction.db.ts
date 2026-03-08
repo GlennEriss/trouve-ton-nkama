@@ -1,8 +1,10 @@
 import firebaseCollectionNames from "@/constantes/firebase-collection-name";
 import { CreditTransaction, CreditTransactionInput, GetHistoryOptions, HistoryResponse } from "@/models/credit-transaction";
+import { createLogger } from '@/lib/logger';
 
 
 const getFirestore = () => import("@/firebase/firestore");
+const logger = createLogger('db.credit-transaction');
 
 /**
  * Génère le suffixe d'annonce si propertyId est présent
@@ -84,7 +86,7 @@ export async function getCreditHistoryByUserId(
       total
     };
   } catch (error) {
-    console.error("Error fetching credit history:", error);
+    logger.error('Error fetching credit history', { userId, options, error });
     throw new Error("Erreur lors de la récupération de l'historique");
   }
 }
@@ -128,7 +130,7 @@ export async function createCreditTransaction(transaction: CreditTransactionInpu
 
     return docRef.id;
   } catch (error) {
-    console.error("Error creating credit transaction:", error);
+    logger.error('Error creating credit transaction', { transaction, error });
     throw new Error("Erreur lors de la création de la transaction");
   }
 }
@@ -157,7 +159,7 @@ export async function updateTransactionStatus(
 
     return true;
   } catch (error) {
-    console.error("Error updating transaction status:", error);
+    logger.error('Error updating transaction status', { transactionId, status, error });
     return false;
   }
 }
@@ -183,7 +185,7 @@ export async function getCreditTransactionCount(
     const snapshot = await getCountFromServer(q);
     return snapshot.data().count;
   } catch (error) {
-    console.error("Error counting transactions:", error);
+    logger.error('Error counting transactions', { userId, type, error });
     return 0;
   }
 }
@@ -210,7 +212,7 @@ export async function getCreditTransactionById(transactionId: string): Promise<C
 
     return null;
   } catch (error) {
-    console.error("Error fetching transaction by ID:", error);
+    logger.error('Error fetching transaction by ID', { transactionId, error });
     return null;
   }
 }
@@ -261,7 +263,7 @@ export async function getCreditTransactionStats(userId: string): Promise<{
       totalAmountSpent
     };
   } catch (error) {
-    console.error("Error fetching transaction stats:", error);
+    logger.error('Error fetching transaction stats', { userId, error });
     return {
       totalPurchases: 0,
       totalSpent: 0,
@@ -296,7 +298,7 @@ export async function createSpendTransaction(
 
     return await createCreditTransaction(transactionData);
   } catch (error) {
-    console.error("Error creating spend transaction:", error);
+    logger.error('Error creating spend transaction', { userId, credits, service, propertyId, error });
     throw new Error("Erreur lors de la création de la transaction de dépense");
   }
 }
@@ -312,13 +314,13 @@ export async function deductCreditsWithTransaction(
   description?: string
 ): Promise<{transactionId: string, success: boolean}> {
   try {
-    console.log('🔄 deductCreditsWithTransaction appelée avec:', { userId, credits, service, propertyId, description });
+    logger.info('deductCreditsWithTransaction called', { userId, credits, service, propertyId, description });
     
     const { runTransaction, doc, serverTimestamp } = await getFirestore();
     const { collection, db, where, query, getDocs } = await getFirestore();
     
     return await runTransaction(db, async (transaction) => {
-      console.log('📊 Début de la transaction atomique');
+      logger.debug('Starting atomic credit deduction transaction', { userId, credits });
       
       // Trouver le document utilisateur
       const usersCollection = collection(db, firebaseCollectionNames.users);
@@ -326,7 +328,7 @@ export async function deductCreditsWithTransaction(
       const userSnapshot = await getDocs(userQuery);
       
       if (userSnapshot.empty) {
-        console.error('❌ Utilisateur introuvable avec uid:', userId);
+        logger.error('Utilisateur introuvable avec uid', { userId });
         throw new Error('Utilisateur introuvable');
       }
       
@@ -334,16 +336,16 @@ export async function deductCreditsWithTransaction(
       const userData = userDoc.data();
       const currentCredits = userData.credits ?? 0;
       
-      console.log('💰 Crédits actuels:', currentCredits, 'Crédits à déduire:', credits);
+      logger.debug('Current user credits before deduction', { currentCredits, credits });
       
       if (currentCredits < credits) {
-        console.error('❌ Solde insuffisant. Disponible:', currentCredits, 'Requis:', credits);
+        logger.warn('Solde insuffisant', { available: currentCredits, required: credits });
         throw new Error('Solde de crédits insuffisant');
       }
       
       // Déduire les crédits
       const newCredits = currentCredits - credits;
-      console.log('📝 Mise à jour du solde utilisateur:', newCredits);
+      logger.debug('Updating user credit balance', { newCredits });
       
       transaction.update(userDoc.ref, {
         credits: newCredits,
@@ -367,11 +369,11 @@ export async function deductCreditsWithTransaction(
         transactionData.propertyId = propertyId;
       }
       
-      console.log('📄 Données de transaction à créer:', transactionData);
+      logger.debug('Credit spend transaction payload', { transactionData });
       
       const transactionRef = doc(collection(db, firebaseCollectionNames.credit_transactions));
-      console.log('📁 Nom de collection utilisé:', firebaseCollectionNames.credit_transactions);
-      console.log('🆔 Transaction ref ID:', transactionRef.id);
+      logger.debug('Credit transaction collection used', { collection: firebaseCollectionNames.credit_transactions });
+      logger.debug('Credit transaction ref created', { transactionRefId: transactionRef.id });
       
       transaction.set(transactionRef, {
         ...transactionData,
@@ -379,7 +381,7 @@ export async function deductCreditsWithTransaction(
         updatedAt: serverTimestamp()
       });
       
-      console.log('✅ Transaction créée avec succès, ID:', transactionRef.id);
+      logger.info('Credit transaction created successfully', { transactionId: transactionRef.id });
       
       return {
         transactionId: transactionRef.id,
@@ -388,7 +390,7 @@ export async function deductCreditsWithTransaction(
     });
     
   } catch (error) {
-    console.error("❌ Error deducting credits:", error);
+    logger.error('Error deducting credits', { userId, credits, service, propertyId, error });
     throw error;
   }
 }

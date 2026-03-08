@@ -1,52 +1,61 @@
 import { NextResponse } from 'next/server';
 import { getServerCountByPropertyType } from '@/db/property.db';
 import redis from '@/redis/client';
+import { createLogger } from '@/lib/logger';
+import { handleApiError, jsonApiError } from '@/lib/api/error-response';
 
-// TTL du cache (en secondes) – configurable via REDIS_CATALOG_TTL, défaut 1800 (30 min)
+const logger = createLogger('api.property.count.by-type');
+
 const CACHE_TTL_SECONDS = parseInt(process.env.REDIS_CATALOG_TTL ?? '1800', 10);
 
 export async function GET(request: Request) {
-    const url = new URL(request.url);
-    const type = url.searchParams.get('type');
+  const url = new URL(request.url);
+  const type = url.searchParams.get('type');
 
-    if (!type) {
-        return NextResponse.json({ error: 'Property type is required' }, { status: 400 });
-    }
+  if (!type) {
+    return jsonApiError(400, 'VALIDATION_ERROR', 'Property type is required', { field: 'type' });
+  }
 
-    const cacheKey = `propertyCountByType:${type}`;
+  const cacheKey = `propertyCountByType:${type}`;
 
+  try {
     try {
-        const cached = await redis.get<number>(cacheKey);
-
-        if (typeof cached === 'number') {
-            return NextResponse.json({ count: cached }, {
-                headers: {
-                    'Cache-Control': `public, s-maxage=${CACHE_TTL_SECONDS}, stale-while-revalidate=${CACHE_TTL_SECONDS}`,
-                },
-            });
-        }
-    } catch (error) {
-        console.error('Redis GET error (property count by type):', error);
-    }
-
-    try {
-        // Récupérer le comptage depuis Firestore
-        const count = await getServerCountByPropertyType(type);
-
-        // Mettre en cache le comptage
-        try {
-            await redis.set(cacheKey, count, { ex: CACHE_TTL_SECONDS });
-        } catch (error) {
-            console.error('Redis SET error (property count by type):', error);
-        }
-
-        return NextResponse.json({ count }, {
+      const cached = await redis.get<number>(cacheKey);
+      if (typeof cached === 'number') {
+        return NextResponse.json(
+          { count: cached },
+          {
             headers: {
-                'Cache-Control': `public, s-maxage=${CACHE_TTL_SECONDS}, stale-while-revalidate=${CACHE_TTL_SECONDS}`,
+              'Cache-Control': `public, s-maxage=${CACHE_TTL_SECONDS}, stale-while-revalidate=${CACHE_TTL_SECONDS}`,
             },
-        });
+          }
+        );
+      }
     } catch (error) {
-        console.error("Error fetching property count by type:", error);
-        return NextResponse.json({ error: 'Failed to fetch property count' }, { status: 500 });
+      logger.warn('Redis GET failed for property count by type', { type, error });
     }
+
+    const count = await getServerCountByPropertyType(type);
+
+    try {
+      await redis.set(cacheKey, count, { ex: CACHE_TTL_SECONDS });
+    } catch (error) {
+      logger.warn('Redis SET failed for property count by type', { type, error });
+    }
+
+    return NextResponse.json(
+      { count },
+      {
+        headers: {
+          'Cache-Control': `public, s-maxage=${CACHE_TTL_SECONDS}, stale-while-revalidate=${CACHE_TTL_SECONDS}`,
+        },
+      }
+    );
+  } catch (error) {
+    return handleApiError(error, {
+      logger,
+      route: '/api/property/count/by-type',
+      fallbackMessage: 'Failed to fetch property count',
+    });
+  }
 }

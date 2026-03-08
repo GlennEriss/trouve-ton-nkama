@@ -5,6 +5,9 @@
 
 import { useMemo } from 'react';
 import { getOSMLocations, OSMLocation, OSMLocationsData } from '@/data/gabon-osm-locations';
+import { createLogger } from '@/lib/logger';
+
+const logger = createLogger('hooks.use-osm-locations');
 
 export interface UseOSMLocationsReturn {
   // Données brutes
@@ -31,7 +34,7 @@ export function useOSMLocations(): UseOSMLocationsReturn {
     try {
       return getOSMLocations();
     } catch (error) {
-      console.error('Erreur lors du chargement des données OSM:', error);
+      logger.error('Erreur lors du chargement des données OSM', { error });
       return null;
     }
   }, []);
@@ -111,4 +114,3 @@ export function useOSMLocations(): UseOSMLocationsReturn {
     getAllQuarters,
   };
 }
-

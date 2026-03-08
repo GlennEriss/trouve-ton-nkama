@@ -1,13 +1,11 @@
 import { NextResponse } from 'next/server';
 import redis from '@/redis/client';
-import {
-  getServerCountByPropertyType,
-  getServerCountByProvince,
-} from '@/db/property.db';
-import {
-  HOME_PROPERTY_TYPE_KEYS,
-  HOME_PROVINCE_NAMES,
-} from '@/constantes/home-page';
+import { getServerCountByPropertyType, getServerCountByProvince } from '@/db/property.db';
+import { HOME_PROPERTY_TYPE_KEYS, HOME_PROVINCE_NAMES } from '@/constantes/home-page';
+import { createLogger } from '@/lib/logger';
+import { handleApiError } from '@/lib/api/error-response';
+
+const logger = createLogger('api.property.count.summary');
 
 const CACHE_KEY = 'propertyCount:summary:v1';
 const CACHE_TTL_SECONDS = parseInt(process.env.REDIS_CATALOG_TTL ?? '600', 10);
@@ -45,13 +43,13 @@ async function buildSummary(): Promise<PropertyCountSummary> {
       HOME_PROPERTY_TYPE_KEYS.map(async (type) => {
         const count = await getServerCountByPropertyType(type);
         return [type, count] as const;
-      }),
+      })
     ),
     Promise.all(
       HOME_PROVINCE_NAMES.map(async (province) => {
         const count = await getServerCountByProvince(province);
         return [province, count] as const;
-      }),
+      })
     ),
   ]);
 
@@ -66,36 +64,37 @@ export async function GET() {
   let cachedSummary: PropertyCountSummary | null = null;
 
   try {
-    const cached = await redis.get<unknown>(CACHE_KEY);
-    if (isValidSummary(cached)) {
-      cachedSummary = cached;
-      return withCacheHeaders(cached);
+    try {
+      const cached = await redis.get<unknown>(CACHE_KEY);
+      if (isValidSummary(cached)) {
+        cachedSummary = cached;
+        return withCacheHeaders(cached);
+      }
+    } catch (error) {
+      logger.warn('Redis GET failed for property count summary', { error });
     }
-  } catch (error) {
-    console.error('Redis GET error (property count summary):', error);
-  }
 
-  try {
     const summary = await buildSummary();
 
     try {
       await redis.set(CACHE_KEY, summary, { ex: CACHE_TTL_SECONDS });
     } catch (error) {
-      console.error('Redis SET error (property count summary):', error);
+      logger.warn('Redis SET failed for property count summary', { error });
     }
 
     return withCacheHeaders(summary);
   } catch (error) {
-    console.error('Error building property count summary:', error);
+    logger.error('Failed to build property count summary', { error });
 
     if (cachedSummary) {
       return withCacheHeaders(cachedSummary);
     }
 
-    return NextResponse.json(
-      { error: 'Failed to fetch property count summary' },
-      { status: 500 },
-    );
+    return handleApiError(error, {
+      logger,
+      route: '/api/property/count/summary',
+      fallbackMessage: 'Failed to fetch property count summary',
+    });
   }
 }
 
@@ -104,10 +103,10 @@ export async function DELETE() {
     await redis.del(CACHE_KEY);
     return NextResponse.json({ success: true });
   } catch (error) {
-    console.error('Redis DEL error (property count summary):', error);
-    return NextResponse.json(
-      { error: 'Failed to invalidate property count summary cache' },
-      { status: 500 },
-    );
+    return handleApiError(error, {
+      logger,
+      route: '/api/property/count/summary',
+      fallbackMessage: 'Failed to invalidate property count summary cache',
+    });
   }
 }

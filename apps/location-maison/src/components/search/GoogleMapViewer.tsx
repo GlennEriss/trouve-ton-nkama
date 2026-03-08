@@ -10,6 +10,9 @@ import GoogleMapViewerHeader from './GoogleMapViewerHeader';
 import { useGoogleMapInstance } from '@/hooks/google-map/use-google-map-instance';
 import { googleMapsSingleton } from '@/singleton';
 import { useLocationGoogle } from '@/hooks/google-map/use-location-google';
+import { createLogger } from '@/lib/logger';
+
+const logger = createLogger('components.google-map-viewer');
 // Import dynamic du composant PropertyDetailsPanel
 const PropertyDetailsPanel = dynamic(() => import('./PropertyDetailsPanel'), {
   ssr: false,
@@ -72,7 +75,7 @@ export default function GoogleMapViewer({ lat, lng, open, onOpenChange }: Google
       mapInstanceRef.current = null;
       setMapReady(false);
     } catch (error) {
-      console.warn('Error cleaning up map instance:', error);
+      logger.warn('Error cleaning up map instance', { error });
     }
   }
 

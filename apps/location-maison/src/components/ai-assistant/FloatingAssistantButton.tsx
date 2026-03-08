@@ -8,6 +8,9 @@ import usePropertyType from '@/hooks/usePropertyType';
 import AutoFillModal from './AutoFillModal';
 import AIPromptsService from '@/services/ai-prompts.service';
 import { TypePropertyEnum } from '@/constantes/property-type';
+import { createLogger } from '@/lib/logger';
+
+const logger = createLogger('components.ai-floating-assistant-button');
 
 interface FloatingAssistantButtonProps {
   formContext?: any;
@@ -31,7 +34,7 @@ const saveFormToLocalStorage = (data: any) => {
       
       // Vérification que les données sont valides
       if (!dataWithoutImages || typeof dataWithoutImages !== 'object') {
-        console.error('Données invalides pour le localStorage');
+        logger.error('Données invalides pour le localStorage');
         return;
       }
 
@@ -47,7 +50,7 @@ const saveFormToLocalStorage = (data: any) => {
         throw new Error('Échec de la sauvegarde dans le localStorage');
       }
     } catch (error) {
-      console.error('Erreur lors de la sauvegarde dans le localStorage:', error);
+      logger.error('Erreur lors de la sauvegarde dans le localStorage', { error });
       throw error;
     }
   }
@@ -179,7 +182,7 @@ const FloatingAssistantButton: React.FC<FloatingAssistantButtonProps> = ({ formC
           });
 
         } catch (parseError) {
-          console.error('Erreur parsing JSON:', parseError);
+          logger.error('Erreur parsing JSON', { parseError });
           toast({
             title: "❌ Erreur de traitement",
             description: "Erreur lors de l'analyse de la réponse de l'IA. Veuillez réessayer.",
@@ -194,7 +197,7 @@ const FloatingAssistantButton: React.FC<FloatingAssistantButtonProps> = ({ formC
         });
       }
     } catch (error) {
-      console.error('Erreur génération automatique:', error);
+      logger.error('Erreur génération automatique', { error });
       toast({
         title: "❌ Erreur inattendue",
         description: "Une erreur inattendue s'est produite lors de la génération automatique.",

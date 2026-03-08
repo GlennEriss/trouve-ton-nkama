@@ -18,6 +18,9 @@ import SmartSuggestions from './SmartSuggestions';
 import AutoFillModal from './AutoFillModal';
 import usePropertyType from '@/hooks/usePropertyType';
 import AIPromptsService from '@/services/ai-prompts.service';
+import { createLogger } from '@/lib/logger';
+
+const logger = createLogger('components.ai-assistant-chat-modal');
 
 interface AssistantChatModalProps {
   isOpen: boolean;
@@ -38,9 +41,11 @@ const saveFormDataToLocalStorage = (data: any) => {
     const savedData = JSON.parse(localStorage.getItem('property_form_draft') ?? '{}');
     const updatedData = { ...savedData, ...data };
     localStorage.setItem('property_form_draft', JSON.stringify(updatedData));
-    console.log('Données sauvegardées:', updatedData);
+    logger.debug('Données sauvegardées dans le localStorage', {
+      keys: Object.keys(updatedData ?? {}),
+    });
   } catch (error) {
-    console.error('Erreur lors de la sauvegarde dans localStorage:', error);
+    logger.error('Erreur lors de la sauvegarde dans localStorage', { error });
   }
 };
 
@@ -49,7 +54,7 @@ const getFromLocalStorage = () => {
   try {
     return JSON.parse(localStorage.getItem('property_form_draft') ?? '{}');
   } catch (error) {
-    console.error('Erreur lors de la lecture du localStorage:', error);
+    logger.error('Erreur lors de la lecture du localStorage', { error });
     return {};
   }
 };
@@ -101,7 +106,7 @@ const handleTryCatchError = (
   setMessages: React.Dispatch<React.SetStateAction<Message[]>>,
   customMessage?: string
 ) => {
-  console.error('Erreur:', error);
+  logger.error('Assistant chat unexpected error', { error });
   const errorMessage = createMessage('error', customMessage ?? 'Erreur inattendue');
   setMessages(prev => [...prev, errorMessage]);
 };
@@ -310,7 +315,7 @@ const AssistantChatModal: React.FC<AssistantChatModalProps> = ({
       }, 2000);
 
     } catch (parseError) {
-      console.error('Erreur parsing JSON:', parseError);
+      logger.error('Erreur parsing JSON IA', { parseError });
       const errorMessage = createMessage(
         'error',
         `Erreur lors de l'analyse de la réponse de l'IA. Réponse reçue: ${result.response ?? ''}`

@@ -1,6 +1,9 @@
-import { useState, useEffect, useMemo, useCallback } from "react";
-import { Property } from "@/models/annonce";
-import { getProperties } from "@/db/property.db";
+import { useState, useEffect, useMemo, useCallback } from 'react';
+import { Property } from '@/models/annonce';
+import { getProperties } from '@/db/property.db';
+import { createLogger } from '@/lib/logger';
+
+const logger = createLogger('hooks.use-properties-pagination');
 
 type FetchedPage = {
   properties: Property[];
@@ -9,17 +12,16 @@ type FetchedPage = {
 
 export const usePropertiesPagination = ({
   limitPerPage = 10,
-  type = "",
-  createdBy = "",
+  type = '',
+  createdBy = '',
 }) => {
   const [properties, setProperties] = useState<Property[]>([]);
   const [loading, setLoading] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
-  const [lastDocs, setLastDocs] = useState<any[]>([null]); // Référence du dernier document
+  const [lastDocs, setLastDocs] = useState<any[]>([null]);
 
   const fetchedPages = useMemo<Record<number, FetchedPage>>(() => ({}), []);
 
-  // Fonction stable pour fetcher les données
   const fetchData = useCallback(
     async (page: number = currentPage, reset = false) => {
       setLoading(true);
@@ -49,15 +51,21 @@ export const usePropertiesPagination = ({
           setLastDocs((prev) => [...prev, res.lastDoc]);
         }
       } catch (error) {
-        console.error("Error fetching properties:", error);
+        logger.error('Failed to fetch paginated properties', {
+          page,
+          reset,
+          limitPerPage,
+          type,
+          createdBy,
+          error,
+        });
       } finally {
         setLoading(false);
       }
     },
-    [limitPerPage, type, createdBy, lastDocs, fetchedPages, currentPage] // Dépendances minimales
+    [limitPerPage, type, createdBy, lastDocs, fetchedPages, currentPage]
   );
 
-  // Charger les données à l'initialisation ou au changement de page
   useEffect(() => {
     fetchData();
   }, [currentPage, fetchData]);

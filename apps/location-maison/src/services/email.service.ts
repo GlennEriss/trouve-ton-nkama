@@ -1,4 +1,7 @@
 import nodemailer from 'nodemailer';
+import { createLogger } from '@/lib/logger';
+
+const logger = createLogger('services.email');
 
 interface EmailOptions {
   from: string;
@@ -52,13 +55,13 @@ export class EmailService {
     
     // En développement, on affiche juste le lien de debug (sauf si forcé)
     if (process.env.NODE_ENV === 'development' && !forceRealEmail) {
-      console.log('📧 Email simulé avec Hostinger SMTP:', {
+      logger.info('Email simulé avec Hostinger SMTP', {
         from: options.from,
         to: options.to,
         subject: options.subject,
         debugLink: debugLink || 'N/A'
       });
-      console.log('💡 Pour envoyer des emails réels en dev, ajoutez: FORCE_REAL_EMAILS=true');
+      logger.info('Pour envoyer des emails réels en dev, ajoutez FORCE_REAL_EMAILS=true');
       return {
         simulated: true,
         accepted: [options.to],
@@ -85,7 +88,7 @@ export class EmailService {
         rejected: Array.isArray(info.rejected) ? info.rejected.map(String) : [],
       };
     } catch (error) {
-      console.error('Erreur lors de l\'envoi d\'email avec Hostinger SMTP:', error);
+      logger.error('Erreur lors de l\'envoi d\'email avec Hostinger SMTP', { error });
       throw new Error('Impossible d\'envoyer l\'email via Hostinger SMTP');
     }
   }

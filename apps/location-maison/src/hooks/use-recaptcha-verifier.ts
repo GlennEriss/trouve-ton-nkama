@@ -2,6 +2,9 @@
 
 import { useEffect, useRef, useState } from 'react';
 import { auth } from '@/firebase/auth';
+import { createLogger } from '@/lib/logger';
+
+const logger = createLogger('hooks.use-recaptcha-verifier');
 
 export const useRecaptchaVerifier = (containerId: string) => {
   const recaptchaVerifierRef = useRef<any>(null);
@@ -41,10 +44,10 @@ export const useRecaptchaVerifier = (containerId: string) => {
           {
             size: 'invisible',
             callback: () => {
-              console.log('Recaptcha résolu');
+              logger.info('Recaptcha solved');
             },
             'expired-callback': () => {
-              console.log('Recaptcha expiré');
+              logger.info('Recaptcha expired');
             }
           }
         );
@@ -56,9 +59,9 @@ export const useRecaptchaVerifier = (containerId: string) => {
         
         setIsReady(true);
         setError(null);
-        console.log('RecaptchaVerifier initialisé avec succès');
+        logger.info('Recaptcha verifier initialized successfully');
       } catch (err: any) {
-        console.error('Erreur création RecaptchaVerifier:', err);
+        logger.error('Recaptcha verifier initialization failed', { err });
         setError(err.message || 'Erreur lors de l\'initialisation du RecaptchaVerifier');
         setIsReady(false);
       }
@@ -72,7 +75,7 @@ export const useRecaptchaVerifier = (containerId: string) => {
         try {
           recaptchaVerifierRef.current.clear();
         } catch (err) {
-          console.log('Erreur nettoyage RecaptchaVerifier:', err);
+          logger.warn('Recaptcha verifier cleanup failed', { err });
         }
         recaptchaVerifierRef.current = null;
       }

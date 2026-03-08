@@ -5,6 +5,9 @@ import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Loader2, Eye, EyeOff } from "lucide-react";
+import { createLogger } from '@/lib/logger';
+
+const logger = createLogger('components.password-modal');
 
 type PasswordModalProps = {
   isOpen: boolean;
@@ -32,7 +35,7 @@ export default function PasswordModal({ isOpen, onClose, onConfirm }: Readonly<P
       setPassword(""); // Réinitialisation après succès
       onClose();
     } catch (err) {
-      console.error("Erreur lors de la confirmation du mot de passe:", err);
+      logger.error('Erreur lors de la confirmation du mot de passe', { err });
       setError("Échec de la vérification. Veuillez réessayer.");
     } finally {
       setLoading(false);

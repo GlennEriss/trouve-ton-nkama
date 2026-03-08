@@ -4,6 +4,9 @@ import { useFormContext } from 'react-hook-form'
 import { useQueryClient } from '@tanstack/react-query'
 import { useLocation } from '@/hooks/use-location'
 import { updateOrCreateSuggestion } from '@/db/suggestion.db'
+import { createLogger } from '@/lib/logger'
+
+const logger = createLogger('hooks.use-location-sync')
 
 interface LocationData {
   [province: string]: {
@@ -99,9 +102,9 @@ export function useLocationSync() {
   ) => {
     try {
       await updateOrCreateSuggestion({ province, city, street })
-      console.log(`✅ Localité synchronisée: ${province} > ${city} > ${street}`)
+      logger.info('Location synchronized to Firebase', { province, city, street })
     } catch (error) {
-      console.error('❌ Erreur lors de la synchronisation Firebase:', error)
+      logger.error('Failed to synchronize location to Firebase', { province, city, street, error })
       
       // En cas d'erreur, on peut soit :
       // 1. Rollback le cache (plus sûr)
@@ -111,7 +114,7 @@ export function useLocationSync() {
       // Optionnel : Programmer un retry
       setTimeout(() => {
         persistToFirebase(province, city, street).catch(() => {
-          console.warn('⚠️ Retry échoué pour:', { province, city, street })
+          logger.warn('Location sync retry failed', { province, city, street })
         })
       }, 5000) // Retry dans 5 secondes
       
@@ -155,7 +158,7 @@ export function useLocationSync() {
       await persistToFirebase(province, city, street)
       
     } catch (error) {
-      console.error('Erreur durante la synchronisation:', error)
+      logger.error('Location sync flow failed', { province, city, street, error })
     } finally {
       isSyncingRef.current = false
     }

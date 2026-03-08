@@ -1,6 +1,9 @@
 import HouseDetails from '@/components/preview-property/HouseDetails'
 //import { getPropertyById } from '@/db/property.db'
 import React from 'react'
+import { createLogger } from '@/lib/logger'
+
+const logger = createLogger('app.house-details.page')
 
 //const propertyCache = new Map<string, { property: any; expiry: number }>()
 
@@ -26,7 +29,7 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
       description: property.description,
     };
   } catch (error) {
-    console.error("Error fetching metadata:", error);
+    logger.error('Error fetching metadata', { error, id });
     return {};
   }
 }

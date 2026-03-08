@@ -5,6 +5,9 @@ import { usePropertyFormStorage } from '@/hooks/usePropertyFormStorage'
 import { ProcessedFormData } from '@/services/ai-form.service'
 import AIFormServiceFactory from '@/factories/services/AIFormServiceFactory'
 import useAIAssistant from '@/hooks/useAIAssistant'
+import { createLogger } from '@/lib/logger'
+
+const logger = createLogger('hooks.use-form-ai-handler')
 
 interface UseFormAIHandlerProps {
   propertyType: string
@@ -54,7 +57,7 @@ export function useFormAIHandler({
 
       return formData
     } catch (error) {
-      console.error('Erreur génération automatique:', error)
+      logger.error('Automatic form generation failed', { error, propertyType })
       throw error
     } finally {
       setIsGenerating(false)
