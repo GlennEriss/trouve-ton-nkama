@@ -53,6 +53,10 @@ rectangle "Plateforme Location Maison Gabon" {
         usecase "Voir nombre d'annonces par type" as UC_StatsByType
         usecase "Surveiller les transactions" as UC_MonitorTransactions
         usecase "Analyser les performances système" as UC_AnalyzePerf
+        usecase "Consulter les métriques\nanalytiques de recherche (Algolia)" as UC_ViewAlgoliaMetrics
+        usecase "Voir top recherches\net filtres populaires" as UC_AlgoliaTopSearches
+        usecase "Voir recherches sans résultat\nou à faible résultat" as UC_AlgoliaNoResults
+        usecase "Analyser la demande par\nprix/type/zone/tags" as UC_AlgoliaDemandBreakdown
     }
     
     ' --- GESTION EMAILS ---
@@ -74,12 +78,14 @@ rectangle "Plateforme Location Maison Gabon" {
 ' =====================================
 actor "Firebase\nAdmin SDK" as FirebaseAdmin <<Système>> #LightGray
 actor "Scripts\nde Maintenance" as Scripts <<Système>> #LightGray
+actor "Algolia\nAnalytics API" as AlgoliaAnalytics <<Système>> #LightGray
 
 ' =====================================
 ' RELATIONS PRINCIPALES
 ' =====================================
 Admin --> UC_AdminPanel
 Admin --> UC_GlobalStats
+Admin --> UC_ViewAlgoliaMetrics
 Admin --> UC_Maintenance
 Admin --> UC_ConfigEmails
 Admin --> UC_PublishPlatformUpdate
@@ -118,6 +124,10 @@ UC_GlobalStats ..> UC_StatsByProvince : <<include>>
 UC_GlobalStats ..> UC_StatsByType : <<include>>
 UC_GlobalStats ..> UC_MonitorTransactions : <<extend>>
 UC_GlobalStats ..> UC_AnalyzePerf : <<extend>>
+UC_GlobalStats ..> UC_ViewAlgoliaMetrics : <<extend>>
+UC_ViewAlgoliaMetrics ..> UC_AlgoliaTopSearches : <<include>>
+UC_ViewAlgoliaMetrics ..> UC_AlgoliaNoResults : <<include>>
+UC_ViewAlgoliaMetrics ..> UC_AlgoliaDemandBreakdown : <<include>>
 
 ' =====================================
 ' RELATIONS EMAILS
@@ -136,6 +146,7 @@ UC_PublishPlatformUpdate ..> UC_TrackUpdateDelivery : <<extend>>
 UC_Maintenance --> FirebaseAdmin : utilise
 UC_MigrateData --> Scripts : exécute
 UC_ImportLocations --> Scripts : exécute
+UC_ViewAlgoliaMetrics --> AlgoliaAnalytics : lit
 
 ' =====================================
 ' NOTES
@@ -165,6 +176,21 @@ note right of UC_GlobalStats
   - Annonces par type de bien
   - Utilisateurs actifs
   - Transactions crédits
+end note
+
+note right of UC_ViewAlgoliaMetrics
+  **Lecture seule (pas de modification):**
+  - Top recherches
+  - Prix les plus recherchés
+  - Types de logements les plus recherchés
+  - Zones les plus recherchées
+    (province / ville / quartier)
+  - Tags les plus recherchés
+  - Résultats associés:
+    sans résultat / peu de résultats / résultats suffisants
+  
+  **Source de vérité:**
+  Algolia Analytics API
 end note
 
 note right of UC_ConfigEmails

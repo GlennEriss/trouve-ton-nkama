@@ -56,6 +56,15 @@ rectangle "Plateforme Location Maison Gabon" {
         usecase "Consulter recherches sauvegardées" as UC_ViewSavedSearches
         usecase "Supprimer recherche sauvegardée" as UC_DeleteSavedSearch
     }
+
+    ' --- RECHERCHE ASSISTEE IA (Utilisateur) ---
+    package "Recherche Assistee IA" #FFF5CC {
+        usecase "Acceder a /search-with-ia" as UC_AIAccessPage
+        usecase "Converser avec l'assistant IA\n(recherche logement)" as UC_AIConversation
+        usecase "Appliquer les suggestions IA\n(filtres/zone/budget)" as UC_AIApplySuggestions
+        usecase "Debiter des credits selon\nappels recherche utiles" as UC_AICreditBilling
+        usecase "Voir le cout credits estime" as UC_AICostPreview
+    }
     
     ' --- NAVIGATION CARTE ---
     package "Navigation Carte" #LightGreen {
@@ -118,6 +127,8 @@ Utilisateur --> UC_AddFavorite
 Utilisateur --> UC_CreateAlert
 Utilisateur --> UC_Compare
 Utilisateur --> UC_ContactOwner
+Utilisateur --> UC_AIAccessPage
+Utilisateur --> UC_AIConversation
 
 ' =====================================
 ' RELATIONS INCLUDE / EXTEND
@@ -138,6 +149,13 @@ UC_Search ..> UC_SaveSearch : <<extend>>
 UC_FilterLocation ..> UC_SearchLocation : <<include>>
 UC_SaveSearch ..> UC_ViewSavedSearches : <<extend>>
 UC_ViewSavedSearches ..> UC_DeleteSavedSearch : <<extend>>
+
+' Recherche assistee IA
+UC_AIAccessPage ..> UC_AIConversation : <<include>>
+UC_AIConversation ..> UC_Search : <<include>>
+UC_AIConversation ..> UC_AIApplySuggestions : <<include>>
+UC_AIConversation ..> UC_AICreditBilling : <<include>>
+UC_AIConversation ..> UC_AICostPreview : <<extend>>
 
 ' Carte
 UC_ExploreMap ..> UC_ViewMapProperties : <<include>>
@@ -208,6 +226,18 @@ note right of UC_Compare
   - Caractéristiques
 end note
 
+note right of UC_AIConversation
+  **Recherche IA dediee:**
+  Parcours separe de la page
+  de recherche classique pour
+  eviter la surcharge UI.
+
+  **Regles cles:**
+  - perimetre strict logement
+  - refus des demandes hors scope
+  - debit credits sur usage utile
+end note
+
 note bottom of Utilisateur
   **Utilisateur authentifié:**
   Accès à toutes les fonctionnalités
@@ -241,7 +271,7 @@ legend bottom left
   |= Couleur Package |= Accès |
   | Gris | Visiteur (non connecté) |
   | Vert | Utilisateur (connecté) |
+  | Jaune | Recherche assistee IA (connecte + credits) |
 endlegend
 
 @enduml
-

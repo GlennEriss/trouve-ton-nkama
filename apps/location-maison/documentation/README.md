@@ -26,6 +26,7 @@ Bienvenue dans la documentation complète de la plateforme de location et vente 
   - Auth (index): [feature/auth/README.md](./feature/auth/README.md)
   - Users (index): [feature/users/README.md](./feature/users/README.md)
   - Annonceur (index): [feature/annonceur/README.md](./feature/annonceur/README.md)
+  - Recherche IA (index): [feature/recherche-ia/README.md](./feature/recherche-ia/README.md)
 
 ### ⚙️ Configuration & Setup
 - **[setup/](./setup/)** : Guides de configuration
@@ -115,4 +116,4 @@ Bienvenue dans la documentation complète de la plateforme de location et vente 
 
 ---
 
-*Dernière mise à jour : 2026-03-07*
+*Dernière mise à jour : 2026-03-08*

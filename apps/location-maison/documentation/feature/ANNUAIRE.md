@@ -50,6 +50,7 @@
 | Sauvegarder une recherche | ⬜ | - | - | À implémenter |
 | Alertes de recherche | ⬜ | - | - | À implémenter |
 | Comparaison de propriétés | ⬜ | - | - | À implémenter |
+| Assistant IA de recherche logement (crédits) | ⬜ | - | 2026-03-08 | Documentation cadrée (`documentation/feature/recherche-ia/`) ; page dédiée prévue `/search-with-ia` |
 
 ---
 
@@ -157,4 +158,4 @@
 
 ---
 
-*Dernière mise à jour : 2026-03-07*
+*Dernière mise à jour : 2026-03-08*
