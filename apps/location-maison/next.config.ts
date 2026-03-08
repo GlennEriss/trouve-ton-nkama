@@ -66,9 +66,16 @@ const staticJsRuntimeCache = defaultRuntimeCaching.find(
   (entry) => entry.options?.cacheName === 'static-js-assets'
 );
 
+const apiRuntimeCache = defaultRuntimeCaching.find(
+  (entry) => entry.options?.cacheName === 'apis'
+);
+
 const crossOriginRuntimeCache = defaultRuntimeCaching.find(
   (entry) => entry.options?.cacheName === 'cross-origin'
 );
+
+const CACHEABLE_PUBLIC_API_PATTERN =
+  /^\/api\/(location\/(provinces|cities|streets|search|suggestions)|map\/properties|property\/promoted)$/;
 
 const runtimeCachingOverrides = [
   ...(staticJsRuntimeCache
@@ -78,6 +85,17 @@ const runtimeCachingOverrides = [
           // Keep static JS cache for first-party scripts only.
           urlPattern: ({ sameOrigin, url }: { sameOrigin: boolean; url: URL }) =>
             sameOrigin && /\.(?:js)$/i.test(url.pathname),
+        },
+      ]
+    : []),
+  ...(apiRuntimeCache
+    ? [
+        {
+          ...apiRuntimeCache,
+          // Cache only selected read-only public APIs.
+          // All private/sensitive APIs are excluded from SW runtime caching.
+          urlPattern: ({ sameOrigin, url }: { sameOrigin: boolean; url: URL }) =>
+            sameOrigin && CACHEABLE_PUBLIC_API_PATTERN.test(url.pathname),
         },
       ]
     : []),
@@ -102,6 +120,9 @@ const runtimeCachingOverrides = [
 const withPwaConfig = withPWA({
   dest: 'public',
   disable: process.env.NODE_ENV === 'development',
+  fallbacks: {
+    document: '/~offline',
+  },
   extendDefaultRuntimeCaching: true,
   workboxOptions: {
     runtimeCaching: runtimeCachingOverrides,

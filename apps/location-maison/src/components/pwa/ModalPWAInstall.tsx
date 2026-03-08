@@ -1,3 +1,5 @@
+'use client'
+
 import React, { useEffect, useState, useCallback } from 'react';
 import {
   Dialog,
@@ -8,24 +10,22 @@ import {
   DialogFooter,
 } from '@/components/ui/dialog';
 import { Download } from 'lucide-react';
+import { usePWAInstall } from '@/providers/PWAInstallProvider';
 
 const LOCALSTORAGE_KEY = 'pwa-modal-dismissed-at';
 const HOUR_MS = 60 * 60 * 1000;
 
-function isIOS() {
-  if (typeof window === 'undefined' || typeof navigator === 'undefined') return false;
-  return /iphone|ipad|ipod/i.test(navigator.userAgent);
-}
-
 export default function ModalPWAInstall() {
+  const { canInstall, isIOS, promptInstall } = usePWAInstall();
   const [open, setOpen] = useState(false);
-  const [canInstall, setCanInstall] = useState(false);
-  const [deferredPrompt, setDeferredPrompt] = useState<Event | null>(null);
-  const [isIOSDevice, setIsIOSDevice] = useState(false);
 
-  // Vérifie si on doit afficher le modal
+  // Ouvre le modal uniquement quand l'installation est pertinente.
   useEffect(() => {
-    setIsIOSDevice(isIOS());
+    if (!isIOS && !canInstall) {
+      setOpen(false);
+      return;
+    }
+
     const lastDismiss = localStorage.getItem(LOCALSTORAGE_KEY);
     if (lastDismiss) {
       const last = parseInt(lastDismiss, 10);
@@ -35,45 +35,22 @@ export default function ModalPWAInstall() {
       }
     }
     setOpen(true);
-  }, []);
+  }, [canInstall, isIOS]);
 
-  // Gestion Android/Chrome (beforeinstallprompt)
-  useEffect(() => {
-    if (isIOSDevice) return;
-    const isStandalone = typeof window !== 'undefined' && (
-      window.matchMedia('(display-mode: standalone)').matches ||
-      (window.navigator as any).standalone === true
-    );
-    if (isStandalone) {
-      setCanInstall(false);
-      return;
-    }
-    const handler = (e: Event) => {
-      e.preventDefault();
-      setDeferredPrompt(e);
-      setCanInstall(true);
-    };
-    window.addEventListener('beforeinstallprompt', handler);
-    return () => window.removeEventListener('beforeinstallprompt', handler);
-  }, [isIOSDevice]);
-
-  const handleInstall = useCallback(async () => {
-    if (isIOSDevice) return;
-    if (!deferredPrompt) return;
-    (deferredPrompt as any).prompt();
-    setDeferredPrompt(null);
-    setCanInstall(false);
+  const handleInstallClick = useCallback(async () => {
+    if (isIOS) return;
+    await promptInstall();
     setOpen(false);
     localStorage.setItem(LOCALSTORAGE_KEY, Date.now().toString());
-  }, [deferredPrompt, isIOSDevice]);
+  }, [isIOS, promptInstall]);
 
   const handleLater = useCallback(() => {
     setOpen(false);
     localStorage.setItem(LOCALSTORAGE_KEY, Date.now().toString());
   }, []);
 
-  // Si ni Android/Chrome ni iOS, ne rien afficher
-  if (!isIOSDevice && !canInstall) return null;
+  // Si ni Android/Chrome installable ni iOS, ne rien afficher.
+  if (!isIOS && !canInstall) return null;
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
@@ -82,7 +59,7 @@ export default function ModalPWAInstall() {
           <DialogTitle>Installer l'application</DialogTitle>
         </DialogHeader>
         <DialogDescription>
-          {isIOSDevice ? (
+          {isIOS ? (
             <>Pour installer l'application sur votre iPhone, ouvrez le menu de partage de Safari puis sélectionnez « Sur l'écran d'accueil ».</>
           ) : (
             <>Vous pouvez installer l'application sur votre appareil pour une expérience optimale.</>
@@ -95,9 +72,9 @@ export default function ModalPWAInstall() {
           >
             Plus tard
           </button>
-          {!isIOSDevice && (
+          {!isIOS && (
             <button
-              onClick={handleInstall}
+              onClick={handleInstallClick}
               className="flex-1 bg-gradient-to-r from-[#1FA89B] to-[#146B67] hover:from-[#1c9690] hover:to-[#125c59] text-white font-bold py-3 px-4 rounded-full shadow-lg hover:shadow-xl transition-all duration-200 hover:scale-[1.02] flex items-center justify-center space-x-2"
             >
               <Download className="w-4 h-4" />
