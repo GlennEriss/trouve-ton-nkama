@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getPropertyStatistics } from '@/db/property-statistics.db';
-import { adminAuth } from '@/firebase/admin';
 
 /**
  * GET /api/property/[id]/statistics
@@ -11,6 +10,8 @@ export async function GET(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { adminAuth } = await import('@/firebase/admin');
+
     const { id } = await params;
     
     if (!id) {
@@ -75,4 +76,3 @@ export async function GET(
     );
   }
 }
-

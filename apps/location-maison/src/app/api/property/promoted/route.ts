@@ -1,18 +1,21 @@
 import { NextResponse } from 'next/server'
 import redis from '@/redis/client'
-import { adminApp } from '@/firebase/admin'
-import { getFirestore } from 'firebase-admin/firestore'
 import { Property } from '@/models/annonce'
-
-if (!adminApp) {
-  throw new Error('Firebase Admin not initialized')
-}
-
-const db = getFirestore(adminApp)
 const CACHE_KEY = 'properties:promoted'
 const CACHE_TTL_SECONDS = parseInt(process.env.REDIS_CATALOG_TTL ?? '600', 10)
 
 export async function GET() {
+  const [{ adminApp }, { getFirestore }] = await Promise.all([
+    import('@/firebase/admin'),
+    import('firebase-admin/firestore'),
+  ]);
+
+  if (!adminApp) {
+    return NextResponse.json({ error: 'Firebase admin is not initialized' }, { status: 500 });
+  }
+
+  const db = getFirestore(adminApp);
+
   // 1. Tentative de lecture en cache Redis
   try {
     const cached = await redis.get<any>(CACHE_KEY)

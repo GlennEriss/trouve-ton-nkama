@@ -13,18 +13,44 @@ import InputFormNumberApp from '../shared/form/InputFormNumberApp'
 import { TypeProperty, getTypePropertyKey } from '@/constantes/property-type'
 import { Button } from '../ui/button'
 import { useFormFilterSearchMediator } from '@/hooks/useFormFilterSearchMediator'
+import { trackingEvents, useTrackEvent } from '@/features/analytics/tracking'
 
 export default function FilterSearchDesktopPageSection() {
     const form = useForm<FormFilterSchemaType>({
         resolver: zodResolver(FormFilterSchema)
     });
     const { onSubmit, onClear } = useFormFilterSearchMediator(form);
+    const { trackEvent } = useTrackEvent();
 
     return (
         <div className="w-1/4 border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 relative">
             <FormProvider {...form}>
                 <Form {...form}>
-                    <form onSubmit={form.handleSubmit(onSubmit)} className="h-[calc(100vh-40px)] flex flex-col">
+                    <form
+                        onSubmit={form.handleSubmit((values) => {
+                            trackEvent(trackingEvents.CTA_SEARCH_SUBMIT_CLICK, {
+                                source: 'search_desktop_filters',
+                                has_query: 0,
+                                has_filters:
+                                    values.province ||
+                                    values.city ||
+                                    values.street ||
+                                    values.minPrice ||
+                                    values.maxPrice ||
+                                    values.minArea ||
+                                    values.maxArea ||
+                                    values.minNbrRooms ||
+                                    values.maxNbrRooms ||
+                                    (values.typeProperty?.length ?? 0) > 0 ||
+                                    (values.status?.length ?? 0) > 0 ||
+                                    (values.tags?.length ?? 0) > 0
+                                        ? 1
+                                        : 0,
+                            });
+                            onSubmit(values);
+                        })}
+                        className="h-[calc(100vh-40px)] flex flex-col"
+                    >
                     <div className='border-b border-gray-200 dark:border-gray-700 p-5'>
                         <div className='flex items-center justify-center mb-3'>
                             <h1 className='text-2xl font-bold text-[#146B67] dark:text-[#1FA89B] text-center'>
@@ -140,7 +166,13 @@ export default function FilterSearchDesktopPageSection() {
                         <Button
                             variant="outline"
                             type="reset"
-                            onClick={onClear}
+                            onClick={() => {
+                                trackEvent(trackingEvents.CTA_SEARCH_SUBMIT_CLICK, {
+                                    source: 'search_desktop_filters_clear',
+                                    has_query: 0,
+                                });
+                                onClear();
+                            }}
                             className="w-full border-[#146B67] dark:border-[#1FA89B] text-[#146B67] dark:text-[#1FA89B] hover:bg-[#1FA89B]/10 dark:hover:bg-[#1FA89B]/20 rounded-full mb-2"
                         >
                             Effacer

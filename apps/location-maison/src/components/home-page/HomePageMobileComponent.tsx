@@ -17,6 +17,7 @@ import FeaturedSection from './FeaturedSection';
 import TrendingSection from './TrendingSection';
 import RecentSection from './RecentSection';
 import { motion, useReducedMotion } from 'framer-motion';
+import { trackingEvents, useTrackEvent } from '@/features/analytics/tracking';
 
 export default function HomePageMobileComponent() {
     const {
@@ -25,6 +26,7 @@ export default function HomePageMobileComponent() {
     } = useAlgoliaContext();
 
     const { user } = useCurrentUser()
+    const { trackEvent } = useTrackEvent()
     const isAnnouncer = Array.isArray(user?.roles) && user.roles.includes('Announcer')
     const publishLink = !user
         ? routes.public.signin
@@ -80,6 +82,13 @@ export default function HomePageMobileComponent() {
                 transition: { duration: 0.45, delay, ease: [0.22, 1, 0.36, 1] },
             }
 
+    const trackSearchSubmit = () => {
+        trackEvent(trackingEvents.CTA_SEARCH_SUBMIT_CLICK, {
+            source: 'home_mobile_search_section',
+            has_query: searchText ? 1 : 0,
+        })
+    }
+
     return (
         <>
             <div
@@ -108,10 +117,11 @@ export default function HomePageMobileComponent() {
                             </h1>
                         </div>
                     </div>
-                    <Form action="/search">
+                    <Form action="/search" onSubmit={trackSearchSubmit}>
                         <div className="flex items-center border rounded-full p-2 px-4 bg-gray-100 focus-within:border-[#1FA89B]">
                             <button
                                 type='submit'
+                                onClick={trackSearchSubmit}
                             >
                                 <Search size={25} className='hover:stroke-[#1FA89B]' />
                             </button>
@@ -163,8 +173,30 @@ export default function HomePageMobileComponent() {
                 <motion.section className='space-y-5 bg-green-50 p-5 py-16' {...getRevealProps(0.07)}>
                     <h1 className='text-xl font-bold text-center text-[#146B67]'>Quels sont vos besoins ?</h1>
                     <div className='flex gap-2'>
-                        <Link href={publishLink} className='w-1/2 bg-[#146B67] text-white font-bold py-3 rounded-xl flex justify-center items-center'>Publier une annonce</Link>
-                        <Link href={routes.public.search_property} className='w-1/2 bg-white border border-[#146B67] text-[#146B67] font-bold py-3 rounded-xl flex justify-center items-center text-center'>Rechercher une annonce</Link>
+                        <Link
+                            href={publishLink}
+                            onClick={() =>
+                                trackEvent(trackingEvents.CTA_HOME_PUBLISH_CLICK, {
+                                    source: 'home_mobile_needs_section',
+                                    destination: publishLink,
+                                })
+                            }
+                            className='w-1/2 bg-[#146B67] text-white font-bold py-3 rounded-xl flex justify-center items-center'
+                        >
+                            Publier une annonce
+                        </Link>
+                        <Link
+                            href={routes.public.search_property}
+                            onClick={() =>
+                                trackEvent(trackingEvents.CTA_HOME_SEARCH_CLICK, {
+                                    source: 'home_mobile_needs_section',
+                                    destination: routes.public.search_property,
+                                })
+                            }
+                            className='w-1/2 bg-white border border-[#146B67] text-[#146B67] font-bold py-3 rounded-xl flex justify-center items-center text-center'
+                        >
+                            Rechercher une annonce
+                        </Link>
                     </div>
                 </motion.section>
 
@@ -208,6 +240,12 @@ export default function HomePageMobileComponent() {
 
                         <Link
                             href={routes.public.search_property}
+                            onClick={() =>
+                                trackEvent(trackingEvents.CTA_HOME_EXPLORE_CLICK, {
+                                    source: 'home_mobile_bottom_section',
+                                    destination: routes.public.search_property,
+                                })
+                            }
                             className='text-[#146B67] bg-white p-2 rounded-full text-center font-bold w-1/3'
                         >
                             Explorez

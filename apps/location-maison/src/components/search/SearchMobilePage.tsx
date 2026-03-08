@@ -9,8 +9,10 @@ import { useAlgoliaContext } from '@/providers/AlgoliaContext';
 import { useInfiniteHits, useStats } from 'react-instantsearch';
 import PropertyCard from '../home-page/PropertyCard';
 import { useSearchParams } from 'next/navigation';
+import { trackingEvents, useTrackEvent } from '@/features/analytics/tracking';
 
 export default function SearchMobilePage() {
+    const { trackEvent } = useTrackEvent()
     const { searchText, setSearchText, province, city, street, minPrice, maxPrice, minArea, maxArea, minNbrRooms, maxNbrRooms, typeProperty, tags, setProvince, setCity, setStreet, setMinPrice, setMaxPrice, setMinArea, setMaxArea, setMinNbrRooms, setMaxNbrRooms, setTypeProperty, setStatus, setTags } = useAlgoliaContext()
     const topRef = React.useRef<HTMLDivElement>(null);
     const sentinelRef = React.useRef<HTMLDivElement>(null);
@@ -139,6 +141,14 @@ export default function SearchMobilePage() {
                                     if (tags && tags.length > 0) {
                                         params.append("tags", tags.join(","));
                                     }
+                                    trackEvent(trackingEvents.CTA_SEARCH_SUBMIT_CLICK, {
+                                        source: 'search_mobile_page',
+                                        has_query: searchText ? 1 : 0,
+                                        has_filters:
+                                            province || city || street || minPrice || maxPrice || minArea || maxArea || minNbrRooms || maxNbrRooms
+                                                ? 1
+                                                : 0,
+                                    });
                                     window.location.href = `/search?${params.toString()}`;
                                 }}
                             >

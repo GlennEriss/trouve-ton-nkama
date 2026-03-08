@@ -2,7 +2,6 @@
  * Route API pour initier l'achat de crédits
  */
 
-import { adminAuth } from '@/firebase/admin'
 import { NextRequest, NextResponse } from 'next/server'
 
 interface PurchaseRequestBody {
@@ -20,6 +19,8 @@ interface PurchaseResponse {
 
 export async function POST(request: NextRequest): Promise<NextResponse<PurchaseResponse>> {
   try {
+    const { adminAuth } = await import('@/firebase/admin')
+
     // Récupérer le token d'authentification
     const authHeader = request.headers.get('authorization')
     if (!authHeader?.startsWith('Bearer ')) {

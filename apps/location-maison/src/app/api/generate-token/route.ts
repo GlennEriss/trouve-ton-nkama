@@ -1,9 +1,10 @@
 // /app/api/auth/generate-token/route.ts
-import { adminAuth } from "@/firebase/admin";
 import { NextResponse, NextRequest } from "next/server";
 
 export async function POST(req: NextRequest) {
     try {
+        const { adminAuth } = await import('@/firebase/admin');
+
         // Check if request has a body
         const contentLength = req.headers.get('content-length');
         if (!contentLength || contentLength === '0') {

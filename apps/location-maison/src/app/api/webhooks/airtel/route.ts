@@ -3,8 +3,6 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server'
-import { adminApp } from '@/firebase/admin'
-import { getFirestore, FieldValue } from 'firebase-admin/firestore'
 
 interface AirtelWebhookPayload {
   transaction: {
@@ -19,8 +17,6 @@ interface AirtelWebhookPayload {
   timestamp: string
   signature?: string
 }
-
-const db = getFirestore(adminApp as any)
 
 /**
  * Vérifie la signature du webhook (à implémenter en Phase 2)
@@ -38,7 +34,13 @@ function verifyWebhookSignature(payload: string, signature: string): boolean {
 /**
  * Met à jour le solde utilisateur après paiement réussi
  */
-async function addCreditsToUser(userId: string, credits: number, transactionId: string) {
+async function addCreditsToUser(
+  db: any,
+  FieldValue: any,
+  userId: string,
+  credits: number,
+  transactionId: string
+) {
   // Trouver le document utilisateur par UID
   const usersSnapshot = await db
     .collection('users')
@@ -76,6 +78,20 @@ async function addCreditsToUser(userId: string, credits: number, transactionId: 
 
 export async function POST(request: NextRequest): Promise<NextResponse> {
   try {
+    const [{ adminApp }, { getFirestore, FieldValue }] = await Promise.all([
+      import('@/firebase/admin'),
+      import('firebase-admin/firestore'),
+    ]);
+
+    if (!adminApp) {
+      return NextResponse.json(
+        { error: 'Firebase admin is not initialized' },
+        { status: 500 }
+      );
+    }
+
+    const db = getFirestore(adminApp as any);
+
     console.log('🔔 Webhook Airtel Money reçu')
     
     const body = await request.text()
@@ -122,7 +138,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
         console.log(`✅ Paiement réussi - Ajout de ${credits} crédits à l'utilisateur ${userId}`)
         
         // Ajouter les crédits au solde utilisateur
-        await addCreditsToUser(userId, credits, transactionId)
+        await addCreditsToUser(db, FieldValue, userId, credits, transactionId)
         
         // Mettre à jour la transaction avec les infos Airtel
         await db.collection('credit_transactions').doc(transactionId).update({

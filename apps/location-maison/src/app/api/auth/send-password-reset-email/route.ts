@@ -1,5 +1,4 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { adminAuth } from '@/firebase/admin';
 import { render } from '@react-email/render';
 import PasswordReset from '@/emails/PasswordReset';
 import { emailService, EmailService } from '@/services/email.service';
@@ -12,6 +11,8 @@ const logger = createLogger('api.auth.send-password-reset-email');
 
 export async function POST(request: NextRequest) {
   try {
+    const { adminAuth } = await import('@/firebase/admin');
+
     const body = await request.json();
     const { email, subject, texts } = body || {};
     assertStringField(email, 'email', 'Email est requis');

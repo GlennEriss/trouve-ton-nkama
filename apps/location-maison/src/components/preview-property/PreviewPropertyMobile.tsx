@@ -18,6 +18,7 @@ import { DetailsPropertyMobile } from './DetailsPropertyMobile'
 import ButtonShareToFacebook from './ButtonShareToFacebook'
 import ButtonShareToWhatsapp from './ButtonShareToWhatsapp'
 import { AlertTriangle } from 'lucide-react'
+import { useTrackPropertyInteraction } from '@/hooks/use-track-property-interaction'
 
 const inter = Inter({
     subsets: ['latin'],
@@ -28,11 +29,26 @@ type PreviewPropertyMobileProps = {
 }
 export const PreviewPropertyMobile: React.FC<PreviewPropertyMobileProps> = ({ property }) => {
     const { data: user } = useUserByUID(property.createdBy)
+    const { trackInteraction } = useTrackPropertyInteraction(property.id)
     const avatarBackground = generateColorFromName(user?.firstname ?? '');
     const tagSatus: Record<string, string> = {
         "FOR_RENT": "A LOUER",
         "FOR_SALE": "A VENDRE"
     }
+    const phoneNumber = property?.contact ?? user?.phoneNumbers?.[0]
+
+    const handleWhatsAppClick = () => {
+        trackInteraction('whatsapp_contact', {
+            phoneNumber,
+        })
+    }
+
+    const handlePhoneClick = () => {
+        trackInteraction('phone_contact', {
+            phoneNumber,
+        })
+    }
+
     return (
         <div className={cn('space-y-8 mb-20', inter.className)}>
             <section className='space-y-3'>
@@ -112,22 +128,24 @@ export const PreviewPropertyMobile: React.FC<PreviewPropertyMobileProps> = ({ pr
                 </div>
                 <div className='flex gap-3'>
                     <Link
-                        href={property?.contact ?? user?.phoneNumbers?.[0] ? `https://wa.me/${property.contact ?? user?.phoneNumbers[0]}?text=${encodeURIComponent(
+                        href={phoneNumber ? `https://wa.me/${phoneNumber}?text=${encodeURIComponent(
                             `Bonjour, je suis intéressé par votre annonce "${property.title}" au prix de ${property.price.toLocaleString('fr-FR')} FCFA. Voici le lien de l'annonce : ${process.env.NEXT_PUBLIC_HOST}/houseDetails/${property.id}`
                         )}` : '#'}
                         target="_blank"
                         rel="noopener noreferrer"
                         title="Contacter via WhatsApp"
+                        onClick={handleWhatsAppClick}
                     >
                         <div className='border border-gray-300 p-3 rounded-lg shadow-lg '>
                             <FaWhatsapp size={30} className="cursor-pointer hover:text-green-600 text-green-600" />
                         </div>
                     </Link>
                     <a
-                        href={property?.contact ?? user?.phoneNumbers?.[0] ? `tel:${property.contact ?? user?.phoneNumbers[0]}` : '#'}
+                        href={phoneNumber ? `tel:${phoneNumber}` : '#'}
                         target="_blank"
                         rel="noopener noreferrer"
                         title="Appeler"
+                        onClick={handlePhoneClick}
                     >
                         <div className='border border-gray-300 p-3 rounded-lg shadow-lg '>
                             <FaPhoneAlt size={30} className="cursor-pointer hover:text-blue-500 text-blue-500" />

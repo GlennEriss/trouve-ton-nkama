@@ -1,8 +1,9 @@
 import { NextResponse, NextRequest } from "next/server";
-import { adminAuth } from "@/firebase/admin"; // Importation de Firebase Admin SDK
 
 export async function POST(req: NextRequest) {
   try {
+    const { adminAuth } = await import('@/firebase/admin');
+
     const { uid } = await req.json();
 
     // Vérification si le uid est présent dans la requête

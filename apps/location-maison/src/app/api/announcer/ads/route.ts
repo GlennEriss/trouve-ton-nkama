@@ -1,8 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@/next-auth/auth';
-import { adminApp } from '@/firebase/admin';
 import { createLogger } from '@/lib/logger';
-import { getFirestore } from 'firebase-admin/firestore';
 import type { Property } from '@/models/annonce';
 import firebaseCollectionNames from '@/constantes/firebase-collection-name';
 
@@ -183,6 +181,11 @@ function compareProperties(left: PropertyRecord, right: PropertyRecord, sortBy: 
 
 export async function GET(request: NextRequest) {
   try {
+    const [{ adminApp }, { getFirestore }] = await Promise.all([
+      import('@/firebase/admin'),
+      import('firebase-admin/firestore'),
+    ]);
+
     const session = await auth();
     const uid = session?.user?.uid;
     if (!uid) {
@@ -213,6 +216,19 @@ export async function GET(request: NextRequest) {
 
     const minPrice = priceMin ? Number(priceMin) : Number.NaN;
     const maxPrice = priceMax ? Number(priceMax) : Number.NaN;
+
+    if (!adminApp) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: {
+            code: 'INTERNAL_SERVER_ERROR',
+            message: 'Firebase admin non initialisé.',
+          },
+        },
+        { status: 500 }
+      );
+    }
 
     const db = getFirestore(adminApp as any);
     const snapshot = await db

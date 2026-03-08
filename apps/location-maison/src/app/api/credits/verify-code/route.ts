@@ -2,7 +2,6 @@
  * Route API pour vérifier le code de paiement et mettre à jour les crédits
  */
 
-import { adminAuth, adminApp } from '@/firebase/admin'
 import { NextRequest, NextResponse } from 'next/server'
 
 interface VerifyCodeRequestBody {
@@ -19,6 +18,8 @@ interface VerifyCodeResponse {
 
 export async function POST(request: NextRequest): Promise<NextResponse<VerifyCodeResponse>> {
   try {
+    const { adminAuth, adminApp } = await import('@/firebase/admin');
+
     if (!adminApp) {
       return NextResponse.json(
         { success: false, message: 'Erreur de configuration du système' },

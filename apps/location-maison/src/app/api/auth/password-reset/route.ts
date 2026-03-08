@@ -1,8 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createLogger } from '@/lib/logger';
 import { assertStringField, handleApiError, jsonApiError } from '@/lib/api/error-response';
-import { adminAuth } from '@/firebase/admin';
-import { accountActivityNotificationServerService } from '@/features/users/account-activity-notifications';
 
 const logger = createLogger('api.auth.password-reset');
 
@@ -31,6 +29,8 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
+    const { adminAuth } = await import('@/firebase/admin');
+
     const body = await request.json();
     const { newPassword, oobCode } = body || {};
     assertStringField(newPassword, 'newPassword', 'Mot de passe et code OOB sont requis');
@@ -52,6 +52,9 @@ export async function POST(request: NextRequest) {
       const resetEmail = typeof confirmResult.email === 'string' ? confirmResult.email : '';
       if (resetEmail) {
         try {
+          const { accountActivityNotificationServerService } = await import(
+            '@/features/users/account-activity-notifications'
+          );
           const userRecord = await adminAuth.getUserByEmail(resetEmail);
           await accountActivityNotificationServerService.dispatch({
             uid: userRecord.uid,
