@@ -56,6 +56,14 @@ Bienvenue dans la documentation complète de la plateforme de location et vente 
 - **[config/](./config/)** : Configuration projet
   - Variables d'environnement
 
+### 📲 Progressive Web App (PWA)
+- **[pwa/](./pwa/)** : Passage a une PWA production-grade
+  - Architecture cible
+  - Strategie de cache runtime
+  - Fallback offline
+  - Install prompt centralise
+  - Runbook incident PWA
+
 ### 🔍 SEO
 - **[seo/](./seo/)** : Documentation SEO
   - Structure SEO

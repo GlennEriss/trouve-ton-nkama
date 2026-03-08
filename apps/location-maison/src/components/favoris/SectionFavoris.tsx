@@ -12,6 +12,7 @@ import { Button } from '../ui/button';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { Skeleton } from '../ui/skeleton';
 import { TypeProperty } from '@/constantes/property-type';
+import { logImageError, logImageLoad } from '@/lib/image-debug';
 
 export default function SectionFavoris() {
     const {user} = useCurrentUser()
@@ -85,10 +86,12 @@ export default function SectionFavoris() {
         <div className='px-5'>
             <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5'>
                 {data?.pages[0].properties.map((property) => {
+                    const propertyId = property.id ?? "unknown";
+                    const rawPrimaryImageUrl = property.images?.[0]?.fileURL;
                     const primaryImageSrc =
-                        typeof property.images?.[0]?.fileURL === "string" &&
-                        property.images[0].fileURL.trim().length > 0
-                            ? property.images[0].fileURL
+                        typeof rawPrimaryImageUrl === "string" &&
+                        rawPrimaryImageUrl.trim().length > 0
+                            ? rawPrimaryImageUrl
                             : "/home.png";
 
                     return (
@@ -112,6 +115,24 @@ export default function SectionFavoris() {
                                     alt={property.title ?? "Image de la propriété"}
                                     fill
                                     className="object-cover transform transition-transform duration-500 hover:scale-110"
+                                    onLoad={() =>
+                                        logImageLoad({
+                                            component: "SectionFavoris",
+                                            propertyId,
+                                            title: property.title,
+                                            rawFileUrl: rawPrimaryImageUrl,
+                                            resolvedSrc: primaryImageSrc,
+                                        })
+                                    }
+                                    onError={() =>
+                                        logImageError({
+                                            component: "SectionFavoris",
+                                            propertyId,
+                                            title: property.title,
+                                            rawFileUrl: rawPrimaryImageUrl,
+                                            resolvedSrc: primaryImageSrc,
+                                        })
+                                    }
                                 />
                             </div>
 

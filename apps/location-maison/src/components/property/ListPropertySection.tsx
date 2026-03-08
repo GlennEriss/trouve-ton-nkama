@@ -30,6 +30,7 @@ import { useQueryClient, useInfiniteQuery } from '@tanstack/react-query';
 import PromotionButton from '../promotion/PromotionButton';
 import PromotionBadge from '../promotion/PromotionBadge';
 import { createLogger } from '@/lib/logger';
+import { logImageError, logImageFallback, logImageLoad } from '@/lib/image-debug';
 
 const logger = createLogger('components.property.list-section');
 
@@ -236,10 +237,23 @@ export const CardPropertyCrud = ({ property }: { property: Property }) => {
         setLocalState(newState);
         setIsLoading(false);
     }
-    const primaryImageSrc =
-        typeof images[0]?.fileURL === 'string' && images[0].fileURL.trim().length > 0
-            ? images[0].fileURL
-            : '/fallback-image.jpg';
+    const rawPrimaryImageUrl = images[0]?.fileURL;
+    const hasPrimaryImageUrl =
+        typeof rawPrimaryImageUrl === 'string' && rawPrimaryImageUrl.trim().length > 0;
+    const primaryImageSrc = hasPrimaryImageUrl ? rawPrimaryImageUrl : '/fallback-image.jpg';
+
+    React.useEffect(() => {
+        if (hasPrimaryImageUrl) {
+            return;
+        }
+        logImageFallback({
+            component: 'CardPropertyCrud',
+            propertyId: property.id ?? 'unknown',
+            title,
+            rawFileUrl: rawPrimaryImageUrl,
+            resolvedSrc: primaryImageSrc,
+        });
+    }, [hasPrimaryImageUrl, primaryImageSrc, property.id, rawPrimaryImageUrl, title]);
     
     return (
         <Card className="group relative overflow-hidden bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-2xl shadow-sm hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
@@ -250,6 +264,24 @@ export const CardPropertyCrud = ({ property }: { property: Property }) => {
                     alt={title}
                     fill
                     className="object-cover transition-transform duration-500 group-hover:scale-110"
+                    onLoad={() =>
+                        logImageLoad({
+                            component: 'CardPropertyCrud',
+                            propertyId: property.id ?? 'unknown',
+                            title,
+                            rawFileUrl: rawPrimaryImageUrl,
+                            resolvedSrc: primaryImageSrc,
+                        })
+                    }
+                    onError={() =>
+                        logImageError({
+                            component: 'CardPropertyCrud',
+                            propertyId: property.id ?? 'unknown',
+                            title,
+                            rawFileUrl: rawPrimaryImageUrl,
+                            resolvedSrc: primaryImageSrc,
+                        })
+                    }
                 />
                 
                 {/* Overlay gradient */}

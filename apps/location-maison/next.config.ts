@@ -1,5 +1,5 @@
 import type { NextConfig } from "next";
-import withPWA from '@ducanh2912/next-pwa';
+import withPWA, { runtimeCaching as defaultRuntimeCaching } from '@ducanh2912/next-pwa';
 
 const nextConfig: NextConfig = {
   reactStrictMode: true,
@@ -62,9 +62,50 @@ const nextConfig: NextConfig = {
   },
 };
 
+const staticJsRuntimeCache = defaultRuntimeCaching.find(
+  (entry) => entry.options?.cacheName === 'static-js-assets'
+);
+
+const crossOriginRuntimeCache = defaultRuntimeCaching.find(
+  (entry) => entry.options?.cacheName === 'cross-origin'
+);
+
+const runtimeCachingOverrides = [
+  ...(staticJsRuntimeCache
+    ? [
+        {
+          ...staticJsRuntimeCache,
+          // Keep static JS cache for first-party scripts only.
+          urlPattern: ({ sameOrigin, url }: { sameOrigin: boolean; url: URL }) =>
+            sameOrigin && /\.(?:js)$/i.test(url.pathname),
+        },
+      ]
+    : []),
+  ...(crossOriginRuntimeCache
+    ? [
+        {
+          ...crossOriginRuntimeCache,
+          // Do not route AdSense traffic through Workbox runtime caching.
+          urlPattern: ({ sameOrigin, url }: { sameOrigin: boolean; url: URL }) =>
+            !sameOrigin &&
+            ![
+              'pagead2.googlesyndication.com',
+              'tpc.googlesyndication.com',
+              'googleads.g.doubleclick.net',
+              'securepubads.g.doubleclick.net',
+            ].includes(url.hostname),
+        },
+      ]
+    : []),
+];
+
 const withPwaConfig = withPWA({
   dest: 'public',
   disable: process.env.NODE_ENV === 'development',
+  extendDefaultRuntimeCaching: true,
+  workboxOptions: {
+    runtimeCaching: runtimeCachingOverrides,
+  },
 });
 
 // Turbopack warns when `webpack` is configured but `turbo` is not.
