@@ -1,5 +1,4 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { adminAuth } from '@/firebase/admin';
 import { render } from '@react-email/render';
 import EmailVerification from '@/emails/EmailVerification';
 import { emailService, EmailService } from '@/services/email.service';
@@ -12,6 +11,8 @@ const logger = createLogger('api.auth.send-verification-email');
 
 export async function POST(request: NextRequest) {
   try {
+    const { adminAuth } = await import('@/firebase/admin');
+
     const body = await request.json();
     const { email, uid, subject, texts } = body || {};
 

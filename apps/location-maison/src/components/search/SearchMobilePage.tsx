@@ -2,6 +2,7 @@
 
 import React from 'react'
 import Form from 'next/form'
+import Link from 'next/link'
 import { Search, ChevronUp, ChevronDown } from 'lucide-react';
 import { Input } from '../ui/input';
 import { FilterModalHomePage } from '../home-page/FilterModalHomePage';
@@ -9,17 +10,41 @@ import { useAlgoliaContext } from '@/providers/AlgoliaContext';
 import { useInfiniteHits, useStats } from 'react-instantsearch';
 import PropertyCard from '../home-page/PropertyCard';
 import { useSearchParams } from 'next/navigation';
+import { trackingEvents, useTrackEvent } from '@/features/analytics/tracking';
+import { useSession } from 'next-auth/react';
+import SearchWithAIAccessNoticeDialog from './SearchWithAIAccessNoticeDialog';
 
 export default function SearchMobilePage() {
+    const { trackEvent } = useTrackEvent()
+    const { status } = useSession();
+    const isAuthenticated = status === 'authenticated';
     const { searchText, setSearchText, province, city, street, minPrice, maxPrice, minArea, maxArea, minNbrRooms, maxNbrRooms, typeProperty, tags, setProvince, setCity, setStreet, setMinPrice, setMaxPrice, setMinArea, setMaxArea, setMinNbrRooms, setMaxNbrRooms, setTypeProperty, setStatus, setTags } = useAlgoliaContext()
     const topRef = React.useRef<HTMLDivElement>(null);
     const sentinelRef = React.useRef<HTMLDivElement>(null);
     const { items, isLastPage, showMore } = useInfiniteHits();
     const { nbHits } = useStats();
     const searchParams = useSearchParams();
+    const searchWithAIHref = React.useMemo(() => {
+        const params = new URLSearchParams(searchParams.toString());
+        params.set('entry', 'search_cta');
+        return `/search-with-ia?${params.toString()}`;
+    }, [searchParams]);
     const [isLoadingMore, setIsLoadingMore] = React.useState(false);
     const [lastItemsCount, setLastItemsCount] = React.useState(0);
     const [newItemsLoaded, setNewItemsLoaded] = React.useState(0);
+    const [isAccessDialogOpen, setIsAccessDialogOpen] = React.useState(false);
+
+    const onSearchWithAIClick = (event: React.MouseEvent<HTMLAnchorElement>) => {
+        trackEvent(trackingEvents.CTA_SEARCH_WITH_IA_ENTRY_CLICK, {
+            source: 'search_mobile_page',
+            is_authenticated: isAuthenticated ? 1 : 0,
+        });
+
+        if (!isAuthenticated) {
+            event.preventDefault();
+            setIsAccessDialogOpen(true);
+        }
+    };
 
     // Synchronisation URL → Contexte Algolia au chargement initial
     React.useEffect(() => {
@@ -139,6 +164,14 @@ export default function SearchMobilePage() {
                                     if (tags && tags.length > 0) {
                                         params.append("tags", tags.join(","));
                                     }
+                                    trackEvent(trackingEvents.CTA_SEARCH_SUBMIT_CLICK, {
+                                        source: 'search_mobile_page',
+                                        has_query: searchText ? 1 : 0,
+                                        has_filters:
+                                            province || city || street || minPrice || maxPrice || minArea || maxArea || minNbrRooms || maxNbrRooms
+                                                ? 1
+                                                : 0,
+                                    });
                                     window.location.href = `/search?${params.toString()}`;
                                 }}
                             >
@@ -156,6 +189,13 @@ export default function SearchMobilePage() {
                             </div>
                         </div>
                     </Form>
+                    <Link
+                        href={searchWithAIHref}
+                        onClick={onSearchWithAIClick}
+                        className="inline-flex items-center gap-2 rounded-full border border-[#146B67]/30 bg-[#E6F8F5] text-[#146B67] px-4 py-2 text-sm font-medium hover:bg-[#d8f1ed] transition-colors"
+                    >
+                        Rechercher avec IA
+                    </Link>
                 </section>
 
                 <section className='space-y-5'>
@@ -246,6 +286,10 @@ export default function SearchMobilePage() {
                     </div>
                 </section>
             </div>
+            <SearchWithAIAccessNoticeDialog
+                open={isAccessDialogOpen}
+                onOpenChange={setIsAccessDialogOpen}
+            />
         </>
     );
 }

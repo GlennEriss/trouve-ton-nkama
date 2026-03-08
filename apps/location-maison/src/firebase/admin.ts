@@ -1,3 +1,4 @@
+import '@/lib/node/slow-buffer-compat';
 import * as admin from 'firebase-admin';
 import { getAuth } from 'firebase-admin/auth';
 import { App } from 'firebase-admin/app';

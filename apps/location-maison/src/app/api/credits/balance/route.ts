@@ -3,8 +3,6 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server'
-import { getFirestore, FieldValue } from 'firebase-admin/firestore'
-import { adminAuth } from '@/firebase/admin'
 
 interface BalanceResponse {
   success: boolean
@@ -13,12 +11,10 @@ interface BalanceResponse {
   error?: string
 }
 
-const db = getFirestore()
-
 /**
  * Trouve un document utilisateur par UID
  */
-async function findUserDocumentByUID(userId: string) {
+async function findUserDocumentByUID(db: any, userId: string) {
   const usersSnapshot = await db
     .collection('users')
     .where('uid', '==', userId)
@@ -34,6 +30,12 @@ async function findUserDocumentByUID(userId: string) {
 
 export async function GET(request: NextRequest): Promise<NextResponse<BalanceResponse>> {
   try {
+    const [{ adminAuth }, { getFirestore, FieldValue }] = await Promise.all([
+      import('@/firebase/admin'),
+      import('firebase-admin/firestore'),
+    ]);
+    const db = getFirestore();
+
     // Récupérer le token d'authentification
     const authHeader = request.headers.get('authorization')
     if (!authHeader?.startsWith('Bearer ')) {
@@ -50,7 +52,7 @@ export async function GET(request: NextRequest): Promise<NextResponse<BalanceRes
     const userId = decodedToken.uid
 
     // Récupérer le document utilisateur par UID
-    const userDoc = await findUserDocumentByUID(userId)
+    const userDoc = await findUserDocumentByUID(db, userId)
     
     if (!userDoc) {
       // L'utilisateur n'existe pas encore en base

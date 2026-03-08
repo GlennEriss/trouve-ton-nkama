@@ -1,8 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { adminAuth } from '@/firebase/admin';
 
 export async function POST(request: NextRequest) {
   try {
+    const { adminAuth } = await import('@/firebase/admin');
+
     const { uid } = await request.json();
 
     if (!uid) {

@@ -6,6 +6,7 @@ import CreditBalanceDisplay from './CreditBalanceDisplay'
 import CreditPacksList from './CreditPacksList'
 import PremiumServicesInfo from './PremiumServicesInfo'
 import MyBalanceNavigation from './MyBalanceNavigation'
+import { trackingEvents, useTrackEvent } from '@/features/analytics/tracking'
 
 const DEFAULT_RECHARGE_WHATSAPP_PHONE = '+221773161707'
 
@@ -22,6 +23,7 @@ function buildWhatsappLink() {
 
 export default function MyBalanceRechargeComponent() {
   const whatsappLink = buildWhatsappLink()
+  const { trackEvent } = useTrackEvent()
 
   return (
     <div className="container mx-auto px-4 md:px-6 py-4 md:py-6 space-y-6 md:space-y-8 max-w-[1280px] 2xl:max-w-[1440px]">
@@ -64,6 +66,11 @@ export default function MyBalanceRechargeComponent() {
           href={whatsappLink}
           target="_blank"
           rel="noreferrer"
+          onClick={() =>
+            trackEvent(trackingEvents.CTA_BALANCE_RECHARGE_WHATSAPP_CLICK, {
+              source: 'balance_recharge_page',
+            })
+          }
           className="inline-flex items-center gap-2 rounded-xl px-4 py-2.5 bg-[#146B67] hover:bg-[#125A56] text-white font-semibold transition-colors"
         >
           <MessageCircle className="w-4 h-4" />

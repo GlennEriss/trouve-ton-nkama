@@ -1,5 +1,4 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { adminAuth } from '@/firebase/admin';
 import { createLogger } from '@/lib/logger';
 import { assertStringField, handleApiError } from '@/lib/api/error-response';
 import { ValidationError } from '@/lib/errors/app-error';
@@ -8,6 +7,8 @@ const logger = createLogger('api.auth.verify-email');
 
 export async function GET(request: NextRequest) {
   try {
+    const { adminAuth } = await import('@/firebase/admin');
+
     const params = request.nextUrl.searchParams;
     const uid = params.get('uid');
     const expires = params.get('expires');
@@ -67,6 +68,8 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
+    const { adminAuth } = await import('@/firebase/admin');
+
     const body = await request.json();
     const { uid } = body || {};
     assertStringField(uid, 'uid', 'UID utilisateur requis');

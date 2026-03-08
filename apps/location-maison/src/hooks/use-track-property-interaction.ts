@@ -1,6 +1,7 @@
 'use client'
 
 import { useCallback } from 'react';
+import { trackEvent, trackingEvents } from '@/features/analytics/tracking';
 
 export type InteractionType = 
   | 'whatsapp_contact'
@@ -58,8 +59,24 @@ export function useTrackPropertyInteraction(propertyId: string | undefined) {
         console.error('Error tracking interaction:', error);
       });
     }
+
+    const analyticsParams = {
+      property_id: propertyId,
+      interaction_type: type,
+    };
+
+    if (type === 'whatsapp_contact') {
+      void trackEvent(trackingEvents.CTA_PROPERTY_WHATSAPP_CONTACT_CLICK, analyticsParams);
+    }
+
+    if (type === 'favorite_add') {
+      void trackEvent(trackingEvents.CTA_PROPERTY_FAVORITE_ADD_CLICK, analyticsParams);
+    }
+
+    if (type === 'favorite_remove') {
+      void trackEvent(trackingEvents.CTA_PROPERTY_FAVORITE_REMOVE_CLICK, analyticsParams);
+    }
   }, [propertyId]);
 
   return { trackInteraction };
 }
-

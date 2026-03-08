@@ -5,10 +5,12 @@ import { BiSearch } from "react-icons/bi";
 import { useAlgoliaContext } from '@/providers/AlgoliaContext';
 import { useRouter } from 'next/navigation';
 import { useWindowSize } from "@/hooks/useSize";
+import { trackingEvents, useTrackEvent } from '@/features/analytics/tracking';
 
 export default function InputSearchNavbar() {
     const router = useRouter();
     const { width } = useWindowSize();
+    const { trackEvent } = useTrackEvent();
     const [showSearch, setShowSearch] = React.useState(false);
     const {
         searchText,
@@ -41,6 +43,14 @@ export default function InputSearchNavbar() {
         if (tags && tags.length > 0) {
             params.append("tags", tags.join(","));
         }
+        trackEvent(trackingEvents.CTA_SEARCH_SUBMIT_CLICK, {
+            source: width < 768 ? 'home_mobile_navbar' : 'home_desktop_navbar',
+            has_query: searchText ? 1 : 0,
+            has_filters:
+                city || street || minPrice || maxPrice || minArea || maxArea || minNbrRooms || maxNbrRooms
+                    ? 1
+                    : 0,
+        });
         router.push(`/search?${params.toString()}`);
     };
 

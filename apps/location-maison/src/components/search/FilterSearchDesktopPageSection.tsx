@@ -1,4 +1,7 @@
+'use client'
+
 import React from 'react'
+import Link from 'next/link'
 import { Form } from '../ui/form'
 import { FormFilterSchemaType } from '@/models/schema';
 import { useForm, FormProvider } from 'react-hook-form';
@@ -13,23 +16,78 @@ import InputFormNumberApp from '../shared/form/InputFormNumberApp'
 import { TypeProperty, getTypePropertyKey } from '@/constantes/property-type'
 import { Button } from '../ui/button'
 import { useFormFilterSearchMediator } from '@/hooks/useFormFilterSearchMediator'
+import { trackingEvents, useTrackEvent } from '@/features/analytics/tracking'
+import { useSearchParams } from 'next/navigation'
+import { useSession } from 'next-auth/react'
+import SearchWithAIAccessNoticeDialog from './SearchWithAIAccessNoticeDialog'
 
 export default function FilterSearchDesktopPageSection() {
     const form = useForm<FormFilterSchemaType>({
         resolver: zodResolver(FormFilterSchema)
     });
     const { onSubmit, onClear } = useFormFilterSearchMediator(form);
+    const { trackEvent } = useTrackEvent();
+    const searchParams = useSearchParams();
+    const { status } = useSession();
+    const [isAccessDialogOpen, setIsAccessDialogOpen] = React.useState(false);
+    const searchWithAIHref = `/search-with-ia?${new URLSearchParams(searchParams.toString()).toString()}&entry=search_cta`;
+    const isAuthenticated = status === 'authenticated';
+
+    const onSearchWithAIClick = (event: React.MouseEvent<HTMLAnchorElement>) => {
+        trackEvent(trackingEvents.CTA_SEARCH_WITH_IA_ENTRY_CLICK, {
+            source: 'search_desktop_filters',
+            is_authenticated: isAuthenticated ? 1 : 0,
+        });
+
+        if (!isAuthenticated) {
+            event.preventDefault();
+            setIsAccessDialogOpen(true);
+        }
+    };
 
     return (
         <div className="w-1/4 border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 relative">
             <FormProvider {...form}>
                 <Form {...form}>
-                    <form onSubmit={form.handleSubmit(onSubmit)} className="h-[calc(100vh-40px)] flex flex-col">
+                    <form
+                        onSubmit={form.handleSubmit((values) => {
+                            trackEvent(trackingEvents.CTA_SEARCH_SUBMIT_CLICK, {
+                                source: 'search_desktop_filters',
+                                has_query: 0,
+                                has_filters:
+                                    values.province ||
+                                    values.city ||
+                                    values.street ||
+                                    values.minPrice ||
+                                    values.maxPrice ||
+                                    values.minArea ||
+                                    values.maxArea ||
+                                    values.minNbrRooms ||
+                                    values.maxNbrRooms ||
+                                    (values.typeProperty?.length ?? 0) > 0 ||
+                                    (values.status?.length ?? 0) > 0 ||
+                                    (values.tags?.length ?? 0) > 0
+                                        ? 1
+                                        : 0,
+                            });
+                            onSubmit(values);
+                        })}
+                        className="h-[calc(100vh-40px)] flex flex-col"
+                    >
                     <div className='border-b border-gray-200 dark:border-gray-700 p-5'>
                         <div className='flex items-center justify-center mb-3'>
                             <h1 className='text-2xl font-bold text-[#146B67] dark:text-[#1FA89B] text-center'>
                                 Filtres de recherches
                             </h1>
+                        </div>
+                        <div className="flex justify-center">
+                            <Link
+                                href={searchWithAIHref}
+                                className="inline-flex items-center gap-2 rounded-full border border-[#146B67]/30 bg-[#E6F8F5] text-[#146B67] px-4 py-2 text-sm font-medium hover:bg-[#d8f1ed] transition-colors"
+                                onClick={onSearchWithAIClick}
+                            >
+                                Essayer la recherche IA
+                            </Link>
                         </div>
                     </div>
                     <div className="flex-1 overflow-auto mb-20">
@@ -140,7 +198,13 @@ export default function FilterSearchDesktopPageSection() {
                         <Button
                             variant="outline"
                             type="reset"
-                            onClick={onClear}
+                            onClick={() => {
+                                trackEvent(trackingEvents.CTA_SEARCH_SUBMIT_CLICK, {
+                                    source: 'search_desktop_filters_clear',
+                                    has_query: 0,
+                                });
+                                onClear();
+                            }}
                             className="w-full border-[#146B67] dark:border-[#1FA89B] text-[#146B67] dark:text-[#1FA89B] hover:bg-[#1FA89B]/10 dark:hover:bg-[#1FA89B]/20 rounded-full mb-2"
                         >
                             Effacer
@@ -156,6 +220,10 @@ export default function FilterSearchDesktopPageSection() {
                     </form>
                 </Form>
             </FormProvider>
+            <SearchWithAIAccessNoticeDialog
+                open={isAccessDialogOpen}
+                onOpenChange={setIsAccessDialogOpen}
+            />
         </div>
     )
 }

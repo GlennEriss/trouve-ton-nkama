@@ -10,6 +10,7 @@ import FeaturedSection from './FeaturedSection'
 import TrendingSection from './TrendingSection'
 import RecentSection from './RecentSection'
 import { motion, useReducedMotion } from 'framer-motion'
+import { trackingEvents, useTrackEvent } from '@/features/analytics/tracking'
 
 const detailssection2 = [
   {
@@ -30,6 +31,7 @@ const detailssection2 = [
 ]
 export default function HomePageDesktopComponent() {
   const { user } = useCurrentUser()
+  const { trackEvent } = useTrackEvent()
   const isAnnouncer = Array.isArray(user?.roles) && user.roles.includes('Announcer')
   const shouldReduceMotion = useReducedMotion()
   const publishLink = !user
@@ -161,6 +163,12 @@ export default function HomePageDesktopComponent() {
           <div className='flex flex-col md:flex-row gap-4 max-w-2xl mx-auto'>
             <Link
               href={publishLink}
+              onClick={() =>
+                trackEvent(trackingEvents.CTA_HOME_PUBLISH_CLICK, {
+                  source: 'home_desktop_needs_section',
+                  destination: publishLink,
+                })
+              }
               className='flex-1 group relative overflow-hidden bg-gradient-to-r from-[#146B67] to-[#1FA89B] text-white font-semibold py-4 px-8 rounded-xl flex items-center justify-center gap-3 shadow-lg hover:shadow-xl transition-all duration-300 hover:-translate-y-1'
             >
               <span className='relative z-10'>Publier une annonce</span>
@@ -168,6 +176,12 @@ export default function HomePageDesktopComponent() {
             </Link>
             <Link
               href={routes.public.search_property}
+              onClick={() =>
+                trackEvent(trackingEvents.CTA_HOME_SEARCH_CLICK, {
+                  source: 'home_desktop_needs_section',
+                  destination: routes.public.search_property,
+                })
+              }
               className='flex-1 group relative overflow-hidden bg-white text-[#146B67] font-semibold py-4 px-8 rounded-xl flex items-center justify-center gap-3 shadow-lg hover:shadow-xl transition-all duration-300 hover:-translate-y-1 border-2 border-[#146B67]/10 hover:border-[#146B67]/30'
             >
               <span>Rechercher une annonce</span>
@@ -217,6 +231,12 @@ export default function HomePageDesktopComponent() {
           </p>
           <Link
             href={routes.public.search_property}
+            onClick={() =>
+              trackEvent(trackingEvents.CTA_HOME_EXPLORE_CLICK, {
+                source: 'home_desktop_bottom_section',
+                destination: routes.public.search_property,
+              })
+            }
             className='bg-white hover:bg-[#146B67] text-[#146B67] hover:text-white px-8 py-3 rounded-full text-center font-semibold w-fit transition-all duration-300 shadow-lg hover:shadow-xl mt-4'
           >
             Explorez maintenant

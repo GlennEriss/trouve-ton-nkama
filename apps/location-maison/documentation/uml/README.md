@@ -86,7 +86,8 @@ Un nouveau diagramme dédié au système de crédits : **[use-cases-credits.puml
 | **Publier des annonces** | ❌ | ✅ |
 | **Acheter des crédits (mode manuel)** | ✅ | ✅ |
 | **Promouvoir annonces** | ❌ | ✅ |
-| **Assistant IA** | ❌ | ✅ |
+| **Assistant IA (creation annonce)** | ❌ | ✅ |
+| **Assistant IA (recherche dediee `/search-with-ia`)** | ✅ | ✅ |
 | **Statistiques** | ❌ | ✅ |
 
 ### Acteurs Secondaires (systèmes externes)
@@ -173,10 +174,10 @@ Property (base class)
 |---------|--------|----------------------------|
 | `use-cases-visiteur.puml` | Visiteur | Navigation, consultation, inscription |
 | `use-cases-utilisateur.puml` | Utilisateur | Profil, favoris, notifications, **devenir annonceur** |
-| `use-cases-recherche.puml` | **Tous** | Recherche avancée, alertes, comparaison, carte |
+| `use-cases-recherche.puml` | **Tous** | Recherche avancée, alertes, comparaison, carte, recherche IA dediee (`/search-with-ia`) |
 | `use-cases-annonceur.puml` | Annonceur | Publication, gestion, promotion, statistiques |
 | `use-cases-credits.puml` | Utilisateur/Annonceur/Admin | Historique, recharge manuelle, dépense, gestion crédits |
-| `use-cases-administrateur.puml` | Admin | Configuration, maintenance, diffusion des nouveautés plateforme |
+| `use-cases-administrateur.puml` | Admin | Configuration, maintenance, diffusion des nouveautés plateforme, lecture des métriques analytiques Algolia |
 
 ---
 
@@ -226,7 +227,8 @@ Property (base class)
 | Trending 7 jours | 10 |
 | Trending 3 jours | 5 |
 | Boost | 3 |
-| Assistant IA | 1 |
+| Assistant IA (creation annonce) | 1 |
+| Assistant IA (recherche dediee) | Variable (selon appels recherche) |
 
 ---
 

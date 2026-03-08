@@ -1,0 +1,33 @@
+@startuml
+title Assistant IA Recherche - Sequence de facturation sur usage utile
+
+actor User
+participant "Search UI classique (/search)" as SEARCH
+participant "Search With IA UI (/search-with-ia)" as UI
+participant "AI Search API" as API
+participant "Agent Runtime (Algolia Agent Studio)" as AGENT
+participant "Algolia Search" as ALGOLIA
+participant "Credit Service" as CREDIT
+database "Analytics/Cost Store" as ANALYTICS
+
+User -> SEARCH: Clique "Essayer la recherche IA"
+SEARCH -> UI: Navigation vers /search-with-ia
+User -> UI: Envoie message
+UI -> API: POST /api/ai-search/conversations/{id}/messages
+API -> AGENT: generate(message, context)
+
+alt Aucun appel recherche
+  AGENT --> API: response + searchCallsDelta=0
+  API -> ANALYTICS: logTurn(tokens, searchCalls=0, credits=0)
+  API --> UI: assistantMessage + creditsDebited=0
+else Appel recherche necessaire
+  AGENT -> ALGOLIA: search(query, filters)
+  ALGOLIA --> AGENT: hits + nbHits
+  AGENT --> API: response + searchCallsDelta>0
+  API -> CREDIT: debitPolicy(conversationId, userId, delta)
+  CREDIT --> API: transactionId + creditsRemaining
+  API -> ANALYTICS: logTurn(tokens, searchCalls, credits, cost, revenue)
+  API --> UI: assistantMessage + billingInfo
+end
+
+@enduml

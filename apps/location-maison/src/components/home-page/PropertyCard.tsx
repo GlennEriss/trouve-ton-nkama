@@ -3,9 +3,10 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import React from "react";
 import Image from "next/image";
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { formatPublicationDate } from "@/lib/utils";
 import { TypeProperty } from "@/constantes/property-type";
+import { trackingEvents, useTrackEvent } from '@/features/analytics/tracking';
 
 // Import des icônes
 import { IoMdBed } from "react-icons/io";
@@ -15,13 +16,22 @@ import { CheckCircle } from "lucide-react";
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const PropertyCard = ({ property, hideDate = false }: { property: any; hideDate?: boolean }) => {
   const router = useRouter();
+  const pathname = usePathname();
+  const { trackEvent } = useTrackEvent();
 
   const handleCardClick = () => {
+    const propertyId = property.objectID || property.id || property.path;
+    trackEvent(trackingEvents.CTA_PROPERTY_CARD_CLICK, {
+      source: pathname ?? 'unknown',
+      property_id: propertyId ?? '',
+      property_type: property.typeProperty ?? '',
+      property_status: property.status ?? '',
+    });
+
     if (property.path) {
       router.push(`/houseDetails/${property.path.replace("properties/", "")}`);
     } else {
       // Fallback si path n'existe pas, utiliser objectID ou id
-      const propertyId = property.objectID || property.id || property.path;
       router.push(`/houseDetails/${propertyId}`);
     }
   };
