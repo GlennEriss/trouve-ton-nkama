@@ -75,6 +75,7 @@ function getSessionId(): string {
 function resolvePageSpecificEvent(pathname: string): TrackingEventName | null {
   if (pathname === '/') return trackingEvents.PAGE_HOME_VIEW;
   if (pathname === '/search') return trackingEvents.PAGE_SEARCH_VIEW;
+  if (pathname === '/search-with-ia') return trackingEvents.PAGE_SEARCH_WITH_IA_VIEW;
   if (pathname === '/signin') return trackingEvents.PAGE_SIGNIN_VIEW;
   if (pathname === '/signup') return trackingEvents.PAGE_SIGNUP_VIEW;
   if (pathname.startsWith('/houseDetails/')) return trackingEvents.PAGE_PROPERTY_DETAILS_VIEW;

@@ -22,6 +22,7 @@ const PROTECTED_ROUTE_PREFIXES = [
     '/my-balance',
     '/login-and-security',
     '/verify-phone',
+    '/search-with-ia',
     '/admin',
 ] as const
 

@@ -1,4 +1,7 @@
+'use client'
+
 import React from 'react'
+import Link from 'next/link'
 import { Form } from '../ui/form'
 import { FormFilterSchemaType } from '@/models/schema';
 import { useForm, FormProvider } from 'react-hook-form';
@@ -14,6 +17,9 @@ import { TypeProperty, getTypePropertyKey } from '@/constantes/property-type'
 import { Button } from '../ui/button'
 import { useFormFilterSearchMediator } from '@/hooks/useFormFilterSearchMediator'
 import { trackingEvents, useTrackEvent } from '@/features/analytics/tracking'
+import { useSearchParams } from 'next/navigation'
+import { useSession } from 'next-auth/react'
+import SearchWithAIAccessNoticeDialog from './SearchWithAIAccessNoticeDialog'
 
 export default function FilterSearchDesktopPageSection() {
     const form = useForm<FormFilterSchemaType>({
@@ -21,6 +27,23 @@ export default function FilterSearchDesktopPageSection() {
     });
     const { onSubmit, onClear } = useFormFilterSearchMediator(form);
     const { trackEvent } = useTrackEvent();
+    const searchParams = useSearchParams();
+    const { status } = useSession();
+    const [isAccessDialogOpen, setIsAccessDialogOpen] = React.useState(false);
+    const searchWithAIHref = `/search-with-ia?${new URLSearchParams(searchParams.toString()).toString()}&entry=search_cta`;
+    const isAuthenticated = status === 'authenticated';
+
+    const onSearchWithAIClick = (event: React.MouseEvent<HTMLAnchorElement>) => {
+        trackEvent(trackingEvents.CTA_SEARCH_WITH_IA_ENTRY_CLICK, {
+            source: 'search_desktop_filters',
+            is_authenticated: isAuthenticated ? 1 : 0,
+        });
+
+        if (!isAuthenticated) {
+            event.preventDefault();
+            setIsAccessDialogOpen(true);
+        }
+    };
 
     return (
         <div className="w-1/4 border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 relative">
@@ -56,6 +79,15 @@ export default function FilterSearchDesktopPageSection() {
                             <h1 className='text-2xl font-bold text-[#146B67] dark:text-[#1FA89B] text-center'>
                                 Filtres de recherches
                             </h1>
+                        </div>
+                        <div className="flex justify-center">
+                            <Link
+                                href={searchWithAIHref}
+                                className="inline-flex items-center gap-2 rounded-full border border-[#146B67]/30 bg-[#E6F8F5] text-[#146B67] px-4 py-2 text-sm font-medium hover:bg-[#d8f1ed] transition-colors"
+                                onClick={onSearchWithAIClick}
+                            >
+                                Essayer la recherche IA
+                            </Link>
                         </div>
                     </div>
                     <div className="flex-1 overflow-auto mb-20">
@@ -188,6 +220,10 @@ export default function FilterSearchDesktopPageSection() {
                     </form>
                 </Form>
             </FormProvider>
+            <SearchWithAIAccessNoticeDialog
+                open={isAccessDialogOpen}
+                onOpenChange={setIsAccessDialogOpen}
+            />
         </div>
     )
 }
