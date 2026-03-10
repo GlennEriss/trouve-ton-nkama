@@ -7,6 +7,7 @@ export interface AIFormData {
   price: number | string
   area: number | string
   tags: string[]
+  status?: string
   propertyDetails: Record<string, any>
 }
 
@@ -30,6 +31,7 @@ export interface ProcessedFormData {
   [key: string]: any
 }
 
+
 // Mapping des types de propriété pour le localStorage
 const PROPERTY_TYPE_MAPPING: Record<string, string> = Object.entries(TypePropertyEnum).reduce(
   (acc, [key, value]) => ({
@@ -40,6 +42,232 @@ const PROPERTY_TYPE_MAPPING: Record<string, string> = Object.entries(TypePropert
 )
 
 export class AIFormService {
+  private static readonly MAX_USER_DESCRIPTION_LENGTH = 2500
+
+  private static readonly DEFAULT_TAGS = ['Famille', 'Calme et tranquillité', 'Parking']
+
+  private normalizeTextForMatch(value: string): string {
+    return value
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .toLowerCase()
+      .trim()
+  }
+
+  private parseStatusCandidate(status: unknown): 'FOR_RENT' | 'FOR_SALE' | null {
+    if (typeof status !== 'string') return null
+    const normalized = this.normalizeTextForMatch(status)
+
+    if (
+      normalized === 'for_rent' ||
+      normalized === 'for-rent' ||
+      normalized === 'for rent' ||
+      normalized === 'rent' ||
+      normalized === 'a louer' ||
+      normalized === 'a loue' ||
+      normalized === 'location'
+    ) {
+      return 'FOR_RENT'
+    }
+
+    if (
+      normalized === 'for_sale' ||
+      normalized === 'for-sale' ||
+      normalized === 'for sale' ||
+      normalized === 'sale' ||
+      normalized === 'a vendre' ||
+      normalized === 'vente'
+    ) {
+      return 'FOR_SALE'
+    }
+
+    return null
+  }
+
+  private inferStatusFromText(...texts: Array<string | undefined>): 'FOR_RENT' | 'FOR_SALE' | null {
+    const normalized = this.normalizeTextForMatch(texts.filter(Boolean).join(' '))
+    if (!normalized) return null
+
+    const rentKeywords = [
+      'loyer',
+      'a louer',
+      'location',
+      'locatif',
+      'bail',
+      'mensuel',
+      'mensualite',
+      'par mois',
+      '/mois',
+      'cfa/mois',
+      'a loue',
+      'charges comprises',
+      'cc',
+      'caution',
+      'avance',
+    ]
+    const saleKeywords = [
+      'a vendre',
+      'vente',
+      'vendre',
+      'achat',
+      'a ceder',
+      'cession',
+      'a cede',
+      'prix de vente',
+      'titre foncier',
+      'parcelle',
+    ]
+
+    const rentScore = rentKeywords.reduce((score, keyword) => score + (normalized.includes(keyword) ? 1 : 0), 0)
+    const saleScore = saleKeywords.reduce((score, keyword) => score + (normalized.includes(keyword) ? 1 : 0), 0)
+
+    if (rentScore === 0 && saleScore === 0) return null
+    if (rentScore === saleScore) return null
+    return rentScore > saleScore ? 'FOR_RENT' : 'FOR_SALE'
+  }
+
+  private resolveStatus(
+    explicitStatus: unknown,
+    sourceDescription?: string,
+    ...generatedTexts: Array<string | undefined>
+  ): 'FOR_RENT' | 'FOR_SALE' {
+    // La description utilisateur est la source la plus fiable.
+    const inferredFromSource = this.inferStatusFromText(sourceDescription)
+    if (inferredFromSource) return inferredFromSource
+
+    const parsedStatus = this.parseStatusCandidate(explicitStatus)
+    if (parsedStatus) return parsedStatus
+
+    const inferredFromGenerated = this.inferStatusFromText(...generatedTexts)
+    if (inferredFromGenerated) return inferredFromGenerated
+
+    return 'FOR_SALE'
+  }
+
+  private extractPrice(description: string): number {
+    const normalized = description
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .toLowerCase()
+    const budgetMatch =
+      normalized.match(/(?:budget|prix|max(?:imum)?|a|à)\s*[:=]?\s*(\d[\d\s.,]*)\s*(?:fcfa|xaf|f cfa)?/) ??
+      normalized.match(/(\d[\d\s.,]{3,})\s*(?:fcfa|xaf|f cfa)/)
+
+    if (!budgetMatch?.[1]) return 0
+    const cleaned = budgetMatch[1].replace(/[^\d]/g, '')
+    const value = Number.parseInt(cleaned || '0', 10)
+    return Number.isFinite(value) && value > 0 ? value : 0
+  }
+
+  private extractArea(description: string): number {
+    const normalized = description
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .toLowerCase()
+    const areaMatch = normalized.match(/(\d+(?:[.,]\d+)?)\s*(?:m2|m²|metres?\s*carres?)/)
+    if (!areaMatch?.[1]) return 0
+    const area = Number.parseFloat(areaMatch[1].replace(',', '.'))
+    return Number.isFinite(area) && area > 0 ? Math.round(area) : 0
+  }
+
+  private extractRooms(description: string): number {
+    const normalized = description
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .toLowerCase()
+    const roomsMatch = normalized.match(/(\d+)\s*(?:chambre|chambres|piece|pieces)/)
+    if (!roomsMatch?.[1]) return 0
+    const rooms = Number.parseInt(roomsMatch[1], 10)
+    return Number.isFinite(rooms) && rooms > 0 ? rooms : 0
+  }
+
+  private buildDefaultPropertyDetails(propertyType: string, rooms: number): Record<string, unknown> {
+    switch (propertyType) {
+      case 'home':
+        return {
+          nbrRooms: rooms,
+          nbrChickens: 1,
+          nbrBathrooms: Math.max(1, rooms > 0 ? Math.ceil(rooms / 2) : 1),
+          nbrToilets: Math.max(1, rooms > 0 ? Math.ceil(rooms / 2) : 1),
+          nbrGarages: 0,
+          nbrFloors: 1,
+          nbrLivingRoom: 1,
+        }
+      case 'apartment':
+        return {
+          nbrRooms: rooms,
+          nbrChickens: 1,
+          nbrBathrooms: Math.max(1, rooms > 0 ? Math.ceil(rooms / 2) : 1),
+          nbrToilets: Math.max(1, rooms > 0 ? Math.ceil(rooms / 2) : 1),
+          nbrFloorApartment: 0,
+          numeroApartment: '',
+        }
+      case 'villa':
+        return {
+          nbrRooms: rooms,
+          nbrChickens: 1,
+          nbrBathrooms: Math.max(1, rooms > 0 ? Math.ceil(rooms / 2) : 1),
+          nbrToilets: Math.max(1, rooms > 0 ? Math.ceil(rooms / 2) : 1),
+          nbrFloors: 1,
+          nbrPiscine: 0,
+          nbrGarages: 0,
+        }
+      case 'studio':
+        return {
+          nbrRooms: rooms > 0 ? rooms : 1,
+          nbrChickens: 1,
+          nbrBathrooms: 1,
+          nbrToilets: 1,
+          nbrFloorStudio: 0,
+          numeroStudio: '',
+        }
+      case 'building':
+        return {
+          nbrApartments: 0,
+          nbrFloors: 1,
+          hasParking: false,
+        }
+      case 'desk':
+        return {
+          nbrToilets: 1,
+          nbrRooms: rooms,
+        }
+      case 'shop':
+        return {
+          nbrRooms: rooms,
+          nbrToilet: 1,
+        }
+      case 'kiosk':
+        return {
+          kioskType: '',
+        }
+      case 'room':
+        return {
+          roomType: '',
+        }
+      default:
+        return {
+          additionalInfo: '',
+        }
+    }
+  }
+
+  private buildFallbackAIData(propertyType: string, propertyLabel: string, description: string): AIFormData {
+    const safeDescription = description.trim().slice(0, AIFormService.MAX_USER_DESCRIPTION_LENGTH)
+    const price = this.extractPrice(safeDescription)
+    const area = this.extractArea(safeDescription)
+    const rooms = this.extractRooms(safeDescription)
+
+    return {
+      title: `${propertyLabel ? propertyLabel.charAt(0).toUpperCase() + propertyLabel.slice(1) : 'Bien'} ${rooms > 0 ? `${rooms} chambre${rooms > 1 ? 's' : ''}` : ''}`.trim(),
+      description: safeDescription,
+      price,
+      area,
+      tags: AIFormService.DEFAULT_TAGS,
+      propertyDetails: this.buildDefaultPropertyDetails(propertyType, rooms),
+    }
+  }
+
   /**
    * Crée le prompt spécialisé pour l'IA
    */
@@ -49,11 +277,13 @@ export class AIFormService {
     requiredFields: string[],
     description: string
   ): string {
+    const boundedDescription = description.trim().slice(0, AIFormService.MAX_USER_DESCRIPTION_LENGTH)
+
     return AIPromptsService.getAutoFillPrompt(
       propertyType,
       propertyLabel,
       requiredFields,
-      description.trim()
+      boundedDescription
     )
   }
 
@@ -71,6 +301,7 @@ export class AIFormService {
         price: generatedData.price ?? 0,
         area: generatedData.area ?? 0,
         tags: generatedData.tags ?? [],
+        status: generatedData.status ?? generatedData.propertyStatus ?? generatedData.listingStatus ?? '',
         propertyDetails: generatedData.propertyDetails ?? {}
       }
     } catch (error) {
@@ -114,7 +345,8 @@ export class AIFormService {
    */
   transformToFormData(
     data: AIFormData,
-    propertyType: string
+    propertyType: string,
+    sourceDescription?: string
   ): ProcessedFormData {
     // S'assurer que price et area sont des nombres au moment de la transformation
     const normalizedPrice = typeof data.price === 'string'
@@ -132,7 +364,7 @@ export class AIFormService {
       price: normalizedPrice,
       area: normalizedArea,
       tags: data.tags,
-      status: 'FOR_SALE', // Valeur par défaut
+      status: this.resolveStatus(data.status, sourceDescription, data.title, data.description),
       
       // Structure address pour le formulaire
       address: {
@@ -182,7 +414,7 @@ export class AIFormService {
     const processedData = this.postProcessData(parsedData)
     
     // 5. Transformer en format formulaire
-    return this.transformToFormData(processedData, propertyType)
+    return this.transformToFormData(processedData, propertyType, description)
   }
 }
 

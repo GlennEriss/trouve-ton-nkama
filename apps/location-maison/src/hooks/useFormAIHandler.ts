@@ -6,6 +6,7 @@ import { ProcessedFormData } from '@/services/ai-form.service'
 import AIFormServiceFactory from '@/factories/services/AIFormServiceFactory'
 import useAIAssistant from '@/hooks/useAIAssistant'
 import { createLogger } from '@/lib/logger'
+import { MAX_IMAGES_UPLOAD } from '@/constantes'
 
 const logger = createLogger('hooks.use-form-ai-handler')
 
@@ -64,8 +65,18 @@ export function useFormAIHandler({
     }
   }
 
-  const handleGenerate = async (description: string) => {
+  const handleGenerate = async (description: string, aiImages: File[] = []) => {
     try {
+      if (form && aiImages.length > 0) {
+        const currentImages = (form.getValues('images') ?? []) as (File | string)[]
+        const mergedImages = [...currentImages, ...aiImages].slice(0, MAX_IMAGES_UPLOAD)
+        form.setValue('images', mergedImages, {
+          shouldDirty: true,
+          shouldTouch: true,
+          shouldValidate: true,
+        })
+      }
+
       const formData = await generateFormData(description)
 
       if (formData && form) {

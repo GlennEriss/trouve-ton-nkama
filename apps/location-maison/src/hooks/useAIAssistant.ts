@@ -3,7 +3,10 @@
 import { useSession } from 'next-auth/react';
 import { useState } from 'react';
 import { auth } from '@/firebase/auth';
-import { FormContext } from '@/services/ai-prompts.service';
+import { model } from '@/firebase/ai';
+import { deductCreditsWithTransaction } from '@/db/credit-transaction.db';
+import AIPromptsService, { FormContext } from '@/services/ai-prompts.service';
+import { createLogger } from '@/lib/logger';
 
 interface AIResponse {
   success: boolean;
@@ -17,6 +20,38 @@ interface AIAssistantHook {
   sendMessage: (message: string, context?: FormContext) => Promise<AIResponse>;
   creditsAvailable: number;
   isLoading: boolean;
+}
+
+const logger = createLogger('hooks.use-ai-assistant');
+const MAX_MESSAGE_LENGTH = 40000;
+
+async function sendToFirebaseAI(message: string, context?: FormContext): Promise<{ success: boolean; text?: string; error?: string }> {
+  try {
+    const prompt = context
+      ? AIPromptsService.buildContextualPrompt(message, context)
+      : `${AIPromptsService.getSystemPrompt()}\n\nQUESTION: ${message}\n\nRéponds en français de manière utile:`;
+
+    const result = await model.generateContent(prompt);
+    const text = result.response.text();
+
+    if (!text?.trim()) {
+      return {
+        success: false,
+        error: "L'assistant IA n'a pas renvoyé de contenu.",
+      };
+    }
+
+    return {
+      success: true,
+      text,
+    };
+  } catch (error) {
+    logger.error('Fallback Firebase AI generation failed', { error });
+    return {
+      success: false,
+      error: "Erreur lors de la communication avec l'assistant IA",
+    };
+  }
 }
 
 export const useAIAssistant = (): AIAssistantHook => {
@@ -45,6 +80,26 @@ export const useAIAssistant = (): AIAssistantHook => {
       };
     }
 
+    const normalizedMessage = typeof message === 'string' ? message.trim() : '';
+    if (normalizedMessage.length < 2) {
+      return {
+        success: false,
+        error: 'Message trop court. Décris un peu plus le bien pour lancer la génération.',
+      };
+    }
+
+    const requestMessage =
+      normalizedMessage.length > MAX_MESSAGE_LENGTH
+        ? normalizedMessage.slice(0, MAX_MESSAGE_LENGTH)
+        : normalizedMessage;
+
+    if (requestMessage.length !== normalizedMessage.length) {
+      logger.warn('AI message truncated before API request', {
+        originalLength: normalizedMessage.length,
+        truncatedLength: requestMessage.length,
+      });
+    }
+
     setIsLoading(true);
 
     try {
@@ -56,7 +111,7 @@ export const useAIAssistant = (): AIAssistantHook => {
           Authorization: `Bearer ${idToken}`,
         },
         body: JSON.stringify({
-          message,
+          message: requestMessage,
           context,
         }),
       });
@@ -68,12 +123,70 @@ export const useAIAssistant = (): AIAssistantHook => {
             creditsRemaining: number;
             transactionId: string | null;
           }
-        | { success?: false; error?: { message?: string } };
+        | { success?: false; error?: { code?: string; message?: string; details?: { issues?: Array<{ path?: string; message?: string }> } } };
 
       if (!response.ok || !('success' in payload) || !payload.success) {
+        const errorPayload = payload as any;
+        const issueMessage = Array.isArray(errorPayload?.error?.details?.issues)
+          ? errorPayload.error.details.issues
+              .map((issue: { path?: string; message?: string }) =>
+                [issue?.path, issue?.message].filter(Boolean).join(': ')
+              )
+              .filter(Boolean)
+              .join(' | ')
+          : null;
+        const baseMessage = errorPayload?.error?.message ?? "Erreur lors de l'appel à l'assistant IA";
+        const errorCode = errorPayload?.error?.code as string | undefined;
+        const shouldTryFirebaseFallback =
+          response.status >= 500 ||
+          errorCode === 'AI_CONFIGURATION_ERROR' ||
+          errorCode === 'AI_PROVIDER_ERROR' ||
+          errorCode === 'INTERNAL_SERVER_ERROR';
+
+        if (shouldTryFirebaseFallback && session?.user?.uid) {
+          logger.warn('Server AI route failed, trying Firebase AI fallback', {
+            status: response.status,
+            errorCode,
+          });
+
+          const fallbackResult = await sendToFirebaseAI(requestMessage, context);
+          if (fallbackResult.success && fallbackResult.text) {
+            const description = `Assistant IA - Question: "${requestMessage.substring(0, 50)}${requestMessage.length > 50 ? '...' : ''}"`;
+            const transactionResult = await deductCreditsWithTransaction(
+              session.user.uid,
+              1,
+              'Assistant IA',
+              undefined,
+              description
+            );
+
+            if (!transactionResult.success) {
+              return {
+                success: false,
+                error: 'Réponse IA générée mais la transaction de crédits a échoué.',
+              };
+            }
+
+            const newCredits = Math.max(0, (session.user.credits ?? 0) - 1);
+            await update({
+              user: {
+                ...(session.user as any),
+                credits: newCredits,
+              },
+            });
+
+            return {
+              success: true,
+              response: fallbackResult.text,
+              creditsRemaining: newCredits,
+              transactionId: transactionResult.transactionId,
+            };
+          }
+        }
+
         return {
           success: false,
-          error: (payload as any)?.error?.message ?? "Erreur lors de l'appel à l'assistant IA",
+          error: issueMessage ? `${baseMessage} (${issueMessage})` : baseMessage,
         };
       }
 
