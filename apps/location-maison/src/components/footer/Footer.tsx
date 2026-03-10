@@ -39,9 +39,31 @@ export default function Footer({ isHide = false }: Readonly<{ isHide?: boolean }
     const { user } = useCurrentUser()
     const { width } = useWindowSize()
     const adInitializedRef = React.useRef(false);
+    const hiddenFooterRoutes = [
+        routes.public.signin,
+        routes.public.signup,
+        routes.public.signinSignup,
+        routes.public.completeProfile,
+        routes.public.passwordResetRequest,
+        routes.public.reset_password,
+        routes.public.passwordResetFailure,
+    ];
+    const hideByRoute = isHide || hiddenFooterRoutes.includes(pathname)
+    const showCompactMobileAdOnly = Boolean(user && width < 768 && pathname !== routes.public.homePage)
+
+    React.useEffect(() => {
+        // Re-allow initialization whenever route or footer mode changes.
+        adInitializedRef.current = false;
+    }, [pathname, hideByRoute, showCompactMobileAdOnly]);
 
     const initializeAds = React.useCallback(() => {
         if (typeof window === 'undefined' || adInitializedRef.current) {
+            return;
+        }
+
+        // Only initialize when an AdSense slot is mounted in the DOM.
+        const adSlot = document.querySelector('ins.adsbygoogle');
+        if (!adSlot) {
             return;
         }
 
@@ -56,6 +78,10 @@ export default function Footer({ isHide = false }: Readonly<{ isHide?: boolean }
     }, [pathname]);
 
     React.useEffect(() => {
+        if (hideByRoute) {
+            return;
+        }
+
         const adsWindow = window as Window & { adsbygoogle?: Array<Record<string, unknown>> };
         if (adsWindow.adsbygoogle && !adInitializedRef.current) {
             initializeAds();
@@ -81,19 +107,7 @@ export default function Footer({ isHide = false }: Readonly<{ isHide?: boolean }
         return () => {
             window.clearInterval(intervalId);
         };
-    }, [initializeAds]);
-    const hiddenFooterRoutes = [
-        routes.public.signin,
-        routes.public.signup,
-        routes.public.signinSignup,
-        routes.public.completeProfile,
-        routes.public.passwordResetRequest,
-        routes.public.reset_password,
-        routes.public.passwordResetFailure,
-    ];
-
-    const hideByRoute = isHide || hiddenFooterRoutes.includes(pathname)
-    const showCompactMobileAdOnly = Boolean(user && width < 768 && pathname !== routes.public.homePage)
+    }, [hideByRoute, initializeAds]);
 
     if (hideByRoute) {
         return null
