@@ -30,6 +30,7 @@ export interface ProcessedFormData {
   [key: string]: any
 }
 
+
 // Mapping des types de propriété pour le localStorage
 const PROPERTY_TYPE_MAPPING: Record<string, string> = Object.entries(TypePropertyEnum).reduce(
   (acc, [key, value]) => ({
@@ -40,6 +41,134 @@ const PROPERTY_TYPE_MAPPING: Record<string, string> = Object.entries(TypePropert
 )
 
 export class AIFormService {
+  private static readonly MAX_USER_DESCRIPTION_LENGTH = 2500
+
+  private static readonly DEFAULT_TAGS = ['Famille', 'Calme et tranquillité', 'Parking']
+
+  private extractPrice(description: string): number {
+    const normalized = description
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .toLowerCase()
+    const budgetMatch =
+      normalized.match(/(?:budget|prix|max(?:imum)?|a|à)\s*[:=]?\s*(\d[\d\s.,]*)\s*(?:fcfa|xaf|f cfa)?/) ??
+      normalized.match(/(\d[\d\s.,]{3,})\s*(?:fcfa|xaf|f cfa)/)
+
+    if (!budgetMatch?.[1]) return 0
+    const cleaned = budgetMatch[1].replace(/[^\d]/g, '')
+    const value = Number.parseInt(cleaned || '0', 10)
+    return Number.isFinite(value) && value > 0 ? value : 0
+  }
+
+  private extractArea(description: string): number {
+    const normalized = description
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .toLowerCase()
+    const areaMatch = normalized.match(/(\d+(?:[.,]\d+)?)\s*(?:m2|m²|metres?\s*carres?)/)
+    if (!areaMatch?.[1]) return 0
+    const area = Number.parseFloat(areaMatch[1].replace(',', '.'))
+    return Number.isFinite(area) && area > 0 ? Math.round(area) : 0
+  }
+
+  private extractRooms(description: string): number {
+    const normalized = description
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .toLowerCase()
+    const roomsMatch = normalized.match(/(\d+)\s*(?:chambre|chambres|piece|pieces)/)
+    if (!roomsMatch?.[1]) return 0
+    const rooms = Number.parseInt(roomsMatch[1], 10)
+    return Number.isFinite(rooms) && rooms > 0 ? rooms : 0
+  }
+
+  private buildDefaultPropertyDetails(propertyType: string, rooms: number): Record<string, unknown> {
+    switch (propertyType) {
+      case 'home':
+        return {
+          nbrRooms: rooms,
+          nbrChickens: 1,
+          nbrBathrooms: Math.max(1, rooms > 0 ? Math.ceil(rooms / 2) : 1),
+          nbrToilets: Math.max(1, rooms > 0 ? Math.ceil(rooms / 2) : 1),
+          nbrGarages: 0,
+          nbrFloors: 1,
+          nbrLivingRoom: 1,
+        }
+      case 'apartment':
+        return {
+          nbrRooms: rooms,
+          nbrChickens: 1,
+          nbrBathrooms: Math.max(1, rooms > 0 ? Math.ceil(rooms / 2) : 1),
+          nbrToilets: Math.max(1, rooms > 0 ? Math.ceil(rooms / 2) : 1),
+          nbrFloorApartment: 0,
+          numeroApartment: '',
+        }
+      case 'villa':
+        return {
+          nbrRooms: rooms,
+          nbrChickens: 1,
+          nbrBathrooms: Math.max(1, rooms > 0 ? Math.ceil(rooms / 2) : 1),
+          nbrToilets: Math.max(1, rooms > 0 ? Math.ceil(rooms / 2) : 1),
+          nbrFloors: 1,
+          nbrPiscine: 0,
+          nbrGarages: 0,
+        }
+      case 'studio':
+        return {
+          nbrRooms: rooms > 0 ? rooms : 1,
+          nbrChickens: 1,
+          nbrBathrooms: 1,
+          nbrToilets: 1,
+          nbrFloorStudio: 0,
+          numeroStudio: '',
+        }
+      case 'building':
+        return {
+          nbrApartments: 0,
+          nbrFloors: 1,
+          hasParking: false,
+        }
+      case 'desk':
+        return {
+          nbrToilets: 1,
+          nbrRooms: rooms,
+        }
+      case 'shop':
+        return {
+          nbrRooms: rooms,
+          nbrToilet: 1,
+        }
+      case 'kiosk':
+        return {
+          kioskType: '',
+        }
+      case 'room':
+        return {
+          roomType: '',
+        }
+      default:
+        return {
+          additionalInfo: '',
+        }
+    }
+  }
+
+  private buildFallbackAIData(propertyType: string, propertyLabel: string, description: string): AIFormData {
+    const safeDescription = description.trim().slice(0, AIFormService.MAX_USER_DESCRIPTION_LENGTH)
+    const price = this.extractPrice(safeDescription)
+    const area = this.extractArea(safeDescription)
+    const rooms = this.extractRooms(safeDescription)
+
+    return {
+      title: `${propertyLabel ? propertyLabel.charAt(0).toUpperCase() + propertyLabel.slice(1) : 'Bien'} ${rooms > 0 ? `${rooms} chambre${rooms > 1 ? 's' : ''}` : ''}`.trim(),
+      description: safeDescription,
+      price,
+      area,
+      tags: AIFormService.DEFAULT_TAGS,
+      propertyDetails: this.buildDefaultPropertyDetails(propertyType, rooms),
+    }
+  }
+
   /**
    * Crée le prompt spécialisé pour l'IA
    */
@@ -49,11 +178,13 @@ export class AIFormService {
     requiredFields: string[],
     description: string
   ): string {
+    const boundedDescription = description.trim().slice(0, AIFormService.MAX_USER_DESCRIPTION_LENGTH)
+
     return AIPromptsService.getAutoFillPrompt(
       propertyType,
       propertyLabel,
       requiredFields,
-      description.trim()
+      boundedDescription
     )
   }
 

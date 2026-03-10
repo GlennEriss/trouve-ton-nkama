@@ -8,26 +8,64 @@ import AIPromptsService, { FormContext } from '@/services/ai-prompts.service';
 
 const logger = createLogger('api.ai.assistant.chat');
 const ASSISTANT_CREDIT_COST = 1;
+const GEMINI_API_KEY_ENV_CANDIDATES = [
+  'GEMINI_API_KEY',
+  'GOOGLE_GENERATIVE_AI_API_KEY',
+  'GOOGLE_AI_API_KEY',
+  'FIREBASE_AI_API_KEY',
+  'NEXT_PUBLIC_FIREBASE_API_KEY',
+] as const;
 
 const bodySchema = z.object({
-  message: z.string().trim().min(2).max(12000),
+  message: z.string().trim().min(2).max(40000),
   context: z.any().optional(),
 });
 
+function resolveGeminiApiKey(): { value: string | null; source: string | null } {
+  for (const envName of GEMINI_API_KEY_ENV_CANDIDATES) {
+    const raw = process.env[envName];
+    if (typeof raw === 'string' && raw.trim().length > 0) {
+      return { value: raw.trim(), source: envName };
+    }
+  }
+  return { value: null, source: null };
+}
+
 async function generateWithGemini(prompt: string): Promise<string> {
-  const apiKey = process.env.GEMINI_API_KEY;
+  const { value: apiKey, source } = resolveGeminiApiKey();
   if (!apiKey) {
     throw new AppError('Configuration IA manquante sur le serveur.', {
       code: 'AI_CONFIGURATION_ERROR',
       status: 500,
+      details: {
+        expectedEnv: GEMINI_API_KEY_ENV_CANDIDATES.join(', '),
+      },
+    });
+  }
+
+  if (source === 'NEXT_PUBLIC_FIREBASE_API_KEY') {
+    logger.warn('Using NEXT_PUBLIC_FIREBASE_API_KEY for Gemini server generation', {
+      source,
     });
   }
 
   const { GoogleGenerativeAI } = await import('@google/generative-ai');
-  const client = new GoogleGenerativeAI(apiKey);
-  const model = client.getGenerativeModel({ model: process.env.GEMINI_MODEL ?? 'gemini-1.5-flash' });
-  const result = await model.generateContent(prompt);
-  const text = result.response.text().trim();
+  let text = '';
+
+  try {
+    const client = new GoogleGenerativeAI(apiKey);
+    const model = client.getGenerativeModel({ model: process.env.GEMINI_MODEL ?? 'gemini-1.5-flash' });
+    const result = await model.generateContent(prompt);
+    text = result.response.text().trim();
+  } catch (error) {
+    throw new AppError("Erreur du fournisseur IA pendant la génération.", {
+      code: 'AI_PROVIDER_ERROR',
+      status: 502,
+      details: {
+        reason: error instanceof Error ? error.message : 'Unknown AI provider error',
+      },
+    });
+  }
 
   if (!text) {
     throw new AppError("L'assistant IA n'a pas renvoyé de contenu.", {
@@ -151,6 +189,11 @@ export async function POST(request: NextRequest) {
           status: 401,
           code: 'AUTH_TOKEN_INVALID',
           message: "Token d'authentification invalide.",
+        },
+        AI_PROVIDER_ERROR: {
+          status: 502,
+          code: 'AI_PROVIDER_ERROR',
+          message: "Le fournisseur IA n'a pas pu générer de réponse pour le moment.",
         },
       },
     });
