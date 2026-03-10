@@ -123,8 +123,8 @@ export default function Footer({ isHide = false }: Readonly<{ isHide?: boolean }
 
     if (showCompactMobileAdOnly) {
         return (
-            <div className="fixed inset-x-0 bottom-[72px] z-40 px-3 md:hidden">
-                <div className="mx-auto max-w-[520px] rounded-xl border border-[#1d3d3a]/20 bg-white/95 p-2 shadow-lg backdrop-blur dark:border-gray-700 dark:bg-gray-900/95">
+            <div className="w-full px-3 py-2 md:hidden">
+                <div className="mx-auto max-w-[520px]">
                     <AdSenseBlock
                         slotKey={`mobile-${pathname}`}
                     />
@@ -200,7 +200,7 @@ export default function Footer({ isHide = false }: Readonly<{ isHide?: boolean }
                 </div>
 
                 <AdSenseBlock
-                    className="mt-8 rounded-2xl border border-white/10 bg-white/[0.03] p-3 md:p-4"
+                    className="mt-8"
                     slotKey={`footer-${pathname}`}
                 />
 
