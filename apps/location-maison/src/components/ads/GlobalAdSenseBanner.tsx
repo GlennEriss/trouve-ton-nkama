@@ -2,6 +2,7 @@
 
 import React from 'react'
 import { usePathname } from 'next/navigation'
+import { useCurrentUser } from '@/hooks/use-current-user'
 import { cn } from '@/lib/utils'
 import { createLogger } from '@/lib/logger'
 
@@ -12,6 +13,7 @@ const logger = createLogger('components.ads.global-banner')
 
 export default function GlobalAdSenseBanner() {
     const pathname = usePathname()
+    const { user } = useCurrentUser()
     const adRef = React.useRef<HTMLModElement | null>(null)
 
     React.useEffect(() => {
@@ -78,11 +80,11 @@ export default function GlobalAdSenseBanner() {
     return (
         <div
             className={cn(
-                "w-full px-2 py-2 sm:px-3",
-                "border-t border-[#1d3d3a]/10 bg-white/95 backdrop-blur dark:border-gray-700/50 dark:bg-gray-900/80"
+                "fixed inset-x-0 z-40 px-2 sm:px-3",
+                user ? "bottom-[72px] md:bottom-3" : "bottom-2 md:bottom-3"
             )}
         >
-            <div className="mx-auto w-full max-w-[980px] rounded-xl border border-[#1d3d3a]/20 bg-white p-2 shadow-sm dark:border-gray-700 dark:bg-gray-900">
+            <div className="mx-auto w-full max-w-[980px] rounded-xl border border-[#1d3d3a]/20 bg-white/95 p-2 shadow-lg backdrop-blur dark:border-gray-700 dark:bg-gray-900/95">
                 <ins
                     key={pathname}
                     ref={adRef}
