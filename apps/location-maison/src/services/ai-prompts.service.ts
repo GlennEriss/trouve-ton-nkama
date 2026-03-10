@@ -228,6 +228,10 @@ CONSIGNES STRICTES:
 8. Si la superficie n'est pas donnée, mets 0 (n'invente jamais de valeur)
 9. Si le prix est donné dans la description utilisateur, tu dois le reprendre tel quel (en FCFA). N'invente jamais un autre prix.
 10. Si la superficie est donnée dans la description utilisateur, tu dois la reprendre telle quelle.
+11. Le champ "status" est obligatoire et doit valoir exactement "FOR_RENT" ou "FOR_SALE".
+12. Si la description contient des indices de location (ex: "loyer", "location", "à louer", "mensuel", "caution"), mets "FOR_RENT".
+13. Si la description contient des indices de vente (ex: "vente", "à vendre", "achat", "parcelle"), mets "FOR_SALE".
+14. En cas d'ambiguïté, privilégie "FOR_RENT" si un montant mensuel est mentionné; sinon "FOR_SALE".
 
 FORMAT DE RÉPONSE OBLIGATOIRE (JSON strict):
 {
@@ -235,6 +239,7 @@ FORMAT DE RÉPONSE OBLIGATOIRE (JSON strict):
   "description": "Description détaillée et professionnelle (100-200 mots)",
   "area": superficie_donnée_par_l_utilisateur_ou_0_si_absente,
   "price": prix_en_fcfa_donné_par_l_utilisateur_ou_0_si_absent,
+  "status": "FOR_RENT ou FOR_SALE",
   "tags": ["tag1", "tag2", "tag3"],
   "propertyDetails": {
     ${this.getPropertyDetailsFormat(propertyType)}
@@ -255,6 +260,7 @@ IMPORTANT:
 - Si la superficie n'est pas donnée, mets 0 (n'invente jamais de valeur)
 - Si le prix est donné dans la description utilisateur, tu dois le reprendre tel quel (en FCFA). N'invente jamais un autre prix.
 - Si la superficie est donnée dans la description utilisateur, tu dois la reprendre telle quelle.
+- Le champ "status" doit être "FOR_RENT" ou "FOR_SALE" et cohérent avec le texte source.
     `;
   }
 

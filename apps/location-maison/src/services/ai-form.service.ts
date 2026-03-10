@@ -7,6 +7,7 @@ export interface AIFormData {
   price: number | string
   area: number | string
   tags: string[]
+  status?: string
   propertyDetails: Record<string, any>
 }
 
@@ -44,6 +45,104 @@ export class AIFormService {
   private static readonly MAX_USER_DESCRIPTION_LENGTH = 2500
 
   private static readonly DEFAULT_TAGS = ['Famille', 'Calme et tranquillité', 'Parking']
+
+  private normalizeTextForMatch(value: string): string {
+    return value
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .toLowerCase()
+      .trim()
+  }
+
+  private parseStatusCandidate(status: unknown): 'FOR_RENT' | 'FOR_SALE' | null {
+    if (typeof status !== 'string') return null
+    const normalized = this.normalizeTextForMatch(status)
+
+    if (
+      normalized === 'for_rent' ||
+      normalized === 'for-rent' ||
+      normalized === 'for rent' ||
+      normalized === 'rent' ||
+      normalized === 'a louer' ||
+      normalized === 'a loue' ||
+      normalized === 'location'
+    ) {
+      return 'FOR_RENT'
+    }
+
+    if (
+      normalized === 'for_sale' ||
+      normalized === 'for-sale' ||
+      normalized === 'for sale' ||
+      normalized === 'sale' ||
+      normalized === 'a vendre' ||
+      normalized === 'vente'
+    ) {
+      return 'FOR_SALE'
+    }
+
+    return null
+  }
+
+  private inferStatusFromText(...texts: Array<string | undefined>): 'FOR_RENT' | 'FOR_SALE' | null {
+    const normalized = this.normalizeTextForMatch(texts.filter(Boolean).join(' '))
+    if (!normalized) return null
+
+    const rentKeywords = [
+      'loyer',
+      'a louer',
+      'location',
+      'locatif',
+      'bail',
+      'mensuel',
+      'mensualite',
+      'par mois',
+      '/mois',
+      'cfa/mois',
+      'a loue',
+      'charges comprises',
+      'cc',
+      'caution',
+      'avance',
+    ]
+    const saleKeywords = [
+      'a vendre',
+      'vente',
+      'vendre',
+      'achat',
+      'a ceder',
+      'cession',
+      'a cede',
+      'prix de vente',
+      'titre foncier',
+      'parcelle',
+    ]
+
+    const rentScore = rentKeywords.reduce((score, keyword) => score + (normalized.includes(keyword) ? 1 : 0), 0)
+    const saleScore = saleKeywords.reduce((score, keyword) => score + (normalized.includes(keyword) ? 1 : 0), 0)
+
+    if (rentScore === 0 && saleScore === 0) return null
+    if (rentScore === saleScore) return null
+    return rentScore > saleScore ? 'FOR_RENT' : 'FOR_SALE'
+  }
+
+  private resolveStatus(
+    explicitStatus: unknown,
+    sourceDescription?: string,
+    ...generatedTexts: Array<string | undefined>
+  ): 'FOR_RENT' | 'FOR_SALE' {
+    // La description utilisateur est la source la plus fiable.
+    const inferredFromSource = this.inferStatusFromText(sourceDescription)
+    if (inferredFromSource) return inferredFromSource
+
+    const parsedStatus = this.parseStatusCandidate(explicitStatus)
+    if (parsedStatus) return parsedStatus
+
+    const inferredFromGenerated = this.inferStatusFromText(...generatedTexts)
+    if (inferredFromGenerated) return inferredFromGenerated
+
+    return 'FOR_SALE'
+  }
 
   private extractPrice(description: string): number {
     const normalized = description
@@ -202,6 +301,7 @@ export class AIFormService {
         price: generatedData.price ?? 0,
         area: generatedData.area ?? 0,
         tags: generatedData.tags ?? [],
+        status: generatedData.status ?? generatedData.propertyStatus ?? generatedData.listingStatus ?? '',
         propertyDetails: generatedData.propertyDetails ?? {}
       }
     } catch (error) {
@@ -245,7 +345,8 @@ export class AIFormService {
    */
   transformToFormData(
     data: AIFormData,
-    propertyType: string
+    propertyType: string,
+    sourceDescription?: string
   ): ProcessedFormData {
     // S'assurer que price et area sont des nombres au moment de la transformation
     const normalizedPrice = typeof data.price === 'string'
@@ -263,7 +364,7 @@ export class AIFormService {
       price: normalizedPrice,
       area: normalizedArea,
       tags: data.tags,
-      status: 'FOR_SALE', // Valeur par défaut
+      status: this.resolveStatus(data.status, sourceDescription, data.title, data.description),
       
       // Structure address pour le formulaire
       address: {
@@ -313,7 +414,7 @@ export class AIFormService {
     const processedData = this.postProcessData(parsedData)
     
     // 5. Transformer en format formulaire
-    return this.transformToFormData(processedData, propertyType)
+    return this.transformToFormData(processedData, propertyType, description)
   }
 }
 
