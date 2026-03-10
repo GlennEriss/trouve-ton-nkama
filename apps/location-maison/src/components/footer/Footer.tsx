@@ -89,6 +89,7 @@ function AdSenseBlock({
     return (
         <div className={className}>
             <ins
+                key={slotKey}
                 ref={adRef}
                 className="adsbygoogle"
                 style={{ display: 'block' }}
@@ -126,6 +127,7 @@ export default function Footer({ isHide = false }: Readonly<{ isHide?: boolean }
             <div className="w-full px-3 py-2 md:hidden">
                 <div className="mx-auto max-w-[520px]">
                     <AdSenseBlock
+                        key={`mobile-${pathname}`}
                         slotKey={`mobile-${pathname}`}
                     />
                 </div>
@@ -200,6 +202,7 @@ export default function Footer({ isHide = false }: Readonly<{ isHide?: boolean }
                 </div>
 
                 <AdSenseBlock
+                    key={`footer-${pathname}`}
                     className="mt-8"
                     slotKey={`footer-${pathname}`}
                 />
