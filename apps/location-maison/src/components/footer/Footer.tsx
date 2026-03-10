@@ -8,7 +8,6 @@ import { useCurrentUser } from '@/hooks/use-current-user';
 import { useWindowSize } from '@/hooks/useSize';
 import { cn } from '@/lib/utils';
 import PWAInstallButton from '@/components/pwa/PWAInstallButton';
-import Script from 'next/script';
 import { createLogger } from '@/lib/logger';
 
 const ADSENSE_CLIENT = 'ca-pub-2799688336707362';
@@ -17,24 +16,12 @@ const ADSENSE_SLOT = '7503013398';
 const logger = createLogger('components.footer.ads');
 
 function AdSenseBlock({
-    scriptId,
-    onScriptLoad,
     className,
 }: Readonly<{
-    scriptId: string;
-    onScriptLoad: () => void;
     className?: string;
 }>) {
     return (
         <div className={className}>
-            <Script
-                id={scriptId}
-                strategy="afterInteractive"
-                async
-                crossOrigin="anonymous"
-                src={`https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=${ADSENSE_CLIENT}`}
-                onLoad={onScriptLoad}
-            />
             <ins
                 className="adsbygoogle"
                 style={{ display: 'block' }}
@@ -72,7 +59,28 @@ export default function Footer({ isHide = false }: Readonly<{ isHide?: boolean }
         const adsWindow = window as Window & { adsbygoogle?: Array<Record<string, unknown>> };
         if (adsWindow.adsbygoogle && !adInitializedRef.current) {
             initializeAds();
+            return;
         }
+
+        // Wait for the global AdSense script to be available in case it loads after mount.
+        let retries = 0;
+        const intervalId = window.setInterval(() => {
+            const currentWindow = window as Window & { adsbygoogle?: Array<Record<string, unknown>> };
+            if (currentWindow.adsbygoogle && !adInitializedRef.current) {
+                initializeAds();
+                window.clearInterval(intervalId);
+                return;
+            }
+
+            retries += 1;
+            if (retries >= 20) {
+                window.clearInterval(intervalId);
+            }
+        }, 250);
+
+        return () => {
+            window.clearInterval(intervalId);
+        };
     }, [initializeAds]);
     const hiddenFooterRoutes = [
         routes.public.signin,
@@ -96,8 +104,6 @@ export default function Footer({ isHide = false }: Readonly<{ isHide?: boolean }
             <div className="fixed inset-x-0 bottom-[72px] z-40 px-3 md:hidden">
                 <div className="mx-auto max-w-[520px] rounded-xl border border-[#1d3d3a]/20 bg-white/95 p-2 shadow-lg backdrop-blur dark:border-gray-700 dark:bg-gray-900/95">
                     <AdSenseBlock
-                        scriptId="adsense-loader-mobile-sticky"
-                        onScriptLoad={initializeAds}
                     />
                 </div>
             </div>
@@ -171,8 +177,6 @@ export default function Footer({ isHide = false }: Readonly<{ isHide?: boolean }
                 </div>
 
                 <AdSenseBlock
-                    scriptId="adsense-loader-footer"
-                    onScriptLoad={initializeAds}
                     className="mt-8 rounded-2xl border border-white/10 bg-white/[0.03] p-3 md:p-4"
                 />
 

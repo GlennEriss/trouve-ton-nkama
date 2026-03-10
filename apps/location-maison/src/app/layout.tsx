@@ -7,11 +7,14 @@ import Footer from "@/components/footer/Footer";
 import { cn } from "@/lib/utils";
 import { Metadata } from 'next'
 import { FirebaseAnalyticsTracker } from '@/features/analytics/tracking';
+import Script from "next/script";
 
 const inter = Inter({
   subsets: ['latin'],
   weight: ['400'],
 })
+
+const ADSENSE_CLIENT = "ca-pub-2799688336707362";
 
 export const metadata: Metadata = {
   title: 'Trouve Ton Nkama - Immobilier Gabon | Location & Vente Maisons, Appartements',
@@ -250,6 +253,13 @@ export default async function RootLayout({
       <body
         className={cn('antialiased overscroll-y-none', inter.className)}
       >
+        <Script
+          id="adsense-loader-global"
+          strategy="afterInteractive"
+          async
+          crossOrigin="anonymous"
+          src={`https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=${ADSENSE_CLIENT}`}
+        />
         <div className="mx-auto">
           <Providers>
             {children}
