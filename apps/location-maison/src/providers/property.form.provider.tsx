@@ -19,6 +19,7 @@ import useLastpath from "@/hooks/use-lastpath"
 import queryKeys from "@/constantes/react-query-keys"
 import { routes } from "@/constantes/routes"
 import { invalidatePropertyCountCache } from "@/lib/invalidate-property-count-cache"
+import { createLogger } from "@/lib/logger"
 
 type PropertyFormComponent = {
     form: any,
@@ -49,6 +50,34 @@ export const steps = [
     { label: 'Second', description: 'Date & Time' },
     { label: 'Third', description: 'Select Rooms' },
 ]
+
+const logger = createLogger('providers.property-form')
+const FINAL_SUBMIT_TIMEOUT_MS = 45_000
+
+function withTimeout<T>(promise: Promise<T>, timeoutMs: number, operation: string): Promise<T> {
+    return new Promise((resolve, reject) => {
+        const timeoutId = setTimeout(() => {
+            reject(new Error(`${operation} a pris trop de temps. Réessayez.`))
+        }, timeoutMs)
+
+        promise
+            .then((value) => {
+                clearTimeout(timeoutId)
+                resolve(value)
+            })
+            .catch((error) => {
+                clearTimeout(timeoutId)
+                reject(error)
+            })
+    })
+}
+
+function getErrorMessage(error: unknown, fallback: string): string {
+    if (error instanceof Error && error.message) {
+        return error.message
+    }
+    return fallback
+}
 
 export const PropertyFormComponentProvider = ({ children, isUpdate, propertyToUpdated }: {
     children: React.ReactNode,
@@ -162,15 +191,33 @@ export const PropertyFormComponentProvider = ({ children, isUpdate, propertyToUp
             const city = data.city
             const street = data.street
             if (id) {
-                return await updateProperty(id, data)
+                const updated = await updateProperty(id, data)
+                if (!updated) {
+                    throw new Error("Impossible de modifier la propriété.")
+                }
+                return updated
             } else {
                 const idP = await createProperty(data)
-                if (idP) {
-                    const propertyCreate = { ...data, id: idP }
-                    setPropertyPreview(propertyCreate as Property)
+                if (!idP) {
+                    throw new Error("Impossible d'enregistrer la propriété.")
                 }
+                const propertyCreate = { ...data, id: idP }
+                setPropertyPreview(propertyCreate as Property)
             }
-            await updateOrCreateSuggestion({ province, city, street });
+            try {
+                await withTimeout(
+                    updateOrCreateSuggestion({ province, city, street }),
+                    8_000,
+                    'Mise à jour des suggestions'
+                )
+            } catch (error) {
+                logger.warn('Suggestion update skipped after timeout/failure', {
+                    error,
+                    province,
+                    city,
+                    street,
+                })
+            }
             //return data
         },
         onSuccess: () => {
@@ -189,7 +236,7 @@ export const PropertyFormComponentProvider = ({ children, isUpdate, propertyToUp
             toast({
                 duration: 5000,
                 title: id ? "Modification d'une propriété" : "Ajout d'une propriété",
-                description: error.message,
+                description: getErrorMessage(error, "Une erreur est survenue pendant l'enregistrement."),
                 variant: "destructive",
             })
         }
@@ -210,8 +257,18 @@ export const PropertyFormComponentProvider = ({ children, isUpdate, propertyToUp
             // Valider avec le schéma complet (applique aussi les transforms) puis soumettre
             try {
                 const parsed = fullSchema.parse(allValues)
+                logger.info('Property final submit started', {
+                    activeStep,
+                    typeProperty,
+                    isUpdate: Boolean(id),
+                    imagesCount: Array.isArray(parsed.images) ? parsed.images.length : 0,
+                })
 
-                const propertyMutate = await onSubmitForm(parsed)
+                const propertyMutate = await withTimeout(
+                    onSubmitForm(parsed),
+                    FINAL_SUBMIT_TIMEOUT_MS,
+                    'Préparation de la propriété'
+                )
 
                 // Nettoyer les champs undefined (Firestore ne supporte pas undefined)
                 const sanitize = (obj: any): any => {
@@ -229,12 +286,29 @@ export const PropertyFormComponentProvider = ({ children, isUpdate, propertyToUp
                 const sanitized = sanitize(propertyMutate)
 
                 // Lancer la mutation
-                mutation.mutate(sanitized)
+                await withTimeout(
+                    mutation.mutateAsync(sanitized),
+                    FINAL_SUBMIT_TIMEOUT_MS,
+                    "Enregistrement de la propriété"
+                )
+                logger.info('Property final submit completed', {
+                    typeProperty,
+                    isUpdate: Boolean(id),
+                })
         } catch (error) {
+                logger.error('Property final submit failed', {
+                    error,
+                    activeStep,
+                    typeProperty,
+                    isUpdate: Boolean(id),
+                })
                 toast({
                     duration: 3000,
                     title: "Validation finale échouée",
-                    description: "Veuillez vérifier tous les champs avant de soumettre.",
+                    description: getErrorMessage(
+                        error,
+                        "Veuillez vérifier tous les champs avant de soumettre."
+                    ),
                     variant: "destructive"
                 })
             }

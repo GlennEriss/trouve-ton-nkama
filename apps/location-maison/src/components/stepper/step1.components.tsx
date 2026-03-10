@@ -187,7 +187,7 @@ export const RenderImage = ({ index }: { index: number }) => {
                     </Button>
 
                     {/* Image */}
-                    <div className="w-full h-full">
+                    <div className="relative w-full h-full">
                         <Image
                             src={typeof image === 'string' ? image : blobUrl || ''}
                             alt={`Image ${index + 1}`}
