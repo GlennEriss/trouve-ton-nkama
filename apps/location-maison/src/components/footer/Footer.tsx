@@ -8,6 +8,98 @@ import { useCurrentUser } from '@/hooks/use-current-user';
 import { useWindowSize } from '@/hooks/useSize';
 import { cn } from '@/lib/utils';
 import PWAInstallButton from '@/components/pwa/PWAInstallButton';
+import { createLogger } from '@/lib/logger';
+
+const ADSENSE_CLIENT = 'ca-pub-2799688336707362';
+const ADSENSE_SLOT = '7503013398';
+
+const logger = createLogger('components.footer.ads');
+
+function AdSenseBlock({
+    className,
+    slotKey,
+}: Readonly<{
+    className?: string;
+    slotKey: string;
+}>) {
+    const adRef = React.useRef<HTMLModElement | null>(null);
+
+    React.useEffect(() => {
+        let retries = 0;
+        let cancelled = false;
+
+        const tryInitialize = () => {
+            if (typeof window === 'undefined' || cancelled) {
+                return true;
+            }
+
+            const adElement = adRef.current;
+            if (!adElement) {
+                return false;
+            }
+
+            // If already filled, no need to push again.
+            if (adElement.getAttribute('data-ad-status') === 'done') {
+                return true;
+            }
+
+            const adsWindow = window as Window & { adsbygoogle?: Array<Record<string, unknown>> };
+            if (!adsWindow.adsbygoogle) {
+                return false;
+            }
+
+            try {
+                adsWindow.adsbygoogle.push({});
+                return true;
+            } catch (error) {
+                logger.warn('AdSense push failed', {
+                    error,
+                    slotKey,
+                    adStatus: adElement.getAttribute('data-ad-status'),
+                });
+                return false;
+            }
+        };
+
+        if (tryInitialize()) {
+            return () => {
+                cancelled = true;
+            };
+        }
+
+        const intervalId = window.setInterval(() => {
+            if (tryInitialize()) {
+                window.clearInterval(intervalId);
+                return;
+            }
+
+            retries += 1;
+            if (retries >= 20) {
+                window.clearInterval(intervalId);
+                logger.warn('AdSense slot init timeout', { slotKey });
+            }
+        }, 350);
+
+        return () => {
+            cancelled = true;
+            window.clearInterval(intervalId);
+        };
+    }, [slotKey]);
+
+    return (
+        <div className={className}>
+            <ins
+                ref={adRef}
+                className="adsbygoogle"
+                style={{ display: 'block' }}
+                data-ad-client={ADSENSE_CLIENT}
+                data-ad-slot={ADSENSE_SLOT}
+                data-ad-format="auto"
+                data-full-width-responsive="true"
+            />
+        </div>
+    );
+}
 
 export default function Footer({ isHide = false }: Readonly<{ isHide?: boolean }>) {
     const pathname = usePathname()
@@ -23,10 +115,22 @@ export default function Footer({ isHide = false }: Readonly<{ isHide?: boolean }
         routes.public.passwordResetFailure,
     ];
     const hideByRoute = isHide || hiddenFooterRoutes.includes(pathname)
-    const hideForMobileConnectedUsers = Boolean(user && width < 768 && pathname !== routes.public.homePage)
+    const showCompactMobileAdOnly = Boolean(user && width < 768 && pathname !== routes.public.homePage)
 
-    if (hideByRoute || hideForMobileConnectedUsers) {
+    if (hideByRoute) {
         return null
+    }
+
+    if (showCompactMobileAdOnly) {
+        return (
+            <div className="fixed inset-x-0 bottom-[72px] z-40 px-3 md:hidden">
+                <div className="mx-auto max-w-[520px] rounded-xl border border-[#1d3d3a]/20 bg-white/95 p-2 shadow-lg backdrop-blur dark:border-gray-700 dark:bg-gray-900/95">
+                    <AdSenseBlock
+                        slotKey={`mobile-${pathname}`}
+                    />
+                </div>
+            </div>
+        )
     }
 
     const supportEmail = process.env.NEXT_PUBLIC_EMAIL_SUPPORT ?? 'support@tonnkama.com'
@@ -94,6 +198,11 @@ export default function Footer({ isHide = false }: Readonly<{ isHide?: boolean }
                         </div>
                     </div>
                 </div>
+
+                <AdSenseBlock
+                    className="mt-8 rounded-2xl border border-white/10 bg-white/[0.03] p-3 md:p-4"
+                    slotKey={`footer-${pathname}`}
+                />
 
                 <div className='mt-6'>
                     <PWAInstallButton />
