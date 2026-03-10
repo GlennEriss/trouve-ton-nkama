@@ -1,5 +1,6 @@
 import { TypePropertyEnum } from '@/constantes/property-type'
 import AIPromptsService from './ai-prompts.service'
+import { OSMLocation, getOSMLocations } from '@/data/gabon-osm-locations'
 
 export interface AIFormData {
   title: string
@@ -31,6 +32,20 @@ export interface ProcessedFormData {
   [key: string]: any
 }
 
+interface ResolvedLocationData {
+  district: string
+  city: string
+  province: string
+  longitude: number
+  latitude: number
+  streetLon: number
+  streetLat: number
+  cityLon: number
+  cityLat: number
+  provinceLon: number
+  provinceLat: number
+}
+
 
 // Mapping des types de propriété pour le localStorage
 const PROPERTY_TYPE_MAPPING: Record<string, string> = Object.entries(TypePropertyEnum).reduce(
@@ -45,6 +60,137 @@ export class AIFormService {
   private static readonly MAX_USER_DESCRIPTION_LENGTH = 2500
 
   private static readonly DEFAULT_TAGS = ['Famille', 'Calme et tranquillité', 'Parking']
+
+  private normalizeLocationTerm(value: string): string {
+    return value
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, ' ')
+      .replace(/\s+/g, ' ')
+      .trim()
+  }
+
+  private normalizeLocationCorpus(...parts: Array<string | undefined>): string {
+    const merged = parts.filter(Boolean).join(' ')
+    const normalized = this.normalizeLocationTerm(merged)
+    return normalized ? ` ${normalized} ` : ''
+  }
+
+  private findLocationByName(name: string, locations: OSMLocation[]): OSMLocation | null {
+    const normalizedName = this.normalizeLocationTerm(name)
+    if (!normalizedName) return null
+    return (
+      locations.find((location) => this.normalizeLocationTerm(location.name) === normalizedName) ?? null
+    )
+  }
+
+  private findBestLocationMatch(
+    normalizedCorpus: string,
+    locations: OSMLocation[]
+  ): OSMLocation | null {
+    if (!normalizedCorpus) return null
+
+    let bestMatch: OSMLocation | null = null
+    let bestScore = -1
+
+    for (const location of locations) {
+      const normalizedName = this.normalizeLocationTerm(location.name)
+      if (!normalizedName || normalizedName.length < 3) continue
+      if (!normalizedCorpus.includes(` ${normalizedName} `)) continue
+
+      const tokenScore = normalizedName.split(' ').length * 100
+      const charScore = normalizedName.length
+      const score = tokenScore + charScore
+
+      if (score > bestScore) {
+        bestScore = score
+        bestMatch = location
+      }
+    }
+
+    return bestMatch
+  }
+
+  private resolveLocationFromDescription(...parts: Array<string | undefined>): ResolvedLocationData {
+    const emptyLocation: ResolvedLocationData = {
+      district: '',
+      city: '',
+      province: '',
+      longitude: 0,
+      latitude: 0,
+      streetLon: 0,
+      streetLat: 0,
+      cityLon: 0,
+      cityLat: 0,
+      provinceLon: 0,
+      provinceLat: 0,
+    }
+
+    const normalizedCorpus = this.normalizeLocationCorpus(...parts)
+    if (!normalizedCorpus) return emptyLocation
+
+    let osm: ReturnType<typeof getOSMLocations>
+    try {
+      osm = getOSMLocations()
+    } catch {
+      return emptyLocation
+    }
+
+    const quarterMatch = this.findBestLocationMatch(normalizedCorpus, osm.quarters)
+    const cityMatch = this.findBestLocationMatch(normalizedCorpus, osm.cities)
+    const provinceMatch = this.findBestLocationMatch(normalizedCorpus, osm.provinces)
+
+    let resolvedQuarter: OSMLocation | null = quarterMatch
+    let resolvedCity: OSMLocation | null = null
+    let resolvedProvince: OSMLocation | null = null
+
+    if (resolvedQuarter) {
+      const cityNameFromQuarter = osm.quarterToCity.get(resolvedQuarter.name)
+      const provinceNameFromQuarter = osm.quarterToProvince.get(resolvedQuarter.name)
+
+      if (cityNameFromQuarter) {
+        resolvedCity = this.findLocationByName(cityNameFromQuarter, osm.cities)
+      }
+      if (provinceNameFromQuarter) {
+        resolvedProvince = this.findLocationByName(provinceNameFromQuarter, osm.provinces)
+      }
+    }
+
+    if (!resolvedCity && cityMatch) {
+      resolvedCity = cityMatch
+    }
+
+    if (!resolvedProvince && resolvedCity) {
+      const provinceNameFromCity = osm.cityToProvince.get(resolvedCity.name)
+      if (provinceNameFromCity) {
+        resolvedProvince = this.findLocationByName(provinceNameFromCity, osm.provinces)
+      }
+    }
+
+    if (!resolvedProvince && provinceMatch) {
+      resolvedProvince = provinceMatch
+    }
+
+    const fallbackPoint = resolvedQuarter || resolvedCity || resolvedProvince
+    if (!fallbackPoint && !resolvedQuarter && !resolvedCity && !resolvedProvince) {
+      return emptyLocation
+    }
+
+    return {
+      district: resolvedQuarter?.name ?? '',
+      city: resolvedCity?.name ?? '',
+      province: resolvedProvince?.name ?? '',
+      longitude: fallbackPoint?.lon ?? 0,
+      latitude: fallbackPoint?.lat ?? 0,
+      streetLon: resolvedQuarter?.lon ?? 0,
+      streetLat: resolvedQuarter?.lat ?? 0,
+      cityLon: resolvedCity?.lon ?? 0,
+      cityLat: resolvedCity?.lat ?? 0,
+      provinceLon: resolvedProvince?.lon ?? 0,
+      provinceLat: resolvedProvince?.lat ?? 0,
+    }
+  }
 
   private normalizeTextForMatch(value: string): string {
     return value
@@ -357,6 +503,12 @@ export class AIFormService {
       ? parseFloat(String(data.area).replace(/[^0-9.]/g, '') || '0')
       : (Number.isFinite(data.area) ? data.area : 0)
 
+    const resolvedLocation = this.resolveLocationFromDescription(
+      sourceDescription,
+      data.description,
+      data.title
+    )
+
     return {
       // Champs principaux du formulaire
       title: data.title,
@@ -368,14 +520,20 @@ export class AIFormService {
       
       // Structure address pour le formulaire
       address: {
-        district: '',
-        city: '',
-        province: ''
+        district: resolvedLocation.district,
+        city: resolvedLocation.city,
+        province: resolvedLocation.province
       },
       
       // Champs de localisation
-      longitude: 0,
-      latitude: 0,
+      longitude: resolvedLocation.longitude,
+      latitude: resolvedLocation.latitude,
+      provinceLon: resolvedLocation.provinceLon,
+      provinceLat: resolvedLocation.provinceLat,
+      cityLon: resolvedLocation.cityLon,
+      cityLat: resolvedLocation.cityLat,
+      streetLon: resolvedLocation.streetLon,
+      streetLat: resolvedLocation.streetLat,
       countryCode: 'GA',
       country: 'Gabon',
       
