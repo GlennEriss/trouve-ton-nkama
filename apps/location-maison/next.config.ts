@@ -74,9 +74,6 @@ const crossOriginRuntimeCache = defaultRuntimeCaching.find(
   (entry) => entry.options?.cacheName === 'cross-origin'
 );
 
-const CACHEABLE_PUBLIC_API_PATTERN =
-  /^\/api\/(location\/(provinces|cities|streets|search|suggestions)|map\/properties|property\/promoted)$/;
-
 const runtimeCachingOverrides = [
   ...(staticJsRuntimeCache
     ? [
@@ -95,7 +92,10 @@ const runtimeCachingOverrides = [
           // Cache only selected read-only public APIs.
           // All private/sensitive APIs are excluded from SW runtime caching.
           urlPattern: ({ sameOrigin, url }: { sameOrigin: boolean; url: URL }) =>
-            sameOrigin && CACHEABLE_PUBLIC_API_PATTERN.test(url.pathname),
+            sameOrigin &&
+            /^\/api\/(location\/(provinces|cities|streets|search|suggestions)|map\/properties|property\/promoted)$/.test(
+              url.pathname
+            ),
         },
       ]
     : []),
