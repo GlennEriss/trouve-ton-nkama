@@ -16,6 +16,37 @@ const ADSENSE_SLOT = '7503013398';
 
 const logger = createLogger('components.footer.ads');
 
+function AdSenseBlock({
+    scriptId,
+    onScriptLoad,
+    className,
+}: Readonly<{
+    scriptId: string;
+    onScriptLoad: () => void;
+    className?: string;
+}>) {
+    return (
+        <div className={className}>
+            <Script
+                id={scriptId}
+                strategy="afterInteractive"
+                async
+                crossOrigin="anonymous"
+                src={`https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=${ADSENSE_CLIENT}`}
+                onLoad={onScriptLoad}
+            />
+            <ins
+                className="adsbygoogle"
+                style={{ display: 'block' }}
+                data-ad-client={ADSENSE_CLIENT}
+                data-ad-slot={ADSENSE_SLOT}
+                data-ad-format="auto"
+                data-full-width-responsive="true"
+            />
+        </div>
+    );
+}
+
 export default function Footer({ isHide = false }: Readonly<{ isHide?: boolean }>) {
     const pathname = usePathname()
     const { user } = useCurrentUser()
@@ -53,8 +84,24 @@ export default function Footer({ isHide = false }: Readonly<{ isHide?: boolean }
         routes.public.passwordResetFailure,
     ];
 
-    if (isHide || hiddenFooterRoutes.includes(pathname) || (user && width < 768 && pathname !== routes.public.homePage)) {
+    const hideByRoute = isHide || hiddenFooterRoutes.includes(pathname)
+    const showCompactMobileAdOnly = Boolean(user && width < 768 && pathname !== routes.public.homePage)
+
+    if (hideByRoute) {
         return null
+    }
+
+    if (showCompactMobileAdOnly) {
+        return (
+            <div className="fixed inset-x-0 bottom-[72px] z-40 px-3 md:hidden">
+                <div className="mx-auto max-w-[520px] rounded-xl border border-[#1d3d3a]/20 bg-white/95 p-2 shadow-lg backdrop-blur dark:border-gray-700 dark:bg-gray-900/95">
+                    <AdSenseBlock
+                        scriptId="adsense-loader-mobile-sticky"
+                        onScriptLoad={initializeAds}
+                    />
+                </div>
+            </div>
+        )
     }
 
     const supportEmail = process.env.NEXT_PUBLIC_EMAIL_SUPPORT ?? 'support@tonnkama.com'
@@ -123,22 +170,11 @@ export default function Footer({ isHide = false }: Readonly<{ isHide?: boolean }
                     </div>
                 </div>
 
-                <div className='mt-8 rounded-2xl border border-white/10 bg-white/[0.03] p-3 md:p-4'>
-                    <Script
-                        id="adsense-loader-footer"
-                        strategy="afterInteractive"
-                        async
-                        crossOrigin="anonymous"
-                        src={`https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=${ADSENSE_CLIENT}`}
-                        onLoad={initializeAds}
-                    />
-                    <ins className="adsbygoogle"
-                        style={{ display: 'block' }}
-                        data-ad-client={ADSENSE_CLIENT}
-                        data-ad-slot={ADSENSE_SLOT}
-                        data-ad-format="auto"
-                        data-full-width-responsive="true"></ins>
-                </div>
+                <AdSenseBlock
+                    scriptId="adsense-loader-footer"
+                    onScriptLoad={initializeAds}
+                    className="mt-8 rounded-2xl border border-white/10 bg-white/[0.03] p-3 md:p-4"
+                />
 
                 <div className='mt-6'>
                     <PWAInstallButton />

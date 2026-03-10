@@ -23,6 +23,50 @@ export function timestampedFileName(fileName: string): string {
     return `${new Date().valueOf()}${fileName}`;
 }
 
+function extractStorageErrorMessage(error: unknown): string {
+    if (!(error instanceof Error)) {
+        return "Unknown storage error";
+    }
+
+    const maybeWithCode = error as Error & { code?: string; serverResponse?: string };
+
+    if (maybeWithCode.code === 'storage/unauthorized') {
+        return "Vous n'avez pas l'autorisation d'uploader des images.";
+    }
+
+    if (maybeWithCode.code === 'storage/canceled') {
+        return "Upload annulé.";
+    }
+
+    if (maybeWithCode.code === 'storage/retry-limit-exceeded') {
+        return "Upload trop long (délai dépassé). Vérifiez la connexion puis réessayez.";
+    }
+
+    if (typeof maybeWithCode.serverResponse === 'string' && maybeWithCode.serverResponse.includes('"code": 412')) {
+        return "Le bucket Firebase Storage est mal configuré (erreur 412).";
+    }
+
+    return error.message || "Failed to upload file";
+}
+
+function withTimeout<T>(promise: Promise<T>, timeoutMs: number, operation: string): Promise<T> {
+    return new Promise((resolve, reject) => {
+        const timeoutId = setTimeout(() => {
+            reject(new Error(`${operation} a pris trop de temps.`));
+        }, timeoutMs);
+
+        promise
+            .then((value) => {
+                clearTimeout(timeoutId);
+                resolve(value);
+            })
+            .catch((error) => {
+                clearTimeout(timeoutId);
+                reject(error);
+            });
+    });
+}
+
 /**
  * Uploads a file to a specified location in cloud storage and generates a download URL.
  * 
@@ -36,7 +80,7 @@ export function timestampedFileName(fileName: string): string {
  * @returns {Promise<Image}>} - Returns an object containing the file URL and its storage path.
  * @throws {Error} - Throws an error if the file upload or URL generation fails.
  */
-export async function createFile(file: File, ownerId: string, location: string): Promise<Image> {
+export async function createFile(file: File, ownerId: string | undefined, location: string): Promise<Image> {
     try {
         const { storage, ref, uploadBytes, getDownloadURL } = await getStorage();
         // Create a storage reference with a unique name
@@ -49,20 +93,29 @@ export async function createFile(file: File, ownerId: string, location: string):
         // File metadata including owner information
         const metadata = {
             customMetadata: {
-                owner: ownerId,
+                owner: ownerId || 'unknown',
                 status: 'InProgress'
             },
         };
         // Upload the file with metadata
-        await uploadBytes(fileRef, file, metadata);
+        await withTimeout(uploadBytes(fileRef, file, metadata), 20_000, "Upload image");
 
         // Get the download URL after upload
-        const fileURL = await getDownloadURL(fileRef);
+        const fileURL = await withTimeout(getDownloadURL(fileRef), 10_000, "Récupération URL image");
 
         return { fileURL, filePATH };
     } catch (error) {
-        logger.error('File upload failed', { error });
-        throw new Error("Failed to upload file");
+        const message = extractStorageErrorMessage(error);
+        logger.error('File upload failed', {
+            error,
+            message,
+            fileName: file?.name,
+            fileSize: file?.size,
+            fileType: file?.type,
+            ownerId: ownerId || 'unknown',
+            location,
+        });
+        throw new Error(message);
     }
 }
 
