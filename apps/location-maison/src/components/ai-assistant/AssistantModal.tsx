@@ -1,15 +1,18 @@
 'use client'
 
-import React, { useState } from 'react'
-import { Wand2, X, Send } from 'lucide-react'
+import React, { useRef, useState } from 'react'
+import { Wand2, X, Send, ImagePlus } from 'lucide-react'
 import { createLogger } from '@/lib/logger'
+import imageCompression from 'browser-image-compression'
+import { MAX_IMAGES_UPLOAD } from '@/constantes'
 
 const logger = createLogger('components.ai-assistant-modal')
+const IMAGE_MAX_SIZE_BYTES = 300 * 1024
 
 interface AssistantModalProps {
   isOpen: boolean
   onClose: () => void
-  onGenerate: (description: string) => Promise<void>
+  onGenerate: (description: string, images?: File[]) => Promise<void>
   requiredFields: string[]
   isLoading?: boolean
   creditsAvailable?: number
@@ -26,13 +29,17 @@ export default function AssistantModal({
   canGenerate = true
 }: AssistantModalProps) {
   const [description, setDescription] = useState('')
+  const [selectedImages, setSelectedImages] = useState<File[]>([])
+  const [isProcessingImages, setIsProcessingImages] = useState(false)
+  const imageInputRef = useRef<HTMLInputElement | null>(null)
 
   const handleGenerate = async () => {
-    if (!description.trim() || !canGenerate) return
+    if (!description.trim() || !canGenerate || isProcessingImages) return
 
     try {
-      await onGenerate(description.trim())
+      await onGenerate(description.trim(), selectedImages)
       setDescription('')
+      setSelectedImages([])
       onClose()
     } catch (error) {
       // L'erreur est gérée dans le hook
@@ -42,7 +49,49 @@ export default function AssistantModal({
 
   const handleClose = () => {
     setDescription('')
+    setSelectedImages([])
     onClose()
+  }
+
+  const handleRemoveImage = (index: number) => {
+    setSelectedImages((current) => current.filter((_, imageIndex) => imageIndex !== index))
+  }
+
+  const handleAddImagesClick = () => {
+    imageInputRef.current?.click()
+  }
+
+  const handleImagesSelected = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(event.target.files ?? [])
+    event.target.value = ''
+    if (files.length === 0) return
+
+    const remainingSlots = Math.max(MAX_IMAGES_UPLOAD - selectedImages.length, 0)
+    if (remainingSlots === 0) return
+
+    setIsProcessingImages(true)
+
+    try {
+      const compressedFiles: File[] = []
+
+      for (const file of files.slice(0, remainingSlots)) {
+        const compressed = await imageCompression(file, {
+          maxSizeMB: 0.3,
+          maxWidthOrHeight: 1920,
+        })
+        if (compressed.size <= IMAGE_MAX_SIZE_BYTES) {
+          compressedFiles.push(compressed)
+        }
+      }
+
+      if (compressedFiles.length > 0) {
+        setSelectedImages((current) => [...current, ...compressedFiles].slice(0, MAX_IMAGES_UPLOAD))
+      }
+    } catch (error) {
+      logger.error("Impossible de préparer les images pour l'assistant IA", { error })
+    } finally {
+      setIsProcessingImages(false)
+    }
   }
 
   if (!isOpen) return null
@@ -115,6 +164,58 @@ export default function AssistantModal({
             />
           </div>
 
+          <div className="mb-5">
+            <div className="flex items-center justify-between mb-2">
+              <label className="block text-sm font-medium text-gray-900">
+                Images (optionnel)
+              </label>
+              <span className="text-xs text-gray-500">
+                {selectedImages.length}/{MAX_IMAGES_UPLOAD}
+              </span>
+            </div>
+
+            <input
+              ref={imageInputRef}
+              type="file"
+              multiple
+              accept="image/png,image/jpeg,image/jpg,image/webp"
+              className="hidden"
+              onChange={handleImagesSelected}
+              disabled={isLoading || isProcessingImages}
+            />
+
+            <button
+              type="button"
+              onClick={handleAddImagesClick}
+              disabled={isLoading || isProcessingImages || selectedImages.length >= MAX_IMAGES_UPLOAD}
+              className="w-full py-2.5 px-4 border border-gray-200 rounded-xl text-gray-700 hover:bg-gray-50 transition-colors font-medium disabled:opacity-50 flex items-center justify-center space-x-2"
+            >
+              <ImagePlus className="w-4 h-4" />
+              <span>{isProcessingImages ? 'Traitement des images...' : 'Ajouter des images'}</span>
+            </button>
+
+            {selectedImages.length > 0 && (
+              <div className="mt-3 max-h-32 overflow-y-auto space-y-2">
+                {selectedImages.map((image, index) => (
+                  <div
+                    key={`${image.name}-${image.size}-${index}`}
+                    className="flex items-center justify-between rounded-lg border border-gray-200 px-3 py-2"
+                  >
+                    <span className="text-xs text-gray-700 truncate pr-3">{image.name}</span>
+                    <button
+                      type="button"
+                      onClick={() => handleRemoveImage(index)}
+                      className="text-xs text-red-600 hover:text-red-700"
+                      disabled={isLoading}
+                    >
+                      Retirer
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+
           {/* Boutons */}
           <div className="flex space-x-3">
             <button
@@ -128,7 +229,7 @@ export default function AssistantModal({
             <button
               type="button"
               onClick={handleGenerate}
-              disabled={!description.trim() || !canGenerate || isLoading}
+              disabled={!description.trim() || !canGenerate || isLoading || isProcessingImages}
               className="flex-1 py-2.5 px-4 text-white rounded-xl transition-colors font-medium disabled:opacity-50 flex items-center justify-center space-x-2"
               style={{ backgroundColor: '#156B68' }}
             >

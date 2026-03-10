@@ -44,10 +44,10 @@ const FlatBotAssistant: React.FC<FlatBotAssistantProps> = ({
         setExpression('smile');
     };
 
-    const handleGenerateWithExpression = async (description: string) => {
+    const handleGenerateWithExpression = async (description: string, images?: File[]) => {
         setExpression('thinking');
         try {
-            await handleGenerate(description);
+            await handleGenerate(description, images);
             setExpression('happy');
             setTimeout(() => setExpression('smile'), 1500);
         } catch (error) {
