@@ -4,6 +4,7 @@ import "./globals.css";
 import { Providers } from "@/providers/providers";
 import { BottomNavigation } from "@/components/shared/BottomNavigation";
 import Footer from "@/components/footer/Footer";
+import GlobalAdSenseBanner from "@/components/ads/GlobalAdSenseBanner";
 import { cn } from "@/lib/utils";
 import { Metadata } from 'next'
 import { FirebaseAnalyticsTracker } from '@/features/analytics/tracking';
@@ -263,6 +264,7 @@ export default async function RootLayout({
         <div className="mx-auto">
           <Providers>
             {children}
+            <GlobalAdSenseBanner />
             <BottomNavigation />
             <Footer />
             <FirebaseAnalyticsTracker />
