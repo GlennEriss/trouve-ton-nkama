@@ -17,12 +17,79 @@ const logger = createLogger('components.footer.ads');
 
 function AdSenseBlock({
     className,
+    slotKey,
 }: Readonly<{
     className?: string;
+    slotKey: string;
 }>) {
+    const adRef = React.useRef<HTMLModElement | null>(null);
+
+    React.useEffect(() => {
+        let retries = 0;
+        let cancelled = false;
+
+        const tryInitialize = () => {
+            if (typeof window === 'undefined' || cancelled) {
+                return true;
+            }
+
+            const adElement = adRef.current;
+            if (!adElement) {
+                return false;
+            }
+
+            // If already filled, no need to push again.
+            if (adElement.getAttribute('data-ad-status') === 'done') {
+                return true;
+            }
+
+            const adsWindow = window as Window & { adsbygoogle?: Array<Record<string, unknown>> };
+            if (!adsWindow.adsbygoogle) {
+                return false;
+            }
+
+            try {
+                adsWindow.adsbygoogle.push({});
+                return true;
+            } catch (error) {
+                logger.warn('AdSense push failed', {
+                    error,
+                    slotKey,
+                    adStatus: adElement.getAttribute('data-ad-status'),
+                });
+                return false;
+            }
+        };
+
+        if (tryInitialize()) {
+            return () => {
+                cancelled = true;
+            };
+        }
+
+        const intervalId = window.setInterval(() => {
+            if (tryInitialize()) {
+                window.clearInterval(intervalId);
+                return;
+            }
+
+            retries += 1;
+            if (retries >= 20) {
+                window.clearInterval(intervalId);
+                logger.warn('AdSense slot init timeout', { slotKey });
+            }
+        }, 350);
+
+        return () => {
+            cancelled = true;
+            window.clearInterval(intervalId);
+        };
+    }, [slotKey]);
+
     return (
         <div className={className}>
             <ins
+                ref={adRef}
                 className="adsbygoogle"
                 style={{ display: 'block' }}
                 data-ad-client={ADSENSE_CLIENT}
@@ -38,7 +105,6 @@ export default function Footer({ isHide = false }: Readonly<{ isHide?: boolean }
     const pathname = usePathname()
     const { user } = useCurrentUser()
     const { width } = useWindowSize()
-    const adInitializedRef = React.useRef(false);
     const hiddenFooterRoutes = [
         routes.public.signin,
         routes.public.signup,
@@ -51,64 +117,6 @@ export default function Footer({ isHide = false }: Readonly<{ isHide?: boolean }
     const hideByRoute = isHide || hiddenFooterRoutes.includes(pathname)
     const showCompactMobileAdOnly = Boolean(user && width < 768 && pathname !== routes.public.homePage)
 
-    React.useEffect(() => {
-        // Re-allow initialization whenever route or footer mode changes.
-        adInitializedRef.current = false;
-    }, [pathname, hideByRoute, showCompactMobileAdOnly]);
-
-    const initializeAds = React.useCallback(() => {
-        if (typeof window === 'undefined' || adInitializedRef.current) {
-            return;
-        }
-
-        // Only initialize when an AdSense slot is mounted in the DOM.
-        const adSlot = document.querySelector('ins.adsbygoogle');
-        if (!adSlot) {
-            return;
-        }
-
-        try {
-            const adsWindow = window as Window & { adsbygoogle?: Array<Record<string, unknown>> };
-            adsWindow.adsbygoogle = adsWindow.adsbygoogle || [];
-            adsWindow.adsbygoogle.push({});
-            adInitializedRef.current = true;
-        } catch (error) {
-            logger.error('Failed to initialize AdSense block', { error, pathname });
-        }
-    }, [pathname]);
-
-    React.useEffect(() => {
-        if (hideByRoute) {
-            return;
-        }
-
-        const adsWindow = window as Window & { adsbygoogle?: Array<Record<string, unknown>> };
-        if (adsWindow.adsbygoogle && !adInitializedRef.current) {
-            initializeAds();
-            return;
-        }
-
-        // Wait for the global AdSense script to be available in case it loads after mount.
-        let retries = 0;
-        const intervalId = window.setInterval(() => {
-            const currentWindow = window as Window & { adsbygoogle?: Array<Record<string, unknown>> };
-            if (currentWindow.adsbygoogle && !adInitializedRef.current) {
-                initializeAds();
-                window.clearInterval(intervalId);
-                return;
-            }
-
-            retries += 1;
-            if (retries >= 20) {
-                window.clearInterval(intervalId);
-            }
-        }, 250);
-
-        return () => {
-            window.clearInterval(intervalId);
-        };
-    }, [hideByRoute, initializeAds]);
-
     if (hideByRoute) {
         return null
     }
@@ -118,6 +126,7 @@ export default function Footer({ isHide = false }: Readonly<{ isHide?: boolean }
             <div className="fixed inset-x-0 bottom-[72px] z-40 px-3 md:hidden">
                 <div className="mx-auto max-w-[520px] rounded-xl border border-[#1d3d3a]/20 bg-white/95 p-2 shadow-lg backdrop-blur dark:border-gray-700 dark:bg-gray-900/95">
                     <AdSenseBlock
+                        slotKey={`mobile-${pathname}`}
                     />
                 </div>
             </div>
@@ -192,6 +201,7 @@ export default function Footer({ isHide = false }: Readonly<{ isHide?: boolean }
 
                 <AdSenseBlock
                     className="mt-8 rounded-2xl border border-white/10 bg-white/[0.03] p-3 md:p-4"
+                    slotKey={`footer-${pathname}`}
                 />
 
                 <div className='mt-6'>
