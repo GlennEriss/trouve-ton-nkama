@@ -58,3 +58,8 @@ init.txt
 /services-account-firebase/**/*.json
 /services-account-firebase/**/*.key
 /services-account-firebase/**/*.pem
+
+# Apify Facebook Cursor v2 artifacts
+/scripts/apify-facebook-cursor-v2/data/raw/*.json
+/scripts/apify-facebook-cursor-v2/data/staging/*.json
+/scripts/apify-facebook-cursor-v2/data/reports/*.json

@@ -40,6 +40,8 @@
     "test:email:signup": "node scripts/test-signup-flow.js",
     "test:email:complete": "node scripts/test-complete-system.js",
     "test:email:force": "node scripts/test-real-emails.js",
+    "apify:v2:run": "node scripts/apify-facebook-cursor-v2/src/cli/run-job.js",
+    "apify:v2:replay": "node scripts/apify-facebook-cursor-v2/src/cli/replay-job.js",
     "test:sms": "node scripts/test-sms-verification.js",
     "test:sms:page": "echo '🌐 Page de test SMS disponible sur: http://localhost:3000/test-sms'",
     "check:firebase": "node scripts/check-firebase-config.js",

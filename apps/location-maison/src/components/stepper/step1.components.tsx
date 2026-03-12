@@ -75,14 +75,52 @@ export const ImageUploader = () => {
     const { getInputProps, getRootProps, isDragActive, isProcessing } = useImageDropzone({
         onFiles: (files) => {
             try {
+                const beforeCount = mediator.getImages().length;
                 mediator.addImages(files);
-                toast({
-                    title: "Images ajoutées",
-                    description: `${files.length} image(s) ajoutée(s) avec succès`,
-                    variant: "default"
-                });
+                const afterCount = mediator.getImages().length;
+                const addedCount = Math.max(afterCount - beforeCount, 0);
+
+                if (addedCount > 0) {
+                    toast({
+                        title: "Images ajoutées",
+                        description: `${addedCount} image(s) ajoutée(s) avec succès`,
+                        variant: "default"
+                    });
+                }
+
+                if (files.length > addedCount) {
+                    toast({
+                        title: "Certaines images n'ont pas été ajoutées",
+                        description: "La limite maximale de 10 images est atteinte.",
+                        variant: "destructive"
+                    });
+                }
             } catch (e) {
                 toast({ title: "Erreur", description: "Impossible d'ajouter les images", variant: "destructive" });
+            }
+        },
+        onFeedback: (feedback) => {
+            const messages: string[] = [];
+
+            if (feedback.invalidTypeCount > 0) {
+                messages.push(`${feedback.invalidTypeCount} image(s) ignorée(s): format non supporté (PNG/JPG/JPEG/WEBP).`);
+            }
+            if (feedback.tooManyFilesCount > 0) {
+                messages.push(`Maximum ${MAX_IMAGES_UPLOAD} images par ajout.`);
+            }
+            if (feedback.oversizedAfterCompressionCount > 0) {
+                messages.push(`${feedback.oversizedAfterCompressionCount} image(s) trop lourde(s) même après compression (limite 300 Ko).`);
+            }
+            if (feedback.compressionErrorCount > 0) {
+                messages.push(`${feedback.compressionErrorCount} image(s) n'ont pas pu être compressée(s).`);
+            }
+
+            if (messages.length > 0) {
+                toast({
+                    title: "Certaines images n'ont pas été ajoutées",
+                    description: messages.join(' '),
+                    variant: "destructive"
+                });
             }
         }
     });

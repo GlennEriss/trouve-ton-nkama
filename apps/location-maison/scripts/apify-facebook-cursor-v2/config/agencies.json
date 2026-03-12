@@ -1,0 +1,45 @@
+{
+  "agencies": [
+    {
+      "key": "jika-immo",
+      "name": "Jika Immo",
+      "uid": "rO9AwHrh1aT9S6mbkFsQWKtNJqz2",
+      "documentId": "rO9AwHrh1aT9S6mbkFsQWKtNJqz2",
+      "enabled": true,
+      "sources": [
+        {
+          "type": "facebook-group",
+          "groupId": "1227810011219532",
+          "label": "Posts Facebook Jika Immo"
+        }
+      ],
+      "defaults": {
+        "country": "Gabon",
+        "countryCode": "GA",
+        "statusDefault": "FOR_RENT",
+        "cityDefault": "Libreville",
+        "provinceDefault": "Estuaire"
+      }
+    },
+    {
+      "key": "onesime-negoce",
+      "name": "Onesime Negoce",
+      "uid": "cd2POQU74IV7F6Rlhm6Nlmz0qUs1",
+      "documentId": "cd2POQU74IV7F6Rlhm6Nlmz0qUs1",
+      "enabled": true,
+      "sources": [
+        {
+          "type": "facebook-profile",
+          "label": "Posts Facebook Onesime Negoce"
+        }
+      ],
+      "defaults": {
+        "country": "Gabon",
+        "countryCode": "GA",
+        "statusDefault": "FOR_RENT",
+        "cityDefault": "Libreville",
+        "provinceDefault": "Estuaire"
+      }
+    }
+  ]
+}

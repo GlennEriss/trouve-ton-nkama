@@ -95,6 +95,12 @@ Bienvenue dans la documentation complète de la plateforme de location et vente 
   - Couche technique de tracking
   - Dashboards et exploitation metrics
 
+### 🤖 Scripts d'import
+- **[scripts/apify-facebook-cursor/](./scripts/apify-facebook-cursor/)** : Architecture cible du pipeline d'import annonces Facebook
+  - Refactor pro (patterns, couches, idempotence)
+  - Configuration agences (uid/documentId/source)
+  - Plan de migration du legacy vers V2
+
 ---
 
 ## 🚀 Démarrage Rapide
@@ -124,4 +130,4 @@ Bienvenue dans la documentation complète de la plateforme de location et vente 
 
 ---
 
-*Dernière mise à jour : 2026-03-08*
+*Dernière mise à jour : 2026-03-12*

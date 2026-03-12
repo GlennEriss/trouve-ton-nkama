@@ -64,7 +64,7 @@ export async function getProperties({ limitPerPage, lastDoc, createdBy, type }: 
         }
     }
     querySnapshot.forEach((doc: any) => {
-        properties.push({ id: doc.id, ...doc.data() } as Property);
+        properties.push({ ...doc.data(), id: doc.id } as Property);
     });
     return {
         properties,
@@ -125,7 +125,7 @@ export async function getPropertyById(id: string): Promise<Property | null> {
         if (propertySnapshot.exists()) {
             // Return the property data with the document ID included
             const property = { ...propertySnapshot.data() } as Property
-            return { id: propertySnapshot.id, ...property, /* updatedAt: (property.updatedAt as any).toDate(), createdAt: (property.createdAt as any).toDate() */ } as Property;
+            return { ...property, id: propertySnapshot.id, /* updatedAt: (property.updatedAt as any).toDate(), createdAt: (property.createdAt as any).toDate() */ } as Property;
         } else {
             // Return null if no document was found
             return null;
