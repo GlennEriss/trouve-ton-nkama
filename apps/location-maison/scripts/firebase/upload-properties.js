@@ -2,11 +2,26 @@ const admin = require('firebase-admin');
 const fs = require('fs').promises;
 const path = require('path');
 
+function parseCliArgs(argv = []) {
+  return argv.reduce((acc, arg, index, all) => {
+    if (!arg.startsWith('--')) return acc;
+    const key = arg.slice(2);
+    const next = all[index + 1];
+    acc[key] = next && !next.startsWith('--') ? next : true;
+    return acc;
+  }, {});
+}
+
 class FirebasePropertyUploader {
   constructor() {
     this.baseDir = __dirname;
+    const cliArgs = parseCliArgs(process.argv.slice(2));
+    const inputOverride = cliArgs.input || process.env.INPUT_FILE;
+
     // Utiliser le nouveau fichier avec les images locales
-    this.inputFile = path.join(__dirname, '..', 'apify-facebook-cursor', 'properties-extracted-combined-with-local-images.json');
+    this.inputFile = inputOverride
+      ? path.resolve(process.cwd(), String(inputOverride))
+      : path.join(__dirname, '..', 'apify-facebook-cursor', 'properties-extracted-combined-with-local-images.json');
     this.imagesDir = path.join(__dirname, '..', 'download-img', 'images');
     this.outputFile = path.join(this.baseDir, 'processed-properties.json');
     
@@ -15,6 +30,8 @@ class FirebasePropertyUploader {
     this.savedProperties = 0;
     this.errors = 0;
     this.processedContacts = 0;
+    this.projectId = '';
+    this.serviceAccountEmail = '';
   }
 
   async initialize() {
@@ -27,16 +44,28 @@ class FirebasePropertyUploader {
       // Vérifier et afficher l'environnement
       const serviceAccount = require('./firebase-config.js');
       const projectId = serviceAccount.projectId;
+      this.projectId = projectId;
+      this.serviceAccountEmail = serviceAccount.clientEmail || '';
       const isProduction = projectId === 'location-maison-prod-167da';
       const isDevelopment = projectId?.includes('-dev');
       
       console.log('🌍 ENVIRONNEMENT DÉTECTÉ:');
       console.log(`   Project ID: ${projectId}`);
+      console.log(`   Service account: ${this.serviceAccountEmail}`);
       console.log(`   Mode: ${isProduction ? '🔴 PRODUCTION' : isDevelopment ? '🟡 DÉVELOPPEMENT' : '❓ INCONNU'}`);
       console.log(`   Storage: ${process.env.FIREBASE_STORAGE_BUCKET}\n`);
       
       if (!projectId || !serviceAccount.clientEmail || !serviceAccount.privateKey) {
         throw new Error('❌ Configuration Firebase incomplète - vérifiez le fichier .env');
+      }
+
+      const serviceAccountProjectMatch = String(this.serviceAccountEmail).match(/@([^.]+)\.iam\.gserviceaccount\.com$/);
+      const serviceAccountProjectId = serviceAccountProjectMatch?.[1] || '';
+      if (serviceAccountProjectId && projectId && serviceAccountProjectId !== projectId) {
+        throw new Error(
+          `Configuration incohérente: FIREBASE_PROJECT_ID=${projectId} mais FIREBASE_CLIENT_EMAIL appartient à ${serviceAccountProjectId}. ` +
+          `Charge le bon fichier d'environnement (ex: DOTENV_CONFIG_PATH=.env.local.prod).`
+        );
       }
       
       // Confirmation pour la production
@@ -47,14 +76,20 @@ class FirebasePropertyUploader {
       
       // Initialiser Firebase Admin
       if (!admin.apps.length) {
+        const storageBucket =
+          process.env.FIREBASE_STORAGE_BUCKET ||
+          `${projectId}.firebasestorage.app`;
+
         admin.initializeApp({
           credential: admin.credential.cert(serviceAccount),
-          storageBucket: process.env.FIREBASE_STORAGE_BUCKET || 'location-maison-prod-167da.firebasestorage.app'
+          storageBucket
         });
       }
       
       this.db = admin.firestore();
       this.bucket = admin.storage().bucket();
+
+      await this.verifyFirestoreWriteAccess();
       
       console.log('✅ Firebase Admin initialisé avec succès');
     } catch (error) {
@@ -63,8 +98,36 @@ class FirebasePropertyUploader {
     }
   }
 
+  async verifyFirestoreWriteAccess() {
+    const probeCollection = '__script_healthchecks';
+    const probeRef = this.db.collection(probeCollection).doc(`upload-properties-${Date.now()}`);
+
+    try {
+      await probeRef.set({
+        createdAt: admin.firestore.FieldValue.serverTimestamp(),
+        source: 'upload-properties-script',
+      });
+      await probeRef.delete();
+      console.log('✅ Permissions Firestore validées\n');
+    } catch (error) {
+      const message = error?.message || 'Erreur inconnue';
+      const isPermissionIssue = /PERMISSION_DENIED|Missing or insufficient permissions/i.test(message);
+
+      if (isPermissionIssue) {
+        throw new Error(
+          `Permissions Firestore insuffisantes pour ${this.serviceAccountEmail} sur ${this.projectId}. ` +
+          `Ajoute au minimum le rôle IAM "Cloud Datastore User" (roles/datastore.user), puis relance le script. ` +
+          `Détail: ${message}`
+        );
+      }
+
+      throw error;
+    }
+  }
+
   async loadProperties() {
     console.log('📄 Chargement du fichier JSON...');
+    console.log(`   Source: ${this.inputFile}`);
     const data = await fs.readFile(this.inputFile, 'utf8');
     const jsonData = JSON.parse(data);
     // Le fichier peut avoir une structure { properties: [...] } ou être directement un tableau
@@ -222,8 +285,10 @@ class FirebasePropertyUploader {
     }
 
     // 3. Préparer la propriété pour Firestore avec les types ICreation
+    // IMPORTANT: ne jamais stocker l'id du document Firestore dans le payload.
+    const { id: _ignoredId, objectID: _ignoredObjectId, ...propertyWithoutId } = property || {};
     const processedProperty = {
-      ...property,
+      ...propertyWithoutId,
       contact: contact,
       contacts: contacts,
       images: firebaseImages, // URLs Firebase après upload
@@ -248,6 +313,9 @@ class FirebasePropertyUploader {
       
     } catch (error) {
       console.log(`   ❌ Erreur sauvegarde Firestore: ${error.message}\n`);
+      if (/PERMISSION_DENIED|Missing or insufficient permissions/i.test(error?.message || '')) {
+        throw new Error(`Permissions Firestore refusées durant l'insertion: ${error.message}`);
+      }
       this.errors++;
       return null;
     }

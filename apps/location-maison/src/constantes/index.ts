@@ -2,7 +2,9 @@
  * @module constantes
  */
 
+import type { IconType } from 'react-icons';
 import { FaBriefcase, FaHome, FaHeart, FaBuilding, FaUsers, FaCouch, FaTree, FaMountain, FaSwimmingPool, FaDog, FaShoppingCart, FaBus, FaCar, FaWifi, FaShieldAlt, FaBicycle, FaRunning, FaChild, FaWheelchair, FaGraduationCap, FaUmbrellaBeach, FaPeace, FaColumns, FaWarehouse, FaRegClock, FaUserTie, FaStore } from 'react-icons/fa';
+import tagNames from './tags.json';
 
 // Constants
 export const MAX_IMAGES_UPLOAD = 10;
@@ -19,140 +21,46 @@ export const statusOptions = [
   }
 ];
 
-export const tags = [
-  {
-    tagName: 'Travail',
-    tagIcon: FaBriefcase, // Icon for work-related housing
-  },
-  {
-    tagName: 'Famille',
-    tagIcon: FaUsers, // Icon for family-friendly homes
-  },
-  {
-    tagName: 'Couple',
-    tagIcon: FaHeart, // Icon for couple-friendly homes
-  },
-  {
-    tagName: 'Villa',
-    tagIcon: FaHome, // Icon for houses
-  },
-  {
-    tagName: 'Sous barrière',
-    tagIcon: FaShieldAlt, // Updated icon for gated properties
-  },
-  {
-    tagName: 'Meublé',
-    tagIcon: FaCouch, // Icon for furnished properties
-  },
-  {
-    tagName: 'Centre-ville',
-    tagIcon: FaBuilding, // Icon for studio apartments
-  },
-  {
-    tagName: 'Vacances',
-    tagIcon: FaUmbrellaBeach, // Icon for vacation homes
-  },
-  {
-    tagName: 'Nature',
-    tagIcon: FaTree, // Icon for nature-friendly homes
-  },
-  {
-    tagName: 'Montagne',
-    tagIcon: FaMountain, // Icon for mountain homes
-  },
-  {
-    tagName: 'Piscine',
-    tagIcon: FaSwimmingPool, // Icon for properties with pools
-  },
-  {
-    tagName: 'Animaux admis',
-    tagIcon: FaDog, // Icon for pet-friendly homes
-  },
-  {
-    tagName: 'Commerces proches',
-    tagIcon: FaShoppingCart, // Icon for homes near shops
-  },
-  {
-    tagName: 'Transport proche',
-    tagIcon: FaBus, // Icon for homes near public transport
-  },
-  {
-    tagName: 'Parking',
-    tagIcon: FaCar, // Icon for homes with parking
-  },
-  {
-    tagName: 'Wi-Fi',
-    tagIcon: FaWifi, // Icon for homes with Wi-Fi
-  },
-  {
-    tagName: 'Sécurisé',
-    tagIcon: FaShieldAlt, // Icon for homes with security features
-  },
-  {
-    tagName: 'Vélo',
-    tagIcon: FaBicycle, // Icon for bike-friendly homes
-  },
-  {
-    tagName: 'Activités sportives',
-    tagIcon: FaRunning, // Icon for homes near sports activities
-  },
-  {
-    tagName: 'Adapté aux enfants',
-    tagIcon: FaChild, // Icon for child-friendly homes
-  },
-  {
-    tagName: 'Accessible handicapés',
-    tagIcon: FaWheelchair, // Icon for accessible homes
-  },
-  {
-    tagName: 'Étudiant',
-    tagIcon: FaGraduationCap, // Icon for student accommodations
-  },
-  {
-    tagName: 'Calme et tranquillité',
-    tagIcon: FaPeace,
-  },
-  {
-    tagName: 'Proche de la plage',
-    tagIcon: FaUmbrellaBeach, 
-  },
-  {
-    tagName: 'Duplex',
-    tagIcon: FaBuilding, // Icon for duplex properties
-  },
-  {
-    tagName: 'Boutique',
-    tagIcon: FaWarehouse, // Icon for shop properties
-  },
-  {
-    tagName: 'Balcon',
-    tagIcon: FaColumns, // Icon for properties with balcony
-  },
-  {
-    tagName: 'Terrasse',
-    tagIcon: FaColumns, // Icon for properties with terrace
-  },
-  {
-    tagName: 'Collocation',
-    tagIcon: FaUsers, // Icon for collocation properties
-  },
-  {
-    tagName: 'Garage',
-    tagIcon: FaCar, // Icon for properties with garage
-  },
-  {
-    tagName: 'Court séjour',
-    tagIcon: FaRegClock, // Icone pour court séjour
-  },
-  {
-    tagName: 'Propriétaire',
-    tagIcon: FaUserTie, // Icon for property owner
-  },
-  {
-    tagName: 'Agence',
-    tagIcon: FaStore, // Icon for real estate agency
-  },
-];
+const TAG_ICONS: Record<string, IconType> = {
+  Travail: FaBriefcase,
+  Famille: FaUsers,
+  Couple: FaHeart,
+  Villa: FaHome,
+  'Sous barrière': FaShieldAlt,
+  Meublé: FaCouch,
+  'Centre-ville': FaBuilding,
+  Vacances: FaUmbrellaBeach,
+  Nature: FaTree,
+  Montagne: FaMountain,
+  Piscine: FaSwimmingPool,
+  'Animaux admis': FaDog,
+  'Commerces proches': FaShoppingCart,
+  'Transport proche': FaBus,
+  Parking: FaCar,
+  'Wi-Fi': FaWifi,
+  Sécurisé: FaShieldAlt,
+  Vélo: FaBicycle,
+  'Activités sportives': FaRunning,
+  'Adapté aux enfants': FaChild,
+  'Accessible handicapés': FaWheelchair,
+  Étudiant: FaGraduationCap,
+  'Calme et tranquillité': FaPeace,
+  'Proche de la plage': FaUmbrellaBeach,
+  Duplex: FaBuilding,
+  Boutique: FaWarehouse,
+  Balcon: FaColumns,
+  Terrasse: FaColumns,
+  Collocation: FaUsers,
+  Garage: FaCar,
+  'Court séjour': FaRegClock,
+  Propriétaire: FaUserTie,
+  Agence: FaStore,
+};
+
+export const tags = (tagNames as string[]).map((tagName) => ({
+  tagName,
+  tagIcon: TAG_ICONS[tagName] ?? FaStore,
+}));
 
 export const collectionFirebaseNames = {
   properties: 'properties',

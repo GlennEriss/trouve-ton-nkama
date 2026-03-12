@@ -10,6 +10,13 @@
  */
 
 const path = require("node:path");
+
+// Compat Node >= 25 pour dépendances legacy qui attendent buffer.SlowBuffer.
+const bufferModule = require("node:buffer");
+if (!bufferModule.SlowBuffer) {
+  bufferModule.SlowBuffer = bufferModule.Buffer;
+}
+
 const { initFirestoreAdmin } = require("../openstreetmap/firestore-admin");
 
 // Nom de la collection Firestore pour les utilisateurs
@@ -17,16 +24,16 @@ const COLLECTION_USERS = "users";
 
 // Configuration de l'utilisateur à créer
 const USER_DATA = {
-  login: "patrickghislain@ttn.ga",
-  password: "patrickghislain",
+  login: "kevingayitou@ttn.ga",
+  password: "kevingayitou",
   roles: ["Announcer"],
   provider: ["CREDENTIALS"],
   credits: 100,
-  firstname: "Patrick",
-  lastname: "Ghislain",
+  firstname: "Kevin",
+  lastname: "Gayitou",
   country: { name: "Gabon", code: "GA" },
-  phoneNumbers: ["+24177531657"], // Format nettoyé : +241 77 53 16 57 -> +24177531657
-  searchableName: "patrick ghislain",
+  phoneNumbers: ["+24174203330"], // Format nettoyé : +241 74 20 33 30 -> +24174203330
+  searchableName: "kevin gayitou",
 };
 
 // Paramètres de notification par défaut
@@ -187,4 +194,3 @@ async function main() {
 
 // Lancer le script
 main();
-

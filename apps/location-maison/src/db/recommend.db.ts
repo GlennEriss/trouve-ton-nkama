@@ -42,7 +42,7 @@ export async function getRecommendedProperties({
         const properties: Property[] = [];
 
         snapshot.forEach((doc) => {
-            const property = { id: doc.id, ...doc.data() } as Property;
+            const property = { ...doc.data(), id: doc.id } as Property;
             if (property.id !== excludeId) {
                 properties.push(property);
             }
