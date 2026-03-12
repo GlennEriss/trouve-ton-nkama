@@ -8,6 +8,7 @@ import { cn } from "@/lib/utils";
 import { Metadata } from 'next'
 import { FirebaseAnalyticsTracker } from '@/features/analytics/tracking';
 import Script from "next/script";
+import { Analytics } from '@vercel/analytics/react';
 
 const inter = Inter({
   subsets: ['latin'],
@@ -266,6 +267,7 @@ export default async function RootLayout({
             <BottomNavigation />
             <Footer />
             <FirebaseAnalyticsTracker />
+            <Analytics />
           </Providers>
         </div>
       </body>
