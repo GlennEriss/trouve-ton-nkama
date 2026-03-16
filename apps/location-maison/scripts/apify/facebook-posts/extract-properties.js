@@ -234,7 +234,7 @@ function transformPostToProperty(post, index) {
       nbrRooms: features.nbrRooms,
       nbrBathrooms: features.nbrBathrooms,
       nbrToilets: features.nbrToilets || features.nbrBathrooms,
-      nbrChickens: 0 // Par défaut
+      nbrKitchens: 0 // Par défaut
     } : {}),
     
     // Métadonnées Facebook

@@ -40,6 +40,26 @@
         "cityDefault": "Libreville",
         "provinceDefault": "Estuaire"
       }
+    },
+    {
+      "key": "diaz-mariano",
+      "name": "Diaz Mariano",
+      "uid": "cEbADyQXtnOWyxujl67bqkVa6Qu1",
+      "documentId": "cEbADyQXtnOWyxujl67bqkVa6Qu1",
+      "enabled": true,
+      "sources": [
+        {
+          "type": "facebook-profile",
+          "label": "Posts Facebook Diaz Mariano"
+        }
+      ],
+      "defaults": {
+        "country": "Gabon",
+        "countryCode": "GA",
+        "statusDefault": "FOR_RENT",
+        "cityDefault": "Libreville",
+        "provinceDefault": "Estuaire"
+      }
     }
   ]
 }

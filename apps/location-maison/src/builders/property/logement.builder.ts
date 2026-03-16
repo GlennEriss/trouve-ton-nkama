@@ -19,7 +19,7 @@ import { PropertyBuilder } from "./property.builder";
 export abstract class LogementBuilder extends PropertyBuilder {
     /**
      * Constructor initializes the `LogementBuilder` with default values.
-     * The initial values for `nbrChickens`, `nbrBathrooms`, and `nbrToilets` are set to 0.
+     * The initial values for `nbrKitchens`, `nbrBathrooms`, and `nbrToilets` are set to 0.
      * 
      * @protected
      */
@@ -29,7 +29,7 @@ export abstract class LogementBuilder extends PropertyBuilder {
             ...this.property,
             typeProperty: 'Logement',
             nbrRooms: 0,
-            nbrChickens: 0,
+            nbrKitchens: 0,
             nbrBathrooms: 0,
             nbrToilets: 0
         } as Logement;
@@ -38,11 +38,11 @@ export abstract class LogementBuilder extends PropertyBuilder {
     /**
      * Sets the number of kitchens in the logement.
      * 
-     * @param {number} nbrChickens - The number of kitchens.
+     * @param {number} nbrKitchens - The number of kitchens.
      * @returns {this} The current instance of `LogementBuilder`.
      */
-    setNbrChickens(nbrChickens: number): this {
-        (this.property as Logement).nbrChickens = nbrChickens;
+    setNbrKitchens(nbrKitchens: number): this {
+        (this.property as Logement).nbrKitchens = nbrKitchens;
         return this;
     }
 

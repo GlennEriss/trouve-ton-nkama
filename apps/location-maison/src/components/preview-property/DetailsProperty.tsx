@@ -63,10 +63,12 @@ const DetailsItem = ({ keyName, value }: Readonly<{ keyName: string, value: numb
 }
 
 const DetailsLogement = ({ logement }: Readonly<{ logement: Logement }>) => {
+    const kitchenCount = (logement as any).nbrKitchens ?? (logement as any).nbrChickens ?? 0;
+
     return (
         <div className='flex flex-wrap gap-4'>
             <DetailsItem keyName='bedroom' value={logement.nbrRooms} />
-            <DetailsItem keyName='kitchen' value={logement.nbrChickens} />
+            <DetailsItem keyName='kitchen' value={kitchenCount} />
             <DetailsItem keyName='bathroom' value={logement.nbrBathrooms} />
             <DetailsItem keyName='toilet' value={logement.nbrToilets} />
         </div>

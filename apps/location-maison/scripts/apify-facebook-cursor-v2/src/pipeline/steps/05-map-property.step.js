@@ -12,6 +12,10 @@ const ALLOWED_TYPES = new Set([
 ]);
 
 function normalizeText(value) {
+  return String(value || '').trim();
+}
+
+function normalizeTextFold(value) {
   return String(value || '')
     .normalize('NFD')
     .replace(/[\u0300-\u036f]/g, '')
@@ -35,322 +39,365 @@ function parseOptionalInt(value) {
   return rounded >= 0 ? rounded : null;
 }
 
-function toNonNegativeInt(value, fallback = 0) {
+function toNonNegativeInt(value, defaultValue = 0) {
   const parsed = parseOptionalInt(value);
-  return parsed !== null ? parsed : fallback;
+  return parsed !== null ? parsed : defaultValue;
 }
 
-function toNonNegativeNumber(value, fallback = 0) {
+function toNonNegativeNumber(value, defaultValue = 0) {
   const parsed = parseOptionalNumber(value);
-  if (!Number.isFinite(parsed)) return fallback;
-  return parsed >= 0 ? parsed : fallback;
-}
-
-function extractIntFromPatterns(text, patterns) {
-  for (const pattern of patterns) {
-    const match = text.match(pattern);
-    if (!match) continue;
-    const candidate = parseInt(match[1], 10);
-    if (Number.isFinite(candidate) && candidate >= 0) {
-      return candidate;
-    }
-  }
-  return null;
-}
-
-function inferRooms(item, text) {
-  const explicit = parseOptionalInt(item.nbrRooms);
-  if (explicit !== null) return explicit;
-  const parsed = extractIntFromPatterns(text, [
-    /(\d{1,2})\s*(?:chambres?|chbre?s?|ch\b)/i,
-    /(\d{1,2})\s*(?:pieces?|pi[eè]ces?)/i,
-  ]);
-  if (parsed !== null) return parsed;
-  if (/\bstudio\b/i.test(text) || /\bchambre\b/i.test(text)) return 1;
-  return 0;
-}
-
-function inferBathrooms(item, text) {
-  const explicit = parseOptionalInt(item.nbrBathrooms);
-  if (explicit !== null) return explicit;
-  const parsed = extractIntFromPatterns(text, [
-    /(\d{1,2})\s*(?:salles?\s*d['’]?\s*(?:eau|bain)|douches?|sdb|bathrooms?)/i,
-  ]);
-  if (parsed !== null) return parsed;
-  return /\bdouche|salle d['’]eau|sdb|bathroom\b/i.test(text) ? 1 : 0;
-}
-
-function inferToilets(item, text, bathrooms) {
-  const explicit = parseOptionalInt(item.nbrToilets);
-  if (explicit !== null) return explicit;
-  const parsed = extractIntFromPatterns(text, [/(\d{1,2})\s*(?:toilettes?|wc)\b/i]);
-  if (parsed !== null) return parsed;
-  if (/\bwc|toilettes?\b/i.test(text)) return 1;
-  return bathrooms > 0 ? bathrooms : 0;
-}
-
-function inferKitchens(item, text) {
-  const explicit = parseOptionalInt(item.nbrChickens);
-  if (explicit !== null) return explicit;
-  const parsed = extractIntFromPatterns(text, [/(\d{1,2})\s*(?:cuisines?|kitchens?)\b/i]);
-  if (parsed !== null) return parsed;
-  return /\bcuisine|kitchen\b/i.test(text) ? 1 : 0;
-}
-
-function inferLivingRooms(item, text) {
-  const explicit = parseOptionalInt(item.nbrLivingRoom);
-  if (explicit !== null) return explicit;
-  const parsed = extractIntFromPatterns(text, [/(\d{1,2})\s*(?:salons?|sejours?|séjours?|living)\b/i]);
-  if (parsed !== null) return parsed;
-  return /\bsalon|sejour|séjour|living\b/i.test(text) ? 1 : 0;
-}
-
-function inferFloorLevel(text) {
-  if (/\b(?:rez[- ]de[- ]chaussee|rdc)\b/i.test(text)) return 0;
-  const parsed = extractIntFromPatterns(text, [
-    /(\d{1,2})\s*(?:er|e|eme|eme)?\s*(?:etage|étage|floor|niveau)\b/i,
-    /(?:etage|étage|floor|niveau)\s*[:#-]?\s*(\d{1,2})\b/i,
-  ]);
-  return parsed !== null ? parsed : 0;
-}
-
-function inferFloorsTotal(item, text) {
-  const explicit = parseOptionalInt(item.nbrFloors);
-  if (explicit !== null) return explicit;
-  const parsed = extractIntFromPatterns(text, [
-    /(\d{1,2})\s*(?:etages?|étages?|niveaux?|floors?)\b/i,
-    /(?:etages?|étages?|niveaux?|floors?)\s*[:#-]?\s*(\d{1,2})\b/i,
-  ]);
-  if (parsed !== null) return parsed;
-  if (/\btriplex\b/i.test(text)) return 3;
-  if (/\bduplex\b/i.test(text)) return 2;
-  return 1;
-}
-
-function inferGarages(item, text) {
-  const explicit = parseOptionalInt(item.nbrGarages);
-  if (explicit !== null) return explicit;
-  const parsed = extractIntFromPatterns(text, [/(\d{1,2})\s*(?:garages?|parkings?)\b/i]);
-  if (parsed !== null) return parsed;
-  return /\bgarage|parking\b/i.test(text) ? 1 : 0;
-}
-
-function inferPools(item, text) {
-  const explicit = parseOptionalInt(item.nbrPiscine);
-  if (explicit !== null) return explicit;
-  const parsed = extractIntFromPatterns(text, [/(\d{1,2})\s*(?:piscines?|pools?)\b/i]);
-  if (parsed !== null) return parsed;
-  return /\bpiscine|pool\b/i.test(text) ? 1 : 0;
-}
-
-function inferBuildingApartments(item, text) {
-  const explicit = parseOptionalInt(item.nbrApartments);
-  if (explicit !== null) return explicit;
-  const parsed = extractIntFromPatterns(text, [/(\d{1,3})\s*(?:appartements?|logements?|studios?)\b/i]);
-  return parsed !== null ? parsed : 0;
-}
-
-function inferHasParking(item, text) {
-  if (typeof item.hasParking === 'boolean') return item.hasParking;
-  return /\bparking|garage\b/i.test(text);
-}
-
-function inferUnitNumber(existingValue, text, kind, index) {
-  const isValidCandidate = (rawValue) => {
-    const value = String(rawValue || '').trim();
-    if (!value) return false;
-    const normalized = normalizeText(value);
-    const blocked = new Set([
-      'moderne',
-      'nouveau',
-      'nouvelle',
-      'charmant',
-      'charmante',
-      'standing',
-      'securise',
-      'securisee',
-      'louer',
-      'vendre',
-    ]);
-    if (blocked.has(normalized)) return false;
-    if (value.length > 10) return false;
-    if (/\d/.test(value)) return true;
-    return /^[a-z]{1,2}$/i.test(value);
-  };
-
-  const explicit = String(existingValue || '').trim();
-  if (isValidCandidate(explicit)) return explicit;
-
-  const patterns =
-    kind === 'studio'
-      ? [
-          /(?:studio|n[°o]|numero)\s*[:#-]?\s*([a-z0-9-]{1,12})\b/i,
-          /\b([a-z]\d{1,4})\b/i,
-        ]
-      : [
-          /(?:appartement|apt|app|n[°o]|numero)\s*[:#-]?\s*([a-z0-9-]{1,12})\b/i,
-          /\b([a-z]\d{1,4})\b/i,
-        ];
-
-  for (const pattern of patterns) {
-    const match = String(text || '').match(pattern);
-    if (match?.[1] && isValidCandidate(match[1])) return String(match[1]).toUpperCase();
-  }
-
-  const prefix = kind === 'studio' ? 'ST' : 'APT';
-  return `${prefix}-${String(index + 1).padStart(2, '0')}`;
-}
-
-function inferRoomType(item, text) {
-  const explicit = String(item.roomType || '').trim();
-  if (explicit) return explicit;
-  const normalized = normalizeText(text);
-  if (/\bamericaine|américaine\b/.test(normalized)) return 'Américaine';
-  if (/\bindividuelle?\b/.test(normalized)) return 'Individuelle';
-  if (/\bdouble\b/.test(normalized)) return 'Double';
-  if (/\bpartagee?|partagée?|colocation\b/.test(normalized)) return 'Partagée';
-  if (/\bsimple\b/.test(normalized)) return 'Simple';
-  return 'Standard';
-}
-
-function inferKioskType(item, text) {
-  const explicit = String(item.kioskType || '').trim();
-  if (explicit) return explicit;
-  const normalized = normalizeText(text);
-  if (/\bpharmacie\b/.test(normalized)) return 'Pharmacie';
-  if (/\balimentaire|nourriture\b/.test(normalized)) return 'Alimentaire';
-  if (/\bbureau|administratif\b/.test(normalized)) return 'Bureau';
-  return 'Standard';
+  if (!Number.isFinite(parsed)) return defaultValue;
+  return parsed >= 0 ? parsed : defaultValue;
 }
 
 function normalizeTypeProperty(value) {
   const type = String(value || '').trim();
-  if (ALLOWED_TYPES.has(type)) return type;
-  return 'Home';
+  return ALLOWED_TYPES.has(type) ? type : 'Home';
 }
 
-function buildTypeSpecificFields(item, sourceText, index) {
-  const typeProperty = normalizeTypeProperty(item.typeProperty);
-  const rooms = inferRooms(item, sourceText);
-  const bathrooms = inferBathrooms(item, sourceText);
-  const toilets = inferToilets(item, sourceText, bathrooms);
-  const kitchens = inferKitchens(item, sourceText);
-  const livingRooms = inferLivingRooms(item, sourceText);
+function normalizeLocation(locationLike) {
+  const location = locationLike && typeof locationLike === 'object' ? locationLike : {};
+  return {
+    district: normalizeText(location.district),
+    city: normalizeText(location.city),
+    province: normalizeText(location.province),
+    lon: Number(location.lon ?? location.longitude ?? 0) || 0,
+    lat: Number(location.lat ?? location.latitude ?? 0) || 0,
+  };
+}
 
-  const logementFields = {
-    nbrRooms: rooms,
-    nbrChickens: kitchens,
-    nbrBathrooms: bathrooms,
-    nbrToilets: toilets,
+function countMatches(text, regex) {
+  const matches = String(text || '').match(regex);
+  return matches ? matches.length : 0;
+}
+
+function detectTypeFromText(text) {
+  const normalized = normalizeTextFold(text);
+  if (!normalized) return '';
+
+  const scores = {
+    Apartment: countMatches(normalized, /\b(appartement|appart|apt)\b/g) * 4,
+    Studio: countMatches(normalized, /\bstudio\b/g) * 4,
+    Villa: countMatches(normalized, /\bvilla\b/g) * 4 + countMatches(normalized, /\bduplex\b/g) * 2,
+    Land: countMatches(normalized, /\b(terrain|parcelle|hectare)\b/g) * 4,
+    Building: countMatches(normalized, /\bimmeuble\b/g) * 4,
+    Desk: countMatches(normalized, /\bbureau[x]?\b/g) * 4,
+    Shop: countMatches(normalized, /\b(boutique|local commercial|magasin)\b/g) * 4,
+    Kiosk: countMatches(normalized, /\bkiosque\b/g) * 4,
+    Room: countMatches(normalized, /\bchambre\b/g) * 2,
+    Home: countMatches(normalized, /\bmaison\b/g) * 4,
+  };
+
+  let bestType = '';
+  let bestScore = 0;
+  Object.entries(scores).forEach(([type, score]) => {
+    if (score > bestScore) {
+      bestType = type;
+      bestScore = score;
+    }
+  });
+
+  if (!bestType || bestScore <= 0) return '';
+  return bestType;
+}
+
+function resolveTypeProperty(item, sourceText) {
+  const aiType = normalizeTypeProperty(item.typeProperty);
+  const detected = detectTypeFromText(sourceText);
+  if (!detected) return aiType;
+  if (detected === aiType) return aiType;
+
+  if (detected === 'Land') return 'Land';
+  if (aiType === 'Home' || aiType === 'Room') return detected;
+  if (aiType === 'Studio' && detected === 'Apartment') return 'Apartment';
+  if (aiType === 'Apartment' && detected === 'Studio') return 'Apartment';
+
+  return aiType;
+}
+
+function detectStatusFromText(text) {
+  const normalized = normalizeTextFold(text);
+  if (!normalized) return '';
+  if (/\b(vente|en vente|a vendre|vendre|vendu|vendue|cession)\b/.test(normalized)) return 'FOR_SALE';
+  if (/\b(loyer|location|a louer|louer|bail)\b/.test(normalized)) return 'FOR_RENT';
+  return '';
+}
+
+function resolveStatus(item, typeProperty, sourceText) {
+  const raw = String(item.status || '').trim().toUpperCase();
+  const aiStatus = raw === 'FOR_RENT' || raw === 'FOR_SALE' ? raw : '';
+  const fromText = detectStatusFromText(sourceText);
+  let status = aiStatus || fromText || 'FOR_RENT';
+
+  const normalized = normalizeTextFold(sourceText);
+  const hasRentSignal = /\b(loyer|location|a louer|louer|bail)\b/.test(normalized);
+  if (typeProperty === 'Land' && status === 'FOR_RENT' && !hasRentSignal) {
+    status = 'FOR_SALE';
+  }
+
+  return status;
+}
+
+function isLikelyPhoneNumber(value) {
+  const digits = String(value || '').replace(/[^\d]/g, '');
+  if (!digits) return false;
+  return /^(?:241)?0?[67]\d{6,7}$/.test(digits) || /^[67]\d{6,7}$/.test(digits);
+}
+
+function parsePriceCandidate(value) {
+  const raw = String(value || '').trim().toLowerCase();
+  if (!raw) return 0;
+
+  const scaled = raw.match(/^(\d+(?:[.,]\d+)?)\s*(mille|mil|k|m|million|millions)$/);
+  if (scaled) {
+    const base = Number(scaled[1].replace(',', '.'));
+    if (!Number.isFinite(base) || base <= 0) return 0;
+    const unit = scaled[2];
+    if (unit === 'mille' || unit === 'mil' || unit === 'k' || unit === 'm') {
+      return Math.round(base * 1000);
+    }
+    return Math.round(base * 1_000_000);
+  }
+
+  const grouped = raw.match(/\d{1,3}(?:[\s.]\d{3})+/);
+  if (grouped) {
+    const digits = grouped[0].replace(/[^\d]/g, '');
+    return digits ? Number(digits) : 0;
+  }
+
+  const digitsOnly = raw.replace(/[^\d]/g, '');
+  return digitsOnly ? Number(digitsOnly) : 0;
+}
+
+function extractPriceFromText(text) {
+  const raw = String(text || '');
+  if (!raw.trim()) return 0;
+
+  const normalized = normalizeTextFold(raw);
+  const withoutPhones = normalized
+    .replace(/(?:\+?241[\s.-]?)?(?:0?[67]\d{6,7}|0?[67](?:[\s.-]\d{2}){3,4})\b/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+
+  const contextualPatterns = [
+    /\b(?:prix|loyer|montant|tarif|cout|coût)\b\s*[:\-]?\s*((?:\d{1,3}(?:[\s.]\d{3})+)|(?:\d+(?:[.,]\d+)?\s*(?:mille|mil|k|m|million|millions)?)|(?:\d{5,10}))/g,
+    /\b([0-9][0-9\s.,]{2,15}(?:\s*(?:mille|mil|k|m|million|millions))?)\s*(?:f(?:\s*cfa)?|fcfa|xaf|cfa)\b/g,
+  ];
+
+  for (const pattern of contextualPatterns) {
+    let match;
+    while ((match = pattern.exec(withoutPhones)) !== null) {
+      const parsed = parsePriceCandidate(match[1]);
+      if (parsed >= 10_000 && parsed <= 2_000_000_000) {
+        return parsed;
+      }
+    }
+  }
+
+  const directMatches = withoutPhones.match(/\b(\d{5,10})\b/g) || [];
+  for (const candidate of directMatches) {
+    if (isLikelyPhoneNumber(candidate)) continue;
+    const parsed = parsePriceCandidate(candidate);
+    if (parsed >= 10_000 && parsed <= 2_000_000_000) return parsed;
+  }
+
+  return 0;
+}
+
+function resolvePrice(item, sourceText) {
+  const aiPrice = toNonNegativeInt(item.price, 0);
+  const textPrice = extractPriceFromText(sourceText);
+
+  if (aiPrice >= 10_000) return aiPrice;
+  if (textPrice > 0) return textPrice;
+  return aiPrice;
+}
+
+function extractCountFromText(text, patterns) {
+  const source = String(text || '');
+  for (const pattern of patterns) {
+    const match = source.match(pattern);
+    if (!match) continue;
+    const parsed = Number(match[1]);
+    if (Number.isFinite(parsed) && parsed >= 0) return Math.round(parsed);
+  }
+  return 0;
+}
+
+function resolveHousingCounts(item, sourceText) {
+  const rooms = toNonNegativeInt(item.nbrRooms, 0) || extractCountFromText(sourceText, [
+    /(\d{1,2})\s*(?:chambres?|ch\b)/i,
+  ]);
+  const kitchens =
+    toNonNegativeInt(item.nbrKitchens ?? item.nbrChickens, 0) ||
+    extractCountFromText(sourceText, [/(\d{1,2})\s*cuisines?\b/i]) ||
+    (/\bcuisine\b/i.test(sourceText) ? 1 : 0);
+  const bathrooms =
+    toNonNegativeInt(item.nbrBathrooms, 0) ||
+    extractCountFromText(sourceText, [/(\d{1,2})\s*(?:salles?\s*d['’]?\s*(?:eau|bain)|douches?|sdb)\b/i]) ||
+    (/\b(douche|salle d['’]?eau|sdb)\b/i.test(sourceText) ? 1 : 0);
+  const toilets =
+    toNonNegativeInt(item.nbrToilets, 0) ||
+    extractCountFromText(sourceText, [/(\d{1,2})\s*(?:toilettes?|wc)\b/i]) ||
+    (/\b(wc|toilette)\b/i.test(sourceText) ? 1 : 0);
+  const livingRooms =
+    toNonNegativeInt(item.nbrLivingRoom, 0) ||
+    extractCountFromText(sourceText, [/(\d{1,2})\s*(?:salons?|sejours?|séjours?)\b/i]) ||
+    (/\b(salon|sejour|séjour)\b/i.test(sourceText) ? 1 : 0);
+
+  return {
+    rooms,
+    kitchens,
+    bathrooms,
+    toilets,
+    livingRooms,
+  };
+}
+
+function applyTypeMinimums(typeProperty, counts) {
+  const next = { ...counts };
+
+  if (['Apartment', 'Home', 'Villa'].includes(typeProperty)) {
+    next.rooms = Math.max(next.rooms, 1);
+    next.kitchens = Math.max(next.kitchens, 1);
+    next.bathrooms = Math.max(next.bathrooms, 1);
+    next.toilets = Math.max(next.toilets, 1);
+    next.livingRooms = Math.max(next.livingRooms, 1);
+  }
+
+  if (typeProperty === 'Studio') {
+    next.rooms = Math.max(next.rooms, 1);
+    next.kitchens = Math.max(next.kitchens, 1);
+    next.bathrooms = Math.max(next.bathrooms, 1);
+    next.toilets = Math.max(next.toilets, 1);
+  }
+
+  return next;
+}
+
+function buildTypeSpecificFields(item, typeProperty, sourceText) {
+  const normalizedCounts = applyTypeMinimums(
+    typeProperty,
+    resolveHousingCounts(item, sourceText)
+  );
+
+  const sharedHousingFields = {
+    nbrRooms: normalizedCounts.rooms,
+    nbrKitchens: normalizedCounts.kitchens,
+    nbrBathrooms: normalizedCounts.bathrooms,
+    nbrToilets: normalizedCounts.toilets,
   };
 
   switch (typeProperty) {
     case 'Apartment':
       return {
-        ...logementFields,
-        nbrFloorApartment: toNonNegativeInt(item.nbrFloorApartment, inferFloorLevel(sourceText)),
-        numeroApartment: inferUnitNumber(item.numeroApartment, sourceText, 'apartment', index),
+        ...sharedHousingFields,
+        nbrFloorApartment: toNonNegativeInt(item.nbrFloorApartment, 0),
+        numeroApartment: normalizeText(item.numeroApartment),
+        nbrLivingRoom: normalizedCounts.livingRooms,
       };
     case 'Studio':
       return {
-        ...logementFields,
-        nbrFloorStudio: toNonNegativeInt(item.nbrFloorStudio, inferFloorLevel(sourceText)),
-        numeroStudio: inferUnitNumber(item.numeroStudio, sourceText, 'studio', index),
+        ...sharedHousingFields,
+        nbrFloorStudio: toNonNegativeInt(item.nbrFloorStudio, 0),
+        numeroStudio: normalizeText(item.numeroStudio),
       };
     case 'Home':
       return {
-        ...logementFields,
-        nbrFloors: toNonNegativeInt(item.nbrFloors, inferFloorsTotal(item, sourceText)),
-        nbrGarages: toNonNegativeInt(item.nbrGarages, inferGarages(item, sourceText)),
-        nbrLivingRoom: toNonNegativeInt(item.nbrLivingRoom, livingRooms),
+        ...sharedHousingFields,
+        nbrFloors: toNonNegativeInt(item.nbrFloors, 0),
+        nbrGarages: toNonNegativeInt(item.nbrGarages, 0),
+        nbrLivingRoom: normalizedCounts.livingRooms,
       };
     case 'Villa':
       return {
-        ...logementFields,
-        nbrFloors: toNonNegativeInt(item.nbrFloors, inferFloorsTotal(item, sourceText)),
-        nbrGarages: toNonNegativeInt(item.nbrGarages, inferGarages(item, sourceText)),
-        nbrLivingRoom: toNonNegativeInt(item.nbrLivingRoom, livingRooms),
-        nbrPiscine: toNonNegativeInt(item.nbrPiscine, inferPools(item, sourceText)),
+        ...sharedHousingFields,
+        nbrFloors: toNonNegativeInt(item.nbrFloors, 0),
+        nbrGarages: toNonNegativeInt(item.nbrGarages, 0),
+        nbrLivingRoom: normalizedCounts.livingRooms,
+        nbrPiscine: toNonNegativeInt(item.nbrPiscine, 0),
       };
     case 'Building':
       return {
-        nbrApartments: toNonNegativeInt(item.nbrApartments, inferBuildingApartments(item, sourceText)),
-        nbrFloors: toNonNegativeInt(item.nbrFloors, inferFloorsTotal(item, sourceText)),
-        hasParking: inferHasParking(item, sourceText),
+        nbrApartments: toNonNegativeInt(item.nbrApartments, 0),
+        nbrFloors: toNonNegativeInt(item.nbrFloors, 0),
+        hasParking: Boolean(item.hasParking),
       };
     case 'Desk':
       return {
-        nbrRooms: rooms,
-        nbrToilets: toilets,
+        nbrRooms: normalizedCounts.rooms,
+        nbrToilets: normalizedCounts.toilets,
       };
     case 'Shop':
       return {
-        nbrRooms: rooms,
-        nbrToilet: toNonNegativeInt(item.nbrToilet, toilets),
+        nbrRooms: normalizedCounts.rooms,
+        nbrToilet: toNonNegativeInt(item.nbrToilet, normalizedCounts.toilets),
       };
     case 'Kiosk':
       return {
-        kioskType: inferKioskType(item, sourceText),
+        kioskType: normalizeText(item.kioskType),
       };
     case 'Room':
       return {
-        roomType: inferRoomType(item, sourceText),
+        roomType: normalizeText(item.roomType),
       };
     default:
       return {};
   }
 }
 
+function normalizeTags(tagsLike, sellerType) {
+  const mandatorySellerTag = sellerType === 'agency' ? 'Agence' : 'Propriétaire';
+  const modelTags = Array.isArray(tagsLike)
+    ? tagsLike.map((tag) => normalizeText(tag)).filter(Boolean)
+    : [];
+  return [mandatorySellerTag, ...modelTags]
+    .filter(Boolean)
+    .filter((tag, index, array) => array.indexOf(tag) === index)
+    .slice(0, 6);
+}
+
 module.exports = {
   name: '05-map-property',
   async execute(context) {
     const sellerType = context.agency?.key ? 'agency' : 'owner';
-    const selectTags =
-      typeof context.services?.tagSelector?.select === 'function'
-        ? context.services.tagSelector.select.bind(context.services.tagSelector)
-        : () => (sellerType === 'agency' ? ['Agence'] : ['Propriétaire']);
 
     const mapped = (context.artifacts.enrichedPosts || []).map((item, index) => {
-      const typeProperty = normalizeTypeProperty(item.typeProperty);
-      const cityDefault = String(context.agency?.defaults?.cityDefault || '').trim();
-      const provinceDefault = String(context.agency?.defaults?.provinceDefault || '').trim();
-      const district =
-        String(item.location?.district || '').trim() ||
-        String(item.location?.city || '').trim() ||
-        cityDefault;
-      const city = String(item.location?.city || '').trim() || cityDefault;
-      const province = String(item.location?.province || '').trim() || provinceDefault;
-      const sourceText = [item.rawText, item.title, item.description].filter(Boolean).join(' ');
-      const rawTags = selectTags(item, { sellerType });
-      const normalizedTags = [...new Set((rawTags || []).filter(Boolean).map((tag) => String(tag).trim()))]
-        .slice(0, 6);
-      const tags = normalizedTags.length
-        ? normalizedTags
-        : sellerType === 'agency'
-          ? ['Agence']
-          : ['Propriétaire'];
+      const sourceText = [
+        item.rawText || '',
+        item.title || '',
+        item.description || '',
+      ]
+        .join(' ')
+        .trim();
+
+      const typeProperty = resolveTypeProperty(item, sourceText);
+      const location = normalizeLocation(item.location);
+      const status = resolveStatus(item, typeProperty, sourceText);
+      const price = resolvePrice(item, sourceText);
+      const tags = normalizeTags(item.tags, sellerType);
 
       return {
         id: `${context.agency.key}-${context.job.id}-${index + 1}`,
-        title: item.title,
-        description: item.description,
+        title: normalizeText(item.title),
+        description: normalizeText(item.description),
         typeProperty,
-        price: toNonNegativeInt(item.price, 0),
+        price,
         area: toNonNegativeNumber(item.area, 0),
-        status: item.status || context.agency.defaults.statusDefault || 'FOR_RENT',
+        status,
         tags,
         images: (item.imageUrls || []).map((url) => ({ fileURL: url })),
-        contact: item.contact || '',
+        contact: normalizeText(item.contact),
         address: {
-          district,
-          city,
-          province,
+          district: location.district,
+          city: location.city,
+          province: location.province,
         },
-        street: district,
-        city,
-        province,
-        longitude: Number(item.location?.lon ?? item.location?.longitude ?? 0) || 0,
-        latitude: Number(item.location?.lat ?? item.location?.latitude ?? 0) || 0,
+        street: location.district,
+        city: location.city,
+        province: location.province,
+        longitude: location.lon,
+        latitude: location.lat,
         country: context.agency.defaults.country,
         countryCode: context.agency.defaults.countryCode,
         isLocExact: false,
@@ -361,7 +408,7 @@ module.exports = {
           agencyKey: context.agency.key,
           jobId: context.job.id,
         },
-        ...buildTypeSpecificFields(item, sourceText, index),
+        ...buildTypeSpecificFields(item, typeProperty, sourceText),
       };
     });
 

@@ -54,7 +54,7 @@ STRUCTURE:
   "nbrRooms": 0,
   "nbrBathrooms": 0,
   "nbrToilets": 0,
-  "nbrChickens": 0
+  "nbrKitchens": 0
 }
 
 TAGS: ${availableTags.join(', ')}

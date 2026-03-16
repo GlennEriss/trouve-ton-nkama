@@ -1,7 +1,6 @@
 const path = require('path');
 const { createAgency } = require('../../domain/entities/agency');
 const { DuplicateDetector } = require('../../domain/services/duplicate-detector');
-const { PropertyEnricher } = require('../../domain/services/property-enricher');
 const { TagSelector } = require('../../domain/services/tag-selector');
 const { OSMGabonLocationResolver } = require('../../domain/services/osm-location-resolver');
 const { PipelineRunner } = require('../../pipeline/pipeline-runner');
@@ -52,7 +51,6 @@ async function runAgencyImportJob(params) {
     adapters,
     services: {
       duplicateDetector: new DuplicateDetector(),
-      propertyEnricher: new PropertyEnricher(),
       tagSelector: new TagSelector(),
       osmLocationResolver: new OSMGabonLocationResolver(),
     },
@@ -64,6 +62,7 @@ async function runAgencyImportJob(params) {
       enrichedPosts: [],
       mappedProperties: [],
       persistResults: [],
+      aiErrors: [],
     },
     metrics: {
       totalRaw: 0,
@@ -102,6 +101,50 @@ async function runAgencyImportJob(params) {
     return context;
   } catch (error) {
     context.job.status = 'failed';
+    const completedAt = new Date().toISOString();
+    const fallbackReport = {
+      metadata: {
+        jobId: context.job.id,
+        agencyKey: context.agency.key,
+        mode: context.job.mode,
+        status: 'failed',
+        startedAt: context.job.startedAt,
+        completedAt,
+        inputFile: context.job.inputFile,
+      },
+      metrics: context.metrics,
+      warnings: context.warnings || [],
+      errors: context.errors || [],
+    };
+    const fallbackErrorsReport = {
+      metadata: fallbackReport.metadata,
+      summary: {
+        pipelineErrorsCount: Array.isArray(context.errors) ? context.errors.length : 0,
+        warningsCount: Array.isArray(context.warnings) ? context.warnings.length : 0,
+        aiErrorsCount: Array.isArray(context.artifacts?.aiErrors) ? context.artifacts.aiErrors.length : 0,
+      },
+      pipelineErrors: context.errors || [],
+      warnings: context.warnings || [],
+      aiErrors: context.artifacts?.aiErrors || [],
+    };
+
+    if (context.adapters?.artifacts?.writeJson) {
+      try {
+        const reportFile = context.adapters.artifacts.writeJson(
+          path.join('reports', `${context.job.id}.report.json`),
+          fallbackReport
+        );
+        const errorReportFile = context.adapters.artifacts.writeJson(
+          path.join('reports', `${context.job.id}.errors.json`),
+          fallbackErrorsReport
+        );
+        context.job.reportFile = reportFile;
+        context.job.errorReportFile = errorReportFile;
+      } catch (_persistError) {
+        // no-op: ne jamais masquer l'erreur originale du pipeline
+      }
+    }
+
     context.logger.error('Import job failed', {
       error: {
         message: error?.message,

@@ -195,7 +195,7 @@ function reformulateDescription(property) {
   if (property.nbrLivingRoom > 0) {
     features.push(`${property.nbrLivingRoom} salon${property.nbrLivingRoom > 1 ? 's' : ''}`);
   }
-  if (property.nbrChickens > 0) {
+  if (property.nbrKitchens > 0) {
     features.push('cuisine');
   }
   

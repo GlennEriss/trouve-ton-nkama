@@ -1,0 +1,1157 @@
+[
+  {
+    "typeProperty": "Apartment",
+    "title": "Appartement 4 chambres à Akanda-Marseille 2",
+    "description": "Appartement de 4 chambres situé à Akanda-Marseille 2, avec séjour, cuisine, sanitaires et bonne accessibilité.",
+    "area": 0,
+    "price": 500000,
+    "tags": [
+      "Agence",
+      "Parking",
+      "Sous barrière"
+    ],
+    "status": "FOR_RENT",
+    "street": "Akanda Angondjé",
+    "city": "Akanda",
+    "province": "Estuaire",
+    "longitude": 9.531,
+    "latitude": 0.589,
+    "country": "Gabon",
+    "countryCode": "GA",
+    "images": [
+      {
+        "filePATH": "images/property_0_image_0.jpg",
+        "fileURL": "https://scontent-lga3-2.xx.fbcdn.net/v/t39.30808-6/644175282_1420436890097110_5194402140161577724_n.jpg?stp=cp6_dst-jpegr_s590x590_tt6&_nc_cat=105&ccb=1-7&_nc_sid=7b2446&_nc_ohc=xTme_p5-jPMQ7kNvwEBIZI6&_nc_oc=AdkRgmKnqSt1v0bkYcdvOi4298BIEGS1QP6hNe_m7kdwziOyhojb3RQ8-vDbqE62vXQ&_nc_zt=23&se=-1&_nc_ht=scontent-lga3-2.xx&_nc_gid=hjIf0EVWoNsq2fLCQlvuHw&_nc_ss=8&oh=00_AfylVOZMxk8cFp0_Lcth02mEqU4HUUKskEjKX-mqMOvVWg&oe=69B77E0F"
+      },
+      {
+        "filePATH": "images/property_0_image_1.jpg",
+        "fileURL": "https://scontent-lga3-2.xx.fbcdn.net/v/t39.30808-6/644209393_1420436983430434_8376379382881358475_n.jpg?stp=cp6_dst-jpegr_s590x590_tt6&_nc_cat=109&ccb=1-7&_nc_sid=7b2446&_nc_ohc=Oc_CXzmy6OkQ7kNvwEWRvn-&_nc_oc=AdmB5926-SQ2fWJ5ZTddqo8QuFGJJnPaHXmEtiNdnQsfaTy1-NxqYKTmxRwG8HnxOPk&_nc_zt=23&se=-1&_nc_ht=scontent-lga3-2.xx&_nc_gid=hjIf0EVWoNsq2fLCQlvuHw&_nc_ss=8&oh=00_Afw4fzUypw9S9WIgFXMpT3W2ehnC66CmNycTuS8vpSSgvA&oe=69B76565"
+      },
+      {
+        "filePATH": "images/property_0_image_2.jpg",
+        "fileURL": "https://scontent-lga3-3.xx.fbcdn.net/v/t39.30808-6/643940321_1420437076763758_3181958380042475725_n.jpg?stp=cp6_dst-jpegr_s590x590_tt6&_nc_cat=106&ccb=1-7&_nc_sid=7b2446&_nc_ohc=D9hSyDvcFu8Q7kNvwFCXviG&_nc_oc=AdlfVu5PlWEeJXLz8Axb-VPxdaWQdglXLyy7eDtSkKo7oyrRfDOsbAXxYdJl41C9xxY&_nc_zt=23&se=-1&_nc_ht=scontent-lga3-3.xx&_nc_gid=hjIf0EVWoNsq2fLCQlvuHw&_nc_ss=8&oh=00_Afwk3n3mSMkwIQAo4yehWasoxtyszXTztmL2tKmE2fmlgQ&oe=69B788FE"
+      },
+      {
+        "filePATH": "images/property_0_image_3.jpg",
+        "fileURL": "https://scontent-lga3-2.xx.fbcdn.net/v/t39.30808-6/645967469_1420437140097085_1162556858017715149_n.jpg?stp=cp6_dst-jpegr_s590x590_tt6&_nc_cat=101&ccb=1-7&_nc_sid=7b2446&_nc_ohc=27nLhcUsXZUQ7kNvwEQ7FaQ&_nc_oc=AdkyL31hvzM6-b8dG4Ts0djQcqcS2gkAGV4spU7ZqXzGREsQcDR4SFZAkY_EdjtxCQc&_nc_zt=23&se=-1&_nc_ht=scontent-lga3-2.xx&_nc_gid=hjIf0EVWoNsq2fLCQlvuHw&_nc_ss=8&oh=00_AfzOzBBeSuYV1kpRGEIgfst40V0toYvhu4Xe815McnXHvQ&oe=69B7635D"
+      },
+      {
+        "filePATH": "images/property_0_image_4.jpg",
+        "fileURL": "https://scontent-lga3-2.xx.fbcdn.net/v/t39.30808-6/643939290_1420437203430412_1968324296395201781_n.jpg?stp=cp6_dst-jpegr_s590x590_tt6&_nc_cat=107&ccb=1-7&_nc_sid=7b2446&_nc_ohc=rky359SoVYsQ7kNvwGKlwok&_nc_oc=Adl4wiKFpVSzYb8MulPovVbcVLy6t08u3DKUtKizEXudO9E_EPvZwJyswL8_jBlqLmY&_nc_zt=23&se=-1&_nc_ht=scontent-lga3-2.xx&_nc_gid=hjIf0EVWoNsq2fLCQlvuHw&_nc_ss=8&oh=00_AfzHZepccC9e932BtwvThg3sXyPACbaY-5FUJXQwPrflGw&oe=69B75A16"
+      }
+    ],
+    "nbrFloorApartment": 1,
+    "numeroApartment": "A-010",
+    "nbrRooms": 4,
+    "nbrBathrooms": 3,
+    "nbrToilets": 1,
+    "nbrKitchens": 1,
+    "sourceId": "https://www.facebook.com/permalink.php?story_fbid=pfbid029FXQCRycacfnKeBqfpG6PSboTTa7ARsSWgEZV3ASVtKS3ctTUarKptFeKaGzQoPtl&id=100063924376821",
+    "sourceText": "🤠👉 #APPARTEMENT A #LOUER 1ERE ✋️  \n..................................................................................... 🛑\n4 CHAMBRES, 3 SALLES D'EAU, 1 SÉJOUR...\nSALLE A MANGER, CUISINE, UNE BUANDERIE, \nSPLITS, CHAUFFE-EAU, SUPPRESSEUR, WC .VI \n. 🚨\n2 OCCUPANT DANS LA BARRIÈRE AVEC PARKING \nQUARTIER AKANDA-MARSEILLE 2 .ZONE 2 HÔTEL \n..\nLOYER 500.000 CFA  SANS CHARGES \nUSAGE : HABITATION  ⚠️ \n👇VIRTUELLE\n https://vt.tiktok.com/ZSmTqCkc9/\n\n☎️ 06 56 95 34  WHATSAPP\n#pourtoi #gabon #jikaimmo #maison #libreville #akanda"
+  },
+  {
+    "typeProperty": "Apartment",
+    "title": "Appartement de 2 chambres à Akandama",
+    "description": "Appartement de 2 chambres situé à Akandama à Libreville, avec séjour, cuisine, sanitaires et parking.",
+    "area": 0,
+    "price": 350000,
+    "tags": [
+      "Agence",
+      "Terrasse",
+      "Sous barrière",
+      "Sécurisé"
+    ],
+    "status": "FOR_RENT",
+    "street": "Akanda Angondjé",
+    "city": "Akanda",
+    "province": "Estuaire",
+    "longitude": 9.531,
+    "latitude": 0.589,
+    "country": "Gabon",
+    "countryCode": "GA",
+    "images": [
+      {
+        "filePATH": "images/property_1_image_0.jpg",
+        "fileURL": "https://scontent-lga3-1.xx.fbcdn.net/v/t39.30808-6/643789935_1420299133444219_8587534959233653144_n.jpg?stp=cp6_dst-jpegr_s590x590_tt6&_nc_cat=103&ccb=1-7&_nc_sid=7b2446&_nc_ohc=RhY12IITzkMQ7kNvwEmBQYz&_nc_oc=AdmNPQ9wHd-qyMsT4FoYfrSpISfonOLoKR5GBSI7ZJkThwOiTolP9dRSUSGXI-lJWtM&_nc_zt=23&se=-1&_nc_ht=scontent-lga3-1.xx&_nc_gid=hjIf0EVWoNsq2fLCQlvuHw&_nc_ss=8&oh=00_Afxd3ppWKZImCczCMOMVV1F4GxOpB7w4k5Ds7sr1lcC9Mw&oe=69B7698A"
+      },
+      {
+        "filePATH": "images/property_1_image_1.jpg",
+        "fileURL": "https://scontent-lga3-2.xx.fbcdn.net/v/t39.30808-6/645962309_1420299226777543_1735992246139545663_n.jpg?stp=cp6_dst-jpegr_s590x590_tt6&_nc_cat=109&ccb=1-7&_nc_sid=7b2446&_nc_ohc=0kSQ8jkL-tkQ7kNvwGAEC0x&_nc_oc=AdkKNxiSSoVTTrpNi2mie991YHdxXhyNGZ7_rlwKPhR71_B8CTotX1JTcYnEGwzxxNc&_nc_zt=23&se=-1&_nc_ht=scontent-lga3-2.xx&_nc_gid=hjIf0EVWoNsq2fLCQlvuHw&_nc_ss=8&oh=00_AfyLYQzH4Vqbr-bq2Any40x2HLe0E16LCc1PafptLVyzLA&oe=69B77418"
+      },
+      {
+        "filePATH": "images/property_1_image_2.jpg",
+        "fileURL": "https://scontent-lga3-3.xx.fbcdn.net/v/t39.30808-6/645559839_1420299323444200_1479190680697113346_n.jpg?stp=cp6_dst-jpegr_s590x590_tt6&_nc_cat=106&ccb=1-7&_nc_sid=7b2446&_nc_ohc=QS7H6O0Uat4Q7kNvwGVoRQM&_nc_oc=AdmU9NkiLfA5ZdRee1m880ugBDK7LkX0nYFVF2kWmBQ5ZieObk38n5Hu2-0OAt7u6dc&_nc_zt=23&se=-1&_nc_ht=scontent-lga3-3.xx&_nc_gid=hjIf0EVWoNsq2fLCQlvuHw&_nc_ss=8&oh=00_AfypUyZRnAG8XC0UBgwDBb-o9f2Ppc6Gru_utzHEzI79MQ&oe=69B77E26"
+      },
+      {
+        "filePATH": "images/property_1_image_3.jpg",
+        "fileURL": "https://scontent-lga3-3.xx.fbcdn.net/v/t39.30808-6/644104201_1420299416777524_5652701558999754156_n.jpg?stp=cp6_dst-jpegr_s590x590_tt6&_nc_cat=108&ccb=1-7&_nc_sid=7b2446&_nc_ohc=A5pnKjwkVmsQ7kNvwEMs5xh&_nc_oc=AdlYRxWrpIZ9qjg7Z8UhErUOaDmtLCAUP62Xc3Kwwo6dSJz0AlE7x3JW7RNgc9pAdtk&_nc_zt=23&se=-1&_nc_ht=scontent-lga3-3.xx&_nc_gid=hjIf0EVWoNsq2fLCQlvuHw&_nc_ss=8&oh=00_AfyvlAvuTAuTTuLME77h9OBPYA9AWsM3y_LZygJj3v13Ww&oe=69B76C3C"
+      },
+      {
+        "filePATH": "images/property_1_image_4.jpg",
+        "fileURL": "https://scontent-lga3-1.xx.fbcdn.net/v/t39.30808-6/644203309_1420299510110848_4388070579898018480_n.jpg?stp=cp6_dst-jpegr_s590x590_tt6&_nc_cat=102&ccb=1-7&_nc_sid=7b2446&_nc_ohc=I0wzsAOrgxAQ7kNvwEJBig1&_nc_oc=AdnG-eh-JkCDHlSUSlTXk9M7KHuS8CUlahBTLgpDsxjSuX8G2XfaUVZpnj5m3i00l7g&_nc_zt=23&se=-1&_nc_ht=scontent-lga3-1.xx&_nc_gid=hjIf0EVWoNsq2fLCQlvuHw&_nc_ss=8&oh=00_AfyvFKLxYZXM-3IqVDjnPkZBO4TEEeHrinMLMp_ckoiqvg&oe=69B77C3B"
+      }
+    ],
+    "nbrFloorApartment": 1,
+    "numeroApartment": "A-100",
+    "nbrRooms": 2,
+    "nbrBathrooms": 2,
+    "nbrToilets": 1,
+    "nbrKitchens": 1,
+    "sourceId": "https://www.facebook.com/permalink.php?story_fbid=pfbid02cavnNZTsinrXkLTXCT4n2khrT7ehL6nJrrtfXg7GV8y3HyQMsyzTQiVQwSBhLi4Bl&id=100063924376821",
+    "sourceText": "🤠👉 #APPARTEMENT #ALOUER 1ERE ✋️ ️ \n.............................................................................. 🛑 \n2 CHAMBRES, 2 SALLES D'EAU, UN SÉJOUR...\nUNE SALLE A MANGER, CUISINE, UNE TERRASSE \n.🚨\nREZ-DE-CHAUSSÉE, CUVE, SUPPRESSEUR \nDANS LA BARRIÈRE AVEC GARDIEN \nQUARTIER AKANDA-ANGONDJE \n\nLOYER 350.000 CFA \nUSAGE : #HABITATION ⚠️\nVIRTUELLE 👇 \nhttps://vt.tiktok.com/ZSmTq64Lg/\n\n☎️ 06 56 95 34  WHATSAPP \n#poutoi #jikaimmo #achat #maison #libreville"
+  },
+  {
+    "typeProperty": "Apartment",
+    "title": "Appartement 2 chambres à Libreville Okala",
+    "description": "Appartement de 2 chambres situé à Libreville Okala, avec séjour, cuisine, sanitaires et parking dans la barrière. Suppléant de cuve et système de sécurité. Possibilité de visite virtuelle.",
+    "area": 0,
+    "price": 350000,
+    "tags": [
+      "Agence",
+      "Parking",
+      "Balcon",
+      "Sous barrière",
+      "Sécurisé"
+    ],
+    "status": "FOR_RENT",
+    "street": "Akanda Okala",
+    "city": "Akanda",
+    "province": "Estuaire",
+    "longitude": 9.536,
+    "latitude": 0.601,
+    "country": "Gabon",
+    "countryCode": "GA",
+    "images": [
+      {
+        "filePATH": "images/property_2_image_0.jpg",
+        "fileURL": "https://scontent.fwzy1-1.fna.fbcdn.net/v/t39.30808-6/643399417_1417690423705090_5735783283781345143_n.jpg?stp=cp6_dst-jpegr_s590x590_tt6&_nc_cat=110&ccb=1-7&_nc_sid=7b2446&_nc_ohc=HGnpFX2AcpcQ7kNvwGeV_un&_nc_oc=Adlz5HuX8dLOhwKya36zZnCURqjMusKwHnjMSHA1SmCbQJuYzmQpRyIxPLneYnpqKHY&_nc_zt=23&se=-1&_nc_ht=scontent.fwzy1-1.fna&_nc_gid=O_Ygjh7GWgf62X4JHkF8UQ&_nc_ss=8&oh=00_AfwEsewyjbgGdm1US1tx4Im_yy8rnM-0HyrHcYrMp5sgmw&oe=69B7639E"
+      },
+      {
+        "filePATH": "images/property_2_image_1.jpg",
+        "fileURL": "https://scontent.fwzy1-1.fna.fbcdn.net/v/t39.30808-6/644234770_1417690513705081_4244807257992721719_n.jpg?stp=cp6_dst-jpegr_s590x590_tt6&_nc_cat=110&ccb=1-7&_nc_sid=7b2446&_nc_ohc=wjnqayIOrDcQ7kNvwE780C4&_nc_oc=AdnFfkMx8wVo2Vt-HHfHCIEk8l6Fe5rfb8NVjBN4SXRNYheuruP96863CPVLdUbbhpU&_nc_zt=23&se=-1&_nc_ht=scontent.fwzy1-1.fna&_nc_gid=O_Ygjh7GWgf62X4JHkF8UQ&_nc_ss=8&oh=00_Afzv7ueTM2Wy-osvQmorjgUuPUUqzMjvvGBjJWrt0jZLsg&oe=69B77080"
+      },
+      {
+        "filePATH": "images/property_2_image_2.jpg",
+        "fileURL": "https://scontent.fwzy1-2.fna.fbcdn.net/v/t39.30808-6/643329827_1417690603705072_4340904180218154637_n.jpg?stp=cp6_dst-jpegr_s590x590_tt6&_nc_cat=102&ccb=1-7&_nc_sid=7b2446&_nc_ohc=C-DDHi1aGNIQ7kNvwFaTyyy&_nc_oc=AdnDyoIkJai824XdiHcdgo9xR_2452sNbWghFEHJwfVPXeupWi216FtVVV6uIlfcnlc&_nc_zt=23&se=-1&_nc_ht=scontent.fwzy1-2.fna&_nc_gid=O_Ygjh7GWgf62X4JHkF8UQ&_nc_ss=8&oh=00_AfxkpSszGFqeOLqay3YlyWjMxwIECM_Uyhm-5pjkip8skg&oe=69B78BE5"
+      },
+      {
+        "filePATH": "images/property_2_image_3.jpg",
+        "fileURL": "https://scontent.fwzy1-1.fna.fbcdn.net/v/t39.30808-6/643457929_1417690723705060_6741098170654364319_n.jpg?stp=cp6_dst-jpegr_s590x590_tt6&_nc_cat=105&ccb=1-7&_nc_sid=7b2446&_nc_ohc=1wIXzgdrMJcQ7kNvwEeht2z&_nc_oc=Adl9Fnfq2b0mNsI8Wbycj7532lvKD79xbHGmN5dHufHXHs3ZUhCN9NDkLuHZzyA4d-0&_nc_zt=23&se=-1&_nc_ht=scontent.fwzy1-1.fna&_nc_gid=O_Ygjh7GWgf62X4JHkF8UQ&_nc_ss=8&oh=00_AfyI95Zj9VIgSTHHG9uhPx35LVbsONLdu8dU_R47u-RWhw&oe=69B78D56"
+      },
+      {
+        "filePATH": "images/property_2_image_4.jpg",
+        "fileURL": "https://scontent.fwzy1-2.fna.fbcdn.net/v/t39.30808-6/643860364_1417690850371714_6650828067740259996_n.jpg?stp=cp6_dst-jpegr_s590x590_tt6&_nc_cat=101&ccb=1-7&_nc_sid=7b2446&_nc_ohc=KbLmoABz1_oQ7kNvwGAPREp&_nc_oc=AdlUN-015PW8nvNXD2ECopS-T2CWzdJrxgbE_JLtjGFheIxp2901DhfXdaXM-DRzfCU&_nc_zt=23&se=-1&_nc_ht=scontent.fwzy1-2.fna&_nc_gid=O_Ygjh7GWgf62X4JHkF8UQ&_nc_ss=8&oh=00_Afyo1Avm1BMsMgGSErIzOMOU7skH7UQFI04i_8UsFe1FFQ&oe=69B75AB0"
+      }
+    ],
+    "nbrFloorApartment": 1,
+    "numeroApartment": "A-010",
+    "nbrRooms": 2,
+    "nbrBathrooms": 2,
+    "nbrToilets": 1,
+    "nbrKitchens": 1,
+    "sourceId": "https://www.facebook.com/permalink.php?story_fbid=pfbid02CoAeapW8rsDBgfQiCqJJjELUMsffHXvzEC4hfeUiZKy1NVAHi2j5RocVevA8S72Ul&id=100063924376821",
+    "sourceText": "🤠👉 #APPARTEMENT #ALOUER 1ERE ✋️ ️ \n.............................................................................. 🛑 \n2 CHAMBRES, 2 SALLES D'EAU, UN SÉJOUR...\nUNE SALLE A MANGER, CUISINE, UN BALCON \n.🚨\n1ER ETAGE, CUVE, SUPPRESSEUR, PARKING \nDANS LA BARRIÈRE AVEC GARDIEN \nQUARTIER LIBREVILLE OKALA \n\nLOYER 350.000 CFA \nUSAGE : #HABITATION ⚠️\nVIRTUELLE 👇 \nhttps://vt.tiktok.com/ZSmE1LD6f/\n\n☎️ 06 56 95 34 WHATSAPP \n#poutoi #jikaimmo #achat #maison #libreville"
+  },
+  {
+    "typeProperty": "Apartment",
+    "title": "Appartement 2 chambres à Libreville",
+    "description": "Appartement de 2 chambres situé à Libreville, avec séjour, cuisine, sanitaires et balcon.",
+    "price": 275000,
+    "area": 0,
+    "status": "FOR_RENT",
+    "tags": [
+      "Agence",
+      "Balcon",
+      "Parking",
+      "Sous barrière",
+      "Sécurisé"
+    ],
+    "street": "Akanda Angondjé",
+    "city": "Akanda",
+    "province": "Estuaire",
+    "longitude": 9.531,
+    "latitude": 0.589,
+    "country": "Gabon",
+    "countryCode": "GA",
+    "images": [
+      {
+        "filePATH": "images/property_3_image_0.jpg",
+        "fileURL": "https://scontent-lga3-3.xx.fbcdn.net/v/t39.30808-6/640393029_1416661430474656_8532167813611577377_n.jpg?stp=cp6_dst-jpegr_s590x590_tt6&_nc_cat=110&ccb=1-7&_nc_sid=7b2446&_nc_ohc=F9WMBJJWN3gQ7kNvwGTmH-G&_nc_oc=AdnlsiC9hvgbbkK1O2jlQKW_SoJfqjzAYbmtyPk-F1uam3NDpQUOrH-LaTS8xu-tujc&_nc_zt=23&se=-1&_nc_ht=scontent-lga3-3.xx&_nc_gid=4ux8F6zn8jLkzyJJf4LjCA&_nc_ss=8&oh=00_AfxVrXaz9C6Zvn0pICh54xXm8vdCgZwpDTYfHUsgUr23oQ&oe=69B77989"
+      },
+      {
+        "filePATH": "images/property_3_image_1.jpg",
+        "fileURL": "https://scontent-lga3-2.xx.fbcdn.net/v/t39.30808-6/641333904_1416661537141312_3977704671264607957_n.jpg?stp=cp6_dst-jpegr_s590x590_tt6&_nc_cat=100&ccb=1-7&_nc_sid=7b2446&_nc_ohc=0btUkuxaHvEQ7kNvwEPt3El&_nc_oc=AdnhgIODoajxNF0vOOutazZQAK5ukFFHVTXbcCu8NyLwqH7cqT91ORyCnXmWQydb2G0&_nc_zt=23&se=-1&_nc_ht=scontent-lga3-2.xx&_nc_gid=4ux8F6zn8jLkzyJJf4LjCA&_nc_ss=8&oh=00_AfwQlZTHlYYusyRU_dQENEG00ltJ4GbsrMiV3E5gycqavQ&oe=69B7842C"
+      },
+      {
+        "filePATH": "images/property_3_image_2.jpg",
+        "fileURL": "https://scontent-lga3-1.xx.fbcdn.net/v/t39.30808-6/641518399_1416661630474636_2764612029355401985_n.jpg?stp=cp6_dst-jpegr_s590x590_tt6&_nc_cat=111&ccb=1-7&_nc_sid=7b2446&_nc_ohc=8HyYkDqM794Q7kNvwE1nOyA&_nc_oc=AdlI_twJlDWQfA7kyefYVaGVkShQeX0M8mo4FtXTi7bXaZxw39ZkJCil0HFYbhOlVIQ&_nc_zt=23&se=-1&_nc_ht=scontent-lga3-1.xx&_nc_gid=4ux8F6zn8jLkzyJJf4LjCA&_nc_ss=8&oh=00_AfylBUtON5R2NWLTq-tIN9UE95aGYR3_TNvq__CgHVAsuQ&oe=69B78A2D"
+      },
+      {
+        "filePATH": "images/property_3_image_3.jpg",
+        "fileURL": "https://scontent-lga3-1.xx.fbcdn.net/v/t39.30808-6/642180529_1416661720474627_217797030869119984_n.jpg?stp=cp6_dst-jpegr_s590x590_tt6&_nc_cat=102&ccb=1-7&_nc_sid=7b2446&_nc_ohc=E8r2AwUolpUQ7kNvwHxv1iU&_nc_oc=AdkTOoWsp2iHTpfq-tpoReeRasouacbyqGNyW9dKmc6fI93dn5hicZsMaR01_vSdjUA&_nc_zt=23&se=-1&_nc_ht=scontent-lga3-1.xx&_nc_gid=4ux8F6zn8jLkzyJJf4LjCA&_nc_ss=8&oh=00_AfwFgdrzmAFrJ8f3p5m-5jPYLE6n-v0dlDOJVrRwUw4Paw&oe=69B77E6A"
+      },
+      {
+        "filePATH": "images/property_3_image_4.jpg",
+        "fileURL": "https://scontent-lga3-1.xx.fbcdn.net/v/t39.30808-6/642283538_1416661810474618_996378916897033651_n.jpg?stp=cp6_dst-jpegr_s590x590_tt6&_nc_cat=103&ccb=1-7&_nc_sid=7b2446&_nc_ohc=gLNYWt2013YQ7kNvwG8qjnc&_nc_oc=AdlqdCJzpfU-T-JEnLaGy9A_tVv2oUdDU4KZ-v87AkUb5FUz_i_MKvJ9ncrkpBRZTCc&_nc_zt=23&se=-1&_nc_ht=scontent-lga3-1.xx&_nc_gid=4ux8F6zn8jLkzyJJf4LjCA&_nc_ss=8&oh=00_AfyMQBsi0WF4GjvsHlkZNOlFZF4280FetA9fZCgq7eoWzQ&oe=69B75B75"
+      }
+    ],
+    "nbrRooms": 2,
+    "nbrBathrooms": 1,
+    "nbrToilets": 1,
+    "nbrKitchens": 1,
+    "sourceId": "https://www.facebook.com/permalink.php?story_fbid=pfbid08L1i6M4D7RnG7xUtSekjXtNcWC7k29pF5TTiTTpfFw5kyPGh9rhoixEEuXKy1smyl&id=100063924376821",
+    "sourceText": "🤠👉 #APPARTEMENT #ALOUER BON STANDING ️ \n.............................................................................. 🛑 \n2 CHAMBRES, UNE SALLE D'EAU, UN SÉJOUR...\nUNE SALLE A MANGER, CUISINE, UN BALCON \n.🚨\n3EME ETAGE, CUVE, SUPPRESSEUR, PARKING \nDANS LA BARRIÈRE AVEC GARDIEN \nQUARTIER AKANDA ANGONDJE CHÂTEAU \n\nLOYER 275.000 CFA \nUSAGE : #HABITATION ⚠️\n\n☎️ 06 56 95 34 WHATSAPP \n#pourtoi #gabon #jikaimmo #maison #libreville"
+  },
+  {
+    "typeProperty": "Studio",
+    "title": "Studio à louer à Libreville-NZENG AYONG",
+    "description": "Studio fonctionnel situé à Libreville-NZENG AYONG dans une barrière, avec séjour, cuisine, salle d'eau et balcon.",
+    "price": 150000,
+    "area": 0,
+    "status": "FOR_RENT",
+    "tags": [
+      "Agence",
+      "Parking",
+      "Balcon",
+      "Sous barrière"
+    ],
+    "street": "Nzeng-Ayong",
+    "city": "Libreville",
+    "province": "Estuaire",
+    "longitude": 9.489,
+    "latitude": 0.437,
+    "country": "Gabon",
+    "countryCode": "GA",
+    "images": [
+      {
+        "filePATH": "images/property_4_image_0.jpg",
+        "fileURL": "https://scontent-lga3-2.xx.fbcdn.net/v/t39.30808-6/642430017_1414812683992864_2863467569397982941_n.jpg?stp=dst-jpg_s590x590_tt6&_nc_cat=107&ccb=1-7&_nc_sid=7b2446&_nc_ohc=f_wEmLr1sxkQ7kNvwElBnsB&_nc_oc=AdlwrZRwgMkW6XJnvtAMm1DSzhKgdr4HorfPff_TEdJIwCtWRRaRJ-So7EpT2EyKsjw&_nc_zt=23&_nc_ht=scontent-lga3-2.xx&_nc_gid=oPCy28ymPzuH0ObaWxsY2A&_nc_ss=8&oh=00_AfyfPkXYSQ6weCP9I8oOn18OiTOZsZXibyb5HawahLMJkw&oe=69B77259"
+      },
+      {
+        "filePATH": "images/property_4_image_1.jpg",
+        "fileURL": "https://scontent-lga3-3.xx.fbcdn.net/v/t39.30808-6/640152507_1414812723992860_5761397662509615431_n.jpg?stp=dst-jpg_s590x590_tt6&_nc_cat=110&ccb=1-7&_nc_sid=7b2446&_nc_ohc=oK3_LuLldYIQ7kNvwHn32yw&_nc_oc=AdmIC5jknGRVnTGKYzE6du9hSA4wBIV4Xndz4aNxlE9IcvZMtSpV8NSQ3AXKXvuDcUs&_nc_zt=23&_nc_ht=scontent-lga3-3.xx&_nc_gid=oPCy28ymPzuH0ObaWxsY2A&_nc_ss=8&oh=00_Afx9A5hwUVrYMsqI-pS83fHtzfKTeWHB5pPI6wkq5-458g&oe=69B78B62"
+      },
+      {
+        "filePATH": "images/property_4_image_2.jpg",
+        "fileURL": "https://scontent-lga3-2.xx.fbcdn.net/v/t39.30808-6/641049155_1414812783992854_2941251857800611769_n.jpg?stp=dst-jpg_s590x590_tt6&_nc_cat=107&ccb=1-7&_nc_sid=7b2446&_nc_ohc=6HRmm46F5O8Q7kNvwE8lXGh&_nc_oc=AdmOW8TKNzUGw-XGkLKPe8qMhrg4_MjyoyGvJrCc0IA6AIf51rjaEAIO7l3yUUAQX58&_nc_zt=23&_nc_ht=scontent-lga3-2.xx&_nc_gid=oPCy28ymPzuH0ObaWxsY2A&_nc_ss=8&oh=00_AfyRcLthNBiALcVb-lwMgTHyIx_jmuaQl-f0QUjhxc8I3Q&oe=69B7619A"
+      },
+      {
+        "filePATH": "images/property_4_image_3.jpg",
+        "fileURL": "https://scontent-lga3-3.xx.fbcdn.net/v/t39.30808-6/640205519_1414812923992840_8748408626975671152_n.jpg?stp=dst-jpg_s590x590_tt6&_nc_cat=110&ccb=1-7&_nc_sid=7b2446&_nc_ohc=8g33FHvmE3AQ7kNvwHJpTXT&_nc_oc=AdlGqduiyl8BNfXpJYXvaHI8CxmQch81WU6-ZSgzbxIjA3IFUVrWCSb45mbMWupIO6Q&_nc_zt=23&_nc_ht=scontent-lga3-3.xx&_nc_gid=oPCy28ymPzuH0ObaWxsY2A&_nc_ss=8&oh=00_Afxl4XvEsYzpe8eIrPmsmNN8D8hw_93Uztg-ecbSs95HIA&oe=69B76B6D"
+      },
+      {
+        "filePATH": "images/property_4_image_4.jpg",
+        "fileURL": "https://scontent-lga3-1.xx.fbcdn.net/v/t39.30808-6/640114021_1414813163992816_5801138019733172969_n.jpg?stp=dst-jpg_s590x590_tt6&_nc_cat=111&ccb=1-7&_nc_sid=7b2446&_nc_ohc=3qvycux55x8Q7kNvwEymwq1&_nc_oc=AdlpzJAA39iWSv1bIqCXgey1fVIxRxZlj6kvEx0yBs1RKE3EuKNR8pQKT8TFPDa245U&_nc_zt=23&_nc_ht=scontent-lga3-1.xx&_nc_gid=oPCy28ymPzuH0ObaWxsY2A&_nc_ss=8&oh=00_Afx1UuALRg-JSqwMQ139AwDm9N3R5ffv2zLw6dMr79szYA&oe=69B77430"
+      }
+    ],
+    "nbrRooms": 1,
+    "nbrKitchens": 1,
+    "nbrBathrooms": 1,
+    "nbrToilets": 1,
+    "sourceId": "https://www.facebook.com/permalink.php?story_fbid=pfbid02QZqfvvzRwPTWrUKvvUMpLRKi2PRJigpZYyMkJ6xPxasNGuPGh3eVR1bkPZx6Xhdnl&id=100063924376821",
+    "sourceText": "🤠👉 #STUDIO #ALOUER BON STANDING \n.............................................................................. 🛑 \nUNE CHAMBRE, UNE SALLES D'EAU, SÉJOUR...\nUNE CUISINE, UN BALCON, 1ER ETAGE \nDANS LA BARRIÈRE AVEC PARKING\n.🚨\nQUARTIER : LIBREVILLE -NZENG AYONG ✅️ \n\n#LOYER 150.000 CFA \nUSAGE : #HABITATION ⚠️ \nVIRTUELLE 👇 \n\n☎️ 06 56 95 34  WHATSAPP \n#pourtoi #gabon #jikaimmo #maison #studio #flypviral"
+  },
+  {
+    "typeProperty": "Apartment",
+    "title": "Appartement 3 chambres à Libreville",
+    "description": "Appartement de 3 chambres situé à Libreville, avec séjour, cuisine, sanitaires et balcon.",
+    "price": 500000,
+    "area": 0,
+    "status": "FOR_RENT",
+    "tags": [
+      "Agence",
+      "Balcon",
+      "Sous barrière",
+      "Sécurisé"
+    ],
+    "street": "Charbonnages",
+    "city": "Libreville",
+    "province": "Estuaire",
+    "longitude": 9.45,
+    "latitude": 0.416,
+    "country": "Gabon",
+    "countryCode": "GA",
+    "images": [
+      {
+        "filePATH": "images/property_5_image_0.jpg",
+        "fileURL": "https://scontent-lga3-3.xx.fbcdn.net/v/t39.30808-6/642401226_1414807157326750_7945359059179254603_n.jpg?stp=cp6_dst-jpegr_s590x590_tt6&_nc_cat=104&ccb=1-7&_nc_sid=7b2446&_nc_ohc=NeALGtbmZt0Q7kNvwEn71tm&_nc_oc=AdmZ4_C0XCTEka5SErsJJ00TqDXjnO95w00X2KyInM9kJOvvgpl8Mi8tPlx8l4gK-aw&_nc_zt=23&se=-1&_nc_ht=scontent-lga3-3.xx&_nc_gid=oPCy28ymPzuH0ObaWxsY2A&_nc_ss=8&oh=00_AfxN7CX4ds1Wg4he4jwhH4OnqVddjh0m4rDmGIBe41oI2g&oe=69B759AC"
+      },
+      {
+        "filePATH": "images/property_5_image_1.jpg",
+        "fileURL": "https://scontent-lga3-3.xx.fbcdn.net/v/t39.30808-6/640938653_1414808033993329_1834519411463065445_n.jpg?stp=cp6_dst-jpegr_s590x590_tt6&_nc_cat=108&ccb=1-7&_nc_sid=7b2446&_nc_ohc=702M_jPFCqUQ7kNvwGp13Cb&_nc_oc=AdkigurZTSoyXl58ZpGrw2v_PW6nZI1BESKiI8aEhY3sXDaKRa1-LPMluWbkkO9gnLQ&_nc_zt=23&se=-1&_nc_ht=scontent-lga3-3.xx&_nc_gid=oPCy28ymPzuH0ObaWxsY2A&_nc_ss=8&oh=00_AfyKY3RVIa6HptBWGxf5WGeowl9ixrxKZAGye9hvTtHhkA&oe=69B76C48"
+      },
+      {
+        "filePATH": "images/property_5_image_2.jpg",
+        "fileURL": "https://scontent-lga3-3.xx.fbcdn.net/v/t39.30808-6/641343316_1414808700659929_1996278453753180103_n.jpg?stp=cp6_dst-jpegr_s590x590_tt6&_nc_cat=104&ccb=1-7&_nc_sid=7b2446&_nc_ohc=YbBCSrCy0IcQ7kNvwGP1dwS&_nc_oc=Adn_FmN34EqcjrsZQdxEseOl3Ociziv_zimltbY40qXfjySMPfWbzgtHyqsu6P-HOic&_nc_zt=23&se=-1&_nc_ht=scontent-lga3-3.xx&_nc_gid=oPCy28ymPzuH0ObaWxsY2A&_nc_ss=8&oh=00_AfxPkky77ItFQgFEub3klFRITx4hvArCi8VqBweI-8IOVw&oe=69B77DCB"
+      },
+      {
+        "filePATH": "images/property_5_image_3.jpg",
+        "fileURL": "https://scontent-lga3-3.xx.fbcdn.net/v/t39.30808-6/640318520_1414810137326452_8098987582344194945_n.jpg?stp=cp6_dst-jpegr_s590x590_tt6&_nc_cat=104&ccb=1-7&_nc_sid=7b2446&_nc_ohc=qMG35CPG5RMQ7kNvwG37V-W&_nc_oc=AdlwQS6P_m3H5LrB6UtrMFerFERDM8zS2jtXOQNkaciNe0clG13DfJfsmjnCFJ0NxXc&_nc_zt=23&se=-1&_nc_ht=scontent-lga3-3.xx&_nc_gid=oPCy28ymPzuH0ObaWxsY2A&_nc_ss=8&oh=00_AfylvAf6b87aDh614m5jzs-Sfoyk-WgCDDRrEA7hZPS7Tg&oe=69B75E76"
+      },
+      {
+        "filePATH": "images/property_5_image_4.jpg",
+        "fileURL": "https://scontent-lga3-2.xx.fbcdn.net/v/t39.30808-6/642934799_1414810277326438_4117752986956163496_n.jpg?stp=cp6_dst-jpegr_s590x590_tt6&_nc_cat=100&ccb=1-7&_nc_sid=7b2446&_nc_ohc=q6br22gWx5UQ7kNvwGr6mKN&_nc_oc=Adksu8PyX-299HzkB9vTNML8CxDrc1d8XKn5hx4RRNp0E8FfDEpV2PJqyYFFdF2085M&_nc_zt=23&se=-1&_nc_ht=scontent-lga3-2.xx&_nc_gid=oPCy28ymPzuH0ObaWxsY2A&_nc_ss=8&oh=00_Afy4H5fqn8Rop2wZJo-7upxxkC40SO5u7bW7nnIbSOXFSg&oe=69B78EE1"
+      }
+    ],
+    "nbrRooms": 3,
+    "nbrKitchens": 1,
+    "nbrBathrooms": 2,
+    "nbrToilets": 1,
+    "sourceId": "https://www.facebook.com/permalink.php?story_fbid=pfbid0HZaZNEGyqQSoGY1mzcx4nYhbYfHSMSUo5fUb9BRbKYE2Ew83zHbfv2ncij75wjrpl&id=100063924376821",
+    "sourceText": "🤠👉 #APPARTEMENT #ALOUER BON STANDING ️ \n............................................................................. 🛑 \n3 CHAMBRES, 3 SALLES D'EAU, UN SÉJOUR...\nSALLE A MANGER, CUISINE, 3 BALCON \n.🚨\n1ER ETAGE, SPLITS, CUVE ET SUPPRESSEUR\n2 DANS LA BARRIÈRE AVEC GARDIEN ✅️\nQUARTIER LIBREVILLE CHARBONARGE \n\nLOYER 500.000 CFA NEGO \nUSAGE : #HABITATION ⚠️\nVIRTUELLE 👇 \n\n☎️ 06 56 95 34  WHATSAPP \n#pourtoi #gabon #jikaimmo #maison #libreville"
+  },
+  {
+    "typeProperty": "Apartment",
+    "title": "Appartement 2 chambres à Akandia Marseille 2",
+    "description": "Appartement de 2 chambres situé à Akandia Marseille 2, avec séjour, cuisine, sanitaires et balcon.",
+    "area": 0,
+    "price": 200000,
+    "tags": [
+      "Agence",
+      "Balcon"
+    ],
+    "status": "FOR_RENT",
+    "street": "Akanda Angondjé",
+    "city": "Akanda",
+    "province": "Estuaire",
+    "longitude": 9.531,
+    "latitude": 0.589,
+    "country": "Gabon",
+    "countryCode": "GA",
+    "images": [
+      {
+        "filePATH": "images/property_6_image_0.jpg",
+        "fileURL": "https://scontent-atl3-1.xx.fbcdn.net/v/t39.30808-6/641313930_1413875114086621_7315716969987477546_n.jpg?stp=cp6_dst-jpegr_s590x590_tt6&_nc_cat=106&ccb=1-7&_nc_sid=7b2446&_nc_ohc=aWCL1pAwQvwQ7kNvwHAVrxa&_nc_oc=AdmFjIkSx8eeGyATUo_8SWBTD7il_854YxvBjCy3gqEs7qT_HS5QXqljbaSui2LaEao&_nc_zt=23&se=-1&_nc_ht=scontent-atl3-1.xx&_nc_gid=y5RQj-5Su7wBY0YmobZu1A&_nc_ss=8&oh=00_AfwmsUrB4mMLG53UOhrcV62NMJMix_5wGJCZokEoJbxOrQ&oe=69B77B38"
+      },
+      {
+        "filePATH": "images/property_6_image_1.jpg",
+        "fileURL": "https://scontent-atl3-1.xx.fbcdn.net/v/t39.30808-6/641536009_1413878690752930_1616337112010096501_n.jpg?stp=cp6_dst-jpegr_s590x590_tt6&_nc_cat=103&ccb=1-7&_nc_sid=7b2446&_nc_ohc=Z48RZ0n4H68Q7kNvwFnfHRO&_nc_oc=AdlamqzVXxKSfrYPA_H7iMnTneURYVWvLF_vBk-tY7GMgJntVp1IOv9fr72mlmbDgRY&_nc_zt=23&se=-1&_nc_ht=scontent-atl3-1.xx&_nc_gid=y5RQj-5Su7wBY0YmobZu1A&_nc_ss=8&oh=00_AfxXtQ8BPAL7qm4nbsPvgJZSLiyGLWm87X_z-y7P7XwNTw&oe=69B77E77"
+      },
+      {
+        "filePATH": "images/property_6_image_2.jpg",
+        "fileURL": "https://scontent-atl3-3.xx.fbcdn.net/v/t39.30808-6/639712892_1413880244086108_2197625383661780079_n.jpg?stp=cp6_dst-jpegr_s590x590_tt6&_nc_cat=109&ccb=1-7&_nc_sid=7b2446&_nc_ohc=ifuuLh_G7CEQ7kNvwGtuwFw&_nc_oc=AdmilQikfi6tXqGzNuNJ0xvks4GVYoJVGkoi-_rzVV7-ePlbLXEyl87jN93XwR85uog&_nc_zt=23&se=-1&_nc_ht=scontent-atl3-3.xx&_nc_gid=y5RQj-5Su7wBY0YmobZu1A&_nc_ss=8&oh=00_AfyTgMNHQYd0mEMGv1vcRRon8v6_EupTRitq3E4oCO1xrA&oe=69B764C7"
+      },
+      {
+        "filePATH": "images/property_6_image_3.jpg",
+        "fileURL": "https://scontent-atl3-3.xx.fbcdn.net/v/t39.30808-6/641617141_1413880860752713_3246377301166206901_n.jpg?stp=cp6_dst-jpegr_s590x590_tt6&_nc_cat=108&ccb=1-7&_nc_sid=7b2446&_nc_ohc=ymTnj8E_ArgQ7kNvwEzLss3&_nc_oc=Adn84r4ljOF7BLksmvPvwEbqmS46-nX16M8wpDHOy9tW7aZN0nxNpXsO3oHRQuzXCyM&_nc_zt=23&se=-1&_nc_ht=scontent-atl3-3.xx&_nc_gid=y5RQj-5Su7wBY0YmobZu1A&_nc_ss=8&oh=00_AfwZqWkc5hqJv_pw5oY2sn3TFKqGgPuYn8ccqQcFu3Tz4w&oe=69B77074"
+      },
+      {
+        "filePATH": "images/property_6_image_4.jpg",
+        "fileURL": "https://scontent-atl3-2.xx.fbcdn.net/v/t39.30808-6/641428883_1413881490752650_7786825790422429417_n.jpg?stp=cp6_dst-jpegr_s590x590_tt6&_nc_cat=105&ccb=1-7&_nc_sid=7b2446&_nc_ohc=2XZTHTskNmcQ7kNvwEi3TjF&_nc_oc=Adlex4WsAvdb4qVF241pViaP0w2cWOzMYV3CH4GQ0gpCoxTHAl9COxf5tgK7nz1RK6M&_nc_zt=23&se=-1&_nc_ht=scontent-atl3-2.xx&_nc_gid=y5RQj-5Su7wBY0YmobZu1A&_nc_ss=8&oh=00_AfyaUyf1ySoVQ5yGh0AR4NxaZjNJQS-eiUch17F0HUxsnQ&oe=69B78C76"
+      }
+    ],
+    "nbrFloorApartment": 1,
+    "numeroApartment": "A-010",
+    "nbrRooms": 2,
+    "nbrBathrooms": 1,
+    "nbrToilets": 1,
+    "nbrKitchens": 1,
+    "sourceId": "https://www.facebook.com/permalink.php?story_fbid=pfbid0fnawB5moYZJ8XTYTG5YYKMGejgpUd6brWXHTJfp8vc6CDM3n4FDKHCN9PQDJcd1vl&id=100063924376821",
+    "sourceText": "🤠👉 #APPARTEMENT #ALOUER 1ERE ✋️ \n.............................................................................. 🛑 \n2 CHAMBRES, UNE SALLES D'EAU, UN SÉJOUR...\nUN COINS CUISINE, UN BALCON, SPLITS \n.🚨\n1ER ETAGE, CUVE ET SUPPRESSEUR  \nQUARTIER AKANDA MARSEILLE 2 ZONE 2 HOTEL \n\nLOYER 200.000 CFA \nUSAGE : #HABITATION ⚠️\nhttps://vt.tiktok.com/ZSmC3r6Sk/\n\n☎️ 06 56 95 34  WHATSAPP \n#pourtoi #gabon #jikaimmo #maison #libreville"
+  },
+  {
+    "typeProperty": "Apartment",
+    "title": "Appartement 2 chambres à Bon Standing",
+    "description": "Appartement de 2 chambres situé à Bon Standing, avec séjour, cuisine, sanitaires et bonne accessibilité.",
+    "area": 0,
+    "price": 400000,
+    "tags": [
+      "Agence",
+      "Parking",
+      "Terrasse",
+      "Sous barrière",
+      "Sécurisé"
+    ],
+    "status": "FOR_RENT",
+    "street": "Akanda Angondjé",
+    "city": "Akanda",
+    "province": "Estuaire",
+    "longitude": 9.531,
+    "latitude": 0.589,
+    "country": "Gabon",
+    "countryCode": "GA",
+    "images": [
+      {
+        "filePATH": "images/property_7_image_0.jpg",
+        "fileURL": "https://scontent-hou1-1.xx.fbcdn.net/v/t39.30808-6/641300988_1412985607508905_1608005739682998075_n.jpg?stp=cp6_dst-jpegr_s590x590_tt6&_nc_cat=105&ccb=1-7&_nc_sid=7b2446&_nc_ohc=3TZCYUdw7pgQ7kNvwHxzXqb&_nc_oc=AdnnVEV7e4LWpt7nbh9ntgUPWYEoIEmL4mqOityfDnSMkQq0ry61etKLRkcvCZ5E1YI&_nc_zt=23&se=-1&_nc_ht=scontent-hou1-1.xx&_nc_gid=Qf6kE62yl9hs3W9IrwKrbA&_nc_ss=8&oh=00_AfzSziEz8VJ2fpoYSf_Z5AFGeL1BmXd4NvGrddvqmrZQZQ&oe=69B77EAF"
+      },
+      {
+        "filePATH": "images/property_7_image_1.jpg",
+        "fileURL": "https://scontent-hou1-1.xx.fbcdn.net/v/t39.30808-6/639676754_1412986954175437_679477599497465330_n.jpg?stp=cp6_dst-jpegr_s590x590_tt6&_nc_cat=100&ccb=1-7&_nc_sid=7b2446&_nc_ohc=bb81Yewfl34Q7kNvwG4ay8U&_nc_oc=AdnpnOHa054lVtKUPFY8LWOJlvBnD3KVbXI2fDX01K0eT7FlcMcUNFcImT2YaG6zb3s&_nc_zt=23&se=-1&_nc_ht=scontent-hou1-1.xx&_nc_gid=Qf6kE62yl9hs3W9IrwKrbA&_nc_ss=8&oh=00_AfwfOPqp06-IAF3p3WAxv3QqzAXVXWxtOYijEK1Kf2oM-w&oe=69B7685A"
+      },
+      {
+        "filePATH": "images/property_7_image_2.jpg",
+        "fileURL": "https://scontent-hou1-1.xx.fbcdn.net/v/t39.30808-6/638830066_1412987074175425_5928137825898267984_n.jpg?stp=cp6_dst-jpegr_s590x590_tt6&_nc_cat=105&ccb=1-7&_nc_sid=7b2446&_nc_ohc=hzGrE9qJjEkQ7kNvwEOCe-n&_nc_oc=AdmQTV3kZ1Sgb93gS2NbTg28g_t2Wur_Dao9OrNJloCuqd_H5dRNVUKxYY07Su2bAgo&_nc_zt=23&se=-1&_nc_ht=scontent-hou1-1.xx&_nc_gid=Qf6kE62yl9hs3W9IrwKrbA&_nc_ss=8&oh=00_Afz74F4S8-4GQ81Xp1xedTBHbIX_IfhTu_MXDZQ1BpStCg&oe=69B77C95"
+      },
+      {
+        "filePATH": "images/property_7_image_3.jpg",
+        "fileURL": "https://scontent-hou1-1.xx.fbcdn.net/v/t39.30808-6/639239034_1412987497508716_199725079170003313_n.jpg?stp=cp6_dst-jpegr_s590x590_tt6&_nc_cat=102&ccb=1-7&_nc_sid=7b2446&_nc_ohc=OzegpkxbIw4Q7kNvwGHmfR_&_nc_oc=AdlHZrRzHKoxOwNHZ20AMg508J4oSN8ft3BfkdbeS681T9AF00lB6W-IMUtavr00nOw&_nc_zt=23&se=-1&_nc_ht=scontent-hou1-1.xx&_nc_gid=Qf6kE62yl9hs3W9IrwKrbA&_nc_ss=8&oh=00_AfyrRx9mTuptFq_nco8Kzu4Ot5_KGAZd9K7XdHnBO3ngHA&oe=69B77550"
+      },
+      {
+        "filePATH": "images/property_7_image_4.jpg",
+        "fileURL": "https://scontent-hou1-1.xx.fbcdn.net/v/t39.30808-6/641408299_1412987894175343_1825448405652269219_n.jpg?stp=cp6_dst-jpegr_s590x590_tt6&_nc_cat=106&ccb=1-7&_nc_sid=7b2446&_nc_ohc=3sTIvZSf9dIQ7kNvwGj_yUr&_nc_oc=AdkGEUW5-w8rmdHjECiP8e670N-q7CqTHEsDnraBobiyikPD6zksRQ0Z1n6KzB0JxiY&_nc_zt=23&se=-1&_nc_ht=scontent-hou1-1.xx&_nc_gid=Qf6kE62yl9hs3W9IrwKrbA&_nc_ss=8&oh=00_AfxBiSPGIFEnXwU2jUQfius2uJ5vkFL48q0YiStwue0QZw&oe=69B774F1"
+      }
+    ],
+    "nbrFloorApartment": 1,
+    "numeroApartment": "A-010",
+    "nbrRooms": 2,
+    "nbrBathrooms": 2,
+    "nbrToilets": 1,
+    "nbrKitchens": 1,
+    "sourceId": "https://www.facebook.com/permalink.php?story_fbid=pfbid0oGFzHspr6dBGRVvDCQJzV7wtwNdnuW6UJhVHMXdcJuyv5krzkH5okT5Xac5FxZbKl&id=100063924376821",
+    "sourceText": "🤠👉 #APPARTEMENT #ALOUER BON STANDING \n.............................................................................. 🛑 \n2 CHAMBRES, 2 SALLES D'EAU, UN SÉJOUR...\nSALLE A MANGER, CUISINE, 2 TERRASSES\nWC VISITEUR, SPLITS, REZ-DE-CHAUSSÉE \n.🚨\n3 DANS LA BARRIÈRE, PARKING ET GARDIEN \nQUARTIER AKANDA MARSEILLE 2 \n\nLOYER 400.000 CFA \nUSAGE : #HABITATION ⚠️\nVIRTUELLE 👇 \nhttps://vt.tiktok.com/ZSmC7AVsN/\n\n☎️ 06 56 95 34 WHATSAPP \n#pourtoi #gabon #jikaimmo #maison #libreville"
+  },
+  {
+    "typeProperty": "Studio",
+    "title": "Studio à louer à Akandu AnGondje",
+    "description": "Studio fonctionnel situé à Akandu AnGondje, comprenant un espace cuisine, une salle d'eau et un séjour. Possibilité de garer un vélo dans la rue.",
+    "area": 0,
+    "price": 160000,
+    "tags": [
+      "Agence",
+      "Sous barrière",
+      "Balcon"
+    ],
+    "status": "FOR_RENT",
+    "street": "Akanda Angondjé",
+    "city": "Akanda",
+    "province": "Estuaire",
+    "longitude": 9.531,
+    "latitude": 0.589,
+    "country": "Gabon",
+    "countryCode": "GA",
+    "images": [
+      {
+        "filePATH": "images/property_8_image_0.jpg",
+        "fileURL": "https://scontent-hou1-1.xx.fbcdn.net/v/t39.30808-6/637900548_1411809374293195_8260472052153729054_n.jpg?stp=cp6_dst-jpegr_s590x590_tt6&_nc_cat=111&ccb=1-7&_nc_sid=7b2446&_nc_ohc=EM2rNUhbobMQ7kNvwFhMqGU&_nc_oc=Adm9-RW7sMzJY5_lgD_KJkMFP-89Jz2ieENlIVxAkFRKjU5z553LwfpoO_LF2Bzbmx8&_nc_zt=23&se=-1&_nc_ht=scontent-hou1-1.xx&_nc_gid=Qf6kE62yl9hs3W9IrwKrbA&_nc_ss=8&oh=00_AfxZriJPcnqpj-RKEIisnCT9s__mEQJcArOvicx_YiNlug&oe=69B7602D"
+      },
+      {
+        "filePATH": "images/property_8_image_1.jpg",
+        "fileURL": "https://scontent-hou1-1.xx.fbcdn.net/v/t39.30808-6/639902949_1411809444293188_5854442940452433796_n.jpg?stp=cp6_dst-jpegr_s590x590_tt6&_nc_cat=105&ccb=1-7&_nc_sid=7b2446&_nc_ohc=uVcvM7GSqO8Q7kNvwHvjc6H&_nc_oc=AdnnPgpcy-Ye5K2pJFVwNZ0eAwpuSvyv-OsYOXOIz0JU4a2ObzN_prPfmiQupuJZLVc&_nc_zt=23&se=-1&_nc_ht=scontent-hou1-1.xx&_nc_gid=Qf6kE62yl9hs3W9IrwKrbA&_nc_ss=8&oh=00_Afwhve_3nM_wM5hqRd9neSPF8hTCNHyxc9fAu3GNgISKGg&oe=69B78A1B"
+      },
+      {
+        "filePATH": "images/property_8_image_2.jpg",
+        "fileURL": "https://scontent-hou1-1.xx.fbcdn.net/v/t39.30808-6/640278467_1411809554293177_3495098952182776290_n.jpg?stp=cp6_dst-jpegr_s590x590_tt6&_nc_cat=106&ccb=1-7&_nc_sid=7b2446&_nc_ohc=xUKPviq9dvgQ7kNvwFI396J&_nc_oc=AdmUBySLmPAXmJtL6RFKBwduz2qSqklIIS0Ba1uptfiahxb52Hkn_-szGU6usTgV5BE&_nc_zt=23&se=-1&_nc_ht=scontent-hou1-1.xx&_nc_gid=Qf6kE62yl9hs3W9IrwKrbA&_nc_ss=8&oh=00_Afwg77oDQs7bvO6bUkpFaPsJHLu9enKsuR5FSeYiyuNptw&oe=69B781AC"
+      },
+      {
+        "filePATH": "images/property_8_image_3.jpg",
+        "fileURL": "https://scontent-hou1-1.xx.fbcdn.net/v/t39.30808-6/639458827_1411809630959836_8106821491249027545_n.jpg?stp=cp6_dst-jpegr_s590x590_tt6&_nc_cat=101&ccb=1-7&_nc_sid=7b2446&_nc_ohc=xnjN_w-CskYQ7kNvwFhFRvY&_nc_oc=Adm3Ji5Bl2iObryy97npATWZIZuW-sBYUwauO2wEhbRFB_kC53IpXIpF0uraS0Rt23c&_nc_zt=23&se=-1&_nc_ht=scontent-hou1-1.xx&_nc_gid=Qf6kE62yl9hs3W9IrwKrbA&_nc_ss=8&oh=00_AfzOgq7jikNXxI9AMrMALdV1aCtkkqJWxRK-mKS92MC6Rg&oe=69B77DB1"
+      },
+      {
+        "filePATH": "images/property_8_image_4.jpg",
+        "fileURL": "https://scontent-hou1-1.xx.fbcdn.net/v/t39.30808-6/639435338_1411809797626486_3159839492288797037_n.jpg?stp=cp6_dst-jpegr_s590x590_tt6&_nc_cat=108&ccb=1-7&_nc_sid=7b2446&_nc_ohc=RInniIWbrdUQ7kNvwGSItgG&_nc_oc=AdlzuF_UO_hQsRJKt1KEHqMQO9pYPo8xGRaTEx8bA8m1_uAhMfV4GYs4NTd9hrle5xE&_nc_zt=23&se=-1&_nc_ht=scontent-hou1-1.xx&_nc_gid=Qf6kE62yl9hs3W9IrwKrbA&_nc_ss=8&oh=00_Afw9mKyYiCYeaSRsofMxt5aKxYFPq8BeicVZvZGxOvPy-A&oe=69B771D0"
+      }
+    ],
+    "nbrFloorStudio": 1,
+    "numeroStudio": "S-11",
+    "nbrRooms": 1,
+    "nbrBathrooms": 1,
+    "nbrToilets": 1,
+    "nbrKitchens": 1,
+    "sourceId": "https://www.facebook.com/permalink.php?story_fbid=pfbid02snFeArY1pvpDW9xHc1xkiUNDwFn3Ece1V9RGtZzmnBbDXEA5Hdj2xfsxTT9dBCXal&id=100063924376821",
+    "sourceText": "🤠👉 #STUDIO #ALOUER BON STANDING \n.............................................................................. 🛑 \nUNE CHAMBRE, UNE SALLES D'EAU, SÉJOUR...\nUN COINS CUISINE, UN BALCON, 1ER ETAGE \nDANS LA BARRIÈRE AVEC EAU  \n.🚨\nQUARTIER : AKANDA ANGONDJE ✅️ \n\n#LOYER 160.000 CFA \nUSAGE : #HABITATION ⚠️ \n\n☎️ 06 56 95 34  WHATSAPP \n#pourtoi #gabon #jikaimmo #maison #studio #flypviral"
+  },
+  {
+    "typeProperty": "Apartment",
+    "title": "Appartement 4 chambres à Akandama-Marseille 2",
+    "description": "Appartement de 4 chambres situé à Akandama-Marseille 2, avec séjour, cuisine, sanitaires et bonne accessibilité.",
+    "area": 0,
+    "price": 500000,
+    "tags": [
+      "Agence",
+      "Balcon",
+      "Terrasse",
+      "Sous barrière",
+      "Sécurisé"
+    ],
+    "status": "FOR_RENT",
+    "street": "Akanda Angondjé",
+    "city": "Akanda",
+    "province": "Estuaire",
+    "longitude": 9.531,
+    "latitude": 0.589,
+    "country": "Gabon",
+    "countryCode": "GA",
+    "images": [
+      {
+        "filePATH": "images/property_9_image_0.jpg",
+        "fileURL": "https://scontent-hou1-1.xx.fbcdn.net/v/t39.30808-6/637974598_1411199594354173_9121471106565724198_n.jpg?stp=cp6_dst-jpegr_s590x590_tt6&_nc_cat=103&ccb=1-7&_nc_sid=7b2446&_nc_ohc=yZetP91jE5cQ7kNvwFLYOnW&_nc_oc=AdlRLq4UH_1B7dToiDKH8Xv5_ZC2y1flC2UH6qp50QiwJpJZc_Cq9vgFYeaZNFBW02E&_nc_zt=23&se=-1&_nc_ht=scontent-hou1-1.xx&_nc_gid=Qf6kE62yl9hs3W9IrwKrbA&_nc_ss=8&oh=00_AfwW22gpKMXNuBqd7M5aNDfjSVXKIrUyr0cUmGCl0sA-AA&oe=69B75C73"
+      },
+      {
+        "filePATH": "images/property_9_image_1.jpg",
+        "fileURL": "https://scontent-hou1-1.xx.fbcdn.net/v/t39.30808-6/637816792_1411199671020832_1132651348110715616_n.jpg?stp=cp6_dst-jpegr_s590x590_tt6&_nc_cat=105&ccb=1-7&_nc_sid=7b2446&_nc_ohc=es-0L1xAh6UQ7kNvwHli_In&_nc_oc=Adnd3gLYS6jWKhr09EX1jKf9DV_ntkbUZDus21Ui6EQrsVbEJPuThZNxPQ8IDIf3Gm0&_nc_zt=23&se=-1&_nc_ht=scontent-hou1-1.xx&_nc_gid=Qf6kE62yl9hs3W9IrwKrbA&_nc_ss=8&oh=00_Afy0aUBXLthZG62mT9eJEyOjIfE0H3rKj4mxE0nwSmJYnA&oe=69B77434"
+      },
+      {
+        "filePATH": "images/property_9_image_2.jpg",
+        "fileURL": "https://scontent-hou1-1.xx.fbcdn.net/v/t39.30808-6/637711580_1411199731020826_850591133342091036_n.jpg?stp=cp6_dst-jpegr_s590x590_tt6&_nc_cat=106&ccb=1-7&_nc_sid=7b2446&_nc_ohc=0Ds_IV6mcUwQ7kNvwFVVbji&_nc_oc=Adk6wsk595MsR27IntP9T9VTWWBPz7hUIfbg8CdamTHqlLm7itwOOpRb8smxFrqN7kw&_nc_zt=23&se=-1&_nc_ht=scontent-hou1-1.xx&_nc_gid=Qf6kE62yl9hs3W9IrwKrbA&_nc_ss=8&oh=00_Afz-YTmS7_ej_M_dLz0Z95Ec8S_S3Vmr0pZacljSBBz2tg&oe=69B772F1"
+      },
+      {
+        "filePATH": "images/property_9_image_3.jpg",
+        "fileURL": "https://scontent-hou1-1.xx.fbcdn.net/v/t39.30808-6/639694733_1411199794354153_6666249299360261116_n.jpg?stp=cp6_dst-jpegr_s590x590_tt6&_nc_cat=103&ccb=1-7&_nc_sid=7b2446&_nc_ohc=TT7A0R-MFOEQ7kNvwFMJACZ&_nc_oc=Adkk0GUnScdG4cH7-0PkWc6UqakBxJXQg87ws0S9UGM3jg5kYQ6cqlumENz7wFHH6r8&_nc_zt=23&se=-1&_nc_ht=scontent-hou1-1.xx&_nc_gid=Qf6kE62yl9hs3W9IrwKrbA&_nc_ss=8&oh=00_Afy4DuGsrwWWDXREUHWc_SY-TZQPoTPiaZ0ctnbWmxzqhA&oe=69B75FF9"
+      },
+      {
+        "filePATH": "images/property_9_image_4.jpg",
+        "fileURL": "https://scontent-hou1-1.xx.fbcdn.net/v/t39.30808-6/637873615_1411199894354143_3805240476002589217_n.jpg?stp=cp6_dst-jpegr_s590x590_tt6&_nc_cat=101&ccb=1-7&_nc_sid=7b2446&_nc_ohc=xg23zbGFmusQ7kNvwEXO3QB&_nc_oc=Adm_Bd3QWmPnXM3l7Ikix4g4H4sliHuWKPeZPkQlXplzD71jRqS3ZXIX-H1dSn07UD4&_nc_zt=23&se=-1&_nc_ht=scontent-hou1-1.xx&_nc_gid=Qf6kE62yl9hs3W9IrwKrbA&_nc_ss=8&oh=00_AfxgNL-B25ks7JeTHMKCOILKMU1vvgZRd6Q9-gZSGzCqIw&oe=69B76890"
+      }
+    ],
+    "nbrFloorApartment": 1,
+    "numeroApartment": "A-010",
+    "nbrRooms": 4,
+    "nbrBathrooms": 3,
+    "nbrToilets": 2,
+    "nbrKitchens": 1,
+    "sourceId": "https://www.facebook.com/permalink.php?story_fbid=pfbid0272z3Cf1n41nHCKHir2WTGPhwBeS7qTurkYNuesCzWUmxfhqTvmfRP83YragqAdoel&id=100063924376821",
+    "sourceText": "🤠👉 #APPARTEMENT 1ERE ✋️  BON STANDING \n..................................................................................... 🛑\n4 CHAMBRES, 3 SALLES D'EAU, 2 SÉJOURS...\nCUISINE, 2 TERRASSES, BUANDERIE, SPLITS \nWC VISITEUR , CHAUFFE-EAU, SUPPRESSEUR \n. 🚨\n2 OCCUPANT DANS LA BARRIÈRE AVEC GARDIEN \nQUARTIER AKANDA-MARSEILLE 2 .ZONE 2 HÔTEL \n\nLOYER 500.000 CFA  SANS CHARGES \nUSAGE : #HABITATION  ⚠️ \nVIRTUELLE 👇 \nhttps://vt.tiktok.com/ZSmHeWTff/\n\n☎️ 06 56 95 34  WHATSAPP \n#pourtoi #gabon #jikaimmo #maison #libreville"
+  },
+  {
+    "typeProperty": "Studio",
+    "title": "Appartement 2 chambres à Libreville LALALA",
+    "description": "Appartement de 2 chambres situé à Libreville LALALA, avec séjour, cuisine, sanitaires et bonne accessibilité.",
+    "area": 0,
+    "price": 500000,
+    "tags": [
+      "Agence",
+      "Balcon",
+      "Parking"
+    ],
+    "status": "FOR_RENT",
+    "street": "Libreville LALALA",
+    "city": "Libreville",
+    "province": "Estuaire",
+    "longitude": 9.462,
+    "latitude": 0.432,
+    "country": "Gabon",
+    "countryCode": "GA",
+    "images": [
+      {
+        "filePATH": "images/property_10_image_0.jpg",
+        "fileURL": "https://scontent-hou1-1.xx.fbcdn.net/v/t39.30808-6/637646454_1409242931216506_6518672803410468785_n.jpg?stp=cp6_dst-jpegr_s590x590_tt6&_nc_cat=108&ccb=1-7&_nc_sid=7b2446&_nc_ohc=e7wnvT6M5KIQ7kNvwETOEby&_nc_oc=AdkuGCZJRgLmu-CQmIvavHYnFL30ja3pHq6Tf9w24tNiT824hJtvBrhbYYmyI5FX5nQ&_nc_zt=23&se=-1&_nc_ht=scontent-hou1-1.xx&_nc_gid=mbJoTNvnGttA-BmsfYvsVQ&_nc_ss=8&oh=00_AfwdlG6pmAPyhaH6BeQvGzcUW6ohsIwa8c27DH4pI_XLzg&oe=69B788FF"
+      },
+      {
+        "filePATH": "images/property_10_image_1.jpg",
+        "fileURL": "https://scontent-hou1-1.xx.fbcdn.net/v/t39.30808-6/636523995_1409243024549830_6649809640854965823_n.jpg?stp=cp6_dst-jpegr_s590x590_tt6&_nc_cat=104&ccb=1-7&_nc_sid=7b2446&_nc_ohc=JrgJVO8GljQQ7kNvwGe9jRa&_nc_oc=AdmApqL50cNpDPV5tI8sYi3mLRAXisq7dokjwAxK7BEyGrxXwwti-EyfH1bZSYy87jU&_nc_zt=23&se=-1&_nc_ht=scontent-hou1-1.xx&_nc_gid=mbJoTNvnGttA-BmsfYvsVQ&_nc_ss=8&oh=00_AfyTTH5Z30TzoHxz1RP67C6prfJKCziyjL34tkOtd1a2Pw&oe=69B76CAF"
+      },
+      {
+        "filePATH": "images/property_10_image_2.jpg",
+        "fileURL": "https://scontent-hou1-1.xx.fbcdn.net/v/t39.30808-6/637861517_1409243137883152_2616478955071537256_n.jpg?stp=cp6_dst-jpegr_s590x590_tt6&_nc_cat=100&ccb=1-7&_nc_sid=7b2446&_nc_ohc=RWpRFuyeFuEQ7kNvwFfKmHh&_nc_oc=Adni74PIATwTtU4LN01sfdvksj8J6TZwOoHhpOAGr2H0xsJNFBzM3b-ZjB2doV9wxRY&_nc_zt=23&se=-1&_nc_ht=scontent-hou1-1.xx&_nc_gid=mbJoTNvnGttA-BmsfYvsVQ&_nc_ss=8&oh=00_AfwaHtbVPjAmVRe7SC-cfXMqCS2mMN96TflX04ngSFQZ1w&oe=69B77E9C"
+      },
+      {
+        "filePATH": "images/property_10_image_3.jpg",
+        "fileURL": "https://scontent-hou1-1.xx.fbcdn.net/v/t39.30808-6/635009147_1409243214549811_6759570223862678236_n.jpg?stp=cp6_dst-jpegr_s590x590_tt6&_nc_cat=100&ccb=1-7&_nc_sid=7b2446&_nc_ohc=9ZtV1U8N7uQQ7kNvwETEeDN&_nc_oc=AdnD1FcQCuY1lq6DxBZkQP451MOrE7qcZSVcVkDvEjVkKGnFsfXlEEUqVGM824FmYCw&_nc_zt=23&se=-1&_nc_ht=scontent-hou1-1.xx&_nc_gid=mbJoTNvnGttA-BmsfYvsVQ&_nc_ss=8&oh=00_AfygaytcroQOEWLarqKHAM1O0FHYwjo2evv8TVJfPwjfUQ&oe=69B7653D"
+      },
+      {
+        "filePATH": "images/property_10_image_4.jpg",
+        "fileURL": "https://scontent-hou1-1.xx.fbcdn.net/v/t39.30808-6/634925434_1409243314549801_6387790453704198733_n.jpg?stp=cp6_dst-jpegr_s590x590_tt6&_nc_cat=105&ccb=1-7&_nc_sid=7b2446&_nc_ohc=TxI0vtiA6wsQ7kNvwGVLkb8&_nc_oc=AdlIiMfuIqyaBI91BqGNkz5lr6IkEAfpWjxx6z_-kWHDHDblTMoiY9AMYWrX6lUxDfA&_nc_zt=23&se=-1&_nc_ht=scontent-hou1-1.xx&_nc_gid=mbJoTNvnGttA-BmsfYvsVQ&_nc_ss=8&oh=00_Afygxn0A8TAYYGob6wsvDwIHxo3csG1Guj_Wtu_60zkELg&oe=69B78E32"
+      }
+    ],
+    "nbrFloorApartment": 1,
+    "numeroApartment": "A-010",
+    "nbrRooms": 2,
+    "nbrBathrooms": 1,
+    "nbrKitchens": 1,
+    "nbrToilets": 1,
+    "sourceId": "https://www.facebook.com/permalink.php?story_fbid=pfbid02Yq45gEmVdABaPUzFiDQAXS6J4KXQUoZQx7VEWnCVjh2FA5dzS4pyDv2ZYhENGmRNl&id=100063924376821",
+    "sourceText": "🤠👉 #APPARTEMENT #ALOUER BON STANDING \n.............................................................................. 🛑 \n2 CHAMBRES, UNE SALLES D'EAU, UN SÉJOUR...\nUNE CUISINE, UN BALCON, PLACARDS\nWC VISITEUR, 1ERT ETAGE, PARKING\n.🚨\nCUVE, SUPPRESSEUR, GROUPE ÉLECTROGÈNE \nQUARTIER LIBREVILLE- LALALA  \nEN BORDURE DE ROUTE PRINCIPALE \n\nLOYER 500.000 CFA \nUSAGE : #HABITATION OU #BUREAU⚠️\nVIRTUELLE 👇 \nhttps://vt.tiktok.com/ZSmPmteDs/\n\n☎️ 06 56 95 34 WHATSAPP \n#pourtoi #gabon #jikaimmo #maison #studio #flypviral"
+  },
+  {
+    "title": "Appartement 2 chambres à Libreville",
+    "description": "Appartement de 2 chambres situé à Libreville, avec séjour, cuisine, sanitaires et bonne accessibilité.",
+    "area": 0,
+    "price": 500000,
+    "tags": [
+      "Agence",
+      "Parking",
+      "Terrasse",
+      "Sous barrière",
+      "Sécurisé"
+    ],
+    "status": "FOR_RENT",
+    "type": "Appartement",
+    "street": "Akanda Angondjé",
+    "city": "Akanda",
+    "province": "Estuaire",
+    "longitude": 9.531,
+    "latitude": 0.589,
+    "country": "Gabon",
+    "countryCode": "GA",
+    "images": [
+      {
+        "filePATH": "images/property_11_image_0.jpg",
+        "fileURL": "https://scontent-hou1-1.xx.fbcdn.net/v/t39.30808-6/635292802_1408455567961909_3095926212478694029_n.jpg?stp=cp6_dst-jpegr_s590x590_tt6&_nc_cat=107&ccb=1-7&_nc_sid=7b2446&_nc_ohc=FHer6eXrPmMQ7kNvwEplPAA&_nc_oc=Adk7Dgn2w8fY2TjRd_XgMyynhq-VI4rWGTuB_z6YA-huD9MOwftMMcqFILSo9BgQ8W4&_nc_zt=23&se=-1&_nc_ht=scontent-hou1-1.xx&_nc_gid=mbJoTNvnGttA-BmsfYvsVQ&_nc_ss=8&oh=00_Afzj7P1dOlSpsHQAYprfTwRLqj7Gz95M7jMyYmZ3i2V3pQ&oe=69B7829C"
+      },
+      {
+        "filePATH": "images/property_11_image_1.jpg",
+        "fileURL": "https://scontent-hou1-1.xx.fbcdn.net/v/t39.30808-6/633985812_1408455661295233_6120388825936444651_n.jpg?stp=cp6_dst-jpegr_s590x590_tt6&_nc_cat=104&ccb=1-7&_nc_sid=7b2446&_nc_ohc=S0Pavc7pKrkQ7kNvwGo9CPl&_nc_oc=AdkppIOZwy6uLcG0kbWKkodUMZ4BTADOdNx_gyN0cUs3JOQ9Nv0OjVJuhR9ejGEYiug&_nc_zt=23&se=-1&_nc_ht=scontent-hou1-1.xx&_nc_gid=mbJoTNvnGttA-BmsfYvsVQ&_nc_ss=8&oh=00_Afzk1KIDROCZYKFG-pmP1Qk0O-1ZaJy8WieRXIedmKLDhQ&oe=69B77247"
+      },
+      {
+        "filePATH": "images/property_11_image_2.jpg",
+        "fileURL": "https://scontent-hou1-1.xx.fbcdn.net/v/t39.30808-6/634764853_1408455751295224_4978308152247107637_n.jpg?stp=cp6_dst-jpegr_s590x590_tt6&_nc_cat=103&ccb=1-7&_nc_sid=7b2446&_nc_ohc=VWZPqhILXcsQ7kNvwG1YKIK&_nc_oc=Adm8vbrMXXLu-Ph4UyfYO2OfZ5O0OPHkOobPz9j-c3ltTpGvG7UCE3kSFJRHFfi7JBY&_nc_zt=23&se=-1&_nc_ht=scontent-hou1-1.xx&_nc_gid=mbJoTNvnGttA-BmsfYvsVQ&_nc_ss=8&oh=00_Afwm7NQ1FKeehZyGzppfJkjMyV9sC7HyI6oHmdRszj78cw&oe=69B767E4"
+      },
+      {
+        "filePATH": "images/property_11_image_3.jpg",
+        "fileURL": "https://scontent-hou1-1.xx.fbcdn.net/v/t39.30808-6/635395860_1408455831295216_6005274780771343642_n.jpg?stp=cp6_dst-jpegr_s590x590_tt6&_nc_cat=108&ccb=1-7&_nc_sid=7b2446&_nc_ohc=3FNvKS0Jce0Q7kNvwGE80Bv&_nc_oc=AdmPcjtsFR3NvvQcnqLoBP1TNeoRgAZY__qJ8GgO2ZITHklyg0DNCVucqS_sSMBgOdg&_nc_zt=23&se=-1&_nc_ht=scontent-hou1-1.xx&_nc_gid=mbJoTNvnGttA-BmsfYvsVQ&_nc_ss=8&oh=00_Afx29ibe3T1IiFMnp7IPWJeFE9Va2K6p3Yuzx6DO32J6Lg&oe=69B77C32"
+      },
+      {
+        "filePATH": "images/property_11_image_4.jpg",
+        "fileURL": "https://scontent-hou1-1.xx.fbcdn.net/v/t39.30808-6/636527620_1408455917961874_571256783611145275_n.jpg?stp=cp6_dst-jpegr_s590x590_tt6&_nc_cat=109&ccb=1-7&_nc_sid=7b2446&_nc_ohc=YvjKBkJ2-swQ7kNvwGhX8NW&_nc_oc=AdnBYl63U40qLhC-eIrmabasY5MR13m-6sk2mwscnO1j232hSiNZFzM6UhHTzIpo-wg&_nc_zt=23&se=-1&_nc_ht=scontent-hou1-1.xx&_nc_gid=mbJoTNvnGttA-BmsfYvsVQ&_nc_ss=8&oh=00_Afw1FnrwGmD0EnJjgRAIPxa5DTroDp51122A_enA14AhuA&oe=69B79146"
+      }
+    ],
+    "nbrFloorApartment": 1,
+    "numeroApartment": "A-010",
+    "nbrRooms": 2,
+    "nbrBathrooms": 2,
+    "nbrToilets": 1,
+    "nbrKitchens": 1,
+    "sourceId": "https://www.facebook.com/permalink.php?story_fbid=pfbid02t377fepTvdUcbHzT9CQNuaa84Zy1HJfbaHG8i8uTRGhZpouAP1QVKnW1oTt9crTyl&id=100063924376821",
+    "sourceText": "🤠👉 #APPARTEMENT #ALOUER BON STANDING \n.............................................................................. 🛑 \n2 CHAMBRES, 2 SALLES D'EAU, UN SÉJOUR...\nÛe CUISINE, FOURE ENCASTRABLE, HOTTE ASPIRANTE, UNE TERRASSE, PLACARDS \n4 DANS LA BARRIÈRE AVEC PARKING\n.🚨\nWC VISITEUR, SUPPRESSEUR, SPLITS, GARDIEN \nQUARTIER : AKANDA - MARSEILLE 2 \nEN BORDURE DE ROUTE BÉTON \n..\n#LOYER 500.000 CFA \nUSAGE : #HABITATION ⚠️ \n👇 VIRTUELLE \nhttps://vt.tiktok.com/ZSmDcQcun/\n\n☎️ 06 56 95 34  WHATSAPP \n#pourtoi #gabon #jikaimmo #maison #libreville",
+    "typeProperty": "Apartment"
+  },
+  {
+    "typeProperty": "Land",
+    "title": "Terrain plat à Akanda",
+    "description": "Terrain plat situé à Akanda dans une zone calme et recherchée, adapté à un projet résidentiel ou investissement.",
+    "price": 10500000,
+    "area": 2000,
+    "status": "FOR_SALE",
+    "tags": [
+      "Agence"
+    ],
+    "street": "Akanda Angondjé",
+    "city": "Akanda",
+    "province": "Estuaire",
+    "longitude": 9.531,
+    "latitude": 0.589,
+    "country": "Gabon",
+    "countryCode": "GA",
+    "images": [
+      {
+        "filePATH": "images/property_12_image_0.jpg",
+        "fileURL": "https://scontent-hou1-1.xx.fbcdn.net/v/t39.30808-6/636715376_1408039314670201_111529495347013982_n.jpg?stp=dst-jpg_s590x590_tt6&_nc_cat=100&ccb=1-7&_nc_sid=7b2446&_nc_ohc=sQpGe3IQOU4Q7kNvwHV-3IO&_nc_oc=AdmHshpstD2eHQy-Q8DmX_YUpJJpkxnLSujaVYpg8_9BZtJhGInePwQjfhARQH9gPFI&_nc_zt=23&_nc_ht=scontent-hou1-1.xx&_nc_gid=mbJoTNvnGttA-BmsfYvsVQ&_nc_ss=8&oh=00_AfwBoqVUX345rKV0YHRHfaRyEi9FbisgXAS-mvGJhKqbgQ&oe=69B78BFA"
+      },
+      {
+        "filePATH": "images/property_12_image_1.jpg",
+        "fileURL": "https://scontent-hou1-1.xx.fbcdn.net/v/t39.30808-6/633992765_1408039554670177_6776426444222778147_n.jpg?stp=dst-jpg_s590x590_tt6&_nc_cat=110&ccb=1-7&_nc_sid=7b2446&_nc_ohc=q5oB5q0fprsQ7kNvwEmw2Hv&_nc_oc=AdlKF3HE86JbQmziOGWlmXw4teKrPaOkV_kzsNOh0fZcAlOoW3M2Xtm-SFiIjlkgJp0&_nc_zt=23&_nc_ht=scontent-hou1-1.xx&_nc_gid=mbJoTNvnGttA-BmsfYvsVQ&_nc_ss=8&oh=00_AfzRB6Gdm5GvoZpHbjmeqkvonTnJ-dMxz_0iYLGeuuIoWg&oe=69B777CE"
+      },
+      {
+        "filePATH": "images/property_12_image_2.jpg",
+        "fileURL": "https://scontent-hou1-1.xx.fbcdn.net/v/t39.30808-6/636831670_1408039731336826_9071067674112317602_n.jpg?stp=dst-jpg_s590x590_tt6&_nc_cat=108&ccb=1-7&_nc_sid=7b2446&_nc_ohc=zFDi_uuNkY0Q7kNvwFBDi8C&_nc_oc=AdlDrfurmAzAv6DbLJBCABu9SNzXVGp4EymuUpQiNS8NfIwe0AmDwC_FsjcLd4HdHFk&_nc_zt=23&_nc_ht=scontent-hou1-1.xx&_nc_gid=mbJoTNvnGttA-BmsfYvsVQ&_nc_ss=8&oh=00_Afy5og0O_OZGuqeD9SlofXT0jv3D8jfSAafymh_c4gv8YQ&oe=69B7673A"
+      },
+      {
+        "filePATH": "images/property_12_image_3.jpg",
+        "fileURL": "https://scontent-hou1-1.xx.fbcdn.net/v/t39.30808-6/634792797_1408039804670152_3992397030085258746_n.jpg?stp=dst-jpg_s590x590_tt6&_nc_cat=108&ccb=1-7&_nc_sid=7b2446&_nc_ohc=6JWs6Br7VZEQ7kNvwESGVeg&_nc_oc=AdlaKdW_i_tjXeNwFYtEixL3hw842dUr4lUIgvC4H0Lj5gthPCQpQQWW8opNmQqDk58&_nc_zt=23&_nc_ht=scontent-hou1-1.xx&_nc_gid=mbJoTNvnGttA-BmsfYvsVQ&_nc_ss=8&oh=00_AfxfMy97OF_rYX4eT9ot2aPcpqKl_Lol-S36UHjmLDt-ww&oe=69B75A1D"
+      },
+      {
+        "filePATH": "images/property_12_image_4.jpg",
+        "fileURL": "https://scontent-hou1-1.xx.fbcdn.net/v/t39.30808-6/636215394_1408039851336814_1520419306558632812_n.jpg?stp=dst-jpg_s590x590_tt6&_nc_cat=107&ccb=1-7&_nc_sid=7b2446&_nc_ohc=BdMy3D4rwrEQ7kNvwHC8gr5&_nc_oc=Admj3iFKsYwMgrPpOG514lN2IYLB80Dtr_UN9Ngv_Ayj_fZUfxYHHc8wivRcX3028lc&_nc_zt=23&_nc_ht=scontent-hou1-1.xx&_nc_gid=mbJoTNvnGttA-BmsfYvsVQ&_nc_ss=8&oh=00_Afz2XSIo9_PdGxrVDGW3yHdwUOtHzdhBJXNvRhRlhVipSg&oe=69B759E8"
+      }
+    ],
+    "nbrRooms": 0,
+    "nbrKitchens": 0,
+    "nbrBathrooms": 0,
+    "nbrToilets": 0,
+    "sourceId": "https://www.facebook.com/permalink.php?story_fbid=pfbid02tqC7mwgFrdgaDujv16deZ3Fh8bqC9RiFktRGsWyZZSGP9hXkUXhFHqs4WuYPVA75l&id=100063924376821",
+    "sourceText": "🌴 OPPORTUNITÉ FONCIÈRE EXCEPTIONNELLE \n\n📍 Akanda – Cap Santa Clara\n📐 2000 m²\n📄 ANUTTC EN RÈGLE \n\nMagnifique terrain plat, idéal pour projet touristique, hôtel, villas ou résidence haut standing. NB: Pas très loin de la mer 🌊 \nZone stratégique, calme et très recherchée.\n\n💰 Prix : 10.500.000 Fcfa \n📞 Contact : 06 56 95 34 WhatsApp \nNB: Les travaux de la route du cap ont débutés il y a quelques mois.\n#pourtoi #gabon #jikaimmo #achat #avendre #terrain"
+  },
+  {
+    "typeProperty": "Apartment",
+    "title": "Appartement Meublé à Libreville",
+    "description": "Appartement meublé situé à Libreville Centre-Ville, avec séjour, cuisine, sanitaires et bonne accessibilité.",
+    "area": 0,
+    "price": 80000,
+    "tags": [
+      "Agence",
+      "Sous barrière",
+      "Meublé",
+      "Centre-ville"
+    ],
+    "status": "FOR_RENT",
+    "street": "Akanda Angondjé",
+    "city": "Akanda",
+    "province": "Estuaire",
+    "longitude": 9.531,
+    "latitude": 0.589,
+    "country": "Gabon",
+    "countryCode": "GA",
+    "images": [
+      {
+        "filePATH": "images/property_13_image_0.jpg",
+        "fileURL": "https://scontent-mia3-1.xx.fbcdn.net/v/t39.30808-6/633444555_1405170288290437_7216420147075474824_n.jpg?stp=cp6_dst-jpegr_s590x590_tt6&_nc_cat=106&ccb=1-7&_nc_sid=7b2446&_nc_ohc=-fDeyChXev4Q7kNvwG7ehd2&_nc_oc=Adli0u5VsdTHxfwC1WgP7qPZcREAezDz5vdENXzRpECOABY45wzjc9o-gDapc4kz_9s&_nc_zt=23&se=-1&_nc_ht=scontent-mia3-1.xx&_nc_gid=bd5WKEwV0OPvzHSUVtHJ0A&_nc_ss=8&oh=00_AfynKHtE4JMoDvNwxa43eh8ooqfSIJtHXsoQz9CqnChRcQ&oe=69B78E2B"
+      },
+      {
+        "filePATH": "images/property_13_image_1.jpg",
+        "fileURL": "https://scontent-mia3-3.xx.fbcdn.net/v/t39.30808-6/631799219_1405170398290426_3361888403089808614_n.jpg?stp=cp6_dst-jpegr_s590x590_tt6&_nc_cat=108&ccb=1-7&_nc_sid=7b2446&_nc_ohc=Wiq7HJJKiCUQ7kNvwENGvIC&_nc_oc=AdnXr4mv-iOkdIeyYl0z1tosI99dvrSFA3UahYz1pzKhoHyORmpM0K0ljBgGAhLdRXM&_nc_zt=23&se=-1&_nc_ht=scontent-mia3-3.xx&_nc_gid=bd5WKEwV0OPvzHSUVtHJ0A&_nc_ss=8&oh=00_Afx8wbEad2zM7a6xu7R5e03KfVvwOVUMaLCWUrbXxWozpA&oe=69B76082"
+      },
+      {
+        "filePATH": "images/property_13_image_2.jpg",
+        "fileURL": "https://scontent-mia3-1.xx.fbcdn.net/v/t39.30808-6/633415705_1405170458290420_7811705252121850822_n.jpg?stp=cp6_dst-jpegr_s590x590_tt6&_nc_cat=106&ccb=1-7&_nc_sid=7b2446&_nc_ohc=JHzOoXMKnZgQ7kNvwHtRbDE&_nc_oc=AdlNKfiHEpqh-FH_-Ga8V9_UjG8m21WlBVsM6S_MkCAn8FvV6xahTsS1JzOi8rzLA9w&_nc_zt=23&se=-1&_nc_ht=scontent-mia3-1.xx&_nc_gid=bd5WKEwV0OPvzHSUVtHJ0A&_nc_ss=8&oh=00_AfwK72HjZ6KGG0ZaNTWCHIaccGSdBpxc0I9gNVzlKoQHDw&oe=69B78B0E"
+      },
+      {
+        "filePATH": "images/property_13_image_3.jpg",
+        "fileURL": "https://scontent-mia3-2.xx.fbcdn.net/v/t39.30808-6/633447331_1405170538290412_21709943130887035_n.jpg?stp=cp6_dst-jpegr_s590x590_tt6&_nc_cat=105&ccb=1-7&_nc_sid=7b2446&_nc_ohc=vIKvpq4OfxUQ7kNvwHEQMBc&_nc_oc=Adlywp4JatrtQCu5mxH6zDklBgU9lDTtvTuA7hxj6sqszClAdEWWsQeCx8jMq4yh1-s&_nc_zt=23&se=-1&_nc_ht=scontent-mia3-2.xx&_nc_gid=bd5WKEwV0OPvzHSUVtHJ0A&_nc_ss=8&oh=00_AfzO3Zz1vRWnHZt9GJxr1kxvkGNukfbroFrDOHEP53k_dg&oe=69B78CEC"
+      },
+      {
+        "filePATH": "images/property_13_image_4.jpg",
+        "fileURL": "https://scontent-mia3-3.xx.fbcdn.net/v/t39.30808-6/631898963_1405170611623738_8229691440526056109_n.jpg?stp=cp6_dst-jpegr_s590x590_tt6&_nc_cat=109&ccb=1-7&_nc_sid=7b2446&_nc_ohc=JPkUOdYFzZMQ7kNvwEUQk5f&_nc_oc=AdlQScEZtX_OHcgjz_9brfPGg44z0yDXMDmeX8ZPrGV86bivzWKX8VQWqoCxkliak54&_nc_zt=23&se=-1&_nc_ht=scontent-mia3-3.xx&_nc_gid=bd5WKEwV0OPvzHSUVtHJ0A&_nc_ss=8&oh=00_Afwqqhk6dx2bezZaqHIeUKmFaMPiBMpD551E00qWwAeuPQ&oe=69B76F23"
+      }
+    ],
+    "nbrRooms": 2,
+    "nbrBathrooms": 1,
+    "nbrKitchens": 1,
+    "nbrToilets": 1,
+    "sourceId": "https://www.facebook.com/permalink.php?story_fbid=pfbid0RLqPgRCe26b7A7QH95o3LuqDo79mEzSiK8ofpxi3WSnUg26xQrjjrWf6GhCQ6E9Dl&id=100063924376821",
+    "sourceText": "🤠👉VENEZ PROFITER D'UN SÉJOUR AGRÉABLE DANS L'UN DE NOS APPARTEMENTS #MEUBLÉ : \n🛑\n2 CHAMBRES, SALON, CUISINE ÉQUIPÉE  \nAU 2EME ETAGE, SÉCURISÉ, EAU H24\nQUARTIER LIBREVILLE CENTRE VILLE 🚨 \n🛑\nPRIX NUITÉE 80.000 CFA \nFORFAIT LONG SÉJOUR \nRÉSERVATION À PARTIR DE 2 NUITÉES \n\n☎️ 06 56 95 34 .WHATSAPP\n#pourtoi #gabon #jikaimmo #maison #libreville #akanda #banque"
+  },
+  {
+    "typeProperty": "Land",
+    "title": "Terrain de 5 000 m² à Akanda",
+    "description": "Terrain situé à Akanda dans une zone calme et tranquille, adapté à un projet touristique ou résidentiel.",
+    "area": 5000,
+    "price": 125000,
+    "tags": [
+      "Agence"
+    ],
+    "status": "FOR_SALE",
+    "street": "Akanda Angondjé",
+    "city": "Akanda",
+    "province": "Estuaire",
+    "longitude": 9.531,
+    "latitude": 0.589,
+    "country": "Gabon",
+    "countryCode": "GA",
+    "images": [
+      {
+        "filePATH": "images/property_14_image_0.jpg",
+        "fileURL": "https://scontent-mia3-3.xx.fbcdn.net/v/t39.30808-6/634490119_1403771145097018_861356189654887244_n.jpg?stp=cp6_dst-jpegr_s590x590_tt6&_nc_cat=110&ccb=1-7&_nc_sid=7b2446&_nc_ohc=xkL4JUk1ABAQ7kNvwEIK5nF&_nc_oc=AdlbdjZhtGOMsNFAycUtotVRmNr6DbX93-hHLCHewX7vPjZFdhbJzmhJJqt7mEmEkVI&_nc_zt=23&se=-1&_nc_ht=scontent-mia3-3.xx&_nc_gid=6LNswS9T-Ms267os74V4LA&_nc_ss=8&oh=00_Afx6om1RRBbmTjOO6Qna9HLCTtIA39AcNZGXCxbNLoNjlg&oe=69B77046"
+      },
+      {
+        "filePATH": "images/property_14_image_1.jpg",
+        "fileURL": "https://scontent-mia5-1.xx.fbcdn.net/v/t39.30808-6/631686698_1403771248430341_3497191804622880659_n.jpg?stp=cp6_dst-jpegr_s590x590_tt6&_nc_cat=101&ccb=1-7&_nc_sid=7b2446&_nc_ohc=jI4gZ7Iq9-MQ7kNvwFdzpGL&_nc_oc=Adlnw9qCVHA63ri3akje-7MBcQ4QtnJH4Ahycb-ElmCSlBf3gfF8u6I3YTEbB4FCYAg&_nc_zt=23&se=-1&_nc_ht=scontent-mia5-1.xx&_nc_gid=6LNswS9T-Ms267os74V4LA&_nc_ss=8&oh=00_AfyEHOOogtzqOXrv8dH8mYXPsuth_MOHr8YxpV2ehS22xA&oe=69B77A40"
+      },
+      {
+        "filePATH": "images/property_14_image_2.jpg",
+        "fileURL": "https://scontent-mia3-2.xx.fbcdn.net/v/t39.30808-6/633554409_1403771448430321_7857632152655515697_n.jpg?stp=cp6_dst-jpegr_s590x590_tt6&_nc_cat=107&ccb=1-7&_nc_sid=7b2446&_nc_ohc=15tQ-EB6QPEQ7kNvwGSAOu1&_nc_oc=Adlo7zYOngx8D4SK001TQmeXzHxwcmHZrjl-e4Ki4kNBq5Mw71hftec4WVJ1OY93rPo&_nc_zt=23&se=-1&_nc_ht=scontent-mia3-2.xx&_nc_gid=6LNswS9T-Ms267os74V4LA&_nc_ss=8&oh=00_AfyeWlHNRI1WmcgxUh1T89nySxhQedZya5ILkJCOj7gtXA&oe=69B761FE"
+      },
+      {
+        "filePATH": "images/property_14_image_3.jpg",
+        "fileURL": "https://scontent-mia3-3.xx.fbcdn.net/v/t39.30808-6/632977621_1403771635096969_1004150770674579080_n.jpg?stp=cp6_dst-jpegr_s590x590_tt6&_nc_cat=109&ccb=1-7&_nc_sid=7b2446&_nc_ohc=4INZ4MKpX_cQ7kNvwHXltEh&_nc_oc=AdmsMSCxMkPhGzar0fZtfeMqZ2HEMtbIv1No1LAD_a8KLla5ZbqmJVOzvo8v4DQ8QJI&_nc_zt=23&se=-1&_nc_ht=scontent-mia3-3.xx&_nc_gid=6LNswS9T-Ms267os74V4LA&_nc_ss=8&oh=00_Afz7cNWYa1zdcZvd14khyIVpNQSbahW0zWClLK8CExLmsw&oe=69B75B09"
+      },
+      {
+        "filePATH": "images/property_14_image_4.jpg",
+        "fileURL": "https://scontent-mia3-2.xx.fbcdn.net/v/t39.30808-6/632815970_1403771731763626_6104404229839107592_n.jpg?stp=cp6_dst-jpegr_s590x590_tt6&_nc_cat=103&ccb=1-7&_nc_sid=7b2446&_nc_ohc=_wMIc5Uo1m4Q7kNvwHej8WH&_nc_oc=AdldfhLXfHlUrQZr4q6MMaYb2fqxNlaNqmxcL0tfXmNZp46xWoIUaFzc-zor1psk0Q4&_nc_zt=23&se=-1&_nc_ht=scontent-mia3-2.xx&_nc_gid=6LNswS9T-Ms267os74V4LA&_nc_ss=8&oh=00_AfwvTt91a2yy8CAT4KrFGI9bcy_UjOgx6gTd6o1OqObXfA&oe=69B77B43"
+      }
+    ],
+    "sourceId": "https://www.facebook.com/permalink.php?story_fbid=pfbid02EHDzEXEYRFNnUcfvNxNc4jvr29XX5eo8qirYN1MqfNZS6jb5UPSvSXR5tS8vjgCQl&id=100063924376821",
+    "sourceText": "🌴 #OPPORTUNITÉ FONCIÈRE EXCEPTIONNELLE BORD DE MER 🌊\n\n📍 Akanda – Cap Santa Clara\n📐 5 000 m²\n📄 Titre Foncier disponible🚨\n\nMagnifique terrain les pieds dans l’eau, idéal pour projet touristique, hôtel, villas ou résidence haut standing.\nZone stratégique, calme et très recherchée.\n\n💰 Prix : 25.000 F le m² \n📞 Contact : 06 56 95 34  WhatsApp  ou appel pour plus d'informations\n#NB: Les travaux de la route du cap ont débutés il y a quelques mois. 🚨\n#pourtoi #gabon #jikaimmo #achat #avendre #terrain #expats"
+  },
+  {
+    "title": "Appartement 2 chambres à Akandà-Angondje",
+    "description": "Appartement de 2 chambres situé à Akandà-Angondje, avec séjour, cuisine, sanitaires et balcon.",
+    "area": 0,
+    "price": 300000,
+    "tags": [
+      "Agence",
+      "Balcon",
+      "Parking",
+      "Sous barrière",
+      "Sécurisé"
+    ],
+    "status": "FOR_RENT",
+    "street": "Akanda Angondjé",
+    "city": "Akanda",
+    "province": "Estuaire",
+    "longitude": 9.531,
+    "latitude": 0.589,
+    "country": "Gabon",
+    "countryCode": "GA",
+    "images": [
+      {
+        "filePATH": "images/property_15_image_0.jpg",
+        "fileURL": "https://scontent-mia3-3.xx.fbcdn.net/v/t39.30808-6/634254262_1403683535105779_3385086174282161242_n.jpg?stp=cp6_dst-jpegr_s590x590_tt6&_nc_cat=109&ccb=1-7&_nc_sid=7b2446&_nc_ohc=DW4GbGJouxsQ7kNvwFbR12o&_nc_oc=Adl4FwoUV6WDxKZSOnGxQK0n_y3CV8AJwPJQmUvjJMU_kGV4Nihcd0boQb5SHERcyHA&_nc_zt=23&se=-1&_nc_ht=scontent-mia3-3.xx&_nc_gid=6LNswS9T-Ms267os74V4LA&_nc_ss=8&oh=00_AfwIHPlp1AiLot4vjoJdJr3vG659Zd0YAKh3Kgf_3zgfIA&oe=69B769A8"
+      },
+      {
+        "filePATH": "images/property_15_image_1.jpg",
+        "fileURL": "https://scontent-mia5-2.xx.fbcdn.net/v/t39.30808-6/634237727_1403683635105769_9072179861857601811_n.jpg?stp=cp6_dst-jpegr_s590x590_tt6&_nc_cat=100&ccb=1-7&_nc_sid=7b2446&_nc_ohc=G6wPjGqYJWwQ7kNvwGYh2AL&_nc_oc=Adn_MZXzXaSTFLKXGdGYHR9bgp_qbVv--G64-JLGaLfltZzPSl1FrtW5EqFkyCWLPLI&_nc_zt=23&se=-1&_nc_ht=scontent-mia5-2.xx&_nc_gid=6LNswS9T-Ms267os74V4LA&_nc_ss=8&oh=00_AfxnbIdoWMYBTPfSP-s5Md0wd9ABiJZhL9qnphy2LQfwEw&oe=69B78976"
+      },
+      {
+        "filePATH": "images/property_15_image_2.jpg",
+        "fileURL": "https://scontent-mia5-2.xx.fbcdn.net/v/t39.30808-6/631000887_1403683708439095_4925654400726232962_n.jpg?stp=cp6_dst-jpegr_s590x590_tt6&_nc_cat=100&ccb=1-7&_nc_sid=7b2446&_nc_ohc=2-RnZ9m2acgQ7kNvwGQ2opg&_nc_oc=AdnyMNJFn_Yu0mhEYs4hgilJKzfa5iUYbHfGNRAfsUWd-kJhhwc0FkWgSoB5ya-As9s&_nc_zt=23&se=-1&_nc_ht=scontent-mia5-2.xx&_nc_gid=6LNswS9T-Ms267os74V4LA&_nc_ss=8&oh=00_Afybs4vyfD6oTSCvKBWguqeB3UEFckNi0sSaaJMVQLDK8w&oe=69B77E50"
+      },
+      {
+        "filePATH": "images/property_15_image_3.jpg",
+        "fileURL": "https://scontent-mia5-2.xx.fbcdn.net/v/t39.30808-6/632309452_1403683815105751_2327605765075627137_n.jpg?stp=cp6_dst-jpegr_s590x590_tt6&_nc_cat=100&ccb=1-7&_nc_sid=7b2446&_nc_ohc=lPeSUVqGvQMQ7kNvwFy5Ehf&_nc_oc=Adk5UekE0e8KbzZn1EMfRqSVbAQlTC09GprM5CMYccdesIu4TG8f5REOgG3SJiFjLYE&_nc_zt=23&se=-1&_nc_ht=scontent-mia5-2.xx&_nc_gid=6LNswS9T-Ms267os74V4LA&_nc_ss=8&oh=00_AfydIcpxnAfV4e14RU2Brd4UoDWzWAvikppHYPYL1XIZOg&oe=69B759AF"
+      },
+      {
+        "filePATH": "images/property_15_image_4.jpg",
+        "fileURL": "https://scontent-mia3-3.xx.fbcdn.net/v/t39.30808-6/633950050_1403683891772410_4594414919567113036_n.jpg?stp=cp6_dst-jpegr_s590x590_tt6&_nc_cat=110&ccb=1-7&_nc_sid=7b2446&_nc_ohc=vaBCdggCtUMQ7kNvwGifjDe&_nc_oc=AdkGJ8Cilme4HR8bloWZF4m-ciOpa0Z-6SITvIOhUkXjtDKPwAeqxyBViEv4pPTDz6w&_nc_zt=23&se=-1&_nc_ht=scontent-mia3-3.xx&_nc_gid=6LNswS9T-Ms267os74V4LA&_nc_ss=8&oh=00_AfyKZ3OV1Kzf2CN7oh9MG5lhNXRitz4LdjEL6K2jw04M8g&oe=69B7696A"
+      }
+    ],
+    "nbrFloorApartment": 1,
+    "numeroApartment": "A-001",
+    "nbrRooms": 2,
+    "nbrBathrooms": 2,
+    "nbrToilets": 1,
+    "nbrKitchens": 1,
+    "sourceId": "https://www.facebook.com/permalink.php?story_fbid=pfbid02KY932NTJRadQLEFbYMSriEB7mnZDznhxhFpSxNZ2bJNpjZTzU5iWfUV8GaaStbGxl&id=100063924376821",
+    "sourceText": "🤠👉 #APPARTEMENT #ALOUER  STANDING \n.............................................................................. 🛑 \n2 CHAMBRES, 2 SALLES D'EAU, UN SÉJOUR...\nUNE CUISINE, UN BALCON, WC VISITEUR \nDANS LA BARRIÈRE, PARKING, GARDIEN \n.🚨\nCUVE, SUPPRESSEUR, 1ER ETAGE, SPLITS \nQUARTIER AKANDA-ANGONDJE \n\n#LOYER 300.000 CFA \nUSAGE : #HABITATION  ⚠️ \n👇 VIRTUELLE \nhttps://vt.tiktok.com/ZSmFfDxuN/\n\n☎️ 06 56 95 34   WHATSAPP \n#pourtoi #gabon #jikaimmo #maison #libreville",
+    "typeProperty": "Apartment"
+  },
+  {
+    "title": "Appartement 2 chambres à Libreville",
+    "description": "Appartement de 2 chambres situé à Libreville, avec séjour, cuisine, sanitaires et parking. Possibilité de visite.",
+    "area": 0,
+    "typeProperty": "Apartment",
+    "price": 315000,
+    "tags": [
+      "Agence",
+      "Parking",
+      "Sous barrière",
+      "Terrasse",
+      "Sécurisé"
+    ],
+    "status": "FOR_RENT",
+    "street": "Akanda Angondjé",
+    "city": "Akanda",
+    "province": "Estuaire",
+    "longitude": 9.531,
+    "latitude": 0.589,
+    "country": "Gabon",
+    "countryCode": "GA",
+    "images": [
+      {
+        "filePATH": "images/property_16_image_0.jpg",
+        "fileURL": "https://scontent-mia3-3.xx.fbcdn.net/v/t39.30808-6/634029743_1403579818449484_1054949493910466369_n.jpg?stp=cp6_dst-jpegr_s590x590_tt6&_nc_cat=109&ccb=1-7&_nc_sid=7b2446&_nc_ohc=zkmafjdBddcQ7kNvwFzaUAp&_nc_oc=AdlNLWcXWA8zbWvtCAVcMTHtyNRPE0Zgq9I_2Yr30LV4_mS7JoOFr0EnIUAcHxBh3w8&_nc_zt=23&se=-1&_nc_ht=scontent-mia3-3.xx&_nc_gid=6LNswS9T-Ms267os74V4LA&_nc_ss=8&oh=00_AfxNHTZSzIHS137xUUqy57_HnihiEz31kIJsEMnC8q8Nog&oe=69B787F5"
+      },
+      {
+        "filePATH": "images/property_16_image_1.jpg",
+        "fileURL": "https://scontent-mia3-1.xx.fbcdn.net/v/t39.30808-6/633959386_1403579918449474_3391990943026759478_n.jpg?stp=cp6_dst-jpegr_s590x590_tt6&_nc_cat=111&ccb=1-7&_nc_sid=7b2446&_nc_ohc=Wx7RojTwa54Q7kNvwGHaONT&_nc_oc=AdllfRZQ6i4pL7qbhMyHCko29oN8cH8qiSbyRf0C6q95acWNdm--1Jex_9fPVeZGn_U&_nc_zt=23&se=-1&_nc_ht=scontent-mia3-1.xx&_nc_gid=6LNswS9T-Ms267os74V4LA&_nc_ss=8&oh=00_AfwNQ_I0Np41HR_tWBQKwL5gdcwhkQVP7lLEpWmpQ8uKnA&oe=69B77F48"
+      },
+      {
+        "filePATH": "images/property_16_image_2.jpg",
+        "fileURL": "https://scontent-mia3-1.xx.fbcdn.net/v/t39.30808-6/631709918_1403580025116130_3463403694391978352_n.jpg?stp=cp6_dst-jpegr_s590x590_tt6&_nc_cat=111&ccb=1-7&_nc_sid=7b2446&_nc_ohc=m5W3MeGj14EQ7kNvwG6OJgC&_nc_oc=AdmsCHNotQOaWRksatbboQZ-JQygVCdyIx588WWlKnanomIK1TeLEoOwOCMaC119uUc&_nc_zt=23&se=-1&_nc_ht=scontent-mia3-1.xx&_nc_gid=6LNswS9T-Ms267os74V4LA&_nc_ss=8&oh=00_AfzoiM8rczijjKLBMI13wJYjdoOqlUv2EKJQMmztAA3loQ&oe=69B7705F"
+      },
+      {
+        "filePATH": "images/property_16_image_3.jpg",
+        "fileURL": "https://scontent-mia5-1.xx.fbcdn.net/v/t39.30808-6/633799174_1403580101782789_1250384095502526261_n.jpg?stp=cp6_dst-jpegr_s590x590_tt6&_nc_cat=101&ccb=1-7&_nc_sid=7b2446&_nc_ohc=vAo5HunqMiIQ7kNvwFPpwAX&_nc_oc=AdniC4kjp79cyJFQWiXlNULS36z1hj_efvOyg16dMtCyyUpv5LqRBhsK9XAocaVXudA&_nc_zt=23&se=-1&_nc_ht=scontent-mia5-1.xx&_nc_gid=6LNswS9T-Ms267os74V4LA&_nc_ss=8&oh=00_AfxFOJtiuMJ16T3fUOuURezue3msfMHdKzLpPSak_Y3fYg&oe=69B765AF"
+      },
+      {
+        "filePATH": "images/property_16_image_4.jpg",
+        "fileURL": "https://scontent-mia3-1.xx.fbcdn.net/v/t39.30808-6/634462571_1403580168449449_4656691774884185946_n.jpg?stp=cp6_dst-jpegr_s590x590_tt6&_nc_cat=106&ccb=1-7&_nc_sid=7b2446&_nc_ohc=K4apmXmJFvMQ7kNvwEn8moX&_nc_oc=AdkbJd5Ybaciare4DRK0ejiuXcMzB5JkifOHDzSwKCsbJiLZ1BYgu4CkRnYFWHzP1LM&_nc_zt=23&se=-1&_nc_ht=scontent-mia3-1.xx&_nc_gid=6LNswS9T-Ms267os74V4LA&_nc_ss=8&oh=00_AfzYVwYWDD4OaCIzquUNwcqjzjJmrrRUFdeuaDvzYpgkwA&oe=69B767FE"
+      }
+    ],
+    "nbrFloorApartment": 1,
+    "numeroApartment": "A-010",
+    "nbrRooms": 2,
+    "nbrBathrooms": 2,
+    "nbrToilets": 1,
+    "nbrKitchens": 1,
+    "sourceId": "https://www.facebook.com/permalink.php?story_fbid=pfbid027qwjooYsFNkZniS5nLbsqMPFpLumHUEvgETzie1tpUc1EXURxHLRoDqe15W1d4afl&id=100063924376821",
+    "sourceText": "🤠👉 #APPARTEMENT #ALOUER  STANDING \n.............................................................................. 🛑 \n2 CHAMBRES, 2 SALLES D'EAU, UN SÉJOUR...\nUNE CUISINE, UNE TERRASSE, WC VISITEUR \nDANS LA BARRIÈRE, PARKING, GARDIEN \n.🚨\nCUVE, SUPPRESSEUR, AU REZ-DE-CHAUSSÉE \nQUARTIER AKANDA-ANGONDJE \n\n#LOYER 315.000 CFA \nUSAGE : #HABITATION  ⚠️  \n\n☎️ 06 56 95 34   WHATSAPP \n#pourtoi #gabon #jikaimmo #maison #libreville"
+  },
+  {
+    "title": "Appartement 3 chambres à Akandama-Ankondje",
+    "description": "Appartement de 3 chambres situé à Akandama-Ankondje, avec séjour, cuisine, sanitaires et bonne accessibilité.",
+    "area": 0,
+    "price": 350000,
+    "tags": [
+      "Agence",
+      "Balcon",
+      "Parking",
+      "Terrasse",
+      "Sous barrière",
+      "Sécurisé"
+    ],
+    "status": "FOR_RENT",
+    "typeProperty": "Apartment",
+    "street": "Akanda Angondjé",
+    "city": "Akanda",
+    "province": "Estuaire",
+    "longitude": 9.531,
+    "latitude": 0.589,
+    "country": "Gabon",
+    "countryCode": "GA",
+    "images": [
+      {
+        "filePATH": "images/property_17_image_0.jpg",
+        "fileURL": "https://scontent-ord5-3.xx.fbcdn.net/v/t39.30808-6/629006906_1401058982034901_9160551519033570576_n.jpg?stp=cp6_dst-jpegr_s590x590_tt6&_nc_cat=100&ccb=1-7&_nc_sid=7b2446&_nc_ohc=vIedQ4W35moQ7kNvwFG5DnA&_nc_oc=AdkQQFA-RKgZNWw5sOzYUEs4Qh-YNUl_clz__KkNVCsFm5lCNXWy_pVA-HqSkZn7rmc&_nc_zt=23&se=-1&_nc_ht=scontent-ord5-3.xx&_nc_gid=31A7x9H4uVbOKY9bjocz-A&_nc_ss=8&oh=00_AfwzWtsu7lJ3jRq8-C2alw1c6b5n3Qv1emeQJpV71lp28g&oe=69B78A99"
+      },
+      {
+        "filePATH": "images/property_17_image_1.jpg",
+        "fileURL": "https://scontent-ord5-1.xx.fbcdn.net/v/t39.30808-6/630478093_1401059122034887_417679806697578576_n.jpg?stp=cp6_dst-jpegr_s590x590_tt6&_nc_cat=111&ccb=1-7&_nc_sid=7b2446&_nc_ohc=f2ITvHsKo7EQ7kNvwEI0a5A&_nc_oc=AdlSUCWD1Mk-WpLjp9LqrrMRXlMxawRo8JtwnVjJn8zeenlP1ZXydHY6O_haaQbSUOw&_nc_zt=23&se=-1&_nc_ht=scontent-ord5-1.xx&_nc_gid=31A7x9H4uVbOKY9bjocz-A&_nc_ss=8&oh=00_AfzjzpUscnMaxlJtRLQ0as0XefnlyrNxcRc8krmMGPfnvQ&oe=69B7803F"
+      },
+      {
+        "filePATH": "images/property_17_image_2.jpg",
+        "fileURL": "https://scontent-ord5-3.xx.fbcdn.net/v/t39.30808-6/633140995_1401060115368121_9090423998144276054_n.jpg?stp=cp6_dst-jpegr_s590x590_tt6&_nc_cat=109&ccb=1-7&_nc_sid=7b2446&_nc_ohc=LLiVaqq3cwcQ7kNvwHY_W4m&_nc_oc=Adk8m7wfZtsQnA6m_XICWNlQbIq0jEQ8KrLy-zcspGEOz92MekXeiMlvTV38NaOrnZ0&_nc_zt=23&se=-1&_nc_ht=scontent-ord5-3.xx&_nc_gid=31A7x9H4uVbOKY9bjocz-A&_nc_ss=8&oh=00_Afxr_CRDu4IYPz7hAMvQwmu6ytaDpPuq0W5mv9ce6lfeRA&oe=69B75F65"
+      },
+      {
+        "filePATH": "images/property_17_image_3.jpg",
+        "fileURL": "https://scontent-ord5-2.xx.fbcdn.net/v/t39.30808-6/631089775_1401060168701449_8374992668050001548_n.jpg?stp=cp6_dst-jpegr_s590x590_tt6&_nc_cat=102&ccb=1-7&_nc_sid=7b2446&_nc_ohc=vz6FsCdIkWQQ7kNvwFsqs1k&_nc_oc=Adn3mWaB7lfBM7JXvLXzjY_T-mPwV-KWMVryiyWPWFZ_FaSlUayQa5P4Et8G2crks_w&_nc_zt=23&se=-1&_nc_ht=scontent-ord5-2.xx&_nc_gid=31A7x9H4uVbOKY9bjocz-A&_nc_ss=8&oh=00_AfwN212yAo7khfzaDHdQBhud0hYHBLP4bVA9O3pz6tPylw&oe=69B7721B"
+      },
+      {
+        "filePATH": "images/property_17_image_4.jpg",
+        "fileURL": "https://scontent-ord5-3.xx.fbcdn.net/v/t39.30808-6/630391824_1401060382034761_2486117237786785803_n.jpg?stp=cp6_dst-jpegr_s590x590_tt6&_nc_cat=104&ccb=1-7&_nc_sid=7b2446&_nc_ohc=eFNJcoChBaMQ7kNvwErGRTa&_nc_oc=Adm3r0sIOqMMv6XnXv_7moH3EW-CVnuSPqtseNka7_TT20q8GWckMvy4rCrHD1tDF2M&_nc_zt=23&se=-1&_nc_ht=scontent-ord5-3.xx&_nc_gid=31A7x9H4uVbOKY9bjocz-A&_nc_ss=8&oh=00_AfwZBYZ5jzaAb2C1I7jNM9X9uW69KRbTO4ahYp604jDt4A&oe=69B78050"
+      }
+    ],
+    "nbrFloorApartment": 1,
+    "numeroApartment": "A-100",
+    "nbrRooms": 3,
+    "nbrBathrooms": 2,
+    "nbrToilets": 1,
+    "nbrKitchens": 1,
+    "sourceId": "https://www.facebook.com/permalink.php?story_fbid=pfbid0NrgGNtx8aGYdJ1zAaijDQwgx2JTtw2K6YYkfBT9TrNaUpyAvAmMUbe1rGa5DMpWSl&id=100063924376821",
+    "sourceText": "🤠👉 #APPARTEMENT #ALOUER  STANDING \n.............................................................................. 🛑 \n3 CHAMBRES, 2 SALLES D'EAU, UN SÉJOUR...\nUNE CUISINE, UNE TERRASSE, WC VISITEUR DANS LA BARRIÈRE, PARKING, GARDIEN \n.🚨\nCUVE, SUPPRESSEUR, REZ-DE-CHAUSSÉE \nQUARTIER AKANDA-ANGONDJE \n\n#LOYER 350.000 CFA \nUSAGE : #HABITATION  ⚠️ \n\n☎️ 06 56 95 34   WHATSAPP \n#pourtoi #gabon #jikaimmo #maison #libreville"
+  },
+  {
+    "typeProperty": "Home",
+    "title": "Maison 3 chambres à Libreville-Bikele",
+    "description": "Maison de 3 chambres située à Libreville-Bikele dans une zone résidentielle, avec accès à l'eau, à l'électricité et à Internet.",
+    "price": 30000000,
+    "area": 360,
+    "status": "FOR_SALE",
+    "tags": [
+      "Agence",
+      "Meublé"
+    ],
+    "street": "Bikélé",
+    "city": "Ntoum",
+    "province": "Estuaire",
+    "longitude": 9.676,
+    "latitude": 0.468,
+    "country": "Gabon",
+    "countryCode": "GA",
+    "images": [
+      {
+        "filePATH": "images/property_18_image_0.jpg",
+        "fileURL": "https://scontent-ord5-2.xx.fbcdn.net/v/t39.30808-6/628225386_1400117022129097_4386847300083476403_n.jpg?stp=cp6_dst-jpegr_s590x590_tt6&_nc_cat=110&ccb=1-7&_nc_sid=7b2446&_nc_ohc=Ugx6fY2UchIQ7kNvwH3gHa0&_nc_oc=Adm9WutpSoJElxG7Aa62WlapdNF-OctaHeaBTNkfafh4Way4F8bLeDWM_r-0OZ5w2Tw&_nc_zt=23&se=-1&_nc_ht=scontent-ord5-2.xx&_nc_gid=31A7x9H4uVbOKY9bjocz-A&_nc_ss=8&oh=00_AfyCao0kRjzYjiTENmYe6Z91Ipea-jHcCVh3IsT1OWK4Ow&oe=69B78FF1"
+      },
+      {
+        "filePATH": "images/property_18_image_1.jpg",
+        "fileURL": "https://scontent-ord5-2.xx.fbcdn.net/v/t39.30808-6/628391120_1400117118795754_1499938399541305639_n.jpg?stp=cp6_dst-jpegr_s590x590_tt6&_nc_cat=110&ccb=1-7&_nc_sid=7b2446&_nc_ohc=q0GX13e38qQQ7kNvwGebc7E&_nc_oc=Adkq1sXutVJflCmCgpFwsmA7-Pdjy9wYxGOc6_YapEiX3spFhaKAomJyLaO2rnmKVNo&_nc_zt=23&se=-1&_nc_ht=scontent-ord5-2.xx&_nc_gid=31A7x9H4uVbOKY9bjocz-A&_nc_ss=8&oh=00_AfwhYerbPqiZ0-2z4Qt9tyxvITi8G8ADYLzqMN7JLYawQw&oe=69B77DD3"
+      },
+      {
+        "filePATH": "images/property_18_image_2.jpg",
+        "fileURL": "https://scontent-ord5-2.xx.fbcdn.net/v/t39.30808-6/630134602_1400117212129078_4634984450042114981_n.jpg?stp=cp6_dst-jpegr_s590x590_tt6&_nc_cat=103&ccb=1-7&_nc_sid=7b2446&_nc_ohc=cSjWzrBNE7QQ7kNvwGh2I5v&_nc_oc=AdmqG3EGr6L_mnrPDxa_iAoNH0elfzs9TkE95DfL7gEf4zM7oLv3c8Yq5tviX211dhM&_nc_zt=23&se=-1&_nc_ht=scontent-ord5-2.xx&_nc_gid=31A7x9H4uVbOKY9bjocz-A&_nc_ss=8&oh=00_AfwBm6ZpF53DlSbLkQnoM7Bta-odv1dLIxzhdG-n0lx-aQ&oe=69B77E2B"
+      },
+      {
+        "filePATH": "images/property_18_image_3.jpg",
+        "fileURL": "https://scontent-ord5-3.xx.fbcdn.net/v/t39.30808-6/629923663_1400117305462402_6981286908884511508_n.jpg?stp=cp6_dst-jpegr_s590x590_tt6&_nc_cat=104&ccb=1-7&_nc_sid=7b2446&_nc_ohc=dLHK_hDdsFwQ7kNvwEp3S9b&_nc_oc=AdkzpauGX_NdZ5M-1CMw14yNEVSkyLmNR8y3t9bvEYtmVd5gT4rKVPTffrZ6fjwG5MU&_nc_zt=23&se=-1&_nc_ht=scontent-ord5-3.xx&_nc_gid=31A7x9H4uVbOKY9bjocz-A&_nc_ss=8&oh=00_AfxBPfGU47myRTUX7JpU78VKVYu5PNdMth6onVN-v-kN4Q&oe=69B7863C"
+      },
+      {
+        "filePATH": "images/property_18_image_4.jpg",
+        "fileURL": "https://scontent-ord5-1.xx.fbcdn.net/v/t39.30808-6/631655864_1400117432129056_5648956290098008038_n.jpg?stp=cp6_dst-jpegr_s590x590_tt6&_nc_cat=108&ccb=1-7&_nc_sid=7b2446&_nc_ohc=oJqfSTI9Ir0Q7kNvwFBmOUJ&_nc_oc=Adk_lMZNhhZcP-t0E1Llz2nRMTlZpoB5Jo_vrzLXYnZcPl2YZoZwsC2rG_AmgmEzOIY&_nc_zt=23&se=-1&_nc_ht=scontent-ord5-1.xx&_nc_gid=31A7x9H4uVbOKY9bjocz-A&_nc_ss=8&oh=00_AfzRNyCTAi4tGQJVXgAStt_q89WGEwkB-xV-TkOKZW4FNw&oe=69B75A59"
+      }
+    ],
+    "nbrRooms": 3,
+    "nbrKitchens": 1,
+    "nbrBathrooms": 1,
+    "nbrToilets": 1,
+    "sourceId": "https://www.facebook.com/permalink.php?story_fbid=pfbid03AT34RpQbQpx3M5b6ssmKSfWAUAFTSPA1FFRYtAm8xwUGM5GQTFcso2i662obwbZl&id=100063924376821",
+    "sourceText": "🧐 __\nSITUATION GÉOGRAPHIQUE : LIBREVILLE-BIKELE\nCITE NZONG  \n\nA #VENDRE  ✳️\n\nMAISON DE 3 CHAMBRES FINI A 75% \nACCÈS EAU, ÉLECTRICITÉ, WI-FI... \nSUPERFICIE : 360m² 🛑 \nDOCUMENT : TITRE FONCIER ✅️\nPRIX ANNONCE : 30.000.000  CFA ⚠️  \n\n☎️ 06 56 95 34 WHATSAPP \n#pourtoi #gabon #jikaimmo #maison #libreville #akanda #immobilier"
+  },
+  {
+    "typeProperty": "Apartment",
+    "title": "Appartement 3 chambres à Akandoungou",
+    "description": "Appartement de 3 chambres situé à Akandoungou, avec séjour, cuisine, sanitaires et bonne accessibilité.",
+    "area": 0,
+    "price": 550000,
+    "tags": [
+      "Agence",
+      "Balcon",
+      "Parking",
+      "Sous barrière",
+      "Sécurisé"
+    ],
+    "status": "FOR_RENT",
+    "street": "Akanda Angondjé",
+    "city": "Akanda",
+    "province": "Estuaire",
+    "longitude": 9.531,
+    "latitude": 0.589,
+    "country": "Gabon",
+    "countryCode": "GA",
+    "images": [
+      {
+        "filePATH": "images/property_19_image_0.jpg",
+        "fileURL": "https://scontent-mia3-2.xx.fbcdn.net/v/t39.30808-6/628236757_1396759902464809_727006448065745191_n.jpg?stp=cp6_dst-jpegr_s590x590_tt6&_nc_cat=105&ccb=1-7&_nc_sid=7b2446&_nc_ohc=7qSrCIEX5MkQ7kNvwEqqI7c&_nc_oc=AdnJR7WknxnRN4cFl7mccwFAVk7gsTzqrHKea71pTZWhza23AtNTMxujoC6zuB__yFQ&_nc_zt=23&se=-1&_nc_ht=scontent-mia3-2.xx&_nc_gid=iaXxmif7UeGVMgoz6qE2Dg&_nc_ss=8&oh=00_Afw-DuPVgZc9Y0B4Id5YvbMps1qZ5OjLbh8rHoBR5R8e5w&oe=69B78AE5"
+      },
+      {
+        "filePATH": "images/property_19_image_1.jpg",
+        "fileURL": "https://scontent-mia3-1.xx.fbcdn.net/v/t39.30808-6/628383668_1396760009131465_3747484847550183236_n.jpg?stp=cp6_dst-jpegr_s590x590_tt6&_nc_cat=106&ccb=1-7&_nc_sid=7b2446&_nc_ohc=WN3gACJXu9EQ7kNvwHO8YL1&_nc_oc=AdlSxFEZWCrZCr-PAyOtlEidecENXgF4axSSTQlU58zoTtrY1kmjXlh-kXfmbtAYcRc&_nc_zt=23&se=-1&_nc_ht=scontent-mia3-1.xx&_nc_gid=iaXxmif7UeGVMgoz6qE2Dg&_nc_ss=8&oh=00_Afzt_59nJT3dff937hr0-P5osUJvEsn4Lyi0usJJGTR2_A&oe=69B75D3C"
+      },
+      {
+        "filePATH": "images/property_19_image_2.jpg",
+        "fileURL": "https://scontent-mia5-1.xx.fbcdn.net/v/t39.30808-6/626297148_1396760089131457_7240761228807517417_n.jpg?stp=cp6_dst-jpegr_s590x590_tt6&_nc_cat=104&ccb=1-7&_nc_sid=7b2446&_nc_ohc=2czQ-4Ac_WYQ7kNvwE_jwOo&_nc_oc=Adm8FiwuXNyLeRE158HLQ8QwMD4XeEoQ0HkNVZIPynoY45yVj0PL9ZlI1wrq3olZE7g&_nc_zt=23&se=-1&_nc_ht=scontent-mia5-1.xx&_nc_gid=iaXxmif7UeGVMgoz6qE2Dg&_nc_ss=8&oh=00_AfxjQfvL1RZW2qPYCjEAU3pLREK5FHdAYg_hIQegU-8elg&oe=69B78585"
+      },
+      {
+        "filePATH": "images/property_19_image_3.jpg",
+        "fileURL": "https://scontent-mia3-2.xx.fbcdn.net/v/t39.30808-6/626804779_1396760202464779_5537629951500460708_n.jpg?stp=cp6_dst-jpegr_s590x590_tt6&_nc_cat=103&ccb=1-7&_nc_sid=7b2446&_nc_ohc=P8TChN5XrGYQ7kNvwEMuoAF&_nc_oc=AdkTwxfs_3ZCD_HWV_wH2OQMvZ_-87y8ouCk2nGDEvudYh8XwMgLezJpW64mW-MqGmo&_nc_zt=23&se=-1&_nc_ht=scontent-mia3-2.xx&_nc_gid=iaXxmif7UeGVMgoz6qE2Dg&_nc_ss=8&oh=00_AfxgvLRD7WZzaCfH37h-hbK7r3BuDRv_ksWr3o8DIsfYpQ&oe=69B75E38"
+      },
+      {
+        "filePATH": "images/property_19_image_4.jpg",
+        "fileURL": "https://scontent-mia3-3.xx.fbcdn.net/v/t39.30808-6/626903150_1396760352464764_5587443868614373114_n.jpg?stp=cp6_dst-jpegr_s590x590_tt6&_nc_cat=109&ccb=1-7&_nc_sid=7b2446&_nc_ohc=PvIV85zDN1UQ7kNvwFvcJyE&_nc_oc=AdlKfZvxXmL6vD4vXU875awpuPIGWZ7U5kyLH5veDFwnOZRonzt-tyeXyk_R4GreK90&_nc_zt=23&se=-1&_nc_ht=scontent-mia3-3.xx&_nc_gid=iaXxmif7UeGVMgoz6qE2Dg&_nc_ss=8&oh=00_AfwKfftKDUF6EA7bL479MLKNaQCLLRBXqvp0_zHuSxNnaQ&oe=69B780A4"
+      }
+    ],
+    "nbrFloorApartment": 1,
+    "numeroApartment": "A-100",
+    "nbrRooms": 3,
+    "nbrBathrooms": 2,
+    "nbrToilets": 1,
+    "nbrKitchens": 1,
+    "sourceId": "https://www.facebook.com/permalink.php?story_fbid=pfbid0JdwNwxEHwBp8mdg1KHn2htHCoW2foHnhteNnEn6xEN1Hm2QLkyxjpojKx7C4EMrul&id=100063924376821",
+    "sourceText": "🤠👉 #APPARTEMENT #ALOUER  STANDING \n.............................................................................. 🛑 \n3 CHAMBRES, 2 SALLES D'EAU, UN SÉJOUR...\nUNE CUISINE, 2 BALCONS, BUANDERIE \n4 DANS LA BARRIÈRE, PARKING, GARDIEN \n.🚨\nCUVE, SUPPRESSEUR, UN WC VISITEUR \nQUARTIER AKANDA-ANGONDJE \n\n#LOYER 550.000 CFA \nUSAGE : #HABITATION OU #BUREAUX ⚠️ \n\n☎️ 06 56 95 34  WHATSAPP \n#pourtoi #gabon #jikaimmo #maison #libreville"
+  },
+  {
+    "title": "Appartement 2 chambres à Akandou Marseille 2",
+    "description": "Appartement de 2 chambres situé à Akandou Marseille 2, avec séjour, cuisine, sanitaires et parking.",
+    "area": 0,
+    "price": 350000,
+    "tags": [
+      "Agence",
+      "Parking",
+      "Terrasse",
+      "Sous barrière"
+    ],
+    "status": "FOR_RENT",
+    "typeProperty": "Apartment",
+    "street": "Akanda Angondjé",
+    "city": "Akanda",
+    "province": "Estuaire",
+    "longitude": 9.531,
+    "latitude": 0.589,
+    "country": "Gabon",
+    "countryCode": "GA",
+    "images": [
+      {
+        "filePATH": "images/property_20_image_0.jpg",
+        "fileURL": "https://scontent-lga3-3.xx.fbcdn.net/v/t39.30808-6/625081911_1393478882792911_3935585967148654299_n.jpg?stp=cp6_dst-jpegr_s590x590_tt6&_nc_cat=104&ccb=1-7&_nc_sid=7b2446&_nc_ohc=OXDzMDDmP-cQ7kNvwH0Xm73&_nc_oc=AdnPynQgvN_0RfrgEE0v3A-_L2w5r26R_uGonSw_UvPV0UUTrAwJH4l7X0TpZCwdMJQ&_nc_zt=23&se=-1&_nc_ht=scontent-lga3-3.xx&_nc_gid=Fgxx7OjScoh6Nu9HZMzxwg&_nc_ss=8&oh=00_AfyPDS1QaaHoU7nuEt95X3rcrqZin3af8T7kcPzu7GVPPg&oe=69B7616D"
+      },
+      {
+        "filePATH": "images/property_20_image_1.jpg",
+        "fileURL": "https://scontent-lga3-3.xx.fbcdn.net/v/t39.30808-6/625202408_1393478972792902_6632474263193498599_n.jpg?stp=cp6_dst-jpegr_s590x590_tt6&_nc_cat=106&ccb=1-7&_nc_sid=7b2446&_nc_ohc=3dsazUDPcfkQ7kNvwFXt7Iq&_nc_oc=AdnhvH5pQsqgOWSxRUWLS-tGesEr08Uun7JcymoShtZadmkRzN0HuVZiXAa-rTFhLUM&_nc_zt=23&se=-1&_nc_ht=scontent-lga3-3.xx&_nc_gid=Fgxx7OjScoh6Nu9HZMzxwg&_nc_ss=8&oh=00_AfzA-VYADlqJeOSGqHimtvpX_Q4Kp7GUm7nw2qucR0tIQw&oe=69B78A8F"
+      },
+      {
+        "filePATH": "images/property_20_image_2.jpg",
+        "fileURL": "https://scontent-lga3-3.xx.fbcdn.net/v/t39.30808-6/626342807_1393479146126218_8066934930363541795_n.jpg?stp=cp6_dst-jpegr_s590x590_tt6&_nc_cat=110&ccb=1-7&_nc_sid=7b2446&_nc_ohc=YAuvTLx5IioQ7kNvwFfcBT3&_nc_oc=Admek-beZFVfFCMQjQzongrrdDp4PNnUiCdeC7ehn-mViXrUr55vBWBfRZMTxkWyuWw&_nc_zt=23&se=-1&_nc_ht=scontent-lga3-3.xx&_nc_gid=Fgxx7OjScoh6Nu9HZMzxwg&_nc_ss=8&oh=00_AfyWTiDVSSZB9sHQVFrGpOyk_eg21xJMnwaGMQ2H7XCjpQ&oe=69B759C6"
+      },
+      {
+        "filePATH": "images/property_20_image_3.jpg",
+        "fileURL": "https://scontent-lga3-2.xx.fbcdn.net/v/t39.30808-6/625487842_1393479236126209_5955359228719461119_n.jpg?stp=cp6_dst-jpegr_s590x590_tt6&_nc_cat=100&ccb=1-7&_nc_sid=7b2446&_nc_ohc=bFGHAurDxjwQ7kNvwEYadcv&_nc_oc=AdlP5YzaM7EhN-AzBtSFx-1wQx8ZxzUv0C5lcSMantLHXiu0OukH0YFLm1g3qT8z-XI&_nc_zt=23&se=-1&_nc_ht=scontent-lga3-2.xx&_nc_gid=Fgxx7OjScoh6Nu9HZMzxwg&_nc_ss=8&oh=00_AfyCpAvlrSb7E-GsnGk_HLIJmKnNrk6z1f498fmsuNyTxg&oe=69B78017"
+      },
+      {
+        "filePATH": "images/property_20_image_4.jpg",
+        "fileURL": "https://scontent-lga3-2.xx.fbcdn.net/v/t39.30808-6/625602757_1393479336126199_6695357502718018462_n.jpg?stp=cp6_dst-jpegr_s590x590_tt6&_nc_cat=101&ccb=1-7&_nc_sid=7b2446&_nc_ohc=FIkN6A3mhz4Q7kNvwG5Giqm&_nc_oc=AdkvHPRFloGDAuQwn83WT8CNeheiFQwbAOisVuFoq5Il0FvWQjUq0qPtVccpH9WNp98&_nc_zt=23&se=-1&_nc_ht=scontent-lga3-2.xx&_nc_gid=Fgxx7OjScoh6Nu9HZMzxwg&_nc_ss=8&oh=00_Afyj6Pnlf5yRJt1Aup45XbAz_5_jTxM2L4ckJZek1CZr8g&oe=69B7669D"
+      }
+    ],
+    "nbrFloorApartment": 2,
+    "numeroApartment": "A-010",
+    "nbrRooms": 2,
+    "nbrBathrooms": 1,
+    "nbrToilets": 1,
+    "nbrKitchens": 1,
+    "sourceId": "https://www.facebook.com/permalink.php?story_fbid=pfbid02rBkcNRv1LZrdFLoa4DeGK2Urw17mvx3yti89GqBZzaMT6PJs1wayEKZ1nSKnK996l&id=100063924376821",
+    "sourceText": "🤠👉 #APPARTEMENT #ALOUER #STANDING \n..................................................................................... 🛑\n2 CHAMBRES, 2 SALLES D'EAU, 1 SÉJOUR..\nUNE CUISINE, 2 TERRASSES, PARKING \n3 DANS LA BARRIÈRE AU REZ-DE-CHAUSSÉE \n.  🚨\nCUVE, SUPPRESSEUR, SPLITS, CHAUFFE-EAU \nQUARTIER AKANDA MARSEILLE 2\n\nLOYER 350.000 CFA \nUSAGE : HABITATION OU BUREAUX \n👇 VIRTUELLE \n\n☎️ 06 56 95 34   WHATSAPP \n#Gabon #jikaimmo #maison #libreville #pourtoi"
+  },
+  {
+    "typeProperty": "Apartment",
+    "title": "Appartement 2 chambres à Libreville",
+    "description": "Appartement de 2 chambres situé à Libreville, avec séjour, cuisine, sanitaires et bonne accessibilité.",
+    "area": 0,
+    "price": 260000,
+    "tags": [
+      "Agence",
+      "Balcon",
+      "Parking",
+      "Terrasse",
+      "Sous barrière",
+      "Sécurisé"
+    ],
+    "status": "FOR_RENT",
+    "street": "Bas de Gué-Gué",
+    "city": "Libreville",
+    "province": "Estuaire",
+    "longitude": 9.472,
+    "latitude": 0.415,
+    "country": "Gabon",
+    "countryCode": "GA",
+    "images": [
+      {
+        "filePATH": "images/property_21_image_0.jpg",
+        "fileURL": "https://scontent-iad3-2.xx.fbcdn.net/v/t39.30808-6/624215447_1392740079533458_4671915996306735702_n.jpg?stp=cp6_dst-jpegr_s590x590_tt6&_nc_cat=103&ccb=1-7&_nc_sid=7b2446&_nc_ohc=cRjLoJlFD1MQ7kNvwFRbJRo&_nc_oc=Adl5NxVpFFMtE92kg40Hbu_FzDKXyswMqRK86XloZOTQU0w-bxkozCyJu7avzbtRv3E&_nc_zt=23&se=-1&_nc_ht=scontent-iad3-2.xx&_nc_gid=dvgAsKxSJUXi4xvzD2p0bg&_nc_ss=8&oh=00_AfyXrrCpLhO92Arv2hZTExIqUvDdCiBfQIhfidKG6v_Frw&oe=69B7893A"
+      },
+      {
+        "filePATH": "images/property_21_image_1.jpg",
+        "fileURL": "https://scontent-iad3-1.xx.fbcdn.net/v/t39.30808-6/623794071_1392740222866777_3892434280917065143_n.jpg?stp=cp6_dst-jpegr_s590x590_tt6&_nc_cat=108&ccb=1-7&_nc_sid=7b2446&_nc_ohc=EVx5-r8VSYAQ7kNvwHLavlH&_nc_oc=Adlo7YU3BHTcNHTJ9MDjPRu3RVqfLjKVgOuunwLB7FMf7mbC8veQIia1Eim9Pqw3PIc&_nc_zt=23&se=-1&_nc_ht=scontent-iad3-1.xx&_nc_gid=dvgAsKxSJUXi4xvzD2p0bg&_nc_ss=8&oh=00_AfwYpnzVaEFv2HX24UnEhTgsUdggJt4KWO5EOzzF5MUCeg&oe=69B77799"
+      },
+      {
+        "filePATH": "images/property_21_image_2.jpg",
+        "fileURL": "https://scontent-iad3-2.xx.fbcdn.net/v/t39.30808-6/625166752_1392740379533428_7680050964466558344_n.jpg?stp=cp6_dst-jpegr_s590x590_tt6&_nc_cat=111&ccb=1-7&_nc_sid=7b2446&_nc_ohc=ZS2K0qcKHOAQ7kNvwGzoBuw&_nc_oc=AdniImTtjlmH7946YHLeo-mDrOVIN0Sr3GCPT9KcZ5Dn4SMfa_4kNWgJpA8V8AID9xY&_nc_zt=23&se=-1&_nc_ht=scontent-iad3-2.xx&_nc_gid=dvgAsKxSJUXi4xvzD2p0bg&_nc_ss=8&oh=00_AfxsNZrmidQDzaJx9lJGU5dBQOKxTvuup9sAi__HUfXiRA&oe=69B762B5"
+      },
+      {
+        "filePATH": "images/property_21_image_3.jpg",
+        "fileURL": "https://scontent-iad3-2.xx.fbcdn.net/v/t39.30808-6/625949295_1392740496200083_1902027183524123728_n.jpg?stp=cp6_dst-jpegr_s590x590_tt6&_nc_cat=111&ccb=1-7&_nc_sid=7b2446&_nc_ohc=anVkqrmsKo0Q7kNvwFepl4d&_nc_oc=Adn8pRb6_8AYUMApErjp6n8RK4TSPQ317L_6Sfdx1y3UzzMuAHxKhvv4qQsBeyrsjHM&_nc_zt=23&se=-1&_nc_ht=scontent-iad3-2.xx&_nc_gid=dvgAsKxSJUXi4xvzD2p0bg&_nc_ss=8&oh=00_Afz37-c71Dff5FlzkN-Xl88t0ToCKOtykUnmmjKt1REFaQ&oe=69B7759F"
+      },
+      {
+        "filePATH": "images/property_21_image_4.jpg",
+        "fileURL": "https://scontent-iad3-1.xx.fbcdn.net/v/t39.30808-6/625205782_1392740592866740_4895080695535174137_n.jpg?stp=cp6_dst-jpegr_s590x590_tt6&_nc_cat=109&ccb=1-7&_nc_sid=7b2446&_nc_ohc=0RHjmrFlO_sQ7kNvwGrS6UO&_nc_oc=AdnzPw96GKCiWRQ5NLJ1bMCZ4y0z9eRKR7nQ0eBd6ZJ84mWhPiop4Rpqatxw70QNhwY&_nc_zt=23&se=-1&_nc_ht=scontent-iad3-1.xx&_nc_gid=dvgAsKxSJUXi4xvzD2p0bg&_nc_ss=8&oh=00_AfyEFrayBu3qdcdCxL3Ott0x4kG3gwxd98CkxfEhvaRZzA&oe=69B75D16"
+      }
+    ],
+    "nbrFloorApartment": 1,
+    "numeroApartment": "A-010",
+    "nbrRooms": 2,
+    "nbrBathrooms": 2,
+    "nbrToilets": 1,
+    "nbrKitchens": 1,
+    "sourceId": "https://www.facebook.com/permalink.php?story_fbid=pfbid07muTYmAUAuPdw5eLCqqCABc8P9nuf3NDphA5Xp1ythGEbD9aabJLrg3CrJcZk4jKl&id=100063924376821",
+    "sourceText": "🤠👉 #APPARTEMENT #ALOUER #STANDING \n..................................................................................... 🛑\n2 CHAMBRES, 2 SALLES D'EAU, 1 SÉJOUR..\nUNE CUISINE, UNE TERRASSE, PARKING \nDANS LA BARRIÈRE AU REZ-DE-CHAUSSÉE \n.  🚨\nWC VISITEUR, CUVE, SUPPRESSEUR, GARDIEN \nQUARTIER LIBREVILLE BAS DE GUE-GUE  \n\nLOYER 260.000 CFA SANS CHARGES \nUSAGE : HABITATION OU BUREAUX \n👇 VIRTUELLE \nhttps://vt.tiktok.com/ZSaVjJXnj/\n\n☎️ 06 56 95 34  WHATSAPP \n#Gabon #jikaimmo #maison #libreville #pourtoi"
+  },
+  {
+    "title": "Appartement 2 chambres à Akandangaondje",
+    "description": "Appartement de 2 chambres situé à Akandangaondje, avec séjour, cuisine, sanitaires et parking. Possibilité de location.",
+    "area": 0,
+    "price": 250000,
+    "tags": [
+      "Agence",
+      "Parking",
+      "Terrasse",
+      "Sous barrière"
+    ],
+    "status": "FOR_RENT",
+    "street": "Akanda Angondjé",
+    "city": "Akanda",
+    "province": "Estuaire",
+    "longitude": 9.531,
+    "latitude": 0.589,
+    "country": "Gabon",
+    "countryCode": "GA",
+    "images": [
+      {
+        "filePATH": "images/property_22_image_0.jpg",
+        "fileURL": "https://scontent-iad3-1.xx.fbcdn.net/v/t39.30808-6/622377628_1391856642955135_1412348587715459015_n.jpg?stp=cp6_dst-jpegr_s590x590_tt6&_nc_cat=109&ccb=1-7&_nc_sid=7b2446&_nc_ohc=dm5PRT63HKQQ7kNvwHx5NcL&_nc_oc=AdnYpwXsL_cCmKBaUOiKUqo1sOqR7vs93rWgFOia7007WazzhDuKzPDaoz6jcDnT5TM&_nc_zt=23&se=-1&_nc_ht=scontent-iad3-1.xx&_nc_gid=dvgAsKxSJUXi4xvzD2p0bg&_nc_ss=8&oh=00_AfwlTpvdjL9L8M2o1zd2JUu7etVn229buzXrwSChMNAu2g&oe=69B75B2A"
+      },
+      {
+        "filePATH": "images/property_22_image_1.jpg",
+        "fileURL": "https://scontent-iad3-2.xx.fbcdn.net/v/t39.30808-6/622801711_1391856782955121_7489737396341510870_n.jpg?stp=cp6_dst-jpegr_s590x590_tt6&_nc_cat=106&ccb=1-7&_nc_sid=7b2446&_nc_ohc=4QaoqGl6WwIQ7kNvwHmGgNW&_nc_oc=Adn655SyB3VYhAaUsL7qVz23RMyv6Nlyi6L5eNxM3YeIDAFf0Po1ARrER9V4i_xESKY&_nc_zt=23&se=-1&_nc_ht=scontent-iad3-2.xx&_nc_gid=dvgAsKxSJUXi4xvzD2p0bg&_nc_ss=8&oh=00_AfzNER9JFBgXew9zVCo_H1G5pr-Gb_C0o9jMAdeIycXwAg&oe=69B78827"
+      },
+      {
+        "filePATH": "images/property_22_image_2.jpg",
+        "fileURL": "https://scontent-iad3-1.xx.fbcdn.net/v/t39.30808-6/622627115_1391856882955111_1168843633569200643_n.jpg?stp=cp6_dst-jpegr_s590x590_tt6&_nc_cat=104&ccb=1-7&_nc_sid=7b2446&_nc_ohc=6EwCIIVpgNkQ7kNvwEc6e4z&_nc_oc=AdmuzclabGsyiQvXOGcmICTDgLZbyxl29-pRQoTkRJZ-m5WMi-dxwP68PSetya85F8I&_nc_zt=23&se=-1&_nc_ht=scontent-iad3-1.xx&_nc_gid=dvgAsKxSJUXi4xvzD2p0bg&_nc_ss=8&oh=00_Afw_2cUo1s7apbwM2TYEdBVSviIZ_GTJsVAnGEKeQGpWLg&oe=69B760EA"
+      },
+      {
+        "filePATH": "images/property_22_image_3.jpg",
+        "fileURL": "https://scontent-iad3-2.xx.fbcdn.net/v/t39.30808-6/623305582_1391856942955105_8166221392762582241_n.jpg?stp=cp6_dst-jpegr_s590x590_tt6&_nc_cat=111&ccb=1-7&_nc_sid=7b2446&_nc_ohc=kBNX94pyNRIQ7kNvwEAqTVm&_nc_oc=AdnqQDS3E-AxCvhoX1Crd_6vSl6-8rhV5f8KTB7Sjrq02VHcHFHJV4oopBb4e6yAnb4&_nc_zt=23&se=-1&_nc_ht=scontent-iad3-2.xx&_nc_gid=dvgAsKxSJUXi4xvzD2p0bg&_nc_ss=8&oh=00_AfzCQ5YqjQiamNNK1RQzoTe1bLDzgxqHAo2CTCsqBbLdOg&oe=69B7635F"
+      },
+      {
+        "filePATH": "images/property_22_image_4.jpg",
+        "fileURL": "https://scontent-iad3-1.xx.fbcdn.net/v/t39.30808-6/622699087_1391856999621766_693686109395947010_n.jpg?stp=cp6_dst-jpegr_s590x590_tt6&_nc_cat=102&ccb=1-7&_nc_sid=7b2446&_nc_ohc=Ca8rhYC_9xEQ7kNvwHqxYxx&_nc_oc=Adm19sNji75GxOvBSuFaMACoOXi2TOvvETY2Ty1dL_glEv_bJLp1aaTBasrbNmiOKuY&_nc_zt=23&se=-1&_nc_ht=scontent-iad3-1.xx&_nc_gid=dvgAsKxSJUXi4xvzD2p0bg&_nc_ss=8&oh=00_AfyDH9vzo6OOeVo5P9PrSNAQhOZP4abCTM2YAUAPUFUG-w&oe=69B7900F"
+      }
+    ],
+    "nbrFloorApartment": 1,
+    "numeroApartment": "A-001",
+    "nbrRooms": 2,
+    "nbrBathrooms": 2,
+    "nbrToilets": 1,
+    "nbrKitchens": 1,
+    "sourceId": "https://www.facebook.com/permalink.php?story_fbid=pfbid0H7uzyNGqq5UwnLRbrkiUqmcU9LAMB8wvPnBPG2cYUVTYDucREMzngDPCoqUV5AzDl&id=100063924376821",
+    "sourceText": "🤠👉 #APPARTEMENT #ALOUER #PROPRE \n..................................................................................... 🛑\n2 CHAMBRES, 2 SALLES D'EAU, 1 SÉJOUR..\nUNE CUISINE, UNE TERRASSE, PARKING \n3 DANS LA BARRIÈRE AU REZ-DE-CHAUSSÉE \n.  🚨\nQUARTIER AKANDA-ANGONDJE\nEN BORDURE DE ROUTE PRINCIPALE \n\nLOYER 250.000 CFA  \nUSAGE : HABITATION OU BUREAUX \n\n☎️ 06 56 95 34 WHATSAPP \n#Gabon #jikaimmo #maison #libreville #pourtoi",
+    "typeProperty": "Apartment"
+  }
+]

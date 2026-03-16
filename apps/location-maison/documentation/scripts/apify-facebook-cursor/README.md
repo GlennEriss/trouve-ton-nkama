@@ -39,6 +39,7 @@ Le pipeline v2 existe et fonctionne en mode batch annonce-par-annonce:
   - `<job-id>.mapped-properties.json`
 - Rapports: `scripts/apify-facebook-cursor-v2/data/reports/`
   - `<job-id>.report.json`
+  - `<job-id>.errors.json`
 
 Note: les JSON `raw/staging/reports` sont ignores par git (hors `.gitkeep`).
 
@@ -115,8 +116,11 @@ node -r dotenv/config scripts/firebase/backfill-property-type-fields.js \
 ## Verification apres run
 1. Ouvrir le report:
    - `scripts/apify-facebook-cursor-v2/data/reports/<job-id>.report.json`
+   - `scripts/apify-facebook-cursor-v2/data/reports/<job-id>.errors.json`
 2. Lire:
    - `aiAttempted`, `aiSuccess`, `aiFallback`
+   - `aiFallbackByReason`
+   - `aiErrors` (dans le fichier `.errors.json`, avec details HTTP/variants)
    - `locationResolved`
 3. Verifier que les URLs de details utilisent bien `doc.id` Firestore.
 

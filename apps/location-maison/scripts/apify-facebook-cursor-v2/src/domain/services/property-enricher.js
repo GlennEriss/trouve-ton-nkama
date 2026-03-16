@@ -36,11 +36,12 @@ function isLikelyPhoneNumber(value) {
   const digits = String(value || '').replace(/[^\d]/g, '');
   if (!digits) return false;
 
-  // Gabon local formats (with or without country code/leading 0)
-  if (/^(?:241)?0?[67]\d{7}$/.test(digits)) return true;
+  // Gabon local formats (with or without country code/leading 0).
+  // Accept 7-9 local digits to catch malformed captures like "7682457".
+  if (/^(?:241)?0?[67]\d{6,7}$/.test(digits)) return true;
 
-  // Generic 8-digit mobile-like number used in many imported posts
-  if (/^[67]\d{7}$/.test(digits)) return true;
+  // Generic mobile-like captures in scraped posts.
+  if (/^[67]\d{6,7}$/.test(digits)) return true;
 
   return false;
 }
@@ -49,16 +50,19 @@ function parsePriceCandidate(value) {
   const raw = String(value || '').trim().toLowerCase();
   if (!raw) return 0;
 
-  const scaled = raw.match(/^(\d+(?:[.,]\d+)?)\s*(mille|k|million|millions)$/);
+  const scaled = raw.match(/^(\d+(?:[.,]\d+)?)\s*(mille|mil|k|m|million|millions)$/);
   if (scaled) {
     const base = Number(scaled[1].replace(',', '.'));
     if (!Number.isFinite(base)) return 0;
     const unit = scaled[2];
-    if (unit === 'mille' || unit === 'k') return Math.round(base * 1000);
+    // In local listings, "mil" and "m" are usually shorthand for thousand.
+    if (unit === 'mille' || unit === 'mil' || unit === 'k' || unit === 'm') {
+      return Math.round(base * 1000);
+    }
     return Math.round(base * 1000000);
   }
 
-  if (/\d{1,3}(?:[ .]\d{3})+/.test(raw)) {
+  if (/\d{1,3}(?:[\s.]\d{3})+/.test(raw)) {
     return toInteger(raw);
   }
 
@@ -69,15 +73,16 @@ function extractPrice(text) {
   const raw = String(text || '');
   const normalized = raw.toLowerCase();
 
-  // Remove phone numbers before any price extraction to avoid false positives.
+  // Remove likely phone numbers before price extraction.
+  // Keep monetary grouped formats (e.g. 175 000 000) untouched.
   const withoutPhones = normalized
-    .replace(/(?:\+?241[\s.-]?)?(?:0[\s.-]?)?[67](?:[\s.-]?\d){7}\b/g, ' ')
+    .replace(/(?:\+?241[\s.-]?)?(?:0?[67]\d{6,7}|0?[67](?:[\s.-]\d{2}){3,4})\b/g, ' ')
     .replace(/\s+/g, ' ')
     .trim();
 
   const contextualPatterns = [
-    /\b(?:prix|loyer|montant|tarif|co[uû]t)\b\s*[:\-]?\s*((?:\d{1,3}(?:[ .]\d{3})+)|(?:\d+(?:[.,]\d+)?\s*(?:mille|k|million|millions)?)|(?:\d{5,9}))/g,
-    /\b([0-9][0-9 .,]{2,15}(?:\s*(?:mille|k|million|millions))?)\s*(?:f(?:\s*cfa)?|fcfa|xaf|cfa)\b/g,
+    /\b(?:prix|loyer|montant|tarif|co[uû]t)\b\s*[:\-]?\s*((?:\d{1,3}(?:[\s.]\d{3})+)|(?:\d+(?:[.,]\d+)?\s*(?:mille|mil|k|m|million|millions)?)|(?:\d{5,10}))/g,
+    /\b([0-9][0-9\s.,]{2,15}(?:\s*(?:mille|mil|k|m|million|millions))?)\s*(?:f(?:\s*cfa)?|fcfa|xaf|cfa)\b/g,
   ];
 
   for (const pattern of contextualPatterns) {
@@ -91,7 +96,7 @@ function extractPrice(text) {
   }
 
   // 350.000 / 350 000 / 1 200 000
-  const groupedMatch = withoutPhones.match(/\b(\d{1,3}(?:[ .]\d{3})+)\b/);
+  const groupedMatch = withoutPhones.match(/\b(\d{1,3}(?:[\s.]\d{3})+)\b/);
   if (groupedMatch) {
     const parsed = parsePriceCandidate(groupedMatch[1]);
     if (parsed >= 10000 && parsed <= 2_000_000_000) {
@@ -100,7 +105,7 @@ function extractPrice(text) {
   }
 
   // 190 mille / 190k / 1.2 million
-  const scaledMatch = withoutPhones.match(/\b(\d+(?:[.,]\d+)?)\s*(mille|k|million|millions)\b/);
+  const scaledMatch = withoutPhones.match(/\b(\d+(?:[.,]\d+)?)\s*(mille|mil|k|m|million|millions)\b/);
   if (scaledMatch) {
     const parsed = parsePriceCandidate(`${scaledMatch[1]} ${scaledMatch[2]}`);
     if (parsed >= 10000 && parsed <= 2_000_000_000) {
@@ -108,7 +113,7 @@ function extractPrice(text) {
     }
   }
 
-  const directMatches = withoutPhones.match(/\b(\d{5,9})\b/g) || [];
+  const directMatches = withoutPhones.match(/\b(\d{5,10})\b/g) || [];
   for (const candidate of directMatches) {
     if (isLikelyPhoneNumber(candidate)) continue;
     const parsed = parsePriceCandidate(candidate);
@@ -120,16 +125,33 @@ function extractPrice(text) {
 
 function extractStatus(text, fallback) {
   const normalized = String(text || '').toLowerCase();
-  if (/\b(vente|a vendre|à vendre|vendre)\b/.test(normalized)) return 'FOR_SALE';
-  if (/\b(loyer|location|a louer|à louer|bail)\b/.test(normalized)) return 'FOR_RENT';
+  if (/\b(vente|en vente|a vendre|à vendre|vendre|vendu|vendue|cession)\b/.test(normalized)) {
+    return 'FOR_SALE';
+  }
+  if (/\b(loyer|location|a louer|à louer|loue|loue[e]?|bail)\b/.test(normalized)) {
+    return 'FOR_RENT';
+  }
   return fallback || 'FOR_RENT';
+}
+
+function normalizeGabonContact(value) {
+  const raw = String(value || '').trim();
+  if (!raw) return '';
+
+  const digitsOnly = raw.replace(/[^\d]/g, '');
+  if (!digitsOnly) return '';
+
+  if (digitsOnly.startsWith('241')) {
+    return `+${digitsOnly}`;
+  }
+
+  return `+241${digitsOnly}`;
 }
 
 function extractContact(text) {
   const match = String(text || '').match(/(?:\+241[\s.-]?)?(?:0[\s.-]?)?[67](?:[\s.-]?\d){6,8}/);
   if (!match) return '';
-  const cleaned = match[0].replace(/[^\d+]/g, '');
-  return cleaned || '';
+  return normalizeGabonContact(match[0]);
 }
 
 function countMatches(text, regex) {
@@ -468,7 +490,7 @@ class PropertyEnricher {
       tags: Array.isArray(record.tags) ? record.tags : [],
       area: Number(record.area || 0),
       nbrRooms: Number(rooms || 0),
-      nbrChickens: Number(normalizedKitchens || 0),
+      nbrKitchens: Number(normalizedKitchens || 0),
       nbrBathrooms: Number(bathrooms || 0),
       nbrToilets: Number(normalizedToilets || 0),
       nbrLivingRoom: Number(livingRooms || 0),

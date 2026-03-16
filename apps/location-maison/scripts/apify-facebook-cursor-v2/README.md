@@ -39,6 +39,7 @@ npm run apify:v2:replay -- --report scripts/apify-facebook-cursor-v2/data/report
   - `data/staging/<job-id>.enriched-posts.json` (resultat apres formatage)
   - `data/staging/<job-id>.mapped-properties.json` (payload annonce final)
   - `data/reports/<job-id>.report.json` (metriques)
+  - `data/reports/<job-id>.errors.json` (journal detaille des erreurs/warnings/AI)
 
 ## Configuration LM Studio
 

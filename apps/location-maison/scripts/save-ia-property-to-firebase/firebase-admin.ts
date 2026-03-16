@@ -51,7 +51,7 @@ export interface AIProperty {
   nbrRooms: number;
   nbrBathrooms: number;
   nbrToilets: number;
-  nbrChickens: number;
+  nbrKitchens: number;
   createdAt?: admin.firestore.Timestamp;
   updatedAt?: admin.firestore.Timestamp;
   source?: string;
