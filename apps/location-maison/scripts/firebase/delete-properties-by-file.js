@@ -1,4 +1,6 @@
 const admin = require('firebase-admin');
+const fs = require('fs');
+const path = require('path');
 
 function parseCliArgs(argv = []) {
   return argv.reduce((acc, arg, index, all) => {
@@ -16,19 +18,6 @@ function parseBoolean(value, defaultValue = false) {
   return ['1', 'true', 'yes', 'on'].includes(normalized);
 }
 
-function parseUtcDayRange(dateValue) {
-  const raw = String(dateValue || '').trim();
-  if (!/^\d{4}-\d{2}-\d{2}$/.test(raw)) {
-    throw new Error(`Format de date invalide: "${raw}". Utilise YYYY-MM-DD.`);
-  }
-  const start = new Date(`${raw}T00:00:00.000Z`);
-  const end = new Date(`${raw}T23:59:59.999Z`);
-  if (Number.isNaN(start.getTime()) || Number.isNaN(end.getTime())) {
-    throw new Error(`Date invalide: "${raw}".`);
-  }
-  return { raw, start, end };
-}
-
 function extractStoragePathFromUrl(urlValue) {
   const raw = String(urlValue || '').trim();
   if (!raw) return '';
@@ -42,11 +31,11 @@ function extractStoragePathFromUrl(urlValue) {
     const parsedUrl = new URL(raw);
     const pathname = parsedUrl.pathname.replace(/^\/+/, '');
     const parts = pathname.split('/');
-    if (parts.length >= 2 && parts[0] && parts[1]) {
+    if (parts.length >= 2) {
       return parts.slice(1).join('/').trim();
     }
   } catch (_error) {
-    // ignore URL parse errors
+    // ignore invalid URL
   }
 
   return '';
@@ -56,32 +45,32 @@ function collectImagePaths(images = []) {
   const paths = [];
   for (const image of images) {
     if (!image) continue;
-
     if (typeof image === 'string') {
-      const extracted = extractStoragePathFromUrl(image);
-      if (extracted) paths.push(extracted);
+      const fromUrl = extractStoragePathFromUrl(image);
+      if (fromUrl) paths.push(fromUrl);
       continue;
     }
-
     if (typeof image === 'object') {
       if (image.filePATH) {
         paths.push(String(image.filePATH).trim());
       } else if (image.fileURL) {
-        const extracted = extractStoragePathFromUrl(image.fileURL);
-        if (extracted) paths.push(extracted);
+        const fromUrl = extractStoragePathFromUrl(image.fileURL);
+        if (fromUrl) paths.push(fromUrl);
       }
     }
   }
-
   return [...new Set(paths.filter((value) => value.startsWith('properties/')))];
 }
 
 async function main() {
   const args = parseCliArgs(process.argv.slice(2));
-  const dateRange = parseUtcDayRange(args.date);
-  const createdBy = String(args['created-by'] || process.env.CREATED_BY || '').trim();
-  const source = String(args.source || '').trim();
+  const inputFile = path.resolve(
+    process.cwd(),
+    String(args.input || 'scripts/firebase/processed-properties.json')
+  );
   const dryRun = parseBoolean(args['dry-run'], true);
+  const createdByFilter = String(args['created-by'] || '').trim();
+  const sourceFilter = String(args.source || '').trim();
 
   require('dotenv').config();
   const serviceAccount = require('./firebase-config.js');
@@ -100,62 +89,81 @@ async function main() {
   const db = admin.firestore();
   const bucket = admin.storage().bucket();
 
-  let query = db
-    .collection('properties')
-    .where('createdAt', '>=', admin.firestore.Timestamp.fromDate(dateRange.start))
-    .where('createdAt', '<=', admin.firestore.Timestamp.fromDate(dateRange.end));
+  const content = JSON.parse(fs.readFileSync(inputFile, 'utf8'));
+  const items = Array.isArray(content) ? content : content.properties || [];
+  const ids = [...new Set(items.map((item) => String(item?.id || '').trim()).filter(Boolean))];
 
-  if (createdBy) query = query.where('createdBy', '==', createdBy);
-  if (source) query = query.where('source', '==', source);
-
-  console.log('🗑️  Suppression des propriétés par date');
+  console.log('🗑️  Suppression ciblée par IDs');
   console.log(`🌍 Project: ${projectId}`);
   console.log(`👤 Service account: ${serviceAccountEmail}`);
-  console.log(`📅 Date (UTC): ${dateRange.raw}`);
-  if (createdBy) console.log(`👤 createdBy: ${createdBy}`);
-  if (source) console.log(`🏷️ source: ${source}`);
+  console.log(`📄 Input: ${inputFile}`);
+  console.log(`📌 IDs fournis: ${ids.length}`);
+  if (createdByFilter) console.log(`👤 Filtre createdBy: ${createdByFilter}`);
+  if (sourceFilter) console.log(`🏷️ Filtre source: ${sourceFilter}`);
   console.log(`🧪 Dry-run: ${dryRun ? 'ON' : 'OFF'}`);
-  if (isProduction) {
-    console.log('⚠️  MODE PRODUCTION');
-  }
+  if (isProduction) console.log('⚠️  MODE PRODUCTION');
   console.log('');
 
-  const snapshot = await query.get();
-  console.log(`📊 Documents trouvés: ${snapshot.size}`);
-
-  if (snapshot.empty) {
-    console.log('✅ Rien à supprimer.');
+  if (ids.length === 0) {
+    console.log('✅ Aucun ID trouvé dans le fichier.');
     return;
   }
 
-  let docsDeleted = 0;
-  let imagesDeleted = 0;
-  let imageDeleteErrors = 0;
+  const targets = [];
+  const missingIds = [];
+  for (const id of ids) {
+    const snap = await db.collection('properties').doc(id).get();
+    if (!snap.exists) {
+      missingIds.push(id);
+      continue;
+    }
+
+    const data = snap.data() || {};
+    if (createdByFilter && String(data.createdBy || '') !== createdByFilter) {
+      continue;
+    }
+    if (sourceFilter && String(data.source || '') !== sourceFilter) {
+      continue;
+    }
+
+    targets.push({
+      id,
+      ref: snap.ref,
+      createdBy: String(data.createdBy || ''),
+      source: String(data.source || ''),
+      imagePaths: collectImagePaths(data.images || []),
+    });
+  }
+
+  console.log(`📊 IDs introuvables: ${missingIds.length}`);
+  console.log(`📊 Documents candidats: ${targets.length}`);
+
+  if (targets.length === 0) {
+    console.log('✅ Rien à supprimer après filtres.');
+    return;
+  }
+
+  const totalImagePaths = targets.reduce((sum, item) => sum + item.imagePaths.length, 0);
+  console.log(`🖼️ Images candidates (references): ${totalImagePaths}`);
 
   if (dryRun) {
-    snapshot.docs.slice(0, 20).forEach((doc, index) => {
-      const data = doc.data() || {};
-      const imagePaths = collectImagePaths(data.images || []);
+    targets.slice(0, 20).forEach((item, index) => {
       console.log(
-        `- [${index + 1}] ${doc.id} | createdBy=${data.createdBy || ''} | images=${imagePaths.length}`
+        `- [${index + 1}] ${item.id} | createdBy=${item.createdBy} | source=${item.source} | images=${item.imagePaths.length}`
       );
     });
-    if (snapshot.size > 20) {
-      console.log(`... +${snapshot.size - 20} autres documents`);
+    if (targets.length > 20) {
+      console.log(`... +${targets.length - 20} autres`);
     }
     console.log('🧪 Dry-run actif: aucune suppression effectuée.');
     return;
   }
 
-  const batchLimit = 400;
-  let batch = db.batch();
-  let batchCount = 0;
+  let imagesDeleted = 0;
+  let imageDeleteErrors = 0;
 
-  for (const doc of snapshot.docs) {
-    const data = doc.data() || {};
-    const imagePaths = collectImagePaths(data.images || []);
-
-    for (const imagePath of imagePaths) {
+  for (const target of targets) {
+    for (const imagePath of target.imagePaths) {
       try {
         await bucket.file(imagePath).delete();
         imagesDeleted += 1;
@@ -163,8 +171,15 @@ async function main() {
         imageDeleteErrors += 1;
       }
     }
+  }
 
-    batch.delete(doc.ref);
+  let docsDeleted = 0;
+  const batchLimit = 400;
+  let batch = db.batch();
+  let batchCount = 0;
+
+  for (const target of targets) {
+    batch.delete(target.ref);
     batchCount += 1;
     docsDeleted += 1;
 
@@ -187,6 +202,7 @@ async function main() {
 }
 
 main().catch((error) => {
-  console.error('❌ delete-properties-from-date failed:', error?.message || error);
+  console.error('❌ delete-properties-by-file failed:', error?.message || error);
   process.exit(1);
 });
+

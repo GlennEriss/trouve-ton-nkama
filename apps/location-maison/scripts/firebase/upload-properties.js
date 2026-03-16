@@ -34,6 +34,20 @@ class FirebasePropertyUploader {
     this.serviceAccountEmail = '';
   }
 
+  normalizeGabonContact(value) {
+    const raw = String(value || '').trim();
+    if (!raw) return '';
+
+    const digitsOnly = raw.replace(/[^\d]/g, '');
+    if (!digitsOnly) return '';
+
+    if (digitsOnly.startsWith('241')) {
+      return `+${digitsOnly}`;
+    }
+
+    return `+241${digitsOnly}`;
+  }
+
   async initialize() {
     console.log('🚀 Initialisation Firebase Admin...\n');
     
@@ -145,11 +159,14 @@ class FirebasePropertyUploader {
     const cleanContact = contactStr.replace(/\s+/g, '');
     
     // Détecter plusieurs numéros (séparés par /, - ou d'autres caractères)
-    const numbers = cleanContact.split(/[\/\-,;|]+/).filter(num => num.trim().length > 0);
+    const numbers = cleanContact
+      .split(/[\/\-,;|]+/)
+      .map((num) => this.normalizeGabonContact(num))
+      .filter((num) => num.trim().length > 0);
     
     if (numbers.length <= 1) {
       return {
-        contact: cleanContact,
+        contact: this.normalizeGabonContact(cleanContact),
         contacts: []
       };
     } else {
@@ -287,8 +304,17 @@ class FirebasePropertyUploader {
     // 3. Préparer la propriété pour Firestore avec les types ICreation
     // IMPORTANT: ne jamais stocker l'id du document Firestore dans le payload.
     const { id: _ignoredId, objectID: _ignoredObjectId, ...propertyWithoutId } = property || {};
+    const normalizedKitchens =
+      Number(propertyWithoutId.nbrKitchens ?? propertyWithoutId.nbrChickens ?? 0) || 0;
+
+    // Canonical field: nbrKitchens (legacy nbrChickens removed from payload).
+    if (Object.prototype.hasOwnProperty.call(propertyWithoutId, 'nbrChickens')) {
+      delete propertyWithoutId.nbrChickens;
+    }
+
     const processedProperty = {
       ...propertyWithoutId,
+      nbrKitchens: normalizedKitchens,
       contact: contact,
       contacts: contacts,
       images: firebaseImages, // URLs Firebase après upload

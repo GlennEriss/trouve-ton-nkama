@@ -57,7 +57,7 @@ JSON requis (TOUS les champs):
   "images": [],
   "tags": ["choisir UNIQUEMENT dans TAGS AUTORISÉS"],
   "nbrRooms": 2,
-  "nbrChickens": 1,
+  "nbrKitchens": 1,
   "nbrBathrooms": 1,
   "nbrToilets": 1
 }

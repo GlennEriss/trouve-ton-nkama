@@ -6,6 +6,18 @@ const logger = createLogger('db.recommend');
 
 const getFirestore = () => import("@/firebase/firestore");
 
+function normalizeKitchenField<T extends Record<string, any>>(data: T): T {
+    if (!data || typeof data !== 'object') {
+        return data;
+    }
+
+    if ((data.nbrKitchens === undefined || data.nbrKitchens === null) && data.nbrChickens !== undefined) {
+        return { ...data, nbrKitchens: data.nbrChickens } as T;
+    }
+
+    return data;
+}
+
 export async function getRecommendedProperties({
     limit = 6,
     excludeId = '',
@@ -42,7 +54,7 @@ export async function getRecommendedProperties({
         const properties: Property[] = [];
 
         snapshot.forEach((doc) => {
-            const property = { ...doc.data(), id: doc.id } as Property;
+            const property = normalizeKitchenField({ ...doc.data(), id: doc.id }) as Property;
             if (property.id !== excludeId) {
                 properties.push(property);
             }

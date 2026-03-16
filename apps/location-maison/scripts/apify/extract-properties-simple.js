@@ -287,7 +287,7 @@ class SimplePropertyExtractor {
       nbrRooms,
       nbrBathrooms,
       nbrToilets: nbrBathrooms,
-      nbrChickens: 0
+      nbrKitchens: 0
     };
 
     return {

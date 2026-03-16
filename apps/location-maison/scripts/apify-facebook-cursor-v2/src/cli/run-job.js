@@ -14,7 +14,7 @@ const { runAgencyImportJob } = require('../application/use-cases/run-agency-impo
 const { AppError } = require('../shared/errors/app-error');
 
 function printUsage() {
-  console.log('Usage: node scripts/apify-facebook-cursor-v2/src/cli/run-job.js --agency <key> --input <file.json> [--mode dry-run|apply] [--job-id <id>] [--ai-model <model>] [--ai-base-url <url>] [--ai-chat-endpoint <path>]');
+  console.log('Usage: node scripts/apify-facebook-cursor-v2/src/cli/run-job.js --agency <key> --input <file.json> [--mode dry-run|apply] [--job-id <id>] [--ai-model <model>] [--ai-base-url <url>] [--ai-chat-endpoint <path>] [--ai-strict true|false] [--ai-token <token>]');
 }
 
 function parseBoolean(value, defaultValue = false) {
@@ -59,11 +59,15 @@ async function main() {
     loadModelEndpoint: String(
       args['ai-load-model-endpoint'] || process.env.LM_STUDIO_LOAD_MODEL_ENDPOINT || defaultsAi.loadModelEndpoint || '/api/v1/models/load'
     ),
+    token: String(args['ai-token'] || process.env.LM_STUDIO_TOKEN || defaultsAi.token || ''),
+    tokenHeader: String(args['ai-token-header'] || process.env.LM_STUDIO_TOKEN_HEADER || defaultsAi.tokenHeader || 'Authorization'),
+    tokenPrefix: String(args['ai-token-prefix'] || process.env.LM_STUDIO_TOKEN_PREFIX || defaultsAi.tokenPrefix || 'Bearer'),
     autoLoadModel: parseBoolean(args['ai-auto-load-model'] || process.env.LM_STUDIO_AUTO_LOAD_MODEL, parseBoolean(defaultsAi.autoLoadModel, false)),
     useResponseFormat: parseBoolean(
       args['ai-use-response-format'] || process.env.LM_STUDIO_USE_RESPONSE_FORMAT,
       parseBoolean(defaultsAi.useResponseFormat, false)
     ),
+    strict: parseBoolean(args['ai-strict'] || process.env.LM_STUDIO_STRICT, parseBoolean(defaultsAi.strict, true)),
     temperature: parseNumber(args['ai-temperature'] || process.env.LM_STUDIO_TEMPERATURE || defaultsAi.temperature, 0.2),
     maxTokens: parseNumber(args['ai-max-tokens'] || process.env.LM_STUDIO_MAX_TOKENS || defaultsAi.maxTokens, 700),
     timeoutMs: parseNumber(args['ai-timeout-ms'] || process.env.LM_STUDIO_TIMEOUT_MS || defaultsAi.timeoutMs, 45000),

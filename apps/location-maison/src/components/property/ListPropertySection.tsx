@@ -525,12 +525,14 @@ const DetailsItem = ({ keyName, value }: { keyName: string, value: any }) => {
 const logementItems = ['bedroom', 'kitchen', 'bathroom', 'toilet']
 
 const DetailsLogement = ({ logement }: { logement: Logement }) => {
+    const kitchenCount = (logement as any).nbrKitchens ?? (logement as any).nbrChickens ?? 0
+
     const getDetailComponent = (keyName: string) => {
         switch (keyName) {
             case 'bedroom':
                 return <DetailsItem keyName={keyName} value={logement.nbrRooms} />
             case 'kitchen':
-                return <DetailsItem keyName={keyName} value={logement.nbrChickens} />
+                return <DetailsItem keyName={keyName} value={kitchenCount} />
             case 'bathroom':
                 return <DetailsItem keyName={keyName} value={logement.nbrBathrooms} />
             default:

@@ -39,7 +39,7 @@ export abstract class LogementFormBuilder extends PropertyFormBuilder {
                 step: 2
             },
             {
-                name: "nbrChickens",
+                name: "nbrKitchens",
                 label: "Nombre de Cuisines",
                 description: "Entrez le nombre de cuisines présentes dans la propriété.",
                 component: KitchensComponent,

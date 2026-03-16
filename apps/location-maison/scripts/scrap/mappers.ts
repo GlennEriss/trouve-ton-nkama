@@ -240,7 +240,7 @@ export function mapToHome(bien: BienJSON, location: Location, images: Image[]): 
     ...baseProperty,
     typeProperty: 'Home',
     nbrRooms: bien.caracteristiques.nombre_chambres,
-    nbrChickens: bien.caracteristiques.nombre_chambres, // Alias pour compatibilité
+    nbrKitchens: bien.caracteristiques.nombre_chambres, // Alias pour compatibilité
     nbrBathrooms: bien.caracteristiques.nombre_salles_bain,
     nbrToilets: bien.caracteristiques.nombre_toilettes,
     nbrFloors: bien.caracteristiques.etage || 1,
@@ -259,7 +259,7 @@ export function mapToApartment(bien: BienJSON, location: Location, images: Image
     ...baseProperty,
     typeProperty: 'Apartment',
     nbrRooms: bien.caracteristiques.nombre_chambres,
-    nbrChickens: bien.caracteristiques.nombre_chambres,
+    nbrKitchens: bien.caracteristiques.nombre_chambres,
     nbrBathrooms: bien.caracteristiques.nombre_salles_bain,
     nbrToilets: bien.caracteristiques.nombre_toilettes,
     nbrFloorApartment: bien.caracteristiques.etage || 1,
@@ -277,7 +277,7 @@ export function mapToStudio(bien: BienJSON, location: Location, images: Image[])
     ...baseProperty,
     typeProperty: 'Studio',
     nbrRooms: bien.caracteristiques.nombre_chambres || 1,
-    nbrChickens: bien.caracteristiques.nombre_chambres || 1,
+    nbrKitchens: bien.caracteristiques.nombre_chambres || 1,
     nbrBathrooms: bien.caracteristiques.nombre_salles_bain || 1,
     nbrToilets: bien.caracteristiques.nombre_toilettes || 1,
     nbrFloorStudio: bien.caracteristiques.etage || 1,

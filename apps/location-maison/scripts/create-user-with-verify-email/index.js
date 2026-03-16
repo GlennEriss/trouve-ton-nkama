@@ -24,16 +24,16 @@ const COLLECTION_USERS = "users";
 
 // Configuration de l'utilisateur à créer
 const USER_DATA = {
-  login: "kevingayitou@ttn.ga",
-  password: "kevingayitou",
+  login: "diazmariano@ttn.ga",
+  password: "diazmariano",
   roles: ["Announcer"],
   provider: ["CREDENTIALS"],
   credits: 100,
-  firstname: "Kevin",
-  lastname: "Gayitou",
+  firstname: "Diaz",
+  lastname: "Mariano",
   country: { name: "Gabon", code: "GA" },
-  phoneNumbers: ["+24174203330"], // Format nettoyé : +241 74 20 33 30 -> +24174203330
-  searchableName: "kevin gayitou",
+  phoneNumbers: ["+24177682457"], // Format nettoyé : +241 77 68 24 57 -> +24177682457
+  searchableName: "diaz mariano",
 };
 
 // Paramètres de notification par défaut

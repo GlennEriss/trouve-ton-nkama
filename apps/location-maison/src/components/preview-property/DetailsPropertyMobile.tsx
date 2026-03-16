@@ -57,6 +57,7 @@ const DetailsItemMobile = ({ label, value }: { label: string; value: string | nu
 
 export const DetailsPropertyMobile: React.FC<DetailsPropertyMobileProps> = ({ property }) => {
     const propertyDetails: any = property;
+    const kitchenCount = propertyDetails.nbrKitchens ?? propertyDetails.nbrChickens ?? 0;
 
     let items: PropertyDetailItem[] = [];
 
@@ -65,7 +66,7 @@ export const DetailsPropertyMobile: React.FC<DetailsPropertyMobileProps> = ({ pr
         case "Home":
             items = [
                 { label: "Chambres", value: propertyDetails.nbrRooms },
-                { label: "Cuisines", value: propertyDetails.nbrChickens },
+                { label: "Cuisines", value: kitchenCount },
                 { label: "Salles de bain", value: propertyDetails.nbrBathrooms },
                 { label: "Étages", value: propertyDetails.nbrFloors },
                 { label: "Garages", value: propertyDetails.nbrGarages },
@@ -77,7 +78,7 @@ export const DetailsPropertyMobile: React.FC<DetailsPropertyMobileProps> = ({ pr
         case "Studio":
             items = [
                 { label: "Chambres", value: propertyDetails.nbrRooms },
-                { label: "Cuisines", value: propertyDetails.nbrChickens },
+                { label: "Cuisines", value: kitchenCount },
                 { label: "Salles de bain", value: propertyDetails.nbrBathrooms },
                 { label: "Étage Appartement", value: propertyDetails.nbrFloorApartment ?? propertyDetails.nbrFloorStudio },
                 { label: "Numéro", value: propertyDetails.numeroApartment ?? propertyDetails.numeroStudio },

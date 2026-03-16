@@ -130,7 +130,7 @@ Après ce script, utiliser :
   "images": ["url1", "url2"],
   "tags": ["Famille", "Parking"],
   "nbrRooms": 2,
-  "nbrChickens": 1,
+  "nbrKitchens": 1,
   "nbrBathrooms": 1,
   "nbrToilets": 1
 }

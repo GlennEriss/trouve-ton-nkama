@@ -91,7 +91,7 @@ interface AIProperty {
   nbrRooms: number;
   nbrBathrooms: number;
   nbrToilets: number;
-  nbrChickens: number;
+  nbrKitchens: number;
   createdAt: Timestamp;
   updatedAt: Timestamp;
   source: string;

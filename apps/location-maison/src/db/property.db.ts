@@ -8,6 +8,18 @@ const logger = createLogger('db.property');
 
 const getFirestore = () => import("@/firebase/firestore");
 
+function normalizeKitchenField<T extends Record<string, any>>(data: T): T {
+    if (!data || typeof data !== 'object') {
+        return data;
+    }
+
+    if ((data.nbrKitchens === undefined || data.nbrKitchens === null) && data.nbrChickens !== undefined) {
+        return { ...data, nbrKitchens: data.nbrChickens } as T;
+    }
+
+    return data;
+}
+
 export async function updateProperty(id: string, property: Partial<Property>): Promise<boolean>{
     return await updateModel<Property>(id, property, collectionFirebaseNames.properties)
 
@@ -64,7 +76,8 @@ export async function getProperties({ limitPerPage, lastDoc, createdBy, type }: 
         }
     }
     querySnapshot.forEach((doc: any) => {
-        properties.push({ ...doc.data(), id: doc.id } as Property);
+        const data = normalizeKitchenField({ ...doc.data(), id: doc.id });
+        properties.push(data as Property);
     });
     return {
         properties,
@@ -124,7 +137,7 @@ export async function getPropertyById(id: string): Promise<Property | null> {
         // Check if the document exists
         if (propertySnapshot.exists()) {
             // Return the property data with the document ID included
-            const property = { ...propertySnapshot.data() } as Property
+            const property = normalizeKitchenField({ ...propertySnapshot.data() }) as Property
             return { ...property, id: propertySnapshot.id, /* updatedAt: (property.updatedAt as any).toDate(), createdAt: (property.createdAt as any).toDate() */ } as Property;
         } else {
             // Return null if no document was found

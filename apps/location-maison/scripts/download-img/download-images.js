@@ -3,12 +3,87 @@ const path = require('path');
 const https = require('https');
 const http = require('http');
 
+function parseCliArgs(argv) {
+  const options = {
+    input: null,
+    output: null,
+    imagesDir: null,
+    timeoutMs: 30000,
+    help: false
+  };
+
+  for (let i = 0; i < argv.length; i++) {
+    const arg = argv[i];
+    const next = argv[i + 1];
+
+    if (arg === '--help' || arg === '-h') {
+      options.help = true;
+      continue;
+    }
+
+    if ((arg === '--input' || arg === '-i') && next) {
+      options.input = next;
+      i++;
+      continue;
+    }
+
+    if ((arg === '--output' || arg === '-o') && next) {
+      options.output = next;
+      i++;
+      continue;
+    }
+
+    if ((arg === '--images-dir' || arg === '-d') && next) {
+      options.imagesDir = next;
+      i++;
+      continue;
+    }
+
+    if (arg === '--timeout-ms' && next) {
+      const parsed = Number.parseInt(next, 10);
+      if (Number.isFinite(parsed) && parsed > 0) {
+        options.timeoutMs = parsed;
+      }
+      i++;
+    }
+  }
+
+  return options;
+}
+
+function printUsage() {
+  console.log(`
+Usage:
+  node scripts/download-img/download-images.js [options]
+
+Options:
+  -i, --input <file>       Fichier JSON source (mapped/properties)
+  -o, --output <file>      Fichier JSON de sortie
+  -d, --images-dir <dir>   Dossier de téléchargement des images
+      --timeout-ms <ms>    Timeout HTTP par image (défaut: 30000)
+  -h, --help               Affiche cette aide
+
+Exemple:
+  node scripts/download-img/download-images.js \\
+    --input /abs/path/mapped-properties.json \\
+    --output /abs/path/mapped-properties.local-images.json \\
+    --images-dir /abs/path/downloaded-images/jika
+`);
+}
+
 class ImageDownloader {
-  constructor() {
+  constructor(options = {}) {
     this.baseDir = __dirname;
-    this.imagesDir = path.join(this.baseDir, 'images');
-    this.inputFile = path.join(__dirname, '..', 'apify-facebook-cursor', 'properties-extracted-combined.json');
-    this.outputFile = path.join(__dirname, '..', 'apify-facebook-cursor', 'properties-extracted-combined-with-local-images.json');
+    this.inputFile = options.input
+      ? path.resolve(options.input)
+      : path.join(__dirname, '..', 'apify-facebook-cursor', 'properties-extracted-combined.json');
+    this.outputFile = options.output
+      ? path.resolve(options.output)
+      : path.join(__dirname, '..', 'apify-facebook-cursor', 'properties-extracted-combined-with-local-images.json');
+    this.imagesDir = options.imagesDir
+      ? path.resolve(options.imagesDir)
+      : path.join(this.baseDir, 'images');
+    this.timeoutMs = Number.isFinite(options.timeoutMs) ? options.timeoutMs : 30000;
     this.downloadedCount = 0;
     this.failedCount = 0;
   }
@@ -30,9 +105,14 @@ class ImageDownloader {
     const data = await fs.readFile(this.inputFile, 'utf8');
     const jsonData = JSON.parse(data);
     // Le fichier peut avoir une structure { properties: [...] } ou être directement un tableau
-    const properties = jsonData.properties || jsonData;
+    const hasWrapper = Boolean(jsonData && !Array.isArray(jsonData) && Array.isArray(jsonData.properties));
+    const properties = hasWrapper ? jsonData.properties : jsonData;
     console.log(`✅ ${properties.length} propriétés trouvées\n`);
-    return { properties, metadata: jsonData.metadata };
+    return {
+      properties,
+      metadata: hasWrapper ? jsonData.metadata : undefined,
+      hasWrapper
+    };
   }
 
   async downloadImage(imageUrl, propertyIndex, imageIndex) {
@@ -77,7 +157,7 @@ class ImageDownloader {
         reject(err);
       });
       
-      request.setTimeout(30000, () => {
+      request.setTimeout(this.timeoutMs, () => {
         this.failedCount++;
         console.log(`⏰ Timeout: ${imageUrl}`);
         request.destroy();
@@ -138,7 +218,7 @@ class ImageDownloader {
   }
 
   async processAllProperties() {
-    const { properties, metadata } = await this.loadProperties();
+    const { properties, metadata, hasWrapper } = await this.loadProperties();
     const processedProperties = [];
     
     console.log('🖼️  Début du téléchargement...\n');
@@ -155,11 +235,14 @@ class ImageDownloader {
       }
     }
     
-    return { properties: processedProperties, metadata };
+    return hasWrapper
+      ? { properties: processedProperties, metadata }
+      : processedProperties;
   }
 
   async saveResults(data) {
     console.log('💾 Sauvegarde du nouveau JSON...');
+    await fs.mkdir(path.dirname(this.outputFile), { recursive: true });
     const jsonData = JSON.stringify(data, null, 2);
     await fs.writeFile(this.outputFile, jsonData, 'utf8');
     console.log(`✅ Fichier sauvegardé: ${this.outputFile}\n`);
@@ -187,5 +270,11 @@ class ImageDownloader {
 }
 
 // Lancement du script
-const downloader = new ImageDownloader();
-downloader.run(); 
+const cliOptions = parseCliArgs(process.argv.slice(2));
+if (cliOptions.help) {
+  printUsage();
+  process.exit(0);
+}
+
+const downloader = new ImageDownloader(cliOptions);
+downloader.run();

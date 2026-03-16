@@ -1,72 +1,119 @@
-function mergeAiResult(fallbackRecord, aiRecord) {
-  if (!aiRecord || typeof aiRecord !== 'object') {
-    return fallbackRecord;
-  }
+const { AppError } = require('../../shared/errors/app-error');
 
-  const mergedLocation = {
-    district: aiRecord.location?.district || fallbackRecord.location?.district || '',
-    city: aiRecord.location?.city || fallbackRecord.location?.city || '',
-    province: aiRecord.location?.province || fallbackRecord.location?.province || '',
-    lon: Number(aiRecord.location?.lon ?? fallbackRecord.location?.lon ?? 0) || 0,
-    lat: Number(aiRecord.location?.lat ?? fallbackRecord.location?.lat ?? 0) || 0,
-  };
-
-  return {
-    ...fallbackRecord,
-    ...aiRecord,
-    title: aiRecord.title || fallbackRecord.title,
-    description: aiRecord.description || fallbackRecord.description,
-    typeProperty: aiRecord.typeProperty || fallbackRecord.typeProperty,
-    status: aiRecord.status || fallbackRecord.status,
-    price: Number(aiRecord.price ?? fallbackRecord.price ?? 0) || 0,
-    area: Number(aiRecord.area ?? fallbackRecord.area ?? 0) || 0,
-    contact: aiRecord.contact || fallbackRecord.contact || '',
-    tags: Array.isArray(aiRecord.tags) ? aiRecord.tags : fallbackRecord.tags || [],
-    location: mergedLocation,
-    nbrRooms: Number(aiRecord.nbrRooms ?? fallbackRecord.nbrRooms ?? 0) || 0,
-    nbrChickens: Number(aiRecord.nbrChickens ?? fallbackRecord.nbrChickens ?? 0) || 0,
-    nbrBathrooms: Number(aiRecord.nbrBathrooms ?? fallbackRecord.nbrBathrooms ?? 0) || 0,
-    nbrToilets: Number(aiRecord.nbrToilets ?? fallbackRecord.nbrToilets ?? 0) || 0,
-    nbrLivingRoom: Number(aiRecord.nbrLivingRoom ?? fallbackRecord.nbrLivingRoom ?? 0) || 0,
-  };
+function toTextPreview(value, maxLength = 260) {
+  const text =
+    typeof value === 'string'
+      ? value
+      : value == null
+        ? ''
+        : (() => {
+            try {
+              return JSON.stringify(value);
+            } catch (_error) {
+              return String(value);
+            }
+          })();
+  if (!text) return '';
+  return text.length > maxLength ? `${text.slice(0, maxLength)}...` : text;
 }
 
-function applyResolvedLocation(record, resolvedLocation, defaults = {}) {
-  if (!resolvedLocation) return record;
+function toNonNegativeInt(value) {
+  const numeric = Number(value ?? 0);
+  if (!Number.isFinite(numeric) || numeric <= 0) return 0;
+  return Math.round(numeric);
+}
 
-  const hasResolvedData = Boolean(
-    resolvedLocation.district ||
-      resolvedLocation.city ||
-      resolvedLocation.province ||
-      resolvedLocation.longitude ||
-      resolvedLocation.latitude
-  );
-
-  if (!hasResolvedData) return record;
-
-  const currentLocation = record.location || {};
-  const defaultCity = String(defaults.cityDefault || '').trim();
-  const defaultProvince = String(defaults.provinceDefault || '').trim();
-  const formatName = (value) =>
-    String(value || '')
-      .split(/\s+/)
-      .filter(Boolean)
-      .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
-      .join(' ');
-
-  const districtResolved = resolvedLocation.district || currentLocation.district || '';
-  const cityResolved = resolvedLocation.city || currentLocation.city || defaultCity;
-  const provinceResolved = resolvedLocation.province || currentLocation.province || defaultProvince;
-  const districtFinal = districtResolved || cityResolved || defaultCity;
+function normalizeAiRecord(record, aiRecord) {
+  const safe = aiRecord && typeof aiRecord === 'object' ? aiRecord : {};
+  const location = safe.location && typeof safe.location === 'object' ? safe.location : {};
+  const normalizedTags = Array.isArray(safe.tags)
+    ? [...new Set(safe.tags.map((tag) => String(tag || '').trim()).filter(Boolean))]
+    : [];
 
   return {
     ...record,
+    ...safe,
+    title: String(safe.title || '').trim(),
+    description: String(safe.description || '').trim(),
+    typeProperty: String(safe.typeProperty || '').trim(),
+    status: String(safe.status || '').trim(),
+    price: toNonNegativeInt(safe.price),
+    area: toNonNegativeInt(safe.area),
+    contact: String(safe.contact || '').trim(),
+    tags: normalizedTags,
     location: {
-      district: formatName(districtFinal),
-      city: formatName(cityResolved),
-      province: formatName(provinceResolved),
-      lon: Number(resolvedLocation.longitude ?? currentLocation.lon ?? 0) || 0,
-      lat: Number(resolvedLocation.latitude ?? currentLocation.lat ?? 0) || 0,
+      district: String(location.district || '').trim(),
+      city: String(location.city || '').trim(),
+      province: String(location.province || '').trim(),
+      lon: Number(location.lon ?? location.longitude ?? 0) || 0,
+      lat: Number(location.lat ?? location.latitude ?? 0) || 0,
+    },
+    nbrRooms: toNonNegativeInt(safe.nbrRooms),
+    nbrKitchens: toNonNegativeInt(safe.nbrKitchens ?? safe.nbrChickens),
+    nbrBathrooms: toNonNegativeInt(safe.nbrBathrooms),
+    nbrToilets: toNonNegativeInt(safe.nbrToilets),
+    nbrLivingRoom: toNonNegativeInt(safe.nbrLivingRoom),
+  };
+}
+
+function buildAiErrorReason(error) {
+  const message = error?.details?.message || error?.message || 'Unknown AI error';
+  const code =
+    error?.details?.code ||
+    error?.code ||
+    error?.details?.lastErrorDetails?.code ||
+    '';
+  const variantErrors =
+    error?.details?.lastErrorDetails?.variantErrors ||
+    error?.details?.variantErrors ||
+    [];
+  const firstVariant = Array.isArray(variantErrors) ? variantErrors[0] : null;
+  const firstVariantLabel = firstVariant
+    ? `${firstVariant.variant || 'unknown'}:${firstVariant.code || firstVariant.status || 'error'}`
+    : '';
+  const bodyPreview =
+    firstVariant?.details?.body ||
+    error?.details?.lastErrorDetails?.body ||
+    error?.details?.body ||
+    '';
+
+  const parts = [message];
+  if (code) parts.push(`code=${code}`);
+  if (firstVariantLabel) parts.push(`variant=${firstVariantLabel}`);
+  if (bodyPreview) parts.push(`body=${toTextPreview(bodyPreview, 180)}`);
+  return parts.join(' | ');
+}
+
+function buildAiErrorDetail(error) {
+  const rawVariantErrors =
+    error?.details?.lastErrorDetails?.variantErrors ||
+    error?.details?.variantErrors ||
+    [];
+  const variantErrors = Array.isArray(rawVariantErrors)
+    ? rawVariantErrors.map((entry) => ({
+        variant: entry?.variant || null,
+        message: entry?.message || null,
+        code: entry?.code || null,
+        status: entry?.status || null,
+        details: {
+          url: entry?.details?.url || null,
+          bodyPreview: toTextPreview(entry?.details?.body || '', 400),
+        },
+      }))
+    : [];
+
+  return {
+    message: error?.message || 'Unknown AI error',
+    code: error?.code || null,
+    status: error?.status || null,
+    details: {
+      message: error?.details?.message || null,
+      code: error?.details?.code || null,
+      bodyPreview: toTextPreview(
+        error?.details?.body || error?.details?.lastErrorDetails?.body || '',
+        400
+      ),
+      variantErrors,
     },
   };
 }
@@ -76,56 +123,59 @@ module.exports = {
   async execute(context) {
     const records = context.artifacts.uniquePosts || [];
     const enriched = [];
-    const aiFallbackByReason = new Map();
+    const aiFailureByReason = new Map();
     const aiEnabled = Boolean(context.config?.ai?.enabled && context.adapters?.textNormalizer);
-    const locationResolver = context.services?.osmLocationResolver;
-    const locationHints = locationResolver?.getHints?.(20) || null;
+    const droppedByAiFailure = [];
+
+    if (!aiEnabled) {
+      throw new AppError('AI normalizer is required for enrichment', {
+        code: 'AI_REQUIRED_FOR_ENRICHMENT',
+        status: 500,
+      });
+    }
 
     for (let index = 0; index < records.length; index += 1) {
       const record = records[index];
-      const fallback = context.services.propertyEnricher.enrich(record, context.agency.defaults);
-      const resolvedFromSource = locationResolver?.resolveFromText?.(
-        record.rawText,
-        record.raw?.text,
-        record.raw?.description
-      );
-      const fallbackWithLocation = applyResolvedLocation(fallback, resolvedFromSource, context.agency?.defaults || {});
-
-      if (fallbackWithLocation.location?.city || fallbackWithLocation.location?.province || fallbackWithLocation.location?.district) {
-        context.metrics.locationResolved += 1;
-      }
-
-      if (!aiEnabled) {
-        enriched.push(fallbackWithLocation);
-        continue;
-      }
-
       context.metrics.aiAttempted += 1;
 
       try {
-        const aiRecord = await context.adapters.textNormalizer.normalizeRecord(record, {
-          defaults: context.agency.defaults,
-          fallbackRecord: fallbackWithLocation,
-          locationHints,
-        });
-        const merged = mergeAiResult(fallbackWithLocation, aiRecord);
+        const aiRecord = await context.adapters.textNormalizer.normalizeRecord(record);
+        const normalized = normalizeAiRecord(record, aiRecord);
 
-        const resolvedFromMerged = locationResolver?.resolveFromText?.(
-          record.rawText,
-          merged.title,
-          merged.description,
-          merged.location?.district,
-          merged.location?.city,
-          merged.location?.province
-        );
-        const mergedWithLocation = applyResolvedLocation(merged, resolvedFromMerged, context.agency?.defaults || {});
-        enriched.push(mergedWithLocation);
+        if (
+          normalized.location?.district ||
+          normalized.location?.city ||
+          normalized.location?.province
+        ) {
+          context.metrics.locationResolved += 1;
+        }
+
+        enriched.push(normalized);
         context.metrics.aiSuccess += 1;
       } catch (error) {
-        enriched.push(fallbackWithLocation);
         context.metrics.aiFallback += 1;
-        const reason = error?.message || 'Unknown AI error';
-        aiFallbackByReason.set(reason, (aiFallbackByReason.get(reason) || 0) + 1);
+        const reason = buildAiErrorReason(error);
+        aiFailureByReason.set(reason, (aiFailureByReason.get(reason) || 0) + 1);
+
+        if (!Array.isArray(context.artifacts.aiErrors)) {
+          context.artifacts.aiErrors = [];
+        }
+        context.artifacts.aiErrors.push({
+          step: '04-enrich',
+          index,
+          sourceId: record.sourceId,
+          reason,
+          recordPreview: {
+            sourceId: record.sourceId,
+            fingerprint: record.fingerprint || null,
+            textPreview: toTextPreview(
+              record.rawText || record.raw?.text || record.raw?.description || '',
+              260
+            ),
+          },
+          error: buildAiErrorDetail(error),
+        });
+
         if (Array.isArray(context.warnings) && context.warnings.length < 100) {
           context.warnings.push({
             step: '04-enrich',
@@ -133,7 +183,9 @@ module.exports = {
             message: reason,
           });
         }
-        context.logger.warn('AI normalization failed, fallback applied', {
+
+        droppedByAiFailure.push({ index, sourceId: record.sourceId, reason });
+        context.logger.warn('AI normalization failed, record dropped', {
           index,
           sourceId: record.sourceId,
           error: reason,
@@ -143,15 +195,30 @@ module.exports = {
 
     context.artifacts.enrichedPosts = enriched;
     context.metrics.totalEnriched = enriched.length;
-    const fallbackSummary = Object.fromEntries(aiFallbackByReason.entries());
+    context.metrics.aiDropped = droppedByAiFailure.length;
+    const failureSummary = Object.fromEntries(aiFailureByReason.entries());
+
     context.logger.info('Enrichment completed', {
       totalEnriched: enriched.length,
       aiEnabled,
       aiAttempted: context.metrics.aiAttempted,
       aiSuccess: context.metrics.aiSuccess,
       aiFallback: context.metrics.aiFallback,
+      aiDropped: droppedByAiFailure.length,
       locationResolved: context.metrics.locationResolved,
-      aiFallbackByReason: fallbackSummary,
+      aiFallbackByReason: failureSummary,
     });
+
+    if (records.length > 0 && enriched.length === 0) {
+      throw new AppError('AI strict mode failed: 0 annonce valide produite', {
+        code: 'AI_STRICT_NO_OUTPUT',
+        status: 502,
+        details: {
+          totalRecords: records.length,
+          dropped: droppedByAiFailure.length,
+          sample: droppedByAiFailure.slice(0, 5),
+        },
+      });
+    }
   },
 };

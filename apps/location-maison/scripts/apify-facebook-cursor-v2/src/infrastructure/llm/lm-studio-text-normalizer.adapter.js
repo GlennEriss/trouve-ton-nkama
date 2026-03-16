@@ -1,6 +1,5 @@
 const { TextNormalizerPort } = require('../../application/ports/text-normalizer.port');
 const { AppError } = require('../../shared/errors/app-error');
-const { ALLOWED_TAGS } = require('../../domain/services/tag-selector');
 
 const TYPE_MAP = {
   appartement: 'Apartment',
@@ -24,7 +23,8 @@ const TYPE_MAP = {
   room: 'Room',
 };
 
-const DEFAULT_TAGS = ALLOWED_TAGS;
+const SYSTEM_INSTRUCTION =
+  'Tu es un extracteur immobilier. Reponds uniquement avec un objet JSON valide (sans markdown) avec les cles: title, description, typeProperty, status(FOR_RENT|FOR_SALE), price, contact, tags, area, nbrRooms, nbrKitchens, nbrBathrooms, nbrToilets, nbrLivingRoom, location{district,city,province,lon,lat}. Si une info manque: mettre "" ou 0 ou [] selon le type. Le texte source est la seule verite: n invente jamais. Titre: professionnel, clair, 6 a 14 mots, sans hashtags ni emojis, sans prix, sans devise, sans numero de telephone. Description: 3 a 5 phrases courtes, professionnelles, neutres et factuelles, en francais correct. Interdit dans description: prix, loyer numerique, caution numerique, frais numeriques, devises (FCFA, CFA, XAF, euro), dates precises, formulations degradantes/speculatives, capacite inventee, villes non presentes dans le texte source. Si visite mentionnee: ecrire seulement "Possibilite de visite".';
 
 function wait(ms) {
   return new Promise((resolve) => setTimeout(resolve, ms));
@@ -71,73 +71,92 @@ function removeNoisePreserveLines(value) {
 }
 
 function parseJsonObject(value) {
-  if (value && typeof value === 'object') return value;
+  if (value && typeof value === 'object' && !Array.isArray(value)) return value;
   const text = String(value || '').trim();
   if (!text) return null;
 
   try {
-    return JSON.parse(text);
+    const parsed = JSON.parse(text);
+    return parsed && typeof parsed === 'object' && !Array.isArray(parsed) ? parsed : null;
   } catch (_error) {
     const match = text.match(/\{[\s\S]*\}/);
     if (!match) return null;
     try {
-      return JSON.parse(match[0]);
+      const parsed = JSON.parse(match[0]);
+      return parsed && typeof parsed === 'object' && !Array.isArray(parsed) ? parsed : null;
     } catch (_errorNested) {
       return null;
     }
   }
 }
 
-function toPositiveInt(value, fallback = 0) {
-  const numeric = Number(String(value ?? '').replace(/[^\d.-]/g, ''));
-  if (!Number.isFinite(numeric) || numeric <= 0) return fallback;
+function isLikelyNormalizedPayload(value) {
+  if (!value || typeof value !== 'object' || Array.isArray(value)) return false;
+  return (
+    'title' in value ||
+    'description' in value ||
+    'typeProperty' in value ||
+    'status' in value ||
+    'price' in value
+  );
+}
+
+function toPositiveInt(value, defaultValue = 0) {
+  const raw = String(value ?? '').trim().toLowerCase();
+  if (!raw) return defaultValue;
+
+  const scaled = raw.match(/^(\d+(?:[.,]\d+)?)\s*(mille|mil|k|m|million|millions)$/);
+  if (scaled) {
+    const base = Number(scaled[1].replace(',', '.'));
+    if (!Number.isFinite(base) || base <= 0) return defaultValue;
+    const unit = scaled[2];
+    const multiplier =
+      unit === 'mille' || unit === 'mil' || unit === 'k' || unit === 'm' ? 1000 : 1_000_000;
+    return Math.round(base * multiplier);
+  }
+
+  const numeric = Number(raw.replace(/[^\d.-]/g, ''));
+  if (!Number.isFinite(numeric) || numeric <= 0) return defaultValue;
   return Math.round(numeric);
 }
 
-function isLikelyPhoneLikePrice(value) {
-  const digits = String(value ?? '').replace(/[^\d]/g, '');
-  if (!digits) return false;
-  return /^(?:241)?0?[67]\d{7}$/.test(digits) || /^[67]\d{7}$/.test(digits);
-}
-
-function normalizePrice(value, { status, fallback = 0 } = {}) {
-  const parsed = toPositiveInt(value, 0);
-  const fallbackPrice = toPositiveInt(fallback, 0);
-  if (!parsed) return fallbackPrice;
-
-  if (isLikelyPhoneLikePrice(parsed)) return fallbackPrice;
-
-  const normalizedStatus = normalizeStatus(status, 'FOR_RENT');
-  if (normalizedStatus === 'FOR_RENT' && parsed > 20_000_000) {
-    return fallbackPrice;
-  }
-
-  if (parsed > 5_000_000_000) return fallbackPrice;
-  return parsed;
-}
-
-function normalizeType(value, fallback = 'Home') {
+function normalizeType(value, defaultType = 'Home') {
   const normalized = normalizeText(value);
-  return TYPE_MAP[normalized] || fallback;
+  return TYPE_MAP[normalized] || defaultType;
 }
 
-function normalizeStatus(value, fallback = 'FOR_RENT') {
+function normalizeStatus(value, defaultStatus = 'FOR_RENT') {
   const normalized = normalizeText(value);
   if (normalized === 'for_sale' || normalized === 'sale' || normalized.includes('vendre')) return 'FOR_SALE';
   if (normalized === 'for_rent' || normalized === 'rent' || normalized.includes('louer')) return 'FOR_RENT';
-  return fallback;
+  return defaultStatus;
 }
 
-function normalizeContact(value, fallback = '') {
-  const text = String(value || fallback || '');
+function normalizeGabonContact(value) {
+  const raw = String(value || '').trim();
+  if (!raw) return '';
+
+  const digitsOnly = raw.replace(/[^\d]/g, '');
+  if (!digitsOnly) return '';
+
+  if (digitsOnly.startsWith('241')) {
+    return `+${digitsOnly}`;
+  }
+
+  return `+241${digitsOnly}`;
+}
+
+function normalizeContact(value, defaultContact = '') {
+  const text = String(value || defaultContact || '');
   const match = text.match(/(?:\+241[\s.-]?)?(?:0[\s.-]?)?[67](?:[\s.-]?\d){6,8}/);
-  if (!match) return fallback || '';
-  const cleaned = match[0].replace(/[^\d+]/g, '');
-  return cleaned || fallback || '';
+  if (!match) return defaultContact || '';
+  const normalized = normalizeGabonContact(match[0]);
+  if (normalized) return normalized;
+  return normalizeGabonContact(defaultContact) || defaultContact || '';
 }
 
-function normalizeTags(value, fallback = []) {
-  if (!Array.isArray(value)) return Array.isArray(fallback) ? fallback : [];
+function normalizeTags(value, defaultTags = []) {
+  if (!Array.isArray(value)) return Array.isArray(defaultTags) ? defaultTags : [];
   const clean = value
     .map((tag) => String(tag || '').trim())
     .filter(Boolean)
@@ -149,15 +168,15 @@ function stripPriceFromTitle(value) {
   return String(value || '')
     .replace(/\b\d{1,3}(?:[ .]\d{3})+\s*(?:f(?:\s*cfa)?|fcfa|xaf|cfa)?\b/gi, ' ')
     .replace(/\b\d{5,9}\s*(?:f(?:\s*cfa)?|fcfa|xaf|cfa)\b/gi, ' ')
-    .replace(/\b\d+(?:[.,]\d+)?\s*(?:mille|k|million|millions)\b/gi, ' ')
+    .replace(/\b\d+(?:[.,]\d+)?\s*(?:mille|mil|k|million|millions)\b/gi, ' ')
     .replace(/\s*[-–—]\s*$/g, '')
     .replace(/\s{2,}/g, ' ')
     .trim();
 }
 
-function cleanTitle(value, fallback) {
+function cleanTitle(value, defaultTitle) {
   const candidate = stripPriceFromTitle(
-    removeNoise(value || fallback || 'Annonce immobilière')
+    removeNoise(value || defaultTitle || 'Annonce immobilière')
     .replace(/(?:\+?241[\s.-]?)?(?:0[\s.-]?)?[67](?:[\s.-]?\d){6,8}/g, ' ')
     .replace(/\b(contact|tel|t[eé]l[eé]phone|whatsapp|inbox|mp)\b/gi, ' ')
     .replace(/\s+/g, ' ')
@@ -180,13 +199,60 @@ function removeContactMentions(value) {
     .trim();
 }
 
-function cleanDescription(value, fallback) {
-  const source = String(value || fallback || 'Description non renseignée');
-  const cleaned = removeContactMentions(
+function softenNegativePhrasing(value) {
+  return String(value || '')
+    .replace(/\bprobl[eè]me(?:s)?\s+de\s+parking\b/gi, '')
+    .replace(/\bpas\s+de\s+parking\b/gi, '')
+    .replace(/\bparking\s+insuffisant\b/gi, '')
+    .replace(/\bprobl[eè]me(?:s)?\s+de\s+stationnement\b/gi, '');
+}
+
+function stripMonetaryMentions(value) {
+  return String(value || '')
+    .replace(
+      /\b\d{1,3}(?:[ .]\d{3})+(?:\s*(?:f(?:\s*cfa)?|fcfa|xaf|cfa|euros?|€))?\b/gi,
+      ' '
+    )
+    .replace(
+      /\b\d+(?:[.,]\d+)?\s*(?:mille|mil|k|million|millions)(?:\s*(?:f(?:\s*cfa)?|fcfa|xaf|cfa|euros?|€))?\b/gi,
+      ' '
+    )
+    .replace(/\b\d+\s*(?:f(?:\s*cfa)?|fcfa|xaf|cfa|euros?|€)\b/gi, ' ')
+    .replace(/\b(?:fcfa|cfa|xaf|euros?|€)\b/gi, ' ')
+    .replace(/\s{2,}/g, ' ')
+    .trim();
+}
+
+function cleanDescription(value, defaultDescription) {
+  const source = String(value || defaultDescription || 'Description non renseignée');
+  const sourceHasFeeMentions = /\b(caution|loyer|frais|agence|visite)\b/i.test(source);
+
+  let cleaned = softenNegativePhrasing(removeContactMentions(
     removeNoisePreserveLines(source)
-    .replace(/\bdetails?\s*:\s*/gi, '')
+    .replace(/\bquartier\s+populaire\b/gi, 'quartier résidentiel')
+    .replace(/\b(?:aucun|pas d['’]?)\s*acc[eè]s\s+automobile\s+possible\b/gi, '')
+    .replace(/\bacc[eè]s\s+automobile\s+impossible\b/gi, '')
+    .replace(/\b[ée]quip[ée]?\s+pour\s+accueillir\s+jusqu['’]?\s*[àa]\s*\d+\s*personnes?\b/gi, '')
+    .replace(/\b(?:possibilit[eé]|possible)\s+de\s+visite\b[^.\n]*/gi, 'Possibilité de visite')
+    .replace(/\bcaution\b[^.!?\n]*/gi, '')
+    .replace(/\bloyer\b[^.!?\n]*/gi, '')
+    .replace(/\bfrais\b[^.!?\n]*/gi, '')
+    .replace(/\bprix\b[^.!?\n]*/gi, '')
+    .replace(/\bdetails?\s*:\s*/gi, ' ')
+    .replace(/\n{3,}/g, '\n\n')
+    .replace(/\s{2,}/g, ' ')
     .trim()
-  );
+  ));
+
+  cleaned = stripMonetaryMentions(cleaned)
+    .replace(/\s*[:;,]\s*(?=[.!?]|$)/g, ' ')
+    .replace(/\s{2,}/g, ' ')
+    .trim();
+
+  if (sourceHasFeeMentions && !/frais de caution/i.test(cleaned)) {
+    cleaned = `${cleaned}${cleaned ? ' ' : ''}Frais de caution, de loyer, d'agence et de visite à prévoir.`;
+  }
+
   return cleaned.length > 1200 ? `${cleaned.slice(0, 1197).trim()}...` : cleaned;
 }
 
@@ -203,135 +269,51 @@ function restoreFrenchAccents(value) {
     .replace(/([\s,:;])a (?=(akanda|libreville|angondje|owendo|okala|nzeng|estuaire|malibe)\b)/gi, '$1à ');
 }
 
-function normalizeLocation(candidate, fallbackLocation = {}) {
+function normalizeLocation(candidate) {
   const location = candidate && typeof candidate === 'object' ? candidate : {};
   return {
-    district: String(location.district || fallbackLocation.district || '').trim(),
-    city: String(location.city || fallbackLocation.city || '').trim(),
-    province: String(location.province || fallbackLocation.province || '').trim(),
-    lon: Number(location.lon ?? fallbackLocation.lon ?? 0) || 0,
-    lat: Number(location.lat ?? fallbackLocation.lat ?? 0) || 0,
+    district: String(location.district || '').trim(),
+    city: String(location.city || '').trim(),
+    province: String(location.province || '').trim(),
+    lon: Number(location.lon ?? 0) || 0,
+    lat: Number(location.lat ?? 0) || 0,
   };
 }
 
-function extractRoomsHint(text, fallback = 0) {
+function extractRoomsHint(text, defaultRooms = 0) {
   const match = normalizeText(text).match(/(\d+)\s*chambres?/);
-  if (!match) return fallback;
+  if (!match) return defaultRooms;
   const parsed = Number(match[1]);
-  return Number.isFinite(parsed) && parsed > 0 ? parsed : fallback;
+  return Number.isFinite(parsed) && parsed > 0 ? parsed : defaultRooms;
 }
 
-function reconcileTypeProperty(typeProperty, rooms, contentText, fallbackType = 'Home') {
+function reconcileTypeProperty(typeProperty, rooms, contentText, defaultType = 'Home') {
   const text = normalizeText(contentText);
-  let type = typeProperty || fallbackType || 'Home';
+  let type = typeProperty || defaultType || 'Home';
 
   if ((type === 'Studio' || type === 'Room') && rooms >= 2) {
     if (/\bappartement\b/.test(text)) return 'Apartment';
     if (/\bmaison\b/.test(text)) return 'Home';
     if (/\bvilla\b/.test(text)) return 'Villa';
-    if (fallbackType && fallbackType !== 'Studio' && fallbackType !== 'Room') return fallbackType;
+    if (defaultType && defaultType !== 'Studio' && defaultType !== 'Room') return defaultType;
     return 'Apartment';
   }
 
   return type;
 }
 
-function isLowQualityTitle(title) {
-  const value = String(title || '').trim();
-  if (!value || value.length < 12) return true;
-  if (/#|https?:\/\//i.test(value)) return true;
-  if (/^\s*chambre\s+\d+\s+chambres?\b/i.test(value)) return true;
-  const normalized = normalizeText(value).replace(/\s+/g, ' ').trim();
-  if (
-    /^(appartement|maison|villa|studio|chambre|terrain|immeuble|bureau|local commercial|kiosque)(?: de \d+ chambres?)?\s+a\s+(louer|vendre)(?:\s+a\s+[a-z0-9 -]+)?$/.test(normalized)
-  ) {
-    return true;
-  }
-  return false;
+function truncateForPrompt(value, max = 1800) {
+  const text = String(value || '').trim();
+  if (!text) return '';
+  return text.length > max ? `${text.slice(0, max)}...` : text;
 }
 
-function titleLooksIncoherentWithType(title, typeProperty) {
-  const normalized = normalizeText(title);
-  if (!normalized) return false;
-  if (typeProperty === 'Apartment' && /\bstudio|chambre\b/.test(normalized)) return true;
-  if (typeProperty === 'Studio' && /\bappartement|maison|villa\b/.test(normalized)) return true;
-  if (typeProperty === 'Home' && /\bappartement|studio\b/.test(normalized)) return true;
-  return false;
-}
-
-function isLowQualityDescription(description) {
-  const value = String(description || '').trim();
-  if (!value || value.length < 35) return true;
-  if (/\.\.\./.test(value)) return true;
-  if (/https?:\/\/|www\./i.test(value)) return true;
-  if (/\b(flypviral|whatsapp|inbox)\b/i.test(value)) return true;
-  const sentenceCount = value.split(/[.!?]\s+/).filter(Boolean).length;
-  return sentenceCount < 1;
-}
-
-function buildPromptPayload(record, defaults, fallback, locationHints) {
+function buildPromptPayload(record) {
   return {
-    task: 'Transformer un post immobilier brut en annonce JSON professionnelle',
-    locale: 'fr-GA',
-    constraints: [
-      'Renvoyer strictement un JSON valide',
-      'Ne pas inventer des informations absentes',
-      'Titre court et professionnel sans emojis/hashtags',
-      'Titre en francais naturel, style annonce premium (pas de titre generique)',
-      'Titre doit inclure au moins un element distinctif utile (zone ou atout principal)',
-      'Interdit: titres du style "Chambre a louer" ou "Appartement a louer"',
-      'Interdit: mettre le prix dans le titre',
-      'Description professionnelle et lisible',
-      'Ne jamais inclure un numero de telephone dans le titre ou la description',
-      'Ne jamais inclure de mention Contact, WhatsApp, Inbox ou MP dans la description',
-      'Description en style annonce professionnelle, claire et concise',
-      'typeProperty doit être dans: Home, Apartment, Studio, Villa, Land, Desk, Building, Shop, Kiosk, Room',
-      'status doit être FOR_RENT ou FOR_SALE',
-      'price entier en FCFA, 0 si inconnu',
-    ],
-    allowedTags: DEFAULT_TAGS,
-    locationReference: locationHints
-      ? {
-          instruction:
-            'Utilise en priorite ces noms de zones OSM pour district/city/province si une correspondance existe.',
-          provinces: locationHints.provinces || [],
-          cities: locationHints.cities || [],
-          quarters: locationHints.quarters || [],
-        }
-      : null,
-    defaults: {
-      country: defaults.country || 'Gabon',
-      countryCode: defaults.countryCode || 'GA',
-      statusDefault: defaults.statusDefault || 'FOR_RENT',
-    },
-    rawPost: {
-      sourceId: record.sourceId,
-      text: record.rawText || '',
-      imageUrls: Array.isArray(record.imageUrls) ? record.imageUrls.slice(0, 3) : [],
-    },
-    expectedSchema: {
-      title: 'string',
-      description: 'string',
-      typeProperty: 'string',
-      status: 'string',
-      price: 'number',
-      contact: 'string',
-      tags: ['string'],
-      area: 'number',
-      nbrRooms: 'number',
-      nbrChickens: 'number',
-      nbrBathrooms: 'number',
-      nbrToilets: 'number',
-      nbrLivingRoom: 'number',
-      location: {
-        district: 'string',
-        city: 'string',
-        province: 'string',
-        lon: 'number',
-        lat: 'number',
-      },
-    },
-    fallback,
+    text: truncateForPrompt(
+      record.rawText || record.raw?.text || record.raw?.description || '',
+      1700
+    ),
   };
 }
 
@@ -345,6 +327,9 @@ class LmStudioTextNormalizerAdapter extends TextNormalizerPort {
       chatEndpoint: String(options.chatEndpoint || '/api/v1/chat'),
       modelsEndpoint: String(options.modelsEndpoint || '/api/v1/models'),
       loadModelEndpoint: String(options.loadModelEndpoint || '/api/v1/models/load'),
+      token: String(options.token || ''),
+      tokenHeader: String(options.tokenHeader || 'Authorization'),
+      tokenPrefix: String(options.tokenPrefix || 'Bearer'),
       autoLoadModel: Boolean(options.autoLoadModel),
       useResponseFormat: Boolean(options.useResponseFormat),
       temperature: Number(options.temperature ?? 0.2),
@@ -356,18 +341,40 @@ class LmStudioTextNormalizerAdapter extends TextNormalizerPort {
     this.modelChecked = false;
   }
 
+  buildAuthHeaders() {
+    const token = String(this.config.token || '').trim();
+    if (!token) return {};
+
+    const headerName = String(this.config.tokenHeader || 'Authorization').trim() || 'Authorization';
+    const prefixRaw = String(this.config.tokenPrefix || '').trim();
+    const useRawToken =
+      !prefixRaw || ['none', 'raw', 'token'].includes(prefixRaw.toLowerCase());
+    const headerValue = useRawToken ? token : `${prefixRaw} ${token}`;
+
+    return { [headerName]: headerValue };
+  }
+
   async fetchJson(url, options = {}) {
     const controller = new AbortController();
     const timeout = setTimeout(() => controller.abort(), this.config.timeoutMs);
+    const authHeaders = this.buildAuthHeaders();
+    const mergedHeaders = {
+      ...(options.headers || {}),
+      ...authHeaders,
+    };
 
     try {
-      const response = await fetch(url, { ...options, signal: controller.signal });
+      const response = await fetch(url, {
+        ...options,
+        headers: mergedHeaders,
+        signal: controller.signal,
+      });
       if (!response.ok) {
         const body = await response.text();
         throw new AppError('LM Studio request failed', {
           code: 'LM_STUDIO_HTTP_ERROR',
           status: response.status,
-          details: { url, body: body.slice(0, 300) },
+          details: { url, body: body.slice(0, 1200) },
         });
       }
       return response.json();
@@ -425,6 +432,26 @@ class LmStudioTextNormalizerAdapter extends TextNormalizerPort {
   }
 
   extractMessageContent(responseJson) {
+    const outputText =
+      typeof responseJson?.output_text === 'string'
+        ? responseJson.output_text
+        : null;
+    if (outputText) return outputText;
+
+    const nestedOutputText = Array.isArray(responseJson?.output)
+      ? responseJson.output
+          .flatMap((entry) => {
+            if (typeof entry?.content === 'string') return [entry.content];
+            if (Array.isArray(entry?.content)) return entry.content;
+            return [];
+          })
+          .map((chunk) =>
+            typeof chunk === 'string' ? chunk : chunk?.text || chunk?.output_text || chunk?.content || ''
+          )
+          .find(Boolean)
+      : null;
+    if (nestedOutputText) return nestedOutputText;
+
     return (
       responseJson?.choices?.[0]?.message?.content ||
       responseJson?.choices?.[0]?.text ||
@@ -441,97 +468,145 @@ class LmStudioTextNormalizerAdapter extends TextNormalizerPort {
     await this.ensureModelAvailable();
 
     const chatUrl = buildUrl(this.config.baseUrl, this.config.chatEndpoint);
-    const requestBody = {
-      model: this.config.model,
-      temperature: this.config.temperature,
-      max_tokens: this.config.maxTokens,
-      stream: false,
-      messages: [
-        {
-          role: 'system',
-          content:
-            'Tu es un assistant d extraction immobiliere. Tu dois renvoyer uniquement un objet JSON valide, sans markdown.',
-        },
-        {
-          role: 'user',
-          content: JSON.stringify(payload),
-        },
-      ],
-    };
-
-    if (this.config.useResponseFormat) {
-      requestBody.response_format = { type: 'json_object' };
-    }
-
-    const json = await this.fetchJson(chatUrl, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(requestBody),
-    });
-
-    const content = this.extractMessageContent(json);
-    const parsed = parseJsonObject(content);
-    if (!parsed) {
-      throw new AppError('LM Studio response is not valid JSON object', {
-        code: 'LM_STUDIO_INVALID_JSON',
-        status: 422,
-        details: { contentPreview: String(content || '').slice(0, 200) },
+    const chatEndpoint = String(this.config.chatEndpoint || '').toLowerCase();
+    const inputOnlyEndpoint = /\/api\/v1\/chat\/?$/.test(chatEndpoint);
+    const userContent = String(payload?.text || '').trim();
+    if (!userContent) {
+      throw new AppError('LM Studio prompt text is empty', {
+        code: 'LM_STUDIO_EMPTY_PROMPT',
+        status: 400,
       });
     }
+    const inputVariants = [
+      {
+        name: 'responses-input-text',
+        body: {
+          model: this.config.model,
+          temperature: this.config.temperature,
+          max_output_tokens: this.config.maxTokens,
+          input: `${SYSTEM_INSTRUCTION}\n\n${userContent}`,
+        },
+      },
+    ];
 
-    return parsed;
+    const chatMessagesVariant = {
+      name: 'chat-messages',
+      body: {
+        model: this.config.model,
+        temperature: this.config.temperature,
+        max_tokens: this.config.maxTokens,
+        stream: false,
+        messages: [
+          { role: 'system', content: SYSTEM_INSTRUCTION },
+          { role: 'user', content: userContent },
+        ],
+        ...(this.config.useResponseFormat ? { response_format: { type: 'json_object' } } : {}),
+      },
+    };
+
+    const requestVariants = inputOnlyEndpoint
+      ? inputVariants
+      : [
+          ...inputVariants,
+          chatMessagesVariant,
+        ];
+
+    const variantErrors = [];
+
+    for (let index = 0; index < requestVariants.length; index += 1) {
+      const variant = requestVariants[index];
+      try {
+        const json = await this.fetchJson(chatUrl, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(variant.body),
+        });
+
+        const content = this.extractMessageContent(json);
+        const parsed = parseJsonObject(content);
+        if (parsed) return parsed;
+
+        if (isLikelyNormalizedPayload(json)) {
+          return json;
+        }
+
+        if (!parsed) {
+          throw new AppError('LM Studio response is not valid JSON object', {
+            code: 'LM_STUDIO_INVALID_JSON',
+            status: 422,
+            details: { contentPreview: String(content || '').slice(0, 300) },
+          });
+        }
+
+        return parsed;
+      } catch (error) {
+        variantErrors.push({
+          variant: variant.name,
+          message: error?.message || 'Unknown error',
+          code: error?.code || null,
+          status: error?.status || null,
+          details: error?.details || null,
+        });
+
+        const hasNextVariant = index < requestVariants.length - 1;
+        if (!hasNextVariant) break;
+
+        // On passe au format suivant si le serveur rejette le schéma de payload.
+        const body = String(error?.details?.body || '');
+        const schemaMismatch =
+          error?.code === 'LM_STUDIO_HTTP_ERROR' &&
+          (/input.+required/i.test(body) ||
+            /messages.+required/i.test(body) ||
+            /invalid_union/i.test(body) ||
+            /invalid_request/i.test(body));
+        if (schemaMismatch) continue;
+      }
+    }
+
+    throw new AppError('LM Studio request variants failed', {
+      code: 'LM_STUDIO_REQUEST_VARIANTS_FAILED',
+      status: 502,
+      details: { chatUrl, variantErrors },
+    });
   }
 
-  normalizeModelOutput(candidate, fallbackRecord) {
-    const fallback = fallbackRecord || {};
-    const fallbackLocation = fallback.location || {};
-    const rawTitle = restoreFrenchAccents(cleanTitle(candidate.title, fallback.title));
-    const rawDescription = restoreFrenchAccents(cleanDescription(candidate.description, fallback.description));
-    const parsedRooms = toPositiveInt(candidate.nbrRooms, toPositiveInt(fallback.nbrRooms, 0));
-    const rooms = parsedRooms || extractRoomsHint(`${rawTitle} ${rawDescription}`, toPositiveInt(fallback.nbrRooms, 0));
-    const typeFromModel = normalizeType(candidate.typeProperty, fallback.typeProperty || 'Home');
-    const finalType = reconcileTypeProperty(typeFromModel, rooms, `${rawTitle} ${rawDescription}`, fallback.typeProperty || 'Home');
-    const fallbackTitle = restoreFrenchAccents(cleanTitle(fallback.title, rawTitle));
-    const fallbackDescription = restoreFrenchAccents(cleanDescription(fallback.description, rawDescription));
-
-    const useFallbackTitle =
-      isLowQualityTitle(rawTitle) ||
-      titleLooksIncoherentWithType(rawTitle, finalType);
-    const useFallbackDescription =
-      isLowQualityDescription(rawDescription) &&
-      !isLowQualityDescription(fallbackDescription);
-
-    const finalTitle = useFallbackTitle ? fallbackTitle : rawTitle;
-    const finalDescription = useFallbackDescription ? fallbackDescription : rawDescription;
-    const normalizedStatus = normalizeStatus(candidate.status, fallback.status || 'FOR_RENT');
-    const normalizedContact = normalizeContact(candidate.contact, fallback.contact || '');
-    const normalizedPrice = normalizePrice(candidate.price, {
-      status: normalizedStatus,
-      fallback: fallback.price,
-    });
+  normalizeModelOutput(candidate) {
+    const safeCandidate = candidate && typeof candidate === 'object' ? candidate : {};
+    const rawTitle = restoreFrenchAccents(cleanTitle(safeCandidate.title, 'Annonce immobilière'));
+    const rawDescription = restoreFrenchAccents(
+      cleanDescription(safeCandidate.description, 'Description non renseignée')
+    );
+    const rooms =
+      toPositiveInt(safeCandidate.nbrRooms, 0) ||
+      extractRoomsHint(`${rawTitle} ${rawDescription}`, 0);
+    const typeFromModel = normalizeType(safeCandidate.typeProperty, 'Home');
+    const finalType = reconcileTypeProperty(
+      typeFromModel,
+      rooms,
+      `${rawTitle} ${rawDescription}`,
+      'Home'
+    );
 
     return {
-      title: finalTitle,
-      description: finalDescription,
+      title: rawTitle,
+      description: rawDescription,
       typeProperty: finalType,
-      status: normalizedStatus,
-      price: normalizedPrice,
-      contact: normalizedContact,
-      tags: normalizeTags(candidate.tags, fallback.tags || []),
-      area: toPositiveInt(candidate.area, toPositiveInt(fallback.area, 0)),
+      status: normalizeStatus(safeCandidate.status, 'FOR_RENT'),
+      price: toPositiveInt(safeCandidate.price, 0),
+      contact: normalizeContact(safeCandidate.contact, ''),
+      tags: normalizeTags(safeCandidate.tags, []),
+      area: toPositiveInt(safeCandidate.area, 0),
       nbrRooms: rooms,
-      nbrChickens: toPositiveInt(candidate.nbrChickens, toPositiveInt(fallback.nbrChickens, 0)),
-      nbrBathrooms: toPositiveInt(candidate.nbrBathrooms, 0),
-      nbrToilets: toPositiveInt(candidate.nbrToilets, 0),
-      nbrLivingRoom: toPositiveInt(candidate.nbrLivingRoom, 0),
-      location: normalizeLocation(candidate.location, fallbackLocation),
+      nbrKitchens: toPositiveInt(safeCandidate.nbrKitchens ?? safeCandidate.nbrChickens, 0),
+      nbrBathrooms: toPositiveInt(safeCandidate.nbrBathrooms, 0),
+      nbrToilets: toPositiveInt(safeCandidate.nbrToilets, 0),
+      nbrLivingRoom: toPositiveInt(safeCandidate.nbrLivingRoom, 0),
+      location: normalizeLocation(safeCandidate.location),
     };
   }
 
-  async normalizeRecord(record, context = {}) {
-    const defaults = context.defaults || {};
-    const fallback = context.fallbackRecord || {};
-    const payload = buildPromptPayload(record, defaults, fallback, context.locationHints || null);
+  async normalizeRecord(record) {
+    const payload = buildPromptPayload(record);
 
     let lastError = null;
     for (let attempt = 0; attempt <= this.config.maxRetries; attempt += 1) {
@@ -543,7 +618,7 @@ class LmStudioTextNormalizerAdapter extends TextNormalizerPort {
         if (this.config.delayMsBetweenRequests > 0) {
           await wait(this.config.delayMsBetweenRequests);
         }
-        return this.normalizeModelOutput(raw, fallback);
+        return this.normalizeModelOutput(raw);
       } catch (error) {
         lastError = error;
       }
@@ -552,7 +627,11 @@ class LmStudioTextNormalizerAdapter extends TextNormalizerPort {
     throw new AppError('LM Studio normalization failed after retries', {
       code: 'LM_STUDIO_NORMALIZATION_FAILED',
       status: 502,
-      details: { message: lastError?.message || 'Unknown error' },
+      details: {
+        message: lastError?.message || 'Unknown error',
+        code: lastError?.code || null,
+        lastErrorDetails: lastError?.details || null,
+      },
     });
   }
 }

@@ -141,7 +141,7 @@ export const PropertySchema = PropertySchemaBase.transform((data) => ({
 }));
 export const LogementSchemaBase = PropertySchemaBase.extend({
   nbrRooms: z.number().min(0, "Le nombre de chambres doit être un nombre positif"),
-  nbrChickens: z.number().min(0, "Le nombre de cuisines doit être un nombre positif"),
+  nbrKitchens: z.number().min(0, "Le nombre de cuisines doit être un nombre positif"),
   nbrBathrooms: z.number().min(0, "Le nombre de salles de bain doit être un nombre positif"),
   nbrToilets: z.number().min(0, "Le nombre de toilettes doit être un nombre positif"),
 });
@@ -304,7 +304,7 @@ export const Step2SchemaBase = z.object({
 });
 export const HomeStep2Schema = z.object({
   nbrRooms: z.number().min(0, "Le nombre de chambres doit être un nombre positif"),
-  nbrChickens: z.number().min(0, "Le nombre de cuisines doit être un nombre positif"),
+  nbrKitchens: z.number().min(0, "Le nombre de cuisines doit être un nombre positif"),
   nbrBathrooms: z.number().min(0, "Le nombre de salles de bain doit être un nombre positif"),
   nbrToilets: z.number().min(0, "Le nombre de toilettes doit être un nombre positif"),
   nbrGarages: z.number().min(0, "Le nombre de garages doit être un nombre positif"),
@@ -312,7 +312,7 @@ export const HomeStep2Schema = z.object({
 });
 export const StudioStep2Schema = z.object({
   nbrRooms: z.number().min(0, "Le nombre de chambres doit être un nombre positif"),
-  nbrChickens: z.number().min(0, "Le nombre de cuisines doit être un nombre positif"),
+  nbrKitchens: z.number().min(0, "Le nombre de cuisines doit être un nombre positif"),
   nbrBathrooms: z.number().min(0, "Le nombre de salles de bain doit être un nombre positif"),
   nbrToilets: z.number().min(0, "Le nombre de toilettes doit être un nombre positif"),
   nbrFloorStudio: z.number().min(0, "Le numéro d'étage doit être un nombre positif"),
@@ -320,7 +320,7 @@ export const StudioStep2Schema = z.object({
 });
 export const ApartmentStep2Schema = z.object({
   nbrRooms: z.number().min(0, "Le nombre de chambres doit être un nombre positif"),
-  nbrChickens: z.number().min(0, "Le nombre de cuisines doit être un nombre positif"),
+  nbrKitchens: z.number().min(0, "Le nombre de cuisines doit être un nombre positif"),
   nbrBathrooms: z.number().min(0, "Le nombre de salles de bain doit être un nombre positif"),
   nbrToilets: z.number().min(0, "Le nombre de toilettes doit être un nombre positif"),
   nbrFloorApartment: z.number().min(0, "Le numéro d'étage de l'appartement doit être un nombre positif"),
@@ -328,7 +328,7 @@ export const ApartmentStep2Schema = z.object({
 });
 export const VillaStep2Schema = z.object({
   nbrRooms: z.number().min(0, "Le nombre de chambres doit être un nombre positif"),
-  nbrChickens: z.number().min(0, "Le nombre de cuisines doit être un nombre positif"),
+  nbrKitchens: z.number().min(0, "Le nombre de cuisines doit être un nombre positif"),
   nbrBathrooms: z.number().min(0, "Le nombre de salles de bain doit être un nombre positif"),
   nbrToilets: z.number().min(0, "Le nombre de toilettes doit être un nombre positif"),
   nbrFloors: z.number().min(0, "Le nombre d'étages doit être un nombre positif"),

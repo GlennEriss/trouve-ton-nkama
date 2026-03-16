@@ -45,7 +45,7 @@ export const RoomsComponent = () => {
 export const KitchensComponent = () => {
     const mediator = useStep2FormPropertyMediator()
     //const { watch } = useFormContext()
-    //const kitchens = watch("nbrChickens")
+    //const kitchens = watch("nbrKitchens")
     return (
         <InputNumberApp value={mediator.getKitchens()} onChange={(value) => mediator.setKitchens(Number(value))} />
     )

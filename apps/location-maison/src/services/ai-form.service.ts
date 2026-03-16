@@ -332,7 +332,7 @@ export class AIFormService {
       case 'home':
         return {
           nbrRooms: rooms,
-          nbrChickens: 1,
+          nbrKitchens: 1,
           nbrBathrooms: Math.max(1, rooms > 0 ? Math.ceil(rooms / 2) : 1),
           nbrToilets: Math.max(1, rooms > 0 ? Math.ceil(rooms / 2) : 1),
           nbrGarages: 0,
@@ -342,7 +342,7 @@ export class AIFormService {
       case 'apartment':
         return {
           nbrRooms: rooms,
-          nbrChickens: 1,
+          nbrKitchens: 1,
           nbrBathrooms: Math.max(1, rooms > 0 ? Math.ceil(rooms / 2) : 1),
           nbrToilets: Math.max(1, rooms > 0 ? Math.ceil(rooms / 2) : 1),
           nbrFloorApartment: 0,
@@ -351,7 +351,7 @@ export class AIFormService {
       case 'villa':
         return {
           nbrRooms: rooms,
-          nbrChickens: 1,
+          nbrKitchens: 1,
           nbrBathrooms: Math.max(1, rooms > 0 ? Math.ceil(rooms / 2) : 1),
           nbrToilets: Math.max(1, rooms > 0 ? Math.ceil(rooms / 2) : 1),
           nbrFloors: 1,
@@ -361,7 +361,7 @@ export class AIFormService {
       case 'studio':
         return {
           nbrRooms: rooms > 0 ? rooms : 1,
-          nbrChickens: 1,
+          nbrKitchens: 1,
           nbrBathrooms: 1,
           nbrToilets: 1,
           nbrFloorStudio: 0,

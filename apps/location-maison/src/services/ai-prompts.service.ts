@@ -272,7 +272,7 @@ IMPORTANT:
       case 'home':
         return `
     "nbrRooms": nombre_de_chambres,
-    "nbrChickens": nombre_de_cuisines,
+    "nbrKitchens": nombre_de_cuisines,
     "nbrBathrooms": nombre_de_salles_de_bain,
     "nbrToilets": nombre_de_toilettes,
     "nbrGarages": nombre_de_garages,
@@ -282,7 +282,7 @@ IMPORTANT:
       case 'apartment':
         return `
     "nbrRooms": nombre_de_chambres,
-    "nbrChickens": nombre_de_cuisines,
+    "nbrKitchens": nombre_de_cuisines,
     "nbrBathrooms": nombre_de_salles_de_bain,
     "nbrToilets": nombre_de_toilettes,
     "nbrFloorApartment": numero_d_etage,
@@ -291,7 +291,7 @@ IMPORTANT:
       case 'villa':
         return `
     "nbrRooms": nombre_de_chambres,
-    "nbrChickens": nombre_de_cuisines,
+    "nbrKitchens": nombre_de_cuisines,
     "nbrBathrooms": nombre_de_salles_de_bain,
     "nbrToilets": nombre_de_toilettes,
     "nbrFloors": nombre_d_etages,
@@ -301,7 +301,7 @@ IMPORTANT:
       case 'studio':
         return `
     "nbrRooms": nombre_de_chambres,
-    "nbrChickens": nombre_de_cuisines,
+    "nbrKitchens": nombre_de_cuisines,
     "nbrBathrooms": nombre_de_salles_de_bain,
     "nbrToilets": nombre_de_toilettes,
     "nbrFloorStudio": numero_d_etage,

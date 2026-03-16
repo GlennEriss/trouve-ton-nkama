@@ -31,7 +31,7 @@ function extractNumber(text, patterns) {
 function extractLogementAttributes(text) {
   const attrs = {
     nbrRooms: 0,
-    nbrChickens: 0,
+    nbrKitchens: 0,
     nbrBathrooms: 0,
     nbrToilets: 0
   };
@@ -70,7 +70,7 @@ function extractLogementAttributes(text) {
     attrs.nbrRooms = 1;
   }
 
-  // Cuisines (nbrChickens = nombre de cuisines)
+  // Cuisines (nbrKitchens = nombre de cuisines)
   const kitchenPatterns = [
     /(\d+)\s*(?:cuisine|cuisines|kitchen)\b/i,
     /(?:cuisine|kitchen)\s*[:=]?\s*(\d+)/i,
@@ -82,15 +82,15 @@ function extractLogementAttributes(text) {
     if (match) {
       const num = parseInt(match[1] || match[2] || match[0]);
       if (num > 0 && num <= 10) {
-        attrs.nbrChickens = num;
+        attrs.nbrKitchens = num;
         break;
       }
     }
   }
   
   // Si pas de cuisine explicite, on peut inférer 1 si c'est un logement
-  if (attrs.nbrChickens === 0 && (lowerText.includes('cuisine') || lowerText.includes('kitchen'))) {
-    attrs.nbrChickens = 1;
+  if (attrs.nbrKitchens === 0 && (lowerText.includes('cuisine') || lowerText.includes('kitchen'))) {
+    attrs.nbrKitchens = 1;
   }
 
   // Salles de bain / Douches
@@ -409,8 +409,8 @@ function enrichProperty(property) {
     if (!property.nbrRooms || property.nbrRooms === 0 || property.nbrRooms > 20) {
       property.nbrRooms = logementAttrs.nbrRooms;
     }
-    if (!property.nbrChickens || property.nbrChickens === 0 || property.nbrChickens > 10) {
-      property.nbrChickens = logementAttrs.nbrChickens;
+    if (!property.nbrKitchens || property.nbrKitchens === 0 || property.nbrKitchens > 10) {
+      property.nbrKitchens = logementAttrs.nbrKitchens;
     }
     if (!property.nbrBathrooms || property.nbrBathrooms === 0 || property.nbrBathrooms > 20) {
       property.nbrBathrooms = logementAttrs.nbrBathrooms;

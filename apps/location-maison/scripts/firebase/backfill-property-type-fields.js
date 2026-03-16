@@ -70,7 +70,7 @@ function inferToilets(data, text, bathrooms) {
 }
 
 function inferKitchens(data, text) {
-  const explicit = parseOptionalInt(data.nbrChickens);
+  const explicit = parseOptionalInt(data.nbrKitchens ?? data.nbrChickens);
   if (explicit !== null) return explicit;
   const parsed = extractInt(text, [/(\d{1,2})\s*(?:cuisines?|kitchens?)\b/i]);
   if (parsed !== null) return parsed;
@@ -193,7 +193,7 @@ function buildPatch(data, index) {
 
   if (['Home', 'Apartment', 'Studio', 'Villa'].includes(typeProperty)) {
     ensure('nbrRooms', rooms);
-    ensure('nbrChickens', kitchens);
+    ensure('nbrKitchens', kitchens);
     ensure('nbrBathrooms', bathrooms);
     ensure('nbrToilets', toilets);
   }

@@ -58,7 +58,7 @@ export type Location = {
 }
 export type Logement = Property & {
     nbrRooms: number,
-    nbrChickens: number,
+    nbrKitchens: number,
     nbrBathrooms: number,
     nbrToilets: number
 }
