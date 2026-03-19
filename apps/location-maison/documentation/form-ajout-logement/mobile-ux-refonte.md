@@ -48,6 +48,20 @@ Impact :
 - risque de double sticky et de recouvrement selon viewport
 - maintenance plus difficile
 
+## 2.4 Publicités visibles dans le formulaire (à supprimer)
+
+Constat utilisateur :
+- des pubs Ads apparaissent encore pendant la saisie du formulaire d'ajout.
+
+Sources techniques à traiter :
+- `src/components/footer/Footer.tsx` contient les blocs AdSense (mobile compact + footer).
+- `src/app/layout.tsx` charge globalement le script AdSense (`adsense-loader-global`) sur toutes les pages.
+
+Impact UX :
+- distraction pendant une tâche à forte concentration (remplir une annonce)
+- baisse de lisibilité mobile
+- sensation d'interface "polluée" dans un flow transactionnel critique
+
 ---
 
 ## 3. Objectifs de refonte
@@ -55,8 +69,9 @@ Impact :
 1. Mobile-first réel sur tout le parcours d'ajout d'annonce.
 2. Zéro blocage visuel du formulaire par l'assistant IA.
 3. Header sticky cohérent, sans espace blanc parasite.
-4. Conservation des comportements métier existants (stepper, validation, génération IA, preview, submit).
-5. Déploiement progressif et réversible.
+4. Zéro publicité visible dans le flow formulaire (`/property/add*`, `/property/modify/*`).
+5. Conservation des comportements métier existants (stepper, validation, génération IA, preview, submit).
+6. Déploiement progressif et réversible.
 
 ---
 
@@ -128,7 +143,13 @@ Stratégies prévues :
 3. Réduire l'intrusion de la bulle de bienvenue.
 - affichage unique, dismissable, ou désactivée sur écrans compacts
 
-## Phase 3 - Harmonisation multi-pages (priorité moyenne)
+## Phase 3 - Suppression Ads dans le formulaire (priorité haute)
+
+1. Bloquer explicitement tout rendu AdSense dans le flow formulaire.
+2. Ajouter un garde-route dédié pour ne pas charger les pubs sur `/property/add*` et `/property/modify/*`.
+3. Garantir que la monétisation reste inchangée hors du flow formulaire.
+
+## Phase 4 - Harmonisation multi-pages (priorité moyenne)
 
 1. Appliquer le header partagé à toutes les pages sticky à titre.
 2. Standardiser les classes de spacing vertical (`pt/pb`, shadow, border).
@@ -155,6 +176,10 @@ Stratégies prévues :
 - accès routes protégées existantes
 - comportement annonceur inchangé côté permissions
 
+4. Monétisation :
+- conserver les pubs sur les pages non-formulaire
+- supprimer les pubs uniquement dans le flow formulaire
+
 ---
 
 ## 7. Tests de validation
@@ -174,7 +199,8 @@ Stratégies prévues :
 2. Vérifier que le premier champ est visible sans espace blanc anormal.
 3. Ouvrir l'assistant IA, saisir/fermer, reprendre la saisie formulaire.
 4. Vérifier que les boutons stepper ne sont jamais recouverts.
-5. Valider la soumission complète avec et sans IA.
+5. Vérifier qu'aucune pub n'apparaît dans `/property/add*` et `/property/modify/*`.
+6. Valider la soumission complète avec et sans IA.
 
 ## 7.3 Régression ciblée pages header sticky
 
@@ -193,6 +219,7 @@ Stratégies prévues :
 3. Header sticky homogène et lisible sur les pages ciblées.
 4. 0 régression fonctionnelle sur le parcours de création d'annonce.
 5. Desktop inchangé visuellement (hors correctifs explicitement validés).
+6. Aucune pub Ads visible sur les écrans du formulaire.
 
 ---
 
@@ -200,8 +227,9 @@ Stratégies prévues :
 
 1. Phase 1 (layout + header partagé)
 2. Phase 2 (assistant IA mobile non bloquant)
-3. Phase 3 (harmonisation globale)
-4. Tests E2E mobile + validation produit
+3. Phase 3 (suppression Ads formulaire)
+4. Phase 4 (harmonisation globale)
+5. Tests E2E mobile + validation produit
 
 Cette séquence limite le risque, sécurise les gains rapides et prépare une refonte UI/UX propre.
 
@@ -244,7 +272,12 @@ Branches de travail par problème :
 - Scope : politique d'affichage minimaliste de `WelcomeMessage`.
 - Fini quand : message non bloquant, dismissable, et compatible petits écrans.
 
-7. [ ] `test/mobile-add-property-regression`
+7. [ ] `fix/remove-ads-property-form-flow`
+- Problème ciblé : section 2.4 (publicités visibles dans le formulaire).
+- Scope : blocage ads sur `/property/add*` et `/property/modify/*` (footer + loader global).
+- Fini quand : aucune pub/overlay ads n'est visible pendant la création/modification d'annonce.
+
+8. [ ] `test/mobile-add-property-regression`
 - Problème ciblé : non-régression globale (sections 6 et 7).
 - Scope : scénarios de validation mobile/tablette/desktop du parcours d'ajout.
 - Fini quand : checklist de tests section 7 validée.
@@ -260,7 +293,8 @@ Branches de travail par problème :
 5. [ ] Créer `fix/mobile-ai-assistant-non-blocking-launcher`
 6. [ ] Créer `feature/mobile-ai-assistant-bottom-sheet`
 7. [ ] Créer `fix/mobile-ai-welcome-message-intrusion`
-8. [ ] Créer `test/mobile-add-property-regression`
+8. [ ] Créer `fix/remove-ads-property-form-flow`
+9. [ ] Créer `test/mobile-add-property-regression`
 
 Commande type :
 
