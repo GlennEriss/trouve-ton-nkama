@@ -1,8 +1,9 @@
 import { TypeProperty } from '@/constantes/property-type'
 import { routes } from '@/constantes/routes'
-import { ChevronLeft, Home, Building, Warehouse, Briefcase, Building2, Bed, Store, ShoppingBag, Globe } from 'lucide-react'
+import { Home, Building, Warehouse, Briefcase, Building2, Bed, Store, ShoppingBag, Globe } from 'lucide-react'
 import Link from 'next/link'
 import React from 'react'
+import AppMobileStickyHeader from '@/components/shared/AppMobileStickyHeader'
 
 const buttonList = [
   {
@@ -59,13 +60,11 @@ const buttonList = [
 export default function page() {
   return (
     <div className='space-y-8 min-h-screen pb-10 bg-gradient-to-br from-gray-100 to-gray-200 dark:bg-gradient-to-b dark:from-gray-900 dark:to-gray-800 mb-10 md:pt-1'>
-      {/* Header Mobile */}
-      <div className='bg-white dark:bg-gray-800 sticky top-0 flex gap-5 items-center border-b dark:border-gray-700 py-4 md:hidden px-6 shadow-md'>
-        <Link href={routes.protected.properties}>
-          <ChevronLeft className='text-gray-800 dark:text-white' />
-        </Link>
-        <h1 className='text-xl font-bold text-gray-900 dark:text-white'>Ajouter un logement</h1>
-      </div>
+      <AppMobileStickyHeader
+        title='Ajouter un logement'
+        backHref={routes.protected.properties}
+        className='px-6 py-4 bg-white dark:bg-gray-800 shadow-md'
+      />
 
       {/* Section des boutons */}
       <div className='grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 px-6'>
