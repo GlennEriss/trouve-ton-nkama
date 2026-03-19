@@ -1,7 +1,7 @@
 'use client'
 
 import React, { useRef, useState } from 'react'
-import { Wand2, X, Send, ImagePlus } from 'lucide-react'
+import { Wand2, X, Send, ImagePlus, Sparkles } from 'lucide-react'
 import { createLogger } from '@/lib/logger'
 import imageCompression from 'browser-image-compression'
 import { MAX_IMAGES_UPLOAD } from '@/constantes'
@@ -10,6 +10,11 @@ import { useCurrentUser } from '@/hooks/use-current-user'
 
 const logger = createLogger('components.ai-assistant-modal')
 const IMAGE_MAX_SIZE_BYTES = 300 * 1024
+const QUICK_PROMPTS = [
+  'Studio meublé à Owendo proche pédiatrie',
+  'Appartement 3 pièces avec balcon',
+  'Maison familiale avec cour et garage'
+]
 
 interface AssistantModalProps {
   isOpen: boolean
@@ -106,7 +111,7 @@ export default function AssistantModal({
 
   return (
     <div
-      className="fixed inset-x-3 z-50 md:inset-x-auto md:right-4 md:w-[390px]"
+      className="fixed inset-x-3 z-[60] md:inset-x-auto md:right-4 md:w-[400px]"
       style={
         isMobileViewport
           ? { bottom: `calc(env(safe-area-inset-bottom, 0px) + ${mobileBottomOffset}px)` }
@@ -116,45 +121,47 @@ export default function AssistantModal({
       aria-modal="false"
       aria-label="Assistant IA"
     >
-      <div className="relative overflow-hidden rounded-3xl border border-gray-200 bg-white shadow-2xl">
-        <div className="flex items-center justify-between border-b border-gray-100 px-4 py-3">
+      <div className="relative overflow-hidden rounded-[28px] border border-gray-200/90 bg-white/95 shadow-[0_20px_55px_-20px_rgba(15,23,42,0.45)] backdrop-blur-sm dark:border-gray-700 dark:bg-gray-900/95">
+        <div className="pointer-events-none absolute -right-16 -top-16 h-44 w-44 rounded-full bg-[#1de9b6]/20 blur-3xl" />
+        <div className="pointer-events-none absolute -left-20 bottom-14 h-40 w-40 rounded-full bg-[#156B68]/15 blur-3xl" />
+
+        <div className="relative flex items-center justify-between bg-gradient-to-r from-[#0f5f5c] via-[#156B68] to-[#1c7f79] px-4 py-3 text-white">
           <div className="flex items-center gap-2">
-            <div
-              className="flex h-8 w-8 items-center justify-center rounded-full"
-              style={{ backgroundColor: '#156B68' }}
-            >
-              <Wand2 className="h-4 w-4" style={{ color: '#1de9b6' }} />
+            <div className="flex h-9 w-9 items-center justify-center rounded-full bg-white/15 ring-1 ring-white/25">
+              <Wand2 className="h-4 w-4 text-[#9cf3db]" />
             </div>
             <div>
-              <h2 className="text-sm font-semibold text-gray-900">Assistant IA</h2>
-              <p className="text-xs text-gray-500">Mode conversation</p>
+              <h2 className="text-sm font-semibold">Assistant IA</h2>
+              <p className="text-[11px] text-white/80">Discussion guidée</p>
             </div>
           </div>
-          <button
-            type="button"
-            onClick={handleClose}
-            className="flex h-7 w-7 items-center justify-center rounded-full bg-gray-100 text-gray-500 transition-colors hover:bg-gray-200"
-          >
-            <X className="h-4 w-4" />
-          </button>
+          <div className="flex items-center gap-2">
+            <span className="inline-flex items-center gap-1 rounded-full bg-white/15 px-2 py-0.5 text-[10px] font-medium text-white/90 ring-1 ring-white/20">
+              <Sparkles className="h-3 w-3" />
+              En ligne
+            </span>
+            <button
+              type="button"
+              onClick={handleClose}
+              className="flex h-7 w-7 items-center justify-center rounded-full bg-white/15 text-white transition-colors hover:bg-white/25"
+            >
+              <X className="h-4 w-4" />
+            </button>
+          </div>
         </div>
 
-        <div className="max-h-[62vh] overflow-y-auto px-4 py-3">
-          <div className="mb-4 flex items-start gap-2">
-            <div
-              className="mt-1 flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full"
-              style={{ backgroundColor: '#e6fffa' }}
-            >
-              <Wand2 className="h-3 w-3" style={{ color: '#156B68' }} />
+        <div className="relative max-h-[66vh] space-y-4 overflow-y-auto px-4 py-4">
+          <div className="flex items-start gap-2">
+            <div className="mt-1 flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-full bg-[#e6fffa] ring-1 ring-[#b5f3e5]">
+              <Wand2 className="h-3.5 w-3.5 text-[#156B68]" />
             </div>
-            <div className="rounded-2xl rounded-tl-sm bg-gray-50 px-3 py-2 text-sm text-gray-700">
-              Décrivez votre bien comme dans un chat. Je génère automatiquement les champs suivants :
+            <div className="rounded-2xl rounded-tl-sm border border-gray-200 bg-white/90 px-3 py-2 text-sm text-gray-700 shadow-sm dark:border-gray-700 dark:bg-gray-800/80 dark:text-gray-200">
+              Décrivez votre bien comme dans un chat. Je m'occupe de générer :
               <div className="mt-2 flex flex-wrap gap-2">
                 {requiredFields.map((field) => (
                   <span
                     key={field}
-                    className="rounded-full px-2 py-1 text-xs text-gray-600"
-                    style={{ backgroundColor: '#e6fffa' }}
+                    className="rounded-full bg-[#ebfffa] px-2 py-1 text-[11px] font-medium text-[#0f5f5c] ring-1 ring-[#d2f8ee]"
                   >
                     {field}
                   </span>
@@ -163,79 +170,92 @@ export default function AssistantModal({
             </div>
           </div>
 
-          <div className="space-y-3">
+          <div className="rounded-2xl border border-gray-200/80 bg-white/80 p-3 shadow-sm dark:border-gray-700 dark:bg-gray-800/70">
             <textarea
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               placeholder="Ex: Studio meublé à Owendo, proche pédiatrie, 35m², cuisine équipée, eau/électricité incluses..."
-              className="h-28 w-full resize-none rounded-2xl border border-gray-200 px-3 py-3 text-sm text-gray-900 placeholder-gray-400 transition-all focus:border-transparent focus:ring-2 focus:ring-[#156B68]"
+              className="h-28 w-full resize-none rounded-2xl border border-gray-200 bg-[#f8fffd] px-3 py-3 text-sm text-gray-900 placeholder-gray-400 transition-all focus:border-transparent focus:ring-2 focus:ring-[#156B68] dark:border-gray-700 dark:bg-gray-900 dark:text-gray-100"
               autoFocus
               disabled={isLoading}
             />
 
-            <input
-              ref={imageInputRef}
-              type="file"
-              multiple
-              accept="image/png,image/jpeg,image/jpg,image/webp"
-              className="hidden"
-              onChange={handleImagesSelected}
-              disabled={isLoading || isProcessingImages}
-            />
-
-            <div className="flex items-center justify-between gap-3">
-              <button
-                type="button"
-                onClick={handleAddImagesClick}
-                disabled={isLoading || isProcessingImages || selectedImages.length >= MAX_IMAGES_UPLOAD}
-                className="inline-flex items-center gap-2 rounded-full border border-gray-200 px-3 py-2 text-xs font-medium text-gray-700 transition-colors hover:bg-gray-50 disabled:opacity-50"
-              >
-                <ImagePlus className="h-4 w-4" />
-                {isProcessingImages ? 'Traitement...' : `Images (${selectedImages.length}/${MAX_IMAGES_UPLOAD})`}
-              </button>
-
-              <button
-                type="button"
-                onClick={handleGenerate}
-                disabled={!description.trim() || !canGenerate || isLoading || isProcessingImages}
-                className="inline-flex items-center gap-2 rounded-full px-4 py-2 text-sm font-medium text-white transition-opacity disabled:opacity-50"
-                style={{ backgroundColor: '#156B68' }}
-              >
-                <Send className="h-4 w-4" />
-                {isLoading ? 'Génération...' : 'Envoyer'}
-              </button>
+            <div className="mt-3 flex flex-wrap gap-2">
+              {QUICK_PROMPTS.map((prompt) => (
+                <button
+                  key={prompt}
+                  type="button"
+                  onClick={() => setDescription(prompt)}
+                  className="rounded-full border border-[#ccefe7] bg-[#f3fffb] px-2.5 py-1 text-[11px] font-medium text-[#146B67] transition-colors hover:bg-[#e7fbf4]"
+                  disabled={isLoading}
+                >
+                  {prompt}
+                </button>
+              ))}
             </div>
-
-            {selectedImages.length > 0 && (
-              <div className="space-y-2 rounded-2xl border border-gray-100 bg-gray-50/70 p-2">
-                {selectedImages.map((image, index) => (
-                  <div
-                    key={`${image.name}-${image.size}-${index}`}
-                    className="flex items-center justify-between rounded-xl bg-white px-3 py-2"
-                  >
-                    <span className="truncate pr-3 text-xs text-gray-700">{image.name}</span>
-                    <button
-                      type="button"
-                      onClick={() => handleRemoveImage(index)}
-                      className="text-xs font-medium text-red-600 hover:text-red-700"
-                      disabled={isLoading}
-                    >
-                      Retirer
-                    </button>
-                  </div>
-                ))}
-              </div>
-            )}
           </div>
+
+          <input
+            ref={imageInputRef}
+            type="file"
+            multiple
+            accept="image/png,image/jpeg,image/jpg,image/webp"
+            className="hidden"
+            onChange={handleImagesSelected}
+            disabled={isLoading || isProcessingImages}
+          />
+
+          {selectedImages.length > 0 && (
+            <div className="space-y-2 rounded-2xl border border-gray-100 bg-gray-50/80 p-2 dark:border-gray-700 dark:bg-gray-800/70">
+              {selectedImages.map((image, index) => (
+                <div
+                  key={`${image.name}-${image.size}-${index}`}
+                  className="flex items-center justify-between rounded-xl bg-white px-3 py-2 dark:bg-gray-900"
+                >
+                  <span className="truncate pr-3 text-xs text-gray-700 dark:text-gray-200">{image.name}</span>
+                  <button
+                    type="button"
+                    onClick={() => handleRemoveImage(index)}
+                    className="text-xs font-medium text-red-600 hover:text-red-700"
+                    disabled={isLoading}
+                  >
+                    Retirer
+                  </button>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
 
-        <div className="border-t border-gray-100 px-4 py-2">
-          <p className="text-center text-xs text-gray-500">
+        <div className="relative border-t border-gray-100 bg-white/80 px-4 py-3 dark:border-gray-700 dark:bg-gray-900/70">
+          <div className="flex items-center justify-between gap-3">
+            <button
+              type="button"
+              onClick={handleAddImagesClick}
+              disabled={isLoading || isProcessingImages || selectedImages.length >= MAX_IMAGES_UPLOAD}
+              className="inline-flex items-center gap-2 rounded-full border border-gray-200 bg-white px-3 py-2 text-xs font-semibold text-gray-700 transition-colors hover:bg-gray-50 disabled:opacity-50 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-200"
+            >
+              <ImagePlus className="h-4 w-4" />
+              {isProcessingImages ? 'Traitement...' : `Images (${selectedImages.length}/${MAX_IMAGES_UPLOAD})`}
+            </button>
+
+            <button
+              type="button"
+              onClick={handleGenerate}
+              disabled={!description.trim() || !canGenerate || isLoading || isProcessingImages}
+              className="inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-[#0f5f5c] to-[#1c7f79] px-4 py-2 text-sm font-semibold text-white shadow-md transition-all hover:brightness-110 disabled:opacity-50"
+            >
+              <Send className="h-4 w-4" />
+              {isLoading ? 'Génération...' : 'Envoyer'}
+            </button>
+          </div>
+
+          <p className="mt-2 text-center text-[11px] text-gray-500 dark:text-gray-400">
             {creditsAvailable} crédit{creditsAvailable > 1 ? 's' : ''} disponible{creditsAvailable > 1 ? 's' : ''}
           </p>
         </div>
 
-        <div className="absolute -bottom-1 right-8 hidden h-3 w-3 rotate-45 border-b border-r border-gray-200 bg-white md:block" />
+        <div className="absolute -bottom-1 right-8 hidden h-3 w-3 rotate-45 border-b border-r border-gray-200 bg-white md:block dark:border-gray-700 dark:bg-gray-900" />
       </div>
     </div>
   )
