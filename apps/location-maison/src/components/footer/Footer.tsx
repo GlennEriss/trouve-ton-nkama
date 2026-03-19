@@ -9,6 +9,7 @@ import { useWindowSize } from '@/hooks/useSize';
 import { cn } from '@/lib/utils';
 import PWAInstallButton from '@/components/pwa/PWAInstallButton';
 import { createLogger } from '@/lib/logger';
+import { isPropertyFormFlowPath } from '@/lib/ads/route-guards';
 
 const ADSENSE_CLIENT = 'ca-pub-2799688336707362';
 const ADSENSE_SLOT = '7503013398';
@@ -115,7 +116,7 @@ export default function Footer({ isHide = false }: Readonly<{ isHide?: boolean }
         routes.public.reset_password,
         routes.public.passwordResetFailure,
     ];
-    const hideByRoute = isHide || hiddenFooterRoutes.includes(pathname)
+    const hideByRoute = isHide || hiddenFooterRoutes.includes(pathname) || isPropertyFormFlowPath(pathname)
     const showCompactMobileAdOnly = Boolean(user && width < 768 && pathname !== routes.public.homePage)
 
     if (hideByRoute) {

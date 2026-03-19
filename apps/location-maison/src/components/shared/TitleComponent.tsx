@@ -2,6 +2,7 @@
 
 import { usePathname } from 'next/navigation'
 import React from 'react'
+import { cn } from '@/lib/utils'
 
 const titleList: Record<string, string> = {
     'home': "Ajout d'une maison",
@@ -11,12 +12,16 @@ const titleList: Record<string, string> = {
     'building': "Ajout d'un immeuble",
     'villa': "Ajout d'une villa",
 }
-export default function TitleComponent() {
+interface TitleComponentProps {
+  className?: string
+}
+
+export default function TitleComponent({ className }: TitleComponentProps) {
   const pathnames = usePathname()
   const titles = pathnames.split('/')
   const title: string = titles[titles.length - 1]
   return (
-    <h1 className='font-bold text-2xl text-[#1B4D5B]'>
+    <h1 className={cn('font-bold text-2xl text-[#1B4D5B]', className)}>
         {titleList[title] || "Modification d'un logement" }
     </h1>
   )
