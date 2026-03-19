@@ -18,7 +18,7 @@ export default function StepperButtonComponent() {
   if (isFinalScreen) return null
 
   return (
-    <div className="flex justify-end gap-3">
+    <div className="flex justify-end gap-3 mb-24 md:mb-0">
       {!isFirstStep && (
         <Button
           className="bg-[#1B4D5B]"
