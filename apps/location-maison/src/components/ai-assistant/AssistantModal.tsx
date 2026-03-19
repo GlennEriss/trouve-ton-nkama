@@ -121,54 +121,55 @@ export default function AssistantModal({
       aria-modal="false"
       aria-label="Assistant IA"
     >
-      <div className="relative ml-auto w-full max-w-[370px] animate-in fade-in-0 zoom-in-95 slide-in-from-bottom-2 duration-200">
-        <div className="relative overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-[0_20px_40px_-26px_rgba(15,23,42,0.7)] dark:border-gray-700 dark:bg-gray-900">
-          <div className="pointer-events-none absolute inset-x-0 top-0 h-20 bg-gradient-to-b from-[#1de9b6]/10 to-transparent" />
+      <div className="relative ml-auto w-full max-w-[368px] animate-in fade-in-0 zoom-in-95 slide-in-from-bottom-2 duration-200">
+        <div className="relative rounded-3xl border border-gray-200 bg-white p-3 shadow-[0_26px_48px_-28px_rgba(15,23,42,0.7)] dark:border-gray-700 dark:bg-gray-900">
+          <div className="pointer-events-none absolute inset-x-4 top-0 h-10 rounded-b-2xl bg-gradient-to-b from-[#1de9b6]/15 to-transparent" />
 
-          <div className="relative flex items-start gap-3 border-b border-gray-100 px-4 py-3 dark:border-gray-700">
-            <div className="mt-0.5 flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full bg-[#e9fffa] ring-1 ring-[#bdeedd]">
+          <button
+            type="button"
+            onClick={handleClose}
+            className="absolute right-2 top-2 z-10 flex h-7 w-7 items-center justify-center rounded-full bg-gray-100 text-gray-600 transition-colors hover:bg-gray-200 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700"
+          >
+            <X className="h-4 w-4" />
+          </button>
+
+          <div className="mb-3 flex items-center gap-2 pl-1 pr-10">
+            <div className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full bg-[#e9fffa] ring-1 ring-[#bdeedd]">
               <Wand2 className="h-4 w-4 text-[#156B68]" />
             </div>
-            <div className="min-w-0 flex-1">
-              <h2 className="text-sm font-semibold text-gray-900 dark:text-white">Assistant IA</h2>
-              <p className="text-[11px] text-gray-500 dark:text-gray-300">Décrivez votre bien comme dans un chat</p>
+            <div className="min-w-0">
+              <p className="text-sm font-semibold text-gray-900 dark:text-white">Assistant IA</p>
+              <p className="text-[11px] text-gray-500 dark:text-gray-300">En ligne</p>
             </div>
-            <div className="flex items-center gap-2">
-              <span className="inline-flex items-center gap-1 rounded-full bg-[#ecfffa] px-2 py-0.5 text-[10px] font-semibold text-[#0f5f5c] ring-1 ring-[#c6f3e7] dark:bg-gray-800 dark:text-[#9cf3db] dark:ring-gray-700">
-                <Sparkles className="h-3 w-3" />
-                En ligne
-              </span>
-              <button
-                type="button"
-                onClick={handleClose}
-                className="flex h-7 w-7 items-center justify-center rounded-full bg-gray-100 text-gray-600 transition-colors hover:bg-gray-200 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700"
-              >
-                <X className="h-4 w-4" />
-              </button>
-            </div>
+
+            <span className="ml-auto inline-flex items-center gap-1 rounded-full bg-[#ecfffa] px-2 py-0.5 text-[10px] font-semibold text-[#0f5f5c] ring-1 ring-[#c6f3e7] dark:bg-gray-800 dark:text-[#9cf3db] dark:ring-gray-700">
+              <Sparkles className="h-3 w-3" />
+              Conversation guidée
+            </span>
           </div>
 
-          <div className="relative max-h-[56vh] space-y-4 overflow-y-auto px-4 py-4">
+          <div className="relative max-h-[54vh] space-y-3 overflow-y-auto pr-1">
             <div className="flex items-start gap-2">
               <div className="mt-1 flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full bg-[#e9fffa] ring-1 ring-[#bdeedd]">
                 <Wand2 className="h-3.5 w-3.5 text-[#156B68]" />
               </div>
-              <div className="rounded-xl rounded-tl-sm border border-gray-200 bg-white px-3 py-2 text-sm text-gray-700 shadow-sm dark:border-gray-700 dark:bg-gray-800 dark:text-gray-200">
+              <div className="relative rounded-2xl rounded-tl-sm border border-[#d6f4ec] bg-[#f4fffb] px-3 py-2 text-sm text-gray-700 shadow-sm dark:border-gray-700 dark:bg-gray-800 dark:text-gray-200">
                 Je m'occupe de générer automatiquement ces champs:
                 <div className="mt-2 flex flex-wrap gap-2">
                   {requiredFields.map((field) => (
                     <span
                       key={field}
-                      className="rounded-full bg-[#ebfffa] px-2 py-1 text-[11px] font-medium text-[#0f5f5c] ring-1 ring-[#d2f8ee]"
+                      className="rounded-full bg-white px-2 py-1 text-[11px] font-medium text-[#0f5f5c] ring-1 ring-[#d2f8ee] dark:bg-gray-900 dark:ring-gray-700"
                     >
                       {field}
                     </span>
                   ))}
                 </div>
+                <div className="absolute -left-1 top-3 h-2.5 w-2.5 rotate-45 border-b border-l border-[#d6f4ec] bg-[#f4fffb] dark:border-gray-700 dark:bg-gray-800" />
               </div>
             </div>
 
-            <div className="rounded-xl border border-gray-200 bg-white p-3 shadow-sm dark:border-gray-700 dark:bg-gray-800">
+            <div className="relative ml-8 rounded-2xl rounded-tr-sm border border-gray-200 bg-white p-3 shadow-sm dark:border-gray-700 dark:bg-gray-800">
               <textarea
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
@@ -191,6 +192,7 @@ export default function AssistantModal({
                   </button>
                 ))}
               </div>
+              <div className="absolute -right-1 top-4 h-2.5 w-2.5 rotate-45 border-r border-t border-gray-200 bg-white dark:border-gray-700 dark:bg-gray-800" />
             </div>
 
             <input
@@ -204,7 +206,7 @@ export default function AssistantModal({
             />
 
             {selectedImages.length > 0 && (
-              <div className="space-y-2 rounded-xl border border-gray-100 bg-gray-50 p-2 dark:border-gray-700 dark:bg-gray-800/70">
+              <div className="ml-8 space-y-2 rounded-2xl border border-gray-100 bg-gray-50 p-2 dark:border-gray-700 dark:bg-gray-800/70">
                 {selectedImages.map((image, index) => (
                   <div
                     key={`${image.name}-${image.size}-${index}`}
@@ -225,7 +227,7 @@ export default function AssistantModal({
             )}
           </div>
 
-          <div className="relative border-t border-gray-100 bg-white px-4 py-3 dark:border-gray-700 dark:bg-gray-900">
+          <div className="mt-3 border-t border-gray-100 pt-3 dark:border-gray-700">
             <div className="flex flex-wrap items-center justify-between gap-3">
               <button
                 type="button"
@@ -253,7 +255,7 @@ export default function AssistantModal({
             </p>
           </div>
 
-          <div className="absolute -bottom-1.5 right-6 h-3.5 w-3.5 rotate-45 border-b border-r border-gray-200 bg-white dark:border-gray-700 dark:bg-gray-900" />
+          <div className="absolute -bottom-1.5 right-7 h-3.5 w-3.5 rotate-45 border-b border-r border-gray-200 bg-white dark:border-gray-700 dark:bg-gray-900" />
         </div>
       </div>
     </div>
