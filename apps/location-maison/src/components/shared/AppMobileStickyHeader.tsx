@@ -1,8 +1,10 @@
 'use client'
 
 import { cn } from '@/lib/utils'
+import { getPageHeaderStrategy, PageHeaderStrategyName } from '@/lib/ui/page-header-strategies'
 import { ChevronLeft } from 'lucide-react'
 import Link from 'next/link'
+import { usePathname } from 'next/navigation'
 import React from 'react'
 
 interface AppMobileStickyHeaderProps {
@@ -13,6 +15,7 @@ interface AppMobileStickyHeaderProps {
   titleClassName?: string
   mobileOnly?: boolean
   staticOnDesktop?: boolean
+  strategy?: PageHeaderStrategyName
 }
 
 export default function AppMobileStickyHeader({
@@ -22,8 +25,12 @@ export default function AppMobileStickyHeader({
   className,
   titleClassName,
   mobileOnly = true,
-  staticOnDesktop = true
+  staticOnDesktop = true,
+  strategy = 'mobile-compact'
 }: AppMobileStickyHeaderProps) {
+  const pathname = usePathname()
+  const headerStrategy = getPageHeaderStrategy(strategy)
+
   const titleNode =
     typeof title === 'string' ? (
       <h1 className={cn('truncate text-xl font-bold text-gray-900 dark:text-white', titleClassName)}>{title}</h1>
@@ -33,14 +40,13 @@ export default function AppMobileStickyHeader({
 
   return (
     <div
-      className={cn(
-        'sticky top-0 z-50 flex items-center gap-3 border-b px-5 py-3 shadow bg-white dark:bg-gray-900 dark:border-gray-700',
-        staticOnDesktop && 'md:static',
-        mobileOnly && 'md:hidden',
-        className
-      )}
+      className={headerStrategy.getContainerClasses({
+        className,
+        mobileOnly,
+        staticOnDesktop
+      })}
     >
-      {backHref ? (
+      {backHref && headerStrategy.showBackButton(backHref, pathname) ? (
         <Link
           href={backHref}
           className="inline-flex h-8 w-8 items-center justify-center rounded-full text-gray-700 transition-colors hover:bg-gray-100 dark:text-gray-200 dark:hover:bg-gray-800"
