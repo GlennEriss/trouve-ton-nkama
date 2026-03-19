@@ -195,3 +195,18 @@ body {
   animation: pulse-glow 2s infinite;
 }
 
+/* Hard-stop des publicités sur les routes formulaire annonce */
+html.ads-disabled-route ins.adsbygoogle,
+html.ads-disabled-route .google-auto-placed,
+html.ads-disabled-route [id^='google_ads_iframe'],
+html.ads-disabled-route [id^='aswift_'],
+html.ads-disabled-route iframe[src*='googlesyndication.com'],
+html.ads-disabled-route iframe[src*='doubleclick.net'] {
+  display: none !important;
+  visibility: hidden !important;
+  pointer-events: none !important;
+  max-width: 0 !important;
+  max-height: 0 !important;
+  width: 0 !important;
+  height: 0 !important;
+}

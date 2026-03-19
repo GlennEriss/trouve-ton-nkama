@@ -225,9 +225,9 @@ Stratégies prévues :
 
 ## 9. Ordre d'exécution recommandé
 
-1. Phase 1 (layout + header partagé)
-2. Phase 2 (assistant IA mobile non bloquant)
-3. Phase 3 (suppression Ads formulaire)
+1. Phase 3 (suppression Ads formulaire)
+2. Phase 1 (layout + header partagé)
+3. Phase 2 (assistant IA mobile non bloquant)
 4. Phase 4 (harmonisation globale)
 5. Tests E2E mobile + validation produit
 
@@ -287,13 +287,13 @@ Branches de travail par problème :
 ## 11. Ordre recommandé de création des branches
 
 1. [ ] Créer `epic/mobile-ux-property-add-2026q1`
-2. [ ] Créer `fix/mobile-empty-top-gap-protected-layout`
-3. [ ] Créer `refactor/mobile-sticky-header-shared-component`
-4. [ ] Créer `refactor/mobile-header-strategy-pattern`
-5. [ ] Créer `fix/mobile-ai-assistant-non-blocking-launcher`
+2. [ ] Créer `fix/remove-ads-property-form-flow`
+3. [ ] Créer `fix/mobile-empty-top-gap-protected-layout`
+4. [ ] Créer `fix/mobile-ai-assistant-non-blocking-launcher`
+5. [ ] Créer `refactor/mobile-sticky-header-shared-component`
 6. [ ] Créer `feature/mobile-ai-assistant-bottom-sheet`
 7. [ ] Créer `fix/mobile-ai-welcome-message-intrusion`
-8. [ ] Créer `fix/remove-ads-property-form-flow`
+8. [ ] Créer `refactor/mobile-header-strategy-pattern`
 9. [ ] Créer `test/mobile-add-property-regression`
 
 Commande type :
