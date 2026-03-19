@@ -242,7 +242,7 @@ Branche parapluie recommandée (suivi global) :
 
 Branches de travail par problème :
 
-1. [ ] `fix/mobile-empty-top-gap-protected-layout`
+1. [x] `fix/mobile-empty-top-gap-protected-layout`
 - Problème ciblé : section 2.2 (grand vide blanc en haut).
 - Scope : `src/app/(protected)/layout.tsx` + logique d'affichage navbar mobile.
 - Fini quand : plus d'espace blanc parasite sur mobile connecté.
@@ -282,19 +282,25 @@ Branches de travail par problème :
 - Scope : scénarios de validation mobile/tablette/desktop du parcours d'ajout.
 - Fini quand : checklist de tests section 7 validée.
 
+9. [ ] `ui/profile-verified-phone-badge-refresh`
+- Problème ciblé : badge "numéro vérifié" trop sobre sur `/profil/informations`.
+- Scope : amélioration UI/UX du badge dans `src/features/users/profile-management/ui/v1/ProfileInformationFormModern.tsx`.
+- Fini quand : statut téléphone vérifié/non vérifié plus visible, lisible et identifiable en un coup d'oeil.
+
 ---
 
 ## 11. Ordre recommandé de création des branches
 
 1. [ ] Créer `epic/mobile-ux-property-add-2026q1`
 2. [x] Créer `fix/remove-ads-property-form-flow`
-3. [ ] Créer `fix/mobile-empty-top-gap-protected-layout`
+3. [x] Créer `fix/mobile-empty-top-gap-protected-layout`
 4. [ ] Créer `fix/mobile-ai-assistant-non-blocking-launcher`
 5. [ ] Créer `refactor/mobile-sticky-header-shared-component`
 6. [ ] Créer `feature/mobile-ai-assistant-bottom-sheet`
 7. [ ] Créer `fix/mobile-ai-welcome-message-intrusion`
 8. [ ] Créer `refactor/mobile-header-strategy-pattern`
 9. [ ] Créer `test/mobile-add-property-regression`
+10. [ ] Créer `ui/profile-verified-phone-badge-refresh`
 
 Commande type :
 
