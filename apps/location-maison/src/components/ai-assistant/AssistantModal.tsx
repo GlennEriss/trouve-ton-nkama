@@ -5,6 +5,8 @@ import { Wand2, X, Send, ImagePlus } from 'lucide-react'
 import { createLogger } from '@/lib/logger'
 import imageCompression from 'browser-image-compression'
 import { MAX_IMAGES_UPLOAD } from '@/constantes'
+import { useWindowSize } from '@/hooks/useSize'
+import { useCurrentUser } from '@/hooks/use-current-user'
 
 const logger = createLogger('components.ai-assistant-modal')
 const IMAGE_MAX_SIZE_BYTES = 300 * 1024
@@ -32,6 +34,12 @@ export default function AssistantModal({
   const [selectedImages, setSelectedImages] = useState<File[]>([])
   const [isProcessingImages, setIsProcessingImages] = useState(false)
   const imageInputRef = useRef<HTMLInputElement | null>(null)
+  const { width } = useWindowSize()
+  const { user } = useCurrentUser()
+
+  const isMobileViewport = width === 0 || width < 768
+  const hasBottomNavigation = Boolean(user && isMobileViewport)
+  const mobileBottomOffset = hasBottomNavigation ? 92 : 20
 
   const handleGenerate = async () => {
     if (!description.trim() || !canGenerate || isProcessingImages) return
@@ -98,81 +106,72 @@ export default function AssistantModal({
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center p-4"
-      style={{ backgroundColor: 'rgba(0, 0, 0, 0.3)' }}
-      onClick={handleClose}
+      className="fixed inset-x-3 z-50 md:inset-x-auto md:right-4 md:w-[390px]"
+      style={
+        isMobileViewport
+          ? { bottom: `calc(env(safe-area-inset-bottom, 0px) + ${mobileBottomOffset}px)` }
+          : { bottom: '88px' }
+      }
+      role="dialog"
+      aria-modal="false"
+      aria-label="Assistant IA"
     >
-      <div
-        className="bg-white rounded-2xl shadow-xl w-full max-w-md"
-        onClick={(e) => e.stopPropagation()}
-      >
-        {/* Header */}
-        <div className="flex items-center justify-between p-5 border-b border-gray-100">
-          <div className="flex items-center space-x-3">
+      <div className="relative overflow-hidden rounded-3xl border border-gray-200 bg-white shadow-2xl">
+        <div className="flex items-center justify-between border-b border-gray-100 px-4 py-3">
+          <div className="flex items-center gap-2">
             <div
-              className="w-8 h-8 rounded-lg flex items-center justify-center"
+              className="flex h-8 w-8 items-center justify-center rounded-full"
               style={{ backgroundColor: '#156B68' }}
             >
-              <Wand2 className="w-4 h-4" style={{ color: '#1de9b6' }} />
+              <Wand2 className="h-4 w-4" style={{ color: '#1de9b6' }} />
             </div>
             <div>
-              <h2 className="font-semibold text-gray-900">Assistant IA</h2>
-              <p className="text-xs text-gray-500">Génération automatique</p>
+              <h2 className="text-sm font-semibold text-gray-900">Assistant IA</h2>
+              <p className="text-xs text-gray-500">Mode conversation</p>
             </div>
           </div>
           <button
             type="button"
             onClick={handleClose}
-            className="w-7 h-7 rounded-full bg-gray-100 hover:bg-gray-200 transition-colors flex items-center justify-center"
+            className="flex h-7 w-7 items-center justify-center rounded-full bg-gray-100 text-gray-500 transition-colors hover:bg-gray-200"
           >
-            <X className="w-4 h-4 text-gray-500" />
+            <X className="h-4 w-4" />
           </button>
         </div>
 
-        {/* Contenu */}
-        <div className="p-5">
-          {/* Info */}
-          <div className="bg-gray-50 rounded-xl p-4 mb-4">
-            <p className="text-sm text-gray-700 mb-2 font-medium">
-              Champs générés automatiquement :
-            </p>
-            <div className="flex flex-wrap gap-2">
-              {requiredFields.map((field) => (
-                <span
-                  key={field}
-                  className="text-xs px-2 py-1 rounded-full text-gray-600"
-                  style={{ backgroundColor: '#e6fffa' }}
-                >
-                  {field}
-                </span>
-              ))}
+        <div className="max-h-[62vh] overflow-y-auto px-4 py-3">
+          <div className="mb-4 flex items-start gap-2">
+            <div
+              className="mt-1 flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full"
+              style={{ backgroundColor: '#e6fffa' }}
+            >
+              <Wand2 className="h-3 w-3" style={{ color: '#156B68' }} />
+            </div>
+            <div className="rounded-2xl rounded-tl-sm bg-gray-50 px-3 py-2 text-sm text-gray-700">
+              Décrivez votre bien comme dans un chat. Je génère automatiquement les champs suivants :
+              <div className="mt-2 flex flex-wrap gap-2">
+                {requiredFields.map((field) => (
+                  <span
+                    key={field}
+                    className="rounded-full px-2 py-1 text-xs text-gray-600"
+                    style={{ backgroundColor: '#e6fffa' }}
+                  >
+                    {field}
+                  </span>
+                ))}
+              </div>
             </div>
           </div>
 
-          {/* Textarea */}
-          <div className="mb-5">
-            <label className="block text-sm font-medium text-gray-900 mb-2">
-              Décrivez votre bien
-            </label>
+          <div className="space-y-3">
             <textarea
               value={description}
               onChange={(e) => setDescription(e.target.value)}
-              placeholder="Ex: Appartement 3 pièces de 75m² avec balcon, cuisine équipée, proche métro..."
-              className="w-full h-28 p-3 border border-gray-200 rounded-xl resize-none focus:ring-2 focus:border-transparent transition-all text-gray-900 placeholder-gray-400 focus:ring-[#156B68]"
+              placeholder="Ex: Studio meublé à Owendo, proche pédiatrie, 35m², cuisine équipée, eau/électricité incluses..."
+              className="h-28 w-full resize-none rounded-2xl border border-gray-200 px-3 py-3 text-sm text-gray-900 placeholder-gray-400 transition-all focus:border-transparent focus:ring-2 focus:ring-[#156B68]"
               autoFocus
               disabled={isLoading}
             />
-          </div>
-
-          <div className="mb-5">
-            <div className="flex items-center justify-between mb-2">
-              <label className="block text-sm font-medium text-gray-900">
-                Images (optionnel)
-              </label>
-              <span className="text-xs text-gray-500">
-                {selectedImages.length}/{MAX_IMAGES_UPLOAD}
-              </span>
-            </div>
 
             <input
               ref={imageInputRef}
@@ -184,28 +183,41 @@ export default function AssistantModal({
               disabled={isLoading || isProcessingImages}
             />
 
-            <button
-              type="button"
-              onClick={handleAddImagesClick}
-              disabled={isLoading || isProcessingImages || selectedImages.length >= MAX_IMAGES_UPLOAD}
-              className="w-full py-2.5 px-4 border border-gray-200 rounded-xl text-gray-700 hover:bg-gray-50 transition-colors font-medium disabled:opacity-50 flex items-center justify-center space-x-2"
-            >
-              <ImagePlus className="w-4 h-4" />
-              <span>{isProcessingImages ? 'Traitement des images...' : 'Ajouter des images'}</span>
-            </button>
+            <div className="flex items-center justify-between gap-3">
+              <button
+                type="button"
+                onClick={handleAddImagesClick}
+                disabled={isLoading || isProcessingImages || selectedImages.length >= MAX_IMAGES_UPLOAD}
+                className="inline-flex items-center gap-2 rounded-full border border-gray-200 px-3 py-2 text-xs font-medium text-gray-700 transition-colors hover:bg-gray-50 disabled:opacity-50"
+              >
+                <ImagePlus className="h-4 w-4" />
+                {isProcessingImages ? 'Traitement...' : `Images (${selectedImages.length}/${MAX_IMAGES_UPLOAD})`}
+              </button>
+
+              <button
+                type="button"
+                onClick={handleGenerate}
+                disabled={!description.trim() || !canGenerate || isLoading || isProcessingImages}
+                className="inline-flex items-center gap-2 rounded-full px-4 py-2 text-sm font-medium text-white transition-opacity disabled:opacity-50"
+                style={{ backgroundColor: '#156B68' }}
+              >
+                <Send className="h-4 w-4" />
+                {isLoading ? 'Génération...' : 'Envoyer'}
+              </button>
+            </div>
 
             {selectedImages.length > 0 && (
-              <div className="mt-3 max-h-32 overflow-y-auto space-y-2">
+              <div className="space-y-2 rounded-2xl border border-gray-100 bg-gray-50/70 p-2">
                 {selectedImages.map((image, index) => (
                   <div
                     key={`${image.name}-${image.size}-${index}`}
-                    className="flex items-center justify-between rounded-lg border border-gray-200 px-3 py-2"
+                    className="flex items-center justify-between rounded-xl bg-white px-3 py-2"
                   >
-                    <span className="text-xs text-gray-700 truncate pr-3">{image.name}</span>
+                    <span className="truncate pr-3 text-xs text-gray-700">{image.name}</span>
                     <button
                       type="button"
                       onClick={() => handleRemoveImage(index)}
-                      className="text-xs text-red-600 hover:text-red-700"
+                      className="text-xs font-medium text-red-600 hover:text-red-700"
                       disabled={isLoading}
                     >
                       Retirer
@@ -215,36 +227,15 @@ export default function AssistantModal({
               </div>
             )}
           </div>
-
-          {/* Boutons */}
-          <div className="flex space-x-3">
-            <button
-              type="button"
-              onClick={handleClose}
-              disabled={isLoading}
-              className="flex-1 py-2.5 px-4 border border-gray-200 rounded-xl text-gray-700 hover:bg-gray-50 transition-colors font-medium disabled:opacity-50"
-            >
-              Annuler
-            </button>
-            <button
-              type="button"
-              onClick={handleGenerate}
-              disabled={!description.trim() || !canGenerate || isLoading || isProcessingImages}
-              className="flex-1 py-2.5 px-4 text-white rounded-xl transition-colors font-medium disabled:opacity-50 flex items-center justify-center space-x-2"
-              style={{ backgroundColor: '#156B68' }}
-            >
-              <Send className="w-4 h-4" />
-              <span>{isLoading ? 'Génération...' : 'Générer'}</span>
-            </button>
-          </div>
-
-          {/* Crédits */}
-          <div className="text-center mt-3">
-            <span className="text-xs text-gray-500">
-              {creditsAvailable} crédit{creditsAvailable > 1 ? 's' : ''} disponible{creditsAvailable > 1 ? 's' : ''}
-            </span>
-          </div>
         </div>
+
+        <div className="border-t border-gray-100 px-4 py-2">
+          <p className="text-center text-xs text-gray-500">
+            {creditsAvailable} crédit{creditsAvailable > 1 ? 's' : ''} disponible{creditsAvailable > 1 ? 's' : ''}
+          </p>
+        </div>
+
+        <div className="absolute -bottom-1 right-8 hidden h-3 w-3 rotate-45 border-b border-r border-gray-200 bg-white md:block" />
       </div>
     </div>
   )
