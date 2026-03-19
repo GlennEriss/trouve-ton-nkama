@@ -252,7 +252,7 @@ Branches de travail par problème :
 - Scope : création d'un composant partagé `AppMobileStickyHeader` + adoption progressive.
 - Fini quand : structure header unifiée sur `/property/add`, `/property/add/*`, `/property/modify/[id]`, `/favoris`, `/list-notifications`.
 
-3. [ ] `refactor/mobile-header-strategy-pattern`
+3. [x] `refactor/mobile-header-strategy-pattern`
 - Problème ciblé : section 2.3 (standardisation durable).
 - Scope : interface `PageHeaderStrategy` + stratégies mobile/desktop/fallback.
 - Fini quand : plus de classes sticky dupliquées critiques dans les pages cibles.
@@ -298,7 +298,7 @@ Branches de travail par problème :
 5. [x] Créer `refactor/mobile-sticky-header-shared-component`
 6. [ ] Créer `feature/mobile-ai-assistant-bottom-sheet`
 7. [ ] Créer `fix/mobile-ai-welcome-message-intrusion`
-8. [ ] Créer `refactor/mobile-header-strategy-pattern`
+8. [x] Créer `refactor/mobile-header-strategy-pattern`
 9. [ ] Créer `test/mobile-add-property-regression`
 10. [ ] Créer `ui/profile-verified-phone-badge-refresh`
 
