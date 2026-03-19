@@ -272,7 +272,7 @@ Branches de travail par problème :
 - Scope : politique d'affichage minimaliste de `WelcomeMessage`.
 - Fini quand : message non bloquant, dismissable, et compatible petits écrans.
 
-7. [ ] `fix/remove-ads-property-form-flow`
+7. [x] `fix/remove-ads-property-form-flow`
 - Problème ciblé : section 2.4 (publicités visibles dans le formulaire).
 - Scope : blocage ads sur `/property/add*` et `/property/modify/*` (footer + loader global).
 - Fini quand : aucune pub/overlay ads n'est visible pendant la création/modification d'annonce.
@@ -287,7 +287,7 @@ Branches de travail par problème :
 ## 11. Ordre recommandé de création des branches
 
 1. [ ] Créer `epic/mobile-ux-property-add-2026q1`
-2. [ ] Créer `fix/remove-ads-property-form-flow`
+2. [x] Créer `fix/remove-ads-property-form-flow`
 3. [ ] Créer `fix/mobile-empty-top-gap-protected-layout`
 4. [ ] Créer `fix/mobile-ai-assistant-non-blocking-launcher`
 5. [ ] Créer `refactor/mobile-sticky-header-shared-component`
