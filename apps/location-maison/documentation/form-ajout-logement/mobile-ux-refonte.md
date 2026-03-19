@@ -247,7 +247,7 @@ Branches de travail par problème :
 - Scope : `src/app/(protected)/layout.tsx` + logique d'affichage navbar mobile.
 - Fini quand : plus d'espace blanc parasite sur mobile connecté.
 
-2. [ ] `refactor/mobile-sticky-header-shared-component`
+2. [x] `refactor/mobile-sticky-header-shared-component`
 - Problème ciblé : section 2.3 (headers sticky incohérents).
 - Scope : création d'un composant partagé `AppMobileStickyHeader` + adoption progressive.
 - Fini quand : structure header unifiée sur `/property/add`, `/property/add/*`, `/property/modify/[id]`, `/favoris`, `/list-notifications`.
@@ -257,7 +257,7 @@ Branches de travail par problème :
 - Scope : interface `PageHeaderStrategy` + stratégies mobile/desktop/fallback.
 - Fini quand : plus de classes sticky dupliquées critiques dans les pages cibles.
 
-4. [ ] `fix/mobile-ai-assistant-non-blocking-launcher`
+4. [x] `fix/mobile-ai-assistant-non-blocking-launcher`
 - Problème ciblé : section 2.1 (assistant IA qui masque le formulaire).
 - Scope : repositionnement launcher avec safe-area mobile.
 - Fini quand : aucun champ/CTA principal n'est recouvert sur les viewports mobiles de test.
@@ -294,8 +294,8 @@ Branches de travail par problème :
 1. [ ] Créer `epic/mobile-ux-property-add-2026q1`
 2. [x] Créer `fix/remove-ads-property-form-flow`
 3. [x] Créer `fix/mobile-empty-top-gap-protected-layout`
-4. [ ] Créer `fix/mobile-ai-assistant-non-blocking-launcher`
-5. [ ] Créer `refactor/mobile-sticky-header-shared-component`
+4. [x] Créer `fix/mobile-ai-assistant-non-blocking-launcher`
+5. [x] Créer `refactor/mobile-sticky-header-shared-component`
 6. [ ] Créer `feature/mobile-ai-assistant-bottom-sheet`
 7. [ ] Créer `fix/mobile-ai-welcome-message-intrusion`
 8. [ ] Créer `refactor/mobile-header-strategy-pattern`
