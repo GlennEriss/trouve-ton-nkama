@@ -28,6 +28,11 @@ Bienvenue dans la documentation complète de la plateforme de location et vente 
   - Annonceur (index): [feature/annonceur/README.md](./feature/annonceur/README.md)
   - Recherche IA (index): [feature/recherche-ia/README.md](./feature/recherche-ia/README.md)
 
+### 🧾 Formulaire d'ajout de logement
+- **[form-ajout-logement/](./form-ajout-logement/)** : Documentation UX/UI et technique du parcours d'ajout
+  - Localisation: [form-ajout-logement/location.md](./form-ajout-logement/location.md)
+  - Refonte mobile UX: [form-ajout-logement/mobile-ux-refonte.md](./form-ajout-logement/mobile-ux-refonte.md)
+
 ### ⚙️ Configuration & Setup
 - **[setup/](./setup/)** : Guides de configuration
   - Airtel Money
@@ -130,4 +135,4 @@ Bienvenue dans la documentation complète de la plateforme de location et vente 
 
 ---
 
-*Dernière mise à jour : 2026-03-12*
+*Dernière mise à jour : 2026-03-19*
