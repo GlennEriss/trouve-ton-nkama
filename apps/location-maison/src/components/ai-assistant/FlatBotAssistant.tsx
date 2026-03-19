@@ -6,6 +6,8 @@ import { useFormAIHandler } from '@/hooks/useFormAIHandler';
 import FlatBotAvatar from './FlatBotAvatar';
 import WelcomeMessage from './WelcomeMessage';
 import AssistantModal from './AssistantModal';
+import { useWindowSize } from '@/hooks/useSize';
+import { useCurrentUser } from '@/hooks/use-current-user';
 
 interface FlatBotAssistantProps {
     isUpdate?: boolean;
@@ -14,9 +16,14 @@ interface FlatBotAssistantProps {
 const FlatBotAssistant: React.FC<FlatBotAssistantProps> = ({ 
     isUpdate = false 
 }) => {
+    const MOBILE_LAUNCHER_OFFSET_PX = 16;
+    const MOBILE_LAUNCHER_OFFSET_WITH_BOTTOM_NAV_PX = 88;
+
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [showWelcomeMessage, setShowWelcomeMessage] = useState(true);
     const [expression, setExpression] = useState<'smile' | 'happy' | 'thinking' | 'talking'>('smile');
+    const { width } = useWindowSize();
+    const { user } = useCurrentUser();
 
     const { propertyType, propertyLabel, requiredFields, isPropertyForm } = usePropertyType();
     
@@ -61,9 +68,22 @@ const FlatBotAssistant: React.FC<FlatBotAssistantProps> = ({
         return null;
     }
 
+    const isMobileViewport = width > 0 && width < 768;
+    const hasBottomNavigation = Boolean(user && isMobileViewport);
+    const mobileBottomOffset = hasBottomNavigation
+        ? MOBILE_LAUNCHER_OFFSET_WITH_BOTTOM_NAV_PX
+        : MOBILE_LAUNCHER_OFFSET_PX;
+
     return (
         <>
-            <div className="fixed lg:bottom-6 bottom-72 right-6">
+            <div
+                className="fixed right-4 bottom-4 z-40 md:right-6 md:bottom-6"
+                style={
+                    isMobileViewport
+                        ? { bottom: `calc(env(safe-area-inset-bottom, 0px) + ${mobileBottomOffset}px)` }
+                        : undefined
+                }
+            >
                 {/* Message de bienvenue */}
                 <WelcomeMessage
                     show={showWelcomeMessage}
