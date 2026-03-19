@@ -25626,6 +25626,26 @@
           "lat": 0.5032194,
           "lon": 9.3854418
         }
+      },
+      {
+        "osm": {
+          "type": "node",
+          "id": 9900000002
+        },
+        "name": "Dragages",
+        "names": {
+          "fr": "Dragages",
+          "en": "Dragages",
+          "local": null
+        },
+        "tags": {
+          "name": "Dragages",
+          "place": "suburb"
+        },
+        "center": {
+          "lat": 0.4303,
+          "lon": 9.4478
+        }
       }
     ],
     "neighbourhood": [
@@ -26177,6 +26197,26 @@
           "lat": 0.429541,
           "lon": 9.4852459
         }
+      },
+      {
+        "osm": {
+          "type": "node",
+          "id": 9900000001
+        },
+        "name": "Pédiatrie",
+        "names": {
+          "fr": "Pédiatrie",
+          "en": "Pédiatrie",
+          "local": null
+        },
+        "tags": {
+          "name": "Pédiatrie",
+          "place": "neighbourhood"
+        },
+        "center": {
+          "lat": 0.3239,
+          "lon": 9.5009
+        }
       }
     ],
     "quarter": [
@@ -26724,6 +26764,46 @@
         "center": {
           "lat": 0.4976613,
           "lon": 9.402393
+        }
+      },
+      {
+        "osm": {
+          "type": "node",
+          "id": 9900000003
+        },
+        "name": "PK6",
+        "names": {
+          "fr": "PK6",
+          "en": "PK6",
+          "local": null
+        },
+        "tags": {
+          "name": "PK6",
+          "place": "quarter"
+        },
+        "center": {
+          "lat": 0.4048,
+          "lon": 9.4788
+        }
+      },
+      {
+        "osm": {
+          "type": "node",
+          "id": 9900000004
+        },
+        "name": "PK9",
+        "names": {
+          "fr": "PK9",
+          "en": "PK9",
+          "local": null
+        },
+        "tags": {
+          "name": "PK9",
+          "place": "quarter"
+        },
+        "center": {
+          "lat": 0.3958,
+          "lon": 9.5015
         }
       }
     ],
@@ -27535,6 +27615,46 @@
         "center": {
           "lat": -1.4468074,
           "lon": 9.1078531
+        }
+      },
+      {
+        "osm": {
+          "type": "node",
+          "id": 9900000005
+        },
+        "name": "Carrefour Léon Mba",
+        "names": {
+          "fr": "Carrefour Léon Mba",
+          "en": "Carrefour Léon Mba",
+          "local": null
+        },
+        "tags": {
+          "name": "Carrefour Léon Mba",
+          "place": "locality"
+        },
+        "center": {
+          "lat": 0.4069,
+          "lon": 9.4489
+        }
+      },
+      {
+        "osm": {
+          "type": "node",
+          "id": 9900000006
+        },
+        "name": "Cap Santa Clara",
+        "names": {
+          "fr": "Cap Santa Clara",
+          "en": "Cap Santa Clara",
+          "local": null
+        },
+        "tags": {
+          "name": "Cap Santa Clara",
+          "place": "locality"
+        },
+        "center": {
+          "lat": 0.6142,
+          "lon": 9.3075
         }
       }
     ]
