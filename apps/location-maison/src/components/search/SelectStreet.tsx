@@ -3,7 +3,7 @@ import { SelectFormApp } from '../shared/form/SelectFormApp';
 import { useSelectFilterLocationMediator } from '@/hooks/useSelectFilterLocationMediator';
 
 export default function SelectStreet() {
-    const { mediator, streetsLoading } = useSelectFilterLocationMediator()
+    const { mediator, streetsLoading, selectedCity } = useSelectFilterLocationMediator()
     return (
         <SelectFormApp
             control={mediator.getForm().control}
@@ -12,7 +12,7 @@ export default function SelectStreet() {
             label="Quartier"
             options={mediator.getStreetOptions()}
             placeholder={streetsLoading ? "Chargement des quartiers..." : "Sélectionnez un quartier"}
-            disabled={streetsLoading || !mediator.getForm().getValues('city')}
+            disabled={streetsLoading || !selectedCity}
             onValueChange={mediator.onStreetChange}
         />
     )
