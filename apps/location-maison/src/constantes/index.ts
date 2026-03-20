@@ -21,7 +21,7 @@ export const statusOptions = [
   }
 ];
 
-const TAG_ICONS: Record<string, IconType> = {
+const TAG_ICONS = {
   Travail: FaBriefcase,
   Famille: FaUsers,
   Couple: FaHeart,
@@ -55,9 +55,12 @@ const TAG_ICONS: Record<string, IconType> = {
   'Court séjour': FaRegClock,
   Propriétaire: FaUserTie,
   Agence: FaStore,
-};
+} satisfies Record<string, IconType>;
 
-export const tags = (tagNames as string[]).map((tagName) => ({
+export type TagName = keyof typeof TAG_ICONS;
+export const allowedTagNames = tagNames as TagName[];
+
+export const tags = allowedTagNames.map((tagName) => ({
   tagName,
   tagIcon: TAG_ICONS[tagName] ?? FaStore,
 }));

@@ -3,6 +3,7 @@
  */
 
 import { Image, Property } from "@/models/annonce";
+import type { TagName } from "@/constantes";
 
 /**
  * Abstract builder class for constructing `Property` objects.
@@ -113,10 +114,10 @@ export abstract class PropertyBuilder {
     /**
      * Sets the tags associated with the property.
      * 
-     * @param {string[]} tags - An array of descriptive tags for the property.
+     * @param {TagName[]} tags - An array of descriptive tags for the property.
      * @returns {PropertyBuilder} The current instance of `PropertyBuilder`.
      */
-    setTags(tags: string[]) {
+    setTags(tags: TagName[]) {
         this.property.tags = tags;
         return this;
     }
