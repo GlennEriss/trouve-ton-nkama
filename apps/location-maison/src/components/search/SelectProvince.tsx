@@ -13,6 +13,7 @@ export default function SelectProvince() {
             options={mediator.getProvinceOptions()}
             placeholder={provincesLoading ? "Chargement des provinces..." : "Sélectionnez une province"}
             disabled={provincesLoading}
+            onValueChange={mediator.onProvinceChange}
         />
     )
 }

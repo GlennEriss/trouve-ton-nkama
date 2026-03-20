@@ -4,6 +4,7 @@
 
 import { ICreation } from "./creation";
 import {TypePropertyEnum} from '@/constantes/property-type'
+import type { TagName } from '@/constantes'
 import { Timestamp } from "firebase/firestore";
 
 //Property
@@ -33,7 +34,7 @@ export type Property = Location & ICreation & {
     description: string,
     area: number,
     price: number,
-    tags: string[],
+    tags: TagName[],
     createdBy?: string,
     status: StatusProperty,
     contact?: string //Propriété tampon

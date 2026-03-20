@@ -4,6 +4,7 @@ import { Province } from "@/models/province";
 import { City } from "@/models/city";
 import { Street } from "@/models/street";
 import { OptionType } from "@/models/OptionType";
+import { isDisplayableLocationLabel } from "@/lib/location/label-guards";
 
 export class SelectFilterLocationMediator {
     private form: UseFormReturn<FormFilterSchemaType>;
@@ -50,12 +51,14 @@ export class SelectFilterLocationMediator {
 
     getCityOptions(): OptionType[] {
         return this.cities
+        .filter((city) => isDisplayableLocationLabel(city.name))
         .sort((a, b) => a.name.localeCompare(b.name, 'fr'))
         .map(city => ({ label: city.name, value: city.name }));
     }
 
     getStreetOptions(): OptionType[] {
         return this.streets
+        .filter((street) => isDisplayableLocationLabel(street.name))
         .sort((a, b) => a.name.localeCompare(b.name, 'fr'))
         .map(street => ({ label: street.name, value: street.name }));
     }
