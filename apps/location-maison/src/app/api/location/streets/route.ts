@@ -5,6 +5,7 @@ import redis from '@/redis/client';
 import { Street } from '@/models/street';
 import { createLogger } from '@/lib/logger';
 import { handleApiError, jsonApiError } from '@/lib/api/error-response';
+import { isDisplayableLocationLabel } from '@/lib/location/label-guards';
 
 const logger = createLogger('api.location.streets');
 
@@ -45,16 +46,18 @@ export async function GET(request: Request) {
       } as Street);
     });
 
-    streets.sort((a, b) => a.name.localeCompare(b.name));
+    const filteredStreets = streets
+      .filter((street) => isDisplayableLocationLabel(street.name))
+      .sort((a, b) => a.name.localeCompare(b.name));
 
     try {
-      await redis.set(cacheKey, streets, { ex: CACHE_TTL_SECONDS });
+      await redis.set(cacheKey, filteredStreets, { ex: CACHE_TTL_SECONDS });
     } catch (error) {
       logger.warn('Failed to cache streets list', { cityId, error });
     }
 
     return NextResponse.json(
-      { streets },
+      { streets: filteredStreets },
       {
         headers: {
           'Cache-Control': `public, s-maxage=${CACHE_TTL_SECONDS}, stale-while-revalidate=${CACHE_TTL_SECONDS}`,
