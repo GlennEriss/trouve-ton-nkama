@@ -7,6 +7,7 @@ import Footer from "@/components/footer/Footer";
 import { cn } from "@/lib/utils";
 import { Metadata } from 'next'
 import { FirebaseAnalyticsTracker } from '@/features/analytics/tracking';
+import { PresenceAnalyticsTracker } from '@/features/analytics/presence/ui/PresenceAnalyticsTracker';
 import { Analytics } from '@vercel/analytics/react';
 import AdSenseRouteLoader from '@/components/ads/AdSenseRouteLoader';
 
@@ -259,6 +260,7 @@ export default async function RootLayout({
             <BottomNavigation />
             <Footer />
             <FirebaseAnalyticsTracker />
+            <PresenceAnalyticsTracker />
             <Analytics />
           </Providers>
         </div>
