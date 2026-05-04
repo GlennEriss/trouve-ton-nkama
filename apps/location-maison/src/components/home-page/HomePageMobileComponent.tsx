@@ -132,6 +132,7 @@ export default function HomePageMobileComponent() {
                                 onChange={(e) => setSearchText(e.target.value)}
                                 name="query"
                             />
+                            <input type="hidden" name="searchSource" value="location_maison_search_bar" />
                             <div>
                                 <FilterModalHomePage />
                             </div>

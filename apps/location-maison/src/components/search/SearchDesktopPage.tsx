@@ -3,16 +3,18 @@
 import React from 'react'
 import { useProvinces } from '@/hooks/use-location-exports'
 import { useAlgoliaContext } from "@/providers/AlgoliaContext";
-import { useInfiniteHits, useStats } from 'react-instantsearch'
+import { useInfiniteHits, useInstantSearch, useStats } from 'react-instantsearch'
 import Image from 'next/image'
 import PropertyCard from '../home-page/PropertyCard'
 import { useSearchParams } from 'next/navigation'
 import FilterSearchDesktopPageSection from './FilterSearchDesktopPageSection'
+import { useTrackSearchAnalytics } from '@/features/analytics/search/hooks/useTrackSearchAnalytics';
 
 export default function 
 SearchDesktopPage() {
     const { items, isLastPage, showMore } = useInfiniteHits();
     const { nbHits } = useStats();
+    const { status: searchStatus } = useInstantSearch();
     const searchParams = useSearchParams();
     const resultsContainerRef = React.useRef<HTMLDivElement>(null);
     const sentinelRef = React.useRef<HTMLDivElement>(null);
@@ -38,6 +40,13 @@ SearchDesktopPage() {
 
     // Hooks pour récupérer les données de localisation
     const { data: provinces = [] } = useProvinces();
+
+    useTrackSearchAnalytics({
+        searchParams,
+        nbHits,
+        searchStatus,
+    });
+
     // Synchronisation URL → Contexte Algolia au chargement initial
     React.useEffect(() => {
         // Attendre que les données provinces soient chargées avant la synchronisation
