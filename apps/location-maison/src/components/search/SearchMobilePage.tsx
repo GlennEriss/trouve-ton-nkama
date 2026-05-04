@@ -7,12 +7,13 @@ import { Search, ChevronUp, ChevronDown } from 'lucide-react';
 import { Input } from '../ui/input';
 import { FilterModalHomePage } from '../home-page/FilterModalHomePage';
 import { useAlgoliaContext } from '@/providers/AlgoliaContext';
-import { useInfiniteHits, useStats } from 'react-instantsearch';
+import { useInfiniteHits, useInstantSearch, useStats } from 'react-instantsearch';
 import PropertyCard from '../home-page/PropertyCard';
 import { useSearchParams } from 'next/navigation';
 import { trackingEvents, useTrackEvent } from '@/features/analytics/tracking';
 import { useSession } from 'next-auth/react';
 import SearchWithAIAccessNoticeDialog from './SearchWithAIAccessNoticeDialog';
+import { useTrackSearchAnalytics } from '@/features/analytics/search/hooks/useTrackSearchAnalytics';
 
 export default function SearchMobilePage() {
     const { trackEvent } = useTrackEvent()
@@ -23,6 +24,7 @@ export default function SearchMobilePage() {
     const sentinelRef = React.useRef<HTMLDivElement>(null);
     const { items, isLastPage, showMore } = useInfiniteHits();
     const { nbHits } = useStats();
+    const { status: searchStatus } = useInstantSearch();
     const searchParams = useSearchParams();
     const searchWithAIHref = React.useMemo(() => {
         const params = new URLSearchParams(searchParams.toString());
@@ -33,6 +35,12 @@ export default function SearchMobilePage() {
     const [lastItemsCount, setLastItemsCount] = React.useState(0);
     const [newItemsLoaded, setNewItemsLoaded] = React.useState(0);
     const [isAccessDialogOpen, setIsAccessDialogOpen] = React.useState(false);
+
+    useTrackSearchAnalytics({
+        searchParams,
+        nbHits,
+        searchStatus,
+    });
 
     const onSearchWithAIClick = (event: React.MouseEvent<HTMLAnchorElement>) => {
         trackEvent(trackingEvents.CTA_SEARCH_WITH_IA_ENTRY_CLICK, {

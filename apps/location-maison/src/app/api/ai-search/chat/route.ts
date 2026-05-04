@@ -1,3 +1,5 @@
+import { createHash } from 'node:crypto';
+
 import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 import firebaseCollectionNames from '@/constantes/firebase-collection-name';
@@ -773,6 +775,117 @@ async function runAlgoliaSearch(
   };
 }
 
+function buildSearchAnalyticsQueryParams(
+  query: string,
+  filters: SearchFilters,
+  entrypointSource: 'search_cta' | 'direct' | 'other' | undefined
+): Record<string, string | number | boolean | string[]> {
+  const params: Record<string, string | number | boolean | string[]> = {
+    query,
+    entrypointSource: entrypointSource ?? 'other',
+  };
+
+  if (filters.province) params.province = filters.province;
+  if (filters.city) params.city = filters.city;
+  if (filters.street) params.street = filters.street;
+  if (typeof filters.minPrice === 'number') params.minPrice = filters.minPrice;
+  if (typeof filters.maxPrice === 'number') params.maxPrice = filters.maxPrice;
+  if (typeof filters.minNbrRooms === 'number') params.minNbrRooms = filters.minNbrRooms;
+  if (typeof filters.maxNbrRooms === 'number') params.maxNbrRooms = filters.maxNbrRooms;
+  if (filters.typeProperty?.length) params.typeProperty = filters.typeProperty;
+  if (filters.status?.length) params.status = filters.status;
+  if (filters.tags?.length) params.tags = filters.tags;
+
+  return params;
+}
+
+async function emitSearchWithIAAnalytics(params: {
+  request: NextRequest;
+  uid: string;
+  conversationId: string;
+  query: string;
+  filters: SearchFilters;
+  entrypointSource: 'search_cta' | 'direct' | 'other' | undefined;
+  nbHits: number;
+}) {
+  const nowIso = new Date().toISOString();
+  const payload = {
+    sent_at: nowIso,
+    occurred_at: nowIso,
+    actor: {
+      actor_type: 'user' as const,
+      actor_id: params.uid,
+      is_authenticated: true,
+    },
+    session: {
+      session_id: params.conversationId,
+    },
+    search: {
+      source: 'search_with_ia_page' as const,
+      query_text_raw: params.query.slice(0, 160),
+      query_params: buildSearchAnalyticsQueryParams(
+        params.query,
+        params.filters,
+        params.entrypointSource
+      ),
+    },
+    result: {
+      results_count: Math.max(0, Math.trunc(params.nbHits)),
+      engine: 'algolia',
+    },
+  };
+
+  const idempotencyKey = `ai_${createHash('sha256')
+    .update(
+      JSON.stringify({
+        conversationId: params.conversationId,
+        uid: params.uid,
+        query: params.query,
+        filters: params.filters,
+        nbHits: params.nbHits,
+      })
+    )
+    .digest('hex')
+    .slice(0, 48)}`;
+  const correlationId = `corr_ai_${createHash('sha256')
+    .update(`${params.conversationId}:${Date.now()}:${params.uid}`)
+    .digest('hex')
+    .slice(0, 32)}`;
+
+  const endpoint = new URL('/api/analytics/search', params.request.url).toString();
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), 1600);
+
+  try {
+    const response = await fetch(endpoint, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-correlation-id': correlationId,
+        'x-idempotency-key': idempotencyKey,
+      },
+      body: JSON.stringify(payload),
+      signal: controller.signal,
+    });
+
+    if (!response.ok) {
+      const details = await response.text().catch(() => '');
+      logger.warn('Search-with-IA analytics forwarding rejected', {
+        status: response.status,
+        details,
+      });
+    }
+  } catch (error) {
+    const timeout = error instanceof Error && error.name === 'AbortError';
+    logger.warn('Search-with-IA analytics forwarding failed', {
+      timeout,
+      error,
+    });
+  } finally {
+    clearTimeout(timeoutId);
+  }
+}
+
 async function findUserDocumentByUID(db: any, uid: string) {
   const usersSnapshot = await db.collection(firebaseCollectionNames.users).where('uid', '==', uid).limit(1).get();
   if (usersSnapshot.empty) return null;
@@ -994,6 +1107,18 @@ export async function POST(request: NextRequest) {
       marginRate,
       createdAt: FieldValue.serverTimestamp(),
     });
+
+    if (searchWillRun) {
+      await emitSearchWithIAAnalytics({
+        request,
+        uid,
+        conversationId: body.conversationId,
+        query,
+        filters: effectiveFilters,
+        entrypointSource: body.entrypointSource,
+        nbHits,
+      });
+    }
 
     return NextResponse.json({
       success: true,
