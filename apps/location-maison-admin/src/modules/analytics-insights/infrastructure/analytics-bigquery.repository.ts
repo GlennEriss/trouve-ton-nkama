@@ -11,7 +11,7 @@ type BigQueryInsertRow = {
   json: Record<string, unknown>;
 };
 
-type BigQueryRequestMethod = "POST";
+type BigQueryRequestMethod = "GET" | "POST";
 
 type BigQueryInsertError = {
   index?: number;
@@ -25,6 +25,44 @@ type BigQueryInsertError = {
 type BigQueryInsertResponse = {
   insertErrors?: BigQueryInsertError[];
 };
+
+type BigQueryQueryResponseField = {
+  name: string;
+  type: string;
+};
+
+type BigQueryQueryResponseRow = {
+  f: Array<{
+    v: unknown;
+  }>;
+};
+
+type BigQueryQueryResponse = {
+  jobComplete?: boolean;
+  schema?: {
+    fields?: BigQueryQueryResponseField[];
+  };
+  rows?: BigQueryQueryResponseRow[];
+  totalRows?: string;
+  jobReference?: {
+    jobId?: string;
+    location?: string;
+  };
+  errors?: Array<{
+    reason?: string;
+    message?: string;
+  }>;
+};
+
+export type BigQueryQueryParamType = "STRING" | "INT64" | "FLOAT64" | "BOOL";
+
+export type BigQueryQueryParam = {
+  name: string;
+  type: BigQueryQueryParamType;
+  value: string | number | boolean;
+};
+
+export type BigQueryQueryResultRow = Record<string, unknown>;
 
 export type RawAnalyticsEventRow = {
   event_id: string;
@@ -157,6 +195,22 @@ function resolveRuntimeProjectId() {
   return projectId;
 }
 
+function resolveRuntimeLocation() {
+  const location = process.env.BQ_LOCATION?.trim();
+  if (location) {
+    return location;
+  }
+  return "EU";
+}
+
+export function getBigQueryRuntimeContext() {
+  return {
+    projectId: resolveRuntimeProjectId(),
+    datasetId: resolveRuntimeDataset(),
+    location: resolveRuntimeLocation(),
+  };
+}
+
 function stripUndefined(value: unknown): unknown {
   if (value === undefined) {
     return null;
@@ -230,7 +284,7 @@ async function getAccessToken() {
 async function bigQueryRequest<T>(
   method: BigQueryRequestMethod,
   path: string,
-  body: Record<string, unknown>,
+  body?: Record<string, unknown>,
 ): Promise<T> {
   const accessToken = await getAccessToken();
   const response = await fetch(`${BIGQUERY_API_BASE}${path}`, {
@@ -239,7 +293,7 @@ async function bigQueryRequest<T>(
       Authorization: `Bearer ${accessToken}`,
       "Content-Type": "application/json",
     },
-    body: JSON.stringify(body),
+    body: body ? JSON.stringify(body) : undefined,
   });
 
   const rawText = await response.text();
@@ -254,6 +308,145 @@ async function bigQueryRequest<T>(
   }
 
   return payload as T;
+}
+
+function parseTimestampString(value: string) {
+  const numeric = Number(value);
+  if (Number.isNaN(numeric)) {
+    return value;
+  }
+
+  return new Date(numeric * 1000).toISOString();
+}
+
+function parseBigQueryScalar(value: unknown, type: string): unknown {
+  if (value === null || value === undefined) {
+    return null;
+  }
+
+  switch (type) {
+    case "INTEGER":
+    case "INT64": {
+      const parsed = Number(value);
+      return Number.isFinite(parsed) ? parsed : null;
+    }
+    case "FLOAT":
+    case "FLOAT64":
+    case "NUMERIC":
+    case "BIGNUMERIC": {
+      const parsed = Number(value);
+      return Number.isFinite(parsed) ? parsed : null;
+    }
+    case "BOOLEAN":
+    case "BOOL":
+      return String(value).toLowerCase() === "true";
+    case "TIMESTAMP":
+      return typeof value === "string" ? parseTimestampString(value) : String(value);
+    default:
+      return value;
+  }
+}
+
+function parseBigQueryQueryRows(response: BigQueryQueryResponse): BigQueryQueryResultRow[] {
+  const fields = response.schema?.fields ?? [];
+  const rows = response.rows ?? [];
+
+  return rows.map((row) => {
+    const mapped: Record<string, unknown> = {};
+
+    fields.forEach((field, index) => {
+      const rawValue = row.f[index]?.v ?? null;
+      mapped[field.name] = parseBigQueryScalar(rawValue, field.type);
+    });
+
+    return mapped;
+  });
+}
+
+function buildQueryParameters(parameters: BigQueryQueryParam[]) {
+  return parameters.map((parameter) => ({
+    name: parameter.name,
+    parameterType: {
+      type: parameter.type,
+    },
+    parameterValue: {
+      value: String(parameter.value),
+    },
+  }));
+}
+
+async function waitForQueryResult(
+  projectId: string,
+  queryResult: BigQueryQueryResponse,
+  maxResults: number | undefined,
+): Promise<BigQueryQueryResponse> {
+  if (queryResult.jobComplete) {
+    return queryResult;
+  }
+
+  const jobId = queryResult.jobReference?.jobId;
+  const location = queryResult.jobReference?.location ?? resolveRuntimeLocation();
+
+  if (!jobId) {
+    throw new Error("BigQuery query did not return a job id.");
+  }
+
+  const params = new URLSearchParams({
+    location,
+    timeoutMs: String(180000),
+  });
+
+  if (maxResults !== undefined) {
+    params.set("maxResults", String(maxResults));
+  }
+
+  return bigQueryRequest<BigQueryQueryResponse>(
+    "GET",
+    `/projects/${encodeURIComponent(projectId)}/queries/${encodeURIComponent(jobId)}?${params.toString()}`,
+  );
+}
+
+export async function runBigQueryQuery(input: {
+  query: string;
+  parameters?: BigQueryQueryParam[];
+  maxResults?: number;
+  timeoutMs?: number;
+}) {
+  const projectId = resolveRuntimeProjectId();
+  const location = resolveRuntimeLocation();
+  const parameters = input.parameters ?? [];
+
+  const response = await bigQueryRequest<BigQueryQueryResponse>(
+    "POST",
+    `/projects/${encodeURIComponent(projectId)}/queries`,
+    {
+      query: input.query,
+      useLegacySql: false,
+      location,
+      timeoutMs: input.timeoutMs ?? 120000,
+      maxResults: input.maxResults,
+      parameterMode: parameters.length > 0 ? "NAMED" : undefined,
+      queryParameters: parameters.length > 0 ? buildQueryParameters(parameters) : undefined,
+    },
+  );
+
+  const completedResponse = await waitForQueryResult(projectId, response, input.maxResults);
+
+  if (Array.isArray(completedResponse.errors) && completedResponse.errors.length > 0) {
+    const first = completedResponse.errors[0];
+    throw new Error(
+      first.message ??
+        `BigQuery query failed: ${first.reason ?? "UNKNOWN_REASON"}`,
+    );
+  }
+
+  return {
+    rows: parseBigQueryQueryRows(completedResponse),
+    totalRows:
+      typeof completedResponse.totalRows === "string"
+        ? Number(completedResponse.totalRows)
+        : null,
+  };
 }
 
 function toInsertRows<T extends Record<string, unknown>>(
