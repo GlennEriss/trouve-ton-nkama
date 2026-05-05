@@ -10,6 +10,7 @@ import { FirebaseAnalyticsTracker } from '@/features/analytics/tracking';
 import { PresenceAnalyticsTracker } from '@/features/analytics/presence/ui/PresenceAnalyticsTracker';
 import { Analytics } from '@vercel/analytics/react';
 import AdSenseRouteLoader from '@/components/ads/AdSenseRouteLoader';
+import { ADSENSE_CLIENT } from '@/lib/ads/config';
 
 const inter = Inter({
   subsets: ['latin'],
@@ -73,7 +74,7 @@ export default async function RootLayout({
     <html lang="fr" suppressHydrationWarning>
       <head>
         <meta name="google-site-verification" content="owGLe__J-ZZiJvB-iZzlfxianxrwoO8vdRyxKFfSkTk" />
-        <meta name="google-adsense-account" content="ca-pub-2799688336707362" />
+        <meta name="google-adsense-account" content={ADSENSE_CLIENT} />
         <link rel="canonical" href={`${process.env.NEXT_PUBLIC_HOST || 'https://www.tonnkama.com'}/`} />
         
         {/* Métadonnées Open Graph optimisées pour mobile et WhatsApp */}

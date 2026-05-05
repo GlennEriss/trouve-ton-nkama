@@ -4,8 +4,8 @@ import React from 'react';
 import Script from 'next/script';
 import { usePathname } from 'next/navigation';
 import { isPropertyFormFlowPath } from '@/lib/ads/route-guards';
+import { ADSENSE_CLIENT } from '@/lib/ads/config';
 
-const ADSENSE_CLIENT = 'ca-pub-2799688336707362';
 const ADSENSE_SCRIPT_ID = 'adsense-loader-global';
 const ADS_DISABLED_CLASS = 'ads-disabled-route';
 
