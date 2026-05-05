@@ -9,6 +9,8 @@ import PropertyCard from '../home-page/PropertyCard'
 import { useSearchParams } from 'next/navigation'
 import FilterSearchDesktopPageSection from './FilterSearchDesktopPageSection'
 import { useTrackSearchAnalytics } from '@/features/analytics/search/hooks/useTrackSearchAnalytics';
+import InlineAdUnit from '@/components/ads/InlineAdUnit';
+import { ADSENSE_SLOTS } from '@/lib/ads/config';
 
 export default function 
 SearchDesktopPage() {
@@ -126,6 +128,34 @@ SearchDesktopPage() {
         return () => window.clearTimeout(guardTimeout);
     }, [items, isLoadingMore, lastItemsCount]);
 
+    const feedItems = React.useMemo(() => {
+        const FIRST_AD_AFTER_INDEX = 5;
+        const AD_INTERVAL = 10;
+
+        const results: Array<
+            | { type: 'property'; item: any }
+            | { type: 'ad'; key: string }
+        > = [];
+
+        items.forEach((item, index) => {
+            results.push({ type: 'property', item });
+
+            const hasEnoughItems = items.length > FIRST_AD_AFTER_INDEX;
+            if (!hasEnoughItems) return;
+
+            const isFirstAdPosition = index === FIRST_AD_AFTER_INDEX;
+            const isRecurringPosition =
+                index > FIRST_AD_AFTER_INDEX &&
+                (index - FIRST_AD_AFTER_INDEX) % AD_INTERVAL === 0;
+
+            if (isFirstAdPosition || isRecurringPosition) {
+                results.push({ type: 'ad', key: `desktop-${index}` });
+            }
+        });
+
+        return results;
+    }, [items]);
+
     return (
         <>
             <div className='flex p-5'>
@@ -160,16 +190,23 @@ SearchDesktopPage() {
                                 </div>
 
                                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 gap-6 pb-20 auto-rows-fr">
-                                    {items.map((propertyData) => (
-                                        <div
-                                            key={propertyData.objectID}
-                                            className="h-full animate-fade-in-up transform transition-all duration-300 hover:translate-y-[-4px]"
-                                        >
-                                            <PropertyCard
-                                                property={propertyData}
+                                    {feedItems.map((entry) =>
+                                        entry.type === 'property' ? (
+                                            <div
+                                                key={entry.item.objectID}
+                                                className="h-full animate-fade-in-up transform transition-all duration-300 hover:translate-y-[-4px]"
+                                            >
+                                                <PropertyCard property={entry.item} />
+                                            </div>
+                                        ) : (
+                                            <InlineAdUnit
+                                                key={`ad-${entry.key}`}
+                                                className="h-full sm:col-span-2 xl:col-span-3"
+                                                slot={ADSENSE_SLOTS.searchInline}
+                                                slotKey={`search-desktop-${entry.key}`}
                                             />
-                                        </div>
-                                    ))}
+                                        )
+                                    )}
                                 </div>
 
                                 <div ref={sentinelRef} className="h-5" />

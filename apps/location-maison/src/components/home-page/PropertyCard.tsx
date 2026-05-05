@@ -20,10 +20,30 @@ const PropertyCard = ({ property, hideDate = false }: { property: any; hideDate?
   const pathname = usePathname();
   const { trackEvent } = useTrackEvent();
   const propertyId = property.objectID || property.id || property.path || "unknown";
-  const rawPrimaryImageUrl = property.images?.[0]?.fileURL;
+  const firstImageCandidate = Array.isArray(property.images)
+    ? property.images.find((image: unknown) => {
+        if (typeof image === "string") {
+          return image.trim().length > 0;
+        }
+        if (!image || typeof image !== "object") {
+          return false;
+        }
+        const fileURL = (image as { fileURL?: unknown }).fileURL;
+        return typeof fileURL === "string" && fileURL.trim().length > 0;
+      })
+    : null;
+  const rawPrimaryImageUrl =
+    typeof firstImageCandidate === "string"
+      ? firstImageCandidate
+      : (firstImageCandidate as { fileURL?: string } | null)?.fileURL;
   const hasPrimaryImageUrl =
     typeof rawPrimaryImageUrl === "string" && rawPrimaryImageUrl.trim().length > 0;
   const primaryImageSrc = hasPrimaryImageUrl ? rawPrimaryImageUrl : "/home.png";
+  const [resolvedImageSrc, setResolvedImageSrc] = React.useState(primaryImageSrc);
+
+  React.useEffect(() => {
+    setResolvedImageSrc(primaryImageSrc);
+  }, [primaryImageSrc]);
 
   React.useEffect(() => {
     if (hasPrimaryImageUrl) {
@@ -72,7 +92,7 @@ const PropertyCard = ({ property, hideDate = false }: { property: any; hideDate?
         {/* Image principale */}
         <div className="relative w-full h-[220px] sm:h-[230px] xl:h-[240px] bg-gray-200">
           <Image
-            src={primaryImageSrc}
+            src={resolvedImageSrc}
             alt={property.title ?? "Image de l'annonce"}
             fill
             className="object-cover"
@@ -82,18 +102,25 @@ const PropertyCard = ({ property, hideDate = false }: { property: any; hideDate?
                 propertyId,
                 title: property.title,
                 rawFileUrl: rawPrimaryImageUrl,
-                resolvedSrc: primaryImageSrc,
+                resolvedSrc: resolvedImageSrc,
               })
             }
-            onError={() =>
+            onError={(event) => {
               logImageError({
                 component: "PropertyCard",
                 propertyId,
                 title: property.title,
                 rawFileUrl: rawPrimaryImageUrl,
-                resolvedSrc: primaryImageSrc,
-              })
-            }
+                resolvedSrc:
+                  event.currentTarget.currentSrc ||
+                  event.currentTarget.src ||
+                  resolvedImageSrc,
+              });
+
+              if (resolvedImageSrc !== "/home.png") {
+                setResolvedImageSrc("/home.png");
+              }
+            }}
           />
           {/* Type de propriété */}
           {property.typeProperty && (

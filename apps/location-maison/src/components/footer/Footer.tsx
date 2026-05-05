@@ -8,100 +8,9 @@ import { useCurrentUser } from '@/hooks/use-current-user';
 import { useWindowSize } from '@/hooks/useSize';
 import { cn } from '@/lib/utils';
 import PWAInstallButton from '@/components/pwa/PWAInstallButton';
-import { createLogger } from '@/lib/logger';
 import { isPropertyFormFlowPath } from '@/lib/ads/route-guards';
-
-const ADSENSE_CLIENT = 'ca-pub-2799688336707362';
-const ADSENSE_SLOT = '7503013398';
-
-const logger = createLogger('components.footer.ads');
-
-function AdSenseBlock({
-    className,
-    slotKey,
-}: Readonly<{
-    className?: string;
-    slotKey: string;
-}>) {
-    const adRef = React.useRef<HTMLModElement | null>(null);
-
-    React.useEffect(() => {
-        let retries = 0;
-        let cancelled = false;
-
-        const tryInitialize = () => {
-            if (typeof window === 'undefined' || cancelled) {
-                return true;
-            }
-
-            const adElement = adRef.current;
-            if (!adElement) {
-                return false;
-            }
-
-            // If already filled, no need to push again.
-            if (adElement.getAttribute('data-ad-status') === 'done') {
-                return true;
-            }
-
-            const adsWindow = window as Window & { adsbygoogle?: Array<Record<string, unknown>> };
-            if (!adsWindow.adsbygoogle) {
-                return false;
-            }
-
-            try {
-                adsWindow.adsbygoogle.push({});
-                return true;
-            } catch (error) {
-                logger.warn('AdSense push failed', {
-                    error,
-                    slotKey,
-                    adStatus: adElement.getAttribute('data-ad-status'),
-                });
-                return false;
-            }
-        };
-
-        if (tryInitialize()) {
-            return () => {
-                cancelled = true;
-            };
-        }
-
-        const intervalId = window.setInterval(() => {
-            if (tryInitialize()) {
-                window.clearInterval(intervalId);
-                return;
-            }
-
-            retries += 1;
-            if (retries >= 20) {
-                window.clearInterval(intervalId);
-                logger.warn('AdSense slot init timeout', { slotKey });
-            }
-        }, 350);
-
-        return () => {
-            cancelled = true;
-            window.clearInterval(intervalId);
-        };
-    }, [slotKey]);
-
-    return (
-        <div className={className}>
-            <ins
-                key={slotKey}
-                ref={adRef}
-                className="adsbygoogle"
-                style={{ display: 'block' }}
-                data-ad-client={ADSENSE_CLIENT}
-                data-ad-slot={ADSENSE_SLOT}
-                data-ad-format="auto"
-                data-full-width-responsive="true"
-            />
-        </div>
-    );
-}
+import InlineAdUnit from '@/components/ads/InlineAdUnit';
+import { ADSENSE_SLOTS } from '@/lib/ads/config';
 
 export default function Footer({ isHide = false }: Readonly<{ isHide?: boolean }>) {
     const pathname = usePathname()
@@ -126,12 +35,12 @@ export default function Footer({ isHide = false }: Readonly<{ isHide?: boolean }
     if (showCompactMobileAdOnly) {
         return (
             <div className="w-full px-3 py-2 md:hidden">
-                <div className="mx-auto max-w-[520px]">
-                    <AdSenseBlock
-                        key={`mobile-${pathname}`}
-                        slotKey={`mobile-${pathname}`}
-                    />
-                </div>
+                <InlineAdUnit
+                    className="mx-auto max-w-[520px]"
+                    slot={ADSENSE_SLOTS.footer}
+                    slotKey={`mobile-${pathname}`}
+                    compact
+                />
             </div>
         )
     }
@@ -202,9 +111,9 @@ export default function Footer({ isHide = false }: Readonly<{ isHide?: boolean }
                     </div>
                 </div>
 
-                <AdSenseBlock
-                    key={`footer-${pathname}`}
+                <InlineAdUnit
                     className="mt-8"
+                    slot={ADSENSE_SLOTS.footer}
                     slotKey={`footer-${pathname}`}
                 />
 

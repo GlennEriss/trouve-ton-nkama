@@ -8,6 +8,8 @@ import { notFound, useParams } from "next/navigation"
 import HouseDetailSkeleton from "./HouseDetailSkeleton"
 import RecommendationSection from "./RecommendationSection"
 import { useTrackPropertyView } from "@/hooks/use-track-property-view"
+import InlineAdUnit from '@/components/ads/InlineAdUnit'
+import { ADSENSE_SLOTS } from '@/lib/ads/config'
 
 export default function HouseDetails() {
     const size = useWindowSize()
@@ -34,6 +36,10 @@ export default function HouseDetails() {
         return (
             <div className='py-5 px-20 space-y-10'>
                 <PreviewProperty property={property} />
+                <InlineAdUnit
+                    slot={ADSENSE_SLOTS.propertyDetail}
+                    slotKey={`property-desktop-${id}`}
+                />
                 <RecommendationSection 
                     currentPropertyId={property.id}
                     currentPropertyType={property.typeProperty}
@@ -46,6 +52,12 @@ export default function HouseDetails() {
     return (
         <div className="space-y-10">
             <PreviewPropertyMobile property={property} />
+            <InlineAdUnit
+                className="mx-4"
+                slot={ADSENSE_SLOTS.propertyDetail}
+                slotKey={`property-mobile-${id}`}
+                compact
+            />
             <RecommendationSection 
                 currentPropertyId={property.id}
                 currentPropertyType={property.typeProperty}

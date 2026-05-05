@@ -229,7 +229,11 @@ export const PropertyFormComponentProvider = ({ children, isUpdate, propertyToUp
                 description: id ? "Propriété modifiée avec succès!" : "Propriété ajoutée avec succès!",
                 variant: "success"
             })
-            router.push(routes.protected.properties)
+            const destination =
+                id
+                    ? routes.protected.properties
+                    : `${routes.protected.properties}?submitted=1`
+            router.push(destination)
             //setActiveStep(prev => prev + 1)
         },
         onError: (error) => {

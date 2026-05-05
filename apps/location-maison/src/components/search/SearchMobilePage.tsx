@@ -14,6 +14,8 @@ import { trackingEvents, useTrackEvent } from '@/features/analytics/tracking';
 import { useSession } from 'next-auth/react';
 import SearchWithAIAccessNoticeDialog from './SearchWithAIAccessNoticeDialog';
 import { useTrackSearchAnalytics } from '@/features/analytics/search/hooks/useTrackSearchAnalytics';
+import InlineAdUnit from '@/components/ads/InlineAdUnit';
+import { ADSENSE_SLOTS } from '@/lib/ads/config';
 
 export default function SearchMobilePage() {
     const { trackEvent } = useTrackEvent()
@@ -127,6 +129,34 @@ export default function SearchMobilePage() {
         return () => window.clearTimeout(guardTimeout);
     }, [items, isLoadingMore, lastItemsCount]);
 
+    const feedItems = React.useMemo(() => {
+        const FIRST_AD_AFTER_INDEX = 4;
+        const AD_INTERVAL = 8;
+
+        const results: Array<
+            | { type: 'property'; item: any }
+            | { type: 'ad'; key: string }
+        > = [];
+
+        items.forEach((item, index) => {
+            results.push({ type: 'property', item });
+
+            const hasEnoughItems = items.length > FIRST_AD_AFTER_INDEX;
+            if (!hasEnoughItems) return;
+
+            const isFirstAdPosition = index === FIRST_AD_AFTER_INDEX;
+            const isRecurringPosition =
+                index > FIRST_AD_AFTER_INDEX &&
+                (index - FIRST_AD_AFTER_INDEX) % AD_INTERVAL === 0;
+
+            if (isFirstAdPosition || isRecurringPosition) {
+                results.push({ type: 'ad', key: `mobile-${index}` });
+            }
+        });
+
+        return results;
+    }, [items]);
+
     // Scroll handlers
     const scrollToTop = () => {
         topRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -235,14 +265,24 @@ export default function SearchMobilePage() {
                             <>
                                 {/* Grille de résultats */}
                                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 xl:grid-cols-6 gap-4 auto-rows-fr">
-                                    {items.map((propertyData) => (
-                                        <div
-                                            key={propertyData.objectID}
-                                            className="h-full animate-fade-in-up transition-all duration-300"
-                                        >
-                                            <PropertyCard property={propertyData} />
-                                        </div>
-                                    ))}
+                                    {feedItems.map((entry) =>
+                                        entry.type === 'property' ? (
+                                            <div
+                                                key={entry.item.objectID}
+                                                className="h-full animate-fade-in-up transition-all duration-300"
+                                            >
+                                                <PropertyCard property={entry.item} />
+                                            </div>
+                                        ) : (
+                                            <InlineAdUnit
+                                                key={`ad-${entry.key}`}
+                                                className="sm:col-span-2 lg:col-span-5 xl:col-span-6"
+                                                slot={ADSENSE_SLOTS.searchInline}
+                                                slotKey={`search-mobile-${entry.key}`}
+                                                compact
+                                            />
+                                        )
+                                    )}
                                 </div>
 
                                 {/* Sentinel pour infinite scroll */}
