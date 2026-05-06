@@ -208,6 +208,21 @@ export default function HomePageDesktopComponent() {
         <PropertyByProvince />
       </motion.section>
 
+      <motion.section className='rounded-2xl bg-white border border-gray-100 p-6 space-y-4' {...getRevealProps(0.19)}>
+        <h2 className='text-xl lg:text-2xl font-bold text-[#146B67]'>Recherches immobilières populaires</h2>
+        <div className='grid gap-3 md:grid-cols-2 lg:grid-cols-3'>
+          <Link href="/immobilier/location/maison" className="rounded-xl border border-gray-200 px-4 py-3 text-sm font-medium text-gray-700 hover:border-[#146B67] hover:text-[#146B67] transition-colors">
+            Maisons à louer au Gabon
+          </Link>
+          <Link href="/immobilier/vente/maison" className="rounded-xl border border-gray-200 px-4 py-3 text-sm font-medium text-gray-700 hover:border-[#146B67] hover:text-[#146B67] transition-colors">
+            Maisons à vendre au Gabon
+          </Link>
+          <Link href="/immobilier/location/appartement/libreville" className="rounded-xl border border-gray-200 px-4 py-3 text-sm font-medium text-gray-700 hover:border-[#146B67] hover:text-[#146B67] transition-colors">
+            Appartements à louer à Libreville
+          </Link>
+        </div>
+      </motion.section>
+
       <motion.section
         className='rounded-3xl bg-gradient-to-r from-[#C1DEE8] to-[#FBD9B9] p-8 lg:p-12 relative mt-10 overflow-visible mb-32 lg:mb-40'
         {...getRevealProps(0.2)}

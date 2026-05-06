@@ -219,6 +219,19 @@ export default function HomePageMobileComponent() {
                     <PropertyByProvince />
                 </motion.section>
 
+                <motion.section className='space-y-3 m-5 p-4 rounded-2xl border border-gray-100 bg-white' {...getRevealProps(0.14)}>
+                    <h2 className='text-lg font-bold text-[#146B67]'>Recherches populaires</h2>
+                    <Link href="/immobilier/location/maison" className="rounded-xl border border-gray-200 px-4 py-3 text-sm font-medium text-gray-700 block">
+                        Maisons à louer au Gabon
+                    </Link>
+                    <Link href="/immobilier/vente/maison" className="rounded-xl border border-gray-200 px-4 py-3 text-sm font-medium text-gray-700 block">
+                        Maisons à vendre au Gabon
+                    </Link>
+                    <Link href="/immobilier/location/appartement/libreville" className="rounded-xl border border-gray-200 px-4 py-3 text-sm font-medium text-gray-700 block">
+                        Appartements à louer à Libreville
+                    </Link>
+                </motion.section>
+
                 <motion.section className='bg-green-50 py-5' {...getRevealProps(0.15)}>
                     <div className='m-5 bg-gradient-to-r to-[#146B67] from-[#1FA89B] rounded-xl py-5 px-3 flex flex-col gap-3 items-center'>
                         <h1 className='text-xl text-white font-bold text-center flex flex-col'>

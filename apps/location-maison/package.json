@@ -27,6 +27,7 @@
     "test:coverage": "jest --coverage --coverageReporters=text --coverageReporters=lcov --coverageReporters=html --coverageReporters=json-summary",
     "check:env": "node scripts/check-env-firebase.js",
     "sync:env": "node scripts/sync-env-variables.js",
+    "audit:seo": "node scripts/audit-seo.mjs",
     "test:ci": "jest --ci --coverage --reporters=default",
     "test:watch": "jest --watch",
     "email": "email dev --dir src/emails",
