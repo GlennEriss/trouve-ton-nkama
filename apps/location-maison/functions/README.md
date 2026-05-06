@@ -13,6 +13,8 @@ functions/
 │   │   └── verification.ts   # Fonction d'envoi d'email de vérification
 │   ├── notification/
 │   │   └── index.ts          # Fonctions de notification
+│   ├── analytics/
+│   │   └── adsense-sync.ts   # Sync quotidien AdSense -> dashboard admin
 │   ├── payments/
 │   │   └── airtel/           # Intégration Airtel Money
 │   └── credit-payment/
@@ -42,6 +44,15 @@ NEXT_PUBLIC_APP_URL=http://localhost:3000
 # Firebase (pour les émulateurs)
 FIREBASE_PROJECT_ID=location-maison-dev
 GCLOUD_PROJECT=location-maison-dev
+
+# Sync AdSense -> Admin Analytics
+ADSENSE_SYNC_ENABLED=true
+ADSENSE_ACCOUNT_RESOURCE=accounts/pub-xxxxxxxxxxxxxxxx
+ADSENSE_OAUTH_CLIENT_ID=
+ADSENSE_OAUTH_CLIENT_SECRET=
+ADSENSE_OAUTH_REFRESH_TOKEN=
+ADSENSE_SYNC_TARGET_URL=http://localhost:3001/api/admin/v1/analytics/adapters/adsense
+ANALYTICS_INGEST_TOKEN=
 ```
 
 **Note :** Le fichier `.env` est automatiquement chargé lors du développement local (émulateurs). En production, les secrets sont gérés par Firebase Secret Manager.
@@ -137,6 +148,14 @@ Les secrets suivants sont nécessaires :
 
 - **`initiatePurchase`** : Initie un achat via Airtel Money
 - **`createCreditPayment`** : Crée un paiement de crédits
+
+### Analytics
+
+- **`syncAdSenseToAdminAnalytics`** : Job quotidien Cloud Scheduler qui:
+  - récupère les rapports AdSense (OAuth refresh token)
+  - pousse les lignes dans l'adaptateur `adsense` du dashboard admin
+  - applique l'idempotence par fenêtre de date (Firestore)
+  - journalise les échecs (`admin_adsense_sync_runs`)
 
 ## 🐛 Dépannage
 
