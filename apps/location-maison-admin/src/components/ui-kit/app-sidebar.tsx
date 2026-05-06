@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { Activity, BarChart3, Building2, Home, Shield, Users } from "lucide-react";
+import { Activity, BarChart3, Building2, Home, Shield, TrendingUp, Users } from "lucide-react";
 import { usePathname } from "next/navigation";
 
 import {
@@ -22,6 +22,7 @@ const navItems = [
   { href: "/dashboard/analytics/searches", label: "Analytics recherches", icon: BarChart3 },
   { href: "/dashboard/analytics/traffic", label: "Analytics visites", icon: Activity },
   { href: "/dashboard/analytics/presence", label: "Analytics présence", icon: Users },
+  { href: "/dashboard/analytics/ads", label: "Analytics monétisation", icon: TrendingUp },
   { href: "/dashboard/admins", label: "Administrateurs", icon: Shield },
   { href: "/dashboard/users", label: "Utilisateurs", icon: Users },
   { href: "/dashboard/announcers", label: "Annonceurs", icon: Building2 },

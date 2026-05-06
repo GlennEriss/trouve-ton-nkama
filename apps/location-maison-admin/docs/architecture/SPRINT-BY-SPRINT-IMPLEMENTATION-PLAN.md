@@ -35,7 +35,7 @@ Definition of Done:
 | Sprint 3 | Users & Announcers Ops | listing/recherche users, presence users, annonceurs |
 | Sprint 4 | Listing Moderation | file moderation, approve/reject, bulk de base |
 | Sprint 5 | Finance Core | packs, credits manuels, transactions, remboursements MVP |
-| Sprint 6 | Analytics Core | recherches 7j + visites Firebase/Vercel centralisees |
+| Sprint 6 | Analytics Core | recherches 7j + visites Firebase/Vercel + monétisation pubs AdSense |
 | Sprint 7 | Hardening & Go-Live | securite/perf, preprod full pass, release MVP v1 |
 
 ## 4. Detail sprint par sprint
@@ -135,7 +135,7 @@ Scope:
 
 Livrables:
 
-- module `user_management` et `announcer_management` MVP
+- module `user-management` et `announcer-management` MVP
 - filtres et pagination de base
 
 Exit criteria:
@@ -158,7 +158,7 @@ Scope:
 
 Livrables:
 
-- module `listing_moderation` MVP
+- module `listing-moderation` MVP
 - audit complet decisions moderation
 
 Exit criteria:
@@ -182,7 +182,7 @@ Scope:
 
 Livrables:
 
-- module `finance_credits` MVP
+- module `finance-credits` MVP
 - protections anti double-traitement
 
 Exit criteria:
@@ -199,15 +199,18 @@ Objectif:
 Scope:
 
 - pipeline ingestion Firebase/Vercel analytics (Cloud Functions)
+- pipeline ingestion AdSense Reporting API
 - tables/aggregats BigQuery
 - dashboard recherches (7 jours par defaut)
 - KPI recherches: volume, top queries, prix/types, avec/sans resultats
 - dashboard visites: Firebase vs Vercel comparatif
+- dashboard monétisation pubs: revenus, RPM, CTR, fill rate, viewability
 
 Livrables:
 
-- module `analytics_insights` MVP
+- module `analytics-insights` MVP
 - jobs ingestion + agregation operationnels
+- spec monétisation pubs: `docs/MONETISATION-PUBS-ADSENSE-SPEC.md`
 - backlog executable detaille: `docs/architecture/SPRINT-6-ANALYTICS-IMPLEMENTATION-BACKLOG.md`
 - spec implementation ready ANL-001/002: `docs/architecture/ANL-001-ANL-002-BIGQUERY-DDL-ZOD-SPEC.md`
 - matrice delivery owner/estimation/priorite: `docs/architecture/SPRINT-6-ANALYTICS-DELIVERY-MATRIX.md`
@@ -216,6 +219,7 @@ Exit criteria:
 
 - comparaison Firebase/Vercel visible et comprehensible
 - recherche 7 jours exploitable metierement
+- revenus pub vs trafic lisibles et actionnables
 
 ## Sprint 7 - Hardening & Go-Live
 

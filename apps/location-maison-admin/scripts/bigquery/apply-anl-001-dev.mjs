@@ -437,6 +437,86 @@ const ddlStatements = [
   PARTITION BY date_key
   OPTIONS (require_partition_filter = TRUE, description = "Daily Firebase vs Vercel comparison")`,
 
+  `CREATE TABLE IF NOT EXISTS ${tableRef("adsense_reporting_raw")} (
+    report_date DATE NOT NULL,
+    account_id STRING,
+    dimension_page_url STRING,
+    dimension_ad_unit STRING,
+    dimension_country STRING,
+    dimension_device STRING,
+    estimated_earnings NUMERIC,
+    page_views INT64,
+    ad_requests INT64,
+    matched_ad_requests INT64,
+    total_impressions INT64,
+    clicks INT64,
+    page_views_rpm NUMERIC,
+    impressions_rpm NUMERIC,
+    active_view_viewability NUMERIC,
+    active_view_measurability NUMERIC,
+    loaded_at TIMESTAMP NOT NULL
+  )
+  PARTITION BY report_date
+  CLUSTER BY dimension_ad_unit, dimension_country, dimension_device
+  OPTIONS (require_partition_filter = TRUE, description = "Raw AdSense reporting export")`,
+
+  `CREATE TABLE IF NOT EXISTS ${tableRef("ads_slot_events")} (
+    event_id STRING NOT NULL,
+    occurred_at TIMESTAMP NOT NULL,
+    date_key DATE NOT NULL,
+    session_id STRING,
+    page_path STRING,
+    page_template STRING,
+    slot_id STRING,
+    slot_position STRING,
+    event_name STRING NOT NULL,
+    latency_ms INT64,
+    is_authenticated BOOL,
+    country STRING,
+    device_category STRING,
+    PRIMARY KEY (event_id) NOT ENFORCED
+  )
+  PARTITION BY date_key
+  CLUSTER BY slot_id, event_name, page_template
+  OPTIONS (require_partition_filter = TRUE, description = "Slot-level ad integration observability events")`,
+
+  `CREATE TABLE IF NOT EXISTS ${tableRef("ads_metrics_daily")} (
+    date_key DATE NOT NULL,
+    page_template STRING,
+    slot_id STRING,
+    device_category STRING,
+    country STRING,
+    estimated_earnings NUMERIC,
+    page_views INT64,
+    sessions INT64,
+    ad_requests INT64,
+    matched_ad_requests INT64,
+    total_impressions INT64,
+    clicks INT64,
+    fill_rate NUMERIC,
+    ctr NUMERIC,
+    page_views_rpm NUMERIC,
+    impressions_rpm NUMERIC,
+    active_view_viewability NUMERIC,
+    updated_at TIMESTAMP NOT NULL
+  )
+  PARTITION BY date_key
+  CLUSTER BY page_template, slot_id, device_category
+  OPTIONS (require_partition_filter = TRUE, description = "Daily monetization metrics for dashboard")`,
+
+  `CREATE TABLE IF NOT EXISTS ${tableRef("ads_revenue_vs_traffic_daily")} (
+    date_key DATE NOT NULL,
+    estimated_earnings NUMERIC,
+    sessions INT64,
+    page_views INT64,
+    revenue_per_1k_sessions NUMERIC,
+    page_views_rpm NUMERIC,
+    delta_revenue_vs_prev_day NUMERIC,
+    delta_rpm_vs_prev_day NUMERIC
+  )
+  PARTITION BY date_key
+  OPTIONS (require_partition_filter = TRUE, description = "Revenue vs traffic daily comparison")`,
+
   `CREATE TABLE IF NOT EXISTS ${tableRef("ingestion_idempotency_registry")} (
     idempotency_key STRING NOT NULL,
     request_fingerprint STRING NOT NULL,
@@ -488,7 +568,11 @@ async function main() {
       'search_metrics_daily',
       'presence_snapshots_5min',
       'traffic_metrics_daily',
-      'traffic_comparison_daily'
+      'traffic_comparison_daily',
+      'adsense_reporting_raw',
+      'ads_slot_events',
+      'ads_metrics_daily',
+      'ads_revenue_vs_traffic_daily'
     )
       AND option_name IN ('partitioning_type', 'partitioning_field', 'require_partition_filter')
     ORDER BY table_name, option_name`,
@@ -509,7 +593,11 @@ async function main() {
       'search_metrics_daily',
       'presence_snapshots_5min',
       'traffic_metrics_daily',
-      'traffic_comparison_daily'
+      'traffic_comparison_daily',
+      'adsense_reporting_raw',
+      'ads_slot_events',
+      'ads_metrics_daily',
+      'ads_revenue_vs_traffic_daily'
     )
       AND clustering_ordinal_position IS NOT NULL
     ORDER BY table_name, clustering_ordinal_position`,

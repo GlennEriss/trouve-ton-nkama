@@ -29,6 +29,7 @@ Out-of-scope MVP (v1.x+):
 - tracking comportemental fin par parcours multi-etapes
 - attribution marketing avancee multi-touch
 - modeles predictifs/ML
+- monétisation pubs AdSense (spec dédiée: `../MONETISATION-PUBS-ADSENSE-SPEC.md`, extension contrat prevue en v1.1)
 
 ## 3. Envelope evenement canonique
 
@@ -477,6 +478,11 @@ Validation query params:
 - RBAC lecture analytics:
   - `analytics.search_read`
   - `analytics.traffic_read`
+- RBAC monétisation ads (extension cible):
+  - `ads_analytics.read`
+  - `ads_analytics.export`
+  - `ads_analytics.alerts.read`
+  - `ads_analytics.alerts.manage`
 - Endpoint ingestion non expose au navigateur admin.
 - Pas de PII brute dans analytics raw:
   - stocker `ip_hash`, jamais IP claire

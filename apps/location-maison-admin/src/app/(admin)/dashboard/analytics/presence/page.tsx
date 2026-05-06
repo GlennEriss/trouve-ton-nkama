@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { RefreshCcw } from "lucide-react";
 
@@ -260,6 +260,18 @@ export default function AnalyticsPresencePage() {
   const adminsOnline = adminsOnlineQuery.data;
   const usersLastSeen = usersLastSeenQuery.data;
   const adminsLastLogin = adminsLastLoginQuery.data;
+  const onExportCsv = useCallback(() => {
+    const params = buildRangeParams({
+      range,
+      startIso: customStartIso,
+      endIso: customEndIso,
+    });
+    window.open(
+      `/api/admin/v1/analytics/presence/export?${params.toString()}`,
+      "_blank",
+      "noopener,noreferrer",
+    );
+  }, [customEndIso, customStartIso, range]);
 
   return (
     <div className="space-y-6">
@@ -267,20 +279,30 @@ export default function AnalyticsPresencePage() {
         title="Analytics présence"
         description="Suivi de la présence utilisateurs/admins et dernière activité."
         actions={
-          <Button
-            type="button"
-            variant="outline"
-            onClick={() => {
-              void usersOnlineQuery.refetch();
-              void adminsOnlineQuery.refetch();
-              void usersLastSeenQuery.refetch();
-              void adminsLastLoginQuery.refetch();
-            }}
-            disabled={loading}
-          >
-            <RefreshCcw className="mr-2 h-4 w-4" />
-            Actualiser
-          </Button>
+          <div className="flex flex-wrap gap-2">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={onExportCsv}
+              disabled={loading || !canQuery}
+            >
+              Export CSV
+            </Button>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => {
+                void usersOnlineQuery.refetch();
+                void adminsOnlineQuery.refetch();
+                void usersLastSeenQuery.refetch();
+                void adminsLastLoginQuery.refetch();
+              }}
+              disabled={loading}
+            >
+              <RefreshCcw className="mr-2 h-4 w-4" />
+              Actualiser
+            </Button>
+          </div>
         }
       />
 

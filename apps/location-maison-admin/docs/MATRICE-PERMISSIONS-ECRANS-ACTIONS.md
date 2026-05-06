@@ -25,7 +25,9 @@ Exemples:
 - `users.read`
 - `users.suspend`
 - `listings.approve`
-- `search_analytics.read`
+- `analytics.search_read`
+- `analytics.traffic_read`
+- `ads_analytics.read`
 
 ## Règles globales d'autorisation
 
@@ -131,6 +133,9 @@ Permissions utilisées:
 
 ## 6) Modération annonces
 
+Note:
+- Pour le niveau de detail complet du module annonces (listing/detail/edition/etat/bulk/doublons), voir `./MATRICE-PERMISSIONS-ANNONCES-ECRANS-ACTIONS.md`.
+
 Permissions utilisées:
 
 - `listings.read`
@@ -177,8 +182,8 @@ Condition `Y*` pour `finance_admin`:
 
 Permissions utilisées:
 
-- `search_analytics.read`
-- `search_analytics.export`
+- `analytics.search_read` (actuel en code)
+- `search_analytics.export` (extension cible)
 
 | Écran / Action | super_admin | operations_admin | moderation_admin | finance_admin | support_admin | analyst_admin |
 |---|---|---|---|---|---|---|
@@ -191,9 +196,9 @@ Permissions utilisées:
 
 Permissions utilisées:
 
-- `traffic_analytics.read`
-- `traffic_analytics.compare`
-- `traffic_analytics.export`
+- `analytics.traffic_read` (actuel en code)
+- `traffic_analytics.compare` (extension cible)
+- `traffic_analytics.export` (extension cible)
 
 | Écran / Action | super_admin | operations_admin | moderation_admin | finance_admin | support_admin | analyst_admin |
 |---|---|---|---|---|---|---|
@@ -201,7 +206,27 @@ Permissions utilisées:
 | Comparer Firebase vs Vercel | Y | Y | Y | Y | Y | Y |
 | Exporter rapport visites | Y | Y | N | N | N | Y |
 
-## 10) Audit logs
+## 10) Analytics monétisation Ads (AdSense)
+
+Note:
+- Spécification fonctionnelle détaillée: `./MONETISATION-PUBS-ADSENSE-SPEC.md`.
+
+Permissions utilisées:
+
+- `ads_analytics.read` (cible)
+- `ads_analytics.export` (cible)
+- `ads_analytics.alerts.read` (cible)
+- `ads_analytics.alerts.manage` (cible)
+
+| Écran / Action | super_admin | operations_admin | moderation_admin | finance_admin | support_admin | analyst_admin |
+|---|---|---|---|---|---|---|
+| Voir dashboard revenus pubs | Y | Y | N | Y | N | Y |
+| Voir performance emplacements/pages | Y | Y | N | Y | N | Y |
+| Voir alertes monétisation | Y | Y | N | Y | N | Y |
+| Gérer seuils d'alertes monétisation | Y | Y | N | N | N | N |
+| Exporter rapport monétisation | Y | Y | N | Y | N | Y |
+
+## 11) Audit logs
 
 Permissions utilisées:
 
@@ -213,7 +238,7 @@ Permissions utilisées:
 | Consulter audit logs | Y | Y | Y | Y | Y | Y |
 | Exporter audit logs | Y | Y | N | N | N | Y |
 
-## 11) Paramètres
+## 12) Paramètres
 
 Permissions utilisées:
 

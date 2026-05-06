@@ -1,6 +1,7 @@
 import { App, cert, getApps, initializeApp } from "firebase-admin/app";
 import { getAuth } from "firebase-admin/auth";
 import { getFirestore } from "firebase-admin/firestore";
+import { getStorage } from "firebase-admin/storage";
 
 let cachedApp: App | undefined;
 
@@ -8,6 +9,10 @@ function getFirebaseAdminConfig() {
   const projectId = process.env.FIREBASE_PROJECT_ID;
   const clientEmail = process.env.FIREBASE_CLIENT_EMAIL;
   const privateKey = process.env.FIREBASE_PRIVATE_KEY?.replace(/\\n/gm, "\n");
+  const storageBucket =
+    process.env.FIREBASE_STORAGE_BUCKET ??
+    process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET ??
+    undefined;
 
   if (!projectId || !clientEmail || !privateKey) {
     throw new Error(
@@ -15,7 +20,7 @@ function getFirebaseAdminConfig() {
     );
   }
 
-  return { projectId, clientEmail, privateKey };
+  return { projectId, clientEmail, privateKey, storageBucket };
 }
 
 export function getFirebaseAdminApp() {
@@ -29,8 +34,14 @@ export function getFirebaseAdminApp() {
     return cachedApp;
   }
 
+  const config = getFirebaseAdminConfig();
   cachedApp = initializeApp({
-    credential: cert(getFirebaseAdminConfig()),
+    credential: cert({
+      projectId: config.projectId,
+      clientEmail: config.clientEmail,
+      privateKey: config.privateKey,
+    }),
+    storageBucket: config.storageBucket,
   });
 
   return cachedApp;
@@ -42,4 +53,8 @@ export function getFirebaseAdminAuth() {
 
 export function getFirebaseAdminDb() {
   return getFirestore(getFirebaseAdminApp());
+}
+
+export function getFirebaseAdminStorage() {
+  return getStorage(getFirebaseAdminApp());
 }

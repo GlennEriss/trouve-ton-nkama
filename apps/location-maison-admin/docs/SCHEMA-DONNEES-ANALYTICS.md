@@ -1,4 +1,4 @@
-# Schéma de Données Analytics (Recherches, Présence, Visites)
+# Schéma de Données Analytics (Recherches, Présence, Visites, Monétisation Pubs)
 
 ## Objectif
 
@@ -7,6 +7,7 @@ Définir le modèle de données analytics pour:
 - présence admins/utilisateurs (en ligne + dernière activité)
 - recherches utilisateurs (7 jours par défaut)
 - visites de la plateforme (centralisation Firebase + Vercel)
+- monétisation pubs AdSense (revenus + performance)
 
 ## Portée du schéma
 
@@ -15,7 +16,7 @@ Le schéma est logique et peut être implémenté dans Firestore, BigQuery ou un
 ## Principes
 
 - Normaliser les événements avec un `event_name` et un `occurred_at`.
-- Conserver la source (`firebase`, `vercel`, `search_page`, `search_bar`).
+- Conserver la source (`firebase`, `vercel`, `search_page`, `search_bar`, `adsense`).
 - Séparer les tables brutes (events) des tables agrégées (reporting rapide).
 - Utiliser UTC pour stockage; conversion fuseau à l'affichage.
 
@@ -185,23 +186,113 @@ Champs:
 - `vercel_page_views` (int)
 - `updated_at` (timestamp)
 
-## 4) Pipeline d'ingestion analytics
+## 4) Monétisation pubs (AdSense)
+
+## 4.1 Table `adsense_reporting_raw`
+
+But: centraliser les métriques de revenu et de performance AdSense.
+
+Champs:
+
+- `report_date` (date)
+- `account_id` (string)
+- `dimension_page_url` (string, nullable)
+- `dimension_ad_unit` (string, nullable)
+- `dimension_country` (string, nullable)
+- `dimension_device` (string, nullable)
+- `estimated_earnings` (numeric)
+- `page_views` (int)
+- `ad_requests` (int)
+- `matched_ad_requests` (int)
+- `total_impressions` (int)
+- `clicks` (int)
+- `page_views_rpm` (numeric)
+- `impressions_rpm` (numeric)
+- `active_view_viewability` (numeric, nullable)
+- `active_view_measurability` (numeric, nullable)
+- `loaded_at` (timestamp)
+
+## 4.2 Table `ads_slot_events`
+
+But: mesurer la qualité réelle de l'intégration pub sur la plateforme.
+
+Champs:
+
+- `event_id` (string, PK)
+- `occurred_at` (timestamp)
+- `date_key` (date)
+- `session_id` (string)
+- `page_path` (string)
+- `page_template` (string)
+- `slot_id` (string)
+- `slot_position` (string)
+- `event_name` (enum: `ad_slot_rendered`, `ad_request_sent`, `ad_filled`, `ad_impression`, `ad_click`)
+- `latency_ms` (int, nullable)
+- `country` (string, nullable)
+- `device_category` (string, nullable)
+- `created_at` (timestamp)
+
+## 4.3 Table agrégée `ads_metrics_daily`
+
+But: alimenter les écrans dashboard monétisation.
+
+Champs:
+
+- `date_key` (date)
+- `page_template` (string)
+- `slot_id` (string, nullable)
+- `slot_position` (string, nullable)
+- `device_category` (string, nullable)
+- `country` (string, nullable)
+- `estimated_earnings` (numeric)
+- `sessions` (int)
+- `page_views` (int)
+- `ad_requests` (int)
+- `matched_ad_requests` (int)
+- `total_impressions` (int)
+- `clicks` (int)
+- `fill_rate` (numeric)
+- `ctr` (numeric)
+- `page_views_rpm` (numeric)
+- `impressions_rpm` (numeric)
+- `active_view_viewability` (numeric, nullable)
+- `updated_at` (timestamp)
+
+## 4.4 Table agrégée `ads_revenue_vs_traffic_daily`
+
+But: comparer revenu pub et trafic dans une seule vue.
+
+Champs:
+
+- `date_key` (date)
+- `estimated_earnings` (numeric)
+- `sessions` (int)
+- `page_views` (int)
+- `revenue_per_1k_sessions` (numeric)
+- `page_views_rpm` (numeric)
+- `delta_revenue_vs_prev_day` (numeric)
+- `delta_rpm_vs_prev_day` (numeric)
+
+## 5) Pipeline d'ingestion analytics
 
 Étapes:
 
 1. Extraction Firebase Analytics
 2. Extraction Vercel Analytics
-3. Normalisation format commun
-4. Upsert dans tables `*_raw`
-5. Agrégation quotidienne dans `*_daily`
-6. Vérification qualité (doublons, trous de données, latence)
+3. Extraction AdSense Reporting API
+4. Ingestion des events slot-level depuis la plateforme
+5. Normalisation format commun
+6. Upsert dans tables `*_raw`
+7. Agrégation quotidienne dans `*_daily`
+8. Vérification qualité (doublons, trous de données, latence)
 
 Fréquence recommandée:
 
-- Ingestion brute: toutes les 15 minutes
+- Ingestion brute trafic/recherche/présence: toutes les 15 minutes
+- Ingestion AdSense: toutes les 6 heures + consolidation quotidienne
 - Agrégation daily: toutes les heures + recalcul nocturne
 
-## 5) Contrat API du dashboard (niveau fonctionnel)
+## 6) Contrat API du dashboard (niveau fonctionnel)
 
 Endpoints attendus (fonctionnels, sans code):
 
@@ -220,16 +311,29 @@ Endpoints attendus (fonctionnels, sans code):
 - `GET /admin/analytics/traffic?range=7d`
 - `GET /admin/analytics/traffic/compare?providers=firebase,vercel&range=7d`
 
-## 6) Rétention des données
+- Monétisation pubs:
+- `GET /admin/analytics/ads/overview?range=7d`
+- `GET /admin/analytics/ads/revenue-timeseries?range=30d`
+- `GET /admin/analytics/ads/placements?range=30d`
+- `GET /admin/analytics/ads/pages?range=30d`
+- `GET /admin/analytics/ads/alerts?range=30d`
+
+Référence détaillée:
+- `./MONETISATION-PUBS-ADSENSE-SPEC.md`
+
+## 7) Rétention des données
 
 - `presence_events`: 90 jours
 - `search_events`: 12 mois
 - `traffic_events_raw`: 12 mois
+- `adsense_reporting_raw`: 24 mois
+- `ads_slot_events`: 12 mois
 - `*_daily`: conservation longue (24+ mois)
 
-## 7) Qualité et gouvernance
+## 8) Qualité et gouvernance
 
 - Horodatage obligatoire sur tous les événements.
 - `source/provider` obligatoire.
 - Requêtes vides ou invalides: conserver avec flag qualité.
 - Audit des jobs d'ingestion (succès, erreurs, volumes).
+- Réconciliation quotidienne revenus AdSense vs agrégats dashboard.

@@ -14,14 +14,15 @@ Chaque module metier suit le meme schema pour maitriser la complexite.
 ## 2. Modules metier cibles
 
 - `iam` (identity and access management)
-- `admin_management`
-- `user_management`
-- `announcer_management`
-- `listing_moderation`
-- `finance_credits`
-- `analytics_insights`
-- `audit_compliance`
-- `platform_settings`
+- `admin-management`
+- `user-management`
+- `announcer-management`
+- `listing-moderation`
+- `finance-credits`
+- `analytics-insights`
+- `audit-compliance`
+- `platform-settings`
+- `account-provisioning`
 
 ## 3. Structure logique recommandee
 
@@ -33,12 +34,15 @@ src/
       application/
       domain/
       infrastructure/
-    admin_management/
-    user_management/
-    listing_moderation/
-    finance_credits/
-    analytics_insights/
-    audit_compliance/
+    admin-management/
+    user-management/
+    announcer-management/
+    listing-moderation/
+    finance-credits/
+    analytics-insights/
+    audit-compliance/
+    platform-settings/
+    account-provisioning/
   shared/
     kernel/
     observability/
@@ -91,11 +95,16 @@ Ordre de verification:
 - Suspendre/reactiver selon policy.
 - Exposer presence utilisateurs.
 
-### 7.4 Listing Moderation Service
+### 7.4 Listing Moderation Service (`listing-moderation`)
 
 - Moderer annonces.
-- Actions bulk.
+- Actions bulk moderation.
 - Historiser decisions.
+- Porter les operations annonces admin:
+- listing/recherche/filtres
+- edition
+- changements d'etat/statut
+- gestion doublons (clusters, resolution)
 
 ### 7.5 Finance Credits Service
 
@@ -103,11 +112,15 @@ Ordre de verification:
 - Attribution manuelle.
 - Transactions et remboursements.
 
-### 7.6 Analytics Insights Service
+### 7.6 Analytics Insights Service (`analytics-insights`)
 
 - Aggregations recherches 7j par defaut.
 - Resultats avec/sans annonces.
 - Consolidation visites Firebase/Vercel.
+- Suivi monetisation Ads admin (AdSense):
+- revenus
+- RPM/CTR/fill rate/viewability
+- performance par page et emplacement
 
 ### 7.7 Audit Compliance Service
 
@@ -133,6 +146,8 @@ Events publies par les services applicatifs:
 - `refund.approved`
 - `search.event_ingested`
 - `traffic.metric_ingested`
+- `adsense.report_ingested`
+- `ads.slot_event_ingested`
 
 Broker MVP: Pub/Sub.
 

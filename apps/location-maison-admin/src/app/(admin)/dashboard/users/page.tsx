@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useMemo, useState } from "react";
+import { FormEvent, useCallback, useMemo, useState } from "react";
 import { useInfiniteQuery, useQuery } from "@tanstack/react-query";
 
 import { Button } from "@/components/ui/button";
@@ -48,6 +48,30 @@ type AuthMePayload = {
   admin: {
     permissions: string[];
   };
+};
+
+type CreateAccountPayload = {
+  uid: string;
+  accountType: "user" | "announcer";
+  email: string;
+  roles: string[];
+  emailVerified: true;
+  phoneNumber: string;
+};
+
+type CreateUserFormState = {
+  firstname: string;
+  lastname: string;
+  email: string;
+  password: string;
+  passwordConfirm: string;
+  phoneNumber: string;
+  countryName: string;
+  countryCode: string;
+  birthDay: string;
+  birthMonth: string;
+  birthYear: string;
+  credits: string;
 };
 
 function hasPermission(permissions: string[], required: string) {
@@ -120,6 +144,25 @@ export default function UsersPage() {
   const [actionError, setActionError] = useState<string | null>(null);
   const [currentPageIndex, setCurrentPageIndex] = useState(0);
 
+  const [showCreateUser, setShowCreateUser] = useState(false);
+  const [createUserSubmitting, setCreateUserSubmitting] = useState(false);
+  const [createUserError, setCreateUserError] = useState<string | null>(null);
+  const [createUserResult, setCreateUserResult] = useState<CreateAccountPayload | null>(null);
+  const [createUser, setCreateUser] = useState<CreateUserFormState>({
+    firstname: "",
+    lastname: "",
+    email: "",
+    password: "",
+    passwordConfirm: "",
+    phoneNumber: "",
+    countryName: "Gabon",
+    countryCode: "GA",
+    birthDay: "",
+    birthMonth: "",
+    birthYear: "",
+    credits: "3",
+  });
+
   const usersQuery = useInfiniteQuery({
     queryKey: ["users", "list", queryApplied, role, status, presence],
     initialPageParam: null as string | null,
@@ -148,6 +191,7 @@ export default function UsersPage() {
 
   const canSuspend = useMemo(() => hasPermission(permissions, "users.suspend"), [permissions]);
   const canReactivate = useMemo(() => hasPermission(permissions, "users.reactivate"), [permissions]);
+  const canCreateUser = useMemo(() => hasPermission(permissions, "users.create"), [permissions]);
 
   const pages = usersQuery.data?.pages ?? [];
   const safePageIndex = Math.min(currentPageIndex, Math.max(0, pages.length - 1));
@@ -246,12 +290,256 @@ export default function UsersPage() {
     [usersQuery],
   );
 
+  const onCreateUserAccount = useCallback(
+    async (event: FormEvent<HTMLFormElement>) => {
+      event.preventDefault();
+
+      if (!canCreateUser) {
+        setCreateUserError("Permission manquante : users.create");
+        return;
+      }
+
+      setCreateUserSubmitting(true);
+      setCreateUserError(null);
+      setCreateUserResult(null);
+
+      try {
+        const response = await fetch("/api/admin/v1/users", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            accountType: "user",
+            firstname: createUser.firstname,
+            lastname: createUser.lastname,
+            email: createUser.email,
+            password: createUser.password,
+            passwordConfirm: createUser.passwordConfirm,
+            phoneNumber: createUser.phoneNumber,
+            country: {
+              name: createUser.countryName,
+              code: createUser.countryCode,
+            },
+            birthdate:
+              createUser.birthDay && createUser.birthMonth && createUser.birthYear
+                ? {
+                    day: createUser.birthDay,
+                    month: createUser.birthMonth,
+                    year: createUser.birthYear,
+                  }
+                : undefined,
+            credits: createUser.credits ? Number(createUser.credits) : undefined,
+          }),
+        });
+
+        const payload = (await response.json()) as
+          | { success: true; data: CreateAccountPayload }
+          | { success: false; error?: { message?: string } };
+
+        if (!response.ok || !payload.success) {
+          throw new Error(payload.success ? "Impossible de créer le compte." : payload.error?.message);
+        }
+
+        setCreateUserResult(payload.data);
+        await usersQuery.refetch();
+      } catch (error) {
+        setCreateUserError(error instanceof Error ? error.message : "Impossible de créer le compte.");
+      } finally {
+        setCreateUserSubmitting(false);
+      }
+    },
+    [canCreateUser, createUser, usersQuery],
+  );
+
   return (
     <div className="space-y-6">
       <PageHeader
         title="Utilisateurs"
         description="Listing, recherche, présence et actions de suspension/réactivation."
+        actions={
+          canCreateUser ? (
+            <Button type="button" variant="outline" onClick={() => setShowCreateUser((v) => !v)}>
+              {showCreateUser ? "Fermer création" : "Nouveau user"}
+            </Button>
+          ) : null
+        }
       />
+
+      {showCreateUser ? (
+        <Card>
+          <CardHeader>
+            <h2 className="text-base font-semibold text-slate-900">Créer un compte utilisateur</h2>
+            <p className="text-sm text-slate-600">Crée un compte `User` avec email vérifié.</p>
+          </CardHeader>
+          <CardContent>
+            <form className="space-y-3" onSubmit={(event) => void onCreateUserAccount(event)}>
+              <div className="grid gap-3 md:grid-cols-2">
+                <Input
+                  value={createUser.firstname}
+                  onChange={(event) =>
+                    setCreateUser((previous) => ({
+                      ...previous,
+                      firstname: event.target.value,
+                    }))
+                  }
+                  placeholder="Prénom"
+                  disabled={createUserSubmitting || loading}
+                />
+                <Input
+                  value={createUser.lastname}
+                  onChange={(event) =>
+                    setCreateUser((previous) => ({
+                      ...previous,
+                      lastname: event.target.value,
+                    }))
+                  }
+                  placeholder="Nom"
+                  disabled={createUserSubmitting || loading}
+                />
+              </div>
+
+              <Input
+                type="email"
+                value={createUser.email}
+                onChange={(event) =>
+                  setCreateUser((previous) => ({
+                    ...previous,
+                    email: event.target.value,
+                  }))
+                }
+                placeholder="Email"
+                disabled={createUserSubmitting || loading}
+              />
+
+              <Input
+                type="password"
+                value={createUser.password}
+                onChange={(event) =>
+                  setCreateUser((previous) => ({
+                    ...previous,
+                    password: event.target.value,
+                  }))
+                }
+                placeholder="Mot de passe (8+ caractères, 1 majuscule, 1 chiffre)"
+                disabled={createUserSubmitting || loading}
+              />
+
+              <Input
+                type="password"
+                value={createUser.passwordConfirm}
+                onChange={(event) =>
+                  setCreateUser((previous) => ({
+                    ...previous,
+                    passwordConfirm: event.target.value,
+                  }))
+                }
+                placeholder="Confirmer le mot de passe"
+                disabled={createUserSubmitting || loading}
+              />
+
+              <Input
+                value={createUser.phoneNumber}
+                onChange={(event) =>
+                  setCreateUser((previous) => ({
+                    ...previous,
+                    phoneNumber: event.target.value,
+                  }))
+                }
+                placeholder="Téléphone (ex: +24177682457)"
+                disabled={createUserSubmitting || loading}
+              />
+
+              <div className="grid gap-3 md:grid-cols-3">
+                <Input
+                  value={createUser.countryName}
+                  onChange={(event) =>
+                    setCreateUser((previous) => ({
+                      ...previous,
+                      countryName: event.target.value,
+                    }))
+                  }
+                  placeholder="Pays"
+                  disabled={createUserSubmitting || loading}
+                />
+                <Input
+                  value={createUser.countryCode}
+                  onChange={(event) =>
+                    setCreateUser((previous) => ({
+                      ...previous,
+                      countryCode: event.target.value,
+                    }))
+                  }
+                  placeholder="Code pays"
+                  disabled={createUserSubmitting || loading}
+                />
+                <Input
+                  value={createUser.credits}
+                  onChange={(event) =>
+                    setCreateUser((previous) => ({
+                      ...previous,
+                      credits: event.target.value,
+                    }))
+                  }
+                  placeholder="Crédits initiaux"
+                  disabled={createUserSubmitting || loading}
+                />
+              </div>
+
+              <div className="grid gap-3 md:grid-cols-3">
+                <Input
+                  value={createUser.birthDay}
+                  onChange={(event) =>
+                    setCreateUser((previous) => ({
+                      ...previous,
+                      birthDay: event.target.value,
+                    }))
+                  }
+                  placeholder="Jour (JJ)"
+                  disabled={createUserSubmitting || loading}
+                />
+                <Input
+                  value={createUser.birthMonth}
+                  onChange={(event) =>
+                    setCreateUser((previous) => ({
+                      ...previous,
+                      birthMonth: event.target.value,
+                    }))
+                  }
+                  placeholder="Mois (MM)"
+                  disabled={createUserSubmitting || loading}
+                />
+                <Input
+                  value={createUser.birthYear}
+                  onChange={(event) =>
+                    setCreateUser((previous) => ({
+                      ...previous,
+                      birthYear: event.target.value,
+                    }))
+                  }
+                  placeholder="Année (AAAA)"
+                  disabled={createUserSubmitting || loading}
+                />
+              </div>
+
+              {createUserError ? (
+                <p className="rounded-md bg-red-50 px-3 py-2 text-sm text-red-700">{createUserError}</p>
+              ) : null}
+
+              {createUserResult ? (
+                <p className="rounded-md bg-emerald-50 px-3 py-2 text-sm text-emerald-800">
+                  Compte créé: UID <span className="font-mono">{createUserResult.uid}</span> - Roles{" "}
+                  <span className="font-mono">{createUserResult.roles.join(", ")}</span>
+                </p>
+              ) : null}
+
+              <Button type="submit" disabled={createUserSubmitting || loading}>
+                {createUserSubmitting ? "Création en cours..." : "Créer user"}
+              </Button>
+            </form>
+          </CardContent>
+        </Card>
+      ) : null}
 
       <section className="grid gap-4 md:grid-cols-4">
         <Card>

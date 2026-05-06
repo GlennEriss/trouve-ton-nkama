@@ -27,9 +27,12 @@ Ce dashboard doit permettre:
 
 - [Vision Produit](./VISION-PRODUIT.md)
 - [Fonctionnalités Dashboard Admin](./FONCTIONNALITES-DASHBOARD-ADMIN.md)
+- [Gestion Annonces Admin (listing, edition, etats, doublons)](./GESTION-ANNONCES-ADMIN-SPEC.md)
+- [Matrice Permissions Annonces (ecran/action detaillee)](./MATRICE-PERMISSIONS-ANNONCES-ECRANS-ACTIONS.md)
 - [RBAC - Rôles et Permissions](./RBAC-ROLES-PERMISSIONS.md)
 - [Matrice Permissions Écran/Action](./MATRICE-PERMISSIONS-ECRANS-ACTIONS.md)
 - [Schéma Données Analytics](./SCHEMA-DONNEES-ANALYTICS.md)
+- [Monétisation Pubs AdSense - Suivi Revenus](./MONETISATION-PUBS-ADSENSE-SPEC.md)
 - [Analytics Data Contract v1 (events + payloads API + validation)](./architecture/ANALYTICS-DATA-CONTRACT-V1.md)
 - [MVP v1 Figé](./MVP-V1-FIGE.md)
 - [Roadmap MVP](./ROADMAP-MVP.md)

@@ -70,8 +70,12 @@ Exemples permissions:
 - `admins.invite`
 - `users.suspend`
 - `listings.approve`
+- `listings.create`
 - `credits.grant`
 - `refunds.approve`
+- `analytics.search_read`
+- `analytics.traffic_read`
+- `ads_analytics.read` (cible module ads admin)
 
 ## 5. Hardening securite API
 

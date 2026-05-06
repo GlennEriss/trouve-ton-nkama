@@ -2,7 +2,7 @@
 
 import { useCallback, useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { RefreshCcw, Search } from "lucide-react";
+import { Download, RefreshCcw, Search } from "lucide-react";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -219,6 +219,24 @@ export default function AnalyticsSearchesPage() {
   const loading = analyticsQuery.isLoading;
   const error = analyticsQuery.error?.message ?? null;
   const searches = data?.searches ?? [];
+  const exportUrl = useMemo(() => {
+    const params = new URLSearchParams();
+    params.set("range", range);
+    params.set("source", source);
+    params.set("resultFilter", resultFilter);
+    params.set("maxRows", "50000");
+
+    if (queryApplied.trim()) {
+      params.set("query", queryApplied.trim());
+    }
+
+    if (range === "custom") {
+      if (customStart.trim()) params.set("start", customStart.trim());
+      if (customEnd.trim()) params.set("end", customEnd.trim());
+    }
+
+    return `/api/admin/v1/analytics/searches/export?${params.toString()}`;
+  }, [customEnd, customStart, queryApplied, range, resultFilter, source]);
 
   const onApplyFilters = useCallback(() => {
     setQueryApplied(queryDraft.trim());
@@ -253,15 +271,26 @@ export default function AnalyticsSearchesPage() {
         title="Analytics recherches"
         description="Vision consolidée des recherches utilisateurs et de leur taux de résultat."
         actions={
-          <Button
-            type="button"
-            variant="outline"
-            onClick={() => void analyticsQuery.refetch()}
-            disabled={loading}
-          >
-            <RefreshCcw className="mr-2 h-4 w-4" />
-            Actualiser
-          </Button>
+          <div className="flex items-center gap-2">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => void analyticsQuery.refetch()}
+              disabled={loading}
+            >
+              <RefreshCcw className="mr-2 h-4 w-4" />
+              Actualiser
+            </Button>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => window.open(exportUrl, "_blank", "noopener,noreferrer")}
+              disabled={!queryEnabled}
+            >
+              <Download className="mr-2 h-4 w-4" />
+              Exporter CSV
+            </Button>
+          </div>
         }
       />
 

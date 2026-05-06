@@ -52,12 +52,31 @@
 - Vérifier les statuts et informations clés
 - Actions de support annonceur
 
-## 6. Modération des annonces
+## 6. Annonces Admin (module `listing-moderation`)
+
+Alignement architecture actuelle:
+
+- Le module technique est `listing-moderation` (pas de module separe `listing-management` en MVP).
+- Ce module couvre a la fois moderation et operations annonces admin.
+
+Fonctionnalites moderation (coeur MVP):
 
 - File de modération (en attente, validée, rejetée)
 - Validation/rejet avec motif
 - Historique des décisions
 - Actions en lot (bulk approve/reject)
+
+Fonctionnalites operations annonces admin (dans le meme module):
+
+- Listing annonces (pagination, filtres, recherche)
+- Edition annonce
+- Changement d'etat/statut
+- Centre de doublons d'annonces (detecter, comparer, resoudre)
+
+Reference detaillee:
+
+- `./GESTION-ANNONCES-ADMIN-SPEC.md`
+- `./MATRICE-PERMISSIONS-ANNONCES-ECRANS-ACTIONS.md`
 
 ## 7. Crédits, transactions et remboursements
 
@@ -72,7 +91,7 @@
 - Journal des actions admin par entité
 - Recherche globale (utilisateur, annonce, transaction)
 
-## 9. Statistiques admin
+## 9. Statistiques admin (module `analytics-insights`)
 
 - Vue synthèse: utilisateurs, annonces, transactions
 - KPI journaliers/hebdomadaires
@@ -92,6 +111,14 @@
 - Importer/afficher les indicateurs Vercel Analytics
 - Comparatif rapide Firebase vs Vercel sur une même période
 - Objectif: ne plus ouvrir séparément Firebase/Vercel pour lire les stats
+- Sous-module monétisation ads admin (dans `analytics-insights`):
+
+- Suivre revenus journaliers/hebdomadaires/mensuels (dont MTD)
+- Suivre RPM, CTR, fill rate, viewability
+- Identifier pages et emplacements pub sous-performants
+- Comparer revenu pub vs trafic réel pour mesurer la rentabilité
+- Déclencher des alertes en cas de chute brutale des revenus
+- Spécification détaillée: `./MONETISATION-PUBS-ADSENSE-SPEC.md`
 
 ## 10. Paramétrage plateforme
 
@@ -112,13 +139,37 @@ Priorité P0:
 - Audit log admin
 - Analytics recherches 7 jours (avec indicateur résultat)
 - Centralisation des visites Firebase/Vercel
+- Suivi revenus pubs AdSense (vue synthèse business)
 
 Priorité P1:
 - Remboursements avancés
 - Statistiques détaillées
 - Actions bulk avancées
+- Performance détaillée par emplacement pub (slot-level)
 
 Priorité P2:
 - Rôles personnalisables
 - Automatisations avancées
 - Intégrations support externes
+
+## 11. Alignement architecture actuelle (annonce + ads)
+
+### 11.1 Annonce Admin
+
+- Module: `src/modules/listing-moderation`
+- Prefixe API: `/api/admin/v1/listings/*`
+- RBAC actuel en code: `listings.read`, `listings.create`, `listings.approve`, `listings.reject`
+- Extension documentee (prochaine etape): permissions lifecycle/detail/bulk/doublons dans `./MATRICE-PERMISSIONS-ANNONCES-ECRANS-ACTIONS.md`
+
+### 11.2 Ads Admin (monetisation)
+
+- Module: `src/modules/analytics-insights` (sous-capacite monetisation)
+- Prefixe API cible: `/api/admin/v1/analytics/ads/*`
+- RBAC analytics actuel en code: `analytics.search_read`, `analytics.traffic_read`
+- RBAC ads cible (a ajouter): `ads_analytics.read`, `ads_analytics.export`, `ads_analytics.alerts.read`, `ads_analytics.alerts.manage`
+
+### 11.3 Regle de coherence architecture
+
+- Les ecrans admin doivent refléter les modules techniques existants.
+- Les nouvelles capacites annonces et ads restent dans les modules actuels pour eviter une fragmentation prematuree.
+- Toute nouvelle permission doit etre ajoutee dans `iam` avant exposition UI/API.

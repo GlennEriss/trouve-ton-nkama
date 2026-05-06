@@ -1,7 +1,8 @@
 "use client";
 
-import { useCallback, useMemo, useState } from "react";
+import { ChangeEvent, FormEvent, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useInfiniteQuery, useQuery } from "@tanstack/react-query";
+import Image from "next/image";
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
@@ -68,6 +69,170 @@ type AuthMePayload = {
   };
 };
 
+type CreateAccountPayload = {
+  uid: string;
+  accountType: "user" | "announcer";
+  email: string;
+  roles: string[];
+  emailVerified: true;
+  phoneNumber: string;
+};
+
+type CreateListingPayload = {
+  propertyId: string;
+  announcerUid: string;
+  typeProperty: string;
+  status: "FOR_RENT" | "FOR_SALE";
+  title: string;
+};
+
+type CreateAnnouncerFormState = {
+  firstname: string;
+  lastname: string;
+  email: string;
+  password: string;
+  passwordConfirm: string;
+  phoneNumber: string;
+  countryName: string;
+  countryCode: string;
+  birthDay: string;
+  birthMonth: string;
+  birthYear: string;
+  credits: string;
+};
+
+type CreateListingFormState = {
+  announcerUid: string;
+  title: string;
+  description: string;
+  typeProperty:
+    | "Home"
+    | "Studio"
+    | "Apartment"
+    | "Desk"
+    | "Building"
+    | "Shop"
+    | "Kiosk"
+    | "Room"
+    | "Property"
+    | "Logement"
+    | "Villa"
+    | "Land";
+  status: "FOR_RENT" | "FOR_SALE";
+  price: string;
+  area: string;
+  street: string;
+  city: string;
+  province: string;
+  country: string;
+  countryCode: string;
+  longitude: string;
+  latitude: string;
+  provinceLon: string;
+  provinceLat: string;
+  cityLon: string;
+  cityLat: string;
+  streetLon: string;
+  streetLat: string;
+  isLocExact: "true" | "false";
+  contact: string;
+  tagsRaw: string;
+  nbrRooms: string;
+  nbrKitchens: string;
+  nbrBathrooms: string;
+  nbrToilets: string;
+  nbrGarages: string;
+  nbrFloors: string;
+  nbrLivingRoom: string;
+  nbrFloorStudio: string;
+  numeroStudio: string;
+  nbrFloorApartment: string;
+  numeroApartment: string;
+  nbrPiscine: string;
+  nbrApartments: string;
+  hasParking: "true" | "false";
+  nbrToilet: string;
+  kioskType: string;
+  roomType: string;
+};
+
+type ListingWizardStep = 1 | 2 | 3;
+
+type LocalListingImage = {
+  id: string;
+  file: File;
+  previewUrl: string;
+};
+
+type UploadListingImagesPayload = {
+  images: Array<{
+    fileURL: string;
+    filePATH: string;
+  }>;
+};
+
+const MAX_LISTING_IMAGES = 10;
+const ACCEPTED_IMAGE_TYPES = new Set(["image/jpeg", "image/png", "image/webp"]);
+
+const PROPERTY_TYPE_OPTIONS: Array<{
+  value: CreateListingFormState["typeProperty"];
+  label: string;
+}> = [
+  { value: "Home", label: "Maison" },
+  { value: "Studio", label: "Studio" },
+  { value: "Apartment", label: "Appartement" },
+  { value: "Desk", label: "Bureau" },
+  { value: "Building", label: "Immeuble" },
+  { value: "Shop", label: "Magasin" },
+  { value: "Kiosk", label: "Kiosque" },
+  { value: "Room", label: "Chambre" },
+  { value: "Property", label: "Logement générique" },
+  { value: "Logement", label: "Logement" },
+  { value: "Villa", label: "Villa" },
+  { value: "Land", label: "Terrain" },
+];
+
+const STATUS_OPTIONS: Array<{ value: "FOR_RENT" | "FOR_SALE"; label: string }> = [
+  { value: "FOR_RENT", label: "À louer" },
+  { value: "FOR_SALE", label: "À vendre" },
+];
+
+const PLATFORM_TAG_OPTIONS = [
+  "Travail",
+  "Famille",
+  "Couple",
+  "Villa",
+  "Sous barrière",
+  "Meublé",
+  "Centre-ville",
+  "Vacances",
+  "Nature",
+  "Montagne",
+  "Piscine",
+  "Animaux admis",
+  "Commerces proches",
+  "Transport proche",
+  "Parking",
+  "Wi-Fi",
+  "Sécurisé",
+  "Vélo",
+  "Activités sportives",
+  "Adapté aux enfants",
+  "Accessible handicapés",
+  "Étudiant",
+  "Calme et tranquillité",
+  "Proche de la plage",
+  "Duplex",
+  "Boutique",
+  "Balcon",
+  "Terrasse",
+  "Collocation",
+  "Garage",
+  "Court séjour",
+  "Propriétaire",
+  "Agence",
+] as const;
+
 function hasPermission(permissions: string[], required: string) {
   return permissions.includes("*.*") || permissions.includes(required);
 }
@@ -84,6 +249,50 @@ function toDateLabel(value?: string | null) {
     dateStyle: "medium",
     timeStyle: "short",
   }).format(date);
+}
+
+function splitTextList(value: string) {
+  return value
+    .split(/[\n,]/)
+    .map((item) => item.trim())
+    .filter((item) => item.length > 0);
+}
+
+function toOptionalNumber(value: string) {
+  const trimmed = value.trim();
+  if (!trimmed) {
+    return undefined;
+  }
+
+  const parsed = Number(trimmed);
+  if (!Number.isFinite(parsed)) {
+    return undefined;
+  }
+
+  return parsed;
+}
+
+function isLogementLike(type: CreateListingFormState["typeProperty"]) {
+  return type === "Logement" || type === "Home" || type === "Studio" || type === "Apartment" || type === "Villa";
+}
+
+function ensureMaxTags(tags: string[]) {
+  return tags.slice(0, 6);
+}
+
+function isFiniteNumber(value: string) {
+  const parsed = Number(value);
+  return Number.isFinite(parsed);
+}
+
+function isPositiveNumber(value: string) {
+  const parsed = Number(value);
+  return Number.isFinite(parsed) && parsed > 0;
+}
+
+function isNonNegativeNumber(value: string) {
+  const parsed = Number(value);
+  return Number.isFinite(parsed) && parsed >= 0;
 }
 
 async function fetchAnnouncersPage(
@@ -149,6 +358,95 @@ export default function AnnouncersPage() {
   const [actionError, setActionError] = useState<string | null>(null);
   const [currentPageIndex, setCurrentPageIndex] = useState(0);
 
+  const [showCreateAnnouncer, setShowCreateAnnouncer] = useState(false);
+  const [showCreateListing, setShowCreateListing] = useState(false);
+  const [listingStep, setListingStep] = useState<ListingWizardStep>(1);
+
+  const [createAnnouncerSubmitting, setCreateAnnouncerSubmitting] = useState(false);
+  const [createListingSubmitting, setCreateListingSubmitting] = useState(false);
+  const [createAnnouncerError, setCreateAnnouncerError] = useState<string | null>(null);
+  const [createListingError, setCreateListingError] = useState<string | null>(null);
+  const [createAnnouncerResult, setCreateAnnouncerResult] = useState<CreateAccountPayload | null>(null);
+  const [createListingResult, setCreateListingResult] = useState<CreateListingPayload | null>(null);
+
+  const [createAnnouncer, setCreateAnnouncer] = useState<CreateAnnouncerFormState>({
+    firstname: "",
+    lastname: "",
+    email: "",
+    password: "",
+    passwordConfirm: "",
+    phoneNumber: "",
+    countryName: "Gabon",
+    countryCode: "GA",
+    birthDay: "",
+    birthMonth: "",
+    birthYear: "",
+    credits: "3",
+  });
+
+  const [createListing, setCreateListing] = useState<CreateListingFormState>({
+    announcerUid: "",
+    title: "",
+    description: "",
+    typeProperty: "Home",
+    status: "FOR_RENT",
+    price: "0",
+    area: "0",
+    street: "",
+    city: "",
+    province: "",
+    country: "Gabon",
+    countryCode: "GA",
+    longitude: "0",
+    latitude: "0",
+    provinceLon: "",
+    provinceLat: "",
+    cityLon: "",
+    cityLat: "",
+    streetLon: "",
+    streetLat: "",
+    isLocExact: "false",
+    contact: "",
+    tagsRaw: "",
+    nbrRooms: "",
+    nbrKitchens: "",
+    nbrBathrooms: "",
+    nbrToilets: "",
+    nbrGarages: "",
+    nbrFloors: "",
+    nbrLivingRoom: "",
+    nbrFloorStudio: "",
+    numeroStudio: "",
+    nbrFloorApartment: "",
+    numeroApartment: "",
+    nbrPiscine: "",
+    nbrApartments: "",
+    hasParking: "false",
+    nbrToilet: "",
+    kioskType: "",
+    roomType: "",
+  });
+
+  const selectedListingTags = useMemo(
+    () => ensureMaxTags(splitTextList(createListing.tagsRaw)),
+    [createListing.tagsRaw],
+  );
+  const [listingLocalImages, setListingLocalImages] = useState<LocalListingImage[]>([]);
+  const listingLocalImagesRef = useRef<LocalListingImage[]>([]);
+
+  useEffect(() => {
+    listingLocalImagesRef.current = listingLocalImages;
+  }, [listingLocalImages]);
+
+  useEffect(
+    () => () => {
+      for (const image of listingLocalImagesRef.current) {
+        URL.revokeObjectURL(image.previewUrl);
+      }
+    },
+    [],
+  );
+
   const announcersQuery = useInfiniteQuery({
     queryKey: ["announcers", "list", queryApplied, status, presence],
     initialPageParam: null as string | null,
@@ -183,6 +481,11 @@ export default function AnnouncersPage() {
     () => hasPermission(permissions, "announcers.update"),
     [permissions],
   );
+  const canCreateAnnouncer = useMemo(
+    () => hasPermission(permissions, "announcers.create"),
+    [permissions],
+  );
+  const canCreateListing = useMemo(() => hasPermission(permissions, "listings.create"), [permissions]);
 
   const pages = announcersQuery.data?.pages ?? [];
   const safePageIndex = Math.min(currentPageIndex, Math.max(0, pages.length - 1));
@@ -288,12 +591,1437 @@ export default function AnnouncersPage() {
     [announcersQuery, detailsQuery, selectedUid],
   );
 
+  const onCreateAnnouncerAccount = useCallback(
+    async (event: FormEvent<HTMLFormElement>) => {
+      event.preventDefault();
+
+      if (!canCreateAnnouncer) {
+        setCreateAnnouncerError("Permission manquante : announcers.create");
+        return;
+      }
+
+      setCreateAnnouncerSubmitting(true);
+      setCreateAnnouncerError(null);
+      setCreateAnnouncerResult(null);
+
+      try {
+        const response = await fetch("/api/admin/v1/users", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            accountType: "announcer",
+            firstname: createAnnouncer.firstname,
+            lastname: createAnnouncer.lastname,
+            email: createAnnouncer.email,
+            password: createAnnouncer.password,
+            passwordConfirm: createAnnouncer.passwordConfirm,
+            phoneNumber: createAnnouncer.phoneNumber,
+            country: {
+              name: createAnnouncer.countryName,
+              code: createAnnouncer.countryCode,
+            },
+            birthdate:
+              createAnnouncer.birthDay && createAnnouncer.birthMonth && createAnnouncer.birthYear
+                ? {
+                    day: createAnnouncer.birthDay,
+                    month: createAnnouncer.birthMonth,
+                    year: createAnnouncer.birthYear,
+                  }
+                : undefined,
+            credits: createAnnouncer.credits ? Number(createAnnouncer.credits) : undefined,
+          }),
+        });
+
+        const payload = (await response.json()) as
+          | { success: true; data: CreateAccountPayload }
+          | { success: false; error?: { message?: string } };
+
+        if (!response.ok || !payload.success) {
+          throw new Error(payload.success ? "Impossible de créer l'annonceur." : payload.error?.message);
+        }
+
+        setCreateAnnouncerResult(payload.data);
+        setSelectedUid(payload.data.uid);
+        setCreateListing((previous) => ({
+          ...previous,
+          announcerUid: payload.data.uid,
+          contact: payload.data.phoneNumber,
+        }));
+
+        await announcersQuery.refetch();
+      } catch (error) {
+        setCreateAnnouncerError(
+          error instanceof Error ? error.message : "Impossible de créer l'annonceur.",
+        );
+      } finally {
+        setCreateAnnouncerSubmitting(false);
+      }
+    },
+    [announcersQuery, canCreateAnnouncer, createAnnouncer],
+  );
+
+  const clearListingLocalImages = useCallback(() => {
+    setListingLocalImages((previous) => {
+      for (const image of previous) {
+        URL.revokeObjectURL(image.previewUrl);
+      }
+      return [];
+    });
+  }, []);
+
+  const onPickListingImages = useCallback(
+    (event: ChangeEvent<HTMLInputElement>) => {
+      const selectedFiles = Array.from(event.target.files ?? []);
+      if (selectedFiles.length === 0) {
+        return;
+      }
+
+      setCreateListingError(null);
+
+      const invalidTypeCount = selectedFiles.filter((file) => !ACCEPTED_IMAGE_TYPES.has(file.type)).length;
+      if (invalidTypeCount > 0) {
+        setCreateListingError("Formats autorisés: JPG, PNG, WEBP.");
+      }
+
+      const accepted = selectedFiles.filter((file) => ACCEPTED_IMAGE_TYPES.has(file.type));
+      setListingLocalImages((previous) => {
+        const availableSlots = Math.max(MAX_LISTING_IMAGES - previous.length, 0);
+        if (availableSlots === 0) {
+          return previous;
+        }
+
+        const toAdd = accepted.slice(0, availableSlots).map((file, index) => ({
+          id: `${Date.now()}-${index}-${Math.random().toString(36).slice(2, 8)}`,
+          file,
+          previewUrl: URL.createObjectURL(file),
+        }));
+
+        return [...previous, ...toAdd];
+      });
+
+      event.target.value = "";
+    },
+    [],
+  );
+
+  const onRemoveListingImage = useCallback((id: string) => {
+    setListingLocalImages((previous) => {
+      const target = previous.find((image) => image.id === id);
+      if (target) {
+        URL.revokeObjectURL(target.previewUrl);
+      }
+      return previous.filter((image) => image.id !== id);
+    });
+  }, []);
+
+  const uploadListingImages = useCallback(async (): Promise<UploadListingImagesPayload["images"]> => {
+    const formData = new FormData();
+    formData.set("announcerUid", createListing.announcerUid);
+
+    for (const image of listingLocalImages) {
+      formData.append("files", image.file, image.file.name);
+    }
+
+    const response = await fetch("/api/admin/v1/listings/images/upload", {
+      method: "POST",
+      body: formData,
+    });
+
+    const payload = (await response.json()) as
+      | { success: true; data: UploadListingImagesPayload }
+      | { success: false; error?: { message?: string } };
+
+    if (!response.ok || !payload.success) {
+      throw new Error(
+        payload.success ? "Impossible d'envoyer les images." : payload.error?.message ?? "Upload image impossible.",
+      );
+    }
+
+    return payload.data.images;
+  }, [createListing.announcerUid, listingLocalImages]);
+
+  const validateListingStep1 = useCallback(() => {
+    if (!createListing.announcerUid.trim()) {
+      return "UID annonceur requis.";
+    }
+    if (createListing.title.trim().length < 3) {
+      return "Le titre doit contenir au moins 3 caractères.";
+    }
+    if (createListing.description.trim().length < 10) {
+      return "La description doit contenir au moins 10 caractères.";
+    }
+    if (!isPositiveNumber(createListing.price)) {
+      return "Le prix doit être supérieur à 0.";
+    }
+    if (!isNonNegativeNumber(createListing.area)) {
+      return "La surface doit être un nombre positif ou nul.";
+    }
+    if (selectedListingTags.length < 1) {
+      return "Ajoute au moins 1 tag (maximum 6).";
+    }
+
+    const sourceTags = splitTextList(createListing.tagsRaw);
+    if (sourceTags.length > 6) {
+      return "Maximum 6 tags comme dans property/add.";
+    }
+
+    if (listingLocalImages.length < 1) {
+      return "Ajoute au moins 1 image.";
+    }
+    if (listingLocalImages.length > MAX_LISTING_IMAGES) {
+      return "Maximum 10 images comme dans property/add.";
+    }
+
+    return null;
+  }, [createListing, listingLocalImages.length, selectedListingTags.length]);
+
+  const validateListingStep2 = useCallback(() => {
+    const requireNumber = (value: string, label: string) => {
+      if (!isFiniteNumber(value)) {
+        return `${label} est requis pour ce type d'annonce.`;
+      }
+      return null;
+    };
+    const requireString = (value: string, label: string) => {
+      if (!value.trim()) {
+        return `${label} est requis pour ce type d'annonce.`;
+      }
+      return null;
+    };
+
+    const requireLogementBase = () =>
+      requireNumber(createListing.nbrRooms, "nbrRooms") ||
+      requireNumber(createListing.nbrKitchens, "nbrKitchens") ||
+      requireNumber(createListing.nbrBathrooms, "nbrBathrooms") ||
+      requireNumber(createListing.nbrToilets, "nbrToilets");
+
+    if (createListing.typeProperty === "Logement") return requireLogementBase();
+    if (createListing.typeProperty === "Home") {
+      return (
+        requireLogementBase() ||
+        requireNumber(createListing.nbrGarages, "nbrGarages") ||
+        requireNumber(createListing.nbrFloors, "nbrFloors") ||
+        requireNumber(createListing.nbrLivingRoom, "nbrLivingRoom")
+      );
+    }
+    if (createListing.typeProperty === "Studio") {
+      return (
+        requireLogementBase() ||
+        requireNumber(createListing.nbrFloorStudio, "nbrFloorStudio") ||
+        requireString(createListing.numeroStudio, "numeroStudio")
+      );
+    }
+    if (createListing.typeProperty === "Apartment") {
+      return (
+        requireLogementBase() ||
+        requireNumber(createListing.nbrFloorApartment, "nbrFloorApartment") ||
+        requireString(createListing.numeroApartment, "numeroApartment")
+      );
+    }
+    if (createListing.typeProperty === "Villa") {
+      return (
+        requireLogementBase() ||
+        requireNumber(createListing.nbrFloors, "nbrFloors") ||
+        requireNumber(createListing.nbrPiscine, "nbrPiscine") ||
+        requireNumber(createListing.nbrGarages, "nbrGarages")
+      );
+    }
+    if (createListing.typeProperty === "Desk") {
+      return (
+        requireNumber(createListing.nbrToilets, "nbrToilets") ||
+        requireNumber(createListing.nbrRooms, "nbrRooms")
+      );
+    }
+    if (createListing.typeProperty === "Building") {
+      return (
+        requireNumber(createListing.nbrApartments, "nbrApartments") ||
+        requireNumber(createListing.nbrFloors, "nbrFloors")
+      );
+    }
+    if (createListing.typeProperty === "Shop") {
+      return (
+        requireNumber(createListing.nbrRooms, "nbrRooms") ||
+        requireNumber(createListing.nbrToilet, "nbrToilet")
+      );
+    }
+    if (createListing.typeProperty === "Kiosk") {
+      return requireString(createListing.kioskType, "kioskType");
+    }
+    if (createListing.typeProperty === "Room") {
+      return requireString(createListing.roomType, "roomType");
+    }
+
+    return null;
+  }, [createListing]);
+
+  const validateListingStep3 = useCallback(() => {
+    if (!createListing.province.trim()) return "La province est requise.";
+    if (!createListing.city.trim()) return "La ville est requise.";
+    if (!createListing.street.trim()) return "Le quartier est requis.";
+    if (!createListing.country.trim()) return "Le pays est requis.";
+    if (createListing.countryCode.trim().length < 2) return "Le code pays est requis.";
+    if (!isFiniteNumber(createListing.longitude)) return "La longitude est requise.";
+    if (!isFiniteNumber(createListing.latitude)) return "La latitude est requise.";
+    return null;
+  }, [createListing]);
+
+  const onToggleListingTag = useCallback(
+    (tag: string) => {
+      const exists = selectedListingTags.includes(tag);
+      const next = exists
+        ? selectedListingTags.filter((item) => item !== tag)
+        : ensureMaxTags([...selectedListingTags, tag]);
+
+      setCreateListing((previous) => ({
+        ...previous,
+        tagsRaw: next.join(", "),
+      }));
+    },
+    [selectedListingTags],
+  );
+
+  const onNextListingStep = useCallback(() => {
+    setCreateListingError(null);
+
+    if (listingStep === 1) {
+      const errorMessage = validateListingStep1();
+      if (errorMessage) {
+        setCreateListingError(errorMessage);
+        return;
+      }
+      setListingStep(2);
+      return;
+    }
+
+    if (listingStep === 2) {
+      const errorMessage = validateListingStep2();
+      if (errorMessage) {
+        setCreateListingError(errorMessage);
+        return;
+      }
+      setListingStep(3);
+    }
+  }, [listingStep, validateListingStep1, validateListingStep2]);
+
+  const onPreviousListingStep = useCallback(() => {
+    setCreateListingError(null);
+    setListingStep((previous) => (previous > 1 ? ((previous - 1) as ListingWizardStep) : previous));
+  }, []);
+
+  const onCreateListingForAnnouncer = useCallback(
+    async (event: FormEvent<HTMLFormElement>) => {
+      event.preventDefault();
+
+      if (!canCreateListing) {
+        setCreateListingError("Permission manquante : listings.create");
+        return;
+      }
+
+      setCreateListingSubmitting(true);
+      setCreateListingError(null);
+      setCreateListingResult(null);
+
+      try {
+        const step1Error = validateListingStep1();
+        if (step1Error) {
+          throw new Error(step1Error);
+        }
+
+        const step2Error = validateListingStep2();
+        if (step2Error) {
+          throw new Error(step2Error);
+        }
+
+        const step3Error = validateListingStep3();
+        if (step3Error) {
+          throw new Error(step3Error);
+        }
+
+        const tags = selectedListingTags;
+        const uploadedImages = await uploadListingImages();
+
+        const response = await fetch("/api/admin/v1/listings", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            announcerUid: createListing.announcerUid,
+            title: createListing.title,
+            description: createListing.description,
+            typeProperty: createListing.typeProperty,
+            status: createListing.status,
+            price: Number(createListing.price),
+            area: Number(createListing.area),
+            street: createListing.street,
+            city: createListing.city,
+            province: createListing.province,
+            country: createListing.country,
+            countryCode: createListing.countryCode,
+            longitude: toOptionalNumber(createListing.longitude),
+            latitude: toOptionalNumber(createListing.latitude),
+            provinceLon: toOptionalNumber(createListing.provinceLon),
+            provinceLat: toOptionalNumber(createListing.provinceLat),
+            cityLon: toOptionalNumber(createListing.cityLon),
+            cityLat: toOptionalNumber(createListing.cityLat),
+            streetLon: toOptionalNumber(createListing.streetLon),
+            streetLat: toOptionalNumber(createListing.streetLat),
+            isLocExact: createListing.isLocExact === "true",
+            contact: createListing.contact || undefined,
+            tags,
+            images: uploadedImages,
+            nbrRooms: toOptionalNumber(createListing.nbrRooms),
+            nbrKitchens: toOptionalNumber(createListing.nbrKitchens),
+            nbrBathrooms: toOptionalNumber(createListing.nbrBathrooms),
+            nbrToilets: toOptionalNumber(createListing.nbrToilets),
+            nbrGarages: toOptionalNumber(createListing.nbrGarages),
+            nbrFloors: toOptionalNumber(createListing.nbrFloors),
+            nbrLivingRoom: toOptionalNumber(createListing.nbrLivingRoom),
+            nbrFloorStudio: toOptionalNumber(createListing.nbrFloorStudio),
+            numeroStudio: createListing.numeroStudio || undefined,
+            nbrFloorApartment: toOptionalNumber(createListing.nbrFloorApartment),
+            numeroApartment: createListing.numeroApartment || undefined,
+            nbrPiscine: toOptionalNumber(createListing.nbrPiscine),
+            nbrApartments: toOptionalNumber(createListing.nbrApartments),
+            hasParking: createListing.hasParking === "true",
+            nbrToilet: toOptionalNumber(createListing.nbrToilet),
+            kioskType: createListing.kioskType || undefined,
+            roomType: createListing.roomType || undefined,
+          }),
+        });
+
+        const payload = (await response.json()) as
+          | { success: true; data: CreateListingPayload }
+          | { success: false; error?: { message?: string } };
+
+        if (!response.ok || !payload.success) {
+          throw new Error(payload.success ? "Impossible de créer l'annonce." : payload.error?.message);
+        }
+
+        setCreateListingResult(payload.data);
+        setListingStep(1);
+        clearListingLocalImages();
+      } catch (error) {
+        setCreateListingError(error instanceof Error ? error.message : "Impossible de créer l'annonce.");
+      } finally {
+        setCreateListingSubmitting(false);
+      }
+    },
+    [
+      canCreateListing,
+      createListing,
+      clearListingLocalImages,
+      selectedListingTags,
+      uploadListingImages,
+      validateListingStep1,
+      validateListingStep2,
+      validateListingStep3,
+    ],
+  );
+
   return (
     <div className="space-y-6">
       <PageHeader
         title="Annonceurs"
         description="Consultation des comptes annonceurs, présence et statut opérationnel."
+        actions={
+          <>
+            {canCreateAnnouncer ? (
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => setShowCreateAnnouncer((value) => !value)}
+              >
+                {showCreateAnnouncer ? "Fermer création" : "Nouveau annonceur"}
+              </Button>
+            ) : null}
+            {canCreateListing ? (
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() =>
+                  setShowCreateListing((value) => {
+                    const next = !value;
+                    setListingStep(1);
+                    setCreateListingError(null);
+                    setCreateListingResult(null);
+                    clearListingLocalImages();
+                    return next;
+                  })
+                }
+              >
+                {showCreateListing ? "Fermer annonce" : "Nouvelle annonce"}
+              </Button>
+            ) : null}
+          </>
+        }
       />
+
+      {showCreateAnnouncer ? (
+        <Card>
+          <CardHeader>
+            <h2 className="text-base font-semibold text-slate-900">Créer un compte annonceur</h2>
+            <p className="text-sm text-slate-600">Crée un compte `Announcer` avec email vérifié.</p>
+          </CardHeader>
+          <CardContent>
+            <form className="space-y-3" onSubmit={(event) => void onCreateAnnouncerAccount(event)}>
+              <div className="grid gap-3 md:grid-cols-2">
+                <Input
+                  value={createAnnouncer.firstname}
+                  onChange={(event) =>
+                    setCreateAnnouncer((previous) => ({
+                      ...previous,
+                      firstname: event.target.value,
+                    }))
+                  }
+                  placeholder="Prénom"
+                  disabled={createAnnouncerSubmitting || loading}
+                />
+                <Input
+                  value={createAnnouncer.lastname}
+                  onChange={(event) =>
+                    setCreateAnnouncer((previous) => ({
+                      ...previous,
+                      lastname: event.target.value,
+                    }))
+                  }
+                  placeholder="Nom"
+                  disabled={createAnnouncerSubmitting || loading}
+                />
+              </div>
+
+              <Input
+                type="email"
+                value={createAnnouncer.email}
+                onChange={(event) =>
+                  setCreateAnnouncer((previous) => ({
+                    ...previous,
+                    email: event.target.value,
+                  }))
+                }
+                placeholder="Email"
+                disabled={createAnnouncerSubmitting || loading}
+              />
+
+              <Input
+                type="password"
+                value={createAnnouncer.password}
+                onChange={(event) =>
+                  setCreateAnnouncer((previous) => ({
+                    ...previous,
+                    password: event.target.value,
+                  }))
+                }
+                placeholder="Mot de passe (8+ caractères, 1 majuscule, 1 chiffre)"
+                disabled={createAnnouncerSubmitting || loading}
+              />
+
+              <Input
+                type="password"
+                value={createAnnouncer.passwordConfirm}
+                onChange={(event) =>
+                  setCreateAnnouncer((previous) => ({
+                    ...previous,
+                    passwordConfirm: event.target.value,
+                  }))
+                }
+                placeholder="Confirmer le mot de passe"
+                disabled={createAnnouncerSubmitting || loading}
+              />
+
+              <Input
+                value={createAnnouncer.phoneNumber}
+                onChange={(event) =>
+                  setCreateAnnouncer((previous) => ({
+                    ...previous,
+                    phoneNumber: event.target.value,
+                  }))
+                }
+                placeholder="Téléphone (ex: +24177682457)"
+                disabled={createAnnouncerSubmitting || loading}
+              />
+
+              <div className="grid gap-3 md:grid-cols-3">
+                <Input
+                  value={createAnnouncer.countryName}
+                  onChange={(event) =>
+                    setCreateAnnouncer((previous) => ({
+                      ...previous,
+                      countryName: event.target.value,
+                    }))
+                  }
+                  placeholder="Pays"
+                  disabled={createAnnouncerSubmitting || loading}
+                />
+                <Input
+                  value={createAnnouncer.countryCode}
+                  onChange={(event) =>
+                    setCreateAnnouncer((previous) => ({
+                      ...previous,
+                      countryCode: event.target.value,
+                    }))
+                  }
+                  placeholder="Code pays"
+                  disabled={createAnnouncerSubmitting || loading}
+                />
+                <Input
+                  value={createAnnouncer.credits}
+                  onChange={(event) =>
+                    setCreateAnnouncer((previous) => ({
+                      ...previous,
+                      credits: event.target.value,
+                    }))
+                  }
+                  placeholder="Crédits initiaux"
+                  disabled={createAnnouncerSubmitting || loading}
+                />
+              </div>
+
+              <div className="grid gap-3 md:grid-cols-3">
+                <Input
+                  value={createAnnouncer.birthDay}
+                  onChange={(event) =>
+                    setCreateAnnouncer((previous) => ({
+                      ...previous,
+                      birthDay: event.target.value,
+                    }))
+                  }
+                  placeholder="Jour (JJ)"
+                  disabled={createAnnouncerSubmitting || loading}
+                />
+                <Input
+                  value={createAnnouncer.birthMonth}
+                  onChange={(event) =>
+                    setCreateAnnouncer((previous) => ({
+                      ...previous,
+                      birthMonth: event.target.value,
+                    }))
+                  }
+                  placeholder="Mois (MM)"
+                  disabled={createAnnouncerSubmitting || loading}
+                />
+                <Input
+                  value={createAnnouncer.birthYear}
+                  onChange={(event) =>
+                    setCreateAnnouncer((previous) => ({
+                      ...previous,
+                      birthYear: event.target.value,
+                    }))
+                  }
+                  placeholder="Année (AAAA)"
+                  disabled={createAnnouncerSubmitting || loading}
+                />
+              </div>
+
+              {createAnnouncerError ? (
+                <p className="rounded-md bg-red-50 px-3 py-2 text-sm text-red-700">
+                  {createAnnouncerError}
+                </p>
+              ) : null}
+
+              {createAnnouncerResult ? (
+                <p className="rounded-md bg-emerald-50 px-3 py-2 text-sm text-emerald-800">
+                  Compte créé: UID <span className="font-mono">{createAnnouncerResult.uid}</span> - Roles{" "}
+                  <span className="font-mono">{createAnnouncerResult.roles.join(", ")}</span>
+                </p>
+              ) : null}
+
+              <Button type="submit" disabled={createAnnouncerSubmitting || loading}>
+                {createAnnouncerSubmitting ? "Création en cours..." : "Créer annonceur"}
+              </Button>
+            </form>
+          </CardContent>
+        </Card>
+      ) : null}
+
+      {showCreateListing ? (
+        <Card>
+          <CardHeader>
+            <h2 className="text-base font-semibold text-slate-900">Créer une annonce</h2>
+            <p className="text-sm text-slate-600">Ajoute une annonce au compte annonceur ciblé.</p>
+          </CardHeader>
+          <CardContent>
+            <form className="space-y-4" onSubmit={(event) => void onCreateListingForAnnouncer(event)}>
+              <div className="grid gap-2 md:grid-cols-3">
+                <button
+                  type="button"
+                  className={`rounded-lg border px-3 py-2 text-left text-sm ${
+                    listingStep === 1 ? "border-emerald-600 bg-emerald-50 text-emerald-800" : "border-slate-300"
+                  }`}
+                  onClick={() => setListingStep(1)}
+                >
+                  Étape 1: Infos générales
+                </button>
+                <button
+                  type="button"
+                  className={`rounded-lg border px-3 py-2 text-left text-sm ${
+                    listingStep === 2 ? "border-emerald-600 bg-emerald-50 text-emerald-800" : "border-slate-300"
+                  }`}
+                  onClick={() => {
+                    if (listingStep >= 2) setListingStep(2);
+                  }}
+                >
+                  Étape 2: Attributs du type
+                </button>
+                <button
+                  type="button"
+                  className={`rounded-lg border px-3 py-2 text-left text-sm ${
+                    listingStep === 3 ? "border-emerald-600 bg-emerald-50 text-emerald-800" : "border-slate-300"
+                  }`}
+                  onClick={() => {
+                    if (listingStep >= 3) setListingStep(3);
+                  }}
+                >
+                  Étape 3: Localisation
+                </button>
+              </div>
+
+              {listingStep === 1 ? (
+                <div className="space-y-3">
+                  <Input
+                    value={createListing.announcerUid}
+                    onChange={(event) =>
+                      setCreateListing((previous) => ({
+                        ...previous,
+                        announcerUid: event.target.value,
+                      }))
+                    }
+                    placeholder="UID annonceur"
+                    disabled={createListingSubmitting || loading}
+                  />
+
+                  <div className="grid gap-3 md:grid-cols-2">
+                    <Input
+                      value={createListing.title}
+                      onChange={(event) =>
+                        setCreateListing((previous) => ({
+                          ...previous,
+                          title: event.target.value,
+                        }))
+                      }
+                      placeholder="Titre"
+                      disabled={createListingSubmitting || loading}
+                    />
+                    <select
+                      className="h-9 rounded-lg border border-slate-300 bg-white px-3 text-sm text-slate-800"
+                      value={createListing.typeProperty}
+                      onChange={(event) =>
+                        setCreateListing((previous) => ({
+                          ...previous,
+                          typeProperty: event.target.value as CreateListingFormState["typeProperty"],
+                        }))
+                      }
+                      disabled={createListingSubmitting || loading}
+                    >
+                      {PROPERTY_TYPE_OPTIONS.map((item) => (
+                        <option key={item.value} value={item.value}>
+                          {item.label}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+
+                  <textarea
+                    className="min-h-24 w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-800"
+                    value={createListing.description}
+                    onChange={(event) =>
+                      setCreateListing((previous) => ({
+                        ...previous,
+                        description: event.target.value,
+                      }))
+                    }
+                    placeholder="Description"
+                    disabled={createListingSubmitting || loading}
+                  />
+
+                  <div className="grid gap-3 md:grid-cols-3">
+                    <select
+                      className="h-9 rounded-lg border border-slate-300 bg-white px-3 text-sm text-slate-800"
+                      value={createListing.status}
+                      onChange={(event) =>
+                        setCreateListing((previous) => ({
+                          ...previous,
+                          status: event.target.value as "FOR_RENT" | "FOR_SALE",
+                        }))
+                      }
+                      disabled={createListingSubmitting || loading}
+                    >
+                      {STATUS_OPTIONS.map((item) => (
+                        <option key={item.value} value={item.value}>
+                          {item.label}
+                        </option>
+                      ))}
+                    </select>
+                    <Input
+                      value={createListing.price}
+                      onChange={(event) =>
+                        setCreateListing((previous) => ({
+                          ...previous,
+                          price: event.target.value,
+                        }))
+                      }
+                      placeholder="Prix"
+                      disabled={createListingSubmitting || loading}
+                    />
+                    <Input
+                      value={createListing.area}
+                      onChange={(event) =>
+                        setCreateListing((previous) => ({
+                          ...previous,
+                          area: event.target.value,
+                        }))
+                      }
+                      placeholder="Surface (m²)"
+                      disabled={createListingSubmitting || loading}
+                    />
+                  </div>
+
+                  <div className="space-y-2 rounded-lg border border-slate-200 p-3">
+                    <p className="text-sm font-medium text-slate-900">
+                      Tags ({selectedListingTags.length}/6) - même logique que property/add
+                    </p>
+                    <div className="flex flex-wrap gap-2">
+                      {PLATFORM_TAG_OPTIONS.map((tag) => {
+                        const isActive = selectedListingTags.includes(tag);
+                        return (
+                          <button
+                            key={tag}
+                            type="button"
+                            className={`rounded-full border px-3 py-1 text-xs ${
+                              isActive
+                                ? "border-emerald-700 bg-emerald-100 text-emerald-800"
+                                : "border-slate-300 bg-white text-slate-700"
+                            }`}
+                            onClick={() => onToggleListingTag(tag)}
+                            disabled={createListingSubmitting || loading}
+                          >
+                            {tag}
+                          </button>
+                        );
+                      })}
+                    </div>
+                    <textarea
+                      className="min-h-16 w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-800"
+                      value={createListing.tagsRaw}
+                      onChange={(event) =>
+                        setCreateListing((previous) => ({
+                          ...previous,
+                          tagsRaw: event.target.value,
+                        }))
+                      }
+                      placeholder="Tags (séparés par virgule ou retour ligne)"
+                      disabled={createListingSubmitting || loading}
+                    />
+                  </div>
+
+                  <div className="space-y-2 rounded-lg border border-slate-200 p-3">
+                    <div className="flex items-center justify-between gap-2">
+                      <p className="text-sm font-medium text-slate-900">
+                        Images ({listingLocalImages.length}/{MAX_LISTING_IMAGES}) - style property/add
+                      </p>
+                      {listingLocalImages.length > 0 ? (
+                        <Button
+                          type="button"
+                          size="sm"
+                          variant="outline"
+                          onClick={clearListingLocalImages}
+                          disabled={createListingSubmitting || loading}
+                        >
+                          Tout supprimer
+                        </Button>
+                      ) : null}
+                    </div>
+
+                    <Input
+                      type="file"
+                      accept="image/png,image/jpeg,image/webp"
+                      multiple
+                      onChange={onPickListingImages}
+                      disabled={createListingSubmitting || loading || listingLocalImages.length >= MAX_LISTING_IMAGES}
+                    />
+
+                    {listingLocalImages.length > 0 ? (
+                      <div className="grid grid-cols-2 gap-3 md:grid-cols-5">
+                        {listingLocalImages.map((image) => (
+                          <div key={image.id} className="overflow-hidden rounded-lg border border-slate-200 bg-white">
+                            <Image
+                              src={image.previewUrl}
+                              alt={image.file.name}
+                              width={320}
+                              height={160}
+                              unoptimized
+                              className="h-24 w-full object-cover"
+                            />
+                            <div className="space-y-1 px-2 py-2">
+                              <p className="truncate text-[11px] text-slate-700">{image.file.name}</p>
+                              <p className="text-[10px] text-slate-500">
+                                {(image.file.size / 1024 / 1024).toFixed(2)} MB
+                              </p>
+                              <Button
+                                type="button"
+                                size="sm"
+                                variant="outline"
+                                className="h-6 w-full px-2 text-[10px]"
+                                onClick={() => onRemoveListingImage(image.id)}
+                                disabled={createListingSubmitting || loading}
+                              >
+                                Retirer
+                              </Button>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    ) : (
+                      <p className="text-xs text-slate-500">
+                        Ajoute entre 1 et 10 images JPG/PNG/WEBP.
+                      </p>
+                    )}
+                  </div>
+                </div>
+              ) : null}
+
+              {listingStep === 2 ? (
+                <div className="space-y-3">
+                  {isLogementLike(createListing.typeProperty) ? (
+                    <div className="grid gap-3 md:grid-cols-2">
+                      <Input
+                        value={createListing.nbrRooms}
+                        onChange={(event) =>
+                          setCreateListing((previous) => ({
+                            ...previous,
+                            nbrRooms: event.target.value,
+                          }))
+                        }
+                        placeholder="Nombre de chambres (nbrRooms)"
+                        disabled={createListingSubmitting || loading}
+                      />
+                      <Input
+                        value={createListing.nbrKitchens}
+                        onChange={(event) =>
+                          setCreateListing((previous) => ({
+                            ...previous,
+                            nbrKitchens: event.target.value,
+                          }))
+                        }
+                        placeholder="Nombre de cuisines (nbrKitchens)"
+                        disabled={createListingSubmitting || loading}
+                      />
+                      <Input
+                        value={createListing.nbrBathrooms}
+                        onChange={(event) =>
+                          setCreateListing((previous) => ({
+                            ...previous,
+                            nbrBathrooms: event.target.value,
+                          }))
+                        }
+                        placeholder="Salles de bain (nbrBathrooms)"
+                        disabled={createListingSubmitting || loading}
+                      />
+                      <Input
+                        value={createListing.nbrToilets}
+                        onChange={(event) =>
+                          setCreateListing((previous) => ({
+                            ...previous,
+                            nbrToilets: event.target.value,
+                          }))
+                        }
+                        placeholder="Toilettes (nbrToilets)"
+                        disabled={createListingSubmitting || loading}
+                      />
+                    </div>
+                  ) : null}
+
+                  {createListing.typeProperty === "Home" ? (
+                    <div className="grid gap-3 md:grid-cols-3">
+                      <Input
+                        value={createListing.nbrGarages}
+                        onChange={(event) =>
+                          setCreateListing((previous) => ({
+                            ...previous,
+                            nbrGarages: event.target.value,
+                          }))
+                        }
+                        placeholder="Garages (nbrGarages)"
+                        disabled={createListingSubmitting || loading}
+                      />
+                      <Input
+                        value={createListing.nbrFloors}
+                        onChange={(event) =>
+                          setCreateListing((previous) => ({
+                            ...previous,
+                            nbrFloors: event.target.value,
+                          }))
+                        }
+                        placeholder="Étages (nbrFloors)"
+                        disabled={createListingSubmitting || loading}
+                      />
+                      <Input
+                        value={createListing.nbrLivingRoom}
+                        onChange={(event) =>
+                          setCreateListing((previous) => ({
+                            ...previous,
+                            nbrLivingRoom: event.target.value,
+                          }))
+                        }
+                        placeholder="Salons (nbrLivingRoom)"
+                        disabled={createListingSubmitting || loading}
+                      />
+                    </div>
+                  ) : null}
+
+                  {createListing.typeProperty === "Studio" ? (
+                    <div className="grid gap-3 md:grid-cols-2">
+                      <Input
+                        value={createListing.nbrFloorStudio}
+                        onChange={(event) =>
+                          setCreateListing((previous) => ({
+                            ...previous,
+                            nbrFloorStudio: event.target.value,
+                          }))
+                        }
+                        placeholder="Étage studio (nbrFloorStudio)"
+                        disabled={createListingSubmitting || loading}
+                      />
+                      <Input
+                        value={createListing.numeroStudio}
+                        onChange={(event) =>
+                          setCreateListing((previous) => ({
+                            ...previous,
+                            numeroStudio: event.target.value,
+                          }))
+                        }
+                        placeholder="Numéro studio (numeroStudio)"
+                        disabled={createListingSubmitting || loading}
+                      />
+                    </div>
+                  ) : null}
+
+                  {createListing.typeProperty === "Apartment" ? (
+                    <div className="grid gap-3 md:grid-cols-2">
+                      <Input
+                        value={createListing.nbrFloorApartment}
+                        onChange={(event) =>
+                          setCreateListing((previous) => ({
+                            ...previous,
+                            nbrFloorApartment: event.target.value,
+                          }))
+                        }
+                        placeholder="Étage appartement (nbrFloorApartment)"
+                        disabled={createListingSubmitting || loading}
+                      />
+                      <Input
+                        value={createListing.numeroApartment}
+                        onChange={(event) =>
+                          setCreateListing((previous) => ({
+                            ...previous,
+                            numeroApartment: event.target.value,
+                          }))
+                        }
+                        placeholder="Numéro appartement (numeroApartment)"
+                        disabled={createListingSubmitting || loading}
+                      />
+                    </div>
+                  ) : null}
+
+                  {createListing.typeProperty === "Villa" ? (
+                    <div className="grid gap-3 md:grid-cols-3">
+                      <Input
+                        value={createListing.nbrFloors}
+                        onChange={(event) =>
+                          setCreateListing((previous) => ({
+                            ...previous,
+                            nbrFloors: event.target.value,
+                          }))
+                        }
+                        placeholder="Étages (nbrFloors)"
+                        disabled={createListingSubmitting || loading}
+                      />
+                      <Input
+                        value={createListing.nbrPiscine}
+                        onChange={(event) =>
+                          setCreateListing((previous) => ({
+                            ...previous,
+                            nbrPiscine: event.target.value,
+                          }))
+                        }
+                        placeholder="Piscines (nbrPiscine)"
+                        disabled={createListingSubmitting || loading}
+                      />
+                      <Input
+                        value={createListing.nbrGarages}
+                        onChange={(event) =>
+                          setCreateListing((previous) => ({
+                            ...previous,
+                            nbrGarages: event.target.value,
+                          }))
+                        }
+                        placeholder="Garages (nbrGarages)"
+                        disabled={createListingSubmitting || loading}
+                      />
+                    </div>
+                  ) : null}
+
+                  {createListing.typeProperty === "Desk" ? (
+                    <div className="grid gap-3 md:grid-cols-2">
+                      <Input
+                        value={createListing.nbrToilets}
+                        onChange={(event) =>
+                          setCreateListing((previous) => ({
+                            ...previous,
+                            nbrToilets: event.target.value,
+                          }))
+                        }
+                        placeholder="Toilettes (nbrToilets)"
+                        disabled={createListingSubmitting || loading}
+                      />
+                      <Input
+                        value={createListing.nbrRooms}
+                        onChange={(event) =>
+                          setCreateListing((previous) => ({
+                            ...previous,
+                            nbrRooms: event.target.value,
+                          }))
+                        }
+                        placeholder="Pièces (nbrRooms)"
+                        disabled={createListingSubmitting || loading}
+                      />
+                    </div>
+                  ) : null}
+
+                  {createListing.typeProperty === "Building" ? (
+                    <div className="grid gap-3 md:grid-cols-3">
+                      <Input
+                        value={createListing.nbrApartments}
+                        onChange={(event) =>
+                          setCreateListing((previous) => ({
+                            ...previous,
+                            nbrApartments: event.target.value,
+                          }))
+                        }
+                        placeholder="Appartements (nbrApartments)"
+                        disabled={createListingSubmitting || loading}
+                      />
+                      <Input
+                        value={createListing.nbrFloors}
+                        onChange={(event) =>
+                          setCreateListing((previous) => ({
+                            ...previous,
+                            nbrFloors: event.target.value,
+                          }))
+                        }
+                        placeholder="Étages (nbrFloors)"
+                        disabled={createListingSubmitting || loading}
+                      />
+                      <select
+                        className="h-9 rounded-lg border border-slate-300 bg-white px-3 text-sm text-slate-800"
+                        value={createListing.hasParking}
+                        onChange={(event) =>
+                          setCreateListing((previous) => ({
+                            ...previous,
+                            hasParking: event.target.value as "true" | "false",
+                          }))
+                        }
+                        disabled={createListingSubmitting || loading}
+                      >
+                        <option value="true">Parking: Oui</option>
+                        <option value="false">Parking: Non</option>
+                      </select>
+                    </div>
+                  ) : null}
+
+                  {createListing.typeProperty === "Shop" ? (
+                    <div className="grid gap-3 md:grid-cols-2">
+                      <Input
+                        value={createListing.nbrRooms}
+                        onChange={(event) =>
+                          setCreateListing((previous) => ({
+                            ...previous,
+                            nbrRooms: event.target.value,
+                          }))
+                        }
+                        placeholder="Pièces (nbrRooms)"
+                        disabled={createListingSubmitting || loading}
+                      />
+                      <Input
+                        value={createListing.nbrToilet}
+                        onChange={(event) =>
+                          setCreateListing((previous) => ({
+                            ...previous,
+                            nbrToilet: event.target.value,
+                          }))
+                        }
+                        placeholder="Toilettes (nbrToilet)"
+                        disabled={createListingSubmitting || loading}
+                      />
+                    </div>
+                  ) : null}
+
+                  {createListing.typeProperty === "Kiosk" ? (
+                    <Input
+                      value={createListing.kioskType}
+                      onChange={(event) =>
+                        setCreateListing((previous) => ({
+                          ...previous,
+                          kioskType: event.target.value,
+                        }))
+                      }
+                      placeholder="Type de kiosque (kioskType)"
+                      disabled={createListingSubmitting || loading}
+                    />
+                  ) : null}
+
+                  {createListing.typeProperty === "Room" ? (
+                    <Input
+                      value={createListing.roomType}
+                      onChange={(event) =>
+                        setCreateListing((previous) => ({
+                          ...previous,
+                          roomType: event.target.value,
+                        }))
+                      }
+                      placeholder="Type de chambre (roomType)"
+                      disabled={createListingSubmitting || loading}
+                    />
+                  ) : null}
+
+                  {createListing.typeProperty === "Land" || createListing.typeProperty === "Property" ? (
+                    <p className="rounded-md bg-slate-50 px-3 py-2 text-sm text-slate-700">
+                      Ce type n&apos;a pas d&apos;attribut supplémentaire à l&apos;étape 2.
+                    </p>
+                  ) : null}
+                </div>
+              ) : null}
+
+              {listingStep === 3 ? (
+                <div className="space-y-3">
+                  <div className="grid gap-3 md:grid-cols-3">
+                    <Input
+                      value={createListing.province}
+                      onChange={(event) =>
+                        setCreateListing((previous) => ({
+                          ...previous,
+                          province: event.target.value,
+                        }))
+                      }
+                      placeholder="Province"
+                      disabled={createListingSubmitting || loading}
+                    />
+                    <Input
+                      value={createListing.city}
+                      onChange={(event) =>
+                        setCreateListing((previous) => ({
+                          ...previous,
+                          city: event.target.value,
+                        }))
+                      }
+                      placeholder="Ville"
+                      disabled={createListingSubmitting || loading}
+                    />
+                    <Input
+                      value={createListing.street}
+                      onChange={(event) =>
+                        setCreateListing((previous) => ({
+                          ...previous,
+                          street: event.target.value,
+                        }))
+                      }
+                      placeholder="Quartier (district)"
+                      disabled={createListingSubmitting || loading}
+                    />
+                  </div>
+
+                  <div className="grid gap-3 md:grid-cols-2">
+                    <Input
+                      value={createListing.country}
+                      onChange={(event) =>
+                        setCreateListing((previous) => ({
+                          ...previous,
+                          country: event.target.value,
+                        }))
+                      }
+                      placeholder="Pays"
+                      disabled={createListingSubmitting || loading}
+                    />
+                    <Input
+                      value={createListing.countryCode}
+                      onChange={(event) =>
+                        setCreateListing((previous) => ({
+                          ...previous,
+                          countryCode: event.target.value,
+                        }))
+                      }
+                      placeholder="Code pays"
+                      disabled={createListingSubmitting || loading}
+                    />
+                  </div>
+
+                  <div className="grid gap-3 md:grid-cols-3">
+                    <Input
+                      value={createListing.longitude}
+                      onChange={(event) =>
+                        setCreateListing((previous) => ({
+                          ...previous,
+                          longitude: event.target.value,
+                        }))
+                      }
+                      placeholder="Longitude"
+                      disabled={createListingSubmitting || loading}
+                    />
+                    <Input
+                      value={createListing.latitude}
+                      onChange={(event) =>
+                        setCreateListing((previous) => ({
+                          ...previous,
+                          latitude: event.target.value,
+                        }))
+                      }
+                      placeholder="Latitude"
+                      disabled={createListingSubmitting || loading}
+                    />
+                    <Input
+                      value={createListing.contact}
+                      onChange={(event) =>
+                        setCreateListing((previous) => ({
+                          ...previous,
+                          contact: event.target.value,
+                        }))
+                      }
+                      placeholder="Contact (optionnel)"
+                      disabled={createListingSubmitting || loading}
+                    />
+                  </div>
+
+                  <div className="grid gap-3 md:grid-cols-3">
+                    <Input
+                      value={createListing.provinceLon}
+                      onChange={(event) =>
+                        setCreateListing((previous) => ({
+                          ...previous,
+                          provinceLon: event.target.value,
+                        }))
+                      }
+                      placeholder="Province Lon (optionnel)"
+                      disabled={createListingSubmitting || loading}
+                    />
+                    <Input
+                      value={createListing.provinceLat}
+                      onChange={(event) =>
+                        setCreateListing((previous) => ({
+                          ...previous,
+                          provinceLat: event.target.value,
+                        }))
+                      }
+                      placeholder="Province Lat (optionnel)"
+                      disabled={createListingSubmitting || loading}
+                    />
+                    <Input
+                      value={createListing.cityLon}
+                      onChange={(event) =>
+                        setCreateListing((previous) => ({
+                          ...previous,
+                          cityLon: event.target.value,
+                        }))
+                      }
+                      placeholder="City Lon (optionnel)"
+                      disabled={createListingSubmitting || loading}
+                    />
+                  </div>
+
+                  <div className="grid gap-3 md:grid-cols-3">
+                    <Input
+                      value={createListing.cityLat}
+                      onChange={(event) =>
+                        setCreateListing((previous) => ({
+                          ...previous,
+                          cityLat: event.target.value,
+                        }))
+                      }
+                      placeholder="City Lat (optionnel)"
+                      disabled={createListingSubmitting || loading}
+                    />
+                    <Input
+                      value={createListing.streetLon}
+                      onChange={(event) =>
+                        setCreateListing((previous) => ({
+                          ...previous,
+                          streetLon: event.target.value,
+                        }))
+                      }
+                      placeholder="Street Lon (optionnel)"
+                      disabled={createListingSubmitting || loading}
+                    />
+                    <Input
+                      value={createListing.streetLat}
+                      onChange={(event) =>
+                        setCreateListing((previous) => ({
+                          ...previous,
+                          streetLat: event.target.value,
+                        }))
+                      }
+                      placeholder="Street Lat (optionnel)"
+                      disabled={createListingSubmitting || loading}
+                    />
+                  </div>
+
+                  <select
+                    className="h-9 rounded-lg border border-slate-300 bg-white px-3 text-sm text-slate-800"
+                    value={createListing.isLocExact}
+                    onChange={(event) =>
+                      setCreateListing((previous) => ({
+                        ...previous,
+                        isLocExact: event.target.value as "true" | "false",
+                      }))
+                    }
+                    disabled={createListingSubmitting || loading}
+                  >
+                    <option value="false">Position approximative</option>
+                    <option value="true">Position exacte</option>
+                  </select>
+                </div>
+              ) : null}
+
+              {createListingError ? (
+                <p className="rounded-md bg-red-50 px-3 py-2 text-sm text-red-700">{createListingError}</p>
+              ) : null}
+
+              {createListingResult ? (
+                <p className="rounded-md bg-emerald-50 px-3 py-2 text-sm text-emerald-800">
+                  Annonce créée: ID <span className="font-mono">{createListingResult.propertyId}</span>
+                </p>
+              ) : null}
+
+              <div className="flex flex-wrap justify-end gap-2">
+                {listingStep > 1 ? (
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={onPreviousListingStep}
+                    disabled={createListingSubmitting || loading}
+                  >
+                    Précédent
+                  </Button>
+                ) : null}
+
+                {listingStep < 3 ? (
+                  <Button
+                    type="button"
+                    onClick={onNextListingStep}
+                    disabled={createListingSubmitting || loading}
+                  >
+                    Suivant
+                  </Button>
+                ) : (
+                  <Button type="submit" disabled={createListingSubmitting || loading}>
+                    {createListingSubmitting ? "Création en cours..." : "Créer annonce"}
+                  </Button>
+                )}
+              </div>
+            </form>
+          </CardContent>
+        </Card>
+      ) : null}
 
       <section className="grid gap-4 md:grid-cols-4">
         <Card>
@@ -445,7 +2173,14 @@ export default function AnnouncersPage() {
                                   type="button"
                                   size="sm"
                                   variant="outline"
-                                  onClick={() => setSelectedUid(announcer.uid)}
+                                  onClick={() => {
+                                    setSelectedUid(announcer.uid);
+                                    setCreateListing((previous) => ({
+                                      ...previous,
+                                      announcerUid: announcer.uid,
+                                      contact: announcer.phoneNumbers[0] ?? previous.contact,
+                                    }));
+                                  }}
                                   disabled={submitting}
                                 >
                                   Consulter

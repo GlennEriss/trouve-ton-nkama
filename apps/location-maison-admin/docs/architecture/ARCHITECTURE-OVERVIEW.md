@@ -38,6 +38,7 @@ flowchart LR
 
   O[Firebase Analytics Source] --> L
   P[Vercel Analytics Source] --> L
+  T[AdSense Reporting API Source] --> L
 
   Q[GitHub Actions CI] --> R[Vercel Deploy]
   Q --> S[Firebase Deploy]
@@ -61,6 +62,7 @@ flowchart LR
 | Error monitoring | Sentry | Utilise | Observabilite erreurs FE/BE centralisee |
 | Product analytics source | Firebase Analytics | Utilise | Source officielle ecosysteme Firebase |
 | Runtime analytics source | Vercel Analytics | Utilise | Vision trafic cote plateforme |
+| Ads revenue source | AdSense Management API v2 | Utilise | Source de verite revenus publicitaires |
 | Data warehouse | BigQuery | Utilise | Agregations analytiques robustes |
 | CI/CD | GitHub Actions | Utilise | Repo et workflows existants |
 | GitLab CI | Non retenu | Ecarte | Eviter double pipeline et drift |
@@ -96,6 +98,8 @@ flowchart LR
 
 - Risque: divergence de KPI Firebase vs Vercel.
 - Mitigation: afficher la source et la formule de calcul par KPI.
+- Risque: ecart trafic eleve mais revenu pub faible.
+- Mitigation: dashboard Ads (RPM, CTR, fill rate, viewability) + priorisation des pages/slots sous-performants.
 - Risque: point de contention Firestore sur agregats.
 - Mitigation: agregations pre-calculees + cache Redis.
 - Risque: drift de permissions RBAC.

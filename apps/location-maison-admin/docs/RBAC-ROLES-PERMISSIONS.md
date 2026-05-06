@@ -9,7 +9,7 @@ Mettre en place un contrôle d'accès robuste pour que chaque admin ne puisse ex
 - `Role`: ensemble de permissions
 - `Permission`: action autorisée sur une ressource
 - `Resource`: module métier (users, listings, credits, etc.)
-- `Action`: read, create, update, delete, approve, refund, invite
+- `Action`: read, create, update, delete, approve, reject, invite, suspend, reactivate, export, manage
 
 ## Rôles proposés (MVP)
 
@@ -47,17 +47,15 @@ Mettre en place un contrôle d'accès robuste pour que chaque admin ne puisse ex
 Ressources principales:
 
 - `admins`
-- `admin_sessions`
 - `roles`
 - `users`
-- `user_presence`
 - `announcers`
 - `listings`
 - `credits`
 - `transactions`
 - `refunds`
-- `search_analytics`
-- `traffic_analytics`
+- `analytics` (search + traffic)
+- `ads_analytics` (monetisation)
 - `settings`
 - `audit_logs`
 
@@ -68,19 +66,29 @@ Actions:
 - `update`
 - `delete`
 - `approve`
-- `refund`
+- `reject`
 - `invite`
-- `assign_role`
-- `revoke_access`
+- `suspend`
+- `reactivate`
 - `view_presence`
-- `view_search_analytics`
-- `view_traffic_analytics`
+- `view_last_login`
+- `view_last_seen`
+- `export`
+- `compare`
+- `manage`
+
+Nomenclature alignée:
+
+- Format standard: `resource.action`
+- Analytics (actuel en code): `analytics.search_read`, `analytics.traffic_read`
+- Ads analytics (cible documentée): `ads_analytics.read`, `ads_analytics.export`, `ads_analytics.alerts.read`, `ads_analytics.alerts.manage`
+- Références: `./MATRICE-PERMISSIONS-ECRANS-ACTIONS.md` et `./MONETISATION-PUBS-ADSENSE-SPEC.md`
 
 Règles globales:
 
 - `super_admin`: toutes permissions
 - `operations_admin`: lecture/édition opérationnelle, sans gestion `roles`/`settings` critiques
-- `moderation_admin`: permissions centrées `listings` (`read`, `approve`, `update`) + lecture contexte utilisateur
+- `moderation_admin`: permissions centrées `listings` (`read`, `approve`, `reject`) + lecture contexte utilisateur
 - `finance_admin`: permissions centrées `credits`, `transactions`, `refunds`
 - `support_admin`: `users`/`announcers` lecture + actions support limitées
 - `analyst_admin`: permissions `read` et visualisation analytics seulement
@@ -88,22 +96,28 @@ Règles globales:
 ## Matrice explicite par rôle (résumé)
 
 - `super_admin`:
-- `admins:*`, `roles:*`, `users:*`, `announcers:*`, `listings:*`, `credits:*`, `transactions:*`, `refunds:*`, `search_analytics:read`, `traffic_analytics:read`, `settings:*`, `audit_logs:read`
+- Actuel en code: `*.*`
+- Cible ads analytics: toutes permissions `ads_analytics.*`
 
 - `operations_admin`:
-- `admins:read`, `admin_sessions:read`, `users:read|update`, `user_presence:read`, `announcers:read|update`, `listings:read|update`, `transactions:read`, `search_analytics:read`, `traffic_analytics:read`, `audit_logs:read`
+- Actuel en code: `admins.read`, `admins.view_presence`, `admins.view_last_login`, `users.read|search|create|update|suspend|reactivate|view_presence|view_last_seen`, `announcers.create|update`, `listings.read|create|approve|reject`, `transactions.read`, `analytics.search_read`, `analytics.traffic_read`, `audit_logs.read`
+- Cible ads analytics: `ads_analytics.read`, `ads_analytics.export`, `ads_analytics.alerts.read`, `ads_analytics.alerts.manage`
 
 - `moderation_admin`:
-- `users:read`, `announcers:read`, `listings:read|approve|update`, `search_analytics:read`, `audit_logs:read`
+- Actuel en code: `users.read|search|view_presence|view_last_seen`, `announcers.read`, `listings.read|approve|reject`, `audit_logs.read`
+- Cible ads analytics: aucun accès
 
 - `finance_admin`:
-- `users:read`, `credits:read|update`, `transactions:read|create`, `refunds:read|create|approve`, `traffic_analytics:read`, `audit_logs:read`
+- Actuel en code: `users.read|search|view_presence|view_last_seen`, `credits.read|grant`, `transactions.read`, `refunds.read|approve`, `analytics.traffic_read`, `audit_logs.read`
+- Cible ads analytics: `ads_analytics.read`, `ads_analytics.export`, `ads_analytics.alerts.read`
 
 - `support_admin`:
-- `users:read|update`, `user_presence:read`, `announcers:read|update`, `listings:read`, `transactions:read`, `audit_logs:read`
+- Actuel en code: `users.read|search|create|suspend|reactivate|view_presence|view_last_seen`, `announcers.read|create|update`, `listings.create`, `transactions.read`, `analytics.search_read`, `analytics.traffic_read`, `audit_logs.read`
+- Cible ads analytics: aucun accès
 
 - `analyst_admin`:
-- `admins:read`, `admin_sessions:read`, `users:read`, `user_presence:read`, `listings:read`, `transactions:read`, `search_analytics:read`, `traffic_analytics:read`, `audit_logs:read`
+- Actuel en code: `admins.read|view_presence|view_last_login`, `users.read|search|view_presence|view_last_seen`, `transactions.read`, `analytics.search_read`, `analytics.traffic_read`, `audit_logs.read`
+- Cible ads analytics: `ads_analytics.read`, `ads_analytics.export`, `ads_analytics.alerts.read`
 
 ## Règles de sécurité obligatoires
 
