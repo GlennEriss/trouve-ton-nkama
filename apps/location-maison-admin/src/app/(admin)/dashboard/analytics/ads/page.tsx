@@ -125,6 +125,31 @@ type AdsAlertsPayload = {
   }>;
 };
 
+type AdsComparisonPayload = {
+  generatedAt: string;
+  rows: Array<{
+    key: "J-1" | "7j" | "30j" | "MTD";
+    label: string;
+    currentStartDate: string;
+    currentEndDate: string;
+    previousStartDate: string;
+    previousEndDate: string;
+    currentRevenue: number;
+    previousRevenue: number;
+    revenueDelta: number;
+    revenueDeltaPercent: number | null;
+    currentFillRate: number | null;
+    previousFillRate: number | null;
+    fillRateDeltaPercent: number | null;
+    currentCtr: number | null;
+    previousCtr: number | null;
+    ctrDeltaPercent: number | null;
+    currentPageViewsRpm: number | null;
+    previousPageViewsRpm: number | null;
+    pageViewsRpmDeltaPercent: number | null;
+  }>;
+};
+
 function formatMoney(value: number | null | undefined) {
   const safeValue = typeof value === "number" && Number.isFinite(value) ? value : 0;
   return new Intl.NumberFormat("fr-FR", {
@@ -147,6 +172,18 @@ function formatPercent(value: number | null | undefined, digits = 2) {
 
   const normalized = Math.abs(value) <= 1 ? value * 100 : value;
   return `${normalized.toLocaleString("fr-FR", {
+    minimumFractionDigits: 0,
+    maximumFractionDigits: digits,
+  })}%`;
+}
+
+function formatDeltaPercent(value: number | null | undefined, digits = 1) {
+  if (value === null || value === undefined || !Number.isFinite(value)) {
+    return "N/A";
+  }
+
+  const sign = value > 0 ? "+" : "";
+  return `${sign}${value.toLocaleString("fr-FR", {
     minimumFractionDigits: 0,
     maximumFractionDigits: digits,
   })}%`;
@@ -331,18 +368,29 @@ export default function AnalyticsAdsPage() {
     enabled: canQuery,
   });
 
+  const comparisonQuery = useQuery({
+    queryKey: ["analytics", "ads", "compare"],
+    queryFn: () =>
+      fetchJson<AdsComparisonPayload>(
+        "/api/admin/v1/analytics/ads/compare",
+        "Impossible de charger les comparaisons de période.",
+      ),
+  });
+
   const isLoading =
     overviewQuery.isLoading ||
     timeseriesQuery.isLoading ||
     placementsQuery.isLoading ||
     pagesQuery.isLoading ||
-    alertsQuery.isLoading;
+    alertsQuery.isLoading ||
+    comparisonQuery.isLoading;
 
   const error =
     overviewQuery.error?.message ||
     timeseriesQuery.error?.message ||
     placementsQuery.error?.message ||
     pagesQuery.error?.message ||
+    comparisonQuery.error?.message ||
     alertsQuery.error?.message ||
     null;
 
@@ -364,8 +412,9 @@ export default function AnalyticsAdsPage() {
     void timeseriesQuery.refetch();
     void placementsQuery.refetch();
     void pagesQuery.refetch();
+    void comparisonQuery.refetch();
     void alertsQuery.refetch();
-  }, [alertsQuery, overviewQuery, pagesQuery, placementsQuery, timeseriesQuery]);
+  }, [alertsQuery, comparisonQuery, overviewQuery, pagesQuery, placementsQuery, timeseriesQuery]);
 
   const unavailableSources = useMemo(() => {
     const availability = overviewQuery.data?.dataAvailability;
@@ -520,6 +569,66 @@ export default function AnalyticsAdsPage() {
               />
             </div>
           ) : null}
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <h2 className="text-base font-semibold text-slate-900">Comparaisons de période</h2>
+          <p className="text-sm text-slate-600">J-1, 7 jours, 30 jours et MTD.</p>
+        </CardHeader>
+        <CardContent>
+          <div className="overflow-x-auto">
+            <table className="min-w-full border-collapse text-sm">
+              <thead>
+                <tr className="border-b border-slate-200 text-left text-slate-600">
+                  <th className="py-2 pr-4 font-medium">Fenêtre</th>
+                  <th className="py-2 pr-4 font-medium">Revenu actuel</th>
+                  <th className="py-2 pr-4 font-medium">Revenu précédent</th>
+                  <th className="py-2 pr-4 font-medium">Delta revenu</th>
+                  <th className="py-2 pr-4 font-medium">Delta fill rate</th>
+                  <th className="py-2 pr-4 font-medium">Delta CTR</th>
+                  <th className="py-2 pr-4 font-medium">Delta RPM</th>
+                </tr>
+              </thead>
+              <tbody>
+                {comparisonQuery.data?.rows.length ? (
+                  comparisonQuery.data.rows.map((row) => (
+                    <tr key={row.key} className="border-b border-slate-100">
+                      <td className="py-2 pr-4 text-slate-700">
+                        <p className="font-medium text-slate-900">{row.key}</p>
+                        <p className="text-xs text-slate-500">
+                          {row.currentStartDate} - {row.currentEndDate}
+                        </p>
+                      </td>
+                      <td className="py-2 pr-4 text-slate-900">{formatMoney(row.currentRevenue)}</td>
+                      <td className="py-2 pr-4 text-slate-700">{formatMoney(row.previousRevenue)}</td>
+                      <td
+                        className={`py-2 pr-4 ${
+                          (row.revenueDeltaPercent ?? 0) < 0 ? "text-red-600" : "text-emerald-700"
+                        }`}
+                      >
+                        {formatDeltaPercent(row.revenueDeltaPercent)}
+                      </td>
+                      <td className="py-2 pr-4 text-slate-700">
+                        {formatDeltaPercent(row.fillRateDeltaPercent)}
+                      </td>
+                      <td className="py-2 pr-4 text-slate-700">{formatDeltaPercent(row.ctrDeltaPercent)}</td>
+                      <td className="py-2 pr-4 text-slate-700">
+                        {formatDeltaPercent(row.pageViewsRpmDeltaPercent)}
+                      </td>
+                    </tr>
+                  ))
+                ) : (
+                  <tr>
+                    <td colSpan={7} className="py-6 text-center text-sm text-slate-500">
+                      Données insuffisantes pour la comparaison de période.
+                    </td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          </div>
         </CardContent>
       </Card>
 

@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { Activity, BarChart3, Building2, Home, Shield, TrendingUp, Users } from "lucide-react";
+import { Activity, BarChart3, Building2, Home, ListChecks, Shield, TrendingUp, Users } from "lucide-react";
 import { usePathname } from "next/navigation";
 
 import {
@@ -26,6 +26,7 @@ const navItems = [
   { href: "/dashboard/admins", label: "Administrateurs", icon: Shield },
   { href: "/dashboard/users", label: "Utilisateurs", icon: Users },
   { href: "/dashboard/announcers", label: "Annonceurs", icon: Building2 },
+  { href: "/dashboard/listings", label: "Annonces", icon: ListChecks },
 ];
 
 export function AppSidebar() {

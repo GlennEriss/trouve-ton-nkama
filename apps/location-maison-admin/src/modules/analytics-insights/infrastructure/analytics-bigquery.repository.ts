@@ -167,6 +167,42 @@ export type IdempotencyRegistryRow = {
   correlation_id: string;
 };
 
+export type AdSenseReportingRawRow = {
+  report_date: string;
+  account_id: string | null;
+  dimension_page_url: string | null;
+  dimension_ad_unit: string | null;
+  dimension_country: string | null;
+  dimension_device: string | null;
+  estimated_earnings: number;
+  page_views: number;
+  ad_requests: number;
+  matched_ad_requests: number;
+  total_impressions: number;
+  clicks: number;
+  page_views_rpm: number | null;
+  impressions_rpm: number | null;
+  active_view_viewability: number | null;
+  active_view_measurability: number | null;
+  loaded_at: string;
+};
+
+export type AdsSlotEventRow = {
+  event_id: string;
+  occurred_at: string;
+  date_key: string;
+  session_id: string | null;
+  page_path: string | null;
+  page_template: string | null;
+  slot_id: string | null;
+  slot_position: string | null;
+  event_name: string;
+  latency_ms: number | null;
+  is_authenticated: boolean | null;
+  country: string | null;
+  device_category: string | null;
+};
+
 function resolveRuntimeDataset() {
   if (process.env.BQ_DATASET?.trim()) {
     return process.env.BQ_DATASET.trim();
@@ -174,6 +210,20 @@ function resolveRuntimeDataset() {
 
   const env = process.env.NEXT_PUBLIC_APP_ENV?.trim().toLowerCase();
   if (env === "prod" || env === "production") {
+    return DEFAULT_PROD_DATASET;
+  }
+
+  // Safety fallback: infer dataset from project id when env flags are missing.
+  const projectIdHint = (
+    process.env.GCP_PROJECT_ID ||
+    process.env.FIREBASE_PROJECT_ID ||
+    process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID ||
+    ""
+  )
+    .trim()
+    .toLowerCase();
+
+  if (projectIdHint.includes("prod")) {
     return DEFAULT_PROD_DATASET;
   }
 
@@ -522,6 +572,31 @@ export async function insertTrafficProjectionRows(rows: TrafficProjectionRow[]) 
   await insertRows(
     "traffic_events_raw",
     toInsertRows(rows, (row) => `${row.source}:${row.provider_event_id}`),
+  );
+}
+
+export async function insertAdSenseReportingRawRows(rows: AdSenseReportingRawRow[]) {
+  await insertRows(
+    "adsense_reporting_raw",
+    toInsertRows(
+      rows,
+      (row) =>
+        [
+          row.report_date,
+          row.account_id ?? "na",
+          row.dimension_page_url ?? "na",
+          row.dimension_ad_unit ?? "na",
+          row.dimension_country ?? "na",
+          row.dimension_device ?? "na",
+        ].join(":"),
+    ),
+  );
+}
+
+export async function insertAdsSlotEventRows(rows: AdsSlotEventRow[]) {
+  await insertRows(
+    "ads_slot_events",
+    toInsertRows(rows, (row) => row.event_id),
   );
 }
 

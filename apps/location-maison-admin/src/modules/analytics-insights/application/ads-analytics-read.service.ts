@@ -170,6 +170,35 @@ export type AdsAlertsResult = {
   alerts: AdsAlert[];
 };
 
+export type AdsPeriodComparisonKey = "J-1" | "7j" | "30j" | "MTD";
+
+export type AdsPeriodComparisonRow = {
+  key: AdsPeriodComparisonKey;
+  label: string;
+  currentStartDate: string;
+  currentEndDate: string;
+  previousStartDate: string;
+  previousEndDate: string;
+  currentRevenue: number;
+  previousRevenue: number;
+  revenueDelta: number;
+  revenueDeltaPercent: number | null;
+  currentFillRate: number | null;
+  previousFillRate: number | null;
+  fillRateDeltaPercent: number | null;
+  currentCtr: number | null;
+  previousCtr: number | null;
+  ctrDeltaPercent: number | null;
+  currentPageViewsRpm: number | null;
+  previousPageViewsRpm: number | null;
+  pageViewsRpmDeltaPercent: number | null;
+};
+
+export type AdsPeriodComparisonsResult = {
+  generatedAt: string;
+  rows: AdsPeriodComparisonRow[];
+};
+
 function toSafeNumber(value: unknown, fallback = 0) {
   if (typeof value === "number" && Number.isFinite(value)) {
     return value;
@@ -904,6 +933,210 @@ export async function listAdsAlerts(input: AdsAnalyticsBaseInput): Promise<AdsAl
     },
     generatedAt: new Date().toISOString(),
     alerts,
+  };
+}
+
+const COMPARISON_ORDER: AdsPeriodComparisonKey[] = ["J-1", "7j", "30j", "MTD"];
+
+function mapComparisonRow(
+  row: Record<string, unknown>,
+): AdsPeriodComparisonRow {
+  const keyRaw = toNullableString(row.period_key) ?? "7j";
+  const key = COMPARISON_ORDER.includes(keyRaw as AdsPeriodComparisonKey)
+    ? (keyRaw as AdsPeriodComparisonKey)
+    : "7j";
+
+  return {
+    key,
+    label: toNullableString(row.period_label) ?? key,
+    currentStartDate: toNullableString(row.current_start_date) ?? "",
+    currentEndDate: toNullableString(row.current_end_date) ?? "",
+    previousStartDate: toNullableString(row.previous_start_date) ?? "",
+    previousEndDate: toNullableString(row.previous_end_date) ?? "",
+    currentRevenue: toSafeNumber(row.current_revenue, 0),
+    previousRevenue: toSafeNumber(row.previous_revenue, 0),
+    revenueDelta: toSafeNumber(row.revenue_delta, 0),
+    revenueDeltaPercent: toNullableNumber(row.revenue_delta_percent),
+    currentFillRate: toNullableNumber(row.current_fill_rate),
+    previousFillRate: toNullableNumber(row.previous_fill_rate),
+    fillRateDeltaPercent: toNullableNumber(row.fill_rate_delta_percent),
+    currentCtr: toNullableNumber(row.current_ctr),
+    previousCtr: toNullableNumber(row.previous_ctr),
+    ctrDeltaPercent: toNullableNumber(row.ctr_delta_percent),
+    currentPageViewsRpm: toNullableNumber(row.current_page_views_rpm),
+    previousPageViewsRpm: toNullableNumber(row.previous_page_views_rpm),
+    pageViewsRpmDeltaPercent: toNullableNumber(row.page_views_rpm_delta_percent),
+  };
+}
+
+export async function listAdsPeriodComparisons(): Promise<AdsPeriodComparisonsResult> {
+  const tables = await getAdsTablesAvailability();
+  if (!tables.adsMetricsDaily) {
+    return {
+      generatedAt: new Date().toISOString(),
+      rows: [],
+    };
+  }
+
+  const result = await runBigQueryQuery({
+    query: `
+WITH bounds AS (
+  SELECT
+    CURRENT_DATE("UTC") AS today,
+    DATE_SUB(CURRENT_DATE("UTC"), INTERVAL 1 DAY) AS last_complete_day,
+    DATE_TRUNC(CURRENT_DATE("UTC"), MONTH) AS current_month_start,
+    DATE_TRUNC(DATE_SUB(CURRENT_DATE("UTC"), INTERVAL 1 MONTH), MONTH) AS previous_month_start
+),
+periods AS (
+  SELECT
+    "J-1" AS period_key,
+    "Comparaison J-1" AS period_label,
+    DATE_SUB(last_complete_day, INTERVAL 0 DAY) AS current_start_date,
+    last_complete_day AS current_end_date,
+    DATE_SUB(last_complete_day, INTERVAL 1 DAY) AS previous_start_date,
+    DATE_SUB(last_complete_day, INTERVAL 1 DAY) AS previous_end_date
+  FROM bounds
+
+  UNION ALL
+
+  SELECT
+    "7j" AS period_key,
+    "Comparaison 7 jours" AS period_label,
+    DATE_SUB(today, INTERVAL 7 DAY) AS current_start_date,
+    DATE_SUB(today, INTERVAL 1 DAY) AS current_end_date,
+    DATE_SUB(today, INTERVAL 14 DAY) AS previous_start_date,
+    DATE_SUB(today, INTERVAL 8 DAY) AS previous_end_date
+  FROM bounds
+
+  UNION ALL
+
+  SELECT
+    "30j" AS period_key,
+    "Comparaison 30 jours" AS period_label,
+    DATE_SUB(today, INTERVAL 30 DAY) AS current_start_date,
+    DATE_SUB(today, INTERVAL 1 DAY) AS current_end_date,
+    DATE_SUB(today, INTERVAL 60 DAY) AS previous_start_date,
+    DATE_SUB(today, INTERVAL 31 DAY) AS previous_end_date
+  FROM bounds
+
+  UNION ALL
+
+  SELECT
+    "MTD" AS period_key,
+    "Comparaison MTD" AS period_label,
+    current_month_start AS current_start_date,
+    last_complete_day AS current_end_date,
+    previous_month_start AS previous_start_date,
+    LEAST(
+      DATE_ADD(
+        previous_month_start,
+        INTERVAL DATE_DIFF(last_complete_day, current_month_start, DAY) DAY
+      ),
+      DATE_SUB(current_month_start, INTERVAL 1 DAY)
+    ) AS previous_end_date
+  FROM bounds
+),
+current_agg AS (
+  SELECT
+    p.period_key,
+    p.period_label,
+    p.current_start_date,
+    p.current_end_date,
+    p.previous_start_date,
+    p.previous_end_date,
+    SUM(IF(m.date_key BETWEEN p.current_start_date AND p.current_end_date, m.estimated_earnings, 0)) AS current_revenue,
+    SAFE_DIVIDE(
+      SUM(IF(m.date_key BETWEEN p.current_start_date AND p.current_end_date, m.matched_ad_requests, 0)),
+      NULLIF(SUM(IF(m.date_key BETWEEN p.current_start_date AND p.current_end_date, m.ad_requests, 0)), 0)
+    ) AS current_fill_rate,
+    SAFE_DIVIDE(
+      SUM(IF(m.date_key BETWEEN p.current_start_date AND p.current_end_date, m.clicks, 0)),
+      NULLIF(SUM(IF(m.date_key BETWEEN p.current_start_date AND p.current_end_date, m.total_impressions, 0)), 0)
+    ) AS current_ctr,
+    SAFE_DIVIDE(
+      SUM(IF(m.date_key BETWEEN p.current_start_date AND p.current_end_date, m.estimated_earnings, 0)) * 1000,
+      NULLIF(SUM(IF(m.date_key BETWEEN p.current_start_date AND p.current_end_date, m.page_views, 0)), 0)
+    ) AS current_page_views_rpm
+  FROM periods p
+  LEFT JOIN ${getAdsMetricsDailyTableRef()} m
+    ON m.date_key BETWEEN p.current_start_date AND p.current_end_date
+    OR m.date_key BETWEEN p.previous_start_date AND p.previous_end_date
+  GROUP BY
+    p.period_key,
+    p.period_label,
+    p.current_start_date,
+    p.current_end_date,
+    p.previous_start_date,
+    p.previous_end_date
+),
+full_agg AS (
+  SELECT
+    c.period_key,
+    c.period_label,
+    c.current_start_date,
+    c.current_end_date,
+    c.previous_start_date,
+    c.previous_end_date,
+    c.current_revenue,
+    SUM(IF(m.date_key BETWEEN c.previous_start_date AND c.previous_end_date, m.estimated_earnings, 0)) AS previous_revenue,
+    c.current_fill_rate,
+    SAFE_DIVIDE(
+      SUM(IF(m.date_key BETWEEN c.previous_start_date AND c.previous_end_date, m.matched_ad_requests, 0)),
+      NULLIF(SUM(IF(m.date_key BETWEEN c.previous_start_date AND c.previous_end_date, m.ad_requests, 0)), 0)
+    ) AS previous_fill_rate,
+    c.current_ctr,
+    SAFE_DIVIDE(
+      SUM(IF(m.date_key BETWEEN c.previous_start_date AND c.previous_end_date, m.clicks, 0)),
+      NULLIF(SUM(IF(m.date_key BETWEEN c.previous_start_date AND c.previous_end_date, m.total_impressions, 0)), 0)
+    ) AS previous_ctr,
+    c.current_page_views_rpm,
+    SAFE_DIVIDE(
+      SUM(IF(m.date_key BETWEEN c.previous_start_date AND c.previous_end_date, m.estimated_earnings, 0)) * 1000,
+      NULLIF(SUM(IF(m.date_key BETWEEN c.previous_start_date AND c.previous_end_date, m.page_views, 0)), 0)
+    ) AS previous_page_views_rpm
+  FROM current_agg c
+  LEFT JOIN ${getAdsMetricsDailyTableRef()} m
+    ON m.date_key BETWEEN c.previous_start_date AND c.previous_end_date
+  GROUP BY
+    c.period_key,
+    c.period_label,
+    c.current_start_date,
+    c.current_end_date,
+    c.previous_start_date,
+    c.previous_end_date,
+    c.current_revenue,
+    c.current_fill_rate,
+    c.current_ctr,
+    c.current_page_views_rpm
+)
+SELECT
+  period_key,
+  period_label,
+  FORMAT_DATE('%Y-%m-%d', current_start_date) AS current_start_date,
+  FORMAT_DATE('%Y-%m-%d', current_end_date) AS current_end_date,
+  FORMAT_DATE('%Y-%m-%d', previous_start_date) AS previous_start_date,
+  FORMAT_DATE('%Y-%m-%d', previous_end_date) AS previous_end_date,
+  current_revenue,
+  previous_revenue,
+  (current_revenue - previous_revenue) AS revenue_delta,
+  IF(previous_revenue = 0, NULL, SAFE_DIVIDE((current_revenue - previous_revenue) * 100, previous_revenue)) AS revenue_delta_percent,
+  current_fill_rate,
+  previous_fill_rate,
+  IF(previous_fill_rate = 0 OR previous_fill_rate IS NULL, NULL, SAFE_DIVIDE((current_fill_rate - previous_fill_rate) * 100, previous_fill_rate)) AS fill_rate_delta_percent,
+  current_ctr,
+  previous_ctr,
+  IF(previous_ctr = 0 OR previous_ctr IS NULL, NULL, SAFE_DIVIDE((current_ctr - previous_ctr) * 100, previous_ctr)) AS ctr_delta_percent,
+  current_page_views_rpm,
+  previous_page_views_rpm,
+  IF(previous_page_views_rpm = 0 OR previous_page_views_rpm IS NULL, NULL, SAFE_DIVIDE((current_page_views_rpm - previous_page_views_rpm) * 100, previous_page_views_rpm)) AS page_views_rpm_delta_percent
+FROM full_agg
+ORDER BY CASE period_key WHEN "J-1" THEN 1 WHEN "7j" THEN 2 WHEN "30j" THEN 3 WHEN "MTD" THEN 4 ELSE 99 END`,
+    maxResults: 10,
+  });
+
+  return {
+    generatedAt: new Date().toISOString(),
+    rows: result.rows.map((row) => mapComparisonRow(row)),
   };
 }
 
