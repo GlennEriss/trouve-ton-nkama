@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import React from 'react';
 import Link from 'next/link';
 import { routes } from '@/constantes/routes';
+import { withCanonical } from '@/lib/seo/metadata';
 import { 
   TrendingUp, 
   CreditCard, 
@@ -13,11 +14,12 @@ import {
   BookOpen 
 } from 'lucide-react';
 
-export const metadata: Metadata = {
+const blogMetadata: Metadata = {
   title: "Blog Immobilier Gabon - Conseils, Actualités, Prix | Trouve Ton Nkama",
   description: "Blog immobilier Gabon : conseils d'investissement, prix du marché Libreville, Port-Gentil, quartiers tendance, guide achat location. Actualités immobilières Gabon.",
   keywords: "blog immobilier Gabon, conseils immobilier Libreville, prix immobilier Port-Gentil, guide investissement Gabon, actualités immobilières Gabon, quartiers Libreville",
 };
+export const metadata: Metadata = withCanonical(blogMetadata, '/blog');
 
 export default function BlogPage() {
   const articles = [
@@ -273,6 +275,21 @@ export default function BlogPage() {
                 </div>
               </article>
             ))}
+          </div>
+
+          <div className="mt-12 bg-white rounded-2xl border border-gray-100 p-6 shadow-sm">
+            <h2 className="text-2xl font-bold text-[#146B67] mb-4">Recherches populaires au Gabon</h2>
+            <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+              <Link href="/immobilier/location/maison" className="rounded-xl border border-gray-200 px-4 py-3 text-sm font-medium text-gray-700 hover:border-[#146B67] hover:text-[#146B67] transition-colors">
+                Maisons à louer au Gabon
+              </Link>
+              <Link href="/immobilier/vente/maison" className="rounded-xl border border-gray-200 px-4 py-3 text-sm font-medium text-gray-700 hover:border-[#146B67] hover:text-[#146B67] transition-colors">
+                Maisons à vendre au Gabon
+              </Link>
+              <Link href="/immobilier/location/appartement/libreville" className="rounded-xl border border-gray-200 px-4 py-3 text-sm font-medium text-gray-700 hover:border-[#146B67] hover:text-[#146B67] transition-colors">
+                Appartements à louer à Libreville
+              </Link>
+            </div>
           </div>
 
           {/* Newsletter Section */}

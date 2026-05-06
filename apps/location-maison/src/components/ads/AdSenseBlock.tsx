@@ -1,8 +1,11 @@
 'use client'
 
 import React from 'react';
+import { usePathname } from 'next/navigation';
+import { useSession } from 'next-auth/react';
 import { ADSENSE_CLIENT } from '@/lib/ads/config';
 import { createLogger } from '@/lib/logger';
+import { emitAdsSlotEvent } from '@/features/analytics/ads/services/ads-slot-analytics.client';
 
 const logger = createLogger('components.ads.AdSenseBlock');
 
@@ -24,10 +27,21 @@ export default function AdSenseBlock({
   fullWidthResponsive = true,
 }: AdSenseBlockProps) {
   const adRef = React.useRef<HTMLModElement | null>(null);
+  const pathname = usePathname();
+  const { data: session, status } = useSession();
+  const uid = React.useMemo(() => {
+    const user = session?.user as { uid?: unknown } | undefined;
+    return typeof user?.uid === 'string' ? user.uid : null;
+  }, [session?.user]);
+  const isAuthenticated = status === 'authenticated';
 
   React.useEffect(() => {
     let retries = 0;
     let cancelled = false;
+    const initStart =
+      typeof performance !== 'undefined' && typeof performance.now === 'function'
+        ? performance.now()
+        : Date.now();
 
     const tryInitialize = () => {
       if (typeof window === 'undefined' || cancelled) {
@@ -50,6 +64,21 @@ export default function AdSenseBlock({
 
       try {
         adsWindow.adsbygoogle.push({});
+        const now =
+          typeof performance !== 'undefined' && typeof performance.now === 'function'
+            ? performance.now()
+            : Date.now();
+        emitAdsSlotEvent({
+          slotId: slot,
+          slotKey,
+          eventName: 'ad_request_sent',
+          pathname: pathname || '/',
+          latencyMs: now - initStart,
+          actor: {
+            uid,
+            isAuthenticated,
+          },
+        });
         return true;
       } catch (error) {
         logger.warn('AdSense push failed', {
@@ -62,9 +91,56 @@ export default function AdSenseBlock({
       }
     };
 
+    emitAdsSlotEvent({
+      slotId: slot,
+      slotKey,
+      eventName: 'ad_slot_rendered',
+      pathname: pathname || '/',
+      actor: {
+        uid,
+        isAuthenticated,
+      },
+    });
+
+    const adElement = adRef.current;
+    let observer: MutationObserver | null = null;
+    if (adElement && typeof MutationObserver !== 'undefined') {
+      observer = new MutationObserver(() => {
+        const adStatus = adElement.getAttribute('data-ad-status');
+        if (adStatus === 'filled') {
+          emitAdsSlotEvent({
+            slotId: slot,
+            slotKey,
+            eventName: 'ad_filled',
+            pathname: pathname || '/',
+            actor: {
+              uid,
+              isAuthenticated,
+            },
+          });
+          emitAdsSlotEvent({
+            slotId: slot,
+            slotKey,
+            eventName: 'ad_impression',
+            pathname: pathname || '/',
+            actor: {
+              uid,
+              isAuthenticated,
+            },
+          });
+        }
+      });
+
+      observer.observe(adElement, {
+        attributes: true,
+        attributeFilter: ['data-ad-status'],
+      });
+    }
+
     if (tryInitialize()) {
       return () => {
         cancelled = true;
+        observer?.disconnect();
       };
     }
 
@@ -84,8 +160,9 @@ export default function AdSenseBlock({
     return () => {
       cancelled = true;
       window.clearInterval(intervalId);
+      observer?.disconnect();
     };
-  }, [slot, slotKey]);
+  }, [slot, slotKey, pathname, uid, isAuthenticated]);
 
   return (
     <div className={className}>

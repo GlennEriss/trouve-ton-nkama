@@ -47,6 +47,7 @@ export const routes = {
         search: '/search',
         search_property: '/search',
         search_with_ia: '/search-with-ia',
+        immobilier: '/immobilier',
         // Nouvelles routes blog et guide
         blog: '/blog',
         blog_tendances_marche: '/blog/tendances-marche-immobilier-gabon-2024',
@@ -66,6 +67,7 @@ export const routes = {
     },
     public_google: {
         homePage: '/',
+        immobilier: '/immobilier',
         search: '/search',
         search_with_ia: '/search-with-ia',
         confidentiality: '/privacy-policy',

@@ -1,11 +1,21 @@
+import { getSiteOrigin } from '@/lib/seo/site-url';
+
 export async function GET() {
+    const siteOrigin = getSiteOrigin();
+
     return new Response(
         `User-agent: *
 Allow: /
 
-Host: https://www.tonnkama.com
+User-agent: OAI-SearchBot
+Allow: /
 
-Sitemap: ${process.env.NEXT_PUBLIC_HOST}/sitemap.xml
+User-agent: GPTBot
+Allow: /
+
+Host: ${siteOrigin}
+
+Sitemap: ${siteOrigin}/sitemap.xml
 `,
         {
             headers: {

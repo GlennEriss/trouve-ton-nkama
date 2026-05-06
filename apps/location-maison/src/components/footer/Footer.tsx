@@ -74,6 +74,15 @@ export default function Footer({ isHide = false }: Readonly<{ isHide?: boolean }
                                 <a href={routes.public.blog} className="hover:underline py-1">Blog</a>
                             </li>
                             <li>
+                                <a href={routes.public.immobilier} className="hover:underline py-1">Immobilier Gabon</a>
+                            </li>
+                            <li>
+                                <a href="/immobilier/location/maison" className="hover:underline py-1">Maisons à louer</a>
+                            </li>
+                            <li>
+                                <a href="/immobilier/vente/maison" className="hover:underline py-1">Maisons à vendre</a>
+                            </li>
+                            <li>
                                 <a href={routes.public.guide_immobilier_gabon} className="hover:underline py-1">Guide Immobilier</a>
                             </li>
                             <li>

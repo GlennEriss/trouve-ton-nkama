@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import React from 'react';
 import Link from 'next/link';
 import { routes } from '@/constantes/routes';
+import { withCanonical } from '@/lib/seo/metadata';
 import { 
   Home, 
   MapPin, 
@@ -32,10 +33,11 @@ import {
   AlertCircle
 } from 'lucide-react';
 
-export const metadata: Metadata = {
+const guideMetadata: Metadata = {
   title: "Guide Immobilier Gabon 2024 - Prix des Loyers par Quartier, Conseils et Démarches | Trouve Ton Nkama",
   description: "Guide complet immobilier Gabon 2024 : prix des loyers par quartier Libreville, Port-Gentil, conseils location, démarches administratives, négociation loyer.",
 };
+export const metadata: Metadata = withCanonical(guideMetadata, '/guide-immobilier-gabon');
 
 export default function GuideImmobilierPage() {
   return (
@@ -326,6 +328,22 @@ export default function GuideImmobilierPage() {
                   <span><strong>Petites améliorations</strong> (peinture, wifi) = valeur locative ↑ immédiatement.</span>
                 </div>
               </div>
+            </div>
+          </div>
+
+          {/* CTA Section */}
+          <div className="bg-white rounded-2xl border border-gray-100 p-6 mb-8 shadow-sm">
+            <h2 className="text-2xl font-bold text-[#146B67] mb-4">Aller plus vite dans vos recherches</h2>
+            <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+              <Link href="/immobilier/location/maison" className="rounded-xl border border-gray-200 px-4 py-3 text-sm font-medium text-gray-700 hover:border-[#146B67] hover:text-[#146B67] transition-colors">
+                Maisons à louer au Gabon
+              </Link>
+              <Link href="/immobilier/vente/maison" className="rounded-xl border border-gray-200 px-4 py-3 text-sm font-medium text-gray-700 hover:border-[#146B67] hover:text-[#146B67] transition-colors">
+                Maisons à vendre au Gabon
+              </Link>
+              <Link href="/immobilier/location/appartement/libreville" className="rounded-xl border border-gray-200 px-4 py-3 text-sm font-medium text-gray-700 hover:border-[#146B67] hover:text-[#146B67] transition-colors">
+                Appartements à louer à Libreville
+              </Link>
             </div>
           </div>
 

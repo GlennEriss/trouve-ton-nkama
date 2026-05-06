@@ -1,53 +1,95 @@
 import { routes } from '@/constantes/routes'
 import { createLogger } from '@/lib/logger'
+import { getSiteOrigin } from '@/lib/seo/site-url';
+import { getPropertyLastModified, listPublicPropertiesForSitemap } from '@/lib/seo/public-listings';
+import {
+  LANDING_CITIES,
+  LANDING_TRANSACTIONS,
+  LANDING_TYPES,
+  getCityLandingPath,
+  getGlobalLandingPath,
+} from '@/lib/seo/landing-taxonomy';
 
 const logger = createLogger('app.sitemap')
+export const revalidate = 3600;
+
+type SitemapEntry = {
+  path: string;
+  lastmod: string;
+  priority?: string;
+};
 
 export async function GET() {
-  const rawBase = process.env.NEXT_PUBLIC_HOST ?? ''
-  const baseUrl = rawBase.replace(/\/$/, '')
+  const baseUrl = getSiteOrigin().replace(/\/$/, '')
 
   // Vérifier que l'URL de base est valide
   if (!baseUrl || !baseUrl.startsWith('http')) {
-    logger.error('NEXT_PUBLIC_HOST invalide', { host: process.env.NEXT_PUBLIC_HOST })
+    logger.error('NEXT_PUBLIC_HOST invalide', { host: baseUrl })
     return new Response('Sitemap non disponible', { status: 500 })
   }
 
-  // Tableau ordonné : home d'abord, puis les autres
-  const pages = [
-    routes.public_google.homePage,          
-    routes.public_google.search,
-    routes.public_google.blog,
-    routes.public_google.blog_tendances_marche,
-    routes.public_google.blog_financement,
-    routes.public_google.blog_commissions_demarcheurs,
-    routes.public_google.blog_structurer_annonces,
-    routes.public_google.blog_proptech,
-    // Nouvelles pages de blog ajoutées
-    routes.public_google.blog_guide_quartiers_libreville,
-    routes.public_google.blog_guide_quartiers_port_gentil,
-    routes.public_google.blog_rentabilite_immobiliere,
-    routes.public_google.blog_actualites_immobilieres,
-    routes.public_google.blog_conseils_negociation,
-    routes.public_google.blog_demarches_administratives,
-    routes.public_google.guide_immobilier_gabon,
-    routes.public_google.confidentiality,
-    routes.public_google.terms_of_use,    
-    routes.public_google.announcer_terms,
-    routes.public.data_deletion,    
-    routes.public.signin,
-    routes.public.signup,
-    routes.public.property,
-  ]
-
   const todayISO = new Date().toISOString()
+  const staticEntries: SitemapEntry[] = [
+    { path: routes.public_google.homePage, lastmod: todayISO, priority: '1.0' },
+    { path: routes.public_google.immobilier, lastmod: todayISO },
+    { path: routes.public_google.search, lastmod: todayISO },
+    { path: routes.public_google.blog, lastmod: todayISO },
+    { path: routes.public_google.blog_tendances_marche, lastmod: todayISO },
+    { path: routes.public_google.blog_financement, lastmod: todayISO },
+    { path: routes.public_google.blog_commissions_demarcheurs, lastmod: todayISO },
+    { path: routes.public_google.blog_structurer_annonces, lastmod: todayISO },
+    { path: routes.public_google.blog_proptech, lastmod: todayISO },
+    { path: routes.public_google.blog_guide_quartiers_libreville, lastmod: todayISO },
+    { path: routes.public_google.blog_guide_quartiers_port_gentil, lastmod: todayISO },
+    { path: routes.public_google.blog_rentabilite_immobiliere, lastmod: todayISO },
+    { path: routes.public_google.blog_actualites_immobilieres, lastmod: todayISO },
+    { path: routes.public_google.blog_conseils_negociation, lastmod: todayISO },
+    { path: routes.public_google.blog_demarches_administratives, lastmod: todayISO },
+    { path: routes.public_google.guide_immobilier_gabon, lastmod: todayISO },
+    { path: routes.public_google.confidentiality, lastmod: todayISO },
+    { path: routes.public_google.terms_of_use, lastmod: todayISO },
+    { path: routes.public_google.announcer_terms, lastmod: todayISO },
+    { path: routes.public.data_deletion, lastmod: todayISO },
+  ];
+
+  const landingEntries: SitemapEntry[] = [];
+  for (const transaction of LANDING_TRANSACTIONS) {
+    for (const type of LANDING_TYPES) {
+      landingEntries.push({
+        path: getGlobalLandingPath(transaction, type),
+        lastmod: todayISO,
+      });
+
+      for (const city of LANDING_CITIES) {
+        landingEntries.push({
+          path: getCityLandingPath(transaction, type, city.slug),
+          lastmod: todayISO,
+        });
+      }
+    }
+  }
+
+  const properties = await listPublicPropertiesForSitemap();
+  const propertyEntries: SitemapEntry[] = properties.map((property) => ({
+    path: `/houseDetails/${property.id}`,
+    lastmod: getPropertyLastModified(property),
+  }));
+
+  const uniqueEntries = new Map<string, SitemapEntry>();
+  for (const entry of [...staticEntries, ...landingEntries, ...propertyEntries]) {
+    if (!uniqueEntries.has(entry.path)) {
+      uniqueEntries.set(entry.path, entry);
+    }
+  }
+
+  const entries = Array.from(uniqueEntries.values());
 
   const sitemap = `<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-${pages
-  .map((path, idx) => `  <url>
-    <loc>${baseUrl}${path}</loc>
-    <lastmod>${todayISO}</lastmod>${idx === 0 ? '\n    <priority>1.0</priority>' : ''}
+${entries
+  .map((entry) => `  <url>
+    <loc>${baseUrl}${entry.path}</loc>
+    <lastmod>${entry.lastmod}</lastmod>${entry.priority ? `\n    <priority>${entry.priority}</priority>` : ''}
   </url>`).join('\n')}
 </urlset>`
 
