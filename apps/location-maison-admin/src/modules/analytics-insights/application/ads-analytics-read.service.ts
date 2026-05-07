@@ -1036,6 +1036,20 @@ periods AS (
     ) AS previous_end_date
   FROM bounds
 ),
+metrics_window AS (
+  SELECT
+    date_key,
+    estimated_earnings,
+    matched_ad_requests,
+    ad_requests,
+    clicks,
+    total_impressions,
+    page_views
+  FROM ${getAdsMetricsDailyTableRef()}
+  -- Required partition filter (date_key) to satisfy BigQuery partition elimination.
+  WHERE date_key BETWEEN DATE_SUB(CURRENT_DATE("UTC"), INTERVAL 120 DAY)
+    AND DATE_SUB(CURRENT_DATE("UTC"), INTERVAL 1 DAY)
+),
 current_agg AS (
   SELECT
     p.period_key,
@@ -1058,7 +1072,7 @@ current_agg AS (
       NULLIF(SUM(IF(m.date_key BETWEEN p.current_start_date AND p.current_end_date, m.page_views, 0)), 0)
     ) AS current_page_views_rpm
   FROM periods p
-  LEFT JOIN ${getAdsMetricsDailyTableRef()} m
+  LEFT JOIN metrics_window m
     ON m.date_key BETWEEN p.current_start_date AND p.current_end_date
     OR m.date_key BETWEEN p.previous_start_date AND p.previous_end_date
   GROUP BY
@@ -1095,7 +1109,7 @@ full_agg AS (
       NULLIF(SUM(IF(m.date_key BETWEEN c.previous_start_date AND c.previous_end_date, m.page_views, 0)), 0)
     ) AS previous_page_views_rpm
   FROM current_agg c
-  LEFT JOIN ${getAdsMetricsDailyTableRef()} m
+  LEFT JOIN metrics_window m
     ON m.date_key BETWEEN c.previous_start_date AND c.previous_end_date
   GROUP BY
     c.period_key,
