@@ -26,6 +26,9 @@ export { createCreditPayment } from './credit-payment';
 // Fonctions d'email
 export { sendVerificationEmail } from './email/verification';
 
+// Fonctions analytics (scheduler)
+export { syncAdSenseToAdminAnalytics } from './analytics/adsense-sync';
+
 // Exemple de fonction (à décommenter si nécessaire)
 // export const helloWorld = onRequest((request, response) => {
 //   logger.info("Hello logs!", {structuredData: true});
