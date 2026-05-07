@@ -10,57 +10,30 @@ import { X, Package, Loader2, CheckCircle, AlertCircle } from 'lucide-react'
 import { useVerifyCode } from '@/hooks/use-verify-code'
 import { useToast } from '@/hooks/use-toast'
 import { createLogger } from '@/lib/logger'
+import { useCreditPacks } from '@/hooks/use-credit-packs'
+import {
+  DEFAULT_CREDIT_PACKS,
+  toUiCreditPack,
+  type CreditPackUi,
+} from '@/lib/credits/credit-packs'
 
 const logger = createLogger('components.purchase-modal')
-
-interface CreditPack {
-  id: string
-  name: string
-  credits: number
-  price: number
-  savings?: number
-}
 
 interface PurchaseModalProps {
   isOpen: boolean
   onClose: () => void
-  preselectedPack?: CreditPack | null
+  preselectedPack?: CreditPackUi | null
 }
 
-const CREDIT_PACKS: CreditPack[] = [
-  {
-    id: 'starter',
-    name: 'Starter',
-    credits: 5,
-    price: 2000
-  },
-  {
-    id: 'standard',
-    name: 'Standard',
-    credits: 10,
-    price: 3500,
-    savings: 12.5
-  },
-  {
-    id: 'advanced',
-    name: 'Avancé',
-    credits: 25,
-    price: 7500,
-    savings: 25
-  },
-  {
-    id: 'premium',
-    name: 'Premium',
-    credits: 50,
-    price: 12500,
-    savings: 37.5
-  }
-]
-
 export default function PurchaseModal({ isOpen, onClose, preselectedPack }: Readonly<PurchaseModalProps>) {
-  const [selectedPack, setSelectedPack] = useState<CreditPack | null>(null)
+  const [selectedPack, setSelectedPack] = useState<CreditPackUi | null>(null)
   const [code, setCode] = useState('')
   const [step, setStep] = useState<'select' | 'instructions' | 'code'>('select')
+  const creditPacksQuery = useCreditPacks()
+  const creditPacks = React.useMemo(() => {
+    const source = creditPacksQuery.data?.packs ?? DEFAULT_CREDIT_PACKS
+    return source.map(toUiCreditPack)
+  }, [creditPacksQuery.data?.packs])
   
   /* const { mutate: purchaseCredits, isPending, isSuccess, isError, error } = useCreditsPurchase() */
   const { 
@@ -91,7 +64,7 @@ export default function PurchaseModal({ isOpen, onClose, preselectedPack }: Read
     }
   }
 
-  const handlePackSelect = (pack: CreditPack) => {
+  const handlePackSelect = (pack: CreditPackUi) => {
     setSelectedPack(pack)
     setStep('instructions')
   }
@@ -142,7 +115,7 @@ export default function PurchaseModal({ isOpen, onClose, preselectedPack }: Read
     onClose()
   }
 
-  const handleKeyDown = (event: React.KeyboardEvent, pack: CreditPack) => {
+  const handleKeyDown = (event: React.KeyboardEvent, pack: CreditPackUi) => {
     if (event.key === 'Enter' || event.key === ' ') {
       event.preventDefault()
       handlePackSelect(pack)
@@ -176,7 +149,7 @@ export default function PurchaseModal({ isOpen, onClose, preselectedPack }: Read
               </p>
               
               <div className="space-y-3">
-                {CREDIT_PACKS.map((pack) => (
+                {creditPacks.map((pack) => (
                   <button
                     key={pack.id}
                     onClick={() => handlePackSelect(pack)}
