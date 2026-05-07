@@ -216,7 +216,10 @@ export default function ListingsDashboardPage() {
     queryFn: () => fetchJson<AuthMePayload>("/api/admin/v1/auth/me", "Impossible de charger les permissions."),
   });
 
-  const permissions = permissionsQuery.data?.admin.permissions ?? [];
+  const permissions = useMemo(
+    () => permissionsQuery.data?.admin.permissions ?? [],
+    [permissionsQuery.data?.admin.permissions],
+  );
 
   const listingsQuery = useQuery({
     queryKey: [
@@ -254,8 +257,10 @@ export default function ListingsDashboardPage() {
         "Impossible de charger les doublons d'annonces.",
       ),
   });
+  const nextCursor = listingsQuery.data?.page.nextCursor ?? null;
 
   const canEditListing = useMemo(() => hasPermission(permissions, "listings.update"), [permissions]);
+  const canExportListings = useMemo(() => hasPermission(permissions, "listings.export"), [permissions]);
   const canArchiveListing = useMemo(() => hasPermission(permissions, "listings.reject"), [permissions]);
   const canRestoreListing = useMemo(() => hasPermission(permissions, "listings.approve"), [permissions]);
 
@@ -282,12 +287,12 @@ export default function ListingsDashboardPage() {
   }, []);
 
   const onNextPage = useCallback(() => {
-    if (!listingsQuery.data?.page.nextCursor) {
+    if (!nextCursor) {
       return;
     }
     setCursorHistory((previous) => [...previous, cursor ?? ""]);
-    setCursor(listingsQuery.data.page.nextCursor);
-  }, [cursor, listingsQuery.data?.page.nextCursor]);
+    setCursor(nextCursor);
+  }, [cursor, nextCursor]);
 
   const onPreviousPage = useCallback(() => {
     if (cursorHistory.length === 0) {
@@ -302,6 +307,26 @@ export default function ListingsDashboardPage() {
     void listingsQuery.refetch();
     void duplicatesQuery.refetch();
   }, [duplicatesQuery, listingsQuery]);
+
+  const exportCsv = useCallback(() => {
+    if (!canExportListings) {
+      setGlobalError("Permission manquante : listings.export");
+      return;
+    }
+
+    const params = new URLSearchParams();
+    if (queryApplied) params.set("query", queryApplied);
+    if (status !== "all") params.set("status", status);
+    if (state !== "all") params.set("state", state);
+    if (createdByApplied) params.set("createdBy", createdByApplied);
+
+    const queryString = params.toString();
+    const target = queryString
+      ? `/api/admin/v1/listings/export?${queryString}`
+      : "/api/admin/v1/listings/export";
+
+    window.location.assign(target);
+  }, [canExportListings, createdByApplied, queryApplied, state, status]);
 
   const changeListingState = useCallback(
     async (listing: ListingRow, nextState: "IN_PROGRESS" | "ARCHIVED") => {
@@ -418,9 +443,19 @@ export default function ListingsDashboardPage() {
         title="Gestion des annonces"
         description="Lister, filtrer, rechercher, modifier, changer l'état et détecter les doublons."
         actions={
-          <Button type="button" variant="outline" onClick={refreshAll} disabled={listingsQuery.isFetching}>
-            Actualiser
-          </Button>
+          <div className="flex items-center gap-2">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={exportCsv}
+              disabled={!canExportListings}
+            >
+              Export CSV
+            </Button>
+            <Button type="button" variant="outline" onClick={refreshAll} disabled={listingsQuery.isFetching}>
+              Actualiser
+            </Button>
+          </div>
         }
       />
 
