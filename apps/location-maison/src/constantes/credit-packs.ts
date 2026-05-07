@@ -1,10 +1,7 @@
-import { type CreditPack } from "@/models/credit-transaction";
-import { DEFAULT_CREDIT_PACKS } from "@/lib/credits/credit-packs";
+import { type CreditPack } from '@/models/credit-transaction'
 
-export const CREDIT_PACKS: CreditPack[] = DEFAULT_CREDIT_PACKS.map((pack) => ({
-  id: pack.id,
-  name: pack.name,
-  credits: pack.credits,
-  price: pack.price,
-  savings: pack.savings,
-}));
+/**
+ * Deprecated: les packs doivent désormais venir de la collection Firestore `credit_packs`
+ * pilotée par le dashboard admin.
+ */
+export const CREDIT_PACKS: CreditPack[] = []

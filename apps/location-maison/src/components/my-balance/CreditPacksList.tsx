@@ -6,7 +6,6 @@ import CreditPackCard from './CreditPackCard'
 import Image from 'next/image'
 import { useCreditPacks } from '@/hooks/use-credit-packs'
 import {
-  DEFAULT_CREDIT_PACKS,
   toUiCreditPack,
   type CreditPackUi,
 } from '@/lib/credits/credit-packs'
@@ -31,7 +30,7 @@ const paymentMethods = [
 export default function CreditPacksList({ onOpenModal, onPackSelect }: Readonly<CreditPacksListProps>) {
   const creditPacksQuery = useCreditPacks()
   const creditPacks = React.useMemo(() => {
-    const source = creditPacksQuery.data?.packs ?? DEFAULT_CREDIT_PACKS
+    const source = creditPacksQuery.data?.packs ?? []
     return source.map(toUiCreditPack)
   }, [creditPacksQuery.data?.packs])
 
@@ -63,9 +62,9 @@ export default function CreditPacksList({ onOpenModal, onPackSelect }: Readonly<
             <p>Recharge actuellement manuelle: contactez le support WhatsApp après dépôt pour créditement du compte.</p>
           </div>
         </div>
-        {creditPacksQuery.data?.source === 'defaults' ? (
-          <p className="text-xs text-amber-700 dark:text-amber-300">
-            Affichage des packs par défaut (configuration admin indisponible temporairement).
+        {creditPacksQuery.isError ? (
+          <p className="text-xs text-red-700 dark:text-red-300">
+            Impossible de charger les packs admin pour le moment.
           </p>
         ) : null}
       </div>
@@ -81,6 +80,11 @@ export default function CreditPacksList({ onOpenModal, onPackSelect }: Readonly<
           />
         ))}
       </div>
+      {!creditPacksQuery.isFetching && creditPacks.length === 0 ? (
+        <div className="rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-800 dark:border-amber-800 dark:bg-amber-950/30 dark:text-amber-200">
+          Aucun pack actif n&apos;est configuré dans le dashboard admin.
+        </div>
+      ) : null}
 
       {/* Info Section */}
       <div className="bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 border border-blue-200 dark:border-blue-800 rounded-2xl p-4 md:p-6">

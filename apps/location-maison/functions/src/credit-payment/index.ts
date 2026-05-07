@@ -18,33 +18,6 @@ type RawCreditPackDoc = {
   order?: unknown;
 };
 
-const DEFAULT_CREDIT_PACKS: ManualCreditPack[] = [
-  {
-    id: 'starter',
-    amount: 2000,
-    name: 'Starter',
-    credits: 5
-  },
-  {
-    id: 'standard',
-    amount: 3500,
-    name: 'Standard',
-    credits: 10
-  },
-  {
-    id: 'advanced',
-    amount: 7500,
-    name: 'Avancé',
-    credits: 25
-  },
-  {
-    id: 'premium',
-    amount: 12500,
-    name: 'Premium',
-    credits: 50
-  }
-];
-
 interface CreditPaymentRequest {
   phoneNumber: string;
   amount: number;
@@ -78,39 +51,24 @@ function toFiniteNumber(value: unknown, fallback: number) {
   return fallback;
 }
 
-function sortPacks(packs: ManualCreditPack[]) {
-  return [...packs].sort((left, right) => left.amount - right.amount);
-}
-
 async function loadActiveCreditPacks(): Promise<ManualCreditPack[]> {
-  try {
-    const snapshot = await adminDB.collection('credit_packs').orderBy('order', 'asc').get();
-    const packs = snapshot.docs
-      .map((doc) => {
-        const data = doc.data() as RawCreditPackDoc;
-        const isActive = typeof data.isActive === 'boolean' ? data.isActive : true;
-        if (!isActive) {
-          return null;
-        }
+  const snapshot = await adminDB.collection('credit_packs').orderBy('order', 'asc').get();
+  return snapshot.docs
+    .map((doc) => {
+      const data = doc.data() as RawCreditPackDoc;
+      const isActive = typeof data.isActive === 'boolean' ? data.isActive : true;
+      if (!isActive) {
+        return null;
+      }
 
-        return {
-          id: toTrimmedString(doc.id) ?? doc.id,
-          name: toTrimmedString(data.name) ?? doc.id,
-          credits: Math.max(1, Math.trunc(toFiniteNumber(data.credits, 1))),
-          amount: Math.max(0, Math.round(toFiniteNumber(data.price, 0))),
-        } satisfies ManualCreditPack;
-      })
-      .filter((pack): pack is ManualCreditPack => Boolean(pack));
-
-    if (packs.length === 0) {
-      return sortPacks(DEFAULT_CREDIT_PACKS);
-    }
-
-    return sortPacks(packs);
-  } catch (error) {
-    console.error('Impossible de charger les packs dynamiques, fallback défaut.', error);
-    return sortPacks(DEFAULT_CREDIT_PACKS);
-  }
+      return {
+        id: toTrimmedString(doc.id) ?? doc.id,
+        name: toTrimmedString(data.name) ?? doc.id,
+        credits: Math.max(1, Math.trunc(toFiniteNumber(data.credits, 1))),
+        amount: Math.max(0, Math.round(toFiniteNumber(data.price, 0))),
+      } satisfies ManualCreditPack;
+    })
+    .filter((pack): pack is ManualCreditPack => Boolean(pack));
 }
 
 // Initialisation du client Twilio (commenté pour l'instant)
@@ -178,6 +136,14 @@ export const createCreditPayment = onRequest(async (req, res) => {
     // Valider le montant
     if (!Number.isFinite(normalizedAmount) || normalizedAmount <= 0) {
       res.status(400).json({ success: false, message: 'Montant invalide' });
+      return;
+    }
+
+    if (creditPacks.length === 0) {
+      res.status(503).json({
+        success: false,
+        message: 'Aucun pack de crédits actif n\'est configuré actuellement.',
+      });
       return;
     }
 

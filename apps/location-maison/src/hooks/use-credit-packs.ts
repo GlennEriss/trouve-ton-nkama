@@ -12,7 +12,7 @@ import type { CreditPackData } from '@/lib/credits/credit-packs'
 interface CreditPacksResponse {
   success: boolean
   packs: CreditPackData[]
-  source: 'firestore' | 'defaults'
+  source: 'firestore'
   message: string
   error?: string
 }

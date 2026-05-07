@@ -5,14 +5,14 @@
 
 import { NextRequest, NextResponse } from 'next/server'
 import { createLogger } from '@/lib/logger'
-import { DEFAULT_CREDIT_PACKS, type CreditPackData } from '@/lib/credits/credit-packs'
+import { type CreditPackData } from '@/lib/credits/credit-packs'
 
 const logger = createLogger('api.credits.packs')
 
 interface CreditPacksResponse {
   success: boolean
   packs: CreditPackData[]
-  source: 'firestore' | 'defaults'
+  source: 'firestore'
   message: string
   error?: string
 }
@@ -86,19 +86,11 @@ function sortPacks(packs: CreditPackData[]) {
   })
 }
 
-function activePacksOrDefaults(packs: CreditPackData[]): {
+function activePacks(packs: CreditPackData[]): {
   packs: CreditPackData[]
-  source: 'firestore' | 'defaults'
+  source: 'firestore'
 } {
   const active = packs.filter((pack) => pack.isActive !== false)
-
-  if (active.length === 0) {
-    return {
-      packs: sortPacks(DEFAULT_CREDIT_PACKS),
-      source: 'defaults',
-    }
-  }
-
   return {
     packs: sortPacks(active),
     source: 'firestore',
@@ -118,7 +110,7 @@ export async function GET(request: NextRequest): Promise<NextResponse<CreditPack
         {
           success: false,
           packs: [],
-          source: 'defaults',
+          source: 'firestore',
           message: "Token d'authentification requis",
         },
         { status: 401 }
@@ -129,31 +121,31 @@ export async function GET(request: NextRequest): Promise<NextResponse<CreditPack
     await adminAuth.verifyIdToken(token)
 
     const db = getFirestore()
-    const snapshot = await db.collection('credit_packs').orderBy('order', 'asc').get()
+    const snapshot = await db.collection('credit_packs').get()
     const mapped = snapshot.docs.map((doc) => mapPack(doc.id, doc.data() as RawCreditPackDoc))
-    const result = activePacksOrDefaults(mapped)
+    const result = activePacks(mapped)
 
     return NextResponse.json({
       success: true,
       packs: result.packs,
       source: result.source,
       message:
-        result.source === 'firestore'
+        result.packs.length > 0
           ? 'Packs chargés depuis la configuration admin'
-          : 'Aucun pack actif trouvé, packs par défaut utilisés',
+          : 'Aucun pack actif configuré côté admin',
     })
   } catch (error: any) {
     logger.error('Credit packs API failed', { error })
 
     return NextResponse.json(
       {
-        success: true,
-        packs: sortPacks(DEFAULT_CREDIT_PACKS),
-        source: 'defaults',
-        message: 'Impossible de charger les packs dynamiques, packs par défaut utilisés',
+        success: false,
+        packs: [],
+        source: 'firestore',
+        message: 'Impossible de charger les packs dynamiques',
         error: process.env.NODE_ENV === 'development' ? error?.message : undefined,
       },
-      { status: 200 }
+      { status: 500 }
     )
   }
 }

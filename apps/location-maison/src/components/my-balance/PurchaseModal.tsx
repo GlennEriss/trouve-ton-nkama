@@ -12,7 +12,6 @@ import { useToast } from '@/hooks/use-toast'
 import { createLogger } from '@/lib/logger'
 import { useCreditPacks } from '@/hooks/use-credit-packs'
 import {
-  DEFAULT_CREDIT_PACKS,
   toUiCreditPack,
   type CreditPackUi,
 } from '@/lib/credits/credit-packs'
@@ -31,7 +30,7 @@ export default function PurchaseModal({ isOpen, onClose, preselectedPack }: Read
   const [step, setStep] = useState<'select' | 'instructions' | 'code'>('select')
   const creditPacksQuery = useCreditPacks()
   const creditPacks = React.useMemo(() => {
-    const source = creditPacksQuery.data?.packs ?? DEFAULT_CREDIT_PACKS
+    const source = creditPacksQuery.data?.packs ?? []
     return source.map(toUiCreditPack)
   }, [creditPacksQuery.data?.packs])
   
@@ -184,6 +183,11 @@ export default function PurchaseModal({ isOpen, onClose, preselectedPack }: Read
                   </button>
                 ))}
               </div>
+              {!creditPacksQuery.isFetching && creditPacks.length === 0 ? (
+                <p className="text-sm text-amber-700 dark:text-amber-300 text-center">
+                  Aucun pack actif n&apos;est configuré côté admin.
+                </p>
+              ) : null}
             </div>
           )}
 

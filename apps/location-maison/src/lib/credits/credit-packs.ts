@@ -48,7 +48,7 @@ const PACK_UI_CONFIG: Record<
   },
 }
 
-export const DEFAULT_CREDIT_PACKS: CreditPackData[] = [
+export const ADMIN_PACKS_TEMPLATE: CreditPackData[] = [
   {
     id: 'starter',
     name: 'Starter',

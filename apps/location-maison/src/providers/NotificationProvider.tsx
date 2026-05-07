@@ -2,7 +2,7 @@
 
 import React, { createContext, useContext, useEffect, useState, useMemo } from "react";
 import { Notification } from "@/models/notification";
-import { collection, query, where, onSnapshot, doc, updateDoc, Timestamp, orderBy, limit, Query, QuerySnapshot, DocumentData } from 'firebase/firestore';
+import { collection, query, where, onSnapshot, doc, updateDoc, Timestamp, orderBy, limit, QuerySnapshot, DocumentData } from 'firebase/firestore';
 import { useCurrentUser } from "@/hooks/use-current-user";
 import { db } from "@/firebase/firestore";
 import { createLogger } from '@/lib/logger';
@@ -39,26 +39,14 @@ export function NotificationProvider({ children }: Readonly<{ children: React.Re
         return [...unreadNotifications, ...filteredRecent];
     };
 
-    // Callback pour traiter les notifications récentes
-    const handleRecentSnapshot = (unreadNotifications: Notification[]) => {
-        return (snapshot: QuerySnapshot<DocumentData, DocumentData>) => {
-            const recentNotifications = mapDocumentsToNotifications(snapshot);
-            const allNotifications = mergeNotifications(unreadNotifications, recentNotifications);
-            setNotifications(allNotifications);
-        };
-    };
-
-    // Callback pour traiter les notifications non lues
-    const handleUnreadSnapshot = (recentQuery: Query<DocumentData, DocumentData>) => {
-        return (snapshot: QuerySnapshot<DocumentData, DocumentData>) => {
-            const unreadNotifications = mapDocumentsToNotifications(snapshot);
-            return onSnapshot(recentQuery, handleRecentSnapshot(unreadNotifications));
-        };
-    };
-
     // Récupération des notifications en temps réel
     useEffect(() => {
-        if (!user) return;
+        const uid = user?.uid?.trim();
+        if (!uid) {
+            setNotifications([]);
+            setUnreadCount(0);
+            return;
+        }
     
         // Calcul de la date limite (7 jours en arrière)
         const sevenDaysAgo = Timestamp.fromDate(new Date(Date.now() - 7 * 24 * 60 * 60 * 1000));
@@ -66,7 +54,7 @@ export function NotificationProvider({ children }: Readonly<{ children: React.Re
         // Requête 1 : Récupérer uniquement les notifications non lues
         const unreadQuery = query(
             collection(db, "notifications"),
-            where("createdFor", "==", user.uid),
+            where("createdFor", "==", uid),
             where("isRead", "==", false),
             orderBy("createdAt", "desc"),
             limit(50)
@@ -75,24 +63,47 @@ export function NotificationProvider({ children }: Readonly<{ children: React.Re
         // Requête 2 : Récupérer les notifications des 7 derniers jours
         const recentQuery = query(
             collection(db, "notifications"),
-            where("createdFor", "==", user.uid),
+            where("createdFor", "==", uid),
             where("createdAt", ">=", sevenDaysAgo),
             orderBy("createdAt", "desc"),
             limit(50)
         );
     
         // Exécuter les requêtes avec gestion d'erreur
+        let unreadNotifications: Notification[] = [];
+        let recentNotifications: Notification[] = [];
+        const syncNotifications = () => {
+            setNotifications(mergeNotifications(unreadNotifications, recentNotifications));
+        };
         let unsubscribeUnread: (() => void) | undefined;
+        let unsubscribeRecent: (() => void) | undefined;
         
         try {
             unsubscribeUnread = onSnapshot(
                 unreadQuery, 
-                handleUnreadSnapshot(recentQuery),
+                (snapshot) => {
+                    unreadNotifications = mapDocumentsToNotifications(snapshot);
+                    syncNotifications();
+                },
                 (error) => {
                     logger.warn("Erreur lors de l'écoute des notifications non lues", { error });
                     // En cas d'erreur de permission, on arrête d'écouter
                     if (error.code === 'permission-denied') {
                         logger.warn("Permissions insuffisantes pour les notifications");
+                    }
+                }
+            );
+
+            unsubscribeRecent = onSnapshot(
+                recentQuery,
+                (snapshot) => {
+                    recentNotifications = mapDocumentsToNotifications(snapshot);
+                    syncNotifications();
+                },
+                (error) => {
+                    logger.warn("Erreur lors de l'écoute des notifications récentes", { error });
+                    if (error.code === 'permission-denied') {
+                        logger.warn("Permissions insuffisantes pour les notifications récentes");
                     }
                 }
             );
@@ -104,8 +115,11 @@ export function NotificationProvider({ children }: Readonly<{ children: React.Re
             if (unsubscribeUnread) {
                 unsubscribeUnread();
             }
+            if (unsubscribeRecent) {
+                unsubscribeRecent();
+            }
         };
-    }, [user]);
+    }, [user?.uid]);
 
     // Mise à jour du nombre de notifications non lues
     useEffect(() => {
