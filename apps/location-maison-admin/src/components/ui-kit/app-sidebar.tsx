@@ -5,6 +5,7 @@ import {
   Activity,
   BarChart3,
   Building2,
+  CopyCheck,
   Home,
   ListChecks,
   Shield,
@@ -37,6 +38,7 @@ const navItems = [
   { href: "/dashboard/users", label: "Utilisateurs", icon: Users },
   { href: "/dashboard/announcers", label: "Annonceurs", icon: Building2 },
   { href: "/dashboard/listings", label: "Annonces", icon: ListChecks },
+  { href: "/dashboard/listings/duplicates", label: "Doublons annonces", icon: CopyCheck },
   { href: "/dashboard/finance", label: "Finance crédits", icon: Wallet },
 ];
 

@@ -91,10 +91,45 @@ export type UpdateListingInput = {
   };
 };
 
+export type UpdateListingResult = {
+  before: ListingDetails;
+  after: ListingDetails;
+  patch: Record<string, unknown>;
+};
+
 export type UpdateListingStateInput = {
   propertyId: string;
   actorUid: string;
   state: "IN_PROGRESS" | "ARCHIVED";
+};
+
+export type UpdateListingStateResult = {
+  before: ListingDetails;
+  after: ListingDetails;
+};
+
+export type BulkUpdateListingStateInput = {
+  propertyIds: string[];
+  actorUid: string;
+  state: "IN_PROGRESS" | "ARCHIVED";
+};
+
+export type BulkUpdateListingStateResult = {
+  state: "IN_PROGRESS" | "ARCHIVED";
+  requestedCount: number;
+  updatedCount: number;
+  notFoundCount: number;
+  failedCount: number;
+  updated: Array<{
+    id: string;
+    beforeState: string | null;
+    afterState: string | null;
+  }>;
+  notFoundIds: string[];
+  failed: Array<{
+    id: string;
+    reason: string;
+  }>;
 };
 
 export type ListingDuplicateItem = {
@@ -110,20 +145,78 @@ export type ListingDuplicateItem = {
   createdAt: string | null;
 };
 
+export type ListingDuplicateReason = "same_signature" | "same_primary_image";
+
+export type ListingDuplicateResolutionAction =
+  | "not_duplicate"
+  | "confirm_duplicate"
+  | "archive_target"
+  | "needs_review";
+
+export type ListingDuplicateResolution = {
+  action: ListingDuplicateResolutionAction;
+  note: string | null;
+  targetListingId: string | null;
+  actorUid: string;
+  actorRoles: string[];
+  reviewedAt: string | null;
+};
+
 export type ListingDuplicateGroup = {
+  clusterId: string;
   fingerprint: string;
-  reason: "same_signature" | "same_primary_image";
+  reason: ListingDuplicateReason;
   confidence: number;
   listings: ListingDuplicateItem[];
+  resolution: ListingDuplicateResolution | null;
 };
 
 export type ListListingDuplicateGroupsInput = {
   limit: number;
   minGroupSize: number;
+  includeResolved?: boolean;
 };
 
 export type ListListingDuplicateGroupsResult = {
   groups: ListingDuplicateGroup[];
   scanned: number;
   returned: number;
+  resolvedCount: number;
+  unresolvedCount: number;
+};
+
+export type GetListingDuplicateClusterInput = {
+  clusterId: string;
+  limit: number;
+  minGroupSize: number;
+};
+
+export type GetListingDuplicateClusterResult = {
+  cluster: ListingDuplicateGroup;
+  scanned: number;
+};
+
+export type ResolveListingDuplicateClusterInput = {
+  clusterId: string;
+  action: ListingDuplicateResolutionAction;
+  actorUid: string;
+  actorRoles: string[];
+  note?: string | null;
+  targetListingId?: string | null;
+  limit: number;
+  minGroupSize: number;
+};
+
+export type ResolveListingDuplicateClusterResult = {
+  cluster: ListingDuplicateGroup;
+  action: ListingDuplicateResolutionAction;
+  archivedListingId: string | null;
+  previousTargetState: string | null;
+  nextTargetState: string | null;
+};
+
+export type RecomputeListingDuplicateGroupsInput = {
+  limit: number;
+  minGroupSize: number;
+  includeResolved?: boolean;
 };

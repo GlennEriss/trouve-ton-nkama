@@ -66,35 +66,52 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
     );
   }
 
-  const updated = await updateListingState({
-    propertyId,
-    actorUid: auth.admin.uid,
-    state: parsed.data.state,
-  });
+  try {
+    const mutation = await updateListingState({
+      propertyId,
+      actorUid: auth.admin.uid,
+      state: parsed.data.state,
+    });
 
-  if (!updated) {
+    if (!mutation) {
+      return jsonError(
+        {
+          code: "NOT_FOUND",
+          message: "Annonce introuvable.",
+        },
+        404,
+        auth.correlationId,
+      );
+    }
+
+    await logAudit({
+      actorId: auth.admin.uid,
+      actorRoles: auth.admin.roles,
+      action: requiredPermission,
+      resource: "property",
+      resourceId: propertyId,
+      status: "success",
+      correlationId: auth.correlationId,
+      diff: {
+        requestedState: parsed.data.state,
+        beforeState: mutation.before.state,
+        afterState: mutation.after.state,
+      },
+      details: {
+        beforeStatus: mutation.before.status,
+        afterStatus: mutation.after.status,
+      },
+    });
+
+    return jsonSuccess({ listing: mutation.after }, auth.correlationId);
+  } catch (error) {
     return jsonError(
       {
-        code: "NOT_FOUND",
-        message: "Annonce introuvable.",
+        code: "INTERNAL_ERROR",
+        message: error instanceof Error ? error.message : "Impossible de mettre à jour l'état de l'annonce.",
       },
-      404,
+      500,
       auth.correlationId,
     );
   }
-
-  await logAudit({
-    actorId: auth.admin.uid,
-    actorRoles: auth.admin.roles,
-    action: requiredPermission,
-    resource: "property",
-    resourceId: propertyId,
-    status: "success",
-    correlationId: auth.correlationId,
-    diff: {
-      state: parsed.data.state,
-    },
-  });
-
-  return jsonSuccess({ listing: updated }, auth.correlationId);
 }

@@ -1,4 +1,10 @@
+import { createHash } from "node:crypto";
+
 import type {
+  BulkUpdateListingStateInput,
+  BulkUpdateListingStateResult,
+  GetListingDuplicateClusterInput,
+  GetListingDuplicateClusterResult,
   ListListingDuplicateGroupsInput,
   ListListingDuplicateGroupsResult,
   ListListingsInput,
@@ -6,10 +12,17 @@ import type {
   ListingDetails,
   ListingDuplicateGroup,
   ListingDuplicateItem,
+  ListingDuplicateReason,
+  ListingDuplicateResolutionAction,
+  RecomputeListingDuplicateGroupsInput,
+  ResolveListingDuplicateClusterInput,
+  ResolveListingDuplicateClusterResult,
   ListingStateFilter,
   ListingStatusFilter,
   UpdateListingInput,
+  UpdateListingResult,
   UpdateListingStateInput,
+  UpdateListingStateResult,
 } from "@/modules/listing-management/domain/types";
 import {
   getPropertyById,
@@ -17,6 +30,10 @@ import {
   patchPropertyById,
   patchPropertyState,
 } from "@/modules/listing-management/infrastructure/listing.repository";
+import {
+  listDuplicateReviewRecordsByClusterIds,
+  upsertDuplicateReviewRecord,
+} from "@/modules/listing-management/infrastructure/listing-duplicate-review.repository";
 
 const MAX_SCAN_PAGES = 60;
 const MIN_SCAN_LIMIT = 40;
@@ -194,10 +211,22 @@ function toDuplicateItem(details: ListingDetails): ListingDuplicateItem {
   };
 }
 
+function buildDuplicateClusterId(reason: ListingDuplicateReason, fingerprint: string) {
+  const hash = createHash("sha1")
+    .update(`${reason}|${fingerprint}`)
+    .digest("hex")
+    .slice(0, 24);
+  return `dup_${hash}`;
+}
+
+function isResolvedDuplicateAction(action: ListingDuplicateResolutionAction) {
+  return action === "not_duplicate" || action === "confirm_duplicate" || action === "archive_target";
+}
+
 function pushGroupedDuplicates(
   groups: ListingDuplicateGroup[],
   map: Map<string, ListingDuplicateItem[]>,
-  reason: "same_signature" | "same_primary_image",
+  reason: ListingDuplicateReason,
   minGroupSize: number,
 ) {
   for (const [fingerprint, items] of map.entries()) {
@@ -207,12 +236,36 @@ function pushGroupedDuplicates(
 
     const confidence = reason === "same_signature" ? Math.min(99, 55 + items.length * 10) : Math.min(94, 45 + items.length * 8);
     groups.push({
+      clusterId: "",
       fingerprint,
       reason,
       confidence,
       listings: items,
+      resolution: null,
     });
   }
+}
+
+async function hydrateDuplicateGroupsWithReviews(
+  groups: ListingDuplicateGroup[],
+): Promise<ListingDuplicateGroup[]> {
+  if (!groups.length) {
+    return [];
+  }
+
+  const clusterIds = groups.map((group) => buildDuplicateClusterId(group.reason, group.fingerprint));
+  const reviewMap = await listDuplicateReviewRecordsByClusterIds(clusterIds);
+
+  return groups.map((group) => {
+    const clusterId = buildDuplicateClusterId(group.reason, group.fingerprint);
+    const review = reviewMap.get(clusterId);
+
+    return {
+      ...group,
+      clusterId,
+      resolution: review?.resolution ?? null,
+    };
+  });
 }
 
 export async function listListings(input: ListListingsInput): Promise<ListListingsResult> {
@@ -332,7 +385,7 @@ export async function getListingDetails(propertyId: string) {
   return getPropertyById(propertyId);
 }
 
-export async function updateListing(input: UpdateListingInput) {
+export async function updateListing(input: UpdateListingInput): Promise<UpdateListingResult | null> {
   const existing = await getPropertyById(input.propertyId);
   if (!existing) {
     return null;
@@ -340,21 +393,97 @@ export async function updateListing(input: UpdateListingInput) {
 
   const patch = normalizePatch(input.patch);
   if (Object.keys(patch).length === 0) {
-    return existing;
+    return {
+      before: existing,
+      after: existing,
+      patch,
+    };
   }
 
   await patchPropertyById(input.propertyId, patch);
-  return getPropertyById(input.propertyId);
+  const updated = await getPropertyById(input.propertyId);
+  if (!updated) {
+    throw new Error("LISTING_UPDATE_FAILED");
+  }
+
+  return {
+    before: existing,
+    after: updated,
+    patch,
+  };
 }
 
-export async function updateListingState(input: UpdateListingStateInput) {
+export async function updateListingState(
+  input: UpdateListingStateInput,
+): Promise<UpdateListingStateResult | null> {
   const existing = await getPropertyById(input.propertyId);
   if (!existing) {
     return null;
   }
 
   await patchPropertyState(input.propertyId, input.state);
-  return getPropertyById(input.propertyId);
+  const updated = await getPropertyById(input.propertyId);
+  if (!updated) {
+    throw new Error("LISTING_UPDATE_FAILED");
+  }
+
+  return {
+    before: existing,
+    after: updated,
+  };
+}
+
+export async function bulkUpdateListingState(
+  input: BulkUpdateListingStateInput,
+): Promise<BulkUpdateListingStateResult> {
+  const uniqueIds = Array.from(
+    new Set(
+      input.propertyIds
+        .map((value) => value.trim())
+        .filter((value) => value.length > 0),
+    ),
+  );
+
+  const updated: BulkUpdateListingStateResult["updated"] = [];
+  const notFoundIds: string[] = [];
+  const failed: BulkUpdateListingStateResult["failed"] = [];
+
+  for (const propertyId of uniqueIds) {
+    try {
+      const result = await updateListingState({
+        propertyId,
+        actorUid: input.actorUid,
+        state: input.state,
+      });
+
+      if (!result) {
+        notFoundIds.push(propertyId);
+        continue;
+      }
+
+      updated.push({
+        id: propertyId,
+        beforeState: result.before.state,
+        afterState: result.after.state,
+      });
+    } catch (error) {
+      failed.push({
+        id: propertyId,
+        reason: error instanceof Error ? error.message : "LISTING_BULK_STATE_FAILED",
+      });
+    }
+  }
+
+  return {
+    state: input.state,
+    requestedCount: uniqueIds.length,
+    updatedCount: updated.length,
+    notFoundCount: notFoundIds.length,
+    failedCount: failed.length,
+    updated,
+    notFoundIds,
+    failed,
+  };
 }
 
 export async function listListingDuplicateGroups(
@@ -362,6 +491,7 @@ export async function listListingDuplicateGroups(
 ): Promise<ListListingDuplicateGroupsResult> {
   const safeLimit = Math.max(50, Math.min(4000, input.limit));
   const minGroupSize = Math.max(2, Math.min(10, input.minGroupSize));
+  const includeResolved = input.includeResolved ?? true;
 
   const page = await listPropertiesRawPage({
     limit: safeLimit,
@@ -400,9 +530,138 @@ export async function listListingDuplicateGroups(
     return b.confidence - a.confidence;
   });
 
+  const hydratedGroups = await hydrateDuplicateGroupsWithReviews(groups);
+  const resolvedCount = hydratedGroups.filter(
+    (group) =>
+      group.resolution && isResolvedDuplicateAction(group.resolution.action),
+  ).length;
+  const unresolvedCount = hydratedGroups.length - resolvedCount;
+  const visibleGroups = includeResolved
+    ? hydratedGroups
+    : hydratedGroups.filter(
+        (group) =>
+          !group.resolution ||
+          !isResolvedDuplicateAction(group.resolution.action),
+      );
+
   return {
-    groups,
+    groups: visibleGroups,
     scanned: page.rows.length,
-    returned: groups.length,
+    returned: visibleGroups.length,
+    resolvedCount,
+    unresolvedCount,
   };
+}
+
+export async function getListingDuplicateCluster(
+  input: GetListingDuplicateClusterInput,
+): Promise<GetListingDuplicateClusterResult | null> {
+  const clusterId = input.clusterId.trim();
+  if (!clusterId) {
+    return null;
+  }
+
+  const listingDuplicateGroups = await listListingDuplicateGroups({
+    limit: input.limit,
+    minGroupSize: input.minGroupSize,
+    includeResolved: true,
+  });
+  const cluster = listingDuplicateGroups.groups.find(
+    (group) => group.clusterId === clusterId,
+  );
+
+  if (!cluster) {
+    return null;
+  }
+
+  return {
+    cluster,
+    scanned: listingDuplicateGroups.scanned,
+  };
+}
+
+export async function resolveListingDuplicateCluster(
+  input: ResolveListingDuplicateClusterInput,
+): Promise<ResolveListingDuplicateClusterResult | null> {
+  const duplicateCluster = await getListingDuplicateCluster({
+    clusterId: input.clusterId,
+    limit: input.limit,
+    minGroupSize: input.minGroupSize,
+  });
+
+  if (!duplicateCluster) {
+    return null;
+  }
+
+  const cluster = duplicateCluster.cluster;
+  const note = input.note?.trim() || null;
+
+  let archivedListingId: string | null = null;
+  let previousTargetState: string | null = null;
+  let nextTargetState: string | null = null;
+
+  if (input.action === "archive_target") {
+    const targetListingId = input.targetListingId?.trim();
+    if (!targetListingId) {
+      throw new Error("LISTING_DUPLICATE_TARGET_REQUIRED");
+    }
+
+    const isTargetInCluster = cluster.listings.some(
+      (listing) => listing.id === targetListingId,
+    );
+    if (!isTargetInCluster) {
+      throw new Error("LISTING_DUPLICATE_TARGET_NOT_IN_CLUSTER");
+    }
+
+    const mutation = await updateListingState({
+      propertyId: targetListingId,
+      actorUid: input.actorUid,
+      state: "ARCHIVED",
+    });
+
+    if (!mutation) {
+      throw new Error("LISTING_DUPLICATE_TARGET_NOT_FOUND");
+    }
+
+    archivedListingId = targetListingId;
+    previousTargetState = mutation.before.state;
+    nextTargetState = mutation.after.state;
+  }
+
+  const reviewRecord = await upsertDuplicateReviewRecord({
+    clusterId: cluster.clusterId,
+    fingerprint: cluster.fingerprint,
+    reason: cluster.reason,
+    listingIds: cluster.listings.map((listing) => listing.id),
+    action: input.action,
+    note,
+    targetListingId: input.action === "archive_target" ? archivedListingId : null,
+    actorUid: input.actorUid,
+    actorRoles: input.actorRoles,
+  });
+
+  if (!reviewRecord) {
+    throw new Error("LISTING_DUPLICATE_REVIEW_WRITE_FAILED");
+  }
+
+  return {
+    cluster: {
+      ...cluster,
+      resolution: reviewRecord.resolution,
+    },
+    action: input.action,
+    archivedListingId,
+    previousTargetState,
+    nextTargetState,
+  };
+}
+
+export async function recomputeListingDuplicateGroups(
+  input: RecomputeListingDuplicateGroupsInput,
+) {
+  return listListingDuplicateGroups({
+    limit: input.limit,
+    minGroupSize: input.minGroupSize,
+    includeResolved: input.includeResolved,
+  });
 }

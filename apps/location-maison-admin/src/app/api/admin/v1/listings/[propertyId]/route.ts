@@ -49,6 +49,28 @@ type RouteContext = {
   params: Promise<{ propertyId: string }>;
 };
 
+function buildFieldDiff(
+  before: Record<string, unknown>,
+  after: Record<string, unknown>,
+  patchedFields: string[],
+) {
+  const changes: Record<string, { before: unknown; after: unknown }> = {};
+
+  for (const field of patchedFields) {
+    const beforeValue = before[field];
+    const afterValue = after[field];
+    if (JSON.stringify(beforeValue) === JSON.stringify(afterValue)) {
+      continue;
+    }
+    changes[field] = {
+      before: beforeValue,
+      after: afterValue,
+    };
+  }
+
+  return changes;
+}
+
 export async function GET(request: NextRequest, context: RouteContext) {
   const auth = await requireAdmin(request, "listings.read");
   if (!auth.ok) {
@@ -118,35 +140,60 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
     );
   }
 
-  const updated = await updateListing({
-    propertyId,
-    actorUid: auth.admin.uid,
-    patch: parsed.data,
-  });
+  try {
+    const mutation = await updateListing({
+      propertyId,
+      actorUid: auth.admin.uid,
+      patch: parsed.data,
+    });
 
-  if (!updated) {
+    if (!mutation) {
+      return jsonError(
+        {
+          code: "NOT_FOUND",
+          message: "Annonce introuvable.",
+        },
+        404,
+        auth.correlationId,
+      );
+    }
+
+    const patchedFields = Object.keys(parsed.data);
+    const diff = buildFieldDiff(
+      mutation.before as unknown as Record<string, unknown>,
+      mutation.after as unknown as Record<string, unknown>,
+      patchedFields,
+    );
+
+    await logAudit({
+      actorId: auth.admin.uid,
+      actorRoles: auth.admin.roles,
+      action: "listings.update",
+      resource: "property",
+      resourceId: propertyId,
+      status: "success",
+      correlationId: auth.correlationId,
+      details: {
+        patchedFields,
+      },
+      diff: {
+        fields: diff,
+        beforeState: mutation.before.state,
+        afterState: mutation.after.state,
+        beforeStatus: mutation.before.status,
+        afterStatus: mutation.after.status,
+      },
+    });
+
+    return jsonSuccess({ listing: mutation.after }, auth.correlationId);
+  } catch (error) {
     return jsonError(
       {
-        code: "NOT_FOUND",
-        message: "Annonce introuvable.",
+        code: "INTERNAL_ERROR",
+        message: error instanceof Error ? error.message : "Impossible de mettre à jour l'annonce.",
       },
-      404,
+      500,
       auth.correlationId,
     );
   }
-
-  await logAudit({
-    actorId: auth.admin.uid,
-    actorRoles: auth.admin.roles,
-    action: "listings.update",
-    resource: "property",
-    resourceId: propertyId,
-    status: "success",
-    correlationId: auth.correlationId,
-    details: {
-      patchedFields: Object.keys(parsed.data),
-    },
-  });
-
-  return jsonSuccess({ listing: updated }, auth.correlationId);
 }
