@@ -316,6 +316,21 @@ function mapCreditPack(docId: string, data: RawCreditPackDoc): FinanceCreditPack
   };
 }
 
+function sortCreditPacks(packs: FinanceCreditPack[]): FinanceCreditPack[] {
+  return [...packs].sort((left, right) => {
+    if (left.order !== right.order) {
+      return left.order - right.order;
+    }
+    if (left.credits !== right.credits) {
+      return left.credits - right.credits;
+    }
+    if (left.price !== right.price) {
+      return left.price - right.price;
+    }
+    return left.id.localeCompare(right.id);
+  });
+}
+
 function toRecordOrNull(value: unknown) {
   if (!value || typeof value !== "object" || Array.isArray(value)) {
     return null;
@@ -610,13 +625,39 @@ export async function finalizeRefundExecution(
 
 export async function listCreditPacks(): Promise<FinanceCreditPack[]> {
   const db = getFirebaseAdminDb();
-  const snapshot = await db
-    .collection(CREDIT_PACKS_COLLECTION)
-    .orderBy("order", "asc")
-    .orderBy("credits", "asc")
-    .get();
+  const snapshot = await db.collection(CREDIT_PACKS_COLLECTION).get();
+  const packs = snapshot.docs.map((doc) => mapCreditPack(doc.id, doc.data() as RawCreditPackDoc));
+  return sortCreditPacks(packs);
+}
 
-  return snapshot.docs.map((doc) => mapCreditPack(doc.id, doc.data() as RawCreditPackDoc));
+export async function findFirstCreditTransactionForPack(packId: string) {
+  const db = getFirebaseAdminDb();
+  const fieldsToCheck = ["packId", "pack_id"];
+
+  for (const fieldName of fieldsToCheck) {
+    const snapshot = await db
+      .collection(CREDIT_TRANSACTIONS_COLLECTION)
+      .where(fieldName, "==", packId)
+      .limit(1)
+      .get();
+
+    if (snapshot.empty) {
+      continue;
+    }
+
+    const doc = snapshot.docs[0];
+    const tx = mapCreditTransaction(doc.id, doc.data() as RawCreditTransactionDoc);
+
+    return {
+      transactionId: doc.id,
+      createdAt: tx.createdAt,
+      status: tx.status,
+      type: tx.type,
+      matchedField: fieldName,
+    };
+  }
+
+  return null;
 }
 
 export async function getCreditPackById(packId: string) {

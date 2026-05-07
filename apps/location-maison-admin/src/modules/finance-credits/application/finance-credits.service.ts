@@ -28,6 +28,7 @@ import type {
 import {
   createCreditPack,
   deleteCreditPack,
+  findFirstCreditTransactionForPack,
   getRefundById,
   grantCreditsAndCreateTransaction,
   listCreditPacks,
@@ -56,51 +57,6 @@ const FINANCE_REFUND_DECISION_NOTE_REQUIRED_THRESHOLD_XAF = Math.max(
   0,
   Number(process.env.FINANCE_REFUND_DECISION_NOTE_REQUIRED_THRESHOLD_XAF ?? 25000),
 );
-const FINANCE_CREDIT_PACKS_AUTOSEED = String(
-  process.env.FINANCE_CREDIT_PACKS_AUTOSEED ?? "true",
-).toLowerCase() !== "false";
-
-const DEFAULT_CREDIT_PACKS: Array<{
-  id: string;
-  name: string;
-  credits: number;
-  price: number;
-  savings: number | null;
-  order: number;
-}> = [
-  {
-    id: "starter",
-    name: "Starter",
-    credits: 5,
-    price: 2000,
-    savings: null,
-    order: 1,
-  },
-  {
-    id: "standard",
-    name: "Standard",
-    credits: 10,
-    price: 3500,
-    savings: 12.5,
-    order: 2,
-  },
-  {
-    id: "advanced",
-    name: "Avancé",
-    credits: 25,
-    price: 7500,
-    savings: 25,
-    order: 3,
-  },
-  {
-    id: "premium",
-    name: "Premium",
-    credits: 50,
-    price: 12500,
-    savings: 37.5,
-    order: 4,
-  },
-];
 
 function normalizeRoleFilter(value?: string): FinanceWalletRoleFilter {
   if (value === "user" || value === "announcer" || value === "admin") {
@@ -264,37 +220,6 @@ function normalizeFiniteNumber(value: number, fallback: number) {
 
 function hasActorRole(roles: string[], target: string) {
   return roles.some((role) => role.trim().toLowerCase() === target.toLowerCase());
-}
-
-async function ensureDefaultCreditPacksIfNeeded() {
-  if (!FINANCE_CREDIT_PACKS_AUTOSEED) {
-    return;
-  }
-
-  const existing = await listCreditPacks();
-  if (existing.length > 0) {
-    return;
-  }
-
-  for (const pack of DEFAULT_CREDIT_PACKS) {
-    try {
-      await createCreditPack({
-        id: pack.id,
-        name: pack.name,
-        credits: pack.credits,
-        price: pack.price,
-        savings: pack.savings,
-        isActive: true,
-        order: pack.order,
-        actorUid: "system",
-      });
-    } catch (error) {
-      const code = error instanceof Error ? error.message : "";
-      if (code !== "FINANCE_PACK_ALREADY_EXISTS") {
-        throw error;
-      }
-    }
-  }
 }
 
 export async function listFinanceWallets(input: ListFinanceWalletsInput): Promise<ListFinanceWalletsResult> {
@@ -688,7 +613,6 @@ export async function grantCredits(input: GrantCreditsInput, correlationId: stri
 }
 
 export async function listFinanceCreditPacks(): Promise<ListFinanceCreditPacksResult> {
-  await ensureDefaultCreditPacksIfNeeded();
   const packs = await listCreditPacks();
   return {
     packs,
@@ -799,6 +723,11 @@ export async function deleteFinanceCreditPack(packId: string) {
   const normalized = normalizePackId(packId);
   if (!normalized) {
     throw new Error("FINANCE_PACK_INVALID_ID");
+  }
+
+  const usage = await findFirstCreditTransactionForPack(normalized);
+  if (usage) {
+    throw new Error("FINANCE_PACK_IN_USE", { cause: usage });
   }
 
   return deleteCreditPack({
