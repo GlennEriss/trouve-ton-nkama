@@ -137,6 +137,11 @@ export type FinanceRefundItem = {
   reviewedAt: string | null;
   reviewedBy: string | null;
   decisionNote: string | null;
+  executedAt: string | null;
+  executedBy: string | null;
+  executionNote: string | null;
+  externalReference: string | null;
+  amountRefunded: number | null;
 };
 
 export type ListFinanceRefundsInput = {
@@ -199,6 +204,22 @@ export type ReviewRefundResult = {
   previousStatus: string;
   nextStatus: "approved" | "rejected";
   reviewedAt: string;
+};
+
+export type FinalizeRefundExecutionInput = {
+  refundId: string;
+  nextStatus: "success" | "failed";
+  actorUid: string;
+  executionNote?: string;
+  externalReference?: string;
+  amountRefunded?: number | null;
+};
+
+export type FinalizeRefundExecutionResult = {
+  refundId: string;
+  previousStatus: string;
+  nextStatus: "success" | "failed";
+  executedAt: string;
 };
 
 export type FinanceCreditPack = {

@@ -1,5 +1,7 @@
 import type {
   CreateFinanceCreditPackInput,
+  FinalizeRefundExecutionInput,
+  FinalizeRefundExecutionResult,
   FinanceAuditLogItem,
   FinanceCreditPack,
   FinanceRefundStatusFilter,
@@ -35,6 +37,7 @@ import {
   listWalletUsersRawPage,
   reviewRefund,
   updateCreditPack,
+  finalizeRefundExecution,
 } from "@/modules/finance-credits/infrastructure/finance-credits.repository";
 import {
   claimFinanceGrantIdempotency,
@@ -939,5 +942,44 @@ export async function reviewFinanceRefund(
   return reviewRefund({
     ...input,
     decisionNote,
+  });
+}
+
+export async function finalizeFinanceRefundExecution(
+  input: FinalizeRefundExecutionInput,
+): Promise<FinalizeRefundExecutionResult | null> {
+  const current = await getRefundById(input.refundId);
+  if (!current) {
+    return null;
+  }
+
+  if (safeLower(current.status) !== "approved") {
+    throw new Error("FINANCE_REFUND_NOT_APPROVED");
+  }
+
+  const executionNote = input.executionNote?.trim() || "";
+  const externalReference = input.externalReference?.trim() || "";
+  const amountRefunded =
+    typeof input.amountRefunded === "number" && Number.isFinite(input.amountRefunded)
+      ? input.amountRefunded
+      : current.amount ?? 0;
+
+  if (!Number.isFinite(amountRefunded) || amountRefunded < 0) {
+    throw new Error("FINANCE_REFUND_INVALID_AMOUNT");
+  }
+
+  if (current.amount != null && amountRefunded > current.amount) {
+    throw new Error("FINANCE_REFUND_AMOUNT_EXCEEDS_REQUEST");
+  }
+
+  if (input.nextStatus === "failed" && executionNote.length < 3) {
+    throw new Error("FINANCE_REFUND_EXECUTION_NOTE_REQUIRED");
+  }
+
+  return finalizeRefundExecution({
+    ...input,
+    executionNote,
+    externalReference,
+    amountRefunded,
   });
 }

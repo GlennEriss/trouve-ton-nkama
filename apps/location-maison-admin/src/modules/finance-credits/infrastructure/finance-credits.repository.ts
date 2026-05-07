@@ -2,6 +2,8 @@ import { FieldPath, FieldValue, Timestamp } from "firebase-admin/firestore";
 
 import { getFirebaseAdminDb } from "@/lib/firebase/firebase-admin";
 import type {
+  FinalizeRefundExecutionInput,
+  FinalizeRefundExecutionResult,
   FinanceAuditLogItem,
   FinanceCreditPack,
   FinanceCreditTransaction,
@@ -67,6 +69,11 @@ type RawRefundDoc = {
   reviewedAt?: unknown;
   reviewedBy?: unknown;
   decisionNote?: unknown;
+  executedAt?: unknown;
+  executedBy?: unknown;
+  executionNote?: unknown;
+  externalReference?: unknown;
+  amountRefunded?: unknown;
 };
 
 type RawCreditPackDoc = {
@@ -285,6 +292,11 @@ function mapRefund(docId: string, data: RawRefundDoc): FinanceRefundItem {
     reviewedAt: toIso(data.reviewedAt),
     reviewedBy: toTrimmedString(data.reviewedBy),
     decisionNote: toTrimmedString(data.decisionNote),
+    executedAt: toIso(data.executedAt),
+    executedBy: toTrimmedString(data.executedBy),
+    executionNote: toTrimmedString(data.executionNote),
+    externalReference: toTrimmedString(data.externalReference),
+    amountRefunded: toNullableNumber(data.amountRefunded),
   };
 }
 
@@ -551,6 +563,48 @@ export async function reviewRefund(input: ReviewRefundInput): Promise<ReviewRefu
     previousStatus: current.status,
     nextStatus: input.nextStatus,
     reviewedAt: nowIso,
+  };
+}
+
+export async function finalizeRefundExecution(
+  input: FinalizeRefundExecutionInput,
+): Promise<FinalizeRefundExecutionResult | null> {
+  const db = getFirebaseAdminDb();
+  const ref = db.collection(REFUND_PAYMENTS_COLLECTION).doc(input.refundId);
+  const snapshot = await ref.get();
+
+  if (!snapshot.exists) {
+    return null;
+  }
+
+  const current = mapRefund(snapshot.id, snapshot.data() as RawRefundDoc);
+  const nowIso = new Date().toISOString();
+
+  await ref.set(
+    {
+      status: input.nextStatus,
+      executedBy: input.actorUid,
+      executedAt: FieldValue.serverTimestamp(),
+      executionNote: input.executionNote?.trim() || null,
+      externalReference: input.externalReference?.trim() || null,
+      amountRefunded:
+        typeof input.amountRefunded === "number" && Number.isFinite(input.amountRefunded)
+          ? input.amountRefunded
+          : current.amount ?? null,
+      refundedAt:
+        input.nextStatus === "success"
+          ? FieldValue.serverTimestamp()
+          : current.refundedAt ?? null,
+      updatedAt: FieldValue.serverTimestamp(),
+    },
+    { merge: true },
+  );
+
+  return {
+    refundId: input.refundId,
+    previousStatus: current.status,
+    nextStatus: input.nextStatus,
+    executedAt: nowIso,
   };
 }
 

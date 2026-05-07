@@ -3,27 +3,42 @@ import { z } from "zod";
 
 import { csvFilename, toCsvLine } from "@/lib/api/csv";
 import { jsonError } from "@/lib/api/response";
-import { listFinanceRefunds } from "@/modules/finance-credits/application/finance-credits.service";
+import { listFinanceAuditLogs } from "@/modules/finance-credits/application/finance-credits.service";
 import { requireAdmin } from "@/modules/iam/presentation/admin-guard";
 
 const querySchema = z.object({
+  actionPrefix: z.string().trim().optional(),
+  status: z.enum(["all", "success", "failed", "denied"]).optional(),
+  actorId: z.string().trim().min(1).optional(),
   query: z.string().trim().optional(),
-  status: z.enum(["all", "pending", "approved", "rejected", "failed", "success"]).optional(),
   maxRows: z.coerce.number().int().min(1).max(200000).optional(),
 });
 
 const PAGE_SIZE = 300;
 const DEFAULT_MAX_ROWS = 50000;
 
+function jsonStringifySafe(value: unknown) {
+  if (!value || typeof value !== "object") {
+    return "";
+  }
+  try {
+    return JSON.stringify(value);
+  } catch {
+    return "";
+  }
+}
+
 export async function GET(request: NextRequest) {
-  const auth = await requireAdmin(request, "refunds.read");
+  const auth = await requireAdmin(request, "audit_logs.read");
   if (!auth.ok) {
     return auth.response;
   }
 
   const parsed = querySchema.safeParse({
-    query: request.nextUrl.searchParams.get("query") ?? undefined,
+    actionPrefix: request.nextUrl.searchParams.get("actionPrefix") ?? undefined,
     status: request.nextUrl.searchParams.get("status") ?? undefined,
+    actorId: request.nextUrl.searchParams.get("actorId") ?? undefined,
+    query: request.nextUrl.searchParams.get("query") ?? undefined,
     maxRows: request.nextUrl.searchParams.get("maxRows") ?? undefined,
   });
 
@@ -32,7 +47,9 @@ export async function GET(request: NextRequest) {
       {
         code: "VALIDATION_ERROR",
         message: "Paramètres de requête invalides.",
-        details: { issues: parsed.error.issues },
+        details: {
+          issues: parsed.error.issues,
+        },
       },
       400,
       auth.correlationId,
@@ -50,53 +67,47 @@ export async function GET(request: NextRequest) {
         controller.enqueue(
           encoder.encode(
             toCsvLine([
-              "refund_id",
+              "id",
               "created_at",
-              "phone_number",
-              "amount",
+              "action",
               "status",
-              "reason",
-              "reviewed_by",
-              "reviewed_at",
-              "decision_note",
-              "executed_by",
-              "executed_at",
-              "execution_note",
-              "external_reference",
-              "amount_refunded",
-              "refunded_at",
+              "actor_id",
+              "actor_roles",
+              "resource",
+              "resource_id",
+              "correlation_id",
+              "diff_json",
+              "details_json",
             ]),
           ),
         );
 
         while (exportedRows < maxRows) {
-          const page = await listFinanceRefunds({
+          const page = await listFinanceAuditLogs({
             limit: PAGE_SIZE,
             cursor,
-            query: parsed.data.query,
+            actionPrefix: parsed.data.actionPrefix,
             status: parsed.data.status,
+            actorId: parsed.data.actorId,
+            query: parsed.data.query,
           });
 
-          for (let index = 0; index < page.refunds.length && exportedRows < maxRows; index += 1) {
-            const refund = page.refunds[index];
+          for (let index = 0; index < page.logs.length && exportedRows < maxRows; index += 1) {
+            const log = page.logs[index];
             controller.enqueue(
               encoder.encode(
                 toCsvLine([
-                  refund.id,
-                  refund.createdAt ?? "",
-                  refund.phoneNumber ?? "",
-                  refund.amount ?? "",
-                  refund.status,
-                  refund.reason ?? "",
-                  refund.reviewedBy ?? "",
-                  refund.reviewedAt ?? "",
-                  refund.decisionNote ?? "",
-                  refund.executedBy ?? "",
-                  refund.executedAt ?? "",
-                  refund.executionNote ?? "",
-                  refund.externalReference ?? "",
-                  refund.amountRefunded ?? "",
-                  refund.refundedAt ?? "",
+                  log.id,
+                  log.createdAt ?? "",
+                  log.action,
+                  log.status ?? "",
+                  log.actorId ?? "",
+                  log.actorRoles.join("|"),
+                  log.resource ?? "",
+                  log.resourceId ?? "",
+                  log.correlationId ?? "",
+                  jsonStringifySafe(log.diff),
+                  jsonStringifySafe(log.details),
                 ]),
               ),
             );
@@ -120,7 +131,7 @@ export async function GET(request: NextRequest) {
   return new Response(stream, {
     headers: {
       "Content-Type": "text/csv; charset=utf-8",
-      "Content-Disposition": `attachment; filename="${csvFilename("export-finance-refunds")}"`,
+      "Content-Disposition": `attachment; filename="${csvFilename("export-finance-audit-logs")}"`,
       "Cache-Control": "no-store",
       "x-correlation-id": auth.correlationId,
     },

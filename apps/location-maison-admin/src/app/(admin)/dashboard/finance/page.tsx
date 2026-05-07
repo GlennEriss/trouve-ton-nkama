@@ -80,6 +80,12 @@ type RefundItem = {
   createdAt: string | null;
   reviewedAt: string | null;
   reviewedBy: string | null;
+  decisionNote: string | null;
+  executedAt: string | null;
+  executedBy: string | null;
+  executionNote: string | null;
+  externalReference: string | null;
+  amountRefunded: number | null;
 };
 
 type RefundsPayload = {
@@ -224,12 +230,16 @@ export default function FinanceDashboardPage() {
   const [refundCursor, setRefundCursor] = useState<string | null>(null);
   const [refundCursorHistory, setRefundCursorHistory] = useState<string[]>([]);
   const [isReviewingRefundId, setIsReviewingRefundId] = useState<string | null>(null);
+  const [isExecutingRefundId, setIsExecutingRefundId] = useState<string | null>(null);
 
   const [grantUid, setGrantUid] = useState("");
   const [grantCredits, setGrantCredits] = useState("3");
   const [grantReason, setGrantReason] = useState("Attribution manuelle admin");
   const [isGranting, setIsGranting] = useState(false);
   const [refundDecisionNote, setRefundDecisionNote] = useState("");
+  const [refundExecutionNote, setRefundExecutionNote] = useState("");
+  const [refundExternalReference, setRefundExternalReference] = useState("");
+  const [refundAmountRefunded, setRefundAmountRefunded] = useState("");
 
   const [packCreateId, setPackCreateId] = useState("");
   const [packCreateName, setPackCreateName] = useState("");
@@ -722,6 +732,58 @@ export default function FinanceDashboardPage() {
       }
     },
     [refundDecisionNote, refundsQuery],
+  );
+
+  const executeRefund = useCallback(
+    async (refundId: string, status: "success" | "failed") => {
+      setGlobalError(null);
+      setGlobalMessage(null);
+      setIsExecutingRefundId(refundId);
+
+      const parsedAmount = refundAmountRefunded.trim() ? Number(refundAmountRefunded.trim()) : undefined;
+      if (parsedAmount !== undefined && (!Number.isFinite(parsedAmount) || parsedAmount < 0)) {
+        setGlobalError("Le montant remboursé est invalide.");
+        setIsExecutingRefundId(null);
+        return;
+      }
+
+      try {
+        const response = await fetch(`/api/admin/v1/refunds/${refundId}/execution`, {
+          method: "PATCH",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            status,
+            executionNote: refundExecutionNote.trim() || undefined,
+            externalReference: refundExternalReference.trim() || undefined,
+            amountRefunded: parsedAmount,
+          }),
+        });
+
+        const payload = (await response.json()) as
+          | { success: true; data: { previousStatus: string; nextStatus: string } }
+          | { success: false; error?: { message?: string } };
+
+        if (!response.ok || !payload.success) {
+          throw new Error(
+            payload.success ? "Impossible de finaliser l'exécution du remboursement." : payload.error?.message,
+          );
+        }
+
+        setGlobalMessage(`Exécution remboursement ${refundId}: ${payload.data.nextStatus}.`);
+        await refundsQuery.refetch();
+      } catch (error) {
+        setGlobalError(
+          error instanceof Error
+            ? error.message
+            : "Impossible de finaliser l'exécution du remboursement.",
+        );
+      } finally {
+        setIsExecutingRefundId(null);
+      }
+    },
+    [refundAmountRefunded, refundExecutionNote, refundExternalReference, refundsQuery],
   );
 
   return (
@@ -1390,17 +1452,37 @@ export default function FinanceDashboardPage() {
             <div />
           </form>
 
-          <div className="grid gap-2 md:grid-cols-2">
+          <div className="grid gap-2 md:grid-cols-4">
             <Input
               value={refundDecisionNote}
               onChange={(event) => setRefundDecisionNote(event.target.value)}
-              placeholder="Note de décision (requise pour gros montants)"
+              placeholder="Note de décision (approval/rejet)"
               disabled={!canApproveRefunds}
             />
-            <p className="text-xs text-muted-foreground">
-              Si le montant dépasse le seuil, une note devient obligatoire et peut exiger un super admin.
-            </p>
+            <Input
+              value={refundExecutionNote}
+              onChange={(event) => setRefundExecutionNote(event.target.value)}
+              placeholder="Note d'exécution (requis pour échec)"
+              disabled={!canApproveRefunds}
+            />
+            <Input
+              value={refundExternalReference}
+              onChange={(event) => setRefundExternalReference(event.target.value)}
+              placeholder="Référence externe (wave, momo...)"
+              disabled={!canApproveRefunds}
+            />
+            <Input
+              type="number"
+              min={0}
+              value={refundAmountRefunded}
+              onChange={(event) => setRefundAmountRefunded(event.target.value)}
+              placeholder="Montant remboursé (optionnel)"
+              disabled={!canApproveRefunds}
+            />
           </div>
+          <p className="text-xs text-muted-foreground">
+            Approbation: note potentiellement obligatoire selon seuil. Exécution: une demande approuvée passe en success/failed avec méta d'exécution.
+          </p>
 
           <div className="overflow-x-auto rounded-xl border">
             <table className="min-w-full text-sm">
@@ -1412,6 +1494,7 @@ export default function FinanceDashboardPage() {
                   <th className="px-3 py-2 font-medium">Statut</th>
                   <th className="px-3 py-2 font-medium">Motif</th>
                   <th className="px-3 py-2 font-medium">Revue</th>
+                  <th className="px-3 py-2 font-medium">Exécution</th>
                   <th className="px-3 py-2 font-medium">Actions</th>
                 </tr>
               </thead>
@@ -1426,6 +1509,16 @@ export default function FinanceDashboardPage() {
                     <td className="px-3 py-2 text-xs text-muted-foreground">
                       {refund.reviewedBy ?? "N/A"}<br />
                       {toDateLabel(refund.reviewedAt)}
+                      <br />
+                      {refund.decisionNote ?? "Sans note"}
+                    </td>
+                    <td className="px-3 py-2 text-xs text-muted-foreground">
+                      {refund.executedBy ?? "N/A"}<br />
+                      {toDateLabel(refund.executedAt)}
+                      <br />
+                      {refund.externalReference ?? "Sans référence"}
+                      <br />
+                      {refund.amountRefunded != null ? formatMoneyXaf(refund.amountRefunded) : "Montant N/A"}
                     </td>
                     <td className="px-3 py-2">
                       {canApproveRefunds && refund.status.toLowerCase() === "pending" ? (
@@ -1434,7 +1527,7 @@ export default function FinanceDashboardPage() {
                             type="button"
                             variant="outline"
                             className="h-8"
-                            disabled={isReviewingRefundId === refund.id}
+                            disabled={isReviewingRefundId === refund.id || isExecutingRefundId === refund.id}
                             onClick={() => reviewRefund(refund.id, "approved")}
                           >
                             Approuver
@@ -1443,10 +1536,31 @@ export default function FinanceDashboardPage() {
                             type="button"
                             variant="ghost"
                             className="h-8"
-                            disabled={isReviewingRefundId === refund.id}
+                            disabled={isReviewingRefundId === refund.id || isExecutingRefundId === refund.id}
                             onClick={() => reviewRefund(refund.id, "rejected")}
                           >
                             Rejeter
+                          </Button>
+                        </div>
+                      ) : canApproveRefunds && refund.status.toLowerCase() === "approved" ? (
+                        <div className="flex gap-2">
+                          <Button
+                            type="button"
+                            variant="outline"
+                            className="h-8"
+                            disabled={isExecutingRefundId === refund.id || isReviewingRefundId === refund.id}
+                            onClick={() => executeRefund(refund.id, "success")}
+                          >
+                            Marquer success
+                          </Button>
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            className="h-8"
+                            disabled={isExecutingRefundId === refund.id || isReviewingRefundId === refund.id}
+                            onClick={() => executeRefund(refund.id, "failed")}
+                          >
+                            Marquer failed
                           </Button>
                         </div>
                       ) : (
@@ -1457,7 +1571,7 @@ export default function FinanceDashboardPage() {
                 ))}
                 {refundsQuery.data && refundsQuery.data.refunds.length === 0 ? (
                   <tr>
-                    <td colSpan={7} className="px-3 py-6 text-center text-muted-foreground">
+                    <td colSpan={8} className="px-3 py-6 text-center text-muted-foreground">
                       Aucun remboursement trouvé.
                     </td>
                   </tr>
@@ -1501,7 +1615,24 @@ export default function FinanceDashboardPage() {
       </Card>
 
       <Card className="rounded-2xl border-border/80">
-        <CardHeader className="pb-2 text-base font-semibold">Journal d'audit finance</CardHeader>
+        <CardHeader className="flex flex-row items-center justify-between pb-2 text-base font-semibold">
+          <span>Journal d'audit finance</span>
+          <Button
+            type="button"
+            variant="outline"
+            className="h-8"
+            onClick={() => {
+              const params = new URLSearchParams();
+              if (auditActionPrefix.trim()) params.set("actionPrefix", auditActionPrefix.trim());
+              params.set("status", auditStatus);
+              if (auditQueryApplied.trim()) params.set("query", auditQueryApplied.trim());
+              exportCsv(`/api/admin/v1/audit/logs/export?${params.toString()}`);
+            }}
+            disabled={!canReadAudit}
+          >
+            Export CSV
+          </Button>
+        </CardHeader>
         <CardContent className="space-y-4">
           <form className="grid gap-2 md:grid-cols-5" onSubmit={applyAuditFilters}>
             <Input
