@@ -1,7 +1,17 @@
 "use client";
 
 import Link from "next/link";
-import { Activity, BarChart3, Building2, Home, ListChecks, Shield, TrendingUp, Users } from "lucide-react";
+import {
+  Activity,
+  BarChart3,
+  Building2,
+  Home,
+  ListChecks,
+  Shield,
+  TrendingUp,
+  Users,
+  Wallet,
+} from "lucide-react";
 import { usePathname } from "next/navigation";
 
 import {
@@ -27,6 +37,7 @@ const navItems = [
   { href: "/dashboard/users", label: "Utilisateurs", icon: Users },
   { href: "/dashboard/announcers", label: "Annonceurs", icon: Building2 },
   { href: "/dashboard/listings", label: "Annonces", icon: ListChecks },
+  { href: "/dashboard/finance", label: "Finance crédits", icon: Wallet },
 ];
 
 export function AppSidebar() {
@@ -72,7 +83,7 @@ export function AppSidebar() {
       </SidebarContent>
 
       <SidebarFooter>
-        <p className="px-2 py-1 text-xs text-muted-foreground">Version Sprint 3</p>
+        <p className="px-2 py-1 text-xs text-muted-foreground">Version Sprint 5</p>
       </SidebarFooter>
       <SidebarRail />
     </Sidebar>
