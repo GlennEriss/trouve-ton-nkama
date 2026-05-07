@@ -4,6 +4,7 @@ import { z } from "zod";
 import { jsonError, jsonSuccess } from "@/lib/api/response";
 import { createListingForAnnouncer } from "@/modules/account-provisioning/application/account-provisioning.service";
 import { logAudit } from "@/modules/audit-compliance/application/audit-log.service";
+import { hasPermission } from "@/modules/iam/domain/permissions";
 import { requireAdmin } from "@/modules/iam/presentation/admin-guard";
 import { listListings } from "@/modules/listing-management/application/listing-management.service";
 
@@ -226,6 +227,25 @@ export async function GET(request: NextRequest) {
         },
       },
       400,
+      auth.correlationId,
+    );
+  }
+
+  const hasSearchCriteria =
+    (parsed.data.query?.trim().length ?? 0) > 0 ||
+    parsed.data.status === "FOR_RENT" ||
+    parsed.data.status === "FOR_SALE" ||
+    parsed.data.state === "IN_PROGRESS" ||
+    parsed.data.state === "ARCHIVED" ||
+    (parsed.data.createdBy?.trim().length ?? 0) > 0;
+
+  if (hasSearchCriteria && !hasPermission(auth.admin.permissions, "listings.search")) {
+    return jsonError(
+      {
+        code: "FORBIDDEN",
+        message: "Permission manquante : listings.search",
+      },
+      403,
       auth.correlationId,
     );
   }

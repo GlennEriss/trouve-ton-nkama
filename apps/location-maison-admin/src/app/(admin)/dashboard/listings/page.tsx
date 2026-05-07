@@ -95,6 +95,7 @@ type EditFormState = {
   title: string;
   description: string;
   typeProperty: string;
+  originalStatus: "FOR_RENT" | "FOR_SALE";
   status: "FOR_RENT" | "FOR_SALE";
   price: string;
   area: string;
@@ -184,12 +185,14 @@ async function fetchJson<T>(url: string, fallbackMessage: string) {
 }
 
 function toEditFormState(payload: ListingDetailsPayload["listing"]): EditFormState {
+  const normalizedStatus = payload.status === "FOR_SALE" ? "FOR_SALE" : "FOR_RENT";
   return {
     id: payload.id,
     title: payload.title ?? "",
     description: payload.description ?? "",
     typeProperty: payload.typeProperty ?? "Home",
-    status: payload.status === "FOR_SALE" ? "FOR_SALE" : "FOR_RENT",
+    originalStatus: normalizedStatus,
+    status: normalizedStatus,
     price: payload.price != null ? String(payload.price) : "",
     area: payload.area != null ? String(payload.area) : "",
     street: payload.street ?? "",
@@ -439,11 +442,10 @@ export default function ListingsDashboardPage() {
       setIsMutatingId(editForm.id);
 
       try {
-        const payload = {
+        const payload: Record<string, unknown> = {
           title: editForm.title.trim(),
           description: editForm.description.trim(),
           typeProperty: editForm.typeProperty.trim(),
-          status: editForm.status,
           price: Number(editForm.price),
           area: Number(editForm.area),
           street: editForm.street.trim(),
@@ -454,6 +456,9 @@ export default function ListingsDashboardPage() {
           contact: editForm.contact.trim(),
           tags: splitTags(editForm.tagsRaw),
         };
+        if (editForm.status !== editForm.originalStatus) {
+          payload.status = editForm.status;
+        }
 
         const response = await fetch(`/api/admin/v1/listings/${editForm.id}`, {
           method: "PATCH",
@@ -527,14 +532,18 @@ export default function ListingsDashboardPage() {
       setIsBulkMutating(true);
 
       try {
-        const response = await fetch("/api/admin/v1/listings/bulk/state", {
+        const bulkEndpoint =
+          nextState === "ARCHIVED"
+            ? "/api/admin/v1/listings/bulk/archive"
+            : "/api/admin/v1/listings/bulk/unarchive";
+
+        const response = await fetch(bulkEndpoint, {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
           },
           body: JSON.stringify({
             propertyIds: selectedListingIds,
-            state: nextState,
           }),
         });
 

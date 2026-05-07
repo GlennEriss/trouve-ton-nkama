@@ -25,6 +25,7 @@ import type {
   UpdateListingStateResult,
 } from "@/modules/listing-management/domain/types";
 import {
+  deletePropertyById,
   getPropertyById,
   listPropertiesRawPage,
   patchPropertyById,
@@ -431,6 +432,16 @@ export async function updateListingState(
     before: existing,
     after: updated,
   };
+}
+
+export async function deleteListing(propertyId: string) {
+  const existing = await getPropertyById(propertyId);
+  if (!existing) {
+    return null;
+  }
+
+  await deletePropertyById(propertyId);
+  return existing;
 }
 
 export async function bulkUpdateListingState(

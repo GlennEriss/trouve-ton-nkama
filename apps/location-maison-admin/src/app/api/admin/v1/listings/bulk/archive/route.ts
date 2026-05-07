@@ -11,14 +11,16 @@ import { bulkUpdateListingState } from "@/modules/listing-management/application
 const bodySchema = z
   .object({
     propertyIds: z.array(z.string().trim().min(1)).min(1).max(300),
-    state: z.enum(["IN_PROGRESS", "ARCHIVED"]),
   })
   .strict();
 
-function hasAnyPermission(
-  permissions: AdminPermission[],
-  values: AdminPermission[],
-) {
+const requiredPermissions: AdminPermission[] = [
+  "listings.bulk.archive",
+  "listings.archive",
+  "listings.reject",
+];
+
+function hasAnyPermission(permissions: AdminPermission[], values: AdminPermission[]) {
   return values.some((value) => hasPermission(permissions, value));
 }
 
@@ -26,6 +28,17 @@ export async function POST(request: NextRequest) {
   const auth = await requireAdmin(request);
   if (!auth.ok) {
     return auth.response;
+  }
+
+  if (!hasAnyPermission(auth.admin.permissions, requiredPermissions)) {
+    return jsonError(
+      {
+        code: "FORBIDDEN",
+        message: `Permission manquante : ${requiredPermissions.join(" ou ")}`,
+      },
+      403,
+      auth.correlationId,
+    );
   }
 
   const body = await request.json().catch(() => null);
@@ -44,37 +57,21 @@ export async function POST(request: NextRequest) {
     );
   }
 
-  const requiredPermissions: AdminPermission[] =
-    parsed.data.state === "ARCHIVED"
-      ? ["listings.bulk.archive", "listings.archive", "listings.state.update", "listings.reject"]
-      : ["listings.bulk.unarchive", "listings.unarchive", "listings.state.update", "listings.approve"];
-
-  if (!hasAnyPermission(auth.admin.permissions, requiredPermissions)) {
-    return jsonError(
-      {
-        code: "FORBIDDEN",
-        message: `Permission manquante : ${requiredPermissions.join(" ou ")}`,
-      },
-      403,
-      auth.correlationId,
-    );
-  }
-
-  const auditAction = hasPermission(auth.admin.permissions, requiredPermissions[0])
-    ? requiredPermissions[0]
-    : requiredPermissions[1];
+  const auditAction = requiredPermissions.find((permission) =>
+    hasPermission(auth.admin.permissions, permission),
+  );
 
   try {
     const result = await bulkUpdateListingState({
       propertyIds: parsed.data.propertyIds,
       actorUid: auth.admin.uid,
-      state: parsed.data.state,
+      state: "ARCHIVED",
     });
 
     await logAudit({
       actorId: auth.admin.uid,
       actorRoles: auth.admin.roles,
-      action: auditAction,
+      action: auditAction ?? "listings.bulk.archive",
       resource: "property_bulk",
       status: "success",
       correlationId: auth.correlationId,
@@ -100,7 +97,7 @@ export async function POST(request: NextRequest) {
         message:
           error instanceof Error
             ? error.message
-            : "Impossible d'appliquer l'action en masse sur les annonces.",
+            : "Impossible d'archiver la sélection d'annonces.",
       },
       500,
       auth.correlationId,

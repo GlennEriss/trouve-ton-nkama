@@ -248,3 +248,8 @@ export async function patchPropertyState(
 ) {
   await patchPropertyById(propertyId, { state });
 }
+
+export async function deletePropertyById(propertyId: string) {
+  const db = getFirebaseAdminDb();
+  await db.collection(PROPERTIES_COLLECTION).doc(propertyId).delete();
+}

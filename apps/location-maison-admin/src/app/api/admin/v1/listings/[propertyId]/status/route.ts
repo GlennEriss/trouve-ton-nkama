@@ -4,28 +4,43 @@ import { z } from "zod";
 import { jsonError, jsonSuccess } from "@/lib/api/response";
 import { logAudit } from "@/modules/audit-compliance/application/audit-log.service";
 import { hasPermission } from "@/modules/iam/domain/permissions";
-import type { AdminPermission } from "@/modules/iam/domain/types";
 import { requireAdmin } from "@/modules/iam/presentation/admin-guard";
-import { updateListingState } from "@/modules/listing-management/application/listing-management.service";
-
-const bodySchema = z
-  .object({
-    state: z.enum(["IN_PROGRESS", "ARCHIVED"]),
-  })
-  .strict();
+import { updateListing } from "@/modules/listing-management/application/listing-management.service";
 
 type RouteContext = {
   params: Promise<{ propertyId: string }>;
 };
 
-function hasAnyPermission(permissions: AdminPermission[], values: AdminPermission[]) {
-  return values.some((value) => hasPermission(permissions, value));
+const bodySchema = z
+  .object({
+    status: z.enum(["FOR_RENT", "FOR_SALE"]),
+    reason: z.string().trim().max(500).optional(),
+  })
+  .strict();
+
+function requiresReasonForRole(roles: string[]) {
+  return (
+    roles.includes("moderation_admin") &&
+    !roles.includes("super_admin") &&
+    !roles.includes("operations_admin")
+  );
 }
 
 export async function PATCH(request: NextRequest, context: RouteContext) {
   const auth = await requireAdmin(request);
   if (!auth.ok) {
     return auth.response;
+  }
+
+  if (!hasPermission(auth.admin.permissions, "listings.status.update")) {
+    return jsonError(
+      {
+        code: "FORBIDDEN",
+        message: "Permission manquante : listings.status.update",
+      },
+      403,
+      auth.correlationId,
+    );
   }
 
   const params = await context.params;
@@ -57,31 +72,25 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
     );
   }
 
-  const requiredPermissions: AdminPermission[] =
-    parsed.data.state === "ARCHIVED"
-      ? ["listings.state.update", "listings.archive", "listings.reject"]
-      : ["listings.state.update", "listings.unarchive", "listings.approve"];
-
-  if (!hasAnyPermission(auth.admin.permissions, requiredPermissions)) {
+  const reason = parsed.data.reason?.trim() || null;
+  if (requiresReasonForRole(auth.admin.roles) && !reason) {
     return jsonError(
       {
-        code: "FORBIDDEN",
-        message: `Permission manquante : ${requiredPermissions.join(" ou ")}`,
+        code: "VALIDATION_ERROR",
+        message: "Un motif est obligatoire pour ce changement de statut.",
       },
-      403,
+      400,
       auth.correlationId,
     );
   }
 
-  const auditAction = requiredPermissions.find((permission) =>
-    hasPermission(auth.admin.permissions, permission),
-  );
-
   try {
-    const mutation = await updateListingState({
+    const mutation = await updateListing({
       propertyId,
       actorUid: auth.admin.uid,
-      state: parsed.data.state,
+      patch: {
+        status: parsed.data.status,
+      },
     });
 
     if (!mutation) {
@@ -98,17 +107,15 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
     await logAudit({
       actorId: auth.admin.uid,
       actorRoles: auth.admin.roles,
-      action: auditAction ?? "listings.state.update",
+      action: "listings.status.update",
       resource: "property",
       resourceId: propertyId,
       status: "success",
       correlationId: auth.correlationId,
-      diff: {
-        requestedState: parsed.data.state,
-        beforeState: mutation.before.state,
-        afterState: mutation.after.state,
-      },
       details: {
+        reason,
+      },
+      diff: {
         beforeStatus: mutation.before.status,
         afterStatus: mutation.after.status,
       },
@@ -119,7 +126,10 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
     return jsonError(
       {
         code: "INTERNAL_ERROR",
-        message: error instanceof Error ? error.message : "Impossible de mettre à jour l'état de l'annonce.",
+        message:
+          error instanceof Error
+            ? error.message
+            : "Impossible de mettre à jour le statut de l'annonce.",
       },
       500,
       auth.correlationId,
