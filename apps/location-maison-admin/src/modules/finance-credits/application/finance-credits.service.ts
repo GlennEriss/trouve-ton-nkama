@@ -1,4 +1,7 @@
 import type {
+  CreateFinanceCreditPackInput,
+  FinanceAuditLogItem,
+  FinanceCreditPack,
   FinanceRefundStatusFilter,
   FinanceTransactionStatusFilter,
   FinanceTransactionTypeFilter,
@@ -10,18 +13,28 @@ import type {
   GrantCreditsResult,
   ListFinanceRefundsInput,
   ListFinanceRefundsResult,
+  ListFinanceAuditLogsInput,
+  ListFinanceAuditLogsResult,
+  ListFinanceCreditPacksResult,
   ListFinanceTransactionsInput,
   ListFinanceTransactionsResult,
   ListFinanceWalletsInput,
   ListFinanceWalletsResult,
   ReviewRefundInput,
+  UpdateFinanceCreditPackInput,
 } from "@/modules/finance-credits/domain/types";
 import {
+  createCreditPack,
+  deleteCreditPack,
+  getRefundById,
   grantCreditsAndCreateTransaction,
+  listCreditPacks,
   listCreditTransactionsRawPage,
+  listFinanceAuditLogsRawPage,
   listRefundsRawPage,
   listWalletUsersRawPage,
   reviewRefund,
+  updateCreditPack,
 } from "@/modules/finance-credits/infrastructure/finance-credits.repository";
 import {
   claimFinanceGrantIdempotency,
@@ -32,6 +45,59 @@ import {
 const MAX_SCAN_PAGES = 60;
 const MIN_SCAN_LIMIT = 50;
 const MAX_SCAN_DOCS = Number(process.env.ADMIN_SCAN_DOCS_LIMIT ?? 10000);
+const FINANCE_REFUND_SUPER_ADMIN_THRESHOLD_XAF = Math.max(
+  0,
+  Number(process.env.FINANCE_REFUND_SUPER_ADMIN_THRESHOLD_XAF ?? 100000),
+);
+const FINANCE_REFUND_DECISION_NOTE_REQUIRED_THRESHOLD_XAF = Math.max(
+  0,
+  Number(process.env.FINANCE_REFUND_DECISION_NOTE_REQUIRED_THRESHOLD_XAF ?? 25000),
+);
+const FINANCE_CREDIT_PACKS_AUTOSEED = String(
+  process.env.FINANCE_CREDIT_PACKS_AUTOSEED ?? "true",
+).toLowerCase() !== "false";
+
+const DEFAULT_CREDIT_PACKS: Array<{
+  id: string;
+  name: string;
+  credits: number;
+  price: number;
+  savings: number | null;
+  order: number;
+}> = [
+  {
+    id: "starter",
+    name: "Starter",
+    credits: 5,
+    price: 2000,
+    savings: null,
+    order: 1,
+  },
+  {
+    id: "standard",
+    name: "Standard",
+    credits: 10,
+    price: 3500,
+    savings: 12.5,
+    order: 2,
+  },
+  {
+    id: "advanced",
+    name: "Avancé",
+    credits: 25,
+    price: 7500,
+    savings: 25,
+    order: 3,
+  },
+  {
+    id: "premium",
+    name: "Premium",
+    credits: 50,
+    price: 12500,
+    savings: 37.5,
+    order: 4,
+  },
+];
 
 function normalizeRoleFilter(value?: string): FinanceWalletRoleFilter {
   if (value === "user" || value === "announcer" || value === "admin") {
@@ -175,6 +241,57 @@ function buildGrantFingerprint(input: GrantCreditsInput) {
     input.reason.trim().toLowerCase(),
     input.actorUid.trim().toLowerCase(),
   ].join("|");
+}
+
+function normalizePackId(value: string) {
+  return value
+    .trim()
+    .toLowerCase()
+    .replace(/[^a-z0-9_-]+/g, "-")
+    .replace(/-+/g, "-")
+    .replace(/^-|-$/g, "");
+}
+
+function normalizeFiniteNumber(value: number, fallback: number) {
+  if (!Number.isFinite(value)) {
+    return fallback;
+  }
+  return value;
+}
+
+function hasActorRole(roles: string[], target: string) {
+  return roles.some((role) => role.trim().toLowerCase() === target.toLowerCase());
+}
+
+async function ensureDefaultCreditPacksIfNeeded() {
+  if (!FINANCE_CREDIT_PACKS_AUTOSEED) {
+    return;
+  }
+
+  const existing = await listCreditPacks();
+  if (existing.length > 0) {
+    return;
+  }
+
+  for (const pack of DEFAULT_CREDIT_PACKS) {
+    try {
+      await createCreditPack({
+        id: pack.id,
+        name: pack.name,
+        credits: pack.credits,
+        price: pack.price,
+        savings: pack.savings,
+        isActive: true,
+        order: pack.order,
+        actorUid: "system",
+      });
+    } catch (error) {
+      const code = error instanceof Error ? error.message : "";
+      if (code !== "FINANCE_PACK_ALREADY_EXISTS") {
+        throw error;
+      }
+    }
+  }
 }
 
 export async function listFinanceWallets(input: ListFinanceWalletsInput): Promise<ListFinanceWalletsResult> {
@@ -567,6 +684,260 @@ export async function grantCredits(input: GrantCreditsInput, correlationId: stri
   }
 }
 
-export async function reviewFinanceRefund(input: ReviewRefundInput) {
-  return reviewRefund(input);
+export async function listFinanceCreditPacks(): Promise<ListFinanceCreditPacksResult> {
+  await ensureDefaultCreditPacksIfNeeded();
+  const packs = await listCreditPacks();
+  return {
+    packs,
+    count: packs.length,
+  };
+}
+
+export async function createFinanceCreditPack(input: CreateFinanceCreditPackInput): Promise<FinanceCreditPack> {
+  const id = normalizePackId(input.id);
+  if (!id) {
+    throw new Error("FINANCE_PACK_INVALID_ID");
+  }
+
+  const name = input.name.trim();
+  if (!name) {
+    throw new Error("FINANCE_PACK_INVALID_NAME");
+  }
+
+  const credits = Math.trunc(normalizeFiniteNumber(input.credits, 0));
+  if (credits <= 0) {
+    throw new Error("FINANCE_PACK_INVALID_CREDITS");
+  }
+
+  const price = Math.round(normalizeFiniteNumber(input.price, -1));
+  if (price < 0) {
+    throw new Error("FINANCE_PACK_INVALID_PRICE");
+  }
+
+  const savings =
+    typeof input.savings === "number" && Number.isFinite(input.savings)
+      ? Math.max(0, Math.min(99.99, input.savings))
+      : null;
+
+  const order = typeof input.order === "number" && Number.isFinite(input.order)
+    ? Math.max(0, Math.trunc(input.order))
+    : 0;
+
+  return createCreditPack({
+    ...input,
+    id,
+    name,
+    credits,
+    price,
+    savings,
+    order,
+  });
+}
+
+export async function updateFinanceCreditPack(input: UpdateFinanceCreditPackInput) {
+  const packId = normalizePackId(input.packId);
+  if (!packId) {
+    throw new Error("FINANCE_PACK_INVALID_ID");
+  }
+
+  const patch: UpdateFinanceCreditPackInput["patch"] = {};
+  if (typeof input.patch.name === "string") {
+    const name = input.patch.name.trim();
+    if (!name) {
+      throw new Error("FINANCE_PACK_INVALID_NAME");
+    }
+    patch.name = name;
+  }
+
+  if (typeof input.patch.credits === "number") {
+    const credits = Math.trunc(normalizeFiniteNumber(input.patch.credits, 0));
+    if (credits <= 0) {
+      throw new Error("FINANCE_PACK_INVALID_CREDITS");
+    }
+    patch.credits = credits;
+  }
+
+  if (typeof input.patch.price === "number") {
+    const price = Math.round(normalizeFiniteNumber(input.patch.price, -1));
+    if (price < 0) {
+      throw new Error("FINANCE_PACK_INVALID_PRICE");
+    }
+    patch.price = price;
+  }
+
+  if (typeof input.patch.savings === "number" || input.patch.savings === null) {
+    const savings =
+      input.patch.savings === null
+        ? null
+        : Math.max(0, Math.min(99.99, normalizeFiniteNumber(input.patch.savings, 0)));
+    patch.savings = savings;
+  }
+
+  if (typeof input.patch.isActive === "boolean") {
+    patch.isActive = input.patch.isActive;
+  }
+
+  if (typeof input.patch.order === "number") {
+    patch.order = Math.max(0, Math.trunc(normalizeFiniteNumber(input.patch.order, 0)));
+  }
+
+  if (Object.keys(patch).length === 0) {
+    throw new Error("FINANCE_PACK_EMPTY_PATCH");
+  }
+
+  return updateCreditPack({
+    packId,
+    patch,
+    actorUid: input.actorUid,
+  });
+}
+
+export async function deleteFinanceCreditPack(packId: string) {
+  const normalized = normalizePackId(packId);
+  if (!normalized) {
+    throw new Error("FINANCE_PACK_INVALID_ID");
+  }
+
+  return deleteCreditPack({
+    packId: normalized,
+  });
+}
+
+export async function listFinanceAuditLogs(
+  input: ListFinanceAuditLogsInput,
+): Promise<ListFinanceAuditLogsResult> {
+  const safeLimit = Math.max(1, Math.min(200, input.limit || 50));
+  const requestedCursor = input.cursor?.trim() || null;
+  const actionPrefix = input.actionPrefix?.trim().toLowerCase() || null;
+  const status = input.status ?? "all";
+  const actorId = input.actorId?.trim() || null;
+  const query = input.query?.trim().toLowerCase() || null;
+  const scanLimit = Math.max(MIN_SCAN_LIMIT, Math.min(500, safeLimit * 3));
+
+  let cursor = requestedCursor;
+  let scanCount = 0;
+  let scannedDocs = 0;
+  let hasMoreRaw = true;
+  let hasMore = false;
+  const filtered: FinanceAuditLogItem[] = [];
+
+  while (
+    filtered.length < safeLimit &&
+    hasMoreRaw &&
+    scanCount < MAX_SCAN_PAGES &&
+    scannedDocs < MAX_SCAN_DOCS
+  ) {
+    scanCount += 1;
+    const page = await listFinanceAuditLogsRawPage({
+      limit: scanLimit,
+      cursor,
+    });
+
+    if (page.logs.length === 0) {
+      hasMoreRaw = false;
+      break;
+    }
+
+    scannedDocs += page.logs.length;
+
+    for (let index = 0; index < page.logs.length; index += 1) {
+      const log = page.logs[index];
+      cursor = log.id;
+
+      const matchesAction = actionPrefix ? safeLower(log.action).startsWith(actionPrefix) : true;
+      const matchesStatus = status === "all" ? true : safeLower(log.status) === status;
+      const matchesActor = actorId ? log.actorId === actorId : true;
+      const searchable = [
+        log.id,
+        log.action,
+        log.resource ?? "",
+        log.resourceId ?? "",
+        log.actorId ?? "",
+        log.correlationId ?? "",
+      ]
+        .join(" ")
+        .toLowerCase();
+      const matchesQuery = query ? searchable.includes(query) : true;
+
+      if (matchesAction && matchesStatus && matchesActor && matchesQuery) {
+        filtered.push(log);
+      }
+
+      if (filtered.length === safeLimit) {
+        hasMore = index < page.logs.length - 1 || page.hasMore;
+        break;
+      }
+    }
+
+    if (filtered.length === safeLimit) {
+      break;
+    }
+
+    if (!page.hasMore) {
+      hasMoreRaw = false;
+      break;
+    }
+  }
+
+  const scanLimited = hasMoreRaw && filtered.length < safeLimit && scannedDocs >= MAX_SCAN_DOCS;
+  if (scanLimited) {
+    hasMore = true;
+  }
+
+  return {
+    logs: filtered,
+    count: filtered.length,
+    page: {
+      cursor: requestedCursor,
+      nextCursor: hasMore ? cursor : null,
+      hasMore,
+    },
+    filters: {
+      actionPrefix,
+      status,
+      actorId,
+      query,
+      limit: safeLimit,
+    },
+  };
+}
+
+export async function reviewFinanceRefund(
+  input: ReviewRefundInput,
+  actorRoles: string[],
+) {
+  const current = await getRefundById(input.refundId);
+  if (!current) {
+    return null;
+  }
+
+  if (safeLower(current.status) !== "pending") {
+    throw new Error("FINANCE_REFUND_NOT_PENDING");
+  }
+
+  const amount = Math.max(0, current.amount ?? 0);
+  const decisionNote = input.decisionNote?.trim() || "";
+
+  if (input.nextStatus === "approved") {
+    if (
+      FINANCE_REFUND_DECISION_NOTE_REQUIRED_THRESHOLD_XAF > 0 &&
+      amount >= FINANCE_REFUND_DECISION_NOTE_REQUIRED_THRESHOLD_XAF &&
+      !decisionNote
+    ) {
+      throw new Error("FINANCE_REFUND_NOTE_REQUIRED");
+    }
+
+    if (
+      FINANCE_REFUND_SUPER_ADMIN_THRESHOLD_XAF > 0 &&
+      amount >= FINANCE_REFUND_SUPER_ADMIN_THRESHOLD_XAF &&
+      !hasActorRole(actorRoles, "super_admin")
+    ) {
+      throw new Error("FINANCE_REFUND_SUPER_ADMIN_REQUIRED");
+    }
+  }
+
+  return reviewRefund({
+    ...input,
+    decisionNote,
+  });
 }

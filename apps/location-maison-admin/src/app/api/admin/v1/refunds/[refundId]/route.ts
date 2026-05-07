@@ -53,12 +53,15 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
   }
 
   try {
-    const result = await reviewFinanceRefund({
-      refundId,
-      nextStatus: parsed.data.status,
-      actorUid: auth.admin.uid,
-      decisionNote: parsed.data.decisionNote,
-    });
+    const result = await reviewFinanceRefund(
+      {
+        refundId,
+        nextStatus: parsed.data.status,
+        actorUid: auth.admin.uid,
+        decisionNote: parsed.data.decisionNote,
+      },
+      auth.admin.roles,
+    );
 
     if (!result) {
       return jsonError(
@@ -88,13 +91,47 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
 
     return jsonSuccess(result, auth.correlationId);
   } catch (error) {
+    const code = error instanceof Error ? error.message : "FINANCE_REFUND_REVIEW_FAILED";
+    const status =
+      code === "FINANCE_REFUND_NOT_PENDING"
+        ? 409
+        : code === "FINANCE_REFUND_NOTE_REQUIRED"
+          ? 400
+          : code === "FINANCE_REFUND_SUPER_ADMIN_REQUIRED"
+            ? 403
+            : 500;
+
     return jsonError(
       {
-        code: "INTERNAL_ERROR",
+        code:
+          status === 400
+            ? "VALIDATION_ERROR"
+            : status === 403
+              ? "FORBIDDEN"
+              : status === 409
+                ? "CONFLICT"
+                : "INTERNAL_ERROR",
         message:
-          error instanceof Error ? error.message : "Impossible de mettre à jour ce remboursement.",
+          code === "FINANCE_REFUND_NOT_PENDING"
+            ? "Cette demande n'est plus en attente."
+            : code === "FINANCE_REFUND_NOTE_REQUIRED"
+              ? "Un commentaire est requis pour approuver ce montant."
+              : code === "FINANCE_REFUND_SUPER_ADMIN_REQUIRED"
+                ? "Ce montant doit être approuvé par un super admin."
+                : error instanceof Error
+                  ? error.message
+                  : "Impossible de mettre à jour ce remboursement.",
+        details: {
+          financeErrorCode: code,
+          superAdminThresholdXaf: Number(
+            process.env.FINANCE_REFUND_SUPER_ADMIN_THRESHOLD_XAF ?? 100000,
+          ),
+          decisionNoteThresholdXaf: Number(
+            process.env.FINANCE_REFUND_DECISION_NOTE_REQUIRED_THRESHOLD_XAF ?? 25000,
+          ),
+        },
       },
-      500,
+      status,
       auth.correlationId,
     );
   }

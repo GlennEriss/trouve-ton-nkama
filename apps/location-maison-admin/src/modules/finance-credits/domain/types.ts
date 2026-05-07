@@ -200,3 +200,90 @@ export type ReviewRefundResult = {
   nextStatus: "approved" | "rejected";
   reviewedAt: string;
 };
+
+export type FinanceCreditPack = {
+  id: string;
+  name: string;
+  credits: number;
+  price: number;
+  savings: number | null;
+  isActive: boolean;
+  order: number;
+  createdAt: string | null;
+  updatedAt: string | null;
+  createdBy: string | null;
+  updatedBy: string | null;
+};
+
+export type ListFinanceCreditPacksResult = {
+  packs: FinanceCreditPack[];
+  count: number;
+};
+
+export type CreateFinanceCreditPackInput = {
+  id: string;
+  name: string;
+  credits: number;
+  price: number;
+  savings?: number | null;
+  isActive?: boolean;
+  order?: number;
+  actorUid: string;
+};
+
+export type UpdateFinanceCreditPackInput = {
+  packId: string;
+  patch: {
+    name?: string;
+    credits?: number;
+    price?: number;
+    savings?: number | null;
+    isActive?: boolean;
+    order?: number;
+  };
+  actorUid: string;
+};
+
+export type DeleteFinanceCreditPackInput = {
+  packId: string;
+};
+
+export type FinanceAuditLogItem = {
+  id: string;
+  actorId: string | null;
+  actorRoles: string[];
+  action: string;
+  resource: string | null;
+  resourceId: string | null;
+  status: string | null;
+  correlationId: string | null;
+  createdAt: string | null;
+  diff: Record<string, unknown> | null;
+  details: Record<string, unknown> | null;
+};
+
+export type ListFinanceAuditLogsInput = {
+  limit: number;
+  cursor?: string | null;
+  actionPrefix?: string | null;
+  status?: "all" | "success" | "failed" | "denied";
+  actorId?: string | null;
+  query?: string | null;
+};
+
+export type ListFinanceAuditLogsResult = {
+  logs: FinanceAuditLogItem[];
+  count: number;
+  page: {
+    cursor: string | null;
+    nextCursor: string | null;
+    hasMore: boolean;
+  };
+  filters: {
+    actionPrefix: string | null;
+    status: "all" | "success" | "failed" | "denied";
+    actorId: string | null;
+    query: string | null;
+    limit: number;
+  };
+};

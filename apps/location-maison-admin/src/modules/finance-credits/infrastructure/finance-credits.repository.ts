@@ -2,16 +2,23 @@ import { FieldPath, FieldValue, Timestamp } from "firebase-admin/firestore";
 
 import { getFirebaseAdminDb } from "@/lib/firebase/firebase-admin";
 import type {
+  FinanceAuditLogItem,
+  FinanceCreditPack,
   FinanceCreditTransaction,
   FinanceRefundItem,
   FinanceWalletItem,
+  CreateFinanceCreditPackInput,
+  DeleteFinanceCreditPackInput,
   ReviewRefundInput,
   ReviewRefundResult,
+  UpdateFinanceCreditPackInput,
 } from "@/modules/finance-credits/domain/types";
 
 const USERS_COLLECTION = "users";
 const CREDIT_TRANSACTIONS_COLLECTION = "credit_transactions";
 const REFUND_PAYMENTS_COLLECTION = "refund_payments";
+const CREDIT_PACKS_COLLECTION = "credit_packs";
+const AUDIT_LOGS_COLLECTION = "audit_logs";
 
 type RawUserDoc = {
   uid?: unknown;
@@ -62,6 +69,32 @@ type RawRefundDoc = {
   decisionNote?: unknown;
 };
 
+type RawCreditPackDoc = {
+  name?: unknown;
+  credits?: unknown;
+  price?: unknown;
+  savings?: unknown;
+  isActive?: unknown;
+  order?: unknown;
+  createdAt?: unknown;
+  updatedAt?: unknown;
+  createdBy?: unknown;
+  updatedBy?: unknown;
+};
+
+type RawAuditLogDoc = {
+  actorId?: unknown;
+  actorRoles?: unknown;
+  action?: unknown;
+  resource?: unknown;
+  resourceId?: unknown;
+  status?: unknown;
+  correlationId?: unknown;
+  createdAt?: unknown;
+  diff?: unknown;
+  details?: unknown;
+};
+
 type WalletPageResult = {
   wallets: FinanceWalletItem[];
   nextCursor: string | null;
@@ -76,6 +109,12 @@ type CreditTransactionsPageResult = {
 
 type RefundsPageResult = {
   refunds: FinanceRefundItem[];
+  nextCursor: string | null;
+  hasMore: boolean;
+};
+
+type AuditLogsPageResult = {
+  logs: FinanceAuditLogItem[];
   nextCursor: string | null;
   hasMore: boolean;
 };
@@ -249,6 +288,45 @@ function mapRefund(docId: string, data: RawRefundDoc): FinanceRefundItem {
   };
 }
 
+function mapCreditPack(docId: string, data: RawCreditPackDoc): FinanceCreditPack {
+  return {
+    id: docId,
+    name: toTrimmedString(data.name) ?? docId,
+    credits: Math.max(1, toNumber(data.credits, 1)),
+    price: Math.max(0, toNumber(data.price, 0)),
+    savings: toNullableNumber(data.savings),
+    isActive: typeof data.isActive === "boolean" ? data.isActive : true,
+    order: Math.max(0, Math.trunc(toNumber(data.order, 0))),
+    createdAt: toIso(data.createdAt),
+    updatedAt: toIso(data.updatedAt),
+    createdBy: toTrimmedString(data.createdBy),
+    updatedBy: toTrimmedString(data.updatedBy),
+  };
+}
+
+function toRecordOrNull(value: unknown) {
+  if (!value || typeof value !== "object" || Array.isArray(value)) {
+    return null;
+  }
+  return value as Record<string, unknown>;
+}
+
+function mapAuditLog(docId: string, data: RawAuditLogDoc): FinanceAuditLogItem {
+  return {
+    id: docId,
+    actorId: toTrimmedString(data.actorId),
+    actorRoles: toStringArray(data.actorRoles),
+    action: toTrimmedString(data.action) ?? "unknown",
+    resource: toTrimmedString(data.resource),
+    resourceId: toTrimmedString(data.resourceId),
+    status: toTrimmedString(data.status),
+    correlationId: toTrimmedString(data.correlationId),
+    createdAt: toIso(data.createdAt),
+    diff: toRecordOrNull(data.diff),
+    details: toRecordOrNull(data.details),
+  };
+}
+
 export async function listWalletUsersRawPage(input: {
   limit: number;
   cursor?: string | null;
@@ -342,6 +420,16 @@ export async function listRefundsRawPage(input: {
     nextCursor,
     hasMore,
   };
+}
+
+export async function getRefundById(refundId: string) {
+  const db = getFirebaseAdminDb();
+  const ref = db.collection(REFUND_PAYMENTS_COLLECTION).doc(refundId);
+  const snapshot = await ref.get();
+  if (!snapshot.exists) {
+    return null;
+  }
+  return mapRefund(snapshot.id, snapshot.data() as RawRefundDoc);
 }
 
 export async function grantCreditsAndCreateTransaction(input: {
@@ -463,5 +551,148 @@ export async function reviewRefund(input: ReviewRefundInput): Promise<ReviewRefu
     previousStatus: current.status,
     nextStatus: input.nextStatus,
     reviewedAt: nowIso,
+  };
+}
+
+export async function listCreditPacks(): Promise<FinanceCreditPack[]> {
+  const db = getFirebaseAdminDb();
+  const snapshot = await db
+    .collection(CREDIT_PACKS_COLLECTION)
+    .orderBy("order", "asc")
+    .orderBy("credits", "asc")
+    .get();
+
+  return snapshot.docs.map((doc) => mapCreditPack(doc.id, doc.data() as RawCreditPackDoc));
+}
+
+export async function getCreditPackById(packId: string) {
+  const db = getFirebaseAdminDb();
+  const snapshot = await db.collection(CREDIT_PACKS_COLLECTION).doc(packId).get();
+  if (!snapshot.exists) {
+    return null;
+  }
+  return mapCreditPack(snapshot.id, snapshot.data() as RawCreditPackDoc);
+}
+
+export async function createCreditPack(input: CreateFinanceCreditPackInput) {
+  const db = getFirebaseAdminDb();
+  const ref = db.collection(CREDIT_PACKS_COLLECTION).doc(input.id);
+
+  await db.runTransaction(async (transaction) => {
+    const existing = await transaction.get(ref);
+    if (existing.exists) {
+      throw new Error("FINANCE_PACK_ALREADY_EXISTS");
+    }
+
+    transaction.set(
+      ref,
+      {
+        name: input.name,
+        credits: input.credits,
+        price: input.price,
+        savings: input.savings ?? null,
+        isActive: input.isActive ?? true,
+        order: input.order ?? 0,
+        createdBy: input.actorUid,
+        updatedBy: input.actorUid,
+        createdAt: FieldValue.serverTimestamp(),
+        updatedAt: FieldValue.serverTimestamp(),
+      },
+      { merge: true },
+    );
+  });
+
+  const created = await getCreditPackById(input.id);
+  if (!created) {
+    throw new Error("FINANCE_PACK_CREATE_FAILED");
+  }
+  return created;
+}
+
+export async function updateCreditPack(input: UpdateFinanceCreditPackInput) {
+  const db = getFirebaseAdminDb();
+  const ref = db.collection(CREDIT_PACKS_COLLECTION).doc(input.packId);
+  const snapshot = await ref.get();
+  if (!snapshot.exists) {
+    return null;
+  }
+
+  const patch: Record<string, unknown> = {};
+
+  if (typeof input.patch.name === "string") {
+    patch.name = input.patch.name;
+  }
+  if (typeof input.patch.credits === "number") {
+    patch.credits = input.patch.credits;
+  }
+  if (typeof input.patch.price === "number") {
+    patch.price = input.patch.price;
+  }
+  if (typeof input.patch.savings === "number" || input.patch.savings === null) {
+    patch.savings = input.patch.savings;
+  }
+  if (typeof input.patch.isActive === "boolean") {
+    patch.isActive = input.patch.isActive;
+  }
+  if (typeof input.patch.order === "number") {
+    patch.order = input.patch.order;
+  }
+
+  await ref.set(
+    {
+      ...patch,
+      updatedBy: input.actorUid,
+      updatedAt: FieldValue.serverTimestamp(),
+    },
+    { merge: true },
+  );
+
+  const updated = await getCreditPackById(input.packId);
+  if (!updated) {
+    throw new Error("FINANCE_PACK_UPDATE_FAILED");
+  }
+  return updated;
+}
+
+export async function deleteCreditPack(input: DeleteFinanceCreditPackInput) {
+  const db = getFirebaseAdminDb();
+  const ref = db.collection(CREDIT_PACKS_COLLECTION).doc(input.packId);
+  const snapshot = await ref.get();
+  if (!snapshot.exists) {
+    return null;
+  }
+
+  const pack = mapCreditPack(snapshot.id, snapshot.data() as RawCreditPackDoc);
+  await ref.delete();
+  return pack;
+}
+
+export async function listFinanceAuditLogsRawPage(input: {
+  limit: number;
+  cursor?: string | null;
+}): Promise<AuditLogsPageResult> {
+  const db = getFirebaseAdminDb();
+  const safeLimit = Math.max(1, Math.min(500, input.limit || 100));
+
+  let query = db.collection(AUDIT_LOGS_COLLECTION).orderBy("createdAt", "desc").limit(safeLimit + 1);
+
+  const cursor = input.cursor?.trim() || null;
+  if (cursor) {
+    const cursorDoc = await db.collection(AUDIT_LOGS_COLLECTION).doc(cursor).get();
+    if (cursorDoc.exists) {
+      query = query.startAfter(cursorDoc);
+    }
+  }
+
+  const snapshot = await query.get();
+  const hasMore = snapshot.docs.length > safeLimit;
+  const docs = hasMore ? snapshot.docs.slice(0, safeLimit) : snapshot.docs;
+  const logs = docs.map((doc) => mapAuditLog(doc.id, doc.data() as RawAuditLogDoc));
+  const nextCursor = logs.length > 0 ? logs[logs.length - 1].id : cursor;
+
+  return {
+    logs,
+    nextCursor,
+    hasMore,
   };
 }
