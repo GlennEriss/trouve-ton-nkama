@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import ImmobilierPropertyCardsGrid from '@/components/seo/ImmobilierPropertyCardsGrid';
 import type { LandingPropertyCard } from '@/lib/seo/algolia-listings';
 
 type QuickLink = {
@@ -21,14 +22,6 @@ type ImmobilierLandingPageProps = {
   totalPages: number;
   totalHits: number;
 };
-
-function formatPrice(price: number | string | undefined): string {
-  const numericPrice = typeof price === 'number' ? price : Number(price);
-  if (!Number.isFinite(numericPrice)) {
-    return 'Prix sur demande';
-  }
-  return `${numericPrice.toLocaleString('fr-FR')} FCFA`;
-}
 
 export default function ImmobilierLandingPage({
   title,
@@ -96,43 +89,14 @@ export default function ImmobilierLandingPage({
                 Page {safePage} sur {safeTotalPages}
               </p>
             ) : null}
+            {properties.length > 0 ? (
+              <p className="mt-2 text-sm text-gray-500">
+                Cliquez sur une annonce pour voir les détails complets.
+              </p>
+            ) : null}
 
             {properties.length > 0 ? (
-              <div className="mt-5 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-                {properties.map((property) => {
-                  const firstImage = property.images?.[0];
-                  const imageUrl =
-                    typeof firstImage === 'string' ? firstImage : firstImage && 'fileURL' in firstImage ? firstImage.fileURL : undefined;
-
-                  return (
-                    <article
-                      key={property.id}
-                      className="rounded-xl border border-gray-200 bg-white p-4 shadow-sm hover:shadow-md transition-shadow"
-                    >
-                      {imageUrl ? (
-                        <img
-                          src={imageUrl}
-                          alt={property.title}
-                          className="h-44 w-full rounded-lg object-cover"
-                          loading="lazy"
-                        />
-                      ) : (
-                        <div className="h-44 w-full rounded-lg bg-gray-100" />
-                      )}
-                      <h3 className="mt-4 text-lg font-semibold text-gray-900 line-clamp-2">
-                        <Link href={property.detailsHref} className="hover:text-[#146B67] transition-colors">
-                          {property.title}
-                        </Link>
-                      </h3>
-                      <p className="mt-2 text-sm text-gray-600 line-clamp-2">{property.description}</p>
-                      <p className="mt-3 text-sm font-semibold text-[#146B67]">{formatPrice(property.price)}</p>
-                      <p className="mt-1 text-xs text-gray-500">
-                        {property.city}, {property.province}
-                      </p>
-                    </article>
-                  );
-                })}
-              </div>
+              <ImmobilierPropertyCardsGrid properties={properties} />
             ) : (
               <div className="mt-5 rounded-xl border border-dashed border-gray-300 bg-gray-50 p-6 text-sm text-gray-600">
                 Cette page sera automatiquement enrichie dès qu&apos;une nouvelle annonce correspondante sera publiée.

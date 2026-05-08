@@ -108,7 +108,7 @@ export default async function Page({
     transaction: transactionConfig.slug,
     type: typeConfig.slug,
     page,
-    hitsPerPage: 18,
+    hitsPerPage: 20,
   });
 
   if (propertiesResults.totalPages > 0 && page > propertiesResults.totalPages) {

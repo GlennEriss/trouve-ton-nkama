@@ -116,7 +116,7 @@ export default async function Page({
     type: typeConfig.slug,
     citySlug: cityConfig.slug,
     page,
-    hitsPerPage: 18,
+    hitsPerPage: 20,
   });
 
   if (propertiesResults.totalPages > 0 && page > propertiesResults.totalPages) {

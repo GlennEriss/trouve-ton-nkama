@@ -10,7 +10,7 @@ import {
 const logger = createLogger('seo.algolia-listings');
 
 const DEFAULT_ALGOLIA_INDEX = 'location-maison_property-index';
-const DEFAULT_HITS_PER_PAGE = 18;
+const DEFAULT_HITS_PER_PAGE = 20;
 const ALGOLIA_REVALIDATE_SECONDS = 900;
 
 type AlgoliaLandingHit = {
@@ -20,8 +20,16 @@ type AlgoliaLandingHit = {
   title?: string;
   description?: string;
   price?: number | string;
+  status?: string;
+  typeProperty?: string;
   city?: string;
   province?: string;
+  street?: string;
+  area?: number | string;
+  nbrRooms?: number | string;
+  nbrBathrooms?: number | string;
+  createdAt?: unknown;
+  createdBy?: unknown;
   images?: Array<{ fileURL?: string } | string>;
 };
 
@@ -35,12 +43,22 @@ type AlgoliaLandingResponse = {
 
 export type LandingPropertyCard = {
   id: string;
+  objectID: string;
+  path: string;
   detailsHref: string;
   title: string;
   description: string;
-  price: number | string | undefined;
+  price: number;
+  status: 'FOR_RENT' | 'FOR_SALE';
+  typeProperty: string;
   city: string;
   province: string;
+  street: string;
+  area: number;
+  nbrRooms?: number;
+  nbrBathrooms?: number;
+  createdAt?: unknown;
+  createdBy?: unknown;
   images: Array<{ fileURL?: string } | string>;
 };
 
@@ -86,7 +104,40 @@ function buildFilters(options: {
   return filters.join(' AND ');
 }
 
-function mapHitToLandingProperty(hit: AlgoliaLandingHit): LandingPropertyCard | null {
+function normalizeTypeProperty(value: string | undefined, fallback: string): string {
+  const normalized = (value ?? '').trim().toLowerCase();
+
+  const map: Record<string, string> = {
+    home: 'Home',
+    house: 'Home',
+    apartment: 'Apartment',
+    studio: 'Studio',
+    villa: 'Villa',
+    land: 'Land',
+    room: 'Room',
+    desk: 'Desk',
+    shop: 'Shop',
+    kiosk: 'Kiosk',
+    building: 'Building',
+    logement: 'Logement',
+    property: 'Property',
+  };
+
+  return map[normalized] ?? fallback;
+}
+
+function toFiniteNumber(value: number | string | undefined): number | undefined {
+  const numeric = typeof value === 'number' ? value : Number(value);
+  return Number.isFinite(numeric) ? numeric : undefined;
+}
+
+function mapHitToLandingProperty(
+  hit: AlgoliaLandingHit,
+  defaults: {
+    fallbackStatus: 'FOR_RENT' | 'FOR_SALE';
+    fallbackTypeProperty: string;
+  }
+): LandingPropertyCard | null {
   const rawId = hit.objectID || hit.id || hit.path?.replace(/^properties\//, '');
   const id = typeof rawId === 'string' ? rawId.trim() : '';
 
@@ -94,17 +145,34 @@ function mapHitToLandingProperty(hit: AlgoliaLandingHit): LandingPropertyCard | 
     return null;
   }
 
+  const price = toFiniteNumber(hit.price) ?? 0;
+  const area = toFiniteNumber(hit.area) ?? 0;
+  const nbrRooms = toFiniteNumber(hit.nbrRooms);
+  const nbrBathrooms = toFiniteNumber(hit.nbrBathrooms);
+  const status = hit.status === 'FOR_RENT' || hit.status === 'FOR_SALE' ? hit.status : defaults.fallbackStatus;
+  const typeProperty = normalizeTypeProperty(hit.typeProperty, defaults.fallbackTypeProperty);
+
   return {
     id,
+    objectID: id,
+    path: `properties/${id}`,
     detailsHref: `/houseDetails/${id}`,
     title: typeof hit.title === 'string' && hit.title.trim().length > 0 ? hit.title : 'Annonce immobiliere',
     description:
       typeof hit.description === 'string' && hit.description.trim().length > 0
         ? hit.description
         : 'Consultez les details de cette annonce immobiliere sur Trouve Ton Nkama.',
-    price: hit.price,
+    price,
+    status,
+    typeProperty,
     city: typeof hit.city === 'string' ? hit.city : '',
     province: typeof hit.province === 'string' ? hit.province : '',
+    street: typeof hit.street === 'string' ? hit.street : '',
+    area,
+    nbrRooms,
+    nbrBathrooms,
+    createdAt: hit.createdAt,
+    createdBy: hit.createdBy,
     images: Array.isArray(hit.images) ? hit.images : [],
   };
 }
@@ -154,6 +222,8 @@ export async function searchLandingProperties(options: {
     typePropertyValues: typeConfig.typePropertyValues,
     cityLabel: cityConfig?.label,
   });
+  const fallbackTypeProperty =
+    typeConfig.typePropertyValues.find((value) => /^[A-Z]/.test(value)) ?? typeConfig.typePropertyValues[0];
 
   const cacheTags = [
     'landing-properties',
@@ -209,7 +279,12 @@ export async function searchLandingProperties(options: {
     const data = (await response.json()) as AlgoliaLandingResponse;
     const items = Array.isArray(data.hits)
       ? data.hits
-          .map((hit) => mapHitToLandingProperty(hit))
+          .map((hit) =>
+            mapHitToLandingProperty(hit, {
+              fallbackStatus: transactionConfig.status,
+              fallbackTypeProperty,
+            })
+          )
           .filter((hit): hit is LandingPropertyCard => Boolean(hit))
       : [];
 
