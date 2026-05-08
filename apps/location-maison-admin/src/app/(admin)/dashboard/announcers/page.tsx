@@ -24,6 +24,7 @@ type AnnouncerListItem = {
   announcerSinceAt: string | null;
   lastSeenAt: string | null;
   createdAt: string | null;
+  socialProfiles: AnnouncerSocialProfiles;
 };
 
 type AnnouncerListPayload = {
@@ -56,12 +57,24 @@ type AnnouncerDetails = {
   announcerSinceAt: string | null;
   createdAt: string | null;
   updatedAt: string | null;
+  socialProfiles: AnnouncerSocialProfiles;
   metadata: Record<string, unknown> | null;
 };
 
 type AnnouncerDetailsPayload = {
   announcer: AnnouncerDetails;
 };
+
+type SocialNetworkKey = "facebook" | "instagram" | "tiktok" | "linkedin" | "x";
+
+type SocialNetworkProfile = {
+  url: string | null;
+  handle: string | null;
+};
+
+type AnnouncerSocialProfiles = Record<SocialNetworkKey, SocialNetworkProfile | null>;
+
+type AnnouncerSocialProfilesDraft = Record<SocialNetworkKey, { url: string; handle: string }>;
 
 type AuthMePayload = {
   admin: {
@@ -233,6 +246,52 @@ const PLATFORM_TAG_OPTIONS = [
   "Agence",
 ] as const;
 
+const SOCIAL_NETWORK_LABELS: Record<SocialNetworkKey, string> = {
+  facebook: "Facebook",
+  instagram: "Instagram",
+  tiktok: "TikTok",
+  linkedin: "LinkedIn",
+  x: "X",
+};
+
+const SOCIAL_NETWORK_KEYS: SocialNetworkKey[] = ["facebook", "instagram", "tiktok", "linkedin", "x"];
+
+function createEmptySocialProfilesDraft(): AnnouncerSocialProfilesDraft {
+  return SOCIAL_NETWORK_KEYS.reduce(
+    (acc, key) => ({
+      ...acc,
+      [key]: { url: "", handle: "" },
+    }),
+    {} as AnnouncerSocialProfilesDraft,
+  );
+}
+
+function toSocialProfilesDraft(source?: AnnouncerSocialProfiles | null): AnnouncerSocialProfilesDraft {
+  const draft = createEmptySocialProfilesDraft();
+
+  if (!source) {
+    return draft;
+  }
+
+  for (const key of SOCIAL_NETWORK_KEYS) {
+    draft[key] = {
+      url: source[key]?.url ?? "",
+      handle: source[key]?.handle ?? "",
+    };
+  }
+
+  return draft;
+}
+
+function getAnnouncerSocialEntries(announcer: AnnouncerListItem) {
+  return SOCIAL_NETWORK_KEYS.map((network) => ({
+    network,
+    label: SOCIAL_NETWORK_LABELS[network],
+    url: announcer.socialProfiles[network]?.url ?? null,
+    handle: announcer.socialProfiles[network]?.handle ?? null,
+  })).filter((entry) => Boolean(entry.url) || Boolean(entry.handle));
+}
+
 function hasPermission(permissions: string[], required: string) {
   return permissions.includes("*.*") || permissions.includes(required);
 }
@@ -335,6 +394,35 @@ async function fetchAnnouncerDetails(uid: string) {
   return payload.data.announcer;
 }
 
+async function patchAnnouncerSocialProfiles(uid: string, socialProfiles: AnnouncerSocialProfilesDraft) {
+  const response = await fetch(`/api/admin/v1/announcers/${uid}`, {
+    method: "PATCH",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      socialProfiles: SOCIAL_NETWORK_KEYS.reduce<
+        Record<SocialNetworkKey, { url?: string; handle?: string } | null>
+      >((acc, key) => {
+        const url = socialProfiles[key].url.trim();
+        const handle = socialProfiles[key].handle.trim();
+        acc[key] = url || handle ? { ...(url ? { url } : {}), ...(handle ? { handle } : {}) } : null;
+        return acc;
+      }, {} as Record<SocialNetworkKey, { url?: string; handle?: string } | null>),
+    }),
+  });
+
+  const payload = (await response.json()) as
+    | { success: true; data: AnnouncerDetailsPayload }
+    | { success: false; error?: { message?: string } };
+
+  if (!response.ok || !payload.success) {
+    throw new Error(payload.success ? "Impossible de mettre à jour les réseaux sociaux." : payload.error?.message);
+  }
+
+  return payload.data.announcer;
+}
+
 async function fetchMe() {
   const response = await fetch("/api/admin/v1/auth/me");
   const payload = (await response.json()) as
@@ -368,6 +456,12 @@ export default function AnnouncersPage() {
   const [createListingError, setCreateListingError] = useState<string | null>(null);
   const [createAnnouncerResult, setCreateAnnouncerResult] = useState<CreateAccountPayload | null>(null);
   const [createListingResult, setCreateListingResult] = useState<CreateListingPayload | null>(null);
+  const [socialProfilesDraft, setSocialProfilesDraft] = useState<AnnouncerSocialProfilesDraft>(
+    createEmptySocialProfilesDraft(),
+  );
+  const [socialSubmitting, setSocialSubmitting] = useState(false);
+  const [socialActionError, setSocialActionError] = useState<string | null>(null);
+  const [socialActionSuccess, setSocialActionSuccess] = useState<string | null>(null);
 
   const [createAnnouncer, setCreateAnnouncer] = useState<CreateAnnouncerFormState>({
     firstname: "",
@@ -472,6 +566,27 @@ export default function AnnouncersPage() {
     queryKey: ["auth", "me"],
     queryFn: fetchMe,
   });
+
+  useEffect(() => {
+    if (!detailsQuery.data) {
+      setSocialProfilesDraft(createEmptySocialProfilesDraft());
+      setSocialActionError(null);
+      setSocialActionSuccess(null);
+      return;
+    }
+
+    setSocialProfilesDraft(toSocialProfilesDraft(detailsQuery.data.socialProfiles));
+    setSocialActionError(null);
+    setSocialActionSuccess(null);
+  }, [detailsQuery.data]);
+
+  useEffect(() => {
+    if (!selectedUid) {
+      setSocialProfilesDraft(createEmptySocialProfilesDraft());
+      setSocialActionError(null);
+      setSocialActionSuccess(null);
+    }
+  }, [selectedUid]);
 
   const permissions = useMemo(
     () => meQuery.data?.admin.permissions ?? [],
@@ -590,6 +705,47 @@ export default function AnnouncersPage() {
     },
     [announcersQuery, detailsQuery, selectedUid],
   );
+
+  const onChangeSocialField = useCallback(
+    (network: SocialNetworkKey, field: "url" | "handle", value: string) => {
+      setSocialProfilesDraft((previous) => ({
+        ...previous,
+        [network]: {
+          ...previous[network],
+          [field]: value,
+        },
+      }));
+      setSocialActionError(null);
+      setSocialActionSuccess(null);
+    },
+    [],
+  );
+
+  const onSaveSocialProfiles = useCallback(async () => {
+    if (!selectedUid) {
+      return;
+    }
+    if (!canUpdateAnnouncer) {
+      setSocialActionError("Permission manquante : announcers.update");
+      return;
+    }
+
+    setSocialSubmitting(true);
+    setSocialActionError(null);
+    setSocialActionSuccess(null);
+
+    try {
+      await patchAnnouncerSocialProfiles(selectedUid, socialProfilesDraft);
+      await detailsQuery.refetch();
+      setSocialActionSuccess("Réseaux sociaux mis à jour.");
+    } catch (error) {
+      setSocialActionError(
+        error instanceof Error ? error.message : "Impossible de mettre à jour les réseaux sociaux.",
+      );
+    } finally {
+      setSocialSubmitting(false);
+    }
+  }, [canUpdateAnnouncer, detailsQuery, selectedUid, socialProfilesDraft]);
 
   const onCreateAnnouncerAccount = useCallback(
     async (event: FormEvent<HTMLFormElement>) => {
@@ -2132,12 +2288,14 @@ export default function AnnouncersPage() {
                         <th className="py-2 pr-4 font-medium">Présence</th>
                         <th className="py-2 pr-4 font-medium">Depuis</th>
                         <th className="py-2 pr-4 font-medium">Dernière activité</th>
+                        <th className="py-2 pr-4 font-medium">Réseaux</th>
                         <th className="py-2 pr-4 font-medium">Actions</th>
                       </tr>
                     </thead>
                     <tbody>
                       {announcers.map((announcer) => {
                         const isArchived = announcer.state === "ARCHIVED";
+                        const socialEntries = getAnnouncerSocialEntries(announcer);
                         return (
                           <tr key={announcer.uid} className="border-b border-slate-100 align-top">
                             <td className="py-3 pr-4">
@@ -2166,6 +2324,36 @@ export default function AnnouncersPage() {
                             </td>
                             <td className="py-3 pr-4 text-slate-700">
                               {toDateLabel(announcer.lastSeenAt)}
+                            </td>
+                            <td className="py-3 pr-4">
+                              {socialEntries.length === 0 ? (
+                                <span className="text-xs text-slate-400">Aucun</span>
+                              ) : (
+                                <div className="flex flex-wrap gap-2">
+                                  {socialEntries.map((entry) =>
+                                    entry.url ? (
+                                      <a
+                                        key={`${announcer.uid}-${entry.network}`}
+                                        href={entry.url}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        className="rounded-full border border-slate-200 px-2 py-1 text-xs text-slate-700 hover:bg-slate-50 hover:text-slate-900"
+                                        title={entry.handle ?? entry.url}
+                                      >
+                                        {entry.label}
+                                      </a>
+                                    ) : (
+                                      <span
+                                        key={`${announcer.uid}-${entry.network}`}
+                                        className="rounded-full border border-slate-200 px-2 py-1 text-xs text-slate-500"
+                                        title={entry.handle ?? ""}
+                                      >
+                                        {entry.label}
+                                      </span>
+                                    ),
+                                  )}
+                                </div>
+                              )}
                             </td>
                             <td className="py-3 pr-4">
                               <div className="flex flex-wrap gap-2">
@@ -2272,6 +2460,67 @@ export default function AnnouncersPage() {
                 <p className="text-sm text-slate-900">
                   <span className="font-medium">Création:</span> {toDateLabel(detailsQuery.data.createdAt)}
                 </p>
+
+                <div className="mt-4 border-t border-slate-200 pt-4">
+                  <h3 className="text-sm font-semibold text-slate-900">Réseaux sociaux annonceur</h3>
+                  <p className="mt-1 text-xs text-slate-600">
+                    Liens et @ utilisés pour le sourcing des annonces depuis les réseaux.
+                  </p>
+
+                  {socialActionError ? (
+                    <p className="mt-3 rounded-md bg-red-50 px-3 py-2 text-xs text-red-700">{socialActionError}</p>
+                  ) : null}
+                  {socialActionSuccess ? (
+                    <p className="mt-3 rounded-md bg-emerald-50 px-3 py-2 text-xs text-emerald-700">
+                      {socialActionSuccess}
+                    </p>
+                  ) : null}
+
+                  <div className="mt-3 space-y-3">
+                    {SOCIAL_NETWORK_KEYS.map((network) => (
+                      <div key={network} className="rounded-md border border-slate-200 p-3">
+                        <p className="mb-2 text-xs font-medium text-slate-700">
+                          {SOCIAL_NETWORK_LABELS[network]}
+                        </p>
+                        <div className="grid gap-2">
+                          <Input
+                            type="url"
+                            placeholder={`https://${network}.com/...`}
+                            value={socialProfilesDraft[network].url}
+                            onChange={(event) =>
+                              onChangeSocialField(network, "url", event.target.value)
+                            }
+                            disabled={socialSubmitting || !canUpdateAnnouncer}
+                          />
+                          <Input
+                            placeholder="@username"
+                            value={socialProfilesDraft[network].handle}
+                            onChange={(event) =>
+                              onChangeSocialField(network, "handle", event.target.value)
+                            }
+                            disabled={socialSubmitting || !canUpdateAnnouncer}
+                          />
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+
+                  {canUpdateAnnouncer ? (
+                    <div className="mt-3">
+                      <Button
+                        type="button"
+                        onClick={() => void onSaveSocialProfiles()}
+                        disabled={socialSubmitting}
+                      >
+                        {socialSubmitting ? "Enregistrement..." : "Enregistrer les réseaux"}
+                      </Button>
+                    </div>
+                  ) : (
+                    <p className="mt-3 text-xs text-slate-500">
+                      Lecture seule: permission `announcers.update` requise.
+                    </p>
+                  )}
+                </div>
               </>
             ) : null}
           </CardContent>

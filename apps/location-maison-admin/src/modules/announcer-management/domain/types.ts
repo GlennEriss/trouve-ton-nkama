@@ -1,5 +1,11 @@
 export type AnnouncerPresenceFilter = "all" | "online" | "offline";
 export type AnnouncerStatusFilter = "all" | "active" | "suspended" | "archived";
+export type AnnouncerSocialNetworkKey = "facebook" | "instagram" | "tiktok" | "linkedin" | "x";
+export type AnnouncerSocialNetwork = {
+  url: string | null;
+  handle: string | null;
+};
+export type AnnouncerSocialProfiles = Record<AnnouncerSocialNetworkKey, AnnouncerSocialNetwork | null>;
 
 export type AnnouncerListItem = {
   uid: string;
@@ -13,6 +19,7 @@ export type AnnouncerListItem = {
   announcerSinceAt: string | null;
   lastSeenAt: string | null;
   createdAt: string | null;
+  socialProfiles: AnnouncerSocialProfiles;
 };
 
 export type ListAnnouncersInput = {

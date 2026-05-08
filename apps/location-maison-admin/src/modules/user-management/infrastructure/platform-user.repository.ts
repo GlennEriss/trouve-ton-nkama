@@ -254,3 +254,28 @@ export async function setPlatformUserSuspended(
 
   return mapUserDoc(updatedSnapshot.id, updatedSnapshot.data() as RawUserDoc);
 }
+
+export async function setPlatformUserMetadata(
+  uid: string,
+  metadata: Record<string, unknown>,
+) {
+  const result = await findUserRefByUid(uid);
+  if (!result) {
+    return null;
+  }
+
+  await result.ref.set(
+    {
+      metadata,
+      updatedAt: FieldValue.serverTimestamp(),
+    },
+    { merge: true },
+  );
+
+  const updatedSnapshot = await result.ref.get();
+  if (!updatedSnapshot.exists) {
+    return null;
+  }
+
+  return mapUserDoc(updatedSnapshot.id, updatedSnapshot.data() as RawUserDoc);
+}

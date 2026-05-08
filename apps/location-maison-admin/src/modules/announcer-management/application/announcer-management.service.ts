@@ -1,5 +1,6 @@
 import type {
   AnnouncerPresenceFilter,
+  AnnouncerSocialProfiles,
   AnnouncerStatusFilter,
   ListAnnouncersInput,
   ListAnnouncersResult,
@@ -8,11 +9,24 @@ import {
   getAnnouncerUserByUid,
   listAnnouncerUsersRawPage,
 } from "@/modules/announcer-management/infrastructure/announcer.repository";
+import { setPlatformUserMetadata } from "@/modules/user-management/infrastructure/platform-user.repository";
 
 const ONLINE_THRESHOLD_SECONDS = Number(process.env.USER_ONLINE_THRESHOLD_SECONDS ?? 300);
 const MAX_SCAN_PAGES = 50;
 const MIN_SCAN_LIMIT = 50;
 const MAX_SCAN_DOCS = Number(process.env.ADMIN_SCAN_DOCS_LIMIT ?? 10000);
+const SOCIAL_NETWORK_KEYS = ["facebook", "instagram", "tiktok", "linkedin", "x"] as const;
+
+type SocialNetworkKey = (typeof SOCIAL_NETWORK_KEYS)[number];
+
+export type AnnouncerSocialNetwork = {
+  url: string | null;
+  handle: string | null;
+};
+
+export type AnnouncerSocialProfilesInput = Partial<
+  Record<SocialNetworkKey, { url?: string | null; handle?: string | null } | null>
+>;
 
 function toTimestamp(value?: string | null) {
   if (!value) {
@@ -29,6 +43,139 @@ function computePresence(lastSeenAt?: string | null) {
   }
   const isOnline = Date.now() - timestamp <= ONLINE_THRESHOLD_SECONDS * 1000;
   return isOnline ? ("online" as const) : ("offline" as const);
+}
+
+function normalizeUrl(value: unknown) {
+  if (typeof value !== "string") {
+    return null;
+  }
+  const trimmed = value.trim();
+  if (!trimmed) {
+    return null;
+  }
+
+  try {
+    const url = new URL(trimmed);
+    if (url.protocol !== "http:" && url.protocol !== "https:") {
+      return null;
+    }
+    return url.toString();
+  } catch {
+    return null;
+  }
+}
+
+function normalizeHandle(value: unknown) {
+  if (typeof value !== "string") {
+    return null;
+  }
+
+  const trimmed = value.trim().replace(/\s+/g, "");
+  if (!trimmed) {
+    return null;
+  }
+
+  const normalized = trimmed.startsWith("@") ? trimmed : `@${trimmed}`;
+  return /^@[A-Za-z0-9._-]{2,50}$/.test(normalized) ? normalized : null;
+}
+
+export function extractAnnouncerSocialProfiles(
+  metadata: Record<string, unknown> | null,
+): AnnouncerSocialProfiles {
+  const rawContainer =
+    metadata && typeof metadata === "object" && !Array.isArray(metadata)
+      ? (metadata.socialProfiles as unknown)
+      : null;
+
+  const rawProfiles =
+    rawContainer && typeof rawContainer === "object" && !Array.isArray(rawContainer)
+      ? (rawContainer as Record<string, unknown>)
+      : {};
+
+  return SOCIAL_NETWORK_KEYS.reduce((acc, key) => {
+    const rawEntry =
+      key in rawProfiles &&
+      rawProfiles[key] &&
+      typeof rawProfiles[key] === "object" &&
+      !Array.isArray(rawProfiles[key])
+        ? (rawProfiles[key] as Record<string, unknown>)
+        : null;
+
+    if (!rawEntry) {
+      acc[key] = null;
+      return acc;
+    }
+
+    const url = normalizeUrl(rawEntry.url);
+    const handle = normalizeHandle(rawEntry.handle);
+    acc[key] = url || handle ? { url, handle } : null;
+    return acc;
+  }, {} as AnnouncerSocialProfiles);
+}
+
+function normalizeAnnouncerSocialProfilesInput(
+  input: AnnouncerSocialProfilesInput | null | undefined,
+  fallback: AnnouncerSocialProfiles,
+) {
+  const next = { ...fallback };
+  if (!input || typeof input !== "object") {
+    return next;
+  }
+
+  for (const key of SOCIAL_NETWORK_KEYS) {
+    const raw = input[key];
+    if (raw === undefined) {
+      continue;
+    }
+
+    if (raw === null || typeof raw !== "object" || Array.isArray(raw)) {
+      next[key] = null;
+      continue;
+    }
+
+    const url = normalizeUrl(raw.url);
+    const handle = normalizeHandle(raw.handle);
+    next[key] = url || handle ? { url, handle } : null;
+  }
+
+  return next;
+}
+
+function buildMetadataWithSocialProfiles(
+  metadata: Record<string, unknown> | null,
+  socialProfiles: AnnouncerSocialProfiles,
+) {
+  const base =
+    metadata && typeof metadata === "object" && !Array.isArray(metadata)
+      ? { ...metadata }
+      : {};
+
+  const hasAnyValue = SOCIAL_NETWORK_KEYS.some((key) => Boolean(socialProfiles[key]));
+
+  if (!hasAnyValue) {
+    const { socialProfiles: _socialProfiles, ...rest } = base;
+    return rest;
+  }
+
+  const nextSocialProfiles = SOCIAL_NETWORK_KEYS.reduce<Record<string, { url?: string; handle?: string }>>(
+    (acc, key) => {
+      const profile = socialProfiles[key];
+      if (!profile) {
+        return acc;
+      }
+      acc[key] = {
+        ...(profile.url ? { url: profile.url } : {}),
+        ...(profile.handle ? { handle: profile.handle } : {}),
+      };
+      return acc;
+    },
+    {},
+  );
+
+  return {
+    ...base,
+    socialProfiles: nextSocialProfiles,
+  };
 }
 
 function computeFullName(input: { firstname: string | null; lastname: string | null; email: string | null; uid: string }) {
@@ -156,6 +303,7 @@ export async function listAnnouncers(input: ListAnnouncersInput): Promise<ListAn
         announcerSinceAt: user.announcerSinceAt,
         lastSeenAt: user.lastSeenAt,
         createdAt: user.createdAt,
+        socialProfiles: extractAnnouncerSocialProfiles(user.metadata),
       };
 
       cursor = user.docId;
@@ -222,6 +370,7 @@ export async function getAnnouncerDetails(uid: string) {
 
   const fullName = computeFullName(user);
   const presenceStatus = computePresence(user.lastSeenAt);
+  const socialProfiles = extractAnnouncerSocialProfiles(user.metadata);
 
   return {
     uid: user.uid,
@@ -239,6 +388,31 @@ export async function getAnnouncerDetails(uid: string) {
     announcerSinceAt: user.announcerSinceAt,
     createdAt: user.createdAt,
     updatedAt: user.updatedAt,
+    socialProfiles,
     metadata: user.metadata,
   };
+}
+
+export async function updateAnnouncerSocialProfiles(input: {
+  uid: string;
+  socialProfiles: AnnouncerSocialProfilesInput;
+}) {
+  const user = await getAnnouncerUserByUid(input.uid);
+  if (!user) {
+    return null;
+  }
+
+  const currentSocialProfiles = extractAnnouncerSocialProfiles(user.metadata);
+  const nextSocialProfiles = normalizeAnnouncerSocialProfilesInput(
+    input.socialProfiles,
+    currentSocialProfiles,
+  );
+
+  const nextMetadata = buildMetadataWithSocialProfiles(user.metadata, nextSocialProfiles);
+  const updated = await setPlatformUserMetadata(input.uid, nextMetadata);
+  if (!updated) {
+    return null;
+  }
+
+  return getAnnouncerDetails(input.uid);
 }
