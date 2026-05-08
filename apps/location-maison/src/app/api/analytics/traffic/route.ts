@@ -255,7 +255,10 @@ export async function POST(request: NextRequest) {
         .slice(0, 16)}`;
 
     return {
-      event_id: `evt_visit_${createHash('sha256').update(providerEventId).digest('hex').slice(0, 24)}`,
+      event_id: `evt_visit_${createHash('sha256')
+        .update(`${eventSource}:${providerEventId}`)
+        .digest('hex')
+        .slice(0, 24)}`,
       event_name: 'platform_visit',
       schema_version: '1.0.0',
       occurred_at: occurredAt,
