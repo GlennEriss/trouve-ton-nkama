@@ -84,7 +84,7 @@ Nomenclature alignée:
 - Analytics (actuel en code): `analytics.search_read`, `analytics.traffic_read`
 - Ads analytics (cible documentée): `ads_analytics.read`, `ads_analytics.export`, `ads_analytics.alerts.read`, `ads_analytics.alerts.manage`
 - Social import (cible documentee): `social_import.*`
-- References: `./MATRICE-PERMISSIONS-ECRANS-ACTIONS.md`, `./MATRICE-PERMISSIONS-SOCIAL-IMPORT-ECRANS-ACTIONS.md` et `./MONETISATION-PUBS-ADSENSE-SPEC.md`
+- References: `./MATRICE-PERMISSIONS-ECRANS-ACTIONS.md`, `./MATRICE-PERMISSIONS-SOCIAL-IMPORT-ECRANS-ACTIONS.md`, `./architecture/CHECKLIST-IMPLEMENTATION-RBAC-SOCIAL-IMPORT.md` et `./MONETISATION-PUBS-ADSENSE-SPEC.md`
 
 Règles globales:
 
