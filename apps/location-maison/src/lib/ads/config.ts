@@ -13,10 +13,12 @@ const footerSlot = normalize(process.env.NEXT_PUBLIC_ADSENSE_SLOT_FOOTER) ?? DEF
 const searchInlineSlot = normalize(process.env.NEXT_PUBLIC_ADSENSE_SLOT_SEARCH_INLINE) ?? footerSlot;
 const propertyDetailSlot = normalize(process.env.NEXT_PUBLIC_ADSENSE_SLOT_PROPERTY_DETAIL) ?? footerSlot;
 const searchAiSlot = normalize(process.env.NEXT_PUBLIC_ADSENSE_SLOT_SEARCH_AI) ?? searchInlineSlot;
+const immobilierInlineSlot = normalize(process.env.NEXT_PUBLIC_ADSENSE_SLOT_IMMOBILIER_INLINE) ?? searchInlineSlot;
 
 export const ADSENSE_SLOTS = {
   footer: footerSlot,
   searchInline: searchInlineSlot,
   propertyDetail: propertyDetailSlot,
   searchAi: searchAiSlot,
+  immobilierInline: immobilierInlineSlot,
 } as const;

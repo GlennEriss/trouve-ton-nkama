@@ -129,8 +129,8 @@ SearchDesktopPage() {
     }, [items, isLoadingMore, lastItemsCount]);
 
     const feedItems = React.useMemo(() => {
-        const FIRST_AD_AFTER_INDEX = 5;
-        const AD_INTERVAL = 10;
+        const FIRST_AD_AFTER_INDEX = 7;
+        const AD_INTERVAL = 12;
 
         const results: Array<
             | { type: 'property'; item: any }

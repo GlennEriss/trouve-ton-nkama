@@ -9,6 +9,8 @@ type InlineAdUnitProps = Readonly<{
   slotKey: string;
   className?: string;
   compact?: boolean;
+  showLabel?: boolean;
+  surface?: 'none' | 'card';
 }>;
 
 export default function InlineAdUnit({
@@ -16,14 +18,23 @@ export default function InlineAdUnit({
   slotKey,
   className,
   compact = false,
+  showLabel = false,
+  surface = 'none',
 }: InlineAdUnitProps) {
+  const containerClassName =
+    surface === 'card'
+      ? 'ads-inline-shell rounded-xl border border-gray-200 bg-white p-3 shadow-sm'
+      : 'ads-inline-shell';
+
   return (
-    <div className={cn('rounded-xl border border-gray-200 bg-white p-3 shadow-sm', className)}>
-      <p className="mb-2 text-[10px] font-semibold uppercase tracking-wide text-gray-400">Publicite</p>
+    <div className={cn(containerClassName, className)}>
+      {showLabel ? (
+        <p className="mb-2 text-[10px] font-semibold uppercase tracking-wide text-gray-400">Publicite</p>
+      ) : null}
       <AdSenseBlock
         slot={slot}
         slotKey={slotKey}
-        minHeight={compact ? 76 : 96}
+        minHeight={compact ? 48 : 60}
       />
     </div>
   );

@@ -9,7 +9,7 @@ import { useToast } from '@/hooks/use-toast';
 import { createLogger } from '@/lib/logger';
 import { generateColorFromName } from '@/lib/generateColorFromName';
 import { firebaseTimestampToDate } from '@/lib/firebaseTimestampToDate';
-import { AlertTriangle, CalendarDays, ChevronLeft, Mail, ShieldCheck, UserCircle } from 'lucide-react';
+import { AlertTriangle, CalendarDays, ChevronLeft, Link2, Mail, ShieldCheck, UserCircle } from 'lucide-react';
 import Link from 'next/link';
 import { useEffect, useMemo } from 'react';
 import { useForm } from 'react-hook-form';
@@ -28,6 +28,13 @@ import {
 const logger = createLogger('users.profile-information-form-modern');
 const INPUT_ICON_COLOR = '#1FA89B';
 const DAY_MS = 24 * 60 * 60 * 1000;
+const SOCIAL_NETWORKS = [
+  { key: 'facebook', label: 'Facebook' },
+  { key: 'instagram', label: 'Instagram' },
+  { key: 'tiktok', label: 'TikTok' },
+  { key: 'linkedin', label: 'LinkedIn' },
+  { key: 'x', label: 'X' },
+] as const;
 
 const countryOptions = countries.map((country) => ({
   label: country.name,
@@ -88,6 +95,101 @@ function getPhoneChangeLockInfo(user: unknown): {
   };
 }
 
+function toSocialProfileDefaults(user: unknown): ProfileInformationSchemaType['socialProfiles'] {
+  const metadata = (user as { metadata?: unknown })?.metadata;
+  const rawContainer =
+    metadata && typeof metadata === 'object' && !Array.isArray(metadata)
+      ? (metadata as Record<string, unknown>).socialProfiles
+      : null;
+  const rawProfiles =
+    rawContainer && typeof rawContainer === 'object' && !Array.isArray(rawContainer)
+      ? (rawContainer as Record<string, unknown>)
+      : {};
+
+  return {
+    facebook: {
+      url:
+        rawProfiles.facebook &&
+        typeof rawProfiles.facebook === 'object' &&
+        !Array.isArray(rawProfiles.facebook) &&
+        typeof (rawProfiles.facebook as Record<string, unknown>).url === 'string'
+          ? ((rawProfiles.facebook as Record<string, unknown>).url as string)
+          : '',
+      handle:
+        rawProfiles.facebook &&
+        typeof rawProfiles.facebook === 'object' &&
+        !Array.isArray(rawProfiles.facebook) &&
+        typeof (rawProfiles.facebook as Record<string, unknown>).handle === 'string'
+          ? ((rawProfiles.facebook as Record<string, unknown>).handle as string)
+          : '',
+    },
+    instagram: {
+      url:
+        rawProfiles.instagram &&
+        typeof rawProfiles.instagram === 'object' &&
+        !Array.isArray(rawProfiles.instagram) &&
+        typeof (rawProfiles.instagram as Record<string, unknown>).url === 'string'
+          ? ((rawProfiles.instagram as Record<string, unknown>).url as string)
+          : '',
+      handle:
+        rawProfiles.instagram &&
+        typeof rawProfiles.instagram === 'object' &&
+        !Array.isArray(rawProfiles.instagram) &&
+        typeof (rawProfiles.instagram as Record<string, unknown>).handle === 'string'
+          ? ((rawProfiles.instagram as Record<string, unknown>).handle as string)
+          : '',
+    },
+    tiktok: {
+      url:
+        rawProfiles.tiktok &&
+        typeof rawProfiles.tiktok === 'object' &&
+        !Array.isArray(rawProfiles.tiktok) &&
+        typeof (rawProfiles.tiktok as Record<string, unknown>).url === 'string'
+          ? ((rawProfiles.tiktok as Record<string, unknown>).url as string)
+          : '',
+      handle:
+        rawProfiles.tiktok &&
+        typeof rawProfiles.tiktok === 'object' &&
+        !Array.isArray(rawProfiles.tiktok) &&
+        typeof (rawProfiles.tiktok as Record<string, unknown>).handle === 'string'
+          ? ((rawProfiles.tiktok as Record<string, unknown>).handle as string)
+          : '',
+    },
+    linkedin: {
+      url:
+        rawProfiles.linkedin &&
+        typeof rawProfiles.linkedin === 'object' &&
+        !Array.isArray(rawProfiles.linkedin) &&
+        typeof (rawProfiles.linkedin as Record<string, unknown>).url === 'string'
+          ? ((rawProfiles.linkedin as Record<string, unknown>).url as string)
+          : '',
+      handle:
+        rawProfiles.linkedin &&
+        typeof rawProfiles.linkedin === 'object' &&
+        !Array.isArray(rawProfiles.linkedin) &&
+        typeof (rawProfiles.linkedin as Record<string, unknown>).handle === 'string'
+          ? ((rawProfiles.linkedin as Record<string, unknown>).handle as string)
+          : '',
+    },
+    x: {
+      url:
+        rawProfiles.x &&
+        typeof rawProfiles.x === 'object' &&
+        !Array.isArray(rawProfiles.x) &&
+        typeof (rawProfiles.x as Record<string, unknown>).url === 'string'
+          ? ((rawProfiles.x as Record<string, unknown>).url as string)
+          : '',
+      handle:
+        rawProfiles.x &&
+        typeof rawProfiles.x === 'object' &&
+        !Array.isArray(rawProfiles.x) &&
+        typeof (rawProfiles.x as Record<string, unknown>).handle === 'string'
+          ? ((rawProfiles.x as Record<string, unknown>).handle as string)
+          : '',
+    },
+  };
+}
+
 export function ProfileInformationFormModern() {
   const { user } = useCurrentUser();
   const { toast } = useToast();
@@ -104,6 +206,13 @@ export function ProfileInformationFormModern() {
       birthDate: '',
       phoneNumber: '',
       countryCode: 'GA',
+      socialProfiles: {
+        facebook: { url: '', handle: '' },
+        instagram: { url: '', handle: '' },
+        tiktok: { url: '', handle: '' },
+        linkedin: { url: '', handle: '' },
+        x: { url: '', handle: '' },
+      },
     },
   });
 
@@ -119,6 +228,7 @@ export function ProfileInformationFormModern() {
       birthDate: user.birthDate ?? '',
       phoneNumber: user.phoneNumbers?.[0] ?? '',
       countryCode: user.country?.code ?? 'GA',
+      socialProfiles: toSocialProfileDefaults(user),
     });
   }, [form, user]);
 
@@ -171,6 +281,7 @@ export function ProfileInformationFormModern() {
       birthDate: values.birthDate,
       phoneNumber: values.phoneNumber,
       countryCode: values.countryCode,
+      socialProfiles: values.socialProfiles,
     });
 
     if (!result.success) {
@@ -206,6 +317,7 @@ export function ProfileInformationFormModern() {
   const phoneLockUntilLabel = phoneChangeLockInfo.lockUntil?.toLocaleDateString('fr-FR') ?? '';
   const currentPhoneNumber = (user.phoneNumbers?.[0] ?? '').trim();
   const watchedPhoneNumber = (form.watch('phoneNumber') ?? '').trim();
+  const isAnnouncer = Array.isArray(user?.roles) && user.roles.includes('Announcer');
   const willLoseVerifiedStatus = Boolean(
     user.phoneNumberVerified &&
     watchedPhoneNumber &&
@@ -373,6 +485,40 @@ export function ProfileInformationFormModern() {
                     En changeant votre numéro, vous perdrez le statut "numéro vérifié" et devrez
                     refaire la vérification OTP.
                   </p>
+                </div>
+              )}
+
+              {isAnnouncer && (
+                <div className="rounded-2xl border border-gray-200 bg-gray-50/60 p-4 dark:border-gray-800 dark:bg-gray-900/40">
+                  <div className="mb-4">
+                    <p className="inline-flex items-center gap-2 text-sm font-semibold text-gray-900 dark:text-white">
+                      <Link2 className="h-4 w-4 text-[#1FA89B]" />
+                      Réseaux sociaux (annonceur)
+                    </p>
+                    <p className="mt-1 text-xs text-gray-600 dark:text-gray-400">
+                      Ces liens nous aident à retrouver vos annonces publiées sur vos réseaux.
+                    </p>
+                  </div>
+
+                  <div className="space-y-4">
+                    {SOCIAL_NETWORKS.map((network) => (
+                      <div key={network.key} className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                        <InputFormApp
+                          control={form.control}
+                          name={`socialProfiles.${network.key}.url`}
+                          label={`${network.label} - lien`}
+                          placeholder={`https://${network.key}.com/...`}
+                          autoComplete="url"
+                        />
+                        <InputFormApp
+                          control={form.control}
+                          name={`socialProfiles.${network.key}.handle`}
+                          label={`${network.label} - @`}
+                          placeholder="@username"
+                        />
+                      </div>
+                    ))}
+                  </div>
                 </div>
               )}
 

@@ -21,7 +21,6 @@ import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
 import type { Property } from '@/models/annonce';
 import Link from 'next/link';
-import { useSearchParams } from 'next/navigation';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { ComponentType } from 'react';
 import {
@@ -41,8 +40,6 @@ import {
   X,
 } from 'lucide-react';
 import { useAdManagement } from '../../hooks';
-import InlineAdUnit from '@/components/ads/InlineAdUnit';
-import { ADSENSE_SLOTS } from '@/lib/ads/config';
 
 const TYPE_FILTER_OPTIONS: Array<{ value: string; label: string }> = [
   { value: '__all', label: 'Tous types' },
@@ -334,8 +331,6 @@ function AdCard({ ad, onToggleState, onDelete, actionLoading }: AdCardProps) {
 }
 
 export function AdManagementPage() {
-  const searchParams = useSearchParams();
-  const shouldShowPostSubmitAd = searchParams.get('submitted') === '1';
   const {
     userUid,
     items,
@@ -713,24 +708,6 @@ export function AdManagementPage() {
 
       {items.length > 0 && (
         <section className="grid grid-cols-1 items-stretch gap-4 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
-          {shouldShowPostSubmitAd && (
-            <Card className="flex h-full min-h-[500px] flex-col overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm dark:border-gray-800 dark:bg-gray-900">
-              <div className="border-b border-gray-100 p-4 dark:border-gray-800">
-                <p className="text-sm font-semibold text-gray-900 dark:text-white">Annonce sponsorisée</p>
-                <p className="text-xs text-gray-500 dark:text-gray-400">
-                  Votre annonce est en ligne. Voici un contenu publicitaire.
-                </p>
-              </div>
-              <div className="flex flex-1 items-center p-4">
-                <InlineAdUnit
-                  className="w-full border-none bg-transparent p-0 shadow-none"
-                  slot={ADSENSE_SLOTS.propertyDetail}
-                  slotKey="post-submit-ad-management"
-                />
-              </div>
-            </Card>
-          )}
-
           {items.map((ad) => (
             <AdCard
               key={ad.id}

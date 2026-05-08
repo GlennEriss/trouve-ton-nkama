@@ -15,6 +15,15 @@ export enum ProfileInformationErrorCode {
   UNKNOWN_ERROR = 'UNKNOWN_ERROR',
 }
 
+export type SocialNetworkKey = 'facebook' | 'instagram' | 'tiktok' | 'linkedin' | 'x';
+
+export type SocialProfileInput = {
+  url?: string;
+  handle?: string;
+};
+
+export type SocialProfilesInput = Partial<Record<SocialNetworkKey, SocialProfileInput | null>>;
+
 export type UpdateProfileInformationData = {
   uid: string;
   firstname: string;
@@ -22,6 +31,7 @@ export type UpdateProfileInformationData = {
   birthDate: string;
   phoneNumber: string;
   countryCode: string;
+  socialProfiles?: SocialProfilesInput;
 };
 
 export type ProfileInformationError = {
