@@ -5,7 +5,10 @@ import { jsonError, jsonSuccess } from "@/lib/api/response";
 import { logAudit } from "@/modules/audit-compliance/application/audit-log.service";
 import { hasPermission } from "@/modules/iam/domain/permissions";
 import { requireAdmin } from "@/modules/iam/presentation/admin-guard";
-import { updateListing } from "@/modules/listing-management/application/listing-management.service";
+import {
+  recordListingModerationDecision,
+  updateListingStatus,
+} from "@/modules/listing-management/application/listing-management.service";
 
 type RouteContext = {
   params: Promise<{ propertyId: string }>;
@@ -14,17 +17,9 @@ type RouteContext = {
 const bodySchema = z
   .object({
     status: z.enum(["FOR_RENT", "FOR_SALE"]),
-    reason: z.string().trim().max(500).optional(),
+    reason: z.string().trim().min(3).max(500),
   })
   .strict();
-
-function requiresReasonForRole(roles: string[]) {
-  return (
-    roles.includes("moderation_admin") &&
-    !roles.includes("super_admin") &&
-    !roles.includes("operations_admin")
-  );
-}
 
 export async function PATCH(request: NextRequest, context: RouteContext) {
   const auth = await requireAdmin(request);
@@ -72,25 +67,12 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
     );
   }
 
-  const reason = parsed.data.reason?.trim() || null;
-  if (requiresReasonForRole(auth.admin.roles) && !reason) {
-    return jsonError(
-      {
-        code: "VALIDATION_ERROR",
-        message: "Un motif est obligatoire pour ce changement de statut.",
-      },
-      400,
-      auth.correlationId,
-    );
-  }
-
   try {
-    const mutation = await updateListing({
+    const mutation = await updateListingStatus({
       propertyId,
       actorUid: auth.admin.uid,
-      patch: {
-        status: parsed.data.status,
-      },
+      reason: parsed.data.reason,
+      status: parsed.data.status,
     });
 
     if (!mutation) {
@@ -104,22 +86,38 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
       );
     }
 
-    await logAudit({
-      actorId: auth.admin.uid,
-      actorRoles: auth.admin.roles,
-      action: "listings.status.update",
-      resource: "property",
-      resourceId: propertyId,
-      status: "success",
-      correlationId: auth.correlationId,
-      details: {
-        reason,
-      },
-      diff: {
+    await Promise.all([
+      logAudit({
+        actorId: auth.admin.uid,
+        actorRoles: auth.admin.roles,
+        action: "listings.status.update",
+        resource: "property",
+        resourceId: propertyId,
+        status: "success",
+        correlationId: auth.correlationId,
+        details: {
+          reason: parsed.data.reason,
+        },
+        diff: {
+          beforeStatus: mutation.before.status,
+          afterStatus: mutation.after.status,
+          beforeState: mutation.before.state,
+          afterState: mutation.after.state,
+        },
+      }),
+      recordListingModerationDecision({
+        propertyId,
+        decision: "STATUS_CHANGE",
+        reason: parsed.data.reason,
+        beforeState: mutation.before.state,
+        afterState: mutation.after.state,
         beforeStatus: mutation.before.status,
         afterStatus: mutation.after.status,
-      },
-    });
+        actorId: auth.admin.uid,
+        actorRoles: auth.admin.roles,
+        correlationId: auth.correlationId,
+      }),
+    ]);
 
     return jsonSuccess({ listing: mutation.after }, auth.correlationId);
   } catch (error) {

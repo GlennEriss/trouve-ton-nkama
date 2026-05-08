@@ -4,32 +4,38 @@ import { z } from "zod";
 import { jsonError, jsonSuccess } from "@/lib/api/response";
 import { logAudit } from "@/modules/audit-compliance/application/audit-log.service";
 import { hasPermission } from "@/modules/iam/domain/permissions";
-import type { AdminPermission } from "@/modules/iam/domain/types";
 import { requireAdmin } from "@/modules/iam/presentation/admin-guard";
 import {
-  bulkUpdateListingState,
+  bulkUpdateListingStatus,
   recordListingModerationDecision,
 } from "@/modules/listing-management/application/listing-management.service";
 
 const bodySchema = z
   .object({
     propertyIds: z.array(z.string().trim().min(1)).min(1).max(300),
-    state: z.enum(["IN_PROGRESS", "ARCHIVED"]),
+    status: z.enum(["FOR_RENT", "FOR_SALE"]),
     reason: z.string().trim().min(3).max(500),
   })
   .strict();
-
-function hasAnyPermission(
-  permissions: AdminPermission[],
-  values: AdminPermission[],
-) {
-  return values.some((value) => hasPermission(permissions, value));
-}
 
 export async function POST(request: NextRequest) {
   const auth = await requireAdmin(request);
   if (!auth.ok) {
     return auth.response;
+  }
+
+  if (
+    !hasPermission(auth.admin.permissions, "listings.bulk.update") &&
+    !hasPermission(auth.admin.permissions, "listings.status.update")
+  ) {
+    return jsonError(
+      {
+        code: "FORBIDDEN",
+        message: "Permission manquante : listings.bulk.update ou listings.status.update",
+      },
+      403,
+      auth.correlationId,
+    );
   }
 
   const body = await request.json().catch(() => null);
@@ -48,54 +54,32 @@ export async function POST(request: NextRequest) {
     );
   }
 
-  const requiredPermissions: AdminPermission[] =
-    parsed.data.state === "ARCHIVED"
-      ? ["listings.bulk.archive", "listings.archive", "listings.state.update", "listings.reject"]
-      : ["listings.bulk.unarchive", "listings.unarchive", "listings.state.update", "listings.approve"];
-
-  if (!hasAnyPermission(auth.admin.permissions, requiredPermissions)) {
-    return jsonError(
-      {
-        code: "FORBIDDEN",
-        message: `Permission manquante : ${requiredPermissions.join(" ou ")}`,
-      },
-      403,
-      auth.correlationId,
-    );
-  }
-
-  const auditAction = hasPermission(auth.admin.permissions, requiredPermissions[0])
-    ? requiredPermissions[0]
-    : requiredPermissions[1];
-
   try {
-    const result = await bulkUpdateListingState({
+    const result = await bulkUpdateListingStatus({
       propertyIds: parsed.data.propertyIds,
       actorUid: auth.admin.uid,
       reason: parsed.data.reason,
-      state: parsed.data.state,
+      status: parsed.data.status,
     });
-
-    const decision =
-      parsed.data.state === "ARCHIVED" ? "BULK_ARCHIVE" : "BULK_UNARCHIVE";
 
     await Promise.all([
       logAudit({
         actorId: auth.admin.uid,
         actorRoles: auth.admin.roles,
-        action: auditAction,
+        action: "listings.bulk.update",
         resource: "property_bulk",
         status: "success",
         correlationId: auth.correlationId,
         details: {
           reason: parsed.data.reason,
+          status: parsed.data.status,
           requestedCount: result.requestedCount,
           updatedCount: result.updatedCount,
           notFoundCount: result.notFoundCount,
           failedCount: result.failedCount,
         },
         diff: {
-          state: result.state,
+          status: result.status,
           updatedIds: result.updated.slice(0, 100).map((entry) => entry.id),
           notFoundIds: result.notFoundIds.slice(0, 100),
           failed: result.failed.slice(0, 30),
@@ -104,12 +88,12 @@ export async function POST(request: NextRequest) {
       ...result.updated.map((entry) =>
         recordListingModerationDecision({
           propertyId: entry.id,
-          decision,
+          decision: "BULK_STATUS_CHANGE",
           reason: parsed.data.reason,
-          beforeState: entry.beforeState,
-          afterState: entry.afterState,
-          beforeStatus: null,
-          afterStatus: null,
+          beforeState: null,
+          afterState: null,
+          beforeStatus: entry.beforeStatus,
+          afterStatus: entry.afterStatus,
           actorId: auth.admin.uid,
           actorRoles: auth.admin.roles,
           correlationId: auth.correlationId,
@@ -125,7 +109,7 @@ export async function POST(request: NextRequest) {
         message:
           error instanceof Error
             ? error.message
-            : "Impossible d'appliquer l'action en masse sur les annonces.",
+            : "Impossible de mettre à jour le statut des annonces en masse.",
       },
       500,
       auth.correlationId,

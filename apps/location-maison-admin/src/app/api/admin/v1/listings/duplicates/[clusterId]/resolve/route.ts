@@ -22,6 +22,7 @@ const bodySchema = z
     note: z.string().trim().max(600).optional(),
     limit: z.coerce.number().int().min(50).max(4000).optional(),
     minGroupSize: z.coerce.number().int().min(2).max(10).optional(),
+    includeSemantic: z.boolean().optional(),
   })
   .strict()
   .superRefine((value, ctx) => {
@@ -100,6 +101,7 @@ export async function POST(request: NextRequest, context: RouteContext) {
       targetListingId: parsed.data.targetListingId?.trim() || null,
       limit: parsed.data.limit ?? 1200,
       minGroupSize: parsed.data.minGroupSize ?? 2,
+      includeSemantic: parsed.data.includeSemantic,
     });
 
     if (!result) {

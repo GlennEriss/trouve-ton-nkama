@@ -7,6 +7,10 @@ import { logAudit } from "@/modules/audit-compliance/application/audit-log.servi
 import { hasPermission } from "@/modules/iam/domain/permissions";
 import { requireAdmin } from "@/modules/iam/presentation/admin-guard";
 import { listListings } from "@/modules/listing-management/application/listing-management.service";
+import {
+  listingFullSchema,
+  normalizeImages,
+} from "@/modules/listing-management/presentation/listing-validation";
 
 const querySchema = z.object({
   limit: z.coerce.number().int().min(1).max(200).optional(),
@@ -15,191 +19,32 @@ const querySchema = z.object({
   status: z.enum(["all", "FOR_RENT", "FOR_SALE"]).optional(),
   state: z.enum(["all", "IN_PROGRESS", "ARCHIVED"]).optional(),
   createdBy: z.string().trim().min(1).optional(),
+  typeProperty: z.array(z.string().trim().min(1).max(40)).max(20).optional(),
+  priceMin: z.coerce.number().min(0).optional(),
+  priceMax: z.coerce.number().min(0).optional(),
+  areaMin: z.coerce.number().min(0).optional(),
+  areaMax: z.coerce.number().min(0).optional(),
+  province: z.array(z.string().trim().min(1).max(120)).max(20).optional(),
+  city: z.array(z.string().trim().min(1).max(120)).max(20).optional(),
+  dateFrom: z.string().trim().optional(),
+  dateTo: z.string().trim().optional(),
+  duplicateState: z.enum(["all", "suspected", "confirmed", "resolved"]).optional(),
 });
 
-const bodySchema = z
+const announcerSchema = z
   .object({
     announcerUid: z.string().trim().min(1),
-    title: z.string().trim().min(3).max(180),
-    description: z.string().trim().min(10).max(5000),
-    typeProperty: z.enum([
-      "Home",
-      "Studio",
-      "Apartment",
-      "Desk",
-      "Building",
-      "Shop",
-      "Kiosk",
-      "Room",
-      "Property",
-      "Logement",
-      "Villa",
-      "Land",
-    ]),
-    status: z.enum(["FOR_RENT", "FOR_SALE"]),
-    price: z.coerce.number().min(1),
-    area: z.coerce.number().min(0),
-    tags: z.array(z.string().trim().min(1).max(50)).min(1).max(6),
-    images: z
-      .array(
-        z.union([
-          z.string().trim().url(),
-          z.object({
-            fileURL: z.string().trim().url(),
-            filePATH: z.string().trim().optional(),
-          }),
-        ]),
-      )
-      .min(1)
-      .max(30),
-    street: z.string().trim().min(1).max(180),
-    city: z.string().trim().min(1).max(120),
-    province: z.string().trim().min(1).max(120),
-    provinceLon: z.coerce.number().min(-180).max(180).optional(),
-    provinceLat: z.coerce.number().min(-90).max(90).optional(),
-    cityLon: z.coerce.number().min(-180).max(180).optional(),
-    cityLat: z.coerce.number().min(-90).max(90).optional(),
-    streetLon: z.coerce.number().min(-180).max(180).optional(),
-    streetLat: z.coerce.number().min(-90).max(90).optional(),
-    additionnalInformation: z.string().trim().max(500).optional(),
-    longitude: z.coerce.number().min(-180).max(180).optional(),
-    latitude: z.coerce.number().min(-90).max(90).optional(),
-    country: z.string().trim().min(1).max(80),
-    countryCode: z.string().trim().min(2).max(4),
-    isLocExact: z.boolean().optional(),
-    contact: z.string().trim().max(60).optional(),
-    nbrRooms: z.coerce.number().min(0).optional(),
-    nbrKitchens: z.coerce.number().min(0).optional(),
-    nbrBathrooms: z.coerce.number().min(0).optional(),
-    nbrToilets: z.coerce.number().min(0).optional(),
-    nbrGarages: z.coerce.number().min(0).optional(),
-    nbrFloors: z.coerce.number().min(0).optional(),
-    nbrLivingRoom: z.coerce.number().min(0).optional(),
-    nbrFloorStudio: z.coerce.number().min(0).optional(),
-    numeroStudio: z.string().trim().min(1).optional(),
-    nbrFloorApartment: z.coerce.number().min(0).optional(),
-    numeroApartment: z.string().trim().min(1).optional(),
-    nbrPiscine: z.coerce.number().min(0).optional(),
-    nbrApartments: z.coerce.number().min(0).optional(),
-    hasParking: z.boolean().optional(),
-    nbrToilet: z.coerce.number().min(0).optional(),
-    kioskType: z.string().trim().min(1).optional(),
-    roomType: z.string().trim().min(1).optional(),
   })
-  .strict()
-  .superRefine((value, ctx) => {
-    const requireNumber = (field: keyof typeof value, label: string) => {
-      if (typeof value[field] !== "number" || !Number.isFinite(value[field] as number)) {
-        ctx.addIssue({
-          code: z.ZodIssueCode.custom,
-          message: `${label} est requis pour ce type d'annonce.`,
-          path: [field],
-        });
-      }
-    };
+  .strict();
 
-    const requireString = (field: keyof typeof value, label: string) => {
-      const candidate = value[field];
-      if (typeof candidate !== "string" || candidate.trim().length === 0) {
-        ctx.addIssue({
-          code: z.ZodIssueCode.custom,
-          message: `${label} est requis pour ce type d'annonce.`,
-          path: [field],
-        });
-      }
-    };
+function parseMultiValue(searchParams: URLSearchParams, key: string) {
+  const values = searchParams
+    .getAll(key)
+    .flatMap((value) => value.split(","))
+    .map((value) => value.trim())
+    .filter((value) => value.length > 0);
 
-    const requireLogementBase = () => {
-      requireNumber("nbrRooms", "nbrRooms");
-      requireNumber("nbrKitchens", "nbrKitchens");
-      requireNumber("nbrBathrooms", "nbrBathrooms");
-      requireNumber("nbrToilets", "nbrToilets");
-    };
-
-    if (value.typeProperty === "Logement") {
-      requireLogementBase();
-      return;
-    }
-
-    if (value.typeProperty === "Home") {
-      requireLogementBase();
-      requireNumber("nbrGarages", "nbrGarages");
-      requireNumber("nbrFloors", "nbrFloors");
-      requireNumber("nbrLivingRoom", "nbrLivingRoom");
-      return;
-    }
-
-    if (value.typeProperty === "Studio") {
-      requireLogementBase();
-      requireNumber("nbrFloorStudio", "nbrFloorStudio");
-      requireString("numeroStudio", "numeroStudio");
-      return;
-    }
-
-    if (value.typeProperty === "Apartment") {
-      requireLogementBase();
-      requireNumber("nbrFloorApartment", "nbrFloorApartment");
-      requireString("numeroApartment", "numeroApartment");
-      return;
-    }
-
-    if (value.typeProperty === "Villa") {
-      requireLogementBase();
-      requireNumber("nbrFloors", "nbrFloors");
-      requireNumber("nbrPiscine", "nbrPiscine");
-      requireNumber("nbrGarages", "nbrGarages");
-      return;
-    }
-
-    if (value.typeProperty === "Desk") {
-      requireNumber("nbrToilets", "nbrToilets");
-      requireNumber("nbrRooms", "nbrRooms");
-      return;
-    }
-
-    if (value.typeProperty === "Building") {
-      requireNumber("nbrApartments", "nbrApartments");
-      requireNumber("nbrFloors", "nbrFloors");
-      if (typeof value.hasParking !== "boolean") {
-        ctx.addIssue({
-          code: z.ZodIssueCode.custom,
-          message: "hasParking est requis pour ce type d'annonce.",
-          path: ["hasParking"],
-        });
-      }
-      return;
-    }
-
-    if (value.typeProperty === "Shop") {
-      requireNumber("nbrRooms", "nbrRooms");
-      requireNumber("nbrToilet", "nbrToilet");
-      return;
-    }
-
-    if (value.typeProperty === "Kiosk") {
-      requireString("kioskType", "kioskType");
-      return;
-    }
-
-    if (value.typeProperty === "Room") {
-      requireString("roomType", "roomType");
-    }
-  });
-
-function normalizeImages(input: Array<string | { fileURL: string; filePATH?: string }>) {
-  return input.map((item) => {
-    if (typeof item === "string") {
-      return {
-        fileURL: item,
-        filePATH: "",
-      };
-    }
-
-    return {
-      fileURL: item.fileURL,
-      filePATH: item.filePATH ?? "",
-    };
-  });
+  return values.length ? values : undefined;
 }
 
 export async function GET(request: NextRequest) {
@@ -215,6 +60,16 @@ export async function GET(request: NextRequest) {
     status: request.nextUrl.searchParams.get("status") ?? undefined,
     state: request.nextUrl.searchParams.get("state") ?? undefined,
     createdBy: request.nextUrl.searchParams.get("createdBy") ?? undefined,
+    typeProperty: parseMultiValue(request.nextUrl.searchParams, "typeProperty"),
+    priceMin: request.nextUrl.searchParams.get("priceMin") ?? undefined,
+    priceMax: request.nextUrl.searchParams.get("priceMax") ?? undefined,
+    areaMin: request.nextUrl.searchParams.get("areaMin") ?? undefined,
+    areaMax: request.nextUrl.searchParams.get("areaMax") ?? undefined,
+    province: parseMultiValue(request.nextUrl.searchParams, "province"),
+    city: parseMultiValue(request.nextUrl.searchParams, "city"),
+    dateFrom: request.nextUrl.searchParams.get("dateFrom") ?? undefined,
+    dateTo: request.nextUrl.searchParams.get("dateTo") ?? undefined,
+    duplicateState: request.nextUrl.searchParams.get("duplicateState") ?? undefined,
   });
 
   if (!parsed.success) {
@@ -237,7 +92,17 @@ export async function GET(request: NextRequest) {
     parsed.data.status === "FOR_SALE" ||
     parsed.data.state === "IN_PROGRESS" ||
     parsed.data.state === "ARCHIVED" ||
-    (parsed.data.createdBy?.trim().length ?? 0) > 0;
+    (parsed.data.createdBy?.trim().length ?? 0) > 0 ||
+    (parsed.data.typeProperty?.length ?? 0) > 0 ||
+    (parsed.data.province?.length ?? 0) > 0 ||
+    (parsed.data.city?.length ?? 0) > 0 ||
+    typeof parsed.data.priceMin === "number" ||
+    typeof parsed.data.priceMax === "number" ||
+    typeof parsed.data.areaMin === "number" ||
+    typeof parsed.data.areaMax === "number" ||
+    (parsed.data.dateFrom?.trim().length ?? 0) > 0 ||
+    (parsed.data.dateTo?.trim().length ?? 0) > 0 ||
+    (parsed.data.duplicateState && parsed.data.duplicateState !== "all");
 
   if (hasSearchCriteria && !hasPermission(auth.admin.permissions, "listings.search")) {
     return jsonError(
@@ -258,6 +123,16 @@ export async function GET(request: NextRequest) {
       status: parsed.data.status,
       state: parsed.data.state,
       createdBy: parsed.data.createdBy,
+      typeProperty: parsed.data.typeProperty,
+      priceMin: parsed.data.priceMin,
+      priceMax: parsed.data.priceMax,
+      areaMin: parsed.data.areaMin,
+      areaMax: parsed.data.areaMax,
+      province: parsed.data.province,
+      city: parsed.data.city,
+      dateFrom: parsed.data.dateFrom,
+      dateTo: parsed.data.dateTo,
+      duplicateState: parsed.data.duplicateState,
     });
     return jsonSuccess(result, auth.correlationId);
   } catch (error) {
@@ -279,15 +154,46 @@ export async function POST(request: NextRequest) {
   }
 
   const body = await request.json().catch(() => null);
-  const parsed = bodySchema.safeParse(body);
+  if (!body || typeof body !== "object" || Array.isArray(body)) {
+    return jsonError(
+      {
+        code: "VALIDATION_ERROR",
+        message: "Corps de requête invalide.",
+      },
+      400,
+      auth.correlationId,
+    );
+  }
 
-  if (!parsed.success) {
+  const parsedAnnouncer = announcerSchema.safeParse({
+    announcerUid: (body as Record<string, unknown>).announcerUid,
+  });
+
+  const rawListingPayload = {
+    ...(body as Record<string, unknown>),
+  };
+  delete rawListingPayload.announcerUid;
+  const parsedListing = listingFullSchema.safeParse({
+    ...rawListingPayload,
+    images: Array.isArray(rawListingPayload.images)
+      ? normalizeImages(
+          rawListingPayload.images as Array<string | { fileURL: string; filePATH?: string }>,
+        )
+      : rawListingPayload.images,
+  });
+
+  if (!parsedAnnouncer.success || !parsedListing.success) {
+    const issues = [
+      ...(parsedAnnouncer.success ? [] : parsedAnnouncer.error.issues),
+      ...(parsedListing.success ? [] : parsedListing.error.issues),
+    ];
+
     return jsonError(
       {
         code: "VALIDATION_ERROR",
         message: "Corps de requête invalide.",
         details: {
-          issues: parsed.error.issues,
+          issues,
         },
       },
       400,
@@ -297,8 +203,9 @@ export async function POST(request: NextRequest) {
 
   try {
     const result = await createListingForAnnouncer({
-      ...parsed.data,
-      images: normalizeImages(parsed.data.images),
+      announcerUid: parsedAnnouncer.data.announcerUid,
+      ...parsedListing.data,
+      images: normalizeImages(parsedListing.data.images),
     });
 
     await logAudit({

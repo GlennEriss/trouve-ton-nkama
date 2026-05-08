@@ -6,11 +6,15 @@ import { logAudit } from "@/modules/audit-compliance/application/audit-log.servi
 import { hasPermission } from "@/modules/iam/domain/permissions";
 import type { AdminPermission } from "@/modules/iam/domain/types";
 import { requireAdmin } from "@/modules/iam/presentation/admin-guard";
-import { bulkUpdateListingState } from "@/modules/listing-management/application/listing-management.service";
+import {
+  bulkUpdateListingState,
+  recordListingModerationDecision,
+} from "@/modules/listing-management/application/listing-management.service";
 
 const bodySchema = z
   .object({
     propertyIds: z.array(z.string().trim().min(1)).min(1).max(300),
+    reason: z.string().trim().min(3).max(500),
   })
   .strict();
 
@@ -65,29 +69,47 @@ export async function POST(request: NextRequest) {
     const result = await bulkUpdateListingState({
       propertyIds: parsed.data.propertyIds,
       actorUid: auth.admin.uid,
+      reason: parsed.data.reason,
       state: "IN_PROGRESS",
     });
 
-    await logAudit({
-      actorId: auth.admin.uid,
-      actorRoles: auth.admin.roles,
-      action: auditAction ?? "listings.bulk.unarchive",
-      resource: "property_bulk",
-      status: "success",
-      correlationId: auth.correlationId,
-      details: {
-        requestedCount: result.requestedCount,
-        updatedCount: result.updatedCount,
-        notFoundCount: result.notFoundCount,
-        failedCount: result.failedCount,
-      },
-      diff: {
-        state: result.state,
-        updatedIds: result.updated.slice(0, 100).map((entry) => entry.id),
-        notFoundIds: result.notFoundIds.slice(0, 100),
-        failed: result.failed.slice(0, 30),
-      },
-    });
+    await Promise.all([
+      logAudit({
+        actorId: auth.admin.uid,
+        actorRoles: auth.admin.roles,
+        action: auditAction ?? "listings.bulk.unarchive",
+        resource: "property_bulk",
+        status: "success",
+        correlationId: auth.correlationId,
+        details: {
+          reason: parsed.data.reason,
+          requestedCount: result.requestedCount,
+          updatedCount: result.updatedCount,
+          notFoundCount: result.notFoundCount,
+          failedCount: result.failedCount,
+        },
+        diff: {
+          state: result.state,
+          updatedIds: result.updated.slice(0, 100).map((entry) => entry.id),
+          notFoundIds: result.notFoundIds.slice(0, 100),
+          failed: result.failed.slice(0, 30),
+        },
+      }),
+      ...result.updated.map((entry) =>
+        recordListingModerationDecision({
+          propertyId: entry.id,
+          decision: "BULK_UNARCHIVE",
+          reason: parsed.data.reason,
+          beforeState: entry.beforeState,
+          afterState: entry.afterState,
+          beforeStatus: null,
+          afterStatus: null,
+          actorId: auth.admin.uid,
+          actorRoles: auth.admin.roles,
+          correlationId: auth.correlationId,
+        }),
+      ),
+    ]);
 
     return jsonSuccess(result, auth.correlationId);
   } catch (error) {

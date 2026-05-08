@@ -9,6 +9,7 @@ const querySchema = z.object({
   limit: z.coerce.number().int().min(50).max(4000).optional(),
   minGroupSize: z.coerce.number().int().min(2).max(10).optional(),
   includeResolved: z.enum(["true", "false"]).optional(),
+  includeSemantic: z.enum(["true", "false"]).optional(),
 });
 
 export async function GET(request: NextRequest) {
@@ -22,6 +23,8 @@ export async function GET(request: NextRequest) {
     minGroupSize: request.nextUrl.searchParams.get("minGroupSize") ?? undefined,
     includeResolved:
       request.nextUrl.searchParams.get("includeResolved") ?? undefined,
+    includeSemantic:
+      request.nextUrl.searchParams.get("includeSemantic") ?? undefined,
   });
 
   if (!parsed.success) {
@@ -43,6 +46,7 @@ export async function GET(request: NextRequest) {
       limit: parsed.data.limit ?? 1200,
       minGroupSize: parsed.data.minGroupSize ?? 2,
       includeResolved: parsed.data.includeResolved !== "false",
+      includeSemantic: parsed.data.includeSemantic !== "false",
     });
     return jsonSuccess(result, auth.correlationId);
   } catch (error) {

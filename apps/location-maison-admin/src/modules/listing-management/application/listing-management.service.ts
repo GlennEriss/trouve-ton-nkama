@@ -1,10 +1,18 @@
 import { createHash } from "node:crypto";
 
 import type {
+  BulkUpdateListingStatusInput,
+  BulkUpdateListingStatusResult,
   BulkUpdateListingStateInput,
   BulkUpdateListingStateResult,
   GetListingDuplicateClusterInput,
   GetListingDuplicateClusterResult,
+  ListingDedupAdvancedSettings,
+  ListingDedupMonitoringMetrics,
+  ListingDuplicatesByPropertyResult,
+  ListingDuplicateStateFilter,
+  ListingModerationHistoryResult,
+  ListingModerationDecisionType,
   ListListingDuplicateGroupsInput,
   ListListingDuplicateGroupsResult,
   ListListingsInput,
@@ -15,14 +23,18 @@ import type {
   ListingDuplicateReason,
   ListingDuplicateResolutionAction,
   RecomputeListingDuplicateGroupsInput,
+  RecomputeListingDuplicateGroupsResult,
   ResolveListingDuplicateClusterInput,
   ResolveListingDuplicateClusterResult,
   ListingStateFilter,
   ListingStatusFilter,
+  UpdateListingDedupAdvancedSettingsInput,
   UpdateListingInput,
   UpdateListingResult,
   UpdateListingStateInput,
   UpdateListingStateResult,
+  UpdateListingStatusInput,
+  UpdateListingStatusResult,
 } from "@/modules/listing-management/domain/types";
 import {
   deletePropertyById,
@@ -32,13 +44,46 @@ import {
   patchPropertyState,
 } from "@/modules/listing-management/infrastructure/listing.repository";
 import {
+  getListingDedupAdvancedSettingsRecord,
+  upsertListingDedupAdvancedSettingsRecord,
+  upsertListingDedupMetricsDaily,
+} from "@/modules/listing-management/infrastructure/listing-dedup-advanced.repository";
+import {
+  listDuplicateReviewRecords,
   listDuplicateReviewRecordsByClusterIds,
   upsertDuplicateReviewRecord,
 } from "@/modules/listing-management/infrastructure/listing-duplicate-review.repository";
+import {
+  createListingModerationDecision,
+  listListingAuditLogsByPropertyId,
+  listListingModerationDecisionsByPropertyId,
+} from "@/modules/listing-management/infrastructure/listing-moderation.repository";
 
 const MAX_SCAN_PAGES = 60;
 const MIN_SCAN_LIMIT = 40;
 const MAX_SCAN_DOCS = Number(process.env.ADMIN_SCAN_DOCS_LIMIT ?? 12000);
+const DEDUP_MATCHING_VERSION = "v3_semantic_local_2026_05";
+
+const DEFAULT_DEDUP_ADVANCED_SETTINGS: ListingDedupAdvancedSettings = {
+  semanticEnabled: true,
+  semanticCandidateThreshold: 0.78,
+  semanticClusterThreshold: 0.86,
+  textWeight: 0.7,
+  priceWeight: 0.15,
+  locationWeight: 0.15,
+  maxListingsForSemantic: 1200,
+  maxBlockSize: 120,
+  minTextTokens: 3,
+  updatedAt: null,
+  updatedBy: null,
+};
+
+type SemanticCandidateScore = {
+  textScore: number;
+  priceScore: number;
+  locationScore: number;
+  combinedScore: number;
+};
 
 function normalizeStatusFilter(value?: string): ListingStatusFilter {
   if (value === "FOR_RENT" || value === "FOR_SALE") {
@@ -56,6 +101,64 @@ function normalizeStateFilter(value?: string): ListingStateFilter {
 
 function normalizeQuery(value?: string) {
   return value?.trim().toLowerCase() ?? "";
+}
+
+function normalizeStringArrayFilter(value?: string[]) {
+  if (!Array.isArray(value)) {
+    return [] as string[];
+  }
+  return Array.from(
+    new Set(
+      value
+        .map((item) => item.trim())
+        .filter((item) => item.length > 0)
+        .map((item) => item.toLowerCase()),
+    ),
+  ).slice(0, 20);
+}
+
+function normalizeDuplicateStateFilter(value?: ListListingsInput["duplicateState"]) {
+  if (
+    value === "suspected" ||
+    value === "confirmed" ||
+    value === "resolved"
+  ) {
+    return value;
+  }
+  return "all";
+}
+
+function normalizeNullableNumber(value?: number) {
+  if (typeof value !== "number" || !Number.isFinite(value)) {
+    return null;
+  }
+  return value;
+}
+
+function normalizeDateOnly(value?: string) {
+  if (!value) {
+    return null;
+  }
+  const trimmed = value.trim();
+  if (!trimmed) {
+    return null;
+  }
+  const date = new Date(trimmed);
+  if (Number.isNaN(date.getTime())) {
+    return null;
+  }
+  return date.toISOString().slice(0, 10);
+}
+
+function toDateTimestamp(value: string | null) {
+  if (!value) {
+    return null;
+  }
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) {
+    return null;
+  }
+  return date.getTime();
 }
 
 function matchesStatus(
@@ -83,6 +186,65 @@ function matchesCreatedBy(createdBy: string | null, filter: string | null) {
     return true;
   }
   return createdBy === filter;
+}
+
+function matchesTypeProperty(typeProperty: string | null, filter: string[]) {
+  if (!filter.length) {
+    return true;
+  }
+  if (!typeProperty) {
+    return false;
+  }
+  return filter.includes(typeProperty.trim().toLowerCase());
+}
+
+function matchesRange(value: number | null, min: number | null, max: number | null) {
+  if (min == null && max == null) {
+    return true;
+  }
+  if (value == null || !Number.isFinite(value)) {
+    return false;
+  }
+  if (min != null && value < min) {
+    return false;
+  }
+  if (max != null && value > max) {
+    return false;
+  }
+  return true;
+}
+
+function matchesLocationValue(value: string | null, filter: string[]) {
+  if (!filter.length) {
+    return true;
+  }
+  if (!value) {
+    return false;
+  }
+  return filter.includes(value.trim().toLowerCase());
+}
+
+function matchesDateRange(value: string | null, fromDate: string | null, toDate: string | null) {
+  if (!fromDate && !toDate) {
+    return true;
+  }
+
+  const listingTimestamp = toDateTimestamp(value);
+  if (listingTimestamp == null) {
+    return false;
+  }
+
+  const fromTimestamp = toDateTimestamp(fromDate);
+  const toTimestamp = toDateTimestamp(toDate ? `${toDate}T23:59:59.999Z` : null);
+
+  if (fromTimestamp != null && listingTimestamp < fromTimestamp) {
+    return false;
+  }
+  if (toTimestamp != null && listingTimestamp > toTimestamp) {
+    return false;
+  }
+
+  return true;
 }
 
 function matchesSearch(
@@ -134,9 +296,14 @@ function normalizePatch(input: UpdateListingInput["patch"]) {
   copyTrimmed("street");
   copyTrimmed("city");
   copyTrimmed("province");
+  copyTrimmed("additionnalInformation");
   copyTrimmed("country");
   copyTrimmed("countryCode");
   copyTrimmed("contact");
+  copyTrimmed("numeroStudio");
+  copyTrimmed("numeroApartment");
+  copyTrimmed("kioskType");
+  copyTrimmed("roomType");
 
   if (typeof input.status === "string") {
     patch.status = input.status;
@@ -156,16 +323,86 @@ function normalizePatch(input: UpdateListingInput["patch"]) {
   if (typeof input.latitude === "number" && Number.isFinite(input.latitude)) {
     patch.latitude = input.latitude;
   }
+  if (typeof input.provinceLon === "number" && Number.isFinite(input.provinceLon)) {
+    patch.provinceLon = input.provinceLon;
+  }
+  if (typeof input.provinceLat === "number" && Number.isFinite(input.provinceLat)) {
+    patch.provinceLat = input.provinceLat;
+  }
+  if (typeof input.cityLon === "number" && Number.isFinite(input.cityLon)) {
+    patch.cityLon = input.cityLon;
+  }
+  if (typeof input.cityLat === "number" && Number.isFinite(input.cityLat)) {
+    patch.cityLat = input.cityLat;
+  }
+  if (typeof input.streetLon === "number" && Number.isFinite(input.streetLon)) {
+    patch.streetLon = input.streetLon;
+  }
+  if (typeof input.streetLat === "number" && Number.isFinite(input.streetLat)) {
+    patch.streetLat = input.streetLat;
+  }
   if (typeof input.isLocExact === "boolean") {
     patch.isLocExact = input.isLocExact;
   }
+  if (typeof input.hasParking === "boolean") {
+    patch.hasParking = input.hasParking;
+  }
+
+  const copyFiniteNumber = (
+    key: keyof UpdateListingInput["patch"],
+  ) => {
+    const value = input[key];
+    if (typeof value === "number" && Number.isFinite(value)) {
+      patch[key] = value;
+    }
+  };
+
+  copyFiniteNumber("nbrRooms");
+  copyFiniteNumber("nbrKitchens");
+  copyFiniteNumber("nbrBathrooms");
+  copyFiniteNumber("nbrToilets");
+  copyFiniteNumber("nbrGarages");
+  copyFiniteNumber("nbrFloors");
+  copyFiniteNumber("nbrLivingRoom");
+  copyFiniteNumber("nbrFloorStudio");
+  copyFiniteNumber("nbrFloorApartment");
+  copyFiniteNumber("nbrPiscine");
+  copyFiniteNumber("nbrApartments");
+  copyFiniteNumber("nbrToilet");
 
   if (Array.isArray(input.tags)) {
     const tags = input.tags
       .map((tag) => tag.trim())
       .filter((tag) => tag.length > 0)
-      .slice(0, 20);
+      .slice(0, 6);
     patch.tags = Array.from(new Set(tags));
+  }
+
+  if (Array.isArray(input.images)) {
+    const images = input.images
+      .map((entry) => {
+        if (!entry || typeof entry !== "object") {
+          return null;
+        }
+        const fileURL =
+          typeof entry.fileURL === "string" ? entry.fileURL.trim() : "";
+        const filePATH =
+          typeof entry.filePATH === "string" ? entry.filePATH.trim() : "";
+        if (!fileURL) {
+          return null;
+        }
+        return { fileURL, filePATH };
+      })
+      .filter(
+        (
+          image,
+        ): image is {
+          fileURL: string;
+          filePATH: string;
+        } => Boolean(image),
+      )
+      .slice(0, 30);
+    patch.images = images;
   }
 
   if (typeof patch.title === "string" && patch.title.length > 0) {
@@ -241,6 +478,8 @@ function pushGroupedDuplicates(
       fingerprint,
       reason,
       confidence,
+      semanticScore: null,
+      scoreBreakdown: null,
       listings: items,
       resolution: null,
     });
@@ -269,6 +508,458 @@ async function hydrateDuplicateGroupsWithReviews(
   });
 }
 
+function clampNumber(value: number, min: number, max: number) {
+  return Math.min(max, Math.max(min, value));
+}
+
+function normalizeListingDedupAdvancedSettings(
+  input: Partial<ListingDedupAdvancedSettings> | null | undefined,
+): ListingDedupAdvancedSettings {
+  const merged: ListingDedupAdvancedSettings = {
+    ...DEFAULT_DEDUP_ADVANCED_SETTINGS,
+    ...input,
+  };
+
+  const normalized = {
+    ...merged,
+    semanticEnabled: Boolean(merged.semanticEnabled),
+    semanticCandidateThreshold: clampNumber(
+      Number(merged.semanticCandidateThreshold),
+      0.4,
+      0.99,
+    ),
+    semanticClusterThreshold: clampNumber(
+      Number(merged.semanticClusterThreshold),
+      0.5,
+      0.995,
+    ),
+    textWeight: clampNumber(Number(merged.textWeight), 0, 1),
+    priceWeight: clampNumber(Number(merged.priceWeight), 0, 1),
+    locationWeight: clampNumber(Number(merged.locationWeight), 0, 1),
+    maxListingsForSemantic: Math.trunc(
+      clampNumber(Number(merged.maxListingsForSemantic), 100, 4000),
+    ),
+    maxBlockSize: Math.trunc(clampNumber(Number(merged.maxBlockSize), 20, 500)),
+    minTextTokens: Math.trunc(clampNumber(Number(merged.minTextTokens), 2, 20)),
+    updatedAt: merged.updatedAt ?? null,
+    updatedBy: merged.updatedBy ?? null,
+  };
+
+  const weightSum =
+    normalized.textWeight + normalized.priceWeight + normalized.locationWeight;
+  if (weightSum <= 0.0001) {
+    normalized.textWeight = DEFAULT_DEDUP_ADVANCED_SETTINGS.textWeight;
+    normalized.priceWeight = DEFAULT_DEDUP_ADVANCED_SETTINGS.priceWeight;
+    normalized.locationWeight = DEFAULT_DEDUP_ADVANCED_SETTINGS.locationWeight;
+  }
+
+  if (normalized.semanticClusterThreshold < normalized.semanticCandidateThreshold) {
+    normalized.semanticClusterThreshold = clampNumber(
+      normalized.semanticCandidateThreshold + 0.03,
+      0.5,
+      0.995,
+    );
+  }
+
+  return normalized;
+}
+
+async function resolveDedupAdvancedSettings() {
+  const record = await getListingDedupAdvancedSettingsRecord();
+  return normalizeListingDedupAdvancedSettings(record);
+}
+
+function tokenizeSemanticText(value: string) {
+  return normalizeDuplicateToken(value)
+    .split(/[^a-z0-9]+/g)
+    .map((token) => token.trim())
+    .filter((token) => token.length >= 2);
+}
+
+function buildSparseVector(tokens: string[]) {
+  const map = new Map<string, number>();
+  for (const token of tokens) {
+    map.set(token, (map.get(token) ?? 0) + 1);
+  }
+
+  let norm = 0;
+  for (const value of map.values()) {
+    norm += value * value;
+  }
+  norm = Math.sqrt(norm);
+  if (norm <= 0) {
+    return map;
+  }
+
+  for (const [token, value] of map.entries()) {
+    map.set(token, value / norm);
+  }
+  return map;
+}
+
+function cosineSimilarity(left: Map<string, number>, right: Map<string, number>) {
+  if (!left.size || !right.size) {
+    return 0;
+  }
+
+  let dot = 0;
+  const [smallest, largest] =
+    left.size <= right.size ? [left, right] : [right, left];
+  for (const [token, value] of smallest.entries()) {
+    dot += value * (largest.get(token) ?? 0);
+  }
+  return clampNumber(dot, 0, 1);
+}
+
+function computePriceSimilarity(left: number | null, right: number | null) {
+  if (!Number.isFinite(left) || !Number.isFinite(right) || !left || !right) {
+    return 0.5;
+  }
+
+  const maxValue = Math.max(left, right);
+  if (maxValue <= 0) {
+    return 0.5;
+  }
+  const ratio = Math.abs(left - right) / maxValue;
+  return clampNumber(1 - ratio, 0, 1);
+}
+
+function computeLocationSimilarity(left: ListingDuplicateItem, right: ListingDuplicateItem) {
+  const sameCity =
+    normalizeDuplicateToken(left.city) &&
+    normalizeDuplicateToken(left.city) === normalizeDuplicateToken(right.city);
+  const sameProvince =
+    normalizeDuplicateToken(left.province) &&
+    normalizeDuplicateToken(left.province) === normalizeDuplicateToken(right.province);
+
+  if (sameCity && sameProvince) {
+    return 1;
+  }
+  if (sameCity || sameProvince) {
+    return 0.6;
+  }
+  return 0;
+}
+
+function computeSemanticCandidateScore(input: {
+  leftVector: Map<string, number>;
+  rightVector: Map<string, number>;
+  leftItem: ListingDuplicateItem;
+  rightItem: ListingDuplicateItem;
+  settings: ListingDedupAdvancedSettings;
+}): SemanticCandidateScore {
+  const textScore = cosineSimilarity(input.leftVector, input.rightVector);
+  const priceScore = computePriceSimilarity(
+    input.leftItem.price,
+    input.rightItem.price,
+  );
+  const locationScore = computeLocationSimilarity(
+    input.leftItem,
+    input.rightItem,
+  );
+
+  const weightSum =
+    input.settings.textWeight +
+    input.settings.priceWeight +
+    input.settings.locationWeight;
+  const safeWeightSum = weightSum > 0 ? weightSum : 1;
+  const combinedScore =
+    (textScore * input.settings.textWeight +
+      priceScore * input.settings.priceWeight +
+      locationScore * input.settings.locationWeight) /
+    safeWeightSum;
+
+  return {
+    textScore,
+    priceScore,
+    locationScore,
+    combinedScore: clampNumber(combinedScore, 0, 1),
+  };
+}
+
+function buildSemanticGroupFingerprint(listingIds: string[]) {
+  const hash = createHash("sha1")
+    .update(listingIds.sort().join("|"))
+    .digest("hex")
+    .slice(0, 24);
+  return `semantic_${hash}`;
+}
+
+class UnionFind {
+  private readonly parent: number[];
+
+  constructor(size: number) {
+    this.parent = Array.from({ length: size }, (_, index) => index);
+  }
+
+  find(value: number): number {
+    if (this.parent[value] === value) {
+      return value;
+    }
+    this.parent[value] = this.find(this.parent[value]);
+    return this.parent[value];
+  }
+
+  union(left: number, right: number) {
+    const leftRoot = this.find(left);
+    const rightRoot = this.find(right);
+    if (leftRoot === rightRoot) {
+      return;
+    }
+    this.parent[rightRoot] = leftRoot;
+  }
+}
+
+function buildSemanticDuplicateGroups(input: {
+  items: ListingDuplicateItem[];
+  details: ListingDetails[];
+  minGroupSize: number;
+  settings: ListingDedupAdvancedSettings;
+}): ListingDuplicateGroup[] {
+  if (input.items.length < input.minGroupSize) {
+    return [];
+  }
+
+  const cappedSize = Math.min(
+    input.items.length,
+    input.settings.maxListingsForSemantic,
+  );
+  const scopedItems = input.items.slice(0, cappedSize);
+  const scopedDetails = input.details.slice(0, cappedSize);
+
+  type Candidate = {
+    index: number;
+    item: ListingDuplicateItem;
+    vector: Map<string, number>;
+    tokenCount: number;
+    blockKey: string;
+  };
+
+  const candidates: Candidate[] = scopedItems.map((item, index) => {
+    const details = scopedDetails[index];
+    const semanticText = [
+      details.title,
+      details.description,
+      details.typeProperty ?? "",
+      details.city ?? "",
+      details.province ?? "",
+      details.country ?? "",
+      details.tags.join(" "),
+    ].join(" ");
+    const tokens = tokenizeSemanticText(semanticText);
+    const vector = buildSparseVector(tokens);
+    const blockKey = [
+      normalizeDuplicateToken(item.province) || "_",
+      normalizeDuplicateToken(item.city) || "_",
+      item.status ?? "_",
+    ].join("|");
+    return {
+      index,
+      item,
+      vector,
+      tokenCount: tokens.length,
+      blockKey,
+    };
+  });
+
+  const blocks = new Map<string, Candidate[]>();
+  for (const candidate of candidates) {
+    const existing = blocks.get(candidate.blockKey) ?? [];
+    existing.push(candidate);
+    blocks.set(candidate.blockKey, existing);
+  }
+
+  const pairScores = new Map<
+    string,
+    {
+      textScore: number;
+      priceScore: number;
+      locationScore: number;
+      combinedScore: number;
+    }
+  >();
+  const unionFind = new UnionFind(candidates.length);
+
+  const makePairKey = (left: number, right: number) =>
+    left < right ? `${left}:${right}` : `${right}:${left}`;
+
+  for (const block of blocks.values()) {
+    if (block.length < input.minGroupSize) {
+      continue;
+    }
+
+    if (block.length > input.settings.maxBlockSize) {
+      continue;
+    }
+
+    for (let left = 0; left < block.length; left += 1) {
+      for (let right = left + 1; right < block.length; right += 1) {
+        const leftCandidate = block[left];
+        const rightCandidate = block[right];
+
+        if (
+          leftCandidate.tokenCount < input.settings.minTextTokens &&
+          rightCandidate.tokenCount < input.settings.minTextTokens
+        ) {
+          continue;
+        }
+
+        const score = computeSemanticCandidateScore({
+          leftVector: leftCandidate.vector,
+          rightVector: rightCandidate.vector,
+          leftItem: leftCandidate.item,
+          rightItem: rightCandidate.item,
+          settings: input.settings,
+        });
+
+        if (score.combinedScore < input.settings.semanticCandidateThreshold) {
+          continue;
+        }
+
+        const pairKey = makePairKey(
+          leftCandidate.index,
+          rightCandidate.index,
+        );
+        pairScores.set(pairKey, score);
+
+        if (score.combinedScore >= input.settings.semanticClusterThreshold) {
+          unionFind.union(leftCandidate.index, rightCandidate.index);
+        }
+      }
+    }
+  }
+
+  const clusterIndexMap = new Map<number, number[]>();
+  for (const candidate of candidates) {
+    const root = unionFind.find(candidate.index);
+    const existing = clusterIndexMap.get(root) ?? [];
+    existing.push(candidate.index);
+    clusterIndexMap.set(root, existing);
+  }
+
+  const groups: ListingDuplicateGroup[] = [];
+  for (const clusterIndexes of clusterIndexMap.values()) {
+    if (clusterIndexes.length < input.minGroupSize) {
+      continue;
+    }
+
+    const listingIds = clusterIndexes
+      .map((index) => candidates[index].item.id)
+      .sort();
+
+    let totalTextScore = 0;
+    let totalPriceScore = 0;
+    let totalLocationScore = 0;
+    let totalCombinedScore = 0;
+    let scoreCount = 0;
+
+    for (let left = 0; left < clusterIndexes.length; left += 1) {
+      for (let right = left + 1; right < clusterIndexes.length; right += 1) {
+        const pairKey = makePairKey(clusterIndexes[left], clusterIndexes[right]);
+        const score = pairScores.get(pairKey);
+        if (!score) {
+          continue;
+        }
+        totalTextScore += score.textScore;
+        totalPriceScore += score.priceScore;
+        totalLocationScore += score.locationScore;
+        totalCombinedScore += score.combinedScore;
+        scoreCount += 1;
+      }
+    }
+
+    if (!scoreCount) {
+      continue;
+    }
+
+    const averageCombined = totalCombinedScore / scoreCount;
+    const averageText = totalTextScore / scoreCount;
+    const averagePrice = totalPriceScore / scoreCount;
+    const averageLocation = totalLocationScore / scoreCount;
+
+    groups.push({
+      clusterId: "",
+      fingerprint: buildSemanticGroupFingerprint(listingIds),
+      reason: "semantic_similarity",
+      confidence: Math.round(clampNumber(averageCombined, 0, 0.99) * 100),
+      semanticScore: Number(averageCombined.toFixed(4)),
+      scoreBreakdown: {
+        textScore: Number(averageText.toFixed(4)),
+        priceScore: Number(averagePrice.toFixed(4)),
+        locationScore: Number(averageLocation.toFixed(4)),
+      },
+      listings: clusterIndexes.map((index) => candidates[index].item),
+      resolution: null,
+    });
+  }
+
+  return groups;
+}
+
+async function buildDuplicateStateIndex(input: {
+  scanLimit: number;
+  minGroupSize: number;
+}) {
+  const groupsResult = await listListingDuplicateGroups({
+    limit: Math.max(200, Math.min(4000, input.scanLimit)),
+    minGroupSize: Math.max(2, Math.min(10, input.minGroupSize)),
+    includeResolved: true,
+    includeSemantic: true,
+  });
+
+  const map = new Map<string, "suspected" | "confirmed" | "resolved">();
+
+  const getRank = (value: "suspected" | "confirmed" | "resolved") => {
+    if (value === "confirmed") {
+      return 3;
+    }
+    if (value === "suspected") {
+      return 2;
+    }
+    return 1;
+  };
+
+  for (const group of groupsResult.groups) {
+    let groupState: "suspected" | "confirmed" | "resolved" = "suspected";
+
+    if (group.resolution) {
+      if (
+        group.resolution.action === "confirm_duplicate" ||
+        group.resolution.action === "archive_target"
+      ) {
+        groupState = "confirmed";
+      } else if (group.resolution.action === "not_duplicate") {
+        groupState = "resolved";
+      } else {
+        groupState = "suspected";
+      }
+    }
+
+    for (const listing of group.listings) {
+      const current = map.get(listing.id);
+      if (!current || getRank(groupState) > getRank(current)) {
+        map.set(listing.id, groupState);
+      }
+    }
+  }
+
+  return map;
+}
+
+function matchesDuplicateState(
+  listingId: string,
+  filter: ListingDuplicateStateFilter,
+  index: Map<string, "suspected" | "confirmed" | "resolved"> | null,
+) {
+  if (filter === "all") {
+    return true;
+  }
+  if (!index) {
+    return false;
+  }
+  return index.get(listingId) === filter;
+}
+
 export async function listListings(input: ListListingsInput): Promise<ListListingsResult> {
   const safeLimit = Math.max(1, Math.min(200, input.limit || 50));
   const requestedCursor = input.cursor?.trim() || null;
@@ -276,7 +967,37 @@ export async function listListings(input: ListListingsInput): Promise<ListListin
   const status = normalizeStatusFilter(input.status);
   const state = normalizeStateFilter(input.state);
   const createdBy = input.createdBy?.trim() || null;
+  const typeProperty = normalizeStringArrayFilter(input.typeProperty);
+  const province = normalizeStringArrayFilter(input.province);
+  const city = normalizeStringArrayFilter(input.city);
+  const duplicateState = normalizeDuplicateStateFilter(input.duplicateState);
+  const dateFrom = normalizeDateOnly(input.dateFrom);
+  const dateTo = normalizeDateOnly(input.dateTo);
+
+  const normalizedPriceMin = normalizeNullableNumber(input.priceMin);
+  const normalizedPriceMax = normalizeNullableNumber(input.priceMax);
+  const normalizedAreaMin = normalizeNullableNumber(input.areaMin);
+  const normalizedAreaMax = normalizeNullableNumber(input.areaMax);
+
+  const [priceMin, priceMax] =
+    normalizedPriceMin != null &&
+    normalizedPriceMax != null &&
+    normalizedPriceMin > normalizedPriceMax
+      ? [normalizedPriceMax, normalizedPriceMin]
+      : [normalizedPriceMin, normalizedPriceMax];
+
+  const [areaMin, areaMax] =
+    normalizedAreaMin != null &&
+    normalizedAreaMax != null &&
+    normalizedAreaMin > normalizedAreaMax
+      ? [normalizedAreaMax, normalizedAreaMin]
+      : [normalizedAreaMin, normalizedAreaMax];
+
   const scanLimit = Math.max(MIN_SCAN_LIMIT, Math.min(500, safeLimit * 3));
+  const duplicateStateIndex = await buildDuplicateStateIndex({
+    scanLimit: Math.max(600, Math.min(4000, safeLimit * 20)),
+    minGroupSize: 2,
+  });
 
   let cursor = requestedCursor;
   let scanCount = 0;
@@ -313,6 +1034,13 @@ export async function listListings(input: ListListingsInput): Promise<ListListin
         matchesStatus(row.listing.status, status) &&
         matchesState(row.listing.state, state) &&
         matchesCreatedBy(row.listing.createdBy, createdBy) &&
+        matchesTypeProperty(row.listing.typeProperty, typeProperty) &&
+        matchesRange(row.listing.price, priceMin, priceMax) &&
+        matchesRange(row.listing.area, areaMin, areaMax) &&
+        matchesLocationValue(row.listing.province, province) &&
+        matchesLocationValue(row.listing.city, city) &&
+        matchesDateRange(row.listing.createdAt, dateFrom, dateTo) &&
+        matchesDuplicateState(row.listing.id, duplicateState, duplicateStateIndex) &&
         matchesSearch(
           {
             id: row.listing.id,
@@ -328,7 +1056,10 @@ export async function listListings(input: ListListingsInput): Promise<ListListin
         );
 
       if (keep) {
-        filtered.push(row.listing);
+        filtered.push({
+          ...row.listing,
+          duplicateState: duplicateStateIndex?.get(row.listing.id) ?? "none",
+        });
       }
 
       if (filtered.length === safeLimit) {
@@ -371,6 +1102,16 @@ export async function listListings(input: ListListingsInput): Promise<ListListin
       status,
       state,
       createdBy,
+      typeProperty,
+      priceMin,
+      priceMax,
+      areaMin,
+      areaMax,
+      province,
+      city,
+      dateFrom,
+      dateTo,
+      duplicateState,
       limit: safeLimit,
     },
     summary: {
@@ -431,6 +1172,32 @@ export async function updateListingState(
   return {
     before: existing,
     after: updated,
+  };
+}
+
+export async function updateListingStatus(
+  input: UpdateListingStatusInput,
+): Promise<UpdateListingStatusResult | null> {
+  const existing = await getPropertyById(input.propertyId);
+  if (!existing) {
+    return null;
+  }
+
+  const mutation = await updateListing({
+    propertyId: input.propertyId,
+    actorUid: input.actorUid,
+    patch: {
+      status: input.status,
+    },
+  });
+
+  if (!mutation) {
+    return null;
+  }
+
+  return {
+    before: mutation.before,
+    after: mutation.after,
   };
 }
 
@@ -497,12 +1264,68 @@ export async function bulkUpdateListingState(
   };
 }
 
+export async function bulkUpdateListingStatus(
+  input: BulkUpdateListingStatusInput,
+): Promise<BulkUpdateListingStatusResult> {
+  const uniqueIds = Array.from(
+    new Set(
+      input.propertyIds
+        .map((value) => value.trim())
+        .filter((value) => value.length > 0),
+    ),
+  );
+
+  const updated: BulkUpdateListingStatusResult["updated"] = [];
+  const notFoundIds: string[] = [];
+  const failed: BulkUpdateListingStatusResult["failed"] = [];
+
+  for (const propertyId of uniqueIds) {
+    try {
+      const result = await updateListingStatus({
+        propertyId,
+        actorUid: input.actorUid,
+        status: input.status,
+      });
+
+      if (!result) {
+        notFoundIds.push(propertyId);
+        continue;
+      }
+
+      updated.push({
+        id: propertyId,
+        beforeStatus: result.before.status,
+        afterStatus: result.after.status,
+      });
+    } catch (error) {
+      failed.push({
+        id: propertyId,
+        reason: error instanceof Error ? error.message : "LISTING_BULK_STATUS_FAILED",
+      });
+    }
+  }
+
+  return {
+    status: input.status,
+    requestedCount: uniqueIds.length,
+    updatedCount: updated.length,
+    notFoundCount: notFoundIds.length,
+    failedCount: failed.length,
+    updated,
+    notFoundIds,
+    failed,
+  };
+}
+
 export async function listListingDuplicateGroups(
   input: ListListingDuplicateGroupsInput,
 ): Promise<ListListingDuplicateGroupsResult> {
   const safeLimit = Math.max(50, Math.min(4000, input.limit));
   const minGroupSize = Math.max(2, Math.min(10, input.minGroupSize));
   const includeResolved = input.includeResolved ?? true;
+  const dedupSettings = await resolveDedupAdvancedSettings();
+  const includeSemantic =
+    input.includeSemantic ?? dedupSettings.semanticEnabled;
 
   const page = await listPropertiesRawPage({
     limit: safeLimit,
@@ -511,6 +1334,8 @@ export async function listListingDuplicateGroups(
 
   const signatureMap = new Map<string, ListingDuplicateItem[]>();
   const primaryImageMap = new Map<string, ListingDuplicateItem[]>();
+  const semanticItems: ListingDuplicateItem[] = [];
+  const semanticDetails: ListingDetails[] = [];
 
   for (const row of page.rows) {
     const item = toDuplicateItem(row.details);
@@ -528,11 +1353,26 @@ export async function listListingDuplicateGroups(
       current.push(item);
       primaryImageMap.set(imageKey, current);
     }
+
+    if (includeSemantic && semanticItems.length < dedupSettings.maxListingsForSemantic) {
+      semanticItems.push(item);
+      semanticDetails.push(row.details);
+    }
   }
 
   const groups: ListingDuplicateGroup[] = [];
   pushGroupedDuplicates(groups, signatureMap, "same_signature", minGroupSize);
   pushGroupedDuplicates(groups, primaryImageMap, "same_primary_image", minGroupSize);
+
+  if (includeSemantic && dedupSettings.semanticEnabled) {
+    const semanticGroups = buildSemanticDuplicateGroups({
+      items: semanticItems,
+      details: semanticDetails,
+      minGroupSize,
+      settings: dedupSettings,
+    });
+    groups.push(...semanticGroups);
+  }
 
   groups.sort((a, b) => {
     if (b.listings.length !== a.listings.length) {
@@ -547,6 +1387,9 @@ export async function listListingDuplicateGroups(
       group.resolution && isResolvedDuplicateAction(group.resolution.action),
   ).length;
   const unresolvedCount = hydratedGroups.length - resolvedCount;
+  const semanticGroupsCount = hydratedGroups.filter(
+    (group) => group.reason === "semantic_similarity",
+  ).length;
   const visibleGroups = includeResolved
     ? hydratedGroups
     : hydratedGroups.filter(
@@ -561,7 +1404,145 @@ export async function listListingDuplicateGroups(
     returned: visibleGroups.length,
     resolvedCount,
     unresolvedCount,
+    semanticGroupsCount,
+    matchingVersion: `${DEDUP_MATCHING_VERSION}|local`,
   };
+}
+
+export async function getListingDedupAdvancedSettings() {
+  return resolveDedupAdvancedSettings();
+}
+
+export async function updateListingDedupAdvancedSettings(
+  input: UpdateListingDedupAdvancedSettingsInput,
+) {
+  const normalizedPatch: Partial<
+    Omit<ListingDedupAdvancedSettings, "updatedAt" | "updatedBy">
+  > = {};
+
+  if (typeof input.patch.semanticEnabled === "boolean") {
+    normalizedPatch.semanticEnabled = input.patch.semanticEnabled;
+  }
+
+  const assignIfFinite = (
+    key: keyof Omit<ListingDedupAdvancedSettings, "updatedAt" | "updatedBy">,
+    value: unknown,
+  ) => {
+    if (typeof value === "number" && Number.isFinite(value)) {
+      normalizedPatch[key] = value as never;
+    }
+  };
+
+  assignIfFinite(
+    "semanticCandidateThreshold",
+    input.patch.semanticCandidateThreshold,
+  );
+  assignIfFinite(
+    "semanticClusterThreshold",
+    input.patch.semanticClusterThreshold,
+  );
+  assignIfFinite("textWeight", input.patch.textWeight);
+  assignIfFinite("priceWeight", input.patch.priceWeight);
+  assignIfFinite("locationWeight", input.patch.locationWeight);
+  assignIfFinite("maxListingsForSemantic", input.patch.maxListingsForSemantic);
+  assignIfFinite("maxBlockSize", input.patch.maxBlockSize);
+  assignIfFinite("minTextTokens", input.patch.minTextTokens);
+
+  const record = await upsertListingDedupAdvancedSettingsRecord({
+    patch: normalizedPatch,
+    actorUid: input.actorUid,
+  });
+
+  return normalizeListingDedupAdvancedSettings(record);
+}
+
+function toRoundedRate(value: number | null) {
+  if (value == null || !Number.isFinite(value)) {
+    return null;
+  }
+  return Number(value.toFixed(4));
+}
+
+function buildListingDedupMonitoringMetrics(input: {
+  groupsResult: ListListingDuplicateGroupsResult;
+  truePositiveDecisions: number;
+  falsePositiveDecisions: number;
+  pendingReviewDecisions: number;
+}): ListingDedupMonitoringMetrics {
+  const reviewedDecisions =
+    input.truePositiveDecisions + input.falsePositiveDecisions;
+  const precision =
+    reviewedDecisions > 0
+      ? input.truePositiveDecisions / reviewedDecisions
+      : null;
+  const recallDenominator =
+    input.truePositiveDecisions + input.groupsResult.unresolvedCount;
+  const recallProxy =
+    recallDenominator > 0
+      ? input.truePositiveDecisions / recallDenominator
+      : null;
+  const totalClusters = Math.max(
+    0,
+    input.groupsResult.resolvedCount + input.groupsResult.unresolvedCount,
+  );
+  const reviewCoverage =
+    totalClusters > 0 ? reviewedDecisions / totalClusters : 0;
+
+  return {
+    measuredAt: new Date().toISOString(),
+    totalClustersDetected: totalClusters,
+    semanticClustersDetected: input.groupsResult.semanticGroupsCount,
+    resolvedClusters: input.groupsResult.resolvedCount,
+    unresolvedClusters: input.groupsResult.unresolvedCount,
+    truePositiveDecisions: input.truePositiveDecisions,
+    falsePositiveDecisions: input.falsePositiveDecisions,
+    pendingReviewDecisions: input.pendingReviewDecisions,
+    precision: toRoundedRate(precision),
+    recallProxy: toRoundedRate(recallProxy),
+    reviewCoverage: toRoundedRate(reviewCoverage) ?? 0,
+  };
+}
+
+export async function getListingDuplicateMonitoringMetrics(input: {
+  limit: number;
+  minGroupSize: number;
+  includeSemantic?: boolean;
+}) {
+  const groupsResult = await listListingDuplicateGroups({
+    limit: input.limit,
+    minGroupSize: input.minGroupSize,
+    includeResolved: true,
+    includeSemantic: input.includeSemantic,
+  });
+
+  const reviews = await listDuplicateReviewRecords(20000);
+  let truePositiveDecisions = 0;
+  let falsePositiveDecisions = 0;
+  let pendingReviewDecisions = 0;
+
+  for (const review of reviews) {
+    if (
+      review.resolution.action === "confirm_duplicate" ||
+      review.resolution.action === "archive_target"
+    ) {
+      truePositiveDecisions += 1;
+      continue;
+    }
+    if (review.resolution.action === "not_duplicate") {
+      falsePositiveDecisions += 1;
+      continue;
+    }
+    if (review.resolution.action === "needs_review") {
+      pendingReviewDecisions += 1;
+    }
+  }
+
+  return buildListingDedupMonitoringMetrics({
+    groupsResult,
+    truePositiveDecisions,
+    falsePositiveDecisions,
+    pendingReviewDecisions,
+  });
 }
 
 export async function getListingDuplicateCluster(
@@ -576,6 +1557,7 @@ export async function getListingDuplicateCluster(
     limit: input.limit,
     minGroupSize: input.minGroupSize,
     includeResolved: true,
+    includeSemantic: input.includeSemantic,
   });
   const cluster = listingDuplicateGroups.groups.find(
     (group) => group.clusterId === clusterId,
@@ -598,6 +1580,7 @@ export async function resolveListingDuplicateCluster(
     clusterId: input.clusterId,
     limit: input.limit,
     minGroupSize: input.minGroupSize,
+    includeSemantic: input.includeSemantic,
   });
 
   if (!duplicateCluster) {
@@ -669,10 +1652,102 @@ export async function resolveListingDuplicateCluster(
 
 export async function recomputeListingDuplicateGroups(
   input: RecomputeListingDuplicateGroupsInput,
-) {
-  return listListingDuplicateGroups({
+): Promise<RecomputeListingDuplicateGroupsResult> {
+  const groupsResult = await listListingDuplicateGroups({
     limit: input.limit,
     minGroupSize: input.minGroupSize,
     includeResolved: input.includeResolved,
+    includeSemantic: input.includeSemantic,
   });
+
+  const metrics = await getListingDuplicateMonitoringMetrics({
+    limit: input.limit,
+    minGroupSize: input.minGroupSize,
+    includeSemantic: input.includeSemantic,
+  });
+
+  if (input.actorUid?.trim()) {
+    await upsertListingDedupMetricsDaily({
+      metrics,
+      measuredBy: input.actorUid.trim(),
+    });
+  }
+
+  return {
+    ...groupsResult,
+    metrics,
+  };
+}
+
+export async function recordListingModerationDecision(input: {
+  propertyId: string;
+  decision: ListingModerationDecisionType;
+  reason: string;
+  beforeState: string | null;
+  afterState: string | null;
+  beforeStatus: "FOR_RENT" | "FOR_SALE" | null;
+  afterStatus: "FOR_RENT" | "FOR_SALE" | null;
+  actorId: string;
+  actorRoles: string[];
+  correlationId: string;
+}) {
+  const reason = input.reason.trim();
+  if (!reason) {
+    throw new Error("LISTING_MODERATION_REASON_REQUIRED");
+  }
+
+  await createListingModerationDecision({
+    ...input,
+    reason,
+  });
+}
+
+export async function listListingModerationHistory(input: {
+  propertyId: string;
+  limit?: number;
+}): Promise<ListingModerationHistoryResult> {
+  const propertyId = input.propertyId.trim();
+  const safeLimit = Math.max(1, Math.min(200, Math.trunc(input.limit ?? 80)));
+
+  const [decisions, auditLogs] = await Promise.all([
+    listListingModerationDecisionsByPropertyId({
+      propertyId,
+      limit: safeLimit,
+    }),
+    listListingAuditLogsByPropertyId({
+      propertyId,
+      limit: safeLimit,
+    }),
+  ]);
+
+  return {
+    propertyId,
+    decisions,
+    auditLogs,
+  };
+}
+
+export async function listListingDuplicatesByPropertyId(input: {
+  propertyId: string;
+  limit: number;
+  minGroupSize: number;
+  includeSemantic?: boolean;
+}): Promise<ListingDuplicatesByPropertyResult> {
+  const propertyId = input.propertyId.trim();
+  const result = await listListingDuplicateGroups({
+    limit: input.limit,
+    minGroupSize: input.minGroupSize,
+    includeResolved: true,
+    includeSemantic: input.includeSemantic,
+  });
+
+  const groups = result.groups.filter((group) =>
+    group.listings.some((listing) => listing.id === propertyId),
+  );
+
+  return {
+    propertyId,
+    groups,
+    count: groups.length,
+  };
 }

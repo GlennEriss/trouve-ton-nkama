@@ -8,44 +8,15 @@ import { requireAdmin } from "@/modules/iam/presentation/admin-guard";
 import {
   deleteListing,
   getListingDetails,
+  recordListingModerationDecision,
   updateListing,
 } from "@/modules/listing-management/application/listing-management.service";
-
-const patchSchema = z
-  .object({
-    title: z.string().trim().min(3).max(180).optional(),
-    description: z.string().trim().min(10).max(5000).optional(),
-    typeProperty: z
-      .enum([
-        "Home",
-        "Studio",
-        "Apartment",
-        "Desk",
-        "Building",
-        "Shop",
-        "Kiosk",
-        "Room",
-        "Property",
-        "Logement",
-        "Villa",
-        "Land",
-      ])
-      .optional(),
-    status: z.enum(["FOR_RENT", "FOR_SALE"]).optional(),
-    price: z.coerce.number().min(1).optional(),
-    area: z.coerce.number().min(0).optional(),
-    street: z.string().trim().min(1).max(180).optional(),
-    city: z.string().trim().min(1).max(120).optional(),
-    province: z.string().trim().min(1).max(120).optional(),
-    country: z.string().trim().min(1).max(80).optional(),
-    countryCode: z.string().trim().min(2).max(4).optional(),
-    contact: z.string().trim().max(60).optional(),
-    tags: z.array(z.string().trim().min(1).max(50)).max(20).optional(),
-    longitude: z.coerce.number().min(-180).max(180).optional(),
-    latitude: z.coerce.number().min(-90).max(90).optional(),
-    isLocExact: z.boolean().optional(),
-  })
-  .strict();
+import type { UpdateListingInput } from "@/modules/listing-management/domain/types";
+import {
+  listingFullSchema,
+  listingPatchSchema,
+  normalizeImages,
+} from "@/modules/listing-management/presentation/listing-validation";
 
 const deleteBodySchema = z
   .object({
@@ -58,6 +29,8 @@ const deleteBodySchema = z
 type RouteContext = {
   params: Promise<{ propertyId: string }>;
 };
+
+type ListingPatchPayload = z.infer<typeof listingPatchSchema>;
 
 function buildFieldDiff(
   before: Record<string, unknown>,
@@ -79,6 +52,69 @@ function buildFieldDiff(
   }
 
   return changes;
+}
+
+function toFullListingPayload(
+  listing: NonNullable<Awaited<ReturnType<typeof getListingDetails>>>,
+) {
+  return {
+    title: listing.title,
+    description: listing.description,
+    typeProperty: listing.typeProperty ?? "Property",
+    status: listing.status ?? "FOR_RENT",
+    price: listing.price ?? 1,
+    area: listing.area ?? 0,
+    tags: listing.tags,
+    images: listing.images,
+    street: listing.street ?? "N/A",
+    city: listing.city ?? "N/A",
+    province: listing.province ?? "N/A",
+    provinceLon: listing.provinceLon ?? undefined,
+    provinceLat: listing.provinceLat ?? undefined,
+    cityLon: listing.cityLon ?? undefined,
+    cityLat: listing.cityLat ?? undefined,
+    streetLon: listing.streetLon ?? undefined,
+    streetLat: listing.streetLat ?? undefined,
+    additionnalInformation: listing.additionnalInformation ?? undefined,
+    longitude: listing.longitude ?? undefined,
+    latitude: listing.latitude ?? undefined,
+    country: listing.country ?? "N/A",
+    countryCode: listing.countryCode ?? "GA",
+    isLocExact: listing.isLocExact ?? undefined,
+    contact: listing.contact ?? undefined,
+    nbrRooms: listing.nbrRooms ?? undefined,
+    nbrKitchens: listing.nbrKitchens ?? undefined,
+    nbrBathrooms: listing.nbrBathrooms ?? undefined,
+    nbrToilets: listing.nbrToilets ?? undefined,
+    nbrGarages: listing.nbrGarages ?? undefined,
+    nbrFloors: listing.nbrFloors ?? undefined,
+    nbrLivingRoom: listing.nbrLivingRoom ?? undefined,
+    nbrFloorStudio: listing.nbrFloorStudio ?? undefined,
+    numeroStudio: listing.numeroStudio ?? undefined,
+    nbrFloorApartment: listing.nbrFloorApartment ?? undefined,
+    numeroApartment: listing.numeroApartment ?? undefined,
+    nbrPiscine: listing.nbrPiscine ?? undefined,
+    nbrApartments: listing.nbrApartments ?? undefined,
+    hasParking: listing.hasParking ?? undefined,
+    nbrToilet: listing.nbrToilet ?? undefined,
+    kioskType: listing.kioskType ?? undefined,
+    roomType: listing.roomType ?? undefined,
+  };
+}
+
+function normalizePatchPayload(
+  input: ListingPatchPayload,
+): UpdateListingInput["patch"] {
+  const patch: Record<string, unknown> = { ...input };
+  delete patch.reason;
+
+  if (Array.isArray(patch.images)) {
+    patch.images = normalizeImages(
+      patch.images as Array<string | { fileURL: string; filePATH?: string }>,
+    );
+  }
+
+  return patch as UpdateListingInput["patch"];
 }
 
 export async function GET(request: NextRequest, context: RouteContext) {
@@ -135,7 +171,7 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
   }
 
   const body = await request.json().catch(() => null);
-  const parsed = patchSchema.safeParse(body);
+  const parsed = listingPatchSchema.safeParse(body);
   if (!parsed.success) {
     return jsonError(
       {
@@ -150,7 +186,10 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
     );
   }
 
-  const patchedFields = Object.keys(parsed.data);
+  const reason = parsed.data.reason?.trim() || null;
+  const patchPayload = normalizePatchPayload(parsed.data);
+  const patchedFields = Object.keys(patchPayload);
+
   if (patchedFields.length === 0) {
     return jsonError(
       {
@@ -187,11 +226,54 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
     );
   }
 
+  if (includesStatus && !reason) {
+    return jsonError(
+      {
+        code: "VALIDATION_ERROR",
+        message: "Un motif est obligatoire pour changer le statut d'une annonce.",
+      },
+      400,
+      auth.correlationId,
+    );
+  }
+
+  const existing = await getListingDetails(propertyId);
+  if (!existing) {
+    return jsonError(
+      {
+        code: "NOT_FOUND",
+        message: "Annonce introuvable.",
+      },
+      404,
+      auth.correlationId,
+    );
+  }
+
+  const mergedCandidate = {
+    ...toFullListingPayload(existing),
+    ...patchPayload,
+  };
+  const mergedValidation = listingFullSchema.safeParse(mergedCandidate);
+
+  if (!mergedValidation.success) {
+    return jsonError(
+      {
+        code: "VALIDATION_ERROR",
+        message: "La mise à jour viole les règles métier de l'annonce.",
+        details: {
+          issues: mergedValidation.error.issues,
+        },
+      },
+      400,
+      auth.correlationId,
+    );
+  }
+
   try {
     const mutation = await updateListing({
       propertyId,
       actorUid: auth.admin.uid,
-      patch: parsed.data,
+      patch: patchPayload,
     });
 
     if (!mutation) {
@@ -225,6 +307,7 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
       correlationId: auth.correlationId,
       details: {
         patchedFields,
+        reason,
       },
       diff: {
         fields: diff,
@@ -234,6 +317,21 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
         afterStatus: mutation.after.status,
       },
     });
+
+    if (includesStatus && mutation.before.status !== mutation.after.status && reason) {
+      await recordListingModerationDecision({
+        propertyId,
+        decision: "STATUS_CHANGE",
+        reason,
+        beforeState: mutation.before.state,
+        afterState: mutation.after.state,
+        beforeStatus: mutation.before.status,
+        afterStatus: mutation.after.status,
+        actorId: auth.admin.uid,
+        actorRoles: auth.admin.roles,
+        correlationId: auth.correlationId,
+      });
+    }
 
     return jsonSuccess({ listing: mutation.after }, auth.correlationId);
   } catch (error) {
@@ -330,27 +428,15 @@ export async function DELETE(request: NextRequest, context: RouteContext) {
         reason: parsed.data.reason,
       },
       diff: {
-        before: {
-          id: deleted.id,
-          title: deleted.title,
-          status: deleted.status,
-          state: deleted.state,
-          createdBy: deleted.createdBy,
-          price: deleted.price,
-          city: deleted.city,
-          province: deleted.province,
-        },
-        after: null,
+        deletedPropertyId: propertyId,
+        deletedBy: auth.admin.uid,
       },
     });
 
     return jsonSuccess(
       {
+        propertyId,
         deleted: true,
-        listing: {
-          id: deleted.id,
-          title: deleted.title,
-        },
       },
       auth.correlationId,
     );
@@ -358,10 +444,7 @@ export async function DELETE(request: NextRequest, context: RouteContext) {
     return jsonError(
       {
         code: "INTERNAL_ERROR",
-        message:
-          error instanceof Error
-            ? error.message
-            : "Impossible de supprimer définitivement cette annonce.",
+        message: error instanceof Error ? error.message : "Impossible de supprimer l'annonce.",
       },
       500,
       auth.correlationId,

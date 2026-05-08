@@ -3,11 +3,7 @@ import { z } from "zod";
 
 import { jsonError, jsonSuccess } from "@/lib/api/response";
 import { requireAdmin } from "@/modules/iam/presentation/admin-guard";
-import { getListingDuplicateCluster } from "@/modules/listing-management/application/listing-management.service";
-
-type RouteContext = {
-  params: Promise<{ clusterId: string }>;
-};
+import { getListingDuplicateMonitoringMetrics } from "@/modules/listing-management/application/listing-management.service";
 
 const querySchema = z.object({
   limit: z.coerce.number().int().min(50).max(4000).optional(),
@@ -15,23 +11,10 @@ const querySchema = z.object({
   includeSemantic: z.enum(["true", "false"]).optional(),
 });
 
-export async function GET(request: NextRequest, context: RouteContext) {
+export async function GET(request: NextRequest) {
   const auth = await requireAdmin(request, "listings.duplicates.read");
   if (!auth.ok) {
     return auth.response;
-  }
-
-  const params = await context.params;
-  const clusterId = params.clusterId?.trim();
-  if (!clusterId) {
-    return jsonError(
-      {
-        code: "VALIDATION_ERROR",
-        message: "Identifiant de cluster invalide.",
-      },
-      400,
-      auth.correlationId,
-    );
   }
 
   const parsed = querySchema.safeParse({
@@ -40,6 +23,7 @@ export async function GET(request: NextRequest, context: RouteContext) {
     includeSemantic:
       request.nextUrl.searchParams.get("includeSemantic") ?? undefined,
   });
+
   if (!parsed.success) {
     return jsonError(
       {
@@ -55,25 +39,13 @@ export async function GET(request: NextRequest, context: RouteContext) {
   }
 
   try {
-    const result = await getListingDuplicateCluster({
-      clusterId,
+    const metrics = await getListingDuplicateMonitoringMetrics({
       limit: parsed.data.limit ?? 1200,
       minGroupSize: parsed.data.minGroupSize ?? 2,
       includeSemantic: parsed.data.includeSemantic !== "false",
     });
 
-    if (!result) {
-      return jsonError(
-        {
-          code: "NOT_FOUND",
-          message: "Cluster de doublons introuvable.",
-        },
-        404,
-        auth.correlationId,
-      );
-    }
-
-    return jsonSuccess(result, auth.correlationId);
+    return jsonSuccess({ metrics }, auth.correlationId);
   } catch (error) {
     return jsonError(
       {
@@ -81,7 +53,7 @@ export async function GET(request: NextRequest, context: RouteContext) {
         message:
           error instanceof Error
             ? error.message
-            : "Impossible de charger le cluster de doublons.",
+            : "Impossible de charger les métriques de qualité dedup.",
       },
       500,
       auth.correlationId,

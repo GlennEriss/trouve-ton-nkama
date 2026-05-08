@@ -6,6 +6,7 @@ import { RefreshCcw } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
 import { PageHeader } from "@/components/ui-kit/page-header";
 
 type DuplicateResolutionAction =
@@ -14,11 +15,22 @@ type DuplicateResolutionAction =
   | "archive_target"
   | "needs_review";
 
+type DuplicateReason =
+  | "same_signature"
+  | "same_primary_image"
+  | "semantic_similarity";
+
 type DuplicateGroup = {
   clusterId: string;
   fingerprint: string;
-  reason: "same_signature" | "same_primary_image";
+  reason: DuplicateReason;
   confidence: number;
+  semanticScore: number | null;
+  scoreBreakdown: {
+    textScore: number | null;
+    priceScore: number | null;
+    locationScore: number | null;
+  } | null;
   resolution: {
     action: DuplicateResolutionAction;
     note: string | null;
@@ -33,12 +45,40 @@ type DuplicateGroup = {
     createdBy: string | null;
     price: number | null;
     status: "FOR_RENT" | "FOR_SALE" | null;
-    state: string | null;
+    state: "IN_PROGRESS" | "ARCHIVED" | string | null;
     city: string | null;
     province: string | null;
     primaryImageUrl: string | null;
     createdAt: string | null;
   }>;
+};
+
+type DedupAdvancedSettings = {
+  semanticEnabled: boolean;
+  semanticCandidateThreshold: number;
+  semanticClusterThreshold: number;
+  textWeight: number;
+  priceWeight: number;
+  locationWeight: number;
+  maxListingsForSemantic: number;
+  maxBlockSize: number;
+  minTextTokens: number;
+  updatedAt: string | null;
+  updatedBy: string | null;
+};
+
+type DedupMonitoringMetrics = {
+  measuredAt: string;
+  totalClustersDetected: number;
+  semanticClustersDetected: number;
+  resolvedClusters: number;
+  unresolvedClusters: number;
+  truePositiveDecisions: number;
+  falsePositiveDecisions: number;
+  pendingReviewDecisions: number;
+  precision: number | null;
+  recallProxy: number | null;
+  reviewCoverage: number;
 };
 
 type DuplicatesPayload = {
@@ -47,11 +87,25 @@ type DuplicatesPayload = {
   returned: number;
   resolvedCount: number;
   unresolvedCount: number;
+  semanticGroupsCount: number;
+  matchingVersion: string;
+};
+
+type RecomputePayload = DuplicatesPayload & {
+  metrics: DedupMonitoringMetrics;
 };
 
 type DuplicateClusterPayload = {
   cluster: DuplicateGroup;
   scanned: number;
+};
+
+type DedupSettingsPayload = {
+  settings: DedupAdvancedSettings;
+};
+
+type DedupMetricsPayload = {
+  metrics: DedupMonitoringMetrics;
 };
 
 type AuthMePayload = {
@@ -92,6 +146,20 @@ function formatMoney(value: number | null | undefined) {
   }).format(value);
 }
 
+function formatRate(value: number | null | undefined) {
+  if (value == null || !Number.isFinite(value)) {
+    return "N/A";
+  }
+  return `${(value * 100).toFixed(1)}%`;
+}
+
+function formatScore(value: number | null | undefined) {
+  if (value == null || !Number.isFinite(value)) {
+    return "N/A";
+  }
+  return value.toFixed(2);
+}
+
 function toDateLabel(value?: string | null) {
   if (!value) {
     return "Inconnu";
@@ -128,10 +196,14 @@ function stateLabel(state: string | null) {
   return state ?? "N/A";
 }
 
-function reasonLabel(reason: DuplicateGroup["reason"]) {
-  return reason === "same_signature"
-    ? "Signature quasi identique"
-    : "Même image principale";
+function reasonLabel(reason: DuplicateReason) {
+  if (reason === "same_signature") {
+    return "Signature quasi identique";
+  }
+  if (reason === "same_primary_image") {
+    return "Même image principale";
+  }
+  return "Similarité sémantique";
 }
 
 function resolutionLabel(action: DuplicateResolutionAction | null) {
@@ -169,13 +241,18 @@ async function fetchJson<T>(url: string, fallbackMessage: string) {
 
 export default function ListingsDuplicatesDashboardPage() {
   const [includeResolved, setIncludeResolved] = useState(false);
+  const [includeSemantic, setIncludeSemantic] = useState(true);
   const [selectedClusterId, setSelectedClusterId] = useState<string | null>(null);
   const [decisionNote, setDecisionNote] = useState("");
   const [targetListingId, setTargetListingId] = useState("");
   const [isResolving, setIsResolving] = useState(false);
   const [isRecomputing, setIsRecomputing] = useState(false);
+  const [isSavingSettings, setIsSavingSettings] = useState(false);
   const [globalError, setGlobalError] = useState<string | null>(null);
   const [globalMessage, setGlobalMessage] = useState<string | null>(null);
+  const [settingsPatch, setSettingsPatch] = useState<
+    Partial<DedupAdvancedSettings>
+  >({});
 
   const permissionsQuery = useQuery({
     queryKey: ["auth", "me"],
@@ -218,28 +295,75 @@ export default function ListingsDuplicatesDashboardPage() {
       "listings",
       "duplicates",
       includeResolved ? "all" : "open",
+      includeSemantic ? "semantic-on" : "semantic-off",
     ],
     enabled: canReadDuplicates,
     queryFn: () =>
       fetchJson<DuplicatesPayload>(
-        `/api/admin/v1/listings/duplicates?limit=1200&minGroupSize=2&includeResolved=${includeResolved ? "true" : "false"}`,
+        `/api/admin/v1/listings/duplicates?limit=1200&minGroupSize=2&includeResolved=${includeResolved ? "true" : "false"}&includeSemantic=${includeSemantic ? "true" : "false"}`,
         "Impossible de charger les clusters de doublons.",
       ),
   });
 
   const clusterQuery = useQuery({
-    queryKey: ["dashboard", "listings", "duplicates", "cluster", selectedClusterId],
+    queryKey: [
+      "dashboard",
+      "listings",
+      "duplicates",
+      "cluster",
+      selectedClusterId,
+      includeSemantic ? "semantic-on" : "semantic-off",
+    ],
     enabled: canReadDuplicates && Boolean(selectedClusterId),
     queryFn: () =>
       fetchJson<DuplicateClusterPayload>(
-        `/api/admin/v1/listings/duplicates/${selectedClusterId}?limit=1200&minGroupSize=2`,
+        `/api/admin/v1/listings/duplicates/${selectedClusterId}?limit=1200&minGroupSize=2&includeSemantic=${includeSemantic ? "true" : "false"}`,
         "Impossible de charger le détail du cluster.",
       ),
   });
 
+  const settingsQuery = useQuery({
+    queryKey: ["dashboard", "listings", "duplicates", "settings"],
+    enabled: canReadDuplicates,
+    queryFn: () =>
+      fetchJson<DedupSettingsPayload>(
+        "/api/admin/v1/listings/duplicates/settings",
+        "Impossible de charger la configuration dedup.",
+      ),
+  });
+
+  const metricsQuery = useQuery({
+    queryKey: [
+      "dashboard",
+      "listings",
+      "duplicates",
+      "metrics",
+      includeSemantic ? "semantic-on" : "semantic-off",
+    ],
+    enabled: canReadDuplicates,
+    queryFn: () =>
+      fetchJson<DedupMetricsPayload>(
+        `/api/admin/v1/listings/duplicates/metrics?limit=1200&minGroupSize=2&includeSemantic=${includeSemantic ? "true" : "false"}`,
+        "Impossible de charger les métriques de qualité.",
+      ),
+  });
+
+  const settingsFromServer = settingsQuery.data?.settings ?? null;
+  const settingsDraft = useMemo(() => {
+    if (!settingsFromServer) {
+      return null;
+    }
+    return {
+      ...settingsFromServer,
+      ...settingsPatch,
+    };
+  }, [settingsFromServer, settingsPatch]);
+
   const hasError =
     permissionsQuery.isError ||
     duplicatesQuery.isError ||
+    settingsQuery.isError ||
+    metricsQuery.isError ||
     (selectedClusterId ? clusterQuery.isError : false);
 
   const onSelectCluster = useCallback((clusterId: string) => {
@@ -256,10 +380,17 @@ export default function ListingsDuplicatesDashboardPage() {
     }
     setGlobalMessage(null);
     void duplicatesQuery.refetch();
+    void metricsQuery.refetch();
     if (selectedClusterId) {
       void clusterQuery.refetch();
     }
-  }, [canReadDuplicates, clusterQuery, duplicatesQuery, selectedClusterId]);
+  }, [
+    canReadDuplicates,
+    clusterQuery,
+    duplicatesQuery,
+    metricsQuery,
+    selectedClusterId,
+  ]);
 
   const recompute = useCallback(async () => {
     if (!canRecomputeDuplicates) {
@@ -281,17 +412,14 @@ export default function ListingsDuplicatesDashboardPage() {
           limit: 1200,
           minGroupSize: 2,
           includeResolved,
+          includeSemantic,
         }),
       });
 
       const payload = (await response.json()) as
         | {
             success: true;
-            data: {
-              returned: number;
-              resolvedCount: number;
-              unresolvedCount: number;
-            };
+            data: RecomputePayload;
           }
         | { success: false; error?: { message?: string } };
 
@@ -304,13 +432,14 @@ export default function ListingsDuplicatesDashboardPage() {
       }
 
       setGlobalMessage(
-        `Recalcul terminé: ${payload.data.returned} clusters visibles, ${payload.data.resolvedCount} traités, ${payload.data.unresolvedCount} ouverts.`,
+        `Recalcul terminé: ${payload.data.returned} clusters visibles, ${payload.data.resolvedCount} traités, ${payload.data.unresolvedCount} ouverts, précision ${formatRate(payload.data.metrics.precision)}.`,
       );
-      if (selectedClusterId) {
-        await Promise.all([duplicatesQuery.refetch(), clusterQuery.refetch()]);
-      } else {
-        await duplicatesQuery.refetch();
-      }
+
+      await Promise.all([
+        duplicatesQuery.refetch(),
+        metricsQuery.refetch(),
+        selectedClusterId ? clusterQuery.refetch() : Promise.resolve(),
+      ]);
     } catch (error) {
       setGlobalError(
         error instanceof Error
@@ -325,6 +454,8 @@ export default function ListingsDuplicatesDashboardPage() {
     clusterQuery,
     duplicatesQuery,
     includeResolved,
+    includeSemantic,
+    metricsQuery,
     selectedClusterId,
   ]);
 
@@ -363,6 +494,7 @@ export default function ListingsDuplicatesDashboardPage() {
               note: decisionNote.trim() || undefined,
               limit: 1200,
               minGroupSize: 2,
+              includeSemantic,
             }),
           },
         );
@@ -380,10 +512,12 @@ export default function ListingsDuplicatesDashboardPage() {
           );
         }
 
-        setGlobalMessage(
-          `Décision enregistrée: ${resolutionLabel(action)}.`,
-        );
-        await Promise.all([duplicatesQuery.refetch(), clusterQuery.refetch()]);
+        setGlobalMessage(`Décision enregistrée: ${resolutionLabel(action)}.`);
+        await Promise.all([
+          duplicatesQuery.refetch(),
+          clusterQuery.refetch(),
+          metricsQuery.refetch(),
+        ]);
       } catch (error) {
         setGlobalError(
           error instanceof Error
@@ -399,10 +533,113 @@ export default function ListingsDuplicatesDashboardPage() {
       clusterQuery,
       decisionNote,
       duplicatesQuery,
+      includeSemantic,
+      metricsQuery,
       selectedClusterId,
       targetListingId,
     ],
   );
+
+  const updateNumericSetting = useCallback(
+    (
+      key:
+        | "semanticCandidateThreshold"
+        | "semanticClusterThreshold"
+        | "textWeight"
+        | "priceWeight"
+        | "locationWeight"
+        | "maxListingsForSemantic"
+        | "maxBlockSize"
+        | "minTextTokens",
+      rawValue: string,
+    ) => {
+      const parsedValue = Number(rawValue);
+      if (!Number.isFinite(parsedValue)) {
+        return;
+      }
+
+      setSettingsPatch((previous) => ({
+        ...previous,
+        [key]:
+          key === "maxListingsForSemantic" ||
+          key === "maxBlockSize" ||
+          key === "minTextTokens"
+            ? Math.trunc(parsedValue)
+            : parsedValue,
+      }));
+    },
+    [],
+  );
+
+  const saveSettings = useCallback(async () => {
+    if (!canRecomputeDuplicates) {
+      setGlobalError("Permission manquante : listings.duplicates.recompute");
+      return;
+    }
+    if (!settingsDraft) {
+      setGlobalError("Configuration dedup non chargée.");
+      return;
+    }
+
+    setGlobalError(null);
+    setGlobalMessage(null);
+    setIsSavingSettings(true);
+
+    try {
+      const response = await fetch("/api/admin/v1/listings/duplicates/settings", {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          semanticEnabled: settingsDraft.semanticEnabled,
+          semanticCandidateThreshold: settingsDraft.semanticCandidateThreshold,
+          semanticClusterThreshold: settingsDraft.semanticClusterThreshold,
+          textWeight: settingsDraft.textWeight,
+          priceWeight: settingsDraft.priceWeight,
+          locationWeight: settingsDraft.locationWeight,
+          maxListingsForSemantic: settingsDraft.maxListingsForSemantic,
+          maxBlockSize: settingsDraft.maxBlockSize,
+          minTextTokens: settingsDraft.minTextTokens,
+        }),
+      });
+
+      const payload = (await response.json()) as
+        | { success: true; data: DedupSettingsPayload }
+        | { success: false; error?: { message?: string } };
+
+      if (!response.ok || !payload.success) {
+        throw new Error(
+          payload.success
+            ? "Impossible de sauvegarder la configuration."
+            : payload.error?.message ||
+                "Impossible de sauvegarder la configuration.",
+        );
+      }
+
+      setSettingsPatch({});
+      setGlobalMessage("Configuration dedup avancée enregistrée.");
+      await Promise.all([
+        settingsQuery.refetch(),
+        duplicatesQuery.refetch(),
+        metricsQuery.refetch(),
+      ]);
+    } catch (error) {
+      setGlobalError(
+        error instanceof Error
+          ? error.message
+          : "Impossible de sauvegarder la configuration.",
+      );
+    } finally {
+      setIsSavingSettings(false);
+    }
+  }, [
+    canRecomputeDuplicates,
+    duplicatesQuery,
+    metricsQuery,
+    settingsDraft,
+    settingsQuery,
+  ]);
 
   const selectedCluster = clusterQuery.data?.cluster ?? null;
 
@@ -410,7 +647,7 @@ export default function ListingsDuplicatesDashboardPage() {
     <div className="space-y-6">
       <PageHeader
         title="Doublons d'annonces"
-        description="Analyse, qualification et résolution des clusters suspects."
+        description="Analyse, qualification et résolution des clusters suspects (Sprint D inclus)."
         actions={
           <div className="flex flex-wrap items-center gap-2">
             <Button
@@ -424,9 +661,22 @@ export default function ListingsDuplicatesDashboardPage() {
             </Button>
             <Button
               type="button"
+              variant={includeSemantic ? "default" : "outline"}
+              onClick={() => setIncludeSemantic((previous) => !previous)}
+            >
+              {includeSemantic
+                ? "Sémantique activée"
+                : "Sémantique désactivée"}
+            </Button>
+            <Button
+              type="button"
               variant="outline"
               onClick={refreshAll}
-              disabled={duplicatesQuery.isFetching || clusterQuery.isFetching}
+              disabled={
+                duplicatesQuery.isFetching ||
+                clusterQuery.isFetching ||
+                metricsQuery.isFetching
+              }
             >
               Actualiser
             </Button>
@@ -466,7 +716,7 @@ export default function ListingsDuplicatesDashboardPage() {
         </div>
       ) : null}
 
-      <section className="grid gap-4 md:grid-cols-4">
+      <section className="grid gap-4 md:grid-cols-5">
         <Card>
           <CardHeader>
             <p className="text-sm text-slate-600">Annonces scannées</p>
@@ -493,13 +743,258 @@ export default function ListingsDuplicatesDashboardPage() {
         </Card>
         <Card>
           <CardHeader>
-            <p className="text-sm text-slate-600">Clusters ouverts</p>
+            <p className="text-sm text-slate-600">Clusters sémantiques</p>
             <p className="text-2xl font-semibold text-slate-900">
-              {formatNumber(duplicatesQuery.data?.unresolvedCount ?? 0)}
+              {formatNumber(duplicatesQuery.data?.semanticGroupsCount ?? 0)}
+            </p>
+          </CardHeader>
+        </Card>
+        <Card>
+          <CardHeader>
+            <p className="text-sm text-slate-600">Version matching</p>
+            <p className="text-sm font-semibold text-slate-900">
+              {duplicatesQuery.data?.matchingVersion ?? "N/A"}
             </p>
           </CardHeader>
         </Card>
       </section>
+
+      <section className="grid gap-4 md:grid-cols-4">
+        <Card>
+          <CardHeader>
+            <p className="text-sm text-slate-600">Précision</p>
+            <p className="text-2xl font-semibold text-slate-900">
+              {formatRate(metricsQuery.data?.metrics.precision)}
+            </p>
+          </CardHeader>
+        </Card>
+        <Card>
+          <CardHeader>
+            <p className="text-sm text-slate-600">Rappel proxy</p>
+            <p className="text-2xl font-semibold text-slate-900">
+              {formatRate(metricsQuery.data?.metrics.recallProxy)}
+            </p>
+          </CardHeader>
+        </Card>
+        <Card>
+          <CardHeader>
+            <p className="text-sm text-slate-600">Couverture review</p>
+            <p className="text-2xl font-semibold text-slate-900">
+              {formatRate(metricsQuery.data?.metrics.reviewCoverage)}
+            </p>
+          </CardHeader>
+        </Card>
+        <Card>
+          <CardHeader>
+            <p className="text-sm text-slate-600">Mesure</p>
+            <p className="text-sm font-semibold text-slate-900">
+              {toDateLabel(metricsQuery.data?.metrics.measuredAt ?? null)}
+            </p>
+          </CardHeader>
+        </Card>
+      </section>
+
+      <Card>
+        <CardHeader className="space-y-1">
+          <h2 className="text-base font-semibold text-slate-900">
+            Paramètres dedup avancés
+          </h2>
+          <p className="text-sm text-slate-600">
+            Ajuste les seuils sémantiques (Sprint D), puis relance un recalcul.
+          </p>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          {!settingsDraft ? (
+            <p className="text-sm text-slate-500">
+              Chargement de la configuration...
+            </p>
+          ) : (
+            <>
+              <div className="flex items-center gap-2">
+                <input
+                  id="semanticEnabled"
+                  type="checkbox"
+                  className="size-4"
+                  checked={settingsDraft.semanticEnabled}
+                  onChange={(event) =>
+                    setSettingsPatch((previous) => ({
+                      ...previous,
+                      semanticEnabled: event.target.checked,
+                    }))
+                  }
+                  disabled={!canRecomputeDuplicates}
+                />
+                <label
+                  htmlFor="semanticEnabled"
+                  className="text-sm font-medium text-slate-700"
+                >
+                  Activer la similarité sémantique
+                </label>
+              </div>
+
+              <div className="grid gap-3 md:grid-cols-3">
+                <div className="space-y-1">
+                  <label className="text-xs font-medium text-slate-700">
+                    Seuil candidat sémantique
+                  </label>
+                  <Input
+                    type="number"
+                    step="0.01"
+                    min={0.4}
+                    max={0.99}
+                    value={settingsDraft.semanticCandidateThreshold}
+                    onChange={(event) =>
+                      updateNumericSetting(
+                        "semanticCandidateThreshold",
+                        event.target.value,
+                      )
+                    }
+                    disabled={!canRecomputeDuplicates}
+                  />
+                </div>
+                <div className="space-y-1">
+                  <label className="text-xs font-medium text-slate-700">
+                    Seuil cluster sémantique
+                  </label>
+                  <Input
+                    type="number"
+                    step="0.01"
+                    min={0.5}
+                    max={0.995}
+                    value={settingsDraft.semanticClusterThreshold}
+                    onChange={(event) =>
+                      updateNumericSetting(
+                        "semanticClusterThreshold",
+                        event.target.value,
+                      )
+                    }
+                    disabled={!canRecomputeDuplicates}
+                  />
+                </div>
+                <div className="space-y-1">
+                  <label className="text-xs font-medium text-slate-700">
+                    Min tokens texte
+                  </label>
+                  <Input
+                    type="number"
+                    step="1"
+                    min={2}
+                    max={20}
+                    value={settingsDraft.minTextTokens}
+                    onChange={(event) =>
+                      updateNumericSetting("minTextTokens", event.target.value)
+                    }
+                    disabled={!canRecomputeDuplicates}
+                  />
+                </div>
+              </div>
+
+              <div className="grid gap-3 md:grid-cols-3">
+                <div className="space-y-1">
+                  <label className="text-xs font-medium text-slate-700">
+                    Poids texte
+                  </label>
+                  <Input
+                    type="number"
+                    step="0.01"
+                    min={0}
+                    max={1}
+                    value={settingsDraft.textWeight}
+                    onChange={(event) =>
+                      updateNumericSetting("textWeight", event.target.value)
+                    }
+                    disabled={!canRecomputeDuplicates}
+                  />
+                </div>
+                <div className="space-y-1">
+                  <label className="text-xs font-medium text-slate-700">
+                    Poids prix
+                  </label>
+                  <Input
+                    type="number"
+                    step="0.01"
+                    min={0}
+                    max={1}
+                    value={settingsDraft.priceWeight}
+                    onChange={(event) =>
+                      updateNumericSetting("priceWeight", event.target.value)
+                    }
+                    disabled={!canRecomputeDuplicates}
+                  />
+                </div>
+                <div className="space-y-1">
+                  <label className="text-xs font-medium text-slate-700">
+                    Poids localisation
+                  </label>
+                  <Input
+                    type="number"
+                    step="0.01"
+                    min={0}
+                    max={1}
+                    value={settingsDraft.locationWeight}
+                    onChange={(event) =>
+                      updateNumericSetting("locationWeight", event.target.value)
+                    }
+                    disabled={!canRecomputeDuplicates}
+                  />
+                </div>
+              </div>
+
+              <div className="grid gap-3 md:grid-cols-2">
+                <div className="space-y-1">
+                  <label className="text-xs font-medium text-slate-700">
+                    Limite annonces pour sémantique
+                  </label>
+                  <Input
+                    type="number"
+                    step="1"
+                    min={100}
+                    max={4000}
+                    value={settingsDraft.maxListingsForSemantic}
+                    onChange={(event) =>
+                      updateNumericSetting(
+                        "maxListingsForSemantic",
+                        event.target.value,
+                      )
+                    }
+                    disabled={!canRecomputeDuplicates}
+                  />
+                </div>
+                <div className="space-y-1">
+                  <label className="text-xs font-medium text-slate-700">
+                    Taille max d&apos;un bloc
+                  </label>
+                  <Input
+                    type="number"
+                    step="1"
+                    min={20}
+                    max={500}
+                    value={settingsDraft.maxBlockSize}
+                    onChange={(event) =>
+                      updateNumericSetting("maxBlockSize", event.target.value)
+                    }
+                    disabled={!canRecomputeDuplicates}
+                  />
+                </div>
+              </div>
+
+              <div className="flex flex-wrap items-center justify-between gap-2 text-xs text-slate-500">
+                <p>
+                  Dernière mise à jour: {toDateLabel(settingsDraft.updatedAt)} par{" "}
+                  {settingsDraft.updatedBy ?? "Inconnu"}
+                </p>
+                <Button
+                  type="button"
+                  onClick={() => void saveSettings()}
+                  disabled={!canRecomputeDuplicates || isSavingSettings}
+                >
+                  Enregistrer la configuration
+                </Button>
+              </div>
+            </>
+          )}
+        </CardContent>
+      </Card>
 
       <Card>
         <CardHeader>
@@ -515,6 +1010,7 @@ export default function ListingsDuplicatesDashboardPage() {
                   <th className="py-2 pr-4 font-medium">Cluster</th>
                   <th className="py-2 pr-4 font-medium">Raison</th>
                   <th className="py-2 pr-4 font-medium">Confiance</th>
+                  <th className="py-2 pr-4 font-medium">Score sémantique</th>
                   <th className="py-2 pr-4 font-medium">Volume</th>
                   <th className="py-2 pr-4 font-medium">Statut</th>
                   <th className="py-2 pr-4 font-medium">Aperçu annonces</th>
@@ -533,6 +1029,11 @@ export default function ListingsDuplicatesDashboardPage() {
                       </td>
                       <td className="py-2 pr-4 text-slate-700">
                         {group.confidence}%
+                      </td>
+                      <td className="py-2 pr-4 text-slate-700">
+                        {group.reason === "semantic_similarity"
+                          ? formatScore(group.semanticScore)
+                          : "N/A"}
                       </td>
                       <td className="py-2 pr-4 text-slate-700">
                         {formatNumber(group.listings.length)} annonces
@@ -566,7 +1067,7 @@ export default function ListingsDuplicatesDashboardPage() {
                   ))
                 ) : (
                   <tr>
-                    <td colSpan={7} className="py-6 text-center text-sm text-slate-500">
+                    <td colSpan={8} className="py-6 text-center text-sm text-slate-500">
                       Aucun cluster détecté sur l&apos;échantillon actuel.
                     </td>
                   </tr>
@@ -590,9 +1091,7 @@ export default function ListingsDuplicatesDashboardPage() {
         </CardHeader>
         <CardContent className="space-y-4">
           {!selectedClusterId ? (
-            <p className="text-sm text-slate-500">
-              Aucun cluster sélectionné.
-            </p>
+            <p className="text-sm text-slate-500">Aucun cluster sélectionné.</p>
           ) : clusterQuery.isLoading ? (
             <p className="text-sm text-slate-500">
               Chargement du détail du cluster...
@@ -610,6 +1109,16 @@ export default function ListingsDuplicatesDashboardPage() {
                   <span className="font-medium">Confiance:</span>{" "}
                   {selectedCluster.confidence}%
                 </p>
+                {selectedCluster.reason === "semantic_similarity" ? (
+                  <p>
+                    <span className="font-medium">Score sémantique:</span>{" "}
+                    {formatScore(selectedCluster.semanticScore)} | texte{" "}
+                    {formatScore(selectedCluster.scoreBreakdown?.textScore)} | prix{" "}
+                    {formatScore(selectedCluster.scoreBreakdown?.priceScore)} |
+                    localisation{" "}
+                    {formatScore(selectedCluster.scoreBreakdown?.locationScore)}
+                  </p>
+                ) : null}
                 <p>
                   <span className="font-medium">Dernière décision:</span>{" "}
                   {resolutionLabel(selectedCluster.resolution?.action ?? null)}

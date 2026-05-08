@@ -1462,7 +1462,7 @@ export default function FinanceDashboardPage() {
             <Input
               value={refundExecutionNote}
               onChange={(event) => setRefundExecutionNote(event.target.value)}
-              placeholder="Note d'exécution (requis pour échec)"
+              placeholder="Note d&apos;exécution (requis pour échec)"
               disabled={!canApproveRefunds}
             />
             <Input
@@ -1481,7 +1481,7 @@ export default function FinanceDashboardPage() {
             />
           </div>
           <p className="text-xs text-muted-foreground">
-            Approbation: note potentiellement obligatoire selon seuil. Exécution: une demande approuvée passe en success/failed avec méta d'exécution.
+            Approbation: note potentiellement obligatoire selon seuil. Exécution: une demande approuvée passe en success/failed avec méta d&apos;exécution.
           </p>
 
           <div className="overflow-x-auto rounded-xl border">
@@ -1616,7 +1616,7 @@ export default function FinanceDashboardPage() {
 
       <Card className="rounded-2xl border-border/80">
         <CardHeader className="flex flex-row items-center justify-between pb-2 text-base font-semibold">
-          <span>Journal d'audit finance</span>
+          <span>Journal d&apos;audit finance</span>
           <Button
             type="button"
             variant="outline"

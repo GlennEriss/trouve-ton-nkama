@@ -66,7 +66,11 @@ function toIsoString(value: unknown) {
 }
 
 function toDuplicateReason(value: unknown): ListingDuplicateReason | null {
-  if (value === "same_signature" || value === "same_primary_image") {
+  if (
+    value === "same_signature" ||
+    value === "same_primary_image" ||
+    value === "semantic_similarity"
+  ) {
     return value;
   }
   return null;
@@ -193,4 +197,20 @@ export async function upsertDuplicateReviewRecord(input: UpsertDuplicateReviewIn
   );
 
   return getDuplicateReviewRecordByClusterId(input.clusterId);
+}
+
+export async function listDuplicateReviewRecords(limit = 5000) {
+  const db = getFirebaseAdminDb();
+  const safeLimit = Math.max(1, Math.min(20000, Math.trunc(limit)));
+  const snapshot = await db
+    .collection(COLLECTION)
+    .orderBy("updatedAt", "desc")
+    .limit(safeLimit)
+    .get();
+
+  return snapshot.docs
+    .map((doc) =>
+      mapDuplicateReviewRecord(doc.id, doc.data() as RawDuplicateReviewDoc),
+    )
+    .filter((record): record is ListingDuplicateReviewRecord => Boolean(record));
 }

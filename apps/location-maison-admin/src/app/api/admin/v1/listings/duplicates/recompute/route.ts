@@ -11,6 +11,7 @@ const bodySchema = z
     limit: z.coerce.number().int().min(50).max(4000).optional(),
     minGroupSize: z.coerce.number().int().min(2).max(10).optional(),
     includeResolved: z.boolean().optional(),
+    includeSemantic: z.boolean().optional(),
   })
   .strict();
 
@@ -41,6 +42,8 @@ export async function POST(request: NextRequest) {
       limit: parsed.data.limit ?? 1200,
       minGroupSize: parsed.data.minGroupSize ?? 2,
       includeResolved: parsed.data.includeResolved,
+      includeSemantic: parsed.data.includeSemantic,
+      actorUid: auth.admin.uid,
     });
 
     await logAudit({
@@ -55,11 +58,13 @@ export async function POST(request: NextRequest) {
         returned: result.returned,
         resolvedCount: result.resolvedCount,
         unresolvedCount: result.unresolvedCount,
+        semanticGroupsCount: result.semanticGroupsCount,
       },
       diff: {
         requestedLimit: parsed.data.limit ?? 1200,
         requestedMinGroupSize: parsed.data.minGroupSize ?? 2,
         includeResolved: parsed.data.includeResolved ?? true,
+        includeSemantic: parsed.data.includeSemantic ?? true,
       },
     });
 

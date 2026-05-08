@@ -10,6 +10,7 @@ import { PageHeader } from "@/components/ui-kit/page-header";
 
 type ListingStatusFilter = "all" | "FOR_RENT" | "FOR_SALE";
 type ListingStateFilter = "all" | "IN_PROGRESS" | "ARCHIVED";
+type DuplicateStateFilter = "all" | "suspected" | "confirmed" | "resolved";
 
 type ListingRow = {
   id: string;
@@ -26,6 +27,8 @@ type ListingRow = {
   createdBy: string | null;
   tags: string[];
   primaryImageUrl: string | null;
+  imageCount: number;
+  duplicateState?: "suspected" | "confirmed" | "resolved" | "none";
   createdAt: string | null;
   updatedAt: string | null;
 };
@@ -47,69 +50,70 @@ type ListingsPayload = {
   };
 };
 
-type ListingDetailsPayload = {
-  listing: ListingRow & {
-    street: string | null;
-    countryCode: string | null;
-    contact: string | null;
-  };
-};
-
-type DuplicatesPayload = {
-  groups: Array<{
-    clusterId: string;
-    fingerprint: string;
-    reason: "same_signature" | "same_primary_image";
-    confidence: number;
-    resolution: {
-      action: "not_duplicate" | "confirm_duplicate" | "archive_target" | "needs_review";
-      reviewedAt: string | null;
-    } | null;
-    listings: Array<{
-      id: string;
-      title: string;
-      createdBy: string | null;
-      price: number | null;
-      status: "FOR_RENT" | "FOR_SALE" | null;
-      state: string | null;
-      city: string | null;
-      province: string | null;
-      primaryImageUrl: string | null;
-      createdAt: string | null;
-    }>;
-  }>;
-  scanned: number;
-  returned: number;
-  resolvedCount: number;
-  unresolvedCount: number;
-};
-
 type AuthMePayload = {
   admin: {
     permissions: string[];
   };
 };
 
-type EditFormState = {
-  id: string;
-  title: string;
-  description: string;
-  typeProperty: string;
-  originalStatus: "FOR_RENT" | "FOR_SALE";
-  status: "FOR_RENT" | "FOR_SALE";
-  price: string;
-  area: string;
-  street: string;
-  city: string;
-  province: string;
-  country: string;
-  countryCode: string;
-  contact: string;
-  tagsRaw: string;
+type AppliedFilters = {
+  query: string;
+  createdBy: string;
+  status: ListingStatusFilter;
+  state: ListingStateFilter;
+  duplicateState: DuplicateStateFilter;
+  typeProperty: string[];
+  province: string[];
+  city: string[];
+  priceMin: string;
+  priceMax: string;
+  areaMin: string;
+  areaMax: string;
+  dateFrom: string;
+  dateTo: string;
+};
+
+const PROPERTY_TYPES = [
+  "Home",
+  "Studio",
+  "Apartment",
+  "Desk",
+  "Building",
+  "Shop",
+  "Kiosk",
+  "Room",
+  "Property",
+  "Logement",
+  "Villa",
+  "Land",
+];
+
+const EMPTY_FILTERS: AppliedFilters = {
+  query: "",
+  createdBy: "",
+  status: "all",
+  state: "all",
+  duplicateState: "all",
+  typeProperty: [],
+  province: [],
+  city: [],
+  priceMin: "",
+  priceMax: "",
+  areaMin: "",
+  areaMax: "",
+  dateFrom: "",
+  dateTo: "",
 };
 
 function hasPermission(permissions: string[], required: string) {
   return permissions.includes("*.*") || permissions.includes(required);
+}
+
+function splitCsv(value: string) {
+  return value
+    .split(",")
+    .map((part) => part.trim())
+    .filter((part) => part.length > 0);
 }
 
 function formatNumber(value: number | null | undefined) {
@@ -164,11 +168,17 @@ function stateLabel(state: string | null) {
   return state ?? "N/A";
 }
 
-function splitTags(value: string) {
-  return value
-    .split(/[\n,]/)
-    .map((tag) => tag.trim())
-    .filter((tag) => tag.length > 0);
+function duplicateStateLabel(state?: "suspected" | "confirmed" | "resolved" | "none") {
+  if (state === "suspected") {
+    return "Suspect";
+  }
+  if (state === "confirmed") {
+    return "Confirmé";
+  }
+  if (state === "resolved") {
+    return "Résolu";
+  }
+  return "Aucun";
 }
 
 async function fetchJson<T>(url: string, fallbackMessage: string) {
@@ -184,43 +194,54 @@ async function fetchJson<T>(url: string, fallbackMessage: string) {
   return payload.data;
 }
 
-function toEditFormState(payload: ListingDetailsPayload["listing"]): EditFormState {
-  const normalizedStatus = payload.status === "FOR_SALE" ? "FOR_SALE" : "FOR_RENT";
-  return {
-    id: payload.id,
-    title: payload.title ?? "",
-    description: payload.description ?? "",
-    typeProperty: payload.typeProperty ?? "Home",
-    originalStatus: normalizedStatus,
-    status: normalizedStatus,
-    price: payload.price != null ? String(payload.price) : "",
-    area: payload.area != null ? String(payload.area) : "",
-    street: payload.street ?? "",
-    city: payload.city ?? "",
-    province: payload.province ?? "",
-    country: payload.country ?? "",
-    countryCode: payload.countryCode ?? "",
-    contact: payload.contact ?? "",
-    tagsRaw: payload.tags.join(", "),
-  };
+function buildQueryParams(limit: number, cursor: string | null, filters: AppliedFilters) {
+  const params = new URLSearchParams();
+  params.set("limit", String(limit));
+  if (cursor) params.set("cursor", cursor);
+  if (filters.query) params.set("query", filters.query);
+  if (filters.createdBy) params.set("createdBy", filters.createdBy);
+  if (filters.status !== "all") params.set("status", filters.status);
+  if (filters.state !== "all") params.set("state", filters.state);
+  if (filters.duplicateState !== "all") params.set("duplicateState", filters.duplicateState);
+  if (filters.priceMin) params.set("priceMin", filters.priceMin);
+  if (filters.priceMax) params.set("priceMax", filters.priceMax);
+  if (filters.areaMin) params.set("areaMin", filters.areaMin);
+  if (filters.areaMax) params.set("areaMax", filters.areaMax);
+  if (filters.dateFrom) params.set("dateFrom", filters.dateFrom);
+  if (filters.dateTo) params.set("dateTo", filters.dateTo);
+
+  filters.typeProperty.forEach((value) => params.append("typeProperty", value));
+  filters.province.forEach((value) => params.append("province", value));
+  filters.city.forEach((value) => params.append("city", value));
+
+  return params;
 }
 
 export default function ListingsDashboardPage() {
   const [queryDraft, setQueryDraft] = useState("");
-  const [queryApplied, setQueryApplied] = useState("");
+  const [createdByDraft, setCreatedByDraft] = useState("");
+  const [typePropertyDraft, setTypePropertyDraft] = useState("");
+  const [provinceDraft, setProvinceDraft] = useState("");
+  const [cityDraft, setCityDraft] = useState("");
+  const [priceMinDraft, setPriceMinDraft] = useState("");
+  const [priceMaxDraft, setPriceMaxDraft] = useState("");
+  const [areaMinDraft, setAreaMinDraft] = useState("");
+  const [areaMaxDraft, setAreaMaxDraft] = useState("");
+  const [dateFromDraft, setDateFromDraft] = useState("");
+  const [dateToDraft, setDateToDraft] = useState("");
   const [status, setStatus] = useState<ListingStatusFilter>("all");
   const [state, setState] = useState<ListingStateFilter>("all");
-  const [createdByDraft, setCreatedByDraft] = useState("");
-  const [createdByApplied, setCreatedByApplied] = useState("");
+  const [duplicateState, setDuplicateState] = useState<DuplicateStateFilter>("all");
+
+  const [filtersApplied, setFiltersApplied] = useState<AppliedFilters>(EMPTY_FILTERS);
   const [cursor, setCursor] = useState<string | null>(null);
   const [cursorHistory, setCursorHistory] = useState<string[]>([]);
+
   const [globalError, setGlobalError] = useState<string | null>(null);
   const [globalMessage, setGlobalMessage] = useState<string | null>(null);
-  const [isMutatingId, setIsMutatingId] = useState<string | null>(null);
-  const [isBulkMutating, setIsBulkMutating] = useState(false);
   const [selectedListingIds, setSelectedListingIds] = useState<string[]>([]);
-  const [editForm, setEditForm] = useState<EditFormState | null>(null);
-  const [isLoadingDetails, setIsLoadingDetails] = useState(false);
+  const [isBulkMutating, setIsBulkMutating] = useState(false);
+  const [isMutatingId, setIsMutatingId] = useState<string | null>(null);
 
   const limit = 40;
 
@@ -235,26 +256,9 @@ export default function ListingsDashboardPage() {
   );
 
   const listingsQuery = useQuery({
-    queryKey: [
-      "dashboard",
-      "listings",
-      "list",
-      limit,
-      cursor,
-      queryApplied,
-      status,
-      state,
-      createdByApplied,
-    ],
+    queryKey: ["dashboard", "listings", "list", limit, cursor, filtersApplied],
     queryFn: () => {
-      const params = new URLSearchParams();
-      params.set("limit", String(limit));
-      if (cursor) params.set("cursor", cursor);
-      if (queryApplied) params.set("query", queryApplied);
-      if (status !== "all") params.set("status", status);
-      if (state !== "all") params.set("state", state);
-      if (createdByApplied) params.set("createdBy", createdByApplied);
-
+      const params = buildQueryParams(limit, cursor, filtersApplied);
       return fetchJson<ListingsPayload>(
         `/api/admin/v1/listings?${params.toString()}`,
         "Impossible de charger les annonces.",
@@ -262,36 +266,34 @@ export default function ListingsDashboardPage() {
     },
   });
 
-  const duplicatesQuery = useQuery({
-    queryKey: ["dashboard", "listings", "duplicates"],
-    queryFn: () =>
-      fetchJson<DuplicatesPayload>(
-        "/api/admin/v1/listings/duplicates?limit=1200&minGroupSize=2",
-        "Impossible de charger les doublons d'annonces.",
-      ),
-  });
-  const nextCursor = listingsQuery.data?.page.nextCursor ?? null;
-
-  const canEditListing = useMemo(() => hasPermission(permissions, "listings.update"), [permissions]);
   const canExportListings = useMemo(() => hasPermission(permissions, "listings.export"), [permissions]);
+  const canArchiveListing = useMemo(
+    () => hasPermission(permissions, "listings.reject") || hasPermission(permissions, "listings.state.update"),
+    [permissions],
+  );
+  const canRestoreListing = useMemo(
+    () => hasPermission(permissions, "listings.approve") || hasPermission(permissions, "listings.state.update"),
+    [permissions],
+  );
   const canBulkArchive = useMemo(
-    () =>
-      hasPermission(permissions, "listings.bulk.archive") || hasPermission(permissions, "listings.reject"),
+    () => hasPermission(permissions, "listings.bulk.archive") || hasPermission(permissions, "listings.reject"),
     [permissions],
   );
   const canBulkRestore = useMemo(
-    () =>
-      hasPermission(permissions, "listings.bulk.unarchive") || hasPermission(permissions, "listings.approve"),
+    () => hasPermission(permissions, "listings.bulk.unarchive") || hasPermission(permissions, "listings.approve"),
     [permissions],
   );
-  const canArchiveListing = useMemo(() => hasPermission(permissions, "listings.reject"), [permissions]);
-  const canRestoreListing = useMemo(() => hasPermission(permissions, "listings.approve"), [permissions]);
-  const canUseBulkActions = canBulkArchive || canBulkRestore;
+  const canBulkStatus = useMemo(
+    () => hasPermission(permissions, "listings.bulk.update") || hasPermission(permissions, "listings.status.update"),
+    [permissions],
+  );
+
   const selectedIdsSet = useMemo(() => new Set(selectedListingIds), [selectedListingIds]);
   const visibleListingIds = useMemo(
     () => (listingsQuery.data?.listings ?? []).map((listing) => listing.id),
     [listingsQuery.data?.listings],
   );
+
   const allVisibleSelected = useMemo(
     () =>
       visibleListingIds.length > 0 &&
@@ -299,45 +301,96 @@ export default function ListingsDashboardPage() {
     [selectedIdsSet, visibleListingIds],
   );
 
+  const duplicateCountInView = useMemo(
+    () =>
+      (listingsQuery.data?.listings ?? []).filter(
+        (listing) => listing.duplicateState && listing.duplicateState !== "none",
+      ).length,
+    [listingsQuery.data?.listings],
+  );
+
+  const nextCursor = listingsQuery.data?.page.nextCursor ?? null;
+
   const onApplyFilters = useCallback(
     (event: FormEvent<HTMLFormElement>) => {
       event.preventDefault();
       setGlobalMessage(null);
-      setQueryApplied(queryDraft.trim());
-      setCreatedByApplied(createdByDraft.trim());
+      setGlobalError(null);
+
+      const nextFilters: AppliedFilters = {
+        query: queryDraft.trim(),
+        createdBy: createdByDraft.trim(),
+        status,
+        state,
+        duplicateState,
+        typeProperty: splitCsv(typePropertyDraft),
+        province: splitCsv(provinceDraft),
+        city: splitCsv(cityDraft),
+        priceMin: priceMinDraft.trim(),
+        priceMax: priceMaxDraft.trim(),
+        areaMin: areaMinDraft.trim(),
+        areaMax: areaMaxDraft.trim(),
+        dateFrom: dateFromDraft.trim(),
+        dateTo: dateToDraft.trim(),
+      };
+
+      setFiltersApplied(nextFilters);
       setCursor(null);
       setCursorHistory([]);
       setSelectedListingIds([]);
     },
-    [createdByDraft, queryDraft],
+    [
+      areaMaxDraft,
+      areaMinDraft,
+      cityDraft,
+      createdByDraft,
+      dateFromDraft,
+      dateToDraft,
+      duplicateState,
+      priceMaxDraft,
+      priceMinDraft,
+      provinceDraft,
+      queryDraft,
+      state,
+      status,
+      typePropertyDraft,
+    ],
   );
 
   const onResetFilters = useCallback(() => {
     setGlobalMessage(null);
+    setGlobalError(null);
+
     setQueryDraft("");
-    setQueryApplied("");
+    setCreatedByDraft("");
+    setTypePropertyDraft("");
+    setProvinceDraft("");
+    setCityDraft("");
+    setPriceMinDraft("");
+    setPriceMaxDraft("");
+    setAreaMinDraft("");
+    setAreaMaxDraft("");
+    setDateFromDraft("");
+    setDateToDraft("");
     setStatus("all");
     setState("all");
-    setCreatedByDraft("");
-    setCreatedByApplied("");
+    setDuplicateState("all");
+
+    setFiltersApplied(EMPTY_FILTERS);
     setCursor(null);
     setCursorHistory([]);
     setSelectedListingIds([]);
   }, []);
 
   const onNextPage = useCallback(() => {
-    if (!nextCursor) {
-      return;
-    }
+    if (!nextCursor) return;
     setCursorHistory((previous) => [...previous, cursor ?? ""]);
     setCursor(nextCursor);
     setSelectedListingIds([]);
   }, [cursor, nextCursor]);
 
   const onPreviousPage = useCallback(() => {
-    if (cursorHistory.length === 0) {
-      return;
-    }
+    if (cursorHistory.length === 0) return;
     const previousCursor = cursorHistory[cursorHistory.length - 1] ?? "";
     setCursorHistory((previous) => previous.slice(0, -1));
     setCursor(previousCursor || null);
@@ -346,9 +399,9 @@ export default function ListingsDashboardPage() {
 
   const refreshAll = useCallback(() => {
     setGlobalMessage(null);
+    setGlobalError(null);
     void listingsQuery.refetch();
-    void duplicatesQuery.refetch();
-  }, [duplicatesQuery, listingsQuery]);
+  }, [listingsQuery]);
 
   const exportCsv = useCallback(() => {
     if (!canExportListings) {
@@ -356,34 +409,50 @@ export default function ListingsDashboardPage() {
       return;
     }
 
-    setGlobalMessage(null);
-    const params = new URLSearchParams();
-    if (queryApplied) params.set("query", queryApplied);
-    if (status !== "all") params.set("status", status);
-    if (state !== "all") params.set("state", state);
-    if (createdByApplied) params.set("createdBy", createdByApplied);
+    const params = buildQueryParams(limit, null, filtersApplied);
+    params.delete("limit");
+    window.location.assign(`/api/admin/v1/listings/export?${params.toString()}`);
+  }, [canExportListings, filtersApplied]);
 
-    const queryString = params.toString();
-    const target = queryString
-      ? `/api/admin/v1/listings/export?${queryString}`
-      : "/api/admin/v1/listings/export";
+  const toggleSelectAllVisible = useCallback(() => {
+    setSelectedListingIds((previous) => {
+      if (allVisibleSelected) {
+        return previous.filter((id) => !visibleListingIds.includes(id));
+      }
+      const merged = new Set(previous);
+      visibleListingIds.forEach((id) => merged.add(id));
+      return Array.from(merged);
+    });
+  }, [allVisibleSelected, visibleListingIds]);
 
-    window.location.assign(target);
-  }, [canExportListings, createdByApplied, queryApplied, state, status]);
+  const toggleSelectListing = useCallback((listingId: string) => {
+    setSelectedListingIds((previous) => {
+      if (previous.includes(listingId)) {
+        return previous.filter((id) => id !== listingId);
+      }
+      return [...previous, listingId];
+    });
+  }, []);
 
   const changeListingState = useCallback(
-    async (listing: ListingRow, nextState: "IN_PROGRESS" | "ARCHIVED") => {
+    async (listingId: string, nextState: "IN_PROGRESS" | "ARCHIVED") => {
+      const reason = window.prompt("Motif obligatoire pour cette action:");
+      if (!reason || !reason.trim()) {
+        setGlobalError("Action annulée: le motif est obligatoire.");
+        return;
+      }
+
+      setIsMutatingId(listingId);
       setGlobalError(null);
       setGlobalMessage(null);
-      setIsMutatingId(listing.id);
 
       try {
-        const response = await fetch(`/api/admin/v1/listings/${listing.id}/state`, {
+        const response = await fetch(`/api/admin/v1/listings/${listingId}/state`, {
           method: "PATCH",
           headers: {
             "Content-Type": "application/json",
           },
-          body: JSON.stringify({ state: nextState }),
+          body: JSON.stringify({ state: nextState, reason: reason.trim() }),
         });
 
         const payload = (await response.json()) as
@@ -391,133 +460,18 @@ export default function ListingsDashboardPage() {
           | { success: false; error?: { message?: string } };
 
         if (!response.ok || !payload.success) {
-          throw new Error(payload.success ? "Impossible de changer l'état de l'annonce." : payload.error?.message);
+          throw new Error(payload.success ? "Impossible de changer l'état." : payload.error?.message);
         }
 
-        await Promise.all([listingsQuery.refetch(), duplicatesQuery.refetch()]);
-        setGlobalMessage(
-          nextState === "ARCHIVED"
-            ? "Annonce archivée avec succès."
-            : "Annonce restaurée avec succès.",
-        );
+        await listingsQuery.refetch();
+        setGlobalMessage(nextState === "ARCHIVED" ? "Annonce archivée." : "Annonce restaurée.");
       } catch (error) {
         setGlobalError(error instanceof Error ? error.message : "Impossible de changer l'état.");
       } finally {
         setIsMutatingId(null);
       }
     },
-    [duplicatesQuery, listingsQuery],
-  );
-
-  const openEditPanel = useCallback(async (listingId: string) => {
-    setGlobalError(null);
-    setGlobalMessage(null);
-    setIsLoadingDetails(true);
-    try {
-      const payload = await fetchJson<ListingDetailsPayload>(
-        `/api/admin/v1/listings/${listingId}`,
-        "Impossible de charger le détail de l'annonce.",
-      );
-      setEditForm(toEditFormState(payload.listing));
-    } catch (error) {
-      setGlobalError(error instanceof Error ? error.message : "Impossible de charger l'annonce.");
-    } finally {
-      setIsLoadingDetails(false);
-    }
-  }, []);
-
-  const closeEditPanel = useCallback(() => {
-    setEditForm(null);
-  }, []);
-
-  const onSubmitEdit = useCallback(
-    async (event: FormEvent<HTMLFormElement>) => {
-      event.preventDefault();
-      if (!editForm) {
-        return;
-      }
-
-      setGlobalError(null);
-      setGlobalMessage(null);
-      setIsMutatingId(editForm.id);
-
-      try {
-        const payload: Record<string, unknown> = {
-          title: editForm.title.trim(),
-          description: editForm.description.trim(),
-          typeProperty: editForm.typeProperty.trim(),
-          price: Number(editForm.price),
-          area: Number(editForm.area),
-          street: editForm.street.trim(),
-          city: editForm.city.trim(),
-          province: editForm.province.trim(),
-          country: editForm.country.trim(),
-          countryCode: editForm.countryCode.trim(),
-          contact: editForm.contact.trim(),
-          tags: splitTags(editForm.tagsRaw),
-        };
-        if (editForm.status !== editForm.originalStatus) {
-          payload.status = editForm.status;
-        }
-
-        const response = await fetch(`/api/admin/v1/listings/${editForm.id}`, {
-          method: "PATCH",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify(payload),
-        });
-
-        const result = (await response.json()) as
-          | { success: true }
-          | { success: false; error?: { message?: string } };
-
-        if (!response.ok || !result.success) {
-          throw new Error(result.success ? "Impossible de modifier l'annonce." : result.error?.message);
-        }
-
-        setEditForm(null);
-        await Promise.all([listingsQuery.refetch(), duplicatesQuery.refetch()]);
-        setGlobalMessage("Annonce mise à jour avec succès.");
-      } catch (error) {
-        setGlobalError(error instanceof Error ? error.message : "Impossible de modifier l'annonce.");
-      } finally {
-        setIsMutatingId(null);
-      }
-    },
-    [duplicatesQuery, editForm, listingsQuery],
-  );
-
-  const toggleSelectAllVisible = useCallback(() => {
-    if (!canUseBulkActions || visibleListingIds.length === 0) {
-      return;
-    }
-
-    setSelectedListingIds((previous) => {
-      if (allVisibleSelected) {
-        return previous.filter((id) => !visibleListingIds.includes(id));
-      }
-
-      const merged = new Set(previous);
-      visibleListingIds.forEach((id) => merged.add(id));
-      return Array.from(merged);
-    });
-  }, [allVisibleSelected, canUseBulkActions, visibleListingIds]);
-
-  const toggleSelectListing = useCallback(
-    (listingId: string) => {
-      if (!canUseBulkActions) {
-        return;
-      }
-
-      setSelectedListingIds((previous) => {
-        if (previous.includes(listingId)) {
-          return previous.filter((id) => id !== listingId);
-        }
-        return [...previous, listingId];
-      });
-    },
-    [canUseBulkActions],
+    [listingsQuery],
   );
 
   const changeListingsStateBulk = useCallback(
@@ -527,23 +481,30 @@ export default function ListingsDashboardPage() {
         return;
       }
 
+      const reason = window.prompt("Motif obligatoire pour l'action en masse:");
+      if (!reason || !reason.trim()) {
+        setGlobalError("Action annulée: le motif est obligatoire.");
+        return;
+      }
+
       setGlobalError(null);
       setGlobalMessage(null);
       setIsBulkMutating(true);
 
       try {
-        const bulkEndpoint =
+        const endpoint =
           nextState === "ARCHIVED"
             ? "/api/admin/v1/listings/bulk/archive"
             : "/api/admin/v1/listings/bulk/unarchive";
 
-        const response = await fetch(bulkEndpoint, {
+        const response = await fetch(endpoint, {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
           },
           body: JSON.stringify({
             propertyIds: selectedListingIds,
+            reason: reason.trim(),
           }),
         });
 
@@ -551,7 +512,6 @@ export default function ListingsDashboardPage() {
           | {
               success: true;
               data: {
-                requestedCount: number;
                 updatedCount: number;
                 notFoundCount: number;
                 failedCount: number;
@@ -567,29 +527,90 @@ export default function ListingsDashboardPage() {
           );
         }
 
-        const summary = payload.data;
         setGlobalMessage(
-          `Action bulk terminée: ${summary.updatedCount} mises à jour, ${summary.notFoundCount} introuvables, ${summary.failedCount} en échec.`,
+          `Action bulk terminée: ${payload.data.updatedCount} mises à jour, ${payload.data.notFoundCount} introuvables, ${payload.data.failedCount} en échec.`,
         );
         setSelectedListingIds([]);
-        await Promise.all([listingsQuery.refetch(), duplicatesQuery.refetch()]);
+        await listingsQuery.refetch();
       } catch (error) {
         setGlobalError(error instanceof Error ? error.message : "Impossible d'appliquer l'action en masse.");
       } finally {
         setIsBulkMutating(false);
       }
     },
-    [duplicatesQuery, listingsQuery, selectedListingIds],
+    [listingsQuery, selectedListingIds],
   );
 
-  const hasError = listingsQuery.isError || duplicatesQuery.isError || permissionsQuery.isError;
-  const topDuplicateGroups = duplicatesQuery.data?.groups.slice(0, 10) ?? [];
+  const bulkChangeStatus = useCallback(
+    async (nextStatus: "FOR_RENT" | "FOR_SALE") => {
+      if (!selectedListingIds.length) {
+        setGlobalError("Sélectionne au moins une annonce.");
+        return;
+      }
+
+      const reason = window.prompt("Motif obligatoire pour changer le statut en masse:");
+      if (!reason || !reason.trim()) {
+        setGlobalError("Action annulée: le motif est obligatoire.");
+        return;
+      }
+
+      setGlobalError(null);
+      setGlobalMessage(null);
+      setIsBulkMutating(true);
+
+      try {
+        const response = await fetch("/api/admin/v1/listings/bulk/status", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            propertyIds: selectedListingIds,
+            status: nextStatus,
+            reason: reason.trim(),
+          }),
+        });
+
+        const payload = (await response.json()) as
+          | {
+              success: true;
+              data: {
+                updatedCount: number;
+                notFoundCount: number;
+                failedCount: number;
+              };
+            }
+          | { success: false; error?: { message?: string } };
+
+        if (!response.ok || !payload.success) {
+          throw new Error(
+            payload.success
+              ? "Impossible de mettre à jour les statuts en masse."
+              : payload.error?.message || "Impossible de mettre à jour les statuts en masse.",
+          );
+        }
+
+        setGlobalMessage(
+          `Bulk statut terminé: ${payload.data.updatedCount} mises à jour, ${payload.data.notFoundCount} introuvables, ${payload.data.failedCount} en échec.`,
+        );
+        setSelectedListingIds([]);
+        await listingsQuery.refetch();
+      } catch (error) {
+        setGlobalError(error instanceof Error ? error.message : "Impossible de mettre à jour les statuts en masse.");
+      } finally {
+        setIsBulkMutating(false);
+      }
+    },
+    [listingsQuery, selectedListingIds],
+  );
+
+  const hasError = listingsQuery.isError || permissionsQuery.isError;
 
   return (
     <div className="space-y-6">
       <PageHeader
         title="Gestion des annonces"
-        description="Lister, filtrer, rechercher, modifier, changer l'état et détecter les doublons."
+        description="Filtres avancés, modération, actions bulk et export alignés à la vue courante."
         actions={
           <div className="flex items-center gap-2">
             <Button
@@ -599,12 +620,7 @@ export default function ListingsDashboardPage() {
             >
               Module doublons
             </Button>
-            <Button
-              type="button"
-              variant="outline"
-              onClick={exportCsv}
-              disabled={!canExportListings}
-            >
+            <Button type="button" variant="outline" onClick={exportCsv} disabled={!canExportListings}>
               Export CSV
             </Button>
             <Button type="button" variant="outline" onClick={refreshAll} disabled={listingsQuery.isFetching}>
@@ -616,26 +632,73 @@ export default function ListingsDashboardPage() {
 
       <Card>
         <CardHeader>
-          <h2 className="text-base font-semibold text-slate-900">Filtres</h2>
+          <h2 className="text-base font-semibold text-slate-900">Filtres avancés</h2>
         </CardHeader>
         <CardContent>
-          <form className="grid gap-3 md:grid-cols-5" onSubmit={onApplyFilters}>
+          <form className="grid gap-3 md:grid-cols-4" onSubmit={onApplyFilters}>
             <Input
-              placeholder="Recherche (titre, ville, id, tags...)"
+              placeholder="Recherche libre"
               value={queryDraft}
               onChange={(event) => setQueryDraft(event.target.value)}
             />
             <Input
-              placeholder="UID annonceur (createdBy)"
+              placeholder="UID annonceur"
               value={createdByDraft}
               onChange={(event) => setCreatedByDraft(event.target.value)}
             />
+            <Input
+              placeholder="Type(s) annonce, ex: Home,Studio"
+              value={typePropertyDraft}
+              onChange={(event) => setTypePropertyDraft(event.target.value)}
+              list="listing-type-hints"
+            />
+            <datalist id="listing-type-hints">
+              {PROPERTY_TYPES.map((type) => (
+                <option key={type} value={type} />
+              ))}
+            </datalist>
+            <Input
+              placeholder="Province(s), séparées par virgules"
+              value={provinceDraft}
+              onChange={(event) => setProvinceDraft(event.target.value)}
+            />
+            <Input
+              placeholder="Ville(s), séparées par virgules"
+              value={cityDraft}
+              onChange={(event) => setCityDraft(event.target.value)}
+            />
+            <Input
+              type="number"
+              placeholder="Prix min"
+              value={priceMinDraft}
+              onChange={(event) => setPriceMinDraft(event.target.value)}
+            />
+            <Input
+              type="number"
+              placeholder="Prix max"
+              value={priceMaxDraft}
+              onChange={(event) => setPriceMaxDraft(event.target.value)}
+            />
+            <Input
+              type="number"
+              placeholder="Surface min"
+              value={areaMinDraft}
+              onChange={(event) => setAreaMinDraft(event.target.value)}
+            />
+            <Input
+              type="number"
+              placeholder="Surface max"
+              value={areaMaxDraft}
+              onChange={(event) => setAreaMaxDraft(event.target.value)}
+            />
+            <Input type="date" value={dateFromDraft} onChange={(event) => setDateFromDraft(event.target.value)} />
+            <Input type="date" value={dateToDraft} onChange={(event) => setDateToDraft(event.target.value)} />
             <select
               className="h-9 rounded-lg border border-slate-300 bg-white px-3 text-sm text-slate-800"
               value={status}
               onChange={(event) => setStatus(event.target.value as ListingStatusFilter)}
             >
-              <option value="all">Tous les statuts (location/vente)</option>
+              <option value="all">Tous les statuts</option>
               <option value="FOR_RENT">À louer</option>
               <option value="FOR_SALE">À vendre</option>
             </select>
@@ -648,6 +711,16 @@ export default function ListingsDashboardPage() {
               <option value="IN_PROGRESS">Actif</option>
               <option value="ARCHIVED">Archivé</option>
             </select>
+            <select
+              className="h-9 rounded-lg border border-slate-300 bg-white px-3 text-sm text-slate-800"
+              value={duplicateState}
+              onChange={(event) => setDuplicateState(event.target.value as DuplicateStateFilter)}
+            >
+              <option value="all">Tous les doublons</option>
+              <option value="suspected">Suspects</option>
+              <option value="confirmed">Confirmés</option>
+              <option value="resolved">Résolus</option>
+            </select>
             <div className="flex items-center gap-2">
               <Button type="submit">Appliquer</Button>
               <Button type="button" variant="outline" onClick={onResetFilters}>
@@ -658,13 +731,11 @@ export default function ListingsDashboardPage() {
         </CardContent>
       </Card>
 
-      <section className="grid gap-4 md:grid-cols-4">
+      <section className="grid gap-4 md:grid-cols-5">
         <Card>
           <CardHeader>
             <p className="text-sm text-slate-600">Résultats page</p>
-            <p className="text-2xl font-semibold text-slate-900">
-              {formatNumber(listingsQuery.data?.count ?? 0)}
-            </p>
+            <p className="text-2xl font-semibold text-slate-900">{formatNumber(listingsQuery.data?.count ?? 0)}</p>
           </CardHeader>
         </Card>
         <Card>
@@ -685,10 +756,16 @@ export default function ListingsDashboardPage() {
         </Card>
         <Card>
           <CardHeader>
-            <p className="text-sm text-slate-600">Groupes doublons</p>
+            <p className="text-sm text-slate-600">À louer</p>
             <p className="text-2xl font-semibold text-slate-900">
-              {formatNumber(duplicatesQuery.data?.returned ?? 0)}
+              {formatNumber(listingsQuery.data?.summary.forRentCount ?? 0)}
             </p>
+          </CardHeader>
+        </Card>
+        <Card>
+          <CardHeader>
+            <p className="text-sm text-slate-600">Doublons page</p>
+            <p className="text-2xl font-semibold text-slate-900">{formatNumber(duplicateCountInView)}</p>
           </CardHeader>
         </Card>
       </section>
@@ -700,9 +777,7 @@ export default function ListingsDashboardPage() {
       ) : null}
 
       {globalError ? (
-        <div className="rounded-md border border-red-300 bg-red-50 px-3 py-2 text-sm text-red-700">
-          {globalError}
-        </div>
+        <div className="rounded-md border border-red-300 bg-red-50 px-3 py-2 text-sm text-red-700">{globalError}</div>
       ) : null}
 
       {globalMessage ? (
@@ -720,7 +795,7 @@ export default function ListingsDashboardPage() {
             <p className="text-sm text-slate-700">
               Sélection actuelle: <span className="font-semibold">{formatNumber(selectedListingIds.length)}</span>
             </p>
-            <div className="flex items-center gap-2">
+            <div className="flex flex-wrap items-center gap-2">
               <Button
                 type="button"
                 variant="outline"
@@ -728,7 +803,7 @@ export default function ListingsDashboardPage() {
                 disabled={!canBulkArchive || selectedListingIds.length === 0 || isBulkMutating}
                 onClick={() => void changeListingsStateBulk("ARCHIVED")}
               >
-                Archiver la sélection
+                Archiver sélection
               </Button>
               <Button
                 type="button"
@@ -737,7 +812,25 @@ export default function ListingsDashboardPage() {
                 disabled={!canBulkRestore || selectedListingIds.length === 0 || isBulkMutating}
                 onClick={() => void changeListingsStateBulk("IN_PROGRESS")}
               >
-                Restaurer la sélection
+                Restaurer sélection
+              </Button>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                disabled={!canBulkStatus || selectedListingIds.length === 0 || isBulkMutating}
+                onClick={() => void bulkChangeStatus("FOR_RENT")}
+              >
+                Statut bulk: à louer
+              </Button>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                disabled={!canBulkStatus || selectedListingIds.length === 0 || isBulkMutating}
+                onClick={() => void bulkChangeStatus("FOR_SALE")}
+              >
+                Statut bulk: à vendre
               </Button>
             </div>
           </div>
@@ -751,14 +844,14 @@ export default function ListingsDashboardPage() {
                       type="checkbox"
                       checked={allVisibleSelected}
                       onChange={toggleSelectAllVisible}
-                      disabled={!canUseBulkActions || visibleListingIds.length === 0}
+                      disabled={visibleListingIds.length === 0}
                     />
                   </th>
                   <th className="py-2 pr-4 font-medium">Annonce</th>
-                  <th className="py-2 pr-4 font-medium">Type</th>
-                  <th className="py-2 pr-4 font-medium">Prix</th>
+                  <th className="py-2 pr-4 font-medium">Type / Statut</th>
+                  <th className="py-2 pr-4 font-medium">Prix / Surface</th>
                   <th className="py-2 pr-4 font-medium">Localisation</th>
-                  <th className="py-2 pr-4 font-medium">Annonceur</th>
+                  <th className="py-2 pr-4 font-medium">Doublon</th>
                   <th className="py-2 pr-4 font-medium">État</th>
                   <th className="py-2 pr-4 font-medium">Créée le</th>
                   <th className="py-2 pr-4 font-medium">Actions</th>
@@ -778,12 +871,12 @@ export default function ListingsDashboardPage() {
                           type="checkbox"
                           checked={selectedIdsSet.has(listing.id)}
                           onChange={() => toggleSelectListing(listing.id)}
-                          disabled={!canUseBulkActions}
                         />
                       </td>
                       <td className="py-2 pr-4">
                         <p className="font-medium text-slate-900">{listing.title}</p>
                         <p className="max-w-[260px] truncate text-xs text-slate-500">{listing.id}</p>
+                        <p className="text-xs text-slate-500">{listing.createdBy ?? "N/A"}</p>
                       </td>
                       <td className="py-2 pr-4 text-slate-700">
                         <p>{listing.typeProperty ?? "N/A"}</p>
@@ -796,7 +889,7 @@ export default function ListingsDashboardPage() {
                       <td className="py-2 pr-4 text-slate-700">
                         {(listing.city ?? "N/A") + ", " + (listing.province ?? "N/A")}
                       </td>
-                      <td className="py-2 pr-4 text-slate-700">{listing.createdBy ?? "N/A"}</td>
+                      <td className="py-2 pr-4 text-slate-700">{duplicateStateLabel(listing.duplicateState)}</td>
                       <td className="py-2 pr-4 text-slate-700">{stateLabel(listing.state)}</td>
                       <td className="py-2 pr-4 text-slate-700">{toDateLabel(listing.createdAt)}</td>
                       <td className="py-2 pr-4">
@@ -805,17 +898,16 @@ export default function ListingsDashboardPage() {
                             type="button"
                             variant="outline"
                             size="sm"
-                            disabled={!canEditListing || isMutatingId === listing.id || isLoadingDetails}
-                            onClick={() => void openEditPanel(listing.id)}
+                            onClick={() => window.location.assign(`/dashboard/listings/${listing.id}`)}
                           >
-                            Modifier
+                            Voir fiche
                           </Button>
                           {listing.state === "ARCHIVED" ? (
                             <Button
                               type="button"
                               size="sm"
                               disabled={!canRestoreListing || isMutatingId === listing.id}
-                              onClick={() => void changeListingState(listing, "IN_PROGRESS")}
+                              onClick={() => void changeListingState(listing.id, "IN_PROGRESS")}
                             >
                               Restaurer
                             </Button>
@@ -825,7 +917,7 @@ export default function ListingsDashboardPage() {
                               variant="outline"
                               size="sm"
                               disabled={!canArchiveListing || isMutatingId === listing.id}
-                              onClick={() => void changeListingState(listing, "ARCHIVED")}
+                              onClick={() => void changeListingState(listing.id, "ARCHIVED")}
                             >
                               Archiver
                             </Button>
@@ -865,171 +957,6 @@ export default function ListingsDashboardPage() {
           </div>
         </CardContent>
       </Card>
-
-      <Card>
-        <CardHeader>
-          <h2 className="text-base font-semibold text-slate-900">Doublons potentiels</h2>
-          <p className="text-sm text-slate-600">
-            Analyse sur {formatNumber(duplicatesQuery.data?.scanned ?? 0)} annonces récentes.
-          </p>
-        </CardHeader>
-        <CardContent className="space-y-3">
-          {topDuplicateGroups.length ? (
-            topDuplicateGroups.map((group) => (
-              <div key={group.clusterId} className="rounded-lg border border-slate-200 p-3">
-                <div className="mb-2 flex items-center justify-between gap-2">
-                  <p className="text-sm font-semibold text-slate-900">
-                    {group.reason === "same_signature" ? "Signature quasi identique" : "Même image principale"}
-                  </p>
-                  <p className="text-xs text-slate-500">
-                    confiance {group.confidence}% - {group.listings.length} annonces
-                  </p>
-                </div>
-                {group.resolution ? (
-                  <p className="mb-2 text-xs text-emerald-700">
-                    Déjà traité: {group.resolution.action} ({toDateLabel(group.resolution.reviewedAt)})
-                  </p>
-                ) : null}
-                <div className="space-y-2">
-                  {group.listings.map((item) => (
-                    <div
-                      key={item.id}
-                      className="flex flex-wrap items-center justify-between gap-2 rounded-md bg-slate-50 px-2 py-1.5 text-xs"
-                    >
-                      <p className="font-medium text-slate-800">
-                        {item.title} ({item.id})
-                      </p>
-                      <div className="flex items-center gap-2 text-slate-600">
-                        <span>{statusLabel(item.status)}</span>
-                        <span>{formatMoney(item.price)}</span>
-                        <span>{stateLabel(item.state)}</span>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            ))
-          ) : (
-            <p className="text-sm text-slate-500">Aucun doublon détecté sur l&apos;échantillon actuel.</p>
-          )}
-        </CardContent>
-      </Card>
-
-      {editForm ? (
-        <Card>
-          <CardHeader>
-            <h2 className="text-base font-semibold text-slate-900">Modifier l&apos;annonce</h2>
-            <p className="text-sm text-slate-600">Annonce: {editForm.id}</p>
-          </CardHeader>
-          <CardContent>
-            <form className="space-y-3" onSubmit={onSubmitEdit}>
-              <div className="grid gap-3 md:grid-cols-2">
-                <Input
-                  value={editForm.title}
-                  onChange={(event) => setEditForm((previous) => (previous ? { ...previous, title: event.target.value } : previous))}
-                  placeholder="Titre"
-                />
-                <Input
-                  value={editForm.typeProperty}
-                  onChange={(event) =>
-                    setEditForm((previous) => (previous ? { ...previous, typeProperty: event.target.value } : previous))
-                  }
-                  placeholder="TypeProperty"
-                />
-              </div>
-              <textarea
-                className="min-h-[110px] w-full rounded-lg border border-slate-300 px-3 py-2 text-sm text-slate-800"
-                value={editForm.description}
-                onChange={(event) =>
-                  setEditForm((previous) => (previous ? { ...previous, description: event.target.value } : previous))
-                }
-                placeholder="Description"
-              />
-              <div className="grid gap-3 md:grid-cols-3">
-                <select
-                  className="h-9 rounded-lg border border-slate-300 bg-white px-3 text-sm text-slate-800"
-                  value={editForm.status}
-                  onChange={(event) =>
-                    setEditForm((previous) =>
-                      previous ? { ...previous, status: event.target.value as "FOR_RENT" | "FOR_SALE" } : previous,
-                    )
-                  }
-                >
-                  <option value="FOR_RENT">À louer</option>
-                  <option value="FOR_SALE">À vendre</option>
-                </select>
-                <Input
-                  type="number"
-                  value={editForm.price}
-                  onChange={(event) => setEditForm((previous) => (previous ? { ...previous, price: event.target.value } : previous))}
-                  placeholder="Prix"
-                />
-                <Input
-                  type="number"
-                  value={editForm.area}
-                  onChange={(event) => setEditForm((previous) => (previous ? { ...previous, area: event.target.value } : previous))}
-                  placeholder="Surface"
-                />
-              </div>
-              <div className="grid gap-3 md:grid-cols-2">
-                <Input
-                  value={editForm.street}
-                  onChange={(event) => setEditForm((previous) => (previous ? { ...previous, street: event.target.value } : previous))}
-                  placeholder="Rue"
-                />
-                <Input
-                  value={editForm.city}
-                  onChange={(event) => setEditForm((previous) => (previous ? { ...previous, city: event.target.value } : previous))}
-                  placeholder="Ville"
-                />
-                <Input
-                  value={editForm.province}
-                  onChange={(event) =>
-                    setEditForm((previous) => (previous ? { ...previous, province: event.target.value } : previous))
-                  }
-                  placeholder="Province"
-                />
-                <Input
-                  value={editForm.country}
-                  onChange={(event) =>
-                    setEditForm((previous) => (previous ? { ...previous, country: event.target.value } : previous))
-                  }
-                  placeholder="Pays"
-                />
-                <Input
-                  value={editForm.countryCode}
-                  onChange={(event) =>
-                    setEditForm((previous) => (previous ? { ...previous, countryCode: event.target.value } : previous))
-                  }
-                  placeholder="Code pays"
-                />
-                <Input
-                  value={editForm.contact}
-                  onChange={(event) =>
-                    setEditForm((previous) => (previous ? { ...previous, contact: event.target.value } : previous))
-                  }
-                  placeholder="Contact"
-                />
-              </div>
-              <Input
-                value={editForm.tagsRaw}
-                onChange={(event) =>
-                  setEditForm((previous) => (previous ? { ...previous, tagsRaw: event.target.value } : previous))
-                }
-                placeholder="Tags séparés par virgules"
-              />
-              <div className="flex items-center gap-2">
-                <Button type="submit" disabled={isMutatingId === editForm.id}>
-                  Enregistrer
-                </Button>
-                <Button type="button" variant="outline" onClick={closeEditPanel}>
-                  Fermer
-                </Button>
-              </div>
-            </form>
-          </CardContent>
-        </Card>
-      ) : null}
     </div>
   );
 }
