@@ -146,6 +146,35 @@ function toPath(value?: string) {
   }
 }
 
+function normalizeCountryCode(value?: string | null) {
+  if (!value) {
+    return null;
+  }
+  const normalized = value.trim().toUpperCase();
+  if (!/^[A-Z]{2}$/.test(normalized)) {
+    return null;
+  }
+  return normalized;
+}
+
+function resolveCountryFromRequest(request: NextRequest) {
+  const candidateHeaders = [
+    'x-vercel-ip-country',
+    'x-country',
+    'cf-ipcountry',
+  ];
+
+  for (const headerName of candidateHeaders) {
+    const value = request.headers.get(headerName);
+    const normalized = normalizeCountryCode(value);
+    if (normalized) {
+      return normalized;
+    }
+  }
+
+  return null;
+}
+
 async function readJsonLike(response: Response) {
   const contentType = response.headers.get('content-type') ?? '';
   if (contentType.toLowerCase().includes('application/json')) {
@@ -201,6 +230,7 @@ export async function POST(request: NextRequest) {
   const sourceHeader = parsedBody.data.provider === 'firebase' ? 'firebase' : 'vercel';
   const eventSource = parsedBody.data.provider === 'firebase' ? 'firebase_analytics' : 'vercel_analytics';
   const nowIso = new Date().toISOString();
+  const countryFromRequest = resolveCountryFromRequest(request);
   const correlationId = pickHeaderValue(request, 'x-correlation-id', 'corr_traffic');
   const idempotencyKey =
     request.headers.get('x-idempotency-key')?.trim() ||
@@ -245,9 +275,9 @@ export async function POST(request: NextRequest) {
         metric_name: visit.metric_name,
         metric_value: visit.metric_value,
         page_path: toPath(visit.page_path),
-        route: visit.route ?? null,
-        referrer_host: visit.referrer_host ?? null,
-        country: visit.country ?? null,
+        route: visit.route ?? undefined,
+        referrer_host: visit.referrer_host ?? undefined,
+        country: normalizeCountryCode(visit.country) ?? countryFromRequest ?? undefined,
         device_category: visit.device_category ?? 'unknown',
       },
     };
