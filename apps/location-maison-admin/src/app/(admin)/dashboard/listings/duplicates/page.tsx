@@ -13,6 +13,7 @@ type DuplicateResolutionAction =
   | "not_duplicate"
   | "confirm_duplicate"
   | "archive_target"
+  | "keep_one_archive_others"
   | "needs_review";
 
 type DuplicateReason =
@@ -219,6 +220,9 @@ function resolutionLabel(action: DuplicateResolutionAction | null) {
   if (action === "archive_target") {
     return "Résolu (cible archivée)";
   }
+  if (action === "keep_one_archive_others") {
+    return "Résolu (1 conservée, autres archivées)";
+  }
   return "À revoir";
 }
 
@@ -246,6 +250,11 @@ export default function ListingsDuplicatesDashboardPage() {
   const [decisionNote, setDecisionNote] = useState("");
   const [targetListingId, setTargetListingId] = useState("");
   const [isResolving, setIsResolving] = useState(false);
+  const [deletingListingId, setDeletingListingId] = useState<string | null>(null);
+  const [isDeletingAllArchived, setIsDeletingAllArchived] = useState(false);
+  const [hardDeleteReason, setHardDeleteReason] = useState(
+    "Suppression definitive annonce doublon archivee depuis module dedup.",
+  );
   const [isRecomputing, setIsRecomputing] = useState(false);
   const [isSavingSettings, setIsSavingSettings] = useState(false);
   const [globalError, setGlobalError] = useState<string | null>(null);
@@ -288,6 +297,10 @@ export default function ListingsDuplicatesDashboardPage() {
     () => canFinalizeDuplicateDecisions(roles),
     [roles],
   );
+  const canHardDeleteListings = useMemo(
+    () => hasPermission(permissions, "listings.delete.hard") && roles.includes("super_admin"),
+    [permissions, roles],
+  );
 
   const duplicatesQuery = useQuery({
     queryKey: [
@@ -321,6 +334,7 @@ export default function ListingsDuplicatesDashboardPage() {
         "Impossible de charger le détail du cluster.",
       ),
   });
+  const selectedCluster = clusterQuery.data?.cluster ?? null;
 
   const settingsQuery = useQuery({
     queryKey: ["dashboard", "listings", "duplicates", "settings"],
@@ -470,8 +484,16 @@ export default function ListingsDuplicatesDashboardPage() {
         return;
       }
 
-      if (action === "archive_target" && !targetListingId.trim()) {
-        setGlobalError("Sélectionne l'annonce cible à archiver.");
+      if (
+        (action === "archive_target" ||
+          action === "keep_one_archive_others") &&
+        !targetListingId.trim()
+      ) {
+        setGlobalError(
+          action === "keep_one_archive_others"
+            ? "Sélectionne l'annonce à conserver."
+            : "Sélectionne l'annonce cible à archiver.",
+        );
         return;
       }
 
@@ -490,7 +512,10 @@ export default function ListingsDuplicatesDashboardPage() {
             body: JSON.stringify({
               action,
               targetListingId:
-                action === "archive_target" ? targetListingId.trim() : undefined,
+                action === "archive_target" ||
+                action === "keep_one_archive_others"
+                  ? targetListingId.trim()
+                  : undefined,
               note: decisionNote.trim() || undefined,
               limit: 1200,
               minGroupSize: 2,
@@ -539,6 +564,142 @@ export default function ListingsDuplicatesDashboardPage() {
       targetListingId,
     ],
   );
+
+  const deleteListingHard = useCallback(
+    async (listingId: string) => {
+      const reason = hardDeleteReason.trim();
+      if (!reason || reason.length < 10) {
+        throw new Error("Renseigne un motif de suppression d'au moins 10 caractères.");
+      }
+
+      const response = await fetch(`/api/admin/v1/listings/${listingId}`, {
+        method: "DELETE",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          reason,
+          confirmPropertyId: listingId,
+          confirmation: "SUPPRIMER",
+        }),
+      });
+
+      const payload = (await response.json()) as
+        | { success: true }
+        | { success: false; error?: { message?: string } };
+
+      if (!response.ok || !payload.success) {
+        throw new Error(
+          payload.success
+            ? "Impossible de supprimer l'annonce."
+            : payload.error?.message || "Impossible de supprimer l'annonce.",
+        );
+      }
+    },
+    [hardDeleteReason],
+  );
+
+  const deleteOneArchivedListing = useCallback(
+    async (listingId: string) => {
+      if (!canHardDeleteListings) {
+        setGlobalError("Permission manquante : listings.delete.hard (super_admin requis).");
+        return;
+      }
+
+      setGlobalError(null);
+      setGlobalMessage(null);
+      setDeletingListingId(listingId);
+
+      try {
+        await deleteListingHard(listingId);
+        setGlobalMessage(`Annonce supprimée définitivement: ${listingId}.`);
+        await Promise.all([
+          duplicatesQuery.refetch(),
+          clusterQuery.refetch(),
+          metricsQuery.refetch(),
+        ]);
+      } catch (error) {
+        setGlobalError(
+          error instanceof Error
+            ? error.message
+            : "Impossible de supprimer l'annonce.",
+        );
+      } finally {
+        setDeletingListingId(null);
+      }
+    },
+    [
+      canHardDeleteListings,
+      clusterQuery,
+      deleteListingHard,
+      duplicatesQuery,
+      metricsQuery,
+    ],
+  );
+
+  const deleteAllArchivedInCluster = useCallback(async () => {
+    if (!canHardDeleteListings) {
+      setGlobalError("Permission manquante : listings.delete.hard (super_admin requis).");
+      return;
+    }
+
+    if (!selectedCluster) {
+      setGlobalError("Sélectionne un cluster.");
+      return;
+    }
+
+    const archivedListingIds = selectedCluster.listings
+      .filter((listing) => listing.state === "ARCHIVED")
+      .map((listing) => listing.id);
+
+    if (!archivedListingIds.length) {
+      setGlobalError("Aucune annonce archivée à supprimer définitivement dans ce cluster.");
+      return;
+    }
+
+    setGlobalError(null);
+    setGlobalMessage(null);
+    setIsDeletingAllArchived(true);
+
+    try {
+      let successCount = 0;
+      const failedIds: string[] = [];
+
+      for (const listingId of archivedListingIds) {
+        try {
+          await deleteListingHard(listingId);
+          successCount += 1;
+        } catch (_error) {
+          failedIds.push(listingId);
+        }
+      }
+
+      if (failedIds.length) {
+        setGlobalError(
+          `Suppression partielle: ${successCount}/${archivedListingIds.length} annonces supprimées. Échecs: ${failedIds.join(", ")}`,
+        );
+      } else {
+        setGlobalMessage(
+          `${successCount} annonces archivées supprimées définitivement dans le cluster.`,
+        );
+      }
+
+      await Promise.all([
+        duplicatesQuery.refetch(),
+        clusterQuery.refetch(),
+        metricsQuery.refetch(),
+      ]);
+    } finally {
+      setIsDeletingAllArchived(false);
+    }
+  }, [
+    canHardDeleteListings,
+    clusterQuery,
+    deleteListingHard,
+    duplicatesQuery,
+    metricsQuery,
+    selectedCluster,
+  ]);
 
   const updateNumericSetting = useCallback(
     (
@@ -641,7 +802,12 @@ export default function ListingsDuplicatesDashboardPage() {
     settingsQuery,
   ]);
 
-  const selectedCluster = clusterQuery.data?.cluster ?? null;
+  const selectedClusterArchivedListings = useMemo(
+    () =>
+      selectedCluster?.listings.filter((listing) => listing.state === "ARCHIVED") ??
+      [],
+    [selectedCluster],
+  );
 
   return (
     <div className="space-y-6">
@@ -1149,7 +1315,7 @@ export default function ListingsDuplicatesDashboardPage() {
               <div className="grid gap-3 md:grid-cols-2">
                 <div className="space-y-1">
                   <label className="text-xs font-medium text-slate-700">
-                    Annonce cible à archiver
+                    Annonce de référence (à conserver)
                   </label>
                   <select
                     className="h-9 w-full rounded-lg border border-slate-300 bg-white px-3 text-sm text-slate-800"
@@ -1164,6 +1330,9 @@ export default function ListingsDuplicatesDashboardPage() {
                       </option>
                     ))}
                   </select>
+                  <p className="text-[11px] text-slate-500">
+                    Utilisé pour "Conserver 1, archiver les autres" et "Archiver la cible".
+                  </p>
                 </div>
                 <div className="space-y-1">
                   <label className="text-xs font-medium text-slate-700">
@@ -1213,12 +1382,104 @@ export default function ListingsDuplicatesDashboardPage() {
                         isResolving ||
                         !targetListingId.trim()
                       }
+                      onClick={() =>
+                        void resolveCluster("keep_one_archive_others")
+                      }
+                    >
+                      Conserver 1, archiver les autres
+                    </Button>
+                    <Button
+                      type="button"
+                      disabled={
+                        !canResolveDuplicates ||
+                        isResolving ||
+                        !targetListingId.trim()
+                      }
                       onClick={() => void resolveCluster("archive_target")}
                     >
                       Archiver la cible
                     </Button>
                   </>
                 ) : null}
+              </div>
+
+              <div className="rounded-lg border border-slate-200 bg-slate-50 p-3">
+                <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
+                  <div>
+                    <p className="text-sm font-semibold text-slate-900">
+                      Annonces archivées du cluster
+                    </p>
+                    <p className="text-xs text-slate-600">
+                      {formatNumber(selectedClusterArchivedListings.length)} annonces archivées
+                    </p>
+                  </div>
+                  <Button
+                    type="button"
+                    variant="destructive"
+                    disabled={
+                      !canHardDeleteListings ||
+                      isDeletingAllArchived ||
+                      isResolving ||
+                      selectedClusterArchivedListings.length === 0
+                    }
+                    onClick={() => void deleteAllArchivedInCluster()}
+                  >
+                    Supprimer toutes les archivées
+                  </Button>
+                </div>
+
+                <div className="mb-3 space-y-1">
+                  <label className="text-xs font-medium text-slate-700">
+                    Motif suppression définitive
+                  </label>
+                  <Input
+                    value={hardDeleteReason}
+                    onChange={(event) => setHardDeleteReason(event.target.value)}
+                    placeholder="Motif obligatoire (min 10 caractères)"
+                    disabled={!canHardDeleteListings || isDeletingAllArchived}
+                  />
+                </div>
+
+                {!canHardDeleteListings ? (
+                  <p className="mb-2 text-xs text-amber-700">
+                    Seul le super_admin peut supprimer définitivement les annonces archivées.
+                  </p>
+                ) : null}
+
+                {selectedClusterArchivedListings.length ? (
+                  <div className="space-y-2">
+                    {selectedClusterArchivedListings.map((listing) => (
+                      <div
+                        key={`archived_${listing.id}`}
+                        className="flex flex-wrap items-center justify-between gap-2 rounded-md border border-slate-200 bg-white px-3 py-2"
+                      >
+                        <div>
+                          <p className="text-sm font-medium text-slate-900">
+                            {listing.title}
+                          </p>
+                          <p className="text-xs text-slate-500">{listing.id}</p>
+                        </div>
+                        <Button
+                          type="button"
+                          size="sm"
+                          variant="destructive"
+                          disabled={
+                            !canHardDeleteListings ||
+                            isDeletingAllArchived ||
+                            deletingListingId === listing.id
+                          }
+                          onClick={() => void deleteOneArchivedListing(listing.id)}
+                        >
+                          Supprimer définitivement
+                        </Button>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="text-xs text-slate-500">
+                    Aucune annonce archivée dans ce cluster.
+                  </p>
+                )}
               </div>
             </>
           )}

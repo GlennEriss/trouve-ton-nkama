@@ -458,7 +458,12 @@ function buildDuplicateClusterId(reason: ListingDuplicateReason, fingerprint: st
 }
 
 function isResolvedDuplicateAction(action: ListingDuplicateResolutionAction) {
-  return action === "not_duplicate" || action === "confirm_duplicate" || action === "archive_target";
+  return (
+    action === "not_duplicate" ||
+    action === "confirm_duplicate" ||
+    action === "archive_target" ||
+    action === "keep_one_archive_others"
+  );
 }
 
 function pushGroupedDuplicates(
@@ -925,7 +930,8 @@ async function buildDuplicateStateIndex(input: {
     if (group.resolution) {
       if (
         group.resolution.action === "confirm_duplicate" ||
-        group.resolution.action === "archive_target"
+        group.resolution.action === "archive_target" ||
+        group.resolution.action === "keep_one_archive_others"
       ) {
         groupState = "confirmed";
       } else if (group.resolution.action === "not_duplicate") {
@@ -1523,7 +1529,8 @@ export async function getListingDuplicateMonitoringMetrics(input: {
   for (const review of reviews) {
     if (
       review.resolution.action === "confirm_duplicate" ||
-      review.resolution.action === "archive_target"
+      review.resolution.action === "archive_target" ||
+      review.resolution.action === "keep_one_archive_others"
     ) {
       truePositiveDecisions += 1;
       continue;
@@ -1591,10 +1598,15 @@ export async function resolveListingDuplicateCluster(
   const note = input.note?.trim() || null;
 
   let archivedListingId: string | null = null;
+  const archivedListingIds: string[] = [];
+  let keptListingId: string | null = null;
   let previousTargetState: string | null = null;
   let nextTargetState: string | null = null;
 
-  if (input.action === "archive_target") {
+  if (
+    input.action === "archive_target" ||
+    input.action === "keep_one_archive_others"
+  ) {
     const targetListingId = input.targetListingId?.trim();
     if (!targetListingId) {
       throw new Error("LISTING_DUPLICATE_TARGET_REQUIRED");
@@ -1607,19 +1619,41 @@ export async function resolveListingDuplicateCluster(
       throw new Error("LISTING_DUPLICATE_TARGET_NOT_IN_CLUSTER");
     }
 
-    const mutation = await updateListingState({
-      propertyId: targetListingId,
-      actorUid: input.actorUid,
-      state: "ARCHIVED",
-    });
+    if (input.action === "archive_target") {
+      const mutation = await updateListingState({
+        propertyId: targetListingId,
+        actorUid: input.actorUid,
+        state: "ARCHIVED",
+      });
 
-    if (!mutation) {
-      throw new Error("LISTING_DUPLICATE_TARGET_NOT_FOUND");
+      if (!mutation) {
+        throw new Error("LISTING_DUPLICATE_TARGET_NOT_FOUND");
+      }
+
+      archivedListingId = targetListingId;
+      archivedListingIds.push(targetListingId);
+      previousTargetState = mutation.before.state;
+      nextTargetState = mutation.after.state;
+    } else {
+      keptListingId = targetListingId;
+      const listingsToArchive = cluster.listings
+        .map((listing) => listing.id)
+        .filter((listingId) => listingId !== targetListingId);
+
+      for (const listingId of listingsToArchive) {
+        const mutation = await updateListingState({
+          propertyId: listingId,
+          actorUid: input.actorUid,
+          state: "ARCHIVED",
+        });
+
+        if (!mutation) {
+          throw new Error("LISTING_DUPLICATE_TARGET_NOT_FOUND");
+        }
+
+        archivedListingIds.push(listingId);
+      }
     }
-
-    archivedListingId = targetListingId;
-    previousTargetState = mutation.before.state;
-    nextTargetState = mutation.after.state;
   }
 
   const reviewRecord = await upsertDuplicateReviewRecord({
@@ -1629,7 +1663,12 @@ export async function resolveListingDuplicateCluster(
     listingIds: cluster.listings.map((listing) => listing.id),
     action: input.action,
     note,
-    targetListingId: input.action === "archive_target" ? archivedListingId : null,
+    targetListingId:
+      input.action === "archive_target"
+        ? archivedListingId
+        : input.action === "keep_one_archive_others"
+          ? keptListingId
+          : null,
     actorUid: input.actorUid,
     actorRoles: input.actorRoles,
   });
@@ -1645,6 +1684,9 @@ export async function resolveListingDuplicateCluster(
     },
     action: input.action,
     archivedListingId,
+    archivedListingIds,
+    archivedListingCount: archivedListingIds.length,
+    keptListingId,
     previousTargetState,
     nextTargetState,
   };

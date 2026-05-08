@@ -271,6 +271,7 @@ export type ListingDuplicateResolutionAction =
   | "not_duplicate"
   | "confirm_duplicate"
   | "archive_target"
+  | "keep_one_archive_others"
   | "needs_review";
 
 export type ListingDuplicateResolution = {
@@ -342,6 +343,9 @@ export type ResolveListingDuplicateClusterResult = {
   cluster: ListingDuplicateGroup;
   action: ListingDuplicateResolutionAction;
   archivedListingId: string | null;
+  archivedListingIds: string[];
+  archivedListingCount: number;
+  keptListingId: string | null;
   previousTargetState: string | null;
   nextTargetState: string | null;
 };

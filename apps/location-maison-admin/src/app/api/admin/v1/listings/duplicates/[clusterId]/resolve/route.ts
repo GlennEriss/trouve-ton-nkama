@@ -16,6 +16,7 @@ const bodySchema = z
       "not_duplicate",
       "confirm_duplicate",
       "archive_target",
+      "keep_one_archive_others",
       "needs_review",
     ]),
     targetListingId: z.string().trim().min(1).optional(),
@@ -26,10 +27,15 @@ const bodySchema = z
   })
   .strict()
   .superRefine((value, ctx) => {
-    if (value.action === "archive_target" && !value.targetListingId?.trim()) {
+    if (
+      (value.action === "archive_target" ||
+        value.action === "keep_one_archive_others") &&
+      !value.targetListingId?.trim()
+    ) {
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
-        message: "targetListingId est requis pour archiver une annonce du cluster.",
+        message:
+          "targetListingId est requis pour cette action de résolution du cluster.",
         path: ["targetListingId"],
       });
     }
@@ -130,6 +136,9 @@ export async function POST(request: NextRequest, context: RouteContext) {
       },
       diff: {
         targetListingId: result.archivedListingId,
+        targetListingIds: result.archivedListingIds,
+        keptListingId: result.keptListingId,
+        archivedListingCount: result.archivedListingCount,
         previousTargetState: result.previousTargetState,
         nextTargetState: result.nextTargetState,
         reviewedBy: auth.admin.uid,

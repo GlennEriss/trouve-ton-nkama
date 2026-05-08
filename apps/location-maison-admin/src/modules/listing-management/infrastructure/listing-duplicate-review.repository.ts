@@ -81,6 +81,7 @@ function toDuplicateResolutionAction(value: unknown): ListingDuplicateResolution
     value === "not_duplicate" ||
     value === "confirm_duplicate" ||
     value === "archive_target" ||
+    value === "keep_one_archive_others" ||
     value === "needs_review"
   ) {
     return value;
