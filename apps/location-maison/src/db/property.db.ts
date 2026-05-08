@@ -3,6 +3,7 @@ import { Property, TypeProperty } from "@/models/annonce";
 import { createModel, deleteModel, updateModel } from "./generic.db";
 import { collectionFirebaseNames } from "@/constantes";
 import { createLogger } from '@/lib/logger';
+import { invalidatePropertySeoCache } from '@/lib/invalidate-property-seo-cache';
 
 const logger = createLogger('db.property');
 
@@ -21,15 +22,27 @@ function normalizeKitchenField<T extends Record<string, any>>(data: T): T {
 }
 
 export async function updateProperty(id: string, property: Partial<Property>): Promise<boolean>{
-    return await updateModel<Property>(id, property, collectionFirebaseNames.properties)
+    const updated = await updateModel<Property>(id, property, collectionFirebaseNames.properties)
+    if (updated) {
+        void invalidatePropertySeoCache();
+    }
+    return updated;
 
 }
 export async function createProperty(property: Property): Promise<string | null> {
-    return await createModel<Property>(property, firebaseCollectionNames.properties);
+    const id = await createModel<Property>(property, firebaseCollectionNames.properties);
+    if (id) {
+        void invalidatePropertySeoCache();
+    }
+    return id;
 }
 
 export async function deleteProperty(id: string): Promise<boolean> {
-    return await deleteModel(id, firebaseCollectionNames.properties)
+    const deleted = await deleteModel(id, firebaseCollectionNames.properties)
+    if (deleted) {
+        void invalidatePropertySeoCache();
+    }
+    return deleted;
 }
 export async function getProperties({ limitPerPage, lastDoc, createdBy, type }: { limitPerPage: number, lastDoc: any, createdBy?: string, type?: string }) {
     const { collection, getDocs, db, where, query, startAfter, limit, orderBy } = await getFirestore();
