@@ -3,10 +3,75 @@
  */
 
 import { getFirestore, FieldValue } from 'firebase-admin/firestore'
-import { CreditTransaction, CreditPack, CREDIT_PACKS } from './types'
+import { CreditTransaction, CreditPack } from './types'
 import { generateTransactionId } from './config'
 
 const db = getFirestore()
+const CREDIT_PACKS_COLLECTION = 'credit_packs'
+
+type RawCreditPackDoc = {
+  name?: unknown
+  credits?: unknown
+  price?: unknown
+  savings?: unknown
+  isActive?: unknown
+  order?: unknown
+}
+
+function toTrimmedString(value: unknown): string | null {
+  if (typeof value !== 'string') {
+    return null
+  }
+  const trimmed = value.trim()
+  return trimmed.length > 0 ? trimmed : null
+}
+
+function toFiniteNumber(value: unknown, fallback: number): number {
+  if (typeof value === 'number' && Number.isFinite(value)) {
+    return value
+  }
+  if (typeof value === 'string') {
+    const parsed = Number(value)
+    if (Number.isFinite(parsed)) {
+      return parsed
+    }
+  }
+  return fallback
+}
+
+function mapCreditPack(docId: string, data: RawCreditPackDoc): CreditPack {
+  const id = toTrimmedString(docId) ?? docId
+  const name = toTrimmedString(data.name) ?? id
+  const credits = Math.max(1, Math.trunc(toFiniteNumber(data.credits, 1)))
+  const price = Math.max(0, Math.round(toFiniteNumber(data.price, 0)))
+  const savingsRaw = toFiniteNumber(data.savings, Number.NaN)
+  const savings =
+    Number.isFinite(savingsRaw) && savingsRaw > 0 ? Math.max(0, Math.min(99.99, savingsRaw)) : undefined
+
+  return {
+    id,
+    name,
+    credits,
+    price,
+    savings,
+  }
+}
+
+async function loadActiveCreditPacks(): Promise<CreditPack[]> {
+  const snapshot = await db.collection(CREDIT_PACKS_COLLECTION).orderBy('order', 'asc').get()
+  const packs = snapshot.docs
+    .map((doc) => {
+      const data = doc.data() as RawCreditPackDoc
+      const isActive = typeof data.isActive === 'boolean' ? data.isActive : true
+      if (!isActive) {
+        return null
+      }
+      return mapCreditPack(doc.id, data)
+    })
+    .filter((item): item is CreditPack => Boolean(item))
+
+  return packs
+}
 
 /**
  * Trouve un document utilisateur par UID
@@ -33,7 +98,7 @@ export async function createCreditTransaction(
   packId: string,
   phoneNumber?: string
 ): Promise<CreditTransaction> {
-  const pack = getCreditPackById(packId)
+  const pack = await getCreditPackById(packId)
   if (!pack) {
     throw new Error(`Pack de crédits introuvable: ${packId}`)
   }
@@ -213,13 +278,15 @@ export async function getUserTransactions(
 /**
  * Récupère un pack de crédits par ID
  */
-export function getCreditPackById(packId: string): CreditPack | null {
-  return CREDIT_PACKS.find(pack => pack.id === packId) || null
+export async function getCreditPackById(packId: string): Promise<CreditPack | null> {
+  const packs = await loadActiveCreditPacks()
+  const normalized = packId.trim().toLowerCase()
+  return packs.find(pack => pack.id.trim().toLowerCase() === normalized) ?? null
 }
 
 /**
  * Récupère tous les packs de crédits disponibles
  */
-export function getAllCreditPacks(): CreditPack[] {
-  return CREDIT_PACKS
-} 
+export async function getAllCreditPacks(): Promise<CreditPack[]> {
+  return loadActiveCreditPacks()
+}

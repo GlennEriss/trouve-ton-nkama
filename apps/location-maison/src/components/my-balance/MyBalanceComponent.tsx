@@ -7,22 +7,11 @@ import CreditPacksList from './CreditPacksList'
 import PremiumServicesInfo from './PremiumServicesInfo'
 import CreditHistory from './CreditHistory'
 import PurchaseModal from './PurchaseModal'
-
-interface CreditPack {
-  id: string
-  name: string
-  credits: number
-  price: number
-  originalPrice?: number
-  savings?: number
-  popular?: boolean
-  bestValue?: boolean
-  features?: string[]
-}
+import type { CreditPackUi } from '@/lib/credits/credit-packs'
 
 export default function MyBalanceComponent() {
   const [isRechargeModalOpen, setIsRechargeModalOpen] = useState(false)
-  const [selectedPack, setSelectedPack] = useState<CreditPack | null>(null)
+  const [selectedPack, setSelectedPack] = useState<CreditPackUi | null>(null)
 
   const handleOpenRecharge = () => {
     setIsRechargeModalOpen(true)
@@ -33,7 +22,7 @@ export default function MyBalanceComponent() {
     setSelectedPack(null) // Reset le pack quand on ferme
   }
 
-  const handlePackSelect = (pack: CreditPack) => {
+  const handlePackSelect = (pack: CreditPackUi) => {
     setSelectedPack(pack)
   }
 

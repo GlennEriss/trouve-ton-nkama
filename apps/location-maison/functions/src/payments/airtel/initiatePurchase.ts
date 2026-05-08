@@ -41,7 +41,7 @@ export const initiatePurchase = onCall<InitiatePurchaseRequest, Promise<Initiate
       }
 
       // Vérifier que le pack existe
-      const pack = getCreditPackById(packId)
+      const pack = await getCreditPackById(packId)
       if (!pack) {
         throw new HttpsError('not-found', `Pack de crédits introuvable: ${packId}`)
       }

@@ -42,31 +42,31 @@ const TYPE_CONFIG: Record<PropertyTypeSlug, TypeConfig> = {
     slug: 'maison',
     singularLabel: 'Maison',
     pluralLabel: 'Maisons',
-    typePropertyValues: ['home'],
+    typePropertyValues: ['Home', 'home', 'House', 'house'],
   },
   appartement: {
     slug: 'appartement',
     singularLabel: 'Appartement',
     pluralLabel: 'Appartements',
-    typePropertyValues: ['apartment'],
+    typePropertyValues: ['Apartment', 'apartment'],
   },
   studio: {
     slug: 'studio',
     singularLabel: 'Studio',
     pluralLabel: 'Studios',
-    typePropertyValues: ['studio'],
+    typePropertyValues: ['Studio', 'studio'],
   },
   villa: {
     slug: 'villa',
     singularLabel: 'Villa',
     pluralLabel: 'Villas',
-    typePropertyValues: ['villa'],
+    typePropertyValues: ['Villa', 'villa'],
   },
   terrain: {
     slug: 'terrain',
     singularLabel: 'Terrain',
     pluralLabel: 'Terrains',
-    typePropertyValues: ['land'],
+    typePropertyValues: ['Land', 'land'],
   },
 };
 

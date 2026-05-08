@@ -3,29 +3,20 @@ import { adminDB } from '../admin';
 import { FieldValue } from 'firebase-admin/firestore';
 // import twilio from 'twilio'; // Commenté pour l'instant
 
-// Montants autorisés pour les packs de crédits
-const CREDIT_PACKS = [
-  {
-    amount: 2000,
-    name: 'Starter',
-    credits: 5
-  },
-  {
-    amount: 3500,
-    name: 'Standard',
-    credits: 10
-  },
-  {
-    amount: 7500,
-    name: 'Avancé',
-    credits: 25
-  },
-  {
-    amount: 12500,
-    name: 'Premium',
-    credits: 50
-  }
-];
+type ManualCreditPack = {
+  id: string;
+  name: string;
+  credits: number;
+  amount: number;
+};
+
+type RawCreditPackDoc = {
+  name?: unknown;
+  credits?: unknown;
+  price?: unknown;
+  isActive?: unknown;
+  order?: unknown;
+};
 
 interface CreditPaymentRequest {
   phoneNumber: string;
@@ -37,6 +28,47 @@ interface CreditPaymentResponse {
   success: boolean;
   message: string;
   code?: string;
+}
+
+function toTrimmedString(value: unknown) {
+  if (typeof value !== 'string') {
+    return null;
+  }
+  const trimmed = value.trim();
+  return trimmed.length > 0 ? trimmed : null;
+}
+
+function toFiniteNumber(value: unknown, fallback: number) {
+  if (typeof value === 'number' && Number.isFinite(value)) {
+    return value;
+  }
+  if (typeof value === 'string') {
+    const parsed = Number(value);
+    if (Number.isFinite(parsed)) {
+      return parsed;
+    }
+  }
+  return fallback;
+}
+
+async function loadActiveCreditPacks(): Promise<ManualCreditPack[]> {
+  const snapshot = await adminDB.collection('credit_packs').orderBy('order', 'asc').get();
+  return snapshot.docs
+    .map((doc) => {
+      const data = doc.data() as RawCreditPackDoc;
+      const isActive = typeof data.isActive === 'boolean' ? data.isActive : true;
+      if (!isActive) {
+        return null;
+      }
+
+      return {
+        id: toTrimmedString(doc.id) ?? doc.id,
+        name: toTrimmedString(data.name) ?? doc.id,
+        credits: Math.max(1, Math.trunc(toFiniteNumber(data.credits, 1))),
+        amount: Math.max(0, Math.round(toFiniteNumber(data.price, 0))),
+      } satisfies ManualCreditPack;
+    })
+    .filter((pack): pack is ManualCreditPack => Boolean(pack));
 }
 
 // Initialisation du client Twilio (commenté pour l'instant)
@@ -84,6 +116,8 @@ export const createCreditPayment = onRequest(async (req, res) => {
 
   try {
     const { phoneNumber, amount, token } = req.body as CreditPaymentRequest;
+    const normalizedAmount = Math.round(Number(amount));
+    const creditPacks = await loadActiveCreditPacks();
 
     // Vérifier le token
     const validToken = process.env.API_TOKEN;
@@ -100,18 +134,26 @@ export const createCreditPayment = onRequest(async (req, res) => {
     }
 
     // Valider le montant
-    if (amount <= 0) {
+    if (!Number.isFinite(normalizedAmount) || normalizedAmount <= 0) {
       res.status(400).json({ success: false, message: 'Montant invalide' });
       return;
     }
 
+    if (creditPacks.length === 0) {
+      res.status(503).json({
+        success: false,
+        message: 'Aucun pack de crédits actif n\'est configuré actuellement.',
+      });
+      return;
+    }
+
     // Vérifier si le montant est autorisé
-    const selectedPack = CREDIT_PACKS.find(pack => pack.amount === amount);
+    const selectedPack = creditPacks.find(pack => pack.amount === normalizedAmount);
     if (!selectedPack) {
       // Enregistrer dans la collection des montants à rembourser
       await adminDB.collection('refund_payments').add({
         phoneNumber,
-        amount,
+        amount: normalizedAmount,
         status: 'pending',
         createdAt: FieldValue.serverTimestamp(),
         reason: 'Montant non autorisé',
@@ -120,9 +162,9 @@ export const createCreditPayment = onRequest(async (req, res) => {
 
       // Envoyer un SMS informatif
       const errorMessage = `${COMPANY_NAME} - Montant non autorisé\n\n` +
-        `Le montant de ${amount} FCFA ne correspond à aucun forfait.\n\n` +
+        `Le montant de ${normalizedAmount} FCFA ne correspond à aucun forfait.\n\n` +
         `Nos forfaits disponibles :\n` +
-        CREDIT_PACKS.map(pack => 
+        creditPacks.map(pack => 
           `- Pack ${pack.name} : ${pack.amount.toLocaleString()} FCFA (${pack.credits} crédits)`
         ).join('\n') + '\n\n' +
         `Pour toute réclamation, contactez notre service client :\n` +
@@ -146,7 +188,7 @@ export const createCreditPayment = onRequest(async (req, res) => {
     const paymentRef = adminDB.collection('credit_payments').doc();
     await paymentRef.set({
       phoneNumber,
-      amount,
+      amount: normalizedAmount,
       credits: selectedPack.credits,
       name: selectedPack.name,
       code,
@@ -160,7 +202,7 @@ export const createCreditPayment = onRequest(async (req, res) => {
     const successMessage = `${COMPANY_NAME} - Achat de crédit réussi!\n\n` +
       `Votre code de paiement est: ${code}\n` +
       `Pack: ${selectedPack.name}\n` +
-      `Montant: ${amount} FCFA\n` +
+      `Montant: ${normalizedAmount} FCFA\n` +
       `Crédits: ${selectedPack.credits}\n\n` +
       `Pour utiliser votre code, visitez: ${WEBSITE_URL}`;
 

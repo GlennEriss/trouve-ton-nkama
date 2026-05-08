@@ -4,64 +4,16 @@ import React from 'react'
 import { Package, Info } from 'lucide-react'
 import CreditPackCard from './CreditPackCard'
 import Image from 'next/image'
-
-interface CreditPack {
-  id: string
-  name: string
-  credits: number
-  price: number
-  originalPrice?: number
-  savings?: number
-  popular?: boolean
-  bestValue?: boolean
-  features?: string[]
-}
+import { useCreditPacks } from '@/hooks/use-credit-packs'
+import {
+  toUiCreditPack,
+  type CreditPackUi,
+} from '@/lib/credits/credit-packs'
 
 interface CreditPacksListProps {
   onOpenModal?: () => void
-  onPackSelect?: (pack: CreditPack) => void
+  onPackSelect?: (pack: CreditPackUi) => void
 }
-
-// Données basées sur le plan financier
-const creditPacks: CreditPack[] = [
-  {
-    id: 'starter',
-    name: 'Starter',
-    credits: 5,
-    price: 2000,
-    popular: false,
-    features: ['Idéal pour tester', 'Support standard']
-  },
-  {
-    id: 'standard',
-    name: 'Standard',
-    credits: 10,
-    price: 3500,
-    originalPrice: 4000,
-    savings: 12.5,
-    popular: true,
-    features: ['Pack le plus choisi', 'Support prioritaire', 'Économique']
-  },
-  {
-    id: 'advanced',
-    name: 'Avancé',
-    credits: 25,
-    price: 7500,
-    originalPrice: 10000,
-    savings: 25,
-    features: ['Excellent rapport qualité/prix', 'Support prioritaire', 'Bonus: conseils personnalisés']
-  },
-  {
-    id: 'premium',
-    name: 'Premium',
-    credits: 50,
-    price: 12500,
-    originalPrice: 20000,
-    savings: 37.5,
-    bestValue: true,
-    features: ['Meilleure économie', 'Support VIP', 'Conseils dédiés', 'Accès prioritaire aux nouveautés']
-  }
-]
 
 const paymentMethods = [
   {
@@ -76,7 +28,13 @@ const paymentMethods = [
   }
 ]
 export default function CreditPacksList({ onOpenModal, onPackSelect }: Readonly<CreditPacksListProps>) {
-  const handlePackSelect = (pack: CreditPack) => {
+  const creditPacksQuery = useCreditPacks()
+  const creditPacks = React.useMemo(() => {
+    const source = creditPacksQuery.data?.packs ?? []
+    return source.map(toUiCreditPack)
+  }, [creditPacksQuery.data?.packs])
+
+  const handlePackSelect = (pack: CreditPackUi) => {
     // Communiquer le pack sélectionné au parent
     if (onPackSelect) {
       onPackSelect(pack)
@@ -104,6 +62,11 @@ export default function CreditPacksList({ onOpenModal, onPackSelect }: Readonly<
             <p>Recharge actuellement manuelle: contactez le support WhatsApp après dépôt pour créditement du compte.</p>
           </div>
         </div>
+        {creditPacksQuery.isError ? (
+          <p className="text-xs text-red-700 dark:text-red-300">
+            Impossible de charger les packs admin pour le moment.
+          </p>
+        ) : null}
       </div>
 
       {/* Packs Grid */}
@@ -117,6 +80,11 @@ export default function CreditPacksList({ onOpenModal, onPackSelect }: Readonly<
           />
         ))}
       </div>
+      {!creditPacksQuery.isFetching && creditPacks.length === 0 ? (
+        <div className="rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-800 dark:border-amber-800 dark:bg-amber-950/30 dark:text-amber-200">
+          Aucun pack actif n&apos;est configuré dans le dashboard admin.
+        </div>
+      ) : null}
 
       {/* Info Section */}
       <div className="bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 border border-blue-200 dark:border-blue-800 rounded-2xl p-4 md:p-6">
