@@ -150,6 +150,8 @@ type AdsComparisonPayload = {
   }>;
 };
 
+const TREND_STABLE_THRESHOLD_PERCENT = 3;
+
 function formatMoney(value: number | null | undefined) {
   const safeValue = typeof value === "number" && Number.isFinite(value) ? value : 0;
   return new Intl.NumberFormat("fr-FR", {
@@ -187,6 +189,41 @@ function formatDeltaPercent(value: number | null | undefined, digits = 1) {
     minimumFractionDigits: 0,
     maximumFractionDigits: digits,
   })}%`;
+}
+
+type TrendState = "up" | "down" | "stable" | "unknown";
+
+function getTrendState(
+  value: number | null | undefined,
+  stableThreshold = TREND_STABLE_THRESHOLD_PERCENT,
+): TrendState {
+  if (value === null || value === undefined || !Number.isFinite(value)) {
+    return "unknown";
+  }
+
+  if (value > stableThreshold) {
+    return "up";
+  }
+
+  if (value < -stableThreshold) {
+    return "down";
+  }
+
+  return "stable";
+}
+
+function trendBadge(value: number | null | undefined) {
+  const state = getTrendState(value);
+  if (state === "up") {
+    return <Badge variant="success">Augmenté</Badge>;
+  }
+  if (state === "down") {
+    return <Badge variant="danger">Diminué</Badge>;
+  }
+  if (state === "stable") {
+    return <Badge variant="neutral">Stable</Badge>;
+  }
+  return <Badge variant="neutral">N/A</Badge>;
 }
 
 function toIsoIfPossible(value: string) {
@@ -575,7 +612,9 @@ export default function AnalyticsAdsPage() {
       <Card>
         <CardHeader>
           <h2 className="text-base font-semibold text-slate-900">Comparaisons de période</h2>
-          <p className="text-sm text-slate-600">J-1, 7 jours, 30 jours et MTD.</p>
+          <p className="text-sm text-slate-600">
+            J-1, 7 jours, 30 jours et MTD. Seuil stable: +/- {TREND_STABLE_THRESHOLD_PERCENT}%.
+          </p>
         </CardHeader>
         <CardContent>
           <div className="overflow-x-auto">
@@ -586,6 +625,7 @@ export default function AnalyticsAdsPage() {
                   <th className="py-2 pr-4 font-medium">Revenu actuel</th>
                   <th className="py-2 pr-4 font-medium">Revenu précédent</th>
                   <th className="py-2 pr-4 font-medium">Delta revenu</th>
+                  <th className="py-2 pr-4 font-medium">Tendance</th>
                   <th className="py-2 pr-4 font-medium">Delta fill rate</th>
                   <th className="py-2 pr-4 font-medium">Delta CTR</th>
                   <th className="py-2 pr-4 font-medium">Delta RPM</th>
@@ -610,6 +650,7 @@ export default function AnalyticsAdsPage() {
                       >
                         {formatDeltaPercent(row.revenueDeltaPercent)}
                       </td>
+                      <td className="py-2 pr-4">{trendBadge(row.revenueDeltaPercent)}</td>
                       <td className="py-2 pr-4 text-slate-700">
                         {formatDeltaPercent(row.fillRateDeltaPercent)}
                       </td>
@@ -621,7 +662,7 @@ export default function AnalyticsAdsPage() {
                   ))
                 ) : (
                   <tr>
-                    <td colSpan={7} className="py-6 text-center text-sm text-slate-500">
+                    <td colSpan={8} className="py-6 text-center text-sm text-slate-500">
                       Données insuffisantes pour la comparaison de période.
                     </td>
                   </tr>

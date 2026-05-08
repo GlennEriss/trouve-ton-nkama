@@ -28,6 +28,7 @@ Exemples:
 - `analytics.search_read`
 - `analytics.traffic_read`
 - `ads_analytics.read`
+- `social_import.read`
 
 ## Règles globales d'autorisation
 
@@ -226,7 +227,40 @@ Permissions utilisées:
 | Gérer seuils d'alertes monétisation | Y | Y | N | N | N | N |
 | Exporter rapport monétisation | Y | Y | N | Y | N | Y |
 
-## 11) Audit logs
+## 11) Social Import (sourcing reseaux sociaux)
+
+Note:
+- Matrice detaillee complete: `./MATRICE-PERMISSIONS-SOCIAL-IMPORT-ECRANS-ACTIONS.md`.
+
+Permissions utilisees:
+
+- `social_import.read`
+- `social_import.source.read`
+- `social_import.source.update`
+- `social_import.run.dry`
+- `social_import.run.prod`
+- `social_import.review`
+- `social_import.publish`
+- `social_import.reject`
+- `social_import.export`
+
+| Écran / Action | super_admin | operations_admin | moderation_admin | finance_admin | support_admin | analyst_admin |
+|---|---|---|---|---|---|---|
+| Voir les sources importables annonceur | Y | Y | Y | N | Y | Y |
+| Modifier source importable (url/statut) | Y | Y | N | N | Y* | N |
+| Lancer un dry-run import | Y | Y | Y | N | Y* | N |
+| Lancer un run import production | Y | Y | N | N | N | N |
+| Revoir annonces candidates importees | Y | Y | Y | N | Y | Y |
+| Publier une annonce candidate | Y | Y | Y | N | N | N |
+| Rejeter une annonce candidate | Y | Y | Y | N | Y* | N |
+| Exporter rapport import/rejets | Y | Y | Y | N | N | Y |
+
+Condition `Y*` pour `support_admin`:
+
+- Dry-run uniquement, jamais de run production.
+- Peut rejeter avec motif (support) mais ne peut pas publier.
+
+## 12) Audit logs
 
 Permissions utilisées:
 
@@ -238,7 +272,7 @@ Permissions utilisées:
 | Consulter audit logs | Y | Y | Y | Y | Y | Y |
 | Exporter audit logs | Y | Y | N | N | N | Y |
 
-## 12) Paramètres
+## 13) Paramètres
 
 Permissions utilisées:
 
