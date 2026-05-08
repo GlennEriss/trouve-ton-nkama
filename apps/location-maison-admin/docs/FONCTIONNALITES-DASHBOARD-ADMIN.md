@@ -51,6 +51,11 @@
 - Lister les annonceurs
 - Vérifier les statuts et informations clés
 - Actions de support annonceur
+- Reseaux sociaux annonceur:
+- Lecture des liens/handles sociaux depuis la fiche annonceur
+- Edition admin des liens/handles (permission `announcers.update`)
+- Ouverture directe des liens en nouvel onglet (mode consultation)
+- Preparation des sources importables pour pipeline reseaux sociaux
 
 ## 6. Annonces Admin (module `listing-moderation`)
 
@@ -125,6 +130,14 @@ Reference detaillee:
 - Paramètres globaux administrables
 - Configuration des règles métier sensibles
 - Feature flags (phase 2)
+
+## 10.1 Sourcing annonces reseaux sociaux
+
+- Gouverner les sources annonceur autorisees (consentement, statut actif/pause/revoque)
+- Suivre les imports mensuels des annonces depuis reseaux sociaux
+- Superviser les erreurs/rejets et valider les publications
+- Reference architecture operationnelle complete:
+- `./architecture/ARCHITECTURE-OPERATIONNELLE-IMPORT-ANNONCES-RESEAUX-SOCIAUX.md`
 
 ## Priorisation MVP
 

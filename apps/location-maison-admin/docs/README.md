@@ -33,6 +33,7 @@ Ce dashboard doit permettre:
 - [Matrice Permissions Écran/Action](./MATRICE-PERMISSIONS-ECRANS-ACTIONS.md)
 - [Schéma Données Analytics](./SCHEMA-DONNEES-ANALYTICS.md)
 - [Monétisation Pubs AdSense - Suivi Revenus](./MONETISATION-PUBS-ADSENSE-SPEC.md)
+- [Architecture Operationnelle - Import Annonces Reseaux Sociaux](./architecture/ARCHITECTURE-OPERATIONNELLE-IMPORT-ANNONCES-RESEAUX-SOCIAUX.md)
 - [Analytics Data Contract v1 (events + payloads API + validation)](./architecture/ANALYTICS-DATA-CONTRACT-V1.md)
 - [MVP v1 Figé](./MVP-V1-FIGE.md)
 - [Roadmap MVP](./ROADMAP-MVP.md)

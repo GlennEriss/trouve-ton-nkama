@@ -13,6 +13,7 @@ Documenter l'architecture cible du projet `location-maison-admin` avant impléme
 - [API Conventions and Security](./API-SECURITY-CONVENTIONS.md)
 - [Cloud Functions - Scope Critique](./CLOUD-FUNCTIONS-CRITICAL-SCOPE.md)
 - [Analytics Data Contract v1](./ANALYTICS-DATA-CONTRACT-V1.md)
+- [Architecture Operationnelle - Import Annonces Reseaux Sociaux](./ARCHITECTURE-OPERATIONNELLE-IMPORT-ANNONCES-RESEAUX-SOCIAUX.md)
 - [Monétisation Pubs AdSense - Suivi Revenus](../MONETISATION-PUBS-ADSENSE-SPEC.md)
 - [Sprint 6 Analytics - Backlog d'Implementation](./SPRINT-6-ANALYTICS-IMPLEMENTATION-BACKLOG.md)
 - [ANL-001/002 - BigQuery DDL + Zod Validation Spec](./ANL-001-ANL-002-BIGQUERY-DDL-ZOD-SPEC.md)
