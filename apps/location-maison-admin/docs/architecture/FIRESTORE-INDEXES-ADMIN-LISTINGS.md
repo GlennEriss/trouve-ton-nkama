@@ -22,11 +22,11 @@ Depuis le repo `location-maison`:
 cd /Users/glenneriss/Documents/projets/location-maison
 
 # DEV
-firebase use location-maison-dev
+firebase use dev
 firebase deploy --only firestore:indexes
 
 # PROD
-firebase use location-maison-prod
+firebase use prod
 firebase deploy --only firestore:indexes
 ```
 
