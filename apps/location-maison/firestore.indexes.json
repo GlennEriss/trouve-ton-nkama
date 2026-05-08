@@ -73,16 +73,6 @@
       ]
     },
     {
-      "collectionGroup": "properties",
-      "queryScope": "COLLECTION",
-      "fields": [
-        {
-          "fieldPath": "currentPromotion.startDate",
-          "order": "DESCENDING"
-        }
-      ]
-    },
-    {
       "collectionGroup": "credit_transactions",
       "queryScope": "COLLECTION",
       "fields": [
