@@ -210,3 +210,13 @@ html.ads-disabled-route iframe[src*='doubleclick.net'] {
   width: 0 !important;
   height: 0 !important;
 }
+
+/* Cache les emplacements non remplis pour eviter les grands blocs blancs */
+ins.adsbygoogle[data-ad-status='unfilled'] {
+  display: none !important;
+}
+
+/* Si un slot est vide, on masque aussi son conteneur visuel */
+.ads-inline-shell:has(ins.adsbygoogle[data-ad-status='unfilled']) {
+  display: none !important;
+}

@@ -22,7 +22,7 @@ export default function AdSenseBlock({
   slot,
   slotKey,
   className,
-  minHeight = 90,
+  minHeight = 0,
   format = 'auto',
   fullWidthResponsive = true,
 }: AdSenseBlockProps) {
@@ -175,6 +175,7 @@ export default function AdSenseBlock({
         data-ad-slot={slot}
         data-ad-format={format}
         data-full-width-responsive={fullWidthResponsive ? 'true' : 'false'}
+        data-slot-key={slotKey}
       />
     </div>
   );

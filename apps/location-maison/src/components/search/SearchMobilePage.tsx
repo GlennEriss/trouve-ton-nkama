@@ -130,8 +130,8 @@ export default function SearchMobilePage() {
     }, [items, isLoadingMore, lastItemsCount]);
 
     const feedItems = React.useMemo(() => {
-        const FIRST_AD_AFTER_INDEX = 4;
-        const AD_INTERVAL = 8;
+        const FIRST_AD_AFTER_INDEX = 5;
+        const AD_INTERVAL = 10;
 
         const results: Array<
             | { type: 'property'; item: any }

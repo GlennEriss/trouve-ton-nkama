@@ -5,6 +5,8 @@ import { useMemo, useRef, useState, useEffect } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { ArrowLeft, Bot, Loader2, Search } from 'lucide-react';
 import PropertyCard from '@/components/home-page/PropertyCard';
+import InlineAdUnit from '@/components/ads/InlineAdUnit';
+import { ADSENSE_SLOTS } from '@/lib/ads/config';
 import useAISearchAssistant, { AISearchFilters, AISearchMessage } from '@/hooks/useAISearchAssistant';
 import { routes } from '@/constantes/routes';
 import { trackingEvents, useTrackEvent } from '@/features/analytics/tracking';
@@ -280,19 +282,28 @@ export default function SearchWithAIPage() {
                   Lance une recherche dans le chat IA pour afficher des logements ici.
                 </div>
               ) : (
-                <div className="grid grid-cols-1 md:grid-cols-2 2xl:grid-cols-3 gap-4 auto-rows-fr">
-                  {results.map((hit, index) => (
-                    <div
-                      key={hit.objectID}
-                      className="h-full"
-                      onClickCapture={() => {
-                        void trackResultClick(hit, index + 1);
-                      }}
-                    >
-                      <PropertyCard property={hit} />
-                    </div>
-                  ))}
-                </div>
+                <>
+                  <div className="grid grid-cols-1 md:grid-cols-2 2xl:grid-cols-3 gap-4 auto-rows-fr">
+                    {results.map((hit, index) => (
+                      <div
+                        key={hit.objectID}
+                        className="h-full"
+                        onClickCapture={() => {
+                          void trackResultClick(hit, index + 1);
+                        }}
+                      >
+                        <PropertyCard property={hit} />
+                      </div>
+                    ))}
+                  </div>
+
+                  <InlineAdUnit
+                    className="mt-4"
+                    slot={ADSENSE_SLOTS.searchAi}
+                    slotKey="search-ai-results"
+                    compact
+                  />
+                </>
               )}
             </div>
           </section>

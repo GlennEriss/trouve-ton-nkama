@@ -4,8 +4,6 @@ import Logo from '../logo/Logo'
 import { routes } from '@/constantes/routes'
 import { MapPin, Mail, Facebook, MessageCircle } from "lucide-react";
 import { usePathname } from 'next/navigation';
-import { useCurrentUser } from '@/hooks/use-current-user';
-import { useWindowSize } from '@/hooks/useSize';
 import { cn } from '@/lib/utils';
 import PWAInstallButton from '@/components/pwa/PWAInstallButton';
 import { isPropertyFormFlowPath } from '@/lib/ads/route-guards';
@@ -14,8 +12,6 @@ import { ADSENSE_SLOTS } from '@/lib/ads/config';
 
 export default function Footer({ isHide = false }: Readonly<{ isHide?: boolean }>) {
     const pathname = usePathname()
-    const { user } = useCurrentUser()
-    const { width } = useWindowSize()
     const hiddenFooterRoutes = [
         routes.public.signin,
         routes.public.signup,
@@ -26,23 +22,14 @@ export default function Footer({ isHide = false }: Readonly<{ isHide?: boolean }
         routes.public.passwordResetFailure,
     ];
     const hideByRoute = isHide || hiddenFooterRoutes.includes(pathname) || isPropertyFormFlowPath(pathname)
-    const showCompactMobileAdOnly = Boolean(user && width < 768 && pathname !== routes.public.homePage)
+    const shouldRenderFooterAd =
+        pathname === routes.public.homePage ||
+        pathname.startsWith('/immobilier') ||
+        pathname.startsWith('/blog') ||
+        pathname === routes.public.guide_immobilier_gabon
 
     if (hideByRoute) {
         return null
-    }
-
-    if (showCompactMobileAdOnly) {
-        return (
-            <div className="w-full px-3 py-2 md:hidden">
-                <InlineAdUnit
-                    className="mx-auto max-w-[520px]"
-                    slot={ADSENSE_SLOTS.footer}
-                    slotKey={`mobile-${pathname}`}
-                    compact
-                />
-            </div>
-        )
     }
 
     const supportEmail = process.env.NEXT_PUBLIC_EMAIL_SUPPORT ?? 'support@tonnkama.com'
@@ -120,11 +107,14 @@ export default function Footer({ isHide = false }: Readonly<{ isHide?: boolean }
                     </div>
                 </div>
 
-                <InlineAdUnit
-                    className="mt-8"
-                    slot={ADSENSE_SLOTS.footer}
-                    slotKey={`footer-${pathname}`}
-                />
+                {shouldRenderFooterAd ? (
+                    <InlineAdUnit
+                        className="mt-8"
+                        slot={ADSENSE_SLOTS.footer}
+                        slotKey={`footer-${pathname}`}
+                        compact
+                    />
+                ) : null}
 
                 <div className='mt-6'>
                     <PWAInstallButton />

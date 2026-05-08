@@ -8,11 +8,14 @@ import { dispatchAccountActivityFromClient } from '@/features/users/account-acti
 import {
   ProfileInformationErrorCode,
   type ProfileInformationService,
+  type SocialNetworkKey,
+  type SocialProfilesInput,
   type UpdateProfileInformationData,
   type UpdateProfileInformationResult,
 } from './profile-information.service.interface';
 
 const logger = createLogger('users.profile-information-service');
+const SOCIAL_NETWORK_KEYS: SocialNetworkKey[] = ['facebook', 'instagram', 'tiktok', 'linkedin', 'x'];
 
 function parseDateLike(value: unknown): Date | null {
   if (!value) {
@@ -119,6 +122,145 @@ function mapErrorMessage(code: ProfileInformationErrorCode): string {
     default:
       return 'Une erreur inattendue est survenue.';
   }
+}
+
+type NormalizedSocialProfile = {
+  url: string | null;
+  handle: string | null;
+};
+
+type NormalizedSocialProfiles = Record<SocialNetworkKey, NormalizedSocialProfile | null>;
+
+function normalizeSocialUrl(value: unknown) {
+  if (typeof value !== 'string') {
+    return null;
+  }
+  const trimmed = value.trim();
+  if (!trimmed) {
+    return null;
+  }
+
+  try {
+    const parsed = new URL(trimmed);
+    if (parsed.protocol !== 'http:' && parsed.protocol !== 'https:') {
+      return null;
+    }
+    return parsed.toString();
+  } catch {
+    return null;
+  }
+}
+
+function normalizeSocialHandle(value: unknown) {
+  if (typeof value !== 'string') {
+    return null;
+  }
+  const trimmed = value.trim().replace(/\s+/g, '');
+  if (!trimmed) {
+    return null;
+  }
+
+  const normalized = trimmed.startsWith('@') ? trimmed : `@${trimmed}`;
+  return /^@[A-Za-z0-9._-]{2,50}$/.test(normalized) ? normalized : null;
+}
+
+function extractSocialProfiles(metadata: Record<string, unknown>): NormalizedSocialProfiles {
+  const rawContainer = metadata.socialProfiles;
+  const rawProfiles =
+    rawContainer && typeof rawContainer === 'object' && !Array.isArray(rawContainer)
+      ? (rawContainer as Record<string, unknown>)
+      : {};
+
+  return SOCIAL_NETWORK_KEYS.reduce((acc, key) => {
+    const rawEntry =
+      rawProfiles[key] &&
+      typeof rawProfiles[key] === 'object' &&
+      !Array.isArray(rawProfiles[key])
+        ? (rawProfiles[key] as Record<string, unknown>)
+        : null;
+
+    if (!rawEntry) {
+      acc[key] = null;
+      return acc;
+    }
+
+    const url = normalizeSocialUrl(rawEntry.url);
+    const handle = normalizeSocialHandle(rawEntry.handle);
+    acc[key] = url || handle ? { url, handle } : null;
+    return acc;
+  }, {} as NormalizedSocialProfiles);
+}
+
+function normalizeSocialProfilesInput(
+  input: SocialProfilesInput | undefined,
+  fallback: NormalizedSocialProfiles,
+): NormalizedSocialProfiles {
+  const next = { ...fallback };
+  if (!input || typeof input !== 'object') {
+    return next;
+  }
+
+  for (const key of SOCIAL_NETWORK_KEYS) {
+    const candidate = input[key];
+    if (candidate === undefined) {
+      continue;
+    }
+    if (candidate === null || typeof candidate !== 'object' || Array.isArray(candidate)) {
+      next[key] = null;
+      continue;
+    }
+
+    const url = normalizeSocialUrl(candidate.url);
+    const handle = normalizeSocialHandle(candidate.handle);
+    next[key] = url || handle ? { url, handle } : null;
+  }
+
+  return next;
+}
+
+function areSocialProfilesEqual(a: NormalizedSocialProfiles, b: NormalizedSocialProfiles) {
+  return SOCIAL_NETWORK_KEYS.every((key) => {
+    const left = a[key];
+    const right = b[key];
+    if (!left && !right) {
+      return true;
+    }
+    if (!left || !right) {
+      return false;
+    }
+    return left.url === right.url && left.handle === right.handle;
+  });
+}
+
+function buildMetadataWithSocialProfiles(
+  metadata: Record<string, unknown>,
+  socialProfiles: NormalizedSocialProfiles,
+) {
+  const hasAny = SOCIAL_NETWORK_KEYS.some((key) => Boolean(socialProfiles[key]));
+  if (!hasAny) {
+    const { socialProfiles: _socialProfiles, ...rest } = metadata;
+    return rest;
+  }
+
+  const nextSocialProfiles = SOCIAL_NETWORK_KEYS.reduce<Record<string, { url?: string; handle?: string }>>(
+    (acc, key) => {
+      const profile = socialProfiles[key];
+      if (!profile) {
+        return acc;
+      }
+      acc[key] = {
+        ...(profile.url ? { url: profile.url } : {}),
+        ...(profile.handle ? { handle: profile.handle } : {}),
+      };
+      return acc;
+    },
+    {},
+  );
+
+  return {
+    ...metadata,
+    socialProfiles: nextSocialProfiles,
+  };
 }
 
 export class ProfileInformationServiceImpl implements ProfileInformationService {
@@ -240,6 +382,13 @@ export class ProfileInformationServiceImpl implements ProfileInformationService 
         currentUser.metadata && typeof currentUser.metadata === 'object'
           ? (currentUser.metadata as Record<string, unknown>)
           : {};
+      const isAnnouncer = Array.isArray(currentUser.roles)
+        ? currentUser.roles.some((role) => typeof role === 'string' && role.toLowerCase() === 'announcer')
+        : false;
+      const currentSocialProfiles = extractSocialProfiles(currentMetadata);
+      const nextSocialProfiles = isAnnouncer
+        ? normalizeSocialProfilesInput(data.socialProfiles, currentSocialProfiles)
+        : currentSocialProfiles;
       const currentPhoneVerificationMetadata =
         currentMetadata.phoneVerification &&
         typeof currentMetadata.phoneVerification === 'object'
@@ -270,6 +419,13 @@ export class ProfileInformationServiceImpl implements ProfileInformationService 
           },
         }
         : currentMetadata;
+      const finalMetadata = isAnnouncer
+        ? buildMetadataWithSocialProfiles(nextMetadata, nextSocialProfiles)
+        : nextMetadata;
+
+      if (isAnnouncer && !areSocialProfilesEqual(currentSocialProfiles, nextSocialProfiles)) {
+        changedFields.push('réseaux sociaux');
+      }
 
       const updatedUser = await userRepository.update(uid, {
         firstname,
@@ -282,7 +438,7 @@ export class ProfileInformationServiceImpl implements ProfileInformationService 
         },
         searchableName: `${firstname} ${lastname}`.trim(),
         phoneNumberVerified: phoneChanged ? false : currentUser.phoneNumberVerified,
-        metadata: nextMetadata,
+        metadata: finalMetadata,
       });
 
       logger.info('Profile information updated', {

@@ -40,6 +40,44 @@ function isValidBirthDate(value: string): boolean {
   return realAge >= 18;
 }
 
+function isValidOptionalUrl(value: string): boolean {
+  const trimmed = value.trim();
+  if (!trimmed) {
+    return true;
+  }
+
+  try {
+    const url = new URL(trimmed);
+    return url.protocol === 'http:' || url.protocol === 'https:';
+  } catch {
+    return false;
+  }
+}
+
+function isValidOptionalHandle(value: string): boolean {
+  const trimmed = value.trim();
+  if (!trimmed) {
+    return true;
+  }
+  const normalized = trimmed.startsWith('@') ? trimmed : `@${trimmed}`;
+  return /^@[A-Za-z0-9._-]{2,50}$/.test(normalized);
+}
+
+const SocialNetworkSchema = z.object({
+  url: z
+    .string()
+    .trim()
+    .max(300, { message: 'URL trop longue (300 caractères max).' })
+    .refine(isValidOptionalUrl, { message: 'URL invalide (http/https requis).' })
+    .default(''),
+  handle: z
+    .string()
+    .trim()
+    .max(120, { message: 'Handle trop long (120 caractères max).' })
+    .refine(isValidOptionalHandle, { message: 'Handle invalide (ex: @username).' })
+    .default(''),
+});
+
 export const ProfileInformationSchema = z.object({
   firstname: z.string().trim().min(1, { message: 'Le prénom est requis.' }),
   lastname: z.string().trim().min(1, { message: 'Le nom est requis.' }),
@@ -57,7 +95,21 @@ export const ProfileInformationSchema = z.object({
       message: 'Le numéro de téléphone est invalide.',
     }),
   countryCode: z.string().min(1, { message: 'Le pays est requis.' }),
+  socialProfiles: z
+    .object({
+      facebook: SocialNetworkSchema,
+      instagram: SocialNetworkSchema,
+      tiktok: SocialNetworkSchema,
+      linkedin: SocialNetworkSchema,
+      x: SocialNetworkSchema,
+    })
+    .default({
+      facebook: { url: '', handle: '' },
+      instagram: { url: '', handle: '' },
+      tiktok: { url: '', handle: '' },
+      linkedin: { url: '', handle: '' },
+      x: { url: '', handle: '' },
+    }),
 });
 
 export type ProfileInformationSchemaType = z.infer<typeof ProfileInformationSchema>;
-
