@@ -186,10 +186,10 @@ const platformVisitPayloadSchema = z
     provider_event_id: z.string().trim().min(1).max(256),
     metric_name: metricNameSchema,
     metric_value: z.number().positive(),
-    page_path: z.string().trim().max(512).optional(),
-    route: z.string().trim().max(512).optional(),
-    referrer_host: z.string().trim().max(255).optional(),
-    country: z.string().trim().regex(/^[A-Z]{2}$/).optional(),
+    page_path: z.string().trim().max(512).nullish(),
+    route: z.string().trim().max(512).nullish(),
+    referrer_host: z.string().trim().max(255).nullish(),
+    country: z.string().trim().regex(/^[A-Z]{2}$/).nullish(),
     device_category: deviceTypeSchema.optional(),
   })
   .strict()
