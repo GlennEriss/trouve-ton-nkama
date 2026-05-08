@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import ImmobilierLandingPage from '@/components/seo/ImmobilierLandingPage';
+import { searchLandingProperties } from '@/lib/seo/algolia-listings';
 import { withCanonical } from '@/lib/seo/metadata';
 import {
   LANDING_CITIES,
@@ -11,14 +12,30 @@ import {
   getTransactionConfig,
   getTypeConfig,
 } from '@/lib/seo/landing-taxonomy';
-import { listLandingProperties } from '@/lib/seo/public-listings';
 import { canonical } from '@/lib/seo/site-url';
 
 type PageParams = Promise<{ transaction: string; type: string }>;
+type PageSearchParams = Promise<{ page?: string | string[] }>;
 export const revalidate = 3600;
 
 function buildSearchHref(status: string, typePropertyValue: string): string {
   return `/search?status=${encodeURIComponent(status)}&typeProperty=${encodeURIComponent(typePropertyValue)}`;
+}
+
+function parsePage(rawPage: string | string[] | undefined): number {
+  const raw = Array.isArray(rawPage) ? rawPage[0] : rawPage;
+  if (!raw) return 1;
+
+  const parsed = Number.parseInt(raw, 10);
+  if (!Number.isFinite(parsed) || parsed < 1) {
+    return 1;
+  }
+
+  return parsed;
+}
+
+function withPageQuery(path: string, page: number): string {
+  return page > 1 ? `${path}?page=${encodeURIComponent(page)}` : path;
 }
 
 export function generateStaticParams() {
@@ -30,8 +47,16 @@ export function generateStaticParams() {
   );
 }
 
-export async function generateMetadata({ params }: { params: PageParams }): Promise<Metadata> {
+export async function generateMetadata({
+  params,
+  searchParams,
+}: {
+  params: PageParams;
+  searchParams: PageSearchParams;
+}): Promise<Metadata> {
   const { transaction, type } = await params;
+  const resolvedSearchParams = await searchParams;
+  const page = parsePage(resolvedSearchParams.page);
   const transactionConfig = getTransactionConfig(transaction);
   const typeConfig = getTypeConfig(type);
 
@@ -39,9 +64,11 @@ export async function generateMetadata({ params }: { params: PageParams }): Prom
     return {};
   }
 
-  const title = `${typeConfig.pluralLabel} ${transactionConfig.proposition} au Gabon | Trouve Ton Nkama`;
+  const baseTitle = `${typeConfig.pluralLabel} ${transactionConfig.proposition} au Gabon`;
+  const title = page > 1 ? `${baseTitle} - Page ${page} | Trouve Ton Nkama` : `${baseTitle} | Trouve Ton Nkama`;
   const description = `Découvrez les ${typeConfig.pluralLabel.toLowerCase()} ${transactionConfig.proposition} au Gabon sur Trouve Ton Nkama. Consultez les annonces disponibles, comparez les prix et contactez directement les annonceurs.`;
   const path = getGlobalLandingPath(transactionConfig.slug, typeConfig.slug);
+  const canonicalPath = withPageQuery(path, page);
 
   return withCanonical(
     {
@@ -50,16 +77,24 @@ export async function generateMetadata({ params }: { params: PageParams }): Prom
       openGraph: {
         title,
         description,
-        url: canonical(path),
+        url: canonical(canonicalPath),
         type: 'website',
       },
     },
-    path
+    canonicalPath
   );
 }
 
-export default async function Page({ params }: { params: PageParams }) {
+export default async function Page({
+  params,
+  searchParams,
+}: {
+  params: PageParams;
+  searchParams: PageSearchParams;
+}) {
   const { transaction, type } = await params;
+  const resolvedSearchParams = await searchParams;
+  const page = parsePage(resolvedSearchParams.page);
   const transactionConfig = getTransactionConfig(transaction);
   const typeConfig = getTypeConfig(type);
 
@@ -68,11 +103,17 @@ export default async function Page({ params }: { params: PageParams }) {
   }
 
   const path = getGlobalLandingPath(transactionConfig.slug, typeConfig.slug);
-  const properties = await listLandingProperties({
+  const paginatedPath = withPageQuery(path, page);
+  const propertiesResults = await searchLandingProperties({
     transaction: transactionConfig.slug,
     type: typeConfig.slug,
-    limit: 18,
+    page,
+    hitsPerPage: 18,
   });
+
+  if (propertiesResults.totalPages > 0 && page > propertiesResults.totalPages) {
+    notFound();
+  }
 
   const title = `${typeConfig.pluralLabel} ${transactionConfig.proposition} au Gabon`;
   const description = `Consultez notre sélection de ${typeConfig.pluralLabel.toLowerCase()} ${transactionConfig.proposition} partout au Gabon: Libreville, Port-Gentil, Franceville et plus.`;
@@ -87,7 +128,7 @@ export default async function Page({ params }: { params: PageParams }) {
     '@type': 'CollectionPage',
     name: title,
     description,
-    url: canonical(path),
+    url: canonical(paginatedPath),
     about: `Immobilier Gabon - ${typeConfig.pluralLabel} ${transactionConfig.proposition}`,
   };
 
@@ -111,7 +152,7 @@ export default async function Page({ params }: { params: PageParams }) {
         '@type': 'ListItem',
         position: 3,
         name: `${typeConfig.pluralLabel} ${transactionConfig.proposition}`,
-        item: canonical(path),
+        item: canonical(paginatedPath),
       },
     ],
   };
@@ -131,10 +172,14 @@ export default async function Page({ params }: { params: PageParams }) {
         description={description}
         transactionLabel={transactionConfig.label}
         typeLabel={typeConfig.singularLabel}
-        properties={properties}
+        properties={propertiesResults.items}
         globalLandingPath={path}
         searchHref={buildSearchHref(transactionConfig.status, typeConfig.typePropertyValues[0])}
         cityLandingLinks={cityLandingLinks}
+        pageBasePath={path}
+        currentPage={propertiesResults.currentPage}
+        totalPages={propertiesResults.totalPages}
+        totalHits={propertiesResults.totalHits}
       />
     </>
   );
