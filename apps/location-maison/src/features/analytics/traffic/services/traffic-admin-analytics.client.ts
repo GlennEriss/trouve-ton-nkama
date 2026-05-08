@@ -16,6 +16,7 @@ const LAST_PAGE_SIGNATURE_KEY = 'ttn_analytics_last_page_signature';
 
 type DeviceCategory = 'mobile' | 'desktop' | 'tablet' | 'unknown';
 type TrafficMetricName = 'visit' | 'unique_visitor' | 'page_view';
+type TrafficProvider = 'vercel' | 'firebase';
 
 type TrafficMetricEvent = {
   provider_event_id: string;
@@ -148,9 +149,14 @@ function buildCorrelationId() {
   return createId('corr_traffic');
 }
 
-function buildIdempotencyKey(sessionId: string, pagePath: string, occurredAt: string) {
+function buildIdempotencyKey(
+  provider: TrafficProvider,
+  sessionId: string,
+  pagePath: string,
+  occurredAt: string
+) {
   const minuteBucket = occurredAt.slice(0, 16);
-  return `idem_traffic_${sessionId}_${pagePath.replace(/\W+/g, '_')}_${minuteBucket}`;
+  return `idem_traffic_${provider}_${sessionId}_${pagePath.replace(/\W+/g, '_')}_${minuteBucket}`;
 }
 
 function getReferrerHost() {
@@ -166,6 +172,7 @@ function getReferrerHost() {
 }
 
 async function emitTrafficEvents(input: {
+  provider: TrafficProvider;
   sessionId: string;
   actor: {
     uid: string | null;
@@ -184,7 +191,7 @@ async function emitTrafficEvents(input: {
     sent_at: sentAt,
     occurred_at: sentAt,
     environment: resolveEnvironment(),
-    provider: 'vercel' as const,
+    provider: input.provider,
     actor: {
       actor_type: 'user' as const,
       actor_id: input.actor.uid ?? undefined,
@@ -201,7 +208,12 @@ async function emitTrafficEvents(input: {
     headers: {
       'Content-Type': 'application/json',
       'X-Correlation-Id': buildCorrelationId(),
-      'X-Idempotency-Key': buildIdempotencyKey(input.sessionId, pagePath, sentAt),
+      'X-Idempotency-Key': buildIdempotencyKey(
+        input.provider,
+        input.sessionId,
+        pagePath,
+        sentAt
+      ),
     },
     body: JSON.stringify(body),
     keepalive: true,
@@ -287,6 +299,14 @@ export function trackTrafficPage(input: TrackTrafficPageInput) {
   }
 
   void emitTrafficEvents({
+    provider: 'vercel',
+    sessionId,
+    actor: input.actor,
+    events,
+  });
+
+  void emitTrafficEvents({
+    provider: 'firebase',
     sessionId,
     actor: input.actor,
     events,
