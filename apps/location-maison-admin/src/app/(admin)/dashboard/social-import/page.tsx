@@ -74,6 +74,12 @@ type ReviewItem = {
   sourceId: string | null;
   rawPostId: string;
   sourcePostUrl: string | null;
+  title: string | null;
+  typeProperty: string | null;
+  price: number | null;
+  city: string | null;
+  province: string | null;
+  imageUrls: string[];
   status: "ready_to_publish" | "needs_review" | "rejected" | "published";
   autoReason: string | null;
   score: number | null;
@@ -1625,11 +1631,42 @@ export default function SocialImportDashboardPage() {
                         <p className="font-medium text-slate-900">{candidate.rawPostId}</p>
                         <Badge variant={toStatusBadgeVariant(candidate.status)}>{candidate.status}</Badge>
                       </div>
+                      {candidate.title ? (
+                        <p className="mt-1 text-sm font-medium text-slate-800">{candidate.title}</p>
+                      ) : null}
+                      <p className="mt-1 text-xs text-slate-500">
+                        {candidate.typeProperty || "Type N/A"}
+                        {candidate.price != null ? ` · ${formatNumber(candidate.price)} FCFA` : ""}
+                        {candidate.city || candidate.province
+                          ? ` · ${[candidate.city, candidate.province].filter(Boolean).join(", ")}`
+                          : ""}
+                      </p>
                       <p className="mt-1 text-xs text-slate-500">Annonceur: {candidate.announcerUid}</p>
                       <p className="mt-1 text-xs text-slate-500">Score: {formatNumber(candidate.score)}</p>
                       <p className="mt-1 text-xs text-slate-500">
                         Raison auto: {candidate.autoReason || "non renseignée"}
                       </p>
+                      {candidate.imageUrls.length ? (
+                        <div className="mt-2 grid grid-cols-2 gap-2 md:grid-cols-4">
+                          {candidate.imageUrls.slice(0, 8).map((imageUrl, index) => (
+                            <a
+                              key={`${candidate.id}_image_${index + 1}`}
+                              href={imageUrl}
+                              target="_blank"
+                              rel="noreferrer"
+                              className="overflow-hidden rounded border border-slate-200"
+                            >
+                              {/* eslint-disable-next-line @next/next/no-img-element */}
+                              <img
+                                src={imageUrl}
+                                alt={`Image ${index + 1} - ${candidate.rawPostId}`}
+                                className="h-24 w-full object-cover"
+                                loading="lazy"
+                              />
+                            </a>
+                          ))}
+                        </div>
+                      ) : null}
                       {candidate.sourcePostUrl ? (
                         <a
                           href={candidate.sourcePostUrl}

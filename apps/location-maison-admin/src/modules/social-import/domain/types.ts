@@ -135,6 +135,12 @@ export type SocialImportReviewCandidate = {
   sourceId: string | null;
   rawPostId: string;
   sourcePostUrl: string | null;
+  title: string | null;
+  typeProperty: string | null;
+  price: number | null;
+  city: string | null;
+  province: string | null;
+  imageUrls: string[];
   status: SocialImportReviewCandidateStatus;
   autoReason: string | null;
   score: number | null;

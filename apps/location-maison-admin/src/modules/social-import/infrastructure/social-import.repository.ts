@@ -54,6 +54,14 @@ type RawReviewDoc = {
   sourceId?: unknown;
   rawPostId?: unknown;
   sourcePostUrl?: unknown;
+  title?: unknown;
+  typeProperty?: unknown;
+  price?: unknown;
+  city?: unknown;
+  province?: unknown;
+  imageUrls?: unknown;
+  payload?: unknown;
+  listing?: unknown;
   status?: unknown;
   autoReason?: unknown;
   score?: unknown;
@@ -248,7 +256,51 @@ function mapJobDoc(docId: string, data: RawJobDoc): SocialImportJob {
   };
 }
 
+function extractImageUrlsFromListingPayload(payload: Record<string, unknown> | null) {
+  if (!payload) {
+    return [];
+  }
+  const rawImages = payload.images;
+  if (!Array.isArray(rawImages)) {
+    return [];
+  }
+
+  const urls: string[] = [];
+  for (const image of rawImages) {
+    if (typeof image === "string") {
+      const trimmed = image.trim();
+      if (trimmed.length > 0) {
+        urls.push(trimmed);
+      }
+      continue;
+    }
+    if (image && typeof image === "object" && !Array.isArray(image)) {
+      const fileURL = toTrimmedString((image as { fileURL?: unknown }).fileURL);
+      if (fileURL) {
+        urls.push(fileURL);
+      }
+    }
+  }
+
+  return Array.from(new Set(urls));
+}
+
+function resolveListingPayload(data: RawReviewDoc) {
+  const payload = sanitizeObject(data.payload);
+  const payloadListing = payload ? sanitizeObject(payload.listing) : null;
+  const directListing = sanitizeObject(data.listing);
+  return payloadListing ?? directListing;
+}
+
 function mapReviewDoc(docId: string, data: RawReviewDoc): SocialImportReviewCandidate {
+  const listing = resolveListingPayload(data);
+  const imageUrls = Array.from(
+    new Set([
+      ...toArrayOfStrings(data.imageUrls),
+      ...extractImageUrlsFromListingPayload(listing),
+    ]),
+  );
+
   return {
     id: docId,
     jobId: toTrimmedString(data.jobId),
@@ -256,6 +308,12 @@ function mapReviewDoc(docId: string, data: RawReviewDoc): SocialImportReviewCand
     sourceId: toTrimmedString(data.sourceId),
     rawPostId: toTrimmedString(data.rawPostId) ?? docId,
     sourcePostUrl: toTrimmedString(data.sourcePostUrl),
+    title: toTrimmedString(data.title) ?? toTrimmedString(listing?.title),
+    typeProperty: toTrimmedString(data.typeProperty) ?? toTrimmedString(listing?.typeProperty),
+    price: toNullableNumber(data.price) ?? toNullableNumber(listing?.price),
+    city: toTrimmedString(data.city) ?? toTrimmedString(listing?.city),
+    province: toTrimmedString(data.province) ?? toTrimmedString(listing?.province),
+    imageUrls,
     status: (toTrimmedString(data.status)?.toLowerCase() ?? "needs_review") as SocialImportReviewCandidate["status"],
     autoReason: toTrimmedString(data.autoReason),
     score: toNullableNumber(data.score),
@@ -512,6 +570,124 @@ export async function listSocialImportReviewRawPage(input: {
     cursor: input.cursor,
     map: (docId, data) => mapReviewDoc(docId, data as RawReviewDoc),
   });
+}
+
+export async function upsertSocialImportReviewCandidates(input: {
+  candidates: Array<{
+    id: string;
+    jobId: string;
+    announcerUid: string;
+    sourceId?: string | null;
+    rawPostId: string;
+    sourcePostUrl?: string | null;
+    title?: string | null;
+    typeProperty?: string | null;
+    price?: number | null;
+    city?: string | null;
+    province?: string | null;
+    imageUrls?: string[];
+    status: SocialImportReviewCandidate["status"];
+    autoReason?: string | null;
+    score?: number | null;
+    payload?: Record<string, unknown> | null;
+    listing?: Record<string, unknown> | null;
+    metadata?: Record<string, unknown> | null;
+  }>;
+}) {
+  if (!Array.isArray(input.candidates) || input.candidates.length === 0) {
+    return {
+      upserted: 0,
+      created: 0,
+      updated: 0,
+      readyToPublish: 0,
+      needsReview: 0,
+      rejected: 0,
+    };
+  }
+
+  const db = getFirebaseAdminDb();
+  let created = 0;
+  let updated = 0;
+  let readyToPublish = 0;
+  let needsReview = 0;
+  let rejected = 0;
+
+  for (const candidate of input.candidates) {
+    const id = String(candidate.id || "").trim();
+    if (!id) {
+      continue;
+    }
+
+    const ref = db.collection(REVIEW_COLLECTION).doc(id);
+    const beforeSnapshot = await ref.get();
+    const before = beforeSnapshot.exists
+      ? mapReviewDoc(beforeSnapshot.id, beforeSnapshot.data() as RawReviewDoc)
+      : null;
+
+    const normalizedStatus = (() => {
+      if (before && (before.status === "published" || before.status === "rejected")) {
+        return before.status;
+      }
+      if (
+        candidate.status === "ready_to_publish" ||
+        candidate.status === "needs_review" ||
+        candidate.status === "rejected" ||
+        candidate.status === "published"
+      ) {
+        return candidate.status;
+      }
+      return "needs_review";
+    })();
+
+    if (normalizedStatus === "ready_to_publish") {
+      readyToPublish += 1;
+    } else if (normalizedStatus === "rejected") {
+      rejected += 1;
+    } else {
+      needsReview += 1;
+    }
+
+    const patch: Record<string, unknown> = {
+      jobId: candidate.jobId,
+      announcerUid: candidate.announcerUid,
+      sourceId: candidate.sourceId ?? null,
+      rawPostId: candidate.rawPostId,
+      sourcePostUrl: candidate.sourcePostUrl ?? null,
+      title: candidate.title ?? null,
+      typeProperty: candidate.typeProperty ?? null,
+      price: candidate.price ?? null,
+      city: candidate.city ?? null,
+      province: candidate.province ?? null,
+      imageUrls: Array.from(
+        new Set((candidate.imageUrls ?? []).map((value) => String(value || "").trim()).filter(Boolean)),
+      ),
+      status: normalizedStatus,
+      autoReason: candidate.autoReason ?? null,
+      score: candidate.score ?? null,
+      payload: candidate.payload ?? null,
+      listing: candidate.listing ?? null,
+      metadata: candidate.metadata ?? null,
+      updatedAt: FieldValue.serverTimestamp(),
+    };
+
+    if (beforeSnapshot.exists) {
+      updated += 1;
+    } else {
+      patch.createdAt = FieldValue.serverTimestamp();
+      created += 1;
+    }
+
+    await ref.set(patch, { merge: true });
+  }
+
+  return {
+    upserted: created + updated,
+    created,
+    updated,
+    readyToPublish,
+    needsReview,
+    rejected,
+  };
 }
 
 export async function listSocialImportDecisionsRawPage(input: {

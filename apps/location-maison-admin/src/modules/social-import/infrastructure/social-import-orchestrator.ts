@@ -2,7 +2,10 @@ import { spawn } from "node:child_process";
 import { access, readFile } from "node:fs/promises";
 import path from "node:path";
 
-import { patchSocialImportJobById } from "@/modules/social-import/infrastructure/social-import.repository";
+import {
+  patchSocialImportJobById,
+  upsertSocialImportReviewCandidates,
+} from "@/modules/social-import/infrastructure/social-import.repository";
 
 export type SocialImportRunDispatchInput = {
   jobId: string;
@@ -26,6 +29,232 @@ export type SocialImportRunDispatchResult = {
   externalRunId: string | null;
   message: string | null;
 };
+
+type PipelineSummaryPayload = {
+  paths?: {
+    readyDir?: unknown;
+  };
+  stats?: {
+    events?: unknown;
+  };
+};
+
+function asRecord(value: unknown) {
+  if (!value || typeof value !== "object" || Array.isArray(value)) {
+    return null;
+  }
+  return value as Record<string, unknown>;
+}
+
+function toIsoOrNull(value: unknown) {
+  if (typeof value !== "string") {
+    return null;
+  }
+  const trimmed = value.trim();
+  if (!trimmed) {
+    return null;
+  }
+  const date = new Date(trimmed);
+  return Number.isNaN(date.getTime()) ? null : date.toISOString();
+}
+
+function toImageUrls(input: unknown) {
+  if (!Array.isArray(input)) {
+    return [];
+  }
+  const urls: string[] = [];
+  for (const item of input) {
+    if (typeof item === "string") {
+      const trimmed = item.trim();
+      if (trimmed) {
+        urls.push(trimmed);
+      }
+      continue;
+    }
+    if (item && typeof item === "object" && !Array.isArray(item)) {
+      const fileURL = String((item as { fileURL?: unknown }).fileURL ?? "").trim();
+      if (fileURL) {
+        urls.push(fileURL);
+      }
+    }
+  }
+  return Array.from(new Set(urls));
+}
+
+function hasListingCoreFields(listing: Record<string, unknown> | null) {
+  if (!listing) {
+    return false;
+  }
+  const title = String(listing.title ?? "").trim();
+  const description = String(listing.description ?? "").trim();
+  const typeProperty = String(listing.typeProperty ?? "").trim();
+  const status = String(listing.status ?? "").trim();
+  return Boolean(title && description && typeProperty && status);
+}
+
+function resolveReadyDir(summary: PipelineSummaryPayload, scraperRoot: string) {
+  const readyDirRaw = summary.paths?.readyDir;
+  if (typeof readyDirRaw === "string" && readyDirRaw.trim()) {
+    const value = readyDirRaw.trim();
+    return path.isAbsolute(value) ? value : path.resolve(scraperRoot, value);
+  }
+  return path.resolve(
+    scraperRoot,
+    "storage/exports/location-maison-fine-tuning/annonces/ready-with-images/by-raw-post",
+  );
+}
+
+function extractRawPostIds(summary: PipelineSummaryPayload) {
+  const events = Array.isArray(summary.stats?.events) ? summary.stats?.events : [];
+  const rawPostIds: string[] = [];
+  for (const event of events) {
+    const record = asRecord(event);
+    if (!record) {
+      continue;
+    }
+    const type = String(record.type ?? "").trim().toUpperCase();
+    const rawPostId = String(record.rawPostId ?? "").trim();
+    if (type === "RAW_SAVED" && rawPostId) {
+      rawPostIds.push(rawPostId);
+    }
+  }
+  return Array.from(new Set(rawPostIds));
+}
+
+async function syncReviewCandidatesFromSummary(input: {
+  summaryPath: string | null;
+  scraperRoot: string;
+  jobId: string;
+  announcerUid: string;
+}) {
+  if (!input.summaryPath) {
+    return null;
+  }
+
+  try {
+    const summaryRaw = await readFile(input.summaryPath, "utf8");
+    const summary = JSON.parse(summaryRaw) as PipelineSummaryPayload;
+    const readyDir = resolveReadyDir(summary, input.scraperRoot);
+    const rawPostIds = extractRawPostIds(summary);
+    if (rawPostIds.length === 0) {
+      return {
+        upserted: 0,
+        created: 0,
+        updated: 0,
+        readyToPublish: 0,
+        needsReview: 0,
+        rejected: 0,
+      };
+    }
+
+    const candidates: Array<{
+      id: string;
+      jobId: string;
+      announcerUid: string;
+      sourceId?: string | null;
+      rawPostId: string;
+      sourcePostUrl?: string | null;
+      title?: string | null;
+      typeProperty?: string | null;
+      price?: number | null;
+      city?: string | null;
+      province?: string | null;
+      imageUrls?: string[];
+      status: "ready_to_publish" | "needs_review" | "rejected" | "published";
+      autoReason?: string | null;
+      score?: number | null;
+      payload?: Record<string, unknown> | null;
+      listing?: Record<string, unknown> | null;
+      metadata?: Record<string, unknown> | null;
+    }> = [];
+
+    for (const rawPostId of rawPostIds) {
+      const readyPath = path.join(readyDir, `${rawPostId}.annonce.json`);
+      try {
+        await access(readyPath);
+      } catch {
+        continue;
+      }
+
+      try {
+        const readyRaw = await readFile(readyPath, "utf8");
+        const readyJson = JSON.parse(readyRaw) as Record<string, unknown>;
+        const source = asRecord(readyJson.source);
+        const listing = asRecord(readyJson.annonce);
+        const imageUrls = toImageUrls(
+          Array.isArray(listing?.images) ? listing?.images : [],
+        );
+        const modelRejectReason = String(readyJson.modelRejectReason ?? "").trim();
+        const status =
+          hasListingCoreFields(listing) && !modelRejectReason
+            ? "ready_to_publish"
+            : "needs_review";
+        const autoReason =
+          modelRejectReason ||
+          (status === "needs_review" ? "LISTING_REQUIERT_VALIDATION_MANUELLE" : null);
+        const score =
+          status === "ready_to_publish" ? 0.9 : modelRejectReason ? 0.35 : 0.45;
+
+        candidates.push({
+          id: rawPostId,
+          jobId: input.jobId,
+          announcerUid:
+            String(source?.advertiser_uuid ?? "").trim() || input.announcerUid,
+          sourceId: String(listing?.sourceId ?? rawPostId).trim() || rawPostId,
+          rawPostId,
+          sourcePostUrl:
+            String(source?.sourcePostUrl ?? "").trim() || null,
+          title: String(listing?.title ?? "").trim() || null,
+          typeProperty: String(listing?.typeProperty ?? "").trim() || null,
+          price:
+            typeof listing?.price === "number" && Number.isFinite(listing.price)
+              ? listing.price
+              : null,
+          city: String(listing?.city ?? "").trim() || null,
+          province: String(listing?.province ?? "").trim() || null,
+          imageUrls,
+          status,
+          autoReason,
+          score,
+          payload: listing ? { listing } : null,
+          listing,
+          metadata: {
+            sourcePlatform: String(source?.sourcePlatform ?? "").trim() || null,
+            sourceAuthorName: String(source?.sourceAuthorName ?? "").trim() || null,
+            sourcePublishedAt: toIsoOrNull(source?.sourcePublishedAt),
+            generatedAt: toIsoOrNull(readyJson.generatedAt),
+            readyPath,
+            imageCountLinked:
+              typeof readyJson.imageCountLinked === "number" &&
+              Number.isFinite(readyJson.imageCountLinked)
+                ? readyJson.imageCountLinked
+                : imageUrls.length,
+            modelJobId: String(readyJson.modelJobId ?? "").trim() || null,
+            modelRecordSource:
+              String(readyJson.modelRecordSource ?? "").trim() || null,
+          },
+        });
+      } catch {
+        continue;
+      }
+    }
+
+    if (candidates.length === 0) {
+      return {
+        upserted: 0,
+        created: 0,
+        updated: 0,
+        readyToPublish: 0,
+        needsReview: 0,
+        rejected: 0,
+      };
+    }
+
+    return upsertSocialImportReviewCandidates({ candidates });
+  } catch {
+    return null;
+  }
+}
 
 function splitLinesWithRemainder(input: string) {
   const lines = input.split(/\r?\n/);
@@ -238,13 +467,30 @@ async function dispatchViaLocalCommand(
     const endedAt = new Date().toISOString();
     if (code === 0) {
       const counters = await readPipelineCounters(summaryPath);
+      const reviewSync = await syncReviewCandidatesFromSummary({
+        summaryPath,
+        scraperRoot,
+        jobId: input.jobId,
+        announcerUid: input.announcerUid,
+      });
+
+      const mergedCounters = counters
+        ? {
+            ...counters,
+            needsReview:
+              reviewSync && Number.isFinite(reviewSync.needsReview)
+                ? reviewSync.needsReview
+                : counters.needsReview,
+          }
+        : undefined;
+
       await patchSocialImportJobById({
         jobId: input.jobId,
         patch: {
           status: "completed",
           endedAt,
           errorSummary: null,
-          counters: counters ?? undefined,
+          counters: mergedCounters ?? undefined,
         },
       }).catch(() => undefined);
       return;
