@@ -36,6 +36,7 @@ Ce dashboard doit permettre:
 - [Monétisation Pubs AdSense - Suivi Revenus](./MONETISATION-PUBS-ADSENSE-SPEC.md)
 - [Architecture Operationnelle - Import Annonces Reseaux Sociaux](./architecture/ARCHITECTURE-OPERATIONNELLE-IMPORT-ANNONCES-RESEAUX-SOCIAUX.md)
 - [Checklist Implementation RBAC Social Import (backend/frontend)](./architecture/CHECKLIST-IMPLEMENTATION-RBAC-SOCIAL-IMPORT.md)
+- [Sprint Social Import - Backlog implementation (tickets API/UI)](./architecture/SPRINT-SOCIAL-IMPORT-IMPLEMENTATION-BACKLOG.md)
 - [Analytics Data Contract v1 (events + payloads API + validation)](./architecture/ANALYTICS-DATA-CONTRACT-V1.md)
 - [MVP v1 Figé](./MVP-V1-FIGE.md)
 - [Roadmap MVP](./ROADMAP-MVP.md)

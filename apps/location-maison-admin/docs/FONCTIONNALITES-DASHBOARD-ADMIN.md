@@ -133,7 +133,7 @@ Reference detaillee:
 
 ## 10.1 Sourcing annonces reseaux sociaux
 
-- Gouverner les sources annonceur autorisees (consentement, statut actif/pause/revoque)
+- Gouverner les sources annonceur autorisees (statut actif/pause/revoque)
 - Suivre les imports mensuels des annonces depuis reseaux sociaux
 - Superviser les erreurs/rejets et valider les publications
 - Reference architecture operationnelle complete:

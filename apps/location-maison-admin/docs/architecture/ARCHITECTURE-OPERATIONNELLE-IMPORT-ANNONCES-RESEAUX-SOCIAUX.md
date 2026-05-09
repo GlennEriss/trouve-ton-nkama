@@ -40,7 +40,7 @@ Ce document couvre l'architecture operationnelle cible, sans code.
 ### 3.2 Cible
 
 - Passer d'un usage "operateur local" a une chaine "gouvernee et auditable":
-  - consentement explicite par source,
+  - gouvernance explicite par source,
   - run planifie,
   - validation qualite,
   - publication controlee,
@@ -77,9 +77,8 @@ flowchart LR
 
 ## 5. Flux operationnel detaille
 
-## 5.1 Etape 0 - Qualification et consentement
+## 5.1 Etape 0 - Qualification source
 
-- Enregistrer la preuve de consentement (date, source, canal, validite).
 - Lier la source reseau social a `announcerUid`.
 - Marquer le statut source: `active | paused | revoked`.
 
@@ -153,11 +152,6 @@ Champs minimaux:
 - `sourceUrl`
 - `sourceType` (`profile`, `page`, `group_user`)
 - `status` (`active`, `paused`, `revoked`)
-- `consent`:
-  - `grantedAt`
-  - `grantedBy`
-  - `proofRef`
-  - `expiresAt` (optionnel)
 - `lastImportAt`
 - `createdAt`, `updatedAt`
 
@@ -196,6 +190,64 @@ Champs minimaux:
 - `actorId`
 - `createdAt`
 
+## 6.5 Stockage brut scrape (decision verrouillee)
+
+### Buckets GCP/Firebase Storage
+
+- `social-import-raw-dev`
+- `social-import-raw-prod`
+
+Note pratique:
+
+- Si contrainte de nom global GCS (deja pris), garder le meme pattern en suffixant par projet:
+  - `social-import-raw-dev-location-maison-dev`
+  - `social-import-raw-prod-location-maison-prod-167da`
+
+### Arborescence de reference
+
+```text
+gs://social-import-raw-{env}/
+  facebook/
+    {announcerUid}/
+      {YYYY}/
+        {MM}/
+          {jobId}/
+            raw-posts/
+              {rawPostId}.json
+            raw-images/
+              {rawPostId}/
+                001.jpg
+                002.jpg
+            processed-posts/
+              {rawPostId}.processed.json
+            candidates/
+              {rawPostId}.candidate.json
+            manifests/
+              job-summary.json
+              mapping-raw-to-candidate.json
+            errors/
+              {rawPostId}.error.json
+```
+
+Regles:
+
+- Les donnees brutes restent dans le bucket (source de verite pour reprocessing et dataset evolutif).
+- Firestore ne stocke que les metadonnees de pilotage (`announcer_import_sources`, `social_import_jobs`, `social_import_decisions`, `social_import_candidates`).
+- Les annonces publiees restent dans `properties` + images finales dans le storage produit.
+
+### Retention (etat actuel)
+
+- Pas de lifecycle delete automatique pour le moment.
+- Pas de purge automatique tant que la gouvernance dataset evolutif n'est pas finalisee.
+- Suppression manuelle uniquement, apres validation explicite:
+  - "annonce scrapee integree dans dataset"
+  - et "aucun besoin de reprocessing brut".
+
+Decision explicite:
+
+- `Retention policy = desactivee (pour l'instant)`.
+- Un lot dedie definira plus tard la politique "dataset-linked cleanup".
+
 ## 7. Gouvernance, securite, conformite
 
 ## 7.1 Secrets et credentials
@@ -204,9 +256,9 @@ Champs minimaux:
 - Utiliser un `session_state` Playwright chiffre + rotation periodique.
 - Secrets centralises via Secret Manager (ou equivalent), separes `dev/prod`.
 
-## 7.2 Conformite et consentement
+## 7.2 Conformite operationnelle
 
-- Import autorise uniquement pour sources avec consentement explicite actif.
+- Import autorise uniquement pour sources actives.
 - Traiter les demandes de retrait via `status=revoked` immediate.
 - Journaliser toute importation avec `who/when/what`.
 
@@ -240,7 +292,7 @@ Regle: deny-by-default sur UI + API.
 
 ## 8.3 Runbook operationnel mensuel
 
-1. Verifier sources actives + consentements.
+1. Verifier sources actives.
 2. Lancer dry-run en `dev`.
 3. Valider echantillon qualite.
 4. Lancer run `prod`.
@@ -303,7 +355,7 @@ Regle: deny-by-default sur UI + API.
 ## 12.1 Lot 1 - Gouvernance source
 
 - Registry `announcer_import_sources`.
-- Consentement et statut source.
+- Statut source.
 - Ecrans admin lecture/edition source import.
 
 ## 12.2 Lot 2 - Control plane admin
@@ -330,4 +382,3 @@ Regle: deny-by-default sur UI + API.
 - La normalisation annonce reste dans `location-maison-fine-tuning`.
 - `location-maison-model-annonce` reste un espace R&D et non un composant d'execution prod.
 - Toute annonce importee doit garder une provenance complete et un rattachement annonceur explicite.
-- Aucun import sans consentement actif.

@@ -7,6 +7,7 @@ Fournir une checklist executable, permission par permission, pour implementer le
 Reference fonctionnelle:
 
 - `../MATRICE-PERMISSIONS-SOCIAL-IMPORT-ECRANS-ACTIONS.md`
+- Backlog sprint executable: `./SPRINT-SOCIAL-IMPORT-IMPLEMENTATION-BACKLOG.md`
 
 ## 2. Prerequis transverses (a faire en premier)
 
@@ -14,6 +15,13 @@ Reference fonctionnelle:
 - [ ] Mapper ces permissions dans les roles MVP (`super_admin`, `operations_admin`, etc.).
 - [ ] Ajouter les traductions/labels permission lisibles dans l'UI IAM.
 - [ ] Ajouter la convention d'audit pour ce module (`resource = social_import_*`).
+- [ ] Creer et valider les buckets:
+  - [ ] `social-import-raw-dev`
+  - [ ] `social-import-raw-prod`
+- [ ] Appliquer l'arborescence standard de stockage brut (raw-posts/raw-images/processed/candidates/manifests/errors).
+- [ ] Verrouiller la politique retention actuelle:
+  - [ ] aucun lifecycle delete automatique
+  - [ ] purge manuelle uniquement apres integration dataset.
 
 ## 3. Checklist permission par permission
 
@@ -41,7 +49,7 @@ Backend:
 Frontend:
 
 - [ ] Afficher liste sources uniquement si autorise.
-- [ ] Afficher etat source/consentement en mode lecture seule si `source.update` absent.
+- [ ] Afficher etat source en mode lecture seule si `source.update` absent.
 
 ### Permission `social_import.job.read`
 
@@ -133,18 +141,6 @@ Frontend:
 - [ ] Action destructive avec double confirmation.
 - [ ] Badge visuel `revoked`.
 
-### Permission `social_import.consent.manage`
-
-Backend:
-
-- [ ] Gate RBAC sur mise a jour consentement (`proofRef`, `grantedAt`, `expiresAt`).
-- [ ] Bloquer run prod si consentement invalide.
-
-Frontend:
-
-- [ ] Formulaire consentement (preuve/date/statut).
-- [ ] Afficher alertes de validite/expiration.
-
 ## 3.3 Jobs execution
 
 ### Permission `social_import.run`
@@ -176,7 +172,6 @@ Backend:
 
 - [ ] Gate RBAC sur `POST /social-import/jobs/run`.
 - [ ] Exiger confirmation explicite + `reason`.
-- [ ] Refuser si consentement source absent/revoque.
 - [ ] Audit critique obligatoire.
 
 Frontend:

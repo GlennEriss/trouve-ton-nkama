@@ -47,7 +47,6 @@ Exemples:
 - `social_import.source.update`
 - `social_import.source.pause`
 - `social_import.source.revoke`
-- `social_import.consent.manage`
 - `social_import.run`
 - `social_import.run.dry`
 - `social_import.run.prod`
@@ -71,19 +70,16 @@ Permissions utilisees:
 - `social_import.source.update`
 - `social_import.source.pause`
 - `social_import.source.revoke`
-- `social_import.consent.manage`
 
 | Ecran / Action | super_admin | operations_admin | moderation_admin | finance_admin | support_admin | analyst_admin |
 |---|---|---|---|---|---|---|
 | Ouvrir l'ecran sources importables | Y | Y | Y | N | Y | Y |
 | Lister les sources par annonceur | Y | Y | Y | N | Y | Y |
 | Voir statut source (active/pause/revoke) | Y | Y | Y | N | Y | Y |
-| Voir preuve de consentement (lecture) | Y | Y | Y | N | Y | Y |
 | Ajouter une nouvelle source | Y | Y | N | N | Y* | N |
 | Modifier une source (url, type) | Y | Y | N | N | Y* | N |
 | Mettre en pause une source | Y | Y | Y | N | Y* | N |
 | Revoquer une source | Y | Y | N | N | N | N |
-| Mettre a jour consentement (proof/date/validite) | Y | Y | N | N | N | N |
 
 Condition `Y*`:
 
@@ -176,7 +172,6 @@ Permissions utilisees:
   - audit log complet,
   - `correlationId`.
 - Les actions de publication/rejet doivent etre idempotentes.
-- Aucune action de prod si consentement source absent ou revoque.
 
 ## 7) Dependances API (gate minimal)
 
@@ -204,7 +199,6 @@ Chaque route doit verifier la permission dediee:
 Mutations a auditer:
 
 - creation/mise a jour/pause/revocation de source
-- mise a jour consentement
 - lancement dry-run/run prod
 - retry job
 - publication/rejet candidate

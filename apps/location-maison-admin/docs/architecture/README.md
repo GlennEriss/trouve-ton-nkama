@@ -15,6 +15,7 @@ Documenter l'architecture cible du projet `location-maison-admin` avant impléme
 - [Analytics Data Contract v1](./ANALYTICS-DATA-CONTRACT-V1.md)
 - [Architecture Operationnelle - Import Annonces Reseaux Sociaux](./ARCHITECTURE-OPERATIONNELLE-IMPORT-ANNONCES-RESEAUX-SOCIAUX.md)
 - [Checklist Implementation RBAC Social Import](./CHECKLIST-IMPLEMENTATION-RBAC-SOCIAL-IMPORT.md)
+- [Sprint Social Import - Backlog implementation (tickets API/UI)](./SPRINT-SOCIAL-IMPORT-IMPLEMENTATION-BACKLOG.md)
 - [Monétisation Pubs AdSense - Suivi Revenus](../MONETISATION-PUBS-ADSENSE-SPEC.md)
 - [Sprint 6 Analytics - Backlog d'Implementation](./SPRINT-6-ANALYTICS-IMPLEMENTATION-BACKLOG.md)
 - [ANL-001/002 - BigQuery DDL + Zod Validation Spec](./ANL-001-ANL-002-BIGQUERY-DDL-ZOD-SPEC.md)
