@@ -37,6 +37,7 @@ import {
   listSocialImportJobsRawPage,
   listSocialImportReviewRawPage,
   listSocialImportSourcesRawPage,
+  patchSocialImportJobById,
   patchSocialImportReviewCandidateById,
   patchSocialImportSourceById,
   patchSocialImportSourceConsent,
@@ -52,6 +53,9 @@ import {
 const MAX_SCAN_PAGES = 80;
 const MIN_SCAN_LIMIT = 40;
 const MAX_SCAN_DOCS = Number(process.env.ADMIN_SCAN_DOCS_LIMIT ?? 12000);
+const SOCIAL_IMPORT_STALE_RUNNING_TIMEOUT_MS = Number(
+  process.env.SOCIAL_IMPORT_STALE_RUNNING_TIMEOUT_MS ?? 1000 * 60 * 90,
+);
 
 function normalizeQuery(value?: string) {
   return value?.trim().toLowerCase() ?? "";
@@ -161,6 +165,17 @@ function matchesDateRange(value: string | null, startedFrom: string | null, star
     return false;
   }
   return true;
+}
+
+function isStaleRunningJob(job: SocialImportJob, nowTimestamp: number) {
+  if (job.status !== "running") {
+    return false;
+  }
+  const startedTimestamp = toTimestamp(job.startedAt ?? job.createdAt);
+  if (startedTimestamp == null) {
+    return false;
+  }
+  return nowTimestamp - startedTimestamp >= SOCIAL_IMPORT_STALE_RUNNING_TIMEOUT_MS;
 }
 
 function matchesSearch(haystack: string[], query: string) {
@@ -485,6 +500,7 @@ export async function listSocialImportJobs(
   const startedFrom = normalizeDateInput(input.startedFrom);
   const startedTo = normalizeDateInput(input.startedTo);
   const scanLimit = Math.max(MIN_SCAN_LIMIT, Math.min(500, safeLimit * 3));
+  const nowTimestamp = Date.now();
 
   let cursor = requestedCursor;
   let scanCount = 0;
@@ -516,27 +532,48 @@ export async function listSocialImportJobs(
     for (let index = 0; index < page.items.length; index += 1) {
       const job = page.items[index];
       cursor = job.id;
-      const jobDate = job.startedAt ?? job.createdAt;
+      let effectiveJob = job;
+
+      if (isStaleRunningJob(job, nowTimestamp)) {
+        const stalePatch = {
+          status: "failed" as const,
+          endedAt: new Date(nowTimestamp).toISOString(),
+          errorSummary: job.errorSummary ?? "SOCIAL_IMPORT_STALE_RUNNING_TIMEOUT",
+        };
+
+        await patchSocialImportJobById({
+          jobId: job.id,
+          patch: stalePatch,
+        }).catch(() => undefined);
+
+        effectiveJob = {
+          ...job,
+          ...stalePatch,
+        };
+      }
+
+      const jobDate = effectiveJob.startedAt ?? effectiveJob.createdAt;
 
       const keep =
-        (status === "all" || job.status === status) &&
-        (!announcerUid || job.announcerScope.some((uid) => uid.toLowerCase() === announcerUid)) &&
+        (status === "all" || effectiveJob.status === status) &&
+        (!announcerUid ||
+          effectiveJob.announcerScope.some((uid) => uid.toLowerCase() === announcerUid)) &&
         matchesDateRange(jobDate, startedFrom, startedTo) &&
         matchesSearch(
           [
-            job.id,
-            job.status,
-            job.mode,
-            job.environment,
-            job.errorSummary ?? "",
-            job.triggeredBy ?? "",
-            ...job.announcerScope,
+            effectiveJob.id,
+            effectiveJob.status,
+            effectiveJob.mode,
+            effectiveJob.environment,
+            effectiveJob.errorSummary ?? "",
+            effectiveJob.triggeredBy ?? "",
+            ...effectiveJob.announcerScope,
           ],
           query,
         );
 
       if (keep) {
-        filtered.push(job);
+        filtered.push(effectiveJob);
       }
 
       if (filtered.length === safeLimit) {
@@ -1486,6 +1523,29 @@ export async function triggerSocialImportRun(input: {
       actorUid,
     });
 
+    if (dispatch.externalRunId) {
+      await patchSocialImportJobById({
+        jobId: job.id,
+        patch: {
+          metadata: {
+            kind: "run",
+            sourceId: source?.id ?? null,
+            sourceUrl: source?.sourceUrl ?? null,
+            sourceStatus: source?.status ?? null,
+            executionMode: settings.orchestrator.executionMode,
+            allowLocalProd: settings.orchestrator.allowLocalProd,
+            reason: reason || null,
+            dateFrom: dateFrom ?? null,
+            dateTo: dateTo ?? null,
+            limit: safeLimit,
+            includeImported,
+            headless,
+            externalRunId: dispatch.externalRunId,
+          },
+        },
+      }).catch(() => undefined);
+    }
+
     if (idempotencyKey && hasClaim) {
       await completeSocialImportIdempotency(idempotencyKey, input.correlationId, {
         jobId: job.id,
@@ -1498,9 +1558,19 @@ export async function triggerSocialImportRun(input: {
       dispatch,
     };
   } catch (error) {
+    const code =
+      error instanceof Error ? error.message : "SOCIAL_IMPORT_RUN_FAILED";
+
+    await patchSocialImportJobById({
+      jobId: job.id,
+      patch: {
+        status: "failed",
+        endedAt: new Date().toISOString(),
+        errorSummary: code,
+      },
+    }).catch(() => undefined);
+
     if (idempotencyKey && hasClaim) {
-      const code =
-        error instanceof Error ? error.message : "SOCIAL_IMPORT_RUN_FAILED";
       await failSocialImportIdempotency(idempotencyKey, input.correlationId, code);
     }
     throw error;
