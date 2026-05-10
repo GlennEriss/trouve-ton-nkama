@@ -56,6 +56,10 @@ const MAX_SCAN_DOCS = Number(process.env.ADMIN_SCAN_DOCS_LIMIT ?? 12000);
 const SOCIAL_IMPORT_STALE_RUNNING_TIMEOUT_MS = Number(
   process.env.SOCIAL_IMPORT_STALE_RUNNING_TIMEOUT_MS ?? 1000 * 60 * 90,
 );
+const SOCIAL_IMPORT_CLOUD_RUN_REGION =
+  process.env.SOCIAL_IMPORT_CLOUD_RUN_REGION?.trim() || "europe-west1";
+const SOCIAL_IMPORT_CLOUD_RUN_JOB_NAME =
+  process.env.SOCIAL_IMPORT_CLOUD_RUN_JOB_NAME?.trim() || "social-import-scraper-job";
 
 function normalizeQuery(value?: string) {
   return value?.trim().toLowerCase() ?? "";
@@ -623,6 +627,239 @@ export async function getSocialImportJobDetails(jobId: string) {
     return null;
   }
   return getSocialImportJobById(safeJobId);
+}
+
+function resolveSocialImportProjectId() {
+  return (
+    process.env.GCP_PROJECT_ID ||
+    process.env.FIREBASE_PROJECT_ID ||
+    process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID ||
+    null
+  );
+}
+
+function resolveExternalExecutionName(job: SocialImportJob) {
+  const externalRunIdRaw = job.metadata?.externalRunId;
+  if (typeof externalRunIdRaw !== "string") {
+    return null;
+  }
+  const trimmed = externalRunIdRaw.trim();
+  if (!trimmed) {
+    return null;
+  }
+  const segments = trimmed.split("/").filter((segment) => segment.trim().length > 0);
+  return segments.length ? segments[segments.length - 1] : trimmed;
+}
+
+function resolveCloudRunLogsUrl(input: {
+  projectId: string;
+  region: string;
+  jobName: string;
+  executionName: string | null;
+}) {
+  const queryParts = [
+    'resource.type="cloud_run_job"',
+    `resource.labels.job_name="${input.jobName}"`,
+    `resource.labels.location="${input.region}"`,
+  ];
+  if (input.executionName) {
+    queryParts.push(`resource.labels.execution_name="${input.executionName}"`);
+  }
+  const query = queryParts.join("\n");
+  const encodedQuery = encodeURIComponent(query);
+  return `https://console.cloud.google.com/logs/query;query=${encodedQuery}?project=${encodeURIComponent(input.projectId)}`;
+}
+
+function resolveCloudRunExecutionsUrl(input: {
+  projectId: string;
+  region: string;
+  jobName: string;
+}) {
+  return `https://console.cloud.google.com/run/jobs/details/${encodeURIComponent(input.region)}/${encodeURIComponent(input.jobName)}/executions?project=${encodeURIComponent(input.projectId)}`;
+}
+
+export async function getSocialImportJobLogs(input: { jobId: string }) {
+  const safeJobId = input.jobId.trim();
+  if (!safeJobId) {
+    throw new Error("SOCIAL_IMPORT_JOB_ID_INVALID");
+  }
+
+  const job = await getSocialImportJobById(safeJobId);
+  if (!job) {
+    throw new Error("SOCIAL_IMPORT_JOB_NOT_FOUND");
+  }
+
+  const projectId = resolveSocialImportProjectId();
+  const executionName = resolveExternalExecutionName(job);
+  const orchestratorUrl = process.env.SOCIAL_IMPORT_ORCHESTRATOR_URL?.trim() || null;
+
+  const hints: string[] = [];
+  if (job.status === "running") {
+    hints.push("Le job est encore en cours: surveille les logs Cloud Run.");
+  }
+  if (job.status === "failed" && job.errorSummary) {
+    hints.push(`Résumé erreur: ${job.errorSummary}`);
+  }
+  if (job.counters.rawFetched === 0) {
+    hints.push("Aucun post brut récupéré (fetch=0). Vérifie l'accès à la source ou la période.");
+  }
+  if (job.counters.needsReview === 0 && job.counters.normalizedOk === 0) {
+    hints.push("Aucune candidate review produite pour ce job.");
+  }
+
+  const cloudRun = projectId
+    ? {
+        projectId,
+        region: SOCIAL_IMPORT_CLOUD_RUN_REGION,
+        jobName: SOCIAL_IMPORT_CLOUD_RUN_JOB_NAME,
+        executionName,
+        executionsUrl: resolveCloudRunExecutionsUrl({
+          projectId,
+          region: SOCIAL_IMPORT_CLOUD_RUN_REGION,
+          jobName: SOCIAL_IMPORT_CLOUD_RUN_JOB_NAME,
+        }),
+        logsUrl: resolveCloudRunLogsUrl({
+          projectId,
+          region: SOCIAL_IMPORT_CLOUD_RUN_REGION,
+          jobName: SOCIAL_IMPORT_CLOUD_RUN_JOB_NAME,
+          executionName,
+        }),
+      }
+    : null;
+
+  return {
+    job,
+    logs: {
+      cloudRun,
+      orchestratorUrl,
+      externalRunId:
+        typeof job.metadata?.externalRunId === "string"
+          ? job.metadata.externalRunId
+          : null,
+      hints,
+    },
+  };
+}
+
+async function tryCancelOrchestratorRun(input: {
+  runId: string | null;
+  correlationId: string;
+}) {
+  const orchestratorBaseUrl = process.env.SOCIAL_IMPORT_ORCHESTRATOR_URL?.trim();
+  const runId = input.runId?.trim() || "";
+  if (!orchestratorBaseUrl || !runId) {
+    return {
+      attempted: false,
+      accepted: false,
+      message: null as string | null,
+    };
+  }
+
+  const cancelUrl = `${orchestratorBaseUrl.replace(/\/+$/, "")}/cancel`;
+  const token = process.env.SOCIAL_IMPORT_ORCHESTRATOR_TOKEN?.trim();
+  const headers: Record<string, string> = {
+    "content-type": "application/json",
+    "x-correlation-id": input.correlationId,
+  };
+  if (token) {
+    headers.authorization = `Bearer ${token}`;
+  }
+
+  try {
+    const response = await fetch(cancelUrl, {
+      method: "POST",
+      headers,
+      body: JSON.stringify({ runId }),
+    });
+    if (!response.ok) {
+      return {
+        attempted: true,
+        accepted: false,
+        message: `HTTP_${response.status}`,
+      };
+    }
+    return {
+      attempted: true,
+      accepted: true,
+      message: "accepted",
+    };
+  } catch (error) {
+    return {
+      attempted: true,
+      accepted: false,
+      message: error instanceof Error ? error.message : "REQUEST_FAILED",
+    };
+  }
+}
+
+export async function cancelSocialImportJob(input: {
+  jobId: string;
+  actorUid: string;
+  reason?: string | null;
+  correlationId: string;
+}) {
+  const actorUid = input.actorUid.trim();
+  if (!actorUid) {
+    throw new Error("SOCIAL_IMPORT_ACTOR_UID_REQUIRED");
+  }
+
+  const jobId = input.jobId.trim();
+  if (!jobId) {
+    throw new Error("SOCIAL_IMPORT_JOB_ID_INVALID");
+  }
+
+  const reason = (input.reason ?? "").trim();
+  const job = await getSocialImportJobById(jobId);
+  if (!job) {
+    throw new Error("SOCIAL_IMPORT_JOB_NOT_FOUND");
+  }
+
+  if (job.status !== "running") {
+    throw new Error("SOCIAL_IMPORT_JOB_CANCEL_STATUS_INVALID");
+  }
+
+  const externalRunId =
+    typeof job.metadata?.externalRunId === "string" ? job.metadata.externalRunId : null;
+  const orchestratorCancel = await tryCancelOrchestratorRun({
+    runId: externalRunId,
+    correlationId: input.correlationId,
+  });
+
+  const endedAt = new Date().toISOString();
+  const cancellationReason = reason || "Annulation demandée depuis dashboard admin.";
+  const errorSummary = [
+    "SOCIAL_IMPORT_CANCELLED_BY_ADMIN",
+    `reason=${cancellationReason}`,
+    orchestratorCancel.attempted
+      ? `orchestratorCancel=${orchestratorCancel.accepted ? "accepted" : "not_confirmed"}`
+      : "orchestratorCancel=not_attempted",
+  ].join(" | ");
+
+  const patchResult = await patchSocialImportJobById({
+    jobId,
+    patch: {
+      status: "failed",
+      endedAt,
+      errorSummary,
+      metadata: {
+        ...(job.metadata ?? {}),
+        cancelledBy: actorUid,
+        cancelledAt: endedAt,
+        cancellationReason,
+        orchestratorCancel,
+      },
+    },
+  });
+
+  if (!patchResult) {
+    throw new Error("SOCIAL_IMPORT_JOB_CANCEL_PATCH_FAILED");
+  }
+
+  return {
+    before: patchResult.before,
+    after: patchResult.after,
+    orchestratorCancel,
+  };
 }
 
 export async function listSocialImportReview(

@@ -89,6 +89,7 @@ export type SocialImportJob = {
   endedAt: string | null;
   createdAt: string | null;
   updatedAt: string | null;
+  metadata: Record<string, unknown> | null;
 };
 
 export type SocialImportJobStatusFilter = "all" | SocialImportJobStatus;

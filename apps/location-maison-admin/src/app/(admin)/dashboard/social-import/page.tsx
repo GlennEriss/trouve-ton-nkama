@@ -8,6 +8,14 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
+import {
+  Sheet,
+  SheetContent,
+  SheetDescription,
+  SheetFooter,
+  SheetHeader,
+  SheetTitle,
+} from "@/components/ui/sheet";
 import { PageHeader } from "@/components/ui-kit/page-header";
 
 type AuthMePayload = {
@@ -56,6 +64,8 @@ type JobItem = {
   startedAt: string | null;
   endedAt: string | null;
   createdAt: string | null;
+  updatedAt: string | null;
+  metadata: Record<string, unknown> | null;
 };
 
 type JobsPayload = {
@@ -67,6 +77,34 @@ type JobsPayload = {
     hasMore: boolean;
   };
 };
+
+type JobDetailsPayload = {
+  job: JobItem;
+};
+
+type JobLogsPayload = {
+  job: JobItem;
+  logs: {
+    cloudRun: {
+      projectId: string;
+      region: string;
+      jobName: string;
+      executionName: string | null;
+      executionsUrl: string;
+      logsUrl: string;
+    } | null;
+    orchestratorUrl: string | null;
+    externalRunId: string | null;
+    hints: string[];
+  };
+};
+
+type JobActionModalMode =
+  | "details"
+  | "logs"
+  | "cancel"
+  | "retry_dry"
+  | "retry_real";
 
 type ReviewItem = {
   id: string;
@@ -234,6 +272,11 @@ export default function SocialImportDashboardPage() {
   const [actionError, setActionError] = useState<string | null>(null);
   const [actionMessage, setActionMessage] = useState<string | null>(null);
   const [settingsDraft, setSettingsDraft] = useState<SocialImportSettings | null>(null);
+  const [jobModalMode, setJobModalMode] = useState<JobActionModalMode | null>(null);
+  const [jobModalJob, setJobModalJob] = useState<JobItem | null>(null);
+  const [jobModalReason, setJobModalReason] = useState("");
+  const [jobModalDetails, setJobModalDetails] = useState<JobDetailsPayload | null>(null);
+  const [jobModalLogs, setJobModalLogs] = useState<JobLogsPayload | null>(null);
 
   const permissionsQuery = useQuery({
     queryKey: ["auth", "me", "social-import"],
@@ -365,6 +408,14 @@ export default function SocialImportDashboardPage() {
   const decisions = decisionsQuery.data?.decisions ?? [];
   const currentSettings = settingsDraft ?? settingsQuery.data?.settings ?? null;
   const announcerLookupResults = announcerLookupQuery.data?.announcers ?? [];
+
+  function closeJobActionModal() {
+    setJobModalMode(null);
+    setJobModalJob(null);
+    setJobModalReason("");
+    setJobModalDetails(null);
+    setJobModalLogs(null);
+  }
 
   function updateSettingsDraft(
     updater: (current: SocialImportSettings) => SocialImportSettings,
@@ -617,25 +668,191 @@ export default function SocialImportDashboardPage() {
     );
   }
 
-  async function handleRetryJob(job: JobItem) {
-    const reason = window.prompt(`Motif de relance pour ${job.id} (optionnel) :`, "");
-    if (reason === null) {
+  function resolveJobSourceId(job: JobItem) {
+    const value = job.metadata?.sourceId;
+    return typeof value === "string" && value.trim().length > 0 ? value.trim() : undefined;
+  }
+
+  function resolveJobLimit(job: JobItem) {
+    const value = job.metadata?.limit;
+    if (typeof value === "number" && Number.isFinite(value) && value > 0) {
+      return Math.floor(value);
+    }
+    return undefined;
+  }
+
+  function resolveJobBooleanMeta(job: JobItem, key: "includeImported" | "headless") {
+    const value = job.metadata?.[key];
+    return typeof value === "boolean" ? value : undefined;
+  }
+
+  function resolveRetryEnvironmentForDryRun(job: JobItem) {
+    return job.environment === "prod" ? "preprod" : job.environment;
+  }
+
+  async function handleViewJobDetails(job: JobItem) {
+    const result = await withAction(
+      `job_details_${job.id}`,
+      () =>
+        fetchJson<JobDetailsPayload>(
+          `/api/admin/v1/social-import/jobs/${job.id}`,
+          "Impossible de charger les détails du job.",
+        ),
+      "Détails job chargés.",
+    );
+
+    if (!result?.job) {
+      return;
+    }
+    setJobModalJob(result.job);
+    setJobModalDetails(result);
+    setJobModalMode("details");
+  }
+
+  async function handleViewJobLogs(job: JobItem) {
+    const result = await withAction(
+      `job_logs_${job.id}`,
+      () =>
+        fetchJson<JobLogsPayload>(
+          `/api/admin/v1/social-import/jobs/${job.id}/logs`,
+          "Impossible de charger les logs du job.",
+        ),
+      "Logs job chargés.",
+    );
+    if (!result) {
+      return;
+    }
+    setJobModalJob(result.job);
+    setJobModalLogs(result);
+    setJobModalMode("logs");
+  }
+
+  async function handleCancelJob(job: JobItem) {
+    setJobModalJob(job);
+    setJobModalReason("");
+    setJobModalMode("cancel");
+  }
+
+  async function handleRetryJobDryRun(job: JobItem) {
+    if (job.announcerScope.length === 0) {
+      setActionError("Impossible de relancer ce job en dry-run: aucun annonceur lié.");
+      return;
+    }
+    setJobModalJob(job);
+    setJobModalReason("");
+    setJobModalMode("retry_dry");
+  }
+
+  async function handleRetryJobReal(job: JobItem) {
+    const announcerUid = job.announcerScope[0]?.trim() || "";
+    if (!announcerUid) {
+      setActionError("Impossible de relancer ce job: aucun annonceur lié.");
+      return;
+    }
+    setJobModalJob(job);
+    setJobModalReason("");
+    setJobModalMode("retry_real");
+  }
+
+  async function handleConfirmJobCancel() {
+    if (!jobModalJob) {
+      return;
+    }
+    const result = await withAction(
+      `job_cancel_${jobModalJob.id}`,
+      () =>
+        mutateJson({
+          url: `/api/admin/v1/social-import/jobs/${jobModalJob.id}/cancel`,
+          method: "POST",
+          body: { reason: jobModalReason.trim() || undefined },
+        }),
+      "Job annulé.",
+    );
+    if (result) {
+      closeJobActionModal();
+    }
+  }
+
+  async function handleConfirmJobRetryDryRun() {
+    if (!jobModalJob) {
+      return;
+    }
+    const result = await withAction(
+      `job_retry_dry_${jobModalJob.id}`,
+      () =>
+        mutateJson({
+          url: "/api/admin/v1/social-import/jobs/dry-run",
+          method: "POST",
+          body: {
+            sourceIds: resolveJobSourceId(jobModalJob) ? [resolveJobSourceId(jobModalJob)] : undefined,
+            announcerUids: jobModalJob.announcerScope,
+            environment: resolveRetryEnvironmentForDryRun(jobModalJob),
+            reason: jobModalReason.trim() || undefined,
+          },
+          headers: {
+            "idempotency-key": buildIdempotencyKey(`si_retry_dry_${jobModalJob.id}`),
+          },
+        }),
+      "Dry-run relancé.",
+    );
+    if (result) {
+      closeJobActionModal();
+    }
+  }
+
+  async function handleConfirmJobRetryReal() {
+    if (!jobModalJob) {
+      return;
+    }
+    const announcerUid = jobModalJob.announcerScope[0]?.trim() || "";
+    if (!announcerUid) {
+      setActionError("Impossible de relancer ce job: aucun annonceur lié.");
       return;
     }
 
-    await withAction(
-      `job_retry_${job.id}`,
+    if (jobModalJob.environment === "prod" && !jobModalReason.trim()) {
+      setActionError("Le motif est obligatoire pour une relance réelle en prod.");
+      return;
+    }
+
+    const limit = resolveJobLimit(jobModalJob);
+    const includeImported = resolveJobBooleanMeta(jobModalJob, "includeImported");
+    const headless = resolveJobBooleanMeta(jobModalJob, "headless");
+    const dateFrom =
+      typeof jobModalJob.metadata?.dateFrom === "string" && jobModalJob.metadata.dateFrom.trim().length > 0
+        ? jobModalJob.metadata.dateFrom.trim()
+        : undefined;
+    const dateTo =
+      typeof jobModalJob.metadata?.dateTo === "string" && jobModalJob.metadata.dateTo.trim().length > 0
+        ? jobModalJob.metadata.dateTo.trim()
+        : undefined;
+
+    const result = await withAction(
+      `job_retry_real_${jobModalJob.id}`,
       () =>
         mutateJson({
-          url: `/api/admin/v1/social-import/jobs/${job.id}/retry`,
+          url: "/api/admin/v1/social-import/jobs/run",
           method: "POST",
-          body: { reason: reason.trim() || undefined },
+          body: {
+            sourceId: resolveJobSourceId(jobModalJob),
+            announcerUid,
+            environment: jobModalJob.environment,
+            reason: jobModalReason.trim() || undefined,
+            dateFrom,
+            dateTo,
+            limit,
+            includeImported,
+            headless,
+          },
           headers: {
-            "idempotency-key": buildIdempotencyKey(`si_retry_${job.id}`),
+            "idempotency-key": buildIdempotencyKey(`si_retry_real_${jobModalJob.id}`),
           },
         }),
-      "Job relancé.",
+      "Run réel relancé.",
     );
+    if (result) {
+      closeJobActionModal();
+    }
   }
 
   async function handleRejectCandidate(candidate: ReviewItem) {
@@ -886,6 +1103,215 @@ export default function SocialImportDashboardPage() {
           <CardContent className="pt-5 text-sm text-emerald-700">{actionMessage}</CardContent>
         </Card>
       ) : null}
+
+      <Sheet
+        open={jobModalMode !== null}
+        onOpenChange={(open) => {
+          if (!open) {
+            closeJobActionModal();
+          }
+        }}
+      >
+        <SheetContent side="right" className="w-full overflow-y-auto sm:max-w-xl">
+          <SheetHeader>
+            <SheetTitle>
+              {jobModalMode === "details"
+                ? "Détails du job"
+                : jobModalMode === "logs"
+                  ? "Logs du job"
+                  : jobModalMode === "cancel"
+                    ? "Annuler le job"
+                    : jobModalMode === "retry_dry"
+                      ? "Relancer en dry-run"
+                      : jobModalMode === "retry_real"
+                        ? "Relancer en réel"
+                        : "Action job"}
+            </SheetTitle>
+            <SheetDescription>
+              {jobModalJob
+                ? `Job ${jobModalJob.id} · ${jobModalJob.environment} · ${jobModalJob.status}`
+                : "Aucun job sélectionné."}
+            </SheetDescription>
+          </SheetHeader>
+
+          {jobModalMode === "details" && jobModalDetails ? (
+            <div className="space-y-3 px-4 text-sm">
+              <div className="rounded-md border border-slate-200 p-3">
+                <p>
+                  <span className="font-medium">Début:</span>{" "}
+                  {toDateLabel(jobModalDetails.job.startedAt ?? jobModalDetails.job.createdAt)}
+                </p>
+                <p>
+                  <span className="font-medium">Fin:</span> {toDateLabel(jobModalDetails.job.endedAt)}
+                </p>
+                <p>
+                  <span className="font-medium">Annonceurs:</span>{" "}
+                  {jobModalDetails.job.announcerScope.length
+                    ? jobModalDetails.job.announcerScope.join(", ")
+                    : "all"}
+                </p>
+                <p>
+                  <span className="font-medium">Erreur:</span>{" "}
+                  {jobModalDetails.job.errorSummary || "N/A"}
+                </p>
+                <p>
+                  <span className="font-medium">Compteurs:</span> fetch{" "}
+                  {formatNumber(jobModalDetails.job.counters.rawFetched)} | ok{" "}
+                  {formatNumber(jobModalDetails.job.counters.normalizedOk)} | review{" "}
+                  {formatNumber(jobModalDetails.job.counters.needsReview)} | pub{" "}
+                  {formatNumber(jobModalDetails.job.counters.published)}
+                </p>
+              </div>
+              <div>
+                <p className="mb-2 text-xs font-medium text-slate-600">Metadata brute</p>
+                <pre className="max-h-72 overflow-auto rounded-md border border-slate-200 bg-slate-50 p-3 text-xs">
+                  {JSON.stringify(jobModalDetails.job.metadata ?? {}, null, 2)}
+                </pre>
+              </div>
+            </div>
+          ) : null}
+
+          {jobModalMode === "logs" && jobModalLogs ? (
+            <div className="space-y-3 px-4 text-sm">
+              <div className="rounded-md border border-slate-200 p-3">
+                <p>
+                  <span className="font-medium">Run externe:</span>{" "}
+                  {jobModalLogs.logs.externalRunId || "N/A"}
+                </p>
+                <p>
+                  <span className="font-medium">Orchestrateur:</span>{" "}
+                  {jobModalLogs.logs.orchestratorUrl || "N/A"}
+                </p>
+                <p>
+                  <span className="font-medium">Résumé erreur:</span>{" "}
+                  {jobModalLogs.job.errorSummary || "N/A"}
+                </p>
+              </div>
+
+              {jobModalLogs.logs.hints.length ? (
+                <div className="rounded-md border border-amber-200 bg-amber-50 p-3">
+                  <p className="text-xs font-medium text-amber-800">Indices de diagnostic</p>
+                  <ul className="mt-2 list-disc space-y-1 pl-4 text-xs text-amber-900">
+                    {jobModalLogs.logs.hints.map((hint, index) => (
+                      <li key={`${jobModalLogs.job.id}_hint_${index + 1}`}>{hint}</li>
+                    ))}
+                  </ul>
+                </div>
+              ) : null}
+
+              {jobModalLogs.logs.cloudRun ? (
+                <div className="rounded-md border border-slate-200 p-3">
+                  <p className="text-xs text-slate-600">
+                    Cloud Run: {jobModalLogs.logs.cloudRun.jobName} · {jobModalLogs.logs.cloudRun.region}
+                  </p>
+                  <div className="mt-3 flex flex-wrap gap-2">
+                    <Button
+                      size="xs"
+                      variant="outline"
+                      onClick={() =>
+                        window.open(
+                          jobModalLogs.logs.cloudRun?.logsUrl,
+                          "_blank",
+                          "noopener,noreferrer",
+                        )
+                      }
+                    >
+                      Ouvrir logs Cloud Run
+                    </Button>
+                    <Button
+                      size="xs"
+                      variant="outline"
+                      onClick={() =>
+                        window.open(
+                          jobModalLogs.logs.cloudRun?.executionsUrl,
+                          "_blank",
+                          "noopener,noreferrer",
+                        )
+                      }
+                    >
+                      Ouvrir exécutions
+                    </Button>
+                  </div>
+                </div>
+              ) : (
+                <p className="text-xs text-slate-500">
+                  Liens Cloud Run indisponibles (projet GCP non résolu côté env).
+                </p>
+              )}
+            </div>
+          ) : null}
+
+          {jobModalMode === "cancel" || jobModalMode === "retry_dry" || jobModalMode === "retry_real" ? (
+            <div className="space-y-3 px-4 text-sm">
+              <div className="rounded-md border border-slate-200 p-3">
+                <p>
+                  <span className="font-medium">Annonceurs:</span>{" "}
+                  {jobModalJob?.announcerScope.length ? jobModalJob.announcerScope.join(", ") : "all"}
+                </p>
+                <p>
+                  <span className="font-medium">Période:</span>{" "}
+                  {typeof jobModalJob?.metadata?.dateFrom === "string" && jobModalJob.metadata.dateFrom
+                    ? jobModalJob.metadata.dateFrom
+                    : "N/A"}{" "}
+                  →{" "}
+                  {typeof jobModalJob?.metadata?.dateTo === "string" && jobModalJob.metadata.dateTo
+                    ? jobModalJob.metadata.dateTo
+                    : "N/A"}
+                </p>
+                <p>
+                  <span className="font-medium">Limite:</span>{" "}
+                  {typeof jobModalJob?.metadata?.limit === "number" ? Math.floor(jobModalJob.metadata.limit) : "N/A"}
+                </p>
+              </div>
+              <div className="space-y-1">
+                <p className="text-xs font-medium text-slate-600">
+                  Motif {jobModalMode === "retry_real" && jobModalJob?.environment === "prod" ? "(obligatoire)" : "(optionnel)"}
+                </p>
+                <Input
+                  value={jobModalReason}
+                  onChange={(event) => setJobModalReason(event.target.value)}
+                  placeholder="Décris brièvement l'action à exécuter"
+                />
+              </div>
+            </div>
+          ) : null}
+
+          <SheetFooter>
+            <Button type="button" variant="outline" onClick={closeJobActionModal}>
+              Fermer
+            </Button>
+            {jobModalMode === "cancel" ? (
+              <Button
+                type="button"
+                variant="destructive"
+                disabled={pendingActionKey !== null}
+                onClick={() => void handleConfirmJobCancel()}
+              >
+                Confirmer annulation
+              </Button>
+            ) : null}
+            {jobModalMode === "retry_dry" ? (
+              <Button
+                type="button"
+                variant="secondary"
+                disabled={pendingActionKey !== null}
+                onClick={() => void handleConfirmJobRetryDryRun()}
+              >
+                Confirmer dry-run
+              </Button>
+            ) : null}
+            {jobModalMode === "retry_real" ? (
+              <Button
+                type="button"
+                disabled={pendingActionKey !== null}
+                onClick={() => void handleConfirmJobRetryReal()}
+              >
+                Confirmer relance réelle
+              </Button>
+            ) : null}
+          </SheetFooter>
+        </SheetContent>
+      </Sheet>
 
       <Card>
         <CardHeader>
@@ -1579,21 +2005,54 @@ export default function SocialImportDashboardPage() {
                           review {formatNumber(job.counters.needsReview)} | pub {formatNumber(job.counters.published)}
                         </td>
                         <td className="py-3 pr-4">
-                          {canRetryJob &&
-                          (job.status === "failed" ||
-                            job.status === "partial" ||
-                            job.status === "needs_review") ? (
+                          <div className="flex flex-wrap gap-2">
                             <Button
                               size="xs"
                               variant="outline"
                               disabled={pendingActionKey !== null}
-                              onClick={() => void handleRetryJob(job)}
+                              onClick={() => void handleViewJobDetails(job)}
                             >
-                              Relancer
+                              Détails
                             </Button>
-                          ) : (
-                            <span className="text-xs text-slate-400">N/A</span>
-                          )}
+                            <Button
+                              size="xs"
+                              variant="outline"
+                              disabled={pendingActionKey !== null}
+                              onClick={() => void handleViewJobLogs(job)}
+                            >
+                              Logs
+                            </Button>
+                            {canRetryJob && job.status === "running" ? (
+                              <Button
+                                size="xs"
+                                variant="destructive"
+                                disabled={pendingActionKey !== null}
+                                onClick={() => void handleCancelJob(job)}
+                              >
+                                Annuler
+                              </Button>
+                            ) : null}
+                            {canRunDry && job.status !== "running" ? (
+                              <Button
+                                size="xs"
+                                variant="secondary"
+                                disabled={pendingActionKey !== null}
+                                onClick={() => void handleRetryJobDryRun(job)}
+                              >
+                                Relancer dry-run
+                              </Button>
+                            ) : null}
+                            {canRunProd && job.status !== "running" ? (
+                              <Button
+                                size="xs"
+                                variant="outline"
+                                disabled={pendingActionKey !== null}
+                                onClick={() => void handleRetryJobReal(job)}
+                              >
+                                Relancer réel
+                              </Button>
+                            ) : null}
+                          </div>
                         </td>
                       </tr>
                     ))

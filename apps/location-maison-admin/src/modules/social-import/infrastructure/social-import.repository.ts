@@ -46,6 +46,7 @@ type RawJobDoc = {
   endedAt?: unknown;
   createdAt?: unknown;
   updatedAt?: unknown;
+  metadata?: unknown;
 };
 
 type RawReviewDoc = {
@@ -234,6 +235,7 @@ function mapSourceDoc(docId: string, data: RawSourceDoc): SocialImportSource {
 
 function mapJobDoc(docId: string, data: RawJobDoc): SocialImportJob {
   const counters = sanitizeObject(data.counters);
+  const metadata = sanitizeObject(data.metadata);
   return {
     id: docId,
     status: (toTrimmedString(data.status)?.toLowerCase() ?? "running") as SocialImportJob["status"],
@@ -253,6 +255,7 @@ function mapJobDoc(docId: string, data: RawJobDoc): SocialImportJob {
     endedAt: toIso(data.endedAt),
     createdAt: toIso(data.createdAt),
     updatedAt: toIso(data.updatedAt),
+    metadata,
   };
 }
 
