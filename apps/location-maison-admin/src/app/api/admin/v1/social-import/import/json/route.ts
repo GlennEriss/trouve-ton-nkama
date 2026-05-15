@@ -13,6 +13,7 @@ const bodySchema = z
     sourceId: z.string().trim().min(1).optional(),
     environment: z.enum(["dev", "preprod", "prod"]).optional(),
     reason: z.string().trim().max(500).optional(),
+    resolveOriginalMedia: z.boolean().optional(),
     posts: z.array(z.record(z.string(), z.unknown())).min(1).max(1500),
   })
   .strict();
@@ -75,6 +76,7 @@ export async function POST(request: NextRequest) {
       sourceId: parsed.data.sourceId,
       environment: parsed.data.environment,
       reason: parsed.data.reason,
+      resolveOriginalMedia: parsed.data.resolveOriginalMedia,
       posts: parsed.data.posts,
       idempotencyKey,
       correlationId: auth.correlationId,

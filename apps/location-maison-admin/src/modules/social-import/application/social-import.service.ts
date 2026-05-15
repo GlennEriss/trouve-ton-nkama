@@ -51,6 +51,7 @@ import {
   completeSocialImportIdempotency,
   failSocialImportIdempotency,
 } from "@/modules/social-import/infrastructure/social-import-idempotency.repository";
+import { resolveOriginalFacebookPostMedia } from "@/modules/social-import/infrastructure/facebook-post-media-resolver";
 
 const MAX_SCAN_PAGES = 80;
 const MIN_SCAN_LIMIT = 40;
@@ -157,6 +158,80 @@ function toNullableNumber(value: unknown) {
     }
   }
   return null;
+}
+
+function toBoundedInteger(
+  value: unknown,
+  fallback: number,
+  min: number,
+  max: number,
+) {
+  const numeric = toNullableNumber(value);
+  if (numeric == null) {
+    return fallback;
+  }
+  const bounded = Math.floor(numeric);
+  if (!Number.isFinite(bounded)) {
+    return fallback;
+  }
+  return Math.min(max, Math.max(min, bounded));
+}
+
+function toBooleanFlag(value: unknown, fallback: boolean) {
+  if (typeof value === "boolean") {
+    return value;
+  }
+  if (typeof value !== "string") {
+    return fallback;
+  }
+  const normalized = value.trim().toLowerCase();
+  if (
+    normalized === "true" ||
+    normalized === "1" ||
+    normalized === "yes" ||
+    normalized === "y" ||
+    normalized === "on"
+  ) {
+    return true;
+  }
+  if (
+    normalized === "false" ||
+    normalized === "0" ||
+    normalized === "no" ||
+    normalized === "n" ||
+    normalized === "off"
+  ) {
+    return false;
+  }
+  return fallback;
+}
+
+async function mapWithConcurrency<T, R>(
+  items: T[],
+  concurrency: number,
+  mapper: (item: T, index: number) => Promise<R>,
+) {
+  if (items.length === 0) {
+    return [] as R[];
+  }
+
+  const size = Math.max(1, Math.min(concurrency, items.length));
+  const results = new Array<R>(items.length);
+  let cursor = 0;
+
+  const workers = Array.from({ length: size }, async () => {
+    while (true) {
+      const currentIndex = cursor;
+      cursor += 1;
+      if (currentIndex >= items.length) {
+        return;
+      }
+      results[currentIndex] = await mapper(items[currentIndex], currentIndex);
+    }
+  });
+
+  await Promise.all(workers);
+  return results;
 }
 
 function toIsoFromCreationTime(value: unknown) {
@@ -2055,6 +2130,7 @@ export async function importSocialPostsFromJson(input: {
   sourceId?: string | null;
   environment?: SocialImportEnvironment;
   reason?: string | null;
+  resolveOriginalMedia?: boolean;
   idempotencyKey?: string | null;
   correlationId: string;
 }) {
@@ -2204,6 +2280,96 @@ export async function importSocialPostsFromJson(input: {
     throw new Error("SOCIAL_IMPORT_JSON_POSTS_PARSE_EMPTY");
   }
 
+  const resolveOriginalMedia = toBooleanFlag(
+    input.resolveOriginalMedia,
+    toBooleanFlag(process.env.SOCIAL_IMPORT_JSON_ENRICH_ORIGINAL_MEDIA, true),
+  );
+  const enrichMaxPosts = toBoundedInteger(
+    process.env.SOCIAL_IMPORT_JSON_ENRICH_MAX_POSTS,
+    80,
+    0,
+    500,
+  );
+  const enrichConcurrency = toBoundedInteger(
+    process.env.SOCIAL_IMPORT_JSON_ENRICH_CONCURRENCY,
+    3,
+    1,
+    8,
+  );
+
+  const candidatesForPersistence = parsedCandidates.map((item) => ({
+    ...item.candidate,
+    metadata: {
+      ...(item.candidate.metadata ?? {}),
+    },
+  }));
+
+  let mediaEnrichmentProcessed = 0;
+  let mediaEnrichmentSucceeded = 0;
+  let mediaEnrichmentFallback = 0;
+  let mediaEnrichmentSkipped = 0;
+
+  if (resolveOriginalMedia && enrichMaxPosts > 0) {
+    const candidatesToEnrich = candidatesForPersistence
+      .map((candidate, index) => ({ index, candidate }))
+      .filter((entry) => Boolean(entry.candidate.sourcePostUrl))
+      .slice(0, enrichMaxPosts);
+
+    mediaEnrichmentProcessed = candidatesToEnrich.length;
+
+    if (candidatesToEnrich.length > 0) {
+      const enrichmentResults = await mapWithConcurrency(
+        candidatesToEnrich,
+        enrichConcurrency,
+        async (entry) => {
+          const resolution = await resolveOriginalFacebookPostMedia({
+            postUrl: entry.candidate.sourcePostUrl ?? "",
+            fallbackUrls: entry.candidate.imageUrls,
+          });
+          return {
+            index: entry.index,
+            resolution,
+          };
+        },
+      );
+
+      for (const result of enrichmentResults) {
+        const existingCandidate = candidatesForPersistence[result.index];
+        if (!existingCandidate) {
+          continue;
+        }
+
+        const nextImageUrls =
+          result.resolution.imageUrls.length > 0
+            ? result.resolution.imageUrls
+            : existingCandidate.imageUrls;
+
+        if (result.resolution.usedFallback) {
+          mediaEnrichmentFallback += 1;
+        } else {
+          mediaEnrichmentSucceeded += 1;
+        }
+
+        candidatesForPersistence[result.index] = {
+          ...existingCandidate,
+          imageUrls: nextImageUrls,
+          metadata: {
+            ...(existingCandidate.metadata ?? {}),
+            originalMediaResolution: {
+              usedFallback: result.resolution.usedFallback,
+              ...result.resolution.details,
+            },
+          },
+        };
+      }
+    }
+  }
+
+  mediaEnrichmentSkipped = Math.max(
+    0,
+    candidatesForPersistence.length - mediaEnrichmentProcessed,
+  );
+
   const nowIso = new Date().toISOString();
   const job = await createSocialImportJobRecord({
     status: "running",
@@ -2227,6 +2393,11 @@ export async function importSocialPostsFromJson(input: {
       postsSubmittedCount: input.posts.length,
       candidatesParsedCount: parsedCandidates.length,
       executionMode: "local",
+      originalMediaResolutionEnabled: resolveOriginalMedia,
+      originalMediaResolutionTargetedCount: mediaEnrichmentProcessed,
+      originalMediaResolutionSuccessCount: mediaEnrichmentSucceeded,
+      originalMediaResolutionFallbackCount: mediaEnrichmentFallback,
+      originalMediaResolutionSkippedCount: mediaEnrichmentSkipped,
     },
   });
 
@@ -2235,8 +2406,10 @@ export async function importSocialPostsFromJson(input: {
       environment,
       jobId: job.id,
       announcerUid,
-      records: parsedCandidates.map((item) => ({
-        rawPostId: item.candidate.rawPostId,
+      records: parsedCandidates.map((item, index) => ({
+        rawPostId:
+          candidatesForPersistence[index]?.rawPostId ??
+          item.candidate.rawPostId,
         post: item.rawPost,
       })),
     });
@@ -2246,13 +2419,13 @@ export async function importSocialPostsFromJson(input: {
     );
 
     const reviewSync = await upsertSocialImportReviewCandidates({
-      candidates: parsedCandidates.map((item) => {
-        const storageRef = rawPostStorageById.get(item.candidate.rawPostId);
+      candidates: candidatesForPersistence.map((candidate) => {
+        const storageRef = rawPostStorageById.get(candidate.rawPostId);
         return {
-          ...item.candidate,
+          ...candidate,
           jobId: job.id,
           metadata: {
-            ...(item.candidate.metadata ?? {}),
+            ...(candidate.metadata ?? {}),
             rawJsonPath: storageRef?.rawJsonPath ?? null,
             rawJsonBucket: storageRef?.rawJsonBucket ?? null,
             rawJsonGsUri: storageRef?.rawJsonGsUri ?? null,
@@ -2279,6 +2452,11 @@ export async function importSocialPostsFromJson(input: {
           ...(job.metadata ?? {}),
           importCompletedAt: new Date().toISOString(),
           rawPostsStoredCount: rawPostStorage.length,
+          originalMediaResolutionEnabled: resolveOriginalMedia,
+          originalMediaResolutionTargetedCount: mediaEnrichmentProcessed,
+          originalMediaResolutionSuccessCount: mediaEnrichmentSucceeded,
+          originalMediaResolutionFallbackCount: mediaEnrichmentFallback,
+          originalMediaResolutionSkippedCount: mediaEnrichmentSkipped,
         },
       },
     });

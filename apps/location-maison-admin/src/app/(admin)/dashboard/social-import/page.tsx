@@ -228,6 +228,7 @@ export default function SocialImportDashboardPage() {
   const [runForm, setRunForm] = useState({
     announcerUid: "",
     sourceId: "",
+    resolveOriginalMedia: true,
   });
   const [jsonImportText, setJsonImportText] = useState("");
   const [pendingActionKey, setPendingActionKey] = useState<string | null>(null);
@@ -568,6 +569,7 @@ export default function SocialImportDashboardPage() {
           body: {
             announcerUid,
             sourceId: runForm.sourceId.trim() || undefined,
+            resolveOriginalMedia: runForm.resolveOriginalMedia,
             posts: parsedPosts,
           },
           headers: {
@@ -1055,6 +1057,22 @@ export default function SocialImportDashboardPage() {
                 }
                 placeholder="ID de la source import"
               />
+            </div>
+            <div className="space-y-1">
+              <p className="text-xs font-medium text-slate-600">Images</p>
+              <label className="flex h-10 items-center gap-2 rounded-md border border-slate-200 px-3 text-sm text-slate-700">
+                <input
+                  type="checkbox"
+                  checked={runForm.resolveOriginalMedia}
+                  onChange={(event) =>
+                    setRunForm((previous) => ({
+                      ...previous,
+                      resolveOriginalMedia: event.target.checked,
+                    }))
+                  }
+                />
+                Récupérer les photos originales via post_url
+              </label>
             </div>
           </div>
 
