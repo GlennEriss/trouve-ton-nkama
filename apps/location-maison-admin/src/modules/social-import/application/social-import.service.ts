@@ -41,6 +41,8 @@ import {
   patchSocialImportReviewCandidateById,
   patchSocialImportSourceById,
   patchSocialImportSourceConsent,
+  deleteSocialImportRawJsonObject,
+  deleteSocialImportReviewCandidateById,
   writeSocialImportRawPostsToStorage,
   upsertSocialImportReviewCandidates,
   upsertSocialImportSettings,
@@ -52,6 +54,7 @@ import {
   failSocialImportIdempotency,
 } from "@/modules/social-import/infrastructure/social-import-idempotency.repository";
 import { resolveOriginalFacebookPostMedia } from "@/modules/social-import/infrastructure/facebook-post-media-resolver";
+import { resolveOriginalFacebookPostMediaFromLocalScraper } from "@/modules/social-import/infrastructure/facebook-post-media-scraper-resolver";
 
 const MAX_SCAN_PAGES = 80;
 const MIN_SCAN_LIMIT = 40;
@@ -59,6 +62,8 @@ const MAX_SCAN_DOCS = Number(process.env.ADMIN_SCAN_DOCS_LIMIT ?? 12000);
 const SOCIAL_IMPORT_STALE_RUNNING_TIMEOUT_MS = Number(
   process.env.SOCIAL_IMPORT_STALE_RUNNING_TIMEOUT_MS ?? 1000 * 60 * 90,
 );
+const SOCIAL_IMPORT_DEFAULT_ACTION_REASON =
+  "Action exécutée depuis le dashboard admin.";
 function normalizeQuery(value?: string) {
   return value?.trim().toLowerCase() ?? "";
 }
@@ -1518,14 +1523,8 @@ export async function updateSocialImportSource(
 
 export async function pauseSocialImportSource(input: {
   sourceId: string;
-  reason: string;
   actorUid: string;
 }) {
-  const reason = input.reason.trim();
-  if (!reason) {
-    throw new Error("SOCIAL_IMPORT_REASON_REQUIRED");
-  }
-
   const sourceId = input.sourceId.trim();
   if (!sourceId) {
     throw new Error("SOCIAL_IMPORT_SOURCE_ID_INVALID");
@@ -1566,14 +1565,8 @@ export async function pauseSocialImportSource(input: {
 
 export async function revokeSocialImportSource(input: {
   sourceId: string;
-  reason: string;
   actorUid: string;
 }) {
-  const reason = input.reason.trim();
-  if (!reason) {
-    throw new Error("SOCIAL_IMPORT_REASON_REQUIRED");
-  }
-
   const sourceId = input.sourceId.trim();
   if (!sourceId) {
     throw new Error("SOCIAL_IMPORT_SOURCE_ID_INVALID");
@@ -2296,11 +2289,28 @@ export async function importSocialPostsFromJson(input: {
     1,
     8,
   );
+  const preferLocalScraperResolver = toBooleanFlag(
+    process.env.SOCIAL_IMPORT_JSON_ENRICH_USE_LOCAL_SCRAPER,
+    true,
+  );
+  const localScraperHeadless = toBooleanFlag(
+    process.env.SOCIAL_IMPORT_LOCAL_SCRAPER_HEADLESS,
+    true,
+  );
+  const localScraperTimeoutMs = toBoundedInteger(
+    process.env.SOCIAL_IMPORT_LOCAL_SCRAPER_TIMEOUT_MS,
+    180000,
+    30000,
+    900000,
+  );
+  const effectiveEnrichmentConcurrency = preferLocalScraperResolver
+    ? Math.min(enrichConcurrency, 1)
+    : enrichConcurrency;
 
   const candidatesForPersistence = parsedCandidates.map((item) => ({
     ...item.candidate,
     metadata: {
-      ...(item.candidate.metadata ?? {}),
+      ...((item.candidate.metadata ?? {}) as Record<string, unknown>),
     },
   }));
 
@@ -2320,15 +2330,53 @@ export async function importSocialPostsFromJson(input: {
     if (candidatesToEnrich.length > 0) {
       const enrichmentResults = await mapWithConcurrency(
         candidatesToEnrich,
-        enrichConcurrency,
+        effectiveEnrichmentConcurrency,
         async (entry) => {
-          const resolution = await resolveOriginalFacebookPostMedia({
+          const fallbackUrls = entry.candidate.imageUrls;
+          const localScraperResolution = preferLocalScraperResolver
+            ? await resolveOriginalFacebookPostMediaFromLocalScraper({
+                postUrl: entry.candidate.sourcePostUrl ?? "",
+                announcerUid: entry.candidate.announcerUid,
+                fallbackUrls,
+                headless: localScraperHeadless,
+                timeoutMs: localScraperTimeoutMs,
+              })
+            : null;
+
+          if (
+            localScraperResolution &&
+            !localScraperResolution.usedFallback &&
+            localScraperResolution.imageUrls.length > 0 &&
+            localScraperResolution.imageUrls.length >= fallbackUrls.length
+          ) {
+            return {
+              index: entry.index,
+              nextImageUrls: localScraperResolution.imageUrls,
+              usedFallback: false,
+              resolutionDebug: {
+                strategy: "local_scraper",
+                localScraper: localScraperResolution.details,
+                httpHtml: null,
+              },
+            };
+          }
+
+          const httpResolution = await resolveOriginalFacebookPostMedia({
             postUrl: entry.candidate.sourcePostUrl ?? "",
-            fallbackUrls: entry.candidate.imageUrls,
+            fallbackUrls,
           });
           return {
             index: entry.index,
-            resolution,
+            nextImageUrls:
+              httpResolution.imageUrls.length > 0
+                ? httpResolution.imageUrls
+                : fallbackUrls,
+            usedFallback: httpResolution.usedFallback,
+            resolutionDebug: {
+              strategy: "http_html",
+              localScraper: localScraperResolution?.details ?? null,
+              httpHtml: httpResolution.details,
+            },
           };
         },
       );
@@ -2340,11 +2388,11 @@ export async function importSocialPostsFromJson(input: {
         }
 
         const nextImageUrls =
-          result.resolution.imageUrls.length > 0
-            ? result.resolution.imageUrls
+          result.nextImageUrls.length > 0
+            ? result.nextImageUrls
             : existingCandidate.imageUrls;
 
-        if (result.resolution.usedFallback) {
+        if (result.usedFallback) {
           mediaEnrichmentFallback += 1;
         } else {
           mediaEnrichmentSucceeded += 1;
@@ -2354,10 +2402,12 @@ export async function importSocialPostsFromJson(input: {
           ...existingCandidate,
           imageUrls: nextImageUrls,
           metadata: {
-            ...(existingCandidate.metadata ?? {}),
+            ...((existingCandidate.metadata ?? {}) as Record<string, unknown>),
             originalMediaResolution: {
-              usedFallback: result.resolution.usedFallback,
-              ...result.resolution.details,
+              strategy: result.resolutionDebug.strategy,
+              usedFallback: result.usedFallback,
+              localScraper: result.resolutionDebug.localScraper,
+              httpHtml: result.resolutionDebug.httpHtml,
             },
           },
         };
@@ -2394,6 +2444,9 @@ export async function importSocialPostsFromJson(input: {
       candidatesParsedCount: parsedCandidates.length,
       executionMode: "local",
       originalMediaResolutionEnabled: resolveOriginalMedia,
+      originalMediaResolutionResolver: preferLocalScraperResolver
+        ? "local_scraper_then_http_fallback"
+        : "http_html",
       originalMediaResolutionTargetedCount: mediaEnrichmentProcessed,
       originalMediaResolutionSuccessCount: mediaEnrichmentSucceeded,
       originalMediaResolutionFallbackCount: mediaEnrichmentFallback,
@@ -2453,6 +2506,9 @@ export async function importSocialPostsFromJson(input: {
           importCompletedAt: new Date().toISOString(),
           rawPostsStoredCount: rawPostStorage.length,
           originalMediaResolutionEnabled: resolveOriginalMedia,
+          originalMediaResolutionResolver: preferLocalScraperResolver
+            ? "local_scraper_then_http_fallback"
+            : "http_html",
           originalMediaResolutionTargetedCount: mediaEnrichmentProcessed,
           originalMediaResolutionSuccessCount: mediaEnrichmentSucceeded,
           originalMediaResolutionFallbackCount: mediaEnrichmentFallback,
@@ -2739,7 +2795,7 @@ export async function retrySocialImportJob(input: {
 
 export async function rejectSocialImportCandidate(input: {
   candidateId: string;
-  reason: string;
+  reason?: string | null;
   actorUid: string;
 }) {
   const candidateId = input.candidateId.trim();
@@ -2752,10 +2808,7 @@ export async function rejectSocialImportCandidate(input: {
     throw new Error("SOCIAL_IMPORT_ACTOR_UID_REQUIRED");
   }
 
-  const reason = input.reason.trim();
-  if (reason.length < 3) {
-    throw new Error("SOCIAL_IMPORT_REJECTION_REASON_REQUIRED");
-  }
+  const reason = (input.reason ?? "").trim() || SOCIAL_IMPORT_DEFAULT_ACTION_REASON;
 
   const candidate = await getSocialImportReviewCandidateById(candidateId);
   if (!candidate) {
@@ -2791,6 +2844,128 @@ export async function rejectSocialImportCandidate(input: {
   });
 
   return mutation;
+}
+
+export async function deleteSocialImportCandidate(input: {
+  candidateId: string;
+  reason?: string | null;
+  actorUid: string;
+}) {
+  const candidateId = input.candidateId.trim();
+  if (!candidateId) {
+    throw new Error("SOCIAL_IMPORT_CANDIDATE_ID_INVALID");
+  }
+
+  const actorUid = input.actorUid.trim();
+  if (!actorUid) {
+    throw new Error("SOCIAL_IMPORT_ACTOR_UID_REQUIRED");
+  }
+
+  const reason = (input.reason ?? "").trim() || SOCIAL_IMPORT_DEFAULT_ACTION_REASON;
+
+  const candidate = await getSocialImportReviewCandidateById(candidateId);
+  if (!candidate) {
+    return null;
+  }
+
+  if (candidate.status === "published") {
+    throw new Error("SOCIAL_IMPORT_CANDIDATE_DELETE_FORBIDDEN_PUBLISHED");
+  }
+
+  let rawJsonDeleted = false;
+  if (candidate.rawJsonPath) {
+    rawJsonDeleted = await deleteSocialImportRawJsonObject({
+      objectPath: candidate.rawJsonPath,
+      bucketName: candidate.rawJsonBucket,
+    }).catch(() => false);
+  }
+
+  const deleted = await deleteSocialImportReviewCandidateById({
+    candidateId,
+  });
+  if (!deleted) {
+    return null;
+  }
+
+  return {
+    candidate: deleted,
+    reason,
+    actorUid,
+    rawJsonDeleted,
+  };
+}
+
+export async function deleteSocialImportCandidatesBulk(input: {
+  candidateIds: string[];
+  actorUid: string;
+}) {
+  const actorUid = input.actorUid.trim();
+  if (!actorUid) {
+    throw new Error("SOCIAL_IMPORT_ACTOR_UID_REQUIRED");
+  }
+
+  const candidateIds = Array.from(
+    new Set(
+      input.candidateIds
+        .map((candidateId) => candidateId.trim())
+        .filter((candidateId) => candidateId.length > 0),
+    ),
+  );
+
+  if (candidateIds.length === 0) {
+    throw new Error("SOCIAL_IMPORT_CANDIDATE_IDS_REQUIRED");
+  }
+
+  if (candidateIds.length > 200) {
+    throw new Error("SOCIAL_IMPORT_CANDIDATE_IDS_LIMIT_EXCEEDED");
+  }
+
+  const deleted: Array<{
+    candidateId: string;
+    rawPostId: string;
+    rawJsonDeleted: boolean;
+  }> = [];
+  const skippedPublished: Array<{ candidateId: string; rawPostId: string }> = [];
+  const notFoundIds: string[] = [];
+
+  for (const candidateId of candidateIds) {
+    try {
+      const result = await deleteSocialImportCandidate({
+        candidateId,
+        actorUid,
+      });
+      if (!result) {
+        notFoundIds.push(candidateId);
+        continue;
+      }
+      deleted.push({
+        candidateId,
+        rawPostId: result.candidate.rawPostId,
+        rawJsonDeleted: result.rawJsonDeleted,
+      });
+    } catch (error) {
+      const code = error instanceof Error ? error.message : "SOCIAL_IMPORT_BULK_DELETE_FAILED";
+      if (code === "SOCIAL_IMPORT_CANDIDATE_DELETE_FORBIDDEN_PUBLISHED") {
+        const candidate = await getSocialImportReviewCandidateById(candidateId);
+        skippedPublished.push({
+          candidateId,
+          rawPostId: candidate?.rawPostId ?? candidateId,
+        });
+        continue;
+      }
+      throw error;
+    }
+  }
+
+  return {
+    requestedCount: candidateIds.length,
+    deletedCount: deleted.length,
+    deleted,
+    skippedPublishedCount: skippedPublished.length,
+    skippedPublished,
+    notFoundCount: notFoundIds.length,
+    notFoundIds,
+  };
 }
 
 function resolvePublishSummary(

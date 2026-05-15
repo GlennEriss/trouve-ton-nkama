@@ -2,7 +2,7 @@ import { NextRequest } from "next/server";
 
 import { jsonError, jsonSuccess } from "@/lib/api/response";
 import { logAudit } from "@/modules/audit-compliance/application/audit-log.service";
-import { rejectSocialImportCandidate } from "@/modules/social-import/application/social-import.service";
+import { deleteSocialImportCandidate } from "@/modules/social-import/application/social-import.service";
 import { requireSocialImportPermission } from "@/modules/social-import/presentation/social-import-guard";
 
 type RouteContext = {
@@ -10,13 +10,16 @@ type RouteContext = {
 };
 
 function resolveErrorStatus(code: string) {
-  if (code === "SOCIAL_IMPORT_CANDIDATE_ID_INVALID") {
+  if (
+    code === "SOCIAL_IMPORT_CANDIDATE_ID_INVALID" ||
+    code === "SOCIAL_IMPORT_CANDIDATE_DELETE_FORBIDDEN_PUBLISHED"
+  ) {
     return 400;
   }
   return 500;
 }
 
-export async function POST(request: NextRequest, context: RouteContext) {
+export async function DELETE(request: NextRequest, context: RouteContext) {
   const auth = await requireSocialImportPermission(request, "social_import.reject");
   if (!auth.ok) {
     return auth.response;
@@ -36,7 +39,7 @@ export async function POST(request: NextRequest, context: RouteContext) {
   }
 
   try {
-    const mutation = await rejectSocialImportCandidate({
+    const mutation = await deleteSocialImportCandidate({
       candidateId,
       actorUid: auth.admin.uid,
     });
@@ -55,26 +58,39 @@ export async function POST(request: NextRequest, context: RouteContext) {
     await logAudit({
       actorId: auth.admin.uid,
       actorRoles: auth.admin.roles,
-      action: "social_import.reject",
+      action: "social_import.delete",
       resource: "social_import_candidate",
       resourceId: candidateId,
       status: "success",
       correlationId: auth.correlationId,
+      details: {
+        rawJsonDeleted: mutation.rawJsonDeleted,
+      },
       diff: {
-        beforeStatus: mutation.before.status,
-        afterStatus: mutation.after.status,
+        deletedStatus: mutation.candidate.status,
+        rawPostId: mutation.candidate.rawPostId,
       },
     });
 
-    return jsonSuccess({ candidate: mutation.after }, auth.correlationId);
+    return jsonSuccess(
+      {
+        deleted: true,
+        candidateId,
+        rawJsonDeleted: mutation.rawJsonDeleted,
+      },
+      auth.correlationId,
+    );
   } catch (error) {
     const code =
-      error instanceof Error ? error.message : "SOCIAL_IMPORT_CANDIDATE_REJECT_FAILED";
+      error instanceof Error ? error.message : "SOCIAL_IMPORT_CANDIDATE_DELETE_FAILED";
     const status = resolveErrorStatus(code);
     return jsonError(
       {
         code: status === 400 ? "VALIDATION_ERROR" : "INTERNAL_ERROR",
-        message: "Impossible de rejeter cette candidate.",
+        message:
+          code === "SOCIAL_IMPORT_CANDIDATE_DELETE_FORBIDDEN_PUBLISHED"
+            ? "Une candidate déjà publiée ne peut pas être supprimée depuis cette action."
+            : "Impossible de supprimer cette candidate.",
         details: {
           socialImportErrorCode: code,
         },

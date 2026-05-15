@@ -104,6 +104,15 @@ type JobActionModalMode =
   | "logs"
   | "cancel";
 
+type SocialImportActionModalMode =
+  | "create_source"
+  | "pause_source"
+  | "revoke_source"
+  | "reject_candidate"
+  | "publish_candidate"
+  | "delete_candidate"
+  | "delete_candidates_bulk";
+
 type ReviewItem = {
   id: string;
   announcerUid: string;
@@ -239,6 +248,16 @@ export default function SocialImportDashboardPage() {
   const [jobModalReason, setJobModalReason] = useState("");
   const [jobModalDetails, setJobModalDetails] = useState<JobDetailsPayload | null>(null);
   const [jobModalLogs, setJobModalLogs] = useState<JobLogsPayload | null>(null);
+  const [actionModalMode, setActionModalMode] = useState<SocialImportActionModalMode | null>(null);
+  const [actionModalSource, setActionModalSource] = useState<SourceItem | null>(null);
+  const [actionModalCandidate, setActionModalCandidate] = useState<ReviewItem | null>(null);
+  const [actionSourceForm, setActionSourceForm] = useState({
+    announcerUid: "",
+    platform: "facebook" as SourceItem["platform"],
+    sourceType: "profile" as SourceItem["sourceType"],
+    sourceUrl: "",
+  });
+  const [selectedCandidateIds, setSelectedCandidateIds] = useState<string[]>([]);
 
   const permissionsQuery = useQuery({
     queryKey: ["auth", "me", "social-import"],
@@ -258,6 +277,7 @@ export default function SocialImportDashboardPage() {
   const canRunProd = hasPermission(permissions, "social_import.run.prod");
   const canRetryJob = hasPermission(permissions, "social_import.job.retry");
   const canRejectCandidate = hasPermission(permissions, "social_import.reject");
+  const canDeleteCandidate = hasPermission(permissions, "social_import.reject");
   const canPublishCandidate = hasPermission(permissions, "social_import.publish");
   const canExport = hasPermission(permissions, "social_import.export");
 
@@ -354,9 +374,16 @@ export default function SocialImportDashboardPage() {
 
   const sources = sourcesQuery.data?.sources ?? [];
   const jobs = jobsQuery.data?.jobs ?? [];
-  const candidates = reviewQuery.data?.candidates ?? [];
+  const candidates = useMemo(
+    () => reviewQuery.data?.candidates ?? [],
+    [reviewQuery.data?.candidates],
+  );
   const decisions = decisionsQuery.data?.decisions ?? [];
   const announcerLookupResults = announcerLookupQuery.data?.announcers ?? [];
+  const selectedCandidateIdsResolved = useMemo(() => {
+    const availableIds = new Set(candidates.map((candidate) => candidate.id));
+    return selectedCandidateIds.filter((candidateId) => availableIds.has(candidateId));
+  }, [candidates, selectedCandidateIds]);
 
   function closeJobActionModal() {
     setJobModalMode(null);
@@ -364,6 +391,18 @@ export default function SocialImportDashboardPage() {
     setJobModalReason("");
     setJobModalDetails(null);
     setJobModalLogs(null);
+  }
+
+  function closeActionModal() {
+    setActionModalMode(null);
+    setActionModalSource(null);
+    setActionModalCandidate(null);
+    setActionSourceForm({
+      announcerUid: runForm.announcerUid.trim(),
+      platform: "facebook",
+      sourceType: "profile",
+      sourceUrl: "",
+    });
   }
 
   function onApplyFilters(event: FormEvent<HTMLFormElement>) {
@@ -398,7 +437,7 @@ export default function SocialImportDashboardPage() {
     headers,
   }: {
     url: string;
-    method: "POST" | "PATCH";
+    method: "POST" | "PATCH" | "DELETE";
     body?: Record<string, unknown>;
     headers?: Record<string, string>;
   }) {
@@ -453,85 +492,97 @@ export default function SocialImportDashboardPage() {
   }
 
   async function handleCreateSource() {
-    const announcerUid = window.prompt("UID annonceur ?");
+    setActionSourceForm({
+      announcerUid: runForm.announcerUid.trim(),
+      platform: "facebook",
+      sourceType: "profile",
+      sourceUrl: "",
+    });
+    setActionModalMode("create_source");
+  }
+
+  async function handleConfirmCreateSource() {
+    const announcerUid = actionSourceForm.announcerUid.trim();
+    const sourceUrl = actionSourceForm.sourceUrl.trim();
     if (!announcerUid) {
+      setActionError("UID annonceur obligatoire.");
       return;
     }
-    const platform = window.prompt(
-      "Plateforme (facebook|instagram|tiktok|linkedin|x) ?",
-      "facebook",
-    );
-    if (!platform) {
-      return;
-    }
-    const sourceType = window.prompt("Type (profile|page|group_user) ?", "profile");
-    if (!sourceType) {
-      return;
-    }
-    const sourceUrl = window.prompt("URL source ?");
     if (!sourceUrl) {
+      setActionError("URL source obligatoire.");
       return;
     }
 
-    await withAction(
+    const result = await withAction(
       "source_create",
       () =>
         mutateJson({
           url: "/api/admin/v1/social-import/sources",
           method: "POST",
           body: {
-            announcerUid: announcerUid.trim(),
-            platform: platform.trim().toLowerCase(),
-            sourceType: sourceType.trim().toLowerCase(),
-            sourceUrl: sourceUrl.trim(),
+            announcerUid,
+            platform: actionSourceForm.platform,
+            sourceType: actionSourceForm.sourceType,
+            sourceUrl,
             status: "active",
           },
         }),
       "Source créée avec succès.",
     );
+
+    if (result) {
+      closeActionModal();
+    }
   }
 
   async function handlePauseSource(source: SourceItem) {
-    const reason = window.prompt(`Motif de pause pour ${source.id} ?`);
-    if (!reason) {
+    setActionModalSource(source);
+    setActionModalMode("pause_source");
+  }
+
+  async function handleConfirmPauseSource() {
+    if (!actionModalSource) {
       return;
     }
 
-    await withAction(
-      `source_pause_${source.id}`,
+    const result = await withAction(
+      `source_pause_${actionModalSource.id}`,
       () =>
         mutateJson({
-          url: `/api/admin/v1/social-import/sources/${source.id}/pause`,
+          url: `/api/admin/v1/social-import/sources/${actionModalSource.id}/pause`,
           method: "POST",
-          body: { reason: reason.trim() },
         }),
       "Source mise en pause.",
     );
+
+    if (result) {
+      closeActionModal();
+    }
   }
 
   async function handleRevokeSource(source: SourceItem) {
-    const reason = window.prompt(`Motif de révocation pour ${source.id} ?`);
-    if (!reason) {
+    setActionModalSource(source);
+    setActionModalMode("revoke_source");
+  }
+
+  async function handleConfirmRevokeSource() {
+    if (!actionModalSource) {
       return;
     }
 
-    const confirmed = window.confirm(
-      `Confirmer la révocation de la source ${source.id} ? Cette action est sensible.`,
-    );
-    if (!confirmed) {
-      return;
-    }
-
-    await withAction(
-      `source_revoke_${source.id}`,
+    const result = await withAction(
+      `source_revoke_${actionModalSource.id}`,
       () =>
         mutateJson({
-          url: `/api/admin/v1/social-import/sources/${source.id}/revoke`,
+          url: `/api/admin/v1/social-import/sources/${actionModalSource.id}/revoke`,
           method: "POST",
-          body: { reason: reason.trim() },
         }),
       "Source révoquée.",
     );
+
+    if (result) {
+      closeActionModal();
+    }
   }
 
   async function handleImportJsonPosts() {
@@ -649,42 +700,146 @@ export default function SocialImportDashboardPage() {
   }
 
   async function handleRejectCandidate(candidate: ReviewItem) {
-    const reason = window.prompt(`Motif de rejet pour ${candidate.rawPostId} ?`);
-    if (!reason) {
+    setActionModalCandidate(candidate);
+    setActionModalMode("reject_candidate");
+  }
+
+  async function handleConfirmRejectCandidate() {
+    if (!actionModalCandidate) {
       return;
     }
 
-    await withAction(
-      `candidate_reject_${candidate.id}`,
+    const result = await withAction(
+      `candidate_reject_${actionModalCandidate.id}`,
       () =>
         mutateJson({
-          url: `/api/admin/v1/social-import/review/${candidate.id}/reject`,
+          url: `/api/admin/v1/social-import/review/${actionModalCandidate.id}/reject`,
           method: "POST",
-          body: { reason: reason.trim() },
         }),
       "Candidate rejetée.",
     );
+
+    if (result) {
+      closeActionModal();
+    }
   }
 
   async function handlePublishCandidate(candidate: ReviewItem) {
-    const reason = window.prompt(`Motif de publication pour ${candidate.rawPostId} (optionnel) :`, "");
-    if (reason === null) {
+    setActionModalCandidate(candidate);
+    setActionModalMode("publish_candidate");
+  }
+
+  async function handleConfirmPublishCandidate() {
+    if (!actionModalCandidate) {
       return;
     }
 
-    await withAction(
-      `candidate_publish_${candidate.id}`,
+    const result = await withAction(
+      `candidate_publish_${actionModalCandidate.id}`,
       () =>
         mutateJson({
-          url: `/api/admin/v1/social-import/review/${candidate.id}/publish`,
+          url: `/api/admin/v1/social-import/review/${actionModalCandidate.id}/publish`,
           method: "POST",
-          body: { reason: reason.trim() || undefined },
           headers: {
-            "idempotency-key": buildIdempotencyKey(`si_publish_${candidate.id}`),
+            "idempotency-key": buildIdempotencyKey(`si_publish_${actionModalCandidate.id}`),
           },
         }),
       "Candidate publiée.",
     );
+
+    if (result) {
+      closeActionModal();
+    }
+  }
+
+  async function handleDeleteCandidate(candidate: ReviewItem) {
+    setActionModalCandidate(candidate);
+    setActionModalMode("delete_candidate");
+  }
+
+  async function handleConfirmDeleteCandidate() {
+    if (!actionModalCandidate) {
+      return;
+    }
+
+    const result = await withAction(
+      `candidate_delete_${actionModalCandidate.id}`,
+      () =>
+        mutateJson({
+          url: `/api/admin/v1/social-import/review/${actionModalCandidate.id}`,
+          method: "DELETE",
+        }),
+      "Candidate supprimée.",
+    );
+
+    if (result) {
+      setSelectedCandidateIds((previous) =>
+        previous.filter((candidateId) => candidateId !== actionModalCandidate.id),
+      );
+      closeActionModal();
+    }
+  }
+
+  function toggleCandidateSelection(candidateId: string, checked: boolean) {
+    setSelectedCandidateIds((previous) => {
+      if (checked) {
+        if (previous.includes(candidateId)) {
+          return previous;
+        }
+        return [...previous, candidateId];
+      }
+      return previous.filter((value) => value !== candidateId);
+    });
+  }
+
+  function selectAllVisibleCandidates() {
+    setSelectedCandidateIds(candidates.map((candidate) => candidate.id));
+  }
+
+  function clearCandidateSelection() {
+    setSelectedCandidateIds([]);
+  }
+
+  async function handleDeleteSelectedCandidates() {
+    if (selectedCandidateIdsResolved.length === 0) {
+      setActionError("Sélectionne au moins une candidate à supprimer.");
+      return;
+    }
+    setActionModalMode("delete_candidates_bulk");
+  }
+
+  async function handleConfirmDeleteCandidatesBulk() {
+    const selectedIds = selectedCandidateIdsResolved;
+    if (selectedIds.length === 0) {
+      setActionError("Aucune candidate sélectionnée.");
+      return;
+    }
+
+    const result = await withAction(
+      `candidate_delete_bulk_${selectedIds.length}`,
+      () =>
+        mutateJson<{
+          requestedCount: number;
+          deletedCount: number;
+          skippedPublishedCount: number;
+          notFoundCount: number;
+        }>({
+          url: "/api/admin/v1/social-import/review/bulk-delete",
+          method: "POST",
+          body: {
+            candidateIds: selectedIds,
+          },
+        }),
+      "Suppression multiple terminée.",
+    );
+
+    if (result) {
+      setActionMessage(
+        `Suppression: ${result.deletedCount}/${result.requestedCount} supprimée(s), ${result.skippedPublishedCount} publiée(s) ignorée(s), ${result.notFoundCount} introuvable(s).`,
+      );
+      clearCandidateSelection();
+      closeActionModal();
+    }
   }
 
   function buildExportQueryParams() {
@@ -703,6 +858,97 @@ export default function SocialImportDashboardPage() {
     const url = `/api/admin/v1/social-import/export/${kind}${params ? `?${params}` : ""}`;
     window.open(url, "_blank", "noopener,noreferrer");
   }
+
+  async function handleSubmitActionModal() {
+    if (actionModalMode === "create_source") {
+      await handleConfirmCreateSource();
+      return;
+    }
+    if (actionModalMode === "pause_source") {
+      await handleConfirmPauseSource();
+      return;
+    }
+    if (actionModalMode === "revoke_source") {
+      await handleConfirmRevokeSource();
+      return;
+    }
+    if (actionModalMode === "reject_candidate") {
+      await handleConfirmRejectCandidate();
+      return;
+    }
+    if (actionModalMode === "publish_candidate") {
+      await handleConfirmPublishCandidate();
+      return;
+    }
+    if (actionModalMode === "delete_candidate") {
+      await handleConfirmDeleteCandidate();
+      return;
+    }
+    if (actionModalMode === "delete_candidates_bulk") {
+      await handleConfirmDeleteCandidatesBulk();
+    }
+  }
+
+  const actionModalTitle =
+    actionModalMode === "create_source"
+      ? "Ajouter une source"
+      : actionModalMode === "pause_source"
+        ? "Mettre en pause la source"
+        : actionModalMode === "revoke_source"
+          ? "Révoquer la source"
+          : actionModalMode === "reject_candidate"
+            ? "Rejeter la candidate"
+            : actionModalMode === "publish_candidate"
+              ? "Publier la candidate"
+              : actionModalMode === "delete_candidate"
+                ? "Supprimer la candidate"
+                : actionModalMode === "delete_candidates_bulk"
+                  ? "Supprimer la sélection"
+                : "Action";
+
+  const actionModalDescription =
+    actionModalMode === "create_source"
+      ? "Renseigne les informations de la source à créer."
+      : actionModalMode === "pause_source"
+        ? `Source: ${actionModalSource?.id ?? "N/A"}`
+        : actionModalMode === "revoke_source"
+          ? `Source: ${actionModalSource?.id ?? "N/A"}`
+          : actionModalMode === "reject_candidate"
+            ? `Candidate: ${actionModalCandidate?.rawPostId ?? "N/A"}`
+            : actionModalMode === "publish_candidate"
+              ? `Candidate: ${actionModalCandidate?.rawPostId ?? "N/A"}`
+              : actionModalMode === "delete_candidate"
+                ? `Candidate: ${actionModalCandidate?.rawPostId ?? "N/A"}`
+                : actionModalMode === "delete_candidates_bulk"
+                  ? `${selectedCandidateIdsResolved.length} candidate(s) sélectionnée(s)`
+                : "";
+
+  const actionModalConfirmLabel =
+    actionModalMode === "create_source"
+      ? "Créer la source"
+      : actionModalMode === "pause_source"
+        ? "Confirmer la pause"
+        : actionModalMode === "revoke_source"
+          ? "Confirmer la révocation"
+          : actionModalMode === "reject_candidate"
+            ? "Confirmer le rejet"
+            : actionModalMode === "publish_candidate"
+              ? "Confirmer la publication"
+              : actionModalMode === "delete_candidate"
+                ? "Confirmer la suppression"
+                : actionModalMode === "delete_candidates_bulk"
+                  ? "Confirmer la suppression multiple"
+                : "Confirmer";
+
+  const actionModalConfirmVariant =
+    actionModalMode === "revoke_source" ||
+    actionModalMode === "reject_candidate" ||
+    actionModalMode === "delete_candidate" ||
+    actionModalMode === "delete_candidates_bulk"
+      ? "destructive"
+      : actionModalMode === "create_source" || actionModalMode === "publish_candidate"
+        ? "secondary"
+        : "outline";
 
   if (permissionsQuery.isLoading) {
     return (
@@ -937,6 +1183,153 @@ export default function SocialImportDashboardPage() {
                 onClick={() => void handleConfirmJobCancel()}
               >
                 Confirmer annulation
+              </Button>
+            ) : null}
+          </SheetFooter>
+        </SheetContent>
+      </Sheet>
+
+      <Sheet
+        open={actionModalMode !== null}
+        onOpenChange={(open) => {
+          if (!open) {
+            closeActionModal();
+          }
+        }}
+      >
+        <SheetContent side="right" className="w-full overflow-y-auto sm:max-w-xl">
+          <SheetHeader>
+            <SheetTitle>{actionModalTitle}</SheetTitle>
+            <SheetDescription>{actionModalDescription}</SheetDescription>
+          </SheetHeader>
+
+          {actionModalMode === "create_source" ? (
+            <div className="space-y-3 px-4 text-sm">
+              <div className="space-y-1">
+                <p className="text-xs font-medium text-slate-600">UID annonceur</p>
+                <Input
+                  value={actionSourceForm.announcerUid}
+                  onChange={(event) =>
+                    setActionSourceForm((previous) => ({
+                      ...previous,
+                      announcerUid: event.target.value,
+                    }))
+                  }
+                  placeholder="UID annonceur"
+                />
+              </div>
+              <div className="space-y-1">
+                <p className="text-xs font-medium text-slate-600">Plateforme</p>
+                <select
+                  value={actionSourceForm.platform}
+                  onChange={(event) =>
+                    setActionSourceForm((previous) => ({
+                      ...previous,
+                      platform: event.target.value as SourceItem["platform"],
+                    }))
+                  }
+                  className="h-10 w-full rounded-md border border-slate-200 px-3 text-sm"
+                >
+                  <option value="facebook">facebook</option>
+                  <option value="instagram">instagram</option>
+                  <option value="tiktok">tiktok</option>
+                  <option value="linkedin">linkedin</option>
+                  <option value="x">x</option>
+                </select>
+              </div>
+              <div className="space-y-1">
+                <p className="text-xs font-medium text-slate-600">Type</p>
+                <select
+                  value={actionSourceForm.sourceType}
+                  onChange={(event) =>
+                    setActionSourceForm((previous) => ({
+                      ...previous,
+                      sourceType: event.target.value as SourceItem["sourceType"],
+                    }))
+                  }
+                  className="h-10 w-full rounded-md border border-slate-200 px-3 text-sm"
+                >
+                  <option value="profile">profile</option>
+                  <option value="page">page</option>
+                  <option value="group_user">group_user</option>
+                </select>
+              </div>
+              <div className="space-y-1">
+                <p className="text-xs font-medium text-slate-600">URL source</p>
+                <Input
+                  value={actionSourceForm.sourceUrl}
+                  onChange={(event) =>
+                    setActionSourceForm((previous) => ({
+                      ...previous,
+                      sourceUrl: event.target.value,
+                    }))
+                  }
+                  placeholder="https://www.facebook.com/..."
+                />
+              </div>
+            </div>
+          ) : null}
+
+          {actionModalMode === "pause_source" || actionModalMode === "revoke_source" ? (
+            <div className="space-y-3 px-4 text-sm">
+              <div className="rounded-md border border-slate-200 p-3">
+                <p>
+                  <span className="font-medium">Source:</span> {actionModalSource?.id ?? "N/A"}
+                </p>
+                <p>
+                  <span className="font-medium">Annonceur:</span>{" "}
+                  {actionModalSource?.announcerUid ?? "N/A"}
+                </p>
+              </div>
+            </div>
+          ) : null}
+
+          {actionModalMode === "reject_candidate" ||
+          actionModalMode === "publish_candidate" ||
+          actionModalMode === "delete_candidate" ? (
+            <div className="space-y-3 px-4 text-sm">
+              <div className="rounded-md border border-slate-200 p-3">
+                <p>
+                  <span className="font-medium">Post:</span> {actionModalCandidate?.rawPostId ?? "N/A"}
+                </p>
+                <p>
+                  <span className="font-medium">Annonceur:</span>{" "}
+                  {actionModalCandidate?.announcerUid ?? "N/A"}
+                </p>
+                <p>
+                  <span className="font-medium">Statut:</span>{" "}
+                  {actionModalCandidate?.status ?? "N/A"}
+                </p>
+              </div>
+            </div>
+          ) : null}
+
+          {actionModalMode === "delete_candidates_bulk" ? (
+            <div className="space-y-3 px-4 text-sm">
+              <div className="rounded-md border border-slate-200 p-3">
+                <p>
+                  <span className="font-medium">Sélection:</span>{" "}
+                  {selectedCandidateIdsResolved.length} candidate(s)
+                </p>
+                <p className="text-xs text-slate-500">
+                  Les candidates déjà publiées seront ignorées automatiquement.
+                </p>
+              </div>
+            </div>
+          ) : null}
+
+          <SheetFooter>
+            <Button type="button" variant="outline" onClick={closeActionModal}>
+              Fermer
+            </Button>
+            {actionModalMode ? (
+              <Button
+                type="button"
+                variant={actionModalConfirmVariant}
+                disabled={pendingActionKey !== null}
+                onClick={() => void handleSubmitActionModal()}
+              >
+                {actionModalConfirmLabel}
               </Button>
             ) : null}
           </SheetFooter>
@@ -1310,10 +1703,43 @@ export default function SocialImportDashboardPage() {
       <div className="grid gap-6 lg:grid-cols-2">
         <Card>
           <CardHeader className="flex items-center justify-between gap-3">
-            <h2 className="text-lg font-semibold text-slate-900">File review</h2>
-            <Badge variant={canReadReview ? "success" : "warning"}>
-              {canReadReview ? "Lecture autorisée" : "Permission manquante"}
-            </Badge>
+            <div className="flex items-center gap-3">
+              <h2 className="text-lg font-semibold text-slate-900">File review</h2>
+              <Badge variant={canReadReview ? "success" : "warning"}>
+                {canReadReview ? "Lecture autorisée" : "Permission manquante"}
+              </Badge>
+            </div>
+            {canReadReview && canDeleteCandidate ? (
+              <div className="flex flex-wrap items-center justify-end gap-2">
+                <Button
+                  type="button"
+                  size="xs"
+                  variant="outline"
+                  disabled={pendingActionKey !== null || candidates.length === 0}
+                  onClick={selectAllVisibleCandidates}
+                >
+                  Tout sélectionner
+                </Button>
+                <Button
+                  type="button"
+                  size="xs"
+                  variant="outline"
+                  disabled={pendingActionKey !== null || selectedCandidateIdsResolved.length === 0}
+                  onClick={clearCandidateSelection}
+                >
+                  Réinitialiser
+                </Button>
+                <Button
+                  type="button"
+                  size="xs"
+                  variant="destructive"
+                  disabled={pendingActionKey !== null || selectedCandidateIdsResolved.length === 0}
+                  onClick={() => void handleDeleteSelectedCandidates()}
+                >
+                  Supprimer sélection ({selectedCandidateIdsResolved.length})
+                </Button>
+              </div>
+            ) : null}
           </CardHeader>
           <CardContent>
             {canReadReview ? (
@@ -1322,7 +1748,19 @@ export default function SocialImportDashboardPage() {
                   candidates.map((candidate) => (
                     <article key={candidate.id} className="rounded-lg border border-slate-200 p-3">
                       <div className="flex items-center justify-between gap-3">
-                        <p className="font-medium text-slate-900">{candidate.rawPostId}</p>
+                        <div className="flex items-center gap-2">
+                          {canDeleteCandidate ? (
+                              <input
+                                type="checkbox"
+                                checked={selectedCandidateIdsResolved.includes(candidate.id)}
+                                onChange={(event) =>
+                                  toggleCandidateSelection(candidate.id, event.target.checked)
+                                }
+                              aria-label={`Sélectionner ${candidate.rawPostId}`}
+                            />
+                          ) : null}
+                          <p className="font-medium text-slate-900">{candidate.rawPostId}</p>
+                        </div>
                         <Badge variant={toStatusBadgeVariant(candidate.status)}>{candidate.status}</Badge>
                       </div>
                       {candidate.title ? (
@@ -1344,24 +1782,29 @@ export default function SocialImportDashboardPage() {
                         Raison auto: {candidate.autoReason || "non renseignée"}
                       </p>
                       {candidate.imageUrls.length ? (
-                        <div className="mt-2 grid grid-cols-2 gap-2 md:grid-cols-4">
-                          {candidate.imageUrls.slice(0, 8).map((imageUrl, index) => (
-                            <a
-                              key={`${candidate.id}_image_${index + 1}`}
-                              href={imageUrl}
-                              target="_blank"
-                              rel="noreferrer"
-                              className="overflow-hidden rounded border border-slate-200"
-                            >
-                              {/* eslint-disable-next-line @next/next/no-img-element */}
-                              <img
-                                src={imageUrl}
-                                alt={`Image ${index + 1} - ${candidate.rawPostId}`}
-                                className="h-24 w-full object-cover"
-                                loading="lazy"
-                              />
-                            </a>
-                          ))}
+                        <div className="mt-2">
+                          <p className="mb-2 text-xs text-slate-500">
+                            Médias détectés: {candidate.imageUrls.length}
+                          </p>
+                          <div className="grid grid-cols-2 gap-2 md:grid-cols-4">
+                            {candidate.imageUrls.map((imageUrl, index) => (
+                              <a
+                                key={`${candidate.id}_image_${index + 1}`}
+                                href={imageUrl}
+                                target="_blank"
+                                rel="noreferrer"
+                                className="overflow-hidden rounded border border-slate-200"
+                              >
+                                {/* eslint-disable-next-line @next/next/no-img-element */}
+                                <img
+                                  src={imageUrl}
+                                  alt={`Image ${index + 1} - ${candidate.rawPostId}`}
+                                  className="h-24 w-full object-cover"
+                                  loading="lazy"
+                                />
+                              </a>
+                            ))}
+                          </div>
                         </div>
                       ) : null}
                       {candidate.sourcePostUrl ? (
@@ -1375,6 +1818,16 @@ export default function SocialImportDashboardPage() {
                         </a>
                       ) : null}
                       <div className="mt-3 flex flex-wrap gap-2">
+                        {canDeleteCandidate && candidate.status !== "published" ? (
+                          <Button
+                            size="xs"
+                            variant="outline"
+                            disabled={pendingActionKey !== null}
+                            onClick={() => void handleDeleteCandidate(candidate)}
+                          >
+                            Supprimer
+                          </Button>
+                        ) : null}
                         {canRejectCandidate && candidate.status !== "rejected" && candidate.status !== "published" ? (
                           <Button
                             size="xs"

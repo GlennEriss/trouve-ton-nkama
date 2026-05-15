@@ -1141,6 +1141,43 @@ export async function patchSocialImportReviewCandidateById(input: {
   return { before, after };
 }
 
+export async function deleteSocialImportReviewCandidateById(input: {
+  candidateId: string;
+}) {
+  const db = getFirebaseAdminDb();
+  const ref = db.collection(REVIEW_COLLECTION).doc(input.candidateId);
+  const snapshot = await ref.get();
+  if (!snapshot.exists) {
+    return null;
+  }
+
+  const before = mapReviewDoc(snapshot.id, snapshot.data() as RawReviewDoc);
+  await ref.delete();
+  return before;
+}
+
+export async function deleteSocialImportRawJsonObject(input: {
+  objectPath: string;
+  bucketName?: string | null;
+}) {
+  const objectPath = input.objectPath.trim();
+  if (!objectPath) {
+    return false;
+  }
+
+  const storage = getFirebaseAdminStorage();
+  const bucket = input.bucketName?.trim()
+    ? storage.bucket(input.bucketName.trim())
+    : storage.bucket();
+  const file = bucket.file(objectPath);
+  const [exists] = await file.exists();
+  if (!exists) {
+    return false;
+  }
+  await file.delete();
+  return true;
+}
+
 export async function createSocialImportDecisionRecord(input: {
   jobId?: string | null;
   announcerUid?: string | null;

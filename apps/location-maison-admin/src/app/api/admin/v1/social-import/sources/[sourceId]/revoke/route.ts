@@ -1,23 +1,15 @@
 import { NextRequest } from "next/server";
-import { z } from "zod";
-
 import { jsonError, jsonSuccess } from "@/lib/api/response";
 import { logAudit } from "@/modules/audit-compliance/application/audit-log.service";
 import { revokeSocialImportSource } from "@/modules/social-import/application/social-import.service";
 import { requireSocialImportPermission } from "@/modules/social-import/presentation/social-import-guard";
-
-const bodySchema = z
-  .object({
-    reason: z.string().trim().min(3).max(500),
-  })
-  .strict();
 
 type RouteContext = {
   params: Promise<{ sourceId: string }>;
 };
 
 function resolveErrorStatus(code: string) {
-  if (code === "SOCIAL_IMPORT_REASON_REQUIRED" || code === "SOCIAL_IMPORT_SOURCE_ID_INVALID") {
+  if (code === "SOCIAL_IMPORT_SOURCE_ID_INVALID") {
     return 400;
   }
   return 500;
@@ -42,26 +34,9 @@ export async function POST(request: NextRequest, context: RouteContext) {
     );
   }
 
-  const body = await request.json().catch(() => null);
-  const parsed = bodySchema.safeParse(body);
-  if (!parsed.success) {
-    return jsonError(
-      {
-        code: "VALIDATION_ERROR",
-        message: "Corps de requête invalide.",
-        details: {
-          issues: parsed.error.issues,
-        },
-      },
-      400,
-      auth.correlationId,
-    );
-  }
-
   try {
     const mutation = await revokeSocialImportSource({
       sourceId,
-      reason: parsed.data.reason,
       actorUid: auth.admin.uid,
     });
 
@@ -85,7 +60,6 @@ export async function POST(request: NextRequest, context: RouteContext) {
       status: "success",
       correlationId: auth.correlationId,
       details: {
-        reason: parsed.data.reason,
         changed: mutation.changed,
       },
       diff: {
