@@ -41,6 +41,8 @@ import {
   patchSocialImportReviewCandidateById,
   patchSocialImportSourceById,
   patchSocialImportSourceConsent,
+  writeSocialImportRawPostsToStorage,
+  upsertSocialImportReviewCandidates,
   upsertSocialImportSettings,
 } from "@/modules/social-import/infrastructure/social-import.repository";
 import { dispatchSocialImportRun } from "@/modules/social-import/infrastructure/social-import-orchestrator";
@@ -56,11 +58,6 @@ const MAX_SCAN_DOCS = Number(process.env.ADMIN_SCAN_DOCS_LIMIT ?? 12000);
 const SOCIAL_IMPORT_STALE_RUNNING_TIMEOUT_MS = Number(
   process.env.SOCIAL_IMPORT_STALE_RUNNING_TIMEOUT_MS ?? 1000 * 60 * 90,
 );
-const SOCIAL_IMPORT_CLOUD_RUN_REGION =
-  process.env.SOCIAL_IMPORT_CLOUD_RUN_REGION?.trim() || "europe-west1";
-const SOCIAL_IMPORT_CLOUD_RUN_JOB_NAME =
-  process.env.SOCIAL_IMPORT_CLOUD_RUN_JOB_NAME?.trim() || "social-import-scraper-job";
-
 function normalizeQuery(value?: string) {
   return value?.trim().toLowerCase() ?? "";
 }
@@ -147,6 +144,148 @@ function normalizeDateInput(value?: string) {
     return null;
   }
   return new Date(timestamp).toISOString();
+}
+
+function toNullableNumber(value: unknown) {
+  if (typeof value === "number" && Number.isFinite(value)) {
+    return value;
+  }
+  if (typeof value === "string") {
+    const parsed = Number(value);
+    if (Number.isFinite(parsed)) {
+      return parsed;
+    }
+  }
+  return null;
+}
+
+function toIsoFromCreationTime(value: unknown) {
+  const numeric = toNullableNumber(value);
+  if (numeric == null) {
+    return null;
+  }
+
+  const asMs = numeric > 10_000_000_000 ? numeric : numeric * 1000;
+  const date = new Date(asMs);
+  if (Number.isNaN(date.getTime())) {
+    return null;
+  }
+  return date.toISOString();
+}
+
+function extractTitleFromCaption(caption: string | null) {
+  if (!caption) {
+    return null;
+  }
+  const firstLine = caption
+    .split(/\r?\n/)
+    .map((line) => line.trim())
+    .find((line) => line.length > 0);
+
+  if (!firstLine) {
+    return null;
+  }
+  return firstLine.slice(0, 180);
+}
+
+function inferTypePropertyFromCaption(caption: string | null) {
+  if (!caption) {
+    return null;
+  }
+  const text = caption.toLowerCase();
+  if (text.includes("terrain")) return "TERRAIN";
+  if (text.includes("studio")) return "STUDIO";
+  if (text.includes("appartement")) return "APPARTEMENT";
+  if (text.includes("villa")) return "VILLA";
+  if (text.includes("duplex")) return "DUPLEX";
+  if (text.includes("local")) return "LOCAL";
+  if (text.includes("bureau")) return "BUREAU";
+  return null;
+}
+
+function extractPriceFromCaption(caption: string | null) {
+  if (!caption) {
+    return null;
+  }
+
+  const matches = Array.from(caption.matchAll(/(\d[\d\s.,]{2,})\s*(fcfa|cfa)/gi));
+  if (matches.length === 0) {
+    return null;
+  }
+
+  const candidateValues = matches
+    .map((match) => match[1]?.replace(/[^\d]/g, "") ?? "")
+    .map((digits) => Number(digits))
+    .filter((value) => Number.isFinite(value) && value > 0);
+
+  if (candidateValues.length === 0) {
+    return null;
+  }
+
+  return Math.max(...candidateValues);
+}
+
+function inferCityFromCaption(caption: string | null) {
+  if (!caption) {
+    return null;
+  }
+  const text = caption.toLowerCase();
+  if (text.includes("akanda")) return "Akanda";
+  if (text.includes("libreville")) return "Libreville";
+  if (text.includes("owendo")) return "Owendo";
+  if (text.includes("port-gentil")) return "Port-Gentil";
+  if (text.includes("franceville")) return "Franceville";
+  return null;
+}
+
+function inferProvinceFromCity(city: string | null) {
+  if (!city) {
+    return null;
+  }
+  const normalized = city.trim().toLowerCase();
+  if (normalized === "akanda" || normalized === "libreville" || normalized === "owendo") {
+    return "Estuaire";
+  }
+  if (normalized === "port-gentil") {
+    return "Ogooué-Maritime";
+  }
+  if (normalized === "franceville") {
+    return "Haut-Ogooué";
+  }
+  return null;
+}
+
+function toStringArray(value: unknown) {
+  if (!Array.isArray(value)) {
+    return [];
+  }
+  return value
+    .map((item) => (typeof item === "string" ? item.trim() : ""))
+    .filter((item) => item.length > 0);
+}
+
+function extractMediaUrls(value: unknown) {
+  if (!Array.isArray(value)) {
+    return [];
+  }
+
+  const urls: string[] = [];
+  for (const item of value) {
+    if (typeof item === "string") {
+      const trimmed = item.trim();
+      if (trimmed) {
+        urls.push(trimmed);
+      }
+      continue;
+    }
+    if (item && typeof item === "object" && !Array.isArray(item)) {
+      const url = toNullableString((item as { url?: unknown }).url);
+      if (url) {
+        urls.push(url);
+      }
+    }
+  }
+  return Array.from(new Set(urls));
 }
 
 function matchesDateRange(value: string | null, startedFrom: string | null, startedTo: string | null) {
@@ -245,16 +384,6 @@ function canTransitionSourceStatus(from: SocialImportSourceStatus, to: SocialImp
   return false;
 }
 
-function normalizeExecutionMode(
-  value?: string | null,
-): SocialImportSettings["orchestrator"]["executionMode"] {
-  const normalized = value?.trim().toLowerCase();
-  if (normalized === "local" || normalized === "orchestrator") {
-    return normalized;
-  }
-  return "auto";
-}
-
 function normalizeSchedulerEnvironment(
   value?: string | null,
 ): SocialImportSchedulerEnvironment {
@@ -266,18 +395,6 @@ function normalizeSchedulerEnvironment(
 }
 
 function resolveDefaultSocialImportSettings(): SocialImportSettings {
-  const executionMode = normalizeExecutionMode(
-    process.env.SOCIAL_IMPORT_EXECUTION_MODE,
-  );
-  const hasOrchestratorUrl = Boolean(
-    process.env.SOCIAL_IMPORT_ORCHESTRATOR_URL?.trim(),
-  );
-  const allowLocalProd = String(
-    process.env.SOCIAL_IMPORT_ALLOW_LOCAL_PROD ?? "",
-  )
-    .trim()
-    .toLowerCase();
-
   return {
     id: "global",
     thresholds: {
@@ -296,12 +413,9 @@ function resolveDefaultSocialImportSettings(): SocialImportSettings {
       defaultReason: "Import social planifie depuis le dashboard admin.",
     },
     orchestrator: {
-      executionMode,
-      orchestratorUrlConfigured: hasOrchestratorUrl,
-      allowLocalProd:
-        allowLocalProd === "1" ||
-        allowLocalProd === "true" ||
-        allowLocalProd === "yes",
+      executionMode: "local",
+      orchestratorUrlConfigured: false,
+      allowLocalProd: true,
     },
     updatedBy: null,
     updatedAt: null,
@@ -629,55 +743,6 @@ export async function getSocialImportJobDetails(jobId: string) {
   return getSocialImportJobById(safeJobId);
 }
 
-function resolveSocialImportProjectId() {
-  return (
-    process.env.GCP_PROJECT_ID ||
-    process.env.FIREBASE_PROJECT_ID ||
-    process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID ||
-    null
-  );
-}
-
-function resolveExternalExecutionName(job: SocialImportJob) {
-  const externalRunIdRaw = job.metadata?.externalRunId;
-  if (typeof externalRunIdRaw !== "string") {
-    return null;
-  }
-  const trimmed = externalRunIdRaw.trim();
-  if (!trimmed) {
-    return null;
-  }
-  const segments = trimmed.split("/").filter((segment) => segment.trim().length > 0);
-  return segments.length ? segments[segments.length - 1] : trimmed;
-}
-
-function resolveCloudRunLogsUrl(input: {
-  projectId: string;
-  region: string;
-  jobName: string;
-  executionName: string | null;
-}) {
-  const queryParts = [
-    'resource.type="cloud_run_job"',
-    `resource.labels.job_name="${input.jobName}"`,
-    `resource.labels.location="${input.region}"`,
-  ];
-  if (input.executionName) {
-    queryParts.push(`resource.labels.execution_name="${input.executionName}"`);
-  }
-  const query = queryParts.join("\n");
-  const encodedQuery = encodeURIComponent(query);
-  return `https://console.cloud.google.com/logs/query;query=${encodedQuery}?project=${encodeURIComponent(input.projectId)}`;
-}
-
-function resolveCloudRunExecutionsUrl(input: {
-  projectId: string;
-  region: string;
-  jobName: string;
-}) {
-  return `https://console.cloud.google.com/run/jobs/details/${encodeURIComponent(input.region)}/${encodeURIComponent(input.jobName)}/executions?project=${encodeURIComponent(input.projectId)}`;
-}
-
 export async function getSocialImportJobLogs(input: { jobId: string }) {
   const safeJobId = input.jobId.trim();
   if (!safeJobId) {
@@ -689,13 +754,25 @@ export async function getSocialImportJobLogs(input: { jobId: string }) {
     throw new Error("SOCIAL_IMPORT_JOB_NOT_FOUND");
   }
 
-  const projectId = resolveSocialImportProjectId();
-  const executionName = resolveExternalExecutionName(job);
-  const orchestratorUrl = process.env.SOCIAL_IMPORT_ORCHESTRATOR_URL?.trim() || null;
+  const scraperRoot =
+    process.env.SOCIAL_IMPORT_SCRAPER_ROOT?.trim() ||
+    null;
+  const sourceUrl =
+    typeof job.metadata?.sourceUrl === "string"
+      ? job.metadata.sourceUrl
+      : null;
+  const callbackIngestedAt =
+    typeof job.metadata?.resultIngestedAt === "string"
+      ? job.metadata.resultIngestedAt
+      : null;
+  const runDateFrom =
+    typeof job.metadata?.dateFrom === "string" ? job.metadata.dateFrom : null;
+  const runDateTo =
+    typeof job.metadata?.dateTo === "string" ? job.metadata.dateTo : null;
 
   const hints: string[] = [];
   if (job.status === "running") {
-    hints.push("Le job est encore en cours: surveille les logs Cloud Run.");
+    hints.push("Le job est encore en cours: surveille le terminal local qui exécute le scraper.");
   }
   if (job.status === "failed" && job.errorSummary) {
     hints.push(`Résumé erreur: ${job.errorSummary}`);
@@ -706,90 +783,37 @@ export async function getSocialImportJobLogs(input: { jobId: string }) {
   if (job.counters.needsReview === 0 && job.counters.normalizedOk === 0) {
     hints.push("Aucune candidate review produite pour ce job.");
   }
-
-  const cloudRun = projectId
-    ? {
-        projectId,
-        region: SOCIAL_IMPORT_CLOUD_RUN_REGION,
-        jobName: SOCIAL_IMPORT_CLOUD_RUN_JOB_NAME,
-        executionName,
-        executionsUrl: resolveCloudRunExecutionsUrl({
-          projectId,
-          region: SOCIAL_IMPORT_CLOUD_RUN_REGION,
-          jobName: SOCIAL_IMPORT_CLOUD_RUN_JOB_NAME,
-        }),
-        logsUrl: resolveCloudRunLogsUrl({
-          projectId,
-          region: SOCIAL_IMPORT_CLOUD_RUN_REGION,
-          jobName: SOCIAL_IMPORT_CLOUD_RUN_JOB_NAME,
-          executionName,
-        }),
-      }
-    : null;
+  if (runDateFrom || runDateTo) {
+    hints.push(
+      `Période appliquée: ${runDateFrom ?? "N/A"} -> ${runDateTo ?? "N/A"}.`,
+    );
+  }
+  if (sourceUrl) {
+    hints.push(`Source ciblée: ${sourceUrl}`);
+  }
+  if (scraperRoot) {
+    hints.push(`Racine scraper locale: ${scraperRoot}`);
+    hints.push(
+      `Sortie annonces normalisées: ${scraperRoot}/storage/exports/location-maison-fine-tuning/annonces/ready-with-images/by-raw-post`,
+    );
+    hints.push(
+      `Sortie posts bruts: ${scraperRoot}/storage/raw/posts`,
+    );
+  }
 
   return {
     job,
     logs: {
-      cloudRun,
-      orchestratorUrl,
+      cloudRun: null,
+      orchestratorUrl: null,
       externalRunId:
         typeof job.metadata?.externalRunId === "string"
           ? job.metadata.externalRunId
           : null,
+      callbackIngestedAt,
       hints,
     },
   };
-}
-
-async function tryCancelOrchestratorRun(input: {
-  runId: string | null;
-  correlationId: string;
-}) {
-  const orchestratorBaseUrl = process.env.SOCIAL_IMPORT_ORCHESTRATOR_URL?.trim();
-  const runId = input.runId?.trim() || "";
-  if (!orchestratorBaseUrl || !runId) {
-    return {
-      attempted: false,
-      accepted: false,
-      message: null as string | null,
-    };
-  }
-
-  const cancelUrl = `${orchestratorBaseUrl.replace(/\/+$/, "")}/cancel`;
-  const token = process.env.SOCIAL_IMPORT_ORCHESTRATOR_TOKEN?.trim();
-  const headers: Record<string, string> = {
-    "content-type": "application/json",
-    "x-correlation-id": input.correlationId,
-  };
-  if (token) {
-    headers.authorization = `Bearer ${token}`;
-  }
-
-  try {
-    const response = await fetch(cancelUrl, {
-      method: "POST",
-      headers,
-      body: JSON.stringify({ runId }),
-    });
-    if (!response.ok) {
-      return {
-        attempted: true,
-        accepted: false,
-        message: `HTTP_${response.status}`,
-      };
-    }
-    return {
-      attempted: true,
-      accepted: true,
-      message: "accepted",
-    };
-  } catch (error) {
-    return {
-      attempted: true,
-      accepted: false,
-      message: error instanceof Error ? error.message : "REQUEST_FAILED",
-    };
-  }
 }
 
 export async function cancelSocialImportJob(input: {
@@ -798,6 +822,7 @@ export async function cancelSocialImportJob(input: {
   reason?: string | null;
   correlationId: string;
 }) {
+  void input.correlationId;
   const actorUid = input.actorUid.trim();
   if (!actorUid) {
     throw new Error("SOCIAL_IMPORT_ACTOR_UID_REQUIRED");
@@ -818,21 +843,12 @@ export async function cancelSocialImportJob(input: {
     throw new Error("SOCIAL_IMPORT_JOB_CANCEL_STATUS_INVALID");
   }
 
-  const externalRunId =
-    typeof job.metadata?.externalRunId === "string" ? job.metadata.externalRunId : null;
-  const orchestratorCancel = await tryCancelOrchestratorRun({
-    runId: externalRunId,
-    correlationId: input.correlationId,
-  });
-
   const endedAt = new Date().toISOString();
   const cancellationReason = reason || "Annulation demandée depuis dashboard admin.";
   const errorSummary = [
     "SOCIAL_IMPORT_CANCELLED_BY_ADMIN",
     `reason=${cancellationReason}`,
-    orchestratorCancel.attempted
-      ? `orchestratorCancel=${orchestratorCancel.accepted ? "accepted" : "not_confirmed"}`
-      : "orchestratorCancel=not_attempted",
+    "mode=local",
   ].join(" | ");
 
   const patchResult = await patchSocialImportJobById({
@@ -846,7 +862,6 @@ export async function cancelSocialImportJob(input: {
         cancelledBy: actorUid,
         cancelledAt: endedAt,
         cancellationReason,
-        orchestratorCancel,
       },
     },
   });
@@ -858,7 +873,11 @@ export async function cancelSocialImportJob(input: {
   return {
     before: patchResult.before,
     after: patchResult.after,
-    orchestratorCancel,
+    orchestratorCancel: {
+      attempted: false,
+      accepted: false,
+      message: "LOCAL_MODE_NO_REMOTE_CANCEL",
+    },
   };
 }
 
@@ -1067,15 +1086,9 @@ export async function getSocialImportSettings() {
     ...stored,
     orchestrator: {
       ...stored.orchestrator,
-      orchestratorUrlConfigured: Boolean(
-        process.env.SOCIAL_IMPORT_ORCHESTRATOR_URL?.trim(),
-      ),
-      executionMode: normalizeExecutionMode(
-        stored.orchestrator.executionMode ||
-          process.env.SOCIAL_IMPORT_EXECUTION_MODE ||
-          defaults.orchestrator.executionMode,
-      ),
-      allowLocalProd: stored.orchestrator.allowLocalProd,
+      orchestratorUrlConfigured: false,
+      executionMode: "local",
+      allowLocalProd: true,
     },
   };
 }
@@ -1085,7 +1098,6 @@ export async function updateSocialImportSettings(input: {
   patch: Partial<{
     thresholds: Partial<SocialImportSettings["thresholds"]>;
     scheduler: Partial<SocialImportSettings["scheduler"]>;
-    orchestrator: Partial<SocialImportSettings["orchestrator"]>;
   }>;
 }) {
   const actorUid = input.actorUid.trim();
@@ -1095,8 +1107,7 @@ export async function updateSocialImportSettings(input: {
 
   const hasPatch =
     Boolean(input.patch.thresholds) ||
-    Boolean(input.patch.scheduler) ||
-    Boolean(input.patch.orchestrator);
+    Boolean(input.patch.scheduler);
   if (!hasPatch) {
     throw new Error("SOCIAL_IMPORT_SETTINGS_PATCH_EMPTY");
   }
@@ -1133,16 +1144,6 @@ export async function updateSocialImportSettings(input: {
     }
   }
 
-  const orchestratorPatch = input.patch.orchestrator ?? {};
-  if (
-    orchestratorPatch.executionMode !== undefined &&
-    !["auto", "orchestrator", "local"].includes(
-      String(orchestratorPatch.executionMode),
-    )
-  ) {
-    throw new Error("SOCIAL_IMPORT_ORCHESTRATOR_MODE_INVALID");
-  }
-
   const patched = await upsertSocialImportSettings({
     updatedBy: actorUid,
     patch: {
@@ -1160,15 +1161,11 @@ export async function updateSocialImportSettings(input: {
             ),
           }
         : schedulerPatch,
-      orchestrator:
-        orchestratorPatch.executionMode !== undefined
-          ? {
-              ...orchestratorPatch,
-              executionMode: normalizeExecutionMode(
-                orchestratorPatch.executionMode,
-              ),
-            }
-          : orchestratorPatch,
+      orchestrator: {
+        executionMode: "local",
+        orchestratorUrlConfigured: false,
+        allowLocalProd: true,
+      },
     },
   });
 
@@ -1595,6 +1592,243 @@ function resolveAllowedRetryStatus(status: SocialImportJob["status"]) {
   return status === "failed" || status === "partial" || status === "needs_review";
 }
 
+function normalizeCandidateImageUrls(value: unknown) {
+  if (!Array.isArray(value)) {
+    return [] as string[];
+  }
+  return Array.from(
+    new Set(
+      value
+        .map((item) => String(item ?? "").trim())
+        .filter((item) => item.length > 0),
+    ),
+  );
+}
+
+function normalizeReviewCandidateStatus(
+  value: unknown,
+): "ready_to_publish" | "needs_review" | "rejected" | "published" {
+  const status = String(value ?? "").trim();
+  if (
+    status === "ready_to_publish" ||
+    status === "needs_review" ||
+    status === "rejected" ||
+    status === "published"
+  ) {
+    return status;
+  }
+  return "needs_review";
+}
+
+function toNullableFiniteNumber(value: unknown) {
+  if (typeof value !== "number" || !Number.isFinite(value)) {
+    return null;
+  }
+  return value;
+}
+
+function toNullableString(value: unknown) {
+  if (typeof value !== "string") {
+    return null;
+  }
+  const trimmed = value.trim();
+  return trimmed.length > 0 ? trimmed : null;
+}
+
+function toSafeCounterValue(value: unknown, fallback: number) {
+  if (typeof value !== "number" || !Number.isFinite(value)) {
+    return fallback;
+  }
+  if (value < 0) {
+    return fallback;
+  }
+  return Math.floor(value);
+}
+
+function normalizeJobResultStatus(
+  value: unknown,
+): "running" | "completed" | "failed" | "partial" | "needs_review" | null {
+  const status = String(value ?? "").trim();
+  if (
+    status === "running" ||
+    status === "completed" ||
+    status === "failed" ||
+    status === "partial" ||
+    status === "needs_review"
+  ) {
+    return status;
+  }
+  return null;
+}
+
+export async function ingestSocialImportJobResult(input: {
+  jobId: string;
+  status?: SocialImportJob["status"] | null;
+  errorSummary?: string | null;
+  counters?: Partial<SocialImportJob["counters"]> | null;
+  candidates?: Array<{
+    id: string;
+    jobId?: string | null;
+    announcerUid?: string | null;
+    sourceId?: string | null;
+    rawPostId: string;
+    sourcePostUrl?: string | null;
+    title?: string | null;
+    typeProperty?: string | null;
+    price?: number | null;
+    city?: string | null;
+    province?: string | null;
+    imageUrls?: string[] | null;
+    status?: "ready_to_publish" | "needs_review" | "rejected" | "published" | null;
+    autoReason?: string | null;
+    score?: number | null;
+    payload?: Record<string, unknown> | null;
+    listing?: Record<string, unknown> | null;
+    metadata?: Record<string, unknown> | null;
+  }> | null;
+  metadata?: Record<string, unknown> | null;
+}) {
+  const jobId = input.jobId.trim();
+  if (!jobId) {
+    throw new Error("SOCIAL_IMPORT_JOB_ID_INVALID");
+  }
+
+  const job = await getSocialImportJobById(jobId);
+  if (!job) {
+    throw new Error("SOCIAL_IMPORT_JOB_NOT_FOUND");
+  }
+
+  const nowIso = new Date().toISOString();
+  const normalizedCandidates = (input.candidates ?? [])
+    .map((candidate) => {
+      const rawPostId = String(candidate.rawPostId ?? "").trim();
+      if (!rawPostId) {
+        return null;
+      }
+      const announcerUid =
+        toNullableString(candidate.announcerUid) ||
+        job.announcerScope[0] ||
+        null;
+      if (!announcerUid) {
+        return null;
+      }
+
+      return {
+        id: toNullableString(candidate.id) || rawPostId,
+        jobId: toNullableString(candidate.jobId) || jobId,
+        announcerUid,
+        sourceId: toNullableString(candidate.sourceId),
+        rawPostId,
+        sourcePostUrl: toNullableString(candidate.sourcePostUrl),
+        title: toNullableString(candidate.title),
+        typeProperty: toNullableString(candidate.typeProperty),
+        price: toNullableFiniteNumber(candidate.price),
+        city: toNullableString(candidate.city),
+        province: toNullableString(candidate.province),
+        imageUrls: normalizeCandidateImageUrls(candidate.imageUrls ?? []),
+        status: normalizeReviewCandidateStatus(candidate.status),
+        autoReason: toNullableString(candidate.autoReason),
+        score: toNullableFiniteNumber(candidate.score),
+        payload: asRecord(candidate.payload) ?? null,
+        listing: asRecord(candidate.listing) ?? null,
+        metadata: asRecord(candidate.metadata) ?? null,
+      };
+    })
+    .filter((candidate): candidate is NonNullable<typeof candidate> => Boolean(candidate));
+
+  const reviewSync =
+    normalizedCandidates.length > 0
+      ? await upsertSocialImportReviewCandidates({
+          candidates: normalizedCandidates,
+        })
+      : null;
+
+  const previousCounters = job.counters;
+  const incomingCounters = input.counters ?? {};
+
+  const counters = {
+    rawFetched: toSafeCounterValue(
+      incomingCounters.rawFetched,
+      previousCounters.rawFetched,
+    ),
+    normalizedOk: toSafeCounterValue(
+      incomingCounters.normalizedOk,
+      previousCounters.normalizedOk,
+    ),
+    needsReview: toSafeCounterValue(
+      incomingCounters.needsReview,
+      previousCounters.needsReview,
+    ),
+    published: toSafeCounterValue(
+      incomingCounters.published,
+      previousCounters.published,
+    ),
+    rejected: toSafeCounterValue(
+      incomingCounters.rejected,
+      previousCounters.rejected,
+    ),
+  };
+
+  if (reviewSync) {
+    counters.needsReview = reviewSync.needsReview;
+    counters.normalizedOk = Math.max(counters.normalizedOk, reviewSync.readyToPublish);
+    counters.rejected = Math.max(counters.rejected, reviewSync.rejected);
+  }
+
+  const normalizedStatus = normalizeJobResultStatus(input.status);
+  const hasErrorSummary = toNullableString(input.errorSummary);
+  const status =
+    normalizedStatus && normalizedStatus !== "running"
+      ? normalizedStatus
+      : hasErrorSummary
+        ? "failed"
+        : counters.needsReview > 0 && counters.normalizedOk === 0
+          ? "needs_review"
+          : "completed";
+
+  const patchResult = await patchSocialImportJobById({
+    jobId,
+    patch: {
+      status,
+      endedAt: nowIso,
+      errorSummary: hasErrorSummary,
+      counters,
+      metadata: {
+        ...(job.metadata ?? {}),
+        ...(asRecord(input.metadata) ?? {}),
+        resultIngestedAt: nowIso,
+        resultIngestedFrom: "social_import_callback",
+        candidatesReceivedCount: normalizedCandidates.length,
+      },
+    },
+  });
+
+  if (!patchResult) {
+    throw new Error("SOCIAL_IMPORT_JOB_RESULT_PATCH_FAILED");
+  }
+
+  const sourceId =
+    typeof patchResult.after.metadata?.sourceId === "string"
+      ? patchResult.after.metadata.sourceId.trim()
+      : "";
+  if (sourceId) {
+    await patchSocialImportSourceById({
+      sourceId,
+      updatedBy: "system:social-import-callback",
+      patch: {
+        lastImportAt: nowIso,
+      },
+    }).catch(() => undefined);
+  }
+
+  return {
+    before: patchResult.before,
+    after: patchResult.after,
+    reviewSync,
+    acceptedCandidates: normalizedCandidates.length,
+  };
+}
+
 export async function triggerSocialImportRun(input: {
   actorUid: string;
   sourceId?: string | null;
@@ -1635,9 +1869,6 @@ export async function triggerSocialImportRun(input: {
 
   const environment = normalizeEnvironment(input.environment);
   const reason = (input.reason ?? "").trim();
-  if (environment === "prod" && !reason) {
-    throw new Error("SOCIAL_IMPORT_REASON_REQUIRED");
-  }
 
   const settings = await getSocialImportSettings();
   const defaultLimit = Math.max(1, Math.floor(settings.thresholds.defaultRunLimit));
@@ -1650,7 +1881,11 @@ export async function triggerSocialImportRun(input: {
       Number.isFinite(Number(input.limit)) ? Number(input.limit) : defaultLimit,
     ),
   );
-  const includeImported = input.includeImported === null ? true : Boolean(input.includeImported ?? true);
+  const includeImportedDefault = true;
+  const includeImported =
+    input.includeImported === null
+      ? includeImportedDefault
+      : Boolean(input.includeImported ?? includeImportedDefault);
   const headless = input.headless === null ? false : Boolean(input.headless ?? false);
 
   const dateFrom = normalizeDateInput(input.dateFrom ?? undefined);
@@ -1727,13 +1962,13 @@ export async function triggerSocialImportRun(input: {
     triggeredBy: actorUid,
     startedAt,
     endedAt: null,
-      metadata: {
+    metadata: {
         kind: "run",
         sourceId: source?.id ?? null,
         sourceUrl: source?.sourceUrl ?? null,
         sourceStatus: source?.status ?? null,
-        executionMode: settings.orchestrator.executionMode,
-        allowLocalProd: settings.orchestrator.allowLocalProd,
+        executionMode: "local",
+        allowLocalProd: true,
         reason: reason || null,
         dateFrom: dateFrom ?? null,
         dateTo: dateTo ?? null,
@@ -1747,9 +1982,8 @@ export async function triggerSocialImportRun(input: {
     const dispatch = await dispatchSocialImportRun({
       jobId: job.id,
       announcerUid,
+      sourceUrl: source?.sourceUrl ?? null,
       environment,
-      executionMode: settings.orchestrator.executionMode,
-      allowLocalProd: settings.orchestrator.allowLocalProd,
       limit: safeLimit,
       includeImported,
       headless,
@@ -1769,8 +2003,8 @@ export async function triggerSocialImportRun(input: {
             sourceId: source?.id ?? null,
             sourceUrl: source?.sourceUrl ?? null,
             sourceStatus: source?.status ?? null,
-            executionMode: settings.orchestrator.executionMode,
-            allowLocalProd: settings.orchestrator.allowLocalProd,
+            executionMode: "local",
+            allowLocalProd: true,
             reason: reason || null,
             dateFrom: dateFrom ?? null,
             dateTo: dateTo ?? null,
@@ -1808,6 +2042,277 @@ export async function triggerSocialImportRun(input: {
     }).catch(() => undefined);
 
     if (idempotencyKey && hasClaim) {
+      await failSocialImportIdempotency(idempotencyKey, input.correlationId, code);
+    }
+    throw error;
+  }
+}
+
+export async function importSocialPostsFromJson(input: {
+  actorUid: string;
+  announcerUid: string;
+  posts: unknown[];
+  sourceId?: string | null;
+  environment?: SocialImportEnvironment;
+  reason?: string | null;
+  idempotencyKey?: string | null;
+  correlationId: string;
+}) {
+  const actorUid = input.actorUid.trim();
+  if (!actorUid) {
+    throw new Error("SOCIAL_IMPORT_ACTOR_UID_REQUIRED");
+  }
+
+  const announcerUid = input.announcerUid.trim();
+  if (!announcerUid) {
+    throw new Error("SOCIAL_IMPORT_SOURCE_ANNOUNCER_UID_REQUIRED");
+  }
+
+  if (!Array.isArray(input.posts) || input.posts.length === 0) {
+    throw new Error("SOCIAL_IMPORT_JSON_POSTS_REQUIRED");
+  }
+
+  const sourceId = input.sourceId?.trim() || null;
+  const reason = (input.reason ?? "").trim();
+  const environment = normalizeEnvironment(input.environment);
+
+  const idempotencyKey = input.idempotencyKey?.trim() || null;
+  const fingerprint = buildIdempotencyFingerprint("social_import.jobs.json_import", {
+    announcerUid,
+    sourceId,
+    environment,
+    reason,
+    postsCount: input.posts.length,
+    postKeys: input.posts
+      .map((value) => {
+        const post = asRecord(value);
+        if (!post) return null;
+        const pageId = toNullableString(post.page_id) ?? toNullableString(post.facebook_id) ?? "";
+        const postId = toNullableString(post.post_id) ?? "";
+        return `${pageId}:${postId}`;
+      })
+      .filter((item): item is string => Boolean(item))
+      .sort(),
+  });
+
+  let hasClaim = false;
+  if (idempotencyKey) {
+    const claim = await claimSocialImportIdempotency({
+      scope: "social_import.jobs.run",
+      idempotencyKey,
+      requestFingerprint: fingerprint,
+      correlationId: input.correlationId,
+      parseSummary: resolveDryRunSummary,
+    });
+
+    if (claim.status === "conflict") {
+      throw new Error("SOCIAL_IMPORT_IDEMPOTENCY_CONFLICT");
+    }
+    if (claim.status === "in_progress") {
+      throw new Error("SOCIAL_IMPORT_IDEMPOTENCY_IN_PROGRESS");
+    }
+    if (claim.status === "replay") {
+      const replayJob = await getSocialImportJobById(claim.summary.jobId);
+      if (!replayJob) {
+        throw new Error("SOCIAL_IMPORT_IDEMPOTENCY_REPLAY_NOT_FOUND");
+      }
+      return {
+        job: replayJob,
+        replayed: true,
+        importedCount: replayJob.counters.rawFetched,
+      };
+    }
+    hasClaim = claim.status === "claimed";
+  }
+
+  const parsedCandidates = input.posts
+    .map((rawItem, index) => {
+      const post = asRecord(rawItem);
+      if (!post) {
+        return null;
+      }
+
+      const pageId =
+        toNullableString(post.page_id) ||
+        toNullableString(post.facebook_id) ||
+        "unknown_page";
+      const postId = toNullableString(post.post_id);
+      const sourcePostUrl = toNullableString(post.post_url);
+      const caption = toNullableString(post.caption);
+      const title = extractTitleFromCaption(caption);
+      const typeProperty = inferTypePropertyFromCaption(caption);
+      const price = extractPriceFromCaption(caption);
+      const city = inferCityFromCaption(caption);
+      const province = inferProvinceFromCity(city);
+      const sourcePublishedAt = toIsoFromCreationTime(post.creation_time);
+      const thumbnailUrl = toNullableString(post.thumbnail_url);
+      const mediaUrls = extractMediaUrls(post.media_urls);
+      const imageUrls = Array.from(
+        new Set([
+          ...mediaUrls,
+          ...(thumbnailUrl ? [thumbnailUrl] : []),
+          ...toStringArray(post.media_urls),
+        ]),
+      );
+      const safePostId = postId || `post_index_${index + 1}`;
+      const rawPostId = `raw_fb_${pageId}_${safePostId}`.replace(/[^a-zA-Z0-9_-]/g, "_");
+
+      return {
+        rawPost: post,
+        candidate: {
+          id: rawPostId,
+          announcerUid,
+          sourceId: sourceId || `${pageId}_${safePostId}`,
+          rawPostId,
+          sourcePostUrl,
+          title,
+          typeProperty,
+          price,
+          city,
+          province,
+          imageUrls,
+          status: "needs_review" as const,
+          autoReason: "JSON_IMPORT_MANUAL_REVIEW_REQUIRED",
+          score: 0.5,
+          payload: {
+            source: "json_manual_import",
+            caption,
+            pageId,
+            pageName: toNullableString(post.page_name),
+            postId: postId ?? safePostId,
+            totalCommentCount: toNullableNumber(post.total_comment_count),
+            shareCount: toNullableNumber(post.share_count),
+            mediaUrlsCount: toNullableNumber(post.media_urls_count),
+          },
+          listing: null,
+          metadata: {
+            sourcePlatform: "facebook",
+            sourceAuthorName: toNullableString(post.page_name),
+            sourcePublishedAt,
+            jsonImportedAt: new Date().toISOString(),
+            sourceRecordType: "facebook_post_json",
+            rawFacebookId: toNullableString(post.facebook_id),
+            rawPageId: pageId,
+            rawPostIdExternal: postId ?? safePostId,
+          },
+        },
+      };
+    })
+    .filter((item): item is NonNullable<typeof item> => Boolean(item));
+
+  if (parsedCandidates.length === 0) {
+    throw new Error("SOCIAL_IMPORT_JSON_POSTS_PARSE_EMPTY");
+  }
+
+  const nowIso = new Date().toISOString();
+  const job = await createSocialImportJobRecord({
+    status: "running",
+    mode: "manual",
+    environment,
+    announcerScope: [announcerUid],
+    counters: {
+      rawFetched: 0,
+      normalizedOk: 0,
+      needsReview: 0,
+      published: 0,
+      rejected: 0,
+    },
+    triggeredBy: actorUid,
+    startedAt: nowIso,
+    endedAt: null,
+    metadata: {
+      kind: "json_import",
+      sourceId,
+      reason: reason || null,
+      postsSubmittedCount: input.posts.length,
+      candidatesParsedCount: parsedCandidates.length,
+      executionMode: "local",
+    },
+  });
+
+  try {
+    const rawPostStorage = await writeSocialImportRawPostsToStorage({
+      environment,
+      jobId: job.id,
+      announcerUid,
+      records: parsedCandidates.map((item) => ({
+        rawPostId: item.candidate.rawPostId,
+        post: item.rawPost,
+      })),
+    });
+
+    const rawPostStorageById = new Map(
+      rawPostStorage.map((item) => [item.rawPostId, item] as const),
+    );
+
+    const reviewSync = await upsertSocialImportReviewCandidates({
+      candidates: parsedCandidates.map((item) => {
+        const storageRef = rawPostStorageById.get(item.candidate.rawPostId);
+        return {
+          ...item.candidate,
+          jobId: job.id,
+          metadata: {
+            ...(item.candidate.metadata ?? {}),
+            rawJsonPath: storageRef?.rawJsonPath ?? null,
+            rawJsonBucket: storageRef?.rawJsonBucket ?? null,
+            rawJsonGsUri: storageRef?.rawJsonGsUri ?? null,
+            rawJsonSizeBytes: storageRef?.rawJsonSizeBytes ?? null,
+          },
+        };
+      }),
+    });
+
+    const patchResult = await patchSocialImportJobById({
+      jobId: job.id,
+      patch: {
+        status: "completed",
+        endedAt: new Date().toISOString(),
+        errorSummary: null,
+        counters: {
+          rawFetched: parsedCandidates.length,
+          normalizedOk: reviewSync.readyToPublish,
+          needsReview: reviewSync.needsReview,
+          published: 0,
+          rejected: reviewSync.rejected,
+        },
+        metadata: {
+          ...(job.metadata ?? {}),
+          importCompletedAt: new Date().toISOString(),
+          rawPostsStoredCount: rawPostStorage.length,
+        },
+      },
+    });
+
+    if (!patchResult) {
+      throw new Error("SOCIAL_IMPORT_JOB_RESULT_PATCH_FAILED");
+    }
+
+    if (idempotencyKey && hasClaim) {
+      await completeSocialImportIdempotency(idempotencyKey, input.correlationId, {
+        jobId: job.id,
+      });
+    }
+
+    return {
+      job: patchResult.after,
+      replayed: false,
+      importedCount: parsedCandidates.length,
+      reviewSync,
+    };
+  } catch (error) {
+    await patchSocialImportJobById({
+      jobId: job.id,
+      patch: {
+        status: "failed",
+        endedAt: new Date().toISOString(),
+        errorSummary:
+          error instanceof Error ? error.message : "SOCIAL_IMPORT_JSON_IMPORT_FAILED",
+      },
+    }).catch(() => undefined);
+
+    if (idempotencyKey && hasClaim) {
+      const code =
+        error instanceof Error ? error.message : "SOCIAL_IMPORT_JSON_IMPORT_FAILED";
       await failSocialImportIdempotency(idempotencyKey, input.correlationId, code);
     }
     throw error;
@@ -1911,7 +2416,7 @@ export async function triggerSocialImportDryRun(input: {
         kind: "dry_run",
         reason: reason || null,
         sourceIds,
-        orchestrator: "si2_stub",
+        executionMode: "local",
       },
     });
 
@@ -2022,7 +2527,7 @@ export async function retrySocialImportJob(input: {
         retryOf: previousJob.id,
         previousStatus: previousJob.status,
         reason: reason || null,
-        orchestrator: "si2_stub",
+        executionMode: "local",
       },
     });
 

@@ -136,6 +136,11 @@ export type SocialImportReviewCandidate = {
   sourceId: string | null;
   rawPostId: string;
   sourcePostUrl: string | null;
+  sourcePublishedAt: string | null;
+  rawJsonPath: string | null;
+  rawJsonBucket: string | null;
+  rawJsonGsUri: string | null;
+  rawJsonSizeBytes: number | null;
   title: string | null;
   typeProperty: string | null;
   price: number | null;
@@ -240,7 +245,7 @@ export type SocialImportSettings = {
     defaultReason: string;
   };
   orchestrator: {
-    executionMode: "auto" | "orchestrator" | "local";
+    executionMode: "local";
     orchestratorUrlConfigured: boolean;
     allowLocalProd: boolean;
   };

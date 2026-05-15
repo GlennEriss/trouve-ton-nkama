@@ -1,8 +1,12 @@
 import { FieldPath, FieldValue, Timestamp } from "firebase-admin/firestore";
 
-import { getFirebaseAdminDb } from "@/lib/firebase/firebase-admin";
+import {
+  getFirebaseAdminDb,
+  getFirebaseAdminStorage,
+} from "@/lib/firebase/firebase-admin";
 import type {
   SocialImportDecision,
+  SocialImportEnvironment,
   SocialImportJob,
   SocialImportReviewCandidate,
   SocialImportSettings,
@@ -55,6 +59,7 @@ type RawReviewDoc = {
   sourceId?: unknown;
   rawPostId?: unknown;
   sourcePostUrl?: unknown;
+  metadata?: unknown;
   title?: unknown;
   typeProperty?: unknown;
   price?: unknown;
@@ -170,6 +175,19 @@ function toDateOrNull(value: string | null | undefined) {
   return Number.isNaN(date.getTime()) ? null : date;
 }
 
+function toPathSegment(value: string, fallback: string) {
+  const sanitized = value
+    .trim()
+    .replace(/[^a-zA-Z0-9_-]/g, "_")
+    .replace(/_+/g, "_")
+    .replace(/^_+|_+$/g, "");
+  return sanitized || fallback;
+}
+
+function pad2(value: number) {
+  return String(value).padStart(2, "0");
+}
+
 function sanitizeObject(value: unknown) {
   if (!value || typeof value !== "object" || Array.isArray(value)) {
     return null;
@@ -196,6 +214,44 @@ async function listRawCollectionPage<T>(
   const cursor = input.cursor?.trim();
   if (cursor) {
     query = query.startAfter(cursor);
+  }
+
+  const snapshot = await query.get();
+  const hasMore = snapshot.docs.length > safeLimit;
+  const docs = hasMore ? snapshot.docs.slice(0, safeLimit) : snapshot.docs;
+  const items = docs.map((doc) => input.map(doc.id, doc.data() as Record<string, unknown>));
+  const nextCursor = docs.length > 0 ? docs[docs.length - 1].id : cursor ?? null;
+
+  return {
+    items,
+    nextCursor,
+    hasMore,
+  };
+}
+
+async function listRawCollectionPageByCreatedAtDesc<T>(
+  collectionName: string,
+  input: {
+    limit: number;
+    cursor?: string | null;
+    map: (docId: string, data: Record<string, unknown>) => T;
+  },
+): Promise<RawCollectionPage<T>> {
+  const db = getFirebaseAdminDb();
+  const safeLimit = Math.max(1, Math.min(500, input.limit || 100));
+
+  let query = db
+    .collection(collectionName)
+    .orderBy("createdAt", "desc")
+    .orderBy(FieldPath.documentId(), "desc")
+    .limit(safeLimit + 1);
+
+  const cursor = input.cursor?.trim();
+  if (cursor) {
+    const cursorSnapshot = await db.collection(collectionName).doc(cursor).get();
+    if (cursorSnapshot.exists) {
+      query = query.startAfter(cursorSnapshot);
+    }
   }
 
   const snapshot = await query.get();
@@ -297,12 +353,18 @@ function resolveListingPayload(data: RawReviewDoc) {
 
 function mapReviewDoc(docId: string, data: RawReviewDoc): SocialImportReviewCandidate {
   const listing = resolveListingPayload(data);
+  const metadata = sanitizeObject(data.metadata);
   const imageUrls = Array.from(
     new Set([
       ...toArrayOfStrings(data.imageUrls),
       ...extractImageUrlsFromListingPayload(listing),
     ]),
   );
+  const sourcePublishedAt =
+    toIso(metadata?.sourcePublishedAt) ||
+    toIso(listing?.sourcePublishedAt) ||
+    toIso(listing?.createdAt) ||
+    null;
 
   return {
     id: docId,
@@ -311,6 +373,11 @@ function mapReviewDoc(docId: string, data: RawReviewDoc): SocialImportReviewCand
     sourceId: toTrimmedString(data.sourceId),
     rawPostId: toTrimmedString(data.rawPostId) ?? docId,
     sourcePostUrl: toTrimmedString(data.sourcePostUrl),
+    sourcePublishedAt,
+    rawJsonPath: toTrimmedString(metadata?.rawJsonPath) ?? null,
+    rawJsonBucket: toTrimmedString(metadata?.rawJsonBucket) ?? null,
+    rawJsonGsUri: toTrimmedString(metadata?.rawJsonGsUri) ?? null,
+    rawJsonSizeBytes: toNullableNumber(metadata?.rawJsonSizeBytes),
     title: toTrimmedString(data.title) ?? toTrimmedString(listing?.title),
     typeProperty: toTrimmedString(data.typeProperty) ?? toTrimmedString(listing?.typeProperty),
     price: toNullableNumber(data.price) ?? toNullableNumber(listing?.price),
@@ -345,7 +412,6 @@ function mapDecisionDoc(docId: string, data: RawDecisionDoc): SocialImportDecisi
 function mapSettingsDoc(docId: string, data: RawSettingsDoc): SocialImportSettings {
   const thresholds = sanitizeObject(data.thresholds);
   const scheduler = sanitizeObject(data.scheduler);
-  const orchestrator = sanitizeObject(data.orchestrator);
 
   const toNumberInRange = (
     value: unknown,
@@ -360,11 +426,7 @@ function mapSettingsDoc(docId: string, data: RawSettingsDoc): SocialImportSettin
     return Math.max(min, Math.min(max, candidate));
   };
 
-  const executionModeRaw = toTrimmedString(orchestrator?.executionMode)?.toLowerCase();
-  const executionMode =
-    executionModeRaw === "local" || executionModeRaw === "orchestrator"
-      ? executionModeRaw
-      : "auto";
+  const executionMode = "local";
 
   const schedulerEnvironmentRaw = toTrimmedString(scheduler?.environment)?.toLowerCase();
   const schedulerEnvironment =
@@ -395,8 +457,8 @@ function mapSettingsDoc(docId: string, data: RawSettingsDoc): SocialImportSettin
     },
     orchestrator: {
       executionMode,
-      orchestratorUrlConfigured: Boolean(orchestrator?.orchestratorUrlConfigured ?? false),
-      allowLocalProd: Boolean(orchestrator?.allowLocalProd ?? false),
+      orchestratorUrlConfigured: false,
+      allowLocalProd: true,
     },
     updatedBy: toTrimmedString(data.updatedBy),
     updatedAt: toIso(data.updatedAt),
@@ -419,7 +481,7 @@ export async function listSocialImportJobsRawPage(input: {
   limit: number;
   cursor?: string | null;
 }) {
-  return listRawCollectionPage(JOBS_COLLECTION, {
+  return listRawCollectionPageByCreatedAtDesc(JOBS_COLLECTION, {
     limit: input.limit,
     cursor: input.cursor,
     map: (docId, data) => mapJobDoc(docId, data as RawJobDoc),
@@ -568,7 +630,7 @@ export async function listSocialImportReviewRawPage(input: {
   limit: number;
   cursor?: string | null;
 }) {
-  return listRawCollectionPage(REVIEW_COLLECTION, {
+  return listRawCollectionPageByCreatedAtDesc(REVIEW_COLLECTION, {
     limit: input.limit,
     cursor: input.cursor,
     map: (docId, data) => mapReviewDoc(docId, data as RawReviewDoc),
@@ -693,6 +755,94 @@ export async function upsertSocialImportReviewCandidates(input: {
   };
 }
 
+export async function writeSocialImportRawPostsToStorage(input: {
+  environment: SocialImportEnvironment;
+  jobId: string;
+  announcerUid: string;
+  records: Array<{
+    rawPostId: string;
+    post: Record<string, unknown>;
+  }>;
+}) {
+  if (!Array.isArray(input.records) || input.records.length === 0) {
+    return [] as Array<{
+      rawPostId: string;
+      rawJsonPath: string;
+      rawJsonBucket: string;
+      rawJsonGsUri: string;
+      rawJsonSizeBytes: number;
+    }>;
+  }
+
+  const storage = getFirebaseAdminStorage();
+  const bucket = storage.bucket();
+  const bucketName = bucket.name?.trim();
+  if (!bucketName) {
+    throw new Error("SOCIAL_IMPORT_STORAGE_BUCKET_NOT_CONFIGURED");
+  }
+
+  const now = new Date();
+  const yyyy = String(now.getUTCFullYear());
+  const mm = pad2(now.getUTCMonth() + 1);
+  const dd = pad2(now.getUTCDate());
+  const prefix = (process.env.SOCIAL_IMPORT_RAW_STORAGE_PREFIX || "social-import/raw").replace(
+    /^\/+|\/+$/g,
+    "",
+  );
+  const safeEnv = toPathSegment(input.environment, "dev");
+  const safeJobId = toPathSegment(input.jobId, "unknown_job");
+  const safeAnnouncerUid = toPathSegment(input.announcerUid, "unknown_announcer");
+
+  const persisted: Array<{
+    rawPostId: string;
+    rawJsonPath: string;
+    rawJsonBucket: string;
+    rawJsonGsUri: string;
+    rawJsonSizeBytes: number;
+  }> = [];
+
+  for (const record of input.records) {
+    const rawPostId = String(record.rawPostId || "").trim();
+    if (!rawPostId) {
+      continue;
+    }
+
+    const safeRawPostId = toPathSegment(rawPostId, "unknown_post");
+    const objectPath = `${prefix}/${safeEnv}/${safeAnnouncerUid}/${yyyy}/${mm}/${dd}/${safeJobId}/${safeRawPostId}.json`;
+    const payload = {
+      schemaVersion: 1,
+      source: "json_manual_import",
+      storedAt: new Date().toISOString(),
+      environment: input.environment,
+      jobId: input.jobId,
+      announcerUid: input.announcerUid,
+      rawPostId,
+      post: record.post,
+    };
+    const serialized = JSON.stringify(payload);
+    const sizeBytes = Buffer.byteLength(serialized, "utf8");
+
+    await bucket.file(objectPath).save(serialized, {
+      resumable: false,
+      contentType: "application/json; charset=utf-8",
+      metadata: {
+        cacheControl: "private, max-age=0, no-transform",
+      },
+      validation: "crc32c",
+    });
+
+    persisted.push({
+      rawPostId,
+      rawJsonPath: objectPath,
+      rawJsonBucket: bucketName,
+      rawJsonGsUri: `gs://${bucketName}/${objectPath}`,
+      rawJsonSizeBytes: sizeBytes,
+    });
+  }
+
+  return persisted;
+}
+
 export async function listSocialImportDecisionsRawPage(input: {
   limit: number;
   cursor?: string | null;
@@ -764,6 +914,7 @@ export async function patchSocialImportSourceById(input: {
     sourceUrl?: string;
     sourceType?: SocialImportSource["sourceType"];
     status?: SocialImportSource["status"];
+    lastImportAt?: string | null;
   };
   updatedBy: string;
 }) {
@@ -787,6 +938,9 @@ export async function patchSocialImportSourceById(input: {
   }
   if (input.patch.status) {
     patch.status = input.patch.status;
+  }
+  if (input.patch.lastImportAt !== undefined) {
+    patch.lastImportAt = toDateOrNull(input.patch.lastImportAt) ?? null;
   }
 
   await ref.set(

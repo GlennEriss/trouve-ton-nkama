@@ -10,9 +10,8 @@ import {
 export type SocialImportRunDispatchInput = {
   jobId: string;
   announcerUid: string;
+  sourceUrl: string | null;
   environment: "dev" | "preprod" | "prod";
-  executionMode: "auto" | "orchestrator" | "local";
-  allowLocalProd: boolean;
   limit: number;
   includeImported: boolean;
   headless: boolean;
@@ -24,7 +23,7 @@ export type SocialImportRunDispatchInput = {
 };
 
 export type SocialImportRunDispatchResult = {
-  mode: "http" | "local_command";
+  mode: "local_command";
   accepted: boolean;
   externalRunId: string | null;
   message: string | null;
@@ -33,6 +32,7 @@ export type SocialImportRunDispatchResult = {
 type PipelineSummaryPayload = {
   paths?: {
     readyDir?: unknown;
+    rawDir?: unknown;
   };
   stats?: {
     events?: unknown;
@@ -58,6 +58,13 @@ function toIsoOrNull(value: unknown) {
   return Number.isNaN(date.getTime()) ? null : date.toISOString();
 }
 
+function toTrimmedString(value: unknown) {
+  if (typeof value !== "string") {
+    return "";
+  }
+  return value.trim();
+}
+
 function toImageUrls(input: unknown) {
   if (!Array.isArray(input)) {
     return [];
@@ -81,6 +88,29 @@ function toImageUrls(input: unknown) {
   return Array.from(new Set(urls));
 }
 
+function toRawImageUrls(input: unknown) {
+  if (!Array.isArray(input)) {
+    return [];
+  }
+  const urls: string[] = [];
+  for (const item of input) {
+    const record = asRecord(item);
+    if (!record) {
+      continue;
+    }
+    const originalUrl = toTrimmedString(record.originalUrl);
+    const storedPath = toTrimmedString(record.storedPath);
+    if (originalUrl) {
+      urls.push(originalUrl);
+      continue;
+    }
+    if (storedPath) {
+      urls.push(storedPath);
+    }
+  }
+  return urls;
+}
+
 function hasListingCoreFields(listing: Record<string, unknown> | null) {
   if (!listing) {
     return false;
@@ -90,6 +120,15 @@ function hasListingCoreFields(listing: Record<string, unknown> | null) {
   const typeProperty = String(listing.typeProperty ?? "").trim();
   const status = String(listing.status ?? "").trim();
   return Boolean(title && description && typeProperty && status);
+}
+
+function resolveRawDir(summary: PipelineSummaryPayload, scraperRoot: string) {
+  const rawDirRaw = summary.paths?.rawDir;
+  if (typeof rawDirRaw === "string" && rawDirRaw.trim()) {
+    const value = rawDirRaw.trim();
+    return path.isAbsolute(value) ? value : path.resolve(scraperRoot, value);
+  }
+  return path.resolve(scraperRoot, "storage/raw/posts");
 }
 
 function resolveReadyDir(summary: PipelineSummaryPayload, scraperRoot: string) {
@@ -135,6 +174,7 @@ async function syncReviewCandidatesFromSummary(input: {
     const summaryRaw = await readFile(input.summaryPath, "utf8");
     const summary = JSON.parse(summaryRaw) as PipelineSummaryPayload;
     const readyDir = resolveReadyDir(summary, input.scraperRoot);
+    const rawDir = resolveRawDir(summary, input.scraperRoot);
     const rawPostIds = extractRawPostIds(summary);
     if (rawPostIds.length === 0) {
       return {
@@ -170,68 +210,140 @@ async function syncReviewCandidatesFromSummary(input: {
 
     for (const rawPostId of rawPostIds) {
       const readyPath = path.join(readyDir, `${rawPostId}.annonce.json`);
+      let hasReadyFile = false;
       try {
         await access(readyPath);
+        hasReadyFile = true;
+      } catch {
+        hasReadyFile = false;
+      }
+
+      if (hasReadyFile) {
+        try {
+          const readyRaw = await readFile(readyPath, "utf8");
+          const readyJson = JSON.parse(readyRaw) as Record<string, unknown>;
+          const source = asRecord(readyJson.source);
+          const listing = asRecord(readyJson.annonce);
+          const imageUrls = toImageUrls(
+            Array.isArray(listing?.images) ? listing?.images : [],
+          );
+          const modelRejectReason = String(readyJson.modelRejectReason ?? "").trim();
+          const status =
+            hasListingCoreFields(listing) && !modelRejectReason
+              ? "ready_to_publish"
+              : "needs_review";
+          const autoReason =
+            modelRejectReason ||
+            (status === "needs_review" ? "LISTING_REQUIERT_VALIDATION_MANUELLE" : null);
+          const score =
+            status === "ready_to_publish" ? 0.9 : modelRejectReason ? 0.35 : 0.45;
+
+          candidates.push({
+            id: rawPostId,
+            jobId: input.jobId,
+            announcerUid:
+              String(source?.advertiser_uuid ?? "").trim() || input.announcerUid,
+            sourceId: String(listing?.sourceId ?? rawPostId).trim() || rawPostId,
+            rawPostId,
+            sourcePostUrl:
+              String(source?.sourcePostUrl ?? "").trim() || null,
+            title: String(listing?.title ?? "").trim() || null,
+            typeProperty: String(listing?.typeProperty ?? "").trim() || null,
+            price:
+              typeof listing?.price === "number" && Number.isFinite(listing.price)
+                ? listing.price
+                : null,
+            city: String(listing?.city ?? "").trim() || null,
+            province: String(listing?.province ?? "").trim() || null,
+            imageUrls,
+            status,
+            autoReason,
+            score,
+            payload: listing ? { listing } : null,
+            listing,
+            metadata: {
+              sourcePlatform: String(source?.sourcePlatform ?? "").trim() || null,
+              sourceAuthorName: String(source?.sourceAuthorName ?? "").trim() || null,
+              sourcePublishedAt: toIsoOrNull(source?.sourcePublishedAt),
+              generatedAt: toIsoOrNull(readyJson.generatedAt),
+              readyPath,
+              imageCountLinked:
+                typeof readyJson.imageCountLinked === "number" &&
+                Number.isFinite(readyJson.imageCountLinked)
+                  ? readyJson.imageCountLinked
+                  : imageUrls.length,
+              modelJobId: String(readyJson.modelJobId ?? "").trim() || null,
+              modelRecordSource:
+                String(readyJson.modelRecordSource ?? "").trim() || null,
+            },
+          });
+          continue;
+        } catch {
+          // fallback vers raw
+        }
+      }
+
+      const rawPath = path.join(rawDir, `${rawPostId}.json`);
+      try {
+        await access(rawPath);
       } catch {
         continue;
       }
 
       try {
-        const readyRaw = await readFile(readyPath, "utf8");
-        const readyJson = JSON.parse(readyRaw) as Record<string, unknown>;
-        const source = asRecord(readyJson.source);
-        const listing = asRecord(readyJson.annonce);
-        const imageUrls = toImageUrls(
-          Array.isArray(listing?.images) ? listing?.images : [],
+        const rawPayload = await readFile(rawPath, "utf8");
+        const rawJson = JSON.parse(rawPayload) as Record<string, unknown>;
+        const rawDescription = toTrimmedString(rawJson.rawDescription);
+        const descriptionPreview = rawDescription
+          ? rawDescription.replace(/\s+/g, " ").trim().slice(0, 180)
+          : "";
+        const titleFromSource = toTrimmedString(rawJson.sourceAuthorName);
+        const imageUrls = Array.from(
+          new Set([
+            ...toRawImageUrls(rawJson.images),
+            ...toImageUrls(rawJson.rawImageUrls),
+            ...toImageUrls(rawJson.rawImageUrlsFromSource),
+          ]),
         );
-        const modelRejectReason = String(readyJson.modelRejectReason ?? "").trim();
-        const status =
-          hasListingCoreFields(listing) && !modelRejectReason
-            ? "ready_to_publish"
-            : "needs_review";
-        const autoReason =
-          modelRejectReason ||
-          (status === "needs_review" ? "LISTING_REQUIERT_VALIDATION_MANUELLE" : null);
-        const score =
-          status === "ready_to_publish" ? 0.9 : modelRejectReason ? 0.35 : 0.45;
 
         candidates.push({
           id: rawPostId,
           jobId: input.jobId,
           announcerUid:
-            String(source?.advertiser_uuid ?? "").trim() || input.announcerUid,
-          sourceId: String(listing?.sourceId ?? rawPostId).trim() || rawPostId,
+            toTrimmedString(rawJson.advertiser_uuid) || input.announcerUid,
+          sourceId: rawPostId,
           rawPostId,
-          sourcePostUrl:
-            String(source?.sourcePostUrl ?? "").trim() || null,
-          title: String(listing?.title ?? "").trim() || null,
-          typeProperty: String(listing?.typeProperty ?? "").trim() || null,
-          price:
-            typeof listing?.price === "number" && Number.isFinite(listing.price)
-              ? listing.price
-              : null,
-          city: String(listing?.city ?? "").trim() || null,
-          province: String(listing?.province ?? "").trim() || null,
+          sourcePostUrl: toTrimmedString(rawJson.sourcePostUrl) || null,
+          title:
+            titleFromSource ||
+            (descriptionPreview
+              ? `${descriptionPreview}${rawDescription.length > 180 ? "..." : ""}`
+              : null),
+          typeProperty: null,
+          price: null,
+          city: null,
+          province: null,
           imageUrls,
-          status,
-          autoReason,
-          score,
-          payload: listing ? { listing } : null,
-          listing,
+          status: "needs_review",
+          autoReason: "RAW_SCRAP_SANS_FORMAT_READY",
+          score: 0.25,
+          payload: {
+            sourcePlatform: toTrimmedString(rawJson.sourcePlatform) || "facebook",
+            rawDescription: descriptionPreview || null,
+            imageCount: imageUrls.length,
+            status: toTrimmedString(rawJson.status) || null,
+          },
+          listing: null,
           metadata: {
-            sourcePlatform: String(source?.sourcePlatform ?? "").trim() || null,
-            sourceAuthorName: String(source?.sourceAuthorName ?? "").trim() || null,
-            sourcePublishedAt: toIsoOrNull(source?.sourcePublishedAt),
-            generatedAt: toIsoOrNull(readyJson.generatedAt),
-            readyPath,
-            imageCountLinked:
-              typeof readyJson.imageCountLinked === "number" &&
-              Number.isFinite(readyJson.imageCountLinked)
-                ? readyJson.imageCountLinked
-                : imageUrls.length,
-            modelJobId: String(readyJson.modelJobId ?? "").trim() || null,
-            modelRecordSource:
-              String(readyJson.modelRecordSource ?? "").trim() || null,
+            sourcePlatform: toTrimmedString(rawJson.sourcePlatform) || null,
+            sourceAuthorName: titleFromSource || null,
+            sourcePublishedAt: toIsoOrNull(rawJson.sourcePublishedAt),
+            generatedAt: null,
+            readyPath: null,
+            rawPath,
+            imageCountLinked: imageUrls.length,
+            modelJobId: null,
+            modelRecordSource: "raw_fallback",
           },
         });
       } catch {
@@ -308,87 +420,6 @@ async function readPipelineCounters(summaryPath: string | null) {
   }
 }
 
-async function dispatchViaHttp(
-  input: SocialImportRunDispatchInput,
-  orchestratorUrl: string,
-): Promise<SocialImportRunDispatchResult> {
-  const controller = new AbortController();
-  const timeoutMs = Math.max(
-    5_000,
-    Number(process.env.SOCIAL_IMPORT_ORCHESTRATOR_TIMEOUT_MS ?? 30_000),
-  );
-  const timeoutHandle = setTimeout(() => controller.abort(), timeoutMs);
-
-  try {
-    const headers: Record<string, string> = {
-      "content-type": "application/json",
-      "x-correlation-id": input.correlationId,
-    };
-    const token = process.env.SOCIAL_IMPORT_ORCHESTRATOR_TOKEN?.trim();
-    if (token) {
-      headers.authorization = `Bearer ${token}`;
-    }
-
-    const response = await fetch(orchestratorUrl, {
-      method: "POST",
-      headers,
-      body: JSON.stringify({
-        jobId: input.jobId,
-        announcerUid: input.announcerUid,
-        environment: input.environment,
-        limit: input.limit,
-        includeImported: input.includeImported,
-        headless: input.headless,
-        reason: input.reason,
-        dateFrom: input.dateFrom,
-        dateTo: input.dateTo,
-        actorUid: input.actorUid,
-      }),
-      signal: controller.signal,
-    });
-
-    if (!response.ok) {
-      throw new Error(`SOCIAL_IMPORT_ORCHESTRATOR_HTTP_${response.status}`);
-    }
-
-    const payload = (await response.json().catch(() => null)) as
-      | {
-          runId?: string;
-          data?: {
-            runId?: string;
-          };
-          message?: string;
-        }
-      | null;
-
-    return {
-      mode: "http",
-      accepted: true,
-      externalRunId:
-        payload?.runId?.trim() ||
-        payload?.data?.runId?.trim() ||
-        null,
-      message: payload?.message?.trim() || null,
-    };
-  } catch (error) {
-    const code =
-      error instanceof Error ? error.message : "SOCIAL_IMPORT_ORCHESTRATOR_HTTP_FAILED";
-
-    await patchSocialImportJobById({
-      jobId: input.jobId,
-      patch: {
-        status: "failed",
-        endedAt: new Date().toISOString(),
-        errorSummary: code,
-      },
-    }).catch(() => undefined);
-
-    throw new Error("SOCIAL_IMPORT_ORCHESTRATOR_REQUEST_FAILED");
-  } finally {
-    clearTimeout(timeoutHandle);
-  }
-}
-
 async function dispatchViaLocalCommand(
   input: SocialImportRunDispatchInput,
 ): Promise<SocialImportRunDispatchResult> {
@@ -416,6 +447,9 @@ async function dispatchViaLocalCommand(
   }
   if (input.dateTo) {
     args.push(`--date-to=${input.dateTo}`);
+  }
+  if (input.sourceUrl) {
+    args.push(`--force-url=${input.sourceUrl}`);
   }
 
   const child = spawn("npm", args, {
@@ -527,30 +561,5 @@ async function dispatchViaLocalCommand(
 export async function dispatchSocialImportRun(
   input: SocialImportRunDispatchInput,
 ): Promise<SocialImportRunDispatchResult> {
-  const executionMode = input.executionMode;
-  const orchestratorUrl = process.env.SOCIAL_IMPORT_ORCHESTRATOR_URL?.trim();
-
-  if (executionMode === "orchestrator") {
-    if (!orchestratorUrl) {
-      throw new Error("SOCIAL_IMPORT_ORCHESTRATOR_URL_REQUIRED");
-    }
-    return dispatchViaHttp(input, orchestratorUrl);
-  }
-
-  if (executionMode === "local") {
-    if (input.environment === "prod" && !input.allowLocalProd) {
-      throw new Error("SOCIAL_IMPORT_ORCHESTRATOR_PROD_LOCAL_FORBIDDEN");
-    }
-    return dispatchViaLocalCommand(input);
-  }
-
-  if (orchestratorUrl) {
-    return dispatchViaHttp(input, orchestratorUrl);
-  }
-
-  if (input.environment === "prod" && !input.allowLocalProd) {
-    throw new Error("SOCIAL_IMPORT_ORCHESTRATOR_PROD_LOCAL_FORBIDDEN");
-  }
-
   return dispatchViaLocalCommand(input);
 }

@@ -78,6 +78,12 @@ type JobsPayload = {
   };
 };
 
+type JsonImportPayload = {
+  job: JobItem;
+  replayed: boolean;
+  importedCount: number;
+};
+
 type JobDetailsPayload = {
   job: JobItem;
 };
@@ -85,16 +91,10 @@ type JobDetailsPayload = {
 type JobLogsPayload = {
   job: JobItem;
   logs: {
-    cloudRun: {
-      projectId: string;
-      region: string;
-      jobName: string;
-      executionName: string | null;
-      executionsUrl: string;
-      logsUrl: string;
-    } | null;
-    orchestratorUrl: string | null;
+    cloudRun: null;
+    orchestratorUrl: null;
     externalRunId: string | null;
+    callbackIngestedAt?: string | null;
     hints: string[];
   };
 };
@@ -102,9 +102,7 @@ type JobLogsPayload = {
 type JobActionModalMode =
   | "details"
   | "logs"
-  | "cancel"
-  | "retry_dry"
-  | "retry_real";
+  | "cancel";
 
 type ReviewItem = {
   id: string;
@@ -112,6 +110,7 @@ type ReviewItem = {
   sourceId: string | null;
   rawPostId: string;
   sourcePostUrl: string | null;
+  sourcePublishedAt: string | null;
   title: string | null;
   typeProperty: string | null;
   price: number | null;
@@ -143,37 +142,6 @@ type DecisionItem = {
 type DecisionsPayload = {
   decisions: DecisionItem[];
   count: number;
-};
-
-type SocialImportSettings = {
-  id: string;
-  thresholds: {
-    autoPublishMinScore: number;
-    autoRejectMaxScore: number;
-    defaultRunLimit: number;
-    maxRunLimit: number;
-  };
-  scheduler: {
-    enabled: boolean;
-    cronExpression: string;
-    timezone: string;
-    environment: "dev" | "preprod" | "prod";
-    includeImported: boolean;
-    headless: boolean;
-    defaultReason: string;
-  };
-  orchestrator: {
-    executionMode: "auto" | "orchestrator" | "local";
-    orchestratorUrlConfigured: boolean;
-    allowLocalProd: boolean;
-  };
-  updatedBy: string | null;
-  updatedAt: string | null;
-  createdAt: string | null;
-};
-
-type SocialImportSettingsPayload = {
-  settings: SocialImportSettings;
 };
 
 type AnnouncerLookupItem = {
@@ -260,18 +228,11 @@ export default function SocialImportDashboardPage() {
   const [runForm, setRunForm] = useState({
     announcerUid: "",
     sourceId: "",
-    dateFrom: "",
-    dateTo: "",
-    limit: "400",
-    includeImported: "true",
-    headless: "false",
-    environment: "dev",
-    reason: "",
   });
+  const [jsonImportText, setJsonImportText] = useState("");
   const [pendingActionKey, setPendingActionKey] = useState<string | null>(null);
   const [actionError, setActionError] = useState<string | null>(null);
   const [actionMessage, setActionMessage] = useState<string | null>(null);
-  const [settingsDraft, setSettingsDraft] = useState<SocialImportSettings | null>(null);
   const [jobModalMode, setJobModalMode] = useState<JobActionModalMode | null>(null);
   const [jobModalJob, setJobModalJob] = useState<JobItem | null>(null);
   const [jobModalReason, setJobModalReason] = useState("");
@@ -293,14 +254,10 @@ export default function SocialImportDashboardPage() {
   const canCreateSource = hasPermission(permissions, "social_import.source.create");
   const canPauseSource = hasPermission(permissions, "social_import.source.pause");
   const canRevokeSource = hasPermission(permissions, "social_import.source.revoke");
-  const canRunDry = hasPermission(permissions, "social_import.run.dry");
   const canRunProd = hasPermission(permissions, "social_import.run.prod");
   const canRetryJob = hasPermission(permissions, "social_import.job.retry");
   const canRejectCandidate = hasPermission(permissions, "social_import.reject");
   const canPublishCandidate = hasPermission(permissions, "social_import.publish");
-  const canReadSettings = hasPermission(permissions, "social_import.settings.read");
-  const canUpdateSettings = hasPermission(permissions, "social_import.settings.update");
-  const canManageScheduler = hasPermission(permissions, "social_import.scheduler.manage");
   const canExport = hasPermission(permissions, "social_import.export");
 
   const queryParams = useMemo(() => {
@@ -325,6 +282,8 @@ export default function SocialImportDashboardPage() {
   const jobsQuery = useQuery({
     queryKey: ["dashboard", "social-import", "jobs", queryParams, canReadJobs],
     enabled: canReadModule && canReadJobs,
+    refetchInterval: canReadModule && canReadJobs ? 7000 : false,
+    refetchIntervalInBackground: true,
     queryFn: () =>
       fetchJson<JobsPayload>(
         `/api/admin/v1/social-import/jobs?${queryParams}`,
@@ -335,6 +294,8 @@ export default function SocialImportDashboardPage() {
   const reviewQuery = useQuery({
     queryKey: ["dashboard", "social-import", "review", queryParams, canReadReview],
     enabled: canReadModule && canReadReview,
+    refetchInterval: canReadModule && canReadReview ? 10000 : false,
+    refetchIntervalInBackground: true,
     queryFn: () =>
       fetchJson<ReviewPayload>(
         `/api/admin/v1/social-import/review?${queryParams}`,
@@ -349,16 +310,6 @@ export default function SocialImportDashboardPage() {
       fetchJson<DecisionsPayload>(
         `/api/admin/v1/social-import/decisions?${queryParams}`,
         "Impossible de charger les décisions social import.",
-      ),
-  });
-
-  const settingsQuery = useQuery({
-    queryKey: ["dashboard", "social-import", "settings", canReadSettings],
-    enabled: canReadModule && canReadSettings,
-    queryFn: () =>
-      fetchJson<SocialImportSettingsPayload>(
-        "/api/admin/v1/social-import/settings",
-        "Impossible de charger les paramètres social import.",
       ),
   });
 
@@ -390,8 +341,7 @@ export default function SocialImportDashboardPage() {
     sourcesQuery.isFetching ||
     jobsQuery.isFetching ||
     reviewQuery.isFetching ||
-    decisionsQuery.isFetching ||
-    settingsQuery.isFetching;
+    decisionsQuery.isFetching;
 
   const globalError =
     permissionsQuery.error?.message ||
@@ -399,14 +349,12 @@ export default function SocialImportDashboardPage() {
     jobsQuery.error?.message ||
     reviewQuery.error?.message ||
     decisionsQuery.error?.message ||
-    settingsQuery.error?.message ||
     null;
 
   const sources = sourcesQuery.data?.sources ?? [];
   const jobs = jobsQuery.data?.jobs ?? [];
   const candidates = reviewQuery.data?.candidates ?? [];
   const decisions = decisionsQuery.data?.decisions ?? [];
-  const currentSettings = settingsDraft ?? settingsQuery.data?.settings ?? null;
   const announcerLookupResults = announcerLookupQuery.data?.announcers ?? [];
 
   function closeJobActionModal() {
@@ -415,18 +363,6 @@ export default function SocialImportDashboardPage() {
     setJobModalReason("");
     setJobModalDetails(null);
     setJobModalLogs(null);
-  }
-
-  function updateSettingsDraft(
-    updater: (current: SocialImportSettings) => SocialImportSettings,
-  ) {
-    setSettingsDraft((previous) => {
-      const base = previous ?? settingsQuery.data?.settings;
-      if (!base) {
-        return previous;
-      }
-      return updater(base);
-    });
   }
 
   function onApplyFilters(event: FormEvent<HTMLFormElement>) {
@@ -441,7 +377,6 @@ export default function SocialImportDashboardPage() {
     void reviewQuery.refetch();
     void decisionsQuery.refetch();
     void announcerLookupQuery.refetch();
-    void settingsQuery.refetch();
   }
 
   function selectAnnouncer(announcer: AnnouncerLookupItem) {
@@ -598,96 +533,55 @@ export default function SocialImportDashboardPage() {
     );
   }
 
-  async function handleDryRun() {
+  async function handleImportJsonPosts() {
     const announcerUid = runForm.announcerUid.trim();
-    const sourceId = runForm.sourceId.trim();
-    if (!announcerUid && !sourceId) {
-      setActionError("Renseigne un UID annonceur ou un sourceId pour lancer un dry-run.");
+    if (!announcerUid) {
+      setActionError("Sélectionne d'abord un annonceur avant d'importer le JSON.");
       return;
     }
 
-    await withAction(
-      "job_dry_run",
+    const rawText = jsonImportText.trim();
+    if (!rawText) {
+      setActionError("Colle le JSON des posts avant de lancer l'import.");
+      return;
+    }
+
+    let parsedPosts: unknown;
+    try {
+      parsedPosts = JSON.parse(rawText);
+    } catch {
+      setActionError("JSON invalide: impossible de parser le contenu collé.");
+      return;
+    }
+
+    if (!Array.isArray(parsedPosts) || parsedPosts.length === 0) {
+      setActionError("Le JSON doit être un tableau non vide d'objets posts.");
+      return;
+    }
+
+    const result = await withAction<JsonImportPayload>(
+      "job_json_import",
       () =>
-        mutateJson({
-          url: "/api/admin/v1/social-import/jobs/dry-run",
+        mutateJson<JsonImportPayload>({
+          url: "/api/admin/v1/social-import/import/json",
           method: "POST",
           body: {
-            sourceIds: sourceId ? [sourceId] : undefined,
-            announcerUids: announcerUid ? [announcerUid] : undefined,
-            reason: runForm.reason.trim() || undefined,
-            environment:
-              runForm.environment === "prod"
-                ? "dev"
-                : (runForm.environment as "dev" | "preprod"),
+            announcerUid,
+            sourceId: runForm.sourceId.trim() || undefined,
+            posts: parsedPosts,
           },
           headers: {
-            "idempotency-key": buildIdempotencyKey("si_dry_run"),
+            "idempotency-key": buildIdempotencyKey("si_json_import"),
           },
         }),
-      "Dry-run déclenché.",
+      "Import JSON déclenché.",
     );
-  }
 
-  async function handleRunImport() {
-    const announcerUid = runForm.announcerUid.trim();
-    const sourceId = runForm.sourceId.trim();
-    if (!announcerUid && !sourceId) {
-      setActionError("Renseigne un UID annonceur ou un sourceId pour lancer l'import.");
-      return;
+    if (result?.job?.id) {
+      setActionMessage(
+        `Import JSON terminé: ${formatNumber(result.importedCount)} post(s) → job ${result.job.id} (${result.job.status}).`,
+      );
     }
-
-    const parsedLimit = Number(runForm.limit.trim());
-    if (!Number.isFinite(parsedLimit) || parsedLimit < 1) {
-      setActionError("La limite doit être un entier supérieur à 0.");
-      return;
-    }
-
-    await withAction(
-      "job_run",
-      () =>
-        mutateJson({
-          url: "/api/admin/v1/social-import/jobs/run",
-          method: "POST",
-          body: {
-            sourceId: sourceId || undefined,
-            announcerUid: announcerUid || undefined,
-            environment: runForm.environment,
-            reason: runForm.reason.trim() || undefined,
-            dateFrom: runForm.dateFrom.trim() || undefined,
-            dateTo: runForm.dateTo.trim() || undefined,
-            limit: Math.floor(parsedLimit),
-            includeImported: runForm.includeImported === "true",
-            headless: runForm.headless === "true",
-          },
-          headers: {
-            "idempotency-key": buildIdempotencyKey("si_run"),
-          },
-        }),
-      "Run social import déclenché.",
-    );
-  }
-
-  function resolveJobSourceId(job: JobItem) {
-    const value = job.metadata?.sourceId;
-    return typeof value === "string" && value.trim().length > 0 ? value.trim() : undefined;
-  }
-
-  function resolveJobLimit(job: JobItem) {
-    const value = job.metadata?.limit;
-    if (typeof value === "number" && Number.isFinite(value) && value > 0) {
-      return Math.floor(value);
-    }
-    return undefined;
-  }
-
-  function resolveJobBooleanMeta(job: JobItem, key: "includeImported" | "headless") {
-    const value = job.metadata?.[key];
-    return typeof value === "boolean" ? value : undefined;
-  }
-
-  function resolveRetryEnvironmentForDryRun(job: JobItem) {
-    return job.environment === "prod" ? "preprod" : job.environment;
   }
 
   async function handleViewJobDetails(job: JobItem) {
@@ -733,27 +627,6 @@ export default function SocialImportDashboardPage() {
     setJobModalMode("cancel");
   }
 
-  async function handleRetryJobDryRun(job: JobItem) {
-    if (job.announcerScope.length === 0) {
-      setActionError("Impossible de relancer ce job en dry-run: aucun annonceur lié.");
-      return;
-    }
-    setJobModalJob(job);
-    setJobModalReason("");
-    setJobModalMode("retry_dry");
-  }
-
-  async function handleRetryJobReal(job: JobItem) {
-    const announcerUid = job.announcerScope[0]?.trim() || "";
-    if (!announcerUid) {
-      setActionError("Impossible de relancer ce job: aucun annonceur lié.");
-      return;
-    }
-    setJobModalJob(job);
-    setJobModalReason("");
-    setJobModalMode("retry_real");
-  }
-
   async function handleConfirmJobCancel() {
     if (!jobModalJob) {
       return;
@@ -767,88 +640,6 @@ export default function SocialImportDashboardPage() {
           body: { reason: jobModalReason.trim() || undefined },
         }),
       "Job annulé.",
-    );
-    if (result) {
-      closeJobActionModal();
-    }
-  }
-
-  async function handleConfirmJobRetryDryRun() {
-    if (!jobModalJob) {
-      return;
-    }
-    const result = await withAction(
-      `job_retry_dry_${jobModalJob.id}`,
-      () =>
-        mutateJson({
-          url: "/api/admin/v1/social-import/jobs/dry-run",
-          method: "POST",
-          body: {
-            sourceIds: resolveJobSourceId(jobModalJob) ? [resolveJobSourceId(jobModalJob)] : undefined,
-            announcerUids: jobModalJob.announcerScope,
-            environment: resolveRetryEnvironmentForDryRun(jobModalJob),
-            reason: jobModalReason.trim() || undefined,
-          },
-          headers: {
-            "idempotency-key": buildIdempotencyKey(`si_retry_dry_${jobModalJob.id}`),
-          },
-        }),
-      "Dry-run relancé.",
-    );
-    if (result) {
-      closeJobActionModal();
-    }
-  }
-
-  async function handleConfirmJobRetryReal() {
-    if (!jobModalJob) {
-      return;
-    }
-    const announcerUid = jobModalJob.announcerScope[0]?.trim() || "";
-    if (!announcerUid) {
-      setActionError("Impossible de relancer ce job: aucun annonceur lié.");
-      return;
-    }
-
-    if (jobModalJob.environment === "prod" && !jobModalReason.trim()) {
-      setActionError("Le motif est obligatoire pour une relance réelle en prod.");
-      return;
-    }
-
-    const limit = resolveJobLimit(jobModalJob);
-    const includeImported = resolveJobBooleanMeta(jobModalJob, "includeImported");
-    const headless = resolveJobBooleanMeta(jobModalJob, "headless");
-    const dateFrom =
-      typeof jobModalJob.metadata?.dateFrom === "string" && jobModalJob.metadata.dateFrom.trim().length > 0
-        ? jobModalJob.metadata.dateFrom.trim()
-        : undefined;
-    const dateTo =
-      typeof jobModalJob.metadata?.dateTo === "string" && jobModalJob.metadata.dateTo.trim().length > 0
-        ? jobModalJob.metadata.dateTo.trim()
-        : undefined;
-
-    const result = await withAction(
-      `job_retry_real_${jobModalJob.id}`,
-      () =>
-        mutateJson({
-          url: "/api/admin/v1/social-import/jobs/run",
-          method: "POST",
-          body: {
-            sourceId: resolveJobSourceId(jobModalJob),
-            announcerUid,
-            environment: jobModalJob.environment,
-            reason: jobModalReason.trim() || undefined,
-            dateFrom,
-            dateTo,
-            limit,
-            includeImported,
-            headless,
-          },
-          headers: {
-            "idempotency-key": buildIdempotencyKey(`si_retry_real_${jobModalJob.id}`),
-          },
-        }),
-      "Run réel relancé.",
     );
     if (result) {
       closeJobActionModal();
@@ -902,12 +693,6 @@ export default function SocialImportDashboardPage() {
     if (runForm.announcerUid.trim()) {
       params.set("announcerUid", runForm.announcerUid.trim());
     }
-    if (runForm.dateFrom.trim()) {
-      params.set("startedFrom", runForm.dateFrom.trim());
-    }
-    if (runForm.dateTo.trim()) {
-      params.set("startedTo", runForm.dateTo.trim());
-    }
     return params.toString();
   }
 
@@ -915,79 +700,6 @@ export default function SocialImportDashboardPage() {
     const params = buildExportQueryParams();
     const url = `/api/admin/v1/social-import/export/${kind}${params ? `?${params}` : ""}`;
     window.open(url, "_blank", "noopener,noreferrer");
-  }
-
-  async function handleSaveSettings() {
-    if (!currentSettings) {
-      return;
-    }
-
-    const result = await withAction(
-      "settings_update",
-      () =>
-        mutateJson<SocialImportSettingsPayload>({
-          url: "/api/admin/v1/social-import/settings",
-          method: "PATCH",
-          body: {
-            thresholds: currentSettings.thresholds,
-            scheduler: {
-              cronExpression: currentSettings.scheduler.cronExpression,
-              timezone: currentSettings.scheduler.timezone,
-              environment: currentSettings.scheduler.environment,
-              includeImported: currentSettings.scheduler.includeImported,
-              headless: currentSettings.scheduler.headless,
-              defaultReason: currentSettings.scheduler.defaultReason,
-            },
-            orchestrator: {
-              executionMode: currentSettings.orchestrator.executionMode,
-              allowLocalProd: currentSettings.orchestrator.allowLocalProd,
-            },
-          },
-        }),
-      "Paramètres social import mis à jour.",
-    );
-
-    if (result?.settings) {
-      setSettingsDraft(result.settings);
-    }
-  }
-
-  async function handleToggleScheduler(enabled: boolean) {
-    if (!currentSettings) {
-      return;
-    }
-    const reason = window.prompt(
-      enabled
-        ? "Motif d'activation du scheduler ?"
-        : "Motif de désactivation du scheduler ?",
-    );
-    if (!reason) {
-      return;
-    }
-
-    const result = await withAction(
-      `scheduler_toggle_${enabled ? "on" : "off"}`,
-      () =>
-        mutateJson<{ scheduler: { before: boolean; after: boolean } }>({
-          url: "/api/admin/v1/social-import/scheduler/toggle",
-          method: "POST",
-          body: {
-            enabled,
-            reason: reason.trim(),
-          },
-        }),
-      enabled ? "Scheduler activé." : "Scheduler désactivé.",
-    );
-
-    if (result && currentSettings) {
-      setSettingsDraft({
-        ...currentSettings,
-        scheduler: {
-          ...currentSettings.scheduler,
-          enabled: result.scheduler.after,
-        },
-      });
-    }
   }
 
   if (permissionsQuery.isLoading) {
@@ -1035,16 +747,6 @@ export default function SocialImportDashboardPage() {
                 disabled={pendingActionKey !== null}
               >
                 Ajouter source
-              </Button>
-            ) : null}
-            {canRunDry ? (
-              <Button
-                type="button"
-                variant="secondary"
-                onClick={handleDryRun}
-                disabled={pendingActionKey !== null}
-              >
-                Dry-run
               </Button>
             ) : null}
             {canExport ? (
@@ -1121,11 +823,7 @@ export default function SocialImportDashboardPage() {
                   ? "Logs du job"
                   : jobModalMode === "cancel"
                     ? "Annuler le job"
-                    : jobModalMode === "retry_dry"
-                      ? "Relancer en dry-run"
-                      : jobModalMode === "retry_real"
-                        ? "Relancer en réel"
-                        : "Action job"}
+                    : "Action job"}
             </SheetTitle>
             <SheetDescription>
               {jobModalJob
@@ -1179,12 +877,15 @@ export default function SocialImportDashboardPage() {
                   {jobModalLogs.logs.externalRunId || "N/A"}
                 </p>
                 <p>
-                  <span className="font-medium">Orchestrateur:</span>{" "}
-                  {jobModalLogs.logs.orchestratorUrl || "N/A"}
+                  <span className="font-medium">Mode exécution:</span> local
                 </p>
                 <p>
                   <span className="font-medium">Résumé erreur:</span>{" "}
                   {jobModalLogs.job.errorSummary || "N/A"}
+                </p>
+                <p>
+                  <span className="font-medium">Callback ingéré:</span>{" "}
+                  {toDateLabel(jobModalLogs.logs.callbackIngestedAt || null)}
                 </p>
               </div>
 
@@ -1198,74 +899,20 @@ export default function SocialImportDashboardPage() {
                   </ul>
                 </div>
               ) : null}
-
-              {jobModalLogs.logs.cloudRun ? (
-                <div className="rounded-md border border-slate-200 p-3">
-                  <p className="text-xs text-slate-600">
-                    Cloud Run: {jobModalLogs.logs.cloudRun.jobName} · {jobModalLogs.logs.cloudRun.region}
-                  </p>
-                  <div className="mt-3 flex flex-wrap gap-2">
-                    <Button
-                      size="xs"
-                      variant="outline"
-                      onClick={() =>
-                        window.open(
-                          jobModalLogs.logs.cloudRun?.logsUrl,
-                          "_blank",
-                          "noopener,noreferrer",
-                        )
-                      }
-                    >
-                      Ouvrir logs Cloud Run
-                    </Button>
-                    <Button
-                      size="xs"
-                      variant="outline"
-                      onClick={() =>
-                        window.open(
-                          jobModalLogs.logs.cloudRun?.executionsUrl,
-                          "_blank",
-                          "noopener,noreferrer",
-                        )
-                      }
-                    >
-                      Ouvrir exécutions
-                    </Button>
-                  </div>
-                </div>
-              ) : (
-                <p className="text-xs text-slate-500">
-                  Liens Cloud Run indisponibles (projet GCP non résolu côté env).
-                </p>
-              )}
             </div>
           ) : null}
 
-          {jobModalMode === "cancel" || jobModalMode === "retry_dry" || jobModalMode === "retry_real" ? (
+          {jobModalMode === "cancel" ? (
             <div className="space-y-3 px-4 text-sm">
               <div className="rounded-md border border-slate-200 p-3">
                 <p>
                   <span className="font-medium">Annonceurs:</span>{" "}
                   {jobModalJob?.announcerScope.length ? jobModalJob.announcerScope.join(", ") : "all"}
                 </p>
-                <p>
-                  <span className="font-medium">Période:</span>{" "}
-                  {typeof jobModalJob?.metadata?.dateFrom === "string" && jobModalJob.metadata.dateFrom
-                    ? jobModalJob.metadata.dateFrom
-                    : "N/A"}{" "}
-                  →{" "}
-                  {typeof jobModalJob?.metadata?.dateTo === "string" && jobModalJob.metadata.dateTo
-                    ? jobModalJob.metadata.dateTo
-                    : "N/A"}
-                </p>
-                <p>
-                  <span className="font-medium">Limite:</span>{" "}
-                  {typeof jobModalJob?.metadata?.limit === "number" ? Math.floor(jobModalJob.metadata.limit) : "N/A"}
-                </p>
               </div>
               <div className="space-y-1">
                 <p className="text-xs font-medium text-slate-600">
-                  Motif {jobModalMode === "retry_real" && jobModalJob?.environment === "prod" ? "(obligatoire)" : "(optionnel)"}
+                  Motif (optionnel)
                 </p>
                 <Input
                   value={jobModalReason}
@@ -1288,25 +935,6 @@ export default function SocialImportDashboardPage() {
                 onClick={() => void handleConfirmJobCancel()}
               >
                 Confirmer annulation
-              </Button>
-            ) : null}
-            {jobModalMode === "retry_dry" ? (
-              <Button
-                type="button"
-                variant="secondary"
-                disabled={pendingActionKey !== null}
-                onClick={() => void handleConfirmJobRetryDryRun()}
-              >
-                Confirmer dry-run
-              </Button>
-            ) : null}
-            {jobModalMode === "retry_real" ? (
-              <Button
-                type="button"
-                disabled={pendingActionKey !== null}
-                onClick={() => void handleConfirmJobRetryReal()}
-              >
-                Confirmer relance réelle
               </Button>
             ) : null}
           </SheetFooter>
@@ -1340,13 +968,13 @@ export default function SocialImportDashboardPage() {
 
       <Card>
         <CardHeader className="flex items-center justify-between gap-3">
-          <h2 className="text-lg font-semibold text-slate-900">Lancement import annonceur</h2>
-          <Badge variant={canRunDry || canRunProd ? "success" : "warning"}>
-            {canRunDry || canRunProd ? "Pilotage autorisé" : "Permission manquante"}
+          <h2 className="text-lg font-semibold text-slate-900">Import JSON annonceur</h2>
+          <Badge variant={canRunProd ? "success" : "warning"}>
+            {canRunProd ? "Import autorisé" : "Permission manquante"}
           </Badge>
         </CardHeader>
         <CardContent className="space-y-4">
-          <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
+          <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
             {canReadAnnouncers ? (
               <>
                 <div className="relative space-y-1 xl:col-span-2">
@@ -1428,427 +1056,36 @@ export default function SocialImportDashboardPage() {
                 placeholder="ID de la source import"
               />
             </div>
-            <div className="space-y-1">
-              <p className="text-xs font-medium text-slate-600">Date début (optionnel)</p>
-              <Input
-                type="date"
-                value={runForm.dateFrom}
-                onChange={(event) =>
-                  setRunForm((previous) => ({
-                    ...previous,
-                    dateFrom: event.target.value,
-                  }))
-                }
-              />
-            </div>
-            <div className="space-y-1">
-              <p className="text-xs font-medium text-slate-600">Date fin (optionnel)</p>
-              <Input
-                type="date"
-                value={runForm.dateTo}
-                onChange={(event) =>
-                  setRunForm((previous) => ({
-                    ...previous,
-                    dateTo: event.target.value,
-                  }))
-                }
-              />
-            </div>
-            <div className="space-y-1">
-              <p className="text-xs font-medium text-slate-600">Limite posts</p>
-              <Input
-                type="number"
-                min={1}
-                value={runForm.limit}
-                onChange={(event) =>
-                  setRunForm((previous) => ({
-                    ...previous,
-                    limit: event.target.value,
-                  }))
-                }
-              />
-            </div>
-            <div className="space-y-1">
-              <p className="text-xs font-medium text-slate-600">Inclure déjà importées</p>
-              <select
-                value={runForm.includeImported}
-                onChange={(event) =>
-                  setRunForm((previous) => ({
-                    ...previous,
-                    includeImported: event.target.value,
-                  }))
-                }
-                className="h-10 w-full rounded-md border border-slate-200 px-3 text-sm"
-              >
-                <option value="true">Oui</option>
-                <option value="false">Non</option>
-              </select>
-            </div>
-            <div className="space-y-1">
-              <p className="text-xs font-medium text-slate-600">Mode headless</p>
-              <select
-                value={runForm.headless}
-                onChange={(event) =>
-                  setRunForm((previous) => ({
-                    ...previous,
-                    headless: event.target.value,
-                  }))
-                }
-                className="h-10 w-full rounded-md border border-slate-200 px-3 text-sm"
-              >
-                <option value="false">Non (visible)</option>
-                <option value="true">Oui (headless)</option>
-              </select>
-            </div>
-            <div className="space-y-1">
-              <p className="text-xs font-medium text-slate-600">Environnement</p>
-              <select
-                value={runForm.environment}
-                onChange={(event) =>
-                  setRunForm((previous) => ({
-                    ...previous,
-                    environment: event.target.value,
-                  }))
-                }
-                className="h-10 w-full rounded-md border border-slate-200 px-3 text-sm"
-              >
-                <option value="dev">dev</option>
-                <option value="preprod">preprod</option>
-                <option value="prod">prod</option>
-              </select>
-            </div>
           </div>
-          <div className="space-y-1">
-            <p className="text-xs font-medium text-slate-600">Motif (optionnel)</p>
-            <Input
-              value={runForm.reason}
-              onChange={(event) =>
-                setRunForm((previous) => ({
-                  ...previous,
-                  reason: event.target.value,
-                }))
-              }
-              placeholder="Ex: import mensuel mars-avril pour annonceur cible"
-            />
-          </div>
-          <div className="flex flex-wrap gap-2">
-            {canRunDry ? (
-              <Button
-                type="button"
-                variant="secondary"
-                onClick={() => void handleDryRun()}
-                disabled={pendingActionKey !== null}
-              >
-                Lancer dry-run
-              </Button>
-            ) : null}
-            {canRunProd ? (
-              <Button
-                type="button"
-                onClick={() => void handleRunImport()}
-                disabled={pendingActionKey !== null}
-              >
-                Lancer import
-              </Button>
-            ) : null}
-            {!canRunDry && !canRunProd ? (
-              <p className="text-sm text-amber-700">
-                Permissions manquantes: <code>social_import.run.dry</code> ou{" "}
-                <code>social_import.run.prod</code>
-              </p>
-            ) : null}
-          </div>
-        </CardContent>
-      </Card>
 
-      <Card>
-        <CardHeader className="flex items-center justify-between gap-3">
-          <h2 className="text-lg font-semibold text-slate-900">Paramètres et scheduler</h2>
-          <Badge variant={canReadSettings ? "success" : "warning"}>
-            {canReadSettings ? "Lecture autorisée" : "Permission manquante"}
-          </Badge>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          {!canReadSettings ? (
-            <p className="text-sm text-amber-700">
-              Permission manquante: <code>social_import.settings.read</code>
+          <div className="space-y-2 rounded-lg border border-slate-200 p-3">
+            <p className="text-sm font-medium text-slate-900">Importer des posts JSON</p>
+            <p className="text-xs text-slate-500">
+              Colle ici un tableau JSON de posts Facebook (comme ton format `facebook_id/post_id/caption/media_urls`).
             </p>
-          ) : !currentSettings ? (
-            <p className="text-sm text-slate-500">Chargement des paramètres...</p>
-          ) : (
-            <>
-              <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
-                <div className="space-y-1">
-                  <p className="text-xs font-medium text-slate-600">Run limit par défaut</p>
-                  <Input
-                    type="number"
-                    min={1}
-                    value={String(currentSettings.thresholds.defaultRunLimit)}
-                    onChange={(event) =>
-                      updateSettingsDraft((previous) => ({
-                        ...previous,
-                        thresholds: {
-                          ...previous.thresholds,
-                          defaultRunLimit: Number(event.target.value || 1),
-                        },
-                      }))
-                    }
-                  />
-                </div>
-                <div className="space-y-1">
-                  <p className="text-xs font-medium text-slate-600">Run limit max</p>
-                  <Input
-                    type="number"
-                    min={1}
-                    value={String(currentSettings.thresholds.maxRunLimit)}
-                    onChange={(event) =>
-                      updateSettingsDraft((previous) => ({
-                        ...previous,
-                        thresholds: {
-                          ...previous.thresholds,
-                          maxRunLimit: Number(event.target.value || 1),
-                        },
-                      }))
-                    }
-                  />
-                </div>
-                <div className="space-y-1">
-                  <p className="text-xs font-medium text-slate-600">Seuil auto publish</p>
-                  <Input
-                    type="number"
-                    min={0}
-                    max={1}
-                    step="0.01"
-                    value={String(currentSettings.thresholds.autoPublishMinScore)}
-                    onChange={(event) =>
-                      updateSettingsDraft((previous) => ({
-                        ...previous,
-                        thresholds: {
-                          ...previous.thresholds,
-                          autoPublishMinScore: Number(event.target.value || 0),
-                        },
-                      }))
-                    }
-                  />
-                </div>
-                <div className="space-y-1">
-                  <p className="text-xs font-medium text-slate-600">Seuil auto reject</p>
-                  <Input
-                    type="number"
-                    min={0}
-                    max={1}
-                    step="0.01"
-                    value={String(currentSettings.thresholds.autoRejectMaxScore)}
-                    onChange={(event) =>
-                      updateSettingsDraft((previous) => ({
-                        ...previous,
-                        thresholds: {
-                          ...previous.thresholds,
-                          autoRejectMaxScore: Number(event.target.value || 0),
-                        },
-                      }))
-                    }
-                  />
-                </div>
-              </div>
-
-              <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
-                <div className="space-y-1">
-                  <p className="text-xs font-medium text-slate-600">Mode exécution</p>
-                  <select
-                    value={currentSettings.orchestrator.executionMode}
-                    onChange={(event) =>
-                      updateSettingsDraft((previous) => ({
-                        ...previous,
-                        orchestrator: {
-                          ...previous.orchestrator,
-                          executionMode: event.target.value as
-                            | "auto"
-                            | "orchestrator"
-                            | "local",
-                        },
-                      }))
-                    }
-                    className="h-10 w-full rounded-md border border-slate-200 px-3 text-sm"
-                  >
-                    <option value="auto">auto</option>
-                    <option value="orchestrator">orchestrator</option>
-                    <option value="local">local</option>
-                  </select>
-                </div>
-                <div className="space-y-1">
-                  <p className="text-xs font-medium text-slate-600">URL orchestrateur</p>
-                  <div className="h-10 rounded-md border border-slate-200 px-3 text-sm leading-10">
-                    {currentSettings.orchestrator.orchestratorUrlConfigured
-                      ? "Configurée"
-                      : "Non configurée"}
-                  </div>
-                </div>
-                <label className="flex items-center gap-2 rounded-md border border-slate-200 px-3 text-sm">
-                  <input
-                    type="checkbox"
-                    checked={currentSettings.orchestrator.allowLocalProd}
-                    onChange={(event) =>
-                      updateSettingsDraft((previous) => ({
-                        ...previous,
-                        orchestrator: {
-                          ...previous.orchestrator,
-                          allowLocalProd: event.target.checked,
-                        },
-                      }))
-                    }
-                  />
-                  Autoriser local en prod
-                </label>
-                <div className="flex items-center gap-2">
-                  <Badge variant={currentSettings.scheduler.enabled ? "success" : "warning"}>
-                    Scheduler {currentSettings.scheduler.enabled ? "actif" : "inactif"}
-                  </Badge>
-                </div>
-              </div>
-
-              <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
-                <div className="space-y-1">
-                  <p className="text-xs font-medium text-slate-600">Scheduler environnement</p>
-                  <select
-                    value={currentSettings.scheduler.environment}
-                    onChange={(event) =>
-                      updateSettingsDraft((previous) => ({
-                        ...previous,
-                        scheduler: {
-                          ...previous.scheduler,
-                          environment: event.target.value as
-                            | "dev"
-                            | "preprod"
-                            | "prod",
-                        },
-                      }))
-                    }
-                    className="h-10 w-full rounded-md border border-slate-200 px-3 text-sm"
-                  >
-                    <option value="dev">dev</option>
-                    <option value="preprod">preprod</option>
-                    <option value="prod">prod</option>
-                  </select>
-                </div>
-                <div className="space-y-1">
-                  <p className="text-xs font-medium text-slate-600">Cron expression</p>
-                  <Input
-                    value={currentSettings.scheduler.cronExpression}
-                    onChange={(event) =>
-                      updateSettingsDraft((previous) => ({
-                        ...previous,
-                        scheduler: {
-                          ...previous.scheduler,
-                          cronExpression: event.target.value,
-                        },
-                      }))
-                    }
-                  />
-                </div>
-                <div className="space-y-1">
-                  <p className="text-xs font-medium text-slate-600">Timezone</p>
-                  <Input
-                    value={currentSettings.scheduler.timezone}
-                    onChange={(event) =>
-                      updateSettingsDraft((previous) => ({
-                        ...previous,
-                        scheduler: {
-                          ...previous.scheduler,
-                          timezone: event.target.value,
-                        },
-                      }))
-                    }
-                  />
-                </div>
-                <div className="space-y-1">
-                  <p className="text-xs font-medium text-slate-600">Reason scheduler par défaut</p>
-                  <Input
-                    value={currentSettings.scheduler.defaultReason}
-                    onChange={(event) =>
-                      updateSettingsDraft((previous) => ({
-                        ...previous,
-                        scheduler: {
-                          ...previous.scheduler,
-                          defaultReason: event.target.value,
-                        },
-                      }))
-                    }
-                  />
-                </div>
-              </div>
-
-              <div className="flex flex-wrap items-center gap-4">
-                <label className="inline-flex items-center gap-2 text-sm text-slate-700">
-                  <input
-                    type="checkbox"
-                    checked={currentSettings.scheduler.includeImported}
-                    onChange={(event) =>
-                      updateSettingsDraft((previous) => ({
-                        ...previous,
-                        scheduler: {
-                          ...previous.scheduler,
-                          includeImported: event.target.checked,
-                        },
-                      }))
-                    }
-                  />
-                  Inclure annonces déjà importées
-                </label>
-                <label className="inline-flex items-center gap-2 text-sm text-slate-700">
-                  <input
-                    type="checkbox"
-                    checked={currentSettings.scheduler.headless}
-                    onChange={(event) =>
-                      updateSettingsDraft((previous) => ({
-                        ...previous,
-                        scheduler: {
-                          ...previous.scheduler,
-                          headless: event.target.checked,
-                        },
-                      }))
-                    }
-                  />
-                  Exécution headless
-                </label>
-              </div>
-
-              <div className="flex flex-wrap gap-2">
-                {canUpdateSettings ? (
-                  <Button
-                    type="button"
-                    variant="secondary"
-                    onClick={() => void handleSaveSettings()}
-                    disabled={pendingActionKey !== null}
-                  >
-                    Enregistrer paramètres
-                  </Button>
-                ) : (
-                  <p className="text-sm text-amber-700">
-                    Permission manquante: <code>social_import.settings.update</code>
-                  </p>
-                )}
-                {canManageScheduler ? (
-                  <Button
-                    type="button"
-                    variant={currentSettings.scheduler.enabled ? "destructive" : "outline"}
-                    onClick={() =>
-                      void handleToggleScheduler(!currentSettings.scheduler.enabled)
-                    }
-                    disabled={pendingActionKey !== null}
-                  >
-                    {currentSettings.scheduler.enabled
-                      ? "Désactiver scheduler"
-                      : "Activer scheduler"}
-                  </Button>
-                ) : (
-                  <p className="text-sm text-amber-700">
-                    Permission manquante: <code>social_import.scheduler.manage</code>
-                  </p>
-                )}
-              </div>
-            </>
-          )}
+            <textarea
+              value={jsonImportText}
+              onChange={(event) => setJsonImportText(event.target.value)}
+              placeholder='[{"facebook_id":"...","post_id":"...","caption":"...","media_urls":[{"url":"..."}]}]'
+              className="min-h-40 w-full rounded-md border border-slate-200 px-3 py-2 text-xs text-slate-900"
+            />
+            <div className="flex flex-wrap gap-2">
+              {canRunProd ? (
+                <Button
+                  type="button"
+                  variant="secondary"
+                  onClick={() => void handleImportJsonPosts()}
+                  disabled={pendingActionKey !== null}
+                >
+                  Importer JSON vers file review
+                </Button>
+              ) : (
+                <p className="text-sm text-amber-700">
+                  Permission manquante: <code>social_import.run.prod</code>
+                </p>
+              )}
+            </div>
+          </div>
         </CardContent>
       </Card>
 
@@ -2032,26 +1269,6 @@ export default function SocialImportDashboardPage() {
                                 Annuler
                               </Button>
                             ) : null}
-                            {canRunDry && job.status !== "running" ? (
-                              <Button
-                                size="xs"
-                                variant="secondary"
-                                disabled={pendingActionKey !== null}
-                                onClick={() => void handleRetryJobDryRun(job)}
-                              >
-                                Relancer dry-run
-                              </Button>
-                            ) : null}
-                            {canRunProd && job.status !== "running" ? (
-                              <Button
-                                size="xs"
-                                variant="outline"
-                                disabled={pendingActionKey !== null}
-                                onClick={() => void handleRetryJobReal(job)}
-                              >
-                                Relancer réel
-                              </Button>
-                            ) : null}
                           </div>
                         </td>
                       </tr>
@@ -2101,6 +1318,9 @@ export default function SocialImportDashboardPage() {
                           : ""}
                       </p>
                       <p className="mt-1 text-xs text-slate-500">Annonceur: {candidate.announcerUid}</p>
+                      <p className="mt-1 text-xs text-slate-500">
+                        Publiée le (source): {toDateLabel(candidate.sourcePublishedAt)}
+                      </p>
                       <p className="mt-1 text-xs text-slate-500">Score: {formatNumber(candidate.score)}</p>
                       <p className="mt-1 text-xs text-slate-500">
                         Raison auto: {candidate.autoReason || "non renseignée"}
