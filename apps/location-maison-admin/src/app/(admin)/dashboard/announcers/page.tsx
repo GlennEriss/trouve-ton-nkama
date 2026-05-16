@@ -1,8 +1,9 @@
 "use client";
 
 import { ChangeEvent, FormEvent, useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { useInfiniteQuery, useQuery } from "@tanstack/react-query";
+import { InfiniteData, useInfiniteQuery, useQuery, useQueryClient } from "@tanstack/react-query";
 import Image from "next/image";
+import { useSearchParams } from "next/navigation";
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
@@ -256,6 +257,14 @@ const SOCIAL_NETWORK_LABELS: Record<SocialNetworkKey, string> = {
 
 const SOCIAL_NETWORK_KEYS: SocialNetworkKey[] = ["facebook", "instagram", "tiktok", "linkedin", "x"];
 
+function formatAnnouncerLookupLabel(announcer: {
+  uid: string;
+  fullName: string;
+  email: string | null;
+}) {
+  return `${announcer.fullName}${announcer.email ? ` — ${announcer.email}` : ""} (${announcer.uid})`;
+}
+
 function createEmptySocialProfilesDraft(): AnnouncerSocialProfilesDraft {
   return SOCIAL_NETWORK_KEYS.reduce(
     (acc, key) => ({
@@ -436,7 +445,59 @@ async function fetchMe() {
   return payload.data;
 }
 
+function updateAnnouncerSocialProfilesInListCache(
+  cached: InfiniteData<AnnouncerListPayload> | undefined,
+  uid: string,
+  socialProfiles: AnnouncerSocialProfiles,
+) {
+  if (!cached) {
+    return cached;
+  }
+
+  return {
+    ...cached,
+    pages: cached.pages.map((page) => ({
+      ...page,
+      announcers: page.announcers.map((announcer) =>
+        announcer.uid === uid
+          ? {
+              ...announcer,
+              socialProfiles,
+            }
+          : announcer,
+      ),
+    })),
+  };
+}
+
+function updateAnnouncerSuspensionInListCache(
+  cached: InfiniteData<AnnouncerListPayload> | undefined,
+  uid: string,
+  isSuspended: boolean,
+) {
+  if (!cached) {
+    return cached;
+  }
+
+  return {
+    ...cached,
+    pages: cached.pages.map((page) => ({
+      ...page,
+      announcers: page.announcers.map((announcer) =>
+        announcer.uid === uid
+          ? {
+              ...announcer,
+              isSuspended,
+            }
+          : announcer,
+      ),
+    })),
+  };
+}
+
 export default function AnnouncersPage() {
+  const queryClient = useQueryClient();
+  const searchParams = useSearchParams();
   const [queryDraft, setQueryDraft] = useState("");
   const [queryApplied, setQueryApplied] = useState("");
   const [status, setStatus] = useState<AnnouncerStatusFilter>("all");
@@ -520,6 +581,9 @@ export default function AnnouncersPage() {
     kioskType: "",
     roomType: "",
   });
+  const [createListingAnnouncerLookupInput, setCreateListingAnnouncerLookupInput] = useState("");
+  const [createListingAnnouncerLookupDebounced, setCreateListingAnnouncerLookupDebounced] = useState("");
+  const [showCreateListingAnnouncerLookup, setShowCreateListingAnnouncerLookup] = useState(false);
 
   const selectedListingTags = useMemo(
     () => ensureMaxTags(splitTextList(createListing.tagsRaw)),
@@ -527,6 +591,7 @@ export default function AnnouncersPage() {
   );
   const [listingLocalImages, setListingLocalImages] = useState<LocalListingImage[]>([]);
   const listingLocalImagesRef = useRef<LocalListingImage[]>([]);
+  const didHydrateCreateListingFromQueryRef = useRef(false);
 
   useEffect(() => {
     listingLocalImagesRef.current = listingLocalImages;
@@ -588,6 +653,13 @@ export default function AnnouncersPage() {
     }
   }, [selectedUid]);
 
+  useEffect(() => {
+    const timeoutId = setTimeout(() => {
+      setCreateListingAnnouncerLookupDebounced(createListingAnnouncerLookupInput.trim());
+    }, 250);
+    return () => clearTimeout(timeoutId);
+  }, [createListingAnnouncerLookupInput]);
+
   const permissions = useMemo(
     () => meQuery.data?.admin.permissions ?? [],
     [meQuery.data?.admin.permissions],
@@ -601,6 +673,19 @@ export default function AnnouncersPage() {
     [permissions],
   );
   const canCreateListing = useMemo(() => hasPermission(permissions, "listings.create"), [permissions]);
+  const createListingAnnouncerLookupQuery = useQuery({
+    queryKey: ["announcers", "create-listing", "lookup", createListingAnnouncerLookupDebounced],
+    enabled: canCreateListing && showCreateListing && createListingAnnouncerLookupDebounced.length >= 2,
+    queryFn: () =>
+      fetchAnnouncersPage(
+        {
+          query: createListingAnnouncerLookupDebounced,
+          status: "all",
+          presence: "all",
+        },
+        null,
+      ),
+  });
 
   const pages = announcersQuery.data?.pages ?? [];
   const safePageIndex = Math.min(currentPageIndex, Math.max(0, pages.length - 1));
@@ -612,6 +697,7 @@ export default function AnnouncersPage() {
 
   const totalCountLabel =
     pages.length > 0 && pages[0].totalCount !== null ? String(pages[0].totalCount) : "?";
+  const createListingAnnouncerLookupResults = createListingAnnouncerLookupQuery.data?.announcers ?? [];
 
   const stats = {
     loadedCount: announcers.length,
@@ -673,6 +759,7 @@ export default function AnnouncersPage() {
   const onToggleSuspension = useCallback(
     async (announcer: AnnouncerListItem) => {
       const targetStatus = announcer.isSuspended ? "active" : "suspended";
+      const nextIsSuspended = targetStatus === "suspended";
       setSubmitting(true);
       setActionError(null);
       try {
@@ -693,6 +780,30 @@ export default function AnnouncersPage() {
           throw new Error(payload.success ? "Action impossible." : payload.error?.message);
         }
 
+        queryClient.setQueriesData<InfiniteData<AnnouncerListPayload>>(
+          { queryKey: ["announcers", "list"] },
+          (cached) =>
+            updateAnnouncerSuspensionInListCache(
+              cached,
+              announcer.uid,
+              nextIsSuspended,
+            ),
+        );
+        if (selectedUid === announcer.uid) {
+          queryClient.setQueryData<AnnouncerDetailsPayload>(
+            ["announcers", "details", selectedUid],
+            (cached) =>
+              cached
+                ? {
+                    announcer: {
+                      ...cached.announcer,
+                      isSuspended: nextIsSuspended,
+                    },
+                  }
+                : cached,
+          );
+        }
+
         await announcersQuery.refetch();
         if (selectedUid === announcer.uid) {
           await detailsQuery.refetch();
@@ -703,7 +814,7 @@ export default function AnnouncersPage() {
         setSubmitting(false);
       }
     },
-    [announcersQuery, detailsQuery, selectedUid],
+    [announcersQuery, detailsQuery, queryClient, selectedUid],
   );
 
   const onChangeSocialField = useCallback(
@@ -735,8 +846,24 @@ export default function AnnouncersPage() {
     setSocialActionSuccess(null);
 
     try {
-      await patchAnnouncerSocialProfiles(selectedUid, socialProfilesDraft);
-      await detailsQuery.refetch();
+      const updatedAnnouncer = await patchAnnouncerSocialProfiles(selectedUid, socialProfilesDraft);
+
+      queryClient.setQueryData<AnnouncerDetailsPayload>(
+        ["announcers", "details", selectedUid],
+        { announcer: updatedAnnouncer },
+      );
+      queryClient.setQueriesData<InfiniteData<AnnouncerListPayload>>(
+        { queryKey: ["announcers", "list"] },
+        (cached) =>
+          updateAnnouncerSocialProfilesInListCache(
+            cached,
+            updatedAnnouncer.uid,
+            updatedAnnouncer.socialProfiles,
+          ),
+      );
+      setSocialProfilesDraft(toSocialProfilesDraft(updatedAnnouncer.socialProfiles));
+
+      await Promise.all([detailsQuery.refetch(), announcersQuery.refetch()]);
       setSocialActionSuccess("Réseaux sociaux mis à jour.");
     } catch (error) {
       setSocialActionError(
@@ -745,7 +872,7 @@ export default function AnnouncersPage() {
     } finally {
       setSocialSubmitting(false);
     }
-  }, [canUpdateAnnouncer, detailsQuery, selectedUid, socialProfilesDraft]);
+  }, [announcersQuery, canUpdateAnnouncer, detailsQuery, queryClient, selectedUid, socialProfilesDraft]);
 
   const onCreateAnnouncerAccount = useCallback(
     async (event: FormEvent<HTMLFormElement>) => {
@@ -805,6 +932,7 @@ export default function AnnouncersPage() {
           announcerUid: payload.data.uid,
           contact: payload.data.phoneNumber,
         }));
+        setCreateListingAnnouncerLookupInput(payload.data.uid);
 
         await announcersQuery.refetch();
       } catch (error) {
@@ -871,6 +999,64 @@ export default function AnnouncersPage() {
       return previous.filter((image) => image.id !== id);
     });
   }, []);
+
+  const onSelectCreateListingAnnouncer = useCallback((announcer: AnnouncerListItem) => {
+    setSelectedUid(announcer.uid);
+    setCreateListing((previous) => ({
+      ...previous,
+      announcerUid: announcer.uid,
+      contact: announcer.phoneNumbers[0] ?? previous.contact,
+    }));
+    setCreateListingAnnouncerLookupInput(formatAnnouncerLookupLabel(announcer));
+    setShowCreateListingAnnouncerLookup(false);
+  }, []);
+
+  const openCreateListingPanel = useCallback(
+    (announcerUid?: string | null) => {
+      setShowCreateListing(true);
+      setShowCreateAnnouncer(false);
+      setListingStep(1);
+      setCreateListingError(null);
+      setCreateListingResult(null);
+      clearListingLocalImages();
+
+      const normalizedUid = announcerUid?.trim();
+      if (normalizedUid) {
+        setSelectedUid(normalizedUid);
+        setCreateListing((previous) => ({
+          ...previous,
+          announcerUid: normalizedUid,
+        }));
+        const fromCurrentPages = pages
+          .flatMap((page) => page.announcers)
+          .find((announcer) => announcer.uid === normalizedUid);
+        if (fromCurrentPages) {
+          setCreateListingAnnouncerLookupInput(formatAnnouncerLookupLabel(fromCurrentPages));
+        } else {
+          setCreateListingAnnouncerLookupInput(normalizedUid);
+        }
+      } else {
+        setCreateListingAnnouncerLookupInput("");
+      }
+    },
+    [clearListingLocalImages, pages],
+  );
+
+  useEffect(() => {
+    const shouldOpenCreateListing = searchParams.get("createListing") === "1";
+    const announcerUidFromQuery = searchParams.get("announcerUid");
+
+    if (!shouldOpenCreateListing) {
+      didHydrateCreateListingFromQueryRef.current = false;
+      return;
+    }
+    if (didHydrateCreateListingFromQueryRef.current) {
+      return;
+    }
+
+    didHydrateCreateListingFromQueryRef.current = true;
+    openCreateListingPanel(announcerUidFromQuery);
+  }, [openCreateListingPanel, searchParams]);
 
   const uploadListingImages = useCallback(async (): Promise<UploadListingImagesPayload["images"]> => {
     const formData = new FormData();
@@ -1197,18 +1383,20 @@ export default function AnnouncersPage() {
               <Button
                 type="button"
                 variant="outline"
-                onClick={() =>
-                  setShowCreateListing((value) => {
-                    const next = !value;
-                    setListingStep(1);
-                    setCreateListingError(null);
-                    setCreateListingResult(null);
-                    clearListingLocalImages();
-                    return next;
-                  })
-                }
+                onClick={() => {
+                  const targetUid = createListing.announcerUid || selectedUid || "";
+                  const params = new URLSearchParams();
+                  if (targetUid) {
+                    params.set("announcerUid", targetUid);
+                  }
+                  window.location.assign(
+                    params.toString()
+                      ? `/dashboard/listings/new?${params.toString()}`
+                      : "/dashboard/listings/new",
+                  );
+                }}
               >
-                {showCreateListing ? "Fermer annonce" : "Nouvelle annonce"}
+                Nouvelle annonce
               </Button>
             ) : null}
           </>
@@ -1436,102 +1624,166 @@ export default function AnnouncersPage() {
 
               {listingStep === 1 ? (
                 <div className="space-y-3">
-                  <Input
-                    value={createListing.announcerUid}
-                    onChange={(event) =>
-                      setCreateListing((previous) => ({
-                        ...previous,
-                        announcerUid: event.target.value,
-                      }))
-                    }
-                    placeholder="UID annonceur"
-                    disabled={createListingSubmitting || loading}
-                  />
-
-                  <div className="grid gap-3 md:grid-cols-2">
+                  <div className="space-y-1">
+                    <p className="text-xs font-medium text-slate-700">Recherche annonceur</p>
                     <Input
-                      value={createListing.title}
-                      onChange={(event) =>
-                        setCreateListing((previous) => ({
-                          ...previous,
-                          title: event.target.value,
-                        }))
-                      }
-                      placeholder="Titre"
+                      value={createListingAnnouncerLookupInput}
+                      onChange={(event) => {
+                        setCreateListingAnnouncerLookupInput(event.target.value);
+                        setShowCreateListingAnnouncerLookup(true);
+                      }}
+                      onFocus={() => setShowCreateListingAnnouncerLookup(true)}
+                      placeholder="Recherche annonceur (nom, email, UID)"
                       disabled={createListingSubmitting || loading}
+                      autoComplete="off"
                     />
-                    <select
-                      className="h-9 rounded-lg border border-slate-300 bg-white px-3 text-sm text-slate-800"
-                      value={createListing.typeProperty}
-                      onChange={(event) =>
-                        setCreateListing((previous) => ({
-                          ...previous,
-                          typeProperty: event.target.value as CreateListingFormState["typeProperty"],
-                        }))
-                      }
-                      disabled={createListingSubmitting || loading}
-                    >
-                      {PROPERTY_TYPE_OPTIONS.map((item) => (
-                        <option key={item.value} value={item.value}>
-                          {item.label}
-                        </option>
-                      ))}
-                    </select>
+                  </div>
+                  {showCreateListingAnnouncerLookup && createListingAnnouncerLookupInput.trim().length >= 2 ? (
+                    <div className="rounded-lg border border-slate-200 bg-white p-2 text-sm">
+                      {createListingAnnouncerLookupQuery.isFetching ? (
+                        <p className="px-2 py-1 text-slate-500">Recherche des annonceurs...</p>
+                      ) : createListingAnnouncerLookupQuery.error ? (
+                        <p className="px-2 py-1 text-red-700">{createListingAnnouncerLookupQuery.error.message}</p>
+                      ) : createListingAnnouncerLookupResults.length ? (
+                        <div className="max-h-56 space-y-1 overflow-y-auto">
+                          {createListingAnnouncerLookupResults.map((announcer) => (
+                            <button
+                              key={`listing-lookup-${announcer.uid}`}
+                              type="button"
+                              className="w-full rounded-md border border-slate-200 px-3 py-2 text-left hover:bg-slate-50"
+                              onClick={() => onSelectCreateListingAnnouncer(announcer)}
+                              disabled={createListingSubmitting || loading}
+                            >
+                              <p className="font-medium text-slate-900">{announcer.fullName}</p>
+                              <p className="text-xs text-slate-500">
+                                {announcer.email ?? "Email N/A"} · {announcer.uid}
+                              </p>
+                            </button>
+                          ))}
+                        </div>
+                      ) : (
+                        <p className="px-2 py-1 text-slate-500">Aucun annonceur trouvé.</p>
+                      )}
+                    </div>
+                  ) : null}
+                  <div className="space-y-1">
+                    <p className="text-xs font-medium text-slate-700">UID annonceur sélectionné</p>
+                    <Input
+                      value={createListing.announcerUid}
+                      readOnly
+                      placeholder="UID annonceur sélectionné"
+                      disabled
+                    />
                   </div>
 
-                  <textarea
-                    className="min-h-24 w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-800"
-                    value={createListing.description}
-                    onChange={(event) =>
-                      setCreateListing((previous) => ({
-                        ...previous,
-                        description: event.target.value,
-                      }))
-                    }
-                    placeholder="Description"
-                    disabled={createListingSubmitting || loading}
-                  />
+                  <div className="grid gap-3 md:grid-cols-2">
+                    <div className="space-y-1">
+                      <p className="text-xs font-medium text-slate-700">Titre de l&apos;annonce</p>
+                      <Input
+                        value={createListing.title}
+                        onChange={(event) =>
+                          setCreateListing((previous) => ({
+                            ...previous,
+                            title: event.target.value,
+                          }))
+                        }
+                        placeholder="Titre"
+                        disabled={createListingSubmitting || loading}
+                      />
+                    </div>
+                    <div className="space-y-1">
+                      <p className="text-xs font-medium text-slate-700">Type de bien</p>
+                      <select
+                        className="h-9 rounded-lg border border-slate-300 bg-white px-3 text-sm text-slate-800"
+                        value={createListing.typeProperty}
+                        onChange={(event) =>
+                          setCreateListing((previous) => ({
+                            ...previous,
+                            typeProperty: event.target.value as CreateListingFormState["typeProperty"],
+                          }))
+                        }
+                        disabled={createListingSubmitting || loading}
+                      >
+                        {PROPERTY_TYPE_OPTIONS.map((item) => (
+                          <option key={item.value} value={item.value}>
+                            {item.label}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                  </div>
+
+                  <div className="space-y-1">
+                    <p className="text-xs font-medium text-slate-700">Description</p>
+                    <textarea
+                      className="min-h-24 w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-800"
+                      value={createListing.description}
+                      onChange={(event) =>
+                        setCreateListing((previous) => ({
+                          ...previous,
+                          description: event.target.value,
+                        }))
+                      }
+                      placeholder="Description"
+                      disabled={createListingSubmitting || loading}
+                    />
+                  </div>
 
                   <div className="grid gap-3 md:grid-cols-3">
-                    <select
-                      className="h-9 rounded-lg border border-slate-300 bg-white px-3 text-sm text-slate-800"
-                      value={createListing.status}
-                      onChange={(event) =>
-                        setCreateListing((previous) => ({
-                          ...previous,
-                          status: event.target.value as "FOR_RENT" | "FOR_SALE",
-                        }))
-                      }
-                      disabled={createListingSubmitting || loading}
-                    >
-                      {STATUS_OPTIONS.map((item) => (
-                        <option key={item.value} value={item.value}>
-                          {item.label}
-                        </option>
-                      ))}
-                    </select>
-                    <Input
-                      value={createListing.price}
-                      onChange={(event) =>
-                        setCreateListing((previous) => ({
-                          ...previous,
-                          price: event.target.value,
-                        }))
-                      }
-                      placeholder="Prix"
-                      disabled={createListingSubmitting || loading}
-                    />
-                    <Input
-                      value={createListing.area}
-                      onChange={(event) =>
-                        setCreateListing((previous) => ({
-                          ...previous,
-                          area: event.target.value,
-                        }))
-                      }
-                      placeholder="Surface (m²)"
-                      disabled={createListingSubmitting || loading}
-                    />
+                    <div className="space-y-1">
+                      <p className="text-xs font-medium text-slate-700">Statut annonce</p>
+                      <select
+                        className="h-9 rounded-lg border border-slate-300 bg-white px-3 text-sm text-slate-800"
+                        value={createListing.status}
+                        onChange={(event) =>
+                          setCreateListing((previous) => ({
+                            ...previous,
+                            status: event.target.value as "FOR_RENT" | "FOR_SALE",
+                          }))
+                        }
+                        disabled={createListingSubmitting || loading}
+                      >
+                        {STATUS_OPTIONS.map((item) => (
+                          <option key={item.value} value={item.value}>
+                            {item.label}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                    <div className="space-y-1">
+                      <p className="text-xs font-medium text-slate-700">Prix</p>
+                      <Input
+                        type="number"
+                        min={0}
+                        step={1}
+                        value={createListing.price}
+                        onChange={(event) =>
+                          setCreateListing((previous) => ({
+                            ...previous,
+                            price: event.target.value,
+                          }))
+                        }
+                        placeholder="Prix"
+                        disabled={createListingSubmitting || loading}
+                      />
+                    </div>
+                    <div className="space-y-1">
+                      <p className="text-xs font-medium text-slate-700">Superficie (m²)</p>
+                      <Input
+                        type="number"
+                        min={0}
+                        step="any"
+                        value={createListing.area}
+                        onChange={(event) =>
+                          setCreateListing((previous) => ({
+                            ...previous,
+                            area: event.target.value,
+                          }))
+                        }
+                        placeholder="Surface (m²)"
+                        disabled={createListingSubmitting || loading}
+                      />
+                    </div>
                   </div>
 
                   <div className="space-y-2 rounded-lg border border-slate-200 p-3">
@@ -1558,18 +1810,21 @@ export default function AnnouncersPage() {
                         );
                       })}
                     </div>
-                    <textarea
-                      className="min-h-16 w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-800"
-                      value={createListing.tagsRaw}
-                      onChange={(event) =>
-                        setCreateListing((previous) => ({
-                          ...previous,
-                          tagsRaw: event.target.value,
-                        }))
-                      }
-                      placeholder="Tags (séparés par virgule ou retour ligne)"
-                      disabled={createListingSubmitting || loading}
-                    />
+                    <div className="space-y-1">
+                      <p className="text-xs font-medium text-slate-700">Saisie manuelle des tags</p>
+                      <textarea
+                        className="min-h-16 w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-800"
+                        value={createListing.tagsRaw}
+                        onChange={(event) =>
+                          setCreateListing((previous) => ({
+                            ...previous,
+                            tagsRaw: event.target.value,
+                          }))
+                        }
+                        placeholder="Tags (séparés par virgule ou retour ligne)"
+                        disabled={createListingSubmitting || loading}
+                      />
+                    </div>
                   </div>
 
                   <div className="space-y-2 rounded-lg border border-slate-200 p-3">
@@ -1590,13 +1845,16 @@ export default function AnnouncersPage() {
                       ) : null}
                     </div>
 
-                    <Input
-                      type="file"
-                      accept="image/png,image/jpeg,image/webp"
-                      multiple
-                      onChange={onPickListingImages}
-                      disabled={createListingSubmitting || loading || listingLocalImages.length >= MAX_LISTING_IMAGES}
-                    />
+                    <div className="space-y-1">
+                      <p className="text-xs font-medium text-slate-700">Ajouter des images</p>
+                      <Input
+                        type="file"
+                        accept="image/png,image/jpeg,image/webp"
+                        multiple
+                        onChange={onPickListingImages}
+                        disabled={createListingSubmitting || loading || listingLocalImages.length >= MAX_LISTING_IMAGES}
+                      />
+                    </div>
 
                     {listingLocalImages.length > 0 ? (
                       <div className="grid grid-cols-2 gap-3 md:grid-cols-5">
@@ -1642,304 +1900,433 @@ export default function AnnouncersPage() {
                 <div className="space-y-3">
                   {isLogementLike(createListing.typeProperty) ? (
                     <div className="grid gap-3 md:grid-cols-2">
-                      <Input
-                        value={createListing.nbrRooms}
-                        onChange={(event) =>
-                          setCreateListing((previous) => ({
-                            ...previous,
-                            nbrRooms: event.target.value,
-                          }))
-                        }
-                        placeholder="Nombre de chambres (nbrRooms)"
-                        disabled={createListingSubmitting || loading}
-                      />
-                      <Input
-                        value={createListing.nbrKitchens}
-                        onChange={(event) =>
-                          setCreateListing((previous) => ({
-                            ...previous,
-                            nbrKitchens: event.target.value,
-                          }))
-                        }
-                        placeholder="Nombre de cuisines (nbrKitchens)"
-                        disabled={createListingSubmitting || loading}
-                      />
-                      <Input
-                        value={createListing.nbrBathrooms}
-                        onChange={(event) =>
-                          setCreateListing((previous) => ({
-                            ...previous,
-                            nbrBathrooms: event.target.value,
-                          }))
-                        }
-                        placeholder="Salles de bain (nbrBathrooms)"
-                        disabled={createListingSubmitting || loading}
-                      />
-                      <Input
-                        value={createListing.nbrToilets}
-                        onChange={(event) =>
-                          setCreateListing((previous) => ({
-                            ...previous,
-                            nbrToilets: event.target.value,
-                          }))
-                        }
-                        placeholder="Toilettes (nbrToilets)"
-                        disabled={createListingSubmitting || loading}
-                      />
+                      <div className="space-y-1">
+                        <p className="text-xs font-medium text-slate-700">Nombre de chambres</p>
+                        <Input
+                          type="number"
+                          min={0}
+                          step={1}
+                          value={createListing.nbrRooms}
+                          onChange={(event) =>
+                            setCreateListing((previous) => ({
+                              ...previous,
+                              nbrRooms: event.target.value,
+                            }))
+                          }
+                          placeholder="Nombre de chambres (nbrRooms)"
+                          disabled={createListingSubmitting || loading}
+                        />
+                      </div>
+                      <div className="space-y-1">
+                        <p className="text-xs font-medium text-slate-700">Nombre de cuisines</p>
+                        <Input
+                          type="number"
+                          min={0}
+                          step={1}
+                          value={createListing.nbrKitchens}
+                          onChange={(event) =>
+                            setCreateListing((previous) => ({
+                              ...previous,
+                              nbrKitchens: event.target.value,
+                            }))
+                          }
+                          placeholder="Nombre de cuisines (nbrKitchens)"
+                          disabled={createListingSubmitting || loading}
+                        />
+                      </div>
+                      <div className="space-y-1">
+                        <p className="text-xs font-medium text-slate-700">Nombre de salles d&apos;eau</p>
+                        <Input
+                          type="number"
+                          min={0}
+                          step={1}
+                          value={createListing.nbrBathrooms}
+                          onChange={(event) =>
+                            setCreateListing((previous) => ({
+                              ...previous,
+                              nbrBathrooms: event.target.value,
+                            }))
+                          }
+                          placeholder="Salles de bain (nbrBathrooms)"
+                          disabled={createListingSubmitting || loading}
+                        />
+                      </div>
+                      <div className="space-y-1">
+                        <p className="text-xs font-medium text-slate-700">Nombre de toilettes</p>
+                        <Input
+                          type="number"
+                          min={0}
+                          step={1}
+                          value={createListing.nbrToilets}
+                          onChange={(event) =>
+                            setCreateListing((previous) => ({
+                              ...previous,
+                              nbrToilets: event.target.value,
+                            }))
+                          }
+                          placeholder="Toilettes (nbrToilets)"
+                          disabled={createListingSubmitting || loading}
+                        />
+                      </div>
                     </div>
                   ) : null}
 
                   {createListing.typeProperty === "Home" ? (
                     <div className="grid gap-3 md:grid-cols-3">
-                      <Input
-                        value={createListing.nbrGarages}
-                        onChange={(event) =>
-                          setCreateListing((previous) => ({
-                            ...previous,
-                            nbrGarages: event.target.value,
-                          }))
-                        }
-                        placeholder="Garages (nbrGarages)"
-                        disabled={createListingSubmitting || loading}
-                      />
-                      <Input
-                        value={createListing.nbrFloors}
-                        onChange={(event) =>
-                          setCreateListing((previous) => ({
-                            ...previous,
-                            nbrFloors: event.target.value,
-                          }))
-                        }
-                        placeholder="Étages (nbrFloors)"
-                        disabled={createListingSubmitting || loading}
-                      />
-                      <Input
-                        value={createListing.nbrLivingRoom}
-                        onChange={(event) =>
-                          setCreateListing((previous) => ({
-                            ...previous,
-                            nbrLivingRoom: event.target.value,
-                          }))
-                        }
-                        placeholder="Salons (nbrLivingRoom)"
-                        disabled={createListingSubmitting || loading}
-                      />
+                      <div className="space-y-1">
+                        <p className="text-xs font-medium text-slate-700">Nombre de garages</p>
+                        <Input
+                          type="number"
+                          min={0}
+                          step={1}
+                          value={createListing.nbrGarages}
+                          onChange={(event) =>
+                            setCreateListing((previous) => ({
+                              ...previous,
+                              nbrGarages: event.target.value,
+                            }))
+                          }
+                          placeholder="Garages (nbrGarages)"
+                          disabled={createListingSubmitting || loading}
+                        />
+                      </div>
+                      <div className="space-y-1">
+                        <p className="text-xs font-medium text-slate-700">Nombre d&apos;étages</p>
+                        <Input
+                          type="number"
+                          min={0}
+                          step={1}
+                          value={createListing.nbrFloors}
+                          onChange={(event) =>
+                            setCreateListing((previous) => ({
+                              ...previous,
+                              nbrFloors: event.target.value,
+                            }))
+                          }
+                          placeholder="Étages (nbrFloors)"
+                          disabled={createListingSubmitting || loading}
+                        />
+                      </div>
+                      <div className="space-y-1">
+                        <p className="text-xs font-medium text-slate-700">Nombre de salons</p>
+                        <Input
+                          type="number"
+                          min={0}
+                          step={1}
+                          value={createListing.nbrLivingRoom}
+                          onChange={(event) =>
+                            setCreateListing((previous) => ({
+                              ...previous,
+                              nbrLivingRoom: event.target.value,
+                            }))
+                          }
+                          placeholder="Salons (nbrLivingRoom)"
+                          disabled={createListingSubmitting || loading}
+                        />
+                      </div>
                     </div>
                   ) : null}
 
                   {createListing.typeProperty === "Studio" ? (
                     <div className="grid gap-3 md:grid-cols-2">
-                      <Input
-                        value={createListing.nbrFloorStudio}
-                        onChange={(event) =>
-                          setCreateListing((previous) => ({
-                            ...previous,
-                            nbrFloorStudio: event.target.value,
-                          }))
-                        }
-                        placeholder="Étage studio (nbrFloorStudio)"
-                        disabled={createListingSubmitting || loading}
-                      />
-                      <Input
-                        value={createListing.numeroStudio}
-                        onChange={(event) =>
-                          setCreateListing((previous) => ({
-                            ...previous,
-                            numeroStudio: event.target.value,
-                          }))
-                        }
-                        placeholder="Numéro studio (numeroStudio)"
-                        disabled={createListingSubmitting || loading}
-                      />
+                      <div className="space-y-1">
+                        <p className="text-xs font-medium text-slate-700">Étage du studio</p>
+                        <Input
+                          type="number"
+                          min={0}
+                          step={1}
+                          value={createListing.nbrFloorStudio}
+                          onChange={(event) =>
+                            setCreateListing((previous) => ({
+                              ...previous,
+                              nbrFloorStudio: event.target.value,
+                            }))
+                          }
+                          placeholder="Étage studio (nbrFloorStudio)"
+                          disabled={createListingSubmitting || loading}
+                        />
+                      </div>
+                      <div className="space-y-1">
+                        <p className="text-xs font-medium text-slate-700">Numéro du studio</p>
+                        <Input
+                          type="number"
+                          min={0}
+                          step={1}
+                          value={createListing.numeroStudio}
+                          onChange={(event) =>
+                            setCreateListing((previous) => ({
+                              ...previous,
+                              numeroStudio: event.target.value,
+                            }))
+                          }
+                          placeholder="Numéro studio (numeroStudio)"
+                          disabled={createListingSubmitting || loading}
+                        />
+                      </div>
                     </div>
                   ) : null}
 
                   {createListing.typeProperty === "Apartment" ? (
                     <div className="grid gap-3 md:grid-cols-2">
-                      <Input
-                        value={createListing.nbrFloorApartment}
-                        onChange={(event) =>
-                          setCreateListing((previous) => ({
-                            ...previous,
-                            nbrFloorApartment: event.target.value,
-                          }))
-                        }
-                        placeholder="Étage appartement (nbrFloorApartment)"
-                        disabled={createListingSubmitting || loading}
-                      />
-                      <Input
-                        value={createListing.numeroApartment}
-                        onChange={(event) =>
-                          setCreateListing((previous) => ({
-                            ...previous,
-                            numeroApartment: event.target.value,
-                          }))
-                        }
-                        placeholder="Numéro appartement (numeroApartment)"
-                        disabled={createListingSubmitting || loading}
-                      />
+                      <div className="space-y-1">
+                        <p className="text-xs font-medium text-slate-700">Étage de l&apos;appartement</p>
+                        <Input
+                          type="number"
+                          min={0}
+                          step={1}
+                          value={createListing.nbrFloorApartment}
+                          onChange={(event) =>
+                            setCreateListing((previous) => ({
+                              ...previous,
+                              nbrFloorApartment: event.target.value,
+                            }))
+                          }
+                          placeholder="Étage appartement (nbrFloorApartment)"
+                          disabled={createListingSubmitting || loading}
+                        />
+                      </div>
+                      <div className="space-y-1">
+                        <p className="text-xs font-medium text-slate-700">Numéro de l&apos;appartement</p>
+                        <Input
+                          type="number"
+                          min={0}
+                          step={1}
+                          value={createListing.numeroApartment}
+                          onChange={(event) =>
+                            setCreateListing((previous) => ({
+                              ...previous,
+                              numeroApartment: event.target.value,
+                            }))
+                          }
+                          placeholder="Numéro appartement (numeroApartment)"
+                          disabled={createListingSubmitting || loading}
+                        />
+                      </div>
                     </div>
                   ) : null}
 
                   {createListing.typeProperty === "Villa" ? (
                     <div className="grid gap-3 md:grid-cols-3">
-                      <Input
-                        value={createListing.nbrFloors}
-                        onChange={(event) =>
-                          setCreateListing((previous) => ({
-                            ...previous,
-                            nbrFloors: event.target.value,
-                          }))
-                        }
-                        placeholder="Étages (nbrFloors)"
-                        disabled={createListingSubmitting || loading}
-                      />
-                      <Input
-                        value={createListing.nbrPiscine}
-                        onChange={(event) =>
-                          setCreateListing((previous) => ({
-                            ...previous,
-                            nbrPiscine: event.target.value,
-                          }))
-                        }
-                        placeholder="Piscines (nbrPiscine)"
-                        disabled={createListingSubmitting || loading}
-                      />
-                      <Input
-                        value={createListing.nbrGarages}
-                        onChange={(event) =>
-                          setCreateListing((previous) => ({
-                            ...previous,
-                            nbrGarages: event.target.value,
-                          }))
-                        }
-                        placeholder="Garages (nbrGarages)"
-                        disabled={createListingSubmitting || loading}
-                      />
+                      <div className="space-y-1">
+                        <p className="text-xs font-medium text-slate-700">Nombre d&apos;étages</p>
+                        <Input
+                          type="number"
+                          min={0}
+                          step={1}
+                          value={createListing.nbrFloors}
+                          onChange={(event) =>
+                            setCreateListing((previous) => ({
+                              ...previous,
+                              nbrFloors: event.target.value,
+                            }))
+                          }
+                          placeholder="Étages (nbrFloors)"
+                          disabled={createListingSubmitting || loading}
+                        />
+                      </div>
+                      <div className="space-y-1">
+                        <p className="text-xs font-medium text-slate-700">Nombre de piscines</p>
+                        <Input
+                          type="number"
+                          min={0}
+                          step={1}
+                          value={createListing.nbrPiscine}
+                          onChange={(event) =>
+                            setCreateListing((previous) => ({
+                              ...previous,
+                              nbrPiscine: event.target.value,
+                            }))
+                          }
+                          placeholder="Piscines (nbrPiscine)"
+                          disabled={createListingSubmitting || loading}
+                        />
+                      </div>
+                      <div className="space-y-1">
+                        <p className="text-xs font-medium text-slate-700">Nombre de garages</p>
+                        <Input
+                          type="number"
+                          min={0}
+                          step={1}
+                          value={createListing.nbrGarages}
+                          onChange={(event) =>
+                            setCreateListing((previous) => ({
+                              ...previous,
+                              nbrGarages: event.target.value,
+                            }))
+                          }
+                          placeholder="Garages (nbrGarages)"
+                          disabled={createListingSubmitting || loading}
+                        />
+                      </div>
                     </div>
                   ) : null}
 
                   {createListing.typeProperty === "Desk" ? (
                     <div className="grid gap-3 md:grid-cols-2">
-                      <Input
-                        value={createListing.nbrToilets}
-                        onChange={(event) =>
-                          setCreateListing((previous) => ({
-                            ...previous,
-                            nbrToilets: event.target.value,
-                          }))
-                        }
-                        placeholder="Toilettes (nbrToilets)"
-                        disabled={createListingSubmitting || loading}
-                      />
-                      <Input
-                        value={createListing.nbrRooms}
-                        onChange={(event) =>
-                          setCreateListing((previous) => ({
-                            ...previous,
-                            nbrRooms: event.target.value,
-                          }))
-                        }
-                        placeholder="Pièces (nbrRooms)"
-                        disabled={createListingSubmitting || loading}
-                      />
+                      <div className="space-y-1">
+                        <p className="text-xs font-medium text-slate-700">Nombre de toilettes</p>
+                        <Input
+                          type="number"
+                          min={0}
+                          step={1}
+                          value={createListing.nbrToilets}
+                          onChange={(event) =>
+                            setCreateListing((previous) => ({
+                              ...previous,
+                              nbrToilets: event.target.value,
+                            }))
+                          }
+                          placeholder="Toilettes (nbrToilets)"
+                          disabled={createListingSubmitting || loading}
+                        />
+                      </div>
+                      <div className="space-y-1">
+                        <p className="text-xs font-medium text-slate-700">Nombre de pièces</p>
+                        <Input
+                          type="number"
+                          min={0}
+                          step={1}
+                          value={createListing.nbrRooms}
+                          onChange={(event) =>
+                            setCreateListing((previous) => ({
+                              ...previous,
+                              nbrRooms: event.target.value,
+                            }))
+                          }
+                          placeholder="Pièces (nbrRooms)"
+                          disabled={createListingSubmitting || loading}
+                        />
+                      </div>
                     </div>
                   ) : null}
 
                   {createListing.typeProperty === "Building" ? (
                     <div className="grid gap-3 md:grid-cols-3">
-                      <Input
-                        value={createListing.nbrApartments}
-                        onChange={(event) =>
-                          setCreateListing((previous) => ({
-                            ...previous,
-                            nbrApartments: event.target.value,
-                          }))
-                        }
-                        placeholder="Appartements (nbrApartments)"
-                        disabled={createListingSubmitting || loading}
-                      />
-                      <Input
-                        value={createListing.nbrFloors}
-                        onChange={(event) =>
-                          setCreateListing((previous) => ({
-                            ...previous,
-                            nbrFloors: event.target.value,
-                          }))
-                        }
-                        placeholder="Étages (nbrFloors)"
-                        disabled={createListingSubmitting || loading}
-                      />
-                      <select
-                        className="h-9 rounded-lg border border-slate-300 bg-white px-3 text-sm text-slate-800"
-                        value={createListing.hasParking}
-                        onChange={(event) =>
-                          setCreateListing((previous) => ({
-                            ...previous,
-                            hasParking: event.target.value as "true" | "false",
-                          }))
-                        }
-                        disabled={createListingSubmitting || loading}
-                      >
-                        <option value="true">Parking: Oui</option>
-                        <option value="false">Parking: Non</option>
-                      </select>
+                      <div className="space-y-1">
+                        <p className="text-xs font-medium text-slate-700">Nombre d&apos;appartements</p>
+                        <Input
+                          type="number"
+                          min={0}
+                          step={1}
+                          value={createListing.nbrApartments}
+                          onChange={(event) =>
+                            setCreateListing((previous) => ({
+                              ...previous,
+                              nbrApartments: event.target.value,
+                            }))
+                          }
+                          placeholder="Appartements (nbrApartments)"
+                          disabled={createListingSubmitting || loading}
+                        />
+                      </div>
+                      <div className="space-y-1">
+                        <p className="text-xs font-medium text-slate-700">Nombre d&apos;étages</p>
+                        <Input
+                          type="number"
+                          min={0}
+                          step={1}
+                          value={createListing.nbrFloors}
+                          onChange={(event) =>
+                            setCreateListing((previous) => ({
+                              ...previous,
+                              nbrFloors: event.target.value,
+                            }))
+                          }
+                          placeholder="Étages (nbrFloors)"
+                          disabled={createListingSubmitting || loading}
+                        />
+                      </div>
+                      <div className="space-y-1">
+                        <p className="text-xs font-medium text-slate-700">Parking</p>
+                        <select
+                          className="h-9 rounded-lg border border-slate-300 bg-white px-3 text-sm text-slate-800"
+                          value={createListing.hasParking}
+                          onChange={(event) =>
+                            setCreateListing((previous) => ({
+                              ...previous,
+                              hasParking: event.target.value as "true" | "false",
+                            }))
+                          }
+                          disabled={createListingSubmitting || loading}
+                        >
+                          <option value="true">Parking: Oui</option>
+                          <option value="false">Parking: Non</option>
+                        </select>
+                      </div>
                     </div>
                   ) : null}
 
                   {createListing.typeProperty === "Shop" ? (
                     <div className="grid gap-3 md:grid-cols-2">
+                      <div className="space-y-1">
+                        <p className="text-xs font-medium text-slate-700">Nombre de pièces</p>
+                        <Input
+                          type="number"
+                          min={0}
+                          step={1}
+                          value={createListing.nbrRooms}
+                          onChange={(event) =>
+                            setCreateListing((previous) => ({
+                              ...previous,
+                              nbrRooms: event.target.value,
+                            }))
+                          }
+                          placeholder="Pièces (nbrRooms)"
+                          disabled={createListingSubmitting || loading}
+                        />
+                      </div>
+                      <div className="space-y-1">
+                        <p className="text-xs font-medium text-slate-700">Nombre de toilettes</p>
+                        <Input
+                          type="number"
+                          min={0}
+                          step={1}
+                          value={createListing.nbrToilet}
+                          onChange={(event) =>
+                            setCreateListing((previous) => ({
+                              ...previous,
+                              nbrToilet: event.target.value,
+                            }))
+                          }
+                          placeholder="Toilettes (nbrToilet)"
+                          disabled={createListingSubmitting || loading}
+                        />
+                      </div>
+                    </div>
+                  ) : null}
+
+                  {createListing.typeProperty === "Kiosk" ? (
+                    <div className="space-y-1">
+                      <p className="text-xs font-medium text-slate-700">Type de kiosque</p>
                       <Input
-                        value={createListing.nbrRooms}
+                        value={createListing.kioskType}
                         onChange={(event) =>
                           setCreateListing((previous) => ({
                             ...previous,
-                            nbrRooms: event.target.value,
+                            kioskType: event.target.value,
                           }))
                         }
-                        placeholder="Pièces (nbrRooms)"
-                        disabled={createListingSubmitting || loading}
-                      />
-                      <Input
-                        value={createListing.nbrToilet}
-                        onChange={(event) =>
-                          setCreateListing((previous) => ({
-                            ...previous,
-                            nbrToilet: event.target.value,
-                          }))
-                        }
-                        placeholder="Toilettes (nbrToilet)"
+                        placeholder="Type de kiosque (kioskType)"
                         disabled={createListingSubmitting || loading}
                       />
                     </div>
                   ) : null}
 
-                  {createListing.typeProperty === "Kiosk" ? (
-                    <Input
-                      value={createListing.kioskType}
-                      onChange={(event) =>
-                        setCreateListing((previous) => ({
-                          ...previous,
-                          kioskType: event.target.value,
-                        }))
-                      }
-                      placeholder="Type de kiosque (kioskType)"
-                      disabled={createListingSubmitting || loading}
-                    />
-                  ) : null}
-
                   {createListing.typeProperty === "Room" ? (
-                    <Input
-                      value={createListing.roomType}
-                      onChange={(event) =>
-                        setCreateListing((previous) => ({
-                          ...previous,
-                          roomType: event.target.value,
-                        }))
-                      }
-                      placeholder="Type de chambre (roomType)"
-                      disabled={createListingSubmitting || loading}
-                    />
+                    <div className="space-y-1">
+                      <p className="text-xs font-medium text-slate-700">Type de chambre</p>
+                      <Input
+                        value={createListing.roomType}
+                        onChange={(event) =>
+                          setCreateListing((previous) => ({
+                            ...previous,
+                            roomType: event.target.value,
+                          }))
+                        }
+                        placeholder="Type de chambre (roomType)"
+                        disabled={createListingSubmitting || loading}
+                      />
+                    </div>
                   ) : null}
 
                   {createListing.typeProperty === "Land" || createListing.typeProperty === "Property" ? (
@@ -1953,188 +2340,249 @@ export default function AnnouncersPage() {
               {listingStep === 3 ? (
                 <div className="space-y-3">
                   <div className="grid gap-3 md:grid-cols-3">
-                    <Input
-                      value={createListing.province}
-                      onChange={(event) =>
-                        setCreateListing((previous) => ({
-                          ...previous,
-                          province: event.target.value,
-                        }))
-                      }
-                      placeholder="Province"
-                      disabled={createListingSubmitting || loading}
-                    />
-                    <Input
-                      value={createListing.city}
-                      onChange={(event) =>
-                        setCreateListing((previous) => ({
-                          ...previous,
-                          city: event.target.value,
-                        }))
-                      }
-                      placeholder="Ville"
-                      disabled={createListingSubmitting || loading}
-                    />
-                    <Input
-                      value={createListing.street}
-                      onChange={(event) =>
-                        setCreateListing((previous) => ({
-                          ...previous,
-                          street: event.target.value,
-                        }))
-                      }
-                      placeholder="Quartier (district)"
-                      disabled={createListingSubmitting || loading}
-                    />
+                    <div className="space-y-1">
+                      <p className="text-xs font-medium text-slate-700">Province</p>
+                      <Input
+                        value={createListing.province}
+                        onChange={(event) =>
+                          setCreateListing((previous) => ({
+                            ...previous,
+                            province: event.target.value,
+                          }))
+                        }
+                        placeholder="Province"
+                        disabled={createListingSubmitting || loading}
+                      />
+                    </div>
+                    <div className="space-y-1">
+                      <p className="text-xs font-medium text-slate-700">Ville</p>
+                      <Input
+                        value={createListing.city}
+                        onChange={(event) =>
+                          setCreateListing((previous) => ({
+                            ...previous,
+                            city: event.target.value,
+                          }))
+                        }
+                        placeholder="Ville"
+                        disabled={createListingSubmitting || loading}
+                      />
+                    </div>
+                    <div className="space-y-1">
+                      <p className="text-xs font-medium text-slate-700">Quartier / District</p>
+                      <Input
+                        value={createListing.street}
+                        onChange={(event) =>
+                          setCreateListing((previous) => ({
+                            ...previous,
+                            street: event.target.value,
+                          }))
+                        }
+                        placeholder="Quartier (district)"
+                        disabled={createListingSubmitting || loading}
+                      />
+                    </div>
                   </div>
 
                   <div className="grid gap-3 md:grid-cols-2">
-                    <Input
-                      value={createListing.country}
-                      onChange={(event) =>
-                        setCreateListing((previous) => ({
-                          ...previous,
-                          country: event.target.value,
-                        }))
-                      }
-                      placeholder="Pays"
-                      disabled={createListingSubmitting || loading}
-                    />
-                    <Input
-                      value={createListing.countryCode}
-                      onChange={(event) =>
-                        setCreateListing((previous) => ({
-                          ...previous,
-                          countryCode: event.target.value,
-                        }))
-                      }
-                      placeholder="Code pays"
-                      disabled={createListingSubmitting || loading}
-                    />
+                    <div className="space-y-1">
+                      <p className="text-xs font-medium text-slate-700">Pays</p>
+                      <Input
+                        value={createListing.country}
+                        onChange={(event) =>
+                          setCreateListing((previous) => ({
+                            ...previous,
+                            country: event.target.value,
+                          }))
+                        }
+                        placeholder="Pays"
+                        disabled={createListingSubmitting || loading}
+                      />
+                    </div>
+                    <div className="space-y-1">
+                      <p className="text-xs font-medium text-slate-700">Code pays</p>
+                      <Input
+                        value={createListing.countryCode}
+                        onChange={(event) =>
+                          setCreateListing((previous) => ({
+                            ...previous,
+                            countryCode: event.target.value,
+                          }))
+                        }
+                        placeholder="Code pays"
+                        disabled={createListingSubmitting || loading}
+                      />
+                    </div>
                   </div>
 
                   <div className="grid gap-3 md:grid-cols-3">
-                    <Input
-                      value={createListing.longitude}
-                      onChange={(event) =>
-                        setCreateListing((previous) => ({
-                          ...previous,
-                          longitude: event.target.value,
-                        }))
-                      }
-                      placeholder="Longitude"
-                      disabled={createListingSubmitting || loading}
-                    />
-                    <Input
-                      value={createListing.latitude}
-                      onChange={(event) =>
-                        setCreateListing((previous) => ({
-                          ...previous,
-                          latitude: event.target.value,
-                        }))
-                      }
-                      placeholder="Latitude"
-                      disabled={createListingSubmitting || loading}
-                    />
-                    <Input
-                      value={createListing.contact}
-                      onChange={(event) =>
-                        setCreateListing((previous) => ({
-                          ...previous,
-                          contact: event.target.value,
-                        }))
-                      }
-                      placeholder="Contact (optionnel)"
-                      disabled={createListingSubmitting || loading}
-                    />
+                    <div className="space-y-1">
+                      <p className="text-xs font-medium text-slate-700">Longitude</p>
+                      <Input
+                        type="number"
+                        step="any"
+                        value={createListing.longitude}
+                        onChange={(event) =>
+                          setCreateListing((previous) => ({
+                            ...previous,
+                            longitude: event.target.value,
+                          }))
+                        }
+                        placeholder="Longitude"
+                        disabled={createListingSubmitting || loading}
+                      />
+                    </div>
+                    <div className="space-y-1">
+                      <p className="text-xs font-medium text-slate-700">Latitude</p>
+                      <Input
+                        type="number"
+                        step="any"
+                        value={createListing.latitude}
+                        onChange={(event) =>
+                          setCreateListing((previous) => ({
+                            ...previous,
+                            latitude: event.target.value,
+                          }))
+                        }
+                        placeholder="Latitude"
+                        disabled={createListingSubmitting || loading}
+                      />
+                    </div>
+                    <div className="space-y-1">
+                      <p className="text-xs font-medium text-slate-700">Contact (optionnel)</p>
+                      <Input
+                        value={createListing.contact}
+                        onChange={(event) =>
+                          setCreateListing((previous) => ({
+                            ...previous,
+                            contact: event.target.value,
+                          }))
+                        }
+                        placeholder="Contact (optionnel)"
+                        disabled={createListingSubmitting || loading}
+                      />
+                    </div>
                   </div>
 
                   <div className="grid gap-3 md:grid-cols-3">
-                    <Input
-                      value={createListing.provinceLon}
-                      onChange={(event) =>
-                        setCreateListing((previous) => ({
-                          ...previous,
-                          provinceLon: event.target.value,
-                        }))
-                      }
-                      placeholder="Province Lon (optionnel)"
-                      disabled={createListingSubmitting || loading}
-                    />
-                    <Input
-                      value={createListing.provinceLat}
-                      onChange={(event) =>
-                        setCreateListing((previous) => ({
-                          ...previous,
-                          provinceLat: event.target.value,
-                        }))
-                      }
-                      placeholder="Province Lat (optionnel)"
-                      disabled={createListingSubmitting || loading}
-                    />
-                    <Input
-                      value={createListing.cityLon}
-                      onChange={(event) =>
-                        setCreateListing((previous) => ({
-                          ...previous,
-                          cityLon: event.target.value,
-                        }))
-                      }
-                      placeholder="City Lon (optionnel)"
-                      disabled={createListingSubmitting || loading}
-                    />
+                    <div className="space-y-1">
+                      <p className="text-xs font-medium text-slate-700">Province Lon (optionnel)</p>
+                      <Input
+                        type="number"
+                        step="any"
+                        value={createListing.provinceLon}
+                        onChange={(event) =>
+                          setCreateListing((previous) => ({
+                            ...previous,
+                            provinceLon: event.target.value,
+                          }))
+                        }
+                        placeholder="Province Lon (optionnel)"
+                        disabled={createListingSubmitting || loading}
+                      />
+                    </div>
+                    <div className="space-y-1">
+                      <p className="text-xs font-medium text-slate-700">Province Lat (optionnel)</p>
+                      <Input
+                        type="number"
+                        step="any"
+                        value={createListing.provinceLat}
+                        onChange={(event) =>
+                          setCreateListing((previous) => ({
+                            ...previous,
+                            provinceLat: event.target.value,
+                          }))
+                        }
+                        placeholder="Province Lat (optionnel)"
+                        disabled={createListingSubmitting || loading}
+                      />
+                    </div>
+                    <div className="space-y-1">
+                      <p className="text-xs font-medium text-slate-700">City Lon (optionnel)</p>
+                      <Input
+                        type="number"
+                        step="any"
+                        value={createListing.cityLon}
+                        onChange={(event) =>
+                          setCreateListing((previous) => ({
+                            ...previous,
+                            cityLon: event.target.value,
+                          }))
+                        }
+                        placeholder="City Lon (optionnel)"
+                        disabled={createListingSubmitting || loading}
+                      />
+                    </div>
                   </div>
 
                   <div className="grid gap-3 md:grid-cols-3">
-                    <Input
-                      value={createListing.cityLat}
-                      onChange={(event) =>
-                        setCreateListing((previous) => ({
-                          ...previous,
-                          cityLat: event.target.value,
-                        }))
-                      }
-                      placeholder="City Lat (optionnel)"
-                      disabled={createListingSubmitting || loading}
-                    />
-                    <Input
-                      value={createListing.streetLon}
-                      onChange={(event) =>
-                        setCreateListing((previous) => ({
-                          ...previous,
-                          streetLon: event.target.value,
-                        }))
-                      }
-                      placeholder="Street Lon (optionnel)"
-                      disabled={createListingSubmitting || loading}
-                    />
-                    <Input
-                      value={createListing.streetLat}
-                      onChange={(event) =>
-                        setCreateListing((previous) => ({
-                          ...previous,
-                          streetLat: event.target.value,
-                        }))
-                      }
-                      placeholder="Street Lat (optionnel)"
-                      disabled={createListingSubmitting || loading}
-                    />
+                    <div className="space-y-1">
+                      <p className="text-xs font-medium text-slate-700">City Lat (optionnel)</p>
+                      <Input
+                        type="number"
+                        step="any"
+                        value={createListing.cityLat}
+                        onChange={(event) =>
+                          setCreateListing((previous) => ({
+                            ...previous,
+                            cityLat: event.target.value,
+                          }))
+                        }
+                        placeholder="City Lat (optionnel)"
+                        disabled={createListingSubmitting || loading}
+                      />
+                    </div>
+                    <div className="space-y-1">
+                      <p className="text-xs font-medium text-slate-700">Street Lon (optionnel)</p>
+                      <Input
+                        type="number"
+                        step="any"
+                        value={createListing.streetLon}
+                        onChange={(event) =>
+                          setCreateListing((previous) => ({
+                            ...previous,
+                            streetLon: event.target.value,
+                          }))
+                        }
+                        placeholder="Street Lon (optionnel)"
+                        disabled={createListingSubmitting || loading}
+                      />
+                    </div>
+                    <div className="space-y-1">
+                      <p className="text-xs font-medium text-slate-700">Street Lat (optionnel)</p>
+                      <Input
+                        type="number"
+                        step="any"
+                        value={createListing.streetLat}
+                        onChange={(event) =>
+                          setCreateListing((previous) => ({
+                            ...previous,
+                            streetLat: event.target.value,
+                          }))
+                        }
+                        placeholder="Street Lat (optionnel)"
+                        disabled={createListingSubmitting || loading}
+                      />
+                    </div>
                   </div>
 
-                  <select
-                    className="h-9 rounded-lg border border-slate-300 bg-white px-3 text-sm text-slate-800"
-                    value={createListing.isLocExact}
-                    onChange={(event) =>
-                      setCreateListing((previous) => ({
-                        ...previous,
-                        isLocExact: event.target.value as "true" | "false",
-                      }))
-                    }
-                    disabled={createListingSubmitting || loading}
-                  >
-                    <option value="false">Position approximative</option>
-                    <option value="true">Position exacte</option>
-                  </select>
+                  <div className="space-y-1">
+                    <p className="text-xs font-medium text-slate-700">Précision de la position</p>
+                    <select
+                      className="h-9 rounded-lg border border-slate-300 bg-white px-3 text-sm text-slate-800"
+                      value={createListing.isLocExact}
+                      onChange={(event) =>
+                        setCreateListing((previous) => ({
+                          ...previous,
+                          isLocExact: event.target.value as "true" | "false",
+                        }))
+                      }
+                      disabled={createListingSubmitting || loading}
+                    >
+                      <option value="false">Position approximative</option>
+                      <option value="true">Position exacte</option>
+                    </select>
+                  </div>
                 </div>
               ) : null}
 
@@ -2368,6 +2816,7 @@ export default function AnnouncersPage() {
                                       announcerUid: announcer.uid,
                                       contact: announcer.phoneNumbers[0] ?? previous.contact,
                                     }));
+                                    setCreateListingAnnouncerLookupInput(formatAnnouncerLookupLabel(announcer));
                                   }}
                                   disabled={submitting}
                                 >

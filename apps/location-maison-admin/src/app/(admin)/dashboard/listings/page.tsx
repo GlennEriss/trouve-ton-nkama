@@ -1,6 +1,7 @@
 "use client";
 
 import { FormEvent, useCallback, useMemo, useState } from "react";
+import { useSearchParams } from "next/navigation";
 import { useQuery } from "@tanstack/react-query";
 
 import { Button } from "@/components/ui/button";
@@ -242,6 +243,7 @@ function buildQueryParams(limit: number, cursor: string | null, filters: Applied
 }
 
 export default function ListingsDashboardPage() {
+  const searchParams = useSearchParams();
   const [queryDraft, setQueryDraft] = useState("");
   const [createdByDraft, setCreatedByDraft] = useState("");
   const [typePropertyDraft, setTypePropertyDraft] = useState("");
@@ -271,6 +273,12 @@ export default function ListingsDashboardPage() {
   const [isSubmittingReason, setIsSubmittingReason] = useState(false);
 
   const limit = 40;
+  const createdPropertyId = searchParams.get("created") === "1" ? searchParams.get("propertyId")?.trim() : null;
+  const createdListingMessage = createdPropertyId
+    ? `Annonce créée avec succès: ${createdPropertyId}`
+    : searchParams.get("created") === "1"
+      ? "Annonce créée avec succès."
+      : null;
 
   const permissionsQuery = useQuery({
     queryKey: ["auth", "me"],
@@ -294,6 +302,7 @@ export default function ListingsDashboardPage() {
   });
 
   const canExportListings = useMemo(() => hasPermission(permissions, "listings.export"), [permissions]);
+  const canCreateListing = useMemo(() => hasPermission(permissions, "listings.create"), [permissions]);
   const canArchiveListing = useMemo(
     () => hasPermission(permissions, "listings.reject") || hasPermission(permissions, "listings.state.update"),
     [permissions],
@@ -440,6 +449,17 @@ export default function ListingsDashboardPage() {
     params.delete("limit");
     window.location.assign(`/api/admin/v1/listings/export?${params.toString()}`);
   }, [canExportListings, filtersApplied]);
+
+  const openCreateListing = useCallback(() => {
+    const announcerUidPrefill = createdByDraft.trim() || filtersApplied.createdBy.trim();
+    const params = new URLSearchParams();
+    if (announcerUidPrefill) {
+      params.set("announcerUid", announcerUidPrefill);
+    }
+    window.location.assign(
+      params.toString() ? `/dashboard/listings/new?${params.toString()}` : "/dashboard/listings/new",
+    );
+  }, [createdByDraft, filtersApplied.createdBy]);
 
   const toggleSelectAllVisible = useCallback(() => {
     setSelectedListingIds((previous) => {
@@ -702,6 +722,11 @@ export default function ListingsDashboardPage() {
         description="Filtres avancés, modération, actions bulk et export alignés à la vue courante."
         actions={
           <div className="flex items-center gap-2">
+            {canCreateListing ? (
+              <Button type="button" variant="outline" onClick={openCreateListing}>
+                Nouvelle annonce
+              </Button>
+            ) : null}
             <Button
               type="button"
               variant="outline"
@@ -872,6 +897,12 @@ export default function ListingsDashboardPage() {
       {globalMessage ? (
         <div className="rounded-md border border-emerald-300 bg-emerald-50 px-3 py-2 text-sm text-emerald-700">
           {globalMessage}
+        </div>
+      ) : null}
+
+      {!globalMessage && !globalError && createdListingMessage ? (
+        <div className="rounded-md border border-emerald-300 bg-emerald-50 px-3 py-2 text-sm text-emerald-700">
+          {createdListingMessage}
         </div>
       ) : null}
 

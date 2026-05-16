@@ -1,7 +1,7 @@
 "use client";
 
 import { FormEvent, useEffect, useMemo, useState } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { RefreshCcw } from "lucide-react";
 
 import { Badge } from "@/components/ui/badge";
@@ -527,6 +527,7 @@ async function fetchJson<T>(url: string, fallbackMessage: string) {
 }
 
 export default function SocialImportDashboardPage() {
+  const queryClient = useQueryClient();
   const [queryDraft, setQueryDraft] = useState("");
   const [queryApplied, setQueryApplied] = useState("");
   const [limit, setLimit] = useState(20);
@@ -729,13 +730,17 @@ export default function SocialImportDashboardPage() {
     setQueryApplied(queryDraft.trim());
   }
 
-  function onRefreshAll() {
-    void permissionsQuery.refetch();
-    void sourcesQuery.refetch();
-    void jobsQuery.refetch();
-    void reviewQuery.refetch();
-    void decisionsQuery.refetch();
-    void announcerLookupQuery.refetch();
+  async function onRefreshAll() {
+    await Promise.all([
+      queryClient.invalidateQueries({ queryKey: ["dashboard", "social-import"] }),
+      queryClient.invalidateQueries({ queryKey: ["dashboard", "announcer-lookup"] }),
+      permissionsQuery.refetch(),
+      sourcesQuery.refetch(),
+      jobsQuery.refetch(),
+      reviewQuery.refetch(),
+      decisionsQuery.refetch(),
+      announcerLookupQuery.refetch(),
+    ]);
   }
 
   function selectAnnouncer(announcer: AnnouncerLookupItem) {
@@ -792,7 +797,7 @@ export default function SocialImportDashboardPage() {
     try {
       const result = await action();
       setActionMessage(successMessage);
-      onRefreshAll();
+      await onRefreshAll();
       return result;
     } catch (error) {
       setActionError(error instanceof Error ? error.message : "Action impossible.");
@@ -1482,7 +1487,7 @@ export default function SocialImportDashboardPage() {
             <Button
               type="button"
               variant="outline"
-              onClick={onRefreshAll}
+              onClick={() => void onRefreshAll()}
               disabled={isLoadingAny || pendingActionKey !== null}
             >
               <RefreshCcw className="mr-2 size-4" />
