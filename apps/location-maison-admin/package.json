@@ -7,7 +7,13 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "finance:packs:backfill": "node scripts/finance/backfill-credit-packs.mjs"
+    "finance:packs:backfill": "node scripts/finance/backfill-credit-packs.mjs",
+    "osm:sync:projection": "tsx scripts/location-osm/sync-projection.ts",
+    "osm:sync:projection:prod": "tsx scripts/location-osm/sync-projection.ts --env-file=.env.local.prod",
+    "osm:sync:projection:dev": "tsx scripts/location-osm/sync-projection.ts --env-file=.env.local",
+    "osm:seed:cloud": "tsx scripts/location-osm/seed-cloud.ts",
+    "osm:seed:cloud:prod": "tsx scripts/location-osm/seed-cloud.ts --env-file=.env.local.prod",
+    "osm:seed:cloud:dev": "tsx scripts/location-osm/seed-cloud.ts --env-file=.env.local"
   },
   "dependencies": {
     "@base-ui/react": "^1.4.1",
@@ -40,6 +46,7 @@
     "eslint": "^9",
     "eslint-config-next": "16.2.4",
     "tailwindcss": "^4",
+    "tsx": "^4.22.0",
     "typescript": "^5"
   }
 }

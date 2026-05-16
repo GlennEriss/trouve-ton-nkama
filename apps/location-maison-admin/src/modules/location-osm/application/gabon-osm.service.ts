@@ -2,6 +2,10 @@ import {
   loadGabonOsmRoot,
   type GabonOsmRootSource,
 } from "@/modules/location-osm/application/gabon-osm-root-loader";
+import type {
+  GabonOsmQuarterOption,
+  GabonOsmSelectorData,
+} from "@/modules/location-osm/domain/types";
 
 type OsmRecord = Record<string, unknown>;
 
@@ -20,41 +24,12 @@ type OsmQuarter = OsmPlace & {
   normalizedProvince: string | null;
 };
 
-export type GabonOsmProvinceOption = {
-  name: string;
-  lat: number;
-  lon: number;
-};
-
-export type GabonOsmCityOption = {
-  name: string;
-  province: string | null;
-  lat: number;
-  lon: number;
-};
-
-export type GabonOsmQuarterOption = {
-  name: string;
-  city: string | null;
-  province: string | null;
-  lat: number;
-  lon: number;
-};
-
-export type GabonOsmSelectorData = {
-  country: {
-    name: string;
-    iso2: string;
-  };
-  sourceMode: "cloud" | "local";
-  sourcePath: string;
-  sourceBucket: string | null;
-  sourceObjectPath: string | null;
-  sourceUpdatedAt: string | null;
-  provinces: GabonOsmProvinceOption[];
-  cities: GabonOsmCityOption[];
-  quarters: GabonOsmQuarterOption[];
-};
+export type {
+  GabonOsmCityOption,
+  GabonOsmProvinceOption,
+  GabonOsmQuarterOption,
+  GabonOsmSelectorData,
+} from "@/modules/location-osm/domain/types";
 
 const DEFAULT_COUNTRY_NAME = "Gabon";
 const DEFAULT_COUNTRY_ISO2 = "GA";
@@ -99,6 +74,24 @@ function normalizeOsmName(value: string) {
     .replace(/[^a-z0-9\s]/g, " ")
     .replace(/\s+/g, " ")
     .trim();
+}
+
+function buildDocId(...parts: Array<string | null | undefined>) {
+  const normalized = parts
+    .map((part) => (part ? normalizeOsmName(part) : ""))
+    .filter(Boolean)
+    .join("__");
+  return normalized || "unknown";
+}
+
+function buildQuarterDocId(
+  name: string,
+  city: string | null,
+  province: string | null,
+  lat: number,
+  lon: number,
+) {
+  return `${buildDocId(name, city, province)}__${lat.toFixed(5)}_${lon.toFixed(5)}`;
 }
 
 function parseOsmPlace(element: unknown): OsmPlace | null {
@@ -292,6 +285,13 @@ function buildOsmSelectorData(root: OsmRecord, source: GabonOsmRootSource): Gabo
     ].join("|");
     if (!quarterMap.has(key)) {
       quarterMap.set(key, {
+        id: buildQuarterDocId(
+          quarter.name,
+          quarter.city,
+          quarter.province,
+          quarter.lat,
+          quarter.lon,
+        ),
         name: quarter.name,
         city: quarter.city,
         province: quarter.province,
@@ -313,12 +313,18 @@ function buildOsmSelectorData(root: OsmRecord, source: GabonOsmRootSource): Gabo
     sourceUpdatedAt: source.sourceUpdatedAt,
     provinces: provinces
       .map((province) => ({
+        id: buildDocId(province.name),
         name: province.name,
         lat: province.lat,
         lon: province.lon,
       }))
       .sort((a, b) => a.name.localeCompare(b.name, "fr")),
-    cities: cityOptions.sort((a, b) => a.name.localeCompare(b.name, "fr")),
+    cities: cityOptions
+      .map((city) => ({
+        id: buildDocId(city.name, city.province ?? ""),
+        ...city,
+      }))
+      .sort((a, b) => a.name.localeCompare(b.name, "fr")),
     quarters: Array.from(quarterMap.values()).sort((a, b) => a.name.localeCompare(b.name, "fr")),
   };
 }
@@ -331,7 +337,7 @@ function buildSourceSignature(source: GabonOsmRootSource) {
   ].join("|");
 }
 
-export async function getGabonOsmSelectorData(forceRefresh = false) {
+export async function getGabonOsmSelectorDataFromRoot(forceRefresh = false) {
   try {
     const loaded = await loadGabonOsmRoot(forceRefresh);
     if (!loaded) {
@@ -353,4 +359,8 @@ export async function getGabonOsmSelectorData(forceRefresh = false) {
     cachedSignature = null;
     return null;
   }
+}
+
+export async function getGabonOsmSelectorData(forceRefresh = false) {
+  return getGabonOsmSelectorDataFromRoot(forceRefresh);
 }
