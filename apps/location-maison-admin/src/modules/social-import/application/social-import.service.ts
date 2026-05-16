@@ -4948,6 +4948,145 @@ export async function deleteSocialImportCandidatesBulk(input: {
   };
 }
 
+export async function publishSocialImportCandidatesBulk(input: {
+  candidateIds: string[];
+  actorUid: string;
+  correlationId: string;
+  reason?: string | null;
+}) {
+  const actorUid = input.actorUid.trim();
+  if (!actorUid) {
+    throw new Error("SOCIAL_IMPORT_ACTOR_UID_REQUIRED");
+  }
+
+  const correlationId = input.correlationId.trim();
+  if (!correlationId) {
+    throw new Error("SOCIAL_IMPORT_CORRELATION_ID_REQUIRED");
+  }
+
+  const candidateIds = Array.from(
+    new Set(
+      input.candidateIds
+        .map((candidateId) => candidateId.trim())
+        .filter((candidateId) => candidateId.length > 0),
+    ),
+  );
+
+  if (candidateIds.length === 0) {
+    throw new Error("SOCIAL_IMPORT_CANDIDATE_IDS_REQUIRED");
+  }
+
+  if (candidateIds.length > 200) {
+    throw new Error("SOCIAL_IMPORT_CANDIDATE_IDS_LIMIT_EXCEEDED");
+  }
+
+  const reason = (input.reason ?? "").trim();
+  const published: Array<{
+    candidateId: string;
+    rawPostId: string;
+    propertyId: string | null;
+    replayed: boolean;
+  }> = [];
+  const skippedPublished: Array<{ candidateId: string; rawPostId: string }> = [];
+  const skippedRejected: Array<{ candidateId: string; rawPostId: string }> = [];
+  const skippedNotReady: Array<{
+    candidateId: string;
+    rawPostId: string;
+    status: string | null;
+  }> = [];
+  const failed: Array<{
+    candidateId: string;
+    rawPostId: string;
+    code: string;
+  }> = [];
+  const notFoundIds: string[] = [];
+
+  for (const candidateId of candidateIds) {
+    const idempotencyKey = createHash("sha256")
+      .update(
+        `social_import_bulk_publish:${candidateId}:${actorUid}:${correlationId}:${Date.now()}:${Math.random()}`,
+      )
+      .digest("hex");
+
+    try {
+      const result = await publishSocialImportCandidate({
+        candidateId,
+        actorUid,
+        reason,
+        idempotencyKey,
+        correlationId,
+      });
+
+      if (!result) {
+        notFoundIds.push(candidateId);
+        continue;
+      }
+
+      published.push({
+        candidateId: result.candidate.id,
+        rawPostId: result.candidate.rawPostId,
+        propertyId: result.propertyId,
+        replayed: result.replayed,
+      });
+    } catch (error) {
+      const code =
+        error instanceof Error
+          ? error.message
+          : "SOCIAL_IMPORT_CANDIDATE_BULK_PUBLISH_FAILED";
+
+      const candidate = await getSocialImportReviewCandidateById(candidateId);
+      const rawPostId = candidate?.rawPostId ?? candidateId;
+
+      if (code === "SOCIAL_IMPORT_CANDIDATE_ALREADY_PUBLISHED") {
+        skippedPublished.push({
+          candidateId,
+          rawPostId,
+        });
+        continue;
+      }
+
+      if (code === "SOCIAL_IMPORT_CANDIDATE_REJECTED") {
+        skippedRejected.push({
+          candidateId,
+          rawPostId,
+        });
+        continue;
+      }
+
+      if (code === "SOCIAL_IMPORT_CANDIDATE_NOT_READY_TO_PUBLISH") {
+        skippedNotReady.push({
+          candidateId,
+          rawPostId,
+          status: candidate?.status ?? null,
+        });
+        continue;
+      }
+
+      failed.push({
+        candidateId,
+        rawPostId,
+        code,
+      });
+    }
+  }
+
+  return {
+    requestedCount: candidateIds.length,
+    publishedCount: published.length,
+    published,
+    skippedPublishedCount: skippedPublished.length,
+    skippedPublished,
+    skippedRejectedCount: skippedRejected.length,
+    skippedRejected,
+    skippedNotReadyCount: skippedNotReady.length,
+    skippedNotReady,
+    failedCount: failed.length,
+    failed,
+    notFoundCount: notFoundIds.length,
+    notFoundIds,
+  };
+}
+
 function resolvePublishSummary(
   value: unknown,
 ): { candidateId: string; propertyId: string | null } | null {

@@ -120,6 +120,7 @@ type SocialImportActionModalMode =
   | "edit_candidate_type"
   | "reject_candidate"
   | "publish_candidate"
+  | "publish_candidates_bulk"
   | "delete_candidate"
   | "delete_candidates_bulk";
 
@@ -1160,6 +1161,14 @@ export default function SocialImportDashboardPage() {
     setActionModalMode("delete_candidates_bulk");
   }
 
+  async function handlePublishSelectedCandidates() {
+    if (selectedCandidateIdsResolved.length === 0) {
+      setActionError("Sélectionne au moins une candidate à publier.");
+      return;
+    }
+    setActionModalMode("publish_candidates_bulk");
+  }
+
   async function handleConfirmDeleteCandidatesBulk() {
     const selectedIds = selectedCandidateIdsResolved;
     if (selectedIds.length === 0) {
@@ -1188,6 +1197,43 @@ export default function SocialImportDashboardPage() {
     if (result) {
       setActionMessage(
         `Suppression: ${result.deletedCount}/${result.requestedCount} supprimée(s), ${result.skippedPublishedCount} publiée(s) ignorée(s), ${result.notFoundCount} introuvable(s).`,
+      );
+      clearCandidateSelection();
+      closeActionModal();
+    }
+  }
+
+  async function handleConfirmPublishCandidatesBulk() {
+    const selectedIds = selectedCandidateIdsResolved;
+    if (selectedIds.length === 0) {
+      setActionError("Aucune candidate sélectionnée.");
+      return;
+    }
+
+    const result = await withAction(
+      `candidate_publish_bulk_${selectedIds.length}`,
+      () =>
+        mutateJson<{
+          requestedCount: number;
+          publishedCount: number;
+          skippedPublishedCount: number;
+          skippedRejectedCount: number;
+          skippedNotReadyCount: number;
+          failedCount: number;
+          notFoundCount: number;
+        }>({
+          url: "/api/admin/v1/social-import/review/bulk-publish",
+          method: "POST",
+          body: {
+            candidateIds: selectedIds,
+          },
+        }),
+      "Publication multiple terminée.",
+    );
+
+    if (result) {
+      setActionMessage(
+        `Publication: ${result.publishedCount}/${result.requestedCount} publiée(s), ${result.skippedPublishedCount} déjà publiée(s), ${result.skippedNotReadyCount} pas prête(s), ${result.skippedRejectedCount} rejetée(s), ${result.failedCount} en échec, ${result.notFoundCount} introuvable(s).`,
       );
       clearCandidateSelection();
       closeActionModal();
@@ -1269,6 +1315,10 @@ export default function SocialImportDashboardPage() {
       await handleConfirmPublishCandidate();
       return;
     }
+    if (actionModalMode === "publish_candidates_bulk") {
+      await handleConfirmPublishCandidatesBulk();
+      return;
+    }
     if (actionModalMode === "delete_candidate") {
       await handleConfirmDeleteCandidate();
       return;
@@ -1291,6 +1341,8 @@ export default function SocialImportDashboardPage() {
             ? "Rejeter la candidate"
             : actionModalMode === "publish_candidate"
               ? "Valider et publier"
+              : actionModalMode === "publish_candidates_bulk"
+                ? "Publier la sélection"
               : actionModalMode === "delete_candidate"
                 ? "Supprimer la candidate"
                 : actionModalMode === "delete_candidates_bulk"
@@ -1310,6 +1362,8 @@ export default function SocialImportDashboardPage() {
             ? `Candidate: ${actionModalCandidate?.rawPostId ?? "N/A"}`
             : actionModalMode === "publish_candidate"
               ? `Candidate: ${actionModalCandidate?.rawPostId ?? "N/A"}`
+              : actionModalMode === "publish_candidates_bulk"
+                ? `${selectedCandidateIdsResolved.length} candidate(s) sélectionnée(s)`
               : actionModalMode === "delete_candidate"
                 ? `Candidate: ${actionModalCandidate?.rawPostId ?? "N/A"}`
                 : actionModalMode === "delete_candidates_bulk"
@@ -1329,6 +1383,8 @@ export default function SocialImportDashboardPage() {
             ? "Confirmer le rejet"
             : actionModalMode === "publish_candidate"
               ? "Valider et pousser dans properties"
+              : actionModalMode === "publish_candidates_bulk"
+                ? "Confirmer la publication multiple"
               : actionModalMode === "delete_candidate"
                 ? "Confirmer la suppression"
                 : actionModalMode === "delete_candidates_bulk"
@@ -1343,6 +1399,7 @@ export default function SocialImportDashboardPage() {
       ? "destructive"
       : actionModalMode === "create_source" ||
           actionModalMode === "publish_candidate" ||
+          actionModalMode === "publish_candidates_bulk" ||
           actionModalMode === "edit_candidate_type"
         ? "secondary"
         : "outline";
@@ -1780,6 +1837,21 @@ export default function SocialImportDashboardPage() {
             </div>
           ) : null}
 
+          {actionModalMode === "publish_candidates_bulk" ? (
+            <div className="space-y-3 px-4 text-sm">
+              <div className="rounded-md border border-slate-200 p-3">
+                <p>
+                  <span className="font-medium">Sélection:</span>{" "}
+                  {selectedCandidateIdsResolved.length} candidate(s)
+                </p>
+                <p className="text-xs text-slate-500">
+                  Seules les candidates en statut ready_to_publish seront publiées.
+                  Les autres seront ignorées avec un détail dans le résultat.
+                </p>
+              </div>
+            </div>
+          ) : null}
+
           <SheetFooter>
             <Button type="button" variant="outline" onClick={closeActionModal}>
               Fermer
@@ -2204,6 +2276,17 @@ export default function SocialImportDashboardPage() {
                 >
                   Réinitialiser
                 </Button>
+                {canPublishCandidate ? (
+                  <Button
+                    type="button"
+                    size="xs"
+                    variant="secondary"
+                    disabled={pendingActionKey !== null || selectedCandidateIdsResolved.length === 0}
+                    onClick={() => void handlePublishSelectedCandidates()}
+                  >
+                    Publier sélection ({selectedCandidateIdsResolved.length})
+                  </Button>
+                ) : null}
                 {canPublishCandidate ? (
                   <Button
                     type="button"

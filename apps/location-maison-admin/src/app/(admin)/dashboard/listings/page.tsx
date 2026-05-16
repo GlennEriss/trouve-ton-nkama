@@ -5,6 +5,15 @@ import { useQuery } from "@tanstack/react-query";
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
+import {
+  Dialog,
+  DialogClose,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { PageHeader } from "@/components/ui-kit/page-header";
 
@@ -72,6 +81,21 @@ type AppliedFilters = {
   dateFrom: string;
   dateTo: string;
 };
+
+type ReasonDialogAction =
+  | {
+      kind: "single-state";
+      listingId: string;
+      nextState: "IN_PROGRESS" | "ARCHIVED";
+    }
+  | {
+      kind: "bulk-state";
+      nextState: "IN_PROGRESS" | "ARCHIVED";
+    }
+  | {
+      kind: "bulk-status";
+      nextStatus: "FOR_RENT" | "FOR_SALE";
+    };
 
 const PROPERTY_TYPES = [
   "Home",
@@ -242,6 +266,9 @@ export default function ListingsDashboardPage() {
   const [selectedListingIds, setSelectedListingIds] = useState<string[]>([]);
   const [isBulkMutating, setIsBulkMutating] = useState(false);
   const [isMutatingId, setIsMutatingId] = useState<string | null>(null);
+  const [reasonDialogAction, setReasonDialogAction] = useState<ReasonDialogAction | null>(null);
+  const [reasonDraft, setReasonDraft] = useState("");
+  const [isSubmittingReason, setIsSubmittingReason] = useState(false);
 
   const limit = 40;
 
@@ -434,14 +461,20 @@ export default function ListingsDashboardPage() {
     });
   }, []);
 
-  const changeListingState = useCallback(
-    async (listingId: string, nextState: "IN_PROGRESS" | "ARCHIVED") => {
-      const reason = window.prompt("Motif obligatoire pour cette action:");
-      if (!reason || !reason.trim()) {
-        setGlobalError("Action annulée: le motif est obligatoire.");
-        return;
-      }
+  const openReasonDialog = useCallback((action: ReasonDialogAction) => {
+    setGlobalError(null);
+    setReasonDraft("");
+    setReasonDialogAction(action);
+  }, []);
 
+  const closeReasonDialog = useCallback(() => {
+    setReasonDialogAction(null);
+    setReasonDraft("");
+    setIsSubmittingReason(false);
+  }, []);
+
+  const changeListingState = useCallback(
+    async (listingId: string, nextState: "IN_PROGRESS" | "ARCHIVED", reason: string) => {
       setIsMutatingId(listingId);
       setGlobalError(null);
       setGlobalMessage(null);
@@ -452,7 +485,7 @@ export default function ListingsDashboardPage() {
           headers: {
             "Content-Type": "application/json",
           },
-          body: JSON.stringify({ state: nextState, reason: reason.trim() }),
+          body: JSON.stringify({ state: nextState, reason }),
         });
 
         const payload = (await response.json()) as
@@ -475,15 +508,9 @@ export default function ListingsDashboardPage() {
   );
 
   const changeListingsStateBulk = useCallback(
-    async (nextState: "IN_PROGRESS" | "ARCHIVED") => {
+    async (nextState: "IN_PROGRESS" | "ARCHIVED", reason: string) => {
       if (!selectedListingIds.length) {
         setGlobalError("Sélectionne au moins une annonce.");
-        return;
-      }
-
-      const reason = window.prompt("Motif obligatoire pour l'action en masse:");
-      if (!reason || !reason.trim()) {
-        setGlobalError("Action annulée: le motif est obligatoire.");
         return;
       }
 
@@ -504,7 +531,7 @@ export default function ListingsDashboardPage() {
           },
           body: JSON.stringify({
             propertyIds: selectedListingIds,
-            reason: reason.trim(),
+            reason,
           }),
         });
 
@@ -542,15 +569,9 @@ export default function ListingsDashboardPage() {
   );
 
   const bulkChangeStatus = useCallback(
-    async (nextStatus: "FOR_RENT" | "FOR_SALE") => {
+    async (nextStatus: "FOR_RENT" | "FOR_SALE", reason: string) => {
       if (!selectedListingIds.length) {
         setGlobalError("Sélectionne au moins une annonce.");
-        return;
-      }
-
-      const reason = window.prompt("Motif obligatoire pour changer le statut en masse:");
-      if (!reason || !reason.trim()) {
-        setGlobalError("Action annulée: le motif est obligatoire.");
         return;
       }
 
@@ -567,7 +588,7 @@ export default function ListingsDashboardPage() {
           body: JSON.stringify({
             propertyIds: selectedListingIds,
             status: nextStatus,
-            reason: reason.trim(),
+            reason,
           }),
         });
 
@@ -603,6 +624,74 @@ export default function ListingsDashboardPage() {
     },
     [listingsQuery, selectedListingIds],
   );
+
+  const reasonDialogMeta = useMemo(() => {
+    if (!reasonDialogAction) {
+      return {
+        title: "",
+        description: "",
+        confirmLabel: "",
+      };
+    }
+
+    if (reasonDialogAction.kind === "single-state") {
+      const isArchive = reasonDialogAction.nextState === "ARCHIVED";
+      return {
+        title: isArchive ? "Archiver l'annonce" : "Restaurer l'annonce",
+        description: "Renseigne le motif obligatoire pour tracer cette action.",
+        confirmLabel: isArchive ? "Archiver" : "Restaurer",
+      };
+    }
+
+    if (reasonDialogAction.kind === "bulk-state") {
+      const isArchive = reasonDialogAction.nextState === "ARCHIVED";
+      return {
+        title: isArchive ? "Archiver la sélection" : "Restaurer la sélection",
+        description: "Le motif s'appliquera à toutes les annonces sélectionnées.",
+        confirmLabel: isArchive ? "Archiver la sélection" : "Restaurer la sélection",
+      };
+    }
+
+    const isRent = reasonDialogAction.nextStatus === "FOR_RENT";
+    return {
+      title: isRent ? "Mettre la sélection à louer" : "Mettre la sélection à vendre",
+      description: "Le motif est obligatoire pour la traçabilité des changements de statut.",
+      confirmLabel: isRent ? "Passer à louer" : "Passer à vendre",
+    };
+  }, [reasonDialogAction]);
+
+  const onConfirmReason = useCallback(async () => {
+    if (!reasonDialogAction) {
+      return;
+    }
+
+    const reason = reasonDraft.trim();
+    if (!reason) {
+      setGlobalError("Le motif est obligatoire.");
+      return;
+    }
+
+    setIsSubmittingReason(true);
+    try {
+      if (reasonDialogAction.kind === "single-state") {
+        await changeListingState(reasonDialogAction.listingId, reasonDialogAction.nextState, reason);
+      } else if (reasonDialogAction.kind === "bulk-state") {
+        await changeListingsStateBulk(reasonDialogAction.nextState, reason);
+      } else {
+        await bulkChangeStatus(reasonDialogAction.nextStatus, reason);
+      }
+      closeReasonDialog();
+    } finally {
+      setIsSubmittingReason(false);
+    }
+  }, [
+    bulkChangeStatus,
+    changeListingState,
+    changeListingsStateBulk,
+    closeReasonDialog,
+    reasonDialogAction,
+    reasonDraft,
+  ]);
 
   const hasError = listingsQuery.isError || permissionsQuery.isError;
 
@@ -801,7 +890,7 @@ export default function ListingsDashboardPage() {
                 variant="outline"
                 size="sm"
                 disabled={!canBulkArchive || selectedListingIds.length === 0 || isBulkMutating}
-                onClick={() => void changeListingsStateBulk("ARCHIVED")}
+                onClick={() => openReasonDialog({ kind: "bulk-state", nextState: "ARCHIVED" })}
               >
                 Archiver sélection
               </Button>
@@ -810,7 +899,7 @@ export default function ListingsDashboardPage() {
                 variant="outline"
                 size="sm"
                 disabled={!canBulkRestore || selectedListingIds.length === 0 || isBulkMutating}
-                onClick={() => void changeListingsStateBulk("IN_PROGRESS")}
+                onClick={() => openReasonDialog({ kind: "bulk-state", nextState: "IN_PROGRESS" })}
               >
                 Restaurer sélection
               </Button>
@@ -819,7 +908,7 @@ export default function ListingsDashboardPage() {
                 variant="outline"
                 size="sm"
                 disabled={!canBulkStatus || selectedListingIds.length === 0 || isBulkMutating}
-                onClick={() => void bulkChangeStatus("FOR_RENT")}
+                onClick={() => openReasonDialog({ kind: "bulk-status", nextStatus: "FOR_RENT" })}
               >
                 Statut bulk: à louer
               </Button>
@@ -828,7 +917,7 @@ export default function ListingsDashboardPage() {
                 variant="outline"
                 size="sm"
                 disabled={!canBulkStatus || selectedListingIds.length === 0 || isBulkMutating}
-                onClick={() => void bulkChangeStatus("FOR_SALE")}
+                onClick={() => openReasonDialog({ kind: "bulk-status", nextStatus: "FOR_SALE" })}
               >
                 Statut bulk: à vendre
               </Button>
@@ -907,7 +996,13 @@ export default function ListingsDashboardPage() {
                               type="button"
                               size="sm"
                               disabled={!canRestoreListing || isMutatingId === listing.id}
-                              onClick={() => void changeListingState(listing.id, "IN_PROGRESS")}
+                              onClick={() =>
+                                openReasonDialog({
+                                  kind: "single-state",
+                                  listingId: listing.id,
+                                  nextState: "IN_PROGRESS",
+                                })
+                              }
                             >
                               Restaurer
                             </Button>
@@ -917,7 +1012,13 @@ export default function ListingsDashboardPage() {
                               variant="outline"
                               size="sm"
                               disabled={!canArchiveListing || isMutatingId === listing.id}
-                              onClick={() => void changeListingState(listing.id, "ARCHIVED")}
+                              onClick={() =>
+                                openReasonDialog({
+                                  kind: "single-state",
+                                  listingId: listing.id,
+                                  nextState: "ARCHIVED",
+                                })
+                              }
                             >
                               Archiver
                             </Button>
@@ -957,6 +1058,36 @@ export default function ListingsDashboardPage() {
           </div>
         </CardContent>
       </Card>
+
+      <Dialog open={reasonDialogAction !== null} onOpenChange={(open) => (open ? undefined : closeReasonDialog())}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>{reasonDialogMeta.title}</DialogTitle>
+            <DialogDescription>{reasonDialogMeta.description}</DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-2">
+            <label htmlFor="listing-reason" className="text-sm font-medium text-slate-700">
+              Motif obligatoire
+            </label>
+            <Input
+              id="listing-reason"
+              value={reasonDraft}
+              onChange={(event) => setReasonDraft(event.target.value)}
+              placeholder="Ex: doublon confirmé après vérification"
+              disabled={isSubmittingReason}
+              autoFocus
+            />
+          </div>
+
+          <DialogFooter>
+            <DialogClose render={<Button type="button" variant="outline">Annuler</Button>} />
+            <Button type="button" disabled={isSubmittingReason} onClick={() => void onConfirmReason()}>
+              {reasonDialogMeta.confirmLabel || "Confirmer"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

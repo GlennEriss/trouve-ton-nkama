@@ -6,6 +6,15 @@ import { useQuery } from "@tanstack/react-query";
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
+import {
+  Dialog,
+  DialogClose,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { PageHeader } from "@/components/ui-kit/page-header";
 
@@ -205,6 +214,20 @@ type EditFormState = {
 };
 
 type TabKey = "details" | "media" | "history" | "duplicates";
+
+type ModerationReasonAction =
+  | {
+      kind: "state";
+      nextState: ListingState;
+    }
+  | {
+      kind: "status";
+      nextStatus: ListingStatus;
+    }
+  | {
+      kind: "moderation";
+      decision: "approve" | "reject";
+    };
 
 const TYPE_OPTIONS: ListingType[] = [
   "Home",
@@ -565,6 +588,9 @@ export default function ListingDetailsPage() {
   const [duplicateTargetByCluster, setDuplicateTargetByCluster] = useState<Record<string, string>>({});
   const [globalError, setGlobalError] = useState<string | null>(null);
   const [globalMessage, setGlobalMessage] = useState<string | null>(null);
+  const [reasonAction, setReasonAction] = useState<ModerationReasonAction | null>(null);
+  const [reasonDraft, setReasonDraft] = useState("");
+  const [isSubmittingReason, setIsSubmittingReason] = useState(false);
 
   const permissionsQuery = useQuery({
     queryKey: ["auth", "me"],
@@ -893,14 +919,21 @@ export default function ListingDetailsPage() {
     [canHardDeleteListings, deleteListingHard, refreshAll],
   );
 
+  const openReasonDialog = useCallback((action: ModerationReasonAction) => {
+    setGlobalError(null);
+    setReasonDraft("");
+    setReasonAction(action);
+  }, []);
+
+  const closeReasonDialog = useCallback(() => {
+    setReasonAction(null);
+    setReasonDraft("");
+    setIsSubmittingReason(false);
+  }, []);
+
   const handleStateAction = useCallback(
-    async (nextState: ListingState) => {
+    async (nextState: ListingState, reason: string) => {
       if (!listingId) return;
-      const reason = window.prompt("Motif obligatoire:");
-      if (!reason || !reason.trim()) {
-        setGlobalError("Action annulée: le motif est obligatoire.");
-        return;
-      }
 
       setIsModerating(true);
       setGlobalError(null);
@@ -912,7 +945,7 @@ export default function ListingDetailsPage() {
           headers: {
             "Content-Type": "application/json",
           },
-          body: JSON.stringify({ state: nextState, reason: reason.trim() }),
+          body: JSON.stringify({ state: nextState, reason }),
         });
 
         const result = (await response.json()) as
@@ -935,13 +968,8 @@ export default function ListingDetailsPage() {
   );
 
   const handleStatusAction = useCallback(
-    async (nextStatus: ListingStatus) => {
+    async (nextStatus: ListingStatus, reason: string) => {
       if (!listingId) return;
-      const reason = window.prompt("Motif obligatoire:");
-      if (!reason || !reason.trim()) {
-        setGlobalError("Action annulée: le motif est obligatoire.");
-        return;
-      }
 
       setIsModerating(true);
       setGlobalError(null);
@@ -953,7 +981,7 @@ export default function ListingDetailsPage() {
           headers: {
             "Content-Type": "application/json",
           },
-          body: JSON.stringify({ status: nextStatus, reason: reason.trim() }),
+          body: JSON.stringify({ status: nextStatus, reason }),
         });
 
         const result = (await response.json()) as
@@ -974,6 +1002,82 @@ export default function ListingDetailsPage() {
     },
     [listingId, refreshAll],
   );
+
+  const reasonDialogMeta = useMemo(() => {
+    if (!reasonAction) {
+      return {
+        title: "",
+        description: "",
+        confirmLabel: "",
+      };
+    }
+
+    if (reasonAction.kind === "state") {
+      const isArchive = reasonAction.nextState === "ARCHIVED";
+      return {
+        title: isArchive ? "Archiver l'annonce" : "Désarchiver l'annonce",
+        description: "Le motif est obligatoire pour tracer ce changement d'état.",
+        confirmLabel: isArchive ? "Archiver" : "Désarchiver",
+      };
+    }
+
+    if (reasonAction.kind === "status") {
+      const isRent = reasonAction.nextStatus === "FOR_RENT";
+      return {
+        title: isRent ? "Passer l'annonce à louer" : "Passer l'annonce à vendre",
+        description: "Le motif est obligatoire pour tracer ce changement de statut.",
+        confirmLabel: isRent ? "Mettre à louer" : "Mettre à vendre",
+      };
+    }
+
+    const isApprove = reasonAction.decision === "approve";
+    return {
+      title: isApprove ? "Approuver l'annonce" : "Rejeter l'annonce",
+      description: "Le motif de modération est obligatoire.",
+      confirmLabel: isApprove ? "Approuver" : "Rejeter",
+    };
+  }, [reasonAction]);
+
+  const onConfirmReason = useCallback(async () => {
+    if (!reasonAction || !listing) {
+      return;
+    }
+
+    const reason = reasonDraft.trim();
+    if (!reason) {
+      setGlobalError("Le motif est obligatoire.");
+      return;
+    }
+
+    setIsSubmittingReason(true);
+    try {
+      if (reasonAction.kind === "state") {
+        await handleStateAction(reasonAction.nextState, reason);
+      } else if (reasonAction.kind === "status") {
+        await handleStatusAction(reasonAction.nextStatus, reason);
+      } else {
+        const endpoint =
+          reasonAction.decision === "approve"
+            ? `/api/admin/v1/listings/${listing.id}/moderation/approve`
+            : `/api/admin/v1/listings/${listing.id}/moderation/reject`;
+        const successMessage =
+          reasonAction.decision === "approve" ? "Annonce approuvée." : "Annonce rejetée.";
+        await runModerationAction(endpoint, { reason }, successMessage);
+      }
+
+      closeReasonDialog();
+    } finally {
+      setIsSubmittingReason(false);
+    }
+  }, [
+    closeReasonDialog,
+    handleStateAction,
+    handleStatusAction,
+    listing,
+    reasonAction,
+    reasonDraft,
+    runModerationAction,
+  ]);
 
   const onSubmitEdition = useCallback(
     async (event: FormEvent<HTMLFormElement>) => {
@@ -1102,18 +1206,7 @@ export default function ListingDetailsPage() {
               <Button
                 type="button"
                 disabled={!canApprove || isModerating}
-                onClick={() => {
-                  const reason = window.prompt("Motif obligatoire pour approuver:");
-                  if (!reason || !reason.trim()) {
-                    setGlobalError("Action annulée: le motif est obligatoire.");
-                    return;
-                  }
-                  void runModerationAction(
-                    `/api/admin/v1/listings/${listing.id}/moderation/approve`,
-                    { reason: reason.trim() },
-                    "Annonce approuvée.",
-                  );
-                }}
+                onClick={() => openReasonDialog({ kind: "moderation", decision: "approve" })}
               >
                 Approuver
               </Button>
@@ -1121,18 +1214,7 @@ export default function ListingDetailsPage() {
                 type="button"
                 variant="outline"
                 disabled={!canReject || isModerating}
-                onClick={() => {
-                  const reason = window.prompt("Motif obligatoire pour rejeter:");
-                  if (!reason || !reason.trim()) {
-                    setGlobalError("Action annulée: le motif est obligatoire.");
-                    return;
-                  }
-                  void runModerationAction(
-                    `/api/admin/v1/listings/${listing.id}/moderation/reject`,
-                    { reason: reason.trim() },
-                    "Annonce rejetée.",
-                  );
-                }}
+                onClick={() => openReasonDialog({ kind: "moderation", decision: "reject" })}
               >
                 Rejeter
               </Button>
@@ -1140,7 +1222,7 @@ export default function ListingDetailsPage() {
                 type="button"
                 variant="outline"
                 disabled={!canArchive || isModerating}
-                onClick={() => void handleStateAction("ARCHIVED")}
+                onClick={() => openReasonDialog({ kind: "state", nextState: "ARCHIVED" })}
               >
                 Archiver
               </Button>
@@ -1148,7 +1230,7 @@ export default function ListingDetailsPage() {
                 type="button"
                 variant="outline"
                 disabled={!canUnarchive || isModerating}
-                onClick={() => void handleStateAction("IN_PROGRESS")}
+                onClick={() => openReasonDialog({ kind: "state", nextState: "IN_PROGRESS" })}
               >
                 Désarchiver
               </Button>
@@ -1156,7 +1238,7 @@ export default function ListingDetailsPage() {
                 type="button"
                 variant="outline"
                 disabled={!canChangeStatus || isModerating}
-                onClick={() => void handleStatusAction("FOR_RENT")}
+                onClick={() => openReasonDialog({ kind: "status", nextStatus: "FOR_RENT" })}
               >
                 Statut: à louer
               </Button>
@@ -1164,7 +1246,7 @@ export default function ListingDetailsPage() {
                 type="button"
                 variant="outline"
                 disabled={!canChangeStatus || isModerating}
-                onClick={() => void handleStatusAction("FOR_SALE")}
+                onClick={() => openReasonDialog({ kind: "status", nextStatus: "FOR_SALE" })}
               >
                 Statut: à vendre
               </Button>
@@ -1884,6 +1966,36 @@ export default function ListingDetailsPage() {
           ) : null}
         </CardContent>
       </Card>
+
+      <Dialog open={reasonAction !== null} onOpenChange={(open) => (open ? undefined : closeReasonDialog())}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>{reasonDialogMeta.title}</DialogTitle>
+            <DialogDescription>{reasonDialogMeta.description}</DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-2">
+            <label htmlFor="listing-detail-reason" className="text-sm font-medium text-slate-700">
+              Motif obligatoire
+            </label>
+            <Input
+              id="listing-detail-reason"
+              value={reasonDraft}
+              onChange={(event) => setReasonDraft(event.target.value)}
+              placeholder="Ex: vérification manuelle terminée"
+              disabled={isSubmittingReason}
+              autoFocus
+            />
+          </div>
+
+          <DialogFooter>
+            <DialogClose render={<Button type="button" variant="outline">Annuler</Button>} />
+            <Button type="button" disabled={isSubmittingReason} onClick={() => void onConfirmReason()}>
+              {reasonDialogMeta.confirmLabel || "Confirmer"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
