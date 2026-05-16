@@ -13,9 +13,9 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { ChevronLeft } from "lucide-react";
 import { BiFilter } from "react-icons/bi";
-import { tags as tagsList } from "@/constantes";
 import { TypeProperty, getTypePropertyKey } from "@/constantes/property-type";
 import { useFilterModal } from "@/hooks/use-filter-modal";
+import { useDynamicTags } from "@/hooks/useDynamicTags";
 
 const PRICE_MIN = 0;
 const AREA_MIN = 0;
@@ -24,6 +24,7 @@ const ROOMS_MIN = 0;
 const ROOMS_MAX = 10;
 
 export const FilterModal = () => {
+  const { tagOptions } = useDynamicTags();
   const {
     // États
     open, setOpen,
@@ -234,7 +235,7 @@ export const FilterModal = () => {
             <div>
               <label htmlFor="tags-list" className="block font-semibold mb-2">Tags</label>
               <div id="tags-list" className="flex flex-wrap gap-2">
-                {tagsList.map(tag => {
+                {tagOptions.map(tag => {
                   const sel = localTags.includes(tag.tagName);
                   return (
                     <Button

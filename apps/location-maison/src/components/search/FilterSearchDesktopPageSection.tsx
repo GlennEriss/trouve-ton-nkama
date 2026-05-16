@@ -11,7 +11,7 @@ import SelectProvince from './SelectProvince';
 import SelectCity from './SelectCity';
 import SelectStreet from './SelectStreet';
 import MultiSelectFormApp from '../shared/form/MultiSelectFormApp'
-import { tags as tagsList, statusOptions } from "@/constantes";
+import { statusOptions } from "@/constantes";
 import InputFormNumberApp from '../shared/form/InputFormNumberApp'
 import { TypeProperty, getTypePropertyKey } from '@/constantes/property-type'
 import { Button } from '../ui/button'
@@ -20,6 +20,7 @@ import { trackingEvents, useTrackEvent } from '@/features/analytics/tracking'
 import { useSearchParams } from 'next/navigation'
 import { useSession } from 'next-auth/react'
 import SearchWithAIAccessNoticeDialog from './SearchWithAIAccessNoticeDialog'
+import { useDynamicTags } from '@/hooks/useDynamicTags'
 
 export default function FilterSearchDesktopPageSection() {
     const form = useForm<FormFilterSchemaType>({
@@ -30,6 +31,7 @@ export default function FilterSearchDesktopPageSection() {
     const searchParams = useSearchParams();
     const { status } = useSession();
     const [isAccessDialogOpen, setIsAccessDialogOpen] = React.useState(false);
+    const { tagOptions } = useDynamicTags();
     const searchWithAIHref = `/search-with-ia?${new URLSearchParams(searchParams.toString()).toString()}&entry=search_cta`;
     const isAuthenticated = status === 'authenticated';
 
@@ -181,7 +183,7 @@ export default function FilterSearchDesktopPageSection() {
                             <MultiSelectFormApp
                                 control={form.control}
                                 name="tags"
-                                options={tagsList
+                                options={tagOptions
                                     .map(tag => ({
                                         label: tag.tagName,
                                         value: tag.tagName
