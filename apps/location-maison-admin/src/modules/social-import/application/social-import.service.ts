@@ -1,4 +1,6 @@
 import { createHash } from "node:crypto";
+import { existsSync, readFileSync } from "node:fs";
+import { resolve as resolvePath } from "node:path";
 
 import { createListingForAnnouncer } from "@/modules/account-provisioning/application/account-provisioning.service";
 import type { CreateListingForAnnouncerInput } from "@/modules/account-provisioning/domain/types";
@@ -105,9 +107,574 @@ const SOCIAL_IMPORT_TAG_CATALOG = [
   "Agence",
 ] as const;
 
+const SOCIAL_IMPORT_OSM_JSON_PATH =
+  process.env.SOCIAL_IMPORT_OSM_JSON_PATH?.trim() ||
+  resolvePath(
+    /* turbopackIgnore: true */ process.cwd(),
+    "..",
+    "location-maison",
+    "src",
+    "data",
+    "gabon_osm.json",
+  );
+
+type OsmRecord = Record<string, unknown>;
+
+type OsmAdminOrPlace = {
+  name: string;
+  normalizedName: string;
+  lat: number;
+  lon: number;
+  tags: Record<string, string>;
+};
+
+type OsmQuarterCandidate = OsmAdminOrPlace & {
+  city: string | null;
+  province: string | null;
+  normalizedCity: string | null;
+  normalizedProvince: string | null;
+};
+
+type OSMLocationIndex = {
+  provinces: OsmAdminOrPlace[];
+  cities: OsmAdminOrPlace[];
+  quarters: OsmQuarterCandidate[];
+  provinceByNormalizedName: Map<string, string>;
+  cityByNormalizedName: Map<string, string>;
+  quarterByNormalizedName: Map<string, OsmQuarterCandidate[]>;
+  cityToProvince: Map<string, string>;
+};
+
+type OSMResolvedLocation = {
+  street: string | null;
+  city: string | null;
+  province: string | null;
+};
+
+let cachedOSMLocationIndex: OSMLocationIndex | null = null;
+let hasAttemptedOSMLocationLoad = false;
+
 type ListingTypeProperty = CreateListingForAnnouncerInput["typeProperty"];
 type ListingStatus = CreateListingForAnnouncerInput["status"];
 type SocialImportKnownTag = (typeof SOCIAL_IMPORT_TAG_CATALOG)[number];
+
+function toOsmRecord(value: unknown): OsmRecord | null {
+  if (!value || typeof value !== "object" || Array.isArray(value)) {
+    return null;
+  }
+  return value as OsmRecord;
+}
+
+function toFiniteNumber(value: unknown) {
+  if (typeof value === "number" && Number.isFinite(value)) {
+    return value;
+  }
+  if (typeof value === "string") {
+    const parsed = Number(value);
+    if (Number.isFinite(parsed)) {
+      return parsed;
+    }
+  }
+  return null;
+}
+
+function parseOsmText(value: unknown) {
+  if (typeof value !== "string") {
+    return null;
+  }
+  const trimmed = value.trim();
+  return trimmed.length > 0 ? trimmed : null;
+}
+
+function normalizeOSMName(value: string) {
+  return value
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase()
+    .replace(/[\s’'`´-]+/g, " ")
+    .replace(/[^a-z0-9\s]/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+function parseOsmElement(element: unknown): OsmAdminOrPlace | null {
+  const record = toOsmRecord(element);
+  if (!record) {
+    return null;
+  }
+  const names = toOsmRecord(record.names);
+  const name =
+    parseOsmText(names?.fr) ??
+    parseOsmText(record.name) ??
+    parseOsmText(names?.en);
+  if (!name) {
+    return null;
+  }
+  const center = toOsmRecord(record.center);
+  const lat = toFiniteNumber(center?.lat);
+  const lon = toFiniteNumber(center?.lon);
+  if (lat == null || lon == null) {
+    return null;
+  }
+  const tagsRecord = toOsmRecord(record.tags);
+  const tags: Record<string, string> = {};
+  if (tagsRecord) {
+    for (const [key, rawValue] of Object.entries(tagsRecord)) {
+      const parsed = parseOsmText(rawValue);
+      if (parsed) {
+        tags[key] = parsed;
+      }
+    }
+  }
+  return {
+    name,
+    normalizedName: normalizeOSMName(name),
+    lat,
+    lon,
+    tags,
+  };
+}
+
+function geoDistanceSquared(aLat: number, aLon: number, bLat: number, bLon: number) {
+  const latDelta = aLat - bLat;
+  const lonDelta = aLon - bLon;
+  return latDelta * latDelta + lonDelta * lonDelta;
+}
+
+function findNearestOsmPlace(source: { lat: number; lon: number }, places: OsmAdminOrPlace[]) {
+  let best: OsmAdminOrPlace | null = null;
+  let bestDistance = Number.POSITIVE_INFINITY;
+  for (const place of places) {
+    const distance = geoDistanceSquared(source.lat, source.lon, place.lat, place.lon);
+    if (distance < bestDistance) {
+      bestDistance = distance;
+      best = place;
+    }
+  }
+  return best;
+}
+
+function collectOsmList(value: unknown) {
+  if (!Array.isArray(value)) {
+    return [] as OsmAdminOrPlace[];
+  }
+  const list: OsmAdminOrPlace[] = [];
+  for (const item of value) {
+    const parsed = parseOsmElement(item);
+    if (parsed) {
+      list.push(parsed);
+    }
+  }
+  return list;
+}
+
+function dedupeOsmPlacesByNormalizedName(items: OsmAdminOrPlace[]) {
+  const map = new Map<string, OsmAdminOrPlace>();
+  for (const item of items) {
+    if (!map.has(item.normalizedName)) {
+      map.set(item.normalizedName, item);
+    }
+  }
+  return Array.from(map.values());
+}
+
+function buildOSMLocationIndex(raw: OsmRecord): OSMLocationIndex {
+  const adminBoundaries = toOsmRecord(raw.admin_boundaries);
+  const places = toOsmRecord(raw.places);
+
+  const provinces = dedupeOsmPlacesByNormalizedName(collectOsmList(adminBoundaries?.["4"]));
+  const cities = dedupeOsmPlacesByNormalizedName([
+    ...collectOsmList(places?.city),
+    ...collectOsmList(places?.town),
+    ...collectOsmList(adminBoundaries?.["6"]),
+    ...collectOsmList(adminBoundaries?.["8"]),
+  ]);
+
+  const provinceByNormalizedName = new Map<string, string>();
+  for (const province of provinces) {
+    provinceByNormalizedName.set(province.normalizedName, province.name);
+  }
+
+  const cityByNormalizedName = new Map<string, string>();
+  for (const city of cities) {
+    cityByNormalizedName.set(city.normalizedName, city.name);
+  }
+
+  const cityToProvince = new Map<string, string>();
+  for (const city of cities) {
+    const provinceFromTags = parseOsmText(city.tags["addr:province"]);
+    if (provinceFromTags) {
+      const normalized = normalizeOSMName(provinceFromTags);
+      const canonicalProvince =
+        provinceByNormalizedName.get(normalized) ??
+        provinces.find((candidate) => candidate.normalizedName.includes(normalized))?.name ??
+        provinceFromTags;
+      cityToProvince.set(city.name, canonicalProvince);
+      continue;
+    }
+    const nearestProvince = findNearestOsmPlace(city, provinces);
+    if (nearestProvince) {
+      cityToProvince.set(city.name, nearestProvince.name);
+    }
+  }
+
+  const quarterRawItems = [
+    ...collectOsmList(places?.suburb),
+    ...collectOsmList(places?.neighbourhood),
+    ...collectOsmList(places?.quarter),
+    ...collectOsmList(places?.locality),
+    ...collectOsmList(places?.village),
+    ...collectOsmList(places?.hamlet),
+    ...collectOsmList(adminBoundaries?.["9"]),
+    ...collectOsmList(adminBoundaries?.["10"]),
+  ];
+
+  const quarters: OsmQuarterCandidate[] = quarterRawItems.map((quarter) => {
+    const rawCity = parseOsmText(quarter.tags["addr:city"]);
+    const rawProvince = parseOsmText(quarter.tags["addr:province"]);
+
+    const cityFromTagsNormalized = rawCity ? normalizeOSMName(rawCity) : null;
+    const provinceFromTagsNormalized = rawProvince ? normalizeOSMName(rawProvince) : null;
+
+    const cityFromTags =
+      (cityFromTagsNormalized ? cityByNormalizedName.get(cityFromTagsNormalized) : null) ??
+      (cityFromTagsNormalized
+        ? cities.find((entry) => entry.normalizedName.includes(cityFromTagsNormalized))?.name ?? null
+        : null);
+    const nearestCity = cityFromTags ? null : findNearestOsmPlace(quarter, cities);
+    const city = cityFromTags ?? nearestCity?.name ?? null;
+
+    const provinceFromTags =
+      (provinceFromTagsNormalized ? provinceByNormalizedName.get(provinceFromTagsNormalized) : null) ??
+      (provinceFromTagsNormalized
+        ? provinces.find((entry) => entry.normalizedName.includes(provinceFromTagsNormalized))?.name ??
+          null
+        : null);
+    const provinceFromCity = city ? cityToProvince.get(city) ?? null : null;
+    const nearestProvince =
+      provinceFromTags || provinceFromCity ? null : findNearestOsmPlace(quarter, provinces);
+    const province = provinceFromTags ?? provinceFromCity ?? nearestProvince?.name ?? null;
+
+    return {
+      ...quarter,
+      city,
+      province,
+      normalizedCity: city ? normalizeOSMName(city) : null,
+      normalizedProvince: province ? normalizeOSMName(province) : null,
+    };
+  });
+
+  const quarterByNormalizedName = new Map<string, OsmQuarterCandidate[]>();
+  for (const quarter of quarters) {
+    const existing = quarterByNormalizedName.get(quarter.normalizedName);
+    if (existing) {
+      existing.push(quarter);
+      continue;
+    }
+    quarterByNormalizedName.set(quarter.normalizedName, [quarter]);
+  }
+
+  return {
+    provinces,
+    cities,
+    quarters,
+    provinceByNormalizedName,
+    cityByNormalizedName,
+    quarterByNormalizedName,
+    cityToProvince,
+  };
+}
+
+function getOSMLocationIndex(): OSMLocationIndex | null {
+  if (hasAttemptedOSMLocationLoad) {
+    return cachedOSMLocationIndex;
+  }
+  hasAttemptedOSMLocationLoad = true;
+
+  try {
+    if (!existsSync(SOCIAL_IMPORT_OSM_JSON_PATH)) {
+      cachedOSMLocationIndex = null;
+      return null;
+    }
+    const content = readFileSync(SOCIAL_IMPORT_OSM_JSON_PATH, "utf8");
+    const parsed = JSON.parse(content) as unknown;
+    const root = toOsmRecord(parsed);
+    if (!root) {
+      cachedOSMLocationIndex = null;
+      return null;
+    }
+    cachedOSMLocationIndex = buildOSMLocationIndex(root);
+    return cachedOSMLocationIndex;
+  } catch {
+    cachedOSMLocationIndex = null;
+    return null;
+  }
+}
+
+function levenshteinDistance(left: string, right: string) {
+  if (left === right) return 0;
+  if (!left.length) return right.length;
+  if (!right.length) return left.length;
+
+  const previous = new Array(right.length + 1);
+  const current = new Array(right.length + 1);
+
+  for (let j = 0; j <= right.length; j += 1) {
+    previous[j] = j;
+  }
+
+  for (let i = 1; i <= left.length; i += 1) {
+    current[0] = i;
+    for (let j = 1; j <= right.length; j += 1) {
+      const substitutionCost = left[i - 1] === right[j - 1] ? 0 : 1;
+      current[j] = Math.min(
+        previous[j] + 1,
+        current[j - 1] + 1,
+        previous[j - 1] + substitutionCost,
+      );
+    }
+    for (let j = 0; j <= right.length; j += 1) {
+      previous[j] = current[j];
+    }
+  }
+
+  return previous[right.length];
+}
+
+function computeTextSimilarity(left: string, right: string) {
+  if (!left || !right) {
+    return 0;
+  }
+  if (left === right) {
+    return 1;
+  }
+  if (left.includes(right) || right.includes(left)) {
+    const minLength = Math.min(left.length, right.length);
+    const maxLength = Math.max(left.length, right.length);
+    return minLength >= 4 ? minLength / maxLength : 0.7;
+  }
+  const distance = levenshteinDistance(left, right);
+  const base = Math.max(left.length, right.length);
+  return base > 0 ? 1 - distance / base : 0;
+}
+
+function resolveCanonicalCityFromOsm(cityHint: string | null) {
+  if (!cityHint) {
+    return null;
+  }
+  const index = getOSMLocationIndex();
+  if (!index) {
+    return null;
+  }
+  const normalized = normalizeOSMName(cityHint);
+  const exact = index.cityByNormalizedName.get(normalized);
+  if (exact) {
+    return exact;
+  }
+
+  let bestName: string | null = null;
+  let bestScore = 0;
+  for (const city of index.cities) {
+    const score = computeTextSimilarity(normalized, city.normalizedName);
+    if (score > bestScore) {
+      bestScore = score;
+      bestName = city.name;
+    }
+  }
+  if (bestScore >= 0.82) {
+    return bestName;
+  }
+  return null;
+}
+
+function resolveCanonicalProvinceFromOsm(provinceHint: string | null) {
+  if (!provinceHint) {
+    return null;
+  }
+  const index = getOSMLocationIndex();
+  if (!index) {
+    return null;
+  }
+  const normalized = normalizeOSMName(provinceHint);
+  const exact = index.provinceByNormalizedName.get(normalized);
+  if (exact) {
+    return exact;
+  }
+
+  let bestName: string | null = null;
+  let bestScore = 0;
+  for (const province of index.provinces) {
+    const score = computeTextSimilarity(normalized, province.normalizedName);
+    if (score > bestScore) {
+      bestScore = score;
+      bestName = province.name;
+    }
+  }
+  if (bestScore >= 0.82) {
+    return bestName;
+  }
+  return null;
+}
+
+function extractLocationCandidatePhrases(caption: string | null, street: string | null) {
+  const candidates = new Set<string>();
+
+  const pushCandidate = (value: string | null | undefined) => {
+    if (!value) return;
+    const cleaned = normalizeInlineSpaces(
+      value
+        .replace(/[\u{1F300}-\u{1FAFF}\u{2600}-\u{27BF}]/gu, " ")
+        .replace(/[|]/g, " ")
+        .replace(/[.]{3,}/g, " ")
+        .replace(/[#*_~`]/g, " "),
+    );
+    if (cleaned.length >= 3) {
+      candidates.add(cleaned);
+    }
+  };
+
+  pushCandidate(street);
+  if (!caption) {
+    return Array.from(candidates);
+  }
+
+  const lines = caption
+    .split(/\r?\n/)
+    .map((line) => line.trim())
+    .filter((line) => line.length > 0);
+
+  for (const line of lines) {
+    if (
+      /(quartier|geographique|géographique|localisation|zone|arrondissement|commune|📍|akanda|libreville|owendo|port-gentil|franceville)/i.test(
+        line,
+      )
+    ) {
+      pushCandidate(line);
+    }
+  }
+
+  const inlineMatch = caption.match(
+    /(?:quartier|geographique|géographique|localisation)\s*[:\-]?\s*([^\n,#]+)/i,
+  );
+  if (inlineMatch?.[1]) {
+    pushCandidate(inlineMatch[1]);
+  }
+
+  return Array.from(candidates);
+}
+
+function resolveLocationFromOsm(input: {
+  caption: string | null;
+  street: string | null;
+  cityHint: string | null;
+  provinceHint: string | null;
+}): OSMResolvedLocation | null {
+  const index = getOSMLocationIndex();
+  if (!index) {
+    return null;
+  }
+
+  const canonicalCityFromHint = resolveCanonicalCityFromOsm(input.cityHint);
+  const canonicalProvinceFromHint = resolveCanonicalProvinceFromOsm(input.provinceHint);
+  const normalizedCityHint = canonicalCityFromHint ? normalizeOSMName(canonicalCityFromHint) : null;
+
+  const phrases = extractLocationCandidatePhrases(input.caption, input.street);
+
+  const directCityPhrase = phrases
+    .map((phrase) => resolveCanonicalCityFromOsm(phrase))
+    .find((value): value is string => Boolean(value));
+  const canonicalCity = directCityPhrase ?? canonicalCityFromHint ?? null;
+  const normalizedCanonicalCity = canonicalCity ? normalizeOSMName(canonicalCity) : normalizedCityHint;
+
+  const variants = new Set<string>();
+  for (const phrase of phrases) {
+    const normalized = normalizeOSMName(phrase)
+      .replace(/\b(quartier|geographique|geographique|localisation|zone|arrondissement|commune)\b/g, " ")
+      .replace(/\s+/g, " ")
+      .trim();
+    if (!normalized) {
+      continue;
+    }
+    variants.add(normalized);
+    for (const segment of normalized.split(/[-,/|]/)) {
+      const cleanSegment = segment.trim();
+      if (cleanSegment.length >= 3) {
+        variants.add(cleanSegment);
+      }
+    }
+    if (normalizedCanonicalCity && normalized.includes(normalizedCanonicalCity)) {
+      const withoutCity = normalized
+        .replace(new RegExp(`\\b${normalizedCanonicalCity}\\b`, "g"), " ")
+        .replace(/\s+/g, " ")
+        .trim();
+      if (withoutCity.length >= 3) {
+        variants.add(withoutCity);
+      }
+    }
+  }
+
+  let bestQuarter: OsmQuarterCandidate | null = null;
+  let bestScore = 0;
+
+  for (const variant of variants) {
+    const exact = index.quarterByNormalizedName.get(variant) ?? [];
+    if (exact.length > 0) {
+      const withCity = normalizedCanonicalCity
+        ? exact.find((candidate) => candidate.normalizedCity === normalizedCanonicalCity) ?? exact[0]
+        : exact[0];
+      return {
+        street: withCity.name,
+        city: withCity.city ?? canonicalCity ?? null,
+        province: withCity.province ?? canonicalProvinceFromHint ?? null,
+      };
+    }
+  }
+
+  for (const variant of variants) {
+    if (variant.length < 4) {
+      continue;
+    }
+    for (const quarter of index.quarters) {
+      const score = computeTextSimilarity(variant, quarter.normalizedName);
+      const boostedScore =
+        normalizedCanonicalCity && quarter.normalizedCity === normalizedCanonicalCity
+          ? score + 0.06
+          : score;
+      if (boostedScore > bestScore) {
+        bestScore = boostedScore;
+        bestQuarter = quarter;
+      }
+    }
+  }
+
+  if (bestQuarter && bestScore >= 0.82) {
+    return {
+      street: bestQuarter.name,
+      city: bestQuarter.city ?? canonicalCity ?? null,
+      province: bestQuarter.province ?? canonicalProvinceFromHint ?? null,
+    };
+  }
+
+  if (canonicalCity) {
+    const provinceFromCity = index.cityToProvince.get(canonicalCity) ?? null;
+    return {
+      street: null,
+      city: canonicalCity,
+      province: canonicalProvinceFromHint ?? provinceFromCity,
+    };
+  }
+
+  if (canonicalProvinceFromHint) {
+    return {
+      street: null,
+      city: null,
+      province: canonicalProvinceFromHint,
+    };
+  }
+
+  return null;
+}
+
 function normalizeQuery(value?: string) {
   return value?.trim().toLowerCase() ?? "";
 }
@@ -151,6 +718,8 @@ function normalizeJobStatus(value?: string): SocialImportJobStatusFilter {
 
 function normalizeReviewStatus(value?: string): SocialImportReviewStatusFilter {
   if (
+    value === "open" ||
+    value === "processed" ||
     value === "ready_to_publish" ||
     value === "needs_review" ||
     value === "rejected" ||
@@ -314,6 +883,27 @@ const FRENCH_TYPE_LABEL: Record<ListingTypeProperty, string> = {
 
 function normalizeInlineSpaces(value: string) {
   return value.replace(/\s+/g, " ").trim();
+}
+
+function keepPrimaryStreetMention(value: string) {
+  const cleaned = normalizeInlineSpaces(value);
+  if (!cleaned) {
+    return cleaned;
+  }
+
+  const parts = cleaned
+    .split(/\b(?:et|ou)\b/gi)
+    .map((segment) => normalizeInlineSpaces(segment))
+    .filter((segment) => segment.length > 0);
+
+  if (parts.length === 0) {
+    return cleaned;
+  }
+
+  return parts[0]
+    .replace(/^(?:deux|2)\s+/i, "")
+    .replace(/^(?:le|la|les|du|de la|de l['’])\s+/i, "")
+    .trim();
 }
 
 function normalizeTagToken(value: string) {
@@ -681,6 +1271,16 @@ function extractAreaFromCaption(caption: string | null) {
 }
 
 function inferCityFromStreet(street: string | null) {
+  const resolvedByOsm = resolveLocationFromOsm({
+    caption: null,
+    street,
+    cityHint: null,
+    provinceHint: null,
+  });
+  if (resolvedByOsm?.city) {
+    return resolvedByOsm.city;
+  }
+
   if (!street) {
     return null;
   }
@@ -704,6 +1304,16 @@ function inferCityFromStreet(street: string | null) {
 }
 
 function inferCityFromCaption(caption: string | null) {
+  const resolvedByOsm = resolveLocationFromOsm({
+    caption,
+    street: null,
+    cityHint: null,
+    provinceHint: null,
+  });
+  if (resolvedByOsm?.city) {
+    return resolvedByOsm.city;
+  }
+
   if (!caption) {
     return null;
   }
@@ -722,6 +1332,20 @@ function inferCityFromCaption(caption: string | null) {
 }
 
 function inferProvinceFromCity(city: string | null) {
+  const resolvedProvince = resolveCanonicalProvinceFromOsm(city);
+  if (resolvedProvince) {
+    return resolvedProvince;
+  }
+
+  const canonicalCity = resolveCanonicalCityFromOsm(city);
+  if (canonicalCity) {
+    const index = getOSMLocationIndex();
+    const provinceFromCity = index?.cityToProvince.get(canonicalCity) ?? null;
+    if (provinceFromCity) {
+      return provinceFromCity;
+    }
+  }
+
   if (!city) {
     return null;
   }
@@ -776,19 +1400,22 @@ function extractStreetFromCaption(caption: string | null, city: string) {
   }
 
   const patterns = [
-    /(?:quartier|geographique|géographique)\s*[:\-]?\s*([^\n,.#]+)/i,
     /(?:akanda|libreville|owendo|port-gentil|franceville)\s*[-–]\s*([^\n,.]+)/i,
+    /\b(?:quartiers?|geographiques?|géographiques?)\b\s*[:\-]?\s*([^\n,.#]+)/i,
   ];
 
   for (const pattern of patterns) {
     const match = caption.match(pattern);
     const value = match?.[1]?.trim();
     if (value) {
-      return normalizeInlineSpaces(
+      const normalized = normalizeInlineSpaces(
         value
           .replace(/[^a-zA-Z0-9À-ÿ\s'’\-]/g, " ")
           .replace(/\b(?:usage|loyer|prix|contact)\b.*$/i, ""),
-      ).slice(0, 180);
+      )
+        .replace(/\b(?:nb|note)\b\s*:?/i, "")
+        .trim();
+      return keepPrimaryStreetMention(normalized).slice(0, 180);
     }
   }
 
@@ -1236,16 +1863,33 @@ function buildListingPayloadFromCandidateRawData(rawData: Record<string, unknown
     inferListingStatusFromCaption(caption);
   const price = toNullableNumber(rawData.price) ?? extractPriceFromCaption(caption) ?? 1;
   const area = extractAreaFromCaption(caption) ?? toNullableNumber(rawData.area) ?? 0;
-  const street = extractStreetFromCaption(caption, SOCIAL_IMPORT_DEFAULT_CITY);
-  const city =
+  const extractedStreet = extractStreetFromCaption(caption, "");
+  const cityHint =
     toNullableString(rawData.city) ??
     inferCityFromCaption(caption) ??
-    inferCityFromStreet(street) ??
+    inferCityFromStreet(extractedStreet);
+  const provinceHint =
+    toNullableString(rawData.province) ??
+    inferProvinceFromCity(cityHint);
+  const resolvedLocation = resolveLocationFromOsm({
+    caption,
+    street: extractedStreet,
+    cityHint,
+    provinceHint,
+  });
+  const city =
+    resolvedLocation?.city ??
+    resolveCanonicalCityFromOsm(cityHint) ??
+    cityHint ??
     SOCIAL_IMPORT_DEFAULT_CITY;
   const province =
-    toNullableString(rawData.province) ??
+    resolvedLocation?.province ??
+    resolveCanonicalProvinceFromOsm(provinceHint) ??
     inferProvinceFromCity(city) ??
     SOCIAL_IMPORT_DEFAULT_PROVINCE;
+  const street = normalizeInlineSpaces(
+    resolvedLocation?.street ?? extractedStreet ?? city ?? SOCIAL_IMPORT_DEFAULT_CITY,
+  ).slice(0, 180);
   const tags = buildFallbackTags({
     caption,
     typeProperty: inferredType,
@@ -1998,8 +2642,17 @@ export async function listSocialImportReview(
       const candidate = page.items[index];
       cursor = candidate.id;
 
+      const matchesStatus =
+        status === "all"
+          ? true
+          : status === "open"
+            ? candidate.status === "needs_review" || candidate.status === "ready_to_publish"
+            : status === "processed"
+              ? candidate.status === "published" || candidate.status === "rejected"
+              : candidate.status === status;
+
       const keep =
-        (status === "all" || candidate.status === status) &&
+        matchesStatus &&
         (!announcerUid || candidate.announcerUid.toLowerCase() === announcerUid) &&
         matchesSearch(
           [

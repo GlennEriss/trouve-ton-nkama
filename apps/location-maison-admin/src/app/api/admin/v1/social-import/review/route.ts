@@ -9,7 +9,7 @@ const querySchema = z.object({
   limit: z.coerce.number().int().min(1).max(500).optional(),
   cursor: z.string().trim().min(1).optional(),
   status: z
-    .enum(["all", "ready_to_publish", "needs_review", "rejected", "published"])
+    .enum(["all", "open", "processed", "ready_to_publish", "needs_review", "rejected", "published"])
     .optional(),
   announcerUid: z.string().trim().optional(),
   query: z.string().trim().optional(),

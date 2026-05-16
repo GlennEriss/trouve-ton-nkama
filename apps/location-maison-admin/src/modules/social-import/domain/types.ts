@@ -159,7 +159,11 @@ export type SocialImportReviewCandidate = {
   updatedAt: string | null;
 };
 
-export type SocialImportReviewStatusFilter = "all" | SocialImportReviewCandidateStatus;
+export type SocialImportReviewStatusFilter =
+  | "all"
+  | "open"
+  | "processed"
+  | SocialImportReviewCandidateStatus;
 
 export type ListSocialImportReviewInput = {
   limit: number;

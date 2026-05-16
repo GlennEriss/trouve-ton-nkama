@@ -143,6 +143,12 @@ type ReviewItem = {
   createdAt: string | null;
 };
 
+type ReviewStatusFilter =
+  | "all"
+  | "open"
+  | "processed"
+  | ReviewItem["status"];
+
 type ReviewPayload = {
   candidates: ReviewItem[];
   count: number;
@@ -312,6 +318,13 @@ function toStatusBadgeVariant(
     return "danger";
   }
   return "neutral";
+}
+
+function toReviewCandidateStatusLabel(status: ReviewItem["status"]) {
+  if (status === "published") {
+    return "production";
+  }
+  return status;
 }
 
 function formatNumber(value: number | null | undefined) {
@@ -516,6 +529,7 @@ export default function SocialImportDashboardPage() {
   const [queryDraft, setQueryDraft] = useState("");
   const [queryApplied, setQueryApplied] = useState("");
   const [limit, setLimit] = useState(20);
+  const [reviewStatusFilter, setReviewStatusFilter] = useState<ReviewStatusFilter>("open");
   const [announcerLookupInput, setAnnouncerLookupInput] = useState("");
   const [announcerLookupDebounced, setAnnouncerLookupDebounced] = useState("");
   const [showAnnouncerLookup, setShowAnnouncerLookup] = useState(false);
@@ -576,6 +590,12 @@ export default function SocialImportDashboardPage() {
     return params.toString();
   }, [limit, queryApplied]);
 
+  const reviewQueryParams = useMemo(() => {
+    const params = new URLSearchParams(queryParams);
+    params.set("status", reviewStatusFilter);
+    return params.toString();
+  }, [queryParams, reviewStatusFilter]);
+
   const sourcesQuery = useQuery({
     queryKey: ["dashboard", "social-import", "sources", queryParams, canReadSources],
     enabled: canReadModule && canReadSources,
@@ -599,13 +619,13 @@ export default function SocialImportDashboardPage() {
   });
 
   const reviewQuery = useQuery({
-    queryKey: ["dashboard", "social-import", "review", queryParams, canReadReview],
+    queryKey: ["dashboard", "social-import", "review", reviewQueryParams, canReadReview],
     enabled: canReadModule && canReadReview,
     refetchInterval: canReadModule && canReadReview ? 10000 : false,
     refetchIntervalInBackground: true,
     queryFn: () =>
       fetchJson<ReviewPayload>(
-        `/api/admin/v1/social-import/review?${queryParams}`,
+        `/api/admin/v1/social-import/review?${reviewQueryParams}`,
         "Impossible de charger la file review social import.",
       ),
   });
@@ -1783,7 +1803,7 @@ export default function SocialImportDashboardPage() {
           <h2 className="text-lg font-semibold text-slate-900">Filtres lecture</h2>
         </CardHeader>
         <CardContent>
-          <form className="grid gap-3 md:grid-cols-3" onSubmit={onApplyFilters}>
+          <form className="grid gap-3 md:grid-cols-4" onSubmit={onApplyFilters}>
             <Input
               value={queryDraft}
               onChange={(event) => setQueryDraft(event.target.value)}
@@ -1797,6 +1817,19 @@ export default function SocialImportDashboardPage() {
               <option value="20">20 lignes</option>
               <option value="50">50 lignes</option>
               <option value="100">100 lignes</option>
+            </select>
+            <select
+              value={reviewStatusFilter}
+              onChange={(event) => setReviewStatusFilter(event.target.value as ReviewStatusFilter)}
+              className="h-10 rounded-md border border-slate-200 px-3 text-sm"
+            >
+              <option value="open">File review: à traiter</option>
+              <option value="processed">File review: traitées</option>
+              <option value="all">File review: toutes</option>
+              <option value="ready_to_publish">Prêtes à publier</option>
+              <option value="needs_review">En révision</option>
+              <option value="published">Publiées (production)</option>
+              <option value="rejected">Rejetées</option>
             </select>
             <Button type="submit">Appliquer</Button>
           </form>
@@ -2233,7 +2266,9 @@ export default function SocialImportDashboardPage() {
                           ) : null}
                           <p className="font-medium text-slate-900">{candidate.rawPostId}</p>
                         </div>
-                        <Badge variant={toStatusBadgeVariant(candidate.status)}>{candidate.status}</Badge>
+                        <Badge variant={toStatusBadgeVariant(candidate.status)}>
+                          {toReviewCandidateStatusLabel(candidate.status)}
+                        </Badge>
                       </div>
                       {candidate.title ? (
                         <p className="mt-1 text-sm font-medium text-slate-800">{candidate.title}</p>
