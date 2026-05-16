@@ -10,7 +10,7 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { ChevronLeft, SlidersHorizontal } from "lucide-react";
-import { tags as tagsList, statusOptions } from "@/constantes";
+import { statusOptions } from "@/constantes";
 import { DialogDescription } from "@radix-ui/react-dialog";
 import { TypeProperty, getTypePropertyKey } from "@/constantes/property-type";
 import { useFilterModal } from "@/hooks/use-filter-modal";
@@ -24,6 +24,7 @@ import SelectCity from "../search/SelectCity";
 import SelectStreet from "../search/SelectStreet";
 import MultiSelectFormApp from "../shared/form/MultiSelectFormApp";
 import InputFormNumberApp from "../shared/form/InputFormNumberApp";
+import { useDynamicTags } from "@/hooks/useDynamicTags";
 
 export const FilterModalHomePage = () => {
     const form = useForm<FormFilterSchemaType>({
@@ -37,6 +38,7 @@ export const FilterModalHomePage = () => {
     } = useFilterModal();
 
     const { onSubmit, onClear } = useFormFilterSearchMediator(form);
+    const { tagOptions } = useDynamicTags();
     return (
         <Dialog open={open} onOpenChange={setOpen}>
             <DialogTrigger asChild>
@@ -189,7 +191,7 @@ export const FilterModalHomePage = () => {
                                         <MultiSelectFormApp
                                             control={form.control}
                                             name="tags"
-                                            options={tagsList
+                                            options={tagOptions
                                                 .map(tag => ({
                                                     label: tag.tagName,
                                                     value: tag.tagName

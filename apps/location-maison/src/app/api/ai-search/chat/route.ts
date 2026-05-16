@@ -3,10 +3,10 @@ import { createHash } from 'node:crypto';
 import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 import firebaseCollectionNames from '@/constantes/firebase-collection-name';
-import { tags as allTags } from '@/constantes';
 import { createLogger } from '@/lib/logger';
 import { AppError } from '@/lib/errors/app-error';
 import { handleApiError, jsonApiError } from '@/lib/api/error-response';
+import { getDynamicTagNamesServer } from '@/lib/tags/dynamic-tags.server';
 
 const logger = createLogger('api.ai-search.chat');
 
@@ -117,7 +117,7 @@ function mergeFilters(current: SearchFilters | undefined, next: Partial<SearchFi
   return merged;
 }
 
-function parseCriteriaFromMessage(message: string): Partial<SearchFilters> {
+function parseCriteriaFromMessage(message: string, availableTagNames: string[]): Partial<SearchFilters> {
   const normalized = normalizeText(message);
   const parsed: Partial<SearchFilters> = {};
 
@@ -177,8 +177,7 @@ function parseCriteriaFromMessage(message: string): Partial<SearchFilters> {
     parsed.typeProperty = matchedTypes;
   }
 
-  const matchedTags = allTags
-    .map((tag) => tag.tagName)
+  const matchedTags = availableTagNames
     .filter((tagName) => normalized.includes(normalizeText(tagName)));
   if (matchedTags.length > 0) {
     parsed.tags = matchedTags;
@@ -933,7 +932,8 @@ export async function POST(request: NextRequest) {
     }
 
     const currentFilters = body.currentFilters ?? {};
-    const parsedFilters = parseCriteriaFromMessage(body.message);
+    const availableTagNames = await getDynamicTagNamesServer();
+    const parsedFilters = parseCriteriaFromMessage(body.message, availableTagNames);
     const shouldResetContext = isNewSearchRequestMessage(body.message);
     const mergedFilters = shouldResetContext
       ? (parsedFilters as SearchFilters)

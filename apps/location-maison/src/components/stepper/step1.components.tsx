@@ -23,7 +23,7 @@ import { AiOutlineCamera, AiOutlineCloseCircle } from "react-icons/ai";
 import Image from 'next/image'
 import { Button } from '../ui/button';
 import { FormItem, FormControl, FormLabel } from '../ui/form';
-import { tags, MAX_TAGS } from '@/constantes';
+import { MAX_TAGS } from '@/constantes';
 import { IconType } from 'react-icons/lib';
 import clsx from 'clsx';
 import { useToast } from '@/hooks/use-toast';
@@ -35,6 +35,7 @@ import { MAX_IMAGES_UPLOAD } from "@/constantes";
 import { InputApp } from "../shared/ui/InputApp";
 import TextareaApp from "../shared/ui/TextareaApp";
 import { InputNumberApp } from "../shared/ui/InputNumberApp";
+import { useDynamicTags } from "@/hooks/useDynamicTags";
 
 // Fonction utilitaire pour générer une clé unique pour les images
 const generateImageKey = (image: File | string, index: number): string => {
@@ -326,6 +327,7 @@ export const TagsComponent = () => {
     const mediator = useStep1FormPropertyMediator();
     const { watch } = useFormContext();
     const selectedTags = watch("tags") ?? [];
+    const { tagOptions } = useDynamicTags();
 
     return (
         <div className="space-y-4">
@@ -335,7 +337,7 @@ export const TagsComponent = () => {
                 </span>
             </div>
             <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
-                {[...tags]
+                {[...tagOptions]
                     .sort((a, b) => a.tagName.localeCompare(b.tagName, "fr"))
                     .map((tag) => (
                         <TagItem

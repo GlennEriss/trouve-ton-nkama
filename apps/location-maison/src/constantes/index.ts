@@ -4,7 +4,7 @@
 
 import type { IconType } from 'react-icons';
 import { FaBriefcase, FaHome, FaHeart, FaBuilding, FaUsers, FaCouch, FaTree, FaMountain, FaSwimmingPool, FaDog, FaShoppingCart, FaBus, FaCar, FaWifi, FaShieldAlt, FaBicycle, FaRunning, FaChild, FaWheelchair, FaGraduationCap, FaUmbrellaBeach, FaPeace, FaColumns, FaWarehouse, FaRegClock, FaUserTie, FaStore } from 'react-icons/fa';
-import tagNames from './tags.json';
+import { DEFAULT_TAG_NAMES } from '@/lib/tags/default-tags';
 
 // Constants
 export const MAX_IMAGES_UPLOAD = 10;
@@ -21,7 +21,7 @@ export const statusOptions = [
   }
 ];
 
-const TAG_ICONS = {
+const TAG_ICONS: Record<string, IconType> = {
   Travail: FaBriefcase,
   Famille: FaUsers,
   Couple: FaHeart,
@@ -55,15 +55,28 @@ const TAG_ICONS = {
   'Court séjour': FaRegClock,
   Propriétaire: FaUserTie,
   Agence: FaStore,
-} satisfies Record<string, IconType>;
+};
 
-export type TagName = keyof typeof TAG_ICONS;
-export const allowedTagNames = tagNames as TagName[];
+export type TagName = string;
+export type TagOption = {
+  tagName: string;
+  tagIcon: IconType;
+};
 
-export const tags = allowedTagNames.map((tagName) => ({
-  tagName,
-  tagIcon: TAG_ICONS[tagName] ?? FaStore,
-}));
+export function resolveTagIcon(tagName: string) {
+  return TAG_ICONS[tagName] ?? FaStore;
+}
+
+export function mapTagNamesToOptions(tagNames: string[]): TagOption[] {
+  const unique = Array.from(new Set(tagNames.map((tag) => tag.trim()).filter(Boolean)));
+  return unique.map((tagName) => ({
+    tagName,
+    tagIcon: resolveTagIcon(tagName),
+  }));
+}
+
+export const allowedTagNames = [...DEFAULT_TAG_NAMES];
+export const tags = mapTagNamesToOptions(allowedTagNames);
 
 export const collectionFirebaseNames = {
   properties: 'properties',
