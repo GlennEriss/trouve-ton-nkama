@@ -3,10 +3,12 @@
  * Charge et transforme gabon_osm.json en structures utilisables par les combobox
  */
 
-import { calculateDistance, findNearestLocation } from '@/lib/geo-haversine';
+import { findNearestLocation } from '@/lib/geo-haversine';
 
-// Import du fichier OSM local
+// Import du fichier OSM local (fallback)
 import osmData from './gabon_osm.json';
+
+type OsmRootRecord = Record<string, unknown>;
 
 export interface OSMLocation {
   name: string;
@@ -29,6 +31,22 @@ export interface OSMLocationsData {
   quarterToProvince: Map<string, string>; // quarter name -> province name
 }
 
+export interface OSMLocationsSerializable {
+  provinces: OSMLocation[];
+  cities: OSMLocation[];
+  quarters: OSMLocation[];
+  cityToProvince: Record<string, string>;
+  quarterToCity: Record<string, string>;
+  quarterToProvince: Record<string, string>;
+}
+
+function toOsmRootRecord(value: unknown): OsmRootRecord | null {
+  if (!value || typeof value !== 'object' || Array.isArray(value)) {
+    return null;
+  }
+  return value as OsmRootRecord;
+}
+
 /**
  * Normalise un nom (priorité: names.fr > name)
  * Retourne null si aucun nom valide trouvé
@@ -45,14 +63,14 @@ function normalizeName(item: any): string | null {
 /**
  * Extrait les provinces depuis admin_boundaries["4"]
  */
-function extractProvinces(): OSMLocation[] {
-  const provinces = (osmData as any).admin_boundaries?.['4'] || [];
-  
+function extractProvinces(root: OsmRootRecord): OSMLocation[] {
+  const provinces = (root as any).admin_boundaries?.['4'] || [];
+
   const mapped = provinces
     .map((item: any): OSMLocation | null => {
       const name = normalizeName(item);
       if (!name) return null; // Ignorer les entrées sans nom valide
-      
+
       return {
         name,
         lat: item.center?.lat || 0,
@@ -73,22 +91,24 @@ function extractProvinces(): OSMLocation[] {
       seen.set(loc.name, loc);
     }
   });
-  
+
   return Array.from(seen.values());
 }
 
 /**
  * Extrait les villes depuis places.city + places.town + admin_boundaries["6"] + admin_boundaries["8"]
  */
-function extractCities(): OSMLocation[] {
+function extractCities(root: OsmRootRecord): OSMLocation[] {
   const cities: OSMLocation[] = [];
+  const places = (root as any).places || {};
+  const adminBoundaries = (root as any).admin_boundaries || {};
 
   // Places: city
-  const placesCities = (osmData as any).places?.city || [];
+  const placesCities = places.city || [];
   placesCities.forEach((item: any) => {
     const name = normalizeName(item);
     if (!name) return; // Ignorer les entrées sans nom valide
-    
+
     cities.push({
       name,
       lat: item.center?.lat || 0,
@@ -102,11 +122,11 @@ function extractCities(): OSMLocation[] {
   });
 
   // Places: town
-  const placesTowns = (osmData as any).places?.town || [];
+  const placesTowns = places.town || [];
   placesTowns.forEach((item: any) => {
     const name = normalizeName(item);
     if (!name) return;
-    
+
     cities.push({
       name,
       lat: item.center?.lat || 0,
@@ -120,11 +140,11 @@ function extractCities(): OSMLocation[] {
   });
 
   // Admin: level 6 (départements)
-  const admin6 = (osmData as any).admin_boundaries?.['6'] || [];
+  const admin6 = adminBoundaries['6'] || [];
   admin6.forEach((item: any) => {
     const name = normalizeName(item);
     if (!name) return;
-    
+
     cities.push({
       name,
       lat: item.center?.lat || 0,
@@ -138,11 +158,11 @@ function extractCities(): OSMLocation[] {
   });
 
   // Admin: level 8 (communes)
-  const admin8 = (osmData as any).admin_boundaries?.['8'] || [];
+  const admin8 = adminBoundaries['8'] || [];
   admin8.forEach((item: any) => {
     const name = normalizeName(item);
     if (!name) return;
-    
+
     cities.push({
       name,
       lat: item.center?.lat || 0,
@@ -164,24 +184,26 @@ function extractCities(): OSMLocation[] {
       seen.set(loc.name, loc);
     }
   });
-  
+
   return Array.from(seen.values());
 }
 
 /**
  * Extrait les quartiers depuis tous les types de places + admin_boundaries["9"] + admin_boundaries["10"]
  */
-function extractQuarters(): OSMLocation[] {
+function extractQuarters(root: OsmRootRecord): OSMLocation[] {
   const quarters: OSMLocation[] = [];
+  const places = (root as any).places || {};
+  const adminBoundaries = (root as any).admin_boundaries || {};
   const placeTypes = ['suburb', 'neighbourhood', 'quarter', 'village', 'hamlet', 'locality'];
 
   // Places: suburb, neighbourhood, quarter, village, hamlet, locality
   placeTypes.forEach((placeType) => {
-    const items = (osmData as any).places?.[placeType] || [];
+    const items = places[placeType] || [];
     items.forEach((item: any) => {
       const name = normalizeName(item);
       if (!name) return; // Ignorer les entrées sans nom valide
-      
+
       quarters.push({
         name,
         lat: item.center?.lat || 0,
@@ -196,11 +218,11 @@ function extractQuarters(): OSMLocation[] {
   });
 
   // Admin: level 9 (arrondissements)
-  const admin9 = (osmData as any).admin_boundaries?.['9'] || [];
+  const admin9 = adminBoundaries['9'] || [];
   admin9.forEach((item: any) => {
     const name = normalizeName(item);
     if (!name) return;
-    
+
     quarters.push({
       name,
       lat: item.center?.lat || 0,
@@ -214,11 +236,11 @@ function extractQuarters(): OSMLocation[] {
   });
 
   // Admin: level 10 (quartiers admin)
-  const admin10 = (osmData as any).admin_boundaries?.['10'] || [];
+  const admin10 = adminBoundaries['10'] || [];
   admin10.forEach((item: any) => {
     const name = normalizeName(item);
     if (!name) return;
-    
+
     quarters.push({
       name,
       lat: item.center?.lat || 0,
@@ -241,7 +263,7 @@ function extractQuarters(): OSMLocation[] {
       seen.set(key, loc);
     }
   });
-  
+
   return Array.from(seen.values());
 }
 
@@ -321,15 +343,59 @@ function associateQuartersToProvinces(
   return quarterToProvince;
 }
 
-/**
- * Charge et structure toutes les données OSM
- * Cette fonction est appelée une seule fois au chargement du module
- */
-export function loadOSMLocations(): OSMLocationsData {
+function mapToRecord(map: Map<string, string>) {
+  const record: Record<string, string> = {};
+  for (const [key, value] of map.entries()) {
+    record[key] = value;
+  }
+  return record;
+}
+
+function recordToMap(record: Record<string, string> | null | undefined) {
+  const map = new Map<string, string>();
+  if (!record) {
+    return map;
+  }
+  for (const [key, value] of Object.entries(record)) {
+    if (typeof value === 'string' && value.trim().length > 0) {
+      map.set(key, value);
+    }
+  }
+  return map;
+}
+
+export function serializeOSMLocationsData(data: OSMLocationsData): OSMLocationsSerializable {
+  return {
+    provinces: data.provinces,
+    cities: data.cities,
+    quarters: data.quarters,
+    cityToProvince: mapToRecord(data.cityToProvince),
+    quarterToCity: mapToRecord(data.quarterToCity),
+    quarterToProvince: mapToRecord(data.quarterToProvince),
+  };
+}
+
+export function deserializeOSMLocationsData(serialized: OSMLocationsSerializable): OSMLocationsData {
+  return {
+    provinces: Array.isArray(serialized.provinces) ? serialized.provinces : [],
+    cities: Array.isArray(serialized.cities) ? serialized.cities : [],
+    quarters: Array.isArray(serialized.quarters) ? serialized.quarters : [],
+    cityToProvince: recordToMap(serialized.cityToProvince),
+    quarterToCity: recordToMap(serialized.quarterToCity),
+    quarterToProvince: recordToMap(serialized.quarterToProvince),
+  };
+}
+
+export function loadOSMLocationsFromRaw(raw: unknown): OSMLocationsData | null {
+  const root = toOsmRootRecord(raw);
+  if (!root) {
+    return null;
+  }
+
   // Extraire les données brutes
-  const provinces = extractProvinces();
-  const cities = extractCities();
-  const quarters = extractQuarters();
+  const provinces = extractProvinces(root);
+  const cities = extractCities(root);
+  const quarters = extractQuarters(root);
 
   // Créer les associations géographiques
   const cityToProvince = associateCitiesToProvinces(provinces, cities);
@@ -354,6 +420,18 @@ export function loadOSMLocations(): OSMLocationsData {
     quarterToCity,
     quarterToProvince,
   };
+}
+
+/**
+ * Charge et structure toutes les données OSM
+ * Cette fonction est appelée une seule fois au chargement du module
+ */
+export function loadOSMLocations(): OSMLocationsData {
+  const parsed = loadOSMLocationsFromRaw(osmData);
+  if (!parsed) {
+    throw new Error('Impossible de parser gabon_osm.json');
+  }
+  return parsed;
 }
 
 // Charger les données une seule fois au chargement du module
