@@ -3,6 +3,7 @@ import 'server-only';
 import { existsSync, readFileSync } from 'node:fs';
 import { resolve as resolvePath } from 'node:path';
 
+import type { App } from 'firebase-admin/app';
 import { getStorage } from 'firebase-admin/storage';
 
 import { adminApp } from '@/firebase/admin';
@@ -105,7 +106,7 @@ async function loadFromCloudStorage(): Promise<GabonOsmRootResult | null> {
     return null;
   }
 
-  const storage = getStorage(adminApp as any);
+  const storage = getStorage(adminApp as App);
   const file = storage.bucket(OSM_STORAGE_BUCKET).file(OSM_STORAGE_OBJECT_PATH);
   const [exists] = await file.exists();
   if (!exists) {
@@ -177,4 +178,3 @@ export async function getGabonOsmRootServer(forceRefresh = false): Promise<Gabon
 
   return loadingPromise;
 }
-

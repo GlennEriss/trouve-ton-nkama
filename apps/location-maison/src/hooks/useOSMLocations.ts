@@ -3,8 +3,14 @@
  * Fournit les données structurées pour les combobox de sélection de localisation
  */
 
-import { useMemo } from 'react';
-import { getOSMLocations, OSMLocation, OSMLocationsData } from '@/data/gabon-osm-locations';
+import { useEffect, useMemo, useState } from 'react';
+import {
+  OSMLocation,
+  OSMLocationsData,
+  OSMLocationsSerializable,
+  deserializeOSMLocationsData,
+  getOSMLocations,
+} from '@/data/gabon-osm-locations';
 import { createLogger } from '@/lib/logger';
 
 const logger = createLogger('hooks.use-osm-locations');
@@ -24,23 +30,111 @@ export interface UseOSMLocationsReturn {
   getAllQuarters: () => OSMLocation[];
 }
 
+interface GabonOsmApiResponse {
+  success: boolean;
+  data?: OSMLocationsSerializable;
+  error?: {
+    code?: string;
+    message?: string;
+  };
+}
+
+let cachedOsmData: OSMLocationsData | null = null;
+let cachedOsmError: Error | null = null;
+let cachedOsmPromise: Promise<OSMLocationsData | null> | null = null;
+
+function getLocalFallbackData() {
+  try {
+    return getOSMLocations();
+  } catch (error) {
+    logger.warn('Fallback OSM local indisponible', { error });
+    return null;
+  }
+}
+
+async function loadFromApi() {
+  const response = await fetch('/api/location/osm/gabon', {
+    method: 'GET',
+    cache: 'no-store',
+  });
+
+  const payload = (await response.json()) as GabonOsmApiResponse;
+  if (!response.ok || !payload.success || !payload.data) {
+    throw new Error(payload.error?.message ?? 'Impossible de charger les données OSM distantes');
+  }
+
+  return deserializeOSMLocationsData(payload.data);
+}
+
+async function loadOsmDataOnce() {
+  if (cachedOsmData) {
+    return cachedOsmData;
+  }
+  if (cachedOsmPromise) {
+    return cachedOsmPromise;
+  }
+
+  cachedOsmPromise = (async () => {
+    try {
+      const fromApi = await loadFromApi();
+      cachedOsmData = fromApi;
+      cachedOsmError = null;
+      return fromApi;
+    } catch (apiError) {
+      logger.warn('Chargement OSM via API indisponible, fallback local', { error: apiError });
+      const fallback = getLocalFallbackData();
+      if (fallback) {
+        cachedOsmData = fallback;
+        cachedOsmError = null;
+        return fallback;
+      }
+      const error =
+        apiError instanceof Error
+          ? apiError
+          : new Error('Impossible de charger les données OSM (API + local)');
+      cachedOsmError = error;
+      return null;
+    } finally {
+      cachedOsmPromise = null;
+    }
+  })();
+
+  return cachedOsmPromise;
+}
+
 /**
  * Hook principal pour accéder aux données OSM
- * Les données sont chargées de manière synchrone au build (pas de chargement async)
+ * Les données sont chargées depuis l'API (cloud + fallback local) avec cache en mémoire.
  */
 export function useOSMLocations(): UseOSMLocationsReturn {
-  // Charger les données une seule fois (cache en mémoire via getOSMLocations)
-  const data = useMemo(() => {
-    try {
-      return getOSMLocations();
-    } catch (error) {
-      logger.error('Erreur lors du chargement des données OSM', { error });
-      return null;
-    }
-  }, []);
+  const [data, setData] = useState<OSMLocationsData | null>(() => cachedOsmData);
+  const [isLoading, setIsLoading] = useState<boolean>(() => !cachedOsmData);
+  const [error, setError] = useState<Error | null>(() => cachedOsmError);
 
-  const isLoading = false; // Les données sont chargées de manière synchrone
-  const error = data === null ? new Error('Impossible de charger les données OSM') : null;
+  useEffect(() => {
+    let mounted = true;
+
+    if (!cachedOsmData && !cachedOsmPromise) {
+      setIsLoading(true);
+    }
+
+    void loadOsmDataOnce().then((result) => {
+      if (!mounted) return;
+      if (result) {
+        setData(result);
+        setError(null);
+      } else if (cachedOsmError) {
+        setError(cachedOsmError);
+      } else {
+        setError(new Error('Impossible de charger les données OSM'));
+      }
+      setIsLoading(false);
+    });
+
+    return () => {
+      mounted = false;
+    };
+  }, []);
 
   // Helper: Récupérer toutes les provinces
   const getAllProvinces = useMemo(() => {
@@ -77,7 +171,7 @@ export function useOSMLocations(): UseOSMLocationsReturn {
   const getQuartersByProvince = useMemo(() => {
     return (province: string): OSMLocation[] => {
       if (!data || !province) return [];
-      
+
       // Quartiers rattachés directement à la province
       const directQuarters = data.quarters.filter(
         (quarter) => data.quarterToProvince.get(quarter.name) === province
