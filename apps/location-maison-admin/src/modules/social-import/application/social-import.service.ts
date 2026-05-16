@@ -68,9 +68,46 @@ const SOCIAL_IMPORT_DEFAULT_COUNTRY = "Gabon";
 const SOCIAL_IMPORT_DEFAULT_COUNTRY_CODE = "GA";
 const SOCIAL_IMPORT_DEFAULT_CITY = "Libreville";
 const SOCIAL_IMPORT_DEFAULT_PROVINCE = "Estuaire";
+const SOCIAL_IMPORT_MAX_TAGS = 6;
+const SOCIAL_IMPORT_TAG_CATALOG = [
+  "Travail",
+  "Famille",
+  "Couple",
+  "Villa",
+  "Sous barrière",
+  "Meublé",
+  "Centre-ville",
+  "Vacances",
+  "Nature",
+  "Montagne",
+  "Piscine",
+  "Animaux admis",
+  "Commerces proches",
+  "Transport proche",
+  "Parking",
+  "Wi-Fi",
+  "Sécurisé",
+  "Vélo",
+  "Activités sportives",
+  "Adapté aux enfants",
+  "Accessible handicapés",
+  "Étudiant",
+  "Calme et tranquillité",
+  "Proche de la plage",
+  "Duplex",
+  "Boutique",
+  "Balcon",
+  "Terrasse",
+  "Collocation",
+  "Garage",
+  "Court séjour",
+  "Propriétaire",
+  "Agence",
+] as const;
 
 type ListingTypeProperty = CreateListingForAnnouncerInput["typeProperty"];
 type ListingStatus = CreateListingForAnnouncerInput["status"];
+type SocialImportKnownTag = (typeof SOCIAL_IMPORT_TAG_CATALOG)[number];
 function normalizeQuery(value?: string) {
   return value?.trim().toLowerCase() ?? "";
 }
@@ -277,6 +314,75 @@ const FRENCH_TYPE_LABEL: Record<ListingTypeProperty, string> = {
 
 function normalizeInlineSpaces(value: string) {
   return value.replace(/\s+/g, " ").trim();
+}
+
+function normalizeTagToken(value: string) {
+  return value
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, " ")
+    .trim();
+}
+
+const TAG_CATALOG_BY_NORMALIZED = new Map<string, SocialImportKnownTag>(
+  SOCIAL_IMPORT_TAG_CATALOG.map((tag) => [normalizeTagToken(tag), tag]),
+);
+
+const SOCIAL_IMPORT_TAG_ALIAS_TO_CANONICAL: Record<string, SocialImportKnownTag> = {
+  agence: "Agence",
+  immobilier: "Agence",
+  immo: "Agence",
+  proprietaire: "Propriétaire",
+  proprietaires: "Propriétaire",
+  proprietairee: "Propriétaire",
+  travail: "Travail",
+  famille: "Famille",
+  couple: "Couple",
+  villa: "Villa",
+  duplex: "Duplex",
+  calme: "Calme et tranquillité",
+  tranquille: "Calme et tranquillité",
+  tranquillite: "Calme et tranquillité",
+  nature: "Nature",
+  montagne: "Montagne",
+  piscine: "Piscine",
+  meuble: "Meublé",
+  meublee: "Meublé",
+  meublees: "Meublé",
+  "centre ville": "Centre-ville",
+  parking: "Parking",
+  wifi: "Wi-Fi",
+  "wi fi": "Wi-Fi",
+  securise: "Sécurisé",
+  velo: "Vélo",
+  "activites sportives": "Activités sportives",
+  "adapte aux enfants": "Adapté aux enfants",
+  "accessible handicapes": "Accessible handicapés",
+  etudiant: "Étudiant",
+  etudiants: "Étudiant",
+  plage: "Proche de la plage",
+  boutique: "Boutique",
+  balcon: "Balcon",
+  terrasse: "Terrasse",
+  collocation: "Collocation",
+  colocation: "Collocation",
+  garage: "Garage",
+  vacances: "Vacances",
+  "court sejour": "Court séjour",
+  "sous barriere": "Sous barrière",
+};
+
+function resolveKnownTag(tagValue: string): SocialImportKnownTag | null {
+  const normalized = normalizeTagToken(tagValue);
+  if (!normalized) {
+    return null;
+  }
+  return (
+    SOCIAL_IMPORT_TAG_ALIAS_TO_CANONICAL[normalized] ??
+    TAG_CATALOG_BY_NORMALIZED.get(normalized) ??
+    null
+  );
 }
 
 function cleanSocialTitleLine(value: string) {
@@ -995,18 +1101,96 @@ function buildFallbackTags(input: {
   typeProperty: ListingTypeProperty;
   city: string;
   status: ListingStatus;
+  pageName: string | null;
 }) {
-  const hashtags = extractHashtagsFromCaption(input.caption);
-  if (hashtags.length > 0) {
-    return hashtags.slice(0, 6);
+  const tags: SocialImportKnownTag[] = [];
+  const addTag = (tag: SocialImportKnownTag | null) => {
+    if (!tag || tags.includes(tag) || tags.length >= SOCIAL_IMPORT_MAX_TAGS) {
+      return;
+    }
+    tags.push(tag);
+  };
+
+  const captionText = input.caption ?? "";
+  const normalizedCaption = normalizeTagToken(captionText);
+  const normalizedPageName = normalizeTagToken(input.pageName ?? "");
+
+  if (/\b(immo|immobilier|agence|real estate)\b/.test(normalizedPageName)) {
+    addTag("Agence");
   }
 
-  const fallback = [
-    input.typeProperty.toLowerCase(),
-    input.city.toLowerCase(),
-    input.status === "FOR_RENT" ? "location" : "vente",
+  if (input.typeProperty === "Villa") {
+    addTag("Villa");
+  }
+  if (input.typeProperty === "Shop" || input.typeProperty === "Kiosk") {
+    addTag("Boutique");
+  }
+  if (/\bduplex\b/.test(normalizedCaption)) {
+    addTag("Duplex");
+  }
+
+  const hashtags = extractHashtagsFromCaption(input.caption);
+  for (const hashtag of hashtags) {
+    addTag(resolveKnownTag(hashtag));
+  }
+
+  const tagRules: Array<{ tag: SocialImportKnownTag; pattern: RegExp }> = [
+    { tag: "Calme et tranquillité", pattern: /\bcalme\b|\btranquill?\w*\b/ },
+    { tag: "Sous barrière", pattern: /\bsous\b.*\bbarrier\w*\b|\bdans la barri\w*\b/ },
+    { tag: "Sécurisé", pattern: /\bs[ée]curis\w*\b|\bgardien\b|\bbarri\w*\b/ },
+    { tag: "Meublé", pattern: /\bmeubl\w*\b/ },
+    { tag: "Centre-ville", pattern: /\bcentre\w*\s*ville\b/ },
+    { tag: "Vacances", pattern: /\bvacances?\b/ },
+    { tag: "Court séjour", pattern: /\bcourt\b.*\bs[ée]jour\b|\bjournalier\b|\bsemaine\b/ },
+    { tag: "Nature", pattern: /\bnature\b|\bverdure\b|\bjardin\b/ },
+    { tag: "Montagne", pattern: /\bmontagne\b/ },
+    { tag: "Piscine", pattern: /\bpiscine\b/ },
+    { tag: "Animaux admis", pattern: /\banimaux?\b.*\badmis\b/ },
+    { tag: "Commerces proches", pattern: /\bcommerces?\b|\bsupermarch\w*\b|\bmarch\w*\b/ },
+    { tag: "Transport proche", pattern: /\btransport\w*\b|\bbus\b|\btaxi\b/ },
+    { tag: "Parking", pattern: /\bparking\b/ },
+    { tag: "Wi-Fi", pattern: /\bwi[\s-]?fi\b|\binternet\b/ },
+    { tag: "Vélo", pattern: /\bv[ée]lo\b/ },
+    { tag: "Activités sportives", pattern: /\bsport\w*\b|\bgym\b|\bstade\b/ },
+    { tag: "Adapté aux enfants", pattern: /\benfants?\b|\bfamilial\w*\b/ },
+    { tag: "Accessible handicapés", pattern: /\baccessible\b.*\bhandicap\w*\b|\bhandicap\w*\b/ },
+    { tag: "Étudiant", pattern: /\b[ée]tudiant\w*\b|\bcampus\b/ },
+    { tag: "Proche de la plage", pattern: /\bplage\b|\bbord de mer\b|\bvue mer\b/ },
+    { tag: "Boutique", pattern: /\bboutique\b|\bmagasin\b|\blocal commercial\b/ },
+    { tag: "Balcon", pattern: /\bbalcon\b/ },
+    { tag: "Terrasse", pattern: /\bterrasse\b/ },
+    { tag: "Collocation", pattern: /\bcollocation\b|\bcolocation\b/ },
+    { tag: "Garage", pattern: /\bgarage\b/ },
+    { tag: "Famille", pattern: /\bfamille\b/ },
+    { tag: "Couple", pattern: /\bcouple\b/ },
+    { tag: "Travail", pattern: /\btravail\b|\bprofessionnel\w*\b|\bbureau\b/ },
+    { tag: "Propriétaire", pattern: /\bpropri[ée]taire\b|\bparticulier\b/ },
+    { tag: "Duplex", pattern: /\bduplex\b/ },
   ];
-  return Array.from(new Set(fallback.map((item) => item.trim()).filter(Boolean))).slice(0, 6);
+
+  for (const rule of tagRules) {
+    if (rule.pattern.test(normalizedCaption)) {
+      addTag(rule.tag);
+    }
+  }
+
+  if (tags.length === 0) {
+    addTag(input.typeProperty === "Villa" ? "Villa" : null);
+  }
+  if (tags.length === 0 && input.typeProperty === "Home") {
+    addTag("Famille");
+  }
+  if (tags.length === 0 && (input.typeProperty === "Shop" || input.typeProperty === "Kiosk")) {
+    addTag("Boutique");
+  }
+  if (tags.length === 0) {
+    addTag("Agence");
+  }
+  if (tags.length === 0) {
+    addTag("Calme et tranquillité");
+  }
+
+  return tags.slice(0, SOCIAL_IMPORT_MAX_TAGS);
 }
 
 function buildListingPayloadFromCandidateRawData(rawData: Record<string, unknown>) {
@@ -1067,6 +1251,7 @@ function buildListingPayloadFromCandidateRawData(rawData: Record<string, unknown
     typeProperty: inferredType,
     city,
     status,
+    pageName,
   });
   const contact = extractContactFromCaption(caption);
   const typeSpecific = buildTypeSpecificFields(inferredType, caption);

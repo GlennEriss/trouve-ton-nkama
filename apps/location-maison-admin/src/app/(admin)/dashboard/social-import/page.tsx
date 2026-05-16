@@ -201,6 +201,7 @@ const COMMON_LISTING_FIELDS: ListingFieldSpec[] = [
   { key: "typeProperty", label: "Type" },
   { key: "status", label: "Statut annonce" },
   { key: "title", label: "Titre" },
+  { key: "tags", label: "Tags" },
   { key: "price", label: "Prix" },
   { key: "area", label: "Superficie (m²)" },
   { key: "street", label: "Quartier/Rue" },
@@ -396,6 +397,12 @@ function formatFieldValueForDisplay(fieldKey: string, value: unknown) {
   }
 
   if (Array.isArray(value)) {
+    if (fieldKey === "tags") {
+      const tags = value
+        .map((item) => (typeof item === "string" ? item.trim() : ""))
+        .filter((item) => item.length > 0);
+      return tags.length > 0 ? tags.join(", ") : "N/A";
+    }
     return `${value.length} élément(s)`;
   }
 
@@ -2204,6 +2211,12 @@ export default function SocialImportDashboardPage() {
                 {candidates.length ? (
                   candidates.map((candidate) => {
                     const requiredFields = buildCandidateRequiredFields(candidate);
+                    const listingData = asRecord(candidate.listing);
+                    const listingTags = Array.isArray(listingData?.tags)
+                      ? listingData.tags
+                          .map((item) => (typeof item === "string" ? item.trim() : ""))
+                          .filter((item) => item.length > 0)
+                      : [];
                     return (
                     <article key={candidate.id} className="rounded-lg border border-slate-200 p-3">
                       <div className="flex items-center justify-between gap-3">
@@ -2237,6 +2250,9 @@ export default function SocialImportDashboardPage() {
                         Publiée le (source): {toDateLabel(candidate.sourcePublishedAt)}
                       </p>
                       <p className="mt-1 text-xs text-slate-500">Score: {formatNumber(candidate.score)}</p>
+                      {listingTags.length > 0 ? (
+                        <p className="mt-1 text-xs text-slate-500">Tags: {listingTags.join(", ")}</p>
+                      ) : null}
                       <p className="mt-1 text-xs text-slate-500">
                         Raison auto: {candidate.autoReason || "non renseignée"}
                       </p>
