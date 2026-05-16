@@ -84,6 +84,15 @@ type JsonImportPayload = {
   importedCount: number;
 };
 
+type AutoFixCandidatesPayload = {
+  requestedCount: number;
+  correctedCount: number;
+  stillNeedsReviewCount: number;
+  skippedPublishedCount: number;
+  skippedRejectedCount: number;
+  notFoundCount: number;
+};
+
 type JobDetailsPayload = {
   job: JobItem;
 };
@@ -108,6 +117,7 @@ type SocialImportActionModalMode =
   | "create_source"
   | "pause_source"
   | "revoke_source"
+  | "edit_candidate_type"
   | "reject_candidate"
   | "publish_candidate"
   | "delete_candidate"
@@ -126,6 +136,7 @@ type ReviewItem = {
   city: string | null;
   province: string | null;
   imageUrls: string[];
+  listing: Record<string, unknown> | null;
   status: "ready_to_publish" | "needs_review" | "rejected" | "published";
   autoReason: string | null;
   score: number | null;
@@ -163,6 +174,101 @@ type AnnouncerLookupItem = {
 type AnnouncerLookupPayload = {
   announcers: AnnouncerLookupItem[];
   count: number;
+};
+
+const LISTING_TYPE_OPTIONS = [
+  "Home",
+  "Studio",
+  "Apartment",
+  "Desk",
+  "Building",
+  "Shop",
+  "Kiosk",
+  "Room",
+  "Property",
+  "Logement",
+  "Villa",
+  "Land",
+] as const;
+
+type ListingTypeOption = (typeof LISTING_TYPE_OPTIONS)[number];
+type ListingFieldSpec = {
+  key: string;
+  label: string;
+};
+
+const COMMON_LISTING_FIELDS: ListingFieldSpec[] = [
+  { key: "typeProperty", label: "Type" },
+  { key: "status", label: "Statut annonce" },
+  { key: "title", label: "Titre" },
+  { key: "price", label: "Prix" },
+  { key: "area", label: "Superficie (m²)" },
+  { key: "street", label: "Quartier/Rue" },
+  { key: "city", label: "Ville" },
+  { key: "province", label: "Province" },
+  { key: "country", label: "Pays" },
+  { key: "countryCode", label: "Code pays" },
+  { key: "images", label: "Images" },
+];
+
+const TYPE_LISTING_FIELDS: Record<ListingTypeOption, ListingFieldSpec[]> = {
+  Logement: [
+    { key: "nbrRooms", label: "Nombre de chambres" },
+    { key: "nbrKitchens", label: "Nombre de cuisines" },
+    { key: "nbrBathrooms", label: "Nombre de salles d'eau" },
+    { key: "nbrToilets", label: "Nombre de toilettes" },
+  ],
+  Apartment: [
+    { key: "nbrRooms", label: "Nombre de chambres" },
+    { key: "nbrKitchens", label: "Nombre de cuisines" },
+    { key: "nbrBathrooms", label: "Nombre de salles d'eau" },
+    { key: "nbrToilets", label: "Nombre de toilettes" },
+    { key: "nbrFloorApartment", label: "Étage appartement" },
+    { key: "numeroApartment", label: "Numéro appartement" },
+  ],
+  Studio: [
+    { key: "nbrRooms", label: "Nombre de pièces" },
+    { key: "nbrKitchens", label: "Nombre de cuisines" },
+    { key: "nbrBathrooms", label: "Nombre de salles d'eau" },
+    { key: "nbrToilets", label: "Nombre de toilettes" },
+    { key: "nbrFloorStudio", label: "Étage studio" },
+    { key: "numeroStudio", label: "Numéro studio" },
+  ],
+  Home: [
+    { key: "nbrRooms", label: "Nombre de chambres" },
+    { key: "nbrKitchens", label: "Nombre de cuisines" },
+    { key: "nbrBathrooms", label: "Nombre de salles d'eau" },
+    { key: "nbrToilets", label: "Nombre de toilettes" },
+    { key: "nbrGarages", label: "Nombre de garages" },
+    { key: "nbrFloors", label: "Nombre d'étages" },
+    { key: "nbrLivingRoom", label: "Nombre de salons" },
+  ],
+  Villa: [
+    { key: "nbrRooms", label: "Nombre de chambres" },
+    { key: "nbrKitchens", label: "Nombre de cuisines" },
+    { key: "nbrBathrooms", label: "Nombre de salles d'eau" },
+    { key: "nbrToilets", label: "Nombre de toilettes" },
+    { key: "nbrGarages", label: "Nombre de garages" },
+    { key: "nbrFloors", label: "Nombre d'étages" },
+    { key: "nbrPiscine", label: "Nombre de piscines" },
+  ],
+  Desk: [
+    { key: "nbrRooms", label: "Nombre de bureaux/pièces" },
+    { key: "nbrToilets", label: "Nombre de toilettes" },
+  ],
+  Building: [
+    { key: "nbrApartments", label: "Nombre d'appartements" },
+    { key: "nbrFloors", label: "Nombre d'étages" },
+    { key: "hasParking", label: "Parking" },
+  ],
+  Shop: [
+    { key: "nbrRooms", label: "Nombre de pièces" },
+    { key: "nbrToilet", label: "Nombre de toilettes" },
+  ],
+  Kiosk: [{ key: "kioskType", label: "Type de kiosque" }],
+  Room: [{ key: "roomType", label: "Type de chambre" }],
+  Property: [],
+  Land: [],
 };
 
 function hasPermission(permissions: string[], required: string) {
@@ -214,6 +320,178 @@ function formatNumber(value: number | null | undefined) {
   return new Intl.NumberFormat("fr-FR").format(value);
 }
 
+function asRecord(value: unknown): Record<string, unknown> | null {
+  if (!value || typeof value !== "object" || Array.isArray(value)) {
+    return null;
+  }
+  return value as Record<string, unknown>;
+}
+
+function normalizeListingType(value: string | null | undefined): ListingTypeOption {
+  const normalized = (value || "").trim().toLowerCase();
+  if (!normalized) {
+    return "Property";
+  }
+  const found = LISTING_TYPE_OPTIONS.find((entry) => entry.toLowerCase() === normalized);
+  return found ?? "Property";
+}
+
+function getCandidateFieldRawValue(candidate: ReviewItem, fieldKey: string): unknown {
+  const listing = asRecord(candidate.listing);
+  if (listing && fieldKey in listing) {
+    return listing[fieldKey];
+  }
+
+  if (fieldKey === "typeProperty") return candidate.typeProperty;
+  if (fieldKey === "price") return candidate.price;
+  if (fieldKey === "city") return candidate.city;
+  if (fieldKey === "province") return candidate.province;
+  if (fieldKey === "images") return candidate.imageUrls;
+
+  return undefined;
+}
+
+function isMissingFieldValue(fieldKey: string, value: unknown) {
+  if (value === undefined || value === null) {
+    return true;
+  }
+  if (typeof value === "string") {
+    return value.trim().length === 0;
+  }
+  if (Array.isArray(value)) {
+    return value.length === 0;
+  }
+  if (fieldKey === "images" && typeof value === "object" && value !== null) {
+    const record = value as Record<string, unknown>;
+    const images = Array.isArray(record.images) ? record.images : [];
+    return images.length === 0;
+  }
+  return false;
+}
+
+function formatFieldValueForDisplay(fieldKey: string, value: unknown) {
+  if (value === undefined || value === null) {
+    return "N/A";
+  }
+
+  if (fieldKey === "images") {
+    const imageArray = Array.isArray(value) ? value : [];
+    return `${imageArray.length} image(s)`;
+  }
+
+  if (typeof value === "boolean") {
+    return value ? "Oui" : "Non";
+  }
+
+  if (typeof value === "number") {
+    if (fieldKey === "price") {
+      return `${formatNumber(value)} FCFA`;
+    }
+    return formatNumber(value);
+  }
+
+  if (typeof value === "string") {
+    const trimmed = value.trim();
+    return trimmed.length ? trimmed : "N/A";
+  }
+
+  if (Array.isArray(value)) {
+    return `${value.length} élément(s)`;
+  }
+
+  return "Renseigné";
+}
+
+function buildCandidateRequiredFields(candidate: ReviewItem) {
+  const listing = asRecord(candidate.listing);
+  const listingType = normalizeListingType(
+    (typeof listing?.typeProperty === "string" ? listing.typeProperty : candidate.typeProperty) as
+      | string
+      | null
+      | undefined,
+  );
+  const fieldSpecs = [...COMMON_LISTING_FIELDS, ...TYPE_LISTING_FIELDS[listingType]];
+  const deduplicated = fieldSpecs.filter(
+    (field, index) => fieldSpecs.findIndex((entry) => entry.key === field.key) === index,
+  );
+  const rows = deduplicated.map((field) => {
+    const value = getCandidateFieldRawValue(candidate, field.key);
+    return {
+      ...field,
+      value,
+      missing: isMissingFieldValue(field.key, value),
+    };
+  });
+  const missingCount = rows.filter((row) => row.missing).length;
+
+  return {
+    listingType,
+    rows,
+    missingCount,
+    filledCount: rows.length - missingCount,
+  };
+}
+
+function formatUnknownForDisplay(value: unknown): string {
+  if (value === null || value === undefined) {
+    return "N/A";
+  }
+  if (typeof value === "string") {
+    const trimmed = value.trim();
+    return trimmed.length > 0 ? trimmed : "N/A";
+  }
+  if (typeof value === "number") {
+    return Number.isFinite(value) ? String(value) : "N/A";
+  }
+  if (typeof value === "boolean") {
+    return value ? "true" : "false";
+  }
+  if (Array.isArray(value)) {
+    if (value.length === 0) {
+      return "[]";
+    }
+    return JSON.stringify(value);
+  }
+  if (typeof value === "object") {
+    return JSON.stringify(value);
+  }
+  return String(value);
+}
+
+function buildCandidateFullAttributes(candidate: ReviewItem | null) {
+  if (!candidate) {
+    return {} as Record<string, unknown>;
+  }
+
+  const listing = asRecord(candidate.listing);
+  const baseAttributes: Record<string, unknown> = {
+    sourcePostUrl: candidate.sourcePostUrl,
+    sourcePublishedAt: candidate.sourcePublishedAt,
+    rawPostId: candidate.rawPostId,
+    announcerUid: candidate.announcerUid,
+    statusReview: candidate.status,
+    autoReason: candidate.autoReason,
+    score: candidate.score,
+  };
+
+  if (!listing) {
+    return {
+      ...baseAttributes,
+      typeProperty: candidate.typeProperty,
+      title: candidate.title,
+      price: candidate.price,
+      city: candidate.city,
+      province: candidate.province,
+      imageUrls: candidate.imageUrls,
+    };
+  }
+
+  return {
+    ...listing,
+    ...baseAttributes,
+  };
+}
+
 async function fetchJson<T>(url: string, fallbackMessage: string) {
   const response = await fetch(url, { cache: "no-store" });
   const payload = (await response.json()) as
@@ -251,6 +529,7 @@ export default function SocialImportDashboardPage() {
   const [actionModalMode, setActionModalMode] = useState<SocialImportActionModalMode | null>(null);
   const [actionModalSource, setActionModalSource] = useState<SourceItem | null>(null);
   const [actionModalCandidate, setActionModalCandidate] = useState<ReviewItem | null>(null);
+  const [candidateTypeDraft, setCandidateTypeDraft] = useState<string>("Property");
   const [actionSourceForm, setActionSourceForm] = useState({
     announcerUid: "",
     platform: "facebook" as SourceItem["platform"],
@@ -384,6 +663,17 @@ export default function SocialImportDashboardPage() {
     const availableIds = new Set(candidates.map((candidate) => candidate.id));
     return selectedCandidateIds.filter((candidateId) => availableIds.has(candidateId));
   }, [candidates, selectedCandidateIds]);
+  const actionModalCandidateAttributes = useMemo(
+    () => buildCandidateFullAttributes(actionModalCandidate),
+    [actionModalCandidate],
+  );
+  const actionModalCandidateAttributeEntries = useMemo(
+    () =>
+      Object.entries(actionModalCandidateAttributes).sort(([keyA], [keyB]) =>
+        keyA.localeCompare(keyB, "fr"),
+      ),
+    [actionModalCandidateAttributes],
+  );
 
   function closeJobActionModal() {
     setJobModalMode(null);
@@ -403,6 +693,7 @@ export default function SocialImportDashboardPage() {
       sourceType: "profile",
       sourceUrl: "",
     });
+    setCandidateTypeDraft("Property");
   }
 
   function onApplyFilters(event: FormEvent<HTMLFormElement>) {
@@ -704,6 +995,40 @@ export default function SocialImportDashboardPage() {
     setActionModalMode("reject_candidate");
   }
 
+  async function handleEditCandidateType(candidate: ReviewItem) {
+    setActionModalCandidate(candidate);
+    setCandidateTypeDraft(candidate.typeProperty || "Property");
+    setActionModalMode("edit_candidate_type");
+  }
+
+  async function handleConfirmEditCandidateType() {
+    if (!actionModalCandidate) {
+      return;
+    }
+    const nextType = candidateTypeDraft.trim();
+    if (!nextType) {
+      setActionError("Sélectionne un type d'annonce.");
+      return;
+    }
+
+    const result = await withAction(
+      `candidate_type_${actionModalCandidate.id}`,
+      () =>
+        mutateJson({
+          url: `/api/admin/v1/social-import/review/${actionModalCandidate.id}`,
+          method: "PATCH",
+          body: {
+            typeProperty: nextType,
+          },
+        }),
+      "Type candidate mis à jour.",
+    );
+
+    if (result) {
+      closeActionModal();
+    }
+  }
+
   async function handleConfirmRejectCandidate() {
     if (!actionModalCandidate) {
       return;
@@ -842,6 +1167,39 @@ export default function SocialImportDashboardPage() {
     }
   }
 
+  async function handleAutoFixCandidates() {
+    const selectedIds = selectedCandidateIdsResolved;
+    const fallbackVisibleIds = candidates
+      .filter((candidate) => candidate.status !== "published" && candidate.status !== "rejected")
+      .map((candidate) => candidate.id);
+    const targetIds = selectedIds.length > 0 ? selectedIds : fallbackVisibleIds;
+
+    if (targetIds.length === 0) {
+      setActionError("Aucune candidate auto-corrigeable dans la vue courante.");
+      return;
+    }
+
+    const result = await withAction(
+      `candidate_autofix_${targetIds.length}`,
+      () =>
+        mutateJson<AutoFixCandidatesPayload>({
+          url: "/api/admin/v1/social-import/review/auto-fix",
+          method: "POST",
+          body: {
+            candidateIds: targetIds,
+          },
+        }),
+      "Auto-correction terminée.",
+    );
+
+    if (result) {
+      setActionMessage(
+        `Auto-correction: ${result.correctedCount}/${result.requestedCount} corrigée(s), ${result.stillNeedsReviewCount} encore en review, ${result.skippedPublishedCount} publiée(s) ignorée(s), ${result.skippedRejectedCount} rejetée(s) ignorée(s), ${result.notFoundCount} introuvable(s).`,
+      );
+      clearCandidateSelection();
+    }
+  }
+
   function buildExportQueryParams() {
     const params = new URLSearchParams();
     if (queryApplied) {
@@ -872,6 +1230,10 @@ export default function SocialImportDashboardPage() {
       await handleConfirmRevokeSource();
       return;
     }
+    if (actionModalMode === "edit_candidate_type") {
+      await handleConfirmEditCandidateType();
+      return;
+    }
     if (actionModalMode === "reject_candidate") {
       await handleConfirmRejectCandidate();
       return;
@@ -896,10 +1258,12 @@ export default function SocialImportDashboardPage() {
         ? "Mettre en pause la source"
         : actionModalMode === "revoke_source"
           ? "Révoquer la source"
+          : actionModalMode === "edit_candidate_type"
+            ? "Corriger l'annonce"
           : actionModalMode === "reject_candidate"
             ? "Rejeter la candidate"
             : actionModalMode === "publish_candidate"
-              ? "Publier la candidate"
+              ? "Valider et publier"
               : actionModalMode === "delete_candidate"
                 ? "Supprimer la candidate"
                 : actionModalMode === "delete_candidates_bulk"
@@ -913,6 +1277,8 @@ export default function SocialImportDashboardPage() {
         ? `Source: ${actionModalSource?.id ?? "N/A"}`
         : actionModalMode === "revoke_source"
           ? `Source: ${actionModalSource?.id ?? "N/A"}`
+          : actionModalMode === "edit_candidate_type"
+            ? `Candidate: ${actionModalCandidate?.rawPostId ?? "N/A"} · édite les attributs puis applique la correction`
           : actionModalMode === "reject_candidate"
             ? `Candidate: ${actionModalCandidate?.rawPostId ?? "N/A"}`
             : actionModalMode === "publish_candidate"
@@ -930,10 +1296,12 @@ export default function SocialImportDashboardPage() {
         ? "Confirmer la pause"
         : actionModalMode === "revoke_source"
           ? "Confirmer la révocation"
+          : actionModalMode === "edit_candidate_type"
+            ? "Appliquer la correction"
           : actionModalMode === "reject_candidate"
             ? "Confirmer le rejet"
             : actionModalMode === "publish_candidate"
-              ? "Confirmer la publication"
+              ? "Valider et pousser dans properties"
               : actionModalMode === "delete_candidate"
                 ? "Confirmer la suppression"
                 : actionModalMode === "delete_candidates_bulk"
@@ -946,7 +1314,9 @@ export default function SocialImportDashboardPage() {
     actionModalMode === "delete_candidate" ||
     actionModalMode === "delete_candidates_bulk"
       ? "destructive"
-      : actionModalMode === "create_source" || actionModalMode === "publish_candidate"
+      : actionModalMode === "create_source" ||
+          actionModalMode === "publish_candidate" ||
+          actionModalMode === "edit_candidate_type"
         ? "secondary"
         : "outline";
 
@@ -1285,6 +1655,7 @@ export default function SocialImportDashboardPage() {
           ) : null}
 
           {actionModalMode === "reject_candidate" ||
+          actionModalMode === "edit_candidate_type" ||
           actionModalMode === "publish_candidate" ||
           actionModalMode === "delete_candidate" ? (
             <div className="space-y-3 px-4 text-sm">
@@ -1301,6 +1672,70 @@ export default function SocialImportDashboardPage() {
                   {actionModalCandidate?.status ?? "N/A"}
                 </p>
               </div>
+              {actionModalMode === "edit_candidate_type" ? (
+                <div className="space-y-3">
+                  <div className="space-y-1">
+                    <p className="text-xs font-medium text-slate-600">
+                      Type d'annonce cible
+                    </p>
+                    <select
+                      value={candidateTypeDraft}
+                      onChange={(event) => setCandidateTypeDraft(event.target.value)}
+                      className="h-10 w-full rounded-md border border-slate-200 px-3 text-sm"
+                    >
+                      {LISTING_TYPE_OPTIONS.map((typeOption) => (
+                        <option key={typeOption} value={typeOption}>
+                          {typeOption}
+                        </option>
+                      ))}
+                    </select>
+                    <p className="text-xs text-slate-500">
+                      Cette action reconstruit automatiquement les attributs requis du modèle avant publication.
+                    </p>
+                  </div>
+                  <div className="space-y-2 rounded-md border border-slate-200 bg-slate-50 p-3">
+                    <p className="text-xs font-semibold text-slate-700">
+                      Attributs actuels de l'annonce (intégral)
+                    </p>
+                    <div className="max-h-60 overflow-auto rounded border border-slate-200 bg-white">
+                      <table className="w-full text-left text-xs">
+                        <thead className="sticky top-0 bg-slate-100 text-slate-600">
+                          <tr>
+                            <th className="px-2 py-1.5 font-medium">Attribut</th>
+                            <th className="px-2 py-1.5 font-medium">Valeur</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {actionModalCandidateAttributeEntries.length > 0 ? (
+                            actionModalCandidateAttributeEntries.map(([attributeKey, attributeValue]) => (
+                              <tr key={`attribute_${attributeKey}`} className="border-t border-slate-100">
+                                <td className="px-2 py-1.5 font-mono text-[11px] text-slate-700">
+                                  {attributeKey}
+                                </td>
+                                <td className="px-2 py-1.5 text-slate-600">
+                                  {formatUnknownForDisplay(attributeValue)}
+                                </td>
+                              </tr>
+                            ))
+                          ) : (
+                            <tr>
+                              <td colSpan={2} className="px-2 py-2 text-slate-500">
+                                Aucun attribut disponible.
+                              </td>
+                            </tr>
+                          )}
+                        </tbody>
+                      </table>
+                    </div>
+                    <div>
+                      <p className="mb-1 text-[11px] font-medium text-slate-600">JSON brut</p>
+                      <pre className="max-h-48 overflow-auto rounded border border-slate-200 bg-white p-2 text-[11px] text-slate-700">
+                        {JSON.stringify(actionModalCandidateAttributes, null, 2)}
+                      </pre>
+                    </div>
+                  </div>
+                </div>
+              ) : null}
             </div>
           ) : null}
 
@@ -1709,7 +2144,7 @@ export default function SocialImportDashboardPage() {
                 {canReadReview ? "Lecture autorisée" : "Permission manquante"}
               </Badge>
             </div>
-            {canReadReview && canDeleteCandidate ? (
+            {canReadReview && (canDeleteCandidate || canPublishCandidate) ? (
               <div className="flex flex-wrap items-center justify-end gap-2">
                 <Button
                   type="button"
@@ -1729,15 +2164,37 @@ export default function SocialImportDashboardPage() {
                 >
                   Réinitialiser
                 </Button>
-                <Button
-                  type="button"
-                  size="xs"
-                  variant="destructive"
-                  disabled={pendingActionKey !== null || selectedCandidateIdsResolved.length === 0}
-                  onClick={() => void handleDeleteSelectedCandidates()}
-                >
-                  Supprimer sélection ({selectedCandidateIdsResolved.length})
-                </Button>
+                {canPublishCandidate ? (
+                  <Button
+                    type="button"
+                    size="xs"
+                    variant="secondary"
+                    disabled={
+                      pendingActionKey !== null ||
+                      (selectedCandidateIdsResolved.length === 0 &&
+                        candidates.every(
+                          (candidate) =>
+                            candidate.status === "published" || candidate.status === "rejected",
+                        ))
+                    }
+                    onClick={() => void handleAutoFixCandidates()}
+                  >
+                    {selectedCandidateIdsResolved.length > 0
+                      ? `Auto-corriger sélection (${selectedCandidateIdsResolved.length})`
+                      : "Auto-corriger visibles"}
+                  </Button>
+                ) : null}
+                {canDeleteCandidate ? (
+                  <Button
+                    type="button"
+                    size="xs"
+                    variant="destructive"
+                    disabled={pendingActionKey !== null || selectedCandidateIdsResolved.length === 0}
+                    onClick={() => void handleDeleteSelectedCandidates()}
+                  >
+                    Supprimer sélection ({selectedCandidateIdsResolved.length})
+                  </Button>
+                ) : null}
               </div>
             ) : null}
           </CardHeader>
@@ -1745,11 +2202,13 @@ export default function SocialImportDashboardPage() {
             {canReadReview ? (
               <div className="space-y-3">
                 {candidates.length ? (
-                  candidates.map((candidate) => (
+                  candidates.map((candidate) => {
+                    const requiredFields = buildCandidateRequiredFields(candidate);
+                    return (
                     <article key={candidate.id} className="rounded-lg border border-slate-200 p-3">
                       <div className="flex items-center justify-between gap-3">
                         <div className="flex items-center gap-2">
-                          {canDeleteCandidate ? (
+                          {canDeleteCandidate || canPublishCandidate ? (
                               <input
                                 type="checkbox"
                                 checked={selectedCandidateIdsResolved.includes(candidate.id)}
@@ -1781,6 +2240,35 @@ export default function SocialImportDashboardPage() {
                       <p className="mt-1 text-xs text-slate-500">
                         Raison auto: {candidate.autoReason || "non renseignée"}
                       </p>
+                      <div className="mt-3 rounded-md border border-slate-200 bg-slate-50 p-2">
+                        <div className="flex flex-wrap items-center justify-between gap-2">
+                          <p className="text-xs font-medium text-slate-700">
+                            Attributs modèle · type {requiredFields.listingType}
+                          </p>
+                          <p className="text-xs text-slate-600">
+                            OK {requiredFields.filledCount} / {requiredFields.rows.length} · Manquants{" "}
+                            {requiredFields.missingCount}
+                          </p>
+                        </div>
+                        <div className="mt-2 grid gap-2 md:grid-cols-2">
+                          {requiredFields.rows.map((field) => (
+                            <div
+                              key={`${candidate.id}_${field.key}`}
+                              className="rounded border border-slate-200 bg-white px-2 py-1.5"
+                            >
+                              <div className="flex items-center justify-between gap-2">
+                                <p className="text-xs font-medium text-slate-700">{field.label}</p>
+                                <Badge variant={field.missing ? "danger" : "success"}>
+                                  {field.missing ? "Manquant" : "OK"}
+                                </Badge>
+                              </div>
+                              <p className="mt-1 text-xs text-slate-600">
+                                {formatFieldValueForDisplay(field.key, field.value)}
+                              </p>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
                       {candidate.imageUrls.length ? (
                         <div className="mt-2">
                           <p className="mb-2 text-xs text-slate-500">
@@ -1838,6 +2326,16 @@ export default function SocialImportDashboardPage() {
                             Rejeter
                           </Button>
                         ) : null}
+                        {canPublishCandidate && candidate.status !== "published" ? (
+                          <Button
+                            size="xs"
+                            variant="outline"
+                            disabled={pendingActionKey !== null}
+                            onClick={() => void handleEditCandidateType(candidate)}
+                          >
+                            Corriger l'annonce
+                          </Button>
+                        ) : null}
                         {canPublishCandidate && candidate.status === "ready_to_publish" ? (
                           <Button
                             size="xs"
@@ -1845,12 +2343,13 @@ export default function SocialImportDashboardPage() {
                             disabled={pendingActionKey !== null}
                             onClick={() => void handlePublishCandidate(candidate)}
                           >
-                            Publier
+                            Valider et publier
                           </Button>
                         ) : null}
                       </div>
                     </article>
-                  ))
+                    );
+                  })
                 ) : (
                   <p className="text-sm text-slate-500">Aucune candidate review.</p>
                 )}

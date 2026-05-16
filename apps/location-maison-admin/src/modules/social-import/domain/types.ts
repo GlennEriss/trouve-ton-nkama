@@ -147,6 +147,7 @@ export type SocialImportReviewCandidate = {
   city: string | null;
   province: string | null;
   imageUrls: string[];
+  listing: Record<string, unknown> | null;
   status: SocialImportReviewCandidateStatus;
   autoReason: string | null;
   score: number | null;

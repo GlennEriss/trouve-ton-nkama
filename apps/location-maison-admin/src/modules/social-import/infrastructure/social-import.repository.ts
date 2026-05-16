@@ -384,6 +384,7 @@ function mapReviewDoc(docId: string, data: RawReviewDoc): SocialImportReviewCand
     city: toTrimmedString(data.city) ?? toTrimmedString(listing?.city),
     province: toTrimmedString(data.province) ?? toTrimmedString(listing?.province),
     imageUrls,
+    listing,
     status: (toTrimmedString(data.status)?.toLowerCase() ?? "needs_review") as SocialImportReviewCandidate["status"],
     autoReason: toTrimmedString(data.autoReason),
     score: toNullableNumber(data.score),
@@ -1081,6 +1082,14 @@ export async function getSocialImportReviewCandidateRawById(candidateId: string)
 export async function patchSocialImportReviewCandidateById(input: {
   candidateId: string;
   patch: Partial<{
+    title: string | null;
+    typeProperty: string | null;
+    price: number | null;
+    city: string | null;
+    province: string | null;
+    imageUrls: string[] | null;
+    listing: Record<string, unknown> | null;
+    metadata: Record<string, unknown> | null;
     status: SocialImportReviewCandidate["status"];
     autoReason: string | null;
     score: number | null;
@@ -1100,6 +1109,32 @@ export async function patchSocialImportReviewCandidateById(input: {
 
   const before = mapReviewDoc(beforeSnapshot.id, beforeSnapshot.data() as RawReviewDoc);
   const patch: Record<string, unknown> = {};
+  if (input.patch.title !== undefined) {
+    patch.title = input.patch.title;
+  }
+  if (input.patch.typeProperty !== undefined) {
+    patch.typeProperty = input.patch.typeProperty;
+  }
+  if (input.patch.price !== undefined) {
+    patch.price = input.patch.price;
+  }
+  if (input.patch.city !== undefined) {
+    patch.city = input.patch.city;
+  }
+  if (input.patch.province !== undefined) {
+    patch.province = input.patch.province;
+  }
+  if (input.patch.imageUrls !== undefined) {
+    patch.imageUrls = Array.from(
+      new Set((input.patch.imageUrls ?? []).map((value) => String(value || "").trim()).filter(Boolean)),
+    );
+  }
+  if (input.patch.listing !== undefined) {
+    patch.listing = input.patch.listing;
+  }
+  if (input.patch.metadata !== undefined) {
+    patch.metadata = input.patch.metadata;
+  }
   if (input.patch.status) {
     patch.status = input.patch.status;
   }

@@ -64,6 +64,13 @@ const SOCIAL_IMPORT_STALE_RUNNING_TIMEOUT_MS = Number(
 );
 const SOCIAL_IMPORT_DEFAULT_ACTION_REASON =
   "Action exécutée depuis le dashboard admin.";
+const SOCIAL_IMPORT_DEFAULT_COUNTRY = "Gabon";
+const SOCIAL_IMPORT_DEFAULT_COUNTRY_CODE = "GA";
+const SOCIAL_IMPORT_DEFAULT_CITY = "Libreville";
+const SOCIAL_IMPORT_DEFAULT_PROVINCE = "Estuaire";
+
+type ListingTypeProperty = CreateListingForAnnouncerInput["typeProperty"];
+type ListingStatus = CreateListingForAnnouncerInput["status"];
 function normalizeQuery(value?: string) {
   return value?.trim().toLowerCase() ?? "";
 }
@@ -253,6 +260,49 @@ function toIsoFromCreationTime(value: unknown) {
   return date.toISOString();
 }
 
+const FRENCH_TYPE_LABEL: Record<ListingTypeProperty, string> = {
+  Home: "Maison",
+  Studio: "Studio",
+  Apartment: "Appartement",
+  Desk: "Bureau",
+  Building: "Immeuble",
+  Shop: "Local commercial",
+  Kiosk: "Kiosque",
+  Room: "Chambre",
+  Property: "Propriété",
+  Logement: "Logement",
+  Villa: "Villa",
+  Land: "Terrain",
+};
+
+function normalizeInlineSpaces(value: string) {
+  return value.replace(/\s+/g, " ").trim();
+}
+
+function cleanSocialTitleLine(value: string) {
+  const withoutDecorations = value
+    .replace(/[\u{1F300}-\u{1FAFF}\u{2600}-\u{27BF}]/gu, " ")
+    .replace(/[#*_~`|]/g, " ")
+    .replace(/[.]{3,}/g, " ")
+    .replace(/[!]{2,}/g, "!")
+    .replace(/[?]{2,}/g, "?");
+  return normalizeInlineSpaces(withoutDecorations);
+}
+
+function isNoiseLine(value: string) {
+  const trimmed = value.trim();
+  if (!trimmed) {
+    return true;
+  }
+  if (/^[.\-_=\s🛑✅🚨⚠️📞📍📐📄💰☎️👇]+$/u.test(trimmed)) {
+    return true;
+  }
+  if (/^#([a-z0-9_]+(?:\s+#?[a-z0-9_]+)*)$/i.test(trimmed)) {
+    return true;
+  }
+  return false;
+}
+
 function extractTitleFromCaption(caption: string | null) {
   if (!caption) {
     return null;
@@ -260,27 +310,213 @@ function extractTitleFromCaption(caption: string | null) {
   const firstLine = caption
     .split(/\r?\n/)
     .map((line) => line.trim())
-    .find((line) => line.length > 0);
+    .find((line) => line.length > 0 && !isNoiseLine(line));
 
   if (!firstLine) {
     return null;
   }
-  return firstLine.slice(0, 180);
+  const cleanTitle = cleanSocialTitleLine(firstLine);
+  return cleanTitle.length > 0 ? cleanTitle.slice(0, 180) : null;
 }
 
 function inferTypePropertyFromCaption(caption: string | null) {
   if (!caption) {
     return null;
   }
-  const text = caption.toLowerCase();
-  if (text.includes("terrain")) return "TERRAIN";
-  if (text.includes("studio")) return "STUDIO";
-  if (text.includes("appartement")) return "APPARTEMENT";
-  if (text.includes("villa")) return "VILLA";
-  if (text.includes("duplex")) return "DUPLEX";
-  if (text.includes("local")) return "LOCAL";
-  if (text.includes("bureau")) return "BUREAU";
+
+  const lines = caption
+    .split(/\r?\n/)
+    .map((line) => line.trim())
+    .filter((line) => line.length > 0);
+  const headline = lines.slice(0, 4).join(" ").toLowerCase();
+  const full = caption.toLowerCase();
+
+  const has = (text: string, pattern: RegExp) => pattern.test(text);
+  const apartmentPattern = /\b(appartement|appartements|appart|apartement|apartment)\b|#appartement|#appart/i;
+  const studioPattern = /\bstudio\b|#studio/i;
+  const homePattern = /\b(duplex|maison)\b|#maison|#duplex/i;
+  const villaPattern = /\bvilla\b|#villa/i;
+  const landPattern = /\b(terrain|fonci[èe]re?|parcelle)\b|#terrain|#fonci[èe]re?/i;
+  const builtStructurePattern =
+    /\b(chambres?|douches?|salles?\s*d['’]?eau|salons?|sejours?|séjours?|wc|cuisine|terrasse|balcon|rez-de-chauss[ée]e|rdc|etage|étage)\b/i;
+
+  // Priorité métier: "appartement" doit gagner face au bruit de hashtags (#studio, #maison).
+  if (apartmentPattern.test(headline) || apartmentPattern.test(full)) {
+    return "Apartment";
+  }
+  if (villaPattern.test(headline) || villaPattern.test(full)) {
+    return "Villa";
+  }
+  if (homePattern.test(headline) || homePattern.test(full)) {
+    return "Home";
+  }
+  if (studioPattern.test(headline) || (studioPattern.test(full) && !homePattern.test(full))) {
+    return "Studio";
+  }
+  if (
+    landPattern.test(headline) ||
+    (landPattern.test(full) &&
+      !homePattern.test(full) &&
+      !apartmentPattern.test(full) &&
+      !villaPattern.test(full) &&
+      !builtStructurePattern.test(full))
+  ) {
+    return "Land";
+  }
+
+  const typeOrder: Array<{ type: ListingTypeProperty; headlinePattern: RegExp; fullPattern: RegExp }> = [
+    {
+      type: "Land",
+      headlinePattern: landPattern,
+      fullPattern: landPattern,
+    },
+    {
+      type: "Building",
+      headlinePattern: /\b(immeuble|building)\b|#immeuble/i,
+      fullPattern: /\b(immeuble|building)\b|#immeuble/i,
+    },
+    {
+      type: "Apartment",
+      headlinePattern: apartmentPattern,
+      fullPattern: apartmentPattern,
+    },
+    {
+      type: "Studio",
+      headlinePattern: studioPattern,
+      fullPattern: studioPattern,
+    },
+    {
+      type: "Villa",
+      headlinePattern: villaPattern,
+      fullPattern: villaPattern,
+    },
+    {
+      type: "Home",
+      headlinePattern: homePattern,
+      fullPattern: homePattern,
+    },
+    {
+      type: "Shop",
+      headlinePattern: /\b(local|magasin|boutique)\b|#local/i,
+      fullPattern: /\b(local|magasin|boutique)\b|#local/i,
+    },
+    {
+      type: "Desk",
+      headlinePattern: /\b(bureau|desk)\b|#bureau/i,
+      fullPattern: /\b(bureau|desk)\b|#bureau/i,
+    },
+    {
+      type: "Kiosk",
+      headlinePattern: /\b(kiosque|kiosk)\b|#kiosque|#kiosk/i,
+      fullPattern: /\b(kiosque|kiosk)\b|#kiosque|#kiosk/i,
+    },
+    {
+      type: "Room",
+      headlinePattern: /\b(chambre)\b|#chambre/i,
+      fullPattern: /\b(chambre)\b|#chambre/i,
+    },
+  ];
+
+  for (const candidate of typeOrder) {
+    if (has(headline, candidate.headlinePattern)) {
+      return candidate.type;
+    }
+  }
+  for (const candidate of typeOrder) {
+    if (has(full, candidate.fullPattern)) {
+      return candidate.type;
+    }
+  }
+
   return null;
+}
+
+function normalizeTypeProperty(value: unknown): ListingTypeProperty | null {
+  if (typeof value !== "string") {
+    return null;
+  }
+  const normalized = value.trim().toLowerCase();
+  if (!normalized) {
+    return null;
+  }
+
+  const map: Record<string, ListingTypeProperty> = {
+    home: "Home",
+    house: "Home",
+    duplex: "Home",
+    studio: "Studio",
+    apartment: "Apartment",
+    appartement: "Apartment",
+    desk: "Desk",
+    bureau: "Desk",
+    building: "Building",
+    immeuble: "Building",
+    shop: "Shop",
+    local: "Shop",
+    kiosk: "Kiosk",
+    kiosque: "Kiosk",
+    room: "Room",
+    chambre: "Room",
+    property: "Property",
+    logement: "Logement",
+    villa: "Villa",
+    land: "Land",
+    terrain: "Land",
+  };
+
+  return map[normalized] ?? null;
+}
+
+function normalizeListingStatus(value: unknown): ListingStatus | null {
+  if (typeof value !== "string") {
+    return null;
+  }
+  const normalized = value.trim().toUpperCase();
+  if (normalized === "FOR_RENT" || normalized === "FOR_SALE") {
+    return normalized;
+  }
+  return null;
+}
+
+function inferListingStatusFromCaption(caption: string | null): ListingStatus {
+  if (!caption) {
+    return "FOR_RENT";
+  }
+  const text = caption.toLowerCase();
+  const hasLoyer = text.includes("loyer");
+  const hasLocationWord = text.includes("location");
+  const hasRent =
+    text.includes("a louer") ||
+    text.includes("à louer") ||
+    hasLoyer ||
+    hasLocationWord;
+  const hasSale =
+    text.includes("a vendre") ||
+    text.includes("à vendre") ||
+    text.includes("vente") ||
+    text.includes("vendre");
+  const hasPriceMention = /(?:prix\s*:?)|(\d[\d\s.,]{2,}\s*(?:fcfa|cfa))/i.test(text);
+  const hasLandDeedSignal = /(titre\s*foncier|borange|anuttc)/i.test(text);
+
+  if (hasRent && !hasSale) {
+    return "FOR_RENT";
+  }
+  if (hasSale && !hasRent) {
+    return "FOR_SALE";
+  }
+  if (hasRent) {
+    return "FOR_RENT";
+  }
+  if (hasSale) {
+    return "FOR_SALE";
+  }
+  if (hasLoyer) {
+    return "FOR_RENT";
+  }
+  if (hasPriceMention || hasLandDeedSignal) {
+    return "FOR_SALE";
+  }
+  return "FOR_RENT";
 }
 
 function extractPriceFromCaption(caption: string | null) {
@@ -288,21 +524,77 @@ function extractPriceFromCaption(caption: string | null) {
     return null;
   }
 
-  const matches = Array.from(caption.matchAll(/(\d[\d\s.,]{2,})\s*(fcfa|cfa)/gi));
+  const extractNumbers = (text: string) =>
+    Array.from(text.matchAll(/\d[\d\s.,]{2,}/g))
+      .map((match) => match[0]?.replace(/[^\d]/g, "") ?? "")
+      .map((digits) => Number(digits))
+      .filter((value) => Number.isFinite(value) && value >= 1_000 && value <= 1_000_000_000);
+
+  const priceLines = caption
+    .split(/\r?\n/)
+    .map((line) => line.trim())
+    .filter((line) => /(prix|loyer)/i.test(line));
+
+  const directCandidates = extractNumbers(priceLines.join(" "));
+  if (directCandidates.length > 0) {
+    return Math.max(...directCandidates);
+  }
+
+  const cfaCandidates = Array.from(caption.matchAll(/(\d[\d\s.,]{2,})\s*(fcfa|cfa)/gi))
+    .map((match) => match[1]?.replace(/[^\d]/g, "") ?? "")
+    .map((digits) => Number(digits))
+    .filter((value) => Number.isFinite(value) && value >= 1_000 && value <= 1_000_000_000);
+
+  if (cfaCandidates.length > 0) {
+    return Math.max(...cfaCandidates);
+  }
+
+  return null;
+}
+
+function extractAreaFromCaption(caption: string | null) {
+  if (!caption) {
+    return null;
+  }
+
+  const matches = Array.from(caption.matchAll(/(\d[\d\s.,]{0,})\s*(?:m²|m2)/gi));
   if (matches.length === 0) {
     return null;
   }
 
-  const candidateValues = matches
+  const values = matches
     .map((match) => match[1]?.replace(/[^\d]/g, "") ?? "")
     .map((digits) => Number(digits))
-    .filter((value) => Number.isFinite(value) && value > 0);
+    .filter((value) => Number.isFinite(value) && value >= 0);
 
-  if (candidateValues.length === 0) {
+  if (values.length === 0) {
     return null;
   }
 
-  return Math.max(...candidateValues);
+  return Math.max(...values);
+}
+
+function inferCityFromStreet(street: string | null) {
+  if (!street) {
+    return null;
+  }
+  const normalized = street.toLowerCase();
+  if (/(malibe|marseille|amissa|avorbam|agondj[eé]|angondj[eé])/.test(normalized)) {
+    return "Akanda";
+  }
+  if (/(okala|charbonage|awendje|nzeng|mindoub[eé]|lalala|glass)/.test(normalized)) {
+    return "Libreville";
+  }
+  if (/port-gentil/.test(normalized)) {
+    return "Port-Gentil";
+  }
+  if (/franceville/.test(normalized)) {
+    return "Franceville";
+  }
+  if (/owendo/.test(normalized)) {
+    return "Owendo";
+  }
+  return null;
 }
 
 function inferCityFromCaption(caption: string | null) {
@@ -315,6 +607,11 @@ function inferCityFromCaption(caption: string | null) {
   if (text.includes("owendo")) return "Owendo";
   if (text.includes("port-gentil")) return "Port-Gentil";
   if (text.includes("franceville")) return "Franceville";
+  const street = extractStreetFromCaption(caption, "");
+  const inferred = inferCityFromStreet(street);
+  if (inferred) {
+    return inferred;
+  }
   return null;
 }
 
@@ -332,6 +629,507 @@ function inferProvinceFromCity(city: string | null) {
   if (normalized === "franceville") {
     return "Haut-Ogooué";
   }
+  return null;
+}
+
+function extractHashtagsFromCaption(caption: string | null) {
+  if (!caption) {
+    return [] as string[];
+  }
+
+  const matches = Array.from(caption.matchAll(/#([a-zA-Z0-9_\-]+)/g));
+  return Array.from(
+    new Set(
+      matches
+        .map((match) => match[1]?.trim().toLowerCase() ?? "")
+        .filter((tag) => tag.length > 0)
+        .slice(0, 6),
+    ),
+  );
+}
+
+function extractContactFromCaption(caption: string | null) {
+  if (!caption) {
+    return null;
+  }
+
+  const matches = caption.match(/(?:\+?\d[\d\s().-]{6,}\d)/g) ?? [];
+  for (const match of matches) {
+    const cleaned = match.replace(/[^\d+]/g, "");
+    const digits = cleaned.replace(/[^\d]/g, "");
+    if (digits.length >= 8 && digits.length <= 15) {
+      return match.trim().slice(0, 60);
+    }
+  }
+  return null;
+}
+
+function extractStreetFromCaption(caption: string | null, city: string) {
+  if (!caption) {
+    return city;
+  }
+
+  const patterns = [
+    /(?:quartier|geographique|géographique)\s*[:\-]?\s*([^\n,.#]+)/i,
+    /(?:akanda|libreville|owendo|port-gentil|franceville)\s*[-–]\s*([^\n,.]+)/i,
+  ];
+
+  for (const pattern of patterns) {
+    const match = caption.match(pattern);
+    const value = match?.[1]?.trim();
+    if (value) {
+      return normalizeInlineSpaces(
+        value
+          .replace(/[^a-zA-Z0-9À-ÿ\s'’\-]/g, " ")
+          .replace(/\b(?:usage|loyer|prix|contact)\b.*$/i, ""),
+      ).slice(0, 180);
+    }
+  }
+
+  return city;
+}
+
+function extractNumberWithPattern(caption: string | null, pattern: RegExp) {
+  if (!caption) {
+    return null;
+  }
+  const match = caption.match(pattern);
+  if (!match?.[1]) {
+    return null;
+  }
+  const value = Number(match[1]);
+  return Number.isFinite(value) && value >= 0 ? value : null;
+}
+
+function buildTypeSpecificFields(typeProperty: ListingTypeProperty, caption: string | null) {
+  const nbrRooms = extractNumberWithPattern(caption, /(\d+)\s*(?:chambres?|pieces?|pi[eè]ces?)/i);
+  const nbrKitchens = extractNumberWithPattern(
+    caption,
+    /(\d+)\s*(?:cuisines?|coins?\s*cuisine)/i,
+  );
+  const nbrBathrooms = extractNumberWithPattern(
+    caption,
+    /(\d+)\s*(?:salles?\s*d['’]?eau|salles?\s*de\s*bain|douches?)/i,
+  );
+  const nbrToilets = extractNumberWithPattern(caption, /(\d+)\s*(?:toilettes?|wc)/i);
+  const nbrGarages = extractNumberWithPattern(caption, /(\d+)\s*garages?/i);
+  const nbrFloors = extractNumberWithPattern(caption, /(\d+)\s*(?:etages?|étages?|niveaux?)/i);
+  const nbrLivingRoom = extractNumberWithPattern(caption, /(\d+)\s*(?:salons?|sejours?|séjours?)/i);
+  const nbrPiscine = extractNumberWithPattern(caption, /(\d+)\s*piscines?/i);
+  const nbrApartments = extractNumberWithPattern(caption, /(\d+)\s*appartements?/i);
+  const floorLevel =
+    extractNumberWithPattern(caption, /(\d+)\s*(?:er|e|eme|ème)?\s*etage/i) ??
+    (caption?.toLowerCase().includes("rez-de-chauss") || caption?.toLowerCase().includes("rdc")
+      ? 0
+      : null);
+
+  if (typeProperty === "Logement") {
+    return {
+      nbrRooms: nbrRooms ?? 1,
+      nbrKitchens: nbrKitchens ?? 1,
+      nbrBathrooms: nbrBathrooms ?? 1,
+      nbrToilets: nbrToilets ?? 1,
+    };
+  }
+
+  if (typeProperty === "Home") {
+    return {
+      nbrRooms: nbrRooms ?? 2,
+      nbrKitchens: nbrKitchens ?? 1,
+      nbrBathrooms: nbrBathrooms ?? 1,
+      nbrToilets: nbrToilets ?? 1,
+      nbrGarages: nbrGarages ?? 0,
+      nbrFloors: nbrFloors ?? 1,
+      nbrLivingRoom: nbrLivingRoom ?? 1,
+    };
+  }
+
+  if (typeProperty === "Studio") {
+    return {
+      nbrRooms: nbrRooms ?? 1,
+      nbrKitchens: nbrKitchens ?? 1,
+      nbrBathrooms: nbrBathrooms ?? 1,
+      nbrToilets: nbrToilets ?? 1,
+      nbrFloorStudio: floorLevel ?? 0,
+      numeroStudio: "S1",
+    };
+  }
+
+  if (typeProperty === "Apartment") {
+    return {
+      nbrRooms: nbrRooms ?? 2,
+      nbrKitchens: nbrKitchens ?? 1,
+      nbrBathrooms: nbrBathrooms ?? 1,
+      nbrToilets: nbrToilets ?? 1,
+      nbrFloorApartment: floorLevel ?? 0,
+      numeroApartment: "A1",
+    };
+  }
+
+  if (typeProperty === "Villa") {
+    return {
+      nbrRooms: nbrRooms ?? 3,
+      nbrKitchens: nbrKitchens ?? 1,
+      nbrBathrooms: nbrBathrooms ?? 2,
+      nbrToilets: nbrToilets ?? 2,
+      nbrFloors: nbrFloors ?? 1,
+      nbrPiscine: nbrPiscine ?? 0,
+      nbrGarages: nbrGarages ?? 0,
+    };
+  }
+
+  if (typeProperty === "Desk") {
+    return {
+      nbrRooms: nbrRooms ?? 1,
+      nbrToilets: nbrToilets ?? 1,
+    };
+  }
+
+  if (typeProperty === "Building") {
+    return {
+      nbrApartments: nbrApartments ?? 1,
+      nbrFloors: nbrFloors ?? 1,
+      hasParking: caption?.toLowerCase().includes("parking") ?? false,
+    };
+  }
+
+  if (typeProperty === "Shop") {
+    return {
+      nbrRooms: nbrRooms ?? 1,
+      nbrToilet: nbrToilets ?? 1,
+    };
+  }
+
+  if (typeProperty === "Kiosk") {
+    return {
+      kioskType: "Standard",
+    };
+  }
+
+  if (typeProperty === "Room") {
+    return {
+      roomType: "Simple",
+    };
+  }
+
+  return {};
+}
+
+function formatPriceForDescription(price: number) {
+  return new Intl.NumberFormat("fr-FR").format(price);
+}
+
+function formatFeatureLine(input: {
+  typeProperty: ListingTypeProperty;
+  typeSpecific: Record<string, unknown>;
+}) {
+  const toNumber = (key: string) => {
+    const value = input.typeSpecific[key];
+    return typeof value === "number" && Number.isFinite(value) ? value : null;
+  };
+
+  if (input.typeProperty === "Apartment" || input.typeProperty === "Studio" || input.typeProperty === "Logement") {
+    const rooms = toNumber("nbrRooms");
+    const kitchens = toNumber("nbrKitchens");
+    const bathrooms = toNumber("nbrBathrooms");
+    const toilets = toNumber("nbrToilets");
+    const fragments = [] as string[];
+    if (rooms != null) fragments.push(`${rooms} chambre(s)`);
+    if (kitchens != null) fragments.push(`${kitchens} cuisine(s)`);
+    if (bathrooms != null) fragments.push(`${bathrooms} salle(s) d'eau`);
+    if (toilets != null) fragments.push(`${toilets} toilette(s)`);
+    return fragments.join(", ");
+  }
+
+  if (input.typeProperty === "Home" || input.typeProperty === "Villa") {
+    const rooms = toNumber("nbrRooms");
+    const bathrooms = toNumber("nbrBathrooms");
+    const living = toNumber("nbrLivingRoom");
+    const floors = toNumber("nbrFloors");
+    const fragments = [] as string[];
+    if (rooms != null) fragments.push(`${rooms} chambre(s)`);
+    if (bathrooms != null) fragments.push(`${bathrooms} salle(s) d'eau`);
+    if (living != null) fragments.push(`${living} salon(s)`);
+    if (floors != null) fragments.push(`${floors} niveau(x)`);
+    return fragments.join(", ");
+  }
+
+  return "";
+}
+
+function escapeRegExp(value: string) {
+  return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
+
+function toNaturalCase(value: string) {
+  const normalized = normalizeInlineSpaces(value)
+    .replace(/[_]+/g, " ")
+    .replace(/[–—]/g, "-");
+  if (!normalized) {
+    return "";
+  }
+
+  const lettersOnly = normalized.replace(/[^A-Za-zÀ-ÿ]/g, "");
+  const shouldLowercase = lettersOnly.length > 0 && normalized === normalized.toUpperCase();
+  const source = shouldLowercase ? normalized.toLowerCase() : normalized;
+
+  return source
+    .split(" ")
+    .filter(Boolean)
+    .map((token) => {
+      if (/^\d+$/.test(token)) {
+        return token;
+      }
+      return token.charAt(0).toUpperCase() + token.slice(1);
+    })
+    .join(" ");
+}
+
+function buildNeighborhoodLabel(street: string, city: string) {
+  let value = normalizeInlineSpaces(street);
+  if (!value) {
+    return "";
+  }
+
+  value = value.replace(/^quartier\s*[:\-]?\s*/i, "");
+  const normalizedCity = normalizeInlineSpaces(city);
+  if (normalizedCity) {
+    const cityPrefix = new RegExp(`^${escapeRegExp(normalizedCity)}\\s*[-–,:]\\s*`, "i");
+    value = value.replace(cityPrefix, "");
+  }
+
+  value = normalizeInlineSpaces(value.replace(/\s*[-–]\s*/g, " "));
+  if (!value) {
+    return "";
+  }
+
+  return toNaturalCase(value).slice(0, 100);
+}
+
+function buildProfessionalTitle(input: {
+  typeProperty: ListingTypeProperty;
+  status: ListingStatus;
+  city: string;
+  street: string;
+  typeSpecific: Record<string, unknown>;
+}) {
+  void input.typeSpecific;
+  const typeLabel = FRENCH_TYPE_LABEL[input.typeProperty];
+  const action = input.status === "FOR_RENT" ? "à louer" : "à vendre";
+  const cityLabel = toNaturalCase(input.city).slice(0, 60);
+  const neighborhoodLabel = buildNeighborhoodLabel(input.street, cityLabel);
+
+  let locationFragment = "";
+  if (neighborhoodLabel) {
+    const includesCity =
+      cityLabel.length > 0 &&
+      neighborhoodLabel.toLowerCase().includes(cityLabel.toLowerCase());
+    locationFragment = includesCity
+      ? ` dans le quartier ${neighborhoodLabel}`
+      : cityLabel
+        ? ` dans le quartier ${neighborhoodLabel} à ${cityLabel}`
+        : ` dans le quartier ${neighborhoodLabel}`;
+  } else if (cityLabel) {
+    locationFragment = ` à ${cityLabel}`;
+  }
+
+  return normalizeInlineSpaces(`${typeLabel} ${action}${locationFragment}`).slice(0, 180);
+}
+
+function buildDescriptionFromCaption(input: {
+  caption: string | null;
+  sourcePostUrl: string | null;
+  typeProperty: ListingTypeProperty;
+  status: ListingStatus;
+  city: string;
+  province: string;
+  street: string;
+  price: number;
+  area: number;
+  typeSpecific: Record<string, unknown>;
+}) {
+  const typeLabel = FRENCH_TYPE_LABEL[input.typeProperty];
+  const action = input.status === "FOR_RENT" ? "à louer" : "à vendre";
+  const location = [input.street, input.city, input.province, SOCIAL_IMPORT_DEFAULT_COUNTRY]
+    .map((value) => normalizeInlineSpaces(value))
+    .filter((value, index, array) => value.length > 0 && array.indexOf(value) === index)
+    .join(", ");
+  const features = formatFeatureLine({
+    typeProperty: input.typeProperty,
+    typeSpecific: input.typeSpecific,
+  });
+
+  const lines = [
+    `${typeLabel} ${action}.`,
+    location ? `Localisation: ${location}.` : null,
+    input.price > 0 ? `Prix: ${formatPriceForDescription(input.price)} FCFA.` : "Prix: sur demande.",
+    input.area > 0 ? `Superficie: ${formatPriceForDescription(input.area)} m².` : null,
+    features ? `Caractéristiques: ${features}.` : null,
+  ].filter((line): line is string => Boolean(line));
+
+  const narrative = (input.caption ?? "")
+    .split(/\r?\n/)
+    .map((line) => cleanSocialTitleLine(line))
+    .filter((line) => line.length > 0 && !isNoiseLine(line))
+    .filter((line) => !/^#/.test(line))
+    .filter((line) => !/^(pourtoi|flypviral|jikaimmo|gabon)\b/i.test(line))
+    .slice(0, 8)
+    .join(" ");
+
+  if (narrative.length > 0) {
+    lines.push(`Détails source: ${narrative}.`);
+  }
+  if (input.sourcePostUrl) {
+    lines.push(`Source: ${input.sourcePostUrl}`);
+  }
+
+  const description = lines.join("\n").trim();
+  if (description.length >= 10) {
+    return description.slice(0, 5000);
+  }
+  return "Annonce importée automatiquement depuis une source sociale.";
+}
+
+function buildFallbackTags(input: {
+  caption: string | null;
+  typeProperty: ListingTypeProperty;
+  city: string;
+  status: ListingStatus;
+}) {
+  const hashtags = extractHashtagsFromCaption(input.caption);
+  if (hashtags.length > 0) {
+    return hashtags.slice(0, 6);
+  }
+
+  const fallback = [
+    input.typeProperty.toLowerCase(),
+    input.city.toLowerCase(),
+    input.status === "FOR_RENT" ? "location" : "vente",
+  ];
+  return Array.from(new Set(fallback.map((item) => item.trim()).filter(Boolean))).slice(0, 6);
+}
+
+function buildListingPayloadFromCandidateRawData(rawData: Record<string, unknown>) {
+  const payload = asRecord(rawData.payload);
+  const metadata = asRecord(rawData.metadata);
+
+  const caption =
+    toNullableString(payload?.caption) ??
+    toNullableString(rawData.caption) ??
+    null;
+  const sourcePostUrl =
+    toNullableString(rawData.sourcePostUrl) ??
+    toNullableString(payload?.sourcePostUrl) ??
+    toNullableString(payload?.postUrl) ??
+    null;
+  const pageName =
+    toNullableString(payload?.pageName) ??
+    toNullableString(payload?.sourceAuthorName) ??
+    toNullableString(metadata?.sourceAuthorName) ??
+    null;
+
+  const imageUrls = Array.from(
+    new Set([
+      ...extractMediaUrls(rawData.imageUrls),
+      ...extractMediaUrls(payload?.mediaUrls),
+      ...extractMediaUrls(rawData.media_urls),
+      ...(toNullableString(payload?.thumbnailUrl) ? [String(payload?.thumbnailUrl)] : []),
+      ...(toNullableString(rawData.thumbnail_url) ? [String(rawData.thumbnail_url)] : []),
+    ]),
+  );
+  if (imageUrls.length === 0) {
+    return null;
+  }
+
+  const inferredType =
+    normalizeTypeProperty(rawData.typeProperty) ??
+    normalizeTypeProperty(payload?.typeProperty) ??
+    inferTypePropertyFromCaption(caption) ??
+    "Property";
+  const status =
+    normalizeListingStatus(rawData.status) ??
+    normalizeListingStatus(payload?.status) ??
+    inferListingStatusFromCaption(caption);
+  const price = toNullableNumber(rawData.price) ?? extractPriceFromCaption(caption) ?? 1;
+  const area = extractAreaFromCaption(caption) ?? toNullableNumber(rawData.area) ?? 0;
+  const street = extractStreetFromCaption(caption, SOCIAL_IMPORT_DEFAULT_CITY);
+  const city =
+    toNullableString(rawData.city) ??
+    inferCityFromCaption(caption) ??
+    inferCityFromStreet(street) ??
+    SOCIAL_IMPORT_DEFAULT_CITY;
+  const province =
+    toNullableString(rawData.province) ??
+    inferProvinceFromCity(city) ??
+    SOCIAL_IMPORT_DEFAULT_PROVINCE;
+  const tags = buildFallbackTags({
+    caption,
+    typeProperty: inferredType,
+    city,
+    status,
+  });
+  const contact = extractContactFromCaption(caption);
+  const typeSpecific = buildTypeSpecificFields(inferredType, caption);
+  const fallbackTitle = extractTitleFromCaption(caption) ?? `Annonce ${pageName ?? "importée"}`;
+  const professionalTitle = buildProfessionalTitle({
+    typeProperty: inferredType,
+    status,
+    city,
+    street,
+    typeSpecific,
+  });
+  const title = professionalTitle || fallbackTitle.slice(0, 180);
+  const description = buildDescriptionFromCaption({
+    caption,
+    sourcePostUrl,
+    typeProperty: inferredType,
+    status,
+    city,
+    province,
+    street,
+    price,
+    area,
+    typeSpecific,
+  });
+
+  const candidatePayload: Record<string, unknown> = {
+    title,
+    description,
+    typeProperty: inferredType,
+    status,
+    price,
+    area,
+    tags,
+    images: normalizeImages(imageUrls),
+    street,
+    city,
+    province,
+    country: SOCIAL_IMPORT_DEFAULT_COUNTRY,
+    countryCode: SOCIAL_IMPORT_DEFAULT_COUNTRY_CODE,
+    isLocExact: false,
+    additionnalInformation: sourcePostUrl
+      ? `Source originale: ${sourcePostUrl}`
+      : "Import social",
+    ...(contact ? { contact } : {}),
+    ...typeSpecific,
+  };
+
+  const primary = listingFullSchema.safeParse(candidatePayload);
+  if (primary.success) {
+    return primary.data;
+  }
+
+  if (inferredType !== "Property") {
+    const fallbackPayload = {
+      ...candidatePayload,
+      typeProperty: "Property" as ListingTypeProperty,
+    };
+    const fallback = listingFullSchema.safeParse(fallbackPayload);
+    if (fallback.success) {
+      return fallback.data;
+    }
+  }
+
   return null;
 }
 
@@ -559,7 +1357,9 @@ function normalizeCreateListingInputFromCandidate(input: {
   announcerUid: string;
   rawData: Record<string, unknown>;
 }): CreateListingForAnnouncerInput {
-  const payload = extractListingPayloadFromCandidate(input.rawData);
+  const payload =
+    extractListingPayloadFromCandidate(input.rawData) ??
+    buildListingPayloadFromCandidateRawData(input.rawData);
   if (!payload) {
     throw new Error("SOCIAL_IMPORT_CANDIDATE_LISTING_PAYLOAD_MISSING");
   }
@@ -574,7 +1374,18 @@ function normalizeCreateListingInputFromCandidate(input: {
   });
 
   if (!parsed.success) {
-    throw new Error("SOCIAL_IMPORT_CANDIDATE_LISTING_PAYLOAD_INVALID");
+    const fallbackPayload = buildListingPayloadFromCandidateRawData(input.rawData);
+    const fallbackParsed = fallbackPayload
+      ? listingFullSchema.safeParse(fallbackPayload)
+      : null;
+    if (!fallbackParsed?.success) {
+      throw new Error("SOCIAL_IMPORT_CANDIDATE_LISTING_PAYLOAD_INVALID");
+    }
+    return {
+      announcerUid: input.announcerUid,
+      ...fallbackParsed.data,
+      images: normalizeImages(fallbackParsed.data.images),
+    };
   }
 
   return {
@@ -2420,6 +3231,47 @@ export async function importSocialPostsFromJson(input: {
     candidatesForPersistence.length - mediaEnrichmentProcessed,
   );
 
+  const normalizedCandidatesForPersistence = candidatesForPersistence.map((candidate) => {
+    const listing = buildListingPayloadFromCandidateRawData({
+      ...candidate,
+      payload: {
+        ...(candidate.payload ?? {}),
+        mediaUrls: candidate.imageUrls,
+      },
+      metadata: candidate.metadata ?? {},
+    });
+
+    if (!listing) {
+      return {
+        ...candidate,
+        status: "needs_review" as const,
+        autoReason: "JSON_IMPORT_AUTO_MAPPING_INCOMPLETE",
+        listing: null,
+      };
+    }
+
+    return {
+      ...candidate,
+      title: listing.title,
+      typeProperty: listing.typeProperty,
+      price: listing.price,
+      city: listing.city,
+      province: listing.province,
+      imageUrls: listing.images.map((image) => image.fileURL),
+      status: "ready_to_publish" as const,
+      autoReason: "JSON_IMPORT_AUTO_MAPPED_READY",
+      listing,
+      metadata: {
+        ...(candidate.metadata ?? {}),
+        autoMapping: {
+          version: "v1",
+          mappedAt: new Date().toISOString(),
+          mode: "json_to_listing_model",
+        },
+      },
+    };
+  });
+
   const nowIso = new Date().toISOString();
   const job = await createSocialImportJobRecord({
     status: "running",
@@ -2472,7 +3324,7 @@ export async function importSocialPostsFromJson(input: {
     );
 
     const reviewSync = await upsertSocialImportReviewCandidates({
-      candidates: candidatesForPersistence.map((candidate) => {
+      candidates: normalizedCandidatesForPersistence.map((candidate) => {
         const storageRef = rawPostStorageById.get(candidate.rawPostId);
         return {
           ...candidate,
@@ -2844,6 +3696,296 @@ export async function rejectSocialImportCandidate(input: {
   });
 
   return mutation;
+}
+
+export async function updateSocialImportCandidateMapping(input: {
+  candidateId: string;
+  actorUid: string;
+  patch: Partial<{
+    typeProperty: string | null;
+  }>;
+}) {
+  const candidateId = input.candidateId.trim();
+  if (!candidateId) {
+    throw new Error("SOCIAL_IMPORT_CANDIDATE_ID_INVALID");
+  }
+
+  const actorUid = input.actorUid.trim();
+  if (!actorUid) {
+    throw new Error("SOCIAL_IMPORT_ACTOR_UID_REQUIRED");
+  }
+
+  const hasPatch = input.patch.typeProperty !== undefined;
+  if (!hasPatch) {
+    throw new Error("SOCIAL_IMPORT_CANDIDATE_PATCH_EMPTY");
+  }
+
+  const candidateRaw = await getSocialImportReviewCandidateRawById(candidateId);
+  if (!candidateRaw) {
+    return null;
+  }
+
+  if (candidateRaw.candidate.status === "published") {
+    throw new Error("SOCIAL_IMPORT_CANDIDATE_EDIT_FORBIDDEN_PUBLISHED");
+  }
+
+  const requestedTypeProperty = input.patch.typeProperty ?? null;
+  const normalizedTypeProperty =
+    requestedTypeProperty == null
+      ? null
+      : normalizeTypeProperty(requestedTypeProperty);
+
+  if (requestedTypeProperty != null && !normalizedTypeProperty) {
+    throw new Error("SOCIAL_IMPORT_CANDIDATE_TYPE_INVALID");
+  }
+
+  const rawPayload = asRecord(candidateRaw.rawData.payload) ?? {};
+  const rawMetadata = asRecord(candidateRaw.rawData.metadata) ?? {};
+  const existingImages =
+    candidateRaw.candidate.imageUrls.length > 0
+      ? candidateRaw.candidate.imageUrls
+      : extractMediaUrls(candidateRaw.rawData.imageUrls);
+
+  const nextRawData: Record<string, unknown> = {
+    ...candidateRaw.rawData,
+    title: candidateRaw.candidate.title ?? candidateRaw.rawData.title,
+    typeProperty:
+      normalizedTypeProperty ??
+      (typeof candidateRaw.candidate.typeProperty === "string"
+        ? candidateRaw.candidate.typeProperty
+        : candidateRaw.rawData.typeProperty),
+    price: candidateRaw.candidate.price ?? candidateRaw.rawData.price,
+    city: candidateRaw.candidate.city ?? candidateRaw.rawData.city,
+    province: candidateRaw.candidate.province ?? candidateRaw.rawData.province,
+    sourcePostUrl:
+      candidateRaw.candidate.sourcePostUrl ?? candidateRaw.rawData.sourcePostUrl,
+    imageUrls: existingImages,
+    payload: {
+      ...rawPayload,
+      typeProperty:
+        normalizedTypeProperty ??
+        (typeof rawPayload.typeProperty === "string" ? rawPayload.typeProperty : null),
+      mediaUrls: existingImages,
+    },
+    metadata: rawMetadata,
+  };
+
+  const listing = buildListingPayloadFromCandidateRawData(nextRawData);
+  const metadataPatch = {
+    ...rawMetadata,
+    autoMapping: {
+      version: "v1",
+      mappedAt: new Date().toISOString(),
+      mode: "manual_type_adjustment",
+      actorUid,
+    },
+  };
+
+  const mutation = await patchSocialImportReviewCandidateById({
+    candidateId,
+    patch: listing
+      ? {
+          title: listing.title,
+          typeProperty: listing.typeProperty,
+          price: listing.price,
+          city: listing.city,
+          province: listing.province,
+          imageUrls: listing.images.map((image) => image.fileURL),
+          listing,
+          metadata: metadataPatch,
+          status: "ready_to_publish",
+          autoReason: "JSON_IMPORT_MANUAL_TYPE_READY",
+          reviewedBy: null,
+          reviewedAt: null,
+          reviewReason: null,
+        }
+      : {
+          typeProperty: normalizedTypeProperty,
+          listing: null,
+          metadata: metadataPatch,
+          status: "needs_review",
+          autoReason: "JSON_IMPORT_MANUAL_TYPE_INCOMPLETE",
+        },
+  });
+
+  return mutation;
+}
+
+export async function autoFixSocialImportCandidates(input: {
+  candidateIds: string[];
+  actorUid: string;
+}) {
+  const actorUid = input.actorUid.trim();
+  if (!actorUid) {
+    throw new Error("SOCIAL_IMPORT_ACTOR_UID_REQUIRED");
+  }
+
+  const candidateIds = Array.from(
+    new Set(
+      input.candidateIds
+        .map((candidateId) => candidateId.trim())
+        .filter((candidateId) => candidateId.length > 0),
+    ),
+  );
+
+  if (candidateIds.length === 0) {
+    throw new Error("SOCIAL_IMPORT_CANDIDATE_IDS_REQUIRED");
+  }
+
+  if (candidateIds.length > 200) {
+    throw new Error("SOCIAL_IMPORT_CANDIDATE_IDS_LIMIT_EXCEEDED");
+  }
+
+  const corrected: Array<{ candidateId: string; rawPostId: string }> = [];
+  const stillNeedsReview: Array<{ candidateId: string; rawPostId: string }> = [];
+  const skippedPublished: Array<{ candidateId: string; rawPostId: string }> = [];
+  const skippedRejected: Array<{ candidateId: string; rawPostId: string }> = [];
+  const notFoundIds: string[] = [];
+
+  for (const candidateId of candidateIds) {
+    const candidateRaw = await getSocialImportReviewCandidateRawById(candidateId);
+    if (!candidateRaw) {
+      notFoundIds.push(candidateId);
+      continue;
+    }
+
+    const candidate = candidateRaw.candidate;
+    if (candidate.status === "published") {
+      skippedPublished.push({
+        candidateId,
+        rawPostId: candidate.rawPostId,
+      });
+      continue;
+    }
+
+    if (candidate.status === "rejected") {
+      skippedRejected.push({
+        candidateId,
+        rawPostId: candidate.rawPostId,
+      });
+      continue;
+    }
+
+    const rawPayload = asRecord(candidateRaw.rawData.payload) ?? {};
+    const rawMetadata = asRecord(candidateRaw.rawData.metadata) ?? {};
+    const sourceCaption =
+      toNullableString(rawPayload.caption) ??
+      toNullableString(candidateRaw.rawData.caption) ??
+      null;
+    const sourcePostUrl =
+      toNullableString(candidateRaw.rawData.sourcePostUrl) ??
+      toNullableString(rawPayload.sourcePostUrl) ??
+      toNullableString(rawPayload.postUrl) ??
+      candidate.sourcePostUrl ??
+      null;
+    const sourceImages = Array.from(
+      new Set([
+        ...extractMediaUrls(candidateRaw.rawData.imageUrls),
+        ...extractMediaUrls(candidateRaw.rawData.media_urls),
+        ...extractMediaUrls(rawPayload.mediaUrls),
+        ...(candidate.imageUrls.length > 0 ? candidate.imageUrls : []),
+      ]),
+    );
+    const inferredCityFromSource = inferCityFromCaption(sourceCaption);
+    const inferredProvinceFromSource = inferProvinceFromCity(inferredCityFromSource);
+    const inferredPriceFromSource = extractPriceFromCaption(sourceCaption);
+    const inferredTypeFromSource = inferTypePropertyFromCaption(sourceCaption);
+    const inferredTitleFromSource = extractTitleFromCaption(sourceCaption);
+
+    const nextRawData: Record<string, unknown> = {
+      ...candidateRaw.rawData,
+      // Reparse strict depuis la source brute (caption/post), sans recycler les anciens mappages.
+      title: null,
+      typeProperty: null,
+      price: inferredPriceFromSource,
+      city: inferredCityFromSource,
+      province: inferredProvinceFromSource,
+      sourcePostUrl,
+      imageUrls: sourceImages,
+      payload: {
+        ...rawPayload,
+        caption: sourceCaption,
+        typeProperty: null,
+        mediaUrls: sourceImages,
+      },
+      metadata: rawMetadata,
+    };
+
+    const listing = buildListingPayloadFromCandidateRawData(nextRawData);
+    const metadataPatch = {
+      ...rawMetadata,
+      autoMapping: {
+        version: "v2",
+        mappedAt: new Date().toISOString(),
+        mode: "autofix_existing_candidate",
+        actorUid,
+      },
+    };
+
+    const mutation = await patchSocialImportReviewCandidateById({
+      candidateId,
+      patch: listing
+        ? {
+            title: listing.title,
+            typeProperty: listing.typeProperty,
+            price: listing.price,
+            city: listing.city,
+            province: listing.province,
+            imageUrls: listing.images.map((image) => image.fileURL),
+            listing,
+            metadata: metadataPatch,
+            status: "ready_to_publish",
+            autoReason: "JSON_IMPORT_AUTO_REPAIRED_READY",
+            reviewedBy: null,
+            reviewedAt: null,
+            reviewReason: null,
+          }
+        : {
+            title: inferredTitleFromSource ?? candidate.title ?? null,
+            typeProperty: inferredTypeFromSource ?? candidate.typeProperty ?? null,
+            price: inferredPriceFromSource ?? candidate.price ?? null,
+            city: inferredCityFromSource ?? candidate.city ?? null,
+            province: inferredProvinceFromSource ?? candidate.province ?? null,
+            imageUrls: sourceImages.length > 0 ? sourceImages : candidate.imageUrls,
+            listing: null,
+            metadata: metadataPatch,
+            status: "needs_review",
+            autoReason: "JSON_IMPORT_AUTO_REPAIRED_INCOMPLETE",
+          },
+    });
+
+    if (!mutation) {
+      notFoundIds.push(candidateId);
+      continue;
+    }
+
+    if (listing) {
+      corrected.push({
+        candidateId: mutation.after.id,
+        rawPostId: mutation.after.rawPostId,
+      });
+      continue;
+    }
+
+    stillNeedsReview.push({
+      candidateId: mutation.after.id,
+      rawPostId: mutation.after.rawPostId,
+    });
+  }
+
+  return {
+    requestedCount: candidateIds.length,
+    correctedCount: corrected.length,
+    corrected,
+    stillNeedsReviewCount: stillNeedsReview.length,
+    stillNeedsReview,
+    skippedPublishedCount: skippedPublished.length,
+    skippedPublished,
+    skippedRejectedCount: skippedRejected.length,
+    skippedRejected,
+    notFoundCount: notFoundIds.length,
+    notFoundIds,
+  };
 }
 
 export async function deleteSocialImportCandidate(input: {
