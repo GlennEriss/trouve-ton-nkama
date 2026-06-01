@@ -309,7 +309,7 @@ export const MultiSelect = React.forwardRef<
           </Button>
         </PopoverTrigger>
         <PopoverContent
-          className="w-auto p-0"
+          className="w-[var(--radix-popover-trigger-width)] min-w-[220px] p-0"
           align="start"
           onEscapeKeyDown={() => setIsPopoverOpen(false)}
         >
@@ -318,7 +318,7 @@ export const MultiSelect = React.forwardRef<
               placeholder="Rechercher..."
               onKeyDown={handleInputKeyDown}
             />
-            <CommandList>
+            <CommandList className="max-h-[40vh] overflow-y-auto touch-pan-y overscroll-contain">
               <CommandEmpty>No results found.</CommandEmpty>
               <CommandGroup>
                 <CommandItem

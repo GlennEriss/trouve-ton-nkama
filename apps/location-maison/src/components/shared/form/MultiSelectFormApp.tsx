@@ -10,9 +10,10 @@ type MultiSelectFormAppProps<T extends FieldValues> = {
     options: OptionType[],
     placeholder?: string,
     label?: string,
-    className?: string
+    className?: string,
+    modalPopover?: boolean,
 }
-export default function MultiSelectFormApp<T extends FieldValues>({ control, name, options, placeholder, label, className }: Readonly<MultiSelectFormAppProps<T>>) {
+export default function MultiSelectFormApp<T extends FieldValues>({ control, name, options, placeholder, label, className, modalPopover = false }: Readonly<MultiSelectFormAppProps<T>>) {
     return (
         <FormField
             control={control}
@@ -30,6 +31,7 @@ export default function MultiSelectFormApp<T extends FieldValues>({ control, nam
                             animation={2}
                             maxCount={3}
                             className={className}
+                            modalPopover={modalPopover}
                         />
                     </FormControl>
                     <FormMessage />

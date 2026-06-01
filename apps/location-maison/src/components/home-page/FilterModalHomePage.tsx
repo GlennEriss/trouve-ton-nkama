@@ -91,6 +91,7 @@ export const FilterModalHomePage = () => {
                                             options={statusOptions}
                                             placeholder="Sélectionnez le statut"
                                             className='rounded-full p-2 h-14 bg-gray-50 dark:bg-gray-900 dark:text-white'
+                                            modalPopover
                                         />
                                     </div>
 
@@ -176,6 +177,7 @@ export const FilterModalHomePage = () => {
                                             options={typePropertyOptions}
                                             placeholder="Types d'annonces"
                                             className='rounded-full p-2 h-14 bg-gray-50 dark:bg-gray-900 dark:text-white'
+                                            modalPopover
                                         />
                                     </div>
 
@@ -188,6 +190,7 @@ export const FilterModalHomePage = () => {
                                             options={tagOptions}
                                             placeholder="Sélectionnez les tags"
                                             className='rounded-full p-2 h-14 bg-gray-50 dark:bg-gray-900 dark:text-white'
+                                            modalPopover
                                         />
                                     </div>
                                 </div>
