@@ -13,14 +13,13 @@ import SelectStreet from './SelectStreet';
 import MultiSelectFormApp from '../shared/form/MultiSelectFormApp'
 import { statusOptions } from "@/constantes";
 import InputFormNumberApp from '../shared/form/InputFormNumberApp'
-import { TypeProperty, getTypePropertyKey } from '@/constantes/property-type'
 import { Button } from '../ui/button'
 import { useFormFilterSearchMediator } from '@/hooks/useFormFilterSearchMediator'
 import { trackingEvents, useTrackEvent } from '@/features/analytics/tracking'
 import { useSearchParams } from 'next/navigation'
 import { useSession } from 'next-auth/react'
 import SearchWithAIAccessNoticeDialog from './SearchWithAIAccessNoticeDialog'
-import { useDynamicTags } from '@/hooks/useDynamicTags'
+import { useAlgoliaTypePropertyOptions, useAlgoliaTagOptions } from '@/hooks/useAlgoliaFacetOptions'
 
 export default function FilterSearchDesktopPageSection() {
     const form = useForm<FormFilterSchemaType>({
@@ -31,7 +30,8 @@ export default function FilterSearchDesktopPageSection() {
     const searchParams = useSearchParams();
     const { status } = useSession();
     const [isAccessDialogOpen, setIsAccessDialogOpen] = React.useState(false);
-    const { tagOptions } = useDynamicTags();
+    const { options: typePropertyOptions } = useAlgoliaTypePropertyOptions();
+    const { options: tagOptions } = useAlgoliaTagOptions();
     const searchWithAIHref = `/search-with-ia?${new URLSearchParams(searchParams.toString()).toString()}&entry=search_cta`;
     const isAuthenticated = status === 'authenticated';
 
@@ -164,13 +164,7 @@ export default function FilterSearchDesktopPageSection() {
                             <MultiSelectFormApp
                                 control={form.control}
                                 name="typeProperty"
-                                options={Object.values(TypeProperty)
-                                    .map(type => ({
-                                        label: type,
-                                        value: getTypePropertyKey(type)!
-                                    }))
-                                    .sort((a, b) => a.label.localeCompare(b.label))
-                                }
+                                options={typePropertyOptions}
                                 placeholder="Types d'annonces"
                                 className='rounded-full p-2 h-14 bg-gray-50 dark:bg-gray-900 dark:text-white'
                             />
@@ -183,13 +177,7 @@ export default function FilterSearchDesktopPageSection() {
                             <MultiSelectFormApp
                                 control={form.control}
                                 name="tags"
-                                options={tagOptions
-                                    .map(tag => ({
-                                        label: tag.tagName,
-                                        value: tag.tagName
-                                    }))
-                                    .sort((a, b) => a.label.localeCompare(b.label))
-                                }
+                                options={tagOptions}
                                 placeholder="Sélectionnez les tags"
                                 className='rounded-full p-2 h-14 bg-gray-50 dark:bg-gray-900 dark:text-white'
                             />
