@@ -90,6 +90,23 @@ export class Step2FormPropertyMediator {
     getVillaPiscines = (): number => this.form.getValues("nbrPiscine") ?? 0;
     setVillaPiscines = (piscines: number) => this.form.setValue("nbrPiscine", piscines);
 
+    /** ===================== DUPLEX ===================== */
+    getDuplexFloors = (): number => this.form.getValues("nbrFloors") ?? 0;
+    setDuplexFloors = (floors: number) => this.form.setValue("nbrFloors", floors);
+
+    getDuplexGarages = (): number => this.form.getValues("nbrGarages") ?? 0;
+    setDuplexGarages = (garages: number) => this.form.setValue("nbrGarages", garages);
+
+    getDuplexLivingRooms = (): number => this.form.getValues("nbrLivingRoom") ?? 0;
+    setDuplexLivingRooms = (nbr: number) => this.form.setValue("nbrLivingRoom", nbr);
+
+    /** ===================== WAREHOUSE ===================== */
+    getWarehouseSections = (): number => this.form.getValues("nbrSections") ?? 0;
+    setWarehouseSections = (nbr: number) => this.form.setValue("nbrSections", nbr);
+
+    getWarehouseToilets = (): number => this.form.getValues("nbrToilets") ?? 0;
+    setWarehouseToilets = (nbr: number) => this.form.setValue("nbrToilets", nbr);
+
     /** ===================== HELPERS ===================== */
     getValues = () => this.form.getValues();
     reset = () => {
