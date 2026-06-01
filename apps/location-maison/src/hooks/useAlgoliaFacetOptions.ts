@@ -1,46 +1,62 @@
 'use client';
-import { useMemo } from 'react';
-import { useRefinementList } from 'react-instantsearch';
+import { useQuery } from '@tanstack/react-query';
+import { algoliaClient, ALGOLIA_INDEX_NAME, ALGOLIA_BASE_FILTER } from '@/lib/algolia';
 import { TypeProperty } from '@/constantes/property-type';
 
 export type FacetOption = { label: string; value: string; count: number };
 
-export function useAlgoliaTypePropertyOptions(): { options: FacetOption[] } {
-    const { items } = useRefinementList({
-        attribute: 'typeProperty',
-        operator: 'or',
-        limit: 50,
-        sortBy: ['name:asc'],
-    });
-
-    const options = useMemo(() =>
-        items.map(item => ({
-            label: TypeProperty[item.value] ?? item.value,
-            value: item.value,
-            count: item.count,
-        })).sort((a, b) => a.label.localeCompare(b.label, 'fr')),
-        [items]
-    );
-
-    return { options };
+async function fetchPropertyFacet(attribute: string): Promise<Record<string, number>> {
+    try {
+        const response = await algoliaClient.search({
+            requests: [{
+                indexName: ALGOLIA_INDEX_NAME,
+                query: '',
+                facets: [attribute],
+                filters: ALGOLIA_BASE_FILTER,
+                hitsPerPage: 0,
+                attributesToRetrieve: [],
+                attributesToHighlight: [],
+            }]
+        }) as any;
+        return response.results?.[0]?.facets?.[attribute] ?? {};
+    } catch {
+        return {};
+    }
 }
 
-export function useAlgoliaTagOptions(): { options: FacetOption[] } {
-    const { items } = useRefinementList({
-        attribute: 'tags',
-        operator: 'or',
-        limit: 100,
-        sortBy: ['name:asc'],
+export function useAlgoliaTypePropertyOptions(): { options: FacetOption[]; isLoading: boolean } {
+    const { data = {}, isLoading } = useQuery({
+        queryKey: ['algolia-facets', 'typeProperty'],
+        queryFn: () => fetchPropertyFacet('typeProperty'),
+        staleTime: 5 * 60 * 1000,
     });
 
-    const options = useMemo(() =>
-        items.map(item => ({
-            label: item.label,
-            value: item.value,
-            count: item.count,
-        })).sort((a, b) => a.label.localeCompare(b.label, 'fr')),
-        [items]
-    );
+    const options: FacetOption[] = Object.entries(data)
+        .map(([value, count]) => ({
+            label: TypeProperty[value] ?? value,
+            value,
+            count,
+        }))
+        .filter(o => o.label)
+        .sort((a, b) => a.label.localeCompare(b.label, 'fr'));
 
-    return { options };
+    return { options, isLoading };
+}
+
+export function useAlgoliaTagOptions(): { options: FacetOption[]; isLoading: boolean } {
+    const { data = {}, isLoading } = useQuery({
+        queryKey: ['algolia-facets', 'tags'],
+        queryFn: () => fetchPropertyFacet('tags'),
+        staleTime: 5 * 60 * 1000,
+    });
+
+    const options: FacetOption[] = Object.entries(data)
+        .map(([value, count]) => ({
+            label: value,
+            value,
+            count,
+        }))
+        .sort((a, b) => a.label.localeCompare(b.label, 'fr'));
+
+    return { options, isLoading };
 }
