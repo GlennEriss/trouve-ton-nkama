@@ -1,6 +1,6 @@
 import { TypeProperty } from '@/constantes/property-type'
 import { routes } from '@/constantes/routes'
-import { Home, Building, Warehouse, Briefcase, Building2, Bed, Store, ShoppingBag, Globe } from 'lucide-react'
+import { Home, Building, Warehouse, Briefcase, Building2, Bed, Store, ShoppingBag, Globe, Landmark, Layers } from 'lucide-react'
 import Link from 'next/link'
 import React from 'react'
 import AppMobileStickyHeader from '@/components/shared/AppMobileStickyHeader'
@@ -21,11 +21,11 @@ const buttonList = [
     link: routes.protected.add_apartment,
     icon: <Building size={24} />
   },
-  /* {
+  {
     label: TypeProperty.Villa,
     link: routes.protected.add_villa,
     icon: <Landmark size={24} />
-  }, */
+  },
   {
     label: TypeProperty.Building,
     link: routes.protected.add_building,
@@ -55,7 +55,17 @@ const buttonList = [
     label: TypeProperty.Land,
     link: routes.protected.add_land,
     icon: <Globe size={24} />
-  }, 
+  },
+  {
+    label: TypeProperty.Duplex,
+    link: routes.protected.add_duplex,
+    icon: <Layers size={24} />
+  },
+  {
+    label: TypeProperty.Warehouse,
+    link: routes.protected.add_warehouse,
+    icon: <Warehouse size={24} />
+  },
 ]
 export default function page() {
   return (
@@ -69,7 +79,7 @@ export default function page() {
       {/* Section des boutons */}
       <div className='grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 px-6'>
         {
-          buttonList.map((item, index) => (
+          buttonList.map((item) => (
             <Link
               className='text-lg font-semibold flex flex-col items-center gap-4 justify-center border p-5 rounded-xl shadow-md lg:h-[140px] lg:text-xl transition-all bg-white dark:bg-gray-800 dark:border-gray-700 hover:scale-105 hover:shadow-lg hover:bg-blue-100 dark:hover:bg-gray-700 text-gray-900 dark:text-white'
               href={item.link}

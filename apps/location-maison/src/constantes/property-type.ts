@@ -11,7 +11,9 @@ export const TypePropertyEnum = {
     Property: "property",
     Logement: "logement",
     Villa: 'villa',
-    Land: 'land'
+    Land: 'land',
+    Duplex: 'duplex',
+    Warehouse: 'warehouse'
   } as const;
 
   export const TypeProperty: Record<string, string> = {
@@ -24,7 +26,9 @@ export const TypePropertyEnum = {
     Desk: "Bureau",
     Building: "Immeuble",
     Land: "Terrain",
-    // Villa: "Villa"
+    Villa: "Villa",
+    Duplex: "Duplex",
+    Warehouse: "Entrepôt"
   };
   
   /**

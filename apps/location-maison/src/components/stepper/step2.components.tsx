@@ -4,7 +4,6 @@ import { FormItem, FormControl, FormLabel } from '../ui/form'
 import { InputNumberApp } from '../shared/ui/InputNumberApp'
 import { useStep2FormPropertyMediator } from '@/hooks/useStep2FormPropertyMediator'
 import { InputApp } from '../shared/ui/InputApp'
-import { useFormContext } from 'react-hook-form'
 
 type ChoiceComponentProps = {
     field?: any,
@@ -199,5 +198,40 @@ export const VillaPiscinesComponent = () => {
     const mediator = useStep2FormPropertyMediator()
     return (
         <InputNumberApp value={mediator.getVillaPiscines()} onChange={(value) => mediator.setVillaPiscines(Number(value))} />
+    )
+}
+
+export const DuplexFloorsComponent = () => {
+    const mediator = useStep2FormPropertyMediator()
+    return (
+        <InputNumberApp value={mediator.getDuplexFloors()} onChange={(value) => mediator.setDuplexFloors(Number(value))} />
+    )
+}
+
+export const DuplexGaragesComponent = () => {
+    const mediator = useStep2FormPropertyMediator()
+    return (
+        <InputNumberApp value={mediator.getDuplexGarages()} onChange={(value) => mediator.setDuplexGarages(Number(value))} />
+    )
+}
+
+export const DuplexLivingRoomsComponent = () => {
+    const mediator = useStep2FormPropertyMediator()
+    return (
+        <InputNumberApp value={mediator.getDuplexLivingRooms()} onChange={(value) => mediator.setDuplexLivingRooms(Number(value))} />
+    )
+}
+
+export const WarehouseSectionsComponent = () => {
+    const mediator = useStep2FormPropertyMediator()
+    return (
+        <InputNumberApp value={mediator.getWarehouseSections()} onChange={(value) => mediator.setWarehouseSections(Number(value))} />
+    )
+}
+
+export const WarehouseToiletsComponent = () => {
+    const mediator = useStep2FormPropertyMediator()
+    return (
+        <InputNumberApp value={mediator.getWarehouseToilets()} onChange={(value) => mediator.setWarehouseToilets(Number(value))} />
     )
 }

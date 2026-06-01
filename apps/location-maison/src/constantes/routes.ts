@@ -16,6 +16,8 @@ export const routes = {
         add_kiosk: '/property/add/kiosk',
         add_shop: '/property/add/shop',
         add_land: '/property/add/land',
+        add_duplex: '/property/add/duplex',
+        add_warehouse: '/property/add/warehouse',
         account: '/profil',
         favoris: '/favoris',
         profil: '/profil',

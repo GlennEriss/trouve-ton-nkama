@@ -107,3 +107,10 @@ export type Kiosk = Property & {
 export type Room = Property & {
     roomType: string;
 }
+
+export type Duplex = Home
+
+export type Warehouse = Property & {
+    nbrSections: number;
+    nbrToilets: number;
+}
