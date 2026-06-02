@@ -10,24 +10,14 @@ import {
   type CreditPackUi,
 } from '@/lib/credits/credit-packs'
 import { useRecharge } from '@/providers/RechargeProvider'
+import { PAYMENT_METHODS } from '@/constantes/payment-methods'
 
 interface CreditPacksListProps {
   onOpenModal?: () => void
   onPackSelect?: (pack: CreditPackUi) => void
 }
 
-const paymentMethods = [
-  {
-    id: 'airtel',
-    name: 'Airtel Money',
-    icon: 'airtel.webp'
-  },
-  {
-    id: 'libertis',
-    name: 'Mobicash',
-    icon: 'libertis.webp'
-  }
-]
+const paymentMethods = PAYMENT_METHODS
 export default function CreditPacksList({ onOpenModal, onPackSelect }: Readonly<CreditPacksListProps>) {
   const creditPacksQuery = useCreditPacks()
   const { openRecharge } = useRecharge()
@@ -63,7 +53,7 @@ export default function CreditPacksList({ onOpenModal, onPackSelect }: Readonly<
         <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-3 max-w-2xl mx-auto">
           <div className="flex items-center gap-2 text-sm text-blue-800 dark:text-blue-200">
             <Info className="w-4 h-4 flex-shrink-0" />
-            <p>Recharge instantanée par mobile money (Airtel Money / Moov Money) via MyPayGa. Vos crédits sont ajoutés après confirmation du paiement.</p>
+            <p>Recharge instantanée par mobile money (Airtel Money / Moov Money). Vos crédits sont ajoutés après confirmation du paiement.</p>
           </div>
         </div>
         {creditPacksQuery.isError ? (
@@ -115,18 +105,15 @@ export default function CreditPacksList({ onOpenModal, onPackSelect }: Readonly<
         <p className="text-xs md:text-sm text-gray-500 dark:text-gray-400">
           Paiement sécurisé avec
         </p>
-        <div className="flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-6">
+        <div className="flex flex-row items-center justify-center gap-6 sm:gap-10">
           {paymentMethods.map((method) => (
-            <div key={method.id} className="flex items-center gap-2">
-              <div className="w-8 h-8 md:w-20 md:h-16 relative flex-shrink-0">
-                <Image
-                  src={`/assets/balance/${method.icon}`}
-                  alt={method.name}
-                  fill
-                  className="object-contain"
-                />
-              </div>
-              <span className="text-sm text-gray-500 dark:text-gray-400">{method.name}</span>
+            <div key={method.id} className="relative w-32 h-20 md:w-40 md:h-24 flex-shrink-0">
+              <Image
+                src={`/assets/balance/${method.icon}`}
+                alt={method.name}
+                fill
+                className="object-contain"
+              />
             </div>
           ))}
         </div>
