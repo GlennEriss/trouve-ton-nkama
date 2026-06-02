@@ -8,6 +8,7 @@ import { Property, PromotionType } from '@/models/annonce'
 import { Megaphone, TrendingUp, ArrowUpCircle, Clock, Coins, CheckCircle2, CreditCard } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { usePromotion } from '@/hooks/use-promotion'
+import { useRecharge } from '@/providers/RechargeProvider'
 
 interface PromotionModalProps {
   property: Property
@@ -44,17 +45,18 @@ function getPromotionTypeName(promotionType: PromotionType | undefined): string 
 export function PromotionModal({ property, isOpen, onClose }: Readonly<PromotionModalProps>) {
   const [selectedPromotion, setSelectedPromotion] = useState<PromotionType>(null)
   
-  const { 
-    promoteProperty, 
-    isLoading, 
-    hasActivePromotion, 
-    canPromote, 
+  const {
+    promoteProperty,
+    isLoading,
+    hasActivePromotion,
+    canPromote,
     getPromotionStatus,
-    userCredits 
-  } = usePromotion({ 
-    property, 
-    onSuccess: onClose 
+    userCredits
+  } = usePromotion({
+    property,
+    onSuccess: onClose
   })
+  const { openRecharge } = useRecharge()
 
   const currentPromotionType = hasActivePromotion ? property.currentPromotion?.type : null
   const promotionStatus = getPromotionStatus()
@@ -149,11 +151,22 @@ export function PromotionModal({ property, isOpen, onClose }: Readonly<Promotion
                 </p>
               </div>
             </div>
-            <div className="text-right">
-              <p className="text-2xl font-bold text-[#146B67] dark:text-[#1FA89B]">
-                {userCredits}
-              </p>
-              <p className="text-sm text-gray-500">crédits</p>
+            <div className="flex items-center gap-4">
+              <div className="text-right">
+                <p className="text-2xl font-bold text-[#146B67] dark:text-[#1FA89B]">
+                  {userCredits}
+                </p>
+                <p className="text-sm text-gray-500">crédits</p>
+              </div>
+              <Button
+                type="button"
+                size="sm"
+                onClick={() => openRecharge()}
+                className="bg-[#146B67] hover:bg-[#125A56] text-white"
+              >
+                <CreditCard className="w-4 h-4 mr-1.5" />
+                Recharger
+              </Button>
             </div>
           </div>
         </div>

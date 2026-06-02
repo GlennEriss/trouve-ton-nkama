@@ -7,6 +7,7 @@ import { NotificationProvider } from "./NotificationProvider";
 import { AlgoliaRefinementsProvider } from "./AlgoliaRefinementsContext";
 import { ThemeProvider } from "@/components/theme-provider"
 import { PWAInstallProvider } from "./PWAInstallProvider";
+import { RechargeProvider } from "./RechargeProvider";
 
 export function Providers({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
@@ -23,7 +24,9 @@ export function Providers({ children }: Readonly<{ children: React.ReactNode }>)
                 <AlgoliaProvider indexName={"location-maison_property-index"}>
                   <AlgoliaRefinementsProvider>
                     <PWAInstallProvider>
-                      {children}
+                      <RechargeProvider>
+                        {children}
+                      </RechargeProvider>
                     </PWAInstallProvider>
                   </AlgoliaRefinementsProvider>
                 </AlgoliaProvider>

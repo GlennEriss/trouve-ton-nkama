@@ -19,6 +19,7 @@ import AutoFillModal from './AutoFillModal';
 import usePropertyType from '@/hooks/usePropertyType';
 import AIPromptsService from '@/services/ai-prompts.service';
 import { createLogger } from '@/lib/logger';
+import { useRecharge } from '@/providers/RechargeProvider';
 
 const logger = createLogger('components.ai-assistant-chat-modal');
 
@@ -122,6 +123,7 @@ const AssistantChatModal: React.FC<AssistantChatModalProps> = ({
   const [showAutoFillModal, setShowAutoFillModal] = useState(false);
   const { sendMessage, creditsAvailable, isLoading } = useAIAssistant();
   const { propertyType, propertyLabel, requiredFields } = usePropertyType();
+  const { openRecharge } = useRecharge();
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -428,7 +430,7 @@ ${generatedData.suggestions?.map((s: string) => `• ${s}`).join('\n') ?? ''}
                 <p className="text-red-700 text-sm mb-2">
                   Vous n'avez plus de crédits pour utiliser l'assistant IA
                 </p>
-                <Button variant="outline" size="sm">
+                <Button variant="outline" size="sm" onClick={() => openRecharge()}>
                   <CreditCard className="w-4 h-4 mr-2" />
                   Recharger des crédits
                 </Button>

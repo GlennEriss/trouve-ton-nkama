@@ -13,13 +13,15 @@ const logger = createLogger('hooks.use-credits-purchase')
 
 interface PurchaseRequest {
   packId: string
-  code: string
+  phoneNumber: string
+  network?: 'AM' | 'MM'
 }
 
 interface PurchaseResponse {
   success: boolean
   transactionId?: string
   checkoutUrl?: string
+  providerPaymentToken?: string
   message: string
   error?: string
 }

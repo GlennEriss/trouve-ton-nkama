@@ -20,7 +20,7 @@ export {
 } from './notification';
 
 // Fonctions de paiement
-export { initiatePurchase } from './payments/airtel';
+export { initiatePurchase, mypaygaPaymentCallback } from './payments/mypayga';
 export { createCreditPayment } from './credit-payment';
 
 // Fonctions d'email

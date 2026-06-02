@@ -9,6 +9,7 @@ import {
   toUiCreditPack,
   type CreditPackUi,
 } from '@/lib/credits/credit-packs'
+import { useRecharge } from '@/providers/RechargeProvider'
 
 interface CreditPacksListProps {
   onOpenModal?: () => void
@@ -29,18 +30,21 @@ const paymentMethods = [
 ]
 export default function CreditPacksList({ onOpenModal, onPackSelect }: Readonly<CreditPacksListProps>) {
   const creditPacksQuery = useCreditPacks()
+  const { openRecharge } = useRecharge()
   const creditPacks = React.useMemo(() => {
     const source = creditPacksQuery.data?.packs ?? []
     return source.map(toUiCreditPack)
   }, [creditPacksQuery.data?.packs])
 
   const handlePackSelect = (pack: CreditPackUi) => {
-    // Communiquer le pack sélectionné au parent
-    if (onPackSelect) {
-      onPackSelect(pack)
+    // Si un parent fournit ses propres handlers, on les respecte (rétrocompat).
+    if (onPackSelect || onOpenModal) {
+      onPackSelect?.(pack)
+      onOpenModal?.()
+      return
     }
-    // Ouvrir le modal du parent
-    onOpenModal?.()
+    // Sinon, ouvrir directement le flux de recharge MyPayGa.
+    openRecharge(pack)
   }
 
   return (
@@ -59,7 +63,7 @@ export default function CreditPacksList({ onOpenModal, onPackSelect }: Readonly<
         <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-3 max-w-2xl mx-auto">
           <div className="flex items-center gap-2 text-sm text-blue-800 dark:text-blue-200">
             <Info className="w-4 h-4 flex-shrink-0" />
-            <p>Recharge actuellement manuelle: contactez le support WhatsApp après dépôt pour créditement du compte.</p>
+            <p>Recharge instantanée par mobile money (Airtel Money / Moov Money) via MyPayGa. Vos crédits sont ajoutés après confirmation du paiement.</p>
           </div>
         </div>
         {creditPacksQuery.isError ? (
@@ -76,7 +80,7 @@ export default function CreditPacksList({ onOpenModal, onPackSelect }: Readonly<
             key={pack.id}
             pack={pack}
             onSelect={handlePackSelect}
-            isLoading={true}
+            isLoading={creditPacksQuery.isFetching}
           />
         ))}
       </div>

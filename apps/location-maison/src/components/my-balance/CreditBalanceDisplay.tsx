@@ -5,9 +5,7 @@ import { Wallet, Zap, Gift, Loader2, AlertCircle } from 'lucide-react'
 import { useCreditsBalance } from '@/hooks/use-credits-balance'
 import { useCurrentUser } from '@/hooks/use-current-user'
 import { useSession } from 'next-auth/react'
-import { createLogger } from '@/lib/logger'
-
-const logger = createLogger('components.credit-balance-display')
+import { useRecharge } from '@/providers/RechargeProvider'
 
 interface CreditBalanceDisplayProps {
   onRecharge?: () => void
@@ -19,6 +17,7 @@ export default function CreditBalanceDisplay({
   const { data: balanceData, isLoading, error, isError } = useCreditsBalance()
   const { user } = useCurrentUser()
   const { update, data: session } = useSession();
+  const { openRecharge } = useRecharge()
   const balance = balanceData?.credits ?? 0
   const isNewUser = balanceData?.message?.includes('Bienvenue') ?? false
   const welcomeCredits = 3
@@ -55,7 +54,7 @@ export default function CreditBalanceDisplay({
     if (onRecharge) {
       onRecharge()
     } else {
-      logger.info('Recharge action clicked without handler')
+      openRecharge()
     }
   }
 
@@ -145,14 +144,18 @@ export default function CreditBalanceDisplay({
           )}
         </div>
 
-        {/* Action Button - Temporairement désactivé */}
+        {/* Action Button */}
         <div className="text-center">
-          <div className="bg-gray-300 dark:bg-gray-600 text-gray-500 dark:text-gray-400 px-6 md:px-8 py-2.5 md:py-3 rounded-full font-semibold inline-flex items-center gap-2 text-sm md:text-base cursor-not-allowed opacity-75">
+          <button
+            type="button"
+            onClick={handleRecharge}
+            className="bg-[#146B67] hover:bg-[#125A56] text-white px-6 md:px-8 py-2.5 md:py-3 rounded-full font-semibold inline-flex items-center gap-2 text-sm md:text-base transition-colors focus:outline-none focus:ring-2 focus:ring-[#146B67] focus:ring-offset-2"
+          >
             <Zap className="w-4 h-4 md:w-5 md:h-5" />
             Recharger mon solde
-          </div>
+          </button>
           <p className="text-xs text-gray-500 dark:text-gray-400 mt-2">
-            Bientôt disponible pour de meilleures visibilités
+            Paiement mobile money sécurisé via MyPayGa
           </p>
         </div>
 
