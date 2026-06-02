@@ -4,7 +4,7 @@ import { onCall, HttpsError } from 'firebase-functions/v2/https'
 import { adminDB } from '../../admin'
 import { generateTransactionId } from '../airtel/config'
 import { getCreditPackById } from '../airtel/database'
-import { MYPAYGA_SECRETS, getMyPayGaConfig, normalizeMyPayGaNetwork, sanitizePhoneDigits } from './config'
+import { MYPAYGA_SECRETS, getMyPayGaConfig, isPhoneValidForNetwork, normalizeMyPayGaNetwork, sanitizePhoneDigits } from './config'
 
 interface InitiatePurchaseRequest {
   packId: string
@@ -33,6 +33,13 @@ export const initiatePurchase = onCall<InitiatePurchaseRequest, Promise<Initiate
 
     if (!packId || !safePhone) {
       throw new HttpsError('invalid-argument', 'Pack ID et numéro de téléphone requis')
+    }
+
+    if (!isPhoneValidForNetwork(safePhone, providerNetwork)) {
+      throw new HttpsError(
+        'invalid-argument',
+        'Numéro invalide pour ce réseau (Airtel: 074/077, Moov: 062/065/066, suivis de 6 chiffres).'
+      )
     }
 
     const pack = await getCreditPackById(packId)

@@ -24,6 +24,16 @@ export const mypaygaPaymentCallback = onRequest({ secrets: MYPAYGA_SECRETS }, as
     return
   }
 
+  // Diagnostic temporaire : tracer la structure brute envoyée par MyPayGa
+  // pour caler le mapping des champs (à retirer une fois le format confirmé).
+  logger.info('Callback MyPayGa reçu (diagnostic)', {
+    method: req.method,
+    contentType: req.headers['content-type'] ?? null,
+    query: req.query ?? null,
+    body: req.body ?? null,
+    rawBody: req.rawBody ? req.rawBody.toString('utf8').slice(0, 1000) : null,
+  })
+
   const config = getMyPayGaConfig()
   if (!config.callbackSecret) {
     res.status(500).json({ ok: false, error: 'callback_secret_missing' })
@@ -32,6 +42,10 @@ export const mypaygaPaymentCallback = onRequest({ secrets: MYPAYGA_SECRETS }, as
 
   const payload = buildCallbackPayload(req)
   if (!payload.uniqueId || !payload.hash) {
+    logger.warn('Callback rejeté: payload incomplet', {
+      uniqueId: payload.uniqueId || null,
+      hasHash: Boolean(payload.hash),
+    })
     res.status(400).json({ ok: false, error: 'invalid_callback_payload' })
     return
   }
@@ -113,14 +127,15 @@ export const mypaygaPaymentCallback = onRequest({ secrets: MYPAYGA_SECRETS }, as
 })
 
 function buildCallbackPayload(req: any): CallbackPayload {
-  const source = {
-    ...(req.query ?? {}),
-    ...(typeof req.body === 'object' && req.body ? req.body : {}),
-  }
+  // MyPayGa peut envoyer le corps en JSON, en form-urlencoded ou en query.
+  // On parse le corps de façon robuste avant d'extraire les champs.
+  const body = parseHttpPayloadObject(req?.body, req?.rawBody)
+  const query = req?.query && typeof req.query === 'object' ? req.query : {}
+  const source = { ...query, ...body }
 
   return {
     uniqueId: pick(source, 'unique_id', 'uniqueId', 'paymentId'),
-    hash: pick(source, 'hash', 'signature'),
+    hash: pick(source, 'hash', 'callback_signature', 'callbackSignature', 'signature'),
     amount: pick(source, 'amount'),
     orderStatus: pick(source, 'order_status', 'orderStatus'),
     statusRequest: pick(source, 'status_request', 'statusRequest', 'request_status'),
@@ -130,6 +145,48 @@ function buildCallbackPayload(req: any): CallbackPayload {
     clientPhone: pick(source, 'client_phone', 'clientPhone', 'phone'),
     currency: pick(source, 'currency'),
   }
+}
+
+function parseHttpPayloadObject(body: unknown, rawBody?: Buffer): Record<string, any> {
+  // Corps déjà parsé en objet par Firebase (JSON / urlencoded reconnus)
+  if (body && typeof body === 'object' && !Buffer.isBuffer(body)) {
+    return body as Record<string, any>
+  }
+
+  // Sinon, repartir du corps brut (string ou Buffer)
+  let raw = ''
+  if (typeof body === 'string') {
+    raw = body
+  } else if (Buffer.isBuffer(body)) {
+    raw = body.toString('utf8')
+  } else if (rawBody && Buffer.isBuffer(rawBody)) {
+    raw = rawBody.toString('utf8')
+  }
+
+  raw = raw.trim()
+  if (!raw) {
+    return {}
+  }
+
+  // 1) Tenter JSON
+  try {
+    const parsed = JSON.parse(raw)
+    if (parsed && typeof parsed === 'object') {
+      return parsed as Record<string, any>
+    }
+  } catch {
+    // pas du JSON, on tente le form-urlencoded
+  }
+
+  // 2) Tenter form-urlencoded (a=b&c=d)
+  const params = new URLSearchParams(raw)
+  const result: Record<string, any> = {}
+  for (const [key, value] of params.entries()) {
+    if (key) {
+      result[key] = value
+    }
+  }
+  return result
 }
 
 function computeCallbackHash(payload: CallbackPayload, secret: string): string {
@@ -147,15 +204,36 @@ function computeCallbackHash(payload: CallbackPayload, secret: string): string {
 }
 
 function timingSafeEqual(expected: string, received: string): boolean {
-  const expectedBuffer = Buffer.from(expected)
-  const receivedBuffer = Buffer.from(String(received).trim())
-  return expectedBuffer.length === receivedBuffer.length
-    && crypto.timingSafeEqual(expectedBuffer, receivedBuffer)
+  // Normaliser (trim + minuscules) : le hash hex de Node est en minuscules,
+  // mais MyPayGa peut renvoyer le sien en majuscules.
+  const left = String(expected).trim().toLowerCase()
+  const right = String(received).trim().toLowerCase()
+  if (!left || !right || left.length !== right.length) {
+    return false
+  }
+  return crypto.timingSafeEqual(Buffer.from(left), Buffer.from(right))
 }
 
 function isSuccessCallback(payload: CallbackPayload): boolean {
-  const status = `${payload.orderStatus} ${payload.statusRequest} ${payload.message}`.toLowerCase()
-  return status.includes('success') || status.includes('successful') || status.includes('paid') || status.includes('succès')
+  // Code de statut explicite (200 = succès)
+  const orderStatus = String(payload.orderStatus ?? '').trim().toLowerCase()
+  const statusRequest = String(payload.statusRequest ?? '').trim()
+  if (
+    orderStatus === '200'
+    || orderStatus === 'success'
+    || orderStatus === 'successful'
+    || orderStatus === 'paid'
+    || orderStatus === 'confirmed'
+    || orderStatus === 'complete'
+    || orderStatus === 'completed'
+    || statusRequest === '200'
+  ) {
+    return true
+  }
+
+  // Repli sur le message texte
+  const text = `${payload.orderStatus} ${payload.statusRequest} ${payload.message}`.toLowerCase()
+  return text.includes('success') || text.includes('successful') || text.includes('paid') || text.includes('succès')
 }
 
 async function applyCreditsOnce(transactionId: string, transaction: FirebaseFirestore.DocumentData): Promise<void> {

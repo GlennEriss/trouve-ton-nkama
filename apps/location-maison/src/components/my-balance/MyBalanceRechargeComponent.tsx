@@ -25,7 +25,7 @@ export default function MyBalanceRechargeComponent() {
               Recharge mobile money instantanée
             </h2>
             <p className="text-sm md:text-base text-emerald-800/90 dark:text-emerald-300/90">
-              Paiement sécurisé via MyPayGa (Airtel Money / Moov Money). Vos crédits sont ajoutés automatiquement après confirmation.
+              Paiement mobile money sécurisé (Airtel Money / Moov Money). Vos crédits sont ajoutés automatiquement après confirmation.
             </p>
           </div>
         </div>
