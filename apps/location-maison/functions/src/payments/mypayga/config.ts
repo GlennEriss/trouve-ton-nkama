@@ -52,6 +52,27 @@ export function sanitizePhoneDigits(value: unknown): string {
   return String(value ?? '').replace(/[^\d]/g, '')
 }
 
+// Regex de validation des numéros mobile money gabonais par réseau.
+// Airtel Money : 074/077 + 6 chiffres — Moov Money : 062/065/066 + 6 chiffres.
+const PHONE_REGEX_BY_NETWORK: Record<MyPayGaNetwork, RegExp> = {
+  AM: /^(?:074|077)\d{6}$/,
+  MM: /^(?:062|065|066)\d{6}$/,
+}
+
+/** Retire l'indicatif pays (241) pour obtenir le numéro local à 9 chiffres. */
+export function toLocalPhone(value: unknown): string {
+  let digits = sanitizePhoneDigits(value)
+  if (digits.startsWith('241') && digits.length > 9) {
+    digits = digits.slice(3)
+  }
+  return digits
+}
+
+/** Valide le numéro local pour le réseau MyPayGa donné. */
+export function isPhoneValidForNetwork(value: unknown, network: MyPayGaNetwork): boolean {
+  return PHONE_REGEX_BY_NETWORK[network].test(toLocalPhone(value))
+}
+
 function trimEnv(name: string): string | null {
   const value = process.env[name]
   if (typeof value !== 'string') {

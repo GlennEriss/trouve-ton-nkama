@@ -155,7 +155,7 @@ export default function CreditBalanceDisplay({
             Recharger mon solde
           </button>
           <p className="text-xs text-gray-500 dark:text-gray-400 mt-2">
-            Paiement mobile money sécurisé via MyPayGa
+            Paiement mobile money sécurisé
           </p>
         </div>
 

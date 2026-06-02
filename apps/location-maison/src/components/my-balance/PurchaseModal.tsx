@@ -5,8 +5,11 @@
 'use client'
 
 import React, { useState, useEffect } from 'react'
+import Image from 'next/image'
 import { useQueryClient } from '@tanstack/react-query'
-import { X, Package, Loader2, CheckCircle, AlertCircle, Smartphone } from 'lucide-react'
+import { X, Package, Loader2, AlertCircle, Smartphone } from 'lucide-react'
+import { PAYMENT_METHODS, isPhoneValidForNetwork, detectNetworkFromPhone } from '@/constantes/payment-methods'
+import PaymentStatusModal from './PaymentStatusModal'
 import { useCreditsPurchase } from '@/hooks/use-credits-purchase'
 import { useTransactionStatus } from '@/hooks/use-transaction-status'
 import { useToast } from '@/hooks/use-toast'
@@ -75,8 +78,21 @@ export default function PurchaseModal({ isOpen, onClose, preselectedPack }: Read
     setStep('payment')
   }
 
+  // Le numéro saisi est-il valide pour le réseau sélectionné ?
+  const isPhoneValid = isPhoneValidForNetwork(phoneNumber, network)
+
+  // Met à jour le numéro et bascule automatiquement le réseau si le préfixe
+  // correspond clairement à l'autre opérateur (074/077 = Airtel, 062/065/066 = Moov).
+  const handlePhoneChange = (value: string) => {
+    setPhoneNumber(value)
+    const detected = detectNetworkFromPhone(value)
+    if (detected && detected !== network) {
+      setNetwork(detected)
+    }
+  }
+
   const handlePurchase = () => {
-    if (selectedPack && phoneNumber.trim()) {
+    if (selectedPack && isPhoneValid) {
       purchaseCredits({
         packId: selectedPack.id,
         phoneNumber: phoneNumber.trim(),
@@ -208,6 +224,20 @@ export default function PurchaseModal({ isOpen, onClose, preselectedPack }: Read
                 </p>
               </div>
 
+              {/* Moyens de paiement acceptés */}
+              <div className="flex flex-row items-center justify-center gap-6">
+                {PAYMENT_METHODS.map((method) => (
+                  <div key={method.id} className="relative w-32 h-20 flex-shrink-0">
+                    <Image
+                      src={`/assets/balance/${method.icon}`}
+                      alt={method.name}
+                      fill
+                      className="object-contain"
+                    />
+                  </div>
+                ))}
+              </div>
+
               <div className="space-y-3">
                 <label htmlFor="payment-network" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
                   Réseau
@@ -231,14 +261,24 @@ export default function PurchaseModal({ isOpen, onClose, preselectedPack }: Read
                     id="payment-phone-input"
                     type="tel"
                     value={phoneNumber}
-                    onChange={(event) => setPhoneNumber(event.target.value)}
+                    onChange={(event) => handlePhoneChange(event.target.value)}
                     placeholder="Ex: 077123456"
-                    className="w-full px-4 py-3 pl-11 border border-gray-200 dark:border-gray-700 rounded-xl focus:ring-2 focus:ring-[#146B67] focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                    className={`w-full px-4 py-3 pl-11 border rounded-xl focus:ring-2 focus:ring-[#146B67] focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white ${
+                      phoneNumber.trim() && !isPhoneValid
+                        ? 'border-red-400 dark:border-red-500'
+                        : 'border-gray-200 dark:border-gray-700'
+                    }`}
                   />
                 </div>
-                <p className="text-xs text-gray-500 dark:text-gray-400">
-                  Une demande de confirmation sera envoyée sur ce numéro.
-                </p>
+                {phoneNumber.trim() && !isPhoneValid ? (
+                  <p className="text-xs text-red-600 dark:text-red-400">
+                    Numéro invalide. Airtel Money : 074/077 — Moov Money : 062/065/066, suivis de 6 chiffres.
+                  </p>
+                ) : (
+                  <p className="text-xs text-gray-500 dark:text-gray-400">
+                    Une demande de confirmation sera envoyée sur ce numéro.
+                  </p>
+                )}
               </div>
 
               {/* Initiation en cours (appel à la Cloud Function) */}
@@ -249,31 +289,6 @@ export default function PurchaseModal({ isOpen, onClose, preselectedPack }: Read
                 </div>
               )}
 
-              {/* En attente de confirmation du paiement (callback MyPayGa) */}
-              {!isPending && transactionId && (txStatus === 'pending' || txStatus === null) && (
-                <div className="flex items-center justify-center gap-2 text-[#146B67]">
-                  <Loader2 className="w-5 h-5 animate-spin" />
-                  <span className="text-sm text-center">
-                    En attente de confirmation. Validez la transaction sur votre téléphone…
-                  </span>
-                </div>
-              )}
-
-              {/* Paiement confirmé en temps réel */}
-              {txStatus === 'success' && (
-                <div className="flex items-center gap-2 text-green-600 dark:text-green-400">
-                  <CheckCircle className="w-5 h-5" />
-                  <span className="text-sm">Paiement confirmé ! Vos crédits ont été ajoutés.</span>
-                </div>
-              )}
-
-              {/* Paiement échoué / annulé en temps réel */}
-              {(txStatus === 'failed' || txStatus === 'cancelled') && (
-                <div className="flex items-center gap-2 text-red-600 dark:text-red-400">
-                  <AlertCircle className="w-5 h-5" />
-                  <span className="text-sm">{failureReason ?? 'Le paiement a échoué. Veuillez réessayer.'}</span>
-                </div>
-              )}
 
               {/* Erreur lors de l'initiation */}
               {isError && !transactionId && (
@@ -284,44 +299,54 @@ export default function PurchaseModal({ isOpen, onClose, preselectedPack }: Read
               )}
 
               {/* Actions */}
-              {txStatus === 'success' ? (
+              <div className="flex gap-3">
                 <button
-                  onClick={handleClose}
-                  className="w-full py-3 bg-[#146B67] text-white rounded-xl font-medium hover:bg-[#125A56] transition-colors"
+                  onClick={() => preselectedPack ? handleClose() : setStep('select')}
+                  disabled={isPending || Boolean(transactionId)}
+                  className="flex-1 py-3 border border-gray-200 dark:border-gray-700 rounded-xl font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 disabled:opacity-50 transition-colors"
                 >
-                  Terminer
+                  {preselectedPack ? 'Annuler' : 'Retour'}
                 </button>
-              ) : (
-                <div className="flex gap-3">
-                  <button
-                    onClick={() => preselectedPack ? handleClose() : setStep('select')}
-                    disabled={isPending}
-                    className="flex-1 py-3 border border-gray-200 dark:border-gray-700 rounded-xl font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 disabled:opacity-50 transition-colors"
-                  >
-                    {preselectedPack ? 'Annuler' : 'Retour'}
-                  </button>
-                  {(txStatus === 'failed' || txStatus === 'cancelled') ? (
-                    <button
-                      onClick={() => setTransactionId(null)}
-                      className="flex-1 py-3 bg-[#146B67] text-white rounded-xl font-medium hover:bg-[#125A56] transition-colors"
-                    >
-                      Réessayer
-                    </button>
-                  ) : (
-                    <button
-                      onClick={handlePurchase}
-                      disabled={Boolean(isPending) || Boolean(!phoneNumber.trim()) || Boolean(transactionId)}
-                      className="flex-1 py-3 bg-[#146B67] text-white rounded-xl font-medium hover:bg-[#125A56] disabled:opacity-50 transition-colors"
-                    >
-                      Payer
-                    </button>
-                  )}
-                </div>
-              )}
+                <button
+                  onClick={handlePurchase}
+                  disabled={Boolean(isPending) || !isPhoneValid || Boolean(transactionId)}
+                  className="flex-1 py-3 bg-[#146B67] text-white rounded-xl font-medium hover:bg-[#125A56] disabled:opacity-50 transition-colors"
+                >
+                  Payer
+                </button>
+              </div>
             </div>
           )}
         </div>
       </div>
+
+      {/* Modale de statut : attente → succès / échec (piloté par le listener Firestore) */}
+      <PaymentStatusModal
+        isOpen={Boolean(transactionId)}
+        status={
+          txStatus === 'success'
+            ? 'success'
+            : (txStatus === 'failed' || txStatus === 'cancelled')
+              ? 'failed'
+              : 'pending'
+        }
+        phoneNumber={phoneNumber.trim() || undefined}
+        message={
+          (txStatus === 'failed' || txStatus === 'cancelled')
+            ? (failureReason ?? undefined)
+            : undefined
+        }
+        actionLabel={txStatus === 'success' ? 'Terminer' : 'Réessayer'}
+        onAction={() => {
+          if (txStatus === 'success') {
+            handleClose()
+          } else {
+            // Échec : permettre de réessayer en repartant du formulaire
+            setTransactionId(null)
+          }
+        }}
+        onClose={handleClose}
+      />
     </div>
   )
 }
