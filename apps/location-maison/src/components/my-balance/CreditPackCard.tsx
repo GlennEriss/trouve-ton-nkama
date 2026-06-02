@@ -45,14 +45,18 @@ export default function CreditPackCard({ pack, onSelect, isLoading = false }: Re
   const pricePerCredit = pack.price / pack.credits
 
   return (
-    <div className={`
+    <div
+      role="button"
+      tabIndex={isLoading ? -1 : 0}
+      onClick={handleSelect}
+      onKeyDown={handleKeyDown}
+      className={`
       relative bg-white dark:bg-gray-800 border-2 rounded-2xl p-6 transition-all duration-300 text-left w-full
       ${pack.popular ? 'border-[#1FA89B] shadow-lg scale-105' : 'border-gray-200 dark:border-gray-700'}
       ${pack.bestValue ? 'border-gradient-to-r from-yellow-400 to-orange-500' : ''}
-      ${isLoading ? 'opacity-50' : 'opacity-75'}
-      ${isLoading ? 'cursor-not-allowed' : 'cursor-pointer'}
-    `} 
-    aria-label={`Pack ${pack.name} - ${pack.credits} crédits pour ${pack.price} FCFA (recharge manuelle)`}
+      ${isLoading ? 'opacity-50 cursor-not-allowed' : 'opacity-100 cursor-pointer hover:border-[#146B67] hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-[#146B67] focus:ring-offset-2'}
+    `}
+    aria-label={`Choisir le pack ${pack.name} - ${pack.credits} crédits pour ${pack.price} FCFA`}
     >
       
       {/* Badge */}
@@ -124,21 +128,17 @@ export default function CreditPackCard({ pack, onSelect, isLoading = false }: Re
           </div>
         )}
 
-        {/* Action Button - Temporairement désactivé */}
+        {/* Action Button */}
         <div
           className={`
             w-full py-3 px-6 rounded-xl font-semibold transition-all duration-300 text-center
-            bg-gray-300 dark:bg-gray-600 text-gray-500 dark:text-gray-400
-            ${isLoading ? 'cursor-not-allowed' : 'cursor-pointer'}
+            ${isLoading
+              ? 'bg-gray-300 dark:bg-gray-600 text-gray-500 dark:text-gray-400 cursor-not-allowed'
+              : 'bg-[#146B67] text-white'}
           `}
         >
-          {isLoading ? 'Recharge manuelle' : 'Choisir ce pack'}
+          {isLoading ? 'Chargement…' : 'Choisir ce pack'}
         </div>
-        <p className="text-xs text-gray-500 dark:text-gray-400 text-center mt-2">
-          {isLoading
-            ? 'Contactez le support WhatsApp pour ce pack'
-            : 'Disponible'}
-        </p>
 
         {/* Savings highlight */}
         {pack.savings && pack.savings > 0 && (

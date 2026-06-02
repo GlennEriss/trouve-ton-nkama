@@ -5,9 +5,10 @@
 'use client'
 
 import React, { useState, useEffect } from 'react'
-import { X, Package, Loader2, CheckCircle, AlertCircle } from 'lucide-react'
-/* import { useCreditsPurchase } from '@/hooks/use-credits-purchase' */
-import { useVerifyCode } from '@/hooks/use-verify-code'
+import { useQueryClient } from '@tanstack/react-query'
+import { X, Package, Loader2, CheckCircle, AlertCircle, Smartphone } from 'lucide-react'
+import { useCreditsPurchase } from '@/hooks/use-credits-purchase'
+import { useTransactionStatus } from '@/hooks/use-transaction-status'
 import { useToast } from '@/hooks/use-toast'
 import { createLogger } from '@/lib/logger'
 import { useCreditPacks } from '@/hooks/use-credit-packs'
@@ -26,22 +27,19 @@ interface PurchaseModalProps {
 
 export default function PurchaseModal({ isOpen, onClose, preselectedPack }: Readonly<PurchaseModalProps>) {
   const [selectedPack, setSelectedPack] = useState<CreditPackUi | null>(null)
-  const [code, setCode] = useState('')
-  const [step, setStep] = useState<'select' | 'instructions' | 'code'>('select')
+  const [phoneNumber, setPhoneNumber] = useState('')
+  const [network, setNetwork] = useState<'AM' | 'MM'>('AM')
+  const [step, setStep] = useState<'select' | 'payment'>('select')
+  const [transactionId, setTransactionId] = useState<string | null>(null)
   const creditPacksQuery = useCreditPacks()
+  const queryClient = useQueryClient()
+  const { status: txStatus, failureReason } = useTransactionStatus(transactionId)
   const creditPacks = React.useMemo(() => {
     const source = creditPacksQuery.data?.packs ?? []
     return source.map(toUiCreditPack)
   }, [creditPacksQuery.data?.packs])
   
-  /* const { mutate: purchaseCredits, isPending, isSuccess, isError, error } = useCreditsPurchase() */
-  const { 
-    mutate: verifyCode, 
-    isPending: isVerifying, 
-    isSuccess: isVerified, 
-    isError: hasError, 
-    error: verifyError 
-  } = useVerifyCode()
+  const { mutate: purchaseCredits, isPending, isError, error } = useCreditsPurchase()
   const { toast } = useToast()
 
   // Effet pour initialiser le modal avec le pack présélectionné
@@ -49,11 +47,20 @@ export default function PurchaseModal({ isOpen, onClose, preselectedPack }: Read
     initializeWithPreselectedPack()
   }, [preselectedPack])
 
+  // Quand le callback MyPayGa confirme le paiement, rafraîchir solde et historique
+  useEffect(() => {
+    if (txStatus === 'success') {
+      queryClient.invalidateQueries({ queryKey: ['credits-balance'] })
+      queryClient.invalidateQueries({ queryKey: ['credits-history'] })
+      queryClient.invalidateQueries({ queryKey: ['credit-history'] })
+    }
+  }, [txStatus, queryClient])
+
   // Méthode pour initialiser le modal avec le pack présélectionné
   const initializeWithPreselectedPack = () => {
     if (preselectedPack) {
       setSelectedPack(preselectedPack)
-      setStep('instructions')
+      setStep('payment')
     } else {
       // Réinitialiser si pas de pack présélectionné
       setSelectedPack(null)
@@ -65,37 +72,33 @@ export default function PurchaseModal({ isOpen, onClose, preselectedPack }: Read
 
   const handlePackSelect = (pack: CreditPackUi) => {
     setSelectedPack(pack)
-    setStep('instructions')
-  }
-
-  const handleInstructionsConfirm = () => {
-    setStep('code')
+    setStep('payment')
   }
 
   const handlePurchase = () => {
-    if (selectedPack && code) {
-      verifyCode({
-        code: code.trim(),
-        amount: selectedPack.price
+    if (selectedPack && phoneNumber.trim()) {
+      purchaseCredits({
+        packId: selectedPack.id,
+        phoneNumber: phoneNumber.trim(),
+        network,
       }, {
         onSuccess: (response) => {
-          logger.info('Code vérifié', { response })
-          
+          logger.info('Paiement MyPayGa initié', { response })
+
+          // Mémoriser l'ID de transaction pour écouter son statut en temps réel
+          setTransactionId(response.transactionId ?? null)
+
           toast({
-            title: "✅ Code validé !",
-            description: `${selectedPack.credits} crédits ajoutés à votre solde`,
+            title: "Paiement initié",
+            description: "Confirmez la transaction sur votre téléphone. Les crédits seront ajoutés après confirmation.",
           })
-          
-          // Réinitialiser le code mais garder le pack sélectionné
-          setCode('')
-          setStep('instructions')
         },
         onError: (error) => {
-          logger.error('Erreur vérification du code', { error })
+          logger.error('Erreur initiation paiement MyPayGa', { error })
           
           toast({
-            title: "❌ Erreur de validation",
-            description: error.message ?? 'Une erreur est survenue lors de la validation du code',
+            title: "Erreur de paiement",
+            description: error.message ?? 'Une erreur est survenue lors de l’initiation du paiement',
             variant: "destructive"
           })
         }
@@ -105,8 +108,10 @@ export default function PurchaseModal({ isOpen, onClose, preselectedPack }: Read
 
   const resetModal = () => {
     setSelectedPack(null)
-    setCode('')
+    setPhoneNumber('')
+    setNetwork('AM')
     setStep('select')
+    setTransactionId(null)
   }
 
   const handleClose = () => {
@@ -191,113 +196,128 @@ export default function PurchaseModal({ isOpen, onClose, preselectedPack }: Read
             </div>
           )}
 
-          {/* Étape 2: Instructions */}
-          {step === 'instructions' && selectedPack && (
+          {/* Étape 2: Paiement MyPayGa */}
+          {step === 'payment' && selectedPack && (
             <div className="space-y-4">
               <div className="text-center">
                 <h3 className="font-semibold text-gray-900 dark:text-white">
-                  Instructions de paiement
+                  Paiement mobile money
                 </h3>
                 <p className="text-sm text-gray-600 dark:text-gray-400 mt-2">
                   Pack {selectedPack.name} - {selectedPack.price.toLocaleString()} FCFA
                 </p>
               </div>
 
-              <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4 space-y-3">
-                <p className="text-sm text-blue-700 dark:text-blue-300">
-                  Pour obtenir votre code de paiement, suivez ces étapes :
-                </p>
-                <ol className="list-decimal list-inside space-y-2 text-sm text-blue-700 dark:text-blue-300">
-                  <li>Faites un retrait de {selectedPack.price.toLocaleString()} FCFA sur le code Agent {process.env.NEXT_PUBLIC_AGENT_CODE_AIRTEL}</li>
-                  <li>Vous recevrez un code de paiement par SMS</li>
-                  <li>Entrez ce code dans l'étape suivante</li>
-                </ol>
-              </div>
-
-              <div className="flex gap-3">
-                <button
-                  onClick={() => preselectedPack ? handleClose() : setStep('select')}
-                  className="flex-1 py-3 border border-gray-200 dark:border-gray-700 rounded-xl font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
-                >
-                  {preselectedPack ? 'Annuler' : 'Retour'}
-                </button>
-                <button
-                  onClick={handleInstructionsConfirm}
-                  className="flex-1 py-3 bg-[#146B67] text-white rounded-xl font-medium hover:bg-[#125A56] transition-colors"
-                >
-                  J'ai le code
-                </button>
-              </div>
-            </div>
-          )}
-
-          {/* Étape 3: Saisie du code */}
-          {step === 'code' && selectedPack && (
-            <div className="space-y-4">
-              <div className="text-center">
-                <h3 className="font-semibold text-gray-900 dark:text-white">
-                  Entrez votre code
-                </h3>
-                <p className="text-sm text-gray-600 dark:text-gray-400">
-                  Pack {selectedPack.name} - {selectedPack.price.toLocaleString()} FCFA
-                </p>
-              </div>
-
               <div className="space-y-3">
-                <label htmlFor="payment-code-input" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                  Code de paiement
+                <label htmlFor="payment-network" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                  Réseau
                 </label>
-                <input
-                  id="payment-code-input"
-                  type="text"
-                  value={code}
-                  onChange={(e) => setCode(e.target.value)}
-                  placeholder="Entrez le code reçu"
-                  className="w-full px-4 py-3 border border-gray-200 dark:border-gray-700 rounded-xl focus:ring-2 focus:ring-[#146B67] focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white font-mono"
-                />
+                <select
+                  id="payment-network"
+                  value={network}
+                  onChange={(event) => setNetwork(event.target.value as 'AM' | 'MM')}
+                  className="w-full px-4 py-3 border border-gray-200 dark:border-gray-700 rounded-xl focus:ring-2 focus:ring-[#146B67] focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                >
+                  <option value="AM">Airtel Money</option>
+                  <option value="MM">Moov Money</option>
+                </select>
+
+                <label htmlFor="payment-phone-input" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                  Numéro de téléphone
+                </label>
+                <div className="relative">
+                  <Smartphone className="absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-gray-400" />
+                  <input
+                    id="payment-phone-input"
+                    type="tel"
+                    value={phoneNumber}
+                    onChange={(event) => setPhoneNumber(event.target.value)}
+                    placeholder="Ex: 077123456"
+                    className="w-full px-4 py-3 pl-11 border border-gray-200 dark:border-gray-700 rounded-xl focus:ring-2 focus:ring-[#146B67] focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                  />
+                </div>
                 <p className="text-xs text-gray-500 dark:text-gray-400">
-                  Le code a été envoyé par SMS après votre paiement
+                  Une demande de confirmation sera envoyée sur ce numéro.
                 </p>
               </div>
 
-              {/* État des requêtes */}
-              {isVerifying && (
+              {/* Initiation en cours (appel à la Cloud Function) */}
+              {isPending && (
                 <div className="flex items-center justify-center gap-2 text-[#146B67]">
                   <Loader2 className="w-5 h-5 animate-spin" />
-                  <span>Vérification du code...</span>
+                  <span>Initiation du paiement...</span>
                 </div>
               )}
 
-              {isVerified && (
+              {/* En attente de confirmation du paiement (callback MyPayGa) */}
+              {!isPending && transactionId && (txStatus === 'pending' || txStatus === null) && (
+                <div className="flex items-center justify-center gap-2 text-[#146B67]">
+                  <Loader2 className="w-5 h-5 animate-spin" />
+                  <span className="text-sm text-center">
+                    En attente de confirmation. Validez la transaction sur votre téléphone…
+                  </span>
+                </div>
+              )}
+
+              {/* Paiement confirmé en temps réel */}
+              {txStatus === 'success' && (
                 <div className="flex items-center gap-2 text-green-600 dark:text-green-400">
                   <CheckCircle className="w-5 h-5" />
-                  <span>Code validé avec succès !</span>
+                  <span className="text-sm">Paiement confirmé ! Vos crédits ont été ajoutés.</span>
                 </div>
               )}
 
-              {hasError && (
+              {/* Paiement échoué / annulé en temps réel */}
+              {(txStatus === 'failed' || txStatus === 'cancelled') && (
                 <div className="flex items-center gap-2 text-red-600 dark:text-red-400">
                   <AlertCircle className="w-5 h-5" />
-                  <span className="text-sm">{verifyError?.message ?? 'Erreur lors de la validation du code'}</span>
+                  <span className="text-sm">{failureReason ?? 'Le paiement a échoué. Veuillez réessayer.'}</span>
                 </div>
               )}
 
-              <div className="flex gap-3">
+              {/* Erreur lors de l'initiation */}
+              {isError && !transactionId && (
+                <div className="flex items-center gap-2 text-red-600 dark:text-red-400">
+                  <AlertCircle className="w-5 h-5" />
+                  <span className="text-sm">{error?.message ?? 'Erreur lors de l’initiation du paiement'}</span>
+                </div>
+              )}
+
+              {/* Actions */}
+              {txStatus === 'success' ? (
                 <button
-                  onClick={() => setStep('instructions')}
-                  disabled={isVerifying}
-                  className="flex-1 py-3 border border-gray-200 dark:border-gray-700 rounded-xl font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors disabled:opacity-50"
+                  onClick={handleClose}
+                  className="w-full py-3 bg-[#146B67] text-white rounded-xl font-medium hover:bg-[#125A56] transition-colors"
                 >
-                  Retour
+                  Terminer
                 </button>
-                <button
-                  onClick={handlePurchase}
-                  disabled={Boolean(isVerifying) || Boolean(!code.trim())}
-                  className="flex-1 py-3 bg-[#146B67] text-white rounded-xl font-medium hover:bg-[#125A56] disabled:opacity-50 transition-colors"
-                >
-                  Valider le code
-                </button>
-              </div>
+              ) : (
+                <div className="flex gap-3">
+                  <button
+                    onClick={() => preselectedPack ? handleClose() : setStep('select')}
+                    disabled={isPending}
+                    className="flex-1 py-3 border border-gray-200 dark:border-gray-700 rounded-xl font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 disabled:opacity-50 transition-colors"
+                  >
+                    {preselectedPack ? 'Annuler' : 'Retour'}
+                  </button>
+                  {(txStatus === 'failed' || txStatus === 'cancelled') ? (
+                    <button
+                      onClick={() => setTransactionId(null)}
+                      className="flex-1 py-3 bg-[#146B67] text-white rounded-xl font-medium hover:bg-[#125A56] transition-colors"
+                    >
+                      Réessayer
+                    </button>
+                  ) : (
+                    <button
+                      onClick={handlePurchase}
+                      disabled={Boolean(isPending) || Boolean(!phoneNumber.trim()) || Boolean(transactionId)}
+                      className="flex-1 py-3 bg-[#146B67] text-white rounded-xl font-medium hover:bg-[#125A56] disabled:opacity-50 transition-colors"
+                    >
+                      Payer
+                    </button>
+                  )}
+                </div>
+              )}
             </div>
           )}
         </div>
