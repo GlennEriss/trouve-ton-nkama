@@ -71,7 +71,7 @@ export interface CreditTransaction {
   amount?: number             // Optionnel pour les dépenses
   service?: string           // Pour les dépenses (boost, mise à la une, etc.)
   status: 'pending' | 'success' | 'failed' | 'cancelled'
-  provider?: 'airtel_money'
+  provider?: 'airtel_money' | 'mypayga'
   description?: string       // Description pour l'historique
   
   // Données Airtel Money

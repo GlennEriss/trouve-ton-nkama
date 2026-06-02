@@ -9,13 +9,15 @@ const logger = createLogger('api.credits.purchase');
 
 interface PurchaseRequestBody {
   packId: string;
-  code: string;
+  phoneNumber: string;
+  network?: 'AM' | 'MM';
 }
 
 interface PurchaseResponse {
   success: boolean;
   transactionId?: string;
   checkoutUrl?: string;
+  providerPaymentToken?: string;
   message: string;
   error?: string;
 }
@@ -34,10 +36,10 @@ export async function POST(request: NextRequest): Promise<NextResponse<PurchaseR
     await adminAuth.verifyIdToken(token);
 
     const body: PurchaseRequestBody = await request.json();
-    const { packId, code } = body;
+    const { packId, phoneNumber, network } = body;
 
-    if (!packId || !code) {
-      return NextResponse.json({ success: false, message: 'Pack ID et code requis' }, { status: 400 });
+    if (!packId || !phoneNumber) {
+      return NextResponse.json({ success: false, message: 'Pack ID et numéro de téléphone requis' }, { status: 400 });
     }
 
     const isLocalEnvironment = !process.env.VERCEL && !process.env.NETLIFY && !process.env.CF_PAGES;
@@ -59,7 +61,8 @@ export async function POST(request: NextRequest): Promise<NextResponse<PurchaseR
       body: JSON.stringify({
         data: {
           packId,
-          code,
+          phoneNumber,
+          network,
         },
       }),
     });
@@ -84,7 +87,8 @@ export async function POST(request: NextRequest): Promise<NextResponse<PurchaseR
       );
     }
 
-    const result = await cloudFunctionResponse.json();
+    const functionPayload = await cloudFunctionResponse.json();
+    const result = functionPayload?.result ?? functionPayload;
     logger.info('Cloud function initiatePurchase succeeded', {
       packId,
       hasCheckoutUrl: Boolean(result?.checkoutUrl),
