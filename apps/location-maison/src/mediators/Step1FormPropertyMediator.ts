@@ -85,6 +85,10 @@ export class Step1FormPropertyMediator {
         this.form.setValue("tags", []);
     };
 
+    /** ===================== IS OWNER ===================== */
+    getIsOwner = (): boolean | undefined => this.form.getValues("isOwner");
+    setIsOwner = (value: boolean) => this.form.setValue("isOwner", value, { shouldValidate: true });
+
     /** ===================== HELPERS ===================== */
     getValues = () => this.form.getValues();
     reset = () => this.form.resetField("images"); // utile si besoin seulement pour les images

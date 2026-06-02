@@ -2,7 +2,7 @@
  * @module Builders/property-form
  */
 
-import { AreaComponent, DescriptionComponent, ImagesComponent, PriceComponent, StatusComponent, TagsComponent, TitleComponent } from "@/components/stepper/step1.components";
+import { AreaComponent, DescriptionComponent, ImagesComponent, IsOwnerComponent, PriceComponent, StatusComponent, TagsComponent, TitleComponent } from "@/components/stepper/step1.components";
 import { LocationPicker } from '@/components/location';
 import { MAX_IMAGES_UPLOAD, MAX_TAGS } from "@/constantes";
 import { UseFormReturn } from 'react-hook-form';
@@ -89,6 +89,13 @@ export abstract class PropertyFormBuilder {
                 label: "Statut",
                 description: "Choisissez si le bien est à vendre ou à louer.",
                 component: StatusComponent,
+                step: 1
+            },
+            {
+                name: "isOwner",
+                label: "Votre rôle sur ce bien",
+                description: "Indiquez si vous êtes le propriétaire direct ou un mandataire.",
+                component: IsOwnerComponent,
                 step: 1
             },
             {
