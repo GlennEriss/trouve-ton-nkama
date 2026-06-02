@@ -1,31 +1,13 @@
 'use client'
 
-import React, { useState } from 'react'
+import React from 'react'
 import { Coins } from 'lucide-react'
 import CreditBalanceDisplay from './CreditBalanceDisplay'
 import CreditPacksList from './CreditPacksList'
 import PremiumServicesInfo from './PremiumServicesInfo'
 import CreditHistory from './CreditHistory'
-import PurchaseModal from './PurchaseModal'
-import type { CreditPackUi } from '@/lib/credits/credit-packs'
 
 export default function MyBalanceComponent() {
-  const [isRechargeModalOpen, setIsRechargeModalOpen] = useState(false)
-  const [selectedPack, setSelectedPack] = useState<CreditPackUi | null>(null)
-
-  const handleOpenRecharge = () => {
-    setIsRechargeModalOpen(true)
-  }
-
-  const handleCloseRecharge = () => {
-    setIsRechargeModalOpen(false)
-    setSelectedPack(null) // Reset le pack quand on ferme
-  }
-
-  const handlePackSelect = (pack: CreditPackUi) => {
-    setSelectedPack(pack)
-  }
-
   return (
     <div className="container mx-auto px-4 md:px-6 py-4 md:py-6 space-y-6 md:space-y-8 max-w-[1280px] 2xl:max-w-[1440px]">
       {/* Header Section */}
@@ -42,26 +24,16 @@ export default function MyBalanceComponent() {
       </div>
 
       {/* Balance Display Section */}
-      <CreditBalanceDisplay onRecharge={handleOpenRecharge} />
+      <CreditBalanceDisplay />
 
       {/* Credit Packs Section */}
-      <CreditPacksList 
-        onOpenModal={handleOpenRecharge}
-        onPackSelect={handlePackSelect}
-      />
+      <CreditPacksList />
 
       {/* Premium Services Info Section */}
       <PremiumServicesInfo />
 
       {/* History Section */}
       <CreditHistory />
-
-      {/* Purchase Modal */}
-      <PurchaseModal 
-        isOpen={isRechargeModalOpen} 
-        onClose={handleCloseRecharge}
-        preselectedPack={selectedPack}
-      />
     </div>
   )
-} 
+}

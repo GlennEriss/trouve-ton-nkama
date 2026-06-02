@@ -1,3 +1,20 @@
+import { defineSecret } from 'firebase-functions/params'
+
+// Secrets MyPayGa chargés depuis Firebase Secret Manager en production.
+// À déclarer dans les options des fonctions (secrets: MYPAYGA_SECRETS) pour
+// que leurs valeurs soient injectées dans process.env au runtime.
+export const MYPAYGA_SECRETS = [
+  defineSecret('MYPAYGA_API_KEY'),
+  defineSecret('MYPAYGA_CALLBACK_SECRET'),
+  defineSecret('MYPAYGA_CALLBACK_URL'),
+  defineSecret('MYPAYGA_API_BASE_URL'),
+  defineSecret('MYPAYGA_COUNTRY'),
+  defineSecret('MYPAYGA_CURRENCY'),
+  defineSecret('MYPAYGA_SUCCESS_URL'),
+  defineSecret('MYPAYGA_FAIL_URL'),
+  defineSecret('MYPAYGA_PAYMENT_TIMEOUT_MS'),
+]
+
 export const MYPAYGA_CONFIG = {
   DEFAULT_API_BASE_URL: 'https://api.mypayga.com',
   DEFAULT_COUNTRY: 'GA',

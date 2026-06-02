@@ -1,16 +1,15 @@
 'use client'
 
-import { useRouter } from 'next/navigation'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { Property, PromotionType, Promotion } from '@/models/annonce'
 import { useCurrentUser } from './use-current-user'
 import { updateProperty } from '@/db/property.db'
 import { deductCreditsWithTransaction } from '@/db/credit-transaction.db'
-import { routes } from '@/constantes/routes'
 import { useToast } from './use-toast'
 import { Timestamp } from 'firebase/firestore'
 import { useSession } from 'next-auth/react'
 import { createLogger } from '@/lib/logger'
+import { useRecharge } from '@/providers/RechargeProvider'
 
 const logger = createLogger('hooks.use-promotion')
 
@@ -39,9 +38,9 @@ const PROMOTION_CONFIGS: Record<NonNullable<PromotionType>, PromotionServiceConf
 export const usePromotion = ({ property, onSuccess }: UsePromotionProps) => {
   const { user, setUser } = useCurrentUser()
   const {update, data: session} = useSession()
-  const router = useRouter()
   const { toast } = useToast()
   const queryClient = useQueryClient()
+  const { openRecharge } = useRecharge()
 
   const promoteMutation = useMutation({
     mutationFn: async ({ promotionType }: PromotePropertyParams) => {
@@ -169,14 +168,12 @@ export const usePromotion = ({ property, onSuccess }: UsePromotionProps) => {
       if (error.name === 'INSUFFICIENT_CREDITS') {
         toast({
           title: "Crédits insuffisants",
-          description: error.message,
+          description: `${error.message} Rechargez votre solde pour continuer.`,
           variant: "destructive"
         })
-        
-        // Redirection séparée
-        setTimeout(() => {
-          router.push(routes.protected.my_balance)
-        }, 2000)
+
+        // Ouvrir directement le flux de recharge MyPayGa
+        openRecharge()
       } else {
         toast({
           title: "Erreur",

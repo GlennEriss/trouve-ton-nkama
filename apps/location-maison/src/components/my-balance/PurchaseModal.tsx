@@ -5,8 +5,10 @@
 'use client'
 
 import React, { useState, useEffect } from 'react'
+import { useQueryClient } from '@tanstack/react-query'
 import { X, Package, Loader2, CheckCircle, AlertCircle, Smartphone } from 'lucide-react'
 import { useCreditsPurchase } from '@/hooks/use-credits-purchase'
+import { useTransactionStatus } from '@/hooks/use-transaction-status'
 import { useToast } from '@/hooks/use-toast'
 import { createLogger } from '@/lib/logger'
 import { useCreditPacks } from '@/hooks/use-credit-packs'
@@ -28,19 +30,31 @@ export default function PurchaseModal({ isOpen, onClose, preselectedPack }: Read
   const [phoneNumber, setPhoneNumber] = useState('')
   const [network, setNetwork] = useState<'AM' | 'MM'>('AM')
   const [step, setStep] = useState<'select' | 'payment'>('select')
+  const [transactionId, setTransactionId] = useState<string | null>(null)
   const creditPacksQuery = useCreditPacks()
+  const queryClient = useQueryClient()
+  const { status: txStatus, failureReason } = useTransactionStatus(transactionId)
   const creditPacks = React.useMemo(() => {
     const source = creditPacksQuery.data?.packs ?? []
     return source.map(toUiCreditPack)
   }, [creditPacksQuery.data?.packs])
   
-  const { mutate: purchaseCredits, isPending, isSuccess, isError, error } = useCreditsPurchase()
+  const { mutate: purchaseCredits, isPending, isError, error } = useCreditsPurchase()
   const { toast } = useToast()
 
   // Effet pour initialiser le modal avec le pack présélectionné
   useEffect(() => {
     initializeWithPreselectedPack()
   }, [preselectedPack])
+
+  // Quand le callback MyPayGa confirme le paiement, rafraîchir solde et historique
+  useEffect(() => {
+    if (txStatus === 'success') {
+      queryClient.invalidateQueries({ queryKey: ['credits-balance'] })
+      queryClient.invalidateQueries({ queryKey: ['credits-history'] })
+      queryClient.invalidateQueries({ queryKey: ['credit-history'] })
+    }
+  }, [txStatus, queryClient])
 
   // Méthode pour initialiser le modal avec le pack présélectionné
   const initializeWithPreselectedPack = () => {
@@ -70,7 +84,10 @@ export default function PurchaseModal({ isOpen, onClose, preselectedPack }: Read
       }, {
         onSuccess: (response) => {
           logger.info('Paiement MyPayGa initié', { response })
-          
+
+          // Mémoriser l'ID de transaction pour écouter son statut en temps réel
+          setTransactionId(response.transactionId ?? null)
+
           toast({
             title: "Paiement initié",
             description: "Confirmez la transaction sur votre téléphone. Les crédits seront ajoutés après confirmation.",
@@ -94,6 +111,7 @@ export default function PurchaseModal({ isOpen, onClose, preselectedPack }: Read
     setPhoneNumber('')
     setNetwork('AM')
     setStep('select')
+    setTransactionId(null)
   }
 
   const handleClose = () => {
@@ -223,6 +241,7 @@ export default function PurchaseModal({ isOpen, onClose, preselectedPack }: Read
                 </p>
               </div>
 
+              {/* Initiation en cours (appel à la Cloud Function) */}
               {isPending && (
                 <div className="flex items-center justify-center gap-2 text-[#146B67]">
                   <Loader2 className="w-5 h-5 animate-spin" />
@@ -230,36 +249,75 @@ export default function PurchaseModal({ isOpen, onClose, preselectedPack }: Read
                 </div>
               )}
 
-              {isSuccess && (
-                <div className="flex items-center gap-2 text-green-600 dark:text-green-400">
-                  <CheckCircle className="w-5 h-5" />
-                  <span>Paiement initié. Confirmez sur votre téléphone.</span>
+              {/* En attente de confirmation du paiement (callback MyPayGa) */}
+              {!isPending && transactionId && (txStatus === 'pending' || txStatus === null) && (
+                <div className="flex items-center justify-center gap-2 text-[#146B67]">
+                  <Loader2 className="w-5 h-5 animate-spin" />
+                  <span className="text-sm text-center">
+                    En attente de confirmation. Validez la transaction sur votre téléphone…
+                  </span>
                 </div>
               )}
 
-              {isError && (
+              {/* Paiement confirmé en temps réel */}
+              {txStatus === 'success' && (
+                <div className="flex items-center gap-2 text-green-600 dark:text-green-400">
+                  <CheckCircle className="w-5 h-5" />
+                  <span className="text-sm">Paiement confirmé ! Vos crédits ont été ajoutés.</span>
+                </div>
+              )}
+
+              {/* Paiement échoué / annulé en temps réel */}
+              {(txStatus === 'failed' || txStatus === 'cancelled') && (
+                <div className="flex items-center gap-2 text-red-600 dark:text-red-400">
+                  <AlertCircle className="w-5 h-5" />
+                  <span className="text-sm">{failureReason ?? 'Le paiement a échoué. Veuillez réessayer.'}</span>
+                </div>
+              )}
+
+              {/* Erreur lors de l'initiation */}
+              {isError && !transactionId && (
                 <div className="flex items-center gap-2 text-red-600 dark:text-red-400">
                   <AlertCircle className="w-5 h-5" />
                   <span className="text-sm">{error?.message ?? 'Erreur lors de l’initiation du paiement'}</span>
                 </div>
               )}
 
-              <div className="flex gap-3">
+              {/* Actions */}
+              {txStatus === 'success' ? (
                 <button
-                  onClick={() => preselectedPack ? handleClose() : setStep('select')}
-                  disabled={isPending}
-                  className="flex-1 py-3 border border-gray-200 dark:border-gray-700 rounded-xl font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 disabled:opacity-50 transition-colors"
+                  onClick={handleClose}
+                  className="w-full py-3 bg-[#146B67] text-white rounded-xl font-medium hover:bg-[#125A56] transition-colors"
                 >
-                  {preselectedPack ? 'Annuler' : 'Retour'}
+                  Terminer
                 </button>
-                <button
-                  onClick={handlePurchase}
-                  disabled={Boolean(isPending) || Boolean(!phoneNumber.trim())}
-                  className="flex-1 py-3 bg-[#146B67] text-white rounded-xl font-medium hover:bg-[#125A56] disabled:opacity-50 transition-colors"
-                >
-                  Payer
-                </button>
-              </div>
+              ) : (
+                <div className="flex gap-3">
+                  <button
+                    onClick={() => preselectedPack ? handleClose() : setStep('select')}
+                    disabled={isPending}
+                    className="flex-1 py-3 border border-gray-200 dark:border-gray-700 rounded-xl font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 disabled:opacity-50 transition-colors"
+                  >
+                    {preselectedPack ? 'Annuler' : 'Retour'}
+                  </button>
+                  {(txStatus === 'failed' || txStatus === 'cancelled') ? (
+                    <button
+                      onClick={() => setTransactionId(null)}
+                      className="flex-1 py-3 bg-[#146B67] text-white rounded-xl font-medium hover:bg-[#125A56] transition-colors"
+                    >
+                      Réessayer
+                    </button>
+                  ) : (
+                    <button
+                      onClick={handlePurchase}
+                      disabled={Boolean(isPending) || Boolean(!phoneNumber.trim()) || Boolean(transactionId)}
+                      className="flex-1 py-3 bg-[#146B67] text-white rounded-xl font-medium hover:bg-[#125A56] disabled:opacity-50 transition-colors"
+                    >
+                      Payer
+                    </button>
+                  )}
+                </div>
+              )}
             </div>
           )}
         </div>

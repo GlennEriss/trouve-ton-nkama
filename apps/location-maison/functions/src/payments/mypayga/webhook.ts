@@ -3,7 +3,7 @@ import { FieldValue } from 'firebase-admin/firestore'
 import { logger } from 'firebase-functions'
 import { onRequest } from 'firebase-functions/v2/https'
 import { adminDB } from '../../admin'
-import { getMyPayGaConfig } from './config'
+import { MYPAYGA_SECRETS, getMyPayGaConfig } from './config'
 
 type CallbackPayload = {
   uniqueId: string
@@ -18,7 +18,7 @@ type CallbackPayload = {
   currency: string
 }
 
-export const mypaygaPaymentCallback = onRequest(async (req, res) => {
+export const mypaygaPaymentCallback = onRequest({ secrets: MYPAYGA_SECRETS }, async (req, res) => {
   if (req.method !== 'POST' && req.method !== 'GET') {
     res.status(405).json({ ok: false, error: 'method_not_allowed' })
     return

@@ -4,7 +4,7 @@ import { onCall, HttpsError } from 'firebase-functions/v2/https'
 import { adminDB } from '../../admin'
 import { generateTransactionId } from '../airtel/config'
 import { getCreditPackById } from '../airtel/database'
-import { getMyPayGaConfig, normalizeMyPayGaNetwork, sanitizePhoneDigits } from './config'
+import { MYPAYGA_SECRETS, getMyPayGaConfig, normalizeMyPayGaNetwork, sanitizePhoneDigits } from './config'
 
 interface InitiatePurchaseRequest {
   packId: string
@@ -20,6 +20,7 @@ interface InitiatePurchaseResponse {
 }
 
 export const initiatePurchase = onCall<InitiatePurchaseRequest, Promise<InitiatePurchaseResponse>>(
+  { secrets: MYPAYGA_SECRETS },
   async (request) => {
     if (!request.auth) {
       throw new HttpsError('unauthenticated', 'Utilisateur non authentifié')
