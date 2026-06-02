@@ -38,7 +38,8 @@ export type Property = Location & ICreation & {
     createdBy?: string,
     status: StatusProperty,
     contact?: string //Propriété tampon
-    
+    isOwner?: boolean
+
     // Nouvelles propriétés pour les promotions
     currentPromotion?: Promotion;
     promotionHistory?: Promotion[];
