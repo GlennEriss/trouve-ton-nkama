@@ -12,7 +12,6 @@ import { Button } from "@/components/ui/button";
 import { ChevronLeft, SlidersHorizontal } from "lucide-react";
 import { statusOptions } from "@/constantes";
 import { DialogDescription } from "@radix-ui/react-dialog";
-import { TypeProperty, getTypePropertyKey } from "@/constantes/property-type";
 import { useFilterModal } from "@/hooks/use-filter-modal";
 import { FormFilterSchema, FormFilterSchemaType } from "@/models/schema";
 import { FormProvider, useForm } from "react-hook-form";
@@ -24,7 +23,7 @@ import SelectCity from "../search/SelectCity";
 import SelectStreet from "../search/SelectStreet";
 import MultiSelectFormApp from "../shared/form/MultiSelectFormApp";
 import InputFormNumberApp from "../shared/form/InputFormNumberApp";
-import { useDynamicTags } from "@/hooks/useDynamicTags";
+import { useAlgoliaTypePropertyOptions, useAlgoliaTagOptions } from "@/hooks/useAlgoliaFacetOptions";
 
 export const FilterModalHomePage = () => {
     const form = useForm<FormFilterSchemaType>({
@@ -38,7 +37,8 @@ export const FilterModalHomePage = () => {
     } = useFilterModal();
 
     const { onSubmit, onClear } = useFormFilterSearchMediator(form);
-    const { tagOptions } = useDynamicTags();
+    const { options: typePropertyOptions } = useAlgoliaTypePropertyOptions();
+    const { options: tagOptions } = useAlgoliaTagOptions();
     return (
         <Dialog open={open} onOpenChange={setOpen}>
             <DialogTrigger asChild>
@@ -91,6 +91,7 @@ export const FilterModalHomePage = () => {
                                             options={statusOptions}
                                             placeholder="Sélectionnez le statut"
                                             className='rounded-full p-2 h-14 bg-gray-50 dark:bg-gray-900 dark:text-white'
+                                            modalPopover
                                         />
                                     </div>
 
@@ -173,15 +174,10 @@ export const FilterModalHomePage = () => {
                                         <MultiSelectFormApp
                                             control={form.control}
                                             name="typeProperty"
-                                            options={Object.values(TypeProperty)
-                                                .map(type => ({
-                                                    label: type,
-                                                    value: getTypePropertyKey(type)!
-                                                }))
-                                                .sort((a, b) => a.label.localeCompare(b.label))
-                                            }
+                                            options={typePropertyOptions}
                                             placeholder="Types d'annonces"
                                             className='rounded-full p-2 h-14 bg-gray-50 dark:bg-gray-900 dark:text-white'
+                                            modalPopover
                                         />
                                     </div>
 
@@ -191,15 +187,10 @@ export const FilterModalHomePage = () => {
                                         <MultiSelectFormApp
                                             control={form.control}
                                             name="tags"
-                                            options={tagOptions
-                                                .map(tag => ({
-                                                    label: tag.tagName,
-                                                    value: tag.tagName
-                                                }))
-                                                .sort((a, b) => a.label.localeCompare(b.label))
-                                            }
+                                            options={tagOptions}
                                             placeholder="Sélectionnez les tags"
                                             className='rounded-full p-2 h-14 bg-gray-50 dark:bg-gray-900 dark:text-white'
+                                            modalPopover
                                         />
                                     </div>
                                 </div>
