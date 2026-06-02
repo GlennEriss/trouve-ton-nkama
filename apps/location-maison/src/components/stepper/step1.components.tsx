@@ -410,6 +410,70 @@ export const TagItem = ({ tag, isActive, onToggle }: TagItemProps) => {
     );
 };
 
+const ownerOptions = [
+    {
+        value: true,
+        label: 'Propriétaire direct',
+        description: 'Le locataire/acheteur ne paie aucune commission',
+        color: '#146B67',
+    },
+    {
+        value: false,
+        label: 'Mandataire / Agence',
+        description: 'Des frais de service peuvent s\'appliquer au locataire/acheteur',
+        color: '#6B7280',
+    },
+] as const;
+
+export const IsOwnerComponent = () => {
+    const mediator = useStep1FormPropertyMediator();
+    const { watch } = useFormContext();
+    const current = watch("isOwner");
+
+    return (
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {ownerOptions.map((option) => {
+                const isSelected = current === option.value;
+                return (
+                    <FormItem key={String(option.value)} className="space-y-0">
+                        <FormControl>
+                            <div
+                                className={clsx(
+                                    "relative flex items-start gap-3 rounded-xl border-2 p-4 cursor-pointer transition-all duration-200",
+                                    "hover:border-[#146B67] hover:bg-[#146B67]/5 dark:hover:bg-[#146B67]/10",
+                                    {
+                                        "border-[#146B67] bg-[#146B67]/5 dark:bg-[#146B67]/10": isSelected,
+                                        "border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800": !isSelected,
+                                    }
+                                )}
+                                onClick={() => mediator.setIsOwner(option.value)}
+                            >
+                                <div
+                                    className="mt-0.5 w-4 h-4 rounded-full border-2 flex items-center justify-center shrink-0"
+                                    style={{
+                                        borderColor: isSelected ? option.color : '#d1d5db',
+                                        backgroundColor: isSelected ? option.color : 'transparent',
+                                    }}
+                                >
+                                    {isSelected && <div className="w-2 h-2 bg-white rounded-full" />}
+                                </div>
+                                <div className="flex-1">
+                                    <FormLabel className="font-semibold text-gray-900 dark:text-gray-100 cursor-pointer">
+                                        {option.label}
+                                    </FormLabel>
+                                    <p className="text-xs text-gray-500 dark:text-gray-400 mt-1 leading-snug">
+                                        {option.description}
+                                    </p>
+                                </div>
+                            </div>
+                        </FormControl>
+                    </FormItem>
+                );
+            })}
+        </div>
+    );
+};
+
 export const TitleComponent = () => {
     const mediator = useStep1FormPropertyMediator();
     const { watch } = useFormContext();

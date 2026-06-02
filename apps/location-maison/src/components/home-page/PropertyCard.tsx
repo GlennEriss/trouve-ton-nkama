@@ -12,7 +12,7 @@ import { logImageError, logImageFallback, logImageLoad } from "@/lib/image-debug
 // Import des icônes
 import { IoMdBed } from "react-icons/io";
 import { MdOutlineBathtub, MdOutlineSquareFoot } from "react-icons/md";
-import { CheckCircle } from "lucide-react";
+import { CheckCircle, KeyRound } from "lucide-react";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const PropertyCard = ({ property, hideDate = false }: { property: any; hideDate?: boolean }) => {
@@ -129,13 +129,21 @@ const PropertyCard = ({ property, hideDate = false }: { property: any; hideDate?
             </div>
           )}
           
-          {/* Indicateur de vérification du numéro de téléphone */}
-          {property.createdBy && property.createdBy.phoneNumberVerified && (
-            <div className="absolute top-4 right-4 flex items-center gap-1 px-2 py-1 text-xs font-medium bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300 rounded-full backdrop-blur-sm border border-green-200 dark:border-green-700">
-              <CheckCircle className="w-3 h-3" />
-              <span>Numéro vérifié</span>
-            </div>
-          )}
+          {/* Badges droite : propriétaire direct + numéro vérifié */}
+          <div className="absolute top-4 right-4 flex flex-col items-end gap-1.5">
+            {property.isOwner === true && (
+              <div className="flex items-center gap-1 px-2 py-1 text-xs font-semibold bg-[#146B67] text-white rounded-full shadow-sm">
+                <KeyRound className="w-3 h-3" />
+                <span>Propriétaire direct</span>
+              </div>
+            )}
+            {property.createdBy && property.createdBy.phoneNumberVerified && (
+              <div className="flex items-center gap-1 px-2 py-1 text-xs font-medium bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300 rounded-full backdrop-blur-sm border border-green-200 dark:border-green-700">
+                <CheckCircle className="w-3 h-3" />
+                <span>Numéro vérifié</span>
+              </div>
+            )}
+          </div>
         </div>
 
         <div className="flex flex-col flex-1 p-5">

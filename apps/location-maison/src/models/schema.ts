@@ -105,6 +105,7 @@ export const PropertySchemaBase = z.object({
   area: z.number().min(0, "La superficie doit être un nombre positif"),
   images: z.array(z.any()).nonempty("Au moins une image est requise"),
   status: z.enum(["FOR_RENT", "FOR_SALE"]),
+  isOwner: z.boolean({ required_error: "Veuillez indiquer votre rôle sur ce bien" }),
   tags: z.array(z.string().min(1, "Chaque tag doit contenir au moins 1 caractère"))
     .nonempty("Vous devez ajouter au moins un tag")
     .max(6, "Vous pouvez ajouter jusqu'à 6 tags seulement"),
@@ -260,6 +261,7 @@ export const Step1Schema = z.object({
   area: z.number().min(0, "La superficie doit être un nombre positif"),
   price: z.number().min(1, "Le prix doit être un nombre positif supérieur à 0"),
   status: z.enum(["FOR_RENT", "FOR_SALE"]),
+  isOwner: z.boolean({ required_error: "Veuillez indiquer votre rôle sur ce bien" }),
   tags: z.array(z.string().min(1, "Chaque tag doit contenir au moins 1 caractère")).nonempty("Vous devez ajouter au moins un tag"),
 });
 export const Step3Schema = z.object({
