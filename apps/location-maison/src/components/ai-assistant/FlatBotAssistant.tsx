@@ -17,7 +17,9 @@ const FlatBotAssistant: React.FC<FlatBotAssistantProps> = ({
     isUpdate = false 
 }) => {
     const MOBILE_LAUNCHER_OFFSET_PX = 16;
-    const MOBILE_LAUNCHER_OFFSET_WITH_BOTTOM_NAV_PX = 88;
+    // Le nav Annonceur a un bouton "+" flottant +24px au-dessus de la barre (~64px)
+    // + safe-area-inset-bottom (~34px iPhone) → il faut dégager ~122px minimum
+    const MOBILE_LAUNCHER_OFFSET_WITH_BOTTOM_NAV_PX = 140;
 
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [showWelcomeMessage, setShowWelcomeMessage] = useState(true);
