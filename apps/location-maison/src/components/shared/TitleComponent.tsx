@@ -11,6 +11,12 @@ const titleList: Record<string, string> = {
     'desk': "Ajout d'un bureau",
     'building': "Ajout d'un immeuble",
     'villa': "Ajout d'une villa",
+    'room': "Ajout d'une chambre",
+    'kiosk': "Ajout d'un kiosque",
+    'shop': "Ajout d'un magasin",
+    'land': "Ajout d'un terrain",
+    'duplex': "Ajout d'un duplex",
+    'warehouse': "Ajout d'un entrepôt",
 }
 interface TitleComponentProps {
   className?: string

@@ -49,6 +49,7 @@ export async function getProperties({ limitPerPage, lastDoc, createdBy, type }: 
     const professionalRef = collection(db, firebaseCollectionNames.properties);
     let q = query(
         professionalRef,
+        where('state', '==', 'IN_PROGRESS'),
         orderBy('createdAt', 'desc'),
     )
     if (limitPerPage > 0) {
