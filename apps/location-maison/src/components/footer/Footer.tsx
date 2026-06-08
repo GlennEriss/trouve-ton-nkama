@@ -2,7 +2,7 @@
 import React from 'react'
 import Logo from '../logo/Logo'
 import { routes } from '@/constantes/routes'
-import { MapPin, Mail, Facebook, MessageCircle } from "lucide-react";
+import { MapPin, Mail, Facebook, MessageCircle, Radio, Music2 } from "lucide-react";
 import { usePathname } from 'next/navigation';
 import { cn } from '@/lib/utils';
 import PWAInstallButton from '@/components/pwa/PWAInstallButton';
@@ -37,6 +37,8 @@ export default function Footer({ isHide = false }: Readonly<{ isHide?: boolean }
     const whatsappUrl = whatsappNumber
         ? `https://wa.me/${whatsappNumber}?text=Bonjour%20!%20Je%20souhaite%20obtenir%20plus%20d'informations%20sur%20Trouve%20Ton%20Nkama.`
         : '#'
+    const whatsappChannelUrl = 'https://whatsapp.com/channel/0029Vb8Pdzv3wtb4UbkmPX0z'
+    const tiktokUrl = 'https://www.tiktok.com/@tonnkama?is_from_webapp=1&sender_device=pc'
 
     const isImmersiveSearchPage = pathname === routes.public.search_property || pathname === routes.public.search_with_ia
 
@@ -102,6 +104,14 @@ export default function Footer({ isHide = false }: Readonly<{ isHide?: boolean }
                             <div className="flex items-center gap-2">
                                 <MessageCircle size={16} className='text-[#4DBEA4]' />
                                 <a href={whatsappUrl} target="_blank" rel="noopener noreferrer" className="hover:underline">Contactez-nous sur WhatsApp</a>
+                            </div>
+                            <div className="flex items-center gap-2">
+                                <Radio size={16} className='text-[#4DBEA4]' />
+                                <a href={whatsappChannelUrl} target="_blank" rel="noopener noreferrer" className="hover:underline">Rejoignez notre chaîne</a>
+                            </div>
+                            <div className="flex items-center gap-2">
+                                <Music2 size={16} className='text-[#4DBEA4]' />
+                                <a href={tiktokUrl} target="_blank" rel="noopener noreferrer" className="hover:underline">Suivez-nous sur TikTok</a>
                             </div>
                         </div>
                     </div>
