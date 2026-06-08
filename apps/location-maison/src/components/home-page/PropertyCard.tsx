@@ -4,7 +4,7 @@
 import React from "react";
 import Image from "next/image";
 import { usePathname, useRouter } from "next/navigation";
-import { formatPublicationDate } from "@/lib/utils";
+import { cn, formatPublicationDate } from "@/lib/utils";
 import { TypeProperty } from "@/constantes/property-type";
 import { trackingEvents, useTrackEvent } from '@/features/analytics/tracking';
 import { logImageError, logImageFallback, logImageLoad } from "@/lib/image-debug";
@@ -14,12 +14,32 @@ import { IoMdBed } from "react-icons/io";
 import { MdOutlineBathtub, MdOutlineSquareFoot } from "react-icons/md";
 import { CheckCircle, KeyRound } from "lucide-react";
 
+const directOwnerCache = new Map<string, boolean>();
+
+function normalizePropertyId(property: any): string {
+  const rawId = property.objectID || property.id || property.path || "";
+
+  return String(rawId).replace(/^properties\//, "");
+}
+
+function isDirectOwnerValue(value: unknown): boolean {
+  if (value === true) {
+    return true;
+  }
+
+  if (typeof value === "string") {
+    return value.trim().toLowerCase() === "true";
+  }
+
+  return false;
+}
+
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const PropertyCard = ({ property, hideDate = false }: { property: any; hideDate?: boolean }) => {
   const router = useRouter();
   const pathname = usePathname();
   const { trackEvent } = useTrackEvent();
-  const propertyId = property.objectID || property.id || property.path || "unknown";
+  const propertyId = normalizePropertyId(property) || "unknown";
   const firstImageCandidate = Array.isArray(property.images)
     ? property.images.find((image: unknown) => {
         if (typeof image === "string") {
@@ -40,10 +60,65 @@ const PropertyCard = ({ property, hideDate = false }: { property: any; hideDate?
     typeof rawPrimaryImageUrl === "string" && rawPrimaryImageUrl.trim().length > 0;
   const primaryImageSrc = hasPrimaryImageUrl ? rawPrimaryImageUrl : "/home.png";
   const [resolvedImageSrc, setResolvedImageSrc] = React.useState(primaryImageSrc);
+  const [isDirectOwner, setIsDirectOwner] = React.useState(() =>
+    isDirectOwnerValue(property.isOwner) || directOwnerCache.get(propertyId) === true
+  );
 
   React.useEffect(() => {
     setResolvedImageSrc(primaryImageSrc);
   }, [primaryImageSrc]);
+
+  React.useEffect(() => {
+    const hitIsDirectOwner = isDirectOwnerValue(property.isOwner);
+    const hitHasOwnerValue = property.isOwner !== undefined && property.isOwner !== null;
+
+    if (hitIsDirectOwner) {
+      directOwnerCache.set(propertyId, true);
+      setIsDirectOwner(true);
+      return;
+    }
+
+    if (!propertyId || propertyId === "unknown") {
+      setIsDirectOwner(false);
+      return;
+    }
+
+    const cachedValue = directOwnerCache.get(propertyId);
+    if (cachedValue === true || (cachedValue === false && !hitHasOwnerValue)) {
+      setIsDirectOwner(cachedValue);
+      return;
+    }
+
+    let isCancelled = false;
+
+    fetch(`/api/property/id?id=${encodeURIComponent(propertyId)}`)
+      .then((response) => {
+        if (!response.ok) {
+          return null;
+        }
+
+        return response.json();
+      })
+      .then((freshProperty) => {
+        if (isCancelled) {
+          return;
+        }
+
+        const nextIsDirectOwner = isDirectOwnerValue(freshProperty?.isOwner);
+        directOwnerCache.set(propertyId, nextIsDirectOwner);
+        setIsDirectOwner(nextIsDirectOwner);
+      })
+      .catch(() => {
+        if (!isCancelled) {
+          directOwnerCache.set(propertyId, false);
+          setIsDirectOwner(false);
+        }
+      });
+
+    return () => {
+      isCancelled = true;
+    };
+  }, [property.isOwner, propertyId]);
 
   React.useEffect(() => {
     if (hasPrimaryImageUrl) {
@@ -66,12 +141,7 @@ const PropertyCard = ({ property, hideDate = false }: { property: any; hideDate?
       property_status: property.status ?? '',
     });
 
-    if (property.path) {
-      router.push(`/houseDetails/${property.path.replace("properties/", "")}`);
-    } else {
-      // Fallback si path n'existe pas, utiliser objectID ou id
-      router.push(`/houseDetails/${propertyId}`);
-    }
+    router.push(`/houseDetails/${propertyId}`);
   };
 
   return (
@@ -84,11 +154,28 @@ const PropertyCard = ({ property, hideDate = false }: { property: any; hideDate?
             handleCardClick();
           }
         }}
-        className="h-full min-h-[500px] relative cursor-pointer rounded-2xl shadow-lg overflow-hidden transition-transform duration-200 ease-out hover:scale-[1.02] bg-white dark:bg-gray-800 hover:shadow-xl flex flex-col group will-change-transform w-full text-left border-none p-0"
+        className={cn(
+          "h-full min-h-[500px] relative cursor-pointer rounded-2xl shadow-lg overflow-hidden transition-transform duration-200 ease-out hover:scale-[1.02] bg-white dark:bg-gray-800 hover:shadow-xl flex flex-col group will-change-transform w-full text-left border-none p-0",
+          isDirectOwner &&
+            "ring-2 ring-amber-400/90 shadow-[0_18px_45px_rgba(245,158,11,0.26)] hover:shadow-[0_22px_55px_rgba(245,158,11,0.34)]"
+        )}
         aria-label={`Voir les détails de ${property.title ?? "l'annonce"}`}
         role="button"
         tabIndex={0}
       >
+        {isDirectOwner && (
+          <>
+            <div
+              className="pointer-events-none absolute inset-0 z-20 rounded-2xl border border-amber-200/90 shadow-[inset_0_1px_0_rgba(255,255,255,0.75)]"
+              aria-hidden="true"
+            />
+            <div
+              className="pointer-events-none absolute left-4 right-4 top-0 z-20 h-1 rounded-b-full bg-gradient-to-r from-transparent via-amber-200 to-transparent"
+              aria-hidden="true"
+            />
+          </>
+        )}
+
         {/* Image principale */}
         <div className="relative w-full h-[220px] sm:h-[230px] xl:h-[240px] bg-gray-200">
           <Image
@@ -131,8 +218,8 @@ const PropertyCard = ({ property, hideDate = false }: { property: any; hideDate?
           
           {/* Badges droite : propriétaire direct + numéro vérifié */}
           <div className="absolute top-4 right-4 flex flex-col items-end gap-1.5">
-            {property.isOwner === true && (
-              <div className="flex items-center gap-1 px-2 py-1 text-xs font-semibold bg-[#146B67] text-white rounded-full shadow-sm">
+            {isDirectOwner && (
+              <div className="flex items-center gap-1 px-2 py-1 text-xs font-semibold bg-amber-400 text-amber-950 rounded-full shadow-sm ring-1 ring-white/80">
                 <KeyRound className="w-3 h-3" />
                 <span>Propriétaire direct</span>
               </div>
