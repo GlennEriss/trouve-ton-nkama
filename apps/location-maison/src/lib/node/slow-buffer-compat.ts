@@ -1,10 +1,16 @@
 import { Buffer } from 'node:buffer';
-import * as bufferModule from 'node:buffer';
+import { createRequire } from 'node:module';
 
-const mutableBufferModule = bufferModule as unknown as {
+const require = createRequire(import.meta.url);
+const mutableBufferModule = require('buffer') as {
   SlowBuffer?: typeof Buffer;
 };
 
 if (!mutableBufferModule.SlowBuffer) {
-  mutableBufferModule.SlowBuffer = Buffer;
+  Object.defineProperty(mutableBufferModule, 'SlowBuffer', {
+    configurable: true,
+    enumerable: false,
+    value: Buffer,
+    writable: true,
+  });
 }
