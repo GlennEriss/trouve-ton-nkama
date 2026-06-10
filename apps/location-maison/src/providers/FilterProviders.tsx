@@ -3,6 +3,29 @@ import { useConfigure, useSearchBox } from 'react-instantsearch';
 import { useSearchParams } from 'next/navigation';
 import React from 'react'
 
+function splitParamValues(value: string) {
+    return value
+        .split(',')
+        .map((item) => item.trim())
+        .filter(Boolean);
+}
+
+function escapeAlgoliaFilterValue(value: string) {
+    return value.replace(/\\/g, '\\\\').replace(/"/g, '\\"');
+}
+
+function buildFacetFilter(attribute: string, rawValue: string) {
+    const values = splitParamValues(rawValue);
+
+    if (values.length === 0) {
+        return null;
+    }
+
+    const filters = values.map((value) => `${attribute}:"${escapeAlgoliaFilterValue(value)}"`);
+
+    return filters.length === 1 ? filters[0] : `(${filters.join(' OR ')})`;
+}
+
 export default function FilterProviders({ children }: Readonly<{ children: React.ReactNode }>) {
     const searchParams = useSearchParams();
 
@@ -11,7 +34,7 @@ export default function FilterProviders({ children }: Readonly<{ children: React
     const queryVal = searchParams.get("query") ?? "";
     React.useEffect(() => {
         refineQuery(queryVal);
-    }, [queryVal]);
+    }, [queryVal, refineQuery]);
 
     // Filtres
     const filtersString = React.useMemo(() => {
@@ -33,45 +56,25 @@ export default function FilterProviders({ children }: Readonly<{ children: React
         const statusRaw = searchParams.get("status") ?? "";
         const tagsRaw = searchParams.get("tags") ?? "";
 
-        if (cityVal) f.push(`city:"${cityVal}"`);
-        if (streetVal) f.push(`street:"${streetVal}"`);
-        if (provinceVal) f.push(`province:"${provinceVal}"`);
+        const cityFilter = buildFacetFilter('city', cityVal);
+        const streetFilter = buildFacetFilter('street', streetVal);
+        const provinceFilter = buildFacetFilter('province', provinceVal);
+        const typePropertyFilter = buildFacetFilter('typeProperty', typePropRaw);
+        const statusFilter = buildFacetFilter('status', statusRaw);
+        const tagsFilter = buildFacetFilter('tags', tagsRaw);
+
+        if (cityFilter) f.push(cityFilter);
+        if (streetFilter) f.push(streetFilter);
+        if (provinceFilter) f.push(provinceFilter);
         if (minPriceVal) f.push(`price >= ${minPriceVal}`);
         if (maxPriceVal) f.push(`price <= ${maxPriceVal}`);
         if (minAreaVal) f.push(`area >= ${minAreaVal}`);
         if (maxAreaVal) f.push(`area <= ${maxAreaVal}`);
         if (minRoomsVal) f.push(`nbrRooms >= ${minRoomsVal}`);
         if (maxRoomsVal) f.push(`nbrRooms <= ${maxRoomsVal}`);
-        if (typePropRaw) {
-            f.push(
-                "(" +
-                typePropRaw
-                    .split(",")
-                    .map((t) => `typeProperty:"${t.trim()}"`)
-                    .join(" OR ") +
-                ")"
-            );
-        }
-        if (statusRaw) {
-            f.push(
-                "(" +
-                statusRaw
-                    .split(",")
-                    .map((s) => `status:"${s.trim()}"`)
-                    .join(" OR ") +
-                ")"
-            );
-        }
-        if (tagsRaw) {
-            f.push(
-                "(" +
-                tagsRaw
-                    .split(",")
-                    .map((t) => `tags:"${t.trim()}"`)
-                    .join(" OR ") +
-                ")"
-            );
-        }
+        if (typePropertyFilter) f.push(typePropertyFilter);
+        if (statusFilter) f.push(statusFilter);
+        if (tagsFilter) f.push(tagsFilter);
         return f.join(" AND ");
     }, [searchParams.toString()]);
     useConfigure({ filters: filtersString });
