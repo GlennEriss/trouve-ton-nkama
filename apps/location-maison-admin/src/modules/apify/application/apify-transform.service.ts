@@ -194,6 +194,11 @@ const CURRENCY_AMOUNT_RE = /(\d{1,3}(?:[.\s]\d{3})+|\d{4,})\s*(?:xaf|fcfa|f\s?cf
 // read as 200 millions.
 const MAGNITUDE_AMOUNT_RE = /(\d+(?:[.,]\d+)?)\s*(millions?|milles?|mil|k)\b/gi;
 
+// A bare amount with no currency or magnitude word: grouped thousands
+// (65.000 / 65 000) or a 4+ digit number. Accepted only when a price keyword
+// sits nearby (see parsePrice) — otherwise it would catch phones/dates/areas.
+const BARE_AMOUNT_RE = /(\d{1,3}(?:[.\s]\d{3})+|\d{4,})/g;
+
 function normalizeAmount(raw: string): number {
   return Number(raw.replace(/[.\s]/g, ""));
 }
@@ -212,11 +217,24 @@ function parsePrice(text: string): number | null {
   const lower = text.toLowerCase();
   const candidates: Array<{ value: number; index: number; priority: boolean }> = [];
 
-  const consider = (value: number, index: number) => {
+  const lastRegexIndex = (haystack: string, re: RegExp) => {
+    let last = -1;
+    for (const match of haystack.matchAll(re)) last = match.index ?? last;
+    return last;
+  };
+
+  // "visite(?!ur)" matches the viewing fee "visite" but NOT "visiteur" (a WC /
+  // room feature) — otherwise "douche visiteur" before a price excludes it.
+  const consider = (value: number, index: number, requirePriceContext = false) => {
     if (!Number.isFinite(value) || value <= 0) return;
     const context = lower.slice(Math.max(0, index - 40), index);
-    if (/(visite|caution|commission)/.test(context)) return;
-    const priority = /(loyer|prix|vente|location|mois)/.test(context);
+    // The label closest to the amount wins: a "visite/caution" fee right before
+    // the amount excludes it, even if a "loyer" appeared earlier (or vice versa).
+    const excludeAt = lastRegexIndex(context, /visite(?!ur)|caution|commission/g);
+    const priceAt = lastRegexIndex(context, /loyer|prix|vente|location|mois|nuit|tarif|forfait/g);
+    if (excludeAt > priceAt) return;
+    const priority = priceAt !== -1;
+    if (requirePriceContext && !priority) return;
     candidates.push({ value, index, priority });
   };
 
@@ -226,6 +244,10 @@ function parsePrice(text: string): number | null {
   for (const match of lower.matchAll(MAGNITUDE_AMOUNT_RE)) {
     const base = Number(match[1].replace(",", "."));
     consider(base * magnitudeMultiplier(match[2]), match.index ?? 0);
+  }
+  // Bare amounts qualify only with a nearby price keyword.
+  for (const match of lower.matchAll(BARE_AMOUNT_RE)) {
+    consider(normalizeAmount(match[1]), match.index ?? 0, true);
   }
 
   if (candidates.length === 0) return null;
@@ -251,9 +273,10 @@ function parseCountAfter(text: string, unitPattern: string): number | null {
   return Number.isFinite(value) && value > 0 ? value : null;
 }
 
-// Gabonese phone number: optional +241 prefix, a leading 0 then 8 more digits
-// (9 total), in any common grouping (2-2-2-2, 3-3-3, or no spaces at all).
-const PHONE_RE = /(?:\+?241[\s.\-]?)?0[1-9](?:[\s.\-]?\d){7}/;
+// Gabonese phone number: optional +241 prefix, a leading 0 then 6–7 more digits
+// (8–9 total — both lengths are in use), in any common grouping (2-2-2, 3-3-3,
+// 2-2-2-2, or no spaces at all). Inter-digit separators may repeat ("16  03").
+const PHONE_RE = /(?:\+?241[\s.\-]?)?0[1-9](?:[\s.\-]*\d){6,7}/;
 
 function parseContact(text: string): string | null {
   const match = text.match(PHONE_RE);
