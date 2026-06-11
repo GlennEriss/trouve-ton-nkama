@@ -5,6 +5,8 @@
 // a platform listing (collection `properties`). Drafts are NOT persisted yet —
 // Firestore write + Storage upload will be a later step.
 
+import type { Property, TypeProperty } from "./platform-listing";
+
 /** Author block as returned by the Apify Facebook scraper. */
 export type ApifyRawUser = {
   id?: string;
@@ -27,22 +29,6 @@ export type ApifyParseResult =
   | { ok: true; posts: ApifyRawPost[] }
   | { ok: false; error: string };
 
-/**
- * Property type values aligned with the platform listing form
- * (see dashboard/listings/new — PROPERTY_TYPE_OPTIONS).
- */
-export type ListingTypeProperty =
-  | "Home"
-  | "Studio"
-  | "Apartment"
-  | "Villa"
-  | "Room"
-  | "Land"
-  | "Shop"
-  | "Building"
-  | "Desk"
-  | "Kiosk";
-
 /** Provenance of a draft, kept for review and later persistence. */
 export type ApifyDraftSource = {
   // Best available link back to the post content. The Apify export has no clean
@@ -57,29 +43,46 @@ export type ApifyDraftSource = {
 };
 
 /**
- * A platform listing draft inferred from a Facebook post. Mirrors the fields of
- * `ListingDetails` we can reasonably infer; everything is nullable since
- * extraction is best-effort.
+ * A platform listing draft inferred from a Facebook post.
+ *
+ * It is a real platform `Property` (exact field names/types — see
+ * {@link platform-listing}), with the type-specific fields of the detected
+ * subtype set. Required fields that could not be extracted are filled with
+ * defaults (0 / "" / false, coords 0/0, country Gabon/GA, state IN_PROGRESS)
+ * and reported in {@link ApifyDraftMeta.missingFields}. When the property kind
+ * is undetected, `typeProperty` is `""` (and flagged as missing).
+ *
+ * The type-specific fields are declared optional here so a single type can hold
+ * any subtype; each produced value contains only the fields of its subtype.
  */
-export type ApifyListingDraft = {
-  title: string | null;
-  description: string | null;
-  typeProperty: ListingTypeProperty | null;
-  status: "FOR_RENT" | "FOR_SALE" | null;
-  price: number | null;
-  area: number | null;
-  city: string | null;
-  province: string | null;
-  street: string | null;
-  contact: string | null;
-  nbrRooms: number | null;
-  nbrLivingRoom: number | null;
-  nbrKitchens: number | null;
-  nbrBathrooms: number | null;
-  nbrToilets: number | null;
-  tags: string[];
-  // Remote (fbcdn) image URLs. Will be downloaded + re-uploaded to Storage later.
-  imageUrls: string[];
+export type ApifyListingDraft = Omit<Property, "typeProperty"> & {
+  typeProperty: TypeProperty | "";
+  // Logement
+  nbrRooms?: number;
+  nbrKitchens?: number;
+  nbrBathrooms?: number;
+  nbrToilets?: number;
+  // Home / Villa
+  nbrFloors?: number;
+  nbrGarages?: number;
+  nbrLivingRoom?: number;
+  nbrPiscine?: number;
+  // Studio
+  nbrFloorStudio?: number;
+  numeroStudio?: string;
+  // Apartment
+  nbrFloorApartment?: number;
+  numeroApartment?: string;
+  // Building
+  nbrApartments?: number;
+  hasParking?: boolean;
+  // Desk / Shop / Warehouse
+  nbrToilet?: number;
+  nbrSections?: number;
+  // Kiosk / Room
+  kioskType?: string;
+  roomType?: string;
+  // Provenance — not part of the platform model, dropped before persistence.
   source: ApifyDraftSource;
 };
 

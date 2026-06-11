@@ -1,10 +1,11 @@
 import type {
   ApifyDraftMeta,
+  ApifyDraftSource,
   ApifyListingDraft,
   ApifyPipelineResult,
   ApifyRawPost,
-  ListingTypeProperty,
 } from "../domain/types";
+import type { Image, StatusProperty, TypeProperty } from "../domain/platform-listing";
 import { hasText, isRealEstatePost, normalizeText } from "./apify-filter.service";
 
 /* -------------------------------------------------------------------------- */
@@ -124,15 +125,160 @@ export function extractSourceUrl(post: ApifyRawPost): string | null {
 /* Text parsing                                                               */
 /* -------------------------------------------------------------------------- */
 
-/** First non-empty line, trimmed of surrounding whitespace. */
-function parseTitle(text: string): string | null {
-  for (const line of text.split("\n")) {
-    const trimmed = line.trim();
-    if (trimmed) {
-      return trimmed.length > 120 ? `${trimmed.slice(0, 117)}…` : trimmed;
-    }
+// French label for each property kind (used in titles/descriptions).
+const TYPE_LABEL_FR: Record<TypeProperty, string> = {
+  Home: "Maison",
+  Studio: "Studio",
+  Apartment: "Appartement",
+  Villa: "Villa",
+  Room: "Chambre",
+  Land: "Terrain",
+  Shop: "Magasin",
+  Building: "Immeuble",
+  Desk: "Bureau",
+  Kiosk: "Kiosque",
+  Property: "Logement",
+  Logement: "Logement",
+  Duplex: "Duplex",
+  Warehouse: "Entrepôt",
+};
+
+function capitalizeFirst(value: string): string {
+  return value ? value.charAt(0).toUpperCase() + value.slice(1) : value;
+}
+
+// Property kinds that carry the Logement counts (rooms/kitchens/baths/toilets).
+const LOGEMENT_TYPES = new Set<TypeProperty>(["Home", "Apartment", "Villa", "Studio", "Logement", "Duplex"]);
+
+// Subset of a draft that buildTitle needs (satisfied by ApifyListingDraft).
+export type TitleFields = {
+  typeProperty: TypeProperty | "" | null;
+  status: StatusProperty | null;
+  street: string | null;
+  city: string | null;
+};
+
+/** "{Type} à louer/vendre dans la zone de {quartier}". */
+export function buildTitle(fields: TitleFields): string {
+  const type = fields.typeProperty ? TYPE_LABEL_FR[fields.typeProperty] : "Bien";
+  const action = fields.status === "FOR_SALE" ? "vendre" : "louer";
+  const zone = capitalizeFirst((fields.street || fields.city || "").trim());
+  return `${type} à ${action}${zone ? ` dans la zone de ${zone}` : ""}`.replace(/\s+/g, " ").trim();
+}
+
+const DESCRIPTION_CONTACT_RE = /(whatsapp|infoline|t[ée]l[ée]?phone|t[ée]l\b|contact|appel|num[ée]ro)/i;
+
+/** Cleaned free text: drop hashtags, emojis, decorative bullets and contact lines. */
+function cleanFreeText(text: string): string {
+  const kept: string[] = [];
+  for (const rawLine of text.split("\n")) {
+    const line = rawLine
+      .replace(/#[\p{L}\d_]+/gu, "")
+      .replace(/\p{Extended_Pictographic}/gu, "")
+      .replace(/[\u200d\ufe0f]/gu, "") // leftover emoji joiners / variation selectors
+      .replace(/\s+/g, " ")
+      .replace(/^[\s\p{P}]+/u, "")
+      .trim();
+    if (!line || !/\p{L}/u.test(line)) continue;
+    if (PHONE_RE.test(line) && line.replace(/\D/g, "").length >= 6) continue;
+    if (DESCRIPTION_CONTACT_RE.test(line) && line.length < 40) continue;
+    kept.push(line);
   }
-  return null;
+  return kept.join("\n").replace(/\n{2,}/g, "\n").trim();
+}
+
+// "1er étage" / "3e étage".
+function floorLabel(floor: number): string {
+  return `${floor === 1 ? "1er" : `${floor}e`} étage`;
+}
+
+/**
+ * Structured description built from the draft's typed attributes (per
+ * typeProperty), followed by the cleaned free text from the post. Counts come
+ * pre-defaulted to 1 (see buildDraft), so an apartment always reads at least
+ * "1 chambre, 1 salon, 1 cuisine…".
+ */
+function buildListingDescription(draft: ApifyListingDraft, freeText: string): string {
+  const typeLabel = draft.typeProperty ? TYPE_LABEL_FR[draft.typeProperty] : "Bien";
+  const action = draft.status === "FOR_SALE" ? "à vendre" : "à louer";
+  const place = capitalizeFirst([draft.street, draft.city, draft.province].filter(Boolean).join(", "));
+  const intro = `${typeLabel} ${action}${place ? ` à ${place}` : ""}.`;
+
+  const fr = (n: number, singular: string, plural: string) => `${n} ${n > 1 ? plural : singular}`;
+  const features: string[] = [];
+
+  if (draft.typeProperty && LOGEMENT_TYPES.has(draft.typeProperty)) {
+    features.push(fr(draft.nbrRooms ?? 1, "chambre", "chambres"));
+    if (draft.nbrLivingRoom != null) features.push(fr(draft.nbrLivingRoom, "salon", "salons"));
+    features.push(fr(draft.nbrKitchens ?? 1, "cuisine", "cuisines"));
+    features.push(fr(draft.nbrBathrooms ?? 1, "salle de bain", "salles de bain"));
+    features.push(fr(draft.nbrToilets ?? 1, "toilette", "toilettes"));
+  }
+
+  switch (draft.typeProperty) {
+    case "Apartment":
+      if (draft.numeroApartment) features.push(`appartement n°${draft.numeroApartment}`);
+      if (draft.nbrFloorApartment) features.push(floorLabel(draft.nbrFloorApartment));
+      break;
+    case "Studio":
+      if (draft.numeroStudio) features.push(`studio n°${draft.numeroStudio}`);
+      if (draft.nbrFloorStudio) features.push(floorLabel(draft.nbrFloorStudio));
+      break;
+    case "Villa":
+      if (draft.nbrFloors) features.push(fr(draft.nbrFloors, "niveau", "niveaux"));
+      if (draft.nbrGarages) features.push(fr(draft.nbrGarages, "garage", "garages"));
+      if (draft.nbrPiscine) features.push(fr(draft.nbrPiscine, "piscine", "piscines"));
+      break;
+    case "Home":
+    case "Duplex":
+      if (draft.nbrFloors) features.push(fr(draft.nbrFloors, "niveau", "niveaux"));
+      if (draft.nbrGarages) features.push(fr(draft.nbrGarages, "garage", "garages"));
+      break;
+    case "Building":
+      features.push(fr(draft.nbrApartments ?? 1, "appartement", "appartements"));
+      if (draft.nbrFloors) features.push(fr(draft.nbrFloors, "étage", "étages"));
+      if (draft.hasParking) features.push("parking");
+      break;
+    case "Desk":
+      features.push(fr(draft.nbrRooms ?? 1, "salle", "salles"));
+      features.push(fr(draft.nbrToilets ?? 1, "toilette", "toilettes"));
+      break;
+    case "Shop":
+      features.push(fr(draft.nbrRooms ?? 1, "pièce", "pièces"));
+      features.push(fr(draft.nbrToilet ?? 1, "toilette", "toilettes"));
+      break;
+    case "Warehouse":
+      features.push(fr(draft.nbrSections ?? 1, "section", "sections"));
+      features.push(fr(draft.nbrToilets ?? 1, "toilette", "toilettes"));
+      break;
+    case "Kiosk":
+      if (draft.kioskType) features.push(`type ${draft.kioskType}`);
+      break;
+    case "Room":
+      if (draft.roomType) features.push(`type ${draft.roomType}`);
+      break;
+    case "Land":
+      if (draft.area) features.push(`${draft.area} m²`);
+      break;
+  }
+
+  const featuresLine = features.length ? `Caractéristiques : ${features.join(", ")}.` : "";
+  const priceLine = draft.price > 0 ? `Prix : ${new Intl.NumberFormat("fr-FR").format(draft.price)} XAF.` : "";
+
+  const description = [intro, featuresLine, priceLine, freeText]
+    .map((part) => part.trim())
+    .filter(Boolean)
+    .join("\n\n");
+  return description.length > 2000 ? `${description.slice(0, 2000).trim()}…` : description;
+}
+
+/**
+ * Title + description recomposed from a draft's current fields and raw text.
+ * Reused after geocoding so both stay in sync with the resolved locality.
+ */
+export function buildListingContent(draft: ApifyListingDraft): { title: string; description: string } {
+  const freeText = cleanFreeText(normalizeText(draft.source.rawText));
+  return { title: buildTitle(draft), description: buildListingDescription(draft, freeText) };
 }
 
 function parseStatus(text: string): "FOR_RENT" | "FOR_SALE" | null {
@@ -158,22 +304,25 @@ function firstIndexOf(haystack: string, needles: string[]): number {
 }
 
 // Ordered: the earliest-appearing keyword in the text wins.
-const TYPE_KEYWORDS: Array<{ keywords: string[]; type: ListingTypeProperty }> = [
+const TYPE_KEYWORDS: Array<{ keywords: string[]; type: TypeProperty }> = [
   { keywords: ["studio"], type: "Studio" },
   { keywords: ["appartement", "appart", "apartment"], type: "Apartment" },
   { keywords: ["villa"], type: "Villa" },
-  { keywords: ["duplex", "maison"], type: "Home" },
+  { keywords: ["duplex"], type: "Duplex" },
+  { keywords: ["maison"], type: "Home" },
   { keywords: ["terrain", "parcelle"], type: "Land" },
+  { keywords: ["entrepôt", "entrepot", "hangar"], type: "Warehouse" },
   { keywords: ["boutique", "magasin"], type: "Shop" },
   { keywords: ["immeuble"], type: "Building" },
   { keywords: ["bureau"], type: "Desk" },
+  { keywords: ["kiosque"], type: "Kiosk" },
   { keywords: ["chambre"], type: "Room" },
 ];
 
-function parseTypeProperty(text: string): ListingTypeProperty | null {
+function parseTypeProperty(text: string): TypeProperty | null {
   const lower = text.toLowerCase();
   let bestIndex = -1;
-  let bestType: ListingTypeProperty | null = null;
+  let bestType: TypeProperty | null = null;
   for (const { keywords, type } of TYPE_KEYWORDS) {
     const index = firstIndexOf(lower, keywords);
     if (index !== -1 && (bestIndex === -1 || index < bestIndex)) {
@@ -267,7 +416,8 @@ function parseArea(text: string): number | null {
 }
 
 function parseCountAfter(text: string, unitPattern: string): number | null {
-  const match = text.match(new RegExp(`(\\d{1,2})\\s*${unitPattern}`, "i"));
+  // Group the unit pattern so the count binds to the whole alternation.
+  const match = text.match(new RegExp(`(\\d{1,2})\\s*(?:${unitPattern})`, "i"));
   if (!match) return null;
   const value = Number(match[1]);
   return Number.isFinite(value) && value > 0 ? value : null;
@@ -330,38 +480,173 @@ function parseCityProvince(text: string): { city: string | null; province: strin
   return { city: null, province: null };
 }
 
+// A line that names a locality: a 📍 pin, or a cue word ("situé à", "quartier",
+// "derrière", "après", "zone"…). Used as the street value and the geocoding seed.
+// Unicode letter lookarounds (not \b): \b is ASCII, so a cue ending in an
+// accented letter ("situé", "côté") followed by a space would otherwise fail.
+const STREET_CUE_RE =
+  /(?<!\p{L})(?:situ[ée]e?s?|sis|implant[ée]e?s?|quartier|lieu|adresse|zone|secteur|derri[èe]re|apr[èe]s|en\s+face|au\s+niveau|carrefour|c[ôo]t[ée])(?!\p{L})/iu;
+// Lead-in to strip so only the place name remains. Connectors use a space
+// lookahead instead of \b (which mishandles accented letters like "à"), so "a"
+// does not match inside "apres" and "à" is still stripped before a space.
+const STREET_LEADIN_RE =
+  /^.*?\b(?:situ[ée]e?s?(?:\s+(?:[àa]|au|aux|en|vers|apr[èe]s|derri[èe]re|pr[èe]s\s+de|proche\s+de)(?=\s))?|quartier|lieu|adresse|zone|secteur|derri[èe]re|apr[èe]s|pr[èe]s\s+de|proche\s+de|en\s+face\s+de|au\s+niveau\s+de|c[ôo]t[ée]\s+de)(?=\s)\s*:?\s*/i;
+// Trailing noise to cut off (price/contact clauses after the place name). The
+// leading \s+ avoids matching "tel" inside "hôtel".
+const STREET_NOISE_RE = /\s+(?:loyer|prix|t[ée]l[ée]?phone|t[ée]l|contact|whatsapp|visite|caution)\b/i;
+// Distance/direction/landmark filler after the place name, cut off so only the
+// quarter remains ("amissa vers le carrefour" → "amissa", "IAI a quelques pas
+// de la route" → "IAI", "X à 3 min de…" → "X").
+const STREET_FILLER_RE =
+  /\s+(?:vers|[àa]\s+c[ôo]t[ée]|en\s+face|face\s+[àa]|au\s+bord|[àa]\s+quelques|quelques\s+(?:pas|min|mn|minutes?|m[èe]tres?)|[àa]\s+\d+\s*(?:min|mn|minutes?|m[èe]tres?|pas)|non\s+loin|pas\s+loin|tout\s+pr[èe]s|en\s+bordure|bordure|acc[èe]s|proche\s+de|pr[èe]s\s+(?:de|du))\b/i;
+
 /**
- * Best-effort locality/street. Facebook listings usually carry a 📍 line such as
- * "📍 Situé à Mindoubé 1 (Auberge Sassou)"; we take that line, stripped of the
- * pin emoji and common "situé à" lead-in.
+ * Best-effort locality/street. Prefers a 📍 line, else the first line carrying a
+ * locality cue; strips the pin, leading bullets/emojis and the cue lead-in
+ * ("Situé après IAI …" → "IAI …").
  */
 function parseStreet(text: string): string | null {
-  for (const line of text.split("\n")) {
-    if (line.includes("📍")) {
-      const cleaned = line
-        .replace(/📍/g, "")
-        .replace(/situ[ée]\s+[àa]\s+/i, "")
-        .trim();
-      if (cleaned) {
-        return cleaned.length > 120 ? `${cleaned.slice(0, 117)}…` : cleaned;
-      }
-    }
-  }
-  return null;
+  const lines = text
+    .split("\n")
+    .map((line) => line.trim())
+    .filter(Boolean);
+
+  const raw = lines.find((line) => line.includes("📍")) ?? lines.find((line) => STREET_CUE_RE.test(line));
+  if (!raw) return null;
+
+  let cleaned = raw
+    .replace(/📍/g, "")
+    .replace(/^[^\p{L}\d]+/u, "")
+    .replace(STREET_LEADIN_RE, "")
+    .trim();
+  // Keep only the place name: drop anything after a comma, a price/contact cue,
+  // or a distance/direction/landmark filler, then trailing punctuation/emojis.
+  cleaned = cleaned.split(/[,\n(]/)[0].split(STREET_NOISE_RE)[0].split(STREET_FILLER_RE)[0].trim();
+  cleaned = cleaned.replace(/[^\p{L}\d)]+$/u, "").trim();
+  if (!cleaned) return null;
+  return cleaned.length > 80 ? `${cleaned.slice(0, 77)}…` : cleaned;
 }
 
 /* -------------------------------------------------------------------------- */
 /* Transformation                                                             */
 /* -------------------------------------------------------------------------- */
 
-const MISSING_FIELD_LABELS: Array<{ key: keyof ApifyListingDraft; label: string }> = [
-  { key: "title", label: "Titre" },
-  { key: "typeProperty", label: "Type de bien" },
-  { key: "status", label: "Statut (location/vente)" },
-  { key: "price", label: "Prix" },
-  { key: "city", label: "Ville" },
-  { key: "contact", label: "Contact" },
-];
+// Default country for Gabonese listings (platform requires both fields).
+const DEFAULT_COUNTRY = "Gabon";
+const DEFAULT_COUNTRY_CODE = "GA";
+const MAX_TAGS = 6;
+
+/** Everything parsed from the post text/attachments, before defaulting. */
+type ParsedFields = {
+  title: string | null;
+  description: string;
+  typeProperty: TypeProperty | null;
+  status: StatusProperty | null;
+  price: number | null;
+  area: number | null;
+  city: string | null;
+  province: string | null;
+  street: string | null;
+  contact: string | null;
+  nbrRooms: number | null;
+  nbrLivingRoom: number | null;
+  nbrKitchens: number | null;
+  nbrBathrooms: number | null;
+  nbrToilets: number | null;
+  tags: string[];
+  images: Image[];
+};
+
+/**
+ * Build a platform `Property` (exact model shape) of the detected subtype.
+ * Unextracted required fields fall back to defaults; type-specific fields are
+ * added only for the matching subtype.
+ */
+function buildDraft(parsed: ParsedFields, source: ApifyDraftSource): ApifyListingDraft {
+  // Optional amenities default to 0; living essentials (rooms, kitchens, baths,
+  // toilets, living rooms, floors) default to 1 — a dwelling has at least one.
+  const num = (value: number | null) => value ?? 0;
+  const count = (value: number | null | undefined) => value ?? 1;
+
+  const base: Omit<ApifyListingDraft, "typeProperty"> = {
+    // Location
+    street: parsed.street ?? "",
+    city: parsed.city ?? "",
+    province: parsed.province ?? "",
+    longitude: 0,
+    latitude: 0,
+    country: DEFAULT_COUNTRY,
+    countryCode: DEFAULT_COUNTRY_CODE,
+    isLocExact: false,
+    // ICreation
+    state: "IN_PROGRESS",
+    // Property
+    images: parsed.images,
+    title: parsed.title ?? "",
+    description: parsed.description,
+    area: num(parsed.area),
+    price: num(parsed.price),
+    tags: parsed.tags.slice(0, MAX_TAGS),
+    status: parsed.status ?? "FOR_RENT",
+    contact: parsed.contact ?? "",
+    isOwner: false,
+    source,
+  };
+
+  const logement = {
+    nbrRooms: count(parsed.nbrRooms),
+    nbrKitchens: count(parsed.nbrKitchens),
+    nbrBathrooms: count(parsed.nbrBathrooms),
+    nbrToilets: count(parsed.nbrToilets),
+  };
+
+  switch (parsed.typeProperty) {
+    case "Apartment":
+      return { ...base, typeProperty: "Apartment", ...logement, nbrFloorApartment: 1, numeroApartment: "" };
+    case "Studio":
+      return { ...base, typeProperty: "Studio", ...logement, nbrFloorStudio: 1, numeroStudio: "" };
+    case "Villa":
+      return {
+        ...base,
+        typeProperty: "Villa",
+        ...logement,
+        nbrFloors: 1,
+        nbrGarages: 0,
+        nbrLivingRoom: count(parsed.nbrLivingRoom),
+        nbrPiscine: 0,
+      };
+    case "Home":
+    case "Duplex":
+      return {
+        ...base,
+        typeProperty: parsed.typeProperty,
+        ...logement,
+        nbrFloors: 1,
+        nbrGarages: 0,
+        nbrLivingRoom: count(parsed.nbrLivingRoom),
+      };
+    case "Logement":
+      return { ...base, typeProperty: "Logement", ...logement };
+    case "Building":
+      return { ...base, typeProperty: "Building", nbrApartments: 1, nbrFloors: 1, hasParking: false };
+    case "Desk":
+      return { ...base, typeProperty: "Desk", nbrToilets: count(parsed.nbrToilets), nbrRooms: count(parsed.nbrRooms) };
+    case "Shop":
+      return { ...base, typeProperty: "Shop", nbrRooms: count(parsed.nbrRooms), nbrToilet: count(parsed.nbrToilets) };
+    case "Warehouse":
+      return { ...base, typeProperty: "Warehouse", nbrSections: 1, nbrToilets: count(parsed.nbrToilets) };
+    case "Kiosk":
+      return { ...base, typeProperty: "Kiosk", kioskType: "" };
+    case "Room":
+      return { ...base, typeProperty: "Room", roomType: "" };
+    case "Land":
+    case "Property":
+      return { ...base, typeProperty: parsed.typeProperty };
+    default:
+      // Undetected kind — left empty and flagged in missingFields.
+      return { ...base, typeProperty: "" };
+  }
+}
 
 /** Transform a single (already-filtered) post into a draft with diagnostics. */
 export function transformPost(post: ApifyRawPost): ApifyDraftMeta {
@@ -370,11 +655,10 @@ export function transformPost(post: ApifyRawPost): ApifyDraftMeta {
   // correctly (e.g. "𝟐𝟎𝟎 𝐦𝐢𝐥𝐥𝐞𝐬" → "200 milles"). rawText keeps the original.
   const text = normalizeText(original).trim();
   const { city, province } = parseCityProvince(text);
-  const imageUrls = extractImageUrls(post);
 
-  const draft: ApifyListingDraft = {
-    title: parseTitle(text),
-    description: text || null,
+  const parsed: ParsedFields = {
+    title: "",
+    description: "",
     typeProperty: parseTypeProperty(text),
     status: parseStatus(text),
     price: parsePrice(text),
@@ -386,28 +670,38 @@ export function transformPost(post: ApifyRawPost): ApifyDraftMeta {
     nbrRooms: parseCountAfter(text, "chambres?"),
     nbrLivingRoom: parseCountAfter(text, "salons?"),
     nbrKitchens: parseCountAfter(text, "cuisines?"),
-    nbrBathrooms: parseCountAfter(text, "douches?|salles? de bain"),
+    nbrBathrooms: parseCountAfter(text, "douches?|salles? de bain|salles? d['’ ]eau"),
     nbrToilets: parseCountAfter(text, "toilettes?|wc"),
     tags: parseTags(text),
-    imageUrls,
-    source: {
-      postUrl: extractSourceUrl(post),
-      authorUrl: toStr(post.facebookUrl),
-      authorName: post.user ? toStr(post.user.name) : null,
-      authorId: post.user ? toStr(post.user.id) : null,
-      rawText: original,
-    },
+    images: extractImageUrls(post).map((fileURL) => ({ fileURL, filePATH: "" })),
+  };
+  const source: ApifyDraftSource = {
+    postUrl: extractSourceUrl(post),
+    authorUrl: toStr(post.facebookUrl),
+    authorName: post.user ? toStr(post.user.name) : null,
+    authorId: post.user ? toStr(post.user.id) : null,
+    rawText: original,
   };
 
-  const missingFields = MISSING_FIELD_LABELS.filter(({ key }) => draft[key] == null).map(
-    ({ label }) => label,
-  );
+  // Compose the title + structured description from the typed (defaulted) draft.
+  const baseDraft = buildDraft(parsed, source);
+  const draft: ApifyListingDraft = { ...baseDraft, ...buildListingContent(baseDraft) };
+
+  // Required platform fields we could not extract (defaulted above).
+  const missingFields: string[] = [];
+  if (!parsed.typeProperty) missingFields.push("Type de bien");
+  if (!parsed.status) missingFields.push("Statut (location/vente)");
+  if (parsed.price == null) missingFields.push("Prix");
+  if (parsed.area == null) missingFields.push("Superficie");
+  if (!parsed.city) missingFields.push("Ville");
+  if (!parsed.street) missingFields.push("Quartier");
+  if (!parsed.contact) missingFields.push("Contact");
+  if (parsed.images.length === 0) missingFields.push("Images");
+  // Coordinates are never present in FB text — always require geocoding.
+  missingFields.push("Coordonnées GPS");
 
   const warnings: string[] = [];
-  if (imageUrls.length === 0) {
-    warnings.push("Aucune image détectée dans le post.");
-  }
-  if (draft.province == null && draft.city != null) {
+  if (parsed.province == null && parsed.city != null) {
     warnings.push("Province non déduite de la ville.");
   }
 
