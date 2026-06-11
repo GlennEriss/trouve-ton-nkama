@@ -291,8 +291,8 @@ export function buildListingContent(draft: ApifyListingDraft): { title: string; 
 
 function parseStatus(text: string): "FOR_RENT" | "FOR_SALE" | null {
   const lower = text.toLowerCase();
-  const rentIndex = firstIndexOf(lower, ["à louer", "a louer", "louer", "location", "loyer"]);
-  const saleIndex = firstIndexOf(lower, ["à vendre", "a vendre", "en vente", "vente", "vendre"]);
+  const rentIndex = firstIndexOf(lower, ["#alouer", "alouer", "à louer", "a louer", "louer", "location", "loyer"]);
+  const saleIndex = firstIndexOf(lower, ["#avendre", "avendre", "à vendre", "a vendre", "en vente", "vente", "vendre"]);
 
   if (rentIndex === -1 && saleIndex === -1) return null;
   if (rentIndex === -1) return "FOR_SALE";
@@ -303,7 +303,9 @@ function parseStatus(text: string): "FOR_RENT" | "FOR_SALE" | null {
 function firstIndexOf(haystack: string, needles: string[]): number {
   let best = -1;
   for (const needle of needles) {
-    const index = haystack.indexOf(needle);
+    const escaped = needle.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+    const match = haystack.match(new RegExp(`(?<!\\p{L})${escaped}(?!\\p{L})`, "iu"));
+    const index = match?.index ?? -1;
     if (index !== -1 && (best === -1 || index < best)) {
       best = index;
     }
@@ -320,7 +322,7 @@ const TYPE_KEYWORDS: Array<{ keywords: string[]; type: TypeProperty }> = [
   { keywords: ["maison"], type: "Home" },
   { keywords: ["terrain", "parcelle"], type: "Land" },
   { keywords: ["entrepôt", "entrepot", "hangar"], type: "Warehouse" },
-  { keywords: ["boutique", "magasin"], type: "Shop" },
+  { keywords: ["local commercial", "local", "boutique", "magasin"], type: "Shop" },
   { keywords: ["immeuble"], type: "Building" },
   { keywords: ["bureau"], type: "Desk" },
   { keywords: ["kiosque"], type: "Kiosk" },
@@ -349,7 +351,7 @@ const CURRENCY_AMOUNT_RE = /(\d{1,3}(?:[.\s]\d{3})+|\d{4,})\s*(?:xaf|fcfa|f\s?cf
 // An amount written with a magnitude word: "160mil", "200 milles", "3 millions",
 // "230k". A bare "m" is intentionally NOT a multiplier, so "200 m²" is never
 // read as 200 millions.
-const MAGNITUDE_AMOUNT_RE = /(\d+(?:[.,]\d+)?)\s*(millions?|milles?|mil|k)\b/gi;
+const MAGNITUDE_AMOUNT_RE = /(\d+(?:[.,]\d+)?)\s*[.,]?\s*(millions?|milles?|mil|k)\b/gi;
 
 // A bare amount with no currency or magnitude word: grouped thousands
 // (65.000 / 65 000) or a 4+ digit number. Accepted only when a price keyword
@@ -390,9 +392,9 @@ function parsePrice(text: string): number | null {
     // The label closest before the amount wins: a "visite/caution" fee right
     // before excludes it, even if a "loyer" appeared earlier (or vice versa).
     const excludeAt = lastRegexIndex(before, /visite(?!ur)|caution|commission/g);
-    const priceAtBefore = lastRegexIndex(before, /loyer|prix|vente|location|mois|nuit|tarif|forfait/g);
+    const priceAtBefore = lastRegexIndex(before, /loyer|prix|montant|vente|location|mois|nuit|tarif|forfait/g);
     if (excludeAt > priceAtBefore) return;
-    const priceAfter = /\/?\s*(?:mois|par mois|le mois)\b|\bloyer|\bprix/.test(after);
+    const priceAfter = /\/?\s*(?:mois|par mois|le mois)\b|\bloyer|\bprix|\b(?:avec|sans)\s+charges?\b/.test(after);
     const priority = priceAtBefore !== -1 || priceAfter;
     if (requirePriceContext && !priority) return;
     candidates.push({ value, index, priority });
@@ -538,14 +540,88 @@ const CITY_TO_PROVINCE: Array<{ city: string; province: string }> = [
   { city: "Makokou", province: "Ogooué-Ivindo" },
 ];
 
-function parseCityProvince(text: string): { city: string | null; province: string | null } {
+const KNOWN_QUARTER_ALIASES: Record<string, { street: string; city: string; province: string }> = {
+  "akanda angondje": { street: "Angondjé", city: "Akanda", province: "Estuaire" },
+  alibandeng: { street: "Alibandeng", city: "Libreville", province: "Estuaire" },
+  alibending: { street: "Alibandeng", city: "Libreville", province: "Estuaire" },
+  angondje: { street: "Angondjé", city: "Akanda", province: "Estuaire" },
+  "akanda marseille 2": { street: "Marseille 2", city: "Akanda", province: "Estuaire" },
+  "ambassade du nigeria": { street: "Ambassade du Nigéria", city: "Libreville", province: "Estuaire" },
+  bikele: { street: "Bikélé", city: "Owendo", province: "Estuaire" },
+  "camp de gaule": { street: "Camp de Gaule", city: "Akanda", province: "Estuaire" },
+  "cite magnolia": { street: "Avorbam", city: "Akanda", province: "Estuaire" },
+  ens: { street: "ENS", city: "Libreville", province: "Estuaire" },
+  essassa: { street: "Essassa", city: "Ntoum", province: "Estuaire" },
+  "haut de gue gue": { street: "Haut de Gué-Gué", city: "Libreville", province: "Estuaire" },
+  "marseille 2": { street: "Marseille 2", city: "Akanda", province: "Estuaire" },
+  nzengayong: { street: "Nzeng Ayong", city: "Libreville", province: "Estuaire" },
+  "nzeng ayong": { street: "Nzeng Ayong", city: "Libreville", province: "Estuaire" },
+  okala: { street: "Okala", city: "Akanda", province: "Estuaire" },
+  "okala canal7": { street: "Okala", city: "Akanda", province: "Estuaire" },
+  "okala canal 7": { street: "Okala", city: "Akanda", province: "Estuaire" },
+  pk26: { street: "Essassa", city: "Ntoum", province: "Estuaire" },
+  pk9: { street: "PK9", city: "Libreville", province: "Estuaire" },
+  tsanguete: { street: "Angondjé", city: "Akanda", province: "Estuaire" },
+  tsanguetes: { street: "Angondjé", city: "Akanda", province: "Estuaire" },
+  tsanguette: { street: "Angondjé", city: "Akanda", province: "Estuaire" },
+  tsanguettes: { street: "Angondjé", city: "Akanda", province: "Estuaire" },
+};
+
+function normalizeLocationKey(value: string): string {
+  return value
+    .normalize("NFD")
+    .replace(/\p{Diacritic}/gu, "")
+    .replace(/#/g, " ")
+    .replace(/[^\p{L}\d]+/gu, " ")
+    .trim()
+    .toLowerCase();
+}
+
+function findKnownQuarterInText(text: string): { street: string; city: string; province: string } | null {
+  const normalized = normalizeLocationKey(text);
+  for (const [alias, location] of Object.entries(KNOWN_QUARTER_ALIASES)) {
+    if (normalized.includes(alias)) return location;
+  }
+  return null;
+}
+
+function isFalseStreetLine(line: string): boolean {
+  const normalized = normalizeLocationKey(line);
+  return /(?:^|\s)(caracteristiques?|modalites?|montant|infoline|contact|loyer|prix|visite)(?:\s|$)/.test(normalized);
+}
+
+function findCityProvinceInText(text: string): { city: string; province: string } | null {
   const lower = text.toLowerCase();
   for (const { city, province } of CITY_TO_PROVINCE) {
     if (lower.includes(city.toLowerCase())) {
       return { city, province };
     }
   }
-  return { city: null, province: null };
+  return null;
+}
+
+function parseCityProvince(text: string): { city: string | null; province: string | null } {
+  const lines = text
+    .split("\n")
+    .map((line) => line.trim())
+    .filter(Boolean);
+  const priorityLines = [
+    ...lines.filter((line) => STREET_PRIORITY_CUE_RE.test(line)),
+    ...lines.filter((line) => line.includes("📍") && !isFalseStreetLine(line)),
+  ];
+
+  for (const line of priorityLines) {
+    const quarter = findKnownQuarterInText(line);
+    if (quarter) return { city: quarter.city, province: quarter.province };
+
+    const result = findCityProvinceInText(line);
+    if (result) return result;
+  }
+
+  const quarter = findKnownQuarterInText(text);
+  if (quarter) return { city: quarter.city, province: quarter.province };
+
+  return findCityProvinceInText(text) ?? { city: null, province: null };
 }
 
 // A line that names a locality: a 📍 pin, or a cue word ("situé à", "quartier",
@@ -558,7 +634,7 @@ const STREET_CUE_RE =
 // lookahead instead of \b (which mishandles accented letters like "à"), so "a"
 // does not match inside "apres" and "à" is still stripped before a space.
 const STREET_LEADIN_RE =
-  /^.*?\b(?:situ[ée]e?s?(?:\s+(?:[àa]|au|aux|en|vers|apr[èe]s|derri[èe]re|pr[èe]s\s+de|proche\s+de)(?=\s))?|quartier|lieu|adresse|zone|secteur|derri[èe]re|apr[èe]s|pr[èe]s\s+de|proche\s+de|en\s+face\s+de|au\s+niveau\s+de|c[ôo]t[ée]\s+de)(?=\s)\s*:?\s*/i;
+  /^.*?\b(?:situ[ée]e?s?(?:\s+(?:[àa]|au|aux|en|vers|apr[èe]s|derri[èe]re|pr[èe]s\s+de|proche\s+de)(?=\s))?|quartier|lieu|adresse|zone|secteur|derri[èe]re|apr[èe]s|pr[èe]s\s+de|proche\s+de|en\s+face\s+de|au\s+niveau\s+de|(?:juste\s+)?[àa]\s+c[ôo]t[ée]\s+(?:de|du|des|de la)|c[ôo]t[ée]\s+(?:de|du|des|de la))(?=\s|:)\s*:?\s*/i;
 // Trailing noise to cut off (price/contact clauses after the place name). The
 // leading \s+ avoids matching "tel" inside "hôtel".
 const STREET_NOISE_RE = /\s+(?:loyer|prix|t[ée]l[ée]?phone|t[ée]l|contact|whatsapp|visite|caution)\b/i;
@@ -566,7 +642,9 @@ const STREET_NOISE_RE = /\s+(?:loyer|prix|t[ée]l[ée]?phone|t[ée]l|contact|wha
 // quarter remains ("amissa vers le carrefour" → "amissa", "IAI a quelques pas
 // de la route" → "IAI", "X à 3 min de…" → "X").
 const STREET_FILLER_RE =
-  /\s+(?:vers|[àa]\s+c[ôo]t[ée]|en\s+face|face\s+[àa]|au\s+bord|[àa]\s+quelques|quelques\s+(?:pas|min|mn|minutes?|m[èe]tres?)|[àa]\s+\d+\s*(?:min|mn|minutes?|m[èe]tres?|pas)|non\s+loin|pas\s+loin|tout\s+pr[èe]s|en\s+bordure|bordure|acc[èe]s|proche\s+de|pr[èe]s\s+(?:de|du))\b/i;
+  /\s+(?:vers|[àa]\s+c[ôo]t[ée]|en\s+face|face\s+[àa]|au\s+bord|en\s+voie\s+(?:secondaire|principale)|voie\s+(?:secondaire|principale)|[àa]\s+quelques|quelques\s+(?:pas|min|mn|minutes?|m[èe]tres?)|[àa]\s+\d+\s*(?:min|mn|minutes?|m[èe]tres?|pas)|non\s+loin|pas\s+loin|tout\s+pr[èe]s|en\s+bordure|bordure|acc[èe]s|proche\s+de|pr[èe]s\s+(?:de|du))\b/i;
+const STREET_PRIORITY_CUE_RE = /\bzone\s+g[ée]ographique\b/i;
+const STREET_PRIORITY_LEADIN_RE = /^.*?\bzone\s+g[ée]ographique\s*:?\s*/i;
 
 /**
  * Best-effort locality/street. Prefers a 📍 line, else the first line carrying a
@@ -574,23 +652,37 @@ const STREET_FILLER_RE =
  * ("Situé après IAI …" → "IAI …").
  */
 function parseStreet(text: string): string | null {
+  const knownQuarter = findKnownQuarterInText(text);
+  if (knownQuarter) return knownQuarter.street;
+
   const lines = text
     .split("\n")
     .map((line) => line.trim())
     .filter(Boolean);
 
-  const raw = lines.find((line) => line.includes("📍")) ?? lines.find((line) => STREET_CUE_RE.test(line));
+  const raw =
+    lines.find((line) => STREET_PRIORITY_CUE_RE.test(line)) ??
+    lines.find((line) => line.includes("📍") && !isFalseStreetLine(line)) ??
+    lines.find((line) => STREET_CUE_RE.test(line));
   if (!raw) return null;
 
   let cleaned = raw
     .replace(/📍/g, "")
     .replace(/^[^\p{L}\d]+/u, "")
+    .replace(STREET_PRIORITY_LEADIN_RE, "")
     .replace(STREET_LEADIN_RE, "")
+    .replace(/^[^\p{L}\d]+/u, "")
     .trim();
   // Keep only the place name: drop anything after a comma, a price/contact cue,
   // or a distance/direction/landmark filler, then trailing punctuation/emojis.
   cleaned = cleaned.split(/[,\n(]/)[0].split(STREET_NOISE_RE)[0].split(STREET_FILLER_RE)[0].trim();
   cleaned = cleaned.replace(/[^\p{L}\d)]+$/u, "").trim();
+  if (/\bprix\s+import\b/i.test(cleaned)) {
+    const city = findCityProvinceInText(cleaned);
+    if (city) return city.city;
+  }
+  const cleanedKnownQuarter = findKnownQuarterInText(cleaned);
+  if (cleanedKnownQuarter) return cleanedKnownQuarter.street;
   if (!cleaned) return null;
   return cleaned.length > 80 ? `${cleaned.slice(0, 77)}…` : cleaned;
 }
@@ -655,7 +747,7 @@ function buildDraft(parsed: ParsedFields, source: ApifyDraftSource): ApifyListin
     area: num(parsed.area),
     price: num(parsed.price),
     tags: parsed.tags.slice(0, MAX_TAGS),
-    status: parsed.status ?? "FOR_RENT",
+    status: parsed.status ?? (parsed.typeProperty === "Land" ? "FOR_SALE" : "FOR_RENT"),
     contact: parsed.contact ?? "",
     isOwner: false,
     source,
@@ -706,7 +798,7 @@ function buildDraft(parsed: ParsedFields, source: ApifyDraftSource): ApifyListin
     case "Kiosk":
       return { ...base, typeProperty: "Kiosk", kioskType: "" };
     case "Room":
-      return { ...base, typeProperty: "Room", roomType: "" };
+      return { ...base, typeProperty: "Room", roomType: "Chambre américaine" };
     case "Land":
     case "Property":
       return { ...base, typeProperty: parsed.typeProperty };
@@ -736,7 +828,7 @@ export function transformPost(post: ApifyRawPost): ApifyDraftMeta {
     province,
     street: parseStreet(text),
     contact: parseContact(text),
-    nbrRooms: parseCountAfter(text, "chambres?"),
+    nbrRooms: parseCountAfter(text, "chambres?|chbre?s?|ch"),
     nbrLivingRoom: parseCountAfter(text, "salons?"),
     nbrKitchens: parseCountAfter(text, "cuisines?"),
     nbrBathrooms: parseCountAfter(text, "douches?|salles? de bain|salles? d['’ ]eau"),

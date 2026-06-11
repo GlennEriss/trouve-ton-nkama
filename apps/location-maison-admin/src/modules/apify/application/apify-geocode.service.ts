@@ -28,6 +28,23 @@ const KNOWN_QUARTERS: KnownQuarter[] = [
   { name: "IAI", aliases: ["iai"], city: "Libreville", province: "Estuaire" },
   { name: "Amissa", aliases: ["amissa"], city: "Akanda", province: "Estuaire" },
   {
+    name: "Alibandeng",
+    aliases: ["alibandeng", "alibending"],
+    city: "Libreville",
+    province: "Estuaire",
+    lat: 0.455897,
+    lon: 9.42752,
+  },
+  {
+    name: "Haut de Gué-Gué",
+    aliases: ["haut de gue gue", "haut de guegue", "gue gue", "guegue"],
+    city: "Libreville",
+    province: "Estuaire",
+    lat: 0.429447,
+    lon: 9.429547,
+  },
+  { name: "Okala", aliases: ["okala", "okala canal7", "okala canal 7"], city: "Akanda", province: "Estuaire" },
+  {
     name: "Rond-point de la Démocratie",
     aliases: ["rond point de la democratie", "rond point democratie", "carrefour democratie", "la democratie", "democratie"],
     city: "Libreville",

@@ -440,6 +440,32 @@ export default function ApifyPage() {
     setGeo(nextGeo);
   }, [rawJson, osm]);
 
+  useEffect(() => {
+    if (!osm || items.length === 0) return;
+
+    let changed = false;
+    const geoUpdates: Record<number, GeoState> = {};
+    const nextItems = items.map((meta, index) => {
+      const currentGeo = geo[index];
+      if (currentGeo?.source && RESOLVED_SOURCES.includes(currentGeo.source)) {
+        return meta;
+      }
+
+      const resolution = resolveFromOsm(meta.draft, osm);
+      if (!resolution) {
+        return meta;
+      }
+
+      changed = true;
+      geoUpdates[index] = { status: "resolved", source: resolution.source };
+      return { ...meta, draft: applyResolution(meta.draft, resolution) };
+    });
+
+    if (!changed) return;
+    setItems(nextItems);
+    setGeo((prev) => ({ ...prev, ...geoUpdates }));
+  }, [geo, items, osm]);
+
   const handleClear = useCallback(() => {
     setRawJson("");
     setError(null);
