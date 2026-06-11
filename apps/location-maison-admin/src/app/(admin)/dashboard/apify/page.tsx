@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 
 import { Badge } from "@/components/ui/badge";
@@ -50,6 +50,13 @@ const RESOLVED_SOURCES: GeoSource[] = ["known", "osm-quarter", "google"];
 type GeoStatus = "none" | "resolved" | "loading" | "error";
 type GeoState = { status: GeoStatus; source?: GeoSource; message?: string };
 
+type ImportStatus = "idle" | "loading" | "created" | "error";
+type ImportState = { status: ImportStatus; propertyId?: string; error?: string };
+
+type AnnouncerOption = { uid: string; fullName: string; email: string | null; phoneNumbers: string[] };
+
+type ImportResult = { index: number; ok: boolean; propertyId?: string; imageCount: number; error?: string };
+
 async function fetchOsmSelector(): Promise<GabonOsmSelectorData> {
   const response = await fetch("/api/admin/v1/osm/gabon");
   const body = (await response.json()) as
@@ -57,6 +64,36 @@ async function fetchOsmSelector(): Promise<GabonOsmSelectorData> {
     | { success: false; error?: { message?: string } };
   if (!body.success) {
     throw new Error(body.error?.message ?? "Source OSM Gabon indisponible.");
+  }
+  return body.data;
+}
+
+async function fetchAnnouncers(query: string): Promise<AnnouncerOption[]> {
+  const params = new URLSearchParams({ limit: "10", query: query.trim(), status: "all", presence: "all" });
+  const response = await fetch(`/api/admin/v1/announcers?${params.toString()}`);
+  const body = (await response.json()) as
+    | { success: true; data: { announcers: AnnouncerOption[] } }
+    | { success: false; error?: { message?: string } };
+  if (!response.ok || !body.success) {
+    throw new Error(body.success ? "Erreur" : body.error?.message ?? "Impossible de charger les annonceurs.");
+  }
+  return body.data.announcers ?? [];
+}
+
+async function importDrafts(
+  announcerUid: string,
+  drafts: ApifyListingDraft[],
+): Promise<{ results: ImportResult[]; created: number; failed: number }> {
+  const response = await fetch("/api/admin/v1/apify/import", {
+    method: "POST",
+    headers: { "content-type": "application/json" },
+    body: JSON.stringify({ announcerUid, drafts }),
+  });
+  const body = (await response.json()) as
+    | { success: true; data: { results: ImportResult[]; created: number; failed: number } }
+    | { success: false; error?: { message?: string } };
+  if (!body.success) {
+    throw new Error(body.error?.message ?? "Échec de l'import.");
   }
   return body.data;
 }
@@ -171,9 +208,12 @@ type DraftCardProps = {
   geo: GeoState;
   canGeocode: boolean;
   onGeocode: (index: number) => void;
+  imp: ImportState;
+  canCreate: boolean;
+  onCreate: (index: number) => void;
 };
 
-function DraftCard({ item, index, geo, canGeocode, onGeocode }: DraftCardProps) {
+function DraftCard({ item, index, geo, canGeocode, onGeocode, imp, canCreate, onCreate }: DraftCardProps) {
   const { draft, warnings } = item;
   const location = [draft.street, draft.city, draft.province].filter(Boolean).join(", ");
   const rooms = roomsSummary(draft);
@@ -319,6 +359,25 @@ function DraftCard({ item, index, geo, canGeocode, onGeocode }: DraftCardProps) 
             <span className="text-slate-500">Auteur : {draft.source.authorName}</span>
           ) : null}
         </div>
+
+        {/* Création de l'annonce */}
+        <div className="flex flex-wrap items-center gap-2 border-t border-slate-100 pt-3">
+          {imp.status === "created" ? (
+            <Badge variant="success">Annonce créée{imp.propertyId ? ` · ${imp.propertyId}` : ""}</Badge>
+          ) : (
+            <Button
+              size="sm"
+              disabled={!canCreate || imp.status === "loading"}
+              onClick={() => onCreate(index)}
+            >
+              {imp.status === "loading" ? "Création…" : "Créer l'annonce"}
+            </Button>
+          )}
+          {imp.status === "error" && imp.error ? <span className="text-xs text-red-600">{imp.error}</span> : null}
+          {!canCreate && imp.status !== "created" ? (
+            <span className="text-xs text-slate-400">Annonceur requis (barre « Annonceur cible » en haut)</span>
+          ) : null}
+        </div>
       </CardContent>
     </Card>
   );
@@ -330,9 +389,27 @@ export default function ApifyPage() {
   const [stats, setStats] = useState<ApifyPipelineResult["stats"] | null>(null);
   const [items, setItems] = useState<ApifyDraftMeta[]>([]);
   const [geo, setGeo] = useState<Record<number, GeoState>>({});
+  const [imp, setImp] = useState<Record<number, ImportState>>({});
+
+  // Announcer picker (listings must be attached to an announcer).
+  const [announcer, setAnnouncer] = useState<AnnouncerOption | null>(null);
+  const [announcerQuery, setAnnouncerQuery] = useState("");
+  const [announcerQueryDebounced, setAnnouncerQueryDebounced] = useState("");
+  const [importingAll, setImportingAll] = useState(false);
 
   const osmQuery = useQuery({ queryKey: ["osm", "gabon", "selector"], queryFn: fetchOsmSelector });
   const osm = osmQuery.data ?? null;
+
+  useEffect(() => {
+    const timer = setTimeout(() => setAnnouncerQueryDebounced(announcerQuery), 300);
+    return () => clearTimeout(timer);
+  }, [announcerQuery]);
+
+  const announcerQueryResult = useQuery({
+    queryKey: ["announcers", "lookup", announcerQueryDebounced],
+    queryFn: () => fetchAnnouncers(announcerQueryDebounced),
+    enabled: !announcer && announcerQueryDebounced.trim().length >= 2,
+  });
 
   const handleTransform = useCallback(() => {
     const parsed = parseApifyJson(rawJson);
@@ -344,6 +421,7 @@ export default function ApifyPage() {
       return;
     }
     setError(null);
+    setImp({});
     const result = runApifyPipeline(parsed.posts);
     setStats(result.stats);
 
@@ -368,7 +446,68 @@ export default function ApifyPage() {
     setStats(null);
     setItems([]);
     setGeo({});
+    setImp({});
   }, []);
+
+  const createOne = useCallback(
+    async (index: number) => {
+      if (!announcer || !items[index]) return;
+      setImp((prev) => ({ ...prev, [index]: { status: "loading" } }));
+      try {
+        const data = await importDrafts(announcer.uid, [items[index].draft]);
+        const result = data.results[0];
+        setImp((prev) => ({
+          ...prev,
+          [index]: result?.ok
+            ? { status: "created", propertyId: result.propertyId }
+            : { status: "error", error: result?.error ?? "Échec." },
+        }));
+      } catch (cause) {
+        setImp((prev) => ({
+          ...prev,
+          [index]: { status: "error", error: cause instanceof Error ? cause.message : "Échec." },
+        }));
+      }
+    },
+    [announcer, items],
+  );
+
+  const createAll = useCallback(async () => {
+    if (!announcer) return;
+    const targets = items.map((_, index) => index).filter((index) => imp[index]?.status !== "created");
+    if (targets.length === 0) return;
+    setImportingAll(true);
+    setImp((prev) => {
+      const next = { ...prev };
+      for (const index of targets) next[index] = { status: "loading" };
+      return next;
+    });
+    try {
+      const data = await importDrafts(
+        announcer.uid,
+        targets.map((index) => items[index].draft),
+      );
+      setImp((prev) => {
+        const next = { ...prev };
+        for (const result of data.results) {
+          const originalIndex = targets[result.index];
+          next[originalIndex] = result.ok
+            ? { status: "created", propertyId: result.propertyId }
+            : { status: "error", error: result.error ?? "Échec." };
+        }
+        return next;
+      });
+    } catch (cause) {
+      const message = cause instanceof Error ? cause.message : "Échec.";
+      setImp((prev) => {
+        const next = { ...prev };
+        for (const index of targets) next[index] = { status: "error", error: message };
+        return next;
+      });
+    } finally {
+      setImportingAll(false);
+    }
+  }, [announcer, items, imp]);
 
   const geocodeOne = useCallback(
     async (index: number) => {
@@ -471,19 +610,89 @@ export default function ApifyPage() {
       ) : null}
 
       {items.length > 0 ? (
-        <div className="flex flex-wrap items-center justify-between gap-2">
-          <p className="text-sm text-slate-600">
-            Localisation : {items.length - unresolvedIndexes.length}/{items.length} résolues localement (référentiel + OSM).
-            {!osm ? " (Données OSM en cours de chargement…)" : null}
-          </p>
-          <Button
-            variant="outline"
-            onClick={geocodeAll}
-            disabled={!osm || unresolvedIndexes.length === 0}
-          >
-            Géolocaliser le reste via Google ({unresolvedIndexes.length})
-          </Button>
-        </div>
+        <Card className="sticky top-2 z-20 shadow-md">
+          <CardContent className="space-y-3 py-4">
+            <p className="text-sm font-medium text-slate-900">Annonceur cible &amp; création</p>
+            <div className="flex flex-wrap items-center justify-between gap-2">
+              <p className="text-sm text-slate-600">
+                Localisation : {items.length - unresolvedIndexes.length}/{items.length} résolues localement (référentiel + OSM).
+                {!osm ? " (Données OSM en cours de chargement…)" : null}
+              </p>
+              <Button variant="outline" onClick={geocodeAll} disabled={!osm || unresolvedIndexes.length === 0}>
+                Géolocaliser le reste via Google ({unresolvedIndexes.length})
+              </Button>
+            </div>
+
+            {/* Annonceur cible + création */}
+            <div className="flex flex-wrap items-center gap-3 border-t border-slate-100 pt-3">
+              <div className="relative">
+                {announcer ? (
+                  <div className="flex items-center gap-2 rounded-md border border-slate-200 px-3 py-1.5 text-sm">
+                    <span className="font-medium text-slate-800">{announcer.fullName}</span>
+                    <span className="text-xs text-slate-400">{announcer.email ?? announcer.uid}</span>
+                    <button
+                      type="button"
+                      className="text-xs text-brand-700 underline"
+                      onClick={() => {
+                        setAnnouncer(null);
+                        setAnnouncerQuery("");
+                      }}
+                    >
+                      changer
+                    </button>
+                  </div>
+                ) : (
+                  <>
+                    <input
+                      value={announcerQuery}
+                      onChange={(event) => setAnnouncerQuery(event.target.value)}
+                      placeholder="Rechercher l'annonceur (nom, email)…"
+                      className="w-72 rounded-md border border-slate-200 px-3 py-1.5 text-sm focus:border-brand-500 focus:outline-none"
+                    />
+                    {announcerQueryDebounced.trim().length >= 2 ? (
+                      <div className="absolute z-10 mt-1 w-72 rounded-md border border-slate-200 bg-white shadow">
+                        {announcerQueryResult.isLoading ? (
+                          <p className="px-3 py-2 text-xs text-slate-400">Recherche…</p>
+                        ) : announcerQueryResult.isError ? (
+                          <p className="px-3 py-2 text-xs text-red-600">
+                            {(announcerQueryResult.error as Error).message}
+                          </p>
+                        ) : (announcerQueryResult.data?.length ?? 0) === 0 ? (
+                          <p className="px-3 py-2 text-xs text-slate-400">Aucun annonceur trouvé.</p>
+                        ) : (
+                          <ul className="max-h-56 overflow-auto">
+                            {announcerQueryResult.data!.map((option) => (
+                              <li key={option.uid}>
+                                <button
+                                  type="button"
+                                  className="flex w-full flex-col items-start px-3 py-1.5 text-left text-sm hover:bg-slate-50"
+                                  onClick={() => {
+                                    setAnnouncer(option);
+                                    setAnnouncerQuery("");
+                                  }}
+                                >
+                                  <span className="font-medium text-slate-800">{option.fullName}</span>
+                                  <span className="text-xs text-slate-400">{option.email ?? option.uid}</span>
+                                </button>
+                              </li>
+                            ))}
+                          </ul>
+                        )}
+                      </div>
+                    ) : null}
+                  </>
+                )}
+              </div>
+
+              <Button onClick={createAll} disabled={!announcer || importingAll}>
+                {importingAll ? "Création en cours…" : "Créer les annonces"}
+              </Button>
+              <span className="text-xs text-slate-400">
+                Images expirées ou prix/lieu manquant ⇒ l&apos;annonce sera signalée en échec.
+              </span>
+            </div>
+          </CardContent>
+        </Card>
       ) : null}
 
       {stats ? (
@@ -497,6 +706,9 @@ export default function ApifyPage() {
                 geo={geo[index] ?? { status: "none" }}
                 canGeocode={Boolean(osm)}
                 onGeocode={geocodeOne}
+                imp={imp[index] ?? { status: "idle" }}
+                canCreate={Boolean(announcer)}
+                onCreate={createOne}
               />
             ))}
           </div>

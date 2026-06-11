@@ -384,13 +384,16 @@ function parsePrice(text: string): number | null {
   // room feature) — otherwise "douche visiteur" before a price excludes it.
   const consider = (value: number, index: number, requirePriceContext = false) => {
     if (!Number.isFinite(value) || value <= 0) return;
-    const context = lower.slice(Math.max(0, index - 40), index);
-    // The label closest to the amount wins: a "visite/caution" fee right before
-    // the amount excludes it, even if a "loyer" appeared earlier (or vice versa).
-    const excludeAt = lastRegexIndex(context, /visite(?!ur)|caution|commission/g);
-    const priceAt = lastRegexIndex(context, /loyer|prix|vente|location|mois|nuit|tarif|forfait/g);
-    if (excludeAt > priceAt) return;
-    const priority = priceAt !== -1;
+    const before = lower.slice(Math.max(0, index - 40), index);
+    // Window after the amount catches a trailing price cue ("125000/mois").
+    const after = lower.slice(index, index + 30);
+    // The label closest before the amount wins: a "visite/caution" fee right
+    // before excludes it, even if a "loyer" appeared earlier (or vice versa).
+    const excludeAt = lastRegexIndex(before, /visite(?!ur)|caution|commission/g);
+    const priceAtBefore = lastRegexIndex(before, /loyer|prix|vente|location|mois|nuit|tarif|forfait/g);
+    if (excludeAt > priceAtBefore) return;
+    const priceAfter = /\/?\s*(?:mois|par mois|le mois)\b|\bloyer|\bprix/.test(after);
+    const priority = priceAtBefore !== -1 || priceAfter;
     if (requirePriceContext && !priority) return;
     candidates.push({ value, index, priority });
   };
@@ -436,24 +439,81 @@ function parseCountAfter(text: string, unitPattern: string): number | null {
 // 2-2-2-2, or no spaces at all). Inter-digit separators may repeat ("16  03").
 const PHONE_RE = /(?:\+?241[\s.\-]?)?0[1-9](?:[\s.\-]*\d){6,7}/;
 
-function parseContact(text: string): string | null {
-  const match = text.match(PHONE_RE);
-  return match ? match[0].trim() : null;
+/** Normalize a Gabonese number to "+241 XXX XX XX XX". */
+function formatGabonPhone(raw: string): string {
+  let digits = raw.replace(/\D/g, "");
+  if (digits.startsWith("241")) digits = digits.slice(3); // drop country code
+  // 9-digit national number (0XX XX XX XX) → grouped 3-2-2-2.
+  if (digits.length === 9) {
+    return `+241 ${digits.slice(0, 3)} ${digits.slice(3, 5)} ${digits.slice(5, 7)} ${digits.slice(7, 9)}`;
+  }
+  // 8-digit number → grouped 2-2-2-2 (still prefixed).
+  if (digits.length === 8) {
+    return `+241 ${digits.slice(0, 2)} ${digits.slice(2, 4)} ${digits.slice(4, 6)} ${digits.slice(6, 8)}`;
+  }
+  return `+241 ${digits}`;
 }
 
-function parseTags(text: string): string[] {
-  const matches = text.match(/#[\p{L}\d_]+/gu) ?? [];
-  const seen = new Set<string>();
+function parseContact(text: string): string | null {
+  const match = text.match(PHONE_RE);
+  return match ? formatGabonPhone(match[0]) : null;
+}
+
+// Agency-fee mentions → "Agence". Owner-direct mentions → "Propriétaire".
+const AGENCY_RE = /\bagence|commissions?|frais d['’ ]agence|frais de d[ée]marche|frais de dossier/i;
+const NO_AGENCY_RE =
+  /sans agence|pas d['’ ]agence|aucune agence|directement (?:du|le|de la) propri[ée]taire|particulier [àa] particulier/i;
+
+// Keyword → canonical platform tag (DEFAULT_TAG_NAMES in location-maison).
+const TAG_RULES: Array<{ tag: string; re: RegExp }> = [
+  { tag: "Meublé", re: /meubl[ée]/i },
+  { tag: "Sécurisé", re: /s[ée]curis|gardien|vigile|gris de s[ée]curit|grille de s[ée]curit|cl[ôo]tur/i },
+  { tag: "Sous barrière", re: /barri[èe]re/i },
+  { tag: "Piscine", re: /piscine/i },
+  { tag: "Parking", re: /parking|stationnement/i },
+  { tag: "Garage", re: /\bgarages?\b/i },
+  { tag: "Balcon", re: /balcon/i },
+  { tag: "Terrasse", re: /terrasse/i },
+  { tag: "Wi-Fi", re: /wi[- ]?fi|\binternet\b|fibre/i },
+  { tag: "Centre-ville", re: /centre[- ]?ville/i },
+  { tag: "Collocation", re: /colocation|collocation|\bcoloc\b/i },
+  { tag: "Court séjour", re: /court s[ée]jour|nuit[ée]e?|airbnb|par nuit/i },
+  { tag: "Vacances", re: /\bvacances\b/i },
+  { tag: "Étudiant", re: /[ée]tudiant|campus|universit[ée]/i },
+  { tag: "Famille", re: /\bfamille\b|familial/i },
+  { tag: "Couple", re: /\bcouple\b/i },
+  { tag: "Animaux admis", re: /animaux (?:admis|accept)|chiens? accept/i },
+  { tag: "Commerces proches", re: /commerces?|supermarch[ée]/i },
+  { tag: "Transport proche", re: /arr[êe]t de bus|transport en commun|station de taxi/i },
+  { tag: "Proche de la plage", re: /\bplage\b/i },
+  { tag: "Calme et tranquillité", re: /\bcalme\b|tranquill|paisible/i },
+  { tag: "Nature", re: /verdure|espace vert/i },
+  { tag: "Montagne", re: /montagne/i },
+];
+
+/**
+ * Curated platform tags inferred from the post. "Agence" is added first when
+ * agency fees/commissions are mentioned (else "Propriétaire" for owner-direct),
+ * then a type-based tag, then keyword tags. Capped at MAX_TAGS.
+ */
+function parseTags(text: string, typeProperty: TypeProperty | null): string[] {
   const tags: string[] = [];
-  for (const raw of matches) {
-    const tag = raw.slice(1);
-    const key = tag.toLowerCase();
-    if (!seen.has(key)) {
-      seen.add(key);
-      tags.push(tag);
-    }
+  const add = (tag: string) => {
+    if (!tags.includes(tag)) tags.push(tag);
+  };
+
+  if (NO_AGENCY_RE.test(text)) add("Propriétaire");
+  else if (AGENCY_RE.test(text)) add("Agence");
+
+  if (typeProperty === "Villa") add("Villa");
+  else if (typeProperty === "Duplex") add("Duplex");
+  else if (typeProperty === "Shop") add("Boutique");
+
+  for (const { tag, re } of TAG_RULES) {
+    if (re.test(text)) add(tag);
   }
-  return tags;
+
+  return tags.slice(0, MAX_TAGS);
 }
 
 // Main Gabon cities and their province, used for best-effort localisation.
@@ -664,10 +724,11 @@ export function transformPost(post: ApifyRawPost): ApifyDraftMeta {
   const text = normalizeText(original).trim();
   const { city, province } = parseCityProvince(text);
 
+  const typeProperty = parseTypeProperty(text);
   const parsed: ParsedFields = {
     title: "",
     description: "",
-    typeProperty: parseTypeProperty(text),
+    typeProperty,
     status: parseStatus(text),
     price: parsePrice(text),
     area: parseArea(text),
@@ -680,7 +741,7 @@ export function transformPost(post: ApifyRawPost): ApifyDraftMeta {
     nbrKitchens: parseCountAfter(text, "cuisines?"),
     nbrBathrooms: parseCountAfter(text, "douches?|salles? de bain|salles? d['’ ]eau"),
     nbrToilets: parseCountAfter(text, "toilettes?|wc"),
-    tags: parseTags(text),
+    tags: parseTags(text, typeProperty),
     images: extractImageUrls(post).map((fileURL) => ({ fileURL, filePATH: "" })),
   };
   const source: ApifyDraftSource = {
