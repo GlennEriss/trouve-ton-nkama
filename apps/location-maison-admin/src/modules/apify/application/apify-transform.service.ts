@@ -166,25 +166,33 @@ export function buildTitle(fields: TitleFields): string {
   return `${type} à ${action}${zone ? ` dans la zone de ${zone}` : ""}`.replace(/\s+/g, " ").trim();
 }
 
-const DESCRIPTION_CONTACT_RE = /(whatsapp|infoline|t[ée]l[ée]?phone|t[ée]l\b|contact|appel|num[ée]ro)/i;
+// Amenities detected in the post text (beyond the model's numeric fields).
+// Ordered; first match per label wins. Patterns run on the normalized text.
+const AMENITY_PATTERNS: Array<{ re: RegExp; label: string }> = [
+  { re: /\bsalle ?[\u00e0a] ?manger\b/i, label: "salle \u00e0 manger" },
+  { re: /\bwc visiteurs?|toilettes? visiteurs?|douche visiteur/i, label: "WC visiteurs" },
+  { re: /\bterrasses?\b/i, label: "terrasse" },
+  { re: /\bbalcons?\b/i, label: "balcon" },
+  { re: /\bparking\b/i, label: "parking" },
+  { re: /\bgardien|vigile|gardiennage\b/i, label: "gardien" },
+  { re: /s[\u00e9e]curis|barri[\u00e8e]re|cl[\u00f4o]tur|grille de s[\u00e9e]curit|gris de s[\u00e9e]curit/i, label: "s\u00e9curis\u00e9" },
+  { re: /\bsplits?\b|climatis|\bclim\b/i, label: "climatisation" },
+  { re: /forage|eau (en )?permanen|eau 24|eau h ?24|eau 7 ?\/ ?7|ch[\u00e2a]teau d.?eau/i, label: "eau permanente" },
+  { re: /groupe [\u00e9e]lectrog[\u00e8e]ne|g[\u00e9e]n[\u00e9e]rateur/i, label: "groupe \u00e9lectrog\u00e8ne" },
+  { re: /\bascenseur\b/i, label: "ascenseur" },
+  { re: /\bjardin\b/i, label: "jardin" },
+  { re: /\bmeubl[\u00e9e]/i, label: "meubl\u00e9" },
+  { re: /\bplacards?\b|dressing/i, label: "placards" },
+  { re: /premi[\u00e8e]re main|jamais habit|\bneuf\b/i, label: "premi\u00e8re main" },
+  { re: /bon standing|haut standing|grand standing|standing/i, label: "bon standing" },
+];
 
-/** Cleaned free text: drop hashtags, emojis, decorative bullets and contact lines. */
-function cleanFreeText(text: string): string {
-  const kept: string[] = [];
-  for (const rawLine of text.split("\n")) {
-    const line = rawLine
-      .replace(/#[\p{L}\d_]+/gu, "")
-      .replace(/\p{Extended_Pictographic}/gu, "")
-      .replace(/[\u200d\ufe0f]/gu, "") // leftover emoji joiners / variation selectors
-      .replace(/\s+/g, " ")
-      .replace(/^[\s\p{P}]+/u, "")
-      .trim();
-    if (!line || !/\p{L}/u.test(line)) continue;
-    if (PHONE_RE.test(line) && line.replace(/\D/g, "").length >= 6) continue;
-    if (DESCRIPTION_CONTACT_RE.test(line) && line.length < 40) continue;
-    kept.push(line);
+function parseAmenities(text: string): string[] {
+  const found: string[] = [];
+  for (const { re, label } of AMENITY_PATTERNS) {
+    if (re.test(text) && !found.includes(label)) found.push(label);
   }
-  return kept.join("\n").replace(/\n{2,}/g, "\n").trim();
+  return found;
 }
 
 // "1er étage" / "3e étage".
@@ -193,12 +201,11 @@ function floorLabel(floor: number): string {
 }
 
 /**
- * Structured description built from the draft's typed attributes (per
- * typeProperty), followed by the cleaned free text from the post. Counts come
- * pre-defaulted to 1 (see buildDraft), so an apartment always reads at least
- * "1 chambre, 1 salon, 1 cuisine…".
+ * Clean structured description from the draft's typed attributes (per
+ * typeProperty) plus the amenities detected in `text`. No raw dump — the
+ * original post is shown separately. Counts come pre-defaulted to 1.
  */
-function buildListingDescription(draft: ApifyListingDraft, freeText: string): string {
+function buildListingDescription(draft: ApifyListingDraft, text: string): string {
   const typeLabel = draft.typeProperty ? TYPE_LABEL_FR[draft.typeProperty] : "Bien";
   const action = draft.status === "FOR_SALE" ? "à vendre" : "à louer";
   const place = capitalizeFirst([draft.street, draft.city, draft.province].filter(Boolean).join(", "));
@@ -263,13 +270,14 @@ function buildListingDescription(draft: ApifyListingDraft, freeText: string): st
   }
 
   const featuresLine = features.length ? `Caractéristiques : ${features.join(", ")}.` : "";
+  const amenities = parseAmenities(text);
+  const amenitiesLine = amenities.length ? `Équipements : ${amenities.join(", ")}.` : "";
   const priceLine = draft.price > 0 ? `Prix : ${new Intl.NumberFormat("fr-FR").format(draft.price)} XAF.` : "";
 
-  const description = [intro, featuresLine, priceLine, freeText]
+  return [intro, featuresLine, amenitiesLine, priceLine]
     .map((part) => part.trim())
     .filter(Boolean)
     .join("\n\n");
-  return description.length > 2000 ? `${description.slice(0, 2000).trim()}…` : description;
 }
 
 /**
@@ -277,8 +285,8 @@ function buildListingDescription(draft: ApifyListingDraft, freeText: string): st
  * Reused after geocoding so both stay in sync with the resolved locality.
  */
 export function buildListingContent(draft: ApifyListingDraft): { title: string; description: string } {
-  const freeText = cleanFreeText(normalizeText(draft.source.rawText));
-  return { title: buildTitle(draft), description: buildListingDescription(draft, freeText) };
+  const text = normalizeText(draft.source.rawText);
+  return { title: buildTitle(draft), description: buildListingDescription(draft, text) };
 }
 
 function parseStatus(text: string): "FOR_RENT" | "FOR_SALE" | null {

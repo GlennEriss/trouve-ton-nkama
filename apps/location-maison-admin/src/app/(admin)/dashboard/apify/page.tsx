@@ -242,11 +242,23 @@ function DraftCard({ item, index, geo, canGeocode, onGeocode }: DraftCardProps) 
         {/* Description générée */}
         {draft.description ? (
           <div>
-            <p className="mb-1 text-xs font-medium text-slate-500">Description</p>
+            <p className="mb-1 text-xs font-medium text-slate-500">Description générée</p>
             <p className="whitespace-pre-line rounded-md bg-slate-50 px-3 py-2 text-sm text-slate-700">
               {draft.description}
             </p>
           </div>
+        ) : null}
+
+        {/* Texte original du post (pour vérifier le parsing) */}
+        {draft.source.rawText ? (
+          <details className="rounded-md border border-slate-200">
+            <summary className="cursor-pointer px-3 py-2 text-xs font-medium text-slate-500">
+              Texte original du post
+            </summary>
+            <p className="whitespace-pre-line border-t border-slate-100 px-3 py-2 text-sm text-slate-600">
+              {draft.source.rawText}
+            </p>
+          </details>
         ) : null}
 
         {/* Attributs du modèle */}
