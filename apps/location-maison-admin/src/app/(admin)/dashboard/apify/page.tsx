@@ -239,6 +239,29 @@ function DraftCard({ item, index, geo, canGeocode, onGeocode }: DraftCardProps) 
           </div>
         ) : null}
 
+        {/* Description générée */}
+        {draft.description ? (
+          <div>
+            <p className="mb-1 text-xs font-medium text-slate-500">Description</p>
+            <p className="whitespace-pre-line rounded-md bg-slate-50 px-3 py-2 text-sm text-slate-700">
+              {draft.description}
+            </p>
+          </div>
+        ) : null}
+
+        {/* Attributs du modèle */}
+        <div>
+          <p className="mb-1 text-xs font-medium text-slate-500">Attributs</p>
+          <dl className="grid grid-cols-2 gap-x-4 gap-y-1 text-sm">
+            {listingAttributes(draft).map((attr) => (
+              <div key={attr.label} className="flex justify-between gap-2 border-b border-slate-100 py-0.5">
+                <dt className="text-slate-500">{attr.label}</dt>
+                <dd className="text-right font-medium text-slate-800">{attr.value}</dd>
+              </div>
+            ))}
+          </dl>
+        </div>
+
         {missingFields.length > 0 ? (
           <div className="flex flex-wrap items-center gap-2">
             <span className="text-xs font-medium text-amber-700">À compléter :</span>
