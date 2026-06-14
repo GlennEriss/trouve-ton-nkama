@@ -303,7 +303,19 @@ export function buildListingContent(draft: ApifyListingDraft): { title: string; 
 function parseStatus(text: string): "FOR_RENT" | "FOR_SALE" | null {
   const lower = text.toLowerCase();
   const rentIndex = firstIndexOf(lower, ["#alouer", "alouer", "à louer", "a louer", "louer", "location", "loyer"]);
-  const saleIndex = firstIndexOf(lower, ["#avendre", "avendre", "à vendre", "a vendre", "en vente", "vente", "vendre"]);
+  const saleIndex = firstIndexOf(lower, [
+    "#avendre",
+    "avendre",
+    "à vendre",
+    "a vendre",
+    "en vente",
+    "vente",
+    "vendre",
+    "vend",
+    "vends",
+    "vendons",
+    "vendu",
+  ]);
 
   if (rentIndex === -1 && saleIndex === -1) return null;
   if (rentIndex === -1) return "FOR_SALE";
@@ -384,9 +396,9 @@ function magnitudeMultiplier(word: string): number {
  * are skipped; an amount near "loyer/prix/vente/location/mois" wins; otherwise
  * the largest remaining amount is used.
  */
-function parsePrice(text: string): number | null {
+function parsePrice(text: string, status: "FOR_RENT" | "FOR_SALE" | null): number | null {
   const lower = text.toLowerCase();
-  const candidates: Array<{ value: number; index: number; priority: boolean }> = [];
+  const candidates: Array<{ value: number; index: number; priority: boolean; purchasePriority: boolean }> = [];
 
   const lastRegexIndex = (haystack: string, re: RegExp) => {
     let last = -1;
@@ -399,17 +411,22 @@ function parsePrice(text: string): number | null {
   const consider = (value: number, index: number, requirePriceContext = false) => {
     if (!Number.isFinite(value) || value <= 0) return;
     const before = lower.slice(Math.max(0, index - 40), index);
+    const beforeWide = lower.slice(Math.max(0, index - 80), index);
     // Window after the amount catches a trailing price cue ("125000/mois").
     const after = lower.slice(index, index + 30);
     // The label closest before the amount wins: a "visite/caution" fee right
     // before excludes it, even if a "loyer" appeared earlier (or vice versa).
     const excludeAt = lastRegexIndex(before, /visite(?!ur)|caution|commission/g);
     const priceAtBefore = lastRegexIndex(before, /loyer|prix|montant|vente|location|mois|nuit|tarif|forfait/g);
+    const purchasePriority = /prix\s+d['’ ]?achat|prix\s+de\s+vente|prix\s+vente|prix\s+d['’ ]?acquisition/.test(beforeWide);
     if (excludeAt > priceAtBefore) return;
     const priceAfter = /\/?\s*(?:mois|par mois|le mois)\b|\bloyer|\bprix|\b(?:avec|sans)\s+charges?\b/.test(after);
+    const monthlyAfter = /\/?\s*(?:mois|par mois|le mois)\b/.test(after);
+    const rentalContext = /valeur\s+locati|locatif|loyer|location/.test(beforeWide) || monthlyAfter;
+    if (status === "FOR_SALE" && rentalContext && !purchasePriority) return;
     const priority = priceAtBefore !== -1 || priceAfter;
     if (requirePriceContext && !priority) return;
-    candidates.push({ value, index, priority });
+    candidates.push({ value, index, priority, purchasePriority });
   };
 
   for (const match of lower.matchAll(CURRENCY_AMOUNT_RE)) {
@@ -435,6 +452,10 @@ function parsePrice(text: string): number | null {
   }
 
   if (candidates.length === 0) return null;
+  const purchase = candidates
+    .filter((candidate) => candidate.purchasePriority)
+    .sort((a, b) => a.index - b.index || b.value - a.value)[0];
+  if (purchase) return purchase.value;
   // Earliest prioritized amount (the asking price usually leads the post); at the
   // same position prefer the larger value (compound "2M 3cent mille" > "2M").
   const prioritized = candidates
@@ -579,6 +600,8 @@ const KNOWN_QUARTER_ALIASES: Record<string, { street: string; city: string; prov
   ens: { street: "ENS", city: "Libreville", province: "Estuaire" },
   essassa: { street: "Essassa", city: "Ntoum", province: "Estuaire" },
   "haut de gue gue": { street: "Haut de Gué-Gué", city: "Libreville", province: "Estuaire" },
+  "lycee bantsantsa": { street: "Lycée Thuriaf Bantsantsa", city: "Libreville", province: "Estuaire" },
+  "lycee thuriaf bantsantsa": { street: "Lycée Thuriaf Bantsantsa", city: "Libreville", province: "Estuaire" },
   "marseille 2": { street: "Marseille 2", city: "Akanda", province: "Estuaire" },
   nzengayong: { street: "Nzeng Ayong", city: "Libreville", province: "Estuaire" },
   "nzeng ayong": { street: "Nzeng Ayong", city: "Libreville", province: "Estuaire" },
@@ -587,6 +610,7 @@ const KNOWN_QUARTER_ALIASES: Record<string, { street: string; city: string; prov
   "okala canal 7": { street: "Okala", city: "Akanda", province: "Estuaire" },
   pk26: { street: "Essassa", city: "Ntoum", province: "Estuaire" },
   pk9: { street: "PK9", city: "Libreville", province: "Estuaire" },
+  "quartier sud": { street: "Quartier Sud", city: "Port-Gentil", province: "Ogooué-Maritime" },
   tsanguete: { street: "Angondjé", city: "Akanda", province: "Estuaire" },
   tsanguetes: { street: "Angondjé", city: "Akanda", province: "Estuaire" },
   tsanguette: { street: "Angondjé", city: "Akanda", province: "Estuaire" },
@@ -605,8 +629,9 @@ function normalizeLocationKey(value: string): string {
 
 function findKnownQuarterInText(text: string): { street: string; city: string; province: string } | null {
   const normalized = normalizeLocationKey(text);
+  const haystack = ` ${normalized} `;
   for (const [alias, location] of Object.entries(KNOWN_QUARTER_ALIASES)) {
-    if (normalized.includes(alias)) return location;
+    if (haystack.includes(` ${alias} `)) return location;
   }
   return null;
 }
@@ -655,12 +680,12 @@ function parseCityProvince(text: string): { city: string | null; province: strin
 // Unicode letter lookarounds (not \b): \b is ASCII, so a cue ending in an
 // accented letter ("situé", "côté") followed by a space would otherwise fail.
 const STREET_CUE_RE =
-  /(?<!\p{L})(?:situ[ée]e?s?|sis|implant[ée]e?s?|quartier|lieu|adresse|zone|secteur|derri[èe]re|apr[èe]s|en\s+face|au\s+niveau|carrefour|c[ôo]t[ée])(?!\p{L})/iu;
+  /(?<!\p{L})(?:emplacement|situ[ée]e?s?|sis|implant[ée]e?s?|quartier|lieu|adresse|zone|secteur|derri[èe]re|apr[èe]s|en\s+face|au\s+niveau|carrefour|lyc[ée]e|c[ôo]t[ée])(?!\p{L})/iu;
 // Lead-in to strip so only the place name remains. Connectors use a space
 // lookahead instead of \b (which mishandles accented letters like "à"), so "a"
 // does not match inside "apres" and "à" is still stripped before a space.
 const STREET_LEADIN_RE =
-  /^.*?\b(?:situ[ée]e?s?(?:\s+(?:[àa]|au|aux|en|vers|apr[èe]s|derri[èe]re|pr[èe]s\s+de|proche\s+de)(?=\s))?|quartier|lieu|adresse|zone|secteur|derri[èe]re|apr[èe]s|pr[èe]s\s+de|proche\s+de|en\s+face\s+de|au\s+niveau\s+de|(?:juste\s+)?[àa]\s+c[ôo]t[ée]\s+(?:de|du|des|de la)|c[ôo]t[ée]\s+(?:de|du|des|de la))(?=\s|:)\s*:?\s*/i;
+  /^.*?\b(?:emplacement|situ[ée]e?s?(?:\s+(?:[àa]|au|aux|en|vers|apr[èe]s|derri[èe]re|pr[èe]s\s+de|proche\s+de)(?=\s))?|quartier|lieu|adresse|zone|secteur|derri[èe]re|apr[èe]s|pr[èe]s\s+de|proche\s+de|en\s+face\s+de|au\s+niveau\s+de|(?:juste\s+)?[àa]\s+lyc[ée]e|lyc[ée]e|(?:juste\s+)?[àa]\s+c[ôo]t[ée]\s+(?:de|du|des|de la)|c[ôo]t[ée]\s+(?:de|du|des|de la))(?=\s|:)\s*:?\s*/i;
 // Trailing noise to cut off (price/contact clauses after the place name). The
 // leading \s+ avoids matching "tel" inside "hôtel".
 const STREET_NOISE_RE = /\s+(?:loyer|prix|t[ée]l[ée]?phone|t[ée]l|contact|whatsapp|visite|caution)\b/i;
@@ -671,6 +696,7 @@ const STREET_FILLER_RE =
   /\s+(?:vers|[àa]\s+c[ôo]t[ée]|en\s+face|face\s+[àa]|au\s+bord|en\s+voie\s+(?:secondaire|principale)|voie\s+(?:secondaire|principale)|[àa]\s+quelques|quelques\s+(?:pas|min|mn|minutes?|m[èe]tres?)|[àa]\s+\d+\s*(?:min|mn|minutes?|m[èe]tres?|pas)|non\s+loin|pas\s+loin|tout\s+pr[èe]s|en\s+bordure|bordure|acc[èe]s|proche\s+de|pr[èe]s\s+(?:de|du))\b/i;
 const STREET_PRIORITY_CUE_RE = /\bzone\s+g[ée]ographique\b/i;
 const STREET_PRIORITY_LEADIN_RE = /^.*?\bzone\s+g[ée]ographique\s*:?\s*/i;
+const STREET_STRUCTURED_CUE_RE = /\b(?:emplacement|lieu|adresse|quartier|zone)\s*:/i;
 
 /**
  * Best-effort locality/street. Prefers a 📍 line, else the first line carrying a
@@ -689,6 +715,8 @@ function parseStreet(text: string): string | null {
   const rawIndex = (() => {
     const priorityIndex = lines.findIndex((line) => STREET_PRIORITY_CUE_RE.test(line));
     if (priorityIndex >= 0) return priorityIndex;
+    const structuredIndex = lines.findIndex((line) => STREET_STRUCTURED_CUE_RE.test(line));
+    if (structuredIndex >= 0) return structuredIndex;
     const pinIndex = lines.findIndex((line) => line.includes("📍") && !isFalseStreetLine(line));
     if (pinIndex >= 0) return pinIndex;
     return lines.findIndex((line) => STREET_CUE_RE.test(line));
@@ -713,7 +741,12 @@ function parseStreet(text: string): string | null {
   // Keep only the place name: drop anything after a comma, a price/contact cue,
   // or a distance/direction/landmark filler, then trailing punctuation/emojis.
   cleaned = cleaned.split(/[,\n(]/)[0].split(STREET_NOISE_RE)[0].split(STREET_FILLER_RE)[0].trim();
-  cleaned = deLeet(cleaned.replace(/[^\p{L}\d)]+$/u, "").trim());
+  cleaned = deLeet(
+    cleaned
+      .replace(/^[^\p{L}\d]+/u, "")
+      .replace(/[^\p{L}\d]+$/u, "")
+      .trim(),
+  );
   if (/\bprix\s+import\b/i.test(cleaned)) {
     const city = findCityProvinceInText(cleaned);
     if (city) return city.city;
@@ -854,12 +887,13 @@ export function transformPost(post: ApifyRawPost): ApifyDraftMeta {
   const { city, province } = parseCityProvince(text);
 
   const typeProperty = parseTypeProperty(text);
+  const status = parseStatus(text);
   const parsed: ParsedFields = {
     title: "",
     description: "",
     typeProperty,
-    status: parseStatus(text),
-    price: parsePrice(text),
+    status,
+    price: parsePrice(text, status),
     area: parseArea(text),
     city,
     province,

@@ -28,6 +28,7 @@ const KNOWN_QUARTERS: KnownQuarter[] = [
   { name: "IAI", aliases: ["iai"], city: "Libreville", province: "Estuaire" },
   { name: "Amissa", aliases: ["amissa"], city: "Akanda", province: "Estuaire" },
   { name: "Balara", aliases: ["balara", "nouvelle route balara"], city: "Port-Gentil", province: "Ogooué-Maritime" },
+  { name: "Quartier Sud", aliases: ["quartier sud"], city: "Port-Gentil", province: "Ogooué-Maritime" },
   {
     name: "Alibandeng",
     aliases: ["alibandeng", "alibending"],
@@ -43,6 +44,12 @@ const KNOWN_QUARTERS: KnownQuarter[] = [
     province: "Estuaire",
     lat: 0.429447,
     lon: 9.429547,
+  },
+  {
+    name: "Lycée Thuriaf Bantsantsa",
+    aliases: ["lycee bantsantsa", "lycee thuriaf bantsantsa", "thuriaf bantsantsa"],
+    city: "Libreville",
+    province: "Estuaire",
   },
   { name: "Okala", aliases: ["okala", "okala canal7", "okala canal 7"], city: "Akanda", province: "Estuaire" },
   {
@@ -133,6 +140,7 @@ const GENERIC_PLACE_WORDS = new Set([
   "hotel",
   "pharmacie",
   "station",
+  "aeroport",
   "marche central",
   "port",
   "plage",
@@ -261,12 +269,17 @@ export function resolveFromOsm(draft: ApifyListingDraft, osm: GabonOsmSelectorDa
   const haystack = ` ${text} `;
 
   // Longest non-generic option name (≥ 4 chars) present as a whole word in `hay`.
-  const longestMatchIn = <T extends { name: string }>(options: T[], hay: string): T | null => {
+  const longestMatchIn = <T extends { name: string }>(options: T[], hay: string, allowGeneric = false): T | null => {
     let best: T | null = null;
     let bestLength = 0;
     for (const option of options) {
       const name = normalize(option.name);
-      if (name.length >= 4 && !GENERIC_PLACE_WORDS.has(name) && hay.includes(` ${name} `) && name.length > bestLength) {
+      if (
+        name.length >= 4 &&
+        (allowGeneric || !GENERIC_PLACE_WORDS.has(name)) &&
+        hay.includes(` ${name} `) &&
+        name.length > bestLength
+      ) {
         best = option;
         bestLength = name.length;
       }
@@ -278,6 +291,22 @@ export function resolveFromOsm(draft: ApifyListingDraft, osm: GabonOsmSelectorDa
   const known = matchKnownQuarter(text);
   if (known) {
     return buildKnownResolution(known, osm);
+  }
+
+  // City aliases in posts are strong signals ("POG" = Port-Gentil). Use them to
+  // constrain ambiguous quarter names like "Aéroport" before considering global
+  // quarter matches elsewhere in Gabon.
+  const aliasCity = matchCityAlias(text, osm);
+  if (aliasCity) {
+    const cityScopedQuarters = osm.quarters.filter((quarter) => {
+      if (quarter.city && normalize(quarter.city) === normalize(aliasCity.name)) return true;
+      return Boolean(quarter.province && aliasCity.province && normalize(quarter.province) === normalize(aliasCity.province));
+    });
+    const scopedQuarter = longestMatchIn<GabonOsmQuarterOption>(cityScopedQuarters, haystack, true);
+    if (scopedQuarter) {
+      return buildQuarterResolution(scopedQuarter, osm);
+    }
+    return buildCityResolution(aliasCity, osm, draft.street);
   }
 
   // (1) When the post names an explicit "quartier …", trust that region: scan the
@@ -298,13 +327,7 @@ export function resolveFromOsm(draft: ApifyListingDraft, osm: GabonOsmSelectorDa
     return buildQuarterResolution(quarter, osm);
   }
 
-  // (3) A city abbreviation (POG → Port-Gentil, LBV → Libreville…).
-  const aliasCity = matchCityAlias(text, osm);
-  if (aliasCity) {
-    return buildCityResolution(aliasCity, osm, draft.street);
-  }
-
-  // (4) Otherwise the longest non-generic city name found in the text.
+  // (3) Otherwise the longest non-generic city name found in the text.
   const city = longestMatchIn<GabonOsmCityOption>(osm.cities, haystack);
   if (city) {
     return buildCityResolution(city, osm, draft.street);
