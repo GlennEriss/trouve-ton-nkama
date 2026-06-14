@@ -327,6 +327,20 @@ export class AIFormService {
     return Number.isFinite(rooms) && rooms > 0 ? rooms : 0
   }
 
+  private extractPhone(description: string): string {
+    const phoneMatch = description.match(/(?:\+241\s*)?(0[1-7][\d\s.-]{6,}|\d{8,})/)
+    if (!phoneMatch?.[0]) return ''
+    const digits = phoneMatch[0].replace(/[^\d+]/g, '')
+    return digits.startsWith('+241') ? digits : digits
+  }
+
+  private inferIsOwner(description: string): boolean | undefined {
+    const normalized = this.normalizeTextForMatch(description)
+    if (/proprietaire\s+direct|je\s+suis\s+le\s+proprietaire|mon\s+bien/.test(normalized)) return true
+    if (/mandataire|agence|demarcheur|intermediaire/.test(normalized)) return false
+    return undefined
+  }
+
   private buildDefaultPropertyDetails(propertyType: string, rooms: number): Record<string, unknown> {
     switch (propertyType) {
       case 'home':
@@ -539,6 +553,8 @@ export class AIFormService {
       
       // Informations additionnelles
       additionnalInformation: '',
+      contact: this.extractPhone(sourceDescription ?? ''),
+      isOwner: this.inferIsOwner(sourceDescription ?? ''),
       
       // Détails spécifiques à la propriété
       ...data.propertyDetails
@@ -558,15 +574,19 @@ export class AIFormService {
     // 1. Créer le prompt
     const prompt = this.createPrompt(propertyType, propertyLabel, requiredFields, description)
     
-    // 2. Appeler l'IA
+    // 2. Appeler l'IA, avec fallback local si le fournisseur est indisponible.
     const result = await sendMessage(prompt)
-    
+
+    let parsedData: AIFormData
     if (!result.success || !result.response) {
-      throw new Error(result.error ?? "Erreur lors de l'appel à l'IA")
+      parsedData = this.buildFallbackAIData(propertyType, propertyLabel, description)
+    } else {
+      try {
+        parsedData = this.parseAIResponse(result.response)
+      } catch {
+        parsedData = this.buildFallbackAIData(propertyType, propertyLabel, description)
+      }
     }
-    
-    // 3. Parser la réponse
-    const parsedData = this.parseAIResponse(result.response)
     
     // 4. Post-traiter
     const processedData = this.postProcessData(parsedData)

@@ -5,6 +5,7 @@ import { createLogger } from '@/lib/logger';
 import { AppError } from '@/lib/errors/app-error';
 import { handleApiError, jsonApiError } from '@/lib/api/error-response';
 import AIPromptsService, { FormContext } from '@/services/ai-prompts.service';
+import { auth } from '@/next-auth/auth';
 
 const logger = createLogger('api.ai.assistant.chat');
 const ASSISTANT_CREDIT_COST = 1;
@@ -101,11 +102,6 @@ function buildAssistantPrompt(message: string, context?: FormContext): string {
 export async function POST(request: NextRequest) {
   try {
     const authHeader = request.headers.get('authorization');
-    if (!authHeader?.startsWith('Bearer ')) {
-      return jsonApiError(401, 'UNAUTHORIZED', "Token d'authentification requis.");
-    }
-
-    const token = authHeader.split('Bearer ')[1];
     const bodyValidation = bodySchema.safeParse(await request.json());
     if (!bodyValidation.success) {
       return jsonApiError(400, 'VALIDATION_ERROR', 'Données de requête invalides.', {
@@ -122,15 +118,36 @@ export async function POST(request: NextRequest) {
       import('firebase-admin/firestore'),
     ]);
 
-    const decoded = await adminAuth.verifyIdToken(token);
-    const uid = decoded.uid;
     const db = getFirestore(adminApp as any);
+    const session = await auth().catch(() => null);
 
-    const userDoc = (await findUserDocumentByUID(db, uid)) ?? (await findUserDocumentByEmail(db, decoded.email));
+    let authenticatedUid: string | undefined;
+    let authenticatedEmail: string | undefined;
+
+    if (authHeader?.startsWith('Bearer ')) {
+      const token = authHeader.split('Bearer ')[1];
+      const decoded = await adminAuth.verifyIdToken(token);
+      authenticatedUid = decoded.uid ?? session?.user?.uid;
+      authenticatedEmail = decoded.email ?? session?.user?.email ?? undefined;
+    } else if (session?.user) {
+      authenticatedUid = session.user.uid;
+      authenticatedEmail = session.user.email ?? undefined;
+    }
+
+    if (!authenticatedUid && !authenticatedEmail) {
+      return jsonApiError(401, 'UNAUTHORIZED', "Session d'authentification requise.");
+    }
+
+    const userDoc =
+      (authenticatedUid ? await findUserDocumentByUID(db, authenticatedUid) : null) ??
+      (await findUserDocumentByEmail(db, authenticatedEmail)) ??
+      (session?.user?.uid ? await findUserDocumentByUID(db, session.user.uid) : null) ??
+      (await findUserDocumentByEmail(db, session?.user?.email ?? undefined));
     if (!userDoc) {
       return jsonApiError(404, 'USER_NOT_FOUND', 'Profil utilisateur introuvable.');
     }
 
+    const userUid = userDoc.data()?.uid ?? authenticatedUid;
     const currentCredits = Number(userDoc.data()?.credits ?? 0);
     if (currentCredits < ASSISTANT_CREDIT_COST) {
       return jsonApiError(402, 'INSUFFICIENT_CREDITS', 'Crédits insuffisants pour utiliser l’assistant IA.');
@@ -162,7 +179,7 @@ export async function POST(request: NextRequest) {
       const txRef = db.collection(firebaseCollectionNames.credit_transactions).doc();
       transactionId = txRef.id;
       transaction.set(txRef, {
-        uid,
+        uid: userUid,
         type: 'spend',
         credits: -ASSISTANT_CREDIT_COST,
         status: 'success',

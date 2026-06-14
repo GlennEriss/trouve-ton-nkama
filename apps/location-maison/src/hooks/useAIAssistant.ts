@@ -73,13 +73,6 @@ export const useAIAssistant = (): AIAssistantHook => {
       };
     }
 
-    if (!auth.currentUser) {
-      return {
-        success: false,
-        error: 'Connexion Firebase en cours. Réessayez dans quelques secondes.',
-      };
-    }
-
     const normalizedMessage = typeof message === 'string' ? message.trim() : '';
     if (normalizedMessage.length < 2) {
       return {
@@ -103,12 +96,12 @@ export const useAIAssistant = (): AIAssistantHook => {
     setIsLoading(true);
 
     try {
-      const idToken = await auth.currentUser.getIdToken();
+      const idToken = await auth.currentUser?.getIdToken();
       const response = await fetch('/api/ai/assistant/chat', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          Authorization: `Bearer ${idToken}`,
+          ...(idToken ? { Authorization: `Bearer ${idToken}` } : {}),
         },
         body: JSON.stringify({
           message: requestMessage,

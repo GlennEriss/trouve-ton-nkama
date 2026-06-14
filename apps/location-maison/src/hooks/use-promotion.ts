@@ -1,12 +1,9 @@
 'use client'
 
 import { useMutation, useQueryClient } from '@tanstack/react-query'
-import { Property, PromotionType, Promotion } from '@/models/annonce'
+import { Property, PromotionType } from '@/models/annonce'
 import { useCurrentUser } from './use-current-user'
-import { updateProperty } from '@/db/property.db'
-import { deductCreditsWithTransaction } from '@/db/credit-transaction.db'
 import { useToast } from './use-toast'
-import { Timestamp } from 'firebase/firestore'
 import { useSession } from 'next-auth/react'
 import { createLogger } from '@/lib/logger'
 import { useRecharge } from '@/providers/RechargeProvider'
@@ -57,84 +54,44 @@ export const usePromotion = ({ property, onSuccess }: UsePromotionProps) => {
         throw error
       }
 
-      // 1. Calculer les nouvelles dates
-      const now = new Date()
-      const startDate = Timestamp.fromDate(now)
-      const endDate = config.duration > 0 
-        ? Timestamp.fromDate(new Date(now.getTime() + config.duration * 24 * 60 * 60 * 1000))
-        : startDate // Pour le boost, pas de date de fin
+      const response = await fetch('/api/property/promote', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          propertyId: property.id,
+          promotionType,
+        }),
+      })
 
-      // 2. Créer l'objet promotion
-      const newPromotion: Promotion = {
-        type: promotionType,
-        startDate,
-        endDate,
-        isActive: true,
-        creditsUsed: config.credits
-      }
-
-      // 3. Préparer les mises à jour
-      const propertyUpdates: Partial<Property> = {
-        currentPromotion: newPromotion,
-        promotionHistory: [
-          ...(property.promotionHistory ?? []),
-          newPromotion
-        ],
-        isPromoted: true
-      }
-
-      // Pour le boost, on met aussi à jour lastBoostedAt
-      if (promotionType === 'boost') {
-        propertyUpdates.lastBoostedAt = startDate
-      }
-
-      // 4. Déduire les crédits ET créer la transaction atomiquement
-      const description = `${config.serviceName} - Annonce "${property.title}"`
-      
-      try {
-        const transactionResult = await deductCreditsWithTransaction(
-          user.uid,
-          config.credits,
-          config.serviceName,
-          property.id,
-          description
-        )
-
-        if (!transactionResult.success) {
-          throw new Error("Échec de la déduction des crédits")
+      const payload = await response.json().catch(() => null)
+      if (!response.ok || !payload?.success) {
+        const error = new Error(payload?.message ?? "Échec de l'activation de la promotion")
+        if (payload?.code === 'INSUFFICIENT_CREDITS' || response.status === 402) {
+          error.name = 'INSUFFICIENT_CREDITS'
         }
-
-        // 5. Mettre à jour la propriété
-        const propertyUpdateSuccess = await updateProperty(property.id!, propertyUpdates)
-
-        if (!propertyUpdateSuccess) {
-          throw new Error("Échec de la mise à jour de la propriété")
-        }
-
-        // 6. Mettre à jour l'état local de l'utilisateur
-        const newCreditsBalance = user.credits - config.credits
-        setUser({
-          ...user,
-          credits: newCreditsBalance
-        })
-        
-        update({
-          user: {
-            ...session?.user,
-            credits: newCreditsBalance
-          }
-        })
-
-        return { 
-          promotionType, 
-          newCreditsBalance, 
-          config, 
-          transactionId: transactionResult.transactionId 
-        }
-
-      } catch (error) {
-        logger.error('Promotion mutation step failed', { error, promotionType, propertyId: property.id })
         throw error
+      }
+
+      const newCreditsBalance = Number(payload.creditsRemaining ?? user.credits - config.credits)
+      setUser({
+        ...user,
+        credits: newCreditsBalance
+      })
+
+      update({
+        user: {
+          ...session?.user,
+          credits: newCreditsBalance
+        }
+      })
+
+      return {
+        promotionType,
+        newCreditsBalance,
+        config,
+        transactionId: payload.transactionId
       }
     },
     onSuccess: (data) => {
