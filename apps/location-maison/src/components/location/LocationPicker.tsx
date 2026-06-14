@@ -22,6 +22,10 @@ import PlacesAutocompleteInput from './PlacesAutocompleteInput'
 
 const logger = createLogger('components.location.picker')
 
+// Carte + localisation GPS temporairement masquées (à réafficher plus tard).
+// Repasser à `true` pour les réactiver — le reste du code est conservé.
+const SHOW_MAP_AND_GPS = false
+
 const GoogleLocationMap = dynamic(() => import('./GoogleLocationMap'), {
   ssr: false,
   loading: () => (
@@ -195,38 +199,44 @@ export default function LocationPicker() {
           <span className="text-[#224D62] font-bold text-lg">Localisation du bien</span>
         </div>
         <p className="text-[#224D62]/80 text-sm font-medium">
-          Utilisez votre position actuelle, ou renseignez la province, la ville et le quartier.
+          {SHOW_MAP_AND_GPS
+            ? 'Utilisez votre position actuelle, ou renseignez la province, la ville et le quartier.'
+            : 'Renseignez la province, la ville et le quartier du bien.'}
         </p>
       </div>
 
       {/* Option 1 : position GPS exacte */}
-      <div className="text-center bg-gradient-to-r from-[#156B68]/10 to-[#156B68]/5 rounded-xl p-5 border border-[#156B68]/20">
-        <p className="text-[#224D62]/80 text-sm font-medium mb-3 flex items-center justify-center">
-          <MapPin className="w-4 h-4 mr-2" />
-          Vous êtes sur place ? Remplissez tout automatiquement.
-        </p>
-        <Button
-          type="button"
-          size="lg"
-          onClick={handleGPSLocation}
-          disabled={gpsLoading}
-          className="bg-[#156B68] hover:bg-[#156B68]/90 text-white font-semibold px-8 py-3 rounded-xl shadow-lg hover:shadow-xl transition-all border-0"
-        >
-          {gpsLoading ? (
-            <Loader2 className="w-5 h-5 mr-3 animate-spin" />
-          ) : (
-            <Crosshair className="w-5 h-5 mr-3" />
-          )}
-          Utiliser ma position actuelle
-        </Button>
-      </div>
+      {SHOW_MAP_AND_GPS && (
+        <>
+          <div className="text-center bg-gradient-to-r from-[#156B68]/10 to-[#156B68]/5 rounded-xl p-5 border border-[#156B68]/20">
+            <p className="text-[#224D62]/80 text-sm font-medium mb-3 flex items-center justify-center">
+              <MapPin className="w-4 h-4 mr-2" />
+              Vous êtes sur place ? Remplissez tout automatiquement.
+            </p>
+            <Button
+              type="button"
+              size="lg"
+              onClick={handleGPSLocation}
+              disabled={gpsLoading}
+              className="bg-[#156B68] hover:bg-[#156B68]/90 text-white font-semibold px-8 py-3 rounded-xl shadow-lg hover:shadow-xl transition-all border-0"
+            >
+              {gpsLoading ? (
+                <Loader2 className="w-5 h-5 mr-3 animate-spin" />
+              ) : (
+                <Crosshair className="w-5 h-5 mr-3" />
+              )}
+              Utiliser ma position actuelle
+            </Button>
+          </div>
 
-      {/* Séparateur */}
-      <div className="flex items-center gap-4">
-        <div className="flex-1 h-px bg-[#224D62]/15" />
-        <span className="text-xs font-medium text-[#224D62]/60 uppercase tracking-wide">ou</span>
-        <div className="flex-1 h-px bg-[#224D62]/15" />
-      </div>
+          {/* Séparateur */}
+          <div className="flex items-center gap-4">
+            <div className="flex-1 h-px bg-[#224D62]/15" />
+            <span className="text-xs font-medium text-[#224D62]/60 uppercase tracking-wide">ou</span>
+            <div className="flex-1 h-px bg-[#224D62]/15" />
+          </div>
+        </>
+      )}
 
       {/* Option 2 : sélection manuelle */}
       <div className="space-y-4">
@@ -281,9 +291,11 @@ export default function LocationPicker() {
       </div>
 
       {/* Carte */}
-      <div className="relative overflow-hidden bg-gradient-to-br from-[#224D62]/5 via-[#CBB171]/5 to-[#224D62]/10 rounded-2xl p-3 shadow-lg border border-[#224D62]/20">
-        <GoogleLocationMap coordinates={mapCoords} label={district || city || province} />
-      </div>
+      {SHOW_MAP_AND_GPS && (
+        <div className="relative overflow-hidden bg-gradient-to-br from-[#224D62]/5 via-[#CBB171]/5 to-[#224D62]/10 rounded-2xl p-3 shadow-lg border border-[#224D62]/20">
+          <GoogleLocationMap coordinates={mapCoords} label={district || city || province} />
+        </div>
+      )}
     </div>
   )
 }
