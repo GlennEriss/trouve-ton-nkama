@@ -139,6 +139,8 @@ export const PropertyFormComponentProvider = ({ children, isUpdate, propertyToUp
             cityLat: 0,
             streetLon: 0,
             streetLat: 0,
+            country: 'Gabon',
+            countryCode: 'GA',
             // Définir le contact directement dans les defaultValues
             contact: user?.phoneNumbers?.[0] || '',
         }
@@ -369,7 +371,15 @@ export const PropertyFormComponentProvider = ({ children, isUpdate, propertyToUp
             <Form {...form}>
                 <form
                     className='flex flex-col'
-                    onSubmit={form.handleSubmit(onSubmit, onInvalid)}>
+                    onSubmit={async (event) => {
+                        if (activeStep === 2) {
+                            event.preventDefault()
+                            await onSubmit(form.getValues())
+                            return
+                        }
+
+                        return form.handleSubmit(onSubmit, onInvalid)(event)
+                    }}>
                     {children}
                 </form>
             </Form>

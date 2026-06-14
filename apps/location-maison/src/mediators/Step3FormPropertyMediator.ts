@@ -15,13 +15,28 @@ export class Step3FormPropertyMediator {
 
   /** ===================== DISTRICT / CITY / PROVINCE ===================== */
   getDistrict = (): string => this.form.getValues("address.district") ?? "";
-  setDistrict = (district: string) => this.form.setValue("address.district", district);
+  setDistrict = (district: string) =>
+    this.form.setValue("address.district", district, {
+      shouldDirty: true,
+      shouldTouch: true,
+      shouldValidate: true,
+    });
 
   getCity = (): string => this.form.getValues("address.city") ?? "";
-  setCity = (city: string) => this.form.setValue("address.city", city);
+  setCity = (city: string) =>
+    this.form.setValue("address.city", city, {
+      shouldDirty: true,
+      shouldTouch: true,
+      shouldValidate: true,
+    });
 
   getProvince = (): string => this.form.getValues("address.province") ?? "";
-  setProvince = (province: string) => this.form.setValue("address.province", province);
+  setProvince = (province: string) =>
+    this.form.setValue("address.province", province, {
+      shouldDirty: true,
+      shouldTouch: true,
+      shouldValidate: true,
+    });
 
   /** ===================== COORDINATES ===================== */
   getCoordinates = (): Coordinates => ({
