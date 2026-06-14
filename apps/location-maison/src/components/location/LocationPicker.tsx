@@ -268,6 +268,7 @@ export default function LocationPicker() {
             value={city}
             onSelect={handleCitySelect}
             onClear={() => mediator.setCity('')}
+            onManualChange={(value) => mediator.setCity(value)}
             placeholder="Ex: Libreville, Port-Gentil…"
             bias={provinceCenter ?? null}
           />
@@ -282,6 +283,7 @@ export default function LocationPicker() {
             value={district}
             onSelect={handleDistrictSelect}
             onClear={() => mediator.setDistrict('')}
+            onManualChange={(value) => mediator.setDistrict(value)}
             placeholder="Ex: Glass, Akanda, Lalala…"
             bias={cityBias}
             hasError={!!districtError}

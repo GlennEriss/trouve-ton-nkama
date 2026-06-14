@@ -19,6 +19,8 @@ interface PlacesAutocompleteInputProps {
   onSelect: (place: ResolvedPlace) => void
   /** Notifie l'effacement / la modification manuelle du champ. */
   onClear?: () => void
+  /** Permet de conserver une saisie libre si aucune suggestion n'est choisie. */
+  onManualChange?: (value: string) => void
   placeholder?: string
   disabled?: boolean
   bias?: { lat: number; lng: number } | null
@@ -29,6 +31,7 @@ export default function PlacesAutocompleteInput({
   value,
   onSelect,
   onClear,
+  onManualChange,
   placeholder,
   disabled,
   bias,
@@ -66,6 +69,7 @@ export default function PlacesAutocompleteInput({
     setQuery(text)
     setSelected(false)
     onClear?.()
+    onManualChange?.(text)
 
     if (debounceRef.current) clearTimeout(debounceRef.current)
     if (text.trim().length < 2) {
