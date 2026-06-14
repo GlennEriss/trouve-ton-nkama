@@ -1,6 +1,6 @@
 import type { ApifyRawPost } from "../domain/types";
 
-// A property kind named in the post. Lowercased substrings.
+// Unambiguous residential property kinds — qualify a post on their own.
 const PROPERTY_KIND_KEYWORDS = [
   "appartement",
   "appart",
@@ -13,9 +13,12 @@ const PROPERTY_KIND_KEYWORDS = [
   "parcelle",
   "immeuble",
   "logement",
-  "magasin",
-  "boutique",
 ];
+
+// Commercial kinds that ALSO appear in non-real-estate posts ("nous avons une
+// boutique physique", "vente de gâteaux en magasin"). They qualify only when a
+// rent/sale signal is also present (see RENT_SALE_KEYWORDS).
+const COMMERCIAL_KIND_KEYWORDS = ["magasin", "boutique", "local commercial", "entrepôt", "entrepot"];
 
 // A rental/sale intent specific to real estate. Lowercased substrings.
 // Note: "vente"/"vendre" alone are deliberately excluded (too generic for
@@ -27,6 +30,19 @@ const INTENT_KEYWORDS = [
   "colocation",
   "loyer",
   "immobil", // immobilier / immobilière / immobiliere
+];
+
+// Rent/sale signals that confirm a commercial-kind post is really real estate.
+const RENT_SALE_KEYWORDS = [
+  "à louer",
+  "a louer",
+  "loyer",
+  "location",
+  "à vendre",
+  "a vendre",
+  "en vente",
+  "bail",
+  "caution",
 ];
 
 /**
@@ -54,8 +70,10 @@ export function isRealEstatePost(post: ApifyRawPost): boolean {
     return false;
   }
   const text = normalizeText(post.text ?? "").toLowerCase();
-  return (
-    PROPERTY_KIND_KEYWORDS.some((keyword) => text.includes(keyword)) ||
-    INTENT_KEYWORDS.some((keyword) => text.includes(keyword))
-  );
+  if (PROPERTY_KIND_KEYWORDS.some((keyword) => text.includes(keyword))) return true;
+  if (INTENT_KEYWORDS.some((keyword) => text.includes(keyword))) return true;
+  // Commercial kinds only count alongside a rent/sale signal.
+  const hasCommercialKind = COMMERCIAL_KIND_KEYWORDS.some((keyword) => text.includes(keyword));
+  const hasRentSale = RENT_SALE_KEYWORDS.some((keyword) => text.includes(keyword));
+  return hasCommercialKind && hasRentSale;
 }

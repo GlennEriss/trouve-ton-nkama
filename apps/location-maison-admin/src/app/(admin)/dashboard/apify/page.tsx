@@ -6,6 +6,14 @@ import { useQuery } from "@tanstack/react-query";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { PageHeader } from "@/components/ui-kit/page-header";
 import { parseApifyJson } from "@/modules/apify/application/apify-parse.service";
 import { runApifyPipeline } from "@/modules/apify/application/apify-transform.service";
@@ -211,9 +219,10 @@ type DraftCardProps = {
   imp: ImportState;
   canCreate: boolean;
   onCreate: (index: number) => void;
+  onRemove: (index: number) => void;
 };
 
-function DraftCard({ item, index, geo, canGeocode, onGeocode, imp, canCreate, onCreate }: DraftCardProps) {
+function DraftCard({ item, index, geo, canGeocode, onGeocode, imp, canCreate, onCreate, onRemove }: DraftCardProps) {
   const { draft, warnings } = item;
   const location = [draft.street, draft.city, draft.province].filter(Boolean).join(", ");
   const rooms = roomsSummary(draft);
@@ -373,6 +382,14 @@ function DraftCard({ item, index, geo, canGeocode, onGeocode, imp, canCreate, on
               {imp.status === "loading" ? "Création…" : "Créer l'annonce"}
             </Button>
           )}
+          <Button
+            variant="outline"
+            size="sm"
+            className="text-red-600"
+            onClick={() => onRemove(index)}
+          >
+            Supprimer
+          </Button>
           {imp.status === "error" && imp.error ? <span className="text-xs text-red-600">{imp.error}</span> : null}
           {!canCreate && imp.status !== "created" ? (
             <span className="text-xs text-slate-400">Annonceur requis (barre « Annonceur cible » en haut)</span>
@@ -390,6 +407,8 @@ export default function ApifyPage() {
   const [items, setItems] = useState<ApifyDraftMeta[]>([]);
   const [geo, setGeo] = useState<Record<number, GeoState>>({});
   const [imp, setImp] = useState<Record<number, ImportState>>({});
+  const [removed, setRemoved] = useState<Record<number, boolean>>({});
+  const [confirmRemoveIndex, setConfirmRemoveIndex] = useState<number | null>(null);
 
   // Announcer picker (listings must be attached to an announcer).
   const [announcer, setAnnouncer] = useState<AnnouncerOption | null>(null);
@@ -411,6 +430,28 @@ export default function ApifyPage() {
     enabled: !announcer && announcerQueryDebounced.trim().length >= 2,
   });
 
+  // Re-run OSM resolution once the dataset is loaded, for drafts still
+  // unresolved (e.g. when "Transformer" was clicked before OSM finished loading).
+  useEffect(() => {
+    if (!osm || items.length === 0) return;
+    const updates: Array<{ index: number; draft: ApifyListingDraft; source: GeoSource }> = [];
+    items.forEach((meta, index) => {
+      if (geo[index]?.status !== "none") return;
+      const resolution = resolveFromOsm(meta.draft, osm);
+      if (resolution) {
+        updates.push({ index, draft: applyResolution(meta.draft, resolution), source: resolution.source });
+      }
+    });
+    if (updates.length === 0) return;
+    const draftByIndex = new Map(updates.map((u) => [u.index, u.draft]));
+    setItems((prev) => prev.map((meta, index) => (draftByIndex.has(index) ? { ...meta, draft: draftByIndex.get(index)! } : meta)));
+    setGeo((prev) => {
+      const next = { ...prev };
+      for (const update of updates) next[update.index] = { status: "resolved", source: update.source };
+      return next;
+    });
+  }, [osm, items, geo]);
+
   const handleTransform = useCallback(() => {
     const parsed = parseApifyJson(rawJson);
     if (!parsed.ok) {
@@ -422,6 +463,7 @@ export default function ApifyPage() {
     }
     setError(null);
     setImp({});
+    setRemoved({});
     const result = runApifyPipeline(parsed.posts);
     setStats(result.stats);
 
@@ -473,7 +515,15 @@ export default function ApifyPage() {
     setItems([]);
     setGeo({});
     setImp({});
+    setRemoved({});
+    setConfirmRemoveIndex(null);
   }, []);
+
+  const confirmRemove = useCallback(() => {
+    if (confirmRemoveIndex === null) return;
+    setRemoved((prev) => ({ ...prev, [confirmRemoveIndex]: true }));
+    setConfirmRemoveIndex(null);
+  }, [confirmRemoveIndex]);
 
   const createOne = useCallback(
     async (index: number) => {
@@ -500,7 +550,9 @@ export default function ApifyPage() {
 
   const createAll = useCallback(async () => {
     if (!announcer) return;
-    const targets = items.map((_, index) => index).filter((index) => imp[index]?.status !== "created");
+    const targets = items
+      .map((_, index) => index)
+      .filter((index) => !removed[index] && imp[index]?.status !== "created");
     if (targets.length === 0) return;
     setImportingAll(true);
     setImp((prev) => {
@@ -533,7 +585,7 @@ export default function ApifyPage() {
     } finally {
       setImportingAll(false);
     }
-  }, [announcer, items, imp]);
+  }, [announcer, items, imp, removed]);
 
   const geocodeOne = useCallback(
     async (index: number) => {
@@ -567,10 +619,11 @@ export default function ApifyPage() {
       items
         .map((_, index) => index)
         .filter((index) => {
+          if (removed[index]) return false;
           const source = geo[index]?.source;
           return !source || !RESOLVED_SOURCES.includes(source);
         }),
-    [items, geo],
+    [items, geo, removed],
   );
 
   const geocodeAll = useCallback(async () => {
@@ -583,8 +636,9 @@ export default function ApifyPage() {
     () =>
       items
         .map((_, index) => index)
+        .filter((index) => !removed[index])
         .sort((a, b) => visibleMissing(items[a]).length - visibleMissing(items[b]).length),
-    [items],
+    [items, removed],
   );
 
   return (
@@ -735,6 +789,7 @@ export default function ApifyPage() {
                 imp={imp[index] ?? { status: "idle" }}
                 canCreate={Boolean(announcer)}
                 onCreate={createOne}
+                onRemove={setConfirmRemoveIndex}
               />
             ))}
           </div>
@@ -746,6 +801,32 @@ export default function ApifyPage() {
           </Card>
         )
       ) : null}
+
+      <Dialog
+        open={confirmRemoveIndex !== null}
+        onOpenChange={(open) => {
+          if (!open) setConfirmRemoveIndex(null);
+        }}
+      >
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>Supprimer cette annonce ?</DialogTitle>
+            <DialogDescription>
+              {confirmRemoveIndex !== null && items[confirmRemoveIndex]
+                ? `« ${items[confirmRemoveIndex].draft.title || "Sans titre"} » sera retirée de la liste et ne sera pas créée. Cette action ne supprime rien en base.`
+                : ""}
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setConfirmRemoveIndex(null)}>
+              Annuler
+            </Button>
+            <Button variant="destructive" onClick={confirmRemove}>
+              Supprimer
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

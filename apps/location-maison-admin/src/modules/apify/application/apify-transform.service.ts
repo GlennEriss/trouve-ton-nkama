@@ -147,6 +147,17 @@ function capitalizeFirst(value: string): string {
   return value ? value.charAt(0).toUpperCase() + value.slice(1) : value;
 }
 
+// Digits used "leet"-style in place of letters (F0RT → FORT, P0UR → POUR).
+const LEET_MAP: Record<string, string> = { "0": "o", "1": "i", "3": "e", "4": "a", "5": "s", "7": "t" };
+
+/**
+ * Fix leet spelling, but only for a digit sitting BETWEEN two letters, so real
+ * numbers ("Akanda 2", "500m2", "PK 12") are left untouched.
+ */
+export function deLeet(value: string): string {
+  return value.replace(/(?<=\p{L})[013457](?=\p{L})/gu, (digit) => LEET_MAP[digit] ?? digit);
+}
+
 // Property kinds that carry the Logement counts (rooms/kitchens/baths/toilets).
 const LOGEMENT_TYPES = new Set<TypeProperty>(["Home", "Apartment", "Villa", "Studio", "Logement", "Duplex"]);
 
@@ -304,7 +315,8 @@ function firstIndexOf(haystack: string, needles: string[]): number {
   let best = -1;
   for (const needle of needles) {
     const escaped = needle.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-    const match = haystack.match(new RegExp(`(?<!\\p{L})${escaped}(?!\\p{L})`, "iu"));
+    // Tolerate a French plural ending (s/x) so "parcelle" matches "parcelles".
+    const match = haystack.match(new RegExp(`(?<!\\p{L})${escaped}(?:s|x)?(?!\\p{L})`, "iu"));
     const index = match?.index ?? -1;
     if (index !== -1 && (best === -1 || index < best)) {
       best = index;
@@ -411,12 +423,23 @@ function parsePrice(text: string): number | null {
   for (const match of lower.matchAll(BARE_AMOUNT_RE)) {
     consider(normalizeAmount(match[1]), match.index ?? 0, true);
   }
+  // Compound French amounts written in words, e.g. "2 millions 3 cent mille".
+  for (const match of lower.matchAll(/(\d+)\s*millions?\s*(?:et\s+)?(\d+)\s*cents?\s*mille/gi)) {
+    consider(Number(match[1]) * 1_000_000 + Number(match[2]) * 100_000, match.index ?? 0);
+  }
+  for (const match of lower.matchAll(/(\d+)\s*millions?\s*(?:et\s+)?(\d+)\s*mille/gi)) {
+    consider(Number(match[1]) * 1_000_000 + Number(match[2]) * 1_000, match.index ?? 0);
+  }
+  for (const match of lower.matchAll(/(\d+)\s*cents?\s*mille/gi)) {
+    consider(Number(match[1]) * 100_000, match.index ?? 0);
+  }
 
   if (candidates.length === 0) return null;
-  // Earliest prioritized amount (the asking price usually leads the post).
+  // Earliest prioritized amount (the asking price usually leads the post); at the
+  // same position prefer the larger value (compound "2M 3cent mille" > "2M").
   const prioritized = candidates
     .filter((candidate) => candidate.priority)
-    .sort((a, b) => a.index - b.index)[0];
+    .sort((a, b) => a.index - b.index || b.value - a.value)[0];
   if (prioritized) return prioritized.value;
   return candidates.reduce((max, candidate) => (candidate.value > max ? candidate.value : max), 0);
 }
@@ -545,6 +568,9 @@ const KNOWN_QUARTER_ALIASES: Record<string, { street: string; city: string; prov
   alibandeng: { street: "Alibandeng", city: "Libreville", province: "Estuaire" },
   alibending: { street: "Alibandeng", city: "Libreville", province: "Estuaire" },
   angondje: { street: "Angondjé", city: "Akanda", province: "Estuaire" },
+  balara: { street: "Balara", city: "Port-Gentil", province: "Ogooué-Maritime" },
+  "boule noir": { street: "Boule-Noir", city: "Libreville", province: "Estuaire" },
+  "nouvelle route balara": { street: "Balara", city: "Port-Gentil", province: "Ogooué-Maritime" },
   "akanda marseille 2": { street: "Marseille 2", city: "Akanda", province: "Estuaire" },
   "ambassade du nigeria": { street: "Ambassade du Nigéria", city: "Libreville", province: "Estuaire" },
   bikele: { street: "Bikélé", city: "Owendo", province: "Estuaire" },
@@ -660,10 +686,21 @@ function parseStreet(text: string): string | null {
     .map((line) => line.trim())
     .filter(Boolean);
 
-  const raw =
-    lines.find((line) => STREET_PRIORITY_CUE_RE.test(line)) ??
-    lines.find((line) => line.includes("📍") && !isFalseStreetLine(line)) ??
-    lines.find((line) => STREET_CUE_RE.test(line));
+  const rawIndex = (() => {
+    const priorityIndex = lines.findIndex((line) => STREET_PRIORITY_CUE_RE.test(line));
+    if (priorityIndex >= 0) return priorityIndex;
+    const pinIndex = lines.findIndex((line) => line.includes("📍") && !isFalseStreetLine(line));
+    if (pinIndex >= 0) return pinIndex;
+    return lines.findIndex((line) => STREET_CUE_RE.test(line));
+  })();
+  if (rawIndex < 0) return null;
+
+  const rawLine = lines[rawIndex];
+  const nextLine = lines[rawIndex + 1] ?? "";
+  const rawKnownQuarter = findKnownQuarterInText(`${rawLine} ${nextLine}`);
+  if (rawKnownQuarter) return rawKnownQuarter.street;
+
+  const raw = rawLine;
   if (!raw) return null;
 
   let cleaned = raw
@@ -676,7 +713,7 @@ function parseStreet(text: string): string | null {
   // Keep only the place name: drop anything after a comma, a price/contact cue,
   // or a distance/direction/landmark filler, then trailing punctuation/emojis.
   cleaned = cleaned.split(/[,\n(]/)[0].split(STREET_NOISE_RE)[0].split(STREET_FILLER_RE)[0].trim();
-  cleaned = cleaned.replace(/[^\p{L}\d)]+$/u, "").trim();
+  cleaned = deLeet(cleaned.replace(/[^\p{L}\d)]+$/u, "").trim());
   if (/\bprix\s+import\b/i.test(cleaned)) {
     const city = findCityProvinceInText(cleaned);
     if (city) return city.city;
