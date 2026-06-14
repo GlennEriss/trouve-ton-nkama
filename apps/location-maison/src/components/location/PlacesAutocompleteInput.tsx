@@ -94,9 +94,14 @@ export default function PlacesAutocompleteInput({
     const resolved = await resolvePlace(suggestion.placeId)
     setIsLoading(false)
     if (resolved) {
-      setQuery(resolved.name || suggestion.mainText)
+      // Le nom retenu doit être celui que l'utilisateur a vu et cliqué (mainText
+      // de la suggestion), pas le displayName de Place Details qui peut différer
+      // (ex: « Owendo » sélectionné → displayName « Port d'Owendo »). Les détails
+      // ne servent qu'aux coordonnées et aux composants (ville / province).
+      const chosen = { ...resolved, name: suggestion.mainText || resolved.name }
+      setQuery(chosen.name)
       setSelected(true)
-      onSelect(resolved)
+      onSelect(chosen)
     }
   }
 

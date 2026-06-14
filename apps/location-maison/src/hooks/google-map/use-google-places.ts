@@ -6,14 +6,11 @@ import { createLogger } from '@/lib/logger'
 
 const logger = createLogger('hooks.google-map.places')
 
-const API_KEY = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY as string
-const PLACES_BASE = 'https://places.googleapis.com/v1'
-
 /**
- * Caches en mémoire (durée de vie = la session navigateur) pour limiter les
- * appels facturés à Google Places sur les requêtes redondantes (backspace,
- * re-frappe, re-sélection). Conforme aux conditions Google : aucun stockage
- * persistant, et les détails sont mis en cache par placeId (autorisé).
+ * Cache mémoire L1 (durée de vie = la session navigateur), au-dessus du cache
+ * partagé L2 (Redis, via le proxy /api/places). Évite même l'aller-retour
+ * réseau vers notre propre proxy pour les requêtes redondantes (backspace,
+ * re-frappe, re-sélection).
  */
 const SUGGEST_TTL_MS = 5 * 60 * 1000
 const suggestCache = new Map<string, { ts: number; items: PlaceSuggestion[] }>()
@@ -91,17 +88,13 @@ export function useGooglePlaces() {
     return sessionTokenRef.current
   }, [])
 
-  /** Récupère des suggestions Places (REST) pour une saisie donnée. */
+  /** Récupère des suggestions via le proxy /api/places/autocomplete (cache Redis). */
   const fetchSuggestions = useCallback(
     async (input: string, options: FetchOptions = {}): Promise<SuggestResult> => {
       const trimmed = input.trim()
       if (trimmed.length < 2) return { items: [], status: 'empty' }
-      if (!API_KEY) {
-        logger.error('Missing NEXT_PUBLIC_GOOGLE_MAPS_API_KEY')
-        return { items: [], status: 'error' }
-      }
 
-      // Cache mémoire : évite de re-facturer une recherche identique récente.
+      // Cache L1 mémoire : évite l'aller-retour réseau pour une requête récente.
       const cacheKey = `${trimmed.toLowerCase()}|${biasKey(options.bias)}`
       const cached = suggestCache.get(cacheKey)
       if (cached && Date.now() - cached.ts < SUGGEST_TTL_MS) {
@@ -109,49 +102,23 @@ export function useGooglePlaces() {
       }
 
       try {
-        const body: any = {
-          input: trimmed,
-          includedRegionCodes: ['ga'],
-          languageCode: 'fr',
-          sessionToken: getSessionToken(),
-        }
-        if (options.bias) {
-          // Places API (New) impose un rayon de biais <= 50 000 m.
-          const radius = Math.min(options.radius ?? 50000, 50000)
-          body.locationBias = {
-            circle: {
-              center: { latitude: options.bias.lat, longitude: options.bias.lng },
-              radius,
-            },
-          }
-        }
-
-        const res = await fetch(`${PLACES_BASE}/places:autocomplete`, {
+        const res = await fetch('/api/places/autocomplete', {
           method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'X-Goog-Api-Key': API_KEY,
-          },
-          body: JSON.stringify(body),
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            input: trimmed,
+            bias: options.bias ?? null,
+            sessionToken: getSessionToken(),
+          }),
         })
 
         if (!res.ok) {
-          const detail = await res.text()
-          logger.error('Places autocomplete HTTP error', { status: res.status, detail })
+          logger.error('autocomplete proxy error', { status: res.status })
           return { items: [], status: 'error' }
         }
 
         const data = await res.json()
-        const items: PlaceSuggestion[] = (data.suggestions || [])
-          .map((s: any) => s.placePrediction)
-          .filter(Boolean)
-          .map((p: any) => ({
-            placeId: p.placeId,
-            mainText: p.structuredFormat?.mainText?.text ?? p.text?.text ?? '',
-            secondaryText: p.structuredFormat?.secondaryText?.text ?? '',
-            label: p.text?.text ?? '',
-          }))
-
+        const items: PlaceSuggestion[] = data.items ?? []
         suggestCache.set(cacheKey, { ts: Date.now(), items })
         return { items, status: items.length ? 'ok' : 'empty' }
       } catch (error) {
@@ -162,12 +129,10 @@ export function useGooglePlaces() {
     [getSessionToken],
   )
 
-  /** Résout un placeId en coordonnées + composants d'adresse (REST). */
+  /** Résout un placeId via le proxy /api/places/details (cache Redis). */
   const resolvePlace = useCallback(
     async (placeId: string): Promise<ResolvedPlace | null> => {
-      if (!API_KEY) return null
-
-      // Cache mémoire par placeId (détails stables → autorisé par les ToS).
+      // Cache L1 par placeId (détails stables → autorisé par les ToS).
       const cachedDetails = detailsCache.get(placeId)
       if (cachedDetails) {
         sessionTokenRef.current = null
@@ -177,38 +142,18 @@ export function useGooglePlaces() {
       try {
         const token = sessionTokenRef.current
         sessionTokenRef.current = null // ferme la session de facturation
-        const url = new URL(`${PLACES_BASE}/places/${placeId}`)
-        url.searchParams.set('languageCode', 'fr')
-        if (token) url.searchParams.set('sessionToken', token)
+        const params = new URLSearchParams({ placeId })
+        if (token) params.set('sessionToken', token)
 
-        const res = await fetch(url.toString(), {
-          headers: {
-            'X-Goog-Api-Key': API_KEY,
-            'X-Goog-FieldMask': 'displayName,location,addressComponents',
-          },
-        })
-
+        const res = await fetch(`/api/places/details?${params.toString()}`)
         if (!res.ok) {
-          const detail = await res.text()
-          logger.error('Place details HTTP error', { status: res.status, detail })
+          logger.error('details proxy error', { status: res.status, placeId })
           return null
         }
 
-        const place = await res.json()
-        const components = (place.addressComponents || []).map((c: any) => ({
-          types: c.types,
-          longText: c.longText,
-        }))
-
-        const resolved: ResolvedPlace = {
-          name: place.displayName?.text ?? '',
-          lat: place.location?.latitude ?? 0,
-          lng: place.location?.longitude ?? 0,
-          city: pickByType(components, 'locality', 'administrative_area_level_2', 'administrative_area_level_3'),
-          province: pickByType(components, 'administrative_area_level_1'),
-          district: pickByType(components, 'sublocality', 'sublocality_level_1', 'neighborhood'),
-        }
-        detailsCache.set(placeId, resolved)
+        const data = await res.json()
+        const resolved: ResolvedPlace | null = data.place ?? null
+        if (resolved) detailsCache.set(placeId, resolved)
         return resolved
       } catch (error) {
         logger.error('resolvePlace failed', { error, placeId })
