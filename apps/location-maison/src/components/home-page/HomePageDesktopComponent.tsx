@@ -7,6 +7,8 @@ import { useCurrentUser } from '@/hooks/use-current-user'
 import CarouselPropertyType from './CarouselPropertyType'
 import PropertyByProvince from './PropertyByProvince'
 import FeaturedSection from './FeaturedSection'
+import SponsoredSlot from '@/components/ads/SponsoredSlot'
+import { ADSENSE_SLOTS } from '@/lib/ads/config'
 import TrendingSection from './TrendingSection'
 import RecentSection from './RecentSection'
 import { motion, useReducedMotion } from 'framer-motion'
@@ -106,6 +108,14 @@ export default function HomePageDesktopComponent() {
       <motion.section className='mb-8 mt-10' {...getRevealProps(0.08)}>
         <FeaturedSection />
       </motion.section>
+      <section className='mb-8'>
+        <SponsoredSlot
+          placement="home"
+          surface="card"
+          fallbackSlot={ADSENSE_SLOTS.footer}
+          fallbackSlotKey="home-desktop"
+        />
+      </section>
       {/* <section className='mt-10 lg:my-20'>
         <h1 className="text-xl lg:text-2xl xl:text-3xl font-bold leading-tight text-center text-[#146B67] dark:text-[#1FA89B]">
           Développez votre activité immobilière en toute simplicité.

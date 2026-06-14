@@ -8,7 +8,7 @@ import { notFound, useParams } from "next/navigation"
 import HouseDetailSkeleton from "./HouseDetailSkeleton"
 import RecommendationSection from "./RecommendationSection"
 import { useTrackPropertyView } from "@/hooks/use-track-property-view"
-import InlineAdUnit from '@/components/ads/InlineAdUnit'
+import SponsoredSlot from '@/components/ads/SponsoredSlot'
 import { ADSENSE_SLOTS } from '@/lib/ads/config'
 
 export default function HouseDetails() {
@@ -36,9 +36,12 @@ export default function HouseDetails() {
         return (
             <div className='py-5 px-20 space-y-10'>
                 <PreviewProperty property={property} />
-                <InlineAdUnit
-                    slot={ADSENSE_SLOTS.propertyDetail}
-                    slotKey={`property-desktop-${id}`}
+                <SponsoredSlot
+                    placement="property_detail"
+                    province={property.province}
+                    city={property.city}
+                    fallbackSlot={ADSENSE_SLOTS.propertyDetail}
+                    fallbackSlotKey={`property-desktop-${id}`}
                 />
                 <RecommendationSection 
                     currentPropertyId={property.id}
@@ -52,11 +55,14 @@ export default function HouseDetails() {
     return (
         <div className="space-y-10">
             <PreviewPropertyMobile property={property} />
-            <InlineAdUnit
+            <SponsoredSlot
                 className="mx-4"
-                slot={ADSENSE_SLOTS.propertyDetail}
-                slotKey={`property-mobile-${id}`}
-                compact
+                placement="property_detail"
+                province={property.province}
+                city={property.city}
+                fallbackSlot={ADSENSE_SLOTS.propertyDetail}
+                fallbackSlotKey={`property-mobile-${id}`}
+                fallbackCompact
             />
             <RecommendationSection 
                 currentPropertyId={property.id}

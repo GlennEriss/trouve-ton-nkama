@@ -83,6 +83,13 @@ async function findUserDocumentByUID(db: any, uid: string) {
   return usersSnapshot.docs[0];
 }
 
+async function findUserDocumentByEmail(db: any, email: string | undefined) {
+  if (!email) return null;
+  const usersSnapshot = await db.collection(firebaseCollectionNames.users).where('email', '==', email).limit(1).get();
+  if (usersSnapshot.empty) return null;
+  return usersSnapshot.docs[0];
+}
+
 function buildAssistantPrompt(message: string, context?: FormContext): string {
   if (context) {
     return AIPromptsService.buildContextualPrompt(message, context);
@@ -119,7 +126,7 @@ export async function POST(request: NextRequest) {
     const uid = decoded.uid;
     const db = getFirestore(adminApp as any);
 
-    const userDoc = await findUserDocumentByUID(db, uid);
+    const userDoc = (await findUserDocumentByUID(db, uid)) ?? (await findUserDocumentByEmail(db, decoded.email));
     if (!userDoc) {
       return jsonApiError(404, 'USER_NOT_FOUND', 'Profil utilisateur introuvable.');
     }

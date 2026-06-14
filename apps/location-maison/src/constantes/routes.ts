@@ -65,6 +65,7 @@ export const routes = {
         blog_conseils_negociation: '/blog/conseils-negociation-immobiliere-gabon',
         blog_demarches_administratives: '/blog/demarches-administratives-immobilier-gabon-2024',
         guide_immobilier_gabon: '/guide-immobilier-gabon',
+        advertise: '/faire-de-la-pub',
         property: '/property',
     },
     public_google: {

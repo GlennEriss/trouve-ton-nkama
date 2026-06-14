@@ -2,7 +2,7 @@
 
 import React from 'react';
 import PropertyCard from '@/components/home-page/PropertyCard';
-import InlineAdUnit from '@/components/ads/InlineAdUnit';
+import SponsoredSlot from '@/components/ads/SponsoredSlot';
 import { ADSENSE_SLOTS } from '@/lib/ads/config';
 import type { LandingPropertyCard } from '@/lib/seo/algolia-listings';
 
@@ -54,12 +54,13 @@ export default function ImmobilierPropertyCardsGrid({ properties }: ImmobilierPr
             <PropertyCard property={entry.property} />
           </div>
         ) : (
-          <InlineAdUnit
+          <SponsoredSlot
             key={`ad-${entry.key}`}
+            placement="immobilier_infeed"
             className="sm:col-span-2 lg:col-span-3 xl:col-span-4"
-            slot={ADSENSE_SLOTS.immobilierInline}
-            slotKey={entry.key}
-            compact
+            fallbackSlot={ADSENSE_SLOTS.immobilierInline}
+            fallbackSlotKey={entry.key}
+            fallbackCompact
           />
         )
       )}

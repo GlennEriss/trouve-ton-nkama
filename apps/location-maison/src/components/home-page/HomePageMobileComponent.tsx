@@ -14,6 +14,8 @@ import CarouselPropertyType from './CarouselPropertyType';
 import { useWindowSize } from '@/hooks/useSize';
 import { cn } from '@/lib/utils';
 import FeaturedSection from './FeaturedSection';
+import SponsoredSlot from '@/components/ads/SponsoredSlot';
+import { ADSENSE_SLOTS } from '@/lib/ads/config';
 import TrendingSection from './TrendingSection';
 import RecentSection from './RecentSection';
 import { motion, useReducedMotion } from 'framer-motion';
@@ -170,6 +172,16 @@ export default function HomePageMobileComponent() {
                 <motion.div {...getRevealProps(0.05)}>
                     <FeaturedSection />
                 </motion.div>
+
+                <div className='px-4'>
+                    <SponsoredSlot
+                        placement="home"
+                        surface="card"
+                        fallbackSlot={ADSENSE_SLOTS.footer}
+                        fallbackSlotKey="home-mobile"
+                        fallbackCompact
+                    />
+                </div>
 
                 <motion.section className='space-y-5 bg-green-50 p-5 py-16' {...getRevealProps(0.07)}>
                     <h1 className='text-xl font-bold text-center text-[#146B67]'>Quels sont vos besoins ?</h1>

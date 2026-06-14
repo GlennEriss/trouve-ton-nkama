@@ -9,7 +9,7 @@ import PropertyCard from '../home-page/PropertyCard'
 import { useSearchParams } from 'next/navigation'
 import FilterSearchDesktopPageSection from './FilterSearchDesktopPageSection'
 import { useTrackSearchAnalytics } from '@/features/analytics/search/hooks/useTrackSearchAnalytics';
-import InlineAdUnit from '@/components/ads/InlineAdUnit';
+import SponsoredSlot from '@/components/ads/SponsoredSlot';
 import { ADSENSE_SLOTS } from '@/lib/ads/config';
 
 export default function 
@@ -199,11 +199,14 @@ SearchDesktopPage() {
                                                 <PropertyCard property={entry.item} />
                                             </div>
                                         ) : (
-                                            <InlineAdUnit
+                                            <SponsoredSlot
                                                 key={`ad-${entry.key}`}
+                                                placement="search_infeed"
+                                                province={searchParams.get('province')}
+                                                city={searchParams.get('city')}
                                                 className="h-full sm:col-span-2 xl:col-span-3"
-                                                slot={ADSENSE_SLOTS.searchInline}
-                                                slotKey={`search-desktop-${entry.key}`}
+                                                fallbackSlot={ADSENSE_SLOTS.searchInline}
+                                                fallbackSlotKey={`search-desktop-${entry.key}`}
                                             />
                                         )
                                     )}

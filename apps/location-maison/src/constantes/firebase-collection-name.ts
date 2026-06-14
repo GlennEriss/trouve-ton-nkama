@@ -12,7 +12,9 @@ const firebaseCollectionNames = {
     provinces: 'provinces',
     cities: 'cities',
     streets: 'streets',
-    property_statistics: 'property_statistics'
+    property_statistics: 'property_statistics',
+    advertisers: 'advertisers',
+    ad_campaigns: 'ad_campaigns'
 }
 
 export default firebaseCollectionNames
