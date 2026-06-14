@@ -9,6 +9,22 @@ const logger = createLogger('hooks.google-map.places')
 const API_KEY = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY as string
 const PLACES_BASE = 'https://places.googleapis.com/v1'
 
+/**
+ * Caches en mémoire (durée de vie = la session navigateur) pour limiter les
+ * appels facturés à Google Places sur les requêtes redondantes (backspace,
+ * re-frappe, re-sélection). Conforme aux conditions Google : aucun stockage
+ * persistant, et les détails sont mis en cache par placeId (autorisé).
+ */
+const SUGGEST_TTL_MS = 5 * 60 * 1000
+const suggestCache = new Map<string, { ts: number; items: PlaceSuggestion[] }>()
+const detailsCache = new Map<string, ResolvedPlace>()
+
+function biasKey(bias?: { lat: number; lng: number } | null): string {
+  if (!bias) return 'none'
+  // Arrondi pour regrouper les biais proches sur une même clé de cache.
+  return `${bias.lat.toFixed(2)},${bias.lng.toFixed(2)}`
+}
+
 export interface PlaceSuggestion {
   placeId: string
   /** Texte principal (ex: nom de la ville / du quartier). */
@@ -85,6 +101,13 @@ export function useGooglePlaces() {
         return { items: [], status: 'error' }
       }
 
+      // Cache mémoire : évite de re-facturer une recherche identique récente.
+      const cacheKey = `${trimmed.toLowerCase()}|${biasKey(options.bias)}`
+      const cached = suggestCache.get(cacheKey)
+      if (cached && Date.now() - cached.ts < SUGGEST_TTL_MS) {
+        return { items: cached.items, status: cached.items.length ? 'ok' : 'empty' }
+      }
+
       try {
         const body: any = {
           input: trimmed,
@@ -129,6 +152,7 @@ export function useGooglePlaces() {
             label: p.text?.text ?? '',
           }))
 
+        suggestCache.set(cacheKey, { ts: Date.now(), items })
         return { items, status: items.length ? 'ok' : 'empty' }
       } catch (error) {
         logger.error('fetchSuggestions failed', { error, input: trimmed })
@@ -142,6 +166,14 @@ export function useGooglePlaces() {
   const resolvePlace = useCallback(
     async (placeId: string): Promise<ResolvedPlace | null> => {
       if (!API_KEY) return null
+
+      // Cache mémoire par placeId (détails stables → autorisé par les ToS).
+      const cachedDetails = detailsCache.get(placeId)
+      if (cachedDetails) {
+        sessionTokenRef.current = null
+        return cachedDetails
+      }
+
       try {
         const token = sessionTokenRef.current
         sessionTokenRef.current = null // ferme la session de facturation
@@ -168,7 +200,7 @@ export function useGooglePlaces() {
           longText: c.longText,
         }))
 
-        return {
+        const resolved: ResolvedPlace = {
           name: place.displayName?.text ?? '',
           lat: place.location?.latitude ?? 0,
           lng: place.location?.longitude ?? 0,
@@ -176,6 +208,8 @@ export function useGooglePlaces() {
           province: pickByType(components, 'administrative_area_level_1'),
           district: pickByType(components, 'sublocality', 'sublocality_level_1', 'neighborhood'),
         }
+        detailsCache.set(placeId, resolved)
+        return resolved
       } catch (error) {
         logger.error('resolvePlace failed', { error, placeId })
         return null

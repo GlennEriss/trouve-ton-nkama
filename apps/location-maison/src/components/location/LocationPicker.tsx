@@ -3,7 +3,7 @@
 import React, { useState } from 'react'
 import dynamic from 'next/dynamic'
 import { useFormContext } from 'react-hook-form'
-import { MapPin, Crosshair, Loader2, Building2, Home } from 'lucide-react'
+import { MapPin, Crosshair, Loader2 } from 'lucide-react'
 import { Label } from '@/components/ui/label'
 import { Button } from '@/components/ui/button'
 import {
@@ -232,12 +232,11 @@ export default function LocationPicker() {
       <div className="space-y-4">
         {/* Province */}
         <div className="space-y-2">
-          <Label className="text-sm font-medium text-[#224D62] flex items-center gap-2">
-            <Building2 className="w-4 h-4 text-[#CBB171]" />
+          <Label className="text-md">
             Province <span className="text-red-500">*</span>
           </Label>
           <Select value={province || undefined} onValueChange={handleProvinceChange}>
-            <SelectTrigger className="w-full border-[#CBB171]/30 focus:ring-[#224D62]/20">
+            <SelectTrigger className="w-full rounded-full py-6 text-md bg-gray-50 dark:bg-gray-900 dark:text-white border-[#1FA89B] focus:ring-0 focus:border-[#1FA89B] focus:bg-[#ebf6f5] transition-colors">
               <SelectValue placeholder="Choisissez votre province" />
             </SelectTrigger>
             <SelectContent>
@@ -252,8 +251,7 @@ export default function LocationPicker() {
 
         {/* Ville */}
         <div className="space-y-2">
-          <Label className="text-sm font-medium text-[#224D62] flex items-center gap-2">
-            <Home className="w-4 h-4 text-[#CBB171]" />
+          <Label className="text-md">
             Ville <span className="text-red-500">*</span>
           </Label>
           <PlacesAutocompleteInput
@@ -267,8 +265,7 @@ export default function LocationPicker() {
 
         {/* Quartier */}
         <div className="space-y-2">
-          <Label className="text-sm font-medium text-[#224D62] flex items-center gap-2">
-            <MapPin className="w-4 h-4 text-[#CBB171]" />
+          <Label className="text-md">
             Quartier <span className="text-red-500">*</span>
           </Label>
           <PlacesAutocompleteInput

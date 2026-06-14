@@ -104,30 +104,32 @@ export default function PlacesAutocompleteInput({
 
   return (
     <div ref={containerRef} className="relative w-full">
-      <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#CBB171] z-10" />
-      <Input
-        value={query}
-        onChange={(e) => handleChange(e.target.value)}
-        onFocus={() => suggestions.length > 0 && !selected && setIsOpen(true)}
-        placeholder={placeholder}
-        disabled={disabled}
-        autoComplete="off"
+      <div
         className={cn(
-          'pl-10 pr-10 w-full border-[#CBB171]/30 focus:border-[#224D62] focus:ring-[#224D62]/20 transition-all',
-          hasError && 'border-red-300 focus:border-red-500 bg-red-50/50',
-          selected && 'border-[#CBB171] bg-[#CBB171]/5',
+          'border border-gray-200 bg-gray-50 dark:bg-gray-900 rounded-full flex py-2 px-4 items-center group transition-colors focus-within:border-[#1FA89B]',
+          hasError && 'border-red-300 focus-within:border-red-500',
+          disabled && 'opacity-60',
         )}
-      />
-
-      {isLoading && (
-        <Loader2 className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#CBB171] animate-spin z-10" />
-      )}
-      {selected && !isLoading && (
-        <CheckCircle className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#CBB171] z-10" />
-      )}
+      >
+        <Search
+          size={22}
+          className="text-gray-400 group-focus-within:stroke-[#1FA89B] transition-colors shrink-0"
+        />
+        <Input
+          value={query}
+          onChange={(e) => handleChange(e.target.value)}
+          onFocus={() => suggestions.length > 0 && !selected && setIsOpen(true)}
+          placeholder={placeholder}
+          disabled={disabled}
+          autoComplete="off"
+          className="border-none shadow-none focus-visible:ring-0 placeholder:text-gray-400 dark:text-white dark:placeholder:text-gray-500 bg-transparent flex-1 ml-2"
+        />
+        {isLoading && <Loader2 className="w-4 h-4 text-[#1FA89B] animate-spin shrink-0" />}
+        {selected && !isLoading && <CheckCircle className="w-4 h-4 text-[#1FA89B] shrink-0" />}
+      </div>
 
       {showDropdown && (
-        <Card className="absolute top-full left-0 right-0 mt-1 z-20 border border-[#CBB171]/30 shadow-lg w-full max-h-64 overflow-y-auto">
+        <Card className="absolute top-full left-0 right-0 mt-1 z-20 border border-gray-200 shadow-lg w-full max-h-64 overflow-y-auto rounded-2xl">
           <CardContent className="p-2">
             {suggestions.length > 0 ? (
               <div className="space-y-1">
@@ -137,13 +139,13 @@ export default function PlacesAutocompleteInput({
                     type="button"
                     variant="ghost"
                     size="sm"
-                    className="w-full justify-start text-left hover:bg-[#224D62]/5 text-sm p-3 h-auto"
+                    className="w-full justify-start text-left hover:bg-[#ebf6f5] text-sm p-3 h-auto rounded-xl"
                     onClick={() => handlePick(s)}
                   >
                     <div className="flex items-start space-x-2 w-full">
-                      <MapPin className="w-4 h-4 text-[#CBB171] mt-0.5 flex-shrink-0" />
+                      <MapPin className="w-4 h-4 text-[#1FA89B] mt-0.5 flex-shrink-0" />
                       <div className="text-left">
-                        <div className="font-medium text-[#224D62]">{s.mainText}</div>
+                        <div className="font-medium text-gray-800 dark:text-white">{s.mainText}</div>
                         {s.secondaryText && (
                           <div className="text-xs text-gray-500">{s.secondaryText}</div>
                         )}
