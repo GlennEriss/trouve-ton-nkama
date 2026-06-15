@@ -30,6 +30,8 @@ export const routes = {
         my_balance_history: '/my-balance/history',
         my_balance_recharge: '/my-balance/recharge',
         verify_phone: '/verify-phone',
+        advertising: '/advertising',
+        advertising_create: '/advertising/create',
     },
     public: {
         signinSignup: '/signin-signup',

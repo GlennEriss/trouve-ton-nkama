@@ -1,6 +1,7 @@
 import type { Metadata } from 'next'
 import React from 'react'
 import Link from 'next/link'
+import { routes } from '@/constantes/routes'
 import { MapPin, Eye, Megaphone, BadgeCheck, MessageCircle } from 'lucide-react'
 
 export const metadata: Metadata = {
@@ -63,15 +64,24 @@ export default function AdvertisePage() {
           Restaurant, boutique, garage, école, événement… Mettez votre publicité
           devant une audience locale et ciblée, à un tarif abordable.
         </p>
-        <a
-          href={WHATSAPP_LINK}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="inline-flex items-center gap-2 rounded-full bg-[#1FA89B] px-6 py-3 font-semibold text-white shadow-lg transition hover:bg-[#188a7f]"
-        >
-          <MessageCircle className="w-5 h-5" />
-          Lancer ma pub sur WhatsApp
-        </a>
+        <div className="flex flex-col items-center justify-center gap-3 sm:flex-row">
+          <Link
+            href={routes.protected.advertising}
+            className="inline-flex items-center gap-2 rounded-full bg-[#1FA89B] px-6 py-3 font-semibold text-white shadow-lg transition hover:bg-[#188a7f]"
+          >
+            <Megaphone className="w-5 h-5" />
+            Créer ma pub en ligne
+          </Link>
+          <a
+            href={WHATSAPP_LINK}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center gap-2 rounded-full border border-[#1FA89B] px-6 py-3 font-semibold text-[#1FA89B] transition hover:bg-[#1FA89B]/5"
+          >
+            <MessageCircle className="w-5 h-5" />
+            Ou nous écrire sur WhatsApp
+          </a>
+        </div>
       </section>
 
       {/* Bénéfices */}

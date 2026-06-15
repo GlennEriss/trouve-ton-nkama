@@ -7,12 +7,11 @@ import { useCurrentUser } from '@/hooks/use-current-user'
 import CarouselPropertyType from './CarouselPropertyType'
 import PropertyByProvince from './PropertyByProvince'
 import FeaturedSection from './FeaturedSection'
-import SponsoredSlot from '@/components/ads/SponsoredSlot'
-import { ADSENSE_SLOTS } from '@/lib/ads/config'
 import TrendingSection from './TrendingSection'
 import RecentSection from './RecentSection'
 import { motion, useReducedMotion } from 'framer-motion'
 import { trackingEvents, useTrackEvent } from '@/features/analytics/tracking'
+import HomeHeroSponsoredSwap from './HomeHeroSponsoredSwap'
 
 const detailssection2 = [
   {
@@ -70,52 +69,12 @@ export default function HomePageDesktopComponent() {
       </div>
 
       <Navbar />
-      <motion.section
-        className='mt-5 bg-gradient-to-r h-[330px] xl:h-[430px] from-[#C1DEE8] to-[#FBD9B9] p-8 rounded-xl flex xl:items-center relative'
-        {...getRevealProps(0.05)}
-      >
-        <div className='flex flex-col gap-3 max-w-3xl lg:gap-5 xl:ml-10'>
-          <span className="text-base text-[#146B67] font-medium">
-            La référence immobilière au Gabon
-          </span>
-          <h1 className="text-3xl xl:text-4xl font-bold leading-tight">
-            Trouvez <br className='lg:hidden' /> le logement idéal ou <br />
-            <span className="text-[#146B67]">développez<br /> votre activité immobilière</span>
-          </h1>
-          <p className="text-base text-gray-700">
-            La première plateforme digitale <br />
-            qui révolutionne l'immobilier au Gabon
-          </p>
-        </div>
-        <motion.div
-          className="absolute -bottom-10 right-0 lg:-bottom-20"
-          animate={shouldReduceMotion ? {} : { y: [0, -8, 0] }}
-          transition={
-            shouldReduceMotion
-              ? {}
-              : { duration: 3.6, repeat: Infinity, ease: 'easeInOut' }
-          }
-        >
-          <Image
-            src="/assets/home-page/Group-2.webp"
-            alt="Home Page Desktop Component"
-            width={0}
-            height={0}
-            className="object-contain w-[350px] h-[350px] lg:w-[450px] lg:h-[450px] xl:w-[550px] xl:h-[550px]"
-          />
-        </motion.div>
-      </motion.section>
+      <motion.div {...getRevealProps(0.05)}>
+        <HomeHeroSponsoredSwap reduceMotion={shouldReduceMotion} />
+      </motion.div>
       <motion.section className='mb-8 mt-10' {...getRevealProps(0.08)}>
         <FeaturedSection />
       </motion.section>
-      <section className='mb-8'>
-        <SponsoredSlot
-          placement="home"
-          surface="card"
-          fallbackSlot={ADSENSE_SLOTS.footer}
-          fallbackSlotKey="home-desktop"
-        />
-      </section>
       {/* <section className='mt-10 lg:my-20'>
         <h1 className="text-xl lg:text-2xl xl:text-3xl font-bold leading-tight text-center text-[#146B67] dark:text-[#1FA89B]">
           Développez votre activité immobilière en toute simplicité.
