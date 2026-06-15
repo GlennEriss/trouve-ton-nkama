@@ -64,7 +64,7 @@ async function main() {
       ctaLabel: 'Commander sur WhatsApp',
       ctaUrl,
     },
-    placements: ['search_infeed'],
+    placements: ['search_infeed', 'property_detail', 'home', 'immobilier_infeed'],
     targeting: null,
     startDate: now,
     endDate: end,

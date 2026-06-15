@@ -17,9 +17,10 @@ export default function ImmobilierPropertyCardsGrid({ properties }: ImmobilierPr
 
     const items: Array<
       | { type: 'property'; property: LandingPropertyCard }
-      | { type: 'ad'; key: string }
+      | { type: 'ad'; key: string; adIndex: number }
     > = [];
 
+    let adIndex = 0;
     properties.forEach((property, index) => {
       items.push({ type: 'property', property });
 
@@ -32,7 +33,7 @@ export default function ImmobilierPropertyCardsGrid({ properties }: ImmobilierPr
         (index - FIRST_AD_AFTER_INDEX) % AD_INTERVAL === 0;
 
       if (isFirstAdPosition || isRecurringPosition) {
-        items.push({ type: 'ad', key: `immobilier-${property.id}-${index}` });
+        items.push({ type: 'ad', key: `immobilier-${property.id}-${index}`, adIndex: adIndex++ });
       }
     });
 
@@ -57,6 +58,7 @@ export default function ImmobilierPropertyCardsGrid({ properties }: ImmobilierPr
           <SponsoredSlot
             key={`ad-${entry.key}`}
             placement="immobilier_infeed"
+            rotationIndex={entry.adIndex}
             className="sm:col-span-2 lg:col-span-3 xl:col-span-4"
             fallbackSlot={ADSENSE_SLOTS.immobilierInline}
             fallbackSlotKey={entry.key}

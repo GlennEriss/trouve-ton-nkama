@@ -9,9 +9,9 @@ export const metadata: Metadata = {
     "Faites la promotion de votre entreprise, marque ou service auprès d'une audience ciblée au Gabon. Forfaits simples et abordables sur Trouve Ton Nkama.",
 }
 
-// Numéro de contact configurable (fallback démo). Voir .env.local.
+// Numéro de contact configurable via env, sinon le numéro officiel (+241 06 84 43 05).
 const WHATSAPP =
-  process.env.NEXT_PUBLIC_CONTACT_WHATSAPP || '24106000000'
+  process.env.NEXT_PUBLIC_CONTACT_WHATSAPP || '24106844305'
 const WHATSAPP_LINK = `https://wa.me/${WHATSAPP}?text=${encodeURIComponent(
   'Bonjour, je souhaite faire de la publicité sur Trouve Ton Nkama.',
 )}`

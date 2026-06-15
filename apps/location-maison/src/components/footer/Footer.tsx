@@ -75,6 +75,9 @@ export default function Footer({ isHide = false }: Readonly<{ isHide?: boolean }
                                 <a href={routes.public.guide_immobilier_gabon} className="hover:underline py-1">Guide Immobilier</a>
                             </li>
                             <li>
+                                <a href={routes.public.advertise} className="hover:underline py-1">Faire de la pub</a>
+                            </li>
+                            <li>
                                 <a href={routes.public.confidentiality} className="hover:underline py-1">Politique de confidentialité</a>
                             </li>
                             <li>

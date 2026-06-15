@@ -135,9 +135,10 @@ export default function SearchMobilePage() {
 
         const results: Array<
             | { type: 'property'; item: any }
-            | { type: 'ad'; key: string }
+            | { type: 'ad'; key: string; adIndex: number }
         > = [];
 
+        let adIndex = 0;
         items.forEach((item, index) => {
             results.push({ type: 'property', item });
 
@@ -150,7 +151,7 @@ export default function SearchMobilePage() {
                 (index - FIRST_AD_AFTER_INDEX) % AD_INTERVAL === 0;
 
             if (isFirstAdPosition || isRecurringPosition) {
-                results.push({ type: 'ad', key: `mobile-${index}` });
+                results.push({ type: 'ad', key: `mobile-${index}`, adIndex: adIndex++ });
             }
         });
 
@@ -279,6 +280,7 @@ export default function SearchMobilePage() {
                                                 placement="search_infeed"
                                                 province={province}
                                                 city={city}
+                                                rotationIndex={entry.adIndex}
                                                 className="sm:col-span-2 lg:col-span-5 xl:col-span-6"
                                                 fallbackSlot={ADSENSE_SLOTS.searchInline}
                                                 fallbackSlotKey={`search-mobile-${entry.key}`}
