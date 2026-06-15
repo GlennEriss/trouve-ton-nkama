@@ -50,7 +50,7 @@ function mapCampaign(id: string, data: Record<string, unknown>): AdCampaign {
   const metrics = (data.metrics as Record<string, unknown>) ?? {};
   return {
     id,
-    advertiserId: String(data.advertiserId ?? ""),
+    advertiserId: typeof data.advertiserId === "string" && data.advertiserId.trim() ? data.advertiserId : null,
     title: String(data.title ?? ""),
     creative: (data.creative as AdCampaign["creative"]) ?? { imageURL: "" },
     placements: (data.placements as AdCampaign["placements"]) ?? [],
@@ -117,7 +117,7 @@ export async function createCampaign(input: CreateAdCampaignInput): Promise<AdCa
   const db = getFirebaseAdminDb();
   const ref = db.collection(AD_CAMPAIGNS_COLLECTION).doc();
   await ref.set({
-    advertiserId: input.advertiserId,
+    advertiserId: input.advertiserId?.trim() || null,
     title: input.title,
     creative: input.creative,
     placements: input.placements,

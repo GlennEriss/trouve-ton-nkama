@@ -40,7 +40,6 @@ export async function listAdvertisers(): Promise<ListAdvertisersResult> {
 /** ===================== Campaigns ===================== */
 
 export async function createCampaign(input: CreateAdCampaignInput): Promise<AdCampaign> {
-  if (!input.advertiserId) throw new Error("AD_CAMPAIGN_ADVERTISER_REQUIRED");
   if (!input.title?.trim()) throw new Error("AD_CAMPAIGN_INVALID_TITLE");
   if (!input.creative?.imageURL?.trim()) throw new Error("AD_CAMPAIGN_INVALID_CREATIVE");
   assertValidPlacements(input.placements);

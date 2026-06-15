@@ -34,7 +34,7 @@ type Advertiser = { id: string; name: string; businessName?: string };
 
 type Campaign = {
   id: string;
-  advertiserId: string;
+  advertiserId?: string | null;
   title: string;
   placements: AdPlacement[];
   status: string;
@@ -122,7 +122,7 @@ export default function AdvertisingDashboardPage() {
 
   const advertiserName = useMemo(() => {
     const map = new Map(advertisers.map((a) => [a.id, a.businessName || a.name]));
-    return (id: string) => map.get(id) ?? "—";
+    return (id?: string | null) => (id ? map.get(id) ?? id : "Annonceur externe");
   }, [advertisers]);
 
   return (
@@ -296,7 +296,7 @@ function NewCampaignDialog({ advertisers, onDone, onError }: { advertisers: Adve
       postJson(
         "/api/admin/v1/advertising/campaigns",
         {
-          advertiserId,
+          advertiserId: advertiserId || null,
           title,
           creative: { imageURL, imagePATH: imagePATH || undefined, ctaUrl: ctaUrl || undefined, headline: headline || undefined },
           placements,
@@ -309,18 +309,21 @@ function NewCampaignDialog({ advertisers, onDone, onError }: { advertisers: Adve
     onError,
   });
 
-  const valid = advertiserId && title.trim().length >= 2 && imageURL.trim() && placements.length > 0 && startDate && endDate;
+  const valid = title.trim().length >= 2 && imageURL.trim() && placements.length > 0 && startDate && endDate;
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger render={<Button size="sm" disabled={advertisers.length === 0} />}>Nouvelle campagne</DialogTrigger>
+      <DialogTrigger render={<Button size="sm" />}>Nouvelle campagne</DialogTrigger>
       <DialogContent>
         <DialogHeader><DialogTitle>Nouvelle campagne</DialogTitle></DialogHeader>
         <div className="space-y-3">
           <select className="w-full rounded-md border px-3 py-2 text-sm" value={advertiserId} onChange={(e) => setAdvertiserId(e.target.value)}>
-            <option value="">— Annonceur * —</option>
+            <option value="">— Aucun annonceur plateforme (externe) —</option>
             {advertisers.map((a) => (<option key={a.id} value={a.id}>{a.businessName || a.name}</option>))}
           </select>
+          <p className="text-xs text-slate-500">
+            Optionnel : laisse vide si la publicité vient d'une personne ou d'une entreprise externe à la plateforme.
+          </p>
           <Input placeholder="Titre de la campagne *" value={title} onChange={(e) => setTitle(e.target.value)} />
           <div className="space-y-2">
             <label className="text-xs text-slate-500">Visuel de la pub *</label>

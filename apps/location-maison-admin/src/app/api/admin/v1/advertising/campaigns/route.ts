@@ -27,7 +27,10 @@ const creativeSchema = z
 
 const createSchema = z
   .object({
-    advertiserId: z.string().trim().min(1),
+    advertiserId: z.preprocess(
+      (value) => (typeof value === "string" && value.trim() === "" ? null : value),
+      z.string().trim().min(1).nullable().optional(),
+    ),
     title: z.string().trim().min(2).max(160),
     creative: creativeSchema,
     placements: z.array(placementEnum).min(1).max(4),

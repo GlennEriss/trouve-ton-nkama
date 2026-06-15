@@ -74,7 +74,7 @@ export type Advertiser = {
 
 export type AdCampaign = {
   id: string;
-  advertiserId: string;
+  advertiserId?: string | null;
   title: string;
   creative: AdCreative;
   placements: AdPlacement[];
@@ -107,7 +107,7 @@ export type ListAdvertisersResult = {
 };
 
 export type CreateAdCampaignInput = {
-  advertiserId: string;
+  advertiserId?: string | null;
   title: string;
   creative: AdCreative;
   placements: AdPlacement[];
