@@ -259,6 +259,8 @@ function NewCampaignDialog({ advertisers, onDone, onError }: { advertisers: Adve
   const [advertiserId, setAdvertiserId] = useState("");
   const [title, setTitle] = useState("");
   const [imageURL, setImageURL] = useState("");
+  const [imagePATH, setImagePATH] = useState("");
+  const [uploading, setUploading] = useState(false);
   const [ctaUrl, setCtaUrl] = useState("");
   const [headline, setHeadline] = useState("");
   const [placements, setPlacements] = useState<AdPlacement[]>(["search_infeed"]);
@@ -268,6 +270,27 @@ function NewCampaignDialog({ advertisers, onDone, onError }: { advertisers: Adve
   const toggle = (p: AdPlacement) =>
     setPlacements((prev) => (prev.includes(p) ? prev.filter((x) => x !== p) : [...prev, p]));
 
+  const handleUpload = async (file: File) => {
+    setUploading(true);
+    try {
+      const fd = new FormData();
+      fd.append("file", file);
+      const res = await fetch("/api/admin/v1/advertising/upload", { method: "POST", body: fd });
+      const payload = (await res.json()) as
+        | { success: true; data: { imageURL: string; imagePATH: string } }
+        | { success: false; error?: { message?: string } };
+      if (!res.ok || !payload.success) {
+        throw new Error(payload.success ? "Échec de l'upload." : payload.error?.message || "Échec de l'upload.");
+      }
+      setImageURL(payload.data.imageURL);
+      setImagePATH(payload.data.imagePATH);
+    } catch (e) {
+      onError(e);
+    } finally {
+      setUploading(false);
+    }
+  };
+
   const mutation = useMutation({
     mutationFn: () =>
       postJson(
@@ -275,7 +298,7 @@ function NewCampaignDialog({ advertisers, onDone, onError }: { advertisers: Adve
         {
           advertiserId,
           title,
-          creative: { imageURL, ctaUrl: ctaUrl || undefined, headline: headline || undefined },
+          creative: { imageURL, imagePATH: imagePATH || undefined, ctaUrl: ctaUrl || undefined, headline: headline || undefined },
           placements,
           startDate: new Date(startDate).toISOString(),
           endDate: new Date(endDate).toISOString(),
@@ -299,7 +322,21 @@ function NewCampaignDialog({ advertisers, onDone, onError }: { advertisers: Adve
             {advertisers.map((a) => (<option key={a.id} value={a.id}>{a.businessName || a.name}</option>))}
           </select>
           <Input placeholder="Titre de la campagne *" value={title} onChange={(e) => setTitle(e.target.value)} />
-          <Input placeholder="URL du visuel (image) *" value={imageURL} onChange={(e) => setImageURL(e.target.value)} />
+          <div className="space-y-2">
+            <label className="text-xs text-slate-500">Visuel de la pub *</label>
+            <input
+              type="file"
+              accept="image/png,image/jpeg,image/webp,image/gif"
+              disabled={uploading}
+              onChange={(e) => { const f = e.target.files?.[0]; if (f) void handleUpload(f); }}
+              className="block w-full text-sm text-slate-600 file:mr-3 file:rounded-md file:border-0 file:bg-slate-100 file:px-3 file:py-1.5 file:text-sm"
+            />
+            {uploading ? <p className="text-xs text-slate-500">Upload en cours…</p> : null}
+            {imageURL ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img src={imageURL} alt="Aperçu" className="h-24 w-full rounded object-cover" />
+            ) : null}
+          </div>
           <Input placeholder="Texte d'accroche" value={headline} onChange={(e) => setHeadline(e.target.value)} />
           <Input placeholder="Lien CTA (https / wa.me / tel:)" value={ctaUrl} onChange={(e) => setCtaUrl(e.target.value)} />
           <div className="flex flex-wrap gap-2">
