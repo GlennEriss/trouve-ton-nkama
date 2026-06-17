@@ -20,6 +20,8 @@ export default function Footer({ isHide = false }: Readonly<{ isHide?: boolean }
         routes.public.passwordResetRequest,
         routes.public.reset_password,
         routes.public.passwordResetFailure,
+        routes.protected.advertising,
+        routes.protected.advertising_create,
     ];
     const hideByRoute = isHide || hiddenFooterRoutes.includes(pathname) || isPropertyFormFlowPath(pathname)
     const shouldRenderFooterAd =
