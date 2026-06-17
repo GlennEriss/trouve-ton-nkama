@@ -153,16 +153,28 @@ export async function GET() {
       .where('createdBy', '==', uid)
       .get()
 
-    const toIso = (v: any) =>
-      v?.toMillis ? new Date(v.toMillis()).toISOString() : v?.seconds ? new Date(v.seconds * 1000).toISOString() : null
+    const toMs = (v: any) =>
+      v?.toMillis ? v.toMillis() : typeof v?.seconds === 'number' ? v.seconds * 1000 : 0
+    const toIso = (v: any) => {
+      const ms = toMs(v)
+      return ms ? new Date(ms).toISOString() : null
+    }
+
+    const now = Date.now()
+    const expired: string[] = []
 
     const campaigns = snap.docs
       .map((d) => {
         const data = d.data()
+        const rawStatus = data.status ?? 'draft'
+        const endMs = toMs(data.endDate)
+        // Statut effectif : une campagne dont la date de fin est passée est terminée.
+        const isExpired = (rawStatus === 'active' || rawStatus === 'scheduled') && endMs > 0 && endMs < now
+        if (isExpired) expired.push(d.id)
         return {
           id: d.id,
           title: data.title ?? '',
-          status: data.status ?? 'draft',
+          status: isExpired ? 'ended' : rawStatus,
           placements: data.placements ?? [],
           imageURL: data.creative?.imageURL ?? '',
           startDate: toIso(data.startDate),
@@ -173,6 +185,23 @@ export async function GET() {
         }
       })
       .sort((a, b) => b.createdAtMs - a.createdAtMs)
+
+    // Persistance paresseuse : on convergent le statut en base (best-effort).
+    if (expired.length > 0) {
+      try {
+        const { FieldValue } = await import('firebase-admin/firestore')
+        const batch = db.batch()
+        for (const id of expired) {
+          batch.update(db.collection(firebaseCollectionNames.ad_campaigns).doc(id), {
+            status: 'ended',
+            updatedAt: FieldValue.serverTimestamp(),
+          })
+        }
+        await batch.commit()
+      } catch (e) {
+        logger.warn('Lazy expire (self) failed', { e })
+      }
+    }
 
     return NextResponse.json({ success: true, campaigns })
   } catch (error) {
