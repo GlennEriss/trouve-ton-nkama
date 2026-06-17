@@ -1,6 +1,6 @@
 'use client';
 import React from 'react';
-import { Search, Heart, UserCircle, Bell, Plus, LayoutGrid } from 'lucide-react';
+import { Search, Heart, UserCircle, Bell, Plus, LayoutGrid, Megaphone } from 'lucide-react';
 import Link from 'next/link';
 import { routes } from '@/constantes/routes';
 import { usePathname } from 'next/navigation';
@@ -119,6 +119,7 @@ export const BottomNavigation: React.FC = () => {
 
     const userMenu: NavItemDef[] = [
         { title: 'Recherche', icon: Search, link: routes.public.search },
+        { title: 'Pub', icon: Megaphone, link: routes.protected.advertising },
         { title: 'Favoris', icon: Heart, link: routes.protected.favoris },
         { title: 'Notifs', icon: Bell, link: routes.protected.notification_list },
         { title: 'Profil', icon: UserCircle, link: routes.protected.profil },

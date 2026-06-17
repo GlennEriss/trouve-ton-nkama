@@ -1,6 +1,6 @@
 'use client'
 import React from 'react'
-import { ChevronRight, Lock, Settings, ShieldCheck, FileText, Coins, Phone, Building2 } from 'lucide-react';
+import { ChevronRight, Lock, Settings, ShieldCheck, FileText, Coins, Phone, Building2, Megaphone } from 'lucide-react';
 import Link from 'next/link';
 import { useWindowSize } from '@/hooks/useSize';
 import { routes } from '@/constantes/routes';
@@ -8,6 +8,12 @@ import { Separator } from '../ui/separator';
 import { useCurrentUser } from '@/hooks/use-current-user';
 
 const baseMenu = [
+    {
+        title: 'Faire de la pub',
+        icon: Megaphone,
+        link: routes.protected.advertising,
+        description: 'Créez une publicité pour votre entreprise et payez en crédits. Diffusion immédiate sur la plateforme.'
+    },
     {
         title: 'Mon solde',
         icon: Coins,
