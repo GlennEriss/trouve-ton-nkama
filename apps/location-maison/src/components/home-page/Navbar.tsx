@@ -55,6 +55,11 @@ export default function Navbar() {
                 Poster une annonce
               </button>
             </Link>
+            <Link href={routes.protected.advertising}>
+              <button className="border border-[#1FA89B] text-[#146B67] dark:text-[#1FA89B] rounded-lg text-[10px] px-3 py-2 font-semibold hover:bg-[#1FA89B]/10 transition-all duration-300 hover:scale-105">
+                Publicité
+              </button>
+            </Link>
           </div>
           ) : (
             <ButtonLogin />
@@ -156,6 +161,10 @@ const NavigationMenuNavbar = () => {
       link: routes.public.signin,
       label: "Poster une annonce"
     }]),
+    ...(user ? [{
+      link: routes.protected.advertising,
+      label: "Publicité"
+    }] : []),
   ]
   return (
     <NavigationMenu>

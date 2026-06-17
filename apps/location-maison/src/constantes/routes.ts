@@ -30,6 +30,8 @@ export const routes = {
         my_balance_history: '/my-balance/history',
         my_balance_recharge: '/my-balance/recharge',
         verify_phone: '/verify-phone',
+        advertising: '/advertising',
+        advertising_create: '/advertising/create',
     },
     public: {
         signinSignup: '/signin-signup',
@@ -65,6 +67,7 @@ export const routes = {
         blog_conseils_negociation: '/blog/conseils-negociation-immobiliere-gabon',
         blog_demarches_administratives: '/blog/demarches-administratives-immobilier-gabon-2024',
         guide_immobilier_gabon: '/guide-immobilier-gabon',
+        advertise: '/faire-de-la-pub',
         property: '/property',
     },
     public_google: {

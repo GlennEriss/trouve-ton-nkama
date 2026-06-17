@@ -27,6 +27,7 @@ Bienvenue dans la documentation complète de la plateforme de location et vente 
   - Users (index): [feature/users/README.md](./feature/users/README.md)
   - Annonceur (index): [feature/annonceur/README.md](./feature/annonceur/README.md)
   - Recherche IA (index): [feature/recherche-ia/README.md](./feature/recherche-ia/README.md)
+  - Publicité (régie first-party): [feature/publicite/README.md](./feature/publicite/README.md)
 
 ### 🧾 Formulaire d'ajout de logement
 - **[form-ajout-logement/](./form-ajout-logement/)** : Documentation UX/UI et technique du parcours d'ajout

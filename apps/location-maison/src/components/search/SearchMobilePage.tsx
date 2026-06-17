@@ -14,7 +14,7 @@ import { trackingEvents, useTrackEvent } from '@/features/analytics/tracking';
 import { useSession } from 'next-auth/react';
 import SearchWithAIAccessNoticeDialog from './SearchWithAIAccessNoticeDialog';
 import { useTrackSearchAnalytics } from '@/features/analytics/search/hooks/useTrackSearchAnalytics';
-import InlineAdUnit from '@/components/ads/InlineAdUnit';
+import SponsoredSlot from '@/components/ads/SponsoredSlot';
 import { ADSENSE_SLOTS } from '@/lib/ads/config';
 
 export default function SearchMobilePage() {
@@ -135,9 +135,10 @@ export default function SearchMobilePage() {
 
         const results: Array<
             | { type: 'property'; item: any }
-            | { type: 'ad'; key: string }
+            | { type: 'ad'; key: string; adIndex: number }
         > = [];
 
+        let adIndex = 0;
         items.forEach((item, index) => {
             results.push({ type: 'property', item });
 
@@ -150,7 +151,7 @@ export default function SearchMobilePage() {
                 (index - FIRST_AD_AFTER_INDEX) % AD_INTERVAL === 0;
 
             if (isFirstAdPosition || isRecurringPosition) {
-                results.push({ type: 'ad', key: `mobile-${index}` });
+                results.push({ type: 'ad', key: `mobile-${index}`, adIndex: adIndex++ });
             }
         });
 
@@ -274,12 +275,16 @@ export default function SearchMobilePage() {
                                                 <PropertyCard property={entry.item} />
                                             </div>
                                         ) : (
-                                            <InlineAdUnit
+                                            <SponsoredSlot
                                                 key={`ad-${entry.key}`}
+                                                placement="search_infeed"
+                                                province={province}
+                                                city={city}
+                                                rotationIndex={entry.adIndex}
                                                 className="sm:col-span-2 lg:col-span-5 xl:col-span-6"
-                                                slot={ADSENSE_SLOTS.searchInline}
-                                                slotKey={`search-mobile-${entry.key}`}
-                                                compact
+                                                fallbackSlot={ADSENSE_SLOTS.searchInline}
+                                                fallbackSlotKey={`search-mobile-${entry.key}`}
+                                                fallbackCompact
                                             />
                                         )
                                     )}

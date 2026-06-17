@@ -85,7 +85,11 @@ export function useFormAIHandler({
         // Appliquer les données générées au formulaire
         Object.entries(formData).forEach(([key, value]) => {
           if (value !== undefined && value !== null) {
-            form.setValue(key as any, value)
+            form.setValue(key as any, value, {
+              shouldDirty: true,
+              shouldTouch: true,
+              shouldValidate: true,
+            })
           }
         })
 

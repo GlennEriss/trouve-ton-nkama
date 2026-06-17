@@ -9,7 +9,7 @@ import PropertyCard from '../home-page/PropertyCard'
 import { useSearchParams } from 'next/navigation'
 import FilterSearchDesktopPageSection from './FilterSearchDesktopPageSection'
 import { useTrackSearchAnalytics } from '@/features/analytics/search/hooks/useTrackSearchAnalytics';
-import InlineAdUnit from '@/components/ads/InlineAdUnit';
+import SponsoredSlot from '@/components/ads/SponsoredSlot';
 import { ADSENSE_SLOTS } from '@/lib/ads/config';
 
 export default function 
@@ -134,9 +134,10 @@ SearchDesktopPage() {
 
         const results: Array<
             | { type: 'property'; item: any }
-            | { type: 'ad'; key: string }
+            | { type: 'ad'; key: string; adIndex: number }
         > = [];
 
+        let adIndex = 0;
         items.forEach((item, index) => {
             results.push({ type: 'property', item });
 
@@ -149,7 +150,7 @@ SearchDesktopPage() {
                 (index - FIRST_AD_AFTER_INDEX) % AD_INTERVAL === 0;
 
             if (isFirstAdPosition || isRecurringPosition) {
-                results.push({ type: 'ad', key: `desktop-${index}` });
+                results.push({ type: 'ad', key: `desktop-${index}`, adIndex: adIndex++ });
             }
         });
 
@@ -199,11 +200,15 @@ SearchDesktopPage() {
                                                 <PropertyCard property={entry.item} />
                                             </div>
                                         ) : (
-                                            <InlineAdUnit
+                                            <SponsoredSlot
                                                 key={`ad-${entry.key}`}
+                                                placement="search_infeed"
+                                                province={searchParams.get('province')}
+                                                city={searchParams.get('city')}
+                                                rotationIndex={entry.adIndex}
                                                 className="h-full sm:col-span-2 xl:col-span-3"
-                                                slot={ADSENSE_SLOTS.searchInline}
-                                                slotKey={`search-desktop-${entry.key}`}
+                                                fallbackSlot={ADSENSE_SLOTS.searchInline}
+                                                fallbackSlotKey={`search-desktop-${entry.key}`}
                                             />
                                         )
                                     )}

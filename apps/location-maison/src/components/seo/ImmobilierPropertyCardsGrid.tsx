@@ -2,7 +2,7 @@
 
 import React from 'react';
 import PropertyCard from '@/components/home-page/PropertyCard';
-import InlineAdUnit from '@/components/ads/InlineAdUnit';
+import SponsoredSlot from '@/components/ads/SponsoredSlot';
 import { ADSENSE_SLOTS } from '@/lib/ads/config';
 import type { LandingPropertyCard } from '@/lib/seo/algolia-listings';
 
@@ -17,9 +17,10 @@ export default function ImmobilierPropertyCardsGrid({ properties }: ImmobilierPr
 
     const items: Array<
       | { type: 'property'; property: LandingPropertyCard }
-      | { type: 'ad'; key: string }
+      | { type: 'ad'; key: string; adIndex: number }
     > = [];
 
+    let adIndex = 0;
     properties.forEach((property, index) => {
       items.push({ type: 'property', property });
 
@@ -32,7 +33,7 @@ export default function ImmobilierPropertyCardsGrid({ properties }: ImmobilierPr
         (index - FIRST_AD_AFTER_INDEX) % AD_INTERVAL === 0;
 
       if (isFirstAdPosition || isRecurringPosition) {
-        items.push({ type: 'ad', key: `immobilier-${property.id}-${index}` });
+        items.push({ type: 'ad', key: `immobilier-${property.id}-${index}`, adIndex: adIndex++ });
       }
     });
 
@@ -54,12 +55,14 @@ export default function ImmobilierPropertyCardsGrid({ properties }: ImmobilierPr
             <PropertyCard property={entry.property} />
           </div>
         ) : (
-          <InlineAdUnit
+          <SponsoredSlot
             key={`ad-${entry.key}`}
+            placement="immobilier_infeed"
+            rotationIndex={entry.adIndex}
             className="sm:col-span-2 lg:col-span-3 xl:col-span-4"
-            slot={ADSENSE_SLOTS.immobilierInline}
-            slotKey={entry.key}
-            compact
+            fallbackSlot={ADSENSE_SLOTS.immobilierInline}
+            fallbackSlotKey={entry.key}
+            fallbackCompact
           />
         )
       )}
