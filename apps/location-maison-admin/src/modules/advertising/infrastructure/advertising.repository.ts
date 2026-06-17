@@ -45,6 +45,25 @@ function mapAdvertiser(id: string, data: Record<string, unknown>): Advertiser {
   };
 }
 
+function toMillisRaw(value: unknown): number {
+  if (!value) return 0;
+  if (value instanceof Timestamp) return value.toMillis();
+  if (value instanceof Date) return value.getTime();
+  const maybe = value as { toMillis?: () => number; seconds?: number };
+  if (typeof maybe?.toMillis === "function") return maybe.toMillis();
+  if (typeof maybe?.seconds === "number") return maybe.seconds * 1000;
+  return 0;
+}
+
+/** Statut effectif : une campagne dont la date de fin est passée est terminée. */
+function effectiveStatus(rawStatus: AdCampaignStatus, endValue: unknown): AdCampaignStatus {
+  const endMs = toMillisRaw(endValue);
+  if ((rawStatus === "active" || rawStatus === "scheduled") && endMs > 0 && endMs < Date.now()) {
+    return "ended";
+  }
+  return rawStatus;
+}
+
 function mapCampaign(id: string, data: Record<string, unknown>): AdCampaign {
   const billing = (data.billing as Record<string, unknown>) ?? {};
   const metrics = (data.metrics as Record<string, unknown>) ?? {};
@@ -57,7 +76,7 @@ function mapCampaign(id: string, data: Record<string, unknown>): AdCampaign {
     targeting: (data.targeting as AdCampaign["targeting"]) ?? null,
     startDate: toIso(data.startDate),
     endDate: toIso(data.endDate),
-    status: (data.status as AdCampaignStatus) ?? "draft",
+    status: effectiveStatus((data.status as AdCampaignStatus) ?? "draft", data.endDate),
     priority: typeof data.priority === "number" ? data.priority : 0,
     billing: {
       mode: (billing.mode as AdCampaign["billing"]["mode"]) ?? "admin_amount",
@@ -217,6 +236,29 @@ export async function listCampaigns(input: ListAdCampaignsInput): Promise<ListAd
     .orderBy("createdAt", "desc")
     .limit(500)
     .get();
+
+  // Persistance paresseuse : bascule en `ended` les campagnes expirées (best-effort).
+  const expiredIds = snap.docs
+    .filter((d) => {
+      const data = d.data();
+      const raw = (data.status as AdCampaignStatus) ?? "draft";
+      return (raw === "active" || raw === "scheduled") && effectiveStatus(raw, data.endDate) === "ended";
+    })
+    .map((d) => d.id);
+  if (expiredIds.length > 0) {
+    try {
+      const batch = db.batch();
+      for (const id of expiredIds) {
+        batch.update(db.collection(AD_CAMPAIGNS_COLLECTION).doc(id), {
+          status: "ended",
+          updatedAt: FieldValue.serverTimestamp(),
+        });
+      }
+      await batch.commit();
+    } catch {
+      // best-effort
+    }
+  }
 
   let campaigns = snap.docs.map((d) => mapCampaign(d.id, d.data()));
 
