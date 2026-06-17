@@ -116,7 +116,7 @@ export default function AdvertisingPage() {
   const canPublish = !!imageURL && !!selectedPackage && !uploading && !createMutation.isPending
 
   return (
-    <div className="mx-auto max-w-3xl px-5 py-8 space-y-8">
+    <div className="mx-auto max-w-3xl px-5 pt-8 pb-28 md:pb-8 space-y-8">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
           <div className="rounded-full bg-[#1FA89B]/10 p-2"><Megaphone className="h-6 w-6 text-[#1FA89B]" /></div>
