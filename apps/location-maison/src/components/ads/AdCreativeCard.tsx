@@ -16,12 +16,17 @@ export type AdCreativeCardData = Readonly<{
 /**
  * Ratio d'image conseillé/réservé par emplacement. Sert à la fois à réserver la
  * place (anti-CLS) côté serving et à cadrer la preview côté formulaire.
+ *
+ * Ratios LARGES (bannière) : ils scalent avec la largeur du slot, donc le visuel
+ * reste proportionné aussi bien en mobile qu'en desktop. On évite les ratios
+ * hauts (type 4/3) qui exploseraient la hauteur sur les slots in-feed pleine
+ * largeur. L'accueil desktop utilise `fillHeight` (hero) et ignore ce ratio.
  */
-export const PLACEMENT_ASPECT: Record<AdPlacement, string> = {
-  home: 'aspect-[16/9]',
-  search_infeed: 'aspect-[4/3]',
-  immobilier_infeed: 'aspect-[4/3]',
-  property_detail: 'aspect-[3/1]',
+export const PLACEMENT_MEDIA: Record<AdPlacement, string> = {
+  home: 'aspect-[16/6]',
+  search_infeed: 'aspect-[16/5]',
+  immobilier_infeed: 'aspect-[16/5]',
+  property_detail: 'aspect-[16/4]',
 }
 
 type AdCreativeCardProps = Readonly<{
@@ -58,9 +63,12 @@ export default function AdCreativeCard({
       ? 'rounded-xl border border-gray-200 bg-white p-3 shadow-sm dark:border-gray-700 dark:bg-gray-900'
       : ''
 
+  // `object-contain` : le visuel entier reste visible (jamais de contenu rogné),
+  // sur un fond neutre. Le hero (fillHeight) remplit la hauteur ; les autres
+  // emplacements réservent un ratio fixe (anti-CLS).
   const imageClassName = fillHeight
-    ? 'h-full w-full object-cover'
-    : cn('w-full object-cover', PLACEMENT_ASPECT[placement])
+    ? 'h-full w-full object-contain'
+    : cn('w-full bg-gray-50 object-contain dark:bg-gray-800/40', PLACEMENT_MEDIA[placement])
 
   const inner = (
     <>
@@ -76,13 +84,13 @@ export default function AdCreativeCard({
         <div
           className={cn(
             'flex items-center justify-center bg-gray-100 text-xs text-gray-400 dark:bg-gray-800',
-            fillHeight ? 'h-full w-full' : cn('w-full', PLACEMENT_ASPECT[placement]),
+            fillHeight ? 'h-full w-full' : cn('w-full', PLACEMENT_MEDIA[placement]),
           )}
         >
           Visuel de la publicité
         </div>
       )}
-      {(creative.headline || creative.body || creative.ctaLabel) && (
+      {!fillHeight && (creative.headline || creative.body || creative.ctaLabel) && (
         <div className="p-3">
           {creative.headline && (
             <p className="font-semibold text-[#224D62] dark:text-white">{creative.headline}</p>
@@ -100,9 +108,16 @@ export default function AdCreativeCard({
     </>
   )
 
+  const linkClassName = cn('block overflow-hidden rounded-lg', fillHeight && 'h-full')
+
   return (
-    <div className={cn(containerClassName, className)}>
-      <p className="mb-2 text-[10px] font-semibold uppercase tracking-wide text-gray-400">
+    <div className={cn('relative', fillHeight && 'h-full', containerClassName, className)}>
+      <p
+        className={cn(
+          'text-[10px] font-semibold uppercase tracking-wide text-gray-400',
+          fillHeight ? 'absolute left-2 top-2 z-10' : 'mb-2',
+        )}
+      >
         Sponsorisé
       </p>
       {interactive ? (
@@ -111,12 +126,12 @@ export default function AdCreativeCard({
           target="_blank"
           rel="noopener noreferrer sponsored"
           onClick={onClick}
-          className="block overflow-hidden rounded-lg"
+          className={linkClassName}
         >
           {inner}
         </a>
       ) : (
-        <div className="block overflow-hidden rounded-lg">{inner}</div>
+        <div className={linkClassName}>{inner}</div>
       )}
     </div>
   )

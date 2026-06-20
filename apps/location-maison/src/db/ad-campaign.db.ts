@@ -93,10 +93,14 @@ export async function getActiveCampaignForPlacement(
     const top = eligible.filter((c) => (c.priority ?? 0) === topPriority)
     const chosen = top[Math.floor(Math.random() * top.length)]
 
+    // Visuel adapté à l'emplacement si fourni, sinon le visuel par défaut.
+    const asset = chosen.creative?.assets?.[placement]
+    const imageURL = asset?.imageURL || chosen.creative?.imageURL || ''
+
     return {
       campaignId: chosen.id,
       placement,
-      imageURL: chosen.creative?.imageURL ?? '',
+      imageURL,
       headline: chosen.creative?.headline,
       body: chosen.creative?.body,
       ctaLabel: chosen.creative?.ctaLabel,
