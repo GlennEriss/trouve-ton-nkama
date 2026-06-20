@@ -10,6 +10,7 @@ import {
   Home,
   ListChecks,
   MapPinned,
+  Megaphone,
   ScanSearch,
   Shield,
   Tags,
@@ -48,6 +49,7 @@ const navItems = [
   { href: "/dashboard/listings", label: "Annonces", icon: ListChecks },
   { href: "/dashboard/listings/duplicates", label: "Doublons annonces", icon: CopyCheck },
   { href: "/dashboard/finance", label: "Finance crédits", icon: Wallet },
+  { href: "/dashboard/advertising", label: "Publicité", icon: Megaphone },
 ];
 
 export function AppSidebar() {

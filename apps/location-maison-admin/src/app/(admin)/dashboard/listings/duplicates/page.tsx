@@ -1533,7 +1533,7 @@ export default function ListingsDuplicatesDashboardPage() {
                     ))}
                   </select>
                   <p className="text-[11px] text-slate-500">
-                    Utilisé pour "Conserver 1, archiver les autres" et "Archiver la cible".
+                    Utilisé pour &quot;Conserver 1, archiver les autres&quot; et &quot;Archiver la cible&quot;.
                   </p>
                 </div>
                 <div className="space-y-1">

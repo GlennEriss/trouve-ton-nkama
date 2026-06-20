@@ -5,7 +5,7 @@ import type {
   GabonOsmSelectorData,
 } from "@/modules/location-osm/domain/types";
 import type { ApifyListingDraft } from "../domain/types";
-import { buildListingContent } from "./apify-transform.service";
+import { buildListingContent, deLeet } from "./apify-transform.service";
 
 export type GeoSource = "known" | "osm-quarter" | "osm-city" | "google";
 
@@ -27,6 +27,31 @@ type KnownQuarter = {
 const KNOWN_QUARTERS: KnownQuarter[] = [
   { name: "IAI", aliases: ["iai"], city: "Libreville", province: "Estuaire" },
   { name: "Amissa", aliases: ["amissa"], city: "Akanda", province: "Estuaire" },
+  { name: "Balara", aliases: ["balara", "nouvelle route balara"], city: "Port-Gentil", province: "Ogooué-Maritime" },
+  { name: "Quartier Sud", aliases: ["quartier sud"], city: "Port-Gentil", province: "Ogooué-Maritime" },
+  {
+    name: "Alibandeng",
+    aliases: ["alibandeng", "alibending"],
+    city: "Libreville",
+    province: "Estuaire",
+    lat: 0.455897,
+    lon: 9.42752,
+  },
+  {
+    name: "Haut de Gué-Gué",
+    aliases: ["haut de gue gue", "haut de guegue", "gue gue", "guegue"],
+    city: "Libreville",
+    province: "Estuaire",
+    lat: 0.429447,
+    lon: 9.429547,
+  },
+  {
+    name: "Lycée Thuriaf Bantsantsa",
+    aliases: ["lycee bantsantsa", "lycee thuriaf bantsantsa", "thuriaf bantsantsa"],
+    city: "Libreville",
+    province: "Estuaire",
+  },
+  { name: "Okala", aliases: ["okala", "okala canal7", "okala canal 7"], city: "Akanda", province: "Estuaire" },
   {
     name: "Rond-point de la Démocratie",
     aliases: ["rond point de la democratie", "rond point democratie", "carrefour democratie", "la democratie", "democratie"],
@@ -70,8 +95,7 @@ export type GoogleGeocodePayload =
 
 // Same normalization as the platform location selector (accent/punct-insensitive).
 function normalize(value: string): string {
-  return value
-    .normalize("NFKC")
+  return deLeet(value.normalize("NFKC"))
     .normalize("NFD")
     .replace(/[\u0300-\u036f]/g, "")
     .toLowerCase()
@@ -116,6 +140,7 @@ const GENERIC_PLACE_WORDS = new Set([
   "hotel",
   "pharmacie",
   "station",
+  "aeroport",
   "marche central",
   "port",
   "plage",
@@ -190,6 +215,42 @@ function buildQuarterResolution(quarter: GabonOsmQuarterOption, osm: GabonOsmSel
   };
 }
 
+// Common city abbreviations used in posts (normalized aliases → OSM city name).
+const CITY_ALIASES: Array<{ aliases: string[]; city: string }> = [
+  { aliases: ["pog", "p o g"], city: "Port-Gentil" },
+  { aliases: ["lbv"], city: "Libreville" },
+  { aliases: ["fcv"], city: "Franceville" },
+];
+
+function matchCityAlias(text: string, osm: GabonOsmSelectorData): GabonOsmCityOption | null {
+  const haystack = ` ${text} `;
+  for (const { aliases, city } of CITY_ALIASES) {
+    if (aliases.some((alias) => haystack.includes(` ${alias} `))) {
+      const option = cityOf(osm, city);
+      if (option) return option;
+    }
+  }
+  return null;
+}
+
+function buildCityResolution(city: GabonOsmCityOption, osm: GabonOsmSelectorData, street: string): GeoResolution {
+  const province = provinceOf(osm, city.province);
+  return {
+    source: "osm-city",
+    label: city.name,
+    street,
+    city: city.name,
+    province: city.province ?? province?.name ?? "",
+    longitude: city.lon,
+    latitude: city.lat,
+    cityLon: city.lon,
+    cityLat: city.lat,
+    provinceLon: province?.lon,
+    provinceLat: province?.lat,
+    isLocExact: false,
+  };
+}
+
 /**
  * Resolve a draft's location from the local OSM Gabon dataset.
  *
@@ -208,12 +269,17 @@ export function resolveFromOsm(draft: ApifyListingDraft, osm: GabonOsmSelectorDa
   const haystack = ` ${text} `;
 
   // Longest non-generic option name (≥ 4 chars) present as a whole word in `hay`.
-  const longestMatchIn = <T extends { name: string }>(options: T[], hay: string): T | null => {
+  const longestMatchIn = <T extends { name: string }>(options: T[], hay: string, allowGeneric = false): T | null => {
     let best: T | null = null;
     let bestLength = 0;
     for (const option of options) {
       const name = normalize(option.name);
-      if (name.length >= 4 && !GENERIC_PLACE_WORDS.has(name) && hay.includes(` ${name} `) && name.length > bestLength) {
+      if (
+        name.length >= 4 &&
+        (allowGeneric || !GENERIC_PLACE_WORDS.has(name)) &&
+        hay.includes(` ${name} `) &&
+        name.length > bestLength
+      ) {
         best = option;
         bestLength = name.length;
       }
@@ -225,6 +291,22 @@ export function resolveFromOsm(draft: ApifyListingDraft, osm: GabonOsmSelectorDa
   const known = matchKnownQuarter(text);
   if (known) {
     return buildKnownResolution(known, osm);
+  }
+
+  // City aliases in posts are strong signals ("POG" = Port-Gentil). Use them to
+  // constrain ambiguous quarter names like "Aéroport" before considering global
+  // quarter matches elsewhere in Gabon.
+  const aliasCity = matchCityAlias(text, osm);
+  if (aliasCity) {
+    const cityScopedQuarters = osm.quarters.filter((quarter) => {
+      if (quarter.city && normalize(quarter.city) === normalize(aliasCity.name)) return true;
+      return Boolean(quarter.province && aliasCity.province && normalize(quarter.province) === normalize(aliasCity.province));
+    });
+    const scopedQuarter = longestMatchIn<GabonOsmQuarterOption>(cityScopedQuarters, haystack, true);
+    if (scopedQuarter) {
+      return buildQuarterResolution(scopedQuarter, osm);
+    }
+    return buildCityResolution(aliasCity, osm, draft.street);
   }
 
   // (1) When the post names an explicit "quartier …", trust that region: scan the
@@ -245,23 +327,10 @@ export function resolveFromOsm(draft: ApifyListingDraft, osm: GabonOsmSelectorDa
     return buildQuarterResolution(quarter, osm);
   }
 
+  // (3) Otherwise the longest non-generic city name found in the text.
   const city = longestMatchIn<GabonOsmCityOption>(osm.cities, haystack);
   if (city) {
-    const province = provinceOf(osm, city.province);
-    return {
-      source: "osm-city",
-      label: city.name,
-      street: draft.street,
-      city: city.name,
-      province: city.province ?? province?.name ?? "",
-      longitude: city.lon,
-      latitude: city.lat,
-      cityLon: city.lon,
-      cityLat: city.lat,
-      provinceLon: province?.lon,
-      provinceLat: province?.lat,
-      isLocExact: false,
-    };
+    return buildCityResolution(city, osm, draft.street);
   }
 
   return null;

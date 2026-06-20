@@ -34,6 +34,7 @@ Ce dashboard doit permettre:
 - [Matrice Permissions Écran/Action](./MATRICE-PERMISSIONS-ECRANS-ACTIONS.md)
 - [Schéma Données Analytics](./SCHEMA-DONNEES-ANALYTICS.md)
 - [Monétisation Pubs AdSense - Suivi Revenus](./MONETISATION-PUBS-ADSENSE-SPEC.md)
+- [Régie Publicitaire (Concierge) - Pubs d'entreprises externes](./REGIE-PUBLICITAIRE-CONCIERGE-SPEC.md)
 - [Architecture Operationnelle - Import Annonces Reseaux Sociaux](./architecture/ARCHITECTURE-OPERATIONNELLE-IMPORT-ANNONCES-RESEAUX-SOCIAUX.md)
 - [Checklist Implementation RBAC Social Import (backend/frontend)](./architecture/CHECKLIST-IMPLEMENTATION-RBAC-SOCIAL-IMPORT.md)
 - [Sprint Social Import - Backlog implementation (tickets API/UI)](./architecture/SPRINT-SOCIAL-IMPORT-IMPLEMENTATION-BACKLOG.md)

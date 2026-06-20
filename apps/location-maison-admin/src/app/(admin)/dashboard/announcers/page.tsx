@@ -633,6 +633,7 @@ export default function AnnouncersPage() {
   });
 
   useEffect(() => {
+    /* eslint-disable react-hooks/set-state-in-effect -- reset volontaire du brouillon social quand l'annonceur affiché change */
     if (!detailsQuery.data) {
       setSocialProfilesDraft(createEmptySocialProfilesDraft());
       setSocialActionError(null);
@@ -643,14 +644,17 @@ export default function AnnouncersPage() {
     setSocialProfilesDraft(toSocialProfilesDraft(detailsQuery.data.socialProfiles));
     setSocialActionError(null);
     setSocialActionSuccess(null);
+    /* eslint-enable react-hooks/set-state-in-effect */
   }, [detailsQuery.data]);
 
   useEffect(() => {
+    /* eslint-disable react-hooks/set-state-in-effect -- reset volontaire du brouillon quand la sélection est vidée */
     if (!selectedUid) {
       setSocialProfilesDraft(createEmptySocialProfilesDraft());
       setSocialActionError(null);
       setSocialActionSuccess(null);
     }
+    /* eslint-enable react-hooks/set-state-in-effect */
   }, [selectedUid]);
 
   useEffect(() => {
