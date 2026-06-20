@@ -92,9 +92,9 @@ async function fetchJson<T>(url: string, fallback: string): Promise<T> {
   return payload.data;
 }
 
-async function postJson<T>(url: string, body: unknown, fallback: string): Promise<T> {
+async function sendJson<T>(method: "POST" | "PATCH", url: string, body: unknown, fallback: string): Promise<T> {
   const res = await fetch(url, {
-    method: "POST",
+    method,
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(body),
   });
@@ -106,6 +106,9 @@ async function postJson<T>(url: string, body: unknown, fallback: string): Promis
   }
   return payload.data;
 }
+
+const postJson = <T,>(url: string, body: unknown, fallback: string) => sendJson<T>("POST", url, body, fallback);
+const patchJson = <T,>(url: string, body: unknown, fallback: string) => sendJson<T>("PATCH", url, body, fallback);
 
 function formatXAF(value: number) {
   return new Intl.NumberFormat("fr-FR", { maximumFractionDigits: 0 }).format(value) + " FCFA";
@@ -230,6 +233,7 @@ function CampaignActions({ campaign, onDone, onError }: { campaign: Campaign; on
 
   return (
     <div className="flex items-center gap-2">
+      <EditCampaignDialog campaignId={campaign.id} onDone={onDone} onError={onError} />
       <RecordPaymentDialog campaignId={campaign.id} onDone={onDone} onError={onError} />
       {(campaign.status === "draft" || campaign.status === "pending_review" || campaign.status === "paused") && (
         <Button size="sm" onClick={() => publishMutation.mutate()} disabled={publishMutation.isPending}>
@@ -532,5 +536,241 @@ function RecordPaymentDialog({ campaignId, onDone, onError }: { campaignId: stri
         </DialogFooter>
       </DialogContent>
     </Dialog>
+  );
+}
+
+/** ===================== Dialog: modifier une campagne ===================== */
+type FullCampaign = {
+  title: string;
+  placements: AdPlacement[];
+  startDate: string | null;
+  endDate: string | null;
+  creative: {
+    imageURL: string;
+    imagePATH?: string;
+    assets?: AssetMap;
+    headline?: string;
+    body?: string;
+    ctaLabel?: string;
+    ctaUrl?: string;
+  };
+};
+
+function EditCampaignDialog({ campaignId, onDone, onError }: { campaignId: string; onDone: (m: string) => void; onError: (e: unknown) => void }) {
+  const [open, setOpen] = useState(false);
+  const query = useQuery({
+    queryKey: ["advertising", "campaign", campaignId],
+    queryFn: () =>
+      fetchJson<{ campaign: FullCampaign }>(`/api/admin/v1/advertising/campaigns/${campaignId}`, "Impossible de charger la campagne."),
+    enabled: open,
+  });
+
+  return (
+    <Dialog open={open} onOpenChange={setOpen}>
+      <DialogTrigger render={<Button variant="outline" size="sm" />}>Modifier</DialogTrigger>
+      <DialogContent className="max-h-[90vh] grid-rows-[auto_minmax(0,1fr)_auto]">
+        <DialogHeader><DialogTitle>Modifier la campagne</DialogTitle></DialogHeader>
+        {!open ? null : query.isPending ? (
+          <p className="text-sm text-slate-500">Chargement…</p>
+        ) : query.data ? (
+          // `key` : remonte le formulaire avec les valeurs initiales de la campagne
+          // (pas de setState-in-effect ; l'état est initialisé depuis les props).
+          <EditCampaignForm
+            key={campaignId}
+            campaignId={campaignId}
+            campaign={query.data.campaign}
+            onError={onError}
+            onSaved={(m) => { setOpen(false); onDone(m); }}
+          />
+        ) : (
+          <p className="text-sm text-red-600">Impossible de charger la campagne.</p>
+        )}
+      </DialogContent>
+    </Dialog>
+  );
+}
+
+function EditCampaignForm({
+  campaignId,
+  campaign,
+  onError,
+  onSaved,
+}: {
+  campaignId: string;
+  campaign: FullCampaign;
+  onError: (e: unknown) => void;
+  onSaved: (m: string) => void;
+}) {
+  const cr = campaign.creative ?? { imageURL: "" };
+  const [title, setTitle] = useState(campaign.title ?? "");
+  const [imageURL, setImageURL] = useState(cr.imageURL ?? "");
+  const [imagePATH, setImagePATH] = useState(cr.imagePATH ?? "");
+  const [localPreview, setLocalPreview] = useState("");
+  const [uploading, setUploading] = useState(false);
+  const [assets, setAssets] = useState<AssetMap>((cr.assets ?? {}) as AssetMap);
+  const [formatUploading, setFormatUploading] = useState<AdFormatKey | null>(null);
+  const [headline, setHeadline] = useState(cr.headline ?? "");
+  const [body, setBody] = useState(cr.body ?? "");
+  const [ctaLabel, setCtaLabel] = useState(cr.ctaLabel ?? "");
+  const [ctaUrl, setCtaUrl] = useState(cr.ctaUrl ?? "");
+  const [placements, setPlacements] = useState<AdPlacement[]>((campaign.placements ?? []) as AdPlacement[]);
+  const [startDate, setStartDate] = useState(campaign.startDate ? campaign.startDate.slice(0, 10) : "");
+  const [endDate, setEndDate] = useState(campaign.endDate ? campaign.endDate.slice(0, 10) : "");
+
+  const toggle = (p: AdPlacement) =>
+    setPlacements((prev) => (prev.includes(p) ? prev.filter((x) => x !== p) : [...prev, p]));
+
+  const handleUpload = async (file: File) => {
+    setLocalPreview((prev) => { if (prev) URL.revokeObjectURL(prev); return URL.createObjectURL(file); });
+    setImageURL("");
+    setImagePATH("");
+    setUploading(true);
+    try {
+      const data = await uploadAdImage(file);
+      setImageURL(data.imageURL);
+      setImagePATH(data.imagePATH);
+    } catch (e) {
+      onError(e);
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  const handleFormatUpload = async (format: (typeof AD_FORMATS)[number], file: File) => {
+    setFormatUploading(format.key);
+    try {
+      const data = await uploadAdImage(file);
+      setAssets((prev) => {
+        const next = { ...prev };
+        for (const p of format.placements) next[p as AdPlacement] = data;
+        return next;
+      });
+    } catch (e) {
+      onError(e);
+    } finally {
+      setFormatUploading(null);
+    }
+  };
+
+  const clearFormat = (format: (typeof AD_FORMATS)[number]) =>
+    setAssets((prev) => {
+      const next = { ...prev };
+      for (const p of format.placements) delete next[p as AdPlacement];
+      return next;
+    });
+
+  const mutation = useMutation({
+    mutationFn: () =>
+      patchJson(
+        `/api/admin/v1/advertising/campaigns/${campaignId}`,
+        {
+          title: title || undefined,
+          creative: {
+            imageURL,
+            imagePATH: imagePATH || undefined,
+            assets: Object.keys(assets).length ? assets : undefined,
+            headline: headline || undefined,
+            body: body || undefined,
+            ctaLabel: ctaLabel || undefined,
+            ctaUrl: ctaUrl || undefined,
+          },
+          placements,
+          startDate: startDate ? new Date(startDate).toISOString() : undefined,
+          endDate: endDate ? new Date(endDate).toISOString() : undefined,
+        },
+        "Échec de la modification.",
+      ),
+    onSuccess: () => {
+      setLocalPreview((prev) => { if (prev) URL.revokeObjectURL(prev); return ""; });
+      onSaved("Campagne modifiée.");
+    },
+    onError,
+  });
+
+  const valid = title.trim().length >= 2 && imageURL.trim() && placements.length > 0 && Boolean(startDate) && Boolean(endDate);
+
+  return (
+    <>
+      <div className="space-y-3 overflow-y-auto pr-1">
+            <Input placeholder="Titre de la campagne *" value={title} onChange={(e) => setTitle(e.target.value)} />
+            <div className="space-y-2">
+              <label className="text-xs text-slate-500">Visuel par défaut *</label>
+              <input
+                type="file"
+                accept="image/png,image/jpeg,image/webp,image/gif"
+                disabled={uploading}
+                onChange={(e) => { const f = e.target.files?.[0]; if (f) void handleUpload(f); }}
+                className="block w-full text-sm text-slate-600 file:mr-3 file:rounded-md file:border-0 file:bg-slate-100 file:px-3 file:py-1.5 file:text-sm"
+              />
+              {uploading ? <p className="text-xs text-slate-500">Upload en cours…</p> : null}
+              {!uploading && imageURL ? <p className="text-xs font-medium text-emerald-600">✓ Visuel présent</p> : null}
+            </div>
+
+            <div className="space-y-2 rounded-lg border border-slate-200 bg-slate-50/60 p-3">
+              <p className="text-xs font-medium text-slate-600">Visuels par format (optionnel)</p>
+              {AD_FORMATS.map((fmt) => {
+                const imported = fmt.placements.every((p) => assets[p as AdPlacement]);
+                return (
+                  <div key={fmt.key} className="flex flex-wrap items-center gap-2 text-xs">
+                    <div className="min-w-[150px] flex-1">
+                      <span className="font-medium text-slate-700">{fmt.label}</span>
+                      <span className="ml-1 text-slate-400">— {fmt.ratioHint} ({fmt.recommended})</span>
+                    </div>
+                    <input
+                      type="file"
+                      accept="image/png,image/jpeg,image/webp,image/gif"
+                      disabled={formatUploading === fmt.key}
+                      onChange={(e) => { const f = e.target.files?.[0]; if (f) void handleFormatUpload(fmt, f); }}
+                      className="block max-w-[180px] text-[11px] text-slate-600 file:mr-2 file:rounded file:border-0 file:bg-slate-100 file:px-2 file:py-1"
+                    />
+                    {formatUploading === fmt.key ? (
+                      <span className="text-slate-500">Upload…</span>
+                    ) : imported ? (
+                      <button type="button" className="text-emerald-600" onClick={() => clearFormat(fmt)}>✓ présent · retirer</button>
+                    ) : null}
+                  </div>
+                );
+              })}
+            </div>
+
+            <Input placeholder="Texte d'accroche" value={headline} onChange={(e) => setHeadline(e.target.value)} />
+            <Input placeholder="Description courte (optionnel)" value={body} onChange={(e) => setBody(e.target.value)} />
+            <Input placeholder="Texte du bouton (ex: Appeler, WhatsApp, Voir)" value={ctaLabel} onChange={(e) => setCtaLabel(e.target.value)} />
+            <Input placeholder="Lien CTA (https / wa.me / tel:)" value={ctaUrl} onChange={(e) => setCtaUrl(e.target.value)} />
+            <div className="flex flex-wrap gap-2">
+              {ALL_PLACEMENTS.map((p) => (
+                <button
+                  type="button"
+                  key={p}
+                  onClick={() => toggle(p)}
+                  className={`rounded-full border px-3 py-1 text-xs ${placements.includes(p) ? "border-emerald-500 bg-emerald-50 text-emerald-700" : "border-slate-200 text-slate-600"}`}
+                >
+                  {PLACEMENT_LABELS[p]}
+                </button>
+              ))}
+            </div>
+            <div className="flex gap-2">
+              <label className="flex-1 text-xs text-slate-500">Début<Input type="date" value={startDate} onChange={(e) => setStartDate(e.target.value)} /></label>
+              <label className="flex-1 text-xs text-slate-500">Fin<Input type="date" value={endDate} onChange={(e) => setEndDate(e.target.value)} /></label>
+            </div>
+            <div className="space-y-2">
+              <p className="text-xs font-medium text-slate-500">Aperçu</p>
+              <AdCreativePreview
+                creative={{
+                  imageURL: imageURL || localPreview || undefined,
+                  headline: headline || undefined,
+                  body: body || undefined,
+                  ctaLabel: ctaLabel || undefined,
+                  ctaUrl: ctaUrl || undefined,
+                }}
+                assets={assets}
+                placements={placements}
+              />
+            </div>
+      </div>
+      <DialogFooter>
+        <Button onClick={() => mutation.mutate()} disabled={mutation.isPending || !valid}>Enregistrer</Button>
+      </DialogFooter>
+    </>
   );
 }
