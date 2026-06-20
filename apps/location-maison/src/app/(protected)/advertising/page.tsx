@@ -12,6 +12,7 @@ import { useCurrentUser } from '@/hooks/use-current-user'
 import { useToast } from '@/hooks/use-toast'
 import { useRecharge } from '@/providers/RechargeProvider'
 import { AD_PACKAGES } from '@/constantes/ad-packages'
+import AdCreativePreview from '@/components/ads/AdCreativePreview'
 
 type MyCampaign = {
   id: string
@@ -46,8 +47,11 @@ export default function AdvertisingPage() {
   const [packageId, setPackageId] = useState('visibility')
   const [imageURL, setImageURL] = useState('')
   const [imagePATH, setImagePATH] = useState('')
+  const [localPreview, setLocalPreview] = useState('')
   const [uploading, setUploading] = useState(false)
   const [headline, setHeadline] = useState('')
+  const [body, setBody] = useState('')
+  const [ctaLabel, setCtaLabel] = useState('')
   const [ctaUrl, setCtaUrl] = useState('')
 
   const selectedPackage = AD_PACKAGES.find((p) => p.id === packageId)
@@ -63,6 +67,13 @@ export default function AdvertisingPage() {
   })
 
   const handleUpload = async (file: File) => {
+    // Aperçu instantané (objet local) le temps que l'upload distant se termine.
+    setLocalPreview((prev) => {
+      if (prev) URL.revokeObjectURL(prev)
+      return URL.createObjectURL(file)
+    })
+    setImageURL('')
+    setImagePATH('')
     setUploading(true)
     try {
       const fd = new FormData()
@@ -86,7 +97,14 @@ export default function AdvertisingPage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           packageId,
-          creative: { imageURL, imagePATH, headline: headline || undefined, ctaUrl: ctaUrl || undefined },
+          creative: {
+            imageURL,
+            imagePATH,
+            headline: headline || undefined,
+            body: body || undefined,
+            ctaLabel: ctaLabel || undefined,
+            ctaUrl: ctaUrl || undefined,
+          },
         }),
       })
       const payload = await res.json()
@@ -100,7 +118,8 @@ export default function AdvertisingPage() {
     },
     onSuccess: () => {
       toast({ title: 'Publicité en ligne 🎉', description: 'Votre campagne est désormais diffusée.', variant: 'success' })
-      setImageURL(''); setImagePATH(''); setHeadline(''); setCtaUrl('')
+      setImageURL(''); setImagePATH(''); setHeadline(''); setBody(''); setCtaLabel(''); setCtaUrl('')
+      setLocalPreview((prev) => { if (prev) URL.revokeObjectURL(prev); return '' })
       void queryClient.invalidateQueries({ queryKey: ['my-ad-campaigns'] })
     },
     onError: (e: any) => {
@@ -165,13 +184,30 @@ export default function AdvertisingPage() {
             className="block w-full text-sm text-gray-600 file:mr-3 file:rounded-md file:border-0 file:bg-gray-100 file:px-3 file:py-1.5"
           />
           {uploading ? <p className="flex items-center gap-2 text-xs text-gray-500"><Loader2 className="h-3 w-3 animate-spin" />Upload…</p> : null}
-          {imageURL ? (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img src={imageURL} alt="Aperçu" className="h-40 w-full rounded-lg object-cover" />
+          {!uploading && imageURL ? <p className="text-xs font-medium text-[#1FA89B]">✓ Visuel importé</p> : null}
+          {!uploading && !imageURL && localPreview ? (
+            <p className="text-xs font-medium text-red-600">L’import du visuel a échoué (l’aperçu est local). Réessaie de choisir le fichier.</p>
           ) : null}
         </div>
         <Input placeholder="Texte d'accroche (ex: -20% ce week-end)" value={headline} onChange={(e) => setHeadline(e.target.value)} />
+        <Input placeholder="Description courte (optionnel)" value={body} onChange={(e) => setBody(e.target.value)} />
+        <Input placeholder="Texte du bouton (ex: Appeler, WhatsApp, Voir)" value={ctaLabel} onChange={(e) => setCtaLabel(e.target.value)} />
         <Input placeholder="Lien au clic (https://… ou wa.me/241…)" value={ctaUrl} onChange={(e) => setCtaUrl(e.target.value)} />
+      </div>
+
+      {/* Aperçu fidèle avant publication */}
+      <div className="space-y-3">
+        <Label className="text-md">3. Aperçu avant publication</Label>
+        <AdCreativePreview
+          creative={{
+            imageURL: imageURL || localPreview || undefined,
+            headline: headline || undefined,
+            body: body || undefined,
+            ctaLabel: ctaLabel || undefined,
+            ctaUrl: ctaUrl || undefined,
+          }}
+          placements={selectedPackage?.placements ?? []}
+        />
       </div>
 
       {/* Publier */}

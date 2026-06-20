@@ -1,16 +1,34 @@
 'use client'
 
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 import Image from 'next/image'
 import { motion, AnimatePresence, type Variants } from 'framer-motion'
-import SponsoredSlot from '@/components/ads/SponsoredSlot'
-import { ADSENSE_SLOTS } from '@/lib/ads/config'
+import AdCreativeCard from '@/components/ads/AdCreativeCard'
+import type { AdCreativePublic } from '@/models/advertising'
 
 type HomeHeroSponsoredSwapProps = Readonly<{
   reduceMotion?: boolean | null
 }>
 
 const SLIDE_DURATION_MS = 7000
+
+function track(event: 'impression' | 'click', campaignId: string) {
+  try {
+    const body = JSON.stringify({ event, campaignId })
+    if (typeof navigator !== 'undefined' && navigator.sendBeacon) {
+      navigator.sendBeacon('/api/advertising/track', new Blob([body], { type: 'application/json' }))
+      return
+    }
+    fetch('/api/advertising/track', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body,
+      keepalive: true,
+    }).catch(() => {})
+  } catch {
+    /* tracking best-effort */
+  }
+}
 
 const slideVariants: Variants = {
   enter: { opacity: 0, y: 18 },
@@ -58,17 +76,18 @@ function PlatformHero({ reduceMotion }: Readonly<{ reduceMotion?: boolean | null
   )
 }
 
-function SponsoredHero() {
+function SponsoredHero({ creative }: Readonly<{ creative: AdCreativePublic }>) {
   return (
     <div className="absolute inset-0 p-6 xl:p-8">
       <div className="flex h-full items-center justify-center">
-        <SponsoredSlot
+        <AdCreativeCard
+          creative={creative}
           placement="home"
           surface="none"
-          fallbackSlot={ADSENSE_SLOTS.footer}
-          fallbackSlotKey="home-desktop-hero"
-          fallbackCompact
-          className="home-hero-sponsored-slot h-full w-full overflow-hidden rounded-xl [&_a]:h-full [&_img]:h-full [&_img]:w-full [&_img]:object-cover"
+          fillHeight
+          interactive
+          onClick={() => track('click', creative.campaignId)}
+          className="home-hero-sponsored-slot h-full w-full overflow-hidden rounded-xl [&_a]:h-full"
         />
       </div>
     </div>
@@ -77,16 +96,47 @@ function SponsoredHero() {
 
 export default function HomeHeroSponsoredSwap({ reduceMotion }: HomeHeroSponsoredSwapProps) {
   const [activeSlide, setActiveSlide] = useState<'platform' | 'sponsored'>('platform')
+  const [creative, setCreative] = useState<AdCreativePublic | null>(null)
+  const impressionSent = useRef(false)
 
+  // Récupère la pub maison de l'accueil. Tant qu'il n'y en a pas, le hero reste
+  // fixé sur la slide plateforme (aucun fallback AdSense vide dans le hero).
   useEffect(() => {
-    if (reduceMotion) return
+    let cancelled = false
+    fetch('/api/advertising/active?placement=home')
+      .then((r) => (r.ok ? r.json() : null))
+      .then((data) => {
+        if (!cancelled) setCreative(data?.creative ?? null)
+      })
+      .catch(() => {})
+    return () => {
+      cancelled = true
+    }
+  }, [])
+
+  // La rotation ne démarre que s'il existe une pub à montrer.
+  useEffect(() => {
+    if (reduceMotion || !creative) return
 
     const interval = window.setInterval(() => {
       setActiveSlide((current) => (current === 'platform' ? 'sponsored' : 'platform'))
     }, SLIDE_DURATION_MS)
 
     return () => window.clearInterval(interval)
-  }, [reduceMotion])
+  }, [reduceMotion, creative])
+
+  // Sans pub, on garde la slide plateforme (et on annule un éventuel swap résiduel).
+  useEffect(() => {
+    if (!creative) setActiveSlide('platform')
+  }, [creative])
+
+  // Impression comptée une fois quand la slide sponsorisée apparaît.
+  useEffect(() => {
+    if (activeSlide === 'sponsored' && creative && !impressionSent.current) {
+      impressionSent.current = true
+      track('impression', creative.campaignId)
+    }
+  }, [activeSlide, creative])
 
   return (
     <section className="relative mt-5 h-[330px] overflow-hidden rounded-xl bg-gradient-to-r from-[#C1DEE8] to-[#FBD9B9] xl:h-[430px]">
@@ -100,10 +150,10 @@ export default function HomeHeroSponsoredSwap({ reduceMotion }: HomeHeroSponsore
           exit={reduceMotion ? undefined : 'exit'}
           transition={{ duration: 0.55, ease: [0.22, 1, 0.36, 1] }}
         >
-          {activeSlide === 'platform' ? (
-            <PlatformHero reduceMotion={reduceMotion} />
+          {activeSlide === 'sponsored' && creative ? (
+            <SponsoredHero creative={creative} />
           ) : (
-            <SponsoredHero />
+            <PlatformHero reduceMotion={reduceMotion} />
           )}
         </motion.div>
       </AnimatePresence>
