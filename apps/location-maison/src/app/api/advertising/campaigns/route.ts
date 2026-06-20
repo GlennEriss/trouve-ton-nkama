@@ -78,6 +78,8 @@ export async function POST(request: Request) {
           imagePATH: typeof creative.imagePATH === 'string' ? creative.imagePATH : '',
           imageURL,
           headline: typeof creative.headline === 'string' ? creative.headline : '',
+          body: typeof creative.body === 'string' ? creative.body : '',
+          ctaLabel: typeof creative.ctaLabel === 'string' ? creative.ctaLabel : '',
           ctaUrl: typeof creative.ctaUrl === 'string' ? creative.ctaUrl : '',
         },
         placements: pkg.placements,

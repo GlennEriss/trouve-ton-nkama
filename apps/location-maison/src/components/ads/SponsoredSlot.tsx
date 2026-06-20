@@ -3,6 +3,7 @@
 import React, { useEffect, useRef, useState } from 'react'
 import { cn } from '@/lib/utils'
 import InlineAdUnit from '@/components/ads/InlineAdUnit'
+import AdCreativeCard from '@/components/ads/AdCreativeCard'
 import type { AdCreativePublic, AdPlacement } from '@/models/advertising'
 
 type SponsoredSlotProps = Readonly<{
@@ -19,9 +20,11 @@ type SponsoredSlotProps = Readonly<{
   /**
    * Rotation pub maison ↔ AdSense. Si fourni (feed multi-slots) : index pair →
    * on tente la pub maison, impair → AdSense. Si absent (emplacement unique) :
-   * tirage 50/50 par affichage. Les deux régies coexistent.
+   * la pub maison est prioritaire et AdSense ne sert que de repli.
    */
   rotationIndex?: number
+  /** Le visuel remplit toute la hauteur du conteneur (hero accueil). */
+  fillHeight?: boolean
 }>
 
 function track(event: 'impression' | 'click', campaignId: string) {
@@ -57,6 +60,7 @@ export default function SponsoredSlot({
   fallbackSlotKey,
   fallbackCompact = false,
   rotationIndex,
+  fillHeight = false,
 }: SponsoredSlotProps) {
   const [creative, setCreative] = useState<AdCreativePublic | null>(null)
   const [loaded, setLoaded] = useState(false)
@@ -126,46 +130,15 @@ export default function SponsoredSlot({
     )
   }
 
-  const containerClassName =
-    surface === 'card'
-      ? 'rounded-xl border border-gray-200 bg-white p-3 shadow-sm'
-      : ''
-
   return (
-    <div className={cn(containerClassName, className)}>
-      <p className="mb-2 text-[10px] font-semibold uppercase tracking-wide text-gray-400">
-        Sponsorisé
-      </p>
-      <a
-        href={creative.ctaUrl || '#'}
-        target="_blank"
-        rel="noopener noreferrer sponsored"
-        onClick={() => track('click', creative.campaignId)}
-        className="block overflow-hidden rounded-lg"
-      >
-        {creative.imageURL ? (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img
-            src={creative.imageURL}
-            alt={creative.headline || 'Publicité'}
-            className="w-full h-auto object-cover"
-            loading="lazy"
-          />
-        ) : null}
-        {(creative.headline || creative.body || creative.ctaLabel) && (
-          <div className="p-3">
-            {creative.headline && (
-              <p className="font-semibold text-[#224D62] dark:text-white">{creative.headline}</p>
-            )}
-            {creative.body && <p className="text-sm text-gray-600 dark:text-gray-300">{creative.body}</p>}
-            {creative.ctaLabel && (
-              <span className="mt-2 inline-block rounded-full bg-[#1FA89B] px-4 py-1.5 text-sm font-medium text-white">
-                {creative.ctaLabel}
-              </span>
-            )}
-          </div>
-        )}
-      </a>
-    </div>
+    <AdCreativeCard
+      creative={creative}
+      placement={placement}
+      surface={surface}
+      className={className}
+      fillHeight={fillHeight}
+      interactive
+      onClick={() => track('click', creative.campaignId)}
+    />
   )
 }
