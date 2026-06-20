@@ -392,7 +392,7 @@ function NewCampaignDialog({ advertisers, onDone, onError }: { advertisers: Adve
             {advertisers.map((a) => (<option key={a.id} value={a.id}>{a.businessName || a.name}</option>))}
           </select>
           <p className="text-xs text-slate-500">
-            Optionnel : laisse vide si la publicité vient d'une personne ou d'une entreprise externe à la plateforme.
+            Optionnel : laisse vide si la publicité vient d&apos;une personne ou d&apos;une entreprise externe à la plateforme.
           </p>
           <Input placeholder="Titre de la campagne *" value={title} onChange={(e) => setTitle(e.target.value)} />
           <div className="space-y-2">

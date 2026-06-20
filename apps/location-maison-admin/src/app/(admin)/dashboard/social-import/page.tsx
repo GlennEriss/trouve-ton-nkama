@@ -1765,7 +1765,7 @@ export default function SocialImportDashboardPage() {
                 <div className="space-y-3">
                   <div className="space-y-1">
                     <p className="text-xs font-medium text-slate-600">
-                      Type d'annonce cible
+                      Type d&apos;annonce cible
                     </p>
                     <select
                       value={candidateTypeDraft}
@@ -1784,7 +1784,7 @@ export default function SocialImportDashboardPage() {
                   </div>
                   <div className="space-y-2 rounded-md border border-slate-200 bg-slate-50 p-3">
                     <p className="text-xs font-semibold text-slate-700">
-                      Attributs actuels de l'annonce (intégral)
+                      Attributs actuels de l&apos;annonce (intégral)
                     </p>
                     <div className="max-h-60 overflow-auto rounded border border-slate-200 bg-white">
                       <table className="w-full text-left text-xs">
@@ -2472,7 +2472,7 @@ export default function SocialImportDashboardPage() {
                             disabled={pendingActionKey !== null}
                             onClick={() => void handleEditCandidateType(candidate)}
                           >
-                            Corriger l'annonce
+                            Corriger l&apos;annonce
                           </Button>
                         ) : null}
                         {canPublishCandidate && candidate.status === "ready_to_publish" ? (
