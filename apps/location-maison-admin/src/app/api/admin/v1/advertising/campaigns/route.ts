@@ -14,10 +14,27 @@ const placementEnum = z.enum(
   AD_PLACEMENTS as [string, ...string[]],
 );
 
+const assetSchema = z
+  .object({
+    imagePATH: z.string().trim().max(500).optional(),
+    imageURL: z.string().trim().url().max(1000),
+  })
+  .strict();
+
 const creativeSchema = z
   .object({
     imagePATH: z.string().trim().max(500).optional(),
     imageURL: z.string().trim().url().max(1000),
+    // Visuels adaptés par emplacement (optionnel).
+    assets: z
+      .object({
+        home: assetSchema.optional(),
+        search_infeed: assetSchema.optional(),
+        immobilier_infeed: assetSchema.optional(),
+        property_detail: assetSchema.optional(),
+      })
+      .strict()
+      .optional(),
     headline: z.string().trim().max(120).optional(),
     body: z.string().trim().max(300).optional(),
     ctaLabel: z.string().trim().max(40).optional(),

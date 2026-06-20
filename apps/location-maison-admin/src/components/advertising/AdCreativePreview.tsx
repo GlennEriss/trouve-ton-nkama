@@ -24,48 +24,68 @@ const PLACEMENT_LABELS: Record<AdPlacement, string> = {
 };
 
 /**
- * Ratio réservé par emplacement — identique au serving côté plateforme
- * (`location-maison` › AdCreativeCard). Garde l'aperçu fidèle au rendu réel.
+ * Hauteur fixe réservée par emplacement — identique au serving côté plateforme
+ * (`location-maison` › AdCreativeCard). Une hauteur fixe (et non un aspect-ratio)
+ * évite que les slots in-feed pleine largeur explosent en hauteur.
  */
-const PLACEMENT_ASPECT: Record<AdPlacement, string> = {
-  home: "aspect-[16/9]",
-  search_infeed: "aspect-[4/3]",
-  immobilier_infeed: "aspect-[4/3]",
-  property_detail: "aspect-[3/1]",
+const PLACEMENT_MEDIA: Record<AdPlacement, string> = {
+  home: "aspect-[16/6]",
+  search_infeed: "aspect-[16/5]",
+  immobilier_infeed: "aspect-[16/5]",
+  property_detail: "aspect-[16/4]",
 };
 
-/** Carte présentationnelle — réplique fidèle du rendu plateforme. */
+/**
+ * Carte présentationnelle — réplique fidèle du rendu plateforme.
+ * `object-contain` : le visuel entier reste visible (jamais rogné). `fillHeight`
+ * = hero accueil (remplit la hauteur sur dégradé, sans bloc texte).
+ */
 function AdCreativeCard({
   creative,
   placement,
   surface,
+  fillHeight = false,
 }: {
   creative: AdCreativeCardData;
   placement: AdPlacement;
   surface: "none" | "card";
+  fillHeight?: boolean;
 }) {
+  const imageClassName = fillHeight
+    ? "h-full w-full object-contain"
+    : cn("w-full bg-slate-50 object-contain", PLACEMENT_MEDIA[placement]);
+
   return (
-    <div className={cn(surface === "card" ? "rounded-xl border border-slate-200 bg-white p-3 shadow-sm" : "")}>
-      <p className="mb-2 text-[10px] font-semibold uppercase tracking-wide text-slate-400">Sponsorisé</p>
-      <div className="block overflow-hidden rounded-lg">
+    <div
+      className={cn(
+        "relative",
+        fillHeight && "h-full",
+        surface === "card" ? "rounded-xl border border-slate-200 bg-white p-3 shadow-sm" : "",
+      )}
+    >
+      <p
+        className={cn(
+          "text-[10px] font-semibold uppercase tracking-wide text-slate-400",
+          fillHeight ? "absolute left-2 top-2 z-10" : "mb-2",
+        )}
+      >
+        Sponsorisé
+      </p>
+      <div className={cn("block overflow-hidden rounded-lg", fillHeight && "h-full")}>
         {creative.imageURL ? (
           // eslint-disable-next-line @next/next/no-img-element
-          <img
-            src={creative.imageURL}
-            alt={creative.headline || "Publicité"}
-            className={cn("w-full object-cover", PLACEMENT_ASPECT[placement])}
-          />
+          <img src={creative.imageURL} alt={creative.headline || "Publicité"} className={imageClassName} />
         ) : (
           <div
             className={cn(
               "flex w-full items-center justify-center bg-slate-100 text-xs text-slate-400",
-              PLACEMENT_ASPECT[placement],
+              fillHeight ? "h-full" : PLACEMENT_MEDIA[placement],
             )}
           >
             Visuel de la publicité
           </div>
         )}
-        {(creative.headline || creative.body || creative.ctaLabel) && (
+        {!fillHeight && (creative.headline || creative.body || creative.ctaLabel) && (
           <div className="p-3">
             {creative.headline && <p className="font-semibold text-[#224D62]">{creative.headline}</p>}
             {creative.body && <p className="text-sm text-slate-600">{creative.body}</p>}
@@ -225,7 +245,14 @@ export default function AdCreativePreview({ creative, placements, className }: A
           <PreviewContext placement={active} device={device}>
             {/* La vraie pub, mise en valeur dans le flux fantôme. */}
             <div className="rounded-lg ring-2 ring-emerald-400/50">
-              <AdCreativeCard creative={creative} placement={active} surface={surface} />
+              {active === "home" ? (
+                // Hero accueil : bannière large sur dégradé, visuel entier (contain).
+                <div className="aspect-[3/1] w-full overflow-hidden rounded-xl bg-linear-to-r from-[#C1DEE8] to-[#FBD9B9]">
+                  <AdCreativeCard creative={creative} placement="home" surface="none" fillHeight />
+                </div>
+              ) : (
+                <AdCreativeCard creative={creative} placement={active} surface={surface} />
+              )}
             </div>
           </PreviewContext>
         </div>

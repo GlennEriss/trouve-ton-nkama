@@ -40,14 +40,48 @@ export type AdBilling = {
   creditsUsed?: number;
 };
 
+export type AdAsset = {
+  imagePATH?: string;
+  imageURL: string;
+};
+
+/** Visuels adaptés par emplacement (optionnel). Repli sur `imageURL` par défaut. */
+export type AdAssets = Partial<Record<AdPlacement, AdAsset>>;
+
 export type AdCreative = {
   imagePATH?: string;
   imageURL: string;
+  assets?: AdAssets;
   headline?: string;
   body?: string;
   ctaLabel?: string;
   ctaUrl?: string;
 };
+
+/**
+ * Regroupement des emplacements par FORME de visuel, pour le formulaire :
+ * l'annonceur fournit un visuel par format, appliqué à tous les emplacements
+ * du groupe. Ratio conseillé indicatif.
+ */
+export type AdFormatKey = "hero" | "infeed" | "detail";
+
+export const AD_FORMATS: ReadonlyArray<{
+  key: AdFormatKey;
+  label: string;
+  ratioHint: string;
+  recommended: string;
+  placements: AdPlacement[];
+}> = [
+  { key: "hero", label: "Bannière accueil", ratioHint: "paysage ~3:1", recommended: "1200×400", placements: ["home"] },
+  {
+    key: "infeed",
+    label: "Bannière in-feed (recherche / immobilier)",
+    ratioHint: "large ~16:5",
+    recommended: "1200×375",
+    placements: ["search_infeed", "immobilier_infeed"],
+  },
+  { key: "detail", label: "Bannière détail annonce", ratioHint: "large ~4:1", recommended: "1200×300", placements: ["property_detail"] },
+];
 
 export type AdTargeting = {
   provinces?: string[];
