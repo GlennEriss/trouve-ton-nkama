@@ -89,6 +89,8 @@ function PreviewContext({
 
 type AdCreativePreviewProps = Readonly<{
   creative: AdCreativeCardData
+  /** Visuels adaptés par emplacement (override du visuel par défaut). */
+  assets?: Partial<Record<AdPlacement, { imageURL: string }>>
   /** Emplacements à prévisualiser (typiquement ceux du forfait/campagne). */
   placements: AdPlacement[]
   className?: string
@@ -102,6 +104,7 @@ type AdCreativePreviewProps = Readonly<{
  */
 export default function AdCreativePreview({
   creative,
+  assets,
   placements,
   className,
 }: AdCreativePreviewProps) {
@@ -113,6 +116,12 @@ export default function AdCreativePreview({
   const [selected, setSelected] = useState<AdPlacement | null>(null)
   // Emplacement actif dérivé : la sélection si encore valide (forfait), sinon le 1er.
   const active = selected && available.includes(selected) ? selected : available[0]
+
+  // Visuel adapté à l'emplacement affiché, sinon le visuel par défaut.
+  const shownCreative: AdCreativeCardData = {
+    ...creative,
+    imageURL: assets?.[active]?.imageURL || creative.imageURL,
+  }
 
   const surface =
     active === 'search_infeed' || active === 'immobilier_infeed' ? 'card' : 'none'
@@ -171,7 +180,7 @@ export default function AdCreativePreview({
                 // Hero accueil : bannière large sur dégradé, visuel entier (contain).
                 <div className="aspect-[3/1] w-full overflow-hidden rounded-xl bg-gradient-to-r from-[#C1DEE8] to-[#FBD9B9]">
                   <AdCreativeCard
-                    creative={creative}
+                    creative={shownCreative}
                     placement="home"
                     surface="none"
                     fillHeight
@@ -181,7 +190,7 @@ export default function AdCreativePreview({
                 </div>
               ) : (
                 <AdCreativeCard
-                  creative={creative}
+                  creative={shownCreative}
                   placement={active}
                   surface={surface}
                   interactive={false}
