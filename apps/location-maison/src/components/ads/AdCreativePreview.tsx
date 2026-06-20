@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useEffect, useState } from 'react'
+import React, { useMemo, useState } from 'react'
 import { Smartphone, Monitor, Search } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import AdCreativeCard, { type AdCreativeCardData } from '@/components/ads/AdCreativeCard'
@@ -105,14 +105,14 @@ export default function AdCreativePreview({
   placements,
   className,
 }: AdCreativePreviewProps) {
-  const available = placements.length > 0 ? placements : (['home'] as AdPlacement[])
+  const available = useMemo(
+    () => (placements.length > 0 ? placements : (['home'] as AdPlacement[])),
+    [placements],
+  )
   const [device, setDevice] = useState<'mobile' | 'desktop'>('mobile')
-  const [active, setActive] = useState<AdPlacement>(available[0])
-
-  // Si le forfait change et retire l'emplacement actif, on retombe sur le premier.
-  useEffect(() => {
-    if (!available.includes(active)) setActive(available[0])
-  }, [available, active])
+  const [selected, setSelected] = useState<AdPlacement | null>(null)
+  // Emplacement actif dérivé : la sélection si encore valide (forfait), sinon le 1er.
+  const active = selected && available.includes(selected) ? selected : available[0]
 
   const surface =
     active === 'search_infeed' || active === 'immobilier_infeed' ? 'card' : 'none'
@@ -125,7 +125,7 @@ export default function AdCreativePreview({
             <button
               key={p}
               type="button"
-              onClick={() => setActive(p)}
+              onClick={() => setSelected(p)}
               className={cn(
                 'rounded-full border px-3 py-1 text-xs transition',
                 active === p
