@@ -10,6 +10,7 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { PageHeader } from "@/components/ui-kit/page-header";
 import { KpiCard } from "@/components/ui-kit/kpi-card";
+import AdCreativePreview from "@/components/advertising/AdCreativePreview";
 import {
   Dialog,
   DialogContent,
@@ -260,9 +261,13 @@ function NewCampaignDialog({ advertisers, onDone, onError }: { advertisers: Adve
   const [title, setTitle] = useState("");
   const [imageURL, setImageURL] = useState("");
   const [imagePATH, setImagePATH] = useState("");
+  const [localPreview, setLocalPreview] = useState("");
   const [uploading, setUploading] = useState(false);
+  const [uploadError, setUploadError] = useState<string | null>(null);
   const [ctaUrl, setCtaUrl] = useState("");
+  const [ctaLabel, setCtaLabel] = useState("");
   const [headline, setHeadline] = useState("");
+  const [body, setBody] = useState("");
   const [placements, setPlacements] = useState<AdPlacement[]>(["search_infeed"]);
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
@@ -271,6 +276,14 @@ function NewCampaignDialog({ advertisers, onDone, onError }: { advertisers: Adve
     setPlacements((prev) => (prev.includes(p) ? prev.filter((x) => x !== p) : [...prev, p]));
 
   const handleUpload = async (file: File) => {
+    // Aperçu instantané le temps que l'upload distant se termine.
+    setLocalPreview((prev) => {
+      if (prev) URL.revokeObjectURL(prev);
+      return URL.createObjectURL(file);
+    });
+    setUploadError(null);
+    setImageURL("");
+    setImagePATH("");
     setUploading(true);
     try {
       const fd = new FormData();
@@ -285,6 +298,7 @@ function NewCampaignDialog({ advertisers, onDone, onError }: { advertisers: Adve
       setImageURL(payload.data.imageURL);
       setImagePATH(payload.data.imagePATH);
     } catch (e) {
+      setUploadError(e instanceof Error ? e.message : "Échec de l'import du visuel.");
       onError(e);
     } finally {
       setUploading(false);
@@ -298,25 +312,43 @@ function NewCampaignDialog({ advertisers, onDone, onError }: { advertisers: Adve
         {
           advertiserId: advertiserId || null,
           title,
-          creative: { imageURL, imagePATH: imagePATH || undefined, ctaUrl: ctaUrl || undefined, headline: headline || undefined },
+          creative: {
+            imageURL,
+            imagePATH: imagePATH || undefined,
+            ctaUrl: ctaUrl || undefined,
+            ctaLabel: ctaLabel || undefined,
+            headline: headline || undefined,
+            body: body || undefined,
+          },
           placements,
           startDate: new Date(startDate).toISOString(),
           endDate: new Date(endDate).toISOString(),
         },
         "Échec de la création.",
       ),
-    onSuccess: () => { setOpen(false); onDone("Campagne créée (brouillon). Pensez à enregistrer le paiement puis publier."); },
+    onSuccess: () => {
+      setOpen(false);
+      setLocalPreview((prev) => { if (prev) URL.revokeObjectURL(prev); return ""; });
+      onDone("Campagne créée (brouillon). Pensez à enregistrer le paiement puis publier.");
+    },
     onError,
   });
 
-  const valid = title.trim().length >= 2 && imageURL.trim() && placements.length > 0 && startDate && endDate;
+  // Le champ « Annonceur » est volontairement optionnel (pub externe).
+  const missing: string[] = [];
+  if (title.trim().length < 2) missing.push("le titre");
+  if (!imageURL.trim()) missing.push("le visuel importé");
+  if (placements.length === 0) missing.push("au moins un emplacement");
+  if (!startDate) missing.push("la date de début");
+  if (!endDate) missing.push("la date de fin");
+  const valid = missing.length === 0;
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger render={<Button size="sm" />}>Nouvelle campagne</DialogTrigger>
-      <DialogContent>
+      <DialogContent className="max-h-[90vh] grid-rows-[auto_minmax(0,1fr)_auto]">
         <DialogHeader><DialogTitle>Nouvelle campagne</DialogTitle></DialogHeader>
-        <div className="space-y-3">
+        <div className="space-y-3 overflow-y-auto pr-1">
           <select className="w-full rounded-md border px-3 py-2 text-sm" value={advertiserId} onChange={(e) => setAdvertiserId(e.target.value)}>
             <option value="">— Aucun annonceur plateforme (externe) —</option>
             {advertisers.map((a) => (<option key={a.id} value={a.id}>{a.businessName || a.name}</option>))}
@@ -335,12 +367,18 @@ function NewCampaignDialog({ advertisers, onDone, onError }: { advertisers: Adve
               className="block w-full text-sm text-slate-600 file:mr-3 file:rounded-md file:border-0 file:bg-slate-100 file:px-3 file:py-1.5 file:text-sm"
             />
             {uploading ? <p className="text-xs text-slate-500">Upload en cours…</p> : null}
-            {imageURL ? (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img src={imageURL} alt="Aperçu" className="h-24 w-full rounded object-cover" />
+            {!uploading && imageURL ? (
+              <p className="text-xs font-medium text-emerald-600">✓ Visuel importé</p>
+            ) : null}
+            {!uploading && !imageURL && localPreview ? (
+              <p className="text-xs font-medium text-red-600">
+                L&apos;import du visuel a échoué (l&apos;aperçu ci-dessous est local). {uploadError ? `Détail : ${uploadError}.` : ""} Réessaie de choisir le fichier.
+              </p>
             ) : null}
           </div>
           <Input placeholder="Texte d'accroche" value={headline} onChange={(e) => setHeadline(e.target.value)} />
+          <Input placeholder="Description courte (optionnel)" value={body} onChange={(e) => setBody(e.target.value)} />
+          <Input placeholder="Texte du bouton (ex: Appeler, WhatsApp, Voir)" value={ctaLabel} onChange={(e) => setCtaLabel(e.target.value)} />
           <Input placeholder="Lien CTA (https / wa.me / tel:)" value={ctaUrl} onChange={(e) => setCtaUrl(e.target.value)} />
           <div className="flex flex-wrap gap-2">
             {ALL_PLACEMENTS.map((p) => (
@@ -358,8 +396,24 @@ function NewCampaignDialog({ advertisers, onDone, onError }: { advertisers: Adve
             <label className="flex-1 text-xs text-slate-500">Début<Input type="date" value={startDate} onChange={(e) => setStartDate(e.target.value)} /></label>
             <label className="flex-1 text-xs text-slate-500">Fin<Input type="date" value={endDate} onChange={(e) => setEndDate(e.target.value)} /></label>
           </div>
+          <div className="space-y-2">
+            <p className="text-xs font-medium text-slate-500">Aperçu avant publication</p>
+            <AdCreativePreview
+              creative={{
+                imageURL: imageURL || localPreview || undefined,
+                headline: headline || undefined,
+                body: body || undefined,
+                ctaLabel: ctaLabel || undefined,
+                ctaUrl: ctaUrl || undefined,
+              }}
+              placements={placements}
+            />
+          </div>
         </div>
-        <DialogFooter>
+        <DialogFooter className="sm:flex-col sm:items-stretch">
+          {!valid ? (
+            <p className="text-xs text-amber-600">Pour publier, il manque encore : {missing.join(", ")}.</p>
+          ) : null}
           <Button onClick={() => mutation.mutate()} disabled={mutation.isPending || !valid}>Créer la campagne</Button>
         </DialogFooter>
       </DialogContent>
