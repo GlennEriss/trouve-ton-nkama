@@ -167,12 +167,26 @@ export default function AdCreativePreview({
           <PreviewContext placement={active} device={device}>
             {/* La vraie pub, mise en valeur dans le flux fantôme. */}
             <div className="rounded-lg ring-2 ring-[#1FA89B]/40">
-              <AdCreativeCard
-                creative={creative}
-                placement={active}
-                surface={surface}
-                interactive={false}
-              />
+              {active === 'home' ? (
+                // Hero accueil : bannière large sur dégradé, visuel entier (contain).
+                <div className="aspect-[3/1] w-full overflow-hidden rounded-xl bg-gradient-to-r from-[#C1DEE8] to-[#FBD9B9]">
+                  <AdCreativeCard
+                    creative={creative}
+                    placement="home"
+                    surface="none"
+                    fillHeight
+                    interactive={false}
+                    className="h-full w-full [&_a]:h-full"
+                  />
+                </div>
+              ) : (
+                <AdCreativeCard
+                  creative={creative}
+                  placement={active}
+                  surface={surface}
+                  interactive={false}
+                />
+              )}
             </div>
           </PreviewContext>
         </div>

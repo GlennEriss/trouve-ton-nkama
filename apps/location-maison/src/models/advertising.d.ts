@@ -42,10 +42,26 @@ export interface AdBilling {
   creditsUsed?: number
 }
 
-/** Visuel + appel à l'action de la pub. */
-export interface AdCreative {
+/** Un visuel hébergé (chemin Storage + URL publique). */
+export interface AdAsset {
   imagePATH: string
   imageURL: string
+}
+
+/**
+ * Visuels spécifiques par emplacement (optionnel). Si un emplacement n'a pas de
+ * visuel dédié, on retombe sur `imageURL`/`imagePATH` (le visuel par défaut).
+ * Plusieurs emplacements de même forme partagent souvent le même fichier.
+ */
+export type AdAssets = Partial<Record<AdPlacement, AdAsset>>
+
+/** Visuel + appel à l'action de la pub. */
+export interface AdCreative {
+  /** Visuel par défaut (fallback si pas de visuel spécifique pour l'emplacement). */
+  imagePATH: string
+  imageURL: string
+  /** Visuels adaptés par emplacement (optionnel). */
+  assets?: AdAssets
   headline?: string
   body?: string
   /** Ex: "Appeler", "WhatsApp", "Voir". */
