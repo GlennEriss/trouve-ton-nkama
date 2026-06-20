@@ -175,6 +175,8 @@ function PreviewContext({
 
 type AdCreativePreviewProps = {
   creative: AdCreativeCardData;
+  /** Visuels adaptés par emplacement (override du visuel par défaut). */
+  assets?: Partial<Record<AdPlacement, { imageURL: string }>>;
   placements: AdPlacement[];
   className?: string;
 };
@@ -184,7 +186,7 @@ type AdCreativePreviewProps = {
  * elle s'affichera. L'admin bascule entre emplacements et entre mobile /
  * desktop avant de publier.
  */
-export default function AdCreativePreview({ creative, placements, className }: AdCreativePreviewProps) {
+export default function AdCreativePreview({ creative, assets, placements, className }: AdCreativePreviewProps) {
   const available = placements.length > 0 ? placements : (["home"] as AdPlacement[]);
   const [device, setDevice] = useState<"mobile" | "desktop">("mobile");
   const [active, setActive] = useState<AdPlacement>(available[0]);
@@ -194,6 +196,12 @@ export default function AdCreativePreview({ creative, placements, className }: A
   }, [available, active]);
 
   const surface = active === "search_infeed" || active === "immobilier_infeed" ? "card" : "none";
+
+  // Visuel adapté à l'emplacement affiché, sinon le visuel par défaut.
+  const shownCreative: AdCreativeCardData = {
+    ...creative,
+    imageURL: assets?.[active]?.imageURL || creative.imageURL,
+  };
 
   return (
     <div className={cn("rounded-2xl border border-slate-200 bg-slate-50 p-4", className)}>
@@ -248,10 +256,10 @@ export default function AdCreativePreview({ creative, placements, className }: A
               {active === "home" ? (
                 // Hero accueil : bannière large sur dégradé, visuel entier (contain).
                 <div className="aspect-[3/1] w-full overflow-hidden rounded-xl bg-linear-to-r from-[#C1DEE8] to-[#FBD9B9]">
-                  <AdCreativeCard creative={creative} placement="home" surface="none" fillHeight />
+                  <AdCreativeCard creative={shownCreative} placement="home" surface="none" fillHeight />
                 </div>
               ) : (
-                <AdCreativeCard creative={creative} placement={active} surface={surface} />
+                <AdCreativeCard creative={shownCreative} placement={active} surface={surface} />
               )}
             </div>
           </PreviewContext>

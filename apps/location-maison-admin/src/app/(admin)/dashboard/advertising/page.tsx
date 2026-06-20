@@ -20,7 +20,25 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 
+import { AD_FORMATS, type AdFormatKey } from "@/modules/advertising/domain/types";
+
 type AdPlacement = "search_infeed" | "property_detail" | "home" | "immobilier_infeed";
+
+type AssetMap = Partial<Record<AdPlacement, { imageURL: string; imagePATH: string }>>;
+
+/** Upload un visuel et renvoie son URL publique + chemin Storage. */
+async function uploadAdImage(file: File): Promise<{ imageURL: string; imagePATH: string }> {
+  const fd = new FormData();
+  fd.append("file", file);
+  const res = await fetch("/api/admin/v1/advertising/upload", { method: "POST", body: fd });
+  const payload = (await res.json()) as
+    | { success: true; data: { imageURL: string; imagePATH: string } }
+    | { success: false; error?: { message?: string } };
+  if (!res.ok || !payload.success) {
+    throw new Error(payload.success ? "Échec de l'upload." : payload.error?.message || "Échec de l'upload.");
+  }
+  return payload.data;
+}
 
 const PLACEMENT_LABELS: Record<AdPlacement, string> = {
   search_infeed: "Recherche (in-feed)",
@@ -269,11 +287,37 @@ function NewCampaignDialog({ advertisers, onDone, onError }: { advertisers: Adve
   const [headline, setHeadline] = useState("");
   const [body, setBody] = useState("");
   const [placements, setPlacements] = useState<AdPlacement[]>(["search_infeed"]);
+  const [assets, setAssets] = useState<AssetMap>({});
+  const [formatUploading, setFormatUploading] = useState<AdFormatKey | null>(null);
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
 
   const toggle = (p: AdPlacement) =>
     setPlacements((prev) => (prev.includes(p) ? prev.filter((x) => x !== p) : [...prev, p]));
+
+  // Upload d'un visuel par FORMAT : appliqué à tous les emplacements du groupe.
+  const handleFormatUpload = async (format: (typeof AD_FORMATS)[number], file: File) => {
+    setFormatUploading(format.key);
+    try {
+      const data = await uploadAdImage(file);
+      setAssets((prev) => {
+        const next = { ...prev };
+        for (const p of format.placements) next[p as AdPlacement] = data;
+        return next;
+      });
+    } catch (e) {
+      onError(e);
+    } finally {
+      setFormatUploading(null);
+    }
+  };
+
+  const clearFormat = (format: (typeof AD_FORMATS)[number]) =>
+    setAssets((prev) => {
+      const next = { ...prev };
+      for (const p of format.placements) delete next[p as AdPlacement];
+      return next;
+    });
 
   const handleUpload = async (file: File) => {
     // Aperçu instantané le temps que l'upload distant se termine.
@@ -286,17 +330,9 @@ function NewCampaignDialog({ advertisers, onDone, onError }: { advertisers: Adve
     setImagePATH("");
     setUploading(true);
     try {
-      const fd = new FormData();
-      fd.append("file", file);
-      const res = await fetch("/api/admin/v1/advertising/upload", { method: "POST", body: fd });
-      const payload = (await res.json()) as
-        | { success: true; data: { imageURL: string; imagePATH: string } }
-        | { success: false; error?: { message?: string } };
-      if (!res.ok || !payload.success) {
-        throw new Error(payload.success ? "Échec de l'upload." : payload.error?.message || "Échec de l'upload.");
-      }
-      setImageURL(payload.data.imageURL);
-      setImagePATH(payload.data.imagePATH);
+      const data = await uploadAdImage(file);
+      setImageURL(data.imageURL);
+      setImagePATH(data.imagePATH);
     } catch (e) {
       setUploadError(e instanceof Error ? e.message : "Échec de l'import du visuel.");
       onError(e);
@@ -315,6 +351,7 @@ function NewCampaignDialog({ advertisers, onDone, onError }: { advertisers: Adve
           creative: {
             imageURL,
             imagePATH: imagePATH || undefined,
+            assets: Object.keys(assets).length ? assets : undefined,
             ctaUrl: ctaUrl || undefined,
             ctaLabel: ctaLabel || undefined,
             headline: headline || undefined,
@@ -328,6 +365,7 @@ function NewCampaignDialog({ advertisers, onDone, onError }: { advertisers: Adve
       ),
     onSuccess: () => {
       setOpen(false);
+      setAssets({});
       setLocalPreview((prev) => { if (prev) URL.revokeObjectURL(prev); return ""; });
       onDone("Campagne créée (brouillon). Pensez à enregistrer le paiement puis publier.");
     },
@@ -358,7 +396,8 @@ function NewCampaignDialog({ advertisers, onDone, onError }: { advertisers: Adve
           </p>
           <Input placeholder="Titre de la campagne *" value={title} onChange={(e) => setTitle(e.target.value)} />
           <div className="space-y-2">
-            <label className="text-xs text-slate-500">Visuel de la pub *</label>
+            <label className="text-xs text-slate-500">Visuel par défaut *</label>
+            <p className="text-[11px] text-slate-400">Utilisé partout où aucun visuel dédié n&apos;est fourni ci-dessous.</p>
             <input
               type="file"
               accept="image/png,image/jpeg,image/webp,image/gif"
@@ -375,6 +414,39 @@ function NewCampaignDialog({ advertisers, onDone, onError }: { advertisers: Adve
                 L&apos;import du visuel a échoué (l&apos;aperçu ci-dessous est local). {uploadError ? `Détail : ${uploadError}.` : ""} Réessaie de choisir le fichier.
               </p>
             ) : null}
+          </div>
+
+          {/* Visuels adaptés par format (optionnel) */}
+          <div className="space-y-2 rounded-lg border border-slate-200 bg-slate-50/60 p-3">
+            <p className="text-xs font-medium text-slate-600">Visuels par format (optionnel)</p>
+            <p className="text-[11px] text-slate-400">
+              Fournis un visuel adapté à chaque forme pour un rendu optimal. Sinon le visuel par défaut est utilisé.
+            </p>
+            {AD_FORMATS.map((fmt) => {
+              const imported = fmt.placements.every((p) => assets[p as AdPlacement]);
+              return (
+                <div key={fmt.key} className="flex flex-wrap items-center gap-2 text-xs">
+                  <div className="min-w-[150px] flex-1">
+                    <span className="font-medium text-slate-700">{fmt.label}</span>
+                    <span className="ml-1 text-slate-400">— {fmt.ratioHint} ({fmt.recommended})</span>
+                  </div>
+                  <input
+                    type="file"
+                    accept="image/png,image/jpeg,image/webp,image/gif"
+                    disabled={formatUploading === fmt.key}
+                    onChange={(e) => { const f = e.target.files?.[0]; if (f) void handleFormatUpload(fmt, f); }}
+                    className="block max-w-[180px] text-[11px] text-slate-600 file:mr-2 file:rounded file:border-0 file:bg-slate-100 file:px-2 file:py-1"
+                  />
+                  {formatUploading === fmt.key ? (
+                    <span className="text-slate-500">Upload…</span>
+                  ) : imported ? (
+                    <button type="button" className="text-emerald-600" onClick={() => clearFormat(fmt)}>
+                      ✓ importé · retirer
+                    </button>
+                  ) : null}
+                </div>
+              );
+            })}
           </div>
           <Input placeholder="Texte d'accroche" value={headline} onChange={(e) => setHeadline(e.target.value)} />
           <Input placeholder="Description courte (optionnel)" value={body} onChange={(e) => setBody(e.target.value)} />
@@ -406,6 +478,7 @@ function NewCampaignDialog({ advertisers, onDone, onError }: { advertisers: Adve
                 ctaLabel: ctaLabel || undefined,
                 ctaUrl: ctaUrl || undefined,
               }}
+              assets={assets}
               placements={placements}
             />
           </div>
