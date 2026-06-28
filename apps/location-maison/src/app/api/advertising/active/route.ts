@@ -1,7 +1,10 @@
 import { NextResponse } from 'next/server'
 import { createLogger } from '@/lib/logger'
 import { handleApiError, jsonApiError } from '@/lib/api/error-response'
-import { getActiveCampaignForPlacement } from '@/db/ad-campaign.db'
+import {
+  getActiveCampaignForPlacement,
+  getActiveCampaignsForPlacement,
+} from '@/db/ad-campaign.db'
 import type { AdPlacement } from '@/models/advertising'
 
 const logger = createLogger('api.advertising.active')
@@ -24,14 +27,25 @@ export async function GET(request: Request) {
   }
 
   try {
-    const creative = await getActiveCampaignForPlacement(placement, {
+    const ctx = {
       province: searchParams.get('province'),
       city: searchParams.get('city'),
-    })
+    }
+    const wantsAll = searchParams.get('all') === '1'
+
+    if (wantsAll) {
+      const creatives = await getActiveCampaignsForPlacement(placement, ctx)
+      const res = NextResponse.json({ creative: creatives[0] ?? null, creatives })
+      res.headers.set('Cache-Control', 'public, s-maxage=60, stale-while-revalidate=120')
+      return res
+    }
+
+    const creative = await getActiveCampaignForPlacement(placement, ctx)
 
     const res = NextResponse.json({ creative })
-    // Cache court côté CDN : la pub maison change peu, on évite de marteler Firestore.
-    res.headers.set('Cache-Control', 'public, s-maxage=60, stale-while-revalidate=120')
+    // Pas de cache ici : la rotation équitable utilise un compteur serveur à
+    // chaque requête. Le mode `all=1` de la home peut rester cacheable.
+    res.headers.set('Cache-Control', 'private, no-store, max-age=0')
     return res
   } catch (error) {
     return handleApiError(error, {

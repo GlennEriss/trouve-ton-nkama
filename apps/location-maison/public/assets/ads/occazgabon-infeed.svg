@@ -1,0 +1,61 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="375" viewBox="0 0 1200 375" role="img" aria-labelledby="title desc">
+  <title id="title">Publicite occazGabon in-feed</title>
+  <desc id="desc">Banniere professionnelle occazGabon pour vendeurs et acheteurs d'occasion.</desc>
+  <defs>
+    <filter id="shadow" x="-12%" y="-16%" width="124%" height="132%">
+      <feDropShadow dx="0" dy="16" stdDeviation="22" flood-color="#0A2928" flood-opacity="0.18"/>
+    </filter>
+    <filter id="smallShadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="8" stdDeviation="12" flood-color="#0A2928" flood-opacity="0.12"/>
+    </filter>
+  </defs>
+
+  <rect width="1200" height="375" fill="#EEF4F2"/>
+  <rect x="30" y="28" width="1140" height="319" rx="28" fill="#FFFFFF" filter="url(#shadow)"/>
+  <rect x="30" y="28" width="1140" height="319" rx="28" fill="#073D3B"/>
+  <path d="M686 28 H1142 C1157.464 28 1170 40.536 1170 56 V319 C1170 334.464 1157.464 347 1142 347 H686 Z" fill="#F8FAF6"/>
+  <path d="M686 28 L746 28 L686 347 Z" fill="#0E7A70" opacity="0.12"/>
+
+  <g transform="translate(72 64)">
+    <text x="0" y="0" font-family="Inter, Arial, sans-serif" font-size="28" font-weight="900" fill="#F4BE3F">occazGabon</text>
+    <text x="0" y="68" font-family="Inter, Arial, sans-serif" font-size="48" font-weight="900" fill="#FFFFFF">Vendez vos affaires.</text>
+    <text x="0" y="124" font-family="Inter, Arial, sans-serif" font-size="48" font-weight="900" fill="#FFFFFF">Achetez malin.</text>
+    <text x="0" y="174" font-family="Inter, Arial, sans-serif" font-size="22" font-weight="600" fill="#D5E7E3">Mode, maison, téléphones, beauté et objets d'occasion au Gabon.</text>
+
+    <g transform="translate(0 210)">
+      <rect x="0" y="0" width="210" height="52" rx="26" fill="#F4BE3F"/>
+      <text x="28" y="34" font-family="Inter, Arial, sans-serif" font-size="19" font-weight="900" fill="#073D3B">Créer un compte</text>
+      <text x="248" y="34" font-family="Inter, Arial, sans-serif" font-size="19" font-weight="800" fill="#FFFFFF">Publier ou acheter maintenant</text>
+    </g>
+  </g>
+
+  <g transform="translate(760 70)">
+    <rect x="0" y="0" width="284" height="214" rx="26" fill="#FFFFFF" stroke="#E1E8E5" stroke-width="2" filter="url(#smallShadow)"/>
+    <rect x="24" y="24" width="236" height="42" rx="21" fill="#EEF4F2"/>
+    <rect x="44" y="40" width="98" height="10" rx="5" fill="#073D3B" opacity="0.3"/>
+    <rect x="206" y="34" width="34" height="20" rx="10" fill="#F4BE3F"/>
+
+    <g transform="translate(24 86)">
+      <rect x="0" y="0" width="72" height="94" rx="16" fill="#F7EFE9"/>
+      <path d="M24 28 C28 19 44 19 48 28 L60 58 H12 Z" fill="#D75F4F"/>
+      <rect x="24" y="58" width="24" height="18" fill="#073D3B"/>
+    </g>
+    <g transform="translate(106 86)">
+      <rect x="0" y="0" width="72" height="94" rx="16" fill="#EEF4F2"/>
+      <rect x="21" y="22" width="30" height="40" rx="8" fill="#073D3B"/>
+      <rect x="29" y="35" width="18" height="6" rx="3" fill="#F4BE3F"/>
+      <rect x="27" y="67" width="38" height="6" rx="3" fill="#CFE2DE"/>
+    </g>
+    <g transform="translate(188 86)">
+      <rect x="0" y="0" width="72" height="94" rx="16" fill="#FFF7DF"/>
+      <rect x="17" y="38" width="42" height="26" rx="8" fill="#0E7A70"/>
+      <rect x="24" y="26" width="26" height="15" rx="7" fill="#073D3B"/>
+      <rect x="24" y="64" width="6" height="16" rx="3" fill="#073D3B"/>
+      <rect x="48" y="64" width="6" height="16" rx="3" fill="#073D3B"/>
+    </g>
+  </g>
+
+  <g transform="translate(808 300)">
+    <text x="0" y="0" font-family="Inter, Arial, sans-serif" font-size="20" font-weight="900" fill="#073D3B">occaz-gabon.vercel.app</text>
+  </g>
+</svg>

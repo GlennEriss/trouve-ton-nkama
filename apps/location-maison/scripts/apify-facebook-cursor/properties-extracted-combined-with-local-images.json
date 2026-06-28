@@ -5246,12 +5246,85 @@
       "nbrLivingRoom": 0,
       "nbrFloorStudio": 0,
       "numeroStudio": "DISPONIBLE"
+    },
+    {
+      "typeProperty": "Studio",
+      "title": "Chambre americaine a louer a Bikele",
+      "description": "Chambre americaine a louer a Bikele avant chez les soeurs, au deuxieme etage. Logement securise avec charge d'eau incluse. Conditions: loyer + caution.",
+      "images": [],
+      "price": 75000,
+      "area": 0,
+      "status": "FOR_RENT",
+      "tags": [
+        "Propriétaire",
+        "Sécurisé"
+      ],
+      "contact": "066379621",
+      "street": "Bikele avant chez les soeurs",
+      "city": "Ntoum",
+      "province": "Estuaire",
+      "country": "Gabon",
+      "countryCode": "GA",
+      "longitude": 9.5528733,
+      "latitude": 0.413302,
+      "isLocExact": false,
+      "isOwner": true,
+      "nbrRooms": 1,
+      "nbrBathrooms": 1,
+      "nbrToilets": 1,
+      "nbrChickens": 1,
+      "_source": {
+        "source": "manual",
+        "sourceText": "ai une chambre americaine a 75mil (avec charge d'eau)\nSitue a bikele avant chez les soeurs,au deuxieme etage, securise\nLoyer +caution\n066379621",
+        "isOwner": true
+      },
+      "nbrFloors": 2,
+      "nbrGarages": 0,
+      "nbrLivingRoom": 0,
+      "nbrFloorStudio": 2,
+      "numeroStudio": ""
+    },
+    {
+      "typeProperty": "Apartment",
+      "title": "Appartement 3 chambres a louer a Peyrie",
+      "description": "Appartement au rez-de-chaussee situe dans la barriere, quartier SEEG de la Peyrie. Il comprend 3 chambres dont une parentale avec douche et sanitaires, une douche avec WC, un WC visiteurs, un grand salon et une grande cuisine. Chaque chambre dispose d'un balcon. Le logement dispose de 2 cuves de 2000 litres avec suppresseur, d'une installation pour machine a laver, de Gabon Telecom, d'un chauffe-eau et d'un gardien le soir. Libre de suite. Conditions: 1 mois de loyer + 1 mois de caution.",
+      "images": [],
+      "price": 450000,
+      "area": 0,
+      "status": "FOR_RENT",
+      "tags": [
+        "Sous barrière",
+        "Balcon",
+        "Sécurisé"
+      ],
+      "contact": "066272475",
+      "street": "SEEG de la Peyrie",
+      "city": "Libreville",
+      "province": "Estuaire",
+      "country": "Gabon",
+      "countryCode": "GA",
+      "longitude": 9.4564379,
+      "latitude": 0.3999137,
+      "isLocExact": false,
+      "isOwner": true,
+      "nbrRooms": 3,
+      "nbrBathrooms": 2,
+      "nbrToilets": 3,
+      "nbrChickens": 1,
+      "_source": {
+        "source": "manual",
+        "sourceText": "Dans la barriere, Appartement au RDC de 3 chambres dont 1 parentale (douche et sanitaires inclus)\n1 douche + WC\n1 WC visiteurs\n1 grand salon\n1 grande cuisine.\nBalcon pour toutes les chambres.\n2 cuves de 2000 litres + supresseur\nInstallation machine a laver ; Gabon Telecom\n1 chauffe-eau\n1 gardien (uniquement le soir).\nQuartier : SEEG de la peyrie.\nConditions : 1 mois de loyer + 1 mois de caution.\nLoyer : 450 000 FCFA.\nTel : 066272475\nLibre de suite",
+        "isOwner": true
+      },
+      "nbrFloorApartment": 0,
+      "numeroApartment": "",
+      "nbrLivingRoom": 1
     }
   ],
   "metadata": {
     "source": "Facebook Group",
     "totalPosts": 1800,
-    "propertiesExtracted": 106,
+    "propertiesExtracted": 108,
     "extractionDate": "2026-01-05T11:39:24.212Z",
     "combinedFrom": "properties-extracted-1.json to properties-extracted-18.json"
   }

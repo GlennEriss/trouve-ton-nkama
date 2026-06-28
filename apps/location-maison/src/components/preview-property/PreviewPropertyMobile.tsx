@@ -19,6 +19,7 @@ import ButtonShareToFacebook from './ButtonShareToFacebook'
 import ButtonShareToWhatsapp from './ButtonShareToWhatsapp'
 import { AlertTriangle } from 'lucide-react'
 import { useTrackPropertyInteraction } from '@/hooks/use-track-property-interaction'
+import { getPrimaryPropertyImageUrl } from '@/lib/property-images'
 
 const inter = Inter({
     subsets: ['latin'],
@@ -36,6 +37,7 @@ export const PreviewPropertyMobile: React.FC<PreviewPropertyMobileProps> = ({ pr
         "FOR_SALE": "A VENDRE"
     }
     const phoneNumber = property?.contact ?? user?.phoneNumbers?.[0]
+    const primaryImageUrl = getPrimaryPropertyImageUrl(property.images)
 
     const handleWhatsAppClick = () => {
         trackInteraction('whatsapp_contact', {
@@ -184,7 +186,7 @@ export const PreviewPropertyMobile: React.FC<PreviewPropertyMobileProps> = ({ pr
             }
             <section>
                 <MapSection
-                    image={property.images[0].fileURL}
+                    image={primaryImageUrl}
                     additionalInformation={property?.additionnalInformation}
                     street={property.street}
                     city={property.city}

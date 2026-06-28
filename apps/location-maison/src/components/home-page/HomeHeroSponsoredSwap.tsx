@@ -12,6 +12,10 @@ type HomeHeroSponsoredSwapProps = Readonly<{
 
 const SLIDE_DURATION_MS = 7000
 
+type HeroSlide =
+  | Readonly<{ kind: 'platform' }>
+  | Readonly<{ kind: 'sponsored'; creative: AdCreativePublic }>
+
 function track(event: 'impression' | 'click', campaignId: string) {
   try {
     const body = JSON.stringify({ event, campaignId })
@@ -95,18 +99,27 @@ function SponsoredHero({ creative }: Readonly<{ creative: AdCreativePublic }>) {
 }
 
 export default function HomeHeroSponsoredSwap({ reduceMotion }: HomeHeroSponsoredSwapProps) {
-  const [activeSlide, setActiveSlide] = useState<'platform' | 'sponsored'>('platform')
-  const [creative, setCreative] = useState<AdCreativePublic | null>(null)
-  const impressionSent = useRef(false)
+  const [activeIndex, setActiveIndex] = useState(0)
+  const [creatives, setCreatives] = useState<AdCreativePublic[]>([])
+  const impressionsSent = useRef<Set<string>>(new Set())
+  const slides: HeroSlide[] = [
+    { kind: 'platform' },
+    ...creatives.map((creative) => ({ kind: 'sponsored' as const, creative })),
+  ]
+  const activeSlide = slides[activeIndex] ?? slides[0]
+  const activeSlideKey =
+    activeSlide.kind === 'sponsored' ? activeSlide.creative.campaignId : 'platform'
 
-  // Récupère la pub maison de l'accueil. Tant qu'il n'y en a pas, le hero reste
-  // fixé sur la slide plateforme (aucun fallback AdSense vide dans le hero).
+  // Récupère toutes les pubs maison de l'accueil. La home est un vrai slider :
+  // chaque campagne active doit pouvoir défiler, pas seulement la priorité haute.
   useEffect(() => {
     let cancelled = false
-    fetch('/api/advertising/active?placement=home')
+    fetch('/api/advertising/active?placement=home&all=1')
       .then((r) => (r.ok ? r.json() : null))
       .then((data) => {
-        if (!cancelled) setCreative(data?.creative ?? null)
+        if (!cancelled) {
+          setCreatives(Array.isArray(data?.creatives) ? data.creatives : [])
+        }
       })
       .catch(() => {})
     return () => {
@@ -114,35 +127,35 @@ export default function HomeHeroSponsoredSwap({ reduceMotion }: HomeHeroSponsore
     }
   }, [])
 
-  // La rotation ne démarre que s'il existe une pub à montrer.
+  // La rotation ne démarre que s'il existe au moins une pub à montrer.
   useEffect(() => {
-    if (reduceMotion || !creative) return
+    if (reduceMotion || slides.length <= 1) return
 
     const interval = window.setInterval(() => {
-      setActiveSlide((current) => (current === 'platform' ? 'sponsored' : 'platform'))
+      setActiveIndex((current) => (current + 1) % slides.length)
     }, SLIDE_DURATION_MS)
 
     return () => window.clearInterval(interval)
-  }, [reduceMotion, creative])
+  }, [reduceMotion, slides.length])
 
-  // Sans pub, on garde la slide plateforme (et on annule un éventuel swap résiduel).
+  // Si la liste change, on évite un index hors limites.
   useEffect(() => {
-    if (!creative) setActiveSlide('platform')
-  }, [creative])
+    setActiveIndex((current) => (current >= slides.length ? 0 : current))
+  }, [slides.length])
 
-  // Impression comptée une fois quand la slide sponsorisée apparaît.
+  // Impression comptée une fois par campagne quand sa slide apparaît.
   useEffect(() => {
-    if (activeSlide === 'sponsored' && creative && !impressionSent.current) {
-      impressionSent.current = true
-      track('impression', creative.campaignId)
+    if (activeSlide.kind === 'sponsored' && !impressionsSent.current.has(activeSlide.creative.campaignId)) {
+      impressionsSent.current.add(activeSlide.creative.campaignId)
+      track('impression', activeSlide.creative.campaignId)
     }
-  }, [activeSlide, creative])
+  }, [activeSlide])
 
   return (
     <section className="relative mt-5 h-[330px] overflow-hidden rounded-xl bg-gradient-to-r from-[#C1DEE8] to-[#FBD9B9] xl:h-[430px]">
       <AnimatePresence mode="wait">
         <motion.div
-          key={activeSlide}
+          key={activeSlideKey}
           className="absolute inset-0"
           variants={slideVariants}
           initial={reduceMotion ? false : 'enter'}
@@ -150,8 +163,8 @@ export default function HomeHeroSponsoredSwap({ reduceMotion }: HomeHeroSponsore
           exit={reduceMotion ? undefined : 'exit'}
           transition={{ duration: 0.55, ease: [0.22, 1, 0.36, 1] }}
         >
-          {activeSlide === 'sponsored' && creative ? (
-            <SponsoredHero creative={creative} />
+          {activeSlide.kind === 'sponsored' ? (
+            <SponsoredHero creative={activeSlide.creative} />
           ) : (
             <PlatformHero reduceMotion={reduceMotion} />
           )}

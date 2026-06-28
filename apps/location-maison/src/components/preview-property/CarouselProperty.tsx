@@ -2,10 +2,11 @@
 import React, { useState } from 'react'
 import Image from 'next/image'
 import { Carousel, CarouselContent, CarouselItem, CarouselPrevious, CarouselNext } from '../ui/carousel'
-import { ChevronLeft, ChevronRight, X } from 'lucide-react'
+import { ChevronLeft, ChevronRight, ImageOff, X } from 'lucide-react'
 import { useSwipeable } from 'react-swipeable'
 
 export default function CarouselProperty({ images }: Readonly<{ images: string[] }>) {
+    const imageUrls = images.filter((image) => typeof image === 'string' && image.trim().length > 0)
     const [selectedImage, setSelectedImage] = useState<string | null>(null);
     const [isPreviewOpen, setIsPreviewOpen] = useState(false);
  
@@ -23,23 +24,23 @@ export default function CarouselProperty({ images }: Readonly<{ images: string[]
         document.body.style.overflow = 'unset';
     };
 
-    const selectedIndex = selectedImage ? images.indexOf(selectedImage) : -1;
+    const selectedIndex = selectedImage ? imageUrls.indexOf(selectedImage) : -1;
 
     const goToNextImage = () => {
-        if (selectedIndex < images.length - 1) {
-            setSelectedImage(images[selectedIndex + 1]);
+        if (selectedIndex < imageUrls.length - 1) {
+            setSelectedImage(imageUrls[selectedIndex + 1]);
         } else {
             // Retour à la première image si on est à la dernière
-            setSelectedImage(images[0]);
+            setSelectedImage(imageUrls[0]);
         }
     };
 
     const goToPreviousImage = () => {
         if (selectedIndex > 0) {
-            setSelectedImage(images[selectedIndex - 1]);
+            setSelectedImage(imageUrls[selectedIndex - 1]);
         } else {
             // Aller à la dernière image si on est à la première
-            setSelectedImage(images[images.length - 1]);
+            setSelectedImage(imageUrls[imageUrls.length - 1]);
         }
     };
 
@@ -73,11 +74,22 @@ export default function CarouselProperty({ images }: Readonly<{ images: string[]
         return () => window.removeEventListener('keydown', handleKeyDown);
     }, [isPreviewOpen, selectedIndex]);
 
+    if (imageUrls.length === 0) {
+        return (
+            <div className="flex h-[260px] w-full items-center justify-center rounded-xl border border-dashed border-gray-300 bg-gray-50 text-gray-500 dark:border-gray-700 dark:bg-gray-900/40 dark:text-gray-400 md:h-[320px] xl:h-[360px]">
+                <div className="flex flex-col items-center gap-2 text-center">
+                    <ImageOff className="h-10 w-10" />
+                    <span className="text-sm font-medium">Aucune photo disponible</span>
+                </div>
+            </div>
+        )
+    }
+
     return (
         <>
             <Carousel className="w-full">
                 <CarouselContent className='-ml-2 md:-ml-4'>
-                    {images.map((image, index) => (
+                    {imageUrls.map((image, index) => (
                         <CarouselItem 
                             key={image} 
                             className='pl-2 md:pl-4 md:basis-1/2 lg:basis-1/3'
@@ -106,7 +118,7 @@ export default function CarouselProperty({ images }: Readonly<{ images: string[]
                     {/* Barre de navigation supérieure */}
                     <div className="absolute top-0 left-0 right-0 flex justify-between items-center p-4 bg-gradient-to-b from-black/50 to-transparent z-10">
                         <span className="text-white text-sm">
-                            {selectedIndex + 1} / {images.length}
+                            {selectedIndex + 1} / {imageUrls.length}
                         </span>
                         <button
                             onClick={closePreview}
@@ -152,7 +164,7 @@ export default function CarouselProperty({ images }: Readonly<{ images: string[]
                         {/* Miniatures en bas */}
                         <div className="absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-black/50 to-transparent overflow-x-auto z-10">
                             <div className="flex gap-2 justify-center">
-                                {images.map((img, idx) => (
+                                {imageUrls.map((img, idx) => (
                                     <button
                                         key={img}
                                         onClick={() => setSelectedImage(img)}
