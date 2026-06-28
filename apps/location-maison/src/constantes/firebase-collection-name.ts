@@ -14,7 +14,8 @@ const firebaseCollectionNames = {
     streets: 'streets',
     property_statistics: 'property_statistics',
     advertisers: 'advertisers',
-    ad_campaigns: 'ad_campaigns'
+    ad_campaigns: 'ad_campaigns',
+    ad_serving_counters: 'ad_serving_counters'
 }
 
 export default firebaseCollectionNames

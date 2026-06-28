@@ -3,6 +3,7 @@
 import { X } from 'lucide-react';
 import { Button } from '../ui/button';
 import { useRouter } from 'next/navigation';
+import { getPrimaryPropertyImageUrl } from '@/lib/property-images';
 
 interface PropertyDetailsPanelProps {
   selectedProperty: any;
@@ -12,6 +13,7 @@ interface PropertyDetailsPanelProps {
 export default function PropertyDetailsPanel({ selectedProperty, onClose }: PropertyDetailsPanelProps) {
   if (!selectedProperty) return null;
   const router = useRouter();
+  const primaryImageUrl = getPrimaryPropertyImageUrl(selectedProperty.images);
 
   function translatePropertyType(type?: string): string {
     if (!type) return 'Non spécifié';
@@ -49,10 +51,10 @@ export default function PropertyDetailsPanel({ selectedProperty, onClose }: Prop
           </button>
         </div>
 
-        {selectedProperty.images?.[0] && (
+        {primaryImageUrl && (
           <div className="mb-4">
             <img
-              src={selectedProperty.images[0].fileURL}
+              src={primaryImageUrl}
               alt={selectedProperty.title || selectedProperty.name}
               className="w-full h-32 object-cover rounded-lg"
             />

@@ -12,6 +12,7 @@ import ButtonShare from './ButtonShare'
 import { AlertTriangle } from 'lucide-react'
 import PropertyStatisticsSummary from '@/components/property/PropertyStatisticsSummary'
 import { useCurrentUser } from '@/hooks/use-current-user'
+import { getPrimaryPropertyImageUrl, getPropertyImageUrls } from '@/lib/property-images'
 
 export default function PreviewProperty({ property }: Readonly<{ property: Property }>) {
   const { user } = useCurrentUser()
@@ -21,7 +22,8 @@ export default function PreviewProperty({ property }: Readonly<{ property: Prope
     "FOR_RENT": "A LOUER",
     "FOR_SALE": "A VENDRE"
   }
-  const images = property.images.map(img => img.fileURL)
+  const images = getPropertyImageUrls(property.images)
+  const primaryImageUrl = getPrimaryPropertyImageUrl(property.images)
 
   return (
     <div className='flex flex-col gap-3 bg-[#FDFCFB] dark:bg-[#020817] p-3 mb-24 md:px-0 max-w-full overflow-x-hidden'>
@@ -117,7 +119,7 @@ export default function PreviewProperty({ property }: Readonly<{ property: Prope
 
         {/* Carte */}
         <MapSection
-          image={property.images[0].fileURL}
+          image={primaryImageUrl}
           additionalInformation={property?.additionnalInformation}
           street={property.street}
           city={property.city}

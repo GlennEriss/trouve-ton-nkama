@@ -43,17 +43,16 @@ vocabulaire propre :
 La plateforme sert déjà des pubs **AdSense** (revenus Google, faibles : ~1,40 €,
 cf. `location-maison-admin/docs/MONETISATION-PUBS-ADSENSE-SPEC.md`).
 
-La régie first-party **réutilise le même inventaire d'emplacements** mais avec
-une règle de priorité simple :
+La régie first-party et AdSense sont deux inventaires indépendants :
 
 ```
-Pour un emplacement donné :
+Pour une zone pub donnée :
   1. Campagne publicitaire maison ACTIVE et éligible ? → on l'affiche
-  2. Sinon → fallback AdSense (composant existant)
+  2. L'unité AdSense associée reste affichée aussi
 ```
 
-→ La pub maison est **mieux margée** (vendue en direct) et **prioritaire** ;
-AdSense reste le *backfill* qui remplit les emplacements invendus.
+→ La pub maison ne remplace pas AdSense. AdSense n'est pas un backfill de la
+régie maison ; il garde ses propres emplacements et sa propre logique de rendu.
 
 ## 4. Décisions V1 (validées)
 
@@ -139,8 +138,8 @@ Un composant unique **`<SponsoredSlot placement="search_infeed" context={...} />
    `placement` (+ ciblage géo éventuel via le `context` de la page).
 2. Si trouvée → rend la **créa** + un libellé **« Sponsorisé »** + tracking
    impression/clic.
-3. Sinon → rend le **fallback AdSense** existant (`InlineAdUnit` /
-   `AdSenseBlock` de `src/components/ads`).
+3. Rend aussi l'unité AdSense configurée pour la zone ; AdSense n'est pas
+   conditionné par l'existence d'une campagne maison.
 
 Sélection V1 (simple, pas d'enchère) : campagnes éligibles triées par
 `priority` puis date de création ; rotation simple si plusieurs.

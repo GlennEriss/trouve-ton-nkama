@@ -12,7 +12,21 @@ import { useCurrentUser } from '@/hooks/use-current-user'
 import { useToast } from '@/hooks/use-toast'
 import { useRecharge } from '@/providers/RechargeProvider'
 import { AD_PACKAGES } from '@/constantes/ad-packages'
+import { formatsForPlacements, type AdFormat } from '@/constantes/ad-formats'
+import type { AdPlacement } from '@/models/advertising'
 import AdCreativePreview from '@/components/ads/AdCreativePreview'
+
+type AssetMap = Partial<Record<AdPlacement, { imageURL: string; imagePATH: string }>>
+
+/** Upload un visuel (self-serve) et renvoie son URL publique + chemin Storage. */
+async function uploadAdImage(file: File): Promise<{ imageURL: string; imagePATH: string }> {
+  const fd = new FormData()
+  fd.append('file', file)
+  const res = await fetch('/api/advertising/upload', { method: 'POST', body: fd })
+  const payload = await res.json()
+  if (!res.ok || !payload.success) throw new Error(payload?.error?.message || 'Échec de l’upload.')
+  return { imageURL: payload.imageURL as string, imagePATH: payload.imagePATH as string }
+}
 
 type MyCampaign = {
   id: string
@@ -53,8 +67,11 @@ export default function AdvertisingPage() {
   const [body, setBody] = useState('')
   const [ctaLabel, setCtaLabel] = useState('')
   const [ctaUrl, setCtaUrl] = useState('')
+  const [assets, setAssets] = useState<AssetMap>({})
+  const [formatUploading, setFormatUploading] = useState<AdFormat['key'] | null>(null)
 
   const selectedPackage = AD_PACKAGES.find((p) => p.id === packageId)
+  const formats = selectedPackage ? formatsForPlacements(selectedPackage.placements) : []
 
   const campaignsQuery = useQuery({
     queryKey: ['my-ad-campaigns'],
@@ -76,19 +93,39 @@ export default function AdvertisingPage() {
     setImagePATH('')
     setUploading(true)
     try {
-      const fd = new FormData()
-      fd.append('file', file)
-      const res = await fetch('/api/advertising/upload', { method: 'POST', body: fd })
-      const payload = await res.json()
-      if (!res.ok || !payload.success) throw new Error(payload?.error?.message || 'Échec de l’upload.')
-      setImageURL(payload.imageURL)
-      setImagePATH(payload.imagePATH)
+      const data = await uploadAdImage(file)
+      setImageURL(data.imageURL)
+      setImagePATH(data.imagePATH)
     } catch (e) {
       toast({ title: 'Upload impossible', description: e instanceof Error ? e.message : '', variant: 'destructive' })
     } finally {
       setUploading(false)
     }
   }
+
+  // Upload d'un visuel par FORMAT : appliqué à tous les emplacements du groupe.
+  const handleFormatUpload = async (format: AdFormat, file: File) => {
+    setFormatUploading(format.key)
+    try {
+      const data = await uploadAdImage(file)
+      setAssets((prev) => {
+        const next = { ...prev }
+        for (const p of format.placements) next[p] = data
+        return next
+      })
+    } catch (e) {
+      toast({ title: 'Upload impossible', description: e instanceof Error ? e.message : '', variant: 'destructive' })
+    } finally {
+      setFormatUploading(null)
+    }
+  }
+
+  const clearFormat = (format: AdFormat) =>
+    setAssets((prev) => {
+      const next = { ...prev }
+      for (const p of format.placements) delete next[p]
+      return next
+    })
 
   const createMutation = useMutation({
     mutationFn: async () => {
@@ -100,6 +137,7 @@ export default function AdvertisingPage() {
           creative: {
             imageURL,
             imagePATH,
+            assets: Object.keys(assets).length ? assets : undefined,
             headline: headline || undefined,
             body: body || undefined,
             ctaLabel: ctaLabel || undefined,
@@ -119,6 +157,7 @@ export default function AdvertisingPage() {
     onSuccess: () => {
       toast({ title: 'Publicité en ligne 🎉', description: 'Votre campagne est désormais diffusée.', variant: 'success' })
       setImageURL(''); setImagePATH(''); setHeadline(''); setBody(''); setCtaLabel(''); setCtaUrl('')
+      setAssets({})
       setLocalPreview((prev) => { if (prev) URL.revokeObjectURL(prev); return '' })
       void queryClient.invalidateQueries({ queryKey: ['my-ad-campaigns'] })
     },
@@ -176,6 +215,7 @@ export default function AdvertisingPage() {
       <div className="space-y-4">
         <Label className="text-md">2. Votre visuel et votre message</Label>
         <div className="space-y-2">
+          <p className="text-xs text-gray-500">Visuel par défaut — utilisé partout où aucun visuel dédié n’est fourni ci-dessous.</p>
           <input
             type="file"
             accept="image/png,image/jpeg,image/webp,image/gif"
@@ -189,6 +229,38 @@ export default function AdvertisingPage() {
             <p className="text-xs font-medium text-red-600">L’import du visuel a échoué (l’aperçu est local). Réessaie de choisir le fichier.</p>
           ) : null}
         </div>
+
+        {/* Visuels par format (optionnel) selon les emplacements du forfait */}
+        {formats.length > 0 && (
+          <div className="space-y-2 rounded-2xl border border-gray-200 bg-gray-50 p-3 dark:border-gray-700 dark:bg-gray-800/40">
+            <p className="text-xs font-medium text-gray-600 dark:text-gray-300">Visuels par format (optionnel)</p>
+            <p className="text-[11px] text-gray-400">Pour un rendu optimal, fournissez un visuel adapté à chaque forme. Sinon le visuel par défaut est utilisé.</p>
+            {formats.map((fmt) => {
+              const imported = fmt.placements.every((p) => assets[p])
+              return (
+                <div key={fmt.key} className="flex flex-wrap items-center gap-2 text-xs">
+                  <div className="min-w-[140px] flex-1">
+                    <span className="font-medium text-[#224D62] dark:text-gray-200">{fmt.label}</span>
+                    <span className="ml-1 text-gray-400">— {fmt.ratioHint} ({fmt.recommended})</span>
+                  </div>
+                  <input
+                    type="file"
+                    accept="image/png,image/jpeg,image/webp,image/gif"
+                    disabled={formatUploading === fmt.key}
+                    onChange={(e) => { const f = e.target.files?.[0]; if (f) void handleFormatUpload(fmt, f) }}
+                    className="block max-w-[170px] text-[11px] text-gray-600 file:mr-2 file:rounded file:border-0 file:bg-gray-100 file:px-2 file:py-1"
+                  />
+                  {formatUploading === fmt.key ? (
+                    <span className="text-gray-500">Upload…</span>
+                  ) : imported ? (
+                    <button type="button" className="text-[#1FA89B]" onClick={() => clearFormat(fmt)}>✓ importé · retirer</button>
+                  ) : null}
+                </div>
+              )
+            })}
+          </div>
+        )}
+
         <Input placeholder="Texte d'accroche (ex: -20% ce week-end)" value={headline} onChange={(e) => setHeadline(e.target.value)} />
         <Input placeholder="Description courte (optionnel)" value={body} onChange={(e) => setBody(e.target.value)} />
         <Input placeholder="Texte du bouton (ex: Appeler, WhatsApp, Voir)" value={ctaLabel} onChange={(e) => setCtaLabel(e.target.value)} />
@@ -206,6 +278,7 @@ export default function AdvertisingPage() {
             ctaLabel: ctaLabel || undefined,
             ctaUrl: ctaUrl || undefined,
           }}
+          assets={assets}
           placements={selectedPackage?.placements ?? []}
         />
       </div>

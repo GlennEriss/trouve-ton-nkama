@@ -4,12 +4,14 @@ import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious
 import Image from 'next/image'
 import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { Skeleton } from '@/components/ui/skeleton';
+import { ImageOff } from 'lucide-react';
+import { getPropertyImageUrls } from '@/lib/property-images';
 
 type CarouselPropertyDetailsProps = {
-  images: ImageModel[]
+  images?: ImageModel[] | null
 }
 export const CarouselPropertyDetails: React.FC<CarouselPropertyDetailsProps> = ({ images }) => {
-  const imageUrls = images.map(image => image.fileURL);
+  const imageUrls = getPropertyImageUrls(images);
 
   const [isPreviewOpen, setIsPreviewOpen] = React.useState(false);
 
@@ -27,6 +29,17 @@ export const CarouselPropertyDetails: React.FC<CarouselPropertyDetailsProps> = (
       return newState;
     });
   };
+
+  if (imageUrls.length === 0) {
+    return (
+      <div className="flex h-[320px] w-full items-center justify-center rounded-b-3xl border border-dashed border-gray-300 bg-gray-50 text-gray-500 dark:border-gray-700 dark:bg-gray-900/40 dark:text-gray-400">
+        <div className="flex flex-col items-center gap-2 text-center">
+          <ImageOff className="h-10 w-10" />
+          <span className="text-sm font-medium">Aucune photo disponible</span>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <>

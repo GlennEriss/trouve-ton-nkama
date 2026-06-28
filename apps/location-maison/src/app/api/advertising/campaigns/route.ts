@@ -21,6 +21,22 @@ function parseTargeting(value: unknown): { provinces?: string[]; cities?: string
   return { ...(provinces?.length ? { provinces } : {}), ...(cities?.length ? { cities } : {}) }
 }
 
+const VALID_PLACEMENTS = ['home', 'search_infeed', 'immobilier_infeed', 'property_detail']
+
+/** Visuels par emplacement : conserve uniquement les entrées valides (URL + chemin). */
+function parseAssets(value: unknown): Record<string, { imageURL: string; imagePATH: string }> | undefined {
+  if (!value || typeof value !== 'object') return undefined
+  const out: Record<string, { imageURL: string; imagePATH: string }> = {}
+  for (const [key, raw] of Object.entries(value as Record<string, unknown>)) {
+    if (!VALID_PLACEMENTS.includes(key) || !raw || typeof raw !== 'object') continue
+    const a = raw as { imageURL?: unknown; imagePATH?: unknown }
+    if (typeof a.imageURL === 'string' && a.imageURL.trim()) {
+      out[key] = { imageURL: a.imageURL, imagePATH: typeof a.imagePATH === 'string' ? a.imagePATH : '' }
+    }
+  }
+  return Object.keys(out).length ? out : undefined
+}
+
 /** Crée une campagne self-serve : débit crédits + mise en ligne immédiate. */
 export async function POST(request: Request) {
   try {
@@ -69,6 +85,7 @@ export async function POST(request: Request) {
       const now = Timestamp.now()
       const endDate = Timestamp.fromMillis(now.toMillis() + pkg.durationDays * 24 * 60 * 60 * 1000)
       const nextCredits = credits - pkg.credits
+      const parsedAssets = parseAssets(creative.assets)
 
       const campaign = {
         advertiserId: null,
@@ -77,6 +94,7 @@ export async function POST(request: Request) {
         creative: {
           imagePATH: typeof creative.imagePATH === 'string' ? creative.imagePATH : '',
           imageURL,
+          ...(parsedAssets ? { assets: parsedAssets } : {}),
           headline: typeof creative.headline === 'string' ? creative.headline : '',
           body: typeof creative.body === 'string' ? creative.body : '',
           ctaLabel: typeof creative.ctaLabel === 'string' ? creative.ctaLabel : '',
