@@ -25,6 +25,14 @@ export const trackingEvents = {
   AI_SEARCH_CREDIT_DEBITED: 'ai_search_credit_debited',
   BUSINESS_AUTH_SIGNIN_SUCCESS: 'business_auth_signin_success',
   BUSINESS_AUTH_SIGNUP_SUCCESS: 'business_auth_signup_success',
+  CTA_PUBLISH_AUTH_MODAL_OPEN: 'cta_publish_auth_modal_open',
+  CTA_PUBLISH_AUTH_CHOICE_SIGNUP: 'cta_publish_auth_choice_signup',
+  CTA_PUBLISH_AUTH_CHOICE_SIGNIN: 'cta_publish_auth_choice_signin',
+  BUSINESS_PUBLISH_AUTH_SIGNUP_SUCCESS: 'business_publish_auth_signup_success',
+  BUSINESS_PUBLISH_AUTH_SIGNIN_SUCCESS: 'business_publish_auth_signin_success',
+  BUSINESS_PUBLISH_AUTH_BECOME_ANNOUNCER_SUCCESS: 'business_publish_auth_become_announcer_success',
+  BUSINESS_PROPERTY_AUTO_PUBLISH_SUCCESS: 'business_property_auto_publish_success',
+  BUSINESS_PROPERTY_AUTO_PUBLISH_FAILED: 'business_property_auto_publish_failed',
 } as const;
 
 export type TrackingEventName = (typeof trackingEvents)[keyof typeof trackingEvents];

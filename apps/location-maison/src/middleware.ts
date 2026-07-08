@@ -43,15 +43,25 @@ const ADMIN_ONLY_ROUTE_PREFIXES = [
     '/admin',
 ] as const
 
+// Un visiteur non connecté doit pouvoir remplir le formulaire de création d'annonce
+// et se voir proposer de créer un compte/se connecter seulement à la soumission finale.
+const PUBLIC_PROPERTY_ADD_PREFIX = '/property/add'
+
 function isExactOrSubPath(pathname: string, prefix: string): boolean {
     return pathname === prefix || pathname.startsWith(`${prefix}/`)
 }
 
+function isPublicPropertyAddRoute(pathname: string): boolean {
+    return isExactOrSubPath(pathname, PUBLIC_PROPERTY_ADD_PREFIX)
+}
+
 function isProtectedRoute(pathname: string): boolean {
+    if (isPublicPropertyAddRoute(pathname)) return false
     return PROTECTED_ROUTE_PREFIXES.some((prefix) => isExactOrSubPath(pathname, prefix))
 }
 
 function isAnnouncerOnlyRoute(pathname: string): boolean {
+    if (isPublicPropertyAddRoute(pathname)) return false
     return ANNOUNCER_ONLY_ROUTE_PREFIXES.some((prefix) => isExactOrSubPath(pathname, prefix))
 }
 

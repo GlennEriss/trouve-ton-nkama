@@ -26,7 +26,7 @@ export interface SigninResult {
 
 export interface UseSigninReturn {
   signinWithCredentials: (credentials: SigninCredentials) => Promise<SigninResult>;
-  signinWithGoogle: () => Promise<void>;
+  signinWithGoogle: (options?: { callbackUrl?: string }) => Promise<void>;
   isCredentialsLoading: boolean;
   isGoogleLoading: boolean;
   isLoading: boolean;
@@ -212,13 +212,13 @@ export function useSignin(): UseSigninReturn {
     []
   );
 
-  const signinWithGoogle = useCallback(async () => {
+  const signinWithGoogle = useCallback(async (options?: { callbackUrl?: string }) => {
     setIsGoogleLoading(true);
     setLastError(null);
 
     try {
       await signIn('google', {
-        callbackUrl: routes.protected.properties,
+        callbackUrl: options?.callbackUrl ?? routes.protected.properties,
       });
     } catch (error) {
       logger.error('Google signin trigger failed', { error });

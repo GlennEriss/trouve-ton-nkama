@@ -1,5 +1,5 @@
 'use client'
-import React, { createContext, useContext, useState, useMemo, useEffect } from "react"
+import React, { useState, useMemo, useEffect, useCallback, useRef } from "react"
 import { Form } from "@/components/ui/form"
 import { useForm } from "react-hook-form"
 import { zodResolver } from '@hookform/resolvers/zod'
@@ -15,35 +15,20 @@ import { useOnSubmitFormProperty } from "@/hooks/useOnSubmitFormProperty"
 import { usePropertyFormSchema } from "@/hooks/usePropertyFormSchema"
 import { useFormPropertyType } from "@/hooks/useFormPropertyType"
 import { usePropertyFormStorage } from "@/hooks/usePropertyFormStorage"
+import { usePropertyDraftImagesStorage } from "@/hooks/usePropertyDraftImagesStorage"
 import useLastpath from "@/hooks/use-lastpath"
 import queryKeys from "@/constantes/react-query-keys"
 import { routes } from "@/constantes/routes"
 import { invalidatePropertyCountCache } from "@/lib/invalidate-property-count-cache"
 import { createLogger } from "@/lib/logger"
+import { isAnnouncer } from "@/lib/auth/role-routing"
+import { PublishAuthModal } from "@/components/property-publish/PublishAuthModal"
+import { PropertyFormComponentContext } from "./property-form.context"
 
-type PropertyFormComponent = {
-    form: any,
-    activeStep: number,
-    setActiveStep: React.Dispatch<React.SetStateAction<number>>,
-    propertyPreview: Property | undefined,
-    setPropertyPreview: React.Dispatch<React.SetStateAction<Property | undefined>>,
-    currentStepSchema: any,
-    typeProperty: string,
-}
-
-export const PropertyFormComponentContext = createContext<PropertyFormComponent>({
-    form: {},
-    activeStep: 0,
-    setActiveStep: () => { },
-    propertyPreview: undefined,
-    setPropertyPreview: () => { },
-    currentStepSchema: null,
-    typeProperty: '',
-})
-
-export const usePropertyFormComponentContext = () => {
-    return useContext(PropertyFormComponentContext)
-}
+// Ré-exportés pour compatibilité : le contexte lui-même vit dans property-form.context.ts
+// (fichier séparé sans dépendance vers PublishAuthModal, pour éviter un cycle d'import
+// puisque PublishAuthModal consomme ce contexte tout en étant rendu par ce provider).
+export { PropertyFormComponentContext, usePropertyFormComponentContext } from "./property-form.context"
 
 export const steps = [
     { label: 'First', description: 'Contact Info' },
@@ -85,7 +70,7 @@ export const PropertyFormComponentProvider = ({ children, isUpdate, propertyToUp
     propertyToUpdated?: Partial<Property>
 }) => {
     //User
-    const { user } = useCurrentUser()
+    const { user, isFirebaseConnected } = useCurrentUser()
     //Router
     const router = useRouter()
     // Hook appelé toujours, puis utilisé conditionnellement
@@ -104,6 +89,13 @@ export const PropertyFormComponentProvider = ({ children, isUpdate, propertyToUp
     //States
     const [activeStep, setActiveStep] = useState(0)
     const [propertyPreview, setPropertyPreview] = useState<Property | undefined>(undefined)
+    // Annonce déjà remplie et validée, en attente qu'un compte Annonceur soit rattaché (visiteur non connecté)
+    const [pendingSubmission, setPendingSubmission] = useState<{ parsed: any } | null>(null)
+    const [isPublishAuthModalOpen, setIsPublishAuthModalOpen] = useState(false)
+    // Anti double-soumission pour la dernière étape (voir onSubmit) : le ref bloque de façon
+    // synchrone, le state pilote l'affichage (bouton désactivé + loader).
+    const isFinalSubmittingRef = useRef(false)
+    const [isFinalSubmitting, setIsFinalSubmitting] = useState(false)
     //Form
     const director = DirectorFactory.createDirectorProperty(typeProperty)
     const property = director.build()
@@ -166,19 +158,36 @@ export const PropertyFormComponentProvider = ({ children, isUpdate, propertyToUp
         shouldUnregister: false, // Conserver les valeurs des champs démontés (steps précédents)
     })
 
-    // Hook pour gérer le localStorage
-    const { clearFormLocalStorage, loadFormFromStorage } = usePropertyFormStorage(form, isUpdate, typeProperty)
+    // Hook pour gérer le localStorage (champs texte)
+    const { clearFormLocalStorage, loadFormFromStorage, saveCurrentFormData } = usePropertyFormStorage(form, isUpdate, typeProperty)
+    // Hook pour gérer IndexedDB (photos) : contrairement au localStorage, IndexedDB peut
+    // stocker des File/Blob et permet aux photos de survivre à une redirection externe
+    // complète (ex: connexion Google), qui démonte entièrement le formulaire.
+    const { saveDraftImages, loadDraftImages, clearDraftImages } = usePropertyDraftImagesStorage(typeProperty)
 
-    // Charger les données du localStorage après l'initialisation du formulaire
+    // Charger les données du localStorage/IndexedDB après l'initialisation du formulaire
     React.useEffect(() => {
         if (!isUpdate) {
             // Attendre que le formulaire soit complètement initialisé
             const timer = setTimeout(() => {
                 loadFormFromStorage()
+                loadDraftImages().then((images) => {
+                    if (images.length > 0) {
+                        form.setValue('images', images)
+                    }
+                })
             }, 100)
             return () => clearTimeout(timer)
         }
-    }, [loadFormFromStorage, isUpdate])
+    }, [loadFormFromStorage, loadDraftImages, isUpdate])
+
+    // À appeler juste avant de quitter la page pour une redirection externe (ex: OAuth
+    // Google) : sauvegarde tout ce qui a été saisi pour que le retour sur cette page
+    // restaure automatiquement le brouillon (texte + photos).
+    const prepareForExternalRedirect = useCallback(() => {
+        saveCurrentFormData()
+        void saveDraftImages(form.getValues('images'))
+    }, [saveCurrentFormData, saveDraftImages, form])
 
     // Mettre à jour le resolver quand l'étape change
     React.useEffect(() => {
@@ -255,59 +264,94 @@ export const PropertyFormComponentProvider = ({ children, isUpdate, propertyToUp
         clearFormLocalStorage
     )
 
+    // Nettoyer les champs undefined (Firestore ne supporte pas undefined)
+    const sanitize = (obj: any): any => {
+        if (Array.isArray(obj)) return obj.map(sanitize)
+        if (obj && typeof obj === 'object') {
+            return Object.fromEntries(
+                Object.entries(obj)
+                    .filter(([, v]) => v !== undefined)
+                    .map(([k, v]) => [k, sanitize(v)])
+            )
+        }
+        return obj
+    }
+
+    // Upload des images + écriture Firestore. Ne doit être appelé qu'une fois un
+    // utilisateur Annonceur authentifié ET synchronisé côté SDK Firebase Client
+    // (cf. isFirebaseConnected), sinon les règles de sécurité rejettent l'écriture.
+    const runFinalSubmission = async (parsed: any) => {
+        try {
+            logger.info('Property final submit started', {
+                activeStep,
+                typeProperty,
+                isUpdate: Boolean(id),
+                imagesCount: Array.isArray(parsed.images) ? parsed.images.length : 0,
+            })
+
+            const propertyMutate = await withTimeout(
+                onSubmitForm(parsed),
+                FINAL_SUBMIT_TIMEOUT_MS,
+                'Préparation de la propriété'
+            )
+            void clearDraftImages()
+
+            const sanitized = sanitize(propertyMutate)
+
+            // Lancer la mutation
+            await withTimeout(
+                mutation.mutateAsync(sanitized),
+                FINAL_SUBMIT_TIMEOUT_MS,
+                "Enregistrement de la propriété"
+            )
+            logger.info('Property final submit completed', {
+                typeProperty,
+                isUpdate: Boolean(id),
+            })
+        } catch (error) {
+            logger.error('Property final submit failed', {
+                error,
+                activeStep,
+                typeProperty,
+                isUpdate: Boolean(id),
+            })
+            toast({
+                duration: 3000,
+                title: "Validation finale échouée",
+                description: getErrorMessage(
+                    error,
+                    "Veuillez vérifier tous les champs avant de soumettre."
+                ),
+                variant: "destructive"
+            })
+            // On garde pendingSubmission intact pour permettre un nouvel essai
+            // sans perte de saisie si l'échec survient juste après authentification.
+            throw error
+        }
+    }
+
     //Submit
     const onSubmit = async (data: any) => {
         if (activeStep === 2) {
+            // Garde anti double-soumission : le formulaire de la dernière étape ne passe pas
+            // par `form.handleSubmit` (voir plus bas), donc `formState.isSubmitting` de
+            // react-hook-form ne reflète jamais cette soumission. Sans cette garde, cliquer
+            // plusieurs fois rapidement sur "Enregistrer" lance plusieurs créations en
+            // parallèle. Un ref (pas juste un state) est nécessaire pour bloquer de façon
+            // synchrone dès le premier clic, avant même le prochain re-render. Elle reste
+            // active jusqu'à ce que le useEffect ci-dessous ait fini (succès/échec) ou que
+            // le modal d'auth soit annulé — voir onClose du modal plus bas.
+            if (isFinalSubmittingRef.current) return
+            isFinalSubmittingRef.current = true
+            setIsFinalSubmitting(true)
+
             // Récupérer toutes les valeurs (y compris celles des steps démontés)
             const allValues = form.getValues()
-            // Valider avec le schéma complet (applique aussi les transforms) puis soumettre
+            let parsed: any
             try {
-                const parsed = fullSchema.parse(allValues)
-                logger.info('Property final submit started', {
-                    activeStep,
-                    typeProperty,
-                    isUpdate: Boolean(id),
-                    imagesCount: Array.isArray(parsed.images) ? parsed.images.length : 0,
-                })
-
-                const propertyMutate = await withTimeout(
-                    onSubmitForm(parsed),
-                    FINAL_SUBMIT_TIMEOUT_MS,
-                    'Préparation de la propriété'
-                )
-
-                // Nettoyer les champs undefined (Firestore ne supporte pas undefined)
-                const sanitize = (obj: any): any => {
-                    if (Array.isArray(obj)) return obj.map(sanitize)
-                    if (obj && typeof obj === 'object') {
-                        return Object.fromEntries(
-                            Object.entries(obj)
-                                .filter(([, v]) => v !== undefined)
-                                .map(([k, v]) => [k, sanitize(v)])
-                        )
-                    }
-                    return obj
-                }
-
-                const sanitized = sanitize(propertyMutate)
-
-                // Lancer la mutation
-                await withTimeout(
-                    mutation.mutateAsync(sanitized),
-                    FINAL_SUBMIT_TIMEOUT_MS,
-                    "Enregistrement de la propriété"
-                )
-                logger.info('Property final submit completed', {
-                    typeProperty,
-                    isUpdate: Boolean(id),
-                })
-        } catch (error) {
-                logger.error('Property final submit failed', {
-                    error,
-                    activeStep,
-                    typeProperty,
-                    isUpdate: Boolean(id),
-                })
+                // Valider avec le schéma complet (applique aussi les transforms)
+                parsed = fullSchema.parse(allValues)
+            } catch (error) {
                 toast({
                     duration: 3000,
                     title: "Validation finale échouée",
@@ -317,7 +361,28 @@ export const PropertyFormComponentProvider = ({ children, isUpdate, propertyToUp
                     ),
                     variant: "destructive"
                 })
+                isFinalSubmittingRef.current = false
+                setIsFinalSubmitting(false)
+                return
             }
+
+            if (!isUpdate && (!user || !isAnnouncer(user))) {
+                // Visiteur non connecté (ou compte sans rôle Annonceur) : l'annonce
+                // reste en mémoire, on demande la création de compte/connexion.
+                setPendingSubmission({ parsed })
+                setIsPublishAuthModalOpen(true)
+                return
+            }
+
+            // Déjà authentifié + Annonceur : on passe quand même par `pendingSubmission` /
+            // le useEffect ci-dessous plutôt que d'appeler runFinalSubmission ici directement.
+            // Raison : juste après une connexion, le SDK Firebase Client (utilisé par l'upload
+            // Storage et l'écriture Firestore) peut ne pas être encore synchronisé avec la
+            // session NextAuth (cf. isFirebaseConnected dans useCurrentUser) — sans cette
+            // attente, l'upload d'image reste bloqué jusqu'au timeout ("Upload image a pris
+            // trop de temps"). Le useEffect est le seul endroit qui attend correctement
+            // isFirebaseConnected avant de lancer l'upload/écriture.
+            setPendingSubmission({ parsed })
         } else {
             // Si on est au step 0 ou 1, valider l'étape actuelle et passer à la suivante
             const isValid = await form.trigger()
@@ -356,6 +421,31 @@ export const PropertyFormComponentProvider = ({ children, isUpdate, propertyToUp
         window.scrollTo({ top: 0, behavior: 'smooth' })
     }, [activeStep])
 
+    // Dès que le visiteur a créé un compte/s'est connecté et obtenu le rôle Annonceur
+    // depuis le modal, et que le SDK Firebase Client est synchronisé, on republie
+    // automatiquement l'annonce déjà remplie sans lui demander de tout ressaisir.
+    useEffect(() => {
+        if (!pendingSubmission) return
+        if (!user || !isAnnouncer(user)) return
+        if (!isFirebaseConnected) return
+
+        // isFinalSubmittingRef/isFinalSubmitting sont déjà à `true` depuis le clic sur
+        // "Enregistrer" (voir onSubmit) : on ne fait que les maintenir jusqu'à la fin.
+        const toRun = pendingSubmission
+        setPendingSubmission(null)
+        setIsPublishAuthModalOpen(false)
+        void runFinalSubmission(toRun.parsed)
+            .catch(() => {
+                // runFinalSubmission a déjà notifié l'erreur via toast. On garde la
+                // possibilité de resoumettre manuellement via le bouton du formulaire.
+            })
+            .finally(() => {
+                isFinalSubmittingRef.current = false
+                setIsFinalSubmitting(false)
+            })
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [pendingSubmission, user, isFirebaseConnected])
+
     const contextValue = useMemo(() => ({
         activeStep,
         setActiveStep,
@@ -363,8 +453,10 @@ export const PropertyFormComponentProvider = ({ children, isUpdate, propertyToUp
         propertyPreview,
         setPropertyPreview,
         currentStepSchema,
-        typeProperty
-    }), [activeStep, form, propertyPreview, currentStepSchema, typeProperty]);
+        typeProperty,
+        prepareForExternalRedirect,
+        isFinalSubmitting
+    }), [activeStep, form, propertyPreview, currentStepSchema, typeProperty, prepareForExternalRedirect, isFinalSubmitting]);
 
     return (
         <PropertyFormComponentContext.Provider value={contextValue}>
@@ -383,6 +475,18 @@ export const PropertyFormComponentProvider = ({ children, isUpdate, propertyToUp
                     {children}
                 </form>
             </Form>
+            <PublishAuthModal
+                isOpen={isPublishAuthModalOpen}
+                onClose={() => {
+                    // L'utilisateur annule sans avoir terminé la connexion : on relâche le
+                    // verrou anti double-soumission pour qu'il puisse recliquer "Enregistrer"
+                    // (sinon le bouton resterait désactivé indéfiniment, cf. pendingSubmission).
+                    setIsPublishAuthModalOpen(false)
+                    setPendingSubmission(null)
+                    isFinalSubmittingRef.current = false
+                    setIsFinalSubmitting(false)
+                }}
+            />
         </PropertyFormComponentContext.Provider>
     )
 }

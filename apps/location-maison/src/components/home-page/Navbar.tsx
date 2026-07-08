@@ -154,13 +154,10 @@ const NavigationMenuNavbar = () => {
       link: routes.public.search_property,
       label: "Catalogue"
     },
-    ...(isAnnouncer ? [{
+    {
       link: routes.protected.add_property,
       label: "Poster une annonce"
-    }] : user ? [] : [{
-      link: routes.public.signin,
-      label: "Poster une annonce"
-    }]),
+    },
     ...(user ? [{
       link: routes.protected.advertising,
       label: "Publicité"

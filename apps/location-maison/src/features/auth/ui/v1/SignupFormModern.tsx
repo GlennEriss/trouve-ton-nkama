@@ -40,7 +40,7 @@ import {
   Building2,
 } from 'lucide-react';
 import { createLogger } from '@/lib/logger';
-import { mapRegisterFormToSignupData } from './signup.mapper';
+import { mapRegisterFormToSignupData, mapSignupErrorToToast } from './signup.mapper';
 import { trackingEvents, useTrackEvent } from '@/features/analytics/tracking';
 
 const logger = createLogger('auth.signup-form-modern');
@@ -214,38 +214,12 @@ export const SignupFormModern: React.FC = () => {
         logger.warn('Signup failed with business error', {
           error: result.error,
         });
-        const errorCode = result.error?.code;
-        let errorTitle = 'Erreur';
-        let errorMessage = result.error?.message || 'Une erreur est survenue.';
-        
-        // Personnaliser le message selon le type d'erreur
-        if (errorCode === 'EMAIL_ALREADY_IN_USE') {
-          errorTitle = 'Email déjà utilisé';
-          errorMessage = 'Cette adresse email est déjà associée à un compte existant. Si c\'est votre compte, veuillez vous connecter. Sinon, utilisez une autre adresse email.';
-        } else if (errorCode === 'PHONE_ALREADY_IN_USE') {
-          errorTitle = 'Numéro de téléphone déjà utilisé';
-          errorMessage = 'Ce numéro de téléphone est déjà associé à un compte existant. Veuillez utiliser un autre numéro.';
-        } else if (errorCode === 'WEAK_PASSWORD') {
-          errorTitle = 'Mot de passe trop faible';
-          errorMessage = 'Votre mot de passe doit contenir au moins 8 caractères, une majuscule et un chiffre.';
-        } else if (errorCode === 'INVALID_EMAIL') {
-          errorTitle = 'Email invalide';
-          errorMessage = 'L\'adresse email fournie n\'est pas valide. Veuillez vérifier votre saisie.';
-        } else if (errorCode === 'TERMS_NOT_ACCEPTED') {
-          errorTitle = 'Conditions non acceptées';
-          errorMessage = 'Vous devez accepter les conditions d\'utilisation et la politique de confidentialité pour créer un compte.';
-        } else if (errorCode === 'ANNOUNCER_TERMS_NOT_ACCEPTED') {
-          errorTitle = 'Conditions annonceur non acceptées';
-          errorMessage = 'Vous devez accepter les conditions annonceur pour créer un compte annonceur.';
-        } else if (errorCode === 'NETWORK_ERROR') {
-          errorTitle = 'Erreur de connexion';
-          errorMessage = 'Une erreur de connexion est survenue. Veuillez vérifier votre connexion internet et réessayer.';
-        }
-        
+        const { title, description } = mapSignupErrorToToast(result.error);
+
         toast({
           duration: 5000,
-          title: errorTitle,
-          description: errorMessage,
+          title,
+          description,
           variant: 'destructive',
         });
       }

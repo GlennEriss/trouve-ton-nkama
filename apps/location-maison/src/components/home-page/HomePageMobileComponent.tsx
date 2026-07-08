@@ -29,12 +29,10 @@ export default function HomePageMobileComponent() {
 
     const { user } = useCurrentUser()
     const { trackEvent } = useTrackEvent()
-    const isAnnouncer = Array.isArray(user?.roles) && user.roles.includes('Announcer')
-    const publishLink = !user
-        ? routes.public.signin
-        : isAnnouncer
-            ? routes.protected.add_property
-            : routes.public.search_property
+    // /property/add gère lui-même l'authentification (voir PublishAuthModal) : un visiteur
+    // non connecté ou non-Annonceur peut remplir l'annonce, on ne lui demande de créer un
+    // compte / se connecter qu'à la soumission finale.
+    const publishLink = routes.protected.add_property
     const { width } = useWindowSize()
     const shouldReduceMotion = useReducedMotion()
     // Porte de garage: gestion de la navbar animée
