@@ -45,3 +45,11 @@ services-account-firebase/*.json
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# PWA (generated at build time by @ducanh2912/next-pwa, regenerated on every build)
+/public/sw.js
+/public/sw.js.map
+/public/workbox-*.js
+/public/workbox-*.js.map
+/public/worker-*.js
+/public/worker-*.js.map

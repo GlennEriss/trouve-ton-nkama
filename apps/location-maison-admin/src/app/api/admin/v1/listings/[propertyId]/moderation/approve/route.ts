@@ -7,12 +7,13 @@ import { hasPermission } from "@/modules/iam/domain/permissions";
 import { requireAdmin } from "@/modules/iam/presentation/admin-guard";
 import {
   recordListingModerationDecision,
-  updateListingState,
+  updateListingModerationStatus,
 } from "@/modules/listing-management/application/listing-management.service";
 
 const bodySchema = z
   .object({
-    reason: z.string().trim().min(3).max(500),
+    // Approuver n'exige pas de motif, contrairement à rejeter.
+    reason: z.string().trim().max(500).optional(),
   })
   .strict();
 
@@ -70,11 +71,11 @@ export async function POST(request: NextRequest, context: RouteContext) {
   }
 
   try {
-    const mutation = await updateListingState({
+    const mutation = await updateListingModerationStatus({
       propertyId,
       actorUid: auth.admin.uid,
+      decision: "APPROVE",
       reason: parsed.data.reason,
-      state: "IN_PROGRESS",
     });
 
     if (!mutation) {
@@ -88,6 +89,8 @@ export async function POST(request: NextRequest, context: RouteContext) {
       );
     }
 
+    const reasonForLog = parsed.data.reason?.trim() || "Approuvé sans motif";
+
     await Promise.all([
       logAudit({
         actorId: auth.admin.uid,
@@ -98,23 +101,23 @@ export async function POST(request: NextRequest, context: RouteContext) {
         status: "success",
         correlationId: auth.correlationId,
         details: {
-          reason: parsed.data.reason,
+          reason: reasonForLog,
         },
         diff: {
-          beforeState: mutation.before.state,
-          afterState: mutation.after.state,
-          beforeStatus: mutation.before.status,
-          afterStatus: mutation.after.status,
+          beforeModerationStatus: mutation.before.moderationStatus,
+          afterModerationStatus: mutation.after.moderationStatus,
         },
       }),
       recordListingModerationDecision({
         propertyId,
         decision: "APPROVE",
-        reason: parsed.data.reason,
+        reason: reasonForLog,
         beforeState: mutation.before.state,
         afterState: mutation.after.state,
         beforeStatus: mutation.before.status,
         afterStatus: mutation.after.status,
+        beforeModerationStatus: mutation.before.moderationStatus,
+        afterModerationStatus: mutation.after.moderationStatus,
         actorId: auth.admin.uid,
         actorRoles: auth.admin.roles,
         correlationId: auth.correlationId,
@@ -123,6 +126,16 @@ export async function POST(request: NextRequest, context: RouteContext) {
 
     return jsonSuccess({ listing: mutation.after }, auth.correlationId);
   } catch (error) {
+    if (error instanceof Error && error.message === "LISTING_NOT_PENDING") {
+      return jsonError(
+        {
+          code: "CONFLICT",
+          message: "Cette annonce a déjà été traitée (déjà approuvée ou rejetée).",
+        },
+        409,
+        auth.correlationId,
+      );
+    }
     return jsonError(
       {
         code: "INTERNAL_ERROR",

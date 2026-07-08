@@ -93,6 +93,10 @@ function normalizeImages(value: unknown) {
     .filter((entry): entry is { fileURL: string; filePATH: string } => Boolean(entry));
 }
 
+function toModerationStatus(value: unknown) {
+  return value === "PENDING" || value === "APPROVED" || value === "REJECTED" ? value : null;
+}
+
 function mapListingDetails(docId: string, data: RawPropertyDoc): ListingDetails {
   const title = toTrimmedString(data.title) ?? docId;
   const description = toTrimmedString(data.description) ?? "";
@@ -108,6 +112,10 @@ function mapListingDetails(docId: string, data: RawPropertyDoc): ListingDetails 
     "typeProperty",
     "status",
     "state",
+    "moderationStatus",
+    "rejectionReason",
+    "moderationReviewedAt",
+    "moderationReviewedBy",
     "price",
     "area",
     "street",
@@ -164,6 +172,8 @@ function mapListingDetails(docId: string, data: RawPropertyDoc): ListingDetails 
     typeProperty,
     status,
     state: stateRaw,
+    moderationStatus: toModerationStatus(data.moderationStatus),
+    rejectionReason: toTrimmedString(data.rejectionReason),
     price: toNullableNumber(data.price),
     area: toNullableNumber(data.area),
     city: toTrimmedString(data.city),
@@ -218,6 +228,8 @@ function toListItem(details: ListingDetails): ListingListItem {
     typeProperty: details.typeProperty,
     status: details.status,
     state: details.state,
+    moderationStatus: details.moderationStatus,
+    rejectionReason: details.rejectionReason,
     price: details.price,
     area: details.area,
     city: details.city,
@@ -295,6 +307,59 @@ export async function patchPropertyState(
   state: "IN_PROGRESS" | "ARCHIVED",
 ) {
   await patchPropertyById(propertyId, { state });
+}
+
+// Distinct de patchPropertyState : moderationStatus est un champ sémantiquement
+// différent (review avant publication, pas actif/archivé).
+export async function patchPropertyModerationStatus(
+  propertyId: string,
+  input: {
+    moderationStatus: "APPROVED" | "REJECTED";
+    rejectionReason?: string | null;
+    reviewedBy: string;
+  },
+) {
+  await patchPropertyById(propertyId, {
+    moderationStatus: input.moderationStatus,
+    rejectionReason: input.moderationStatus === "REJECTED" ? input.rejectionReason ?? null : null,
+    moderationReviewedAt: FieldValue.serverTimestamp(),
+    moderationReviewedBy: input.reviewedBy,
+  });
+}
+
+export async function listPendingListings(input: {
+  limit: number;
+  cursor?: string | null;
+}): Promise<RawPropertyPageResult> {
+  const db = getFirebaseAdminDb();
+  let query = db
+    .collection(PROPERTIES_COLLECTION)
+    .where("moderationStatus", "==", "PENDING")
+    .orderBy("createdAt", "asc")
+    .limit(input.limit);
+
+  const cursor = input.cursor?.trim() || null;
+  if (cursor) {
+    const cursorDoc = await db.collection(PROPERTIES_COLLECTION).doc(cursor).get();
+    if (cursorDoc.exists) {
+      query = query.startAfter(cursorDoc);
+    }
+  }
+
+  const snapshot = await query.get();
+  const rows = snapshot.docs.map((doc) => {
+    const details = mapListingDetails(doc.id, doc.data() as RawPropertyDoc);
+    return {
+      docId: doc.id,
+      listing: toListItem(details),
+      details,
+    };
+  });
+
+  return {
+    rows,
+    hasMore: snapshot.docs.length === input.limit,
+  };
 }
 
 export async function deletePropertyById(propertyId: string) {

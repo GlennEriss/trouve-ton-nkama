@@ -50,6 +50,10 @@ function toStatus(value: unknown) {
   return value === "FOR_RENT" || value === "FOR_SALE" ? value : null;
 }
 
+function toModerationStatus(value: unknown) {
+  return value === "PENDING" || value === "APPROVED" || value === "REJECTED" ? value : null;
+}
+
 function toRecordOrNull(value: unknown) {
   if (!value || typeof value !== "object" || Array.isArray(value)) {
     return null;
@@ -94,6 +98,8 @@ function mapDecision(
     afterState: toTrimmedString(data.afterState),
     beforeStatus: toStatus(data.beforeStatus),
     afterStatus: toStatus(data.afterStatus),
+    beforeModerationStatus: toModerationStatus(data.beforeModerationStatus),
+    afterModerationStatus: toModerationStatus(data.afterModerationStatus),
     actorId,
     actorRoles: toStringArray(data.actorRoles),
     correlationId: toTrimmedString(data.correlationId),
@@ -125,6 +131,8 @@ export async function createListingModerationDecision(input: {
   afterState: string | null;
   beforeStatus: "FOR_RENT" | "FOR_SALE" | null;
   afterStatus: "FOR_RENT" | "FOR_SALE" | null;
+  beforeModerationStatus?: "PENDING" | "APPROVED" | "REJECTED" | null;
+  afterModerationStatus?: "PENDING" | "APPROVED" | "REJECTED" | null;
   actorId: string;
   actorRoles: string[];
   correlationId: string;
@@ -138,6 +146,8 @@ export async function createListingModerationDecision(input: {
     afterState: input.afterState,
     beforeStatus: input.beforeStatus,
     afterStatus: input.afterStatus,
+    beforeModerationStatus: input.beforeModerationStatus ?? null,
+    afterModerationStatus: input.afterModerationStatus ?? null,
     actorId: input.actorId,
     actorRoles: input.actorRoles,
     correlationId: input.correlationId,
