@@ -24,7 +24,10 @@ export default function Navbar() {
   );
 
   if (width < 768) {
-    if (user) {
+    // Sur mobile, les pages "protégées" (ex: /property/add, désormais accessible aux
+    // visiteurs anonymes) ont déjà leur propre en-tête sticky (AppMobileStickyHeader).
+    // Ne pas empiler la navbar générique par-dessus, quel que soit l'état de connexion.
+    if (user || isProtectedRoute) {
       return null
     }
     return (
