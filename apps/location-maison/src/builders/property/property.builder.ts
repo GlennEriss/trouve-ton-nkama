@@ -52,7 +52,10 @@ export abstract class PropertyBuilder {
             /* createdAt: new Date(),
             updatedAt: new Date(), */
             state: 'IN_PROGRESS',
-            status: "FOR_RENT"
+            status: "FOR_RENT",
+            // Valeur par défaut uniquement : createProperty() la force à 'PENDING' de toute
+            // façon avant l'écriture Firestore (défense en profondeur, cf. firestore.rules).
+            moderationStatus: 'PENDING'
         };
     }
 

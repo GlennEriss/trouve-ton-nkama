@@ -384,3 +384,78 @@ export const onPropertyFavorisDelete = functions.firestore
 
     return null;
   });
+
+// Notifie l'annonceur quand un admin (depuis location-maison-admin, via Admin SDK) approuve
+// ou rejette son annonce. Se déclenche quel que soit le repo à l'origine de l'écriture,
+// puisque les triggers Firestore sont au niveau projet, pas au niveau app.
+export const onPropertyModerationStatusChange = functions.firestore
+  .document('properties/{propertyId}')
+  .onUpdate(async (change, context) => {
+    const propertyId = context.params.propertyId as string;
+    const before = change.before.data() as Record<string, unknown>;
+    const after = change.after.data() as Record<string, unknown>;
+
+    const beforeStatus = typeof before.moderationStatus === 'string' ? before.moderationStatus : null;
+    const afterStatus = typeof after.moderationStatus === 'string' ? after.moderationStatus : null;
+
+    if (!afterStatus || beforeStatus === afterStatus) {
+      return null;
+    }
+    if (afterStatus !== 'APPROVED' && afterStatus !== 'REJECTED') {
+      return null;
+    }
+
+    const createdBy = typeof after.createdBy === 'string' ? after.createdBy.trim() : '';
+    if (!createdBy) {
+      functions.logger.warn('Skipping moderation notification: missing createdBy', { propertyId });
+      return null;
+    }
+
+    const title = typeof after.title === 'string' && after.title.trim().length > 0
+      ? after.title.trim()
+      : 'Votre annonce';
+    const rejectionReason = typeof after.rejectionReason === 'string' ? after.rejectionReason.trim() : '';
+
+    const notification: Notification = afterStatus === 'APPROVED'
+      ? {
+          idProperty: propertyId,
+          type: 'MODERATION',
+          title: 'Annonce approuvée',
+          message: `Votre annonce "${title}" a été approuvée et est maintenant visible publiquement.`,
+          isRead: false,
+          createdFor: createdBy,
+          actionUrl: `/houseDetails/${propertyId}`,
+          state: 'IN_PROGRESS',
+          createdAt: admin.firestore.FieldValue.serverTimestamp() as any,
+        }
+      : {
+          idProperty: propertyId,
+          type: 'MODERATION',
+          title: 'Annonce rejetée',
+          message: rejectionReason
+            ? `Votre annonce "${title}" a été rejetée. Motif : ${rejectionReason}`
+            : `Votre annonce "${title}" a été rejetée.`,
+          isRead: false,
+          createdFor: createdBy,
+          actionUrl: '/property',
+          state: 'IN_PROGRESS',
+          createdAt: admin.firestore.FieldValue.serverTimestamp() as any,
+        };
+
+    try {
+      await adminDB.collection('notifications').add(notification);
+      functions.logger.info('Moderation status notification created', {
+        propertyId,
+        createdBy,
+        afterStatus,
+      });
+    } catch (error) {
+      functions.logger.error('Failed to create moderation status notification', {
+        propertyId,
+        createdBy,
+        error,
+      });
+    }
+
+    return null;
+  });

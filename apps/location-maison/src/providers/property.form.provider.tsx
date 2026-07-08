@@ -298,6 +298,14 @@ export const PropertyFormComponentProvider = ({ children, isUpdate, propertyToUp
 
             const sanitized = sanitize(propertyMutate)
 
+            // Resoumission après rejet : modifier une annonce REJECTED la repasse
+            // automatiquement en PENDING pour une nouvelle review (autorisé par
+            // firestore.rules), sans bouton dédié — l'édition classique suffit.
+            if (id && propertyToUpdated?.moderationStatus === 'REJECTED') {
+                sanitized.moderationStatus = 'PENDING'
+                sanitized.rejectionReason = null
+            }
+
             // Lancer la mutation
             await withTimeout(
                 mutation.mutateAsync(sanitized),

@@ -10,6 +10,7 @@ import { Timestamp } from "firebase/firestore";
 //Property
 export type TypeProperty = keyof typeof TypePropertyEnum;
 export type StatusProperty = "FOR_RENT" | "FOR_SALE"
+export type ModerationStatus = "PENDING" | "APPROVED" | "REJECTED"
 
 // Types pour les promotions
 export type PromotionType = 'featured' | 'trending-7d' | 'trending-3d' | 'boost' | null;
@@ -39,6 +40,13 @@ export type Property = Location & ICreation & {
     status: StatusProperty,
     contact?: string //Propriété tampon
     isOwner?: boolean
+
+    // Modération avant publication : distinct de `state` (ICreation), qui gère
+    // l'archivage par le propriétaire, pas la review admin.
+    moderationStatus: ModerationStatus
+    rejectionReason?: string
+    moderationReviewedAt?: Timestamp
+    moderationReviewedBy?: string
 
     // Nouvelles propriétés pour les promotions
     currentPromotion?: Promotion;

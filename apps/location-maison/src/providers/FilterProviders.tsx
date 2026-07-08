@@ -40,8 +40,9 @@ export default function FilterProviders({ children }: Readonly<{ children: React
     const filtersString = React.useMemo(() => {
         const f: string[] = [];
         
-        // Filtre constant pour ne récupérer que les propriétés en cours
+        // Filtre constant pour ne récupérer que les propriétés en cours et approuvées
         f.push(`state:"IN_PROGRESS"`);
+        f.push(`moderationStatus:"APPROVED"`);
         
         const cityVal = searchParams.get("city") ?? "";
         const streetVal = searchParams.get("street") ?? "";

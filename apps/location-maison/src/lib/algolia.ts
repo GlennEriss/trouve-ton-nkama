@@ -6,5 +6,5 @@ export const algoliaClient = algoliasearch(
 );
 
 export const ALGOLIA_INDEX_NAME = 'location-maison_property-index';
-// Applied to all facet queries so we only surface active listings
-export const ALGOLIA_BASE_FILTER = 'state:"IN_PROGRESS"';
+// Applied to all facet queries so we only surface active, moderation-approved listings
+export const ALGOLIA_BASE_FILTER = 'state:"IN_PROGRESS" AND moderationStatus:"APPROVED"';

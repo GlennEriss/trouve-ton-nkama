@@ -45,8 +45,16 @@ service cloud.firestore {
     
     match /properties/{propertyId} {
       allow read: if true;
-      allow create: if isAnnouncer();
-      allow update, delete: if isAnnouncer() && request.auth.uid == resource.data.uid;
+      allow create: if isAnnouncer() && request.resource.data.moderationStatus == 'PENDING';
+      // Le propriétaire ne peut pas changer moderationStatus lui-même, sauf pour resoumettre
+      // une annonce rejetée (REJECTED -> PENDING). Seul l'admin (Admin SDK, bypass ces rules)
+      // peut approuver/rejeter. Note: corrige aussi resource.data.uid -> createdBy, le seul
+      // champ réellement écrit sur les documents property (uid n'a jamais existé ici).
+      allow update: if isAnnouncer() && request.auth.uid == resource.data.createdBy && (
+        request.resource.data.moderationStatus == resource.data.moderationStatus ||
+        (resource.data.moderationStatus == 'REJECTED' && request.resource.data.moderationStatus == 'PENDING')
+      );
+      allow delete: if isAnnouncer() && request.auth.uid == resource.data.createdBy;
     }
     
     match /suggestions/{suggestionId} {

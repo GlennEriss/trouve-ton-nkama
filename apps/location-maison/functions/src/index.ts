@@ -17,6 +17,7 @@ export {
   onPropertyCreateNewAnnouncement,
   onPropertyFavorisUpdate,
   onPropertyFavorisDelete,
+  onPropertyModerationStatusChange,
 } from './notification';
 
 // Fonctions de paiement

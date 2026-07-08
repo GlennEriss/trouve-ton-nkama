@@ -219,12 +219,26 @@ type AdCardProps = {
   actionLoading: boolean;
 };
 
+const MODERATION_STATUS_LABELS: Record<string, string> = {
+  PENDING: 'En attente de validation',
+  APPROVED: 'Publiée',
+  REJECTED: 'Rejetée',
+};
+
+const MODERATION_STATUS_CLASSES: Record<string, string> = {
+  PENDING: 'bg-amber-100/95 text-amber-800',
+  APPROVED: 'bg-emerald-100/90 text-emerald-800',
+  REJECTED: 'bg-red-100/95 text-red-800',
+};
+
 function AdCard({ ad, onToggleState, onDelete, actionLoading }: AdCardProps) {
   const statusLabel = ad.status === 'FOR_RENT' ? 'À louer' : 'À vendre';
   const stateLabel = ad.state === 'IN_PROGRESS' ? 'Active' : 'Archivée';
   const publishedAt = formatDate(ad.createdAt);
   const updatedAt = formatDate(ad.updatedAt);
   const mainImage = ad.images?.[0]?.fileURL || '/fallback-image.jpg';
+  const moderationLabel = ad.moderationStatus ? MODERATION_STATUS_LABELS[ad.moderationStatus] : null;
+  const moderationClass = ad.moderationStatus ? MODERATION_STATUS_CLASSES[ad.moderationStatus] : '';
 
   return (
     <Card
@@ -256,6 +270,16 @@ function AdCard({ ad, onToggleState, onDelete, actionLoading }: AdCardProps) {
           >
             {stateLabel}
           </span>
+          {moderationLabel && (
+            <span
+              className={cn(
+                'rounded-full px-2.5 py-1 text-xs font-semibold backdrop-blur',
+                moderationClass
+              )}
+            >
+              {moderationLabel}
+            </span>
+          )}
           <PromotionBadge property={ad} />
         </div>
       </div>
@@ -268,6 +292,11 @@ function AdCard({ ad, onToggleState, onDelete, actionLoading }: AdCardProps) {
           <p className="line-clamp-1 text-sm text-gray-500 dark:text-gray-400">
             {resolveTypeLabel(ad.typeProperty)} • {ad.area || 0} m²
           </p>
+          {ad.moderationStatus === 'REJECTED' && ad.rejectionReason && (
+            <p className="rounded-lg bg-red-50 px-2.5 py-1.5 text-xs text-red-700 dark:bg-red-950/30 dark:text-red-300">
+              Motif du rejet : {ad.rejectionReason}
+            </p>
+          )}
           <p className="line-clamp-1 inline-flex items-center gap-1 text-sm text-gray-600 dark:text-gray-300">
             <MapPin className="h-4 w-4 text-[#146B67]" />
             {ad.street}, {ad.city}, {ad.province}

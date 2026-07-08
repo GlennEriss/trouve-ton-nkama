@@ -30,7 +30,11 @@ export async function updateProperty(id: string, property: Partial<Property>): P
 
 }
 export async function createProperty(property: Property): Promise<string | null> {
-    const id = await createModel<Property>(property, firebaseCollectionNames.properties);
+    // Toute nouvelle annonce démarre en attente de review, quelle que soit la valeur
+    // fournie par l'appelant (défense en profondeur, en plus de firestore.rules).
+    const { rejectionReason, moderationReviewedAt, moderationReviewedBy, ...safeProperty } = property;
+    const payload: Property = { ...safeProperty, moderationStatus: 'PENDING' };
+    const id = await createModel<Property>(payload, firebaseCollectionNames.properties);
     if (id) {
         void invalidatePropertySeoCache();
     }
@@ -50,6 +54,7 @@ export async function getProperties({ limitPerPage, lastDoc, createdBy, type }: 
     let q = query(
         professionalRef,
         where('state', '==', 'IN_PROGRESS'),
+        where('moderationStatus', '==', 'APPROVED'),
         orderBy('createdAt', 'desc'),
     )
     if (limitPerPage > 0) {
@@ -180,7 +185,8 @@ export async function getServerCountByProvince(province: string): Promise<number
 
         // Créer la requête pour compter les documents avec la province spécifiée
         const q = query(propertiesRef,
-            where('province', '==', province)
+            where('province', '==', province),
+            where('moderationStatus', '==', 'APPROVED')
         );
 
         // Utiliser getCountFromServer pour compter les documents
@@ -207,7 +213,10 @@ export async function getServerCountByPropertyType(type: string): Promise<number
         const propertiesRef = collection(db, firebaseCollectionNames.properties);
 
         // Créer la requête pour compter les documents avec le type spécifié
-        const q = query(propertiesRef, where('typeProperty', '==', type));
+        const q = query(propertiesRef,
+            where('typeProperty', '==', type),
+            where('moderationStatus', '==', 'APPROVED')
+        );
 
         // Utiliser getCountFromServer pour compter les documents
         const snapshot = await getCountFromServer(q);

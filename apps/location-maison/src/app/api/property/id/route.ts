@@ -36,7 +36,9 @@ export async function GET(request: Request) {
 
     const property = await getPropertyById(id);
 
-    if (!property) {
+    // Traiter une annonce non approuvée ou archivée comme inexistante pour le public
+    // (cette route est appelée sans auth, cf. PropertyCard.tsx / use-property.ts).
+    if (!property || property.state !== 'IN_PROGRESS' || property.moderationStatus !== 'APPROVED') {
       return jsonApiError(404, 'PROPERTY_NOT_FOUND', 'Property not found', { id });
     }
 

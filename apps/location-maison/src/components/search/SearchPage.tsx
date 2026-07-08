@@ -92,8 +92,9 @@ export default function SearchPage() {
   const filtersString = useMemo(() => {
     const f: string[] = [];
     
-    // Filtre constant pour ne récupérer que les propriétés en cours
+    // Filtre constant pour ne récupérer que les propriétés en cours et approuvées
     f.push(`state:"IN_PROGRESS"`);
+    f.push(`moderationStatus:"APPROVED"`);
     
     const provinceVal = searchParams.get("province") ?? "";
     const cityVal = searchParams.get("city") ?? "";
