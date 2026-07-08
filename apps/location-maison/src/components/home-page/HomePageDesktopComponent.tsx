@@ -3,7 +3,6 @@ import Navbar from './Navbar'
 import Image from 'next/image'
 import Link from 'next/link'
 import { routes } from '@/constantes/routes'
-import { useCurrentUser } from '@/hooks/use-current-user'
 import CarouselPropertyType from './CarouselPropertyType'
 import PropertyByProvince from './PropertyByProvince'
 import FeaturedSection from './FeaturedSection'
@@ -31,15 +30,12 @@ const detailssection2 = [
   }
 ]
 export default function HomePageDesktopComponent() {
-  const { user } = useCurrentUser()
   const { trackEvent } = useTrackEvent()
-  const isAnnouncer = Array.isArray(user?.roles) && user.roles.includes('Announcer')
   const shouldReduceMotion = useReducedMotion()
-  const publishLink = !user
-    ? routes.public.signin
-    : isAnnouncer
-      ? routes.protected.add_property
-      : routes.public.search_property
+  // /property/add gère lui-même l'authentification (voir PublishAuthModal) : un visiteur
+  // non connecté ou non-Annonceur peut remplir l'annonce, on ne lui demande de créer un
+  // compte / se connecter qu'à la soumission finale.
+  const publishLink = routes.protected.add_property
 
   const getRevealProps = (delay = 0) =>
     shouldReduceMotion

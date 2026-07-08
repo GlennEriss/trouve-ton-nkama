@@ -172,7 +172,7 @@ export default function SigninMobileComponent() {
 
         <div className="flex items-center justify-center md:mt-10">
           <Button
-            onClick={signinWithGoogle}
+            onClick={() => signinWithGoogle()}
             variant="outline"
             disabled={isLoading}
             className="w-full flex justify-center items-center gap-2 bg-white dark:bg-gray-900 border border-gray-300 rounded-full p-6 text-md font-medium text-gray-800 dark:text-white hover:bg-gray-200 focus:outline-none focus:ring-offset-2 focus:ring-gray-500"

@@ -11,7 +11,6 @@ import { useAlgoliaContext } from "@/providers/AlgoliaContext";
 import { useRouter } from "next/navigation";
 import { propertyTypesList } from "./PropertyTypeList";
 import Link from "next/link";
-import { useCurrentUser } from "@/hooks/use-current-user";
 import { getTypePropertyKey, TypeProperty } from "@/constantes/property-type";
 
 const neighborhoods: Neighborhood[] = [
@@ -73,13 +72,10 @@ const HomePage = () => {
     typeProperty,
     setTypeProperty,
   } = useAlgoliaContext();
-  const { user } = useCurrentUser();
-  const isAnnouncer = Array.isArray(user?.roles) && user.roles.includes('Announcer');
-  const publishLink = !user
-    ? routes.public.signin
-    : isAnnouncer
-      ? routes.protected.add_property
-      : routes.public.search_property;
+  // /property/add gère lui-même l'authentification (voir PublishAuthModal) : un visiteur
+  // non connecté ou non-Annonceur peut remplir l'annonce, on ne lui demande de créer un
+  // compte / se connecter qu'à la soumission finale.
+  const publishLink = routes.protected.add_property;
 
   const toggleSelection = useCallback(
     (list: string[], item: string, setter: (val: string[]) => void) => {
