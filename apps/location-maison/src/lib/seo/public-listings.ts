@@ -68,7 +68,7 @@ function mapDocToPublicProperty(id: string, data: unknown): PublicProperty | nul
   }
 
   const property = { ...(data as Property), id } as PublicProperty;
-  return property.state === 'IN_PROGRESS' ? property : null;
+  return property.state === 'IN_PROGRESS' && property.moderationStatus === 'APPROVED' ? property : null;
 }
 
 async function getAdminDb() {
@@ -126,6 +126,7 @@ export async function listPublicPropertiesForSitemap(limit = 5000): Promise<Publ
     const snapshot = await db
       .collection(firebaseCollectionNames.properties)
       .where('state', '==', 'IN_PROGRESS')
+      .where('moderationStatus', '==', 'APPROVED')
       .limit(limit)
       .get();
 
@@ -163,6 +164,7 @@ export async function listLandingProperties(options: {
       .collection(firebaseCollectionNames.properties)
       .where('state', '==', 'IN_PROGRESS')
       .where('status', '==', transactionConfig.status)
+      .where('moderationStatus', '==', 'APPROVED')
       .limit(250)
       .get();
 

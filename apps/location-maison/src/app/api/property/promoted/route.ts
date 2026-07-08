@@ -38,6 +38,11 @@ export async function GET() {
     const propertiesRef = db.collection('properties');
     const querySnap = await propertiesRef
       .where('isPromoted', '==', true)
+      // Corrige une lacune préexistante : aucun filtre state/moderationStatus n'était
+      // appliqué ici, une annonce archivée ou en attente de review pouvait apparaître
+      // en avant sur l'accueil.
+      .where('state', '==', 'IN_PROGRESS')
+      .where('moderationStatus', '==', 'APPROVED')
       .orderBy('currentPromotion.startDate', 'desc')
       .limit(20)
       .get();

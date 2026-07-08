@@ -460,7 +460,7 @@ function escapeForAlgoliaFilter(value: string): string {
 }
 
 function buildAlgoliaFilters(filters: SearchFilters): string {
-  const clauses: string[] = ['state:"IN_PROGRESS"'];
+  const clauses: string[] = ['state:"IN_PROGRESS"', 'moderationStatus:"APPROVED"'];
 
   if (filters.province) clauses.push(`province:"${escapeForAlgoliaFilter(filters.province)}"`);
   if (filters.city) clauses.push(`city:"${escapeForAlgoliaFilter(filters.city)}"`);

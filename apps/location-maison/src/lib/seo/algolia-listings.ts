@@ -87,7 +87,11 @@ function buildFilters(options: {
   typePropertyValues: string[];
   cityLabel?: string;
 }): string {
-  const filters: string[] = ['state:"IN_PROGRESS"', `status:"${escapeFilterValue(options.status)}"`];
+  const filters: string[] = [
+    'state:"IN_PROGRESS"',
+    'moderationStatus:"APPROVED"',
+    `status:"${escapeFilterValue(options.status)}"`,
+  ];
 
   if (options.typePropertyValues.length > 0) {
     filters.push(

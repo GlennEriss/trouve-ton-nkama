@@ -24,7 +24,12 @@ export async function GET(request: NextRequest) {
   try {
     const propertiesRef = collection(db, firebaseCollectionNames.properties);
 
-    let q = query(propertiesRef, where('street', '==', quarter), where('state', '==', 'IN_PROGRESS'));
+    let q = query(
+      propertiesRef,
+      where('street', '==', quarter),
+      where('state', '==', 'IN_PROGRESS'),
+      where('moderationStatus', '==', 'APPROVED')
+    );
 
     if (province) {
       q = query(q, where('province', '==', province));
