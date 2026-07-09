@@ -1,10 +1,16 @@
-name: CI
+name: location-maison-admin CI
 
 on:
   pull_request:
+    paths: ['apps/location-maison-admin/**']
   push:
     branches:
       - main
+    paths: ['apps/location-maison-admin/**']
+
+defaults:
+  run:
+    working-directory: apps/location-maison-admin
 
 jobs:
   verify:
@@ -19,6 +25,7 @@ jobs:
         with:
           node-version: 20
           cache: npm
+          cache-dependency-path: apps/location-maison-admin/package-lock.json
 
       - name: Install
         run: npm ci

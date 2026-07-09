@@ -1,17 +1,20 @@
 # =============================================================================
-# Workflow de Tests CI/CD - Plateforme Location Maison Gabon
+# Workflow de Tests CI/CD - apps/location-maison
 # =============================================================================
 # Ce workflow exécute les tests unitaires, d'intégration et E2E
-# lors des push/PR sur les branches main et develop.
+# lors des push/PR sur les branches main et develop, uniquement quand
+# apps/location-maison change.
 # =============================================================================
 
-name: Tests & Quality
+name: location-maison Tests & Quality
 
 on:
   push:
     branches: [main, develop]
+    paths: ['apps/location-maison/**']
   pull_request:
     branches: [main, develop]
+    paths: ['apps/location-maison/**']
 
 # Annuler les runs précédents sur la même branche
 concurrency:
@@ -22,6 +25,10 @@ env:
   NODE_VERSION: '20'
   COVERAGE_THRESHOLD: 70
 
+defaults:
+  run:
+    working-directory: apps/location-maison
+
 jobs:
   # =============================================================================
   # LINT & TYPE CHECK
@@ -29,7 +36,7 @@ jobs:
   quality:
     name: 🔍 Code Quality
     runs-on: ubuntu-latest
-    
+
     steps:
       - name: 📥 Checkout code
         uses: actions/checkout@v4
@@ -39,6 +46,7 @@ jobs:
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: 'npm'
+          cache-dependency-path: apps/location-maison/package-lock.json
 
       - name: 📚 Install dependencies
         run: npm ci
@@ -56,7 +64,7 @@ jobs:
     name: 🧪 Unit Tests
     runs-on: ubuntu-latest
     needs: quality
-    
+
     steps:
       - name: 📥 Checkout code
         uses: actions/checkout@v4
@@ -66,6 +74,7 @@ jobs:
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: 'npm'
+          cache-dependency-path: apps/location-maison/package-lock.json
 
       - name: 📚 Install dependencies
         run: npm ci
@@ -79,7 +88,7 @@ jobs:
         uses: codecov/codecov-action@v4
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
-          files: ./coverage/lcov.info
+          files: ./apps/location-maison/coverage/lcov.info
           flags: unit
           name: unit-coverage
           fail_ci_if_error: false
@@ -88,7 +97,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: unit-coverage
-          path: coverage/
+          path: apps/location-maison/coverage/
           retention-days: 7
 
   # =============================================================================
@@ -98,7 +107,7 @@ jobs:
     name: 🔗 Integration Tests
     runs-on: ubuntu-latest
     needs: unit-tests
-    
+
     steps:
       - name: 📥 Checkout code
         uses: actions/checkout@v4
@@ -108,6 +117,7 @@ jobs:
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: 'npm'
+          cache-dependency-path: apps/location-maison/package-lock.json
 
       - name: 📚 Install dependencies
         run: npm ci
@@ -116,14 +126,12 @@ jobs:
         run: npm run test:integration -- --coverage --coverageReporters=json-summary
         env:
           CI: true
-          # Variables d'environnement de test (si nécessaires)
-          # FIREBASE_PROJECT_ID: ${{ secrets.FIREBASE_PROJECT_ID_TEST }}
 
       - name: 📊 Upload integration coverage to Codecov
         uses: codecov/codecov-action@v4
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
-          files: ./coverage/lcov.info
+          files: ./apps/location-maison/coverage/lcov.info
           flags: integration
           name: integration-coverage
           fail_ci_if_error: false
@@ -137,7 +145,7 @@ jobs:
     needs: integration-tests
     # Désactivé par défaut jusqu'à ce que Playwright soit configuré
     if: false
-    
+
     steps:
       - name: 📥 Checkout code
         uses: actions/checkout@v4
@@ -147,6 +155,7 @@ jobs:
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: 'npm'
+          cache-dependency-path: apps/location-maison/package-lock.json
 
       - name: 📚 Install dependencies
         run: npm ci
@@ -167,7 +176,7 @@ jobs:
         if: always()
         with:
           name: playwright-report
-          path: playwright-report/
+          path: apps/location-maison/playwright-report/
           retention-days: 30
 
   # =============================================================================
@@ -178,7 +187,7 @@ jobs:
     runs-on: ubuntu-latest
     needs: [unit-tests, integration-tests]
     if: always() && needs.unit-tests.result == 'success'
-    
+
     steps:
       - name: 📥 Checkout code
         uses: actions/checkout@v4
@@ -187,44 +196,40 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: unit-coverage
-          path: coverage/
+          path: apps/location-maison/coverage/
 
       - name: 📊 Display coverage summary
         run: |
           echo "## 📊 Rapport de Couverture" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
-          
+
           if [ -f coverage/coverage-summary.json ]; then
             LINES=$(cat coverage/coverage-summary.json | jq '.total.lines.pct')
             STATEMENTS=$(cat coverage/coverage-summary.json | jq '.total.statements.pct')
             FUNCTIONS=$(cat coverage/coverage-summary.json | jq '.total.functions.pct')
             BRANCHES=$(cat coverage/coverage-summary.json | jq '.total.branches.pct')
-            
+
             echo "| Métrique | Couverture | Objectif | Statut |" >> $GITHUB_STEP_SUMMARY
             echo "|----------|------------|----------|--------|" >> $GITHUB_STEP_SUMMARY
-            
-            # Lines
+
             if (( $(echo "$LINES >= ${{ env.COVERAGE_THRESHOLD }}" | bc -l) )); then
               echo "| Lines | ${LINES}% | ${{ env.COVERAGE_THRESHOLD }}% | ✅ |" >> $GITHUB_STEP_SUMMARY
             else
               echo "| Lines | ${LINES}% | ${{ env.COVERAGE_THRESHOLD }}% | ❌ |" >> $GITHUB_STEP_SUMMARY
             fi
-            
-            # Statements
+
             if (( $(echo "$STATEMENTS >= ${{ env.COVERAGE_THRESHOLD }}" | bc -l) )); then
               echo "| Statements | ${STATEMENTS}% | ${{ env.COVERAGE_THRESHOLD }}% | ✅ |" >> $GITHUB_STEP_SUMMARY
             else
               echo "| Statements | ${STATEMENTS}% | ${{ env.COVERAGE_THRESHOLD }}% | ❌ |" >> $GITHUB_STEP_SUMMARY
             fi
-            
-            # Functions
+
             if (( $(echo "$FUNCTIONS >= ${{ env.COVERAGE_THRESHOLD }}" | bc -l) )); then
               echo "| Functions | ${FUNCTIONS}% | ${{ env.COVERAGE_THRESHOLD }}% | ✅ |" >> $GITHUB_STEP_SUMMARY
             else
               echo "| Functions | ${FUNCTIONS}% | ${{ env.COVERAGE_THRESHOLD }}% | ❌ |" >> $GITHUB_STEP_SUMMARY
             fi
-            
-            # Branches
+
             if (( $(echo "$BRANCHES >= ${{ env.COVERAGE_THRESHOLD }}" | bc -l) )); then
               echo "| Branches | ${BRANCHES}% | ${{ env.COVERAGE_THRESHOLD }}% | ✅ |" >> $GITHUB_STEP_SUMMARY
             else
@@ -238,7 +243,7 @@ jobs:
         run: |
           if [ -f coverage/coverage-summary.json ]; then
             LINES=$(cat coverage/coverage-summary.json | jq '.total.lines.pct')
-            
+
             if (( $(echo "$LINES < ${{ env.COVERAGE_THRESHOLD }}" | bc -l) )); then
               echo "❌ La couverture de code est inférieure au seuil requis de ${{ env.COVERAGE_THRESHOLD }}%"
               echo "   Couverture actuelle: ${LINES}%"
@@ -257,7 +262,7 @@ jobs:
     runs-on: ubuntu-latest
     needs: [quality, unit-tests, integration-tests, coverage-report]
     if: always()
-    
+
     steps:
       - name: 📋 Generate summary
         run: |
