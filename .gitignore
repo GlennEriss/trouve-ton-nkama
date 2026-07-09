@@ -1,0 +1,13 @@
+# Monorepo root — chaque app garde aussi son propre .gitignore (apps/*/.gitignore)
+
+# dependencies (npm workspaces hoist certains modules ici)
+/node_modules
+
+# misc
+.DS_Store
+*.pem
+
+# env files
+.env*
+
+# vidéos générées (sortie de apps/marketing/scripts, pas la source — voir apps/marketing/videos/.gitignore)

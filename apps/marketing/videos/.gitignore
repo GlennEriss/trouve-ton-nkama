@@ -1,0 +1,5 @@
+# Sorties générées par scripts/assemble.mjs (403 Mo) — non versionnées, régénérables à partir
+# de apps/marketing/scripts + apps/marketing/assets. Garder ce dossier suivi en git (via ce
+# .gitignore) sans en committer le contenu.
+*
+!.gitignore

@@ -1,0 +1,15 @@
+{
+  "name": "trouve-ton-nkama",
+  "private": true,
+  "version": "0.0.0",
+  "description": "Trouve Ton Nkama — plateforme immobilière au Gabon (app publique + dashboard admin + marketing)",
+  "workspaces": [
+    "apps/*"
+  ],
+  "scripts": {
+    "dev:location-maison": "npm run dev -w apps/location-maison",
+    "build:location-maison": "npm run build -w apps/location-maison",
+    "dev:admin": "npm run dev -w apps/location-maison-admin",
+    "build:admin": "npm run build -w apps/location-maison-admin"
+  }
+}
