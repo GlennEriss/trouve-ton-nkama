@@ -1,0 +1,130 @@
+@startuml
+left to right direction
+skinparam packageStyle rectangle
+skinparam usecase {
+  BackgroundColor #F9F9F9
+  BorderColor #555555
+}
+
+actor "Super Admin" as Super
+actor "Operations Admin" as Ops
+actor "Moderation Admin" as Mod
+actor "Finance Admin" as Fin
+actor "Support Admin" as Sup
+actor "Analyst Admin" as Ana
+
+rectangle "Admin Dashboard System" {
+  usecase "UC-01\nSe connecter au dashboard" as UC01
+  usecase "UC-02\nLister les admins" as UC02
+  usecase "UC-03\nInviter un admin" as UC03
+  usecase "UC-04\nAssigner/modifier role" as UC04
+  usecase "UC-05\nSuspendre/revoquer admin" as UC05
+  usecase "UC-06\nVoir admins en ligne\net derniere connexion" as UC06
+
+  usecase "UC-07\nLister/rechercher utilisateurs" as UC07
+  usecase "UC-08\nVoir utilisateurs en ligne\net derniere activite" as UC08
+  usecase "UC-09\nSuspendre/reactiver utilisateur" as UC09
+
+  usecase "UC-10\nModerer annonces\n(approuver/rejeter)" as UC10
+  usecase "UC-11\nModeration en lot" as UC11
+
+  usecase "UC-12\nGerer packs credits" as UC12
+  usecase "UC-13\nAttribuer credits manuellement" as UC13
+  usecase "UC-14\nConsulter transactions" as UC14
+  usecase "UC-15\nInitier/valider remboursement" as UC15
+
+  usecase "UC-16\nVoir analytics recherches\n(7 jours par defaut)" as UC16
+  usecase "UC-17\nVoir taux avec/sans resultats" as UC17
+  usecase "UC-18\nVoir analytics visites\nFirebase vs Vercel" as UC18
+
+  usecase "UC-19\nConsulter audit logs" as UC19
+  usecase "UC-20\nExporter report analytics" as UC20
+  usecase "UC-21\nGerer parametres globaux" as UC21
+}
+
+Super --> UC01
+Super --> UC02
+Super --> UC03
+Super --> UC04
+Super --> UC05
+Super --> UC06
+Super --> UC07
+Super --> UC08
+Super --> UC09
+Super --> UC10
+Super --> UC11
+Super --> UC12
+Super --> UC13
+Super --> UC14
+Super --> UC15
+Super --> UC16
+Super --> UC17
+Super --> UC18
+Super --> UC19
+Super --> UC20
+Super --> UC21
+
+Ops --> UC01
+Ops --> UC02
+Ops --> UC06
+Ops --> UC07
+Ops --> UC08
+Ops --> UC09
+Ops --> UC10
+Ops --> UC11
+Ops --> UC14
+Ops --> UC16
+Ops --> UC17
+Ops --> UC18
+Ops --> UC19
+Ops --> UC20
+
+Mod --> UC01
+Mod --> UC07
+Mod --> UC08
+Mod --> UC10
+Mod --> UC11
+Mod --> UC16
+Mod --> UC17
+Mod --> UC18
+Mod --> UC19
+
+Fin --> UC01
+Fin --> UC07
+Fin --> UC08
+Fin --> UC12
+Fin --> UC13
+Fin --> UC14
+Fin --> UC15
+Fin --> UC18
+Fin --> UC19
+
+Sup --> UC01
+Sup --> UC07
+Sup --> UC08
+Sup --> UC09
+Sup --> UC14
+Sup --> UC16
+Sup --> UC17
+Sup --> UC18
+Sup --> UC19
+
+Ana --> UC01
+Ana --> UC02
+Ana --> UC06
+Ana --> UC07
+Ana --> UC08
+Ana --> UC14
+Ana --> UC16
+Ana --> UC17
+Ana --> UC18
+Ana --> UC19
+Ana --> UC20
+
+UC10 .> UC19 : <<include>>
+UC13 .> UC19 : <<include>>
+UC15 .> UC19 : <<include>>
+UC04 .> UC19 : <<include>>
+UC21 .> UC19 : <<include>>
+
+@enduml
