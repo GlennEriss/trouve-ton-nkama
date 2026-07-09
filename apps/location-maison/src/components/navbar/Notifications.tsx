@@ -2,24 +2,28 @@
 
 import { useState } from "react";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Switch } from "@/components/ui/switch";
 import { useNotifications } from "@/providers/NotificationProvider";
 import { useCurrentUser } from "@/hooks/use-current-user";
+import { usePushNotifications } from "@/hooks/usePushNotifications";
 import { generateColorFromName } from "@/lib/generateColorFromName";
-import { 
-  EmptyNotificationsState, 
-  NotificationItem, 
-  NotificationButton 
+import {
+  EmptyNotificationsState,
+  NotificationItem,
+  NotificationButton
 } from "@/components/notifications/shared/NotificationComponents";
 import { NOTIFICATION_CSS_CLASSES } from "@/components/notifications/shared/notification-utils";
 
 // Composant pour l'en-tête des notifications
-function NotificationsHeader({ 
-  unreadCount, 
-  onMarkAllAsRead 
-}: { 
-  unreadCount: number; 
-  onMarkAllAsRead: () => void; 
+function NotificationsHeader({
+  unreadCount,
+  onMarkAllAsRead
+}: {
+  unreadCount: number;
+  onMarkAllAsRead: () => void;
 }) {
+  const { permission, isEnabled, isLoading, enable, disable } = usePushNotifications();
+
   return (
     <>
       <div className="flex items-baseline justify-between gap-4 px-3 py-2">
@@ -33,6 +37,29 @@ function NotificationsHeader({
           </button>
         )}
       </div>
+
+      {permission !== 'unsupported' && (
+        <div className="flex items-center justify-between gap-4 px-3 py-2">
+          <label htmlFor="push-notifications-toggle" className="text-xs text-gray-500 dark:text-gray-400 cursor-pointer">
+            {permission === 'denied'
+              ? 'Notifications bloquées par le navigateur'
+              : 'Activer les notifications sur cet appareil'}
+          </label>
+          <Switch
+            id="push-notifications-toggle"
+            checked={isEnabled}
+            disabled={isLoading || permission === 'denied'}
+            onCheckedChange={(checked) => {
+              if (checked) {
+                void enable();
+              } else {
+                void disable();
+              }
+            }}
+          />
+        </div>
+      )}
+
       <hr className={`${NOTIFICATION_CSS_CLASSES.bg.border} -mx-1 my-1 h-px border-0`} />
     </>
   );

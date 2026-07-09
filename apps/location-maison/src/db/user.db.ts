@@ -103,6 +103,48 @@ export async function updateUser(uid: string, updates: Partial<User>): Promise<b
     }
 }
 
+export async function addFcmToken(uid: string, token: string): Promise<boolean> {
+    try {
+        const { db, collection, query, where, getDocs, doc, updateDoc, arrayUnion } = await getFirestore();
+        const collectionRef = collection(db, firebaseCollectionNames.users);
+        const q = query(collectionRef, where("uid", "==", uid));
+        const querySnapshot = await getDocs(q);
+
+        if (querySnapshot.empty) {
+            logger.warn('No user found with UID to add FCM token', { uid });
+            return false;
+        }
+
+        const userRef = doc(db, firebaseCollectionNames.users, querySnapshot.docs[0].id);
+        await updateDoc(userRef, { fcmTokens: arrayUnion(token) });
+        return true;
+    } catch (error) {
+        logger.error('Error adding FCM token', { uid, error });
+        return false;
+    }
+}
+
+export async function removeFcmToken(uid: string, token: string): Promise<boolean> {
+    try {
+        const { db, collection, query, where, getDocs, doc, updateDoc, arrayRemove } = await getFirestore();
+        const collectionRef = collection(db, firebaseCollectionNames.users);
+        const q = query(collectionRef, where("uid", "==", uid));
+        const querySnapshot = await getDocs(q);
+
+        if (querySnapshot.empty) {
+            logger.warn('No user found with UID to remove FCM token', { uid });
+            return false;
+        }
+
+        const userRef = doc(db, firebaseCollectionNames.users, querySnapshot.docs[0].id);
+        await updateDoc(userRef, { fcmTokens: arrayRemove(token) });
+        return true;
+    } catch (error) {
+        logger.error('Error removing FCM token', { uid, error });
+        return false;
+    }
+}
+
 export async function findUserByPhoneNumber(phoneNumber: string) {
     try {
         const { getDocs, where, query, collection, db } = await getFirestore();
