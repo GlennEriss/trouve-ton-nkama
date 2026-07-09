@@ -1,0 +1,179 @@
+@startuml
+skinparam classAttributeIconSize 0
+hide circle
+
+class AdminUser {
+  +id: String
+  +email: String
+  +displayName: String
+  +status: AdminStatus
+  +lastLoginAt: DateTime
+  +lastSeenAt: DateTime
+  +createdAt: DateTime
+}
+
+class AdminRole {
+  +id: String
+  +name: String
+  +description: String
+}
+
+class Permission {
+  +key: String
+  +resource: String
+  +action: String
+}
+
+class AdminSession {
+  +id: String
+  +adminId: String
+  +status: SessionStatus
+  +connectedAt: DateTime
+  +lastSeenAt: DateTime
+  +disconnectedAt: DateTime
+}
+
+class PlatformUser {
+  +id: String
+  +email: String
+  +status: UserStatus
+  +lastSeenAt: DateTime
+}
+
+class Listing {
+  +id: String
+  +ownerId: String
+  +status: ListingStatus
+  +moderationStatus: ModerationStatus
+  +price: Decimal
+  +propertyType: String
+}
+
+class CreditWallet {
+  +id: String
+  +userId: String
+  +balance: Int
+  +totalBought: Int
+  +totalSpent: Int
+}
+
+class CreditTransaction {
+  +id: String
+  +walletId: String
+  +type: CreditTransactionType
+  +credits: Int
+  +amountXaf: Decimal
+  +createdAt: DateTime
+}
+
+class RefundRequest {
+  +id: String
+  +transactionId: String
+  +status: RefundStatus
+  +requestedBy: String
+  +approvedBy: String
+  +requestedAt: DateTime
+  +approvedAt: DateTime
+}
+
+class SearchEvent {
+  +id: String
+  +source: SearchSource
+  +query: String
+  +filtersJson: Json
+  +resultsCount: Int
+  +hasResults: Boolean
+  +occurredAt: DateTime
+}
+
+class TrafficMetricDaily {
+  +dateKey: Date
+  +provider: TrafficProvider
+  +visits: Int
+  +uniqueVisitors: Int
+  +pageViews: Int
+}
+
+class AuditLog {
+  +id: String
+  +actorId: String
+  +action: String
+  +resource: String
+  +resourceId: String
+  +status: AuditStatus
+  +correlationId: String
+  +createdAt: DateTime
+}
+
+class RbacPolicyService {
+  +can(actor: AdminUser, permission: Permission): Boolean
+}
+
+class PresenceService {
+  +isOnline(lastSeenAt: DateTime): Boolean
+}
+
+class AnalyticsService {
+  +getSearchOverview(range: DateRange): SearchOverview
+  +getTrafficComparison(range: DateRange): TrafficComparison
+}
+
+interface AdminRepository {
+  +findById(id: String): AdminUser
+  +list(): AdminUser[]
+  +save(admin: AdminUser): void
+}
+
+interface UserRepository {
+  +list(): PlatformUser[]
+  +suspend(userId: String): void
+  +reactivate(userId: String): void
+}
+
+interface ListingRepository {
+  +listForModeration(): Listing[]
+  +approve(listingId: String): void
+  +reject(listingId: String, reason: String): void
+}
+
+interface FinanceRepository {
+  +getWallet(userId: String): CreditWallet
+  +grantCredits(userId: String, credits: Int): CreditTransaction
+  +createRefund(transactionId: String): RefundRequest
+}
+
+interface AnalyticsRepository {
+  +searchOverview(range: DateRange): SearchOverview
+  +trafficComparison(range: DateRange): TrafficComparison
+}
+
+interface AuditRepository {
+  +log(entry: AuditLog): void
+}
+
+AdminUser "1" -- "*" AdminSession
+AdminUser "*" -- "*" AdminRole
+AdminRole "*" -- "*" Permission
+
+PlatformUser "1" -- "*" Listing
+PlatformUser "1" -- "1" CreditWallet
+CreditWallet "1" -- "*" CreditTransaction
+CreditTransaction "1" -- "0..1" RefundRequest
+
+RbacPolicyService ..> AdminRole
+RbacPolicyService ..> Permission
+PresenceService ..> AdminSession
+AnalyticsService ..> SearchEvent
+AnalyticsService ..> TrafficMetricDaily
+
+AdminRepository ..> AdminUser
+UserRepository ..> PlatformUser
+ListingRepository ..> Listing
+FinanceRepository ..> CreditWallet
+FinanceRepository ..> CreditTransaction
+FinanceRepository ..> RefundRequest
+AnalyticsRepository ..> SearchEvent
+AnalyticsRepository ..> TrafficMetricDaily
+AuditRepository ..> AuditLog
+
+@enduml

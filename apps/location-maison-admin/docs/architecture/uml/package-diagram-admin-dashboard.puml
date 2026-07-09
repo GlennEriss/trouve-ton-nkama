@@ -1,0 +1,116 @@
+@startuml
+skinparam packageStyle rectangle
+hide methods
+hide attributes
+
+package "Presentation" {
+  package "Web UI" {
+    class DashboardPages
+    class AdminPages
+    class UserPages
+    class ModerationPages
+    class FinancePages
+    class AnalyticsPages
+  }
+  package "BFF API" {
+    class AdminApiRoutes
+    class UserApiRoutes
+    class ModerationApiRoutes
+    class FinanceApiRoutes
+    class AnalyticsApiRoutes
+  }
+}
+
+package "Application" {
+  class AuthAppService
+  class AdminAppService
+  class UserAppService
+  class ModerationAppService
+  class FinanceAppService
+  class AnalyticsAppService
+  class AuditAppService
+}
+
+package "Domain" {
+  class RbacPolicy
+  class PresencePolicy
+  class RefundPolicy
+  class SearchInsightsPolicy
+}
+
+package "Infrastructure" {
+  package "Repositories" {
+    interface AdminRepository
+    interface UserRepository
+    interface ListingRepository
+    interface FinanceRepository
+    interface AnalyticsRepository
+    interface AuditRepository
+  }
+
+  package "Adapters" {
+    class FirestoreAdapter
+    class RedisAdapter
+    class PubSubAdapter
+    class FirebaseAnalyticsAdapter
+    class VercelAnalyticsAdapter
+    class SentryAdapter
+  }
+}
+
+package "Data Stores" {
+  database Firestore
+  database Redis
+  database BigQuery
+}
+
+DashboardPages --> AdminApiRoutes
+AdminPages --> AdminApiRoutes
+UserPages --> UserApiRoutes
+ModerationPages --> ModerationApiRoutes
+FinancePages --> FinanceApiRoutes
+AnalyticsPages --> AnalyticsApiRoutes
+
+AdminApiRoutes --> AuthAppService
+AdminApiRoutes --> AdminAppService
+UserApiRoutes --> UserAppService
+ModerationApiRoutes --> ModerationAppService
+FinanceApiRoutes --> FinanceAppService
+AnalyticsApiRoutes --> AnalyticsAppService
+
+AuthAppService --> RbacPolicy
+AdminAppService --> RbacPolicy
+UserAppService --> PresencePolicy
+FinanceAppService --> RefundPolicy
+AnalyticsAppService --> SearchInsightsPolicy
+
+AdminAppService --> AdminRepository
+UserAppService --> UserRepository
+ModerationAppService --> ListingRepository
+FinanceAppService --> FinanceRepository
+AnalyticsAppService --> AnalyticsRepository
+AuditAppService --> AuditRepository
+
+AdminRepository --> FirestoreAdapter
+UserRepository --> FirestoreAdapter
+ListingRepository --> FirestoreAdapter
+FinanceRepository --> FirestoreAdapter
+AnalyticsRepository --> FirebaseAnalyticsAdapter
+AnalyticsRepository --> VercelAnalyticsAdapter
+AnalyticsRepository --> PubSubAdapter
+AnalyticsRepository --> RedisAdapter
+AuditRepository --> FirestoreAdapter
+
+FirestoreAdapter --> Firestore
+RedisAdapter --> Redis
+FirebaseAnalyticsAdapter --> BigQuery
+VercelAnalyticsAdapter --> BigQuery
+PubSubAdapter --> BigQuery
+
+SentryAdapter ..> AdminApiRoutes
+SentryAdapter ..> UserApiRoutes
+SentryAdapter ..> ModerationApiRoutes
+SentryAdapter ..> FinanceApiRoutes
+SentryAdapter ..> AnalyticsApiRoutes
+
+@enduml

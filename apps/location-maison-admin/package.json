@@ -1,0 +1,52 @@
+{
+  "name": "location-maison-admin",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "eslint",
+    "finance:packs:backfill": "node scripts/finance/backfill-credit-packs.mjs",
+    "osm:sync:projection": "tsx scripts/location-osm/sync-projection.ts",
+    "osm:sync:projection:prod": "tsx scripts/location-osm/sync-projection.ts --env-file=.env.local.prod",
+    "osm:sync:projection:dev": "tsx scripts/location-osm/sync-projection.ts --env-file=.env.local",
+    "osm:seed:cloud": "tsx scripts/location-osm/seed-cloud.ts",
+    "osm:seed:cloud:prod": "tsx scripts/location-osm/seed-cloud.ts --env-file=.env.local.prod",
+    "osm:seed:cloud:dev": "tsx scripts/location-osm/seed-cloud.ts --env-file=.env.local"
+  },
+  "dependencies": {
+    "@base-ui/react": "^1.4.1",
+    "@hookform/resolvers": "^5.2.2",
+    "@radix-ui/react-slot": "^1.2.4",
+    "@tanstack/react-query": "^5.100.9",
+    "@tanstack/react-query-devtools": "^5.100.9",
+    "class-variance-authority": "^0.7.1",
+    "clsx": "^2.1.1",
+    "date-fns": "^4.1.0",
+    "firebase": "^12.12.1",
+    "firebase-admin": "^13.8.0",
+    "lucide-react": "^1.14.0",
+    "next": "16.2.4",
+    "react": "19.2.4",
+    "react-dom": "19.2.4",
+    "react-hook-form": "^7.75.0",
+    "recharts": "^3.8.1",
+    "shadcn": "^4.6.0",
+    "tailwind-merge": "^3.5.0",
+    "tw-animate-css": "^1.4.0",
+    "zod": "^4.4.2",
+    "zustand": "^5.0.12"
+  },
+  "devDependencies": {
+    "@tailwindcss/postcss": "^4",
+    "@types/node": "^20",
+    "@types/react": "^19",
+    "@types/react-dom": "^19",
+    "eslint": "^9",
+    "eslint-config-next": "16.2.4",
+    "tailwindcss": "^4",
+    "tsx": "^4.22.0",
+    "typescript": "^5"
+  }
+}
