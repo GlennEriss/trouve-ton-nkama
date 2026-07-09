@@ -1,0 +1,12 @@
+{
+  "name": "location-maison-marketing",
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "capture": "node scripts/capture.mjs",
+    "assemble": "node scripts/assemble.mjs"
+  },
+  "dependencies": {
+    "playwright": "^1.60.0"
+  }
+}
