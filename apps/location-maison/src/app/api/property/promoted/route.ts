@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import redis from '@/redis/client';
+import { getCacheStore } from '@/lib/cache';
 import { Property } from '@/models/annonce';
 import { createLogger } from '@/lib/logger';
 import { handleApiError } from '@/lib/api/error-response';
@@ -8,6 +8,12 @@ const logger = createLogger('api.property.promoted');
 
 const CACHE_KEY = 'properties:promoted';
 const CACHE_TTL_SECONDS = parseInt(process.env.REDIS_CATALOG_TTL ?? '600', 10);
+
+type PromotedResult = {
+  featuredProperties: Property[];
+  trendingProperties: Property[];
+  boostProperties: Property[];
+};
 
 export async function GET() {
   const [{ adminApp }, { getFirestore }] = await Promise.all([
@@ -20,18 +26,15 @@ export async function GET() {
   }
 
   const db = getFirestore(adminApp);
+  const cache = getCacheStore();
 
-  try {
-    const cached = await redis.get<any>(CACHE_KEY);
-    if (cached) {
-      return NextResponse.json(cached, {
-        headers: {
-          'Cache-Control': 'public, s-maxage=60, stale-while-revalidate=60',
-        },
-      });
-    }
-  } catch (error) {
-    logger.warn('Redis GET failed for promoted properties', { error });
+  const cached = await cache.get<PromotedResult>(CACHE_KEY);
+  if (cached) {
+    return NextResponse.json(cached, {
+      headers: {
+        'Cache-Control': 'public, s-maxage=60, stale-while-revalidate=60',
+      },
+    });
   }
 
   try {
@@ -70,17 +73,13 @@ export async function GET() {
       else if (type === 'trending-7d' || type === 'trending-3d') trending.push(property);
     });
 
-    const result = {
+    const result: PromotedResult = {
       featuredProperties: featured,
       trendingProperties: trending,
       boostProperties: boost,
     };
 
-    try {
-      await redis.set(CACHE_KEY, result, { ex: CACHE_TTL_SECONDS });
-    } catch (error) {
-      logger.warn('Redis SET failed for promoted properties', { error });
-    }
+    await cache.set(CACHE_KEY, result, CACHE_TTL_SECONDS);
 
     return NextResponse.json(result, {
       headers: {

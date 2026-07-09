@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { collection, db, getDocs } from '@/firebase/firestore';
 import firebaseCollectionNames from '@/constantes/firebase-collection-name';
-import redis from '@/redis/client';
+import { getCacheStore } from '@/lib/cache';
 import { Province } from '@/models/province';
 import { createLogger } from '@/lib/logger';
 import { handleApiError } from '@/lib/api/error-response';
@@ -12,8 +12,9 @@ const CACHE_TTL_SECONDS = parseInt(process.env.REDIS_LOCATION_TTL ?? '1800', 10)
 
 export async function GET() {
   try {
+    const cache = getCacheStore();
     const cacheKey = 'provinces:all';
-    const cached = await redis.get<Province[]>(cacheKey);
+    const cached = await cache.get<Province[]>(cacheKey);
 
     if (Array.isArray(cached)) {
       return NextResponse.json(
@@ -39,11 +40,7 @@ export async function GET() {
 
     provinces.sort((a, b) => a.name.localeCompare(b.name));
 
-    try {
-      await redis.set(cacheKey, provinces, { ex: CACHE_TTL_SECONDS });
-    } catch (error) {
-      logger.warn('Failed to cache provinces list', { error });
-    }
+    await cache.set(cacheKey, provinces, CACHE_TTL_SECONDS);
 
     return NextResponse.json(
       { provinces },

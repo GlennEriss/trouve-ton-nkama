@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { getServerCountByProvince } from '@/db/property.db';
-import redis from '@/redis/client';
+import { getCacheStore } from '@/lib/cache';
 import { createLogger } from '@/lib/logger';
 import { handleApiError, jsonApiError } from '@/lib/api/error-response';
 
@@ -16,32 +16,25 @@ export async function GET(request: Request) {
     return jsonApiError(400, 'VALIDATION_ERROR', 'Province is required', { field: 'province' });
   }
 
+  const cache = getCacheStore();
   const cacheKey = `propertyCountByProvince:${province}`;
 
   try {
-    try {
-      const cached = await redis.get<number>(cacheKey);
-      if (typeof cached === 'number') {
-        return NextResponse.json(
-          { count: cached },
-          {
-            headers: {
-              'Cache-Control': `public, s-maxage=${CACHE_TTL_SECONDS}, stale-while-revalidate=${CACHE_TTL_SECONDS}`,
-            },
-          }
-        );
-      }
-    } catch (error) {
-      logger.warn('Redis GET failed for property count by province', { province, error });
+    const cached = await cache.get<number>(cacheKey);
+    if (typeof cached === 'number') {
+      return NextResponse.json(
+        { count: cached },
+        {
+          headers: {
+            'Cache-Control': `public, s-maxage=${CACHE_TTL_SECONDS}, stale-while-revalidate=${CACHE_TTL_SECONDS}`,
+          },
+        }
+      );
     }
 
     const count = await getServerCountByProvince(province);
 
-    try {
-      await redis.set(cacheKey, count, { ex: CACHE_TTL_SECONDS });
-    } catch (error) {
-      logger.warn('Redis SET failed for property count by province', { province, error });
-    }
+    await cache.set(cacheKey, count, CACHE_TTL_SECONDS);
 
     return NextResponse.json(
       { count },

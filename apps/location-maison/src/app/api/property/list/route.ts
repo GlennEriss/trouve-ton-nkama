@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { getProperties } from '@/db/property.db';
-import redis from '@/redis/client';
+import { getCacheStore } from '@/lib/cache';
 import { createLogger } from '@/lib/logger';
 import { handleApiError } from '@/lib/api/error-response';
 
@@ -13,29 +13,22 @@ export async function GET(request: Request) {
   const limitPerPage = parseInt(url.searchParams.get('limitPerPage') ?? '10', 10);
   const lastDoc = url.searchParams.get('lastDoc') ?? null;
 
+  const cache = getCacheStore();
   const cacheKey = `properties:list:${limitPerPage}:${lastDoc ?? 'first'}`;
 
   try {
-    try {
-      const cached = await redis.get<any>(cacheKey);
-      if (cached) {
-        return NextResponse.json(cached, {
-          headers: {
-            'Cache-Control': 'public, s-maxage=60, stale-while-revalidate=60',
-          },
-        });
-      }
-    } catch (error) {
-      logger.warn('Redis GET failed for properties list', { cacheKey, error });
+    const cached = await cache.get<unknown>(cacheKey);
+    if (cached) {
+      return NextResponse.json(cached, {
+        headers: {
+          'Cache-Control': 'public, s-maxage=60, stale-while-revalidate=60',
+        },
+      });
     }
 
     const properties = await getProperties({ limitPerPage, lastDoc });
 
-    try {
-      await redis.set(cacheKey, properties, { ex: CACHE_TTL_SECONDS });
-    } catch (error) {
-      logger.warn('Redis SET failed for properties list', { cacheKey, error });
-    }
+    await cache.set(cacheKey, properties, CACHE_TTL_SECONDS);
 
     return NextResponse.json(properties, {
       headers: {
