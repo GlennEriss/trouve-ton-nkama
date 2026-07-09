@@ -6,6 +6,9 @@
   "workspaces": [
     "apps/*"
   ],
+  "overrides": {
+    "nodemailer": "^6.10.1"
+  },
   "scripts": {
     "dev:location-maison": "npm run dev -w apps/location-maison",
     "build:location-maison": "npm run build -w apps/location-maison",

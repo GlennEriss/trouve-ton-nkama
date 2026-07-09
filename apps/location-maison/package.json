@@ -52,6 +52,7 @@
   "dependencies": {
     "@babel/plugin-bugfix-firefox-class-in-computed-class-key": "^7.28.5",
     "@ducanh2912/next-pwa": "^10.2.9",
+    "@auth/core": "0.41.2",
     "@google/generative-ai": "^0.24.1",
     "@googlemaps/js-api-loader": "^1.16.10",
     "@hookform/resolvers": "^3.9.1",
@@ -135,6 +136,7 @@
     "@testing-library/dom": "^10.4.0",
     "@testing-library/jest-dom": "^6.6.3",
     "@testing-library/react": "^16.2.0",
+    "@types/geojson": "^7946.0.16",
     "@types/google-map-react": "^2.1.10",
     "@types/jest": "^29.5.14",
     "@types/leaflet": "^1.9.21",
