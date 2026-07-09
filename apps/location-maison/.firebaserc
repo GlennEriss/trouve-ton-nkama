@@ -4,5 +4,13 @@
     "dev": "location-maison-dev",
     "preprod": "location-maison-preprod",
     "prod": "location-maison-prod-167da"
+  },
+  "targets": {},
+  "etags": {
+    "location-maison-prod-167da": {
+      "extensionInstances": {
+        "firestore-algolia-search": "6490d6157b3dea6966edb540e420a41a24d71accd3cfd2dd8c5b15e082d7964b"
+      }
+    }
   }
 }

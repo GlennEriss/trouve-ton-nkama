@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import redis from '@/redis/client';
+import { getCacheStore } from '@/lib/cache';
 import { z } from 'zod';
 import { AppError } from '@/lib/errors/app-error';
 import { createLogger } from '@/lib/logger';
@@ -156,25 +157,19 @@ export async function GET(request: NextRequest) {
     const { q: query, limit } = validation.data;
     const normalizedQuery = query.toLowerCase().trim();
     const cacheKey = REDIS_KEYS.SEARCH_CACHE(normalizedQuery);
+    const cache = getCacheStore();
 
-    try {
-      const cachedResult = await redis.get(cacheKey);
+    // Cache best-effort (bascule Redis/Firestore via getCacheStore) : une panne du
+    // backend de cache ne doit jamais empêcher la recherche elle-même.
+    const cached = await cache.get<CachedSearchResult>(cacheKey);
+    if (cached) {
+      await trackSearchPopularity(normalizedQuery);
 
-      if (cachedResult) {
-        const parsed: CachedSearchResult = JSON.parse(cachedResult as string);
-        await trackSearchPopularity(normalizedQuery);
-
-        return NextResponse.json({
-          results: parsed.results,
-          cached: true,
-          timestamp: parsed.timestamp,
-          query: parsed.query,
-        });
-      }
-    } catch (redisError) {
-      logger.warn('Redis read cache failed for location search', {
-        cacheKey,
-        error: redisError,
+      return NextResponse.json({
+        results: cached.results,
+        cached: true,
+        timestamp: cached.timestamp,
+        query: cached.query,
       });
     }
 
@@ -186,16 +181,10 @@ export async function GET(request: NextRequest) {
       query: normalizedQuery,
     };
 
-    try {
-      await redis.setex(cacheKey, CACHE_TTL, JSON.stringify(cacheData));
-
-      await Promise.all([updateAutocomplete(normalizedQuery, results), trackSearchPopularity(normalizedQuery)]);
-    } catch (redisError) {
-      logger.warn('Redis write cache failed for location search', {
-        cacheKey,
-        error: redisError,
-      });
-    }
+    await cache.set(cacheKey, cacheData, CACHE_TTL);
+    // L'index d'autocomplétion/popularité reste un usage Redis natif (sorted sets), hors
+    // périmètre du repli Firestore — déjà résilient individuellement (try/catch ci-dessus).
+    await Promise.all([updateAutocomplete(normalizedQuery, results), trackSearchPopularity(normalizedQuery)]);
 
     return NextResponse.json({
       results,

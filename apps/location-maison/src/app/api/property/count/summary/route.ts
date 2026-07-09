@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import redis from '@/redis/client';
+import { getCacheStore } from '@/lib/cache';
 import { getServerCountByPropertyType, getServerCountByProvince } from '@/db/property.db';
 import { HOME_PROPERTY_TYPE_KEYS, HOME_PROVINCE_NAMES } from '@/constantes/home-page';
 import { createLogger } from '@/lib/logger';
@@ -61,26 +61,19 @@ async function buildSummary(): Promise<PropertyCountSummary> {
 }
 
 export async function GET() {
+  const cache = getCacheStore();
   let cachedSummary: PropertyCountSummary | null = null;
 
   try {
-    try {
-      const cached = await redis.get<unknown>(CACHE_KEY);
-      if (isValidSummary(cached)) {
-        cachedSummary = cached;
-        return withCacheHeaders(cached);
-      }
-    } catch (error) {
-      logger.warn('Redis GET failed for property count summary', { error });
+    const cached = await cache.get<unknown>(CACHE_KEY);
+    if (isValidSummary(cached)) {
+      cachedSummary = cached;
+      return withCacheHeaders(cached);
     }
 
     const summary = await buildSummary();
 
-    try {
-      await redis.set(CACHE_KEY, summary, { ex: CACHE_TTL_SECONDS });
-    } catch (error) {
-      logger.warn('Redis SET failed for property count summary', { error });
-    }
+    await cache.set(CACHE_KEY, summary, CACHE_TTL_SECONDS);
 
     return withCacheHeaders(summary);
   } catch (error) {
@@ -100,7 +93,7 @@ export async function GET() {
 
 export async function DELETE() {
   try {
-    await redis.del(CACHE_KEY);
+    await getCacheStore().del(CACHE_KEY);
     return NextResponse.json({ success: true });
   } catch (error) {
     return handleApiError(error, {

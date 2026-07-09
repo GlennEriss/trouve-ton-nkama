@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { collection, db, getDocs, query, where } from '@/firebase/firestore';
 import firebaseCollectionNames from '@/constantes/firebase-collection-name';
-import redis from '@/redis/client';
+import { getCacheStore } from '@/lib/cache';
 import { City } from '@/models/city';
 import { createLogger } from '@/lib/logger';
 import { handleApiError, jsonApiError } from '@/lib/api/error-response';
@@ -20,8 +20,9 @@ export async function GET(request: Request) {
   }
 
   try {
+    const cache = getCacheStore();
     const cacheKey = `cities:province:${provinceId}`;
-    const cached = await redis.get<City[]>(cacheKey);
+    const cached = await cache.get<City[]>(cacheKey);
 
     if (Array.isArray(cached)) {
       return NextResponse.json(
@@ -50,11 +51,7 @@ export async function GET(request: Request) {
       .filter((city) => isDisplayableLocationLabel(city.name))
       .sort((a, b) => a.name.localeCompare(b.name));
 
-    try {
-      await redis.set(cacheKey, filteredCities, { ex: CACHE_TTL_SECONDS });
-    } catch (error) {
-      logger.warn('Failed to cache cities list', { provinceId, error });
-    }
+    await cache.set(cacheKey, filteredCities, CACHE_TTL_SECONDS);
 
     return NextResponse.json(
       { cities: filteredCities },

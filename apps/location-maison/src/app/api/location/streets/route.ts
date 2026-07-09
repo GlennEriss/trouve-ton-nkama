@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { collection, db, getDocs, query, where } from '@/firebase/firestore';
 import firebaseCollectionNames from '@/constantes/firebase-collection-name';
-import redis from '@/redis/client';
+import { getCacheStore } from '@/lib/cache';
 import { Street } from '@/models/street';
 import { createLogger } from '@/lib/logger';
 import { handleApiError, jsonApiError } from '@/lib/api/error-response';
@@ -20,8 +20,9 @@ export async function GET(request: Request) {
   }
 
   try {
+    const cache = getCacheStore();
     const cacheKey = `streets:city:${cityId}`;
-    const cached = await redis.get<Street[]>(cacheKey);
+    const cached = await cache.get<Street[]>(cacheKey);
 
     if (Array.isArray(cached)) {
       return NextResponse.json(
@@ -50,11 +51,7 @@ export async function GET(request: Request) {
       .filter((street) => isDisplayableLocationLabel(street.name))
       .sort((a, b) => a.name.localeCompare(b.name));
 
-    try {
-      await redis.set(cacheKey, filteredStreets, { ex: CACHE_TTL_SECONDS });
-    } catch (error) {
-      logger.warn('Failed to cache streets list', { cityId, error });
-    }
+    await cache.set(cacheKey, filteredStreets, CACHE_TTL_SECONDS);
 
     return NextResponse.json(
       { streets: filteredStreets },

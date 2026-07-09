@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server'
-import redis from '@/redis/client'
+import { getCacheStore } from '@/lib/cache'
 import { createLogger } from '@/lib/logger'
 import { handleApiError, jsonApiError } from '@/lib/api/error-response'
 import { googleAutocomplete, PlaceSuggestionDTO } from '@/lib/places/google-places.server'
@@ -13,23 +13,6 @@ const CACHE_TTL_SECONDS = 60 * 60 * 24 * 7
 function biasKey(bias?: { lat: number; lng: number } | null): string {
   if (!bias) return 'none'
   return `${bias.lat.toFixed(2)},${bias.lng.toFixed(2)}`
-}
-
-async function safeCacheGet(key: string): Promise<PlaceSuggestionDTO[] | null> {
-  try {
-    return await redis.get<PlaceSuggestionDTO[]>(key)
-  } catch (error) {
-    logger.warn('Redis indisponible (get) — fallback Google direct', { error })
-    return null
-  }
-}
-
-async function safeCacheSet(key: string, items: PlaceSuggestionDTO[]): Promise<void> {
-  try {
-    await redis.set(key, items, { ex: CACHE_TTL_SECONDS })
-  } catch (error) {
-    logger.warn('Redis indisponible (set) — résultat non mis en cache', { error })
-  }
 }
 
 export async function POST(request: Request) {
@@ -51,11 +34,12 @@ export async function POST(request: Request) {
     return NextResponse.json({ items: [] })
   }
 
+  const cache = getCacheStore()
   const cacheKey = `places:ac:${input.toLowerCase()}:${biasKey(bias)}`
 
   try {
-    // Cache best-effort : une panne Redis ne doit pas casser la recherche.
-    const cached = await safeCacheGet(cacheKey)
+    // Cache best-effort : une panne du backend de cache ne doit pas casser la recherche.
+    const cached = await cache.get<PlaceSuggestionDTO[]>(cacheKey)
     if (cached) {
       logger.debug('autocomplete cache HIT', { cacheKey })
       const res = NextResponse.json({ items: cached })
@@ -66,7 +50,7 @@ export async function POST(request: Request) {
     const items = await googleAutocomplete({ input, bias, sessionToken })
     // On ne met en cache que des résultats exploitables.
     if (items.length > 0) {
-      await safeCacheSet(cacheKey, items)
+      await cache.set(cacheKey, items, CACHE_TTL_SECONDS)
     }
 
     const res = NextResponse.json({ items })

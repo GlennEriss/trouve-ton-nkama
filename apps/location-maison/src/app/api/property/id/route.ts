@@ -1,8 +1,9 @@
 import { NextResponse } from 'next/server';
 import { getPropertyById } from '@/db/property.db';
-import redis from '@/redis/client';
+import { getCacheStore } from '@/lib/cache';
 import { createLogger } from '@/lib/logger';
 import { handleApiError, jsonApiError } from '@/lib/api/error-response';
+import type { Property } from '@/models/annonce';
 
 const logger = createLogger('api.property.id');
 
@@ -18,20 +19,17 @@ export async function GET(request: Request) {
     });
   }
 
+  const cache = getCacheStore();
   const cacheKey = `property:${id}`;
 
   try {
-    try {
-      const cached = await redis.get(cacheKey);
-      if (cached) {
-        return NextResponse.json(cached, {
-          headers: {
-            'Cache-Control': 'public, s-maxage=60, stale-while-revalidate=60',
-          },
-        });
-      }
-    } catch (error) {
-      logger.warn('Redis GET failed for property', { id, error });
+    const cached = await cache.get<Property>(cacheKey);
+    if (cached) {
+      return NextResponse.json(cached, {
+        headers: {
+          'Cache-Control': 'public, s-maxage=60, stale-while-revalidate=60',
+        },
+      });
     }
 
     const property = await getPropertyById(id);
@@ -42,11 +40,9 @@ export async function GET(request: Request) {
       return jsonApiError(404, 'PROPERTY_NOT_FOUND', 'Property not found', { id });
     }
 
-    try {
-      await redis.set(cacheKey, property, { ex: CACHE_TTL_SECONDS });
-    } catch (error) {
-      logger.warn('Redis SET failed for property', { id, error });
-    }
+    // Awaited (pas fire-and-forget) : en environnement serverless (Vercel), une promesse
+    // non attendue peut être annulée dès la réponse envoyée.
+    await cache.set(cacheKey, property, CACHE_TTL_SECONDS);
 
     return NextResponse.json(property, {
       headers: {
