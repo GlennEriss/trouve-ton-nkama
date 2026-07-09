@@ -22,4 +22,5 @@ export type Person = ICreation & {
     image?: string | null,
     notificationParameter?: NotificationParameter,
     darkMode?: boolean
+    fcmTokens?: string[]
 }

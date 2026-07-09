@@ -457,5 +457,86 @@ export const onPropertyModerationStatusChange = functions.firestore
       });
     }
 
+    // Notification push (best effort, ne bloque jamais la notification in-app ci-dessus
+    // en cas d'échec) : réutilise le même title/message déjà calculés.
+    try {
+      await sendModerationPush({
+        createdBy,
+        title: notification.title,
+        body: notification.message,
+        actionUrl: notification.actionUrl ?? '/',
+        propertyId,
+      });
+    } catch (error) {
+      functions.logger.error('Failed to send moderation push notification', {
+        propertyId,
+        createdBy,
+        error,
+      });
+    }
+
     return null;
   });
+
+const INVALID_FCM_TOKEN_ERROR_CODES = new Set([
+  'messaging/registration-token-not-registered',
+  'messaging/invalid-registration-token',
+]);
+
+async function sendModerationPush(params: {
+  createdBy: string;
+  title: string;
+  body: string;
+  actionUrl: string;
+  propertyId: string;
+}): Promise<void> {
+  const { createdBy, title, body, actionUrl, propertyId } = params;
+
+  const usersSnapshot = await adminDB
+    .collection('users')
+    .where('uid', '==', createdBy)
+    .limit(1)
+    .get();
+
+  if (usersSnapshot.empty) {
+    return;
+  }
+
+  const userDoc = usersSnapshot.docs[0];
+  const tokens = (userDoc.data().fcmTokens as string[] | undefined) ?? [];
+  if (tokens.length === 0) {
+    return;
+  }
+
+  const response = await admin.messaging().sendEachForMulticast({
+    tokens,
+    notification: { title, body },
+    webpush: {
+      fcmOptions: { link: actionUrl },
+      notification: { icon: '/icons/icon-192x192.png' },
+    },
+    data: { type: 'MODERATION', propertyId, actionUrl },
+  });
+
+  const invalidTokens = response.responses
+    .map((result, index) => ({ result, token: tokens[index] }))
+    .filter(({ result }) => result.error && INVALID_FCM_TOKEN_ERROR_CODES.has(result.error.code))
+    .map(({ token }) => token);
+
+  if (invalidTokens.length > 0) {
+    await userDoc.ref.update({
+      fcmTokens: admin.firestore.FieldValue.arrayRemove(...invalidTokens),
+    });
+    functions.logger.info('Removed invalid FCM tokens', {
+      createdBy,
+      removedCount: invalidTokens.length,
+    });
+  }
+
+  functions.logger.info('Moderation push notification sent', {
+    propertyId,
+    createdBy,
+    successCount: response.successCount,
+    failureCount: response.failureCount,
+  });
+}
