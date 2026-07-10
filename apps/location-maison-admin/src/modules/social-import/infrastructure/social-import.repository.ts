@@ -14,6 +14,7 @@ import type {
 } from "@/modules/social-import/domain/types";
 import { COLLECTIONS } from "@trouve-ton-nkama/core/constants";
 import { toIsoDate as toIso } from "@trouve-ton-nkama/core/utils";
+import { resolveCursorSnapshot, sliceCursorPage } from "@/lib/firestore/pagination";
 
 const SOURCES_COLLECTION = COLLECTIONS.announcer_import_sources;
 const JOBS_COLLECTION = COLLECTIONS.social_import_jobs;
@@ -184,10 +185,12 @@ async function listRawCollectionPage<T>(
   }
 
   const snapshot = await query.get();
-  const hasMore = snapshot.docs.length > safeLimit;
-  const docs = hasMore ? snapshot.docs.slice(0, safeLimit) : snapshot.docs;
-  const items = docs.map((doc) => input.map(doc.id, doc.data() as Record<string, unknown>));
-  const nextCursor = docs.length > 0 ? docs[docs.length - 1].id : cursor ?? null;
+  const { items, hasMore, nextCursor } = sliceCursorPage(
+    snapshot.docs,
+    safeLimit,
+    (doc) => input.map(doc.id, doc.data() as Record<string, unknown>),
+    cursor ?? null,
+  );
 
   return {
     items,
@@ -214,18 +217,18 @@ async function listRawCollectionPageByCreatedAtDesc<T>(
     .limit(safeLimit + 1);
 
   const cursor = input.cursor?.trim();
-  if (cursor) {
-    const cursorSnapshot = await db.collection(collectionName).doc(cursor).get();
-    if (cursorSnapshot.exists) {
-      query = query.startAfter(cursorSnapshot);
-    }
+  const cursorSnapshot = await resolveCursorSnapshot(db.collection(collectionName), cursor);
+  if (cursorSnapshot) {
+    query = query.startAfter(cursorSnapshot);
   }
 
   const snapshot = await query.get();
-  const hasMore = snapshot.docs.length > safeLimit;
-  const docs = hasMore ? snapshot.docs.slice(0, safeLimit) : snapshot.docs;
-  const items = docs.map((doc) => input.map(doc.id, doc.data() as Record<string, unknown>));
-  const nextCursor = docs.length > 0 ? docs[docs.length - 1].id : cursor ?? null;
+  const { items, hasMore, nextCursor } = sliceCursorPage(
+    snapshot.docs,
+    safeLimit,
+    (doc) => input.map(doc.id, doc.data() as Record<string, unknown>),
+    cursor ?? null,
+  );
 
   return {
     items,

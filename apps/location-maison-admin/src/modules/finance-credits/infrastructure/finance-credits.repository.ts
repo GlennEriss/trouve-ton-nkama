@@ -17,6 +17,7 @@ import type {
 } from "@/modules/finance-credits/domain/types";
 import { COLLECTIONS } from "@trouve-ton-nkama/core/constants";
 import { toIsoDate as toIso } from "@trouve-ton-nkama/core/utils";
+import { resolveCursorSnapshot, sliceCursorPage } from "@/lib/firestore/pagination";
 
 const USERS_COLLECTION = COLLECTIONS.users;
 const CREDIT_TRANSACTIONS_COLLECTION = COLLECTIONS.credit_transactions;
@@ -339,10 +340,12 @@ export async function listWalletUsersRawPage(input: {
   }
 
   const snapshot = await query.get();
-  const hasMore = snapshot.docs.length > safeLimit;
-  const docs = hasMore ? snapshot.docs.slice(0, safeLimit) : snapshot.docs;
-  const wallets = docs.map((doc) => mapWalletUser(doc.id, doc.data() as RawUserDoc));
-  const nextCursor = wallets.length > 0 ? wallets[wallets.length - 1].docId : cursor ?? null;
+  const { items: wallets, hasMore, nextCursor } = sliceCursorPage(
+    snapshot.docs,
+    safeLimit,
+    (doc) => mapWalletUser(doc.id, doc.data() as RawUserDoc),
+    cursor ?? null,
+  );
 
   return {
     wallets,
@@ -364,20 +367,18 @@ export async function listCreditTransactionsRawPage(input: {
     .limit(safeLimit + 1);
 
   const cursor = input.cursor?.trim() || null;
-  if (cursor) {
-    const cursorDoc = await db.collection(CREDIT_TRANSACTIONS_COLLECTION).doc(cursor).get();
-    if (cursorDoc.exists) {
-      query = query.startAfter(cursorDoc);
-    }
+  const cursorDoc = await resolveCursorSnapshot(db.collection(CREDIT_TRANSACTIONS_COLLECTION), cursor);
+  if (cursorDoc) {
+    query = query.startAfter(cursorDoc);
   }
 
   const snapshot = await query.get();
-  const hasMore = snapshot.docs.length > safeLimit;
-  const docs = hasMore ? snapshot.docs.slice(0, safeLimit) : snapshot.docs;
-  const transactions = docs.map((doc) =>
-    mapCreditTransaction(doc.id, doc.data() as RawCreditTransactionDoc),
+  const { items: transactions, hasMore, nextCursor } = sliceCursorPage(
+    snapshot.docs,
+    safeLimit,
+    (doc) => mapCreditTransaction(doc.id, doc.data() as RawCreditTransactionDoc),
+    cursor,
   );
-  const nextCursor = transactions.length > 0 ? transactions[transactions.length - 1].id : cursor;
 
   return {
     transactions,
@@ -396,18 +397,18 @@ export async function listRefundsRawPage(input: {
   let query = db.collection(REFUND_PAYMENTS_COLLECTION).orderBy("createdAt", "desc").limit(safeLimit + 1);
 
   const cursor = input.cursor?.trim() || null;
-  if (cursor) {
-    const cursorDoc = await db.collection(REFUND_PAYMENTS_COLLECTION).doc(cursor).get();
-    if (cursorDoc.exists) {
-      query = query.startAfter(cursorDoc);
-    }
+  const cursorDoc = await resolveCursorSnapshot(db.collection(REFUND_PAYMENTS_COLLECTION), cursor);
+  if (cursorDoc) {
+    query = query.startAfter(cursorDoc);
   }
 
   const snapshot = await query.get();
-  const hasMore = snapshot.docs.length > safeLimit;
-  const docs = hasMore ? snapshot.docs.slice(0, safeLimit) : snapshot.docs;
-  const refunds = docs.map((doc) => mapRefund(doc.id, doc.data() as RawRefundDoc));
-  const nextCursor = refunds.length > 0 ? refunds[refunds.length - 1].id : cursor;
+  const { items: refunds, hasMore, nextCursor } = sliceCursorPage(
+    snapshot.docs,
+    safeLimit,
+    (doc) => mapRefund(doc.id, doc.data() as RawRefundDoc),
+    cursor,
+  );
 
   return {
     refunds,
@@ -739,18 +740,18 @@ export async function listFinanceAuditLogsRawPage(input: {
   let query = db.collection(AUDIT_LOGS_COLLECTION).orderBy("createdAt", "desc").limit(safeLimit + 1);
 
   const cursor = input.cursor?.trim() || null;
-  if (cursor) {
-    const cursorDoc = await db.collection(AUDIT_LOGS_COLLECTION).doc(cursor).get();
-    if (cursorDoc.exists) {
-      query = query.startAfter(cursorDoc);
-    }
+  const cursorDoc = await resolveCursorSnapshot(db.collection(AUDIT_LOGS_COLLECTION), cursor);
+  if (cursorDoc) {
+    query = query.startAfter(cursorDoc);
   }
 
   const snapshot = await query.get();
-  const hasMore = snapshot.docs.length > safeLimit;
-  const docs = hasMore ? snapshot.docs.slice(0, safeLimit) : snapshot.docs;
-  const logs = docs.map((doc) => mapAuditLog(doc.id, doc.data() as RawAuditLogDoc));
-  const nextCursor = logs.length > 0 ? logs[logs.length - 1].id : cursor;
+  const { items: logs, hasMore, nextCursor } = sliceCursorPage(
+    snapshot.docs,
+    safeLimit,
+    (doc) => mapAuditLog(doc.id, doc.data() as RawAuditLogDoc),
+    cursor,
+  );
 
   return {
     logs,
