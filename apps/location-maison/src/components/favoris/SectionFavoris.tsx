@@ -13,6 +13,7 @@ import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { Skeleton } from '../ui/skeleton';
 import { TypeProperty } from '@/constantes/property-type';
 import { logImageError, logImageLoad } from '@/lib/image-debug';
+import { resolveThumbnailUrl } from '@/lib/property-images';
 
 export default function SectionFavoris() {
     const {user} = useCurrentUser()
@@ -87,7 +88,7 @@ export default function SectionFavoris() {
             <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5'>
                 {data?.pages[0].properties.map((property) => {
                     const propertyId = property.id ?? "unknown";
-                    const rawPrimaryImageUrl = property.images?.[0]?.fileURL;
+                    const rawPrimaryImageUrl = resolveThumbnailUrl(property.images?.[0]);
                     const primaryImageSrc =
                         typeof rawPrimaryImageUrl === "string" &&
                         rawPrimaryImageUrl.trim().length > 0

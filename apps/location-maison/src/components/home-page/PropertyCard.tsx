@@ -8,6 +8,7 @@ import { cn, formatPublicationDate } from "@/lib/utils";
 import { TypeProperty } from "@/constantes/property-type";
 import { trackingEvents, useTrackEvent } from '@/features/analytics/tracking';
 import { logImageError, logImageFallback, logImageLoad } from "@/lib/image-debug";
+import { resolveThumbnailUrl } from "@/lib/property-images";
 
 // Import des icônes
 import { IoMdBed } from "react-icons/io";
@@ -52,10 +53,9 @@ const PropertyCard = ({ property, hideDate = false }: { property: any; hideDate?
         return typeof fileURL === "string" && fileURL.trim().length > 0;
       })
     : null;
-  const rawPrimaryImageUrl =
-    typeof firstImageCandidate === "string"
-      ? firstImageCandidate
-      : (firstImageCandidate as { fileURL?: string } | null)?.fileURL;
+  const rawPrimaryImageUrl = resolveThumbnailUrl(
+    firstImageCandidate as { fileURL?: string; thumbURL?: string } | string | null | undefined
+  );
   const hasPrimaryImageUrl =
     typeof rawPrimaryImageUrl === "string" && rawPrimaryImageUrl.trim().length > 0;
   const primaryImageSrc = hasPrimaryImageUrl ? rawPrimaryImageUrl : "/home.png";

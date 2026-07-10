@@ -139,7 +139,6 @@ type UploadListingImagesPayload = {
 
 type ListingWizardStep = 1 | 2 | 3;
 
-const MAX_LISTING_IMAGES = 10;
 const ACCEPTED_IMAGE_TYPES = new Set(["image/jpeg", "image/png", "image/webp"]);
 
 const PROPERTY_TYPE_OPTIONS: Array<{
@@ -602,12 +601,7 @@ export default function NewListingPage() {
 
     const accepted = selectedFiles.filter((file) => ACCEPTED_IMAGE_TYPES.has(file.type));
     setListingLocalImages((previous) => {
-      const availableSlots = Math.max(MAX_LISTING_IMAGES - previous.length, 0);
-      if (availableSlots === 0) {
-        return previous;
-      }
-
-      const toAdd = accepted.slice(0, availableSlots).map((file, index) => ({
+      const toAdd = accepted.map((file, index) => ({
         id: `${Date.now()}-${index}-${Math.random().toString(36).slice(2, 8)}`,
         file,
         previewUrl: URL.createObjectURL(file),
@@ -660,7 +654,6 @@ export default function NewListingPage() {
     if (selectedListingTags.length < 1) return "Ajoute au moins 1 tag (maximum 6).";
     if (selectedListingTags.length > 6) return "Maximum 6 tags.";
     if (listingLocalImages.length < 1) return "Ajoute au moins 1 image.";
-    if (listingLocalImages.length > MAX_LISTING_IMAGES) return "Maximum 10 images.";
     return null;
   }, [createListing, listingLocalImages.length, selectedListingTags.length]);
 
@@ -1096,7 +1089,7 @@ export default function NewListingPage() {
                 <div className="space-y-2 rounded-lg border border-slate-200 p-3">
                   <div className="flex items-center justify-between gap-2">
                     <p className="text-sm font-medium text-slate-900">
-                      Images ({listingLocalImages.length}/{MAX_LISTING_IMAGES})
+                      Images ({listingLocalImages.length})
                     </p>
                     {listingLocalImages.length > 0 ? (
                       <Button
@@ -1117,7 +1110,7 @@ export default function NewListingPage() {
                       accept="image/png,image/jpeg,image/webp"
                       multiple
                       onChange={onPickListingImages}
-                      disabled={createListingSubmitting || loading || listingLocalImages.length >= MAX_LISTING_IMAGES}
+                      disabled={createListingSubmitting || loading}
                     />
                   </div>
                   {listingLocalImages.length > 0 ? (
@@ -1150,7 +1143,7 @@ export default function NewListingPage() {
                       ))}
                     </div>
                   ) : (
-                    <p className="text-xs text-slate-500">Ajoute entre 1 et 10 images JPG/PNG/WEBP.</p>
+                    <p className="text-xs text-slate-500">Ajoute au moins 1 image JPG/PNG/WEBP.</p>
                   )}
                 </div>
               </div>

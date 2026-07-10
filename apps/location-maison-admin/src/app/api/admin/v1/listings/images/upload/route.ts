@@ -9,7 +9,6 @@ import { logAudit } from "@/modules/audit-compliance/application/audit-log.servi
 
 export const runtime = "nodejs";
 
-const MAX_FILES = 10;
 const MAX_FILE_SIZE_BYTES = 10 * 1024 * 1024;
 const ALLOWED_CONTENT_TYPES = new Set(["image/jpeg", "image/png", "image/webp"]);
 
@@ -57,17 +56,6 @@ export async function POST(request: NextRequest) {
       {
         code: "VALIDATION_ERROR",
         message: "Aucune image fournie.",
-      },
-      400,
-      auth.correlationId,
-    );
-  }
-
-  if (files.length > MAX_FILES) {
-    return jsonError(
-      {
-        code: "VALIDATION_ERROR",
-        message: `Maximum ${MAX_FILES} images autorisées par annonce.`,
       },
       400,
       auth.correlationId,

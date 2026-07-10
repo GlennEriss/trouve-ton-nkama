@@ -4,6 +4,7 @@ import firebaseCollectionNames from '@/constantes/firebase-collection-name';
 import type { Property } from '@/models/annonce';
 import { createLogger } from '@/lib/logger';
 import { handleApiError, jsonApiError } from '@/lib/api/error-response';
+import { resolveThumbnailUrl } from '@/lib/property-images';
 
 const logger = createLogger('api.map.properties');
 
@@ -54,7 +55,7 @@ export async function GET(request: NextRequest) {
         province: data.province,
         latitude: data.latitude,
         longitude: data.longitude,
-        images: data.images?.map((img) => (typeof img === 'string' ? img : img.fileURL)) || [],
+        images: data.images?.map((img) => resolveThumbnailUrl(img)).filter((url): url is string => Boolean(url)) || [],
         typeProperty: data.typeProperty,
         status: data.status,
         nbrRooms: 'nbrRooms' in data ? (data as any).nbrRooms : undefined,

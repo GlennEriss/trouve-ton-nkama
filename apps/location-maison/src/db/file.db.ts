@@ -9,6 +9,9 @@ const logger = createLogger('db.file');
 
 const getStorage = () => import("@/firebase/storage");
 
+const THUMBNAIL_MAX_SIZE_MB = 0.08;
+const THUMBNAIL_MAX_DIMENSION_PX = 640;
+
 /**
  * Generates a unique file name by appending a timestamp to the original file name.
  * 
@@ -68,12 +71,51 @@ function withTimeout<T>(promise: Promise<T>, timeoutMs: number, operation: strin
 }
 
 /**
+ * Génère et uploade une variante basse résolution du fichier déjà compressé, utilisée dans les
+ * contextes "liste" (cartes de recherche, favoris, gestion des annonces) pour éviter de servir
+ * la même image pleine résolution partout. Best-effort : une vignette manquante n'empêche jamais
+ * la création de l'annonce, les appelants retombent sur `fileURL`.
+ */
+async function uploadThumbnail(
+    file: File,
+    location: string,
+    uniqueFileName: string
+): Promise<{ thumbURL: string; thumbPATH: string } | null> {
+    try {
+        const [{ storage, ref, uploadBytes, getDownloadURL }, { default: imageCompression }] = await Promise.all([
+            getStorage(),
+            import("browser-image-compression"),
+        ]);
+
+        const thumbnailFile = await imageCompression(file, {
+            maxSizeMB: THUMBNAIL_MAX_SIZE_MB,
+            maxWidthOrHeight: THUMBNAIL_MAX_DIMENSION_PX,
+        });
+
+        const thumbRef = ref(storage, `${location}/thumb_${uniqueFileName}`);
+        const thumbPATH = thumbRef.fullPath;
+
+        await withTimeout(uploadBytes(thumbRef, thumbnailFile), 15_000, "Upload vignette");
+        const thumbURL = await withTimeout(getDownloadURL(thumbRef), 10_000, "Récupération URL vignette");
+
+        return { thumbURL, thumbPATH };
+    } catch (error) {
+        logger.warn('Thumbnail generation failed, falling back to full-size image', {
+            error,
+            fileName: file?.name,
+            location,
+        });
+        return null;
+    }
+}
+
+/**
  * Uploads a file to a specified location in cloud storage and generates a download URL.
- * 
- * This function uploads a file to the specified `location` in cloud storage, using the 
- * `ownerId` for custom metadata to track ownership and status. A timestamp is appended 
+ *
+ * This function uploads a file to the specified `location` in cloud storage, using the
+ * `ownerId` for custom metadata to track ownership and status. A timestamp is appended
  * to the file name to ensure uniqueness.
- * 
+ *
  * @param {File} file - The file to be uploaded.
  * @param {string} ownerId - The ID of the owner of the file, stored in the file metadata.
  * @param {string} location - The storage location where the file will be uploaded.
@@ -83,10 +125,11 @@ function withTimeout<T>(promise: Promise<T>, timeoutMs: number, operation: strin
 export async function createFile(file: File, ownerId: string | undefined, location: string): Promise<Image> {
     try {
         const { storage, ref, uploadBytes, getDownloadURL } = await getStorage();
+        const uniqueFileName = timestampedFileName(file.name);
         // Create a storage reference with a unique name
         let fileRef = ref(
             storage,
-            `${location}/${timestampedFileName(file.name)}`
+            `${location}/${uniqueFileName}`
         );
         let filePATH = fileRef.fullPath;
 
@@ -103,7 +146,9 @@ export async function createFile(file: File, ownerId: string | undefined, locati
         // Get the download URL after upload
         const fileURL = await withTimeout(getDownloadURL(fileRef), 10_000, "Récupération URL image");
 
-        return { fileURL, filePATH };
+        const thumbnail = await uploadThumbnail(file, location, uniqueFileName);
+
+        return { fileURL, filePATH, ...(thumbnail ?? {}) };
     } catch (error) {
         const message = extractStorageErrorMessage(error);
         logger.error('File upload failed', {

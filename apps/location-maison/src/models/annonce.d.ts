@@ -27,7 +27,9 @@ export type Promotion = {
 
 export type Image = {
     filePATH: string,
-    fileURL: string
+    fileURL: string,
+    thumbPATH?: string,
+    thumbURL?: string,
 }
 
 export type Property = Location & ICreation & {

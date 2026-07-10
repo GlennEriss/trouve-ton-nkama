@@ -23,8 +23,7 @@ export const listingFullSchema = z
           filePATH: z.string().trim().optional(),
         }),
       )
-      .min(1)
-      .max(30),
+      .min(1),
     street: z.string().trim().min(1).max(180),
     city: z.string().trim().min(1).max(120),
     province: z.string().trim().min(1).max(120),
@@ -117,7 +116,6 @@ export const listingPatchSchema = z
           }),
         ]),
       )
-      .max(30)
       .optional(),
     longitude: z.coerce.number().min(-180).max(180).optional(),
     latitude: z.coerce.number().min(-90).max(90).optional(),
