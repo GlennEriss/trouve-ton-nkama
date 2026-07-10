@@ -44,23 +44,22 @@ export const CarouselPropertyDetails: React.FC<CarouselPropertyDetailsProps> = (
   return (
     <>
       <Carousel>
-        <CarouselContent className='relative'>
+        <CarouselContent className='relative ml-0'>
           {imageUrls.map((imageUrl, index) => (
-            <CarouselItem className='md:basis-1/2 xl:basis-1/3' key={imageUrl}>
+            <CarouselItem className='pl-0' key={imageUrl}>
               <>
-                {!loadedImages[index] && <Skeleton className="w-[500px] h-[400px]" />}
+                {!loadedImages[index] && <Skeleton className="w-full h-[400px]" />}
                 <Image
                   src={imageUrl}
                   sizes="100vw"
                   alt="alt"
                   width={0}
                   height={0}
-                  objectFit='cover'
                   quality={100}
                   priority
                   onClick={() => openPreview()}
                   onLoad={() => handleImageLoad(index)}
-                  className={`w-[500px] h-[400px] cursor-pointer transition-transform duration-300 hover:scale-105 ${!loadedImages[index] ? 'hidden' : ''}`}
+                  className={`w-full h-[400px] object-cover cursor-pointer transition-transform duration-300 hover:scale-105 ${!loadedImages[index] ? 'hidden' : ''}`}
                 />
               </>
             </CarouselItem>
@@ -73,9 +72,9 @@ export const CarouselPropertyDetails: React.FC<CarouselPropertyDetailsProps> = (
       <Dialog open={isPreviewOpen} onOpenChange={setIsPreviewOpen}>
         <DialogContent className="max-w-6xl w-full flex flex-col items-center justify-center p-0">
           <Carousel>
-            <CarouselContent>
+            <CarouselContent className='ml-0'>
               {imageUrls.map((url, idx) => (
-                <CarouselItem key={url} className="flex justify-center items-center">
+                <CarouselItem key={url} className="flex justify-center items-center pl-0">
                   <>
                     {!loadedImages[idx] && <Skeleton className="w-full h-[400px] md:h-[768px]" />}
                     <Image

@@ -50,7 +50,8 @@ reels (nouvelle collection)
 
 gifts (nouvelle collection)
   id, reelId, propertyId, toAnnouncerUid,
-  fromUserUid (nullable si cadeau anonyme — à trancher),
+  fromUserUid (null — cadeau anonyme, pas de compte requis),
+  fromPhoneNumber (numéro mobile money du donateur, fourni au paiement),
   amount, provider ('airtel' | 'mobicash'), status ('pending'|'completed'|'failed'),
   createdAt
 ```
@@ -58,16 +59,22 @@ gifts (nouvelle collection)
 `TypeNotification`) — in-app + push, même chemin que les notifications de modération déjà
 implémentées ce trimestre.
 
-### Question ouverte : anonymat du donateur
-Un chercheur doit-il être connecté pour offrir un cadeau ? Deux options :
-- **Connecté obligatoire** : plus de friction, mais traçabilité complète (utile pour la
-  confiance, et pour éventuellement afficher "12 personnes ont soutenu cette annonce").
-- **Anonyme (juste un numéro mobile money)** : moins de friction, conversion plus haute, mais
-  moins de traçabilité/relation avec l'utilisateur donateur.
-Recommandation : commencer par **connecté obligatoire** (réutilise l'auth existante, plus simple
-à sécuriser côté paiement, cohérent avec le parcours "publier sans compte puis connexion à la
-fin" déjà adopté ailleurs sur la plateforme) — l'anonymat peut être ajouté plus tard si la
-friction s'avère être un vrai frein.
+### Anonymat du donateur — tranché : pas de compte requis
+Un chercheur peut offrir un cadeau **sans être connecté** — juste un numéro mobile money au
+moment du paiement, comme pour un achat de pack de crédits classique. Aucune friction
+d'inscription avant de soutenir une annonce.
+
+Implications à prendre en compte pendant le développement :
+- Pas de `fromUserUid` : la relation donateur↔annonce n'est pas rattachable à un profil
+  utilisateur. Le compteur `giftCount`/`giftTotalAmount` sur le réel reste valide (agrégats
+  anonymes), mais impossible d'afficher "12 personnes ont soutenu cette annonce" comme
+  fonctionnalité de confiance (nécessiterait de compter les numéros distincts, pas des comptes).
+- Anti-fraude/anti-spam : le webhook du provider de paiement (MyPayGa/Airtel, même mécanisme que
+  les packs de crédits) reste la seule vérification — pas de couche `uid` authentifié
+  supplémentaire. S'appuyer sur les protections déjà en place côté paiement plutôt qu'en inventer
+  une nouvelle liée à l'auth.
+- Rate-limiting éventuel (anti-abus) à faire par `fromPhoneNumber`/IP si besoin, pas par `uid`
+  puisqu'il n'y en a pas.
 
 ## 3. Dashboard annonceur — cadeaux reçus + paywall abonnement
 
@@ -132,9 +139,11 @@ vidéo coûte un ordre de grandeur de plus que les images :
    MyPayGa existante (`apps/location-maison/functions/src/payments/mypayga/config.ts`, réseau
    `MM`, numéros 062/065/066). Confirmé par lecture du code — aucune intégration séparée
    nécessaire.
-2. **Anonymat du donateur** : compte chercheur **obligatoire** pour offrir un cadeau. Réutilise
-   l'auth existante, plus simple à sécuriser côté paiement, cohérent avec le parcours "publier
-   sans compte puis connexion à la fin" déjà en place ailleurs sur la plateforme.
+2. **Anonymat du donateur** : **pas de compte requis** pour offrir un cadeau — juste un numéro
+   mobile money au moment du paiement, comme pour un achat de pack de crédits. Pas de `fromUserUid`
+   (voir modèle de données §2) : on perd la traçabilité par profil et l'affichage "X personnes ont
+   soutenu cette annonce", l'anti-fraude repose sur le webhook du provider de paiement plutôt que
+   sur une couche d'auth.
 3. **Prix de l'abonnement** : **3 000–5 000 FCFA/mois**, calibré sur les packs de crédits réels en
    prod (Firestore `credit_packs` : Starter 5 crédits/2 000 FCFA, Standard 10/3 500, Avancé
    25/7 500, Premium 50/12 500) — se situe au milieu de cette fourchette. À ajuster après les
