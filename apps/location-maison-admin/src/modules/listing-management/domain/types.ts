@@ -1,5 +1,13 @@
+import type { ModerationStatus } from "@trouve-ton-nkama/core/domain";
+
 export type ListingStatusFilter = "all" | "FOR_RENT" | "FOR_SALE";
 export type ListingStateFilter = "all" | "IN_PROGRESS" | "ARCHIVED";
+// Distinct de ListingStateFilter (actif/archivé) : statut de review avant publication.
+export type ListingModerationStatusFilter =
+  | "all"
+  | "PENDING"
+  | "APPROVED"
+  | "REJECTED";
 export type ListingDuplicateStateFilter =
   | "all"
   | "suspected"
@@ -13,6 +21,8 @@ export type ListingListItem = {
   typeProperty: string | null;
   status: "FOR_RENT" | "FOR_SALE" | null;
   state: "IN_PROGRESS" | "ARCHIVED" | string | null;
+  moderationStatus: ModerationStatus | null;
+  rejectionReason: string | null;
   price: number | null;
   area: number | null;
   city: string | null;
@@ -116,6 +126,27 @@ export type ListListingsResult = {
     forRentCount: number;
     forSaleCount: number;
   };
+};
+
+export type ListPendingListingsResult = {
+  listings: ListingListItem[];
+  page: {
+    cursor: string | null;
+    nextCursor: string | null;
+    hasMore: boolean;
+  };
+};
+
+export type UpdateListingModerationStatusInput = {
+  propertyId: string;
+  actorUid: string;
+  decision: "APPROVE" | "REJECT";
+  reason?: string;
+};
+
+export type UpdateListingModerationStatusResult = {
+  before: ListingDetails;
+  after: ListingDetails;
 };
 
 export type UpdateListingInput = {
@@ -417,6 +448,8 @@ export type ListingModerationDecisionItem = {
   afterState: string | null;
   beforeStatus: "FOR_RENT" | "FOR_SALE" | null;
   afterStatus: "FOR_RENT" | "FOR_SALE" | null;
+  beforeModerationStatus: ModerationStatus | null;
+  afterModerationStatus: ModerationStatus | null;
   actorId: string;
   actorRoles: string[];
   correlationId: string | null;

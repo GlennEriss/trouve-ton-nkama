@@ -4,7 +4,8 @@
   "version": "0.0.0",
   "description": "Trouve Ton Nkama — plateforme immobilière au Gabon (app publique + dashboard admin + marketing)",
   "workspaces": [
-    "apps/*"
+    "apps/*",
+    "packages/*"
   ],
   "overrides": {
     "nodemailer": "^6.10.1"

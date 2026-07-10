@@ -6,9 +6,10 @@ import type {
   ExistingPlatformUser,
   ListingImageInput,
 } from "@/modules/account-provisioning/domain/types";
+import { COLLECTIONS } from "@trouve-ton-nkama/core/constants";
 
-const USERS_COLLECTION = "users";
-const PROPERTIES_COLLECTION = "properties";
+const USERS_COLLECTION = COLLECTIONS.users;
+const PROPERTIES_COLLECTION = COLLECTIONS.properties;
 
 type RawUserDoc = {
   uid?: unknown;

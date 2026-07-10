@@ -9,7 +9,7 @@
   "etags": {
     "location-maison-prod-167da": {
       "extensionInstances": {
-        "firestore-algolia-search": "6490d6157b3dea6966edb540e420a41a24d71accd3cfd2dd8c5b15e082d7964b"
+        "firestore-algolia-search": "0744abd69b5371e5fc2029c62f481c08c0521467983e4f4f975d57e57c09fe03"
       }
     }
   }

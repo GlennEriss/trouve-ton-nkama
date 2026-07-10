@@ -6,9 +6,10 @@ import type {
   ListingModerationDecisionItem,
   ListingModerationDecisionType,
 } from "@/modules/listing-management/domain/types";
+import { COLLECTIONS } from "@trouve-ton-nkama/core/constants";
 
-const MODERATION_COLLECTION = "listing_moderation_decisions";
-const AUDIT_COLLECTION = "audit_logs";
+const MODERATION_COLLECTION = COLLECTIONS.listing_moderation_decisions;
+const AUDIT_COLLECTION = COLLECTIONS.audit_logs;
 
 type RawModerationDecisionDoc = Record<string, unknown>;
 type RawAuditLogDoc = Record<string, unknown>;
@@ -48,6 +49,10 @@ function toIsoString(value: unknown) {
 
 function toStatus(value: unknown) {
   return value === "FOR_RENT" || value === "FOR_SALE" ? value : null;
+}
+
+function toModerationStatus(value: unknown) {
+  return value === "PENDING" || value === "APPROVED" || value === "REJECTED" ? value : null;
 }
 
 function toRecordOrNull(value: unknown) {
@@ -94,6 +99,8 @@ function mapDecision(
     afterState: toTrimmedString(data.afterState),
     beforeStatus: toStatus(data.beforeStatus),
     afterStatus: toStatus(data.afterStatus),
+    beforeModerationStatus: toModerationStatus(data.beforeModerationStatus),
+    afterModerationStatus: toModerationStatus(data.afterModerationStatus),
     actorId,
     actorRoles: toStringArray(data.actorRoles),
     correlationId: toTrimmedString(data.correlationId),
@@ -125,6 +132,8 @@ export async function createListingModerationDecision(input: {
   afterState: string | null;
   beforeStatus: "FOR_RENT" | "FOR_SALE" | null;
   afterStatus: "FOR_RENT" | "FOR_SALE" | null;
+  beforeModerationStatus?: "PENDING" | "APPROVED" | "REJECTED" | null;
+  afterModerationStatus?: "PENDING" | "APPROVED" | "REJECTED" | null;
   actorId: string;
   actorRoles: string[];
   correlationId: string;
@@ -138,6 +147,8 @@ export async function createListingModerationDecision(input: {
     afterState: input.afterState,
     beforeStatus: input.beforeStatus,
     afterStatus: input.afterStatus,
+    beforeModerationStatus: input.beforeModerationStatus ?? null,
+    afterModerationStatus: input.afterModerationStatus ?? null,
     actorId: input.actorId,
     actorRoles: input.actorRoles,
     correlationId: input.correlationId,

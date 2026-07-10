@@ -1,0 +1,12 @@
+{
+  "name": "@trouve-ton-nkama/core",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts",
+    "./constants": "./src/constants/index.ts",
+    "./domain": "./src/domain/index.ts",
+    "./utils": "./src/utils/index.ts"
+  }
+}

@@ -13,9 +13,10 @@ import type {
   RecordPaymentInput,
   UpdateAdCampaignInput,
 } from "@/modules/advertising/domain/types";
+import { COLLECTIONS } from "@trouve-ton-nkama/core/constants";
 
-const ADVERTISERS_COLLECTION = "advertisers";
-const AD_CAMPAIGNS_COLLECTION = "ad_campaigns";
+const ADVERTISERS_COLLECTION = COLLECTIONS.advertisers;
+const AD_CAMPAIGNS_COLLECTION = COLLECTIONS.ad_campaigns;
 
 function toIso(value: unknown): string | null {
   if (!value) return null;

@@ -17,8 +17,6 @@ type ImmobilierLandingPageProps = {
   globalLandingPath: string;
   searchHref: string;
   cityLandingLinks: QuickLink[];
-  pageBasePath: string;
-  currentPage: number;
   totalPages: number;
   totalHits: number;
 };
@@ -33,24 +31,12 @@ export default function ImmobilierLandingPage({
   globalLandingPath,
   searchHref,
   cityLandingLinks,
-  pageBasePath,
-  currentPage,
   totalPages,
   totalHits,
 }: ImmobilierLandingPageProps) {
-  const safePage = Number.isFinite(currentPage) ? Math.max(1, Math.trunc(currentPage)) : 1;
   const safeTotalPages = Number.isFinite(totalPages) ? Math.max(0, Math.trunc(totalPages)) : 0;
   const safeTotalHits = Number.isFinite(totalHits) ? Math.max(0, Math.trunc(totalHits)) : 0;
-  const canPaginate = safeTotalPages > 1;
-
-  const buildPageHref = (page: number): string =>
-    page <= 1 ? pageBasePath : `${pageBasePath}?page=${encodeURIComponent(page)}`;
-
-  const visiblePages = Array.from(
-    new Set([1, safePage - 2, safePage - 1, safePage, safePage + 1, safePage + 2, safeTotalPages])
-  )
-    .filter((page) => page >= 1 && page <= safeTotalPages)
-    .sort((a, b) => a - b);
+  const hasMoreResults = safeTotalPages > 1;
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -84,11 +70,6 @@ export default function ImmobilierLandingPage({
                 ? `${safeTotalHits} annonces ${transactionLabel} ${typeLabel.toLowerCase()} ${cityLabel ? `à ${cityLabel}` : 'au Gabon'}`
                 : `Aucune annonce ${transactionLabel} ${typeLabel.toLowerCase()} ${cityLabel ? `à ${cityLabel}` : 'au Gabon'} pour le moment`}
             </h2>
-            {canPaginate ? (
-              <p className="mt-2 text-sm text-gray-600">
-                Page {safePage} sur {safeTotalPages}
-              </p>
-            ) : null}
             {properties.length > 0 ? (
               <p className="mt-2 text-sm text-gray-500">
                 Cliquez sur une annonce pour voir les détails complets.
@@ -103,46 +84,15 @@ export default function ImmobilierLandingPage({
               </div>
             )}
 
-            {canPaginate ? (
-              <nav className="mt-6 flex flex-wrap items-center gap-2" aria-label="Pagination des annonces immobilières">
+            {hasMoreResults ? (
+              <div className="mt-6 flex justify-center">
                 <Link
-                  href={buildPageHref(Math.max(1, safePage - 1))}
-                  aria-disabled={safePage <= 1}
-                  className={`rounded-lg border px-3 py-2 text-sm ${
-                    safePage <= 1
-                      ? 'pointer-events-none border-gray-200 text-gray-400'
-                      : 'border-gray-300 text-gray-700 hover:border-[#146B67] hover:text-[#146B67]'
-                  }`}
+                  href={searchHref}
+                  className="inline-flex items-center rounded-full border border-[#146B67] px-6 py-2.5 text-sm font-semibold text-[#146B67] hover:bg-[#146B67] hover:text-white transition-colors"
                 >
-                  Precedent
+                  Voir plus d&apos;annonces
                 </Link>
-
-                {visiblePages.map((page) => (
-                  <Link
-                    key={page}
-                    href={buildPageHref(page)}
-                    className={`rounded-lg border px-3 py-2 text-sm ${
-                      page === safePage
-                        ? 'border-[#146B67] bg-[#146B67] text-white'
-                        : 'border-gray-300 text-gray-700 hover:border-[#146B67] hover:text-[#146B67]'
-                    }`}
-                  >
-                    {page}
-                  </Link>
-                ))}
-
-                <Link
-                  href={buildPageHref(Math.min(safeTotalPages, safePage + 1))}
-                  aria-disabled={safePage >= safeTotalPages}
-                  className={`rounded-lg border px-3 py-2 text-sm ${
-                    safePage >= safeTotalPages
-                      ? 'pointer-events-none border-gray-200 text-gray-400'
-                      : 'border-gray-300 text-gray-700 hover:border-[#146B67] hover:text-[#146B67]'
-                  }`}
-                >
-                  Suivant
-                </Link>
-              </nav>
+              </div>
             ) : null}
           </section>
 

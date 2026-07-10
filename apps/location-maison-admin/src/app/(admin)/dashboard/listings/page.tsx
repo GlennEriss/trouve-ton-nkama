@@ -17,6 +17,7 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { PageHeader } from "@/components/ui-kit/page-header";
+import { formatPriceFCFA } from "@trouve-ton-nkama/core/utils";
 
 type ListingStatusFilter = "all" | "FOR_RENT" | "FOR_SALE";
 type ListingStateFilter = "all" | "IN_PROGRESS" | "ARCHIVED";
@@ -146,17 +147,6 @@ function formatNumber(value: number | null | undefined) {
     return "N/A";
   }
   return new Intl.NumberFormat("fr-FR").format(value);
-}
-
-function formatMoney(value: number | null | undefined) {
-  if (value == null || !Number.isFinite(value)) {
-    return "N/A";
-  }
-  return new Intl.NumberFormat("fr-FR", {
-    style: "currency",
-    currency: "XAF",
-    maximumFractionDigits: 0,
-  }).format(value);
 }
 
 function toDateLabel(value?: string | null) {
@@ -1003,7 +993,7 @@ export default function ListingsDashboardPage() {
                         <p className="text-xs text-slate-500">{statusLabel(listing.status)}</p>
                       </td>
                       <td className="py-2 pr-4 text-slate-700">
-                        <p>{formatMoney(listing.price)}</p>
+                        <p>{formatPriceFCFA(listing.price)}</p>
                         <p className="text-xs text-slate-500">{formatNumber(listing.area)} m²</p>
                       </td>
                       <td className="py-2 pr-4 text-slate-700">

@@ -1,5 +1,6 @@
 import { createHash } from "node:crypto";
 
+import redis from "@/lib/redis/client";
 import type {
   BulkUpdateListingStatusInput,
   BulkUpdateListingStatusResult,
@@ -17,6 +18,9 @@ import type {
   ListListingDuplicateGroupsResult,
   ListListingsInput,
   ListListingsResult,
+  ListPendingListingsResult,
+  UpdateListingModerationStatusInput,
+  UpdateListingModerationStatusResult,
   ListingDetails,
   ListingDuplicateGroup,
   ListingDuplicateItem,
@@ -39,8 +43,10 @@ import type {
 import {
   deletePropertyById,
   getPropertyById,
+  listPendingListings as listPendingListingsRaw,
   listPropertiesRawPage,
   patchPropertyById,
+  patchPropertyModerationStatus,
   patchPropertyState,
 } from "@/modules/listing-management/infrastructure/listing.repository";
 import {
@@ -1181,6 +1187,75 @@ export async function updateListingState(
   };
 }
 
+// Distinct de updateListingState : moderationStatus (PENDING/APPROVED/REJECTED) gère la
+// review avant publication, pas l'archivage. Ne touche jamais `state`.
+export async function updateListingModerationStatus(
+  input: UpdateListingModerationStatusInput,
+): Promise<UpdateListingModerationStatusResult | null> {
+  const existing = await getPropertyById(input.propertyId);
+  if (!existing) {
+    return null;
+  }
+
+  if (existing.moderationStatus !== "PENDING") {
+    // Idempotence : évite qu'un double-clic (ou deux onglets admin) ne traite deux fois
+    // la même annonce et ne déclenche deux notifications.
+    throw new Error("LISTING_NOT_PENDING");
+  }
+
+  const moderationStatus = input.decision === "APPROVE" ? "APPROVED" : "REJECTED";
+  await patchPropertyModerationStatus(input.propertyId, {
+    moderationStatus,
+    rejectionReason: input.decision === "REJECT" ? input.reason ?? null : null,
+    reviewedBy: input.actorUid,
+  });
+
+  const updated = await getPropertyById(input.propertyId);
+  if (!updated) {
+    throw new Error("LISTING_UPDATE_FAILED");
+  }
+
+  // Best-effort : invalide le cache Redis de location-maison (même instance Upstash)
+  // pour que l'annonce approuvée/rejetée n'attende pas jusqu'à 10 min avant de refléter
+  // le changement côté public. Ne doit jamais faire échouer la décision de modération.
+  try {
+    if (redis) {
+      await redis.del(`property:${input.propertyId}`);
+    }
+  } catch (error) {
+    console.warn("Redis invalidation failed after moderation decision", {
+      propertyId: input.propertyId,
+      error,
+    });
+  }
+
+  return {
+    before: existing,
+    after: updated,
+  };
+}
+
+export async function listPendingListings(input: {
+  limit: number;
+  cursor?: string;
+}): Promise<ListPendingListingsResult> {
+  const safeLimit = Math.max(1, Math.min(100, input.limit || 20));
+  const cursor = input.cursor?.trim() || null;
+
+  const page = await listPendingListingsRaw({ limit: safeLimit, cursor });
+  const nextCursor =
+    page.hasMore && page.rows.length > 0 ? page.rows[page.rows.length - 1].docId : null;
+
+  return {
+    listings: page.rows.map((row) => row.listing),
+    page: {
+      cursor,
+      nextCursor,
+      hasMore: page.hasMore,
+    },
+  };
+}
+
 export async function updateListingStatus(
   input: UpdateListingStatusInput,
 ): Promise<UpdateListingStatusResult | null> {
@@ -1729,6 +1804,8 @@ export async function recordListingModerationDecision(input: {
   afterState: string | null;
   beforeStatus: "FOR_RENT" | "FOR_SALE" | null;
   afterStatus: "FOR_RENT" | "FOR_SALE" | null;
+  beforeModerationStatus?: "PENDING" | "APPROVED" | "REJECTED" | null;
+  afterModerationStatus?: "PENDING" | "APPROVED" | "REJECTED" | null;
   actorId: string;
   actorRoles: string[];
   correlationId: string;

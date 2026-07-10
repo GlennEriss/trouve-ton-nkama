@@ -176,8 +176,6 @@ export default async function Page({
         globalLandingPath={path}
         searchHref={buildSearchHref(transactionConfig.status, typeConfig.typePropertyValues[0])}
         cityLandingLinks={cityLandingLinks}
-        pageBasePath={path}
-        currentPage={propertiesResults.currentPage}
         totalPages={propertiesResults.totalPages}
         totalHits={propertiesResults.totalHits}
       />
