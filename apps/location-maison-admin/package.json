@@ -16,6 +16,7 @@
     "osm:seed:cloud:dev": "tsx scripts/location-osm/seed-cloud.ts --env-file=.env.local"
   },
   "dependencies": {
+    "@trouve-ton-nkama/core": "*",
     "@base-ui/react": "^1.4.1",
     "@ducanh2912/next-pwa": "^10.2.9",
     "@hookform/resolvers": "^5.2.2",

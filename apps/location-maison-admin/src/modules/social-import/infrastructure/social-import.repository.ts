@@ -12,12 +12,13 @@ import type {
   SocialImportSettings,
   SocialImportSource,
 } from "@/modules/social-import/domain/types";
+import { COLLECTIONS } from "@trouve-ton-nkama/core/constants";
 
-const SOURCES_COLLECTION = "announcer_import_sources";
-const JOBS_COLLECTION = "social_import_jobs";
-const REVIEW_COLLECTION = "social_import_candidates";
-const DECISIONS_COLLECTION = "social_import_decisions";
-const SETTINGS_COLLECTION = "social_import_settings";
+const SOURCES_COLLECTION = COLLECTIONS.announcer_import_sources;
+const JOBS_COLLECTION = COLLECTIONS.social_import_jobs;
+const REVIEW_COLLECTION = COLLECTIONS.social_import_candidates;
+const DECISIONS_COLLECTION = COLLECTIONS.social_import_decisions;
+const SETTINGS_COLLECTION = COLLECTIONS.social_import_settings;
 const SETTINGS_DOC_ID = "global";
 
 type RawCollectionPage<T> = {

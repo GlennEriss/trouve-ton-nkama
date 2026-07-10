@@ -2,8 +2,9 @@ import { FieldValue } from "firebase-admin/firestore";
 
 import { getFirebaseAdminDb } from "@/lib/firebase/firebase-admin";
 import type { ListingDetails, ListingListItem } from "@/modules/listing-management/domain/types";
+import { COLLECTIONS } from "@trouve-ton-nkama/core/constants";
 
-const PROPERTIES_COLLECTION = "properties";
+const PROPERTIES_COLLECTION = COLLECTIONS.properties;
 
 type RawPropertyDoc = Record<string, unknown>;
 

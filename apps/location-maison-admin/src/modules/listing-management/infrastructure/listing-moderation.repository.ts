@@ -6,9 +6,10 @@ import type {
   ListingModerationDecisionItem,
   ListingModerationDecisionType,
 } from "@/modules/listing-management/domain/types";
+import { COLLECTIONS } from "@trouve-ton-nkama/core/constants";
 
-const MODERATION_COLLECTION = "listing_moderation_decisions";
-const AUDIT_COLLECTION = "audit_logs";
+const MODERATION_COLLECTION = COLLECTIONS.listing_moderation_decisions;
+const AUDIT_COLLECTION = COLLECTIONS.audit_logs;
 
 type RawModerationDecisionDoc = Record<string, unknown>;
 type RawAuditLogDoc = Record<string, unknown>;

@@ -2,8 +2,9 @@ import { FieldValue } from "firebase-admin/firestore";
 
 import { getFirebaseAdminDb } from "@/lib/firebase/firebase-admin";
 import type { AuditLogInput } from "@/modules/audit-compliance/domain/types";
+import { COLLECTIONS } from "@trouve-ton-nkama/core/constants";
 
-const COLLECTION = "audit_logs";
+const COLLECTION = COLLECTIONS.audit_logs;
 
 export async function writeAuditLog(entry: AuditLogInput) {
   const db = getFirebaseAdminDb();

@@ -4,6 +4,7 @@ import withPWA, { runtimeCaching as defaultRuntimeCaching } from '@ducanh2912/ne
 const nextConfig: NextConfig = {
   reactStrictMode: true,
   output: 'standalone',
+  transpilePackages: ['@trouve-ton-nkama/core'],
   async redirects() {
     return [
       {

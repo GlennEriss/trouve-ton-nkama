@@ -1,3 +1,5 @@
+import type { ModerationStatus } from "@trouve-ton-nkama/core/domain";
+
 export type ListingStatusFilter = "all" | "FOR_RENT" | "FOR_SALE";
 export type ListingStateFilter = "all" | "IN_PROGRESS" | "ARCHIVED";
 // Distinct de ListingStateFilter (actif/archivé) : statut de review avant publication.
@@ -19,7 +21,7 @@ export type ListingListItem = {
   typeProperty: string | null;
   status: "FOR_RENT" | "FOR_SALE" | null;
   state: "IN_PROGRESS" | "ARCHIVED" | string | null;
-  moderationStatus: "PENDING" | "APPROVED" | "REJECTED" | null;
+  moderationStatus: ModerationStatus | null;
   rejectionReason: string | null;
   price: number | null;
   area: number | null;
@@ -446,8 +448,8 @@ export type ListingModerationDecisionItem = {
   afterState: string | null;
   beforeStatus: "FOR_RENT" | "FOR_SALE" | null;
   afterStatus: "FOR_RENT" | "FOR_SALE" | null;
-  beforeModerationStatus: "PENDING" | "APPROVED" | "REJECTED" | null;
-  afterModerationStatus: "PENDING" | "APPROVED" | "REJECTED" | null;
+  beforeModerationStatus: ModerationStatus | null;
+  afterModerationStatus: ModerationStatus | null;
   actorId: string;
   actorRoles: string[];
   correlationId: string | null;

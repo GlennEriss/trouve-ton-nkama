@@ -2,20 +2,9 @@
  * @module constantes
  */
 
-const firebaseCollectionNames = {
-    users: "users",
-    properties: "properties",
-    credit_transactions: "credit_transactions",
-    ai_search_sessions: "ai_search_sessions",
-    ai_search_turns: "ai_search_turns",
-    notifications: 'notifications',
-    provinces: 'provinces',
-    cities: 'cities',
-    streets: 'streets',
-    property_statistics: 'property_statistics',
-    advertisers: 'advertisers',
-    ad_campaigns: 'ad_campaigns',
-    ad_serving_counters: 'ad_serving_counters'
-}
+// Transitoire : ré-export depuis @trouve-ton-nkama/core, source unique désormais partagée
+// avec apps/location-maison-admin. À terme, les ~21 sites d'import de ce fichier seront
+// repointés directement vers @trouve-ton-nkama/core/constants et ce fichier supprimé.
+import { COLLECTIONS } from "@trouve-ton-nkama/core/constants";
 
-export default firebaseCollectionNames
+export default COLLECTIONS;

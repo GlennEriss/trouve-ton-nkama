@@ -2,10 +2,11 @@ import { FieldValue } from "firebase-admin/firestore";
 
 import { getFirebaseAdminDb } from "@/lib/firebase/firebase-admin";
 import type { ListingDedupMonitoringMetrics } from "@/modules/listing-management/domain/types";
+import { COLLECTIONS } from "@trouve-ton-nkama/core/constants";
 
-const SETTINGS_COLLECTION = "listing_duplicate_settings";
+const SETTINGS_COLLECTION = COLLECTIONS.listing_duplicate_settings;
 const SETTINGS_DOC_ID = "default";
-const METRICS_COLLECTION = "listing_similarity_metrics_daily";
+const METRICS_COLLECTION = COLLECTIONS.listing_similarity_metrics_daily;
 
 export type ListingDedupAdvancedSettingsRecord = {
   semanticEnabled: boolean;

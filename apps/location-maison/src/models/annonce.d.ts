@@ -3,14 +3,16 @@
  */
 
 import { ICreation } from "./creation";
-import {TypePropertyEnum} from '@/constantes/property-type'
 import type { TagName } from '@/constantes'
 import { Timestamp } from "firebase/firestore";
+// Transitoire : ré-exports depuis @trouve-ton-nkama/core, source unique désormais partagée
+// avec apps/location-maison-admin.
+import type { TypePropertyKey, ModerationStatus as CoreModerationStatus } from "@trouve-ton-nkama/core/domain";
 
 //Property
-export type TypeProperty = keyof typeof TypePropertyEnum;
+export type TypeProperty = TypePropertyKey;
 export type StatusProperty = "FOR_RENT" | "FOR_SALE"
-export type ModerationStatus = "PENDING" | "APPROVED" | "REJECTED"
+export type ModerationStatus = CoreModerationStatus
 
 // Types pour les promotions
 export type PromotionType = 'featured' | 'trending-7d' | 'trending-3d' | 'boost' | null;

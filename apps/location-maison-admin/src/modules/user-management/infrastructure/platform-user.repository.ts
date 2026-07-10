@@ -2,8 +2,9 @@ import { FieldPath, FieldValue, Timestamp } from "firebase-admin/firestore";
 
 import { getFirebaseAdminDb } from "@/lib/firebase/firebase-admin";
 import type { PlatformUser } from "@/modules/user-management/domain/types";
+import { COLLECTIONS } from "@trouve-ton-nkama/core/constants";
 
-const USERS_COLLECTION = "users";
+const USERS_COLLECTION = COLLECTIONS.users;
 
 type PlatformUserRoleQuery = "admin" | "announcer";
 

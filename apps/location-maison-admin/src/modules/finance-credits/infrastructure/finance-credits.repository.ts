@@ -15,12 +15,13 @@ import type {
   ReviewRefundResult,
   UpdateFinanceCreditPackInput,
 } from "@/modules/finance-credits/domain/types";
+import { COLLECTIONS } from "@trouve-ton-nkama/core/constants";
 
-const USERS_COLLECTION = "users";
-const CREDIT_TRANSACTIONS_COLLECTION = "credit_transactions";
-const REFUND_PAYMENTS_COLLECTION = "refund_payments";
-const CREDIT_PACKS_COLLECTION = "credit_packs";
-const AUDIT_LOGS_COLLECTION = "audit_logs";
+const USERS_COLLECTION = COLLECTIONS.users;
+const CREDIT_TRANSACTIONS_COLLECTION = COLLECTIONS.credit_transactions;
+const REFUND_PAYMENTS_COLLECTION = COLLECTIONS.refund_payments;
+const CREDIT_PACKS_COLLECTION = COLLECTIONS.credit_packs;
+const AUDIT_LOGS_COLLECTION = COLLECTIONS.audit_logs;
 
 type RawUserDoc = {
   uid?: unknown;
