@@ -59,17 +59,14 @@ pas les traiter comme un chantier séparé qui bloque le reste : les interlacer 
 quand c'est naturel (ex: le nouveau module Réels côté admin est l'occasion d'appliquer directement
 le pattern Strategy plutôt que de créer une 3e chaîne de conditions par type de bien).
 
-- [ ] Utilitaire `toIso` partagé (`packages/core`) — à faire dès qu'on retouche `packages/core`
-  pour une autre raison.
-- [ ] Mappers/pagination communs pour les repositories admin.
-- [ ] Port du pattern Strategy/Factory vers `dashboard/listings/new/page.tsx` — bon candidat à
-  faire **en même temps** que la Phase 2 si le module Réels admin touche à cette page de toute
-  façon.
-- [ ] Stratégie de gestion des images (chargement, affichage, stockage) — voir
-  [refactoring-optimisation-couts.md §5](./refactoring-optimisation-couts.md#5-strat%C3%A9gie-de-gestion-des-images-%C3%A0-revoir).
-  À investiguer avant la Phase 2 si possible : le module Réels va de toute façon poser la question
-  du stockage/CDN pour la vidéo, autant trancher la stratégie médias (images + vidéo) une seule
-  fois plutôt que deux fois séparément.
+- [x] Utilitaire `toIso` partagé (`packages/core`).
+- [x] Mappers/pagination communs pour les repositories admin.
+- [x] Port du pattern Strategy/Factory vers `dashboard/listings/new/page.tsx` (et `announcers/page.tsx`,
+  et la validation serveur `listing-validation.ts` — les 3 duplications de la règle "champs requis
+  par type de bien" unifiées en une seule table de règles).
+- [x] Vignette à l'upload (voir [refactoring-optimisation-couts.md §5](./refactoring-optimisation-couts.md#5-strat%C3%A9gie-de-gestion-des-images-%C3%A0-revoir)) —
+  fait, coût nul. Réactivation de l'optimiseur Next/Vercel Pro et CDN restent ouvertes ; le module
+  Réels posera de toute façon la question du stockage/CDN vidéo, à trancher à ce moment-là.
 
 ## Ce qui n'est volontairement pas dans cette roadmap
 

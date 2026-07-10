@@ -9,6 +9,8 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { PageHeader } from "@/components/ui-kit/page-header";
+import { PROPERTY_TYPE_FIELD_RULES } from "@/modules/listing-management/domain/property-type-fields";
+import { renderExtraTypeFields } from "@/modules/listing-management/presentation/property-type-fields-renderer";
 
 type AuthMePayload = {
   admin: {
@@ -85,6 +87,7 @@ type CreateListingFormState = {
     | "Villa"
     | "Land";
   status: "FOR_RENT" | "FOR_SALE";
+  isOwner: "true" | "false" | "";
   price: string;
   area: string;
   street: string;
@@ -137,7 +140,6 @@ type UploadListingImagesPayload = {
 
 type ListingWizardStep = 1 | 2 | 3;
 
-const MAX_LISTING_IMAGES = 10;
 const ACCEPTED_IMAGE_TYPES = new Set(["image/jpeg", "image/png", "image/webp"]);
 
 const PROPERTY_TYPE_OPTIONS: Array<{
@@ -161,6 +163,23 @@ const PROPERTY_TYPE_OPTIONS: Array<{
 const STATUS_OPTIONS: Array<{ value: "FOR_RENT" | "FOR_SALE"; label: string }> = [
   { value: "FOR_RENT", label: "À louer" },
   { value: "FOR_SALE", label: "À vendre" },
+];
+
+const OWNER_ROLE_OPTIONS: Array<{
+  value: "true" | "false";
+  label: string;
+  description: string;
+}> = [
+  {
+    value: "true",
+    label: "Propriétaire direct",
+    description: "Le locataire/acheteur ne paie aucune commission.",
+  },
+  {
+    value: "false",
+    label: "Mandataire / Agence",
+    description: "Des frais de service peuvent s'appliquer au locataire/acheteur.",
+  },
 ];
 
 const PLATFORM_TAG_OPTIONS = [
@@ -222,10 +241,6 @@ function toOptionalNumber(value: string) {
   }
 
   return parsed;
-}
-
-function isLogementLike(type: CreateListingFormState["typeProperty"]) {
-  return type === "Logement" || type === "Home" || type === "Studio" || type === "Apartment" || type === "Villa";
 }
 
 function ensureMaxTags(tags: string[]) {
@@ -342,6 +357,7 @@ export default function NewListingPage() {
     description: "",
     typeProperty: "Home",
     status: "FOR_RENT",
+    isOwner: "",
     price: "0",
     area: "0",
     street: "",
@@ -604,12 +620,7 @@ export default function NewListingPage() {
 
     const accepted = selectedFiles.filter((file) => ACCEPTED_IMAGE_TYPES.has(file.type));
     setListingLocalImages((previous) => {
-      const availableSlots = Math.max(MAX_LISTING_IMAGES - previous.length, 0);
-      if (availableSlots === 0) {
-        return previous;
-      }
-
-      const toAdd = accepted.slice(0, availableSlots).map((file, index) => ({
+      const toAdd = accepted.map((file, index) => ({
         id: `${Date.now()}-${index}-${Math.random().toString(36).slice(2, 8)}`,
         file,
         previewUrl: URL.createObjectURL(file),
@@ -659,79 +670,31 @@ export default function NewListingPage() {
     if (createListing.description.trim().length < 10) return "La description doit contenir au moins 10 caractères.";
     if (!isPositiveNumber(createListing.price)) return "Le prix doit être supérieur à 0.";
     if (!isNonNegativeNumber(createListing.area)) return "La surface doit être un nombre positif ou nul.";
+    if (createListing.isOwner !== "true" && createListing.isOwner !== "false") {
+      return "Indique si l'annonceur est propriétaire direct ou mandataire/agence.";
+    }
     if (selectedListingTags.length < 1) return "Ajoute au moins 1 tag (maximum 6).";
     if (selectedListingTags.length > 6) return "Maximum 6 tags.";
     if (listingLocalImages.length < 1) return "Ajoute au moins 1 image.";
-    if (listingLocalImages.length > MAX_LISTING_IMAGES) return "Maximum 10 images.";
     return null;
   }, [createListing, listingLocalImages.length, selectedListingTags.length]);
 
   const validateListingStep2 = useCallback(() => {
-    const requireNumber = (value: string, label: string) => {
-      if (!isFiniteNumber(value)) return `${label} est requis pour ce type d'annonce.`;
-      return null;
-    };
-    const requireString = (value: string, label: string) => {
-      if (!value.trim()) return `${label} est requis pour ce type d'annonce.`;
-      return null;
-    };
-    const requireLogementBase = () =>
-      requireNumber(createListing.nbrRooms, "nbrRooms") ||
-      requireNumber(createListing.nbrKitchens, "nbrKitchens") ||
-      requireNumber(createListing.nbrBathrooms, "nbrBathrooms") ||
-      requireNumber(createListing.nbrToilets, "nbrToilets");
+    const rules = PROPERTY_TYPE_FIELD_RULES[createListing.typeProperty] ?? [];
 
-    if (createListing.typeProperty === "Logement") return requireLogementBase();
-    if (createListing.typeProperty === "Home") {
-      return (
-        requireLogementBase() ||
-        requireNumber(createListing.nbrGarages, "nbrGarages") ||
-        requireNumber(createListing.nbrFloors, "nbrFloors") ||
-        requireNumber(createListing.nbrLivingRoom, "nbrLivingRoom")
-      );
+    for (const rule of rules) {
+      const value = (createListing as Record<string, string>)[rule.key];
+
+      if (rule.kind === "number" && !isFiniteNumber(value)) {
+        return `${rule.label} est requis pour ce type d'annonce.`;
+      }
+      if (rule.kind === "string" && !value?.trim()) {
+        return `${rule.label} est requis pour ce type d'annonce.`;
+      }
+      if (rule.kind === "boolean" && value !== "true" && value !== "false") {
+        return `${rule.label} est requis pour ce type d'annonce.`;
+      }
     }
-    if (createListing.typeProperty === "Studio") {
-      return (
-        requireLogementBase() ||
-        requireNumber(createListing.nbrFloorStudio, "nbrFloorStudio") ||
-        requireString(createListing.numeroStudio, "numeroStudio")
-      );
-    }
-    if (createListing.typeProperty === "Apartment") {
-      return (
-        requireLogementBase() ||
-        requireNumber(createListing.nbrFloorApartment, "nbrFloorApartment") ||
-        requireString(createListing.numeroApartment, "numeroApartment")
-      );
-    }
-    if (createListing.typeProperty === "Villa") {
-      return (
-        requireLogementBase() ||
-        requireNumber(createListing.nbrFloors, "nbrFloors") ||
-        requireNumber(createListing.nbrPiscine, "nbrPiscine") ||
-        requireNumber(createListing.nbrGarages, "nbrGarages")
-      );
-    }
-    if (createListing.typeProperty === "Desk") {
-      return (
-        requireNumber(createListing.nbrToilets, "nbrToilets") ||
-        requireNumber(createListing.nbrRooms, "nbrRooms")
-      );
-    }
-    if (createListing.typeProperty === "Building") {
-      return (
-        requireNumber(createListing.nbrApartments, "nbrApartments") ||
-        requireNumber(createListing.nbrFloors, "nbrFloors")
-      );
-    }
-    if (createListing.typeProperty === "Shop") {
-      return (
-        requireNumber(createListing.nbrRooms, "nbrRooms") ||
-        requireNumber(createListing.nbrToilet, "nbrToilet")
-      );
-    }
-    if (createListing.typeProperty === "Kiosk") return requireString(createListing.kioskType, "kioskType");
-    if (createListing.typeProperty === "Room") return requireString(createListing.roomType, "roomType");
 
     return null;
   }, [createListing]);
@@ -818,6 +781,7 @@ export default function NewListingPage() {
             description: createListing.description,
             typeProperty: createListing.typeProperty,
             status: createListing.status,
+            isOwner: createListing.isOwner === "true",
             price: Number(createListing.price),
             area: Number(createListing.area),
             street: createListing.street,
@@ -1049,6 +1013,53 @@ export default function NewListingPage() {
                   />
                 </div>
 
+                <div className="space-y-2 rounded-lg border border-slate-200 p-3">
+                  <div>
+                    <p className="text-sm font-medium text-slate-900">Rôle de l&apos;annonceur sur ce bien</p>
+                    <p className="text-xs text-slate-500">
+                      Indique si l&apos;annonceur est le propriétaire direct ou un mandataire/agence.
+                    </p>
+                  </div>
+                  <div className="grid gap-3 md:grid-cols-2">
+                    {OWNER_ROLE_OPTIONS.map((option) => {
+                      const selected = createListing.isOwner === option.value;
+                      return (
+                        <button
+                          key={option.value}
+                          type="button"
+                          className={`rounded-xl border-2 p-4 text-left transition ${
+                            selected
+                              ? "border-emerald-700 bg-emerald-50 text-emerald-950"
+                              : "border-slate-200 bg-white text-slate-800 hover:border-emerald-600 hover:bg-emerald-50/60"
+                          }`}
+                          onClick={() =>
+                            setCreateListing((previous) => ({
+                              ...previous,
+                              isOwner: option.value,
+                            }))
+                          }
+                          disabled={createListingSubmitting || loading}
+                        >
+                          <span className="flex items-start gap-3">
+                            <span
+                              className={`mt-0.5 flex h-4 w-4 shrink-0 items-center justify-center rounded-full border-2 ${
+                                selected ? "border-emerald-700 bg-emerald-700" : "border-slate-300"
+                              }`}
+                              aria-hidden="true"
+                            >
+                              {selected ? <span className="h-2 w-2 rounded-full bg-white" /> : null}
+                            </span>
+                            <span>
+                              <span className="block text-sm font-semibold">{option.label}</span>
+                              <span className="mt-1 block text-xs text-slate-500">{option.description}</span>
+                            </span>
+                          </span>
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+
                 <div className="grid gap-3 md:grid-cols-3">
                   <div className="space-y-1">
                     <p className="text-xs font-medium text-slate-700">Statut annonce</p>
@@ -1148,7 +1159,7 @@ export default function NewListingPage() {
                 <div className="space-y-2 rounded-lg border border-slate-200 p-3">
                   <div className="flex items-center justify-between gap-2">
                     <p className="text-sm font-medium text-slate-900">
-                      Images ({listingLocalImages.length}/{MAX_LISTING_IMAGES})
+                      Images ({listingLocalImages.length})
                     </p>
                     {listingLocalImages.length > 0 ? (
                       <Button
@@ -1169,7 +1180,7 @@ export default function NewListingPage() {
                       accept="image/png,image/jpeg,image/webp"
                       multiple
                       onChange={onPickListingImages}
-                      disabled={createListingSubmitting || loading || listingLocalImages.length >= MAX_LISTING_IMAGES}
+                      disabled={createListingSubmitting || loading}
                     />
                   </div>
                   {listingLocalImages.length > 0 ? (
@@ -1202,7 +1213,7 @@ export default function NewListingPage() {
                       ))}
                     </div>
                   ) : (
-                    <p className="text-xs text-slate-500">Ajoute entre 1 et 10 images JPG/PNG/WEBP.</p>
+                    <p className="text-xs text-slate-500">Ajoute au moins 1 image JPG/PNG/WEBP.</p>
                   )}
                 </div>
               </div>
@@ -1210,83 +1221,12 @@ export default function NewListingPage() {
 
             {listingStep === 2 ? (
               <div className="space-y-3">
-                {isLogementLike(createListing.typeProperty) ? (
-                  <div className="grid gap-3 md:grid-cols-2">
-                    <Input type="number" min={0} step={1} value={createListing.nbrRooms} onChange={(event) => setCreateListing((previous) => ({ ...previous, nbrRooms: event.target.value }))} placeholder="Nombre de chambres" disabled={createListingSubmitting || loading} />
-                    <Input type="number" min={0} step={1} value={createListing.nbrKitchens} onChange={(event) => setCreateListing((previous) => ({ ...previous, nbrKitchens: event.target.value }))} placeholder="Nombre de cuisines" disabled={createListingSubmitting || loading} />
-                    <Input type="number" min={0} step={1} value={createListing.nbrBathrooms} onChange={(event) => setCreateListing((previous) => ({ ...previous, nbrBathrooms: event.target.value }))} placeholder="Nombre de salles d'eau" disabled={createListingSubmitting || loading} />
-                    <Input type="number" min={0} step={1} value={createListing.nbrToilets} onChange={(event) => setCreateListing((previous) => ({ ...previous, nbrToilets: event.target.value }))} placeholder="Nombre de toilettes" disabled={createListingSubmitting || loading} />
-                  </div>
-                ) : null}
-
-                {createListing.typeProperty === "Home" ? (
-                  <div className="grid gap-3 md:grid-cols-3">
-                    <Input type="number" min={0} step={1} value={createListing.nbrGarages} onChange={(event) => setCreateListing((previous) => ({ ...previous, nbrGarages: event.target.value }))} placeholder="Nombre de garages" disabled={createListingSubmitting || loading} />
-                    <Input type="number" min={0} step={1} value={createListing.nbrFloors} onChange={(event) => setCreateListing((previous) => ({ ...previous, nbrFloors: event.target.value }))} placeholder="Nombre d'étages" disabled={createListingSubmitting || loading} />
-                    <Input type="number" min={0} step={1} value={createListing.nbrLivingRoom} onChange={(event) => setCreateListing((previous) => ({ ...previous, nbrLivingRoom: event.target.value }))} placeholder="Nombre de salons" disabled={createListingSubmitting || loading} />
-                  </div>
-                ) : null}
-
-                {createListing.typeProperty === "Studio" ? (
-                  <div className="grid gap-3 md:grid-cols-2">
-                    <Input type="number" min={0} step={1} value={createListing.nbrFloorStudio} onChange={(event) => setCreateListing((previous) => ({ ...previous, nbrFloorStudio: event.target.value }))} placeholder="Étage du studio" disabled={createListingSubmitting || loading} />
-                    <Input type="number" min={0} step={1} value={createListing.numeroStudio} onChange={(event) => setCreateListing((previous) => ({ ...previous, numeroStudio: event.target.value }))} placeholder="Numéro du studio" disabled={createListingSubmitting || loading} />
-                  </div>
-                ) : null}
-
-                {createListing.typeProperty === "Apartment" ? (
-                  <div className="grid gap-3 md:grid-cols-2">
-                    <Input type="number" min={0} step={1} value={createListing.nbrFloorApartment} onChange={(event) => setCreateListing((previous) => ({ ...previous, nbrFloorApartment: event.target.value }))} placeholder="Étage de l'appartement" disabled={createListingSubmitting || loading} />
-                    <Input type="number" min={0} step={1} value={createListing.numeroApartment} onChange={(event) => setCreateListing((previous) => ({ ...previous, numeroApartment: event.target.value }))} placeholder="Numéro de l'appartement" disabled={createListingSubmitting || loading} />
-                  </div>
-                ) : null}
-
-                {createListing.typeProperty === "Villa" ? (
-                  <div className="grid gap-3 md:grid-cols-3">
-                    <Input type="number" min={0} step={1} value={createListing.nbrFloors} onChange={(event) => setCreateListing((previous) => ({ ...previous, nbrFloors: event.target.value }))} placeholder="Nombre d'étages" disabled={createListingSubmitting || loading} />
-                    <Input type="number" min={0} step={1} value={createListing.nbrPiscine} onChange={(event) => setCreateListing((previous) => ({ ...previous, nbrPiscine: event.target.value }))} placeholder="Nombre de piscines" disabled={createListingSubmitting || loading} />
-                    <Input type="number" min={0} step={1} value={createListing.nbrGarages} onChange={(event) => setCreateListing((previous) => ({ ...previous, nbrGarages: event.target.value }))} placeholder="Nombre de garages" disabled={createListingSubmitting || loading} />
-                  </div>
-                ) : null}
-
-                {createListing.typeProperty === "Desk" ? (
-                  <div className="grid gap-3 md:grid-cols-2">
-                    <Input type="number" min={0} step={1} value={createListing.nbrToilets} onChange={(event) => setCreateListing((previous) => ({ ...previous, nbrToilets: event.target.value }))} placeholder="Nombre de toilettes" disabled={createListingSubmitting || loading} />
-                    <Input type="number" min={0} step={1} value={createListing.nbrRooms} onChange={(event) => setCreateListing((previous) => ({ ...previous, nbrRooms: event.target.value }))} placeholder="Nombre de pièces" disabled={createListingSubmitting || loading} />
-                  </div>
-                ) : null}
-
-                {createListing.typeProperty === "Building" ? (
-                  <div className="grid gap-3 md:grid-cols-3">
-                    <Input type="number" min={0} step={1} value={createListing.nbrApartments} onChange={(event) => setCreateListing((previous) => ({ ...previous, nbrApartments: event.target.value }))} placeholder="Nombre d'appartements" disabled={createListingSubmitting || loading} />
-                    <Input type="number" min={0} step={1} value={createListing.nbrFloors} onChange={(event) => setCreateListing((previous) => ({ ...previous, nbrFloors: event.target.value }))} placeholder="Nombre d'étages" disabled={createListingSubmitting || loading} />
-                    <select className="h-9 rounded-lg border border-slate-300 bg-white px-3 text-sm text-slate-800" value={createListing.hasParking} onChange={(event) => setCreateListing((previous) => ({ ...previous, hasParking: event.target.value as "true" | "false" }))} disabled={createListingSubmitting || loading}>
-                      <option value="true">Parking: Oui</option>
-                      <option value="false">Parking: Non</option>
-                    </select>
-                  </div>
-                ) : null}
-
-                {createListing.typeProperty === "Shop" ? (
-                  <div className="grid gap-3 md:grid-cols-2">
-                    <Input type="number" min={0} step={1} value={createListing.nbrRooms} onChange={(event) => setCreateListing((previous) => ({ ...previous, nbrRooms: event.target.value }))} placeholder="Nombre de pièces" disabled={createListingSubmitting || loading} />
-                    <Input type="number" min={0} step={1} value={createListing.nbrToilet} onChange={(event) => setCreateListing((previous) => ({ ...previous, nbrToilet: event.target.value }))} placeholder="Nombre de toilettes" disabled={createListingSubmitting || loading} />
-                  </div>
-                ) : null}
-
-                {createListing.typeProperty === "Kiosk" ? (
-                  <Input value={createListing.kioskType} onChange={(event) => setCreateListing((previous) => ({ ...previous, kioskType: event.target.value }))} placeholder="Type de kiosque" disabled={createListingSubmitting || loading} />
-                ) : null}
-
-                {createListing.typeProperty === "Room" ? (
-                  <Input value={createListing.roomType} onChange={(event) => setCreateListing((previous) => ({ ...previous, roomType: event.target.value }))} placeholder="Type de chambre" disabled={createListingSubmitting || loading} />
-                ) : null}
-
-                {createListing.typeProperty === "Land" || createListing.typeProperty === "Property" ? (
-                  <p className="rounded-md bg-slate-50 px-3 py-2 text-sm text-slate-700">
-                    Ce type n&apos;a pas d&apos;attribut supplémentaire à l&apos;étape 2.
-                  </p>
-                ) : null}
+                {renderExtraTypeFields(
+                  createListing.typeProperty,
+                  createListing,
+                  setCreateListing,
+                  createListingSubmitting || loading,
+                )}
               </div>
             ) : null}
 

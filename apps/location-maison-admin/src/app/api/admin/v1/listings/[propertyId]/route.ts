@@ -62,6 +62,7 @@ function toFullListingPayload(
     description: listing.description,
     typeProperty: listing.typeProperty ?? "Property",
     status: listing.status ?? "FOR_RENT",
+    isOwner: listing.isOwner ?? false,
     price: listing.price ?? 1,
     area: listing.area ?? 0,
     tags: listing.tags,

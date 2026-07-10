@@ -1,4 +1,4 @@
-import { FieldPath, FieldValue, Timestamp } from "firebase-admin/firestore";
+import { FieldPath, FieldValue } from "firebase-admin/firestore";
 
 import {
   getFirebaseAdminDb,
@@ -13,6 +13,8 @@ import type {
   SocialImportSource,
 } from "@/modules/social-import/domain/types";
 import { COLLECTIONS } from "@trouve-ton-nkama/core/constants";
+import { toIsoDate as toIso } from "@trouve-ton-nkama/core/utils";
+import { resolveCursorSnapshot, sliceCursorPage } from "@/lib/firestore/pagination";
 
 const SOURCES_COLLECTION = COLLECTIONS.announcer_import_sources;
 const JOBS_COLLECTION = COLLECTIONS.social_import_jobs;
@@ -99,41 +101,6 @@ type RawSettingsDoc = {
   createdAt?: unknown;
 };
 
-function toIso(value: unknown): string | null {
-  if (!value) {
-    return null;
-  }
-
-  if (typeof value === "string") {
-    const date = new Date(value);
-    return Number.isNaN(date.getTime()) ? null : date.toISOString();
-  }
-
-  if (value instanceof Timestamp) {
-    return value.toDate().toISOString();
-  }
-
-  if (value instanceof Date) {
-    return value.toISOString();
-  }
-
-  if (
-    typeof value === "object" &&
-    value !== null &&
-    "seconds" in value &&
-    typeof (value as { seconds?: unknown }).seconds === "number"
-  ) {
-    const seconds = (value as { seconds: number }).seconds;
-    const nanoseconds =
-      "nanoseconds" in value && typeof (value as { nanoseconds?: unknown }).nanoseconds === "number"
-        ? (value as { nanoseconds: number }).nanoseconds
-        : 0;
-    return new Date(seconds * 1000 + nanoseconds / 1_000_000).toISOString();
-  }
-
-  return null;
-}
-
 function toTrimmedString(value: unknown): string | null {
   if (typeof value !== "string") {
     return null;
@@ -218,10 +185,12 @@ async function listRawCollectionPage<T>(
   }
 
   const snapshot = await query.get();
-  const hasMore = snapshot.docs.length > safeLimit;
-  const docs = hasMore ? snapshot.docs.slice(0, safeLimit) : snapshot.docs;
-  const items = docs.map((doc) => input.map(doc.id, doc.data() as Record<string, unknown>));
-  const nextCursor = docs.length > 0 ? docs[docs.length - 1].id : cursor ?? null;
+  const { items, hasMore, nextCursor } = sliceCursorPage(
+    snapshot.docs,
+    safeLimit,
+    (doc) => input.map(doc.id, doc.data() as Record<string, unknown>),
+    cursor ?? null,
+  );
 
   return {
     items,
@@ -248,18 +217,18 @@ async function listRawCollectionPageByCreatedAtDesc<T>(
     .limit(safeLimit + 1);
 
   const cursor = input.cursor?.trim();
-  if (cursor) {
-    const cursorSnapshot = await db.collection(collectionName).doc(cursor).get();
-    if (cursorSnapshot.exists) {
-      query = query.startAfter(cursorSnapshot);
-    }
+  const cursorSnapshot = await resolveCursorSnapshot(db.collection(collectionName), cursor);
+  if (cursorSnapshot) {
+    query = query.startAfter(cursorSnapshot);
   }
 
   const snapshot = await query.get();
-  const hasMore = snapshot.docs.length > safeLimit;
-  const docs = hasMore ? snapshot.docs.slice(0, safeLimit) : snapshot.docs;
-  const items = docs.map((doc) => input.map(doc.id, doc.data() as Record<string, unknown>));
-  const nextCursor = docs.length > 0 ? docs[docs.length - 1].id : cursor ?? null;
+  const { items, hasMore, nextCursor } = sliceCursorPage(
+    snapshot.docs,
+    safeLimit,
+    (doc) => input.map(doc.id, doc.data() as Record<string, unknown>),
+    cursor ?? null,
+  );
 
   return {
     items,

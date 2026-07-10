@@ -1,19 +1,11 @@
 import { z } from "zod";
 
-export const LISTING_TYPE_VALUES = [
-  "Home",
-  "Studio",
-  "Apartment",
-  "Desk",
-  "Building",
-  "Shop",
-  "Kiosk",
-  "Room",
-  "Property",
-  "Logement",
-  "Villa",
-  "Land",
-] as const;
+import {
+  LISTING_TYPE_VALUES,
+  PROPERTY_TYPE_FIELD_RULES,
+} from "@/modules/listing-management/domain/property-type-fields";
+
+export { LISTING_TYPE_VALUES };
 
 export const listingFullSchema = z
   .object({
@@ -31,8 +23,8 @@ export const listingFullSchema = z
           filePATH: z.string().trim().optional(),
         }),
       )
-      .min(1)
-      .max(30),
+      .min(1),
+    isOwner: z.boolean(),
     street: z.string().trim().min(1).max(180),
     city: z.string().trim().min(1).max(120),
     province: z.string().trim().min(1).max(120),
@@ -69,101 +61,27 @@ export const listingFullSchema = z
   })
   .strict()
   .superRefine((value, ctx) => {
-    const requireNumber = (field: keyof typeof value, label: string) => {
-      if (typeof value[field] !== "number" || !Number.isFinite(value[field] as number)) {
+    const rules = PROPERTY_TYPE_FIELD_RULES[value.typeProperty] ?? [];
+
+    for (const rule of rules) {
+      const candidate = (value as Record<string, unknown>)[rule.key];
+      let isValid: boolean;
+
+      if (rule.kind === "number") {
+        isValid = typeof candidate === "number" && Number.isFinite(candidate);
+      } else if (rule.kind === "string") {
+        isValid = typeof candidate === "string" && candidate.trim().length > 0;
+      } else {
+        isValid = typeof candidate === "boolean";
+      }
+
+      if (!isValid) {
         ctx.addIssue({
           code: z.ZodIssueCode.custom,
-          message: `${label} est requis pour ce type d'annonce.`,
-          path: [field],
+          message: `${rule.label} est requis pour ce type d'annonce.`,
+          path: [rule.key],
         });
       }
-    };
-
-    const requireString = (field: keyof typeof value, label: string) => {
-      const candidate = value[field];
-      if (typeof candidate !== "string" || candidate.trim().length === 0) {
-        ctx.addIssue({
-          code: z.ZodIssueCode.custom,
-          message: `${label} est requis pour ce type d'annonce.`,
-          path: [field],
-        });
-      }
-    };
-
-    const requireLogementBase = () => {
-      requireNumber("nbrRooms", "nbrRooms");
-      requireNumber("nbrKitchens", "nbrKitchens");
-      requireNumber("nbrBathrooms", "nbrBathrooms");
-      requireNumber("nbrToilets", "nbrToilets");
-    };
-
-    if (value.typeProperty === "Logement") {
-      requireLogementBase();
-      return;
-    }
-
-    if (value.typeProperty === "Home") {
-      requireLogementBase();
-      requireNumber("nbrGarages", "nbrGarages");
-      requireNumber("nbrFloors", "nbrFloors");
-      requireNumber("nbrLivingRoom", "nbrLivingRoom");
-      return;
-    }
-
-    if (value.typeProperty === "Studio") {
-      requireLogementBase();
-      requireNumber("nbrFloorStudio", "nbrFloorStudio");
-      requireString("numeroStudio", "numeroStudio");
-      return;
-    }
-
-    if (value.typeProperty === "Apartment") {
-      requireLogementBase();
-      requireNumber("nbrFloorApartment", "nbrFloorApartment");
-      requireString("numeroApartment", "numeroApartment");
-      return;
-    }
-
-    if (value.typeProperty === "Villa") {
-      requireLogementBase();
-      requireNumber("nbrFloors", "nbrFloors");
-      requireNumber("nbrPiscine", "nbrPiscine");
-      requireNumber("nbrGarages", "nbrGarages");
-      return;
-    }
-
-    if (value.typeProperty === "Desk") {
-      requireNumber("nbrToilets", "nbrToilets");
-      requireNumber("nbrRooms", "nbrRooms");
-      return;
-    }
-
-    if (value.typeProperty === "Building") {
-      requireNumber("nbrApartments", "nbrApartments");
-      requireNumber("nbrFloors", "nbrFloors");
-      if (typeof value.hasParking !== "boolean") {
-        ctx.addIssue({
-          code: z.ZodIssueCode.custom,
-          message: "hasParking est requis pour ce type d'annonce.",
-          path: ["hasParking"],
-        });
-      }
-      return;
-    }
-
-    if (value.typeProperty === "Shop") {
-      requireNumber("nbrRooms", "nbrRooms");
-      requireNumber("nbrToilet", "nbrToilet");
-      return;
-    }
-
-    if (value.typeProperty === "Kiosk") {
-      requireString("kioskType", "kioskType");
-      return;
-    }
-
-    if (value.typeProperty === "Room") {
-      requireString("roomType", "roomType");
     }
   });
 
@@ -199,8 +117,8 @@ export const listingPatchSchema = z
           }),
         ]),
       )
-      .max(30)
       .optional(),
+    isOwner: z.boolean().optional(),
     longitude: z.coerce.number().min(-180).max(180).optional(),
     latitude: z.coerce.number().min(-90).max(90).optional(),
     isLocExact: z.boolean().optional(),

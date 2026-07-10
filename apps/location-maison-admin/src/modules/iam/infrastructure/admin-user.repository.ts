@@ -1,8 +1,9 @@
-import { FieldValue, Timestamp } from "firebase-admin/firestore";
+import { FieldValue } from "firebase-admin/firestore";
 
 import { getFirebaseAdminDb } from "@/lib/firebase/firebase-admin";
 import { isAdminRole } from "@/modules/iam/domain/role-utils";
 import type { AdminRole, AdminStatus, AdminUser } from "@/modules/iam/domain/types";
+import { toIsoDate as toIso } from "@trouve-ton-nkama/core/utils";
 
 const COLLECTION = "admin_users";
 
@@ -15,18 +16,6 @@ type AdminDoc = {
   lastSeenAt?: unknown;
   createdAt?: unknown;
 };
-
-function toIso(value: unknown): string | null {
-  if (value instanceof Timestamp) {
-    return value.toDate().toISOString();
-  }
-
-  if (value instanceof Date) {
-    return value.toISOString();
-  }
-
-  return null;
-}
 
 function sanitizeStatus(value: unknown): AdminStatus {
   if (

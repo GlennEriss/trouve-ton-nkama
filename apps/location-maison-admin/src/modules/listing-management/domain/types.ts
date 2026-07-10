@@ -20,6 +20,7 @@ export type ListingListItem = {
   description: string;
   typeProperty: string | null;
   status: "FOR_RENT" | "FOR_SALE" | null;
+  isOwner: boolean | null;
   state: "IN_PROGRESS" | "ARCHIVED" | string | null;
   moderationStatus: ModerationStatus | null;
   rejectionReason: string | null;
@@ -157,6 +158,7 @@ export type UpdateListingInput = {
     description?: string;
     typeProperty?: string;
     status?: "FOR_RENT" | "FOR_SALE";
+    isOwner?: boolean;
     price?: number;
     area?: number;
     street?: string;

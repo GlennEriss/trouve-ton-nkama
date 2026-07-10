@@ -1,8 +1,10 @@
-import { FieldPath, FieldValue, Timestamp } from "firebase-admin/firestore";
+import { FieldPath, FieldValue } from "firebase-admin/firestore";
 
 import { getFirebaseAdminDb } from "@/lib/firebase/firebase-admin";
 import type { PlatformUser } from "@/modules/user-management/domain/types";
 import { COLLECTIONS } from "@trouve-ton-nkama/core/constants";
+import { toIsoDate as toIso } from "@trouve-ton-nkama/core/utils";
+import { sliceCursorPage } from "@/lib/firestore/pagination";
 
 const USERS_COLLECTION = COLLECTIONS.users;
 
@@ -55,41 +57,6 @@ function resolveAnnouncerSinceIso(metadata: Record<string, unknown> | null) {
   }
 
   return toIso(metadata.becomeAnnouncerAt);
-}
-
-function toIso(value: unknown): string | null {
-  if (!value) {
-    return null;
-  }
-
-  if (typeof value === "string") {
-    const date = new Date(value);
-    return Number.isNaN(date.getTime()) ? null : date.toISOString();
-  }
-
-  if (value instanceof Timestamp) {
-    return value.toDate().toISOString();
-  }
-
-  if (value instanceof Date) {
-    return value.toISOString();
-  }
-
-  if (
-    typeof value === "object" &&
-    value !== null &&
-    "seconds" in value &&
-    typeof value.seconds === "number"
-  ) {
-    const millis = value.seconds * 1000;
-    const nanos =
-      "nanoseconds" in value && typeof value.nanoseconds === "number"
-        ? value.nanoseconds / 1_000_000
-        : 0;
-    return new Date(millis + nanos).toISOString();
-  }
-
-  return null;
 }
 
 function sanitizeRoles(value: unknown) {
@@ -210,10 +177,12 @@ export async function listPlatformUsersRawPage(
   }
 
   const snapshot = await query.get();
-  const hasMore = snapshot.docs.length > safeLimit;
-  const docs = hasMore ? snapshot.docs.slice(0, safeLimit) : snapshot.docs;
-  const users = docs.map((doc) => mapUserDoc(doc.id, doc.data() as RawUserDoc));
-  const nextCursor = users.length > 0 ? users[users.length - 1].docId : cursor ?? null;
+  const { items: users, hasMore, nextCursor } = sliceCursorPage(
+    snapshot.docs,
+    safeLimit,
+    (doc) => mapUserDoc(doc.id, doc.data() as RawUserDoc),
+    cursor ?? null,
+  );
 
   return {
     users,

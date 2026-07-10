@@ -122,15 +122,42 @@ mais sur un flux déjà massif aujourd'hui (chaque annonce a plusieurs photos, c
 recherche affiche des dizaines de cartes) — contrairement à la vidéo qui est encore à construire,
 l'inefficacité images est **déjà en production**.
 
-**Pistes à évaluer** (pas une décision, une liste de départ pour la prochaine session dédiée) :
-1. Réactiver l'optimisation Next.js (`unoptimized: false`) — nécessite de vérifier pourquoi elle
-   a été désactivée à l'origine (probablement pour éviter la facturation de la transformation
-   d'image de Vercel/Next — à chiffrer avant de réactiver).
-2. Générer une variante "vignette" à l'upload (en plus du fichier pleine résolution), servie dans
-   les cartes de liste/recherche, pour réduire la bande passante sur les pages à forte densité
-   d'images.
+**Cause racine de `unoptimized: true` (vérifiée, pas une supposition)** : archéologie git —
+introduit le 20/12/2024 (commit `1d148c08`, "feat: ajout du fichier next config") sans aucune
+justification écrite. L'API Vercel confirme que l'équipe `glenneriss' projects` est sur le **plan
+Hobby (gratuit)**, avec `enableImageOptimizationNewPrice: true`. Le plan Hobby inclut 5 000
+transformations d'image gratuites/mois ; au-delà, les nouvelles images échouent avec une erreur
+HTTP 402 (image cassée) — **pas de facturation automatique**, mais un blocage silencieux. Un
+marketplace avec plusieurs photos par annonce × cartes de recherche affichant des dizaines
+d'annonces épuise ce quota en quelques jours d'usage normal : `unoptimized: true` était très
+probablement le correctif d'urgence contre des images cassées en prod, pas un choix architectural.
+Point annexe : le plan Hobby est contractuellement réservé à un usage non-commercial, ce qui
+concerne les 12 projets de l'équipe indépendamment du sujet images.
+
+**Pistes à évaluer** :
+1. Réactiver l'optimisation Next.js (`unoptimized: false`) — nécessite un upgrade Vercel Pro
+   (20$/mois, quota mutualisé avec les 11 autres projets de l'équipe) pour rester fiable au-delà
+   de 5 000 transformations/mois. Non fait, décision séparée à trancher plus tard.
+2. **Fait** (voir plus bas) : génération d'une vignette basse résolution à l'upload, servie dans
+   les contextes liste (recherche, favoris, gestion des annonces), indépendante de tout service
+   tiers — répond à l'essentiel du problème de bande passante sans dépendre du quota Vercel.
 3. Évaluer un CDN/proxy de transformation d'image (Cloudflare Images, ou l'optimiseur Next.js
-   réactivé) plutôt que de continuer à servir Firebase Storage brut.
+   réactivé) — non fait, piste ouverte si le besoin de redimensionnement à la volée/WebP-AVIF
+   automatique se confirme malgré la vignette.
+
+### Vignette à l'upload — implémenté
+
+`createFile` (`apps/location-maison/src/db/file.db.ts`) génère désormais, en plus du fichier
+principal (1920px/300 Ko), une vignette (640px/80 Ko, même lib `browser-image-compression`)
+uploadée sous `thumb_<nom-fichier>` à côté du fichier principal. Le type `Image`
+(`src/models/annonce.d.ts`) porte deux champs optionnels `thumbURL`/`thumbPATH` — optionnels
+pour ne pas casser les annonces déjà publiées (pas de backfill). Un nouvel helper
+`resolveThumbnailUrl` (`src/lib/property-images.ts`) centralise la règle "vignette si dispo,
+sinon image pleine résolution" ; utilisé dans les 5 contextes liste (`PropertyCard`,
+`ListPropertySection`, `SectionFavoris`, `AdManagementPage`, l'API `/api/map/properties`). Les
+vues détail (fiche annonce, carousel, partage, opengraph-image) continuent d'utiliser l'image
+pleine résolution, inchangées. Génération de la vignette best-effort (échec silencieux, log +
+fallback sur `fileURL`) : n'a jamais pu empêcher une publication d'annonce.
 
 ## Ordre de traitement suggéré
 
@@ -139,5 +166,6 @@ l'inefficacité images est **déjà en production**.
 2. **2.1** (rapide une fois qu'on commence à toucher `packages/core` de toute façon).
 3. **2.3 et 2.2** (chantiers de fond, à interlacer avec le développement produit plutôt qu'à
    bloquer dessus — voir [10-roadmap.md](./10-roadmap.md)).
-4. **5 (images)** : à chiffrer/investiguer avant de trancher — ne pas basculer
-   `unoptimized: false` à l'aveugle sans comprendre pourquoi c'était désactivé à l'origine.
+4. **5 (images)** : vignette à l'upload faite (gain sans coût). Réactivation de l'optimiseur
+   Next/Vercel Pro et CDN restent des pistes ouvertes, à trancher séparément si le besoin se
+   confirme.

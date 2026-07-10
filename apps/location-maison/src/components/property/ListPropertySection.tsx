@@ -31,6 +31,7 @@ import PromotionButton from '../promotion/PromotionButton';
 import PromotionBadge from '../promotion/PromotionBadge';
 import { createLogger } from '@/lib/logger';
 import { logImageError, logImageFallback, logImageLoad } from '@/lib/image-debug';
+import { resolveThumbnailUrl } from '@/lib/property-images';
 
 const logger = createLogger('components.property.list-section');
 
@@ -237,7 +238,7 @@ export const CardPropertyCrud = ({ property }: { property: Property }) => {
         setLocalState(newState);
         setIsLoading(false);
     }
-    const rawPrimaryImageUrl = images[0]?.fileURL;
+    const rawPrimaryImageUrl = resolveThumbnailUrl(images[0]);
     const hasPrimaryImageUrl =
         typeof rawPrimaryImageUrl === 'string' && rawPrimaryImageUrl.trim().length > 0;
     const primaryImageSrc = hasPrimaryImageUrl ? rawPrimaryImageUrl : '/fallback-image.jpg';

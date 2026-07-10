@@ -3,6 +3,8 @@ import { FieldValue } from "firebase-admin/firestore";
 import { getFirebaseAdminDb } from "@/lib/firebase/firebase-admin";
 import type { ListingDetails, ListingListItem } from "@/modules/listing-management/domain/types";
 import { COLLECTIONS } from "@trouve-ton-nkama/core/constants";
+import { toIsoDate as toIsoString } from "@trouve-ton-nkama/core/utils";
+import { resolveCursorSnapshot } from "@/lib/firestore/pagination";
 
 const PROPERTIES_COLLECTION = COLLECTIONS.properties;
 
@@ -56,21 +58,6 @@ function toStringArray(value: unknown) {
     .filter((item) => item.length > 0);
 }
 
-function toIsoString(value: unknown) {
-  if (!value || typeof value !== "object") {
-    return null;
-  }
-
-  if ("toDate" in value && typeof value.toDate === "function") {
-    const date = value.toDate();
-    if (date instanceof Date && !Number.isNaN(date.getTime())) {
-      return date.toISOString();
-    }
-  }
-
-  return null;
-}
-
 function normalizeImages(value: unknown) {
   if (!Array.isArray(value)) {
     return [] as Array<{ fileURL: string; filePATH: string }>;
@@ -112,6 +99,7 @@ function mapListingDetails(docId: string, data: RawPropertyDoc): ListingDetails 
     "description",
     "typeProperty",
     "status",
+    "isOwner",
     "state",
     "moderationStatus",
     "rejectionReason",
@@ -172,6 +160,7 @@ function mapListingDetails(docId: string, data: RawPropertyDoc): ListingDetails 
     description,
     typeProperty,
     status,
+    isOwner: toNullableBoolean(data.isOwner),
     state: stateRaw,
     moderationStatus: toModerationStatus(data.moderationStatus),
     rejectionReason: toTrimmedString(data.rejectionReason),
@@ -228,6 +217,7 @@ function toListItem(details: ListingDetails): ListingListItem {
     description: details.description,
     typeProperty: details.typeProperty,
     status: details.status,
+    isOwner: details.isOwner,
     state: details.state,
     moderationStatus: details.moderationStatus,
     rejectionReason: details.rejectionReason,
@@ -254,11 +244,9 @@ export async function listPropertiesRawPage(input: {
   let query = db.collection(PROPERTIES_COLLECTION).orderBy("createdAt", "desc").limit(input.limit);
 
   const cursor = input.cursor?.trim() || null;
-  if (cursor) {
-    const cursorDoc = await db.collection(PROPERTIES_COLLECTION).doc(cursor).get();
-    if (cursorDoc.exists) {
-      query = query.startAfter(cursorDoc);
-    }
+  const cursorDoc = await resolveCursorSnapshot(db.collection(PROPERTIES_COLLECTION), cursor);
+  if (cursorDoc) {
+    query = query.startAfter(cursorDoc);
   }
 
   const snapshot = await query.get();
@@ -340,11 +328,9 @@ export async function listPendingListings(input: {
     .limit(input.limit);
 
   const cursor = input.cursor?.trim() || null;
-  if (cursor) {
-    const cursorDoc = await db.collection(PROPERTIES_COLLECTION).doc(cursor).get();
-    if (cursorDoc.exists) {
-      query = query.startAfter(cursorDoc);
-    }
+  const cursorDoc = await resolveCursorSnapshot(db.collection(PROPERTIES_COLLECTION), cursor);
+  if (cursorDoc) {
+    query = query.startAfter(cursorDoc);
   }
 
   const snapshot = await query.get();

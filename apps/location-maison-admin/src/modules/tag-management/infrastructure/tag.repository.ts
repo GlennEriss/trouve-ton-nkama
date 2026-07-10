@@ -1,4 +1,4 @@
-import { FieldValue, Timestamp } from "firebase-admin/firestore";
+import { FieldValue } from "firebase-admin/firestore";
 
 import { getFirebaseAdminDb } from "@/lib/firebase/firebase-admin";
 import type {
@@ -6,6 +6,7 @@ import type {
   ListingTag,
   UpdateListingTagInput,
 } from "@/modules/tag-management/domain/types";
+import { toIsoDate } from "@trouve-ton-nkama/core/utils";
 
 const COLLECTION = "listing_tags";
 
@@ -19,22 +20,6 @@ type ListingTagDoc = {
   createdBy?: unknown;
   updatedBy?: unknown;
 };
-
-function toIsoDate(value: unknown): string | null {
-  if (value instanceof Timestamp) {
-    return value.toDate().toISOString();
-  }
-  if (value instanceof Date) {
-    return value.toISOString();
-  }
-  if (typeof value === "string") {
-    const parsed = new Date(value);
-    if (!Number.isNaN(parsed.getTime())) {
-      return parsed.toISOString();
-    }
-  }
-  return null;
-}
 
 function toSafeString(value: unknown): string | null {
   if (typeof value !== "string") {

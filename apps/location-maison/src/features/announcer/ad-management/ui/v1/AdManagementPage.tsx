@@ -20,6 +20,7 @@ import { TypeProperty } from '@/constantes/property-type';
 import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
 import type { Property } from '@/models/annonce';
+import { resolveThumbnailUrl } from '@/lib/property-images';
 import Link from 'next/link';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { ComponentType } from 'react';
@@ -236,7 +237,7 @@ function AdCard({ ad, onToggleState, onDelete, actionLoading }: AdCardProps) {
   const stateLabel = ad.state === 'IN_PROGRESS' ? 'Active' : 'Archivée';
   const publishedAt = formatDate(ad.createdAt);
   const updatedAt = formatDate(ad.updatedAt);
-  const mainImage = ad.images?.[0]?.fileURL || '/fallback-image.jpg';
+  const mainImage = resolveThumbnailUrl(ad.images?.[0]) || '/fallback-image.jpg';
   const moderationLabel = ad.moderationStatus ? MODERATION_STATUS_LABELS[ad.moderationStatus] : null;
   const moderationClass = ad.moderationStatus ? MODERATION_STATUS_CLASSES[ad.moderationStatus] : '';
 
