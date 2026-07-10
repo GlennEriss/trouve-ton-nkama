@@ -4,9 +4,23 @@ import { getPropertyById } from "./property.db";
 import { adminApp } from "@/firebase/admin";
 import { getFirestore as getAdminFirestore } from "firebase-admin/firestore";
 import { createLogger } from '@/lib/logger';
+import { getCacheStore } from '@/lib/cache';
 
 const getFirestore = () => import("@/firebase/firestore");
 const logger = createLogger('db.property-statistics');
+
+// trackPropertyInteraction/getPropertyStatistics sont sur le chemin le plus fréquent de
+// l'app (chaque clic WhatsApp/appel/partage/favori) — voir docs/refactoring-optimisation-couts.md
+// §1.1. Deux caches distincts :
+// - STATS_EXISTS: un flag booléen (le document de stats, une fois créé, existe pour toujours)
+//   pour éviter de relire le document à chaque interaction juste pour vérifier son existence.
+// - STATS: le document de stats complet, pour éviter de le relire à chaque affichage du
+//   dashboard "mes stats" annonceur. Invalidé à l'écriture (trackPropertyInteraction) pour
+//   limiter la fenêtre de fraîcheur, avec le TTL en filet de sécurité.
+const STATS_EXISTS_TTL_SECONDS = 24 * 60 * 60;
+const STATS_TTL_SECONDS = parseInt(process.env.REDIS_PROPERTY_STATS_TTL ?? '300', 10);
+const statsExistsCacheKey = (propertyId: string) => `property-stats-exists:${propertyId}`;
+const statsCacheKey = (propertyId: string) => `property-stats:${propertyId}`;
 
 const getFirestoreAdmin = () => {
   if (!adminApp) {
@@ -244,10 +258,11 @@ export async function trackPropertyView(
       };
       
       await statsRef.set(initialStats);
+      await getCacheStore().set(statsExistsCacheKey(propertyId), true, STATS_EXISTS_TTL_SECONDS);
       await calculateMetrics(propertyId);
       return true;
     }
-    
+
     // Mise à jour du document existant avec Admin SDK
     const statsData = statsSnap.data() || {};
     const updates: any = {
@@ -329,10 +344,11 @@ export async function trackPropertyView(
     }
     
     await statsRef.update(updates);
-    
+    await getCacheStore().del(statsCacheKey(propertyId));
+
     // Recalculer les métriques calculées
     await calculateMetrics(propertyId);
-    
+
     return true;
   } catch (error) {
     logger.error('Error tracking property view', { propertyId, error });
@@ -356,22 +372,33 @@ export async function trackPropertyInteraction(
 
     const { doc, getDoc, updateDoc, increment, serverTimestamp, db } = await getFirestore();
     const statsRef = doc(db, firebaseCollectionNames.property_statistics, propertyId);
-    const statsSnap = await getDoc(statsRef);
-    
+
+    // Le document de stats, une fois créé, existe pour toujours : un flag caché à TTL long
+    // évite de le relire à chaque interaction juste pour vérifier son existence.
+    const cache = getCacheStore();
+    const existsKey = statsExistsCacheKey(propertyId);
+    let statsExists = await cache.get<boolean>(existsKey);
+
+    if (!statsExists) {
+      const statsSnap = await getDoc(statsRef);
+      statsExists = statsSnap.exists();
+      if (!statsExists) {
+        await getOrCreateStatistics(propertyId, property.createdBy);
+        statsExists = true;
+      }
+      await cache.set(existsKey, true, STATS_EXISTS_TTL_SECONDS);
+    }
+
     const now = new Date();
     const today = now.toISOString().split('T')[0];
-    
+
+    // interactionsByDay.<jour> en notation pointée : increment atomique côté serveur, pas
+    // besoin de relire la map existante pour la fusionner en JS.
     const updates: any = {
       updatedAt: serverTimestamp(),
+      [`interactionsByDay.${today}`]: increment(1),
     };
-    
-    // Initialiser les statistiques si nécessaire
-    if (!statsSnap.exists()) {
-      await getOrCreateStatistics(propertyId, property.createdBy);
-      const newStatsSnap = await getDoc(statsRef);
-      if (!newStatsSnap.exists()) return false;
-    }
-    
+
     // Mettre à jour selon le type d'interaction
     switch (type) {
       case 'whatsapp_contact':
@@ -394,20 +421,13 @@ export async function trackPropertyInteraction(
         updates.favoriteAdds = increment(1);
         break;
     }
-    
-    // Mise à jour des interactions par jour
-    const statsData = statsSnap.data();
-    const interactionsByDay = statsData?.interactionsByDay || {};
-    updates.interactionsByDay = {
-      ...interactionsByDay,
-      [today]: (interactionsByDay[today] || 0) + 1,
-    };
-    
+
     await updateDoc(statsRef, updates);
-    
+    await cache.del(statsCacheKey(propertyId));
+
     // Recalculer les métriques calculées
     await calculateMetrics(propertyId);
-    
+
     return true;
   } catch (error) {
     logger.error('Error tracking property interaction', { propertyId, type, error });
@@ -424,31 +444,39 @@ export async function getPropertyStatistics(
   ownerId: string
 ): Promise<PropertyStatistics | null> {
   try {
-    // Vérifier que l'utilisateur est le propriétaire
+    // Vérifier que l'utilisateur est le propriétaire (toujours vérifié, même sur un hit de
+    // cache ci-dessous, pour ne jamais exposer les stats d'un autre annonceur).
     const property = await getPropertyById(propertyId);
     if (!property || property.createdBy !== ownerId) {
       throw new Error('Accès non autorisé');
+    }
+
+    const cache = getCacheStore();
+    const cacheKey = statsCacheKey(propertyId);
+    const cached = await cache.get<PropertyStatistics>(cacheKey);
+    if (cached) {
+      return cached;
     }
 
     // Utiliser Admin SDK pour contourner les règles Firestore
     const db = getFirestoreAdmin();
     const statsRef = db.collection(firebaseCollectionNames.property_statistics).doc(propertyId);
     const statsSnap = await statsRef.get();
-    
+
+    let result: PropertyStatistics | null;
     if (!statsSnap.exists) {
       // Créer les statistiques si elles n'existent pas
-      if (property.createdBy) {
-        return await getOrCreateStatistics(propertyId, property.createdBy);
-      }
-      return null;
+      result = property.createdBy ? await getOrCreateStatistics(propertyId, property.createdBy) : null;
+    } else {
+      const data = statsSnap.data();
+      result = data ? ({ id: statsSnap.id, ...data } as PropertyStatistics) : null;
     }
-    
-    const data = statsSnap.data();
-    if (!data) {
-      return null;
+
+    if (result) {
+      await cache.set(cacheKey, result, STATS_TTL_SECONDS);
     }
-    
-    return { id: statsSnap.id, ...data } as PropertyStatistics;
+
+    return result;
   } catch (error) {
     logger.error('Error getting property statistics', { propertyId, ownerId, error });
     return null;
