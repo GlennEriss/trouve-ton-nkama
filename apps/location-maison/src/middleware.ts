@@ -47,6 +47,11 @@ const ADMIN_ONLY_ROUTE_PREFIXES = [
 // et se voir proposer de créer un compte/se connecter seulement à la soumission finale.
 const PUBLIC_PROPERTY_ADD_PREFIX = '/property/add'
 
+// Les fiches d'annonces doivent rester publiques: /property/:id
+// Les routes privées du vendeur restent protégées: /property, /property/modify/:id,
+// /property/:id/statistics, etc.
+const PUBLIC_PROPERTY_DETAIL_PATTERN = /^\/property\/[^/]+\/?$/
+
 function isExactOrSubPath(pathname: string, prefix: string): boolean {
     return pathname === prefix || pathname.startsWith(`${prefix}/`)
 }
@@ -55,13 +60,21 @@ function isPublicPropertyAddRoute(pathname: string): boolean {
     return isExactOrSubPath(pathname, PUBLIC_PROPERTY_ADD_PREFIX)
 }
 
+function isPublicPropertyDetailRoute(pathname: string): boolean {
+    return PUBLIC_PROPERTY_DETAIL_PATTERN.test(pathname)
+}
+
+function isPublicPropertyRoute(pathname: string): boolean {
+    return isPublicPropertyAddRoute(pathname) || isPublicPropertyDetailRoute(pathname)
+}
+
 function isProtectedRoute(pathname: string): boolean {
-    if (isPublicPropertyAddRoute(pathname)) return false
+    if (isPublicPropertyRoute(pathname)) return false
     return PROTECTED_ROUTE_PREFIXES.some((prefix) => isExactOrSubPath(pathname, prefix))
 }
 
 function isAnnouncerOnlyRoute(pathname: string): boolean {
-    if (isPublicPropertyAddRoute(pathname)) return false
+    if (isPublicPropertyRoute(pathname)) return false
     return ANNOUNCER_ONLY_ROUTE_PREFIXES.some((prefix) => isExactOrSubPath(pathname, prefix))
 }
 

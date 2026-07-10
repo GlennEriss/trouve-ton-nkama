@@ -126,13 +126,29 @@ vidéo coûte un ordre de grandeur de plus que les images :
 - **Diffusion** : servir des vidéos directement depuis Firebase Storage fonctionne mais sans CDN
   optimisé pour le streaming — à surveiller dès que le volume de réels grossit.
 
-## Ce qui reste à trancher avant de scoper le développement
+## Décisions (tranchées)
 
-1. Mobicash passe-t-il déjà par MyPayGa, ou faut-il une intégration séparée ?
-2. Cadeau anonyme ou compte obligatoire ?
-3. Prix et paliers d'abonnement définitifs.
-4. Transcodage vidéo : Cloud Function maison vs service tiers (Mux/Cloudflare Stream) — arbitrage
-   coût/complexité à faire avant de commencer le développement.
-5. Durée max d'un réel et politique de modération vidéo (la modération humaine actuelle
-   fonctionne pour des photos/texte — visionner des vidéos prend plus de temps admin, à anticiper
-   dans la charge de modération).
+1. **Mobicash / MyPayGa** : "Mobicash" désigne Moov Money, déjà supporté par l'intégration
+   MyPayGa existante (`apps/location-maison/functions/src/payments/mypayga/config.ts`, réseau
+   `MM`, numéros 062/065/066). Confirmé par lecture du code — aucune intégration séparée
+   nécessaire.
+2. **Anonymat du donateur** : compte chercheur **obligatoire** pour offrir un cadeau. Réutilise
+   l'auth existante, plus simple à sécuriser côté paiement, cohérent avec le parcours "publier
+   sans compte puis connexion à la fin" déjà en place ailleurs sur la plateforme.
+3. **Prix de l'abonnement** : **3 000–5 000 FCFA/mois**, calibré sur les packs de crédits réels en
+   prod (Firestore `credit_packs` : Starter 5 crédits/2 000 FCFA, Standard 10/3 500, Avancé
+   25/7 500, Premium 50/12 500) — se situe au milieu de cette fourchette. À ajuster après les
+   premiers retours terrain, l'admin pilote déjà les prix dynamiquement (même modèle que les
+   packs de crédits).
+4. **Transcodage vidéo** : **Cloud Function maison (ffmpeg)**, pas de service tiers. Mux et
+   Cloudflare Stream sont tous les deux payants dès la première minute (pas de plan gratuit
+   viable en prod pour aucun des deux, vérifié juillet 2026) — écartés suite à la contrainte de ne
+   pas ajouter de nouveau service payant. La Cloud Function s'appuie sur l'infra Firebase déjà
+   utilisée par le projet (pas un nouveau fournisseur à onboarder), mais reste à développer
+   entièrement (queue de transcodage, gestion des formats, pas de CDN streaming inclus — plus de
+   travail avant le premier réel publiable qu'avec un service tiers).
+5. **Durée max d'un réel** : **5 minutes**, dans le même flux vertical swipe que le reste du
+   contenu. Point de vigilance conservé : c'est un format nettement plus long qu'un "reel"
+   TikTok-style classique (15-60s) — la charge de modération humaine par vidéo et le coût de
+   stockage/transcodage seront proportionnellement plus élevés qu'anticipé initialement dans ce
+   document ; à intégrer dans le chiffrage/staffing modération avant le lancement.
