@@ -195,6 +195,7 @@ export async function createPropertyDocumentForAnnouncer(
     description: input.description,
     typeProperty: input.typeProperty,
     status: input.status,
+    isOwner: input.isOwner,
     price: input.price,
     area: input.area,
     tags: input.sanitizedTags,

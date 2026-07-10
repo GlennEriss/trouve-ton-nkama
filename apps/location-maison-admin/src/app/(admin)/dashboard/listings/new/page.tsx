@@ -87,6 +87,7 @@ type CreateListingFormState = {
     | "Villa"
     | "Land";
   status: "FOR_RENT" | "FOR_SALE";
+  isOwner: "true" | "false" | "";
   price: string;
   area: string;
   street: string;
@@ -162,6 +163,23 @@ const PROPERTY_TYPE_OPTIONS: Array<{
 const STATUS_OPTIONS: Array<{ value: "FOR_RENT" | "FOR_SALE"; label: string }> = [
   { value: "FOR_RENT", label: "À louer" },
   { value: "FOR_SALE", label: "À vendre" },
+];
+
+const OWNER_ROLE_OPTIONS: Array<{
+  value: "true" | "false";
+  label: string;
+  description: string;
+}> = [
+  {
+    value: "true",
+    label: "Propriétaire direct",
+    description: "Le locataire/acheteur ne paie aucune commission.",
+  },
+  {
+    value: "false",
+    label: "Mandataire / Agence",
+    description: "Des frais de service peuvent s'appliquer au locataire/acheteur.",
+  },
 ];
 
 const PLATFORM_TAG_OPTIONS = [
@@ -339,6 +357,7 @@ export default function NewListingPage() {
     description: "",
     typeProperty: "Home",
     status: "FOR_RENT",
+    isOwner: "",
     price: "0",
     area: "0",
     street: "",
@@ -651,6 +670,9 @@ export default function NewListingPage() {
     if (createListing.description.trim().length < 10) return "La description doit contenir au moins 10 caractères.";
     if (!isPositiveNumber(createListing.price)) return "Le prix doit être supérieur à 0.";
     if (!isNonNegativeNumber(createListing.area)) return "La surface doit être un nombre positif ou nul.";
+    if (createListing.isOwner !== "true" && createListing.isOwner !== "false") {
+      return "Indique si l'annonceur est propriétaire direct ou mandataire/agence.";
+    }
     if (selectedListingTags.length < 1) return "Ajoute au moins 1 tag (maximum 6).";
     if (selectedListingTags.length > 6) return "Maximum 6 tags.";
     if (listingLocalImages.length < 1) return "Ajoute au moins 1 image.";
@@ -759,6 +781,7 @@ export default function NewListingPage() {
             description: createListing.description,
             typeProperty: createListing.typeProperty,
             status: createListing.status,
+            isOwner: createListing.isOwner === "true",
             price: Number(createListing.price),
             area: Number(createListing.area),
             street: createListing.street,
@@ -988,6 +1011,53 @@ export default function NewListingPage() {
                     placeholder="Description"
                     disabled={createListingSubmitting || loading}
                   />
+                </div>
+
+                <div className="space-y-2 rounded-lg border border-slate-200 p-3">
+                  <div>
+                    <p className="text-sm font-medium text-slate-900">Rôle de l&apos;annonceur sur ce bien</p>
+                    <p className="text-xs text-slate-500">
+                      Indique si l&apos;annonceur est le propriétaire direct ou un mandataire/agence.
+                    </p>
+                  </div>
+                  <div className="grid gap-3 md:grid-cols-2">
+                    {OWNER_ROLE_OPTIONS.map((option) => {
+                      const selected = createListing.isOwner === option.value;
+                      return (
+                        <button
+                          key={option.value}
+                          type="button"
+                          className={`rounded-xl border-2 p-4 text-left transition ${
+                            selected
+                              ? "border-emerald-700 bg-emerald-50 text-emerald-950"
+                              : "border-slate-200 bg-white text-slate-800 hover:border-emerald-600 hover:bg-emerald-50/60"
+                          }`}
+                          onClick={() =>
+                            setCreateListing((previous) => ({
+                              ...previous,
+                              isOwner: option.value,
+                            }))
+                          }
+                          disabled={createListingSubmitting || loading}
+                        >
+                          <span className="flex items-start gap-3">
+                            <span
+                              className={`mt-0.5 flex h-4 w-4 shrink-0 items-center justify-center rounded-full border-2 ${
+                                selected ? "border-emerald-700 bg-emerald-700" : "border-slate-300"
+                              }`}
+                              aria-hidden="true"
+                            >
+                              {selected ? <span className="h-2 w-2 rounded-full bg-white" /> : null}
+                            </span>
+                            <span>
+                              <span className="block text-sm font-semibold">{option.label}</span>
+                              <span className="mt-1 block text-xs text-slate-500">{option.description}</span>
+                            </span>
+                          </span>
+                        </button>
+                      );
+                    })}
+                  </div>
                 </div>
 
                 <div className="grid gap-3 md:grid-cols-3">

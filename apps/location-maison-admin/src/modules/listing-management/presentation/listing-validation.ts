@@ -24,6 +24,7 @@ export const listingFullSchema = z
         }),
       )
       .min(1),
+    isOwner: z.boolean(),
     street: z.string().trim().min(1).max(180),
     city: z.string().trim().min(1).max(120),
     province: z.string().trim().min(1).max(120),
@@ -117,6 +118,7 @@ export const listingPatchSchema = z
         ]),
       )
       .optional(),
+    isOwner: z.boolean().optional(),
     longitude: z.coerce.number().min(-180).max(180).optional(),
     latitude: z.coerce.number().min(-90).max(90).optional(),
     isLocExact: z.boolean().optional(),

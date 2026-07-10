@@ -54,6 +54,7 @@ export type CreateListingForAnnouncerInput = {
   description: string;
   typeProperty: ListingTypeProperty;
   status: ListingStatus;
+  isOwner: boolean;
   price: number;
   area: number;
   tags?: string[];
