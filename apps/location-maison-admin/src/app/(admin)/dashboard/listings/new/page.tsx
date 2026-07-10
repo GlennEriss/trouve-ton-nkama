@@ -9,6 +9,8 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { PageHeader } from "@/components/ui-kit/page-header";
+import { PROPERTY_TYPE_FIELD_RULES } from "@/modules/listing-management/domain/property-type-fields";
+import { renderExtraTypeFields } from "@/modules/listing-management/presentation/property-type-fields-renderer";
 
 type AuthMePayload = {
   admin: {
@@ -222,10 +224,6 @@ function toOptionalNumber(value: string) {
   }
 
   return parsed;
-}
-
-function isLogementLike(type: CreateListingFormState["typeProperty"]) {
-  return type === "Logement" || type === "Home" || type === "Studio" || type === "Apartment" || type === "Villa";
 }
 
 function ensureMaxTags(tags: string[]) {
@@ -667,71 +665,21 @@ export default function NewListingPage() {
   }, [createListing, listingLocalImages.length, selectedListingTags.length]);
 
   const validateListingStep2 = useCallback(() => {
-    const requireNumber = (value: string, label: string) => {
-      if (!isFiniteNumber(value)) return `${label} est requis pour ce type d'annonce.`;
-      return null;
-    };
-    const requireString = (value: string, label: string) => {
-      if (!value.trim()) return `${label} est requis pour ce type d'annonce.`;
-      return null;
-    };
-    const requireLogementBase = () =>
-      requireNumber(createListing.nbrRooms, "nbrRooms") ||
-      requireNumber(createListing.nbrKitchens, "nbrKitchens") ||
-      requireNumber(createListing.nbrBathrooms, "nbrBathrooms") ||
-      requireNumber(createListing.nbrToilets, "nbrToilets");
+    const rules = PROPERTY_TYPE_FIELD_RULES[createListing.typeProperty] ?? [];
 
-    if (createListing.typeProperty === "Logement") return requireLogementBase();
-    if (createListing.typeProperty === "Home") {
-      return (
-        requireLogementBase() ||
-        requireNumber(createListing.nbrGarages, "nbrGarages") ||
-        requireNumber(createListing.nbrFloors, "nbrFloors") ||
-        requireNumber(createListing.nbrLivingRoom, "nbrLivingRoom")
-      );
+    for (const rule of rules) {
+      const value = (createListing as Record<string, string>)[rule.key];
+
+      if (rule.kind === "number" && !isFiniteNumber(value)) {
+        return `${rule.label} est requis pour ce type d'annonce.`;
+      }
+      if (rule.kind === "string" && !value?.trim()) {
+        return `${rule.label} est requis pour ce type d'annonce.`;
+      }
+      if (rule.kind === "boolean" && value !== "true" && value !== "false") {
+        return `${rule.label} est requis pour ce type d'annonce.`;
+      }
     }
-    if (createListing.typeProperty === "Studio") {
-      return (
-        requireLogementBase() ||
-        requireNumber(createListing.nbrFloorStudio, "nbrFloorStudio") ||
-        requireString(createListing.numeroStudio, "numeroStudio")
-      );
-    }
-    if (createListing.typeProperty === "Apartment") {
-      return (
-        requireLogementBase() ||
-        requireNumber(createListing.nbrFloorApartment, "nbrFloorApartment") ||
-        requireString(createListing.numeroApartment, "numeroApartment")
-      );
-    }
-    if (createListing.typeProperty === "Villa") {
-      return (
-        requireLogementBase() ||
-        requireNumber(createListing.nbrFloors, "nbrFloors") ||
-        requireNumber(createListing.nbrPiscine, "nbrPiscine") ||
-        requireNumber(createListing.nbrGarages, "nbrGarages")
-      );
-    }
-    if (createListing.typeProperty === "Desk") {
-      return (
-        requireNumber(createListing.nbrToilets, "nbrToilets") ||
-        requireNumber(createListing.nbrRooms, "nbrRooms")
-      );
-    }
-    if (createListing.typeProperty === "Building") {
-      return (
-        requireNumber(createListing.nbrApartments, "nbrApartments") ||
-        requireNumber(createListing.nbrFloors, "nbrFloors")
-      );
-    }
-    if (createListing.typeProperty === "Shop") {
-      return (
-        requireNumber(createListing.nbrRooms, "nbrRooms") ||
-        requireNumber(createListing.nbrToilet, "nbrToilet")
-      );
-    }
-    if (createListing.typeProperty === "Kiosk") return requireString(createListing.kioskType, "kioskType");
-    if (createListing.typeProperty === "Room") return requireString(createListing.roomType, "roomType");
 
     return null;
   }, [createListing]);
@@ -1210,83 +1158,12 @@ export default function NewListingPage() {
 
             {listingStep === 2 ? (
               <div className="space-y-3">
-                {isLogementLike(createListing.typeProperty) ? (
-                  <div className="grid gap-3 md:grid-cols-2">
-                    <Input type="number" min={0} step={1} value={createListing.nbrRooms} onChange={(event) => setCreateListing((previous) => ({ ...previous, nbrRooms: event.target.value }))} placeholder="Nombre de chambres" disabled={createListingSubmitting || loading} />
-                    <Input type="number" min={0} step={1} value={createListing.nbrKitchens} onChange={(event) => setCreateListing((previous) => ({ ...previous, nbrKitchens: event.target.value }))} placeholder="Nombre de cuisines" disabled={createListingSubmitting || loading} />
-                    <Input type="number" min={0} step={1} value={createListing.nbrBathrooms} onChange={(event) => setCreateListing((previous) => ({ ...previous, nbrBathrooms: event.target.value }))} placeholder="Nombre de salles d'eau" disabled={createListingSubmitting || loading} />
-                    <Input type="number" min={0} step={1} value={createListing.nbrToilets} onChange={(event) => setCreateListing((previous) => ({ ...previous, nbrToilets: event.target.value }))} placeholder="Nombre de toilettes" disabled={createListingSubmitting || loading} />
-                  </div>
-                ) : null}
-
-                {createListing.typeProperty === "Home" ? (
-                  <div className="grid gap-3 md:grid-cols-3">
-                    <Input type="number" min={0} step={1} value={createListing.nbrGarages} onChange={(event) => setCreateListing((previous) => ({ ...previous, nbrGarages: event.target.value }))} placeholder="Nombre de garages" disabled={createListingSubmitting || loading} />
-                    <Input type="number" min={0} step={1} value={createListing.nbrFloors} onChange={(event) => setCreateListing((previous) => ({ ...previous, nbrFloors: event.target.value }))} placeholder="Nombre d'étages" disabled={createListingSubmitting || loading} />
-                    <Input type="number" min={0} step={1} value={createListing.nbrLivingRoom} onChange={(event) => setCreateListing((previous) => ({ ...previous, nbrLivingRoom: event.target.value }))} placeholder="Nombre de salons" disabled={createListingSubmitting || loading} />
-                  </div>
-                ) : null}
-
-                {createListing.typeProperty === "Studio" ? (
-                  <div className="grid gap-3 md:grid-cols-2">
-                    <Input type="number" min={0} step={1} value={createListing.nbrFloorStudio} onChange={(event) => setCreateListing((previous) => ({ ...previous, nbrFloorStudio: event.target.value }))} placeholder="Étage du studio" disabled={createListingSubmitting || loading} />
-                    <Input type="number" min={0} step={1} value={createListing.numeroStudio} onChange={(event) => setCreateListing((previous) => ({ ...previous, numeroStudio: event.target.value }))} placeholder="Numéro du studio" disabled={createListingSubmitting || loading} />
-                  </div>
-                ) : null}
-
-                {createListing.typeProperty === "Apartment" ? (
-                  <div className="grid gap-3 md:grid-cols-2">
-                    <Input type="number" min={0} step={1} value={createListing.nbrFloorApartment} onChange={(event) => setCreateListing((previous) => ({ ...previous, nbrFloorApartment: event.target.value }))} placeholder="Étage de l'appartement" disabled={createListingSubmitting || loading} />
-                    <Input type="number" min={0} step={1} value={createListing.numeroApartment} onChange={(event) => setCreateListing((previous) => ({ ...previous, numeroApartment: event.target.value }))} placeholder="Numéro de l'appartement" disabled={createListingSubmitting || loading} />
-                  </div>
-                ) : null}
-
-                {createListing.typeProperty === "Villa" ? (
-                  <div className="grid gap-3 md:grid-cols-3">
-                    <Input type="number" min={0} step={1} value={createListing.nbrFloors} onChange={(event) => setCreateListing((previous) => ({ ...previous, nbrFloors: event.target.value }))} placeholder="Nombre d'étages" disabled={createListingSubmitting || loading} />
-                    <Input type="number" min={0} step={1} value={createListing.nbrPiscine} onChange={(event) => setCreateListing((previous) => ({ ...previous, nbrPiscine: event.target.value }))} placeholder="Nombre de piscines" disabled={createListingSubmitting || loading} />
-                    <Input type="number" min={0} step={1} value={createListing.nbrGarages} onChange={(event) => setCreateListing((previous) => ({ ...previous, nbrGarages: event.target.value }))} placeholder="Nombre de garages" disabled={createListingSubmitting || loading} />
-                  </div>
-                ) : null}
-
-                {createListing.typeProperty === "Desk" ? (
-                  <div className="grid gap-3 md:grid-cols-2">
-                    <Input type="number" min={0} step={1} value={createListing.nbrToilets} onChange={(event) => setCreateListing((previous) => ({ ...previous, nbrToilets: event.target.value }))} placeholder="Nombre de toilettes" disabled={createListingSubmitting || loading} />
-                    <Input type="number" min={0} step={1} value={createListing.nbrRooms} onChange={(event) => setCreateListing((previous) => ({ ...previous, nbrRooms: event.target.value }))} placeholder="Nombre de pièces" disabled={createListingSubmitting || loading} />
-                  </div>
-                ) : null}
-
-                {createListing.typeProperty === "Building" ? (
-                  <div className="grid gap-3 md:grid-cols-3">
-                    <Input type="number" min={0} step={1} value={createListing.nbrApartments} onChange={(event) => setCreateListing((previous) => ({ ...previous, nbrApartments: event.target.value }))} placeholder="Nombre d'appartements" disabled={createListingSubmitting || loading} />
-                    <Input type="number" min={0} step={1} value={createListing.nbrFloors} onChange={(event) => setCreateListing((previous) => ({ ...previous, nbrFloors: event.target.value }))} placeholder="Nombre d'étages" disabled={createListingSubmitting || loading} />
-                    <select className="h-9 rounded-lg border border-slate-300 bg-white px-3 text-sm text-slate-800" value={createListing.hasParking} onChange={(event) => setCreateListing((previous) => ({ ...previous, hasParking: event.target.value as "true" | "false" }))} disabled={createListingSubmitting || loading}>
-                      <option value="true">Parking: Oui</option>
-                      <option value="false">Parking: Non</option>
-                    </select>
-                  </div>
-                ) : null}
-
-                {createListing.typeProperty === "Shop" ? (
-                  <div className="grid gap-3 md:grid-cols-2">
-                    <Input type="number" min={0} step={1} value={createListing.nbrRooms} onChange={(event) => setCreateListing((previous) => ({ ...previous, nbrRooms: event.target.value }))} placeholder="Nombre de pièces" disabled={createListingSubmitting || loading} />
-                    <Input type="number" min={0} step={1} value={createListing.nbrToilet} onChange={(event) => setCreateListing((previous) => ({ ...previous, nbrToilet: event.target.value }))} placeholder="Nombre de toilettes" disabled={createListingSubmitting || loading} />
-                  </div>
-                ) : null}
-
-                {createListing.typeProperty === "Kiosk" ? (
-                  <Input value={createListing.kioskType} onChange={(event) => setCreateListing((previous) => ({ ...previous, kioskType: event.target.value }))} placeholder="Type de kiosque" disabled={createListingSubmitting || loading} />
-                ) : null}
-
-                {createListing.typeProperty === "Room" ? (
-                  <Input value={createListing.roomType} onChange={(event) => setCreateListing((previous) => ({ ...previous, roomType: event.target.value }))} placeholder="Type de chambre" disabled={createListingSubmitting || loading} />
-                ) : null}
-
-                {createListing.typeProperty === "Land" || createListing.typeProperty === "Property" ? (
-                  <p className="rounded-md bg-slate-50 px-3 py-2 text-sm text-slate-700">
-                    Ce type n&apos;a pas d&apos;attribut supplémentaire à l&apos;étape 2.
-                  </p>
-                ) : null}
+                {renderExtraTypeFields(
+                  createListing.typeProperty,
+                  createListing,
+                  setCreateListing,
+                  createListingSubmitting || loading,
+                )}
               </div>
             ) : null}
 
