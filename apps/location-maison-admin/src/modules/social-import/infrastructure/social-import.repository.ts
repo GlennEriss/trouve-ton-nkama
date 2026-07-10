@@ -1,4 +1,4 @@
-import { FieldPath, FieldValue, Timestamp } from "firebase-admin/firestore";
+import { FieldPath, FieldValue } from "firebase-admin/firestore";
 
 import {
   getFirebaseAdminDb,
@@ -13,6 +13,7 @@ import type {
   SocialImportSource,
 } from "@/modules/social-import/domain/types";
 import { COLLECTIONS } from "@trouve-ton-nkama/core/constants";
+import { toIsoDate as toIso } from "@trouve-ton-nkama/core/utils";
 
 const SOURCES_COLLECTION = COLLECTIONS.announcer_import_sources;
 const JOBS_COLLECTION = COLLECTIONS.social_import_jobs;
@@ -98,41 +99,6 @@ type RawSettingsDoc = {
   updatedAt?: unknown;
   createdAt?: unknown;
 };
-
-function toIso(value: unknown): string | null {
-  if (!value) {
-    return null;
-  }
-
-  if (typeof value === "string") {
-    const date = new Date(value);
-    return Number.isNaN(date.getTime()) ? null : date.toISOString();
-  }
-
-  if (value instanceof Timestamp) {
-    return value.toDate().toISOString();
-  }
-
-  if (value instanceof Date) {
-    return value.toISOString();
-  }
-
-  if (
-    typeof value === "object" &&
-    value !== null &&
-    "seconds" in value &&
-    typeof (value as { seconds?: unknown }).seconds === "number"
-  ) {
-    const seconds = (value as { seconds: number }).seconds;
-    const nanoseconds =
-      "nanoseconds" in value && typeof (value as { nanoseconds?: unknown }).nanoseconds === "number"
-        ? (value as { nanoseconds: number }).nanoseconds
-        : 0;
-    return new Date(seconds * 1000 + nanoseconds / 1_000_000).toISOString();
-  }
-
-  return null;
-}
 
 function toTrimmedString(value: unknown): string | null {
   if (typeof value !== "string") {

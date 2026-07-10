@@ -1,4 +1,4 @@
-import { FieldValue, Timestamp } from "firebase-admin/firestore";
+import { FieldValue } from "firebase-admin/firestore";
 
 import { getFirebaseAdminDb } from "@/lib/firebase/firebase-admin";
 import { getGabonOsmSelectorDataFromRoot } from "@/modules/location-osm/application/gabon-osm.service";
@@ -7,6 +7,7 @@ import type {
   GabonOsmSelectorData,
   GabonOsmSourceMode,
 } from "@/modules/location-osm/domain/types";
+import { toIsoDate } from "@trouve-ton-nkama/core/utils";
 
 const COLLECTION_PROVINCES = "geo_provinces";
 const COLLECTION_CITIES = "geo_cities";
@@ -89,22 +90,6 @@ function toSafeNumber(value: unknown) {
     const parsed = Number(value);
     if (Number.isFinite(parsed)) {
       return parsed;
-    }
-  }
-  return null;
-}
-
-function toIsoDate(value: unknown) {
-  if (value instanceof Timestamp) {
-    return value.toDate().toISOString();
-  }
-  if (value instanceof Date) {
-    return value.toISOString();
-  }
-  if (typeof value === "string") {
-    const parsed = new Date(value);
-    if (!Number.isNaN(parsed.getTime())) {
-      return parsed.toISOString();
     }
   }
   return null;

@@ -3,6 +3,7 @@ import { FieldValue } from "firebase-admin/firestore";
 import { getFirebaseAdminDb } from "@/lib/firebase/firebase-admin";
 import type { ListingDetails, ListingListItem } from "@/modules/listing-management/domain/types";
 import { COLLECTIONS } from "@trouve-ton-nkama/core/constants";
+import { toIsoDate as toIsoString } from "@trouve-ton-nkama/core/utils";
 
 const PROPERTIES_COLLECTION = COLLECTIONS.properties;
 
@@ -54,21 +55,6 @@ function toStringArray(value: unknown) {
     .filter((item): item is string => typeof item === "string")
     .map((item) => item.trim())
     .filter((item) => item.length > 0);
-}
-
-function toIsoString(value: unknown) {
-  if (!value || typeof value !== "object") {
-    return null;
-  }
-
-  if ("toDate" in value && typeof value.toDate === "function") {
-    const date = value.toDate();
-    if (date instanceof Date && !Number.isNaN(date.getTime())) {
-      return date.toISOString();
-    }
-  }
-
-  return null;
 }
 
 function normalizeImages(value: unknown) {

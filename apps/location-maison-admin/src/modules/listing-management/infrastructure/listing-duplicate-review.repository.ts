@@ -6,6 +6,7 @@ import type {
   ListingDuplicateResolution,
   ListingDuplicateResolutionAction,
 } from "@/modules/listing-management/domain/types";
+import { toIsoDate as toIsoString } from "@trouve-ton-nkama/core/utils";
 
 const COLLECTION = "listing_duplicate_reviews";
 const MAX_IN_QUERY = 10;
@@ -48,21 +49,6 @@ function toStringArray(value: unknown) {
   return value
     .map((item) => toTrimmedString(item))
     .filter((item): item is string => Boolean(item));
-}
-
-function toIsoString(value: unknown) {
-  if (!value || typeof value !== "object") {
-    return null;
-  }
-
-  if ("toDate" in value && typeof value.toDate === "function") {
-    const date = value.toDate();
-    if (date instanceof Date && !Number.isNaN(date.getTime())) {
-      return date.toISOString();
-    }
-  }
-
-  return null;
 }
 
 function toDuplicateReason(value: unknown): ListingDuplicateReason | null {

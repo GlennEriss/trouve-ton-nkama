@@ -7,6 +7,7 @@ import type {
   ListingModerationDecisionType,
 } from "@/modules/listing-management/domain/types";
 import { COLLECTIONS } from "@trouve-ton-nkama/core/constants";
+import { toIsoDate as toIsoString } from "@trouve-ton-nkama/core/utils";
 
 const MODERATION_COLLECTION = COLLECTIONS.listing_moderation_decisions;
 const AUDIT_COLLECTION = COLLECTIONS.audit_logs;
@@ -30,21 +31,6 @@ function toStringArray(value: unknown) {
   return value
     .map((item) => toTrimmedString(item))
     .filter((item): item is string => Boolean(item));
-}
-
-function toIsoString(value: unknown) {
-  if (!value || typeof value !== "object") {
-    return null;
-  }
-
-  if ("toDate" in value && typeof value.toDate === "function") {
-    const date = value.toDate();
-    if (date instanceof Date && !Number.isNaN(date.getTime())) {
-      return date.toISOString();
-    }
-  }
-
-  return null;
 }
 
 function toStatus(value: unknown) {

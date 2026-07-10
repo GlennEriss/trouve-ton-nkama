@@ -1,4 +1,4 @@
-import { FieldPath, FieldValue, Timestamp } from "firebase-admin/firestore";
+import { FieldPath, FieldValue } from "firebase-admin/firestore";
 
 import { getFirebaseAdminDb } from "@/lib/firebase/firebase-admin";
 import type {
@@ -16,6 +16,7 @@ import type {
   UpdateFinanceCreditPackInput,
 } from "@/modules/finance-credits/domain/types";
 import { COLLECTIONS } from "@trouve-ton-nkama/core/constants";
+import { toIsoDate as toIso } from "@trouve-ton-nkama/core/utils";
 
 const USERS_COLLECTION = COLLECTIONS.users;
 const CREDIT_TRANSACTIONS_COLLECTION = COLLECTIONS.credit_transactions;
@@ -133,41 +134,6 @@ function toTrimmedString(value: unknown) {
   }
   const trimmed = value.trim();
   return trimmed.length > 0 ? trimmed : null;
-}
-
-function toIso(value: unknown): string | null {
-  if (!value) {
-    return null;
-  }
-
-  if (typeof value === "string") {
-    const date = new Date(value);
-    return Number.isNaN(date.getTime()) ? null : date.toISOString();
-  }
-
-  if (value instanceof Timestamp) {
-    return value.toDate().toISOString();
-  }
-
-  if (value instanceof Date) {
-    return value.toISOString();
-  }
-
-  if (
-    typeof value === "object" &&
-    value !== null &&
-    "seconds" in value &&
-    typeof value.seconds === "number"
-  ) {
-    const millis = value.seconds * 1000;
-    const nanos =
-      "nanoseconds" in value && typeof value.nanoseconds === "number"
-        ? value.nanoseconds / 1_000_000
-        : 0;
-    return new Date(millis + nanos).toISOString();
-  }
-
-  return null;
 }
 
 function toNumber(value: unknown, fallback = 0) {

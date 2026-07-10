@@ -14,22 +14,10 @@ import type {
   UpdateAdCampaignInput,
 } from "@/modules/advertising/domain/types";
 import { COLLECTIONS } from "@trouve-ton-nkama/core/constants";
+import { toIsoDate as toIso } from "@trouve-ton-nkama/core/utils";
 
 const ADVERTISERS_COLLECTION = COLLECTIONS.advertisers;
 const AD_CAMPAIGNS_COLLECTION = COLLECTIONS.ad_campaigns;
-
-function toIso(value: unknown): string | null {
-  if (!value) return null;
-  if (value instanceof Timestamp) return value.toDate().toISOString();
-  if (value instanceof Date) return value.toISOString();
-  if (typeof value === "object" && value !== null) {
-    const maybe = value as { toDate?: () => Date; seconds?: number };
-    if (typeof maybe.toDate === "function") return maybe.toDate().toISOString();
-    if (typeof maybe.seconds === "number") return new Date(maybe.seconds * 1000).toISOString();
-  }
-  if (typeof value === "string") return value;
-  return null;
-}
 
 function mapAdvertiser(id: string, data: Record<string, unknown>): Advertiser {
   return {
