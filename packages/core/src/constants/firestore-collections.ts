@@ -9,6 +9,7 @@ const COLLECTIONS = {
   notifications: "notifications",
   advertisers: "advertisers",
   ad_campaigns: "ad_campaigns",
+  reels: "reels",
 
   // location-maison uniquement
   ai_search_sessions: "ai_search_sessions",

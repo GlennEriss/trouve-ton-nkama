@@ -1,0 +1,138 @@
+/**
+ * @module db
+ */
+import firebaseCollectionNames from "@/constantes/firebase-collection-name";
+import { Reel } from "@/models/reel";
+import { createModelWithCustomId } from "./generic.db";
+import { createLogger } from '@/lib/logger';
+
+const logger = createLogger('db.reel');
+
+const getStorage = () => import("@/firebase/storage");
+const getFirestore = () => import("@/firebase/firestore");
+
+function withTimeout<T>(promise: Promise<T>, timeoutMs: number, operation: string): Promise<T> {
+    return new Promise((resolve, reject) => {
+        const timeoutId = setTimeout(() => {
+            reject(new Error(`${operation} a pris trop de temps.`));
+        }, timeoutMs);
+
+        promise
+            .then((value) => {
+                clearTimeout(timeoutId);
+                resolve(value);
+            })
+            .catch((error) => {
+                clearTimeout(timeoutId);
+                reject(error);
+            });
+    });
+}
+
+function extractStorageErrorMessage(error: unknown): string {
+    if (!(error instanceof Error)) {
+        return "Erreur inconnue lors de l'envoi de la vidéo.";
+    }
+
+    const maybeWithCode = error as Error & { code?: string };
+
+    if (maybeWithCode.code === 'storage/unauthorized') {
+        return "Vous n'avez pas l'autorisation d'uploader cette vidéo.";
+    }
+
+    if (maybeWithCode.code === 'storage/canceled') {
+        return "Envoi annulé.";
+    }
+
+    if (maybeWithCode.code === 'storage/retry-limit-exceeded') {
+        return "Envoi trop long (délai dépassé). Vérifiez la connexion puis réessayez.";
+    }
+
+    return error.message || "Échec de l'envoi de la vidéo.";
+}
+
+/**
+ * Crée le document Firestore du réel avant même que la vidéo ne soit uploadée — le pipeline
+ * de transcodage (Cloud Function déclenchée par l'upload Storage) met à jour ce même document
+ * par son id, `reelId` doit donc être généré par l'appelant (`crypto.randomUUID()`) et utilisé
+ * à la fois ici et dans `uploadRawReelVideo`.
+ */
+export async function createReel(
+    reelId: string,
+    propertyId: string,
+    ownerId: string,
+    rawVideoPath: string
+): Promise<string | null> {
+    const payload: Reel = {
+        propertyId,
+        createdBy: ownerId,
+        processingStatus: 'uploading',
+        rawVideoPath,
+        moderationStatus: 'PENDING',
+        viewCount: 0,
+        giftCount: 0,
+        giftTotalAmount: 0,
+    } as Reel;
+
+    return createModelWithCustomId<Reel>(payload, firebaseCollectionNames.reels, reelId);
+}
+
+/**
+ * Upload le fichier vidéo brut — la Cloud Function de transcodage se déclenche sur cet upload
+ * et prend le relais (durée réelle, conversion, miniature), ce module ne fait que déposer le
+ * fichier au bon endroit.
+ */
+export async function uploadRawReelVideo(file: File, ownerId: string, reelId: string): Promise<string> {
+    try {
+        const { storage, ref, uploadBytes } = await getStorage();
+        const extension = file.name.includes('.') ? file.name.split('.').pop() : 'mp4';
+        const rawVideoPath = `reels-raw/${ownerId}/${reelId}.${extension}`;
+        const fileRef = ref(storage, rawVideoPath);
+
+        const metadata = {
+            customMetadata: {
+                owner: ownerId,
+                reelId,
+            },
+        };
+
+        await withTimeout(uploadBytes(fileRef, file, metadata), 120_000, "Upload vidéo");
+
+        return rawVideoPath;
+    } catch (error) {
+        const message = extractStorageErrorMessage(error);
+        logger.error('Reel video upload failed', {
+            error,
+            message,
+            fileName: file?.name,
+            fileSize: file?.size,
+            ownerId,
+            reelId,
+        });
+        throw new Error(message);
+    }
+}
+
+export function subscribeToReel(reelId: string, onChange: (reel: (Reel & { id: string }) | null) => void): () => void {
+    let unsubscribe: (() => void) | null = null;
+    let cancelled = false;
+
+    getFirestore().then(({ doc, onSnapshot, db }) => {
+        if (cancelled) return;
+        const reelRef = doc(db, firebaseCollectionNames.reels, reelId);
+        unsubscribe = onSnapshot(reelRef, (snapshot) => {
+            if (!snapshot.exists()) {
+                onChange(null);
+                return;
+            }
+            onChange({ ...(snapshot.data() as Reel), id: snapshot.id });
+        }, (error) => {
+            logger.error('Reel subscription failed', { error, reelId });
+        });
+    });
+
+    return () => {
+        cancelled = true;
+        unsubscribe?.();
+    };
+}
