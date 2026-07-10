@@ -65,6 +65,11 @@ le pattern Strategy plutôt que de créer une 3e chaîne de conditions par type 
 - [ ] Port du pattern Strategy/Factory vers `dashboard/listings/new/page.tsx` — bon candidat à
   faire **en même temps** que la Phase 2 si le module Réels admin touche à cette page de toute
   façon.
+- [ ] Stratégie de gestion des images (chargement, affichage, stockage) — voir
+  [refactoring-optimisation-couts.md §5](./refactoring-optimisation-couts.md#5-strat%C3%A9gie-de-gestion-des-images-%C3%A0-revoir).
+  À investiguer avant la Phase 2 si possible : le module Réels va de toute façon poser la question
+  du stockage/CDN pour la vidéo, autant trancher la stratégie médias (images + vidéo) une seule
+  fois plutôt que deux fois séparément.
 
 ## Ce qui n'est volontairement pas dans cette roadmap
 

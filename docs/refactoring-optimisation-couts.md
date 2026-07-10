@@ -96,6 +96,42 @@ maîtrisées par `useImageDropzone` — voir la section dédiée du document Ré
 (transcodage, limite de durée, choix Cloud Function maison vs service tiers). À chiffrer **avant**
 de commencer le développement de cette fonctionnalité, pas après.
 
+## 5. Stratégie de gestion des images (à revoir)
+
+Constat après lecture du code — trois problèmes distincts, tous vérifiés :
+
+- **Une seule taille servie partout** : `apps/location-maison/src/hooks/useImageDropzone.ts:49`
+  compresse chaque image à l'upload (`maxSizeMB: 0.3, maxWidthOrHeight: 1920`) — bon réflexe
+  côté coût de stockage, mais c'est la **même** image (jusqu'à 300 Ko, 1920px) qui est ensuite
+  servie aussi bien en vignette dans une carte de la liste de recherche qu'en grand format sur la
+  fiche détail. Aucune variante générée à l'upload (`src/db/file.db.ts:83`, `createFile` — un
+  fichier, une URL, pas de miniature).
+- **Optimisation Next.js désactivée** : `apps/location-maison/next.config.ts:62` —
+  `unoptimized: true` sur `images`. Ça désactive le redimensionnement à la volée par viewport, la
+  conversion automatique WebP/AVIF, et le `srcset` responsive que Next.js fournit nativement.
+  Résultat concret : une page de recherche avec 20 cartes télécharge potentiellement 20×300 Ko
+  d'images en pleine résolution alors qu'une vignette de quelques centaines de pixels de large
+  suffirait.
+- **Pas de CDN/cache dédié devant Firebase Storage** — les images sont servies directement
+  depuis Storage, sans couche de cache HTTP additionnelle (contrairement au `CacheStore`
+  applicatif déjà en place pour les données Firestore).
+
+**Pourquoi s'en soucier maintenant plutôt que d'attendre** : c'est le même type de coût que la
+vidéo/Reels ([reels-cadeaux-abonnement.md §5](./reels-cadeaux-abonnement.md#5-co%C3%BBts-et-implications-techniques-greenfield-vid%C3%A9o))
+mais sur un flux déjà massif aujourd'hui (chaque annonce a plusieurs photos, chaque page de
+recherche affiche des dizaines de cartes) — contrairement à la vidéo qui est encore à construire,
+l'inefficacité images est **déjà en production**.
+
+**Pistes à évaluer** (pas une décision, une liste de départ pour la prochaine session dédiée) :
+1. Réactiver l'optimisation Next.js (`unoptimized: false`) — nécessite de vérifier pourquoi elle
+   a été désactivée à l'origine (probablement pour éviter la facturation de la transformation
+   d'image de Vercel/Next — à chiffrer avant de réactiver).
+2. Générer une variante "vignette" à l'upload (en plus du fichier pleine résolution), servie dans
+   les cartes de liste/recherche, pour réduire la bande passante sur les pages à forte densité
+   d'images.
+3. Évaluer un CDN/proxy de transformation d'image (Cloudflare Images, ou l'optimiseur Next.js
+   réactivé) plutôt que de continuer à servir Firebase Storage brut.
+
 ## Ordre de traitement suggéré
 
 1. **1.1 et 1.2** (cette semaine, effort faible, impact direct sur la facture Firestore/Algolia
@@ -103,3 +139,5 @@ de commencer le développement de cette fonctionnalité, pas après.
 2. **2.1** (rapide une fois qu'on commence à toucher `packages/core` de toute façon).
 3. **2.3 et 2.2** (chantiers de fond, à interlacer avec le développement produit plutôt qu'à
    bloquer dessus — voir [10-roadmap.md](./10-roadmap.md)).
+4. **5 (images)** : à chiffrer/investiguer avant de trancher — ne pas basculer
+   `unoptimized: false` à l'aveugle sans comprendre pourquoi c'était désactivé à l'origine.
