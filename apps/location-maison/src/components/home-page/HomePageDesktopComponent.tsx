@@ -32,10 +32,10 @@ const detailssection2 = [
 export default function HomePageDesktopComponent() {
   const { trackEvent } = useTrackEvent()
   const shouldReduceMotion = useReducedMotion()
-  // /property/add gère lui-même l'authentification (voir PublishAuthModal) : un visiteur
-  // non connecté ou non-Annonceur peut remplir l'annonce, on ne lui demande de créer un
-  // compte / se connecter qu'à la soumission finale.
-  const publishLink = routes.protected.add_property
+  // /publish gère lui-même l'authentification (voir PublishAuthModal) : un visiteur
+  // non connecté ou non-Annonceur peut remplir l'annonce/le réel, on ne lui demande de créer
+  // un compte / se connecter qu'à la soumission finale.
+  const publishLink = routes.protected.publish
 
   const getRevealProps = (delay = 0) =>
     shouldReduceMotion

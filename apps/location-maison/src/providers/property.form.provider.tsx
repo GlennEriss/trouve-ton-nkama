@@ -494,6 +494,9 @@ export const PropertyFormComponentProvider = ({ children, isUpdate, propertyToUp
                     isFinalSubmittingRef.current = false
                     setIsFinalSubmitting(false)
                 }}
+                prepareForExternalRedirect={prepareForExternalRedirect}
+                description="Votre annonce est prête. Créez un compte annonceur (ou connectez-vous) pour la publier — toutes les informations et photos que vous avez saisies sont conservées."
+                becomeAnnouncerSource="property_add_modal"
             />
         </PropertyFormComponentContext.Provider>
     )

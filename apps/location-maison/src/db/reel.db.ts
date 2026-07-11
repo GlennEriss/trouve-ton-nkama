@@ -3,7 +3,7 @@
  */
 import firebaseCollectionNames from "@/constantes/firebase-collection-name";
 import { Reel } from "@/models/reel";
-import { createModelWithCustomId } from "./generic.db";
+import { createModelWithCustomId, updateModel } from "./generic.db";
 import { createLogger } from '@/lib/logger';
 
 const logger = createLogger('db.reel');
@@ -59,12 +59,12 @@ function extractStorageErrorMessage(error: unknown): string {
  */
 export async function createReel(
     reelId: string,
-    propertyId: string,
+    propertyId: string | null,
     ownerId: string,
     rawVideoPath: string
 ): Promise<string | null> {
     const payload: Reel = {
-        propertyId,
+        propertyId: propertyId ?? null,
         createdBy: ownerId,
         processingStatus: 'uploading',
         rawVideoPath,
@@ -75,6 +75,23 @@ export async function createReel(
     } as Reel;
 
     return createModelWithCustomId<Reel>(payload, firebaseCollectionNames.reels, reelId);
+}
+
+/**
+ * Rattache a posteriori un réel orphelin (créé sans annonce, voir CreateOrphanReelClient) à une
+ * annonce existante. firestore.rules restreint ce update à un passage null -> valeur unique,
+ * uniquement vers une annonce possédée par l'appelant.
+ */
+export async function attachReelToProperty(reelId: string, propertyId: string): Promise<boolean> {
+    return updateModel<Reel>(reelId, { propertyId }, firebaseCollectionNames.reels);
+}
+
+export async function getReelsByOwner(ownerId: string): Promise<(Reel & { id: string })[]> {
+    const { collection, getDocs, db, where, query, orderBy } = await getFirestore();
+    const reelsRef = collection(db, firebaseCollectionNames.reels);
+    const q = query(reelsRef, where('createdBy', '==', ownerId), orderBy('createdAt', 'desc'));
+    const snapshot = await getDocs(q);
+    return snapshot.docs.map((doc) => ({ ...(doc.data() as Reel), id: doc.id }));
 }
 
 /**

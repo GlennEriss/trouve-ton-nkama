@@ -86,7 +86,7 @@ export const BottomNavigation: React.FC = () => {
                         {/* Bouton central surélevé */}
                         <div className="flex flex-col items-center flex-1 pb-2">
                             <Link
-                                href={routes.protected.add_property}
+                                href={routes.protected.publish}
                                 className="flex flex-col items-center gap-1 group -mt-6"
                             >
                                 <div className={clsx(

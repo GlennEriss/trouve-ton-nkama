@@ -7,7 +7,9 @@ import type { ModerationStatus } from "./annonce";
 export type ReelProcessingStatus = 'uploading' | 'processing' | 'ready' | 'failed';
 
 export type Reel = ICreation & {
-    propertyId: string;
+    // Optionnel : un réel peut être créé sans annonce existante (visiteur sans compte/sans
+    // annonce, voir CreateOrphanReelClient) puis rattaché plus tard via attachReelToProperty.
+    propertyId?: string | null;
     createdBy: string;
 
     processingStatus: ReelProcessingStatus;

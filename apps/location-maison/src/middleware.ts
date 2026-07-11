@@ -15,6 +15,7 @@ const GUEST_ONLY_ROUTES = [
 
 const PROTECTED_ROUTE_PREFIXES = [
     '/property',
+    '/reels',
     '/profil',
     '/favoris',
     '/settings',
@@ -37,6 +38,7 @@ type SessionUser = {
 
 const ANNOUNCER_ONLY_ROUTE_PREFIXES = [
     '/property',
+    '/reels',
 ] as const
 
 const ADMIN_ONLY_ROUTE_PREFIXES = [
@@ -46,6 +48,10 @@ const ADMIN_ONLY_ROUTE_PREFIXES = [
 // Un visiteur non connecté doit pouvoir remplir le formulaire de création d'annonce
 // et se voir proposer de créer un compte/se connecter seulement à la soumission finale.
 const PUBLIC_PROPERTY_ADD_PREFIX = '/property/add'
+
+// Même logique pour la création d'un réel sans annonce préalable (voir
+// CreateOrphanReelClient) : le réel reste orphelin en attendant un compte Annonceur.
+const PUBLIC_REEL_ADD_PREFIX = '/reels/add'
 
 // Les fiches d'annonces doivent rester publiques: /property/:id
 // Les routes privées du vendeur restent protégées: /property, /property/modify/:id,
@@ -60,21 +66,26 @@ function isPublicPropertyAddRoute(pathname: string): boolean {
     return isExactOrSubPath(pathname, PUBLIC_PROPERTY_ADD_PREFIX)
 }
 
+function isPublicReelAddRoute(pathname: string): boolean {
+    return isExactOrSubPath(pathname, PUBLIC_REEL_ADD_PREFIX)
+}
+
 function isPublicPropertyDetailRoute(pathname: string): boolean {
     return PUBLIC_PROPERTY_DETAIL_PATTERN.test(pathname)
 }
 
-function isPublicPropertyRoute(pathname: string): boolean {
-    return isPublicPropertyAddRoute(pathname) || isPublicPropertyDetailRoute(pathname)
+// Exceptions publiques à l'intérieur de préfixes autrement protégés/réservés aux annonceurs.
+function isPublicException(pathname: string): boolean {
+    return isPublicPropertyAddRoute(pathname) || isPublicReelAddRoute(pathname) || isPublicPropertyDetailRoute(pathname)
 }
 
 function isProtectedRoute(pathname: string): boolean {
-    if (isPublicPropertyRoute(pathname)) return false
+    if (isPublicException(pathname)) return false
     return PROTECTED_ROUTE_PREFIXES.some((prefix) => isExactOrSubPath(pathname, prefix))
 }
 
 function isAnnouncerOnlyRoute(pathname: string): boolean {
-    if (isPublicPropertyRoute(pathname)) return false
+    if (isPublicException(pathname)) return false
     return ANNOUNCER_ONLY_ROUTE_PREFIXES.some((prefix) => isExactOrSubPath(pathname, prefix))
 }
 

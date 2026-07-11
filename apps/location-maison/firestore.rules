@@ -109,18 +109,31 @@ service cloud.firestore {
       // via API route dédiée (Admin SDK, contourne ces règles).
       allow read: if isSignedIn() && request.auth.uid == resource.data.createdBy;
 
-      // Création : uniquement par l'annonceur propriétaire de l'annonce référencée, un réel
-      // démarre toujours PENDING/uploading (défense en profondeur, mirror du pattern
-      // properties ci-dessus) — le client ne peut pas se déclarer déjà approuvé ou déjà traité.
+      // Création : par l'annonceur, soit rattachée à une annonce qu'il possède, soit orpheline
+      // (propertyId absent/null — visiteur sans annonce, voir CreateOrphanReelClient, rattachée
+      // plus tard). Un réel démarre toujours PENDING/uploading (défense en profondeur, mirror du
+      // pattern properties ci-dessus) — le client ne peut pas se déclarer déjà approuvé/traité.
       allow create: if isAnnouncer() &&
         request.auth.uid == request.resource.data.createdBy &&
-        ownsReferencedProperty(request.resource.data.propertyId) &&
         request.resource.data.moderationStatus == 'PENDING' &&
-        request.resource.data.processingStatus == 'uploading';
+        request.resource.data.processingStatus == 'uploading' &&
+        (
+          !('propertyId' in request.resource.data) ||
+          request.resource.data.propertyId == null ||
+          ownsReferencedProperty(request.resource.data.propertyId)
+        );
 
-      // Mise à jour/suppression : uniquement la Cloud Function de transcodage et l'API admin
-      // de modération (toutes deux via Admin SDK, qui contourne ces règles) — jamais le client.
-      allow update, delete: if false;
+      // Rattachement a posteriori d'un réel orphelin : le créateur peut passer propertyId de
+      // null à une annonce qu'il possède, une seule fois, rien d'autre ne change (même idiome
+      // que isTransactionOperation() plus haut — diff().affectedKeys() restreint).
+      allow update: if isAnnouncer() &&
+        request.auth.uid == resource.data.createdBy &&
+        resource.data.propertyId == null &&
+        request.resource.data.diff(resource.data).affectedKeys().hasOnly(['propertyId', 'updatedAt']) &&
+        ownsReferencedProperty(request.resource.data.propertyId);
+
+      // Suppression : uniquement l'API admin (Admin SDK, contourne ces règles) — jamais le client.
+      allow delete: if false;
     }
 
     match /property_statistics/{statisticsId} {

@@ -6,6 +6,10 @@ export const routes = {
     protected: {
         properties: '/property',
         add_property: '/property/add',
+        publish: '/publish',
+        reels: '/reels',
+        reels_add: '/reels/add',
+        reels_select_property: '/reels/select-property',
         add_home: '/property/add/home',
         add_apartment: '/property/add/apartment',
         add_building: '/property/add/building',

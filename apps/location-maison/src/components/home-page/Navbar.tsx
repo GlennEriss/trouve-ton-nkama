@@ -53,7 +53,7 @@ export default function Navbar() {
                   {user && isAnnouncer ? (
           <div className="flex items-center gap-2">
             <Notifications />
-            <Link href={routes.protected.add_property}>
+            <Link href={routes.protected.publish}>
               <button className="bg-gradient-to-r from-[#146B67] via-[#1FA89B] to-[#146B67] text-white rounded-lg text-[10px] px-3 py-2 font-semibold hover:brightness-110 hover:shadow-md transition-all duration-300 hover:scale-105 dark:hover:shadow-[#1FA89B]/20">
                 Poster une annonce
               </button>
@@ -158,7 +158,7 @@ const NavigationMenuNavbar = () => {
       label: "Catalogue"
     },
     {
-      link: routes.protected.add_property,
+      link: routes.protected.publish,
       label: "Poster une annonce"
     },
     ...(user ? [{
