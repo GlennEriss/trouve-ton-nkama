@@ -38,6 +38,7 @@ import {
   Search,
   Trash2,
   TrendingUp,
+  Video,
   X,
 } from 'lucide-react';
 import { useAdManagement } from '../../hooks';
@@ -350,6 +351,13 @@ function AdCard({ ad, onToggleState, onDelete, actionLoading }: AdCardProps) {
               Supprimer
             </Button>
           </div>
+
+          <Button variant="outline" className="h-9 w-full rounded-full" asChild>
+            <Link href={`${routes.protected.properties}/${ad.id}/reels/add`}>
+              <Video className="mr-1.5 h-4 w-4" />
+              Ajouter un réel
+            </Link>
+          </Button>
 
           <div className="pt-0.5">
             <PromotionButton property={ad} />

@@ -1,0 +1,42 @@
+rules_version = '2';
+
+// Premier fichier storage.rules versionné de ce repo. Les règles actuellement actives en prod
+// (relevées via l'API Firebase Rules avant d'écrire ce fichier, pas devinées) sont :
+//
+//   match /{allPaths=**} { allow read, create: if true; }
+//
+// c'est-à-dire : lecture et écriture ouvertes à tous, sans authentification, sur tout le bucket.
+// Ce fichier préserve exactement ce comportement pour tous les chemins existants (property/,
+// avatars, etc.) via le même catch-all en fin de fichier — ne pas le resserrer ici, une annonce
+// séparée. Les nouveaux chemins reels-raw/ et reels/ ci-dessous sont volontairement plus stricts
+// (upload authentifié pour le propriétaire uniquement) puisqu'ils n'existaient pas avant.
+//
+// Storage Security Rules retient la règle du chemin le PLUS SPÉCIFIQUE en cas de chevauchement
+// (un match non-wildcard prévaut sur {allPaths=**}) — à vérifier en pratique avant tout déploiement
+// prod (voir docs/reels-cadeaux-abonnement.md et le plan de l'étape 1 Réels).
+
+service firebase.storage {
+  match /b/{bucket}/o {
+
+    // Vidéo brute uploadée par l'annonceur avant transcodage — jamais servie publiquement,
+    // seule la Cloud Function de transcodage (Admin SDK, contourne ces règles) la lit puis la
+    // supprime après traitement.
+    match /reels-raw/{ownerId}/{fileName} {
+      allow read: if false;
+      allow create: if request.auth != null && request.auth.uid == ownerId;
+      allow update, delete: if false;
+    }
+
+    // Vidéo + miniature transcodées — écrites uniquement par la Cloud Function (Admin SDK),
+    // lecture publique nécessaire pour la lecture vidéo une fois le réel approuvé.
+    match /reels/{ownerId}/{reelId}/{fileName} {
+      allow read: if true;
+      allow write: if false;
+    }
+
+    // Règle générale préexistante — inchangée, voir note en tête de fichier.
+    match /{allPaths=**} {
+      allow read, create: if true;
+    }
+  }
+}

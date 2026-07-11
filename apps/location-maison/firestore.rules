@@ -21,7 +21,16 @@ service cloud.firestore {
              exists(currentUserPath()) &&
              get(currentUserPath()).data.roles.hasAny(['Announcer']);
     }
-    
+
+    function propertyPath(propertyId) {
+      return /databases/$(database)/documents/properties/$(propertyId);
+    }
+
+    function ownsReferencedProperty(propertyId) {
+      return exists(propertyPath(propertyId)) &&
+             get(propertyPath(propertyId)).data.createdBy == request.auth.uid;
+    }
+
     match /users/{userId} {
       // Lecture : l'utilisateur peut lire son propre profil, ou lecture publique pour vérification
       allow read: if true;
@@ -91,6 +100,27 @@ service cloud.firestore {
     match /streets/{streetId} {
       allow read: if true;           
       allow create, update: if isSignedIn();  
+    }
+
+    match /reels/{reelId} {
+      // Lecture : le créateur seulement pour l'instant (suivi temps réel du traitement,
+      // étape 1 du chantier Réels). Le flux public (étape 2) devra revoir ce point — lecture
+      // publique des réels APPROVED uniquement, pas encore décidé si via règle Firestore ou
+      // via API route dédiée (Admin SDK, contourne ces règles).
+      allow read: if isSignedIn() && request.auth.uid == resource.data.createdBy;
+
+      // Création : uniquement par l'annonceur propriétaire de l'annonce référencée, un réel
+      // démarre toujours PENDING/uploading (défense en profondeur, mirror du pattern
+      // properties ci-dessus) — le client ne peut pas se déclarer déjà approuvé ou déjà traité.
+      allow create: if isAnnouncer() &&
+        request.auth.uid == request.resource.data.createdBy &&
+        ownsReferencedProperty(request.resource.data.propertyId) &&
+        request.resource.data.moderationStatus == 'PENDING' &&
+        request.resource.data.processingStatus == 'uploading';
+
+      // Mise à jour/suppression : uniquement la Cloud Function de transcodage et l'API admin
+      // de modération (toutes deux via Admin SDK, qui contourne ces règles) — jamais le client.
+      allow update, delete: if false;
     }
 
     match /property_statistics/{statisticsId} {
