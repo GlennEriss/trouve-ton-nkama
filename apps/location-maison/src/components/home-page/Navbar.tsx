@@ -19,11 +19,21 @@ export default function Navbar() {
   const isAnnouncer = Array.isArray(user?.roles) && user.roles.includes('Announcer');
   
   // Vérifier si on est sur une route protégée
-  const isProtectedRoute = Object.values(routes.protected).some(route => 
+  const isProtectedRoute = Object.values(routes.protected).some(route =>
     pathname.startsWith(route)
   );
 
+  // Le flux public de réels est plein écran façon TikTok (vidéo en h-[100dvh]) : empiler ce
+  // navbar par-dessus ajoute sa hauteur au-dessus des 100dvh de la vidéo, ce qui fait dépasser
+  // la page de la hauteur de l'écran et provoque un scroll indésirable. Match exact seulement
+  // (pas /reels/mine, qui garde son AppMobileStickyHeader habituel).
+  const isReelsFeedRoute = pathname === routes.protected.reels
+
   if (width < 768) {
+    if (isReelsFeedRoute) {
+      return null
+    }
+
     // Utilisateur connecté : petite barre persistante (notifications + profil) — sans elle,
     // ces deux écrans ne sont plus atteignables sur mobile depuis que "Notifs" a quitté la
     // bottom nav (remplacée par "Réels"). S'affiche même sur les pages "protégées" qui ont

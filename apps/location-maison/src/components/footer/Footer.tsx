@@ -26,6 +26,10 @@ export default function Footer({ isHide = false }: Readonly<{ isHide?: boolean }
         routes.public.passwordResetFailure,
         routes.protected.advertising,
         routes.protected.advertising_create,
+        // Flux public de réels : plein écran façon TikTok (vidéo en h-[100dvh]) — un footer
+        // marketing ajouté en dessous ferait dépasser la page de la hauteur de l'écran et
+        // provoquerait un scroll indésirable, pour tout visiteur (connecté ou non).
+        routes.protected.reels,
     ];
     // Connecté sur mobile : la bottom nav couvre déjà la navigation, un footer marketing/SEO
     // (liens blog, réseaux sociaux, pages légales...) n'a pas sa place dans cette expérience
