@@ -3,7 +3,6 @@
 import React from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-import { useQuery } from '@tanstack/react-query'
 import { Building2, Loader2, Video } from 'lucide-react'
 import { useCurrentUser } from '@/hooks/use-current-user'
 import { getProperties } from '@/db/property.db'
@@ -11,27 +10,29 @@ import { Card } from '@/components/ui/card'
 import { routes } from '@/constantes/routes'
 
 export default function PublishChoiceClient() {
-  const { user, isLoading: authLoading } = useCurrentUser()
+  const { user } = useCurrentUser()
   const router = useRouter()
+  const [isChecking, setIsChecking] = React.useState(false)
 
-  const hasPropertiesQuery = useQuery({
-    queryKey: ['properties', 'has-any', user?.uid],
-    queryFn: async () => {
-      const result = await getProperties({ limitPerPage: 1, lastDoc: null, createdBy: user?.uid })
-      return result.properties.length > 0
-    },
-    enabled: Boolean(user?.uid),
-  })
-
-  const handleCreateReel = () => {
-    if (user?.uid && hasPropertiesQuery.data) {
-      router.push(routes.protected.reels_select_property)
-    } else {
+  // Vérifié seulement au clic, pas au chargement de la page : ce n'est qu'une décision de
+  // routage ("as-tu déjà une annonce ?"), pas une donnée à afficher — un bouton qui redirige
+  // n'a pas besoin d'un état de chargement visible avant même d'être cliqué.
+  const handleCreateReel = async () => {
+    if (!user?.uid) {
       router.push(routes.protected.reels_add)
+      return
+    }
+
+    setIsChecking(true)
+    try {
+      const result = await getProperties({ limitPerPage: 1, lastDoc: null, createdBy: user.uid })
+      router.push(result.properties.length > 0 ? routes.protected.reels_select_property : routes.protected.reels_add)
+    } catch {
+      router.push(routes.protected.reels_add)
+    } finally {
+      setIsChecking(false)
     }
   }
-
-  const checkingProperties = Boolean(user?.uid) && hasPropertiesQuery.isLoading
 
   return (
     <div className="max-w-xl mx-auto space-y-6">
@@ -55,9 +56,9 @@ export default function PublishChoiceClient() {
 
         <Card
           className="h-full flex flex-col items-center justify-center gap-3 p-8 text-center cursor-pointer hover:border-emerald-500 hover:shadow-md transition-all"
-          onClick={authLoading || checkingProperties ? undefined : handleCreateReel}
+          onClick={isChecking ? undefined : handleCreateReel}
         >
-          {checkingProperties || authLoading ? (
+          {isChecking ? (
             <Loader2 className="h-10 w-10 animate-spin text-emerald-600" />
           ) : (
             <Video className="h-10 w-10 text-emerald-600" />

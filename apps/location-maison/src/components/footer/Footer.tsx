@@ -9,9 +9,13 @@ import PWAInstallButton from '@/components/pwa/PWAInstallButton';
 import { isPropertyFormFlowPath } from '@/lib/ads/route-guards';
 import InlineAdUnit from '@/components/ads/InlineAdUnit';
 import { ADSENSE_SLOTS } from '@/lib/ads/config';
+import { useCurrentUser } from '@/hooks/use-current-user';
+import { useWindowSize } from '@/hooks/useSize';
 
 export default function Footer({ isHide = false }: Readonly<{ isHide?: boolean }>) {
     const pathname = usePathname()
+    const { user } = useCurrentUser()
+    const { width } = useWindowSize()
     const hiddenFooterRoutes = [
         routes.public.signin,
         routes.public.signup,
@@ -23,7 +27,12 @@ export default function Footer({ isHide = false }: Readonly<{ isHide?: boolean }
         routes.protected.advertising,
         routes.protected.advertising_create,
     ];
-    const hideByRoute = isHide || hiddenFooterRoutes.includes(pathname) || isPropertyFormFlowPath(pathname)
+    // Connecté sur mobile : la bottom nav couvre déjà la navigation, un footer marketing/SEO
+    // (liens blog, réseaux sociaux, pages légales...) n'a pas sa place dans cette expérience
+    // orientée tâche. Reste affiché sur desktop (n'y gêne pas) et pour les visiteurs anonymes
+    // sur mobile (où le footer sert de navigation de repli).
+    const hideOnMobileLoggedIn = Boolean(user) && width > 0 && width < 768
+    const hideByRoute = isHide || hideOnMobileLoggedIn || hiddenFooterRoutes.includes(pathname) || isPropertyFormFlowPath(pathname)
     const shouldRenderFooterAd =
         pathname === routes.public.homePage ||
         pathname.startsWith('/immobilier') ||

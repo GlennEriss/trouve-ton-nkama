@@ -24,10 +24,32 @@ export default function Navbar() {
   );
 
   if (width < 768) {
-    // Sur mobile, les pages "protégées" (ex: /property/add, désormais accessible aux
-    // visiteurs anonymes) ont déjà leur propre en-tête sticky (AppMobileStickyHeader).
-    // Ne pas empiler la navbar générique par-dessus, quel que soit l'état de connexion.
-    if (user || isProtectedRoute) {
+    // Utilisateur connecté : petite barre persistante (notifications + profil) — sans elle,
+    // ces deux écrans ne sont plus atteignables sur mobile depuis que "Notifs" a quitté la
+    // bottom nav (remplacée par "Réels"). S'affiche même sur les pages "protégées" qui ont
+    // leur propre AppMobileStickyHeader : les deux s'empilent (barre de compte globale +
+    // en-tête contextuel de la page), ce n'est pas redondant.
+    if (user) {
+      return (
+        <nav className="sticky top-0 left-0 right-0 z-[9999] flex items-center justify-between border-b border-gray-200 bg-white/90 px-4 py-2 backdrop-blur-lg dark:border-gray-800 dark:bg-gray-900/90">
+          <a href="/" rel="noopener noreferrer" className="flex items-center gap-2">
+            <Logo width="32px" height="32px" />
+            <span className="text-sm font-black text-[#146B67] dark:text-[#1FA89B]">
+              Trouve Ton Nkama
+            </span>
+          </a>
+          <div className="flex items-center gap-3">
+            <Notifications />
+            <MenuProfil />
+          </div>
+        </nav>
+      )
+    }
+
+    // Visiteur non connecté sur une page "protégée" (ex: /property/add, accessible sans
+    // compte) : celle-ci a déjà son propre en-tête sticky (AppMobileStickyHeader). Ne pas
+    // empiler la navbar générique par-dessus.
+    if (isProtectedRoute) {
       return null
     }
     return (
@@ -156,6 +178,10 @@ const NavigationMenuNavbar = () => {
     {
       link: routes.public.search_property,
       label: "Catalogue"
+    },
+    {
+      link: routes.protected.reels,
+      label: "Réels"
     },
     {
       link: routes.protected.publish,

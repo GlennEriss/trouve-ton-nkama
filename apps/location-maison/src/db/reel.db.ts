@@ -95,6 +95,50 @@ export async function getReelsByOwner(ownerId: string): Promise<(Reel & { id: st
 }
 
 /**
+ * Réels publics (flux) — SDK client utilisé côté serveur (API route), autorisé par
+ * firestore.rules (`moderationStatus == 'APPROVED'` lisible par tous), pas besoin d'Admin SDK
+ * pour une simple lecture publique (même principe que getProperties()).
+ *
+ * Curseur en id de document (string), pas en DocumentSnapshot brut — un DocumentSnapshot ne
+ * survit pas à un aller-retour JSON via l'API HTTP (contrairement à getProperties(), qui renvoie
+ * son lastDoc tel quel et n'est en pratique jamais rappelée avec un curseur, seulement en
+ * première page). Mirror du pattern robuste déjà utilisé par useAdManagement.ts/`/api/announcer/ads`.
+ */
+export async function getPublicReels({
+    limitPerPage,
+    cursor,
+}: {
+    limitPerPage: number;
+    cursor: string | null;
+}): Promise<{ reels: (Reel & { id: string })[]; nextCursor: string | null }> {
+    const { collection, getDocs, doc, getDoc, db, where, query, orderBy, startAfter, limit } = await getFirestore();
+    const reelsRef = collection(db, firebaseCollectionNames.reels);
+    let q = query(
+        reelsRef,
+        where('processingStatus', '==', 'ready'),
+        where('moderationStatus', '==', 'APPROVED'),
+        orderBy('createdAt', 'desc'),
+        limit(limitPerPage)
+    );
+
+    if (cursor) {
+        const cursorSnap = await getDoc(doc(db, firebaseCollectionNames.reels, cursor));
+        if (cursorSnap.exists()) {
+            q = query(q, startAfter(cursorSnap));
+        }
+    }
+
+    const querySnapshot = await getDocs(q);
+    const reels = querySnapshot.docs.map((d) => ({ ...(d.data() as Reel), id: d.id }));
+
+    const nextCursor = querySnapshot.docs.length === limitPerPage
+        ? querySnapshot.docs[querySnapshot.docs.length - 1].id
+        : null;
+
+    return { reels, nextCursor };
+}
+
+/**
  * Upload le fichier vidéo brut — la Cloud Function de transcodage se déclenche sur cet upload
  * et prend le relais (durée réelle, conversion, miniature), ce module ne fait que déposer le
  * fichier au bon endroit.

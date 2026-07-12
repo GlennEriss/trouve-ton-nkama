@@ -8,6 +8,7 @@ export const routes = {
         add_property: '/property/add',
         publish: '/publish',
         reels: '/reels',
+        reels_mine: '/reels/mine',
         reels_add: '/reels/add',
         reels_select_property: '/reels/select-property',
         add_home: '/property/add/home',

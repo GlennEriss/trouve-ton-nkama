@@ -43,7 +43,7 @@ export default function SelectPropertyForReelClient() {
       const ok = await attachReelToProperty(attachReelId, property.id!)
       if (!ok) throw new Error("Impossible de rattacher le réel.")
       toast({ title: "Réel rattaché", description: `Rattaché à "${property.title}".` })
-      router.push(routes.protected.reels)
+      router.push(routes.protected.reels_mine)
     } catch (error) {
       toast({
         title: "Échec du rattachement",
@@ -57,7 +57,7 @@ export default function SelectPropertyForReelClient() {
 
   return (
     <div className="max-w-xl mx-auto space-y-6">
-      <Link href={attachReelId ? routes.protected.reels : routes.protected.publish}>
+      <Link href={attachReelId ? routes.protected.reels_mine : routes.protected.publish}>
         <Button variant="ghost" size="sm" className="group -ml-2">
           <ArrowLeft className="h-4 w-4 mr-1 transition-transform group-hover:-translate-x-1" />
           Retour

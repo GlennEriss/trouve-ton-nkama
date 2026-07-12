@@ -230,7 +230,7 @@ export default function CreateOrphanReelClient() {
               <p className="text-sm text-red-600 mt-1">{reel.processingError}</p>
             )}
             {reel.processingStatus === 'ready' && (
-              <Link href={routes.protected.reels} className="inline-block mt-2">
+              <Link href={routes.protected.reels_mine} className="inline-block mt-2">
                 <Button size="sm" variant="outline">Voir mes réels</Button>
               </Link>
             )}

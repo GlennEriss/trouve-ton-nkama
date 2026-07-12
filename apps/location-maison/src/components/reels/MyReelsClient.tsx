@@ -3,7 +3,7 @@
 import React from 'react'
 import Link from 'next/link'
 import { useQuery } from '@tanstack/react-query'
-import { CheckCircle2, Loader2, Video, XCircle } from 'lucide-react'
+import { ArrowLeft, CheckCircle2, Loader2, Video, XCircle } from 'lucide-react'
 import { useCurrentUser } from '@/hooks/use-current-user'
 import { getReelsByOwner } from '@/db/reel.db'
 import { Card } from '@/components/ui/card'
@@ -29,6 +29,13 @@ export default function MyReelsClient() {
 
   return (
     <div className="max-w-xl mx-auto space-y-6">
+      <Link href={routes.protected.properties}>
+        <Button variant="ghost" size="sm" className="group -ml-2">
+          <ArrowLeft className="h-4 w-4 mr-1 transition-transform group-hover:-translate-x-1" />
+          Mes annonces
+        </Button>
+      </Link>
+
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-xl font-bold text-slate-900 dark:text-white">Mes réels</h1>

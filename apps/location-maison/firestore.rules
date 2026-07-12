@@ -103,11 +103,12 @@ service cloud.firestore {
     }
 
     match /reels/{reelId} {
-      // Lecture : le créateur seulement pour l'instant (suivi temps réel du traitement,
-      // étape 1 du chantier Réels). Le flux public (étape 2) devra revoir ce point — lecture
-      // publique des réels APPROVED uniquement, pas encore décidé si via règle Firestore ou
-      // via API route dédiée (Admin SDK, contourne ces règles).
-      allow read: if isSignedIn() && request.auth.uid == resource.data.createdBy;
+      // Lecture : le créateur (suivi temps réel du traitement, étape 1) OU tout le monde une
+      // fois APPROVED (flux public, étape 2) — mirror exact de properties ci-dessus
+      // (`allow read: if true`), qui permet à /api/property/list d'utiliser le SDK client
+      // côté serveur sans Admin SDK. Même logique ici pour /api/reels/feed.
+      allow read: if (isSignedIn() && request.auth.uid == resource.data.createdBy) ||
+        resource.data.moderationStatus == 'APPROVED';
 
       // Création : par l'annonceur, soit rattachée à une annonce qu'il possède, soit orpheline
       // (propertyId absent/null — visiteur sans annonce, voir CreateOrphanReelClient, rattachée

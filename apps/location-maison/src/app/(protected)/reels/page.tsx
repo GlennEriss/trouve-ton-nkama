@@ -1,10 +1,6 @@
 import React from 'react'
-import MyReelsClient from '@/components/reels/MyReelsClient'
+import ReelsFeedClient from '@/components/reels/ReelsFeedClient'
 
-export default function MyReelsPage() {
-  return (
-    <div className="container mx-auto px-4 py-8">
-      <MyReelsClient />
-    </div>
-  )
+export default function ReelsFeedPage() {
+  return <ReelsFeedClient />
 }

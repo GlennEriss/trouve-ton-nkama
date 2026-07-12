@@ -58,6 +58,12 @@ const PUBLIC_REEL_ADD_PREFIX = '/reels/add'
 // /property/:id/statistics, etc.
 const PUBLIC_PROPERTY_DETAIL_PATTERN = /^\/property\/[^/]+\/?$/
 
+// Le flux public de réels vit à la racine /reels (attendu par un bouton "Réels" dans la nav —
+// regarder des réels, pas les gérer). Match exact seulement : /reels/mine et
+// /reels/select-property (gestion privée) restent protégés+annonceur, seule la racine est
+// publique — PUBLIC_REEL_ADD_PREFIX gère déjà /reels/add séparément.
+const PUBLIC_REEL_FEED_PATTERN = /^\/reels\/?$/
+
 function isExactOrSubPath(pathname: string, prefix: string): boolean {
     return pathname === prefix || pathname.startsWith(`${prefix}/`)
 }
@@ -70,13 +76,20 @@ function isPublicReelAddRoute(pathname: string): boolean {
     return isExactOrSubPath(pathname, PUBLIC_REEL_ADD_PREFIX)
 }
 
+function isPublicReelFeedRoute(pathname: string): boolean {
+    return PUBLIC_REEL_FEED_PATTERN.test(pathname)
+}
+
 function isPublicPropertyDetailRoute(pathname: string): boolean {
     return PUBLIC_PROPERTY_DETAIL_PATTERN.test(pathname)
 }
 
 // Exceptions publiques à l'intérieur de préfixes autrement protégés/réservés aux annonceurs.
 function isPublicException(pathname: string): boolean {
-    return isPublicPropertyAddRoute(pathname) || isPublicReelAddRoute(pathname) || isPublicPropertyDetailRoute(pathname)
+    return isPublicPropertyAddRoute(pathname) ||
+        isPublicReelAddRoute(pathname) ||
+        isPublicReelFeedRoute(pathname) ||
+        isPublicPropertyDetailRoute(pathname)
 }
 
 function isProtectedRoute(pathname: string): boolean {

@@ -241,7 +241,7 @@ export const CardPropertyCrud = ({ property }: { property: Property }) => {
     const rawPrimaryImageUrl = resolveThumbnailUrl(images[0]);
     const hasPrimaryImageUrl =
         typeof rawPrimaryImageUrl === 'string' && rawPrimaryImageUrl.trim().length > 0;
-    const primaryImageSrc = hasPrimaryImageUrl ? rawPrimaryImageUrl : '/fallback-image.jpg';
+    const primaryImageSrc = hasPrimaryImageUrl ? rawPrimaryImageUrl : '/home.png';
 
     React.useEffect(() => {
         if (hasPrimaryImageUrl) {
