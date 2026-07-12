@@ -9,6 +9,8 @@ import { useProperty } from '@/hooks/use-property'
 import { useVideoDropzone, type VideoDropzoneRejectionReason } from '@/hooks/useVideoDropzone'
 import { createReel, uploadRawReelVideo, subscribeToReel } from '@/db/reel.db'
 import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
 import { useToast } from '@/hooks/use-toast'
 import { routes } from '@/constantes/routes'
 import { cn } from '@/lib/utils'
@@ -39,6 +41,11 @@ export default function CreateReelClient({ propertyId }: CreateReelClientProps) 
 
   const [isUploading, setIsUploading] = React.useState(false)
   const [reel, setReel] = React.useState<(Reel & { id: string }) | null>(null)
+  // Numéro à afficher sur le réel dans le feed (boutons WhatsApp/Appel) — indépendant du
+  // rattachement à l'annonce : pré-rempli avec le contact de l'annonce si dispo, sinon le
+  // numéro de profil, modifiable. Repli sur le numéro de profil au moment de l'affichage si
+  // laissé vide (voir ReelsFeedClient).
+  const [contact, setContact] = React.useState('')
 
   React.useEffect(() => {
     if (!authLoading && !propertyLoading && property) {
@@ -47,6 +54,11 @@ export default function CreateReelClient({ propertyId }: CreateReelClientProps) 
       }
     }
   }, [property, user?.uid, propertyId, authLoading, propertyLoading])
+
+  React.useEffect(() => {
+    const defaultContact = property?.contact ?? user?.phoneNumbers?.[0]
+    if (defaultContact) setContact((current) => current || defaultContact)
+  }, [property?.contact, user?.phoneNumbers])
 
   React.useEffect(() => {
     if (!reel?.id) return undefined
@@ -70,7 +82,8 @@ export default function CreateReelClient({ propertyId }: CreateReelClientProps) 
     try {
       const reelId = crypto.randomUUID()
       const rawVideoPath = await uploadRawReelVideo(file, user.uid, reelId)
-      const createdId = await createReel(reelId, propertyId, user.uid, rawVideoPath)
+      const trimmedContact = contact.trim() || undefined
+      const createdId = await createReel(reelId, propertyId, user.uid, rawVideoPath, trimmedContact)
 
       if (!createdId) {
         throw new Error("La création du réel a échoué.")
@@ -86,6 +99,7 @@ export default function CreateReelClient({ propertyId }: CreateReelClientProps) 
         viewCount: 0,
         giftCount: 0,
         giftTotalAmount: 0,
+        ...(trimmedContact ? { contact: trimmedContact } : {}),
       } as Reel & { id: string })
 
       toast({
@@ -101,7 +115,7 @@ export default function CreateReelClient({ propertyId }: CreateReelClientProps) 
     } finally {
       setIsUploading(false)
     }
-  }, [user?.uid, propertyId, toast])
+  }, [user?.uid, propertyId, contact, toast])
 
   const { getRootProps, getInputProps, isDragActive, isProcessing } = useVideoDropzone({
     onFile: handleFile,
@@ -139,6 +153,24 @@ export default function CreateReelClient({ propertyId }: CreateReelClientProps) 
           Pour l&apos;annonce « {property.title} » — vidéo verticale, 5 minutes maximum.
         </p>
       </div>
+
+      {showDropzone && (
+        <div>
+          <Label htmlFor="reel-contact">Numéro à contacter (WhatsApp / appel)</Label>
+          <Input
+            id="reel-contact"
+            type="tel"
+            value={contact}
+            onChange={(event) => setContact(event.target.value)}
+            placeholder="Ex: +241 XX XX XX XX"
+            disabled={busy}
+            className="mt-1"
+          />
+          <p className="text-xs text-slate-400 mt-1">
+            Laissez vide pour utiliser le contact de l&apos;annonce, ou votre numéro de profil.
+          </p>
+        </div>
+      )}
 
       {showDropzone && (
         <div

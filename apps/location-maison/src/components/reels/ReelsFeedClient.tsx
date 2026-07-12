@@ -10,7 +10,9 @@ import {
   CarouselItem,
   type CarouselApi,
 } from '@/components/ui/carousel'
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { useProperty } from '@/hooks/use-property'
+import { useUserByUID } from '@/hooks/use-user-by-uid'
 import { useTrackPropertyInteraction } from '@/hooks/use-track-property-interaction'
 import type { Reel } from '@/models/reel'
 
@@ -52,12 +54,16 @@ function ReelSlide({
   onToggleMute: () => void
 }) {
   const videoRef = React.useRef<HTMLVideoElement>(null)
-  // La vidéo n'a de sens que rattachée à une annonce pour l'instant : contact WhatsApp/appel
-  // réutilise tel quel le tracking existant des annonces (téléphone, message, compteurs) —
-  // pas de nouvelle infra de tracking pour les réels orphelins, hors scope de cette étape
-  // (voir plan). Un réel orphelin s'affiche donc sans boutons de contact.
+  // Un réel peut exister avec ou sans annonce liée (propertyId optionnel) — les boutons de
+  // contact ne dépendent donc pas de l'annonce. `useProperty`/`useTrackPropertyInteraction`
+  // restent utiles quand une annonce est liée (légende + tracking existant), mais le contact
+  // affiché a sa propre priorité, voir `phoneNumber` ci-dessous.
   const { data: property } = useProperty(reel.propertyId ?? undefined)
   const { trackInteraction } = useTrackPropertyInteraction(reel.propertyId ?? undefined)
+  // Identité de l'annonceur affichée façon TikTok (avatar + nom) — pas de page profil publique
+  // annonceur pour l'instant (routes.protected.profil est privé, propre à l'utilisateur
+  // connecté), donc l'avatar reste purement visuel, sans lien.
+  const { data: owner } = useUserByUID(reel.createdBy)
 
   React.useEffect(() => {
     const video = videoRef.current
@@ -71,12 +77,16 @@ function ReelSlide({
     }
   }, [isActive])
 
-  const phoneNumber = property?.contact ?? undefined
+  // Priorité : numéro renseigné explicitement sur le réel > contact de l'annonce liée > numéro
+  // de profil du créateur (le "titulaire" par défaut si rien n'a été précisé).
+  const phoneNumber = reel.contact ?? property?.contact ?? owner?.phoneNumbers?.[0] ?? undefined
 
   const handleWhatsApp = () => {
-    if (!phoneNumber || !property) return
+    if (!phoneNumber) return
     trackInteraction('whatsapp_contact', { phoneNumber })
-    const message = `Bonjour, je suis intéressé par votre annonce "${property.title}" au prix de ${property.price.toLocaleString('fr-FR')} FCFA. Voici le lien de l'annonce : ${process.env.NEXT_PUBLIC_HOST}/houseDetails/${property.id}`
+    const message = property
+      ? `Bonjour, je suis intéressé par votre annonce "${property.title}" au prix de ${property.price.toLocaleString('fr-FR')} FCFA. Voici le lien de l'annonce : ${process.env.NEXT_PUBLIC_HOST}/houseDetails/${property.id}`
+      : `Bonjour, je suis intéressé par votre réel sur Trouve Ton Nkama.`
     window.open(`https://wa.me/${phoneNumber}?text=${encodeURIComponent(message)}`, '_blank')
   }
 
@@ -100,45 +110,73 @@ function ReelSlide({
         onClick={onToggleMute}
       />
 
-      <button
-        type="button"
-        onClick={onToggleMute}
-        className="absolute top-4 right-4 z-10 flex h-10 w-10 items-center justify-center rounded-full bg-black/40 text-white backdrop-blur-sm"
-        aria-label={isMuted ? 'Activer le son' : 'Couper le son'}
-      >
-        {isMuted ? <VolumeX className="h-5 w-5" /> : <Volume2 className="h-5 w-5" />}
-      </button>
+      {/* Dégradé de lisibilité, façon TikTok : couvre toute la largeur pour que le bloc légende
+          (gauche) et le rail d'actions (droite) restent lisibles sur n'importe quelle vidéo. */}
+      <div className="pointer-events-none absolute inset-x-0 bottom-0 z-10 h-64 bg-gradient-to-t from-black/85 via-black/25 to-transparent" />
 
-      {property && (
-        <div className="absolute inset-x-0 bottom-0 z-10 flex items-end justify-between gap-3 bg-gradient-to-t from-black/80 via-black/40 to-transparent p-4 pb-8 text-white">
-          <div className="min-w-0">
-            <p className="font-semibold truncate">{property.title}</p>
-            <p className="text-sm text-white/80">
+      {/* Bloc légende en bas à gauche : identité de l'annonceur + infos annonce, laisse la
+          place au rail d'actions (right-20) et au home indicator / bottom nav (pb-24). */}
+      <div className="absolute inset-x-4 bottom-0 z-10 pb-24 pr-20 text-white">
+        {owner && (
+          <p className="font-semibold">
+            {[owner.firstname, owner.lastname].filter(Boolean).join(' ')}
+          </p>
+        )}
+        {property ? (
+          <>
+            <p className="mt-1 line-clamp-2 text-sm text-white/90">{property.title}</p>
+            <p className="mt-1 text-sm font-medium text-white/80">
               {property.price.toLocaleString('fr-FR')} FCFA · {property.city}
             </p>
-          </div>
-          <div className="flex shrink-0 gap-2">
-            <button
-              type="button"
-              onClick={handleWhatsApp}
-              disabled={!phoneNumber}
-              className="flex h-11 w-11 items-center justify-center rounded-full bg-emerald-600 disabled:opacity-40"
-              aria-label="Contacter via WhatsApp"
-            >
-              <FaWhatsapp className="h-5 w-5" />
-            </button>
-            <button
-              type="button"
-              onClick={handleCall}
-              disabled={!phoneNumber}
-              className="flex h-11 w-11 items-center justify-center rounded-full bg-white/15 backdrop-blur-sm disabled:opacity-40"
-              aria-label="Appeler"
-            >
-              <PhoneCall className="h-5 w-5" />
-            </button>
-          </div>
-        </div>
-      )}
+          </>
+        ) : (
+          <p className="mt-1 text-sm text-white/70">Réel</p>
+        )}
+      </div>
+
+      {/* Rail d'actions vertical en bas à droite, façon TikTok. */}
+      <div className="absolute bottom-24 right-3 z-10 flex flex-col items-center gap-5">
+        {owner && (
+          <Avatar className="h-11 w-11 border-2 border-white">
+            <AvatarImage
+              src={owner.image ?? ''}
+              alt={[owner.firstname, owner.lastname].filter(Boolean).join(' ')}
+            />
+            <AvatarFallback className="bg-[#1FA89B] text-sm font-semibold text-white">
+              {owner.firstname?.at(0) ?? ''}
+            </AvatarFallback>
+          </Avatar>
+        )}
+
+        <button
+          type="button"
+          onClick={handleWhatsApp}
+          disabled={!phoneNumber}
+          className="flex h-11 w-11 items-center justify-center rounded-full bg-emerald-600 disabled:opacity-40"
+          aria-label="Contacter via WhatsApp"
+        >
+          <FaWhatsapp className="h-5 w-5" />
+        </button>
+
+        <button
+          type="button"
+          onClick={handleCall}
+          disabled={!phoneNumber}
+          className="flex h-11 w-11 items-center justify-center rounded-full bg-white/15 text-white backdrop-blur-sm disabled:opacity-40"
+          aria-label="Appeler"
+        >
+          <PhoneCall className="h-5 w-5" />
+        </button>
+
+        <button
+          type="button"
+          onClick={onToggleMute}
+          className="flex h-11 w-11 items-center justify-center rounded-full bg-white/15 text-white backdrop-blur-sm"
+          aria-label={isMuted ? 'Activer le son' : 'Couper le son'}
+        >
+          {isMuted ? <VolumeX className="h-5 w-5" /> : <Volume2 className="h-5 w-5" />}
+        </button>
+      </div>
     </div>
   )
 }

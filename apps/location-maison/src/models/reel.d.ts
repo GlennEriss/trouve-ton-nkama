@@ -11,6 +11,10 @@ export type Reel = ICreation & {
     // annonce, voir CreateOrphanReelClient) puis rattaché plus tard via attachReelToProperty.
     propertyId?: string | null;
     createdBy: string;
+    // Numéro à contacter pour ce réel, indépendant d'une éventuelle annonce liée (un réel peut
+    // exister sans annonce, voir propertyId). Optionnel : si absent, le feed retombe sur le
+    // contact de l'annonce liée puis, en dernier recours, le numéro de profil du créateur.
+    contact?: string;
 
     processingStatus: ReelProcessingStatus;
     processingError?: string;

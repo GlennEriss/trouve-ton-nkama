@@ -145,11 +145,27 @@ export const transcodeReelVideo = onObjectFinalized(TRANSCODE_FUNCTION_OPTIONS, 
     const videoDestPath = `reels/${ownerId}/${reelId}/video.mp4`;
     const thumbDestPath = `reels/${ownerId}/${reelId}/thumbnail.jpg`;
 
-    await bucket.upload(tmpOutPath, { destination: videoDestPath, metadata: { contentType: 'video/mp4' } });
-    await bucket.upload(tmpThumbPath, { destination: thumbDestPath, metadata: { contentType: 'image/jpeg' } });
+    // bucket.file(...).publicUrl() génère une URL storage.googleapis.com brute — ce chemin
+    // est régi par l'IAM Google Cloud, PAS par firestore/storage.rules (constaté en prod :
+    // 403 "Anonymous caller does not have storage.objects.get access" malgré `allow read: if
+    // true` sur ce chemin dans storage.rules). Il faut l'URL de téléchargement au format
+    // Firebase (firebasestorage.googleapis.com/.../o/...?alt=media&token=...), le même que
+    // génère getDownloadURL() côté client (file.db.ts) — c'est ce format qui respecte les
+    // règles Storage.
+    const videoToken = randomUUID();
+    const thumbToken = randomUUID();
 
-    const videoUrl = bucket.file(videoDestPath).publicUrl();
-    const thumbnailUrl = bucket.file(thumbDestPath).publicUrl();
+    await bucket.upload(tmpOutPath, {
+      destination: videoDestPath,
+      metadata: { contentType: 'video/mp4', metadata: { firebaseStorageDownloadTokens: videoToken } },
+    });
+    await bucket.upload(tmpThumbPath, {
+      destination: thumbDestPath,
+      metadata: { contentType: 'image/jpeg', metadata: { firebaseStorageDownloadTokens: thumbToken } },
+    });
+
+    const videoUrl = `https://firebasestorage.googleapis.com/v0/b/${bucket.name}/o/${encodeURIComponent(videoDestPath)}?alt=media&token=${videoToken}`;
+    const thumbnailUrl = `https://firebasestorage.googleapis.com/v0/b/${bucket.name}/o/${encodeURIComponent(thumbDestPath)}?alt=media&token=${thumbToken}`;
 
     await reelRef.update({
       videoUrl,

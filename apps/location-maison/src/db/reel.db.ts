@@ -61,7 +61,8 @@ export async function createReel(
     reelId: string,
     propertyId: string | null,
     ownerId: string,
-    rawVideoPath: string
+    rawVideoPath: string,
+    contact?: string
 ): Promise<string | null> {
     const payload: Reel = {
         propertyId: propertyId ?? null,
@@ -72,6 +73,7 @@ export async function createReel(
         viewCount: 0,
         giftCount: 0,
         giftTotalAmount: 0,
+        ...(contact ? { contact } : {}),
     } as Reel;
 
     return createModelWithCustomId<Reel>(payload, firebaseCollectionNames.reels, reelId);

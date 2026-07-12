@@ -9,6 +9,8 @@ import { useReelDraftVideoStorage } from '@/hooks/useReelDraftVideoStorage'
 import { createReel, uploadRawReelVideo, subscribeToReel } from '@/db/reel.db'
 import { PublishAuthModal } from '@/components/property-publish/PublishAuthModal'
 import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
 import { useToast } from '@/hooks/use-toast'
 import { routes } from '@/constantes/routes'
 import { cn } from '@/lib/utils'
@@ -35,6 +37,10 @@ export default function CreateOrphanReelClient() {
   const { saveDraftVideo, loadDraftVideo, clearDraftVideo } = useReelDraftVideoStorage()
 
   const [videoFile, setVideoFile] = React.useState<File | null>(null)
+  // Numéro à afficher sur le réel dans le feed (boutons WhatsApp/Appel) — pré-rempli avec le
+  // numéro de profil de l'annonceur, modifiable, pas obligatoire (repli sur le numéro de profil
+  // au moment de l'affichage si laissé vide, voir ReelsFeedClient).
+  const [contact, setContact] = React.useState('')
   const [pendingSubmission, setPendingSubmission] = React.useState(false)
   const [isPublishAuthModalOpen, setIsPublishAuthModalOpen] = React.useState(false)
   const isFinalSubmittingRef = React.useRef(false)
@@ -49,6 +55,10 @@ export default function CreateOrphanReelClient() {
     })
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
+
+  React.useEffect(() => {
+    if (user?.phoneNumbers?.[0]) setContact((current) => current || user.phoneNumbers[0])
+  }, [user?.phoneNumbers])
 
   React.useEffect(() => {
     if (!reel?.id) return undefined
@@ -75,7 +85,8 @@ export default function CreateOrphanReelClient() {
     try {
       const reelId = crypto.randomUUID()
       const rawVideoPath = await uploadRawReelVideo(file, user.uid, reelId)
-      const createdId = await createReel(reelId, null, user.uid, rawVideoPath)
+      const trimmedContact = contact.trim() || undefined
+      const createdId = await createReel(reelId, null, user.uid, rawVideoPath, trimmedContact)
 
       if (!createdId) {
         throw new Error("La création du réel a échoué.")
@@ -92,6 +103,7 @@ export default function CreateOrphanReelClient() {
         viewCount: 0,
         giftCount: 0,
         giftTotalAmount: 0,
+        ...(trimmedContact ? { contact: trimmedContact } : {}),
       } as Reel & { id: string })
 
       toast({
@@ -106,7 +118,7 @@ export default function CreateOrphanReelClient() {
       })
       throw error
     }
-  }, [user?.uid, clearDraftVideo, toast])
+  }, [user?.uid, contact, clearDraftVideo, toast])
 
   const handlePublish = React.useCallback(async () => {
     if (!videoFile) return
@@ -202,6 +214,21 @@ export default function CreateOrphanReelClient() {
               <p className="text-sm font-medium text-slate-700 dark:text-slate-200 truncate">{videoFile.name}</p>
               <p className="text-xs text-slate-400">{Math.round(videoFile.size / (1024 * 1024))} Mo</p>
             </div>
+          </div>
+          <div>
+            <Label htmlFor="reel-contact">Numéro à contacter (WhatsApp / appel)</Label>
+            <Input
+              id="reel-contact"
+              type="tel"
+              value={contact}
+              onChange={(event) => setContact(event.target.value)}
+              placeholder="Ex: +241 XX XX XX XX"
+              disabled={busy}
+              className="mt-1"
+            />
+            <p className="text-xs text-slate-400 mt-1">
+              Laissez vide pour utiliser votre numéro de profil par défaut.
+            </p>
           </div>
           <div className="flex gap-2">
             <Button variant="outline" className="flex-1" onClick={() => setVideoFile(null)} disabled={busy}>
