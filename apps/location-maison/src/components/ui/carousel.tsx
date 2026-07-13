@@ -155,11 +155,17 @@ const CarouselContent = React.forwardRef<
   const { carouselRef, orientation } = useCarousel()
 
   return (
-    <div ref={carouselRef} className="overflow-hidden">
+    // h-full : sans hauteur explicite ici, ce viewport (le conteneur qu'Embla mesure pour
+    // calculer les distances de scroll) prend la hauteur intrinsèque de son contenu au lieu de
+    // celle du <Carousel> parent. Inoffensif pour un carousel horizontal (un ancêtre sans
+    // hauteur définie garde ce h-full résolu à "auto"), mais cassait tout défilement vertical :
+    // Embla mesurait un viewport plus grand que la section réellement visible et n'appliquait
+    // jamais de transform lors d'un scrollNext/scrollPrev.
+    <div ref={carouselRef} className="h-full overflow-hidden">
       <div
         ref={ref}
         className={cn(
-          "flex",
+          "flex h-full",
           orientation === "horizontal" ? "-ml-4" : "-mt-4 flex-col",
           className
         )}
