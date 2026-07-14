@@ -15,6 +15,7 @@ const GUEST_ONLY_ROUTES = [
 
 const PROTECTED_ROUTE_PREFIXES = [
     '/property',
+    '/reels',
     '/profil',
     '/favoris',
     '/settings',
@@ -37,6 +38,7 @@ type SessionUser = {
 
 const ANNOUNCER_ONLY_ROUTE_PREFIXES = [
     '/property',
+    '/reels',
 ] as const
 
 const ADMIN_ONLY_ROUTE_PREFIXES = [
@@ -47,6 +49,21 @@ const ADMIN_ONLY_ROUTE_PREFIXES = [
 // et se voir proposer de créer un compte/se connecter seulement à la soumission finale.
 const PUBLIC_PROPERTY_ADD_PREFIX = '/property/add'
 
+// Même logique pour la création d'un réel sans annonce préalable (voir
+// CreateOrphanReelClient) : le réel reste orphelin en attendant un compte Annonceur.
+const PUBLIC_REEL_ADD_PREFIX = '/reels/add'
+
+// Les fiches d'annonces doivent rester publiques: /property/:id
+// Les routes privées du vendeur restent protégées: /property, /property/modify/:id,
+// /property/:id/statistics, etc.
+const PUBLIC_PROPERTY_DETAIL_PATTERN = /^\/property\/[^/]+\/?$/
+
+// Le flux public de réels vit à la racine /reels (attendu par un bouton "Réels" dans la nav —
+// regarder des réels, pas les gérer). Match exact seulement : /reels/mine et
+// /reels/select-property (gestion privée) restent protégés+annonceur, seule la racine est
+// publique — PUBLIC_REEL_ADD_PREFIX gère déjà /reels/add séparément.
+const PUBLIC_REEL_FEED_PATTERN = /^\/reels\/?$/
+
 function isExactOrSubPath(pathname: string, prefix: string): boolean {
     return pathname === prefix || pathname.startsWith(`${prefix}/`)
 }
@@ -55,13 +72,33 @@ function isPublicPropertyAddRoute(pathname: string): boolean {
     return isExactOrSubPath(pathname, PUBLIC_PROPERTY_ADD_PREFIX)
 }
 
+function isPublicReelAddRoute(pathname: string): boolean {
+    return isExactOrSubPath(pathname, PUBLIC_REEL_ADD_PREFIX)
+}
+
+function isPublicReelFeedRoute(pathname: string): boolean {
+    return PUBLIC_REEL_FEED_PATTERN.test(pathname)
+}
+
+function isPublicPropertyDetailRoute(pathname: string): boolean {
+    return PUBLIC_PROPERTY_DETAIL_PATTERN.test(pathname)
+}
+
+// Exceptions publiques à l'intérieur de préfixes autrement protégés/réservés aux annonceurs.
+function isPublicException(pathname: string): boolean {
+    return isPublicPropertyAddRoute(pathname) ||
+        isPublicReelAddRoute(pathname) ||
+        isPublicReelFeedRoute(pathname) ||
+        isPublicPropertyDetailRoute(pathname)
+}
+
 function isProtectedRoute(pathname: string): boolean {
-    if (isPublicPropertyAddRoute(pathname)) return false
+    if (isPublicException(pathname)) return false
     return PROTECTED_ROUTE_PREFIXES.some((prefix) => isExactOrSubPath(pathname, prefix))
 }
 
 function isAnnouncerOnlyRoute(pathname: string): boolean {
-    if (isPublicPropertyAddRoute(pathname)) return false
+    if (isPublicException(pathname)) return false
     return ANNOUNCER_ONLY_ROUTE_PREFIXES.some((prefix) => isExactOrSubPath(pathname, prefix))
 }
 

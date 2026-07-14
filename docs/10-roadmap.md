@@ -22,10 +22,11 @@ répond le plus directement au problème structurel identifié dans
 [01-vision.md](./01-vision.md) (concurrencer les groupes WhatsApp/Facebook sur leur propre
 terrain : la vidéo courte).
 
-**Déclencheur pour démarrer** : les points ouverts de
-[reels-cadeaux-abonnement.md](./reels-cadeaux-abonnement.md#ce-qui-reste-%C3%A0-trancher-avant-de-scoper-le-d%C3%A9veloppement)
-doivent être tranchés avant d'écrire du code — en particulier le choix transcodage vidéo
-(Cloud Function maison vs service tiers), qui conditionne l'architecture.
+**Déclencheur pour démarrer** : les 5 points ouverts de
+[reels-cadeaux-abonnement.md](./reels-cadeaux-abonnement.md#d%C3%A9cisions-tranch%C3%A9es) sont
+désormais **tranchés** — Mobicash = Moov Money (déjà supporté), compte obligatoire pour les dons,
+abonnement 3 000–5 000 FCFA/mois, transcodage en Cloud Function maison (pas de service tiers
+payant), réels jusqu'à 5 min dans le flux swipe. Phase 2 est prête à être scopée/développée.
 
 Ordre interne suggéré à l'intérieur de cette phase :
 1. Modération des réels (extension directe du pattern `moderationStatus` existant — pas de

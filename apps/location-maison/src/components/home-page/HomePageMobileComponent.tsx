@@ -29,10 +29,10 @@ export default function HomePageMobileComponent() {
 
     const { user } = useCurrentUser()
     const { trackEvent } = useTrackEvent()
-    // /property/add gère lui-même l'authentification (voir PublishAuthModal) : un visiteur
-    // non connecté ou non-Annonceur peut remplir l'annonce, on ne lui demande de créer un
-    // compte / se connecter qu'à la soumission finale.
-    const publishLink = routes.protected.add_property
+    // /publish gère lui-même l'authentification (voir PublishAuthModal) : un visiteur
+    // non connecté ou non-Annonceur peut remplir l'annonce/le réel, on ne lui demande de créer
+    // un compte / se connecter qu'à la soumission finale.
+    const publishLink = routes.protected.publish
     const { width } = useWindowSize()
     const shouldReduceMotion = useReducedMotion()
     // Porte de garage: gestion de la navbar animée
@@ -151,7 +151,7 @@ export default function HomePageMobileComponent() {
                                 Générez des revenus passifs en publiant vos annonces immobilières !
                             </span>
                             <Link
-                                href={user ? routes.protected.add_property : routes.public.signinSignup}
+                                href={user ? routes.protected.publish : routes.public.signinSignup}
                                 className='text-[#146B67] bg-white p-2 rounded-full text-center font-bold'
                             >
                                 Publiez votre annonce

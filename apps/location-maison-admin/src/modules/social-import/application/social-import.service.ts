@@ -5188,7 +5188,11 @@ export async function publishSocialImportCandidate(input: {
       rawData: candidateRaw.rawData,
     });
 
-    const createdListing = await createListingForAnnouncer(createListingInput);
+    const createdListing = await createListingForAnnouncer({
+      ...createListingInput,
+      moderationReviewedBy: actorUid,
+      moderationReviewReason: reason || "Publication validée depuis le dashboard admin.",
+    });
     const mutation = await patchSocialImportReviewCandidateById({
       candidateId,
       patch: {

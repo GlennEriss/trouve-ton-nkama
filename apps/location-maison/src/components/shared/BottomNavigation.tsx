@@ -1,12 +1,10 @@
 'use client';
 import React from 'react';
-import { Search, Heart, UserCircle, Bell, Plus, LayoutGrid, Megaphone } from 'lucide-react';
+import { Search, Heart, UserCircle, Plus, LayoutGrid, Megaphone, Video } from 'lucide-react';
 import Link from 'next/link';
 import { routes } from '@/constantes/routes';
 import { usePathname } from 'next/navigation';
 import clsx from 'clsx';
-import { Badge } from '../ui/badge';
-import { useNotifications } from '@/providers/NotificationProvider';
 import { useCurrentUser } from '@/hooks/use-current-user';
 import { Inter } from 'next/font/google';
 import { cn } from '@/lib/utils';
@@ -22,7 +20,7 @@ type NavItemDef = {
     link: string;
 }
 
-const NavItem: React.FC<{ item: NavItemDef; isActive: boolean; badge?: number }> = ({ item, isActive, badge }) => (
+const NavItem: React.FC<{ item: NavItemDef; isActive: boolean }> = ({ item, isActive }) => (
     <Link
         href={item.link}
         className={clsx(
@@ -30,11 +28,6 @@ const NavItem: React.FC<{ item: NavItemDef; isActive: boolean; badge?: number }>
             isActive ? 'text-[#146B67] dark:text-[#1FA89B]' : 'text-gray-500 dark:text-gray-400'
         )}
     >
-        {badge != null && badge > 0 && (
-            <Badge className="absolute top-2 right-[calc(50%-18px)] min-w-4 h-4 flex items-center justify-center rounded-full px-1 text-[9px] bg-red-500 text-white border-2 border-white dark:border-gray-900">
-                {badge > 99 ? '99+' : badge}
-            </Badge>
-        )}
         <div className={clsx(
             'p-1.5 rounded-xl transition-all duration-200',
             isActive && 'bg-[#146B67]/10 dark:bg-[#1FA89B]/10'
@@ -51,7 +44,6 @@ const NavItem: React.FC<{ item: NavItemDef; isActive: boolean; badge?: number }>
 export const BottomNavigation: React.FC = () => {
     const { user } = useCurrentUser();
     const pathnames = usePathname();
-    const { unreadCount } = useNotifications();
     const isAnnouncer = Array.isArray(user?.roles) && user.roles.includes('Announcer');
 
     if (!user) return null;
@@ -62,7 +54,7 @@ export const BottomNavigation: React.FC = () => {
             { title: 'Recherche', icon: Search, link: routes.public.search },
         ];
         const rightItems: NavItemDef[] = [
-            { title: 'Notifs', icon: Bell, link: routes.protected.notification_list },
+            { title: 'Réels', icon: Video, link: routes.protected.reels },
             { title: 'Profil', icon: UserCircle, link: routes.protected.profil },
         ];
 
@@ -86,7 +78,7 @@ export const BottomNavigation: React.FC = () => {
                         {/* Bouton central surélevé */}
                         <div className="flex flex-col items-center flex-1 pb-2">
                             <Link
-                                href={routes.protected.add_property}
+                                href={routes.protected.publish}
                                 className="flex flex-col items-center gap-1 group -mt-6"
                             >
                                 <div className={clsx(
@@ -108,7 +100,6 @@ export const BottomNavigation: React.FC = () => {
                                 key={item.link}
                                 item={item}
                                 isActive={pathnames === item.link}
-                                badge={item.title === 'Notifs' ? unreadCount : undefined}
                             />
                         ))}
                     </div>
@@ -121,7 +112,7 @@ export const BottomNavigation: React.FC = () => {
         { title: 'Recherche', icon: Search, link: routes.public.search },
         { title: 'Pub', icon: Megaphone, link: routes.protected.advertising },
         { title: 'Favoris', icon: Heart, link: routes.protected.favoris },
-        { title: 'Notifs', icon: Bell, link: routes.protected.notification_list },
+        { title: 'Réels', icon: Video, link: routes.protected.reels },
         { title: 'Profil', icon: UserCircle, link: routes.protected.profil },
     ];
 
@@ -139,7 +130,6 @@ export const BottomNavigation: React.FC = () => {
                             key={item.link}
                             item={item}
                             isActive={pathnames === item.link}
-                            badge={item.title === 'Notifs' ? unreadCount : undefined}
                         />
                     ))}
                 </div>

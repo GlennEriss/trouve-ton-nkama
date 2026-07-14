@@ -13,6 +13,7 @@ export const MYPAYGA_SECRETS = [
   defineSecret('MYPAYGA_SUCCESS_URL'),
   defineSecret('MYPAYGA_FAIL_URL'),
   defineSecret('MYPAYGA_PAYMENT_TIMEOUT_MS'),
+  defineSecret('MYPAYGA_GIFT_CALLBACK_URL'),
 ]
 
 export const MYPAYGA_CONFIG = {
@@ -32,6 +33,7 @@ export function getMyPayGaConfig() {
     apiKey: trimEnv('MYPAYGA_API_KEY'),
     callbackSecret: trimEnv('MYPAYGA_CALLBACK_SECRET'),
     callbackUrl: trimEnv('MYPAYGA_CALLBACK_URL'),
+    giftCallbackUrl: trimEnv('MYPAYGA_GIFT_CALLBACK_URL'),
     successUrl: trimEnv('MYPAYGA_SUCCESS_URL') ?? MYPAYGA_CONFIG.DEFAULT_SUCCESS_URL,
     failUrl: trimEnv('MYPAYGA_FAIL_URL') ?? MYPAYGA_CONFIG.DEFAULT_FAIL_URL,
     country: (trimEnv('MYPAYGA_COUNTRY') ?? MYPAYGA_CONFIG.DEFAULT_COUNTRY).toUpperCase(),

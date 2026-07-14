@@ -72,10 +72,10 @@ const HomePage = () => {
     typeProperty,
     setTypeProperty,
   } = useAlgoliaContext();
-  // /property/add gère lui-même l'authentification (voir PublishAuthModal) : un visiteur
-  // non connecté ou non-Annonceur peut remplir l'annonce, on ne lui demande de créer un
-  // compte / se connecter qu'à la soumission finale.
-  const publishLink = routes.protected.add_property;
+  // /publish gère lui-même l'authentification (voir PublishAuthModal) : un visiteur
+  // non connecté ou non-Annonceur peut remplir l'annonce/le réel, on ne lui demande de créer
+  // un compte / se connecter qu'à la soumission finale.
+  const publishLink = routes.protected.publish;
 
   const toggleSelection = useCallback(
     (list: string[], item: string, setter: (val: string[]) => void) => {

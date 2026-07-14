@@ -22,6 +22,7 @@ export {
 
 // Fonctions de paiement
 export { initiatePurchase, mypaygaPaymentCallback } from './payments/mypayga';
+export { initiateGiftPayment, giftPaymentCallback } from './payments/gifts';
 export { createCreditPayment } from './credit-payment';
 
 // Fonctions d'email
@@ -29,6 +30,9 @@ export { sendVerificationEmail } from './email/verification';
 
 // Fonctions analytics (scheduler)
 export { syncAdSenseToAdminAnalytics } from './analytics/adsense-sync';
+
+// Fonctions Réels (transcodage vidéo)
+export { transcodeReelVideo } from './reels';
 
 // Exemple de fonction (à décommenter si nécessaire)
 // export const helloWorld = onRequest((request, response) => {

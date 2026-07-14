@@ -204,6 +204,8 @@ export async function POST(request: NextRequest) {
   try {
     const result = await createListingForAnnouncer({
       announcerUid: parsedAnnouncer.data.announcerUid,
+      moderationReviewedBy: auth.admin.uid,
+      moderationReviewReason: "Annonce créée et publiée depuis le dashboard admin.",
       ...parsedListing.data,
       images: normalizeImages(parsedListing.data.images),
     });

@@ -21,7 +21,16 @@ service cloud.firestore {
              exists(currentUserPath()) &&
              get(currentUserPath()).data.roles.hasAny(['Announcer']);
     }
-    
+
+    function propertyPath(propertyId) {
+      return /databases/$(database)/documents/properties/$(propertyId);
+    }
+
+    function ownsReferencedProperty(propertyId) {
+      return exists(propertyPath(propertyId)) &&
+             get(propertyPath(propertyId)).data.createdBy == request.auth.uid;
+    }
+
     match /users/{userId} {
       // Lecture : l'utilisateur peut lire son propre profil, ou lecture publique pour vérification
       allow read: if true;
@@ -73,11 +82,24 @@ service cloud.firestore {
       
       // Création de transaction
       allow create: if isSignedIn() && request.auth.uid == request.resource.data.uid;
-      
+
       // Mise à jour de transaction
       allow update: if isSignedIn() && request.auth.uid == resource.data.uid;
     }
-    
+
+    // Cadeaux (dons MoMo sur les réels) : écrits par les Cloud Functions,
+    // lus via les API routes (Admin SDK). Aucun accès client — le donateur est
+    // anonyme (pas d'uid) et le doc contient son numéro de téléphone.
+    match /gift_transactions/{transactionId} {
+      allow read, write: if false;
+    }
+
+    // Demandes de retrait du solde cadeaux : créées et lues via les API routes
+    // authentifiées, traitées par le back-office admin. Aucun accès client.
+    match /gift_withdrawals/{withdrawalId} {
+      allow read, write: if false;
+    }
+
     match /provinces/{provinceId} {
       allow read: if true;
       allow create, update: if isSignedIn();
@@ -91,6 +113,41 @@ service cloud.firestore {
     match /streets/{streetId} {
       allow read: if true;           
       allow create, update: if isSignedIn();  
+    }
+
+    match /reels/{reelId} {
+      // Lecture : le créateur (suivi temps réel du traitement, étape 1) OU tout le monde une
+      // fois APPROVED (flux public, étape 2) — mirror exact de properties ci-dessus
+      // (`allow read: if true`), qui permet à /api/property/list d'utiliser le SDK client
+      // côté serveur sans Admin SDK. Même logique ici pour /api/reels/feed.
+      allow read: if (isSignedIn() && request.auth.uid == resource.data.createdBy) ||
+        resource.data.moderationStatus == 'APPROVED';
+
+      // Création : par l'annonceur, soit rattachée à une annonce qu'il possède, soit orpheline
+      // (propertyId absent/null — visiteur sans annonce, voir CreateOrphanReelClient, rattachée
+      // plus tard). Un réel démarre toujours PENDING/uploading (défense en profondeur, mirror du
+      // pattern properties ci-dessus) — le client ne peut pas se déclarer déjà approuvé/traité.
+      allow create: if isAnnouncer() &&
+        request.auth.uid == request.resource.data.createdBy &&
+        request.resource.data.moderationStatus == 'PENDING' &&
+        request.resource.data.processingStatus == 'uploading' &&
+        (
+          !('propertyId' in request.resource.data) ||
+          request.resource.data.propertyId == null ||
+          ownsReferencedProperty(request.resource.data.propertyId)
+        );
+
+      // Rattachement a posteriori d'un réel orphelin : le créateur peut passer propertyId de
+      // null à une annonce qu'il possède, une seule fois, rien d'autre ne change (même idiome
+      // que isTransactionOperation() plus haut — diff().affectedKeys() restreint).
+      allow update: if isAnnouncer() &&
+        request.auth.uid == resource.data.createdBy &&
+        resource.data.propertyId == null &&
+        request.resource.data.diff(resource.data).affectedKeys().hasOnly(['propertyId', 'updatedAt']) &&
+        ownsReferencedProperty(request.resource.data.propertyId);
+
+      // Suppression : uniquement l'API admin (Admin SDK, contourne ces règles) — jamais le client.
+      allow delete: if false;
     }
 
     match /property_statistics/{statisticsId} {

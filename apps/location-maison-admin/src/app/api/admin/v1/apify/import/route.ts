@@ -418,6 +418,8 @@ export async function POST(request: NextRequest) {
     try {
       const created = await createListingForAnnouncer({
         announcerUid,
+        moderationReviewedBy: auth.admin.uid,
+        moderationReviewReason: "Annonce importée et publiée depuis Apify.",
         ...parsed.data,
         images: normalizeImages(parsed.data.images),
       });

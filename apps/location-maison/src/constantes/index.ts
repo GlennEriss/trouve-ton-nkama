@@ -9,6 +9,8 @@ import { DEFAULT_TAG_NAMES } from '@/lib/tags/default-tags';
 // Constants
 export const MAX_IMAGES_UPLOAD = 10;
 export const MAX_TAGS = 6;
+export const MAX_REEL_DURATION_SECONDS = 300;
+export const MAX_REEL_RAW_SIZE_BYTES = 500 * 1024 * 1024;
 
 export const statusOptions = [
   {

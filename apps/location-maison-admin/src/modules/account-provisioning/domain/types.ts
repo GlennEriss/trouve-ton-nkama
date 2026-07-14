@@ -50,6 +50,8 @@ export type ListingImageInput = {
 
 export type CreateListingForAnnouncerInput = {
   announcerUid: string;
+  moderationReviewedBy?: string;
+  moderationReviewReason?: string;
   title: string;
   description: string;
   typeProperty: ListingTypeProperty;

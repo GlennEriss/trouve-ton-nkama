@@ -19,15 +19,47 @@ export default function Navbar() {
   const isAnnouncer = Array.isArray(user?.roles) && user.roles.includes('Announcer');
   
   // Vérifier si on est sur une route protégée
-  const isProtectedRoute = Object.values(routes.protected).some(route => 
+  const isProtectedRoute = Object.values(routes.protected).some(route =>
     pathname.startsWith(route)
   );
 
+  // Le flux public de réels est plein écran façon TikTok (vidéo en h-[100dvh]) : empiler ce
+  // navbar par-dessus ajoute sa hauteur au-dessus des 100dvh de la vidéo, ce qui fait dépasser
+  // la page de la hauteur de l'écran et provoque un scroll indésirable. Match exact seulement
+  // (pas /reels/mine, qui garde son AppMobileStickyHeader habituel).
+  const isReelsFeedRoute = pathname === routes.protected.reels
+
   if (width < 768) {
-    // Sur mobile, les pages "protégées" (ex: /property/add, désormais accessible aux
-    // visiteurs anonymes) ont déjà leur propre en-tête sticky (AppMobileStickyHeader).
-    // Ne pas empiler la navbar générique par-dessus, quel que soit l'état de connexion.
-    if (user || isProtectedRoute) {
+    if (isReelsFeedRoute) {
+      return null
+    }
+
+    // Utilisateur connecté : petite barre persistante (notifications + profil) — sans elle,
+    // ces deux écrans ne sont plus atteignables sur mobile depuis que "Notifs" a quitté la
+    // bottom nav (remplacée par "Réels"). S'affiche même sur les pages "protégées" qui ont
+    // leur propre AppMobileStickyHeader : les deux s'empilent (barre de compte globale +
+    // en-tête contextuel de la page), ce n'est pas redondant.
+    if (user) {
+      return (
+        <nav className="sticky top-0 left-0 right-0 z-[9999] flex items-center justify-between border-b border-gray-200 bg-white/90 px-4 py-2 backdrop-blur-lg dark:border-gray-800 dark:bg-gray-900/90">
+          <a href="/" rel="noopener noreferrer" className="flex items-center gap-2">
+            <Logo width="32px" height="32px" />
+            <span className="text-sm font-black text-[#146B67] dark:text-[#1FA89B]">
+              Trouve Ton Nkama
+            </span>
+          </a>
+          <div className="flex items-center gap-3">
+            <Notifications />
+            <MenuProfil />
+          </div>
+        </nav>
+      )
+    }
+
+    // Visiteur non connecté sur une page "protégée" (ex: /property/add, accessible sans
+    // compte) : celle-ci a déjà son propre en-tête sticky (AppMobileStickyHeader). Ne pas
+    // empiler la navbar générique par-dessus.
+    if (isProtectedRoute) {
       return null
     }
     return (
@@ -53,7 +85,7 @@ export default function Navbar() {
                   {user && isAnnouncer ? (
           <div className="flex items-center gap-2">
             <Notifications />
-            <Link href={routes.protected.add_property}>
+            <Link href={routes.protected.publish}>
               <button className="bg-gradient-to-r from-[#146B67] via-[#1FA89B] to-[#146B67] text-white rounded-lg text-[10px] px-3 py-2 font-semibold hover:brightness-110 hover:shadow-md transition-all duration-300 hover:scale-105 dark:hover:shadow-[#1FA89B]/20">
                 Poster une annonce
               </button>
@@ -158,7 +190,11 @@ const NavigationMenuNavbar = () => {
       label: "Catalogue"
     },
     {
-      link: routes.protected.add_property,
+      link: routes.protected.reels,
+      label: "Réels"
+    },
+    {
+      link: routes.protected.publish,
       label: "Poster une annonce"
     },
     ...(user ? [{

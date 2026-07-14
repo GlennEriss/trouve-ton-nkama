@@ -26,7 +26,6 @@ import { useToast } from '@/hooks/use-toast'
 import { isAnnouncer } from '@/lib/auth/role-routing'
 import { routes } from '@/constantes/routes'
 import { mapRegisterFormToSignupData, mapSignupErrorToToast } from '@/features/auth/ui/v1/signup.mapper'
-import { usePropertyFormComponentContext } from '@/providers/property-form.context'
 import { trackingEvents, useTrackEvent } from '@/features/analytics/tracking'
 import { Building2, KeyRound, Loader2, Mail, User } from 'lucide-react'
 
@@ -35,6 +34,14 @@ type View = 'choice' | 'signup' | 'signup-pending-verification' | 'signin' | 'si
 interface PublishAuthModalProps {
     isOpen: boolean
     onClose: () => void
+    // Sauvegarde le brouillon en cours (texte/fichiers) avant une redirection externe complète
+    // (OAuth Google, qui démonte la page) — propre à chaque appelant (annonce: localStorage +
+    // IndexedDB photos ; réel: IndexedDB vidéo).
+    prepareForExternalRedirect: () => void
+    // Texte affiché sur la vue "choice", propre au contenu en attente de publication.
+    description: string
+    // Métadonnée de tracking passée à useBecomeAnnouncer, propre à l'appelant.
+    becomeAnnouncerSource?: string
 }
 
 const BecomeAnnouncerSchema = z.object({
@@ -44,7 +51,13 @@ const BecomeAnnouncerSchema = z.object({
 })
 type BecomeAnnouncerFormType = z.infer<typeof BecomeAnnouncerSchema>
 
-export function PublishAuthModal({ isOpen, onClose }: PublishAuthModalProps) {
+export function PublishAuthModal({
+    isOpen,
+    onClose,
+    prepareForExternalRedirect,
+    description,
+    becomeAnnouncerSource,
+}: PublishAuthModalProps) {
     const [view, setView] = useState<View>('choice')
     const [pendingCredentials, setPendingCredentials] = useState<{ email: string; password: string } | null>(null)
 
@@ -52,7 +65,6 @@ export function PublishAuthModal({ isOpen, onClose }: PublishAuthModalProps) {
     const { trackEvent } = useTrackEvent()
     const { user } = useCurrentUser()
     const pathname = usePathname()
-    const { prepareForExternalRedirect } = usePropertyFormComponentContext()
 
     // Réinitialiser sur une nouvelle ouverture. Si l'utilisateur est déjà connecté (ex: retour
     // d'une connexion Google, ou compte "Utilisateur" existant) le guard du provider n'ouvre le
@@ -159,7 +171,7 @@ export function PublishAuthModal({ isOpen, onClose }: PublishAuthModalProps) {
     }
 
     const handleBecomeAnnouncerSubmit = async (values: BecomeAnnouncerFormType) => {
-        const result = await becomeAnnouncer({ acceptAnnouncerTerms: values.acceptAnnouncerTerms, source: 'property_add_modal' })
+        const result = await becomeAnnouncer({ acceptAnnouncerTerms: values.acceptAnnouncerTerms, source: becomeAnnouncerSource })
 
         if (result.success) {
             trackEvent(trackingEvents.BUSINESS_PUBLISH_AUTH_BECOME_ANNOUNCER_SUCCESS)
@@ -207,8 +219,7 @@ export function PublishAuthModal({ isOpen, onClose }: PublishAuthModalProps) {
                 {view === 'choice' && (
                     <div className="space-y-4">
                         <p className="text-sm text-gray-600 dark:text-gray-400">
-                            Votre annonce est prête. Créez un compte annonceur (ou connectez-vous) pour la publier —
-                            toutes les informations et photos que vous avez saisies sont conservées.
+                            {description}
                         </p>
                         <div className="flex flex-col gap-3">
                             <Button

@@ -30,44 +30,68 @@ annonce — doit suivre **exactement le même pattern `moderationStatus`** déj�
 (`PENDING`→`APPROVED`/`REJECTED`, motif de rejet, notification). Ne pas inventer un second
 système de modération pour la vidéo.
 
-## 2. Mécanique du cadeau
+## 2. Mécanique du cadeau — ✅ IMPLÉMENTÉ (modèle « argent réel + retrait », pas de crédits)
 
-### Paiement
-Réutiliser l'infrastructure de paiement existante (`functions/src/payments/mypayga/`,
-`functions/src/payments/airtel/`) plutôt que d'intégrer un nouveau prestataire pour Airtel
-Money — l'intégration Airtel existe déjà. **Mobicash est à confirmer** : vérifier s'il existe
-une API/agrégateur déjà supporté par MyPayGa (à vérifier — MyPayGa semble être un agrégateur
-multi-opérateurs, auquel cas Mobicash pourrait déjà passer par le même webhook) avant d'envisager
-une intégration directe séparée.
+> **Décision produit finale** : le cadeau est une **seconde source de revenu réelle** pour
+> l'annonceur, pas des crédits plateforme. Le donateur paie en Mobile Money (MyPayGa,
+> confirmation USSD), la plateforme prélève une **commission de 15 %** à la confirmation,
+> le **net** s'accumule dans un solde retirable. L'annonceur demande un **retrait**
+> (minimum 10 000 FCFA, frais de 5 % déduits du versement, intégralité du disponible,
+> une demande en attente à la fois) ; un admin envoie l'argent **manuellement** via son
+> app MoMo puis marque la demande « versée » dans le back-office (registre, pas de payout
+> automatisé). Une conversion cadeaux→crédits pourra être ajoutée PLUS TARD (le solde
+> étant dérivé à la lecture, ce sera un terme de plus dans la formule).
 
-### Modèle de données (proposition)
+### Paiement (implémenté)
+Cloud Functions `initiateGiftPayment` (endpoint anonyme — pas de compte requis, la
+confirmation USSD du donateur est le garde-fou) et `giftPaymentCallback` (webhook dédié,
+même vérification HMAC-SHA512 + idempotence que le webhook crédits, helpers partagés dans
+`functions/src/payments/mypayga/callback-shared.ts`). Secret dédié `MYPAYGA_GIFT_CALLBACK_URL`.
+Constantes : `functions/src/payments/gifts/constants.ts` (commission 15 %, bornes 500–100 000
+FCFA, anti-spam 5 pending/numéro/heure) et `apps/location-maison/src/constantes/gifts.ts`
+(frais retrait 5 %, minimum 10 000 FCFA, presets UI).
+
+### Modèle de données (implémenté)
 ```
-reels (nouvelle collection)
-  id, propertyId, createdBy (uid annonceur), videoUrl, thumbnailUrl,
-  moderationStatus, rejectionReason, moderationReviewedAt, moderationReviewedBy,
-  viewCount, giftCount, giftTotalAmount,
-  createdAt, updatedAt
+gift_transactions/{transactionId}   — cycle de vie du paiement ET historique (status='success')
+  id, type:'gift', reelId, announcerUid, propertyId?,
+  donorPhone (local 9 chiffres), donorNetwork ('AM'|'MM'), message?,
+  amountXaf (brut), commissionRate (snapshot 0.15), netAmountXaf,
+  status ('pending'|'success'|'failed'), entitlementApplyState (garde d'idempotence),
+  provider:'mypayga', champs provider*..., createdAt, completedAt
 
-gifts (nouvelle collection)
-  id, reelId, propertyId, toAnnouncerUid,
-  fromUserUid (nullable si cadeau anonyme — à trancher),
-  amount, provider ('airtel' | 'mobicash'), status ('pending'|'completed'|'failed'),
-  createdAt
+gift_withdrawals/{id}               — demandes de retrait
+  id, announcerUid, montantXaf (= tout le disponible), feeRate (0.05), feeXaf,
+  netPayoutXaf (ce que l'admin envoie), numero, reseau,
+  statut ('EN_ATTENTE'|'TRAITE'|'REFUSE'), traitePar?, motifRefus?, dates
 ```
-`toAnnouncerUid` reçoit une notification (`type: 'GIFT_RECEIVED'`, à ajouter à
-`TypeNotification`) — in-app + push, même chemin que les notifications de modération déjà
-implémentées ce trimestre.
+Sur confirmation : `reels.giftCount`/`giftTotalAmount` (brut, public) et
+`users.giftTotalReceivedXaf`/`giftCountReceived` (net) incrémentés en transaction idempotente.
+**Solde dérivé à la lecture** (`deriveGiftBalance`) : `disponible = net cumulé − retraits non
+refusés` — REFUSE restitue, EN_ATTENTE/TRAITE débitent. Aucun accès client Firestore aux deux
+collections (règles `allow read, write: if false`, tout passe par API routes/functions).
 
-### Question ouverte : anonymat du donateur
-Un chercheur doit-il être connecté pour offrir un cadeau ? Deux options :
-- **Connecté obligatoire** : plus de friction, mais traçabilité complète (utile pour la
-  confiance, et pour éventuellement afficher "12 personnes ont soutenu cette annonce").
-- **Anonyme (juste un numéro mobile money)** : moins de friction, conversion plus haute, mais
-  moins de traçabilité/relation avec l'utilisateur donateur.
-Recommandation : commencer par **connecté obligatoire** (réutilise l'auth existante, plus simple
-à sécuriser côté paiement, cohérent avec le parcours "publier sans compte puis connexion à la
-fin" déjà adopté ailleurs sur la plateforme) — l'anonymat peut être ajouté plus tard si la
-friction s'avère être un vrai frein.
+L'annonceur reçoit une notification `type: 'GIFT'` (in-app + push FCM via `sendUserPush`
+généralisé) au cadeau reçu et au traitement de son retrait. Écrans : `/gifts` (annonceur :
+solde, retrait, historiques) et `/dashboard/gift-withdrawals` (admin : versement manuel,
+permissions `gift_withdrawals.read/process` sur finance_admin + operations_admin).
+
+### Anonymat du donateur — tranché : pas de compte requis
+Un chercheur peut offrir un cadeau **sans être connecté** — juste un numéro mobile money au
+moment du paiement, comme pour un achat de pack de crédits classique. Aucune friction
+d'inscription avant de soutenir une annonce.
+
+Implications à prendre en compte pendant le développement :
+- Pas de `fromUserUid` : la relation donateur↔annonce n'est pas rattachable à un profil
+  utilisateur. Le compteur `giftCount`/`giftTotalAmount` sur le réel reste valide (agrégats
+  anonymes), mais impossible d'afficher "12 personnes ont soutenu cette annonce" comme
+  fonctionnalité de confiance (nécessiterait de compter les numéros distincts, pas des comptes).
+- Anti-fraude/anti-spam : le webhook du provider de paiement (MyPayGa/Airtel, même mécanisme que
+  les packs de crédits) reste la seule vérification — pas de couche `uid` authentifié
+  supplémentaire. S'appuyer sur les protections déjà en place côté paiement plutôt qu'en inventer
+  une nouvelle liée à l'auth.
+- Rate-limiting éventuel (anti-abus) à faire par `fromPhoneNumber`/IP si besoin, pas par `uid`
+  puisqu'il n'y en a pas.
 
 ## 3. Dashboard annonceur — cadeaux reçus + paywall abonnement
 
@@ -126,13 +150,31 @@ vidéo coûte un ordre de grandeur de plus que les images :
 - **Diffusion** : servir des vidéos directement depuis Firebase Storage fonctionne mais sans CDN
   optimisé pour le streaming — à surveiller dès que le volume de réels grossit.
 
-## Ce qui reste à trancher avant de scoper le développement
+## Décisions (tranchées)
 
-1. Mobicash passe-t-il déjà par MyPayGa, ou faut-il une intégration séparée ?
-2. Cadeau anonyme ou compte obligatoire ?
-3. Prix et paliers d'abonnement définitifs.
-4. Transcodage vidéo : Cloud Function maison vs service tiers (Mux/Cloudflare Stream) — arbitrage
-   coût/complexité à faire avant de commencer le développement.
-5. Durée max d'un réel et politique de modération vidéo (la modération humaine actuelle
-   fonctionne pour des photos/texte — visionner des vidéos prend plus de temps admin, à anticiper
-   dans la charge de modération).
+1. **Mobicash / MyPayGa** : "Mobicash" désigne Moov Money, déjà supporté par l'intégration
+   MyPayGa existante (`apps/location-maison/functions/src/payments/mypayga/config.ts`, réseau
+   `MM`, numéros 062/065/066). Confirmé par lecture du code — aucune intégration séparée
+   nécessaire.
+2. **Anonymat du donateur** : **pas de compte requis** pour offrir un cadeau — juste un numéro
+   mobile money au moment du paiement, comme pour un achat de pack de crédits. Pas de `fromUserUid`
+   (voir modèle de données §2) : on perd la traçabilité par profil et l'affichage "X personnes ont
+   soutenu cette annonce", l'anti-fraude repose sur le webhook du provider de paiement plutôt que
+   sur une couche d'auth.
+3. **Prix de l'abonnement** : **3 000–5 000 FCFA/mois**, calibré sur les packs de crédits réels en
+   prod (Firestore `credit_packs` : Starter 5 crédits/2 000 FCFA, Standard 10/3 500, Avancé
+   25/7 500, Premium 50/12 500) — se situe au milieu de cette fourchette. À ajuster après les
+   premiers retours terrain, l'admin pilote déjà les prix dynamiquement (même modèle que les
+   packs de crédits).
+4. **Transcodage vidéo** : **Cloud Function maison (ffmpeg)**, pas de service tiers. Mux et
+   Cloudflare Stream sont tous les deux payants dès la première minute (pas de plan gratuit
+   viable en prod pour aucun des deux, vérifié juillet 2026) — écartés suite à la contrainte de ne
+   pas ajouter de nouveau service payant. La Cloud Function s'appuie sur l'infra Firebase déjà
+   utilisée par le projet (pas un nouveau fournisseur à onboarder), mais reste à développer
+   entièrement (queue de transcodage, gestion des formats, pas de CDN streaming inclus — plus de
+   travail avant le premier réel publiable qu'avec un service tiers).
+5. **Durée max d'un réel** : **5 minutes**, dans le même flux vertical swipe que le reste du
+   contenu. Point de vigilance conservé : c'est un format nettement plus long qu'un "reel"
+   TikTok-style classique (15-60s) — la charge de modération humaine par vidéo et le coût de
+   stockage/transcodage seront proportionnellement plus élevés qu'anticipé initialement dans ce
+   document ; à intégrer dans le chiffrage/staffing modération avant le lancement.

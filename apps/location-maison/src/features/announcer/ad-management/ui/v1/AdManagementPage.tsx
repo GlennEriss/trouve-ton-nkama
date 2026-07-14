@@ -31,6 +31,7 @@ import {
   CalendarDays,
   Eye,
   Filter,
+  Gift,
   Layers3,
   MapPin,
   Pencil,
@@ -38,6 +39,7 @@ import {
   Search,
   Trash2,
   TrendingUp,
+  Video,
   X,
 } from 'lucide-react';
 import { useAdManagement } from '../../hooks';
@@ -237,7 +239,7 @@ function AdCard({ ad, onToggleState, onDelete, actionLoading }: AdCardProps) {
   const stateLabel = ad.state === 'IN_PROGRESS' ? 'Active' : 'Archivée';
   const publishedAt = formatDate(ad.createdAt);
   const updatedAt = formatDate(ad.updatedAt);
-  const mainImage = resolveThumbnailUrl(ad.images?.[0]) || '/fallback-image.jpg';
+  const mainImage = resolveThumbnailUrl(ad.images?.[0]) || '/home.png';
   const moderationLabel = ad.moderationStatus ? MODERATION_STATUS_LABELS[ad.moderationStatus] : null;
   const moderationClass = ad.moderationStatus ? MODERATION_STATUS_CLASSES[ad.moderationStatus] : '';
 
@@ -350,6 +352,13 @@ function AdCard({ ad, onToggleState, onDelete, actionLoading }: AdCardProps) {
               Supprimer
             </Button>
           </div>
+
+          <Button variant="outline" className="h-9 w-full rounded-full" asChild>
+            <Link href={`${routes.protected.properties}/${ad.id}/reels/add`}>
+              <Video className="mr-1.5 h-4 w-4" />
+              Ajouter un réel
+            </Link>
+          </Button>
 
           <div className="pt-0.5">
             <PromotionButton property={ad} />
@@ -516,15 +525,37 @@ export function AdManagementPage() {
               Recherchez, filtrez et pilotez vos annonces depuis un seul espace.
             </p>
           </div>
-          <Button
-            asChild
-            className="h-12 rounded-full bg-gradient-to-r from-[#146B67] to-[#1FA89B] px-6 font-semibold hover:from-[#115a56] hover:to-[#1a9388]"
-          >
-            <Link href={routes.protected.add_property}>
-              <Plus className="mr-2 h-4 w-4" />
-              Publier une annonce
-            </Link>
-          </Button>
+          <div className="flex flex-wrap gap-3">
+            <Button
+              asChild
+              variant="outline"
+              className="h-12 rounded-full px-6 font-semibold"
+            >
+              <Link href={routes.protected.reels_mine}>
+                <Video className="mr-2 h-4 w-4" />
+                Mes réels
+              </Link>
+            </Button>
+            <Button
+              asChild
+              variant="outline"
+              className="h-12 rounded-full px-6 font-semibold"
+            >
+              <Link href={routes.protected.gifts}>
+                <Gift className="mr-2 h-4 w-4" />
+                Mes cadeaux
+              </Link>
+            </Button>
+            <Button
+              asChild
+              className="h-12 rounded-full bg-gradient-to-r from-[#146B67] to-[#1FA89B] px-6 font-semibold hover:from-[#115a56] hover:to-[#1a9388]"
+            >
+              <Link href={routes.protected.add_property}>
+                <Plus className="mr-2 h-4 w-4" />
+                Publier une annonce
+              </Link>
+            </Button>
+          </div>
         </div>
       </section>
 

@@ -7,6 +7,7 @@ import {
   Building2,
   CopyCheck,
   DownloadCloud,
+  Gift,
   Home,
   ListChecks,
   MapPinned,
@@ -17,6 +18,7 @@ import {
   Tags,
   TrendingUp,
   Users,
+  Video,
   Wallet,
 } from "lucide-react";
 import { usePathname } from "next/navigation";
@@ -49,8 +51,10 @@ const navItems = [
   { href: "/dashboard/apify", label: "Apify", icon: DownloadCloud },
   { href: "/dashboard/listings", label: "Annonces", icon: ListChecks },
   { href: "/dashboard/moderation", label: "File de modération", icon: ShieldCheck },
+  { href: "/dashboard/reels-moderation", label: "Modération réels", icon: Video },
   { href: "/dashboard/listings/duplicates", label: "Doublons annonces", icon: CopyCheck },
   { href: "/dashboard/finance", label: "Finance crédits", icon: Wallet },
+  { href: "/dashboard/gift-withdrawals", label: "Retraits cadeaux", icon: Gift },
   { href: "/dashboard/advertising", label: "Publicité", icon: Megaphone },
 ];
 
