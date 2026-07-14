@@ -259,8 +259,8 @@ export default async function RootLayout({
         <div className="mx-auto">
           <Providers>
             {children}
-            <BottomNavigation />
             <Footer />
+            <BottomNavigation />
             <FirebaseAnalyticsTracker />
             <PresenceAnalyticsTracker />
             <TrafficAnalyticsTracker />

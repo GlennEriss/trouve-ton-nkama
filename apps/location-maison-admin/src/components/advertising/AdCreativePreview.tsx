@@ -21,6 +21,7 @@ const PLACEMENT_LABELS: Record<AdPlacement, string> = {
   search_infeed: "Recherche",
   property_detail: "Détail annonce",
   immobilier_infeed: "Immobilier",
+  reels_infeed: "Réels",
 };
 
 /**
@@ -33,6 +34,7 @@ const PLACEMENT_MEDIA: Record<AdPlacement, string> = {
   search_infeed: "aspect-[16/5]",
   immobilier_infeed: "aspect-[16/5]",
   property_detail: "aspect-[16/4]",
+  reels_infeed: "aspect-[4/5]",
 };
 
 /**

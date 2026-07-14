@@ -22,7 +22,7 @@ import {
 
 import { AD_FORMATS, type AdFormatKey } from "@/modules/advertising/domain/types";
 
-type AdPlacement = "search_infeed" | "property_detail" | "home" | "immobilier_infeed";
+type AdPlacement = "search_infeed" | "property_detail" | "home" | "immobilier_infeed" | "reels_infeed";
 
 type AssetMap = Partial<Record<AdPlacement, { imageURL: string; imagePATH: string }>>;
 
@@ -45,6 +45,7 @@ const PLACEMENT_LABELS: Record<AdPlacement, string> = {
   property_detail: "Détail annonce",
   home: "Accueil",
   immobilier_infeed: "Immobilier (in-feed)",
+  reels_infeed: "Réels (plein écran)",
 };
 
 const ALL_PLACEMENTS = Object.keys(PLACEMENT_LABELS) as AdPlacement[];

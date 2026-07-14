@@ -6,7 +6,7 @@
 
 import type { AdPlacement } from '@/models/advertising'
 
-export type AdFormatKey = 'hero' | 'infeed' | 'detail'
+export type AdFormatKey = 'hero' | 'infeed' | 'detail' | 'reels'
 
 export interface AdFormat {
   key: AdFormatKey

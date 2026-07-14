@@ -195,6 +195,10 @@ body {
   animation: pulse-glow 2s infinite;
 }
 
+.safe-area-pb {
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+
 /* Hard-stop des publicités sur les routes formulaire annonce */
 html.ads-disabled-route ins.adsbygoogle,
 html.ads-disabled-route .google-auto-placed,
