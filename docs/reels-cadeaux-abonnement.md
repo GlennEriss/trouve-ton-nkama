@@ -30,34 +30,51 @@ annonce — doit suivre **exactement le même pattern `moderationStatus`** déj�
 (`PENDING`→`APPROVED`/`REJECTED`, motif de rejet, notification). Ne pas inventer un second
 système de modération pour la vidéo.
 
-## 2. Mécanique du cadeau
+## 2. Mécanique du cadeau — ✅ IMPLÉMENTÉ (modèle « argent réel + retrait », pas de crédits)
 
-### Paiement
-Réutiliser l'infrastructure de paiement existante (`functions/src/payments/mypayga/`,
-`functions/src/payments/airtel/`) plutôt que d'intégrer un nouveau prestataire pour Airtel
-Money — l'intégration Airtel existe déjà. **Mobicash est à confirmer** : vérifier s'il existe
-une API/agrégateur déjà supporté par MyPayGa (à vérifier — MyPayGa semble être un agrégateur
-multi-opérateurs, auquel cas Mobicash pourrait déjà passer par le même webhook) avant d'envisager
-une intégration directe séparée.
+> **Décision produit finale** : le cadeau est une **seconde source de revenu réelle** pour
+> l'annonceur, pas des crédits plateforme. Le donateur paie en Mobile Money (MyPayGa,
+> confirmation USSD), la plateforme prélève une **commission de 15 %** à la confirmation,
+> le **net** s'accumule dans un solde retirable. L'annonceur demande un **retrait**
+> (minimum 10 000 FCFA, frais de 5 % déduits du versement, intégralité du disponible,
+> une demande en attente à la fois) ; un admin envoie l'argent **manuellement** via son
+> app MoMo puis marque la demande « versée » dans le back-office (registre, pas de payout
+> automatisé). Une conversion cadeaux→crédits pourra être ajoutée PLUS TARD (le solde
+> étant dérivé à la lecture, ce sera un terme de plus dans la formule).
 
-### Modèle de données (proposition)
+### Paiement (implémenté)
+Cloud Functions `initiateGiftPayment` (endpoint anonyme — pas de compte requis, la
+confirmation USSD du donateur est le garde-fou) et `giftPaymentCallback` (webhook dédié,
+même vérification HMAC-SHA512 + idempotence que le webhook crédits, helpers partagés dans
+`functions/src/payments/mypayga/callback-shared.ts`). Secret dédié `MYPAYGA_GIFT_CALLBACK_URL`.
+Constantes : `functions/src/payments/gifts/constants.ts` (commission 15 %, bornes 500–100 000
+FCFA, anti-spam 5 pending/numéro/heure) et `apps/location-maison/src/constantes/gifts.ts`
+(frais retrait 5 %, minimum 10 000 FCFA, presets UI).
+
+### Modèle de données (implémenté)
 ```
-reels (nouvelle collection)
-  id, propertyId, createdBy (uid annonceur), videoUrl, thumbnailUrl,
-  moderationStatus, rejectionReason, moderationReviewedAt, moderationReviewedBy,
-  viewCount, giftCount, giftTotalAmount,
-  createdAt, updatedAt
+gift_transactions/{transactionId}   — cycle de vie du paiement ET historique (status='success')
+  id, type:'gift', reelId, announcerUid, propertyId?,
+  donorPhone (local 9 chiffres), donorNetwork ('AM'|'MM'), message?,
+  amountXaf (brut), commissionRate (snapshot 0.15), netAmountXaf,
+  status ('pending'|'success'|'failed'), entitlementApplyState (garde d'idempotence),
+  provider:'mypayga', champs provider*..., createdAt, completedAt
 
-gifts (nouvelle collection)
-  id, reelId, propertyId, toAnnouncerUid,
-  fromUserUid (null — cadeau anonyme, pas de compte requis),
-  fromPhoneNumber (numéro mobile money du donateur, fourni au paiement),
-  amount, provider ('airtel' | 'mobicash'), status ('pending'|'completed'|'failed'),
-  createdAt
+gift_withdrawals/{id}               — demandes de retrait
+  id, announcerUid, montantXaf (= tout le disponible), feeRate (0.05), feeXaf,
+  netPayoutXaf (ce que l'admin envoie), numero, reseau,
+  statut ('EN_ATTENTE'|'TRAITE'|'REFUSE'), traitePar?, motifRefus?, dates
 ```
-`toAnnouncerUid` reçoit une notification (`type: 'GIFT_RECEIVED'`, à ajouter à
-`TypeNotification`) — in-app + push, même chemin que les notifications de modération déjà
-implémentées ce trimestre.
+Sur confirmation : `reels.giftCount`/`giftTotalAmount` (brut, public) et
+`users.giftTotalReceivedXaf`/`giftCountReceived` (net) incrémentés en transaction idempotente.
+**Solde dérivé à la lecture** (`deriveGiftBalance`) : `disponible = net cumulé − retraits non
+refusés` — REFUSE restitue, EN_ATTENTE/TRAITE débitent. Aucun accès client Firestore aux deux
+collections (règles `allow read, write: if false`, tout passe par API routes/functions).
+
+L'annonceur reçoit une notification `type: 'GIFT'` (in-app + push FCM via `sendUserPush`
+généralisé) au cadeau reçu et au traitement de son retrait. Écrans : `/gifts` (annonceur :
+solde, retrait, historiques) et `/dashboard/gift-withdrawals` (admin : versement manuel,
+permissions `gift_withdrawals.read/process` sur finance_admin + operations_admin).
 
 ### Anonymat du donateur — tranché : pas de compte requis
 Un chercheur peut offrir un cadeau **sans être connecté** — juste un numéro mobile money au

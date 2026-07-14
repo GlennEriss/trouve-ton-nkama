@@ -31,6 +31,7 @@ import {
   CalendarDays,
   Eye,
   Filter,
+  Gift,
   Layers3,
   MapPin,
   Pencil,
@@ -533,6 +534,16 @@ export function AdManagementPage() {
               <Link href={routes.protected.reels_mine}>
                 <Video className="mr-2 h-4 w-4" />
                 Mes réels
+              </Link>
+            </Button>
+            <Button
+              asChild
+              variant="outline"
+              className="h-12 rounded-full px-6 font-semibold"
+            >
+              <Link href={routes.protected.gifts}>
+                <Gift className="mr-2 h-4 w-4" />
+                Mes cadeaux
               </Link>
             </Button>
             <Button

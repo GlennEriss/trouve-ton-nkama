@@ -82,11 +82,24 @@ service cloud.firestore {
       
       // Création de transaction
       allow create: if isSignedIn() && request.auth.uid == request.resource.data.uid;
-      
+
       // Mise à jour de transaction
       allow update: if isSignedIn() && request.auth.uid == resource.data.uid;
     }
-    
+
+    // Cadeaux (dons MoMo sur les réels) : écrits par les Cloud Functions,
+    // lus via les API routes (Admin SDK). Aucun accès client — le donateur est
+    // anonyme (pas d'uid) et le doc contient son numéro de téléphone.
+    match /gift_transactions/{transactionId} {
+      allow read, write: if false;
+    }
+
+    // Demandes de retrait du solde cadeaux : créées et lues via les API routes
+    // authentifiées, traitées par le back-office admin. Aucun accès client.
+    match /gift_withdrawals/{withdrawalId} {
+      allow read, write: if false;
+    }
+
     match /provinces/{provinceId} {
       allow read: if true;
       allow create, update: if isSignedIn();

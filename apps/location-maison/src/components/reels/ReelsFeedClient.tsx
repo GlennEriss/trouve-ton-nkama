@@ -2,7 +2,7 @@
 
 import React from 'react'
 import { useInfiniteQuery } from '@tanstack/react-query'
-import { ChevronDown, ChevronUp, Loader2, PhoneCall, Volume2, VolumeX } from 'lucide-react'
+import { ChevronDown, ChevronUp, Gift, Loader2, PhoneCall, Volume2, VolumeX } from 'lucide-react'
 import { FaWhatsapp } from 'react-icons/fa'
 import {
   Carousel,
@@ -16,6 +16,7 @@ import { useUserByUID } from '@/hooks/use-user-by-uid'
 import { useTrackPropertyInteraction } from '@/hooks/use-track-property-interaction'
 import { cn } from '@/lib/utils'
 import type { Reel } from '@/models/reel'
+import GiftModal from './gift/GiftModal'
 
 // Mobile : plein écran edge-to-edge (comme l'app TikTok). Desktop (md+) : carte 9:16 centrée
 // sur fond sombre façon TikTok/Instagram Reels web, pas une vidéo étirée sur toute la largeur
@@ -56,11 +57,13 @@ function ReelActionRail({
   reel,
   isMuted,
   onToggleMute,
+  onGiftClick,
   variant,
 }: {
   reel: Reel & { id: string }
   isMuted: boolean
   onToggleMute: () => void
+  onGiftClick: () => void
   variant: 'overlay' | 'sidebar'
 }) {
   const { data: property } = useProperty(reel.propertyId ?? undefined)
@@ -124,6 +127,20 @@ function ReelActionRail({
         <PhoneCall className="h-5 w-5" />
       </button>
 
+      <div className="flex flex-col items-center gap-1">
+        <button
+          type="button"
+          onClick={onGiftClick}
+          className="flex h-11 w-11 items-center justify-center rounded-full bg-pink-600 text-white"
+          aria-label="Offrir un cadeau"
+        >
+          <Gift className="h-5 w-5" />
+        </button>
+        {reel.giftCount > 0 && (
+          <span className="text-xs font-medium text-white/90">{reel.giftCount}</span>
+        )}
+      </div>
+
       <button
         type="button"
         onClick={onToggleMute}
@@ -141,11 +158,13 @@ function ReelSlide({
   isActive,
   isMuted,
   onToggleMute,
+  onGiftClick,
 }: {
   reel: Reel & { id: string }
   isActive: boolean
   isMuted: boolean
   onToggleMute: () => void
+  onGiftClick: () => void
 }) {
   const videoRef = React.useRef<HTMLVideoElement>(null)
   // Un réel peut exister avec ou sans annonce liée (propertyId optionnel) — la légende ne
@@ -209,7 +228,7 @@ function ReelSlide({
         )}
       </div>
 
-      <ReelActionRail reel={reel} isMuted={isMuted} onToggleMute={onToggleMute} variant="overlay" />
+      <ReelActionRail reel={reel} isMuted={isMuted} onToggleMute={onToggleMute} onGiftClick={onGiftClick} variant="overlay" />
     </div>
   )
 }
@@ -218,6 +237,9 @@ export default function ReelsFeedClient() {
   const [api, setApi] = React.useState<CarouselApi>()
   const [activeIndex, setActiveIndex] = React.useState(0)
   const [isMuted, setIsMuted] = React.useState(true)
+  // Réel ciblé par le modal cadeau — état au niveau du feed car le bouton
+  // existe dans les deux rails (overlay mobile dans ReelSlide + sidebar desktop ici).
+  const [giftReel, setGiftReel] = React.useState<(Reel & { id: string }) | null>(null)
   const trackedViewsRef = React.useRef<Set<string>>(new Set())
 
   const feedQuery = useInfiniteQuery({
@@ -300,6 +322,7 @@ export default function ReelsFeedClient() {
                   isActive={index === activeIndex}
                   isMuted={isMuted}
                   onToggleMute={() => setIsMuted((m) => !m)}
+                  onGiftClick={() => setGiftReel(reel)}
                 />
               </CarouselItem>
             ))}
@@ -322,9 +345,16 @@ export default function ReelsFeedClient() {
           reel={reels[activeIndex]}
           isMuted={isMuted}
           onToggleMute={() => setIsMuted((m) => !m)}
+          onGiftClick={() => setGiftReel(reels[activeIndex])}
           variant="sidebar"
         />
       )}
+
+      <GiftModal
+        isOpen={giftReel !== null}
+        onClose={() => setGiftReel(null)}
+        reelId={giftReel?.id ?? ''}
+      />
 
       {/* Boutons précédent/suivant façon TikTok desktop web — sur mobile le swipe suffit,
           ces boutons n'ont de sens qu'à côté de la carte, place que le plein écran mobile n'a pas. */}

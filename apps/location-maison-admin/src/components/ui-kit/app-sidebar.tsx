@@ -7,6 +7,7 @@ import {
   Building2,
   CopyCheck,
   DownloadCloud,
+  Gift,
   Home,
   ListChecks,
   MapPinned,
@@ -53,6 +54,7 @@ const navItems = [
   { href: "/dashboard/reels-moderation", label: "Modération réels", icon: Video },
   { href: "/dashboard/listings/duplicates", label: "Doublons annonces", icon: CopyCheck },
   { href: "/dashboard/finance", label: "Finance crédits", icon: Wallet },
+  { href: "/dashboard/gift-withdrawals", label: "Retraits cadeaux", icon: Gift },
   { href: "/dashboard/advertising", label: "Publicité", icon: Megaphone },
 ];
 

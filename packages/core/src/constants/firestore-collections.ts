@@ -10,6 +10,8 @@ const COLLECTIONS = {
   advertisers: "advertisers",
   ad_campaigns: "ad_campaigns",
   reels: "reels",
+  gift_transactions: "gift_transactions",
+  gift_withdrawals: "gift_withdrawals",
 
   // location-maison uniquement
   ai_search_sessions: "ai_search_sessions",

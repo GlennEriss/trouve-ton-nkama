@@ -37,6 +37,7 @@ export const routes = {
         verify_phone: '/verify-phone',
         advertising: '/advertising',
         advertising_create: '/advertising/create',
+        gifts: '/gifts',
     },
     public: {
         signinSignup: '/signin-signup',

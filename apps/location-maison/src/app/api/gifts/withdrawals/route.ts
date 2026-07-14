@@ -1,0 +1,98 @@
+/**
+ * Demande de retrait du solde cadeaux. Règles (modèle occazGabon) :
+ * - le solde est TOUJOURS re-dérivé côté serveur (le client n'envoie aucun montant) ;
+ * - retrait de l'intégralité du disponible, pas de montant partiel ;
+ * - minimum de solde requis ; une seule demande EN_ATTENTE à la fois ;
+ * - frais de retrait (5 %) snapshotés sur le doc — l'admin envoie netPayoutXaf.
+ */
+
+import { NextRequest, NextResponse } from 'next/server';
+import { FieldValue, getFirestore as getAdminFirestore } from 'firebase-admin/firestore';
+import { z } from 'zod';
+import firebaseCollectionNames from '@/constantes/firebase-collection-name';
+import { adminApp, adminAuth } from '@/firebase/admin';
+import {
+  WITHDRAWAL_FEE_RATE,
+  WITHDRAWAL_MINIMUM_XAF,
+  computeWithdrawalFee,
+  computeWithdrawalNetPayout,
+} from '@/constantes/gifts';
+import { isPhoneValidForNetwork, sanitizeLocalPhone } from '@/constantes/payment-methods';
+import { deriveGiftBalance } from '@/lib/gifts/balance';
+import { createLogger } from '@/lib/logger';
+import { handleApiError, jsonApiError } from '@/lib/api/error-response';
+
+const logger = createLogger('api.gifts.withdrawals');
+
+const bodySchema = z.object({
+  numero: z.string().trim().min(6).max(20),
+  reseau: z.enum(['AM', 'MM']),
+});
+
+export async function POST(request: NextRequest) {
+  try {
+    const authHeader = request.headers.get('authorization');
+    if (!authHeader?.startsWith('Bearer ')) {
+      return jsonApiError(401, 'UNAUTHORIZED', "Token d'authentification requis");
+    }
+    const decoded = await adminAuth.verifyIdToken(authHeader.split('Bearer ')[1]);
+    const uid = decoded.uid;
+
+    const parsed = bodySchema.safeParse(await request.json());
+    if (!parsed.success) {
+      return jsonApiError(400, 'VALIDATION_ERROR', 'Données invalides.');
+    }
+
+    const numero = sanitizeLocalPhone(parsed.data.numero);
+    const reseau = parsed.data.reseau;
+    if (!isPhoneValidForNetwork(numero, reseau)) {
+      return jsonApiError(
+        400,
+        'INVALID_PHONE',
+        'Numéro invalide pour ce réseau (Airtel : 074/077 — Moov : 062/065/066).'
+      );
+    }
+
+    const balance = await deriveGiftBalance(uid);
+    if (balance.hasPendingWithdrawal) {
+      return jsonApiError(
+        409,
+        'WITHDRAWAL_PENDING',
+        'Tu as déjà une demande de retrait en attente de traitement.'
+      );
+    }
+    if (balance.disponibleXaf < WITHDRAWAL_MINIMUM_XAF) {
+      return jsonApiError(
+        400,
+        'BELOW_MINIMUM',
+        `Le retrait est possible à partir de ${WITHDRAWAL_MINIMUM_XAF.toLocaleString('fr-FR')} FCFA de solde.`
+      );
+    }
+
+    const montantXaf = balance.disponibleXaf;
+    const db = getAdminFirestore(adminApp as any);
+    const ref = db.collection(firebaseCollectionNames.gift_withdrawals).doc();
+    await ref.set({
+      id: ref.id,
+      announcerUid: uid,
+      montantXaf,
+      feeRate: WITHDRAWAL_FEE_RATE,
+      feeXaf: computeWithdrawalFee(montantXaf),
+      netPayoutXaf: computeWithdrawalNetPayout(montantXaf),
+      numero,
+      reseau,
+      statut: 'EN_ATTENTE',
+      dateCreation: FieldValue.serverTimestamp(),
+      dateMiseAJour: FieldValue.serverTimestamp(),
+    });
+
+    logger.info('Withdrawal requested', { uid, montantXaf });
+    return NextResponse.json({ success: true, withdrawalId: ref.id, montantXaf }, { status: 201 });
+  } catch (error) {
+    return handleApiError(error, {
+      logger,
+      route: '/api/gifts/withdrawals',
+      fallbackMessage: 'Internal server error',
+    });
+  }
+}

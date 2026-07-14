@@ -14,6 +14,11 @@ export type User = Person & {
     metadata: any,
     favoris: string[],
     credits: number
+    // Cadeaux reçus sur les réels : cumul NET (après commission plateforme),
+    // incrémenté uniquement par le webhook giftPaymentCallback. Le solde
+    // retirable est dérivé (net cumulé − retraits non refusés), jamais stocké.
+    giftTotalReceivedXaf?: number
+    giftCountReceived?: number
 }
 
 export type Role = 'Admin' | 'User' | 'Announcer'
