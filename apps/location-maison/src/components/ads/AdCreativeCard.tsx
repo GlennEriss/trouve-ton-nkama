@@ -27,6 +27,9 @@ export const PLACEMENT_MEDIA: Record<AdPlacement, string> = {
   search_infeed: 'aspect-[16/5]',
   immobilier_infeed: 'aspect-[16/5]',
   property_detail: 'aspect-[16/4]',
+  // Diapositive plein écran du fil réels : format portrait, seul emplacement
+  // où le visuel occupe une carte verticale et non une bannière.
+  reels_infeed: 'aspect-[4/5]',
 }
 
 type AdCreativeCardProps = Readonly<{

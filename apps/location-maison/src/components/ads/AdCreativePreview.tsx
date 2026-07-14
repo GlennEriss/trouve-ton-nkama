@@ -11,6 +11,7 @@ const PLACEMENT_LABELS: Record<AdPlacement, string> = {
   search_infeed: 'Recherche',
   property_detail: 'Détail annonce',
   immobilier_infeed: 'Immobilier',
+  reels_infeed: 'Réels',
 }
 
 const skeleton = 'rounded bg-gray-200 dark:bg-gray-700'

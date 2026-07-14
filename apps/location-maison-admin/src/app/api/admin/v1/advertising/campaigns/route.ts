@@ -32,6 +32,7 @@ const creativeSchema = z
         search_infeed: assetSchema.optional(),
         immobilier_infeed: assetSchema.optional(),
         property_detail: assetSchema.optional(),
+        reels_infeed: assetSchema.optional(),
       })
       .strict()
       .optional(),

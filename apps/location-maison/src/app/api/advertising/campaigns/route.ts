@@ -21,7 +21,7 @@ function parseTargeting(value: unknown): { provinces?: string[]; cities?: string
   return { ...(provinces?.length ? { provinces } : {}), ...(cities?.length ? { cities } : {}) }
 }
 
-const VALID_PLACEMENTS = ['home', 'search_infeed', 'immobilier_infeed', 'property_detail']
+const VALID_PLACEMENTS = ['home', 'search_infeed', 'immobilier_infeed', 'property_detail', 'reels_infeed']
 
 /** Visuels par emplacement : conserve uniquement les entrées valides (URL + chemin). */
 function parseAssets(value: unknown): Record<string, { imageURL: string; imagePATH: string }> | undefined {

@@ -14,6 +14,7 @@ const VALID_PLACEMENTS: AdPlacement[] = [
   'property_detail',
   'home',
   'immobilier_infeed',
+  'reels_infeed',
 ]
 
 export async function GET(request: Request) {

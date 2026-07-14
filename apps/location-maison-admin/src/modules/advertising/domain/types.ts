@@ -8,13 +8,15 @@ export type AdPlacement =
   | "search_infeed"
   | "property_detail"
   | "home"
-  | "immobilier_infeed";
+  | "immobilier_infeed"
+  | "reels_infeed";
 
 export const AD_PLACEMENTS: AdPlacement[] = [
   "search_infeed",
   "property_detail",
   "home",
   "immobilier_infeed",
+  "reels_infeed",
 ];
 
 export type AdCampaignStatus =
@@ -63,7 +65,7 @@ export type AdCreative = {
  * l'annonceur fournit un visuel par format, appliqué à tous les emplacements
  * du groupe. Ratio conseillé indicatif.
  */
-export type AdFormatKey = "hero" | "infeed" | "detail";
+export type AdFormatKey = "hero" | "infeed" | "detail" | "reels";
 
 export const AD_FORMATS: ReadonlyArray<{
   key: AdFormatKey;
@@ -81,6 +83,7 @@ export const AD_FORMATS: ReadonlyArray<{
     placements: ["search_infeed", "immobilier_infeed"],
   },
   { key: "detail", label: "Bannière détail annonce", ratioHint: "large ~4:1", recommended: "1200×300", placements: ["property_detail"] },
+  { key: "reels", label: "Pub plein écran réels", ratioHint: "portrait ~4:5", recommended: "1080×1350", placements: ["reels_infeed"] },
 ];
 
 export type AdTargeting = {

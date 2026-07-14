@@ -14,6 +14,7 @@ export type AdPlacement =
   | 'property_detail'
   | 'home'
   | 'immobilier_infeed'
+  | 'reels_infeed'
 
 export type AdCampaignStatus =
   | 'draft'
