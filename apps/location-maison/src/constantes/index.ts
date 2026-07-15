@@ -12,6 +12,12 @@ export const MAX_TAGS = 6;
 export const MAX_REEL_DURATION_SECONDS = 300;
 export const MAX_REEL_RAW_SIZE_BYTES = 500 * 1024 * 1024;
 
+// Créa vidéo publicitaire (emplacement reels_infeed uniquement). Valeurs
+// volontairement alignées sur les constantes Réels ci-dessus mais dupliquées
+// (pas d'import croisé) pour garder les deux systèmes découplés.
+export const AD_VIDEO_MAX_DURATION_SECONDS = 300;
+export const AD_VIDEO_MAX_SIZE_BYTES = 500 * 1024 * 1024;
+
 export const statusOptions = [
   {
     label: 'À vendre',

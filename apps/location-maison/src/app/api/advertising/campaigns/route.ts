@@ -21,18 +21,27 @@ function parseTargeting(value: unknown): { provinces?: string[]; cities?: string
   return { ...(provinces?.length ? { provinces } : {}), ...(cities?.length ? { cities } : {}) }
 }
 
-const VALID_PLACEMENTS = ['home', 'search_infeed', 'immobilier_infeed', 'property_detail']
+const VALID_PLACEMENTS = ['home', 'search_infeed', 'immobilier_infeed', 'property_detail', 'reels_infeed']
 
-/** Visuels par emplacement : conserve uniquement les entrées valides (URL + chemin). */
-function parseAssets(value: unknown): Record<string, { imageURL: string; imagePATH: string }> | undefined {
+/** Visuels par emplacement : conserve uniquement les entrées valides (image OU vidéo). */
+function parseAssets(
+  value: unknown,
+): Record<string, { imageURL?: string; imagePATH?: string; videoURL?: string; videoPATH?: string }> | undefined {
   if (!value || typeof value !== 'object') return undefined
-  const out: Record<string, { imageURL: string; imagePATH: string }> = {}
+  const out: Record<string, { imageURL?: string; imagePATH?: string; videoURL?: string; videoPATH?: string }> = {}
   for (const [key, raw] of Object.entries(value as Record<string, unknown>)) {
     if (!VALID_PLACEMENTS.includes(key) || !raw || typeof raw !== 'object') continue
-    const a = raw as { imageURL?: unknown; imagePATH?: unknown }
+    const a = raw as { imageURL?: unknown; imagePATH?: unknown; videoURL?: unknown; videoPATH?: unknown }
+    const entry: { imageURL?: string; imagePATH?: string; videoURL?: string; videoPATH?: string } = {}
     if (typeof a.imageURL === 'string' && a.imageURL.trim()) {
-      out[key] = { imageURL: a.imageURL, imagePATH: typeof a.imagePATH === 'string' ? a.imagePATH : '' }
+      entry.imageURL = a.imageURL
+      entry.imagePATH = typeof a.imagePATH === 'string' ? a.imagePATH : ''
     }
+    if (typeof a.videoURL === 'string' && a.videoURL.trim()) {
+      entry.videoURL = a.videoURL
+      entry.videoPATH = typeof a.videoPATH === 'string' ? a.videoPATH : ''
+    }
+    if (entry.imageURL || entry.videoURL) out[key] = entry
   }
   return Object.keys(out).length ? out : undefined
 }

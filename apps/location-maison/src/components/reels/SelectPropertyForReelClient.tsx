@@ -4,7 +4,7 @@ import React from 'react'
 import Link from 'next/link'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { useQuery } from '@tanstack/react-query'
-import { ArrowLeft, Loader2, MapPin } from 'lucide-react'
+import { ArrowLeft, Loader2, MapPin, Video } from 'lucide-react'
 import { useCurrentUser } from '@/hooks/use-current-user'
 import { getProperties } from '@/db/property.db'
 import { attachReelToProperty } from '@/db/reel.db'
@@ -22,6 +22,7 @@ export default function SelectPropertyForReelClient() {
   const { toast } = useToast()
   const attachReelId = searchParams.get('attachReelId')
   const [attachingId, setAttachingId] = React.useState<string | null>(null)
+  const noPropertyHref = attachReelId ? routes.protected.reels_mine : routes.protected.reels_add
 
   const propertiesQuery = useQuery({
     queryKey: ['properties', 'select-for-reel', user?.uid],
@@ -70,10 +71,28 @@ export default function SelectPropertyForReelClient() {
         </h1>
         <p className="text-slate-500 dark:text-slate-400 text-sm mt-1">
           {attachReelId
-            ? "Sélectionnez l'annonce à laquelle rattacher ce réel."
-            : "Choisissez l'annonce pour laquelle vous voulez créer un réel."}
+            ? "Sélectionnez l'annonce à laquelle rattacher ce réel, ou gardez-le sans annonce."
+            : "Choisissez une annonce, ou créez un réel indépendant sans rattachement."}
         </p>
       </div>
+
+      <Link href={noPropertyHref} className="block">
+        <Card className="flex items-center gap-3 border-[#1FA89B]/40 bg-[#1FA89B]/5 p-3 transition-colors hover:bg-[#1FA89B]/10 dark:border-[#1FA89B]/40 dark:bg-[#1FA89B]/10">
+          <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-lg bg-[#146B67] text-white">
+            <Video className="h-7 w-7" />
+          </div>
+          <div className="min-w-0 flex-1">
+            <p className="text-sm font-semibold text-[#146B67] dark:text-[#1FA89B]">
+              {attachReelId ? "Garder sans annonce" : "Créer sans annonce"}
+            </p>
+            <p className="mt-0.5 text-xs leading-relaxed text-slate-500 dark:text-slate-400">
+              {attachReelId
+                ? "Ce réel restera visible dans le flux, sans être lié à un bien."
+                : "Publiez une vidéo indépendante maintenant, puis rattachez-la plus tard si besoin."}
+            </p>
+          </div>
+        </Card>
+      </Link>
 
       {propertiesQuery.isLoading && (
         <div className="flex justify-center py-10">

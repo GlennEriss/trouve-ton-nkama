@@ -15,8 +15,13 @@ import { AD_PACKAGES } from '@/constantes/ad-packages'
 import { formatsForPlacements, type AdFormat } from '@/constantes/ad-formats'
 import type { AdPlacement } from '@/models/advertising'
 import AdCreativePreview from '@/components/ads/AdCreativePreview'
+import { uploadAdCreativeVideo } from '@/db/ad-video.db'
+import { AD_VIDEO_REJECTION_MESSAGES, validateAdVideoFile } from '@/lib/ads/validate-ad-video'
 
-type AssetMap = Partial<Record<AdPlacement, { imageURL: string; imagePATH: string }>>
+type AssetMap = Partial<Record<AdPlacement, { imageURL?: string; imagePATH?: string; videoURL?: string; videoPATH?: string }>>
+
+const REELS_FORMAT_ACCEPT = 'image/png,image/jpeg,image/webp,image/gif,video/mp4,video/quicktime,video/webm'
+const IMAGE_ONLY_ACCEPT = 'image/png,image/jpeg,image/webp,image/gif'
 
 /** Upload un visuel (self-serve) et renvoie son URL publique + chemin Storage. */
 async function uploadAdImage(file: File): Promise<{ imageURL: string; imagePATH: string }> {
@@ -104,9 +109,27 @@ export default function AdvertisingPage() {
   }
 
   // Upload d'un visuel par FORMAT : appliqué à tous les emplacements du groupe.
+  // Le format "reels" accepte aussi la vidéo (seul format concerné) : bascule
+  // vers l'upload direct-Storage + validation durée/taille au lieu de la
+  // route /api/advertising/upload (image-only, 3 Mo max).
   const handleFormatUpload = async (format: AdFormat, file: File) => {
     setFormatUploading(format.key)
     try {
+      if (format.key === 'reels' && file.type.startsWith('video/')) {
+        if (!user?.uid) throw new Error('Connecte-toi pour uploader une vidéo.')
+        const validation = await validateAdVideoFile(file)
+        if (!validation.ok) {
+          throw new Error(AD_VIDEO_REJECTION_MESSAGES[validation.reason!])
+        }
+        const data = await uploadAdCreativeVideo(file, user.uid)
+        setAssets((prev) => {
+          const next = { ...prev }
+          for (const p of format.placements) next[p] = { videoURL: data.videoURL, videoPATH: data.videoPATH }
+          return next
+        })
+        return
+      }
+
       const data = await uploadAdImage(file)
       setAssets((prev) => {
         const next = { ...prev }
@@ -242,10 +265,11 @@ export default function AdvertisingPage() {
                   <div className="min-w-[140px] flex-1">
                     <span className="font-medium text-[#224D62] dark:text-gray-200">{fmt.label}</span>
                     <span className="ml-1 text-gray-400">— {fmt.ratioHint} ({fmt.recommended})</span>
+                    {fmt.key === 'reels' && <span className="ml-1 text-gray-400">· vidéo jusqu&apos;à 5 min</span>}
                   </div>
                   <input
                     type="file"
-                    accept="image/png,image/jpeg,image/webp,image/gif"
+                    accept={fmt.key === 'reels' ? REELS_FORMAT_ACCEPT : IMAGE_ONLY_ACCEPT}
                     disabled={formatUploading === fmt.key}
                     onChange={(e) => { const f = e.target.files?.[0]; if (f) void handleFormatUpload(fmt, f) }}
                     className="block max-w-[170px] text-[11px] text-gray-600 file:mr-2 file:rounded file:border-0 file:bg-gray-100 file:px-2 file:py-1"

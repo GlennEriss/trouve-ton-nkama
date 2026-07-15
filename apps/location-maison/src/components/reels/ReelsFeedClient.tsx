@@ -17,6 +17,7 @@ import { useTrackPropertyInteraction } from '@/hooks/use-track-property-interact
 import { cn } from '@/lib/utils'
 import type { Reel } from '@/models/reel'
 import GiftModal from './gift/GiftModal'
+import ReelAdSlide, { type ReelAdVariant } from './ReelAdSlide'
 
 // Mobile : plein écran edge-to-edge (comme l'app TikTok). Desktop (md+) : carte 9:16 centrée
 // sur fond sombre façon TikTok/Instagram Reels web, pas une vidéo étirée sur toute la largeur
@@ -28,6 +29,33 @@ const PAGE_SIZE = 10
 // Précharge la page suivante dès qu'il reste peu de réels non affichés — évite un trou/blanc
 // en fin de liste chargée pendant que l'utilisateur défile.
 const PREFETCH_THRESHOLD = 3
+
+// Une diapositive publicitaire tous les N réels, en alternant AdSense et pub
+// maison (module publicité, emplacement reels_infeed) : réel×4 → AdSense →
+// réel×4 → pub maison → réel×4 → AdSense → …
+const ADS_INTERVAL = 4
+
+type FeedSlide =
+  | { kind: 'reel'; key: string; reel: Reel & { id: string } }
+  | { kind: 'ad'; key: string; variant: ReelAdVariant }
+
+/** Intercale les diapositives pub dans la liste des réels. */
+function buildSlides(reels: (Reel & { id: string })[]): FeedSlide[] {
+  const slides: FeedSlide[] = []
+  let adCount = 0
+  reels.forEach((reel, index) => {
+    slides.push({ kind: 'reel', key: reel.id, reel })
+    if ((index + 1) % ADS_INTERVAL === 0) {
+      slides.push({
+        kind: 'ad',
+        key: `ad-${adCount}`,
+        variant: adCount % 2 === 0 ? 'adsense' : 'house',
+      })
+      adCount += 1
+    }
+  })
+  return slides
+}
 
 type FeedPage = { reels: (Reel & { id: string })[]; nextCursor: string | null }
 
@@ -241,6 +269,49 @@ export default function ReelsFeedClient() {
   // existe dans les deux rails (overlay mobile dans ReelSlide + sidebar desktop ici).
   const [giftReel, setGiftReel] = React.useState<(Reel & { id: string }) | null>(null)
   const trackedViewsRef = React.useRef<Set<string>>(new Set())
+  const feedRootRef = React.useRef<HTMLDivElement>(null)
+
+  // Garde-fou anti-AdSense : quand une unité AdSense ne peut pas se remplir
+  // (ou en mode responsive), son script injecte `height: auto !important` en
+  // style inline sur TOUS les ancêtres du bloc <ins> — jusqu'au body. Cela
+  // écrase la chaîne h-full du carousel vertical : toutes les diapositives
+  // retombent à quelques pixels et embla n'a plus rien à faire défiler
+  // (constaté en réel : section/viewport/track tous forcés à height:auto).
+  // On retire ces hauteurs injectées partout SAUF dans le bloc pub lui-même,
+  // puis on re-mesure embla. L'observer ne réagit qu'aux mutations de style :
+  // après nettoyage, plus rien à retirer → pas de boucle.
+  React.useEffect(() => {
+    const root = feedRootRef.current
+    if (!root || typeof MutationObserver === 'undefined') return
+
+    const stripInjectedHeights = () => {
+      let stripped = false
+      const strip = (el: HTMLElement) => {
+        if (el.tagName === 'INS' || el.closest('ins.adsbygoogle')) return
+        if (el.style.height === 'auto') {
+          el.style.removeProperty('height')
+          el.style.removeProperty('min-height')
+          stripped = true
+        }
+      }
+
+      root.querySelectorAll<HTMLElement>('[style]').forEach(strip)
+      // Les ancêtres AU-DESSUS du feed (wrappers de page, body…) sont aussi touchés.
+      let up: HTMLElement | null = root.parentElement
+      while (up) {
+        strip(up)
+        up = up.parentElement
+      }
+
+      if (stripped) api?.reInit()
+    }
+
+    const observer = new MutationObserver(stripInjectedHeights)
+    // body en subtree couvre à la fois le feed et les wrappers de page au-dessus.
+    observer.observe(document.body, { attributes: true, attributeFilter: ['style'], subtree: true })
+    stripInjectedHeights()
+    return () => observer.disconnect()
+  }, [api])
 
   const feedQuery = useInfiniteQuery({
     queryKey: ['reels-feed'],
@@ -253,6 +324,12 @@ export default function ReelsFeedClient() {
     () => feedQuery.data?.pages.flatMap((page) => page.reels) ?? [],
     [feedQuery.data?.pages]
   )
+
+  // Fil affiché = réels + diapositives pub intercalées. activeIndex est un
+  // index dans `slides`, plus dans `reels`.
+  const slides = React.useMemo(() => buildSlides(reels), [reels])
+  const activeSlide = slides[activeIndex]
+  const activeReel = activeSlide?.kind === 'reel' ? activeSlide.reel : null
 
   React.useEffect(() => {
     if (!api) return
@@ -267,22 +344,21 @@ export default function ReelsFeedClient() {
   }, [api])
 
   React.useEffect(() => {
-    const activeReel = reels[activeIndex]
-    if (!activeReel) return
-
-    if (!trackedViewsRef.current.has(activeReel.id)) {
+    if (activeReel && !trackedViewsRef.current.has(activeReel.id)) {
       trackedViewsRef.current.add(activeReel.id)
       trackReelView(activeReel.id)
     }
 
+    // Préchargement : compter les diapositives restantes (réels + pubs) suffit,
+    // le seuil reste une approximation du "il reste peu de contenu à voir".
     if (
-      reels.length - activeIndex <= PREFETCH_THRESHOLD &&
+      slides.length - activeIndex <= PREFETCH_THRESHOLD &&
       feedQuery.hasNextPage &&
       !feedQuery.isFetchingNextPage
     ) {
       void feedQuery.fetchNextPage()
     }
-  }, [activeIndex, reels, feedQuery])
+  }, [activeIndex, activeReel, slides.length, feedQuery])
 
   if (feedQuery.isLoading) {
     return (
@@ -306,7 +382,7 @@ export default function ReelsFeedClient() {
   }
 
   return (
-    <div className="flex h-[100dvh] w-full items-center justify-center bg-black md:h-auto md:gap-4 md:bg-neutral-950 md:py-8">
+    <div ref={feedRootRef} className="flex h-[100dvh] w-full items-center justify-center bg-black md:h-auto md:gap-4 md:bg-neutral-950 md:py-8">
       <div className={cn('relative h-full w-full overflow-hidden md:shadow-2xl', DESKTOP_CARD_CLASS)}>
         <Carousel
           orientation="vertical"
@@ -315,15 +391,23 @@ export default function ReelsFeedClient() {
           className="h-full w-full"
         >
           <CarouselContent className="ml-0 h-full">
-            {reels.map((reel, index) => (
-              <CarouselItem key={reel.id} className="pl-0 basis-full">
-                <ReelSlide
-                  reel={reel}
-                  isActive={index === activeIndex}
-                  isMuted={isMuted}
-                  onToggleMute={() => setIsMuted((m) => !m)}
-                  onGiftClick={() => setGiftReel(reel)}
-                />
+            {slides.map((slide, index) => (
+              <CarouselItem key={slide.key} className="pl-0 basis-full">
+                {slide.kind === 'reel' ? (
+                  <ReelSlide
+                    reel={slide.reel}
+                    isActive={index === activeIndex}
+                    isMuted={isMuted}
+                    onToggleMute={() => setIsMuted((m) => !m)}
+                    onGiftClick={() => setGiftReel(slide.reel)}
+                  />
+                ) : (
+                  <ReelAdSlide
+                    variant={slide.variant}
+                    isActive={index === activeIndex}
+                    slotKey={slide.key}
+                  />
+                )}
               </CarouselItem>
             ))}
             {feedQuery.isFetchingNextPage && (
@@ -340,12 +424,13 @@ export default function ReelsFeedClient() {
       {/* Rail d'actions desktop — sorti à côté de la carte façon TikTok web (jamais superposé à
           la vidéo, contrairement au variant "overlay" utilisé dans ReelSlide sur mobile). Reflète
           le réel actuellement actif dans le carousel. */}
-      {reels[activeIndex] && (
+      {/* Rail masqué quand la diapositive active est une pub (pas de réel à cibler). */}
+      {activeReel && (
         <ReelActionRail
-          reel={reels[activeIndex]}
+          reel={activeReel}
           isMuted={isMuted}
           onToggleMute={() => setIsMuted((m) => !m)}
-          onGiftClick={() => setGiftReel(reels[activeIndex])}
+          onGiftClick={() => setGiftReel(activeReel)}
           variant="sidebar"
         />
       )}
@@ -371,7 +456,7 @@ export default function ReelsFeedClient() {
         <button
           type="button"
           onClick={() => api?.scrollNext()}
-          disabled={activeIndex >= reels.length - 1 && !feedQuery.hasNextPage}
+          disabled={activeIndex >= slides.length - 1 && !feedQuery.hasNextPage}
           className="flex h-10 w-10 items-center justify-center rounded-full bg-white/10 text-white hover:bg-white/20 disabled:opacity-30 disabled:hover:bg-white/10"
           aria-label="Réel suivant"
         >

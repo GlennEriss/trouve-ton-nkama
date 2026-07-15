@@ -40,7 +40,7 @@ export const AD_PACKAGES: ReadonlyArray<AdPackage> = [
     name: 'Marque',
     credits: 70,
     durationDays: 30,
-    placements: ['search_infeed', 'property_detail', 'home', 'immobilier_infeed'],
+    placements: ['search_infeed', 'property_detail', 'home', 'immobilier_infeed', 'reels_infeed'],
     description: '30 jours sur tous les emplacements.',
   },
 ]

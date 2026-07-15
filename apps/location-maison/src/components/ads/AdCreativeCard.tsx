@@ -7,6 +7,8 @@ import type { AdPlacement } from '@/models/advertising'
 /** Données minimales nécessaires au rendu d'une créa (live ou preview). */
 export type AdCreativeCardData = Readonly<{
   imageURL?: string
+  /** Vidéo (reels_infeed uniquement) — prioritaire sur imageURL si présente. */
+  videoURL?: string
   headline?: string
   body?: string
   ctaLabel?: string
@@ -27,6 +29,9 @@ export const PLACEMENT_MEDIA: Record<AdPlacement, string> = {
   search_infeed: 'aspect-[16/5]',
   immobilier_infeed: 'aspect-[16/5]',
   property_detail: 'aspect-[16/4]',
+  // Diapositive plein écran du fil réels : format portrait, seul emplacement
+  // où le visuel occupe une carte verticale et non une bannière.
+  reels_infeed: 'aspect-[4/5]',
 }
 
 type AdCreativeCardProps = Readonly<{
@@ -72,7 +77,19 @@ export default function AdCreativeCard({
 
   const inner = (
     <>
-      {creative.imageURL ? (
+      {creative.videoURL ? (
+        // Pas de poster : pas de retraitement V1 côté pub (contrairement aux
+        // Réels), donc pas de miniature générée — limitation assumée, le
+        // navigateur affiche la 1re frame une fois la vidéo bufferisée.
+        <video
+          src={creative.videoURL}
+          className={imageClassName}
+          muted
+          autoPlay
+          loop
+          playsInline
+        />
+      ) : creative.imageURL ? (
         // eslint-disable-next-line @next/next/no-img-element
         <img
           src={creative.imageURL}

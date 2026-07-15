@@ -10,6 +10,8 @@ import type { AdPlacement } from "@/modules/advertising/domain/types";
 /** Données minimales pour rendre l'aperçu d'une créa. */
 export type AdCreativeCardData = {
   imageURL?: string;
+  /** Vidéo (reels_infeed uniquement) — prioritaire sur imageURL si présente. */
+  videoURL?: string;
   headline?: string;
   body?: string;
   ctaLabel?: string;
@@ -21,6 +23,7 @@ const PLACEMENT_LABELS: Record<AdPlacement, string> = {
   search_infeed: "Recherche",
   property_detail: "Détail annonce",
   immobilier_infeed: "Immobilier",
+  reels_infeed: "Réels",
 };
 
 /**
@@ -33,6 +36,7 @@ const PLACEMENT_MEDIA: Record<AdPlacement, string> = {
   search_infeed: "aspect-[16/5]",
   immobilier_infeed: "aspect-[16/5]",
   property_detail: "aspect-[16/4]",
+  reels_infeed: "aspect-[4/5]",
 };
 
 /**
@@ -72,7 +76,11 @@ function AdCreativeCard({
         Sponsorisé
       </p>
       <div className={cn("block overflow-hidden rounded-lg", fillHeight && "h-full")}>
-        {creative.imageURL ? (
+        {creative.videoURL ? (
+          // Pas de poster : pas de retraitement V1 côté pub, pas de miniature
+          // générée — limitation assumée (mirror exact de AdCreativeCard côté app).
+          <video src={creative.videoURL} className={imageClassName} muted autoPlay loop playsInline />
+        ) : creative.imageURL ? (
           // eslint-disable-next-line @next/next/no-img-element
           <img src={creative.imageURL} alt={creative.headline || "Publicité"} className={imageClassName} />
         ) : (
@@ -157,6 +165,19 @@ function PreviewContext({
     );
   }
 
+  if (placement === "reels_infeed") {
+    // Réplique le décor réel du fil réels (ReelAdSlide.tsx, apps/location-maison) :
+    // fond noir plein cadre + pastille "Publicité" — pas le décor "accueil".
+    return (
+      <div className="relative flex aspect-[9/16] w-full items-center justify-center overflow-hidden rounded-xl bg-neutral-950">
+        <p className="absolute left-4 top-4 z-10 rounded-full bg-white/10 px-3 py-1 text-[10px] font-semibold uppercase tracking-wide text-white/70 backdrop-blur-sm">
+          Publicité
+        </p>
+        {children}
+      </div>
+    );
+  }
+
   // home
   return (
     <div className="space-y-3">
@@ -176,7 +197,7 @@ function PreviewContext({
 type AdCreativePreviewProps = {
   creative: AdCreativeCardData;
   /** Visuels adaptés par emplacement (override du visuel par défaut). */
-  assets?: Partial<Record<AdPlacement, { imageURL: string }>>;
+  assets?: Partial<Record<AdPlacement, { imageURL?: string; videoURL?: string }>>;
   placements: AdPlacement[];
   className?: string;
 };
@@ -202,6 +223,7 @@ export default function AdCreativePreview({ creative, assets, placements, classN
   const shownCreative: AdCreativeCardData = {
     ...creative,
     imageURL: assets?.[active]?.imageURL || creative.imageURL,
+    videoURL: assets?.[active]?.videoURL || creative.videoURL,
   };
 
   return (
@@ -258,6 +280,11 @@ export default function AdCreativePreview({ creative, assets, placements, classN
                 // Hero accueil : bannière large sur dégradé, visuel entier (contain).
                 <div className="aspect-[3/1] w-full overflow-hidden rounded-xl bg-linear-to-r from-[#C1DEE8] to-[#FBD9B9]">
                   <AdCreativeCard creative={shownCreative} placement="home" surface="none" fillHeight />
+                </div>
+              ) : active === "reels_infeed" ? (
+                // Carte centrée sur fond noir — identique au rendu réel ReelAdSlide.tsx.
+                <div className="w-[85%] max-w-sm">
+                  <AdCreativeCard creative={shownCreative} placement="reels_infeed" surface="card" />
                 </div>
               ) : (
                 <AdCreativeCard creative={shownCreative} placement={active} surface={surface} />
