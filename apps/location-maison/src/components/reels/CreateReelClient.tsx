@@ -7,7 +7,7 @@ import { ArrowLeft, Loader2, Video, CheckCircle2, XCircle } from 'lucide-react'
 import { useCurrentUser } from '@/hooks/use-current-user'
 import { useProperty } from '@/hooks/use-property'
 import { useVideoDropzone, type VideoDropzoneRejectionReason } from '@/hooks/useVideoDropzone'
-import { createReel, uploadRawReelVideo, subscribeToReel } from '@/db/reel.db'
+import { buildRawReelVideoPath, createReel, markReelUploadFailed, uploadRawReelVideo, subscribeToReel } from '@/db/reel.db'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -35,7 +35,7 @@ interface CreateReelClientProps {
 }
 
 export default function CreateReelClient({ propertyId }: CreateReelClientProps) {
-  const { user, isLoading: authLoading } = useCurrentUser()
+  const { user, isLoading: authLoading, isFirebaseConnected } = useCurrentUser()
   const { data: property, isLoading: propertyLoading } = useProperty(propertyId)
   const { toast } = useToast()
 
@@ -77,16 +77,31 @@ export default function CreateReelClient({ propertyId }: CreateReelClientProps) 
 
   const handleFile = React.useCallback(async (file: File) => {
     if (!user?.uid) return
+    if (!isFirebaseConnected) {
+      toast({
+        title: "Connexion en cours",
+        description: "Patientez quelques secondes puis réessayez.",
+      })
+      return
+    }
 
     setIsUploading(true)
     try {
       const reelId = crypto.randomUUID()
-      const rawVideoPath = await uploadRawReelVideo(file, user.uid, reelId)
       const trimmedContact = contact.trim() || undefined
+      const rawVideoPath = buildRawReelVideoPath(file, user.uid, reelId)
       const createdId = await createReel(reelId, propertyId, user.uid, rawVideoPath, trimmedContact)
 
       if (!createdId) {
         throw new Error("La création du réel a échoué.")
+      }
+
+      try {
+        await uploadRawReelVideo(file, user.uid, reelId)
+      } catch (error) {
+        const message = error instanceof Error ? error.message : "Échec de l'envoi de la vidéo."
+        await markReelUploadFailed(createdId, message)
+        throw error
       }
 
       setReel({
@@ -115,18 +130,22 @@ export default function CreateReelClient({ propertyId }: CreateReelClientProps) 
     } finally {
       setIsUploading(false)
     }
-  }, [user?.uid, propertyId, contact, toast])
+  }, [user?.uid, isFirebaseConnected, propertyId, contact, toast])
 
   const { getRootProps, getInputProps, isDragActive, isProcessing } = useVideoDropzone({
     onFile: handleFile,
     onRejected: handleRejected,
   })
 
-  if (authLoading || propertyLoading) {
+  const waitingForFirebase = Boolean(user?.uid && !isFirebaseConnected)
+
+  if (authLoading || propertyLoading || waitingForFirebase) {
     return (
       <div className="flex flex-col items-center justify-center min-h-[400px] gap-4">
         <Loader2 className="h-8 w-8 animate-spin text-emerald-600" />
-        <p className="text-slate-500 dark:text-slate-400">Chargement...</p>
+        <p className="text-slate-500 dark:text-slate-400">
+          {waitingForFirebase ? "Connexion sécurisée..." : "Chargement..."}
+        </p>
       </div>
     )
   }
