@@ -1,5 +1,6 @@
 import { initializeApp, getApps } from "firebase/app";
 import { Auth, getAuth } from "firebase/auth";
+import { FirebaseStorage, getStorage } from "firebase/storage";
 
 function getFirebaseClientConfig() {
   const apiKey = process.env.NEXT_PUBLIC_FIREBASE_API_KEY;
@@ -27,4 +28,23 @@ export function getClientAuth() {
     getApps().length > 0 ? getApps()[0] : initializeApp(getFirebaseClientConfig());
   cachedAuth = getAuth(app);
   return cachedAuth;
+}
+
+let cachedStorage: FirebaseStorage | null = null;
+
+// Ajouté pour l'upload direct-client des créas vidéo publicitaires
+// (reels_infeed) — jusque-là l'admin n'utilisait le SDK client que pour
+// l'authentification (getClientAuth), tout le reste passait par l'Admin SDK
+// côté serveur. La session Firebase Auth du client persiste après connexion
+// (signInWithEmailAndPassword sans signOut), donc request.auth.uid est
+// disponible pour storage.rules ici aussi.
+export function getClientStorage() {
+  if (cachedStorage) {
+    return cachedStorage;
+  }
+
+  const app =
+    getApps().length > 0 ? getApps()[0] : initializeApp(getFirebaseClientConfig());
+  cachedStorage = getStorage(app);
+  return cachedStorage;
 }

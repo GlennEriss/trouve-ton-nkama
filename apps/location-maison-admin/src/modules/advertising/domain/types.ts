@@ -42,17 +42,29 @@ export type AdBilling = {
   creditsUsed?: number;
 };
 
+/** Image OU vidéo (la vidéo n'a de sens que pour reels_infeed) — au moins
+ * l'un des deux requis, validé côté zod/service, pas par le type. */
 export type AdAsset = {
   imagePATH?: string;
-  imageURL: string;
+  imageURL?: string;
+  videoPATH?: string;
+  videoURL?: string;
 };
 
 /** Visuels adaptés par emplacement (optionnel). Repli sur `imageURL` par défaut. */
 export type AdAssets = Partial<Record<AdPlacement, AdAsset>>;
 
+// Créa vidéo publicitaire (reels_infeed uniquement). Valeurs volontairement
+// alignées sur les constantes Réels (functions/src/reels/config.ts) mais
+// dupliquées (pas d'import croisé) pour garder les deux systèmes découplés.
+export const AD_VIDEO_MAX_DURATION_SECONDS = 300;
+export const AD_VIDEO_MAX_SIZE_BYTES = 500 * 1024 * 1024;
+
 export type AdCreative = {
   imagePATH?: string;
-  imageURL: string;
+  imageURL?: string;
+  videoPATH?: string;
+  videoURL?: string;
   assets?: AdAssets;
   headline?: string;
   body?: string;

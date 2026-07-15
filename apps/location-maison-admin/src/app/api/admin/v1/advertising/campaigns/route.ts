@@ -17,14 +17,21 @@ const placementEnum = z.enum(
 const assetSchema = z
   .object({
     imagePATH: z.string().trim().max(500).optional(),
-    imageURL: z.string().trim().url().max(1000),
+    imageURL: z.string().trim().url().max(1000).optional(),
+    videoPATH: z.string().trim().max(500).optional(),
+    videoURL: z.string().trim().url().max(1000).optional(),
   })
-  .strict();
+  .strict()
+  .refine((a) => Boolean(a.imageURL || a.videoURL), {
+    message: "Un visuel (image ou vidéo) est requis par emplacement fourni.",
+  });
 
 const creativeSchema = z
   .object({
     imagePATH: z.string().trim().max(500).optional(),
-    imageURL: z.string().trim().url().max(1000),
+    imageURL: z.string().trim().url().max(1000).optional(),
+    videoPATH: z.string().trim().max(500).optional(),
+    videoURL: z.string().trim().url().max(1000).optional(),
     // Visuels adaptés par emplacement (optionnel).
     assets: z
       .object({
@@ -41,7 +48,10 @@ const creativeSchema = z
     ctaLabel: z.string().trim().max(40).optional(),
     ctaUrl: z.string().trim().max(1000).optional(),
   })
-  .strict();
+  .strict()
+  .refine((c) => Boolean(c.imageURL || c.videoURL), {
+    message: "Un visuel par défaut (image ou vidéo) est requis.",
+  });
 
 const createSchema = z
   .object({
@@ -51,7 +61,7 @@ const createSchema = z
     ),
     title: z.string().trim().min(2).max(160),
     creative: creativeSchema,
-    placements: z.array(placementEnum).min(1).max(4),
+    placements: z.array(placementEnum).min(1).max(5),
     targeting: z
       .object({
         provinces: z.array(z.string().trim()).optional(),

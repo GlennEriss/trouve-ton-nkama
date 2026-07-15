@@ -41,7 +41,9 @@ export async function listAdvertisers(): Promise<ListAdvertisersResult> {
 
 export async function createCampaign(input: CreateAdCampaignInput): Promise<AdCampaign> {
   if (!input.title?.trim()) throw new Error("AD_CAMPAIGN_INVALID_TITLE");
-  if (!input.creative?.imageURL?.trim()) throw new Error("AD_CAMPAIGN_INVALID_CREATIVE");
+  if (!input.creative?.imageURL?.trim() && !input.creative?.videoURL?.trim()) {
+    throw new Error("AD_CAMPAIGN_INVALID_CREATIVE");
+  }
   assertValidPlacements(input.placements);
   assertValidDates(input.startDate, input.endDate);
   return repo.createCampaign(input);

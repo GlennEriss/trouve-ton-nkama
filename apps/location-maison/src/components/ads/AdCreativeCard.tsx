@@ -7,6 +7,8 @@ import type { AdPlacement } from '@/models/advertising'
 /** Données minimales nécessaires au rendu d'une créa (live ou preview). */
 export type AdCreativeCardData = Readonly<{
   imageURL?: string
+  /** Vidéo (reels_infeed uniquement) — prioritaire sur imageURL si présente. */
+  videoURL?: string
   headline?: string
   body?: string
   ctaLabel?: string
@@ -75,7 +77,19 @@ export default function AdCreativeCard({
 
   const inner = (
     <>
-      {creative.imageURL ? (
+      {creative.videoURL ? (
+        // Pas de poster : pas de retraitement V1 côté pub (contrairement aux
+        // Réels), donc pas de miniature générée — limitation assumée, le
+        // navigateur affiche la 1re frame une fois la vidéo bufferisée.
+        <video
+          src={creative.videoURL}
+          className={imageClassName}
+          muted
+          autoPlay
+          loop
+          playsInline
+        />
+      ) : creative.imageURL ? (
         // eslint-disable-next-line @next/next/no-img-element
         <img
           src={creative.imageURL}

@@ -43,10 +43,15 @@ export interface AdBilling {
   creditsUsed?: number
 }
 
-/** Un visuel hébergé (chemin Storage + URL publique). */
+/** Un visuel hébergé (chemin Storage + URL publique). Image OU vidéo (la
+ * vidéo n'est utilisée que pour l'emplacement reels_infeed) — au moins l'un
+ * des deux doit être renseigné, jamais imposé par le type lui-même (validé
+ * côté zod/service). */
 export interface AdAsset {
-  imagePATH: string
-  imageURL: string
+  imagePATH?: string
+  imageURL?: string
+  videoPATH?: string
+  videoURL?: string
 }
 
 /**
@@ -58,9 +63,13 @@ export type AdAssets = Partial<Record<AdPlacement, AdAsset>>
 
 /** Visuel + appel à l'action de la pub. */
 export interface AdCreative {
-  /** Visuel par défaut (fallback si pas de visuel spécifique pour l'emplacement). */
-  imagePATH: string
-  imageURL: string
+  /** Visuel par défaut (fallback si pas de visuel spécifique pour l'emplacement).
+   * Optionnel : une campagne reels_infeed peut être 100% vidéo. */
+  imagePATH?: string
+  imageURL?: string
+  /** Vidéo par défaut — n'a de sens que pour reels_infeed. */
+  videoPATH?: string
+  videoURL?: string
   /** Visuels adaptés par emplacement (optionnel). */
   assets?: AdAssets
   headline?: string
@@ -121,7 +130,9 @@ export interface AdCampaign {
 export interface AdCreativePublic {
   campaignId: string
   placement: AdPlacement
-  imageURL: string
+  imageURL?: string
+  /** Vidéo (reels_infeed uniquement). Pas de videoPATH : détail Storage interne. */
+  videoURL?: string
   headline?: string
   body?: string
   ctaLabel?: string

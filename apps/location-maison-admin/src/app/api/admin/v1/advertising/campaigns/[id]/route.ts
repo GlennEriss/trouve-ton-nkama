@@ -19,9 +19,14 @@ const placementEnum = z.enum(AD_PLACEMENTS as [string, ...string[]]);
 const assetSchema = z
   .object({
     imagePATH: z.string().trim().max(500).optional(),
-    imageURL: z.string().trim().url().max(1000),
+    imageURL: z.string().trim().url().max(1000).optional(),
+    videoPATH: z.string().trim().max(500).optional(),
+    videoURL: z.string().trim().url().max(1000).optional(),
   })
-  .strict();
+  .strict()
+  .refine((a) => Boolean(a.imageURL || a.videoURL), {
+    message: "Un visuel (image ou vidéo) est requis par emplacement fourni.",
+  });
 
 const patchSchema = z
   .object({
@@ -29,7 +34,9 @@ const patchSchema = z
     creative: z
       .object({
         imagePATH: z.string().trim().max(500).optional(),
-        imageURL: z.string().trim().url().max(1000),
+        imageURL: z.string().trim().url().max(1000).optional(),
+        videoPATH: z.string().trim().max(500).optional(),
+        videoURL: z.string().trim().url().max(1000).optional(),
         assets: z
           .object({
             home: assetSchema.optional(),
@@ -46,8 +53,11 @@ const patchSchema = z
         ctaUrl: z.string().trim().max(1000).optional(),
       })
       .strict()
+      .refine((c) => Boolean(c.imageURL || c.videoURL), {
+        message: "Un visuel par défaut (image ou vidéo) est requis.",
+      })
       .optional(),
-    placements: z.array(placementEnum).min(1).max(4).optional(),
+    placements: z.array(placementEnum).min(1).max(5).optional(),
     targeting: z
       .object({
         provinces: z.array(z.string().trim()).optional(),

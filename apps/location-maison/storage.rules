@@ -34,6 +34,16 @@ service firebase.storage {
       allow write: if false;
     }
 
+    // Créa vidéo publicitaire (emplacement reels_infeed) — uploadée directement
+    // par le client (admin ou annonceur self-serve, tous deux authentifiés via
+    // Firebase Auth), sans retraitement V1 : le fichier brut est servi tel
+    // quel, lecture publique.
+    match /ad-campaigns-video/{ownerUid}/{fileName} {
+      allow read: if true;
+      allow create: if request.auth != null && request.auth.uid == ownerUid;
+      allow update, delete: if false;
+    }
+
     // Règle générale préexistante — inchangée, voir note en tête de fichier.
     match /{allPaths=**} {
       allow read, create: if true;

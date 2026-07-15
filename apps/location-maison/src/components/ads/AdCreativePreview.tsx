@@ -72,6 +72,19 @@ function PreviewContext({
     )
   }
 
+  if (placement === 'reels_infeed') {
+    // Réplique le décor réel du fil réels (ReelAdSlide.tsx) : fond noir plein
+    // cadre + pastille "Publicité" — pas le décor "accueil".
+    return (
+      <div className="relative flex aspect-[9/16] w-full items-center justify-center overflow-hidden rounded-xl bg-neutral-950">
+        <p className="absolute left-4 top-4 z-10 rounded-full bg-white/10 px-3 py-1 text-[10px] font-semibold uppercase tracking-wide text-white/70 backdrop-blur-sm">
+          Publicité
+        </p>
+        {children}
+      </div>
+    )
+  }
+
   // home
   return (
     <div className="space-y-3">
@@ -91,7 +104,7 @@ function PreviewContext({
 type AdCreativePreviewProps = Readonly<{
   creative: AdCreativeCardData
   /** Visuels adaptés par emplacement (override du visuel par défaut). */
-  assets?: Partial<Record<AdPlacement, { imageURL: string }>>
+  assets?: Partial<Record<AdPlacement, { imageURL?: string; videoURL?: string }>>
   /** Emplacements à prévisualiser (typiquement ceux du forfait/campagne). */
   placements: AdPlacement[]
   className?: string
@@ -122,6 +135,7 @@ export default function AdCreativePreview({
   const shownCreative: AdCreativeCardData = {
     ...creative,
     imageURL: assets?.[active]?.imageURL || creative.imageURL,
+    videoURL: assets?.[active]?.videoURL || creative.videoURL,
   }
 
   const surface =
@@ -187,6 +201,16 @@ export default function AdCreativePreview({
                     fillHeight
                     interactive={false}
                     className="h-full w-full [&_a]:h-full"
+                  />
+                </div>
+              ) : active === 'reels_infeed' ? (
+                // Carte centrée sur fond noir — identique au rendu réel ReelAdSlide.tsx.
+                <div className="w-[85%] max-w-sm">
+                  <AdCreativeCard
+                    creative={shownCreative}
+                    placement="reels_infeed"
+                    surface="card"
+                    interactive={false}
                   />
                 </div>
               ) : (

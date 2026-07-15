@@ -56,12 +56,15 @@ function matchesTargeting(campaign: AdCampaign, ctx: AdServeContext): boolean {
 function toPublicCreative(campaign: AdCampaign, placement: AdPlacement): AdCreativePublic {
   // Visuel adapté à l'emplacement si fourni, sinon le visuel par défaut.
   const asset = campaign.creative?.assets?.[placement]
-  const imageURL = asset?.imageURL || campaign.creative?.imageURL || ''
+  const imageURL = asset?.imageURL || campaign.creative?.imageURL || undefined
+  // Vidéo (reels_infeed uniquement) — même logique de repli que l'image.
+  const videoURL = asset?.videoURL || campaign.creative?.videoURL || undefined
 
   return {
     campaignId: campaign.id,
     placement,
     imageURL,
+    videoURL,
     headline: campaign.creative?.headline,
     body: campaign.creative?.body,
     ctaLabel: campaign.creative?.ctaLabel,

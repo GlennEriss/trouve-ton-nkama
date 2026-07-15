@@ -21,10 +21,15 @@ import {
 } from "@/components/ui/dialog";
 
 import { AD_FORMATS, type AdFormatKey } from "@/modules/advertising/domain/types";
+import { uploadAdCreativeVideo } from "@/modules/advertising/infrastructure/ad-video-upload.client";
+import { AD_VIDEO_REJECTION_MESSAGES, validateAdVideoFile } from "@/modules/advertising/infrastructure/validate-ad-video";
 
 type AdPlacement = "search_infeed" | "property_detail" | "home" | "immobilier_infeed" | "reels_infeed";
 
-type AssetMap = Partial<Record<AdPlacement, { imageURL: string; imagePATH: string }>>;
+type AssetMap = Partial<Record<AdPlacement, { imageURL?: string; imagePATH?: string; videoURL?: string; videoPATH?: string }>>;
+
+const REELS_FORMAT_ACCEPT = "image/png,image/jpeg,image/webp,image/gif,video/mp4,video/quicktime,video/webm";
+const IMAGE_ONLY_ACCEPT = "image/png,image/jpeg,image/webp,image/gif";
 
 /** Upload un visuel et renvoie son URL publique + chemin Storage. */
 async function uploadAdImage(file: File): Promise<{ imageURL: string; imagePATH: string }> {
@@ -38,6 +43,15 @@ async function uploadAdImage(file: File): Promise<{ imageURL: string; imagePATH:
     throw new Error(payload.success ? "Échec de l'upload." : payload.error?.message || "Échec de l'upload.");
   }
   return payload.data;
+}
+
+/** Upload une vidéo de créa (format "reels" uniquement) avec validation durée/taille préalable. */
+async function uploadAdVideo(file: File): Promise<{ videoURL: string; videoPATH: string }> {
+  const validation = await validateAdVideoFile(file);
+  if (!validation.ok) {
+    throw new Error(AD_VIDEO_REJECTION_MESSAGES[validation.reason!]);
+  }
+  return uploadAdCreativeVideo(file);
 }
 
 const PLACEMENT_LABELS: Record<AdPlacement, string> = {
@@ -301,10 +315,14 @@ function NewCampaignDialog({ advertisers, onDone, onError }: { advertisers: Adve
     setPlacements((prev) => (prev.includes(p) ? prev.filter((x) => x !== p) : [...prev, p]));
 
   // Upload d'un visuel par FORMAT : appliqué à tous les emplacements du groupe.
+  // Le format "reels" accepte aussi la vidéo (seul format concerné).
   const handleFormatUpload = async (format: (typeof AD_FORMATS)[number], file: File) => {
     setFormatUploading(format.key);
     try {
-      const data = await uploadAdImage(file);
+      const data =
+        format.key === "reels" && file.type.startsWith("video/")
+          ? await uploadAdVideo(file)
+          : await uploadAdImage(file);
       setAssets((prev) => {
         const next = { ...prev };
         for (const p of format.placements) next[p as AdPlacement] = data;
@@ -354,8 +372,14 @@ function NewCampaignDialog({ advertisers, onDone, onError }: { advertisers: Adve
           advertiserId: advertiserId || null,
           title,
           creative: {
-            imageURL,
+            // Chaîne vide → undefined : le schéma zod du serveur valide imageURL
+            // avec .url() même en optional (une chaîne vide échouerait .url()).
+            // Campagne 100% reels_infeed sans visuel par défaut : le serveur exige
+            // quand même un visuel par défaut (image ou vidéo) — on reflète l'asset
+            // reels comme visuel par défaut dans ce cas précis.
+            imageURL: imageURL || (isReelsOnly ? assets.reels_infeed?.imageURL : undefined),
             imagePATH: imagePATH || undefined,
+            videoURL: isReelsOnly ? assets.reels_infeed?.videoURL : undefined,
             assets: Object.keys(assets).length ? assets : undefined,
             ctaUrl: ctaUrl || undefined,
             ctaLabel: ctaLabel || undefined,
@@ -378,9 +402,14 @@ function NewCampaignDialog({ advertisers, onDone, onError }: { advertisers: Adve
   });
 
   // Le champ « Annonceur » est volontairement optionnel (pub externe).
+  // Le visuel par défaut n'est exigé que si la campagne cible au moins un
+  // emplacement autre que reels_infeed (les autres formats sont image-only) —
+  // une campagne 100% reels_infeed peut se contenter de sa vidéo par format.
+  const isReelsOnly = placements.length > 0 && placements.every((p) => p === "reels_infeed");
+  const hasReelsAsset = Boolean(assets.reels_infeed?.imageURL || assets.reels_infeed?.videoURL);
   const missing: string[] = [];
   if (title.trim().length < 2) missing.push("le titre");
-  if (!imageURL.trim()) missing.push("le visuel importé");
+  if (!imageURL.trim() && !(isReelsOnly && hasReelsAsset)) missing.push("le visuel importé");
   if (placements.length === 0) missing.push("au moins un emplacement");
   if (!startDate) missing.push("la date de début");
   if (!endDate) missing.push("la date de fin");
@@ -434,10 +463,11 @@ function NewCampaignDialog({ advertisers, onDone, onError }: { advertisers: Adve
                   <div className="min-w-[150px] flex-1">
                     <span className="font-medium text-slate-700">{fmt.label}</span>
                     <span className="ml-1 text-slate-400">— {fmt.ratioHint} ({fmt.recommended})</span>
+                    {fmt.key === "reels" && <span className="ml-1 text-slate-400">· vidéo jusqu&apos;à 5 min</span>}
                   </div>
                   <input
                     type="file"
-                    accept="image/png,image/jpeg,image/webp,image/gif"
+                    accept={fmt.key === "reels" ? REELS_FORMAT_ACCEPT : IMAGE_ONLY_ACCEPT}
                     disabled={formatUploading === fmt.key}
                     onChange={(e) => { const f = e.target.files?.[0]; if (f) void handleFormatUpload(fmt, f); }}
                     className="block max-w-[180px] text-[11px] text-slate-600 file:mr-2 file:rounded file:border-0 file:bg-slate-100 file:px-2 file:py-1"
@@ -547,8 +577,10 @@ type FullCampaign = {
   startDate: string | null;
   endDate: string | null;
   creative: {
-    imageURL: string;
+    imageURL?: string;
     imagePATH?: string;
+    videoURL?: string;
+    videoPATH?: string;
     assets?: AssetMap;
     headline?: string;
     body?: string;
@@ -637,10 +669,14 @@ function EditCampaignForm({
     }
   };
 
+  // Le format "reels" accepte aussi la vidéo (seul format concerné).
   const handleFormatUpload = async (format: (typeof AD_FORMATS)[number], file: File) => {
     setFormatUploading(format.key);
     try {
-      const data = await uploadAdImage(file);
+      const data =
+        format.key === "reels" && file.type.startsWith("video/")
+          ? await uploadAdVideo(file)
+          : await uploadAdImage(file);
       setAssets((prev) => {
         const next = { ...prev };
         for (const p of format.placements) next[p as AdPlacement] = data;
@@ -660,6 +696,11 @@ function EditCampaignForm({
       return next;
     });
 
+  // Cf. NewCampaignDialog : une campagne 100% reels_infeed peut se contenter
+  // de sa vidéo par format, sans visuel par défaut.
+  const isReelsOnly = placements.length > 0 && placements.every((p) => p === "reels_infeed");
+  const hasReelsAsset = Boolean(assets.reels_infeed?.imageURL || assets.reels_infeed?.videoURL);
+
   const mutation = useMutation({
     mutationFn: () =>
       patchJson(
@@ -667,8 +708,9 @@ function EditCampaignForm({
         {
           title: title || undefined,
           creative: {
-            imageURL,
+            imageURL: imageURL || (isReelsOnly ? assets.reels_infeed?.imageURL : undefined),
             imagePATH: imagePATH || undefined,
+            videoURL: isReelsOnly ? assets.reels_infeed?.videoURL : undefined,
             assets: Object.keys(assets).length ? assets : undefined,
             headline: headline || undefined,
             body: body || undefined,
@@ -688,7 +730,12 @@ function EditCampaignForm({
     onError,
   });
 
-  const valid = title.trim().length >= 2 && imageURL.trim() && placements.length > 0 && Boolean(startDate) && Boolean(endDate);
+  const valid =
+    title.trim().length >= 2 &&
+    (Boolean(imageURL.trim()) || (isReelsOnly && hasReelsAsset)) &&
+    placements.length > 0 &&
+    Boolean(startDate) &&
+    Boolean(endDate);
 
   return (
     <>
@@ -716,10 +763,11 @@ function EditCampaignForm({
                     <div className="min-w-[150px] flex-1">
                       <span className="font-medium text-slate-700">{fmt.label}</span>
                       <span className="ml-1 text-slate-400">— {fmt.ratioHint} ({fmt.recommended})</span>
+                      {fmt.key === "reels" && <span className="ml-1 text-slate-400">· vidéo jusqu&apos;à 5 min</span>}
                     </div>
                     <input
                       type="file"
-                      accept="image/png,image/jpeg,image/webp,image/gif"
+                      accept={fmt.key === "reels" ? REELS_FORMAT_ACCEPT : IMAGE_ONLY_ACCEPT}
                       disabled={formatUploading === fmt.key}
                       onChange={(e) => { const f = e.target.files?.[0]; if (f) void handleFormatUpload(fmt, f); }}
                       className="block max-w-[180px] text-[11px] text-slate-600 file:mr-2 file:rounded file:border-0 file:bg-slate-100 file:px-2 file:py-1"
