@@ -66,7 +66,8 @@ export async function createReel(
     propertyId: string | null,
     ownerId: string,
     rawVideoPath: string,
-    contact?: string
+    contact?: string,
+    description?: string
 ): Promise<string | null> {
     try {
         const { auth } = await getAuth();
@@ -87,6 +88,7 @@ export async function createReel(
                 propertyId,
                 rawVideoPath,
                 contact,
+                description,
             }),
         });
 

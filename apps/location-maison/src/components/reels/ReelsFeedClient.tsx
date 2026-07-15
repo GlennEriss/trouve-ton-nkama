@@ -250,6 +250,11 @@ export function ReelSlide({
             {[owner.firstname, owner.lastname].filter(Boolean).join(' ')}
           </p>
         )}
+        {reel.description && (
+          <p className="mt-1 line-clamp-3 whitespace-pre-line text-sm text-white/95">
+            {reel.description}
+          </p>
+        )}
         {property ? (
           <>
             <p className="mt-1 line-clamp-2 text-sm text-white/90">{property.title}</p>
