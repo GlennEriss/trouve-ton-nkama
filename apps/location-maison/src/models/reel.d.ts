@@ -15,6 +15,8 @@ export type Reel = ICreation & {
     // exister sans annonce, voir propertyId). Optionnel : si absent, le feed retombe sur le
     // contact de l'annonce liée puis, en dernier recours, le numéro de profil du créateur.
     contact?: string;
+    // Texte libre affiché sur le réel dans le feed. Facultatif pour garder une création rapide.
+    description?: string;
 
     processingStatus: ReelProcessingStatus;
     processingError?: string;

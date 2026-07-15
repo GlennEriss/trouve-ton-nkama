@@ -11,6 +11,7 @@ import { buildRawReelVideoPath, createReel, markReelUploadFailed, uploadRawReelV
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import { Textarea } from '@/components/ui/textarea'
 import { useToast } from '@/hooks/use-toast'
 import { routes } from '@/constantes/routes'
 import { cn } from '@/lib/utils'
@@ -30,6 +31,8 @@ const PROCESSING_LABELS: Record<ReelProcessingStatus, string> = {
   failed: "Le traitement de la vidéo a échoué.",
 }
 
+const MAX_DESCRIPTION_LENGTH = 280
+
 interface CreateReelClientProps {
   propertyId: string
 }
@@ -46,6 +49,7 @@ export default function CreateReelClient({ propertyId }: CreateReelClientProps) 
   // numéro de profil, modifiable. Repli sur le numéro de profil au moment de l'affichage si
   // laissé vide (voir ReelsFeedClient).
   const [contact, setContact] = React.useState('')
+  const [description, setDescription] = React.useState('')
 
   React.useEffect(() => {
     if (!authLoading && !propertyLoading && property) {
@@ -89,8 +93,9 @@ export default function CreateReelClient({ propertyId }: CreateReelClientProps) 
     try {
       const reelId = crypto.randomUUID()
       const trimmedContact = contact.trim() || undefined
+      const trimmedDescription = description.trim() || undefined
       const rawVideoPath = buildRawReelVideoPath(file, user.uid, reelId)
-      const createdId = await createReel(reelId, propertyId, user.uid, rawVideoPath, trimmedContact)
+      const createdId = await createReel(reelId, propertyId, user.uid, rawVideoPath, trimmedContact, trimmedDescription)
 
       if (!createdId) {
         throw new Error("La création du réel a échoué.")
@@ -115,6 +120,7 @@ export default function CreateReelClient({ propertyId }: CreateReelClientProps) 
         giftCount: 0,
         giftTotalAmount: 0,
         ...(trimmedContact ? { contact: trimmedContact } : {}),
+        ...(trimmedDescription ? { description: trimmedDescription } : {}),
       } as Reel & { id: string })
 
       toast({
@@ -130,7 +136,7 @@ export default function CreateReelClient({ propertyId }: CreateReelClientProps) 
     } finally {
       setIsUploading(false)
     }
-  }, [user?.uid, isFirebaseConnected, propertyId, contact, toast])
+  }, [user?.uid, isFirebaseConnected, propertyId, contact, description, toast])
 
   const { getRootProps, getInputProps, isDragActive, isProcessing } = useVideoDropzone({
     onFile: handleFile,
@@ -174,20 +180,38 @@ export default function CreateReelClient({ propertyId }: CreateReelClientProps) 
       </div>
 
       {showDropzone && (
-        <div>
-          <Label htmlFor="reel-contact">Numéro à contacter (WhatsApp / appel)</Label>
-          <Input
-            id="reel-contact"
-            type="tel"
-            value={contact}
-            onChange={(event) => setContact(event.target.value)}
-            placeholder="Ex: +241 XX XX XX XX"
-            disabled={busy}
-            className="mt-1"
-          />
-          <p className="text-xs text-slate-400 mt-1">
-            Laissez vide pour utiliser le contact de l&apos;annonce, ou votre numéro de profil.
-          </p>
+        <div className="space-y-3">
+          <div>
+            <Label htmlFor="reel-contact">Numéro à contacter (WhatsApp / appel)</Label>
+            <Input
+              id="reel-contact"
+              type="tel"
+              value={contact}
+              onChange={(event) => setContact(event.target.value)}
+              placeholder="Ex: +241 XX XX XX XX"
+              disabled={busy}
+              className="mt-1"
+            />
+            <p className="text-xs text-slate-400 mt-1">
+              Laissez vide pour utiliser le contact de l&apos;annonce, ou votre numéro de profil.
+            </p>
+          </div>
+          <div>
+            <Label htmlFor="reel-description">Description (facultatif)</Label>
+            <Textarea
+              id="reel-description"
+              value={description}
+              onChange={(event) => setDescription(event.target.value.slice(0, MAX_DESCRIPTION_LENGTH))}
+              placeholder="Ex: Visite rapide, quartier calme, proche commerces..."
+              disabled={busy}
+              maxLength={MAX_DESCRIPTION_LENGTH}
+              rows={3}
+              className="mt-1 resize-none"
+            />
+            <p className="mt-1 text-right text-xs text-slate-400">
+              {description.length}/{MAX_DESCRIPTION_LENGTH}
+            </p>
+          </div>
         </div>
       )}
 

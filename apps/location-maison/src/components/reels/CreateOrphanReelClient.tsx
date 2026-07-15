@@ -11,6 +11,7 @@ import { PublishAuthModal } from '@/components/property-publish/PublishAuthModal
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import { Textarea } from '@/components/ui/textarea'
 import { useToast } from '@/hooks/use-toast'
 import { routes } from '@/constantes/routes'
 import { cn } from '@/lib/utils'
@@ -31,6 +32,8 @@ const PROCESSING_LABELS: Record<ReelProcessingStatus, string> = {
   failed: "Le traitement de la vidéo a échoué.",
 }
 
+const MAX_DESCRIPTION_LENGTH = 280
+
 export default function CreateOrphanReelClient() {
   const { user, isFirebaseConnected } = useCurrentUser()
   const { toast } = useToast()
@@ -41,6 +44,7 @@ export default function CreateOrphanReelClient() {
   // numéro de profil de l'annonceur, modifiable, pas obligatoire (repli sur le numéro de profil
   // au moment de l'affichage si laissé vide, voir ReelsFeedClient).
   const [contact, setContact] = React.useState('')
+  const [description, setDescription] = React.useState('')
   const [pendingSubmission, setPendingSubmission] = React.useState(false)
   const [isPublishAuthModalOpen, setIsPublishAuthModalOpen] = React.useState(false)
   const isFinalSubmittingRef = React.useRef(false)
@@ -85,8 +89,9 @@ export default function CreateOrphanReelClient() {
     try {
       const reelId = crypto.randomUUID()
       const trimmedContact = contact.trim() || undefined
+      const trimmedDescription = description.trim() || undefined
       const rawVideoPath = buildRawReelVideoPath(file, user.uid, reelId)
-      const createdId = await createReel(reelId, null, user.uid, rawVideoPath, trimmedContact)
+      const createdId = await createReel(reelId, null, user.uid, rawVideoPath, trimmedContact, trimmedDescription)
 
       if (!createdId) {
         throw new Error("La création du réel a échoué.")
@@ -112,6 +117,7 @@ export default function CreateOrphanReelClient() {
         giftCount: 0,
         giftTotalAmount: 0,
         ...(trimmedContact ? { contact: trimmedContact } : {}),
+        ...(trimmedDescription ? { description: trimmedDescription } : {}),
       } as Reel & { id: string })
 
       toast({
@@ -126,7 +132,7 @@ export default function CreateOrphanReelClient() {
       })
       throw error
     }
-  }, [user?.uid, contact, clearDraftVideo, toast])
+  }, [user?.uid, contact, description, clearDraftVideo, toast])
 
   const handlePublish = React.useCallback(async () => {
     if (!videoFile) return
@@ -236,6 +242,22 @@ export default function CreateOrphanReelClient() {
             />
             <p className="text-xs text-slate-400 mt-1">
               Laissez vide pour utiliser votre numéro de profil par défaut.
+            </p>
+          </div>
+          <div>
+            <Label htmlFor="reel-description">Description (facultatif)</Label>
+            <Textarea
+              id="reel-description"
+              value={description}
+              onChange={(event) => setDescription(event.target.value.slice(0, MAX_DESCRIPTION_LENGTH))}
+              placeholder="Ex: Visite rapide, quartier calme, proche commerces..."
+              disabled={busy}
+              maxLength={MAX_DESCRIPTION_LENGTH}
+              rows={3}
+              className="mt-1 resize-none"
+            />
+            <p className="mt-1 text-right text-xs text-slate-400">
+              {description.length}/{MAX_DESCRIPTION_LENGTH}
             </p>
           </div>
           <div className="flex gap-2">

@@ -124,6 +124,23 @@ function sanitizeOptionalContact(value: unknown): string | undefined {
   return contact;
 }
 
+function sanitizeOptionalDescription(value: unknown): string | undefined {
+  if (typeof value !== 'string') {
+    return undefined;
+  }
+
+  const description = value.trim();
+  if (!description) {
+    return undefined;
+  }
+
+  if (description.length > 280) {
+    throw new ReelApiError(400, 'INVALID_DESCRIPTION', 'La description ne peut pas dépasser 280 caractères.');
+  }
+
+  return description;
+}
+
 function sanitizeProcessingError(value: unknown): string {
   const fallback = "L'envoi de la vidéo a échoué. Réessayez avec un autre fichier.";
   if (typeof value !== 'string') {
@@ -221,6 +238,7 @@ export async function POST(request: NextRequest): Promise<NextResponse<ReelApiRe
     const propertyId = sanitizeOptionalPropertyId(body.propertyId);
     const rawVideoPath = sanitizeRawVideoPath(body.rawVideoPath, uid, reelId);
     const contact = sanitizeOptionalContact(body.contact);
+    const description = sanitizeOptionalDescription(body.description);
 
     const db = getAdminDb();
     await assertAnnouncer(db, uid);
@@ -253,6 +271,7 @@ export async function POST(request: NextRequest): Promise<NextResponse<ReelApiRe
         createdAt: FieldValue.serverTimestamp(),
         updatedAt: FieldValue.serverTimestamp(),
         ...(contact ? { contact } : {}),
+        ...(description ? { description } : {}),
       } as Reel & { state: 'IN_PROGRESS'; createdAt: FirebaseFirestore.FieldValue; updatedAt: FirebaseFirestore.FieldValue };
 
       transaction.create(reelRef, payload);

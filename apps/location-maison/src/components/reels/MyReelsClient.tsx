@@ -82,6 +82,11 @@ export default function MyReelsClient() {
               <p className="text-xs text-slate-500 mt-0.5">
                 {reel.propertyId ? 'Attaché à une annonce' : 'Pas encore attaché à une annonce'}
               </p>
+              {reel.description && (
+                <p className="mt-1 line-clamp-2 text-xs text-slate-500 dark:text-slate-400">
+                  {reel.description}
+                </p>
+              )}
             </div>
             {!reel.propertyId && (
               <Link href={`${routes.protected.reels_select_property}?attachReelId=${reel.id}`}>
