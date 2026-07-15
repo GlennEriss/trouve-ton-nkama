@@ -6,7 +6,7 @@ import { ArrowLeft, Loader2, Video, CheckCircle2, XCircle } from 'lucide-react'
 import { useCurrentUser } from '@/hooks/use-current-user'
 import { useVideoDropzone, type VideoDropzoneRejectionReason } from '@/hooks/useVideoDropzone'
 import { useReelDraftVideoStorage } from '@/hooks/useReelDraftVideoStorage'
-import { createReel, uploadRawReelVideo, subscribeToReel } from '@/db/reel.db'
+import { buildRawReelVideoPath, createReel, markReelUploadFailed, uploadRawReelVideo, subscribeToReel } from '@/db/reel.db'
 import { PublishAuthModal } from '@/components/property-publish/PublishAuthModal'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -84,12 +84,20 @@ export default function CreateOrphanReelClient() {
 
     try {
       const reelId = crypto.randomUUID()
-      const rawVideoPath = await uploadRawReelVideo(file, user.uid, reelId)
       const trimmedContact = contact.trim() || undefined
+      const rawVideoPath = buildRawReelVideoPath(file, user.uid, reelId)
       const createdId = await createReel(reelId, null, user.uid, rawVideoPath, trimmedContact)
 
       if (!createdId) {
         throw new Error("La création du réel a échoué.")
+      }
+
+      try {
+        await uploadRawReelVideo(file, user.uid, reelId)
+      } catch (error) {
+        const message = error instanceof Error ? error.message : "Échec de l'envoi de la vidéo."
+        await markReelUploadFailed(createdId, message)
+        throw error
       }
 
       void clearDraftVideo()

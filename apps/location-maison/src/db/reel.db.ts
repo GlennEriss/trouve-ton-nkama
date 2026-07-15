@@ -3,13 +3,13 @@
  */
 import firebaseCollectionNames from "@/constantes/firebase-collection-name";
 import { Reel } from "@/models/reel";
-import { createModelWithCustomId, updateModel } from "./generic.db";
 import { createLogger } from '@/lib/logger';
 
 const logger = createLogger('db.reel');
 
 const getStorage = () => import("@/firebase/storage");
 const getFirestore = () => import("@/firebase/firestore");
+const getAuth = () => import("@/firebase/auth");
 
 function withTimeout<T>(promise: Promise<T>, timeoutMs: number, operation: string): Promise<T> {
     return new Promise((resolve, reject) => {
@@ -51,11 +51,15 @@ function extractStorageErrorMessage(error: unknown): string {
     return error.message || "Échec de l'envoi de la vidéo.";
 }
 
+export function buildRawReelVideoPath(file: File, ownerId: string, reelId: string): string {
+    const extension = file.name.includes('.') ? file.name.split('.').pop() : 'mp4';
+    return `reels-raw/${ownerId}/${reelId}.${extension}`;
+}
+
 /**
- * Crée le document Firestore du réel avant même que la vidéo ne soit uploadée — le pipeline
- * de transcodage (Cloud Function déclenchée par l'upload Storage) met à jour ce même document
- * par son id, `reelId` doit donc être généré par l'appelant (`crypto.randomUUID()`) et utilisé
- * à la fois ici et dans `uploadRawReelVideo`.
+ * Crée le document Firestore du réel via l'API serveur. Les anciens comptes prod peuvent avoir
+ * un document users/{id} différent de leur UID Firebase : l'API retrouve donc le profil par uid
+ * et écrit avec l'Admin SDK, tout en gardant les mêmes contrôles de rôle/propriété.
  */
 export async function createReel(
     reelId: string,
@@ -64,28 +68,127 @@ export async function createReel(
     rawVideoPath: string,
     contact?: string
 ): Promise<string | null> {
-    const payload: Reel = {
-        propertyId: propertyId ?? null,
-        createdBy: ownerId,
-        processingStatus: 'uploading',
-        rawVideoPath,
-        moderationStatus: 'PENDING',
-        viewCount: 0,
-        giftCount: 0,
-        giftTotalAmount: 0,
-        ...(contact ? { contact } : {}),
-    } as Reel;
+    try {
+        const { auth } = await getAuth();
+        const token = await auth.currentUser?.getIdToken();
 
-    return createModelWithCustomId<Reel>(payload, firebaseCollectionNames.reels, reelId);
+        if (!token || auth.currentUser?.uid !== ownerId) {
+            throw new Error("Session Firebase introuvable. Rechargez la page puis réessayez.");
+        }
+
+        const response = await fetch('/api/reels', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                Authorization: `Bearer ${token}`,
+            },
+            body: JSON.stringify({
+                reelId,
+                propertyId,
+                rawVideoPath,
+                contact,
+            }),
+        });
+
+        const result = await response.json().catch(() => null) as { success?: boolean; reelId?: string; message?: string } | null;
+
+        if (!response.ok || !result?.success || !result.reelId) {
+            throw new Error(result?.message || "La création du réel a échoué.");
+        }
+
+        return result.reelId;
+    } catch (error) {
+        logger.error('Reel creation API failed', {
+            error,
+            reelId,
+            propertyId,
+            ownerId,
+            rawVideoPath,
+        });
+        throw error;
+    }
 }
 
 /**
  * Rattache a posteriori un réel orphelin (créé sans annonce, voir CreateOrphanReelClient) à une
- * annonce existante. firestore.rules restreint ce update à un passage null -> valeur unique,
- * uniquement vers une annonce possédée par l'appelant.
+ * annonce existante. L'API serveur applique le même passage null -> valeur unique, uniquement
+ * vers une annonce possédée par l'appelant.
  */
 export async function attachReelToProperty(reelId: string, propertyId: string): Promise<boolean> {
-    return updateModel<Reel>(reelId, { propertyId }, firebaseCollectionNames.reels);
+    try {
+        const { auth } = await getAuth();
+        const token = await auth.currentUser?.getIdToken();
+
+        if (!token) {
+            throw new Error("Session Firebase introuvable. Rechargez la page puis réessayez.");
+        }
+
+        const response = await fetch('/api/reels', {
+            method: 'PATCH',
+            headers: {
+                'Content-Type': 'application/json',
+                Authorization: `Bearer ${token}`,
+            },
+            body: JSON.stringify({
+                action: 'attach-property',
+                reelId,
+                propertyId,
+            }),
+        });
+
+        const result = await response.json().catch(() => null) as { success?: boolean; message?: string } | null;
+
+        if (!response.ok || !result?.success) {
+            throw new Error(result?.message || "Le rattachement du réel a échoué.");
+        }
+
+        return true;
+    } catch (error) {
+        logger.error('Reel attach API failed', {
+            error,
+            reelId,
+            propertyId,
+        });
+        return false;
+    }
+}
+
+export async function markReelUploadFailed(reelId: string, processingError: string): Promise<boolean> {
+    try {
+        const { auth } = await getAuth();
+        const token = await auth.currentUser?.getIdToken();
+
+        if (!token) {
+            throw new Error("Session Firebase introuvable. Rechargez la page puis réessayez.");
+        }
+
+        const response = await fetch('/api/reels', {
+            method: 'PATCH',
+            headers: {
+                'Content-Type': 'application/json',
+                Authorization: `Bearer ${token}`,
+            },
+            body: JSON.stringify({
+                action: 'mark-upload-failed',
+                reelId,
+                processingError,
+            }),
+        });
+
+        const result = await response.json().catch(() => null) as { success?: boolean; message?: string } | null;
+
+        if (!response.ok || !result?.success) {
+            throw new Error(result?.message || "Le réel n'a pas pu être marqué en échec.");
+        }
+
+        return true;
+    } catch (error) {
+        logger.error('Reel upload failure mark failed', {
+            error,
+            reelId,
+        });
+        return false;
+    }
 }
 
 export async function getReelsByOwner(ownerId: string): Promise<(Reel & { id: string })[]> {
@@ -148,8 +251,7 @@ export async function getPublicReels({
 export async function uploadRawReelVideo(file: File, ownerId: string, reelId: string): Promise<string> {
     try {
         const { storage, ref, uploadBytes } = await getStorage();
-        const extension = file.name.includes('.') ? file.name.split('.').pop() : 'mp4';
-        const rawVideoPath = `reels-raw/${ownerId}/${reelId}.${extension}`;
+        const rawVideoPath = buildRawReelVideoPath(file, ownerId, reelId);
         const fileRef = ref(storage, rawVideoPath);
 
         const metadata = {
