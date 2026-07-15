@@ -8,10 +8,19 @@ import { routes } from '@/constantes/routes'
 export default function template({ children }: Readonly<{ children: React.ReactNode }>) {
   const pathname = usePathname()
 
-  // Le flux public de réels est plein écran façon TikTok, sans fil d'Ariane ni marges — ce
+  // Le flux public de réels et la vue "réel unique" (lien profond /reels/{id}, ouvert
+  // depuis WhatsApp) sont plein écran façon TikTok, sans fil d'Ariane ni marges — ce
   // wrapper (appliqué par défaut à toutes les routes protégées) casserait sinon la mise en
   // page immersive (vidéo étriquée par le padding, "Accueil > Réels" par-dessus).
-  if (pathname === routes.protected.reels) {
+  // Exclut explicitement les sous-routes statiques connues (mine/add/select-property),
+  // qui elles gardent le wrapper standard (formulaires, pas des vues plein écran).
+  const KNOWN_REELS_SUBROUTES: string[] = [
+    routes.protected.reels_mine,
+    routes.protected.reels_add,
+    routes.protected.reels_select_property,
+  ]
+  const isSingleReelView = pathname.startsWith('/reels/') && !KNOWN_REELS_SUBROUTES.includes(pathname)
+  if (pathname === routes.protected.reels || isSingleReelView) {
     return <>{children}</>
   }
 

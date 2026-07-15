@@ -79,3 +79,33 @@ export async function patchReelModerationStatus(
       { merge: true },
     );
 }
+
+// Cache applicatif de apps/location-maison/src/lib/cache/firestore-cache-store.ts
+// (collection `_cache_entries`, clé = id de doc, ex. `reels:feed:10:first`) — pas de
+// module partagé entre les deux apps, nom dupliqué volontairement (même pattern que
+// COLLECTIONS ailleurs dans ce repo). Sans cette purge, un réel fraîchement approuvé
+// reste invisible du fil public jusqu'à expiration du cache (TTL 10 min par défaut) si
+// une requête a mis en cache une page vide pendant que le réel était encore en attente.
+const CACHE_ENTRIES_COLLECTION = "_cache_entries";
+const REELS_FEED_CACHE_PREFIX = "reels:feed:";
+
+export async function invalidateReelsFeedCache(): Promise<void> {
+  const db = getFirebaseAdminDb();
+  // Requête par plage d'id de document = équivalent d'un "startsWith" Firestore
+  // (borne haute = préfixe + caractère unicode \uF8FF, pattern standard).
+  const snapshot = await db
+    .collection(CACHE_ENTRIES_COLLECTION)
+    .where("__name__", ">=", REELS_FEED_CACHE_PREFIX)
+    .where("__name__", "<", `${REELS_FEED_CACHE_PREFIX}`)
+    .get();
+
+  if (snapshot.empty) {
+    return;
+  }
+
+  const batch = db.batch();
+  for (const doc of snapshot.docs) {
+    batch.delete(doc.ref);
+  }
+  await batch.commit();
+}

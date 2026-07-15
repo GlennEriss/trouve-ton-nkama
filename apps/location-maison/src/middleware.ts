@@ -64,6 +64,13 @@ const PUBLIC_PROPERTY_DETAIL_PATTERN = /^\/property\/[^/]+\/?$/
 // publique — PUBLIC_REEL_ADD_PREFIX gère déjà /reels/add séparément.
 const PUBLIC_REEL_FEED_PATTERN = /^\/reels\/?$/
 
+// Lien profond vers un réel précis (/reels/{reelId}, ouvert depuis le message WhatsApp de
+// contact — voir handleWhatsApp dans ReelsFeedClient.tsx) : doit rester public comme le fil
+// lui-même. Exclut explicitement les sous-routes privées à un seul segment (mine,
+// select-property) — /reels/add a déjà sa propre exception séparée ci-dessus.
+const RESERVED_REEL_SUBROUTES = new Set(['mine', 'select-property', 'add'])
+const PUBLIC_SINGLE_REEL_PATTERN = /^\/reels\/([^/]+)\/?$/
+
 function isExactOrSubPath(pathname: string, prefix: string): boolean {
     return pathname === prefix || pathname.startsWith(`${prefix}/`)
 }
@@ -80,6 +87,12 @@ function isPublicReelFeedRoute(pathname: string): boolean {
     return PUBLIC_REEL_FEED_PATTERN.test(pathname)
 }
 
+function isPublicSingleReelRoute(pathname: string): boolean {
+    const match = PUBLIC_SINGLE_REEL_PATTERN.exec(pathname)
+    if (!match) return false
+    return !RESERVED_REEL_SUBROUTES.has(match[1])
+}
+
 function isPublicPropertyDetailRoute(pathname: string): boolean {
     return PUBLIC_PROPERTY_DETAIL_PATTERN.test(pathname)
 }
@@ -89,6 +102,7 @@ function isPublicException(pathname: string): boolean {
     return isPublicPropertyAddRoute(pathname) ||
         isPublicReelAddRoute(pathname) ||
         isPublicReelFeedRoute(pathname) ||
+        isPublicSingleReelRoute(pathname) ||
         isPublicPropertyDetailRoute(pathname)
 }
 
