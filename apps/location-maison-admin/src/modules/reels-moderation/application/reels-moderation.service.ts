@@ -1,5 +1,6 @@
 import {
   getReelById,
+  invalidateReelsFeedCache,
   listPendingReels as listPendingReelsRaw,
   patchReelModerationStatus,
 } from "@/modules/reels-moderation/infrastructure/reels.repository";
@@ -48,6 +49,12 @@ export async function updateReelModerationStatus(
   if (!updated) {
     throw new Error("REEL_UPDATE_FAILED");
   }
+
+  // Best-effort : une décision d'approbation change ce que le fil public doit
+  // montrer — sans ça, un réel fraîchement approuvé reste invisible jusqu'à
+  // expiration naturelle du cache (jusqu'à 10 min, voir invalidateReelsFeedCache).
+  // Ne doit jamais faire échouer la décision de modération elle-même.
+  await invalidateReelsFeedCache().catch(() => undefined);
 
   return { before: existing, after: updated };
 }

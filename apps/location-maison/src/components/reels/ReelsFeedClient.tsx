@@ -102,9 +102,13 @@ function ReelActionRail({
   const handleWhatsApp = () => {
     if (!phoneNumber) return
     trackInteraction('whatsapp_contact', { phoneNumber })
+    // Lien vers le réel lui-même dans les deux cas : même quand une annonce est liée,
+    // l'acheteur parle précisément de CE réel (parmi peut-être plusieurs sur la même
+    // annonce) — l'annonceur doit pouvoir l'identifier sans ambiguïté (voir /reels/[reelId]).
+    const reelLink = `${process.env.NEXT_PUBLIC_HOST}/reels/${reel.id}`
     const message = property
-      ? `Bonjour, je suis intéressé par votre annonce "${property.title}" au prix de ${property.price.toLocaleString('fr-FR')} FCFA. Voici le lien de l'annonce : ${process.env.NEXT_PUBLIC_HOST}/houseDetails/${property.id}`
-      : `Bonjour, je suis intéressé par votre réel sur Trouve Ton Nkama.`
+      ? `Bonjour, je suis intéressé par votre annonce "${property.title}" au prix de ${property.price.toLocaleString('fr-FR')} FCFA, vue sur ce réel : ${reelLink}`
+      : `Bonjour, je suis intéressé par votre réel sur Trouve Ton Nkama : ${reelLink}`
     window.open(`https://wa.me/${phoneNumber}?text=${encodeURIComponent(message)}`, '_blank')
   }
 
@@ -181,7 +185,9 @@ function ReelActionRail({
   )
 }
 
-function ReelSlide({
+// Exporté pour la vue "réel unique" (lien profond /reels/[reelId], ouvert
+// depuis le message WhatsApp de contact) — même rendu que dans le fil.
+export function ReelSlide({
   reel,
   isActive,
   isMuted,
