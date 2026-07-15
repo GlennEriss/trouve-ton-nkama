@@ -269,6 +269,49 @@ export default function ReelsFeedClient() {
   // existe dans les deux rails (overlay mobile dans ReelSlide + sidebar desktop ici).
   const [giftReel, setGiftReel] = React.useState<(Reel & { id: string }) | null>(null)
   const trackedViewsRef = React.useRef<Set<string>>(new Set())
+  const feedRootRef = React.useRef<HTMLDivElement>(null)
+
+  // Garde-fou anti-AdSense : quand une unité AdSense ne peut pas se remplir
+  // (ou en mode responsive), son script injecte `height: auto !important` en
+  // style inline sur TOUS les ancêtres du bloc <ins> — jusqu'au body. Cela
+  // écrase la chaîne h-full du carousel vertical : toutes les diapositives
+  // retombent à quelques pixels et embla n'a plus rien à faire défiler
+  // (constaté en réel : section/viewport/track tous forcés à height:auto).
+  // On retire ces hauteurs injectées partout SAUF dans le bloc pub lui-même,
+  // puis on re-mesure embla. L'observer ne réagit qu'aux mutations de style :
+  // après nettoyage, plus rien à retirer → pas de boucle.
+  React.useEffect(() => {
+    const root = feedRootRef.current
+    if (!root || typeof MutationObserver === 'undefined') return
+
+    const stripInjectedHeights = () => {
+      let stripped = false
+      const strip = (el: HTMLElement) => {
+        if (el.tagName === 'INS' || el.closest('ins.adsbygoogle')) return
+        if (el.style.height === 'auto') {
+          el.style.removeProperty('height')
+          el.style.removeProperty('min-height')
+          stripped = true
+        }
+      }
+
+      root.querySelectorAll<HTMLElement>('[style]').forEach(strip)
+      // Les ancêtres AU-DESSUS du feed (wrappers de page, body…) sont aussi touchés.
+      let up: HTMLElement | null = root.parentElement
+      while (up) {
+        strip(up)
+        up = up.parentElement
+      }
+
+      if (stripped) api?.reInit()
+    }
+
+    const observer = new MutationObserver(stripInjectedHeights)
+    // body en subtree couvre à la fois le feed et les wrappers de page au-dessus.
+    observer.observe(document.body, { attributes: true, attributeFilter: ['style'], subtree: true })
+    stripInjectedHeights()
+    return () => observer.disconnect()
+  }, [api])
 
   const feedQuery = useInfiniteQuery({
     queryKey: ['reels-feed'],
@@ -339,7 +382,7 @@ export default function ReelsFeedClient() {
   }
 
   return (
-    <div className="flex h-[100dvh] w-full items-center justify-center bg-black md:h-auto md:gap-4 md:bg-neutral-950 md:py-8">
+    <div ref={feedRootRef} className="flex h-[100dvh] w-full items-center justify-center bg-black md:h-auto md:gap-4 md:bg-neutral-950 md:py-8">
       <div className={cn('relative h-full w-full overflow-hidden md:shadow-2xl', DESKTOP_CARD_CLASS)}>
         <Carousel
           orientation="vertical"
