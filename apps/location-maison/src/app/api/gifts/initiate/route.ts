@@ -1,9 +1,9 @@
 /**
- * Route API PUBLIQUE d'initiation d'un cadeau (don MoMo sur un réel).
+ * Route API PUBLIQUE d'initiation d'un cadeau (don MoMo sur un réel ou une annonce).
  * Pas d'authentification : le donateur est anonyme (décision produit) — la
  * confirmation USSD sur son propre téléphone est le garde-fou du paiement.
  * Simple proxy vers la Cloud Function initiateGiftPayment, qui porte toute la
- * validation forte (bornes, réseau/numéro, réel APPROVED, anti-spam).
+ * validation forte (bornes, réseau/numéro, cible APPROVED, anti-spam).
  */
 
 import { NextRequest, NextResponse } from 'next/server';
@@ -13,13 +13,18 @@ import { GIFT_MAX_AMOUNT_XAF, GIFT_MESSAGE_MAX_LENGTH, GIFT_MIN_AMOUNT_XAF } fro
 
 const logger = createLogger('api.gifts.initiate');
 
-const bodySchema = z.object({
-  reelId: z.string().trim().min(1),
-  amount: z.number().int().min(GIFT_MIN_AMOUNT_XAF).max(GIFT_MAX_AMOUNT_XAF),
-  phoneNumber: z.string().trim().min(6).max(20),
-  network: z.enum(['AM', 'MM']),
-  message: z.string().trim().max(GIFT_MESSAGE_MAX_LENGTH).optional(),
-});
+const bodySchema = z
+  .object({
+    reelId: z.string().trim().min(1).optional(),
+    propertyId: z.string().trim().min(1).optional(),
+    amount: z.number().int().min(GIFT_MIN_AMOUNT_XAF).max(GIFT_MAX_AMOUNT_XAF),
+    phoneNumber: z.string().trim().min(6).max(20),
+    network: z.enum(['AM', 'MM']),
+    message: z.string().trim().max(GIFT_MESSAGE_MAX_LENGTH).optional(),
+  })
+  .refine((v) => Boolean(v.reelId) !== Boolean(v.propertyId), {
+    message: 'Fournir soit reelId soit propertyId, jamais les deux ni aucun.',
+  });
 
 export async function POST(request: NextRequest) {
   try {

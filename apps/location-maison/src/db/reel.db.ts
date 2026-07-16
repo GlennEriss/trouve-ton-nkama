@@ -155,6 +155,83 @@ export async function attachReelToProperty(reelId: string, propertyId: string): 
     }
 }
 
+export async function updateReelDetails(
+    reelId: string,
+    contact: string,
+    description: string
+): Promise<boolean> {
+    try {
+        const { auth } = await getAuth();
+        const token = await auth.currentUser?.getIdToken();
+
+        if (!token) {
+            throw new Error("Session Firebase introuvable. Rechargez la page puis réessayez.");
+        }
+
+        const response = await fetch('/api/reels', {
+            method: 'PATCH',
+            headers: {
+                'Content-Type': 'application/json',
+                Authorization: `Bearer ${token}`,
+            },
+            body: JSON.stringify({
+                action: 'update-details',
+                reelId,
+                contact,
+                description,
+            }),
+        });
+
+        const result = await response.json().catch(() => null) as { success?: boolean; message?: string } | null;
+
+        if (!response.ok || !result?.success) {
+            throw new Error(result?.message || "La modification du réel a échoué.");
+        }
+
+        return true;
+    } catch (error) {
+        logger.error('Reel details update failed', {
+            error,
+            reelId,
+        });
+        throw error;
+    }
+}
+
+export async function deleteReel(reelId: string): Promise<boolean> {
+    try {
+        const { auth } = await getAuth();
+        const token = await auth.currentUser?.getIdToken();
+
+        if (!token) {
+            throw new Error("Session Firebase introuvable. Rechargez la page puis réessayez.");
+        }
+
+        const response = await fetch('/api/reels', {
+            method: 'DELETE',
+            headers: {
+                'Content-Type': 'application/json',
+                Authorization: `Bearer ${token}`,
+            },
+            body: JSON.stringify({ reelId }),
+        });
+
+        const result = await response.json().catch(() => null) as { success?: boolean; message?: string } | null;
+
+        if (!response.ok || !result?.success) {
+            throw new Error(result?.message || "La suppression du réel a échoué.");
+        }
+
+        return true;
+    } catch (error) {
+        logger.error('Reel deletion failed', {
+            error,
+            reelId,
+        });
+        throw error;
+    }
+}
+
 export async function markReelUploadFailed(reelId: string, processingError: string): Promise<boolean> {
     try {
         const { auth } = await getAuth();
@@ -199,6 +276,13 @@ export async function getReelsByOwner(ownerId: string): Promise<(Reel & { id: st
     const q = query(reelsRef, where('createdBy', '==', ownerId), orderBy('createdAt', 'desc'));
     const snapshot = await getDocs(q);
     return snapshot.docs.map((doc) => ({ ...(doc.data() as Reel), id: doc.id }));
+}
+
+export async function getReelById(reelId: string): Promise<(Reel & { id: string }) | null> {
+    const { doc, getDoc, db } = await getFirestore();
+    const snapshot = await getDoc(doc(db, firebaseCollectionNames.reels, reelId));
+    if (!snapshot.exists()) return null;
+    return { ...(snapshot.data() as Reel), id: snapshot.id };
 }
 
 /**

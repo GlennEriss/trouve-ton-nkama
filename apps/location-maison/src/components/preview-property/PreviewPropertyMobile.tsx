@@ -17,9 +17,10 @@ import { MapSection } from './MapSection'
 import { DetailsPropertyMobile } from './DetailsPropertyMobile'
 import ButtonShareToFacebook from './ButtonShareToFacebook'
 import ButtonShareToWhatsapp from './ButtonShareToWhatsapp'
-import { AlertTriangle } from 'lucide-react'
+import { AlertTriangle, Gift } from 'lucide-react'
 import { useTrackPropertyInteraction } from '@/hooks/use-track-property-interaction'
 import { getPrimaryPropertyImageUrl } from '@/lib/property-images'
+import GiftModal from '../reels/gift/GiftModal'
 
 const inter = Inter({
     subsets: ['latin'],
@@ -31,7 +32,9 @@ type PreviewPropertyMobileProps = {
 export const PreviewPropertyMobile: React.FC<PreviewPropertyMobileProps> = ({ property }) => {
     const { data: user } = useUserByUID(property.createdBy)
     const { trackInteraction } = useTrackPropertyInteraction(property.id)
+    const [giftOpen, setGiftOpen] = React.useState(false)
     const avatarBackground = generateColorFromName(user?.firstname ?? '');
+    const announcerName = [user?.firstname, user?.lastname].filter(Boolean).join(' ') || null
     const tagSatus: Record<string, string> = {
         "FOR_RENT": "A LOUER",
         "FOR_SALE": "A VENDRE"
@@ -153,9 +156,23 @@ export const PreviewPropertyMobile: React.FC<PreviewPropertyMobileProps> = ({ pr
                             <FaPhoneAlt size={30} className="cursor-pointer hover:text-blue-500 text-blue-500" />
                         </div>
                     </a>
+                    <button
+                        type="button"
+                        onClick={() => setGiftOpen(true)}
+                        title="Envoyer un cadeau à l'annonceur"
+                        className='border border-gray-300 p-3 rounded-lg shadow-lg'
+                    >
+                        <Gift size={30} className="cursor-pointer text-pink-600" />
+                    </button>
                 </div>
 
             </section>
+            <GiftModal
+                isOpen={giftOpen}
+                onClose={() => setGiftOpen(false)}
+                propertyId={property.id}
+                announcerName={announcerName}
+            />
             <Separator />
             <section className='px-2'>
                 <h1 className='font-bold text-xl'>Description</h1>

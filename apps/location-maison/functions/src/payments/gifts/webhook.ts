@@ -9,6 +9,7 @@ import { MYPAYGA_SECRETS, getMyPayGaConfig } from '../mypayga/config'
 
 const GIFT_TRANSACTIONS_COLLECTION = 'gift_transactions'
 const REELS_COLLECTION = 'reels'
+const PROPERTIES_COLLECTION = 'properties'
 
 // Webhook MyPayGa dédié aux cadeaux — même vérification HMAC + idempotence que
 // mypaygaPaymentCallback (crédits), mais l'application du succès incrémente les
@@ -121,16 +122,19 @@ export const giftPaymentCallback = onRequest({ secrets: MYPAYGA_SECRETS }, async
 })
 
 // Applique le cadeau exactement une fois (le webhook peut être rejoué) :
-// compteurs du réel (montant BRUT, affiché publiquement) + solde net cumulé
-// de l'annonceur (montant NET après commission, seul montant retirable).
-// Renvoie true si l'application a eu lieu dans CET appel (false = déjà appliqué),
-// pour que l'appelant ne notifie l'annonceur qu'une seule fois.
+// compteurs de la cible — réel OU annonce, jamais les deux (voir
+// initiateGiftPayment.ts, XOR imposé dès l'initiation) — montant BRUT affiché
+// publiquement, + solde net cumulé de l'annonceur (montant NET après
+// commission, seul montant retirable). Renvoie true si l'application a eu
+// lieu dans CET appel (false = déjà appliqué), pour que l'appelant ne
+// notifie l'annonceur qu'une seule fois.
 async function applyGiftOnce(transactionId: string, transaction: FirebaseFirestore.DocumentData): Promise<boolean> {
-  const reelId = String(transaction.reelId ?? '').trim()
+  const reelId = String(transaction.reelId ?? '').trim() || null
+  const propertyId = String(transaction.propertyId ?? '').trim() || null
   const announcerUid = String(transaction.announcerUid ?? '').trim()
   const grossAmount = Math.max(0, Math.trunc(Number(transaction.amountXaf ?? 0)))
   const netAmount = Math.max(0, Math.trunc(Number(transaction.netAmountXaf ?? 0)))
-  if (!reelId || !announcerUid || grossAmount <= 0 || netAmount <= 0) {
+  if ((!reelId && !propertyId) || !announcerUid || grossAmount <= 0 || netAmount <= 0) {
     throw new Error('Transaction cadeau incomplète')
   }
 
@@ -147,15 +151,26 @@ async function applyGiftOnce(transactionId: string, transaction: FirebaseFiresto
       throw new Error(`Annonceur introuvable: ${announcerUid}`)
     }
 
-    const reelRef = adminDB.collection(REELS_COLLECTION).doc(reelId)
-    const reelSnapshot = await tx.get(reelRef)
-
-    if (reelSnapshot.exists) {
-      tx.update(reelRef, {
-        giftCount: FieldValue.increment(1),
-        giftTotalAmount: FieldValue.increment(grossAmount),
-        updatedAt: FieldValue.serverTimestamp(),
-      })
+    if (reelId) {
+      const reelRef = adminDB.collection(REELS_COLLECTION).doc(reelId)
+      const reelSnapshot = await tx.get(reelRef)
+      if (reelSnapshot.exists) {
+        tx.update(reelRef, {
+          giftCount: FieldValue.increment(1),
+          giftTotalAmount: FieldValue.increment(grossAmount),
+          updatedAt: FieldValue.serverTimestamp(),
+        })
+      }
+    } else if (propertyId) {
+      const propertyRef = adminDB.collection(PROPERTIES_COLLECTION).doc(propertyId)
+      const propertySnapshot = await tx.get(propertyRef)
+      if (propertySnapshot.exists) {
+        tx.update(propertyRef, {
+          giftCount: FieldValue.increment(1),
+          giftTotalAmount: FieldValue.increment(grossAmount),
+          updatedAt: FieldValue.serverTimestamp(),
+        })
+      }
     }
 
     tx.update(userQuery.docs[0].ref, {
@@ -180,10 +195,11 @@ async function notifyAnnouncerOfGift(transaction: FirebaseFirestore.DocumentData
     return
   }
 
+  const target = transaction.reelId ? 'réel' : 'annonce'
   const notification: Notification = {
     type: 'GIFT',
     title: 'Cadeau reçu 🎁',
-    message: `Tu as reçu un cadeau de ${netAmount.toLocaleString('fr-FR')} FCFA sur ton réel.`,
+    message: `Tu as reçu un cadeau de ${netAmount.toLocaleString('fr-FR')} FCFA sur ton ${target}.`,
     isRead: false,
     createdFor: announcerUid,
     actionUrl: '/gifts',

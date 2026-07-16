@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { FieldValue, getFirestore } from 'firebase-admin/firestore';
+import { getStorage } from 'firebase-admin/storage';
 
 import firebaseCollectionNames from '@/constantes/firebase-collection-name';
 import { adminApp, adminAuth } from '@/firebase/admin';
@@ -50,6 +51,35 @@ function getAdminDb(): FirebaseFirestore.Firestore {
   }
 
   return getFirestore(adminApp);
+}
+
+function getStoragePathsFromReel(reel: Record<string, unknown>): string[] {
+  return [reel.rawVideoPath, reel.videoPath, reel.thumbnailPath]
+    .filter((value): value is string => typeof value === 'string' && value.trim().length > 0)
+    .map((value) => value.trim());
+}
+
+async function deleteStorageObjects(paths: string[]) {
+  if (paths.length === 0) return;
+  if (!adminApp) {
+    throw new ReelApiError(500, 'FIREBASE_ADMIN_UNAVAILABLE', 'Firebase admin non initialisé.');
+  }
+
+  const uniquePaths = Array.from(new Set(paths));
+  const bucket = getStorage(adminApp).bucket();
+  const results = await Promise.allSettled(
+    uniquePaths.map((path) => bucket.file(path).delete({ ignoreNotFound: true }))
+  );
+
+  const failed = results
+    .map((result, index) => ({ result, path: uniquePaths[index] }))
+    .filter(({ result }) => result.status === 'rejected');
+
+  if (failed.length > 0) {
+    logger.warn('Some reel storage objects could not be deleted', {
+      paths: failed.map(({ path }) => path),
+    });
+  }
 }
 
 function readBearerToken(request: NextRequest): string {
@@ -132,6 +162,40 @@ function sanitizeOptionalDescription(value: unknown): string | undefined {
   const description = value.trim();
   if (!description) {
     return undefined;
+  }
+
+  if (description.length > 280) {
+    throw new ReelApiError(400, 'INVALID_DESCRIPTION', 'La description ne peut pas dépasser 280 caractères.');
+  }
+
+  return description;
+}
+
+function sanitizeEditableContact(value: unknown): string | null {
+  if (typeof value !== 'string') {
+    throw new ReelApiError(400, 'INVALID_CONTACT', 'Le numéro de contact est invalide.');
+  }
+
+  const contact = value.trim();
+  if (!contact) {
+    return null;
+  }
+
+  if (contact.length > 80) {
+    throw new ReelApiError(400, 'INVALID_CONTACT', 'Le numéro de contact est trop long.');
+  }
+
+  return contact;
+}
+
+function sanitizeEditableDescription(value: unknown): string | null {
+  if (typeof value !== 'string') {
+    throw new ReelApiError(400, 'INVALID_DESCRIPTION', 'La description est invalide.');
+  }
+
+  const description = value.trim();
+  if (!description) {
+    return null;
   }
 
   if (description.length > 280) {
@@ -314,7 +378,14 @@ export async function PATCH(request: NextRequest): Promise<NextResponse<ReelApiR
   try {
     const uid = await authenticateRequest(request);
     const body = await readJsonBody(request);
-    const action = body.action === 'mark-upload-failed' ? 'mark-upload-failed' : 'attach-property';
+    const action = body.action;
+    if (
+      action !== 'mark-upload-failed' &&
+      action !== 'attach-property' &&
+      action !== 'update-details'
+    ) {
+      throw new ReelApiError(400, 'INVALID_ACTION', 'Action de modification invalide.');
+    }
     const reelId = sanitizeDocId(body.reelId, 'Reel ID');
 
     const db = getAdminDb();
@@ -354,6 +425,44 @@ export async function PATCH(request: NextRequest): Promise<NextResponse<ReelApiR
         success: true,
         reelId,
         message: 'Réel marqué en échec.',
+      });
+    }
+
+    if (action === 'update-details') {
+      await assertAnnouncer(db, uid);
+
+      const contact = sanitizeEditableContact(body.contact);
+      const description = sanitizeEditableDescription(body.description);
+
+      await db.runTransaction(async (transaction) => {
+        const reelSnapshot = await transaction.get(reelRef);
+        if (!reelSnapshot.exists) {
+          throw new ReelApiError(404, 'REEL_NOT_FOUND', 'Réel introuvable.');
+        }
+
+        const reel = reelSnapshot.data() ?? {};
+        if (reel.createdBy !== uid) {
+          throw new ReelApiError(403, 'FORBIDDEN_REEL', "Ce réel ne vous appartient pas.");
+        }
+
+        transaction.update(reelRef, {
+          contact: contact ?? FieldValue.delete(),
+          description: description ?? FieldValue.delete(),
+          updatedAt: FieldValue.serverTimestamp(),
+        });
+      });
+
+      logger.info('Reel details updated', {
+        uid,
+        reelId,
+        hasContact: Boolean(contact),
+        hasDescription: Boolean(description),
+      });
+
+      return jsonResponse({
+        success: true,
+        reelId,
+        message: 'Réel modifié avec succès.',
       });
     }
 
@@ -412,6 +521,68 @@ export async function PATCH(request: NextRequest): Promise<NextResponse<ReelApiR
         success: false,
         code: 'INTERNAL_SERVER_ERROR',
         message: 'Erreur lors du rattachement du réel.',
+      },
+      500
+    );
+  }
+}
+
+export async function DELETE(request: NextRequest): Promise<NextResponse<ReelApiResponse>> {
+  try {
+    const uid = await authenticateRequest(request);
+    const body = await readJsonBody(request);
+    const reelId = sanitizeDocId(body.reelId, 'Reel ID');
+
+    const db = getAdminDb();
+    await assertAnnouncer(db, uid);
+
+    const reelRef = db.collection(firebaseCollectionNames.reels).doc(reelId);
+    let storagePaths: string[] = [];
+
+    await db.runTransaction(async (transaction) => {
+      const reelSnapshot = await transaction.get(reelRef);
+      if (!reelSnapshot.exists) {
+        throw new ReelApiError(404, 'REEL_NOT_FOUND', 'Réel introuvable.');
+      }
+
+      const reel = reelSnapshot.data() ?? {};
+      if (reel.createdBy !== uid) {
+        throw new ReelApiError(403, 'FORBIDDEN_REEL', "Ce réel ne vous appartient pas.");
+      }
+
+      storagePaths = getStoragePathsFromReel(reel);
+      transaction.delete(reelRef);
+    });
+
+    await deleteStorageObjects(storagePaths);
+
+    logger.info('Reel deleted', {
+      uid,
+      reelId,
+      storagePathCount: storagePaths.length,
+    });
+
+    return jsonResponse({
+      success: true,
+      reelId,
+      message: 'Réel supprimé avec succès.',
+    });
+  } catch (error) {
+    if (error instanceof ReelApiError) {
+      logger.warn('Reel deletion rejected', {
+        code: error.code,
+        status: error.status,
+        message: error.message,
+      });
+      return jsonError(error);
+    }
+
+    logger.error('Reel deletion failed', { error });
+    return jsonResponse(
+      {
+        success: false,
+        code: 'INTERNAL_SERVER_ERROR',
+        message: 'Erreur lors de la suppression du réel.',
       },
       500
     );

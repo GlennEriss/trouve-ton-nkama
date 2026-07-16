@@ -14,9 +14,11 @@ export type GiftWithdrawalStatus = 'EN_ATTENTE' | 'TRAITE' | 'REFUSE';
 export type GiftTransaction = {
     id: string;
     type: 'gift';
-    reelId: string;
-    announcerUid: string;
+    // Exactement l'un des deux (jamais les deux, jamais aucun) — la cible du
+    // cadeau : un réel ou une annonce, voir initiateGiftPayment.ts (Cloud Function).
+    reelId?: string | null;
     propertyId?: string | null;
+    announcerUid: string;
     donorPhone: string;
     donorNetwork: GiftNetwork;
     message?: string | null;
