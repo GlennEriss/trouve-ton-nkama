@@ -232,6 +232,22 @@ function sanitizeProcessingError(value: unknown): string {
   return message.length > 180 ? `${message.slice(0, 177)}...` : message;
 }
 
+function sanitizeOptionalTrimSeconds(value: unknown, fieldName: string): number | undefined {
+  if (typeof value !== 'number' || !Number.isFinite(value)) {
+    return undefined;
+  }
+
+  if (value < 0 || value > 3600) {
+    throw new ReelApiError(400, 'INVALID_TRIM', `${fieldName} invalide.`);
+  }
+
+  return value;
+}
+
+function sanitizeOptionalMuted(value: unknown): boolean | undefined {
+  return typeof value === 'boolean' ? value : undefined;
+}
+
 function sanitizeRawVideoPath(value: unknown, uid: string, reelId: string): string {
   const rawVideoPath = typeof value === 'string' ? value.trim() : '';
   const expectedPrefix = `reels-raw/${uid}/${reelId}.`;
@@ -316,6 +332,16 @@ export async function POST(request: NextRequest): Promise<NextResponse<ReelApiRe
     const rawVideoPath = sanitizeRawVideoPath(body.rawVideoPath, uid, reelId);
     const contact = sanitizeOptionalContact(body.contact);
     const description = sanitizeOptionalDescription(body.description);
+    const trimStartSeconds = sanitizeOptionalTrimSeconds(body.trimStartSeconds, 'Début du montage');
+    const trimEndSeconds = sanitizeOptionalTrimSeconds(body.trimEndSeconds, 'Fin du montage');
+    if (
+      typeof trimStartSeconds === 'number' &&
+      typeof trimEndSeconds === 'number' &&
+      trimEndSeconds <= trimStartSeconds
+    ) {
+      throw new ReelApiError(400, 'INVALID_TRIM_RANGE', 'La fin du montage doit être après le début.');
+    }
+    const muted = sanitizeOptionalMuted(body.muted);
 
     const db = getAdminDb();
     await assertAnnouncer(db, uid);
@@ -349,6 +375,9 @@ export async function POST(request: NextRequest): Promise<NextResponse<ReelApiRe
         updatedAt: FieldValue.serverTimestamp(),
         ...(contact ? { contact } : {}),
         ...(description ? { description } : {}),
+        ...(typeof trimStartSeconds === 'number' ? { trimStartSeconds } : {}),
+        ...(typeof trimEndSeconds === 'number' ? { trimEndSeconds } : {}),
+        ...(typeof muted === 'boolean' ? { muted } : {}),
       } as Reel & { state: 'IN_PROGRESS'; createdAt: FirebaseFirestore.FieldValue; updatedAt: FirebaseFirestore.FieldValue };
 
       transaction.create(reelRef, payload);

@@ -193,6 +193,10 @@ const NavigationMenuNavbar = () => {
       link: routes.protected.reels,
       label: "Réels"
     },
+    ...(user ? [{
+      link: routes.protected.reels_mine,
+      label: "Mes réels"
+    }] : []),
     {
       link: routes.protected.publish,
       label: "Poster une annonce"

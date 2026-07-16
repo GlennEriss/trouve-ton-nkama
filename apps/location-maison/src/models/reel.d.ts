@@ -21,6 +21,14 @@ export type Reel = ICreation & {
     processingStatus: ReelProcessingStatus;
     processingError?: string;
     rawVideoPath: string;
+    // Découpe demandée par l'annonceur à l'envoi (secondes, relatives au fichier brut) — lue
+    // une seule fois par transcodeReelVideo puis sans effet ultérieur (le montage ne s'applique
+    // qu'au transcodage initial, pas à une vidéo déjà "ready").
+    trimStartSeconds?: number;
+    trimEndSeconds?: number;
+    // Son coupé à l'envoi (WhatsApp-like) — répercuté dans l'encodage final (-an), pas
+    // seulement dans l'aperçu client.
+    muted?: boolean;
 
     videoUrl?: string;
     videoPath?: string;
