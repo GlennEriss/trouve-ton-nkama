@@ -262,7 +262,11 @@ export function ReelSlide({
         loop
         playsInline
         preload={isActive ? 'auto' : 'none'}
-        className="h-full w-full object-cover"
+        // object-contain (pas cover) : cover recadre/zoome toute vidéo dont le ratio diffère
+        // du conteneur plein écran — une vidéo filmée en paysage ou en 4:3 apparaissait
+        // "agrandie" avec les bords coupés. Le fond est noir, le letterboxing est le
+        // comportement attendu (TikTok/WhatsApp).
+        className="h-full w-full object-contain"
         onClick={onToggleMute}
       />
 
