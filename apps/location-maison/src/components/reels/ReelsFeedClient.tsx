@@ -247,6 +247,19 @@ export function ReelSlide({
   // connecté), donc l'avatar reste purement visuel, sans lien.
   const { data: owner } = useUserByUID(reel.createdBy)
 
+  // Description longue : repli sur 3 lignes + bouton "voir plus" façon TikTok. Le bouton ne
+  // s'affiche que si le texte déborde réellement du clamp (mesure scrollHeight vs clientHeight,
+  // pas un seuil de caractères — le nombre de lignes dépend de la largeur d'écran).
+  const descriptionRef = React.useRef<HTMLParagraphElement>(null)
+  const [isDescriptionExpanded, setIsDescriptionExpanded] = React.useState(false)
+  const [isDescriptionTruncated, setIsDescriptionTruncated] = React.useState(false)
+
+  React.useEffect(() => {
+    const element = descriptionRef.current
+    if (!element || isDescriptionExpanded) return
+    setIsDescriptionTruncated(element.scrollHeight > element.clientHeight + 1)
+  }, [reel.description, isDescriptionExpanded])
+
   React.useEffect(() => {
     const video = videoRef.current
     if (!video) return
@@ -256,6 +269,9 @@ export function ReelSlide({
       video.play().catch(() => undefined)
     } else {
       video.pause()
+      // Replie la description en quittant la diapositive : en revenant dessus, on retrouve
+      // l'état compact par défaut, comme sur TikTok.
+      setIsDescriptionExpanded(false)
     }
   }, [isActive])
 
@@ -292,9 +308,28 @@ export function ReelSlide({
           </p>
         )}
         {reel.description && (
-          <p className="mt-1 line-clamp-3 whitespace-pre-line text-sm text-white/95">
-            {reel.description}
-          </p>
+          <div className="mt-1">
+            <p
+              ref={descriptionRef}
+              className={cn(
+                'whitespace-pre-line text-sm text-white/95',
+                isDescriptionExpanded
+                  ? 'max-h-44 overflow-y-auto' // garde-fou : la description est bornée à 280 caractères, mais un écran étroit peut quand même dépasser
+                  : 'line-clamp-3'
+              )}
+            >
+              {reel.description}
+            </p>
+            {(isDescriptionTruncated || isDescriptionExpanded) && (
+              <button
+                type="button"
+                onClick={() => setIsDescriptionExpanded((current) => !current)}
+                className="mt-0.5 text-xs font-semibold text-white/70 hover:text-white"
+              >
+                {isDescriptionExpanded ? 'voir moins' : 'voir plus'}
+              </button>
+            )}
+          </div>
         )}
         {property ? (
           <>
