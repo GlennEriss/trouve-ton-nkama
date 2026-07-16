@@ -1,6 +1,12 @@
-import { TypePropertyEnum } from '@/constantes/property-type'
 import AIPromptsService from './ai-prompts.service'
-import { OSMLocation, getOSMLocations } from '@/data/gabon-osm-locations'
+
+type ListingStatus = 'FOR_RENT' | 'FOR_SALE'
+
+interface AIAddressData {
+  district: string
+  city: string
+  province: string
+}
 
 export interface AIFormData {
   title: string
@@ -9,6 +15,20 @@ export interface AIFormData {
   area: number | string
   tags: string[]
   status?: string
+  address?: Partial<AIAddressData>
+  longitude?: number | string
+  latitude?: number | string
+  provinceLon?: number | string
+  provinceLat?: number | string
+  cityLon?: number | string
+  cityLat?: number | string
+  streetLon?: number | string
+  streetLat?: number | string
+  countryCode?: string
+  country?: string
+  additionnalInformation?: string
+  contact?: string
+  isOwner?: boolean
   propertyDetails: Record<string, any>
 }
 
@@ -18,418 +38,107 @@ export interface ProcessedFormData {
   price: number
   area: number
   tags: string[]
-  status: string
-  address: {
-    district: string
-    city: string
-    province: string
-  }
+  status: ListingStatus
+  address: AIAddressData
   longitude: number
   latitude: number
   countryCode: string
   country: string
   additionnalInformation: string
+  contact?: string
+  isOwner?: boolean
   [key: string]: any
 }
-
-interface ResolvedLocationData {
-  district: string
-  city: string
-  province: string
-  longitude: number
-  latitude: number
-  streetLon: number
-  streetLat: number
-  cityLon: number
-  cityLat: number
-  provinceLon: number
-  provinceLat: number
-}
-
-
-// Mapping des types de propriété pour le localStorage
-const PROPERTY_TYPE_MAPPING: Record<string, string> = Object.entries(TypePropertyEnum).reduce(
-  (acc, [key, value]) => ({
-    ...acc,
-    [value]: key.toUpperCase()
-  }),
-  {}
-)
 
 export class AIFormService {
   private static readonly MAX_USER_DESCRIPTION_LENGTH = 2500
 
-  private static readonly DEFAULT_TAGS = ['Famille', 'Calme et tranquillité', 'Parking']
+  private toString(value: unknown): string {
+    return typeof value === 'string' ? value.trim() : ''
+  }
 
-  private normalizeLocationTerm(value: string): string {
-    return value
-      .normalize('NFD')
-      .replace(/[\u0300-\u036f]/g, '')
-      .toLowerCase()
-      .replace(/[^a-z0-9]+/g, ' ')
-      .replace(/\s+/g, ' ')
+  private normalizeNumber(value: unknown): number {
+    if (typeof value === 'number') {
+      return Number.isFinite(value) ? Math.round(value) : 0
+    }
+
+    if (typeof value !== 'string') {
+      return 0
+    }
+
+    const withoutCurrency = value
       .trim()
+      .replace(/\s*(?:fcfa|xaf|f\s*cfa|francs?)\s*$/gi, '')
+      .replace(/\s+/g, '')
+
+    if (!withoutCurrency || /[a-z]/i.test(withoutCurrency)) {
+      return 0
+    }
+
+    const normalized = withoutCurrency
+      .replace(/(?<=\d)[.,](?=\d{3}\b)/g, '')
+      .replace(',', '.')
+
+    const numberValue = Number.parseFloat(normalized)
+    return Number.isFinite(numberValue) ? Math.round(numberValue) : 0
   }
 
-  private normalizeLocationCorpus(...parts: Array<string | undefined>): string {
-    const merged = parts.filter(Boolean).join(' ')
-    const normalized = this.normalizeLocationTerm(merged)
-    return normalized ? ` ${normalized} ` : ''
+  private normalizePositiveNumber(value: unknown): number {
+    const numberValue = this.normalizeNumber(value)
+    return numberValue >= 0 ? numberValue : 0
   }
 
-  private findLocationByName(name: string, locations: OSMLocation[]): OSMLocation | null {
-    const normalizedName = this.normalizeLocationTerm(name)
-    if (!normalizedName) return null
-    return (
-      locations.find((location) => this.normalizeLocationTerm(location.name) === normalizedName) ?? null
-    )
+  private normalizeStatus(status: unknown): ListingStatus {
+    return status === 'FOR_RENT' || status === 'FOR_SALE' ? status : 'FOR_RENT'
   }
 
-  private findBestLocationMatch(
-    normalizedCorpus: string,
-    locations: OSMLocation[]
-  ): OSMLocation | null {
-    if (!normalizedCorpus) return null
-
-    let bestMatch: OSMLocation | null = null
-    let bestScore = -1
-
-    for (const location of locations) {
-      const normalizedName = this.normalizeLocationTerm(location.name)
-      if (!normalizedName || normalizedName.length < 3) continue
-      if (!normalizedCorpus.includes(` ${normalizedName} `)) continue
-
-      const tokenScore = normalizedName.split(' ').length * 100
-      const charScore = normalizedName.length
-      const score = tokenScore + charScore
-
-      if (score > bestScore) {
-        bestScore = score
-        bestMatch = location
-      }
+  private normalizeTags(tags: unknown): string[] {
+    if (!Array.isArray(tags)) {
+      return []
     }
 
-    return bestMatch
+    return tags
+      .map((tag) => this.toString(tag))
+      .filter(Boolean)
+      .slice(0, 5)
   }
 
-  private resolveLocationFromDescription(...parts: Array<string | undefined>): ResolvedLocationData {
-    const emptyLocation: ResolvedLocationData = {
-      district: '',
-      city: '',
-      province: '',
-      longitude: 0,
-      latitude: 0,
-      streetLon: 0,
-      streetLat: 0,
-      cityLon: 0,
-      cityLat: 0,
-      provinceLon: 0,
-      provinceLat: 0,
+  private normalizeAddress(address: unknown): AIAddressData {
+    if (!address || typeof address !== 'object') {
+      return { district: '', city: '', province: '' }
     }
 
-    const normalizedCorpus = this.normalizeLocationCorpus(...parts)
-    if (!normalizedCorpus) return emptyLocation
-
-    let osm: ReturnType<typeof getOSMLocations>
-    try {
-      osm = getOSMLocations()
-    } catch {
-      return emptyLocation
-    }
-
-    const quarterMatch = this.findBestLocationMatch(normalizedCorpus, osm.quarters)
-    const cityMatch = this.findBestLocationMatch(normalizedCorpus, osm.cities)
-    const provinceMatch = this.findBestLocationMatch(normalizedCorpus, osm.provinces)
-
-    let resolvedQuarter: OSMLocation | null = quarterMatch
-    let resolvedCity: OSMLocation | null = null
-    let resolvedProvince: OSMLocation | null = null
-
-    if (resolvedQuarter) {
-      const cityNameFromQuarter = osm.quarterToCity.get(resolvedQuarter.name)
-      const provinceNameFromQuarter = osm.quarterToProvince.get(resolvedQuarter.name)
-
-      if (cityNameFromQuarter) {
-        resolvedCity = this.findLocationByName(cityNameFromQuarter, osm.cities)
-      }
-      if (provinceNameFromQuarter) {
-        resolvedProvince = this.findLocationByName(provinceNameFromQuarter, osm.provinces)
-      }
-    }
-
-    if (!resolvedCity && cityMatch) {
-      resolvedCity = cityMatch
-    }
-
-    if (!resolvedProvince && resolvedCity) {
-      const provinceNameFromCity = osm.cityToProvince.get(resolvedCity.name)
-      if (provinceNameFromCity) {
-        resolvedProvince = this.findLocationByName(provinceNameFromCity, osm.provinces)
-      }
-    }
-
-    if (!resolvedProvince && provinceMatch) {
-      resolvedProvince = provinceMatch
-    }
-
-    const fallbackPoint = resolvedQuarter || resolvedCity || resolvedProvince
-    if (!fallbackPoint && !resolvedQuarter && !resolvedCity && !resolvedProvince) {
-      return emptyLocation
-    }
+    const data = address as Partial<Record<keyof AIAddressData, unknown>>
 
     return {
-      district: resolvedQuarter?.name ?? '',
-      city: resolvedCity?.name ?? '',
-      province: resolvedProvince?.name ?? '',
-      longitude: fallbackPoint?.lon ?? 0,
-      latitude: fallbackPoint?.lat ?? 0,
-      streetLon: resolvedQuarter?.lon ?? 0,
-      streetLat: resolvedQuarter?.lat ?? 0,
-      cityLon: resolvedCity?.lon ?? 0,
-      cityLat: resolvedCity?.lat ?? 0,
-      provinceLon: resolvedProvince?.lon ?? 0,
-      provinceLat: resolvedProvince?.lat ?? 0,
+      district: this.toString(data.district),
+      city: this.toString(data.city),
+      province: this.toString(data.province),
     }
   }
 
-  private normalizeTextForMatch(value: string): string {
-    return value
-      .normalize('NFD')
-      .replace(/[\u0300-\u036f]/g, '')
-      .toLowerCase()
+  private extractJsonPayload(response: string): string {
+    const cleanedResponse = response
+      .replace(/```json\s*/gi, '')
+      .replace(/```\s*/g, '')
       .trim()
-  }
 
-  private parseStatusCandidate(status: unknown): 'FOR_RENT' | 'FOR_SALE' | null {
-    if (typeof status !== 'string') return null
-    const normalized = this.normalizeTextForMatch(status)
-
-    if (
-      normalized === 'for_rent' ||
-      normalized === 'for-rent' ||
-      normalized === 'for rent' ||
-      normalized === 'rent' ||
-      normalized === 'a louer' ||
-      normalized === 'a loue' ||
-      normalized === 'location'
-    ) {
-      return 'FOR_RENT'
+    if (cleanedResponse.startsWith('{') && cleanedResponse.endsWith('}')) {
+      return cleanedResponse
     }
 
-    if (
-      normalized === 'for_sale' ||
-      normalized === 'for-sale' ||
-      normalized === 'for sale' ||
-      normalized === 'sale' ||
-      normalized === 'a vendre' ||
-      normalized === 'vente'
-    ) {
-      return 'FOR_SALE'
+    const firstBrace = cleanedResponse.indexOf('{')
+    const lastBrace = cleanedResponse.lastIndexOf('}')
+
+    if (firstBrace >= 0 && lastBrace > firstBrace) {
+      return cleanedResponse.slice(firstBrace, lastBrace + 1)
     }
 
-    return null
-  }
-
-  private inferStatusFromText(...texts: Array<string | undefined>): 'FOR_RENT' | 'FOR_SALE' | null {
-    const normalized = this.normalizeTextForMatch(texts.filter(Boolean).join(' '))
-    if (!normalized) return null
-
-    const rentKeywords = [
-      'loyer',
-      'a louer',
-      'location',
-      'locatif',
-      'bail',
-      'mensuel',
-      'mensualite',
-      'par mois',
-      '/mois',
-      'cfa/mois',
-      'a loue',
-      'charges comprises',
-      'cc',
-      'caution',
-      'avance',
-    ]
-    const saleKeywords = [
-      'a vendre',
-      'vente',
-      'vendre',
-      'achat',
-      'a ceder',
-      'cession',
-      'a cede',
-      'prix de vente',
-      'titre foncier',
-      'parcelle',
-    ]
-
-    const rentScore = rentKeywords.reduce((score, keyword) => score + (normalized.includes(keyword) ? 1 : 0), 0)
-    const saleScore = saleKeywords.reduce((score, keyword) => score + (normalized.includes(keyword) ? 1 : 0), 0)
-
-    if (rentScore === 0 && saleScore === 0) return null
-    if (rentScore === saleScore) return null
-    return rentScore > saleScore ? 'FOR_RENT' : 'FOR_SALE'
-  }
-
-  private resolveStatus(
-    explicitStatus: unknown,
-    sourceDescription?: string,
-    ...generatedTexts: Array<string | undefined>
-  ): 'FOR_RENT' | 'FOR_SALE' {
-    // La description utilisateur est la source la plus fiable.
-    const inferredFromSource = this.inferStatusFromText(sourceDescription)
-    if (inferredFromSource) return inferredFromSource
-
-    const parsedStatus = this.parseStatusCandidate(explicitStatus)
-    if (parsedStatus) return parsedStatus
-
-    const inferredFromGenerated = this.inferStatusFromText(...generatedTexts)
-    if (inferredFromGenerated) return inferredFromGenerated
-
-    return 'FOR_SALE'
-  }
-
-  private extractPrice(description: string): number {
-    const normalized = description
-      .normalize('NFD')
-      .replace(/[\u0300-\u036f]/g, '')
-      .toLowerCase()
-    const budgetMatch =
-      normalized.match(/(?:budget|prix|max(?:imum)?|a|à)\s*[:=]?\s*(\d[\d\s.,]*)\s*(?:fcfa|xaf|f cfa)?/) ??
-      normalized.match(/(\d[\d\s.,]{3,})\s*(?:fcfa|xaf|f cfa)/)
-
-    if (!budgetMatch?.[1]) return 0
-    const cleaned = budgetMatch[1].replace(/[^\d]/g, '')
-    const value = Number.parseInt(cleaned || '0', 10)
-    return Number.isFinite(value) && value > 0 ? value : 0
-  }
-
-  private extractArea(description: string): number {
-    const normalized = description
-      .normalize('NFD')
-      .replace(/[\u0300-\u036f]/g, '')
-      .toLowerCase()
-    const areaMatch = normalized.match(/(\d+(?:[.,]\d+)?)\s*(?:m2|m²|metres?\s*carres?)/)
-    if (!areaMatch?.[1]) return 0
-    const area = Number.parseFloat(areaMatch[1].replace(',', '.'))
-    return Number.isFinite(area) && area > 0 ? Math.round(area) : 0
-  }
-
-  private extractRooms(description: string): number {
-    const normalized = description
-      .normalize('NFD')
-      .replace(/[\u0300-\u036f]/g, '')
-      .toLowerCase()
-    const roomsMatch = normalized.match(/(\d+)\s*(?:chambre|chambres|piece|pieces)/)
-    if (!roomsMatch?.[1]) return 0
-    const rooms = Number.parseInt(roomsMatch[1], 10)
-    return Number.isFinite(rooms) && rooms > 0 ? rooms : 0
-  }
-
-  private extractPhone(description: string): string {
-    const phoneMatch = description.match(/(?:\+241\s*)?(0[1-7][\d\s.-]{6,}|\d{8,})/)
-    if (!phoneMatch?.[0]) return ''
-    const digits = phoneMatch[0].replace(/[^\d+]/g, '')
-    return digits.startsWith('+241') ? digits : digits
-  }
-
-  private inferIsOwner(description: string): boolean | undefined {
-    const normalized = this.normalizeTextForMatch(description)
-    if (/proprietaire\s+direct|je\s+suis\s+le\s+proprietaire|mon\s+bien/.test(normalized)) return true
-    if (/mandataire|agence|demarcheur|intermediaire/.test(normalized)) return false
-    return undefined
-  }
-
-  private buildDefaultPropertyDetails(propertyType: string, rooms: number): Record<string, unknown> {
-    switch (propertyType) {
-      case 'home':
-        return {
-          nbrRooms: rooms,
-          nbrKitchens: 1,
-          nbrBathrooms: Math.max(1, rooms > 0 ? Math.ceil(rooms / 2) : 1),
-          nbrToilets: Math.max(1, rooms > 0 ? Math.ceil(rooms / 2) : 1),
-          nbrGarages: 0,
-          nbrFloors: 1,
-          nbrLivingRoom: 1,
-        }
-      case 'apartment':
-        return {
-          nbrRooms: rooms,
-          nbrKitchens: 1,
-          nbrBathrooms: Math.max(1, rooms > 0 ? Math.ceil(rooms / 2) : 1),
-          nbrToilets: Math.max(1, rooms > 0 ? Math.ceil(rooms / 2) : 1),
-          nbrFloorApartment: 0,
-          numeroApartment: '',
-        }
-      case 'villa':
-        return {
-          nbrRooms: rooms,
-          nbrKitchens: 1,
-          nbrBathrooms: Math.max(1, rooms > 0 ? Math.ceil(rooms / 2) : 1),
-          nbrToilets: Math.max(1, rooms > 0 ? Math.ceil(rooms / 2) : 1),
-          nbrFloors: 1,
-          nbrPiscine: 0,
-          nbrGarages: 0,
-        }
-      case 'studio':
-        return {
-          nbrRooms: rooms > 0 ? rooms : 1,
-          nbrKitchens: 1,
-          nbrBathrooms: 1,
-          nbrToilets: 1,
-          nbrFloorStudio: 0,
-          numeroStudio: '',
-        }
-      case 'building':
-        return {
-          nbrApartments: 0,
-          nbrFloors: 1,
-          hasParking: false,
-        }
-      case 'desk':
-        return {
-          nbrToilets: 1,
-          nbrRooms: rooms,
-        }
-      case 'shop':
-        return {
-          nbrRooms: rooms,
-          nbrToilet: 1,
-        }
-      case 'kiosk':
-        return {
-          kioskType: '',
-        }
-      case 'room':
-        return {
-          roomType: '',
-        }
-      default:
-        return {
-          additionalInfo: '',
-        }
-    }
-  }
-
-  private buildFallbackAIData(propertyType: string, propertyLabel: string, description: string): AIFormData {
-    const safeDescription = description.trim().slice(0, AIFormService.MAX_USER_DESCRIPTION_LENGTH)
-    const price = this.extractPrice(safeDescription)
-    const area = this.extractArea(safeDescription)
-    const rooms = this.extractRooms(safeDescription)
-
-    return {
-      title: `${propertyLabel ? propertyLabel.charAt(0).toUpperCase() + propertyLabel.slice(1) : 'Bien'} ${rooms > 0 ? `${rooms} chambre${rooms > 1 ? 's' : ''}` : ''}`.trim(),
-      description: safeDescription,
-      price,
-      area,
-      tags: AIFormService.DEFAULT_TAGS,
-      propertyDetails: this.buildDefaultPropertyDetails(propertyType, rooms),
-    }
+    return cleanedResponse
   }
 
   /**
-   * Crée le prompt spécialisé pour l'IA
+   * Cree le prompt specialise pour l'IA.
    */
   createPrompt(
     propertyType: string,
@@ -448,121 +157,104 @@ export class AIFormService {
   }
 
   /**
-   * Parse la réponse JSON de l'IA
+   * Parse uniquement le JSON renvoye par Gemini.
    */
   parseAIResponse(response: string): AIFormData {
     try {
-      const cleanedResponse = response?.replace(/```json\n?|\n?```/g, '').trim() ?? ''
-      const generatedData = JSON.parse(cleanedResponse)
-      
+      const generatedData = JSON.parse(this.extractJsonPayload(response))
+
       return {
-        title: generatedData.title ?? '',
-        description: generatedData.description ?? '',
+        title: this.toString(generatedData.title),
+        description: this.toString(generatedData.description),
         price: generatedData.price ?? 0,
         area: generatedData.area ?? 0,
-        tags: generatedData.tags ?? [],
-        status: generatedData.status ?? generatedData.propertyStatus ?? generatedData.listingStatus ?? '',
-        propertyDetails: generatedData.propertyDetails ?? {}
+        tags: this.normalizeTags(generatedData.tags),
+        status: this.toString(
+          generatedData.status ?? generatedData.propertyStatus ?? generatedData.listingStatus
+        ),
+        address: this.normalizeAddress(generatedData.address),
+        longitude: generatedData.longitude ?? 0,
+        latitude: generatedData.latitude ?? 0,
+        provinceLon: generatedData.provinceLon ?? 0,
+        provinceLat: generatedData.provinceLat ?? 0,
+        cityLon: generatedData.cityLon ?? 0,
+        cityLat: generatedData.cityLat ?? 0,
+        streetLon: generatedData.streetLon ?? 0,
+        streetLat: generatedData.streetLat ?? 0,
+        countryCode: this.toString(generatedData.countryCode) || 'GA',
+        country: this.toString(generatedData.country) || 'Gabon',
+        additionnalInformation: this.toString(generatedData.additionnalInformation),
+        contact: this.toString(generatedData.contact),
+        isOwner: typeof generatedData.isOwner === 'boolean' ? generatedData.isOwner : undefined,
+        propertyDetails:
+          generatedData.propertyDetails && typeof generatedData.propertyDetails === 'object'
+            ? generatedData.propertyDetails
+            : {},
       }
     } catch (error) {
-      throw new Error(`Erreur parsing JSON: ${error}`)
+      throw new Error(`Gemini a renvoye une reponse illisible: ${error}`)
     }
   }
 
   /**
-   * Post-traite les données (prix, superficie, etc.)
+   * Normalise seulement les types attendus par le formulaire.
    */
   postProcessData(data: AIFormData): AIFormData {
-    // Normaliser le prix
-    let priceNum: number
-    if (typeof data.price === 'string') {
-      const cleaned = data.price.replace(/[^0-9]/g, '')
-      priceNum = parseInt(cleaned || '0', 10)
-    } else {
-      priceNum = data.price
-    }
-    if (!Number.isFinite(priceNum) || priceNum < 0) priceNum = 0
-
-    // Normaliser la surface
-    let areaNum: number
-    if (typeof data.area === 'string') {
-      const cleanedArea = String(data.area).replace(/[^0-9.]/g, '')
-      areaNum = parseFloat(cleanedArea || '0')
-    } else {
-      areaNum = data.area
-    }
-    if (!Number.isFinite(areaNum) || areaNum < 0) areaNum = 0
-
     return {
       ...data,
-      price: priceNum,
-      area: areaNum
+      price: this.normalizePositiveNumber(data.price),
+      area: this.normalizePositiveNumber(data.area),
+      tags: this.normalizeTags(data.tags),
+      status: this.normalizeStatus(data.status),
+      address: this.normalizeAddress(data.address),
+      longitude: this.normalizeNumber(data.longitude),
+      latitude: this.normalizeNumber(data.latitude),
+      provinceLon: this.normalizeNumber(data.provinceLon),
+      provinceLat: this.normalizeNumber(data.provinceLat),
+      cityLon: this.normalizeNumber(data.cityLon),
+      cityLat: this.normalizeNumber(data.cityLat),
+      streetLon: this.normalizeNumber(data.streetLon),
+      streetLat: this.normalizeNumber(data.streetLat),
+      countryCode: this.toString(data.countryCode) || 'GA',
+      country: this.toString(data.country) || 'Gabon',
+      additionnalInformation: this.toString(data.additionnalInformation),
+      contact: this.toString(data.contact),
     }
   }
 
   /**
-   * Transforme les données IA en format de formulaire
+   * Transforme les donnees Gemini en format de formulaire.
    */
-  transformToFormData(
-    data: AIFormData,
-    propertyType: string,
-    sourceDescription?: string
-  ): ProcessedFormData {
-    // S'assurer que price et area sont des nombres au moment de la transformation
-    const normalizedPrice = typeof data.price === 'string'
-      ? parseInt(data.price.replace(/[^0-9]/g, '') || '0', 10)
-      : (Number.isFinite(data.price) ? data.price : 0)
-
-    const normalizedArea = typeof data.area === 'string'
-      ? parseFloat(String(data.area).replace(/[^0-9.]/g, '') || '0')
-      : (Number.isFinite(data.area) ? data.area : 0)
-
-    const resolvedLocation = this.resolveLocationFromDescription(
-      sourceDescription,
-      data.description,
-      data.title
-    )
+  transformToFormData(data: AIFormData): ProcessedFormData {
+    const address = this.normalizeAddress(data.address)
 
     return {
-      // Champs principaux du formulaire
       title: data.title,
       description: data.description,
-      price: normalizedPrice,
-      area: normalizedArea,
-      tags: data.tags,
-      status: this.resolveStatus(data.status, sourceDescription, data.title, data.description),
-      
-      // Structure address pour le formulaire
-      address: {
-        district: resolvedLocation.district,
-        city: resolvedLocation.city,
-        province: resolvedLocation.province
-      },
-      
-      // Champs de localisation
-      longitude: resolvedLocation.longitude,
-      latitude: resolvedLocation.latitude,
-      provinceLon: resolvedLocation.provinceLon,
-      provinceLat: resolvedLocation.provinceLat,
-      cityLon: resolvedLocation.cityLon,
-      cityLat: resolvedLocation.cityLat,
-      streetLon: resolvedLocation.streetLon,
-      streetLat: resolvedLocation.streetLat,
-      countryCode: 'GA',
-      country: 'Gabon',
-      
-      // Informations additionnelles
-      additionnalInformation: '',
-      contact: this.extractPhone(sourceDescription ?? ''),
-      isOwner: this.inferIsOwner(sourceDescription ?? ''),
-      
-      // Détails spécifiques à la propriété
-      ...data.propertyDetails
+      price: this.normalizePositiveNumber(data.price),
+      area: this.normalizePositiveNumber(data.area),
+      tags: this.normalizeTags(data.tags),
+      status: this.normalizeStatus(data.status),
+      address,
+      longitude: this.normalizeNumber(data.longitude),
+      latitude: this.normalizeNumber(data.latitude),
+      provinceLon: this.normalizeNumber(data.provinceLon),
+      provinceLat: this.normalizeNumber(data.provinceLat),
+      cityLon: this.normalizeNumber(data.cityLon),
+      cityLat: this.normalizeNumber(data.cityLat),
+      streetLon: this.normalizeNumber(data.streetLon),
+      streetLat: this.normalizeNumber(data.streetLat),
+      countryCode: this.toString(data.countryCode) || 'GA',
+      country: this.toString(data.country) || 'Gabon',
+      additionnalInformation: this.toString(data.additionnalInformation),
+      contact: this.toString(data.contact) || undefined,
+      isOwner: typeof data.isOwner === 'boolean' ? data.isOwner : undefined,
+      ...data.propertyDetails,
     }
   }
 
   /**
-   * Pipeline complet : prompt → IA → parsing → post-traitement → format formulaire
+   * Pipeline complet : prompt -> Gemini -> parsing -> format formulaire.
    */
   async processAIRequest(
     propertyType: string,
@@ -571,28 +263,19 @@ export class AIFormService {
     description: string,
     sendMessage: (prompt: string, formContext?: any) => Promise<any>
   ): Promise<ProcessedFormData> {
-    // 1. Créer le prompt
     const prompt = this.createPrompt(propertyType, propertyLabel, requiredFields, description)
-    
-    // 2. Appeler l'IA, avec fallback local si le fournisseur est indisponible.
     const result = await sendMessage(prompt)
 
-    let parsedData: AIFormData
     if (!result.success || !result.response) {
-      parsedData = this.buildFallbackAIData(propertyType, propertyLabel, description)
-    } else {
-      try {
-        parsedData = this.parseAIResponse(result.response)
-      } catch {
-        parsedData = this.buildFallbackAIData(propertyType, propertyLabel, description)
-      }
+      throw new Error(
+        result.error || "Gemini n'a pas pu generer le formulaire. Reessayez avec une description plus precise."
+      )
     }
-    
-    // 4. Post-traiter
+
+    const parsedData = this.parseAIResponse(result.response)
     const processedData = this.postProcessData(parsedData)
-    
-    // 5. Transformer en format formulaire
-    return this.transformToFormData(processedData, propertyType, description)
+
+    return this.transformToFormData(processedData)
   }
 }
 

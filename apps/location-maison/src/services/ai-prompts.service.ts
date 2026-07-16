@@ -232,19 +232,48 @@ CONSIGNES STRICTES:
 12. Si la description contient des indices de location (ex: "loyer", "location", "à louer", "mensuel", "caution"), mets "FOR_RENT".
 13. Si la description contient des indices de vente (ex: "vente", "à vendre", "achat", "parcelle"), mets "FOR_SALE".
 14. En cas d'ambiguïté, privilégie "FOR_RENT" si un montant mensuel est mentionné; sinon "FOR_SALE".
+15. N'utilise JAMAIS le texte utilisateur brut comme description finale. Réécris-le en annonce claire, attractive et professionnelle.
+16. Le titre doit être vendeur et contextualisé, pas seulement le type de bien. Exemple: "Belle chambre à louer à Akébé Poteau", pas "Chambre".
+17. Comprends les formats de prix locaux:
+   - "40 k", "40k", "40 mille", "40.000", "40 000" = 40000 FCFA
+   - "1,5 million", "1.5 million", "1 500 000" = 1500000 FCFA
+   - Ne confonds jamais un numéro de téléphone avec un prix.
+18. Conserve les détails utiles: quartier, conditions d'entrée, charges, douche/toilettes, contact si présent.
+19. Tu dois extraire toi-même la localisation, le contact et les conditions depuis la description utilisateur.
+20. Pour "address", mets le quartier/la zone dans "district", la ville dans "city" et la province dans "province" si ces informations sont présentes ou déductibles.
+21. Si tu ne connais pas les coordonnées GPS exactes, mets 0 pour longitude, latitude, provinceLon, provinceLat, cityLon, cityLat, streetLon et streetLat.
+22. Ne laisse pas un champ important vide si l'information est clairement donnée dans la description utilisateur.
 
 FORMAT DE RÉPONSE OBLIGATOIRE (JSON strict):
 {
   "title": "Titre attractif pour l'annonce",
   "description": "Description détaillée et professionnelle (100-200 mots)",
-  "area": superficie_donnée_par_l_utilisateur_ou_0_si_absente,
-  "price": prix_en_fcfa_donné_par_l_utilisateur_ou_0_si_absent,
-  "status": "FOR_RENT ou FOR_SALE",
+  "area": 0,
+  "price": 0,
+  "status": "FOR_RENT",
   "tags": ["tag1", "tag2", "tag3"],
+  "address": {
+    "district": "quartier_ou_zone_extraite_ou_chaine_vide",
+    "city": "ville_extraite_ou_deduite_ou_chaine_vide",
+    "province": "province_extraite_ou_deduite_ou_chaine_vide"
+  },
+  "longitude": 0,
+  "latitude": 0,
+  "provinceLon": 0,
+  "provinceLat": 0,
+  "cityLon": 0,
+  "cityLat": 0,
+  "streetLon": 0,
+  "streetLat": 0,
+  "countryCode": "GA",
+  "country": "Gabon",
+  "additionnalInformation": "complement_de_localisation_ou_conditions_utiles_ou_chaine_vide",
+  "contact": "numero_de_telephone_extrait_ou_chaine_vide",
+  "isOwner": false,
   "propertyDetails": {
     ${this.getPropertyDetailsFormat(propertyType)}
   },
-  "confidence": pourcentage_de_confiance_sur_les_estimations,
+  "confidence": 85,
   "suggestions": ["conseil1", "conseil2", "conseil3"]
 }
 
@@ -261,6 +290,9 @@ IMPORTANT:
 - Si le prix est donné dans la description utilisateur, tu dois le reprendre tel quel (en FCFA). N'invente jamais un autre prix.
 - Si la superficie est donnée dans la description utilisateur, tu dois la reprendre telle quelle.
 - Le champ "status" doit être "FOR_RENT" ou "FOR_SALE" et cohérent avec le texte source.
+- Pour "isOwner", mets true seulement si le texte indique clairement que l'utilisateur est propriétaire; sinon mets false.
+- La description finale doit être une reformulation professionnelle, jamais une copie brute du texte utilisateur.
+- Toute l'interprétation doit venir de toi: prix, titre, description, statut, contact, localisation et détails du bien.
     `;
   }
 
@@ -271,68 +303,68 @@ IMPORTANT:
     switch (propertyType) {
       case 'home':
         return `
-    "nbrRooms": nombre_de_chambres,
-    "nbrKitchens": nombre_de_cuisines,
-    "nbrBathrooms": nombre_de_salles_de_bain,
-    "nbrToilets": nombre_de_toilettes,
-    "nbrGarages": nombre_de_garages,
-    "nbrFloors": nombre_d_etages,
-    "nbrLivingRoom": nombre_de_salons`;
+    "nbrRooms": 0,
+    "nbrKitchens": 0,
+    "nbrBathrooms": 0,
+    "nbrToilets": 0,
+    "nbrGarages": 0,
+    "nbrFloors": 0,
+    "nbrLivingRoom": 0`;
 
       case 'apartment':
         return `
-    "nbrRooms": nombre_de_chambres,
-    "nbrKitchens": nombre_de_cuisines,
-    "nbrBathrooms": nombre_de_salles_de_bain,
-    "nbrToilets": nombre_de_toilettes,
-    "nbrFloorApartment": numero_d_etage,
-    "numeroApartment": "numero_appartement"`;
+    "nbrRooms": 0,
+    "nbrKitchens": 0,
+    "nbrBathrooms": 0,
+    "nbrToilets": 0,
+    "nbrFloorApartment": 0,
+    "numeroApartment": ""`;
 
       case 'villa':
         return `
-    "nbrRooms": nombre_de_chambres,
-    "nbrKitchens": nombre_de_cuisines,
-    "nbrBathrooms": nombre_de_salles_de_bain,
-    "nbrToilets": nombre_de_toilettes,
-    "nbrFloors": nombre_d_etages,
-    "nbrPiscine": nombre_de_piscines,
-    "nbrGarages": nombre_de_garages`;
+    "nbrRooms": 0,
+    "nbrKitchens": 0,
+    "nbrBathrooms": 0,
+    "nbrToilets": 0,
+    "nbrFloors": 0,
+    "nbrPiscine": 0,
+    "nbrGarages": 0`;
 
       case 'studio':
         return `
-    "nbrRooms": nombre_de_chambres,
-    "nbrKitchens": nombre_de_cuisines,
-    "nbrBathrooms": nombre_de_salles_de_bain,
-    "nbrToilets": nombre_de_toilettes,
-    "nbrFloorStudio": numero_d_etage,
-    "numeroStudio": "numero_studio"`;
+    "nbrRooms": 0,
+    "nbrKitchens": 0,
+    "nbrBathrooms": 0,
+    "nbrToilets": 0,
+    "nbrFloorStudio": 0,
+    "numeroStudio": ""`;
 
       case 'building':
         return `
-    "nbrApartments": nombre_d_appartements,
-    "nbrFloors": nombre_d_etages,
-    "hasParking": true_ou_false`;
+    "nbrApartments": 0,
+    "nbrFloors": 0,
+    "hasParking": false`;
 
       case 'desk':
         return `
-    "nbrToilets": nombre_de_toilettes,
-    "nbrRooms": nombre_de_pieces`;
+    "nbrToilets": 0,
+    "nbrRooms": 0`;
 
       case 'shop':
         return `
-    "nbrRooms": nombre_de_pieces,
-    "nbrToilet": nombre_de_toilettes`;
+    "nbrRooms": 0,
+    "nbrToilet": 0`;
 
       case 'kiosk':
         return `
-    "kioskType": "type_de_kiosque"`;
+    "kioskType": ""`;
 
       case 'room':
         return `
-    "roomType": "type_de_chambre"`;
+    "roomType": ""`;
 
       default:
-        return '"additionalInfo": "informations_supplementaires"';
+        return '"additionalInfo": ""';
     }
   }
 
