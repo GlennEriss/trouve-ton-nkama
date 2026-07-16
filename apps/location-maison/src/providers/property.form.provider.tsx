@@ -97,8 +97,10 @@ export const PropertyFormComponentProvider = ({ children, isUpdate, propertyToUp
     const isFinalSubmittingRef = useRef(false)
     const [isFinalSubmitting, setIsFinalSubmitting] = useState(false)
     //Form
-    const director = DirectorFactory.createDirectorProperty(typeProperty)
-    const property = director.build()
+    const property = useMemo(() => {
+        const director = DirectorFactory.createDirectorProperty(typeProperty)
+        return director.build()
+    }, [typeProperty])
 
     // Hook pour gérer les schémas
     const { fullSchema, currentStepSchema } = usePropertyFormSchema(activeStep, typeProperty)
@@ -116,7 +118,7 @@ export const PropertyFormComponentProvider = ({ children, isUpdate, propertyToUp
     })
 
     // Calculer les valeurs par défaut en fonction des props
-    const getDefaultValues = () => {
+    const getDefaultValues = useCallback(() => {
         const baseValues = {
             ...property,
             images: [],
@@ -150,7 +152,7 @@ export const PropertyFormComponentProvider = ({ children, isUpdate, propertyToUp
         }
 
         return baseValues
-    }
+    }, [property, propertyToUpdated, user?.phoneNumbers])
 
     const form = useForm<any>({
         resolver: zodResolver(currentStepSchema), // Utiliser le schéma de l'étape actuelle
@@ -188,6 +190,37 @@ export const PropertyFormComponentProvider = ({ children, isUpdate, propertyToUp
         saveCurrentFormData()
         void saveDraftImages(form.getValues('images'))
     }, [saveCurrentFormData, saveDraftImages, form])
+
+    const resetPropertyForm = useCallback(async () => {
+        form.reset(getDefaultValues())
+        form.clearErrors()
+        setImagesAlreadyUplaod(propertyToUpdated?.images || [])
+        setPropertyPreview(undefined)
+        setPendingSubmission(null)
+        setIsPublishAuthModalOpen(false)
+        isFinalSubmittingRef.current = false
+        setIsFinalSubmitting(false)
+        setActiveStep(0)
+        clearFormLocalStorage()
+        await clearDraftImages()
+
+        toast({
+            duration: 3000,
+            title: "Formulaire réinitialisé",
+            description: isUpdate
+                ? "Les champs sont revenus aux informations de l'annonce."
+                : "Tous les champs et les brouillons sauvegardés ont été vidés.",
+            variant: "success",
+        })
+    }, [
+        clearDraftImages,
+        clearFormLocalStorage,
+        form,
+        getDefaultValues,
+        isUpdate,
+        propertyToUpdated?.images,
+        toast,
+    ])
 
     // Mettre à jour le resolver quand l'étape change
     React.useEffect(() => {
@@ -463,8 +496,20 @@ export const PropertyFormComponentProvider = ({ children, isUpdate, propertyToUp
         currentStepSchema,
         typeProperty,
         prepareForExternalRedirect,
-        isFinalSubmitting
-    }), [activeStep, form, propertyPreview, currentStepSchema, typeProperty, prepareForExternalRedirect, isFinalSubmitting]);
+        resetPropertyForm,
+        isFinalSubmitting,
+        isUpdate: Boolean(isUpdate),
+    }), [
+        activeStep,
+        form,
+        propertyPreview,
+        currentStepSchema,
+        typeProperty,
+        prepareForExternalRedirect,
+        resetPropertyForm,
+        isFinalSubmitting,
+        isUpdate,
+    ]);
 
     return (
         <PropertyFormComponentContext.Provider value={contextValue}>
