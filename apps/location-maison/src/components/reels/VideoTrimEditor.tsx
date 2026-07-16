@@ -1,6 +1,7 @@
 'use client'
 
 import React from 'react'
+import { Volume2, VolumeX } from 'lucide-react'
 
 const FILMSTRIP_FRAME_COUNT = 10
 const MIN_TRIM_SECONDS = 1
@@ -181,6 +182,7 @@ export interface VideoTrimEditorProps {
   trimEnd: number
   onTrimChange: (start: number, end: number) => void
   muted: boolean
+  onToggleMute: () => void
 }
 
 export function VideoTrimEditor({
@@ -190,6 +192,7 @@ export function VideoTrimEditor({
   trimEnd,
   onTrimChange,
   muted,
+  onToggleMute,
 }: Readonly<VideoTrimEditorProps>) {
   const [frames, setFrames] = React.useState<string[]>([])
   const videoRef = React.useRef<HTMLVideoElement | null>(null)
@@ -238,9 +241,34 @@ export function VideoTrimEditor({
 
   const trimmedDurationSeconds = Math.max(0, trimEnd - trimStart)
 
+  // Disposition WhatsApp : bande de montage EN HAUT (sous la rangée de boutons), pastille
+  // son + durée/poids juste dessous, vidéo plein cadre au centre.
   return (
-    <div className="flex h-full flex-col">
-      <div className="relative flex flex-1 items-center justify-center overflow-hidden bg-black">
+    <div className="flex h-full min-h-0 flex-col">
+      <div className="space-y-2 px-4 pb-1 pt-2">
+        <TrimBar
+          durationSeconds={durationSeconds}
+          trimStart={trimStart}
+          trimEnd={trimEnd}
+          onChange={onTrimChange}
+          frames={frames}
+        />
+        <div className="flex items-center gap-2 text-xs font-medium text-white/90">
+          <button
+            type="button"
+            onClick={onToggleMute}
+            className="flex h-8 w-8 items-center justify-center rounded-full bg-white/15 text-white"
+            aria-label={muted ? 'Réactiver le son' : 'Couper le son'}
+          >
+            {muted ? <VolumeX className="h-4 w-4" /> : <Volume2 className="h-4 w-4" />}
+          </button>
+          <span className="rounded-full bg-white/15 px-2.5 py-1.5 backdrop-blur-sm">
+            {formatDuration(trimmedDurationSeconds)} · {formatSize(file.size)}
+          </span>
+        </div>
+      </div>
+
+      <div className="relative flex min-h-0 flex-1 items-center justify-center overflow-hidden bg-black">
         {objectUrl && (
           <video
             ref={videoRef}
@@ -252,21 +280,6 @@ export function VideoTrimEditor({
             playsInline
           />
         )}
-      </div>
-
-      <div className="space-y-2 px-4 pb-2 pt-3">
-        <div className="flex items-center gap-2 text-xs font-medium text-white/80">
-          <span className="rounded-full bg-white/10 px-2.5 py-1 backdrop-blur-sm">
-            {formatDuration(trimmedDurationSeconds)} · {formatSize(file.size)}
-          </span>
-        </div>
-        <TrimBar
-          durationSeconds={durationSeconds}
-          trimStart={trimStart}
-          trimEnd={trimEnd}
-          onChange={onTrimChange}
-          frames={frames}
-        />
       </div>
     </div>
   )

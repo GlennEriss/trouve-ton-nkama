@@ -2,7 +2,7 @@
 
 import React from 'react'
 import Link from 'next/link'
-import { ArrowLeft, CheckCircle2, Loader2, Pencil, Send, Video, Volume2, VolumeX, X, XCircle } from 'lucide-react'
+import { ArrowLeft, CheckCircle2, Loader2, Pencil, Send, Video, X, XCircle } from 'lucide-react'
 import { useCurrentUser } from '@/hooks/use-current-user'
 import { useVideoDropzone, type VideoDropzoneRejectionReason } from '@/hooks/useVideoDropzone'
 import { useReelDraftVideoStorage } from '@/hooks/useReelDraftVideoStorage'
@@ -228,14 +228,6 @@ export default function CreateOrphanReelClient() {
           >
             <X className="h-5 w-5" />
           </button>
-          <button
-            type="button"
-            onClick={() => setMuted((current) => !current)}
-            className="flex h-10 w-10 items-center justify-center rounded-full bg-white/10 text-white"
-            aria-label={muted ? 'Réactiver le son' : 'Couper le son'}
-          >
-            {muted ? <VolumeX className="h-5 w-5" /> : <Volume2 className="h-5 w-5" />}
-          </button>
         </div>
 
         <VideoTrimEditor
@@ -248,6 +240,7 @@ export default function CreateOrphanReelClient() {
             setTrimEnd(end)
           }}
           muted={muted}
+          onToggleMute={() => setMuted((current) => !current)}
         />
 
         <div className="space-y-2 px-4 pb-[calc(env(safe-area-inset-bottom,0px)+1rem)] pt-2">

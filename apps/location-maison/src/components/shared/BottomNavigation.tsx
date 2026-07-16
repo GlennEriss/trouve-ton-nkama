@@ -44,6 +44,15 @@ function shouldHideGuestBottomNavigation(pathname: string) {
     return GUEST_BOTTOM_NAV_HIDDEN_PREFIXES.some((prefix) => isActivePath(pathname, prefix))
 }
 
+// Routes masquées pour TOUT le monde (pas seulement les visiteurs) : la création de réel est
+// un éditeur plein écran façon statut WhatsApp (fixed inset-0) — cette barre (z-50, fixed
+// bottom) recouvrirait la légende et le bouton d'envoi.
+const ALWAYS_HIDDEN_PREFIXES = [routes.protected.reels_add] as const
+
+function shouldHideBottomNavigationForEveryone(pathname: string) {
+    return ALWAYS_HIDDEN_PREFIXES.some((prefix) => isActivePath(pathname, prefix))
+}
+
 function shouldReserveBottomNavigationSpace(pathname: string) {
     return pathname !== routes.protected.reels
 }
@@ -102,6 +111,8 @@ export const BottomNavigation: React.FC = () => {
     const pathnames = usePathname();
     const isAnnouncer = Array.isArray(user?.roles) && user.roles.includes('Announcer');
     const reserveSpace = shouldReserveBottomNavigationSpace(pathnames);
+
+    if (shouldHideBottomNavigationForEveryone(pathnames)) return null;
 
     if (!user) {
         if (shouldHideGuestBottomNavigation(pathnames)) return null;

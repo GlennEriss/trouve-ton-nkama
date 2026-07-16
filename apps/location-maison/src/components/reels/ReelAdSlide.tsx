@@ -9,8 +9,11 @@
  */
 
 import React from 'react'
+import Link from 'next/link'
+import { Loader2, Megaphone } from 'lucide-react'
 import AdSenseBlock from '@/components/ads/AdSenseBlock'
 import AdCreativeCard from '@/components/ads/AdCreativeCard'
+import { routes } from '@/constantes/routes'
 import { ADSENSE_SLOTS } from '@/lib/ads/config'
 import type { AdCreativePublic } from '@/models/advertising'
 
@@ -35,20 +38,84 @@ function track(event: 'impression' | 'click', campaignId: string) {
 }
 
 function AdSenseSlide({ slotKey }: { slotKey: string }) {
+  const [status, setStatus] = React.useState<'loading' | 'filled' | 'fallback'>('loading')
+
+  React.useEffect(() => {
+    setStatus('loading')
+    const timeoutId = window.setTimeout(() => {
+      setStatus((current) => (current === 'filled' ? current : 'fallback'))
+    }, 6500)
+
+    return () => window.clearTimeout(timeoutId)
+  }, [slotKey])
+
+  const handleStatusChange = React.useCallback((adStatus: string | null) => {
+    if (adStatus === 'filled') {
+      setStatus('filled')
+      return
+    }
+
+    if (adStatus === 'unfilled') {
+      setStatus('fallback')
+    }
+  }, [])
+
   return (
-    <div className="w-[85%] max-w-sm rounded-2xl bg-white p-4 shadow-2xl">
+    <>
+      {status === 'loading' && (
+        <div className="flex flex-col items-center gap-3 text-white/70">
+          <Loader2 className="h-7 w-7 animate-spin" aria-hidden="true" />
+          <p className="text-xs font-medium uppercase tracking-wide">Chargement</p>
+        </div>
+      )}
+
+      {status === 'fallback' && <ReelsAdFallback />}
+
       {/* Format rectangle FIXE (pas "auto"/responsive) : le mode responsive
           d'AdSense injecte height:auto !important sur tous les ancêtres du
           bloc, ce qui écrase la chaîne h-full du carousel vertical et fige le
           défilement. Le garde-fou MutationObserver de ReelsFeedClient couvre
           le cas où AdSense le ferait quand même. */}
-      <AdSenseBlock
-        slot={ADSENSE_SLOTS.reelsInline}
-        slotKey={slotKey}
-        format="rectangle"
-        fullWidthResponsive={false}
-        minHeight={250}
-      />
+      <div
+        className={
+          status === 'filled'
+            ? 'w-[85%] max-w-sm rounded-2xl bg-white p-4 shadow-2xl'
+            : 'pointer-events-none absolute left-1/2 top-1/2 w-[85%] max-w-sm -translate-x-1/2 -translate-y-1/2 opacity-0'
+        }
+      >
+        <AdSenseBlock
+          slot={ADSENSE_SLOTS.reelsInline}
+          slotKey={slotKey}
+          format="rectangle"
+          fullWidthResponsive={false}
+          minHeight={250}
+          onStatusChange={handleStatusChange}
+        />
+      </div>
+    </>
+  )
+}
+
+function ReelsAdFallback() {
+  return (
+    <div className="w-[85%] max-w-sm rounded-2xl border border-white/10 bg-neutral-900/80 p-5 text-center text-white shadow-2xl backdrop-blur-sm">
+      <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-emerald-500/15 text-emerald-200">
+        <Megaphone className="h-6 w-6" aria-hidden="true" />
+      </div>
+      <p className="mt-4 text-xs font-semibold uppercase tracking-wide text-emerald-200">
+        Sponsorisé
+      </p>
+      <h2 className="mt-2 text-xl font-bold leading-tight">Votre bien peut être vu ici</h2>
+      <p className="mt-3 text-sm leading-6 text-white/70">
+        Mettez votre logement, terrain ou service immobilier devant les personnes qui
+        regardent les réels.
+      </p>
+      <Link
+        href={routes.public.advertise}
+        className="mt-5 inline-flex min-h-11 items-center justify-center rounded-full bg-white px-5 text-sm font-semibold text-neutral-950 transition hover:bg-emerald-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
+      >
+        Faire de la pub
+      </Link>
     </div>
   )
 }
