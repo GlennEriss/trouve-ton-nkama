@@ -11,7 +11,9 @@ export type PropertyFormComponent = {
     currentStepSchema: any,
     typeProperty: string,
     prepareForExternalRedirect: () => void,
+    resetPropertyForm: () => Promise<void>,
     isFinalSubmitting: boolean,
+    isUpdate: boolean,
 }
 
 export const PropertyFormComponentContext = createContext<PropertyFormComponent>({
@@ -23,7 +25,9 @@ export const PropertyFormComponentContext = createContext<PropertyFormComponent>
     currentStepSchema: null,
     typeProperty: '',
     prepareForExternalRedirect: () => { },
+    resetPropertyForm: async () => { },
     isFinalSubmitting: false,
+    isUpdate: false,
 })
 
 export const usePropertyFormComponentContext = () => {
