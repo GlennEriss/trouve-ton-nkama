@@ -3,9 +3,7 @@
 import { useSession } from 'next-auth/react';
 import { useState } from 'react';
 import { auth } from '@/firebase/auth';
-import { model } from '@/firebase/ai';
-import { deductCreditsWithTransaction } from '@/db/credit-transaction.db';
-import AIPromptsService, { FormContext } from '@/services/ai-prompts.service';
+import type { FormContext } from '@/services/ai-prompts.service';
 import { createLogger } from '@/lib/logger';
 
 interface AIResponse {
@@ -24,9 +22,14 @@ interface AIAssistantHook {
 
 const logger = createLogger('hooks.use-ai-assistant');
 const MAX_MESSAGE_LENGTH = 40000;
+const ENABLE_FIREBASE_AI_FALLBACK = process.env.NEXT_PUBLIC_ENABLE_FIREBASE_AI_FALLBACK === 'true';
 
 async function sendToFirebaseAI(message: string, context?: FormContext): Promise<{ success: boolean; text?: string; error?: string }> {
   try {
+    const [{ model }, { default: AIPromptsService }] = await Promise.all([
+      import('@/firebase/ai'),
+      import('@/services/ai-prompts.service'),
+    ]);
     const prompt = context
       ? AIPromptsService.buildContextualPrompt(message, context)
       : `${AIPromptsService.getSystemPrompt()}\n\nQUESTION: ${message}\n\nRéponds en français de manière utile:`;
@@ -136,7 +139,7 @@ export const useAIAssistant = (): AIAssistantHook => {
           errorCode === 'AI_PROVIDER_ERROR' ||
           errorCode === 'INTERNAL_SERVER_ERROR';
 
-        if (shouldTryFirebaseFallback && session?.user?.uid) {
+        if (ENABLE_FIREBASE_AI_FALLBACK && shouldTryFirebaseFallback && session?.user?.uid) {
           logger.warn('Server AI route failed, trying Firebase AI fallback', {
             status: response.status,
             errorCode,
@@ -144,6 +147,7 @@ export const useAIAssistant = (): AIAssistantHook => {
 
           const fallbackResult = await sendToFirebaseAI(requestMessage, context);
           if (fallbackResult.success && fallbackResult.text) {
+            const { deductCreditsWithTransaction } = await import('@/db/credit-transaction.db');
             const description = `Assistant IA - Question: "${requestMessage.substring(0, 50)}${requestMessage.length > 50 ? '...' : ''}"`;
             const transactionResult = await deductCreditsWithTransaction(
               session.user.uid,
