@@ -214,8 +214,10 @@ export default function CreateOrphanReelClient() {
   const showDropzone = !reel || reel.processingStatus === 'failed'
 
   if (showDropzone && videoFile) {
+    // z-40, sous le Dialog partagé (z-50, voir ui/dialog.tsx) : PublishAuthModal doit pouvoir
+    // s'afficher par-dessus cet éditeur plein écran pour les visiteurs non connectés/non-annonceurs.
     return (
-      <div className="fixed inset-0 z-[200] flex flex-col bg-black">
+      <div className="fixed inset-0 z-40 flex flex-col bg-black">
         <div className="flex items-center justify-between px-4 pt-[calc(env(safe-area-inset-top,0px)+0.75rem)] pb-2">
           <button
             type="button"

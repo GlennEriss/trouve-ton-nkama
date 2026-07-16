@@ -139,9 +139,9 @@ function TrimBar({ durationSeconds, trimStart, trimEnd, onChange, frames, disabl
     >
       <div className="absolute inset-0 flex">
         {frames.length > 0 ? (
-          frames.map((src) => (
+          frames.map((src, index) => (
             // eslint-disable-next-line @next/next/no-img-element
-            <img key={src.slice(-24)} src={src} alt="" draggable={false} className="h-full flex-1 object-cover" />
+            <img key={index} src={src} alt="" draggable={false} className="h-full flex-1 object-cover" />
           ))
         ) : (
           <div className="h-full w-full bg-neutral-700" />
@@ -193,11 +193,17 @@ export function VideoTrimEditor({
 }: Readonly<VideoTrimEditorProps>) {
   const [frames, setFrames] = React.useState<string[]>([])
   const videoRef = React.useRef<HTMLVideoElement | null>(null)
-  const objectUrl = React.useMemo(() => URL.createObjectURL(file), [file])
+  // Créée DANS l'effet (pas via useMemo) : en React 18 StrictMode (dev), les effets sont
+  // montés/démontés/remontés deux fois — un useMemo garde la même URL sur les deux montages
+  // alors que le cleanup du premier la révoque, cassant le second montage (vidéo illisible,
+  // MEDIA_ELEMENT_ERROR). Ici chaque montage recrée sa propre URL, y compris en double-invoke.
+  const [objectUrl, setObjectUrl] = React.useState<string | null>(null)
 
   React.useEffect(() => {
-    return () => URL.revokeObjectURL(objectUrl)
-  }, [objectUrl])
+    const url = URL.createObjectURL(file)
+    setObjectUrl(url)
+    return () => URL.revokeObjectURL(url)
+  }, [file])
 
   React.useEffect(() => {
     let cancelled = false
@@ -235,15 +241,17 @@ export function VideoTrimEditor({
   return (
     <div className="flex h-full flex-col">
       <div className="relative flex flex-1 items-center justify-center overflow-hidden bg-black">
-        <video
-          ref={videoRef}
-          src={objectUrl}
-          className="max-h-full max-w-full object-contain"
-          autoPlay
-          loop
-          muted={muted}
-          playsInline
-        />
+        {objectUrl && (
+          <video
+            ref={videoRef}
+            src={objectUrl}
+            className="max-h-full max-w-full object-contain"
+            autoPlay
+            loop
+            muted={muted}
+            playsInline
+          />
+        )}
       </div>
 
       <div className="space-y-2 px-4 pb-2 pt-3">
