@@ -1,8 +1,9 @@
 'use client'
 
 import React from 'react'
+import Link from 'next/link'
 import { useInfiniteQuery } from '@tanstack/react-query'
-import { ChevronDown, ChevronUp, Gift, Loader2, PhoneCall, Volume2, VolumeX } from 'lucide-react'
+import { ChevronDown, ChevronUp, Gift, Loader2, PhoneCall, PlusCircle, Video, Volume2, VolumeX } from 'lucide-react'
 import { FaWhatsapp } from 'react-icons/fa'
 import {
   Carousel,
@@ -14,6 +15,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { useProperty } from '@/hooks/use-property'
 import { useUserByUID } from '@/hooks/use-user-by-uid'
 import { useTrackPropertyInteraction } from '@/hooks/use-track-property-interaction'
+import { routes } from '@/constantes/routes'
 import { cn } from '@/lib/utils'
 import type { Reel } from '@/models/reel'
 import GiftModal from './gift/GiftModal'
@@ -76,6 +78,34 @@ function trackReelView(reelId: string) {
   } else {
     fetch(url, { method: 'POST', keepalive: true }).catch(() => undefined)
   }
+}
+
+function EndOfFeedSlide() {
+  return (
+    <div className="relative flex h-full w-full items-center justify-center overflow-hidden bg-neutral-950 px-6 text-center text-white">
+      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_50%_0%,rgba(31,168,155,0.22),transparent_46%)]" />
+      <div className="relative z-10 flex w-full max-w-sm flex-col items-center">
+        <div className="mb-5 flex h-14 w-14 items-center justify-center rounded-full border border-white/15 bg-white/10 text-emerald-300">
+          <Video className="h-7 w-7" aria-hidden="true" />
+        </div>
+        <p className="text-sm font-medium text-emerald-200">Vous êtes à jour</p>
+        <h2 className="mt-3 text-2xl font-bold leading-tight">
+          Mettez votre bien en avant
+        </h2>
+        <p className="mt-3 text-sm leading-6 text-white/70">
+          Vous avez un logement ou un terrain à vendre ou à louer ? Publiez une courte
+          vidéo pour montrer le lieu, rassurer les visiteurs et toucher plus de monde.
+        </p>
+        <Link
+          href={routes.protected.reels_add}
+          className="mt-7 inline-flex min-h-12 items-center justify-center gap-2 rounded-full bg-white px-6 text-sm font-semibold text-neutral-950 shadow-lg shadow-black/20 transition hover:bg-emerald-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
+        >
+          <PlusCircle className="h-5 w-5" aria-hidden="true" />
+          Créer un réel
+        </Link>
+      </div>
+    </div>
+  )
 }
 
 // Rail d'actions (avatar annonceur + WhatsApp + appel + son). `variant="overlay"` = superposé
@@ -339,6 +369,8 @@ export default function ReelsFeedClient() {
   // Fil affiché = réels + diapositives pub intercalées. activeIndex est un
   // index dans `slides`, plus dans `reels`.
   const slides = React.useMemo(() => buildSlides(reels), [reels])
+  const showEndOfFeedCta = !feedQuery.hasNextPage && !feedQuery.isFetchingNextPage
+  const carouselItemCount = slides.length + (showEndOfFeedCta ? 1 : 0) + (feedQuery.isFetchingNextPage ? 1 : 0)
   const activeSlide = slides[activeIndex]
   const activeReel = activeSlide?.kind === 'reel' ? activeSlide.reel : null
 
@@ -428,6 +460,11 @@ export default function ReelsFeedClient() {
                 </div>
               </CarouselItem>
             )}
+            {showEndOfFeedCta && (
+              <CarouselItem className="pl-0 basis-full">
+                <EndOfFeedSlide />
+              </CarouselItem>
+            )}
           </CarouselContent>
         </Carousel>
       </div>
@@ -467,7 +504,7 @@ export default function ReelsFeedClient() {
         <button
           type="button"
           onClick={() => api?.scrollNext()}
-          disabled={activeIndex >= slides.length - 1 && !feedQuery.hasNextPage}
+          disabled={activeIndex >= carouselItemCount - 1}
           className="flex h-10 w-10 items-center justify-center rounded-full bg-white/10 text-white hover:bg-white/20 disabled:opacity-30 disabled:hover:bg-white/10"
           aria-label="Réel suivant"
         >
