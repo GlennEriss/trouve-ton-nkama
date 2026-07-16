@@ -387,6 +387,10 @@ export default function ReelsFeedClient() {
   }, [api])
 
   React.useEffect(() => {
+    api?.reInit()
+  }, [api, carouselItemCount])
+
+  React.useEffect(() => {
     if (activeReel && !trackedViewsRef.current.has(activeReel.id)) {
       trackedViewsRef.current.add(activeReel.id)
       trackReelView(activeReel.id)
@@ -433,9 +437,9 @@ export default function ReelsFeedClient() {
           setApi={setApi}
           className="h-full w-full"
         >
-          <CarouselContent className="ml-0 h-full">
+          <CarouselContent className="ml-0 mt-0 h-full">
             {slides.map((slide, index) => (
-              <CarouselItem key={slide.key} className="pl-0 basis-full">
+              <CarouselItem key={slide.key} className="basis-full pl-0 pt-0">
                 {slide.kind === 'reel' ? (
                   <ReelSlide
                     reel={slide.reel}
@@ -454,14 +458,14 @@ export default function ReelsFeedClient() {
               </CarouselItem>
             ))}
             {feedQuery.isFetchingNextPage && (
-              <CarouselItem className="pl-0 basis-full">
+              <CarouselItem className="basis-full pl-0 pt-0">
                 <div className="flex h-full items-center justify-center bg-black">
                   <Loader2 className="h-8 w-8 animate-spin text-white" />
                 </div>
               </CarouselItem>
             )}
             {showEndOfFeedCta && (
-              <CarouselItem className="pl-0 basis-full">
+              <CarouselItem className="basis-full pl-0 pt-0">
                 <EndOfFeedSlide />
               </CarouselItem>
             )}

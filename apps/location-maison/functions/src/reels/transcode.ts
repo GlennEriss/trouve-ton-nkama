@@ -92,24 +92,55 @@ function withFfmpegOutput(error: Error, stdout: string | null | undefined, stder
   return detailedError;
 }
 
-function remuxToMp4(inputPath: string, outputPath: string): Promise<void> {
+type TrimOptions = {
+  trimStartSeconds: number;
+  trimDurationSeconds: number;
+  muted: boolean;
+};
+
+function applyTrimOptions(command: ffmpeg.FfmpegCommand, trim: TrimOptions | null): void {
+  if (!trim) return;
+  if (trim.trimStartSeconds > 0) {
+    command.seekInput(trim.trimStartSeconds);
+  }
+  command.duration(trim.trimDurationSeconds);
+}
+
+// Coupe le son demandée à l'envoi (WhatsApp-like) — appliquée à l'encodage final, pas
+// seulement à l'aperçu client (voir CreateOrphanReelClient.tsx).
+function audioOutputOptions(muted: boolean): string[] {
+  return muted ? ['-an'] : [];
+}
+
+function remuxToMp4(inputPath: string, outputPath: string, trim: TrimOptions | null): Promise<void> {
   return new Promise((resolve, reject) => {
-    ffmpeg(inputPath)
-      .outputOptions(['-map 0:v:0', '-map 0:a:0?', '-c:v copy', '-c:a copy', '-movflags +faststart'])
+    const command = ffmpeg(inputPath);
+    applyTrimOptions(command, trim);
+    command
+      .outputOptions([
+        '-map 0:v:0',
+        ...(trim?.muted ? [] : ['-map 0:a:0?']),
+        '-c:v copy',
+        ...(trim?.muted ? [] : ['-c:a copy']),
+        ...audioOutputOptions(Boolean(trim?.muted)),
+        '-movflags +faststart',
+      ])
       .on('end', () => resolve())
       .on('error', (error, stdout, stderr) => reject(withFfmpegOutput(error, stdout, stderr)))
       .save(outputPath);
   });
 }
 
-function encodeToMp4(inputPath: string, outputPath: string): Promise<void> {
+function encodeToMp4(inputPath: string, outputPath: string, trim: TrimOptions | null): Promise<void> {
   return new Promise((resolve, reject) => {
-    ffmpeg(inputPath)
+    const command = ffmpeg(inputPath);
+    applyTrimOptions(command, trim);
+    command
       .videoCodec('libx264')
       .audioCodec('aac')
       .videoFilters(`scale='if(gt(ih,${REEL_MAX_HEIGHT_PX}),-2,iw)':'if(gt(ih,${REEL_MAX_HEIGHT_PX}),${REEL_MAX_HEIGHT_PX},ih)'`)
       .videoBitrate(REEL_VIDEO_BITRATE)
-      .outputOptions(['-movflags +faststart', '-preset veryfast'])
+      .outputOptions(['-movflags +faststart', '-preset veryfast', ...audioOutputOptions(Boolean(trim?.muted))])
       .on('end', () => resolve())
       .on('error', (error, stdout, stderr) => reject(withFfmpegOutput(error, stdout, stderr)))
       .save(outputPath);
@@ -124,10 +155,15 @@ function canRemuxToMp4(metadata: VideoMetadata): boolean {
   return compatibleVideo && compatibleAudio && withinHeightLimit;
 }
 
-async function transcodeToMp4(inputPath: string, outputPath: string, metadata: VideoMetadata): Promise<void> {
+async function transcodeToMp4(
+  inputPath: string,
+  outputPath: string,
+  metadata: VideoMetadata,
+  trim: TrimOptions | null
+): Promise<void> {
   if (canRemuxToMp4(metadata)) {
     try {
-      await remuxToMp4(inputPath, outputPath);
+      await remuxToMp4(inputPath, outputPath, trim);
       return;
     } catch (error) {
       logger.warn('Compatible reel remux failed; falling back to video encoding', {
@@ -137,7 +173,7 @@ async function transcodeToMp4(inputPath: string, outputPath: string, metadata: V
     }
   }
 
-  await encodeToMp4(inputPath, outputPath);
+  await encodeToMp4(inputPath, outputPath, trim);
 }
 
 function extractThumbnail(inputPath: string, outputPath: string, timestampSeconds: number): Promise<void> {
@@ -295,7 +331,18 @@ export const transcodeReelVideo = onObjectFinalized(TRANSCODE_FUNCTION_OPTIONS, 
     await bucket.file(filePath).download({ destination: tmpRawPath });
 
     const metadata = await probeVideoMetadata(tmpRawPath);
-    const { durationSeconds } = metadata;
+    const { durationSeconds: rawDurationSeconds } = metadata;
+    const reelData = reelSnap.data() ?? {};
+    const requestedTrimStart = typeof reelData.trimStartSeconds === 'number' ? reelData.trimStartSeconds : 0;
+    const requestedTrimEnd = typeof reelData.trimEndSeconds === 'number' ? reelData.trimEndSeconds : rawDurationSeconds;
+    // Bornes défensives : le client envoie déjà des valeurs cohérentes (voir CreateOrphanReelClient.tsx
+    // + validation API /api/reels), mais on ne fait jamais confiance à la durée probée côté client.
+    const trimStartSeconds = Math.max(0, Math.min(requestedTrimStart, rawDurationSeconds));
+    const trimEndSeconds = Math.max(trimStartSeconds, Math.min(requestedTrimEnd, rawDurationSeconds));
+    const isTrimmed = trimStartSeconds > 0 || trimEndSeconds < rawDurationSeconds;
+    const durationSeconds = isTrimmed ? trimEndSeconds - trimStartSeconds : rawDurationSeconds;
+    const muted = Boolean(reelData.muted);
+
     if (durationSeconds > REEL_MAX_DURATION_SECONDS) {
       await reelRef.update({
         processingStatus: 'failed',
@@ -306,7 +353,11 @@ export const transcodeReelVideo = onObjectFinalized(TRANSCODE_FUNCTION_OPTIONS, 
       return;
     }
 
-    await transcodeToMp4(tmpRawPath, tmpOutPath, metadata);
+    const trimOptions = isTrimmed || muted
+      ? { trimStartSeconds, trimDurationSeconds: durationSeconds, muted }
+      : null;
+
+    await transcodeToMp4(tmpRawPath, tmpOutPath, metadata, trimOptions);
     const hasThumbnail = await tryExtractThumbnail({
       inputPath: tmpOutPath,
       outputPath: tmpThumbPath,

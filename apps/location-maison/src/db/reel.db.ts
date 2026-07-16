@@ -67,7 +67,8 @@ export async function createReel(
     ownerId: string,
     rawVideoPath: string,
     contact?: string,
-    description?: string
+    description?: string,
+    trim?: { trimStartSeconds?: number; trimEndSeconds?: number; muted?: boolean }
 ): Promise<string | null> {
     try {
         const { auth } = await getAuth();
@@ -89,6 +90,9 @@ export async function createReel(
                 rawVideoPath,
                 contact,
                 description,
+                trimStartSeconds: trim?.trimStartSeconds,
+                trimEndSeconds: trim?.trimEndSeconds,
+                muted: trim?.muted,
             }),
         });
 
@@ -270,12 +274,48 @@ export async function markReelUploadFailed(reelId: string, processingError: stri
     }
 }
 
-export async function getReelsByOwner(ownerId: string): Promise<(Reel & { id: string })[]> {
-    const { collection, getDocs, db, where, query, orderBy } = await getFirestore();
+/**
+ * Réels d'un propriétaire, paginés par curseur (même pattern que getPublicReels) et
+ * filtrables par plage de dates de création — le filtre s'appuie sur l'index composite
+ * existant (createdBy ASC, createdAt DESC), aucune migration Firestore nécessaire.
+ */
+export async function getReelsByOwner(
+    ownerId: string,
+    options?: {
+        limitPerPage?: number;
+        cursor?: string | null;
+        startDate?: Date | null;
+        endDate?: Date | null;
+    }
+): Promise<{ reels: (Reel & { id: string })[]; nextCursor: string | null }> {
+    const { collection, getDocs, doc, getDoc, db, where, query, orderBy, startAfter, limit, Timestamp } = await getFirestore();
     const reelsRef = collection(db, firebaseCollectionNames.reels);
-    const q = query(reelsRef, where('createdBy', '==', ownerId), orderBy('createdAt', 'desc'));
+
+    const constraints = [where('createdBy', '==', ownerId)];
+    if (options?.startDate) {
+        constraints.push(where('createdAt', '>=', Timestamp.fromDate(options.startDate)));
+    }
+    if (options?.endDate) {
+        constraints.push(where('createdAt', '<=', Timestamp.fromDate(options.endDate)));
+    }
+
+    const limitPerPage = options?.limitPerPage ?? 20;
+    let q = query(reelsRef, ...constraints, orderBy('createdAt', 'desc'), limit(limitPerPage));
+
+    if (options?.cursor) {
+        const cursorSnap = await getDoc(doc(db, firebaseCollectionNames.reels, options.cursor));
+        if (cursorSnap.exists()) {
+            q = query(q, startAfter(cursorSnap));
+        }
+    }
+
     const snapshot = await getDocs(q);
-    return snapshot.docs.map((doc) => ({ ...(doc.data() as Reel), id: doc.id }));
+    const reels = snapshot.docs.map((d) => ({ ...(d.data() as Reel), id: d.id }));
+    const nextCursor = snapshot.docs.length === limitPerPage
+        ? snapshot.docs[snapshot.docs.length - 1].id
+        : null;
+
+    return { reels, nextCursor };
 }
 
 export async function getReelById(reelId: string): Promise<(Reel & { id: string }) | null> {
