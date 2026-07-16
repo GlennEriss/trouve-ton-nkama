@@ -55,7 +55,7 @@ async function generateWithGemini(prompt: string): Promise<string> {
 
   try {
     const client = new GoogleGenerativeAI(apiKey);
-    const model = client.getGenerativeModel({ model: process.env.GEMINI_MODEL ?? 'gemini-1.5-flash' });
+    const model = client.getGenerativeModel({ model: process.env.GEMINI_MODEL ?? 'gemini-2.0-flash' });
     const result = await model.generateContent(prompt);
     text = result.response.text().trim();
   } catch (error) {
