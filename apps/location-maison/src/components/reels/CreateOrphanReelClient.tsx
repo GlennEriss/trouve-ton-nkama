@@ -2,19 +2,16 @@
 
 import React from 'react'
 import Link from 'next/link'
-import { ArrowLeft, Loader2, Video, CheckCircle2, XCircle } from 'lucide-react'
+import { ArrowLeft, CheckCircle2, Loader2, Pencil, Send, Video, Volume2, VolumeX, X, XCircle } from 'lucide-react'
 import { useCurrentUser } from '@/hooks/use-current-user'
 import { useVideoDropzone, type VideoDropzoneRejectionReason } from '@/hooks/useVideoDropzone'
 import { useReelDraftVideoStorage } from '@/hooks/useReelDraftVideoStorage'
 import { buildRawReelVideoPath, createReel, markReelUploadFailed, uploadRawReelVideo, subscribeToReel } from '@/db/reel.db'
 import { PublishAuthModal } from '@/components/property-publish/PublishAuthModal'
+import { VideoTrimEditor } from '@/components/reels/VideoTrimEditor'
 import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
-import { Textarea } from '@/components/ui/textarea'
 import { useToast } from '@/hooks/use-toast'
 import { routes } from '@/constantes/routes'
-import { cn } from '@/lib/utils'
 import { isAnnouncer } from '@/lib/auth/role-routing'
 import type { Reel, ReelProcessingStatus } from '@/models/reel'
 
@@ -40,6 +37,11 @@ export default function CreateOrphanReelClient() {
   const { saveDraftVideo, loadDraftVideo, clearDraftVideo } = useReelDraftVideoStorage()
 
   const [videoFile, setVideoFile] = React.useState<File | null>(null)
+  const [videoDurationSeconds, setVideoDurationSeconds] = React.useState(0)
+  const [trimStart, setTrimStart] = React.useState(0)
+  const [trimEnd, setTrimEnd] = React.useState(0)
+  const [muted, setMuted] = React.useState(false)
+  const [isEditingContact, setIsEditingContact] = React.useState(false)
   // Numéro à afficher sur le réel dans le feed (boutons WhatsApp/Appel) — pré-rempli avec le
   // numéro de profil de l'annonceur, modifiable, pas obligatoire (repli sur le numéro de profil
   // au moment de l'affichage si laissé vide, voir ReelsFeedClient).
@@ -83,6 +85,23 @@ export default function CreateOrphanReelClient() {
     })
   }, [toast])
 
+  const handleFileSelected = React.useCallback((file: File, durationSeconds: number) => {
+    setVideoFile(file)
+    setVideoDurationSeconds(durationSeconds)
+    setTrimStart(0)
+    setTrimEnd(durationSeconds)
+    setMuted(false)
+  }, [])
+
+  const handleDiscardVideo = React.useCallback(() => {
+    setVideoFile(null)
+    setVideoDurationSeconds(0)
+    setTrimStart(0)
+    setTrimEnd(0)
+    setMuted(false)
+    void clearDraftVideo()
+  }, [clearDraftVideo])
+
   const runFinalSubmission = React.useCallback(async (file: File) => {
     if (!user?.uid) return
 
@@ -91,7 +110,19 @@ export default function CreateOrphanReelClient() {
       const trimmedContact = contact.trim() || undefined
       const trimmedDescription = description.trim() || undefined
       const rawVideoPath = buildRawReelVideoPath(file, user.uid, reelId)
-      const createdId = await createReel(reelId, null, user.uid, rawVideoPath, trimmedContact, trimmedDescription)
+      const isTrimmed = trimStart > 0 || trimEnd < videoDurationSeconds
+      const createdId = await createReel(
+        reelId,
+        null,
+        user.uid,
+        rawVideoPath,
+        trimmedContact,
+        trimmedDescription,
+        {
+          ...(isTrimmed ? { trimStartSeconds: trimStart, trimEndSeconds: trimEnd } : {}),
+          ...(muted ? { muted: true } : {}),
+        }
+      )
 
       if (!createdId) {
         throw new Error("La création du réel a échoué.")
@@ -132,7 +163,7 @@ export default function CreateOrphanReelClient() {
       })
       throw error
     }
-  }, [user?.uid, contact, description, clearDraftVideo, toast])
+  }, [user?.uid, contact, description, trimStart, trimEnd, videoDurationSeconds, muted, clearDraftVideo, toast])
 
   const handlePublish = React.useCallback(async () => {
     if (!videoFile) return
@@ -175,12 +206,105 @@ export default function CreateOrphanReelClient() {
   }, [pendingSubmission, user, isFirebaseConnected, videoFile])
 
   const { getRootProps, getInputProps, isDragActive, isProcessing } = useVideoDropzone({
-    onFile: (file) => setVideoFile(file),
+    onFile: handleFileSelected,
     onRejected: handleRejected,
   })
 
   const busy = isFinalSubmitting || isProcessing
   const showDropzone = !reel || reel.processingStatus === 'failed'
+
+  if (showDropzone && videoFile) {
+    return (
+      <div className="fixed inset-0 z-[200] flex flex-col bg-black">
+        <div className="flex items-center justify-between px-4 pt-[calc(env(safe-area-inset-top,0px)+0.75rem)] pb-2">
+          <button
+            type="button"
+            onClick={handleDiscardVideo}
+            disabled={busy}
+            className="flex h-10 w-10 items-center justify-center rounded-full bg-white/10 text-white disabled:opacity-40"
+            aria-label="Annuler"
+          >
+            <X className="h-5 w-5" />
+          </button>
+          <button
+            type="button"
+            onClick={() => setMuted((current) => !current)}
+            className="flex h-10 w-10 items-center justify-center rounded-full bg-white/10 text-white"
+            aria-label={muted ? 'Réactiver le son' : 'Couper le son'}
+          >
+            {muted ? <VolumeX className="h-5 w-5" /> : <Volume2 className="h-5 w-5" />}
+          </button>
+        </div>
+
+        <VideoTrimEditor
+          file={videoFile}
+          durationSeconds={videoDurationSeconds}
+          trimStart={trimStart}
+          trimEnd={trimEnd}
+          onTrimChange={(start, end) => {
+            setTrimStart(start)
+            setTrimEnd(end)
+          }}
+          muted={muted}
+        />
+
+        <div className="space-y-2 px-4 pb-[calc(env(safe-area-inset-bottom,0px)+1rem)] pt-2">
+          <button
+            type="button"
+            onClick={() => setIsEditingContact((current) => !current)}
+            className="inline-flex items-center gap-1.5 rounded-full bg-white/10 px-3 py-1 text-xs text-white/80"
+          >
+            <Pencil className="h-3 w-3" />
+            {contact ? `Contact : ${contact}` : 'Ajouter un numéro de contact'}
+          </button>
+
+          {isEditingContact && (
+            <input
+              type="tel"
+              value={contact}
+              onChange={(event) => setContact(event.target.value)}
+              placeholder="Ex: +241 XX XX XX XX"
+              disabled={busy}
+              className="w-full rounded-full border-0 bg-white/10 px-4 py-2.5 text-sm text-white placeholder:text-white/50 focus:outline-none focus:ring-2 focus:ring-white/40"
+            />
+          )}
+
+          <div className="flex items-center gap-2">
+            <input
+              type="text"
+              value={description}
+              onChange={(event) => setDescription(event.target.value.slice(0, MAX_DESCRIPTION_LENGTH))}
+              placeholder="Ajouter une légende..."
+              disabled={busy}
+              className="flex-1 rounded-full border-0 bg-white/10 px-4 py-3 text-sm text-white placeholder:text-white/60 focus:outline-none focus:ring-2 focus:ring-white/40"
+            />
+            <button
+              type="button"
+              onClick={handlePublish}
+              disabled={busy}
+              className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-gradient-to-r from-[#146B67] to-[#1FA89B] text-white shadow-lg disabled:opacity-50"
+              aria-label="Publier le réel"
+            >
+              {busy ? <Loader2 className="h-5 w-5 animate-spin" /> : <Send className="h-5 w-5" />}
+            </button>
+          </div>
+        </div>
+
+        <PublishAuthModal
+          isOpen={isPublishAuthModalOpen}
+          onClose={() => {
+            setIsPublishAuthModalOpen(false)
+            setPendingSubmission(false)
+            isFinalSubmittingRef.current = false
+            setIsFinalSubmitting(false)
+          }}
+          prepareForExternalRedirect={prepareForExternalRedirect}
+          description="Votre réel est prêt. Créez un compte annonceur (ou connectez-vous) pour le publier — la vidéo que vous avez choisie est conservée."
+          becomeAnnouncerSource="reel_add_modal"
+        />
+      </div>
+    )
+  }
 
   return (
     <div className="max-w-xl mx-auto space-y-6">
@@ -198,14 +322,12 @@ export default function CreateOrphanReelClient() {
         </p>
       </div>
 
-      {showDropzone && !videoFile && (
+      {showDropzone && (
         <div
           {...getRootProps()}
-          className={cn(
-            "flex flex-col items-center justify-center gap-3 rounded-2xl border-2 border-dashed p-10 text-center cursor-pointer transition-colors",
-            isDragActive ? "border-emerald-500 bg-emerald-50 dark:bg-emerald-900/20" : "border-slate-300 dark:border-slate-700",
-            busy && "pointer-events-none opacity-60"
-          )}
+          className={`flex flex-col items-center justify-center gap-3 rounded-2xl border-2 border-dashed p-10 text-center cursor-pointer transition-colors ${
+            isDragActive ? 'border-emerald-500 bg-emerald-50 dark:bg-emerald-900/20' : 'border-slate-300 dark:border-slate-700'
+          } ${busy ? 'pointer-events-none opacity-60' : ''}`}
         >
           <input {...getInputProps()} disabled={busy} />
           {isProcessing ? (
@@ -217,58 +339,6 @@ export default function CreateOrphanReelClient() {
             {isProcessing ? "Vérification en cours..." : "Glissez une vidéo ou cliquez pour en choisir une"}
           </p>
           <p className="text-xs text-slate-400">MP4, MOV ou WebM — 5 minutes maximum</p>
-        </div>
-      )}
-
-      {showDropzone && videoFile && (
-        <div className="space-y-3">
-          <div className="rounded-xl border border-slate-200 dark:border-slate-700 p-4 flex items-center gap-3">
-            <Video className="h-6 w-6 text-emerald-600 shrink-0" />
-            <div className="min-w-0">
-              <p className="text-sm font-medium text-slate-700 dark:text-slate-200 truncate">{videoFile.name}</p>
-              <p className="text-xs text-slate-400">{Math.round(videoFile.size / (1024 * 1024))} Mo</p>
-            </div>
-          </div>
-          <div>
-            <Label htmlFor="reel-contact">Numéro à contacter (WhatsApp / appel)</Label>
-            <Input
-              id="reel-contact"
-              type="tel"
-              value={contact}
-              onChange={(event) => setContact(event.target.value)}
-              placeholder="Ex: +241 XX XX XX XX"
-              disabled={busy}
-              className="mt-1"
-            />
-            <p className="text-xs text-slate-400 mt-1">
-              Laissez vide pour utiliser votre numéro de profil par défaut.
-            </p>
-          </div>
-          <div>
-            <Label htmlFor="reel-description">Description (facultatif)</Label>
-            <Textarea
-              id="reel-description"
-              value={description}
-              onChange={(event) => setDescription(event.target.value.slice(0, MAX_DESCRIPTION_LENGTH))}
-              placeholder="Ex: Visite rapide, quartier calme, proche commerces..."
-              disabled={busy}
-              maxLength={MAX_DESCRIPTION_LENGTH}
-              rows={3}
-              className="mt-1 resize-none"
-            />
-            <p className="mt-1 text-right text-xs text-slate-400">
-              {description.length}/{MAX_DESCRIPTION_LENGTH}
-            </p>
-          </div>
-          <div className="flex gap-2">
-            <Button variant="outline" className="flex-1" onClick={() => setVideoFile(null)} disabled={busy}>
-              Changer de vidéo
-            </Button>
-            <Button className="flex-1" onClick={handlePublish} disabled={busy}>
-              {busy ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : null}
-              Publier le réel
-            </Button>
-          </div>
         </div>
       )}
 
