@@ -16,6 +16,7 @@ type AdSenseBlockProps = Readonly<{
   minHeight?: number;
   format?: 'auto' | 'rectangle' | 'vertical' | 'horizontal' | string;
   fullWidthResponsive?: boolean;
+  onStatusChange?: (status: string | null) => void;
 }>;
 
 export default function AdSenseBlock({
@@ -25,6 +26,7 @@ export default function AdSenseBlock({
   minHeight = 0,
   format = 'auto',
   fullWidthResponsive = true,
+  onStatusChange,
 }: AdSenseBlockProps) {
   const adRef = React.useRef<HTMLModElement | null>(null);
   const pathname = usePathname();
@@ -105,8 +107,10 @@ export default function AdSenseBlock({
     const adElement = adRef.current;
     let observer: MutationObserver | null = null;
     if (adElement && typeof MutationObserver !== 'undefined') {
+      onStatusChange?.(adElement.getAttribute('data-ad-status'));
       observer = new MutationObserver(() => {
         const adStatus = adElement.getAttribute('data-ad-status');
+        onStatusChange?.(adStatus);
         if (adStatus === 'filled') {
           emitAdsSlotEvent({
             slotId: slot,
@@ -162,7 +166,7 @@ export default function AdSenseBlock({
       window.clearInterval(intervalId);
       observer?.disconnect();
     };
-  }, [slot, slotKey, pathname, uid, isAuthenticated]);
+  }, [slot, slotKey, pathname, uid, isAuthenticated, onStatusChange]);
 
   return (
     <div className={className}>

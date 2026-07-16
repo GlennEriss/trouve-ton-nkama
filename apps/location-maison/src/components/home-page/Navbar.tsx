@@ -29,6 +29,13 @@ export default function Navbar() {
   // (pas /reels/mine, qui garde son AppMobileStickyHeader habituel).
   const isReelsFeedRoute = pathname === routes.protected.reels
 
+  // Création de réel plein écran façon statut WhatsApp (éditeur vidéo en fixed inset-0) :
+  // ce navbar (z-[9999]) recouvrirait les boutons de l'éditeur (fermer, couper le son) sur
+  // mobile ET desktop — aucune barre sur cette route.
+  if (pathname === routes.protected.reels_add || pathname.startsWith(`${routes.protected.reels_add}/`)) {
+    return null
+  }
+
   if (width < 768) {
     if (isReelsFeedRoute) {
       return null
