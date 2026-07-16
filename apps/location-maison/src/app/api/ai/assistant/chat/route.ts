@@ -6,6 +6,7 @@ import { AppError } from '@/lib/errors/app-error';
 import { handleApiError, jsonApiError } from '@/lib/api/error-response';
 import AIPromptsService, { FormContext } from '@/services/ai-prompts.service';
 import { auth } from '@/next-auth/auth';
+import { resolveGeminiModel } from '@/lib/ai/gemini-model';
 
 const logger = createLogger('api.ai.assistant.chat');
 const ASSISTANT_CREDIT_COST = 1;
@@ -14,7 +15,6 @@ const GEMINI_API_KEY_ENV_CANDIDATES = [
   'GOOGLE_GENERATIVE_AI_API_KEY',
   'GOOGLE_AI_API_KEY',
   'FIREBASE_AI_API_KEY',
-  'NEXT_PUBLIC_FIREBASE_API_KEY',
 ] as const;
 
 const bodySchema = z.object({
@@ -44,18 +44,12 @@ async function generateWithGemini(prompt: string): Promise<string> {
     });
   }
 
-  if (source === 'NEXT_PUBLIC_FIREBASE_API_KEY') {
-    logger.warn('Using NEXT_PUBLIC_FIREBASE_API_KEY for Gemini server generation', {
-      source,
-    });
-  }
-
   const { GoogleGenerativeAI } = await import('@google/generative-ai');
   let text = '';
 
   try {
     const client = new GoogleGenerativeAI(apiKey);
-    const model = client.getGenerativeModel({ model: process.env.GEMINI_MODEL ?? 'gemini-2.0-flash' });
+    const model = client.getGenerativeModel({ model: resolveGeminiModel(process.env.GEMINI_MODEL) });
     const result = await model.generateContent(prompt);
     text = result.response.text().trim();
   } catch (error) {

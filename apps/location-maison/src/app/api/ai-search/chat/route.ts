@@ -7,6 +7,7 @@ import { createLogger } from '@/lib/logger';
 import { AppError } from '@/lib/errors/app-error';
 import { handleApiError, jsonApiError } from '@/lib/api/error-response';
 import { getDynamicTagNamesServer } from '@/lib/tags/dynamic-tags.server';
+import { resolveGeminiModel } from '@/lib/ai/gemini-model';
 
 const logger = createLogger('api.ai-search.chat');
 
@@ -601,7 +602,7 @@ async function generateWithGemini(prompt: string): Promise<string | null> {
   try {
     const { GoogleGenerativeAI } = await import('@google/generative-ai');
     const client = new GoogleGenerativeAI(apiKey);
-    const model = client.getGenerativeModel({ model: process.env.GEMINI_MODEL ?? 'gemini-1.5-flash' });
+    const model = client.getGenerativeModel({ model: resolveGeminiModel(process.env.GEMINI_MODEL) });
     const result = await model.generateContent(prompt);
     const text = result.response.text().trim();
     return text || null;
