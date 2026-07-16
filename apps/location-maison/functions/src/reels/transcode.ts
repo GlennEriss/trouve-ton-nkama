@@ -5,8 +5,6 @@ import { randomUUID } from 'crypto';
 import { onObjectFinalized } from 'firebase-functions/v2/storage';
 import { logger } from 'firebase-functions/v2';
 import ffmpeg from 'fluent-ffmpeg';
-import ffmpegInstaller from '@ffmpeg-installer/ffmpeg';
-import ffprobeInstaller from '@ffprobe-installer/ffprobe';
 import { getStorage } from 'firebase-admin/storage';
 import { admin, adminDB } from '../admin';
 import {
@@ -18,10 +16,40 @@ import {
   TRANSCODE_FUNCTION_OPTIONS,
 } from './config';
 
-ffmpeg.setFfmpegPath(ffmpegInstaller.path);
-ffmpeg.setFfprobePath(ffprobeInstaller.path);
-
 const REELS_COLLECTION = 'reels';
+
+function resolveInstallerPath(packageName: string): string | null {
+  try {
+    const installer = require(packageName) as { path?: string };
+    return typeof installer.path === 'string' ? installer.path : null;
+  } catch (error) {
+    logger.warn('Optional ffmpeg installer package could not be resolved during startup', {
+      packageName,
+      error: serializeError(error),
+    });
+    return null;
+  }
+}
+
+function configureFfmpegBinaries(): void {
+  const ffmpegPath = resolveInstallerPath('@ffmpeg-installer/ffmpeg');
+  if (ffmpegPath && fs.existsSync(ffmpegPath)) {
+    ffmpeg.setFfmpegPath(ffmpegPath);
+  } else {
+    logger.warn('ffmpeg installer binary not found during startup; relying on runtime PATH', {
+      ffmpegPath,
+    });
+  }
+
+  const ffprobePath = resolveInstallerPath('@ffprobe-installer/ffprobe');
+  if (ffprobePath && fs.existsSync(ffprobePath)) {
+    ffmpeg.setFfprobePath(ffprobePath);
+  } else {
+    logger.warn('ffprobe installer binary not found during startup; relying on runtime PATH', {
+      ffprobePath,
+    });
+  }
+}
 
 function probeDurationSeconds(filePath: string): Promise<number> {
   return new Promise((resolve, reject) => {
@@ -40,6 +68,8 @@ function probeDurationSeconds(filePath: string): Promise<number> {
   });
 }
 
+configureFfmpegBinaries();
+
 function transcodeToMp4(inputPath: string, outputPath: string): Promise<void> {
   return new Promise((resolve, reject) => {
     ffmpeg(inputPath)
@@ -54,15 +84,84 @@ function transcodeToMp4(inputPath: string, outputPath: string): Promise<void> {
   });
 }
 
-function extractThumbnail(inputPath: string, outputPath: string): Promise<void> {
+function extractThumbnail(inputPath: string, outputPath: string, timestampSeconds: number): Promise<void> {
   return new Promise((resolve, reject) => {
     ffmpeg(inputPath)
-      .seekInput(REEL_THUMBNAIL_TIMESTAMP_SECONDS)
+      .seekInput(timestampSeconds)
       .frames(1)
       .on('end', () => resolve())
       .on('error', (error) => reject(error))
       .save(outputPath);
   });
+}
+
+async function fileExists(filePath: string): Promise<boolean> {
+  try {
+    await fs.promises.access(filePath, fs.constants.F_OK);
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+function serializeError(error: unknown): Record<string, unknown> {
+  if (error instanceof Error) {
+    const maybeNodeError = error as NodeJS.ErrnoException;
+    return {
+      name: error.name,
+      message: error.message,
+      stack: error.stack,
+      code: maybeNodeError.code,
+      errno: maybeNodeError.errno,
+      syscall: maybeNodeError.syscall,
+      path: maybeNodeError.path,
+    };
+  }
+
+  return { value: String(error) };
+}
+
+async function tryExtractThumbnail({
+  inputPath,
+  outputPath,
+  durationSeconds,
+  filePath,
+  reelId,
+}: {
+  inputPath: string;
+  outputPath: string;
+  durationSeconds: number;
+  filePath: string;
+  reelId: string;
+}): Promise<boolean> {
+  const timestampSeconds = Math.min(
+    REEL_THUMBNAIL_TIMESTAMP_SECONDS,
+    Math.max(0, durationSeconds - 0.25)
+  );
+
+  try {
+    await extractThumbnail(inputPath, outputPath, timestampSeconds);
+    if (await fileExists(outputPath)) {
+      return true;
+    }
+
+    logger.warn('Reel thumbnail was not generated; continuing without thumbnail', {
+      filePath,
+      reelId,
+      timestampSeconds,
+      durationSeconds,
+    });
+    return false;
+  } catch (error) {
+    logger.warn('Reel thumbnail extraction failed; continuing without thumbnail', {
+      error: serializeError(error),
+      filePath,
+      reelId,
+      timestampSeconds,
+      durationSeconds,
+    });
+    return false;
+  }
 }
 
 function cleanupTmpFiles(filePaths: string[]): void {
@@ -140,7 +239,13 @@ export const transcodeReelVideo = onObjectFinalized(TRANSCODE_FUNCTION_OPTIONS, 
     }
 
     await transcodeToMp4(tmpRawPath, tmpOutPath);
-    await extractThumbnail(tmpRawPath, tmpThumbPath);
+    const hasThumbnail = await tryExtractThumbnail({
+      inputPath: tmpOutPath,
+      outputPath: tmpThumbPath,
+      durationSeconds,
+      filePath,
+      reelId,
+    });
 
     const videoDestPath = `reels/${ownerId}/${reelId}/video.mp4`;
     const thumbDestPath = `reels/${ownerId}/${reelId}/thumbnail.jpg`;
@@ -159,10 +264,12 @@ export const transcodeReelVideo = onObjectFinalized(TRANSCODE_FUNCTION_OPTIONS, 
       destination: videoDestPath,
       metadata: { contentType: 'video/mp4', metadata: { firebaseStorageDownloadTokens: videoToken } },
     });
-    await bucket.upload(tmpThumbPath, {
-      destination: thumbDestPath,
-      metadata: { contentType: 'image/jpeg', metadata: { firebaseStorageDownloadTokens: thumbToken } },
-    });
+    if (hasThumbnail) {
+      await bucket.upload(tmpThumbPath, {
+        destination: thumbDestPath,
+        metadata: { contentType: 'image/jpeg', metadata: { firebaseStorageDownloadTokens: thumbToken } },
+      });
+    }
 
     const videoUrl = `https://firebasestorage.googleapis.com/v0/b/${bucket.name}/o/${encodeURIComponent(videoDestPath)}?alt=media&token=${videoToken}`;
     const thumbnailUrl = `https://firebasestorage.googleapis.com/v0/b/${bucket.name}/o/${encodeURIComponent(thumbDestPath)}?alt=media&token=${thumbToken}`;
@@ -170,16 +277,15 @@ export const transcodeReelVideo = onObjectFinalized(TRANSCODE_FUNCTION_OPTIONS, 
     await reelRef.update({
       videoUrl,
       videoPath: videoDestPath,
-      thumbnailUrl,
-      thumbnailPath: thumbDestPath,
       durationSeconds,
       processingStatus: 'ready',
       updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+      ...(hasThumbnail ? { thumbnailUrl, thumbnailPath: thumbDestPath } : {}),
     });
 
     await bucket.file(filePath).delete().catch(() => undefined);
   } catch (error) {
-    logger.error('Reel transcoding failed', { error, filePath, reelId });
+    logger.error('Reel transcoding failed', { error: serializeError(error), filePath, reelId });
     await reelRef.update({
       processingStatus: 'failed',
       processingError: "Le traitement de la vidéo a échoué. Réessayez avec un autre fichier.",
