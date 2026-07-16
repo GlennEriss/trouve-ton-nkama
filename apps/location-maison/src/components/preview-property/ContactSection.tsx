@@ -1,12 +1,14 @@
 'use client'
 import React, { useState } from 'react'
 import { FaWhatsapp, FaPhoneAlt } from 'react-icons/fa'
+import { Gift } from 'lucide-react'
 import { Property } from '@/models/annonce'
 import Link from 'next/link'
 
 import { useUserByUID } from '@/hooks/use-user-by-uid'
 import { useWindowSize } from "@/hooks/useSize"
 import { useTrackPropertyInteraction } from "@/hooks/use-track-property-interaction"
+import GiftModal from '@/components/reels/gift/GiftModal'
 
 export default function ContactSection({ property }: Readonly<{ property: Property }>) {
     const { data: user } = useUserByUID(property.createdBy)
@@ -15,6 +17,7 @@ export default function ContactSection({ property }: Readonly<{ property: Proper
     const { trackInteraction } = useTrackPropertyInteraction(property.id)
 
     const [showNumber, setShowNumber] = useState(false)
+    const [giftOpen, setGiftOpen] = useState(false)
     const phoneNumber = property?.contact ?? user?.phoneNumbers?.[0]
 
     const handleWhatsAppClick = () => {
@@ -86,7 +89,25 @@ export default function ContactSection({ property }: Readonly<{ property: Proper
                             )}
                         </>
                     )}
+                    <button
+                        type="button"
+                        onClick={() => setGiftOpen(true)}
+                        title="Envoyer un cadeau à l'annonceur"
+                        className={`flex items-center gap-2 border border-gray-300 ${
+                            isDesktop ? 'px-4 py-3' : 'p-3'
+                        } rounded-lg shadow-lg`}
+                    >
+                        <Gift size={isDesktop ? 22 : 30} className="text-pink-600" />
+                        {isDesktop && <span className="font-medium">Cadeau</span>}
+                    </button>
                 </div>
+
+                <GiftModal
+                    isOpen={giftOpen}
+                    onClose={() => setGiftOpen(false)}
+                    propertyId={property.id}
+                    announcerName={[user?.firstname, user?.lastname].filter(Boolean).join(' ') || null}
+                />
         </section>
     )
 }

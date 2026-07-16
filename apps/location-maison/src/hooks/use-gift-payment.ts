@@ -23,7 +23,9 @@ export type GiftPaymentPhase =
   | 'timeout'
 
 export interface GiftPaymentInput {
-  reelId: string
+  // Exactement l'un des deux (jamais les deux, jamais aucun) — voir GiftModal.
+  reelId?: string
+  propertyId?: string
   amount: number
   phoneNumber: string
   network: 'AM' | 'MM'

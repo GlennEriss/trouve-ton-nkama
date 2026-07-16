@@ -8,6 +8,12 @@ import AIPromptsService, { FormContext } from '@/services/ai-prompts.service';
 import { auth } from '@/next-auth/auth';
 import { resolveGeminiModel } from '@/lib/ai/gemini-model';
 
+// L'appel Gemini (surtout pour la génération auto-fill, prompt+JSON volumineux)
+// peut dépasser la limite par défaut de 10s des fonctions Vercel — d'où les
+// 504 FUNCTION_INVOCATION_TIMEOUT observés en prod quand photos+description
+// sont combinées (prompt plus long à traiter côté modèle).
+export const maxDuration = 60;
+
 const logger = createLogger('api.ai.assistant.chat');
 const ASSISTANT_CREDIT_COST = 1;
 const GEMINI_API_KEY_ENV_CANDIDATES = [

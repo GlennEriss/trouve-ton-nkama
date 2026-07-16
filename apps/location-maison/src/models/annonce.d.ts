@@ -57,6 +57,10 @@ export type Property = Location & ICreation & {
     promotionHistory?: Promotion[];
     lastBoostedAt?: Timestamp; // Pour le boost simple
     isPromoted?: boolean; // Indicateur rapide pour les requêtes
+
+    // Cadeaux (dons MoMo) reçus sur cette annonce — voir applyGiftOnce (Cloud Function).
+    giftCount?: number;
+    giftTotalAmount?: number;
 }
 
 export type Location = {

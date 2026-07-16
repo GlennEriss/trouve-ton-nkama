@@ -1,9 +1,11 @@
 'use client'
 
 /**
- * Modal d'envoi d'un cadeau (don Mobile Money) à l'annonceur d'un réel.
- * Accessible sans compte : le donateur saisit montant + son numéro MoMo,
- * confirme sur son téléphone (USSD), et le modal suit le paiement par polling.
+ * Modal d'envoi d'un cadeau (don Mobile Money) à l'annonceur d'un réel OU
+ * d'une annonce (fiche immobilière) — exactement l'un des deux props reelId/
+ * propertyId doit être fourni. Accessible sans compte : le donateur saisit
+ * montant + son numéro MoMo, confirme sur son téléphone (USSD), et le modal
+ * suit le paiement par polling.
  */
 
 import React from 'react'
@@ -20,11 +22,12 @@ import { useGiftPayment } from '@/hooks/use-gift-payment'
 interface GiftModalProps {
   isOpen: boolean
   onClose: () => void
-  reelId: string
+  reelId?: string
+  propertyId?: string
   announcerName?: string | null
 }
 
-export default function GiftModal({ isOpen, onClose, reelId, announcerName }: Readonly<GiftModalProps>) {
+export default function GiftModal({ isOpen, onClose, reelId, propertyId, announcerName }: Readonly<GiftModalProps>) {
   const [amount, setAmount] = React.useState<number>(GIFT_AMOUNT_PRESETS[1])
   const [customAmount, setCustomAmount] = React.useState('')
   const [phoneNumber, setPhoneNumber] = React.useState('')
@@ -60,6 +63,7 @@ export default function GiftModal({ isOpen, onClose, reelId, announcerName }: Re
     if (!canSubmit) return
     void sendGift({
       reelId,
+      propertyId,
       amount: effectiveAmount,
       phoneNumber,
       network,

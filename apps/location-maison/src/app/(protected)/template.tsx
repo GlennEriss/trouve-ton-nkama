@@ -19,7 +19,7 @@ export default function template({ children }: Readonly<{ children: React.ReactN
     routes.protected.reels_add,
     routes.protected.reels_select_property,
   ]
-  const isSingleReelView = pathname.startsWith('/reels/') && !KNOWN_REELS_SUBROUTES.includes(pathname)
+  const isSingleReelView = /^\/reels\/[^/]+\/?$/.test(pathname) && !KNOWN_REELS_SUBROUTES.includes(pathname)
   if (pathname === routes.protected.reels || isSingleReelView) {
     return <>{children}</>
   }

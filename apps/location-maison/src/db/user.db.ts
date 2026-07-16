@@ -1,5 +1,5 @@
 import { User } from "@/models/authentication";
-import { createModel } from "./generic.db";
+import { createModel, createModelWithCustomId } from "./generic.db";
 import firebaseCollectionNames from "@/constantes/firebase-collection-name";
 import { createLogger } from '@/lib/logger';
 
@@ -12,6 +12,9 @@ export async function createUser(user: Partial<User>) {
         ...user,
         credits: 3
     };
+    if (user.uid) {
+        return await createModelWithCustomId<Partial<User>>(userWithCredits, firebaseCollectionNames.users, user.uid)
+    }
     return await createModel<Partial<User>>(userWithCredits, firebaseCollectionNames.users)
 }
 

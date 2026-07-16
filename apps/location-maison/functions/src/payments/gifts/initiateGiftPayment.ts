@@ -14,13 +14,16 @@ import {
 } from './constants'
 
 const REELS_COLLECTION = 'reels'
+const PROPERTIES_COLLECTION = 'properties'
 const GIFT_TRANSACTIONS_COLLECTION = 'gift_transactions'
 
-// Initiation d'un cadeau (don Mobile Money) sur un réel — endpoint ANONYME :
-// le donateur n'a pas de compte, il fournit juste son numéro MoMo. La sécurité
-// repose sur la confirmation USSD côté donateur (aucun argent ne bouge sans
-// son code MoMo) + les gardes anti-spam ci-dessous. Appelé exclusivement en
-// serveur-à-serveur depuis la route Next /api/gifts/initiate.
+// Initiation d'un cadeau (don Mobile Money) sur un réel OU une annonce —
+// endpoint ANONYME : le donateur n'a pas de compte, il fournit juste son
+// numéro MoMo. La sécurité repose sur la confirmation USSD côté donateur
+// (aucun argent ne bouge sans son code MoMo) + les gardes anti-spam
+// ci-dessous. Appelé exclusivement en serveur-à-serveur depuis la route Next
+// /api/gifts/initiate. Cible : exactement l'un de reelId/propertyId, jamais
+// les deux (déjà imposé par le schéma zod de la route, revérifié ici).
 export const initiateGiftPayment = onRequest({ secrets: MYPAYGA_SECRETS }, async (req, res) => {
   if (req.method !== 'POST') {
     res.status(405).json({ success: false, error: 'method_not_allowed' })
@@ -28,14 +31,19 @@ export const initiateGiftPayment = onRequest({ secrets: MYPAYGA_SECRETS }, async
   }
 
   const body = (req.body && typeof req.body === 'object' ? req.body : {}) as Record<string, unknown>
-  const reelId = String(body.reelId ?? '').trim()
+  const reelId = String(body.reelId ?? '').trim() || null
+  const propertyId = String(body.propertyId ?? '').trim() || null
   const rawAmount = Number(body.amount)
   const providerNetwork = normalizeMyPayGaNetwork(body.network)
   const donorPhone = toLocalPhone(body.phoneNumber)
   const message = normalizeMessage(body.message)
 
-  if (!reelId) {
-    res.status(400).json({ success: false, error: 'reel_id_required', message: 'Réel manquant.' })
+  if (!reelId && !propertyId) {
+    res.status(400).json({ success: false, error: 'target_required', message: 'Réel ou annonce manquant.' })
+    return
+  }
+  if (reelId && propertyId) {
+    res.status(400).json({ success: false, error: 'ambiguous_target', message: 'Cible du cadeau ambiguë.' })
     return
   }
 
@@ -57,12 +65,35 @@ export const initiateGiftPayment = onRequest({ secrets: MYPAYGA_SECRETS }, async
     return
   }
 
-  const reelSnapshot = await adminDB.collection(REELS_COLLECTION).doc(reelId).get()
-  const reel = reelSnapshot.data()
-  const announcerUid = String(reel?.createdBy ?? '').trim()
-  if (!reelSnapshot.exists || !reel || reel.moderationStatus !== 'APPROVED' || !announcerUid) {
-    res.status(404).json({ success: false, error: 'reel_not_found', message: 'Ce réel n’est pas disponible.' })
-    return
+  let announcerUid: string
+  let description: string
+  if (reelId) {
+    const reelSnapshot = await adminDB.collection(REELS_COLLECTION).doc(reelId).get()
+    const reel = reelSnapshot.data()
+    announcerUid = String(reel?.createdBy ?? '').trim()
+    if (!reelSnapshot.exists || !reel || reel.moderationStatus !== 'APPROVED' || !announcerUid) {
+      res.status(404).json({ success: false, error: 'reel_not_found', message: 'Ce réel n’est pas disponible.' })
+      return
+    }
+    description = 'Cadeau sur un réel'
+  } else {
+    // propertyId garanti non-null ici (XOR déjà validé ci-dessus)
+    const propertySnapshot = await adminDB.collection(PROPERTIES_COLLECTION).doc(propertyId as string).get()
+    const property = propertySnapshot.data()
+    announcerUid = String(property?.createdBy ?? '').trim()
+    // state 'IN_PROGRESS' (pas archivée) + moderationStatus 'APPROVED' : mêmes conditions
+    // que /api/property/id/route.ts pour la visibilité publique de la fiche annonce.
+    if (
+      !propertySnapshot.exists ||
+      !property ||
+      property.state !== 'IN_PROGRESS' ||
+      property.moderationStatus !== 'APPROVED' ||
+      !announcerUid
+    ) {
+      res.status(404).json({ success: false, error: 'property_not_found', message: 'Cette annonce n’est pas disponible.' })
+      return
+    }
+    description = 'Cadeau sur une annonce'
   }
 
   // Anti-spam : cap de transactions pending par numéro donateur sur 1 h.
@@ -99,9 +130,11 @@ export const initiateGiftPayment = onRequest({ secrets: MYPAYGA_SECRETS }, async
   await transactionRef.set({
     id: transactionId,
     type: 'gift',
+    // Exactement l'un des deux (XOR déjà validé) : c'est ce champ qui indique à
+    // applyGiftOnce() (webhook.ts) quel compteur incrémenter à la confirmation.
     reelId,
+    propertyId,
     announcerUid,
-    propertyId: reel.propertyId ?? null,
     donorPhone,
     donorNetwork: providerNetwork,
     message,
@@ -116,7 +149,7 @@ export const initiateGiftPayment = onRequest({ secrets: MYPAYGA_SECRETS }, async
     providerName: 'MyPayGa',
     providerNetwork,
     providerCountry: config.country,
-    description: 'Cadeau sur un réel',
+    description,
     createdAt: FieldValue.serverTimestamp(),
     updatedAt: FieldValue.serverTimestamp(),
   })
@@ -138,12 +171,13 @@ export const initiateGiftPayment = onRequest({ secrets: MYPAYGA_SECRETS }, async
     lastname: 'Location Maison',
     email: `gift+${transactionId.toLowerCase()}@location-maison.invalid`,
     currency: config.currency,
-    description: 'Cadeau reel',
+    description,
   }
 
   logger.info('Initiation cadeau MyPayGa', {
     transactionId,
     reelId,
+    propertyId,
     announcerUid,
     amount: rawAmount,
     network: providerNetwork,
