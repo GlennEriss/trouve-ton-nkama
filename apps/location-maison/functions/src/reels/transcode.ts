@@ -18,6 +18,13 @@ import {
 
 const REELS_COLLECTION = 'reels';
 
+type VideoMetadata = {
+  durationSeconds: number;
+  videoCodec: string | null;
+  audioCodec: string | null;
+  height: number | null;
+};
+
 function resolveInstallerPath(packageName: string): string | null {
   try {
     const installer = require(packageName) as { path?: string };
@@ -51,7 +58,7 @@ function configureFfmpegBinaries(): void {
   }
 }
 
-function probeDurationSeconds(filePath: string): Promise<number> {
+function probeVideoMetadata(filePath: string): Promise<VideoMetadata> {
   return new Promise((resolve, reject) => {
     ffmpeg.ffprobe(filePath, (error, data) => {
       if (error) {
@@ -63,14 +70,39 @@ function probeDurationSeconds(filePath: string): Promise<number> {
         reject(new Error('Durée de la vidéo illisible (ffprobe).'));
         return;
       }
-      resolve(duration);
+
+      const videoStream = data.streams?.find((stream) => stream.codec_type === 'video');
+      const audioStream = data.streams?.find((stream) => stream.codec_type === 'audio');
+      resolve({
+        durationSeconds: duration,
+        videoCodec: videoStream?.codec_name ?? null,
+        audioCodec: audioStream?.codec_name ?? null,
+        height: typeof videoStream?.height === 'number' ? videoStream.height : null,
+      });
     });
   });
 }
 
 configureFfmpegBinaries();
 
-function transcodeToMp4(inputPath: string, outputPath: string): Promise<void> {
+function withFfmpegOutput(error: Error, stdout: string | null | undefined, stderr: string | null | undefined): Error {
+  const detailedError = error as Error & { stdout?: string; stderr?: string };
+  detailedError.stdout = stdout ?? undefined;
+  detailedError.stderr = stderr ?? undefined;
+  return detailedError;
+}
+
+function remuxToMp4(inputPath: string, outputPath: string): Promise<void> {
+  return new Promise((resolve, reject) => {
+    ffmpeg(inputPath)
+      .outputOptions(['-map 0:v:0', '-map 0:a:0?', '-c:v copy', '-c:a copy', '-movflags +faststart'])
+      .on('end', () => resolve())
+      .on('error', (error, stdout, stderr) => reject(withFfmpegOutput(error, stdout, stderr)))
+      .save(outputPath);
+  });
+}
+
+function encodeToMp4(inputPath: string, outputPath: string): Promise<void> {
   return new Promise((resolve, reject) => {
     ffmpeg(inputPath)
       .videoCodec('libx264')
@@ -79,9 +111,33 @@ function transcodeToMp4(inputPath: string, outputPath: string): Promise<void> {
       .videoBitrate(REEL_VIDEO_BITRATE)
       .outputOptions(['-movflags +faststart', '-preset veryfast'])
       .on('end', () => resolve())
-      .on('error', (error) => reject(error))
+      .on('error', (error, stdout, stderr) => reject(withFfmpegOutput(error, stdout, stderr)))
       .save(outputPath);
   });
+}
+
+function canRemuxToMp4(metadata: VideoMetadata): boolean {
+  const compatibleVideo = metadata.videoCodec === 'h264';
+  const compatibleAudio = metadata.audioCodec === null || metadata.audioCodec === 'aac';
+  const withinHeightLimit = metadata.height === null || metadata.height <= REEL_MAX_HEIGHT_PX;
+
+  return compatibleVideo && compatibleAudio && withinHeightLimit;
+}
+
+async function transcodeToMp4(inputPath: string, outputPath: string, metadata: VideoMetadata): Promise<void> {
+  if (canRemuxToMp4(metadata)) {
+    try {
+      await remuxToMp4(inputPath, outputPath);
+      return;
+    } catch (error) {
+      logger.warn('Compatible reel remux failed; falling back to video encoding', {
+        error: serializeError(error),
+        metadata,
+      });
+    }
+  }
+
+  await encodeToMp4(inputPath, outputPath);
 }
 
 function extractThumbnail(inputPath: string, outputPath: string, timestampSeconds: number): Promise<void> {
@@ -90,9 +146,17 @@ function extractThumbnail(inputPath: string, outputPath: string, timestampSecond
       .seekInput(timestampSeconds)
       .frames(1)
       .on('end', () => resolve())
-      .on('error', (error) => reject(error))
+      .on('error', (error, stdout, stderr) => reject(withFfmpegOutput(error, stdout, stderr)))
       .save(outputPath);
   });
+}
+
+function truncateLogValue(value: unknown): unknown {
+  if (typeof value !== 'string' || value.length <= 4000) {
+    return value;
+  }
+
+  return `${value.slice(0, 4000)}... [truncated]`;
 }
 
 async function fileExists(filePath: string): Promise<boolean> {
@@ -107,6 +171,7 @@ async function fileExists(filePath: string): Promise<boolean> {
 function serializeError(error: unknown): Record<string, unknown> {
   if (error instanceof Error) {
     const maybeNodeError = error as NodeJS.ErrnoException;
+    const maybeFfmpegError = error as Error & { stdout?: string; stderr?: string };
     return {
       name: error.name,
       message: error.message,
@@ -115,6 +180,8 @@ function serializeError(error: unknown): Record<string, unknown> {
       errno: maybeNodeError.errno,
       syscall: maybeNodeError.syscall,
       path: maybeNodeError.path,
+      stdout: truncateLogValue(maybeFfmpegError.stdout),
+      stderr: truncateLogValue(maybeFfmpegError.stderr),
     };
   }
 
@@ -227,7 +294,8 @@ export const transcodeReelVideo = onObjectFinalized(TRANSCODE_FUNCTION_OPTIONS, 
 
     await bucket.file(filePath).download({ destination: tmpRawPath });
 
-    const durationSeconds = await probeDurationSeconds(tmpRawPath);
+    const metadata = await probeVideoMetadata(tmpRawPath);
+    const { durationSeconds } = metadata;
     if (durationSeconds > REEL_MAX_DURATION_SECONDS) {
       await reelRef.update({
         processingStatus: 'failed',
@@ -238,7 +306,7 @@ export const transcodeReelVideo = onObjectFinalized(TRANSCODE_FUNCTION_OPTIONS, 
       return;
     }
 
-    await transcodeToMp4(tmpRawPath, tmpOutPath);
+    await transcodeToMp4(tmpRawPath, tmpOutPath, metadata);
     const hasThumbnail = await tryExtractThumbnail({
       inputPath: tmpOutPath,
       outputPath: tmpThumbPath,
