@@ -223,12 +223,19 @@ export function ReelSlide({
   isMuted,
   onToggleMute,
   onGiftClick,
+  hasBeenViewed = false,
 }: {
   reel: Reel & { id: string }
   isActive: boolean
   isMuted: boolean
   onToggleMute: () => void
   onGiftClick: () => void
+  // Un réel déjà activé une fois dans cette session garde preload="auto" : repasser à "none"
+  // est un signal pour le navigateur de libérer le buffer déjà téléchargé, ce qui obligeait à
+  // tout retélécharger en revenant dessus (voir aussi le cacheControl côté Storage, l'autre
+  // moitié du problème). Par défaut false pour SingleReelClient.tsx (une seule vidéo, jamais
+  // "déjà vue puis quittée puis revisitée" dans cette vue).
+  hasBeenViewed?: boolean
 }) {
   const videoRef = React.useRef<HTMLVideoElement>(null)
   // Un réel peut exister avec ou sans annonce liée (propertyId optionnel) — la légende ne
@@ -261,7 +268,7 @@ export function ReelSlide({
         muted={isMuted}
         loop
         playsInline
-        preload={isActive ? 'auto' : 'none'}
+        preload={isActive || hasBeenViewed ? 'auto' : 'none'}
         // object-contain (pas cover) : cover recadre/zoome toute vidéo dont le ratio diffère
         // du conteneur plein écran — une vidéo filmée en paysage ou en 4:3 apparaissait
         // "agrandie" avec les bords coupés. Le fond est noir, le letterboxing est le
@@ -451,6 +458,7 @@ export default function ReelsFeedClient() {
                     isMuted={isMuted}
                     onToggleMute={() => setIsMuted((m) => !m)}
                     onGiftClick={() => setGiftReel(slide.reel)}
+                    hasBeenViewed={trackedViewsRef.current.has(slide.reel.id)}
                   />
                 ) : (
                   <ReelAdSlide

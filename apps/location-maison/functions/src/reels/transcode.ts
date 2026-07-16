@@ -379,14 +379,30 @@ export const transcodeReelVideo = onObjectFinalized(TRANSCODE_FUNCTION_OPTIONS, 
     const videoToken = randomUUID();
     const thumbToken = randomUUID();
 
+    // Sans cacheControl explicite, GCS/Firebase Storage sert `private, max-age=0` par défaut :
+    // le navigateur doit revalider (donc réseau) à CHAQUE lecture, même en revenant sur un réel
+    // déjà vu dans le fil pendant la même session — c'est ça qui donne l'impression que la
+    // vidéo "recharge". Le chemin de sortie (reels/{owner}/{reelId}/video.mp4) n'est jamais
+    // réécrit après transcodage (un réel ready n'est pas re-transcodé) : le contenu est
+    // immuable, donc un cache long + immutable est sûr.
+    const longLivedCacheControl = 'public, max-age=31536000, immutable';
+
     await bucket.upload(tmpOutPath, {
       destination: videoDestPath,
-      metadata: { contentType: 'video/mp4', metadata: { firebaseStorageDownloadTokens: videoToken } },
+      metadata: {
+        contentType: 'video/mp4',
+        cacheControl: longLivedCacheControl,
+        metadata: { firebaseStorageDownloadTokens: videoToken },
+      },
     });
     if (hasThumbnail) {
       await bucket.upload(tmpThumbPath, {
         destination: thumbDestPath,
-        metadata: { contentType: 'image/jpeg', metadata: { firebaseStorageDownloadTokens: thumbToken } },
+        metadata: {
+          contentType: 'image/jpeg',
+          cacheControl: longLivedCacheControl,
+          metadata: { firebaseStorageDownloadTokens: thumbToken },
+        },
       });
     }
 
