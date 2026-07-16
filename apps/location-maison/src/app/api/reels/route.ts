@@ -61,23 +61,36 @@ function getStoragePathsFromReel(reel: Record<string, unknown>): string[] {
 
 async function deleteStorageObjects(paths: string[]) {
   if (paths.length === 0) return;
+
   if (!adminApp) {
-    throw new ReelApiError(500, 'FIREBASE_ADMIN_UNAVAILABLE', 'Firebase admin non initialisé.');
+    logger.warn('Reel storage cleanup skipped because Firebase admin is unavailable', {
+      pathCount: paths.length,
+    });
+    return;
   }
 
   const uniquePaths = Array.from(new Set(paths));
-  const bucket = getStorage(adminApp).bucket();
-  const results = await Promise.allSettled(
-    uniquePaths.map((path) => bucket.file(path).delete({ ignoreNotFound: true }))
-  );
+  try {
+    const storage = getStorage(adminApp);
+    const bucketName = process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET || process.env.FIREBASE_STORAGE_BUCKET;
+    const bucket = bucketName ? storage.bucket(bucketName) : storage.bucket();
+    const results = await Promise.allSettled(
+      uniquePaths.map((path) => bucket.file(path).delete({ ignoreNotFound: true }))
+    );
 
-  const failed = results
-    .map((result, index) => ({ result, path: uniquePaths[index] }))
-    .filter(({ result }) => result.status === 'rejected');
+    const failed = results
+      .map((result, index) => ({ result, path: uniquePaths[index] }))
+      .filter(({ result }) => result.status === 'rejected');
 
-  if (failed.length > 0) {
-    logger.warn('Some reel storage objects could not be deleted', {
-      paths: failed.map(({ path }) => path),
+    if (failed.length > 0) {
+      logger.warn('Some reel storage objects could not be deleted', {
+        paths: failed.map(({ path }) => path),
+      });
+    }
+  } catch (error) {
+    logger.warn('Reel storage cleanup skipped after Firestore deletion', {
+      error,
+      pathCount: uniquePaths.length,
     });
   }
 }
@@ -538,11 +551,12 @@ export async function DELETE(request: NextRequest): Promise<NextResponse<ReelApi
 
     const reelRef = db.collection(firebaseCollectionNames.reels).doc(reelId);
     let storagePaths: string[] = [];
+    let reelExisted = false;
 
     await db.runTransaction(async (transaction) => {
       const reelSnapshot = await transaction.get(reelRef);
       if (!reelSnapshot.exists) {
-        throw new ReelApiError(404, 'REEL_NOT_FOUND', 'Réel introuvable.');
+        return;
       }
 
       const reel = reelSnapshot.data() ?? {};
@@ -550,15 +564,19 @@ export async function DELETE(request: NextRequest): Promise<NextResponse<ReelApi
         throw new ReelApiError(403, 'FORBIDDEN_REEL', "Ce réel ne vous appartient pas.");
       }
 
+      reelExisted = true;
       storagePaths = getStoragePathsFromReel(reel);
       transaction.delete(reelRef);
     });
 
-    await deleteStorageObjects(storagePaths);
+    if (reelExisted) {
+      await deleteStorageObjects(storagePaths);
+    }
 
     logger.info('Reel deleted', {
       uid,
       reelId,
+      alreadyDeleted: !reelExisted,
       storagePathCount: storagePaths.length,
     });
 
