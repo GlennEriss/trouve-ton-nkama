@@ -175,14 +175,12 @@ export default function ReelAdSlide({
       )}
 
       {loaded && showHouse && creative && (
-        <div className="w-[85%] max-w-sm">
-          <AdCreativeCard
-            creative={creative}
-            placement="reels_infeed"
-            surface="card"
-            onClick={() => track('click', creative.campaignId)}
-          />
-        </div>
+        <AdCreativeCard
+          creative={creative}
+          placement="reels_infeed"
+          reelFullscreen
+          onClick={() => track('click', creative.campaignId)}
+        />
       )}
 
       {loaded && !showHouse && <AdSenseSlide slotKey={slotKey} />}

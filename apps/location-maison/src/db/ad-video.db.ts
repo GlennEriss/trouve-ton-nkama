@@ -5,8 +5,8 @@
  * reels_infeed uniquement). Fichier séparé de `ad-campaign.db.ts` (100% Admin
  * SDK côté serveur) pour ne pas mélanger runtime client et Admin SDK dans le
  * même module. Contourne volontairement `/api/advertising/upload` (bufferise
- * tout le fichier en mémoire Node, plafonné à 3 Mo — inadapté à une vidéo
- * jusqu'à 500 Mo) : upload direct au SDK client, même pattern que
+ * tout le fichier en mémoire Node, inadapté à une vidéo jusqu'à 500 Mo) :
+ * upload direct au SDK client, même pattern que
  * `uploadRawReelVideo` (reel.db.ts) et `createFile` (file.db.ts).
  */
 
@@ -67,7 +67,7 @@ export async function uploadAdCreativeVideo(
 
     // Timeout généreux (5 min) : fichiers jusqu'à 500 Mo, contrairement aux
     // 120s de uploadRawReelVideo (fichiers réels plus petits en pratique) ou
-    // aux 20s de createFile (images, 3 Mo max).
+    // aux 20s de createFile (images d'annonces immobilières).
     await withTimeout(uploadBytes(fileRef, file), 300_000, 'Upload vidéo pub')
     const videoURL = await withTimeout(getDownloadURL(fileRef), 15_000, 'Récupération URL vidéo pub')
 

@@ -29,9 +29,8 @@ export const PLACEMENT_MEDIA: Record<AdPlacement, string> = {
   search_infeed: 'aspect-[16/5]',
   immobilier_infeed: 'aspect-[16/5]',
   property_detail: 'aspect-[16/4]',
-  // Diapositive plein écran du fil réels : format portrait, seul emplacement
-  // où le visuel occupe une carte verticale et non une bannière.
-  reels_infeed: 'aspect-[4/5]',
+  // Diapositive plein écran du fil réels : même format vertical qu'un réel.
+  reels_infeed: 'aspect-[9/16]',
 }
 
 type AdCreativeCardProps = Readonly<{
@@ -41,6 +40,8 @@ type AdCreativeCardProps = Readonly<{
   className?: string
   /** Le hero accueil remplit toute la hauteur : on saute l'aspect-ratio. */
   fillHeight?: boolean
+  /** Rendu plein écran pour une diapositive du fil réels. */
+  reelFullscreen?: boolean
   /**
    * `false` (preview) : rendu non cliquable, pas de tracking. `true` (serving) :
    * lien réel + callback de tracking.
@@ -60,9 +61,79 @@ export default function AdCreativeCard({
   surface = 'none',
   className,
   fillHeight = false,
+  reelFullscreen = false,
   interactive = true,
   onClick,
 }: AdCreativeCardProps) {
+  if (reelFullscreen) {
+    const mediaClassName = 'h-full w-full object-contain'
+    const media = creative.videoURL ? (
+      <video
+        src={creative.videoURL}
+        className={mediaClassName}
+        muted
+        autoPlay
+        loop
+        playsInline
+      />
+    ) : creative.imageURL ? (
+      // eslint-disable-next-line @next/next/no-img-element
+      <img
+        src={creative.imageURL}
+        alt={creative.headline || 'Publicité'}
+        className={mediaClassName}
+        loading="lazy"
+      />
+    ) : (
+      <div className="flex h-full w-full items-center justify-center bg-neutral-950 text-xs text-white/45">
+        Visuel de la publicité
+      </div>
+    )
+
+    const content = (
+      <div className="relative h-full w-full overflow-hidden bg-black">
+        {media}
+        <div className="pointer-events-none absolute inset-x-0 bottom-0 z-10 h-64 bg-gradient-to-t from-black/85 via-black/25 to-transparent" />
+        {(creative.headline || creative.body || creative.ctaLabel) && (
+          <div className="absolute inset-x-4 bottom-0 z-20 pb-24 text-white md:pb-6">
+            <p className="text-[10px] font-semibold uppercase tracking-wide text-white/65">
+              Sponsorisé
+            </p>
+            {creative.headline && (
+              <p className="mt-2 text-lg font-semibold leading-tight text-white">
+                {creative.headline}
+              </p>
+            )}
+            {creative.body && (
+              <p className="mt-1 line-clamp-3 whitespace-pre-line text-sm leading-5 text-white/85">
+                {creative.body}
+              </p>
+            )}
+            {creative.ctaLabel && (
+              <span className="mt-3 inline-flex min-h-10 items-center rounded-full bg-[#1FA89B] px-5 text-sm font-semibold text-white shadow-lg shadow-black/20">
+                {creative.ctaLabel}
+              </span>
+            )}
+          </div>
+        )}
+      </div>
+    )
+
+    return interactive ? (
+      <a
+        href={creative.ctaUrl || '#'}
+        target="_blank"
+        rel="noopener noreferrer sponsored"
+        onClick={onClick}
+        className={cn('block h-full w-full', className)}
+      >
+        {content}
+      </a>
+    ) : (
+      <div className={cn('h-full w-full', className)}>{content}</div>
+    )
+  }
+
   const containerClassName =
     surface === 'card'
       ? 'rounded-xl border border-gray-200 bg-white p-3 shadow-sm dark:border-gray-700 dark:bg-gray-900'

@@ -190,7 +190,10 @@ export default function AdCreativePreview({
         >
           <PreviewContext placement={active} device={device}>
             {/* La vraie pub, mise en valeur dans le flux fantôme. */}
-            <div className="rounded-lg ring-2 ring-[#1FA89B]/40">
+            <div className={cn(
+              'rounded-lg ring-2 ring-[#1FA89B]/40',
+              active === 'reels_infeed' && 'h-full w-full overflow-hidden rounded-xl',
+            )}>
               {active === 'home' ? (
                 // Hero accueil : bannière large sur dégradé, visuel entier (contain).
                 <div className="aspect-[3/1] w-full overflow-hidden rounded-xl bg-gradient-to-r from-[#C1DEE8] to-[#FBD9B9]">
@@ -204,15 +207,13 @@ export default function AdCreativePreview({
                   />
                 </div>
               ) : active === 'reels_infeed' ? (
-                // Carte centrée sur fond noir — identique au rendu réel ReelAdSlide.tsx.
-                <div className="w-[85%] max-w-sm">
-                  <AdCreativeCard
-                    creative={shownCreative}
-                    placement="reels_infeed"
-                    surface="card"
-                    interactive={false}
-                  />
-                </div>
+                // Plein slide, comme le rendu réel ReelAdSlide.tsx.
+                <AdCreativeCard
+                  creative={shownCreative}
+                  placement="reels_infeed"
+                  reelFullscreen
+                  interactive={false}
+                />
               ) : (
                 <AdCreativeCard
                   creative={shownCreative}

@@ -36,6 +36,14 @@ export const AD_PACKAGES: ReadonlyArray<AdPackage> = [
     highlight: true,
   },
   {
+    id: 'reels',
+    name: 'Réels',
+    credits: 45,
+    durationDays: 14,
+    placements: ['reels_infeed'],
+    description: '14 jours dans le fil des réels avec visuel portrait ou vidéo.',
+  },
+  {
     id: 'brand',
     name: 'Marque',
     credits: 70,
