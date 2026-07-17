@@ -7,10 +7,13 @@ import {
   ArrowLeft,
   CalendarDays,
   CheckCircle2,
+  Eye,
   Filter,
+  Heart,
   Link2,
   Loader2,
   Pencil,
+  Share2,
   Trash2,
   Video,
   X,
@@ -73,6 +76,10 @@ function endOfDay(date: Date): Date {
 }
 
 type ReelWithId = Reel & { id: string }
+
+function formatStat(value: number | undefined) {
+  return (value ?? 0).toLocaleString('fr-FR')
+}
 
 function ReelCard({
   reel,
@@ -148,6 +155,24 @@ function ReelCard({
           </div>
         )}
 
+        <div className="grid grid-cols-3 gap-2">
+          <div className="rounded-xl border border-gray-100 bg-gray-50 px-2 py-2 text-center dark:border-gray-800 dark:bg-gray-800/40">
+            <Eye className="mx-auto h-4 w-4 text-[#146B67]" />
+            <p className="mt-1 text-sm font-bold text-gray-900 dark:text-white">{formatStat(reel.viewCount)}</p>
+            <p className="text-[11px] text-gray-500 dark:text-gray-400">Vues</p>
+          </div>
+          <div className="rounded-xl border border-gray-100 bg-gray-50 px-2 py-2 text-center dark:border-gray-800 dark:bg-gray-800/40">
+            <Heart className="mx-auto h-4 w-4 text-rose-600" />
+            <p className="mt-1 text-sm font-bold text-gray-900 dark:text-white">{formatStat(reel.likeCount)}</p>
+            <p className="text-[11px] text-gray-500 dark:text-gray-400">Likes</p>
+          </div>
+          <div className="rounded-xl border border-gray-100 bg-gray-50 px-2 py-2 text-center dark:border-gray-800 dark:bg-gray-800/40">
+            <Share2 className="mx-auto h-4 w-4 text-sky-600" />
+            <p className="mt-1 text-sm font-bold text-gray-900 dark:text-white">{formatStat(reel.shareCount)}</p>
+            <p className="text-[11px] text-gray-500 dark:text-gray-400">Partages</p>
+          </div>
+        </div>
+
         <div className="mt-auto space-y-2">
           <div className="grid grid-cols-2 gap-2">
             <Button variant="outline" className="h-9 rounded-full" asChild>
@@ -213,6 +238,17 @@ export default function MyReelsClient() {
   const reels = useMemo(
     () => reelsQuery.data?.pages.flatMap((page) => page.reels) ?? [],
     [reelsQuery.data?.pages]
+  )
+  const totalStats = useMemo(
+    () => reels.reduce(
+      (acc, reel) => ({
+        views: acc.views + (reel.viewCount ?? 0),
+        likes: acc.likes + (reel.likeCount ?? 0),
+        shares: acc.shares + (reel.shareCount ?? 0),
+      }),
+      { views: 0, likes: 0, shares: 0 }
+    ),
+    [reels]
   )
   const hasMore = Boolean(reelsQuery.hasNextPage)
 
@@ -286,7 +322,7 @@ export default function MyReelsClient() {
             </p>
             <h1 className="mt-1 text-2xl font-bold text-gray-900 dark:text-white md:text-3xl">Mes réels</h1>
             <p className="mt-1 text-sm text-gray-600 dark:text-gray-300">
-              Suivi du traitement, de la validation et des annonces attachées.
+              Suivi du traitement, de la validation, des vues, des likes et des partages.
             </p>
           </div>
           <Button
@@ -342,6 +378,44 @@ export default function MyReelsClient() {
           {Array.from({ length: 4 }).map((_, index) => (
             <Skeleton key={`reel-skeleton-${index}`} className="h-[360px] rounded-2xl" />
           ))}
+        </section>
+      )}
+
+      {!isInitialLoading && reels.length > 0 && (
+        <section className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+          <div className="rounded-2xl border border-gray-200 bg-white p-4 shadow-sm dark:border-gray-800 dark:bg-gray-900">
+            <div className="flex items-center gap-3">
+              <span className="flex h-10 w-10 items-center justify-center rounded-full bg-emerald-50 text-[#146B67] dark:bg-emerald-950/40">
+                <Eye className="h-5 w-5" />
+              </span>
+              <div>
+                <p className="text-xs font-medium text-gray-500 dark:text-gray-400">Vues totales</p>
+                <p className="text-2xl font-bold text-gray-900 dark:text-white">{formatStat(totalStats.views)}</p>
+              </div>
+            </div>
+          </div>
+          <div className="rounded-2xl border border-gray-200 bg-white p-4 shadow-sm dark:border-gray-800 dark:bg-gray-900">
+            <div className="flex items-center gap-3">
+              <span className="flex h-10 w-10 items-center justify-center rounded-full bg-rose-50 text-rose-600 dark:bg-rose-950/30">
+                <Heart className="h-5 w-5" />
+              </span>
+              <div>
+                <p className="text-xs font-medium text-gray-500 dark:text-gray-400">Likes reçus</p>
+                <p className="text-2xl font-bold text-gray-900 dark:text-white">{formatStat(totalStats.likes)}</p>
+              </div>
+            </div>
+          </div>
+          <div className="rounded-2xl border border-gray-200 bg-white p-4 shadow-sm dark:border-gray-800 dark:bg-gray-900">
+            <div className="flex items-center gap-3">
+              <span className="flex h-10 w-10 items-center justify-center rounded-full bg-sky-50 text-sky-600 dark:bg-sky-950/30">
+                <Share2 className="h-5 w-5" />
+              </span>
+              <div>
+                <p className="text-xs font-medium text-gray-500 dark:text-gray-400">Partages</p>
+                <p className="text-2xl font-bold text-gray-900 dark:text-white">{formatStat(totalStats.shares)}</p>
+              </div>
+            </div>
+          </div>
         </section>
       )}
 

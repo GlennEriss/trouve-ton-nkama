@@ -3,8 +3,8 @@
 import React from 'react'
 import Link from 'next/link'
 import { useInfiniteQuery } from '@tanstack/react-query'
-import { ChevronDown, ChevronUp, Gift, Loader2, PhoneCall, PlusCircle, Video, Volume2, VolumeX } from 'lucide-react'
-import { FaWhatsapp } from 'react-icons/fa'
+import { Check, ChevronDown, ChevronUp, Copy, Gift, Heart, Loader2, Mail, PhoneCall, PlusCircle, Share2, Video, Volume2, VolumeX } from 'lucide-react'
+import { FaFacebookF, FaTiktok, FaWhatsapp, FaXTwitter } from 'react-icons/fa6'
 import {
   Carousel,
   CarouselContent,
@@ -12,6 +12,13 @@ import {
   type CarouselApi,
 } from '@/components/ui/carousel'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu'
 import { useProperty } from '@/hooks/use-property'
 import { useUserByUID } from '@/hooks/use-user-by-uid'
 import { useTrackPropertyInteraction } from '@/hooks/use-track-property-interaction'
@@ -36,6 +43,7 @@ const PREFETCH_THRESHOLD = 3
 // maison (module publicité, emplacement reels_infeed) : réel×4 → AdSense →
 // réel×4 → pub maison → réel×4 → AdSense → …
 const ADS_INTERVAL = 4
+const LIKED_REELS_STORAGE_KEY = 'ttn-liked-reels'
 
 type FeedSlide =
   | { kind: 'reel'; key: string; reel: Reel & { id: string } }
@@ -78,6 +86,251 @@ function trackReelView(reelId: string) {
   } else {
     fetch(url, { method: 'POST', keepalive: true }).catch(() => undefined)
   }
+}
+
+async function trackReelLike(reelId: string, liked: boolean) {
+  const response = await fetch(`/api/reels/${reelId}/statistics/like`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ liked }),
+  })
+
+  if (!response.ok) {
+    throw new Error('Impossible de mettre à jour le like.')
+  }
+}
+
+function trackReelShare(reelId: string, target: ShareTarget) {
+  const url = `/api/reels/${reelId}/statistics/share`
+  const payload = JSON.stringify({ target })
+
+  if (navigator.sendBeacon) {
+    navigator.sendBeacon(url, new Blob([payload], { type: 'application/json' }))
+  } else {
+    fetch(url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: payload,
+      keepalive: true,
+    }).catch(() => undefined)
+  }
+}
+
+function getReelPublicUrl(reelId: string) {
+  if (typeof window !== 'undefined') {
+    return new URL(`/reels/${reelId}`, window.location.origin).toString()
+  }
+
+  return `${process.env.NEXT_PUBLIC_HOST ?? ''}/reels/${reelId}`
+}
+
+function getLikedReelIds() {
+  if (typeof window === 'undefined') return new Set<string>()
+
+  try {
+    const raw = window.localStorage.getItem(LIKED_REELS_STORAGE_KEY)
+    const parsed = raw ? JSON.parse(raw) : []
+    return new Set(Array.isArray(parsed) ? parsed.filter((id): id is string => typeof id === 'string') : [])
+  } catch {
+    return new Set<string>()
+  }
+}
+
+function setLikedReelIds(ids: Set<string>) {
+  if (typeof window === 'undefined') return
+  window.localStorage.setItem(LIKED_REELS_STORAGE_KEY, JSON.stringify(Array.from(ids)))
+}
+
+function getInitialLikeCount(reel: Reel & { id: string }) {
+  const maybeReel = reel as Reel & { likeCount?: unknown; likesCount?: unknown }
+  const value = typeof maybeReel.likeCount === 'number'
+    ? maybeReel.likeCount
+    : typeof maybeReel.likesCount === 'number'
+      ? maybeReel.likesCount
+      : 0
+
+  return Math.max(0, value)
+}
+
+function useLocalReelLike(reel: Reel & { id: string }) {
+  const initialLikeCount = React.useMemo(() => getInitialLikeCount(reel), [reel])
+  const [isLiked, setIsLiked] = React.useState(false)
+  const [likeCount, setLikeCount] = React.useState(initialLikeCount)
+
+  React.useEffect(() => {
+    const likedIds = getLikedReelIds()
+    const liked = likedIds.has(reel.id)
+    setIsLiked(liked)
+    setLikeCount(initialLikeCount)
+  }, [initialLikeCount, reel.id])
+
+  const toggleLike = React.useCallback(() => {
+    const likedIds = getLikedReelIds()
+    const nextLiked = !likedIds.has(reel.id)
+    const delta = nextLiked ? 1 : -1
+
+    if (nextLiked) {
+      likedIds.add(reel.id)
+    } else {
+      likedIds.delete(reel.id)
+    }
+
+    setLikedReelIds(likedIds)
+    setIsLiked(nextLiked)
+    setLikeCount((current) => Math.max(0, current + delta))
+
+    trackReelLike(reel.id, nextLiked).catch(() => {
+      const rollbackLikedIds = getLikedReelIds()
+      if (nextLiked) {
+        rollbackLikedIds.delete(reel.id)
+      } else {
+        rollbackLikedIds.add(reel.id)
+      }
+
+      setLikedReelIds(rollbackLikedIds)
+      setIsLiked(!nextLiked)
+      setLikeCount((current) => Math.max(0, current - delta))
+    })
+  }, [reel.id])
+
+  return { isLiked, likeCount, toggleLike }
+}
+
+type ShareTarget = 'native' | 'whatsapp' | 'facebook' | 'x' | 'mail' | 'tiktok' | 'copy'
+
+function openShareTarget(target: ShareTarget, reel: Reel & { id: string }, propertyTitle?: string) {
+  const reelUrl = getReelPublicUrl(reel.id)
+  const title = propertyTitle
+    ? `${propertyTitle} sur Trouve Ton Nkama`
+    : 'Réel Trouve Ton Nkama'
+  const text = `Regarde ce réel sur Trouve Ton Nkama : ${reelUrl}`
+  const encodedUrl = encodeURIComponent(reelUrl)
+  const encodedText = encodeURIComponent(text)
+  const encodedTitle = encodeURIComponent(title)
+
+  if (target === 'copy') {
+    void navigator.clipboard?.writeText(reelUrl)
+    return
+  }
+
+  if (target === 'whatsapp') {
+    window.open(`https://wa.me/?text=${encodedText}`, '_blank', 'noopener,noreferrer')
+    return
+  }
+
+  if (target === 'facebook') {
+    window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodedUrl}`, '_blank', 'noopener,noreferrer')
+    return
+  }
+
+  if (target === 'x') {
+    window.open(`https://twitter.com/intent/tweet?text=${encodedText}`, '_blank', 'noopener,noreferrer')
+    return
+  }
+
+  if (target === 'mail') {
+    window.location.href = `mailto:?subject=${encodedTitle}&body=${encodedText}`
+    return
+  }
+
+  if (navigator.share) {
+    void navigator.share({ title, text, url: reelUrl }).catch(() => undefined)
+    return
+  }
+
+  void navigator.clipboard?.writeText(reelUrl)
+}
+
+function ReelShareMenu({
+  reel,
+  propertyTitle,
+}: {
+  reel: Reel & { id: string }
+  propertyTitle?: string
+}) {
+  const [hasCopied, setHasCopied] = React.useState(false)
+
+  const handleNativeShare = async () => {
+    const reelUrl = getReelPublicUrl(reel.id)
+    const title = propertyTitle
+      ? `${propertyTitle} sur Trouve Ton Nkama`
+      : 'Réel Trouve Ton Nkama'
+
+    if (navigator.share) {
+      await navigator.share({
+        title,
+        text: `Regarde ce réel sur Trouve Ton Nkama : ${reelUrl}`,
+        url: reelUrl,
+      }).catch(() => undefined)
+      trackReelShare(reel.id, 'native')
+      return
+    }
+
+    await navigator.clipboard?.writeText(reelUrl)
+    trackReelShare(reel.id, 'copy')
+    setHasCopied(true)
+    window.setTimeout(() => setHasCopied(false), 1800)
+  }
+
+  const handleShareTarget = (target: ShareTarget) => {
+    openShareTarget(target, reel, propertyTitle)
+    trackReelShare(reel.id, target)
+    if (target === 'copy' || target === 'tiktok') {
+      setHasCopied(true)
+      window.setTimeout(() => setHasCopied(false), 1800)
+    }
+  }
+
+  return (
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <button
+          type="button"
+          onClick={(event) => {
+            if (typeof navigator.share === 'function' && window.matchMedia('(pointer: coarse)').matches) {
+              event.preventDefault()
+              void handleNativeShare()
+            }
+          }}
+          className="flex h-11 w-11 items-center justify-center rounded-full bg-white/15 text-white backdrop-blur-sm"
+          aria-label="Partager ce réel"
+        >
+          <Share2 className="h-5 w-5" />
+        </button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent
+        align="end"
+        side="left"
+        className="z-[80] min-w-44 border-white/10 bg-neutral-950/95 text-white backdrop-blur"
+      >
+        <DropdownMenuItem onClick={() => handleShareTarget('whatsapp')} className="cursor-pointer focus:bg-white/10 focus:text-white">
+          <FaWhatsapp className="h-4 w-4 text-emerald-400" />
+          WhatsApp
+        </DropdownMenuItem>
+        <DropdownMenuItem onClick={() => handleShareTarget('facebook')} className="cursor-pointer focus:bg-white/10 focus:text-white">
+          <FaFacebookF className="h-4 w-4 text-blue-400" />
+          Facebook
+        </DropdownMenuItem>
+        <DropdownMenuItem onClick={() => handleShareTarget('x')} className="cursor-pointer focus:bg-white/10 focus:text-white">
+          <FaXTwitter className="h-4 w-4" />
+          X
+        </DropdownMenuItem>
+        <DropdownMenuItem onClick={() => handleShareTarget('mail')} className="cursor-pointer focus:bg-white/10 focus:text-white">
+          <Mail className="h-4 w-4" />
+          Mail
+        </DropdownMenuItem>
+        <DropdownMenuItem onClick={() => handleShareTarget('tiktok')} className="cursor-pointer focus:bg-white/10 focus:text-white">
+          <FaTiktok className="h-4 w-4" />
+          TikTok
+        </DropdownMenuItem>
+        <DropdownMenuSeparator className="bg-white/10" />
+        <DropdownMenuItem onClick={() => handleShareTarget('copy')} className="cursor-pointer focus:bg-white/10 focus:text-white">
+          {hasCopied ? <Check className="h-4 w-4 text-emerald-300" /> : <Copy className="h-4 w-4" />}
+          {hasCopied ? 'Lien copié' : 'Copier le lien'}
+        </DropdownMenuItem>
+      </DropdownMenuContent>
+    </DropdownMenu>
+  )
 }
 
 function EndOfFeedSlide() {
@@ -128,6 +381,7 @@ function ReelActionRail({
   const { trackInteraction } = useTrackPropertyInteraction(reel.propertyId ?? undefined)
   const { data: owner } = useUserByUID(reel.createdBy)
   const phoneNumber = reel.contact ?? property?.contact ?? owner?.phoneNumbers?.[0] ?? undefined
+  const { isLiked, likeCount, toggleLike } = useLocalReelLike(reel)
 
   const handleWhatsApp = () => {
     if (!phoneNumber) return
@@ -135,7 +389,7 @@ function ReelActionRail({
     // Lien vers le réel lui-même dans les deux cas : même quand une annonce est liée,
     // l'acheteur parle précisément de CE réel (parmi peut-être plusieurs sur la même
     // annonce) — l'annonceur doit pouvoir l'identifier sans ambiguïté (voir /reels/[reelId]).
-    const reelLink = `${process.env.NEXT_PUBLIC_HOST}/reels/${reel.id}`
+    const reelLink = getReelPublicUrl(reel.id)
     const message = property
       ? `Bonjour, je suis intéressé par votre annonce "${property.title}" au prix de ${property.price.toLocaleString('fr-FR')} FCFA, vue sur ce réel : ${reelLink}`
       : `Bonjour, je suis intéressé par votre réel sur Trouve Ton Nkama : ${reelLink}`
@@ -169,6 +423,24 @@ function ReelActionRail({
         </Avatar>
       )}
 
+      <div className="flex flex-col items-center gap-1">
+        <button
+          type="button"
+          onClick={toggleLike}
+          className={cn(
+            'flex h-11 w-11 items-center justify-center rounded-full backdrop-blur-sm',
+            isLiked ? 'bg-rose-600 text-white' : 'bg-white/15 text-white'
+          )}
+          aria-label={isLiked ? "Retirer le j'aime" : "J'aime ce réel"}
+          aria-pressed={isLiked}
+        >
+          <Heart className={cn('h-5 w-5', isLiked && 'fill-current')} />
+        </button>
+        {likeCount > 0 && (
+          <span className="text-xs font-medium text-white/90">{likeCount}</span>
+        )}
+      </div>
+
       <button
         type="button"
         onClick={handleWhatsApp}
@@ -183,7 +455,7 @@ function ReelActionRail({
         type="button"
         onClick={handleCall}
         disabled={!phoneNumber}
-        className="flex h-11 w-11 items-center justify-center rounded-full bg-white/15 text-white backdrop-blur-sm disabled:opacity-40"
+        className="flex h-11 w-11 items-center justify-center rounded-full bg-blue-600 text-white disabled:opacity-40"
         aria-label="Appeler"
       >
         <PhoneCall className="h-5 w-5" />
@@ -202,6 +474,8 @@ function ReelActionRail({
           <span className="text-xs font-medium text-white/90">{reel.giftCount}</span>
         )}
       </div>
+
+      <ReelShareMenu reel={reel} propertyTitle={property?.title} />
 
       <button
         type="button"

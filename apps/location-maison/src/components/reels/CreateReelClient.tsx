@@ -117,6 +117,8 @@ export default function CreateReelClient({ propertyId }: CreateReelClientProps) 
         rawVideoPath,
         moderationStatus: 'PENDING',
         viewCount: 0,
+        likeCount: 0,
+        shareCount: 0,
         giftCount: 0,
         giftTotalAmount: 0,
         ...(trimmedContact ? { contact: trimmedContact } : {}),

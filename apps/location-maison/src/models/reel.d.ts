@@ -42,6 +42,8 @@ export type Reel = ICreation & {
     moderationReviewedBy?: string;
 
     viewCount: number;
+    likeCount: number;
+    shareCount: number;
     giftCount: number;
     giftTotalAmount: number;
 }
