@@ -368,6 +368,8 @@ export async function POST(request: NextRequest): Promise<NextResponse<ReelApiRe
         rawVideoPath,
         moderationStatus: 'PENDING',
         viewCount: 0,
+        likeCount: 0,
+        shareCount: 0,
         giftCount: 0,
         giftTotalAmount: 0,
         state: 'IN_PROGRESS',
