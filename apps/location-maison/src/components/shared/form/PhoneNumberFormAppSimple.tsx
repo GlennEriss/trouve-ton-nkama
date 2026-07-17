@@ -21,6 +21,14 @@ type PhoneNumberPartsProps = {
     disabled?: boolean
 }
 
+const normalizeLocalPhoneNumber = (localNumber: string, countryCode: string) => {
+    if (countryCode === 'GA' && localNumber.startsWith('0')) {
+        return localNumber.substring(1);
+    }
+
+    return localNumber;
+}
+
 export const PhoneNumberParts = ({
     value,
     onChange,
@@ -44,19 +52,21 @@ export const PhoneNumberParts = ({
                 phoneNumber = currentValue.replace(`+${code}`, '').trim();
                 // Nettoyer le numéro (enlever les espaces et caractères non numériques)
                 phoneNumber = phoneNumber.replace(/[^\d]/g, '');
+                phoneNumber = normalizeLocalPhoneNumber(phoneNumber, countryCode);
                 break;
             }
         }
         // Si pas de code pays trouvé, supposer que c'est juste le numéro
         if (!phoneNumber && currentValue && !currentValue.startsWith('+')) {
             phoneNumber = currentValue.replace(/[^\d]/g, '');
+            phoneNumber = normalizeLocalPhoneNumber(phoneNumber, countryCode);
         }
     }
 
     const handleCountryChange = (newCountryCode: string) => {
         const country = enabledCountries.find(c => c.code === newCountryCode);
         if (country) {
-            const cleaned = phoneNumber.replace(/[^\d]/g, '');
+            const cleaned = normalizeLocalPhoneNumber(phoneNumber.replace(/[^\d]/g, ''), country.code);
             if (cleaned) {
                 const countryKey = country.code as keyof typeof SUPPORTED_COUNTRIES;
                 const fullNumber = `+${SUPPORTED_COUNTRIES[countryKey].countryCode.replace('+', '')}${cleaned}`;
@@ -82,9 +92,12 @@ export const PhoneNumberParts = ({
                 cleaned = cleaned.substring(countryCodeDigits.length);
             }
 
-            // Limiter à 9 chiffres maximum pour le numéro local
-            if (cleaned.length > 9) {
-                cleaned = cleaned.substring(0, 9);
+            cleaned = normalizeLocalPhoneNumber(cleaned, country.code);
+
+            // Limiter à la longueur locale du pays sélectionné.
+            const maxLocalLength = SUPPORTED_COUNTRIES[countryKey].length;
+            if (cleaned.length > maxLocalLength) {
+                cleaned = cleaned.substring(0, maxLocalLength);
             }
 
             // Toujours mettre à jour le champ, même si le numéro n'est pas encore complet
