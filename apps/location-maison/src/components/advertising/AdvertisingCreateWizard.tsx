@@ -25,6 +25,7 @@ import { Textarea } from '@/components/ui/textarea'
 import { AD_PACKAGES } from '@/constantes/ad-packages'
 import { formatsForPlacements, type AdFormat } from '@/constantes/ad-formats'
 import { routes } from '@/constantes/routes'
+import { uploadAdCreativeImage } from '@/db/ad-image.db'
 import { uploadAdCreativeVideo } from '@/db/ad-video.db'
 import { useCurrentUser } from '@/hooks/use-current-user'
 import { useToast } from '@/hooks/use-toast'
@@ -47,34 +48,6 @@ const STEPS = [
   { id: 'message', title: 'Message', description: 'Préparez le CTA.' },
   { id: 'preview', title: 'Aperçu', description: 'Vérifiez et publiez.' },
 ] as const
-
-async function uploadAdImage(file: File): Promise<{ imageURL: string; imagePATH: string }> {
-  const fd = new FormData()
-  fd.append('file', file)
-  const res = await fetch('/api/advertising/upload', { method: 'POST', body: fd })
-  const payload = await res.json()
-  if (!res.ok || !payload.success) throw new Error(payload?.error?.message || 'Échec de l’upload.')
-  return { imageURL: payload.imageURL as string, imagePATH: payload.imagePATH as string }
-}
-
-function FormatAssetPreview({
-  asset,
-}: {
-  asset?: AssetMap[AdPlacement]
-}) {
-  if (!asset) return null
-
-  return (
-    <div className="h-16 w-12 overflow-hidden rounded-lg bg-neutral-950 ring-1 ring-black/5">
-      {asset.videoURL ? (
-        <video src={asset.videoURL} className="h-full w-full object-cover" muted playsInline />
-      ) : asset.imageURL ? (
-        // eslint-disable-next-line @next/next/no-img-element
-        <img src={asset.imageURL} alt="" className="h-full w-full object-cover" />
-      ) : null}
-    </div>
-  )
-}
 
 const visualSkeleton = 'rounded bg-gray-200 dark:bg-gray-700'
 
@@ -109,7 +82,9 @@ function PlacementMockup({
     return (
       <div className="rounded-2xl bg-white p-3 shadow-sm dark:bg-gray-900">
         <div className="space-y-3">
-          <GhostPropertyGrid cols={2} />
+          <div className="hidden sm:block">
+            <GhostPropertyGrid cols={2} />
+          </div>
           {children}
           <GhostPropertyGrid cols={2} />
         </div>
@@ -260,7 +235,7 @@ function Stepper({
   currentStep: number
 }) {
   return (
-    <ol className="grid gap-2 sm:grid-cols-4">
+    <ol className="grid grid-cols-4 gap-2">
       {STEPS.map((step, index) => {
         const isActive = index === currentStep
         const isDone = index < currentStep
@@ -268,7 +243,7 @@ function Stepper({
           <li
             key={step.id}
             className={cn(
-              'rounded-xl border p-3 transition',
+              'rounded-xl border px-2 py-2 transition sm:p-3',
               isActive
                 ? 'border-[#1FA89B] bg-[#1FA89B]/5 text-[#224D62]'
                 : isDone
@@ -277,18 +252,18 @@ function Stepper({
             )}
             aria-current={isActive ? 'step' : undefined}
           >
-            <div className="flex items-center gap-2">
+            <div className="flex flex-col items-center gap-1 sm:flex-row sm:gap-2">
               <span
                 className={cn(
-                  'flex h-7 w-7 items-center justify-center rounded-full text-xs font-bold',
+                  'flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-xs font-bold',
                   isDone || isActive ? 'bg-[#1FA89B] text-white' : 'bg-gray-100 text-gray-500 dark:bg-gray-800',
                 )}
               >
                 {isDone ? <CheckCircle className="h-4 w-4" /> : index + 1}
               </span>
-              <span className="font-semibold">{step.title}</span>
+              <span className="max-w-full truncate text-[11px] font-semibold leading-tight sm:text-base">{step.title}</span>
             </div>
-            <p className="mt-2 text-xs text-gray-500">{step.description}</p>
+            <p className="mt-2 hidden text-xs text-gray-500 sm:block">{step.description}</p>
           </li>
         )
       })}
@@ -336,6 +311,10 @@ export default function AdvertisingCreateWizard() {
     formats[0]
   const activePlacement = activeFormat?.placements[0]
   const activeAsset = activeFormat?.placements.map((placement) => assets[placement]).find(Boolean)
+  const totalPlacementCount = selectedPackage?.placements.length ?? 0
+  const readyPlacementCount = selectedPackage?.placements.filter(hasVisualForPlacement).length ?? 0
+  const visualProgress = totalPlacementCount ? Math.round((readyPlacementCount / totalPlacementCount) * 100) : 0
+  const stepProgress = Math.round(((currentStep + 1) / STEPS.length) * 100)
 
   React.useEffect(() => {
     if (formats.length === 0) return
@@ -352,7 +331,8 @@ export default function AdvertisingCreateWizard() {
     setImagePATH('')
     setUploading(true)
     try {
-      const data = await uploadAdImage(file)
+      if (!user?.uid) throw new Error('Connecte-toi pour uploader une image.')
+      const data = await uploadAdCreativeImage(file, user.uid)
       setImageURL(data.imageURL)
       setImagePATH(data.imagePATH)
     } catch (e) {
@@ -389,7 +369,8 @@ export default function AdvertisingCreateWizard() {
         return
       }
 
-      const data = await uploadAdImage(file)
+      if (!user?.uid) throw new Error('Connecte-toi pour uploader une image.')
+      const data = await uploadAdCreativeImage(file, user.uid)
       setAssets((prev) => {
         const next = { ...prev }
         for (const p of format.placements) next[p] = data
@@ -557,104 +538,75 @@ export default function AdvertisingCreateWizard() {
         )}
 
         {currentStep === 1 && (
-          <div className="space-y-6">
-            <div>
+          <div className="space-y-4 sm:space-y-6">
+            <div className="space-y-1">
               <h2 className="text-lg font-semibold text-[#224D62] dark:text-white">Ajouter les visuels</h2>
-              <p className="mt-1 text-sm text-gray-500">Choisissez un format, puis cliquez directement dans l’emplacement publicitaire du mockup.</p>
+              <p className="text-sm leading-6 text-gray-500">Choisissez le format, puis touchez la zone pub pour importer le visuel.</p>
             </div>
 
-            <div className="rounded-xl border border-gray-200 bg-gray-50 p-4 dark:border-gray-700 dark:bg-gray-800/40">
-              <div className="flex flex-wrap items-center justify-between gap-3">
-                <div>
-                  <Label htmlFor="default-ad-image" className="text-sm">Visuel par défaut</Label>
-                  <p className="mt-1 text-xs text-gray-500">Option rapide pour couvrir les emplacements sans visuel dédié.</p>
-                </div>
-                <div className="flex flex-wrap items-center gap-3">
-                  {(imageURL || localPreview) ? (
-                    <div className="h-12 w-20 overflow-hidden rounded-lg bg-white ring-1 ring-black/5">
-                      {/* eslint-disable-next-line @next/next/no-img-element */}
-                      <img src={imageURL || localPreview} alt="" className="h-full w-full object-cover" />
-                    </div>
-                  ) : null}
-                  <input
-                    id="default-ad-image"
-                    type="file"
-                    accept={IMAGE_ONLY_ACCEPT}
-                    disabled={uploading}
-                    className="sr-only"
-                    onChange={(e) => {
-                      const file = e.target.files?.[0]
-                      e.target.value = ''
-                      if (file) void handleUpload(file)
-                    }}
-                  />
-                  <label
-                    htmlFor="default-ad-image"
-                    className="inline-flex min-h-10 cursor-pointer items-center justify-center gap-2 rounded-md bg-white px-3 text-sm font-medium text-[#224D62] shadow-sm ring-1 ring-gray-200 transition hover:bg-gray-50 dark:bg-gray-900 dark:text-white dark:ring-gray-700"
-                  >
-                    {uploading ? <Loader2 className="h-4 w-4 animate-spin text-[#1FA89B]" /> : <ImagePlus className="h-4 w-4 text-[#1FA89B]" />}
-                    {uploading ? 'Import' : (imageURL || localPreview) ? 'Changer' : 'Importer'}
-                  </label>
-                  {(imageURL || localPreview) ? (
-                    <button
-                      type="button"
-                      onClick={clearDefaultVisual}
-                      className="inline-flex min-h-10 items-center gap-1.5 rounded-md px-2 text-xs font-medium text-red-600 hover:bg-red-50"
-                    >
-                      <Trash2 className="h-3.5 w-3.5" />
-                      Retirer
-                    </button>
-                  ) : null}
-                </div>
+            <div className="rounded-2xl border border-[#1FA89B]/20 bg-[#F0FDFA] p-3 dark:border-[#1FA89B]/30 dark:bg-[#102522] sm:p-4">
+              <div className="flex items-center justify-between gap-3">
+                <p className="text-sm font-semibold text-[#224D62] dark:text-white">
+                  {readyPlacementCount}/{totalPlacementCount} emplacements prêts
+                </p>
+                <span className="rounded-full bg-white px-3 py-1 text-xs font-semibold text-[#1FA89B] ring-1 ring-[#1FA89B]/20 dark:bg-gray-950">
+                  {visualProgress}%
+                </span>
               </div>
-            </div>
-
-            <div className="grid gap-4 xl:grid-cols-[16rem_minmax(0,1fr)_17rem]">
-              <div className="space-y-2">
-                <p className="text-xs font-semibold uppercase tracking-wide text-gray-500">Formats du forfait</p>
-                {formats.map((fmt) => {
-                  const ready = fmt.placements.every(hasVisualForPlacement)
-                  const dedicated = fmt.placements.every((placement) => hasAsset(assets[placement]))
-                  const previewAsset = fmt.placements.map((placement) => assets[placement]).find(Boolean)
-                  return (
-                    <button
-                      key={fmt.key}
-                      type="button"
-                      onClick={() => setActiveFormatKey(fmt.key)}
-                      className={cn(
-                        'flex w-full items-center gap-3 rounded-xl border p-3 text-left transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1FA89B]',
-                        activeFormat?.key === fmt.key
-                          ? 'border-[#1FA89B] bg-[#1FA89B]/5 ring-2 ring-[#1FA89B]/15'
-                          : 'border-gray-200 bg-white hover:border-[#1FA89B]/50 dark:border-gray-700 dark:bg-gray-900',
-                      )}
-                    >
-                      <FormatAssetPreview asset={previewAsset} />
-                      <div className="min-w-0 flex-1">
-                        <p className="truncate text-sm font-semibold text-[#224D62] dark:text-white">{fmt.label}</p>
-                        <p className="mt-0.5 text-xs text-gray-500">{fmt.recommended}</p>
-                        <span
-                          className={cn(
-                            'mt-2 inline-flex rounded-full px-2 py-0.5 text-[11px] font-medium',
-                            ready
-                              ? 'bg-[#1FA89B]/10 text-[#1FA89B]'
-                              : 'bg-gray-100 text-gray-500 dark:bg-gray-800 dark:text-gray-300',
-                          )}
-                        >
-                          {dedicated ? 'Visuel dédié' : ready ? 'Par défaut' : 'Manquant'}
+              <div className="mt-3 h-2 overflow-hidden rounded-full bg-white/80 ring-1 ring-[#1FA89B]/10 dark:bg-gray-800">
+                <div
+                  className="h-full rounded-full bg-[#1FA89B] transition-all duration-300"
+                  style={{ width: `${visualProgress}%` }}
+                />
+              </div>
+              <div className="-mx-3 mt-3 overflow-x-auto px-3 pb-1 sm:mx-0 sm:px-0">
+                <div className="flex min-w-max gap-2 lg:grid lg:min-w-0 lg:grid-cols-4" role="tablist" aria-label="Formats publicitaires">
+                  {formats.map((fmt) => {
+                    const ready = fmt.placements.every(hasVisualForPlacement)
+                    const dedicated = fmt.placements.every((placement) => hasAsset(assets[placement]))
+                    return (
+                      <button
+                        key={fmt.key}
+                        type="button"
+                        role="tab"
+                        aria-selected={activeFormat?.key === fmt.key}
+                        onClick={() => setActiveFormatKey(fmt.key)}
+                        className={cn(
+                          'min-h-[58px] w-[11.5rem] shrink-0 touch-manipulation rounded-2xl border bg-white px-3 py-2 text-left transition active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1FA89B] lg:w-auto',
+                          activeFormat?.key === fmt.key
+                            ? 'border-[#1FA89B] shadow-sm ring-2 ring-[#1FA89B]/15'
+                            : 'border-transparent ring-1 ring-gray-200 dark:bg-gray-900 dark:ring-gray-700',
+                        )}
+                      >
+                        <span className="flex items-center gap-2">
+                          <span
+                            className={cn(
+                              'h-2.5 w-2.5 rounded-full',
+                              ready ? 'bg-[#1FA89B]' : 'bg-gray-300 dark:bg-gray-600',
+                            )}
+                          />
+                          <span className="min-w-0 flex-1 truncate text-sm font-semibold text-[#224D62] dark:text-white">
+                            {fmt.label}
+                          </span>
                         </span>
-                      </div>
-                    </button>
-                  )
-                })}
+                        <span className="mt-1 block text-xs text-gray-500">
+                          {dedicated ? 'Visuel dédié' : ready ? 'Visuel par défaut' : fmt.recommended}
+                        </span>
+                      </button>
+                    )
+                  })}
+                </div>
               </div>
+            </div>
 
-              <div className="min-w-0 rounded-2xl bg-gray-50 p-3 dark:bg-gray-800/40">
+            <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_18rem]">
+              <div className="min-w-0 rounded-2xl bg-gray-50 p-3 dark:bg-gray-800/40 sm:p-4">
                 {activeFormat && activePlacement ? (
                   <div className="space-y-3">
                     <div className="flex flex-wrap items-start justify-between gap-3 px-1">
                       <div>
-                        <h3 className="font-semibold text-[#224D62] dark:text-white">{activeFormat.label}</h3>
-                        <p className="mt-1 text-xs text-gray-500">
+                        <h3 className="text-base font-semibold text-[#224D62] dark:text-white">{activeFormat.label}</h3>
+                        <p className="mt-1 text-sm leading-5 text-gray-500">
                           {activeFormat.ratioHint} · {activeFormat.recommended}
                           {activeFormat.key === 'reels' ? ' · image ou vidéo jusqu’à 5 min' : ''}
                         </p>
@@ -663,7 +615,7 @@ export default function AdvertisingCreateWizard() {
                         <button
                           type="button"
                           onClick={() => clearFormat(activeFormat)}
-                          className="inline-flex min-h-10 items-center gap-1.5 rounded-md px-2 text-xs font-medium text-red-600 hover:bg-red-50"
+                          className="inline-flex min-h-11 items-center gap-1.5 rounded-md px-2 text-xs font-medium text-red-600 hover:bg-red-50"
                         >
                           <Trash2 className="h-3.5 w-3.5" />
                           Retirer
@@ -696,26 +648,74 @@ export default function AdvertisingCreateWizard() {
                 ) : null}
               </div>
 
-              <aside className="rounded-xl bg-gray-50 p-4 dark:bg-gray-800">
-                <div className="flex items-center gap-2 text-sm font-semibold text-[#224D62] dark:text-white">
-                  <ImagePlus className="h-4 w-4 text-[#1FA89B]" />
-                  Progression visuelle
-                </div>
-                <div className="mt-4 space-y-2">
-                  {selectedPackage?.placements.map((placement) => (
-                    <div key={placement} className="flex items-center justify-between gap-3 text-sm">
-                      <span className="text-gray-600 dark:text-gray-300">{PACKAGE_PLACEMENT_LABELS[placement]}</span>
-                      <span className={cn('rounded-full px-2 py-0.5 text-xs font-medium', hasVisualForPlacement(placement) ? 'bg-[#1FA89B]/10 text-[#1FA89B]' : 'bg-gray-200 text-gray-600 dark:bg-gray-700 dark:text-gray-300')}>
-                        {hasVisualForPlacement(placement) ? 'Prêt' : 'Manquant'}
-                      </span>
+              <aside className="space-y-3">
+                <div className="rounded-xl border border-gray-200 bg-white p-4 dark:border-gray-700 dark:bg-gray-900">
+                  <div className="flex items-start justify-between gap-3">
+                    <div>
+                      <Label htmlFor="default-ad-image" className="text-sm font-semibold">Visuel par défaut</Label>
+                      <p className="mt-1 text-xs leading-5 text-gray-500">Couvre les emplacements sans visuel dédié.</p>
                     </div>
-                  ))}
+                    {(imageURL || localPreview) ? (
+                      <div className="h-12 w-20 shrink-0 overflow-hidden rounded-lg bg-gray-50 ring-1 ring-black/5">
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img src={imageURL || localPreview} alt="" className="h-full w-full object-cover" />
+                      </div>
+                    ) : null}
+                  </div>
+                  <input
+                    id="default-ad-image"
+                    type="file"
+                    accept={IMAGE_ONLY_ACCEPT}
+                    disabled={uploading}
+                    className="sr-only"
+                    onChange={(e) => {
+                      const file = e.target.files?.[0]
+                      e.target.value = ''
+                      if (file) void handleUpload(file)
+                    }}
+                  />
+                  <div className="mt-3 flex flex-wrap gap-2">
+                    <label
+                      htmlFor="default-ad-image"
+                      className="inline-flex min-h-11 flex-1 cursor-pointer touch-manipulation items-center justify-center gap-2 rounded-md bg-[#224D62] px-3 text-sm font-medium text-white shadow-sm transition active:scale-[0.98]"
+                    >
+                      {uploading ? <Loader2 className="h-4 w-4 animate-spin" /> : <ImagePlus className="h-4 w-4" />}
+                      {uploading ? 'Import' : (imageURL || localPreview) ? 'Changer' : 'Importer'}
+                    </label>
+                    {(imageURL || localPreview) ? (
+                      <button
+                        type="button"
+                        onClick={clearDefaultVisual}
+                        className="inline-flex min-h-11 items-center gap-1.5 rounded-md px-3 text-xs font-medium text-red-600 hover:bg-red-50"
+                      >
+                        <Trash2 className="h-3.5 w-3.5" />
+                        Retirer
+                      </button>
+                    ) : null}
+                  </div>
                 </div>
-                {!hasAllPlacementVisuals ? (
-                  <p className="mt-4 text-xs leading-5 text-red-600">
-                    Ajoutez un visuel par défaut ou un visuel dédié pour chaque emplacement du forfait.
-                  </p>
-                ) : null}
+
+                <div className="rounded-xl bg-gray-50 p-4 dark:bg-gray-800">
+                  <div className="flex items-center gap-2 text-sm font-semibold text-[#224D62] dark:text-white">
+                    <ImagePlus className="h-4 w-4 text-[#1FA89B]" />
+                    Progression visuelle
+                  </div>
+                  <div className="mt-4 space-y-2">
+                    {selectedPackage?.placements.map((placement) => (
+                      <div key={placement} className="flex items-center justify-between gap-3 text-sm">
+                        <span className="text-gray-600 dark:text-gray-300">{PACKAGE_PLACEMENT_LABELS[placement]}</span>
+                        <span className={cn('rounded-full px-2 py-0.5 text-xs font-medium', hasVisualForPlacement(placement) ? 'bg-[#1FA89B]/10 text-[#1FA89B]' : 'bg-gray-200 text-gray-600 dark:bg-gray-700 dark:text-gray-300')}>
+                          {hasVisualForPlacement(placement) ? 'Prêt' : 'Manquant'}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                  {!hasAllPlacementVisuals ? (
+                    <p className="mt-4 text-xs leading-5 text-red-600">
+                      Ajoutez un visuel par défaut ou un visuel dédié pour chaque emplacement du forfait.
+                    </p>
+                  ) : null}
+                </div>
               </aside>
             </div>
           </div>
@@ -806,7 +806,53 @@ export default function AdvertisingCreateWizard() {
         )}
       </section>
 
-      <footer className="flex flex-col-reverse gap-3 rounded-2xl border border-gray-200 bg-white p-4 shadow-sm dark:border-gray-700 dark:bg-gray-900 sm:flex-row sm:items-center sm:justify-between">
+      <div className="-mx-1 mb-[calc(6rem+env(safe-area-inset-bottom,0px))] rounded-2xl border border-gray-200 bg-white px-3 pb-2 pt-2 shadow-sm dark:border-gray-800 dark:bg-gray-950 sm:hidden">
+        <div className="mx-auto max-w-md">
+          <div className="mb-2 h-1 overflow-hidden rounded-full bg-gray-100 dark:bg-gray-800" aria-label={`Étape ${currentStep + 1} sur ${STEPS.length}`}>
+            <div
+              className="h-full rounded-full bg-[#1FA89B] transition-all duration-300"
+              style={{ width: `${stepProgress}%` }}
+            />
+          </div>
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              onClick={goBack}
+              disabled={currentStep === 0 || createMutation.isPending}
+              aria-label="Retour à l’étape précédente"
+              className="flex h-12 w-12 shrink-0 touch-manipulation items-center justify-center rounded-full border border-gray-200 bg-white text-[#224D62] transition active:scale-95 disabled:opacity-40 dark:border-gray-700 dark:bg-gray-900 dark:text-white"
+            >
+              <ArrowLeft className="h-5 w-5" />
+            </button>
+
+            {currentStep < STEPS.length - 1 ? (
+              <button
+                type="button"
+                onClick={goNext}
+                disabled={!canGoNext}
+                aria-label={`Continuer vers l’étape ${currentStep + 2}`}
+                className="flex h-12 flex-1 touch-manipulation items-center justify-center gap-2 rounded-full bg-[#1FA89B] px-5 text-sm font-semibold text-white shadow-lg shadow-[#1FA89B]/20 transition active:scale-[0.98] disabled:bg-gray-300 disabled:text-gray-500 disabled:shadow-none dark:disabled:bg-gray-700 dark:disabled:text-gray-400"
+              >
+                Continuer
+                <ArrowRight className="h-5 w-5" />
+              </button>
+            ) : (
+              <button
+                type="button"
+                onClick={() => createMutation.mutate()}
+                disabled={!canPublish}
+                aria-label={`Payer ${selectedPackage?.credits ?? ''} crédits et publier`}
+                className="flex h-12 flex-1 touch-manipulation items-center justify-center gap-2 rounded-full bg-[#1FA89B] px-5 text-sm font-semibold text-white shadow-lg shadow-[#1FA89B]/20 transition active:scale-[0.98] disabled:bg-gray-300 disabled:text-gray-500 disabled:shadow-none dark:disabled:bg-gray-700 dark:disabled:text-gray-400"
+              >
+                {createMutation.isPending ? <Loader2 className="h-5 w-5 animate-spin" /> : <CheckCircle className="h-5 w-5" />}
+                Payer & publier
+              </button>
+            )}
+          </div>
+        </div>
+      </div>
+
+      <footer className="hidden gap-3 rounded-2xl border border-gray-200 bg-white p-4 shadow-sm dark:border-gray-700 dark:bg-gray-900 sm:flex sm:items-center sm:justify-between">
         <Button
           type="button"
           variant="outline"

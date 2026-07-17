@@ -8,7 +8,6 @@ import { jsonApiError } from '@/lib/api/error-response'
 
 const logger = createLogger('api.advertising.upload')
 
-const MAX_BYTES = 3 * 1024 * 1024 // 3 Mo
 const EXT_BY_TYPE: Record<string, string> = {
   'image/jpeg': 'jpg',
   'image/png': 'png',
@@ -41,10 +40,6 @@ export async function POST(request: Request) {
   if (!ext) {
     return jsonApiError(400, 'VALIDATION_ERROR', 'Format non supporté (JPG, PNG, WEBP ou GIF).')
   }
-  if (file.size > MAX_BYTES) {
-    return jsonApiError(400, 'VALIDATION_ERROR', 'Image trop lourde (max 3 Mo).')
-  }
-
   try {
     const { getStorage } = await import('firebase-admin/storage')
     const bucket = getStorage(adminApp).bucket()

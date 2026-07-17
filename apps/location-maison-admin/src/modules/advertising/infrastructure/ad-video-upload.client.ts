@@ -4,7 +4,7 @@
  * Upload direct client → Storage pour les créas vidéo publicitaires
  * (emplacement reels_infeed uniquement), côté admin. Contourne volontairement
  * `/api/admin/v1/advertising/upload` (bufferise tout le fichier en mémoire
- * Node, plafonné à 3 Mo — inadapté à une vidéo jusqu'à 500 Mo) : upload
+ * Node, inadapté à une vidéo jusqu'à 500 Mo) : upload
  * direct au SDK client (mirroir de `uploadAdCreativeVideo` côté app publique,
  * apps/location-maison/src/db/ad-video.db.ts).
  */

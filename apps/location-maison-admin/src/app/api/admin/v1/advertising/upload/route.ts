@@ -5,7 +5,6 @@ import { jsonError, jsonSuccess } from "@/lib/api/response";
 import { getFirebaseAdminStorage } from "@/lib/firebase/firebase-admin";
 import { requireAdmin } from "@/modules/iam/presentation/admin-guard";
 
-const MAX_BYTES = 3 * 1024 * 1024; // 3 Mo
 const EXT_BY_TYPE: Record<string, string> = {
   "image/jpeg": "jpg",
   "image/png": "png",
@@ -36,10 +35,6 @@ export async function POST(request: NextRequest) {
       auth.correlationId,
     );
   }
-  if (file.size > MAX_BYTES) {
-    return jsonError({ code: "VALIDATION_ERROR", message: "Image trop lourde (max 3 Mo)." }, 400, auth.correlationId);
-  }
-
   try {
     const bucket = getFirebaseAdminStorage().bucket();
     const imagePATH = `ad-campaigns/${Date.now()}-${randomUUID()}.${ext}`;
