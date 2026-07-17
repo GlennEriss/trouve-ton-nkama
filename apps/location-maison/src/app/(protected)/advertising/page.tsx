@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { Megaphone, Loader2, Wallet, CheckCircle } from 'lucide-react'
+import { Megaphone, Loader2, Wallet, CheckCircle, Video } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -23,6 +23,14 @@ type AssetMap = Partial<Record<AdPlacement, { imageURL?: string; imagePATH?: str
 const REELS_FORMAT_ACCEPT = 'image/png,image/jpeg,image/webp,image/gif,video/mp4,video/quicktime,video/webm'
 const IMAGE_ONLY_ACCEPT = 'image/png,image/jpeg,image/webp,image/gif'
 
+const PACKAGE_PLACEMENT_LABELS: Record<AdPlacement, string> = {
+  home: 'Accueil',
+  search_infeed: 'Recherche',
+  property_detail: 'Détail',
+  immobilier_infeed: 'Immobilier',
+  reels_infeed: 'Réels',
+}
+
 /** Upload un visuel (self-serve) et renvoie son URL publique + chemin Storage. */
 async function uploadAdImage(file: File): Promise<{ imageURL: string; imagePATH: string }> {
   const fd = new FormData()
@@ -39,6 +47,7 @@ type MyCampaign = {
   status: string
   placements: string[]
   imageURL: string
+  videoURL?: string
   startDate: string | null
   endDate: string | null
   metrics: { impressions: number; clicks: number }
@@ -63,7 +72,7 @@ export default function AdvertisingPage() {
 
   const credits = Number(user?.credits ?? 0)
 
-  const [packageId, setPackageId] = useState('visibility')
+  const [packageId, setPackageId] = useState('brand')
   const [imageURL, setImageURL] = useState('')
   const [imagePATH, setImagePATH] = useState('')
   const [localPreview, setLocalPreview] = useState('')
@@ -77,6 +86,11 @@ export default function AdvertisingPage() {
 
   const selectedPackage = AD_PACKAGES.find((p) => p.id === packageId)
   const formats = selectedPackage ? formatsForPlacements(selectedPackage.placements) : []
+  const hasReelsPlacement = selectedPackage?.placements.includes('reels_infeed') ?? false
+
+  const hasAsset = (asset?: AssetMap[AdPlacement]) => Boolean(asset?.imageURL || asset?.videoURL)
+  const hasVisualForPlacement = (placement: AdPlacement) => Boolean(imageURL || hasAsset(assets[placement]))
+  const hasAllPlacementVisuals = selectedPackage ? selectedPackage.placements.every(hasVisualForPlacement) : false
 
   const campaignsQuery = useQuery({
     queryKey: ['my-ad-campaigns'],
@@ -194,7 +208,12 @@ export default function AdvertisingPage() {
     },
   })
 
-  const canPublish = !!imageURL && !!selectedPackage && !uploading && !createMutation.isPending
+  const canPublish =
+    !!selectedPackage &&
+    hasAllPlacementVisuals &&
+    !uploading &&
+    !formatUploading &&
+    !createMutation.isPending
 
   return (
     <div className="mx-auto max-w-3xl px-5 pt-8 pb-28 md:pb-8 space-y-8">
@@ -215,7 +234,7 @@ export default function AdvertisingPage() {
       {/* Forfaits */}
       <div className="space-y-3">
         <Label className="text-md">1. Choisissez un forfait</Label>
-        <div className="grid gap-3 sm:grid-cols-3">
+        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
           {AD_PACKAGES.map((p) => (
             <button
               key={p.id}
@@ -229,6 +248,21 @@ export default function AdvertisingPage() {
               <p className="font-bold text-[#224D62] dark:text-white">{p.name}</p>
               <p className="mt-1 text-lg font-extrabold text-[#1FA89B]">{p.credits} crédits</p>
               <p className="mt-1 text-xs text-gray-500">{p.description}</p>
+              <div className="mt-3 flex flex-wrap gap-1.5">
+                {p.placements.map((placement) => (
+                  <span
+                    key={placement}
+                    className={cn(
+                      'rounded-full px-2 py-0.5 text-[10px] font-medium',
+                      placement === 'reels_infeed'
+                        ? 'bg-[#1FA89B]/10 text-[#1FA89B]'
+                        : 'bg-gray-100 text-gray-500 dark:bg-gray-800 dark:text-gray-300',
+                    )}
+                  >
+                    {PACKAGE_PLACEMENT_LABELS[placement]}
+                  </span>
+                ))}
+              </div>
             </button>
           ))}
         </div>
@@ -256,16 +290,17 @@ export default function AdvertisingPage() {
         {/* Visuels par format (optionnel) selon les emplacements du forfait */}
         {formats.length > 0 && (
           <div className="space-y-2 rounded-2xl border border-gray-200 bg-gray-50 p-3 dark:border-gray-700 dark:bg-gray-800/40">
-            <p className="text-xs font-medium text-gray-600 dark:text-gray-300">Visuels par format (optionnel)</p>
-            <p className="text-[11px] text-gray-400">Pour un rendu optimal, fournissez un visuel adapté à chaque forme. Sinon le visuel par défaut est utilisé.</p>
+            <p className="text-xs font-medium text-gray-600 dark:text-gray-300">Visuels par format</p>
+            <p className="text-[11px] text-gray-400">Pour les réels, vous pouvez importer une image portrait ou une vidéo. Sinon le visuel par défaut est utilisé.</p>
             {formats.map((fmt) => {
               const imported = fmt.placements.every((p) => assets[p])
+              const previewAsset = fmt.placements.map((p) => assets[p]).find(Boolean)
               return (
                 <div key={fmt.key} className="flex flex-wrap items-center gap-2 text-xs">
                   <div className="min-w-[140px] flex-1">
                     <span className="font-medium text-[#224D62] dark:text-gray-200">{fmt.label}</span>
                     <span className="ml-1 text-gray-400">— {fmt.ratioHint} ({fmt.recommended})</span>
-                    {fmt.key === 'reels' && <span className="ml-1 text-gray-400">· vidéo jusqu&apos;à 5 min</span>}
+                    {fmt.key === 'reels' && <span className="ml-1 text-gray-400">· image ou vidéo jusqu&apos;à 5 min</span>}
                   </div>
                   <input
                     type="file"
@@ -279,6 +314,16 @@ export default function AdvertisingPage() {
                   ) : imported ? (
                     <button type="button" className="text-[#1FA89B]" onClick={() => clearFormat(fmt)}>✓ importé · retirer</button>
                   ) : null}
+                  {previewAsset && (
+                    <div className="ml-auto h-16 w-12 overflow-hidden rounded-lg bg-neutral-950 ring-1 ring-black/5">
+                      {previewAsset.videoURL ? (
+                        <video src={previewAsset.videoURL} className="h-full w-full object-cover" muted playsInline />
+                      ) : previewAsset.imageURL ? (
+                        // eslint-disable-next-line @next/next/no-img-element
+                        <img src={previewAsset.imageURL} alt="" className="h-full w-full object-cover" />
+                      ) : null}
+                    </div>
+                  )}
                 </div>
               )
             })}
@@ -305,13 +350,39 @@ export default function AdvertisingPage() {
           assets={assets}
           placements={selectedPackage?.placements ?? []}
         />
+        {hasReelsPlacement ? (
+          <div className="space-y-2">
+            <div className="flex items-center gap-2 text-sm font-semibold text-[#224D62] dark:text-white">
+              <Video className="h-4 w-4 text-[#1FA89B]" />
+              Aperçu visuel dans les réels
+            </div>
+            <AdCreativePreview
+              creative={{
+                imageURL: imageURL || localPreview || undefined,
+                headline: headline || undefined,
+                body: body || undefined,
+                ctaLabel: ctaLabel || undefined,
+                ctaUrl: ctaUrl || undefined,
+              }}
+              assets={assets}
+              placements={['reels_infeed']}
+            />
+          </div>
+        ) : null}
       </div>
 
       {/* Publier */}
-      <div className="flex items-center justify-between rounded-2xl bg-gray-50 p-4 dark:bg-gray-800">
-        <p className="text-sm text-gray-600 dark:text-gray-300">
-          {selectedPackage ? `${selectedPackage.name} — ${selectedPackage.credits} crédits / ${selectedPackage.durationDays} j` : ''}
-        </p>
+      <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl bg-gray-50 p-4 dark:bg-gray-800">
+        <div>
+          <p className="text-sm text-gray-600 dark:text-gray-300">
+            {selectedPackage ? `${selectedPackage.name} — ${selectedPackage.credits} crédits / ${selectedPackage.durationDays} j` : ''}
+          </p>
+          {selectedPackage && !hasAllPlacementVisuals ? (
+            <p className="mt-1 text-xs text-red-600">
+              Ajoutez un visuel par défaut ou un visuel dédié pour chaque emplacement du forfait.
+            </p>
+          ) : null}
+        </div>
         <Button onClick={() => createMutation.mutate()} disabled={!canPublish} className="bg-[#1FA89B] hover:bg-[#188a7f]">
           {createMutation.isPending ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <CheckCircle className="mr-2 h-4 w-4" />}
           Payer {selectedPackage?.credits} crédits & publier
@@ -328,7 +399,9 @@ export default function AdvertisingPage() {
         ) : (
           campaignsQuery.data?.map((c) => (
             <Card key={c.id} className="flex items-center gap-3 p-3">
-              {c.imageURL ? (
+              {c.videoURL ? (
+                <video src={c.videoURL} className="h-12 w-20 rounded bg-neutral-950 object-cover" muted playsInline />
+              ) : c.imageURL ? (
                 // eslint-disable-next-line @next/next/no-img-element
                 <img src={c.imageURL} alt="" className="h-12 w-20 rounded object-cover" />
               ) : null}

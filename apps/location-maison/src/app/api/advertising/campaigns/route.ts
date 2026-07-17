@@ -46,6 +46,19 @@ function parseAssets(
   return Object.keys(out).length ? out : undefined
 }
 
+type ParsedAssets = NonNullable<ReturnType<typeof parseAssets>>
+
+function hasVisualForPlacement(
+  placement: string,
+  imageURL: string,
+  videoURL: string,
+  assets: ParsedAssets | undefined,
+): boolean {
+  const asset = assets?.[placement]
+  const canUseVideo = placement === 'reels_infeed'
+  return Boolean(imageURL || asset?.imageURL || (canUseVideo && (videoURL || asset?.videoURL)))
+}
+
 /** Crée une campagne self-serve : débit crédits + mise en ligne immédiate. */
 export async function POST(request: Request) {
   try {
@@ -62,12 +75,17 @@ export async function POST(request: Request) {
     const pkg = getAdPackage(typeof body.packageId === 'string' ? body.packageId : '')
     const creative = body.creative ?? {}
     const imageURL = typeof creative.imageURL === 'string' ? creative.imageURL.trim() : ''
+    const videoURL = typeof creative.videoURL === 'string' ? creative.videoURL.trim() : ''
+    const parsedAssets = parseAssets(creative.assets)
 
     if (!pkg) {
       return NextResponse.json({ success: false, message: 'Forfait invalide.' }, { status: 400 })
     }
-    if (!imageURL) {
-      return NextResponse.json({ success: false, message: 'Visuel de la publicité requis.' }, { status: 400 })
+    if (!pkg.placements.every((placement) => hasVisualForPlacement(placement, imageURL, videoURL, parsedAssets))) {
+      return NextResponse.json(
+        { success: false, message: 'Ajoutez un visuel par défaut ou un visuel dédié pour chaque emplacement.' },
+        { status: 400 },
+      )
     }
 
     const db = getFirestore(adminApp)
@@ -94,7 +112,6 @@ export async function POST(request: Request) {
       const now = Timestamp.now()
       const endDate = Timestamp.fromMillis(now.toMillis() + pkg.durationDays * 24 * 60 * 60 * 1000)
       const nextCredits = credits - pkg.credits
-      const parsedAssets = parseAssets(creative.assets)
 
       const campaign = {
         advertiserId: null,
@@ -103,6 +120,10 @@ export async function POST(request: Request) {
         creative: {
           imagePATH: typeof creative.imagePATH === 'string' ? creative.imagePATH : '',
           imageURL,
+          ...(videoURL ? {
+            videoPATH: typeof creative.videoPATH === 'string' ? creative.videoPATH : '',
+            videoURL,
+          } : {}),
           ...(parsedAssets ? { assets: parsedAssets } : {}),
           headline: typeof creative.headline === 'string' ? creative.headline : '',
           body: typeof creative.body === 'string' ? creative.body : '',
@@ -197,6 +218,11 @@ export async function GET() {
         const data = d.data()
         const rawStatus = data.status ?? 'draft'
         const endMs = toMs(data.endDate)
+        const creativeAssets =
+          data.creative?.assets && typeof data.creative.assets === 'object'
+            ? Object.values(data.creative.assets as Record<string, { imageURL?: string; videoURL?: string }>)
+            : []
+        const firstAsset = creativeAssets.find((asset) => asset?.imageURL || asset?.videoURL)
         // Statut effectif : une campagne dont la date de fin est passée est terminée.
         const isExpired = (rawStatus === 'active' || rawStatus === 'scheduled') && endMs > 0 && endMs < now
         if (isExpired) expired.push(d.id)
@@ -205,7 +231,8 @@ export async function GET() {
           title: data.title ?? '',
           status: isExpired ? 'ended' : rawStatus,
           placements: data.placements ?? [],
-          imageURL: data.creative?.imageURL ?? '',
+          imageURL: data.creative?.imageURL ?? firstAsset?.imageURL ?? '',
+          videoURL: data.creative?.videoURL ?? firstAsset?.videoURL ?? '',
           startDate: toIso(data.startDate),
           endDate: toIso(data.endDate),
           metrics: { impressions: data.metrics?.impressions ?? 0, clicks: data.metrics?.clicks ?? 0 },
