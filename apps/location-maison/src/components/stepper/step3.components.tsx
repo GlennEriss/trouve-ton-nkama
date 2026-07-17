@@ -10,7 +10,7 @@ import { Database, MapPin, Building } from "lucide-react"
 import { OptionType } from "@/models/OptionType"
 import { useStep3FormPropertyMediator } from "@/hooks/useStep3FormPropertyMediator"
 import TextareaApp from "../shared/ui/TextareaApp"
-import { PhoneInput } from "../ui/phone-input"
+import { PhoneNumberParts } from "../shared/form/PhoneNumberFormAppSimple"
 
 /**
  * Composant Select pour les provinces avec synchronisation automatique
@@ -262,17 +262,12 @@ export const AdditionalInformationComponent = () => {
   )
 }
 
-export const ContactComponent = () => {
-  const mediator = useStep3FormPropertyMediator()
+export const ContactComponent = ({ field }: Readonly<{ field?: any }>) => {
   return (
-    <div className='border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900 p-2 rounded-full focus-within:border-[#1FA89B] focus-within:bg-[#ebf6f5] dark:focus-within:bg-gray-800'>
-      <PhoneInput
-        value={mediator.getContact()}
-        onChange={(value) => mediator.setContact(value)}
-        defaultCountry='GA'
-        triggerClassName=' border-none shadow-none rounded-full'
-        className='border-none shadow-none focus-visible:ring-0 rounded-full dark:text-white dark:placeholder:text-gray-500 bg-transparent'
-      />
-    </div>
+    <PhoneNumberParts
+      value={field?.value ?? ""}
+      onChange={field?.onChange ?? (() => undefined)}
+      placeholder="077 12 34 56"
+    />
   )
 }

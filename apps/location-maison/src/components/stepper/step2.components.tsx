@@ -175,8 +175,29 @@ export const StudioFloorComponent = () => {
 
 export const StudioNumberComponent = () => {
     const mediator = useStep2FormPropertyMediator()
+    const [studioNumber, setStudioNumber] = React.useState(() => mediator.getStudioNumber() || '01')
+
+    React.useEffect(() => {
+        const currentStudioNumber = mediator.getStudioNumber()
+
+        if (!currentStudioNumber) {
+            mediator.setStudioNumber('01')
+            setStudioNumber('01')
+            return
+        }
+
+        setStudioNumber(currentStudioNumber)
+    }, [mediator])
+
     return (
-        <InputApp type='text' value={mediator.getStudioNumber()} onChange={(e) => mediator.setStudioNumber(e.target.value)} />
+        <InputApp
+            type='text'
+            value={studioNumber}
+            onChange={(e) => {
+                setStudioNumber(e.target.value)
+                mediator.setStudioNumber(e.target.value)
+            }}
+        />
     )
 }
 
