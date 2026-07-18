@@ -20,6 +20,10 @@
     "rules": "storage.rules"
   },
   "emulators": {
+    "firestore": {
+      "host": "0.0.0.0",
+      "port": 8080
+    },
     "functions": {
       "host": "0.0.0.0",
       "port": 5001

@@ -101,6 +101,12 @@ Bienvenue dans la documentation complète de la plateforme de location et vente 
   - Couche technique de tracking
   - Dashboards et exploitation metrics
 
+### ✅ Tests & Qualité
+- **[testing/](./testing/PLAN-DE-TESTS.md)** : Plan global de tests
+  - Tests métier et Cloud Functions
+  - Tests d'idempotence, coûts Firebase et règles de sécurité
+  - Tests de parcours, UX mobile, publicités et cohérence visuelle
+
 ### 🤖 Scripts d'import
 - **[scripts/apify-facebook-cursor/](./scripts/apify-facebook-cursor/)** : Architecture cible du pipeline d'import annonces Facebook
   - Refactor pro (patterns, couches, idempotence)

@@ -84,12 +84,6 @@ export async function POST(request: NextRequest): Promise<NextResponse<VerifyCod
       return NextResponse.json({ success: false, message: 'Données de paiement incomplètes' }, { status: 400 });
     }
 
-    await paymentDoc.ref.update({
-      status: 'success',
-      usedBy: uid,
-      usedAt: new Date(),
-    });
-
     const userQuery = await adminApp.firestore().collection('users').where('uid', '==', uid).limit(1).get();
 
     if (userQuery.empty) {
@@ -97,38 +91,65 @@ export async function POST(request: NextRequest): Promise<NextResponse<VerifyCod
     }
 
     const userDoc = userQuery.docs[0];
-    const userData = userDoc.data();
-    const currentCredits = userData?.credits ?? 0;
-    const newCredits = currentCredits + paymentData.credits;
+    const db = adminApp.firestore();
+    const transactionRef = db.collection('credit_transactions').doc(`manual-code-${paymentDoc.id}-${uid}`);
 
-    await userDoc.ref.update({
-      credits: newCredits,
-      updatedAt: new Date(),
+    const result = await db.runTransaction(async (transaction) => {
+      const [freshPaymentDoc, freshUserDoc] = await Promise.all([
+        transaction.get(paymentDoc.ref),
+        transaction.get(userDoc.ref),
+      ]);
+
+      const freshPaymentData = freshPaymentDoc.data();
+      if (!freshPaymentDoc.exists || freshPaymentData?.status !== 'pending' || freshPaymentData?.usedBy) {
+        throw new Error('CODE_ALREADY_USED');
+      }
+
+      const userData = freshUserDoc.data();
+      const currentCredits = Number(userData?.credits ?? 0);
+      const newCredits = currentCredits + Number(freshPaymentData.credits);
+      const now = new Date();
+
+      transaction.update(paymentDoc.ref, {
+        status: 'success',
+        usedBy: uid,
+        usedAt: now,
+      });
+
+      transaction.update(userDoc.ref, {
+        credits: newCredits,
+        updatedAt: now,
+      });
+
+      transaction.set(transactionRef, {
+        uid,
+        type: 'purchase',
+        packName: freshPaymentData.name,
+        credits: freshPaymentData.credits,
+        amount: freshPaymentData.amount,
+        status: 'success',
+        provider: 'airtel_money',
+        description: 'Achat de crédits via code',
+        phoneNumber: freshPaymentData.phoneNumber ?? null,
+        createdAt: now,
+        updatedAt: now,
+        completedAt: now,
+        paymentCodeId: paymentDoc.id,
+      });
+
+      return { newCredits };
     });
-
-    const transactionData = {
-      uid,
-      type: 'purchase',
-      packName: paymentData.name,
-      credits: paymentData.credits,
-      amount: paymentData.amount,
-      status: 'success',
-      provider: 'airtel_money',
-      description: 'Achat de crédits via code',
-      phoneNumber: paymentData.phoneNumber ?? null,
-      createdAt: new Date(),
-      updatedAt: new Date(),
-      completedAt: new Date(),
-    };
-
-    await adminApp.firestore().collection('credit_transactions').add(transactionData);
 
     return NextResponse.json({
       success: true,
       message: 'Code validé avec succès',
-      credits: newCredits,
+      credits: result.newCredits,
     });
   } catch (error: any) {
+    if (error?.message === 'CODE_ALREADY_USED') {
+      return NextResponse.json({ success: false, message: 'Code invalide ou déjà utilisé' }, { status: 400 });
+    }
+
     logger.error('Verify code API failed', { error });
 
     if (error.code === 'auth/id-token-expired') {

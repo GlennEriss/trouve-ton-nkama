@@ -99,6 +99,10 @@ const config: Config = {
     '/__tests__/e2e/',
     '/\\.next/',
   ],
+
+  modulePathIgnorePatterns: [
+    '<rootDir>/.next/',
+  ],
   
   // =============================================================================
   // MODULE MAPPING

@@ -9,7 +9,11 @@ service cloud.firestore {
     
     function isTransactionOperation() {
       return request.resource != null && 
-             request.resource.data.diff(resource.data).affectedKeys().hasOnly(['credits', 'updatedAt']);
+             request.resource.data.diff(resource.data).affectedKeys().hasOnly(['credits', 'updatedAt']) &&
+             request.resource.data.credits is number &&
+             resource.data.credits is number &&
+             request.resource.data.credits <= resource.data.credits &&
+             request.resource.data.credits >= 0;
     }
 
     function currentUserPath() {
@@ -31,19 +35,61 @@ service cloud.firestore {
              get(propertyPath(propertyId)).data.createdBy == request.auth.uid;
     }
 
+    function isSafeUserSelfUpdate() {
+      let changedKeys = request.resource.data.diff(resource.data).affectedKeys();
+      let roleChanged = changedKeys.hasAny(['roles']);
+      return changedKeys.hasOnly([
+          'firstname',
+          'lastname',
+          'searchableName',
+          'phoneNumbers',
+          'phoneNumberVerified',
+          'birthDate',
+          'country',
+          'metadata',
+          'providers',
+          'fcmTokens',
+          'notificationParameter',
+          'favoris',
+          'state',
+          'image',
+          'updatedAt',
+          'roles'
+        ]) &&
+        request.resource.data.uid == resource.data.uid &&
+        (
+          !roleChanged ||
+          (
+            resource.data.metadata.needsProfileCompletion == true &&
+            request.resource.data.roles is list &&
+            request.resource.data.roles.hasOnly(['User', 'Announcer']) &&
+            request.resource.data.roles.hasAny(['User'])
+          )
+        );
+    }
+
+    function isValidUserCreate() {
+      return request.resource.data.uid == request.auth.uid &&
+        request.resource.data.credits == 3 &&
+        request.resource.data.roles is list &&
+        request.resource.data.roles.hasOnly(['User', 'Announcer']) &&
+        request.resource.data.roles.hasAny(['User']);
+    }
+
     match /users/{userId} {
       // Lecture : l'utilisateur peut lire son propre profil, ou lecture publique pour vérification
       allow read: if true;
       
       // Création : lors de l'inscription, l'utilisateur authentifié peut créer son propre document
-      // L'uid dans les données doit correspondre à l'utilisateur authentifié
-      allow create: if isSignedIn() && request.auth.uid == request.resource.data.uid;
+      // L'uid dans les données doit correspondre à l'utilisateur authentifié, avec les crédits
+      // d'accueil attendus et sans role sensible injecté côté client.
+      allow create: if isSignedIn() && isValidUserCreate();
       
       // Mise à jour : l'utilisateur peut mettre à jour son propre profil
       allow update: if isSignedIn() && (
-        // Soit l'utilisateur est le propriétaire
-        request.auth.uid == resource.data.uid ||
-        // Soit c'est une transaction atomique (pour les crédits)
+        // Le propriétaire peut modifier uniquement les champs non financiers/non sensibles.
+        (request.auth.uid == resource.data.uid && isSafeUserSelfUpdate()) ||
+        // Transaction client de dépense de crédits uniquement : jamais d'augmentation.
         (isTransactionOperation() && request.auth.uid == request.resource.data.uid)
       );
     }
@@ -75,18 +121,19 @@ service cloud.firestore {
     
     match /credit_transactions/{transactionId} {
       // Simplification des règles de lecture
-      allow read: if isSignedIn() && (
-        // L'utilisateur peut lire ses propres transactions
-        request.auth.uid == resource.data.uid ||
-        // Ou lire dans le contexte d'une transaction atomique
-        (request.auth.uid == request.resource.data.uid)
-      );
+      allow read: if isSignedIn() && request.auth.uid == resource.data.uid;
       
-      // Création de transaction
-      allow create: if isSignedIn() && request.auth.uid == request.resource.data.uid;
+      // Création client uniquement pour les dépenses immédiates (fallback IA).
+      // Les achats/crédits positifs passent par API routes/Cloud Functions (Admin SDK).
+      allow create: if isSignedIn() &&
+        request.auth.uid == request.resource.data.uid &&
+        request.resource.data.type == 'spend' &&
+        request.resource.data.status == 'success' &&
+        request.resource.data.credits is number &&
+        request.resource.data.credits < 0;
 
-      // Mise à jour de transaction
-      allow update: if isSignedIn() && request.auth.uid == resource.data.uid;
+      // Mise à jour de transaction : uniquement serveur/Admin SDK.
+      allow update: if false;
     }
 
     // Cadeaux (dons MoMo sur les réels) : écrits par les Cloud Functions,
@@ -99,6 +146,10 @@ service cloud.firestore {
     // Demandes de retrait du solde cadeaux : créées et lues via les API routes
     // authentifiées, traitées par le back-office admin. Aucun accès client.
     match /gift_withdrawals/{withdrawalId} {
+      allow read, write: if false;
+    }
+
+    match /idempotency_keys/{idempotencyKeyId} {
       allow read, write: if false;
     }
 

@@ -18,9 +18,10 @@ import {
   computeWithdrawalNetPayout,
 } from '@/constantes/gifts';
 import { isPhoneValidForNetwork, sanitizeLocalPhone } from '@/constantes/payment-methods';
-import { deriveGiftBalance } from '@/lib/gifts/balance';
+import { computeGiftBalanceFromRows } from '@/lib/gifts/balance-calculator';
 import { createLogger } from '@/lib/logger';
 import { handleApiError, jsonApiError } from '@/lib/api/error-response';
+import { AppError } from '@/lib/errors/app-error';
 
 const logger = createLogger('api.gifts.withdrawals');
 
@@ -53,41 +54,60 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const balance = await deriveGiftBalance(uid);
-    if (balance.hasPendingWithdrawal) {
-      return jsonApiError(
-        409,
-        'WITHDRAWAL_PENDING',
-        'Tu as déjà une demande de retrait en attente de traitement.'
-      );
-    }
-    if (balance.disponibleXaf < WITHDRAWAL_MINIMUM_XAF) {
-      return jsonApiError(
-        400,
-        'BELOW_MINIMUM',
-        `Le retrait est possible à partir de ${WITHDRAWAL_MINIMUM_XAF.toLocaleString('fr-FR')} FCFA de solde.`
-      );
-    }
-
-    const montantXaf = balance.disponibleXaf;
     const db = getAdminFirestore(adminApp as any);
     const ref = db.collection(firebaseCollectionNames.gift_withdrawals).doc();
-    await ref.set({
-      id: ref.id,
-      announcerUid: uid,
-      montantXaf,
-      feeRate: WITHDRAWAL_FEE_RATE,
-      feeXaf: computeWithdrawalFee(montantXaf),
-      netPayoutXaf: computeWithdrawalNetPayout(montantXaf),
-      numero,
-      reseau,
-      statut: 'EN_ATTENTE',
-      dateCreation: FieldValue.serverTimestamp(),
-      dateMiseAJour: FieldValue.serverTimestamp(),
+
+    const result = await db.runTransaction(async (transaction) => {
+      const usersQuery = db.collection(firebaseCollectionNames.users).where('uid', '==', uid).limit(1);
+      const withdrawalsQuery = db.collection(firebaseCollectionNames.gift_withdrawals).where('announcerUid', '==', uid);
+
+      const [usersSnap, withdrawalsSnap] = await Promise.all([
+        transaction.get(usersQuery),
+        transaction.get(withdrawalsQuery),
+      ]);
+
+      const balance = computeGiftBalanceFromRows(
+        usersSnap.docs[0]?.data()?.giftTotalReceivedXaf,
+        withdrawalsSnap.docs.map((doc) => doc.data()),
+      );
+
+      if (balance.hasPendingWithdrawal) {
+        throw new AppError('Tu as déjà une demande de retrait en attente de traitement.', {
+          code: 'WITHDRAWAL_PENDING',
+          status: 409,
+        });
+      }
+
+      if (balance.disponibleXaf < WITHDRAWAL_MINIMUM_XAF) {
+        throw new AppError(
+          `Le retrait est possible à partir de ${WITHDRAWAL_MINIMUM_XAF.toLocaleString('fr-FR')} FCFA de solde.`,
+          {
+            code: 'BELOW_MINIMUM',
+            status: 400,
+          },
+        );
+      }
+
+      const montantXaf = balance.disponibleXaf;
+      transaction.create(ref, {
+        id: ref.id,
+        announcerUid: uid,
+        montantXaf,
+        feeRate: WITHDRAWAL_FEE_RATE,
+        feeXaf: computeWithdrawalFee(montantXaf),
+        netPayoutXaf: computeWithdrawalNetPayout(montantXaf),
+        numero,
+        reseau,
+        statut: 'EN_ATTENTE',
+        dateCreation: FieldValue.serverTimestamp(),
+        dateMiseAJour: FieldValue.serverTimestamp(),
+      });
+
+      return { withdrawalId: ref.id, montantXaf };
     });
 
-    logger.info('Withdrawal requested', { uid, montantXaf });
-    return NextResponse.json({ success: true, withdrawalId: ref.id, montantXaf }, { status: 201 });
+    logger.info('Withdrawal requested', { uid, montantXaf: result.montantXaf });
+    return NextResponse.json({ success: true, ...result }, { status: 201 });
   } catch (error) {
     return handleApiError(error, {
       logger,

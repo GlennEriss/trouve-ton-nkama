@@ -413,6 +413,7 @@ export default function AdvertisingCreateWizard() {
   const { toast } = useToast()
   const { openRecharge } = useRecharge()
   const creditPacksQuery = useCreditPacks()
+  const publishIdempotencyKeyRef = React.useRef<string | null>(null)
 
   const credits = Number(user?.credits ?? 0)
   const creditPacks = creditPacksQuery.data?.packs?.length ? creditPacksQuery.data.packs : ADMIN_PACKS_TEMPLATE
@@ -561,10 +562,20 @@ export default function AdvertisingCreateWizard() {
 
   const createMutation = useMutation({
     mutationFn: async () => {
+      if (!publishIdempotencyKeyRef.current) {
+        publishIdempotencyKeyRef.current =
+          typeof crypto !== 'undefined' && 'randomUUID' in crypto
+            ? crypto.randomUUID()
+            : `ad-${Date.now()}-${Math.random().toString(36).slice(2)}`
+      }
       const res = await fetch('/api/advertising/campaigns', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          'Idempotency-Key': publishIdempotencyKeyRef.current,
+        },
         body: JSON.stringify({
+          idempotencyKey: publishIdempotencyKeyRef.current,
           packageId,
           creative: {
             imageURL,
@@ -587,6 +598,7 @@ export default function AdvertisingCreateWizard() {
       return payload
     },
     onSuccess: () => {
+      publishIdempotencyKeyRef.current = null
       toast({ title: 'Publicité en ligne', description: 'Votre campagne est désormais diffusée.', variant: 'success' })
       void queryClient.invalidateQueries({ queryKey: ['my-ad-campaigns'] })
       router.push(routes.protected.advertising)
