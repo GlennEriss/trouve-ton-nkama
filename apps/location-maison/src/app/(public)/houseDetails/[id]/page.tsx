@@ -3,8 +3,9 @@ import type { Metadata } from 'next';
 import React from 'react'
 import { createLogger } from '@/lib/logger'
 import { notFound } from 'next/navigation';
-import { canonical } from '@/lib/seo/site-url';
+import { absoluteUrl, canonical } from '@/lib/seo/site-url';
 import { getPropertyLastModified, getPublicPropertyById } from '@/lib/seo/public-listings';
+import { buildListingShareTitle } from '@/lib/seo/listing-share';
 
 const logger = createLogger('app.house-details.page')
 type HouseDetailsParams = Promise<{ id: string }>;
@@ -34,7 +35,12 @@ export async function generateMetadata({ params }: { params: HouseDetailsParams 
       };
     }
 
-    const ogImage = property.images?.[0]?.fileURL;
+    // og:title/description enrichis prix + quartier : WhatsApp/Facebook n'affichent que
+    // l'image + ces deux champs (souvent tronqués), donc le prix et le quartier doivent y
+    // être explicitement plutôt que de compter sur le titre libre saisi par l'annonceur.
+    const shareTitle = buildListingShareTitle(property);
+    // Image composée (photo + bandeau prix/quartier), voir src/app/api/og/property/[id]/route.tsx.
+    const ogImage = absoluteUrl(`/api/og/property/${id}`);
 
     return {
       title: property.title,
@@ -43,17 +49,17 @@ export async function generateMetadata({ params }: { params: HouseDetailsParams 
         canonical: canonicalUrl,
       },
       openGraph: {
-        title: property.title,
+        title: shareTitle,
         description: property.description,
         url: canonicalUrl,
         type: 'article',
-        images: ogImage ? [{ url: ogImage, alt: property.title }] : undefined,
+        images: [{ url: ogImage, width: 1200, height: 630, alt: shareTitle }],
       },
       twitter: {
         card: 'summary_large_image',
-        title: property.title,
+        title: shareTitle,
         description: property.description,
-        images: ogImage ? [ogImage] : undefined,
+        images: [ogImage],
       },
     };
   } catch (error) {

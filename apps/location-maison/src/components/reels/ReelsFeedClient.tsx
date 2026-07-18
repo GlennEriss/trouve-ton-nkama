@@ -44,6 +44,7 @@ const PREFETCH_THRESHOLD = 3
 // réel×4 → pub maison → réel×4 → AdSense → …
 const ADS_INTERVAL = 4
 const LIKED_REELS_STORAGE_KEY = 'ttn-liked-reels'
+const CREATE_REEL_FROM_FEED_HREF = `${routes.protected.reels_add}?returnTo=${encodeURIComponent(routes.protected.reels)}`
 
 type FeedSlide =
   | { kind: 'reel'; key: string; reel: Reel & { id: string } }
@@ -350,7 +351,7 @@ function EndOfFeedSlide() {
           vidéo pour montrer le lieu, rassurer les visiteurs et toucher plus de monde.
         </p>
         <Link
-          href={routes.protected.reels_add}
+          href={CREATE_REEL_FROM_FEED_HREF}
           className="mt-7 inline-flex min-h-12 items-center justify-center gap-2 rounded-full bg-white px-6 text-sm font-semibold text-neutral-950 shadow-lg shadow-black/20 transition hover:bg-emerald-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
         >
           <PlusCircle className="h-5 w-5" aria-hidden="true" />
