@@ -9,6 +9,7 @@ import { Metadata } from 'next'
 import { FirebaseAnalyticsTracker } from '@/features/analytics/tracking';
 import { PresenceAnalyticsTracker } from '@/features/analytics/presence/ui/PresenceAnalyticsTracker';
 import { TrafficAnalyticsTracker } from '@/features/analytics/traffic/ui/TrafficAnalyticsTracker';
+import { MetaPixelScript, MetaPixelPageViewTracker } from '@/features/analytics/meta-pixel';
 import { Analytics } from '@vercel/analytics/react';
 import AdSenseRouteLoader from '@/components/ads/AdSenseRouteLoader';
 import { ADSENSE_CLIENT } from '@/lib/ads/config';
@@ -244,6 +245,7 @@ export default async function RootLayout({
         className={cn('antialiased overscroll-y-none', inter.className)}
       >
         <AdSenseRouteLoader />
+        <MetaPixelScript />
         <div className="mx-auto">
           <Providers>
             {children}
@@ -252,6 +254,7 @@ export default async function RootLayout({
             <FirebaseAnalyticsTracker />
             <PresenceAnalyticsTracker />
             <TrafficAnalyticsTracker />
+            <MetaPixelPageViewTracker />
             <Analytics />
           </Providers>
         </div>

@@ -2,6 +2,7 @@
 
 import { useCallback } from 'react';
 import { trackEvent, trackingEvents } from '@/features/analytics/tracking';
+import { trackMetaPixelEvent, metaPixelEvents } from '@/features/analytics/meta-pixel';
 import { createLogger } from '@/lib/logger';
 
 const logger = createLogger('hooks.use-track-property-interaction');
@@ -66,6 +67,17 @@ export function useTrackPropertyInteraction(propertyId: string | undefined) {
 
       if (type === 'whatsapp_contact') {
         void trackEvent(trackingEvents.CTA_PROPERTY_WHATSAPP_CONTACT_CLICK, analyticsParams);
+        void trackMetaPixelEvent(metaPixelEvents.CONTACT, {
+          content_ids: [propertyId],
+          contact_method: 'whatsapp',
+        });
+      }
+
+      if (type === 'phone_contact') {
+        void trackMetaPixelEvent(metaPixelEvents.CONTACT, {
+          content_ids: [propertyId],
+          contact_method: 'phone',
+        });
       }
 
       if (type === 'favorite_add') {
