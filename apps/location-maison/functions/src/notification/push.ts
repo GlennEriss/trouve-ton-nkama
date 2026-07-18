@@ -1,3 +1,4 @@
+import '../node/slow-buffer-compat';
 import * as functions from 'firebase-functions/v1';
 import { admin, adminDB } from '../admin';
 

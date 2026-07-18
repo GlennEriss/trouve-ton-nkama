@@ -11,7 +11,7 @@ export default function ProfilInformations() {
     const { user } = useCurrentUser()
     const avatarBackground = generateColorFromName(user?.firstname);
     return (
-        <Link href={routes.protected.profil_informations} className='flex items-center gap-5 border rounded-lg p-5'>
+        <Link href={routes.protected.profil_informations} className='flex min-h-20 items-center gap-5 rounded-lg border border-gray-200 bg-white p-5 transition-colors hover:border-[#1FA89B] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#146B67] dark:border-gray-700 dark:bg-gray-900'>
             <Avatar
                 className='w-[50px] h-[50px]'
             >
@@ -28,7 +28,7 @@ export default function ProfilInformations() {
                     <span className='text-xl hidden md:block'>{user?.lastname}</span>
                 </p>
 
-                <span className='text-xs text-gray-500'>Voir son profil</span>
+                <span className='text-sm text-gray-600 dark:text-gray-300'>Modifier mes informations</span>
             </div>
             <ChevronRight className='ml-auto' size={24} />
         </Link>

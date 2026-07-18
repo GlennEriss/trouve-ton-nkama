@@ -12,7 +12,7 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion, AnimatePresence, useReducedMotion } from 'framer-motion';
 import { useToast } from '@/hooks/use-toast';
 import { FormRegisterSchemaType, FormRegisterSchema } from '@/models/schema';
 import { useSignup } from '../../hooks';
@@ -87,6 +87,7 @@ export const SignupFormModern: React.FC = () => {
   const { toast } = useToast();
   const { signup, isLoading } = useSignup();
   const { trackEvent } = useTrackEvent();
+  const shouldReduceMotion = useReducedMotion();
   const [currentStep, setCurrentStep] = useState(1);
   const [isGoogleLoading, setIsGoogleLoading] = useState(false);
 
@@ -275,18 +276,6 @@ export const SignupFormModern: React.FC = () => {
           aria-hidden
         />
 
-        {/* Floating shapes */}
-        <motion.div
-          className="absolute top-20 right-20 w-64 h-64 bg-white/10 rounded-full blur-3xl"
-          animate={{ scale: [1, 1.2, 1], opacity: [0.3, 0.5, 0.3] }}
-          transition={{ duration: 8, repeat: Infinity }}
-        />
-        <motion.div
-          className="absolute bottom-40 left-10 w-48 h-48 bg-teal-300/20 rounded-full blur-2xl"
-          animate={{ scale: [1, 1.3, 1], opacity: [0.2, 0.4, 0.2] }}
-          transition={{ duration: 6, repeat: Infinity, delay: 2 }}
-        />
-
         {/* Content */}
         <div className="relative z-10 flex flex-col justify-between p-12 xl:p-16 text-white w-full">
           {/* Logo & Title */}
@@ -367,6 +356,8 @@ export const SignupFormModern: React.FC = () => {
                 <React.Fragment key={step.id}>
                   <motion.button
                     type="button"
+                    aria-label={`Étape ${step.id} sur ${steps.length} : ${step.title}`}
+                    aria-current={step.id === currentStep ? 'step' : undefined}
                     onClick={() => step.id < currentStep && setCurrentStep(step.id)}
                     className={`relative flex items-center justify-center w-12 h-12 rounded-full transition-all duration-300 ${
                       step.id === currentStep
@@ -425,10 +416,10 @@ export const SignupFormModern: React.FC = () => {
                 <motion.div
                   key={currentStep}
                   variants={pageVariants}
-                  initial="initial"
-                  animate="animate"
-                  exit="exit"
-                  transition={{ duration: 0.3 }}
+                initial={shouldReduceMotion ? false : 'initial'}
+                animate="animate"
+                exit={shouldReduceMotion ? undefined : 'exit'}
+                transition={{ duration: shouldReduceMotion ? 0 : 0.3 }}
                   className="space-y-4"
                 >
                   {/* Step 1: Identity */}
@@ -441,6 +432,7 @@ export const SignupFormModern: React.FC = () => {
                         <div className="grid grid-cols-2 gap-3">
                           <button
                             type="button"
+                            aria-pressed={selectedAccountType === 'User'}
                             onClick={() =>
                               form.setValue('accountType', 'User', {
                                 shouldDirty: true,
@@ -457,10 +449,11 @@ export const SignupFormModern: React.FC = () => {
                               <User className="w-4 h-4" />
                               Utilisateur
                             </div>
-                            <p className="text-xs text-gray-500 mt-1">Chercher un logement</p>
+                            <p className="mt-1 text-xs text-gray-700 dark:text-gray-300">Chercher un logement</p>
                           </button>
                           <button
                             type="button"
+                            aria-pressed={selectedAccountType === 'Announcer'}
                             onClick={() =>
                               form.setValue('accountType', 'Announcer', {
                                 shouldDirty: true,
@@ -477,7 +470,7 @@ export const SignupFormModern: React.FC = () => {
                               <Building2 className="w-4 h-4" />
                               Annonceur
                             </div>
-                            <p className="text-xs text-gray-500 mt-1">Publier des annonces</p>
+                            <p className="mt-1 text-xs text-gray-700 dark:text-gray-300">Publier des annonces</p>
                           </button>
                         </div>
                       </div>
@@ -662,7 +655,7 @@ export const SignupFormModern: React.FC = () => {
               <div className="w-full border-t border-gray-200 dark:border-gray-700" />
             </div>
             <div className="relative flex justify-center">
-              <span className="px-4 bg-white dark:bg-gray-900 text-sm text-gray-500">
+              <span className="bg-white px-4 text-sm text-gray-600 dark:bg-gray-900 dark:text-gray-300">
                 ou continuer avec
               </span>
             </div>

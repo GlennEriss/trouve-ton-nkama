@@ -317,38 +317,46 @@ export default function CreateOrphanReelClient() {
   }
 
   return (
-    <div className="max-w-xl mx-auto space-y-6">
-      <Link href={returnHref}>
-        <Button variant="ghost" size="sm" className="group -ml-2">
-          <ArrowLeft className="h-4 w-4 mr-1 transition-transform group-hover:-translate-x-1" />
-          Retour
+    <div className="mx-auto max-w-3xl space-y-5">
+      <section className="rounded-3xl border border-emerald-100 bg-gradient-to-br from-emerald-50 to-white p-5 shadow-sm dark:border-emerald-900 dark:from-emerald-950/30 dark:to-gray-900 md:p-6">
+        <Button variant="ghost" className="group -ml-2 h-11 rounded-full px-4" asChild>
+          <Link href={returnHref}>
+            <ArrowLeft className="mr-1 h-4 w-4 transition-transform group-hover:-translate-x-1" />
+            Retour
+          </Link>
         </Button>
-      </Link>
 
-      <div>
-        <h1 className="text-xl font-bold text-slate-900 dark:text-white">Créer un réel</h1>
-        <p className="text-slate-500 dark:text-slate-400 text-sm mt-1">
-          Vidéo verticale, 5 minutes maximum. Vous pourrez l&apos;attacher à une de vos annonces ensuite.
-        </p>
-      </div>
+        <div className="mt-3">
+          <p className="inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-wide text-[#146B67] dark:text-[#9FE2DB]">
+            <Video className="h-3.5 w-3.5" />
+            Espace annonceur
+          </p>
+          <h1 className="mt-1 text-2xl font-bold text-slate-900 dark:text-white md:text-3xl">Créer un réel</h1>
+          <p className="mt-1 max-w-2xl text-sm leading-6 text-slate-600 dark:text-slate-300">
+            Vidéo verticale, 5 minutes maximum. Vous pourrez l&apos;attacher à une de vos annonces ensuite.
+          </p>
+        </div>
+      </section>
 
       {showDropzone && (
         <div
           {...getRootProps()}
-          className={`flex flex-col items-center justify-center gap-3 rounded-2xl border-2 border-dashed p-10 text-center cursor-pointer transition-colors ${
-            isDragActive ? 'border-emerald-500 bg-emerald-50 dark:bg-emerald-900/20' : 'border-slate-300 dark:border-slate-700'
+          className={`flex min-h-[260px] cursor-pointer flex-col items-center justify-center gap-3 rounded-2xl border-2 border-dashed bg-white p-6 text-center shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#146B67] focus-visible:ring-offset-2 dark:bg-gray-900 ${
+            isDragActive ? 'border-[#146B67] bg-emerald-50 dark:bg-emerald-900/20' : 'border-slate-300 hover:border-[#146B67]/60 dark:border-slate-700'
           } ${busy ? 'pointer-events-none opacity-60' : ''}`}
         >
-          <input {...getInputProps()} disabled={busy} />
-          {isProcessing ? (
-            <Loader2 className="h-10 w-10 animate-spin text-emerald-600" />
-          ) : (
-            <Video className="h-10 w-10 text-slate-400" />
-          )}
+          <input {...getInputProps({ 'aria-label': 'Choisir une vidéo' })} disabled={busy} />
+          <div className="flex h-14 w-14 items-center justify-center rounded-full bg-[#146B67]/10 text-[#146B67] dark:bg-[#1FA89B]/15 dark:text-[#9FE2DB]">
+            {isProcessing ? (
+              <Loader2 className="h-7 w-7 animate-spin" />
+            ) : (
+              <Video className="h-7 w-7" />
+            )}
+          </div>
           <p className="font-medium text-slate-700 dark:text-slate-200">
             {isProcessing ? "Vérification en cours..." : "Glissez une vidéo ou cliquez pour en choisir une"}
           </p>
-          <p className="text-xs text-slate-400">MP4, MOV ou WebM — 5 minutes maximum</p>
+          <p className="text-xs text-slate-600 dark:text-slate-300">MP4, MOV ou WebM — 5 minutes maximum</p>
         </div>
       )}
 

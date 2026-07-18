@@ -6,7 +6,6 @@
  */
 
 import { useQuery } from '@tanstack/react-query';
-import { auth } from '@/firebase/auth';
 import { useCurrentUser } from './use-current-user';
 import type { GiftNetwork, GiftWithdrawalStatus } from '@/models/gift';
 import type { GiftBalance } from '@/lib/gifts/balance';
@@ -35,15 +34,7 @@ export interface GiftsSummary {
 }
 
 async function fetchGiftsSummary(): Promise<GiftsSummary> {
-  const user = auth.currentUser;
-  if (!user) {
-    throw new Error('Utilisateur non authentifié');
-  }
-
-  const token = await user.getIdToken();
-  const response = await fetch('/api/gifts/summary', {
-    headers: { Authorization: `Bearer ${token}` },
-  });
+  const response = await fetch('/api/gifts/summary');
 
   if (!response.ok) {
     const errorData = await response.json().catch(() => ({}));
@@ -54,12 +45,12 @@ async function fetchGiftsSummary(): Promise<GiftsSummary> {
 }
 
 export function useGiftsSummary() {
-  const { user, isLoading: authLoading, isFirebaseConnected } = useCurrentUser();
+  const { user, isLoading: authLoading } = useCurrentUser();
 
   return useQuery({
     queryKey: ['gifts-summary', user?.uid],
     queryFn: fetchGiftsSummary,
-    enabled: !!user?.uid && isFirebaseConnected && !authLoading,
+    enabled: !!user?.uid && !authLoading,
     staleTime: 1000 * 60,
   });
 }

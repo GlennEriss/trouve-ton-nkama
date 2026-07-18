@@ -131,16 +131,20 @@ export const SignupMobileComponent = () => {
     const isGoogleLoading = isOtherMethodConnection
     
     return (
-        <div className={cn('p-4 md:p-20', inter.className)}>
+        <div className={cn('min-h-dvh bg-white p-4 text-gray-900 dark:bg-gray-950 dark:text-white md:p-20', inter.className)}>
             <div>
-                <Link href={routes.public.signin}>
+                <Link
+                    href={routes.public.signin}
+                    aria-label="Retour à la connexion"
+                    className="inline-flex h-11 w-11 items-center justify-center rounded-full hover:bg-gray-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#146B67] dark:hover:bg-gray-800"
+                >
                     <ChevronLeft color='gray' size={30} />
                 </Link>
             </div>
 
             <section className='mt-8 md:mt-10'>
                 <h1 className='text-2xl font-bold text-[#187872]'>Explorons ensemble avec Trouve Ton Nkama !</h1>
-                <p className='text-gray-500'>
+                <p className='text-gray-600 dark:text-gray-300'>
                     Créez votre compte Trouve Ton Nkama pour trouver votre logement de rêve partout au Gabon !
                 </p>
             </section>
@@ -148,7 +152,7 @@ export const SignupMobileComponent = () => {
                 <section className='mt-8 md:mt-10'>
                     <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-3">
                         <div className="space-y-2">
-                            <label className="text-sm font-medium text-gray-700">Type de compte</label>
+                            <p className="text-sm font-medium text-gray-700 dark:text-gray-300">Type de compte</p>
                             <div className="grid grid-cols-2 gap-2">
                                 <button
                                     type="button"
@@ -158,17 +162,18 @@ export const SignupMobileComponent = () => {
                                             shouldValidate: true,
                                         })
                                     }
-                                    className={`rounded-xl border p-3 text-left ${
+                                    aria-pressed={selectedAccountType === 'User'}
+                                    className={`min-h-20 rounded-lg border p-3 text-left ${
                                         selectedAccountType === 'User'
-                                            ? 'border-[#1FA89B] bg-teal-50'
-                                            : 'border-gray-200'
+                                            ? 'border-[#1FA89B] bg-teal-50 dark:bg-teal-950/40'
+                                            : 'border-gray-200 dark:border-gray-700'
                                     }`}
                                 >
                                     <div className="flex items-center gap-2 font-semibold text-sm">
                                         <CircleUser size={16} />
                                         Utilisateur
                                     </div>
-                                    <p className="text-xs text-gray-500 mt-1">Chercher un logement</p>
+                                    <p className="text-xs text-gray-600 dark:text-gray-300 mt-1">Chercher un logement</p>
                                 </button>
                                 <button
                                     type="button"
@@ -178,17 +183,18 @@ export const SignupMobileComponent = () => {
                                             shouldValidate: true,
                                         })
                                     }
-                                    className={`rounded-xl border p-3 text-left ${
+                                    aria-pressed={selectedAccountType === 'Announcer'}
+                                    className={`min-h-20 rounded-lg border p-3 text-left ${
                                         selectedAccountType === 'Announcer'
-                                            ? 'border-[#1FA89B] bg-teal-50'
-                                            : 'border-gray-200'
+                                            ? 'border-[#1FA89B] bg-teal-50 dark:bg-teal-950/40'
+                                            : 'border-gray-200 dark:border-gray-700'
                                     }`}
                                 >
                                     <div className="flex items-center gap-2 font-semibold text-sm">
                                         <Building2 size={16} />
                                         Annonceur
                                     </div>
-                                    <p className="text-xs text-gray-500 mt-1">Publier des annonces</p>
+                                    <p className="text-xs text-gray-600 dark:text-gray-300 mt-1">Publier des annonces</p>
                                 </button>
                             </div>
                         </div>
@@ -229,9 +235,9 @@ export const SignupMobileComponent = () => {
                         />
 
                         <div className="space-y-2">
-                            <label className="text-sm font-medium text-gray-700">
+                            <p className="text-sm font-medium text-gray-700 dark:text-gray-300">
                                 Téléphone *
-                            </label>
+                            </p>
                             <PhoneNumberFormApp
                                 control={form.control}
                                 name='phone'
@@ -265,11 +271,11 @@ export const SignupMobileComponent = () => {
                             label={
                                 <>
                                     En cliquant sur s'inscrire, vous êtes en accord avec notre{" "}
-                                    <a href={routes.public.confidentiality} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">
+                                    <a href={routes.public.confidentiality} target="_blank" rel="noopener noreferrer" className="inline-flex min-h-11 items-center text-blue-700 hover:underline dark:text-blue-300">
                                         politique de confidentialité
                                     </a>{" "}
                                     et nos{" "}
-                                    <a href={routes.public.terms_of_use} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">
+                                    <a href={routes.public.terms_of_use} target="_blank" rel="noopener noreferrer" className="inline-flex min-h-11 items-center text-blue-700 hover:underline dark:text-blue-300">
                                         conditions d'utilisation
                                     </a>.
                                 </>
@@ -282,7 +288,7 @@ export const SignupMobileComponent = () => {
                                 label={
                                     <>
                                         J&apos;accepte les{" "}
-                                        <a href={routes.public.announcer_terms} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">
+                                        <a href={routes.public.announcer_terms} target="_blank" rel="noopener noreferrer" className="inline-flex min-h-11 items-center text-blue-700 hover:underline dark:text-blue-300">
                                             conditions annonceur
                                         </a>
                                         .
@@ -304,7 +310,7 @@ export const SignupMobileComponent = () => {
 
                 <div className="flex items-center my-6 md:mt-10">
                     <div className="flex-grow h-px bg-gray-300"></div>
-                    <span className="px-4 py-1 text-[#146B67] bg-[#e7f5f4] rounded-full text-sm font-medium">OU</span>
+                    <span className="px-4 py-1 text-[#146B67] bg-[#e7f5f4] dark:bg-gray-800 dark:text-[#9FE2DB] rounded-full text-sm font-medium">OU</span>
                     <div className="flex-grow h-px bg-gray-300"></div>
                 </div>
 

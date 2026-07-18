@@ -79,7 +79,7 @@ const FlatBotAssistant: React.FC<FlatBotAssistantProps> = ({
     return (
         <>
             <div
-                className="fixed right-4 bottom-4 z-40 md:right-6 md:bottom-6"
+                className="fixed bottom-4 right-4 z-40 origin-bottom-right scale-75 md:bottom-6 md:right-6 md:scale-100"
                 style={
                     isMobileViewport
                         ? { bottom: `calc(env(safe-area-inset-bottom, 0px) + ${mobileBottomOffset}px)` }
@@ -87,10 +87,12 @@ const FlatBotAssistant: React.FC<FlatBotAssistantProps> = ({
                 }
             >
                 {/* Message de bienvenue */}
-                <WelcomeMessage
-                    show={showWelcomeMessage}
-                    onComplete={() => setShowWelcomeMessage(false)}
-                />
+                <div className="hidden md:block">
+                    <WelcomeMessage
+                        show={showWelcomeMessage}
+                        onComplete={() => setShowWelcomeMessage(false)}
+                    />
+                </div>
 
                 {/* Bouton bot */}
                 <FlatBotAvatar

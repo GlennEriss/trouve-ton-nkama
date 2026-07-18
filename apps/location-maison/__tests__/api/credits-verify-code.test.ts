@@ -160,7 +160,7 @@ describe('/api/credits/verify-code', () => {
 
   it('refuse une requete sans token bearer', async () => {
     const { db } = makeVerifyCodeDb()
-    ;(adminApp.firestore as jest.Mock).mockReturnValue(db)
+    ;(adminApp!.firestore as jest.Mock).mockReturnValue(db)
 
     const response = await postVerifyCode(makeRequest({ code: 'ABC123', amount: 10_000 }, {}))
     const payload = await response.json()
@@ -176,7 +176,7 @@ describe('/api/credits/verify-code', () => {
 
   it('refuse un code introuvable ou deja utilise avant transaction', async () => {
     const { db } = makeVerifyCodeDb({ paymentData: null })
-    ;(adminApp.firestore as jest.Mock).mockReturnValue(db)
+    ;(adminApp!.firestore as jest.Mock).mockReturnValue(db)
 
     const response = await postVerifyCode(makeRequest({ code: 'BADCODE', amount: 10_000 }))
     const payload = await response.json()
@@ -191,7 +191,7 @@ describe('/api/credits/verify-code', () => {
 
   it('refuse un montant qui ne correspond pas au code', async () => {
     const { db } = makeVerifyCodeDb()
-    ;(adminApp.firestore as jest.Mock).mockReturnValue(db)
+    ;(adminApp!.firestore as jest.Mock).mockReturnValue(db)
 
     const response = await postVerifyCode(makeRequest({ code: 'ABC123', amount: 5_000 }))
     const payload = await response.json()
@@ -206,7 +206,7 @@ describe('/api/credits/verify-code', () => {
 
   it('refuse quand le profil utilisateur est introuvable', async () => {
     const { db } = makeVerifyCodeDb({ userData: null })
-    ;(adminApp.firestore as jest.Mock).mockReturnValue(db)
+    ;(adminApp!.firestore as jest.Mock).mockReturnValue(db)
 
     const response = await postVerifyCode(makeRequest({ code: 'ABC123', amount: 10_000 }))
     const payload = await response.json()
@@ -221,7 +221,7 @@ describe('/api/credits/verify-code', () => {
 
   it('credite utilisateur et marque le paiement en succes dans une transaction', async () => {
     const { db, transaction, refs } = makeVerifyCodeDb()
-    ;(adminApp.firestore as jest.Mock).mockReturnValue(db)
+    ;(adminApp!.firestore as jest.Mock).mockReturnValue(db)
 
     const response = await postVerifyCode(makeRequest({ code: 'ABC123', amount: 10_000 }))
     const payload = await response.json()
@@ -271,7 +271,7 @@ describe('/api/credits/verify-code', () => {
         usedBy: 'other-user',
       },
     })
-    ;(adminApp.firestore as jest.Mock).mockReturnValue(db)
+    ;(adminApp!.firestore as jest.Mock).mockReturnValue(db)
 
     const response = await postVerifyCode(makeRequest({ code: 'ABC123', amount: 10_000 }))
     const payload = await response.json()

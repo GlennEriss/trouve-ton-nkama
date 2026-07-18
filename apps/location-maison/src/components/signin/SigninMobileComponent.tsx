@@ -108,16 +108,20 @@ export default function SigninMobileComponent() {
   }, [clearError, lastError, toast]);
 
   return (
-    <div className={cn('p-4 md:p-20', inter.className)}>
+    <div className={cn('min-h-dvh bg-white p-4 text-gray-900 dark:bg-gray-950 dark:text-white md:p-20', inter.className)}>
       <div>
-        <Link href={routes.public.homePage}>
+        <Link
+          href={routes.public.homePage}
+          aria-label="Retour à l'accueil"
+          className="inline-flex h-11 w-11 items-center justify-center rounded-full hover:bg-gray-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#146B67] dark:hover:bg-gray-800"
+        >
           <ChevronLeft color="gray" size={30} />
         </Link>
       </div>
 
       <section className="mt-8 md:mt-10">
         <h1 className="text-2xl font-bold text-[#187872]">Bienvenue sur Trouve Ton Nkama !</h1>
-        <p className="text-gray-500">
+        <p className="text-gray-600 dark:text-gray-300">
           Connectez-vous pour retrouver vos annonces, favoris et paramètres de compte.
         </p>
       </section>
@@ -156,7 +160,7 @@ export default function SigninMobileComponent() {
               />
               <Link
                 href={routes.public.passwordResetRequest}
-                className="text-[#146B67] dark:text-[#1FA89B] hover:underline font-medium"
+                className="inline-flex min-h-11 items-center px-1 text-[#146B67] dark:text-[#9FE2DB] hover:underline font-medium"
               >
                 Mot de passe oublié?
               </Link>
@@ -214,7 +218,7 @@ export default function SigninMobileComponent() {
           Vous n&apos;avez pas de compte?{' '}
           <Link
             href={routes.public.signup}
-            className="text-[#146B67] dark:text-[#1FA89B] hover:underline font-medium"
+            className="inline-flex min-h-11 items-center px-1 text-[#146B67] dark:text-[#9FE2DB] hover:underline font-medium"
           >
             S&apos;enregistrer
           </Link>

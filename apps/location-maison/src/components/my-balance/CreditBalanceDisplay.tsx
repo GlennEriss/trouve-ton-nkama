@@ -149,7 +149,7 @@ export default function CreditBalanceDisplay({
           <button
             type="button"
             onClick={handleRecharge}
-            className="bg-[#146B67] hover:bg-[#125A56] text-white px-6 md:px-8 py-2.5 md:py-3 rounded-full font-semibold inline-flex items-center gap-2 text-sm md:text-base transition-colors focus:outline-none focus:ring-2 focus:ring-[#146B67] focus:ring-offset-2"
+            className="inline-flex min-h-11 items-center gap-2 rounded-lg bg-[#146B67] px-6 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-[#125A56] focus:outline-none focus:ring-2 focus:ring-[#146B67] focus:ring-offset-2 md:px-8 md:py-3 md:text-base"
           >
             <Zap className="w-4 h-4 md:w-5 md:h-5" />
             Recharger mon solde

@@ -50,7 +50,7 @@ export default function MyBalanceRechargeComponent() {
           <p>Historique et solde sont mis à jour automatiquement après confirmation du paiement.</p>
         </div>
 
-        <div className="flex items-center gap-2 text-xs md:text-sm text-emerald-900/70 dark:text-emerald-300/80">
+        <div className="flex items-center gap-2 text-xs md:text-sm text-emerald-900 dark:text-emerald-200">
           <Zap className="w-4 h-4 flex-shrink-0" />
           <p>Astuce : cliquez sur un pack ci-dessous pour démarrer la recharge.</p>
         </div>

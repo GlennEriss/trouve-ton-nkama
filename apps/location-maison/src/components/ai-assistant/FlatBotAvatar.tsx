@@ -115,7 +115,8 @@ export default function FlatBotAvatar({
         type="button"
         onClick={onClick}
         disabled={disabled}
-        className="focus:outline-none transition-all duration-200 disabled:opacity-50"
+        className="focus:outline-none focus-visible:ring-2 focus-visible:ring-[#146B67] focus-visible:ring-offset-2 rounded-2xl transition-all duration-200 disabled:opacity-50"
+        aria-label="Ouvrir l'assistant de création d'annonce"
       >
         <Bot />
       </button>

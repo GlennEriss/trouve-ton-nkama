@@ -48,9 +48,7 @@ export default function Notifications() {
   return (
     <Popover open={isOpen} onOpenChange={setIsOpen}>
       <PopoverTrigger asChild>
-        <div className="cursor-pointer">
-          <NotificationButton unreadCount={unreadCount} />
-        </div>
+        <NotificationButton unreadCount={unreadCount} />
       </PopoverTrigger>
 
       <PopoverContent className={`w-80 p-1 ${NOTIFICATION_CSS_CLASSES.bg.content}`}>

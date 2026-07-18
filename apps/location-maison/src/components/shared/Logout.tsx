@@ -48,7 +48,7 @@ export default function Logout() {
             <Button 
                 onClick={handleClientSignout} 
                 variant='outline' 
-                className='w-full text-md border-red-500 text-red-500 hover:text-red-500 hover:bg-red-50 transition-colors'
+                className='min-h-11 w-full text-md border-red-600 text-red-700 hover:text-red-800 hover:bg-red-50 dark:border-red-500 dark:text-red-300 dark:hover:bg-red-950/30 transition-colors'
                 disabled={isLoading}
             >
                 <LogOut className="mr-2" size={20} />

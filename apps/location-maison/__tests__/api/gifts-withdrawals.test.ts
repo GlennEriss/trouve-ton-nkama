@@ -1,6 +1,7 @@
 import { getFirestore } from 'firebase-admin/firestore'
 
 import { adminAuth } from '@/firebase/admin'
+import { auth } from '@/next-auth/auth'
 
 let postWithdrawal: typeof import('@/app/api/gifts/withdrawals/route').POST
 
@@ -26,6 +27,10 @@ jest.mock('@/firebase/admin', () => ({
   adminAuth: {
     verifyIdToken: jest.fn(),
   },
+}))
+
+jest.mock('@/next-auth/auth', () => ({
+  auth: jest.fn(),
 }))
 
 jest.mock('firebase-admin/firestore', () => ({
@@ -119,6 +124,7 @@ describe('/api/gifts/withdrawals', () => {
 
   beforeEach(() => {
     jest.clearAllMocks()
+    ;(auth as jest.Mock).mockResolvedValue(null)
     ;(adminAuth.verifyIdToken as jest.Mock).mockResolvedValue({ uid: 'announcer-1' })
   })
 
@@ -243,6 +249,27 @@ describe('/api/gifts/withdrawals', () => {
         numero: '077123456',
         reseau: 'AM',
         statut: 'EN_ATTENTE',
+      }),
+    )
+  })
+
+  it('cree un retrait avec la session web sans jeton Firebase', async () => {
+    const { db, transaction, withdrawalRef } = makeWithdrawalsDb({
+      giftTotalReceivedXaf: 20_000,
+    })
+    ;(getFirestore as jest.Mock).mockReturnValue(db)
+    ;(auth as jest.Mock).mockResolvedValue({ user: { uid: 'session-announcer' } })
+
+    const response = await postWithdrawal(
+      makeRequest({ numero: '+241077123456', reseau: 'AM' }, {}),
+    )
+
+    expect(response.status).toBe(201)
+    expect(adminAuth.verifyIdToken).not.toHaveBeenCalled()
+    expect(transaction.create).toHaveBeenCalledWith(
+      withdrawalRef,
+      expect.objectContaining({
+        announcerUid: 'session-announcer',
       }),
     )
   })

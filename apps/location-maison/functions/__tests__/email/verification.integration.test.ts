@@ -9,7 +9,8 @@
  * 
  * Pour exécuter ces tests :
  * 1. Démarrer les émulateurs Firebase : firebase emulators:start
- * 2. Exécuter les tests : npm test -- verification.integration.test.ts
+ * 2. Activer le test : ENABLE_EMAIL_INTEGRATION_TESTS=true
+ * 3. Exécuter les tests : npm test -- verification.integration.test.ts
  */
 
 import { describe, test, expect, beforeAll, afterAll, beforeEach } from '@jest/globals';
@@ -57,7 +58,10 @@ const functionsTestHelper = functionsTest({
   // emulatorPort: 9099,
 });
 
-describe('sendVerificationEmail - Tests d\'intégration', () => {
+const emailIntegrationEnabled = process.env.ENABLE_EMAIL_INTEGRATION_TESTS === 'true';
+const describeEmailIntegration = emailIntegrationEnabled ? describe : describe.skip;
+
+describeEmailIntegration('sendVerificationEmail - Tests d\'intégration', () => {
   let adminApp: admin.app.App;
   let adminAuth: admin.auth.Auth;
 

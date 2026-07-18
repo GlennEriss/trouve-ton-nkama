@@ -7,10 +7,11 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getFirestore as getAdminFirestore } from 'firebase-admin/firestore';
 import firebaseCollectionNames from '@/constantes/firebase-collection-name';
-import { adminApp, adminAuth } from '@/firebase/admin';
+import { adminApp } from '@/firebase/admin';
 import { deriveGiftBalance } from '@/lib/gifts/balance';
 import { createLogger } from '@/lib/logger';
 import { handleApiError, jsonApiError } from '@/lib/api/error-response';
+import { resolveAuthenticatedUid } from '@/lib/server/authenticated-uid';
 
 const logger = createLogger('api.gifts.summary');
 
@@ -25,12 +26,10 @@ function maskPhone(phone: string): string {
 
 export async function GET(request: NextRequest) {
   try {
-    const authHeader = request.headers.get('authorization');
-    if (!authHeader?.startsWith('Bearer ')) {
-      return jsonApiError(401, 'UNAUTHORIZED', "Token d'authentification requis");
+    const uid = await resolveAuthenticatedUid(request);
+    if (!uid) {
+      return jsonApiError(401, 'UNAUTHORIZED', 'Authentification requise');
     }
-    const decoded = await adminAuth.verifyIdToken(authHeader.split('Bearer ')[1]);
-    const uid = decoded.uid;
 
     const db = getAdminFirestore(adminApp as any);
     const [balance, giftsSnap, withdrawalsSnap] = await Promise.all([

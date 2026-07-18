@@ -78,7 +78,7 @@ export const DateSelect = <T extends FieldValues>({
         
         return (
           <FormItem>
-            <FormLabel className="text-sm font-medium text-gray-700">
+            <FormLabel className="text-sm font-medium text-gray-700 dark:text-gray-300">
               {label}
             </FormLabel>
             <div className="grid grid-cols-3 gap-2">
@@ -88,6 +88,7 @@ export const DateSelect = <T extends FieldValues>({
                 label=""
                 options={dayOptions}
                 placeholder="Jour"
+                aria-label="Jour de naissance"
                 disabled={disabled}
                 className="text-sm"
               />
@@ -97,6 +98,7 @@ export const DateSelect = <T extends FieldValues>({
                 label=""
                 options={monthOptions}
                 placeholder="Mois"
+                aria-label="Mois de naissance"
                 disabled={disabled}
                 className="text-sm"
               />
@@ -106,6 +108,7 @@ export const DateSelect = <T extends FieldValues>({
                 label=""
                 options={yearOptions}
                 placeholder="Année"
+                aria-label="Année de naissance"
                 disabled={disabled}
                 className="text-sm"
               />
@@ -119,4 +122,4 @@ export const DateSelect = <T extends FieldValues>({
       }}
     />
   )
-} 
+}

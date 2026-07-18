@@ -80,6 +80,7 @@ export default function MenuProfil() {
             <DropdownMenuTrigger asChild>
                 <Button 
                     variant='ghost' 
+                    aria-label="Ouvrir le menu du profil"
                     className='relative h-10 w-10 rounded-full focus:ring-2 focus:ring-[#146B67] focus:ring-offset-2 focus-visible:ring-2 focus-visible:ring-[#146B67] hover:bg-gray-100 dark:hover:bg-gray-800 transition-all duration-200 group'
                 >
                     <div className="flex items-center gap-2">

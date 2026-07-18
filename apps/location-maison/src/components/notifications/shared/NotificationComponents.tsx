@@ -187,17 +187,19 @@ export function NotificationItem({
 }
 
 // Composant pour le bouton de notification avec badge
-export function NotificationButton({ 
-  unreadCount, 
-  iconSize = 16, 
-  variant = "icon",
-  className = ""
-}: { 
+type NotificationButtonProps = {
   unreadCount: number;
   iconSize?: number;
   variant?: "icon" | "floating";
   className?: string;
-}) {
+}
+
+export const NotificationButton = React.forwardRef<HTMLButtonElement, NotificationButtonProps>(function NotificationButton({
+  unreadCount,
+  iconSize = 16,
+  variant = "icon",
+  className = "",
+}, ref) {
   const buttonClass = variant === "floating" 
     ? "fixed bottom-4 right-4"
     : "relative inline-flex";
@@ -209,30 +211,29 @@ export function NotificationButton({
     "h-12 w-12 rounded-full border border-[#1FA89B]/30 bg-gradient-to-r from-[#146B67] to-[#1FA89B] text-white shadow-lg hover:brightness-110";
 
   return (
-    <div className={buttonClass}>
-      <Button 
-        size="icon" 
-        variant={variant === "floating" ? "default" : "outline"}
-        className={cn(
-          "relative",
-          variant === "floating" ? floatingVariantClass : iconVariantClass,
-          unreadCount > 0 && variant !== "floating" && "ring-2 ring-[#1FA89B]/25 ring-offset-1",
-          className
-        )}
-        aria-label="Ouvrir les notifications"
-        type="button"
-      >
-        <BellIcon size={iconSize} aria-hidden="true" />
-        {unreadCount > 0 && (
-          <Badge className={`absolute min-w-5 rounded-full border border-white px-1 flex justify-center ${
-            variant === "floating" 
-              ? "-top-2 right-0"
-              : "-top-1.5 left-full -translate-x-1/2 bg-red-500 text-white"
-          }`}>
-            {unreadCount > 99 ? "99+" : unreadCount}
-          </Badge>
-        )}
-      </Button>
-    </div>
+    <Button
+      ref={ref}
+      size="icon"
+      variant={variant === "floating" ? "default" : "outline"}
+      className={cn(
+        buttonClass,
+        variant === "floating" ? floatingVariantClass : iconVariantClass,
+        unreadCount > 0 && variant !== "floating" && "ring-2 ring-[#1FA89B]/25 ring-offset-1",
+        className
+      )}
+      aria-label="Ouvrir les notifications"
+      type="button"
+    >
+      <BellIcon size={iconSize} aria-hidden="true" />
+      {unreadCount > 0 && (
+        <Badge className={`absolute min-w-5 rounded-full border border-white px-1 flex justify-center ${
+          variant === "floating"
+            ? "-top-2 right-0"
+            : "-top-1.5 left-full -translate-x-1/2 bg-red-500 text-white"
+        }`}>
+          {unreadCount > 99 ? "99+" : unreadCount}
+        </Badge>
+      )}
+    </Button>
   );
-} 
+})

@@ -33,7 +33,7 @@ export const InputNumberApp = React.forwardRef<HTMLInputElement, InputNumberAppP
                 <Input
                     type={type}
                     className={cn(
-                        "pr-20",
+                        "min-h-12 pr-24",
                         className
                     )}
                     ref={ref}
@@ -53,8 +53,9 @@ export const InputNumberApp = React.forwardRef<HTMLInputElement, InputNumberAppP
                         type="button"
                         variant="ghost"
                         size="icon"
-                        className="h-full px-3 hover:bg-gray-100"
+                        className="h-full min-w-11 px-3 hover:bg-gray-100 dark:hover:bg-gray-800"
                         onClick={decrement}
+                        aria-label="Diminuer la valeur"
                     >
                         <Minus className="h-4 w-4" />
                     </Button>
@@ -62,8 +63,9 @@ export const InputNumberApp = React.forwardRef<HTMLInputElement, InputNumberAppP
                         type="button"
                         variant="ghost"
                         size="icon"
-                        className="h-full px-3 hover:bg-gray-100"
+                        className="h-full min-w-11 px-3 hover:bg-gray-100 dark:hover:bg-gray-800"
                         onClick={increment}
+                        aria-label="Augmenter la valeur"
                     >
                         <Plus className="h-4 w-4" />
                     </Button>

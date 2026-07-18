@@ -4,7 +4,6 @@ import { ChevronRight, Lock, Settings, ShieldCheck, FileText, Coins, Phone, Buil
 import Link from 'next/link';
 import { useWindowSize } from '@/hooks/useSize';
 import { routes } from '@/constantes/routes';
-import { Separator } from '../ui/separator';
 import { useCurrentUser } from '@/hooks/use-current-user';
 
 const baseMenu = [
@@ -74,16 +73,15 @@ export default function ProfilDetails() {
     ];
 
     return size.width < 768 ? (
-        <div className='space-y-5'>
+        <div className='divide-y divide-gray-200 rounded-lg border border-gray-200 bg-white px-4 dark:divide-gray-700 dark:border-gray-700 dark:bg-gray-900'>
             {
                 menu.map((item) => (
-                    <div key={item.title} className='flex flex-col gap-5'>
-                        <Link href={item.link} className='flex items-center gap-3'>
+                    <div key={item.title}>
+                        <Link href={item.link} className='flex min-h-14 items-center gap-3 py-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#146B67]'>
                             <item.icon />
                             <span>{item.title}</span>
                             <ChevronRight className='ml-auto' size={24} />
                         </Link>
-                        <Separator className='md:hidden' />
                     </div>
                 ))
             }
@@ -92,12 +90,12 @@ export default function ProfilDetails() {
         <div className='grid gap-3 lg:grid-cols-2'>
             {
                 menu.map((item) => (
-                    <Link href={item.link} key={item.title} className='border p-5 space-y-3 rounded-xl shadow'>
+                    <Link href={item.link} key={item.title} className='min-h-36 border border-gray-200 bg-white p-5 space-y-3 rounded-lg shadow-sm transition-colors hover:border-[#1FA89B] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#146B67] dark:border-gray-700 dark:bg-gray-900'>
                         <div className='flex gap-3 items-center'>
                             <item.icon size={30} />
-                            <h1 className='font-bold text-xl'>{item.title}</h1>
+                            <h2 className='font-bold text-xl'>{item.title}</h2>
                         </div>
-                        <p className='text-gray-500'>
+                        <p className='text-gray-600 dark:text-gray-300'>
                             {item.description}
                         </p>
                     </Link>

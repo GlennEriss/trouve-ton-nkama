@@ -151,7 +151,7 @@ export default function Navbar() {
 const LogoNavigation = () => {
   return (
     <div className="rounded-full bg-[#f4f9f9] dark:bg-gray-900 shadow dark:shadow-gray-900/50">
-      <a href="/" rel="noopener noreferrer">
+      <a href="/" rel="noopener noreferrer" aria-label="Accueil - Trouve Ton Nkama">
         <Logo width="64px" height="64px" />
       </a>
     </div>

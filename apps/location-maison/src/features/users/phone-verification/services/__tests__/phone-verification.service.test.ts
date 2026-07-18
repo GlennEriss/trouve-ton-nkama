@@ -6,9 +6,9 @@ import {
 } from '../phone-verification.service.interface';
 import { PhoneVerificationServiceImpl } from '../phone-verification.service';
 
-const mockSignInWithPhoneNumber = jest.fn();
-const mockSignInWithCustomToken = jest.fn();
-const mockSignOut = jest.fn();
+const mockSignInWithPhoneNumber = jest.fn<(...args: unknown[]) => Promise<unknown>>();
+const mockSignInWithCustomToken = jest.fn<(...args: unknown[]) => Promise<unknown>>();
+const mockSignOut = jest.fn<(...args: unknown[]) => Promise<unknown>>();
 
 jest.mock('@/features/auth/repositories/user.repository', () => ({
   userRepository: {
@@ -96,7 +96,7 @@ describe('PhoneVerificationService', () => {
 
   it('confirms otp and persists verified status', async () => {
     const confirmationResult = {
-      confirm: jest.fn().mockResolvedValue({ user: { uid: 'temporary' } }),
+      confirm: jest.fn<() => Promise<unknown>>().mockResolvedValue({ user: { uid: 'temporary' } }),
     } as any;
 
     mockedFindById.mockResolvedValue(createMockUser({ uid: 'uid-1' }));
@@ -138,7 +138,7 @@ describe('PhoneVerificationService', () => {
 
   it('maps invalid verification code error', async () => {
     const confirmationResult = {
-      confirm: jest.fn().mockRejectedValue({ code: 'auth/invalid-verification-code' }),
+      confirm: jest.fn<() => Promise<unknown>>().mockRejectedValue({ code: 'auth/invalid-verification-code' }),
     } as any;
 
     const result = await service.confirmPhoneOtp({

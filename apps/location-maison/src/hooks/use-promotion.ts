@@ -1,5 +1,6 @@
 'use client'
 
+import { useRef } from 'react'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { Property, PromotionType } from '@/models/annonce'
 import { useCurrentUser } from './use-current-user'
@@ -38,6 +39,7 @@ export const usePromotion = ({ property, onSuccess }: UsePromotionProps) => {
   const { toast } = useToast()
   const queryClient = useQueryClient()
   const { openRecharge } = useRecharge()
+  const promotionIdempotencyKeyRef = useRef<string | null>(null)
 
   const promoteMutation = useMutation({
     mutationFn: async ({ promotionType }: PromotePropertyParams) => {
@@ -54,12 +56,21 @@ export const usePromotion = ({ property, onSuccess }: UsePromotionProps) => {
         throw error
       }
 
+      if (!promotionIdempotencyKeyRef.current) {
+        promotionIdempotencyKeyRef.current =
+          typeof crypto !== 'undefined' && 'randomUUID' in crypto
+            ? crypto.randomUUID()
+            : `promotion-${Date.now()}-${Math.random().toString(36).slice(2)}`
+      }
+
       const response = await fetch('/api/property/promote', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          'Idempotency-Key': promotionIdempotencyKeyRef.current,
         },
         body: JSON.stringify({
+          idempotencyKey: promotionIdempotencyKeyRef.current,
           propertyId: property.id,
           promotionType,
         }),
@@ -95,6 +106,7 @@ export const usePromotion = ({ property, onSuccess }: UsePromotionProps) => {
       }
     },
     onSuccess: (data) => {
+      promotionIdempotencyKeyRef.current = null
       const { promotionType, config, transactionId } = data
       
       const promotionNames = {

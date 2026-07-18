@@ -1,3 +1,4 @@
+import '../../node/slow-buffer-compat';
 import { defineSecret } from 'firebase-functions/params'
 
 // Secrets MyPayGa chargés depuis Firebase Secret Manager en production.

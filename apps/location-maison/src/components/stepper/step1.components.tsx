@@ -142,7 +142,12 @@ export const ImageUploader = () => {
                 }
             )}
         >
-            <Input {...getInputProps()} disabled={isProcessing} className="sr-only" />
+            <Input
+                {...getInputProps()}
+                disabled={isProcessing}
+                className="sr-only"
+                aria-label="Ajouter des images du bien"
+            />
 
             <div className="flex flex-col items-center space-y-3 p-4 md:p-6">
                 {isProcessing ? (
@@ -479,7 +484,11 @@ export const TitleComponent = () => {
     const { watch } = useFormContext();
     const title = watch("title");
     return (
-        <InputApp value={title} onChange={(e) => mediator.setTitle(e.target.value)} />
+        <InputApp
+            value={title}
+            onChange={(e) => mediator.setTitle(e.target.value)}
+            aria-label="Titre de l'annonce"
+        />
     )
 }
 
@@ -488,7 +497,11 @@ export const DescriptionComponent = () => {
     const { watch } = useFormContext();
     const description = watch("description");
     return (
-        <TextareaApp value={description} onChange={(e) => mediator.setDescription(e.target.value)} />
+        <TextareaApp
+            value={description}
+            onChange={(e) => mediator.setDescription(e.target.value)}
+            aria-label="Description de l'annonce"
+        />
     )
 }
 
@@ -501,6 +514,7 @@ export const AreaComponent = () => {
             step={10}
             value={area}
             onChange={(value) => mediator.setArea(Number(value))}
+            aria-label="Superficie du bien en mètres carrés"
         />
     )
 }
@@ -513,6 +527,7 @@ export const PriceComponent = () => {
         <InputNumberApp
             step={10000}
             value={price}
+            aria-label="Prix du bien en FCFA"
             onChange={(value) => {
                 mediator.setPrice(Number(value));
             }}

@@ -31,8 +31,8 @@ export const PhoneNumberFormApp = <T extends FieldValues>({
                             <PhoneInput
                                 defaultCountry={defaultCountry}
                                 disabled={isSubmitting}
-                                triggerClassName=' border-none shadow-none rounded-full'
-                                className='border-none shadow-none focus-visible:ring-0 rounded-full dark:text-white dark:placeholder:text-gray-500 bg-transparent'
+                                triggerClassName='min-h-11 border-none shadow-none rounded-full'
+                                className='min-h-11 border-none shadow-none focus-visible:ring-0 rounded-full dark:text-white dark:placeholder:text-gray-500 bg-transparent'
                                 {...props}
                                 {...field}
                             />

@@ -1,7 +1,7 @@
 import React from 'react'
 import { InputApp } from '../ui/InputApp'
 import { LucideIcon } from 'lucide-react'
-import { FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form'
+import { FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form'
 import { Control, FieldValues, Path } from 'react-hook-form'
 
 type InputFormAppProps<T extends FieldValues> = {
@@ -29,14 +29,16 @@ export const InputFormApp = <T extends FieldValues>({
             render={({ field, formState: { isSubmitting } }) => (
                 <FormItem>
                     <FormLabel className='text-md'>{label}</FormLabel>
-                    <InputApp
-                        IconLucide={IconLucide}
-                        IconColorFill={IconColorFill}
-                        IconColor={IconColor}
-                        disabled={isSubmitting}
-                        {...props}
-                        {...field}
-                    />
+                    <FormControl>
+                        <InputApp
+                            IconLucide={IconLucide}
+                            IconColorFill={IconColorFill}
+                            IconColor={IconColor}
+                            disabled={isSubmitting}
+                            {...props}
+                            {...field}
+                        />
+                    </FormControl>
                     <FormMessage />
                 </FormItem>
             )}

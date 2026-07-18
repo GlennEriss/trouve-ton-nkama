@@ -56,7 +56,7 @@ export default function StepperButtonComponent() {
           <Button
             type="button"
             variant="outline"
-            className="w-full border-red-200 text-red-700 hover:bg-red-50 hover:text-red-800 dark:border-red-900/60 dark:text-red-300 dark:hover:bg-red-950/40 sm:w-auto"
+            className="min-h-11 w-full border-red-200 text-red-700 hover:bg-red-50 hover:text-red-800 dark:border-red-900/60 dark:text-red-300 dark:hover:bg-red-950/40 sm:w-auto"
             onClick={() => setIsResetDialogOpen(true)}
             disabled={isBusy}
           >
@@ -68,7 +68,7 @@ export default function StepperButtonComponent() {
         <div className="flex flex-col gap-3 sm:flex-row sm:justify-end">
           {!isFirstStep && (
             <Button
-              className="w-full bg-[#1B4D5B] sm:w-auto"
+              className="min-h-11 w-full bg-[#1B4D5B] text-white sm:w-auto"
               type="button"
               onClick={handlePreviousStep}
               disabled={isBusy}
@@ -78,7 +78,7 @@ export default function StepperButtonComponent() {
           )}
 
           <Button
-            className="w-full bg-[#1B4D5B] sm:w-auto"
+            className="min-h-11 w-full bg-[#1B4D5B] text-white sm:w-auto"
             type="submit"
             disabled={isBusy}
           >

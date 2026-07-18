@@ -1,6 +1,7 @@
 import { randomUUID } from "node:crypto";
 
 import { FieldValue } from "firebase-admin/firestore";
+import '../node/slow-buffer-compat';
 import * as functions from "firebase-functions";
 import { onSchedule } from "firebase-functions/v2/scheduler";
 

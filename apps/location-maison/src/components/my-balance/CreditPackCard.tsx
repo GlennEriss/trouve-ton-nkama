@@ -68,8 +68,8 @@ export default function CreditPackCard({ pack, onSelect, isLoading = false }: Re
             ${pack.popular ? 'bg-gradient-to-r from-[#146B67] to-[#1FA89B]' : ''}
             ${pack.savings && !pack.popular && !pack.bestValue ? 'bg-gradient-to-r from-green-500 to-emerald-500' : ''}
           `}>
-            {pack.bestValue && '💎 MEILLEUR PRIX'}
-            {pack.popular && !pack.bestValue && '🏆 POPULAIRE'}
+            {pack.bestValue && 'MEILLEUR PRIX'}
+            {pack.popular && !pack.bestValue && 'POPULAIRE'}
             {pack.savings && !pack.popular && !pack.bestValue && `${pack.savings}% D'ÉCONOMIE`}
           </div>
         </div>
@@ -103,7 +103,7 @@ export default function CreditPackCard({ pack, onSelect, isLoading = false }: Re
         <div className="space-y-2">
           <div className="flex items-center justify-center gap-2">
             {pack.originalPrice && (
-              <span className="text-lg text-gray-400 line-through">
+              <span className="text-lg text-gray-600 line-through dark:text-gray-400">
                 {pack.originalPrice.toLocaleString()} FCFA
               </span>
             )}
@@ -142,7 +142,7 @@ export default function CreditPackCard({ pack, onSelect, isLoading = false }: Re
 
         {/* Savings highlight */}
         {pack.savings && pack.savings > 0 && (
-          <div className="text-sm font-medium text-green-600 dark:text-green-400">
+          <div className="text-sm font-medium text-green-700 dark:text-green-300">
             Économisez {pack.savings}% par rapport au pack de base
           </div>
         )}

@@ -43,6 +43,7 @@ export default function CreateReelClient({ propertyId }: CreateReelClientProps) 
   const { toast } = useToast()
 
   const [isUploading, setIsUploading] = React.useState(false)
+  const isUploadingRef = React.useRef(false)
   const [reel, setReel] = React.useState<(Reel & { id: string }) | null>(null)
   // Numéro à afficher sur le réel dans le feed (boutons WhatsApp/Appel) — indépendant du
   // rattachement à l'annonce : pré-rempli avec le contact de l'annonce si dispo, sinon le
@@ -88,7 +89,9 @@ export default function CreateReelClient({ propertyId }: CreateReelClientProps) 
       })
       return
     }
+    if (isUploadingRef.current) return
 
+    isUploadingRef.current = true
     setIsUploading(true)
     try {
       const reelId = crypto.randomUUID()
@@ -136,6 +139,7 @@ export default function CreateReelClient({ propertyId }: CreateReelClientProps) 
         variant: "destructive",
       })
     } finally {
+      isUploadingRef.current = false
       setIsUploading(false)
     }
   }, [user?.uid, isFirebaseConnected, propertyId, contact, description, toast])
@@ -226,7 +230,7 @@ export default function CreateReelClient({ propertyId }: CreateReelClientProps) 
             busy && "pointer-events-none opacity-60"
           )}
         >
-          <input {...getInputProps()} disabled={busy} />
+          <input {...getInputProps({ 'aria-label': 'Choisir une vidéo' })} disabled={busy} />
           {busy ? (
             <Loader2 className="h-10 w-10 animate-spin text-emerald-600" />
           ) : (

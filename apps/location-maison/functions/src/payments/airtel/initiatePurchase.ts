@@ -2,6 +2,7 @@
  * Cloud Function pour initier un achat de crédits via Airtel Money
  */
 
+import '../../node/slow-buffer-compat';
 import { onCall, HttpsError } from 'firebase-functions/v2/https'
 import { createCreditTransaction, getCreditPackById, addCreditsToUser } from './database'
 import { validateAirtelNumber, formatPhoneNumber } from './config'

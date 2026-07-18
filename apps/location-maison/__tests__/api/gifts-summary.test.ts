@@ -2,6 +2,7 @@ import { getFirestore } from 'firebase-admin/firestore'
 
 import { adminAuth } from '@/firebase/admin'
 import { deriveGiftBalance } from '@/lib/gifts/balance'
+import { auth } from '@/next-auth/auth'
 
 let getGiftSummary: typeof import('@/app/api/gifts/summary/route').GET
 
@@ -27,6 +28,10 @@ jest.mock('@/firebase/admin', () => ({
   adminAuth: {
     verifyIdToken: jest.fn(),
   },
+}))
+
+jest.mock('@/next-auth/auth', () => ({
+  auth: jest.fn(),
 }))
 
 jest.mock('firebase-admin/firestore', () => ({
@@ -115,6 +120,7 @@ describe('/api/gifts/summary', () => {
 
   beforeEach(() => {
     jest.clearAllMocks()
+    ;(auth as jest.Mock).mockResolvedValue(null)
     ;(adminAuth.verifyIdToken as jest.Mock).mockResolvedValue({ uid: 'announcer-1' })
     ;(deriveGiftBalance as jest.Mock).mockResolvedValue({
       totalRecuXaf: 20_000,
@@ -187,5 +193,17 @@ describe('/api/gifts/summary', () => {
         },
       ],
     })
+  })
+
+  it('utilise la session web sans exiger de jeton Firebase', async () => {
+    const { db } = makeSummaryDb()
+    ;(getFirestore as jest.Mock).mockReturnValue(db)
+    ;(auth as jest.Mock).mockResolvedValue({ user: { uid: 'session-announcer' } })
+
+    const response = await getGiftSummary(makeRequest({}))
+
+    expect(response.status).toBe(200)
+    expect(deriveGiftBalance).toHaveBeenCalledWith('session-announcer')
+    expect(adminAuth.verifyIdToken).not.toHaveBeenCalled()
   })
 })

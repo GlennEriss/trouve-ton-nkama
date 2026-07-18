@@ -49,7 +49,7 @@ export default function AppMobileStickyHeader({
       {backHref && headerStrategy.showBackButton(backHref, pathname) ? (
         <Link
           href={backHref}
-          className="inline-flex h-8 w-8 items-center justify-center rounded-full text-gray-700 transition-colors hover:bg-gray-100 dark:text-gray-200 dark:hover:bg-gray-800"
+          className="inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-full text-gray-700 transition-colors hover:bg-gray-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#146B67] dark:text-gray-200 dark:hover:bg-gray-800"
           aria-label="Retour"
         >
           <ChevronLeft className="h-5 w-5" />

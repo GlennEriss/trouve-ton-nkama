@@ -55,8 +55,9 @@ export const SelectFormApp = <T extends FieldValues>({
                         >
                             <FormControl>
                                 <SelectTrigger
+                                    aria-label={props['aria-label'] || label || placeholder || String(name)}
                                     className={cn(
-                                        'rounded-full transition-colors border-[#1FA89B] focus:ring-0 focus:border-[#1FA89B] focus:bg-[#ebf6f5] group py-6 text-md bg-gray-50 dark:bg-gray-900 dark:text-white'
+                                        'min-h-12 rounded-full transition-colors border-[#1FA89B] focus:ring-0 focus:border-[#1FA89B] focus:bg-[#ebf6f5] group py-3 text-md bg-gray-50 dark:bg-gray-900 dark:text-white'
                                     )}
                                 >
                                     <SelectValue placeholder={placeholder}>

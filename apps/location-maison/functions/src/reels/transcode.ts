@@ -2,6 +2,7 @@ import * as path from 'path';
 import * as os from 'os';
 import * as fs from 'fs';
 import { randomUUID } from 'crypto';
+import '../node/slow-buffer-compat';
 import { onObjectFinalized } from 'firebase-functions/v2/storage';
 import { logger } from 'firebase-functions/v2';
 import ffmpeg from 'fluent-ffmpeg';

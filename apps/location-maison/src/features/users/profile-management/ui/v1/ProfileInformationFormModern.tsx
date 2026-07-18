@@ -9,9 +9,9 @@ import { useToast } from '@/hooks/use-toast';
 import { createLogger } from '@/lib/logger';
 import { generateColorFromName } from '@/lib/generateColorFromName';
 import { firebaseTimestampToDate } from '@/lib/firebaseTimestampToDate';
-import { AlertTriangle, CalendarDays, ChevronLeft, Link2, Mail, ShieldCheck, UserCircle } from 'lucide-react';
+import { AlertTriangle, CalendarDays, ChevronDown, ChevronLeft, Link2, Mail, ShieldCheck, UserCircle } from 'lucide-react';
 import Link from 'next/link';
-import { useEffect, useMemo } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { Form } from '@/components/ui/form';
 import { ButtonApp } from '@/components/shared/ui/ButtonApp';
@@ -193,6 +193,7 @@ function toSocialProfileDefaults(user: unknown): ProfileInformationSchemaType['s
 export function ProfileInformationFormModern() {
   const { user } = useCurrentUser();
   const { toast } = useToast();
+  const [socialProfilesOpen, setSocialProfilesOpen] = useState(false);
   const { updateProfileInformation, isLoading, lastError, clearError } = useProfileInformationUpdate();
   const phoneChangeLockInfo = useMemo(() => getPhoneChangeLockInfo(user), [user]);
 
@@ -328,7 +329,11 @@ export function ProfileInformationFormModern() {
   return (
     <div className="pb-20 md:pb-8 px-4 lg:px-0">
       <div className="bg-white dark:bg-gray-900 sticky top-0 flex gap-4 items-center border-b dark:border-gray-700 py-3 px-1 z-40 md:hidden">
-        <Link href={routes.protected.profil}>
+        <Link
+          href={routes.protected.profil}
+          aria-label="Retour au profil"
+          className="inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-full hover:bg-gray-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#146B67] dark:hover:bg-gray-800"
+        >
           <ChevronLeft />
         </Link>
         <h1 className="text-xl font-bold dark:text-white">Modifier mes informations</h1>
@@ -489,36 +494,49 @@ export function ProfileInformationFormModern() {
               )}
 
               {isAnnouncer && (
-                <div className="rounded-2xl border border-gray-200 bg-gray-50/60 p-4 dark:border-gray-800 dark:bg-gray-900/40">
-                  <div className="mb-4">
-                    <p className="inline-flex items-center gap-2 text-sm font-semibold text-gray-900 dark:text-white">
-                      <Link2 className="h-4 w-4 text-[#1FA89B]" />
-                      Réseaux sociaux (annonceur)
-                    </p>
-                    <p className="mt-1 text-xs text-gray-600 dark:text-gray-400">
-                      Ces liens nous aident à retrouver vos annonces publiées sur vos réseaux.
-                    </p>
-                  </div>
+                <div className="border-t border-gray-200 pt-3 dark:border-gray-800">
+                  <button
+                    type="button"
+                    aria-expanded={socialProfilesOpen}
+                    aria-controls="social-profile-fields"
+                    onClick={() => setSocialProfilesOpen((current) => !current)}
+                    className="flex min-h-11 w-full items-center justify-between gap-3 rounded-lg px-1 text-left focus:outline-none focus-visible:ring-2 focus-visible:ring-[#146B67] focus-visible:ring-offset-2 dark:focus-visible:ring-offset-gray-900"
+                  >
+                    <span>
+                      <span className="inline-flex items-center gap-2 text-sm font-semibold text-gray-900 dark:text-white">
+                        <Link2 className="h-4 w-4 text-[#1FA89B]" />
+                        Réseaux sociaux (facultatif)
+                      </span>
+                      <span className="mt-1 block text-xs text-gray-600 dark:text-gray-400">
+                        Ajoutez les liens utilisés pour publier vos annonces.
+                      </span>
+                    </span>
+                    <ChevronDown
+                      className={`h-5 w-5 shrink-0 text-gray-500 transition-transform dark:text-gray-400 ${socialProfilesOpen ? 'rotate-180' : ''}`}
+                    />
+                  </button>
 
-                  <div className="space-y-4">
-                    {SOCIAL_NETWORKS.map((network) => (
-                      <div key={network.key} className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                        <InputFormApp
-                          control={form.control}
-                          name={`socialProfiles.${network.key}.url`}
-                          label={`${network.label} - lien`}
-                          placeholder={`https://${network.key}.com/...`}
-                          autoComplete="url"
-                        />
-                        <InputFormApp
-                          control={form.control}
-                          name={`socialProfiles.${network.key}.handle`}
-                          label={`${network.label} - @`}
-                          placeholder="@username"
-                        />
-                      </div>
-                    ))}
-                  </div>
+                  {socialProfilesOpen && (
+                    <div id="social-profile-fields" className="mt-4 space-y-4">
+                      {SOCIAL_NETWORKS.map((network) => (
+                        <div key={network.key} className="grid grid-cols-1 gap-3 md:grid-cols-2">
+                          <InputFormApp
+                            control={form.control}
+                            name={`socialProfiles.${network.key}.url`}
+                            label={`${network.label} - lien`}
+                            placeholder={`https://${network.key}.com/...`}
+                            autoComplete="url"
+                          />
+                          <InputFormApp
+                            control={form.control}
+                            name={`socialProfiles.${network.key}.handle`}
+                            label={`${network.label} - @`}
+                            placeholder="@username"
+                          />
+                        </div>
+                      ))}
+                    </div>
+                  )}
                 </div>
               )}
 

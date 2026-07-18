@@ -11,6 +11,14 @@ module.exports = {
     '!src/**/*.d.ts',
     '!src/index.ts',
   ],
+  coverageThreshold: {
+    global: {
+      branches: 14,
+      functions: 16,
+      lines: 15,
+      statements: 15,
+    },
+  },
   coverageDirectory: 'coverage',
   coverageReporters: ['text', 'lcov', 'html'],
   moduleFileExtensions: ['ts', 'js', 'json'],
