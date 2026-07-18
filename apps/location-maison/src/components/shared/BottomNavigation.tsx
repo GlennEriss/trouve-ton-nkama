@@ -77,14 +77,17 @@ function BottomNavigationFrame({
                     style={{ height: BOTTOM_NAV_SPACER_HEIGHT }}
                 />
             )}
-            <div className={cn(
-                'fixed bottom-0 z-50 w-full bg-white/90 dark:bg-gray-900/90 backdrop-blur-lg md:hidden',
-                'border-t border-gray-200 dark:border-gray-800',
-                'safe-area-pb',
-                inter.className
-            )}>
+            <nav
+                aria-label="Navigation mobile"
+                className={cn(
+                    'fixed bottom-0 z-50 w-full bg-white/90 dark:bg-gray-900/90 backdrop-blur-lg md:hidden',
+                    'border-t border-gray-200 dark:border-gray-800',
+                    'safe-area-pb',
+                    inter.className
+                )}
+            >
                 {children}
-            </div>
+            </nav>
         </>
     )
 }

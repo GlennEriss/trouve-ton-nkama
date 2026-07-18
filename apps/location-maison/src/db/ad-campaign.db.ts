@@ -4,6 +4,7 @@
  */
 
 import firebaseCollectionNames from '@/constantes/firebase-collection-name'
+import { AD_FORMATS } from '@/constantes/ad-formats'
 import { createLogger } from '@/lib/logger'
 import type {
   AdCampaign,
@@ -55,10 +56,21 @@ function matchesTargeting(campaign: AdCampaign, ctx: AdServeContext): boolean {
 
 function toPublicCreative(campaign: AdCampaign, placement: AdPlacement): AdCreativePublic {
   // Visuel adapté à l'emplacement si fourni, sinon le visuel par défaut.
-  const asset = campaign.creative?.assets?.[placement]
+  const directAsset = campaign.creative?.assets?.[placement]
+  const hasCompatibleAsset = (asset: typeof directAsset) =>
+    Boolean(asset?.imageURL || (placement === 'reels_infeed' && asset?.videoURL))
+  const format = AD_FORMATS.find((item) => item.placements.includes(placement))
+  const siblingAsset = format?.placements
+    .filter((candidate) => candidate !== placement)
+    .map((candidate) => campaign.creative?.assets?.[candidate])
+    .find(hasCompatibleAsset)
+  const asset = hasCompatibleAsset(directAsset) ? directAsset : siblingAsset
   const imageURL = asset?.imageURL || campaign.creative?.imageURL || undefined
   // Vidéo (reels_infeed uniquement) — même logique de repli que l'image.
-  const videoURL = asset?.videoURL || campaign.creative?.videoURL || undefined
+  const videoURL =
+    placement === 'reels_infeed'
+      ? asset?.videoURL || campaign.creative?.videoURL || undefined
+      : undefined
 
   return {
     campaignId: campaign.id,

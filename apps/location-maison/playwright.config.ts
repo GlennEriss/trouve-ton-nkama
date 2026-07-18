@@ -129,6 +129,7 @@ export default defineConfig({
     stderr: 'pipe',
     env: {
       E2E_ENV: e2eEnv,
+      NEXT_IGNORE_INCORRECT_LOCKFILE: '1',
     },
   },
 });

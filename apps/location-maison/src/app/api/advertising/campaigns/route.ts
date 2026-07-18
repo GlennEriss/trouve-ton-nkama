@@ -6,11 +6,20 @@ import { adminApp } from '@/firebase/admin'
 import { auth } from '@/next-auth/auth'
 import { createLogger } from '@/lib/logger'
 import { getAdPackage } from '@/constantes/ad-packages'
+import {
+  IdempotencyKeyError,
+  buildScopedIdempotencyDocId,
+  hashIdempotencyPayload,
+  readIdempotencyKey,
+} from '@/lib/server/idempotency'
 import type { AdCampaign } from '@/models/advertising'
 
 const logger = createLogger('api.advertising.campaigns')
 
 const SELF_SERVE_PRIORITY = 5 // < campagnes concierge (10) en cas d'égalité
+const DEFAULT_CTA_LABEL = 'En savoir plus'
+const IDEMPOTENCY_SCOPE = 'advertising_campaign_create'
+const ALLOWED_CTA_PROTOCOLS = new Set(['http:', 'https:', 'mailto:', 'tel:', 'whatsapp:'])
 
 function parseTargeting(value: unknown): { provinces?: string[]; cities?: string[] } | null {
   if (!value || typeof value !== 'object') return null
@@ -22,6 +31,26 @@ function parseTargeting(value: unknown): { provinces?: string[]; cities?: string
 }
 
 const VALID_PLACEMENTS = ['home', 'search_infeed', 'immobilier_infeed', 'property_detail', 'reels_infeed']
+
+function normalizeCtaUrl(value: unknown): string {
+  if (typeof value !== 'string') return ''
+  const trimmed = value.trim()
+  if (!trimmed) return ''
+  if (/^(https?:\/\/|mailto:|tel:|whatsapp:\/\/)/i.test(trimmed)) return trimmed
+  if (/^(wa\.me|api\.whatsapp\.com|www\.)/i.test(trimmed)) return `https://${trimmed}`
+  return trimmed
+}
+
+function isValidCtaUrl(value: string): boolean {
+  if (!value) return false
+
+  try {
+    const url = new URL(value)
+    return ALLOWED_CTA_PROTOCOLS.has(url.protocol)
+  } catch {
+    return false
+  }
+}
 
 /** Visuels par emplacement : conserve uniquement les entrées valides (image OU vidéo). */
 function parseAssets(
@@ -72,14 +101,38 @@ export async function POST(request: Request) {
     }
 
     const body = await request.json().catch(() => ({}))
+    const idempotencyKey = readIdempotencyKey(request.headers, body)
+    if (!idempotencyKey) {
+      return NextResponse.json(
+        { success: false, code: 'IDEMPOTENCY_KEY_REQUIRED', message: "Clé d'idempotence requise." },
+        { status: 400 },
+      )
+    }
     const pkg = getAdPackage(typeof body.packageId === 'string' ? body.packageId : '')
     const creative = body.creative ?? {}
     const imageURL = typeof creative.imageURL === 'string' ? creative.imageURL.trim() : ''
     const videoURL = typeof creative.videoURL === 'string' ? creative.videoURL.trim() : ''
     const parsedAssets = parseAssets(creative.assets)
+    const ctaUrl = normalizeCtaUrl(creative.ctaUrl)
+    const ctaLabel =
+      typeof creative.ctaLabel === 'string' && creative.ctaLabel.trim()
+        ? creative.ctaLabel.trim()
+        : DEFAULT_CTA_LABEL
 
     if (!pkg) {
       return NextResponse.json({ success: false, message: 'Forfait invalide.' }, { status: 400 })
+    }
+    if (!ctaUrl) {
+      return NextResponse.json(
+        { success: false, message: 'Ajoutez un lien au clic pour publier la publicité.' },
+        { status: 400 },
+      )
+    }
+    if (!isValidCtaUrl(ctaUrl)) {
+      return NextResponse.json(
+        { success: false, message: 'Lien au clic invalide. Utilisez https://, wa.me, tel: ou mailto:.' },
+        { status: 400 },
+      )
     }
     if (!pkg.placements.every((placement) => hasVisualForPlacement(placement, imageURL, videoURL, parsedAssets))) {
       return NextResponse.json(
@@ -100,8 +153,43 @@ export async function POST(request: Request) {
     const userRef = usersQuery.docs[0].ref
     const campaignRef = db.collection(firebaseCollectionNames.ad_campaigns).doc()
     const transactionRef = db.collection(firebaseCollectionNames.credit_transactions).doc()
+    const idempotencyRef = db
+      .collection(firebaseCollectionNames.idempotency_keys)
+      .doc(buildScopedIdempotencyDocId(IDEMPOTENCY_SCOPE, uid, idempotencyKey))
+    const requestHash = hashIdempotencyPayload({
+      packageId: pkg.id,
+      creative: {
+        imageURL,
+        videoURL,
+        assets: parsedAssets ?? null,
+        headline: typeof creative.headline === 'string' ? creative.headline : '',
+        body: typeof creative.body === 'string' ? creative.body : '',
+        ctaLabel,
+        ctaUrl,
+      },
+      targeting: parseTargeting(body.targeting),
+    })
 
     const result = await db.runTransaction(async (tx) => {
+      const idempotencySnap = await tx.get(idempotencyRef)
+      if (idempotencySnap.exists) {
+        const idempotencyData = idempotencySnap.data() ?? {}
+        if (idempotencyData.requestHash !== requestHash) {
+          throw new Error('IDEMPOTENCY_PAYLOAD_MISMATCH')
+        }
+        if (idempotencyData.status === 'completed' && idempotencyData.response) {
+          return {
+            ...(idempotencyData.response as {
+              campaignId: string
+              creditsUsed: number
+              creditsRemaining: number
+            }),
+            replayed: true,
+          }
+        }
+        throw new Error('IDEMPOTENCY_IN_PROGRESS')
+      }
+
       const userSnap = await tx.get(userRef)
       const user = userSnap.data() ?? {}
       const credits = Number(user.credits ?? 0)
@@ -127,8 +215,8 @@ export async function POST(request: Request) {
           ...(parsedAssets ? { assets: parsedAssets } : {}),
           headline: typeof creative.headline === 'string' ? creative.headline : '',
           body: typeof creative.body === 'string' ? creative.body : '',
-          ctaLabel: typeof creative.ctaLabel === 'string' ? creative.ctaLabel : '',
-          ctaUrl: typeof creative.ctaUrl === 'string' ? creative.ctaUrl : '',
+          ctaLabel,
+          ctaUrl,
         },
         placements: pkg.placements,
         targeting: parseTargeting(body.targeting),
@@ -161,23 +249,61 @@ export async function POST(request: Request) {
         createdAt: now,
         updatedAt: now,
       })
+      tx.create(idempotencyRef, {
+        scope: IDEMPOTENCY_SCOPE,
+        uid,
+        key: idempotencyKey,
+        requestHash,
+        status: 'completed',
+        response: {
+          campaignId: campaignRef.id,
+          creditsUsed: pkg.credits,
+          creditsRemaining: nextCredits,
+        },
+        createdAt: now,
+        updatedAt: now,
+      })
 
-      return { nextCredits }
+      return {
+        campaignId: campaignRef.id,
+        creditsUsed: pkg.credits,
+        creditsRemaining: nextCredits,
+        replayed: false,
+      }
     })
 
     return NextResponse.json({
       success: true,
-      campaignId: campaignRef.id,
-      creditsUsed: pkg.credits,
-      creditsRemaining: result.nextCredits,
+      campaignId: result.campaignId,
+      creditsUsed: result.creditsUsed,
+      creditsRemaining: result.creditsRemaining,
+      replayed: result.replayed,
     })
   } catch (error) {
     const message = error instanceof Error ? error.message : 'UNKNOWN'
+    if (error instanceof IdempotencyKeyError) {
+      return NextResponse.json(
+        { success: false, code: 'INVALID_IDEMPOTENCY_KEY', message: error.message },
+        { status: 400 },
+      )
+    }
     if (message.startsWith('INSUFFICIENT_CREDITS')) {
       const available = Number(message.split(':')[1] ?? 0)
       return NextResponse.json(
         { success: false, code: 'INSUFFICIENT_CREDITS', message: `Crédits insuffisants. Vous avez ${available} crédits.` },
         { status: 402 },
+      )
+    }
+    if (message === 'IDEMPOTENCY_PAYLOAD_MISMATCH') {
+      return NextResponse.json(
+        { success: false, code: 'IDEMPOTENCY_PAYLOAD_MISMATCH', message: "Cette clé d'idempotence a déjà été utilisée avec un autre contenu." },
+        { status: 409 },
+      )
+    }
+    if (message === 'IDEMPOTENCY_IN_PROGRESS') {
+      return NextResponse.json(
+        { success: false, code: 'IDEMPOTENCY_IN_PROGRESS', message: 'Publication déjà en cours. Patientez quelques secondes.' },
+        { status: 409 },
       )
     }
     logger.error('Self-serve campaign creation failed', { error })

@@ -12,6 +12,7 @@ const COLLECTIONS = {
   reels: "reels",
   gift_transactions: "gift_transactions",
   gift_withdrawals: "gift_withdrawals",
+  idempotency_keys: "idempotency_keys",
 
   // location-maison uniquement
   ai_search_sessions: "ai_search_sessions",

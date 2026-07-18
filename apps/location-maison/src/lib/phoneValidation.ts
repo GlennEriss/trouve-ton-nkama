@@ -84,6 +84,33 @@ function cleanPhoneNumber(phone: string): string {
   return phone.replace(/[\s\-\+\(\)]/g, '');
 }
 
+function normalizeGabonLocalNumberForInternational(cleanPhone: string): string | null {
+  let localNumber = cleanPhone;
+
+  if (localNumber.startsWith('241')) {
+    localNumber = localNumber.substring(3);
+  }
+
+  if (!/^\d+$/.test(localNumber)) {
+    return null;
+  }
+
+  // Nouvelle numerotation Gabon : 066545430 devient 66545430.
+  if (
+    localNumber.length === 9 &&
+    localNumber.startsWith('0') &&
+    (localNumber[1] === '6' || localNumber[1] === '7')
+  ) {
+    return localNumber.substring(1);
+  }
+
+  if (localNumber.length === 8) {
+    return localNumber;
+  }
+
+  return null;
+}
+
 /**
  * Vérifie si un numéro appartient à un pays supporté
  */
@@ -248,6 +275,14 @@ export function formatPhoneNumberForDisplay(phone: string): string {
  */
 export function normalizePhoneNumberForFirebase(phone: string): string {
   const cleanPhone = cleanPhoneNumber(phone);
+  const gabonLocalNumber = ENABLED_COUNTRIES.includes('GA')
+    ? normalizeGabonLocalNumberForInternational(cleanPhone)
+    : null;
+
+  if (gabonLocalNumber) {
+    return `${SUPPORTED_COUNTRIES.GA.countryCode}${gabonLocalNumber}`;
+  }
+
   const country = getCountryFromNumber(phone);
   
   if (!country) return phone;
