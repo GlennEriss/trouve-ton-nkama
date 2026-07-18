@@ -138,11 +138,11 @@ export const LocationProvider: React.FC<LocationProviderProps> = ({
           getAddressFromCoordinates(latitude, longitude);
         },
         (error) => {
-          logger.error('Erreur de géolocalisation utilisateur', { error });
+          logger.warn('Géolocalisation utilisateur indisponible', { error });
         }
       );
     } else {
-      logger.error("La géolocalisation n'est pas prise en charge");
+      logger.warn("La géolocalisation n'est pas prise en charge");
     }
   };
 
