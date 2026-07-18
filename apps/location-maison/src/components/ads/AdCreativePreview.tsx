@@ -4,6 +4,7 @@ import React, { useMemo, useState } from 'react'
 import { Smartphone, Monitor, Search } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import AdCreativeCard, { type AdCreativeCardData } from '@/components/ads/AdCreativeCard'
+import { AD_FORMATS } from '@/constantes/ad-formats'
 import type { AdPlacement } from '@/models/advertising'
 
 const PLACEMENT_LABELS: Record<AdPlacement, string> = {
@@ -15,6 +16,26 @@ const PLACEMENT_LABELS: Record<AdPlacement, string> = {
 }
 
 const skeleton = 'rounded bg-gray-200 dark:bg-gray-700'
+
+type PreviewAsset = { imageURL?: string; videoURL?: string }
+
+function hasCompatibleAsset(placement: AdPlacement, asset?: PreviewAsset) {
+  return Boolean(asset?.imageURL || (placement === 'reels_infeed' && asset?.videoURL))
+}
+
+function resolveAssetForPlacement(
+  placement: AdPlacement,
+  assets?: Partial<Record<AdPlacement, PreviewAsset>>,
+): PreviewAsset | undefined {
+  const directAsset = assets?.[placement]
+  if (hasCompatibleAsset(placement, directAsset)) return directAsset
+
+  const format = AD_FORMATS.find((item) => item.placements.includes(placement))
+  return format?.placements
+    .filter((candidate) => candidate !== placement)
+    .map((candidate) => assets?.[candidate])
+    .find((asset) => hasCompatibleAsset(placement, asset))
+}
 
 /** Fausse carte d'annonce immobilière (contexte autour de la pub). */
 function GhostCard() {
@@ -132,10 +153,11 @@ export default function AdCreativePreview({
   const active = selected && available.includes(selected) ? selected : available[0]
 
   // Visuel adapté à l'emplacement affiché, sinon le visuel par défaut.
+  const placementAsset = resolveAssetForPlacement(active, assets)
   const shownCreative: AdCreativeCardData = {
     ...creative,
-    imageURL: assets?.[active]?.imageURL || creative.imageURL,
-    videoURL: assets?.[active]?.videoURL || creative.videoURL,
+    imageURL: placementAsset?.imageURL || creative.imageURL,
+    videoURL: active === 'reels_infeed' ? placementAsset?.videoURL || creative.videoURL : undefined,
   }
 
   const surface =

@@ -11,6 +11,8 @@ import type { AdCampaign } from '@/models/advertising'
 const logger = createLogger('api.advertising.campaigns')
 
 const SELF_SERVE_PRIORITY = 5 // < campagnes concierge (10) en cas d'égalité
+const DEFAULT_CTA_LABEL = 'En savoir plus'
+const ALLOWED_CTA_PROTOCOLS = new Set(['http:', 'https:', 'mailto:', 'tel:', 'whatsapp:'])
 
 function parseTargeting(value: unknown): { provinces?: string[]; cities?: string[] } | null {
   if (!value || typeof value !== 'object') return null
@@ -22,6 +24,26 @@ function parseTargeting(value: unknown): { provinces?: string[]; cities?: string
 }
 
 const VALID_PLACEMENTS = ['home', 'search_infeed', 'immobilier_infeed', 'property_detail', 'reels_infeed']
+
+function normalizeCtaUrl(value: unknown): string {
+  if (typeof value !== 'string') return ''
+  const trimmed = value.trim()
+  if (!trimmed) return ''
+  if (/^(https?:\/\/|mailto:|tel:|whatsapp:\/\/)/i.test(trimmed)) return trimmed
+  if (/^(wa\.me|api\.whatsapp\.com|www\.)/i.test(trimmed)) return `https://${trimmed}`
+  return trimmed
+}
+
+function isValidCtaUrl(value: string): boolean {
+  if (!value) return false
+
+  try {
+    const url = new URL(value)
+    return ALLOWED_CTA_PROTOCOLS.has(url.protocol)
+  } catch {
+    return false
+  }
+}
 
 /** Visuels par emplacement : conserve uniquement les entrées valides (image OU vidéo). */
 function parseAssets(
@@ -77,9 +99,26 @@ export async function POST(request: Request) {
     const imageURL = typeof creative.imageURL === 'string' ? creative.imageURL.trim() : ''
     const videoURL = typeof creative.videoURL === 'string' ? creative.videoURL.trim() : ''
     const parsedAssets = parseAssets(creative.assets)
+    const ctaUrl = normalizeCtaUrl(creative.ctaUrl)
+    const ctaLabel =
+      typeof creative.ctaLabel === 'string' && creative.ctaLabel.trim()
+        ? creative.ctaLabel.trim()
+        : DEFAULT_CTA_LABEL
 
     if (!pkg) {
       return NextResponse.json({ success: false, message: 'Forfait invalide.' }, { status: 400 })
+    }
+    if (!ctaUrl) {
+      return NextResponse.json(
+        { success: false, message: 'Ajoutez un lien au clic pour publier la publicité.' },
+        { status: 400 },
+      )
+    }
+    if (!isValidCtaUrl(ctaUrl)) {
+      return NextResponse.json(
+        { success: false, message: 'Lien au clic invalide. Utilisez https://, wa.me, tel: ou mailto:.' },
+        { status: 400 },
+      )
     }
     if (!pkg.placements.every((placement) => hasVisualForPlacement(placement, imageURL, videoURL, parsedAssets))) {
       return NextResponse.json(
@@ -127,8 +166,8 @@ export async function POST(request: Request) {
           ...(parsedAssets ? { assets: parsedAssets } : {}),
           headline: typeof creative.headline === 'string' ? creative.headline : '',
           body: typeof creative.body === 'string' ? creative.body : '',
-          ctaLabel: typeof creative.ctaLabel === 'string' ? creative.ctaLabel : '',
-          ctaUrl: typeof creative.ctaUrl === 'string' ? creative.ctaUrl : '',
+          ctaLabel,
+          ctaUrl,
         },
         placements: pkg.placements,
         targeting: parseTargeting(body.targeting),

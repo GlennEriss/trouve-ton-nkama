@@ -5,6 +5,7 @@ import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import {
+  AlertTriangle,
   ArrowLeft,
   ArrowRight,
   CheckCircle,
@@ -23,14 +24,21 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { AD_PACKAGES } from '@/constantes/ad-packages'
-import { formatsForPlacements, type AdFormat } from '@/constantes/ad-formats'
+import { formatsForPlacements, type AdFormat, type AdFormatKey } from '@/constantes/ad-formats'
 import { routes } from '@/constantes/routes'
 import { uploadAdCreativeImage } from '@/db/ad-image.db'
 import { uploadAdCreativeVideo } from '@/db/ad-video.db'
+import { useCreditPacks } from '@/hooks/use-credit-packs'
 import { useCurrentUser } from '@/hooks/use-current-user'
 import { useToast } from '@/hooks/use-toast'
 import { useRecharge } from '@/providers/RechargeProvider'
 import { AD_VIDEO_REJECTION_MESSAGES, validateAdVideoFile } from '@/lib/ads/validate-ad-video'
+import {
+  ADMIN_PACKS_TEMPLATE,
+  estimateCreditsXafValue,
+  formatCreditUnitPriceRange,
+  formatXaf,
+} from '@/lib/credits/credit-packs'
 import { cn } from '@/lib/utils'
 import type { AdPlacement } from '@/models/advertising'
 import {
@@ -41,6 +49,10 @@ import {
 
 const REELS_FORMAT_ACCEPT = 'image/png,image/jpeg,image/webp,image/gif,video/mp4,video/quicktime,video/webm'
 const IMAGE_ONLY_ACCEPT = 'image/png,image/jpeg,image/webp,image/gif'
+const REELS_TARGET_RATIO = 9 / 16
+const REELS_RATIO_TOLERANCE = 0.08
+const DEFAULT_CTA_LABEL = 'En savoir plus'
+const ALLOWED_CTA_PROTOCOLS = new Set(['http:', 'https:', 'mailto:', 'tel:', 'whatsapp:'])
 
 const STEPS = [
   { id: 'package', title: 'Forfait', description: 'Choisissez où diffuser.' },
@@ -50,6 +62,129 @@ const STEPS = [
 ] as const
 
 const visualSkeleton = 'rounded bg-gray-200 dark:bg-gray-700'
+
+type MediaDimensions = {
+  width: number
+  height: number
+}
+
+function normalizeCtaUrl(value: string) {
+  const trimmed = value.trim()
+  if (!trimmed) return ''
+  if (/^(https?:\/\/|mailto:|tel:|whatsapp:\/\/)/i.test(trimmed)) return trimmed
+  if (/^(wa\.me|api\.whatsapp\.com|www\.)/i.test(trimmed)) return `https://${trimmed}`
+  return trimmed
+}
+
+function isValidCtaUrl(value: string) {
+  const normalized = normalizeCtaUrl(value)
+  if (!normalized) return false
+
+  try {
+    const url = new URL(normalized)
+    return ALLOWED_CTA_PROTOCOLS.has(url.protocol)
+  } catch {
+    return false
+  }
+}
+
+function getCtaUrlError(value: string) {
+  if (!value.trim()) return 'Ajoutez un lien au clic pour que la publicité puisse convertir.'
+  if (!isValidCtaUrl(value)) return 'Lien invalide. Utilisez https://, wa.me, tel: ou mailto:.'
+  return ''
+}
+
+function readImageDimensions(file: File): Promise<MediaDimensions | null> {
+  return new Promise((resolve) => {
+    const objectUrl = URL.createObjectURL(file)
+    const image = new Image()
+    let settled = false
+
+    const cleanup = () => {
+      URL.revokeObjectURL(objectUrl)
+      clearTimeout(timeoutId)
+    }
+
+    const finish = (dimensions: MediaDimensions | null) => {
+      if (settled) return
+      settled = true
+      cleanup()
+      resolve(dimensions)
+    }
+
+    const timeoutId = setTimeout(() => finish(null), 8000)
+
+    image.onload = () => {
+      if (!image.naturalWidth || !image.naturalHeight) {
+        finish(null)
+        return
+      }
+      finish({ width: image.naturalWidth, height: image.naturalHeight })
+    }
+
+    image.onerror = () => {
+      finish(null)
+    }
+
+    image.src = objectUrl
+  })
+}
+
+function readVideoDimensions(file: File): Promise<MediaDimensions | null> {
+  return new Promise((resolve) => {
+    const objectUrl = URL.createObjectURL(file)
+    const video = document.createElement('video')
+    let settled = false
+
+    const cleanup = () => {
+      URL.revokeObjectURL(objectUrl)
+      clearTimeout(timeoutId)
+      video.removeAttribute('src')
+    }
+
+    const finish = (dimensions: MediaDimensions | null) => {
+      if (settled) return
+      settled = true
+      cleanup()
+      resolve(dimensions)
+    }
+
+    const timeoutId = setTimeout(() => finish(null), 8000)
+
+    video.onloadedmetadata = () => {
+      if (!video.videoWidth || !video.videoHeight) {
+        finish(null)
+        return
+      }
+      finish({ width: video.videoWidth, height: video.videoHeight })
+    }
+
+    video.onerror = () => {
+      finish(null)
+    }
+
+    video.preload = 'metadata'
+    video.src = objectUrl
+  })
+}
+
+async function readMediaDimensions(file: File): Promise<MediaDimensions | null> {
+  if (file.type.startsWith('image/')) return readImageDimensions(file)
+  if (file.type.startsWith('video/')) return readVideoDimensions(file)
+  return null
+}
+
+function buildReelsRatioWarning(dimensions: MediaDimensions | null) {
+  if (!dimensions) return ''
+
+  const ratio = dimensions.width / dimensions.height
+  const isVertical = dimensions.height > dimensions.width
+  const isNearReelsRatio = Math.abs(ratio - REELS_TARGET_RATIO) <= REELS_RATIO_TOLERANCE
+
+  if (isVertical && isNearReelsRatio) return ''
+
+  return `Format vertical recommandé pour Réels (1080×1920). Votre fichier ${dimensions.width}×${dimensions.height} sera affiché avec des bandes noires.`
+}
 
 function GhostPropertyCard() {
   return (
@@ -277,8 +412,10 @@ export default function AdvertisingCreateWizard() {
   const { user } = useCurrentUser()
   const { toast } = useToast()
   const { openRecharge } = useRecharge()
+  const creditPacksQuery = useCreditPacks()
 
   const credits = Number(user?.credits ?? 0)
+  const creditPacks = creditPacksQuery.data?.packs?.length ? creditPacksQuery.data.packs : ADMIN_PACKS_TEMPLATE
 
   const [currentStep, setCurrentStep] = React.useState(0)
   const [packageId, setPackageId] = React.useState('brand')
@@ -291,6 +428,8 @@ export default function AdvertisingCreateWizard() {
   const [ctaLabel, setCtaLabel] = React.useState('')
   const [ctaUrl, setCtaUrl] = React.useState('')
   const [assets, setAssets] = React.useState<AssetMap>({})
+  const [formatWarnings, setFormatWarnings] = React.useState<Partial<Record<AdFormatKey, string>>>({})
+  const [defaultVisualReelsWarning, setDefaultVisualReelsWarning] = React.useState('')
   const [formatUploading, setFormatUploading] = React.useState<AdFormat['key'] | null>(null)
   const [activeFormatKey, setActiveFormatKey] = React.useState<AdFormat['key']>('infeed')
 
@@ -305,6 +444,10 @@ export default function AdvertisingCreateWizard() {
   const hasReelsPlacement = selectedPackage?.placements.includes('reels_infeed') ?? false
   const hasVisualForPlacement = (placement: AdPlacement) => Boolean(imageURL || hasAsset(assets[placement]))
   const hasAllPlacementVisuals = selectedPackage ? selectedPackage.placements.every(hasVisualForPlacement) : false
+  const normalizedCtaUrl = normalizeCtaUrl(ctaUrl)
+  const ctaUrlError = getCtaUrlError(ctaUrl)
+  const hasValidCtaUrl = isValidCtaUrl(ctaUrl)
+  const effectiveCtaLabel = ctaLabel.trim() || DEFAULT_CTA_LABEL
   const activeFormat =
     formats.find((format) => format.key === activeFormatKey) ??
     formats.find((format) => format.key === 'infeed') ??
@@ -315,6 +458,22 @@ export default function AdvertisingCreateWizard() {
   const readyPlacementCount = selectedPackage?.placements.filter(hasVisualForPlacement).length ?? 0
   const visualProgress = totalPlacementCount ? Math.round((readyPlacementCount / totalPlacementCount) * 100) : 0
   const stepProgress = Math.round(((currentStep + 1) / STEPS.length) * 100)
+  const selectedPackageXafValue = selectedPackage
+    ? estimateCreditsXafValue(selectedPackage.credits, creditPacks)
+    : 0
+  const creditUnitPriceLabel = formatCreditUnitPriceRange(creditPacks)
+  const reelsFormatWarning =
+    formatWarnings.reels ||
+    (hasReelsPlacement && !hasAsset(assets.reels_infeed) ? defaultVisualReelsWarning : '')
+
+  const setFormatWarning = (formatKey: AdFormatKey, warning: string) => {
+    setFormatWarnings((prev) => {
+      const next = { ...prev }
+      if (warning) next[formatKey] = warning
+      else delete next[formatKey]
+      return next
+    })
+  }
 
   React.useEffect(() => {
     if (formats.length === 0) return
@@ -331,6 +490,7 @@ export default function AdvertisingCreateWizard() {
     setImagePATH('')
     setUploading(true)
     try {
+      setDefaultVisualReelsWarning(buildReelsRatioWarning(await readMediaDimensions(file)))
       if (!user?.uid) throw new Error('Connecte-toi pour uploader une image.')
       const data = await uploadAdCreativeImage(file, user.uid)
       setImageURL(data.imageURL)
@@ -345,6 +505,7 @@ export default function AdvertisingCreateWizard() {
   const clearDefaultVisual = () => {
     setImageURL('')
     setImagePATH('')
+    setDefaultVisualReelsWarning('')
     setLocalPreview((prev) => {
       if (prev) URL.revokeObjectURL(prev)
       return ''
@@ -354,6 +515,12 @@ export default function AdvertisingCreateWizard() {
   const handleFormatUpload = async (format: AdFormat, file: File) => {
     setFormatUploading(format.key)
     try {
+      if (format.key === 'reels') {
+        setFormatWarning(format.key, buildReelsRatioWarning(await readMediaDimensions(file)))
+      } else {
+        setFormatWarning(format.key, '')
+      }
+
       if (format.key === 'reels' && file.type.startsWith('video/')) {
         if (!user?.uid) throw new Error('Connecte-toi pour uploader une vidéo.')
         const validation = await validateAdVideoFile(file)
@@ -383,12 +550,14 @@ export default function AdvertisingCreateWizard() {
     }
   }
 
-  const clearFormat = (format: AdFormat) =>
+  const clearFormat = (format: AdFormat) => {
+    setFormatWarning(format.key, '')
     setAssets((prev) => {
       const next = { ...prev }
       for (const p of format.placements) delete next[p]
       return next
     })
+  }
 
   const createMutation = useMutation({
     mutationFn: async () => {
@@ -403,8 +572,8 @@ export default function AdvertisingCreateWizard() {
             assets: Object.keys(assets).length ? assets : undefined,
             headline: headline || undefined,
             body: body || undefined,
-            ctaLabel: ctaLabel || undefined,
-            ctaUrl: ctaUrl || undefined,
+            ctaLabel: effectiveCtaLabel,
+            ctaUrl: normalizedCtaUrl,
           },
         }),
       })
@@ -435,6 +604,7 @@ export default function AdvertisingCreateWizard() {
   const canPublish =
     !!selectedPackage &&
     hasAllPlacementVisuals &&
+    hasValidCtaUrl &&
     !uploading &&
     !formatUploading &&
     !createMutation.isPending
@@ -445,7 +615,7 @@ export default function AdvertisingCreateWizard() {
       : currentStep === 1
         ? hasAllPlacementVisuals && !uploading && !formatUploading
         : currentStep === 2
-          ? true
+          ? hasValidCtaUrl
           : canPublish
 
   const goNext = () => {
@@ -460,8 +630,8 @@ export default function AdvertisingCreateWizard() {
     imageURL: imageURL || localPreview || undefined,
     headline: headline || undefined,
     body: body || undefined,
-    ctaLabel: ctaLabel || undefined,
-    ctaUrl: ctaUrl || undefined,
+    ctaLabel: effectiveCtaLabel,
+    ctaUrl: normalizedCtaUrl || undefined,
   }
 
   return (
@@ -485,9 +655,12 @@ export default function AdvertisingCreateWizard() {
             </div>
           </div>
         </div>
-        <div className="flex min-h-10 items-center gap-2 rounded-full border border-gray-200 bg-white px-4 text-sm shadow-sm dark:border-gray-700 dark:bg-gray-900">
-          <Wallet className="h-4 w-4 text-[#1FA89B]" />
-          <span className="font-semibold">{credits.toLocaleString('fr-FR')} crédits</span>
+        <div className="flex min-h-10 flex-col justify-center gap-0.5 rounded-2xl border border-gray-200 bg-white px-4 py-2 text-sm shadow-sm dark:border-gray-700 dark:bg-gray-900 sm:items-end">
+          <span className="inline-flex items-center gap-2 font-semibold">
+            <Wallet className="h-4 w-4 text-[#1FA89B]" />
+            {credits.toLocaleString('fr-FR')} crédits
+          </span>
+          <span className="text-xs text-gray-500">{creditUnitPriceLabel}</span>
         </div>
       </header>
 
@@ -515,6 +688,9 @@ export default function AdvertisingCreateWizard() {
                 >
                   <p className="font-semibold text-[#224D62] dark:text-white">{p.name}</p>
                   <p className="mt-1 text-2xl font-bold text-[#1FA89B]">{p.credits} crédits</p>
+                  <p className="mt-1 text-xs font-semibold text-gray-500">
+                    ≈ {formatXaf(estimateCreditsXafValue(p.credits, creditPacks))}
+                  </p>
                   <p className="mt-2 min-h-10 text-xs leading-5 text-gray-500">{p.description}</p>
                   <div className="mt-3 flex flex-wrap gap-1.5">
                     {p.placements.map((placement) => (
@@ -564,6 +740,7 @@ export default function AdvertisingCreateWizard() {
                   {formats.map((fmt) => {
                     const ready = fmt.placements.every(hasVisualForPlacement)
                     const dedicated = fmt.placements.every((placement) => hasAsset(assets[placement]))
+                    const warning = fmt.key === 'reels' ? reelsFormatWarning : formatWarnings[fmt.key]
                     return (
                       <button
                         key={fmt.key}
@@ -582,7 +759,7 @@ export default function AdvertisingCreateWizard() {
                           <span
                             className={cn(
                               'h-2.5 w-2.5 rounded-full',
-                              ready ? 'bg-[#1FA89B]' : 'bg-gray-300 dark:bg-gray-600',
+                              warning ? 'bg-amber-500' : ready ? 'bg-[#1FA89B]' : 'bg-gray-300 dark:bg-gray-600',
                             )}
                           />
                           <span className="min-w-0 flex-1 truncate text-sm font-semibold text-[#224D62] dark:text-white">
@@ -590,7 +767,7 @@ export default function AdvertisingCreateWizard() {
                           </span>
                         </span>
                         <span className="mt-1 block text-xs text-gray-500">
-                          {dedicated ? 'Visuel dédié' : ready ? 'Visuel par défaut' : fmt.recommended}
+                          {warning ? 'Format à vérifier' : dedicated ? 'Visuel dédié' : ready ? 'Visuel par défaut' : fmt.recommended}
                         </span>
                       </button>
                     )
@@ -633,6 +810,13 @@ export default function AdvertisingCreateWizard() {
                         onUpload={(file) => void handleFormatUpload(activeFormat, file)}
                       />
                     </PlacementMockup>
+
+                    {activeFormat.key === 'reels' && reelsFormatWarning ? (
+                      <div className="flex gap-2 rounded-xl border border-amber-200 bg-amber-50 p-3 text-sm leading-5 text-amber-800 dark:border-amber-500/30 dark:bg-amber-500/10 dark:text-amber-200">
+                        <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0" />
+                        <p>{reelsFormatWarning}</p>
+                      </div>
+                    ) : null}
 
                     <div className="flex flex-wrap gap-1.5 px-1">
                       {activeFormat.placements.map((placement) => (
@@ -693,6 +877,12 @@ export default function AdvertisingCreateWizard() {
                       </button>
                     ) : null}
                   </div>
+                  {hasReelsPlacement && !hasAsset(assets.reels_infeed) && defaultVisualReelsWarning ? (
+                    <div className="mt-3 flex gap-2 rounded-xl border border-amber-200 bg-amber-50 p-3 text-xs leading-5 text-amber-800 dark:border-amber-500/30 dark:bg-amber-500/10 dark:text-amber-200">
+                      <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0" />
+                      <p>{defaultVisualReelsWarning}</p>
+                    </div>
+                  ) : null}
                 </div>
 
                 <div className="rounded-xl bg-gray-50 p-4 dark:bg-gray-800">
@@ -705,7 +895,9 @@ export default function AdvertisingCreateWizard() {
                       <div key={placement} className="flex items-center justify-between gap-3 text-sm">
                         <span className="text-gray-600 dark:text-gray-300">{PACKAGE_PLACEMENT_LABELS[placement]}</span>
                         <span className={cn('rounded-full px-2 py-0.5 text-xs font-medium', hasVisualForPlacement(placement) ? 'bg-[#1FA89B]/10 text-[#1FA89B]' : 'bg-gray-200 text-gray-600 dark:bg-gray-700 dark:text-gray-300')}>
-                          {hasVisualForPlacement(placement) ? 'Prêt' : 'Manquant'}
+                          {placement === 'reels_infeed' && hasVisualForPlacement(placement) && reelsFormatWarning
+                            ? 'À vérifier'
+                            : hasVisualForPlacement(placement) ? 'Prêt' : 'Manquant'}
                         </span>
                       </div>
                     ))}
@@ -725,7 +917,7 @@ export default function AdvertisingCreateWizard() {
           <div className="space-y-5">
             <div>
               <h2 className="text-lg font-semibold text-[#224D62] dark:text-white">Préparer le message</h2>
-              <p className="mt-1 text-sm text-gray-500">Ces textes sont facultatifs, mais ils rendent la publicité plus claire.</p>
+              <p className="mt-1 text-sm text-gray-500">Le lien au clic est obligatoire pour transformer les vues en contacts.</p>
             </div>
             <div className="grid gap-4 lg:grid-cols-2">
               <div className="space-y-2">
@@ -745,6 +937,7 @@ export default function AdvertisingCreateWizard() {
                   value={ctaLabel}
                   onChange={(e) => setCtaLabel(e.target.value)}
                 />
+                <p className="text-xs leading-5 text-gray-500">Par défaut : {DEFAULT_CTA_LABEL}.</p>
               </div>
               <div className="space-y-2 lg:col-span-2">
                 <Label htmlFor="ad-body">Description courte</Label>
@@ -757,13 +950,29 @@ export default function AdvertisingCreateWizard() {
                 />
               </div>
               <div className="space-y-2 lg:col-span-2">
-                <Label htmlFor="ad-url">Lien au clic</Label>
+                <Label htmlFor="ad-url">Lien au clic <span className="text-red-600">*</span></Label>
                 <Input
                   id="ad-url"
+                  type="url"
+                  inputMode="url"
+                  autoComplete="url"
+                  required
+                  aria-invalid={Boolean(ctaUrlError)}
+                  aria-describedby="ad-url-helper"
                   placeholder="https://... ou wa.me/241..."
                   value={ctaUrl}
                   onChange={(e) => setCtaUrl(e.target.value)}
+                  onBlur={() => setCtaUrl(normalizeCtaUrl(ctaUrl))}
                 />
+                <p
+                  id="ad-url-helper"
+                  className={cn(
+                    'text-sm leading-5',
+                    ctaUrlError ? 'text-red-600' : 'text-gray-500',
+                  )}
+                >
+                  {ctaUrlError || 'Ce lien sera ouvert quand un utilisateur touche la publicité.'}
+                </p>
               </div>
             </div>
           </div>
@@ -780,8 +989,24 @@ export default function AdvertisingCreateWizard() {
                 <span className="font-semibold">{selectedPackage?.name}</span>
                 <span className="mx-2">·</span>
                 <span>{selectedPackage?.credits} crédits</span>
+                <span className="mx-2">·</span>
+                <span>≈ {formatXaf(selectedPackageXafValue)}</span>
               </div>
             </div>
+
+            {!hasValidCtaUrl ? (
+              <div className="flex gap-2 rounded-xl border border-red-200 bg-red-50 p-3 text-sm leading-5 text-red-700 dark:border-red-500/30 dark:bg-red-500/10 dark:text-red-200">
+                <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0" />
+                <p>{ctaUrlError}</p>
+              </div>
+            ) : null}
+
+            {reelsFormatWarning ? (
+              <div className="flex gap-2 rounded-xl border border-amber-200 bg-amber-50 p-3 text-sm leading-5 text-amber-800 dark:border-amber-500/30 dark:bg-amber-500/10 dark:text-amber-200">
+                <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0" />
+                <p>{reelsFormatWarning}</p>
+              </div>
+            ) : null}
 
             <AdCreativePreview
               creative={selectedCreative}
@@ -841,7 +1066,7 @@ export default function AdvertisingCreateWizard() {
                 type="button"
                 onClick={() => createMutation.mutate()}
                 disabled={!canPublish}
-                aria-label={`Payer ${selectedPackage?.credits ?? ''} crédits et publier`}
+                aria-label={`Payer ${selectedPackage?.credits ?? ''} crédits, environ ${formatXaf(selectedPackageXafValue)}, et publier`}
                 className="flex h-12 flex-1 touch-manipulation items-center justify-center gap-2 rounded-full bg-[#1FA89B] px-5 text-sm font-semibold text-white shadow-lg shadow-[#1FA89B]/20 transition active:scale-[0.98] disabled:bg-gray-300 disabled:text-gray-500 disabled:shadow-none dark:disabled:bg-gray-700 dark:disabled:text-gray-400"
               >
                 {createMutation.isPending ? <Loader2 className="h-5 w-5 animate-spin" /> : <CheckCircle className="h-5 w-5" />}
@@ -867,7 +1092,7 @@ export default function AdvertisingCreateWizard() {
         <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
           {selectedPackage && (
             <p className="text-sm text-gray-500">
-              {selectedPackage.name} · {selectedPackage.credits} crédits · {selectedPackage.durationDays} j
+              {selectedPackage.name} · {selectedPackage.credits} crédits ≈ {formatXaf(selectedPackageXafValue)} · {selectedPackage.durationDays} j
             </p>
           )}
           {currentStep < STEPS.length - 1 ? (

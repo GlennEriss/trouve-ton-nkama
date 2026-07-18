@@ -86,6 +86,37 @@ export const ADMIN_PACKS_TEMPLATE: CreditPackData[] = [
   },
 ]
 
+function getPricedPacks(packs: ReadonlyArray<CreditPackData>) {
+  const active = packs.filter((pack) => pack.isActive !== false && pack.credits > 0 && pack.price > 0)
+  return active.length > 0 ? active : ADMIN_PACKS_TEMPLATE
+}
+
+export function formatXaf(amount: number): string {
+  return `${Math.round(amount).toLocaleString('fr-FR')} FCFA`
+}
+
+export function estimateCreditsXafValue(
+  credits: number,
+  packs: ReadonlyArray<CreditPackData> = ADMIN_PACKS_TEMPLATE,
+): number {
+  const pricedPacks = getPricedPacks(packs)
+  const bestUnitPrice = Math.min(...pricedPacks.map((pack) => pack.price / pack.credits))
+  return Math.round(Math.max(0, credits) * bestUnitPrice)
+}
+
+export function formatCreditUnitPriceRange(
+  packs: ReadonlyArray<CreditPackData> = ADMIN_PACKS_TEMPLATE,
+): string {
+  const pricedPacks = getPricedPacks(packs)
+  const unitPrices = pricedPacks.map((pack) => pack.price / pack.credits)
+  const min = Math.round(Math.min(...unitPrices))
+  const max = Math.round(Math.max(...unitPrices))
+
+  if (min === max) return `1 crédit ≈ ${formatXaf(min)}`
+
+  return `1 crédit ≈ ${formatXaf(min)} à ${formatXaf(max)} selon le pack`
+}
+
 export function toUiCreditPack(pack: CreditPackData): CreditPackUi {
   const normalizedId = pack.id.trim().toLowerCase()
   const uiConfig = PACK_UI_CONFIG[normalizedId]

@@ -15,6 +15,10 @@ const SEGMENT_LABELS: Record<string, string> = {
   'villa': 'Villa',
   'desk': 'Bureau',
   'building': 'Immeuble',
+  'advertising': 'Publicités',
+  'create': 'Créer',
+  'reels': 'Réels',
+  'mine': 'Mes réels',
   'login-and-security': 'Connexion et sécurité',
   'modify': 'Modifier'
 };
