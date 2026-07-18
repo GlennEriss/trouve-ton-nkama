@@ -14,6 +14,16 @@ export const E2E_ANNOUNCER = {
   phoneNumberVerified: true,
   birthDate: '1990-01-01',
   credits: 169,
+  favoris: [],
+  providers: ['CREDENTIALS'],
+  notificationParameter: {
+    isNew: false,
+    isAccountActivity: false,
+    isNewAnnouncement: false,
+    isFavoris: false,
+    isPersonalizedSuggestions: false,
+    isSystemUpdated: false,
+  },
   metadata: { needsProfileCompletion: false },
 }
 

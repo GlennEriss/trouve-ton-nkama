@@ -6,8 +6,7 @@ import { useCurrentUser } from "@/hooks/use-current-user";
 import { generateColorFromName } from "@/lib/generateColorFromName";
 import { 
   EmptyNotificationsState, 
-  NotificationItem, 
-  NotificationButton 
+  NotificationItem,
 } from "@/components/notifications/shared/NotificationComponents";
 import { NOTIFICATION_CSS_CLASSES } from "@/components/notifications/shared/notification-utils";
 
@@ -56,7 +55,7 @@ export default function SectionNotifications() {
 
       <div className="mt-4 space-y-3">
         {!hasNotifications ? (
-          <EmptyNotificationsState iconSize={60} />
+          <EmptyNotificationsState iconSize={60} showSettingsLink />
         ) : (
           notifications.map((notification) => (
             <NotificationItem
@@ -70,12 +69,6 @@ export default function SectionNotifications() {
           ))
         )}
       </div>
-
-      <NotificationButton 
-        unreadCount={unreadCount} 
-        iconSize={20}
-        variant="floating"
-      />
     </div>
   );
 }

@@ -229,6 +229,18 @@ Couverture Lot 5B : formulaire studio, profil, informations personnelles, histor
 
 Resultat : 28 tests passes. Validation associee : TypeScript sans erreur, 26 tests API/services passes, Lot 5A a 8/8 et regression mobile Lot 4 a 15/15. Le detail et les captures sont documentes dans [LOT-5-AUDIT.md](./LOT-5-AUDIT.md).
 
+Lot 5C automatise le 2026-07-18 :
+
+```bash
+cd apps/location-maison
+npm run test:e2e:lot5c
+npm run test:e2e:lot5c:screenshots
+```
+
+Couverture Lot 5C : accueil, recherche, choix du type d'annonce, publication, favoris, notifications, connexion/securite, parametres, mes reels et fil de reels. La matrice couvre mobile/desktop et clair/sombre, soit 40 scenarios.
+
+Resultat : 40 tests passes. Les tests ont revele puis verrouille les noms accessibles, contrastes, labels de dates, cibles tactiles, titres desktop, etats vides et interactions imbriquees. Validation associee : 39 tests API/services, Lot 5A a 8/8, Lot 5B a 28/28 et Lot 4 mobile a 15/15. Les 40 captures et le detail des corrections sont documentes dans [LOT-5-AUDIT.md](./LOT-5-AUDIT.md).
+
 ### Lot 6 - Publicites, monitoring et regression continue
 
 But : suivre la prod sans attendre les retours utilisateurs.

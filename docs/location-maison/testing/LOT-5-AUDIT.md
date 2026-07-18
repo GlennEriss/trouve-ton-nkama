@@ -145,8 +145,49 @@ Resultats : TypeScript sans erreur, 26 tests API/services passes, Lot 5A a 8/8 e
 
 Les captures 5B sont conservees dans `docs/location-maison/testing/screenshots/lot5b`.
 
+## Lot 5C - Surfaces transversales et etats vides
+
+Perimetre automatise :
+
+- accueil et recherche ;
+- choix du type d'annonce et page publier ;
+- favoris et notifications ;
+- connexion/securite et parametres ;
+- gestion des reels et fil public ;
+- viewports 390 x 844 et 1440 x 960 ;
+- themes clair et sombre.
+
+Commandes :
+
+```bash
+cd apps/location-maison
+npm run test:e2e:lot5c
+npm run test:e2e:lot5c:screenshots
+```
+
+Dernier resultat : 40 tests passes en 1 min 18 s, y compris l'attente de l'etat charge de `/reels/mine` sur les quatre variantes.
+
+Chaque scenario controle le titre ou l'etat fonctionnel attendu, Axe/WCAG, le clavier, le debordement horizontal, le dark mode et le mouvement reduit. Sur mobile, il controle aussi les cibles de 44 px et la derniere action au-dessus de la bottom navigation. Le fil de reels conserve son traitement plein ecran specifique.
+
+Corrections appliquees :
+
+- Les interrupteurs ont une cible tactile de 44 px et un nom accessible sans agrandir visuellement leur piste.
+- Les pages Parametres et Connexion/securite utilisent l'en-tete partage, un seul `h1` et des sections semantiques.
+- Les favoris vides ne tentent plus d'iterer une page inexistante et proposent une recherche d'annonces.
+- L'etat vide des notifications propose les preferences sans bouton flottant redondant au-dessus de la navigation.
+- Les filtres de date et actions de `/reels/mine` ont des labels et tailles tactiles conformes.
+- Les boutons de recherche de la navbar ont un nom accessible et une cible de 44 px.
+- Les contrastes de l'accueil, de la recherche, des annonces publicitaires de repli et de la page Publier sont conformes en clair et sombre.
+- Le titre du choix de type d'annonce reste visible sur desktop.
+- Les liens/boutons imbriques ont ete remplaces par une seule cible interactive valide.
+- Les libelles inactifs de la bottom navigation restent lisibles dans les deux themes.
+
+Les 40 captures de reference sont conservees dans `docs/location-maison/testing/screenshots/lot5c`.
+
+Validation associee : TypeScript sans erreur, 39 tests API/services passes, Lot 5A a 8/8, Lot 5B a 28/28 et regression mobile Lot 4 a 15/15.
+
 ## Suite
 
 - Conserver le test Lot 5 dans la regression de release.
 - Etendre progressivement la matrice aux autres types de formulaire d'annonce sans dupliquer les memes controles.
-- Passer au Lot 5C pour l'audit transversal des composants et pages restantes, puis au Lot 6 pour les publicites et le monitoring.
+- Passer au Lot 6 pour les publicites, le monitoring et la regression continue.

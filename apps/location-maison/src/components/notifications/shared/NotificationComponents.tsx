@@ -25,7 +25,13 @@ export function NotificationDot({ className }: Readonly<{ className?: string }>)
 }
 
 // Composant pour l'état vide des notifications
-export function EmptyNotificationsState({ iconSize = 32 }: { iconSize?: number }) {
+export function EmptyNotificationsState({
+  iconSize = 32,
+  showSettingsLink = false,
+}: {
+  iconSize?: number;
+  showSettingsLink?: boolean;
+}) {
   return (
     <div className={`flex flex-col items-center justify-center py-6 ${NOTIFICATION_CSS_CLASSES.text.muted}`}>
       <BellIcon size={iconSize} className="mb-2 text-gray-400 dark:text-gray-500" />
@@ -35,6 +41,11 @@ export function EmptyNotificationsState({ iconSize = 32 }: { iconSize?: number }
           : "Aucune notification pour le moment"
         }
       </p>
+      {showSettingsLink && (
+        <Button asChild variant="outline" className="mt-5 h-11 rounded-full px-5">
+          <Link href="/settings">Gérer mes préférences</Link>
+        </Button>
+      )}
     </div>
   );
 }

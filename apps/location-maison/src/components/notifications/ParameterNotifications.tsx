@@ -78,10 +78,10 @@ export default function ParameterNotifications() {
     };
 
     return (
-        <div className="px-6 space-y-6 py-6 bg-white dark:bg-gray-900 max-w-4xl mx-auto">
-            <h1 className="text-2xl font-bold mb-4 text-gray-900 dark:text-white">
-                Paramètre de notifications
-            </h1>
+        <section aria-labelledby="notification-settings-title" className="px-6 space-y-6 py-6 bg-white dark:bg-gray-900 max-w-4xl mx-auto">
+            <h2 id="notification-settings-title" className="text-xl font-bold mb-4 text-gray-900 dark:text-white">
+                Notifications
+            </h2>
             {notifications.map((notification) => (
                 <div key={notification.key} className="flex items-center justify-between gap-4 py-4 border-b border-gray-200 dark:border-gray-700 last:border-b-0">
                     <div className="flex flex-col">
@@ -93,12 +93,13 @@ export default function ParameterNotifications() {
                         </p>
                     </div>
                     <Switch
+                        aria-label={`Recevoir les notifications : ${notification.title}`}
                         onCheckedChange={() => onCheckedChange(notification.key)}
                         checked={user?.notificationParameter ? user.notificationParameter[notification.key] : false}
                         disabled={loading}
                     />
                 </div>
             ))}
-        </div>
+        </section>
     );
 }

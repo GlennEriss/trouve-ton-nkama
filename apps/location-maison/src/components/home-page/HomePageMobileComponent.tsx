@@ -109,7 +109,7 @@ export default function HomePageMobileComponent() {
             <div className={cn('text-sm space-y-5', user && width < 768 ? 'mb-20' : '')}>
                 <motion.section className='space-y-4 m-5' ref={searchSectionRef} {...getRevealProps(0.03)}>
                     <div className='space-y-1 '>
-                        <h1 className='text-gray-500 text-[11px]'>Votre futur chez-vous grâce à Trouve Ton Nkama</h1>
+                        <p className='text-xs text-gray-600 dark:text-gray-300'>Votre futur chez-vous grâce à Trouve Ton Nkama</p>
                         <div className='flex text-xl font-bold text-[#146B67] items-center gap-2'>
                             <MapPin size={25} color='#146B67' />
                             <h1>
@@ -118,15 +118,17 @@ export default function HomePageMobileComponent() {
                         </div>
                     </div>
                     <Form action="/search" onSubmit={trackSearchSubmit}>
-                        <div className="flex items-center border rounded-full p-2 px-4 bg-gray-100 focus-within:border-[#1FA89B]">
+                        <div className="flex items-center border rounded-full p-2 px-3 bg-gray-100 focus-within:border-[#1FA89B] dark:border-gray-700 dark:bg-gray-800">
                             <button
                                 type='submit'
+                                aria-label='Lancer la recherche'
+                                className='flex h-11 w-11 shrink-0 items-center justify-center rounded-full text-gray-700 hover:bg-white dark:text-gray-200 dark:hover:bg-gray-700'
                                 onClick={trackSearchSubmit}
                             >
                                 <Search size={25} className='hover:stroke-[#1FA89B]' />
                             </button>
                             <Input
-                                className='border-none bg-transparent shadow-none focus-visible:ring-0'
+                                className='h-11 border-none bg-transparent shadow-none focus-visible:ring-0'
                                 placeholder='Logement, ville, quartier...'
                                 value={searchText}
                                 onChange={(e) => setSearchText(e.target.value)}

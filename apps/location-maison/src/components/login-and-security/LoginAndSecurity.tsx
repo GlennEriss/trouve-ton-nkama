@@ -138,29 +138,35 @@ export default function LoginAndSecurity() {
     };
 
     return (
-        <div className='px-6'>
-            <h1 className='text-xl font-bold'>Réseaux sociaux</h1>
+        <div className='mx-auto max-w-4xl px-6 text-gray-900 dark:text-white'>
+            <h2 className='text-xl font-bold'>Méthodes de connexion</h2>
+            <p className='mt-1 text-sm text-gray-600 dark:text-gray-400'>
+                Associez une méthode supplémentaire pour accéder plus facilement à votre compte.
+            </p>
             <Separator className='my-4' />
             <div>
                 {connectionMethods.map((connection) => (
                     <div key={connection.method} className=''>
-                        <div className='flex items-center justify-between'>
-                            <div className="w-12 h-12 rounded-full bg-gray-100 flex items-center justify-center hover:bg-gray-200 transition duration-200">
+                        <div className='grid grid-cols-[auto_1fr] items-center gap-3 sm:grid-cols-[auto_1fr_auto]'>
+                            <div className="flex h-12 w-12 items-center justify-center rounded-full bg-gray-100 dark:bg-gray-800">
                                 <connection.icon size={24} />
                             </div>
-                            <div>
+                            <div className='min-w-0'>
+                                <p className='font-semibold capitalize'>{connection.method.toLowerCase()}</p>
                                 {user?.providers?.includes(connection.method as ProviderType) ? (
-                                    <span className='text-green-500 font-bold'>Connecté</span>
+                                    <span className='text-sm font-semibold text-emerald-700 dark:text-emerald-300'>Connecté</span>
                                 ) : (
-                                    <span className='text-red-500 font-bold'>Non connecté</span>
+                                    <span className='text-sm font-medium text-gray-600 dark:text-gray-400'>Non connecté</span>
                                 )}
                             </div>
                             <Button
                                 type='button'
+                                variant='outline'
+                                className='col-span-2 h-11 w-full rounded-full sm:col-span-1 sm:w-auto'
                                 onClick={() => handleConnection(connection.method)}
                                 disabled={Boolean(user?.providers?.includes(connection.method as ProviderType)) || Boolean(isPending)}
                             >
-                                Se connecter
+                                {user?.providers?.includes(connection.method as ProviderType) ? 'Déjà associé' : 'Associer'}
                             </Button>
                         </div>
                         <Separator className='my-4' />
@@ -168,8 +174,9 @@ export default function LoginAndSecurity() {
                 ))}
             </div>
             <div className='space-y-2'>
-                <h1 className='text-xl font-bold'>Modifier le mot de passe</h1>
-                <Button variant='outline' asChild disabled={isPending}>
+                <h2 className='text-xl font-bold'>Mot de passe</h2>
+                <p className='text-sm text-gray-600 dark:text-gray-400'>Renouvelez votre mot de passe en cas de doute ou par précaution.</p>
+                <Button variant='outline' className='h-11 rounded-full' asChild disabled={isPending}>
                     <Link href={routes.public.reset_password}>
                         Mettre à jour
                     </Link>

@@ -126,6 +126,7 @@ export const PhoneCountryConfig: React.FC = () => {
                   {enabledCountries.includes(code as SupportedCountry) ? 'Activé' : 'Désactivé'}
                 </Badge>
                 <Switch
+                  aria-label={`${enabledCountries.includes(code as SupportedCountry) ? 'Désactiver' : 'Activer'} ${config.name}`}
                   checked={enabledCountries.includes(code as SupportedCountry)}
                   onCheckedChange={(checked) => handleToggleCountry(code as SupportedCountry, checked)}
                 />
@@ -229,4 +230,4 @@ export const PhoneCountryConfig: React.FC = () => {
       </Card>
     </div>
   );
-}; 
+};

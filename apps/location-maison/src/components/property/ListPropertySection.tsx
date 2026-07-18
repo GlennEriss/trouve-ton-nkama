@@ -368,10 +368,10 @@ export const CardPropertyCrud = ({ property }: { property: Property }) => {
                         </div>
                         <div className="flex items-center gap-2 text-sm">
                             <Switch
+                                aria-label={localState === 'IN_PROGRESS' ? 'Marquer comme indisponible' : 'Marquer comme disponible'}
                                 disabled={isLoading}
                                 checked={localState === "IN_PROGRESS"}
                                 onCheckedChange={handleChangePropertyState}
-                                className="scale-75"
                             />
                             <span className={cn(
                                 "font-medium",

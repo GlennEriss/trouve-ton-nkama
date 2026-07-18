@@ -74,8 +74,10 @@ export default function InputSearchNavbar() {
         return (
             <div>
                 <button
+                    type="button"
+                    aria-label="Ouvrir la recherche"
                     onClick={handleClick}
-                    className="w-9 h-9 flex items-center justify-center border border-[#146B67] dark:bg-gray-800 rounded-full"
+                    className="flex h-11 w-11 items-center justify-center rounded-full border border-[#146B67] dark:bg-gray-800"
                 >
                     <Search size={20} className="text-[#146B67]" />
                 </button>
@@ -140,8 +142,10 @@ export default function InputSearchNavbar() {
             </div>
             {/* Bouton de validation */}
             <button
+                type="button"
+                aria-label="Lancer la recherche"
                 onClick={handleSearch}
-                className="flex items-center justify-center w-9 h-9 bg-white dark:bg-neutral-900 border border-[#146B67] text-[#146B67] rounded-full hover:bg-gradient-to-r hover:from-[#146B67] hover:to-[#1FA89B] hover:text-white transition-colors duration-200"
+                className="flex h-11 w-11 items-center justify-center rounded-full border border-[#146B67] bg-white text-[#146B67] transition-colors duration-200 hover:bg-[#146B67] hover:text-white dark:bg-neutral-900"
             >
                 <BiSearch className="w-6 h-6" />
             </button>
