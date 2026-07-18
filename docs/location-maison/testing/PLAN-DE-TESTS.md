@@ -108,6 +108,38 @@ Parcours prioritaires mobile d'abord :
 - Publicites : liste `/advertising`, creation `/advertising/create`, apercus Recherche/Immobilier/Reels, paiement credits.
 - Gifts : page `/gifts`, listing, etats vides et erreurs.
 
+Commande Lot 4A deja automatisee :
+
+```bash
+cd apps/location-maison && npx playwright test --project=chromium-mobile __tests__/e2e/lot4-mobile-public.spec.ts
+```
+
+Couverture Lot 4A : parcours publics anonymes sur mobile, bottom navigation invite, routes protegees, footer, creation de reel publique, feed reels, partage et fin de feed.
+
+Commande Lot 4B deja automatisee :
+
+```bash
+cd apps/location-maison && npx playwright test --project=chromium-mobile __tests__/e2e/lot4-mobile-announcer.spec.ts
+```
+
+Couverture Lot 4B : session annonceur mockee avec cookie NextAuth, `/publish`, bottom navigation connectee, `/property`, actions annonceur principales, `/reels/mine` et retour `returnTo` depuis la creation de reel.
+
+Commande Lot 4C deja automatisee :
+
+```bash
+cd apps/location-maison && npx playwright test --project=chromium-mobile __tests__/e2e/lot4-mobile-crud.spec.ts
+```
+
+Couverture Lot 4C : reset du formulaire `/property/add/studio`, filtres annonceur, nettoyage du prix minimum, reset des filtres et modals annulables pour `Archiver`/`Supprimer`. Ce sous-lot est non destructif : il ne confirme pas encore les ecritures Firestore.
+
+Commande de regression mobile Lot 4A + Lot 4B + Lot 4C :
+
+```bash
+cd apps/location-maison && npx playwright test --project=chromium-mobile __tests__/e2e/lot4-mobile-public.spec.ts __tests__/e2e/lot4-mobile-announcer.spec.ts __tests__/e2e/lot4-mobile-crud.spec.ts
+```
+
+Dernier resultat local : 12 tests passes en 58.5s.
+
 Critere de sortie :
 
 - Les parcours passent sur petit mobile, mobile standard et desktop.

@@ -73,13 +73,21 @@ async function expectAboveBottomNav(page: Page, locator: Locator) {
   expect(targetBox!.y + targetBox!.height).toBeLessThanOrEqual(navBox!.y + 2)
 }
 
+async function gotoReelsFeed(page: Page) {
+  await page.goto('/reels', { waitUntil: 'domcontentloaded', timeout: 30_000 })
+}
+
+async function gotoApp(page: Page, path: string) {
+  await page.goto(path, { waitUntil: 'domcontentloaded', timeout: 30_000 })
+}
+
 test.describe('Lot 4 mobile public UX', () => {
   test.use({ viewport: MOBILE_SIZE })
 
   test('la bottom navigation invite donne acces aux pages publiques majeures', async ({ page }) => {
     await mockReelsFeed(page)
 
-    await page.goto('/')
+    await gotoApp(page, '/')
 
     const bottomNav = page.getByRole('navigation', { name: /Navigation mobile/i })
     await expect(bottomNav).toBeVisible()
@@ -114,7 +122,7 @@ test.describe('Lot 4 mobile public UX', () => {
   })
 
   test('la bottom navigation ne couvre pas le footer sur mobile invite', async ({ page }) => {
-    await page.goto('/terms-of-use')
+    await gotoApp(page, '/terms-of-use')
 
     const footerCopyright = page
       .locator('footer')
@@ -126,7 +134,7 @@ test.describe('Lot 4 mobile public UX', () => {
   })
 
   test('la creation de reel reste publique, sans bottom nav, et le retour respecte returnTo', async ({ page }) => {
-    await page.goto('/reels/add?returnTo=%2Freels')
+    await gotoApp(page, '/reels/add?returnTo=%2Freels')
 
     await expect(page).toHaveURL(/\/reels\/add\?returnTo=%2Freels/)
     await expect(page.getByRole('heading', { name: /Créer un réel/i })).toBeVisible()
@@ -140,7 +148,7 @@ test.describe('Lot 4 mobile public UX', () => {
 
   test('le rail mobile des reels garde l ordre attendu et le partage expose les reseaux', async ({ page }) => {
     await mockReelsFeed(page)
-    await page.goto('/reels')
+    await gotoReelsFeed(page)
 
     const buttons = [
       page.getByRole('button', { name: /J'aime ce réel/i }),
@@ -172,7 +180,7 @@ test.describe('Lot 4 mobile public UX', () => {
 
   test('la fin du feed reels propose clairement de creer un reel', async ({ page }) => {
     await mockReelsFeed(page)
-    await page.goto('/reels')
+    await gotoReelsFeed(page)
 
     await expect(page.getByRole('button', { name: /J'aime ce réel/i })).toBeVisible()
 

@@ -4,6 +4,24 @@ import { User } from '@/models/authentication';
 import { UserRepositoryImpl } from '../user.repository';
 import { RepositoryError } from '../user.repository.interface';
 
+// Mock explicite (pas d'automock) : @/firebase/firestore exécute getFirestore(app) au chargement
+// du module réel, ce qui échoue hors d'un contexte Firebase initialisé. `db` volontairement
+// absent du mock (undefined) — les tests vérifient juste que doc()/collection() sont appelés
+// avec le bon nom de collection et les bons arguments, peu importe la valeur de `db`.
+jest.mock('@/firebase/firestore', () => ({
+  collection: jest.fn(),
+  query: jest.fn(),
+  where: jest.fn(),
+  getDocs: jest.fn(),
+  getDoc: jest.fn(),
+  setDoc: jest.fn(),
+  updateDoc: jest.fn(),
+  doc: jest.fn(),
+  // Retourne un sentinel non-null : update()/delete() vérifient updatedAt via
+  // expect.anything(), qui échoue sur undefined (jest.fn() sans valeur par défaut).
+  serverTimestamp: jest.fn(() => 'SERVER_TIMESTAMP_SENTINEL'),
+}));
+
 type FirestoreSnapshot = {
   id: string;
   exists: () => boolean;
