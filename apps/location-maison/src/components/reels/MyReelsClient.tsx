@@ -40,6 +40,7 @@ import type { Reel, ReelProcessingStatus } from '@/models/reel'
 
 const REELS_PAGE_SIZE = 12
 const REELS_QUERY_KEY = 'reels-mine'
+const CREATE_REEL_FROM_MINE_HREF = `${routes.protected.reels_add}?returnTo=${encodeURIComponent(routes.protected.reels_mine)}`
 
 const PROCESSING_LABELS: Record<ReelProcessingStatus, string> = {
   uploading: 'Envoi en cours',
@@ -329,7 +330,7 @@ export default function MyReelsClient() {
             asChild
             className="h-12 rounded-full bg-gradient-to-r from-[#146B67] to-[#1FA89B] px-6 font-semibold hover:from-[#115a56] hover:to-[#1a9388]"
           >
-            <Link href={routes.protected.reels_add}>
+            <Link href={CREATE_REEL_FROM_MINE_HREF}>
               <Video className="mr-2 h-4 w-4" />
               Nouveau réel
             </Link>
@@ -442,7 +443,7 @@ export default function MyReelsClient() {
                 asChild
                 className="h-11 rounded-full bg-gradient-to-r from-[#146B67] to-[#1FA89B] px-6 hover:from-[#115a56] hover:to-[#1a9388]"
               >
-                <Link href={routes.protected.reels_add}>
+                <Link href={CREATE_REEL_FROM_MINE_HREF}>
                   <Video className="mr-2 h-4 w-4" />
                   Créer un réel
                 </Link>

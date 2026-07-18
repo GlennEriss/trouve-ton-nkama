@@ -44,13 +44,17 @@ function shouldHideGuestBottomNavigation(pathname: string) {
     return GUEST_BOTTOM_NAV_HIDDEN_PREFIXES.some((prefix) => isActivePath(pathname, prefix))
 }
 
-// Routes masquées pour TOUT le monde (pas seulement les visiteurs) : la création de réel est
-// un éditeur plein écran façon statut WhatsApp (fixed inset-0) — cette barre (z-50, fixed
-// bottom) recouvrirait la légende et le bouton d'envoi.
+// Routes masquées pour TOUT le monde (pas seulement les visiteurs) : la création et l'édition
+// de réel sont des éditeurs plein écran façon statut WhatsApp (fixed inset-0) — cette barre
+// (z-50, fixed bottom) recouvrirait la légende et le bouton d'envoi.
 const ALWAYS_HIDDEN_PREFIXES = [routes.protected.reels_add] as const
+const REEL_EDIT_ROUTE_REGEX = /^\/reels\/[^/]+\/edit\/?$/
 
 function shouldHideBottomNavigationForEveryone(pathname: string) {
-    return ALWAYS_HIDDEN_PREFIXES.some((prefix) => isActivePath(pathname, prefix))
+    return (
+        ALWAYS_HIDDEN_PREFIXES.some((prefix) => isActivePath(pathname, prefix)) ||
+        REEL_EDIT_ROUTE_REGEX.test(pathname)
+    )
 }
 
 function shouldReserveBottomNavigationSpace(pathname: string) {

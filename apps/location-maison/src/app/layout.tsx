@@ -9,6 +9,7 @@ import { Metadata } from 'next'
 import { FirebaseAnalyticsTracker } from '@/features/analytics/tracking';
 import { PresenceAnalyticsTracker } from '@/features/analytics/presence/ui/PresenceAnalyticsTracker';
 import { TrafficAnalyticsTracker } from '@/features/analytics/traffic/ui/TrafficAnalyticsTracker';
+import { MetaPixelScript, MetaPixelPageViewTracker } from '@/features/analytics/meta-pixel';
 import { Analytics } from '@vercel/analytics/react';
 import AdSenseRouteLoader from '@/components/ads/AdSenseRouteLoader';
 import { ADSENSE_CLIENT } from '@/lib/ads/config';
@@ -78,26 +79,14 @@ export default async function RootLayout({
       <head>
         <meta name="google-site-verification" content="owGLe__J-ZZiJvB-iZzlfxianxrwoO8vdRyxKFfSkTk" />
         <meta name="google-adsense-account" content={ADSENSE_CLIENT} />
-        {/* Métadonnées Open Graph optimisées pour mobile et WhatsApp */}
-        <meta property="og:title" content="Immobilier Gabon - Trouve Ton Nkama | Location & Vente Maisons, Appartements" />
-        <meta property="og:description" content="Plateforme immobilière #1 au Gabon. Maisons, appartements, villas à Libreville, Port-Gentil, Franceville, Oyem, Mouila et partout au Gabon. Prix en FCFA, annonces vérifiées, contact direct propriétaire." />
-        <meta property="og:url" content={SITE_ORIGIN} />
-        <meta property="og:type" content="website" />
-        <meta property="og:site_name" content="Trouve Ton Nkama" />
-        <meta property="og:locale" content="fr_FR" />
-        <meta property="og:image" content={`${SITE_ORIGIN}/og-image.jpg`} />
-        <meta property="og:image:width" content="1200" />
-        <meta property="og:image:height" content="630" />
-        <meta property="og:image:type" content="image/jpeg" />
-        <meta property="og:image:alt" content="Trouve Ton Nkama - Plateforme immobilière au Gabon" />
-        <meta property="og:image:secure_url" content={`${SITE_ORIGIN}/og-image.jpg`} />
-        
-        {/* Métadonnées Twitter Card */}
-        <meta name="twitter:card" content="summary_large_image" />
-        <meta name="twitter:title" content="Immobilier Gabon - Trouve Ton Nkama | Location & Vente" />
-        <meta name="twitter:description" content="Trouvez votre logement au Gabon : maisons, appartements, villas. Prix en FCFA, annonces vérifiées, contact direct propriétaire." />
-        <meta name="twitter:image" content={`${SITE_ORIGIN}/og-image.jpg`} />
-        
+        {/* Les balises og: et twitter: de la home sont déjà couvertes par l'export `metadata`
+            ci-dessus (openGraph/twitter) — les dupliquer ici en meta statiques les faisait
+            apparaître en premier dans le head final, hors du système de merge/override par
+            page de Next. Les crawlers (WhatsApp/Facebook) ne retiennent que la première balise
+            par propriété : ça masquait silencieusement l'og:title/og:image propres à chaque
+            page (ex. houseDetails/[id], voir generateMetadata) derrière ceux, génériques, de
+            la home. */}
+
         {/* Schema.org - Local Business */}
         <script
           type="application/ld+json"
@@ -256,6 +245,7 @@ export default async function RootLayout({
         className={cn('antialiased overscroll-y-none', inter.className)}
       >
         <AdSenseRouteLoader />
+        <MetaPixelScript />
         <div className="mx-auto">
           <Providers>
             {children}
@@ -264,6 +254,7 @@ export default async function RootLayout({
             <FirebaseAnalyticsTracker />
             <PresenceAnalyticsTracker />
             <TrafficAnalyticsTracker />
+            <MetaPixelPageViewTracker />
             <Analytics />
           </Providers>
         </div>

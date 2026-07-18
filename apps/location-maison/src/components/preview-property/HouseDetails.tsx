@@ -8,6 +8,7 @@ import { notFound, useParams } from "next/navigation"
 import HouseDetailSkeleton from "./HouseDetailSkeleton"
 import RecommendationSection from "./RecommendationSection"
 import { useTrackPropertyView } from "@/hooks/use-track-property-view"
+import { useMetaPixelViewContent } from "@/features/analytics/meta-pixel"
 import SponsoredSlot from '@/components/ads/SponsoredSlot'
 import { ADSENSE_SLOTS } from '@/lib/ads/config'
 
@@ -18,9 +19,12 @@ export default function HouseDetails() {
         notFound()
     }
     const { data: property, isLoading, error } = useProperty(id)
-    
+
     // Tracking des vues sur la page publique
     useTrackPropertyView(id)
+    useMetaPixelViewContent(
+        property ? { id: property.id, title: property.title, price: property.price } : null
+    )
 
     if (isLoading) {
         return (

@@ -2,6 +2,7 @@
 
 import React from 'react'
 import Link from 'next/link'
+import { useSearchParams } from 'next/navigation'
 import { ArrowLeft, CheckCircle2, Loader2, Pencil, Send, Video, X, XCircle } from 'lucide-react'
 import { useCurrentUser } from '@/hooks/use-current-user'
 import { useVideoDropzone, type VideoDropzoneRejectionReason } from '@/hooks/useVideoDropzone'
@@ -30,11 +31,23 @@ const PROCESSING_LABELS: Record<ReelProcessingStatus, string> = {
 }
 
 const MAX_DESCRIPTION_LENGTH = 280
+const ALLOWED_RETURN_PATHS = new Set([
+  routes.protected.publish,
+  routes.protected.reels_mine,
+  routes.protected.reels,
+])
+
+function getSafeReturnHref(returnTo: string | null) {
+  if (!returnTo) return routes.protected.publish
+  return ALLOWED_RETURN_PATHS.has(returnTo) ? returnTo : routes.protected.publish
+}
 
 export default function CreateOrphanReelClient() {
   const { user, isFirebaseConnected } = useCurrentUser()
   const { toast } = useToast()
+  const searchParams = useSearchParams()
   const { saveDraftVideo, loadDraftVideo, clearDraftVideo } = useReelDraftVideoStorage()
+  const returnHref = getSafeReturnHref(searchParams.get('returnTo'))
 
   const [videoFile, setVideoFile] = React.useState<File | null>(null)
   const [videoDurationSeconds, setVideoDurationSeconds] = React.useState(0)
@@ -305,7 +318,7 @@ export default function CreateOrphanReelClient() {
 
   return (
     <div className="max-w-xl mx-auto space-y-6">
-      <Link href={routes.protected.publish}>
+      <Link href={returnHref}>
         <Button variant="ghost" size="sm" className="group -ml-2">
           <ArrowLeft className="h-4 w-4 mr-1 transition-transform group-hover:-translate-x-1" />
           Retour

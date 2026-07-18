@@ -4,12 +4,8 @@ import React from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
-import { ArrowLeft, Loader2, Save, Video } from 'lucide-react'
+import { ArrowLeft, Loader2, Pencil, Send, Video, X } from 'lucide-react'
 import { Button } from '@/components/ui/button'
-import { Card } from '@/components/ui/card'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
-import { Textarea } from '@/components/ui/textarea'
 import { routes } from '@/constantes/routes'
 import { getReelById, updateReelDetails } from '@/db/reel.db'
 import { useCurrentUser } from '@/hooks/use-current-user'
@@ -28,6 +24,7 @@ export default function EditReelClient({ reelId }: EditReelClientProps) {
   const { toast } = useToast()
   const [contact, setContact] = React.useState('')
   const [description, setDescription] = React.useState('')
+  const [isEditingContact, setIsEditingContact] = React.useState(false)
   const [initializedReelId, setInitializedReelId] = React.useState<string | null>(null)
   const [isSaving, setIsSaving] = React.useState(false)
 
@@ -57,7 +54,7 @@ export default function EditReelClient({ reelId }: EditReelClientProps) {
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault()
-    if (!canEdit || isSaving) return
+    if (!canEdit || isSaving || !hasChanges) return
 
     setIsSaving(true)
     try {
@@ -85,9 +82,9 @@ export default function EditReelClient({ reelId }: EditReelClientProps) {
 
   if (authLoading || waitingForFirebase || reelQuery.isLoading) {
     return (
-      <div className="flex min-h-[360px] flex-col items-center justify-center gap-3">
-        <Loader2 className="h-8 w-8 animate-spin text-emerald-600" />
-        <p className="text-sm text-slate-500">
+      <div className="fixed inset-0 z-40 flex flex-col items-center justify-center gap-3 bg-black">
+        <Loader2 className="h-8 w-8 animate-spin text-white" />
+        <p className="text-sm text-white/70">
           {waitingForFirebase ? "Connexion sécurisée..." : "Chargement du réel..."}
         </p>
       </div>
@@ -103,101 +100,99 @@ export default function EditReelClient({ reelId }: EditReelClientProps) {
             Mes réels
           </Button>
         </Link>
-        <Card className="p-5">
-          <p className="text-sm font-medium text-slate-800 dark:text-slate-100">
+        <div className="rounded-xl border border-slate-200 p-4 dark:border-slate-700">
+          <p className="text-sm font-medium text-slate-700 dark:text-slate-200">
             Réel introuvable ou non modifiable.
           </p>
           <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
             Vous ne pouvez modifier que les réels que vous avez créés.
           </p>
-        </Card>
+        </div>
       </div>
     )
   }
 
+  // Même éditeur plein écran façon statut WhatsApp que le formulaire d'ajout
+  // (CreateOrphanReelClient) : vidéo au centre, pilule contact + légende + envoi en bas.
+  // Seule différence : la vidéo est déjà traitée (lecture depuis videoUrl, pas de montage).
   return (
-    <div className="mx-auto max-w-xl space-y-6">
-      <Link href={routes.protected.reels_mine}>
-        <Button variant="ghost" size="sm" className="group -ml-2">
-          <ArrowLeft className="mr-1 h-4 w-4 transition-transform group-hover:-translate-x-1" />
-          Mes réels
-        </Button>
-      </Link>
-
-      <div>
-        <h1 className="text-xl font-bold text-slate-900 dark:text-white">Modifier le réel</h1>
-        <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
-          Corrigez le numéro de contact ou la description sans renvoyer la vidéo.
-        </p>
+    <div className="fixed inset-0 z-40 flex flex-col bg-black">
+      <div className="flex items-center justify-between px-4 pt-[calc(env(safe-area-inset-top,0px)+0.75rem)] pb-2">
+        <button
+          type="button"
+          onClick={() => router.push(routes.protected.reels_mine)}
+          disabled={isSaving}
+          className="flex h-10 w-10 items-center justify-center rounded-full bg-white/10 text-white disabled:opacity-40"
+          aria-label="Retour à mes réels"
+        >
+          <X className="h-5 w-5" />
+        </button>
       </div>
 
-      <Card className="overflow-hidden">
-        <div className="flex items-center gap-3 border-b border-slate-100 p-3 dark:border-slate-800">
-          <div className="flex h-16 w-16 shrink-0 items-center justify-center overflow-hidden rounded-lg bg-slate-100 dark:bg-slate-800">
-            {reel.thumbnailUrl ? (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img src={reel.thumbnailUrl} alt="" className="h-full w-full object-cover" />
-            ) : (
-              <Video className="h-6 w-6 text-slate-400" />
-            )}
+      <div className="relative mx-4 flex min-h-0 flex-1 items-center justify-center overflow-hidden rounded-2xl bg-white/5">
+        {reel.videoUrl ? (
+          <video
+            src={reel.videoUrl}
+            poster={reel.thumbnailUrl}
+            controls
+            playsInline
+            loop
+            className="h-full w-full object-contain"
+          />
+        ) : reel.thumbnailUrl ? (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img src={reel.thumbnailUrl} alt="" className="h-full w-full object-contain" />
+        ) : (
+          <div className="flex flex-col items-center gap-2 text-white/60">
+            <Video className="h-10 w-10" />
+            <p className="text-sm">Vidéo en cours de traitement</p>
           </div>
-          <div className="min-w-0">
-            <p className="text-sm font-medium text-slate-800 dark:text-slate-100">
-              {reel.propertyId ? 'Réel attaché à une annonce' : 'Réel sans annonce attachée'}
-            </p>
-            <p className="mt-0.5 text-xs text-slate-500 dark:text-slate-400">
-              Statut : {reel.moderationStatus === 'APPROVED' ? 'approuvé' : reel.moderationStatus === 'PENDING' ? 'en attente' : 'rejeté'}
-            </p>
-          </div>
+        )}
+      </div>
+
+      <form
+        onSubmit={handleSubmit}
+        className="space-y-2 px-4 pb-[calc(env(safe-area-inset-bottom,0px)+1rem)] pt-2"
+      >
+        <button
+          type="button"
+          onClick={() => setIsEditingContact((current) => !current)}
+          className="inline-flex items-center gap-1.5 rounded-full bg-white/10 px-3 py-1 text-xs text-white/80"
+        >
+          <Pencil className="h-3 w-3" />
+          {contact ? `Contact : ${contact}` : 'Ajouter un numéro de contact'}
+        </button>
+
+        {isEditingContact && (
+          <input
+            type="tel"
+            value={contact}
+            onChange={(event) => setContact(event.target.value)}
+            placeholder="Ex: +241 XX XX XX XX"
+            disabled={isBusy}
+            className="w-full rounded-full border-0 bg-white/10 px-4 py-2.5 text-sm text-white placeholder:text-white/50 focus:outline-none focus:ring-2 focus:ring-white/40"
+          />
+        )}
+
+        <div className="flex items-center gap-2">
+          <input
+            type="text"
+            value={description}
+            onChange={(event) => setDescription(event.target.value.slice(0, MAX_DESCRIPTION_LENGTH))}
+            placeholder="Ajouter une légende..."
+            disabled={isBusy}
+            className="flex-1 rounded-full border-0 bg-white/10 px-4 py-3 text-sm text-white placeholder:text-white/60 focus:outline-none focus:ring-2 focus:ring-white/40"
+          />
+          <button
+            type="submit"
+            disabled={isBusy || !hasChanges}
+            className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-gradient-to-r from-[#146B67] to-[#1FA89B] text-white shadow-lg disabled:opacity-50"
+            aria-label="Enregistrer les modifications"
+          >
+            {isSaving ? <Loader2 className="h-5 w-5 animate-spin" /> : <Send className="h-5 w-5" />}
+          </button>
         </div>
-
-        <form onSubmit={handleSubmit} className="space-y-4 p-4">
-          <div>
-            <Label htmlFor="reel-contact">Numéro à contacter (WhatsApp / appel)</Label>
-            <Input
-              id="reel-contact"
-              type="tel"
-              value={contact}
-              onChange={(event) => setContact(event.target.value)}
-              placeholder="Ex: +241 XX XX XX XX"
-              disabled={isBusy}
-              className="mt-1"
-            />
-            <p className="mt-1 text-xs text-slate-400">
-              Laissez vide pour utiliser le contact de l&apos;annonce, ou votre numéro de profil.
-            </p>
-          </div>
-
-          <div>
-            <Label htmlFor="reel-description">Description (facultatif)</Label>
-            <Textarea
-              id="reel-description"
-              value={description}
-              onChange={(event) => setDescription(event.target.value.slice(0, MAX_DESCRIPTION_LENGTH))}
-              placeholder="Ex: Visite rapide, quartier calme, proche commerces..."
-              disabled={isBusy}
-              maxLength={MAX_DESCRIPTION_LENGTH}
-              rows={4}
-              className="mt-1 resize-none"
-            />
-            <p className="mt-1 text-right text-xs text-slate-400">
-              {description.length}/{MAX_DESCRIPTION_LENGTH}
-            </p>
-          </div>
-
-          <div className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
-            <Link href={routes.protected.reels_mine}>
-              <Button type="button" variant="outline" className="w-full sm:w-auto" disabled={isSaving}>
-                Annuler
-              </Button>
-            </Link>
-            <Button type="submit" disabled={isBusy || !hasChanges} className="w-full sm:w-auto">
-              {isSaving ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Save className="mr-2 h-4 w-4" />}
-              Enregistrer
-            </Button>
-          </div>
-        </form>
-      </Card>
+      </form>
     </div>
   )
 }
