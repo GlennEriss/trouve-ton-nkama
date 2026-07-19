@@ -371,6 +371,50 @@ Execute le 2026-07-19 hors Redis :
 
 Le workflow de monitoring est present localement. Il deviendra actif toutes les 30 minutes apres publication des changements sur GitHub et une premiere execution manuelle reussie.
 
+### Lot 7 - Extension de couverture et seuils CI
+
+Execute le 2026-07-19 en quatre sous-lots :
+
+- 7A : 33 tests des Functions cadeaux et credits MyPayGa, incluant signatures,
+  montants, erreurs fournisseur et idempotence ;
+- 7B : 34 tests des transactions de credits et du client de donnees reels ;
+- 7C : 19 tests des formulaires, hooks et composants sensibles, dont le double clic reel ;
+- 7D : seuils globaux et locaux obligatoires, resumes GitHub Actions et rapport d'audit.
+
+Resultat mesure : application 260 tests passes et 6 ignores, Functions 75 tests passes et
+5 ignores. La couverture globale atteint 10,92 % des lignes application et 36,62 % des
+lignes Functions. Les dix modules critiques du lot sont couverts entre 77,37 % et 100 %
+des lignes, avec des seuils CI individuels entre 75 % et 95 %.
+
+Le monitoring production manuel `29696611203` a egalement passe. Detail et commandes dans
+[LOT-7-AUDIT.md](./LOT-7-AUDIT.md).
+
+### Lot 8 - Couverture par domaine fonctionnel
+
+But : faire progresser la couverture globale sans exclure artificiellement les pages
+historiques, domaine par domaine, avec des seuils locaux exigeants sur chaque circuit traite.
+
+#### Lot 8A - Annonces hors UI
+
+Execute le 2026-07-19 :
+
+- 57 tests cibles sur les 12 types d'annonces, constructeurs, schemas, images,
+  localisations, CRUD, pagination, moderation et double clic ;
+- 20/20 tests de regles Firestore, avec modification/suppression par le proprietaire et
+  refus pour un autre utilisateur ;
+- 6/6 scenarios de regression API avec Firestore Emulator ;
+- 317 tests application passes, 6 ignores, TypeScript et seuils CI au vert ;
+- couverture globale application portee a 13,60 % des lignes et 50,43 % des branches.
+
+Les modules annonces critiques sont couverts entre 77,18 % et 100 % des lignes et disposent
+maintenant de seuils CI individuels. Detail dans [LOT-8A-AUDIT.md](./LOT-8A-AUDIT.md).
+
+#### Lot 8B - Annonces dans le navigateur
+
+Prochaine etape : parcourir les 12 variantes sur mobile et desktop, verifier les champs,
+les claviers, erreurs, images, brouillons, reset, navigation entre etapes, creation,
+modification et suppression contre l'environnement de developpement.
+
 ## Matrice de risques
 
 | Risque | Impact | Premier lot |

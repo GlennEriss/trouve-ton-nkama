@@ -1,0 +1,168 @@
+import { fireEvent, render, screen, waitFor } from '@testing-library/react'
+
+const currentUserState: {
+  user: Record<string, unknown> | null
+  isFirebaseConnected: boolean
+} = {
+  user: { uid: 'owner-1', roles: ['Announcer'], phoneNumbers: ['+24166545430'] },
+  isFirebaseConnected: true,
+}
+const mockToast = jest.fn()
+const mockCreateReel = jest.fn()
+const mockUploadRawReelVideo = jest.fn()
+const mockMarkReelUploadFailed = jest.fn()
+const mockSubscribeToReel = jest.fn(() => jest.fn())
+const mockClearDraftVideo = jest.fn()
+const mockSaveDraftVideo = jest.fn()
+const mockLoadDraftVideo = jest.fn()
+let selectedFile: File
+let returnTo = '/reels/mine'
+
+jest.mock('next/navigation', () => ({
+  useSearchParams: () => ({ get: () => returnTo }),
+}))
+
+jest.mock('@/hooks/use-current-user', () => ({
+  useCurrentUser: () => currentUserState,
+}))
+
+jest.mock('@/hooks/use-toast', () => ({
+  useToast: () => ({ toast: mockToast }),
+}))
+
+jest.mock('@/hooks/useReelDraftVideoStorage', () => ({
+  useReelDraftVideoStorage: () => ({
+    saveDraftVideo: mockSaveDraftVideo,
+    loadDraftVideo: mockLoadDraftVideo,
+    clearDraftVideo: mockClearDraftVideo,
+  }),
+}))
+
+jest.mock('@/hooks/useVideoDropzone', () => ({
+  useVideoDropzone: ({ onFile }: { onFile: (file: File, duration: number) => void }) => ({
+    getRootProps: () => ({
+      'data-testid': 'video-dropzone',
+      onClick: () => onFile(selectedFile, 5),
+    }),
+    getInputProps: () => ({}),
+    isDragActive: false,
+    isProcessing: false,
+  }),
+}))
+
+jest.mock('@/db/reel.db', () => ({
+  buildRawReelVideoPath: (_file: File, ownerId: string, reelId: string) =>
+    `reels-raw/${ownerId}/${reelId}.mov`,
+  createReel: (...args: unknown[]) => mockCreateReel(...args),
+  uploadRawReelVideo: (...args: unknown[]) => mockUploadRawReelVideo(...args),
+  markReelUploadFailed: (...args: unknown[]) => mockMarkReelUploadFailed(...args),
+  subscribeToReel: () => mockSubscribeToReel(),
+}))
+
+jest.mock('@/components/reels/VideoTrimEditor', () => ({
+  VideoTrimEditor: () => <div data-testid="trim-editor" />,
+}))
+
+jest.mock('@/components/property-publish/PublishAuthModal', () => ({
+  PublishAuthModal: ({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) =>
+    isOpen ? (
+      <div role="dialog" aria-label="Authentification requise">
+        <button type="button" onClick={onClose}>Fermer</button>
+      </div>
+    ) : null,
+}))
+
+import CreateOrphanReelClient from '@/components/reels/CreateOrphanReelClient'
+
+describe('CreateOrphanReelClient', () => {
+  beforeEach(() => {
+    jest.clearAllMocks()
+    currentUserState.user = {
+      uid: 'owner-1',
+      roles: ['Announcer'],
+      phoneNumbers: ['+24166545430'],
+    }
+    currentUserState.isFirebaseConnected = true
+    returnTo = '/reels/mine'
+    selectedFile = new File(['video'], 'visite.mov', { type: 'video/quicktime' })
+    mockLoadDraftVideo.mockResolvedValue(null)
+    mockCreateReel.mockResolvedValue('reel-fixed-id')
+    mockUploadRawReelVideo.mockResolvedValue('reels-raw/owner-1/reel-fixed-id.mov')
+    mockMarkReelUploadFailed.mockResolvedValue(true)
+    Object.defineProperty(globalThis.crypto, 'randomUUID', {
+      configurable: true,
+      value: jest.fn(() => 'reel-fixed-id'),
+    })
+  })
+
+  async function chooseVideo() {
+    fireEvent.click(screen.getByTestId('video-dropzone'))
+    await waitFor(() => expect(screen.getByTestId('trim-editor')).toBeInTheDocument())
+  }
+
+  it('revient vers Mes reels quand returnTo est autorise', () => {
+    render(<CreateOrphanReelClient />)
+    expect(screen.getByRole('link', { name: /Retour/i })).toHaveAttribute('href', '/reels/mine')
+  })
+
+  it('ignore un returnTo externe et utilise la page publier', () => {
+    returnTo = 'https://malicious.example'
+    render(<CreateOrphanReelClient />)
+    expect(screen.getByRole('link', { name: /Retour/i })).toHaveAttribute('href', '/publish')
+  })
+
+  it('ne cree et n upload le reel qu une fois apres un double clic', async () => {
+    render(<CreateOrphanReelClient />)
+    await chooseVideo()
+
+    const publish = screen.getByRole('button', { name: 'Publier le réel' })
+    fireEvent.click(publish)
+    fireEvent.click(publish)
+
+    await waitFor(() => expect(mockCreateReel).toHaveBeenCalledTimes(1))
+    await waitFor(() => expect(mockUploadRawReelVideo).toHaveBeenCalledTimes(1))
+    expect(mockCreateReel).toHaveBeenCalledWith(
+      'reel-fixed-id',
+      null,
+      'owner-1',
+      'reels-raw/owner-1/reel-fixed-id.mov',
+      '+24166545430',
+      undefined,
+      {},
+    )
+    expect(mockClearDraftVideo).toHaveBeenCalled()
+    expect(mockToast).toHaveBeenCalledWith(expect.objectContaining({ title: 'Vidéo envoyée' }))
+  })
+
+  it('ouvre l authentification sans ecriture pour un visiteur', async () => {
+    currentUserState.user = null
+    render(<CreateOrphanReelClient />)
+    await chooseVideo()
+
+    fireEvent.click(screen.getByRole('button', { name: 'Publier le réel' }))
+
+    expect(await screen.findByRole('dialog', { name: 'Authentification requise' })).toBeInTheDocument()
+    expect(mockCreateReel).not.toHaveBeenCalled()
+    expect(mockUploadRawReelVideo).not.toHaveBeenCalled()
+
+    fireEvent.click(screen.getByRole('button', { name: 'Fermer' }))
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
+  })
+
+  it('marque le document en echec quand l upload Storage casse', async () => {
+    mockUploadRawReelVideo.mockRejectedValue(new Error('Envoi annulé.'))
+    render(<CreateOrphanReelClient />)
+    await chooseVideo()
+
+    fireEvent.click(screen.getByRole('button', { name: 'Publier le réel' }))
+
+    await waitFor(() => expect(mockMarkReelUploadFailed).toHaveBeenCalledWith(
+      'reel-fixed-id',
+      'Envoi annulé.',
+    ))
+    expect(mockToast).toHaveBeenCalledWith(expect.objectContaining({
+      title: "Échec de l'envoi",
+      variant: 'destructive',
+    }))
+  })
+})

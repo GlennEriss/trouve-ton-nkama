@@ -5,7 +5,7 @@ import { onCall, HttpsError } from 'firebase-functions/v2/https'
 import { adminDB } from '../../admin'
 import { generateTransactionId } from '../airtel/config'
 import { getCreditPackById } from '../airtel/database'
-import { MYPAYGA_SECRETS, getMyPayGaConfig, isPhoneValidForNetwork, normalizeMyPayGaNetwork, sanitizePhoneDigits } from './config'
+import { MYPAYGA_SECRETS, getMyPayGaConfig, isPhoneValidForNetwork, normalizeMyPayGaNetwork, toLocalPhone } from './config'
 
 interface InitiatePurchaseRequest {
   packId: string
@@ -29,7 +29,7 @@ export const initiatePurchase = onCall<InitiatePurchaseRequest, Promise<Initiate
 
     const { packId, phoneNumber, network } = request.data
     const uid = request.auth.uid
-    const safePhone = sanitizePhoneDigits(phoneNumber)
+    const safePhone = toLocalPhone(phoneNumber)
     const providerNetwork = normalizeMyPayGaNetwork(network)
 
     if (!packId || !safePhone) {

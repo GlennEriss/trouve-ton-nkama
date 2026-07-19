@@ -34,6 +34,10 @@ export function useFormPropertyType(propertyToUpdated?: Partial<Property>) {
         return 'Land' as TypeProperty
       case 'villa':
         return 'Villa' as TypeProperty
+      case 'duplex':
+        return 'Duplex' as TypeProperty
+      case 'warehouse':
+        return 'Warehouse' as TypeProperty
       default:
         return 'Property' as TypeProperty
     }

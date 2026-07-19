@@ -49,6 +49,12 @@ jobs:
       - name: Tests metier, API et couverture
         run: npm run test:ci --workspace=apps/location-maison
 
+      - name: Resumer la couverture application
+        if: always()
+        working-directory: apps/location-maison
+        run: |
+          node -e "const fs=require('fs');const p='__tests__/coverage/coverage-summary.json';if(!fs.existsSync(p))process.exit(0);const t=JSON.parse(fs.readFileSync(p)).total;console.log('## Couverture application\n\n| Lignes | Branches | Fonctions | Instructions |\n|---:|---:|---:|---:|\n| '+t.lines.pct+'% | '+t.branches.pct+'% | '+t.functions.pct+'% | '+t.statements.pct+'% |')" >> "$GITHUB_STEP_SUMMARY"
+
       - name: Publier la couverture application
         if: always()
         uses: actions/upload-artifact@v4
@@ -119,6 +125,12 @@ jobs:
       - name: Tester les Functions et mesurer la couverture
         working-directory: apps/location-maison/functions
         run: npm run test:ci
+
+      - name: Resumer la couverture Functions
+        if: always()
+        working-directory: apps/location-maison/functions
+        run: |
+          node -e "const fs=require('fs');const p='coverage/coverage-summary.json';if(!fs.existsSync(p))process.exit(0);const t=JSON.parse(fs.readFileSync(p)).total;console.log('## Couverture Cloud Functions\n\n| Lignes | Branches | Fonctions | Instructions |\n|---:|---:|---:|---:|\n| '+t.lines.pct+'% | '+t.branches.pct+'% | '+t.functions.pct+'% | '+t.statements.pct+'% |')" >> "$GITHUB_STEP_SUMMARY"
 
       - name: Publier la couverture Functions
         if: always()
