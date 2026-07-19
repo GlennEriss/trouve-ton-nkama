@@ -114,3 +114,17 @@ La couverture globale application reste a 10,92 % car `collectCoverageFrom` comp
 Atteindre 70 % globalement demande une campagne separee par domaines (annonces, recherche,
 profil, administration, pages editoriales), sans abaisser ni exclure artificiellement le
 denominateur.
+
+## Validation finale
+
+| Verification | Resultat |
+| --- | --- |
+| TypeScript application | PASS |
+| Build TypeScript Functions | PASS |
+| Suite CI application | 260 passes, 6 ignores |
+| Suite CI Functions | 75 passes, 5 ignores |
+| Seuils application | PASS |
+| Seuils Functions | PASS |
+| API avec Firestore Emulator | 6/6 PASS |
+| Regles Firestore | 18/18 PASS |
+| Monitoring production manuel | PASS, run `29696611203` |
