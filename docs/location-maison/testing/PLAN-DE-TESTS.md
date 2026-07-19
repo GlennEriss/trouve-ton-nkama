@@ -411,9 +411,20 @@ maintenant de seuils CI individuels. Detail dans [LOT-8A-AUDIT.md](./LOT-8A-AUDI
 
 #### Lot 8B - Annonces dans le navigateur
 
-Prochaine etape : parcourir les 12 variantes sur mobile et desktop, verifier les champs,
-les claviers, erreurs, images, brouillons, reset, navigation entre etapes, creation,
-modification et suppression contre l'environnement de developpement.
+Execute le 2026-07-19 :
+
+- 27/27 parcours Playwright passes sur les 12 variantes, en mobile et desktop ;
+- champs, claviers, libelles accessibles, erreurs, images, brouillons, reset et navigation
+  entre etapes verifies ;
+- normalisation du telephone gabonais et valeurs `01` du studio/appartement verrouillees ;
+- smoke test reel Firebase dev passe pour creation avec image, double clic, modification
+  et suppression ;
+- nettoyage confirme : aucun document de test restant et deux fichiers Storage supprimes ;
+- 320 tests application passes, 6 ignores, TypeScript et seuils CI au vert.
+
+Le lot a aussi reduit les synchronisations Firebase Auth concurrentes a un seul appel par
+UID et corrige l'accessibilite des champs de l'etape 2. Detail dans
+[LOT-8B-AUDIT.md](./LOT-8B-AUDIT.md).
 
 ## Matrice de risques
 

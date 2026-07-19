@@ -3,6 +3,7 @@ import React from 'react'
 import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
 import { Minus, Plus, LucideIcon } from 'lucide-react'
+import { useInheritedFormControl } from './InheritedFormControl'
 
 type InputNumberAppProps = {
     IconLucide?: LucideIcon
@@ -13,7 +14,8 @@ type InputNumberAppProps = {
 } & React.ComponentProps<"input">
 
 export const InputNumberApp = React.forwardRef<HTMLInputElement, InputNumberAppProps>(
-    ({ className, type, onChange, value, step, ...props }, ref) => {
+    ({ className, type = 'number', inputMode = 'decimal', onChange, value, step, ...props }, ref) => {
+        const inheritedFormControl = useInheritedFormControl();
         const increment = () => {
             if (typeof value === 'number') {
                 const newValue = (value as number) + (step || 1);
@@ -31,12 +33,14 @@ export const InputNumberApp = React.forwardRef<HTMLInputElement, InputNumberAppP
         return (
             <div className="relative">
                 <Input
+                    {...inheritedFormControl}
                     type={type}
                     className={cn(
                         "min-h-12 pr-24",
                         className
                     )}
                     ref={ref}
+                    inputMode={inputMode}
                     value={value === undefined ? '' : value}
                     onChange={(e) => {
                         const numValue = parseFloat(e.target.value);
