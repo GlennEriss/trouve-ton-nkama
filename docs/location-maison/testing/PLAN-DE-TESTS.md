@@ -296,6 +296,81 @@ Important : en dev, les appels Google sont bloques et `data-ad-status=unfilled` 
 
 Dernier resultat : 11/11 API/composants, 1/1 Firestore Emulator cible, 1/1 Playwright et TypeScript sans erreur. La couverture ciblee des deux routes et deux composants de serving atteint 92,44 % des lignes, 73,07 % des branches et 100 % des fonctions.
 
+### Lot 6C - Statistiques fiables et maitrise des ecritures
+
+But : rendre les statistiques reels/publicites utiles a l'annonceur sans compter chaque
+rafraichissement comme une nouvelle interaction ni multiplier les ecritures Firebase.
+
+Perimetre :
+
+- Identifiant visiteur persistant cote navigateur, transforme en empreinte SHA-256 cote serveur.
+- Aucune adresse IP brute stockee ; une empreinte de requete sert uniquement de repli.
+- Deduplication navigateur et serveur : vue reel 6 h, impression publicitaire 30 min,
+  partage 10 s par cible et clic publicitaire 5 s.
+- Etat like/unlike memorise et mutations rapides serialisees par reel.
+- Reservation atomique des evenements via Redis SET NX EX ou transaction Firestore en repli.
+- Suppression des lectures Firestore prealables aux increments de vues et partages.
+- Verification de la concurrence et des compteurs reels avec Firestore Emulator.
+- Affichage du taux de clic global et par campagne dans l'espace annonceur.
+
+Commandes :
+
+~~~bash
+cd apps/location-maison
+npx jest --config jest.config.ts --runInBand --coverage=false \
+  __tests__/api/reel-statistics-routes.test.ts \
+  __tests__/api/advertising-serving.test.ts \
+  __tests__/components/advertising-serving.test.tsx \
+  __tests__/components/advertising-dashboard.test.tsx \
+  __tests__/components/advertising-shared.test.ts \
+  __tests__/lib/statistics-actor.test.ts \
+  __tests__/lib/statistics-visitor-client.test.ts \
+  __tests__/lib/reel-statistics-client.test.ts \
+  __tests__/lib/redis-cache-store.test.ts
+npm run test:emulator:stats
+npm run test:emulator:api
+npm run test:e2e:lot6b
+~~~
+
+Dernier resultat le 2026-07-19 : 34/34 tests cibles, 2/2 scenarios statistiques
+emulateur, regression emulateur 6/6, Playwright 1/1, suite Jest complete 200/200
+et TypeScript sans erreur.
+Couverture ciblee : 86,02 % lignes, 67,45 % branches et 86,11 % fonctions.
+Detail dans [LOT-6-AUDIT.md](./LOT-6-AUDIT.md).
+
+### Lot 6D - Observabilite et regression continue
+
+Perimetre automatise le 2026-07-19 :
+
+- logs structures et redaction des donnees sensibles;
+- correlation `x-request-id` des routes critiques;
+- codes d'incident pour reels, paiements, statistiques et cache;
+- endpoint de sante sans lecture Firebase;
+- CI application, regles Firestore, emulateur et Cloud Functions;
+- monitoring production toutes les 30 minutes;
+- smoke test sur Firebase dev reel avec nettoyage automatique;
+- repli automatique Redis vers Firestore avec circuit de 60 secondes.
+
+Dernier resultat : application 207/207, Functions 42/42, integration emulateur 6/6, regles Firestore PASS et smoke dev reel PASS. Upstash dev etait limite; le test a valide le repli Firestore, puis confirme zero donnee temporaire restante.
+
+Couverture globale mesuree et publiee par la CI : 9,05 % des lignes application et 16,38 % des lignes Functions. Cette baseline est distincte de la couverture ciblee des modules du Lot 6C. La montee vers 70-80 % necessitera des lots de tests supplementaires sur les pages, composants et Functions historiques.
+
+Runbook : [LOT-6D-RUNBOOK.md](./LOT-6D-RUNBOOK.md).
+
+### Lot 6E - Mise en production controlee
+
+Execute le 2026-07-19 hors Redis :
+
+- application Vercel deployee et promue sur `www.tonnkama.com`;
+- cache production force sur Firestore;
+- trois Functions critiques deployees en dev puis en production;
+- etat `ACTIVE` et runtime Node.js 22 verifies;
+- `/api/health` et `/reels` verifies en HTTP 200;
+- revisions Cloud Run demarrees avec sondes TCP reussies;
+- aucun paiement ni transcodage utilisateur declenche par les tests.
+
+Le workflow de monitoring est present localement. Il deviendra actif toutes les 30 minutes apres publication des changements sur GitHub et une premiere execution manuelle reussie.
+
 ## Matrice de risques
 
 | Risque | Impact | Premier lot |

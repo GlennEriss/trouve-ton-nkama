@@ -10,6 +10,7 @@ import {
   Eye,
   Megaphone,
   MousePointerClick,
+  Percent,
   PlusCircle,
   Wallet,
 } from 'lucide-react'
@@ -20,6 +21,7 @@ import { routes } from '@/constantes/routes'
 import { useCurrentUser } from '@/hooks/use-current-user'
 import { cn } from '@/lib/utils'
 import {
+  formatClickThroughRate,
   formatCampaignDate,
   getStatusClassName,
   PACKAGE_PLACEMENT_LABELS,
@@ -122,7 +124,7 @@ function CampaignCard({ campaign }: { campaign: MyCampaign }) {
             </span>
           </div>
 
-          <div className="mt-4 grid gap-2 text-sm text-gray-600 dark:text-gray-300 sm:grid-cols-2 lg:grid-cols-4">
+          <div className="mt-4 grid gap-2 text-sm text-gray-600 dark:text-gray-300 sm:grid-cols-2 lg:grid-cols-5">
             <span className="inline-flex items-center gap-1.5">
               <Eye className="h-4 w-4 text-gray-400" />
               {campaign.metrics.impressions.toLocaleString('fr-FR')} vues
@@ -130,6 +132,13 @@ function CampaignCard({ campaign }: { campaign: MyCampaign }) {
             <span className="inline-flex items-center gap-1.5">
               <MousePointerClick className="h-4 w-4 text-gray-400" />
               {campaign.metrics.clicks.toLocaleString('fr-FR')} clics
+            </span>
+            <span className="inline-flex items-center gap-1.5">
+              <Percent className="h-4 w-4 text-gray-400" />
+              {formatClickThroughRate(
+                campaign.metrics.impressions,
+                campaign.metrics.clicks,
+              )} de clics
             </span>
             <span className="inline-flex items-center gap-1.5">
               <CircleDollarSign className="h-4 w-4 text-gray-400" />
@@ -188,10 +197,15 @@ export default function AdvertisingDashboardClient() {
         </div>
       </header>
 
-      <section className="grid gap-3 sm:grid-cols-3">
+      <section className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
         <StatTile icon={BarChart3} label="Campagnes actives" value={activeCount} />
         <StatTile icon={Eye} label="Vues" value={totalImpressions.toLocaleString('fr-FR')} />
         <StatTile icon={MousePointerClick} label="Clics" value={totalClicks.toLocaleString('fr-FR')} />
+        <StatTile
+          icon={Percent}
+          label="Taux de clic"
+          value={formatClickThroughRate(totalImpressions, totalClicks)}
+        />
       </section>
 
       <section className="space-y-3">

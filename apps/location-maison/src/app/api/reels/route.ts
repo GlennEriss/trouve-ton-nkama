@@ -5,6 +5,10 @@ import { getStorage } from 'firebase-admin/storage';
 import firebaseCollectionNames from '@/constantes/firebase-collection-name';
 import { adminApp, adminAuth } from '@/firebase/admin';
 import { createLogger } from '@/lib/logger';
+import {
+  attachRequestId,
+  createRequestLogContext,
+} from '@/lib/observability/request-context';
 import type { Role } from '@/models/authentication';
 import type { Reel } from '@/models/reel';
 
@@ -30,18 +34,20 @@ class ReelApiError extends Error {
   }
 }
 
-function jsonResponse(payload: ReelApiResponse, status = 200) {
-  return NextResponse.json(payload, { status });
+function jsonResponse(payload: ReelApiResponse, status = 200, requestId?: string) {
+  const response = NextResponse.json(payload, { status });
+  return requestId ? attachRequestId(response, requestId) : response;
 }
 
-function jsonError(error: ReelApiError) {
+function jsonError(error: ReelApiError, requestId?: string) {
   return jsonResponse(
     {
       success: false,
       code: error.code,
       message: error.message,
     },
-    error.status
+    error.status,
+    requestId,
   );
 }
 
@@ -324,6 +330,8 @@ async function assertOwnedProperty(
 }
 
 export async function POST(request: NextRequest): Promise<NextResponse<ReelApiResponse>> {
+  const requestContext = createRequestLogContext(request, 'reel.create', 'reel_lifecycle');
+  const requestLogger = createLogger('api.reels', requestContext);
   try {
     const uid = await authenticateRequest(request);
     const body = await readJsonBody(request);
@@ -385,7 +393,7 @@ export async function POST(request: NextRequest): Promise<NextResponse<ReelApiRe
       transaction.create(reelRef, payload);
     });
 
-    logger.info('Reel created', {
+    requestLogger.info('Reel created', {
       uid,
       reelId,
       hasProperty: Boolean(propertyId),
@@ -395,30 +403,37 @@ export async function POST(request: NextRequest): Promise<NextResponse<ReelApiRe
       success: true,
       reelId,
       message: 'Réel créé avec succès.',
-    });
+    }, 200, requestContext.requestId);
   } catch (error) {
     if (error instanceof ReelApiError) {
-      logger.warn('Reel creation rejected', {
+      requestLogger.warn('Reel creation rejected', {
         code: error.code,
         status: error.status,
         message: error.message,
       });
-      return jsonError(error);
+      return jsonError(error, requestContext.requestId);
     }
 
-    logger.error('Reel creation failed', { error });
+    requestLogger.error('Reel creation failed', {
+      incidentCode: 'REEL_CREATE_FAILED',
+      retryable: true,
+      error,
+    });
     return jsonResponse(
       {
         success: false,
         code: 'INTERNAL_SERVER_ERROR',
         message: 'Erreur lors de la création du réel.',
       },
-      500
+      500,
+      requestContext.requestId,
     );
   }
 }
 
 export async function PATCH(request: NextRequest): Promise<NextResponse<ReelApiResponse>> {
+  const requestContext = createRequestLogContext(request, 'reel.update', 'reel_lifecycle');
+  const requestLogger = createLogger('api.reels', requestContext);
   try {
     const uid = await authenticateRequest(request);
     const body = await readJsonBody(request);
@@ -460,7 +475,7 @@ export async function PATCH(request: NextRequest): Promise<NextResponse<ReelApiR
         });
       });
 
-      logger.info('Reel upload marked as failed', {
+      requestLogger.info('Reel upload marked as failed', {
         uid,
         reelId,
       });
@@ -469,7 +484,7 @@ export async function PATCH(request: NextRequest): Promise<NextResponse<ReelApiR
         success: true,
         reelId,
         message: 'Réel marqué en échec.',
-      });
+      }, 200, requestContext.requestId);
     }
 
     if (action === 'update-details') {
@@ -496,7 +511,7 @@ export async function PATCH(request: NextRequest): Promise<NextResponse<ReelApiR
         });
       });
 
-      logger.info('Reel details updated', {
+      requestLogger.info('Reel details updated', {
         uid,
         reelId,
         hasContact: Boolean(contact),
@@ -507,7 +522,7 @@ export async function PATCH(request: NextRequest): Promise<NextResponse<ReelApiR
         success: true,
         reelId,
         message: 'Réel modifié avec succès.',
-      });
+      }, 200, requestContext.requestId);
     }
 
     await assertAnnouncer(db, uid);
@@ -538,7 +553,7 @@ export async function PATCH(request: NextRequest): Promise<NextResponse<ReelApiR
       });
     });
 
-    logger.info('Reel attached to property', {
+    requestLogger.info('Reel attached to property', {
       uid,
       reelId,
       propertyId,
@@ -548,30 +563,37 @@ export async function PATCH(request: NextRequest): Promise<NextResponse<ReelApiR
       success: true,
       reelId,
       message: 'Réel rattaché avec succès.',
-    });
+    }, 200, requestContext.requestId);
   } catch (error) {
     if (error instanceof ReelApiError) {
-      logger.warn('Reel attach rejected', {
+      requestLogger.warn('Reel update rejected', {
         code: error.code,
         status: error.status,
         message: error.message,
       });
-      return jsonError(error);
+      return jsonError(error, requestContext.requestId);
     }
 
-    logger.error('Reel attach failed', { error });
+    requestLogger.error('Reel update failed', {
+      incidentCode: 'REEL_UPDATE_FAILED',
+      retryable: true,
+      error,
+    });
     return jsonResponse(
       {
         success: false,
         code: 'INTERNAL_SERVER_ERROR',
         message: 'Erreur lors du rattachement du réel.',
       },
-      500
+      500,
+      requestContext.requestId,
     );
   }
 }
 
 export async function DELETE(request: NextRequest): Promise<NextResponse<ReelApiResponse>> {
+  const requestContext = createRequestLogContext(request, 'reel.delete', 'reel_lifecycle');
+  const requestLogger = createLogger('api.reels', requestContext);
   try {
     const uid = await authenticateRequest(request);
     const body = await readJsonBody(request);
@@ -604,7 +626,7 @@ export async function DELETE(request: NextRequest): Promise<NextResponse<ReelApi
       await deleteStorageObjects(storagePaths);
     }
 
-    logger.info('Reel deleted', {
+    requestLogger.info('Reel deleted', {
       uid,
       reelId,
       alreadyDeleted: !reelExisted,
@@ -615,25 +637,30 @@ export async function DELETE(request: NextRequest): Promise<NextResponse<ReelApi
       success: true,
       reelId,
       message: 'Réel supprimé avec succès.',
-    });
+    }, 200, requestContext.requestId);
   } catch (error) {
     if (error instanceof ReelApiError) {
-      logger.warn('Reel deletion rejected', {
+      requestLogger.warn('Reel deletion rejected', {
         code: error.code,
         status: error.status,
         message: error.message,
       });
-      return jsonError(error);
+      return jsonError(error, requestContext.requestId);
     }
 
-    logger.error('Reel deletion failed', { error });
+    requestLogger.error('Reel deletion failed', {
+      incidentCode: 'REEL_DELETE_FAILED',
+      retryable: true,
+      error,
+    });
     return jsonResponse(
       {
         success: false,
         code: 'INTERNAL_SERVER_ERROR',
         message: 'Erreur lors de la suppression du réel.',
       },
-      500
+      500,
+      requestContext.requestId,
     );
   }
 }

@@ -26,6 +26,10 @@ jest.mock('@/lib/logger', () => ({
   })),
 }))
 
+jest.mock('@/lib/server/statistics-actor', () => ({
+  resolveStatisticsActor: jest.fn(() => 'actor-lot6c'),
+}))
+
 let getActiveAds: typeof import('@/app/api/advertising/active/route').GET
 let trackAd: typeof import('@/app/api/advertising/track/route').POST
 
@@ -43,8 +47,11 @@ function activeRequest(url: string) {
 
 function trackingRequest(body: Record<string, unknown>) {
   return {
+    headers: {
+      get: () => null,
+    },
     json: async () => body,
-  } as Request
+  } as unknown as Request
 }
 
 describe('Lot 6B - API de diffusion publicitaire', () => {
@@ -108,16 +115,22 @@ describe('Lot 6B - API de diffusion publicitaire', () => {
     ['impression', 'impressions'],
     ['click', 'clicks'],
   ])('convertit %s vers la metrique %s', async (event, metric) => {
-    incrementCampaignMetric.mockResolvedValue(true)
+    incrementCampaignMetric.mockResolvedValue('tracked')
 
     const response = await trackAd(trackingRequest({
       campaignId: creative.campaignId,
       event,
+      placementKey: 'surface-lot6c',
     }))
 
     expect(response.status).toBe(200)
-    expect(await response.json()).toEqual({ success: true })
-    expect(incrementCampaignMetric).toHaveBeenCalledWith(creative.campaignId, metric)
+    expect(await response.json()).toEqual({ success: true, deduplicated: false })
+    expect(incrementCampaignMetric).toHaveBeenCalledWith(
+      creative.campaignId,
+      metric,
+      'actor-lot6c',
+      'surface-lot6c',
+    )
   })
 
   it('refuse les charges de suivi invalides', async () => {
@@ -131,7 +144,7 @@ describe('Lot 6B - API de diffusion publicitaire', () => {
   })
 
   it('ne valide pas le suivi d une campagne inexistante', async () => {
-    incrementCampaignMetric.mockResolvedValue(false)
+    incrementCampaignMetric.mockResolvedValue('not-found')
 
     const response = await trackAd(trackingRequest({
       campaignId: 'missing-campaign',
@@ -144,5 +157,17 @@ describe('Lot 6B - API de diffusion publicitaire', () => {
       success: false,
       error: { code: 'CAMPAIGN_NOT_FOUND' },
     })
+  })
+
+  it('confirme sans incrementer une impression dupliquee', async () => {
+    incrementCampaignMetric.mockResolvedValue('duplicate')
+
+    const response = await trackAd(trackingRequest({
+      campaignId: creative.campaignId,
+      event: 'impression',
+    }))
+
+    expect(response.status).toBe(200)
+    expect(await response.json()).toEqual({ success: true, deduplicated: true })
   })
 })

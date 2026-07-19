@@ -68,6 +68,7 @@ function trackedEvents() {
 describe('Lot 6B - rendu publicitaire', () => {
   beforeEach(() => {
     jest.clearAllMocks()
+    window.localStorage.clear()
     Object.defineProperty(global, 'fetch', {
       configurable: true,
       value: fetchMock,
@@ -102,7 +103,12 @@ describe('Lot 6B - rendu publicitaire', () => {
     )
     await waitFor(() => {
       expect(trackedEvents()).toEqual([
-        { event: 'impression', campaignId: creative.campaignId },
+        expect.objectContaining({
+          event: 'impression',
+          campaignId: creative.campaignId,
+          placementKey: 'search_infeed',
+          visitorId: expect.stringMatching(/^ttn_/),
+        }),
       ])
     })
 
@@ -120,8 +126,8 @@ describe('Lot 6B - rendu publicitaire', () => {
     fireEvent.click(houseAd)
     await waitFor(() => {
       expect(trackedEvents()).toEqual([
-        { event: 'impression', campaignId: creative.campaignId },
-        { event: 'click', campaignId: creative.campaignId },
+        expect.objectContaining({ event: 'impression', campaignId: creative.campaignId }),
+        expect.objectContaining({ event: 'click', campaignId: creative.campaignId }),
       ])
     })
   })
@@ -183,17 +189,22 @@ describe('Lot 6B - rendu publicitaire', () => {
     rerender(<ReelAdSlide variant="house" isActive slotKey="reels-house-6b" />)
     await waitFor(() => {
       expect(trackedEvents()).toEqual([
-        { event: 'impression', campaignId: reelsCreative.campaignId },
+        expect.objectContaining({
+          event: 'impression',
+          campaignId: reelsCreative.campaignId,
+          placementKey: 'reels:reels-house-6b',
+        }),
       ])
     })
 
     fireEvent.click(houseAd)
     await waitFor(() => {
       expect(trackedEvents()).toHaveLength(2)
-      expect(trackedEvents()[1]).toEqual({
+      expect(trackedEvents()[1]).toEqual(expect.objectContaining({
         event: 'click',
         campaignId: reelsCreative.campaignId,
-      })
+        placementKey: 'reels:reels-house-6b',
+      }))
     })
   })
 })

@@ -16,6 +16,7 @@ import { routes } from '@/constantes/routes'
 import type { Reel } from '@/models/reel'
 import { ReelSlide } from './ReelsFeedClient'
 import GiftModal from './gift/GiftModal'
+import { trackReelView } from '@/lib/statistics/reel-statistics.client'
 
 const DESKTOP_CARD_CLASS = 'md:h-[75vh] md:max-h-[760px] md:aspect-[9/16] md:w-auto md:rounded-2xl md:border md:border-white/10'
 
@@ -56,6 +57,10 @@ export default function SingleReelClient({ reelId }: Readonly<{ reelId: string }
       cancelled = true
     }
   }, [reelId])
+
+  React.useEffect(() => {
+    if (state.status === 'ready') trackReelView(state.reel.id)
+  }, [state])
 
   return (
     <main className="flex h-[100dvh] w-full items-center justify-center bg-black md:h-auto md:gap-4 md:bg-neutral-950 md:py-8">

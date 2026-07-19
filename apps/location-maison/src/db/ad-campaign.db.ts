@@ -12,8 +12,13 @@ import type {
   AdMetrics,
   AdPlacement,
 } from '@/models/advertising'
+import { getCacheStore } from '@/lib/cache'
 
 const logger = createLogger('db.ad-campaign')
+const AD_IMPRESSION_TTL_SECONDS = 30 * 60
+const AD_CLICK_TTL_SECONDS = 5
+
+export type CampaignMetricResult = 'tracked' | 'duplicate' | 'not-found'
 
 export interface AdServeContext {
   province?: string | null
@@ -230,13 +235,24 @@ export async function getActiveCampaignsForPlacement(
 export async function incrementCampaignMetric(
   campaignId: string,
   metric: keyof AdMetrics,
-): Promise<boolean> {
+  actorId: string,
+  placementKey: string,
+): Promise<CampaignMetricResult> {
+  const cache = getCacheStore()
+  const ttlSeconds = metric === 'impressions' ? AD_IMPRESSION_TTL_SECONDS : AD_CLICK_TTL_SECONDS
+  const claimKey = `ad-metric:${metric}:${campaignId}:${placementKey}:${actorId}`
+  const claimed = await cache.setIfAbsent(claimKey, true, ttlSeconds)
+  if (!claimed) return 'duplicate'
+
   try {
     const [{ adminApp }, { getFirestore, FieldValue }] = await Promise.all([
       import('@/firebase/admin'),
       import('firebase-admin/firestore'),
     ])
-    if (!adminApp) return false
+    if (!adminApp) {
+      await cache.del(claimKey)
+      throw new Error('Firebase Admin not initialized')
+    }
 
     const db = getFirestore(adminApp as any)
     const campaignRef = db
@@ -246,12 +262,13 @@ export async function incrementCampaignMetric(
     await campaignRef.update({
       [`metrics.${metric}`]: FieldValue.increment(1),
     })
-    return true
+    return 'tracked'
   } catch (error) {
     const errorCode = typeof error === 'object' && error !== null && 'code' in error
       ? (error as { code?: unknown }).code
       : null
-    if (errorCode === 5 || errorCode === 'not-found') return false
+    await cache.del(claimKey)
+    if (errorCode === 5 || errorCode === 'not-found') return 'not-found'
 
     logger.error('incrementCampaignMetric failed', { error, campaignId, metric })
     throw error

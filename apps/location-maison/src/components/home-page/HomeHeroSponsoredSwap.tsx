@@ -5,6 +5,7 @@ import Image from 'next/image'
 import { motion, AnimatePresence, type Variants } from 'framer-motion'
 import AdCreativeCard from '@/components/ads/AdCreativeCard'
 import type { AdCreativePublic } from '@/models/advertising'
+import { trackAdEvent } from '@/lib/statistics/ad-tracking.client'
 
 type HomeHeroSponsoredSwapProps = Readonly<{
   reduceMotion?: boolean | null
@@ -15,24 +16,6 @@ const SLIDE_DURATION_MS = 7000
 type HeroSlide =
   | Readonly<{ kind: 'platform' }>
   | Readonly<{ kind: 'sponsored'; creative: AdCreativePublic }>
-
-function track(event: 'impression' | 'click', campaignId: string) {
-  try {
-    const body = JSON.stringify({ event, campaignId })
-    if (typeof navigator !== 'undefined' && navigator.sendBeacon) {
-      navigator.sendBeacon('/api/advertising/track', new Blob([body], { type: 'application/json' }))
-      return
-    }
-    fetch('/api/advertising/track', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body,
-      keepalive: true,
-    }).catch(() => {})
-  } catch {
-    /* tracking best-effort */
-  }
-}
 
 const slideVariants: Variants = {
   enter: { opacity: 0, y: 18 },
@@ -90,7 +73,7 @@ function SponsoredHero({ creative }: Readonly<{ creative: AdCreativePublic }>) {
           surface="none"
           fillHeight
           interactive
-          onClick={() => track('click', creative.campaignId)}
+          onClick={() => trackAdEvent('click', creative.campaignId, 'home-hero')}
           className="home-hero-sponsored-slot h-full w-full overflow-hidden rounded-xl [&_a]:h-full"
         />
       </div>
@@ -147,7 +130,7 @@ export default function HomeHeroSponsoredSwap({ reduceMotion }: HomeHeroSponsore
   useEffect(() => {
     if (activeSlide.kind === 'sponsored' && !impressionsSent.current.has(activeSlide.creative.campaignId)) {
       impressionsSent.current.add(activeSlide.creative.campaignId)
-      track('impression', activeSlide.creative.campaignId)
+      trackAdEvent('impression', activeSlide.creative.campaignId, 'home-hero')
     }
   }, [activeSlide])
 

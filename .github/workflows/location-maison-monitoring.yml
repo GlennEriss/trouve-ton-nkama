@@ -1,0 +1,85 @@
+name: location-maison monitoring
+
+on:
+  schedule:
+    - cron: '17,47 * * * *'
+  workflow_dispatch:
+
+concurrency:
+  group: location-maison-production-monitoring
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  uptime:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    env:
+      BASE_URL: https://www.tonnkama.com
+      ISSUE_TITLE: '[Monitoring] Trouve Ton Nkama indisponible'
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Verifier la sante et le rendu public
+        id: smoke
+        continue-on-error: true
+        shell: bash
+        run: |
+          set -o pipefail
+          mkdir -p monitoring-results
+          health_status=$(curl --silent --show-error --location \
+            --max-time 15 --output monitoring-results/health.json \
+            --write-out '%{http_code}' "${BASE_URL}/api/health")
+          reels_status=$(curl --silent --show-error --location \
+            --max-time 20 --output monitoring-results/reels.html \
+            --write-out '%{http_code}' "${BASE_URL}/reels")
+          printf 'health=%s\nreels=%s\n' "$health_status" "$reels_status" \
+            | tee monitoring-results/status.txt
+          test "$health_status" = "200"
+          test "$reels_status" = "200"
+          grep -q '"status":"ok"' monitoring-results/health.json
+
+      - name: Publier le diagnostic
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: production-monitoring-${{ github.run_id }}
+          path: monitoring-results
+          retention-days: 7
+
+      - name: Ouvrir ou commenter l incident
+        if: steps.smoke.outcome == 'failure'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          issue=$(gh issue list --state open --search "$ISSUE_TITLE in:title" \
+            --json number --jq '.[0].number // empty')
+          body="Le contrôle programmé a échoué. Run: ${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}"
+          if [ -n "$issue" ]; then
+            gh issue comment "$issue" --body "$body"
+          else
+            gh issue create --title "$ISSUE_TITLE" --body "$body" \
+              --label bug 2>/dev/null || gh issue create --title "$ISSUE_TITLE" --body "$body"
+          fi
+
+      - name: Cloturer l incident apres recuperation
+        if: steps.smoke.outcome == 'success'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          issue=$(gh issue list --state open --search "$ISSUE_TITLE in:title" \
+            --json number --jq '.[0].number // empty')
+          if [ -n "$issue" ]; then
+            gh issue comment "$issue" --body "Service rétabli automatiquement. Run: ${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}"
+            gh issue close "$issue"
+          fi
+
+      - name: Echouer le workflow si le smoke a echoue
+        if: steps.smoke.outcome == 'failure'
+        run: exit 1

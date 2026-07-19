@@ -16,26 +16,9 @@ import AdCreativeCard from '@/components/ads/AdCreativeCard'
 import { routes } from '@/constantes/routes'
 import { ADSENSE_SLOTS } from '@/lib/ads/config'
 import type { AdCreativePublic } from '@/models/advertising'
+import { trackAdEvent } from '@/lib/statistics/ad-tracking.client'
 
 export type ReelAdVariant = 'adsense' | 'house'
-
-function track(event: 'impression' | 'click', campaignId: string) {
-  try {
-    const body = JSON.stringify({ event, campaignId })
-    if (typeof navigator !== 'undefined' && navigator.sendBeacon) {
-      navigator.sendBeacon('/api/advertising/track', new Blob([body], { type: 'application/json' }))
-      return
-    }
-    fetch('/api/advertising/track', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body,
-      keepalive: true,
-    }).catch(() => {})
-  } catch {
-    /* tracking best-effort */
-  }
-}
 
 function AdSenseSlide({ slotKey }: { slotKey: string }) {
   const [status, setStatus] = React.useState<'loading' | 'filled' | 'fallback'>('loading')
@@ -158,9 +141,9 @@ export default function ReelAdSlide({
   React.useEffect(() => {
     if (isActive && creative && !impressionSent.current) {
       impressionSent.current = true
-      track('impression', creative.campaignId)
+      trackAdEvent('impression', creative.campaignId, `reels:${slotKey}`)
     }
-  }, [isActive, creative])
+  }, [isActive, creative, slotKey])
 
   const showHouse = variant === 'house' && creative !== null
 
@@ -179,7 +162,7 @@ export default function ReelAdSlide({
           creative={creative}
           placement="reels_infeed"
           reelFullscreen
-          onClick={() => track('click', creative.campaignId)}
+          onClick={() => trackAdEvent('click', creative.campaignId, `reels:${slotKey}`)}
         />
       )}
 

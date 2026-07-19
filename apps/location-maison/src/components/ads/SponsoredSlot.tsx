@@ -5,6 +5,7 @@ import { cn } from '@/lib/utils'
 import InlineAdUnit from '@/components/ads/InlineAdUnit'
 import AdCreativeCard from '@/components/ads/AdCreativeCard'
 import type { AdCreativePublic, AdPlacement } from '@/models/advertising'
+import { trackAdEvent } from '@/lib/statistics/ad-tracking.client'
 
 type SponsoredSlotProps = Readonly<{
   placement: AdPlacement
@@ -22,24 +23,6 @@ type SponsoredSlotProps = Readonly<{
   /** Le visuel remplit toute la hauteur du conteneur (hero accueil). */
   fillHeight?: boolean
 }>
-
-function track(event: 'impression' | 'click', campaignId: string) {
-  try {
-    const body = JSON.stringify({ event, campaignId })
-    if (typeof navigator !== 'undefined' && navigator.sendBeacon) {
-      navigator.sendBeacon('/api/advertising/track', new Blob([body], { type: 'application/json' }))
-      return
-    }
-    fetch('/api/advertising/track', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body,
-      keepalive: true,
-    }).catch(() => {})
-  } catch {
-    /* tracking best-effort */
-  }
-}
 
 /**
  * Affiche l'inventaire pub maison quand une campagne est active, puis affiche
@@ -86,9 +69,9 @@ export default function SponsoredSlot({
   useEffect(() => {
     if (creative && !impressionSent.current) {
       impressionSent.current = true
-      track('impression', creative.campaignId)
+      trackAdEvent('impression', creative.campaignId, placement)
     }
-  }, [creative])
+  }, [creative, placement])
 
   return (
     <div className={cn('space-y-3', className)}>
@@ -99,7 +82,7 @@ export default function SponsoredSlot({
           surface={surface}
           fillHeight={fillHeight}
           interactive
-          onClick={() => track('click', creative.campaignId)}
+          onClick={() => trackAdEvent('click', creative.campaignId, placement)}
         />
       ) : null}
       <InlineAdUnit

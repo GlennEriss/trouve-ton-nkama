@@ -13,6 +13,7 @@ const USER_UID = 'lot4e-announcer'
 
 process.env.GCLOUD_PROJECT = PROJECT_ID
 process.env.FIREBASE_PROJECT_ID = PROJECT_ID
+process.env.CACHE_BACKEND = 'firestore'
 if (HAS_FIRESTORE_EMULATOR) {
   process.env.FIRESTORE_EMULATOR_HOST = EMULATOR_HOST
 }
@@ -24,6 +25,9 @@ let postCampaign: typeof import('@/app/api/advertising/campaigns/route').POST
 let getCampaigns: typeof import('@/app/api/advertising/campaigns/route').GET
 let getActiveAds: typeof import('@/app/api/advertising/active/route').GET
 let postTrackAd: typeof import('@/app/api/advertising/track/route').POST
+let postReelView: typeof import('@/app/api/reels/[reelId]/statistics/view/route').POST
+let postReelLike: typeof import('@/app/api/reels/[reelId]/statistics/like/route').POST
+let postReelShare: typeof import('@/app/api/reels/[reelId]/statistics/share/route').POST
 let postReel: typeof import('@/app/api/reels/route').POST
 let patchReel: typeof import('@/app/api/reels/route').PATCH
 let deleteReel: typeof import('@/app/api/reels/route').DELETE
@@ -124,6 +128,9 @@ async function countDocs(collectionName: string) {
     ;({ POST: postCampaign, GET: getCampaigns } = await import('@/app/api/advertising/campaigns/route'))
     ;({ GET: getActiveAds } = await import('@/app/api/advertising/active/route'))
     ;({ POST: postTrackAd } = await import('@/app/api/advertising/track/route'))
+    ;({ POST: postReelView } = await import('@/app/api/reels/[reelId]/statistics/view/route'))
+    ;({ POST: postReelLike } = await import('@/app/api/reels/[reelId]/statistics/like/route'))
+    ;({ POST: postReelShare } = await import('@/app/api/reels/[reelId]/statistics/share/route'))
     ;({ POST: postReel, PATCH: patchReel, DELETE: deleteReel } = await import('@/app/api/reels/route'))
   })
 
@@ -375,12 +382,27 @@ async function countDocs(collectionName: string) {
     const impressionResponse = await postTrackAd(makeRequest({
       campaignId: 'campaign-lot6b-active',
       event: 'impression',
+      visitorId: 'ttn_visitor_lot6c_ads',
+      placementKey: 'search_infeed',
+    }))
+    const duplicateImpressionResponse = await postTrackAd(makeRequest({
+      campaignId: 'campaign-lot6b-active',
+      event: 'impression',
+      visitorId: 'ttn_visitor_lot6c_ads',
+      placementKey: 'search_infeed',
     }))
     const clickResponse = await postTrackAd(makeRequest({
       campaignId: 'campaign-lot6b-active',
       event: 'click',
+      visitorId: 'ttn_visitor_lot6c_ads',
+      placementKey: 'search_infeed',
     }))
     expect(impressionResponse.status).toBe(200)
+    expect(duplicateImpressionResponse.status).toBe(200)
+    expect(await duplicateImpressionResponse.json()).toMatchObject({
+      success: true,
+      deduplicated: true,
+    })
     expect(clickResponse.status).toBe(200)
 
     const trackedCampaign = await db
@@ -397,6 +419,58 @@ async function countDocs(collectionName: string) {
     expect(
       (await db.collection(firebaseCollectionNames.ad_campaigns).doc('campaign-lot6b-missing').get()).exists,
     ).toBe(false)
+  })
+
+  it('deduplique les statistiques reels par visiteur et applique les transitions de like', async () => {
+    const reelId = 'reel-statistics-lot6c'
+    const params = { params: Promise.resolve({ reelId }) }
+    const visitorId = 'ttn_visitor_lot6c_reels'
+
+    await db.collection(firebaseCollectionNames.reels).doc(reelId).set({
+      createdBy: USER_UID,
+      viewCount: 2,
+      likeCount: 1,
+      shareCount: 4,
+      shareTargets: {},
+    })
+
+    const [firstView, secondView] = await Promise.all([
+      postReelView(makeRequest({ visitorId }), params),
+      postReelView(makeRequest({ visitorId }), params),
+    ])
+    const viewPayloads = await Promise.all([firstView.json(), secondView.json()])
+
+    expect([firstView.status, secondView.status]).toEqual([200, 200])
+    expect(viewPayloads.map((payload) => payload.deduplicated).sort()).toEqual([false, true])
+
+    const firstLike = await postReelLike(makeRequest({ visitorId, liked: true }), params)
+    const duplicateLike = await postReelLike(makeRequest({ visitorId, liked: true }), params)
+    const unlike = await postReelLike(makeRequest({ visitorId, liked: false }), params)
+
+    expect(firstLike.status).toBe(200)
+    expect(await firstLike.json()).toMatchObject({ deduplicated: false })
+    expect(await duplicateLike.json()).toMatchObject({ deduplicated: true })
+    expect(await unlike.json()).toMatchObject({ deduplicated: false })
+
+    const firstShare = await postReelShare(makeRequest({
+      visitorId,
+      target: 'whatsapp',
+    }), params)
+    const duplicateShare = await postReelShare(makeRequest({
+      visitorId,
+      target: 'whatsapp',
+    }), params)
+
+    expect(firstShare.status).toBe(200)
+    expect(await duplicateShare.json()).toMatchObject({ deduplicated: true })
+
+    const reel = await db.collection(firebaseCollectionNames.reels).doc(reelId).get()
+    expect(reel.data()).toMatchObject({
+      viewCount: 3,
+      likeCount: 1,
+      shareCount: 5,
+      shareTargets: { whatsapp: 1 },
+    })
   })
 
   it('cree, modifie puis supprime un reel dans Firestore emulator', async () => {

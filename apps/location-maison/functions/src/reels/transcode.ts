@@ -8,6 +8,7 @@ import { logger } from 'firebase-functions/v2';
 import ffmpeg from 'fluent-ffmpeg';
 import { getStorage } from 'firebase-admin/storage';
 import { admin, adminDB } from '../admin';
+import { buildFunctionIncidentContext } from '../observability';
 import {
   REELS_RAW_PREFIX,
   REEL_MAX_DURATION_SECONDS,
@@ -229,13 +230,11 @@ async function tryExtractThumbnail({
   inputPath,
   outputPath,
   durationSeconds,
-  filePath,
   reelId,
 }: {
   inputPath: string;
   outputPath: string;
   durationSeconds: number;
-  filePath: string;
   reelId: string;
 }): Promise<boolean> {
   const timestampSeconds = Math.min(
@@ -250,7 +249,6 @@ async function tryExtractThumbnail({
     }
 
     logger.warn('Reel thumbnail was not generated; continuing without thumbnail', {
-      filePath,
       reelId,
       timestampSeconds,
       durationSeconds,
@@ -259,7 +257,6 @@ async function tryExtractThumbnail({
   } catch (error) {
     logger.warn('Reel thumbnail extraction failed; continuing without thumbnail', {
       error: serializeError(error),
-      filePath,
       reelId,
       timestampSeconds,
       durationSeconds,
@@ -302,15 +299,34 @@ export const transcodeReelVideo = onObjectFinalized(TRANSCODE_FUNCTION_OPTIONS, 
 
   const parsed = parseRawVideoPath(filePath);
   if (!parsed) {
-    logger.error('Reel raw video path could not be parsed', { filePath });
+    logger.error('Reel raw video path could not be parsed', {
+      ...buildFunctionIncidentContext({
+        category: 'reel_processing',
+        operation: 'reel.transcode',
+        incidentCode: 'INVALID_STORAGE_PATH',
+        retryable: false,
+        eventId: event.id,
+      }),
+      objectNameLength: filePath.length,
+    });
     return;
   }
   const { ownerId, reelId } = parsed;
+  const incidentContext = buildFunctionIncidentContext({
+    category: 'reel_processing',
+    operation: 'reel.transcode',
+    eventId: event.id,
+    reelId,
+  });
 
   const reelRef = adminDB.collection(REELS_COLLECTION).doc(reelId);
   const reelSnap = await reelRef.get();
   if (!reelSnap.exists) {
-    logger.error('Reel document not found for uploaded video', { filePath, reelId });
+    logger.error('Reel document not found for uploaded video', {
+      ...incidentContext,
+      incidentCode: 'REEL_NOT_FOUND',
+      retryable: false,
+    });
     return;
   }
 
@@ -345,6 +361,13 @@ export const transcodeReelVideo = onObjectFinalized(TRANSCODE_FUNCTION_OPTIONS, 
     const muted = Boolean(reelData.muted);
 
     if (durationSeconds > REEL_MAX_DURATION_SECONDS) {
+      logger.warn('Reel duration exceeds configured limit', {
+        ...incidentContext,
+        incidentCode: 'VIDEO_TOO_LONG',
+        retryable: false,
+        durationSeconds: Math.round(durationSeconds),
+        maxDurationSeconds: REEL_MAX_DURATION_SECONDS,
+      });
       await reelRef.update({
         processingStatus: 'failed',
         processingError: `Vidéo trop longue (${Math.round(durationSeconds)}s, maximum ${REEL_MAX_DURATION_SECONDS}s).`,
@@ -363,7 +386,6 @@ export const transcodeReelVideo = onObjectFinalized(TRANSCODE_FUNCTION_OPTIONS, 
       inputPath: tmpOutPath,
       outputPath: tmpThumbPath,
       durationSeconds,
-      filePath,
       reelId,
     });
 
@@ -420,8 +442,19 @@ export const transcodeReelVideo = onObjectFinalized(TRANSCODE_FUNCTION_OPTIONS, 
     });
 
     await bucket.file(filePath).delete().catch(() => undefined);
+    logger.info('Reel transcoding completed', {
+      ...incidentContext,
+      durationSeconds,
+      hasThumbnail,
+      outputCodec: 'h264',
+    });
   } catch (error) {
-    logger.error('Reel transcoding failed', { error: serializeError(error), filePath, reelId });
+    logger.error('Reel transcoding failed', {
+      ...incidentContext,
+      incidentCode: 'REEL_TRANSCODE_FAILED',
+      retryable: true,
+      error: serializeError(error),
+    });
     await reelRef.update({
       processingStatus: 'failed',
       processingError: "Le traitement de la vidéo a échoué. Réessayez avec un autre fichier.",

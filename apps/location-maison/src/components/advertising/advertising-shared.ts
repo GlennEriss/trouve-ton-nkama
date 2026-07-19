@@ -49,6 +49,19 @@ export function formatCampaignDate(value: string | null) {
   }).format(new Date(value))
 }
 
+export function calculateClickThroughRate(impressions: number, clicks: number) {
+  if (!Number.isFinite(impressions) || impressions <= 0) return 0
+  if (!Number.isFinite(clicks) || clicks <= 0) return 0
+  return (clicks / impressions) * 100
+}
+
+export function formatClickThroughRate(impressions: number, clicks: number) {
+  return `${new Intl.NumberFormat('fr-FR', {
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 1,
+  }).format(calculateClickThroughRate(impressions, clicks))} %`
+}
+
 export function getStatusClassName(status: string) {
   if (status === 'active') return 'bg-emerald-50 text-emerald-700 ring-emerald-200'
   if (status === 'ended') return 'bg-gray-100 text-gray-600 ring-gray-200'

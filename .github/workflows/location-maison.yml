@@ -1,0 +1,130 @@
+name: location-maison CI
+
+on:
+  pull_request:
+    paths:
+      - 'apps/location-maison/**'
+      - 'packages/**'
+      - 'package.json'
+      - 'package-lock.json'
+      - '.github/workflows/location-maison.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'apps/location-maison/**'
+      - 'packages/**'
+      - 'package.json'
+      - 'package-lock.json'
+      - '.github/workflows/location-maison.yml'
+  workflow_dispatch:
+
+concurrency:
+  group: location-maison-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  application:
+    name: Application, metier et couverture
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: package-lock.json
+
+      - name: Installer les dependances
+        run: npm ci
+
+      - name: Verifier TypeScript
+        run: npm run check:types --workspace=apps/location-maison
+
+      - name: Tests metier, API et couverture
+        run: npm run test:ci --workspace=apps/location-maison
+
+      - name: Publier la couverture application
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: location-maison-coverage
+          path: apps/location-maison/__tests__/coverage
+          if-no-files-found: warn
+          retention-days: 14
+
+  firestore-emulator:
+    name: Integration Firestore Emulator
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    needs: application
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: package-lock.json
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+
+      - name: Installer les dependances
+        run: npm ci
+
+      - name: Installer Firebase CLI
+        run: npm install --global firebase-tools@14.26.0
+
+      - name: Tester les regles Firestore
+        working-directory: apps/location-maison
+        env:
+          GCLOUD_PROJECT: location-maison-dev
+        run: npm run test:rules
+
+      - name: Tester les API avec Firestore reel emule
+        working-directory: apps/location-maison
+        run: npm run test:emulator:api
+
+  cloud-functions:
+    name: Cloud Functions
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: apps/location-maison/functions/package-lock.json
+
+      - name: Installer les dependances Functions
+        working-directory: apps/location-maison/functions
+        run: npm ci
+
+      - name: Compiler les Functions
+        working-directory: apps/location-maison/functions
+        run: npm run build
+
+      - name: Tester les Functions et mesurer la couverture
+        working-directory: apps/location-maison/functions
+        run: npm run test:ci
+
+      - name: Publier la couverture Functions
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: location-maison-functions-coverage
+          path: apps/location-maison/functions/coverage
+          if-no-files-found: warn
+          retention-days: 14
