@@ -91,6 +91,35 @@ export class FirestoreCacheStore implements CacheStore {
     }
   }
 
+  async setIfAbsent<T>(key: string, value: T, ttlSeconds: number): Promise<boolean> {
+    try {
+      const { db, Timestamp } = await getAdminDb();
+      const ref = db.collection(CACHE_COLLECTION).doc(toDocId(key));
+      const now = Date.now();
+
+      return await db.runTransaction(async (transaction) => {
+        const snapshot = await transaction.get(ref);
+        const data = snapshot.exists
+          ? snapshot.data() as { expiresAt?: { toMillis(): number } } | undefined
+          : undefined;
+        const expiresAtMs = data?.expiresAt?.toMillis?.() ?? 0;
+
+        if (snapshot.exists && expiresAtMs > now) {
+          return false;
+        }
+
+        transaction.set(ref, {
+          value: stripUndefined(value),
+          expiresAt: Timestamp.fromMillis(now + ttlSeconds * 1000),
+        });
+        return true;
+      });
+    } catch (error) {
+      logger.warn('Firestore cache SET IF ABSENT failed', { key, error });
+      return false;
+    }
+  }
+
   async del(key: string): Promise<void> {
     try {
       const { db } = await getAdminDb();

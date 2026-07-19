@@ -11,3 +11,4 @@
 .env*
 
 # vidéos générées (sortie de apps/marketing/scripts, pas la source — voir apps/marketing/videos/.gitignore)
+.vercel

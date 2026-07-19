@@ -3,6 +3,7 @@ import '../../node/slow-buffer-compat';
 import { logger } from 'firebase-functions'
 import { onRequest } from 'firebase-functions/v2/https'
 import { adminDB } from '../../admin'
+import { buildFunctionIncidentContext, safeHttpRequestContext } from '../../observability'
 import type { Notification } from '../../models/notification'
 import { sendUserPush } from '../../notification/push'
 import { buildCallbackPayload, computeCallbackHash, isSuccessCallback, timingSafeEqual } from '../mypayga/callback-shared'
@@ -16,6 +17,13 @@ const PROPERTIES_COLLECTION = 'properties'
 // mypaygaPaymentCallback (crédits), mais l'application du succès incrémente les
 // compteurs du réel et le solde net de l'annonceur au lieu des crédits.
 export const giftPaymentCallback = onRequest({ secrets: MYPAYGA_SECRETS }, async (req, res) => {
+  const requestContext = safeHttpRequestContext(req)
+  const incidentContext = buildFunctionIncidentContext({
+    category: 'payment_callback',
+    operation: 'mypayga.gift.callback',
+    requestId: requestContext.requestId,
+  })
+
   if (req.method !== 'POST' && req.method !== 'GET') {
     res.status(405).json({ ok: false, error: 'method_not_allowed' })
     return
@@ -23,6 +31,11 @@ export const giftPaymentCallback = onRequest({ secrets: MYPAYGA_SECRETS }, async
 
   const config = getMyPayGaConfig()
   if (!config.callbackSecret) {
+    logger.error('Gift callback secret missing', {
+      ...incidentContext,
+      incidentCode: 'CALLBACK_SECRET_MISSING',
+      retryable: false,
+    })
     res.status(500).json({ ok: false, error: 'callback_secret_missing' })
     return
   }
@@ -30,6 +43,9 @@ export const giftPaymentCallback = onRequest({ secrets: MYPAYGA_SECRETS }, async
   const payload = buildCallbackPayload(req)
   if (!payload.uniqueId || !payload.hash) {
     logger.warn('Callback cadeau rejeté: payload incomplet', {
+      ...incidentContext,
+      incidentCode: 'INVALID_CALLBACK_PAYLOAD',
+      retryable: false,
       uniqueId: payload.uniqueId || null,
       hasHash: Boolean(payload.hash),
     })
@@ -40,9 +56,10 @@ export const giftPaymentCallback = onRequest({ secrets: MYPAYGA_SECRETS }, async
   const expectedHash = computeCallbackHash(payload, config.callbackSecret)
   if (!timingSafeEqual(expectedHash, payload.hash)) {
     logger.warn('Signature MyPayGa invalide (cadeau)', {
+      ...incidentContext,
+      incidentCode: 'INVALID_CALLBACK_SIGNATURE',
+      retryable: false,
       transactionId: payload.uniqueId,
-      expectedHashPrefix: expectedHash.slice(0, 10),
-      receivedHashPrefix: payload.hash.slice(0, 10),
     })
     res.status(401).json({ ok: false, error: 'invalid_signature' })
     return
@@ -51,6 +68,12 @@ export const giftPaymentCallback = onRequest({ secrets: MYPAYGA_SECRETS }, async
   const transactionRef = adminDB.collection(GIFT_TRANSACTIONS_COLLECTION).doc(payload.uniqueId)
   const transactionSnapshot = await transactionRef.get()
   if (!transactionSnapshot.exists) {
+    logger.warn('Gift callback transaction not found', {
+      ...incidentContext,
+      incidentCode: 'TRANSACTION_NOT_FOUND',
+      retryable: false,
+      transactionId: payload.uniqueId,
+    })
     res.status(404).json({ ok: false, error: 'transaction_not_found' })
     return
   }
@@ -60,6 +83,14 @@ export const giftPaymentCallback = onRequest({ secrets: MYPAYGA_SECRETS }, async
   const callbackAmount = Number(payload.amount || 0)
 
   if (expectedAmount > 0 && callbackAmount > 0 && expectedAmount !== callbackAmount) {
+    logger.error('Gift callback amount mismatch', {
+      ...incidentContext,
+      incidentCode: 'AMOUNT_MISMATCH',
+      retryable: false,
+      transactionId: payload.uniqueId,
+      expectedAmount,
+      callbackAmount,
+    })
     await transactionRef.update({
       providerCallbackVerified: false,
       providerCallbackError: 'amount_mismatch',
@@ -73,6 +104,14 @@ export const giftPaymentCallback = onRequest({ secrets: MYPAYGA_SECRETS }, async
 
   const succeeded = isSuccessCallback(payload)
   if (!succeeded) {
+    logger.warn('Gift payment rejected by provider', {
+      ...incidentContext,
+      incidentCode: 'PAYMENT_REJECTED',
+      retryable: false,
+      transactionId: payload.uniqueId,
+      orderStatus: payload.orderStatus || null,
+      statusRequest: payload.statusRequest || null,
+    })
     await transactionRef.update({
       status: 'failed',
       paymentStatus: 'failed_provider',
@@ -115,10 +154,21 @@ export const giftPaymentCallback = onRequest({ secrets: MYPAYGA_SECRETS }, async
   // rejoué (idempotence) ne crée pas de notification en double.
   if (appliedNow) {
     await notifyAnnouncerOfGift(transaction).catch((error) => {
-      logger.error('Échec notification cadeau', { transactionId: payload.uniqueId, error })
+      logger.error('Échec notification cadeau', {
+        ...incidentContext,
+        incidentCode: 'GIFT_NOTIFICATION_FAILED',
+        retryable: true,
+        transactionId: payload.uniqueId,
+        error,
+      })
     })
   }
 
+  logger.info('MyPayGa gift callback applied', {
+    ...incidentContext,
+    transactionId: payload.uniqueId,
+    replayed: !appliedNow,
+  })
   res.status(200).json({ ok: true, transactionId: payload.uniqueId, status: 'success' })
 })
 

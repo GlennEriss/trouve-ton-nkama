@@ -13,6 +13,7 @@ const USER_UID = 'lot4e-announcer'
 
 process.env.GCLOUD_PROJECT = PROJECT_ID
 process.env.FIREBASE_PROJECT_ID = PROJECT_ID
+process.env.CACHE_BACKEND = 'firestore'
 if (HAS_FIRESTORE_EMULATOR) {
   process.env.FIRESTORE_EMULATOR_HOST = EMULATOR_HOST
 }
@@ -22,6 +23,11 @@ let postVerifyCode: typeof import('@/app/api/credits/verify-code/route').POST
 let postPromote: typeof import('@/app/api/property/promote/route').POST
 let postCampaign: typeof import('@/app/api/advertising/campaigns/route').POST
 let getCampaigns: typeof import('@/app/api/advertising/campaigns/route').GET
+let getActiveAds: typeof import('@/app/api/advertising/active/route').GET
+let postTrackAd: typeof import('@/app/api/advertising/track/route').POST
+let postReelView: typeof import('@/app/api/reels/[reelId]/statistics/view/route').POST
+let postReelLike: typeof import('@/app/api/reels/[reelId]/statistics/like/route').POST
+let postReelShare: typeof import('@/app/api/reels/[reelId]/statistics/share/route').POST
 let postReel: typeof import('@/app/api/reels/route').POST
 let patchReel: typeof import('@/app/api/reels/route').PATCH
 let deleteReel: typeof import('@/app/api/reels/route').DELETE
@@ -30,6 +36,7 @@ jest.mock('next/server', () => ({
   NextResponse: {
     json: (payload: unknown, init?: { status?: number }) => ({
       status: init?.status ?? 200,
+      headers: new Headers(),
       json: async () => payload,
     }),
   },
@@ -82,6 +89,10 @@ function bearerRequest(body: Record<string, unknown>) {
   return makeRequest(body, { Authorization: 'Bearer emulator-token' })
 }
 
+function urlRequest(url: string) {
+  return { url } as Request
+}
+
 async function clearFirestoreEmulator() {
   const response = await fetch(
     `http://${EMULATOR_HOST}/emulator/v1/projects/${PROJECT_ID}/databases/(default)/documents`,
@@ -115,6 +126,11 @@ async function countDocs(collectionName: string) {
     ;({ POST: postVerifyCode } = await import('@/app/api/credits/verify-code/route'))
     ;({ POST: postPromote } = await import('@/app/api/property/promote/route'))
     ;({ POST: postCampaign, GET: getCampaigns } = await import('@/app/api/advertising/campaigns/route'))
+    ;({ GET: getActiveAds } = await import('@/app/api/advertising/active/route'))
+    ;({ POST: postTrackAd } = await import('@/app/api/advertising/track/route'))
+    ;({ POST: postReelView } = await import('@/app/api/reels/[reelId]/statistics/view/route'))
+    ;({ POST: postReelLike } = await import('@/app/api/reels/[reelId]/statistics/like/route'))
+    ;({ POST: postReelShare } = await import('@/app/api/reels/[reelId]/statistics/share/route'))
     ;({ POST: postReel, PATCH: patchReel, DELETE: deleteReel } = await import('@/app/api/reels/route'))
   })
 
@@ -290,6 +306,170 @@ async function countDocs(collectionName: string) {
       title: 'Campagne Lot 4E',
       creditsUsed: 70,
       imageURL: 'https://example.com/lot4e-ad.png',
+    })
+  })
+
+  it('sert seulement la campagne eligible et suit ses impressions et clics', async () => {
+    const now = Date.now()
+    const baseCampaign = {
+      advertiserId: 'advertiser-lot6b',
+      title: 'Campagne Lot 6B',
+      placements: ['search_infeed', 'reels_infeed'],
+      priority: 10,
+      billing: { mode: 'user_credits', paymentStatus: 'paid', creditsUsed: 70 },
+      createdAt: new Date(now - 10_000),
+      updatedAt: new Date(now - 10_000),
+    }
+
+    await Promise.all([
+      db.collection(firebaseCollectionNames.ad_campaigns).doc('campaign-lot6b-active').set({
+        ...baseCampaign,
+        status: 'active',
+        startDate: new Date(now - 60_000),
+        endDate: new Date(now + 60_000),
+        targeting: { provinces: ['Estuaire'], cities: ['Libreville'] },
+        creative: {
+          imageURL: 'https://example.com/default.jpg',
+          assets: {
+            search_infeed: { imageURL: 'https://example.com/search.jpg' },
+            reels_infeed: { imageURL: 'https://example.com/reels.jpg' },
+          },
+          headline: 'Offre Lot 6B',
+          ctaUrl: 'https://example.com/offre',
+        },
+        metrics: { impressions: 3, clicks: 2 },
+      }),
+      db.collection(firebaseCollectionNames.ad_campaigns).doc('campaign-lot6b-expired').set({
+        ...baseCampaign,
+        status: 'active',
+        startDate: new Date(now - 120_000),
+        endDate: new Date(now - 60_000),
+        creative: { imageURL: 'https://example.com/expired.jpg' },
+        metrics: { impressions: 0, clicks: 0 },
+      }),
+      db.collection(firebaseCollectionNames.ad_campaigns).doc('campaign-lot6b-other-city').set({
+        ...baseCampaign,
+        status: 'active',
+        startDate: new Date(now - 60_000),
+        endDate: new Date(now + 60_000),
+        targeting: { cities: ['Port-Gentil'] },
+        creative: { imageURL: 'https://example.com/port-gentil.jpg' },
+        metrics: { impressions: 0, clicks: 0 },
+      }),
+    ])
+
+    const searchResponse = await getActiveAds(urlRequest(
+      'http://localhost/api/advertising/active?placement=search_infeed&province=Estuaire&city=Libreville',
+    ))
+    const searchPayload = await searchResponse.json()
+    expect(searchResponse.status).toBe(200)
+    expect(searchResponse.headers.get('Cache-Control')).toBe('private, no-store, max-age=0')
+    expect(searchPayload.creative).toMatchObject({
+      campaignId: 'campaign-lot6b-active',
+      placement: 'search_infeed',
+      imageURL: 'https://example.com/search.jpg',
+    })
+
+    const reelsResponse = await getActiveAds(urlRequest(
+      'http://localhost/api/advertising/active?placement=reels_infeed&province=Estuaire&city=Libreville',
+    ))
+    expect((await reelsResponse.json()).creative).toMatchObject({
+      campaignId: 'campaign-lot6b-active',
+      placement: 'reels_infeed',
+      imageURL: 'https://example.com/reels.jpg',
+    })
+
+    const impressionResponse = await postTrackAd(makeRequest({
+      campaignId: 'campaign-lot6b-active',
+      event: 'impression',
+      visitorId: 'ttn_visitor_lot6c_ads',
+      placementKey: 'search_infeed',
+    }))
+    const duplicateImpressionResponse = await postTrackAd(makeRequest({
+      campaignId: 'campaign-lot6b-active',
+      event: 'impression',
+      visitorId: 'ttn_visitor_lot6c_ads',
+      placementKey: 'search_infeed',
+    }))
+    const clickResponse = await postTrackAd(makeRequest({
+      campaignId: 'campaign-lot6b-active',
+      event: 'click',
+      visitorId: 'ttn_visitor_lot6c_ads',
+      placementKey: 'search_infeed',
+    }))
+    expect(impressionResponse.status).toBe(200)
+    expect(duplicateImpressionResponse.status).toBe(200)
+    expect(await duplicateImpressionResponse.json()).toMatchObject({
+      success: true,
+      deduplicated: true,
+    })
+    expect(clickResponse.status).toBe(200)
+
+    const trackedCampaign = await db
+      .collection(firebaseCollectionNames.ad_campaigns)
+      .doc('campaign-lot6b-active')
+      .get()
+    expect(trackedCampaign.data()?.metrics).toEqual({ impressions: 4, clicks: 3 })
+
+    const missingResponse = await postTrackAd(makeRequest({
+      campaignId: 'campaign-lot6b-missing',
+      event: 'impression',
+    }))
+    expect(missingResponse.status).toBe(404)
+    expect(
+      (await db.collection(firebaseCollectionNames.ad_campaigns).doc('campaign-lot6b-missing').get()).exists,
+    ).toBe(false)
+  })
+
+  it('deduplique les statistiques reels par visiteur et applique les transitions de like', async () => {
+    const reelId = 'reel-statistics-lot6c'
+    const params = { params: Promise.resolve({ reelId }) }
+    const visitorId = 'ttn_visitor_lot6c_reels'
+
+    await db.collection(firebaseCollectionNames.reels).doc(reelId).set({
+      createdBy: USER_UID,
+      viewCount: 2,
+      likeCount: 1,
+      shareCount: 4,
+      shareTargets: {},
+    })
+
+    const [firstView, secondView] = await Promise.all([
+      postReelView(makeRequest({ visitorId }), params),
+      postReelView(makeRequest({ visitorId }), params),
+    ])
+    const viewPayloads = await Promise.all([firstView.json(), secondView.json()])
+
+    expect([firstView.status, secondView.status]).toEqual([200, 200])
+    expect(viewPayloads.map((payload) => payload.deduplicated).sort()).toEqual([false, true])
+
+    const firstLike = await postReelLike(makeRequest({ visitorId, liked: true }), params)
+    const duplicateLike = await postReelLike(makeRequest({ visitorId, liked: true }), params)
+    const unlike = await postReelLike(makeRequest({ visitorId, liked: false }), params)
+
+    expect(firstLike.status).toBe(200)
+    expect(await firstLike.json()).toMatchObject({ deduplicated: false })
+    expect(await duplicateLike.json()).toMatchObject({ deduplicated: true })
+    expect(await unlike.json()).toMatchObject({ deduplicated: false })
+
+    const firstShare = await postReelShare(makeRequest({
+      visitorId,
+      target: 'whatsapp',
+    }), params)
+    const duplicateShare = await postReelShare(makeRequest({
+      visitorId,
+      target: 'whatsapp',
+    }), params)
+
+    expect(firstShare.status).toBe(200)
+    expect(await duplicateShare.json()).toMatchObject({ deduplicated: true })
+
+    const reel = await db.collection(firebaseCollectionNames.reels).doc(reelId).get()
+    expect(reel.data()).toMatchObject({
+      viewCount: 3,
+      likeCount: 1,
+      shareCount: 5,
+      shareTargets: { whatsapp: 1 },
     })
   })
 

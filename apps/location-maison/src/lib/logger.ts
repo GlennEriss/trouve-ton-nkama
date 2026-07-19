@@ -15,9 +15,21 @@ const REDACTED_KEYS = [
   'authorization',
   'cookie',
   'oobcode',
+  'email',
+  'phone',
+  'hash',
+  'signature',
+  'privatekey',
+  'private_key',
+  'rawbody',
+  'raw_body',
+  'apikey',
+  'api_key',
   'refresh_token',
   'access_token',
 ];
+const MAX_LOG_STRING_LENGTH = 1000;
+const MAX_LOG_DEPTH = 6;
 
 function isObject(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null;
@@ -47,21 +59,28 @@ function serializeError(error: Error): Record<string, unknown> {
   };
 }
 
-function sanitizeForLog(value: unknown, seen = new WeakSet<object>()): unknown {
+function sanitizeForLog(
+  value: unknown,
+  seen = new WeakSet<object>(),
+  depth = 0,
+): unknown {
   if (value === null || value === undefined) {
     return value;
   }
 
   if (value instanceof Error) {
-    return serializeError(value);
-  }
-
-  if (Array.isArray(value)) {
-    return value.map((item) => sanitizeForLog(item, seen));
+    return sanitizeForLog(serializeError(value), seen, depth);
   }
 
   if (!isObject(value)) {
+    if (typeof value === 'string' && value.length > MAX_LOG_STRING_LENGTH) {
+      return `${value.slice(0, MAX_LOG_STRING_LENGTH)}...[TRUNCATED]`;
+    }
     return value;
+  }
+
+  if (depth >= MAX_LOG_DEPTH) {
+    return '[MAX_DEPTH]';
   }
 
   if (seen.has(value)) {
@@ -69,13 +88,17 @@ function sanitizeForLog(value: unknown, seen = new WeakSet<object>()): unknown {
   }
   seen.add(value);
 
+  if (Array.isArray(value)) {
+    return value.map((item) => sanitizeForLog(item, seen, depth + 1));
+  }
+
   const sanitized: Record<string, unknown> = {};
   for (const [key, nestedValue] of Object.entries(value)) {
     if (shouldRedactKey(key)) {
       sanitized[key] = '[REDACTED]';
       continue;
     }
-    sanitized[key] = sanitizeForLog(nestedValue, seen);
+    sanitized[key] = sanitizeForLog(nestedValue, seen, depth + 1);
   }
   return sanitized;
 }
@@ -87,7 +110,10 @@ export interface Logger {
   error: (message: string, context?: Record<string, unknown>) => void;
 }
 
-export function createLogger(scope: string): Logger {
+export function createLogger(
+  scope: string,
+  defaultContext: Record<string, unknown> = {},
+): Logger {
   const minimumLogLevel = resolveLogLevel();
 
   const write = (level: LogLevel, message: string, context?: Record<string, unknown>) => {
@@ -100,7 +126,9 @@ export function createLogger(scope: string): Logger {
       level,
       scope,
       message,
-      ...(context ? { context: sanitizeForLog(context) } : {}),
+      ...(Object.keys(defaultContext).length > 0 || context
+        ? { context: sanitizeForLog({ ...defaultContext, ...context }) }
+        : {}),
     };
 
     const line = JSON.stringify(payload);
@@ -129,4 +157,3 @@ export function createLogger(scope: string): Logger {
     error: (message, context) => write('error', message, context),
   };
 }
-

@@ -4,8 +4,10 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { createLogger } from '@/lib/logger';
-
-const logger = createLogger('api.credits.purchase');
+import {
+  attachRequestId,
+  createRequestLogContext,
+} from '@/lib/observability/request-context';
 
 interface PurchaseRequestBody {
   packId: string;
@@ -23,12 +25,17 @@ interface PurchaseResponse {
 }
 
 export async function POST(request: NextRequest): Promise<NextResponse<PurchaseResponse>> {
+  const requestContext = createRequestLogContext(request, 'credits.purchase', 'payment');
+  const logger = createLogger('api.credits.purchase', requestContext);
+  const respond = (payload: PurchaseResponse, status = 200) =>
+    attachRequestId(NextResponse.json(payload, { status }), requestContext.requestId);
+
   try {
     const { adminAuth } = await import('@/firebase/admin');
 
     const authHeader = request.headers.get('authorization');
     if (!authHeader?.startsWith('Bearer ')) {
-      return NextResponse.json({ success: false, message: "Token d'authentification requis" }, { status: 401 });
+      return respond({ success: false, message: "Token d'authentification requis" }, 401);
     }
 
     const token = authHeader.split('Bearer ')[1];
@@ -39,7 +46,7 @@ export async function POST(request: NextRequest): Promise<NextResponse<PurchaseR
     const { packId, phoneNumber, network } = body;
 
     if (!packId || !phoneNumber) {
-      return NextResponse.json({ success: false, message: 'Pack ID et numéro de téléphone requis' }, { status: 400 });
+      return respond({ success: false, message: 'Pack ID et numéro de téléphone requis' }, 400);
     }
 
     const isLocalEnvironment = !process.env.VERCEL && !process.env.NETLIFY && !process.env.CF_PAGES;
@@ -70,11 +77,13 @@ export async function POST(request: NextRequest): Promise<NextResponse<PurchaseR
     if (!cloudFunctionResponse.ok) {
       const errorData = await cloudFunctionResponse.json().catch(() => ({}));
       logger.error('Cloud function initiatePurchase failed', {
+        incidentCode: 'PAYMENT_FUNCTION_FAILED',
+        retryable: cloudFunctionResponse.status >= 500,
         status: cloudFunctionResponse.status,
         errorData,
       });
 
-      return NextResponse.json(
+      return respond(
         {
           success: false,
           message: errorData.error ?? "Erreur lors de l'initiation du paiement",
@@ -83,7 +92,7 @@ export async function POST(request: NextRequest): Promise<NextResponse<PurchaseR
               ? `Cloud Function error: ${cloudFunctionResponse.status}`
               : undefined,
         },
-        { status: 500 }
+        500,
       );
     }
 
@@ -95,31 +104,35 @@ export async function POST(request: NextRequest): Promise<NextResponse<PurchaseR
       transactionId: result?.transactionId,
     });
 
-    return NextResponse.json(result);
+    return respond(result);
   } catch (error: any) {
-    logger.error('Purchase API failed', { error });
+    logger.error('Purchase API failed', {
+      incidentCode: 'CREDIT_PURCHASE_FAILED',
+      retryable: !String(error?.code ?? '').startsWith('auth/'),
+      error,
+    });
 
     if (error.code === 'auth/id-token-expired') {
-      return NextResponse.json(
+      return respond(
         { success: false, message: 'Session expirée, veuillez vous reconnecter' },
-        { status: 401 }
+        401,
       );
     }
 
     if (error.code === 'auth/invalid-id-token') {
-      return NextResponse.json(
+      return respond(
         { success: false, message: "Token d'authentification invalide" },
-        { status: 401 }
+        401,
       );
     }
 
-    return NextResponse.json(
+    return respond(
       {
         success: false,
         message: 'Erreur interne du serveur',
         error: process.env.NODE_ENV === 'development' ? error.message : undefined,
       },
-      { status: 500 }
+      500,
     );
   }
 }

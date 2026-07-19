@@ -12,8 +12,13 @@ import type {
   AdMetrics,
   AdPlacement,
 } from '@/models/advertising'
+import { getCacheStore } from '@/lib/cache'
 
 const logger = createLogger('db.ad-campaign')
+const AD_IMPRESSION_TTL_SECONDS = 30 * 60
+const AD_CLICK_TTL_SECONDS = 5
+
+export type CampaignMetricResult = 'tracked' | 'duplicate' | 'not-found'
 
 export interface AdServeContext {
   province?: string | null
@@ -230,20 +235,42 @@ export async function getActiveCampaignsForPlacement(
 export async function incrementCampaignMetric(
   campaignId: string,
   metric: keyof AdMetrics,
-): Promise<void> {
+  actorId: string,
+  placementKey: string,
+): Promise<CampaignMetricResult> {
+  const cache = getCacheStore()
+  const ttlSeconds = metric === 'impressions' ? AD_IMPRESSION_TTL_SECONDS : AD_CLICK_TTL_SECONDS
+  const claimKey = `ad-metric:${metric}:${campaignId}:${placementKey}:${actorId}`
+  const claimed = await cache.setIfAbsent(claimKey, true, ttlSeconds)
+  if (!claimed) return 'duplicate'
+
   try {
     const [{ adminApp }, { getFirestore, FieldValue }] = await Promise.all([
       import('@/firebase/admin'),
       import('firebase-admin/firestore'),
     ])
-    if (!adminApp) return
+    if (!adminApp) {
+      await cache.del(claimKey)
+      throw new Error('Firebase Admin not initialized')
+    }
 
     const db = getFirestore(adminApp as any)
-    await db
+    const campaignRef = db
       .collection(firebaseCollectionNames.ad_campaigns)
       .doc(campaignId)
-      .set({ metrics: { [metric]: FieldValue.increment(1) } }, { merge: true })
+
+    await campaignRef.update({
+      [`metrics.${metric}`]: FieldValue.increment(1),
+    })
+    return 'tracked'
   } catch (error) {
+    const errorCode = typeof error === 'object' && error !== null && 'code' in error
+      ? (error as { code?: unknown }).code
+      : null
+    await cache.del(claimKey)
+    if (errorCode === 5 || errorCode === 'not-found') return 'not-found'
+
     logger.error('incrementCampaignMetric failed', { error, campaignId, metric })
+    throw error
   }
 }

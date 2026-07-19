@@ -27,6 +27,12 @@ import { cn } from '@/lib/utils'
 import type { Reel } from '@/models/reel'
 import GiftModal from './gift/GiftModal'
 import ReelAdSlide, { type ReelAdVariant } from './ReelAdSlide'
+import {
+  trackReelLike,
+  trackReelShare,
+  trackReelView,
+  type ReelShareTarget,
+} from '@/lib/statistics/reel-statistics.client'
 
 // Mobile : plein écran edge-to-edge (comme l'app TikTok). Desktop (md+) : carte 9:16 centrée
 // sur fond sombre façon TikTok/Instagram Reels web, pas une vidéo étirée sur toute la largeur
@@ -78,43 +84,6 @@ async function fetchReelsPage(cursor: string | null): Promise<FeedPage> {
     throw new Error('Impossible de charger les réels.')
   }
   return response.json()
-}
-
-function trackReelView(reelId: string) {
-  const url = `/api/reels/${reelId}/statistics/view`
-  if (navigator.sendBeacon) {
-    navigator.sendBeacon(url, new Blob([], { type: 'application/json' }))
-  } else {
-    fetch(url, { method: 'POST', keepalive: true }).catch(() => undefined)
-  }
-}
-
-async function trackReelLike(reelId: string, liked: boolean) {
-  const response = await fetch(`/api/reels/${reelId}/statistics/like`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ liked }),
-  })
-
-  if (!response.ok) {
-    throw new Error('Impossible de mettre à jour le like.')
-  }
-}
-
-function trackReelShare(reelId: string, target: ShareTarget) {
-  const url = `/api/reels/${reelId}/statistics/share`
-  const payload = JSON.stringify({ target })
-
-  if (navigator.sendBeacon) {
-    navigator.sendBeacon(url, new Blob([payload], { type: 'application/json' }))
-  } else {
-    fetch(url, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: payload,
-      keepalive: true,
-    }).catch(() => undefined)
-  }
 }
 
 function getReelPublicUrl(reelId: string) {
@@ -197,7 +166,7 @@ function useLocalReelLike(reel: Reel & { id: string }) {
   return { isLiked, likeCount, toggleLike }
 }
 
-type ShareTarget = 'native' | 'whatsapp' | 'facebook' | 'x' | 'mail' | 'tiktok' | 'copy'
+type ShareTarget = ReelShareTarget
 
 function openShareTarget(target: ShareTarget, reel: Reel & { id: string }, propertyTitle?: string) {
   const reelUrl = getReelPublicUrl(reel.id)

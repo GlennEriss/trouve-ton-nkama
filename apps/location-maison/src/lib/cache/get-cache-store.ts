@@ -21,6 +21,8 @@ export function getCacheStore(): CacheStore {
   }
 
   const backend = (process.env.CACHE_BACKEND ?? 'redis').trim().toLowerCase();
-  cachedStore = backend === 'firestore' ? new FirestoreCacheStore() : new RedisCacheStore();
+  cachedStore = backend === 'firestore'
+    ? new FirestoreCacheStore()
+    : new RedisCacheStore(new FirestoreCacheStore());
   return cachedStore;
 }

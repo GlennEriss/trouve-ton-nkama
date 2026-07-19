@@ -15,9 +15,12 @@ if (!process.env.UPSTASH_REDIS_REST_URL || !process.env.UPSTASH_REDIS_REST_TOKEN
 const redis = global._redis ?? new Redis({
   url: process.env.UPSTASH_REDIS_REST_URL,
   token: process.env.UPSTASH_REDIS_REST_TOKEN,
+  // Les commandes unitaires n'ont pas besoin d'auto-pipeline. Le désactiver conserve
+  // surtout l'erreur fournisseur originale (quota, authentification, indisponibilité).
+  enableAutoPipelining: false,
 })
 
 // Stocker l'instance dans le global pour la réutiliser
 global._redis ??= redis
 
-export default redis 
+export default redis
