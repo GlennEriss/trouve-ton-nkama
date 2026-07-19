@@ -200,6 +200,16 @@ export const VillaSchema = LogementSchemaBase.extend({
   city: data.address.city,
   province: data.address.province,
 }));
+export const DuplexSchema = LogementSchemaBase.extend({
+  nbrFloors: z.number().min(0, "Le nombre d'étages doit être un nombre positif"),
+  nbrLivingRoom: z.number().min(0, "Le nombre de salons doit être un nombre positif"),
+  nbrGarages: z.number().min(0, "Le nombre de garages doit être un nombre positif"),
+}).transform((data) => ({
+  ...data,
+  street: data.address.district,
+  city: data.address.city,
+  province: data.address.province,
+}));
 export const DeskSchema = PropertySchemaBase.extend({
   nbrToilets: z.number().min(0, "Le nombre de toilettes doit être un nombre positif"),
   nbrRooms: z.number().min(0, "Le nombre de salles doit être un nombre positif"),
@@ -253,6 +263,15 @@ export const ShopSchema = PropertySchemaBase.extend({
   city: data.address.city,
   province: data.address.province,
 }));
+export const WarehouseSchema = PropertySchemaBase.extend({
+  nbrSections: z.number().min(0, "Le nombre de sections doit être un nombre positif"),
+  nbrToilets: z.number().min(0, "Le nombre de toilettes doit être un nombre positif"),
+}).transform((data) => ({
+  ...data,
+  street: data.address.district,
+  city: data.address.city,
+  province: data.address.province,
+}));
 //Steps schemas
 export const Step1Schema = z.object({
   images: z.array(z.any()).nonempty("Au moins une image est requise"),
@@ -300,6 +319,12 @@ export const PropertyTypeEnum = z.enum([
   'villa',
   'desk',
   'building',
+  'shop',
+  'kiosk',
+  'room',
+  'land',
+  'duplex',
+  'warehouse',
 ]);
 export const Step2SchemaBase = z.object({
   propertyType: PropertyTypeEnum,
@@ -342,9 +367,22 @@ export const DeskStep2Schema = z.object({
   nbrRooms: z.number().min(0, "Le nombre de salles doit être un nombre positif"),
 });
 export const BuildingStep2Schema = z.object({
-  nbrAppartement: z.number().min(0, "Le nombre d'appartements doit être un nombre positif"),
+  nbrApartments: z.number().min(0, "Le nombre d'appartements doit être un nombre positif"),
   nbrFloors: z.number().min(0, "Le nombre d'étages doit être un nombre positif"),
-  hasParking: z.number().min(0, "Le nombre de places de parking doit être un nombre positif"),
+  hasParking: z.boolean({ required_error: "Le champ parking est requis" }),
+});
+export const DuplexStep2Schema = z.object({
+  nbrRooms: z.number().min(0, "Le nombre de chambres doit être un nombre positif"),
+  nbrKitchens: z.number().min(0, "Le nombre de cuisines doit être un nombre positif"),
+  nbrBathrooms: z.number().min(0, "Le nombre de salles de bain doit être un nombre positif"),
+  nbrToilets: z.number().min(0, "Le nombre de toilettes doit être un nombre positif"),
+  nbrFloors: z.number().min(0, "Le nombre d'étages doit être un nombre positif"),
+  nbrLivingRoom: z.number().min(0, "Le nombre de salons doit être un nombre positif"),
+  nbrGarages: z.number().min(0, "Le nombre de garages doit être un nombre positif"),
+});
+export const WarehouseStep2Schema = z.object({
+  nbrSections: z.number().min(0, "Le nombre de sections doit être un nombre positif"),
+  nbrToilets: z.number().min(0, "Le nombre de toilettes doit être un nombre positif"),
 });
 export const Step2Schema = Step2SchemaBase.refine((data) => {
   switch (data.propertyType) {
@@ -412,6 +450,8 @@ export type BuildingSchemaType = z.infer<typeof BuildingSchema>;
 export type StudioSchemaType = z.infer<typeof StudioSchema>;
 export type ApartmentSchemaType = z.infer<typeof ApartmentSchema>;
 export type VillaSchemaType = z.infer<typeof VillaSchema>;
+export type DuplexSchemaType = z.infer<typeof DuplexSchema>;
+export type WarehouseSchemaType = z.infer<typeof WarehouseSchema>;
 export type LogementSchemaType = z.infer<typeof LogementSchema>;
 export type PropertySchemaType = z.infer<typeof PropertySchema>;
 export type HomeSchemaType = z.infer<typeof HomeSchema>;

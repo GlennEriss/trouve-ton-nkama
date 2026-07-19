@@ -74,6 +74,11 @@ export function useOnSubmitFormProperty(
       createdBy: user?.uid
     }
 
+    if (data.longitude === 0 && data.latitude === 0) {
+      delete (propertyMutate as Partial<Property>).longitude
+      delete (propertyMutate as Partial<Property>).latitude
+    }
+
     // Créer les entités de localisation
     await createLocationEntities(propertyMutate, {
       provinceLon,

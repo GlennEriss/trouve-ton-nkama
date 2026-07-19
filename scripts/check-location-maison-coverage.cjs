@@ -12,6 +12,13 @@ const profiles = {
       'src/hooks/useFormAIHandler.ts': { branches: 75, functions: 100, lines: 95, statements: 95 },
       'src/components/reels/CreateOrphanReelClient.tsx': { branches: 65, functions: 30, lines: 85, statements: 85 },
       'src/components/shared/form/PhoneNumberFormAppSimple.tsx': { branches: 60, functions: 50, lines: 75, statements: 75 },
+      'src/db/generic.db.ts': { branches: 95, functions: 100, lines: 95, statements: 95 },
+      'src/db/property.db.ts': { branches: 80, functions: 100, lines: 90, statements: 90 },
+      'src/directors/factory.director.ts': { branches: 90, functions: 100, lines: 95, statements: 95 },
+      'src/hooks/useFormPropertyType.ts': { branches: 90, functions: 100, lines: 95, statements: 95 },
+      'src/hooks/useOnSubmitFormProperty.ts': { branches: 70, functions: 100, lines: 95, statements: 95 },
+      'src/hooks/usePropertyFormSchema.ts': { branches: 25, functions: 100, lines: 80, statements: 80 },
+      'src/providers/property.form.provider.tsx': { branches: 65, functions: 60, lines: 70, statements: 70 },
     },
   },
   functions: {

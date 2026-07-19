@@ -18,7 +18,11 @@ import {
   KioskSchema,
   RoomSchema,
   ShopSchema,
-  PropertySchema
+  PropertySchema,
+  DuplexSchema,
+  WarehouseSchema,
+  DuplexStep2Schema,
+  WarehouseStep2Schema
 } from '@/models/schema'
 import { z } from 'zod'
 
@@ -45,6 +49,10 @@ export function usePropertyFormSchema(
         return DeskStep2Schema
       case 'Building':
         return BuildingStep2Schema
+      case 'Duplex':
+        return DuplexStep2Schema
+      case 'Warehouse':
+        return WarehouseStep2Schema
       default:
         return z.object({}) // Schéma vide pour les autres types
     }
@@ -71,6 +79,10 @@ export function usePropertyFormSchema(
         return RoomSchema
       case 'Villa':
         return VillaSchema
+      case 'Duplex':
+        return DuplexSchema
+      case 'Warehouse':
+        return WarehouseSchema
       default:
         return PropertySchema
     }

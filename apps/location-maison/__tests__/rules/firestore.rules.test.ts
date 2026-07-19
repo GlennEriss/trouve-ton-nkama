@@ -237,6 +237,32 @@ describe('firestore.rules properties', () => {
       }),
     )
   })
+
+  it('autorise le propriétaire à modifier et supprimer son annonce', async () => {
+    await seed('properties/property-owned', {
+      createdBy: 'announcer',
+      moderationStatus: 'PENDING',
+      state: 'IN_PROGRESS',
+      price: 40000,
+    })
+
+    const propertyRef = doc(authedDb('announcer'), 'properties/property-owned')
+    await assertSucceeds(updateDoc(propertyRef, { price: 45000 }))
+    await assertSucceeds(deleteDoc(propertyRef))
+  })
+
+  it('refuse à un autre utilisateur de modifier ou supprimer l annonce', async () => {
+    await seed('properties/property-other', {
+      createdBy: 'announcer',
+      moderationStatus: 'PENDING',
+      state: 'IN_PROGRESS',
+      price: 40000,
+    })
+
+    const propertyRef = doc(authedDb('user'), 'properties/property-other')
+    await assertFails(updateDoc(propertyRef, { price: 1 }))
+    await assertFails(deleteDoc(propertyRef))
+  })
 })
 
 describe('firestore.rules reels', () => {
