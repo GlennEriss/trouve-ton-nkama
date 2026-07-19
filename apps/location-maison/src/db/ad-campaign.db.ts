@@ -230,20 +230,30 @@ export async function getActiveCampaignsForPlacement(
 export async function incrementCampaignMetric(
   campaignId: string,
   metric: keyof AdMetrics,
-): Promise<void> {
+): Promise<boolean> {
   try {
     const [{ adminApp }, { getFirestore, FieldValue }] = await Promise.all([
       import('@/firebase/admin'),
       import('firebase-admin/firestore'),
     ])
-    if (!adminApp) return
+    if (!adminApp) return false
 
     const db = getFirestore(adminApp as any)
-    await db
+    const campaignRef = db
       .collection(firebaseCollectionNames.ad_campaigns)
       .doc(campaignId)
-      .set({ metrics: { [metric]: FieldValue.increment(1) } }, { merge: true })
+
+    await campaignRef.update({
+      [`metrics.${metric}`]: FieldValue.increment(1),
+    })
+    return true
   } catch (error) {
+    const errorCode = typeof error === 'object' && error !== null && 'code' in error
+      ? (error as { code?: unknown }).code
+      : null
+    if (errorCode === 5 || errorCode === 'not-found') return false
+
     logger.error('incrementCampaignMetric failed', { error, campaignId, metric })
+    throw error
   }
 }

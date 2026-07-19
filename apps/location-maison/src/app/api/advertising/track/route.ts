@@ -21,7 +21,10 @@ export async function POST(request: Request) {
   }
 
   try {
-    await incrementCampaignMetric(campaignId, event)
+    const campaignExists = await incrementCampaignMetric(campaignId, event)
+    if (!campaignExists) {
+      return jsonApiError(404, 'CAMPAIGN_NOT_FOUND', 'Campagne publicitaire introuvable')
+    }
     return NextResponse.json({ success: true })
   } catch (error) {
     return handleApiError(error, {

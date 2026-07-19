@@ -287,6 +287,20 @@
       ]
     },
     {
+      "collectionGroup": "ad_campaigns",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "status",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "placements",
+          "arrayConfig": "CONTAINS"
+        }
+      ]
+    },
+    {
       "collectionGroup": "gift_transactions",
       "queryScope": "COLLECTION",
       "fields": [
