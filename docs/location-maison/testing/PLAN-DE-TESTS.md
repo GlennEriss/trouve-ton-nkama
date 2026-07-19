@@ -174,7 +174,7 @@ Critere de sortie :
 - Les pages principales rendent la bonne vue en dev et prod.
 - Les ecritures serveur critiques passent au moins une fois contre Firestore emulator avant un smoke test dev heberge.
 
-### Smoke test dev avec vrais credits de dev
+### Lot 6A - Smoke test dev avec vrais credits de dev
 
 But : valider la chaine complete hors mock avec un compte annonceur de dev et des credits non prod.
 
@@ -190,6 +190,20 @@ Critere de sortie :
 - Les soldes visibles dans l'UI correspondent aux soldes Firestore dev.
 - Aucun debit double n'apparait apres double clic ou refresh.
 - Les donnees de test sont nettoyees apres verification.
+
+Commande automatisee :
+
+```bash
+cd apps/location-maison
+LOT6A_CONFIRM_REAL_DEV=1 \
+LOT6A_USER_EMAIL=<compte-annonceur-dev> \
+LOT6A_BASE_URL=http://127.0.0.1:3001 \
+npm run test:smoke:lot6a
+```
+
+Le runner refuse tout projet autre que `location-maison-dev`, tout serveur non local et toute connexion aux emulateurs. Il publie une campagne `discovery` a 15 credits et un boost a 3 credits, rejoue les deux requetes en concurrence, verifie Firestore et les API de solde/historique, puis restaure le solde et supprime les documents crees.
+
+Dernier resultat reel le 2026-07-19 : PASS. Solde `200 -> 182 -> 200`, une campagne, un boost et deux transactions uniques, puis zero document de test restant. Le passage a revele l'index manquant `credit_transactions(type, uid, createdAt desc)` ; il a ete ajoute a `firestore.indexes.json` et deploye uniquement sur `location-maison-dev` pour ce lot. Detail dans [LOT-6-AUDIT.md](./LOT-6-AUDIT.md).
 
 ### Lot 5 - Audit UX, accessibilite et coherence artistique
 

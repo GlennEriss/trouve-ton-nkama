@@ -30,6 +30,7 @@
     "test:e2e:lot5b:screenshots": "LOT5B_SCREENSHOTS=1 E2E_ENV=dev playwright test __tests__/e2e/lot5b-forms-auth-balance.spec.ts --project=chromium-desktop-dev --workers=1",
     "test:e2e:lot5c": "E2E_ENV=dev playwright test __tests__/e2e/lot5c-transversal-surfaces.spec.ts --project=chromium-desktop-dev --workers=1",
     "test:e2e:lot5c:screenshots": "LOT5C_SCREENSHOTS=1 E2E_ENV=dev playwright test __tests__/e2e/lot5c-transversal-surfaces.spec.ts --project=chromium-desktop-dev --workers=1",
+    "test:smoke:lot6a": "node scripts/test-lot6a-real-dev-credits.js",
     "test:e2e:run:preprod": "E2E_ENV=preprod playwright test",
     "test:e2e:run:prod": "E2E_ENV=prod playwright test --project=chromium-desktop-prod",
     "test:coverage": "jest --coverage --coverageReporters=text --coverageReporters=lcov --coverageReporters=html --coverageReporters=json-summary",
