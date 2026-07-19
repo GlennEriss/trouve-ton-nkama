@@ -6,6 +6,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createLogger } from '@/lib/logger'
 import { type CreditPackData } from '@/lib/credits/credit-packs'
+import { resolveAuthenticatedUid } from '@/lib/server/authenticated-uid'
 
 const logger = createLogger('api.credits.packs')
 
@@ -99,26 +100,22 @@ function activePacks(packs: CreditPackData[]): {
 
 export async function GET(request: NextRequest): Promise<NextResponse<CreditPacksResponse>> {
   try {
-    const [{ adminAuth }, { getFirestore }] = await Promise.all([
-      import('@/firebase/admin'),
+    const [{ getFirestore }] = await Promise.all([
       import('firebase-admin/firestore'),
     ])
 
-    const authHeader = request.headers.get('authorization')
-    if (!authHeader?.startsWith('Bearer ')) {
+    const uid = await resolveAuthenticatedUid(request)
+    if (!uid) {
       return NextResponse.json(
         {
           success: false,
           packs: [],
           source: 'firestore',
-          message: "Token d'authentification requis",
+          message: 'Authentification requise',
         },
         { status: 401 }
       )
     }
-
-    const token = authHeader.split('Bearer ')[1]
-    await adminAuth.verifyIdToken(token)
 
     const db = getFirestore()
     const snapshot = await db.collection('credit_packs').get()

@@ -241,7 +241,7 @@ export default function CreditHistory() {
                     {transaction.description}
                   </td>
                   <td className="py-4 px-6">
-                    <span className={`font-bold ${transaction.credits > 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}`}>
+                    <span className={`font-bold ${transaction.credits > 0 ? 'text-green-700 dark:text-green-300' : 'text-red-700 dark:text-red-300'}`}>
                       {transaction.credits > 0 ? '+' : ''}{transaction.credits}
                     </span>
                   </td>
@@ -296,7 +296,7 @@ export default function CreditHistory() {
               </p>
               
               <div className="flex items-center justify-between">
-                <span className={`font-bold ${transaction.credits > 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}`}>
+                <span className={`font-bold ${transaction.credits > 0 ? 'text-green-700 dark:text-green-300' : 'text-red-700 dark:text-red-300'}`}>
                   {transaction.credits > 0 ? '+' : ''}{transaction.credits} crédits
                 </span>
                 <span className="text-sm text-gray-500 dark:text-gray-400">
@@ -346,7 +346,7 @@ export default function CreditHistory() {
             <div className="flex items-center gap-2">
               <Filter className="w-4 h-4 text-gray-500" />
               <Select value={filter} onValueChange={handleFilterChange}>
-                <SelectTrigger className="w-[140px] sm:w-[120px]">
+                <SelectTrigger aria-label="Filtrer les transactions" className="min-h-11 w-[140px] sm:w-[120px]">
                   <SelectValue placeholder="Filtrer" />
                 </SelectTrigger>
                 <SelectContent>
@@ -363,7 +363,7 @@ export default function CreditHistory() {
               variant="outline"
               size="sm"
               disabled={allTransactions.length === 0}
-              className="flex items-center gap-2"
+              className="min-h-11 flex items-center gap-2"
             >
               <Download className="w-4 h-4" />
               <span className="sm:inline">Exporter</span>
@@ -397,4 +397,4 @@ export default function CreditHistory() {
       )}
     </div>
   )
-} 
+}

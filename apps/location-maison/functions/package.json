@@ -11,6 +11,7 @@
     "test": "jest",
     "test:watch": "jest --watch",
     "test:coverage": "jest --coverage",
+    "test:coverage:baseline": "jest --coverage --runInBand --silent --coverageReporters=text-summary --coverageReporters=json-summary",
     "test:real-email": "ENABLE_REAL_EMAIL_TEST=true npm test -- verification.real-email.test.ts"
   },
   "engines": {

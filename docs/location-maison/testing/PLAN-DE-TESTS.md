@@ -26,6 +26,15 @@ But : savoir d'ou on part avant de corriger massivement.
 
 Sortie attendue : cartographie des risques et commandes de test fiables.
 
+### Baseline couverture
+
+La baseline de couverture mesuree le 2026-07-18 est documentee dans [COVERAGE-BASELINE.md](./COVERAGE-BASELINE.md).
+
+- App Next.js : statements 7.54 %, branches 37.11 %, functions 15.63 %, lines 7.54 %.
+- Cloud Functions : statements 15.45 %, branches 14.57 %, functions 16.86 %, lines 15.74 %.
+
+Decision : ne pas activer tout de suite un seuil global a 70 % ou 80 %. Une garde de baseline basse est activee pour empecher une regression, puis on protegera les zones critiques avec des seuils locaux avant de remonter progressivement le global.
+
 ### Lot 1 - Fonctions metier et Cloud Functions sans UI
 
 But : tester les regles qui doivent rester vraies meme sans navigateur.
@@ -132,19 +141,69 @@ cd apps/location-maison && npx playwright test --project=chromium-mobile __tests
 
 Couverture Lot 4C : reset du formulaire `/property/add/studio`, filtres annonceur, nettoyage du prix minimum, reset des filtres et modals annulables pour `Archiver`/`Supprimer`. Ce sous-lot est non destructif : il ne confirme pas encore les ecritures Firestore.
 
-Commande de regression mobile Lot 4A + Lot 4B + Lot 4C :
+Commande Lot 4D deja automatisee :
 
 ```bash
-cd apps/location-maison && npx playwright test --project=chromium-mobile __tests__/e2e/lot4-mobile-public.spec.ts __tests__/e2e/lot4-mobile-announcer.spec.ts __tests__/e2e/lot4-mobile-crud.spec.ts
+cd apps/location-maison && npx playwright test --project=chromium-mobile __tests__/e2e/lot4-mobile-advertising.spec.ts
 ```
 
-Dernier resultat local : 12 tests passes en 58.5s.
+Couverture Lot 4D : dashboard publicitaire, wizard `/advertising/create`, valeur FCFA des credits, upload image mocke, warning format Reels, lien au clic obligatoire, apercus Recherche/Immobilier/Reels et POST de publication mocke avec idempotence.
+
+Commande Lot 4E deja automatisee :
+
+```bash
+cd apps/location-maison && npm run test:emulator:api
+```
+
+Couverture Lot 4E : routes critiques avec Firestore emulator, credits par code, rejeu concurrent de paiement, promotion `boost` idempotente, publication publicitaire idempotente, creation/modification/suppression de reel et verification des documents Firestore produits.
+
+Commande de regression mobile Lot 4A + Lot 4B + Lot 4C + Lot 4D :
+
+```bash
+cd apps/location-maison && npx playwright test --project=chromium-mobile __tests__/e2e/lot4-mobile-public.spec.ts __tests__/e2e/lot4-mobile-announcer.spec.ts __tests__/e2e/lot4-mobile-crud.spec.ts __tests__/e2e/lot4-mobile-advertising.spec.ts
+```
+
+Dernier resultat local : 15 tests passes en 34.6s.
+Dernier resultat Lot 4E emulator : 4 tests passes en 10.96s.
+Dernier resultat rules : 18 tests passes en 4.547s.
 
 Critere de sortie :
 
 - Les parcours passent sur petit mobile, mobile standard et desktop.
 - Les elements fixes ne cachent pas les actions principales.
 - Les pages principales rendent la bonne vue en dev et prod.
+- Les ecritures serveur critiques passent au moins une fois contre Firestore emulator avant un smoke test dev heberge.
+
+### Lot 6A - Smoke test dev avec vrais credits de dev
+
+But : valider la chaine complete hors mock avec un compte annonceur de dev et des credits non prod.
+
+- Creer ou selectionner un compte annonceur dev.
+- Crediter ce compte via un code de paiement/dev-code controle.
+- Publier une publicite self-serve avec un petit forfait et verifier le debit dans Firebase dev.
+- Promouvoir une annonce avec `boost` et verifier le debit unique.
+- Creer, modifier et supprimer un reel dev court.
+- Noter les IDs de documents crees et nettoyer les donnees de test.
+
+Critere de sortie :
+
+- Les soldes visibles dans l'UI correspondent aux soldes Firestore dev.
+- Aucun debit double n'apparait apres double clic ou refresh.
+- Les donnees de test sont nettoyees apres verification.
+
+Commande automatisee :
+
+```bash
+cd apps/location-maison
+LOT6A_CONFIRM_REAL_DEV=1 \
+LOT6A_USER_EMAIL=<compte-annonceur-dev> \
+LOT6A_BASE_URL=http://127.0.0.1:3001 \
+npm run test:smoke:lot6a
+```
+
+Le runner refuse tout projet autre que `location-maison-dev`, tout serveur non local et toute connexion aux emulateurs. Il publie une campagne `discovery` a 15 credits et un boost a 3 credits, rejoue les deux requetes en concurrence, verifie Firestore et les API de solde/historique, puis restaure le solde et supprime les documents crees.
+
+Dernier resultat reel le 2026-07-19 : PASS. Solde `200 -> 182 -> 200`, une campagne, un boost et deux transactions uniques, puis zero document de test restant. Le passage a revele l'index manquant `credit_transactions(type, uid, createdAt desc)` ; il a ete ajoute a `firestore.indexes.json` et deploye uniquement sur `location-maison-dev` pour ce lot. Detail dans [LOT-6-AUDIT.md](./LOT-6-AUDIT.md).
 
 ### Lot 5 - Audit UX, accessibilite et coherence artistique
 
@@ -162,6 +221,40 @@ Critere de sortie :
 - Une grille de composants coherente est appliquee aux pages majeures.
 - Aucune action principale n'est masquee ou difficile a atteindre sur mobile.
 
+Lot 5A automatise le 2026-07-18 :
+
+```bash
+cd apps/location-maison
+npm run test:e2e:lot5
+```
+
+Resultat : 8 tests passes sur mobile et desktop. Le detail des controles, corrections et captures est documente dans [LOT-5-AUDIT.md](./LOT-5-AUDIT.md).
+
+Regression associee : TypeScript sans erreur, 21 tests API/services passes, 4 tests Firestore emulator passes et 15 parcours Playwright du Lot 4 passes.
+
+Lot 5B automatise le 2026-07-18 :
+
+```bash
+cd apps/location-maison
+npm run test:e2e:lot5b
+```
+
+Couverture Lot 5B : formulaire studio, profil, informations personnelles, historique/recharge de credits, connexion et inscription, sur mobile/desktop et en themes clair/sombre. Les controles incluent Axe/WCAG, navigation clavier, cibles tactiles, debordements, bottom navigation et mouvement reduit.
+
+Resultat : 28 tests passes. Validation associee : TypeScript sans erreur, 26 tests API/services passes, Lot 5A a 8/8 et regression mobile Lot 4 a 15/15. Le detail et les captures sont documentes dans [LOT-5-AUDIT.md](./LOT-5-AUDIT.md).
+
+Lot 5C automatise le 2026-07-18 :
+
+```bash
+cd apps/location-maison
+npm run test:e2e:lot5c
+npm run test:e2e:lot5c:screenshots
+```
+
+Couverture Lot 5C : accueil, recherche, choix du type d'annonce, publication, favoris, notifications, connexion/securite, parametres, mes reels et fil de reels. La matrice couvre mobile/desktop et clair/sombre, soit 40 scenarios.
+
+Resultat : 40 tests passes. Les tests ont revele puis verrouille les noms accessibles, contrastes, labels de dates, cibles tactiles, titres desktop, etats vides et interactions imbriquees. Validation associee : 39 tests API/services, Lot 5A a 8/8, Lot 5B a 28/28 et Lot 4 mobile a 15/15. Les 40 captures et le detail des corrections sont documentes dans [LOT-5-AUDIT.md](./LOT-5-AUDIT.md).
+
 ### Lot 6 - Publicites, monitoring et regression continue
 
 But : suivre la prod sans attendre les retours utilisateurs.
@@ -170,7 +263,7 @@ But : suivre la prod sans attendre les retours utilisateurs.
 - AdSense : en dev, utiliser uniquement des emplacements de test ou mocks visuels. En prod, smoke test sans cliquer les pubs.
 - Stats reels/publicites : vues, likes, partages, impressions, clics.
 - Logs : erreurs creation reel, traitement video, callbacks paiement, API failed.
-- CI : lancer Lot 1 et Lot 3 a chaque PR, Lot 4 sur branches de release.
+- CI : lancer Lot 1 et Lot 3 a chaque PR, Lot 4 sur branches de release, et publier la couverture sans casser la CI tant que les seuils cibles locaux ne sont pas poses.
 
 Critere de sortie :
 
@@ -199,4 +292,5 @@ Une fonctionnalite est consideree prete quand :
 - Les actions de creation/paiement sont idempotentes ou protegees contre le double clic.
 - Le parcours mobile a ete verifie visuellement.
 - Les couts Firebase sont limites par pagination, cache ou debouncing quand necessaire.
+- La couverture ne descend pas sous la baseline acceptee, ou la baisse est justifiee dans la PR.
 - Les regressions connues sont documentees si elles ne sont pas corrigees dans le lot.

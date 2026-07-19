@@ -99,7 +99,7 @@ export default function PremiumServicesInfo() {
                     {service.name}
                   </h3>
                   {service.duration && (
-                    <span className="inline-block mt-1 px-2 py-1 bg-[#146B67]/10 dark:bg-[#1FA89B]/10 text-[#146B67] dark:text-[#1FA89B] text-xs rounded-full font-medium">
+                    <span className="mt-1 inline-block rounded-full bg-[#146B67]/10 px-2 py-1 text-xs font-medium text-[#146B67] dark:bg-[#146B67]/40 dark:text-teal-100">
                       {service.duration}
                     </span>
                   )}
@@ -150,7 +150,7 @@ export default function PremiumServicesInfo() {
               <TrendingUp className="w-6 h-6 text-emerald-600 dark:text-emerald-400" />
             </div>
             <h3 className="text-xl font-bold text-emerald-900 dark:text-emerald-200">
-              💡 Optimisez votre retour sur investissement
+              Optimisez votre retour sur investissement
             </h3>
           </div>
           
@@ -159,10 +159,10 @@ export default function PremiumServicesInfo() {
               <h4 className="font-semibold text-emerald-800 dark:text-emerald-300">
                 Stratégies recommandées :
               </h4>
-              <ul className="space-y-2 text-emerald-700 dark:text-emerald-400">
-                <li>• Commencez par un <strong>boost simple (3 crédits)</strong> pour tester</li>
-                <li>• Utilisez la <strong>mise en tendance 7j</strong> pour les annonces prioritaires</li>
-                <li>• Réservez la <strong>mise à la une</strong> pour vos meilleures propriétés</li>
+              <ul className="list-disc space-y-2 pl-4 text-emerald-700 marker:text-emerald-500 dark:text-emerald-400">
+                <li>Commencez par un <strong>boost simple (3 crédits)</strong> pour tester</li>
+                <li>Utilisez la <strong>mise en tendance 7j</strong> pour les annonces prioritaires</li>
+                <li>Réservez la <strong>mise à la une</strong> pour vos meilleures propriétés</li>
               </ul>
             </div>
             
@@ -170,10 +170,10 @@ export default function PremiumServicesInfo() {
               <h4 className="font-semibold text-emerald-800 dark:text-emerald-300">
                 Résultats moyens observés :
               </h4>
-              <ul className="space-y-2 text-emerald-700 dark:text-emerald-400">
-                <li>• <strong>+300% de vues</strong> avec mise à la une</li>
-                <li>• <strong>+150% de contacts</strong> avec mise en tendance</li>
-                <li>• <strong>70% de chances</strong> de location sous 15 jours</li>
+              <ul className="list-disc space-y-2 pl-4 text-emerald-700 marker:text-emerald-500 dark:text-emerald-400">
+                <li><strong>+300% de vues</strong> avec mise à la une</li>
+                <li><strong>+150% de contacts</strong> avec mise en tendance</li>
+                <li><strong>70% de chances</strong> de location sous 15 jours</li>
               </ul>
             </div>
           </div>
@@ -181,4 +181,4 @@ export default function PremiumServicesInfo() {
       </div>
     </div>
   )
-} 
+}

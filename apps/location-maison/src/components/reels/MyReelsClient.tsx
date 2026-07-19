@@ -176,7 +176,7 @@ function ReelCard({
 
         <div className="mt-auto space-y-2">
           <div className="grid grid-cols-2 gap-2">
-            <Button variant="outline" className="h-9 rounded-full" asChild>
+            <Button variant="outline" className="h-11 rounded-full" asChild>
               <Link href={`/reels/${reel.id}/edit`}>
                 <Pencil className="mr-1.5 h-4 w-4" />
                 Modifier
@@ -184,7 +184,7 @@ function ReelCard({
             </Button>
             <Button
               variant="outline"
-              className="h-9 rounded-full text-red-600 hover:bg-red-50 hover:text-red-700 dark:text-red-400 dark:hover:bg-red-950/20"
+              className="h-11 rounded-full text-red-600 hover:bg-red-50 hover:text-red-700 dark:text-red-400 dark:hover:bg-red-950/20"
               onClick={() => onDelete(reel)}
             >
               <Trash2 className="mr-1.5 h-4 w-4" />
@@ -192,7 +192,7 @@ function ReelCard({
             </Button>
           </div>
           {!reel.propertyId && (
-            <Button variant="outline" className="h-9 w-full rounded-full" asChild>
+            <Button variant="outline" className="h-11 w-full rounded-full" asChild>
               <Link href={`${routes.protected.reels_select_property}?attachReelId=${reel.id}`}>
                 <Link2 className="mr-1.5 h-4 w-4" />
                 Attacher à une annonce
@@ -311,12 +311,12 @@ export default function MyReelsClient() {
       <section className="rounded-3xl border border-emerald-100 bg-gradient-to-br from-emerald-50 to-white p-5 shadow-sm dark:border-emerald-900 dark:from-emerald-950/30 dark:to-gray-900 md:p-6">
         <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
           <div>
-            <Link href={routes.protected.properties}>
-              <Button variant="ghost" size="sm" className="group -ml-2 mb-2">
+            <Button asChild variant="ghost" size="sm" className="group -ml-2 mb-2 h-11">
+              <Link href={routes.protected.properties}>
                 <ArrowLeft className="h-4 w-4 mr-1 transition-transform group-hover:-translate-x-1" />
                 Mes annonces
-              </Button>
-            </Link>
+              </Link>
+            </Button>
             <p className="inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-wide text-[#146B67]">
               <Video className="h-3.5 w-3.5" />
               Espace annonceur
@@ -341,8 +341,9 @@ export default function MyReelsClient() {
       <section className="rounded-2xl border border-gray-200 bg-white p-4 shadow-sm dark:border-gray-800 dark:bg-gray-900 md:p-5">
         <div className="grid gap-3 md:grid-cols-3">
           <div>
-            <label className="mb-1 block text-xs font-medium text-gray-500 dark:text-gray-400">Publiés depuis le</label>
+            <label htmlFor="reels-start-date" className="mb-1 block text-xs font-medium text-gray-500 dark:text-gray-400">Publiés depuis le</label>
             <Input
+              id="reels-start-date"
               type="date"
               value={startDateInput}
               onChange={(event) => setStartDateInput(event.target.value)}
@@ -351,8 +352,9 @@ export default function MyReelsClient() {
             />
           </div>
           <div>
-            <label className="mb-1 block text-xs font-medium text-gray-500 dark:text-gray-400">Jusqu&apos;au</label>
+            <label htmlFor="reels-end-date" className="mb-1 block text-xs font-medium text-gray-500 dark:text-gray-400">Jusqu&apos;au</label>
             <Input
+              id="reels-end-date"
               type="date"
               value={endDateInput}
               onChange={(event) => setEndDateInput(event.target.value)}

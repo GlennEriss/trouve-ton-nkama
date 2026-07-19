@@ -57,6 +57,47 @@ cd apps/location-maison && npx playwright test --project=chromium-mobile __tests
 Resultat Lot 4C : 3 tests passes en 21.9s.
 Resultat combine Lot 4A + Lot 4B + Lot 4C : 12 tests passes en 58.5s.
 
+## Lot 4D - Couverture publicites
+
+- Dashboard `/advertising` : credits annonceur, stats, campagnes, vues/clics/credits utilises et CTA de creation.
+- Wizard `/advertising/create` : valeur FCFA visible a cote des credits, progression mobile et navigation entre etapes.
+- Visuels : upload image publicitaire mocke via `/api/advertising/upload`.
+- Reels : warning `Format vertical recommandé pour Réels` quand le visuel paysage est utilise sur un placement vertical.
+- Message : le lien au clic est obligatoire et bloque l'etape suivante tant qu'il est absent ou invalide.
+- Apercus : rendu des emplacements Recherche, Immobilier et Reels dans le wizard.
+- Publication : POST `/api/advertising/campaigns` mocke, verification de la cle d'idempotence, du forfait, du CTA normalise et du visuel.
+- Anti double-clic : deux clics rapides sur `Payer & publier` ne declenchent qu'une seule requete de creation.
+
+## Commandes Lot 4D et regression Lot 4
+
+```bash
+cd apps/location-maison && npx playwright test --project=chromium-mobile __tests__/e2e/lot4-mobile-advertising.spec.ts
+cd apps/location-maison && npx playwright test --project=chromium-mobile __tests__/e2e/lot4-mobile-public.spec.ts __tests__/e2e/lot4-mobile-announcer.spec.ts __tests__/e2e/lot4-mobile-crud.spec.ts __tests__/e2e/lot4-mobile-advertising.spec.ts
+```
+
+Resultat Lot 4D : 3 tests passes en 19.5s.
+Resultat combine Lot 4A + Lot 4B + Lot 4C + Lot 4D : 15 tests passes en 34.6s.
+Derniere regression apres les corrections UX du Lot 5A : 15 tests passes en 42.1s.
+
+## Lot 4E - Ecritures reelles avec Firestore emulator
+
+- Credits : validation concurrente d'un code de paiement, credit utilisateur applique une seule fois, code marque `success` et transaction d'achat creee.
+- Promotion annonce : double requete `boost` avec la meme cle d'idempotence, debit applique une seule fois, annonce promue et transaction de depense creee.
+- Publicites : double publication de campagne avec la meme cle d'idempotence, debit de credits applique une seule fois, campagne active creee, transaction et listing verifies.
+- Reels : creation de reel orphelin, rejet du meme `reelId` rejoue, modification contact/description, suppression idempotente.
+
+## Commandes Lot 4E
+
+```bash
+cd apps/location-maison && npm run test:emulator:api
+cd apps/location-maison && npx jest --config jest.config.ts --runInBand --coverage=false __tests__/api/property-promote.test.ts __tests__/api/advertising-campaigns-idempotency.test.ts __tests__/api/credits-verify-code.test.ts
+cd apps/location-maison && npm run test:rules
+```
+
+Resultat Lot 4E emulator : 4 tests passes en 11.061s lors de la derniere regression.
+Resultat API ciblee : 21 tests passes en 0.568s.
+Resultat rules : 18 tests passes en 4.547s.
+
 ## Corrections appliquees pendant le lot
 
 - Ajout d'un landmark accessible `Navigation mobile` sur la bottom navigation pour stabiliser les tests et ameliorer l'accessibilite.
@@ -66,17 +107,23 @@ Resultat combine Lot 4A + Lot 4B + Lot 4C : 12 tests passes en 58.5s.
 - Tests annonceur : mock des appels analytics, Meta CAPI, Firebase custom token et API annonces pour eviter les ecritures externes pendant les tests de navigation.
 - Tests annonceur : masquage du bouton flottant Next Dev Tools dans le navigateur de test, car il recouvre le premier bouton de la bottom navigation mobile en dev.
 - Tests 4C : factorisation de la fixture annonceur et limitation volontaire aux actions annulables tant que les ecritures Firestore client ne sont pas branchees sur emulator dans les tests E2E.
+- Publicites : l'upload image self-serve passe par `/api/advertising/upload`, ce qui rend le parcours testable et garde l'ecriture Storage cote serveur.
+- Publicites : ajout d'un verrou synchrone sur `Payer & publier` pour eviter deux creations/debits si l'annonceur clique plusieurs fois rapidement.
+- Promotions : ajout d'une idempotence serveur optionnelle sur `/api/property/promote`, envoyee par `usePromotion`, pour proteger les promotions instantanees comme `boost`.
+- Reels rattaches : ajout d'un verrou synchrone client pendant l'envoi pour eviter deux creations si deux actions partent avant la mise a jour React.
+- Tests : ajout de `npm run test:emulator:api` pour executer les routes critiques contre Firestore emulator.
 
 ## Observations
 
-- Les Lots 4A, 4B et 4C couvrent les murs mobiles les plus visibles : navigation invite, navigation annonceur, reels publics, retour depuis `Mes reels`, footer, CTA principaux, reset de formulaire, filtres et confirmations destructives.
-- La creation/modification/suppression reelle d'annonces, reels, cadeaux et publicites n'est pas encore couverte par Playwright. Elle demandera des fixtures Firestore/emulator ou des routes API serveur plus testables.
+- Les Lots 4A a 4E couvrent les murs mobiles les plus visibles et les ecritures serveur critiques : navigation invite, navigation annonceur, reels publics, retour depuis `Mes reels`, footer, CTA principaux, reset de formulaire, filtres, confirmations destructives, creation publicitaire self-serve, credits, promotions, publicites et reels via emulator.
+- La creation/modification/suppression reelle d'annonces et cadeaux n'est pas encore couverte par Playwright. Elle demandera des fixtures Firestore/emulator ou des routes API serveur plus testables.
 - La gestion annonceur liste les annonces via `/api/announcer/ads`, mais les actions `Archiver` et `Supprimer` passent encore par Firestore client via `property.db`; c'est la raison pour laquelle 4C s'arrete au modal de confirmation.
+- Le paiement publicitaire est teste avec POST mocke en 4D et avec Firestore emulator en 4E. Aucun credit prod/dev heberge n'est debite. Un smoke test dev avec vrais credits de dev reste a prevoir avant les tests prod.
+- Les doubles requetes concurrentes peuvent produire des warnings `Transaction lock timeout` dans Firestore emulator, mais les assertions verifient l'etat final : un seul credit/debit et un seul document metier.
 - Le serveur dev lance plusieurs appels analytics/presence pendant les parcours accueil/reels. C'est a auditer dans les lots couts/monitoring pour limiter les ecritures Firebase inutiles.
 - Les publicites AdSense restent a tester avec mocks visuels en dev et smoke test sans clic en prod.
 
 ## Suite recommandee
 
-- Lot 4D : publicites `/advertising` et `/advertising/create`, paiement credits, apercus Recherche/Immobilier/Reels.
-- Lot 4E : ecritures reelles avec emulator ou routes API dediees pour annonce/reel, y compris confirmation de suppression et anti double-clic jusqu'au commit.
+- Smoke test dev credits reels : compte annonceur dev, recharge/dev-code, publication pub, promotion boost et verification du solde dans Firebase dev.
 - Lot 5 : revue artistique mobile/desktop avec screenshots avant-apres.

@@ -73,6 +73,7 @@ export default function page() {
       <AppMobileStickyHeader
         title='Ajouter un logement'
         backHref={routes.protected.properties}
+        mobileOnly={false}
         className='px-6 py-4 bg-white dark:bg-gray-800 shadow-md'
       />
 

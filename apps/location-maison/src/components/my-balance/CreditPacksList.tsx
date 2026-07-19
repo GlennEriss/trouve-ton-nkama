@@ -88,14 +88,14 @@ export default function CreditPacksList({ onOpenModal, onPackSelect }: Readonly<
           </div>
           <div className="space-y-2 text-center md:text-left">
             <h3 className="font-semibold text-blue-900 dark:text-blue-200">
-              💡 Conseils d'achat
+              Conseils d'achat
             </h3>
-            <div className="text-xs md:text-sm text-blue-700 dark:text-blue-300 space-y-1">
-              <p>• <strong>Pack Standard</strong> : Parfait pour débuter, excellent rapport qualité/prix</p>
-              <p>• <strong>Pack Avancé</strong> : Idéal pour une utilisation régulière avec 25% d'économies</p>
-              <p>• <strong>Pack Premium</strong> : Maximum d'économies (37.5%) pour les utilisateurs intensifs</p>
-              <p>• Vos crédits n'expirent jamais, achetez en toute sérénité</p>
-            </div>
+            <ul className="list-disc space-y-1 pl-4 text-xs text-blue-700 marker:text-blue-500 dark:text-blue-300 md:text-sm">
+              <li><strong>Pack Standard</strong> : Parfait pour débuter, excellent rapport qualité/prix</li>
+              <li><strong>Pack Avancé</strong> : Idéal pour une utilisation régulière avec 25% d'économies</li>
+              <li><strong>Pack Premium</strong> : Maximum d'économies (37.5%) pour les utilisateurs intensifs</li>
+              <li>Vos crédits n'expirent jamais, achetez en toute sérénité</li>
+            </ul>
           </div>
         </div>
       </div>

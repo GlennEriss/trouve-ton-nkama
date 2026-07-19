@@ -4,10 +4,17 @@ import { FieldValue, Timestamp, getFirestore } from 'firebase-admin/firestore';
 import firebaseCollectionNames from '@/constantes/firebase-collection-name';
 import { adminApp } from '@/firebase/admin';
 import { createLogger } from '@/lib/logger';
+import {
+  IdempotencyKeyError,
+  buildScopedIdempotencyDocId,
+  hashIdempotencyPayload,
+  readIdempotencyKey,
+} from '@/lib/server/idempotency';
 import { auth } from '@/next-auth/auth';
 import type { PromotionType } from '@/models/annonce';
 
 const logger = createLogger('api.property.promote');
+const IDEMPOTENCY_SCOPE = 'property_promote';
 
 const PROMOTION_CONFIGS: Record<NonNullable<PromotionType>, { credits: number; duration: number; serviceName: string }> = {
   featured: { credits: 15, duration: 7, serviceName: 'Mise à la une' },
@@ -47,6 +54,7 @@ export async function POST(request: NextRequest) {
     const body = await request.json().catch(() => ({}));
     const propertyId = typeof body.propertyId === 'string' ? body.propertyId.trim() : '';
     const promotionType = body.promotionType;
+    const idempotencyKey = readIdempotencyKey(request.headers, body);
 
     if (!propertyId || !isPromotionType(promotionType)) {
       return NextResponse.json({ success: false, message: 'Promotion invalide.' }, { status: 400 });
@@ -67,8 +75,39 @@ export async function POST(request: NextRequest) {
 
     const userRef = usersQuery.docs[0].ref;
     const transactionRef = db.collection(firebaseCollectionNames.credit_transactions).doc();
+    const idempotencyRef = idempotencyKey
+      ? db
+        .collection(firebaseCollectionNames.idempotency_keys)
+        .doc(buildScopedIdempotencyDocId(IDEMPOTENCY_SCOPE, uid, idempotencyKey))
+      : null;
+    const requestHash = idempotencyKey
+      ? hashIdempotencyPayload({
+        propertyId,
+        promotionType,
+      })
+      : '';
 
     const result = await db.runTransaction(async (transaction) => {
+      if (idempotencyRef) {
+        const idempotencySnap = await transaction.get(idempotencyRef);
+        if (idempotencySnap.exists) {
+          const idempotencyData = idempotencySnap.data() ?? {};
+          if (idempotencyData.requestHash !== requestHash) {
+            throw new Error('IDEMPOTENCY_PAYLOAD_MISMATCH');
+          }
+          if (idempotencyData.status === 'completed' && idempotencyData.response) {
+            return {
+              ...(idempotencyData.response as {
+                nextCredits: number;
+                transactionId: string;
+              }),
+              replayed: true,
+            };
+          }
+          throw new Error('IDEMPOTENCY_IN_PROGRESS');
+        }
+      }
+
       const [userSnap, propertySnap] = await Promise.all([transaction.get(userRef), transaction.get(propertyRef)]);
 
       if (!propertySnap.exists) {
@@ -127,7 +166,23 @@ export async function POST(request: NextRequest) {
         updatedAt: now,
       });
 
-      return { nextCredits, transactionId: transactionRef.id };
+      if (idempotencyRef) {
+        transaction.create(idempotencyRef, {
+          scope: IDEMPOTENCY_SCOPE,
+          uid,
+          key: idempotencyKey,
+          requestHash,
+          status: 'completed',
+          response: {
+            nextCredits,
+            transactionId: transactionRef.id,
+          },
+          createdAt: now,
+          updatedAt: now,
+        });
+      }
+
+      return { nextCredits, transactionId: transactionRef.id, replayed: false };
     });
 
     return NextResponse.json({
@@ -136,10 +191,32 @@ export async function POST(request: NextRequest) {
       creditsRemaining: result.nextCredits,
       creditsUsed: config.credits,
       transactionId: result.transactionId,
+      replayed: result.replayed,
     });
   } catch (error) {
     const message = error instanceof Error ? error.message : 'UNKNOWN';
     logger.error('Promotion activation failed', { error });
+
+    if (error instanceof IdempotencyKeyError) {
+      return NextResponse.json(
+        { success: false, code: 'INVALID_IDEMPOTENCY_KEY', message: error.message },
+        { status: 400 },
+      );
+    }
+
+    if (message === 'IDEMPOTENCY_PAYLOAD_MISMATCH') {
+      return NextResponse.json(
+        { success: false, code: 'IDEMPOTENCY_PAYLOAD_MISMATCH', message: "Cette clé d'idempotence a déjà été utilisée avec un autre contenu." },
+        { status: 409 },
+      );
+    }
+
+    if (message === 'IDEMPOTENCY_IN_PROGRESS') {
+      return NextResponse.json(
+        { success: false, code: 'IDEMPOTENCY_IN_PROGRESS', message: 'Promotion déjà en cours. Patientez quelques secondes.' },
+        { status: 409 },
+      );
+    }
 
     if (message.startsWith('INSUFFICIENT_CREDITS')) {
       const available = Number(message.split(':')[1] ?? 0);

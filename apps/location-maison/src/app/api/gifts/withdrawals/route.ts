@@ -10,7 +10,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { FieldValue, getFirestore as getAdminFirestore } from 'firebase-admin/firestore';
 import { z } from 'zod';
 import firebaseCollectionNames from '@/constantes/firebase-collection-name';
-import { adminApp, adminAuth } from '@/firebase/admin';
+import { adminApp } from '@/firebase/admin';
 import {
   WITHDRAWAL_FEE_RATE,
   WITHDRAWAL_MINIMUM_XAF,
@@ -22,6 +22,7 @@ import { computeGiftBalanceFromRows } from '@/lib/gifts/balance-calculator';
 import { createLogger } from '@/lib/logger';
 import { handleApiError, jsonApiError } from '@/lib/api/error-response';
 import { AppError } from '@/lib/errors/app-error';
+import { resolveAuthenticatedUid } from '@/lib/server/authenticated-uid';
 
 const logger = createLogger('api.gifts.withdrawals');
 
@@ -32,12 +33,10 @@ const bodySchema = z.object({
 
 export async function POST(request: NextRequest) {
   try {
-    const authHeader = request.headers.get('authorization');
-    if (!authHeader?.startsWith('Bearer ')) {
-      return jsonApiError(401, 'UNAUTHORIZED', "Token d'authentification requis");
+    const uid = await resolveAuthenticatedUid(request);
+    if (!uid) {
+      return jsonApiError(401, 'UNAUTHORIZED', 'Authentification requise');
     }
-    const decoded = await adminAuth.verifyIdToken(authHeader.split('Bearer ')[1]);
-    const uid = decoded.uid;
 
     const parsed = bodySchema.safeParse(await request.json());
     if (!parsed.success) {

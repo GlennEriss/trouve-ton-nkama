@@ -27,7 +27,7 @@ export default function TitleComponent({ className }: TitleComponentProps) {
   const titles = pathnames.split('/')
   const title: string = titles[titles.length - 1]
   return (
-    <h1 className={cn('font-bold text-2xl text-[#1B4D5B]', className)}>
+    <h1 className={cn('text-2xl font-bold text-[#1B4D5B] dark:text-[#9FE2DB]', className)}>
         {titleList[title] || "Modification d'un logement" }
     </h1>
   )

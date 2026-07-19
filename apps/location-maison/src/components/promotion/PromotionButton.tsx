@@ -52,12 +52,10 @@ export default function PromotionButton({ property }: Readonly<PromotionButtonPr
   return (
     <>
       <Button
-        variant="ghost"
-        size="sm"
-        className={`w-full max-w-[120px] h-8 px-3 gap-1.5 text-xs font-medium transition-all duration-200 rounded-lg ${
+        className={`h-11 w-full rounded-full px-3 text-sm font-semibold transition-colors ${
           hasActivePromotion
-            ? 'text-white bg-gradient-to-r from-yellow-500 to-amber-500 hover:from-yellow-600 hover:to-amber-600 border border-yellow-400 shadow-md hover:shadow-lg'
-            : 'text-white bg-gradient-to-r from-amber-500 to-yellow-500 hover:from-amber-600 hover:to-yellow-600 border border-amber-400 shadow-md hover:shadow-lg'
+            ? 'border border-amber-600 bg-amber-600 text-white hover:bg-amber-700'
+            : 'bg-[#146B67] text-white hover:bg-[#0f5a56]'
         }`}
         onClick={() => setIsModalOpen(true)}
       >
@@ -72,4 +70,4 @@ export default function PromotionButton({ property }: Readonly<PromotionButtonPr
       />
     </>
   )
-} 
+}

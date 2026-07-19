@@ -28,16 +28,16 @@ const config: Config = {
     'json-summary',   // JSON pour scripts
   ],
   
-  // Seuils de couverture (objectif: 70%)
-  // Désactivé pour l'instant car le projet n'atteint pas encore le seuil
-  // coverageThreshold: {
-  //   global: {
-  //     branches: 70,
-  //     functions: 70,
-  //     lines: 70,
-  //     statements: 70,
-  //   },
-  // },
+  // Seuil global de baseline. Il protege contre une baisse pendant qu'on ajoute
+  // progressivement des seuils locaux plus ambitieux sur les zones critiques.
+  coverageThreshold: {
+    global: {
+      branches: 35,
+      functions: 15,
+      lines: 7,
+      statements: 7,
+    },
+  },
   
   // Fichiers à inclure dans la couverture
   collectCoverageFrom: [

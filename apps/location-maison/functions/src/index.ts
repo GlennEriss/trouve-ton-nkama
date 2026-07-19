@@ -5,9 +5,11 @@
  * Les fonctions sont organisées par catégorie (notifications, paiements, etc.)
  */
 
-// ⚠️ IMPORTANT : Charger les variables d'environnement EN PREMIER, avant tout export
+// Compat Node recent pour des dependances legacy chargees par firebase-admin/jsonwebtoken.
+import './node/slow-buffer-compat';
+
+// ⚠️ IMPORTANT : Charger les variables d'environnement avant les exports applicatifs.
 // Cette importation charge automatiquement le .env lors de l'import du module
-// DOIT être la première ligne d'import pour que process.env soit disponible
 import './config/env';
 
 // Fonctions de notification

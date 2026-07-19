@@ -9,7 +9,8 @@ import { PROPERTY_ITEM_PER_PAGE } from '@/constantes/item-per-page';
 import { Property } from '@/models/annonce';
 import { getPropertyById } from '@/db/property.db';
 import { Button } from '../ui/button';
-import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Search } from 'lucide-react';
+import Link from 'next/link';
 import { Skeleton } from '../ui/skeleton';
 import { TypeProperty } from '@/constantes/property-type';
 import { logImageError, logImageLoad } from '@/lib/image-debug';
@@ -39,7 +40,8 @@ export default function SectionFavoris() {
         }
         setTotalPage(paginated.length)
         const properties: Property[] = []
-        for (const propertyId of paginated[currentPage]) {
+        const propertyIds = paginated[currentPage] ?? []
+        for (const propertyId of propertyIds) {
             const property = await getPropertyById(propertyId)
             if (property) {
                 properties.push(property)
@@ -80,6 +82,12 @@ export default function SectionFavoris() {
                 <Image src="/no-favorites.svg" width={128} height={128} alt="Aucun favori" />
                 <h2 className="text-xl font-semibold text-gray-700 dark:text-white">Aucun favori pour le moment</h2>
                 <p className="text-gray-500 dark:text-gray-400 text-center">Ajoutez des annonces à vos favoris pour les retrouver ici</p>
+                <Button asChild className="mt-5 h-11 rounded-full px-6">
+                    <Link href="/search">
+                        <Search className="mr-2 h-4 w-4" />
+                        Rechercher des annonces
+                    </Link>
+                </Button>
             </div>
         );
     }

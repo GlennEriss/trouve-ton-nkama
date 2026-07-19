@@ -69,7 +69,7 @@ export const NumberInputRHF = React.forwardRef<HTMLInputElement, NumberInputRHFP
         <input
           type="number"
           ref={ref}
-          className={cn('pr-20 w-full min-w-0', inputNumberNoSpin, className)}
+          className={cn('min-h-12 pr-24 w-full min-w-0', inputNumberNoSpin, className)}
           value={numericValue === undefined || isNaN(numericValue) ? '' : numericValue}
           onChange={handleInputChange}
           min={min}
@@ -83,8 +83,9 @@ export const NumberInputRHF = React.forwardRef<HTMLInputElement, NumberInputRHFP
             type="button"
             variant="ghost"
             size="icon"
-            className="h-full px-3 hover:bg-gray-100"
+            className="h-full min-w-11 px-3 hover:bg-gray-100 dark:hover:bg-gray-800"
             onClick={handleDecrement}
+            aria-label="Diminuer la valeur"
             disabled={disabled || (typeof numericValue === 'number' && min !== undefined && numericValue <= min)}
           >
             <Minus className="h-4 w-4" />
@@ -93,8 +94,9 @@ export const NumberInputRHF = React.forwardRef<HTMLInputElement, NumberInputRHFP
             type="button"
             variant="ghost"
             size="icon"
-            className="h-full px-3 hover:bg-gray-100"
+            className="h-full min-w-11 px-3 hover:bg-gray-100 dark:hover:bg-gray-800"
             onClick={handleIncrement}
+            aria-label="Augmenter la valeur"
             disabled={disabled || (typeof numericValue === 'number' && max !== undefined && numericValue >= max)}
           >
             <Plus className="h-4 w-4" />
@@ -105,4 +107,4 @@ export const NumberInputRHF = React.forwardRef<HTMLInputElement, NumberInputRHFP
   }
 );
 
-NumberInputRHF.displayName = 'NumberInputRHF'; 
+NumberInputRHF.displayName = 'NumberInputRHF';

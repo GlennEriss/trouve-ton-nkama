@@ -131,7 +131,10 @@ export const PhoneNumberParts = ({
                     onValueChange={handleCountryChange}
                     disabled={disabled}
                 >
-                    <SelectTrigger className="w-full min-h-[48px] py-2 px-3 border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900 rounded-full focus:border-[#1FA89B] focus:bg-[#ebf6f5] dark:focus:bg-gray-800 [&>span]:flex [&>span]:items-center">
+                    <SelectTrigger
+                        aria-label="Indicatif téléphonique"
+                        className="w-full min-h-[48px] py-2 px-3 border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900 rounded-full focus:border-[#1FA89B] focus:bg-[#ebf6f5] dark:focus:bg-gray-800 [&>span]:flex [&>span]:items-center"
+                    >
                         <SelectValue>
                             <span className="flex items-center gap-1">
                                 <span>{selectedDialCode}</span>
@@ -174,9 +177,10 @@ export const PhoneNumberParts = ({
                         }}
                         placeholder={placeholder}
                         disabled={disabled}
-                        className="w-full border-none shadow-none focus-visible:ring-0 placeholder:text-gray-400 dark:text-white dark:placeholder:text-gray-500 bg-transparent flex-1 h-auto min-w-0"
+                        className="min-h-11 w-full border-none shadow-none focus-visible:ring-0 placeholder:text-gray-400 dark:text-white dark:placeholder:text-gray-500 bg-transparent flex-1 min-w-0"
                         inputMode="numeric"
                         autoComplete="tel-national"
+                        aria-label="Numéro de téléphone national"
                     />
                 </div>
             </div>

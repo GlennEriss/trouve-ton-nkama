@@ -1,3 +1,4 @@
+import '../node/slow-buffer-compat';
 import { onRequest } from 'firebase-functions/v2/https';
 import { adminDB } from '../admin';
 import { FieldValue } from 'firebase-admin/firestore';

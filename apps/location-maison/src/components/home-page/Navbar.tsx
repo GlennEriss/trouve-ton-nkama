@@ -74,7 +74,7 @@ export default function Navbar() {
       <nav className="border-b border-gray-300 dark:border-gray-700 sticky top-0 left-0 right-0 z-[9999] bg-white dark:bg-gray-900 text-black dark:text-white px-4 py-4 flex items-center justify-between shadow-md dark:shadow-gray-900/50">
         <div className="flex items-center gap-2">
           <LogoNavigation />
-          <a href="/" rel="noopener noreferrer">
+          <a href="/" rel="noopener noreferrer" className="inline-flex min-h-11 min-w-11 items-center">
             <div className="flex flex-col items-start justify-center leading-none hover:opacity-80 transition-opacity cursor-pointer">
               <span className="text-[#146B67] dark:text-[#1FA89B] font-black text-xs drop-shadow-sm">
                 Trouve
@@ -151,7 +151,7 @@ export default function Navbar() {
 const LogoNavigation = () => {
   return (
     <div className="rounded-full bg-[#f4f9f9] dark:bg-gray-900 shadow dark:shadow-gray-900/50">
-      <a href="/" rel="noopener noreferrer">
+      <a href="/" rel="noopener noreferrer" aria-label="Accueil - Trouve Ton Nkama">
         <Logo width="64px" height="64px" />
       </a>
     </div>
@@ -162,7 +162,7 @@ const ButtonLogin = () => {
   return (
     <Button
       variant="ghost"
-      className="bg-gradient-to-r from-[#146B67] via-[#1FA89B] to-[#146B67] text-white border-none rounded-full text-base px-6 py-3 font-semibold hover:brightness-110 hover:shadow-md transition-all duration-300 hover:scale-105 dark:hover:shadow-[#1FA89B]/20"
+      className="h-11 bg-gradient-to-r from-[#146B67] via-[#1FA89B] to-[#146B67] text-white border-none rounded-full text-base px-6 py-3 font-semibold hover:brightness-110 hover:shadow-md transition-all duration-300 hover:scale-105 dark:hover:shadow-[#1FA89B]/20"
       asChild
     >
       <Link href={routes.public.signin}>
@@ -176,7 +176,7 @@ const ButtonRegister = () => {
   return (
     <Button
       variant="outline"
-      className="text-[#146B67] dark:text-[#1FA89B] border border-[#146B67] dark:border-[#1FA89B] rounded-full text-base px-6 py-3 font-semibold hover:brightness-110 hover:shadow-md transition-all duration-300 hover:scale-105 hover:bg-[#146B67]/5 dark:hover:bg-[#1FA89B]/5 dark:hover:shadow-[#1FA89B]/20"
+      className="h-11 text-[#146B67] dark:text-[#1FA89B] border border-[#146B67] dark:border-[#1FA89B] rounded-full text-base px-6 py-3 font-semibold hover:brightness-110 hover:shadow-md transition-all duration-300 hover:scale-105 hover:bg-[#146B67]/5 dark:hover:bg-[#1FA89B]/5 dark:hover:shadow-[#1FA89B]/20"
       asChild>
       <Link href={routes.public.signup}>
         S'inscrire

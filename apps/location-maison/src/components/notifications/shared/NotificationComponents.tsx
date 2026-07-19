@@ -25,7 +25,13 @@ export function NotificationDot({ className }: Readonly<{ className?: string }>)
 }
 
 // Composant pour l'état vide des notifications
-export function EmptyNotificationsState({ iconSize = 32 }: { iconSize?: number }) {
+export function EmptyNotificationsState({
+  iconSize = 32,
+  showSettingsLink = false,
+}: {
+  iconSize?: number;
+  showSettingsLink?: boolean;
+}) {
   return (
     <div className={`flex flex-col items-center justify-center py-6 ${NOTIFICATION_CSS_CLASSES.text.muted}`}>
       <BellIcon size={iconSize} className="mb-2 text-gray-400 dark:text-gray-500" />
@@ -35,6 +41,11 @@ export function EmptyNotificationsState({ iconSize = 32 }: { iconSize?: number }
           : "Aucune notification pour le moment"
         }
       </p>
+      {showSettingsLink && (
+        <Button asChild variant="outline" className="mt-5 h-11 rounded-full px-5">
+          <Link href="/settings">Gérer mes préférences</Link>
+        </Button>
+      )}
     </div>
   );
 }
@@ -187,17 +198,19 @@ export function NotificationItem({
 }
 
 // Composant pour le bouton de notification avec badge
-export function NotificationButton({ 
-  unreadCount, 
-  iconSize = 16, 
-  variant = "icon",
-  className = ""
-}: { 
+type NotificationButtonProps = {
   unreadCount: number;
   iconSize?: number;
   variant?: "icon" | "floating";
   className?: string;
-}) {
+}
+
+export const NotificationButton = React.forwardRef<HTMLButtonElement, NotificationButtonProps>(function NotificationButton({
+  unreadCount,
+  iconSize = 16,
+  variant = "icon",
+  className = "",
+}, ref) {
   const buttonClass = variant === "floating" 
     ? "fixed bottom-4 right-4"
     : "relative inline-flex";
@@ -209,30 +222,29 @@ export function NotificationButton({
     "h-12 w-12 rounded-full border border-[#1FA89B]/30 bg-gradient-to-r from-[#146B67] to-[#1FA89B] text-white shadow-lg hover:brightness-110";
 
   return (
-    <div className={buttonClass}>
-      <Button 
-        size="icon" 
-        variant={variant === "floating" ? "default" : "outline"}
-        className={cn(
-          "relative",
-          variant === "floating" ? floatingVariantClass : iconVariantClass,
-          unreadCount > 0 && variant !== "floating" && "ring-2 ring-[#1FA89B]/25 ring-offset-1",
-          className
-        )}
-        aria-label="Ouvrir les notifications"
-        type="button"
-      >
-        <BellIcon size={iconSize} aria-hidden="true" />
-        {unreadCount > 0 && (
-          <Badge className={`absolute min-w-5 rounded-full border border-white px-1 flex justify-center ${
-            variant === "floating" 
-              ? "-top-2 right-0"
-              : "-top-1.5 left-full -translate-x-1/2 bg-red-500 text-white"
-          }`}>
-            {unreadCount > 99 ? "99+" : unreadCount}
-          </Badge>
-        )}
-      </Button>
-    </div>
+    <Button
+      ref={ref}
+      size="icon"
+      variant={variant === "floating" ? "default" : "outline"}
+      className={cn(
+        buttonClass,
+        variant === "floating" ? floatingVariantClass : iconVariantClass,
+        unreadCount > 0 && variant !== "floating" && "ring-2 ring-[#1FA89B]/25 ring-offset-1",
+        className
+      )}
+      aria-label="Ouvrir les notifications"
+      type="button"
+    >
+      <BellIcon size={iconSize} aria-hidden="true" />
+      {unreadCount > 0 && (
+        <Badge className={`absolute min-w-5 rounded-full border border-white px-1 flex justify-center ${
+          variant === "floating"
+            ? "-top-2 right-0"
+            : "-top-1.5 left-full -translate-x-1/2 bg-red-500 text-white"
+        }`}>
+          {unreadCount > 99 ? "99+" : unreadCount}
+        </Badge>
+      )}
+    </Button>
   );
-} 
+})

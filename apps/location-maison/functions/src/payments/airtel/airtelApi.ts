@@ -2,6 +2,7 @@
  * Module pour les appels à l'API Airtel Money
  */
 
+import '../../node/slow-buffer-compat';
 import { logger } from 'firebase-functions'
 import { getAirtelCredentials, AIRTEL_CONFIG } from './config'
 import { AirtelPaymentRequest, AirtelPaymentResponse } from './types'
@@ -179,4 +180,4 @@ export async function checkPaymentStatus(transactionId: string): Promise<AirtelP
     })
     throw error
   }
-} 
+}

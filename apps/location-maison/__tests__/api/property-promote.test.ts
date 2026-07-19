@@ -1,5 +1,6 @@
 import { getFirestore } from 'firebase-admin/firestore'
 
+import { hashIdempotencyPayload } from '@/lib/server/idempotency'
 import { auth } from '@/next-auth/auth'
 
 let postPromote: typeof import('@/app/api/property/promote/route').POST
@@ -45,8 +46,15 @@ type FakeRef = {
   id: string
 }
 
-function makeRequest(body: Record<string, unknown>) {
+function makeRequest(body: Record<string, unknown>, headers: Record<string, string> = {}) {
+  const normalizedHeaders = new Map(
+    Object.entries(headers).map(([key, value]) => [key.toLowerCase(), value]),
+  )
+
   return {
+    headers: {
+      get: (name: string) => normalizedHeaders.get(name.toLowerCase()) ?? null,
+    },
     json: async () => body,
   } as any
 }
@@ -61,6 +69,7 @@ function makeSnapshot(data: Record<string, unknown> | null) {
 function makePromoteDb(options: {
   userData?: Record<string, unknown> | null
   propertyData?: Record<string, unknown> | null
+  idempotencyData?: Record<string, unknown> | null
 } = {}) {
   const userData = options.userData === undefined ? { uid: 'uid-1', credits: 20 } : options.userData
   const propertyData = options.propertyData === undefined
@@ -70,15 +79,18 @@ function makePromoteDb(options: {
   const userRef: FakeRef = { __collection: 'users', id: 'user-doc-1' }
   const propertyRef: FakeRef = { __collection: 'properties', id: 'property-1' }
   const transactionRef: FakeRef = { __collection: 'credit_transactions', id: 'transaction-1' }
+  const idempotencyRef: FakeRef = { __collection: 'idempotency_keys', id: 'idempotency-1' }
 
   const transaction = {
     get: jest.fn(async (ref: FakeRef) => {
+      if (ref === idempotencyRef) return makeSnapshot(options.idempotencyData ?? null)
       if (ref === userRef) return makeSnapshot(userData)
       if (ref === propertyRef) return makeSnapshot(propertyData)
       return makeSnapshot(null)
     }),
     update: jest.fn(),
     set: jest.fn(),
+    create: jest.fn(),
   }
 
   const db = {
@@ -94,6 +106,7 @@ function makePromoteDb(options: {
       doc: jest.fn(() => {
         if (collectionName === 'properties') return propertyRef
         if (collectionName === 'credit_transactions') return transactionRef
+        if (collectionName === 'idempotency_keys') return idempotencyRef
         throw new Error(`Unexpected doc collection ${collectionName}`)
       }),
     })),
@@ -107,6 +120,7 @@ function makePromoteDb(options: {
       userRef,
       propertyRef,
       transactionRef,
+      idempotencyRef,
     },
   }
 }
@@ -194,6 +208,42 @@ describe('/api/property/promote', () => {
         status: 'success',
       }),
     )
+  })
+
+  it('rejoue une promotion idempotente sans redebiter', async () => {
+    const { db, transaction } = makePromoteDb({
+      idempotencyData: {
+        requestHash: hashIdempotencyPayload({
+          propertyId: 'property-1',
+          promotionType: 'featured',
+        }),
+        status: 'completed',
+        response: {
+          nextCredits: 5,
+          transactionId: 'transaction-existing',
+        },
+      },
+    })
+    ;(getFirestore as jest.Mock).mockReturnValue(db)
+
+    const response = await postPromote(
+      makeRequest(
+        { propertyId: 'property-1', promotionType: 'featured' },
+        { 'Idempotency-Key': 'promotion-key-1' },
+      ),
+    )
+    const payload = await response.json()
+
+    expect(response.status).toBe(200)
+    expect(payload).toMatchObject({
+      success: true,
+      replayed: true,
+      creditsRemaining: 5,
+      transactionId: 'transaction-existing',
+    })
+    expect(transaction.update).not.toHaveBeenCalled()
+    expect(transaction.set).not.toHaveBeenCalled()
+    expect(transaction.create).not.toHaveBeenCalled()
   })
 
   it('refuse une annonce qui appartient a un autre utilisateur', async () => {

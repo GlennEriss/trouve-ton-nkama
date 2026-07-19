@@ -172,7 +172,7 @@ export default function SearchMobilePage() {
                 {/* Barre de recherche identique à la homepage */}
                 <section className='space-y-4'>
                     <div className='space-y-1'>
-                        <h1 className='text-gray-500 text-[11px]'>Votre futur chez-vous grâce à Trouve Ton Nkama</h1>
+                        <p className='text-xs text-gray-600 dark:text-gray-300'>Votre futur chez-vous grâce à Trouve Ton Nkama</p>
                         <div className='flex text-xl font-bold text-[#146B67] items-center gap-2'>
                             <h1>
                                 Rechercher sur Trouve Ton Nkama
@@ -180,9 +180,11 @@ export default function SearchMobilePage() {
                         </div>
                     </div>
                     <Form action="/search">
-                        <div className="flex items-center border rounded-full p-2 px-4 bg-gray-100 focus-within:border-[#1FA89B]">
+                        <div className="flex items-center border rounded-full p-2 px-3 bg-gray-100 focus-within:border-[#1FA89B] dark:border-gray-700 dark:bg-gray-800">
                             <button
                                 type='submit'
+                                aria-label='Lancer la recherche'
+                                className='flex h-11 w-11 shrink-0 items-center justify-center rounded-full text-gray-700 hover:bg-white dark:text-gray-200 dark:hover:bg-gray-700'
                                 onClick={(e) => {
                                     e.preventDefault();
                                     // Construire l'URL avec tous les filtres actifs
@@ -217,7 +219,7 @@ export default function SearchMobilePage() {
                                 <Search size={25} className='hover:stroke-[#1FA89B]' />
                             </button>
                             <Input
-                                className='border-none bg-transparent shadow-none focus-visible:ring-0'
+                                className='h-11 border-none bg-transparent shadow-none focus-visible:ring-0'
                                 placeholder='Logement, ville, quartier...'
                                 value={searchText}
                                 onChange={(e) => setSearchText(e.target.value)}
@@ -231,7 +233,7 @@ export default function SearchMobilePage() {
                     <Link
                         href={searchWithAIHref}
                         onClick={onSearchWithAIClick}
-                        className="inline-flex items-center gap-2 rounded-full border border-[#146B67]/30 bg-[#E6F8F5] text-[#146B67] px-4 py-2 text-sm font-medium hover:bg-[#d8f1ed] transition-colors"
+                        className="inline-flex min-h-11 items-center gap-2 rounded-full border border-[#146B67]/30 bg-[#E6F8F5] text-[#146B67] px-4 py-2 text-sm font-medium hover:bg-[#d8f1ed] transition-colors dark:border-[#1FA89B]/50 dark:bg-[#123f3b] dark:text-[#9FE2DB]"
                     >
                         Rechercher avec IA
                     </Link>
@@ -243,7 +245,7 @@ export default function SearchMobilePage() {
                             <h1 className='text-2xl font-bold text-[#146B67]'>
                                 Résultats de la recherche
                             </h1>
-                            <p className='text-sm text-gray-500'>
+                            <p className='text-sm text-gray-600 dark:text-gray-300'>
                                 {nbHits} résultats trouvés
                             </p>
                         </div>
@@ -260,7 +262,7 @@ export default function SearchMobilePage() {
                     <div className="space-y-4">
                         {items.length === 0 ? (
                             <div className="text-center py-8">
-                                <p className="text-gray-500">Aucun résultat trouvé</p>
+                                <p className="text-gray-600 dark:text-gray-300">Aucun résultat trouvé</p>
                             </div>
                         ) : (
                             <>
@@ -324,14 +326,14 @@ export default function SearchMobilePage() {
                     <div className="fixed bottom-24 right-6 flex flex-col gap-2 z-50">
                         <button
                             onClick={scrollToTop}
-                            className="p-2 bg-gray-200 dark:bg-gray-700 rounded-full shadow hover:bg-gray-300 dark:hover:bg-gray-600 transition"
+                            className="flex h-11 w-11 items-center justify-center rounded-full bg-gray-200 shadow transition hover:bg-gray-300 dark:bg-gray-700 dark:hover:bg-gray-600"
                             aria-label="Aller en haut"
                         >
                             <ChevronUp size={20} />
                         </button>
                         <button
                             onClick={scrollToBottom}
-                            className="p-2 bg-gray-200 dark:bg-gray-700 rounded-full shadow hover:bg-gray-300 dark:hover:bg-gray-600 transition"
+                            className="flex h-11 w-11 items-center justify-center rounded-full bg-gray-200 shadow transition hover:bg-gray-300 dark:bg-gray-700 dark:hover:bg-gray-600"
                             aria-label="Aller en bas"
                         >
                             <ChevronDown size={20} />

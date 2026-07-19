@@ -19,17 +19,16 @@ export const CheckboxFormApp = <T extends FieldValues>({
             control={control}
             name={name}
             render={({ field, formState: { isSubmitting } }) => (
-                <FormItem className='flex gap-2'>
-                    <FormControl className='mt-2.5'>
+                <FormItem className='flex items-start gap-2 space-y-0'>
+                    <FormControl>
                         <Checkbox
-                            className="data-[state=checked]:bg-[#1FA89B] data-[state=checked]:border-[#1FA89B]"
                             checked={field.value}
                             onCheckedChange={field.onChange}
                             disabled={isSubmitting}
                         />
                     </FormControl>
-                    <div className={"leading-none"}>
-                        <FormLabel>
+                    <div className="min-h-11 pt-2 leading-5">
+                        <FormLabel className="cursor-pointer text-sm text-gray-700 dark:text-gray-300">
                             {label}
                         </FormLabel>
                     </div>

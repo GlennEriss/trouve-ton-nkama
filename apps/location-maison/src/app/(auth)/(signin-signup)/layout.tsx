@@ -8,9 +8,5 @@ export default async function layout({ children }: Readonly<{ children: React.Re
     if (session?.user) {
         redirect(getPostAuthRedirectPath(session.user))
     }
-    return (
-        <div>
-            {children}
-        </div>
-    )
+    return <main>{children}</main>
 }

@@ -289,7 +289,7 @@ export const SigninFormModern: React.FC = () => {
               <div className="w-full border-t border-gray-200 dark:border-gray-700" />
             </div>
             <div className="relative flex justify-center">
-              <span className="px-4 bg-white dark:bg-gray-900 text-sm text-gray-500">
+              <span className="bg-white px-4 text-sm text-gray-600 dark:bg-gray-900 dark:text-gray-300">
                 ou continuer avec
               </span>
             </div>

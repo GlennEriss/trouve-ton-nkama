@@ -321,13 +321,13 @@ function AdCard({ ad, onToggleState, onDelete, actionLoading }: AdCardProps) {
 
         <div className="mt-auto space-y-2">
           <div className="grid grid-cols-2 gap-2">
-            <Button variant="outline" className="h-9 rounded-full" asChild>
+            <Button variant="outline" className="h-11 rounded-full" asChild>
               <Link href={`${routes.protected.properties}/${ad.id}`}>
                 <Eye className="mr-1.5 h-4 w-4" />
                 Voir
               </Link>
             </Button>
-            <Button variant="outline" className="h-9 rounded-full" asChild>
+            <Button variant="outline" className="h-11 rounded-full" asChild>
               <Link href={`${routes.protected.properties}/modify/${ad.id}`}>
                 <Pencil className="mr-1.5 h-4 w-4" />
                 Modifier
@@ -335,7 +335,7 @@ function AdCard({ ad, onToggleState, onDelete, actionLoading }: AdCardProps) {
             </Button>
             <Button
               variant="outline"
-              className="h-9 rounded-full"
+              className="h-11 rounded-full"
               onClick={() => onToggleState(ad)}
               disabled={actionLoading}
             >
@@ -344,7 +344,7 @@ function AdCard({ ad, onToggleState, onDelete, actionLoading }: AdCardProps) {
             </Button>
             <Button
               variant="outline"
-              className="h-9 rounded-full text-red-600 hover:bg-red-50 hover:text-red-700 dark:text-red-400 dark:hover:bg-red-950/20"
+              className="h-11 rounded-full text-red-600 hover:bg-red-50 hover:text-red-700 dark:text-red-400 dark:hover:bg-red-950/20"
               onClick={() => onDelete(ad)}
               disabled={actionLoading}
             >
@@ -353,14 +353,13 @@ function AdCard({ ad, onToggleState, onDelete, actionLoading }: AdCardProps) {
             </Button>
           </div>
 
-          <Button variant="outline" className="h-9 w-full rounded-full" asChild>
-            <Link href={`${routes.protected.properties}/${ad.id}/reels/add`}>
-              <Video className="mr-1.5 h-4 w-4" />
-              Ajouter un réel
-            </Link>
-          </Button>
-
-          <div className="pt-0.5">
+          <div className="grid grid-cols-2 gap-2 pt-0.5">
+            <Button variant="outline" className="h-11 w-full rounded-full px-3" asChild>
+              <Link href={`${routes.protected.properties}/${ad.id}/reels/add`}>
+                <Video className="mr-1 h-4 w-4" />
+                Ajouter un réel
+              </Link>
+            </Button>
             <PromotionButton property={ad} />
           </div>
         </div>
@@ -571,10 +570,11 @@ export function AdManagementPage() {
       <section className="rounded-2xl border border-gray-200 bg-white p-4 shadow-sm dark:border-gray-800 dark:bg-gray-900 md:p-5">
         <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-6">
           <div className="xl:col-span-2">
-            <label className="mb-1 block text-xs font-medium text-gray-500 dark:text-gray-400">Recherche</label>
+            <label htmlFor="property-search" className="mb-1 block text-xs font-medium text-gray-500 dark:text-gray-400">Recherche</label>
             <div className="relative">
               <Search className="pointer-events-none absolute left-4 top-4 h-4 w-4 text-gray-400" />
               <Input
+                id="property-search"
                 value={searchInput}
                 onChange={(event) => setSearchInput(event.target.value)}
                 placeholder="Titre, description, ville, quartier..."
@@ -584,7 +584,7 @@ export function AdManagementPage() {
                 <button
                   type="button"
                   onClick={() => setSearchInput('')}
-                  className="absolute right-3 top-3 rounded p-1 text-gray-400 hover:bg-gray-100 hover:text-gray-600 dark:hover:bg-gray-800"
+                  className="absolute right-0.5 top-0.5 flex h-11 w-11 items-center justify-center rounded-full text-gray-500 hover:bg-gray-100 hover:text-gray-700 dark:hover:bg-gray-800"
                   aria-label="Effacer la recherche"
                 >
                   <X className="h-4 w-4" />
@@ -594,12 +594,12 @@ export function AdManagementPage() {
           </div>
 
           <div>
-            <label className="mb-1 block text-xs font-medium text-gray-500 dark:text-gray-400">Type</label>
+            <label htmlFor="property-type-filter" className="mb-1 block text-xs font-medium text-gray-500 dark:text-gray-400">Type</label>
             <Select
               value={filters.type || '__all'}
               onValueChange={(value) => setTypeFilter(value === '__all' ? '' : (value as any))}
             >
-              <SelectTrigger className={SELECT_TRIGGER_CLASS}>
+              <SelectTrigger id="property-type-filter" aria-label="Type de bien" className={SELECT_TRIGGER_CLASS}>
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
@@ -613,12 +613,12 @@ export function AdManagementPage() {
           </div>
 
           <div>
-            <label className="mb-1 block text-xs font-medium text-gray-500 dark:text-gray-400">Statut</label>
+            <label htmlFor="property-status-filter" className="mb-1 block text-xs font-medium text-gray-500 dark:text-gray-400">Statut</label>
             <Select
               value={filters.status || '__all'}
               onValueChange={(value) => setStatusFilter(value === '__all' ? '' : (value as any))}
             >
-              <SelectTrigger className={SELECT_TRIGGER_CLASS}>
+              <SelectTrigger id="property-status-filter" aria-label="Statut de l'annonce" className={SELECT_TRIGGER_CLASS}>
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
@@ -632,12 +632,12 @@ export function AdManagementPage() {
           </div>
 
           <div>
-            <label className="mb-1 block text-xs font-medium text-gray-500 dark:text-gray-400">État</label>
+            <label htmlFor="property-state-filter" className="mb-1 block text-xs font-medium text-gray-500 dark:text-gray-400">État</label>
             <Select
               value={filters.state || '__all'}
               onValueChange={(value) => setStateFilter(value === '__all' ? '' : (value as any))}
             >
-              <SelectTrigger className={SELECT_TRIGGER_CLASS}>
+              <SelectTrigger id="property-state-filter" aria-label="État de publication" className={SELECT_TRIGGER_CLASS}>
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
@@ -651,12 +651,12 @@ export function AdManagementPage() {
           </div>
 
           <div>
-            <label className="mb-1 block text-xs font-medium text-gray-500 dark:text-gray-400">Promotion</label>
+            <label htmlFor="property-promotion-filter" className="mb-1 block text-xs font-medium text-gray-500 dark:text-gray-400">Promotion</label>
             <Select
               value={filters.promoted || '__all'}
               onValueChange={(value) => setPromotedFilter(value === '__all' ? '' : (value as any))}
             >
-              <SelectTrigger className={SELECT_TRIGGER_CLASS}>
+              <SelectTrigger id="property-promotion-filter" aria-label="État de promotion" className={SELECT_TRIGGER_CLASS}>
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
@@ -672,8 +672,9 @@ export function AdManagementPage() {
 
         <div className="mt-3 grid gap-3 md:grid-cols-3 xl:grid-cols-6">
           <div>
-            <label className="mb-1 block text-xs font-medium text-gray-500 dark:text-gray-400">Prix min (FCFA)</label>
+            <label htmlFor="property-price-min" className="mb-1 block text-xs font-medium text-gray-500 dark:text-gray-400">Prix min (FCFA)</label>
             <Input
+              id="property-price-min"
               inputMode="numeric"
               value={filters.priceMin}
               onChange={(event) => setPriceMin(event.target.value)}
@@ -682,8 +683,9 @@ export function AdManagementPage() {
             />
           </div>
           <div>
-            <label className="mb-1 block text-xs font-medium text-gray-500 dark:text-gray-400">Prix max (FCFA)</label>
+            <label htmlFor="property-price-max" className="mb-1 block text-xs font-medium text-gray-500 dark:text-gray-400">Prix max (FCFA)</label>
             <Input
+              id="property-price-max"
               inputMode="numeric"
               value={filters.priceMax}
               onChange={(event) => setPriceMax(event.target.value)}
@@ -692,9 +694,9 @@ export function AdManagementPage() {
             />
           </div>
           <div className="md:col-span-2">
-            <label className="mb-1 block text-xs font-medium text-gray-500 dark:text-gray-400">Tri</label>
+            <label htmlFor="property-sort" className="mb-1 block text-xs font-medium text-gray-500 dark:text-gray-400">Tri</label>
             <Select value={sortValue} onValueChange={handleSortChange}>
-              <SelectTrigger className={SELECT_TRIGGER_CLASS}>
+              <SelectTrigger id="property-sort" aria-label="Ordre de tri" className={SELECT_TRIGGER_CLASS}>
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>

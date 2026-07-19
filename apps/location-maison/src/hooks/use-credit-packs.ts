@@ -5,7 +5,6 @@
 'use client'
 
 import { useQuery } from '@tanstack/react-query'
-import { auth } from '@/firebase/auth'
 import { useCurrentUser } from '@/hooks/use-current-user'
 import type { CreditPackData } from '@/lib/credits/credit-packs'
 
@@ -22,17 +21,9 @@ function extractErrorMessage(payload: any, fallback: string): string {
 }
 
 async function fetchCreditPacks(): Promise<CreditPacksResponse> {
-  const user = auth.currentUser
-  if (!user) {
-    throw new Error('Utilisateur non authentifié')
-  }
-
-  const token = await user.getIdToken()
-
   const response = await fetch('/api/credits/packs', {
     method: 'GET',
     headers: {
-      Authorization: `Bearer ${token}`,
       'Content-Type': 'application/json',
     },
   })
@@ -47,12 +38,12 @@ async function fetchCreditPacks(): Promise<CreditPacksResponse> {
 }
 
 export function useCreditPacks() {
-  const { user, isLoading: authLoading, isFirebaseConnected, error: authError } = useCurrentUser()
+  const { user, isLoading: authLoading, error: authError } = useCurrentUser()
 
   return useQuery({
     queryKey: ['credits-packs', user?.uid],
     queryFn: fetchCreditPacks,
-    enabled: !!user?.uid && isFirebaseConnected && !authLoading,
+    enabled: !!user?.uid && !authLoading,
     staleTime: 1000 * 60 * 5,
     gcTime: 1000 * 60 * 10,
     refetchOnWindowFocus: false,

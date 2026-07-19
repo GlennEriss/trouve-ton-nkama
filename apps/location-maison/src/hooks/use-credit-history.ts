@@ -6,11 +6,8 @@
 
 import { useInfiniteQuery, useQuery } from '@tanstack/react-query'
 import { useCurrentUser } from '@/hooks/use-current-user'
-import { 
-  getCreditHistoryByUserId, 
-  getCreditTransactionStats,
-  GetHistoryOptions 
-} from '@/db/credit-transaction.db'
+import { getCreditTransactionStats } from '@/db/credit-transaction.db'
+import type { HistoryResponse } from '@/models/credit-transaction'
 
 interface HistoryFilters {
   type?: 'all' | 'purchase' | 'spend'
@@ -18,30 +15,34 @@ interface HistoryFilters {
 }
 
 export function useCreditHistory(filters: HistoryFilters = {}) {
-  const { user, isLoading: authLoading, isFirebaseConnected, error: authError } = useCurrentUser()
+  const { user, isLoading: authLoading, error: authError } = useCurrentUser()
 
   return useInfiniteQuery({
     queryKey: ['credit-history', user?.uid, filters.type],
-    queryFn: async ({ pageParam }) => {
-      if (!user?.uid) {
-        throw new Error('Utilisateur non authentifié')
+    queryFn: async ({ pageParam }): Promise<HistoryResponse> => {
+      const searchParams = new URLSearchParams({
+        type: filters.type ?? 'all',
+        limit: String(filters.limit ?? 10),
+      })
+      if (typeof pageParam === 'string' && pageParam) searchParams.set('cursor', pageParam)
+
+      const response = await fetch(`/api/credits/history?${searchParams.toString()}`)
+      const payload = await response.json().catch(() => null)
+      if (!response.ok) {
+        throw new Error(payload?.message ?? "Erreur lors de la récupération de l'historique")
       }
 
-      const options: GetHistoryOptions = {
-        type: filters.type,
-        limit: filters.limit ?? 10
+      return {
+        transactions: payload.transactions ?? [],
+        hasMore: Boolean(payload.hasMore),
+        lastVisible: payload.nextCursor ?? undefined,
+        total: Number(payload.total ?? 0),
       }
-
-      if (pageParam) {
-        options.startAfter = pageParam
-      }
-
-      return await getCreditHistoryByUserId(user.uid, options)
     },
     getNextPageParam: (lastPage) => {
       return lastPage.hasMore ? lastPage.lastVisible : undefined
     },
-    enabled: !!user?.uid && isFirebaseConnected && !authLoading,
+    enabled: !!user?.uid && !authLoading,
     staleTime: 1000 * 60 * 2, // 2 minutes
     gcTime: 1000 * 60 * 5,    // 5 minutes
     refetchOnWindowFocus: false,

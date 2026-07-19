@@ -97,7 +97,7 @@ const NavItem: React.FC<{ item: NavItemDef; isActive: boolean }> = ({ item, isAc
         href={item.link}
         className={clsx(
             'relative flex flex-col items-center gap-1 flex-1 pt-3 pb-2 transition-colors duration-200',
-            isActive ? 'text-[#146B67] dark:text-[#1FA89B]' : 'text-gray-500 dark:text-gray-400'
+            isActive ? 'text-[#146B67] dark:text-[#1FA89B]' : 'text-gray-600 dark:text-gray-300'
         )}
     >
         <div className={clsx(
@@ -109,7 +109,7 @@ const NavItem: React.FC<{ item: NavItemDef; isActive: boolean }> = ({ item, isAc
                 className={clsx(isActive && 'stroke-[2.5px]')}
             />
         </div>
-        <span className="text-[10px] font-medium leading-none">{item.title}</span>
+        <span className="text-[11px] font-medium leading-none">{item.title}</span>
     </Link>
 );
 

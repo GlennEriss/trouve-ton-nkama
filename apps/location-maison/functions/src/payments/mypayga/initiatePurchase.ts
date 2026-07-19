@@ -1,4 +1,5 @@
 import { FieldValue } from 'firebase-admin/firestore'
+import '../../node/slow-buffer-compat';
 import { logger } from 'firebase-functions'
 import { onCall, HttpsError } from 'firebase-functions/v2/https'
 import { adminDB } from '../../admin'

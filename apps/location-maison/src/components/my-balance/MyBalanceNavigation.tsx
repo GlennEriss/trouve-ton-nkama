@@ -54,7 +54,7 @@ export default function MyBalanceNavigation({
               <Link
                 key={tab.href}
                 href={tab.href}
-                className={`inline-flex items-center gap-2 rounded-xl px-3 md:px-4 py-2 text-sm font-semibold transition-colors ${
+                className={`inline-flex min-h-11 items-center gap-2 rounded-lg px-3 py-2 text-sm font-semibold transition-colors md:px-4 ${
                   isActive
                     ? 'bg-[#146B67] text-white'
                     : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800'

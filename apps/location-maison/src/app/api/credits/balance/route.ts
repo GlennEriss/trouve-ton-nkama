@@ -4,6 +4,7 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { createLogger } from '@/lib/logger';
+import { resolveAuthenticatedUid } from '@/lib/server/authenticated-uid';
 
 const logger = createLogger('api.credits.balance');
 
@@ -26,21 +27,15 @@ async function findUserDocumentByUID(db: any, userId: string) {
 
 export async function GET(request: NextRequest): Promise<NextResponse<BalanceResponse>> {
   try {
-    const [{ adminAuth }, { getFirestore, FieldValue }] = await Promise.all([
-      import('@/firebase/admin'),
+    const [{ getFirestore, FieldValue }] = await Promise.all([
       import('firebase-admin/firestore'),
     ]);
     const db = getFirestore();
 
-    const authHeader = request.headers.get('authorization');
-    if (!authHeader?.startsWith('Bearer ')) {
-      return NextResponse.json({ success: false, message: "Token d'authentification requis" }, { status: 401 });
+    const userId = await resolveAuthenticatedUid(request);
+    if (!userId) {
+      return NextResponse.json({ success: false, message: 'Authentification requise' }, { status: 401 });
     }
-
-    const token = authHeader.split('Bearer ')[1];
-
-    const decodedToken = await adminAuth.verifyIdToken(token);
-    const userId = decodedToken.uid;
 
     const userDoc = await findUserDocumentByUID(db, userId);
 

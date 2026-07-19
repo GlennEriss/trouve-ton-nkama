@@ -27,7 +27,7 @@ export default function Step1({ data }: Readonly<Step1Props>) {
               name={item.name}
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel className='text-lg text-[#1B4D5B] font-bold'>{item.label}</FormLabel>
+                  <FormLabel className='text-lg text-[#1B4D5B] dark:text-[#9FE2DB] font-bold'>{item.label}</FormLabel>
                   <FormControl>
                     <item.component />
                   </FormControl>

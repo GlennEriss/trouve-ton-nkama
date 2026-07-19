@@ -26,7 +26,7 @@ export default function PublishChoiceClient() {
             <Building2 className="h-10 w-10 text-emerald-600" />
             <div>
               <p className="font-semibold text-slate-800 dark:text-slate-100">Publier une annonce</p>
-              <p className="text-xs text-slate-500 mt-1">Louer ou vendre un bien</p>
+              <p className="mt-1 text-xs text-slate-500 dark:text-slate-300">Louer ou vendre un bien</p>
             </div>
           </Card>
         </Link>
@@ -36,7 +36,7 @@ export default function PublishChoiceClient() {
             <Video className="h-10 w-10 text-emerald-600" />
             <div>
               <p className="font-semibold text-slate-800 dark:text-slate-100">Créer un réel</p>
-              <p className="text-xs text-slate-500 mt-1">Vidéo courte pour mettre en avant un bien</p>
+              <p className="mt-1 text-xs text-slate-500 dark:text-slate-300">Vidéo courte pour mettre en avant un bien</p>
             </div>
           </Card>
         </Link>
