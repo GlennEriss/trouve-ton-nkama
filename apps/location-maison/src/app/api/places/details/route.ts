@@ -19,7 +19,9 @@ export async function GET(request: Request) {
   }
 
   const cache = getCacheStore()
-  const cacheKey = `places:details:${placeId}`
+  // v2 ajoute placeId/countryCode au contrat. Ne pas resservir pendant 30 jours
+  // les anciennes entrées qui ne possèdent pas ces champs de validation.
+  const cacheKey = `places:details:v2:${placeId}`
 
   try {
     const cached = await cache.get<ResolvedPlaceDTO>(cacheKey)

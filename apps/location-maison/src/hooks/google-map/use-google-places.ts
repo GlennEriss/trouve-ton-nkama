@@ -1,8 +1,13 @@
 'use client'
 
-import { useCallback, useRef } from 'react'
+import { useCallback, useEffect, useRef } from 'react'
 import { googleMapsSingleton } from '@/singleton'
 import { createLogger } from '@/lib/logger'
+import type { OSMLocationsSerializable } from '@/data/gabon-osm-locations'
+import {
+  searchGabonLocationCatalog,
+  type LocationKind,
+} from '@/lib/location/gabon-location-catalog'
 
 const logger = createLogger('hooks.google-map.places')
 
@@ -15,6 +20,24 @@ const logger = createLogger('hooks.google-map.places')
 const SUGGEST_TTL_MS = 5 * 60 * 1000
 const suggestCache = new Map<string, { ts: number; items: PlaceSuggestion[] }>()
 const detailsCache = new Map<string, ResolvedPlace>()
+let catalogPromise: Promise<OSMLocationsSerializable | null> | null = null
+
+async function loadCatalog() {
+  if (!catalogPromise) {
+    catalogPromise = fetch('/api/location/osm/gabon')
+      .then(async (response) => {
+        if (!response.ok) return null
+        const payload = await response.json()
+        return (payload.data ?? null) as OSMLocationsSerializable | null
+      })
+      .catch((error) => {
+        logger.warn('Official location catalog unavailable', { error })
+        catalogPromise = null
+        return null
+      })
+  }
+  return catalogPromise
+}
 
 function biasKey(bias?: { lat: number; lng: number } | null): string {
   if (!bias) return 'none'
@@ -30,15 +53,20 @@ export interface PlaceSuggestion {
   secondaryText: string
   /** Libellé complet affiché dans la liste. */
   label: string
+  source: 'GOOGLE_PLACES' | 'OFFICIAL_CATALOG'
+  /** Le catalogue officiel fournit déjà ses coordonnées. */
+  place?: ResolvedPlace
 }
 
 export interface ResolvedPlace {
+  placeId: string
   name: string
   lat: number
   lng: number
   city: string
   province: string
   district: string
+  countryCode: string
 }
 
 export type SuggestStatus = 'ok' | 'empty' | 'error'
@@ -49,10 +77,13 @@ export interface SuggestResult {
 }
 
 interface FetchOptions {
+  kind: LocationKind
   /** Coordonnées pour biaiser la recherche (centre de la province / ville). */
   bias?: { lat: number; lng: number } | null
   /** Rayon du biais en mètres. */
   radius?: number
+  province?: string
+  city?: string
 }
 
 function pickByType(
@@ -78,6 +109,12 @@ export function useGooglePlaces() {
   // Jeton de session Places : optimise la facturation autocomplete -> détails.
   const sessionTokenRef = useRef<string | null>(null)
 
+  // L'étape de localisation arrive après les informations générales du bien.
+  // Démarrer ce chargement à son montage masque la latence avant la première frappe.
+  useEffect(() => {
+    void loadCatalog()
+  }, [])
+
   const getSessionToken = useCallback(() => {
     if (!sessionTokenRef.current) {
       sessionTokenRef.current =
@@ -90,37 +127,69 @@ export function useGooglePlaces() {
 
   /** Récupère des suggestions via le proxy /api/places/autocomplete (cache Redis). */
   const fetchSuggestions = useCallback(
-    async (input: string, options: FetchOptions = {}): Promise<SuggestResult> => {
+    async (input: string, options: FetchOptions): Promise<SuggestResult> => {
       const trimmed = input.trim()
       if (trimmed.length < 2) return { items: [], status: 'empty' }
 
       // Cache L1 mémoire : évite l'aller-retour réseau pour une requête récente.
-      const cacheKey = `${trimmed.toLowerCase()}|${biasKey(options.bias)}`
+      const cacheKey = [
+        options.kind,
+        trimmed.toLowerCase(),
+        options.province ?? '',
+        options.city ?? '',
+        biasKey(options.bias),
+      ].join('|')
       const cached = suggestCache.get(cacheKey)
       if (cached && Date.now() - cached.ts < SUGGEST_TTL_MS) {
         return { items: cached.items, status: cached.items.length ? 'ok' : 'empty' }
       }
 
       try {
-        const res = await fetch('/api/places/autocomplete', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            input: trimmed,
-            bias: options.bias ?? null,
-            sessionToken: getSessionToken(),
+        const [catalog, googleResponse] = await Promise.all([
+          loadCatalog(),
+          fetch('/api/places/autocomplete', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              input: trimmed,
+              kind: options.kind,
+              bias: options.bias ?? null,
+              sessionToken: getSessionToken(),
+            }),
+          }).catch((error) => {
+            logger.warn('Google autocomplete unavailable', { error })
+            return null
           }),
-        })
+        ])
 
-        if (!res.ok) {
-          logger.error('autocomplete proxy error', { status: res.status })
-          return { items: [], status: 'error' }
+        const officialItems = catalog
+          ? searchGabonLocationCatalog(catalog, trimmed, {
+              kind: options.kind,
+              province: options.province,
+              city: options.city,
+            })
+          : []
+        for (const item of officialItems) detailsCache.set(item.placeId, item.place)
+
+        let googleItems: PlaceSuggestion[] = []
+        if (googleResponse?.ok) {
+          const data = await googleResponse.json()
+          googleItems = (data.items ?? []).map((item: PlaceSuggestion) => ({
+            ...item,
+            source: 'GOOGLE_PLACES' as const,
+          }))
+        } else if (googleResponse) {
+          logger.warn('autocomplete proxy error', { status: googleResponse.status })
         }
 
-        const data = await res.json()
-        const items: PlaceSuggestion[] = data.items ?? []
+        const officialNames = new Set(officialItems.map((item) => item.mainText.toLocaleLowerCase('fr')))
+        const items = [
+          ...officialItems,
+          ...googleItems.filter((item) => !officialNames.has(item.mainText.toLocaleLowerCase('fr'))),
+        ].slice(0, 8)
         suggestCache.set(cacheKey, { ts: Date.now(), items })
-        return { items, status: items.length ? 'ok' : 'empty' }
+        if (items.length) return { items, status: 'ok' }
+        return { items, status: googleResponse === null && catalog === null ? 'error' : 'empty' }
       } catch (error) {
         logger.error('fetchSuggestions failed', { error, input: trimmed })
         return { items: [], status: 'error' }
@@ -183,12 +252,14 @@ export function useGooglePlaces() {
         const city = pickByType(merged, 'locality', 'administrative_area_level_2', 'administrative_area_level_3')
 
         return {
+          placeId: results[0].place_id || `gps:${lat},${lng}`,
           name: district || city || results[0].formatted_address,
           lat,
           lng,
           city,
           province: pickByType(merged, 'administrative_area_level_1'),
           district: district || city,
+          countryCode: /gabon/i.test(country) ? 'GA' : '',
           isGabon: /gabon/i.test(country),
         }
       } catch (error) {

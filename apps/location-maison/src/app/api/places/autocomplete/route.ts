@@ -24,6 +24,7 @@ export async function POST(request: Request) {
   }
 
   const input = typeof payload?.input === 'string' ? payload.input.trim() : ''
+  const kind = payload?.kind === 'city' || payload?.kind === 'district' ? payload.kind : null
   const bias =
     payload?.bias && typeof payload.bias.lat === 'number' && typeof payload.bias.lng === 'number'
       ? { lat: payload.bias.lat as number, lng: payload.bias.lng as number }
@@ -33,9 +34,12 @@ export async function POST(request: Request) {
   if (input.length < 2) {
     return NextResponse.json({ items: [] })
   }
+  if (!kind) {
+    return jsonApiError(400, 'VALIDATION_ERROR', 'Le type de lieu est invalide', { field: 'kind' })
+  }
 
   const cache = getCacheStore()
-  const cacheKey = `places:ac:${input.toLowerCase()}:${biasKey(bias)}`
+  const cacheKey = `places:ac:${kind}:${input.toLowerCase()}:${biasKey(bias)}`
 
   try {
     // Cache best-effort : une panne du backend de cache ne doit pas casser la recherche.
@@ -47,7 +51,7 @@ export async function POST(request: Request) {
       return res
     }
 
-    const items = await googleAutocomplete({ input, bias, sessionToken })
+    const items = await googleAutocomplete({ input, kind, bias, sessionToken })
     // On ne met en cache que des résultats exploitables.
     if (items.length > 0) {
       await cache.set(cacheKey, items, CACHE_TTL_SECONDS)

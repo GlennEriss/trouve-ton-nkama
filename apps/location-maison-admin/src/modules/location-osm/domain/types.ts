@@ -18,6 +18,7 @@ export type GabonOsmCityOption = {
 export type GabonOsmQuarterOption = {
   id: string;
   name: string;
+  aliases: string[];
   city: string | null;
   province: string | null;
   lat: number;

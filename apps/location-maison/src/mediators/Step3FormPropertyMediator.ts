@@ -6,6 +6,13 @@ export interface Coordinates {
   lat: number;
 }
 
+export type PropertyLocationSource =
+  | 'UNVERIFIED'
+  | 'OFFICIAL_CATALOG'
+  | 'GOOGLE_PLACES'
+  | 'GPS'
+  | 'LEGACY';
+
 export class Step3FormPropertyMediator {
   private form: UseFormReturn<any>;
 
@@ -35,6 +42,26 @@ export class Step3FormPropertyMediator {
     this.form.setValue("address.province", province, {
       shouldDirty: true,
       shouldTouch: true,
+      shouldValidate: true,
+    });
+
+  getCityPlaceId = (): string => this.form.getValues("cityPlaceId") ?? "";
+  setCityPlaceId = (placeId: string) =>
+    this.form.setValue("cityPlaceId", placeId, {
+      shouldDirty: true,
+      shouldValidate: true,
+    });
+
+  getDistrictPlaceId = (): string => this.form.getValues("districtPlaceId") ?? "";
+  setDistrictPlaceId = (placeId: string) =>
+    this.form.setValue("districtPlaceId", placeId, {
+      shouldDirty: true,
+      shouldValidate: true,
+    });
+
+  setLocationSource = (source: PropertyLocationSource) =>
+    this.form.setValue("locationSource", source, {
+      shouldDirty: true,
       shouldValidate: true,
     });
 
@@ -83,6 +110,9 @@ export class Step3FormPropertyMediator {
     this.form.setValue("address.district", "");
     this.form.setValue("address.city", "");
     this.form.setValue("address.province", "");
+    this.form.setValue("cityPlaceId", "");
+    this.form.setValue("districtPlaceId", "");
+    this.form.setValue("locationSource", "UNVERIFIED");
     this.form.setValue("longitude", 0);
     this.form.setValue("latitude", 0);
     this.form.setValue("isLocExact", false);

@@ -1,3 +1,8 @@
+> **Architecture active (2026)** : voir
+> [ARCHITECTURE-CANONIQUE.md](./ARCHITECTURE-CANONIQUE.md). Le document ci-dessous
+> décrit l'historique de l'import OSM et ne représente plus à lui seul le flux
+> du formulaire public.
+
 ### Objectif
 
 Importer la base géographique du Gabon depuis `scripts/openstreetmap/gabon_osm.json` vers Firestore en respectant **le format déjà utilisé par l’application** :
@@ -203,5 +208,4 @@ Bonnes pratiques :
 2. Lancer en `--dry-run` pour valider les volumes
 3. Import réel par étapes: provinces → cities → streets
 4. Vérification dans Firestore (doublons, rattachements, cohérence)
-
 

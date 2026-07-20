@@ -18,16 +18,19 @@ export interface PlaceSuggestionDTO {
 }
 
 export interface ResolvedPlaceDTO {
+  placeId: string
   name: string
   lat: number
   lng: number
   city: string
   province: string
   district: string
+  countryCode: string
 }
 
 export interface AutocompleteParams {
   input: string
+  kind: 'city' | 'district'
   bias?: { lat: number; lng: number } | null
   radius?: number
   sessionToken?: string
@@ -42,6 +45,14 @@ function pickByType(
     if (found) return (found.longText || '').trim()
   }
   return ''
+}
+
+function pickShortByType(
+  components: Array<{ types: string[]; shortText?: string }>,
+  type: string,
+): string {
+  const found = components.find((component) => component.types.includes(type))
+  return (found?.shortText || '').trim().toUpperCase()
 }
 
 function assertKey() {
@@ -60,7 +71,9 @@ export async function googleAutocomplete(
   const body: Record<string, unknown> = {
     input: params.input,
     includedRegionCodes: ['ga'],
+    includedPrimaryTypes: [params.kind === 'city' ? '(cities)' : '(regions)'],
     languageCode: 'fr',
+    regionCode: 'ga',
   }
   if (params.sessionToken) body.sessionToken = params.sessionToken
   if (params.bias) {
@@ -128,14 +141,17 @@ export async function googlePlaceDetails(
   const components = (place.addressComponents || []).map((c: any) => ({
     types: c.types,
     longText: c.longText,
+    shortText: c.shortText,
   }))
 
   return {
+    placeId,
     name: place.displayName?.text ?? '',
     lat: place.location?.latitude ?? 0,
     lng: place.location?.longitude ?? 0,
     city: pickByType(components, 'locality', 'administrative_area_level_2', 'administrative_area_level_3'),
     province: pickByType(components, 'administrative_area_level_1'),
     district: pickByType(components, 'sublocality', 'sublocality_level_1', 'neighborhood'),
+    countryCode: pickShortByType(components, 'country'),
   }
 }

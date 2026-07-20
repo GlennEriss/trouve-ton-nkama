@@ -49,6 +49,9 @@ export abstract class PropertyBuilder {
             countryCode: 'ga',
             country: 'Gabon',
             isLocExact: false,
+            cityPlaceId: '',
+            districtPlaceId: '',
+            locationSource: 'UNVERIFIED',
             /* createdAt: new Date(),
             updatedAt: new Date(), */
             state: 'IN_PROGRESS',

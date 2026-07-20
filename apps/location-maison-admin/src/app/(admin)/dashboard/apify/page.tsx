@@ -343,6 +343,7 @@ function listingAttributes(draft: ApifyListingDraft): Array<{ label: string; val
 
   push("Type", draft.typeProperty ? TYPE_LABELS[draft.typeProperty] : "");
   push("Statut", draft.status === "FOR_RENT" ? "Location" : "Vente");
+  push("Propriétaire", typeof draft.isOwner === "boolean" ? draft.isOwner : false);
   if (draft.price > 0) push("Prix", `${new Intl.NumberFormat("fr-FR").format(draft.price)} XAF`);
   if (draft.area > 0) push("Superficie", `${draft.area} m²`);
   push("Chambres", draft.nbrRooms);
@@ -392,10 +393,14 @@ function DraftEditDialog({
     setForm((prev) => ({ ...prev, [key]: value }));
   };
 
-  const submit = (event: FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
+  const save = () => {
     onSave(index, applyDraftEdit(item.draft, form));
     onOpenChange(false);
+  };
+
+  const submit = (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    save();
   };
 
   return (
@@ -672,7 +677,9 @@ function DraftEditDialog({
             <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
               Annuler
             </Button>
-            <Button type="submit">Enregistrer</Button>
+            <Button type="button" onClick={save}>
+              Enregistrer
+            </Button>
           </DialogFooter>
         </form>
       </DialogContent>

@@ -142,11 +142,15 @@ export const PropertyFormComponentProvider = ({ children, isUpdate, propertyToUp
         // Si on met à jour une propriété existante, utiliser ses valeurs
         if (propertyToUpdated) {
             const { images, ...othersData } = propertyToUpdated
+            const legacyLocationId = propertyToUpdated.id || id || 'property'
             return {
                 ...baseValues,
                 ...othersData,
                 // Écraser d'éventuels null par 0 pour éviter les erreurs de validation
                 ...sanitizeLocationFields(othersData as any),
+                cityPlaceId: othersData.cityPlaceId || `legacy:${legacyLocationId}:city`,
+                districtPlaceId: othersData.districtPlaceId || `legacy:${legacyLocationId}:district`,
+                locationSource: othersData.locationSource || 'LEGACY',
                 images: images ? images.map(img => img.fileURL) : [],
             }
         }

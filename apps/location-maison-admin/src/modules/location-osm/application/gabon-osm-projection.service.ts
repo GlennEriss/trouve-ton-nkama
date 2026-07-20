@@ -51,6 +51,7 @@ type GeoCityDoc = {
 type GeoQuarterDoc = {
   source?: unknown;
   name?: unknown;
+  aliases?: unknown;
   normalizedName?: unknown;
   city?: unknown;
   province?: unknown;
@@ -93,6 +94,11 @@ function toSafeNumber(value: unknown) {
     }
   }
   return null;
+}
+
+function toSafeStringArray(value: unknown) {
+  if (!Array.isArray(value)) return [];
+  return value.map(toSafeString).filter((item): item is string => Boolean(item));
 }
 
 function normalizeName(value: string) {
@@ -237,6 +243,7 @@ export async function getGabonOsmSelectorDataFromProjection(): Promise<GabonOsmS
       }
       return {
         name,
+        aliases: toSafeStringArray(data.aliases),
         city: toSafeString(data.city),
         province: toSafeString(data.province),
         lat,
@@ -246,7 +253,7 @@ export async function getGabonOsmSelectorDataFromProjection(): Promise<GabonOsmS
     .filter(
       (
         item,
-      ): item is { name: string; city: string | null; province: string | null; lat: number; lon: number } =>
+      ): item is { name: string; aliases: string[]; city: string | null; province: string | null; lat: number; lon: number } =>
         Boolean(item),
     )
     .map((item) => ({

@@ -1,5 +1,9 @@
 # Sélection de Localisation - Formulaire d'ajout de propriété
 
+> **Document historique.** Le flux actif combine désormais le catalogue
+> canonique administré et Google Places. Voir
+> [Architecture canonique](../localisation/ARCHITECTURE-CANONIQUE.md).
+
 ## Table des matières
 
 1. [Contexte et problème](#contexte-et-problème)
@@ -543,4 +547,3 @@ Aucune nouvelle dépendance requise. Tous les composants shadcn/ui sont déjà i
 - [shadcn/ui Combobox](https://ui.shadcn.com/docs/components/combobox)
 - [shadcn/ui Tabs](https://ui.shadcn.com/docs/components/tabs)
 - [OpenStreetMap Gabon](https://www.openstreetmap.org/#map=6/0.37/12.76)
-
