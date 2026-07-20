@@ -4,7 +4,7 @@ const path = require('node:path')
 const profiles = {
   application: {
     summary: '__tests__/coverage/coverage-summary.json',
-    global: { branches: 45, functions: 22, lines: 10, statements: 10 },
+    global: { branches: 50, functions: 30, lines: 20, statements: 20 },
     files: {
       'src/db/credit-transaction.db.ts': { branches: 70, functions: 100, lines: 95, statements: 95 },
       'src/db/reel.db.ts': { branches: 60, functions: 95, lines: 90, statements: 90 },

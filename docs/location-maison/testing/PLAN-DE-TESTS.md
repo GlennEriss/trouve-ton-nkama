@@ -501,10 +501,30 @@ Avec le denominateur actuel de 90 675 lignes, la cible represente environ 45 338
 couvertes contre 13 111 aujourd'hui. Il reste donc environ 32 227 lignes a exercer si la
 taille du code reste stable. L'effort sera decoupe pour rendre chaque progression verifiable :
 
-- 9A : inventaire des fichiers non couverts a fort volume et montee du seuil lignes a 20 % ;
+- 9A : termine le 2026-07-20, inventaire des fichiers non couverts a fort volume et
+  montee de la couverture lignes a 21,90 % avec un seuil CI fixe a 20 % ;
 - 9B : composants, hooks, providers et formulaires majeurs, cible globale 30 % ;
 - 9C : pages, routes API, recherche, profil, notifications et administration, cible 40 % ;
 - 9D : cas d'erreur, branches restantes, tests de regression et seuil CI final a 50 %.
+
+#### Lot 9A - Inventaire et premier palier
+
+Execute le 2026-07-20 :
+
+- 13 pages editoriales testees sur leur rendu, metadonnees SEO, structure semantique,
+  liens internes et appels a action ;
+- parseur OSM teste sur les entrees invalides, la normalisation, les associations,
+  la serialisation et le cache ;
+- doublons OSM proches d'un meme quartier fusionnes, tout en conservant les homonymes
+  eloignes de plus d'un kilometre ;
+- 22/22 nouveaux tests cibles et 375 tests application passes, avec 6 ignores ;
+- couverture globale portee de 14,45 % a 21,90 % des lignes et instructions, de
+  31,66 % a 34,19 % des fonctions et de 50,76 % a 51,34 % des branches ;
+- seuils CI releves a 20 % lignes/instructions, 30 % fonctions et 50 % branches.
+
+Les prochains volumes prioritaires sont la recherche IA, le wizard publicitaire, la
+gestion des annonces, le feed reels, les listes d'annonces, les statistiques et les
+formulaires de profil. Detail dans [LOT-9A-AUDIT.md](./LOT-9A-AUDIT.md).
 
 Les tests Playwright prouvent les parcours utilisateurs mais ne font pas progresser le rapport
 Jest actuel. Le Lot 9 ajoutera donc principalement des tests unitaires, composants et API

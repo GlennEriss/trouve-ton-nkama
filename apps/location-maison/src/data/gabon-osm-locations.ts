@@ -3,7 +3,7 @@
  * Charge et transforme gabon_osm.json en structures utilisables par les combobox
  */
 
-import { findNearestLocation } from '@/lib/geo-haversine';
+import { calculateDistance, findNearestLocation } from '@/lib/geo-haversine';
 
 // Import du fichier OSM local (fallback)
 import osmData from './gabon_osm.json';
@@ -253,18 +253,21 @@ function extractQuarters(root: OsmRootRecord): OSMLocation[] {
     });
   });
 
-  // Filtrer les coordonnées invalides et dédupliquer par nom+coords (garder la première occurrence)
-  const seen = new Map<string, OSMLocation>();
+  // OSM peut retourner le meme quartier via plusieurs types avec des centres
+  // legerement differents. Conserver les homonymes eloignes, mais pas ces doublons proches.
+  const unique: OSMLocation[] = [];
   quarters.forEach((loc: OSMLocation) => {
     if (loc.lat === 0 && loc.lon === 0) return;
-    // Utiliser nom+coords comme clé pour éviter les doublons exacts
-    const key = `${loc.name}_${loc.lat.toFixed(5)}_${loc.lon.toFixed(5)}`;
-    if (!seen.has(key)) {
-      seen.set(key, loc);
-    }
+    const normalizedName = loc.name.trim().toLocaleLowerCase('fr');
+    const isNearbyDuplicate = unique.some(
+      (candidate) =>
+        candidate.name.trim().toLocaleLowerCase('fr') === normalizedName &&
+        calculateDistance(candidate, loc) <= 1,
+    );
+    if (!isNearbyDuplicate) unique.push(loc);
   });
 
-  return Array.from(seen.values());
+  return unique;
 }
 
 /**
@@ -446,4 +449,3 @@ export function getOSMLocations(): OSMLocationsData {
   }
   return cachedData;
 }
-
