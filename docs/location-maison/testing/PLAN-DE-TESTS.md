@@ -426,6 +426,24 @@ Le lot a aussi reduit les synchronisations Firebase Auth concurrentes a un seul 
 UID et corrige l'accessibilite des champs de l'etape 2. Detail dans
 [LOT-8B-AUDIT.md](./LOT-8B-AUDIT.md).
 
+#### Lot 8C - Pipeline video des reels
+
+Execute le 2026-07-20 :
+
+- 8/8 tests metier et FFmpeg passes : claim atomique, generation Storage, decoupe,
+  limite de cinq minutes, remux, reencodage MOV, son coupe et miniature ;
+- 5/5 tests de regles Storage ajoutes, soit 25/25 regles Firestore et Storage au total ;
+- smoke test reel Firebase dev passe pour creation, upload MOV, transcodage, rejeu,
+  modification, suppression et nettoyage ;
+- le rejeu du meme chemin ne relance pas FFmpeg et sa generation brute est supprimee ;
+- 83 tests Functions passes, 5 ignores, et 320 tests application passes, 6 ignores ;
+- couverture Functions portee a 42,93 % des lignes ; le transcodeur atteint 49,03 % des
+  lignes, 62,41 % des branches et 66,66 % des fonctions avec un seuil CI individuel.
+
+Le lot corrige aussi une ouverture involontaire des chemins Storage proteges par le
+catch-all historique, ainsi que les courses entre generations d'un meme upload. Detail
+dans [LOT-8C-AUDIT.md](./LOT-8C-AUDIT.md).
+
 ## Matrice de risques
 
 | Risque | Impact | Premier lot |

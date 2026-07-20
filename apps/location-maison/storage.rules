@@ -11,9 +11,9 @@ rules_version = '2';
 // séparée. Les nouveaux chemins reels-raw/ et reels/ ci-dessous sont volontairement plus stricts
 // (upload authentifié pour le propriétaire uniquement) puisqu'ils n'existaient pas avant.
 //
-// Storage Security Rules retient la règle du chemin le PLUS SPÉCIFIQUE en cas de chevauchement
-// (un match non-wildcard prévaut sur {allPaths=**}) — à vérifier en pratique avant tout déploiement
-// prod (voir docs/reels-cadeaux-abonnement.md et le plan de l'étape 1 Réels).
+// Les autorisations des blocs `match` qui correspondent sont additionnees. Le catch-all doit
+// donc exclure explicitement les chemins proteges ci-dessous, sinon son `allow create: if true`
+// rendrait leurs restrictions inoperantes.
 
 service firebase.storage {
   match /b/{bucket}/o {
@@ -23,7 +23,10 @@ service firebase.storage {
     // supprime après traitement.
     match /reels-raw/{ownerId}/{fileName} {
       allow read: if false;
-      allow create: if request.auth != null && request.auth.uid == ownerId;
+      allow create: if
+        request.auth != null &&
+        request.auth.uid == ownerId &&
+        resource == null;
       allow update, delete: if false;
     }
 
@@ -53,8 +56,12 @@ service firebase.storage {
     }
 
     // Règle générale préexistante — inchangée, voir note en tête de fichier.
-    match /{allPaths=**} {
-      allow read, create: if true;
+    match /{firstSegment}/{remaining=**} {
+      allow read, create: if
+        firstSegment != 'reels-raw' &&
+        firstSegment != 'reels' &&
+        firstSegment != 'ad-campaigns-video' &&
+        firstSegment != 'ad-campaigns';
     }
   }
 }
