@@ -42,6 +42,7 @@ type GabonOsmCityOption = {
 type GabonOsmQuarterOption = {
   id: string;
   name: string;
+  aliases: string[];
   city: string | null;
   province: string | null;
   lat: number;
@@ -99,6 +100,7 @@ type EditDialogState =
       kind: "quarter";
       quarterId: string;
       name: string;
+      aliases: string;
       cityId: string;
       lat: string;
       lon: string;
@@ -155,6 +157,12 @@ function parseFiniteNumber(value: string) {
   return Number.isFinite(parsed) ? parsed : null;
 }
 
+function parseAliases(value: string) {
+  return Array.from(
+    new Set(value.split(',').map((alias) => alias.trim()).filter(Boolean)),
+  );
+}
+
 export default function GeolocationDashboardPage() {
   const [globalMessage, setGlobalMessage] = useState<string | null>(null);
   const [globalError, setGlobalError] = useState<string | null>(null);
@@ -169,6 +177,7 @@ export default function GeolocationDashboardPage() {
   const [createCityLon, setCreateCityLon] = useState("");
 
   const [createQuarterName, setCreateQuarterName] = useState("");
+  const [createQuarterAliases, setCreateQuarterAliases] = useState("");
   const [createQuarterCityId, setCreateQuarterCityId] = useState("");
   const [createQuarterLat, setCreateQuarterLat] = useState("");
   const [createQuarterLon, setCreateQuarterLon] = useState("");
@@ -222,6 +231,7 @@ export default function GeolocationDashboardPage() {
     return (osmQuery.data?.quarters ?? []).filter((quarter) => {
       return (
         normalizeSearch(quarter.name).includes(query) ||
+        quarter.aliases.some((alias) => normalizeSearch(alias).includes(query)) ||
         normalizeSearch(quarter.city ?? "").includes(query) ||
         normalizeSearch(quarter.province ?? "").includes(query)
       );
@@ -246,6 +256,7 @@ export default function GeolocationDashboardPage() {
 
   const resetCreateQuarterForm = useCallback(() => {
     setCreateQuarterName("");
+    setCreateQuarterAliases("");
     setCreateQuarterCityId("");
     setCreateQuarterLat("");
     setCreateQuarterLon("");
@@ -365,6 +376,7 @@ export default function GeolocationDashboardPage() {
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             name: createQuarterName,
+            aliases: parseAliases(createQuarterAliases),
             city: selectedQuarterCity.name,
             province: selectedQuarterCity.province ?? "",
             lat,
@@ -388,7 +400,7 @@ export default function GeolocationDashboardPage() {
         setIsMutating(false);
       }
     },
-    [canManageGeolocation, createQuarterLat, createQuarterLon, createQuarterName, osmQuery, resetCreateQuarterForm, selectedQuarterCity],
+    [canManageGeolocation, createQuarterAliases, createQuarterLat, createQuarterLon, createQuarterName, osmQuery, resetCreateQuarterForm, selectedQuarterCity],
   );
 
   const openCityEditDialog = useCallback((city: GabonOsmCityOption) => {
@@ -417,6 +429,7 @@ export default function GeolocationDashboardPage() {
         kind: "quarter",
         quarterId: quarter.id,
         name: quarter.name,
+        aliases: quarter.aliases.join(', '),
         cityId: matchedCity?.id ?? "",
         lat: String(quarter.lat),
         lon: String(quarter.lon),
@@ -478,6 +491,7 @@ export default function GeolocationDashboardPage() {
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             name: editDialog.name,
+            aliases: parseAliases(editDialog.aliases),
             city: selectedCity.name,
             province: selectedCity.province ?? "",
             lat,
@@ -660,6 +674,12 @@ export default function GeolocationDashboardPage() {
                     placeholder="Nom du quartier"
                     disabled={!canManageGeolocation || isMutating}
                   />
+                  <Input
+                    value={createQuarterAliases}
+                    onChange={(event) => setCreateQuarterAliases(event.target.value)}
+                    placeholder="Alias séparés par des virgules"
+                    disabled={!canManageGeolocation || isMutating}
+                  />
                   <select
                     className="h-10 rounded-md border border-slate-200 bg-white px-3 text-sm text-slate-900"
                     value={createQuarterCityId}
@@ -823,6 +843,7 @@ export default function GeolocationDashboardPage() {
                     <thead className="sticky top-0 z-10 bg-slate-50 text-left text-slate-600">
                       <tr>
                         <th className="px-3 py-2 font-medium">Quartier</th>
+                        <th className="px-3 py-2 font-medium">Alias</th>
                         <th className="px-3 py-2 font-medium">Ville</th>
                         <th className="px-3 py-2 font-medium">Province</th>
                         <th className="px-3 py-2 font-medium">Latitude</th>
@@ -834,6 +855,7 @@ export default function GeolocationDashboardPage() {
                       {filteredQuarters.map((quarter) => (
                         <tr key={quarter.id} className="border-t border-slate-100">
                           <td className="px-3 py-2 text-slate-900">{quarter.name}</td>
+                          <td className="px-3 py-2 text-slate-700">{quarter.aliases.join(', ') || "N/A"}</td>
                           <td className="px-3 py-2 text-slate-700">{quarter.city ?? "N/A"}</td>
                           <td className="px-3 py-2 text-slate-700">{quarter.province ?? "N/A"}</td>
                           <td className="px-3 py-2 text-slate-700">{toCoordLabel(quarter.lat)}</td>
@@ -920,6 +942,15 @@ export default function GeolocationDashboardPage() {
                   setEditDialog((prev) => (prev && prev.kind === "quarter" ? { ...prev, name: event.target.value } : prev))
                 }
                 placeholder="Nom du quartier"
+              />
+              <Input
+                value={editDialog.aliases}
+                onChange={(event) =>
+                  setEditDialog((prev) =>
+                    prev && prev.kind === "quarter" ? { ...prev, aliases: event.target.value } : prev,
+                  )
+                }
+                placeholder="Alias séparés par des virgules"
               />
               <select
                 className="h-10 rounded-md border border-slate-200 bg-white px-3 text-sm text-slate-900"

@@ -23,6 +23,7 @@ type GeoCityDoc = {
 type GeoQuarterDoc = {
   source?: unknown;
   name?: unknown;
+  aliases?: unknown;
   normalizedName?: unknown;
   city?: unknown;
   province?: unknown;
@@ -53,6 +54,7 @@ type UpdateCityInput = {
 
 type CreateQuarterInput = {
   name: string;
+  aliases?: string[];
   city: string;
   province: string;
   lat: number;
@@ -63,6 +65,7 @@ type UpdateQuarterInput = {
   quarterId: string;
   patch: {
     name?: string;
+    aliases?: string[];
     city?: string;
     province?: string;
     lat?: number;
@@ -89,6 +92,11 @@ function toSafeNumber(value: unknown) {
     }
   }
   return null;
+}
+
+function toSafeStringArray(value: unknown) {
+  if (!Array.isArray(value)) return [];
+  return value.map(toSafeString).filter((item): item is string => Boolean(item));
 }
 
 function normalizeName(value: string) {
@@ -146,6 +154,7 @@ function parseQuarterDoc(docId: string, data: GeoQuarterDoc): GabonOsmQuarterOpt
   return {
     id: docId,
     name,
+    aliases: toSafeStringArray(data.aliases),
     city: toSafeString(data.city),
     province: toSafeString(data.province),
     lat,
@@ -162,6 +171,18 @@ function sanitizeName(raw: string, field: string) {
     throw new Error(`${field}_INVALID`);
   }
   return value;
+}
+
+function sanitizeAliases(raw: string[] | undefined, canonicalName: string) {
+  const canonical = normalizeName(canonicalName);
+  const unique = new Map<string, string>();
+  for (const entry of raw ?? []) {
+    const alias = sanitizeName(entry, "QUARTER_ALIAS");
+    const normalized = normalizeName(alias);
+    if (normalized !== canonical) unique.set(normalized, alias);
+  }
+  if (unique.size > 20) throw new Error("QUARTER_ALIASES_INVALID");
+  return Array.from(unique.values());
 }
 
 function sanitizeCoordinate(raw: number, field: "lat" | "lon") {
@@ -381,6 +402,7 @@ export async function removeGeoCity(cityIdRaw: string): Promise<{ city: GabonOsm
 
 export async function createGeoQuarter(input: CreateQuarterInput): Promise<GabonOsmQuarterOption> {
   const name = sanitizeName(input.name, "QUARTER_NAME");
+  const aliases = sanitizeAliases(input.aliases, name);
   const city = sanitizeName(input.city, "QUARTER_CITY");
   const province = sanitizeName(input.province, "QUARTER_PROVINCE");
   const lat = sanitizeQuarterCoordinate(input.lat, "lat");
@@ -413,6 +435,7 @@ export async function createGeoQuarter(input: CreateQuarterInput): Promise<Gabon
   await quarterRef.set({
     source: "manual",
     name,
+    aliases,
     normalizedName,
     city,
     province,
@@ -429,6 +452,7 @@ export async function createGeoQuarter(input: CreateQuarterInput): Promise<Gabon
   return {
     id: quarterId,
     name,
+    aliases,
     city,
     province,
     lat,
@@ -456,6 +480,9 @@ export async function updateGeoQuarter(input: UpdateQuarterInput): Promise<Gabon
   }
 
   const nextName = input.patch.name != null ? sanitizeName(input.patch.name, "QUARTER_NAME") : current.name;
+  const nextAliases = input.patch.aliases != null
+    ? sanitizeAliases(input.patch.aliases, nextName)
+    : current.aliases;
   const nextCity = input.patch.city != null ? sanitizeName(input.patch.city, "QUARTER_CITY") : current.city ?? "";
   const nextProvince =
     input.patch.province != null ? sanitizeName(input.patch.province, "QUARTER_PROVINCE") : current.province ?? "";
@@ -464,6 +491,7 @@ export async function updateGeoQuarter(input: UpdateQuarterInput): Promise<Gabon
 
   if (
     nextName === current.name &&
+    JSON.stringify(nextAliases) === JSON.stringify(current.aliases) &&
     nextCity === (current.city ?? "") &&
     nextProvince === (current.province ?? "") &&
     nextLat === current.lat &&
@@ -484,6 +512,7 @@ export async function updateGeoQuarter(input: UpdateQuarterInput): Promise<Gabon
   const payload = {
     source: "manual",
     name: nextName,
+    aliases: nextAliases,
     normalizedName: normalizeName(nextName),
     city: nextCity,
     province: nextProvince,
@@ -511,6 +540,7 @@ export async function updateGeoQuarter(input: UpdateQuarterInput): Promise<Gabon
   return {
     id: nextId,
     name: nextName,
+    aliases: nextAliases,
     city: nextCity,
     province: nextProvince,
     lat: nextLat,

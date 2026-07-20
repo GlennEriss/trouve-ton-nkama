@@ -12,6 +12,7 @@ type OsmRootRecord = Record<string, unknown>;
 
 export interface OSMLocation {
   name: string;
+  aliases?: string[];
   lat: number;
   lon: number;
   type: 'province' | 'city' | 'quarter';

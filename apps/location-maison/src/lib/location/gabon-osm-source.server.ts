@@ -50,8 +50,9 @@ const OSM_STORAGE_BUCKET =
 const OSM_STORAGE_OBJECT_PATH =
   process.env.OSM_STORAGE_OBJECT_PATH?.trim() || DEFAULT_OSM_OBJECT_PATH;
 
+const DEFAULT_STORAGE_PREFERENCE = process.env.NODE_ENV === 'production' ? 'true' : 'false';
 const OSM_STORAGE_PREFER_CLOUD = !['0', 'false', 'no'].includes(
-  (process.env.OSM_STORAGE_PREFER_CLOUD ?? 'true').trim().toLowerCase()
+  (process.env.OSM_STORAGE_PREFER_CLOUD ?? DEFAULT_STORAGE_PREFERENCE).trim().toLowerCase()
 );
 
 const OSM_SOURCE_CACHE_TTL_MS = Number(

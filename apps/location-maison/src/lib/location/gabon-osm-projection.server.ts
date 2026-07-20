@@ -39,6 +39,7 @@ type GeoCityDoc = {
 
 type GeoQuarterDoc = {
   name?: unknown;
+  aliases?: unknown;
   city?: unknown;
   province?: unknown;
   lat?: unknown;
@@ -77,6 +78,11 @@ function toSafeNumber(value: unknown) {
   return null;
 }
 
+function toSafeStringArray(value: unknown) {
+  if (!Array.isArray(value)) return [];
+  return value.map(toSafeString).filter((item): item is string => Boolean(item));
+}
+
 function toIsoDate(value: unknown) {
   if (value instanceof Timestamp) {
     return value.toDate().toISOString();
@@ -103,8 +109,9 @@ function hashString(input: string) {
 }
 
 function isProjectionPreferred() {
+  const defaultPreference = process.env.NODE_ENV === "production" ? "true" : "false";
   return !["0", "false", "no"].includes(
-    (process.env.OSM_SELECTOR_PREFER_PROJECTION ?? "true").trim().toLowerCase(),
+    (process.env.OSM_SELECTOR_PREFER_PROJECTION ?? defaultPreference).trim().toLowerCase(),
   );
 }
 
@@ -191,6 +198,7 @@ export async function loadGabonOsmProjectionSerializableServer(): Promise<{
       }
       return {
         name,
+        aliases: toSafeStringArray(data.aliases),
         city: toSafeString(data.city),
         province: toSafeString(data.province),
         lat,

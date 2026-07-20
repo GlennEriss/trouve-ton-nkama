@@ -315,6 +315,7 @@ function buildListingPayload(draft: Record<string, unknown>, images: UploadedIma
     description: str(draft.description),
     typeProperty,
     status: str(draft.status),
+    isOwner: typeof draft.isOwner === "boolean" ? draft.isOwner : false,
     price: numOrUndef(draft.price),
     area: numOrUndef(draft.area) ?? 0,
     tags: tags.length > 0 ? tags : [str(draft.status) === "FOR_SALE" ? "À vendre" : "À louer"],

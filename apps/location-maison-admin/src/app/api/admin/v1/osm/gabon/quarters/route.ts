@@ -9,6 +9,7 @@ import { requireAdmin } from "@/modules/iam/presentation/admin-guard";
 const bodySchema = z
   .object({
     name: z.string().trim().min(2).max(120),
+    aliases: z.array(z.string().trim().min(2).max(120)).max(20).optional(),
     city: z.string().trim().min(2).max(120),
     province: z.string().trim().min(2).max(120),
     lat: z.coerce.number().finite(),

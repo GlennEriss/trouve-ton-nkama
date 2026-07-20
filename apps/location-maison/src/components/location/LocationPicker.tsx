@@ -26,6 +26,14 @@ const logger = createLogger('components.location.picker')
 // Repasser à `true` pour les réactiver — le reste du code est conservé.
 const SHOW_MAP_AND_GPS = false
 
+function normalizeLocationName(value: string): string {
+  return value
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase()
+    .replace(/[^a-z0-9]/g, '')
+}
+
 const GoogleLocationMap = dynamic(() => import('./GoogleLocationMap'), {
   ssr: false,
   loading: () => (
@@ -36,7 +44,7 @@ const GoogleLocationMap = dynamic(() => import('./GoogleLocationMap'), {
 })
 
 export default function LocationPicker() {
-  const { watch, formState: { errors } } = useFormContext<any>()
+  const { watch, setValue, formState: { errors } } = useFormContext<any>()
   const mediator = useStep3FormPropertyMediator()
   const { reverseGeocode } = useGooglePlaces()
   const { toast } = useToast()
@@ -45,6 +53,8 @@ export default function LocationPicker() {
   const province = watch('address.province') || ''
   const city = watch('address.city') || ''
   const district = watch('address.district') || ''
+  const cityPlaceId = watch('cityPlaceId') || ''
+  const districtPlaceId = watch('districtPlaceId') || ''
 
   // Coordonnées de la carte : quartier > ville > province > position principale.
   const streetLat = watch('streetLat')
@@ -75,6 +85,9 @@ export default function LocationPicker() {
     // Réinitialise ville et quartier qui dépendent de la province.
     mediator.setCity('')
     mediator.setDistrict('')
+    mediator.setCityPlaceId('')
+    mediator.setDistrictPlaceId('')
+    mediator.setLocationSource('UNVERIFIED')
     mediator.setCityCoordinates({ lon: 0, lat: 0 })
     mediator.setStreetCoordinates({ lon: 0, lat: 0 })
     mediator.setIsLocExact(false)
@@ -84,39 +97,95 @@ export default function LocationPicker() {
     }
   }
 
-  /** Sélection d'une ville via Google Places. */
+  /** Sélection d'une ville vérifiée via le catalogue ou Google Places. */
   const handleCitySelect = (place: ResolvedPlace) => {
+    if (place.countryCode && place.countryCode !== 'GA') {
+      toast({
+        title: 'Ville hors du Gabon',
+        description: 'Sélectionnez une ville située au Gabon.',
+        variant: 'destructive',
+      })
+      return
+    }
+    if (place.province) handleProvinceFromText(place.province)
     mediator.setCity(place.name)
+    mediator.setCityPlaceId(place.placeId)
     mediator.setCityCoordinates({ lon: place.lng, lat: place.lat })
     mediator.setCoordinates({ lon: place.lng, lat: place.lat })
     // Le quartier doit être re-choisi pour la nouvelle ville.
     mediator.setDistrict('')
+    mediator.setDistrictPlaceId('')
+    mediator.setLocationSource('UNVERIFIED')
     mediator.setStreetCoordinates({ lon: 0, lat: 0 })
     mediator.setIsLocExact(false)
-    if (!province && place.province && getProvinceByName(place.province)) {
-      handleProvinceFromText(place.province)
-    }
+    setValue('country', 'Gabon')
+    setValue('countryCode', 'GA')
   }
 
-  /** Sélection d'un quartier via Google Places. */
+  /** Sélection d'un quartier vérifié via le catalogue ou Google Places. */
   const handleDistrictSelect = (place: ResolvedPlace) => {
+    const googleProvince = canonicalProvince(place.province)
+    if (googleProvince && province && googleProvince !== province) {
+      toast({
+        title: 'Quartier dans une autre province',
+        description: `Google situe ce quartier dans la province ${googleProvince}.`,
+        variant: 'destructive',
+      })
+      return
+    }
+    if (
+      place.city &&
+      city &&
+      normalizeLocationName(place.city) !== normalizeLocationName(city)
+    ) {
+      toast({
+        title: 'Quartier dans une autre ville',
+        description: `Google situe ce quartier à ${place.city}.`,
+        variant: 'destructive',
+      })
+      return
+    }
     mediator.setDistrict(place.name)
+    mediator.setDistrictPlaceId(place.placeId)
     mediator.setStreetCoordinates({ lon: place.lng, lat: place.lat })
     mediator.setCoordinates({ lon: place.lng, lat: place.lat })
     mediator.setIsLocExact(false)
-    if (!city && place.city) {
-      mediator.setCity(place.city)
-      mediator.setCityCoordinates({ lon: place.lng, lat: place.lat })
-    }
+    mediator.setLocationSource(place.placeId.startsWith('catalog:') ? 'OFFICIAL_CATALOG' : 'GOOGLE_PLACES')
+    setValue('country', 'Gabon')
+    setValue('countryCode', 'GA')
   }
 
   // Aligne une province retournée par Google sur l'un des 9 noms officiels
   // (sinon conserve la valeur brute pour ne pas laisser le champ vide).
-  const handleProvinceFromText = (name: string) => {
+  const canonicalProvince = (name: string) => {
     const match = GABON_PROVINCES.find((p) =>
-      name.toLowerCase().includes(p.name.toLowerCase()),
+      normalizeLocationName(name).includes(normalizeLocationName(p.name)),
     )
-    mediator.setProvince(match ? match.name : name)
+    return match?.name
+  }
+
+  const handleProvinceFromText = (name: string) => {
+    const canonical = canonicalProvince(name)
+    if (!canonical) return
+    const match = getProvinceByName(canonical)
+    mediator.setProvince(canonical)
+    if (match) mediator.setProvinceCoordinates({ lon: match.lng, lat: match.lat })
+  }
+
+  const handleCityManualChange = (value: string) => {
+    mediator.setCity(value)
+    mediator.setCityPlaceId('')
+    mediator.setDistrict('')
+    mediator.setDistrictPlaceId('')
+    mediator.setStreetCoordinates({ lon: 0, lat: 0 })
+    mediator.setLocationSource('UNVERIFIED')
+  }
+
+  const handleDistrictManualChange = (value: string) => {
+    mediator.setDistrict(value)
+    mediator.setDistrictPlaceId('')
+    mediator.setStreetCoordinates({ lon: 0, lat: 0 })
+    mediator.setLocationSource('UNVERIFIED')
   }
 
   /** Localisation GPS exacte du bien. */
@@ -161,6 +230,9 @@ export default function LocationPicker() {
       mediator.setCityCoordinates({ lon: lng, lat })
       mediator.setStreetCoordinates({ lon: lng, lat })
       mediator.setIsLocExact(true)
+      mediator.setCityPlaceId(result.placeId)
+      mediator.setDistrictPlaceId(result.placeId)
+      mediator.setLocationSource('GPS')
 
       toast({
         title: 'Localisation détectée',
@@ -189,6 +261,12 @@ export default function LocationPicker() {
   }
 
   const districtError = (errors?.address as any)?.district?.message as string | undefined
+  const cityError =
+    ((errors?.address as any)?.city?.message || (errors as any)?.cityPlaceId?.message) as
+      | string
+      | undefined
+  const districtSelectionError =
+    (districtError || (errors as any)?.districtPlaceId?.message) as string | undefined
 
   return (
     <div className="space-y-6 w-full">
@@ -242,11 +320,11 @@ export default function LocationPicker() {
       <div className="space-y-4">
         {/* Province */}
         <div className="space-y-2">
-          <Label className="text-md">
+          <Label htmlFor="property-province" className="text-md">
             Province <span className="text-red-500">*</span>
           </Label>
           <Select value={province || undefined} onValueChange={handleProvinceChange}>
-            <SelectTrigger className="w-full rounded-full py-6 text-md bg-gray-50 dark:bg-gray-900 dark:text-white border-[#1FA89B] focus:ring-0 focus:border-[#1FA89B] focus:bg-[#ebf6f5] transition-colors">
+            <SelectTrigger id="property-province" className="w-full rounded-full py-6 text-md bg-gray-50 dark:bg-gray-900 dark:text-white border-[#1FA89B] focus:ring-0 focus:border-[#1FA89B] focus:bg-[#ebf6f5] transition-colors">
               <SelectValue placeholder="Choisissez votre province" />
             </SelectTrigger>
             <SelectContent>
@@ -261,34 +339,53 @@ export default function LocationPicker() {
 
         {/* Ville */}
         <div className="space-y-2">
-          <Label className="text-md">
+          <Label htmlFor="property-city" className="text-md">
             Ville <span className="text-red-500">*</span>
           </Label>
           <PlacesAutocompleteInput
+            inputId="property-city"
+            kind="city"
             value={city}
+            isVerified={Boolean(cityPlaceId)}
             onSelect={handleCitySelect}
-            onClear={() => mediator.setCity('')}
-            onManualChange={(value) => mediator.setCity(value)}
+            onClear={() => handleCityManualChange('')}
+            onManualChange={handleCityManualChange}
             placeholder="Ex: Libreville, Port-Gentil…"
             bias={provinceCenter ?? null}
+            province={province}
+            disabled={!province}
+            hasError={Boolean(cityError)}
           />
+          {!province && <p className="text-xs text-gray-500">Choisissez d&apos;abord la province.</p>}
+          {cityError && <p className="text-xs text-red-600" role="alert">{cityError}</p>}
         </div>
 
         {/* Quartier */}
         <div className="space-y-2">
-          <Label className="text-md">
+          <Label htmlFor="property-district" className="text-md">
             Quartier <span className="text-red-500">*</span>
           </Label>
           <PlacesAutocompleteInput
+            inputId="property-district"
+            kind="district"
             value={district}
+            isVerified={Boolean(districtPlaceId)}
             onSelect={handleDistrictSelect}
-            onClear={() => mediator.setDistrict('')}
-            onManualChange={(value) => mediator.setDistrict(value)}
-            placeholder="Ex: Glass, Akanda, Lalala…"
+            onClear={() => handleDistrictManualChange('')}
+            onManualChange={handleDistrictManualChange}
+            placeholder="Ex: Atong-Abè, Glass, Lalala…"
             bias={cityBias}
-            hasError={!!districtError}
+            province={province}
+            city={city}
+            disabled={!cityPlaceId}
+            hasError={Boolean(districtSelectionError)}
           />
-          {districtError && <p className="text-red-500 text-xs">{districtError}</p>}
+          {!cityPlaceId && (
+            <p className="text-xs text-gray-500">Sélectionnez d&apos;abord une ville proposée.</p>
+          )}
+          {districtSelectionError && (
+            <p className="text-xs text-red-600" role="alert">{districtSelectionError}</p>
+          )}
         </div>
       </div>
 

@@ -293,6 +293,7 @@ function buildOsmSelectorData(root: OsmRecord, source: GabonOsmRootSource): Gabo
           quarter.lon,
         ),
         name: quarter.name,
+        aliases: [],
         city: quarter.city,
         province: quarter.province,
         lat: quarter.lat,

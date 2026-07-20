@@ -73,6 +73,9 @@ export type Location = {
     country: string,
     countryCode: string,
     isLocExact?: boolean
+    cityPlaceId?: string
+    districtPlaceId?: string
+    locationSource?: 'OFFICIAL_CATALOG' | 'GOOGLE_PLACES' | 'GPS' | 'LEGACY' | 'UNVERIFIED'
 }
 export type Logement = Property & {
     nbrRooms: number,

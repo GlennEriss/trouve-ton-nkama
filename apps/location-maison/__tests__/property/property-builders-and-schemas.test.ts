@@ -47,6 +47,9 @@ const validBase = {
     city: 'Libreville',
     province: 'Estuaire',
   },
+  cityPlaceId: 'google-city-libreville',
+  districtPlaceId: 'google-district-akebe',
+  locationSource: 'GOOGLE_PLACES' as const,
   contact: '+24166545430',
   longitude: 9.45,
   latitude: 0.39,
@@ -93,6 +96,83 @@ describe('contrats des types d annonces', () => {
 })
 
 describe('validation des annonces spécifiques', () => {
+  it('refuse une ville et un quartier simplement saisis sans sélection vérifiée', () => {
+    const result = DuplexSchema.safeParse({
+      ...validBase,
+      cityPlaceId: '',
+      districtPlaceId: '',
+      locationSource: 'UNVERIFIED',
+      nbrRooms: 3,
+      nbrKitchens: 1,
+      nbrBathrooms: 2,
+      nbrToilets: 2,
+      nbrFloors: 2,
+      nbrLivingRoom: 1,
+      nbrGarages: 1,
+    })
+
+    expect(result.success).toBe(false)
+    if (!result.success) {
+      expect(result.error.flatten().fieldErrors).toMatchObject({
+        cityPlaceId: ['Sélectionnez une ville proposée'],
+        districtPlaceId: ['Sélectionnez un quartier proposé'],
+        locationSource: ['Validez la localisation proposée'],
+      })
+    }
+  })
+
+  it('conserve les identifiants Google avec les noms canoniques sélectionnés', () => {
+    const parsed = DuplexSchema.parse({
+      ...validBase,
+      address: {
+        district: 'Atong-Abè',
+        city: 'Libreville',
+        province: 'Estuaire',
+      },
+      nbrRooms: 3,
+      nbrKitchens: 1,
+      nbrBathrooms: 2,
+      nbrToilets: 2,
+      nbrFloors: 2,
+      nbrLivingRoom: 1,
+      nbrGarages: 1,
+    })
+
+    expect(parsed).toMatchObject({
+      street: 'Atong-Abè',
+      cityPlaceId: 'google-city-libreville',
+      districtPlaceId: 'google-district-akebe',
+      locationSource: 'GOOGLE_PLACES',
+    })
+  })
+
+  it('accepte aussi un quartier canonique du catalogue administré', () => {
+    const parsed = DuplexSchema.parse({
+      ...validBase,
+      address: {
+        district: 'Atong-Abè',
+        city: 'Libreville',
+        province: 'Estuaire',
+      },
+      cityPlaceId: 'catalog:city:node:123',
+      districtPlaceId: 'catalog:district:node:1827771028',
+      locationSource: 'OFFICIAL_CATALOG',
+      nbrRooms: 3,
+      nbrKitchens: 1,
+      nbrBathrooms: 2,
+      nbrToilets: 2,
+      nbrFloors: 2,
+      nbrLivingRoom: 1,
+      nbrGarages: 1,
+    })
+
+    expect(parsed).toMatchObject({
+      street: 'Atong-Abè',
+      districtPlaceId: 'catalog:district:node:1827771028',
+      locationSource: 'OFFICIAL_CATALOG',
+    })
+  })
+
   it('conserve tous les champs métier du duplex', () => {
     const parsed = DuplexSchema.parse({
       ...validBase,
