@@ -49,7 +49,7 @@ export async function deleteProperty(id: string): Promise<boolean> {
     return deleted;
 }
 export async function getProperties({ limitPerPage, lastDoc, createdBy, type }: { limitPerPage: number, lastDoc: any, createdBy?: string, type?: string }) {
-    const { collection, getDocs, db, where, query, startAfter, limit, orderBy } = await getFirestore();
+    const { collection, doc, getDoc, getDocs, db, where, query, startAfter, limit, orderBy } = await getFirestore();
     const professionalRef = collection(db, firebaseCollectionNames.properties);
     let q = query(
         professionalRef,
@@ -76,10 +76,15 @@ export async function getProperties({ limitPerPage, lastDoc, createdBy, type }: 
             where('typeProperty', '==', type)
         );
     }
-    if (lastDoc) {
+    let cursor = lastDoc;
+    if (typeof cursor === 'string') {
+        const cursorSnapshot = await getDoc(doc(db, firebaseCollectionNames.properties, cursor));
+        cursor = cursorSnapshot.exists() ? cursorSnapshot : null;
+    }
+    if (cursor) {
         q = query(
             q,
-            startAfter(lastDoc)
+            startAfter(cursor)
         )
     }
     const querySnapshot = await getDocs(q);
@@ -87,11 +92,13 @@ export async function getProperties({ limitPerPage, lastDoc, createdBy, type }: 
     if (querySnapshot.docs.length < limitPerPage) {
         lastDoc = null;
     } else {
-        lastDoc = querySnapshot.docs[querySnapshot.docs.length - 1];
-        const nextQuery = query(q, startAfter(lastDoc), limit(1));
+        const nextCursor = querySnapshot.docs[querySnapshot.docs.length - 1];
+        const nextQuery = query(q, startAfter(nextCursor), limit(1));
         const nextQuerySnapshot = await getDocs(nextQuery);
         if (nextQuerySnapshot.docs.length === 0) {
             lastDoc = null;
+        } else {
+            lastDoc = nextCursor.id;
         }
     }
     querySnapshot.forEach((doc: any) => {

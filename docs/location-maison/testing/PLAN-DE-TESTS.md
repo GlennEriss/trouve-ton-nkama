@@ -463,6 +463,54 @@ desormais Firebase Auth avant de charger `Mes reels`, ajoute la recuperation d'e
 et corrige les cibles tactiles des editeurs. Detail dans
 [LOT-8D-AUDIT.md](./LOT-8D-AUDIT.md).
 
+#### Lot 8E - Recherche, consultation et couts du catalogue
+
+Execute le 2026-07-20 :
+
+- 30/30 tests metier, API et base de donnees cibles passes sur les filtres, la pagination,
+  la carte et les statistiques d'annonces ;
+- 4/4 parcours Playwright passes en mobile et desktop, dont une vraie annonce Firebase Dev ;
+- filtres Algolia numeriques valides et echappes, sans injection ni valeur `Infinity` ;
+- navigation mobile sans rechargement et etats chargement/erreur/aucun resultat distincts ;
+- vues dedupliquees six heures et interactions rapides dedupliquees dix secondes cote client
+  et serveur, avec identifiant visiteur opaque ;
+- pagination catalogue serialisable, limites de 1 a 50, fin de liste explicite et carte
+  plafonnee a 200 annonces par requete ;
+- suite CI a 353 tests passes et 6 ignores ; couverture globale portee a 14,45 % des lignes,
+  31,66 % des fonctions et 50,76 % des branches.
+
+Detail dans [LOT-8E-AUDIT.md](./LOT-8E-AUDIT.md).
+
+### Lot 9 - Couverture globale a 50 %
+
+Ce lot commencera apres la fin de tous les sous-lots 8. Son objectif est d'atteindre au
+minimum 50 % sur chacune des quatre metriques globales de l'application : lignes,
+instructions, fonctions et branches, sans exclure artificiellement du rapport les fichiers
+difficiles a tester.
+
+Point de depart mesure apres le Lot 8E :
+
+| Metrique | Couverture actuelle | Cible Lot 9 |
+| --- | ---: | ---: |
+| Lignes | 14,45 % | 50 % minimum |
+| Instructions | 14,45 % | 50 % minimum |
+| Fonctions | 31,66 % | 50 % minimum |
+| Branches | 50,76 % | 50 % minimum, sans regression |
+
+Avec le denominateur actuel de 90 675 lignes, la cible represente environ 45 338 lignes
+couvertes contre 13 111 aujourd'hui. Il reste donc environ 32 227 lignes a exercer si la
+taille du code reste stable. L'effort sera decoupe pour rendre chaque progression verifiable :
+
+- 9A : inventaire des fichiers non couverts a fort volume et montee du seuil lignes a 20 % ;
+- 9B : composants, hooks, providers et formulaires majeurs, cible globale 30 % ;
+- 9C : pages, routes API, recherche, profil, notifications et administration, cible 40 % ;
+- 9D : cas d'erreur, branches restantes, tests de regression et seuil CI final a 50 %.
+
+Les tests Playwright prouvent les parcours utilisateurs mais ne font pas progresser le rapport
+Jest actuel. Le Lot 9 ajoutera donc principalement des tests unitaires, composants et API
+instrumentes, tout en conservant les E2E comme filet de securite fonctionnel. A chaque palier,
+la CI sera relevee pour interdire de redescendre sous le niveau obtenu.
+
 ## Matrice de risques
 
 | Risque | Impact | Premier lot |

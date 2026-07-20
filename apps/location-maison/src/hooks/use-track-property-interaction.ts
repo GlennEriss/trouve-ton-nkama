@@ -4,6 +4,7 @@ import { useCallback } from 'react';
 import { trackEvent, trackingEvents } from '@/features/analytics/tracking';
 import { trackMetaPixelEvent, metaPixelEvents } from '@/features/analytics/meta-pixel';
 import { createLogger } from '@/lib/logger';
+import { trackPropertyInteractionStatistic } from '@/lib/statistics/property-statistics.client';
 
 const logger = createLogger('hooks.use-track-property-interaction');
 
@@ -26,39 +27,10 @@ export function useTrackPropertyInteraction(propertyId: string | undefined) {
         return;
       }
 
-      const data = JSON.stringify({
-        type,
-        metadata: {
-          ...metadata,
-          timestamp: new Date().toISOString(),
-        },
+      trackPropertyInteractionStatistic(propertyId, type, {
+        ...metadata,
+        timestamp: new Date().toISOString(),
       });
-
-      const isCritical =
-        type === 'whatsapp_contact' ||
-        type === 'phone_contact' ||
-        type === 'whatsapp_share' ||
-        type === 'facebook_share';
-
-      if (isCritical && navigator.sendBeacon) {
-        const blob = new Blob([data], { type: 'application/json' });
-        navigator.sendBeacon(`/api/property/${propertyId}/statistics/interaction`, blob);
-      } else {
-        fetch(`/api/property/${propertyId}/statistics/interaction`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: data,
-          keepalive: true,
-        }).catch((error) => {
-          logger.error('Failed to track property interaction', {
-            propertyId,
-            type,
-            error,
-          });
-        });
-      }
 
       const analyticsParams = {
         property_id: propertyId,

@@ -10,8 +10,14 @@ const CACHE_TTL_SECONDS = parseInt(process.env.REDIS_CATALOG_TTL ?? '600', 10);
 
 export async function GET(request: Request) {
   const url = new URL(request.url);
-  const limitPerPage = parseInt(url.searchParams.get('limitPerPage') ?? '10', 10);
-  const lastDoc = url.searchParams.get('lastDoc') ?? null;
+  const requestedLimit = Number(url.searchParams.get('limitPerPage') ?? url.searchParams.get('limit') ?? 10);
+  const limitPerPage = Number.isInteger(requestedLimit)
+    ? Math.min(50, Math.max(1, requestedLimit))
+    : 10;
+  const rawLastDoc = url.searchParams.get('lastDoc')?.trim() ?? '';
+  const lastDoc = rawLastDoc && rawLastDoc.length <= 256 && !rawLastDoc.includes('/')
+    ? rawLastDoc
+    : null;
 
   const cache = getCacheStore();
   const cacheKey = `properties:list:${limitPerPage}:${lastDoc ?? 'first'}`;

@@ -1,7 +1,8 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState, type FormEvent } from "react";
 import { useQuery } from "@tanstack/react-query";
+import { Pencil } from "lucide-react";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -25,7 +26,7 @@ import {
   type GeoSource,
 } from "@/modules/apify/application/apify-geocode.service";
 import type { ApifyDraftMeta, ApifyListingDraft, ApifyPipelineResult } from "@/modules/apify/domain/types";
-import type { TypeProperty } from "@/modules/apify/domain/platform-listing";
+import type { StatusProperty, TypeProperty } from "@/modules/apify/domain/platform-listing";
 import type { GabonOsmSelectorData } from "@/modules/location-osm/domain/types";
 
 const TYPE_LABELS: Record<TypeProperty, string> = {
@@ -44,6 +45,8 @@ const TYPE_LABELS: Record<TypeProperty, string> = {
   Duplex: "Duplex",
   Warehouse: "Entrepôt",
 };
+
+const TYPE_OPTIONS = Object.entries(TYPE_LABELS) as Array<[TypeProperty, string]>;
 
 const GEO_SOURCE_LABELS: Record<GeoSource, string> = {
   known: "Quartier connu",
@@ -64,6 +67,49 @@ type ImportState = { status: ImportStatus; propertyId?: string; error?: string }
 type AnnouncerOption = { uid: string; fullName: string; email: string | null; phoneNumbers: string[] };
 
 type ImportResult = { index: number; ok: boolean; propertyId?: string; imageCount: number; error?: string };
+
+type DraftEditFormState = {
+  title: string;
+  description: string;
+  typeProperty: TypeProperty | "";
+  status: StatusProperty;
+  price: string;
+  area: string;
+  tags: string;
+  images: string;
+  street: string;
+  city: string;
+  province: string;
+  country: string;
+  countryCode: string;
+  longitude: string;
+  latitude: string;
+  isLocExact: boolean;
+  contact: string;
+  isOwner: boolean;
+  nbrRooms: string;
+  nbrLivingRoom: string;
+  nbrKitchens: string;
+  nbrBathrooms: string;
+  nbrToilets: string;
+  nbrGarages: string;
+  nbrFloors: string;
+  nbrPiscine: string;
+  nbrFloorStudio: string;
+  numeroStudio: string;
+  nbrFloorApartment: string;
+  numeroApartment: string;
+  nbrApartments: string;
+  hasParking: boolean;
+  nbrToilet: string;
+  nbrSections: string;
+  kioskType: string;
+  roomType: string;
+};
+
+const inputClass =
+  "w-full rounded-md border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 focus:border-brand-500 focus:outline-none";
+const labelClass = "space-y-1 text-xs font-medium text-slate-600";
 
 async function fetchOsmSelector(): Promise<GabonOsmSelectorData> {
   const response = await fetch("/api/admin/v1/osm/gabon");
@@ -129,11 +175,128 @@ function hasCoords(draft: ApifyListingDraft): boolean {
 function visibleMissing(meta: ApifyDraftMeta): string[] {
   const draft = meta.draft;
   return meta.missingFields.filter((field) => {
+    if (field === "Type de bien") return !draft.typeProperty;
+    if (field === "Statut (location/vente)") return !draft.status;
+    if (field === "Prix") return !draft.price || draft.price <= 0;
     if (field === "Ville") return !draft.city;
     if (field === "Quartier") return !draft.street;
+    if (field === "Contact") return !draft.contact;
+    if (field === "Images") return draft.images.length === 0;
     if (field === "Coordonnées GPS") return !hasCoords(draft);
     return true;
   });
+}
+
+function numberText(value: number | undefined | null, hideZero = false): string {
+  if (typeof value !== "number" || !Number.isFinite(value)) return "";
+  if (hideZero && value === 0) return "";
+  return String(value);
+}
+
+function toNonNegativeNumber(value: string, fallback = 0): number {
+  const normalized = value.trim().replace(",", ".");
+  if (!normalized) return fallback;
+  const parsed = Number(normalized);
+  return Number.isFinite(parsed) && parsed >= 0 ? parsed : fallback;
+}
+
+function toCoordinate(value: string, fallback = 0): number {
+  const normalized = value.trim().replace(",", ".");
+  if (!normalized) return fallback;
+  const parsed = Number(normalized);
+  return Number.isFinite(parsed) ? parsed : fallback;
+}
+
+function parseList(value: string): string[] {
+  return value
+    .split(/[\n,]/)
+    .map((item) => item.trim())
+    .filter(Boolean);
+}
+
+function draftToEditForm(draft: ApifyListingDraft): DraftEditFormState {
+  return {
+    title: draft.title,
+    description: draft.description,
+    typeProperty: draft.typeProperty,
+    status: draft.status,
+    price: numberText(draft.price, true),
+    area: numberText(draft.area, true),
+    tags: draft.tags.join(", "),
+    images: draft.images.map((image) => image.fileURL).join("\n"),
+    street: draft.street,
+    city: draft.city,
+    province: draft.province,
+    country: draft.country,
+    countryCode: draft.countryCode,
+    longitude: numberText(draft.longitude, true),
+    latitude: numberText(draft.latitude, true),
+    isLocExact: Boolean(draft.isLocExact),
+    contact: draft.contact ?? "",
+    isOwner: Boolean(draft.isOwner),
+    nbrRooms: numberText(draft.nbrRooms),
+    nbrLivingRoom: numberText(draft.nbrLivingRoom),
+    nbrKitchens: numberText(draft.nbrKitchens),
+    nbrBathrooms: numberText(draft.nbrBathrooms),
+    nbrToilets: numberText(draft.nbrToilets),
+    nbrGarages: numberText(draft.nbrGarages),
+    nbrFloors: numberText(draft.nbrFloors),
+    nbrPiscine: numberText(draft.nbrPiscine),
+    nbrFloorStudio: numberText(draft.nbrFloorStudio),
+    numeroStudio: draft.numeroStudio ?? "",
+    nbrFloorApartment: numberText(draft.nbrFloorApartment),
+    numeroApartment: draft.numeroApartment ?? "",
+    nbrApartments: numberText(draft.nbrApartments),
+    hasParking: Boolean(draft.hasParking),
+    nbrToilet: numberText(draft.nbrToilet),
+    nbrSections: numberText(draft.nbrSections),
+    kioskType: draft.kioskType ?? "",
+    roomType: draft.roomType ?? "",
+  };
+}
+
+function applyDraftEdit(draft: ApifyListingDraft, form: DraftEditFormState): ApifyListingDraft {
+  return {
+    ...draft,
+    title: form.title.trim(),
+    description: form.description.trim(),
+    typeProperty: form.typeProperty,
+    status: form.status,
+    price: toNonNegativeNumber(form.price),
+    area: toNonNegativeNumber(form.area),
+    tags: parseList(form.tags).slice(0, 6),
+    images: parseList(form.images)
+      .slice(0, 10)
+      .map((fileURL) => ({ fileURL, filePATH: "" })),
+    street: form.street.trim(),
+    city: form.city.trim(),
+    province: form.province.trim(),
+    country: form.country.trim() || "Gabon",
+    countryCode: form.countryCode.trim().toUpperCase() || "GA",
+    longitude: toCoordinate(form.longitude),
+    latitude: toCoordinate(form.latitude),
+    isLocExact: form.isLocExact,
+    contact: form.contact.trim(),
+    isOwner: form.isOwner,
+    nbrRooms: toNonNegativeNumber(form.nbrRooms, 1),
+    nbrLivingRoom: toNonNegativeNumber(form.nbrLivingRoom, 1),
+    nbrKitchens: toNonNegativeNumber(form.nbrKitchens, 1),
+    nbrBathrooms: toNonNegativeNumber(form.nbrBathrooms, 1),
+    nbrToilets: toNonNegativeNumber(form.nbrToilets, 1),
+    nbrGarages: toNonNegativeNumber(form.nbrGarages),
+    nbrFloors: toNonNegativeNumber(form.nbrFloors, 1),
+    nbrPiscine: toNonNegativeNumber(form.nbrPiscine),
+    nbrFloorStudio: toNonNegativeNumber(form.nbrFloorStudio, 1),
+    numeroStudio: form.numeroStudio.trim() || "NC",
+    nbrFloorApartment: toNonNegativeNumber(form.nbrFloorApartment, 1),
+    numeroApartment: form.numeroApartment.trim() || "NC",
+    nbrApartments: toNonNegativeNumber(form.nbrApartments, 1),
+    hasParking: form.hasParking,
+    nbrToilet: toNonNegativeNumber(form.nbrToilet, 1),
+    nbrSections: toNonNegativeNumber(form.nbrSections, 1),
+    kioskType: form.kioskType.trim(),
+    roomType: form.roomType.trim() || "Chambre américaine",
+  };
 }
 
 function ImageThumb({ url }: { url: string }) {
@@ -210,6 +373,313 @@ function listingAttributes(draft: ApifyListingDraft): Array<{ label: string; val
   return attrs;
 }
 
+function DraftEditDialog({
+  index,
+  item,
+  open,
+  onOpenChange,
+  onSave,
+}: {
+  index: number;
+  item: ApifyDraftMeta;
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  onSave: (index: number, draft: ApifyListingDraft) => void;
+}) {
+  const [form, setForm] = useState<DraftEditFormState>(() => draftToEditForm(item.draft));
+
+  const setField = <K extends keyof DraftEditFormState>(key: K, value: DraftEditFormState[K]) => {
+    setForm((prev) => ({ ...prev, [key]: value }));
+  };
+
+  const submit = (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    onSave(index, applyDraftEdit(item.draft, form));
+    onOpenChange(false);
+  };
+
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="max-h-[90vh] max-w-4xl overflow-y-auto">
+        <DialogHeader>
+          <DialogTitle>Modifier l&apos;annonce Apify</DialogTitle>
+          <DialogDescription>#{index + 1} · {form.title.trim() || "Sans titre"}</DialogDescription>
+        </DialogHeader>
+
+        <form className="space-y-5" onSubmit={submit}>
+          <section className="space-y-3">
+            <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">Contenu</p>
+            <label className={labelClass}>
+              Titre
+              <input
+                className={inputClass}
+                value={form.title}
+                onChange={(event) => setField("title", event.target.value)}
+              />
+            </label>
+            <label className={labelClass}>
+              Description
+              <textarea
+                className={`${inputClass} min-h-32 resize-y`}
+                value={form.description}
+                onChange={(event) => setField("description", event.target.value)}
+              />
+            </label>
+            <div className="grid gap-3 md:grid-cols-2">
+              <label className={labelClass}>
+                Type de bien
+                <select
+                  className={inputClass}
+                  value={form.typeProperty}
+                  onChange={(event) => setField("typeProperty", event.target.value as TypeProperty | "")}
+                >
+                  <option value="">Non défini</option>
+                  {TYPE_OPTIONS.map(([value, label]) => (
+                    <option key={value} value={value}>
+                      {label}
+                    </option>
+                  ))}
+                </select>
+              </label>
+              <label className={labelClass}>
+                Statut
+                <select
+                  className={inputClass}
+                  value={form.status}
+                  onChange={(event) => setField("status", event.target.value as StatusProperty)}
+                >
+                  <option value="FOR_RENT">Location</option>
+                  <option value="FOR_SALE">Vente</option>
+                </select>
+              </label>
+              <label className={labelClass}>
+                Prix (XAF)
+                <input
+                  className={inputClass}
+                  inputMode="numeric"
+                  value={form.price}
+                  onChange={(event) => setField("price", event.target.value)}
+                  placeholder="0"
+                />
+              </label>
+              <label className={labelClass}>
+                Superficie (m²)
+                <input
+                  className={inputClass}
+                  inputMode="numeric"
+                  value={form.area}
+                  onChange={(event) => setField("area", event.target.value)}
+                  placeholder="Inconnue"
+                />
+              </label>
+            </div>
+          </section>
+
+          <section className="space-y-3">
+            <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">Localisation</p>
+            <div className="grid gap-3 md:grid-cols-3">
+              <label className={labelClass}>
+                Quartier / rue
+                <input
+                  className={inputClass}
+                  value={form.street}
+                  onChange={(event) => setField("street", event.target.value)}
+                />
+              </label>
+              <label className={labelClass}>
+                Ville
+                <input
+                  className={inputClass}
+                  value={form.city}
+                  onChange={(event) => setField("city", event.target.value)}
+                />
+              </label>
+              <label className={labelClass}>
+                Province
+                <input
+                  className={inputClass}
+                  value={form.province}
+                  onChange={(event) => setField("province", event.target.value)}
+                />
+              </label>
+              <label className={labelClass}>
+                Pays
+                <input
+                  className={inputClass}
+                  value={form.country}
+                  onChange={(event) => setField("country", event.target.value)}
+                />
+              </label>
+              <label className={labelClass}>
+                Code pays
+                <input
+                  className={inputClass}
+                  value={form.countryCode}
+                  onChange={(event) => setField("countryCode", event.target.value)}
+                />
+              </label>
+              <label className={labelClass}>
+                Contact
+                <input
+                  className={inputClass}
+                  value={form.contact}
+                  onChange={(event) => setField("contact", event.target.value)}
+                />
+              </label>
+              <label className={labelClass}>
+                Longitude
+                <input
+                  className={inputClass}
+                  inputMode="decimal"
+                  value={form.longitude}
+                  onChange={(event) => setField("longitude", event.target.value)}
+                />
+              </label>
+              <label className={labelClass}>
+                Latitude
+                <input
+                  className={inputClass}
+                  inputMode="decimal"
+                  value={form.latitude}
+                  onChange={(event) => setField("latitude", event.target.value)}
+                />
+              </label>
+              <div className="flex items-end gap-4 pb-2">
+                <label className="flex items-center gap-2 text-xs font-medium text-slate-600">
+                  <input
+                    type="checkbox"
+                    checked={form.isLocExact}
+                    onChange={(event) => setField("isLocExact", event.target.checked)}
+                  />
+                  Position exacte
+                </label>
+                <label className="flex items-center gap-2 text-xs font-medium text-slate-600">
+                  <input
+                    type="checkbox"
+                    checked={form.isOwner}
+                    onChange={(event) => setField("isOwner", event.target.checked)}
+                  />
+                  Propriétaire
+                </label>
+              </div>
+            </div>
+          </section>
+
+          <section className="space-y-3">
+            <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">Détails</p>
+            <div className="grid gap-3 md:grid-cols-4">
+              <label className={labelClass}>
+                Chambres / pièces
+                <input className={inputClass} inputMode="numeric" value={form.nbrRooms} onChange={(event) => setField("nbrRooms", event.target.value)} />
+              </label>
+              <label className={labelClass}>
+                Salons
+                <input className={inputClass} inputMode="numeric" value={form.nbrLivingRoom} onChange={(event) => setField("nbrLivingRoom", event.target.value)} />
+              </label>
+              <label className={labelClass}>
+                Cuisines
+                <input className={inputClass} inputMode="numeric" value={form.nbrKitchens} onChange={(event) => setField("nbrKitchens", event.target.value)} />
+              </label>
+              <label className={labelClass}>
+                Salles d&apos;eau
+                <input className={inputClass} inputMode="numeric" value={form.nbrBathrooms} onChange={(event) => setField("nbrBathrooms", event.target.value)} />
+              </label>
+              <label className={labelClass}>
+                Toilettes
+                <input className={inputClass} inputMode="numeric" value={form.nbrToilets} onChange={(event) => setField("nbrToilets", event.target.value)} />
+              </label>
+              <label className={labelClass}>
+                Étages
+                <input className={inputClass} inputMode="numeric" value={form.nbrFloors} onChange={(event) => setField("nbrFloors", event.target.value)} />
+              </label>
+              <label className={labelClass}>
+                Garages
+                <input className={inputClass} inputMode="numeric" value={form.nbrGarages} onChange={(event) => setField("nbrGarages", event.target.value)} />
+              </label>
+              <label className={labelClass}>
+                Piscines
+                <input className={inputClass} inputMode="numeric" value={form.nbrPiscine} onChange={(event) => setField("nbrPiscine", event.target.value)} />
+              </label>
+              <label className={labelClass}>
+                Étage studio
+                <input className={inputClass} inputMode="numeric" value={form.nbrFloorStudio} onChange={(event) => setField("nbrFloorStudio", event.target.value)} />
+              </label>
+              <label className={labelClass}>
+                N° studio
+                <input className={inputClass} value={form.numeroStudio} onChange={(event) => setField("numeroStudio", event.target.value)} />
+              </label>
+              <label className={labelClass}>
+                Étage appartement
+                <input className={inputClass} inputMode="numeric" value={form.nbrFloorApartment} onChange={(event) => setField("nbrFloorApartment", event.target.value)} />
+              </label>
+              <label className={labelClass}>
+                N° appartement
+                <input className={inputClass} value={form.numeroApartment} onChange={(event) => setField("numeroApartment", event.target.value)} />
+              </label>
+              <label className={labelClass}>
+                Appartements
+                <input className={inputClass} inputMode="numeric" value={form.nbrApartments} onChange={(event) => setField("nbrApartments", event.target.value)} />
+              </label>
+              <label className={labelClass}>
+                Toilettes commerce
+                <input className={inputClass} inputMode="numeric" value={form.nbrToilet} onChange={(event) => setField("nbrToilet", event.target.value)} />
+              </label>
+              <label className={labelClass}>
+                Sections
+                <input className={inputClass} inputMode="numeric" value={form.nbrSections} onChange={(event) => setField("nbrSections", event.target.value)} />
+              </label>
+              <label className="flex items-end gap-2 pb-2 text-xs font-medium text-slate-600">
+                <input
+                  type="checkbox"
+                  checked={form.hasParking}
+                  onChange={(event) => setField("hasParking", event.target.checked)}
+                />
+                Parking
+              </label>
+              <label className={`${labelClass} md:col-span-2`}>
+                Type kiosque
+                <input className={inputClass} value={form.kioskType} onChange={(event) => setField("kioskType", event.target.value)} />
+              </label>
+              <label className={`${labelClass} md:col-span-2`}>
+                Type chambre
+                <input className={inputClass} value={form.roomType} onChange={(event) => setField("roomType", event.target.value)} />
+              </label>
+            </div>
+          </section>
+
+          <section className="space-y-3">
+            <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">Médias & tags</p>
+            <label className={labelClass}>
+              Tags
+              <input
+                className={inputClass}
+                value={form.tags}
+                onChange={(event) => setField("tags", event.target.value)}
+                placeholder="tag 1, tag 2"
+              />
+            </label>
+            <label className={labelClass}>
+              URLs d&apos;images
+              <textarea
+                className={`${inputClass} min-h-24 resize-y font-mono text-xs`}
+                value={form.images}
+                onChange={(event) => setField("images", event.target.value)}
+              />
+            </label>
+          </section>
+
+          <DialogFooter>
+            <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
+              Annuler
+            </Button>
+            <Button type="submit">Enregistrer</Button>
+          </DialogFooter>
+        </form>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
 type DraftCardProps = {
   item: ApifyDraftMeta;
   index: number;
@@ -219,10 +689,11 @@ type DraftCardProps = {
   imp: ImportState;
   canCreate: boolean;
   onCreate: (index: number) => void;
+  onEdit: (index: number) => void;
   onRemove: (index: number) => void;
 };
 
-function DraftCard({ item, index, geo, canGeocode, onGeocode, imp, canCreate, onCreate, onRemove }: DraftCardProps) {
+function DraftCard({ item, index, geo, canGeocode, onGeocode, imp, canCreate, onCreate, onEdit, onRemove }: DraftCardProps) {
   const { draft, warnings } = item;
   const location = [draft.street, draft.city, draft.province].filter(Boolean).join(", ");
   const rooms = roomsSummary(draft);
@@ -385,6 +856,15 @@ function DraftCard({ item, index, geo, canGeocode, onGeocode, imp, canCreate, on
           <Button
             variant="outline"
             size="sm"
+            disabled={imp.status === "created" || imp.status === "loading"}
+            onClick={() => onEdit(index)}
+          >
+            <Pencil />
+            Modifier
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
             className="text-red-600"
             onClick={() => onRemove(index)}
           >
@@ -409,6 +889,7 @@ export default function ApifyPage() {
   const [imp, setImp] = useState<Record<number, ImportState>>({});
   const [removed, setRemoved] = useState<Record<number, boolean>>({});
   const [confirmRemoveIndex, setConfirmRemoveIndex] = useState<number | null>(null);
+  const [editIndex, setEditIndex] = useState<number | null>(null);
 
   // Announcer picker (listings must be attached to an announcer).
   const [announcer, setAnnouncer] = useState<AnnouncerOption | null>(null);
@@ -517,13 +998,25 @@ export default function ApifyPage() {
     setImp({});
     setRemoved({});
     setConfirmRemoveIndex(null);
+    setEditIndex(null);
   }, []);
 
   const confirmRemove = useCallback(() => {
     if (confirmRemoveIndex === null) return;
     setRemoved((prev) => ({ ...prev, [confirmRemoveIndex]: true }));
+    if (editIndex === confirmRemoveIndex) {
+      setEditIndex(null);
+    }
     setConfirmRemoveIndex(null);
-  }, [confirmRemoveIndex]);
+  }, [confirmRemoveIndex, editIndex]);
+
+  const saveDraftEdit = useCallback((index: number, draft: ApifyListingDraft) => {
+    setItems((prev) => prev.map((meta, currentIndex) => (currentIndex === index ? { ...meta, draft } : meta)));
+    setImp((prev) => {
+      if (prev[index]?.status !== "error") return prev;
+      return { ...prev, [index]: { status: "idle" } };
+    });
+  }, []);
 
   const createOne = useCallback(
     async (index: number) => {
@@ -789,6 +1282,7 @@ export default function ApifyPage() {
                 imp={imp[index] ?? { status: "idle" }}
                 canCreate={Boolean(announcer)}
                 onCreate={createOne}
+                onEdit={setEditIndex}
                 onRemove={setConfirmRemoveIndex}
               />
             ))}
@@ -800,6 +1294,19 @@ export default function ApifyPage() {
             </CardContent>
           </Card>
         )
+      ) : null}
+
+      {editIndex !== null && items[editIndex] ? (
+        <DraftEditDialog
+          key={editIndex}
+          index={editIndex}
+          item={items[editIndex]}
+          open={editIndex !== null}
+          onOpenChange={(open) => {
+            if (!open) setEditIndex(null);
+          }}
+          onSave={saveDraftEdit}
+        />
       ) : null}
 
       <Dialog

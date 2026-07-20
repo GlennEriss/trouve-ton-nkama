@@ -36,6 +36,7 @@
     "test:e2e:lot6b": "E2E_ENV=dev playwright test __tests__/e2e/lot6b-ad-serving.spec.ts --project=chromium-desktop-dev --workers=1",
     "test:e2e:lot8b": "E2E_ENV=dev playwright test __tests__/e2e/lot8b-property-forms.spec.ts --project=chromium-desktop-dev --workers=2",
     "test:e2e:lot8d": "E2E_ENV=dev playwright test __tests__/e2e/lot8d-reels-ux.spec.ts --project=chromium-desktop-dev --workers=1",
+    "test:e2e:lot8e": "E2E_ENV=dev playwright test __tests__/e2e/lot8e-search-consultation.spec.ts --project=chromium-desktop-dev --workers=1",
     "test:smoke:lot6a": "node scripts/test-lot6a-real-dev-credits.js",
     "test:smoke:lot6d": "node scripts/test-lot6d-real-dev-observability.js",
     "test:smoke:lot8b": "node scripts/test-lot8b-real-dev-property.js",

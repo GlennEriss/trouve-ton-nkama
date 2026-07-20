@@ -9,7 +9,9 @@ import { useInfiniteQuery } from '@tanstack/react-query'
 export default function RecentSection() {
     const fetchInfiniteProperties = async ({ pageParam }: { pageParam: any }) => {
         const { limitPerPage, lastDoc } = pageParam;
-        const url = `/api/property/list?limit=${limitPerPage}&lastDoc=${lastDoc ?? ''}`;
+        const params = new URLSearchParams({ limitPerPage: String(limitPerPage) });
+        if (lastDoc) params.set('lastDoc', String(lastDoc));
+        const url = `/api/property/list?${params.toString()}`;
         const response = await fetch(url, {
             headers: {
                 'Cache-Control': 'public, s-maxage=600, stale-while-revalidate=600',
@@ -28,7 +30,7 @@ export default function RecentSection() {
         getNextPageParam: (lastPage, allPages, pageParam) => {
             const { limitPerPage } = pageParam;
             const lastDoc = allPages[allPages.length - 1]?.lastDoc ?? null;
-            return { limitPerPage, lastDoc };
+            return lastDoc ? { limitPerPage, lastDoc } : undefined;
         },
         staleTime: 1000 * 60 * 10, // 10 minutes
         gcTime: 1000 * 60 * 15, // 15 minutes
