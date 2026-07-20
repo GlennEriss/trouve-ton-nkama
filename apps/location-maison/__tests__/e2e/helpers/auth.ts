@@ -27,7 +27,13 @@ export const E2E_ANNOUNCER = {
   metadata: { needsProfileCompletion: false },
 }
 
-export async function signInAsAnnouncer(context: BrowserContext, baseURL = E2E_BASE_URL) {
+export type E2EAnnouncer = typeof E2E_ANNOUNCER
+
+export async function signInAsAnnouncer(
+  context: BrowserContext,
+  baseURL = E2E_BASE_URL,
+  user: E2EAnnouncer = E2E_ANNOUNCER,
+) {
   if (!process.env.NEXTAUTH_SECRET) {
     throw new Error('NEXTAUTH_SECRET is required to create an E2E session')
   }
@@ -36,7 +42,7 @@ export async function signInAsAnnouncer(context: BrowserContext, baseURL = E2E_B
     secret: process.env.NEXTAUTH_SECRET,
     salt: AUTH_COOKIE_NAME,
     token: {
-      user: E2E_ANNOUNCER,
+      user,
     },
   })
 
@@ -52,7 +58,10 @@ export async function signInAsAnnouncer(context: BrowserContext, baseURL = E2E_B
   ])
 }
 
-export async function mockCommonAppNoise(page: Page) {
+export async function mockCommonAppNoise(
+  page: Page,
+  options: { mockFirebaseToken?: boolean } = {},
+) {
   await page.addInitScript(() => {
     const styleId = 'e2e-hide-next-devtools'
     const installStyle = () => {
@@ -93,15 +102,17 @@ export async function mockCommonAppNoise(page: Page) {
     })
   })
 
-  await page.route('**/api/generate-token', async (route) => {
-    await route.fulfill({
-      status: 200,
-      contentType: 'application/json',
-      body: JSON.stringify({
-        token: 'e2e-firebase-custom-token-disabled',
-      }),
+  if (options.mockFirebaseToken !== false) {
+    await page.route('**/api/generate-token', async (route) => {
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({
+          token: 'e2e-firebase-custom-token-disabled',
+        }),
+      })
     })
-  })
+  }
 
   await page.route('https://www.google-analytics.com/**', async (route) => route.abort())
   await page.route('https://www.googletagmanager.com/**', async (route) => route.abort())

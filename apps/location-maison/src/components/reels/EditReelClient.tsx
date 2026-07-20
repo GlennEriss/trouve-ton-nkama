@@ -60,7 +60,7 @@ export default function EditReelClient({ reelId }: EditReelClientProps) {
     try {
       await updateReelDetails(reelId, contact, description)
       await Promise.all([
-        queryClient.invalidateQueries({ queryKey: ['reels', 'mine', user?.uid] }),
+        queryClient.invalidateQueries({ queryKey: ['reels-mine', user?.uid] }),
         queryClient.invalidateQueries({ queryKey: ['reels', 'edit', reelId, user?.uid] }),
         queryClient.invalidateQueries({ queryKey: ['reels-feed'] }),
       ])
@@ -122,7 +122,7 @@ export default function EditReelClient({ reelId }: EditReelClientProps) {
           type="button"
           onClick={() => router.push(routes.protected.reels_mine)}
           disabled={isSaving}
-          className="flex h-10 w-10 items-center justify-center rounded-full bg-white/10 text-white disabled:opacity-40"
+          className="flex h-11 w-11 items-center justify-center rounded-full bg-white/10 text-white disabled:opacity-40"
           aria-label="Retour à mes réels"
         >
           <X className="h-5 w-5" />
@@ -157,7 +157,7 @@ export default function EditReelClient({ reelId }: EditReelClientProps) {
         <button
           type="button"
           onClick={() => setIsEditingContact((current) => !current)}
-          className="inline-flex items-center gap-1.5 rounded-full bg-white/10 px-3 py-1 text-xs text-white/80"
+          className="inline-flex min-h-11 items-center gap-1.5 rounded-full bg-white/10 px-3 py-2 text-xs text-white/80"
         >
           <Pencil className="h-3 w-3" />
           {contact ? `Contact : ${contact}` : 'Ajouter un numéro de contact'}
@@ -170,7 +170,7 @@ export default function EditReelClient({ reelId }: EditReelClientProps) {
             onChange={(event) => setContact(event.target.value)}
             placeholder="Ex: +241 XX XX XX XX"
             disabled={isBusy}
-            className="w-full rounded-full border-0 bg-white/10 px-4 py-2.5 text-sm text-white placeholder:text-white/50 focus:outline-none focus:ring-2 focus:ring-white/40"
+            className="h-11 w-full rounded-full border-0 bg-white/10 px-4 text-sm text-white placeholder:text-white/50 focus:outline-none focus:ring-2 focus:ring-white/40"
           />
         )}
 

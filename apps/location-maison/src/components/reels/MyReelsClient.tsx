@@ -206,7 +206,7 @@ function ReelCard({
 }
 
 export default function MyReelsClient() {
-  const { user } = useCurrentUser()
+  const { user, isFirebaseConnected } = useCurrentUser()
   const { toast } = useToast()
   const queryClient = useQueryClient()
   const [reelToDelete, setReelToDelete] = useState<ReelWithId | null>(null)
@@ -224,7 +224,7 @@ export default function MyReelsClient() {
 
   const reelsQuery = useInfiniteQuery({
     queryKey: [REELS_QUERY_KEY, user?.uid, startDateInput, endDateInput],
-    enabled: Boolean(user?.uid),
+    enabled: Boolean(user?.uid && isFirebaseConnected),
     initialPageParam: null as string | null,
     queryFn: ({ pageParam }) =>
       getReelsByOwner(user!.uid, {
@@ -304,7 +304,8 @@ export default function MyReelsClient() {
   })
 
   const isDeleting = deleteMutation.isPending
-  const isInitialLoading = reelsQuery.isLoading
+  const waitingForFirebase = Boolean(user?.uid && !isFirebaseConnected)
+  const isInitialLoading = waitingForFirebase || reelsQuery.isLoading
 
   return (
     <div className="space-y-6 px-4 pb-20 pt-2 md:px-0 md:pb-8">

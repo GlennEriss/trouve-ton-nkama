@@ -1,6 +1,6 @@
 # Plan de tests - Trouve Ton Nkama
 
-Derniere mise a jour : 2026-07-19
+Derniere mise a jour : 2026-07-20
 
 Ce plan sert de feuille de route qualite pour tester la plateforme sans tout melanger. On commence par le metier et les Cloud Functions, puis on monte progressivement vers les API, les parcours utilisateurs, l'UX mobile et la coherence visuelle.
 
@@ -443,6 +443,25 @@ Execute le 2026-07-20 :
 Le lot corrige aussi une ouverture involontaire des chemins Storage proteges par le
 catch-all historique, ainsi que les courses entre generations d'un meme upload. Detail
 dans [LOT-8C-AUDIT.md](./LOT-8C-AUDIT.md).
+
+#### Lot 8D - Parcours navigateur des reels
+
+Execute le 2026-07-20 :
+
+- 6/6 scenarios Playwright passes, avec recuperation reseau en mobile/desktop et parcours
+  annonceur sur une vraie session Firebase ;
+- vraie video verticale H.264/AAC chargee dans l'editeur mobile, sans publication Storage ;
+- lecture des statuts et statistiques, modification et suppression confirmees directement
+  dans Firestore Dev ;
+- utilisateur et reels temporaires nettoyes automatiquement apres le run ;
+- 48/48 tests metier reels cibles et 9/9 regressions mobiles Lot 4 passes ;
+- suite CI et TypeScript au vert ; couverture globale a 13,73 % des lignes, 30,50 % des
+  fonctions et 50,73 % des branches.
+
+Le lot a ferme une faille de generation de custom token Firebase par UID arbitraire, attend
+desormais Firebase Auth avant de charger `Mes reels`, ajoute la recuperation d'erreur du feed
+et corrige les cibles tactiles des editeurs. Detail dans
+[LOT-8D-AUDIT.md](./LOT-8D-AUDIT.md).
 
 ## Matrice de risques
 
