@@ -71,3 +71,21 @@ prioritaire. Ces comportements peuvent être forcés avec
   retouche libre ;
 - `property-builders-and-schemas.test.ts` vérifie le blocage des textes libres ;
 - les tests Places vérifient les restrictions `GA`, `(cities)` et `(regions)`.
+
+## Migration et audit
+
+La migration est réexécutable et fonctionne en `dry-run` par défaut :
+
+```bash
+cd apps/location-maison
+npm run location:migrate:dev
+npm run location:migrate:dev:apply
+```
+
+Elle amorce la projection `geo_*` si nécessaire, ne fusionne que les doublons
+de même portée situés à moins d'un kilomètre, et ne modifie jamais les annonces
+historiques. Un second `dry-run` doit annoncer zéro fusion restante.
+
+Les saisies sans résultat sont envoyées au pipeline analytics sous la source
+`property_location_form`. Une même requête et son contexte ne sont envoyés
+qu'une fois par période de 24 heures dans un navigateur.

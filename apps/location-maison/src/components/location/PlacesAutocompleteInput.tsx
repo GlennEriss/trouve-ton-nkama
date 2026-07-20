@@ -6,6 +6,7 @@ import { Input } from '@/components/ui/input'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
+import { trackLocationNoResult } from '@/features/analytics/location/services/location-search-analytics.client'
 import {
   useGooglePlaces,
   PlaceSuggestion,
@@ -104,6 +105,9 @@ export default function PlacesAutocompleteInput({
       setSuggestions(result.items)
       setStatus(result.status)
       setIsLoading(false)
+      if (result.status === 'empty') {
+        trackLocationNoResult({ query: text, kind, province, city })
+      }
     }, 350)
   }
 

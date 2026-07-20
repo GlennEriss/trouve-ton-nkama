@@ -3,9 +3,14 @@ import PlacesAutocompleteInput from '@/components/location/PlacesAutocompleteInp
 
 const fetchSuggestions = jest.fn()
 const resolvePlace = jest.fn()
+const trackLocationNoResult = jest.fn()
 
 jest.mock('@/hooks/google-map/use-google-places', () => ({
   useGooglePlaces: () => ({ fetchSuggestions, resolvePlace }),
+}))
+
+jest.mock('@/features/analytics/location/services/location-search-analytics.client', () => ({
+  trackLocationNoResult: (...args: unknown[]) => trackLocationNoResult(...args),
 }))
 
 describe('PlacesAutocompleteInput', () => {
@@ -13,6 +18,7 @@ describe('PlacesAutocompleteInput', () => {
     jest.useFakeTimers()
     fetchSuggestions.mockReset()
     resolvePlace.mockReset()
+    trackLocationNoResult.mockReset()
   })
 
   afterEach(() => {
@@ -115,5 +121,29 @@ describe('PlacesAutocompleteInput', () => {
     expect(onClear).toHaveBeenCalled()
     expect(onManualChange).toHaveBeenCalledWith('Atong Abe modifié')
     expect(screen.getByRole('combobox')).toHaveAttribute('aria-invalid', 'true')
+  })
+
+  it('signale une recherche sans résultat avec son contexte', async () => {
+    fetchSuggestions.mockResolvedValue({ status: 'empty', items: [] })
+    render(
+      <PlacesAutocompleteInput
+        {...defaultProps}
+        province="Estuaire"
+        city="Libreville"
+      />,
+    )
+
+    fireEvent.change(screen.getByRole('combobox'), { target: { value: 'Quartier inconnu' } })
+    await act(async () => {
+      jest.advanceTimersByTime(350)
+      await Promise.resolve()
+    })
+
+    expect(trackLocationNoResult).toHaveBeenCalledWith({
+      query: 'Quartier inconnu',
+      kind: 'district',
+      province: 'Estuaire',
+      city: 'Libreville',
+    })
   })
 })

@@ -11,7 +11,7 @@ import { Input } from "@/components/ui/input";
 import { PageHeader } from "@/components/ui-kit/page-header";
 
 type RangeFilter = "24h" | "7d" | "30d" | "custom";
-type SourceFilter = "all" | "catalog_search_page" | "location_maison_search_bar" | "search_with_ia_page";
+type SourceFilter = "all" | "catalog_search_page" | "location_maison_search_bar" | "search_with_ia_page" | "property_location_form";
 type ResultFilter = "all" | "with_results" | "without_results" | "pending";
 
 type SearchAnalyticsPayload = {
@@ -93,6 +93,9 @@ function toSourceLabel(source: SourceFilter | string) {
   }
   if (source === "search_with_ia_page") {
     return "Recherche IA";
+  }
+  if (source === "property_location_form") {
+    return "Localisation d'annonce";
   }
   return source;
 }
@@ -360,6 +363,7 @@ export default function AnalyticsSearchesPage() {
               <option value="catalog_search_page">Catalogue</option>
               <option value="location_maison_search_bar">Barre de recherche</option>
               <option value="search_with_ia_page">Recherche IA</option>
+              <option value="property_location_form">Localisation d&apos;annonce</option>
             </select>
 
             <select

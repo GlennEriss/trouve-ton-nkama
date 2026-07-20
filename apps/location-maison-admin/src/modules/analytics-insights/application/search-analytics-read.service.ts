@@ -9,7 +9,8 @@ export type SearchAnalyticsSourceFilter =
   | "all"
   | "catalog_search_page"
   | "location_maison_search_bar"
-  | "search_with_ia_page";
+  | "search_with_ia_page"
+  | "property_location_form";
 export type SearchAnalyticsResultFilter =
   | "all"
   | "with_results"

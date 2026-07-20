@@ -16,7 +16,7 @@ const querySchema = z
     start: z.string().trim().optional(),
     end: z.string().trim().optional(),
     source: z
-      .enum(["all", "catalog_search_page", "location_maison_search_bar", "search_with_ia_page"])
+      .enum(["all", "catalog_search_page", "location_maison_search_bar", "search_with_ia_page", "property_location_form"])
       .optional(),
     resultFilter: z.enum(["all", "with_results", "without_results", "pending"]).optional(),
     query: z.string().trim().optional(),

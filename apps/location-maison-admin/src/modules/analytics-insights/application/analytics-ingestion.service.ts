@@ -187,7 +187,8 @@ function isSourceCompatible(
   return (
     event.source === "catalog_search_page" ||
     event.source === "location_maison_search_bar" ||
-    event.source === "search_with_ia_page"
+    event.source === "search_with_ia_page" ||
+    event.source === "property_location_form"
   );
 }
 

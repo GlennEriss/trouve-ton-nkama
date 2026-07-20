@@ -49,6 +49,7 @@ const searchSourceSchema = z.enum([
   "catalog_search_page",
   "location_maison_search_bar",
   "search_with_ia_page",
+  "property_location_form",
 ]);
 
 export const searchAnalyticsAdapterBodySchema = z
