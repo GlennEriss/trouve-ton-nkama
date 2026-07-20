@@ -3,6 +3,7 @@ import { usePropertyFormComponentContext } from '@/providers/property.form.provi
 import React from 'react'
 import { FormField, FormItem, FormLabel, FormControl, FormDescription, FormMessage } from '../ui/form'
 import { FormElement } from '@/builders/property-form/property.form.builder'
+import { InheritedFormControl } from '../shared/ui/InheritedFormControl'
 
 type Step2Props = {
     data: FormElement[]
@@ -21,7 +22,9 @@ export default function Step2({ data }: Readonly<Step2Props>) {
                             <FormItem>
                                 <FormLabel className='text-lg text-[#1B4D5B] font-bold'>{item.label}</FormLabel>
                                 <FormControl>
-                                    <item.component field={field} form={form} />
+                                    <InheritedFormControl>
+                                        <item.component field={field} form={form} />
+                                    </InheritedFormControl>
                                 </FormControl>
                                 <FormDescription>
                                     {item.description}

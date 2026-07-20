@@ -1,6 +1,7 @@
 import { Input } from '@/components/ui/input'
 import { LucideIcon, Eye, EyeOff } from 'lucide-react'
 import React, { useState } from 'react'
+import { useInheritedFormControl } from './InheritedFormControl'
 
 type InputAppProps = {
     IconLucide?: LucideIcon
@@ -8,14 +9,15 @@ type InputAppProps = {
     IconColor?: string
 } & React.ComponentProps<"input">
 
-export const InputApp: React.FC<InputAppProps> = ({
+export const InputApp = React.forwardRef<HTMLInputElement, InputAppProps>(({
     IconLucide,
     IconColorFill,
     IconColor,
     type,
     ...props
-}) => {
+}, ref) => {
     const [showPassword, setShowPassword] = useState(false);
+    const inheritedFormControl = useInheritedFormControl();
     const isPasswordField = type === 'password';
     
     const togglePasswordVisibility = () => setShowPassword(!showPassword);
@@ -31,6 +33,8 @@ export const InputApp: React.FC<InputAppProps> = ({
                 />
             )}
             <Input 
+                {...inheritedFormControl}
+                ref={ref}
                 className="min-h-11 border-none shadow-none focus-visible:ring-0 placeholder:text-gray-400 dark:text-white dark:placeholder:text-gray-500 bg-transparent flex-1 pr-12"
                 type={isPasswordField && showPassword ? 'text' : type}
                 {...props} 
@@ -53,4 +57,6 @@ export const InputApp: React.FC<InputAppProps> = ({
             )}
         </div>
     )
-}
+})
+
+InputApp.displayName = 'InputApp'

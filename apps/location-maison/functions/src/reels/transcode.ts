@@ -20,12 +20,34 @@ import {
 
 const REELS_COLLECTION = 'reels';
 
-type VideoMetadata = {
+export type VideoMetadata = {
   durationSeconds: number;
   videoCodec: string | null;
   audioCodec: string | null;
   height: number | null;
 };
+
+type ReelData = Record<string, unknown>;
+
+export type ReelProcessingPlan = {
+  ok: true;
+  durationSeconds: number;
+  trimOptions: TrimOptions | null;
+};
+
+export type ReelProcessingRejection = {
+  ok: false;
+  incidentCode: 'VIDEO_TOO_LONG' | 'INVALID_TRIM_RANGE';
+  processingError: string;
+  durationSeconds: number;
+};
+
+export type ReelProcessingClaim =
+  | { allowed: true }
+  | {
+      allowed: false;
+      reason: 'OWNER_MISMATCH' | 'RAW_PATH_MISMATCH' | 'ALREADY_CLAIMED';
+    };
 
 function resolveInstallerPath(packageName: string): string | null {
   try {
@@ -60,7 +82,7 @@ function configureFfmpegBinaries(): void {
   }
 }
 
-function probeVideoMetadata(filePath: string): Promise<VideoMetadata> {
+export function probeVideoMetadata(filePath: string): Promise<VideoMetadata> {
   return new Promise((resolve, reject) => {
     ffmpeg.ffprobe(filePath, (error, data) => {
       if (error) {
@@ -94,7 +116,7 @@ function withFfmpegOutput(error: Error, stdout: string | null | undefined, stder
   return detailedError;
 }
 
-type TrimOptions = {
+export type TrimOptions = {
   trimStartSeconds: number;
   trimDurationSeconds: number;
   muted: boolean;
@@ -149,7 +171,7 @@ function encodeToMp4(inputPath: string, outputPath: string, trim: TrimOptions | 
   });
 }
 
-function canRemuxToMp4(metadata: VideoMetadata): boolean {
+export function canRemuxToMp4(metadata: VideoMetadata): boolean {
   const compatibleVideo = metadata.videoCodec === 'h264';
   const compatibleAudio = metadata.audioCodec === null || metadata.audioCodec === 'aac';
   const withinHeightLimit = metadata.height === null || metadata.height <= REEL_MAX_HEIGHT_PX;
@@ -157,7 +179,7 @@ function canRemuxToMp4(metadata: VideoMetadata): boolean {
   return compatibleVideo && compatibleAudio && withinHeightLimit;
 }
 
-async function transcodeToMp4(
+export async function transcodeToMp4(
   inputPath: string,
   outputPath: string,
   metadata: VideoMetadata,
@@ -226,7 +248,7 @@ function serializeError(error: unknown): Record<string, unknown> {
   return { value: String(error) };
 }
 
-async function tryExtractThumbnail({
+export async function tryExtractThumbnail({
   inputPath,
   outputPath,
   durationSeconds,
@@ -276,13 +298,83 @@ function cleanupTmpFiles(filePaths: string[]): void {
  * client (crypto.randomUUID()) et sert à la fois d'id du doc Firestore et de nom de fichier
  * Storage — voir apps/location-maison/src/db/reel.db.ts.
  */
-function parseRawVideoPath(filePath: string): { ownerId: string; reelId: string } | null {
+export function parseRawVideoPath(filePath: string): { ownerId: string; reelId: string } | null {
   const parts = filePath.split('/');
   if (parts.length !== 3) return null;
   const [, ownerId, fileNameWithExt] = parts;
   const reelId = path.basename(fileNameWithExt, path.extname(fileNameWithExt));
   if (!ownerId || !reelId) return null;
   return { ownerId, reelId };
+}
+
+export function evaluateReelProcessingClaim(
+  reelData: ReelData,
+  ownerId: string,
+  filePath: string
+): ReelProcessingClaim {
+  if (reelData.createdBy !== ownerId) {
+    return { allowed: false, reason: 'OWNER_MISMATCH' };
+  }
+  if (reelData.rawVideoPath !== filePath) {
+    return { allowed: false, reason: 'RAW_PATH_MISMATCH' };
+  }
+  if (reelData.processingStatus !== 'uploading') {
+    return { allowed: false, reason: 'ALREADY_CLAIMED' };
+  }
+  return { allowed: true };
+}
+
+export function isActiveProcessingGeneration(
+  processingStatus: unknown,
+  processingGeneration: unknown,
+  objectGeneration: number
+): boolean {
+  return processingStatus === 'processing' &&
+    String(processingGeneration) === String(objectGeneration);
+}
+
+export function buildReelProcessingPlan(
+  metadata: VideoMetadata,
+  reelData: ReelData
+): ReelProcessingPlan | ReelProcessingRejection {
+  const rawDurationSeconds = metadata.durationSeconds;
+  const requestedTrimStart = typeof reelData.trimStartSeconds === 'number'
+    ? reelData.trimStartSeconds
+    : 0;
+  const requestedTrimEnd = typeof reelData.trimEndSeconds === 'number'
+    ? reelData.trimEndSeconds
+    : rawDurationSeconds;
+  const trimStartSeconds = Math.max(0, Math.min(requestedTrimStart, rawDurationSeconds));
+  const trimEndSeconds = Math.max(trimStartSeconds, Math.min(requestedTrimEnd, rawDurationSeconds));
+  const isTrimmed = trimStartSeconds > 0 || trimEndSeconds < rawDurationSeconds;
+  const durationSeconds = isTrimmed ? trimEndSeconds - trimStartSeconds : rawDurationSeconds;
+  const muted = Boolean(reelData.muted);
+
+  if (durationSeconds <= 0) {
+    return {
+      ok: false,
+      incidentCode: 'INVALID_TRIM_RANGE',
+      processingError: 'La découpe sélectionnée ne contient aucune image vidéo.',
+      durationSeconds,
+    };
+  }
+
+  if (durationSeconds > REEL_MAX_DURATION_SECONDS) {
+    return {
+      ok: false,
+      incidentCode: 'VIDEO_TOO_LONG',
+      processingError: `Vidéo trop longue (${Math.round(durationSeconds)}s, maximum ${REEL_MAX_DURATION_SECONDS}s).`,
+      durationSeconds,
+    };
+  }
+
+  return {
+    ok: true,
+    durationSeconds,
+    trimOptions: isTrimmed || muted
+      ? { trimStartSeconds, trimDurationSeconds: durationSeconds, muted }
+      : null,
+  };
 }
 
 /**
@@ -318,19 +410,86 @@ export const transcodeReelVideo = onObjectFinalized(TRANSCODE_FUNCTION_OPTIONS, 
     eventId: event.id,
     reelId,
   });
+  const bucket = getStorage().bucket(event.data.bucket);
+  const objectGeneration = event.data.generation;
+  const rawFile = bucket.file(filePath, { generation: objectGeneration });
+  const deleteRawFile = async (reason: string): Promise<void> => {
+    try {
+      await rawFile.delete({ ignoreNotFound: true });
+      logger.info('Reel raw video generation deleted', {
+        ...incidentContext,
+        generation: objectGeneration,
+        reason,
+      });
+    } catch (error) {
+      logger.error('Reel raw video generation cleanup failed', {
+        ...incidentContext,
+        incidentCode: 'RAW_VIDEO_CLEANUP_FAILED',
+        generation: objectGeneration,
+        reason,
+        retryable: true,
+        error: serializeError(error),
+      });
+    }
+  };
 
   const reelRef = adminDB.collection(REELS_COLLECTION).doc(reelId);
-  const reelSnap = await reelRef.get();
-  if (!reelSnap.exists) {
+  const claimOutcome = await adminDB.runTransaction(async (transaction) => {
+    const reelSnap = await transaction.get(reelRef);
+    if (!reelSnap.exists) {
+      return { status: 'missing' as const };
+    }
+
+    const reelData = reelSnap.data() ?? {};
+    const claim = evaluateReelProcessingClaim(reelData, ownerId, filePath);
+    if (!claim.allowed) {
+      return {
+        status: 'rejected' as const,
+        reason: claim.reason,
+        processingStatus: reelData.processingStatus,
+        processingGeneration: reelData.processingGeneration,
+      };
+    }
+
+    transaction.update(reelRef, {
+      processingStatus: 'processing',
+      processingEventId: event.id,
+      processingGeneration: objectGeneration,
+      processingAttemptCount: admin.firestore.FieldValue.increment(1),
+      processingStartedAt: admin.firestore.FieldValue.serverTimestamp(),
+      updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+    });
+    return { status: 'claimed' as const, reelData };
+  });
+
+  if (claimOutcome.status === 'missing') {
     logger.error('Reel document not found for uploaded video', {
       ...incidentContext,
       incidentCode: 'REEL_NOT_FOUND',
       retryable: false,
     });
+    await deleteRawFile('missing_reel_document');
     return;
   }
 
-  const bucket = getStorage().bucket(event.data.bucket);
+  if (claimOutcome.status === 'rejected') {
+    logger.warn('Reel transcoding event ignored', {
+      ...incidentContext,
+      incidentCode: claimOutcome.reason,
+      retryable: false,
+    });
+    const activeProcessingEvent = claimOutcome.reason === 'ALREADY_CLAIMED' &&
+      isActiveProcessingGeneration(
+        claimOutcome.processingStatus,
+        claimOutcome.processingGeneration,
+        objectGeneration
+      );
+    if (!activeProcessingEvent) {
+      await deleteRawFile('rejected_processing_event');
+    }
+    return;
+  }
+
   const workDir = path.join(os.tmpdir(), `reel-${reelId}-${randomUUID()}`);
   await fs.promises.mkdir(workDir, { recursive: true });
 
@@ -340,46 +499,29 @@ export const transcodeReelVideo = onObjectFinalized(TRANSCODE_FUNCTION_OPTIONS, 
   const tmpThumbPath = path.join(workDir, 'thumbnail.jpg');
 
   try {
-    await reelRef.update({
-      processingStatus: 'processing',
-      updatedAt: admin.firestore.FieldValue.serverTimestamp(),
-    });
-
-    await bucket.file(filePath).download({ destination: tmpRawPath });
+    await rawFile.download({ destination: tmpRawPath });
 
     const metadata = await probeVideoMetadata(tmpRawPath);
-    const { durationSeconds: rawDurationSeconds } = metadata;
-    const reelData = reelSnap.data() ?? {};
-    const requestedTrimStart = typeof reelData.trimStartSeconds === 'number' ? reelData.trimStartSeconds : 0;
-    const requestedTrimEnd = typeof reelData.trimEndSeconds === 'number' ? reelData.trimEndSeconds : rawDurationSeconds;
-    // Bornes défensives : le client envoie déjà des valeurs cohérentes (voir CreateOrphanReelClient.tsx
-    // + validation API /api/reels), mais on ne fait jamais confiance à la durée probée côté client.
-    const trimStartSeconds = Math.max(0, Math.min(requestedTrimStart, rawDurationSeconds));
-    const trimEndSeconds = Math.max(trimStartSeconds, Math.min(requestedTrimEnd, rawDurationSeconds));
-    const isTrimmed = trimStartSeconds > 0 || trimEndSeconds < rawDurationSeconds;
-    const durationSeconds = isTrimmed ? trimEndSeconds - trimStartSeconds : rawDurationSeconds;
-    const muted = Boolean(reelData.muted);
+    const processingPlan = buildReelProcessingPlan(metadata, claimOutcome.reelData);
 
-    if (durationSeconds > REEL_MAX_DURATION_SECONDS) {
-      logger.warn('Reel duration exceeds configured limit', {
+    if (!processingPlan.ok) {
+      logger.warn('Reel video rejected after metadata probe', {
         ...incidentContext,
-        incidentCode: 'VIDEO_TOO_LONG',
+        incidentCode: processingPlan.incidentCode,
         retryable: false,
-        durationSeconds: Math.round(durationSeconds),
+        durationSeconds: processingPlan.durationSeconds,
         maxDurationSeconds: REEL_MAX_DURATION_SECONDS,
       });
       await reelRef.update({
         processingStatus: 'failed',
-        processingError: `Vidéo trop longue (${Math.round(durationSeconds)}s, maximum ${REEL_MAX_DURATION_SECONDS}s).`,
+        processingError: processingPlan.processingError,
         updatedAt: admin.firestore.FieldValue.serverTimestamp(),
       });
-      await bucket.file(filePath).delete().catch(() => undefined);
+      await deleteRawFile('invalid_video');
       return;
     }
 
-    const trimOptions = isTrimmed || muted
-      ? { trimStartSeconds, trimDurationSeconds: durationSeconds, muted }
-      : null;
+    const { durationSeconds, trimOptions } = processingPlan;
 
     await transcodeToMp4(tmpRawPath, tmpOutPath, metadata, trimOptions);
     const hasThumbnail = await tryExtractThumbnail({
@@ -441,7 +583,7 @@ export const transcodeReelVideo = onObjectFinalized(TRANSCODE_FUNCTION_OPTIONS, 
       ...(hasThumbnail ? { thumbnailUrl, thumbnailPath: thumbDestPath } : {}),
     });
 
-    await bucket.file(filePath).delete().catch(() => undefined);
+    await deleteRawFile('processing_completed');
     logger.info('Reel transcoding completed', {
       ...incidentContext,
       durationSeconds,
@@ -460,6 +602,7 @@ export const transcodeReelVideo = onObjectFinalized(TRANSCODE_FUNCTION_OPTIONS, 
       processingError: "Le traitement de la vidéo a échoué. Réessayez avec un autre fichier.",
       updatedAt: admin.firestore.FieldValue.serverTimestamp(),
     }).catch(() => undefined);
+    await deleteRawFile('processing_failed');
   } finally {
     cleanupTmpFiles([tmpRawPath, tmpOutPath, tmpThumbPath]);
     await fs.promises.rm(workDir, { recursive: true, force: true }).catch(() => undefined);

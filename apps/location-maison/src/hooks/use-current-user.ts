@@ -21,6 +21,53 @@ interface UseCurrentUserReturn {
 
 const logger = createLogger("auth.use-current-user");
 
+let pendingFirebaseConnection: { uid: string; promise: Promise<void> } | null = null;
+
+export async function connectFirebaseClient(uid: string): Promise<void> {
+  if (auth.currentUser?.uid === uid) {
+    return;
+  }
+
+  if (pendingFirebaseConnection) {
+    if (pendingFirebaseConnection.uid === uid) {
+      return pendingFirebaseConnection.promise;
+    }
+    await pendingFirebaseConnection.promise.catch(() => undefined);
+    return connectFirebaseClient(uid);
+  }
+
+  const connectionPromise = (async () => {
+    if (auth.currentUser && auth.currentUser.uid !== uid) {
+      await auth.signOut();
+    }
+
+    const response = await fetch('/api/generate-token', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({ uid })
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.details ?? `Erreur ${response.status}: ${response.statusText}`);
+    }
+
+    const { token } = await response.json();
+    await signInWithCustomToken(auth, token);
+  })();
+
+  pendingFirebaseConnection = { uid, promise: connectionPromise };
+  try {
+    await connectionPromise;
+  } finally {
+    if (pendingFirebaseConnection?.promise === connectionPromise) {
+      pendingFirebaseConnection = null;
+    }
+  }
+}
+
 export const useCurrentUser = (): UseCurrentUserReturn => {
   const { data: session, status, update } = useSession();
   const [user, setUser] = useState(session?.user ?? undefined);
@@ -34,30 +81,7 @@ export const useCurrentUser = (): UseCurrentUserReturn => {
     setError(null);
 
     try {
-      // Vérifier si on est déjà connecté
-      if (auth.currentUser) {
-        setIsFirebaseConnected(true);
-        return;
-      }
-
-      // 1. Générer un custom token
-      const response = await fetch('/api/generate-token', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ uid })
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.details ?? `Erreur ${response.status}: ${response.statusText}`);
-      }
-
-      const { token } = await response.json();
-
-      // 2. Se connecter à Firebase avec le custom token
-      await signInWithCustomToken(auth, token);
+      await connectFirebaseClient(uid);
       setIsFirebaseConnected(true);
 
     } catch (err: any) {
@@ -82,9 +106,9 @@ export const useCurrentUser = (): UseCurrentUserReturn => {
       const uid = sessionUser.uid;
       
       // Connecter à Firebase si pas encore connecté et si on a un UID
-      if (!auth.currentUser && uid) {
+      if (auth.currentUser?.uid !== uid && uid) {
         connectToFirebase(uid);
-      } else if (auth.currentUser) {
+      } else if (auth.currentUser?.uid === uid) {
         setIsFirebaseConnected(true);
       } else {
         logger.warn("No UID found in authenticated session");

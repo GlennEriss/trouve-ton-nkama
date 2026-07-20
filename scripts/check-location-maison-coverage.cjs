@@ -29,6 +29,7 @@ const profiles = {
       'src/payments/gifts/webhook.ts': { branches: 65, functions: 80, lines: 85, statements: 85 },
       'src/payments/mypayga/initiatePurchase.ts': { branches: 75, functions: 60, lines: 90, statements: 90 },
       'src/payments/mypayga/webhook.ts': { branches: 60, functions: 100, lines: 80, statements: 80 },
+      'src/reels/transcode.ts': { branches: 58, functions: 55, lines: 45, statements: 45 },
     },
   },
 }

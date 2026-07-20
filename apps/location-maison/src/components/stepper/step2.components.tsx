@@ -4,6 +4,7 @@ import { FormItem, FormControl, FormLabel } from '../ui/form'
 import { InputNumberApp } from '../shared/ui/InputNumberApp'
 import { useStep2FormPropertyMediator } from '@/hooks/useStep2FormPropertyMediator'
 import { InputApp } from '../shared/ui/InputApp'
+import { useInheritedFormControl } from '../shared/ui/InheritedFormControl'
 
 type ChoiceComponentProps = {
     field?: any,
@@ -12,17 +13,26 @@ type ChoiceComponentProps = {
     value?: any
 }
 export const ChoiceComponent: React.FC<ChoiceComponentProps> = ({ field, data, onValueChange, value }) => {
+    const inheritedFormControl = useInheritedFormControl()
+    const selectedValue = value !== undefined ? value : field?.value
+    const handleValueChange = (rawValue: string) => {
+        const selectedItem = data.find((item) => String(item.value) === rawValue)
+        const nextValue = selectedItem?.value ?? rawValue
+        ;(onValueChange || field?.onChange)?.(nextValue)
+    }
+
     return (
         <RadioGroup
-            onValueChange={onValueChange || field?.onChange}
-            value={value !== undefined ? value : field?.value}
+            {...inheritedFormControl}
+            onValueChange={handleValueChange}
+            value={selectedValue === undefined ? undefined : String(selectedValue)}
             className="flex gap-5"
         >
             {
                 data.map((item) =>
                     <FormItem key={item.value} className="flex items-center space-x-3 space-y-0">
                         <FormControl>
-                            <RadioGroupItem value={item.value} />
+                            <RadioGroupItem value={String(item.value)} />
                         </FormControl>
                         <FormLabel className="font-normal">
                             {item.label}
@@ -96,7 +106,7 @@ export const HasParkingComponent = () => {
     const mediator = useStep2FormPropertyMediator()
     return (
         <ChoiceComponent
-            onValueChange={(value) => mediator.setHasParking(Boolean(value))}
+            onValueChange={(value) => mediator.setHasParking(value === true)}
             value={mediator.hasParking()}
             data={[{ label: 'Oui', value: true }, { label: 'Non', value: false }]}
         />
