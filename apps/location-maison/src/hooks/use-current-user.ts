@@ -51,7 +51,12 @@ export async function connectFirebaseClient(uid: string): Promise<void> {
 
     if (!response.ok) {
       const errorData = await response.json();
-      throw new Error(errorData.details ?? `Erreur ${response.status}: ${response.statusText}`);
+      throw new Error(
+        errorData?.error?.message ??
+        errorData?.message ??
+        errorData?.details ??
+        `Erreur ${response.status}: ${response.statusText}`
+      );
     }
 
     const { token } = await response.json();

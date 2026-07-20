@@ -920,11 +920,12 @@ export function transformPost(post: ApifyRawPost): ApifyDraftMeta {
   const draft: ApifyListingDraft = { ...baseDraft, ...buildListingContent(baseDraft) };
 
   // Required platform fields we could not extract (defaulted above).
+  // `area` is intentionally omitted: the platform treats a 0 m² value as
+  // "unknown", so missing surface must not block an Apify-created listing.
   const missingFields: string[] = [];
   if (!parsed.typeProperty) missingFields.push("Type de bien");
   if (!parsed.status) missingFields.push("Statut (location/vente)");
   if (parsed.price == null) missingFields.push("Prix");
-  if (parsed.area == null) missingFields.push("Superficie");
   if (!parsed.city) missingFields.push("Ville");
   if (!parsed.street) missingFields.push("Quartier");
   if (!parsed.contact) missingFields.push("Contact");

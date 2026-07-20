@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { collection, db, getDocs, query, where } from '@/firebase/firestore';
+import { collection, db, getDocs, limit, query, where } from '@/firebase/firestore';
 import firebaseCollectionNames from '@/constantes/firebase-collection-name';
 import type { Property } from '@/models/annonce';
 import { createLogger } from '@/lib/logger';
@@ -9,6 +9,7 @@ import { resolveThumbnailUrl } from '@/lib/property-images';
 const logger = createLogger('api.map.properties');
 
 const CACHE_TTL = 300;
+const MAX_MAP_PROPERTIES = 200;
 
 export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);
@@ -38,6 +39,7 @@ export async function GET(request: NextRequest) {
     if (city) {
       q = query(q, where('city', '==', city));
     }
+    q = query(q, limit(MAX_MAP_PROPERTIES));
 
     const querySnapshot = await getDocs(q);
 

@@ -1,6 +1,6 @@
 "use client";
 
-import { createContext, useContext, useState, useMemo } from "react";
+import { createContext, useCallback, useContext, useState, useMemo } from "react";
 import { InstantSearch } from "react-instantsearch";
 import { liteClient as algoliasearch } from "algoliasearch/lite";
 
@@ -108,7 +108,7 @@ export const AlgoliaProvider: React.FC<AlgoliaProviderProps> = ({
   const [searchText, setSearchText] = useState("");
 
   // Fonction pour tout remettre à zéro
-  const clearFilters = () => {
+  const clearFilters = useCallback(() => {
     setProvince("");
     setCity("");
     setStreet("");
@@ -125,7 +125,9 @@ export const AlgoliaProvider: React.FC<AlgoliaProviderProps> = ({
     setTypeProperty([]);
     setStatus([]);
     setTags([]);
-  };
+    setFilteredResults([]);
+    setSearchText("");
+  }, []);
 
   const contextValue = useMemo(() => ({
     indexName,

@@ -59,7 +59,7 @@ export default function ListPropertySection() {
         getNextPageParam: (lastPage, allPages, pageParam) => {
             const { limitPerPage } = pageParam;
             const lastDoc = allPages[allPages.length - 1].lastDoc;
-            return { limitPerPage, lastDoc };
+            return lastDoc ? { limitPerPage, lastDoc } : undefined;
         },
     })
     const handlePrev = () => {

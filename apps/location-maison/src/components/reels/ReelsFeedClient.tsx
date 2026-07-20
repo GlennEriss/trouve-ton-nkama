@@ -3,7 +3,7 @@
 import React from 'react'
 import Link from 'next/link'
 import { useInfiniteQuery } from '@tanstack/react-query'
-import { Check, ChevronDown, ChevronUp, Copy, Gift, Heart, Loader2, Mail, PhoneCall, PlusCircle, Share2, Video, Volume2, VolumeX } from 'lucide-react'
+import { Check, ChevronDown, ChevronUp, Copy, Gift, Heart, Loader2, Mail, PhoneCall, PlusCircle, RefreshCw, Share2, Video, Volume2, VolumeX } from 'lucide-react'
 import { FaFacebookF, FaTiktok, FaWhatsapp, FaXTwitter } from 'react-icons/fa6'
 import {
   Carousel,
@@ -12,6 +12,7 @@ import {
   type CarouselApi,
 } from '@/components/ui/carousel'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
+import { Button } from '@/components/ui/button'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -702,6 +703,28 @@ export default function ReelsFeedClient() {
       <div className="flex h-[100dvh] w-full items-center justify-center bg-black md:h-auto md:bg-neutral-950 md:py-8">
         <div className={cn('flex h-full w-full items-center justify-center bg-black', DESKTOP_CARD_CLASS)}>
           <Loader2 className="h-8 w-8 animate-spin text-white" />
+        </div>
+      </div>
+    )
+  }
+
+  if (feedQuery.isError && reels.length === 0) {
+    return (
+      <div className="flex h-[100dvh] w-full items-center justify-center bg-black md:h-auto md:bg-neutral-950 md:py-8">
+        <div className={cn('flex h-full w-full flex-col items-center justify-center gap-4 bg-black px-6 text-center text-white', DESKTOP_CARD_CLASS)}>
+          <div>
+            <p className="font-medium">Impossible de charger les réels</p>
+            <p className="mt-1 text-sm text-white/60">Vérifiez votre connexion puis réessayez.</p>
+          </div>
+          <Button
+            type="button"
+            variant="secondary"
+            className="h-12 rounded-full px-6"
+            onClick={() => void feedQuery.refetch()}
+          >
+            <RefreshCw className="mr-2 h-4 w-4" />
+            Réessayer
+          </Button>
         </div>
       </div>
     )

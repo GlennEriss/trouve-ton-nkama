@@ -4,6 +4,7 @@ import React from 'react'
 import { useProvinces } from '@/hooks/use-location-exports'
 import { useAlgoliaContext } from "@/providers/AlgoliaContext";
 import { useInfiniteHits, useInstantSearch, useStats } from 'react-instantsearch'
+import { LoaderCircle } from 'lucide-react'
 import Image from 'next/image'
 import PropertyCard from '../home-page/PropertyCard'
 import { useSearchParams } from 'next/navigation'
@@ -16,7 +17,7 @@ export default function
 SearchDesktopPage() {
     const { items, isLastPage, showMore } = useInfiniteHits();
     const { nbHits } = useStats();
-    const { status: searchStatus } = useInstantSearch();
+    const { status: searchStatus, refresh } = useInstantSearch();
     const searchParams = useSearchParams();
     const resultsContainerRef = React.useRef<HTMLDivElement>(null);
     const sentinelRef = React.useRef<HTMLDivElement>(null);
@@ -163,7 +164,23 @@ SearchDesktopPage() {
                 <FilterSearchDesktopPageSection />
                 <div className="w-3/4 flex flex-col h-screen pb-20">
                     <div ref={resultsContainerRef} className="p-5 flex-1 overflow-auto">
-                        {items.length === 0 ? (
+                        {searchStatus === 'error' ? (
+                            <div className="flex h-full flex-col items-center justify-center bg-gray-50 p-8 text-center dark:bg-gray-800" role="alert">
+                                <p className="text-lg text-gray-700 dark:text-gray-200">La recherche est momentanément indisponible.</p>
+                                <button
+                                    type="button"
+                                    onClick={refresh}
+                                    className="mt-6 min-h-11 rounded-full bg-[#146B67] px-6 py-2.5 text-white hover:bg-[#0f5754]"
+                                >
+                                    Réessayer
+                                </button>
+                            </div>
+                        ) : items.length === 0 && (searchStatus === 'loading' || searchStatus === 'stalled') ? (
+                            <div className="flex h-full items-center justify-center gap-3 text-gray-600 dark:text-gray-300" role="status">
+                                <LoaderCircle className="h-6 w-6 animate-spin" aria-hidden="true" />
+                                <span>Recherche des annonces...</span>
+                            </div>
+                        ) : items.length === 0 ? (
                             <div className="flex flex-col items-center justify-center h-full bg-gray-50 dark:bg-gray-800 rounded-xl p-8">
                                 <Image
                                     src="/no-favorites.svg"
@@ -177,7 +194,7 @@ SearchDesktopPage() {
                                 </p>
                                 <button
                                     onClick={clearFilters}
-                                    className="mt-6 px-6 py-2.5 bg-gradient-to-r from-[#146B67] via-[#1FA89B] to-[#146B67] text-white rounded-full hover:brightness-110 transition-all duration-300 shadow-md hover:shadow-lg"
+                                    className="mt-6 min-h-11 rounded-full bg-[#146B67] px-6 py-2.5 text-white transition-colors hover:bg-[#0f5754]"
                                 >
                                     Réinitialiser les filtres
                                 </button>

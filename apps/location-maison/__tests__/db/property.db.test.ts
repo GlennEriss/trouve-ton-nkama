@@ -148,8 +148,19 @@ describe('property database', () => {
 
     const result = await getProperties({ limitPerPage: 2, lastDoc: null })
 
-    expect(result.lastDoc).toBe(firstPage[1])
+    expect(result.lastDoc).toBe('property-2')
     expect(firestore.startAfter).toHaveBeenCalledWith(firstPage[1])
+  })
+
+  it('resout un identifiant de curseur avant de paginer', async () => {
+    const cursor = { id: 'property-cursor', exists: () => true }
+    firestore.getDoc.mockResolvedValue(cursor)
+    firestore.getDocs.mockResolvedValue(querySnapshot([]))
+
+    await getProperties({ limitPerPage: 10, lastDoc: 'property-cursor' })
+
+    expect(firestore.doc).toHaveBeenCalledWith(firestore.db, 'properties', 'property-cursor')
+    expect(firestore.startAfter).toHaveBeenCalledWith(cursor)
   })
 
   it('retourne une annonce par identifiant et migre l ancien champ cuisine', async () => {

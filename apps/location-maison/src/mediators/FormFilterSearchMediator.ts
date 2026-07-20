@@ -9,18 +9,32 @@ export class FormFilterSearchMediator {
     ) { }
 
     normalizeValues(data: FormFilterSchemaType) {
-        let minPrice = Math.max(0, Number(data.minPrice) || 0);
-        let maxPrice = Math.max(0, Number(data.maxPrice) || 0);
+        const normalize = (value: unknown) => {
+            if (value === '' || value === null || value === undefined) return undefined;
+            const number = Number(value);
+            return Number.isFinite(number) ? Math.max(0, number) : undefined;
+        };
 
-        if (minPrice >= maxPrice) {
-            maxPrice = Infinity;
-            this.form?.setValue("maxPrice", maxPrice);
+        const minPrice = normalize(data.minPrice);
+        let maxPrice = normalize(data.maxPrice);
+        if (minPrice !== undefined && maxPrice !== undefined && minPrice >= maxPrice) {
+            maxPrice = undefined;
+            this.form?.setValue("maxPrice", undefined);
         }
 
-        const minArea = Math.max(0, Number(data.minArea) || 0);
-        const maxArea = Math.max(0, Number(data.maxArea) || 0);
-        const minRooms = Math.max(0, Number(data.minNbrRooms) || 0);
-        const maxRooms = Math.max(0, Number(data.maxNbrRooms) || 0);
+        const minArea = normalize(data.minArea);
+        let maxArea = normalize(data.maxArea);
+        if (minArea !== undefined && maxArea !== undefined && minArea >= maxArea) {
+            maxArea = undefined;
+            this.form?.setValue("maxArea", undefined);
+        }
+
+        const minRooms = normalize(data.minNbrRooms);
+        let maxRooms = normalize(data.maxNbrRooms);
+        if (minRooms !== undefined && maxRooms !== undefined && minRooms >= maxRooms) {
+            maxRooms = undefined;
+            this.form?.setValue("maxNbrRooms", undefined);
+        }
 
         return { minPrice, maxPrice, minArea, maxArea, minRooms, maxRooms };
     }
@@ -38,26 +52,18 @@ export class FormFilterSearchMediator {
 
         const { minPrice, maxPrice, minArea, maxArea, minRooms, maxRooms } = normalized;
 
-        // Définition des mappings
-        const fieldMappings: { condition: any; setter: (v: any) => void; value: any }[] = [
-            { condition: data.province, setter: setProvince, value: data.province },
-            { condition: data.city, setter: setCity, value: data.city },
-            { condition: data.street, setter: setStreet, value: data.street },
-            { condition: data.minPrice, setter: setMinPrice, value: String(minPrice) },
-            { condition: data.maxPrice, setter: setMaxPrice, value: String(maxPrice) },
-            { condition: data.minArea, setter: setMinArea, value: String(minArea) },
-            { condition: data.maxArea, setter: setMaxArea, value: String(maxArea) },
-            { condition: data.minNbrRooms, setter: setMinNbrRooms, value: String(minRooms) },
-            { condition: data.maxNbrRooms, setter: setMaxNbrRooms, value: String(maxRooms) },
-            { condition: data.typeProperty?.length, setter: setTypeProperty, value: data.typeProperty },
-            { condition: data.status?.length, setter: setStatus, value: data.status },
-            { condition: data.tags?.length, setter: setTags, value: data.tags },
-        ];
-
-        // Application des mappings
-        fieldMappings.forEach(({ condition, setter, value }) => {
-            if (condition) setter(value);
-        });
+        setProvince(data.province ?? '');
+        setCity(data.city ?? '');
+        setStreet(data.street ?? '');
+        setMinPrice(minPrice === undefined ? '' : String(minPrice));
+        setMaxPrice(maxPrice === undefined ? '' : String(maxPrice));
+        setMinArea(minArea === undefined ? '' : String(minArea));
+        setMaxArea(maxArea === undefined ? '' : String(maxArea));
+        setMinNbrRooms(minRooms === undefined ? '' : String(minRooms));
+        setMaxNbrRooms(maxRooms === undefined ? '' : String(maxRooms));
+        setTypeProperty(data.typeProperty ?? []);
+        setStatus(data.status ?? []);
+        setTags(data.tags ?? []);
     }
 
 
@@ -76,7 +82,7 @@ export class FormFilterSearchMediator {
             { condition: data.city, key: "city", value: data.city },
             { condition: data.street, key: "street", value: data.street },
             { condition: minPrice, key: "minPrice", value: String(minPrice) },
-            { condition: maxPrice && maxPrice !== Infinity, key: "maxPrice", value: String(maxPrice) },
+            { condition: maxPrice, key: "maxPrice", value: String(maxPrice) },
             { condition: minArea, key: "minArea", value: String(minArea) },
             { condition: maxArea, key: "maxArea", value: String(maxArea) },
             { condition: minRooms, key: "minNbrRooms", value: String(minRooms) },

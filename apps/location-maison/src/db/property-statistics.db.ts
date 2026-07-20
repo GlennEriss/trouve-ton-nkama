@@ -19,6 +19,8 @@ const logger = createLogger('db.property-statistics');
 //   limiter la fenêtre de fraîcheur, avec le TTL en filet de sécurité.
 const STATS_EXISTS_TTL_SECONDS = 24 * 60 * 60;
 const STATS_TTL_SECONDS = parseInt(process.env.REDIS_PROPERTY_STATS_TTL ?? '300', 10);
+const PROPERTY_VIEW_TTL_SECONDS = 6 * 60 * 60;
+const PROPERTY_INTERACTION_TTL_SECONDS = 10;
 const statsExistsCacheKey = (propertyId: string) => `property-stats-exists:${propertyId}`;
 const statsCacheKey = (propertyId: string) => `property-stats:${propertyId}`;
 
@@ -123,6 +125,8 @@ export type InteractionType =
   | 'map_click'
   | 'recommendation_click';
 
+export type PropertyStatisticResult = 'tracked' | 'duplicate' | 'not-found' | 'failed';
+
 /**
  * Initialise ou récupère les statistiques d'une propriété
  * Utilise Admin SDK pour contourner les règles Firestore
@@ -198,13 +202,20 @@ async function getOrCreateStatistics(propertyId: string, propertyOwnerId: string
  */
 export async function trackPropertyView(
   propertyId: string,
+  actorId: string,
   metadata?: ViewMetadata
-): Promise<boolean> {
+): Promise<PropertyStatisticResult> {
+  const cache = getCacheStore();
+  const claimKey = `property-stat:view:${propertyId}:${actorId}`;
+  const claimed = await cache.setIfAbsent(claimKey, true, PROPERTY_VIEW_TTL_SECONDS);
+  if (!claimed) return 'duplicate';
+
   try {
     // Vérifier que la propriété existe
     const property = await getPropertyById(propertyId);
     if (!property || !property.createdBy) {
-      return false;
+      await cache.del(claimKey);
+      return 'not-found';
     }
 
     // Utiliser Admin SDK pour contourner les règles Firestore
@@ -260,7 +271,7 @@ export async function trackPropertyView(
       await statsRef.set(initialStats);
       await getCacheStore().set(statsExistsCacheKey(propertyId), true, STATS_EXISTS_TTL_SECONDS);
       await calculateMetrics(propertyId);
-      return true;
+      return 'tracked';
     }
 
     // Mise à jour du document existant avec Admin SDK
@@ -349,10 +360,11 @@ export async function trackPropertyView(
     // Recalculer les métriques calculées
     await calculateMetrics(propertyId);
 
-    return true;
+    return 'tracked';
   } catch (error) {
+    await cache.del(claimKey);
     logger.error('Error tracking property view', { propertyId, error });
-    return false;
+    return 'failed';
   }
 }
 
@@ -362,12 +374,19 @@ export async function trackPropertyView(
 export async function trackPropertyInteraction(
   propertyId: string,
   type: InteractionType,
+  actorId: string,
   metadata?: Record<string, any>
-): Promise<boolean> {
+): Promise<PropertyStatisticResult> {
+  const cache = getCacheStore();
+  const claimKey = `property-stat:interaction:${propertyId}:${actorId}:${type}`;
+  const claimed = await cache.setIfAbsent(claimKey, true, PROPERTY_INTERACTION_TTL_SECONDS);
+  if (!claimed) return 'duplicate';
+
   try {
     const property = await getPropertyById(propertyId);
     if (!property || !property.createdBy) {
-      return false;
+      await cache.del(claimKey);
+      return 'not-found';
     }
 
     const { doc, getDoc, updateDoc, increment, serverTimestamp, db } = await getFirestore();
@@ -375,7 +394,6 @@ export async function trackPropertyInteraction(
 
     // Le document de stats, une fois créé, existe pour toujours : un flag caché à TTL long
     // évite de le relire à chaque interaction juste pour vérifier son existence.
-    const cache = getCacheStore();
     const existsKey = statsExistsCacheKey(propertyId);
     let statsExists = await cache.get<boolean>(existsKey);
 
@@ -428,10 +446,11 @@ export async function trackPropertyInteraction(
     // Recalculer les métriques calculées
     await calculateMetrics(propertyId);
 
-    return true;
+    return 'tracked';
   } catch (error) {
+    await cache.del(claimKey);
     logger.error('Error tracking property interaction', { propertyId, type, error });
-    return false;
+    return 'failed';
   }
 }
 

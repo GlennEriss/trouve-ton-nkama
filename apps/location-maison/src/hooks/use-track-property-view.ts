@@ -1,8 +1,8 @@
 'use client'
 
 import { useEffect, useRef } from 'react';
-import { useCurrentUser } from './use-current-user';
 import { createLogger } from '@/lib/logger';
+import { trackPropertyViewStatistic } from '@/lib/statistics/property-statistics.client';
 
 const logger = createLogger('hooks.use-track-property-view');
 
@@ -20,7 +20,6 @@ interface ViewMetadata {
  * Utilise sendBeacon pour envoyer les données de manière fiable même lors de la fermeture de la page
  */
 export function useTrackPropertyView(propertyId: string | undefined) {
-  const { user } = useCurrentUser();
   const startTimeRef = useRef<number | null>(null);
   const scrollDepthRef = useRef<number>(0);
   const imagesViewedRef = useRef<Set<number>>(new Set());
@@ -28,6 +27,10 @@ export function useTrackPropertyView(propertyId: string | undefined) {
 
   useEffect(() => {
     if (!propertyId) return;
+
+    hasTrackedRef.current = false;
+    scrollDepthRef.current = 0;
+    imagesViewedRef.current = new Set();
 
     // Marquer le temps de début
     startTimeRef.current = Date.now();
@@ -94,36 +97,16 @@ export function useTrackPropertyView(propertyId: string | undefined) {
       const duration = Math.floor((Date.now() - startTimeRef.current) / 1000);
 
       const metadata: ViewMetadata = {
-        userId: user?.uid,
         duration,
         scrollDepth: Math.round(scrollDepthRef.current),
         imagesViewed: Array.from(imagesViewedRef.current),
       };
 
       // Utiliser sendBeacon pour fiabilité même si la page se ferme
-      const data = JSON.stringify({
-        ...metadata,
-      });
-
-      // Essayer sendBeacon d'abord (plus fiable pour les pages qui se ferment)
-      if (navigator.sendBeacon) {
-        const blob = new Blob([data], { type: 'application/json' });
-        navigator.sendBeacon(
-          `/api/property/${propertyId}/statistics/view`,
-          blob
-        );
-      } else {
-        // Fallback sur fetch si sendBeacon n'est pas disponible
-        fetch(`/api/property/${propertyId}/statistics/view`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: data,
-          keepalive: true, // Permet d'envoyer même si la page se ferme
-        }).catch((error) => {
-          logger.error('Failed to track property view', { propertyId, error });
-        });
+      try {
+        trackPropertyViewStatistic(propertyId, metadata);
+      } catch (error) {
+        logger.error('Failed to track property view', { propertyId, error });
       }
     };
 
@@ -153,5 +136,5 @@ export function useTrackPropertyView(propertyId: string | undefined) {
       // Envoyer les données finales au démontage
       sendTrackingData();
     };
-  }, [propertyId, user?.uid]);
+  }, [propertyId]);
 }

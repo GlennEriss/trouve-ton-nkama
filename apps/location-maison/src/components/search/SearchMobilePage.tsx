@@ -3,13 +3,13 @@
 import React from 'react'
 import Form from 'next/form'
 import Link from 'next/link'
-import { Search, ChevronUp, ChevronDown } from 'lucide-react';
+import { Search, ChevronUp, ChevronDown, LoaderCircle } from 'lucide-react';
 import { Input } from '../ui/input';
 import { FilterModalHomePage } from '../home-page/FilterModalHomePage';
 import { useAlgoliaContext } from '@/providers/AlgoliaContext';
 import { useInfiniteHits, useInstantSearch, useStats } from 'react-instantsearch';
 import PropertyCard from '../home-page/PropertyCard';
-import { useSearchParams } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { trackingEvents, useTrackEvent } from '@/features/analytics/tracking';
 import { useSession } from 'next-auth/react';
 import SearchWithAIAccessNoticeDialog from './SearchWithAIAccessNoticeDialog';
@@ -19,6 +19,7 @@ import { ADSENSE_SLOTS } from '@/lib/ads/config';
 
 export default function SearchMobilePage() {
     const { trackEvent } = useTrackEvent()
+    const router = useRouter();
     const { status } = useSession();
     const isAuthenticated = status === 'authenticated';
     const { searchText, setSearchText, province, city, street, minPrice, maxPrice, minArea, maxArea, minNbrRooms, maxNbrRooms, typeProperty, tags, setProvince, setCity, setStreet, setMinPrice, setMaxPrice, setMinArea, setMaxArea, setMinNbrRooms, setMaxNbrRooms, setTypeProperty, setStatus, setTags } = useAlgoliaContext()
@@ -26,7 +27,7 @@ export default function SearchMobilePage() {
     const sentinelRef = React.useRef<HTMLDivElement>(null);
     const { items, isLastPage, showMore } = useInfiniteHits();
     const { nbHits } = useStats();
-    const { status: searchStatus } = useInstantSearch();
+    const { status: searchStatus, refresh } = useInstantSearch();
     const searchParams = useSearchParams();
     const searchWithAIHref = React.useMemo(() => {
         const params = new URLSearchParams(searchParams.toString());
@@ -69,23 +70,22 @@ export default function SearchMobilePage() {
         const minRoomsVal = searchParams.get("minNbrRooms") ?? "";
         const maxRoomsVal = searchParams.get("maxNbrRooms") ?? "";
         const typePropRaw = searchParams.get("typeProperty");
+        const statusRaw = searchParams.get("status");
         const tagsRaw = searchParams.get("tags");
 
-        // Mettre à jour le contexte Algolia avec délai pour s'assurer de la stabilité
-        setTimeout(() => {
-            setSearchText(queryVal);
-            setProvince(provinceVal);
-            setCity(cityVal);
-            setStreet(streetVal);
-            setMinPrice(minPriceVal);
-            setMaxPrice(maxPriceVal);
-            setMinArea(minAreaVal);
-            setMaxArea(maxAreaVal);
-            setMinNbrRooms(minRoomsVal);
-            setMaxNbrRooms(maxRoomsVal);
-            setTypeProperty(typePropRaw ? typePropRaw.split(",").map(s => s.trim()) : []);
-            setTags(tagsRaw ? tagsRaw.split(",").map(s => s.trim()) : []);
-        }, 50);
+        setSearchText(queryVal);
+        setProvince(provinceVal);
+        setCity(cityVal);
+        setStreet(streetVal);
+        setMinPrice(minPriceVal);
+        setMaxPrice(maxPriceVal);
+        setMinArea(minAreaVal);
+        setMaxArea(maxAreaVal);
+        setMinNbrRooms(minRoomsVal);
+        setMaxNbrRooms(maxRoomsVal);
+        setTypeProperty(typePropRaw ? typePropRaw.split(",").map(s => s.trim()).filter(Boolean) : []);
+        setStatus(statusRaw ? statusRaw.split(",").map(s => s.trim()).filter(Boolean) : []);
+        setTags(tagsRaw ? tagsRaw.split(",").map(s => s.trim()).filter(Boolean) : []);
     }, [searchParams.toString(), setSearchText, setProvince, setCity, setStreet, setMinPrice, setMaxPrice, setMinArea, setMaxArea, setMinNbrRooms, setMaxNbrRooms, setTypeProperty, setStatus, setTags]);
 
     const requestMore = React.useCallback(() => {
@@ -213,7 +213,7 @@ export default function SearchMobilePage() {
                                                 ? 1
                                                 : 0,
                                     });
-                                    window.location.href = `/search?${params.toString()}`;
+                                    router.push(`/search?${params.toString()}`);
                                 }}
                             >
                                 <Search size={25} className='hover:stroke-[#1FA89B]' />
@@ -260,7 +260,23 @@ export default function SearchMobilePage() {
                     </div>
 
                     <div className="space-y-4">
-                        {items.length === 0 ? (
+                        {searchStatus === 'error' ? (
+                            <div className="text-center py-8" role="alert">
+                                <p className="text-gray-700 dark:text-gray-200">La recherche est momentanément indisponible.</p>
+                                <button
+                                    type="button"
+                                    onClick={refresh}
+                                    className="mt-4 min-h-11 rounded-full bg-[#146B67] px-5 py-2 text-sm font-medium text-white hover:bg-[#0f5754]"
+                                >
+                                    Réessayer
+                                </button>
+                            </div>
+                        ) : items.length === 0 && (searchStatus === 'loading' || searchStatus === 'stalled') ? (
+                            <div className="flex items-center justify-center gap-2 py-8 text-gray-600 dark:text-gray-300" role="status">
+                                <LoaderCircle className="h-5 w-5 animate-spin" aria-hidden="true" />
+                                <span>Recherche des annonces...</span>
+                            </div>
+                        ) : items.length === 0 ? (
                             <div className="text-center py-8">
                                 <p className="text-gray-600 dark:text-gray-300">Aucun résultat trouvé</p>
                             </div>
