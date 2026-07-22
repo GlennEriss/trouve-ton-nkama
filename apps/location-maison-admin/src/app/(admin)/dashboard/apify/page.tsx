@@ -23,6 +23,7 @@ import {
   geocodeBestEffort,
   resolveFromGoogle,
   resolveFromOsm,
+  type GeoResolution,
   type GeoSource,
 } from "@/modules/apify/application/apify-geocode.service";
 import type { ApifyDraftMeta, ApifyListingDraft, ApifyPipelineResult } from "@/modules/apify/domain/types";
@@ -385,7 +386,7 @@ function DraftEditDialog({
   item: ApifyDraftMeta;
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  onSave: (index: number, draft: ApifyListingDraft) => void;
+  onSave: (index: number, form: DraftEditFormState) => void;
 }) {
   const [form, setForm] = useState<DraftEditFormState>(() => draftToEditForm(item.draft));
 
@@ -394,7 +395,7 @@ function DraftEditDialog({
   };
 
   const save = () => {
-    onSave(index, applyDraftEdit(item.draft, form));
+    onSave(index, form);
     onOpenChange(false);
   };
 
@@ -698,9 +699,10 @@ type DraftCardProps = {
   onCreate: (index: number) => void;
   onEdit: (index: number) => void;
   onRemove: (index: number) => void;
+  isEdited: boolean;
 };
 
-function DraftCard({ item, index, geo, canGeocode, onGeocode, imp, canCreate, onCreate, onEdit, onRemove }: DraftCardProps) {
+function DraftCard({ item, index, geo, canGeocode, onGeocode, imp, canCreate, onCreate, onEdit, onRemove, isEdited }: DraftCardProps) {
   const { draft, warnings } = item;
   const location = [draft.street, draft.city, draft.province].filter(Boolean).join(", ");
   const rooms = roomsSummary(draft);
@@ -717,6 +719,7 @@ function DraftCard({ item, index, geo, canGeocode, onGeocode, imp, canCreate, on
           <Badge variant={draft.status === "FOR_RENT" ? "success" : "warning"}>
             {draft.status === "FOR_RENT" ? "Location" : "Vente"}
           </Badge>
+          {isEdited ? <Badge variant="success">Modifiée manuellement</Badge> : null}
           <Badge variant="neutral">{draft.images.length} image(s)</Badge>
         </div>
         <h3 className="text-base font-semibold text-slate-900">{draft.title || "Sans titre"}</h3>
@@ -897,6 +900,7 @@ export default function ApifyPage() {
   const [removed, setRemoved] = useState<Record<number, boolean>>({});
   const [confirmRemoveIndex, setConfirmRemoveIndex] = useState<number | null>(null);
   const [editIndex, setEditIndex] = useState<number | null>(null);
+  const [edited, setEdited] = useState<Record<number, boolean>>({});
 
   // Announcer picker (listings must be attached to an announcer).
   const [announcer, setAnnouncer] = useState<AnnouncerOption | null>(null);
@@ -922,23 +926,29 @@ export default function ApifyPage() {
   // unresolved (e.g. when "Transformer" was clicked before OSM finished loading).
   useEffect(() => {
     if (!osm || items.length === 0) return;
-    const updates: Array<{ index: number; draft: ApifyListingDraft; source: GeoSource }> = [];
+    const updates: Array<{ index: number; resolution: GeoResolution; source: GeoSource }> = [];
     items.forEach((meta, index) => {
+      if (edited[index]) return;
       if (geo[index]?.status !== "none") return;
       const resolution = resolveFromOsm(meta.draft, osm);
       if (resolution) {
-        updates.push({ index, draft: applyResolution(meta.draft, resolution), source: resolution.source });
+        updates.push({ index, resolution, source: resolution.source });
       }
     });
     if (updates.length === 0) return;
-    const draftByIndex = new Map(updates.map((u) => [u.index, u.draft]));
-    setItems((prev) => prev.map((meta, index) => (draftByIndex.has(index) ? { ...meta, draft: draftByIndex.get(index)! } : meta)));
+    const resolutionByIndex = new Map(updates.map((update) => [update.index, update.resolution]));
+    setItems((prev) =>
+      prev.map((meta, index) => {
+        const resolution = resolutionByIndex.get(index);
+        return resolution ? { ...meta, draft: applyResolution(meta.draft, resolution) } : meta;
+      }),
+    );
     setGeo((prev) => {
       const next = { ...prev };
       for (const update of updates) next[update.index] = { status: "resolved", source: update.source };
       return next;
     });
-  }, [osm, items, geo]);
+  }, [osm, items, geo, edited]);
 
   const handleTransform = useCallback(() => {
     const parsed = parseApifyJson(rawJson);
@@ -952,6 +962,7 @@ export default function ApifyPage() {
     setError(null);
     setImp({});
     setRemoved({});
+    setEdited({});
     const result = runApifyPipeline(parsed.posts);
     setStats(result.stats);
 
@@ -970,32 +981,6 @@ export default function ApifyPage() {
     setGeo(nextGeo);
   }, [rawJson, osm]);
 
-  useEffect(() => {
-    if (!osm || items.length === 0) return;
-
-    let changed = false;
-    const geoUpdates: Record<number, GeoState> = {};
-    const nextItems = items.map((meta, index) => {
-      const currentGeo = geo[index];
-      if (currentGeo?.source && RESOLVED_SOURCES.includes(currentGeo.source)) {
-        return meta;
-      }
-
-      const resolution = resolveFromOsm(meta.draft, osm);
-      if (!resolution) {
-        return meta;
-      }
-
-      changed = true;
-      geoUpdates[index] = { status: "resolved", source: resolution.source };
-      return { ...meta, draft: applyResolution(meta.draft, resolution) };
-    });
-
-    if (!changed) return;
-    setItems(nextItems);
-    setGeo((prev) => ({ ...prev, ...geoUpdates }));
-  }, [geo, items, osm]);
-
   const handleClear = useCallback(() => {
     setRawJson("");
     setError(null);
@@ -1006,6 +991,7 @@ export default function ApifyPage() {
     setRemoved({});
     setConfirmRemoveIndex(null);
     setEditIndex(null);
+    setEdited({});
   }, []);
 
   const confirmRemove = useCallback(() => {
@@ -1017,8 +1003,13 @@ export default function ApifyPage() {
     setConfirmRemoveIndex(null);
   }, [confirmRemoveIndex, editIndex]);
 
-  const saveDraftEdit = useCallback((index: number, draft: ApifyListingDraft) => {
-    setItems((prev) => prev.map((meta, currentIndex) => (currentIndex === index ? { ...meta, draft } : meta)));
+  const saveDraftEdit = useCallback((index: number, form: DraftEditFormState) => {
+    setItems((prev) =>
+      prev.map((meta, currentIndex) =>
+        currentIndex === index ? { ...meta, draft: applyDraftEdit(meta.draft, form) } : meta,
+      ),
+    );
+    setEdited((prev) => ({ ...prev, [index]: true }));
     setImp((prev) => {
       if (prev[index]?.status !== "error") return prev;
       return { ...prev, [index]: { status: "idle" } };
@@ -1101,9 +1092,20 @@ export default function ApifyPage() {
           return;
         }
         setItems((prev) =>
-          prev.map((current, currentIndex) =>
-            currentIndex === index ? { ...current, draft: applyResolution(current.draft, resolution) } : current,
-          ),
+          prev.map((current, currentIndex) => {
+            if (currentIndex !== index) return current;
+            const resolvedDraft = applyResolution(current.draft, resolution);
+            return {
+              ...current,
+              draft: edited[index]
+                ? {
+                    ...resolvedDraft,
+                    title: current.draft.title,
+                    description: current.draft.description,
+                  }
+                : resolvedDraft,
+            };
+          }),
         );
         setGeo((prev) => ({ ...prev, [index]: { status: "resolved", source: "google" } }));
       } catch (cause) {
@@ -1111,7 +1113,7 @@ export default function ApifyPage() {
         setGeo((prev) => ({ ...prev, [index]: { status: "error", message } }));
       }
     },
-    [items, osm],
+    [edited, items, osm],
   );
 
   const unresolvedIndexes = useMemo(
@@ -1291,6 +1293,7 @@ export default function ApifyPage() {
                 onCreate={createOne}
                 onEdit={setEditIndex}
                 onRemove={setConfirmRemoveIndex}
+                isEdited={Boolean(edited[index])}
               />
             ))}
           </div>

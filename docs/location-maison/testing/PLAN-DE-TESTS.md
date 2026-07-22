@@ -503,7 +503,8 @@ taille du code reste stable. L'effort sera decoupe pour rendre chaque progressio
 
 - 9A : termine le 2026-07-20, inventaire des fichiers non couverts a fort volume et
   montee de la couverture lignes a 21,90 % avec un seuil CI fixe a 20 % ;
-- 9B : composants, hooks, providers et formulaires majeurs, cible globale 30 % ;
+- 9B : termine le 2026-07-21, composants, hooks, formulaires complexes et emails ;
+  couverture globale portee a 31,02 % et seuil CI fixe a 30 % ;
 - 9C : pages, routes API, recherche, profil, notifications et administration, cible 40 % ;
 - 9D : cas d'erreur, branches restantes, tests de regression et seuil CI final a 50 %.
 
@@ -525,6 +526,31 @@ Execute le 2026-07-20 :
 Les prochains volumes prioritaires sont la recherche IA, le wizard publicitaire, la
 gestion des annonces, le feed reels, les listes d'annonces, les statistiques et les
 formulaires de profil. Detail dans [LOT-9A-AUDIT.md](./LOT-9A-AUDIT.md).
+
+#### Lot 9B - Composants majeurs et palier 30 %
+
+Execute le 2026-07-21 :
+
+- parcours complet du wizard publicitaire, validation du lien, upload, paiement,
+  idempotence du bouton et insuffisance de credits ;
+- gestion des campagnes et hook associe : filtres, pagination, archivage, activation,
+  suppression, erreurs et etats vides ;
+- feed reels et espace annonceur : lecture, navigation, likes, partages, cadeaux,
+  statistiques, pagination et suppression ;
+- catalogue annonceur : requete Firestore, pagination, archivage, cache React Query,
+  images et informations propres aux dix types de biens ;
+- tableau de statistiques : compteurs, courbe, periodes, geographie, interactions et
+  timestamps Firestore ;
+- rendu HTML des emails de bienvenue, verification, mot de passe, publication et du
+  layout commun, y compris leurs variantes facultatives ;
+- 49 nouveaux tests, 443 tests application passes et 6 ignores ;
+- couverture globale portee a 31,02 % des lignes/instructions, 43,49 % des fonctions
+  et 58,51 % des branches ;
+- seuils CI releves a 30 % lignes/instructions, 40 % fonctions et 55 % branches.
+
+Le detail des fichiers et validations est dans [LOT-9B-AUDIT.md](./LOT-9B-AUDIT.md).
+Le Lot 9C conserve la route de recherche IA, les routes API et les surfaces profil,
+notifications et administration pour le prochain palier de 40 %.
 
 Les tests Playwright prouvent les parcours utilisateurs mais ne font pas progresser le rapport
 Jest actuel. Le Lot 9 ajoutera donc principalement des tests unitaires, composants et API
