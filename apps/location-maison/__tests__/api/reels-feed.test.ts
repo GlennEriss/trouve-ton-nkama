@@ -1,3 +1,4 @@
+export {};
 let GET: typeof import('@/app/api/reels/feed/route').GET
 
 const getPublicReels = jest.fn()

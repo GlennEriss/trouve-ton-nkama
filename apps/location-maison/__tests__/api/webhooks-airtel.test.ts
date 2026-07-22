@@ -1,3 +1,4 @@
+export {};
 let POST: typeof import('@/app/api/webhooks/airtel/route').POST
 let GET: typeof import('@/app/api/webhooks/airtel/route').GET
 

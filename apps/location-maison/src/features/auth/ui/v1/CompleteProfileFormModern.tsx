@@ -7,7 +7,7 @@ import { motion } from 'framer-motion';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { signOut, useSession } from 'next-auth/react';
-import { Building2, Home, Mail, Shield, Sparkles, User } from 'lucide-react';
+import { Building2, Home, Mail, Phone, Shield, Sparkles, User } from 'lucide-react';
 import Logo from '@/components/logo/Logo';
 import { Form } from '@/components/ui/form';
 import { Button } from '@/components/ui/button';
@@ -95,6 +95,10 @@ export const CompleteProfileFormModern: React.FC = () => {
 
   const selectedAccountType = form.watch('accountType') ?? 'User';
   const isFormLoading = isLoading || form.formState.isSubmitting;
+  // Phone (OTP) accounts: number already verified → prefilled & locked, and the
+  // header speaks about the verified number instead of a Google connection.
+  const isPhoneAccount = currentUser?.providers?.includes('PHONE') ?? false;
+  const verifiedPhone = currentUser?.phoneNumbers?.[0] ?? '';
 
   useEffect(() => {
     if (status === 'loading') {
@@ -271,7 +275,9 @@ export const CompleteProfileFormModern: React.FC = () => {
               transition={{ duration: 0.6, delay: 0.1 }}
               className="text-lg text-white/80 max-w-md"
             >
-              Votre compte Google est reconnu. Complétez uniquement les informations manquantes.
+              {isPhoneAccount
+                ? 'Votre numéro est vérifié. Complétez uniquement les informations manquantes.'
+                : 'Votre compte Google est reconnu. Complétez uniquement les informations manquantes.'}
             </motion.p>
           </div>
 
@@ -312,17 +318,29 @@ export const CompleteProfileFormModern: React.FC = () => {
           <div className="mb-8 text-center">
             <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Compléter le profil</h1>
             <p className="text-gray-500 dark:text-gray-400 mt-2">
-              Connexion Google validée, finalisez votre compte.
+              {isPhoneAccount
+                ? 'Numéro vérifié, finalisez votre compte.'
+                : 'Connexion Google validée, finalisez votre compte.'}
             </p>
           </div>
 
-          <div className="p-4 rounded-2xl border border-emerald-200 bg-emerald-50/80 dark:bg-emerald-900/20 dark:border-emerald-800 mb-6">
-            <div className="flex items-center gap-2 text-emerald-800 dark:text-emerald-200 font-semibold mb-1">
-              <Mail className="w-4 h-4" />
-              Compte Google connecté
+          {isPhoneAccount ? (
+            <div className="p-4 rounded-2xl border border-emerald-200 bg-emerald-50/80 dark:bg-emerald-900/20 dark:border-emerald-800 mb-6">
+              <div className="flex items-center gap-2 text-emerald-800 dark:text-emerald-200 font-semibold mb-1">
+                <Phone className="w-4 h-4" />
+                Numéro vérifié
+              </div>
+              <p className="text-sm text-emerald-700 dark:text-emerald-300">{verifiedPhone}</p>
             </div>
-            <p className="text-sm text-emerald-700 dark:text-emerald-300">{currentUser.email}</p>
-          </div>
+          ) : currentUser.email ? (
+            <div className="p-4 rounded-2xl border border-emerald-200 bg-emerald-50/80 dark:bg-emerald-900/20 dark:border-emerald-800 mb-6">
+              <div className="flex items-center gap-2 text-emerald-800 dark:text-emerald-200 font-semibold mb-1">
+                <Mail className="w-4 h-4" />
+                Compte Google connecté
+              </div>
+              <p className="text-sm text-emerald-700 dark:text-emerald-300">{currentUser.email}</p>
+            </div>
+          ) : null}
 
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-5">
@@ -392,13 +410,18 @@ export const CompleteProfileFormModern: React.FC = () => {
                 placeholder="Entrez votre nom"
               />
 
-              <PhoneNumberFormAppSimple
-                control={form.control}
-                name="phone"
-                label="Numéro de téléphone"
-                placeholder="06 12 34 56 78"
-                disabled={isFormLoading}
-              />
+              <div className="space-y-1">
+                <PhoneNumberFormAppSimple
+                  control={form.control}
+                  name="phone"
+                  label="Numéro de téléphone"
+                  placeholder="06 12 34 56 78"
+                  disabled={isFormLoading || isPhoneAccount}
+                />
+                {isPhoneAccount ? (
+                  <p className="text-xs text-gray-500">Numéro déjà vérifié par SMS, non modifiable.</p>
+                ) : null}
+              </div>
 
               <DateSelect
                 control={form.control}

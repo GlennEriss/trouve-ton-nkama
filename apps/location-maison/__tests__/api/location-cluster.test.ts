@@ -1,3 +1,4 @@
+export {};
 let getCities: typeof import('@/app/api/location/cities/route').GET
 let getProvinces: typeof import('@/app/api/location/provinces/route').GET
 

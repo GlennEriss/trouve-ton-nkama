@@ -1,3 +1,4 @@
+export {};
 let postTraffic: typeof import('@/app/api/analytics/traffic/route').POST
 
 jest.mock('next/server', () => ({

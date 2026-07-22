@@ -1,3 +1,4 @@
+export {};
 let POST: typeof import('@/app/api/auth/send-verification-email/route').POST
 
 const adminAuth = { getUser: jest.fn(), getUserByEmail: jest.fn() }
@@ -66,7 +67,7 @@ describe('/api/auth/send-verification-email', () => {
     expect(payload).toMatchObject({ success: true })
     expect(payload.verificationLink).toContain('/api/auth/verify-email?uid=u9')
     expect(sendEmail).toHaveBeenCalledTimes(1)
-    const [emailData] = sendEmail.mock.calls[0]
+    const [emailData] = sendEmail.mock.calls[0] as unknown[]
     expect(emailData).toMatchObject({ to: 'b@x.ga', from: 'no-reply@tonnkama.com' })
   })
 

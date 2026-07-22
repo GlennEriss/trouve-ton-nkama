@@ -1,3 +1,4 @@
+export {};
 let postPresence: typeof import('@/app/api/analytics/presence/route').POST
 
 jest.mock('next/server', () => ({

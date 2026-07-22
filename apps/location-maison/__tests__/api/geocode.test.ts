@@ -1,3 +1,4 @@
+export {};
 let getReverse: typeof import('@/app/api/geocode/route').GET
 let optionsReverse: typeof import('@/app/api/geocode/route').OPTIONS
 let getSearch: typeof import('@/app/api/geocode/search/route').GET

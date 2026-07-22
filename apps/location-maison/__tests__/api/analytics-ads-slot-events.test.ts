@@ -1,3 +1,4 @@
+export {};
 let postSlot: typeof import('@/app/api/analytics/ads/slot-events/route').POST
 
 jest.mock('next/server', () => ({

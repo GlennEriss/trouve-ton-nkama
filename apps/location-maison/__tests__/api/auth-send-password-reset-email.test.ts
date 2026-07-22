@@ -1,3 +1,4 @@
+export {};
 let POST: typeof import('@/app/api/auth/send-password-reset-email/route').POST
 
 const adminAuth = { getUserByEmail: jest.fn(), generatePasswordResetLink: jest.fn() }
@@ -55,7 +56,7 @@ describe('/api/auth/send-password-reset-email', () => {
     const payload = await response.json()
     expect(payload).toMatchObject({ success: true })
     expect(payload.resetLink).toContain('oobCode=OOB123')
-    const [emailData] = sendEmail.mock.calls[0]
+    const [emailData] = sendEmail.mock.calls[0] as unknown[]
     expect(emailData).toMatchObject({ to: 'a@x.ga', from: 'no-reply@tonnkama.com' })
   })
 

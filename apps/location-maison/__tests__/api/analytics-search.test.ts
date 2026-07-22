@@ -1,3 +1,4 @@
+export {};
 let postSearch: typeof import('@/app/api/analytics/search/route').POST
 
 jest.mock('next/server', () => ({

@@ -1,3 +1,4 @@
+export {};
 let GET: typeof import('@/app/api/location/streets/route').GET
 
 const firestore = {

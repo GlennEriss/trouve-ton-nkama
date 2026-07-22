@@ -1,3 +1,4 @@
+export {};
 let GET: typeof import('@/app/api/property/promoted/route').GET
 
 let currentDb: any

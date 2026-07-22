@@ -1,3 +1,4 @@
+export {};
 const getActiveCampaignForPlacement = jest.fn()
 const getActiveCampaignsForPlacement = jest.fn()
 const incrementCampaignMetric = jest.fn()

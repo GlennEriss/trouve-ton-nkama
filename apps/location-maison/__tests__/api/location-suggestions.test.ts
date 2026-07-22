@@ -1,3 +1,4 @@
+export {};
 let GET: typeof import('@/app/api/location/suggestions/route').GET
 
 const redis = { zrange: jest.fn() }

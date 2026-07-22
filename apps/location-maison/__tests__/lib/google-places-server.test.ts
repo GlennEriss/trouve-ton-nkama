@@ -1,3 +1,4 @@
+export {};
 describe('Google Places serveur', () => {
   const originalApiKey = process.env.GOOGLE_MAPS_API_KEY
 

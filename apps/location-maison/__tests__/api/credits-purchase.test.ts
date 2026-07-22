@@ -1,3 +1,4 @@
+export {};
 let POST: typeof import('@/app/api/credits/purchase/route').POST
 
 const adminAuth = { verifyIdToken: jest.fn(async () => ({ uid: 'u1' })) }

@@ -1,3 +1,4 @@
+export {};
 let GET: typeof import('@/app/api/location/search/route').GET
 let POST: typeof import('@/app/api/location/search/route').POST
 

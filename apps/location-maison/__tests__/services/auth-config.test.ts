@@ -1,3 +1,4 @@
+export {};
 const mockFindById = jest.fn()
 const mockFindByEmail = jest.fn()
 const mockGoogleSignIn = jest.fn()

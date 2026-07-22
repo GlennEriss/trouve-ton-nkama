@@ -1,3 +1,4 @@
+export {};
 let POST: typeof import('@/app/api/ai/assistant/chat/route').POST
 
 // --- Holders pilotables par test ---

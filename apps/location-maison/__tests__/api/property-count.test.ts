@@ -1,3 +1,4 @@
+export {};
 let getByProvince: typeof import('@/app/api/property/count/by-province/route').GET
 let getByType: typeof import('@/app/api/property/count/by-type/route').GET
 

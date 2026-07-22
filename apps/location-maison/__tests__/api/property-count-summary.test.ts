@@ -1,3 +1,4 @@
+export {};
 let GET: typeof import('@/app/api/property/count/summary/route').GET
 let DELETE: typeof import('@/app/api/property/count/summary/route').DELETE
 
