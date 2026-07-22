@@ -1,6 +1,6 @@
 # Plan de tests - Trouve Ton Nkama
 
-Derniere mise a jour : 2026-07-20
+Derniere mise a jour : 2026-07-22
 
 Ce plan sert de feuille de route qualite pour tester la plateforme sans tout melanger. On commence par le metier et les Cloud Functions, puis on monte progressivement vers les API, les parcours utilisateurs, l'UX mobile et la coherence visuelle.
 
@@ -505,8 +505,10 @@ taille du code reste stable. L'effort sera decoupe pour rendre chaque progressio
   montee de la couverture lignes a 21,90 % avec un seuil CI fixe a 20 % ;
 - 9B : termine le 2026-07-21, composants, hooks, formulaires complexes et emails ;
   couverture globale portee a 31,02 % et seuil CI fixe a 30 % ;
-- 9C : pages, routes API, recherche, profil, notifications et administration, cible 40 % ;
-- 9D : cas d'erreur, branches restantes, tests de regression et seuil CI final a 50 %.
+- 9C : termine le 2026-07-22, recherche IA, profil, authentification, localisation,
+  credits et recherche ; couverture lignes portee a 40,16 % et seuil CI fixe a 40 % ;
+- 9D : termine le 2026-07-22, cas d'erreur, branches restantes, tests de regression
+  et seuil CI final fixe a 50 %.
 
 #### Lot 9A - Inventaire et premier palier
 
@@ -549,13 +551,227 @@ Execute le 2026-07-21 :
 - seuils CI releves a 30 % lignes/instructions, 40 % fonctions et 55 % branches.
 
 Le detail des fichiers et validations est dans [LOT-9B-AUDIT.md](./LOT-9B-AUDIT.md).
-Le Lot 9C conserve la route de recherche IA, les routes API et les surfaces profil,
-notifications et administration pour le prochain palier de 40 %.
+La route de recherche IA, les surfaces profil et les parcours de recherche restaient
+les principaux volumes a couvrir au palier suivant.
+
+#### Lot 9C - Recherche, profil et palier 40 %
+
+Execute le 2026-07-22 :
+
+- recherche IA testee de la route serveur jusqu'au hook client et au formulaire Gemini ;
+- profil, connexion, reinitialisation et verification OTP couverts sur leurs etats limites ;
+- localisation testee du cache navigateur a Photon, Nominatim, Overpass et Firebase ;
+- recherche desktop/mobile, filtres URL, publicites et pagination infinie verifies ;
+- historique, achat de credits et promotions couverts avec les retours MyPayGa ;
+- deux regressions d'interaction corrigees sur l'effacement d'une localite et le badge de pagination ;
+- 577 tests passes et 6 ignores ; couverture globale a 40,16 % des lignes/instructions,
+  50,81 % des fonctions et 65,76 % des branches ;
+- seuils CI releves a 40 % lignes/instructions, 50 % fonctions et 60 % branches.
+
+Detail dans [LOT-9C-AUDIT.md](./LOT-9C-AUDIT.md). Le Lot 9D portera les lignes et
+instructions au palier final de 50 %.
+
+#### Lot 9D - Cas limites et palier final 50 %
+
+Execute le 2026-07-22 :
+
+- formulaires immobiliers, publication, assistants IA et recherche IA couverts sur leurs
+  interactions, validations et echecs ;
+- inscription, reinitialisation, authentification, profil et activites de compte verifies ;
+- cadeaux, publicite, analytics, SEO, OSM serveur et bases de campagnes testes ;
+- footer couvert sur ses contacts, publicites, PWA et regles de visibilite mobile ;
+- 810 tests passes et 6 ignores ; couverture globale a 50,04 % des lignes/instructions,
+  59,43 % des fonctions et 70,56 % des branches ;
+- seuils CI finaux fixes a 50 % lignes/instructions, 50 % fonctions et 60 % branches.
+
+Detail dans [LOT-9D-AUDIT.md](./LOT-9D-AUDIT.md). L'objectif de couverture du Lot 9
+est atteint et protege contre les regressions par la CI.
 
 Les tests Playwright prouvent les parcours utilisateurs mais ne font pas progresser le rapport
 Jest actuel. Le Lot 9 ajoutera donc principalement des tests unitaires, composants et API
 instrumentes, tout en conservant les E2E comme filet de securite fonctionnel. A chaque palier,
 la CI sera relevee pour interdire de redescendre sous le niveau obtenu.
+
+### Lot 10 - Couverture globale a 60 %
+
+Ce lot commence apres la fin du Lot 9. Son objectif est de porter les lignes et instructions
+de l'application de 50 % a 60 %, sans regression des fonctions (deja 59,43 %) ni des branches
+(deja 70,56 %), et sans exclure de fichiers du rapport.
+
+Point de depart mesure a la fin du Lot 9D (rapport
+`__tests__/coverage/coverage-summary.json`) :
+
+| Metrique | Couverture actuelle | Cible Lot 10 |
+| --- | ---: | ---: |
+| Lignes | 50,04 % (45 193 / 90 306) | 60 % minimum |
+| Instructions | 50,04 % (45 193 / 90 306) | 60 % minimum |
+| Fonctions | 59,43 % (1 065 / 1 792) | 55 % minimum, sans regression |
+| Branches | 70,56 % (5 718 / 8 103) | 65 % minimum, sans regression |
+
+Avec le denominateur actuel de 90 306 lignes, la cible de 60 % represente environ 54 184 lignes
+couvertes contre 45 193 aujourd'hui. Il reste donc environ **9 000 lignes** a exercer si la taille
+du code reste stable.
+
+Inventaire des lignes non couvertes par domaine (source : rapport 9D), du plus gros levier au
+plus petit :
+
+| Domaine | Lignes non couvertes | Nature |
+| --- | ---: | --- |
+| `src/app/api/**` | 4 789 (68 fichiers) | Routes serveur, logique mockable, meilleur ratio effort/gain |
+| `src/components/home-page/**` | 2 647 (18 fichiers) | PropertyCard, HomePage, FilterModal, Navbar (0 %) |
+| `src/components/preview-property/**` | 1 823 (18 fichiers) | Carousel et fiche detail |
+| `src/components/reels/**` | 1 367 (10 fichiers) | VideoTrimEditor, CreateReelClient, GiftModal |
+| `src/features/auth/**` | 1 320 (23 fichiers) | Signup/Signin restants |
+| `src/components/search/**` | 1 310 (15 fichiers) | SearchDesktopPage, filtres |
+| `src/db/property-statistics.db.ts` | 335 (a 38 %) | Fichier unique a fort gain |
+
+L'effort est decoupe en deux paliers verifiables, chacun relevant la CI pour interdire une
+regression.
+
+#### Principe anti-faux-vrai
+
+Un test qui mocke la fonction qu'il pretend tester passe toujours et ne prouve rien. Pour eviter
+que la montee de couverture produise de faux positifs, chaque test ajoute au Lot 10 respecte ces
+regles, verifiees lors de l'audit du Lot 9 sur la suite existante :
+
+- ne jamais mocker le module sous test ; ne mocker que les frontieres d'infrastructure (SDK
+  Firebase, `next/server`, router, animations, feuilles du design-system) ;
+- privilegier les assertions de valeur (sortie reelle, DOM rendu, code HTTP, effet metier) plutot
+  que le simple `toHaveBeenCalled`, qui reste reserve aux invariants (idempotence, non-ecriture) ;
+- pour toute route ou regle metier critique, doubler le test a SDK mocke d'au moins un test sur
+  emulateur Firestore reel, afin de valider ce que le faux SDK ne voit pas : regles de securite,
+  index composites, semantique des operateurs, `Timestamp`, transactions.
+
+La couverture v8 ne comptant que les lignes reellement executees, un module mocke ne compte pas :
+le chiffre de couverture mesure donc du vrai code exerce, pas des mocks.
+
+#### Lot 10A - Routes API et palier 55 %
+
+But : exploiter le plus gros levier, les routes serveur, qui sont de la logique mockable sans
+navigateur.
+
+Perimetre :
+
+- statistiques serveur : `src/app/api/analytics/presence/route.ts` (236 lignes non couvertes)
+  et les routes analytics associees ;
+- assistant IA : `src/app/api/ai/assistant/chat/route.ts` (225) et la recherche IA restante ;
+- localisation serveur : `src/app/api/location/search/route.ts` (230) ;
+- reels : finir `src/app/api/reels/route.ts` (244 lignes restantes, deja a 63 %) ;
+- le reste des 68 routes `src/app/api/**` (succes, erreurs metier, pannes reseau, autorisation,
+  validations, deduplication) ;
+- complement sur `src/db/property-statistics.db.ts` pour absorber ses 335 lignes non couvertes.
+
+Garde-fou d'authenticite (voir Principe anti-faux-vrai) : pour chaque route critique couverte
+ici (idempotence, credits, paiements, publication), ajouter au moins un test sur emulateur
+Firestore reel via `test:emulator:api`, en plus du test rapide a SDK mocke. Le test a mocks
+valide la logique, le test emulateur valide les regles, index et transactions reels.
+
+Cible : couvrir environ 70 % du domaine API (~3 350 lignes) plus la base statistiques (~300),
+soit environ +3 650 lignes couvertes, portant les lignes/instructions a environ 55 %.
+
+Sortie attendue : seuils CI releves a 55 % lignes/instructions, fonctions et branches inchanges.
+Audit dans `LOT-10A-AUDIT.md`.
+
+#### Lot 10B - Clusters UI et palier final 60 %
+
+But : couvrir les grands ensembles de composants encore a 0 %, sur le modele rode aux Lots 9B
+et 9C (rendu, etats de chargement et d'erreur, interactions, branches conditionnelles).
+
+Perimetre :
+
+- page d'accueil : `PropertyCard`, `HomePage`, `HomePageMobileComponent`,
+  `HomePageDesktopComponent`, `FilterModal`, `FilterModalHomePage`, `Navbar`,
+  `use-filter-modal` (~2 647 lignes) ;
+- fiche detail : `CarouselPropertyDetails`, `PreviewPropertyMobile` et le reste de
+  `src/components/preview-property/**` (~1 823 lignes) ;
+- recherche : `SearchDesktopPage`, `FilterSearchDesktopPageSection` et les filtres
+  `src/components/search/**` (~1 310 lignes).
+
+Cible : couvrir environ 85 % de ces clusters (~4 900 lignes), portant les lignes/instructions
+a 60 % ou plus.
+
+Sortie attendue : seuils CI finaux fixes a 60 % lignes/instructions, 55 % fonctions et 65 %
+branches. Audit dans `LOT-10B-AUDIT.md`. L'objectif de couverture du Lot 10 est alors atteint
+et protege contre les regressions par la CI.
+
+Priorite de reserve si un cluster resiste (dependances navigateur lourdes type Leaflet, Google
+Places, trim video) : basculer l'effort sur `src/components/reels/**` et `src/features/auth/**`
+restants, dont le gain en lignes est equivalent et le mocking deja documente.
+
+#### Preuve systematique par mutation testing
+
+En cloture du Lot 10, lancer une passe de mutation testing (Stryker) sur les modules critiques
+(`src/db/**`, paiements, idempotence, credits). La couverture prouve que le code s'execute ;
+le score de mutation prouve que les assertions attraperaient un vrai bug. Stryker injecte des
+centaines de mutations dans le code source et mesure combien de tests virent au rouge : un
+mutant survivant designe une ligne couverte mais mal assertee, c'est-a-dire un faux vrai a
+corriger. Objectif : score de mutation eleve sur les modules critiques, documente a cote du
+score de couverture. Cette passe est ponctuelle (hors CI standard car couteuse en temps), a
+relancer apres chaque gros ajout de tests metier.
+
+But : reduire et verrouiller le cout des requetes Firestore (lectures/ecritures/suppressions
+facturables), dans la continuite du Lot 2 (idempotence, listeners) et du Lot 6C (maitrise des
+ecritures). Ce lot vise les memes signaux que le tableau de bord Query Insights sans changer
+d'edition Firestore.
+
+Contexte edition. Query Insights de la
+[documentation Firestore Enterprise](https://firebase.google.com/docs/firestore/enterprise/query-insights?hl=fr)
+n'est disponible que sur l'edition Enterprise (mode natif, API `find()`/`aggregate()`). Les
+bases `location-maison-dev/preprod/prod` sont sur l'edition Standard : la migration vers
+Enterprise est un changement de facturation quasi irreversible, non justifie pour cette
+plateforme. On reproduit donc les memes signaux (lectures facturables, documents scannes,
+entrees d'index scannees, latence) avec des outils gratuits sur l'edition Standard.
+
+Etat initial du code (audit statique du 2026-07-22) :
+
+- comptages via agregation `getCountFromServer` deja utilises (property, statistic,
+  credit-transaction) : evite de lire tous les documents pour compter ;
+- pagination `limit()` presente dans 21 fichiers ;
+- cache React Query present dans 42 fichiers ;
+- 6 listeners `onSnapshot` a auditer (portee, `limit`, `unsubscribe`, refresh) ;
+- 22 index composites a auditer (index inutilises = ecritures facturees en plus).
+
+Le code est deja plutot sobre : ce lot est un audit-et-resserrage cible, pas une refonte.
+
+#### Lot 11A - Observabilite gratuite
+
+But : voir ou part l'argent sans Enterprise.
+
+- Tableau de bord Cloud Monitoring sur `firestore.googleapis.com/document/read_count`,
+  `write_count` et `delete_count`, ventile par base et par periode.
+- Croisement avec l'onglet Usage & facturation Firebase pour classer les collections et
+  parcours les plus couteux.
+- Alertes de budget sur les seuils de lectures/ecritures journalieres par environnement.
+
+Sortie attendue : un classement des zones couteuses reelles, base des priorites du Lot 11B.
+
+#### Lot 11B - Audit statique des requetes et des index
+
+But : corriger les motifs couteux dans le code.
+
+- Les 6 `onSnapshot` : verifier portee limitee, `limit`, desabonnement au demontage, absence
+  de refresh abusif ; remplacer par une lecture ponctuelle quand le temps reel n'apporte rien.
+- Les 18 fichiers `getDocs` : reperer les N+1, l'absence de `limit`, les re-lectures que le
+  cache React Query devrait absorber, et les comptages qui devraient passer par agregation.
+- Les 22 index composites : identifier les index inutilises (chaque index ajoute un cout
+  d'ecriture) et les requetes sans index qui forcent un scan large.
+
+Sortie attendue : liste priorisee des corrections par impact FCFA estime, appliquees ou notees
+en dette.
+
+#### Lot 11C - Tests de regression de cout
+
+But : empecher une derive de cout de revenir apres correction.
+
+- Dans les tests emulator et a mocks, instrumenter `getDocs`/`getDoc`/`onSnapshot` par des
+  espions qui comptent les lectures d'un parcours.
+- Definir un budget de lectures par parcours critique (accueil, recherche, fiche annonce,
+  feed reels, statistiques) et faire echouer le test au-dela du budget.
+- Brancher ces assertions sur les suites existantes des Lots 2 et 6C plutot que d'en creer une
+  famille separee.
+
+Sortie attendue : garde-fou durable en CI contre les requetes qui relisent trop, documente au
+meme titre que les seuils de couverture.
 
 ## Matrice de risques
 
@@ -569,6 +785,7 @@ la CI sera relevee pour interdire de redescendre sous le niveau obtenu.
 | AdSense blanc en reels | Revenus manques, design casse | Lot 6 |
 | Page prod qui ne rend pas | Perte de confiance et SEO | Lot 3 puis Lot 4 |
 | Formulaire IA regressif | Annonces mediocres, friction | Lot 1 puis Lot 4 |
+| Requetes Firestore trop couteuses | Facture Firebase qui derive | Lot 2 puis Lot 11 |
 
 ## Definition of Done qualite
 

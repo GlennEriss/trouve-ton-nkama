@@ -5,6 +5,10 @@ import {
   validateCredentialsUserForOAuth,
 } from "@/features/auth/services/oauth-google.service";
 import { userRepository } from "@/features/auth/repositories/user.repository";
+import {
+  resolveSessionUser,
+  toSessionUserIdentity,
+} from "@/features/auth/services/resolve-session-user";
 import { auth, GoogleAuthProvider } from "@/firebase/auth";
 import { createLogger } from "@/lib/logger";
 import type { Role } from "@/models/authentication";
@@ -276,9 +280,9 @@ const authConfig = {
   callbacks: {
     async signIn({ user, account, profile, credentials }) {
       try {
-        const userExists = user?.email
-          ? await userRepository.findByEmail(user.email)
-          : null;
+        // Resolve by uid → phone → email so email-less providers (phone OTP)
+        // hydrate too, while OAuth/Credentials keep resolving as before.
+        const userExists = await resolveSessionUser(toSessionUserIdentity(user));
 
         if (userExists) {
           const credentialsValidation = validateCredentialsUserForOAuth(
@@ -349,9 +353,7 @@ const authConfig = {
 
       if (user) {
         try {
-          const userDetails = user.email
-            ? await userRepository.findByEmail(user.email)
-            : null;
+          const userDetails = await resolveSessionUser(toSessionUserIdentity(user));
 
           if (userDetails) {
             user = userDetails as any;

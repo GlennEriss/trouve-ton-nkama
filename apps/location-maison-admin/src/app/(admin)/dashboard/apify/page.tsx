@@ -375,15 +375,23 @@ function listingAttributes(draft: ApifyListingDraft): Array<{ label: string; val
   return attrs;
 }
 
+// Alphabetical order (French collation, accent/case-insensitive) for the
+// localisation dropdowns fed by the geolocation (OSM) reference.
+function sortByName<T extends { name: string }>(items: T[]): T[] {
+  return [...items].sort((a, b) => a.name.localeCompare(b.name, "fr", { sensitivity: "base" }));
+}
+
 function DraftEditDialog({
   index,
   item,
+  osm,
   open,
   onOpenChange,
   onSave,
 }: {
   index: number;
   item: ApifyDraftMeta;
+  osm: GabonOsmSelectorData | null;
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onSave: (index: number, form: DraftEditFormState) => void;
@@ -392,6 +400,60 @@ function DraftEditDialog({
 
   const setField = <K extends keyof DraftEditFormState>(key: K, value: DraftEditFormState[K]) => {
     setForm((prev) => ({ ...prev, [key]: value }));
+  };
+
+  // Localisation options drawn from the geolocation reference, sorted A→Z and
+  // cascaded province → ville → quartier.
+  const provinceOptions = useMemo(() => sortByName(osm?.provinces ?? []), [osm?.provinces]);
+
+  const cityOptions = useMemo(() => {
+    const cities = osm?.cities ?? [];
+    const scoped = form.province ? cities.filter((city) => city.province === form.province) : cities;
+    return sortByName(scoped);
+  }, [osm?.cities, form.province]);
+
+  const quarterOptions = useMemo(() => {
+    const quarters = osm?.quarters ?? [];
+    const scoped = form.city ? quarters.filter((quarter) => quarter.city === form.city) : quarters;
+    return sortByName(scoped);
+  }, [osm?.quarters, form.city]);
+
+  // Select a province: fill its centroid and drop now-inconsistent city/quarter.
+  const handleProvinceSelect = (name: string) => {
+    const province = provinceOptions.find((option) => option.name === name);
+    setForm((prev) => ({
+      ...prev,
+      province: name,
+      city: "",
+      street: "",
+      ...(province ? { latitude: String(province.lat), longitude: String(province.lon) } : {}),
+    }));
+  };
+
+  // Select a city: adopt its province + centroid and drop the now-stale quarter.
+  const handleCitySelect = (name: string) => {
+    const city = (osm?.cities ?? []).find((option) => option.name === name);
+    setForm((prev) => ({
+      ...prev,
+      city: name,
+      street: "",
+      province: city?.province ?? prev.province,
+      ...(city ? { latitude: String(city.lat), longitude: String(city.lon) } : {}),
+    }));
+  };
+
+  // Select a quarter: adopt its city/province and precise centroid.
+  const handleQuarterSelect = (name: string) => {
+    const quarter = (osm?.quarters ?? []).find(
+      (option) => option.name === name && (!form.city || option.city === form.city),
+    );
+    setForm((prev) => ({
+      ...prev,
+      street: name,
+      city: quarter?.city ?? prev.city,
+      province: quarter?.province ?? prev.province,
+      ...(quarter ? { latitude: String(quarter.lat), longitude: String(quarter.lon) } : {}),
+    }));
   };
 
   const save = () => {
@@ -485,28 +547,58 @@ function DraftEditDialog({
             <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">Localisation</p>
             <div className="grid gap-3 md:grid-cols-3">
               <label className={labelClass}>
-                Quartier / rue
-                <input
+                Province
+                <select
                   className={inputClass}
-                  value={form.street}
-                  onChange={(event) => setField("street", event.target.value)}
-                />
+                  value={form.province}
+                  onChange={(event) => handleProvinceSelect(event.target.value)}
+                >
+                  <option value="">{osm ? "Sélectionner une province" : "Chargement du référentiel…"}</option>
+                  {form.province && !provinceOptions.some((option) => option.name === form.province) ? (
+                    <option value={form.province}>{form.province} (actuel)</option>
+                  ) : null}
+                  {provinceOptions.map((option) => (
+                    <option key={option.id} value={option.name}>
+                      {option.name}
+                    </option>
+                  ))}
+                </select>
               </label>
               <label className={labelClass}>
                 Ville
-                <input
+                <select
                   className={inputClass}
                   value={form.city}
-                  onChange={(event) => setField("city", event.target.value)}
-                />
+                  onChange={(event) => handleCitySelect(event.target.value)}
+                >
+                  <option value="">{osm ? "Sélectionner une ville" : "Chargement du référentiel…"}</option>
+                  {form.city && !cityOptions.some((option) => option.name === form.city) ? (
+                    <option value={form.city}>{form.city} (actuel)</option>
+                  ) : null}
+                  {cityOptions.map((option) => (
+                    <option key={option.id} value={option.name}>
+                      {option.name}
+                    </option>
+                  ))}
+                </select>
               </label>
               <label className={labelClass}>
-                Province
-                <input
+                Quartier / rue
+                <select
                   className={inputClass}
-                  value={form.province}
-                  onChange={(event) => setField("province", event.target.value)}
-                />
+                  value={form.street}
+                  onChange={(event) => handleQuarterSelect(event.target.value)}
+                >
+                  <option value="">{osm ? "Sélectionner un quartier" : "Chargement du référentiel…"}</option>
+                  {form.street && !quarterOptions.some((option) => option.name === form.street) ? (
+                    <option value={form.street}>{form.street} (actuel)</option>
+                  ) : null}
+                  {quarterOptions.map((option) => (
+                    <option key={option.id} value={option.name}>
+                      {option.name}
+                    </option>
+                  ))}
+                </select>
               </label>
               <label className={labelClass}>
                 Pays
@@ -1311,6 +1403,7 @@ export default function ApifyPage() {
           key={editIndex}
           index={editIndex}
           item={items[editIndex]}
+          osm={osm}
           open={editIndex !== null}
           onOpenChange={(open) => {
             if (!open) setEditIndex(null);

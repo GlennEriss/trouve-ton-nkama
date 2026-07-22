@@ -293,6 +293,38 @@ export default function GeolocationDashboardPage() {
     [osmQuery.data?.cities],
   );
 
+  const handleEditCityPlaceSelect = useCallback(
+    (details: PlaceDetailsResult) => {
+      setEditDialog((prev) => {
+        if (!prev || prev.kind !== "city") return prev;
+        let province = prev.province;
+        if (details.province) {
+          const target = normalizeSearch(details.province);
+          const match = (osmQuery.data?.provinces ?? []).find((p) => normalizeSearch(p.name) === target);
+          if (match) province = match.name;
+        }
+        return { ...prev, name: details.name, lat: String(details.latitude), lon: String(details.longitude), province };
+      });
+    },
+    [osmQuery.data?.provinces],
+  );
+
+  const handleEditQuarterPlaceSelect = useCallback(
+    (details: PlaceDetailsResult) => {
+      setEditDialog((prev) => {
+        if (!prev || prev.kind !== "quarter") return prev;
+        let cityId = prev.cityId;
+        if (details.city) {
+          const target = normalizeSearch(details.city);
+          const match = (osmQuery.data?.cities ?? []).find((c) => normalizeSearch(c.name) === target);
+          if (match) cityId = match.id;
+        }
+        return { ...prev, name: details.name, lat: String(details.latitude), lon: String(details.longitude), cityId };
+      });
+    },
+    [osmQuery.data?.cities],
+  );
+
   const refreshAll = useCallback(async () => {
     await Promise.all([permissionsQuery.refetch(), osmQuery.refetch()]);
   }, [osmQuery, permissionsQuery]);
@@ -933,10 +965,15 @@ export default function GeolocationDashboardPage() {
 
           {editDialog?.kind === "city" ? (
             <div className="grid gap-3">
-              <Input
+              <PlacesAutocomplete
+                kind="city"
                 value={editDialog.name}
-                onChange={(event) => setEditDialog((prev) => (prev && prev.kind === "city" ? { ...prev, name: event.target.value } : prev))}
-                placeholder="Nom de la ville"
+                onValueChange={(name) =>
+                  setEditDialog((prev) => (prev && prev.kind === "city" ? { ...prev, name } : prev))
+                }
+                onSelect={handleEditCityPlaceSelect}
+                onError={setGlobalError}
+                placeholder="Rechercher une ville (Google)"
               />
               <select
                 className="h-10 rounded-md border border-slate-200 bg-white px-3 text-sm text-slate-900"
@@ -973,12 +1010,15 @@ export default function GeolocationDashboardPage() {
 
           {editDialog?.kind === "quarter" ? (
             <div className="grid gap-3">
-              <Input
+              <PlacesAutocomplete
+                kind="quarter"
                 value={editDialog.name}
-                onChange={(event) =>
-                  setEditDialog((prev) => (prev && prev.kind === "quarter" ? { ...prev, name: event.target.value } : prev))
+                onValueChange={(name) =>
+                  setEditDialog((prev) => (prev && prev.kind === "quarter" ? { ...prev, name } : prev))
                 }
-                placeholder="Nom du quartier"
+                onSelect={handleEditQuarterPlaceSelect}
+                onError={setGlobalError}
+                placeholder="Rechercher un quartier (Google)"
               />
               <Input
                 value={editDialog.aliases}

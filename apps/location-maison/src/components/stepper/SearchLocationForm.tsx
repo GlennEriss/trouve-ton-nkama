@@ -153,7 +153,7 @@ export default function SearchLocationForm() {
     setSelectedResult(null)
     setIsOpen(false)
     setShowSuggestions(false)
-    inputRef.current?.focus()
+    setTimeout(() => inputRef.current?.focus(), 0)
   }
   
   // Gérer l'ouverture du dropdown

@@ -1,41 +1,42 @@
 /**
- * Thin server-side wrappers around the Google Places web service (Autocomplete
- * + Details), biased to Gabon and in French. The Maps key is read here so it
+ * Thin server-side wrappers around the Google Places API (New) — Autocomplete +
+ * Place Details — biased to Gabon and in French. The Maps key is read here so it
  * never has to be exposed to the browser for these calls. Used by the
  * geolocation dashboard so admins pick an official locality name (and its
  * coordinates) instead of free-typing misspelled quarters/cities.
+ *
+ * Places API (New) endpoints (the legacy `maps/api/place/*` web service is a
+ * separate, often-disabled product):
+ *   POST https://places.googleapis.com/v1/places:autocomplete
+ *   GET  https://places.googleapis.com/v1/places/{placeId}
  */
 
-type GoogleAddressComponent = {
-  long_name: string;
-  short_name: string;
-  types: string[];
-};
-
-type AutocompletePrediction = {
-  place_id: string;
-  description: string;
-  structured_formatting?: {
-    main_text?: string;
-    secondary_text?: string;
-  };
+type NewAddressComponent = {
+  longText?: string;
+  shortText?: string;
+  types?: string[];
 };
 
 type AutocompleteResponse = {
-  status: string;
-  error_message?: string;
-  predictions: AutocompletePrediction[];
+  suggestions?: Array<{
+    placePrediction?: {
+      placeId?: string;
+      text?: { text?: string };
+      structuredFormat?: {
+        mainText?: { text?: string };
+        secondaryText?: { text?: string };
+      };
+    };
+  }>;
+  error?: { message?: string; status?: string };
 };
 
 type PlaceDetailsResponse = {
-  status: string;
-  error_message?: string;
-  result?: {
-    name?: string;
-    formatted_address?: string;
-    geometry?: { location?: { lat: number; lng: number } };
-    address_components?: GoogleAddressComponent[];
-  };
+  displayName?: { text?: string };
+  formattedAddress?: string;
+  location?: { latitude?: number; longitude?: number };
+  addressComponents?: NewAddressComponent[];
+  error?: { message?: string; status?: string };
 };
 
 export type PlaceKind = "city" | "quarter";
@@ -69,17 +70,18 @@ export function getMapsApiKey(): string {
   return apiKey;
 }
 
-function pickComponent(components: GoogleAddressComponent[], types: string[]): string | null {
+function pickComponent(components: NewAddressComponent[], types: string[]): string | null {
   for (const type of types) {
-    const match = components.find((component) => component.types.includes(type));
-    if (match) return match.long_name;
+    const match = components.find((component) => component.types?.includes(type));
+    if (match?.longText) return match.longText;
   }
   return null;
 }
 
 /**
  * Fetch autocomplete predictions for a locality query. Cities are restricted to
- * `(cities)`; quarters stay unrestricted so neighborhoods/sublocalities surface.
+ * administrative locality types; quarters stay unrestricted so neighborhoods /
+ * sublocalities surface. Restricted to Gabon.
  */
 export async function fetchPlaceSuggestions(
   input: string,
@@ -87,39 +89,51 @@ export async function fetchPlaceSuggestions(
   apiKey: string,
   sessionToken?: string,
 ): Promise<PlaceSuggestion[]> {
-  const url = new URL("https://maps.googleapis.com/maps/api/place/autocomplete/json");
-  url.searchParams.set("input", input);
-  url.searchParams.set("components", "country:ga");
-  url.searchParams.set("language", "fr");
+  const body: Record<string, unknown> = {
+    input,
+    includedRegionCodes: ["ga"],
+    languageCode: "fr",
+  };
   if (kind === "city") {
-    url.searchParams.set("types", "(cities)");
+    body.includedPrimaryTypes = ["locality", "administrative_area_level_2", "administrative_area_level_3"];
   }
   if (sessionToken) {
-    url.searchParams.set("sessiontoken", sessionToken);
+    body.sessionToken = sessionToken;
   }
-  url.searchParams.set("key", apiKey);
 
+  let response: Response;
   let payload: AutocompleteResponse;
   try {
-    const response = await fetch(url, { cache: "no-store" });
+    response = await fetch("https://places.googleapis.com/v1/places:autocomplete", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "X-Goog-Api-Key": apiKey,
+      },
+      body: JSON.stringify(body),
+      cache: "no-store",
+    });
     payload = (await response.json()) as AutocompleteResponse;
   } catch {
     throw new PlacesUpstreamError("Échec de l'appel à Google Places Autocomplete.");
   }
 
-  if (payload.status === "ZERO_RESULTS") {
-    return [];
-  }
-  if (payload.status !== "OK") {
-    throw new PlacesUpstreamError(payload.error_message || `Google Places: ${payload.status}`);
+  if (!response.ok) {
+    throw new PlacesUpstreamError(payload.error?.message || `Google Places: ${response.status}`);
   }
 
-  return payload.predictions.map((prediction) => ({
-    placeId: prediction.place_id,
-    description: prediction.description,
-    mainText: prediction.structured_formatting?.main_text ?? prediction.description,
-    secondaryText: prediction.structured_formatting?.secondary_text ?? "",
-  }));
+  return (payload.suggestions ?? [])
+    .map((suggestion) => suggestion.placePrediction)
+    .filter((prediction): prediction is NonNullable<typeof prediction> => Boolean(prediction?.placeId))
+    .map((prediction) => {
+      const description = prediction.text?.text ?? "";
+      return {
+        placeId: prediction.placeId as string,
+        description,
+        mainText: prediction.structuredFormat?.mainText?.text ?? description,
+        secondaryText: prediction.structuredFormat?.secondaryText?.text ?? "",
+      };
+    });
 }
 
 /** Resolve a selected prediction to its official name + coordinates + admin area. */
@@ -128,42 +142,42 @@ export async function fetchPlaceDetails(
   apiKey: string,
   sessionToken?: string,
 ): Promise<PlaceDetails | null> {
-  const url = new URL("https://maps.googleapis.com/maps/api/place/details/json");
-  url.searchParams.set("place_id", placeId);
-  url.searchParams.set("language", "fr");
-  url.searchParams.set("fields", "name,formatted_address,geometry,address_component");
+  const url = new URL(`https://places.googleapis.com/v1/places/${encodeURIComponent(placeId)}`);
+  url.searchParams.set("languageCode", "fr");
   if (sessionToken) {
-    url.searchParams.set("sessiontoken", sessionToken);
+    url.searchParams.set("sessionToken", sessionToken);
   }
-  url.searchParams.set("key", apiKey);
 
+  let response: Response;
   let payload: PlaceDetailsResponse;
   try {
-    const response = await fetch(url, { cache: "no-store" });
+    response = await fetch(url, {
+      headers: {
+        "X-Goog-Api-Key": apiKey,
+        "X-Goog-FieldMask": "displayName,formattedAddress,location,addressComponents",
+      },
+      cache: "no-store",
+    });
     payload = (await response.json()) as PlaceDetailsResponse;
   } catch {
     throw new PlacesUpstreamError("Échec de l'appel à Google Places Details.");
   }
 
-  if (payload.status === "ZERO_RESULTS" || !payload.result) {
-    return null;
-  }
-  if (payload.status !== "OK") {
-    throw new PlacesUpstreamError(payload.error_message || `Google Places: ${payload.status}`);
+  if (!response.ok) {
+    throw new PlacesUpstreamError(payload.error?.message || `Google Places: ${response.status}`);
   }
 
-  const result = payload.result;
-  const location = result.geometry?.location;
-  if (!location) {
+  const location = payload.location;
+  if (location?.latitude == null || location?.longitude == null) {
     return null;
   }
-  const components = result.address_components ?? [];
+  const components = payload.addressComponents ?? [];
 
   return {
-    name: result.name ?? "",
-    formattedAddress: result.formatted_address ?? "",
-    latitude: location.lat,
-    longitude: location.lng,
+    name: payload.displayName?.text ?? "",
+    formattedAddress: payload.formattedAddress ?? "",
+    latitude: location.latitude,
+    longitude: location.longitude,
     province: pickComponent(components, ["administrative_area_level_1"]),
     city: pickComponent(components, ["locality", "administrative_area_level_2", "postal_town"]),
     quarter: pickComponent(components, [

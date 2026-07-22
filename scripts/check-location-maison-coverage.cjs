@@ -4,7 +4,7 @@ const path = require('node:path')
 const profiles = {
   application: {
     summary: '__tests__/coverage/coverage-summary.json',
-    global: { branches: 55, functions: 40, lines: 30, statements: 30 },
+    global: { branches: 60, functions: 50, lines: 50, statements: 50 },
     files: {
       'src/db/credit-transaction.db.ts': { branches: 70, functions: 100, lines: 95, statements: 95 },
       'src/db/reel.db.ts': { branches: 60, functions: 95, lines: 90, statements: 90 },
@@ -28,6 +28,14 @@ const profiles = {
       'src/components/property/PropertyStatisticsPanel.tsx': { branches: 90, functions: 95, lines: 95, statements: 95 },
       'src/emails/Layout.tsx': { branches: 90, functions: 100, lines: 95, statements: 95 },
       'src/emails/PropertyPublished.tsx': { branches: 95, functions: 100, lines: 95, statements: 95 },
+      'src/app/api/ai-search/chat/route.ts': { branches: 70, functions: 90, lines: 90, statements: 90 },
+      'src/hooks/useAISearchAssistant.ts': { branches: 65, functions: 80, lines: 90, statements: 90 },
+      'src/features/users/phone-verification/hooks/usePhoneVerification.ts': { branches: 65, functions: 50, lines: 80, statements: 80 },
+      'src/components/stepper/SearchLocationForm.tsx': { branches: 60, functions: 60, lines: 85, statements: 85 },
+      'src/providers/LocationProvider.tsx': { branches: 55, functions: 70, lines: 85, statements: 85 },
+      'src/components/search/SearchMobilePage.tsx': { branches: 70, functions: 70, lines: 90, statements: 90 },
+      'src/components/shared/ui/MultiSelectApp.tsx': { branches: 65, functions: 65, lines: 90, statements: 90 },
+      'src/components/my-balance/PurchaseModal.tsx': { branches: 65, functions: 60, lines: 90, statements: 90 },
     },
   },
   functions: {
