@@ -7,11 +7,12 @@ import { useToast } from '@/hooks/use-toast';
 import { createLogger } from '@/lib/logger';
 import { FormLoginSchema, FormLoginSchemaType } from '@/models/schema';
 import { motion } from 'framer-motion';
-import { Home, KeyRound, Mail, Shield, Sparkles } from 'lucide-react';
+import { Home, KeyRound, Mail, Phone, Shield, Sparkles } from 'lucide-react';
 import Link from 'next/link';
 import Logo from '@/components/logo/Logo';
 import { useRouter, useSearchParams } from 'next/navigation';
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
+import { PhoneAuthModal } from './PhoneAuthModal';
 import { useForm } from 'react-hook-form';
 import { Form } from '@/components/ui/form';
 import { InputFormApp } from '@/components/shared/form/InputFormApp';
@@ -36,6 +37,7 @@ export const SigninFormModern: React.FC = () => {
   const searchParams = useSearchParams();
   const { toast } = useToast();
   const { trackEvent } = useTrackEvent();
+  const [isPhoneModalOpen, setIsPhoneModalOpen] = useState(false);
   const {
     signinWithCredentials,
     signinWithGoogle,
@@ -326,6 +328,25 @@ export const SigninFormModern: React.FC = () => {
             )}
             <span className="font-medium">Continuer avec Google</span>
           </Button>
+
+          <Button
+            type="button"
+            variant="outline"
+            onClick={() => {
+              trackEvent(trackingEvents.CTA_AUTH_SIGNIN_CLICK, {
+                method: 'phone',
+                entry_point: 'signin_form',
+              });
+              setIsPhoneModalOpen(true);
+            }}
+            disabled={isLoading}
+            className="w-full h-12 mt-3 rounded-full border-2 hover:bg-gray-50 dark:hover:bg-gray-800 transition-all duration-200"
+          >
+            <Phone className="w-5 h-5 mr-3 text-[#1FA89B]" />
+            <span className="font-medium">Continuer avec Numéro de téléphone</span>
+          </Button>
+
+          <PhoneAuthModal open={isPhoneModalOpen} onOpenChange={setIsPhoneModalOpen} />
 
           <p className="text-center text-sm text-gray-500 dark:text-gray-400 mt-6">
             Vous n&apos;avez pas de compte ?{' '}

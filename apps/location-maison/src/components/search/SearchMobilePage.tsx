@@ -117,9 +117,7 @@ export default function SearchMobilePage() {
             const delta = items.length - lastItemsCount;
             setNewItemsLoaded(delta);
             setIsLoadingMore(false);
-
-            const timeoutId = window.setTimeout(() => setNewItemsLoaded(0), 1800);
-            return () => window.clearTimeout(timeoutId);
+            return;
         }
 
         const guardTimeout = window.setTimeout(() => {
@@ -128,6 +126,12 @@ export default function SearchMobilePage() {
 
         return () => window.clearTimeout(guardTimeout);
     }, [items, isLoadingMore, lastItemsCount]);
+
+    React.useEffect(() => {
+        if (newItemsLoaded <= 0) return;
+        const timeoutId = window.setTimeout(() => setNewItemsLoaded(0), 1800);
+        return () => window.clearTimeout(timeoutId);
+    }, [newItemsLoaded]);
 
     const feedItems = React.useMemo(() => {
         const FIRST_AD_AFTER_INDEX = 5;

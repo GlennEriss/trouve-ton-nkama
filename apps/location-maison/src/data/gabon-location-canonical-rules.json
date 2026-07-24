@@ -1,0 +1,16 @@
+{
+  "version": "2026-07-20.1",
+  "quarters": [
+    {
+      "canonicalName": "Atong-Abè",
+      "city": "Libreville",
+      "province": "Estuaire",
+      "matchNames": ["Atong Abe", "Atong-Abe", "Atong-Abè"],
+      "aliases": ["Toabet", "Toabe"],
+      "preferredCoordinates": {
+        "lat": 0.4117628,
+        "lon": 9.4511796
+      }
+    }
+  ]
+}

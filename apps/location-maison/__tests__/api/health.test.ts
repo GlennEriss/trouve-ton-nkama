@@ -1,3 +1,4 @@
+export {};
 let getHealth: typeof import('@/app/api/health/route').GET
 
 jest.mock('next/server', () => ({

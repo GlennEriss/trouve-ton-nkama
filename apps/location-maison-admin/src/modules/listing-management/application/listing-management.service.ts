@@ -1,6 +1,7 @@
 import { createHash } from "node:crypto";
 
 import redis from "@/lib/redis/client";
+import { normalizeGabonPhoneE164 } from "@/lib/phone/gabon-phone";
 import type {
   BulkUpdateListingStatusInput,
   BulkUpdateListingStatusResult,
@@ -305,11 +306,18 @@ function normalizePatch(input: UpdateListingInput["patch"]) {
   copyTrimmed("additionnalInformation");
   copyTrimmed("country");
   copyTrimmed("countryCode");
-  copyTrimmed("contact");
   copyTrimmed("numeroStudio");
   copyTrimmed("numeroApartment");
   copyTrimmed("kioskType");
   copyTrimmed("roomType");
+
+  if (typeof input.contact === "string") {
+    const trimmed = input.contact.trim();
+    // Store the canonical compact E.164 form (join key for announcer
+    // auto-attribution / OTP matching) whenever the value parses as a
+    // Gabonese number; otherwise keep the trimmed input as-is.
+    patch.contact = normalizeGabonPhoneE164(trimmed) ?? trimmed;
+  }
 
   if (typeof input.status === "string") {
     patch.status = input.status;

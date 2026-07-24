@@ -23,6 +23,7 @@ import {
   geocodeBestEffort,
   resolveFromGoogle,
   resolveFromOsm,
+  type GeoResolution,
   type GeoSource,
 } from "@/modules/apify/application/apify-geocode.service";
 import type { ApifyDraftMeta, ApifyListingDraft, ApifyPipelineResult } from "@/modules/apify/domain/types";
@@ -374,18 +375,26 @@ function listingAttributes(draft: ApifyListingDraft): Array<{ label: string; val
   return attrs;
 }
 
+// Alphabetical order (French collation, accent/case-insensitive) for the
+// localisation dropdowns fed by the geolocation (OSM) reference.
+function sortByName<T extends { name: string }>(items: T[]): T[] {
+  return [...items].sort((a, b) => a.name.localeCompare(b.name, "fr", { sensitivity: "base" }));
+}
+
 function DraftEditDialog({
   index,
   item,
+  osm,
   open,
   onOpenChange,
   onSave,
 }: {
   index: number;
   item: ApifyDraftMeta;
+  osm: GabonOsmSelectorData | null;
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  onSave: (index: number, draft: ApifyListingDraft) => void;
+  onSave: (index: number, form: DraftEditFormState) => void;
 }) {
   const [form, setForm] = useState<DraftEditFormState>(() => draftToEditForm(item.draft));
 
@@ -393,8 +402,62 @@ function DraftEditDialog({
     setForm((prev) => ({ ...prev, [key]: value }));
   };
 
+  // Localisation options drawn from the geolocation reference, sorted A→Z and
+  // cascaded province → ville → quartier.
+  const provinceOptions = useMemo(() => sortByName(osm?.provinces ?? []), [osm?.provinces]);
+
+  const cityOptions = useMemo(() => {
+    const cities = osm?.cities ?? [];
+    const scoped = form.province ? cities.filter((city) => city.province === form.province) : cities;
+    return sortByName(scoped);
+  }, [osm?.cities, form.province]);
+
+  const quarterOptions = useMemo(() => {
+    const quarters = osm?.quarters ?? [];
+    const scoped = form.city ? quarters.filter((quarter) => quarter.city === form.city) : quarters;
+    return sortByName(scoped);
+  }, [osm?.quarters, form.city]);
+
+  // Select a province: fill its centroid and drop now-inconsistent city/quarter.
+  const handleProvinceSelect = (name: string) => {
+    const province = provinceOptions.find((option) => option.name === name);
+    setForm((prev) => ({
+      ...prev,
+      province: name,
+      city: "",
+      street: "",
+      ...(province ? { latitude: String(province.lat), longitude: String(province.lon) } : {}),
+    }));
+  };
+
+  // Select a city: adopt its province + centroid and drop the now-stale quarter.
+  const handleCitySelect = (name: string) => {
+    const city = (osm?.cities ?? []).find((option) => option.name === name);
+    setForm((prev) => ({
+      ...prev,
+      city: name,
+      street: "",
+      province: city?.province ?? prev.province,
+      ...(city ? { latitude: String(city.lat), longitude: String(city.lon) } : {}),
+    }));
+  };
+
+  // Select a quarter: adopt its city/province and precise centroid.
+  const handleQuarterSelect = (name: string) => {
+    const quarter = (osm?.quarters ?? []).find(
+      (option) => option.name === name && (!form.city || option.city === form.city),
+    );
+    setForm((prev) => ({
+      ...prev,
+      street: name,
+      city: quarter?.city ?? prev.city,
+      province: quarter?.province ?? prev.province,
+      ...(quarter ? { latitude: String(quarter.lat), longitude: String(quarter.lon) } : {}),
+    }));
+  };
+
   const save = () => {
-    onSave(index, applyDraftEdit(item.draft, form));
+    onSave(index, form);
     onOpenChange(false);
   };
 
@@ -484,28 +547,58 @@ function DraftEditDialog({
             <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">Localisation</p>
             <div className="grid gap-3 md:grid-cols-3">
               <label className={labelClass}>
-                Quartier / rue
-                <input
+                Province
+                <select
                   className={inputClass}
-                  value={form.street}
-                  onChange={(event) => setField("street", event.target.value)}
-                />
+                  value={form.province}
+                  onChange={(event) => handleProvinceSelect(event.target.value)}
+                >
+                  <option value="">{osm ? "Sélectionner une province" : "Chargement du référentiel…"}</option>
+                  {form.province && !provinceOptions.some((option) => option.name === form.province) ? (
+                    <option value={form.province}>{form.province} (actuel)</option>
+                  ) : null}
+                  {provinceOptions.map((option) => (
+                    <option key={option.id} value={option.name}>
+                      {option.name}
+                    </option>
+                  ))}
+                </select>
               </label>
               <label className={labelClass}>
                 Ville
-                <input
+                <select
                   className={inputClass}
                   value={form.city}
-                  onChange={(event) => setField("city", event.target.value)}
-                />
+                  onChange={(event) => handleCitySelect(event.target.value)}
+                >
+                  <option value="">{osm ? "Sélectionner une ville" : "Chargement du référentiel…"}</option>
+                  {form.city && !cityOptions.some((option) => option.name === form.city) ? (
+                    <option value={form.city}>{form.city} (actuel)</option>
+                  ) : null}
+                  {cityOptions.map((option) => (
+                    <option key={option.id} value={option.name}>
+                      {option.name}
+                    </option>
+                  ))}
+                </select>
               </label>
               <label className={labelClass}>
-                Province
-                <input
+                Quartier / rue
+                <select
                   className={inputClass}
-                  value={form.province}
-                  onChange={(event) => setField("province", event.target.value)}
-                />
+                  value={form.street}
+                  onChange={(event) => handleQuarterSelect(event.target.value)}
+                >
+                  <option value="">{osm ? "Sélectionner un quartier" : "Chargement du référentiel…"}</option>
+                  {form.street && !quarterOptions.some((option) => option.name === form.street) ? (
+                    <option value={form.street}>{form.street} (actuel)</option>
+                  ) : null}
+                  {quarterOptions.map((option) => (
+                    <option key={option.id} value={option.name}>
+                      {option.name}
+                    </option>
+                  ))}
+                </select>
               </label>
               <label className={labelClass}>
                 Pays
@@ -698,9 +791,10 @@ type DraftCardProps = {
   onCreate: (index: number) => void;
   onEdit: (index: number) => void;
   onRemove: (index: number) => void;
+  isEdited: boolean;
 };
 
-function DraftCard({ item, index, geo, canGeocode, onGeocode, imp, canCreate, onCreate, onEdit, onRemove }: DraftCardProps) {
+function DraftCard({ item, index, geo, canGeocode, onGeocode, imp, canCreate, onCreate, onEdit, onRemove, isEdited }: DraftCardProps) {
   const { draft, warnings } = item;
   const location = [draft.street, draft.city, draft.province].filter(Boolean).join(", ");
   const rooms = roomsSummary(draft);
@@ -717,6 +811,7 @@ function DraftCard({ item, index, geo, canGeocode, onGeocode, imp, canCreate, on
           <Badge variant={draft.status === "FOR_RENT" ? "success" : "warning"}>
             {draft.status === "FOR_RENT" ? "Location" : "Vente"}
           </Badge>
+          {isEdited ? <Badge variant="success">Modifiée manuellement</Badge> : null}
           <Badge variant="neutral">{draft.images.length} image(s)</Badge>
         </div>
         <h3 className="text-base font-semibold text-slate-900">{draft.title || "Sans titre"}</h3>
@@ -897,6 +992,7 @@ export default function ApifyPage() {
   const [removed, setRemoved] = useState<Record<number, boolean>>({});
   const [confirmRemoveIndex, setConfirmRemoveIndex] = useState<number | null>(null);
   const [editIndex, setEditIndex] = useState<number | null>(null);
+  const [edited, setEdited] = useState<Record<number, boolean>>({});
 
   // Announcer picker (listings must be attached to an announcer).
   const [announcer, setAnnouncer] = useState<AnnouncerOption | null>(null);
@@ -922,23 +1018,29 @@ export default function ApifyPage() {
   // unresolved (e.g. when "Transformer" was clicked before OSM finished loading).
   useEffect(() => {
     if (!osm || items.length === 0) return;
-    const updates: Array<{ index: number; draft: ApifyListingDraft; source: GeoSource }> = [];
+    const updates: Array<{ index: number; resolution: GeoResolution; source: GeoSource }> = [];
     items.forEach((meta, index) => {
+      if (edited[index]) return;
       if (geo[index]?.status !== "none") return;
       const resolution = resolveFromOsm(meta.draft, osm);
       if (resolution) {
-        updates.push({ index, draft: applyResolution(meta.draft, resolution), source: resolution.source });
+        updates.push({ index, resolution, source: resolution.source });
       }
     });
     if (updates.length === 0) return;
-    const draftByIndex = new Map(updates.map((u) => [u.index, u.draft]));
-    setItems((prev) => prev.map((meta, index) => (draftByIndex.has(index) ? { ...meta, draft: draftByIndex.get(index)! } : meta)));
+    const resolutionByIndex = new Map(updates.map((update) => [update.index, update.resolution]));
+    setItems((prev) =>
+      prev.map((meta, index) => {
+        const resolution = resolutionByIndex.get(index);
+        return resolution ? { ...meta, draft: applyResolution(meta.draft, resolution) } : meta;
+      }),
+    );
     setGeo((prev) => {
       const next = { ...prev };
       for (const update of updates) next[update.index] = { status: "resolved", source: update.source };
       return next;
     });
-  }, [osm, items, geo]);
+  }, [osm, items, geo, edited]);
 
   const handleTransform = useCallback(() => {
     const parsed = parseApifyJson(rawJson);
@@ -952,6 +1054,7 @@ export default function ApifyPage() {
     setError(null);
     setImp({});
     setRemoved({});
+    setEdited({});
     const result = runApifyPipeline(parsed.posts);
     setStats(result.stats);
 
@@ -970,32 +1073,6 @@ export default function ApifyPage() {
     setGeo(nextGeo);
   }, [rawJson, osm]);
 
-  useEffect(() => {
-    if (!osm || items.length === 0) return;
-
-    let changed = false;
-    const geoUpdates: Record<number, GeoState> = {};
-    const nextItems = items.map((meta, index) => {
-      const currentGeo = geo[index];
-      if (currentGeo?.source && RESOLVED_SOURCES.includes(currentGeo.source)) {
-        return meta;
-      }
-
-      const resolution = resolveFromOsm(meta.draft, osm);
-      if (!resolution) {
-        return meta;
-      }
-
-      changed = true;
-      geoUpdates[index] = { status: "resolved", source: resolution.source };
-      return { ...meta, draft: applyResolution(meta.draft, resolution) };
-    });
-
-    if (!changed) return;
-    setItems(nextItems);
-    setGeo((prev) => ({ ...prev, ...geoUpdates }));
-  }, [geo, items, osm]);
-
   const handleClear = useCallback(() => {
     setRawJson("");
     setError(null);
@@ -1006,6 +1083,7 @@ export default function ApifyPage() {
     setRemoved({});
     setConfirmRemoveIndex(null);
     setEditIndex(null);
+    setEdited({});
   }, []);
 
   const confirmRemove = useCallback(() => {
@@ -1017,8 +1095,13 @@ export default function ApifyPage() {
     setConfirmRemoveIndex(null);
   }, [confirmRemoveIndex, editIndex]);
 
-  const saveDraftEdit = useCallback((index: number, draft: ApifyListingDraft) => {
-    setItems((prev) => prev.map((meta, currentIndex) => (currentIndex === index ? { ...meta, draft } : meta)));
+  const saveDraftEdit = useCallback((index: number, form: DraftEditFormState) => {
+    setItems((prev) =>
+      prev.map((meta, currentIndex) =>
+        currentIndex === index ? { ...meta, draft: applyDraftEdit(meta.draft, form) } : meta,
+      ),
+    );
+    setEdited((prev) => ({ ...prev, [index]: true }));
     setImp((prev) => {
       if (prev[index]?.status !== "error") return prev;
       return { ...prev, [index]: { status: "idle" } };
@@ -1101,9 +1184,20 @@ export default function ApifyPage() {
           return;
         }
         setItems((prev) =>
-          prev.map((current, currentIndex) =>
-            currentIndex === index ? { ...current, draft: applyResolution(current.draft, resolution) } : current,
-          ),
+          prev.map((current, currentIndex) => {
+            if (currentIndex !== index) return current;
+            const resolvedDraft = applyResolution(current.draft, resolution);
+            return {
+              ...current,
+              draft: edited[index]
+                ? {
+                    ...resolvedDraft,
+                    title: current.draft.title,
+                    description: current.draft.description,
+                  }
+                : resolvedDraft,
+            };
+          }),
         );
         setGeo((prev) => ({ ...prev, [index]: { status: "resolved", source: "google" } }));
       } catch (cause) {
@@ -1111,7 +1205,7 @@ export default function ApifyPage() {
         setGeo((prev) => ({ ...prev, [index]: { status: "error", message } }));
       }
     },
-    [items, osm],
+    [edited, items, osm],
   );
 
   const unresolvedIndexes = useMemo(
@@ -1291,6 +1385,7 @@ export default function ApifyPage() {
                 onCreate={createOne}
                 onEdit={setEditIndex}
                 onRemove={setConfirmRemoveIndex}
+                isEdited={Boolean(edited[index])}
               />
             ))}
           </div>
@@ -1308,6 +1403,7 @@ export default function ApifyPage() {
           key={editIndex}
           index={editIndex}
           item={items[editIndex]}
+          osm={osm}
           open={editIndex !== null}
           onOpenChange={(open) => {
             if (!open) setEditIndex(null);

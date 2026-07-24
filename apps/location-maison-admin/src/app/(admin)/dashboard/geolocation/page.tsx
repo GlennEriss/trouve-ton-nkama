@@ -17,6 +17,7 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { PageHeader } from "@/components/ui-kit/page-header";
+import { PlacesAutocomplete, type PlaceDetailsResult } from "@/components/geolocation/places-autocomplete";
 
 type AuthMePayload = {
   admin: {
@@ -261,6 +262,68 @@ export default function GeolocationDashboardPage() {
     setCreateQuarterLat("");
     setCreateQuarterLon("");
   }, []);
+
+  const handleCityPlaceSelect = useCallback(
+    (details: PlaceDetailsResult) => {
+      setCreateCityName(details.name);
+      setCreateCityLat(String(details.latitude));
+      setCreateCityLon(String(details.longitude));
+      // Auto-select the province when Google's admin area matches one we know.
+      if (details.province) {
+        const target = normalizeSearch(details.province);
+        const match = (osmQuery.data?.provinces ?? []).find((province) => normalizeSearch(province.name) === target);
+        if (match) setCreateCityProvince(match.name);
+      }
+    },
+    [osmQuery.data?.provinces],
+  );
+
+  const handleQuarterPlaceSelect = useCallback(
+    (details: PlaceDetailsResult) => {
+      setCreateQuarterName(details.name);
+      setCreateQuarterLat(String(details.latitude));
+      setCreateQuarterLon(String(details.longitude));
+      // Best-effort: preselect the parent city when Google returns a known one.
+      if (details.city) {
+        const target = normalizeSearch(details.city);
+        const match = (osmQuery.data?.cities ?? []).find((city) => normalizeSearch(city.name) === target);
+        if (match) setCreateQuarterCityId(match.id);
+      }
+    },
+    [osmQuery.data?.cities],
+  );
+
+  const handleEditCityPlaceSelect = useCallback(
+    (details: PlaceDetailsResult) => {
+      setEditDialog((prev) => {
+        if (!prev || prev.kind !== "city") return prev;
+        let province = prev.province;
+        if (details.province) {
+          const target = normalizeSearch(details.province);
+          const match = (osmQuery.data?.provinces ?? []).find((p) => normalizeSearch(p.name) === target);
+          if (match) province = match.name;
+        }
+        return { ...prev, name: details.name, lat: String(details.latitude), lon: String(details.longitude), province };
+      });
+    },
+    [osmQuery.data?.provinces],
+  );
+
+  const handleEditQuarterPlaceSelect = useCallback(
+    (details: PlaceDetailsResult) => {
+      setEditDialog((prev) => {
+        if (!prev || prev.kind !== "quarter") return prev;
+        let cityId = prev.cityId;
+        if (details.city) {
+          const target = normalizeSearch(details.city);
+          const match = (osmQuery.data?.cities ?? []).find((c) => normalizeSearch(c.name) === target);
+          if (match) cityId = match.id;
+        }
+        return { ...prev, name: details.name, lat: String(details.latitude), lon: String(details.longitude), cityId };
+      });
+    },
+    [osmQuery.data?.cities],
+  );
 
   const refreshAll = useCallback(async () => {
     await Promise.all([permissionsQuery.refetch(), osmQuery.refetch()]);
@@ -620,10 +683,13 @@ export default function GeolocationDashboardPage() {
               <CardHeader className="pb-2 text-sm font-medium text-slate-700">Ajouter une ville dans une province</CardHeader>
               <CardContent>
                 <form className="grid gap-3 md:grid-cols-2" onSubmit={(event) => void handleCreateCity(event)}>
-                  <Input
+                  <PlacesAutocomplete
+                    kind="city"
                     value={createCityName}
-                    onChange={(event) => setCreateCityName(event.target.value)}
-                    placeholder="Nom de la ville"
+                    onValueChange={setCreateCityName}
+                    onSelect={handleCityPlaceSelect}
+                    onError={setGlobalError}
+                    placeholder="Rechercher une ville (Google)"
                     disabled={!canManageGeolocation || isMutating}
                   />
                   <select
@@ -668,10 +734,13 @@ export default function GeolocationDashboardPage() {
               <CardHeader className="pb-2 text-sm font-medium text-slate-700">Ajouter un quartier dans une ville</CardHeader>
               <CardContent>
                 <form className="grid gap-3 md:grid-cols-2" onSubmit={(event) => void handleCreateQuarter(event)}>
-                  <Input
+                  <PlacesAutocomplete
+                    kind="quarter"
                     value={createQuarterName}
-                    onChange={(event) => setCreateQuarterName(event.target.value)}
-                    placeholder="Nom du quartier"
+                    onValueChange={setCreateQuarterName}
+                    onSelect={handleQuarterPlaceSelect}
+                    onError={setGlobalError}
+                    placeholder="Rechercher un quartier (Google)"
                     disabled={!canManageGeolocation || isMutating}
                   />
                   <Input
@@ -896,10 +965,15 @@ export default function GeolocationDashboardPage() {
 
           {editDialog?.kind === "city" ? (
             <div className="grid gap-3">
-              <Input
+              <PlacesAutocomplete
+                kind="city"
                 value={editDialog.name}
-                onChange={(event) => setEditDialog((prev) => (prev && prev.kind === "city" ? { ...prev, name: event.target.value } : prev))}
-                placeholder="Nom de la ville"
+                onValueChange={(name) =>
+                  setEditDialog((prev) => (prev && prev.kind === "city" ? { ...prev, name } : prev))
+                }
+                onSelect={handleEditCityPlaceSelect}
+                onError={setGlobalError}
+                placeholder="Rechercher une ville (Google)"
               />
               <select
                 className="h-10 rounded-md border border-slate-200 bg-white px-3 text-sm text-slate-900"
@@ -936,12 +1010,15 @@ export default function GeolocationDashboardPage() {
 
           {editDialog?.kind === "quarter" ? (
             <div className="grid gap-3">
-              <Input
+              <PlacesAutocomplete
+                kind="quarter"
                 value={editDialog.name}
-                onChange={(event) =>
-                  setEditDialog((prev) => (prev && prev.kind === "quarter" ? { ...prev, name: event.target.value } : prev))
+                onValueChange={(name) =>
+                  setEditDialog((prev) => (prev && prev.kind === "quarter" ? { ...prev, name } : prev))
                 }
-                placeholder="Nom du quartier"
+                onSelect={handleEditQuarterPlaceSelect}
+                onError={setGlobalError}
+                placeholder="Rechercher un quartier (Google)"
               />
               <Input
                 value={editDialog.aliases}

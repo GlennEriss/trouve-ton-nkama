@@ -1,4 +1,5 @@
 import type { OSMLocation, OSMLocationsSerializable } from '@/data/gabon-osm-locations'
+import canonicalRules from '@/data/gabon-location-canonical-rules.json'
 
 export type LocationKind = 'city' | 'district'
 
@@ -27,12 +28,17 @@ type CanonicalOverride = {
 
 // Les alias métier complètent le catalogue administré lorsque l'usage local
 // diffère trop du nom officiel pour qu'une recherche floue soit fiable.
-const CANONICAL_OVERRIDES: Record<string, CanonicalOverride> = {
-  'atong abe': {
-    name: 'Atong-Abè',
-    aliases: ['atong abe', 'atong-abe', 'atongabè', 'toabe', 'toabet'],
-  },
-}
+const CANONICAL_OVERRIDES: Record<string, CanonicalOverride> = Object.fromEntries(
+  canonicalRules.quarters.flatMap((rule) =>
+    rule.matchNames.map((name) => [
+      normalizeGabonLocationName(name),
+      {
+        name: rule.canonicalName,
+        aliases: [...rule.matchNames, ...rule.aliases],
+      },
+    ]),
+  ),
+)
 
 export function normalizeGabonLocationName(value: string) {
   return value

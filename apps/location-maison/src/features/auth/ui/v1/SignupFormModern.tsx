@@ -38,8 +38,10 @@ import {
   Shield,
   Sparkles,
   Building2,
+  Phone,
 } from 'lucide-react';
 import { createLogger } from '@/lib/logger';
+import { PhoneAuthModal } from './PhoneAuthModal';
 import { mapRegisterFormToSignupData, mapSignupErrorToToast } from './signup.mapper';
 import { trackingEvents, useTrackEvent } from '@/features/analytics/tracking';
 
@@ -90,6 +92,7 @@ export const SignupFormModern: React.FC = () => {
   const shouldReduceMotion = useReducedMotion();
   const [currentStep, setCurrentStep] = useState(1);
   const [isGoogleLoading, setIsGoogleLoading] = useState(false);
+  const [isPhoneModalOpen, setIsPhoneModalOpen] = useState(false);
 
   const form = useForm<FormRegisterSchemaType>({
     resolver: zodResolver(FormRegisterSchema),
@@ -693,6 +696,26 @@ export const SignupFormModern: React.FC = () => {
             )}
             <span className="font-medium">Continuer avec Google</span>
           </Button>
+
+          {/* Phone (OTP) Login */}
+          <Button
+            type="button"
+            variant="outline"
+            onClick={() => {
+              trackEvent(trackingEvents.CTA_AUTH_SIGNUP_CLICK, {
+                method: 'phone',
+                entry_point: 'signup_form',
+              });
+              setIsPhoneModalOpen(true);
+            }}
+            disabled={isFormLoading || isGoogleLoading}
+            className="w-full h-12 mt-3 rounded-full border-2 hover:bg-gray-50 dark:hover:bg-gray-800 transition-all duration-200"
+          >
+            <Phone className="w-5 h-5 mr-3 text-[#1FA89B]" />
+            <span className="font-medium">Continuer avec Numéro de téléphone</span>
+          </Button>
+
+          <PhoneAuthModal open={isPhoneModalOpen} onOpenChange={setIsPhoneModalOpen} />
 
           {/* Sign In Link */}
           <p className="text-center text-sm text-gray-500 dark:text-gray-400 mt-6">

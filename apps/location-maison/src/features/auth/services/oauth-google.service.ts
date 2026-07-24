@@ -9,7 +9,7 @@ import {
   signInWithCredential,
 } from 'firebase/auth';
 
-type ProviderType = 'GOOGLE' | 'FACEBOOK' | 'CREDENTIALS';
+type ProviderType = 'GOOGLE' | 'FACEBOOK' | 'CREDENTIALS' | 'PHONE';
 
 type ExistingUser = {
   uid: string;

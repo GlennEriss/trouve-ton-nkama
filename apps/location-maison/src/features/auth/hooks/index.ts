@@ -24,3 +24,8 @@ export {
   mapPasswordResetConfirmError,
   type UsePasswordResetReturn,
 } from './usePasswordReset';
+export {
+  usePhoneOtpAuth,
+  type UsePhoneOtpAuthReturn,
+  type PhoneOtpStep,
+} from './usePhoneOtpAuth';

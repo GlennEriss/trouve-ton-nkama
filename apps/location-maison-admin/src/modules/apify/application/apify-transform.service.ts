@@ -7,6 +7,7 @@ import type {
 } from "../domain/types";
 import type { Image, StatusProperty, TypeProperty } from "../domain/platform-listing";
 import { hasText, isRealEstatePost, normalizeText } from "./apify-filter.service";
+import { GABON_PHONE_RE, normalizeGabonPhoneE164 } from "@/lib/phone/gabon-phone";
 
 /* -------------------------------------------------------------------------- */
 /* Small helpers                                                              */
@@ -480,29 +481,9 @@ function parseCountAfter(text: string, unitPattern: string): number | null {
   return Number.isFinite(value) && value > 0 ? value : null;
 }
 
-// Gabonese phone number: optional +241 prefix, a leading 0 then 6–7 more digits
-// (8–9 total — both lengths are in use), in any common grouping (2-2-2, 3-3-3,
-// 2-2-2-2, or no spaces at all). Inter-digit separators may repeat ("16  03").
-const PHONE_RE = /(?:\+?241[\s.\-]?)?0[1-9](?:[\s.\-]*\d){6,7}/;
-
-/** Normalize a Gabonese number to "+241 XXX XX XX XX". */
-function formatGabonPhone(raw: string): string {
-  let digits = raw.replace(/\D/g, "");
-  if (digits.startsWith("241")) digits = digits.slice(3); // drop country code
-  // 9-digit national number (0XX XX XX XX) → grouped 3-2-2-2.
-  if (digits.length === 9) {
-    return `+241 ${digits.slice(0, 3)} ${digits.slice(3, 5)} ${digits.slice(5, 7)} ${digits.slice(7, 9)}`;
-  }
-  // 8-digit number → grouped 2-2-2-2 (still prefixed).
-  if (digits.length === 8) {
-    return `+241 ${digits.slice(0, 2)} ${digits.slice(2, 4)} ${digits.slice(4, 6)} ${digits.slice(6, 8)}`;
-  }
-  return `+241 ${digits}`;
-}
-
 function parseContact(text: string): string | null {
-  const match = text.match(PHONE_RE);
-  return match ? formatGabonPhone(match[0]) : null;
+  const match = text.match(GABON_PHONE_RE);
+  return match ? normalizeGabonPhoneE164(match[0]) : null;
 }
 
 // Agency-fee mentions → "Agence". Owner-direct mentions → "Propriétaire".

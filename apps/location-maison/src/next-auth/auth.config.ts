@@ -5,6 +5,11 @@ import {
   validateCredentialsUserForOAuth,
 } from "@/features/auth/services/oauth-google.service";
 import { userRepository } from "@/features/auth/repositories/user.repository";
+import {
+  resolveSessionUser,
+  toSessionUserIdentity,
+} from "@/features/auth/services/resolve-session-user";
+import { authenticateWithPhoneIdToken } from "@/features/auth/services/phone-auth.service";
 import { auth, GoogleAuthProvider } from "@/firebase/auth";
 import { createLogger } from "@/lib/logger";
 import type { Role } from "@/models/authentication";
@@ -16,7 +21,7 @@ import Credentials from "next-auth/providers/credentials";
 import FacebookProvider from "next-auth/providers/facebook";
 import GoogleProvider from "next-auth/providers/google";
 
-type ProviderType = "GOOGLE" | "FACEBOOK" | "CREDENTIALS";
+type ProviderType = "GOOGLE" | "FACEBOOK" | "CREDENTIALS" | "PHONE";
 
 type AuthToken = JWT & {
   user?: unknown;
@@ -272,13 +277,36 @@ const authConfig = {
         }
       },
     }),
+    // Passwordless phone (OTP) provider. The client performs Firebase Phone Auth
+    // and passes the resulting Firebase ID token; we verify it server-side and
+    // resolve/provision the announcer account.
+    Credentials({
+      id: "phone",
+      name: "Phone",
+      credentials: {
+        idToken: { label: "Firebase phone ID token", type: "text" },
+      },
+      authorize: async (credentials) => {
+        const idToken = typeof credentials?.idToken === "string" ? credentials.idToken : "";
+        if (!idToken) {
+          throw new Error("phone_missing_id_token");
+        }
+        try {
+          const user = await authenticateWithPhoneIdToken(idToken);
+          return { ...user, emailVerified: user.emailVerified ?? false } as any;
+        } catch (error: any) {
+          logger.warn("Phone sign-in failed", { code: error?.code, error });
+          throw new Error(error?.code ?? "phone_signin_failed");
+        }
+      },
+    }),
   ],
   callbacks: {
     async signIn({ user, account, profile, credentials }) {
       try {
-        const userExists = user?.email
-          ? await userRepository.findByEmail(user.email)
-          : null;
+        // Resolve by uid → phone → email so email-less providers (phone OTP)
+        // hydrate too, while OAuth/Credentials keep resolving as before.
+        const userExists = await resolveSessionUser(toSessionUserIdentity(user));
 
         if (userExists) {
           const credentialsValidation = validateCredentialsUserForOAuth(
@@ -339,7 +367,7 @@ const authConfig = {
         currentToken.oauthTokenRefreshError = null;
       }
 
-      if (account?.provider === "credentials") {
+      if (account?.provider === "credentials" || account?.provider === "phone") {
         currentToken.oauthProvider = null;
         currentToken.oauthAccessToken = undefined;
         currentToken.oauthRefreshToken = undefined;
@@ -349,9 +377,7 @@ const authConfig = {
 
       if (user) {
         try {
-          const userDetails = user.email
-            ? await userRepository.findByEmail(user.email)
-            : null;
+          const userDetails = await resolveSessionUser(toSessionUserIdentity(user));
 
           if (userDetails) {
             user = userDetails as any;

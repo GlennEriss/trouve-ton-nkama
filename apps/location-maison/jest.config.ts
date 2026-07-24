@@ -32,10 +32,10 @@ const config: Config = {
   // progressivement des seuils locaux plus ambitieux sur les zones critiques.
   coverageThreshold: {
     global: {
-      branches: 50,
-      functions: 30,
-      lines: 20,
-      statements: 20,
+      branches: 65,
+      functions: 55,
+      lines: 60,
+      statements: 60,
     },
   },
   
@@ -48,6 +48,9 @@ const config: Config = {
     '!src/app/**/loading.tsx',
     '!src/app/**/error.tsx',
     '!src/app/**/not-found.tsx',
+    // Outils de diagnostic manuel et jeux de démonstration, absents du produit livré.
+    '!src/app/**/test-*/**/*.{ts,tsx}',
+    '!src/mocks/**/*.{ts,tsx}',
     '!src/**/*.stories.{ts,tsx}',
   ],
   

@@ -1,4 +1,7 @@
-import { validatePhoneNumberForSupportedCountries } from '@/lib/phoneValidation';
+import {
+  normalizePhoneNumberForFirebase,
+  validatePhoneNumberForSupportedCountries,
+} from '@/lib/phoneValidation';
 import { createLogger } from '@/lib/logger';
 import type { Role, User } from '@/models/authentication';
 import { RepositoryError } from '../repositories/user.repository.interface';
@@ -149,12 +152,34 @@ export class CompleteProfileServiceImpl implements CompleteProfileService {
       : ['User'];
 
     try {
+      const existingUser = await userRepository.findById(uid);
+      if (!existingUser) {
+        return {
+          success: false,
+          error: {
+            code: CompleteProfileErrorCode.USER_NOT_FOUND,
+            message: mapErrorMessage(CompleteProfileErrorCode.USER_NOT_FOUND),
+          },
+        };
+      }
+
+      // Store the number in E.164 for a single canonical format across accounts.
+      const normalizedPhone = normalizePhoneNumberForFirebase(data.phoneNumber);
+      const previousPhone = existingUser.phoneNumbers?.[0]
+        ? normalizePhoneNumberForFirebase(existingUser.phoneNumbers[0])
+        : '';
+      // Preserve OTP verification when the (already verified) number is unchanged
+      // — a phone account keeps its verified status through profile completion,
+      // while a Google user typing a fresh number stays unverified.
+      const phoneNumberVerified =
+        Boolean(existingUser.phoneNumberVerified) && normalizedPhone === previousPhone;
+
       const updatedUser = await userRepository.update(uid, {
         firstname,
         lastname,
         searchableName,
-        phoneNumbers: [data.phoneNumber],
-        phoneNumberVerified: false,
+        phoneNumbers: [normalizedPhone],
+        phoneNumberVerified,
         birthDate: birthdate.value,
         roles,
         metadata: {

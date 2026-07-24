@@ -34,6 +34,7 @@ export const analyticsSourceSchema = z.enum([
   "catalog_search_page",
   "location_maison_search_bar",
   "search_with_ia_page",
+  "property_location_form",
   "firebase_analytics",
   "vercel_analytics",
 ]);
@@ -277,6 +278,7 @@ export function validateEventPayload(
       "catalog_search_page",
       "location_maison_search_bar",
       "search_with_ia_page",
+      "property_location_form",
     ].includes(event.source)
   ) {
     return {
@@ -296,6 +298,7 @@ export function validateEventPayload(
       "catalog_search_page",
       "location_maison_search_bar",
       "search_with_ia_page",
+      "property_location_form",
     ].includes(event.source)
   ) {
     return {

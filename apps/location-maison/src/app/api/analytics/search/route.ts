@@ -39,6 +39,7 @@ const bodySchema = z
           'catalog_search_page',
           'location_maison_search_bar',
           'search_with_ia_page',
+          'property_location_form',
         ]),
         search_id: idSchema.optional(),
         query_text_raw: z.string().trim().max(160).optional(),
