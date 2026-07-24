@@ -300,6 +300,132 @@ describe('/api/reels', () => {
     expect(transaction.update).not.toHaveBeenCalled()
   })
 
+  it('refuse un trim invalide (fin avant le debut)', async () => {
+    const { db } = makeReelsDb()
+    ;(getFirestore as jest.Mock).mockReturnValue(db)
+
+    const response = await postReel(
+      makeRequest({
+        reelId: 'reel-1',
+        rawVideoPath: 'reels-raw/uid-1/reel-1.mov',
+        trimStartSeconds: 10,
+        trimEndSeconds: 5,
+      }),
+    )
+    const payload = await response.json()
+
+    expect(response.status).toBe(400)
+    expect(payload).toMatchObject({ success: false, code: 'INVALID_TRIM_RANGE' })
+  })
+
+  it('refuse la creation quand le profil utilisateur est introuvable', async () => {
+    const { db } = makeReelsDb({ userData: null })
+    ;(getFirestore as jest.Mock).mockReturnValue(db)
+
+    const response = await postReel(
+      makeRequest({ reelId: 'reel-1', rawVideoPath: 'reels-raw/uid-1/reel-1.mov' }),
+    )
+    const payload = await response.json()
+
+    expect(response.status).toBe(404)
+    expect(payload).toMatchObject({ success: false, code: 'USER_NOT_FOUND' })
+  })
+
+  it('refuse la creation pour un compte non annonceur', async () => {
+    const { db } = makeReelsDb({ userData: { uid: 'uid-1', roles: ['User'] } })
+    ;(getFirestore as jest.Mock).mockReturnValue(db)
+
+    const response = await postReel(
+      makeRequest({ reelId: 'reel-1', rawVideoPath: 'reels-raw/uid-1/reel-1.mov' }),
+    )
+    const payload = await response.json()
+
+    expect(response.status).toBe(403)
+    expect(payload).toMatchObject({ success: false, code: 'ANNOUNCER_REQUIRED' })
+  })
+
+  it('marque un reel en echec d upload', async () => {
+    const { db, transaction, refFor } = makeReelsDb({
+      reelData: { createdBy: 'uid-1', processingStatus: 'uploading' },
+    })
+    ;(getFirestore as jest.Mock).mockReturnValue(db)
+
+    const response = await patchReel(
+      makeRequest({ action: 'mark-upload-failed', reelId: 'reel-1', processingError: 'Codec non supporte.' }),
+    )
+    const payload = await response.json()
+
+    expect(response.status).toBe(200)
+    expect(payload).toMatchObject({ success: true, reelId: 'reel-1' })
+    expect(transaction.update).toHaveBeenCalledWith(
+      refFor('reels', 'reel-1'),
+      expect.objectContaining({ processingStatus: 'failed', processingError: 'Codec non supporte.' }),
+    )
+  })
+
+  it('refuse de marquer en echec un reel dont le statut a deja change', async () => {
+    const { db, transaction } = makeReelsDb({
+      reelData: { createdBy: 'uid-1', processingStatus: 'processed' },
+    })
+    ;(getFirestore as jest.Mock).mockReturnValue(db)
+
+    const response = await patchReel(
+      makeRequest({ action: 'mark-upload-failed', reelId: 'reel-1' }),
+    )
+    const payload = await response.json()
+
+    expect(response.status).toBe(409)
+    expect(payload).toMatchObject({ success: false, code: 'REEL_STATUS_CHANGED' })
+    expect(transaction.update).not.toHaveBeenCalled()
+  })
+
+  it('rattache un reel orphelin a une annonce possedee', async () => {
+    const { db, transaction, refFor } = makeReelsDb({
+      reelData: { createdBy: 'uid-1', propertyId: null },
+      propertyData: { createdBy: 'uid-1' },
+    })
+    ;(getFirestore as jest.Mock).mockReturnValue(db)
+
+    const response = await patchReel(
+      makeRequest({ action: 'attach-property', reelId: 'reel-1', propertyId: 'property-1' }),
+    )
+    const payload = await response.json()
+
+    expect(response.status).toBe(200)
+    expect(payload).toMatchObject({ success: true, reelId: 'reel-1' })
+    expect(transaction.update).toHaveBeenCalledWith(
+      refFor('reels', 'reel-1'),
+      expect.objectContaining({ propertyId: 'property-1' }),
+    )
+  })
+
+  it('refuse de rattacher un reel deja rattache', async () => {
+    const { db, transaction } = makeReelsDb({
+      reelData: { createdBy: 'uid-1', propertyId: 'property-existing' },
+    })
+    ;(getFirestore as jest.Mock).mockReturnValue(db)
+
+    const response = await patchReel(
+      makeRequest({ action: 'attach-property', reelId: 'reel-1', propertyId: 'property-1' }),
+    )
+    const payload = await response.json()
+
+    expect(response.status).toBe(409)
+    expect(payload).toMatchObject({ success: false, code: 'REEL_ALREADY_ATTACHED' })
+    expect(transaction.update).not.toHaveBeenCalled()
+  })
+
+  it('refuse une action de modification inconnue', async () => {
+    const { db } = makeReelsDb()
+    ;(getFirestore as jest.Mock).mockReturnValue(db)
+
+    const response = await patchReel(makeRequest({ action: 'bogus-action', reelId: 'reel-1' }))
+    const payload = await response.json()
+
+    expect(response.status).toBe(400)
+    expect(payload).toMatchObject({ success: false, code: 'INVALID_ACTION' })
+  })
+
   it('supprime un reel possede et nettoie les fichiers storage associes', async () => {
     const storageMocks = mockStorage()
     const { db, transaction, refFor } = makeReelsDb({
@@ -323,5 +449,45 @@ describe('/api/reels', () => {
     expect(transaction.delete).toHaveBeenCalledWith(refFor('reels', 'reel-1'))
     expect(storageMocks.bucket.file).toHaveBeenCalledTimes(3)
     expect(storageMocks.deleteFile).toHaveBeenCalledTimes(3)
+  })
+
+  it('traite une suppression sur un reel deja absent comme un succes idempotent', async () => {
+    const storageMocks = mockStorage()
+    const { db, transaction } = makeReelsDb({ reelData: null })
+    ;(getFirestore as jest.Mock).mockReturnValue(db)
+
+    const response = await deleteReel(makeRequest({ reelId: 'reel-1' }))
+    const payload = await response.json()
+
+    expect(response.status).toBe(200)
+    expect(payload).toMatchObject({ success: true, reelId: 'reel-1' })
+    expect(transaction.delete).not.toHaveBeenCalled()
+    expect(storageMocks.deleteFile).not.toHaveBeenCalled()
+  })
+
+  it('refuse de supprimer un reel qui appartient a un autre annonceur', async () => {
+    const { db, transaction } = makeReelsDb({ reelData: { createdBy: 'other-uid' } })
+    ;(getFirestore as jest.Mock).mockReturnValue(db)
+
+    const response = await deleteReel(makeRequest({ reelId: 'reel-1' }))
+    const payload = await response.json()
+
+    expect(response.status).toBe(403)
+    expect(payload).toMatchObject({ success: false, code: 'FORBIDDEN_REEL' })
+    expect(transaction.delete).not.toHaveBeenCalled()
+  })
+
+  it('traduit une exception inattendue en 500', async () => {
+    const { db } = makeReelsDb()
+    db.runTransaction = jest.fn(async () => {
+      throw new Error('firestore unavailable')
+    }) as unknown as typeof db.runTransaction
+    ;(getFirestore as jest.Mock).mockReturnValue(db)
+
+    const response = await deleteReel(makeRequest({ reelId: 'reel-1' }))
+    const payload = await response.json()
+
+    expect(response.status).toBe(500)
+    expect(payload).toMatchObject({ success: false, code: 'INTERNAL_SERVER_ERROR' })
   })
 })

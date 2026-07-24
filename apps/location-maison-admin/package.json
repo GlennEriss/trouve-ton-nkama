@@ -13,7 +13,9 @@
     "osm:sync:projection:dev": "tsx scripts/location-osm/sync-projection.ts --env-file=.env.local",
     "osm:seed:cloud": "tsx scripts/location-osm/seed-cloud.ts",
     "osm:seed:cloud:prod": "tsx scripts/location-osm/seed-cloud.ts --env-file=.env.local.prod",
-    "osm:seed:cloud:dev": "tsx scripts/location-osm/seed-cloud.ts --env-file=.env.local"
+    "osm:seed:cloud:dev": "tsx scripts/location-osm/seed-cloud.ts --env-file=.env.local",
+    "phone:normalize": "tsx scripts/phone/normalize-existing-phones.ts",
+    "phone:normalize:apply": "tsx scripts/phone/normalize-existing-phones.ts --apply"
   },
   "dependencies": {
     "@trouve-ton-nkama/core": "*",

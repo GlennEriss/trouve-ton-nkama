@@ -669,8 +669,24 @@ valide la logique, le test emulateur valide les regles, index et transactions re
 Cible : couvrir environ 70 % du domaine API (~3 350 lignes) plus la base statistiques (~300),
 soit environ +3 650 lignes couvertes, portant les lignes/instructions a environ 55 %.
 
-Sortie attendue : seuils CI releves a 55 % lignes/instructions, fonctions et branches inchanges.
-Audit dans `LOT-10A-AUDIT.md`.
+Execute le 2026-07-23 :
+
+- une trentaine de routes `src/app/api/**` couvertes (forwarders analytics, assistant IA,
+  localisation serveur, authentification par email, paiements/cadeaux, annonces/reels,
+  divers) et `src/db/property-statistics.db.ts` porte de 38,3 % a 88,02 % de lignes ;
+- deux quirks de schema latents decouverts et figes par des tests (`limit` absent traite
+  comme `null` plutot que `undefined` sur `location/search` et `location/suggestions`),
+  sans impact production connu (seuls appelants envoient toujours `limit`) ;
+- un blocage externe corrige en cours de lot : trois suites cassees par un chantier
+  concurrent sur l'authentification telephone (`slow-buffer-compat.ts` incompatible ts-jest,
+  hook non mocke, mocks obsoletes face a deux evolutions reelles du code) ; detail et preuve
+  par injection de bug dans `LOT-10A-AUDIT.md` ;
+- 1 047 tests passes et 6 ignores ; couverture globale a 55,06 % des lignes/instructions,
+  63,20 % des fonctions et 72,49 % des branches ; `check:types` et `test:ci` verts.
+
+Sortie attendue : seuils CI releves a 55 % lignes/instructions, fonctions et branches
+inchanges. Audit dans `LOT-10A-AUDIT.md`. Reporte au Lot 10B : les tests sur emulateur
+Firestore reel du Principe anti-faux-vrai pour les routes critiques (credits, idempotence).
 
 #### Lot 10B - Clusters UI et palier final 60 %
 
@@ -690,13 +706,27 @@ Perimetre :
 Cible : couvrir environ 85 % de ces clusters (~4 900 lignes), portant les lignes/instructions
 a 60 % ou plus.
 
+Execute le 2026-07-23 :
+
+- home-page, preview-property et search couverts sur leurs composants principaux (voir liste
+  complete dans `LOT-10B-AUDIT.md`) ; `HomePage.tsx` et `ModaleLanguageSwitcher.tsx` exclus
+  car code mort (aucun import ailleurs dans `src/`) ; `CarouselPropertyType.tsx` bloque par un
+  defaut d'environnement preexistant (`identity-obj-proxy` reference dans `jest.config.ts`
+  mais absent de `node_modules`, necessiterait un `npm install` depuis la racine du monorepo) ;
+- deux constats de code reel documentes sans correction (hors scope) : sur mobile, `Navbar.tsx`
+  rend les CTA annonceur du bloc visiteur inatteignables pour un utilisateur connecte ; le
+  repli `nbrKitchens ?? nbrChickens` dans `DetailsProperty`/`DetailsPropertyMobile` est une
+  typo historique conservee pour compatibilite ;
+- 1 219 tests passes et 6 ignores ; couverture globale a 60,16 % des lignes/instructions,
+  66,15 % des fonctions et 73,29 % des branches ; `check:types` et `test:ci` verts.
+
 Sortie attendue : seuils CI finaux fixes a 60 % lignes/instructions, 55 % fonctions et 65 %
 branches. Audit dans `LOT-10B-AUDIT.md`. L'objectif de couverture du Lot 10 est alors atteint
 et protege contre les regressions par la CI.
 
-Priorite de reserve si un cluster resiste (dependances navigateur lourdes type Leaflet, Google
-Places, trim video) : basculer l'effort sur `src/components/reels/**` et `src/features/auth/**`
-restants, dont le gain en lignes est equivalent et le mocking deja documente.
+Reporte a une prochaine iteration : tests sur emulateur Firestore reel pour les routes
+critiques (deja reporte au Lot 10A), resolution du defaut `identity-obj-proxy`, et la passe de
+mutation testing prevue ci-dessous.
 
 #### Preuve systematique par mutation testing
 

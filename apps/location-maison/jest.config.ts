@@ -32,10 +32,10 @@ const config: Config = {
   // progressivement des seuils locaux plus ambitieux sur les zones critiques.
   coverageThreshold: {
     global: {
-      branches: 60,
-      functions: 50,
-      lines: 50,
-      statements: 50,
+      branches: 65,
+      functions: 55,
+      lines: 60,
+      statements: 60,
     },
   },
   

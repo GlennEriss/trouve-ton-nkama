@@ -1,4 +1,5 @@
 import { getFirebaseAdminAuth } from "@/lib/firebase/firebase-admin";
+import { normalizeGabonPhoneE164 } from "@/lib/phone/gabon-phone";
 import type {
   CreateListingForAnnouncerInput,
   CreateListingForAnnouncerResult,
@@ -19,8 +20,18 @@ function sanitizeEmail(value: string) {
   return value.trim().toLowerCase();
 }
 
+/**
+ * Normalize to compact E.164 (+241XXXXXXXX) — the same stored form the OTP
+ * (Firebase Phone Auth) login produces, so a provisioned account's number
+ * matches on phone sign-in. Throws rather than silently persisting an
+ * unparseable number, since this is a data-entry boundary.
+ */
 function sanitizePhone(value: string) {
-  return value.replace(/\s+/g, "").trim();
+  const normalized = normalizeGabonPhoneE164(value);
+  if (!normalized) {
+    throw new Error("ACCOUNT_PHONE_INVALID");
+  }
+  return normalized;
 }
 
 function hasAnnouncerRole(roles: string[]) {
@@ -159,7 +170,13 @@ export async function createListingForAnnouncer(
     throw new Error("ANNOUNCER_ROLE_REQUIRED");
   }
 
-  const contact = (input.contact ?? "").trim() || announcer.phoneNumbers[0] || "";
+  const trimmedContact = (input.contact ?? "").trim();
+  // Canonicalize an explicit manual contact too — the fallback to the
+  // announcer's own phone is already compact E.164 (sanitizePhone/OTP/profile
+  // completion all converge on that format).
+  const contact = (trimmedContact ? normalizeGabonPhoneE164(trimmedContact) ?? trimmedContact : "") ||
+    announcer.phoneNumbers[0] ||
+    "";
 
   const propertyId = await createPropertyDocumentForAnnouncer({
     ...input,

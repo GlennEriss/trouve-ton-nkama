@@ -23,6 +23,21 @@ jest.mock('@/features/auth/hooks', () => ({
   useSignin: () => authState,
   mapSigninError: (error?: string) => mapErrorMock(error),
 }))
+// PhoneAuthModal importe ce hook par son chemin direct (pas via le barrel ci-dessus),
+// et le hook réel tire next-auth/react (ESM non transformé par Jest) — on le mocke ici
+// pour garder ce test concentré sur SigninFormModern, pas sur le flux OTP téléphone.
+jest.mock('@/features/auth/hooks/usePhoneOtpAuth', () => ({
+  usePhoneOtpAuth: () => ({
+    step: 'phone',
+    phone: '',
+    isSending: false,
+    isVerifying: false,
+    error: null,
+    sendOtp: jest.fn(),
+    verifyOtp: jest.fn(),
+    reset: jest.fn(),
+  }),
+}))
 jest.mock('@/hooks/use-toast', () => ({ useToast: () => ({ toast: toastMock }) }))
 jest.mock('@/features/analytics/tracking', () => ({
   trackingEvents: { CTA_AUTH_SIGNIN_CLICK: 'signin-click', BUSINESS_AUTH_SIGNIN_SUCCESS: 'signin-success', CTA_AUTH_GOOGLE_CLICK: 'google-click' },

@@ -192,6 +192,17 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    if (code === "ACCOUNT_PHONE_INVALID") {
+      return jsonError(
+        {
+          code: "VALIDATION_ERROR",
+          message: "Numéro de téléphone invalide. Utilisez un numéro gabonais valide.",
+        },
+        400,
+        auth.correlationId,
+      );
+    }
+
     return jsonError(
       {
         code: "INTERNAL_ERROR",

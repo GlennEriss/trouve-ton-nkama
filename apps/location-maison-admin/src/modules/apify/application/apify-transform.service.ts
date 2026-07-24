@@ -7,6 +7,7 @@ import type {
 } from "../domain/types";
 import type { Image, StatusProperty, TypeProperty } from "../domain/platform-listing";
 import { hasText, isRealEstatePost, normalizeText } from "./apify-filter.service";
+import { GABON_PHONE_RE, normalizeGabonPhoneE164 } from "@/lib/phone/gabon-phone";
 
 /* -------------------------------------------------------------------------- */
 /* Small helpers                                                              */
@@ -480,29 +481,9 @@ function parseCountAfter(text: string, unitPattern: string): number | null {
   return Number.isFinite(value) && value > 0 ? value : null;
 }
 
-// Gabonese phone number: optional +241 prefix, an optional legacy leading 0,
-// then a significant first digit and 6–7 more (8 significant digits in the
-// current plan, 9 when a legacy 0 is written), in any common grouping (2-2-2,
-// 3-3-3, 2-2-2-2, or no spaces at all). Separators may repeat ("16  03").
-const PHONE_RE = /(?:\+?241[\s.\-]?)?0?[1-9](?:[\s.\-]*\d){6,7}/;
-
-/** Normalize a Gabonese number to "+241 XX XX XX XX". */
-function formatGabonPhone(raw: string): string {
-  let digits = raw.replace(/\D/g, "");
-  if (digits.startsWith("241")) digits = digits.slice(3); // drop country code
-  // The current Gabon plan uses 8 significant digits without the historical
-  // leading 0 (066 57 54 67 → 66 57 54 67), so drop a legacy 0 when present.
-  if (digits.length === 9 && digits.startsWith("0")) digits = digits.slice(1);
-  // 8-digit national number → grouped 2-2-2-2 (still prefixed).
-  if (digits.length === 8) {
-    return `+241 ${digits.slice(0, 2)} ${digits.slice(2, 4)} ${digits.slice(4, 6)} ${digits.slice(6, 8)}`;
-  }
-  return `+241 ${digits}`;
-}
-
 function parseContact(text: string): string | null {
-  const match = text.match(PHONE_RE);
-  return match ? formatGabonPhone(match[0]) : null;
+  const match = text.match(GABON_PHONE_RE);
+  return match ? normalizeGabonPhoneE164(match[0]) : null;
 }
 
 // Agency-fee mentions → "Agence". Owner-direct mentions → "Propriétaire".

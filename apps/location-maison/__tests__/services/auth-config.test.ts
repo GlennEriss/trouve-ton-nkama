@@ -8,6 +8,7 @@ const mockUpdateUser = jest.fn()
 const mockFirebaseSignin = jest.fn()
 const mockSignInWithCredential = jest.fn()
 const mockLinkWithCredential = jest.fn()
+const mockAuthenticateWithPhoneIdToken = jest.fn()
 
 jest.mock('next-auth/providers/google', () => ({ __esModule: true, default: (options: any) => ({ id: 'google', options }) }))
 jest.mock('next-auth/providers/facebook', () => ({ __esModule: true, default: (options: any) => ({ id: 'facebook', options }) }))
@@ -18,6 +19,13 @@ jest.mock('@/features/auth/services/oauth-google.service', () => ({
   validateCredentialsUserForOAuth: (...args: any[]) => mockValidateCredentials(...args),
 }))
 jest.mock('@/db/user.db', () => ({ createUser: (...args: any[]) => mockCreateUser(...args), updateUser: (...args: any[]) => mockUpdateUser(...args) }))
+// Comme oauth-google.service ci-dessus: on mocke le service collaborateur plutôt que de
+// laisser Jest résoudre @/firebase/admin pour de vrai (firebase-admin/auth → jwks-rsa → jose,
+// dont le build ESM "browser" casse sous testEnvironment jsdom). La logique de
+// authenticateWithPhoneIdToken a son propre test dans phone-auth.service.test.ts.
+jest.mock('@/features/auth/services/phone-auth.service', () => ({
+  authenticateWithPhoneIdToken: (...args: any[]) => mockAuthenticateWithPhoneIdToken(...args),
+}))
 jest.mock('@/firebase/auth', () => ({
   auth: { name: 'client-auth' },
   GoogleAuthProvider: { credential: (token: string) => ({ googleToken: token }) },
@@ -46,7 +54,7 @@ describe('configuration NextAuth', () => {
   })
 
   it('configure les trois fournisseurs et autorise des identifiants vérifiés', async () => {
-    expect(config.providers.map((provider: any) => provider.id)).toEqual(['google', 'facebook', 'credentials'])
+    expect(config.providers.map((provider: any) => provider.id)).toEqual(['google', 'facebook', 'credentials', 'phone'])
     mockFirebaseSignin.mockResolvedValueOnce({ user: { uid: 'u1', emailVerified: true } })
     mockFindById.mockResolvedValueOnce({ uid: 'u1', email: 'glenn@example.com' })
     await expect(config.providers[2].authorize({ login: 'glenn@example.com', password: 'secret' })).resolves.toMatchObject({ uid: 'u1', emailVerified: true })

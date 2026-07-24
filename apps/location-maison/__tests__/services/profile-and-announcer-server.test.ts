@@ -5,14 +5,24 @@ import { becomeAnnouncerServerService } from '@/features/users/become-announcer/
 import { BecomeAnnouncerErrorCode } from '@/features/users/become-announcer/services/become-announcer.service.interface'
 
 const mockUpdateUser = jest.fn()
+const mockFindById = jest.fn()
 const mockDirectGet = jest.fn()
 const mockQueryGet = jest.fn()
 const mockRefUpdate = jest.fn()
 
 jest.mock('@/lib/phoneValidation', () => ({
   validatePhoneNumberForSupportedCountries: (phone: string) => ({ isValid: phone.startsWith('+241') }),
+  // Passthrough: le format d'entree des tests (+241...) est deja normalise, seule la
+  // presence de la fonction compte ici (complete-profile.service l'appelle desormais pour
+  // stocker le numero en E.164 canonique).
+  normalizePhoneNumberForFirebase: (phone: string) => phone,
 }))
-jest.mock('@/features/auth/repositories/user.repository', () => ({ userRepository: { update: (...args: any[]) => mockUpdateUser(...args) } }))
+jest.mock('@/features/auth/repositories/user.repository', () => ({
+  userRepository: {
+    update: (...args: any[]) => mockUpdateUser(...args),
+    findById: (...args: any[]) => mockFindById(...args),
+  },
+}))
 jest.mock('@/firebase/admin', () => ({ adminApp: { name: 'admin' } }))
 jest.mock('@/lib/logger', () => ({ createLogger: () => ({ info: jest.fn(), warn: jest.fn(), error: jest.fn() }) }))
 jest.mock('firebase-admin/firestore', () => ({
@@ -35,7 +45,29 @@ describe('CompleteProfileServiceImpl', () => {
   const service = new CompleteProfileServiceImpl()
   beforeEach(() => {
     jest.clearAllMocks()
+    mockFindById.mockResolvedValue({ uid: 'u1', phoneNumbers: [], phoneNumberVerified: false })
     mockUpdateUser.mockResolvedValue({ uid: 'u1', firstname: 'Glenn' })
+  })
+
+  it('traduit une absence de profil existant en USER_NOT_FOUND', async () => {
+    mockFindById.mockResolvedValueOnce(null)
+    await expect(service.completeProfile(validProfile)).resolves.toMatchObject({
+      success: false,
+      error: { code: CompleteProfileErrorCode.USER_NOT_FOUND },
+    })
+    expect(mockUpdateUser).not.toHaveBeenCalled()
+  })
+
+  it('conserve le statut verifie quand le numero de telephone est inchange', async () => {
+    mockFindById.mockResolvedValueOnce({ uid: 'u1', phoneNumbers: ['+24166545430'], phoneNumberVerified: true })
+    await service.completeProfile({ ...validProfile, phoneNumber: '+24166545430' })
+    expect(mockUpdateUser).toHaveBeenCalledWith('u1', expect.objectContaining({ phoneNumberVerified: true }))
+  })
+
+  it('reinitialise le statut verifie quand le numero de telephone change', async () => {
+    mockFindById.mockResolvedValueOnce({ uid: 'u1', phoneNumbers: ['+24166540000'], phoneNumberVerified: true })
+    await service.completeProfile({ ...validProfile, phoneNumber: '+24166545430' })
+    expect(mockUpdateUser).toHaveBeenCalledWith('u1', expect.objectContaining({ phoneNumberVerified: false }))
   })
 
   it.each([
