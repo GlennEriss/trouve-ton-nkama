@@ -231,15 +231,23 @@ export async function GET(request: NextRequest) {
     }
 
     const db = getFirestore(adminApp as any);
-    const snapshot = await db
-      .collection(firebaseCollectionNames.properties)
-      .where('createdBy', '==', uid)
-      .get();
+    const propertiesCollection = db.collection(firebaseCollectionNames.properties);
+    // "Mes annonces" = originally created by this announcer, OR claimed via a
+    // verified phone number matching the listing's contact (auto-attribution,
+    // see listing-claim.service.ts). Two queries + merge-by-id rather than a
+    // single OR filter, consistent with the rest of this route (loads
+    // everything then filters/sorts in memory — no pagination at the Firestore
+    // query level here).
+    const [createdSnapshot, claimedSnapshot] = await Promise.all([
+      propertiesCollection.where('createdBy', '==', uid).get(),
+      propertiesCollection.where('claimedBy', '==', uid).get(),
+    ]);
 
-    const allItems = snapshot.docs.map((doc) => ({
-      id: doc.id,
-      ...(doc.data() as Property),
-    })) as PropertyRecord[];
+    const byId = new Map<string, PropertyRecord>();
+    for (const doc of [...createdSnapshot.docs, ...claimedSnapshot.docs]) {
+      byId.set(doc.id, { id: doc.id, ...(doc.data() as Property) } as PropertyRecord);
+    }
+    const allItems = Array.from(byId.values());
 
     const globalSummary = buildSummary(allItems);
 

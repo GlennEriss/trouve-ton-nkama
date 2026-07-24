@@ -82,4 +82,27 @@ describe('/api/announcer/ads', () => {
     expect(response.status).toBe(500)
     expect(await response.json()).toMatchObject({ error: { code: 'INTERNAL_SERVER_ERROR' } })
   })
+
+  it('inclut les annonces revendiquees (claimedBy) en plus de celles creees (createdBy), sans doublon', async () => {
+    const created = { id: 'a', title: 'Creee par admin', typeProperty: 'Villa', status: 'FOR_SALE', state: 'IN_PROGRESS', price: 1, createdBy: 'admin-uid' }
+    const claimedOnly = { id: 'd', title: 'Revendiquee par telephone', typeProperty: 'Studio', status: 'FOR_RENT', state: 'IN_PROGRESS', price: 2, createdBy: 'admin-uid', claimedBy: 'u1' }
+    const both = { id: 'e', title: 'Creee et revendiquee par u1', typeProperty: 'Home', status: 'FOR_RENT', state: 'IN_PROGRESS', price: 3, createdBy: 'u1', claimedBy: 'u1' }
+
+    const toDocs = (rows: Array<Record<string, any>>) => rows.map((item) => ({ id: item.id, data: () => { const { id, ...data } = item; return data } }))
+
+    ;(getFirestore as jest.Mock).mockReturnValueOnce({
+      collection: () => ({
+        where: (field: string) => ({
+          get: async () => ({
+            docs: field === 'createdBy' ? toDocs([created, both]) : toDocs([claimedOnly, both]),
+          }),
+        }),
+      }),
+    })
+
+    const response = await getAds(request())
+    const body = await response.json()
+    const ids = body.items.map((listing: { id: string }) => listing.id).sort()
+    expect(ids).toEqual(['a', 'd', 'e'])
+  })
 })
