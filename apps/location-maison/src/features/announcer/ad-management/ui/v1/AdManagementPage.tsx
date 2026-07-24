@@ -43,6 +43,7 @@ import {
   X,
 } from 'lucide-react';
 import { useAdManagement } from '../../hooks';
+import { AutoClaimBanner } from '@/features/announcer/listing-claim/ui';
 
 const TYPE_FILTER_OPTIONS: Array<{ value: string; label: string }> = [
   { value: '__all', label: 'Tous types' },
@@ -512,6 +513,7 @@ export function AdManagementPage() {
 
   return (
     <div className="space-y-6 px-4 pb-20 pt-2 md:px-0 md:pb-8">
+      <AutoClaimBanner />
       <section className="rounded-3xl border border-emerald-100 bg-gradient-to-br from-emerald-50 to-white p-5 shadow-sm dark:border-emerald-900 dark:from-emerald-950/30 dark:to-gray-900 md:p-6">
         <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
           <div>

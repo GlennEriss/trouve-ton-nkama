@@ -136,4 +136,38 @@ describe('authenticateWithPhoneIdToken', () => {
 
     await expect(authenticateWithPhoneIdToken('t')).resolves.toBe(existing);
   });
+
+  it('persists a pendingClaimNotice when listings were auto-claimed, so the dashboard can welcome the announcer', async () => {
+    adminAuth.verifyIdToken.mockResolvedValue({ uid: 'uid-1', phone_number: PHONE });
+    const existing = makeUser({ providers: ['PHONE'], phoneNumberVerified: true, metadata: { foo: 'bar' } });
+    resolveSessionUser.mockResolvedValue(existing);
+    claimListingsByVerifiedPhone.mockResolvedValue({ claimedCount: 3, skippedThreshold: false });
+    const updated = { ...existing, metadata: { foo: 'bar', pendingClaimNotice: { count: 3, claimedAt: 'now' } } };
+    userRepository.update.mockResolvedValue(updated);
+
+    const result = await authenticateWithPhoneIdToken('t');
+
+    expect(userRepository.update).toHaveBeenCalledWith(
+      'uid-1',
+      expect.objectContaining({
+        metadata: expect.objectContaining({
+          foo: 'bar',
+          pendingClaimNotice: expect.objectContaining({ count: 3 }),
+        }),
+      }),
+    );
+    expect(result).toBe(updated);
+  });
+
+  it('does not touch metadata when nothing was claimed', async () => {
+    adminAuth.verifyIdToken.mockResolvedValue({ uid: 'uid-1', phone_number: PHONE });
+    const existing = makeUser({ providers: ['PHONE'], phoneNumberVerified: true });
+    resolveSessionUser.mockResolvedValue(existing);
+    claimListingsByVerifiedPhone.mockResolvedValue({ claimedCount: 0, skippedThreshold: false });
+
+    const result = await authenticateWithPhoneIdToken('t');
+
+    expect(userRepository.update).not.toHaveBeenCalled();
+    expect(result).toBe(existing);
+  });
 });

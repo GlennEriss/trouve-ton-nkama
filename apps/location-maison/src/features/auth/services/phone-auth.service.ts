@@ -66,11 +66,22 @@ export async function authenticateWithPhoneIdToken(idToken: string): Promise<Use
 
   // Existing account by Firebase uid, else by phone (account linking, option A).
   const existing = await resolveSessionUser({ uid, phone });
-  const resolvedUser = existing ? await ensurePhoneProvider(existing) : await createMinimalPhoneUser(uid, phone);
+  let resolvedUser = existing ? await ensurePhoneProvider(existing) : await createMinimalPhoneUser(uid, phone);
 
-  // Auto-attribution (Lot 4b): best-effort, never blocks sign-in.
+  // Auto-attribution (Lot 4b): best-effort, never blocks sign-in. On a
+  // successful claim, persist a one-shot notice so the announcer's dashboard
+  // can welcome them ("N annonces vous ont été rattachées") — see
+  // AutoClaimBanner / the dismiss route, which clears this flag once shown.
   try {
-    await claimListingsByVerifiedPhone(resolvedUser.uid, phone);
+    const { claimedCount } = await claimListingsByVerifiedPhone(resolvedUser.uid, phone);
+    if (claimedCount > 0) {
+      resolvedUser = await userRepository.update(resolvedUser.uid, {
+        metadata: {
+          ...resolvedUser.metadata,
+          pendingClaimNotice: { count: claimedCount, claimedAt: new Date().toISOString() },
+        },
+      });
+    }
   } catch (error) {
     logger.warn("Auto-claim of listings by verified phone failed", { uid: resolvedUser.uid, error });
   }

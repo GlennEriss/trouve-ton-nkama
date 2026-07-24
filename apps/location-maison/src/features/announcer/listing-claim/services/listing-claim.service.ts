@@ -12,8 +12,9 @@
  * Security note: OTP verification is proof of phone possession, which is why
  * this attaches automatically rather than requiring admin review — but a
  * shared/mistyped `contact` could otherwise mass-attach many listings to the
- * wrong account, so a batch above MAX_AUTO_CLAIM is skipped entirely and
- * logged for manual follow-up instead of partially/fully applied.
+ * wrong account, so a batch above MAX_AUTO_CLAIM is skipped entirely, logged,
+ * and recorded in `listing_claim_reviews` (COLLECTIONS.listing_claim_reviews)
+ * for an admin to approve or reject from location-maison-admin.
  */
 
 import { FieldValue, getFirestore } from 'firebase-admin/firestore';
@@ -31,6 +32,43 @@ export type ClaimListingsResult = {
   claimedCount: number;
   skippedThreshold: boolean;
 };
+
+/** Deterministic id so repeated sign-in attempts upsert the same review instead of piling up duplicates. */
+function buildReviewDocId(uid: string, verifiedPhone: string): string {
+  return `${uid}__${verifiedPhone.replace(/[^a-zA-Z0-9]/g, '')}`;
+}
+
+/**
+ * Record (or refresh) a pending review for an auto-claim batch that exceeded
+ * MAX_AUTO_CLAIM. Never overwrites a review an admin already resolved
+ * (approved/rejected) — a fresh sign-in attempt before that resolution just
+ * bumps `matchCount`/`lastAttemptAt` on the still-pending review.
+ */
+async function recordPendingReview(
+  db: FirebaseFirestore.Firestore,
+  uid: string,
+  verifiedPhone: string,
+  matchCount: number,
+): Promise<void> {
+  const ref = db.collection(firebaseCollectionNames.listing_claim_reviews).doc(buildReviewDocId(uid, verifiedPhone));
+  const existing = await ref.get();
+
+  if (existing.exists && existing.data()?.status !== 'pending') {
+    return;
+  }
+
+  await ref.set(
+    {
+      uid,
+      verifiedPhone,
+      matchCount,
+      status: 'pending',
+      lastAttemptAt: FieldValue.serverTimestamp(),
+      ...(existing.exists ? {} : { createdAt: FieldValue.serverTimestamp() }),
+    },
+    { merge: true },
+  );
+}
 
 /**
  * Attach every unclaimed listing whose `contact` matches `verifiedPhone` to
@@ -65,6 +103,11 @@ export async function claimListingsByVerifiedPhone(
       matchCount: candidates.length,
       threshold: MAX_AUTO_CLAIM,
     });
+    try {
+      await recordPendingReview(db, uid, verifiedPhone, candidates.length);
+    } catch (error) {
+      logger.error('Failed to record pending listing-claim review', { uid, verifiedPhone, error });
+    }
     return { claimedCount: 0, skippedThreshold: true };
   }
 

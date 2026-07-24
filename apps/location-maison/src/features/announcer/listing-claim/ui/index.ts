@@ -1,0 +1,1 @@
+export { AutoClaimBanner } from './AutoClaimBanner';
