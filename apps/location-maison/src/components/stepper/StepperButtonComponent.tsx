@@ -68,7 +68,7 @@ export default function StepperButtonComponent() {
         <div className="flex flex-col gap-3 sm:flex-row sm:justify-end">
           {!isFirstStep && (
             <Button
-              className="min-h-11 w-full bg-[#1B4D5B] text-white sm:w-auto"
+              className="min-h-11 w-full bg-ink text-white sm:w-auto"
               type="button"
               onClick={handlePreviousStep}
               disabled={isBusy}
@@ -78,7 +78,7 @@ export default function StepperButtonComponent() {
           )}
 
           <Button
-            className="min-h-11 w-full bg-[#1B4D5B] text-white sm:w-auto"
+            className="min-h-11 w-full bg-ink text-white sm:w-auto"
             type="submit"
             disabled={isBusy}
           >

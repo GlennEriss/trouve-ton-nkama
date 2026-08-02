@@ -204,11 +204,11 @@ export default function BlogPage() {
   return (
     <div className="min-h-screen bg-gray-50">
       <div className="container mx-auto px-4 py-8">
-        <div className="max-w-[1280px] 2xl:max-w-[1440px] mx-auto">
+        <div className="container-page">
           
           {/* Header */}
           <div className="text-center mb-12">
-            <h1 className="text-4xl md:text-5xl font-bold text-[#146B67] mb-6">
+            <h1 className="text-4xl md:text-5xl font-bold text-primary mb-6">
               Blog Immobilier Gabon
             </h1>
             <p className="text-xl text-gray-600 max-w-3xl mx-auto leading-relaxed">
@@ -222,7 +222,7 @@ export default function BlogPage() {
             {articles.map((article) => (
               <article key={article.id} className="bg-white rounded-xl shadow-lg overflow-hidden hover:shadow-xl transition-shadow duration-300">
                 {/* Image */}
-                <div className="h-48 bg-gradient-to-br from-[#C1DEE8] to-[#FBD9B9] flex items-center justify-center">
+                <div className="h-48 bg-gradient-to-br from-sky to-peach flex items-center justify-center">
                   <div className="text-4xl"></div>
                 </div>
                 
@@ -230,7 +230,7 @@ export default function BlogPage() {
                 <div className="p-6">
                   {/* Category */}
                   <div className="mb-3">
-                    <span className="inline-block bg-[#146B67] text-white text-xs font-semibold px-3 py-1 rounded-full">
+                    <span className="inline-block bg-primary text-white text-xs font-semibold px-3 py-1 rounded-full">
                       {article.category}
                     </span>
                   </div>
@@ -247,11 +247,11 @@ export default function BlogPage() {
                   
                   {/* Highlights */}
                   <div className="mb-4">
-                    <h4 className="text-sm font-semibold text-[#146B67] mb-2">Points clés :</h4>
+                    <h4 className="text-sm font-semibold text-primary mb-2">Points clés :</h4>
                     <ul className="space-y-1">
                       {article.highlights.slice(0, 2).map((highlight, index) => (
                         <li key={index} className="text-xs text-gray-600 flex items-start">
-                          <span className="text-[#146B67] mr-2">•</span>
+                          <span className="text-primary mr-2">•</span>
                           {highlight}
                         </li>
                       ))}
@@ -267,7 +267,7 @@ export default function BlogPage() {
                   {/* CTA */}
                   <Link 
                     href={article.url}
-                    className="inline-flex items-center justify-center w-full bg-[#146B67] text-white px-4 py-2 rounded-lg hover:bg-[#0f5a57] transition-colors font-semibold text-sm"
+                    className="inline-flex items-center justify-center w-full bg-primary text-white px-4 py-2 rounded-lg hover:bg-primary-800 transition-colors font-semibold text-sm"
                   >
                     Lire l'article complet
                     <span className="ml-2">→</span>
@@ -278,23 +278,23 @@ export default function BlogPage() {
           </div>
 
           <div className="mt-12 bg-white rounded-2xl border border-gray-100 p-6 shadow-sm">
-            <h2 className="text-2xl font-bold text-[#146B67] mb-4">Recherches populaires au Gabon</h2>
+            <h2 className="text-2xl font-bold text-primary mb-4">Recherches populaires au Gabon</h2>
             <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-              <Link href="/immobilier/location/maison" className="rounded-xl border border-gray-200 px-4 py-3 text-sm font-medium text-gray-700 hover:border-[#146B67] hover:text-[#146B67] transition-colors">
+              <Link href="/immobilier/location/maison" className="rounded-xl border border-gray-200 px-4 py-3 text-sm font-medium text-gray-700 hover:border-primary hover:text-primary transition-colors">
                 Maisons à louer au Gabon
               </Link>
-              <Link href="/immobilier/vente/maison" className="rounded-xl border border-gray-200 px-4 py-3 text-sm font-medium text-gray-700 hover:border-[#146B67] hover:text-[#146B67] transition-colors">
+              <Link href="/immobilier/vente/maison" className="rounded-xl border border-gray-200 px-4 py-3 text-sm font-medium text-gray-700 hover:border-primary hover:text-primary transition-colors">
                 Maisons à vendre au Gabon
               </Link>
-              <Link href="/immobilier/location/appartement/libreville" className="rounded-xl border border-gray-200 px-4 py-3 text-sm font-medium text-gray-700 hover:border-[#146B67] hover:text-[#146B67] transition-colors">
+              <Link href="/immobilier/location/appartement/libreville" className="rounded-xl border border-gray-200 px-4 py-3 text-sm font-medium text-gray-700 hover:border-primary hover:text-primary transition-colors">
                 Appartements à louer à Libreville
               </Link>
             </div>
           </div>
 
           {/* Newsletter Section */}
-          <div className="mt-16 bg-gradient-to-r from-[#C1DEE8] to-[#FBD9B9] rounded-2xl p-8 text-center">
-            <h3 className="text-2xl font-bold text-[#146B67] mb-4">
+          <div className="mt-16 bg-gradient-to-r from-sky to-peach rounded-2xl p-8 text-center">
+            <h3 className="text-2xl font-bold text-primary mb-4">
               Restez Informé du Marché Immobilier Gabonais
             </h3>
             <p className="text-gray-700 mb-6 max-w-2xl mx-auto">
@@ -305,9 +305,9 @@ export default function BlogPage() {
               <input 
                 type="email" 
                 placeholder="Votre adresse email"
-                className="flex-1 px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-[#146B67]"
+                className="flex-1 px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-primary"
               />
-              <button className="bg-[#146B67] text-white px-6 py-3 rounded-lg hover:bg-[#0f5a57] transition-colors font-semibold">
+              <button className="bg-primary text-white px-6 py-3 rounded-lg hover:bg-primary-800 transition-colors font-semibold">
                 S'abonner
               </button>
             </div>
@@ -315,23 +315,23 @@ export default function BlogPage() {
 
           {/* Categories */}
           <div className="mt-16">
-            <h3 className="text-2xl font-bold text-[#146B67] mb-6 text-center">
+            <h3 className="text-2xl font-bold text-primary mb-6 text-center">
               Catégories d'Articles
             </h3>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
               {[
-                { name: "Marché immobilier", count: 2, icon: <TrendingUp className="text-4xl text-[#146B67]" /> },
-                { name: "Financement", count: 1, icon: <CreditCard className="text-4xl text-[#146B67]" /> },
-                { name: "PropTech", count: 1, icon: <Smartphone className="text-4xl text-[#146B67]" /> },
-                { name: "Marketing immobilier", count: 1, icon: <Megaphone className="text-4xl text-[#146B67]" /> },
-                { name: "Quartiers", count: 2, icon: <MapPin className="text-4xl text-[#146B67]" /> },
-                { name: "Investissement", count: 1, icon: <DollarSign className="text-4xl text-[#146B67]" /> },
-                { name: "Actualités", count: 1, icon: <Newspaper className="text-4xl text-[#146B67]" /> },
-                { name: "Conseils pratiques", count: 2, icon: <BookOpen className="text-4xl text-[#146B67]" /> }
+                { name: "Marché immobilier", count: 2, icon: <TrendingUp className="text-4xl text-primary" /> },
+                { name: "Financement", count: 1, icon: <CreditCard className="text-4xl text-primary" /> },
+                { name: "PropTech", count: 1, icon: <Smartphone className="text-4xl text-primary" /> },
+                { name: "Marketing immobilier", count: 1, icon: <Megaphone className="text-4xl text-primary" /> },
+                { name: "Quartiers", count: 2, icon: <MapPin className="text-4xl text-primary" /> },
+                { name: "Investissement", count: 1, icon: <DollarSign className="text-4xl text-primary" /> },
+                { name: "Actualités", count: 1, icon: <Newspaper className="text-4xl text-primary" /> },
+                { name: "Conseils pratiques", count: 2, icon: <BookOpen className="text-4xl text-primary" /> }
               ].map((category) => (
                 <div key={category.name} className="bg-white p-6 rounded-xl text-center hover:shadow-lg transition-all duration-300 hover:scale-105 border border-gray-100">
                   <div className="flex justify-center mb-4">
-                    <div className="p-3 bg-gradient-to-br from-[#C1DEE8] to-[#FBD9B9] rounded-full">
+                    <div className="p-3 bg-gradient-to-br from-sky to-peach rounded-full">
                       {category.icon}
                     </div>
                   </div>
@@ -343,7 +343,7 @@ export default function BlogPage() {
           </div>
 
           {/* CTA Section */}
-          <div className="mt-16 bg-[#146B67] rounded-2xl p-8 text-center text-white">
+          <div className="mt-16 bg-primary rounded-2xl p-8 text-center text-white">
             <h3 className="text-2xl font-bold mb-4">
               Prêt à Investir dans l'Immobilier Gabonais ?
             </h3>
@@ -354,13 +354,13 @@ export default function BlogPage() {
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Link 
                 href={routes.public.search_property}
-                className="bg-white text-[#146B67] px-6 py-3 rounded-lg hover:bg-gray-100 transition-colors font-semibold"
+                className="bg-white text-primary px-6 py-3 rounded-lg hover:bg-gray-100 transition-colors font-semibold"
               >
                 Voir les Annonces
               </Link>
               <Link 
                 href={routes.public.guide_immobilier_gabon}
-                className="border border-white text-white px-6 py-3 rounded-lg hover:bg-white hover:text-[#146B67] transition-colors font-semibold"
+                className="border border-white text-white px-6 py-3 rounded-lg hover:bg-white hover:text-primary transition-colors font-semibold"
               >
                 Guide Immobilier Complet
               </Link>

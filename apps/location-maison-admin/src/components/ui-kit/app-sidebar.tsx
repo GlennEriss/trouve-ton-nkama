@@ -67,7 +67,7 @@ export function AppSidebar() {
     <Sidebar collapsible="icon" variant="inset">
       <SidebarHeader>
         <div className="px-2 py-1">
-          <p className="text-xs font-semibold uppercase tracking-[0.12em] text-brand-700">
+          <p className="text-xs font-semibold uppercase tracking-[0.12em] text-primary">
             Trouve Ton Nkama
           </p>
           <p className="text-sm text-muted-foreground">Espace administrateur</p>

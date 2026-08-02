@@ -48,7 +48,7 @@ const termsSections: LegalSection[] = [
     description: (
       <>
         Les traitements de données sont détaillés dans la{" "}
-        <Link href={routes.public.confidentiality} className="font-medium text-[#146B67] hover:underline">
+        <Link href={routes.public.confidentiality} className="font-medium text-primary hover:underline">
           politique de confidentialité
         </Link>
         .

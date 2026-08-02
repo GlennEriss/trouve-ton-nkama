@@ -33,7 +33,7 @@ export default function MapResultsList({
   if (isLoading) {
     return (
       <div className="flex flex-col items-center justify-center py-12">
-        <Loader2 className="h-8 w-8 animate-spin text-[#146B67]" />
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
         <p className="mt-3 text-sm text-gray-500">Chargement des logements...</p>
       </div>
     );

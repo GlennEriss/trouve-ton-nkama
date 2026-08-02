@@ -77,9 +77,9 @@ export default function InputSearchNavbar() {
                     type="button"
                     aria-label="Ouvrir la recherche"
                     onClick={handleClick}
-                    className="flex h-11 w-11 items-center justify-center rounded-full border border-[#146B67] dark:bg-gray-800"
+                    className="flex h-11 w-11 items-center justify-center rounded-full border border-primary dark:bg-gray-800"
                 >
-                    <Search size={20} className="text-[#146B67]" />
+                    <Search size={20} className="text-primary" />
                 </button>
 
                 {showSearch && width >= 768 && (
@@ -107,7 +107,7 @@ export default function InputSearchNavbar() {
                                 value={searchText}
                                 onChange={(e) => setSearchText(e.target.value)}
                                 placeholder="Rechercher une annonce..."
-                                className="w-full bg-neutral-100 dark:bg-neutral-900 text-black dark:text-white placeholder:text-gray-500 border-none focus-visible:ring-1 focus-visible:ring-[#146B67]/50 dark:focus-visible:ring-[#1FA89B]/50 min-h-[50px] rounded-full pl-12 shadow-inner"
+                                className="w-full bg-neutral-100 dark:bg-neutral-900 text-black dark:text-white placeholder:text-gray-500 border-none focus-visible:ring-1 focus-visible:ring-primary/50 dark:focus-visible:ring-secondary/50 min-h-[50px] rounded-full pl-12 shadow-inner"
                                 onKeyDown={(e) => {
                                     if (e.key === 'Enter') {
                                         handleSearch();
@@ -117,7 +117,7 @@ export default function InputSearchNavbar() {
                         </div>
                         <button
                             onClick={handleSearch}
-                            className="absolute right-6 top-6 w-[50px] h-[50px] bg-gradient-to-r from-[#146B67] via-[#1FA89B] to-[#146B67] text-white hover:brightness-110 flex items-center justify-center rounded-full cursor-pointer transition-all duration-200 shadow-md hover:shadow-lg border-none"
+                            className="absolute right-6 top-6 w-[50px] h-[50px] bg-gradient-to-r from-primary via-secondary to-primary text-white hover:brightness-110 flex items-center justify-center rounded-full cursor-pointer transition-all duration-200 shadow-md hover:shadow-lg border-none"
                             aria-label="Lancer la recherche"
                         >
                             <BiSearch className="w-6 h-6" />
@@ -137,7 +137,7 @@ export default function InputSearchNavbar() {
                     value={searchText}
                     onChange={(e) => setSearchText(e.target.value)}
                     placeholder="Rechercher…"
-                    className="w-full bg-neutral-100 dark:bg-neutral-900 text-black dark:text-white placeholder:text-gray-500 border-none focus-visible:ring-1 focus-visible:ring-[#146B67]/50 dark:focus-visible:ring-[#1FA89B]/50 min-h-[42px] rounded-full pl-12 shadow-inner"
+                    className="w-full bg-neutral-100 dark:bg-neutral-900 text-black dark:text-white placeholder:text-gray-500 border-none focus-visible:ring-1 focus-visible:ring-primary/50 dark:focus-visible:ring-secondary/50 min-h-[42px] rounded-full pl-12 shadow-inner"
                 />
             </div>
             {/* Bouton de validation */}
@@ -145,7 +145,7 @@ export default function InputSearchNavbar() {
                 type="button"
                 aria-label="Lancer la recherche"
                 onClick={handleSearch}
-                className="flex h-11 w-11 items-center justify-center rounded-full border border-[#146B67] bg-white text-[#146B67] transition-colors duration-200 hover:bg-[#146B67] hover:text-white dark:bg-neutral-900"
+                className="flex h-11 w-11 items-center justify-center rounded-full border border-primary bg-white text-primary transition-colors duration-200 hover:bg-primary hover:text-white dark:bg-neutral-900"
             >
                 <BiSearch className="w-6 h-6" />
             </button>

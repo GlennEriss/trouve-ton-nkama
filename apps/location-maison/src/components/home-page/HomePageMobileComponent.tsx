@@ -110,7 +110,7 @@ export default function HomePageMobileComponent() {
                 <motion.section className='space-y-4 m-5' ref={searchSectionRef} {...getRevealProps(0.03)}>
                     <div className='space-y-1 '>
                         <p className='text-xs text-gray-600 dark:text-gray-300'>Votre futur chez-vous grâce à Trouve Ton Nkama</p>
-                        <div className='flex text-xl font-bold text-[#146B67] items-center gap-2'>
+                        <div className='flex text-xl font-bold text-primary items-center gap-2'>
                             <MapPin size={25} color='#146B67' />
                             <h1>
                                 Rechercher sur Trouve Ton Nkama
@@ -118,14 +118,14 @@ export default function HomePageMobileComponent() {
                         </div>
                     </div>
                     <Form action="/search" onSubmit={trackSearchSubmit}>
-                        <div className="flex items-center border rounded-full p-2 px-3 bg-gray-100 focus-within:border-[#1FA89B] dark:border-gray-700 dark:bg-gray-800">
+                        <div className="flex items-center border rounded-full p-2 px-3 bg-gray-100 focus-within:border-secondary dark:border-gray-700 dark:bg-gray-800">
                             <button
                                 type='submit'
                                 aria-label='Lancer la recherche'
                                 className='flex h-11 w-11 shrink-0 items-center justify-center rounded-full text-gray-700 hover:bg-white dark:text-gray-200 dark:hover:bg-gray-700'
                                 onClick={trackSearchSubmit}
                             >
-                                <Search size={25} className='hover:stroke-[#1FA89B]' />
+                                <Search size={25} className='hover:stroke-secondary' />
                             </button>
                             <Input
                                 className='h-11 border-none bg-transparent shadow-none focus-visible:ring-0'
@@ -143,9 +143,9 @@ export default function HomePageMobileComponent() {
                 </motion.section>
 
                 {/* <section className='space-y-5 m-5'>
-                    <h1 className='text-xl font-bold text-center text-[#146B67]'>Mettez votre logement en valeur</h1>
+                    <h1 className='text-xl font-bold text-center text-primary'>Mettez votre logement en valeur</h1>
                     <div className='rounded-xl flex'>
-                        <div className='w-2/3 bg-[#146B67] rounded-l-xl py-5 px-3 flex flex-col gap-3'>
+                        <div className='w-2/3 bg-primary rounded-l-xl py-5 px-3 flex flex-col gap-3'>
                             <h1 className='text-xl text-white font-bold'>
                                 Vous avez un logement à publier ?
                             </h1>
@@ -154,7 +154,7 @@ export default function HomePageMobileComponent() {
                             </span>
                             <Link
                                 href={user ? routes.protected.publish : routes.public.signinSignup}
-                                className='text-[#146B67] bg-white p-2 rounded-full text-center font-bold'
+                                className='text-primary bg-white p-2 rounded-full text-center font-bold'
                             >
                                 Publiez votre annonce
                             </Link>
@@ -184,7 +184,7 @@ export default function HomePageMobileComponent() {
                 </div>
 
                 <motion.section className='space-y-5 bg-green-50 p-5 py-16' {...getRevealProps(0.07)}>
-                    <h1 className='text-xl font-bold text-center text-[#146B67]'>Quels sont vos besoins ?</h1>
+                    <h1 className='text-xl font-bold text-center text-primary'>Quels sont vos besoins ?</h1>
                     <div className='flex gap-2'>
                         <Link
                             href={publishLink}
@@ -194,7 +194,7 @@ export default function HomePageMobileComponent() {
                                     destination: publishLink,
                                 })
                             }
-                            className='w-1/2 bg-[#146B67] text-white font-bold py-3 rounded-xl flex justify-center items-center'
+                            className='w-1/2 bg-primary text-white font-bold py-3 rounded-xl flex justify-center items-center'
                         >
                             Publier une annonce
                         </Link>
@@ -206,7 +206,7 @@ export default function HomePageMobileComponent() {
                                     destination: routes.public.search_property,
                                 })
                             }
-                            className='w-1/2 bg-white border border-[#146B67] text-[#146B67] font-bold py-3 rounded-xl flex justify-center items-center text-center'
+                            className='w-1/2 bg-white border border-primary text-primary font-bold py-3 rounded-xl flex justify-center items-center text-center'
                         >
                             Rechercher une annonce
                         </Link>
@@ -214,7 +214,7 @@ export default function HomePageMobileComponent() {
                 </motion.section>
 
                 <motion.section className='space-y-5 p-5' {...getRevealProps(0.09)}>
-                    <h1 className='text-xl text-center font-bold text-[#146B67]'>Types d'annonces</h1>
+                    <h1 className='text-xl text-center font-bold text-primary'>Types d'annonces</h1>
                     <CarouselPropertyType />
                 </motion.section>
 
@@ -227,12 +227,12 @@ export default function HomePageMobileComponent() {
                 </motion.section>
 
                 <motion.section className='space-y-5 m-5' {...getRevealProps(0.13)}>
-                    <h1 className='text-xl font-bold text-center text-[#146B67]'>Logements par province</h1>
+                    <h1 className='text-xl font-bold text-center text-primary'>Logements par province</h1>
                     <PropertyByProvince />
                 </motion.section>
 
                 <motion.section className='space-y-3 m-5 p-4 rounded-2xl border border-gray-100 bg-white' {...getRevealProps(0.14)}>
-                    <h2 className='text-lg font-bold text-[#146B67]'>Recherches populaires</h2>
+                    <h2 className='text-lg font-bold text-primary'>Recherches populaires</h2>
                     <Link href="/immobilier/location/maison" className="rounded-xl border border-gray-200 px-4 py-3 text-sm font-medium text-gray-700 block">
                         Maisons à louer au Gabon
                     </Link>
@@ -245,7 +245,7 @@ export default function HomePageMobileComponent() {
                 </motion.section>
 
                 <motion.section className='bg-green-50 py-5' {...getRevealProps(0.15)}>
-                    <div className='m-5 bg-gradient-to-r to-[#146B67] from-[#1FA89B] rounded-xl py-5 px-3 flex flex-col gap-3 items-center'>
+                    <div className='m-5 bg-gradient-to-r to-primary from-secondary rounded-xl py-5 px-3 flex flex-col gap-3 items-center'>
                         <h1 className='text-xl text-white font-bold text-center flex flex-col'>
                             <span>Vous recherchez</span>
                             <span>un nouveau logement ?</span>
@@ -272,7 +272,7 @@ export default function HomePageMobileComponent() {
                                     destination: routes.public.search_property,
                                 })
                             }
-                            className='text-[#146B67] bg-white p-2 rounded-full text-center font-bold w-1/3'
+                            className='text-primary bg-white p-2 rounded-full text-center font-bold w-1/3'
                         >
                             Explorez
                         </Link>

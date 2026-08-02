@@ -57,12 +57,12 @@ export default function SigninSignupComponent() {
                     size.height > 740 ? 'mt-8' : 'absolute bottom-[-190px] md:bottom-[-270px]'
                 )}>
                     <div className="space-y-4">
-                        <h1 className='text-xl font-bold text-center md:text-4xl text-[#146b66] dark:text-[#3ebeb8] transition-colors duration-300'>
+                        <h1 className='text-xl font-bold text-center md:text-4xl text-primary dark:text-primary-300 transition-colors duration-300'>
                             Nouveau lieu, nouvelle maison !
                         </h1>
                         <p className={cn(
                             'text-center text-md text-gray-500 flex flex-col md:text-xl transition-colors duration-300',
-                            size.height < 700 ? 'dark:text-[#277874]' : ''
+                            size.height < 700 ? 'dark:text-primary' : ''
                         )}>
                             <span>Trouve Ton Nkama, votre nouveau départ.</span>
                             <span>Trouvez votre futur logement dès aujourd'hui.</span>
@@ -71,7 +71,7 @@ export default function SigninSignupComponent() {
                     <div className='space-y-3'>
                         <ButtonApp
                             title={'Se connecter'}
-                            className='bg-gradient-to-b from-[#1FA89B] to-[#146B67] md:text-xl md:py-7 transition-all duration-300 hover:scale-105'
+                            className='bg-gradient-to-b from-secondary to-primary md:text-xl md:py-7 transition-all duration-300 hover:scale-105'
                             onClick={handleGoToSignin}
                         />
                         <ButtonApp
@@ -83,7 +83,7 @@ export default function SigninSignupComponent() {
                         <div className="text-center">
                             <Link 
                                 href={routes.public.homePage} 
-                                className="text-sm text-gray-500 dark:text-gray-400 hover:text-[#146B67] dark:hover:text-[#1FA89B] transition-colors duration-300"
+                                className="text-sm text-gray-500 dark:text-gray-400 hover:text-primary dark:hover:text-secondary transition-colors duration-300"
                             >
                                 Revenir à l'accueil
                             </Link>

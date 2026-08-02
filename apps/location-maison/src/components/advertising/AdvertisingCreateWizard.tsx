@@ -296,7 +296,7 @@ function CreativeUploadSlot({
 
   const card =
     placement === 'home' ? (
-      <div className="aspect-[3/1] w-full overflow-hidden rounded-xl bg-gradient-to-r from-[#C1DEE8] to-[#FBD9B9]">
+      <div className="aspect-[3/1] w-full overflow-hidden rounded-xl bg-gradient-to-r from-sky to-peach">
         <AdCreativeCard
           creative={shownCreative}
           placement="home"
@@ -326,7 +326,7 @@ function CreativeUploadSlot({
     <label
       htmlFor={inputId}
       className={cn(
-        'group relative block cursor-pointer overflow-hidden rounded-xl ring-2 ring-dashed ring-[#1FA89B]/45 transition hover:ring-[#1FA89B] focus-within:ring-[#1FA89B]',
+        'group relative block cursor-pointer overflow-hidden rounded-xl ring-2 ring-dashed ring-secondary/45 transition hover:ring-secondary focus-within:ring-secondary',
         placement === 'reels_infeed' && 'h-full w-full',
       )}
     >
@@ -348,14 +348,14 @@ function CreativeUploadSlot({
       <div
         className={cn(
           'pointer-events-none absolute inset-0 flex items-center justify-center bg-black/0 p-4 text-center transition group-hover:bg-black/10',
-          !hasVisual && 'bg-[#1FA89B]/10',
+          !hasVisual && 'bg-secondary/10',
         )}
       >
-        <span className="inline-flex min-h-10 items-center gap-2 rounded-full bg-white px-4 text-sm font-semibold text-[#224D62] shadow-lg shadow-black/10 dark:bg-gray-950 dark:text-white">
+        <span className="inline-flex min-h-10 items-center gap-2 rounded-full bg-white px-4 text-sm font-semibold text-ink shadow-lg shadow-black/10 dark:bg-gray-950 dark:text-white">
           {uploading ? (
-            <Loader2 className="h-4 w-4 animate-spin text-[#1FA89B]" />
+            <Loader2 className="h-4 w-4 animate-spin text-secondary" />
           ) : (
-            <ImagePlus className="h-4 w-4 text-[#1FA89B]" />
+            <ImagePlus className="h-4 w-4 text-secondary" />
           )}
           {uploading ? 'Import en cours' : hasVisual ? 'Changer le visuel' : 'Ajouter le visuel'}
         </span>
@@ -380,9 +380,9 @@ function Stepper({
             className={cn(
               'rounded-xl border px-2 py-2 transition sm:p-3',
               isActive
-                ? 'border-[#1FA89B] bg-[#1FA89B]/5 text-[#224D62]'
+                ? 'border-secondary bg-secondary/5 text-ink'
                 : isDone
-                  ? 'border-[#1FA89B]/30 bg-white text-[#224D62]'
+                  ? 'border-secondary/30 bg-white text-ink'
                   : 'border-gray-200 bg-white text-gray-500 dark:border-gray-700 dark:bg-gray-900',
             )}
             aria-current={isActive ? 'step' : undefined}
@@ -391,7 +391,7 @@ function Stepper({
               <span
                 className={cn(
                   'flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-xs font-bold',
-                  isDone || isActive ? 'bg-[#1FA89B] text-white' : 'bg-gray-100 text-gray-500 dark:bg-gray-800',
+                  isDone || isActive ? 'bg-secondary text-white' : 'bg-gray-100 text-gray-500 dark:bg-gray-800',
                 )}
               >
                 {isDone ? <CheckCircle className="h-4 w-4" /> : index + 1}
@@ -660,24 +660,24 @@ export default function AdvertisingCreateWizard() {
         <div>
           <Link
             href={routes.protected.advertising}
-            className="inline-flex min-h-11 items-center gap-2 text-sm font-medium text-gray-600 hover:text-[#224D62]"
+            className="inline-flex min-h-11 items-center gap-2 text-sm font-medium text-gray-600 hover:text-ink"
           >
             <ArrowLeft className="h-4 w-4" />
             Publicités
           </Link>
           <div className="mt-3 flex items-center gap-3">
-            <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-[#1FA89B]/10 text-[#1FA89B]">
+            <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-secondary/10 text-secondary">
               <Megaphone className="h-6 w-6" />
             </div>
             <div>
-              <h1 className="text-2xl font-bold text-[#224D62] dark:text-white">Créer une publicité</h1>
+              <h1 className="text-2xl font-bold text-ink dark:text-white">Créer une publicité</h1>
               <p className="text-sm text-gray-500">Construisez la campagne étape par étape.</p>
             </div>
           </div>
         </div>
         <div className="flex min-h-10 flex-col justify-center gap-0.5 rounded-2xl border border-gray-200 bg-white px-4 py-2 text-sm shadow-sm dark:border-gray-700 dark:bg-gray-900 sm:items-end">
           <span className="inline-flex items-center gap-2 font-semibold">
-            <Wallet className="h-4 w-4 text-[#1FA89B]" />
+            <Wallet className="h-4 w-4 text-secondary" />
             {credits.toLocaleString('fr-FR')} crédits
           </span>
           <span className="text-xs text-gray-500">{creditUnitPriceLabel}</span>
@@ -690,7 +690,7 @@ export default function AdvertisingCreateWizard() {
         {currentStep === 0 && (
           <div className="space-y-5">
             <div>
-              <h2 className="text-lg font-semibold text-[#224D62] dark:text-white">Choisir un forfait</h2>
+              <h2 className="text-lg font-semibold text-ink dark:text-white">Choisir un forfait</h2>
               <p className="mt-1 text-sm text-gray-500">Le forfait définit les emplacements et la durée de diffusion.</p>
             </div>
             <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
@@ -700,14 +700,14 @@ export default function AdvertisingCreateWizard() {
                   type="button"
                   onClick={() => setPackageId(p.id)}
                   className={cn(
-                    'min-h-44 rounded-xl border p-4 text-left transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1FA89B]',
+                    'min-h-44 rounded-xl border p-4 text-left transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-secondary',
                     packageId === p.id
-                      ? 'border-[#1FA89B] bg-[#1FA89B]/5 ring-2 ring-[#1FA89B]/20'
-                      : 'border-gray-200 hover:border-[#1FA89B]/50 dark:border-gray-700',
+                      ? 'border-secondary bg-secondary/5 ring-2 ring-secondary/20'
+                      : 'border-gray-200 hover:border-secondary/50 dark:border-gray-700',
                   )}
                 >
-                  <p className="font-semibold text-[#224D62] dark:text-white">{p.name}</p>
-                  <p className="mt-1 text-2xl font-bold text-[#146B67] dark:text-[#9FE2DB]">{p.credits} crédits</p>
+                  <p className="font-semibold text-ink dark:text-white">{p.name}</p>
+                  <p className="mt-1 text-2xl font-bold text-primary dark:text-primary-200">{p.credits} crédits</p>
                   <p className="mt-1 text-xs font-semibold text-gray-500">
                     ≈ {formatXaf(estimateCreditsXafValue(p.credits, creditPacks))}
                   </p>
@@ -719,7 +719,7 @@ export default function AdvertisingCreateWizard() {
                         className={cn(
                           'rounded-full px-2 py-0.5 text-[10px] font-medium',
                           placement === 'reels_infeed'
-                            ? 'bg-[#146B67]/10 text-[#146B67] dark:bg-[#1FA89B]/15 dark:text-[#9FE2DB]'
+                            ? 'bg-primary/10 text-primary dark:bg-secondary/15 dark:text-primary-200'
                             : 'bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-300',
                         )}
                       >
@@ -736,22 +736,22 @@ export default function AdvertisingCreateWizard() {
         {currentStep === 1 && (
           <div className="space-y-4 sm:space-y-6">
             <div className="space-y-1">
-              <h2 className="text-lg font-semibold text-[#224D62] dark:text-white">Ajouter les visuels</h2>
+              <h2 className="text-lg font-semibold text-ink dark:text-white">Ajouter les visuels</h2>
               <p className="text-sm leading-6 text-gray-500">Choisissez le format, puis touchez la zone pub pour importer le visuel.</p>
             </div>
 
-            <div className="rounded-2xl border border-[#1FA89B]/20 bg-[#F0FDFA] p-3 dark:border-[#1FA89B]/30 dark:bg-[#102522] sm:p-4">
+            <div className="rounded-2xl border border-secondary/20 bg-primary-50 p-3 dark:border-secondary/30 dark:bg-primary-950 sm:p-4">
               <div className="flex items-center justify-between gap-3">
-                <p className="text-sm font-semibold text-[#224D62] dark:text-white">
+                <p className="text-sm font-semibold text-ink dark:text-white">
                   {readyPlacementCount}/{totalPlacementCount} emplacements prêts
                 </p>
-                <span className="rounded-full bg-white px-3 py-1 text-xs font-semibold text-[#146B67] ring-1 ring-[#146B67]/20 dark:bg-gray-950 dark:text-[#9FE2DB]">
+                <span className="rounded-full bg-white px-3 py-1 text-xs font-semibold text-primary ring-1 ring-primary/20 dark:bg-gray-950 dark:text-primary-200">
                   {visualProgress}%
                 </span>
               </div>
-              <div className="mt-3 h-2 overflow-hidden rounded-full bg-white/80 ring-1 ring-[#1FA89B]/10 dark:bg-gray-800">
+              <div className="mt-3 h-2 overflow-hidden rounded-full bg-white/80 ring-1 ring-secondary/10 dark:bg-gray-800">
                 <div
-                  className="h-full rounded-full bg-[#1FA89B] transition-all duration-300"
+                  className="h-full rounded-full bg-secondary transition-all duration-300"
                   style={{ width: `${visualProgress}%` }}
                 />
               </div>
@@ -769,9 +769,9 @@ export default function AdvertisingCreateWizard() {
                         aria-selected={activeFormat?.key === fmt.key}
                         onClick={() => setActiveFormatKey(fmt.key)}
                         className={cn(
-                          'min-h-[58px] w-[11.5rem] shrink-0 touch-manipulation rounded-2xl border bg-white px-3 py-2 text-left transition active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1FA89B] lg:w-auto',
+                          'min-h-[58px] w-[11.5rem] shrink-0 touch-manipulation rounded-2xl border bg-white px-3 py-2 text-left transition active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-secondary lg:w-auto',
                           activeFormat?.key === fmt.key
-                            ? 'border-[#1FA89B] shadow-sm ring-2 ring-[#1FA89B]/15'
+                            ? 'border-secondary shadow-sm ring-2 ring-secondary/15'
                             : 'border-transparent ring-1 ring-gray-200 dark:bg-gray-900 dark:ring-gray-700',
                         )}
                       >
@@ -779,10 +779,10 @@ export default function AdvertisingCreateWizard() {
                           <span
                             className={cn(
                               'h-2.5 w-2.5 rounded-full',
-                              warning ? 'bg-amber-500' : ready ? 'bg-[#1FA89B]' : 'bg-gray-300 dark:bg-gray-600',
+                              warning ? 'bg-amber-500' : ready ? 'bg-secondary' : 'bg-gray-300 dark:bg-gray-600',
                             )}
                           />
-                          <span className="min-w-0 flex-1 truncate text-sm font-semibold text-[#224D62] dark:text-white">
+                          <span className="min-w-0 flex-1 truncate text-sm font-semibold text-ink dark:text-white">
                             {fmt.label}
                           </span>
                         </span>
@@ -802,7 +802,7 @@ export default function AdvertisingCreateWizard() {
                   <div className="space-y-3">
                     <div className="flex flex-wrap items-start justify-between gap-3 px-1">
                       <div>
-                        <h3 className="text-base font-semibold text-[#224D62] dark:text-white">{activeFormat.label}</h3>
+                        <h3 className="text-base font-semibold text-ink dark:text-white">{activeFormat.label}</h3>
                         <p className="mt-1 text-sm leading-5 text-gray-500">
                           {activeFormat.ratioHint} · {activeFormat.recommended}
                           {activeFormat.key === 'reels' ? ' · image ou vidéo jusqu’à 5 min' : ''}
@@ -881,7 +881,7 @@ export default function AdvertisingCreateWizard() {
                   <div className="mt-3 flex flex-wrap gap-2">
                     <label
                       htmlFor="default-ad-image"
-                      className="inline-flex min-h-11 flex-1 cursor-pointer touch-manipulation items-center justify-center gap-2 rounded-md bg-[#224D62] px-3 text-sm font-medium text-white shadow-sm transition active:scale-[0.98]"
+                      className="inline-flex min-h-11 flex-1 cursor-pointer touch-manipulation items-center justify-center gap-2 rounded-md bg-ink px-3 text-sm font-medium text-white shadow-sm transition active:scale-[0.98]"
                     >
                       {uploading ? <Loader2 className="h-4 w-4 animate-spin" /> : <ImagePlus className="h-4 w-4" />}
                       {uploading ? 'Import' : (imageURL || localPreview) ? 'Changer' : 'Importer'}
@@ -906,15 +906,15 @@ export default function AdvertisingCreateWizard() {
                 </div>
 
                 <div className="rounded-xl bg-gray-50 p-4 dark:bg-gray-800">
-                  <div className="flex items-center gap-2 text-sm font-semibold text-[#224D62] dark:text-white">
-                    <ImagePlus className="h-4 w-4 text-[#1FA89B]" />
+                  <div className="flex items-center gap-2 text-sm font-semibold text-ink dark:text-white">
+                    <ImagePlus className="h-4 w-4 text-secondary" />
                     Progression visuelle
                   </div>
                   <div className="mt-4 space-y-2">
                     {selectedPackage?.placements.map((placement) => (
                       <div key={placement} className="flex items-center justify-between gap-3 text-sm">
                         <span className="text-gray-600 dark:text-gray-300">{PACKAGE_PLACEMENT_LABELS[placement]}</span>
-                        <span className={cn('rounded-full px-2 py-0.5 text-xs font-medium', hasVisualForPlacement(placement) ? 'bg-[#146B67]/10 text-[#146B67] dark:bg-[#1FA89B]/15 dark:text-[#9FE2DB]' : 'bg-gray-200 text-gray-600 dark:bg-gray-700 dark:text-gray-300')}>
+                        <span className={cn('rounded-full px-2 py-0.5 text-xs font-medium', hasVisualForPlacement(placement) ? 'bg-primary/10 text-primary dark:bg-secondary/15 dark:text-primary-200' : 'bg-gray-200 text-gray-600 dark:bg-gray-700 dark:text-gray-300')}>
                           {placement === 'reels_infeed' && hasVisualForPlacement(placement) && reelsFormatWarning
                             ? 'À vérifier'
                             : hasVisualForPlacement(placement) ? 'Prêt' : 'Manquant'}
@@ -936,7 +936,7 @@ export default function AdvertisingCreateWizard() {
         {currentStep === 2 && (
           <div className="space-y-5">
             <div>
-              <h2 className="text-lg font-semibold text-[#224D62] dark:text-white">Préparer le message</h2>
+              <h2 className="text-lg font-semibold text-ink dark:text-white">Préparer le message</h2>
               <p className="mt-1 text-sm text-gray-500">Le lien au clic est obligatoire pour transformer les vues en contacts.</p>
             </div>
             <div className="grid gap-4 lg:grid-cols-2">
@@ -1002,10 +1002,10 @@ export default function AdvertisingCreateWizard() {
           <div className="space-y-5">
             <div className="flex flex-wrap items-start justify-between gap-3">
               <div>
-                <h2 className="text-lg font-semibold text-[#224D62] dark:text-white">Vérifier avant publication</h2>
+                <h2 className="text-lg font-semibold text-ink dark:text-white">Vérifier avant publication</h2>
                 <p className="mt-1 text-sm text-gray-500">Contrôlez les emplacements, les visuels et le coût final.</p>
               </div>
-              <div className="rounded-xl bg-[#146B67]/10 px-4 py-3 text-sm text-[#146B67] dark:bg-[#1FA89B]/15 dark:text-[#9FE2DB]">
+              <div className="rounded-xl bg-primary/10 px-4 py-3 text-sm text-primary dark:bg-secondary/15 dark:text-primary-200">
                 <span className="font-semibold">{selectedPackage?.name}</span>
                 <span className="mx-2">·</span>
                 <span>{selectedPackage?.credits} crédits</span>
@@ -1036,8 +1036,8 @@ export default function AdvertisingCreateWizard() {
 
             {hasReelsPlacement ? (
               <div className="space-y-2">
-                <div className="flex items-center gap-2 text-sm font-semibold text-[#224D62] dark:text-white">
-                  <Video className="h-4 w-4 text-[#1FA89B]" />
+                <div className="flex items-center gap-2 text-sm font-semibold text-ink dark:text-white">
+                  <Video className="h-4 w-4 text-secondary" />
                   Aperçu visuel dans les réels
                 </div>
                 <AdCreativePreview
@@ -1063,7 +1063,7 @@ export default function AdvertisingCreateWizard() {
             aria-valuetext={`Étape ${currentStep + 1} sur ${STEPS.length}`}
           >
             <div
-              className="h-full rounded-full bg-[#1FA89B] transition-all duration-300"
+              className="h-full rounded-full bg-secondary transition-all duration-300"
               style={{ width: `${stepProgress}%` }}
             />
           </div>
@@ -1073,7 +1073,7 @@ export default function AdvertisingCreateWizard() {
               onClick={goBack}
               disabled={currentStep === 0 || createMutation.isPending}
               aria-label="Retour à l’étape précédente"
-              className="flex h-12 w-12 shrink-0 touch-manipulation items-center justify-center rounded-full border border-gray-200 bg-white text-[#224D62] transition active:scale-95 disabled:opacity-40 dark:border-gray-700 dark:bg-gray-900 dark:text-white"
+              className="flex h-12 w-12 shrink-0 touch-manipulation items-center justify-center rounded-full border border-gray-200 bg-white text-ink transition active:scale-95 disabled:opacity-40 dark:border-gray-700 dark:bg-gray-900 dark:text-white"
             >
               <ArrowLeft className="h-5 w-5" />
             </button>
@@ -1084,7 +1084,7 @@ export default function AdvertisingCreateWizard() {
                 onClick={goNext}
                 disabled={!canGoNext}
                 aria-label={`Continuer vers l’étape ${currentStep + 2}`}
-                className="flex h-12 flex-1 touch-manipulation items-center justify-center gap-2 rounded-full bg-[#146B67] px-5 text-sm font-semibold text-white shadow-lg shadow-[#146B67]/20 transition hover:bg-[#0f5a56] active:scale-[0.98] disabled:bg-gray-300 disabled:text-gray-600 disabled:shadow-none dark:disabled:bg-gray-700 dark:disabled:text-gray-300"
+                className="flex h-12 flex-1 touch-manipulation items-center justify-center gap-2 rounded-full bg-primary px-5 text-sm font-semibold text-white shadow-lg shadow-primary/20 transition hover:bg-primary-800 active:scale-[0.98] disabled:bg-gray-300 disabled:text-gray-600 disabled:shadow-none dark:disabled:bg-gray-700 dark:disabled:text-gray-300"
               >
                 Continuer
                 <ArrowRight className="h-5 w-5" />
@@ -1095,7 +1095,7 @@ export default function AdvertisingCreateWizard() {
                 onClick={publishCampaign}
                 disabled={!canPublish}
                 aria-label={`Payer ${selectedPackage?.credits ?? ''} crédits, environ ${formatXaf(selectedPackageXafValue)}, et publier`}
-                className="flex h-12 flex-1 touch-manipulation items-center justify-center gap-2 rounded-full bg-[#146B67] px-5 text-sm font-semibold text-white shadow-lg shadow-[#146B67]/20 transition hover:bg-[#0f5a56] active:scale-[0.98] disabled:bg-gray-300 disabled:text-gray-600 disabled:shadow-none dark:disabled:bg-gray-700 dark:disabled:text-gray-300"
+                className="flex h-12 flex-1 touch-manipulation items-center justify-center gap-2 rounded-full bg-primary px-5 text-sm font-semibold text-white shadow-lg shadow-primary/20 transition hover:bg-primary-800 active:scale-[0.98] disabled:bg-gray-300 disabled:text-gray-600 disabled:shadow-none dark:disabled:bg-gray-700 dark:disabled:text-gray-300"
               >
                 {createMutation.isPending ? <Loader2 className="h-5 w-5 animate-spin" /> : <CheckCircle className="h-5 w-5" />}
                 Payer & publier
@@ -1128,7 +1128,7 @@ export default function AdvertisingCreateWizard() {
               type="button"
               onClick={goNext}
               disabled={!canGoNext}
-              className="min-h-11 bg-[#146B67] hover:bg-[#0f5a56]"
+              className="min-h-11 bg-primary hover:bg-primary-800"
             >
               Suivant
               <ArrowRight className="h-4 w-4" />
@@ -1138,7 +1138,7 @@ export default function AdvertisingCreateWizard() {
               type="button"
               onClick={publishCampaign}
               disabled={!canPublish}
-              className="min-h-11 bg-[#146B67] hover:bg-[#0f5a56]"
+              className="min-h-11 bg-primary hover:bg-primary-800"
             >
               {createMutation.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <CheckCircle className="h-4 w-4" />}
               Payer {selectedPackage?.credits} crédits & publier

@@ -37,7 +37,7 @@ export default function RecentSection() {
         refetchOnWindowFocus: false,
     })
     return (
-        <section className='relative space-y-3 bg-gradient-to-r from-[#146B67]/5 via-[#1FA89B]/10 to-[#146B67]/5 rounded-3xl p-5 py-10 overflow-hidden'>
+        <section className='relative space-y-3 bg-gradient-to-r from-primary/5 via-secondary/10 to-primary/5 rounded-3xl p-5 py-10 overflow-hidden'>
             {/* Forme 3 - Derrière la 5ème section */}
             <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full h-full -z-10 overflow-hidden">
                 <Image
@@ -47,7 +47,7 @@ export default function RecentSection() {
                     className="object-cover opacity-10 -rotate-90"
                 />
             </div>
-            <h1 className='text-xl lg:text-2xl xl:text-3xl leading-tight font-bold text-center text-[#146B67]'>
+            <h1 className='text-xl lg:text-2xl xl:text-3xl leading-tight font-bold text-center text-primary'>
                 Annonces récentes
             </h1>
             <PropertyCarousel properties={data?.pages[0]?.properties ?? []} />

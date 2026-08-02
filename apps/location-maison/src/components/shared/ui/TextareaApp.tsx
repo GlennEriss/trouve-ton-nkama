@@ -16,13 +16,13 @@ const TextareaApp: React.FC<TextareaAppProps> = ({
     ...props
 }) => {
     return (
-        <div className="border border-gray-200 bg-gray-50 dark:bg-gray-900 rounded-2xl flex py-2 md:px-4 items-start group transition-colors focus-within:border-[#1FA89B]">
+        <div className="border border-gray-200 bg-gray-50 dark:bg-gray-900 rounded-2xl flex py-2 md:px-4 items-start group transition-colors focus-within:border-secondary">
             {IconLucide && (
                 <IconLucide
                     size={30}
                     fill={IconColorFill}
                     color={IconColor}
-                    className='transition-colors group-focus-within:stroke-[#1FA89B] mt-1'
+                    className='transition-colors group-focus-within:stroke-secondary mt-1'
                 />
             )}
             <Textarea

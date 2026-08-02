@@ -196,15 +196,15 @@ export default function SearchLocationForm() {
         <div className={cn(
           "relative flex items-center bg-white border-2 rounded-xl transition-all duration-300",
           isOpen || selectedResult 
-            ? "border-[#156B69] shadow-lg ring-4 ring-[#156B69]/10" 
-            : "border-gray-200 hover:border-[#156B69]/50",
-          "focus-within:border-[#156B69] focus-within:shadow-lg focus-within:ring-4 focus-within:ring-[#156B69]/10"
+            ? "border-primary shadow-lg ring-4 ring-primary/10" 
+            : "border-gray-200 hover:border-primary/50",
+          "focus-within:border-primary focus-within:shadow-lg focus-within:ring-4 focus-within:ring-primary/10"
         )}>
           
           {/* Icône de recherche */}
           <div className="pl-4 pr-3 flex items-center">
             {isLoading ? (
-              <Loader2 className="w-5 h-5 text-[#156B69] animate-spin" />
+              <Loader2 className="w-5 h-5 text-primary animate-spin" />
             ) : isSyncing ? (
               <Database className="w-5 h-5 text-orange-500 animate-pulse" />
             ) : selectedResult ? (
@@ -238,7 +238,7 @@ export default function SearchLocationForm() {
           
           {/* Indicateur de géolocalisation */}
           <div className="pr-4 pl-2">
-            <Navigation className="w-4 h-4 text-[#156B69]" />
+            <Navigation className="w-4 h-4 text-primary" />
           </div>
         </div>
         
@@ -268,7 +268,7 @@ export default function SearchLocationForm() {
       {(isOpen || showSuggestions) && (
         <Card 
           ref={dropdownRef}
-          className="absolute top-full left-0 right-0 mt-2 z-50 border-2 border-[#156B69]/20 shadow-2xl animate-in fade-in-0 slide-in-from-top-2 duration-200"
+          className="absolute top-full left-0 right-0 mt-2 z-50 border-2 border-primary/20 shadow-2xl animate-in fade-in-0 slide-in-from-top-2 duration-200"
         >
           <CardContent className="p-0">
             {/* Affichage des suggestions d'auto-complétion */}
@@ -285,7 +285,7 @@ export default function SearchLocationForm() {
                     key={`suggestion-${index}`}
                     type="button"
                     onClick={() => handleSelectSuggestion(suggestion.text)}
-                    className="w-full p-3 text-left hover:bg-[#156B69]/5 transition-colors duration-200 border-b border-gray-50 last:border-b-0 focus:bg-[#156B69]/5 focus:outline-none"
+                    className="w-full p-3 text-left hover:bg-primary/5 transition-colors duration-200 border-b border-gray-50 last:border-b-0 focus:bg-primary/5 focus:outline-none"
                   >
                     <div className="flex items-center space-x-3">
                       <Search className="w-4 h-4 text-gray-400" />
@@ -341,11 +341,11 @@ export default function SearchLocationForm() {
                           key={`result-${result.properties.name}-${index}`}
                           type="button"
                           onClick={() => handleSelectResult(result)}
-                          className="w-full p-4 text-left hover:bg-[#156B69]/5 transition-colors duration-200 border-b border-gray-100 last:border-b-0 focus:bg-[#156B69]/5 focus:outline-none"
+                          className="w-full p-4 text-left hover:bg-primary/5 transition-colors duration-200 border-b border-gray-100 last:border-b-0 focus:bg-primary/5 focus:outline-none"
                         >
                           <div className="flex items-start space-x-3">
                             <div className="mt-1">
-                              <IconComponent className="w-4 h-4 text-[#156B69]" />
+                              <IconComponent className="w-4 h-4 text-primary" />
                             </div>
                             
                             <div className="flex-1 min-w-0">
@@ -360,7 +360,7 @@ export default function SearchLocationForm() {
                                   </Badge>
                                 )}
                                 {state && (
-                                  <Badge variant="secondary" className="text-xs bg-[#156B69]/10 text-[#156B69]">
+                                  <Badge variant="secondary" className="text-xs bg-primary/10 text-primary">
                                     {state}
                                   </Badge>
                                 )}

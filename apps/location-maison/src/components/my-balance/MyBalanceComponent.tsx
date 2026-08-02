@@ -9,12 +9,12 @@ import CreditHistory from './CreditHistory'
 
 export default function MyBalanceComponent() {
   return (
-    <div className="container mx-auto px-4 md:px-6 py-4 md:py-6 space-y-6 md:space-y-8 max-w-[1280px] 2xl:max-w-[1440px]">
+    <div className="container-page px-4 md:px-6 py-4 md:py-6 space-y-6 md:space-y-8">
       {/* Header Section */}
       <div className="text-center space-y-3 md:space-y-4">
         <div className="flex items-center justify-center gap-2 md:gap-3">
-          <Coins className="w-6 h-6 md:w-8 md:h-8 text-[#146B67] dark:text-[#1FA89B]" />
-          <h1 className="text-2xl md:text-3xl font-bold text-[#146B67] dark:text-[#1FA89B]">
+          <Coins className="w-6 h-6 md:w-8 md:h-8 text-primary dark:text-secondary" />
+          <h1 className="text-2xl md:text-3xl font-bold text-primary dark:text-secondary">
             Mon Solde de Crédits
           </h1>
         </div>

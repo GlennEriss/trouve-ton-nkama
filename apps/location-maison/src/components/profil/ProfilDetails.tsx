@@ -77,7 +77,7 @@ export default function ProfilDetails() {
             {
                 menu.map((item) => (
                     <div key={item.title}>
-                        <Link href={item.link} className='flex min-h-14 items-center gap-3 py-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#146B67]'>
+                        <Link href={item.link} className='flex min-h-14 items-center gap-3 py-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary'>
                             <item.icon />
                             <span>{item.title}</span>
                             <ChevronRight className='ml-auto' size={24} />
@@ -90,7 +90,7 @@ export default function ProfilDetails() {
         <div className='grid gap-3 lg:grid-cols-2'>
             {
                 menu.map((item) => (
-                    <Link href={item.link} key={item.title} className='min-h-36 border border-gray-200 bg-white p-5 space-y-3 rounded-lg shadow-sm transition-colors hover:border-[#1FA89B] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#146B67] dark:border-gray-700 dark:bg-gray-900'>
+                    <Link href={item.link} key={item.title} className='min-h-36 border border-gray-200 bg-white p-5 space-y-3 rounded-lg shadow-sm transition-colors hover:border-secondary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary dark:border-gray-700 dark:bg-gray-900'>
                         <div className='flex gap-3 items-center'>
                             <item.icon size={30} />
                             <h2 className='font-bold text-xl'>{item.title}</h2>

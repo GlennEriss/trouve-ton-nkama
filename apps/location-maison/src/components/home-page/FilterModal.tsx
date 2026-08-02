@@ -54,7 +54,7 @@ export const FilterModal = () => {
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
         <button
-          className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-[#146B67] via-[#1FA89B] to-[#146B67] rounded-full hover:brightness-110 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#1FA89B]"
+          className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-primary via-secondary to-primary rounded-full hover:brightness-110 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-secondary"
         >
           <BiFilter className="w-5 h-5 text-white" />
           <span className="text-white font-semibold">Filtrer</span>

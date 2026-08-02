@@ -177,14 +177,14 @@ export default function SearchMobilePage() {
                 <section className='space-y-4'>
                     <div className='space-y-1'>
                         <p className='text-xs text-gray-600 dark:text-gray-300'>Votre futur chez-vous grâce à Trouve Ton Nkama</p>
-                        <div className='flex text-xl font-bold text-[#146B67] items-center gap-2'>
+                        <div className='flex text-xl font-bold text-primary items-center gap-2'>
                             <h1>
                                 Rechercher sur Trouve Ton Nkama
                             </h1>
                         </div>
                     </div>
                     <Form action="/search">
-                        <div className="flex items-center border rounded-full p-2 px-3 bg-gray-100 focus-within:border-[#1FA89B] dark:border-gray-700 dark:bg-gray-800">
+                        <div className="flex items-center border rounded-full p-2 px-3 bg-gray-100 focus-within:border-secondary dark:border-gray-700 dark:bg-gray-800">
                             <button
                                 type='submit'
                                 aria-label='Lancer la recherche'
@@ -220,7 +220,7 @@ export default function SearchMobilePage() {
                                     router.push(`/search?${params.toString()}`);
                                 }}
                             >
-                                <Search size={25} className='hover:stroke-[#1FA89B]' />
+                                <Search size={25} className='hover:stroke-secondary' />
                             </button>
                             <Input
                                 className='h-11 border-none bg-transparent shadow-none focus-visible:ring-0'
@@ -237,7 +237,7 @@ export default function SearchMobilePage() {
                     <Link
                         href={searchWithAIHref}
                         onClick={onSearchWithAIClick}
-                        className="inline-flex min-h-11 items-center gap-2 rounded-full border border-[#146B67]/30 bg-[#E6F8F5] text-[#146B67] px-4 py-2 text-sm font-medium hover:bg-[#d8f1ed] transition-colors dark:border-[#1FA89B]/50 dark:bg-[#123f3b] dark:text-[#9FE2DB]"
+                        className="inline-flex min-h-11 items-center gap-2 rounded-full border border-primary/30 bg-primary-100 text-primary px-4 py-2 text-sm font-medium hover:bg-primary-100 transition-colors dark:border-secondary/50 dark:bg-primary-900 dark:text-primary-200"
                     >
                         Rechercher avec IA
                     </Link>
@@ -246,7 +246,7 @@ export default function SearchMobilePage() {
                 <section className='space-y-5'>
                     <div className='flex items-center justify-between'>
                         <div>
-                            <h1 className='text-2xl font-bold text-[#146B67]'>
+                            <h1 className='text-2xl font-bold text-primary'>
                                 Résultats de la recherche
                             </h1>
                             <p className='text-sm text-gray-600 dark:text-gray-300'>
@@ -270,7 +270,7 @@ export default function SearchMobilePage() {
                                 <button
                                     type="button"
                                     onClick={refresh}
-                                    className="mt-4 min-h-11 rounded-full bg-[#146B67] px-5 py-2 text-sm font-medium text-white hover:bg-[#0f5754]"
+                                    className="mt-4 min-h-11 rounded-full bg-primary px-5 py-2 text-sm font-medium text-white hover:bg-primary-800"
                                 >
                                     Réessayer
                                 </button>
@@ -333,7 +333,7 @@ export default function SearchMobilePage() {
 
                                 {newItemsLoaded > 0 && (
                                     <div className="mb-5 text-center">
-                                        <span className="text-xs text-[#146B67] bg-[#E6F8F5] border border-[#B8ECE4] rounded-full px-3 py-1 animate-fade-in-up">
+                                        <span className="text-xs text-primary bg-primary-100 border border-primary-100 rounded-full px-3 py-1 animate-fade-in-up">
                                             +{newItemsLoaded} nouvelles annonces ajoutées
                                         </span>
                                     </div>

@@ -28,8 +28,8 @@ export default function StepperComponent() {
                                 disabled={activeStep <= index}
                                 aria-label={`Aller à l'étape ${index + 1}: ${step.label}`}
                                 className={clsx({
-                                    'rounded-full border-2 border-[#1B4D5B] text-[#1B4D5B] cursor-pointer text-2xl flex justify-center items-center h-10 w-10 md:h-20 md:w-20 focus:outline-none focus:ring-2 focus:ring-[#1B4D5B] focus:ring-offset-2 transition-all duration-200': activeStep == index,
-                                    'rounded-full border-2 border-[#1B4D5B] bg-[#1B4D5B] cursor-pointer text-2xl flex justify-center items-center h-10 w-10 md:h-20 md:w-20 focus:outline-none focus:ring-2 focus:ring-[#1B4D5B] focus:ring-offset-2 hover:opacity-80 transition-all duration-200': activeStep > index,
+                                    'rounded-full border-2 border-ink text-ink cursor-pointer text-2xl flex justify-center items-center h-10 w-10 md:h-20 md:w-20 focus:outline-none focus:ring-2 focus:ring-ink focus:ring-offset-2 transition-all duration-200': activeStep == index,
+                                    'rounded-full border-2 border-ink bg-ink cursor-pointer text-2xl flex justify-center items-center h-10 w-10 md:h-20 md:w-20 focus:outline-none focus:ring-2 focus:ring-ink focus:ring-offset-2 hover:opacity-80 transition-all duration-200': activeStep > index,
                                     'rounded-full border-2 text-2xl text-gray-400 flex justify-center items-center h-10 w-10 md:h-20 md:w-20 cursor-not-allowed opacity-50': activeStep < index,
                                 })}
                             >
@@ -49,7 +49,7 @@ export default function StepperComponent() {
                             {
                                 index < steps.length - 1 && (
                                     <Separator className={clsx({
-                                        'border-2 w-full border-[#1B4D5B]': activeStep > index,
+                                        'border-2 w-full border-ink': activeStep > index,
                                         'border-2 w-full': activeStep <= index,
                                     })} />
                                 )

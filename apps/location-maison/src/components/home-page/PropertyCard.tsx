@@ -211,7 +211,7 @@ const PropertyCard = ({ property, hideDate = false }: { property: any; hideDate?
           />
           {/* Type de propriété */}
           {property.typeProperty && (
-            <div className="absolute top-4 left-4 px-4 py-2 text-sm font-semibold bg-white/90 dark:bg-gray-800/90 text-[#146B67] dark:text-white rounded-full backdrop-blur-sm">
+            <div className="absolute top-4 left-4 px-4 py-2 text-sm font-semibold bg-white/90 dark:bg-gray-800/90 text-primary dark:text-white rounded-full backdrop-blur-sm">
               {TypeProperty[property.typeProperty]}
             </div>
           )}
@@ -236,14 +236,14 @@ const PropertyCard = ({ property, hideDate = false }: { property: any; hideDate?
         <div className="flex flex-col flex-1 p-5">
           {/* Titre */}
           <div className="min-h-[68px]">
-            <h3 className="text-lg font-bold text-gray-900 dark:text-white line-clamp-2 group-hover:text-[#146B67] transition-colors">
+            <h3 className="text-lg font-bold text-gray-900 dark:text-white line-clamp-2 group-hover:text-primary transition-colors">
               {property.title ?? "Annonce"}
             </h3>
           </div>
 
           {/* Prix */}
           <div className="min-h-[44px]">
-            <p className="text-lg pt-2 font-bold text-[#146B67] dark:text-blue-300 break-words">
+            <p className="text-lg pt-2 font-bold text-primary dark:text-blue-300 break-words">
               {property.status === "FOR_RENT" ? "À louer" : "À vendre"} - {property.price.toLocaleString()} F CFA
             </p>
           </div>
@@ -264,7 +264,7 @@ const PropertyCard = ({ property, hideDate = false }: { property: any; hideDate?
               ? "border-t" : ""
             }`}>
             {property.area > 0 && (
-              <div className="flex items-center gap-2 group-hover:text-[#146B67] transition-colors">
+              <div className="flex items-center gap-2 group-hover:text-primary transition-colors">
                 <MdOutlineSquareFoot className="w-5 h-5" />
                 <span>{property.area} m²</span>
               </div>
@@ -279,13 +279,13 @@ const PropertyCard = ({ property, hideDate = false }: { property: any; hideDate?
               property.typeProperty === "Shop") && (
                 <>
                   {"nbrRooms" in property && property.nbrRooms > 0 && (
-                    <div className="flex items-center gap-2 group-hover:text-[#146B67] transition-colors">
+                    <div className="flex items-center gap-2 group-hover:text-primary transition-colors">
                       <IoMdBed className="w-5 h-5" />
                       <span>{property.nbrRooms}</span>
                     </div>
                   )}
                   {"nbrBathrooms" in property && property.nbrBathrooms > 0 && (
-                    <div className="flex items-center gap-2 group-hover:text-[#146B67] transition-colors">
+                    <div className="flex items-center gap-2 group-hover:text-primary transition-colors">
                       <MdOutlineBathtub className="w-5 h-5" />
                       <span>{property.nbrBathrooms}</span>
                     </div>

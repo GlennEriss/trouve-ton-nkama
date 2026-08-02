@@ -138,14 +138,14 @@ export default function PlacesAutocompleteInput({
     <div ref={containerRef} className="relative w-full">
       <div
         className={cn(
-          'border border-gray-200 bg-gray-50 dark:bg-gray-900 rounded-full flex py-2 px-4 items-center group transition-colors focus-within:border-[#1FA89B]',
+          'border border-gray-200 bg-gray-50 dark:bg-gray-900 rounded-full flex py-2 px-4 items-center group transition-colors focus-within:border-secondary',
           (hasError || selectionRequired) && 'border-red-300 focus-within:border-red-500',
           disabled && 'opacity-60',
         )}
       >
         <Search
           size={22}
-          className="text-gray-400 group-focus-within:stroke-[#1FA89B] transition-colors shrink-0"
+          className="text-gray-400 group-focus-within:stroke-secondary transition-colors shrink-0"
         />
         <Input
           id={inputId}
@@ -162,8 +162,8 @@ export default function PlacesAutocompleteInput({
           aria-invalid={hasError || selectionRequired}
           className="border-none shadow-none focus-visible:ring-0 placeholder:text-gray-400 dark:text-white dark:placeholder:text-gray-500 bg-transparent flex-1 ml-2"
         />
-        {isLoading && <Loader2 className="w-4 h-4 text-[#1FA89B] animate-spin shrink-0" />}
-        {selected && !isLoading && <CheckCircle className="w-4 h-4 text-[#1FA89B] shrink-0" />}
+        {isLoading && <Loader2 className="w-4 h-4 text-secondary animate-spin shrink-0" />}
+        {selected && !isLoading && <CheckCircle className="w-4 h-4 text-secondary shrink-0" />}
       </div>
 
       {selectionRequired && (
@@ -190,17 +190,17 @@ export default function PlacesAutocompleteInput({
                     type="button"
                     variant="ghost"
                     size="sm"
-                    className="w-full justify-start text-left hover:bg-[#ebf6f5] text-sm p-3 h-auto rounded-xl"
+                    className="w-full justify-start text-left hover:bg-primary-50 text-sm p-3 h-auto rounded-xl"
                     onClick={() => handlePick(s)}
                   >
                     <div className="flex items-start space-x-2 w-full">
-                      <MapPin className="w-4 h-4 text-[#1FA89B] mt-0.5 flex-shrink-0" />
+                      <MapPin className="w-4 h-4 text-secondary mt-0.5 flex-shrink-0" />
                       <div className="text-left">
                         <div className="font-medium text-gray-800 dark:text-white">{s.mainText}</div>
                         {s.secondaryText && (
                           <div className="text-xs text-gray-500">{s.secondaryText}</div>
                         )}
-                        <div className="mt-1 text-[11px] font-medium text-[#16756d]">
+                        <div className="mt-1 text-[11px] font-medium text-primary">
                           {s.source === 'OFFICIAL_CATALOG'
                             ? 'Lieu vérifié Trouve Ton Nkama'
                             : 'Google Maps'}

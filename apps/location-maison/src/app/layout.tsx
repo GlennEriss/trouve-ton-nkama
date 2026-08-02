@@ -17,7 +17,7 @@ import { getSiteOrigin } from '@/lib/seo/site-url';
 
 const inter = Inter({
   subsets: ['latin'],
-  weight: ['400'],
+  weight: ['400', '500', '600', '700'],
 })
 const SITE_ORIGIN = getSiteOrigin();
 
@@ -234,7 +234,7 @@ export default async function RootLayout({
           }}
         />
         <link rel="manifest" href="/manifest.json" />
-        <meta name="theme-color" content="#4DBEA4" />
+        <meta name="theme-color" content="#146B67" />
         <meta name="mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />

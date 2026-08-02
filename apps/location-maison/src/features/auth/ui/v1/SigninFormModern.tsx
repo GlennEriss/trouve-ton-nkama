@@ -150,7 +150,7 @@ export const SigninFormModern: React.FC = () => {
   return (
     <div className="min-h-screen flex bg-gradient-to-br from-slate-50 via-white to-teal-50/30 dark:from-gray-950 dark:via-gray-900 dark:to-gray-950">
       <div className="hidden lg:flex lg:w-1/2 xl:w-[45%] relative overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-br from-[#146B67] via-[#1a8a83] to-[#1FA89B]" />
+        <div className="absolute inset-0 bg-gradient-to-br from-primary via-primary-600 to-secondary" />
 
         <div
           className="absolute inset-0 bg-cover bg-no-repeat opacity-20 mix-blend-overlay blur-[1px] pointer-events-none"
@@ -236,7 +236,7 @@ export const SigninFormModern: React.FC = () => {
         <div className="w-full max-w-lg">
           <div className="lg:hidden flex items-center justify-center gap-3 mb-8">
             <Logo width="48px" height="48px" />
-            <span className="text-xl font-bold text-[#146B67]">Trouve Ton Nkama</span>
+            <span className="text-xl font-bold text-primary">Trouve Ton Nkama</span>
           </div>
 
           <div className="mb-8 text-center">
@@ -270,7 +270,7 @@ export const SigninFormModern: React.FC = () => {
               <div className="flex justify-end">
                 <Link
                   href={routes.public.passwordResetRequest}
-                  className="text-sm text-[#1FA89B] hover:underline font-medium"
+                  className="text-sm text-secondary hover:underline font-medium"
                 >
                   Mot de passe oublié ?
                 </Link>
@@ -280,7 +280,7 @@ export const SigninFormModern: React.FC = () => {
                 type="submit"
                 disabled={isLoading}
                 isLoading={isCredentialsLoading}
-                className="h-12 bg-gradient-to-r from-[#146B67] to-[#1FA89B] hover:from-[#125b57] hover:to-[#1a9589] shadow-lg shadow-teal-500/25"
+                className="h-12 bg-gradient-to-r from-primary to-secondary hover:from-primary-800 hover:to-primary-600 shadow-lg shadow-teal-500/25"
                 title={isCredentialsLoading ? 'Connexion en cours...' : 'Se connecter'}
               />
             </form>
@@ -342,7 +342,7 @@ export const SigninFormModern: React.FC = () => {
             disabled={isLoading}
             className="w-full h-12 mt-3 rounded-full border-2 hover:bg-gray-50 dark:hover:bg-gray-800 transition-all duration-200"
           >
-            <Phone className="w-5 h-5 mr-3 text-[#1FA89B]" />
+            <Phone className="w-5 h-5 mr-3 text-secondary" />
             <span className="font-medium">Continuer avec Numéro de téléphone</span>
           </Button>
 
@@ -352,7 +352,7 @@ export const SigninFormModern: React.FC = () => {
             Vous n&apos;avez pas de compte ?{' '}
             <Link
               href={routes.public.signup}
-              className="text-[#1FA89B] hover:underline font-semibold"
+              className="text-secondary hover:underline font-semibold"
             >
               S&apos;enregistrer
             </Link>

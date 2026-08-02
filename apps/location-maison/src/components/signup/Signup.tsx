@@ -277,7 +277,7 @@ export const Signup: React.FC = () => {
                     <ButtonLoading
                         type='submit'
                         disabled={isFormLoading || isGoogleLoading}
-                        className='w-full bg-gradient-to-r from-[#146B67] via-[#1FA89B] to-[#146B67]'>
+                        className='w-full bg-gradient-to-r from-primary via-secondary to-primary'>
                         {isFormLoading ? 'Création en cours...' : 'S\'enregistrer'}
                     </ButtonLoading>
                     

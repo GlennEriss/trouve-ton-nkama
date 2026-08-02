@@ -38,7 +38,7 @@ export default function DataDeletionClientPage() {
             <div className="max-w-4xl mx-auto px-4 py-16 relative">
                 {/* En-tête */}
                 <div className="text-center mb-12 space-y-4">
-                    <h1 className="text-4xl md:text-5xl font-bold bg-gradient-to-r from-[#146B67] via-[#1FA89B] to-[#146B67] text-transparent bg-clip-text">
+                    <h1 className="text-4xl md:text-5xl font-bold bg-gradient-to-r from-primary via-secondary to-primary text-transparent bg-clip-text">
                         Suppression des Données
                     </h1>
                     <p className="text-gray-600 text-lg max-w-2xl mx-auto">
@@ -75,7 +75,7 @@ export default function DataDeletionClientPage() {
                                     Comment demander la suppression ?
                                 </h3>
                                 <div className="flex items-start gap-4">
-                                    <div className="bg-[#146B67] rounded-full p-3">
+                                    <div className="bg-primary rounded-full p-3">
                                         <Mail className="w-6 h-6 text-white" />
                                     </div>
                                     <div>
@@ -84,7 +84,7 @@ export default function DataDeletionClientPage() {
                                         </p>
                                         <a
                                             href={`mailto:${process.env.NEXT_PUBLIC_EMAIL_SUPPORT}`}
-                                            className="text-[#146B67] font-medium hover:text-[#1FA89B] transition-colors"
+                                            className="text-primary font-medium hover:text-secondary transition-colors"
                                         >
                                             {process.env.NEXT_PUBLIC_EMAIL_SUPPORT}
                                         </a>
@@ -103,7 +103,7 @@ export default function DataDeletionClientPage() {
                                     Pour plus d'informations, consultez notre{" "}
                                     <a 
                                         href={routes.public.confidentiality}
-                                        className="text-[#146B67] hover:text-[#1FA89B] transition-colors underline"
+                                        className="text-primary hover:text-secondary transition-colors underline"
                                     >
                                         Politique de Confidentialité
                                     </a>.

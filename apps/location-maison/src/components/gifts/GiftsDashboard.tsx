@@ -96,7 +96,7 @@ export default function GiftsDashboard() {
   return (
     <div className="mx-auto flex w-full max-w-4xl flex-col gap-6 px-4 pb-20 pt-2 md:px-0 md:pb-8">
       <section className="rounded-3xl border border-emerald-100 bg-gradient-to-br from-emerald-50 to-white p-5 shadow-sm dark:border-emerald-900 dark:from-emerald-950/30 dark:to-gray-900 md:p-6">
-        <p className="inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-wide text-[#146B67] dark:text-[#9FE2DB]">
+        <p className="inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-wide text-primary dark:text-primary-200">
           <Gift className="h-3.5 w-3.5" />
           Espace annonceur
         </p>
@@ -108,8 +108,8 @@ export default function GiftsDashboard() {
 
       {/* Cartes de solde */}
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
-        <div className="rounded-2xl border border-[#146B67]/25 bg-[#146B67]/5 p-4 shadow-sm dark:border-[#1FA89B]/30 dark:bg-[#1FA89B]/10">
-          <p className="text-xs font-medium uppercase tracking-wide text-[#146B67] dark:text-[#9FE2DB]">Disponible au retrait</p>
+        <div className="rounded-2xl border border-primary/25 bg-primary/5 p-4 shadow-sm dark:border-secondary/30 dark:bg-secondary/10">
+          <p className="text-xs font-medium uppercase tracking-wide text-primary dark:text-primary-200">Disponible au retrait</p>
           <p className="mt-1 text-2xl font-semibold text-slate-900 dark:text-white">{formatXaf(balance.disponibleXaf)}</p>
         </div>
         <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm dark:border-slate-700 dark:bg-gray-900">
@@ -142,7 +142,7 @@ export default function GiftsDashboard() {
           <button
             type="button"
             onClick={() => setShowWithdrawForm(true)}
-            className="flex min-h-11 items-center gap-2 rounded-full bg-[#146B67] px-5 text-sm font-semibold text-white transition-colors hover:bg-[#0f5a56] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#146B67] focus-visible:ring-offset-2"
+            className="flex min-h-11 items-center gap-2 rounded-full bg-primary px-5 text-sm font-semibold text-white transition-colors hover:bg-primary-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
           >
             <ArrowDownToLine className="h-4 w-4" />
             Retirer {formatXaf(balance.disponibleXaf)}
@@ -163,7 +163,7 @@ export default function GiftsDashboard() {
                   aria-pressed={reseau === method.network}
                   className={`min-h-11 rounded-full border px-3 text-sm font-medium transition ${
                     reseau === method.network
-                      ? 'border-[#146B67] bg-[#146B67]/5 text-[#146B67] dark:border-[#1FA89B] dark:bg-[#1FA89B]/10 dark:text-[#9FE2DB]'
+                      ? 'border-primary bg-primary/5 text-primary dark:border-secondary dark:bg-secondary/10 dark:text-primary-200'
                       : 'border-slate-200 dark:border-slate-700'
                   }`}
                 >
@@ -187,7 +187,7 @@ export default function GiftsDashboard() {
                 onChange={(e) => setNumero(e.target.value)}
                 aria-invalid={Boolean(numero && !phoneValid)}
                 aria-describedby={numero && !phoneValid ? 'gift-withdrawal-phone-error' : undefined}
-                className="h-12 w-full rounded-full border border-slate-200 py-2 pl-10 pr-4 text-base focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#146B67] dark:border-slate-700 dark:bg-slate-800 dark:text-white"
+                className="h-12 w-full rounded-full border border-slate-200 py-2 pl-10 pr-4 text-base focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary dark:border-slate-700 dark:bg-slate-800 dark:text-white"
               />
               </div>
             </div>
@@ -208,7 +208,7 @@ export default function GiftsDashboard() {
                 type="button"
                 disabled={!phoneValid || submitting}
                 onClick={() => void handleWithdraw()}
-                className="flex min-h-11 items-center gap-2 rounded-full bg-[#146B67] px-5 text-sm font-semibold text-white disabled:opacity-40"
+                className="flex min-h-11 items-center gap-2 rounded-full bg-primary px-5 text-sm font-semibold text-white disabled:opacity-40"
               >
                 {submitting && <Loader2 className="h-4 w-4 animate-spin" />}
                 Confirmer le retrait
@@ -228,7 +228,7 @@ export default function GiftsDashboard() {
       {/* Historique des retraits */}
       {withdrawals.length > 0 && (
         <div>
-          <h2 className="mb-2 text-sm font-semibold uppercase tracking-wide text-[#146B67] dark:text-[#9FE2DB]">
+          <h2 className="mb-2 text-sm font-semibold uppercase tracking-wide text-primary dark:text-primary-200">
             Historique des retraits
           </h2>
           <div className="divide-y divide-slate-100 rounded-2xl border border-slate-200 bg-white shadow-sm dark:divide-slate-800 dark:border-slate-700 dark:bg-gray-900">
@@ -260,7 +260,7 @@ export default function GiftsDashboard() {
 
       {/* Historique des cadeaux reçus */}
       <div>
-        <h2 className="mb-2 text-sm font-semibold uppercase tracking-wide text-[#146B67] dark:text-[#9FE2DB]">Cadeaux reçus</h2>
+        <h2 className="mb-2 text-sm font-semibold uppercase tracking-wide text-primary dark:text-primary-200">Cadeaux reçus</h2>
         {gifts.length === 0 ? (
           <div className="flex flex-col items-center gap-2 rounded-2xl border border-dashed border-slate-200 py-10 text-center dark:border-slate-700">
             <Gift className="h-8 w-8 text-slate-300" />
@@ -281,7 +281,7 @@ export default function GiftsDashboard() {
                     <p className="mt-1 text-sm italic text-slate-600 dark:text-slate-400">« {gift.message} »</p>
                   )}
                 </div>
-                <Gift className="h-5 w-5 shrink-0 text-[#146B67] dark:text-[#9FE2DB]" />
+                <Gift className="h-5 w-5 shrink-0 text-primary dark:text-primary-200" />
               </div>
             ))}
           </div>

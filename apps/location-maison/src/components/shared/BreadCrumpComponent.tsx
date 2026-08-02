@@ -45,7 +45,7 @@ export default function BreadCrumpComponent({ hideOnMobile = false }: BreadCrump
             <React.Fragment key={href}>
               <BreadcrumbSeparator />
               <BreadcrumbItem>
-                <BreadcrumbLink className='hover:text-[#1B4D5B]' href={href}>
+                <BreadcrumbLink className='hover:text-ink' href={href}>
             {label}
                 </BreadcrumbLink>
               </BreadcrumbItem>
@@ -59,7 +59,7 @@ export default function BreadCrumpComponent({ hideOnMobile = false }: BreadCrump
     <Breadcrumb className={breadcrumbClassName}>
       <BreadcrumbList>
         <BreadcrumbItem>
-          <BreadcrumbLink className='hover:text-[#1B4D5B]' href={routes.public.homePage}>
+          <BreadcrumbLink className='hover:text-ink' href={routes.public.homePage}>
             Accueil
           </BreadcrumbLink>
         </BreadcrumbItem>

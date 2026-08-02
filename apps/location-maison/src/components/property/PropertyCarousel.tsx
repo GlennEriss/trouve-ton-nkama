@@ -26,11 +26,11 @@ const ArrowButton: React.FC<{ direction: "prev" | "next"; onClick?: () => void }
       aria-label={direction === "prev" ? "Précédent" : "Suivant"}
       onClick={onClick}
       className={`absolute ${position} top-1/2 -translate-y-1/2 z-10 group
-                  border border-[#146B67] p-2 rounded-full shadow-lg
-                  bg-white/80 hover:bg-[#146B67] transition-all duration-300
-                  hover:scale-110 focus:outline-none focus:ring-2 focus:ring-[#146B67] focus:ring-offset-2`}
+                  border border-primary p-2 rounded-full shadow-lg
+                  bg-white/80 hover:bg-primary transition-all duration-300
+                  hover:scale-110 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2`}
     >
-      <Icon className="w-5 h-5 text-[#0e4845] group-hover:text-white transition-colors duration-300" />
+      <Icon className="w-5 h-5 text-primary-900 group-hover:text-white transition-colors duration-300" />
     </button>
   );
 };
@@ -94,13 +94,13 @@ const PropertyCarousel: React.FC<CarouselProps> = ({ properties = [], isRecommen
 
   /* ----- Rendu ----- */
   return (
-    <div className="container mx-auto px-4 relative max-w-[1280px] 2xl:max-w-[1440px]">
+    <div className="container-page px-4 relative">
       {hasMultiple ? (
         <Slider {...settings}>
           {properties.map((p) => (
             <div
               key={p.id ?? `property-${Math.random()}`}
-              className="p-3 w-full text-left focus:outline-none focus:ring-2 focus:ring-[#146B67] focus:ring-offset-2 rounded-lg transition-all duration-200"
+              className="p-3 w-full text-left focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 rounded-lg transition-all duration-200"
               style={shouldCenter ? { width: 320 } : undefined}
               onClick={() => handleCardClick(p.id)}
               onKeyDown={(e) => {
@@ -121,7 +121,7 @@ const PropertyCarousel: React.FC<CarouselProps> = ({ properties = [], isRecommen
         /* 1 seule carte : largeur contrôlée */
         properties[0] && (
           <div
-            className="mx-auto block focus:outline-none focus:ring-2 focus:ring-[#146B67] focus:ring-offset-2 rounded-lg transition-all duration-200"
+            className="mx-auto block focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 rounded-lg transition-all duration-200"
             style={{ width: '100%', maxWidth: 320 }}
             onClick={() => handleCardClick(properties[0].id)}
             onKeyDown={(e) => {
@@ -142,7 +142,7 @@ const PropertyCarousel: React.FC<CarouselProps> = ({ properties = [], isRecommen
       <div className={cn("mt-8 flex justify-center", isRecommendation ? 'hidden' : '')}>
         <button
           onClick={() => router.push("/search")}
-          className="px-8 py-3 rounded-xl bg-gradient-to-r from-[#146B67] via-[#1FA89B] to-[#146B67] hover:scale-[1.02] text-white font-semibold transition-all duration-300 shadow-lg hover:shadow-xl"
+          className="px-8 py-3 rounded-xl bg-gradient-to-r from-primary via-secondary to-primary hover:scale-[1.02] text-white font-semibold transition-all duration-300 shadow-lg hover:shadow-xl"
         >
           Voir plus d'annonces
         </button>

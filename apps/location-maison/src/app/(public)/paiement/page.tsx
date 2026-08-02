@@ -49,7 +49,7 @@ export default async function PaiementRetourPage({ searchParams }: Readonly<Paie
         <div className="flex flex-col sm:flex-row items-center justify-center gap-3 pt-2">
           <Link
             href={routes.protected.my_balance}
-            className="inline-flex items-center gap-2 rounded-xl px-5 py-2.5 bg-[#146B67] hover:bg-[#125A56] text-white font-semibold transition-colors"
+            className="inline-flex items-center gap-2 rounded-xl px-5 py-2.5 bg-primary hover:bg-primary-800 text-white font-semibold transition-colors"
           >
             <Wallet className="w-4 h-4" />
             Voir mon solde

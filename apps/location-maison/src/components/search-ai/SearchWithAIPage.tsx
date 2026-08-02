@@ -61,7 +61,7 @@ function MessageItem({
       <div
         className={[
           'max-w-[90%] rounded-2xl px-4 py-3 text-sm shadow-sm',
-          isUser ? 'bg-[#146B67] text-white' : '',
+          isUser ? 'bg-primary text-white' : '',
           isError ? 'bg-red-50 text-red-700 border border-red-200' : '',
           isSystem ? 'bg-amber-50 text-amber-800 border border-amber-200' : '',
           !isUser && !isError && !isSystem ? 'bg-gray-100 text-gray-800 border border-gray-200' : '',
@@ -82,7 +82,7 @@ function MessageItem({
               <button
                 key={`${message.id}-${action.label}`}
                 type="button"
-                className="text-xs px-3 py-1.5 rounded-full border border-[#146B67]/30 text-[#146B67] hover:bg-[#146B67]/10 transition-colors"
+                className="text-xs px-3 py-1.5 rounded-full border border-primary/30 text-primary hover:bg-primary/10 transition-colors"
                 onClick={() => onApplyAction(action)}
                 title={action.reason}
               >
@@ -155,7 +155,7 @@ export default function SearchWithAIPage() {
       <div className="mx-auto max-w-[1400px] space-y-4">
         <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
           <div className="space-y-1">
-            <h1 className="text-2xl md:text-3xl font-bold text-[#146B67] flex items-center gap-2">
+            <h1 className="text-2xl md:text-3xl font-bold text-primary flex items-center gap-2">
               <Bot className="w-6 h-6" />
               Recherche avec IA
             </h1>
@@ -187,7 +187,7 @@ export default function SearchWithAIPage() {
                 </div>
                 <div className="text-right">
                   <p className="text-xs uppercase tracking-wide text-gray-500">Crédits disponibles</p>
-                  <p className="text-lg font-bold text-[#146B67]">{creditsAvailable}</p>
+                  <p className="text-lg font-bold text-primary">{creditsAvailable}</p>
                 </div>
               </div>
               {!isFirebaseConnected && (
@@ -223,12 +223,12 @@ export default function SearchWithAIPage() {
                   value={draft}
                   onChange={(event) => setDraft(event.target.value)}
                   placeholder="Ex: maison 3 chambres max 190000 FCFA à Libreville"
-                  className="flex-1 rounded-xl border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#146B67]/30"
+                  className="flex-1 rounded-xl border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30"
                   disabled={isLoading}
                 />
                 <button
                   type="submit"
-                  className="inline-flex items-center gap-2 rounded-xl bg-[#146B67] hover:bg-[#1A807A] text-white px-3 py-2 text-sm disabled:opacity-60"
+                  className="inline-flex items-center gap-2 rounded-xl bg-primary hover:bg-primary text-white px-3 py-2 text-sm disabled:opacity-60"
                   disabled={isLoading || !draft.trim()}
                 >
                   <Search className="w-4 h-4" />

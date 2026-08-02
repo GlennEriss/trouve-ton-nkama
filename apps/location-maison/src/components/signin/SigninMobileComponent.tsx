@@ -113,14 +113,14 @@ export default function SigninMobileComponent() {
         <Link
           href={routes.public.homePage}
           aria-label="Retour à l'accueil"
-          className="inline-flex h-11 w-11 items-center justify-center rounded-full hover:bg-gray-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#146B67] dark:hover:bg-gray-800"
+          className="inline-flex h-11 w-11 items-center justify-center rounded-full hover:bg-gray-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary dark:hover:bg-gray-800"
         >
           <ChevronLeft color="gray" size={30} />
         </Link>
       </div>
 
       <section className="mt-8 md:mt-10">
-        <h1 className="text-2xl font-bold text-[#187872]">Bienvenue sur Trouve Ton Nkama !</h1>
+        <h1 className="text-2xl font-bold text-primary">Bienvenue sur Trouve Ton Nkama !</h1>
         <p className="text-gray-600 dark:text-gray-300">
           Connectez-vous pour retrouver vos annonces, favoris et paramètres de compte.
         </p>
@@ -155,12 +155,12 @@ export default function SigninMobileComponent() {
                 type="submit"
                 disabled={isLoading}
                 isLoading={isCredentialsLoading}
-                className="bg-gradient-to-b from-[#1FA89B] to-[#146B67] md:py-7 mt-5"
+                className="bg-gradient-to-b from-secondary to-primary md:py-7 mt-5"
                 title={isCredentialsLoading ? 'Connexion en cours...' : 'Connexion'}
               />
               <Link
                 href={routes.public.passwordResetRequest}
-                className="inline-flex min-h-11 items-center px-1 text-[#146B67] dark:text-[#9FE2DB] hover:underline font-medium"
+                className="inline-flex min-h-11 items-center px-1 text-primary dark:text-primary-200 hover:underline font-medium"
               >
                 Mot de passe oublié?
               </Link>
@@ -170,7 +170,7 @@ export default function SigninMobileComponent() {
 
         <div className="flex items-center my-6 md:mt-10">
           <div className="flex-grow h-px bg-gray-300"></div>
-          <span className="px-4 py-1 text-[#146B67] bg-[#e7f5f4] rounded-full text-sm font-medium">OU</span>
+          <span className="px-4 py-1 text-primary bg-primary-50 rounded-full text-sm font-medium">OU</span>
           <div className="flex-grow h-px bg-gray-300"></div>
         </div>
 
@@ -218,7 +218,7 @@ export default function SigninMobileComponent() {
           Vous n&apos;avez pas de compte?{' '}
           <Link
             href={routes.public.signup}
-            className="inline-flex min-h-11 items-center px-1 text-[#146B67] dark:text-[#9FE2DB] hover:underline font-medium"
+            className="inline-flex min-h-11 items-center px-1 text-primary dark:text-primary-200 hover:underline font-medium"
           >
             S&apos;enregistrer
           </Link>

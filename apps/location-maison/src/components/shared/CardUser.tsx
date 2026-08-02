@@ -21,7 +21,7 @@ const menu = [
 ]
 export default function CardUser() {
     return (
-        <Card className="md:w-1/3 bg-[#1B4D5B] md:h-[300px]">
+        <Card className="md:w-1/3 bg-ink md:h-[300px]">
             <CardHeader className='grid grid-cols-3 md:flex md:flex-col md:items-center xl:flex-row xl:gap-3'>
                 <Avatar className='w-20 h-20'>
                     <AvatarImage src="https://github.com/shadcn.png" alt="@shadcn" />
@@ -29,7 +29,7 @@ export default function CardUser() {
                 </Avatar>
                 <div className='col-span-2 space-y-2'>
                     <CardTitle className='md:text-center text-white'>John Doe</CardTitle>
-                    <CardDescription className='md:text-center flex flex-col text-[#eaeaed]'>
+                    <CardDescription className='md:text-center flex flex-col text-gray-200'>
                         <span>johndoe@gmail.com</span>
                         <span>Depuis le 20/09/2024</span>
                     </CardDescription>
@@ -38,7 +38,7 @@ export default function CardUser() {
             <CardContent className='hidden md:block md:space-y-2'>
                 {
                     menu.map((item) => (
-                        <Button key={item.link} variant='outline' asChild className='w-full justify-start text-white hover:text-[#1B4D5B]'>
+                        <Button key={item.link} variant='outline' asChild className='w-full justify-start text-white hover:text-ink'>
                             <Link href={item.link} className='flex gap-2'>
                                 <item.icon />
                                 <span>

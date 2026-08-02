@@ -173,12 +173,12 @@ export function BecomeAnnouncerPageModern() {
                 id="accept-announcer-terms"
                 checked={acceptAnnouncerTerms}
                 onCheckedChange={(checked) => setAcceptAnnouncerTerms(Boolean(checked))}
-                className="mt-0.5 data-[state=checked]:bg-[#1FA89B] data-[state=checked]:border-[#1FA89B]"
+                className="mt-0.5 data-[state=checked]:bg-secondary data-[state=checked]:border-secondary"
                 disabled={isLoading}
               />
               <Label htmlFor="accept-announcer-terms" className="text-sm leading-relaxed text-gray-700 dark:text-gray-300">
                 J&apos;accepte les{' '}
-                <Link href={routes.public.announcer_terms} className="font-medium text-[#146B67] hover:underline">
+                <Link href={routes.public.announcer_terms} className="font-medium text-primary hover:underline">
                   conditions annonceur
                 </Link>{' '}
                 et je confirme vouloir activer mon compte annonceur.
@@ -191,7 +191,7 @@ export function BecomeAnnouncerPageModern() {
           <Button
             onClick={handleSubmit}
             disabled={isLoading || (!isAlreadyAnnouncer && !acceptAnnouncerTerms)}
-            className="h-12 bg-gradient-to-r from-[#146B67] to-[#1FA89B] px-6 hover:from-[#115b57] hover:to-[#1b9488]"
+            className="h-12 bg-gradient-to-r from-primary to-secondary px-6 hover:from-primary-800 hover:to-primary-600"
           >
             {isLoading ? 'Activation en cours...' : isAlreadyAnnouncer ? 'Continuer' : 'Activer le mode annonceur'}
             {!isLoading && <ArrowRight className="ml-2 h-4 w-4" />}

@@ -15,16 +15,16 @@ export default function StructurerAnnoncesPage() {
       <div className="max-w-4xl mx-auto">
         {/* Breadcrumb */}
         <nav className="text-sm text-gray-600 mb-6">
-          <Link href={routes.public.homePage} className="hover:text-[#146B67]">Accueil</Link>
+          <Link href={routes.public.homePage} className="hover:text-primary">Accueil</Link>
           <span className="mx-2">→</span>
-          <Link href={routes.public.blog} className="hover:text-[#146B67]">Blog</Link>
+          <Link href={routes.public.blog} className="hover:text-primary">Blog</Link>
           <span className="mx-2">→</span>
           <span className="text-gray-800">Structurer Vos Annonces Immobilières</span>
         </nav>
 
         {/* Article Header */}
         <header className="mb-8">
-          <h1 className="text-4xl font-bold text-[#146B67] mb-4">
+          <h1 className="text-4xl font-bold text-primary mb-4">
             Comment Structurer Vos Annonces pour Maximiser l&apos;Engagement 📝
           </h1>
           <div className="flex items-center text-sm text-gray-600 mb-6">
@@ -45,7 +45,7 @@ export default function StructurerAnnoncesPage() {
         <article className="prose prose-lg max-w-none">
           
           <section className="mb-8">
-            <h2 className="text-2xl font-semibold text-[#146B67] mb-4">
+            <h2 className="text-2xl font-semibold text-primary mb-4">
                L&apos;Importance d&apos;une Annonce Bien Structurée
             </h2>
             
@@ -72,13 +72,13 @@ export default function StructurerAnnoncesPage() {
           </section>
 
           <section className="mb-8">
-            <h2 className="text-2xl font-semibold text-[#146B67] mb-4">
+            <h2 className="text-2xl font-semibold text-primary mb-4">
               ✨ Titres Accrocheurs : L&apos;Art de Capturer l&apos;Attention
             </h2>
             
             <div className="grid md:grid-cols-2 gap-6 mb-6">
               <div className="bg-white p-6 rounded-lg shadow-md">
-                <h3 className="text-xl font-semibold text-[#146B67] mb-4">❌ Exemples à Éviter</h3>
+                <h3 className="text-xl font-semibold text-primary mb-4">❌ Exemples à Éviter</h3>
                 <ul className="space-y-2 text-sm">
                   <li>• "Maison à vendre"</li>
                   <li>• "Appartement Libreville"</li>
@@ -88,7 +88,7 @@ export default function StructurerAnnoncesPage() {
               </div>
               
               <div className="bg-white p-6 rounded-lg shadow-md">
-                <h3 className="text-xl font-semibold text-[#146B67] mb-4"> Exemples Optimisés</h3>
+                <h3 className="text-xl font-semibold text-primary mb-4"> Exemples Optimisés</h3>
                 <ul className="space-y-2 text-sm">
                   <li>• "Villa sous barrière Glass - 4 chambres - Piscine"</li>
                   <li>• "Appartement centre-ville Libreville - Vue mer - 3 chambres"</li>
@@ -110,7 +110,7 @@ export default function StructurerAnnoncesPage() {
           </section>
 
           <section className="mb-8">
-            <h2 className="text-2xl font-semibold text-[#146B67] mb-4">
+            <h2 className="text-2xl font-semibold text-primary mb-4">
               📝 Description Optimisée : Raconter l&apos;Histoire de Votre Bien
             </h2>
             
@@ -121,7 +121,7 @@ export default function StructurerAnnoncesPage() {
             
             <div className="space-y-6 mb-6">
               <div className="bg-white p-6 rounded-lg shadow-md">
-                <h3 className="text-xl font-semibold text-[#146B67] mb-4">1. Accroche (2-3 phrases)</h3>
+                <h3 className="text-xl font-semibold text-primary mb-4">1. Accroche (2-3 phrases)</h3>
                 <p className="text-sm text-gray-700">
                   "Découvrez cette villa exceptionnelle dans le quartier résidentiel de Glass. 
                   Idéalement située à 5 minutes du centre-ville, cette propriété allie 
@@ -130,7 +130,7 @@ export default function StructurerAnnoncesPage() {
               </div>
               
               <div className="bg-white p-6 rounded-lg shadow-md">
-                <h3 className="text-xl font-semibold text-[#146B67] mb-4">2. Caractéristiques Techniques</h3>
+                <h3 className="text-xl font-semibold text-primary mb-4">2. Caractéristiques Techniques</h3>
                 <ul className="space-y-1 text-sm">
                   <li>• <strong>Surface :</strong> 200m² habitable + 100m² terrasse</li>
                   <li>• <strong>Chambres :</strong> 4 chambres avec dressing</li>
@@ -141,7 +141,7 @@ export default function StructurerAnnoncesPage() {
               </div>
               
               <div className="bg-white p-6 rounded-lg shadow-md">
-                <h3 className="text-xl font-semibold text-[#146B67] mb-4">3. Avantages et Points Forts</h3>
+                <h3 className="text-xl font-semibold text-primary mb-4">3. Avantages et Points Forts</h3>
                 <ul className="space-y-1 text-sm">
                   <li>• Quartier sécurisé avec gardiennage 24h/24</li>
                   <li>• Écoles internationales à proximité</li>
@@ -152,7 +152,7 @@ export default function StructurerAnnoncesPage() {
               </div>
               
               <div className="bg-white p-6 rounded-lg shadow-md">
-                <h3 className="text-xl font-semibold text-[#146B67] mb-4">4. Call-to-Action (CTA)</h3>
+                <h3 className="text-xl font-semibold text-primary mb-4">4. Call-to-Action (CTA)</h3>
                 <p className="text-sm text-gray-700">
                   "Visite possible dès cette semaine. Contactez-nous pour organiser 
                   une visite privée et découvrir tous les détails de cette propriété exceptionnelle."
@@ -162,7 +162,7 @@ export default function StructurerAnnoncesPage() {
           </section>
 
           <section className="mb-8">
-            <h2 className="text-2xl font-semibold text-[#146B67] mb-4">
+            <h2 className="text-2xl font-semibold text-primary mb-4">
               📸 Galerie Photo : L&apos;Impact Visuel
             </h2>
             
@@ -173,7 +173,7 @@ export default function StructurerAnnoncesPage() {
             
             <div className="grid md:grid-cols-2 gap-6 mb-6">
               <div className="bg-white p-6 rounded-lg shadow-md">
-                <h3 className="text-xl font-semibold text-[#146B67] mb-4">📱 Ordre des Photos</h3>
+                <h3 className="text-xl font-semibold text-primary mb-4">📱 Ordre des Photos</h3>
                 <ol className="space-y-2 text-sm">
                   <li><strong>1. Photo principale :</strong> Vue extérieure attractive</li>
                   <li><strong>2. Salon/Séjour :</strong> Pièce de vie principale</li>
@@ -186,7 +186,7 @@ export default function StructurerAnnoncesPage() {
               </div>
               
               <div className="bg-white p-6 rounded-lg shadow-md">
-                <h3 className="text-xl font-semibold text-[#146B67] mb-4"> Conseils Photo</h3>
+                <h3 className="text-xl font-semibold text-primary mb-4"> Conseils Photo</h3>
                 <ul className="space-y-2 text-sm">
                   <li>• <strong>Lumière naturelle :</strong> Photos en journée</li>
                   <li>• <strong>Angles larges :</strong> Montrer l&apos;espace</li>
@@ -211,7 +211,7 @@ export default function StructurerAnnoncesPage() {
           </section>
 
           <section className="mb-8">
-            <h2 className="text-2xl font-semibold text-[#146B67] mb-4">
+            <h2 className="text-2xl font-semibold text-primary mb-4">
                Call-to-Action (CTA) : Convertir l&apos;Intérêt en Action
             </h2>
             
@@ -222,17 +222,17 @@ export default function StructurerAnnoncesPage() {
             
             <div className="grid md:grid-cols-3 gap-4 mb-6">
               <div className="bg-white p-4 rounded-lg shadow-md text-center">
-                <h4 className="font-semibold text-[#146B67] mb-2">📞 Contact Direct</h4>
+                <h4 className="font-semibold text-primary mb-2">📞 Contact Direct</h4>
                 <p className="text-sm text-gray-600">"Appelez maintenant : +241 01 23 45 67"</p>
               </div>
               
               <div className="bg-white p-4 rounded-lg shadow-md text-center">
-                <h4 className="font-semibold text-[#146B67] mb-2">📱 WhatsApp</h4>
+                <h4 className="font-semibold text-primary mb-2">📱 WhatsApp</h4>
                 <p className="text-sm text-gray-600">"Contactez-nous sur WhatsApp"</p>
               </div>
               
               <div className="bg-white p-4 rounded-lg shadow-md text-center">
-                <h4 className="font-semibold text-[#146B67] mb-2">👁️ Visite</h4>
+                <h4 className="font-semibold text-primary mb-2">👁️ Visite</h4>
                 <p className="text-sm text-gray-600">"Visite organisée cette semaine"</p>
               </div>
             </div>
@@ -250,7 +250,7 @@ export default function StructurerAnnoncesPage() {
           </section>
 
           <section className="mb-8">
-            <h2 className="text-2xl font-semibold text-[#146B67] mb-4">
+            <h2 className="text-2xl font-semibold text-primary mb-4">
                Mesurer l&apos;Efficacité de Vos Annonces
             </h2>
             
@@ -261,7 +261,7 @@ export default function StructurerAnnoncesPage() {
             
             <div className="grid md:grid-cols-2 gap-6 mb-6">
               <div className="bg-white p-6 rounded-lg shadow-md">
-                <h3 className="text-xl font-semibold text-[#146B67] mb-4"> Métriques d&apos;Engagement</h3>
+                <h3 className="text-xl font-semibold text-primary mb-4"> Métriques d&apos;Engagement</h3>
                 <ul className="space-y-2 text-sm">
                   <li>• <strong>Vues de l&apos;annonce :</strong> Nombre de consultations</li>
                   <li>• <strong>Temps passé :</strong> Durée moyenne de visite</li>
@@ -272,7 +272,7 @@ export default function StructurerAnnoncesPage() {
               </div>
               
               <div className="bg-white p-6 rounded-lg shadow-md">
-                <h3 className="text-xl font-semibold text-[#146B67] mb-4">📞 Métriques de Conversion</h3>
+                <h3 className="text-xl font-semibold text-primary mb-4">📞 Métriques de Conversion</h3>
                 <ul className="space-y-2 text-sm">
                   <li>• <strong>Contacts générés :</strong> Appels/emails</li>
                   <li>• <strong>Taux de contact :</strong> % de vues qui contactent</li>
@@ -290,7 +290,7 @@ export default function StructurerAnnoncesPage() {
           </section>
 
           <section className="mb-8">
-            <h2 className="text-2xl font-semibold text-[#146B67] mb-4">
+            <h2 className="text-2xl font-semibold text-primary mb-4">
                Conclusion : L&apos;Art de la Vente Immobilière au Gabon
             </h2>
             
@@ -300,7 +300,7 @@ export default function StructurerAnnoncesPage() {
               du marché local.
             </p>
             
-            <div className="bg-[#146B67] text-white p-6 rounded-lg text-center">
+            <div className="bg-primary text-white p-6 rounded-lg text-center">
               <h3 className="text-xl font-semibold mb-3"> Prêt à Optimiser Vos Annonces ?</h3>
               <p className="mb-4">
                 Découvrez comment Trouve Ton Nkama peut vous aider à créer des annonces 
@@ -309,13 +309,13 @@ export default function StructurerAnnoncesPage() {
               <div className="flex flex-col sm:flex-row gap-4 justify-center">
                 <Link 
                   href={routes.public.property} 
-                  className="bg-white text-[#146B67] px-6 py-3 rounded-lg hover:bg-gray-100 transition-colors font-semibold"
+                  className="bg-white text-primary px-6 py-3 rounded-lg hover:bg-gray-100 transition-colors font-semibold"
                 >
                   Publier une Annonce
                 </Link>
                 <Link 
                   href={routes.public.search_property} 
-                  className="border border-white text-white px-6 py-3 rounded-lg hover:bg-white hover:text-[#146B67] transition-colors font-semibold"
+                  className="border border-white text-white px-6 py-3 rounded-lg hover:bg-white hover:text-primary transition-colors font-semibold"
                 >
                   Voir les Exemples
                 </Link>
@@ -326,13 +326,13 @@ export default function StructurerAnnoncesPage() {
 
         {/* Related Articles */}
         <section className="mt-12 pt-8 border-t border-gray-200">
-          <h3 className="text-2xl font-semibold text-[#146B67] mb-6">
+          <h3 className="text-2xl font-semibold text-primary mb-6">
              Articles Similaires
           </h3>
           <div className="grid md:grid-cols-2 gap-6">
             <Link href={routes.public.blog_commissions_demarcheurs} className="block">
               <div className="bg-white p-4 rounded-lg shadow-md hover:shadow-lg transition-shadow">
-                <h4 className="font-semibold text-[#146B67] mb-2">
+                <h4 className="font-semibold text-primary mb-2">
                   Commissions Démarcheurs Logements Gabon
                 </h4>
                 <p className="text-sm text-gray-600">
@@ -343,7 +343,7 @@ export default function StructurerAnnoncesPage() {
             
             <Link href={routes.public.blog_tendances_marche} className="block">
               <div className="bg-white p-4 rounded-lg shadow-md hover:shadow-lg transition-shadow">
-                <h4 className="font-semibold text-[#146B67] mb-2">
+                <h4 className="font-semibold text-primary mb-2">
                   Tendances Marché Immobilier Gabon 2024
                 </h4>
                 <p className="text-sm text-gray-600">

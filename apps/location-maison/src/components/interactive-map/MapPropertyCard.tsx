@@ -47,7 +47,7 @@ export default function MapPropertyCard({
   return (
     <Link 
       href={`/houseDetails/${property.objectID || property.id}`}
-      className={`block transition-all duration-200 ${isHighlighted ? 'ring-2 ring-[#146B67] scale-[1.02]' : ''}`}
+      className={`block transition-all duration-200 ${isHighlighted ? 'ring-2 ring-primary scale-[1.02]' : ''}`}
       onMouseEnter={onMouseEnter}
       onMouseLeave={onMouseLeave}
     >
@@ -64,7 +64,7 @@ export default function MapPropertyCard({
           
           {/* Badge type */}
           <div className="absolute top-2 left-2">
-            <span className="bg-[#146B67] text-white text-xs px-2 py-1 rounded-full">
+            <span className="bg-primary text-white text-xs px-2 py-1 rounded-full">
               {getPropertyType(property.typeProperty)}
             </span>
           </div>
@@ -86,7 +86,7 @@ export default function MapPropertyCard({
         {/* Contenu */}
         <div className="p-3">
           {/* Prix */}
-          <p className="text-[#146B67] font-bold text-lg">
+          <p className="text-primary font-bold text-lg">
             {formatPrice(property.price)}
             {property.status === 'À louer' && <span className="text-sm font-normal">/mois</span>}
           </p>

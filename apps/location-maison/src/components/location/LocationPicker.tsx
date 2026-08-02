@@ -272,11 +272,11 @@ export default function LocationPicker() {
     <div className="space-y-6 w-full">
       {/* En-tête */}
       <div className="text-center space-y-3">
-        <div className="inline-flex items-center space-x-3 px-5 py-3 bg-gradient-to-r from-[#224D62]/10 via-[#CBB171]/10 to-[#224D62]/10 rounded-full shadow-lg border border-[#224D62]/20">
-          <MapPin className="w-6 h-6 text-[#224D62]" />
-          <span className="text-[#224D62] font-bold text-lg">Localisation du bien</span>
+        <div className="inline-flex items-center space-x-3 px-5 py-3 bg-gradient-to-r from-ink/10 via-gold/10 to-ink/10 rounded-full shadow-lg border border-ink/20">
+          <MapPin className="w-6 h-6 text-ink" />
+          <span className="text-ink font-bold text-lg">Localisation du bien</span>
         </div>
-        <p className="text-[#224D62]/80 text-sm font-medium">
+        <p className="text-ink/80 text-sm font-medium">
           {SHOW_MAP_AND_GPS
             ? 'Utilisez votre position actuelle, ou renseignez la province, la ville et le quartier.'
             : 'Renseignez la province, la ville et le quartier du bien.'}
@@ -286,8 +286,8 @@ export default function LocationPicker() {
       {/* Option 1 : position GPS exacte */}
       {SHOW_MAP_AND_GPS && (
         <>
-          <div className="text-center bg-gradient-to-r from-[#156B68]/10 to-[#156B68]/5 rounded-xl p-5 border border-[#156B68]/20">
-            <p className="text-[#224D62]/80 text-sm font-medium mb-3 flex items-center justify-center">
+          <div className="text-center bg-gradient-to-r from-primary/10 to-primary/5 rounded-xl p-5 border border-primary/20">
+            <p className="text-ink/80 text-sm font-medium mb-3 flex items-center justify-center">
               <MapPin className="w-4 h-4 mr-2" />
               Vous êtes sur place ? Remplissez tout automatiquement.
             </p>
@@ -296,7 +296,7 @@ export default function LocationPicker() {
               size="lg"
               onClick={handleGPSLocation}
               disabled={gpsLoading}
-              className="bg-[#156B68] hover:bg-[#156B68]/90 text-white font-semibold px-8 py-3 rounded-xl shadow-lg hover:shadow-xl transition-all border-0"
+              className="bg-primary hover:bg-primary/90 text-white font-semibold px-8 py-3 rounded-xl shadow-lg hover:shadow-xl transition-all border-0"
             >
               {gpsLoading ? (
                 <Loader2 className="w-5 h-5 mr-3 animate-spin" />
@@ -309,9 +309,9 @@ export default function LocationPicker() {
 
           {/* Séparateur */}
           <div className="flex items-center gap-4">
-            <div className="flex-1 h-px bg-[#224D62]/15" />
-            <span className="text-xs font-medium text-[#224D62]/60 uppercase tracking-wide">ou</span>
-            <div className="flex-1 h-px bg-[#224D62]/15" />
+            <div className="flex-1 h-px bg-ink/15" />
+            <span className="text-xs font-medium text-ink/60 uppercase tracking-wide">ou</span>
+            <div className="flex-1 h-px bg-ink/15" />
           </div>
         </>
       )}
@@ -324,7 +324,7 @@ export default function LocationPicker() {
             Province <span className="text-red-500">*</span>
           </Label>
           <Select value={province || undefined} onValueChange={handleProvinceChange}>
-            <SelectTrigger id="property-province" className="w-full rounded-full py-6 text-md bg-gray-50 dark:bg-gray-900 dark:text-white border-[#1FA89B] focus:ring-0 focus:border-[#1FA89B] focus:bg-[#ebf6f5] transition-colors">
+            <SelectTrigger id="property-province" className="w-full rounded-full py-6 text-md bg-gray-50 dark:bg-gray-900 dark:text-white border-secondary focus:ring-0 focus:border-secondary focus:bg-primary-50 transition-colors">
               <SelectValue placeholder="Choisissez votre province" />
             </SelectTrigger>
             <SelectContent>
@@ -391,7 +391,7 @@ export default function LocationPicker() {
 
       {/* Carte */}
       {SHOW_MAP_AND_GPS && (
-        <div className="relative overflow-hidden bg-gradient-to-br from-[#224D62]/5 via-[#CBB171]/5 to-[#224D62]/10 rounded-2xl p-3 shadow-lg border border-[#224D62]/20">
+        <div className="relative overflow-hidden bg-gradient-to-br from-ink/5 via-gold/5 to-ink/10 rounded-2xl p-3 shadow-lg border border-ink/20">
           <GoogleLocationMap coordinates={mapCoords} label={district || city || province} />
         </div>
       )}

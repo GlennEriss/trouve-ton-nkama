@@ -67,7 +67,7 @@ export default function PaymentStatusModal({
                     </>
                   )}
                 </p>
-                <div className="flex items-center justify-center gap-2 text-[#146B67] mb-6">
+                <div className="flex items-center justify-center gap-2 text-primary mb-6">
                   <Loader2 className="w-5 h-5 animate-spin" />
                   <span className="text-sm">En attente de confirmation…</span>
                 </div>
@@ -101,7 +101,7 @@ export default function PaymentStatusModal({
                 </p>
                 <button
                   onClick={onAction}
-                  className="w-full py-3 bg-[#146B67] text-white rounded-xl font-medium hover:bg-[#125A56] transition-colors"
+                  className="w-full py-3 bg-primary text-white rounded-xl font-medium hover:bg-primary-800 transition-colors"
                 >
                   {actionLabel ?? 'Terminer'}
                 </button>
@@ -127,7 +127,7 @@ export default function PaymentStatusModal({
                 </p>
                 <button
                   onClick={onAction}
-                  className="w-full py-3 bg-[#146B67] text-white rounded-xl font-medium hover:bg-[#125A56] transition-colors"
+                  className="w-full py-3 bg-primary text-white rounded-xl font-medium hover:bg-primary-800 transition-colors"
                 >
                   {actionLabel ?? 'Réessayer'}
                 </button>

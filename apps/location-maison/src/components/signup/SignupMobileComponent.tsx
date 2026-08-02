@@ -136,14 +136,14 @@ export const SignupMobileComponent = () => {
                 <Link
                     href={routes.public.signin}
                     aria-label="Retour à la connexion"
-                    className="inline-flex h-11 w-11 items-center justify-center rounded-full hover:bg-gray-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#146B67] dark:hover:bg-gray-800"
+                    className="inline-flex h-11 w-11 items-center justify-center rounded-full hover:bg-gray-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary dark:hover:bg-gray-800"
                 >
                     <ChevronLeft color='gray' size={30} />
                 </Link>
             </div>
 
             <section className='mt-8 md:mt-10'>
-                <h1 className='text-2xl font-bold text-[#187872]'>Explorons ensemble avec Trouve Ton Nkama !</h1>
+                <h1 className='text-2xl font-bold text-primary'>Explorons ensemble avec Trouve Ton Nkama !</h1>
                 <p className='text-gray-600 dark:text-gray-300'>
                     Créez votre compte Trouve Ton Nkama pour trouver votre logement de rêve partout au Gabon !
                 </p>
@@ -165,7 +165,7 @@ export const SignupMobileComponent = () => {
                                     aria-pressed={selectedAccountType === 'User'}
                                     className={`min-h-20 rounded-lg border p-3 text-left ${
                                         selectedAccountType === 'User'
-                                            ? 'border-[#1FA89B] bg-teal-50 dark:bg-teal-950/40'
+                                            ? 'border-secondary bg-teal-50 dark:bg-teal-950/40'
                                             : 'border-gray-200 dark:border-gray-700'
                                     }`}
                                 >
@@ -186,7 +186,7 @@ export const SignupMobileComponent = () => {
                                     aria-pressed={selectedAccountType === 'Announcer'}
                                     className={`min-h-20 rounded-lg border p-3 text-left ${
                                         selectedAccountType === 'Announcer'
-                                            ? 'border-[#1FA89B] bg-teal-50 dark:bg-teal-950/40'
+                                            ? 'border-secondary bg-teal-50 dark:bg-teal-950/40'
                                             : 'border-gray-200 dark:border-gray-700'
                                     }`}
                                 >
@@ -301,7 +301,7 @@ export const SignupMobileComponent = () => {
                                 type='submit'
                                 disabled={isFormLoading || isGoogleLoading}
                                 isLoading={isFormLoading}
-                                className='bg-gradient-to-b from-[#1FA89B] to-[#146B67] md:py-7 mt-5'
+                                className='bg-gradient-to-b from-secondary to-primary md:py-7 mt-5'
                                 title={isFormLoading ? 'Création en cours...' : 'Créer un compte'}
                             />
                         </div>
@@ -310,7 +310,7 @@ export const SignupMobileComponent = () => {
 
                 <div className="flex items-center my-6 md:mt-10">
                     <div className="flex-grow h-px bg-gray-300"></div>
-                    <span className="px-4 py-1 text-[#146B67] bg-[#e7f5f4] dark:bg-gray-800 dark:text-[#9FE2DB] rounded-full text-sm font-medium">OU</span>
+                    <span className="px-4 py-1 text-primary bg-primary-50 dark:bg-gray-800 dark:text-primary-200 rounded-full text-sm font-medium">OU</span>
                     <div className="flex-grow h-px bg-gray-300"></div>
                 </div>
 

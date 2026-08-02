@@ -927,7 +927,7 @@ function DraftCard({ item, index, geo, canGeocode, onGeocode, imp, canCreate, on
 
         <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs">
           {draft.source.postUrl ? (
-            <a href={draft.source.postUrl} target="_blank" rel="noreferrer" className="text-brand-700 underline">
+            <a href={draft.source.postUrl} target="_blank" rel="noreferrer" className="text-primary underline">
               Voir les photos du post
             </a>
           ) : (
@@ -1306,7 +1306,7 @@ export default function ApifyPage() {
                     <span className="text-xs text-slate-400">{announcer.email ?? announcer.uid}</span>
                     <button
                       type="button"
-                      className="text-xs text-brand-700 underline"
+                      className="text-xs text-primary underline"
                       onClick={() => {
                         setAnnouncer(null);
                         setAnnouncerQuery("");

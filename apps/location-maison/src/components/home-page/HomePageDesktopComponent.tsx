@@ -49,7 +49,7 @@ export default function HomePageDesktopComponent() {
 
   return (
     <motion.div
-      className='container p-5 mx-auto max-w-[1280px] 2xl:max-w-[1440px] relative'
+      className='container-page p-5 relative'
       initial={shouldReduceMotion ? false : { opacity: 0 }}
       animate={shouldReduceMotion ? {} : { opacity: 1 }}
       transition={{ duration: 0.35 }}
@@ -72,7 +72,7 @@ export default function HomePageDesktopComponent() {
         <FeaturedSection />
       </motion.section>
       {/* <section className='mt-10 lg:my-20'>
-        <h1 className="text-xl lg:text-2xl xl:text-3xl font-bold leading-tight text-center text-[#146B67] dark:text-[#1FA89B]">
+        <h1 className="text-xl lg:text-2xl xl:text-3xl font-bold leading-tight text-center text-primary dark:text-secondary">
           Développez votre activité immobilière en toute simplicité.
         </h1>
         <div className='grid grid-cols-3 lg:mt-5 gap-4'>
@@ -80,7 +80,7 @@ export default function HomePageDesktopComponent() {
             detailssection2.map((item, index) => (
               <div
                 key={index}
-                className='bg-white dark:bg-gray-800 p-6 rounded-xl hover:shadow-md dark:hover:shadow-[#1FA89B]/10 transition-all flex flex-col items-center h-[200px] dark:border dark:border-gray-700'
+                className='bg-white dark:bg-gray-800 p-6 rounded-xl hover:shadow-md dark:hover:shadow-secondary/10 transition-all flex flex-col items-center h-[200px] dark:border dark:border-gray-700'
               >
                 <div className="h-[60px] flex items-center justify-center">
                   <Image
@@ -92,7 +92,7 @@ export default function HomePageDesktopComponent() {
                   />
                 </div>
                 <div className="h-[30px] flex items-center justify-center">
-                  <h2 className='text-lg font-bold text-center text-[#146B67] dark:text-[#1FA89B]'>
+                  <h2 className='text-lg font-bold text-center text-primary dark:text-secondary'>
                     {item.title}
                   </h2>
                 </div>
@@ -108,7 +108,7 @@ export default function HomePageDesktopComponent() {
       </section> */}
 
       <motion.section
-        className='relative overflow-hidden bg-gradient-to-r from-[#146B67]/5 via-[#1FA89B]/10 to-[#146B67]/5 p-8 py-16 rounded-3xl'
+        className='relative overflow-hidden bg-gradient-to-r from-primary/5 via-secondary/10 to-primary/5 p-8 py-16 rounded-3xl'
         {...getRevealProps(0.1)}
       >
         {/* Forme 2 - Derrière la 3ème section */}
@@ -122,7 +122,7 @@ export default function HomePageDesktopComponent() {
         </div>
         <div className='relative z-10 space-y-8'>
           <div className='text-center space-y-3'>
-            <h1 className='text-xl md:text-2xl xl:text-3xl font-bold text-[#146B67]'>Quels sont vos besoins ?</h1>
+            <h1 className='text-xl md:text-2xl xl:text-3xl font-bold text-primary'>Quels sont vos besoins ?</h1>
             <p className='text-gray-600 max-w-2xl mx-auto'>Que vous souhaitiez publier une annonce ou trouver votre prochain logement, nous sommes là pour vous accompagner</p>
           </div>
           <div className='flex flex-col md:flex-row gap-4 max-w-2xl mx-auto'>
@@ -134,10 +134,10 @@ export default function HomePageDesktopComponent() {
                   destination: publishLink,
                 })
               }
-              className='flex-1 group relative overflow-hidden bg-gradient-to-r from-[#146B67] to-[#1FA89B] text-white font-semibold py-4 px-8 rounded-xl flex items-center justify-center gap-3 shadow-lg hover:shadow-xl transition-all duration-300 hover:-translate-y-1'
+              className='flex-1 group relative overflow-hidden bg-gradient-to-r from-primary to-secondary text-white font-semibold py-4 px-8 rounded-xl flex items-center justify-center gap-3 shadow-lg hover:shadow-xl transition-all duration-300 hover:-translate-y-1'
             >
               <span className='relative z-10'>Publier une annonce</span>
-              <div className='absolute inset-0 bg-gradient-to-r from-[#1FA89B] to-[#146B67] opacity-0 group-hover:opacity-100 transition-opacity duration-300'></div>
+              <div className='absolute inset-0 bg-gradient-to-r from-secondary to-primary opacity-0 group-hover:opacity-100 transition-opacity duration-300'></div>
             </Link>
             <Link
               href={routes.public.search_property}
@@ -147,7 +147,7 @@ export default function HomePageDesktopComponent() {
                   destination: routes.public.search_property,
                 })
               }
-              className='flex-1 group relative overflow-hidden bg-white text-[#146B67] font-semibold py-4 px-8 rounded-xl flex items-center justify-center gap-3 shadow-lg hover:shadow-xl transition-all duration-300 hover:-translate-y-1 border-2 border-[#146B67]/10 hover:border-[#146B67]/30'
+              className='flex-1 group relative overflow-hidden bg-white text-primary font-semibold py-4 px-8 rounded-xl flex items-center justify-center gap-3 shadow-lg hover:shadow-xl transition-all duration-300 hover:-translate-y-1 border-2 border-primary/10 hover:border-primary/30'
             >
               <span>Rechercher une annonce</span>
             </Link>
@@ -156,7 +156,7 @@ export default function HomePageDesktopComponent() {
       </motion.section>
 
       <motion.section className='space-y-5 p-5 mb-8' {...getRevealProps(0.12)}>
-        <h1 className='text-xl lg:text-2xl xl:text-3xl leading-tight text-center font-bold text-[#146B67] my-5'>Types d'annonces</h1>
+        <h1 className='text-xl lg:text-2xl xl:text-3xl leading-tight text-center font-bold text-primary my-5'>Types d'annonces</h1>
         <CarouselPropertyType />
       </motion.section>
 
@@ -169,31 +169,31 @@ export default function HomePageDesktopComponent() {
       </motion.section>
 
       <motion.section className='space-y-5 m-5' {...getRevealProps(0.18)}>
-        <h1 className='text-xl lg:text-2xl xl:text-3xl leading-tight font-bold text-center text-[#146B67] my-10'>Annonces par province</h1>
+        <h1 className='text-xl lg:text-2xl xl:text-3xl leading-tight font-bold text-center text-primary my-10'>Annonces par province</h1>
         <PropertyByProvince />
       </motion.section>
 
       <motion.section className='rounded-2xl bg-white border border-gray-100 p-6 space-y-4' {...getRevealProps(0.19)}>
-        <h2 className='text-xl lg:text-2xl font-bold text-[#146B67]'>Recherches immobilières populaires</h2>
+        <h2 className='text-xl lg:text-2xl font-bold text-primary'>Recherches immobilières populaires</h2>
         <div className='grid gap-3 md:grid-cols-2 lg:grid-cols-3'>
-          <Link href="/immobilier/location/maison" className="rounded-xl border border-gray-200 px-4 py-3 text-sm font-medium text-gray-700 hover:border-[#146B67] hover:text-[#146B67] transition-colors">
+          <Link href="/immobilier/location/maison" className="rounded-xl border border-gray-200 px-4 py-3 text-sm font-medium text-gray-700 hover:border-primary hover:text-primary transition-colors">
             Maisons à louer au Gabon
           </Link>
-          <Link href="/immobilier/vente/maison" className="rounded-xl border border-gray-200 px-4 py-3 text-sm font-medium text-gray-700 hover:border-[#146B67] hover:text-[#146B67] transition-colors">
+          <Link href="/immobilier/vente/maison" className="rounded-xl border border-gray-200 px-4 py-3 text-sm font-medium text-gray-700 hover:border-primary hover:text-primary transition-colors">
             Maisons à vendre au Gabon
           </Link>
-          <Link href="/immobilier/location/appartement/libreville" className="rounded-xl border border-gray-200 px-4 py-3 text-sm font-medium text-gray-700 hover:border-[#146B67] hover:text-[#146B67] transition-colors">
+          <Link href="/immobilier/location/appartement/libreville" className="rounded-xl border border-gray-200 px-4 py-3 text-sm font-medium text-gray-700 hover:border-primary hover:text-primary transition-colors">
             Appartements à louer à Libreville
           </Link>
         </div>
       </motion.section>
 
       <motion.section
-        className='rounded-3xl bg-gradient-to-r from-[#C1DEE8] to-[#FBD9B9] p-8 lg:p-12 relative mt-10 overflow-visible mb-32 lg:mb-40'
+        className='rounded-3xl bg-gradient-to-r from-sky to-peach p-8 lg:p-12 relative mt-10 overflow-visible mb-32 lg:mb-40'
         {...getRevealProps(0.2)}
       >
         <div className='flex flex-col gap-5 max-w-xl'>
-          <h1 className='text-2xl lg:text-3xl xl:text-4xl text-[#146B67] font-bold flex flex-col gap-1'>
+          <h1 className='text-2xl lg:text-3xl xl:text-4xl text-primary font-bold flex flex-col gap-1'>
             <span>Vous recherchez</span>
             <span>un nouveau logement ?</span>
             <span>Parcourez notre catalogue !</span>
@@ -217,7 +217,7 @@ export default function HomePageDesktopComponent() {
                 destination: routes.public.search_property,
               })
             }
-            className='bg-white hover:bg-[#146B67] text-[#146B67] hover:text-white px-8 py-3 rounded-full text-center font-semibold w-fit transition-all duration-300 shadow-lg hover:shadow-xl mt-4'
+            className='bg-white hover:bg-primary text-primary hover:text-white px-8 py-3 rounded-full text-center font-semibold w-fit transition-all duration-300 shadow-lg hover:shadow-xl mt-4'
           >
             Explorez maintenant
           </Link>

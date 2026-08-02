@@ -27,7 +27,7 @@ export const FilterMobile = ({ children }: Readonly<{ children: ReactNode }>) =>
                 <Button
                     onClick={() => setIsOpen(!isOpen)}
                     variant='ghost'
-                    className='flex gap-1 justify-start text-[#1B4D5B] hover:text-[#1B4D5B]'
+                    className='flex gap-1 justify-start text-ink hover:text-ink'
                 >
                     {
                         isOpen ? (
@@ -51,8 +51,8 @@ export const FilterDesktop = ({ children }: Readonly<{ children: React.ReactNode
     return (
         <div className='hidden xl:flex'>
             <div className="flex gap-2 items-center">
-                <FiFilter size={22} className='text-[#1B4D5B]' />
-                <span className='text-xl font-bold text-[#1B4D5B]'>Filtres</span>
+                <FiFilter size={22} className='text-ink' />
+                <span className='text-xl font-bold text-ink'>Filtres</span>
             </div>
             <FilterList />
             {children}
@@ -81,13 +81,13 @@ const FilterList = () => {
     }
     return (
         <div className="flex flex-col gap-3 xl:flex-row xl:items-center xl:ml-auto xl:gap-2">
-            <div className='flex flex-col gap-2 xl:flex-row xl:items-center xl:border xl:rounded-lg xl:px-2 xl:gap-1 xl:border-[#1B4D5B]'>
+            <div className='flex flex-col gap-2 xl:flex-row xl:items-center xl:border xl:rounded-lg xl:px-2 xl:gap-1 xl:border-ink'>
                 <Label htmlFor='date' className='text-nowrap text-sm xl:text-md'>A partir de</Label>
                 <Input
                     id='date'
                     type='date'
                     onChange={e => setFilterDate(e.target.value)}
-                    className='border-[#1B4D5B] xl:border-none xl:focus-visible:ring-0'
+                    className='border-ink xl:border-none xl:focus-visible:ring-0'
                 />
             </div>
             {
@@ -111,7 +111,7 @@ export const FilterButton = ({ title, handleFilter, state, icon }: Readonly<{ ti
             <Tooltip>
                 <TooltipTrigger asChild>
                     <Button
-                        className={`border-[#1B4D5B] text-[#1B4D5B] ${actived ? 'bg-[#1B4D5B] hover:bg-[#1B4D5B] hover:text-white text-white' : 'bg-white'}`}
+                        className={`border-ink text-ink ${actived ? 'bg-ink hover:bg-ink hover:text-white text-white' : 'bg-white'}`}
                         onClick={() => {
                             handleFilter(state)
                             setActived(!actived)
@@ -136,7 +136,7 @@ export const FilterButton = ({ title, handleFilter, state, icon }: Readonly<{ ti
                         }
                     </Button>
                 </TooltipTrigger>
-                <TooltipContent className="bg-[#1B4D5B]">
+                <TooltipContent className="bg-ink">
                     <p>{title}</p>
                 </TooltipContent>
             </Tooltip>

@@ -117,7 +117,7 @@ export const PhoneAuthModal: React.FC<PhoneAuthModalProps> = ({
             <Button
               type="submit"
               disabled={isSending || phoneInput.trim().length < 6}
-              className="w-full h-12 rounded-full bg-gradient-to-r from-[#146B67] to-[#1FA89B] text-white"
+              className="w-full h-12 rounded-full bg-gradient-to-r from-primary to-secondary text-white"
             >
               {isSending ? 'Envoi du code…' : 'Recevoir le code'}
             </Button>
@@ -143,7 +143,7 @@ export const PhoneAuthModal: React.FC<PhoneAuthModalProps> = ({
             <Button
               type="submit"
               disabled={isVerifying || otpInput.length < 6}
-              className="w-full h-12 rounded-full bg-gradient-to-r from-[#146B67] to-[#1FA89B] text-white"
+              className="w-full h-12 rounded-full bg-gradient-to-r from-primary to-secondary text-white"
             >
               {isVerifying ? 'Vérification…' : 'Vérifier et continuer'}
             </Button>
@@ -151,7 +151,7 @@ export const PhoneAuthModal: React.FC<PhoneAuthModalProps> = ({
               type="button"
               onClick={handleChangeNumber}
               disabled={isVerifying}
-              className="w-full text-center text-sm text-[#1FA89B] hover:underline"
+              className="w-full text-center text-sm text-secondary hover:underline"
             >
               Modifier le numéro
             </button>

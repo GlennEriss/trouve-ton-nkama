@@ -15,16 +15,16 @@ export default function GuideQuartiersPortGentilPage() {
       <div className="max-w-4xl mx-auto">
         {/* Breadcrumb */}
         <nav className="text-sm text-gray-600 mb-6">
-          <Link href={routes.public.homePage} className="hover:text-[#146B67]">Accueil</Link>
+          <Link href={routes.public.homePage} className="hover:text-primary">Accueil</Link>
           <span className="mx-2">→</span>
-          <Link href={routes.public.blog} className="hover:text-[#146B67]">Blog</Link>
+          <Link href={routes.public.blog} className="hover:text-primary">Blog</Link>
           <span className="mx-2">→</span>
           <span className="text-gray-800">Guide Quartiers Port-Gentil 2024-2025</span>
         </nav>
 
         {/* Article Header */}
         <header className="mb-8">
-          <h1 className="text-4xl font-bold text-[#146B67] mb-4">
+          <h1 className="text-4xl font-bold text-primary mb-4">
             Guide Complet des Quartiers Port-Gentil 2024-2025 
           </h1>
           <div className="flex items-center text-sm text-gray-600 mb-6">
@@ -45,7 +45,7 @@ export default function GuideQuartiersPortGentilPage() {
         <article className="prose prose-lg max-w-none">
           
           <section className="mb-8">
-            <h2 className="text-2xl font-semibold text-[#146B67] mb-4">
+            <h2 className="text-2xl font-semibold text-primary mb-4">
                Port-Gentil : La Capitale Économique du Gabon
             </h2>
             
@@ -82,13 +82,13 @@ export default function GuideQuartiersPortGentilPage() {
           </section>
 
           <section className="mb-8">
-            <h2 className="text-2xl font-semibold text-[#146B67] mb-4">
+            <h2 className="text-2xl font-semibold text-primary mb-4">
               🏆 Quartiers Premium : Montagne Sainte et Centre-Ville
             </h2>
             
             <div className="space-y-6 mb-6">
               <div className="bg-white p-6 rounded-lg shadow-md">
-                <h3 className="text-xl font-semibold text-[#146B67] mb-4">🏔️ Montagne Sainte - Le Quartier Résidentiel de Standing</h3>
+                <h3 className="text-xl font-semibold text-primary mb-4">🏔️ Montagne Sainte - Le Quartier Résidentiel de Standing</h3>
                 <div className="grid md:grid-cols-2 gap-4">
                   <div>
                     <h4 className="font-semibold mb-2"> Prix Immobiliers 2024-2025</h4>
@@ -111,7 +111,7 @@ export default function GuideQuartiersPortGentilPage() {
                   </div>
                 </div>
                 <div className="mt-4 p-4 bg-yellow-50 rounded-lg">
-                  <h4 className="font-semibold text-[#146B67] mb-2"> Conseil Investissement</h4>
+                  <h4 className="font-semibold text-primary mb-2"> Conseil Investissement</h4>
                   <p className="text-sm">
                     Montagne Sainte est le quartier premium de Port-Gentil avec une rentabilité 
                     locative de 8-10% et une plus-value annuelle de 12-15%.
@@ -120,7 +120,7 @@ export default function GuideQuartiersPortGentilPage() {
               </div>
               
               <div className="bg-white p-6 rounded-lg shadow-md">
-                <h3 className="text-xl font-semibold text-[#146B67] mb-4"> Centre-Ville - Le Cœur Économique</h3>
+                <h3 className="text-xl font-semibold text-primary mb-4"> Centre-Ville - Le Cœur Économique</h3>
                 <div className="grid md:grid-cols-2 gap-4">
                   <div>
                     <h4 className="font-semibold mb-2"> Prix Immobiliers 2024-2025</h4>
@@ -143,7 +143,7 @@ export default function GuideQuartiersPortGentilPage() {
                   </div>
                 </div>
                 <div className="mt-4 p-4 bg-blue-50 rounded-lg">
-                  <h4 className="font-semibold text-[#146B67] mb-2"> Conseil Investissement</h4>
+                  <h4 className="font-semibold text-primary mb-2"> Conseil Investissement</h4>
                   <p className="text-sm">
                     Le Centre-Ville est idéal pour l&apos;investissement locatif avec une rentabilité 
                     de 9-12% grâce à la forte demande des travailleurs du secteur pétrolier.
@@ -154,13 +154,13 @@ export default function GuideQuartiersPortGentilPage() {
           </section>
 
           <section className="mb-8">
-            <h2 className="text-2xl font-semibold text-[#146B67] mb-4">
+            <h2 className="text-2xl font-semibold text-primary mb-4">
                Quartiers Accessibles : Matanda et Olowé
             </h2>
             
             <div className="space-y-6 mb-6">
               <div className="bg-white p-6 rounded-lg shadow-md">
-                <h3 className="text-xl font-semibold text-[#146B67] mb-4">👥 Matanda - Le Quartier Populaire et Dynamique</h3>
+                <h3 className="text-xl font-semibold text-primary mb-4">👥 Matanda - Le Quartier Populaire et Dynamique</h3>
                 <div className="grid md:grid-cols-2 gap-4">
                   <div>
                     <h4 className="font-semibold mb-2"> Prix Immobiliers 2024-2025</h4>
@@ -183,7 +183,7 @@ export default function GuideQuartiersPortGentilPage() {
                   </div>
                 </div>
                 <div className="mt-4 p-4 bg-green-50 rounded-lg">
-                  <h4 className="font-semibold text-[#146B67] mb-2"> Conseil Investissement</h4>
+                  <h4 className="font-semibold text-primary mb-2"> Conseil Investissement</h4>
                   <p className="text-sm">
                     Matanda offre un excellent potentiel de plus-value avec une rentabilité 
                     de 10-15% et un quartier en pleine expansion.
@@ -192,7 +192,7 @@ export default function GuideQuartiersPortGentilPage() {
               </div>
               
               <div className="bg-white p-6 rounded-lg shadow-md">
-                <h3 className="text-xl font-semibold text-[#146B67] mb-4"> Olowé - Le Quartier en Expansion</h3>
+                <h3 className="text-xl font-semibold text-primary mb-4"> Olowé - Le Quartier en Expansion</h3>
                 <div className="grid md:grid-cols-2 gap-4">
                   <div>
                     <h4 className="font-semibold mb-2"> Prix Immobiliers 2024-2025</h4>
@@ -215,7 +215,7 @@ export default function GuideQuartiersPortGentilPage() {
                   </div>
                 </div>
                 <div className="mt-4 p-4 bg-orange-50 rounded-lg">
-                  <h4 className="font-semibold text-[#146B67] mb-2"> Conseil Investissement</h4>
+                  <h4 className="font-semibold text-primary mb-2"> Conseil Investissement</h4>
                   <p className="text-sm">
                     Olowé est le quartier à surveiller avec un potentiel de plus-value 
                     de 15-20% par an grâce au développement des infrastructures.
@@ -226,13 +226,13 @@ export default function GuideQuartiersPortGentilPage() {
           </section>
 
           <section className="mb-8">
-            <h2 className="text-2xl font-semibold text-[#146B67] mb-4">
+            <h2 className="text-2xl font-semibold text-primary mb-4">
                Quartiers Industriels : Zone Portuaire et Pétrolière
             </h2>
             
             <div className="space-y-6 mb-6">
               <div className="bg-white p-6 rounded-lg shadow-md">
-                <h3 className="text-xl font-semibold text-[#146B67] mb-4">⚓ Zone Portuaire - Le Quartier des Travailleurs</h3>
+                <h3 className="text-xl font-semibold text-primary mb-4">⚓ Zone Portuaire - Le Quartier des Travailleurs</h3>
                 <div className="grid md:grid-cols-2 gap-4">
                   <div>
                     <h4 className="font-semibold mb-2"> Prix Immobiliers 2024-2025</h4>
@@ -255,7 +255,7 @@ export default function GuideQuartiersPortGentilPage() {
                   </div>
                 </div>
                 <div className="mt-4 p-4 bg-gray-50 rounded-lg">
-                  <h4 className="font-semibold text-[#146B67] mb-2"> Conseil Investissement</h4>
+                  <h4 className="font-semibold text-primary mb-2"> Conseil Investissement</h4>
                   <p className="text-sm">
                     La Zone Portuaire est idéale pour l&apos;investissement long terme avec un potentiel 
                     de plus-value important grâce au développement portuaire.
@@ -266,13 +266,13 @@ export default function GuideQuartiersPortGentilPage() {
           </section>
 
           <section className="mb-8">
-            <h2 className="text-2xl font-semibold text-[#146B67] mb-4">
+            <h2 className="text-2xl font-semibold text-primary mb-4">
                Comparaison des Quartiers Port-Gentil 2024-2025
             </h2>
             
             <div className="overflow-x-auto">
               <table className="w-full bg-white rounded-lg shadow-md">
-                <thead className="bg-[#146B67] text-white">
+                <thead className="bg-primary text-white">
                   <tr>
                     <th className="p-4 text-left">Quartier</th>
                     <th className="p-4 text-left">Prix 2 pièces</th>
@@ -323,13 +323,13 @@ export default function GuideQuartiersPortGentilPage() {
           </section>
 
           <section className="mb-8">
-            <h2 className="text-2xl font-semibold text-[#146B67] mb-4">
+            <h2 className="text-2xl font-semibold text-primary mb-4">
                Conseils pour Choisir Son Quartier à Port-Gentil
             </h2>
             
             <div className="grid md:grid-cols-2 gap-6 mb-6">
               <div className="bg-white p-6 rounded-lg shadow-md">
-                <h3 className="text-xl font-semibold text-[#146B67] mb-4"> Pour un Budget Modéré</h3>
+                <h3 className="text-xl font-semibold text-primary mb-4"> Pour un Budget Modéré</h3>
                 <ul className="space-y-2 text-sm">
                   <li>• <strong>Matanda :</strong> Prix accessibles, ambiance populaire</li>
                   <li>• <strong>Zone Portuaire :</strong> Prix attractifs, emplois</li>
@@ -339,7 +339,7 @@ export default function GuideQuartiersPortGentilPage() {
               </div>
               
               <div className="bg-white p-6 rounded-lg shadow-md">
-                <h3 className="text-xl font-semibold text-[#146B67] mb-4"> Pour l&apos;Investissement</h3>
+                <h3 className="text-xl font-semibold text-primary mb-4"> Pour l&apos;Investissement</h3>
                 <ul className="space-y-2 text-sm">
                   <li>• <strong>Olowé :</strong> Plus-value importante, développement</li>
                   <li>• <strong>Centre-Ville :</strong> Forte demande locative</li>
@@ -351,7 +351,7 @@ export default function GuideQuartiersPortGentilPage() {
             
             <div className="grid md:grid-cols-2 gap-6 mb-6">
               <div className="bg-white p-6 rounded-lg shadow-md">
-                <h3 className="text-xl font-semibold text-[#146B67] mb-4">👨‍👩‍👧‍👦 Pour les Familles</h3>
+                <h3 className="text-xl font-semibold text-primary mb-4">👨‍👩‍👧‍👦 Pour les Familles</h3>
                 <ul className="space-y-2 text-sm">
                   <li>• <strong>Montagne Sainte :</strong> Calme, écoles, sécurité</li>
                   <li>• <strong>Centre-Ville :</strong> Services, écoles, commerces</li>
@@ -361,7 +361,7 @@ export default function GuideQuartiersPortGentilPage() {
               </div>
               
               <div className="bg-white p-6 rounded-lg shadow-md">
-                <h3 className="text-xl font-semibold text-[#146B67] mb-4">💼 Pour les Professionnels</h3>
+                <h3 className="text-xl font-semibold text-primary mb-4">💼 Pour les Professionnels</h3>
                 <ul className="space-y-2 text-sm">
                   <li>• <strong>Centre-Ville :</strong> Centralité, services</li>
                   <li>• <strong>Montagne Sainte :</strong> Standing, réseaux</li>
@@ -373,7 +373,7 @@ export default function GuideQuartiersPortGentilPage() {
           </section>
 
           <section className="mb-8">
-            <h2 className="text-2xl font-semibold text-[#146B67] mb-4">
+            <h2 className="text-2xl font-semibold text-primary mb-4">
                Tendances 2024-2025 : Évolution des Quartiers Port-Gentil
             </h2>
             
@@ -414,7 +414,7 @@ export default function GuideQuartiersPortGentilPage() {
           </section>
 
           <section className="mb-8">
-            <h2 className="text-2xl font-semibold text-[#146B67] mb-4">
+            <h2 className="text-2xl font-semibold text-primary mb-4">
                Conclusion : Trouver Son Quartier Idéal à Port-Gentil
             </h2>
             
@@ -424,7 +424,7 @@ export default function GuideQuartiersPortGentilPage() {
               quartier nécessite de considérer budget, style de vie et objectifs d&apos;investissement.
             </p>
             
-            <div className="bg-[#146B67] text-white p-6 rounded-lg text-center">
+            <div className="bg-primary text-white p-6 rounded-lg text-center">
               <h3 className="text-xl font-semibold mb-3"> Prêt à Trouver Votre Quartier Idéal ?</h3>
               <p className="mb-4">
                 Découvrez nos annonces immobilières par quartier et trouvez le logement 
@@ -433,13 +433,13 @@ export default function GuideQuartiersPortGentilPage() {
               <div className="flex flex-col sm:flex-row gap-4 justify-center">
                 <Link 
                   href={routes.public.search_property} 
-                  className="bg-white text-[#146B67] px-6 py-3 rounded-lg hover:bg-gray-100 transition-colors font-semibold"
+                  className="bg-white text-primary px-6 py-3 rounded-lg hover:bg-gray-100 transition-colors font-semibold"
                 >
                   Voir les Annonces
                 </Link>
                 <Link 
                   href={routes.public.guide_immobilier_gabon} 
-                  className="border border-white text-white px-6 py-3 rounded-lg hover:bg-white hover:text-[#146B67] transition-colors font-semibold"
+                  className="border border-white text-white px-6 py-3 rounded-lg hover:bg-white hover:text-primary transition-colors font-semibold"
                 >
                   Guide Complet
                 </Link>
@@ -450,13 +450,13 @@ export default function GuideQuartiersPortGentilPage() {
 
         {/* Related Articles */}
         <section className="mt-12 pt-8 border-t border-gray-200">
-          <h3 className="text-2xl font-semibold text-[#146B67] mb-6">
+          <h3 className="text-2xl font-semibold text-primary mb-6">
              Articles Similaires
           </h3>
           <div className="grid md:grid-cols-2 gap-6">
             <Link href={routes.public.blog_guide_quartiers_libreville} className="block">
               <div className="bg-white p-4 rounded-lg shadow-md hover:shadow-lg transition-shadow">
-                <h4 className="font-semibold text-[#146B67] mb-2">
+                <h4 className="font-semibold text-primary mb-2">
                   Guide Quartiers Libreville 2024-2025
                 </h4>
                 <p className="text-sm text-gray-600">
@@ -467,7 +467,7 @@ export default function GuideQuartiersPortGentilPage() {
             
             <Link href={routes.public.guide_immobilier_gabon} className="block">
               <div className="bg-white p-4 rounded-lg shadow-md hover:shadow-lg transition-shadow">
-                <h4 className="font-semibold text-[#146B67] mb-2">
+                <h4 className="font-semibold text-primary mb-2">
                   Guide Immobilier Gabon 2024
                 </h4>
                 <p className="text-sm text-gray-600">

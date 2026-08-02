@@ -40,8 +40,8 @@ export default function ImmobilierIndexPage() {
   return (
     <div className="min-h-screen bg-gray-50">
       <div className="container mx-auto px-4 py-8">
-        <div className="max-w-[1280px] 2xl:max-w-[1440px] mx-auto rounded-2xl bg-white p-6 shadow-sm border border-gray-100">
-          <h1 className="text-3xl md:text-4xl font-bold text-[#146B67]">Immobilier au Gabon</h1>
+        <div className="container-page rounded-2xl bg-white p-6 shadow-sm border border-gray-100">
+          <h1 className="text-3xl md:text-4xl font-bold text-primary">Immobilier au Gabon</h1>
           <p className="mt-4 text-gray-700">
             Accédez directement à nos pages thématiques pour comparer les annonces immobilières par type
             de bien et par transaction.
@@ -51,7 +51,7 @@ export default function ImmobilierIndexPage() {
               <Link
                 key={link.href}
                 href={link.href}
-                className="rounded-xl border border-gray-200 bg-white px-4 py-3 text-sm font-medium text-gray-700 hover:border-[#146B67] hover:text-[#146B67] transition-colors"
+                className="rounded-xl border border-gray-200 bg-white px-4 py-3 text-sm font-medium text-gray-700 hover:border-primary hover:text-primary transition-colors"
               >
                 {link.label}
               </Link>

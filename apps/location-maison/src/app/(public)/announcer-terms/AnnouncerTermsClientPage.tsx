@@ -59,11 +59,11 @@ const announcerSections: LegalSection[] = [
     description: (
       <>
         Ces conditions sont à lire conjointement avec les{" "}
-        <Link href={routes.public.terms_of_use} className="font-medium text-[#146B67] hover:underline">
+        <Link href={routes.public.terms_of_use} className="font-medium text-primary hover:underline">
           conditions d&apos;utilisation
         </Link>{" "}
         et la{" "}
-        <Link href={routes.public.confidentiality} className="font-medium text-[#146B67] hover:underline">
+        <Link href={routes.public.confidentiality} className="font-medium text-primary hover:underline">
           politique de confidentialité
         </Link>
         .

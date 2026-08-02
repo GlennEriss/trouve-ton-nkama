@@ -15,7 +15,7 @@ const EmailAlreadyVerified: React.FC = () => {
       <div className="w-full max-w-2xl mx-4 bg-white dark:bg-gray-800 shadow-lg dark:shadow-gray-900/50 rounded-lg overflow-hidden">
         
         {/* Header avec gradient */}
-        <div className="bg-gradient-to-br from-[#146B67] via-[#1FA89B] to-[#146B67] text-white p-8 text-center">
+        <div className="bg-gradient-to-br from-primary via-secondary to-primary text-white p-8 text-center">
           <div className="flex items-center justify-center mb-4">
             <Link href={routes.public.homePage}>
               <Logo width="64px" height="64px" />
@@ -83,13 +83,13 @@ const EmailAlreadyVerified: React.FC = () => {
           {/* Boutons d'action */}
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Link href={routes.public.signin}>
-              <Button className="w-full sm:w-auto bg-gradient-to-r from-[#146B67] to-[#1FA89B] hover:from-[#0f5853] hover:to-[#1a9688] text-white font-semibold px-8 py-3 rounded-lg transition-all duration-200 shadow-lg">
+              <Button className="w-full sm:w-auto bg-gradient-to-r from-primary to-secondary hover:from-primary-800 hover:to-primary-600 text-white font-semibold px-8 py-3 rounded-lg transition-all duration-200 shadow-lg">
                 Se connecter
               </Button>
             </Link>
             
             <Link href={routes.public.homePage}>
-              <Button variant="outline" className="w-full sm:w-auto border-[#146B67] text-[#146B67] hover:bg-[#146B67] hover:text-white px-8 py-3 rounded-lg transition-all duration-200">
+              <Button variant="outline" className="w-full sm:w-auto border-primary text-primary hover:bg-primary hover:text-white px-8 py-3 rounded-lg transition-all duration-200">
                 Retour à l'accueil
               </Button>
             </Link>
@@ -99,7 +99,7 @@ const EmailAlreadyVerified: React.FC = () => {
           <div className="mt-8 pt-6 border-t border-gray-200 dark:border-gray-600">
             <p className="text-sm text-gray-500 dark:text-gray-400">
               Vous rencontrez des difficultés ? Contactez notre support à{' '}
-              <a href={`mailto:${supportContact.email}`} className="text-[#146B67] hover:text-[#1FA89B] font-medium">
+              <a href={`mailto:${supportContact.email}`} className="text-primary hover:text-secondary font-medium">
                 {supportContact.email}
               </a>
             </p>

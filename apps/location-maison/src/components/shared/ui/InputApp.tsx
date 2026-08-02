@@ -23,13 +23,13 @@ export const InputApp = React.forwardRef<HTMLInputElement, InputAppProps>(({
     const togglePasswordVisibility = () => setShowPassword(!showPassword);
     
     return (
-        <div className="min-h-12 border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900 rounded-full flex py-2 pl-4 pr-2 items-center group transition-colors focus-within:border-[#1FA89B] relative">
+        <div className="min-h-12 border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900 rounded-full flex py-2 pl-4 pr-2 items-center group transition-colors focus-within:border-secondary relative">
             {IconLucide && (
                 <IconLucide
                     size={30}
                     fill={IconColorFill ?? 'none'}
                     color={IconColor}
-                    className='transition-colors group-focus-within:stroke-[#1FA89B]'
+                    className='transition-colors group-focus-within:stroke-secondary'
                 />
             )}
             <Input 
@@ -43,7 +43,7 @@ export const InputApp = React.forwardRef<HTMLInputElement, InputAppProps>(({
                 <button
                     type="button"
                     onClick={togglePasswordVisibility}
-                    className="absolute right-1 inline-flex h-11 w-11 items-center justify-center rounded-full text-gray-600 hover:bg-gray-200 hover:text-gray-900 dark:text-gray-300 dark:hover:bg-gray-800 dark:hover:text-white transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#146B67]"
+                    className="absolute right-1 inline-flex h-11 w-11 items-center justify-center rounded-full text-gray-600 hover:bg-gray-200 hover:text-gray-900 dark:text-gray-300 dark:hover:bg-gray-800 dark:hover:text-white transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
                     disabled={props.disabled}
                     aria-label={showPassword ? 'Masquer le mot de passe' : 'Afficher le mot de passe'}
                     aria-pressed={showPassword}

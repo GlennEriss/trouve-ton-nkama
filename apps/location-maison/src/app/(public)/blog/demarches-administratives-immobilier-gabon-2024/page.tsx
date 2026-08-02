@@ -15,16 +15,16 @@ export default function DemarchesAdministrativesPage() {
       <div className="max-w-4xl mx-auto">
         {/* Breadcrumb */}
         <nav className="text-sm text-gray-600 mb-6">
-          <Link href={routes.public.homePage} className="hover:text-[#146B67]">Accueil</Link>
+          <Link href={routes.public.homePage} className="hover:text-primary">Accueil</Link>
           <span className="mx-2">→</span>
-          <Link href={routes.public.blog} className="hover:text-[#146B67]">Blog</Link>
+          <Link href={routes.public.blog} className="hover:text-primary">Blog</Link>
           <span className="mx-2">→</span>
           <span className="text-gray-800">Démarches Administratives Immobilier Gabon 2024</span>
         </nav>
 
         {/* Article Header */}
         <header className="mb-8">
-          <h1 className="text-4xl font-bold text-[#146B67] mb-4">
+          <h1 className="text-4xl font-bold text-primary mb-4">
             Démarches Administratives Immobilier Gabon 2024 : Guide Complet
           </h1>
           <div className="flex items-center text-sm text-gray-600 mb-6">
@@ -45,7 +45,7 @@ export default function DemarchesAdministrativesPage() {
         <article className="prose prose-lg max-w-none">
           
           <section className="mb-8">
-            <h2 className="text-2xl font-semibold text-[#146B67] mb-4">
+            <h2 className="text-2xl font-semibold text-primary mb-4">
                Cadre Légal Immobilier au Gabon 2024
             </h2>
             
@@ -56,7 +56,7 @@ export default function DemarchesAdministrativesPage() {
             
             <div className="grid md:grid-cols-2 gap-6 mb-6">
               <div className="bg-white p-6 rounded-lg shadow-md">
-                <h3 className="text-xl font-semibold text-[#146B67] mb-4"> Lois Principales</h3>
+                <h3 className="text-xl font-semibold text-primary mb-4"> Lois Principales</h3>
                 <ul className="space-y-2 text-sm">
                   <li>• <strong>Code Civil :</strong> Droits de propriété</li>
                   <li>• <strong>Code Foncier :</strong> Régime foncier</li>
@@ -67,7 +67,7 @@ export default function DemarchesAdministrativesPage() {
               </div>
               
               <div className="bg-white p-6 rounded-lg shadow-md">
-                <h3 className="text-xl font-semibold text-[#146B67] mb-4"> Institutions Clés</h3>
+                <h3 className="text-xl font-semibold text-primary mb-4"> Institutions Clés</h3>
                 <ul className="space-y-2 text-sm">
                   <li>• <strong>Direction du Cadastre :</strong> Titres fonciers</li>
                   <li>• <strong>Service Domanial :</strong> Domaine public</li>
@@ -104,13 +104,13 @@ export default function DemarchesAdministrativesPage() {
           </section>
 
           <section className="mb-8">
-            <h2 className="text-2xl font-semibold text-[#146B67] mb-4">
+            <h2 className="text-2xl font-semibold text-primary mb-4">
                Démarches pour l&apos;Achat Immobilier
             </h2>
             
             <div className="space-y-6 mb-6">
               <div className="bg-white p-6 rounded-lg shadow-md">
-                <h3 className="text-xl font-semibold text-[#146B67] mb-4"> Étapes Obligatoires</h3>
+                <h3 className="text-xl font-semibold text-primary mb-4"> Étapes Obligatoires</h3>
                 <ol className="list-decimal list-inside space-y-3 text-sm">
                   <li>
                     <strong>Vérification du titre foncier</strong>
@@ -185,7 +185,7 @@ export default function DemarchesAdministrativesPage() {
               </div>
               
               <div className="bg-white p-6 rounded-lg shadow-md">
-                <h3 className="text-xl font-semibold text-[#146B67] mb-4">📄 Documents Requis</h3>
+                <h3 className="text-xl font-semibold text-primary mb-4">📄 Documents Requis</h3>
                 <div className="grid md:grid-cols-2 gap-4">
                   <div>
                     <h4 className="font-semibold mb-2">👤 Documents Personnels</h4>
@@ -209,7 +209,7 @@ export default function DemarchesAdministrativesPage() {
                   </div>
                 </div>
                 <div className="mt-4 p-4 bg-yellow-50 rounded-lg">
-                  <h4 className="font-semibold text-[#146B67] mb-2"> Conseil Important</h4>
+                  <h4 className="font-semibold text-primary mb-2"> Conseil Important</h4>
                   <p className="text-sm">
                     Préparez tous les documents à l&apos;avance et faites des copies. 
                     Les délais administratifs peuvent être longs, anticipez !
@@ -220,13 +220,13 @@ export default function DemarchesAdministrativesPage() {
           </section>
 
           <section className="mb-8">
-            <h2 className="text-2xl font-semibold text-[#146B67] mb-4">
+            <h2 className="text-2xl font-semibold text-primary mb-4">
                Démarches pour la Location Immobilière
             </h2>
             
             <div className="space-y-6 mb-6">
               <div className="bg-white p-6 rounded-lg shadow-md">
-                <h3 className="text-xl font-semibold text-[#146B67] mb-4"> Étapes Obligatoires</h3>
+                <h3 className="text-xl font-semibold text-primary mb-4"> Étapes Obligatoires</h3>
                 <ol className="list-decimal list-inside space-y-3 text-sm">
                   <li>
                     <strong>Vérification du propriétaire</strong>
@@ -281,7 +281,7 @@ export default function DemarchesAdministrativesPage() {
               </div>
               
               <div className="bg-white p-6 rounded-lg shadow-md">
-                <h3 className="text-xl font-semibold text-[#146B67] mb-4">📄 Contenu du Contrat de Location</h3>
+                <h3 className="text-xl font-semibold text-primary mb-4">📄 Contenu du Contrat de Location</h3>
                 <div className="grid md:grid-cols-2 gap-4">
                   <div>
                     <h4 className="font-semibold mb-2"> Informations Obligatoires</h4>
@@ -305,7 +305,7 @@ export default function DemarchesAdministrativesPage() {
                   </div>
                 </div>
                 <div className="mt-4 p-4 bg-blue-50 rounded-lg">
-                  <h4 className="font-semibold text-[#146B67] mb-2"> Conseil Important</h4>
+                  <h4 className="font-semibold text-primary mb-2"> Conseil Important</h4>
                   <p className="text-sm">
                     Faites rédiger le contrat par un professionnel (notaire ou avocat) 
                     pour éviter les litiges futurs et protéger vos droits.
@@ -316,13 +316,13 @@ export default function DemarchesAdministrativesPage() {
           </section>
 
           <section className="mb-8">
-            <h2 className="text-2xl font-semibold text-[#146B67] mb-4">
+            <h2 className="text-2xl font-semibold text-primary mb-4">
                Taxes et Droits Immobiliers 2024
             </h2>
             
             <div className="space-y-6 mb-6">
               <div className="bg-white p-6 rounded-lg shadow-md">
-                <h3 className="text-xl font-semibold text-[#146B67] mb-4"> Taxes d&apos;Achat</h3>
+                <h3 className="text-xl font-semibold text-primary mb-4"> Taxes d&apos;Achat</h3>
                 <div className="grid md:grid-cols-2 gap-4">
                   <div>
                     <h4 className="font-semibold mb-2"> Droits de Mutation</h4>
@@ -346,7 +346,7 @@ export default function DemarchesAdministrativesPage() {
                   </div>
                 </div>
                 <div className="mt-4 p-4 bg-green-50 rounded-lg">
-                  <h4 className="font-semibold text-[#146B67] mb-2"> Calcul Approximatif</h4>
+                  <h4 className="font-semibold text-primary mb-2"> Calcul Approximatif</h4>
                   <p className="text-sm">
                     Pour un bien de 50M FCFA, comptez environ 3-4M FCFA de taxes 
                     et droits d&apos;achat (6-8% du prix).
@@ -355,7 +355,7 @@ export default function DemarchesAdministrativesPage() {
               </div>
               
               <div className="bg-white p-6 rounded-lg shadow-md">
-                <h3 className="text-xl font-semibold text-[#146B67] mb-4"> Taxes de Location</h3>
+                <h3 className="text-xl font-semibold text-primary mb-4"> Taxes de Location</h3>
                 <div className="grid md:grid-cols-2 gap-4">
                   <div>
                     <h4 className="font-semibold mb-2"> Pour le Propriétaire</h4>
@@ -379,7 +379,7 @@ export default function DemarchesAdministrativesPage() {
                   </div>
                 </div>
                 <div className="mt-4 p-4 bg-blue-50 rounded-lg">
-                  <h4 className="font-semibold text-[#146B67] mb-2"> Optimisation Fiscale</h4>
+                  <h4 className="font-semibold text-primary mb-2"> Optimisation Fiscale</h4>
                   <p className="text-sm">
                     Consultez un expert-comptable pour optimiser votre fiscalité 
                     immobilière et bénéficier des déductions possibles.
@@ -390,13 +390,13 @@ export default function DemarchesAdministrativesPage() {
           </section>
 
           <section className="mb-8">
-            <h2 className="text-2xl font-semibold text-[#146B67] mb-4">
+            <h2 className="text-2xl font-semibold text-primary mb-4">
                Délais et Coûts des Démarches 2024
             </h2>
             
             <div className="overflow-x-auto">
               <table className="w-full bg-white rounded-lg shadow-md">
-                <thead className="bg-[#146B67] text-white">
+                <thead className="bg-primary text-white">
                   <tr>
                     <th className="p-4 text-left">Démarche</th>
                     <th className="p-4 text-left">Délai</th>
@@ -471,13 +471,13 @@ export default function DemarchesAdministrativesPage() {
           </section>
 
           <section className="mb-8">
-            <h2 className="text-2xl font-semibold text-[#146B67] mb-4">
+            <h2 className="text-2xl font-semibold text-primary mb-4">
               🛡️ Conseils pour Sécuriser vos Transactions
             </h2>
             
             <div className="space-y-6 mb-6">
               <div className="bg-white p-6 rounded-lg shadow-md">
-                <h3 className="text-xl font-semibold text-[#146B67] mb-4">🔍 Vérifications Essentielles</h3>
+                <h3 className="text-xl font-semibold text-primary mb-4">🔍 Vérifications Essentielles</h3>
                 <div className="grid md:grid-cols-2 gap-4">
                   <div>
                     <h4 className="font-semibold mb-2"> Avant l&apos;Achat</h4>
@@ -501,7 +501,7 @@ export default function DemarchesAdministrativesPage() {
                   </div>
                 </div>
                 <div className="mt-4 p-4 bg-red-50 rounded-lg">
-                  <h4 className="font-semibold text-[#146B67] mb-2"> Risques à Éviter</h4>
+                  <h4 className="font-semibold text-primary mb-2"> Risques à Éviter</h4>
                   <p className="text-sm">
                     Ne signez jamais sans vérifier ! Les arnaques immobilières 
                     sont fréquentes. Privilégiez les professionnels reconnus.
@@ -510,7 +510,7 @@ export default function DemarchesAdministrativesPage() {
               </div>
               
               <div className="bg-white p-6 rounded-lg shadow-md">
-                <h3 className="text-xl font-semibold text-[#146B67] mb-4">👨‍💼 Professionnels Recommandés</h3>
+                <h3 className="text-xl font-semibold text-primary mb-4">👨‍💼 Professionnels Recommandés</h3>
                 <div className="grid md:grid-cols-2 gap-4">
                   <div>
                     <h4 className="font-semibold mb-2"> Obligatoires</h4>
@@ -534,7 +534,7 @@ export default function DemarchesAdministrativesPage() {
                   </div>
                 </div>
                 <div className="mt-4 p-4 bg-green-50 rounded-lg">
-                  <h4 className="font-semibold text-[#146B67] mb-2"> Conseil Expert</h4>
+                  <h4 className="font-semibold text-primary mb-2"> Conseil Expert</h4>
                   <p className="text-sm">
                     Un bon professionnel vous fait économiser plus qu&apos;il ne vous coûte. 
                     Privilégiez la qualité et l&apos;expérience.
@@ -545,13 +545,13 @@ export default function DemarchesAdministrativesPage() {
           </section>
 
           <section className="mb-8">
-            <h2 className="text-2xl font-semibold text-[#146B67] mb-4">
+            <h2 className="text-2xl font-semibold text-primary mb-4">
               📞 Contacts Utiles et Ressources
             </h2>
             
             <div className="grid md:grid-cols-2 gap-6 mb-6">
               <div className="bg-white p-6 rounded-lg shadow-md">
-                <h3 className="text-xl font-semibold text-[#146B67] mb-4"> Administrations</h3>
+                <h3 className="text-xl font-semibold text-primary mb-4"> Administrations</h3>
                 <ul className="space-y-2 text-sm">
                   <li>• <strong>Direction du Cadastre :</strong> Libreville, Port-Gentil</li>
                   <li>• <strong>Service Domanial :</strong> Ministère des Domaines</li>
@@ -562,7 +562,7 @@ export default function DemarchesAdministrativesPage() {
               </div>
               
               <div className="bg-white p-6 rounded-lg shadow-md">
-                <h3 className="text-xl font-semibold text-[#146B67] mb-4">👨‍💼 Professionnels</h3>
+                <h3 className="text-xl font-semibold text-primary mb-4">👨‍💼 Professionnels</h3>
                 <ul className="space-y-2 text-sm">
                   <li>• <strong>Chambre des Notaires :</strong> Libreville</li>
                   <li>• <strong>Ordre des Avocats :</strong> Barreau du Gabon</li>
@@ -599,7 +599,7 @@ export default function DemarchesAdministrativesPage() {
           </section>
 
           <section className="mb-8">
-            <h2 className="text-2xl font-semibold text-[#146B67] mb-4">
+            <h2 className="text-2xl font-semibold text-primary mb-4">
                Conclusion : Sécuriser vos Transactions Immobilières
             </h2>
             
@@ -609,7 +609,7 @@ export default function DemarchesAdministrativesPage() {
               La préparation et la vérification sont essentielles pour sécuriser vos transactions.
             </p>
             
-            <div className="bg-[#146B67] text-white p-6 rounded-lg text-center">
+            <div className="bg-primary text-white p-6 rounded-lg text-center">
               <h3 className="text-xl font-semibold mb-3"> Besoin d&apos;Aide pour vos Démarches ?</h3>
               <p className="mb-4">
                 Consultez nos experts immobiliers et obtenez un accompagnement 
@@ -618,13 +618,13 @@ export default function DemarchesAdministrativesPage() {
               <div className="flex flex-col sm:flex-row gap-4 justify-center">
                 <Link 
                   href={routes.public.search_property} 
-                  className="bg-white text-[#146B67] px-6 py-3 rounded-lg hover:bg-gray-100 transition-colors font-semibold"
+                  className="bg-white text-primary px-6 py-3 rounded-lg hover:bg-gray-100 transition-colors font-semibold"
                 >
                   Consulter nos Experts
                 </Link>
                 <Link 
                   href={routes.public.guide_immobilier_gabon} 
-                  className="border border-white text-white px-6 py-3 rounded-lg hover:bg-white hover:text-[#146B67] transition-colors font-semibold"
+                  className="border border-white text-white px-6 py-3 rounded-lg hover:bg-white hover:text-primary transition-colors font-semibold"
                 >
                   Guide Complet
                 </Link>
@@ -635,13 +635,13 @@ export default function DemarchesAdministrativesPage() {
 
         {/* Related Articles */}
         <section className="mt-12 pt-8 border-t border-gray-200">
-          <h3 className="text-2xl font-semibold text-[#146B67] mb-6">
+          <h3 className="text-2xl font-semibold text-primary mb-6">
              Articles Similaires
           </h3>
           <div className="grid md:grid-cols-2 gap-6">
             <Link href={routes.public.blog_conseils_negociation} className="block">
               <div className="bg-white p-4 rounded-lg shadow-md hover:shadow-lg transition-shadow">
-                <h4 className="font-semibold text-[#146B67] mb-2">
+                <h4 className="font-semibold text-primary mb-2">
                   Conseils Négociation Immobilière Gabon
                 </h4>
                 <p className="text-sm text-gray-600">
@@ -652,7 +652,7 @@ export default function DemarchesAdministrativesPage() {
             
             <Link href={routes.public.guide_immobilier_gabon} className="block">
               <div className="bg-white p-4 rounded-lg shadow-md hover:shadow-lg transition-shadow">
-                <h4 className="font-semibold text-[#146B67] mb-2">
+                <h4 className="font-semibold text-primary mb-2">
                   Guide Immobilier Gabon 2024
                 </h4>
                 <p className="text-sm text-gray-600">

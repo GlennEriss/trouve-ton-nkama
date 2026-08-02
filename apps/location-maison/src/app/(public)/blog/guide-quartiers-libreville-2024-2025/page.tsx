@@ -15,16 +15,16 @@ export default function GuideQuartiersLibrevillePage() {
       <div className="max-w-4xl mx-auto">
         {/* Breadcrumb */}
         <nav className="text-sm text-gray-600 mb-6">
-          <Link href={routes.public.homePage} className="hover:text-[#146B67]">Accueil</Link>
+          <Link href={routes.public.homePage} className="hover:text-primary">Accueil</Link>
           <span className="mx-2">→</span>
-          <Link href={routes.public.blog} className="hover:text-[#146B67]">Blog</Link>
+          <Link href={routes.public.blog} className="hover:text-primary">Blog</Link>
           <span className="mx-2">→</span>
           <span className="text-gray-800">Guide Quartiers Libreville 2024-2025</span>
         </nav>
 
         {/* Article Header */}
         <header className="mb-8">
-          <h1 className="text-4xl font-bold text-[#146B67] mb-4">
+          <h1 className="text-4xl font-bold text-primary mb-4">
             Guide Complet des Quartiers Libreville 2024-2025 
           </h1>
           <div className="flex items-center text-sm text-gray-600 mb-6">
@@ -45,7 +45,7 @@ export default function GuideQuartiersLibrevillePage() {
         <article className="prose prose-lg max-w-none">
           
           <section className="mb-8">
-            <h2 className="text-2xl font-semibold text-[#146B67] mb-4">
+            <h2 className="text-2xl font-semibold text-primary mb-4">
                Comment Choisir Son Quartier à Libreville ?
             </h2>
             
@@ -57,7 +57,7 @@ export default function GuideQuartiersLibrevillePage() {
             
             <div className="grid md:grid-cols-2 gap-6 mb-6">
               <div className="bg-white p-6 rounded-lg shadow-md">
-                <h3 className="text-xl font-semibold text-[#146B67] mb-4"> Critères Financiers</h3>
+                <h3 className="text-xl font-semibold text-primary mb-4"> Critères Financiers</h3>
                 <ul className="space-y-2 text-sm">
                   <li>• <strong>Budget immobilier :</strong> Prix d&apos;achat et loyer</li>
                   <li>• <strong>Coût de la vie :</strong> Courses, restaurants, services</li>
@@ -67,7 +67,7 @@ export default function GuideQuartiersLibrevillePage() {
               </div>
               
               <div className="bg-white p-6 rounded-lg shadow-md">
-                <h3 className="text-xl font-semibold text-[#146B67] mb-4"> Critères Pratiques</h3>
+                <h3 className="text-xl font-semibold text-primary mb-4"> Critères Pratiques</h3>
                 <ul className="space-y-2 text-sm">
                   <li>• <strong>Proximité travail :</strong> Temps de trajet quotidien</li>
                   <li>• <strong>Services essentiels :</strong> Écoles, hôpitaux, commerces</li>
@@ -79,7 +79,7 @@ export default function GuideQuartiersLibrevillePage() {
             
             <div className="grid md:grid-cols-2 gap-6 mb-6">
               <div className="bg-white p-6 rounded-lg shadow-md">
-                <h3 className="text-xl font-semibold text-[#146B67] mb-4">👨‍👩‍👧‍👦 Critères Familiaux</h3>
+                <h3 className="text-xl font-semibold text-primary mb-4">👨‍👩‍👧‍👦 Critères Familiaux</h3>
                 <ul className="space-y-2 text-sm">
                   <li>• <strong>Écoles :</strong> Qualité et proximité</li>
                   <li>• <strong>Activités enfants :</strong> Parcs, clubs sportifs</li>
@@ -89,7 +89,7 @@ export default function GuideQuartiersLibrevillePage() {
               </div>
               
               <div className="bg-white p-6 rounded-lg shadow-md">
-                <h3 className="text-xl font-semibold text-[#146B67] mb-4"> Critères Investissement</h3>
+                <h3 className="text-xl font-semibold text-primary mb-4"> Critères Investissement</h3>
                 <ul className="space-y-2 text-sm">
                   <li>• <strong>Potentiel de plus-value :</strong> Évolution des prix</li>
                   <li>• <strong>Rentabilité locative :</strong> ROI attendu</li>
@@ -101,13 +101,13 @@ export default function GuideQuartiersLibrevillePage() {
           </section>
 
           <section className="mb-8">
-            <h2 className="text-2xl font-semibold text-[#146B67] mb-4">
+            <h2 className="text-2xl font-semibold text-primary mb-4">
               🏆 Quartiers Premium : Glass et Akébé
             </h2>
             
             <div className="space-y-6 mb-6">
               <div className="bg-white p-6 rounded-lg shadow-md">
-                <h3 className="text-xl font-semibold text-[#146B67] mb-4"> Glass - Le Quartier des Expatriés</h3>
+                <h3 className="text-xl font-semibold text-primary mb-4"> Glass - Le Quartier des Expatriés</h3>
                 <div className="grid md:grid-cols-2 gap-4">
                   <div>
                     <h4 className="font-semibold mb-2"> Prix Immobiliers 2024-2025</h4>
@@ -130,7 +130,7 @@ export default function GuideQuartiersLibrevillePage() {
                   </div>
                 </div>
                 <div className="mt-4 p-4 bg-yellow-50 rounded-lg">
-                  <h4 className="font-semibold text-[#146B67] mb-2"> Conseil Investissement</h4>
+                  <h4 className="font-semibold text-primary mb-2"> Conseil Investissement</h4>
                   <p className="text-sm">
                     Glass reste le quartier le plus prisé pour l&apos;investissement immobilier 
                     avec une rentabilité locative de 8-12% et une plus-value annuelle de 10-15%.
@@ -139,7 +139,7 @@ export default function GuideQuartiersLibrevillePage() {
               </div>
               
               <div className="bg-white p-6 rounded-lg shadow-md">
-                <h3 className="text-xl font-semibold text-[#146B67] mb-4">🏡 Akébé - Le Quartier Résidentiel Par Excellence</h3>
+                <h3 className="text-xl font-semibold text-primary mb-4">🏡 Akébé - Le Quartier Résidentiel Par Excellence</h3>
                 <div className="grid md:grid-cols-2 gap-4">
                   <div>
                     <h4 className="font-semibold mb-2"> Prix Immobiliers 2024-2025</h4>
@@ -162,7 +162,7 @@ export default function GuideQuartiersLibrevillePage() {
                   </div>
                 </div>
                 <div className="mt-4 p-4 bg-green-50 rounded-lg">
-                  <h4 className="font-semibold text-[#146B67] mb-2"> Conseil Investissement</h4>
+                  <h4 className="font-semibold text-primary mb-2"> Conseil Investissement</h4>
                   <p className="text-sm">
                     Akébé offre un excellent rapport qualité-prix avec une rentabilité 
                     de 6-9% et une stabilité des prix appréciée des investisseurs.
@@ -173,13 +173,13 @@ export default function GuideQuartiersLibrevillePage() {
           </section>
 
           <section className="mb-8">
-            <h2 className="text-2xl font-semibold text-[#146B67] mb-4">
+            <h2 className="text-2xl font-semibold text-primary mb-4">
                Quartiers Mixtes : Louis et Centre-Ville
             </h2>
             
             <div className="space-y-6 mb-6">
               <div className="bg-white p-6 rounded-lg shadow-md">
-                <h3 className="text-xl font-semibold text-[#146B67] mb-4"> Louis - Le Cœur de Libreville</h3>
+                <h3 className="text-xl font-semibold text-primary mb-4"> Louis - Le Cœur de Libreville</h3>
                 <div className="grid md:grid-cols-2 gap-4">
                   <div>
                     <h4 className="font-semibold mb-2"> Prix Immobiliers 2024-2025</h4>
@@ -202,7 +202,7 @@ export default function GuideQuartiersLibrevillePage() {
                   </div>
                 </div>
                 <div className="mt-4 p-4 bg-blue-50 rounded-lg">
-                  <h4 className="font-semibold text-[#146B67] mb-2"> Conseil Investissement</h4>
+                  <h4 className="font-semibold text-primary mb-2"> Conseil Investissement</h4>
                   <p className="text-sm">
                     Louis est idéal pour l&apos;investissement locatif avec une rentabilité 
                     de 7-10% grâce à la forte demande des travailleurs et expatriés.
@@ -213,13 +213,13 @@ export default function GuideQuartiersLibrevillePage() {
           </section>
 
           <section className="mb-8">
-            <h2 className="text-2xl font-semibold text-[#146B67] mb-4">
+            <h2 className="text-2xl font-semibold text-primary mb-4">
                Quartiers Accessibles : Nzeng-Ayong et Bellevue
             </h2>
             
             <div className="space-y-6 mb-6">
               <div className="bg-white p-6 rounded-lg shadow-md">
-                <h3 className="text-xl font-semibold text-[#146B67] mb-4">👨‍👩‍👧‍👦 Nzeng-Ayong - Le Quartier des Jeunes Actifs</h3>
+                <h3 className="text-xl font-semibold text-primary mb-4">👨‍👩‍👧‍👦 Nzeng-Ayong - Le Quartier des Jeunes Actifs</h3>
                 <div className="grid md:grid-cols-2 gap-4">
                   <div>
                     <h4 className="font-semibold mb-2"> Prix Immobiliers 2024-2025</h4>
@@ -242,7 +242,7 @@ export default function GuideQuartiersLibrevillePage() {
                   </div>
                 </div>
                 <div className="mt-4 p-4 bg-orange-50 rounded-lg">
-                  <h4 className="font-semibold text-[#146B67] mb-2"> Conseil Investissement</h4>
+                  <h4 className="font-semibold text-primary mb-2"> Conseil Investissement</h4>
                   <p className="text-sm">
                     Nzeng-Ayong offre un excellent potentiel de plus-value avec 
                     une rentabilité de 8-12% et un quartier en pleine expansion.
@@ -251,7 +251,7 @@ export default function GuideQuartiersLibrevillePage() {
               </div>
               
               <div className="bg-white p-6 rounded-lg shadow-md">
-                <h3 className="text-xl font-semibold text-[#146B67] mb-4">🏪 Bellevue - Le Quartier Mixte</h3>
+                <h3 className="text-xl font-semibold text-primary mb-4">🏪 Bellevue - Le Quartier Mixte</h3>
                 <div className="grid md:grid-cols-2 gap-4">
                   <div>
                     <h4 className="font-semibold mb-2"> Prix Immobiliers 2024-2025</h4>
@@ -274,7 +274,7 @@ export default function GuideQuartiersLibrevillePage() {
                   </div>
                 </div>
                 <div className="mt-4 p-4 bg-purple-50 rounded-lg">
-                  <h4 className="font-semibold text-[#146B67] mb-2"> Conseil Investissement</h4>
+                  <h4 className="font-semibold text-primary mb-2"> Conseil Investissement</h4>
                   <p className="text-sm">
                     Bellevue offre un bon équilibre prix/qualité avec une rentabilité 
                     de 6-9% et une stabilité appréciée des familles.
@@ -285,13 +285,13 @@ export default function GuideQuartiersLibrevillePage() {
           </section>
 
           <section className="mb-8">
-            <h2 className="text-2xl font-semibold text-[#146B67] mb-4">
+            <h2 className="text-2xl font-semibold text-primary mb-4">
                Quartiers Industriels : Owendo et Port
             </h2>
             
             <div className="space-y-6 mb-6">
               <div className="bg-white p-6 rounded-lg shadow-md">
-                <h3 className="text-xl font-semibold text-[#146B67] mb-4"> Owendo - Le Quartier Portuaire</h3>
+                <h3 className="text-xl font-semibold text-primary mb-4"> Owendo - Le Quartier Portuaire</h3>
                 <div className="grid md:grid-cols-2 gap-4">
                   <div>
                     <h4 className="font-semibold mb-2"> Prix Immobiliers 2024-2025</h4>
@@ -314,7 +314,7 @@ export default function GuideQuartiersLibrevillePage() {
                   </div>
                 </div>
                 <div className="mt-4 p-4 bg-gray-50 rounded-lg">
-                  <h4 className="font-semibold text-[#146B67] mb-2"> Conseil Investissement</h4>
+                  <h4 className="font-semibold text-primary mb-2"> Conseil Investissement</h4>
                   <p className="text-sm">
                     Owendo est idéal pour l&apos;investissement long terme avec un potentiel 
                     de plus-value important grâce au développement portuaire.
@@ -325,13 +325,13 @@ export default function GuideQuartiersLibrevillePage() {
           </section>
 
           <section className="mb-8">
-            <h2 className="text-2xl font-semibold text-[#146B67] mb-4">
+            <h2 className="text-2xl font-semibold text-primary mb-4">
                Comparaison des Quartiers Libreville 2024-2025
             </h2>
             
             <div className="overflow-x-auto">
               <table className="w-full bg-white rounded-lg shadow-md">
-                <thead className="bg-[#146B67] text-white">
+                <thead className="bg-primary text-white">
                   <tr>
                     <th className="p-4 text-left">Quartier</th>
                     <th className="p-4 text-left">Prix 2 pièces</th>
@@ -389,13 +389,13 @@ export default function GuideQuartiersLibrevillePage() {
           </section>
 
           <section className="mb-8">
-            <h2 className="text-2xl font-semibold text-[#146B67] mb-4">
+            <h2 className="text-2xl font-semibold text-primary mb-4">
                Conseils pour Choisir Son Quartier
             </h2>
             
             <div className="grid md:grid-cols-2 gap-6 mb-6">
               <div className="bg-white p-6 rounded-lg shadow-md">
-                <h3 className="text-xl font-semibold text-[#146B67] mb-4"> Pour un Budget Modéré</h3>
+                <h3 className="text-xl font-semibold text-primary mb-4"> Pour un Budget Modéré</h3>
                 <ul className="space-y-2 text-sm">
                   <li>• <strong>Nzeng-Ayong :</strong> Prix accessibles, ambiance jeune</li>
                   <li>• <strong>Bellevue :</strong> Bon rapport qualité-prix</li>
@@ -405,7 +405,7 @@ export default function GuideQuartiersLibrevillePage() {
               </div>
               
               <div className="bg-white p-6 rounded-lg shadow-md">
-                <h3 className="text-xl font-semibold text-[#146B67] mb-4"> Pour l&apos;Investissement</h3>
+                <h3 className="text-xl font-semibold text-primary mb-4"> Pour l&apos;Investissement</h3>
                 <ul className="space-y-2 text-sm">
                   <li>• <strong>Glass :</strong> Plus-value et rentabilité élevées</li>
                   <li>• <strong>Louis :</strong> Forte demande locative</li>
@@ -417,7 +417,7 @@ export default function GuideQuartiersLibrevillePage() {
             
             <div className="grid md:grid-cols-2 gap-6 mb-6">
               <div className="bg-white p-6 rounded-lg shadow-md">
-                <h3 className="text-xl font-semibold text-[#146B67] mb-4">👨‍👩‍👧‍👦 Pour les Familles</h3>
+                <h3 className="text-xl font-semibold text-primary mb-4">👨‍👩‍👧‍👦 Pour les Familles</h3>
                 <ul className="space-y-2 text-sm">
                   <li>• <strong>Akébé :</strong> Calme, écoles, sécurité</li>
                   <li>• <strong>Glass :</strong> Écoles internationales, standing</li>
@@ -427,7 +427,7 @@ export default function GuideQuartiersLibrevillePage() {
               </div>
               
               <div className="bg-white p-6 rounded-lg shadow-md">
-                <h3 className="text-xl font-semibold text-[#146B67] mb-4">💼 Pour les Professionnels</h3>
+                <h3 className="text-xl font-semibold text-primary mb-4">💼 Pour les Professionnels</h3>
                 <ul className="space-y-2 text-sm">
                   <li>• <strong>Louis :</strong> Centralité, services</li>
                   <li>• <strong>Glass :</strong> Standing, réseaux</li>
@@ -439,7 +439,7 @@ export default function GuideQuartiersLibrevillePage() {
           </section>
 
           <section className="mb-8">
-            <h2 className="text-2xl font-semibold text-[#146B67] mb-4">
+            <h2 className="text-2xl font-semibold text-primary mb-4">
                Tendances 2024-2025 : Évolution des Quartiers
             </h2>
             
@@ -480,7 +480,7 @@ export default function GuideQuartiersLibrevillePage() {
           </section>
 
           <section className="mb-8">
-            <h2 className="text-2xl font-semibold text-[#146B67] mb-4">
+            <h2 className="text-2xl font-semibold text-primary mb-4">
                Conclusion : Trouver Son Quartier Idéal à Libreville
             </h2>
             
@@ -489,7 +489,7 @@ export default function GuideQuartiersLibrevillePage() {
               équilibrée entre budget, style de vie et objectifs d&apos;investissement.
             </p>
             
-            <div className="bg-[#146B67] text-white p-6 rounded-lg text-center">
+            <div className="bg-primary text-white p-6 rounded-lg text-center">
               <h3 className="text-xl font-semibold mb-3"> Prêt à Trouver Votre Quartier Idéal ?</h3>
               <p className="mb-4">
                 Découvrez nos annonces immobilières par quartier et trouvez le logement 
@@ -498,13 +498,13 @@ export default function GuideQuartiersLibrevillePage() {
               <div className="flex flex-col sm:flex-row gap-4 justify-center">
                 <Link 
                   href={routes.public.search_property} 
-                  className="bg-white text-[#146B67] px-6 py-3 rounded-lg hover:bg-gray-100 transition-colors font-semibold"
+                  className="bg-white text-primary px-6 py-3 rounded-lg hover:bg-gray-100 transition-colors font-semibold"
                 >
                   Voir les Annonces
                 </Link>
                 <Link 
                   href={routes.public.guide_immobilier_gabon} 
-                  className="border border-white text-white px-6 py-3 rounded-lg hover:bg-white hover:text-[#146B67] transition-colors font-semibold"
+                  className="border border-white text-white px-6 py-3 rounded-lg hover:bg-white hover:text-primary transition-colors font-semibold"
                 >
                   Guide Complet
                 </Link>
@@ -515,13 +515,13 @@ export default function GuideQuartiersLibrevillePage() {
 
         {/* Related Articles */}
         <section className="mt-12 pt-8 border-t border-gray-200">
-          <h3 className="text-2xl font-semibold text-[#146B67] mb-6">
+          <h3 className="text-2xl font-semibold text-primary mb-6">
              Articles Similaires
           </h3>
           <div className="grid md:grid-cols-2 gap-6">
             <Link href={routes.public.blog_tendances_marche} className="block">
               <div className="bg-white p-4 rounded-lg shadow-md hover:shadow-lg transition-shadow">
-                <h4 className="font-semibold text-[#146B67] mb-2">
+                <h4 className="font-semibold text-primary mb-2">
                   Tendances Marché Immobilier Gabon 2024
                 </h4>
                 <p className="text-sm text-gray-600">
@@ -532,7 +532,7 @@ export default function GuideQuartiersLibrevillePage() {
             
             <Link href={routes.public.guide_immobilier_gabon} className="block">
               <div className="bg-white p-4 rounded-lg shadow-md hover:shadow-lg transition-shadow">
-                <h4 className="font-semibold text-[#146B67] mb-2">
+                <h4 className="font-semibold text-primary mb-2">
                   Guide Immobilier Gabon 2024
                 </h4>
                 <p className="text-sm text-gray-600">

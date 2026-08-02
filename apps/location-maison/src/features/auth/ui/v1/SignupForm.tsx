@@ -169,7 +169,7 @@ export const SignupForm: React.FC<SignupFormProps> = ({ onLoadingChange }) => {
               }
               className={`rounded-xl border p-3 text-left ${
                 selectedAccountType === 'User'
-                  ? 'border-[#1FA89B] bg-teal-50'
+                  ? 'border-secondary bg-teal-50'
                   : 'border-gray-200'
               }`}
             >
@@ -189,7 +189,7 @@ export const SignupForm: React.FC<SignupFormProps> = ({ onLoadingChange }) => {
               }
               className={`rounded-xl border p-3 text-left ${
                 selectedAccountType === 'Announcer'
-                  ? 'border-[#1FA89B] bg-teal-50'
+                  ? 'border-secondary bg-teal-50'
                   : 'border-gray-200'
               }`}
             >
@@ -317,7 +317,7 @@ export const SignupForm: React.FC<SignupFormProps> = ({ onLoadingChange }) => {
         <ButtonLoading
           type="submit"
           disabled={isFormLoading}
-          className="w-full bg-gradient-to-r from-[#146B67] via-[#1FA89B] to-[#146B67]"
+          className="w-full bg-gradient-to-r from-primary via-secondary to-primary"
         >
           {isFormLoading ? 'Création en cours...' : "S'enregistrer"}
         </ButtonLoading>

@@ -62,7 +62,7 @@ const MODERATION_CLASSES: Record<string, string> = {
 }
 
 const CONTROL_CLASS =
-  'h-12 rounded-full border border-gray-200 bg-gray-50 px-4 text-sm shadow-none transition-colors focus-visible:border-[#1FA89B] focus-visible:ring-0 dark:border-gray-700 dark:bg-gray-800/70'
+  'h-12 rounded-full border border-gray-200 bg-gray-50 px-4 text-sm shadow-none transition-colors focus-visible:border-secondary focus-visible:ring-0 dark:border-gray-700 dark:bg-gray-800/70'
 
 function parseDateInput(value: string): Date | null {
   if (!value) return null
@@ -137,7 +137,7 @@ function ReelCard({
       <div className="flex flex-1 flex-col space-y-3 p-4">
         <div className="space-y-1.5">
           <p className="line-clamp-1 inline-flex items-center gap-1.5 text-sm font-medium text-gray-700 dark:text-gray-200">
-            <Link2 className="h-3.5 w-3.5 text-[#146B67]" />
+            <Link2 className="h-3.5 w-3.5 text-primary" />
             {reel.propertyId ? 'Attaché à une annonce' : 'Pas encore attaché à une annonce'}
           </p>
           {reel.description ? (
@@ -158,7 +158,7 @@ function ReelCard({
 
         <div className="grid grid-cols-3 gap-2">
           <div className="rounded-xl border border-gray-100 bg-gray-50 px-2 py-2 text-center dark:border-gray-800 dark:bg-gray-800/40">
-            <Eye className="mx-auto h-4 w-4 text-[#146B67]" />
+            <Eye className="mx-auto h-4 w-4 text-primary" />
             <p className="mt-1 text-sm font-bold text-gray-900 dark:text-white">{formatStat(reel.viewCount)}</p>
             <p className="text-[11px] text-gray-500 dark:text-gray-400">Vues</p>
           </div>
@@ -318,7 +318,7 @@ export default function MyReelsClient() {
                 Mes annonces
               </Link>
             </Button>
-            <p className="inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-wide text-[#146B67]">
+            <p className="inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-wide text-primary">
               <Video className="h-3.5 w-3.5" />
               Espace annonceur
             </p>
@@ -329,7 +329,7 @@ export default function MyReelsClient() {
           </div>
           <Button
             asChild
-            className="h-12 rounded-full bg-gradient-to-r from-[#146B67] to-[#1FA89B] px-6 font-semibold hover:from-[#115a56] hover:to-[#1a9388]"
+            className="h-12 rounded-full bg-gradient-to-r from-primary to-secondary px-6 font-semibold hover:from-primary-800 hover:to-primary-600"
           >
             <Link href={CREATE_REEL_FROM_MINE_HREF}>
               <Video className="mr-2 h-4 w-4" />
@@ -389,7 +389,7 @@ export default function MyReelsClient() {
         <section className="grid grid-cols-1 gap-3 sm:grid-cols-3">
           <div className="rounded-2xl border border-gray-200 bg-white p-4 shadow-sm dark:border-gray-800 dark:bg-gray-900">
             <div className="flex items-center gap-3">
-              <span className="flex h-10 w-10 items-center justify-center rounded-full bg-emerald-50 text-[#146B67] dark:bg-emerald-950/40">
+              <span className="flex h-10 w-10 items-center justify-center rounded-full bg-emerald-50 text-primary dark:bg-emerald-950/40">
                 <Eye className="h-5 w-5" />
               </span>
               <div>
@@ -444,7 +444,7 @@ export default function MyReelsClient() {
             ) : (
               <Button
                 asChild
-                className="h-11 rounded-full bg-gradient-to-r from-[#146B67] to-[#1FA89B] px-6 hover:from-[#115a56] hover:to-[#1a9388]"
+                className="h-11 rounded-full bg-gradient-to-r from-primary to-secondary px-6 hover:from-primary-800 hover:to-primary-600"
               >
                 <Link href={CREATE_REEL_FROM_MINE_HREF}>
                   <Video className="mr-2 h-4 w-4" />

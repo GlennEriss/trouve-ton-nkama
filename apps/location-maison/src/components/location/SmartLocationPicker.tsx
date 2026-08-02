@@ -77,41 +77,41 @@ export default function SmartLocationPicker() {
       {/* Options de localisation */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
         {/* Option 1: Localisation exacte */}
-        <div className="p-4 bg-gradient-to-br from-[#CBB171]/10 to-[#224D62]/5 rounded-lg border border-[#CBB171]/20">
+        <div className="p-4 bg-gradient-to-br from-gold/10 to-ink/5 rounded-lg border border-gold/20">
           <div className="flex items-center space-x-2 mb-2">
-            <Crosshair className="w-5 h-5 text-[#CBB171]" />
-            <span className="text-[#224D62] font-semibold text-sm">Localisation exacte</span>
+            <Crosshair className="w-5 h-5 text-gold" />
+            <span className="text-ink font-semibold text-sm">Localisation exacte</span>
           </div>
-          <p className="text-[#224D62]/70 text-xs mb-3">
+          <p className="text-ink/70 text-xs mb-3">
             Utilisez votre position GPS actuelle pour remplir automatiquement tous les champs.
           </p>
         </div>
 
         {/* Option 2: Recherche manuelle */}
-        <div className="p-4 bg-gradient-to-br from-[#224D62]/10 to-[#CBB171]/5 rounded-lg border border-[#224D62]/20">
+        <div className="p-4 bg-gradient-to-br from-ink/10 to-gold/5 rounded-lg border border-ink/20">
           <div className="flex items-center space-x-2 mb-2">
-            <Search className="w-5 h-5 text-[#224D62]" />
-            <span className="text-[#224D62] font-semibold text-sm">Recherche manuelle</span>
+            <Search className="w-5 h-5 text-ink" />
+            <span className="text-ink font-semibold text-sm">Recherche manuelle</span>
           </div>
-          <p className="text-[#224D62]/70 text-xs mb-3">
+          <p className="text-ink/70 text-xs mb-3">
             Tapez le nom de votre quartier et sélectionnez-le dans la liste.
           </p>
         </div>
       </div>
 
       {/* Carte intégrée */}
-      <div className="relative overflow-hidden bg-gradient-to-br from-[#224D62]/5 via-[#CBB171]/5 to-[#224D62]/10 rounded-2xl p-4 shadow-lg border border-[#224D62]/20">
+      <div className="relative overflow-hidden bg-gradient-to-br from-ink/5 via-gold/5 to-ink/10 rounded-2xl p-4 shadow-lg border border-ink/20">
         <LocationMap coordinates={mapCoordinates} districtName={selectedLocation?.properties.name} />
       </div>
 
       {/* Bouton de localisation exacte */}
       <div className="text-center space-y-4">
-        <div className="bg-gradient-to-r from-[#156B68]/10 to-[#156B68]/5 rounded-lg p-4 border border-[#156B68]/20">
-          <p className="text-[#224D62]/80 text-sm font-medium mb-2 flex items-center justify-center">
+        <div className="bg-gradient-to-r from-primary/10 to-primary/5 rounded-lg p-4 border border-primary/20">
+          <p className="text-ink/80 text-sm font-medium mb-2 flex items-center justify-center">
             <MapPin className="w-4 h-4 mr-2" />
             Utilisez votre position GPS actuelle
           </p>
-          <p className="text-[#224D62]/60 text-xs mb-3">
+          <p className="text-ink/60 text-xs mb-3">
             Le quartier, la ville et la province seront automatiquement remplis.
           </p>
           <div className="space-y-2">
@@ -119,12 +119,12 @@ export default function SmartLocationPicker() {
               type="button"
               size="lg"
               onClick={handleGPSLocation}
-              className="bg-[#156B68] hover:bg-[#156B68]/90 text-white font-semibold px-8 py-3 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105 border-0"
+              className="bg-primary hover:bg-primary/90 text-white font-semibold px-8 py-3 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105 border-0"
             >
               <Crosshair className="w-5 h-5 mr-3 text-white" />
               Utiliser ma position actuelle
             </Button>
-            <p className="text-[#224D62]/50 text-xs">
+            <p className="text-ink/50 text-xs">
               💡 Si l'autorisation a été refusée, suivez les instructions dans le message d'erreur
             </p>
           </div>
@@ -136,36 +136,36 @@ export default function SmartLocationPicker() {
         <div className="space-y-4 w-full">
           {/* Recherche de quartier */}
           <div className="space-y-2">
-            <Label htmlFor="districtSearch" className="text-sm font-medium text-[#224D62]">
+            <Label htmlFor="districtSearch" className="text-sm font-medium text-ink">
               Rechercher votre quartier <span className="text-red-500">*</span>
             </Label>
             <div className="relative w-full">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-[#CBB171] z-10" />
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gold z-10" />
               <Input
                 id="districtSearch"
                 value={districtQuery}
                 onChange={(e) => setDistrictQuery(e.target.value)}
                 placeholder="Ex: Glass, Akanda, Lalala..."
                 className={cn(
-                  "pl-10 pr-12 border-[#CBB171]/30 focus:border-[#224D62] focus:ring-[#224D62]/20 transition-all duration-300 w-full",
+                  "pl-10 pr-12 border-gold/30 focus:border-ink focus:ring-ink/20 transition-all duration-300 w-full",
                   (errors?.address as any)?.district && "border-red-300 focus:border-red-500 bg-red-50/50",
-                  selectedLocation && "border-[#CBB171] bg-[#CBB171]/5"
+                  selectedLocation && "border-gold bg-gold/5"
                 )}
               />
               
               {/* Loading spinner */}
               {isLoading && (
-                <Loader2 className="absolute right-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-[#CBB171] animate-spin z-10" />
+                <Loader2 className="absolute right-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gold animate-spin z-10" />
               )}
               
               {/* Success checkmark */}
               {selectedLocation && !isLoading && (
-                <CheckCircle className="absolute right-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-[#CBB171] z-10" />
+                <CheckCircle className="absolute right-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gold z-10" />
               )}
 
               {/* Résultats de recherche */}
               {showResults && results.length > 0 && (
-                <Card className="absolute top-full left-0 right-0 mt-1 z-20 border border-[#CBB171]/30 shadow-lg w-full max-h-64 overflow-y-auto">
+                <Card className="absolute top-full left-0 right-0 mt-1 z-20 border border-gold/30 shadow-lg w-full max-h-64 overflow-y-auto">
                   <CardContent className="p-2">
                     <div className="space-y-1">
                       {results.map((result: PhotonResult, index: number) => (
@@ -173,13 +173,13 @@ export default function SmartLocationPicker() {
                           key={index}
                           variant="ghost"
                           size="sm"
-                          className="w-full justify-start text-left hover:bg-[#224D62]/5 transition-colors text-sm p-3"
+                          className="w-full justify-start text-left hover:bg-ink/5 transition-colors text-sm p-3"
                           onClick={() => handleLocationSelect(result)}
                         >
                           <div className="flex items-start space-x-2 w-full">
-                            <MapPinIcon className="w-4 h-4 text-[#CBB171] mt-0.5 flex-shrink-0" />
+                            <MapPinIcon className="w-4 h-4 text-gold mt-0.5 flex-shrink-0" />
                             <div className="text-left">
-                              <div className="font-medium text-[#224D62]">
+                              <div className="font-medium text-ink">
                                 {result.properties.name}
                               </div>
                               <div className="text-xs text-gray-500">
@@ -205,11 +205,11 @@ export default function SmartLocationPicker() {
 
           {/* Informations automatiques */}
           {selectedLocation && !isEditingDistrict && (
-            <div className="p-4 bg-[#CBB171]/5 rounded-lg border border-[#CBB171]/20">
+            <div className="p-4 bg-gold/5 rounded-lg border border-gold/20">
               <div className="flex items-center justify-between mb-2">
                 <div className="flex items-center space-x-2">
-                <CheckCircle className="w-4 h-4 text-[#CBB171]" />
-                <span className="text-sm font-medium text-[#224D62]">
+                <CheckCircle className="w-4 h-4 text-gold" />
+                <span className="text-sm font-medium text-ink">
                   Localisation détectée
                 </span>
               </div>
@@ -218,16 +218,16 @@ export default function SmartLocationPicker() {
                   variant="ghost"
                   size="sm"
                   onClick={handleEnableDistrictEdit}
-                  className="text-[#224D62] hover:bg-[#224D62]/10 h-8 px-2"
+                  className="text-ink hover:bg-ink/10 h-8 px-2"
                 >
                   <Edit3 className="w-3 h-3 mr-1" />
                   Modifier
                 </Button>
               </div>
-              <div className="text-xs text-[#224D62]/80 mb-2">
+              <div className="text-xs text-ink/80 mb-2">
                 {selectedLocation && formatResultDisplay(selectedLocation)}
               </div>
-              <div className="text-xs text-[#224D62]/60 bg-blue-50 p-2 rounded border-l-2 border-blue-200">
+              <div className="text-xs text-ink/60 bg-blue-50 p-2 rounded border-l-2 border-blue-200">
                 💡 Le quartier "<strong>{districtQuery || selectedLocation.properties.name}</strong>" 
                 {districtQuery && districtQuery !== selectedLocation.properties.name 
                   ? " a été personnalisé" 
@@ -278,9 +278,9 @@ export default function SmartLocationPicker() {
         <div className="space-y-4 w-full">
           {/* Ville (automatique) */}
           <div className="space-y-2">
-            <Label className="text-sm font-medium text-[#224D62]">
+            <Label className="text-sm font-medium text-ink">
               Ville <span className="text-red-500">*</span>
-              <Badge variant="secondary" className="ml-2 bg-[#224D62]/10 text-[#224D62] text-xs">
+              <Badge variant="secondary" className="ml-2 bg-ink/10 text-ink text-xs">
                 Automatique
               </Badge>
             </Label>
@@ -297,9 +297,9 @@ export default function SmartLocationPicker() {
 
           {/* Province (automatique) */}
           <div className="space-y-2">
-            <Label className="text-sm font-medium text-[#224D62]">
+            <Label className="text-sm font-medium text-ink">
               Province <span className="text-red-500">*</span>
-              <Badge variant="secondary" className="ml-2 bg-[#224D62]/10 text-[#224D62] text-xs">
+              <Badge variant="secondary" className="ml-2 bg-ink/10 text-ink text-xs">
                 Automatique
               </Badge>
             </Label>
@@ -316,10 +316,10 @@ export default function SmartLocationPicker() {
 
           {/* Quartier (conditionnellement éditable) */}
           <div className="space-y-2">
-            <Label className="text-sm font-medium text-[#224D62]">
+            <Label className="text-sm font-medium text-ink">
               Quartier <span className="text-red-500">*</span>
               {!isEditingDistrict && (
-                <Badge variant="secondary" className="ml-2 bg-[#224D62]/10 text-[#224D62] text-xs">
+                <Badge variant="secondary" className="ml-2 bg-ink/10 text-ink text-xs">
                   Automatique
                 </Badge>
               )}
@@ -332,7 +332,7 @@ export default function SmartLocationPicker() {
             <div className="relative w-full">
               <MapPin className={cn(
                 "absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4",
-                isEditingDistrict ? "text-[#CBB171]" : "text-gray-400"
+                isEditingDistrict ? "text-gold" : "text-gray-400"
               )} />
               <Input
                 {...register('address.district')}
@@ -343,7 +343,7 @@ export default function SmartLocationPicker() {
                 className={cn(
                   "pl-10 w-full",
                   isEditingDistrict 
-                    ? "border-[#CBB171]/30 focus:border-[#224D62] focus:ring-[#224D62]/20 bg-white" 
+                    ? "border-gold/30 focus:border-ink focus:ring-ink/20 bg-white" 
                     : "bg-gray-50 text-gray-600 border-gray-200 cursor-not-allowed"
                 )}
               />

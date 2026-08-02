@@ -174,12 +174,12 @@ export default function PurchaseModal({ isOpen, onClose, preselectedPack }: Read
                     key={pack.id}
                     onClick={() => handlePackSelect(pack)}
                     onKeyDown={(e) => handleKeyDown(e, pack)}
-                    className="w-full text-left border border-gray-200 dark:border-gray-700 rounded-xl p-4 cursor-pointer hover:border-[#146B67] hover:bg-[#146B67]/5 focus:outline-none focus:ring-2 focus:ring-[#146B67] focus:ring-offset-2 transition-all duration-200"
+                    className="w-full text-left border border-gray-200 dark:border-gray-700 rounded-xl p-4 cursor-pointer hover:border-primary hover:bg-primary/5 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 transition-all duration-200"
                     aria-label={`Sélectionner le pack ${pack.name} - ${pack.credits} crédits pour ${pack.price} FCFA`}
                   >
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-3">
-                        <Package className="w-5 h-5 text-[#146B67]" />
+                        <Package className="w-5 h-5 text-primary" />
                         <div>
                           <h3 className="font-semibold text-gray-900 dark:text-white">
                             {pack.name}
@@ -191,7 +191,7 @@ export default function PurchaseModal({ isOpen, onClose, preselectedPack }: Read
                       </div>
                       
                       <div className="text-right">
-                        <p className="font-bold text-[#146B67] dark:text-[#1FA89B]">
+                        <p className="font-bold text-primary dark:text-secondary">
                           {pack.price.toLocaleString()} FCFA
                         </p>
                         {pack.savings && (
@@ -246,7 +246,7 @@ export default function PurchaseModal({ isOpen, onClose, preselectedPack }: Read
                   id="payment-network"
                   value={network}
                   onChange={(event) => setNetwork(event.target.value as 'AM' | 'MM')}
-                  className="w-full px-4 py-3 border border-gray-200 dark:border-gray-700 rounded-xl focus:ring-2 focus:ring-[#146B67] focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                  className="w-full px-4 py-3 border border-gray-200 dark:border-gray-700 rounded-xl focus:ring-2 focus:ring-primary focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
                 >
                   <option value="AM">Airtel Money</option>
                   <option value="MM">Moov Money</option>
@@ -263,7 +263,7 @@ export default function PurchaseModal({ isOpen, onClose, preselectedPack }: Read
                     value={phoneNumber}
                     onChange={(event) => handlePhoneChange(event.target.value)}
                     placeholder="Ex: 077123456"
-                    className={`w-full px-4 py-3 pl-11 border rounded-xl focus:ring-2 focus:ring-[#146B67] focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white ${
+                    className={`w-full px-4 py-3 pl-11 border rounded-xl focus:ring-2 focus:ring-primary focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white ${
                       phoneNumber.trim() && !isPhoneValid
                         ? 'border-red-400 dark:border-red-500'
                         : 'border-gray-200 dark:border-gray-700'
@@ -283,7 +283,7 @@ export default function PurchaseModal({ isOpen, onClose, preselectedPack }: Read
 
               {/* Initiation en cours (appel à la Cloud Function) */}
               {isPending && (
-                <div className="flex items-center justify-center gap-2 text-[#146B67]">
+                <div className="flex items-center justify-center gap-2 text-primary">
                   <Loader2 className="w-5 h-5 animate-spin" />
                   <span>Initiation du paiement...</span>
                 </div>
@@ -310,7 +310,7 @@ export default function PurchaseModal({ isOpen, onClose, preselectedPack }: Read
                 <button
                   onClick={handlePurchase}
                   disabled={Boolean(isPending) || !isPhoneValid || Boolean(transactionId)}
-                  className="flex-1 py-3 bg-[#146B67] text-white rounded-xl font-medium hover:bg-[#125A56] disabled:opacity-50 transition-colors"
+                  className="flex-1 py-3 bg-primary text-white rounded-xl font-medium hover:bg-primary-800 disabled:opacity-50 transition-colors"
                 >
                   Payer
                 </button>

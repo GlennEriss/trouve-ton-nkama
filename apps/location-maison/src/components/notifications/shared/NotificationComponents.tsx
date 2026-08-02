@@ -216,10 +216,10 @@ export const NotificationButton = React.forwardRef<HTMLButtonElement, Notificati
     : "relative inline-flex";
 
   const iconVariantClass =
-    "h-11 w-11 rounded-full border border-[#D6ECE9] bg-white text-[#146B67] shadow-sm transition-all duration-300 hover:-translate-y-0.5 hover:border-[#1FA89B] hover:bg-[#ECF8F6] hover:text-[#0f5a56] hover:shadow-md focus-visible:ring-2 focus-visible:ring-[#1FA89B]/30 dark:border-gray-700 dark:bg-gray-900 dark:text-[#9FE2DB] dark:hover:border-[#1FA89B]/70 dark:hover:bg-gray-800";
+    "h-11 w-11 rounded-full border border-primary-100 bg-white text-primary shadow-sm transition-all duration-300 hover:-translate-y-0.5 hover:border-secondary hover:bg-primary-100 hover:text-primary-800 hover:shadow-md focus-visible:ring-2 focus-visible:ring-secondary/30 dark:border-gray-700 dark:bg-gray-900 dark:text-primary-200 dark:hover:border-secondary/70 dark:hover:bg-gray-800";
 
   const floatingVariantClass =
-    "h-12 w-12 rounded-full border border-[#1FA89B]/30 bg-gradient-to-r from-[#146B67] to-[#1FA89B] text-white shadow-lg hover:brightness-110";
+    "h-12 w-12 rounded-full border border-secondary/30 bg-gradient-to-r from-primary to-secondary text-white shadow-lg hover:brightness-110";
 
   return (
     <Button
@@ -229,7 +229,7 @@ export const NotificationButton = React.forwardRef<HTMLButtonElement, Notificati
       className={cn(
         buttonClass,
         variant === "floating" ? floatingVariantClass : iconVariantClass,
-        unreadCount > 0 && variant !== "floating" && "ring-2 ring-[#1FA89B]/25 ring-offset-1",
+        unreadCount > 0 && variant !== "floating" && "ring-2 ring-secondary/25 ring-offset-1",
         className
       )}
       aria-label="Ouvrir les notifications"

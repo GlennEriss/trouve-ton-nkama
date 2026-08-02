@@ -55,7 +55,7 @@ const privacySections: LegalSection[] = [
       <>
         Vous pouvez demander l&apos;accès, la correction ou la suppression de vos données. Pour une demande de suppression
         complète, consultez la page{" "}
-        <Link href={routes.public.data_deletion} className="font-medium text-[#146B67] hover:underline">
+        <Link href={routes.public.data_deletion} className="font-medium text-primary hover:underline">
           suppression des données
         </Link>
         .

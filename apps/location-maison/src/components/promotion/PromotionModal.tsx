@@ -125,7 +125,7 @@ export function PromotionModal({ property, isOpen, onClose }: Readonly<Promotion
       <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-3 text-2xl">
-            <div className="w-10 h-10 bg-gradient-to-r from-[#146B67] to-[#1FA89B] rounded-xl flex items-center justify-center">
+            <div className="w-10 h-10 bg-gradient-to-r from-primary to-secondary rounded-xl flex items-center justify-center">
               <TrendingUp className="w-5 h-5 text-white" />
             </div>
             Promouvoir votre annonce
@@ -136,14 +136,14 @@ export function PromotionModal({ property, isOpen, onClose }: Readonly<Promotion
         </DialogHeader>
 
         {/* Solde de crédits */}
-        <div className="bg-gradient-to-r from-[#146B67]/5 to-[#1FA89B]/5 dark:from-[#146B67]/10 dark:to-[#1FA89B]/10 border border-[#146B67]/20 rounded-xl p-4 mb-6">
+        <div className="bg-gradient-to-r from-primary/5 to-secondary/5 dark:from-primary/10 dark:to-secondary/10 border border-primary/20 rounded-xl p-4 mb-6">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-gradient-to-r from-[#146B67] to-[#1FA89B] rounded-xl flex items-center justify-center">
+              <div className="w-10 h-10 bg-gradient-to-r from-primary to-secondary rounded-xl flex items-center justify-center">
                 <CreditCard className="w-5 h-5 text-white" />
               </div>
               <div>
-                <h3 className="font-semibold text-[#146B67] dark:text-[#1FA89B]">
+                <h3 className="font-semibold text-primary dark:text-secondary">
                   Votre solde de crédits
                 </h3>
                 <p className="text-sm text-gray-600 dark:text-gray-400">
@@ -153,7 +153,7 @@ export function PromotionModal({ property, isOpen, onClose }: Readonly<Promotion
             </div>
             <div className="flex items-center gap-4">
               <div className="text-right">
-                <p className="text-2xl font-bold text-[#146B67] dark:text-[#1FA89B]">
+                <p className="text-2xl font-bold text-primary dark:text-secondary">
                   {userCredits}
                 </p>
                 <p className="text-sm text-gray-500">crédits</p>
@@ -162,7 +162,7 @@ export function PromotionModal({ property, isOpen, onClose }: Readonly<Promotion
                 type="button"
                 size="sm"
                 onClick={() => openRecharge()}
-                className="bg-[#146B67] hover:bg-[#125A56] text-white"
+                className="bg-primary hover:bg-primary-800 text-white"
               >
                 <CreditCard className="w-4 h-4 mr-1.5" />
                 Recharger
@@ -209,11 +209,11 @@ export function PromotionModal({ property, isOpen, onClose }: Readonly<Promotion
                 className={cn(
                   "relative border-2 rounded-2xl p-6 transition-all duration-300 text-left",
                   selectedPromotion === service.id
-                    ? "border-[#146B67] bg-[#146B67]/5 dark:bg-[#146B67]/10"
-                    : "border-gray-200 dark:border-gray-700 hover:border-[#146B67]/50",
+                    ? "border-primary bg-primary/5 dark:bg-primary/10"
+                    : "border-gray-200 dark:border-gray-700 hover:border-primary/50",
                   service.disabled && "opacity-50 cursor-not-allowed",
                   !hasEnoughCredits && "border-red-200 dark:border-red-800",
-                  (!service.disabled && hasEnoughCredits) && "hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-[#146B67] focus:ring-offset-2"
+                  (!service.disabled && hasEnoughCredits) && "hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2"
                 )}
                 onClick={() => {
                   if (!service.disabled && hasEnoughCredits) {
@@ -276,14 +276,14 @@ export function PromotionModal({ property, isOpen, onClose }: Readonly<Promotion
                     <Coins className={cn(
                       "w-5 h-5",
                       hasEnoughCredits 
-                        ? "text-[#146B67] dark:text-[#1FA89B]" 
+                        ? "text-primary dark:text-secondary" 
                         : "text-red-600 dark:text-red-400"
                     )} />
                     <div>
                       <div className={cn(
                         "text-lg font-bold",
                         hasEnoughCredits 
-                          ? "text-[#146B67] dark:text-[#1FA89B]" 
+                          ? "text-primary dark:text-secondary" 
                           : "text-red-600 dark:text-red-400"
                       )}>
                         {service.credits} crédits
@@ -302,7 +302,7 @@ export function PromotionModal({ property, isOpen, onClose }: Readonly<Promotion
                     <ul className="space-y-1">
                       {service.benefits.slice(0, 2).map((benefit) => (
                         <li key={benefit} className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
-                          <div className="w-1.5 h-1.5 bg-[#146B67] dark:bg-[#1FA89B] rounded-full flex-shrink-0" />
+                          <div className="w-1.5 h-1.5 bg-primary dark:bg-secondary rounded-full flex-shrink-0" />
                           {benefit}
                         </li>
                       ))}
@@ -316,8 +316,8 @@ export function PromotionModal({ property, isOpen, onClose }: Readonly<Promotion
 
         {/* Récapitulatif de la sélection */}
         {selectedService && (
-          <div className="bg-[#146B67]/5 dark:bg-[#146B67]/10 border border-[#146B67]/20 rounded-xl p-4 mb-6">
-            <h3 className="font-semibold text-[#146B67] dark:text-[#1FA89B] mb-2">
+          <div className="bg-primary/5 dark:bg-primary/10 border border-primary/20 rounded-xl p-4 mb-6">
+            <h3 className="font-semibold text-primary dark:text-secondary mb-2">
               Récapitulatif de votre sélection
             </h3>
             <div className="flex items-center justify-between">
@@ -328,7 +328,7 @@ export function PromotionModal({ property, isOpen, onClose }: Readonly<Promotion
                 </p>
               </div>
               <div className="text-right">
-                <p className="text-lg font-bold text-[#146B67] dark:text-[#1FA89B]">
+                <p className="text-lg font-bold text-primary dark:text-secondary">
                   {selectedService.credits} crédits
                 </p>
                 <p className="text-sm text-gray-500">
@@ -347,7 +347,7 @@ export function PromotionModal({ property, isOpen, onClose }: Readonly<Promotion
           <Button
             onClick={handlePromote}
             disabled={!selectedPromotion || isLoading || (selectedService && userCredits < selectedService.credits)}
-            className="bg-gradient-to-r from-[#146B67] to-[#1FA89B] hover:from-[#146B67]/90 hover:to-[#1FA89B]/90"
+            className="bg-gradient-to-r from-primary to-secondary hover:from-primary/90 hover:to-secondary/90"
           >
             {isLoading ? (
               <>

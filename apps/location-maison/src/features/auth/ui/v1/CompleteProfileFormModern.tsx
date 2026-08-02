@@ -220,7 +220,7 @@ export const CompleteProfileFormModern: React.FC = () => {
   if (status === 'loading' || !currentUser) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-50 via-white to-teal-50/30">
-        <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-[#1FA89B]" />
+        <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-secondary" />
       </div>
     );
   }
@@ -228,7 +228,7 @@ export const CompleteProfileFormModern: React.FC = () => {
   return (
     <div className="min-h-screen flex bg-gradient-to-br from-slate-50 via-white to-teal-50/30 dark:from-gray-950 dark:via-gray-900 dark:to-gray-950">
       <div className="hidden lg:flex lg:w-1/2 xl:w-[45%] relative overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-br from-[#146B67] via-[#1a8a83] to-[#1FA89B]" />
+        <div className="absolute inset-0 bg-gradient-to-br from-primary via-primary-600 to-secondary" />
         <div
           className="absolute inset-0 bg-cover bg-no-repeat opacity-20 mix-blend-overlay blur-[1px] pointer-events-none"
           style={{
@@ -312,7 +312,7 @@ export const CompleteProfileFormModern: React.FC = () => {
         <div className="w-full max-w-lg">
           <div className="lg:hidden flex items-center justify-center gap-3 mb-8">
             <Logo width="48px" height="48px" />
-            <span className="text-xl font-bold text-[#146B67]">Trouve Ton Nkama</span>
+            <span className="text-xl font-bold text-primary">Trouve Ton Nkama</span>
           </div>
 
           <div className="mb-8 text-center">
@@ -357,7 +357,7 @@ export const CompleteProfileFormModern: React.FC = () => {
                     }
                     className={`rounded-2xl border p-3 text-left transition ${
                       selectedAccountType === 'User'
-                        ? 'border-[#1FA89B] bg-teal-50 dark:bg-teal-900/20'
+                        ? 'border-secondary bg-teal-50 dark:bg-teal-900/20'
                         : 'border-gray-200 dark:border-gray-700'
                     }`}
                   >
@@ -377,7 +377,7 @@ export const CompleteProfileFormModern: React.FC = () => {
                     }
                     className={`rounded-2xl border p-3 text-left transition ${
                       selectedAccountType === 'Announcer'
-                        ? 'border-[#1FA89B] bg-teal-50 dark:bg-teal-900/20'
+                        ? 'border-secondary bg-teal-50 dark:bg-teal-900/20'
                         : 'border-gray-200 dark:border-gray-700'
                     }`}
                   >
@@ -442,7 +442,7 @@ export const CompleteProfileFormModern: React.FC = () => {
                           href={routes.public.announcer_terms}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="text-[#1FA89B] hover:underline font-medium"
+                          className="text-secondary hover:underline font-medium"
                         >
                           conditions annonceur
                         </a>
@@ -469,7 +469,7 @@ export const CompleteProfileFormModern: React.FC = () => {
                         href={routes.public.confidentiality}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="text-[#1FA89B] hover:underline font-medium"
+                        className="text-secondary hover:underline font-medium"
                       >
                         politique de confidentialité
                       </a>
@@ -478,7 +478,7 @@ export const CompleteProfileFormModern: React.FC = () => {
                         href={routes.public.terms_of_use}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="text-[#1FA89B] hover:underline font-medium"
+                        className="text-secondary hover:underline font-medium"
                       >
                         conditions d&apos;utilisation
                       </a>
@@ -496,7 +496,7 @@ export const CompleteProfileFormModern: React.FC = () => {
                 type="submit"
                 disabled={isFormLoading}
                 isLoading={isFormLoading}
-                className="h-12 bg-gradient-to-r from-[#146B67] to-[#1FA89B] hover:from-[#125b57] hover:to-[#1a9589] shadow-lg shadow-teal-500/25"
+                className="h-12 bg-gradient-to-r from-primary to-secondary hover:from-primary-800 hover:to-primary-600 shadow-lg shadow-teal-500/25"
                 title={isFormLoading ? 'Finalisation...' : 'Finaliser mon compte'}
               />
             </form>

@@ -78,14 +78,14 @@ export default function FilterSearchDesktopPageSection() {
                     >
                     <div className='border-b border-gray-200 dark:border-gray-700 p-5'>
                         <div className='flex items-center justify-center mb-3'>
-                            <h1 className='text-2xl font-bold text-[#146B67] dark:text-[#1FA89B] text-center'>
+                            <h1 className='text-2xl font-bold text-primary dark:text-secondary text-center'>
                                 Filtres de recherches
                             </h1>
                         </div>
                         <div className="flex justify-center">
                             <Link
                                 href={searchWithAIHref}
-                                className="inline-flex items-center gap-2 rounded-full border border-[#146B67]/30 bg-[#E6F8F5] text-[#146B67] px-4 py-2 text-sm font-medium hover:bg-[#d8f1ed] transition-colors"
+                                className="inline-flex items-center gap-2 rounded-full border border-primary/30 bg-primary-100 text-primary px-4 py-2 text-sm font-medium hover:bg-primary-100 transition-colors"
                                 onClick={onSearchWithAIClick}
                             >
                                 Essayer la recherche IA
@@ -95,7 +95,7 @@ export default function FilterSearchDesktopPageSection() {
                     <div className="flex-1 overflow-auto mb-20">
                         <section>
                             <div className='space-y-5 p-5'>
-                                <h2 className='text-lg font-semibold text-[#146B67] dark:text-[#1FA89B]'>
+                                <h2 className='text-lg font-semibold text-primary dark:text-secondary'>
                                     Secteur recherché
                                 </h2>
                                 <SelectProvince />
@@ -105,7 +105,7 @@ export default function FilterSearchDesktopPageSection() {
                         </section>
 
                         <section className='space-y-5 p-5'>
-                            <h2 className='text-lg font-semibold text-[#146B67] dark:text-[#1FA89B]'>
+                            <h2 className='text-lg font-semibold text-primary dark:text-secondary'>
                                 Statut
                             </h2>
                             <MultiSelectFormApp
@@ -118,7 +118,7 @@ export default function FilterSearchDesktopPageSection() {
                         </section>
 
                         <section className='space-y-5 p-5'>
-                            <h2 className='text-lg font-semibold text-[#146B67] dark:text-[#1FA89B]'>
+                            <h2 className='text-lg font-semibold text-primary dark:text-secondary'>
                                 Prix (FCFA)
                             </h2>
                             <InputFormNumberApp
@@ -138,7 +138,7 @@ export default function FilterSearchDesktopPageSection() {
                         </section>
 
                         <section className='space-y-5 p-5'>
-                            <h2 className='text-lg font-semibold text-[#146B67] dark:text-[#1FA89B]'>
+                            <h2 className='text-lg font-semibold text-primary dark:text-secondary'>
                                 Surface (m²)
                             </h2>
                             <InputFormNumberApp
@@ -158,7 +158,7 @@ export default function FilterSearchDesktopPageSection() {
                         </section>
 
                         <section className='space-y-5 p-5'>
-                            <h2 className='text-lg font-semibold text-[#146B67] dark:text-[#1FA89B]'>
+                            <h2 className='text-lg font-semibold text-primary dark:text-secondary'>
                                 Types d'annonces
                             </h2>
                             <MultiSelectFormApp
@@ -171,7 +171,7 @@ export default function FilterSearchDesktopPageSection() {
                         </section>
 
                         <section className='space-y-5 p-5'>
-                            <h2 className='text-lg font-semibold text-[#146B67] dark:text-[#1FA89B]'>
+                            <h2 className='text-lg font-semibold text-primary dark:text-secondary'>
                                 Tags
                             </h2>
                             <MultiSelectFormApp
@@ -195,14 +195,14 @@ export default function FilterSearchDesktopPageSection() {
                                 });
                                 onClear();
                             }}
-                            className="w-full border-[#146B67] dark:border-[#1FA89B] text-[#146B67] dark:text-[#1FA89B] hover:bg-[#1FA89B]/10 dark:hover:bg-[#1FA89B]/20 rounded-full mb-2"
+                            className="w-full border-primary dark:border-secondary text-primary dark:text-secondary hover:bg-secondary/10 dark:hover:bg-secondary/20 rounded-full mb-2"
                         >
                             Effacer
                         </Button>
                         <Button
                             variant="default"
                             type="submit"
-                            className="w-full bg-[#146B67] hover:bg-[#1FA89B] text-white rounded-full"
+                            className="w-full bg-primary hover:bg-secondary text-white rounded-full"
                         >
                             Appliquer
                         </Button>

@@ -53,7 +53,7 @@ const PasswordResetFailure: React.FC = () => {
   return (
     <div className="min-h-screen flex bg-gradient-to-br from-slate-50 via-white to-rose-50/30 dark:from-gray-950 dark:via-gray-900 dark:to-gray-950">
       <div className="hidden lg:flex lg:w-1/2 xl:w-[45%] relative overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-br from-[#7f1d1d] via-[#b91c1c] to-[#ef4444]" />
+        <div className="absolute inset-0 bg-gradient-to-br from-red-900 via-red-700 to-destructive" />
 
         <div
           className="absolute inset-0 bg-cover bg-no-repeat opacity-15 mix-blend-overlay blur-[1px] pointer-events-none"
@@ -134,7 +134,7 @@ const PasswordResetFailure: React.FC = () => {
         <div className="w-full max-w-lg">
           <div className="lg:hidden flex items-center justify-center gap-3 mb-8">
             <Logo width="48px" height="48px" />
-            <span className="text-xl font-bold text-[#146B67]">Trouve Ton Nkama</span>
+            <span className="text-xl font-bold text-primary">Trouve Ton Nkama</span>
           </div>
 
           <div className="bg-white dark:bg-gray-900 rounded-3xl shadow-2xl shadow-gray-200/50 dark:shadow-black/30 p-8 lg:p-10 border border-gray-100 dark:border-gray-800">
@@ -161,7 +161,7 @@ const PasswordResetFailure: React.FC = () => {
             <div className="space-y-3">
               <ButtonApp
                 title="Demander un nouveau lien"
-                className="bg-gradient-to-r from-[#146B67] to-[#1FA89B]"
+                className="bg-gradient-to-r from-primary to-secondary"
                 onClick={() => router.push(routes.public.passwordResetRequest)}
               />
 
@@ -177,7 +177,7 @@ const PasswordResetFailure: React.FC = () => {
 
               <Link
                 href={routes.public.homePage}
-                className="inline-flex items-center gap-2 justify-center w-full text-sm text-gray-500 hover:text-[#146B67]"
+                className="inline-flex items-center gap-2 justify-center w-full text-sm text-gray-500 hover:text-primary"
               >
                 <Home className="w-4 h-4" />
                 Retour à l&apos;accueil
@@ -189,10 +189,10 @@ const PasswordResetFailure: React.FC = () => {
                 Besoin d&apos;aide?
               </p>
               <div className="text-sm space-y-1">
-                <a href={`mailto:${supportContact.email}`} className="block text-[#146B67] hover:underline font-medium">
+                <a href={`mailto:${supportContact.email}`} className="block text-primary hover:underline font-medium">
                   {supportContact.email}
                 </a>
-                <a href={`tel:${supportContact.phone}`} className="block text-[#146B67] hover:underline font-medium">
+                <a href={`tel:${supportContact.phone}`} className="block text-primary hover:underline font-medium">
                   {supportContact.phone}
                 </a>
               </div>

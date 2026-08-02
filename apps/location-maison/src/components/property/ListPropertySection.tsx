@@ -166,7 +166,7 @@ export default function ListPropertySection() {
                                     className={cn(
                                         "w-8 h-8 rounded-md text-sm font-medium transition-all duration-200",
                                         pageIndex === currentPage
-                                            ? "bg-[#146B67] text-white shadow-md"
+                                            ? "bg-primary text-white shadow-md"
                                             : "text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700"
                                     )}
                                 >

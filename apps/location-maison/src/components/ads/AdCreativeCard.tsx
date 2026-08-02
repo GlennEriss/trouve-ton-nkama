@@ -110,7 +110,7 @@ export default function AdCreativeCard({
               </p>
             )}
             {creative.ctaLabel && (
-              <span className="mt-3 inline-flex min-h-10 items-center rounded-full bg-[#1FA89B] px-5 text-sm font-semibold text-white shadow-lg shadow-black/20">
+              <span className="mt-3 inline-flex min-h-10 items-center rounded-full bg-secondary px-5 text-sm font-semibold text-white shadow-lg shadow-black/20">
                 {creative.ctaLabel}
               </span>
             )}
@@ -181,13 +181,13 @@ export default function AdCreativeCard({
       {!fillHeight && (creative.headline || creative.body || creative.ctaLabel) && (
         <div className="p-3">
           {creative.headline && (
-            <p className="font-semibold text-[#224D62] dark:text-white">{creative.headline}</p>
+            <p className="font-semibold text-ink dark:text-white">{creative.headline}</p>
           )}
           {creative.body && (
             <p className="text-sm text-gray-600 dark:text-gray-300">{creative.body}</p>
           )}
           {creative.ctaLabel && (
-            <span className="mt-2 inline-block rounded-full bg-[#1FA89B] px-4 py-1.5 text-sm font-medium text-white">
+            <span className="mt-2 inline-block rounded-full bg-secondary px-4 py-1.5 text-sm font-medium text-white">
               {creative.ctaLabel}
             </span>
           )}

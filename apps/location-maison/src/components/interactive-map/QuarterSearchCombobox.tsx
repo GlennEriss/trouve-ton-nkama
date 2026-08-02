@@ -102,7 +102,7 @@ export default function QuarterSearchCombobox({
         >
           {value ? (
             <div className="flex items-center gap-2 truncate">
-              <MapPin className="h-4 w-4 text-[#146B67] shrink-0" />
+              <MapPin className="h-4 w-4 text-primary shrink-0" />
               <span className="truncate">{value.name}</span>
             </div>
           ) : (
@@ -146,7 +146,7 @@ export default function QuarterSearchCombobox({
                       <Check
                         className={cn(
                           "mr-2 h-4 w-4",
-                          value?.name === quarter.name ? "opacity-100 text-[#146B67]" : "opacity-0"
+                          value?.name === quarter.name ? "opacity-100 text-primary" : "opacity-0"
                         )}
                       />
                       <MapPin className="mr-2 h-4 w-4 text-gray-400" />

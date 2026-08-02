@@ -42,8 +42,8 @@ export default function CreditPacksList({ onOpenModal, onPackSelect }: Readonly<
       {/* Header */}
       <div className="text-center space-y-3 md:space-y-4">
         <div className="flex items-center justify-center gap-2 md:gap-3">
-          <Package className="w-6 h-6 md:w-7 md:h-7 text-[#146B67] dark:text-[#1FA89B]" />
-          <h2 className="text-2xl md:text-3xl font-bold text-[#146B67] dark:text-[#1FA89B]">
+          <Package className="w-6 h-6 md:w-7 md:h-7 text-primary dark:text-secondary" />
+          <h2 className="text-2xl md:text-3xl font-bold text-primary dark:text-secondary">
             Packs de Crédits
           </h2>
         </div>

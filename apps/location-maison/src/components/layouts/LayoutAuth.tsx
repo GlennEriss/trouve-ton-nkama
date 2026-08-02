@@ -48,7 +48,7 @@ export const LayoutAuth: React.FC<LayoutAuthProps> = ({
             {/* Container */}
             <div className="w-full max-w-4xl mx-4 bg-white dark:bg-gray-800 shadow-lg dark:shadow-gray-900/50 rounded-lg flex flex-col md:flex-row overflow-hidden">
                 {/* Left Side: Branding/Message */}
-                <div className="hidden md:block md:w-1/2 bg-gradient-to-br from-[#146B67] via-[#1FA89B] to-[#146B67] text-white p-8">
+                <div className="hidden md:block md:w-1/2 bg-gradient-to-br from-primary via-secondary to-primary text-white p-8">
                     <div className="flex flex-col h-full">
                         <div className="flex items-center">
                             <Link href={routes.public.homePage}>
@@ -70,10 +70,10 @@ export const LayoutAuth: React.FC<LayoutAuthProps> = ({
                     {/* Card Content */}
                     <div className="w-full max-w-md mx-auto">
                         <h1 className="relative text-center text-2xl md:text-3xl font-bold mb-8">
-                            <span className="bg-gradient-to-r from-[#146B67] via-[#1FA89B] to-[#146B67] text-transparent bg-clip-text">
+                            <span className="bg-gradient-to-r from-primary via-secondary to-primary text-transparent bg-clip-text">
                                 {type === "Signin" ? "Connexion" : type === "Signup" ? "Créer un compte" : "Compléter votre profil"}
                             </span>
-                            <div className="absolute -bottom-3 left-1/2 transform -translate-x-1/2 w-12 h-1 rounded-full bg-gradient-to-r from-[#146B67] via-[#1FA89B] to-[#146B67]" />
+                            <div className="absolute -bottom-3 left-1/2 transform -translate-x-1/2 w-12 h-1 rounded-full bg-gradient-to-r from-primary via-secondary to-primary" />
                         </h1>
                         <div>{children}</div>
                         {type !== "CompleteProfile" && (

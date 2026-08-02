@@ -6,6 +6,6 @@ import { useCrudContext } from '@/providers/crud.provider'
 export default function TitleCrudComponent() {
   const {title} = useCrudContext()
   return (
-    <CardTitle className='text-xl text-[#1B4D5B]'>{title}</CardTitle>
+    <CardTitle className='text-xl text-ink'>{title}</CardTitle>
   )
 }

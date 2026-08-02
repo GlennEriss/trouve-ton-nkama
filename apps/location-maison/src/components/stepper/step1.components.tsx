@@ -131,12 +131,12 @@ export const ImageUploader = () => {
             {...getRootProps()}
             className={clsx(
                 "group relative border-2 border-dashed rounded-xl transition-all duration-300 ease-in-out",
-                "hover:border-[#156B68] hover:bg-[#156B68]/5 dark:hover:bg-[#156B68]/10",
-                "focus-within:ring-2 focus-within:ring-[#156B68] focus-within:ring-offset-2",
+                "hover:border-primary hover:bg-primary/5 dark:hover:bg-primary/10",
+                "focus-within:ring-2 focus-within:ring-primary focus-within:ring-offset-2",
                 "min-h-[160px] md:min-h-[180px] lg:min-h-[200px] flex flex-col justify-center items-center cursor-pointer",
                 "bg-gray-50/50 dark:bg-gray-800/50",
                 {
-                    "border-[#156B68] bg-[#156B68]/5 dark:bg-[#156B68]/10": isDragActive,
+                    "border-primary bg-primary/5 dark:bg-primary/10": isDragActive,
                     "opacity-60 pointer-events-none": isProcessing,
                     "border-gray-300 dark:border-gray-600": !isDragActive && !isProcessing
                 }
@@ -153,42 +153,42 @@ export const ImageUploader = () => {
                 {isProcessing ? (
                     <>
                         <div className="relative">
-                            <div className="w-10 h-10 md:w-12 md:h-12 border-4 border-[#156B68]/20 border-t-[#156B68] rounded-full animate-spin"></div>
-                            <AiOutlineCamera className="absolute inset-0 m-auto w-5 h-5 md:w-6 md:h-6 text-[#156B68]" />
+                            <div className="w-10 h-10 md:w-12 md:h-12 border-4 border-primary/20 border-t-primary rounded-full animate-spin"></div>
+                            <AiOutlineCamera className="absolute inset-0 m-auto w-5 h-5 md:w-6 md:h-6 text-primary" />
                         </div>
                         <div className="text-center">
-                            <p className="text-sm font-medium text-[#156B68] dark:text-[#156B68]/80">
+                            <p className="text-sm font-medium text-primary dark:text-primary/80">
                                 Traitement en cours...
                             </p>
-                            <p className="text-xs text-[#156B68]/70 dark:text-[#156B68]/60 mt-1">
+                            <p className="text-xs text-primary/70 dark:text-primary/60 mt-1">
                                 Compression des images
                             </p>
                         </div>
                     </>
                 ) : isDragActive ? (
                     <>
-                        <div className="w-10 h-10 md:w-12 md:h-12 bg-[#156B68]/10 dark:bg-[#156B68]/20 rounded-full flex items-center justify-center animate-pulse">
-                            <AiOutlineCamera className="w-5 h-5 md:w-6 md:h-6 text-[#156B68] dark:text-[#156B68]/80" />
+                        <div className="w-10 h-10 md:w-12 md:h-12 bg-primary/10 dark:bg-primary/20 rounded-full flex items-center justify-center animate-pulse">
+                            <AiOutlineCamera className="w-5 h-5 md:w-6 md:h-6 text-primary dark:text-primary/80" />
                         </div>
                         <div className="text-center">
-                            <p className="text-sm font-medium text-[#156B68] dark:text-[#156B68]/80">
+                            <p className="text-sm font-medium text-primary dark:text-primary/80">
                                 Déposez vos images ici
                             </p>
-                            <p className="text-xs text-[#156B68]/70 dark:text-[#156B68]/60 mt-1">
+                            <p className="text-xs text-primary/70 dark:text-primary/60 mt-1">
                                 Relâchez pour ajouter
                             </p>
                         </div>
                     </>
                 ) : (
                     <>
-                        <div className="w-10 h-10 md:w-12 md:h-12 bg-gray-100 dark:bg-gray-700 rounded-full flex items-center justify-center group-hover:bg-[#156B68]/10 dark:group-hover:bg-[#156B68]/20 group-hover:scale-110 transition-all duration-200">
-                            <AiOutlineCamera className="w-5 h-5 md:w-6 md:h-6 text-gray-500 dark:text-gray-400 group-hover:text-[#156B68] dark:group-hover:text-[#156B68]/80 transition-colors" />
+                        <div className="w-10 h-10 md:w-12 md:h-12 bg-gray-100 dark:bg-gray-700 rounded-full flex items-center justify-center group-hover:bg-primary/10 dark:group-hover:bg-primary/20 group-hover:scale-110 transition-all duration-200">
+                            <AiOutlineCamera className="w-5 h-5 md:w-6 md:h-6 text-gray-500 dark:text-gray-400 group-hover:text-primary dark:group-hover:text-primary/80 transition-colors" />
                         </div>
                         <div className="text-center">
-                            <p className="hidden lg:block text-xs md:text-sm font-medium text-gray-700 dark:text-gray-300 group-hover:text-[#156B68] dark:group-hover:text-[#156B68]/80 transition-colors">
+                            <p className="hidden lg:block text-xs md:text-sm font-medium text-gray-700 dark:text-gray-300 group-hover:text-primary dark:group-hover:text-primary/80 transition-colors">
                                 Ajouter des images
                             </p>
-                            <p className="text-xs text-gray-500 dark:text-gray-400 mt-1 group-hover:text-[#156B68]/70 dark:group-hover:text-[#156B68]/60 transition-colors">
+                            <p className="text-xs text-gray-500 dark:text-gray-400 mt-1 group-hover:text-primary/70 dark:group-hover:text-primary/60 transition-colors">
                                 Cliquez ou glissez-déposez
                             </p>
                         </div>
@@ -285,9 +285,9 @@ export const StatusComponent = () => {
                             <div
                                 className={clsx(
                                     "relative flex items-center space-x-3 rounded-xl border-2 p-4 cursor-pointer transition-all duration-200",
-                                    "hover:border-[#156B68] hover:bg-[#156B68]/5 dark:hover:bg-[#156B68]/10",
+                                    "hover:border-primary hover:bg-primary/5 dark:hover:bg-primary/10",
                                     {
-                                        "border-[#156B68] bg-[#156B68]/5 dark:bg-[#156B68]/10": currentStatus === item.value,
+                                        "border-primary bg-primary/5 dark:bg-primary/10": currentStatus === item.value,
                                         "border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800": currentStatus !== item.value
                                     }
                                 )}
@@ -315,7 +315,7 @@ export const StatusComponent = () => {
                                 </div>
                                 {currentStatus === item.value && (
                                     <div className="absolute top-2 right-2">
-                                        <div className="w-2 h-2 bg-[#156B68] rounded-full"></div>
+                                        <div className="w-2 h-2 bg-primary rounded-full"></div>
                                     </div>
                                 )}
                             </div>
@@ -374,9 +374,9 @@ export const TagItem = ({ tag, isActive, onToggle }: TagItemProps) => {
                 "hover:scale-105 hover:shadow-md focus:outline-none focus:ring-2 focus:ring-offset-2",
                 {
                     // État actif
-                    "border-[#156B68] bg-[#156B68]/10 text-[#156B68] shadow-sm": isActive,
+                    "border-primary bg-primary/10 text-primary shadow-sm": isActive,
                     // État inactif
-                    "border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-400 hover:border-[#156B68]/50 hover:bg-[#156B68]/5": !isActive,
+                    "border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-400 hover:border-primary/50 hover:bg-primary/5": !isActive,
                 }
             )}
             onClick={onToggle}
@@ -387,8 +387,8 @@ export const TagItem = ({ tag, isActive, onToggle }: TagItemProps) => {
             <div className={clsx(
                 "p-2 rounded-lg transition-colors duration-200",
                 {
-                    "bg-[#156B68]/20": isActive,
-                    "bg-gray-100 dark:bg-gray-700 group-hover:bg-[#156B68]/10": !isActive,
+                    "bg-primary/20": isActive,
+                    "bg-gray-100 dark:bg-gray-700 group-hover:bg-primary/10": !isActive,
                 }
             )}>
                 <tag.tagIcon size={20} />
@@ -398,8 +398,8 @@ export const TagItem = ({ tag, isActive, onToggle }: TagItemProps) => {
             <span className={clsx(
                 "text-xs font-medium text-center leading-tight",
                 {
-                    "text-[#156B68]": isActive,
-                    "text-gray-600 dark:text-gray-400 group-hover:text-[#156B68]": !isActive,
+                    "text-primary": isActive,
+                    "text-gray-600 dark:text-gray-400 group-hover:text-primary": !isActive,
                 }
             )}>
                 {tag.tagName}
@@ -407,7 +407,7 @@ export const TagItem = ({ tag, isActive, onToggle }: TagItemProps) => {
 
             {/* Indicateur de sélection */}
             {isActive && (
-                <div className="absolute -top-1 -right-1 w-4 h-4 bg-[#156B68] rounded-full flex items-center justify-center">
+                <div className="absolute -top-1 -right-1 w-4 h-4 bg-primary rounded-full flex items-center justify-center">
                     <div className="w-2 h-2 bg-white rounded-full"></div>
                 </div>
             )}
@@ -445,9 +445,9 @@ export const IsOwnerComponent = () => {
                             <div
                                 className={clsx(
                                     "relative flex items-start gap-3 rounded-xl border-2 p-4 cursor-pointer transition-all duration-200",
-                                    "hover:border-[#146B67] hover:bg-[#146B67]/5 dark:hover:bg-[#146B67]/10",
+                                    "hover:border-primary hover:bg-primary/5 dark:hover:bg-primary/10",
                                     {
-                                        "border-[#146B67] bg-[#146B67]/5 dark:bg-[#146B67]/10": isSelected,
+                                        "border-primary bg-primary/5 dark:bg-primary/10": isSelected,
                                         "border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800": !isSelected,
                                     }
                                 )}

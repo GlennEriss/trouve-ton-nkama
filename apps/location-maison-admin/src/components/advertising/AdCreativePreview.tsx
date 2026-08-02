@@ -95,10 +95,10 @@ function AdCreativeCard({
         )}
         {!fillHeight && (creative.headline || creative.body || creative.ctaLabel) && (
           <div className="p-3">
-            {creative.headline && <p className="font-semibold text-[#224D62]">{creative.headline}</p>}
+            {creative.headline && <p className="font-semibold text-ink">{creative.headline}</p>}
             {creative.body && <p className="text-sm text-slate-600">{creative.body}</p>}
             {creative.ctaLabel && (
-              <span className="mt-2 inline-block rounded-full bg-[#1FA89B] px-4 py-1.5 text-sm font-medium text-white">
+              <span className="mt-2 inline-block rounded-full bg-secondary px-4 py-1.5 text-sm font-medium text-white">
                 {creative.ctaLabel}
               </span>
             )}
@@ -278,7 +278,7 @@ export default function AdCreativePreview({ creative, assets, placements, classN
             <div className="rounded-lg ring-2 ring-emerald-400/50">
               {active === "home" ? (
                 // Hero accueil : bannière large sur dégradé, visuel entier (contain).
-                <div className="aspect-[3/1] w-full overflow-hidden rounded-xl bg-linear-to-r from-[#C1DEE8] to-[#FBD9B9]">
+                <div className="aspect-[3/1] w-full overflow-hidden rounded-xl bg-linear-to-r from-sky to-peach">
                   <AdCreativeCard creative={shownCreative} placement="home" surface="none" fillHeight />
                 </div>
               ) : active === "reels_infeed" ? (

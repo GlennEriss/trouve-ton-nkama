@@ -325,6 +325,30 @@ describe('firestore.rules reels', () => {
       moderationStatus: 'APPROVED',
       state: 'IN_PROGRESS',
     })
+    await seed('users/claimant', {
+      uid: 'claimant',
+      roles: ['User', 'Announcer'],
+      credits: 100,
+      metadata: {},
+      state: 'IN_PROGRESS',
+    })
+    await seed('properties/claimed-property', {
+      createdBy: 'announcer',
+      claimedBy: 'claimant',
+      moderationStatus: 'APPROVED',
+      state: 'IN_PROGRESS',
+    })
+  })
+
+  it('autorise la creation reel rattache a une annonce revendiquee (claimedBy)', async () => {
+    await assertSucceeds(
+      setDoc(doc(authedDb('claimant'), 'reels/claimed-reel'), {
+        createdBy: 'claimant',
+        propertyId: 'claimed-property',
+        moderationStatus: 'PENDING',
+        processingStatus: 'uploading',
+      }),
+    )
   })
 
   it('autorise la creation reel orphelin ou rattache a une annonce possedee', async () => {

@@ -15,16 +15,16 @@ export default function PropTechInnovationPage() {
       <div className="max-w-4xl mx-auto">
         {/* Breadcrumb */}
         <nav className="text-sm text-gray-600 mb-6">
-          <Link href={routes.public.homePage} className="hover:text-[#146B67]">Accueil</Link>
+          <Link href={routes.public.homePage} className="hover:text-primary">Accueil</Link>
           <span className="mx-2">→</span>
-          <Link href={routes.public.blog} className="hover:text-[#146B67]">Blog</Link>
+          <Link href={routes.public.blog} className="hover:text-primary">Blog</Link>
           <span className="mx-2">→</span>
           <span className="text-gray-800">PropTech Innovation Immobilier Gabon</span>
         </nav>
 
         {/* Article Header */}
         <header className="mb-8">
-          <h1 className="text-4xl font-bold text-[#146B67] mb-4">
+          <h1 className="text-4xl font-bold text-primary mb-4">
             Digital & PropTech : L&apos;Innovation au Service de l&apos;Immobilier Gabonais 
           </h1>
           <div className="flex items-center text-sm text-gray-600 mb-6">
@@ -45,7 +45,7 @@ export default function PropTechInnovationPage() {
         <article className="prose prose-lg max-w-none">
           
           <section className="mb-8">
-            <h2 className="text-2xl font-semibold text-[#146B67] mb-4">
+            <h2 className="text-2xl font-semibold text-primary mb-4">
                La Révolution PropTech au Gabon
             </h2>
             
@@ -73,7 +73,7 @@ export default function PropTechInnovationPage() {
           </section>
 
           <section className="mb-8">
-            <h2 className="text-2xl font-semibold text-[#146B67] mb-4">
+            <h2 className="text-2xl font-semibold text-primary mb-4">
                Les Portails qui Dominent le SEO Immobilier
             </h2>
             
@@ -84,7 +84,7 @@ export default function PropTechInnovationPage() {
             
             <div className="grid md:grid-cols-2 gap-6 mb-6">
               <div className="bg-white p-6 rounded-lg shadow-md">
-                <h3 className="text-xl font-semibold text-[#146B67] mb-4"> Avantages des Portails</h3>
+                <h3 className="text-xl font-semibold text-primary mb-4"> Avantages des Portails</h3>
                 <ul className="space-y-2 text-sm">
                   <li>• <strong>Contenu frais :</strong> Nouvelles annonces régulières</li>
                   <li>• <strong>Autorité :</strong> Sites reconnus par Google</li>
@@ -96,7 +96,7 @@ export default function PropTechInnovationPage() {
               </div>
               
               <div className="bg-white p-6 rounded-lg shadow-md">
-                <h3 className="text-xl font-semibold text-[#146B67] mb-4"> Stratégie Trouve Ton Nkama</h3>
+                <h3 className="text-xl font-semibold text-primary mb-4"> Stratégie Trouve Ton Nkama</h3>
                 <ul className="space-y-2 text-sm">
                   <li>• <strong>Contenu localisé :</strong> Spécialisé Gabon</li>
                   <li>• <strong>Mots-clés régionaux :</strong> Libreville, Port-Gentil</li>
@@ -115,7 +115,7 @@ export default function PropTechInnovationPage() {
           </section>
 
           <section className="mb-8">
-            <h2 className="text-2xl font-semibold text-[#146B67] mb-4">
+            <h2 className="text-2xl font-semibold text-primary mb-4">
               🤖 L&apos;Intelligence Artificielle au Service de l&apos;Immobilier
             </h2>
             
@@ -126,7 +126,7 @@ export default function PropTechInnovationPage() {
             
             <div className="space-y-6 mb-6">
               <div className="bg-white p-6 rounded-lg shadow-md">
-                <h3 className="text-xl font-semibold text-[#146B67] mb-4">📝 Génération de Contenu</h3>
+                <h3 className="text-xl font-semibold text-primary mb-4">📝 Génération de Contenu</h3>
                 <div className="grid md:grid-cols-2 gap-4">
                   <div>
                     <h4 className="font-semibold mb-2">Titres Optimisés</h4>
@@ -146,7 +146,7 @@ export default function PropTechInnovationPage() {
               </div>
               
               <div className="bg-white p-6 rounded-lg shadow-md">
-                <h3 className="text-xl font-semibold text-[#146B67] mb-4"> Optimisation SEO</h3>
+                <h3 className="text-xl font-semibold text-primary mb-4"> Optimisation SEO</h3>
                 <div className="grid md:grid-cols-2 gap-4">
                   <div>
                     <h4 className="font-semibold mb-2">Mots-clés Intelligents</h4>
@@ -166,7 +166,7 @@ export default function PropTechInnovationPage() {
               </div>
               
               <div className="bg-white p-6 rounded-lg shadow-md">
-                <h3 className="text-xl font-semibold text-[#146B67] mb-4"> Analyse Prédictive</h3>
+                <h3 className="text-xl font-semibold text-primary mb-4"> Analyse Prédictive</h3>
                 <div className="grid md:grid-cols-2 gap-4">
                   <div>
                     <h4 className="font-semibold mb-2">Prix du Marché</h4>
@@ -188,7 +188,7 @@ export default function PropTechInnovationPage() {
           </section>
 
           <section className="mb-8">
-            <h2 className="text-2xl font-semibold text-[#146B67] mb-4">
+            <h2 className="text-2xl font-semibold text-primary mb-4">
                Google My Business : L&apos;Arme Secrète du SEO Local
             </h2>
             
@@ -199,7 +199,7 @@ export default function PropTechInnovationPage() {
             
             <div className="grid md:grid-cols-2 gap-6 mb-6">
               <div className="bg-white p-6 rounded-lg shadow-md">
-                <h3 className="text-xl font-semibold text-[#146B67] mb-4"> Checklist GMB Gabon</h3>
+                <h3 className="text-xl font-semibold text-primary mb-4"> Checklist GMB Gabon</h3>
                 <ul className="space-y-2 text-sm">
                   <li> Informations complètes (adresse, téléphone)</li>
                   <li> Horaires d&apos;ouverture précis</li>
@@ -213,7 +213,7 @@ export default function PropTechInnovationPage() {
               </div>
               
               <div className="bg-white p-6 rounded-lg shadow-md">
-                <h3 className="text-xl font-semibold text-[#146B67] mb-4"> Impact sur le SEO</h3>
+                <h3 className="text-xl font-semibold text-primary mb-4"> Impact sur le SEO</h3>
                 <ul className="space-y-2 text-sm">
                   <li>• <strong>+40%</strong> de visibilité dans les recherches locales</li>
                   <li>• <strong>+35%</strong> de clics sur les résultats Google</li>
@@ -238,7 +238,7 @@ export default function PropTechInnovationPage() {
           </section>
 
           <section className="mb-8">
-            <h2 className="text-2xl font-semibold text-[#146B67] mb-4">
+            <h2 className="text-2xl font-semibold text-primary mb-4">
                Outils Essentiels de Monitoring et Optimisation
             </h2>
             
@@ -249,7 +249,7 @@ export default function PropTechInnovationPage() {
             
             <div className="grid md:grid-cols-2 gap-6 mb-6">
               <div className="bg-white p-6 rounded-lg shadow-md">
-                <h3 className="text-xl font-semibold text-[#146B67] mb-4"> Google Analytics</h3>
+                <h3 className="text-xl font-semibold text-primary mb-4"> Google Analytics</h3>
                 <ul className="space-y-2 text-sm">
                   <li>• <strong>Trafic :</strong> Visiteurs, sources, comportement</li>
                   <li>• <strong>Conversions :</strong> Contacts, visites organisées</li>
@@ -260,7 +260,7 @@ export default function PropTechInnovationPage() {
               </div>
               
               <div className="bg-white p-6 rounded-lg shadow-md">
-                <h3 className="text-xl font-semibold text-[#146B67] mb-4">🔍 Google Search Console</h3>
+                <h3 className="text-xl font-semibold text-primary mb-4">🔍 Google Search Console</h3>
                 <ul className="space-y-2 text-sm">
                   <li>• <strong>Mots-clés :</strong> Termes qui génèrent du trafic</li>
                   <li>• <strong>Positions :</strong> Classement dans Google</li>
@@ -273,7 +273,7 @@ export default function PropTechInnovationPage() {
             
             <div className="grid md:grid-cols-2 gap-6 mb-6">
               <div className="bg-white p-6 rounded-lg shadow-md">
-                <h3 className="text-xl font-semibold text-[#146B67] mb-4"> Ubersuggest</h3>
+                <h3 className="text-xl font-semibold text-primary mb-4"> Ubersuggest</h3>
                 <ul className="space-y-2 text-sm">
                   <li>• <strong>Recherche mots-clés :</strong> Volume et difficulté</li>
                   <li>• <strong>Analyse concurrentielle :</strong> Stratégies concurrents</li>
@@ -284,7 +284,7 @@ export default function PropTechInnovationPage() {
               </div>
               
               <div className="bg-white p-6 rounded-lg shadow-md">
-                <h3 className="text-xl font-semibold text-[#146B67] mb-4">📱 Outils Spécialisés</h3>
+                <h3 className="text-xl font-semibold text-primary mb-4">📱 Outils Spécialisés</h3>
                 <ul className="space-y-2 text-sm">
                   <li>• <strong>GTmetrix :</strong> Vitesse de chargement</li>
                   <li>• <strong>Mobile-Friendly Test :</strong> Optimisation mobile</li>
@@ -297,7 +297,7 @@ export default function PropTechInnovationPage() {
           </section>
 
           <section className="mb-8">
-            <h2 className="text-2xl font-semibold text-[#146B67] mb-4">
+            <h2 className="text-2xl font-semibold text-primary mb-4">
                Stratégie de Contenu Digital pour le Gabon
             </h2>
             
@@ -308,7 +308,7 @@ export default function PropTechInnovationPage() {
             
             <div className="grid md:grid-cols-2 gap-6 mb-6">
               <div className="bg-white p-6 rounded-lg shadow-md">
-                <h3 className="text-xl font-semibold text-[#146B67] mb-4">📝 Contenu Écrit</h3>
+                <h3 className="text-xl font-semibold text-primary mb-4">📝 Contenu Écrit</h3>
                 <ul className="space-y-2 text-sm">
                   <li>• <strong>Guides par quartier :</strong> Glass, Akébé, Louis</li>
                   <li>• <strong>Analyses de prix :</strong> Évolutions par zone</li>
@@ -320,7 +320,7 @@ export default function PropTechInnovationPage() {
               </div>
               
               <div className="bg-white p-6 rounded-lg shadow-md">
-                <h3 className="text-xl font-semibold text-[#146B67] mb-4">📸 Contenu Visuel</h3>
+                <h3 className="text-xl font-semibold text-primary mb-4">📸 Contenu Visuel</h3>
                 <ul className="space-y-2 text-sm">
                   <li>• <strong>Photos professionnelles :</strong> Biens immobiliers</li>
                   <li>• <strong>Vidéos de visites :</strong> Tours virtuels</li>
@@ -345,7 +345,7 @@ export default function PropTechInnovationPage() {
           </section>
 
           <section className="mb-8">
-            <h2 className="text-2xl font-semibold text-[#146B67] mb-4">
+            <h2 className="text-2xl font-semibold text-primary mb-4">
                Mesurer le Succès de Votre Stratégie Digital
             </h2>
             
@@ -356,7 +356,7 @@ export default function PropTechInnovationPage() {
             
             <div className="grid md:grid-cols-2 gap-6 mb-6">
               <div className="bg-white p-6 rounded-lg shadow-md">
-                <h3 className="text-xl font-semibold text-[#146B67] mb-4"> KPIs de Visibilité</h3>
+                <h3 className="text-xl font-semibold text-primary mb-4"> KPIs de Visibilité</h3>
                 <ul className="space-y-2 text-sm">
                   <li>• <strong>Position Google :</strong> Classement mots-clés</li>
                   <li>• <strong>Trafic organique :</strong> Visiteurs Google</li>
@@ -367,7 +367,7 @@ export default function PropTechInnovationPage() {
               </div>
               
               <div className="bg-white p-6 rounded-lg shadow-md">
-                <h3 className="text-xl font-semibold text-[#146B67] mb-4">📞 KPIs de Conversion</h3>
+                <h3 className="text-xl font-semibold text-primary mb-4">📞 KPIs de Conversion</h3>
                 <ul className="space-y-2 text-sm">
                   <li>• <strong>Contacts générés :</strong> Appels, emails, WhatsApp</li>
                   <li>• <strong>Taux de conversion :</strong> % visiteurs qui contactent</li>
@@ -386,7 +386,7 @@ export default function PropTechInnovationPage() {
           </section>
 
           <section className="mb-8">
-            <h2 className="text-2xl font-semibold text-[#146B67] mb-4">
+            <h2 className="text-2xl font-semibold text-primary mb-4">
                L&apos;Avenir de l&apos;Immobilier Digital au Gabon
             </h2>
             
@@ -395,7 +395,7 @@ export default function PropTechInnovationPage() {
               Les acteurs qui s&apos;adaptent aujourd&apos;hui seront les leaders de demain.
             </p>
             
-            <div className="bg-[#146B67] text-white p-6 rounded-lg text-center">
+            <div className="bg-primary text-white p-6 rounded-lg text-center">
               <h3 className="text-xl font-semibold mb-3"> Prêt à Embrasser l&apos;Innovation ?</h3>
               <p className="mb-4">
                 Découvrez comment Trouve Ton Nkama utilise les dernières technologies 
@@ -404,13 +404,13 @@ export default function PropTechInnovationPage() {
               <div className="flex flex-col sm:flex-row gap-4 justify-center">
                 <Link 
                   href={routes.public.search_property} 
-                  className="bg-white text-[#146B67] px-6 py-3 rounded-lg hover:bg-gray-100 transition-colors font-semibold"
+                  className="bg-white text-primary px-6 py-3 rounded-lg hover:bg-gray-100 transition-colors font-semibold"
                 >
                   Explorer la Plateforme
                 </Link>
                 <Link 
                   href={routes.public.blog} 
-                  className="border border-white text-white px-6 py-3 rounded-lg hover:bg-white hover:text-[#146B67] transition-colors font-semibold"
+                  className="border border-white text-white px-6 py-3 rounded-lg hover:bg-white hover:text-primary transition-colors font-semibold"
                 >
                   Découvrir Plus d&apos;Articles
                 </Link>
@@ -421,13 +421,13 @@ export default function PropTechInnovationPage() {
 
         {/* Related Articles */}
         <section className="mt-12 pt-8 border-t border-gray-200">
-          <h3 className="text-2xl font-semibold text-[#146B67] mb-6">
+          <h3 className="text-2xl font-semibold text-primary mb-6">
              Articles Similaires
           </h3>
           <div className="grid md:grid-cols-2 gap-6">
             <Link href={routes.public.blog_structurer_annonces} className="block">
               <div className="bg-white p-4 rounded-lg shadow-md hover:shadow-lg transition-shadow">
-                <h4 className="font-semibold text-[#146B67] mb-2">
+                <h4 className="font-semibold text-primary mb-2">
                   Structurer Vos Annonces pour Maximiser l&apos;Engagement
                 </h4>
                 <p className="text-sm text-gray-600">
@@ -438,7 +438,7 @@ export default function PropTechInnovationPage() {
             
             <Link href={routes.public.blog_commissions_demarcheurs} className="block">
               <div className="bg-white p-4 rounded-lg shadow-md hover:shadow-lg transition-shadow">
-                <h4 className="font-semibold text-[#146B67] mb-2">
+                <h4 className="font-semibold text-primary mb-2">
                   Commissions Démarcheurs Logements Gabon
                 </h4>
                 <p className="text-sm text-gray-600">

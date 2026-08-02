@@ -31,8 +31,11 @@ service cloud.firestore {
     }
 
     function ownsReferencedProperty(propertyId) {
+      // Co-gestion (cf. properties ci-dessous) : un annonceur qui a revendiqué l'annonce
+      // (claimedBy) peut lui rattacher un reel, au même titre que le créateur d'origine.
       return exists(propertyPath(propertyId)) &&
-             get(propertyPath(propertyId)).data.createdBy == request.auth.uid;
+             (get(propertyPath(propertyId)).data.createdBy == request.auth.uid ||
+              get(propertyPath(propertyId)).data.get('claimedBy', null) == request.auth.uid);
     }
 
     function isSafeUserSelfUpdate() {

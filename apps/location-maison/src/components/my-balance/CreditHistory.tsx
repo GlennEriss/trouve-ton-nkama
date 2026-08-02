@@ -36,7 +36,7 @@ const EmptyStateMessage = ({ filter }: { filter: FilterType }) => {
       <p className="text-gray-500 dark:text-gray-400 mb-6">
         {getEmptyMessage()}
       </p>
-      <Button className="bg-gradient-to-r from-[#146B67] via-[#1FA89B] to-[#146B67] text-white hover:brightness-110 transition-all duration-300">
+      <Button className="bg-gradient-to-r from-primary via-secondary to-primary text-white hover:brightness-110 transition-all duration-300">
         Acheter vos premiers crédits
       </Button>
     </div>
@@ -172,8 +172,8 @@ export default function CreditHistory() {
     return (
       <div className="space-y-6">
         <div className="flex items-center gap-3">
-          <History className="w-7 h-7 text-[#146B67] dark:text-[#1FA89B]" />
-          <h2 className="text-2xl md:text-3xl font-bold text-[#146B67] dark:text-[#1FA89B]">
+          <History className="w-7 h-7 text-primary dark:text-secondary" />
+          <h2 className="text-2xl md:text-3xl font-bold text-primary dark:text-secondary">
             Historique des Transactions
           </h2>
         </div>
@@ -322,8 +322,8 @@ export default function CreditHistory() {
       <div className="space-y-4">
         {/* Title */}
         <div className="flex items-center gap-3">
-          <History className="w-7 h-7 text-[#146B67] dark:text-[#1FA89B]" />
-          <h2 className="text-2xl md:text-3xl font-bold text-[#146B67] dark:text-[#1FA89B]">
+          <History className="w-7 h-7 text-primary dark:text-secondary" />
+          <h2 className="text-2xl md:text-3xl font-bold text-primary dark:text-secondary">
             Historique des Transactions
           </h2>
         </div>
@@ -333,7 +333,7 @@ export default function CreditHistory() {
           <div className="text-sm text-gray-500 dark:text-gray-400">
             {isLoadingHistory ? (
               <div className="flex items-center gap-2">
-                <div className="w-4 h-4 border-2 border-gray-300 border-t-[#146B67] rounded-full animate-spin" />
+                <div className="w-4 h-4 border-2 border-gray-300 border-t-primary rounded-full animate-spin" />
                 Chargement...
               </div>
             ) : (
@@ -382,7 +382,7 @@ export default function CreditHistory() {
             onClick={handleLoadMore}
             disabled={isFetchingNextPage}
             variant="outline"
-            className="border-[#146B67] dark:border-[#1FA89B] text-[#146B67] dark:text-[#1FA89B] hover:bg-[#146B67] hover:text-white dark:hover:bg-[#1FA89B] dark:hover:text-white transition-all duration-300"
+            className="border-primary dark:border-secondary text-primary dark:text-secondary hover:bg-primary hover:text-white dark:hover:bg-secondary dark:hover:text-white transition-all duration-300"
           >
             {isFetchingNextPage ? (
               <div className="flex items-center gap-2">

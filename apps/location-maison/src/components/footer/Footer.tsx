@@ -58,8 +58,8 @@ export default function Footer({ isHide = false }: Readonly<{ isHide?: boolean }
     const isImmersiveSearchPage = pathname === routes.public.search_property || pathname === routes.public.search_with_ia
 
     return (
-        <footer className={cn("w-full border-t border-[#1d3d3a] bg-[#0f1f1e] text-white", isImmersiveSearchPage && "lg:hidden")}>
-            <div className="max-w-[1280px] 2xl:max-w-[1440px] mx-auto p-4 py-10 md:py-12">
+        <footer className={cn("w-full border-t border-primary-900 bg-primary-950 text-white", isImmersiveSearchPage && "lg:hidden")}>
+            <div className="container-page p-4 py-10 md:py-12">
                 <div className="grid grid-cols-1 gap-8 md:grid-cols-12 md:gap-10">
                     <div className='md:col-span-4 lg:col-span-3 space-y-4'>
                         <Logo className="text-white" width="64px" height="64px" />
@@ -108,27 +108,27 @@ export default function Footer({ isHide = false }: Readonly<{ isHide?: boolean }
                         <h2 className='text-sm font-semibold uppercase tracking-wide text-white/70'>Contact</h2>
                         <div className="mt-4 flex flex-col gap-3 text-white/90 text-sm">
                             <div className="flex items-center gap-2">
-                                <MapPin size={16} className='text-[#4DBEA4]' />
+                                <MapPin size={16} className='text-primary-300' />
                                 <span>Libreville, Gabon</span>
                             </div>
                             <div className="flex items-center gap-2">
-                                <Mail size={16} className='text-[#4DBEA4]' />
+                                <Mail size={16} className='text-primary-300' />
                                 <a href={`mailto:${supportEmail}`} className="hover:underline break-all">{supportEmail}</a>
                             </div>
                             <div className="flex items-center gap-2">
-                                <Facebook size={16} className='text-[#4DBEA4]' />
+                                <Facebook size={16} className='text-primary-300' />
                                 <a href="https://www.facebook.com/share/16beeh915e/" target="_blank" rel="noopener noreferrer" className="hover:underline">Suivez-nous sur Facebook</a>
                             </div>
                             <div className="flex items-center gap-2">
-                                <MessageCircle size={16} className='text-[#4DBEA4]' />
+                                <MessageCircle size={16} className='text-primary-300' />
                                 <a href={whatsappUrl} target="_blank" rel="noopener noreferrer" className="hover:underline">Contactez-nous sur WhatsApp</a>
                             </div>
                             <div className="flex items-center gap-2">
-                                <Radio size={16} className='text-[#4DBEA4]' />
+                                <Radio size={16} className='text-primary-300' />
                                 <a href={whatsappChannelUrl} target="_blank" rel="noopener noreferrer" className="hover:underline">Rejoignez notre chaîne</a>
                             </div>
                             <div className="flex items-center gap-2">
-                                <Music2 size={16} className='text-[#4DBEA4]' />
+                                <Music2 size={16} className='text-primary-300' />
                                 <a href={tiktokUrl} target="_blank" rel="noopener noreferrer" className="hover:underline">Suivez-nous sur TikTok</a>
                             </div>
                         </div>

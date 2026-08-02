@@ -186,7 +186,7 @@ export default function EditReelClient({ reelId }: EditReelClientProps) {
           <button
             type="submit"
             disabled={isBusy || !hasChanges}
-            className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-gradient-to-r from-[#146B67] to-[#1FA89B] text-white shadow-lg disabled:opacity-50"
+            className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-gradient-to-r from-primary to-secondary text-white shadow-lg disabled:opacity-50"
             aria-label="Enregistrer les modifications"
           >
             {isSaving ? <Loader2 className="h-5 w-5 animate-spin" /> : <Send className="h-5 w-5" />}
