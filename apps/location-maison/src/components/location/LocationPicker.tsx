@@ -265,8 +265,7 @@ export default function LocationPicker() {
     ((errors?.address as any)?.city?.message || (errors as any)?.cityPlaceId?.message) as
       | string
       | undefined
-  const districtSelectionError =
-    (districtError || (errors as any)?.districtPlaceId?.message) as string | undefined
+  const districtSelectionError = districtError
 
   return (
     <div className="space-y-6 w-full">
@@ -373,12 +372,13 @@ export default function LocationPicker() {
             onSelect={handleDistrictSelect}
             onClear={() => handleDistrictManualChange('')}
             onManualChange={handleDistrictManualChange}
-            placeholder="Ex: Atong-Abè, Glass, Lalala…"
+            placeholder="Ex: Atong-Abè, Glass, Lalala, PK18…"
             bias={cityBias}
             province={province}
             city={city}
             disabled={!cityPlaceId}
             hasError={Boolean(districtSelectionError)}
+            requireSelection={false}
           />
           {!cityPlaceId && (
             <p className="text-xs text-gray-500">Sélectionnez d&apos;abord une ville proposée.</p>

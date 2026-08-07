@@ -32,6 +32,8 @@ interface PlacesAutocompleteInputProps {
   province?: string
   city?: string
   hasError?: boolean
+  /** Si false, la saisie libre est acceptée sans avertissement (défaut: true). */
+  requireSelection?: boolean
 }
 
 export default function PlacesAutocompleteInput({
@@ -48,6 +50,7 @@ export default function PlacesAutocompleteInput({
   province,
   city,
   hasError,
+  requireSelection = true,
 }: PlacesAutocompleteInputProps) {
   const { fetchSuggestions, resolvePlace } = useGooglePlaces()
   const [query, setQuery] = useState(value)
@@ -132,7 +135,7 @@ export default function PlacesAutocompleteInput({
   }
 
   const showDropdown = isOpen && (suggestions.length > 0 || (!isLoading && status !== 'empty'))
-  const selectionRequired = query.trim().length > 0 && !selected && !isLoading
+  const selectionRequired = requireSelection && query.trim().length > 0 && !selected && !isLoading
 
   return (
     <div ref={containerRef} className="relative w-full">
