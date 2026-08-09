@@ -102,6 +102,10 @@ function normalize(value: string): string {
     .replace(/[\s’'`´-]+/g, " ")
     .replace(/[^a-z0-9\s]/g, " ")
     .replace(/\s+/g, " ")
+    // "PK10"/"pk 10"/"PK-10" all name the same kilometer-marker quarter; collapse
+    // to one canonical token so posts match the OSM name either way (OSM stores
+    // e.g. "PK 10" with a space, posts almost always write it "PK10").
+    .replace(/\bpk\s*(\d+)\b/g, "pk$1")
     .trim();
 }
 
