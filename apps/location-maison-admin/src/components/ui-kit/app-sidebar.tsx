@@ -17,6 +17,7 @@ import {
   Shield,
   Tags,
   TrendingUp,
+  UserCheck,
   Users,
   Video,
   Wallet,
@@ -45,6 +46,7 @@ const navItems = [
   { href: "/dashboard/admins", label: "Administrateurs", icon: Shield },
   { href: "/dashboard/users", label: "Utilisateurs", icon: Users },
   { href: "/dashboard/announcers", label: "Annonceurs", icon: Building2 },
+  { href: "/dashboard/listing-claims", label: "Revendications annonces", icon: UserCheck },
   { href: "/dashboard/tags", label: "Tags annonces", icon: Tags },
   { href: "/dashboard/geolocation", label: "Géolocalisation", icon: MapPinned },
   { href: "/dashboard/social-import", label: "Import social", icon: ScanSearch },
@@ -65,7 +67,7 @@ export function AppSidebar() {
     <Sidebar collapsible="icon" variant="inset">
       <SidebarHeader>
         <div className="px-2 py-1">
-          <p className="text-xs font-semibold uppercase tracking-[0.12em] text-brand-700">
+          <p className="text-xs font-semibold uppercase tracking-[0.12em] text-primary">
             Trouve Ton Nkama
           </p>
           <p className="text-sm text-muted-foreground">Espace administrateur</p>

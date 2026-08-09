@@ -53,7 +53,7 @@ export default function PropertyList() {
                         <div className="flex items-center justify-between">
                             {/* Titre avec icône */}
                             <div className="flex items-center gap-4">
-                                <div className="p-2 bg-gradient-to-br from-[#146B67] to-[#1FA89B] rounded-xl shadow-md">
+                                <div className="p-2 bg-gradient-to-br from-primary to-secondary rounded-xl shadow-md">
                                     <Home className="w-6 h-6 text-white" />
                                 </div>
                                 <div>
@@ -68,7 +68,7 @@ export default function PropertyList() {
 
                             {/* Bouton CTA amélioré */}
                             <Button 
-                                className="bg-gradient-to-r from-[#146B67] to-[#1FA89B] hover:from-[#1FA89B] hover:to-[#146B67] text-white font-semibold px-6 py-3 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 border-0"
+                                className="bg-gradient-to-r from-primary to-secondary hover:from-secondary hover:to-primary text-white font-semibold px-6 py-3 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 border-0"
                                 asChild
                             >
                                 <Link href={routes.protected.publish} className="flex items-center gap-2">
@@ -100,13 +100,13 @@ export default function PropertyList() {
                     }`}>
                         <div className="flex items-center justify-between">
                             {/* Icône seule */}
-                            <div className="p-2 bg-gradient-to-br from-[#146B67] to-[#1FA89B] rounded-xl shadow-md">
+                            <div className="p-2 bg-gradient-to-br from-primary to-secondary rounded-xl shadow-md">
                                 <Home className="w-6 h-6 text-white" />
                             </div>
 
                             {/* Bouton CTA compact */}
                             <Button 
-                                className="bg-gradient-to-r from-[#146B67] to-[#1FA89B] hover:from-[#1FA89B] hover:to-[#146B67] text-white font-semibold px-4 py-2 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 border-0"
+                                className="bg-gradient-to-r from-primary to-secondary hover:from-secondary hover:to-primary text-white font-semibold px-4 py-2 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 border-0"
                                 asChild
                             >
                                 <Link href={routes.protected.publish} className="flex items-center gap-2">

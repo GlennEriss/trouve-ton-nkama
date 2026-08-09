@@ -16,7 +16,7 @@ export default function MapViewerModal() {
             <Button
                 variant="outline"
                 onClick={() => setShowMap(true)}
-                className="border-[#146B67] dark:border-[#1FA89B] text-[#146B67] dark:text-[#1FA89B] hover:bg-[#1FA89B]/10 dark:hover:bg-[#1FA89B]/20 rounded-full px-6 py-2 flex items-center gap-2"
+                className="border-primary dark:border-secondary text-primary dark:text-secondary hover:bg-secondary/10 dark:hover:bg-secondary/20 rounded-full px-6 py-2 flex items-center gap-2"
             >
                 <MapPin className="w-4 h-4" />
                 Voir sur la carte

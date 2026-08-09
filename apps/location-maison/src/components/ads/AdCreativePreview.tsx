@@ -175,8 +175,8 @@ export default function AdCreativePreview({
               className={cn(
                 'rounded-full border px-3 py-1 text-xs transition',
                 active === p
-                  ? 'border-[#1FA89B] bg-[#1FA89B]/10 text-[#1FA89B]'
-                  : 'border-gray-200 text-gray-500 hover:border-[#1FA89B]/40 dark:border-gray-600',
+                  ? 'border-secondary bg-secondary/10 text-secondary'
+                  : 'border-gray-200 text-gray-500 hover:border-secondary/40 dark:border-gray-600',
               )}
             >
               {PLACEMENT_LABELS[p]}
@@ -188,7 +188,7 @@ export default function AdCreativePreview({
             type="button"
             aria-label="Aperçu mobile"
             onClick={() => setDevice('mobile')}
-            className={cn('rounded-full p-1.5', device === 'mobile' ? 'bg-[#1FA89B]/10 text-[#1FA89B]' : 'text-gray-400')}
+            className={cn('rounded-full p-1.5', device === 'mobile' ? 'bg-secondary/10 text-secondary' : 'text-gray-400')}
           >
             <Smartphone className="h-4 w-4" />
           </button>
@@ -196,7 +196,7 @@ export default function AdCreativePreview({
             type="button"
             aria-label="Aperçu desktop"
             onClick={() => setDevice('desktop')}
-            className={cn('rounded-full p-1.5', device === 'desktop' ? 'bg-[#1FA89B]/10 text-[#1FA89B]' : 'text-gray-400')}
+            className={cn('rounded-full p-1.5', device === 'desktop' ? 'bg-secondary/10 text-secondary' : 'text-gray-400')}
           >
             <Monitor className="h-4 w-4" />
           </button>
@@ -213,12 +213,12 @@ export default function AdCreativePreview({
           <PreviewContext placement={active} device={device}>
             {/* La vraie pub, mise en valeur dans le flux fantôme. */}
             <div className={cn(
-              'rounded-lg ring-2 ring-[#1FA89B]/40',
+              'rounded-lg ring-2 ring-secondary/40',
               active === 'reels_infeed' && 'h-full w-full overflow-hidden rounded-xl',
             )}>
               {active === 'home' ? (
                 // Hero accueil : bannière large sur dégradé, visuel entier (contain).
-                <div className="aspect-[3/1] w-full overflow-hidden rounded-xl bg-gradient-to-r from-[#C1DEE8] to-[#FBD9B9]">
+                <div className="aspect-[3/1] w-full overflow-hidden rounded-xl bg-gradient-to-r from-sky to-peach">
                   <AdCreativeCard
                     creative={shownCreative}
                     placement="home"

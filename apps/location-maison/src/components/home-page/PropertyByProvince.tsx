@@ -65,7 +65,7 @@ export default function PropertyByProvince() {
                             </div>
                             
                             {/* Overlay avec informations */}
-                            <div className='absolute inset-0 bg-gradient-to-t from-[#093836] via-[#093836]/80 to-transparent transition-opacity duration-300 group-hover:from-[#093836]/90 group-hover:via-[#093836]/85 p-5 flex flex-col justify-end'>
+                            <div className='absolute inset-0 bg-gradient-to-t from-primary-950 via-primary-950/80 to-transparent transition-opacity duration-300 group-hover:from-primary-950/90 group-hover:via-primary-950/85 p-5 flex flex-col justify-end'>
                                 <div className='mb-2'>
                                     <h1 className='text-xl font-bold text-white mb-2'>{province.name}</h1>
                                     {isLoading ? (

@@ -263,6 +263,54 @@ describe('firestore.rules properties', () => {
     await assertFails(updateDoc(propertyRef, { price: 1 }))
     await assertFails(deleteDoc(propertyRef))
   })
+
+  it('autorise l announceur revendicateur (claimedBy) a modifier et supprimer une annonce co-geree', async () => {
+    await seed('users/claimant', {
+      uid: 'claimant',
+      roles: ['User', 'Announcer'],
+      credits: 100,
+      metadata: {},
+      state: 'IN_PROGRESS',
+    })
+    await seed('properties/property-claimed', {
+      createdBy: 'announcer',
+      claimedBy: 'claimant',
+      moderationStatus: 'PENDING',
+      state: 'IN_PROGRESS',
+      price: 40000,
+    })
+
+    const propertyRef = doc(authedDb('claimant'), 'properties/property-claimed')
+    await assertSucceeds(updateDoc(propertyRef, { price: 45000 }))
+    await assertSucceeds(deleteDoc(propertyRef))
+  })
+
+  it('refuse a un tiers non createdBy/claimedBy de modifier ou supprimer une annonce co-geree', async () => {
+    await seed('properties/property-claimed-other', {
+      createdBy: 'announcer',
+      claimedBy: 'claimant',
+      moderationStatus: 'PENDING',
+      state: 'IN_PROGRESS',
+      price: 40000,
+    })
+
+    const propertyRef = doc(authedDb('user'), 'properties/property-claimed-other')
+    await assertFails(updateDoc(propertyRef, { price: 1 }))
+    await assertFails(deleteDoc(propertyRef))
+  })
+
+  it('autorise toujours le createdBy d origine meme quand claimedBy est defini pour quelqu un d autre', async () => {
+    await seed('properties/property-created-and-claimed', {
+      createdBy: 'announcer',
+      claimedBy: 'claimant',
+      moderationStatus: 'PENDING',
+      state: 'IN_PROGRESS',
+      price: 40000,
+    })
+
+    const propertyRef = doc(authedDb('announcer'), 'properties/property-created-and-claimed')
+    await assertSucceeds(updateDoc(propertyRef, { price: 45000 }))
+  })
 })
 
 describe('firestore.rules reels', () => {
@@ -277,6 +325,30 @@ describe('firestore.rules reels', () => {
       moderationStatus: 'APPROVED',
       state: 'IN_PROGRESS',
     })
+    await seed('users/claimant', {
+      uid: 'claimant',
+      roles: ['User', 'Announcer'],
+      credits: 100,
+      metadata: {},
+      state: 'IN_PROGRESS',
+    })
+    await seed('properties/claimed-property', {
+      createdBy: 'announcer',
+      claimedBy: 'claimant',
+      moderationStatus: 'APPROVED',
+      state: 'IN_PROGRESS',
+    })
+  })
+
+  it('autorise la creation reel rattache a une annonce revendiquee (claimedBy)', async () => {
+    await assertSucceeds(
+      setDoc(doc(authedDb('claimant'), 'reels/claimed-reel'), {
+        createdBy: 'claimant',
+        propertyId: 'claimed-property',
+        moderationStatus: 'PENDING',
+        processingStatus: 'uploading',
+      }),
+    )
   })
 
   it('autorise la creation reel orphelin ou rattache a une annonce possedee', async () => {

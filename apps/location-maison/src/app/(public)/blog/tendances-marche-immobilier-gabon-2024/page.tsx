@@ -15,16 +15,16 @@ export default function TendancesMarchePage() {
       <div className="max-w-4xl mx-auto">
         {/* Breadcrumb */}
         <nav className="text-sm text-gray-600 mb-6">
-          <Link href={routes.public.homePage} className="hover:text-[#146B67]">Accueil</Link>
+          <Link href={routes.public.homePage} className="hover:text-primary">Accueil</Link>
           <span className="mx-2">→</span>
-          <Link href={routes.public.blog} className="hover:text-[#146B67]">Blog</Link>
+          <Link href={routes.public.blog} className="hover:text-primary">Blog</Link>
           <span className="mx-2">→</span>
           <span className="text-gray-800">Tendances Marché Immobilier Gabon 2024</span>
         </nav>
 
         {/* Article Header */}
         <header className="mb-8">
-          <h1 className="text-4xl font-bold text-[#146B67] mb-4">
+          <h1 className="text-4xl font-bold text-primary mb-4">
             Tendances du Marché Immobilier au Gabon 2024 🇬🇦
           </h1>
           <div className="flex items-center text-sm text-gray-600 mb-6">
@@ -45,7 +45,7 @@ export default function TendancesMarchePage() {
         <article className="prose prose-lg max-w-none">
           
           <section className="mb-8">
-            <h2 className="text-2xl font-semibold text-[#146B67] mb-4">
+            <h2 className="text-2xl font-semibold text-primary mb-4">
                Libreville : Le Pôle Immobilier en Pleine Expansion
             </h2>
             
@@ -55,7 +55,7 @@ export default function TendancesMarchePage() {
               <strong>Glass, Akébé et Louis</strong> connaissent une forte demande locative.
             </p>
             
-            <div className="bg-gradient-to-r from-[#C1DEE8] to-[#FBD9B9] p-6 rounded-lg mb-6">
+            <div className="bg-gradient-to-r from-sky to-peach p-6 rounded-lg mb-6">
               <h3 className="text-xl font-semibold mb-3"> Chiffres Clés Libreville 2024</h3>
               <ul className="space-y-2">
                 <li><strong>Prix moyen location :</strong> 350 000 - 800 000 FCFA/mois</li>
@@ -73,7 +73,7 @@ export default function TendancesMarchePage() {
           </section>
 
           <section className="mb-8">
-            <h2 className="text-2xl font-semibold text-[#146B67] mb-4">
+            <h2 className="text-2xl font-semibold text-primary mb-4">
                Port-Gentil : Le Dynamisme Pétrolier au Service de l'Immobilier
             </h2>
             
@@ -84,7 +84,7 @@ export default function TendancesMarchePage() {
             
             <div className="grid md:grid-cols-2 gap-6 mb-6">
               <div className="bg-white p-4 rounded-lg shadow-md">
-                <h4 className="font-semibold text-[#146B67] mb-2"> Secteur Pétrolier</h4>
+                <h4 className="font-semibold text-primary mb-2"> Secteur Pétrolier</h4>
                 <ul className="text-sm space-y-1">
                   <li>• Logements haut de gamme</li>
                   <li>• Prix 20-30% plus élevés</li>
@@ -94,7 +94,7 @@ export default function TendancesMarchePage() {
               </div>
               
               <div className="bg-white p-4 rounded-lg shadow-md">
-                <h4 className="font-semibold text-[#146B67] mb-2"> Secteur Résidentiel</h4>
+                <h4 className="font-semibold text-primary mb-2"> Secteur Résidentiel</h4>
                 <ul className="text-sm space-y-1">
                   <li>• Quartiers populaires</li>
                   <li>• Prix accessibles</li>
@@ -112,7 +112,7 @@ export default function TendancesMarchePage() {
           </section>
 
           <section className="mb-8">
-            <h2 className="text-2xl font-semibold text-[#146B67] mb-4">
+            <h2 className="text-2xl font-semibold text-primary mb-4">
                Projet Libreville 2 : L'Initiative Gouvernementale Révolutionnaire
             </h2>
             
@@ -126,7 +126,7 @@ export default function TendancesMarchePage() {
               <h3 className="text-xl font-semibold mb-4"> Objectifs du Projet Libreville 2</h3>
               <div className="grid md:grid-cols-2 gap-4">
                 <div>
-                  <h4 className="font-semibold text-[#146B67] mb-2"> Chiffres Clés</h4>
+                  <h4 className="font-semibold text-primary mb-2"> Chiffres Clés</h4>
                   <ul className="space-y-1 text-sm">
                     <li>• 6000 logements sociaux</li>
                     <li>• Livraison d'ici 2026</li>
@@ -135,7 +135,7 @@ export default function TendancesMarchePage() {
                   </ul>
                 </div>
                 <div>
-                  <h4 className="font-semibold text-[#146B67] mb-2"> Types de Logements</h4>
+                  <h4 className="font-semibold text-primary mb-2"> Types de Logements</h4>
                   <ul className="space-y-1 text-sm">
                     <li>• Appartements 2-3 pièces</li>
                     <li>• Maisons individuelles</li>
@@ -153,7 +153,7 @@ export default function TendancesMarchePage() {
           </section>
 
           <section className="mb-8">
-            <h2 className="text-2xl font-semibold text-[#146B67] mb-4">
+            <h2 className="text-2xl font-semibold text-primary mb-4">
                Défis Actuels du Marché Immobilier Gabonais
             </h2>
             
@@ -185,13 +185,13 @@ export default function TendancesMarchePage() {
           </section>
 
           <section className="mb-8">
-            <h2 className="text-2xl font-semibold text-[#146B67] mb-4">
+            <h2 className="text-2xl font-semibold text-primary mb-4">
                Recommandations pour Investisseurs et Propriétaires
             </h2>
             
             <div className="grid md:grid-cols-2 gap-6">
               <div className="bg-white p-6 rounded-lg shadow-md">
-                <h3 className="text-xl font-semibold text-[#146B67] mb-4"> Pour les Investisseurs</h3>
+                <h3 className="text-xl font-semibold text-primary mb-4"> Pour les Investisseurs</h3>
                 <ul className="space-y-3">
                   <li> <strong>Diversifiez</strong> : Libreville + Port-Gentil</li>
                   <li> <strong>Privilégiez</strong> les quartiers en développement</li>
@@ -202,7 +202,7 @@ export default function TendancesMarchePage() {
               </div>
               
               <div className="bg-white p-6 rounded-lg shadow-md">
-                <h3 className="text-xl font-semibold text-[#146B67] mb-4"> Pour les Propriétaires</h3>
+                <h3 className="text-xl font-semibold text-primary mb-4"> Pour les Propriétaires</h3>
                 <ul className="space-y-3">
                   <li> <strong>Améliorez</strong> la qualité des logements</li>
                   <li> <strong>Adaptez</strong> les prix au marché local</li>
@@ -215,7 +215,7 @@ export default function TendancesMarchePage() {
           </section>
 
           <section className="mb-8">
-            <h2 className="text-2xl font-semibold text-[#146B67] mb-4">
+            <h2 className="text-2xl font-semibold text-primary mb-4">
                Perspectives 2024-2025
             </h2>
             
@@ -252,7 +252,7 @@ export default function TendancesMarchePage() {
           </section>
 
           <section className="mb-8">
-            <h2 className="text-2xl font-semibold text-[#146B67] mb-4">
+            <h2 className="text-2xl font-semibold text-primary mb-4">
                Conclusion : Opportunités à Saisir
             </h2>
             
@@ -269,7 +269,7 @@ export default function TendancesMarchePage() {
               optimisée pour le marché local.
             </p>
             
-            <div className="bg-[#146B67] text-white p-6 rounded-lg text-center">
+            <div className="bg-primary text-white p-6 rounded-lg text-center">
               <h3 className="text-xl font-semibold mb-3"> Prêt à Investir au Gabon ?</h3>
               <p className="mb-4">
                 Découvrez nos annonces immobilières vérifiées et trouvez l&apos;opportunité 
@@ -278,13 +278,13 @@ export default function TendancesMarchePage() {
               <div className="flex flex-col sm:flex-row gap-4 justify-center">
                 <Link 
                   href={routes.public.search_property} 
-                  className="bg-white text-[#146B67] px-6 py-3 rounded-lg hover:bg-gray-100 transition-colors font-semibold"
+                  className="bg-white text-primary px-6 py-3 rounded-lg hover:bg-gray-100 transition-colors font-semibold"
                 >
                   Voir les Annonces
                 </Link>
                 <Link 
                   href={routes.public.property} 
-                  className="border border-white text-white px-6 py-3 rounded-lg hover:bg-white hover:text-[#146B67] transition-colors font-semibold"
+                  className="border border-white text-white px-6 py-3 rounded-lg hover:bg-white hover:text-primary transition-colors font-semibold"
                 >
                   Publier une Annonce
                 </Link>
@@ -295,13 +295,13 @@ export default function TendancesMarchePage() {
 
         {/* Related Articles */}
         <section className="mt-12 pt-8 border-t border-gray-200">
-          <h3 className="text-2xl font-semibold text-[#146B67] mb-6">
+          <h3 className="text-2xl font-semibold text-primary mb-6">
              Articles Similaires
           </h3>
           <div className="grid md:grid-cols-2 gap-6">
             <Link href={routes.public.blog_commissions_demarcheurs} className="block">
               <div className="bg-white p-4 rounded-lg shadow-md hover:shadow-lg transition-shadow">
-                <h4 className="font-semibold text-[#146B67] mb-2">
+                <h4 className="font-semibold text-primary mb-2">
                   Commissions Démarcheurs Logements Gabon
                 </h4>
                 <p className="text-sm text-gray-600">
@@ -312,7 +312,7 @@ export default function TendancesMarchePage() {
             
             <Link href={routes.public.guide_immobilier_gabon} className="block">
               <div className="bg-white p-4 rounded-lg shadow-md hover:shadow-lg transition-shadow">
-                <h4 className="font-semibold text-[#146B67] mb-2">
+                <h4 className="font-semibold text-primary mb-2">
                   Guide Immobilier Gabon 2024
                 </h4>
                 <p className="text-sm text-gray-600">

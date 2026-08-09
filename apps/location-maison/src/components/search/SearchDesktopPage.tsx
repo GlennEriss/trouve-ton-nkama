@@ -170,7 +170,7 @@ SearchDesktopPage() {
                                 <button
                                     type="button"
                                     onClick={refresh}
-                                    className="mt-6 min-h-11 rounded-full bg-[#146B67] px-6 py-2.5 text-white hover:bg-[#0f5754]"
+                                    className="mt-6 min-h-11 rounded-full bg-primary px-6 py-2.5 text-white hover:bg-primary-800"
                                 >
                                     Réessayer
                                 </button>
@@ -194,7 +194,7 @@ SearchDesktopPage() {
                                 </p>
                                 <button
                                     onClick={clearFilters}
-                                    className="mt-6 min-h-11 rounded-full bg-[#146B67] px-6 py-2.5 text-white transition-colors hover:bg-[#0f5754]"
+                                    className="mt-6 min-h-11 rounded-full bg-primary px-6 py-2.5 text-white transition-colors hover:bg-primary-800"
                                 >
                                     Réinitialiser les filtres
                                 </button>
@@ -251,7 +251,7 @@ SearchDesktopPage() {
 
                                 {newItemsLoaded > 0 && (
                                     <div className="mb-5 text-center">
-                                        <span className="text-xs text-[#146B67] bg-[#E6F8F5] border border-[#B8ECE4] rounded-full px-3 py-1 animate-fade-in-up">
+                                        <span className="text-xs text-primary bg-primary-100 border border-primary-100 rounded-full px-3 py-1 animate-fade-in-up">
                                             +{newItemsLoaded} nouvelles annonces ajoutées
                                         </span>
                                     </div>

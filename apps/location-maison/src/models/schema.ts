@@ -115,10 +115,8 @@ export const PropertySchemaBase = z.object({
     province: z.string().min(1, "Le nom de la province est obligatoire"),
   }),
   cityPlaceId: z.string().min(1, "Sélectionnez une ville proposée"),
-  districtPlaceId: z.string().min(1, "Sélectionnez un quartier proposé"),
-  locationSource: z
-    .enum(["OFFICIAL_CATALOG", "GOOGLE_PLACES", "GPS", "LEGACY", "UNVERIFIED"])
-    .refine((source) => source !== "UNVERIFIED", "Validez la localisation proposée"),
+  districtPlaceId: z.string().optional(),
+  locationSource: z.enum(["OFFICIAL_CATALOG", "GOOGLE_PLACES", "GPS", "LEGACY", "UNVERIFIED"]),
   contact: z.string().min(1, "Le numéro de téléphone est obligatoire"),
   additionnalInformation: z.string().optional(),
   longitude: z
@@ -295,10 +293,8 @@ export const Step3Schema = z.object({
     province: z.string().min(1, "Le nom de la province est obligatoire"),
   }),
   cityPlaceId: z.string().min(1, "Sélectionnez une ville proposée"),
-  districtPlaceId: z.string().min(1, "Sélectionnez un quartier proposé"),
-  locationSource: z
-    .enum(["OFFICIAL_CATALOG", "GOOGLE_PLACES", "GPS", "LEGACY", "UNVERIFIED"])
-    .refine((source) => source !== "UNVERIFIED", "Validez la localisation proposée"),
+  districtPlaceId: z.string().optional(),
+  locationSource: z.enum(["OFFICIAL_CATALOG", "GOOGLE_PLACES", "GPS", "LEGACY", "UNVERIFIED"]),
   additionnalInformation: z.string().optional(),
   longitude: z.coerce
     .number()

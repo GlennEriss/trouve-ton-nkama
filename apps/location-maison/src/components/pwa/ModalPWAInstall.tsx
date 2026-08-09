@@ -75,7 +75,7 @@ export default function ModalPWAInstall() {
           {!isIOS && (
             <button
               onClick={handleInstallClick}
-              className="flex-1 bg-gradient-to-r from-[#1FA89B] to-[#146B67] hover:from-[#1c9690] hover:to-[#125c59] text-white font-bold py-3 px-4 rounded-full shadow-lg hover:shadow-xl transition-all duration-200 hover:scale-[1.02] flex items-center justify-center space-x-2"
+              className="flex-1 bg-gradient-to-r from-secondary to-primary hover:from-secondary hover:to-primary-800 text-white font-bold py-3 px-4 rounded-full shadow-lg hover:shadow-xl transition-all duration-200 hover:scale-[1.02] flex items-center justify-center space-x-2"
             >
               <Download className="w-4 h-4" />
               <span>Installer maintenant</span>

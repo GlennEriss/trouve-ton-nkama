@@ -43,11 +43,11 @@ export default function GuideImmobilierPage() {
   return (
     <div className="min-h-screen bg-gray-50">
       <div className="container mx-auto px-4 py-8">
-        <div className="max-w-[1280px] 2xl:max-w-[1440px] mx-auto">
+        <div className="container-page">
           
           {/* Header */}
           <div className="text-center mb-12">
-            <h1 className="text-4xl md:text-5xl font-bold text-[#146B67] mb-6">
+            <h1 className="text-4xl md:text-5xl font-bold text-primary mb-6">
               Guide Immobilier Gabon 2024
             </h1>
             <p className="text-xl text-gray-600 max-w-4xl mx-auto leading-relaxed">
@@ -57,7 +57,7 @@ export default function GuideImmobilierPage() {
 
           {/* Section 1: Comprendre le marché locatif */}
           <div className="bg-white rounded-xl shadow-lg p-6 mb-8">
-            <h2 className="text-2xl font-bold text-[#146B67] mb-6 flex items-center">
+            <h2 className="text-2xl font-bold text-primary mb-6 flex items-center">
               <BarChart3 className="mr-2" />
               1. Comprendre le marché locatif (2024‑2025)
             </h2>
@@ -71,7 +71,7 @@ export default function GuideImmobilierPage() {
                 <span><strong>Offres mal documentées :</strong> beaucoup d'annonces sans prix, commissions élevées.</span>
               </div>
               <div className="flex items-start">
-                <TrendingUp className="text-[#146B67] mr-3 mt-1 flex-shrink-0" />
+                <TrendingUp className="text-primary mr-3 mt-1 flex-shrink-0" />
                 <span><strong>Loyers en hausse modérée</strong> (+4 à +8 %/an) dans les zones centrales, stabilité en périphérie.</span>
               </div>
             </div>
@@ -79,7 +79,7 @@ export default function GuideImmobilierPage() {
 
           {/* Section 2: Fourchettes de loyers */}
           <div className="bg-white rounded-xl shadow-lg p-6 mb-8">
-            <h2 className="text-2xl font-bold text-[#146B67] mb-6 flex items-center">
+            <h2 className="text-2xl font-bold text-primary mb-6 flex items-center">
               <DollarSign className="mr-2" />
               2. Fourchettes de loyers par ville et type de logement (FCFA / mois)
             </h2>
@@ -87,13 +87,13 @@ export default function GuideImmobilierPage() {
             {/* Libreville */}
             <div className="mb-8">
               <h3 className="text-xl font-bold text-gray-900 mb-4 flex items-center">
-                <MapPin className="mr-2 text-[#146B67]" />
+                <MapPin className="mr-2 text-primary" />
                 2.1 Libreville & périphérie (Owendo, Akanda/Angondjé, Bikélé…)
               </h3>
               <div className="overflow-x-auto">
                 <table className="w-full border-collapse border border-gray-300">
                   <thead>
-                    <tr className="bg-[#146B67] text-white">
+                    <tr className="bg-primary text-white">
                       <th className="border border-gray-300 p-3 text-left">Type de logement</th>
                       <th className="border border-gray-300 p-3 text-left">Quartiers populaires (PK, Nzeng-Ayong, Akébé…)</th>
                       <th className="border border-gray-300 p-3 text-left">Quartiers centraux/standing (Glass, Louis, Sablière…)</th>
@@ -128,14 +128,14 @@ export default function GuideImmobilierPage() {
             {/* Port-Gentil */}
             <div className="mb-8">
               <h3 className="text-xl font-bold text-gray-900 mb-4 flex items-center">
-                <MapPin className="mr-2 text-[#146B67]" />
+                <MapPin className="mr-2 text-primary" />
                 2.2 Port‑Gentil
               </h3>
               <p className="text-sm text-gray-600 mb-4 italic">(Remplacement de Montagne Sainte par Château, comme demandé)</p>
               <div className="overflow-x-auto">
                 <table className="w-full border-collapse border border-gray-300">
                   <thead>
-                    <tr className="bg-[#146B67] text-white">
+                    <tr className="bg-primary text-white">
                       <th className="border border-gray-300 p-3 text-left">Quartier / Zone</th>
                       <th className="border border-gray-300 p-3 text-left">Studio / 1p</th>
                       <th className="border border-gray-300 p-3 text-left">2 pièces</th>
@@ -173,13 +173,13 @@ export default function GuideImmobilierPage() {
             {/* Autres villes */}
             <div>
               <h3 className="text-xl font-bold text-gray-900 mb-4 flex items-center">
-                <MapPin className="mr-2 text-[#146B67]" />
+                <MapPin className="mr-2 text-primary" />
                 2.3 Autres grandes villes (ordres de grandeur)
               </h3>
               <div className="overflow-x-auto">
                 <table className="w-full border-collapse border border-gray-300">
                   <thead>
-                    <tr className="bg-[#146B67] text-white">
+                    <tr className="bg-primary text-white">
                       <th className="border border-gray-300 p-3 text-left">Ville</th>
                       <th className="border border-gray-300 p-3 text-left">Studio / 1p</th>
                       <th className="border border-gray-300 p-3 text-left">2 pièces</th>
@@ -225,25 +225,25 @@ export default function GuideImmobilierPage() {
 
           {/* Section 3: Démarches et sécurité */}
           <div className="bg-white rounded-xl shadow-lg p-6 mb-8">
-            <h2 className="text-2xl font-bold text-[#146B67] mb-6 flex items-center">
+            <h2 className="text-2xl font-bold text-primary mb-6 flex items-center">
               <Shield className="mr-2" />
               3. Démarches et sécurité du bail
             </h2>
             <div className="space-y-4">
               <div className="flex items-start">
-                <FileText className="text-[#146B67] mr-3 mt-1 flex-shrink-0" />
+                <FileText className="text-primary mr-3 mt-1 flex-shrink-0" />
                 <span><strong>Contrat écrit obligatoire :</strong> durée, dépôt de garantie, révision de loyer, charges.</span>
               </div>
               <div className="flex items-start">
-                <Eye className="text-[#146B67] mr-3 mt-1 flex-shrink-0" />
+                <Eye className="text-primary mr-3 mt-1 flex-shrink-0" />
                 <span><strong>État des lieux + photos</strong> (entrée/sortie).</span>
               </div>
               <div className="flex items-start">
-                <CreditCard className="text-[#146B67] mr-3 mt-1 flex-shrink-0" />
+                <CreditCard className="text-primary mr-3 mt-1 flex-shrink-0" />
                 <span><strong>Reçus de paiement</strong> (virement, mobile money) pour traçabilité.</span>
               </div>
               <div className="flex items-start">
-                <AlertCircle className="text-[#146B67] mr-3 mt-1 flex-shrink-0" />
+                <AlertCircle className="text-primary mr-3 mt-1 flex-shrink-0" />
                 <span><strong>Dépôt de garantie :</strong> 1 à 2 mois max (au-delà = méfiance).</span>
               </div>
             </div>
@@ -251,7 +251,7 @@ export default function GuideImmobilierPage() {
 
           {/* Section 4: Négocier son loyer */}
           <div className="bg-white rounded-xl shadow-lg p-6 mb-8">
-            <h2 className="text-2xl font-bold text-[#146B67] mb-6 flex items-center">
+            <h2 className="text-2xl font-bold text-primary mb-6 flex items-center">
               <Handshake className="mr-2" />
               4. Négocier son loyer : 4 astuces simples
             </h2>
@@ -281,7 +281,7 @@ export default function GuideImmobilierPage() {
 
           {/* Section 5: Éviter les pièges */}
           <div className="bg-white rounded-xl shadow-lg p-6 mb-8">
-            <h2 className="text-2xl font-bold text-[#146B67] mb-6 flex items-center">
+            <h2 className="text-2xl font-bold text-primary mb-6 flex items-center">
               <AlertTriangle className="mr-2" />
               5. Éviter les pièges
             </h2>
@@ -307,7 +307,7 @@ export default function GuideImmobilierPage() {
 
           {/* Section 6: Conseils pour bailleurs */}
           <div className="bg-white rounded-xl shadow-lg p-6 mb-8">
-            <h2 className="text-2xl font-bold text-[#146B67] mb-6 flex items-center">
+            <h2 className="text-2xl font-bold text-primary mb-6 flex items-center">
               <Lightbulb className="mr-2" />
               6. Conseils express pour bailleurs
             </h2>
@@ -333,23 +333,23 @@ export default function GuideImmobilierPage() {
 
           {/* CTA Section */}
           <div className="bg-white rounded-2xl border border-gray-100 p-6 mb-8 shadow-sm">
-            <h2 className="text-2xl font-bold text-[#146B67] mb-4">Aller plus vite dans vos recherches</h2>
+            <h2 className="text-2xl font-bold text-primary mb-4">Aller plus vite dans vos recherches</h2>
             <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-              <Link href="/immobilier/location/maison" className="rounded-xl border border-gray-200 px-4 py-3 text-sm font-medium text-gray-700 hover:border-[#146B67] hover:text-[#146B67] transition-colors">
+              <Link href="/immobilier/location/maison" className="rounded-xl border border-gray-200 px-4 py-3 text-sm font-medium text-gray-700 hover:border-primary hover:text-primary transition-colors">
                 Maisons à louer au Gabon
               </Link>
-              <Link href="/immobilier/vente/maison" className="rounded-xl border border-gray-200 px-4 py-3 text-sm font-medium text-gray-700 hover:border-[#146B67] hover:text-[#146B67] transition-colors">
+              <Link href="/immobilier/vente/maison" className="rounded-xl border border-gray-200 px-4 py-3 text-sm font-medium text-gray-700 hover:border-primary hover:text-primary transition-colors">
                 Maisons à vendre au Gabon
               </Link>
-              <Link href="/immobilier/location/appartement/libreville" className="rounded-xl border border-gray-200 px-4 py-3 text-sm font-medium text-gray-700 hover:border-[#146B67] hover:text-[#146B67] transition-colors">
+              <Link href="/immobilier/location/appartement/libreville" className="rounded-xl border border-gray-200 px-4 py-3 text-sm font-medium text-gray-700 hover:border-primary hover:text-primary transition-colors">
                 Appartements à louer à Libreville
               </Link>
             </div>
           </div>
 
           {/* CTA Section */}
-          <div className="bg-gradient-to-r from-[#C1DEE8] to-[#FBD9B9] rounded-2xl p-8 text-center">
-            <h3 className="text-2xl font-bold text-[#146B67] mb-4">
+          <div className="bg-gradient-to-r from-sky to-peach rounded-2xl p-8 text-center">
+            <h3 className="text-2xl font-bold text-primary mb-4">
               Prêt à Trouver Votre Logement Idéal ?
             </h3>
             <p className="text-gray-700 mb-6 max-w-2xl mx-auto">
@@ -359,13 +359,13 @@ export default function GuideImmobilierPage() {
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Link 
                 href={routes.public.search_property}
-                className="bg-[#146B67] text-white px-6 py-3 rounded-lg hover:bg-[#0f5a57] transition-colors font-semibold"
+                className="bg-primary text-white px-6 py-3 rounded-lg hover:bg-primary-800 transition-colors font-semibold"
               >
                 Voir les Annonces
               </Link>
               <Link 
                 href={routes.public.blog}
-                className="border border-[#146B67] text-[#146B67] px-6 py-3 rounded-lg hover:bg-[#146B67] hover:text-white transition-colors font-semibold"
+                className="border border-primary text-primary px-6 py-3 rounded-lg hover:bg-primary hover:text-white transition-colors font-semibold"
               >
                 Lire nos Conseils
               </Link>

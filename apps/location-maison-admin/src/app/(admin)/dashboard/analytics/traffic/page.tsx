@@ -342,7 +342,7 @@ export default function AnalyticsTrafficPage() {
         <Card>
           <CardHeader>
             <p className="text-sm text-slate-600">Pages vues</p>
-            <p className="text-2xl font-semibold text-brand-700">{data?.summary.pageViews ?? 0}</p>
+            <p className="text-2xl font-semibold text-primary">{data?.summary.pageViews ?? 0}</p>
           </CardHeader>
         </Card>
       </section>

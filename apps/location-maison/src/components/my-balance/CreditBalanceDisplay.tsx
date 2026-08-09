@@ -61,9 +61,9 @@ export default function CreditBalanceDisplay({
   // État de chargement
   if (isLoading) {
     return (
-      <div className="bg-gradient-to-r from-[#146B67]/10 via-[#1FA89B]/10 to-[#146B67]/10 dark:from-[#146B67]/20 dark:via-[#1FA89B]/20 dark:to-[#146B67]/20 rounded-2xl p-8">
+      <div className="bg-gradient-to-r from-primary/10 via-secondary/10 to-primary/10 dark:from-primary/20 dark:via-secondary/20 dark:to-primary/20 rounded-2xl p-8">
         <div className="flex items-center justify-center gap-3">
-          <Loader2 className="w-6 h-6 animate-spin text-[#146B67]" />
+          <Loader2 className="w-6 h-6 animate-spin text-primary" />
           <span className="text-gray-600 dark:text-gray-400">
             Chargement de votre solde...
           </span>
@@ -88,10 +88,10 @@ export default function CreditBalanceDisplay({
   }
 
   return (
-    <div className="bg-gradient-to-r from-[#146B67]/10 via-[#1FA89B]/10 to-[#146B67]/10 dark:from-[#146B67]/20 dark:via-[#1FA89B]/20 dark:to-[#146B67]/20 rounded-2xl p-8 relative overflow-hidden">
+    <div className="bg-gradient-to-r from-primary/10 via-secondary/10 to-primary/10 dark:from-primary/20 dark:via-secondary/20 dark:to-primary/20 rounded-2xl p-8 relative overflow-hidden">
       {/* Background decoration */}
       <div className="absolute top-0 right-0 opacity-5 dark:opacity-10">
-        <Wallet className="w-32 h-32 text-[#146B67]" />
+        <Wallet className="w-32 h-32 text-primary" />
       </div>
 
       <div className="relative z-10 space-y-6">
@@ -113,13 +113,13 @@ export default function CreditBalanceDisplay({
         {/* Balance Display */}
         <div className="text-center space-y-4">
           <div className="flex items-center justify-center gap-3">
-            <Wallet className="w-6 h-6 md:w-8 md:h-8 text-[#146B67] dark:text-[#1FA89B]" />
+            <Wallet className="w-6 h-6 md:w-8 md:h-8 text-primary dark:text-secondary" />
             <span className="text-base md:text-lg font-medium text-gray-600 dark:text-gray-300">
               Solde actuel
             </span>
           </div>
 
-          <div className="text-3xl md:text-5xl font-bold text-[#146B67] dark:text-[#1FA89B]">
+          <div className="text-3xl md:text-5xl font-bold text-primary dark:text-secondary">
             {balance.toLocaleString()}
             <span className="text-lg md:text-xl ml-2 font-medium text-gray-500 dark:text-gray-400">
               crédit{balance > 1 ? 's' : ''}
@@ -149,7 +149,7 @@ export default function CreditBalanceDisplay({
           <button
             type="button"
             onClick={handleRecharge}
-            className="inline-flex min-h-11 items-center gap-2 rounded-lg bg-[#146B67] px-6 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-[#125A56] focus:outline-none focus:ring-2 focus:ring-[#146B67] focus:ring-offset-2 md:px-8 md:py-3 md:text-base"
+            className="inline-flex min-h-11 items-center gap-2 rounded-lg bg-primary px-6 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-primary-800 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 md:px-8 md:py-3 md:text-base"
           >
             <Zap className="w-4 h-4 md:w-5 md:h-5" />
             Recharger mon solde
@@ -162,7 +162,7 @@ export default function CreditBalanceDisplay({
         {/* Quick stats */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4 pt-4 border-t border-gray-200/50 dark:border-gray-700/50">
           <div className="text-center">
-            <div className="text-base md:text-lg font-bold text-[#146B67] dark:text-[#1FA89B]">
+            <div className="text-base md:text-lg font-bold text-primary dark:text-secondary">
               {Math.floor(balance / 15)}
             </div>
             <div className="text-xs text-gray-500 dark:text-gray-400 leading-tight">
@@ -170,7 +170,7 @@ export default function CreditBalanceDisplay({
             </div>
           </div>
           <div className="text-center">
-            <div className="text-base md:text-lg font-bold text-[#146B67] dark:text-[#1FA89B]">
+            <div className="text-base md:text-lg font-bold text-primary dark:text-secondary">
               {Math.floor(balance / 10)}
             </div>
             <div className="text-xs text-gray-500 dark:text-gray-400 leading-tight">
@@ -178,7 +178,7 @@ export default function CreditBalanceDisplay({
             </div>
           </div>
           <div className="text-center">
-            <div className="text-base md:text-lg font-bold text-[#146B67] dark:text-[#1FA89B]">
+            <div className="text-base md:text-lg font-bold text-primary dark:text-secondary">
               {Math.floor(balance / 5)}
             </div>
             <div className="text-xs text-gray-500 dark:text-gray-400 leading-tight">
@@ -186,7 +186,7 @@ export default function CreditBalanceDisplay({
             </div>
           </div>
           <div className="text-center">
-            <div className="text-base md:text-lg font-bold text-[#146B67] dark:text-[#1FA89B]">
+            <div className="text-base md:text-lg font-bold text-primary dark:text-secondary">
               {balance}
             </div>
             <div className="text-xs text-gray-500 dark:text-gray-400 leading-tight">

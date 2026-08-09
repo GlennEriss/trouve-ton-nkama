@@ -292,7 +292,7 @@ export default function CreateOrphanReelClient() {
               type="button"
               onClick={handlePublish}
               disabled={busy}
-              className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-gradient-to-r from-[#146B67] to-[#1FA89B] text-white shadow-lg disabled:opacity-50"
+              className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-gradient-to-r from-primary to-secondary text-white shadow-lg disabled:opacity-50"
               aria-label="Publier le réel"
             >
               {busy ? <Loader2 className="h-5 w-5 animate-spin" /> : <Send className="h-5 w-5" />}
@@ -327,7 +327,7 @@ export default function CreateOrphanReelClient() {
         </Button>
 
         <div className="mt-3">
-          <p className="inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-wide text-[#146B67] dark:text-[#9FE2DB]">
+          <p className="inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-wide text-primary dark:text-primary-200">
             <Video className="h-3.5 w-3.5" />
             Espace annonceur
           </p>
@@ -341,12 +341,12 @@ export default function CreateOrphanReelClient() {
       {showDropzone && (
         <div
           {...getRootProps()}
-          className={`flex min-h-[260px] cursor-pointer flex-col items-center justify-center gap-3 rounded-2xl border-2 border-dashed bg-white p-6 text-center shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#146B67] focus-visible:ring-offset-2 dark:bg-gray-900 ${
-            isDragActive ? 'border-[#146B67] bg-emerald-50 dark:bg-emerald-900/20' : 'border-slate-300 hover:border-[#146B67]/60 dark:border-slate-700'
+          className={`flex min-h-[260px] cursor-pointer flex-col items-center justify-center gap-3 rounded-2xl border-2 border-dashed bg-white p-6 text-center shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 dark:bg-gray-900 ${
+            isDragActive ? 'border-primary bg-emerald-50 dark:bg-emerald-900/20' : 'border-slate-300 hover:border-primary/60 dark:border-slate-700'
           } ${busy ? 'pointer-events-none opacity-60' : ''}`}
         >
           <input {...getInputProps({ 'aria-label': 'Choisir une vidéo' })} disabled={busy} />
-          <div className="flex h-14 w-14 items-center justify-center rounded-full bg-[#146B67]/10 text-[#146B67] dark:bg-[#1FA89B]/15 dark:text-[#9FE2DB]">
+          <div className="flex h-14 w-14 items-center justify-center rounded-full bg-primary/10 text-primary dark:bg-secondary/15 dark:text-primary-200">
             {isProcessing ? (
               <Loader2 className="h-7 w-7 animate-spin" />
             ) : (

@@ -515,7 +515,7 @@ export default function AnalyticsAdsPage() {
         <Card>
           <CardHeader>
             <p className="text-sm text-slate-600">Revenu 30 jours</p>
-            <p className="text-2xl font-semibold text-brand-700">
+            <p className="text-2xl font-semibold text-primary">
               {formatMoney(overviewQuery.data?.summary.revenue30d)}
             </p>
           </CardHeader>

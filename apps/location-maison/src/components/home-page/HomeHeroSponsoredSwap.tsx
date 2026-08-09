@@ -28,12 +28,12 @@ function PlatformHero({ reduceMotion }: Readonly<{ reduceMotion?: boolean | null
     <div className="absolute inset-0 p-8">
       <div className="flex h-full xl:items-center">
         <div className="flex max-w-3xl flex-col gap-3 lg:gap-5 xl:ml-10">
-          <span className="text-base font-medium text-[#146B67]">
+          <span className="text-base font-medium text-primary">
             La référence immobilière au Gabon
           </span>
           <h1 className="text-3xl font-bold leading-tight xl:text-4xl">
             Trouvez <br className="lg:hidden" /> le logement idéal ou <br />
-            <span className="text-[#146B67]">développez<br /> votre activité immobilière</span>
+            <span className="text-primary">développez<br /> votre activité immobilière</span>
           </h1>
           <p className="text-base text-gray-700">
             La première plateforme digitale <br />
@@ -135,7 +135,7 @@ export default function HomeHeroSponsoredSwap({ reduceMotion }: HomeHeroSponsore
   }, [activeSlide])
 
   return (
-    <section className="relative mt-5 h-[330px] overflow-hidden rounded-xl bg-gradient-to-r from-[#C1DEE8] to-[#FBD9B9] xl:h-[430px]">
+    <section className="relative mt-5 h-[330px] overflow-hidden rounded-xl bg-gradient-to-r from-sky to-peach xl:h-[430px]">
       <AnimatePresence mode="wait">
         <motion.div
           key={activeSlideKey}

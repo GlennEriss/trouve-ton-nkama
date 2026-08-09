@@ -40,8 +40,8 @@ export default function FlatBotAvatar({
         }`}
         style={{ boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.8), 0 9px 16px rgba(15,23,42,0.2)' }}
       >
-        <div className="absolute left-1/2 top-[8px] h-[3px] w-6 -translate-x-1/2 rounded-full bg-[#106865]/35" />
-        <div className="absolute inset-x-[10px] bottom-[7px] h-[9px] rounded-full bg-gradient-to-b from-[#d9fff5]/70 to-[#9ff0de]/30" />
+        <div className="absolute left-1/2 top-[8px] h-[3px] w-6 -translate-x-1/2 rounded-full bg-primary/35" />
+        <div className="absolute inset-x-[10px] bottom-[7px] h-[9px] rounded-full bg-gradient-to-b from-primary-100/70 to-primary-200/30" />
       </div>
 
       <div className="absolute bottom-[19px] left-[2px] h-[16px] w-[11px] rotate-[-14deg] rounded-full bg-gradient-to-b from-slate-100 to-slate-300 shadow-[0_3px_7px_rgba(15,23,42,0.18)]" />
@@ -56,7 +56,7 @@ export default function FlatBotAvatar({
         <div className="absolute left-[6px] top-[6px] h-[14px] w-[18px] rounded-full bg-white/75 blur-[0.4px]" />
         <div className="absolute right-[7px] top-[8px] h-[8px] w-[8px] rounded-full bg-white/45 blur-[0.4px]" />
 
-        <div className="absolute left-1/2 top-[9px] h-[22px] w-[36px] -translate-x-1/2 rounded-[13px] border border-[#8adacb]/55 bg-gradient-to-r from-[#0f5856] via-[#156B68] to-[#197a74] shadow-[inset_0_1px_4px_rgba(255,255,255,0.25),inset_0_-3px_8px_rgba(0,0,0,0.2)]">
+        <div className="absolute left-1/2 top-[9px] h-[22px] w-[36px] -translate-x-1/2 rounded-[13px] border border-primary-200/55 bg-gradient-to-r from-primary-800 via-primary to-primary shadow-[inset_0_1px_4px_rgba(255,255,255,0.25),inset_0_-3px_8px_rgba(0,0,0,0.2)]">
           <div className="absolute inset-0 rounded-[13px] bg-[linear-gradient(120deg,rgba(255,255,255,0.22),transparent_45%,rgba(255,255,255,0.08))]" />
 
           <div className="absolute left-1/2 top-1/2 flex -translate-x-1/2 -translate-y-1/2 gap-2">
@@ -92,19 +92,19 @@ export default function FlatBotAvatar({
               style={{ borderBottom: '2.5px solid #1a7e78', borderRadius: '0 0 999px 999px' }}
             />
           )}
-          {expression === 'thinking' && <div className="h-[5px] w-[5px] animate-pulse rounded-full bg-[#1a7e78]" />}
-          {expression === 'talking' && <div className="h-[4px] w-[10px] animate-pulse rounded-full bg-[#1a7e78]" />}
+          {expression === 'thinking' && <div className="h-[5px] w-[5px] animate-pulse rounded-full bg-primary" />}
+          {expression === 'talking' && <div className="h-[4px] w-[10px] animate-pulse rounded-full bg-primary" />}
         </div>
 
         {isLoading && (
           <div className="absolute right-1.5 top-1.5">
-            <div className="h-3.5 w-3.5 animate-spin rounded-full border-[2px] border-[#8de7d0] border-t-transparent" />
+            <div className="h-3.5 w-3.5 animate-spin rounded-full border-[2px] border-primary-200 border-t-transparent" />
           </div>
         )}
       </div>
 
       {creditsAvailable > 0 && !isLoading && (
-        <div className="absolute bottom-[10px] right-[4px] h-3 w-3 rounded-full border-2 border-white bg-[#1de9b6] shadow-[0_0_8px_rgba(29,233,182,0.75)]" />
+        <div className="absolute bottom-[10px] right-[4px] h-3 w-3 rounded-full border-2 border-white bg-success shadow-[0_0_8px_rgba(29,233,182,0.75)]" />
       )}
     </div>
   )
@@ -115,7 +115,7 @@ export default function FlatBotAvatar({
         type="button"
         onClick={onClick}
         disabled={disabled}
-        className="focus:outline-none focus-visible:ring-2 focus-visible:ring-[#146B67] focus-visible:ring-offset-2 rounded-2xl transition-all duration-200 disabled:opacity-50"
+        className="focus:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 rounded-2xl transition-all duration-200 disabled:opacity-50"
         aria-label="Ouvrir l'assistant de création d'annonce"
       >
         <Bot />

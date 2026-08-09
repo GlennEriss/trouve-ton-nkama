@@ -71,8 +71,8 @@ export default function PremiumServicesInfo() {
       {/* Header */}
       <div className="text-center space-y-4">
         <div className="flex items-center justify-center gap-3">
-          <Info className="w-7 h-7 text-[#146B67] dark:text-[#1FA89B]" />
-          <h2 className="text-3xl font-bold text-[#146B67] dark:text-[#1FA89B]">
+          <Info className="w-7 h-7 text-primary dark:text-secondary" />
+          <h2 className="text-3xl font-bold text-primary dark:text-secondary">
             Services Premium
           </h2>
         </div>
@@ -91,15 +91,15 @@ export default function PremiumServicesInfo() {
             <div className="space-y-4">
               {/* Header */}
               <div className="flex items-start gap-4">
-                <div className="flex-shrink-0 w-12 h-12 bg-[#146B67]/10 dark:bg-[#1FA89B]/10 rounded-xl flex items-center justify-center">
-                  <service.icon className="w-6 h-6 text-[#146B67] dark:text-[#1FA89B]" />
+                <div className="flex-shrink-0 w-12 h-12 bg-primary/10 dark:bg-secondary/10 rounded-xl flex items-center justify-center">
+                  <service.icon className="w-6 h-6 text-primary dark:text-secondary" />
                 </div>
                 <div className="flex-1 min-w-0">
                   <h3 className="font-bold text-lg text-gray-900 dark:text-white">
                     {service.name}
                   </h3>
                   {service.duration && (
-                    <span className="mt-1 inline-block rounded-full bg-[#146B67]/10 px-2 py-1 text-xs font-medium text-[#146B67] dark:bg-[#146B67]/40 dark:text-teal-100">
+                    <span className="mt-1 inline-block rounded-full bg-primary/10 px-2 py-1 text-xs font-medium text-primary dark:bg-primary/40 dark:text-teal-100">
                       {service.duration}
                     </span>
                   )}
@@ -112,9 +112,9 @@ export default function PremiumServicesInfo() {
               </p>
 
               {/* Cost */}
-              <div className="flex items-center justify-between p-3 bg-gradient-to-r from-[#146B67]/5 to-[#1FA89B]/5 dark:from-[#146B67]/10 dark:to-[#1FA89B]/10 rounded-xl">
+              <div className="flex items-center justify-between p-3 bg-gradient-to-r from-primary/5 to-secondary/5 dark:from-primary/10 dark:to-secondary/10 rounded-xl">
                 <div>
-                  <div className="text-2xl font-bold text-[#146B67] dark:text-[#1FA89B]">
+                  <div className="text-2xl font-bold text-primary dark:text-secondary">
                     {service.credits} crédits
                   </div>
                   <div className="text-xs text-gray-500 dark:text-gray-400">
@@ -131,7 +131,7 @@ export default function PremiumServicesInfo() {
                 <ul className="space-y-1">
                   {service.benefits.map((benefit) => (
                     <li key={benefit} className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
-                      <div className="w-1.5 h-1.5 bg-[#146B67] dark:bg-[#1FA89B] rounded-full flex-shrink-0" />
+                      <div className="w-1.5 h-1.5 bg-primary dark:bg-secondary rounded-full flex-shrink-0" />
                       {benefit}
                     </li>
                   ))}

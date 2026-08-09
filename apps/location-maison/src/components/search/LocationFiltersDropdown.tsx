@@ -42,7 +42,7 @@ export default function LocationFiltersDropdown({
               <Button
                 type="button"
                 onClick={() => form.handleSubmit(onSubmit)()}
-                className="bg-[#146B67] hover:bg-[#1FA89B] text-white px-4 py-2 text-sm"
+                className="bg-primary hover:bg-secondary text-white px-4 py-2 text-sm"
               >
                 Appliquer
               </Button>
@@ -50,7 +50,7 @@ export default function LocationFiltersDropdown({
                 type="button"
                 variant="outline"
                 onClick={clearLocationFilters}
-                className="border-[#146B67] text-[#146B67] hover:bg-[#146B67] hover:text-white px-4 py-2 text-sm"
+                className="border-primary text-primary hover:bg-primary hover:text-white px-4 py-2 text-sm"
               >
                 Effacer
               </Button>

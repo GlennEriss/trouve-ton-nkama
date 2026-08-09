@@ -298,7 +298,7 @@ export default function SearchPage() {
               setTypeProperty([]);
               setTags([]);
             }}
-            className="mt-4 px-4 py-2 bg-gradient-to-r from-[#146B67] via-[#1FA89B] to-[#146B67] text-white rounded hover:brightness-110 transition"
+            className="mt-4 px-4 py-2 bg-gradient-to-r from-primary via-secondary to-primary text-white rounded hover:brightness-110 transition"
           >
             Réinitialiser les filtres
           </button>
@@ -320,7 +320,7 @@ export default function SearchPage() {
             <div className="text-center mt-6">
               <button
                 onClick={showMore}
-                className="bg-gradient-to-r from-[#146B67] via-[#1FA89B] to-[#146B67] text-white rounded-lg px-3 py-2 font-semibold hover:brightness-110 hover:shadow-md transition"
+                className="bg-gradient-to-r from-primary via-secondary to-primary text-white rounded-lg px-3 py-2 font-semibold hover:brightness-110 hover:shadow-md transition"
               >
                 Voir plus
               </button>

@@ -16,7 +16,7 @@ export default function FeaturedSection() {
    }
 
   return (
-    <section className='relative rounded-3xl space-y-3 bg-gradient-to-r from-[#C1DEE8] to-[#FBD9B9] dark:from-[#146B67]/10 dark:to-[#1FA89B]/10 p-5 py-10 overflow-hidden'>
+    <section className='relative rounded-3xl space-y-3 bg-gradient-to-r from-sky to-peach dark:from-primary/10 dark:to-secondary/10 p-5 py-10 overflow-hidden'>
       {/* Image d'arrière-plan */}
       <div className="absolute inset-0 z-0">
         <Image
@@ -34,7 +34,7 @@ export default function FeaturedSection() {
           <div className="w-8 h-8 bg-gradient-to-r from-yellow-500 to-amber-500 rounded-xl flex items-center justify-center">
             <Star className="w-5 h-5 text-white" />
           </div>
-          <h1 className='text-xl font-bold text-center text-[#146B67] flex items-center gap-2'>
+          <h1 className='text-xl font-bold text-center text-primary flex items-center gap-2'>
             <Star className="w-5 h-5 text-yellow-500" />
             À la une
           </h1>

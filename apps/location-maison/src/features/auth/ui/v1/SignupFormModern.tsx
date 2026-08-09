@@ -267,7 +267,7 @@ export const SignupFormModern: React.FC = () => {
       {/* Left Panel - Branding & Features (Desktop only) */}
       <div className="hidden lg:flex lg:w-1/2 xl:w-[45%] relative overflow-hidden">
         {/* Background gradient */}
-        <div className="absolute inset-0 bg-gradient-to-br from-[#146B67] via-[#1a8a83] to-[#1FA89B]" />
+        <div className="absolute inset-0 bg-gradient-to-br from-primary via-primary-600 to-secondary" />
 
         {/* Decorative background image — blends with gradient, does not reduce readability */}
         <div
@@ -349,7 +349,7 @@ export const SignupFormModern: React.FC = () => {
           {/* Mobile Logo */}
           <div className="lg:hidden flex items-center justify-center gap-3 mb-8">
             <Logo width="48px" height="48px" />
-            <span className="text-xl font-bold text-[#146B67]">Trouve Ton Nkama</span>
+            <span className="text-xl font-bold text-primary">Trouve Ton Nkama</span>
           </div>
 
           {/* Progress Steps */}
@@ -364,9 +364,9 @@ export const SignupFormModern: React.FC = () => {
                     onClick={() => step.id < currentStep && setCurrentStep(step.id)}
                     className={`relative flex items-center justify-center w-12 h-12 rounded-full transition-all duration-300 ${
                       step.id === currentStep
-                        ? 'bg-gradient-to-br from-[#146B67] to-[#1FA89B] text-white shadow-lg shadow-teal-500/30'
+                        ? 'bg-gradient-to-br from-primary to-secondary text-white shadow-lg shadow-teal-500/30'
                         : step.id < currentStep
-                        ? 'bg-[#1FA89B] text-white cursor-pointer'
+                        ? 'bg-secondary text-white cursor-pointer'
                         : 'bg-gray-100 dark:bg-gray-800 text-gray-400'
                     }`}
                     whileHover={step.id <= currentStep ? { scale: 1.05 } : {}}
@@ -380,7 +380,7 @@ export const SignupFormModern: React.FC = () => {
                     {step.id === currentStep && (
                       <motion.div
                         layoutId="activeStep"
-                        className="absolute inset-0 rounded-full border-2 border-[#1FA89B]"
+                        className="absolute inset-0 rounded-full border-2 border-secondary"
                         initial={false}
                         transition={{ type: 'spring', stiffness: 500, damping: 30 }}
                       />
@@ -389,7 +389,7 @@ export const SignupFormModern: React.FC = () => {
                   {index < steps.length - 1 && (
                     <div className="flex-1 h-1 mx-2 rounded-full bg-gray-100 dark:bg-gray-800 overflow-hidden">
                       <motion.div
-                        className="h-full bg-gradient-to-r from-[#146B67] to-[#1FA89B]"
+                        className="h-full bg-gradient-to-r from-primary to-secondary"
                         initial={{ width: '0%' }}
                         animate={{ width: step.id < currentStep ? '100%' : '0%' }}
                         transition={{ duration: 0.3 }}
@@ -444,7 +444,7 @@ export const SignupFormModern: React.FC = () => {
                             }
                             className={`rounded-2xl border p-3 text-left transition ${
                               selectedAccountType === 'User'
-                                ? 'border-[#1FA89B] bg-teal-50 dark:bg-teal-900/20'
+                                ? 'border-secondary bg-teal-50 dark:bg-teal-900/20'
                                 : 'border-gray-200 dark:border-gray-700'
                             }`}
                           >
@@ -465,7 +465,7 @@ export const SignupFormModern: React.FC = () => {
                             }
                             className={`rounded-2xl border p-3 text-left transition ${
                               selectedAccountType === 'Announcer'
-                                ? 'border-[#1FA89B] bg-teal-50 dark:bg-teal-900/20'
+                                ? 'border-secondary bg-teal-50 dark:bg-teal-900/20'
                                 : 'border-gray-200 dark:border-gray-700'
                             }`}
                           >
@@ -573,7 +573,7 @@ export const SignupFormModern: React.FC = () => {
                                     href={routes.public.announcer_terms}
                                     target="_blank"
                                     rel="noopener noreferrer"
-                                    className="text-[#1FA89B] hover:underline font-medium"
+                                    className="text-secondary hover:underline font-medium"
                                   >
                                     conditions annonceur
                                   </a>
@@ -593,7 +593,7 @@ export const SignupFormModern: React.FC = () => {
                                 href={routes.public.confidentiality}
                                 target="_blank"
                                 rel="noopener noreferrer"
-                                className="text-[#1FA89B] hover:underline font-medium"
+                                className="text-secondary hover:underline font-medium"
                               >
                                 politique de confidentialité
                               </a>
@@ -602,7 +602,7 @@ export const SignupFormModern: React.FC = () => {
                                 href={routes.public.terms_of_use}
                                 target="_blank"
                                 rel="noopener noreferrer"
-                                className="text-[#1FA89B] hover:underline font-medium"
+                                className="text-secondary hover:underline font-medium"
                               >
                                 conditions d'utilisation
                               </a>
@@ -634,7 +634,7 @@ export const SignupFormModern: React.FC = () => {
                     type="button"
                     onClick={nextStep}
                     disabled={!isCurrentStepValid()}
-                    className="flex-1 h-12 rounded-full bg-gradient-to-r from-[#146B67] to-[#1FA89B] hover:from-[#125b57] hover:to-[#1a9589] text-white shadow-lg shadow-teal-500/25 disabled:opacity-50 disabled:shadow-none"
+                    className="flex-1 h-12 rounded-full bg-gradient-to-r from-primary to-secondary hover:from-primary-800 hover:to-primary-600 text-white shadow-lg shadow-teal-500/25 disabled:opacity-50 disabled:shadow-none"
                   >
                     Continuer
                     <ChevronRight className="w-5 h-5 ml-1" />
@@ -644,7 +644,7 @@ export const SignupFormModern: React.FC = () => {
                     type="submit"
                     disabled={isFormLoading}
                     isLoading={isFormLoading}
-                    className="flex-1 h-12 bg-gradient-to-r from-[#146B67] to-[#1FA89B] hover:from-[#125b57] hover:to-[#1a9589] shadow-lg shadow-teal-500/25"
+                    className="flex-1 h-12 bg-gradient-to-r from-primary to-secondary hover:from-primary-800 hover:to-primary-600 shadow-lg shadow-teal-500/25"
                     title={isFormLoading ? 'Création en cours...' : 'Créer mon compte'}
                   />
                 )}
@@ -711,7 +711,7 @@ export const SignupFormModern: React.FC = () => {
             disabled={isFormLoading || isGoogleLoading}
             className="w-full h-12 mt-3 rounded-full border-2 hover:bg-gray-50 dark:hover:bg-gray-800 transition-all duration-200"
           >
-            <Phone className="w-5 h-5 mr-3 text-[#1FA89B]" />
+            <Phone className="w-5 h-5 mr-3 text-secondary" />
             <span className="font-medium">Continuer avec Numéro de téléphone</span>
           </Button>
 
@@ -722,7 +722,7 @@ export const SignupFormModern: React.FC = () => {
             Vous avez déjà un compte ?{' '}
             <Link
               href={routes.public.signin}
-              className="text-[#1FA89B] hover:underline font-semibold"
+              className="text-secondary hover:underline font-semibold"
             >
               Se connecter
             </Link>

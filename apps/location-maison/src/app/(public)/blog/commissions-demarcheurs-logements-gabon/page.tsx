@@ -15,16 +15,16 @@ export default function CommissionsDemarcheursPage() {
       <div className="max-w-4xl mx-auto">
         {/* Breadcrumb */}
         <nav className="text-sm text-gray-600 mb-6">
-          <Link href={routes.public.homePage} className="hover:text-[#146B67]">Accueil</Link>
+          <Link href={routes.public.homePage} className="hover:text-primary">Accueil</Link>
           <span className="mx-2">→</span>
-          <Link href={routes.public.blog} className="hover:text-[#146B67]">Blog</Link>
+          <Link href={routes.public.blog} className="hover:text-primary">Blog</Link>
           <span className="mx-2">→</span>
           <span className="text-gray-800">Commissions Démarcheurs Logements Gabon</span>
         </nav>
 
         {/* Article Header */}
         <header className="mb-8">
-          <h1 className="text-4xl font-bold text-[#146B67] mb-4">
+          <h1 className="text-4xl font-bold text-primary mb-4">
             Commissions Élevées des Démarcheurs de Logements au Gabon : Problèmes et Solutions 
           </h1>
           <div className="flex items-center text-sm text-gray-600 mb-6">
@@ -46,7 +46,7 @@ export default function CommissionsDemarcheursPage() {
         <article className="prose prose-lg max-w-none">
           
           <section className="mb-8">
-            <h2 className="text-2xl font-semibold text-[#146B67] mb-4">
+            <h2 className="text-2xl font-semibold text-primary mb-4">
               🚨 Le Problème des Commissions Abusives au Gabon
             </h2>
             
@@ -77,7 +77,7 @@ export default function CommissionsDemarcheursPage() {
           </section>
 
           <section className="mb-8">
-            <h2 className="text-2xl font-semibold text-[#146B67] mb-4">
+            <h2 className="text-2xl font-semibold text-primary mb-4">
                Chiffres Alarments du Marché Gabonais
             </h2>
             
@@ -88,7 +88,7 @@ export default function CommissionsDemarcheursPage() {
             
             <div className="grid md:grid-cols-2 gap-6 mb-6">
               <div className="bg-white p-6 rounded-lg shadow-md">
-                <h3 className="text-xl font-semibold text-[#146B67] mb-4"> Commissions Moyennes</h3>
+                <h3 className="text-xl font-semibold text-primary mb-4"> Commissions Moyennes</h3>
                 <ul className="space-y-2 text-sm">
                   <li><strong>Libreville :</strong> 4-6 mois de loyer</li>
                   <li><strong>Port-Gentil :</strong> 3-5 mois de loyer</li>
@@ -98,7 +98,7 @@ export default function CommissionsDemarcheursPage() {
               </div>
               
               <div className="bg-white p-6 rounded-lg shadow-md">
-                <h3 className="text-xl font-semibold text-[#146B67] mb-4"> Impact sur les Prix</h3>
+                <h3 className="text-xl font-semibold text-primary mb-4"> Impact sur les Prix</h3>
                 <ul className="space-y-2 text-sm">
                   <li><strong>+25-40%</strong> sur le coût total du logement</li>
                   <li><strong>+15-30%</strong> sur les loyers pour compenser</li>
@@ -123,7 +123,7 @@ export default function CommissionsDemarcheursPage() {
           </section>
 
           <section className="mb-8">
-            <h2 className="text-2xl font-semibold text-[#146B67] mb-4">
+            <h2 className="text-2xl font-semibold text-primary mb-4">
                Qui sont les Démarcheurs et Comment ils Opèrent
             </h2>
             
@@ -134,7 +134,7 @@ export default function CommissionsDemarcheursPage() {
             
             <div className="space-y-6 mb-6">
               <div className="bg-white p-6 rounded-lg shadow-md">
-                <h3 className="text-xl font-semibold text-[#146B67] mb-4">👥 Démarcheurs Indépendants</h3>
+                <h3 className="text-xl font-semibold text-primary mb-4">👥 Démarcheurs Indépendants</h3>
                 <ul className="space-y-2 text-sm">
                   <li><strong>Commission :</strong> 2-4 mois de loyer</li>
                   <li><strong>Services :</strong> Visite, négociation, paperasse</li>
@@ -145,7 +145,7 @@ export default function CommissionsDemarcheursPage() {
               </div>
               
               <div className="bg-white p-6 rounded-lg shadow-md">
-                <h3 className="text-xl font-semibold text-[#146B67] mb-4"> Agences Immobilières</h3>
+                <h3 className="text-xl font-semibold text-primary mb-4"> Agences Immobilières</h3>
                 <ul className="space-y-2 text-sm">
                   <li><strong>Commission :</strong> 4-6 mois de loyer</li>
                   <li><strong>Services :</strong> Visite, gestion, garantie</li>
@@ -156,7 +156,7 @@ export default function CommissionsDemarcheursPage() {
               </div>
               
               <div className="bg-white p-6 rounded-lg shadow-md">
-                <h3 className="text-xl font-semibold text-[#146B67] mb-4">📱 Plateformes en Ligne</h3>
+                <h3 className="text-xl font-semibold text-primary mb-4">📱 Plateformes en Ligne</h3>
                 <ul className="space-y-2 text-sm">
                   <li><strong>Commission :</strong> 0-1 mois de loyer</li>
                   <li><strong>Services :</strong> Mise en relation, outils digitaux</li>
@@ -169,7 +169,7 @@ export default function CommissionsDemarcheursPage() {
           </section>
 
           <section className="mb-8">
-            <h2 className="text-2xl font-semibold text-[#146B67] mb-4">
+            <h2 className="text-2xl font-semibold text-primary mb-4">
                Solutions Alternatives pour Éviter les Commissions Abusives
             </h2>
             
@@ -180,7 +180,7 @@ export default function CommissionsDemarcheursPage() {
             
             <div className="grid md:grid-cols-2 gap-6 mb-6">
               <div className="bg-white p-6 rounded-lg shadow-md">
-                <h3 className="text-xl font-semibold text-[#146B67] mb-4">🌐 Plateformes en Ligne</h3>
+                <h3 className="text-xl font-semibold text-primary mb-4">🌐 Plateformes en Ligne</h3>
                 <ul className="space-y-2 text-sm">
                   <li>• <strong>Trouve Ton Nkama :</strong> 0 commission, contact direct</li>
                   <li>• <strong>Avantages :</strong> Transparence, coûts réduits</li>
@@ -190,7 +190,7 @@ export default function CommissionsDemarcheursPage() {
               </div>
               
               <div className="bg-white p-6 rounded-lg shadow-md">
-                <h3 className="text-xl font-semibold text-[#146B67] mb-4">👥 Réseaux Personnels</h3>
+                <h3 className="text-xl font-semibold text-primary mb-4">👥 Réseaux Personnels</h3>
                 <ul className="space-y-2 text-sm">
                   <li>• <strong>Famille et amis :</strong> Mise en relation directe</li>
                   <li>• <strong>Réseaux professionnels :</strong> Colègues, associations</li>
@@ -202,7 +202,7 @@ export default function CommissionsDemarcheursPage() {
             
             <div className="grid md:grid-cols-2 gap-6 mb-6">
               <div className="bg-white p-6 rounded-lg shadow-md">
-                <h3 className="text-xl font-semibold text-[#146B67] mb-4"> Petites Annonces</h3>
+                <h3 className="text-xl font-semibold text-primary mb-4"> Petites Annonces</h3>
                 <ul className="space-y-2 text-sm">
                   <li>• <strong>Journaux locaux :</strong> Petites annonces classiques</li>
                   <li>• <strong>Panneaux d&apos;affichage :</strong> Quartiers résidentiels</li>
@@ -212,7 +212,7 @@ export default function CommissionsDemarcheursPage() {
               </div>
               
               <div className="bg-white p-6 rounded-lg shadow-md">
-                <h3 className="text-xl font-semibold text-[#146B67] mb-4"> Négociation Directe</h3>
+                <h3 className="text-xl font-semibold text-primary mb-4"> Négociation Directe</h3>
                 <ul className="space-y-2 text-sm">
                   <li>• <strong>Contact propriétaire :</strong> Éviter les intermédiaires</li>
                   <li>• <strong>Négociation :</strong> Réduire les commissions</li>
@@ -224,7 +224,7 @@ export default function CommissionsDemarcheursPage() {
           </section>
 
           <section className="mb-8">
-            <h2 className="text-2xl font-semibold text-[#146B67] mb-4">
+            <h2 className="text-2xl font-semibold text-primary mb-4">
               ⚖️ Cadre Légal et Réglementation au Gabon
             </h2>
             
@@ -246,7 +246,7 @@ export default function CommissionsDemarcheursPage() {
             
             <div className="grid md:grid-cols-2 gap-6 mb-6">
               <div className="bg-white p-6 rounded-lg shadow-md">
-                <h3 className="text-xl font-semibold text-[#146B67] mb-4"> Projets de Régulation</h3>
+                <h3 className="text-xl font-semibold text-primary mb-4"> Projets de Régulation</h3>
                 <ul className="space-y-2 text-sm">
                   <li>• <strong>Plafonnement :</strong> Limitation à 1-2 mois de loyer</li>
                   <li>• <strong>Transparence :</strong> Affichage obligatoire des frais</li>
@@ -257,7 +257,7 @@ export default function CommissionsDemarcheursPage() {
               </div>
               
               <div className="bg-white p-6 rounded-lg shadow-md">
-                <h3 className="text-xl font-semibold text-[#146B67] mb-4">🛡️ Droits des Consommateurs</h3>
+                <h3 className="text-xl font-semibold text-primary mb-4">🛡️ Droits des Consommateurs</h3>
                 <ul className="space-y-2 text-sm">
                   <li>• <strong>Information :</strong> Droit à la transparence</li>
                   <li>• <strong>Négociation :</strong> Possibilité de discuter les frais</li>
@@ -270,7 +270,7 @@ export default function CommissionsDemarcheursPage() {
           </section>
 
           <section className="mb-8">
-            <h2 className="text-2xl font-semibold text-[#146B67] mb-4">
+            <h2 className="text-2xl font-semibold text-primary mb-4">
                Conseils Pratiques pour Éviter les Commissions Abusives
             </h2>
             
@@ -281,7 +281,7 @@ export default function CommissionsDemarcheursPage() {
             
             <div className="space-y-6 mb-6">
               <div className="bg-white p-6 rounded-lg shadow-md">
-                <h3 className="text-xl font-semibold text-[#146B67] mb-4"> Avant la Recherche</h3>
+                <h3 className="text-xl font-semibold text-primary mb-4"> Avant la Recherche</h3>
                 <ul className="space-y-2 text-sm">
                   <li>• <strong>Définir un budget :</strong> Inclure les commissions dans le calcul</li>
                   <li>• <strong>Rechercher les alternatives :</strong> Plateformes en ligne, réseaux</li>
@@ -292,7 +292,7 @@ export default function CommissionsDemarcheursPage() {
               </div>
               
               <div className="bg-white p-6 rounded-lg shadow-md">
-                <h3 className="text-xl font-semibold text-[#146B67] mb-4">🤝 Pendant la Négociation</h3>
+                <h3 className="text-xl font-semibold text-primary mb-4">🤝 Pendant la Négociation</h3>
                 <ul className="space-y-2 text-sm">
                   <li>• <strong>Négocier fermement :</strong> Les commissions ne sont pas fixes</li>
                   <li>• <strong>Demander un détail :</strong> De tous les frais inclus</li>
@@ -303,7 +303,7 @@ export default function CommissionsDemarcheursPage() {
               </div>
               
               <div className="bg-white p-6 rounded-lg shadow-md">
-                <h3 className="text-xl font-semibold text-[#146B67] mb-4">📄 Contrat et Engagement</h3>
+                <h3 className="text-xl font-semibold text-primary mb-4">📄 Contrat et Engagement</h3>
                 <ul className="space-y-2 text-sm">
                   <li>• <strong>Lire attentivement :</strong> Tous les termes du contrat</li>
                   <li>• <strong>Négocier les clauses :</strong> Éviter les engagements longs</li>
@@ -316,7 +316,7 @@ export default function CommissionsDemarcheursPage() {
           </section>
 
           <section className="mb-8">
-            <h2 className="text-2xl font-semibold text-[#146B67] mb-4">
+            <h2 className="text-2xl font-semibold text-primary mb-4">
                L&apos;Avenir : Vers un Marché Plus Transparent
             </h2>
             
@@ -327,7 +327,7 @@ export default function CommissionsDemarcheursPage() {
             
             <div className="grid md:grid-cols-2 gap-6 mb-6">
               <div className="bg-white p-6 rounded-lg shadow-md">
-                <h3 className="text-xl font-semibold text-[#146B67] mb-4">📱 Impact du Digital</h3>
+                <h3 className="text-xl font-semibold text-primary mb-4">📱 Impact du Digital</h3>
                 <ul className="space-y-2 text-sm">
                   <li>• <strong>Plateformes en ligne :</strong> Transparence des prix</li>
                   <li>• <strong>Comparaison facile :</strong> Plusieurs offres</li>
@@ -338,7 +338,7 @@ export default function CommissionsDemarcheursPage() {
               </div>
               
               <div className="bg-white p-6 rounded-lg shadow-md">
-                <h3 className="text-xl font-semibold text-[#146B67] mb-4"> Tendances Futures</h3>
+                <h3 className="text-xl font-semibold text-primary mb-4"> Tendances Futures</h3>
                 <ul className="space-y-2 text-sm">
                   <li>• <strong>Régulation :</strong> Cadre légal plus strict</li>
                   <li>• <strong>Transparence :</strong> Affichage obligatoire des frais</li>
@@ -349,7 +349,7 @@ export default function CommissionsDemarcheursPage() {
               </div>
             </div>
             
-            <div className="bg-[#146B67] text-white p-6 rounded-lg text-center">
+            <div className="bg-primary text-white p-6 rounded-lg text-center">
               <h3 className="text-xl font-semibold mb-3"> Trouve Ton Nkama : La Solution Alternative</h3>
               <p className="mb-4">
                 Notre plateforme propose une alternative transparente aux démarcheurs 
@@ -359,13 +359,13 @@ export default function CommissionsDemarcheursPage() {
               <div className="flex flex-col sm:flex-row gap-4 justify-center">
                 <Link 
                   href={routes.public.search_property} 
-                  className="bg-white text-[#146B67] px-6 py-3 rounded-lg hover:bg-gray-100 transition-colors font-semibold"
+                  className="bg-white text-primary px-6 py-3 rounded-lg hover:bg-gray-100 transition-colors font-semibold"
                 >
                   Voir les Annonces
                 </Link>
                 <Link 
                   href={routes.public.property} 
-                  className="border border-white text-white px-6 py-3 rounded-lg hover:bg-white hover:text-[#146B67] transition-colors font-semibold"
+                  className="border border-white text-white px-6 py-3 rounded-lg hover:bg-white hover:text-primary transition-colors font-semibold"
                 >
                   Publier une Annonce
                 </Link>
@@ -376,13 +376,13 @@ export default function CommissionsDemarcheursPage() {
 
         {/* Related Articles */}
         <section className="mt-12 pt-8 border-t border-gray-200">
-          <h3 className="text-2xl font-semibold text-[#146B67] mb-6">
+          <h3 className="text-2xl font-semibold text-primary mb-6">
              Articles Similaires
           </h3>
           <div className="grid md:grid-cols-2 gap-6">
             <Link href={routes.public.blog_tendances_marche} className="block">
               <div className="bg-white p-4 rounded-lg shadow-md hover:shadow-lg transition-shadow">
-                <h4 className="font-semibold text-[#146B67] mb-2">
+                <h4 className="font-semibold text-primary mb-2">
                   Tendances Marché Immobilier Gabon 2024
                 </h4>
                 <p className="text-sm text-gray-600">
@@ -393,7 +393,7 @@ export default function CommissionsDemarcheursPage() {
             
             <Link href={routes.public.blog_financement} className="block">
               <div className="bg-white p-4 rounded-lg shadow-md hover:shadow-lg transition-shadow">
-                <h4 className="font-semibold text-[#146B67] mb-2">
+                <h4 className="font-semibold text-primary mb-2">
                   Financement Immobilier Gabon 2024
                 </h4>
                 <p className="text-sm text-gray-600">

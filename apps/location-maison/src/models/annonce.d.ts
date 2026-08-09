@@ -45,6 +45,12 @@ export type Property = Location & ICreation & {
     contact?: string //Propriété tampon
     isOwner?: boolean
 
+    // Auto-attribution annonceur (Lot 4b) : rattachement par numéro de téléphone
+    // vérifié (OTP), distinct de `createdBy` qui reste l'auteur original (souvent
+    // l'admin via import Apify). Co-gestion : l'annonceur édite, l'admin modère.
+    claimedBy?: string
+    claimedAt?: Timestamp
+
     // Modération avant publication : distinct de `state` (ICreation), qui gère
     // l'archivage par le propriétaire, pas la review admin.
     moderationStatus: ModerationStatus

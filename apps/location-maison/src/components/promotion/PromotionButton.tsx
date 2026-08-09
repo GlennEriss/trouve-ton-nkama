@@ -55,7 +55,7 @@ export default function PromotionButton({ property }: Readonly<PromotionButtonPr
         className={`h-11 w-full rounded-full px-3 text-sm font-semibold transition-colors ${
           hasActivePromotion
             ? 'border border-amber-600 bg-amber-600 text-white hover:bg-amber-700'
-            : 'bg-[#146B67] text-white hover:bg-[#0f5a56]'
+            : 'bg-primary text-white hover:bg-primary-800'
         }`}
         onClick={() => setIsModalOpen(true)}
       >

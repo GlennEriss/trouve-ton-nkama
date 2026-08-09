@@ -169,8 +169,8 @@ export default function AssistantModal({
               transition={{ duration: 3.2, repeat: Infinity, ease: 'easeInOut' }}
             >
               <div className="flex items-center gap-2">
-                <div className="flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-full bg-[#e9fffa] ring-1 ring-[#bdeedd]">
-                  <Wand2 className="h-3.5 w-3.5 text-[#156B68]" />
+                <div className="flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-full bg-primary-50 ring-1 ring-primary-100">
+                  <Wand2 className="h-3.5 w-3.5 text-primary" />
                 </div>
                 <p className="text-sm font-semibold text-gray-900 dark:text-white">Assistant IA</p>
                 <button
@@ -197,7 +197,7 @@ export default function AssistantModal({
                     value={description}
                     onChange={(e) => setDescription(e.target.value)}
                     placeholder="Décrivez votre logement..."
-                    className="h-24 w-full resize-none rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm text-gray-900 placeholder-gray-400 transition-all duration-200 focus:border-transparent focus:ring-2 focus:ring-[#156B68] dark:border-gray-700 dark:bg-gray-900 dark:text-gray-100"
+                    className="h-24 w-full resize-none rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm text-gray-900 placeholder-gray-400 transition-all duration-200 focus:border-transparent focus:ring-2 focus:ring-primary dark:border-gray-700 dark:bg-gray-900 dark:text-gray-100"
                     autoFocus
                     disabled={isLoading}
                   />
@@ -258,7 +258,7 @@ export default function AssistantModal({
                       disabled={!description.trim() || !canGenerate || isLoading || isProcessingImages}
                       whileHover={{ scale: 1.03 }}
                       whileTap={{ scale: 0.97 }}
-                      className="inline-flex items-center gap-2 rounded-full bg-[#156B68] px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-[#125b59] disabled:opacity-50"
+                      className="inline-flex items-center gap-2 rounded-full bg-primary px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-primary-800 disabled:opacity-50"
                     >
                       <Send className="h-4 w-4" />
                       {isLoading ? 'Génération...' : 'Envoyer'}

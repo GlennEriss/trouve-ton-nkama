@@ -14,6 +14,9 @@
  *   account instead of creating a duplicate. Resolution is uid → phone, and the
  *   app's session layer keys on the NextAuth uid (see resolveAuthenticatedUid),
  *   so returning the existing doc keeps the session consistent.
+ * - Auto-attribution (Lot 4b): every successful phone sign-in reconciles
+ *   listings whose `contact` matches the verified number to this account —
+ *   best-effort, never blocks the sign-in itself.
  */
 
 import { Timestamp } from "firebase/firestore";
@@ -21,6 +24,8 @@ import { Timestamp } from "firebase/firestore";
 import { adminAuth } from "@/firebase/admin";
 import { createLogger } from "@/lib/logger";
 import type { Role, User } from "@/models/authentication";
+
+import { claimListingsByVerifiedPhone } from "@/features/announcer/listing-claim/services/listing-claim.service";
 
 import { userRepository } from "../repositories/user.repository";
 import { resolveSessionUser } from "./resolve-session-user";
@@ -61,11 +66,27 @@ export async function authenticateWithPhoneIdToken(idToken: string): Promise<Use
 
   // Existing account by Firebase uid, else by phone (account linking, option A).
   const existing = await resolveSessionUser({ uid, phone });
-  if (existing) {
-    return ensurePhoneProvider(existing);
+  let resolvedUser = existing ? await ensurePhoneProvider(existing) : await createMinimalPhoneUser(uid, phone);
+
+  // Auto-attribution (Lot 4b): best-effort, never blocks sign-in. On a
+  // successful claim, persist a one-shot notice so the announcer's dashboard
+  // can welcome them ("N annonces vous ont été rattachées") — see
+  // AutoClaimBanner / the dismiss route, which clears this flag once shown.
+  try {
+    const { claimedCount } = await claimListingsByVerifiedPhone(resolvedUser.uid, phone);
+    if (claimedCount > 0) {
+      resolvedUser = await userRepository.update(resolvedUser.uid, {
+        metadata: {
+          ...resolvedUser.metadata,
+          pendingClaimNotice: { count: claimedCount, claimedAt: new Date().toISOString() },
+        },
+      });
+    }
+  } catch (error) {
+    logger.warn("Auto-claim of listings by verified phone failed", { uid: resolvedUser.uid, error });
   }
 
-  return createMinimalPhoneUser(uid, phone);
+  return resolvedUser;
 }
 
 /** Attach the PHONE provider + verified flag to an existing account if missing. */

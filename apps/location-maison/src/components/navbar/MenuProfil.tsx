@@ -81,10 +81,10 @@ export default function MenuProfil() {
                 <Button 
                     variant='ghost' 
                     aria-label="Ouvrir le menu du profil"
-                    className='relative h-10 w-10 rounded-full focus:ring-2 focus:ring-[#146B67] focus:ring-offset-2 focus-visible:ring-2 focus-visible:ring-[#146B67] hover:bg-gray-100 dark:hover:bg-gray-800 transition-all duration-200 group'
+                    className='relative h-10 w-10 rounded-full focus:ring-2 focus:ring-primary focus:ring-offset-2 focus-visible:ring-2 focus-visible:ring-primary hover:bg-gray-100 dark:hover:bg-gray-800 transition-all duration-200 group'
                 >
                     <div className="flex items-center gap-2">
-                        <Avatar className="h-9 w-9 ring-2 ring-white dark:ring-gray-800 group-hover:ring-[#146B67]/20 transition-all duration-200">
+                        <Avatar className="h-9 w-9 ring-2 ring-white dark:ring-gray-800 group-hover:ring-primary/20 transition-all duration-200">
                             <AvatarImage src={user?.image ?? ''} alt={user?.firstname + '' + user?.lastname} />
                             <AvatarFallback
                                 style={{ backgroundColor: avatarBackground }}
@@ -92,7 +92,7 @@ export default function MenuProfil() {
                                 {user?.firstname?.at(0) ?? ''}
                             </AvatarFallback>
                         </Avatar>
-                        <ChevronDown className="h-4 w-4 text-gray-500 dark:text-gray-400 group-hover:text-[#146B67] transition-colors duration-200 hidden sm:block" />
+                        <ChevronDown className="h-4 w-4 text-gray-500 dark:text-gray-400 group-hover:text-primary transition-colors duration-200 hidden sm:block" />
                     </div>
                 </Button>
             </DropdownMenuTrigger>
@@ -102,7 +102,7 @@ export default function MenuProfil() {
                 sideOffset={8}
             >
                 {/* Header avec informations utilisateur */}
-                <div className="px-4 py-4 bg-gradient-to-r from-[#146B67] to-[#1FA89B] text-white">
+                <div className="px-4 py-4 bg-gradient-to-r from-primary to-secondary text-white">
                     <div className="flex items-center gap-3">
                         <Avatar className="h-12 w-12 ring-2 ring-white/20">
                             <AvatarImage src={user?.image ?? ''} alt={user?.firstname + '' + user?.lastname} />
@@ -135,11 +135,11 @@ export default function MenuProfil() {
                                     className='mx-2 my-1 px-3 py-3 cursor-pointer rounded-xl hover:bg-gray-50 dark:hover:bg-gray-800 transition-all duration-200 group'
                                 >
                                     <div className="flex items-center gap-3 w-full">
-                                        <div className="flex-shrink-0 w-10 h-10 rounded-lg bg-gray-100 dark:bg-gray-800 group-hover:bg-[#146B67] group-hover:text-white flex items-center justify-center transition-all duration-200">
+                                        <div className="flex-shrink-0 w-10 h-10 rounded-lg bg-gray-100 dark:bg-gray-800 group-hover:bg-primary group-hover:text-white flex items-center justify-center transition-all duration-200">
                                             <IconComponent className="h-5 w-5 text-gray-600 dark:text-gray-400 group-hover:text-white transition-colors duration-200" />
                                         </div>
                                         <div className="flex-1 min-w-0">
-                                            <p className="font-medium text-gray-900 dark:text-white group-hover:text-[#146B67] dark:group-hover:text-[#1FA89B] transition-colors duration-200">
+                                            <p className="font-medium text-gray-900 dark:text-white group-hover:text-primary dark:group-hover:text-secondary transition-colors duration-200">
                                                 {item.title}
                                             </p>
                                             <p className="text-sm text-gray-500 dark:text-gray-400 truncate">

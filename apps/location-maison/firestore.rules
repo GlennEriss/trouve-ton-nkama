@@ -31,8 +31,11 @@ service cloud.firestore {
     }
 
     function ownsReferencedProperty(propertyId) {
+      // Co-gestion (cf. properties ci-dessous) : un annonceur qui a revendiqué l'annonce
+      // (claimedBy) peut lui rattacher un reel, au même titre que le créateur d'origine.
       return exists(propertyPath(propertyId)) &&
-             get(propertyPath(propertyId)).data.createdBy == request.auth.uid;
+             (get(propertyPath(propertyId)).data.createdBy == request.auth.uid ||
+              get(propertyPath(propertyId)).data.get('claimedBy', null) == request.auth.uid);
     }
 
     function isSafeUserSelfUpdate() {
@@ -103,15 +106,26 @@ service cloud.firestore {
       allow create: if isAnnouncer() &&
         request.auth.uid == request.resource.data.createdBy &&
         request.resource.data.moderationStatus == 'PENDING';
+      // Co-gestion (auto-attribution par téléphone vérifié, cf listing-claim.service.ts) :
+      // un compte revendicataire (claimedBy) a les mêmes droits d'édition/suppression que
+      // le créateur d'origine (createdBy, souvent l'admin via l'import Apify). `claimedBy`
+      // est absent sur les documents jamais revendiqués, d'où `get(..., null)` plutôt qu'un
+      // accès direct qui échouerait sur un champ manquant.
       // Le propriétaire ne peut pas changer moderationStatus lui-même, sauf pour resoumettre
       // une annonce rejetée (REJECTED -> PENDING). Seul l'admin (Admin SDK, bypass ces rules)
       // peut approuver/rejeter. Note: corrige aussi resource.data.uid -> createdBy, le seul
       // champ réellement écrit sur les documents property (uid n'a jamais existé ici).
-      allow update: if isAnnouncer() && request.auth.uid == resource.data.createdBy && (
+      allow update: if isAnnouncer() && (
+        request.auth.uid == resource.data.createdBy ||
+        request.auth.uid == resource.data.get('claimedBy', null)
+      ) && (
         request.resource.data.moderationStatus == resource.data.moderationStatus ||
         (resource.data.moderationStatus == 'REJECTED' && request.resource.data.moderationStatus == 'PENDING')
       );
-      allow delete: if isAnnouncer() && request.auth.uid == resource.data.createdBy;
+      allow delete: if isAnnouncer() && (
+        request.auth.uid == resource.data.createdBy ||
+        request.auth.uid == resource.data.get('claimedBy', null)
+      );
     }
     
     match /suggestions/{suggestionId} {

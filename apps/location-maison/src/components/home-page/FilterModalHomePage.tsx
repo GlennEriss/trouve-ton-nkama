@@ -45,7 +45,7 @@ export const FilterModalHomePage = () => {
                 <button
                     type="button"
                     aria-label="Ouvrir les filtres de recherche"
-                    className="flex h-11 w-11 items-center justify-center rounded-full bg-gray-200 transition hover:bg-[#1FA89B]/20 dark:bg-gray-700 dark:hover:bg-gray-600"
+                    className="flex h-11 w-11 items-center justify-center rounded-full bg-gray-200 transition hover:bg-secondary/20 dark:bg-gray-700 dark:hover:bg-gray-600"
                     title="Ouvrir les filtres de recherche"
                 >
                     <SlidersHorizontal />
@@ -60,7 +60,7 @@ export const FilterModalHomePage = () => {
                             className="w-6 h-6 rounded-full border border-gray-500 cursor-pointer text-gray-600 dark:text-gray-300 hover:text-gray-800 dark:hover:text-white"
                             onClick={() => setOpen(false)}
                         />
-                        <DialogTitle className="flex items-center gap-2 text-lg font-bold m-0 text-[#146B67]">
+                        <DialogTitle className="flex items-center gap-2 text-lg font-bold m-0 text-primary">
                             Filtres de recherche
                         </DialogTitle>
                     </div>
@@ -78,7 +78,7 @@ export const FilterModalHomePage = () => {
                                 <div className="space-y-6">
                                     {/* Province, Ville & Quartier */}
                                     <div className="grid grid-cols-1 gap-3">
-                                        <h1 className="text-lg mb-1 text-[#1FA89B] font-bold col-span-full">Secteur recherché</h1>
+                                        <h1 className="text-lg mb-1 text-secondary font-bold col-span-full">Secteur recherché</h1>
                                         <SelectProvince />
                                         <SelectCity />
                                         <SelectStreet />
@@ -86,7 +86,7 @@ export const FilterModalHomePage = () => {
 
                                     {/* Statut (À vendre/À louer) */}
                                     <div className="space-y-3">
-                                        <h1 className="text-lg mb-1 text-[#1FA89B] font-bold">Statut</h1>
+                                        <h1 className="text-lg mb-1 text-secondary font-bold">Statut</h1>
                                         <MultiSelectFormApp
                                             control={form.control}
                                             name="status"
@@ -99,7 +99,7 @@ export const FilterModalHomePage = () => {
 
                                     {/* Prix */}
                                     <div className="space-y-2">
-                                        <h1 className="text-lg mb-1 text-[#1FA89B] font-bold">Prix (FCFA)</h1>
+                                        <h1 className="text-lg mb-1 text-secondary font-bold">Prix (FCFA)</h1>
                                         <div className="grid grid-cols-1 gap-4">
                                             <InputFormNumberApp
                                                 control={form.control}
@@ -120,7 +120,7 @@ export const FilterModalHomePage = () => {
 
                                     {/* Surface */}
                                     <div className="space-y-3">
-                                        <h1 className="text-lg mb-1 text-[#1FA89B] font-bold">Surface (m²)</h1>
+                                        <h1 className="text-lg mb-1 text-secondary font-bold">Surface (m²)</h1>
                                         <label htmlFor="area-slider-home" className="text-gray-600">Surface (m²)</label>
                                         <InputFormNumberApp
                                             control={form.control}
@@ -155,8 +155,8 @@ export const FilterModalHomePage = () => {
                                             min={ROOMS_MIN} max={ROOMS_MAX} step={1}
                                             className="relative flex items-center select-none"
                                         >
-                                            <SliderPrimitive.Track className="relative h-2 w-full rounded-full bg-[#E0F2F1]">
-                                                <SliderPrimitive.Range className="absolute h-full bg-[#1FA89B]" />
+                                            <SliderPrimitive.Track className="relative h-2 w-full rounded-full bg-primary-100">
+                                                <SliderPrimitive.Range className="absolute h-full bg-secondary" />
                                             </SliderPrimitive.Track>
                                             <SliderPrimitive.Thumb className="block h-5 w-5 rounded-full border bg-background shadow" />
                                             <SliderPrimitive.Thumb className="block h-5 w-5 rounded-full border bg-background shadow" />
@@ -172,7 +172,7 @@ export const FilterModalHomePage = () => {
                                 <div className="space-y-6">
                                     {/* Type de propriété */}
                                     <div className="space-y-3">
-                                        <h1 className="text-lg mb-1 text-[#1FA89B] font-bold">Type d'annonces</h1>
+                                        <h1 className="text-lg mb-1 text-secondary font-bold">Type d'annonces</h1>
                                         <MultiSelectFormApp
                                             control={form.control}
                                             name="typeProperty"
@@ -185,7 +185,7 @@ export const FilterModalHomePage = () => {
 
                                     {/* Tags */}
                                     <div className="space-y-3">
-                                        <h1 className="text-lg mb-1 text-[#1FA89B] font-bold">Tags</h1>
+                                        <h1 className="text-lg mb-1 text-secondary font-bold">Tags</h1>
                                         <MultiSelectFormApp
                                             control={form.control}
                                             name="tags"
@@ -204,7 +204,7 @@ export const FilterModalHomePage = () => {
                                     variant="outline"
                                     type="reset"
                                     onClick={onClear}
-                                    className="w-full sm:w-auto border-[#146B67] text-[#146B67] hover:bg-[#1FA89B]/10 rounded-full text-sm"
+                                    className="w-full sm:w-auto border-primary text-primary hover:bg-secondary/10 rounded-full text-sm"
                                 >
                                     Effacer
                                 </Button>
@@ -212,7 +212,7 @@ export const FilterModalHomePage = () => {
                                     variant="default"
                                     type="submit"
                                     onClick={onApply}
-                                    className="w-full sm:w-auto bg-[#146B67] hover:bg-[#1FA89B] text-white rounded-full text-sm"
+                                    className="w-full sm:w-auto bg-primary hover:bg-secondary text-white rounded-full text-sm"
                                 >
                                     Appliquer
                                 </Button>

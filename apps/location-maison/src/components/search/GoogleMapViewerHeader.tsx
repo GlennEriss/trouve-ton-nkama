@@ -83,12 +83,12 @@ export default function GoogleMapViewerHeader({
               <button
                 type="button"
                 disabled={isSubmitting}
-                className="p-1 hover:stroke-[#1FA89B] disabled:opacity-50 disabled:cursor-not-allowed mr-3"
+                className="p-1 hover:stroke-secondary disabled:opacity-50 disabled:cursor-not-allowed mr-3"
               >
                 {isSubmitting ? (
-                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-[#1FA89B]"></div>
+                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-secondary"></div>
                 ) : (
-                  <Search size={20} className="text-gray-500 hover:stroke-[#1FA89B]" />
+                  <Search size={20} className="text-gray-500 hover:stroke-secondary" />
                 )}
               </button>
 

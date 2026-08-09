@@ -43,6 +43,7 @@ import {
   X,
 } from 'lucide-react';
 import { useAdManagement } from '../../hooks';
+import { AutoClaimBanner } from '@/features/announcer/listing-claim/ui';
 
 const TYPE_FILTER_OPTIONS: Array<{ value: string; label: string }> = [
   { value: '__all', label: 'Tous types' },
@@ -86,10 +87,10 @@ const SORT_OPTIONS = [
 ];
 
 const CONTROL_CLASS =
-  'h-12 rounded-full border border-gray-200 bg-gray-50 px-4 text-sm shadow-none transition-colors focus-visible:border-[#1FA89B] focus-visible:ring-0 dark:border-gray-700 dark:bg-gray-800/70';
+  'h-12 rounded-full border border-gray-200 bg-gray-50 px-4 text-sm shadow-none transition-colors focus-visible:border-secondary focus-visible:ring-0 dark:border-gray-700 dark:bg-gray-800/70';
 
 const SELECT_TRIGGER_CLASS =
-  'h-12 rounded-full border border-gray-200 bg-gray-50 px-4 text-sm shadow-none transition-colors focus:ring-0 focus:border-[#1FA89B] dark:border-gray-700 dark:bg-gray-800/70';
+  'h-12 rounded-full border border-gray-200 bg-gray-50 px-4 text-sm shadow-none transition-colors focus:ring-0 focus:border-secondary dark:border-gray-700 dark:bg-gray-800/70';
 
 function toDate(value: unknown): Date | null {
   if (!value) {
@@ -198,7 +199,7 @@ function StatCard({ title, value, icon: Icon, tone = 'neutral' }: StatCardProps)
         'border p-4 transition-all duration-300 hover:-translate-y-0.5 hover:shadow-md',
         tone === 'success' && 'border-emerald-200 bg-emerald-50/60 dark:border-emerald-800 dark:bg-emerald-900/20',
         tone === 'warning' && 'border-amber-200 bg-amber-50/70 dark:border-amber-800 dark:bg-amber-900/20',
-        tone === 'accent' && 'border-[#1FA89B]/30 bg-[#1FA89B]/5 dark:border-[#1FA89B]/50 dark:bg-[#1FA89B]/10',
+        tone === 'accent' && 'border-secondary/30 bg-secondary/5 dark:border-secondary/50 dark:bg-secondary/10',
         tone === 'neutral' && 'border-gray-200 bg-white dark:border-gray-800 dark:bg-gray-900'
       )}
     >
@@ -208,7 +209,7 @@ function StatCard({ title, value, icon: Icon, tone = 'neutral' }: StatCardProps)
           <p className="mt-1 text-2xl font-bold text-gray-900 dark:text-white">{value}</p>
         </div>
         <div className="rounded-xl bg-white/70 p-2 dark:bg-black/20">
-          <Icon className="h-5 w-5 text-[#146B67]" />
+          <Icon className="h-5 w-5 text-primary" />
         </div>
       </div>
     </Card>
@@ -301,13 +302,13 @@ function AdCard({ ad, onToggleState, onDelete, actionLoading }: AdCardProps) {
             </p>
           )}
           <p className="line-clamp-1 inline-flex items-center gap-1 text-sm text-gray-600 dark:text-gray-300">
-            <MapPin className="h-4 w-4 text-[#146B67]" />
+            <MapPin className="h-4 w-4 text-primary" />
             {ad.street}, {ad.city}, {ad.province}
           </p>
         </div>
 
         <div className="rounded-xl border border-gray-100 bg-gray-50 p-2.5 text-sm dark:border-gray-800 dark:bg-gray-800/40">
-          <p className="text-lg font-bold text-[#146B67]">
+          <p className="text-lg font-bold text-primary">
             {formatPrice(Number(ad.price || 0))} <span className="text-sm font-medium">FCFA</span>
           </p>
           <div className="mt-1.5 grid grid-cols-2 gap-x-4 gap-y-1 text-xs text-gray-500 dark:text-gray-400">
@@ -512,10 +513,11 @@ export function AdManagementPage() {
 
   return (
     <div className="space-y-6 px-4 pb-20 pt-2 md:px-0 md:pb-8">
+      <AutoClaimBanner />
       <section className="rounded-3xl border border-emerald-100 bg-gradient-to-br from-emerald-50 to-white p-5 shadow-sm dark:border-emerald-900 dark:from-emerald-950/30 dark:to-gray-900 md:p-6">
         <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
           <div>
-            <p className="inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-wide text-[#146B67]">
+            <p className="inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-wide text-primary">
               <Building2 className="h-3.5 w-3.5" />
               Espace annonceur
             </p>
@@ -547,7 +549,7 @@ export function AdManagementPage() {
             </Button>
             <Button
               asChild
-              className="h-12 rounded-full bg-gradient-to-r from-[#146B67] to-[#1FA89B] px-6 font-semibold hover:from-[#115a56] hover:to-[#1a9388]"
+              className="h-12 rounded-full bg-gradient-to-r from-primary to-secondary px-6 font-semibold hover:from-primary-800 hover:to-primary-600"
             >
               <Link href={routes.protected.add_property}>
                 <Plus className="mr-2 h-4 w-4" />
@@ -758,7 +760,7 @@ export function AdManagementPage() {
           <div className="mt-4 flex justify-center">
             <Button
               asChild
-              className="h-11 rounded-full bg-gradient-to-r from-[#146B67] to-[#1FA89B] px-6 hover:from-[#115a56] hover:to-[#1a9388]"
+              className="h-11 rounded-full bg-gradient-to-r from-primary to-secondary px-6 hover:from-primary-800 hover:to-primary-600"
             >
               <Link href={routes.protected.add_property}>
                 <Plus className="mr-2 h-4 w-4" />
@@ -837,7 +839,7 @@ export function AdManagementPage() {
             </Button>
             <Button
               type="button"
-              className="rounded-full bg-gradient-to-r from-[#146B67] to-[#1FA89B] hover:from-[#115a56] hover:to-[#1a9388]"
+              className="rounded-full bg-gradient-to-r from-primary to-secondary hover:from-primary-800 hover:to-primary-600"
               onClick={() => void confirmToggleState()}
               disabled={isTogglingState}
             >

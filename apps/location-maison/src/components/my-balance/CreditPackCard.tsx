@@ -52,9 +52,9 @@ export default function CreditPackCard({ pack, onSelect, isLoading = false }: Re
       onKeyDown={handleKeyDown}
       className={`
       relative bg-white dark:bg-gray-800 border-2 rounded-2xl p-6 transition-all duration-300 text-left w-full
-      ${pack.popular ? 'border-[#1FA89B] shadow-lg scale-105' : 'border-gray-200 dark:border-gray-700'}
+      ${pack.popular ? 'border-secondary shadow-lg scale-105' : 'border-gray-200 dark:border-gray-700'}
       ${pack.bestValue ? 'border-gradient-to-r from-yellow-400 to-orange-500' : ''}
-      ${isLoading ? 'opacity-50 cursor-not-allowed' : 'opacity-100 cursor-pointer hover:border-[#146B67] hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-[#146B67] focus:ring-offset-2'}
+      ${isLoading ? 'opacity-50 cursor-not-allowed' : 'opacity-100 cursor-pointer hover:border-primary hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2'}
     `}
     aria-label={`Choisir le pack ${pack.name} - ${pack.credits} crédits pour ${pack.price} FCFA`}
     >
@@ -65,7 +65,7 @@ export default function CreditPackCard({ pack, onSelect, isLoading = false }: Re
           <div className={`
             px-4 py-1 rounded-full text-xs font-bold text-white
             ${pack.bestValue ? 'bg-gradient-to-r from-yellow-500 to-orange-500' : ''}
-            ${pack.popular ? 'bg-gradient-to-r from-[#146B67] to-[#1FA89B]' : ''}
+            ${pack.popular ? 'bg-gradient-to-r from-primary to-secondary' : ''}
             ${pack.savings && !pack.popular && !pack.bestValue ? 'bg-gradient-to-r from-green-500 to-emerald-500' : ''}
           `}>
             {pack.bestValue && 'MEILLEUR PRIX'}
@@ -80,11 +80,11 @@ export default function CreditPackCard({ pack, onSelect, isLoading = false }: Re
         <div className="space-y-3">
           <div className={`
             w-16 h-16 mx-auto rounded-full flex items-center justify-center
-            ${pack.popular ? 'bg-[#1FA89B]/20 text-[#1FA89B]' : 'bg-[#146B67]/20 text-[#146B67] dark:text-[#1FA89B]'}
+            ${pack.popular ? 'bg-secondary/20 text-secondary' : 'bg-primary/20 text-primary dark:text-secondary'}
           `}>
             {getPackIcon()}
           </div>
-          <h3 className="text-2xl font-bold text-[#146B67] dark:text-[#1FA89B]">
+          <h3 className="text-2xl font-bold text-primary dark:text-secondary">
             {pack.name}
           </h3>
         </div>
@@ -107,7 +107,7 @@ export default function CreditPackCard({ pack, onSelect, isLoading = false }: Re
                 {pack.originalPrice.toLocaleString()} FCFA
               </span>
             )}
-            <span className="text-2xl font-bold text-[#146B67] dark:text-[#1FA89B]">
+            <span className="text-2xl font-bold text-primary dark:text-secondary">
               {pack.price.toLocaleString()} FCFA
             </span>
           </div>
@@ -121,7 +121,7 @@ export default function CreditPackCard({ pack, onSelect, isLoading = false }: Re
           <div className="space-y-2">
             {pack.features.map((feature) => (
               <div key={feature} className="text-sm text-gray-600 dark:text-gray-300 flex items-center gap-2">
-                <div className="w-1.5 h-1.5 bg-[#146B67] dark:bg-[#1FA89B] rounded-full" />
+                <div className="w-1.5 h-1.5 bg-primary dark:bg-secondary rounded-full" />
                 {feature}
               </div>
             ))}
@@ -134,7 +134,7 @@ export default function CreditPackCard({ pack, onSelect, isLoading = false }: Re
             w-full py-3 px-6 rounded-xl font-semibold transition-all duration-300 text-center
             ${isLoading
               ? 'bg-gray-300 dark:bg-gray-600 text-gray-500 dark:text-gray-400 cursor-not-allowed'
-              : 'bg-[#146B67] text-white'}
+              : 'bg-primary text-white'}
           `}
         >
           {isLoading ? 'Chargement…' : 'Choisir ce pack'}

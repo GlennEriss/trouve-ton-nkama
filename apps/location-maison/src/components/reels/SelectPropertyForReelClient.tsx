@@ -77,12 +77,12 @@ export default function SelectPropertyForReelClient() {
       </div>
 
       <Link href={noPropertyHref} className="block">
-        <Card className="flex items-center gap-3 border-[#1FA89B]/40 bg-[#1FA89B]/5 p-3 transition-colors hover:bg-[#1FA89B]/10 dark:border-[#1FA89B]/40 dark:bg-[#1FA89B]/10">
-          <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-lg bg-[#146B67] text-white">
+        <Card className="flex items-center gap-3 border-secondary/40 bg-secondary/5 p-3 transition-colors hover:bg-secondary/10 dark:border-secondary/40 dark:bg-secondary/10">
+          <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-lg bg-primary text-white">
             <Video className="h-7 w-7" />
           </div>
           <div className="min-w-0 flex-1">
-            <p className="text-sm font-semibold text-[#146B67] dark:text-[#1FA89B]">
+            <p className="text-sm font-semibold text-primary dark:text-secondary">
               {attachReelId ? "Garder sans annonce" : "Créer sans annonce"}
             </p>
             <p className="mt-0.5 text-xs leading-relaxed text-slate-500 dark:text-slate-400">

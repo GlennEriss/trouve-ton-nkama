@@ -2117,7 +2117,7 @@ export default function SocialImportDashboardPage() {
                             href={source.sourceUrl}
                             target="_blank"
                             rel="noreferrer"
-                            className="text-brand-700 hover:underline"
+                            className="text-primary hover:underline"
                           >
                             Ouvrir
                           </a>
@@ -2439,7 +2439,7 @@ export default function SocialImportDashboardPage() {
                           href={candidate.sourcePostUrl}
                           target="_blank"
                           rel="noreferrer"
-                          className="mt-2 inline-block text-xs text-brand-700 hover:underline"
+                          className="mt-2 inline-block text-xs text-primary hover:underline"
                         >
                           Ouvrir le post source
                         </a>

@@ -71,7 +71,7 @@ export default function PropertyDetailsPanel({ selectedProperty, onClose }: Prop
 
           <div className="flex justify-between">
             <span className="text-sm text-gray-600">Prix</span>
-            <span className="text-lg font-bold text-[#146B67]">
+            <span className="text-lg font-bold text-primary">
               {selectedProperty.price
                 ? `${selectedProperty.price.toLocaleString()} FCFA`
                 : 'Prix sur demande'}
@@ -89,12 +89,12 @@ export default function PropertyDetailsPanel({ selectedProperty, onClose }: Prop
         <div className="flex gap-3">
           <Button
             onClick={() => router.push(`/houseDetails/${selectedProperty.objectID}`)}
-            className="flex-1 bg-[#146B67] hover:bg-[#1FA89B] text-white">
+            className="flex-1 bg-primary hover:bg-secondary text-white">
             Voir les détails
           </Button>
           {/* <Button
             variant="outline"
-            className="flex-1 border-[#146B67] text-[#146B67] hover:bg-[#146B67] hover:text-white"
+            className="flex-1 border-primary text-primary hover:bg-primary hover:text-white"
           >
             Contacter
           </Button> */}

@@ -121,7 +121,7 @@ export default function FormPersonalInformation() {
                                     type='submit'
                                     disabled={Boolean(form.formState.isSubmitting) || Boolean(form.formState.isLoading)}
                                     isLoading={Boolean(form.formState.isSubmitting) || Boolean(form.formState.isLoading)}
-                                    className='bg-gradient-to-b from-[#1FA89B] to-[#146B67] md:py-7 mt-5'
+                                    className='bg-gradient-to-b from-secondary to-primary md:py-7 mt-5'
                                     title='Modifier le téléphone'
                                 />
                             </div>

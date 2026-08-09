@@ -53,11 +53,11 @@ export default function AdvertisePage() {
     <div className="mx-auto max-w-5xl px-5 py-10 space-y-12">
       {/* Hero */}
       <section className="text-center space-y-4">
-        <div className="inline-flex items-center gap-2 rounded-full border border-[#1FA89B]/30 bg-[#1FA89B]/10 px-4 py-2">
-          <Megaphone className="w-5 h-5 text-[#1FA89B]" />
-          <span className="font-semibold text-[#224D62]">Publicité</span>
+        <div className="inline-flex items-center gap-2 rounded-full border border-secondary/30 bg-secondary/10 px-4 py-2">
+          <Megaphone className="w-5 h-5 text-secondary" />
+          <span className="font-semibold text-ink">Publicité</span>
         </div>
-        <h1 className="text-3xl md:text-4xl font-bold text-[#224D62] dark:text-white">
+        <h1 className="text-3xl md:text-4xl font-bold text-ink dark:text-white">
           Faites connaître votre business au Gabon
         </h1>
         <p className="mx-auto max-w-2xl text-gray-600 dark:text-gray-300">
@@ -67,7 +67,7 @@ export default function AdvertisePage() {
         <div className="flex flex-col items-center justify-center gap-3 sm:flex-row">
           <Link
             href={routes.protected.advertising}
-            className="inline-flex items-center gap-2 rounded-full bg-[#1FA89B] px-6 py-3 font-semibold text-white shadow-lg transition hover:bg-[#188a7f]"
+            className="inline-flex items-center gap-2 rounded-full bg-secondary px-6 py-3 font-semibold text-white shadow-lg transition hover:bg-primary-600"
           >
             <Megaphone className="w-5 h-5" />
             Créer ma pub en ligne
@@ -76,7 +76,7 @@ export default function AdvertisePage() {
             href={WHATSAPP_LINK}
             target="_blank"
             rel="noopener noreferrer"
-            className="inline-flex items-center gap-2 rounded-full border border-[#1FA89B] px-6 py-3 font-semibold text-[#1FA89B] transition hover:bg-[#1FA89B]/5"
+            className="inline-flex items-center gap-2 rounded-full border border-secondary px-6 py-3 font-semibold text-secondary transition hover:bg-secondary/5"
           >
             <MessageCircle className="w-5 h-5" />
             Ou nous écrire sur WhatsApp
@@ -88,8 +88,8 @@ export default function AdvertisePage() {
       <section className="grid gap-5 md:grid-cols-3">
         {BENEFITS.map(({ icon: Icon, title, text }) => (
           <div key={title} className="rounded-2xl border border-gray-200 bg-white p-6 dark:bg-gray-900 dark:border-gray-700">
-            <Icon className="w-8 h-8 text-[#1FA89B]" />
-            <h3 className="mt-3 font-semibold text-[#224D62] dark:text-white">{title}</h3>
+            <Icon className="w-8 h-8 text-secondary" />
+            <h3 className="mt-3 font-semibold text-ink dark:text-white">{title}</h3>
             <p className="mt-1 text-sm text-gray-600 dark:text-gray-300">{text}</p>
           </div>
         ))}
@@ -97,11 +97,11 @@ export default function AdvertisePage() {
 
       {/* Emplacements */}
       <section className="space-y-4">
-        <h2 className="text-2xl font-bold text-[#224D62] dark:text-white">Où s’affiche votre pub ?</h2>
+        <h2 className="text-2xl font-bold text-ink dark:text-white">Où s’affiche votre pub ?</h2>
         <ul className="grid gap-3 sm:grid-cols-2">
           {PLACEMENTS.map((p) => (
             <li key={p} className="flex items-center gap-2 rounded-lg bg-gray-50 px-4 py-3 text-gray-700 dark:bg-gray-800 dark:text-gray-200">
-              <BadgeCheck className="w-5 h-5 text-[#1FA89B] shrink-0" />
+              <BadgeCheck className="w-5 h-5 text-secondary shrink-0" />
               {p}
             </li>
           ))}
@@ -110,7 +110,7 @@ export default function AdvertisePage() {
 
       {/* Tarifs */}
       <section className="space-y-4">
-        <h2 className="text-2xl font-bold text-[#224D62] dark:text-white">Nos forfaits</h2>
+        <h2 className="text-2xl font-bold text-ink dark:text-white">Nos forfaits</h2>
         <div className="grid gap-5 md:grid-cols-3">
           {PLANS.map((plan) => (
             <div
@@ -118,12 +118,12 @@ export default function AdvertisePage() {
               className={
                 'rounded-2xl border p-6 ' +
                 (plan.highlight
-                  ? 'border-[#1FA89B] ring-2 ring-[#1FA89B]/30 bg-white dark:bg-gray-900'
+                  ? 'border-secondary ring-2 ring-secondary/30 bg-white dark:bg-gray-900'
                   : 'border-gray-200 bg-white dark:bg-gray-900 dark:border-gray-700')
               }
             >
-              <h3 className="font-bold text-[#224D62] dark:text-white">{plan.name}</h3>
-              <p className="mt-2 text-2xl font-extrabold text-[#1FA89B]">{plan.price}</p>
+              <h3 className="font-bold text-ink dark:text-white">{plan.name}</h3>
+              <p className="mt-2 text-2xl font-extrabold text-secondary">{plan.price}</p>
               <p className="mt-1 text-sm text-gray-500">{plan.duration}</p>
               <p className="text-sm text-gray-500">{plan.placements}</p>
             </div>
@@ -135,7 +135,7 @@ export default function AdvertisePage() {
       </section>
 
       {/* CTA final */}
-      <section className="rounded-2xl bg-[#224D62] px-6 py-10 text-center text-white">
+      <section className="rounded-2xl bg-ink px-6 py-10 text-center text-white">
         <h2 className="text-2xl font-bold">Prêt à booster votre visibilité ?</h2>
         <p className="mx-auto mt-2 max-w-xl text-white/80">
           Envoyez-nous votre visuel et votre message, on met votre pub en ligne rapidement.
@@ -144,7 +144,7 @@ export default function AdvertisePage() {
           href={WHATSAPP_LINK}
           target="_blank"
           rel="noopener noreferrer"
-          className="mt-5 inline-flex items-center gap-2 rounded-full bg-[#1FA89B] px-6 py-3 font-semibold text-white shadow-lg transition hover:bg-[#188a7f]"
+          className="mt-5 inline-flex items-center gap-2 rounded-full bg-secondary px-6 py-3 font-semibold text-white shadow-lg transition hover:bg-primary-600"
         >
           <MessageCircle className="w-5 h-5" />
           Nous contacter sur WhatsApp

@@ -31,6 +31,15 @@ jest.mock('@/features/announcer/ad-management/hooks', () => ({
   useAdManagement: () => managementState,
 }))
 
+// use-current-user importe @/firebase/auth (getAuth) au chargement du module, qui
+// plante sous jsdom sans clé Firebase valide — comme dans les tests des formulaires
+// d'auth, on mocke le hook plutot que de laisser Jest resoudre le vrai SDK. Pas de
+// pendingClaimNotice ici : ce test se concentre sur AdManagementPage, pas sur la
+// banniere d'auto-attribution (voir auto-claim-banner.test.tsx).
+jest.mock('@/hooks/use-current-user', () => ({
+  useCurrentUser: () => ({ user: { uid: 'u1', metadata: {} }, refreshSession: jest.fn() }),
+}))
+
 jest.mock('@/components/promotion/PromotionBadge', () => ({
   __esModule: true,
   default: ({ property }: { property: Property }) => property.isPromoted ? <span>Promotion active</span> : null,

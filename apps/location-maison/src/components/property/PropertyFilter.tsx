@@ -93,9 +93,9 @@ export const PropertyFilter = () => {
                             className={cn(
                                 "group relative flex flex-col items-center gap-3 p-4 rounded-2xl transition-all duration-300 transform hover:scale-105 min-w-[100px] border-2",
                                 isActive 
-                                    ? "bg-gradient-to-br from-[#146B67] to-[#1FA89B] text-white border-transparent shadow-xl" 
+                                    ? "bg-gradient-to-br from-primary to-secondary text-white border-transparent shadow-xl" 
                                     : "bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 border-gray-200 dark:border-gray-600 shadow-md hover:shadow-lg",
-                                "focus:outline-none focus:ring-2 focus:ring-[#146B67] focus:ring-offset-2"
+                                "focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2"
                             )}
                         >
                             {/* Icône avec gradient de fond */}

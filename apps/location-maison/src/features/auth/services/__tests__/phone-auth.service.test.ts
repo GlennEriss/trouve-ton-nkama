@@ -14,6 +14,9 @@ jest.mock('../../repositories/user.repository', () => ({
 jest.mock('@/lib/logger', () => ({
   createLogger: () => ({ warn: jest.fn(), error: jest.fn(), info: jest.fn(), debug: jest.fn() }),
 }));
+jest.mock('@/features/announcer/listing-claim/services/listing-claim.service', () => ({
+  claimListingsByVerifiedPhone: jest.fn(),
+}));
 
 import { authenticateWithPhoneIdToken, PhoneAuthError } from '../phone-auth.service';
 
@@ -39,12 +42,16 @@ describe('authenticateWithPhoneIdToken', () => {
   let adminAuth: any;
   let resolveSessionUser: any;
   let userRepository: any;
+  let claimListingsByVerifiedPhone: any;
 
   beforeEach(() => {
     jest.clearAllMocks();
     adminAuth = require('@/firebase/admin').adminAuth;
     resolveSessionUser = require('../resolve-session-user').resolveSessionUser;
     userRepository = require('../../repositories/user.repository').userRepository;
+    claimListingsByVerifiedPhone =
+      require('@/features/announcer/listing-claim/services/listing-claim.service').claimListingsByVerifiedPhone;
+    claimListingsByVerifiedPhone.mockResolvedValue({ claimedCount: 0, skippedThreshold: false });
   });
 
   it('throws INVALID_TOKEN when the ID token cannot be verified', async () => {
@@ -108,6 +115,59 @@ describe('authenticateWithPhoneIdToken', () => {
 
     expect(userRepository.update).not.toHaveBeenCalled();
     expect(userRepository.create).not.toHaveBeenCalled();
+    expect(result).toBe(existing);
+  });
+
+  it('reconciles listings by verified phone (auto-attribution) after a successful sign-in', async () => {
+    adminAuth.verifyIdToken.mockResolvedValue({ uid: 'uid-1', phone_number: PHONE });
+    const existing = makeUser({ providers: ['PHONE'], phoneNumberVerified: true });
+    resolveSessionUser.mockResolvedValue(existing);
+
+    await authenticateWithPhoneIdToken('t');
+
+    expect(claimListingsByVerifiedPhone).toHaveBeenCalledWith('uid-1', PHONE);
+  });
+
+  it('still returns the user when auto-attribution fails (best-effort, never blocks sign-in)', async () => {
+    adminAuth.verifyIdToken.mockResolvedValue({ uid: 'uid-1', phone_number: PHONE });
+    const existing = makeUser({ providers: ['PHONE'], phoneNumberVerified: true });
+    resolveSessionUser.mockResolvedValue(existing);
+    claimListingsByVerifiedPhone.mockRejectedValue(new Error('firestore down'));
+
+    await expect(authenticateWithPhoneIdToken('t')).resolves.toBe(existing);
+  });
+
+  it('persists a pendingClaimNotice when listings were auto-claimed, so the dashboard can welcome the announcer', async () => {
+    adminAuth.verifyIdToken.mockResolvedValue({ uid: 'uid-1', phone_number: PHONE });
+    const existing = makeUser({ providers: ['PHONE'], phoneNumberVerified: true, metadata: { foo: 'bar' } });
+    resolveSessionUser.mockResolvedValue(existing);
+    claimListingsByVerifiedPhone.mockResolvedValue({ claimedCount: 3, skippedThreshold: false });
+    const updated = { ...existing, metadata: { foo: 'bar', pendingClaimNotice: { count: 3, claimedAt: 'now' } } };
+    userRepository.update.mockResolvedValue(updated);
+
+    const result = await authenticateWithPhoneIdToken('t');
+
+    expect(userRepository.update).toHaveBeenCalledWith(
+      'uid-1',
+      expect.objectContaining({
+        metadata: expect.objectContaining({
+          foo: 'bar',
+          pendingClaimNotice: expect.objectContaining({ count: 3 }),
+        }),
+      }),
+    );
+    expect(result).toBe(updated);
+  });
+
+  it('does not touch metadata when nothing was claimed', async () => {
+    adminAuth.verifyIdToken.mockResolvedValue({ uid: 'uid-1', phone_number: PHONE });
+    const existing = makeUser({ providers: ['PHONE'], phoneNumberVerified: true });
+    resolveSessionUser.mockResolvedValue(existing);
+    claimListingsByVerifiedPhone.mockResolvedValue({ claimedCount: 0, skippedThreshold: false });
+
+    const result = await authenticateWithPhoneIdToken('t');
+
+    expect(userRepository.update).not.toHaveBeenCalled();
     expect(result).toBe(existing);
   });
 });

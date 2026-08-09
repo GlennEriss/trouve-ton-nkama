@@ -97,12 +97,12 @@ const NavItem: React.FC<{ item: NavItemDef; isActive: boolean }> = ({ item, isAc
         href={item.link}
         className={clsx(
             'relative flex flex-col items-center gap-1 flex-1 pt-3 pb-2 transition-colors duration-200',
-            isActive ? 'text-[#146B67] dark:text-[#1FA89B]' : 'text-gray-600 dark:text-gray-300'
+            isActive ? 'text-primary dark:text-secondary' : 'text-gray-600 dark:text-gray-300'
         )}
     >
         <div className={clsx(
             'p-1.5 rounded-xl transition-all duration-200',
-            isActive && 'bg-[#146B67]/10 dark:bg-[#1FA89B]/10'
+            isActive && 'bg-primary/10 dark:bg-secondary/10'
         )}>
             <item.icon
                 size={22}
@@ -152,14 +152,14 @@ export const BottomNavigation: React.FC = () => {
                                 className="flex flex-col items-center gap-1 group -mt-6"
                             >
                                 <div className={clsx(
-                                    'w-14 h-14 rounded-full bg-[#146B67] flex items-center justify-center',
-                                    'shadow-lg shadow-[#146B67]/30',
+                                    'w-14 h-14 rounded-full bg-primary flex items-center justify-center',
+                                    'shadow-lg shadow-primary/30',
                                     'border-4 border-white dark:border-gray-900',
                                     'transition-transform duration-200 active:scale-95 group-hover:scale-105'
                                 )}>
                                     <Plus size={26} className="text-white stroke-[2.5px]" />
                                 </div>
-                                <span className="text-[10px] font-semibold text-[#146B67] dark:text-[#1FA89B] leading-none">
+                                <span className="text-[10px] font-semibold text-primary dark:text-secondary leading-none">
                                     Publier
                                 </span>
                             </Link>
@@ -207,14 +207,14 @@ export const BottomNavigation: React.FC = () => {
                                 className="flex flex-col items-center gap-1 group -mt-6"
                             >
                                 <div className={clsx(
-                                    'w-14 h-14 rounded-full bg-[#146B67] flex items-center justify-center',
-                                    'shadow-lg shadow-[#146B67]/30',
+                                    'w-14 h-14 rounded-full bg-primary flex items-center justify-center',
+                                    'shadow-lg shadow-primary/30',
                                     'border-4 border-white dark:border-gray-900',
                                     'transition-transform duration-200 active:scale-95 group-hover:scale-105'
                                 )}>
                                     <Plus size={26} className="text-white stroke-[2.5px]" />
                                 </div>
-                                <span className="text-[10px] font-semibold text-[#146B67] dark:text-[#1FA89B] leading-none">
+                                <span className="text-[10px] font-semibold text-primary dark:text-secondary leading-none">
                                     Publier
                                 </span>
                             </Link>

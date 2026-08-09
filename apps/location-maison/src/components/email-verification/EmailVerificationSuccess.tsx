@@ -15,7 +15,7 @@ const EmailVerificationSuccess: React.FC = () => {
       <div className="w-full max-w-2xl mx-4 bg-white dark:bg-gray-800 shadow-lg dark:shadow-gray-900/50 rounded-lg overflow-hidden">
         
         {/* Header avec gradient et animation */}
-        <div className="bg-gradient-to-br from-[#146B67] via-[#1FA89B] to-[#146B67] text-white p-8 text-center">
+        <div className="bg-gradient-to-br from-primary via-secondary to-primary text-white p-8 text-center">
           <div className="flex items-center justify-center mb-4">
             <Link href={routes.public.homePage}>
               <Logo width="64px" height="64px" />
@@ -57,12 +57,12 @@ const EmailVerificationSuccess: React.FC = () => {
 
             {/* Prochaines étapes */}
             <div className="text-left bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 rounded-lg p-6 mb-6">
-              <h3 className="font-bold text-[#146B67] dark:text-[#1FA89B] text-lg mb-4 text-center">
+              <h3 className="font-bold text-primary dark:text-secondary text-lg mb-4 text-center">
                 Prochaines étapes
               </h3>
               <div className="grid md:grid-cols-2 gap-4">
                 <div className="flex items-start">
-                  <div className="flex-shrink-0 w-8 h-8 bg-[#146B67] text-white rounded-full flex items-center justify-center text-sm font-bold mr-3">
+                  <div className="flex-shrink-0 w-8 h-8 bg-primary text-white rounded-full flex items-center justify-center text-sm font-bold mr-3">
                     1
                   </div>
                   <div>
@@ -72,7 +72,7 @@ const EmailVerificationSuccess: React.FC = () => {
                 </div>
                 
                 <div className="flex items-start">
-                  <div className="flex-shrink-0 w-8 h-8 bg-[#1FA89B] text-white rounded-full flex items-center justify-center text-sm font-bold mr-3">
+                  <div className="flex-shrink-0 w-8 h-8 bg-secondary text-white rounded-full flex items-center justify-center text-sm font-bold mr-3">
                     2
                   </div>
                   <div>
@@ -82,7 +82,7 @@ const EmailVerificationSuccess: React.FC = () => {
                 </div>
                 
                 <div className="flex items-start">
-                  <div className="flex-shrink-0 w-8 h-8 bg-[#146B67] text-white rounded-full flex items-center justify-center text-sm font-bold mr-3">
+                  <div className="flex-shrink-0 w-8 h-8 bg-primary text-white rounded-full flex items-center justify-center text-sm font-bold mr-3">
                     3
                   </div>
                   <div>
@@ -92,7 +92,7 @@ const EmailVerificationSuccess: React.FC = () => {
                 </div>
                 
                 <div className="flex items-start">
-                  <div className="flex-shrink-0 w-8 h-8 bg-[#1FA89B] text-white rounded-full flex items-center justify-center text-sm font-bold mr-3">
+                  <div className="flex-shrink-0 w-8 h-8 bg-secondary text-white rounded-full flex items-center justify-center text-sm font-bold mr-3">
                     4
                   </div>
                   <div>
@@ -111,23 +111,23 @@ const EmailVerificationSuccess: React.FC = () => {
               <div className="grid sm:grid-cols-3 gap-3 text-sm">
                 <div className="text-center">
                   <div className="text-2xl mb-1">
-                    <CreditCard className="w-8 h-8 mx-auto text-[#146B67]" />
+                    <CreditCard className="w-8 h-8 mx-auto text-primary" />
                   </div>
-                  <div className="font-medium text-[#146B67] dark:text-[#1FA89B]">3 crédits</div>
+                  <div className="font-medium text-primary dark:text-secondary">3 crédits</div>
                   <div className="text-gray-600 dark:text-gray-400">gratuits</div>
                 </div>
                 <div className="text-center">
                   <div className="text-2xl mb-1">
-                    <Bell className="w-8 h-8 mx-auto text-[#146B67]" />
+                    <Bell className="w-8 h-8 mx-auto text-primary" />
                   </div>
-                  <div className="font-medium text-[#146B67] dark:text-[#1FA89B]">Alertes</div>
+                  <div className="font-medium text-primary dark:text-secondary">Alertes</div>
                   <div className="text-gray-600 dark:text-gray-400">personnalisées</div>
                 </div>
                 <div className="text-center">
                   <div className="text-2xl mb-1">
-                    <Heart className="w-8 h-8 mx-auto text-[#146B67]" />
+                    <Heart className="w-8 h-8 mx-auto text-primary" />
                   </div>
-                  <div className="font-medium text-[#146B67] dark:text-[#1FA89B]">Favoris</div>
+                  <div className="font-medium text-primary dark:text-secondary">Favoris</div>
                   <div className="text-gray-600 dark:text-gray-400">illimités</div>
                 </div>
               </div>
@@ -137,13 +137,13 @@ const EmailVerificationSuccess: React.FC = () => {
           {/* Boutons d'action */}
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Link href={routes.public.signin}>
-              <Button className="w-full sm:w-auto bg-gradient-to-r from-[#146B67] to-[#1FA89B] hover:from-[#0f5853] hover:to-[#1a9688] text-white font-semibold px-8 py-3 rounded-lg transition-all duration-200 shadow-lg">
+              <Button className="w-full sm:w-auto bg-gradient-to-r from-primary to-secondary hover:from-primary-800 hover:to-primary-600 text-white font-semibold px-8 py-3 rounded-lg transition-all duration-200 shadow-lg">
                 Commencer maintenant
               </Button>
             </Link>
             
             <Link href={routes.public.search}>
-              <Button variant="outline" className="w-full sm:w-auto border-[#146B67] text-[#146B67] hover:bg-[#146B67] hover:text-white px-8 py-3 rounded-lg transition-all duration-200">
+              <Button variant="outline" className="w-full sm:w-auto border-primary text-primary hover:bg-primary hover:text-white px-8 py-3 rounded-lg transition-all duration-200">
                 Découvrir les annonces
               </Button>
             </Link>
@@ -153,11 +153,11 @@ const EmailVerificationSuccess: React.FC = () => {
           <div className="mt-8 pt-6 border-t border-gray-200 dark:border-gray-600">
             <p className="text-sm text-gray-500 dark:text-gray-400">
               Besoin d'aide pour commencer ? Consultez notre{' '}
-              <a href="/aide" className="text-[#146B67] hover:text-[#1FA89B] font-medium">
+              <a href="/aide" className="text-primary hover:text-secondary font-medium">
                 guide d'utilisation
               </a>
               {' '}ou contactez-nous à{' '}
-              <a href={`mailto:${supportContact.email}`} className="text-[#146B67] hover:text-[#1FA89B] font-medium">
+              <a href={`mailto:${supportContact.email}`} className="text-primary hover:text-secondary font-medium">
                 {supportContact.email}
               </a>
             </p>

@@ -67,7 +67,7 @@ export default function ContactSection({ property }: Readonly<{ property: Proper
                     {isDesktop ? (
                         phoneNumber && (
                             <div className="flex items-center gap-2 border border-gray-300 px-4 py-3 rounded-lg shadow-lg">
-                                <FaPhoneAlt size={22} className="text-[#146B67]" />
+                                <FaPhoneAlt size={22} className="text-primary" />
                                 <span className="font-medium select-all">{phoneNumber}</span>
                             </div>
                         )
@@ -84,7 +84,7 @@ export default function ContactSection({ property }: Readonly<{ property: Proper
                                     className="border border-gray-300 p-3 rounded-lg shadow-lg"
                                     title="Afficher le numéro"
                                 >
-                                    <FaPhoneAlt size={30} className="text-[#146B67]" />
+                                    <FaPhoneAlt size={30} className="text-primary" />
                                 </button>
                             )}
                         </>

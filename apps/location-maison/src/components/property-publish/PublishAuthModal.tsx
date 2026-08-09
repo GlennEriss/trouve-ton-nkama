@@ -224,7 +224,7 @@ export function PublishAuthModal({
                         <div className="flex flex-col gap-3">
                             <Button
                                 type="button"
-                                className="h-12 rounded-full bg-[#1FA89B] hover:bg-[#178b80] text-white"
+                                className="h-12 rounded-full bg-secondary hover:bg-primary-600 text-white"
                                 onClick={() => {
                                     trackEvent(trackingEvents.CTA_PUBLISH_AUTH_CHOICE_SIGNUP)
                                     setView('signup')
@@ -316,11 +316,11 @@ export function PublishAuthModal({
                                 label={
                                     <span className="text-sm text-gray-600 dark:text-gray-400">
                                         J&apos;accepte la{' '}
-                                        <a href={routes.public.confidentiality} target="_blank" rel="noopener noreferrer" className="text-[#1FA89B] hover:underline font-medium">
+                                        <a href={routes.public.confidentiality} target="_blank" rel="noopener noreferrer" className="text-secondary hover:underline font-medium">
                                             politique de confidentialité
                                         </a>{' '}
                                         et les{' '}
-                                        <a href={routes.public.terms_of_use} target="_blank" rel="noopener noreferrer" className="text-[#1FA89B] hover:underline font-medium">
+                                        <a href={routes.public.terms_of_use} target="_blank" rel="noopener noreferrer" className="text-secondary hover:underline font-medium">
                                             conditions d&apos;utilisation
                                         </a>
                                     </span>
@@ -332,13 +332,13 @@ export function PublishAuthModal({
                                 label={
                                     <span className="text-sm text-gray-600 dark:text-gray-400">
                                         J&apos;accepte les{' '}
-                                        <a href={routes.public.announcer_terms} target="_blank" rel="noopener noreferrer" className="text-[#1FA89B] hover:underline font-medium">
+                                        <a href={routes.public.announcer_terms} target="_blank" rel="noopener noreferrer" className="text-secondary hover:underline font-medium">
                                             conditions annonceur
                                         </a>
                                     </span>
                                 }
                             />
-                            <Button type="submit" disabled={isSignupLoading} className="w-full h-12 rounded-full bg-[#1FA89B] hover:bg-[#178b80] text-white">
+                            <Button type="submit" disabled={isSignupLoading} className="w-full h-12 rounded-full bg-secondary hover:bg-primary-600 text-white">
                                 {isSignupLoading ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : null}
                                 Créer mon compte annonceur
                             </Button>
@@ -357,7 +357,7 @@ export function PublishAuthModal({
                             type="button"
                             disabled={isCredentialsLoading}
                             onClick={handleRetrySigninAfterVerification}
-                            className="w-full h-12 rounded-full bg-[#1FA89B] hover:bg-[#178b80] text-white"
+                            className="w-full h-12 rounded-full bg-secondary hover:bg-primary-600 text-white"
                         >
                             {isCredentialsLoading ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : null}
                             J&apos;ai vérifié, se connecter
@@ -386,7 +386,7 @@ export function PublishAuthModal({
                                 IconColor="#9ca3af"
                                 placeholder="Votre mot de passe"
                             />
-                            <Button type="submit" disabled={isCredentialsLoading} className="w-full h-12 rounded-full bg-[#1FA89B] hover:bg-[#178b80] text-white">
+                            <Button type="submit" disabled={isCredentialsLoading} className="w-full h-12 rounded-full bg-secondary hover:bg-primary-600 text-white">
                                 {isCredentialsLoading ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : null}
                                 Se connecter
                             </Button>
@@ -438,13 +438,13 @@ export function PublishAuthModal({
                                 label={
                                     <span className="text-sm text-gray-600 dark:text-gray-400">
                                         J&apos;accepte les{' '}
-                                        <a href={routes.public.announcer_terms} target="_blank" rel="noopener noreferrer" className="text-[#1FA89B] hover:underline font-medium">
+                                        <a href={routes.public.announcer_terms} target="_blank" rel="noopener noreferrer" className="text-secondary hover:underline font-medium">
                                             conditions annonceur
                                         </a>
                                     </span>
                                 }
                             />
-                            <Button type="submit" disabled={isBecomeAnnouncerLoading} className="w-full h-12 rounded-full bg-[#1FA89B] hover:bg-[#178b80] text-white">
+                            <Button type="submit" disabled={isBecomeAnnouncerLoading} className="w-full h-12 rounded-full bg-secondary hover:bg-primary-600 text-white">
                                 {isBecomeAnnouncerLoading ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : null}
                                 Activer et publier
                             </Button>
@@ -454,7 +454,7 @@ export function PublishAuthModal({
 
                 {view === 'finalizing' && (
                     <div className="flex flex-col items-center gap-3 py-6 text-center">
-                        <Loader2 className="w-6 h-6 animate-spin text-[#1FA89B]" />
+                        <Loader2 className="w-6 h-6 animate-spin text-secondary" />
                         <p className="text-sm text-gray-600 dark:text-gray-400">
                             Finalisation de la connexion et publication de votre annonce...
                         </p>

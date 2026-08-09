@@ -306,7 +306,7 @@ export function ProfileInformationFormModern() {
   if (!user) {
     return (
       <div className="min-h-[60vh] flex items-center justify-center">
-        <div className="h-10 w-10 animate-spin rounded-full border-b-2 border-[#1FA89B]" />
+        <div className="h-10 w-10 animate-spin rounded-full border-b-2 border-secondary" />
       </div>
     );
   }
@@ -332,7 +332,7 @@ export function ProfileInformationFormModern() {
         <Link
           href={routes.protected.profil}
           aria-label="Retour au profil"
-          className="inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-full hover:bg-gray-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#146B67] dark:hover:bg-gray-800"
+          className="inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-full hover:bg-gray-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary dark:hover:bg-gray-800"
         >
           <ChevronLeft />
         </Link>
@@ -500,11 +500,11 @@ export function ProfileInformationFormModern() {
                     aria-expanded={socialProfilesOpen}
                     aria-controls="social-profile-fields"
                     onClick={() => setSocialProfilesOpen((current) => !current)}
-                    className="flex min-h-11 w-full items-center justify-between gap-3 rounded-lg px-1 text-left focus:outline-none focus-visible:ring-2 focus-visible:ring-[#146B67] focus-visible:ring-offset-2 dark:focus-visible:ring-offset-gray-900"
+                    className="flex min-h-11 w-full items-center justify-between gap-3 rounded-lg px-1 text-left focus:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 dark:focus-visible:ring-offset-gray-900"
                   >
                     <span>
                       <span className="inline-flex items-center gap-2 text-sm font-semibold text-gray-900 dark:text-white">
-                        <Link2 className="h-4 w-4 text-[#1FA89B]" />
+                        <Link2 className="h-4 w-4 text-secondary" />
                         Réseaux sociaux (facultatif)
                       </span>
                       <span className="mt-1 block text-xs text-gray-600 dark:text-gray-400">
@@ -545,7 +545,7 @@ export function ProfileInformationFormModern() {
                   type="submit"
                   disabled={isLoading}
                   isLoading={isLoading}
-                  className="bg-gradient-to-r from-[#146B67] to-[#1FA89B] hover:from-[#125b57] hover:to-[#1a9589]"
+                  className="bg-gradient-to-r from-primary to-secondary hover:from-primary-800 hover:to-primary-600"
                   title={
                     isLoading
                       ? 'Enregistrement en cours...'

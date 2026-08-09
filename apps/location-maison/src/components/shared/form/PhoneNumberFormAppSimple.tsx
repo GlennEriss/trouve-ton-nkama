@@ -133,7 +133,7 @@ export const PhoneNumberParts = ({
                 >
                     <SelectTrigger
                         aria-label="Indicatif téléphonique"
-                        className="w-full min-h-[48px] py-2 px-3 border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900 rounded-full focus:border-[#1FA89B] focus:bg-[#ebf6f5] dark:focus:bg-gray-800 [&>span]:flex [&>span]:items-center"
+                        className="w-full min-h-[48px] py-2 px-3 border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900 rounded-full focus:border-secondary focus:bg-primary-50 dark:focus:bg-gray-800 [&>span]:flex [&>span]:items-center"
                     >
                         <SelectValue>
                             <span className="flex items-center gap-1">
@@ -164,7 +164,7 @@ export const PhoneNumberParts = ({
                 <span className="block text-xs font-medium text-gray-600 dark:text-gray-300">
                     Numéro
                 </span>
-                <div className="border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900 rounded-full flex items-center group transition-colors focus-within:border-[#1FA89B] focus-within:bg-[#ebf6f5] dark:focus-within:bg-gray-800 min-h-[48px] py-2 px-4">
+                <div className="border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900 rounded-full flex items-center group transition-colors focus-within:border-secondary focus-within:bg-primary-50 dark:focus-within:bg-gray-800 min-h-[48px] py-2 px-4">
                     <Input
                         type="tel"
                         value={phoneNumber}

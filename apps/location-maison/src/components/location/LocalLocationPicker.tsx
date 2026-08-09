@@ -80,7 +80,7 @@ export default function LocalLocationPicker() {
     <div className="space-y-6 w-full">
       {/* Description */}
       <div className="text-center space-y-2">
-        <p className="text-[#224D62]/80 text-sm">
+        <p className="text-ink/80 text-sm">
           Sélectionnez votre localisation en utilisant les listes déroulantes. 
           Les données sont issues d'OpenStreetMap et couvrent toutes les zones du Gabon.
         </p>
@@ -88,7 +88,7 @@ export default function LocalLocationPicker() {
 
       {/* Carte en haut */}
       {displayCoordinates && (
-        <div className="relative overflow-hidden bg-gradient-to-br from-[#224D62]/5 via-[#CBB171]/5 to-[#224D62]/10 rounded-2xl p-4 shadow-lg border border-[#224D62]/20">
+        <div className="relative overflow-hidden bg-gradient-to-br from-ink/5 via-gold/5 to-ink/10 rounded-2xl p-4 shadow-lg border border-ink/20">
           <LocationMap coordinates={displayCoordinates} districtName={districtName} />
         </div>
       )}
@@ -97,7 +97,7 @@ export default function LocalLocationPicker() {
       <div className="space-y-4">
         {/* Province */}
         <div className="space-y-2">
-          <Label className="text-sm font-medium text-[#224D62]">
+          <Label className="text-sm font-medium text-ink">
             Province <span className="text-red-500">*</span>
           </Label>
           <ProvinceCombobox />
@@ -105,7 +105,7 @@ export default function LocalLocationPicker() {
 
         {/* Ville */}
         <div className="space-y-2">
-          <Label className="text-sm font-medium text-[#224D62]">
+          <Label className="text-sm font-medium text-ink">
             Ville <span className="text-red-500">*</span>
           </Label>
           <CityCombobox />
@@ -113,7 +113,7 @@ export default function LocalLocationPicker() {
 
         {/* Quartier */}
         <div className="space-y-2">
-          <Label className="text-sm font-medium text-[#224D62]">
+          <Label className="text-sm font-medium text-ink">
             Quartier <span className="text-red-500">*</span>
           </Label>
           <QuarterCombobox />

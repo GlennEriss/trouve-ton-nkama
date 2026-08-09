@@ -94,15 +94,15 @@ export default function CarouselPropertyType() {
                             >
                                 <CardHeader className="flex flex-col items-center pt-6">
                                     <div className="relative">
-                                        <CardTitle className="rounded-full w-20 h-20 flex items-center justify-center bg-gradient-to-br from-[#146B67]/10 to-[#1FA89B]/10 group-hover:from-[#146B67]/20 group-hover:to-[#1FA89B]/20 transition-colors duration-300">
-                                            <div className="text-[#146B67] text-3xl group-hover:scale-110 transition-transform duration-300">
+                                        <CardTitle className="rounded-full w-20 h-20 flex items-center justify-center bg-gradient-to-br from-primary/10 to-secondary/10 group-hover:from-primary/20 group-hover:to-secondary/20 transition-colors duration-300">
+                                            <div className="text-primary text-3xl group-hover:scale-110 transition-transform duration-300">
                                                 {property.icon}
                                             </div>
                                         </CardTitle>
                                     </div>
                                 </CardHeader>
                                 <CardContent className="text-center pb-6">
-                                    <h1 className="text-lg font-semibold text-gray-800 dark:text-white mb-1 group-hover:text-[#146B67] transition-colors duration-300">
+                                    <h1 className="text-lg font-semibold text-gray-800 dark:text-white mb-1 group-hover:text-primary transition-colors duration-300">
                                         {TypeProperty[property.type]}
                                     </h1>
                                     <CardDescription className="text-sm text-gray-500 dark:text-gray-400">

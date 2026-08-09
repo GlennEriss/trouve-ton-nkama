@@ -26,7 +26,7 @@ export default function PreviewProperty({ property }: Readonly<{ property: Prope
   const primaryImageUrl = getPrimaryPropertyImageUrl(property.images)
 
   return (
-    <div className='flex flex-col gap-3 bg-[#FDFCFB] dark:bg-[#020817] p-3 mb-24 md:px-0 max-w-full overflow-x-hidden'>
+    <div className='flex flex-col gap-3 bg-gray-50 dark:bg-gray-950 p-3 mb-24 md:px-0 max-w-full overflow-x-hidden'>
       {/* Section des tags */}
       <section className='flex justify-between'>
         <div className='flex flex-wrap gap-3 items-center'>

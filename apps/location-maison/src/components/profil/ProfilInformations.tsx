@@ -11,7 +11,7 @@ export default function ProfilInformations() {
     const { user } = useCurrentUser()
     const avatarBackground = generateColorFromName(user?.firstname);
     return (
-        <Link href={routes.protected.profil_informations} className='flex min-h-20 items-center gap-5 rounded-lg border border-gray-200 bg-white p-5 transition-colors hover:border-[#1FA89B] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#146B67] dark:border-gray-700 dark:bg-gray-900'>
+        <Link href={routes.protected.profil_informations} className='flex min-h-20 items-center gap-5 rounded-lg border border-gray-200 bg-white p-5 transition-colors hover:border-secondary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary dark:border-gray-700 dark:bg-gray-900'>
             <Avatar
                 className='w-[50px] h-[50px]'
             >

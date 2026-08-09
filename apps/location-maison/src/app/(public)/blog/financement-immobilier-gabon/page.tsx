@@ -15,16 +15,16 @@ export default function FinancementImmobilierPage() {
       <div className="max-w-4xl mx-auto">
         {/* Breadcrumb */}
         <nav className="text-sm text-gray-600 mb-6">
-          <Link href={routes.public.homePage} className="hover:text-[#146B67]">Accueil</Link>
+          <Link href={routes.public.homePage} className="hover:text-primary">Accueil</Link>
           <span className="mx-2">→</span>
-          <Link href="/blog" className="hover:text-[#146B67]">Blog</Link>
+          <Link href="/blog" className="hover:text-primary">Blog</Link>
           <span className="mx-2">→</span>
           <span className="text-gray-800">Financement Immobilier Gabon 2024</span>
         </nav>
 
         {/* Article Header */}
         <header className="mb-8">
-          <h1 className="text-4xl font-bold text-[#146B67] mb-4">
+          <h1 className="text-4xl font-bold text-primary mb-4">
             Financement Immobilier au Gabon : État des Lieux et Solutions 2024 
           </h1>
           <div className="flex items-center text-sm text-gray-600 mb-6">
@@ -45,7 +45,7 @@ export default function FinancementImmobilierPage() {
         <article className="prose prose-lg max-w-none">
           
           <section className="mb-8">
-            <h2 className="text-2xl font-semibold text-[#146B67] mb-4">
+            <h2 className="text-2xl font-semibold text-primary mb-4">
                État Actuel du Crédit Immobilier au Gabon
             </h2>
             
@@ -73,13 +73,13 @@ export default function FinancementImmobilierPage() {
           </section>
 
           <section className="mb-8">
-            <h2 className="text-2xl font-semibold text-[#146B67] mb-4">
+            <h2 className="text-2xl font-semibold text-primary mb-4">
                Banques Principales et Leurs Offres
             </h2>
             
             <div className="grid md:grid-cols-2 gap-6 mb-6">
               <div className="bg-white p-6 rounded-lg shadow-md">
-                <h3 className="text-xl font-semibold text-[#146B67] mb-4"> BGFI (Banque Gabonaise et Française Internationale)</h3>
+                <h3 className="text-xl font-semibold text-primary mb-4"> BGFI (Banque Gabonaise et Française Internationale)</h3>
                 <ul className="space-y-2 text-sm">
                   <li><strong>Durée :</strong> 5-7 ans</li>
                   <li><strong>Taux :</strong> 9-11%</li>
@@ -90,7 +90,7 @@ export default function FinancementImmobilierPage() {
               </div>
 
               <div className="bg-white p-6 rounded-lg shadow-md">
-                <h3 className="text-xl font-semibold text-[#146B67] mb-4"> AFG Bank (ex-BICIG)</h3>
+                <h3 className="text-xl font-semibold text-primary mb-4"> AFG Bank (ex-BICIG)</h3>
                 <ul className="space-y-2 text-sm">
                   <li><strong>Durée :</strong> 5-8 ans</li>
                   <li><strong>Taux :</strong> 8-10%</li>
@@ -103,7 +103,7 @@ export default function FinancementImmobilierPage() {
             
             <div className="grid md:grid-cols-2 gap-6">
               <div className="bg-white p-6 rounded-lg shadow-md">
-                <h3 className="text-xl font-semibold text-[#146B67] mb-4"> UBA Gabon</h3>
+                <h3 className="text-xl font-semibold text-primary mb-4"> UBA Gabon</h3>
                 <ul className="space-y-2 text-sm">
                   <li><strong>Durée :</strong> 6-10 ans</li>
                   <li><strong>Taux :</strong> 10-12%</li>
@@ -114,7 +114,7 @@ export default function FinancementImmobilierPage() {
               </div>
               
               <div className="bg-white p-6 rounded-lg shadow-md">
-                <h3 className="text-xl font-semibold text-[#146B67] mb-4"> Ecobank Gabon</h3>
+                <h3 className="text-xl font-semibold text-primary mb-4"> Ecobank Gabon</h3>
                 <ul className="space-y-2 text-sm">
                   <li><strong>Durée :</strong> 5-7 ans</li>
                   <li><strong>Taux :</strong> 9-11%</li>
@@ -127,7 +127,7 @@ export default function FinancementImmobilierPage() {
           </section>
 
           <section className="mb-8">
-            <h2 className="text-2xl font-semibold text-[#146B67] mb-4">
+            <h2 className="text-2xl font-semibold text-primary mb-4">
               🔄 Refinancement Hypothécaire : Une Solution Émergente
             </h2>
             
@@ -141,7 +141,7 @@ export default function FinancementImmobilierPage() {
               <h3 className="text-xl font-semibold mb-3"> Avantages du Refinancement Hypothécaire</h3>
               <div className="grid md:grid-cols-2 gap-4">
                 <div>
-                  <h4 className="font-semibold text-[#146B67] mb-2"> Pour les Propriétaires</h4>
+                  <h4 className="font-semibold text-primary mb-2"> Pour les Propriétaires</h4>
                   <ul className="space-y-1 text-sm">
                     <li>• Libération de liquidités</li>
                     <li>• Amélioration du logement</li>
@@ -150,7 +150,7 @@ export default function FinancementImmobilierPage() {
                   </ul>
                 </div>
                 <div>
-                  <h4 className="font-semibold text-[#146B67] mb-2"> Pour les Banques</h4>
+                  <h4 className="font-semibold text-primary mb-2"> Pour les Banques</h4>
                   <ul className="space-y-1 text-sm">
                     <li>• Garanties immobilières</li>
                     <li>• Risques réduits</li>
@@ -169,13 +169,13 @@ export default function FinancementImmobilierPage() {
           </section>
 
           <section className="mb-8">
-            <h2 className="text-2xl font-semibold text-[#146B67] mb-4">
+            <h2 className="text-2xl font-semibold text-primary mb-4">
                Solutions Alternatives de Financement
             </h2>
             
             <div className="space-y-6">
               <div className="bg-white p-6 rounded-lg shadow-md">
-                <h3 className="text-xl font-semibold text-[#146B67] mb-3"> Micro-Crédit Immobilier</h3>
+                <h3 className="text-xl font-semibold text-primary mb-3"> Micro-Crédit Immobilier</h3>
                 <p className="mb-3">
                   Le micro-crédit immobilier émerge comme une solution adaptée aux 
                   revenus modestes au Gabon.
@@ -190,7 +190,7 @@ export default function FinancementImmobilierPage() {
               </div>
               
               <div className="bg-white p-6 rounded-lg shadow-md">
-                <h3 className="text-xl font-semibold text-[#146B67] mb-3"> Épargne et Auto-Financement</h3>
+                <h3 className="text-xl font-semibold text-primary mb-3"> Épargne et Auto-Financement</h3>
                 <p className="mb-3">
                   L&apos;épargne reste la méthode principale de financement immobilier au Gabon.
                 </p>
@@ -204,7 +204,7 @@ export default function FinancementImmobilierPage() {
               </div>
               
               <div className="bg-white p-6 rounded-lg shadow-md">
-                <h3 className="text-xl font-semibold text-[#146B67] mb-3">🤝 Partenariats Public-Privé (PPP)</h3>
+                <h3 className="text-xl font-semibold text-primary mb-3">🤝 Partenariats Public-Privé (PPP)</h3>
                 <p className="mb-3">
                   Les PPP se développent pour financer les logements sociaux au Gabon.
                 </p>
@@ -220,14 +220,14 @@ export default function FinancementImmobilierPage() {
           </section>
 
           <section className="mb-8">
-            <h2 className="text-2xl font-semibold text-[#146B67] mb-4">
+            <h2 className="text-2xl font-semibold text-primary mb-4">
                Comparaison des Solutions de Financement
             </h2>
             
             <div className="overflow-x-auto">
               <table className="w-full border-collapse border border-gray-300">
                 <thead>
-                  <tr className="bg-[#146B67] text-white">
+                  <tr className="bg-primary text-white">
                     <th className="border border-gray-300 p-3 text-left">Solution</th>
                     <th className="border border-gray-300 p-3 text-left">Montant</th>
                     <th className="border border-gray-300 p-3 text-left">Durée</th>
@@ -275,13 +275,13 @@ export default function FinancementImmobilierPage() {
           </section>
 
           <section className="mb-8">
-            <h2 className="text-2xl font-semibold text-[#146B67] mb-4">
+            <h2 className="text-2xl font-semibold text-primary mb-4">
                Conseils pour Optimiser Votre Financement
             </h2>
             
             <div className="grid md:grid-cols-2 gap-6">
               <div className="bg-white p-6 rounded-lg shadow-md">
-                <h3 className="text-xl font-semibold text-[#146B67] mb-4"> Préparation du Dossier</h3>
+                <h3 className="text-xl font-semibold text-primary mb-4"> Préparation du Dossier</h3>
                 <ul className="space-y-3">
                   <li> <strong>Épargnez</strong> au moins 30% du bien</li>
                   <li> <strong>Stabilisez</strong> vos revenus (CDI)</li>
@@ -292,7 +292,7 @@ export default function FinancementImmobilierPage() {
               </div>
               
               <div className="bg-white p-6 rounded-lg shadow-md">
-                <h3 className="text-xl font-semibold text-[#146B67] mb-4"> Stratégies Bancaires</h3>
+                <h3 className="text-xl font-semibold text-primary mb-4"> Stratégies Bancaires</h3>
                 <ul className="space-y-3">
                   <li> <strong>Développez</strong> une relation bancaire</li>
                   <li> <strong>Diversifiez</strong> vos comptes</li>
@@ -305,7 +305,7 @@ export default function FinancementImmobilierPage() {
           </section>
 
           <section className="mb-8">
-            <h2 className="text-2xl font-semibold text-[#146B67] mb-4">
+            <h2 className="text-2xl font-semibold text-primary mb-4">
                Évolutions Futures du Financement Immobilier
             </h2>
             
@@ -350,7 +350,7 @@ export default function FinancementImmobilierPage() {
           </section>
 
           <section className="mb-8">
-            <h2 className="text-2xl font-semibold text-[#146B67] mb-4">
+            <h2 className="text-2xl font-semibold text-primary mb-4">
                Conclusion : Choisir la Bonne Solution
             </h2>
             
@@ -360,19 +360,19 @@ export default function FinancementImmobilierPage() {
               combinant plusieurs solutions selon votre situation.
             </p>
             
-            <div className="bg-gradient-to-r from-[#C1DEE8] to-[#FBD9B9] p-6 rounded-lg mb-6">
+            <div className="bg-gradient-to-r from-sky to-peach p-6 rounded-lg mb-6">
               <h3 className="text-xl font-semibold mb-4"> Recommandations par Profil</h3>
               <div className="grid md:grid-cols-3 gap-4">
                 <div>
-                  <h4 className="font-semibold text-[#146B67] mb-2">👨‍💼 Salarié CDI</h4>
+                  <h4 className="font-semibold text-primary mb-2">👨‍💼 Salarié CDI</h4>
                   <p className="text-sm">Crédit bancaire + épargne</p>
                 </div>
                 <div>
-                  <h4 className="font-semibold text-[#146B67] mb-2">👨‍💻 Entrepreneur</h4>
+                  <h4 className="font-semibold text-primary mb-2">👨‍💻 Entrepreneur</h4>
                   <p className="text-sm">Micro-crédit + épargne</p>
                 </div>
                 <div>
-                  <h4 className="font-semibold text-[#146B67] mb-2">👨‍👩‍👧‍👦 Famille Modeste</h4>
+                  <h4 className="font-semibold text-primary mb-2">👨‍👩‍👧‍👦 Famille Modeste</h4>
                   <p className="text-sm">PPP + épargne communautaire</p>
                 </div>
               </div>
@@ -383,7 +383,7 @@ export default function FinancementImmobilierPage() {
               au Gabon avec des conseils personnalisés et des annonces adaptées à votre budget.
             </p>
             
-            <div className="bg-[#146B67] text-white p-6 rounded-lg text-center">
+            <div className="bg-primary text-white p-6 rounded-lg text-center">
               <h3 className="text-xl font-semibold mb-3"> Prêt à Financer Votre Projet ?</h3>
               <p className="mb-4">
                 Découvrez nos annonces immobilières et trouvez le bien qui correspond 
@@ -392,13 +392,13 @@ export default function FinancementImmobilierPage() {
               <div className="flex flex-col sm:flex-row gap-4 justify-center">
                 <Link 
                   href={routes.public.search_property} 
-                  className="bg-white text-[#146B67] px-6 py-3 rounded-lg hover:bg-gray-100 transition-colors font-semibold"
+                  className="bg-white text-primary px-6 py-3 rounded-lg hover:bg-gray-100 transition-colors font-semibold"
                 >
                   Voir les Annonces
                 </Link>
                 <Link 
                   href={routes.public.guide_immobilier_gabon} 
-                  className="border border-white text-white px-6 py-3 rounded-lg hover:bg-white hover:text-[#146B67] transition-colors font-semibold"
+                  className="border border-white text-white px-6 py-3 rounded-lg hover:bg-white hover:text-primary transition-colors font-semibold"
                 >
                   Guide Immobilier
                 </Link>
@@ -409,13 +409,13 @@ export default function FinancementImmobilierPage() {
 
         {/* Related Articles */}
         <section className="mt-12 pt-8 border-t border-gray-200">
-          <h3 className="text-2xl font-semibold text-[#146B67] mb-6">
+          <h3 className="text-2xl font-semibold text-primary mb-6">
              Articles Similaires
           </h3>
           <div className="grid md:grid-cols-2 gap-6">
             <Link href={routes.public.blog_commissions_demarcheurs} className="block">
               <div className="bg-white p-4 rounded-lg shadow-md hover:shadow-lg transition-shadow">
-                <h4 className="font-semibold text-[#146B67] mb-2">
+                <h4 className="font-semibold text-primary mb-2">
                   Commissions Démarcheurs Logements Gabon
                 </h4>
                 <p className="text-sm text-gray-600">
@@ -426,7 +426,7 @@ export default function FinancementImmobilierPage() {
             
             <Link href={routes.public.blog_guide_quartiers_libreville} className="block">
               <div className="bg-white p-4 rounded-lg shadow-md hover:shadow-lg transition-shadow">
-                <h4 className="font-semibold text-[#146B67] mb-2">
+                <h4 className="font-semibold text-primary mb-2">
                   Guide Quartiers Libreville 2024-2025
                 </h4>
                 <p className="text-sm text-gray-600">

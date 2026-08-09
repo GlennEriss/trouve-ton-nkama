@@ -59,7 +59,7 @@ export default function MapSidebar({ isCollapsed = false, onToggle }: MapSidebar
       <div className="p-4 border-b border-gray-100 dark:border-gray-800">
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
-            <MapPin className="h-5 w-5 text-[#146B67]" />
+            <MapPin className="h-5 w-5 text-primary" />
             Carte du Gabon
           </h2>
           {onToggle && (
@@ -89,9 +89,9 @@ export default function MapSidebar({ isCollapsed = false, onToggle }: MapSidebar
 
       {/* Info quartier sélectionné */}
       {selectedQuarter && (
-        <div className="px-4 py-3 bg-[#146B67]/5 border-b border-gray-100 dark:border-gray-800">
+        <div className="px-4 py-3 bg-primary/5 border-b border-gray-100 dark:border-gray-800">
           <div className="flex items-start gap-3">
-            <div className="w-10 h-10 bg-[#146B67] rounded-lg flex items-center justify-center shrink-0">
+            <div className="w-10 h-10 bg-primary rounded-lg flex items-center justify-center shrink-0">
               <MapPin className="h-5 w-5 text-white" />
             </div>
             <div className="flex-1 min-w-0">
@@ -103,7 +103,7 @@ export default function MapSidebar({ isCollapsed = false, onToggle }: MapSidebar
                   Province : {selectedQuarter.province}
                 </p>
               )}
-              <p className="text-sm text-[#146B67] font-medium mt-1">
+              <p className="text-sm text-primary font-medium mt-1">
                 {isLoading ? (
                   'Chargement...'
                 ) : (

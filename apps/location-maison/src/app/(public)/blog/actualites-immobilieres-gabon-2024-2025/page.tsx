@@ -15,16 +15,16 @@ export default function ActualitesImmobilieresPage() {
       <div className="max-w-4xl mx-auto">
         {/* Breadcrumb */}
         <nav className="text-sm text-gray-600 mb-6">
-          <Link href={routes.public.homePage} className="hover:text-[#146B67]">Accueil</Link>
+          <Link href={routes.public.homePage} className="hover:text-primary">Accueil</Link>
           <span className="mx-2">→</span>
-          <Link href={routes.public.blog} className="hover:text-[#146B67]">Blog</Link>
+          <Link href={routes.public.blog} className="hover:text-primary">Blog</Link>
           <span className="mx-2">→</span>
           <span className="text-gray-800">Actualités Immobilières Gabon 2024-2025</span>
         </nav>
 
         {/* Article Header */}
         <header className="mb-8">
-          <h1 className="text-4xl font-bold text-[#146B67] mb-4">
+          <h1 className="text-4xl font-bold text-primary mb-4">
             Actualités Immobilières Gabon 2024-2025 : Projets, Lois, Tendances
           </h1>
           <div className="flex items-center text-sm text-gray-600 mb-6">
@@ -46,13 +46,13 @@ export default function ActualitesImmobilieresPage() {
         <article className="prose prose-lg max-w-none">
           
           <section className="mb-8">
-            <h2 className="text-2xl font-semibold text-[#146B67] mb-4">
+            <h2 className="text-2xl font-semibold text-primary mb-4">
               Nouveaux Projets Immobiliers 2024-2025
             </h2>
             
             <div className="space-y-6 mb-6">
               <div className="bg-white p-6 rounded-lg shadow-md">
-                <h3 className="text-xl font-semibold text-[#146B67] mb-4">Libreville - Projets Premium</h3>
+                <h3 className="text-xl font-semibold text-primary mb-4">Libreville - Projets Premium</h3>
                 <div className="grid md:grid-cols-2 gap-4">
                   <div>
                     <h4 className="font-semibold mb-2">Résidence Glass Premium</h4>
@@ -76,7 +76,7 @@ export default function ActualitesImmobilieresPage() {
                   </div>
                 </div>
                 <div className="mt-4 p-4 bg-blue-50 rounded-lg">
-                  <h4 className="font-semibold text-[#146B67] mb-2">Impact sur le Marché</h4>
+                  <h4 className="font-semibold text-primary mb-2">Impact sur le Marché</h4>
                   <p className="text-sm">
                     Ces projets premium vont renforcer l&apos;attractivité des quartiers 
                     Glass et Akébé avec une hausse attendue des prix de 10-15%.
@@ -85,7 +85,7 @@ export default function ActualitesImmobilieresPage() {
               </div>
               
               <div className="bg-white p-6 rounded-lg shadow-md">
-                <h3 className="text-xl font-semibold text-[#146B67] mb-4">Port-Gentil - Développement Économique</h3>
+                <h3 className="text-xl font-semibold text-primary mb-4">Port-Gentil - Développement Économique</h3>
                 <div className="grid md:grid-cols-2 gap-4">
                   <div>
                     <h4 className="font-semibold mb-2">Zone Olowé Extension</h4>
@@ -109,7 +109,7 @@ export default function ActualitesImmobilieresPage() {
                   </div>
                 </div>
                 <div className="mt-4 p-4 bg-green-50 rounded-lg">
-                  <h4 className="font-semibold text-[#146B67] mb-2"> Impact sur le Marché</h4>
+                  <h4 className="font-semibold text-primary mb-2"> Impact sur le Marché</h4>
                   <p className="text-sm">
                     Le développement d&apos;Olowé va créer une dynamique positive avec 
                     une plus-value attendue de 20-25% sur 3 ans.
@@ -120,13 +120,13 @@ export default function ActualitesImmobilieresPage() {
           </section>
 
           <section className="mb-8">
-            <h2 className="text-2xl font-semibold text-[#146B67] mb-4">
+            <h2 className="text-2xl font-semibold text-primary mb-4">
               Évolutions Législatives 2024-2025
             </h2>
             
             <div className="space-y-6 mb-6">
               <div className="bg-white p-6 rounded-lg shadow-md">
-                <h3 className="text-xl font-semibold text-[#146B67] mb-4">Nouvelle Loi Foncière 2024</h3>
+                <h3 className="text-xl font-semibold text-primary mb-4">Nouvelle Loi Foncière 2024</h3>
                 <div className="grid md:grid-cols-2 gap-4">
                   <div>
                     <h4 className="font-semibold mb-2">Améliorations</h4>
@@ -150,7 +150,7 @@ export default function ActualitesImmobilieresPage() {
                   </div>
                 </div>
                 <div className="mt-4 p-4 bg-yellow-50 rounded-lg">
-                  <h4 className="font-semibold text-[#146B67] mb-2"> Impact sur les Investisseurs</h4>
+                  <h4 className="font-semibold text-primary mb-2"> Impact sur les Investisseurs</h4>
                   <p className="text-sm">
                     La nouvelle loi sécurise les investissements mais augmente les coûts 
                     de 5-10% pour la conformité aux nouvelles normes.
@@ -159,7 +159,7 @@ export default function ActualitesImmobilieresPage() {
               </div>
               
               <div className="bg-white p-6 rounded-lg shadow-md">
-                <h3 className="text-xl font-semibold text-[#146B67] mb-4">Mesures Fiscales 2024-2025</h3>
+                <h3 className="text-xl font-semibold text-primary mb-4">Mesures Fiscales 2024-2025</h3>
                 <div className="grid md:grid-cols-2 gap-4">
                   <div>
                     <h4 className="font-semibold mb-2">Incitations</h4>
@@ -183,7 +183,7 @@ export default function ActualitesImmobilieresPage() {
                   </div>
                 </div>
                 <div className="mt-4 p-4 bg-blue-50 rounded-lg">
-                  <h4 className="font-semibold text-[#146B67] mb-2"> Impact sur le Marché</h4>
+                  <h4 className="font-semibold text-primary mb-2"> Impact sur le Marché</h4>
                   <p className="text-sm">
                     Les incitations favorisent l&apos;investissement locatif tandis que 
                     les nouvelles taxes impactent les biens de luxe et la spéculation.
@@ -194,13 +194,13 @@ export default function ActualitesImmobilieresPage() {
           </section>
 
           <section className="mb-8">
-            <h2 className="text-2xl font-semibold text-[#146B67] mb-4">
+            <h2 className="text-2xl font-semibold text-primary mb-4">
               Tendances du Marché 2024-2025
             </h2>
             
             <div className="space-y-6 mb-6">
               <div className="bg-white p-6 rounded-lg shadow-md">
-                <h3 className="text-xl font-semibold text-[#146B67] mb-4">Évolution des Prix par Ville</h3>
+                <h3 className="text-xl font-semibold text-primary mb-4">Évolution des Prix par Ville</h3>
                 <div className="grid md:grid-cols-2 gap-4">
                   <div>
                     <h4 className="font-semibold mb-2"> Libreville</h4>
@@ -224,7 +224,7 @@ export default function ActualitesImmobilieresPage() {
                   </div>
                 </div>
                 <div className="mt-4 p-4 bg-green-50 rounded-lg">
-                  <h4 className="font-semibold text-[#146B67] mb-2"> Analyse</h4>
+                  <h4 className="font-semibold text-primary mb-2"> Analyse</h4>
                   <p className="text-sm">
                     Port-Gentil affiche une croissance plus dynamique grâce au développement 
                     économique et aux nouveaux projets d&apos;infrastructure.
@@ -233,7 +233,7 @@ export default function ActualitesImmobilieresPage() {
               </div>
               
               <div className="bg-white p-6 rounded-lg shadow-md">
-                <h3 className="text-xl font-semibold text-[#146B67] mb-4">Évolution des Types de Biens</h3>
+                <h3 className="text-xl font-semibold text-primary mb-4">Évolution des Types de Biens</h3>
                 <div className="grid md:grid-cols-2 gap-4">
                   <div>
                     <h4 className="font-semibold mb-2">Croissance</h4>
@@ -256,7 +256,7 @@ export default function ActualitesImmobilieresPage() {
                   </div>
                 </div>
                 <div className="mt-4 p-4 bg-blue-50 rounded-lg">
-                  <h4 className="font-semibold text-[#146B67] mb-2"> Tendances</h4>
+                  <h4 className="font-semibold text-primary mb-2"> Tendances</h4>
                   <p className="text-sm">
                     La demande se concentre sur les biens modernes et fonctionnels, 
                     reflétant l&apos;évolution des modes de vie et des besoins professionnels.
@@ -267,13 +267,13 @@ export default function ActualitesImmobilieresPage() {
           </section>
 
           <section className="mb-8">
-            <h2 className="text-2xl font-semibold text-[#146B67] mb-4">
+            <h2 className="text-2xl font-semibold text-primary mb-4">
               Investissements Majeurs 2024-2025
             </h2>
             
             <div className="space-y-6 mb-6">
               <div className="bg-white p-6 rounded-lg shadow-md">
-                <h3 className="text-xl font-semibold text-[#146B67] mb-4"> Investissements Institutionnels</h3>
+                <h3 className="text-xl font-semibold text-primary mb-4"> Investissements Institutionnels</h3>
                 <div className="grid md:grid-cols-2 gap-4">
                   <div>
                     <h4 className="font-semibold mb-2">Banques et Assurances</h4>
@@ -297,7 +297,7 @@ export default function ActualitesImmobilieresPage() {
                   </div>
                 </div>
                 <div className="mt-4 p-4 bg-purple-50 rounded-lg">
-                  <h4 className="font-semibold text-[#146B67] mb-2"> Impact sur le Marché</h4>
+                  <h4 className="font-semibold text-primary mb-2"> Impact sur le Marché</h4>
                   <p className="text-sm">
                     Ces investissements massifs (445M FCFA) vont stimuler le marché 
                     et créer de nouvelles opportunités pour les investisseurs privés.
@@ -306,7 +306,7 @@ export default function ActualitesImmobilieresPage() {
               </div>
               
               <div className="bg-white p-6 rounded-lg shadow-md">
-                <h3 className="text-xl font-semibold text-[#146B67] mb-4">Investissements Internationaux</h3>
+                <h3 className="text-xl font-semibold text-primary mb-4">Investissements Internationaux</h3>
                 <div className="grid md:grid-cols-2 gap-4">
                   <div>
                     <h4 className="font-semibold mb-2">Investisseurs Français</h4>
@@ -328,7 +328,7 @@ export default function ActualitesImmobilieresPage() {
                   </div>
                 </div>
                 <div className="mt-4 p-4 bg-orange-50 rounded-lg">
-                  <h4 className="font-semibold text-[#146B67] mb-2"> Impact sur le Marché</h4>
+                  <h4 className="font-semibold text-primary mb-2"> Impact sur le Marché</h4>
                   <p className="text-sm">
                     Les investissements internationaux (510M FCFA) témoignent de 
                     la confiance dans le marché gabonais et vont moderniser l&apos;offre.
@@ -339,13 +339,13 @@ export default function ActualitesImmobilieresPage() {
           </section>
 
           <section className="mb-8">
-            <h2 className="text-2xl font-semibold text-[#146B67] mb-4">
+            <h2 className="text-2xl font-semibold text-primary mb-4">
               Développement Urbain et Infrastructures
             </h2>
             
             <div className="space-y-6 mb-6">
               <div className="bg-white p-6 rounded-lg shadow-md">
-                <h3 className="text-xl font-semibold text-[#146B67] mb-4">Infrastructures de Transport</h3>
+                <h3 className="text-xl font-semibold text-primary mb-4">Infrastructures de Transport</h3>
                 <div className="grid md:grid-cols-2 gap-4">
                   <div>
                     <h4 className="font-semibold mb-2">Libreville</h4>
@@ -369,7 +369,7 @@ export default function ActualitesImmobilieresPage() {
                   </div>
                 </div>
                 <div className="mt-4 p-4 bg-green-50 rounded-lg">
-                  <h4 className="font-semibold text-[#146B67] mb-2"> Impact sur l&apos;Immobilier</h4>
+                  <h4 className="font-semibold text-primary mb-2"> Impact sur l&apos;Immobilier</h4>
                   <p className="text-sm">
                     Ces infrastructures vont améliorer l&apos;accessibilité et augmenter 
                     la valeur des biens dans les zones desservies (+10-15% de plus-value).
@@ -378,7 +378,7 @@ export default function ActualitesImmobilieresPage() {
               </div>
               
               <div className="bg-white p-6 rounded-lg shadow-md">
-                <h3 className="text-xl font-semibold text-[#146B67] mb-4">Équipements et Services</h3>
+                <h3 className="text-xl font-semibold text-primary mb-4">Équipements et Services</h3>
                 <div className="grid md:grid-cols-2 gap-4">
                   <div>
                     <h4 className="font-semibold mb-2">Santé</h4>
@@ -400,7 +400,7 @@ export default function ActualitesImmobilieresPage() {
                   </div>
                 </div>
                 <div className="mt-4 p-4 bg-blue-50 rounded-lg">
-                  <h4 className="font-semibold text-[#146B67] mb-2"> Impact sur l&apos;Immobilier</h4>
+                  <h4 className="font-semibold text-primary mb-2"> Impact sur l&apos;Immobilier</h4>
                   <p className="text-sm">
                     Ces équipements vont améliorer la qualité de vie et augmenter 
                     l&apos;attractivité des quartiers (+8-12% de plus-value).
@@ -411,13 +411,13 @@ export default function ActualitesImmobilieresPage() {
           </section>
 
           <section className="mb-8">
-            <h2 className="text-2xl font-semibold text-[#146B67] mb-4">
+            <h2 className="text-2xl font-semibold text-primary mb-4">
               Perspectives 2025-2030
             </h2>
             
             <div className="space-y-6 mb-6">
               <div className="bg-white p-6 rounded-lg shadow-md">
-                <h3 className="text-xl font-semibold text-[#146B67] mb-4">Prévisions de Croissance</h3>
+                <h3 className="text-xl font-semibold text-primary mb-4">Prévisions de Croissance</h3>
                 <div className="grid md:grid-cols-2 gap-4">
                   <div>
                     <h4 className="font-semibold mb-2">Évolution des Prix</h4>
@@ -441,7 +441,7 @@ export default function ActualitesImmobilieresPage() {
                   </div>
                 </div>
                 <div className="mt-4 p-4 bg-yellow-50 rounded-lg">
-                  <h4 className="font-semibold text-[#146B67] mb-2"> Opportunités</h4>
+                  <h4 className="font-semibold text-primary mb-2"> Opportunités</h4>
                   <p className="text-sm">
                     Le marché gabonais offre un potentiel de croissance exceptionnel 
                     avec des opportunités d&apos;investissement diversifiées.
@@ -450,7 +450,7 @@ export default function ActualitesImmobilieresPage() {
               </div>
               
               <div className="bg-white p-6 rounded-lg shadow-md">
-                <h3 className="text-xl font-semibold text-[#146B67] mb-4">Risques et Défis</h3>
+                <h3 className="text-xl font-semibold text-primary mb-4">Risques et Défis</h3>
                 <div className="grid md:grid-cols-2 gap-4">
                   <div>
                     <h4 className="font-semibold mb-2">Risques Économiques</h4>
@@ -472,7 +472,7 @@ export default function ActualitesImmobilieresPage() {
                   </div>
                 </div>
                 <div className="mt-4 p-4 bg-red-50 rounded-lg">
-                  <h4 className="font-semibold text-[#146B67] mb-2"> Recommandations</h4>
+                  <h4 className="font-semibold text-primary mb-2"> Recommandations</h4>
                   <p className="text-sm">
                     Diversifier les investissements et privilégier les biens de qualité 
                     avec une forte demande locative pour limiter les risques.
@@ -483,7 +483,7 @@ export default function ActualitesImmobilieresPage() {
           </section>
 
           <section className="mb-8">
-            <h2 className="text-2xl font-semibold text-[#146B67] mb-4">
+            <h2 className="text-2xl font-semibold text-primary mb-4">
               Conclusion : Un Marché Immobilier Dynamique
             </h2>
             
@@ -493,7 +493,7 @@ export default function ActualitesImmobilieresPage() {
               et des perspectives de croissance prometteuses.
             </p>
             
-            <div className="bg-[#146B67] text-white p-6 rounded-lg text-center">
+            <div className="bg-primary text-white p-6 rounded-lg text-center">
               <h3 className="text-xl font-semibold mb-3"> Restez Informé des Actualités Immobilières</h3>
               <p className="mb-4">
                 Suivez nos actualités immobilières en temps réel et découvrez les 
@@ -502,13 +502,13 @@ export default function ActualitesImmobilieresPage() {
               <div className="flex flex-col sm:flex-row gap-4 justify-center">
                 <Link 
                   href={routes.public.search_property} 
-                  className="bg-white text-[#146B67] px-6 py-3 rounded-lg hover:bg-gray-100 transition-colors font-semibold"
+                  className="bg-white text-primary px-6 py-3 rounded-lg hover:bg-gray-100 transition-colors font-semibold"
                 >
                   Voir les Opportunités
                 </Link>
                 <Link 
                   href={routes.public.guide_immobilier_gabon} 
-                  className="border border-white text-white px-6 py-3 rounded-lg hover:bg-white hover:text-[#146B67] transition-colors font-semibold"
+                  className="border border-white text-white px-6 py-3 rounded-lg hover:bg-white hover:text-primary transition-colors font-semibold"
                 >
                   Guide Complet
                 </Link>
@@ -519,13 +519,13 @@ export default function ActualitesImmobilieresPage() {
 
         {/* Related Articles */}
         <section className="mt-12 pt-8 border-t border-gray-200">
-          <h3 className="text-2xl font-semibold text-[#146B67] mb-6">
+          <h3 className="text-2xl font-semibold text-primary mb-6">
                           Articles Similaires
           </h3>
           <div className="grid md:grid-cols-2 gap-6">
             <Link href={routes.public.blog_rentabilite_immobiliere} className="block">
               <div className="bg-white p-4 rounded-lg shadow-md hover:shadow-lg transition-shadow">
-                <h4 className="font-semibold text-[#146B67] mb-2">
+                <h4 className="font-semibold text-primary mb-2">
                   Rentabilité Immobilière Gabon 2024-2025
                 </h4>
                 <p className="text-sm text-gray-600">
@@ -536,7 +536,7 @@ export default function ActualitesImmobilieresPage() {
             
             <Link href={routes.public.guide_immobilier_gabon} className="block">
               <div className="bg-white p-4 rounded-lg shadow-md hover:shadow-lg transition-shadow">
-                <h4 className="font-semibold text-[#146B67] mb-2">
+                <h4 className="font-semibold text-primary mb-2">
                   Guide Immobilier Gabon 2024
                 </h4>
                 <p className="text-sm text-gray-600">

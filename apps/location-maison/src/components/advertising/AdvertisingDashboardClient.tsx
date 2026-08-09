@@ -49,12 +49,12 @@ function StatTile({
   return (
     <div className="rounded-xl border border-gray-200 bg-white p-4 shadow-sm dark:border-gray-700 dark:bg-gray-900">
       <div className="flex items-center gap-3">
-        <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-[#1FA89B]/10 text-[#1FA89B]">
+        <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-secondary/10 text-secondary">
           <Icon className="h-5 w-5" />
         </div>
         <div>
           <p className="text-xs font-medium uppercase tracking-wide text-gray-500">{label}</p>
-          <p className="mt-0.5 text-xl font-bold text-[#224D62] dark:text-white">{value}</p>
+          <p className="mt-0.5 text-xl font-bold text-ink dark:text-white">{value}</p>
         </div>
       </div>
     </div>
@@ -100,7 +100,7 @@ function CampaignCard({ campaign }: { campaign: MyCampaign }) {
         <div className="min-w-0 flex-1">
           <div className="flex flex-wrap items-start justify-between gap-2">
             <div className="min-w-0">
-              <h2 className="truncate text-base font-semibold text-[#224D62] dark:text-white">
+              <h2 className="truncate text-base font-semibold text-ink dark:text-white">
                 {campaign.title || 'Publicité'}
               </h2>
               <div className="mt-2 flex flex-wrap gap-1.5">
@@ -174,21 +174,21 @@ export default function AdvertisingDashboardClient() {
       <header className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <div className="flex items-center gap-3">
-            <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-[#1FA89B]/10 text-[#1FA89B]">
+            <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-secondary/10 text-secondary">
               <Megaphone className="h-6 w-6" />
             </div>
             <div>
-              <h1 className="text-2xl font-bold text-[#224D62] dark:text-white">Publicités</h1>
+              <h1 className="text-2xl font-bold text-ink dark:text-white">Publicités</h1>
               <p className="text-sm text-gray-500">Suivez vos campagnes et leurs résultats.</p>
             </div>
           </div>
         </div>
         <div className="flex flex-wrap items-center gap-3">
           <div className="flex min-h-10 items-center gap-2 rounded-full border border-gray-200 bg-white px-4 text-sm shadow-sm dark:border-gray-700 dark:bg-gray-900">
-            <Wallet className="h-4 w-4 text-[#1FA89B]" />
+            <Wallet className="h-4 w-4 text-secondary" />
             <span className="font-semibold">{credits.toLocaleString('fr-FR')} crédits</span>
           </div>
-          <Button asChild className="min-h-10 bg-[#1FA89B] px-4 hover:bg-[#188a7f]">
+          <Button asChild className="min-h-10 bg-secondary px-4 hover:bg-primary-600">
             <Link href={routes.protected.advertising_create}>
               <PlusCircle className="h-4 w-4" />
               Créer une publicité
@@ -211,7 +211,7 @@ export default function AdvertisingDashboardClient() {
       <section className="space-y-3">
         <div className="flex items-center justify-between gap-3">
           <div>
-            <h2 className="text-lg font-semibold text-[#224D62] dark:text-white">Mes publicités</h2>
+            <h2 className="text-lg font-semibold text-ink dark:text-white">Mes publicités</h2>
             <p className="text-sm text-gray-500">Toutes les campagnes créées depuis votre compte.</p>
           </div>
         </div>
@@ -229,16 +229,16 @@ export default function AdvertisingDashboardClient() {
           </Card>
         ) : campaigns.length === 0 ? (
           <Card className="rounded-xl border-dashed border-gray-300 p-8 text-center shadow-sm dark:border-gray-700">
-            <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-xl bg-[#1FA89B]/10 text-[#1FA89B]">
+            <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-xl bg-secondary/10 text-secondary">
               <Megaphone className="h-6 w-6" />
             </div>
-            <h2 className="mt-4 text-lg font-semibold text-[#224D62] dark:text-white">
+            <h2 className="mt-4 text-lg font-semibold text-ink dark:text-white">
               Aucune publicité pour le moment
             </h2>
             <p className="mx-auto mt-2 max-w-md text-sm leading-6 text-gray-500">
               Créez une campagne pour promouvoir un logement, un service ou une annonce dans les surfaces Trouve Ton Nkama.
             </p>
-            <Button asChild className="mt-5 bg-[#1FA89B] hover:bg-[#188a7f]">
+            <Button asChild className="mt-5 bg-secondary hover:bg-primary-600">
               <Link href={routes.protected.advertising_create}>
                 <PlusCircle className="h-4 w-4" />
                 Créer une publicité

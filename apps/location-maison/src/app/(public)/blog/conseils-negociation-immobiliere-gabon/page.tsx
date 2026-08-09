@@ -15,16 +15,16 @@ export default function ConseilsNegociationPage() {
       <div className="max-w-4xl mx-auto">
         {/* Breadcrumb */}
         <nav className="text-sm text-gray-600 mb-6">
-          <Link href={routes.public.homePage} className="hover:text-[#146B67]">Accueil</Link>
+          <Link href={routes.public.homePage} className="hover:text-primary">Accueil</Link>
           <span className="mx-2">→</span>
-          <Link href={routes.public.blog} className="hover:text-[#146B67]">Blog</Link>
+          <Link href={routes.public.blog} className="hover:text-primary">Blog</Link>
           <span className="mx-2">→</span>
           <span className="text-gray-800">Conseils Négociation Immobilière Gabon</span>
         </nav>
 
         {/* Article Header */}
         <header className="mb-8">
-          <h1 className="text-4xl font-bold text-[#146B67] mb-4">
+          <h1 className="text-4xl font-bold text-primary mb-4">
             Conseils Négociation Immobilière Gabon : Techniques et Astuces 
           </h1>
           <div className="flex items-center text-sm text-gray-600 mb-6">
@@ -45,7 +45,7 @@ export default function ConseilsNegociationPage() {
         <article className="prose prose-lg max-w-none">
           
           <section className="mb-8">
-            <h2 className="text-2xl font-semibold text-[#146B67] mb-4">
+            <h2 className="text-2xl font-semibold text-primary mb-4">
                Pourquoi la Négociation Immobilière est Cruciale au Gabon ?
             </h2>
             
@@ -56,7 +56,7 @@ export default function ConseilsNegociationPage() {
             
             <div className="grid md:grid-cols-2 gap-6 mb-6">
               <div className="bg-white p-6 rounded-lg shadow-md">
-                <h3 className="text-xl font-semibold text-[#146B67] mb-4"> Impact Financier</h3>
+                <h3 className="text-xl font-semibold text-primary mb-4"> Impact Financier</h3>
                 <ul className="space-y-2 text-sm">
                   <li>• <strong>Économies importantes :</strong> 5-15M FCFA sur un achat</li>
                   <li>• <strong>Réduction mensuelle :</strong> 50-200k FCFA sur un loyer</li>
@@ -66,7 +66,7 @@ export default function ConseilsNegociationPage() {
               </div>
               
               <div className="bg-white p-6 rounded-lg shadow-md">
-                <h3 className="text-xl font-semibold text-[#146B67] mb-4"> Avantages Immobiliers</h3>
+                <h3 className="text-xl font-semibold text-primary mb-4"> Avantages Immobiliers</h3>
                 <ul className="space-y-2 text-sm">
                   <li>• <strong>Travaux inclus :</strong> Rénovation, aménagement</li>
                   <li>• <strong>Mobilier :</strong> Équipements, meubles</li>
@@ -80,15 +80,15 @@ export default function ConseilsNegociationPage() {
               <h3 className="text-xl font-semibold mb-3"> Statistiques de Négociation au Gabon</h3>
               <div className="grid md:grid-cols-3 gap-4">
                 <div className="text-center">
-                  <h4 className="text-2xl font-bold text-[#146B67]">15%</h4>
+                  <h4 className="text-2xl font-bold text-primary">15%</h4>
                   <p className="text-sm">Réduction moyenne obtenue</p>
                 </div>
                 <div className="text-center">
-                  <h4 className="text-2xl font-bold text-[#146B67]">80%</h4>
+                  <h4 className="text-2xl font-bold text-primary">80%</h4>
                   <p className="text-sm">Des vendeurs acceptent une négociation</p>
                 </div>
                 <div className="text-center">
-                  <h4 className="text-2xl font-bold text-[#146B67]">25%</h4>
+                  <h4 className="text-2xl font-bold text-primary">25%</h4>
                   <p className="text-sm">Économies supplémentaires possibles</p>
                 </div>
               </div>
@@ -96,13 +96,13 @@ export default function ConseilsNegociationPage() {
           </section>
 
           <section className="mb-8">
-            <h2 className="text-2xl font-semibold text-[#146B67] mb-4">
+            <h2 className="text-2xl font-semibold text-primary mb-4">
                Préparation : La Clé du Succès
             </h2>
             
             <div className="space-y-6 mb-6">
               <div className="bg-white p-6 rounded-lg shadow-md">
-                <h3 className="text-xl font-semibold text-[#146B67] mb-4">🔍 Étude du Marché</h3>
+                <h3 className="text-xl font-semibold text-primary mb-4">🔍 Étude du Marché</h3>
                 <div className="grid md:grid-cols-2 gap-4">
                   <div>
                     <h4 className="font-semibold mb-2"> Données à Collecter</h4>
@@ -126,7 +126,7 @@ export default function ConseilsNegociationPage() {
                   </div>
                 </div>
                 <div className="mt-4 p-4 bg-blue-50 rounded-lg">
-                  <h4 className="font-semibold text-[#146B67] mb-2"> Conseil Expert</h4>
+                  <h4 className="font-semibold text-primary mb-2"> Conseil Expert</h4>
                   <p className="text-sm">
                     Plus vous avez d&apos;informations, plus votre négociation sera efficace. 
                     Préparez un dossier complet avec comparatifs et arguments.
@@ -135,7 +135,7 @@ export default function ConseilsNegociationPage() {
               </div>
               
               <div className="bg-white p-6 rounded-lg shadow-md">
-                <h3 className="text-xl font-semibold text-[#146B67] mb-4"> Définition de Votre Stratégie</h3>
+                <h3 className="text-xl font-semibold text-primary mb-4"> Définition de Votre Stratégie</h3>
                 <div className="grid md:grid-cols-2 gap-4">
                   <div>
                     <h4 className="font-semibold mb-2"> Objectifs Financiers</h4>
@@ -159,7 +159,7 @@ export default function ConseilsNegociationPage() {
                   </div>
                 </div>
                 <div className="mt-4 p-4 bg-green-50 rounded-lg">
-                  <h4 className="font-semibold text-[#146B67] mb-2"> Conseil Expert</h4>
+                  <h4 className="font-semibold text-primary mb-2"> Conseil Expert</h4>
                   <p className="text-sm">
                     Définissez vos objectifs par ordre de priorité et préparez 
                     des arguments solides pour chaque point de négociation.
@@ -170,13 +170,13 @@ export default function ConseilsNegociationPage() {
           </section>
 
           <section className="mb-8">
-            <h2 className="text-2xl font-semibold text-[#146B67] mb-4">
+            <h2 className="text-2xl font-semibold text-primary mb-4">
               🎭 Techniques de Négociation Immobilière
             </h2>
             
             <div className="space-y-6 mb-6">
               <div className="bg-white p-6 rounded-lg shadow-md">
-                <h3 className="text-xl font-semibold text-[#146B67] mb-4"> Techniques Psychologiques</h3>
+                <h3 className="text-xl font-semibold text-primary mb-4"> Techniques Psychologiques</h3>
                 <div className="grid md:grid-cols-2 gap-4">
                   <div>
                     <h4 className="font-semibold mb-2"> Techniques d&apos;Influence</h4>
@@ -200,7 +200,7 @@ export default function ConseilsNegociationPage() {
                   </div>
                 </div>
                 <div className="mt-4 p-4 bg-yellow-50 rounded-lg">
-                  <h4 className="font-semibold text-[#146B67] mb-2"> Conseil Expert</h4>
+                  <h4 className="font-semibold text-primary mb-2"> Conseil Expert</h4>
                   <p className="text-sm">
                     Utilisez ces techniques avec éthique. L&apos;objectif est une 
                     négociation gagnant-gagnant, pas une manipulation.
@@ -209,7 +209,7 @@ export default function ConseilsNegociationPage() {
               </div>
               
               <div className="bg-white p-6 rounded-lg shadow-md">
-                <h3 className="text-xl font-semibold text-[#146B67] mb-4"> Techniques Financières</h3>
+                <h3 className="text-xl font-semibold text-primary mb-4"> Techniques Financières</h3>
                 <div className="grid md:grid-cols-2 gap-4">
                   <div>
                     <h4 className="font-semibold mb-2"> Stratégies de Prix</h4>
@@ -233,7 +233,7 @@ export default function ConseilsNegociationPage() {
                   </div>
                 </div>
                 <div className="mt-4 p-4 bg-blue-50 rounded-lg">
-                  <h4 className="font-semibold text-[#146B67] mb-2"> Conseil Expert</h4>
+                  <h4 className="font-semibold text-primary mb-2"> Conseil Expert</h4>
                   <p className="text-sm">
                     Proposez différentes modalités de paiement pour montrer 
                     votre flexibilité et obtenir de meilleures conditions.
@@ -244,13 +244,13 @@ export default function ConseilsNegociationPage() {
           </section>
 
           <section className="mb-8">
-            <h2 className="text-2xl font-semibold text-[#146B67] mb-4">
+            <h2 className="text-2xl font-semibold text-primary mb-4">
               🚫 Erreurs à Éviter en Négociation Immobilière
             </h2>
             
             <div className="space-y-6 mb-6">
               <div className="bg-white p-6 rounded-lg shadow-md">
-                <h3 className="text-xl font-semibold text-[#146B67] mb-4">❌ Erreurs Psychologiques</h3>
+                <h3 className="text-xl font-semibold text-primary mb-4">❌ Erreurs Psychologiques</h3>
                 <div className="grid md:grid-cols-2 gap-4">
                   <div>
                     <h4 className="font-semibold mb-2">😰 Erreurs Émotionnelles</h4>
@@ -274,7 +274,7 @@ export default function ConseilsNegociationPage() {
                   </div>
                 </div>
                 <div className="mt-4 p-4 bg-red-50 rounded-lg">
-                  <h4 className="font-semibold text-[#146B67] mb-2"> Solution</h4>
+                  <h4 className="font-semibold text-primary mb-2"> Solution</h4>
                   <p className="text-sm">
                     Restez calme, objectif et préparez-vous mentalement. 
                     La négociation est un jeu, pas une guerre.
@@ -283,7 +283,7 @@ export default function ConseilsNegociationPage() {
               </div>
               
               <div className="bg-white p-6 rounded-lg shadow-md">
-                <h3 className="text-xl font-semibold text-[#146B67] mb-4">❌ Erreurs Techniques</h3>
+                <h3 className="text-xl font-semibold text-primary mb-4">❌ Erreurs Techniques</h3>
                 <div className="grid md:grid-cols-2 gap-4">
                   <div>
                     <h4 className="font-semibold mb-2"> Erreurs Financières</h4>
@@ -307,7 +307,7 @@ export default function ConseilsNegociationPage() {
                   </div>
                 </div>
                 <div className="mt-4 p-4 bg-orange-50 rounded-lg">
-                  <h4 className="font-semibold text-[#146B67] mb-2"> Solution</h4>
+                  <h4 className="font-semibold text-primary mb-2"> Solution</h4>
                   <p className="text-sm">
                     Préparez-vous méthodiquement et entourez-vous de professionnels 
                     pour éviter ces erreurs coûteuses.
@@ -318,13 +318,13 @@ export default function ConseilsNegociationPage() {
           </section>
 
           <section className="mb-8">
-            <h2 className="text-2xl font-semibold text-[#146B67] mb-4">
+            <h2 className="text-2xl font-semibold text-primary mb-4">
                Scripts de Négociation par Situation
             </h2>
             
             <div className="space-y-6 mb-6">
               <div className="bg-white p-6 rounded-lg shadow-md">
-                <h3 className="text-xl font-semibold text-[#146B67] mb-4"> Négociation d&apos;Achat</h3>
+                <h3 className="text-xl font-semibold text-primary mb-4"> Négociation d&apos;Achat</h3>
                 <div className="space-y-4">
                   <div>
                     <h4 className="font-semibold mb-2">📞 Premier Contact</h4>
@@ -363,7 +363,7 @@ export default function ConseilsNegociationPage() {
               </div>
               
               <div className="bg-white p-6 rounded-lg shadow-md">
-                <h3 className="text-xl font-semibold text-[#146B67] mb-4"> Négociation de Location</h3>
+                <h3 className="text-xl font-semibold text-primary mb-4"> Négociation de Location</h3>
                 <div className="space-y-4">
                   <div>
                     <h4 className="font-semibold mb-2">📞 Premier Contact</h4>
@@ -403,13 +403,13 @@ export default function ConseilsNegociationPage() {
           </section>
 
           <section className="mb-8">
-            <h2 className="text-2xl font-semibold text-[#146B67] mb-4">
+            <h2 className="text-2xl font-semibold text-primary mb-4">
                Checklist de Négociation Immobilière
             </h2>
             
             <div className="grid md:grid-cols-2 gap-6 mb-6">
               <div className="bg-white p-6 rounded-lg shadow-md">
-                <h3 className="text-xl font-semibold text-[#146B67] mb-4"> Avant la Négociation</h3>
+                <h3 className="text-xl font-semibold text-primary mb-4"> Avant la Négociation</h3>
                 <ul className="space-y-2 text-sm">
                   <li>☐ <strong>Étude du marché :</strong> Prix, comparatifs</li>
                   <li>☐ <strong>Inspection du bien :</strong> État, travaux</li>
@@ -423,7 +423,7 @@ export default function ConseilsNegociationPage() {
               </div>
               
               <div className="bg-white p-6 rounded-lg shadow-md">
-                <h3 className="text-xl font-semibold text-[#146B67] mb-4">🤝 Pendant la Négociation</h3>
+                <h3 className="text-xl font-semibold text-primary mb-4">🤝 Pendant la Négociation</h3>
                 <ul className="space-y-2 text-sm">
                   <li>☐ <strong>Écouter activement :</strong> Comprendre les besoins</li>
                   <li>☐ <strong>Poser des questions :</strong> Obtenir des informations</li>
@@ -439,7 +439,7 @@ export default function ConseilsNegociationPage() {
             
             <div className="grid md:grid-cols-2 gap-6 mb-6">
               <div className="bg-white p-6 rounded-lg shadow-md">
-                <h3 className="text-xl font-semibold text-[#146B67] mb-4">📝 Après la Négociation</h3>
+                <h3 className="text-xl font-semibold text-primary mb-4">📝 Après la Négociation</h3>
                 <ul className="space-y-2 text-sm">
                   <li>☐ <strong>Résumer l&apos;accord :</strong> Points clés</li>
                   <li>☐ <strong>Rédiger un contrat :</strong> Conditions écrites</li>
@@ -453,7 +453,7 @@ export default function ConseilsNegociationPage() {
               </div>
               
               <div className="bg-white p-6 rounded-lg shadow-md">
-                <h3 className="text-xl font-semibold text-[#146B67] mb-4">❌ À Éviter Absolument</h3>
+                <h3 className="text-xl font-semibold text-primary mb-4">❌ À Éviter Absolument</h3>
                 <ul className="space-y-2 text-sm">
                   <li>☐ <strong>Se précipiter :</strong> Prendre le temps</li>
                   <li>☐ <strong>Révéler ses limites :</strong> Garder ses secrets</li>
@@ -469,13 +469,13 @@ export default function ConseilsNegociationPage() {
           </section>
 
           <section className="mb-8">
-            <h2 className="text-2xl font-semibold text-[#146B67] mb-4">
+            <h2 className="text-2xl font-semibold text-primary mb-4">
                Conseils d&apos;Experts pour Réussir sa Négociation
             </h2>
             
             <div className="space-y-6 mb-6">
               <div className="bg-white p-6 rounded-lg shadow-md">
-                <h3 className="text-xl font-semibold text-[#146B67] mb-4">👨‍💼 Conseils de Notaires</h3>
+                <h3 className="text-xl font-semibold text-primary mb-4">👨‍💼 Conseils de Notaires</h3>
                 <div className="grid md:grid-cols-2 gap-4">
                   <div>
                     <h4 className="font-semibold mb-2"> Préparation Légale</h4>
@@ -499,7 +499,7 @@ export default function ConseilsNegociationPage() {
                   </div>
                 </div>
                 <div className="mt-4 p-4 bg-purple-50 rounded-lg">
-                  <h4 className="font-semibold text-[#146B67] mb-2"> Conseil Expert</h4>
+                  <h4 className="font-semibold text-primary mb-2"> Conseil Expert</h4>
                   <p className="text-sm">
                     Un bon contrat protège les deux parties. N&apos;hésitez pas à 
                     consulter un notaire pour sécuriser votre transaction.
@@ -508,7 +508,7 @@ export default function ConseilsNegociationPage() {
               </div>
               
               <div className="bg-white p-6 rounded-lg shadow-md">
-                <h3 className="text-xl font-semibold text-[#146B67] mb-4"> Conseils d&apos;Agents Immobiliers</h3>
+                <h3 className="text-xl font-semibold text-primary mb-4"> Conseils d&apos;Agents Immobiliers</h3>
                 <div className="grid md:grid-cols-2 gap-4">
                   <div>
                     <h4 className="font-semibold mb-2"> Analyse de Marché</h4>
@@ -532,7 +532,7 @@ export default function ConseilsNegociationPage() {
                   </div>
                 </div>
                 <div className="mt-4 p-4 bg-green-50 rounded-lg">
-                  <h4 className="font-semibold text-[#146B67] mb-2"> Conseil Expert</h4>
+                  <h4 className="font-semibold text-primary mb-2"> Conseil Expert</h4>
                   <p className="text-sm">
                     Les agents immobiliers connaissent le marché et les vendeurs. 
                     Utilisez leur expertise pour optimiser votre négociation.
@@ -543,7 +543,7 @@ export default function ConseilsNegociationPage() {
           </section>
 
           <section className="mb-8">
-            <h2 className="text-2xl font-semibold text-[#146B67] mb-4">
+            <h2 className="text-2xl font-semibold text-primary mb-4">
                Conclusion : Maîtriser l&apos;Art de la Négociation
             </h2>
             
@@ -553,7 +553,7 @@ export default function ConseilsNegociationPage() {
               vous pouvez économiser des sommes importantes et obtenir de meilleures conditions.
             </p>
             
-            <div className="bg-[#146B67] text-white p-6 rounded-lg text-center">
+            <div className="bg-primary text-white p-6 rounded-lg text-center">
               <h3 className="text-xl font-semibold mb-3"> Prêt à Négocier Votre Bien Immobilier ?</h3>
               <p className="mb-4">
                 Découvrez nos annonces immobilières et mettez en pratique 
@@ -562,13 +562,13 @@ export default function ConseilsNegociationPage() {
               <div className="flex flex-col sm:flex-row gap-4 justify-center">
                 <Link 
                   href={routes.public.search_property} 
-                  className="bg-white text-[#146B67] px-6 py-3 rounded-lg hover:bg-gray-100 transition-colors font-semibold"
+                  className="bg-white text-primary px-6 py-3 rounded-lg hover:bg-gray-100 transition-colors font-semibold"
                 >
                   Voir les Annonces
                 </Link>
                 <Link 
                   href={routes.public.guide_immobilier_gabon} 
-                  className="border border-white text-white px-6 py-3 rounded-lg hover:bg-white hover:text-[#146B67] transition-colors font-semibold"
+                  className="border border-white text-white px-6 py-3 rounded-lg hover:bg-white hover:text-primary transition-colors font-semibold"
                 >
                   Guide Complet
                 </Link>
@@ -579,13 +579,13 @@ export default function ConseilsNegociationPage() {
 
         {/* Related Articles */}
         <section className="mt-12 pt-8 border-t border-gray-200">
-          <h3 className="text-2xl font-semibold text-[#146B67] mb-6">
+          <h3 className="text-2xl font-semibold text-primary mb-6">
              Articles Similaires
           </h3>
           <div className="grid md:grid-cols-2 gap-6">
             <Link href={routes.public.blog_rentabilite_immobiliere} className="block">
               <div className="bg-white p-4 rounded-lg shadow-md hover:shadow-lg transition-shadow">
-                <h4 className="font-semibold text-[#146B67] mb-2">
+                <h4 className="font-semibold text-primary mb-2">
                   Rentabilité Immobilière Gabon 2024-2025
                 </h4>
                 <p className="text-sm text-gray-600">
@@ -596,7 +596,7 @@ export default function ConseilsNegociationPage() {
             
             <Link href={routes.public.guide_immobilier_gabon} className="block">
               <div className="bg-white p-4 rounded-lg shadow-md hover:shadow-lg transition-shadow">
-                <h4 className="font-semibold text-[#146B67] mb-2">
+                <h4 className="font-semibold text-primary mb-2">
                   Guide Immobilier Gabon 2024
                 </h4>
                 <p className="text-sm text-gray-600">

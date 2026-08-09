@@ -23,7 +23,7 @@ export default function PWAInstallButton() {
         onClick={() => {
           void promptInstall();
         }}
-        className="bg-gradient-to-r from-[#1FA89B] to-[#146B67] text-white font-bold px-6 py-3 rounded-full shadow-xl hover:scale-105 transition-all duration-300 mx-auto"
+        className="bg-gradient-to-r from-secondary to-primary text-white font-bold px-6 py-3 rounded-full shadow-xl hover:scale-105 transition-all duration-300 mx-auto"
       >
         Installer l'application
       </button>

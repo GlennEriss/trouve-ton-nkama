@@ -25,7 +25,7 @@ export default function SearchWithAIAccessNoticeDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-md">
         <DialogHeader>
-          <DialogTitle className="text-[#146B67]">Recherche IA réservée aux membres</DialogTitle>
+          <DialogTitle className="text-primary">Recherche IA réservée aux membres</DialogTitle>
           <DialogDescription className="text-gray-600 leading-relaxed">
             Cette fonctionnalité est disponible après création de compte ou connexion.
           </DialogDescription>
@@ -44,14 +44,14 @@ export default function SearchWithAIAccessNoticeDialog({
             type="button"
             variant="outline"
             asChild
-            className="w-full sm:w-auto border-[#146B67] text-[#146B67] hover:bg-[#146B67]/10"
+            className="w-full sm:w-auto border-primary text-primary hover:bg-primary/10"
           >
             <Link href={routes.public.signin}>Se connecter</Link>
           </Button>
           <Button
             type="button"
             asChild
-            className="w-full sm:w-auto bg-[#146B67] hover:bg-[#1A807A] text-white"
+            className="w-full sm:w-auto bg-primary hover:bg-primary text-white"
           >
             <Link href={routes.public.signup}>Créer un compte</Link>
           </Button>

@@ -388,7 +388,7 @@ function ReelActionRail({
             src={owner.image ?? ''}
             alt={[owner.firstname, owner.lastname].filter(Boolean).join(' ')}
           />
-          <AvatarFallback className="bg-[#1FA89B] text-sm font-semibold text-white">
+          <AvatarFallback className="bg-secondary text-sm font-semibold text-white">
             {owner.firstname?.at(0) ?? ''}
           </AvatarFallback>
         </Avatar>

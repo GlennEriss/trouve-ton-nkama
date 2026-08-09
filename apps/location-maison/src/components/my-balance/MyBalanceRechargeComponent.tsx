@@ -9,7 +9,7 @@ import MyBalanceNavigation from './MyBalanceNavigation'
 
 export default function MyBalanceRechargeComponent() {
   return (
-    <div className="container mx-auto px-4 md:px-6 py-4 md:py-6 space-y-6 md:space-y-8 max-w-[1280px] 2xl:max-w-[1440px]">
+    <div className="container-page px-4 md:px-6 py-4 md:py-6 space-y-6 md:space-y-8">
       <MyBalanceNavigation
         title="Recharge & packs"
         description="Rechargez votre solde instantanément par mobile money. Choisissez un pack et confirmez le paiement sur votre téléphone."

@@ -106,7 +106,7 @@ const PasswordResetRequest: React.FC = () => {
   return (
     <div className="min-h-[100dvh] md:min-h-screen flex bg-gradient-to-br from-slate-50 via-white to-teal-50/30 dark:from-gray-950 dark:via-gray-900 dark:to-gray-950">
       <div className="hidden lg:flex lg:w-1/2 xl:w-[45%] relative overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-br from-[#146B67] via-[#1a8a83] to-[#1FA89B]" />
+        <div className="absolute inset-0 bg-gradient-to-br from-primary via-primary-600 to-secondary" />
 
         <div
           className="absolute inset-0 bg-cover bg-no-repeat opacity-20 mix-blend-overlay blur-[1px] pointer-events-none"
@@ -187,7 +187,7 @@ const PasswordResetRequest: React.FC = () => {
         <div className="w-full max-w-lg">
           <div className="lg:hidden flex items-center justify-center gap-2 mb-6">
             <Logo width="40px" height="40px" />
-            <span className="text-lg font-bold text-[#146B67]">Trouve Ton Nkama</span>
+            <span className="text-lg font-bold text-primary">Trouve Ton Nkama</span>
           </div>
 
           <div className="bg-white dark:bg-gray-900 rounded-2xl sm:rounded-3xl shadow-xl sm:shadow-2xl shadow-gray-200/50 dark:shadow-black/30 p-6 sm:p-8 lg:p-10 border border-gray-100 dark:border-gray-800">
@@ -207,7 +207,7 @@ const PasswordResetRequest: React.FC = () => {
                 <div className="space-y-3">
                   <ButtonApp
                     title="Retour à la connexion"
-                    className="bg-gradient-to-r from-[#146B67] to-[#1FA89B]"
+                    className="bg-gradient-to-r from-primary to-secondary"
                     onClick={() => router.push(routes.public.signin)}
                   />
                   <Button
@@ -227,7 +227,7 @@ const PasswordResetRequest: React.FC = () => {
               <>
                 <Link
                   href={routes.public.signin}
-                  className="inline-flex items-center gap-2 text-xs sm:text-sm text-gray-500 hover:text-[#146B67] mb-5 sm:mb-6"
+                  className="inline-flex items-center gap-2 text-xs sm:text-sm text-gray-500 hover:text-primary mb-5 sm:mb-6"
                 >
                   <ArrowLeft className="w-4 h-4" />
                   Retour à la connexion
@@ -274,7 +274,7 @@ const PasswordResetRequest: React.FC = () => {
                       }
                       isLoading={isLoading}
                       disabled={isLoading || isRateLimited}
-                      className="bg-gradient-to-r from-[#146B67] to-[#1FA89B] h-12"
+                      className="bg-gradient-to-r from-primary to-secondary h-12"
                     />
                   </form>
                 </Form>
@@ -282,13 +282,13 @@ const PasswordResetRequest: React.FC = () => {
                 <div className="mt-8 pt-6 border-t border-gray-200 dark:border-gray-800 text-center">
                   <p className="text-sm text-gray-500 dark:text-gray-400">
                     Besoin d&apos;aide?{' '}
-                    <a href={`mailto:${supportContact.email}`} className="text-[#146B67] hover:underline font-medium">
+                    <a href={`mailto:${supportContact.email}`} className="text-primary hover:underline font-medium">
                       {supportContact.email}
                     </a>
                   </p>
                   <Link
                     href={routes.public.homePage}
-                    className="mt-3 inline-flex items-center gap-2 text-sm text-gray-500 hover:text-[#146B67]"
+                    className="mt-3 inline-flex items-center gap-2 text-sm text-gray-500 hover:text-primary"
                   >
                     <Home className="w-4 h-4" />
                     Retour à l&apos;accueil

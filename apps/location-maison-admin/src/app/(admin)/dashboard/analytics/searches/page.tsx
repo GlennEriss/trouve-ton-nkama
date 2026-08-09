@@ -325,7 +325,7 @@ export default function AnalyticsSearchesPage() {
         <Card>
           <CardHeader>
             <p className="text-sm text-slate-600">Taux de succès</p>
-            <p className="text-2xl font-semibold text-brand-700">{data?.summary.successRate ?? 0}%</p>
+            <p className="text-2xl font-semibold text-primary">{data?.summary.successRate ?? 0}%</p>
           </CardHeader>
         </Card>
       </section>

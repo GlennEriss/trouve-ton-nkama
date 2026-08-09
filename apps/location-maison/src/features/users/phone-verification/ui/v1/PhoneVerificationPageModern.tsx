@@ -83,7 +83,7 @@ export function PhoneVerificationPageModern() {
 
         {isCheckingVerification && (
           <div className="mt-8 flex flex-col items-center gap-3 text-center">
-            <RefreshCw className="h-8 w-8 animate-spin text-[#1FA89B]" />
+            <RefreshCw className="h-8 w-8 animate-spin text-secondary" />
             <p className="text-sm text-gray-600 dark:text-gray-300">
               Vérification du statut en cours...
             </p>
@@ -154,7 +154,7 @@ export function PhoneVerificationPageModern() {
             <Button
               onClick={sendOtp}
               disabled={!canSendOtp}
-              className="h-12 w-full bg-gradient-to-r from-[#146B67] to-[#1FA89B] hover:from-[#125b57] hover:to-[#1a9589]"
+              className="h-12 w-full bg-gradient-to-r from-primary to-secondary hover:from-primary-800 hover:to-primary-600"
             >
               {isLoading ? 'Envoi du code...' : 'Envoyer le code OTP'}
             </Button>
@@ -212,7 +212,7 @@ export function PhoneVerificationPageModern() {
               <Button
                 onClick={verifyOtp}
                 disabled={!canVerifyOtp}
-                className="h-12 bg-gradient-to-r from-[#146B67] to-[#1FA89B] hover:from-[#125b57] hover:to-[#1a9589]"
+                className="h-12 bg-gradient-to-r from-primary to-secondary hover:from-primary-800 hover:to-primary-600"
               >
                 {isLoading ? 'Vérification...' : 'Vérifier le code'}
               </Button>
@@ -229,7 +229,7 @@ export function PhoneVerificationPageModern() {
             <button
               type="button"
               onClick={resendOtp}
-              className="text-sm font-medium text-[#1FA89B] hover:underline disabled:cursor-not-allowed disabled:opacity-60"
+              className="text-sm font-medium text-secondary hover:underline disabled:cursor-not-allowed disabled:opacity-60"
               disabled={isLoading}
             >
               Renvoyer un code OTP
@@ -249,7 +249,7 @@ export function PhoneVerificationPageModern() {
               Votre numéro <strong>{fullPhoneNumber}</strong> est maintenant vérifié.
             </p>
             <Link href={routes.protected.profil}>
-              <Button className="h-12 bg-gradient-to-r from-[#146B67] to-[#1FA89B] hover:from-[#125b57] hover:to-[#1a9589]">
+              <Button className="h-12 bg-gradient-to-r from-primary to-secondary hover:from-primary-800 hover:to-primary-600">
                 Retour au profil
               </Button>
             </Link>
@@ -278,7 +278,7 @@ export function PhoneVerificationPageModern() {
               </p>
             </div>
             <Link href={routes.protected.profil}>
-              <Button className="h-12 bg-gradient-to-r from-[#146B67] to-[#1FA89B] hover:from-[#125b57] hover:to-[#1a9589]">
+              <Button className="h-12 bg-gradient-to-r from-primary to-secondary hover:from-primary-800 hover:to-primary-600">
                 Retour au profil
               </Button>
             </Link>
