@@ -96,7 +96,7 @@ describe('contrats des types d annonces', () => {
 })
 
 describe('validation des annonces spécifiques', () => {
-  it('refuse une ville et un quartier simplement saisis sans sélection vérifiée', () => {
+  it('refuse une ville non sélectionnée, mais autorise un quartier et une localisation libres', () => {
     const result = DuplexSchema.safeParse({
       ...validBase,
       cityPlaceId: '',
@@ -113,10 +113,10 @@ describe('validation des annonces spécifiques', () => {
 
     expect(result.success).toBe(false)
     if (!result.success) {
-      expect(result.error.flatten().fieldErrors).toMatchObject({
+      // Depuis 4d8f5a41, districtPlaceId et locationSource acceptent une
+      // sélection non vérifiée (texte libre) ; seule la ville reste obligatoire.
+      expect(result.error.flatten().fieldErrors).toEqual({
         cityPlaceId: ['Sélectionnez une ville proposée'],
-        districtPlaceId: ['Sélectionnez un quartier proposé'],
-        locationSource: ['Validez la localisation proposée'],
       })
     }
   })
