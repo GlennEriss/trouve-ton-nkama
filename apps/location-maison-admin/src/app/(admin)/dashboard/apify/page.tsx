@@ -1,8 +1,8 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState, type FormEvent } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState, type ChangeEvent, type FormEvent } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { Pencil } from "lucide-react";
+import { ChevronLeft, ChevronRight, ImagePlus, Pencil, X } from "lucide-react";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -69,6 +69,11 @@ type AnnouncerOption = { uid: string; fullName: string; email: string | null; ph
 
 type ImportResult = { index: number; ok: boolean; propertyId?: string; imageCount: number; error?: string };
 
+type DraftEditImage = { fileURL: string; filePATH: string };
+
+const MAX_DRAFT_IMAGES = 10;
+const ALLOWED_IMAGE_TYPES = new Set(["image/jpeg", "image/png", "image/webp"]);
+
 type DraftEditFormState = {
   title: string;
   description: string;
@@ -77,7 +82,7 @@ type DraftEditFormState = {
   price: string;
   area: string;
   tags: string;
-  images: string;
+  images: DraftEditImage[];
   street: string;
   city: string;
   province: string;
@@ -153,6 +158,25 @@ async function importDrafts(
   return body.data;
 }
 
+// Manually downloaded photos (from the real post, since fbcdn URLs expire)
+// are uploaded through the same endpoint the listing editor uses.
+async function uploadDraftImages(files: File[], announcerUid?: string): Promise<DraftEditImage[]> {
+  const formData = new FormData();
+  if (announcerUid) formData.append("announcerUid", announcerUid);
+  for (const file of files) formData.append("files", file);
+  const response = await fetch("/api/admin/v1/listings/images/upload", {
+    method: "POST",
+    body: formData,
+  });
+  const body = (await response.json()) as
+    | { success: true; data: { images: DraftEditImage[] } }
+    | { success: false; error?: { message?: string } };
+  if (!response.ok || !body.success) {
+    throw new Error(body.success ? "Erreur" : body.error?.message ?? "Échec de l'envoi des images.");
+  }
+  return body.data.images.map((image) => ({ fileURL: image.fileURL, filePATH: image.filePATH }));
+}
+
 function formatPrice(price: number): string {
   if (price <= 0) return "Prix non détecté";
   return `${new Intl.NumberFormat("fr-FR").format(price)} XAF`;
@@ -224,7 +248,7 @@ function draftToEditForm(draft: ApifyListingDraft): DraftEditFormState {
     price: numberText(draft.price, true),
     area: numberText(draft.area, true),
     tags: draft.tags.join(", "),
-    images: draft.images.map((image) => image.fileURL).join("\n"),
+    images: draft.images.map((image) => ({ fileURL: image.fileURL, filePATH: image.filePATH ?? "" })),
     street: draft.street,
     city: draft.city,
     province: draft.province,
@@ -266,9 +290,7 @@ function applyDraftEdit(draft: ApifyListingDraft, form: DraftEditFormState): Api
     price: toNonNegativeNumber(form.price),
     area: toNonNegativeNumber(form.area),
     tags: parseList(form.tags).slice(0, 6),
-    images: parseList(form.images)
-      .slice(0, 10)
-      .map((fileURL) => ({ fileURL, filePATH: "" })),
+    images: form.images.slice(0, MAX_DRAFT_IMAGES),
     street: form.street.trim(),
     city: form.city.trim(),
     province: form.province.trim(),
@@ -385,6 +407,7 @@ function DraftEditDialog({
   index,
   item,
   osm,
+  announcerUid,
   open,
   onOpenChange,
   onSave,
@@ -392,14 +415,71 @@ function DraftEditDialog({
   index: number;
   item: ApifyDraftMeta;
   osm: GabonOsmSelectorData | null;
+  announcerUid?: string;
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onSave: (index: number, form: DraftEditFormState) => void;
 }) {
   const [form, setForm] = useState<DraftEditFormState>(() => draftToEditForm(item.draft));
+  const [manualUrl, setManualUrl] = useState("");
+  const [uploading, setUploading] = useState(false);
+  const [uploadError, setUploadError] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
 
   const setField = <K extends keyof DraftEditFormState>(key: K, value: DraftEditFormState[K]) => {
     setForm((prev) => ({ ...prev, [key]: value }));
+  };
+
+  const removeImage = (imageIndex: number) => {
+    setForm((prev) => ({ ...prev, images: prev.images.filter((_, i) => i !== imageIndex) }));
+  };
+
+  const moveImage = (from: number, to: number) => {
+    setForm((prev) => {
+      if (to < 0 || to >= prev.images.length) return prev;
+      const images = [...prev.images];
+      const [moved] = images.splice(from, 1);
+      images.splice(to, 0, moved);
+      return { ...prev, images };
+    });
+  };
+
+  const addManualImageUrl = () => {
+    const url = manualUrl.trim();
+    if (!url || form.images.length >= MAX_DRAFT_IMAGES) return;
+    setForm((prev) => ({ ...prev, images: [...prev.images, { fileURL: url, filePATH: "" }] }));
+    setManualUrl("");
+  };
+
+  // Manually downloaded photos from the real post (fbcdn links expire fast,
+  // so the reviewer grabs them from the post itself and uploads them here).
+  const handleFilesSelected = async (event: ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(event.target.files ?? []);
+    event.target.value = "";
+    if (files.length === 0) return;
+
+    const invalid = files.find((file) => !ALLOWED_IMAGE_TYPES.has(file.type));
+    if (invalid) {
+      setUploadError("Format non supporté (JPG, PNG ou WEBP uniquement).");
+      return;
+    }
+
+    const remaining = MAX_DRAFT_IMAGES - form.images.length;
+    if (remaining <= 0) {
+      setUploadError(`Maximum ${MAX_DRAFT_IMAGES} images.`);
+      return;
+    }
+
+    setUploading(true);
+    setUploadError(null);
+    try {
+      const uploaded = await uploadDraftImages(files.slice(0, remaining), announcerUid);
+      setForm((prev) => ({ ...prev, images: [...prev.images, ...uploaded].slice(0, MAX_DRAFT_IMAGES) }));
+    } catch (cause) {
+      setUploadError(cause instanceof Error ? cause.message : "Échec de l'envoi des images.");
+    } finally {
+      setUploading(false);
+    }
   };
 
   // Localisation options drawn from the geolocation reference, sorted A→Z and
@@ -756,14 +836,102 @@ function DraftEditDialog({
                 placeholder="tag 1, tag 2"
               />
             </label>
-            <label className={labelClass}>
-              URLs d&apos;images
-              <textarea
-                className={`${inputClass} min-h-24 resize-y font-mono text-xs`}
-                value={form.images}
-                onChange={(event) => setField("images", event.target.value)}
-              />
-            </label>
+            <div className="space-y-2">
+              <p className="flex items-center justify-between text-xs font-medium text-slate-600">
+                <span>
+                  Images ({form.images.length}/{MAX_DRAFT_IMAGES})
+                </span>
+              </p>
+
+              {form.images.length > 0 ? (
+                <div className="flex flex-wrap gap-2">
+                  {form.images.map((image, imageIndex) => (
+                    <div key={`${image.fileURL}-${imageIndex}`} className="group relative">
+                      <ImageThumb url={image.fileURL} />
+                      <button
+                        type="button"
+                        aria-label="Supprimer cette image"
+                        onClick={() => removeImage(imageIndex)}
+                        className="absolute -right-1.5 -top-1.5 flex h-5 w-5 items-center justify-center rounded-full bg-red-600 text-white shadow"
+                      >
+                        <X className="size-3" />
+                      </button>
+                      <div className="absolute -bottom-1.5 left-1/2 flex -translate-x-1/2 gap-0.5">
+                        <button
+                          type="button"
+                          aria-label="Déplacer vers la gauche"
+                          disabled={imageIndex === 0}
+                          onClick={() => moveImage(imageIndex, imageIndex - 1)}
+                          className="flex h-5 w-5 items-center justify-center rounded-full bg-white text-slate-600 shadow disabled:opacity-30"
+                        >
+                          <ChevronLeft className="size-3" />
+                        </button>
+                        <button
+                          type="button"
+                          aria-label="Déplacer vers la droite"
+                          disabled={imageIndex === form.images.length - 1}
+                          onClick={() => moveImage(imageIndex, imageIndex + 1)}
+                          className="flex h-5 w-5 items-center justify-center rounded-full bg-white text-slate-600 shadow disabled:opacity-30"
+                        >
+                          <ChevronRight className="size-3" />
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <p className="text-xs text-slate-400">Aucune image. Ajoute-en depuis ton ordinateur ou colle une URL.</p>
+              )}
+
+              <div className="flex flex-wrap items-center gap-2">
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  disabled={uploading || form.images.length >= MAX_DRAFT_IMAGES}
+                  onClick={() => fileInputRef.current?.click()}
+                >
+                  <ImagePlus />
+                  {uploading ? "Envoi…" : "Ajouter des photos"}
+                </Button>
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept="image/jpeg,image/png,image/webp"
+                  multiple
+                  className="hidden"
+                  onChange={handleFilesSelected}
+                />
+                {uploadError ? <span className="text-xs text-red-600">{uploadError}</span> : null}
+              </div>
+              <p className="text-xs text-slate-400">
+                Images expirées ou absentes du JSON : télécharge-les depuis le lien du post puis ajoute-les ici (JPG/PNG/WEBP, 10 Mo max).
+              </p>
+
+              <div className="flex gap-2">
+                <input
+                  className={inputClass}
+                  value={manualUrl}
+                  onChange={(event) => setManualUrl(event.target.value)}
+                  placeholder="…ou coller une URL d'image directe"
+                  onKeyDown={(event) => {
+                    if (event.key === "Enter") {
+                      event.preventDefault();
+                      addManualImageUrl();
+                    }
+                  }}
+                />
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  disabled={!manualUrl.trim() || form.images.length >= MAX_DRAFT_IMAGES}
+                  onClick={addManualImageUrl}
+                >
+                  Ajouter l&apos;URL
+                </Button>
+              </div>
+            </div>
           </section>
 
           <DialogFooter>
@@ -1404,6 +1572,7 @@ export default function ApifyPage() {
           index={editIndex}
           item={items[editIndex]}
           osm={osm}
+          announcerUid={announcer?.uid}
           open={editIndex !== null}
           onOpenChange={(open) => {
             if (!open) setEditIndex(null);
