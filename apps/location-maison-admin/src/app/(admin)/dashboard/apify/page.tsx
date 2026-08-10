@@ -434,8 +434,11 @@ function ImageThumb({ url }: { url: string }) {
 
   if (failed) {
     return (
-      <div className="flex h-20 w-20 items-center justify-center rounded-md border border-dashed border-slate-300 bg-slate-50 px-1 text-center text-[10px] leading-tight text-slate-400">
-        Image expirée
+      <div
+        className="flex h-20 w-20 items-center justify-center rounded-md border border-dashed border-slate-300 bg-slate-50 px-1 text-center text-[10px] leading-tight text-slate-400"
+        title="Aperçu inaccessible depuis ce navigateur (réseau/VPN qui bloque fbcdn.net, ou URL expirée) — n'empêche pas forcément la création de l'annonce, qui télécharge l'image depuis le serveur."
+      >
+        Aperçu indisponible
       </div>
     );
   }
@@ -1970,9 +1973,11 @@ export default function ApifyPage() {
           <p className="text-sm font-medium text-slate-900">JSON Apify</p>
           <p className="text-xs text-slate-500">
             Le tableau de posts du scraper Facebook. Les annonces ne sont pas encore enregistrées en base —
-            cette étape ne fait que prévisualiser la transformation. Les URLs d&apos;images Facebook expirent
-            au bout de quelques heures : utilisez un export récent, sinon les miniatures s&apos;afficheront comme
-            «&nbsp;expirées&nbsp;».
+            cette étape ne fait que prévisualiser la transformation. Une vignette «&nbsp;Aperçu
+            indisponible&nbsp;» ne veut pas dire que l&apos;image est perdue : soit l&apos;URL Facebook a
+            fini par expirer (après plusieurs heures), soit ton réseau/VPN bloque fbcdn.net dans ce
+            navigateur — dans les deux cas, «&nbsp;Créer l&apos;annonce&nbsp;» télécharge l&apos;image
+            depuis le serveur et fonctionne souvent quand même.
           </p>
         </CardHeader>
         <CardContent>
