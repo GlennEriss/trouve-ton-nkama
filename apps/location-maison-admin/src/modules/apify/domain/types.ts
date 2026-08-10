@@ -22,6 +22,11 @@ export type ApifyRawPost = {
   commentsCount?: number;
   // Attachments are deeply nested and inconsistent; kept loose on purpose.
   attachments?: unknown[];
+  // Present when the post is a repost of another post (common for agency
+  // Pages sharing into buy/sell groups) — `attachments` is then empty and
+  // the real photos/videos live in `sharedPost.media` instead, same node
+  // shape (__typename "Photo"/"Video") as regular attachments.
+  sharedPost?: { media?: unknown[]; url?: string } | null;
 };
 
 /** Result of parsing the pasted JSON string. */
