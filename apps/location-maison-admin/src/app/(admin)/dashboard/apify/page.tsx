@@ -27,6 +27,7 @@ import {
   type GeoSource,
 } from "@/modules/apify/application/apify-geocode.service";
 import type { ApifyDraftMeta, ApifyListingDraft, ApifyPipelineResult, ApifyReelDraft } from "@/modules/apify/domain/types";
+import type { FacebookGroupSource } from "@/modules/apify/domain/group-source.types";
 import type { StatusProperty, TypeProperty } from "@/modules/apify/domain/platform-listing";
 import type { GabonOsmSelectorData } from "@/modules/location-osm/domain/types";
 
@@ -161,6 +162,58 @@ async function importDrafts(
     throw new Error(body.error?.message ?? "Échec de l'import.");
   }
   return body.data;
+}
+
+async function fetchGroupSources(): Promise<{ groups: FacebookGroupSource[]; count: number }> {
+  const response = await fetch("/api/admin/v1/apify/groups");
+  const body = (await response.json()) as
+    | { success: true; data: { groups: FacebookGroupSource[]; count: number } }
+    | { success: false; error?: { message?: string } };
+  if (!body.success) {
+    throw new Error(body.error?.message ?? "Impossible de charger les groupes.");
+  }
+  return body.data;
+}
+
+async function createGroupSourceApi(url: string, label: string): Promise<FacebookGroupSource> {
+  const response = await fetch("/api/admin/v1/apify/groups", {
+    method: "POST",
+    headers: { "content-type": "application/json" },
+    body: JSON.stringify(label ? { url, label } : { url }),
+  });
+  const body = (await response.json()) as
+    | { success: true; data: { group: FacebookGroupSource } }
+    | { success: false; error?: { message?: string } };
+  if (!body.success) {
+    throw new Error(body.error?.message ?? "Impossible d'enregistrer ce groupe.");
+  }
+  return body.data.group;
+}
+
+async function updateGroupSourceApi(
+  groupId: string,
+  patch: { url?: string; label?: string | null },
+): Promise<FacebookGroupSource> {
+  const response = await fetch(`/api/admin/v1/apify/groups/${groupId}`, {
+    method: "PATCH",
+    headers: { "content-type": "application/json" },
+    body: JSON.stringify(patch),
+  });
+  const body = (await response.json()) as
+    | { success: true; data: { group: FacebookGroupSource } }
+    | { success: false; error?: { message?: string } };
+  if (!body.success) {
+    throw new Error(body.error?.message ?? "Impossible de mettre à jour ce groupe.");
+  }
+  return body.data.group;
+}
+
+async function deleteGroupSourceApi(groupId: string): Promise<void> {
+  const response = await fetch(`/api/admin/v1/apify/groups/${groupId}`, { method: "DELETE" });
+  const body = (await response.json()) as { success: true } | { success: false; error?: { message?: string } };
+  if (!body.success) {
+    throw new Error(body.error?.message ?? "Impossible de supprimer ce groupe.");
+  }
 }
 
 async function triggerScrape(
@@ -1261,6 +1314,70 @@ function DraftCard({
   );
 }
 
+type GroupEditDialogProps = {
+  group: FacebookGroupSource;
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  onSave: (groupId: string, patch: { url?: string; label?: string | null }) => Promise<void>;
+};
+
+function GroupEditDialog({ group, open, onOpenChange, onSave }: GroupEditDialogProps) {
+  const [url, setUrl] = useState(group.url);
+  const [label, setLabel] = useState(group.label ?? "");
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const save = async () => {
+    setSaving(true);
+    setError(null);
+    try {
+      await onSave(group.id, { url: url.trim(), label: label.trim() || null });
+    } catch (cause) {
+      setError(cause instanceof Error ? cause.message : "Échec de la mise à jour.");
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="max-w-md">
+        <DialogHeader>
+          <DialogTitle>Modifier le groupe</DialogTitle>
+        </DialogHeader>
+        <div className="space-y-3 py-2">
+          <label className="flex flex-col gap-1 text-xs text-slate-500">
+            URL du groupe
+            <input
+              value={url}
+              onChange={(event) => setUrl(event.target.value)}
+              className="rounded-md border border-slate-200 px-2 py-1.5 text-sm focus:border-brand-500 focus:outline-none"
+            />
+          </label>
+          <label className="flex flex-col gap-1 text-xs text-slate-500">
+            Libellé
+            <input
+              value={label}
+              onChange={(event) => setLabel(event.target.value)}
+              placeholder="(optionnel)"
+              className="rounded-md border border-slate-200 px-2 py-1.5 text-sm focus:border-brand-500 focus:outline-none"
+            />
+          </label>
+          {error ? <p className="text-xs text-red-600">{error}</p> : null}
+        </div>
+        <DialogFooter>
+          <Button variant="outline" onClick={() => onOpenChange(false)}>
+            Annuler
+          </Button>
+          <Button onClick={save} disabled={saving || !url.trim()}>
+            {saving ? "Enregistrement…" : "Enregistrer"}
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
 export default function ApifyPage() {
   const [rawJson, setRawJson] = useState("");
   const [error, setError] = useState<string | null>(null);
@@ -1282,12 +1399,24 @@ export default function ApifyPage() {
 
   // Automated scraping (POST /apify/scrape + poll) — alternative to pasting
   // JSON by hand in the textarea below.
-  const [groupUrlsText, setGroupUrlsText] = useState("");
+  const [selectedGroupIds, setSelectedGroupIds] = useState<Record<string, boolean>>({});
   const [resultsLimitText, setResultsLimitText] = useState("100");
   const [scrapeRunId, setScrapeRunId] = useState<string | null>(null);
   const [scrapeStatus, setScrapeStatus] = useState<ScrapeStatus>("idle");
   const [scrapeError, setScrapeError] = useState<string | null>(null);
   const [scrapeStartedAt, setScrapeStartedAt] = useState<number | null>(null);
+
+  // Registre de groupes Facebook enregistrés (ajout/modification/suppression).
+  const [newGroupUrl, setNewGroupUrl] = useState("");
+  const [newGroupLabel, setNewGroupLabel] = useState("");
+  const [groupFormError, setGroupFormError] = useState<string | null>(null);
+  const [addingGroup, setAddingGroup] = useState(false);
+  const [editGroup, setEditGroup] = useState<FacebookGroupSource | null>(null);
+  const [confirmRemoveGroupId, setConfirmRemoveGroupId] = useState<string | null>(null);
+
+  const groupsQuery = useQuery({ queryKey: ["apify", "groups"], queryFn: fetchGroupSources });
+  const groupsData = groupsQuery.data?.groups;
+  const groups = useMemo(() => groupsData ?? [], [groupsData]);
 
   const osmQuery = useQuery({ queryKey: ["osm", "gabon", "selector"], queryFn: fetchOsmSelector });
   const osm = osmQuery.data ?? null;
@@ -1375,26 +1504,66 @@ export default function ApifyPage() {
     applyRawJson(rawJson);
   }, [applyRawJson, rawJson]);
 
+  const selectedGroupUrls = useMemo(
+    () => groups.filter((group) => selectedGroupIds[group.id]).map((group) => group.url),
+    [groups, selectedGroupIds],
+  );
+
   const handleTriggerScrape = useCallback(async () => {
-    const groupUrls = groupUrlsText
-      .split("\n")
-      .map((line) => line.trim())
-      .filter(Boolean);
-    if (groupUrls.length === 0) return;
+    if (selectedGroupUrls.length === 0) return;
     const resultsLimit = Number(resultsLimitText) || 100;
 
     setScrapeStatus("running");
     setScrapeError(null);
     setScrapeRunId(null);
     try {
-      const { runId } = await triggerScrape(groupUrls, resultsLimit);
+      const { runId } = await triggerScrape(selectedGroupUrls, resultsLimit);
       setScrapeStartedAt(Date.now());
       setScrapeRunId(runId);
     } catch (cause) {
       setScrapeStatus("failed");
       setScrapeError(cause instanceof Error ? cause.message : "Échec du déclenchement.");
     }
-  }, [groupUrlsText, resultsLimitText]);
+  }, [selectedGroupUrls, resultsLimitText]);
+
+  const handleAddGroup = useCallback(async () => {
+    const url = newGroupUrl.trim();
+    if (!url) return;
+    setAddingGroup(true);
+    setGroupFormError(null);
+    try {
+      const created = await createGroupSourceApi(url, newGroupLabel.trim());
+      setNewGroupUrl("");
+      setNewGroupLabel("");
+      await groupsQuery.refetch();
+      setSelectedGroupIds((prev) => ({ ...prev, [created.id]: true }));
+    } catch (cause) {
+      setGroupFormError(cause instanceof Error ? cause.message : "Échec de l'enregistrement.");
+    } finally {
+      setAddingGroup(false);
+    }
+  }, [newGroupUrl, newGroupLabel, groupsQuery]);
+
+  const handleSaveGroupEdit = useCallback(
+    async (groupId: string, patch: { url?: string; label?: string | null }) => {
+      await updateGroupSourceApi(groupId, patch);
+      await groupsQuery.refetch();
+      setEditGroup(null);
+    },
+    [groupsQuery],
+  );
+
+  const handleConfirmRemoveGroup = useCallback(async () => {
+    if (!confirmRemoveGroupId) return;
+    await deleteGroupSourceApi(confirmRemoveGroupId);
+    setSelectedGroupIds((prev) => {
+      const next = { ...prev };
+      delete next[confirmRemoveGroupId];
+      return next;
+    });
+    setConfirmRemoveGroupId(null);
+    await groupsQuery.refetch();
+  }, [confirmRemoveGroupId, groupsQuery]);
 
   const scrapePollQuery = useQuery({
     queryKey: ["apify", "scrape", scrapeRunId],
@@ -1683,15 +1852,79 @@ export default function ApifyPage() {
           </p>
         </CardHeader>
         <CardContent className="space-y-3">
-          <textarea
-            value={groupUrlsText}
-            onChange={(event) => setGroupUrlsText(event.target.value)}
-            spellCheck={false}
-            placeholder={"https://www.facebook.com/groups/...\nhttps://www.facebook.com/groups/... (une URL par ligne)"}
-            className="h-24 w-full resize-y rounded-md border border-slate-200 bg-slate-50 p-3 font-mono text-xs text-slate-800 focus:border-brand-500 focus:outline-none"
-            disabled={scrapeStatus === "running"}
-          />
-          <div className="flex flex-wrap items-center gap-3">
+          <div className="space-y-2">
+            <p className="text-xs font-medium text-slate-500">Groupes enregistrés</p>
+            {groupsQuery.isLoading ? (
+              <p className="text-xs text-slate-400">Chargement…</p>
+            ) : groups.length === 0 ? (
+              <p className="text-xs text-slate-400">Aucun groupe enregistré — ajoute-en un ci-dessous.</p>
+            ) : (
+              <ul className="space-y-1">
+                {groups.map((group) => (
+                  <li
+                    key={group.id}
+                    className="flex items-center gap-2 rounded-md border border-slate-200 px-2 py-1.5"
+                  >
+                    <input
+                      type="checkbox"
+                      checked={Boolean(selectedGroupIds[group.id])}
+                      onChange={(event) =>
+                        setSelectedGroupIds((prev) => ({ ...prev, [group.id]: event.target.checked }))
+                      }
+                      disabled={scrapeStatus === "running"}
+                    />
+                    <span className="flex-1 truncate text-sm text-slate-800">{group.label || group.url}</span>
+                    {group.label ? (
+                      <span className="hidden truncate text-xs text-slate-400 sm:inline">{group.url}</span>
+                    ) : null}
+                    <button
+                      type="button"
+                      className="text-slate-400 hover:text-slate-700"
+                      onClick={() => setEditGroup(group)}
+                      aria-label="Modifier"
+                    >
+                      <Pencil className="h-3.5 w-3.5" />
+                    </button>
+                    <button
+                      type="button"
+                      className="text-red-500 hover:text-red-700"
+                      onClick={() => setConfirmRemoveGroupId(group.id)}
+                      aria-label="Supprimer"
+                    >
+                      <X className="h-3.5 w-3.5" />
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </div>
+
+          <div className="flex flex-wrap items-end gap-2 border-t border-slate-100 pt-3">
+            <label className="flex flex-col gap-1 text-xs text-slate-500">
+              URL du groupe
+              <input
+                value={newGroupUrl}
+                onChange={(event) => setNewGroupUrl(event.target.value)}
+                placeholder="https://www.facebook.com/groups/..."
+                className="w-64 rounded-md border border-slate-200 px-2 py-1.5 text-sm focus:border-brand-500 focus:outline-none"
+              />
+            </label>
+            <label className="flex flex-col gap-1 text-xs text-slate-500">
+              Libellé (optionnel)
+              <input
+                value={newGroupLabel}
+                onChange={(event) => setNewGroupLabel(event.target.value)}
+                placeholder="Bons plans immo Libreville"
+                className="w-56 rounded-md border border-slate-200 px-2 py-1.5 text-sm focus:border-brand-500 focus:outline-none"
+              />
+            </label>
+            <Button variant="outline" onClick={handleAddGroup} disabled={!newGroupUrl.trim() || addingGroup}>
+              {addingGroup ? "Ajout…" : "Ajouter le groupe"}
+            </Button>
+          </div>
+          {groupFormError ? <p className="text-xs text-red-600">{groupFormError}</p> : null}
+
+          <div className="flex flex-wrap items-center gap-3 border-t border-slate-100 pt-3">
             <label className="flex items-center gap-2 text-sm text-slate-600">
               Posts par groupe
               <input
@@ -1705,9 +1938,11 @@ export default function ApifyPage() {
             </label>
             <Button
               onClick={handleTriggerScrape}
-              disabled={!groupUrlsText.trim() || scrapeStatus === "running"}
+              disabled={selectedGroupUrls.length === 0 || scrapeStatus === "running"}
             >
-              {scrapeStatus === "running" ? "Scraping en cours…" : "Lancer le scraping"}
+              {scrapeStatus === "running"
+                ? "Scraping en cours…"
+                : `Lancer le scraping (${selectedGroupUrls.length})`}
             </Button>
             {scrapeStatus === "running" ? (
               <span className="text-xs text-slate-500">
@@ -1925,6 +2160,43 @@ export default function ApifyPage() {
               Annuler
             </Button>
             <Button variant="destructive" onClick={confirmRemove}>
+              Supprimer
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {editGroup ? (
+        <GroupEditDialog
+          key={editGroup.id}
+          group={editGroup}
+          open={Boolean(editGroup)}
+          onOpenChange={(open) => {
+            if (!open) setEditGroup(null);
+          }}
+          onSave={handleSaveGroupEdit}
+        />
+      ) : null}
+
+      <Dialog
+        open={confirmRemoveGroupId !== null}
+        onOpenChange={(open) => {
+          if (!open) setConfirmRemoveGroupId(null);
+        }}
+      >
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>Supprimer ce groupe ?</DialogTitle>
+            <DialogDescription>
+              Il ne sera plus proposé dans la liste de sélection pour le scraping. Cette action ne
+              touche aucune annonce déjà créée.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setConfirmRemoveGroupId(null)}>
+              Annuler
+            </Button>
+            <Button variant="destructive" onClick={handleConfirmRemoveGroup}>
               Supprimer
             </Button>
           </DialogFooter>
