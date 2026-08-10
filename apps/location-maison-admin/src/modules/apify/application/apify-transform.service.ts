@@ -41,6 +41,17 @@ function bestPhotoUrl(photo: Record<string, unknown>): string | null {
 }
 
 /**
+ * Nodes to walk for media: regular attachments, plus — for a repost of
+ * another post (common for agency Pages sharing into buy/sell groups,
+ * verified against a real scrape: ~1/3 of posts in some groups) —
+ * `sharedPost.media`, which `attachments` is empty for even though the
+ * actual photos/videos (same `__typename` node shape) live there instead.
+ */
+function mediaSources(post: ApifyRawPost): unknown[] {
+  return [post.attachments ?? [], post.sharedPost?.media ?? []];
+}
+
+/**
  * Recursively walk the attachments tree collecting image URLs from every
  * `Photo` media object. Facebook returns the same photos across several
  * subattachment layout buckets (two/three/four/five_photos_subattachments), so
@@ -75,7 +86,7 @@ export function extractImageUrls(post: ApifyRawPost): string[] {
     }
   };
 
-  visit(post.attachments ?? []);
+  visit(mediaSources(post));
   return urls;
 }
 
@@ -140,7 +151,7 @@ export function extractVideoUrls(post: ApifyRawPost): { urls: string[]; sawUnres
     }
   };
 
-  visit(post.attachments ?? []);
+  visit(mediaSources(post));
   return { urls, sawUnresolvedVideo };
 }
 
@@ -156,6 +167,13 @@ const ALBUM_URL_RE = /media\/set\/\?set=pcb\./;
  * album URL. Returns null when the post is text-only with no usable link.
  */
 export function extractSourceUrl(post: ApifyRawPost): string | null {
+  // A repost carries the original's clean permalink directly — better than
+  // anything the attachment-mining below can reconstruct.
+  const sharedUrl = toStr(post.sharedPost?.url ?? null);
+  if (sharedUrl) {
+    return sharedUrl;
+  }
+
   let albumUrl: string | null = null;
 
   const visit = (node: unknown): string | null => {
