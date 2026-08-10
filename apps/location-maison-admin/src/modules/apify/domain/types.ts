@@ -86,6 +86,19 @@ export type ApifyListingDraft = Omit<Property, "typeProperty"> & {
   source: ApifyDraftSource;
 };
 
+/**
+ * A Reel inferred from a post's video attachment — independent of the listing
+ * draft from the same post (a Reel does not require a property; see
+ * `apps/location-maison/src/models/reel.d.ts`, orphan reels). Present whenever
+ * the post has at least one extractable video, whether or not it also has
+ * images (a post with both produces a listing draft AND a reel draft).
+ */
+export type ApifyReelDraft = {
+  videoUrl: string;
+  contact: string | null;
+  description: string;
+};
+
 /** A draft plus extraction diagnostics surfaced to the reviewer. */
 export type ApifyDraftMeta = {
   draft: ApifyListingDraft;
@@ -93,6 +106,8 @@ export type ApifyDraftMeta = {
   missingFields: string[];
   // Non-blocking notes about the extraction.
   warnings: string[];
+  // Null when the post has no extractable video attachment.
+  reelDraft: ApifyReelDraft | null;
 };
 
 /** Counters describing what the épuration step did. */

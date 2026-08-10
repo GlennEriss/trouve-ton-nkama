@@ -26,7 +26,7 @@ import {
   type GeoResolution,
   type GeoSource,
 } from "@/modules/apify/application/apify-geocode.service";
-import type { ApifyDraftMeta, ApifyListingDraft, ApifyPipelineResult } from "@/modules/apify/domain/types";
+import type { ApifyDraftMeta, ApifyListingDraft, ApifyPipelineResult, ApifyReelDraft } from "@/modules/apify/domain/types";
 import type { StatusProperty, TypeProperty } from "@/modules/apify/domain/platform-listing";
 import type { GabonOsmSelectorData } from "@/modules/location-osm/domain/types";
 
@@ -64,10 +64,12 @@ type GeoState = { status: GeoStatus; source?: GeoSource; message?: string };
 
 type ImportStatus = "idle" | "loading" | "created" | "error";
 type ImportState = { status: ImportStatus; propertyId?: string; error?: string };
+type ReelImportState = { status: ImportStatus; reelId?: string; error?: string };
 
 type AnnouncerOption = { uid: string; fullName: string; email: string | null; phoneNumbers: string[] };
 
 type ImportResult = { index: number; ok: boolean; propertyId?: string; imageCount: number; error?: string };
+type ReelImportResult = { index: number; ok: boolean; reelId?: string; error?: string };
 
 type DraftEditImage = { fileURL: string; filePATH: string };
 
@@ -154,6 +156,24 @@ async function importDrafts(
     | { success: false; error?: { message?: string } };
   if (!body.success) {
     throw new Error(body.error?.message ?? "Échec de l'import.");
+  }
+  return body.data;
+}
+
+async function importReels(
+  announcerUid: string,
+  reels: ApifyReelDraft[],
+): Promise<{ results: ReelImportResult[]; created: number; failed: number }> {
+  const response = await fetch("/api/admin/v1/apify/import-reel", {
+    method: "POST",
+    headers: { "content-type": "application/json" },
+    body: JSON.stringify({ announcerUid, reels }),
+  });
+  const body = (await response.json()) as
+    | { success: true; data: { results: ReelImportResult[]; created: number; failed: number } }
+    | { success: false; error?: { message?: string } };
+  if (!body.success) {
+    throw new Error(body.error?.message ?? "Échec de l'import du reel.");
   }
   return body.data;
 }
@@ -960,10 +980,28 @@ type DraftCardProps = {
   onEdit: (index: number) => void;
   onRemove: (index: number) => void;
   isEdited: boolean;
+  reelImp: ReelImportState;
+  canCreateReel: boolean;
+  onCreateReel: (index: number) => void;
 };
 
-function DraftCard({ item, index, geo, canGeocode, onGeocode, imp, canCreate, onCreate, onEdit, onRemove, isEdited }: DraftCardProps) {
-  const { draft, warnings } = item;
+function DraftCard({
+  item,
+  index,
+  geo,
+  canGeocode,
+  onGeocode,
+  imp,
+  canCreate,
+  onCreate,
+  onEdit,
+  onRemove,
+  isEdited,
+  reelImp,
+  canCreateReel,
+  onCreateReel,
+}: DraftCardProps) {
+  const { draft, warnings, reelDraft } = item;
   const location = [draft.street, draft.city, draft.province].filter(Boolean).join(", ");
   const rooms = roomsSummary(draft);
   const missingFields = visibleMissing(item);
@@ -1145,6 +1183,45 @@ function DraftCard({ item, index, geo, canGeocode, onGeocode, imp, canCreate, on
             <span className="text-xs text-slate-400">Annonceur requis (barre « Annonceur cible » en haut)</span>
           ) : null}
         </div>
+
+        {/* Reel — indépendant de l'annonce : un post vidéo sans image ne crée que ça */}
+        {reelDraft ? (
+          <div className="space-y-2 border-t border-slate-100 pt-3">
+            <div className="flex flex-wrap items-center gap-2">
+              <Badge variant="neutral">Vidéo détectée</Badge>
+              {draft.images.length === 0 ? (
+                <span className="text-xs text-slate-500">Post sans image — reel orphelin uniquement.</span>
+              ) : null}
+            </div>
+            {/* fbcdn video URLs expire like the photo URLs above — same caveat. */}
+            <video
+              src={reelDraft.videoUrl}
+              controls
+              className="max-h-64 w-full rounded-md bg-black"
+            />
+            <div className="flex flex-wrap items-center gap-2">
+              {reelImp.status === "created" ? (
+                <Badge variant="success">Reel créé{reelImp.reelId ? ` · ${reelImp.reelId}` : ""}</Badge>
+              ) : (
+                <Button
+                  size="sm"
+                  variant="outline"
+                  disabled={!canCreateReel || reelImp.status === "loading"}
+                  onClick={() => onCreateReel(index)}
+                >
+                  {reelImp.status === "loading" ? "Création…" : "Créer le reel"}
+                </Button>
+              )}
+              {reelDraft.contact ? <span className="text-xs text-slate-500">☎ {reelDraft.contact}</span> : null}
+              {reelImp.status === "error" && reelImp.error ? (
+                <span className="text-xs text-red-600">{reelImp.error}</span>
+              ) : null}
+            </div>
+            <p className="text-xs text-slate-400">
+              Le reel sera visible après validation dans Modération &gt; Réels.
+            </p>
+          </div>
+        ) : null}
       </CardContent>
     </Card>
   );
@@ -1157,6 +1234,7 @@ export default function ApifyPage() {
   const [items, setItems] = useState<ApifyDraftMeta[]>([]);
   const [geo, setGeo] = useState<Record<number, GeoState>>({});
   const [imp, setImp] = useState<Record<number, ImportState>>({});
+  const [reelImp, setReelImp] = useState<Record<number, ReelImportState>>({});
   const [removed, setRemoved] = useState<Record<number, boolean>>({});
   const [confirmRemoveIndex, setConfirmRemoveIndex] = useState<number | null>(null);
   const [editIndex, setEditIndex] = useState<number | null>(null);
@@ -1221,6 +1299,7 @@ export default function ApifyPage() {
     }
     setError(null);
     setImp({});
+    setReelImp({});
     setRemoved({});
     setEdited({});
     const result = runApifyPipeline(parsed.posts);
@@ -1248,6 +1327,7 @@ export default function ApifyPage() {
     setItems([]);
     setGeo({});
     setImp({});
+    setReelImp({});
     setRemoved({});
     setConfirmRemoveIndex(null);
     setEditIndex(null);
@@ -1337,6 +1417,74 @@ export default function ApifyPage() {
       setImportingAll(false);
     }
   }, [announcer, items, imp, removed]);
+
+  const createReelOne = useCallback(
+    async (index: number) => {
+      const reelDraft = items[index]?.reelDraft;
+      if (!announcer || !reelDraft) return;
+      setReelImp((prev) => ({ ...prev, [index]: { status: "loading" } }));
+      try {
+        const data = await importReels(announcer.uid, [reelDraft]);
+        const result = data.results[0];
+        setReelImp((prev) => ({
+          ...prev,
+          [index]: result?.ok
+            ? { status: "created", reelId: result.reelId }
+            : { status: "error", error: result?.error ?? "Échec." },
+        }));
+      } catch (cause) {
+        setReelImp((prev) => ({
+          ...prev,
+          [index]: { status: "error", error: cause instanceof Error ? cause.message : "Échec." },
+        }));
+      }
+    },
+    [announcer, items],
+  );
+
+  const createReelAll = useCallback(async () => {
+    if (!announcer) return;
+    const targets = items
+      .map((_, index) => index)
+      .filter((index) => !removed[index] && items[index].reelDraft && reelImp[index]?.status !== "created");
+    if (targets.length === 0) return;
+    setReelImp((prev) => {
+      const next = { ...prev };
+      for (const index of targets) next[index] = { status: "loading" };
+      return next;
+    });
+    try {
+      const data = await importReels(
+        announcer.uid,
+        targets.map((index) => items[index].reelDraft!),
+      );
+      setReelImp((prev) => {
+        const next = { ...prev };
+        for (const result of data.results) {
+          const originalIndex = targets[result.index];
+          next[originalIndex] = result.ok
+            ? { status: "created", reelId: result.reelId }
+            : { status: "error", error: result.error ?? "Échec." };
+        }
+        return next;
+      });
+    } catch (cause) {
+      const message = cause instanceof Error ? cause.message : "Échec.";
+      setReelImp((prev) => {
+        const next = { ...prev };
+        for (const index of targets) next[index] = { status: "error", error: message };
+        return next;
+      });
+    }
+  }, [announcer, items, reelImp, removed]);
+
+  const reelTargetCount = useMemo(
+    () =>
+      items.filter(
+        (meta, index) => !removed[index] && meta.reelDraft && reelImp[index]?.status !== "created",
+      ).length,
+    [items, removed, reelImp],
+  );
 
   const geocodeOne = useCallback(
     async (index: number) => {
@@ -1533,6 +1681,17 @@ export default function ApifyPage() {
                 Images expirées ou prix/lieu manquant ⇒ l&apos;annonce sera signalée en échec.
               </span>
             </div>
+
+            {reelTargetCount > 0 ? (
+              <div className="flex flex-wrap items-center gap-3 border-t border-slate-100 pt-3">
+                <Button variant="outline" onClick={createReelAll} disabled={!announcer}>
+                  Créer tous les reels ({reelTargetCount})
+                </Button>
+                <span className="text-xs text-slate-400">
+                  Reels indépendants des annonces — visibles après validation dans Modération &gt; Réels.
+                </span>
+              </div>
+            ) : null}
           </CardContent>
         </Card>
       ) : null}
@@ -1554,6 +1713,9 @@ export default function ApifyPage() {
                 onEdit={setEditIndex}
                 onRemove={setConfirmRemoveIndex}
                 isEdited={Boolean(edited[index])}
+                reelImp={reelImp[index] ?? { status: "idle" }}
+                canCreateReel={Boolean(announcer)}
+                onCreateReel={createReelOne}
               />
             ))}
           </div>
