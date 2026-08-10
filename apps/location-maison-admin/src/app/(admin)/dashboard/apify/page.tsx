@@ -60,6 +60,9 @@ const GEO_SOURCE_LABELS: Record<GeoSource, string> = {
 const RESOLVED_SOURCES: GeoSource[] = ["known", "osm-quarter", "google"];
 
 type GeoStatus = "none" | "resolved" | "loading" | "error";
+
+type ScrapeStatus = "idle" | "running" | "succeeded" | "failed" | "stalled";
+const SCRAPE_MAX_POLL_MS = 10 * 60 * 1000;
 type GeoState = { status: GeoStatus; source?: GeoSource; message?: string };
 
 type ImportStatus = "idle" | "loading" | "created" | "error";
@@ -156,6 +159,37 @@ async function importDrafts(
     | { success: false; error?: { message?: string } };
   if (!body.success) {
     throw new Error(body.error?.message ?? "Échec de l'import.");
+  }
+  return body.data;
+}
+
+async function triggerScrape(
+  groupUrls: string[],
+  resultsLimit: number,
+): Promise<{ runId: string; datasetId: string }> {
+  const response = await fetch("/api/admin/v1/apify/scrape", {
+    method: "POST",
+    headers: { "content-type": "application/json" },
+    body: JSON.stringify({ groupUrls, resultsLimit }),
+  });
+  const body = (await response.json()) as
+    | { success: true; data: { runId: string; datasetId: string } }
+    | { success: false; error?: { message?: string } };
+  if (!body.success) {
+    throw new Error(body.error?.message ?? "Échec du déclenchement du scraping.");
+  }
+  return body.data;
+}
+
+type ScrapePollResult = { status: string; items?: unknown[]; error?: string };
+
+async function pollScrape(runId: string): Promise<ScrapePollResult> {
+  const response = await fetch(`/api/admin/v1/apify/scrape/${runId}`);
+  const body = (await response.json()) as
+    | { success: true; data: ScrapePollResult }
+    | { success: false; error?: { message?: string } };
+  if (!body.success) {
+    throw new Error(body.error?.message ?? "Échec de la vérification du run.");
   }
   return body.data;
 }
@@ -1246,6 +1280,15 @@ export default function ApifyPage() {
   const [announcerQueryDebounced, setAnnouncerQueryDebounced] = useState("");
   const [importingAll, setImportingAll] = useState(false);
 
+  // Automated scraping (POST /apify/scrape + poll) — alternative to pasting
+  // JSON by hand in the textarea below.
+  const [groupUrlsText, setGroupUrlsText] = useState("");
+  const [resultsLimitText, setResultsLimitText] = useState("100");
+  const [scrapeRunId, setScrapeRunId] = useState<string | null>(null);
+  const [scrapeStatus, setScrapeStatus] = useState<ScrapeStatus>("idle");
+  const [scrapeError, setScrapeError] = useState<string | null>(null);
+  const [scrapeStartedAt, setScrapeStartedAt] = useState<number | null>(null);
+
   const osmQuery = useQuery({ queryKey: ["osm", "gabon", "selector"], queryFn: fetchOsmSelector });
   const osm = osmQuery.data ?? null;
 
@@ -1288,37 +1331,99 @@ export default function ApifyPage() {
     });
   }, [osm, items, geo, edited]);
 
+  // Shared by the manual "Transformer" button and the auto-scrape success
+  // handler below — takes the JSON as a plain argument (not read from
+  // `rawJson` state) so the latter isn't tripped up by React's async state
+  // updates (setRawJson + immediate use in the same tick would still see
+  // the stale value otherwise).
+  const applyRawJson = useCallback(
+    (json: string) => {
+      const parsed = parseApifyJson(json);
+      if (!parsed.ok) {
+        setError(parsed.error);
+        setStats(null);
+        setItems([]);
+        setGeo({});
+        return;
+      }
+      setError(null);
+      setImp({});
+      setReelImp({});
+      setRemoved({});
+      setEdited({});
+      const result = runApifyPipeline(parsed.posts);
+      setStats(result.stats);
+
+      // Auto-resolve with the free OSM dataset when it is loaded.
+      const nextGeo: Record<number, GeoState> = {};
+      const nextItems = result.drafts.map((meta, index) => {
+        const resolution = osm ? resolveFromOsm(meta.draft, osm) : null;
+        if (resolution) {
+          nextGeo[index] = { status: "resolved", source: resolution.source };
+          return { ...meta, draft: applyResolution(meta.draft, resolution) };
+        }
+        nextGeo[index] = { status: "none" };
+        return meta;
+      });
+      setItems(nextItems);
+      setGeo(nextGeo);
+    },
+    [osm],
+  );
+
   const handleTransform = useCallback(() => {
-    const parsed = parseApifyJson(rawJson);
-    if (!parsed.ok) {
-      setError(parsed.error);
-      setStats(null);
-      setItems([]);
-      setGeo({});
+    applyRawJson(rawJson);
+  }, [applyRawJson, rawJson]);
+
+  const handleTriggerScrape = useCallback(async () => {
+    const groupUrls = groupUrlsText
+      .split("\n")
+      .map((line) => line.trim())
+      .filter(Boolean);
+    if (groupUrls.length === 0) return;
+    const resultsLimit = Number(resultsLimitText) || 100;
+
+    setScrapeStatus("running");
+    setScrapeError(null);
+    setScrapeRunId(null);
+    try {
+      const { runId } = await triggerScrape(groupUrls, resultsLimit);
+      setScrapeStartedAt(Date.now());
+      setScrapeRunId(runId);
+    } catch (cause) {
+      setScrapeStatus("failed");
+      setScrapeError(cause instanceof Error ? cause.message : "Échec du déclenchement.");
+    }
+  }, [groupUrlsText, resultsLimitText]);
+
+  const scrapePollQuery = useQuery({
+    queryKey: ["apify", "scrape", scrapeRunId],
+    queryFn: () => pollScrape(scrapeRunId!),
+    enabled: Boolean(scrapeRunId) && scrapeStatus === "running",
+    refetchInterval: 5000,
+  });
+
+  useEffect(() => {
+    const data = scrapePollQuery.data;
+    if (!data || (scrapeStatus !== "running" && scrapeStatus !== "stalled")) return;
+
+    if (data.status === "SUCCEEDED") {
+      setScrapeStatus("succeeded");
+      const json = JSON.stringify(data.items ?? [], null, 2);
+      setRawJson(json);
+      applyRawJson(json);
       return;
     }
-    setError(null);
-    setImp({});
-    setReelImp({});
-    setRemoved({});
-    setEdited({});
-    const result = runApifyPipeline(parsed.posts);
-    setStats(result.stats);
-
-    // Auto-resolve with the free OSM dataset when it is loaded.
-    const nextGeo: Record<number, GeoState> = {};
-    const nextItems = result.drafts.map((meta, index) => {
-      const resolution = osm ? resolveFromOsm(meta.draft, osm) : null;
-      if (resolution) {
-        nextGeo[index] = { status: "resolved", source: resolution.source };
-        return { ...meta, draft: applyResolution(meta.draft, resolution) };
+    if (data.status === "RUNNING" || data.status === "READY") {
+      if (scrapeStartedAt && Date.now() - scrapeStartedAt > SCRAPE_MAX_POLL_MS) {
+        setScrapeStatus("stalled");
       }
-      nextGeo[index] = { status: "none" };
-      return meta;
-    });
-    setItems(nextItems);
-    setGeo(nextGeo);
-  }, [rawJson, osm]);
+      return;
+    }
+    // FAILED / TIMED-OUT / ABORTED / ABORTING
+    setScrapeStatus("failed");
+    setScrapeError(data.error ?? `Le run Apify s'est terminé avec le statut ${data.status}.`);
+  }, [scrapePollQuery.data, scrapeStatus, scrapeStartedAt, applyRawJson]);
 
   const handleClear = useCallback(() => {
     setRawJson("");
@@ -1567,6 +1672,63 @@ export default function ApifyPage() {
           </div>
         }
       />
+
+      <Card>
+        <CardHeader>
+          <p className="text-sm font-medium text-slate-900">Scraping automatique</p>
+          <p className="text-xs text-slate-500">
+            Lance le scraper Facebook Groups directement depuis l&apos;API Apify — remplace le
+            copier-coller manuel ci-dessous. Bascule automatiquement entre les comptes Apify
+            configurés si l&apos;un atteint sa limite de crédit.
+          </p>
+        </CardHeader>
+        <CardContent className="space-y-3">
+          <textarea
+            value={groupUrlsText}
+            onChange={(event) => setGroupUrlsText(event.target.value)}
+            spellCheck={false}
+            placeholder={"https://www.facebook.com/groups/...\nhttps://www.facebook.com/groups/... (une URL par ligne)"}
+            className="h-24 w-full resize-y rounded-md border border-slate-200 bg-slate-50 p-3 font-mono text-xs text-slate-800 focus:border-brand-500 focus:outline-none"
+            disabled={scrapeStatus === "running"}
+          />
+          <div className="flex flex-wrap items-center gap-3">
+            <label className="flex items-center gap-2 text-sm text-slate-600">
+              Posts par groupe
+              <input
+                type="number"
+                min={1}
+                value={resultsLimitText}
+                onChange={(event) => setResultsLimitText(event.target.value)}
+                disabled={scrapeStatus === "running"}
+                className="w-20 rounded-md border border-slate-200 px-2 py-1 text-sm focus:border-brand-500 focus:outline-none"
+              />
+            </label>
+            <Button
+              onClick={handleTriggerScrape}
+              disabled={!groupUrlsText.trim() || scrapeStatus === "running"}
+            >
+              {scrapeStatus === "running" ? "Scraping en cours…" : "Lancer le scraping"}
+            </Button>
+            {scrapeStatus === "running" ? (
+              <span className="text-xs text-slate-500">
+                Run {scrapeRunId} — ça peut prendre plusieurs minutes pour 100 posts.
+              </span>
+            ) : null}
+            {scrapeStatus === "succeeded" ? <Badge variant="success">Résultats chargés ci-dessous</Badge> : null}
+          </div>
+          {scrapeStatus === "stalled" ? (
+            <div className="flex items-center gap-2 text-xs text-amber-700">
+              <span>Toujours en cours côté Apify (run {scrapeRunId}) — le run continue même si tu quittes la page.</span>
+              <Button variant="outline" size="sm" onClick={() => scrapePollQuery.refetch()}>
+                Vérifier maintenant
+              </Button>
+            </div>
+          ) : null}
+          {scrapeStatus === "failed" && scrapeError ? (
+            <p className="text-xs text-red-600">{scrapeError}</p>
+          ) : null}
+        </CardContent>
+      </Card>
 
       <Card>
         <CardHeader>
