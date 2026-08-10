@@ -249,7 +249,7 @@ async function pollScrape(runId: string): Promise<ScrapePollResult> {
 
 async function importReels(
   announcerUid: string,
-  reels: ApifyReelDraft[],
+  reels: Array<ApifyReelDraft & { propertyId?: string }>,
 ): Promise<{ results: ReelImportResult[]; created: number; failed: number }> {
   const response = await fetch("/api/admin/v1/apify/import-reel", {
     method: "POST",
@@ -1274,14 +1274,20 @@ function DraftCard({
           ) : null}
         </div>
 
-        {/* Reel — indépendant de l'annonce : un post vidéo sans image ne crée que ça */}
+        {/* Reel — orphelin si le post n'a pas d'image, sinon rattaché à l'annonce */}
         {reelDraft ? (
           <div className="space-y-2 border-t border-slate-100 pt-3">
             <div className="flex flex-wrap items-center gap-2">
               <Badge variant="neutral">Vidéo détectée</Badge>
               {draft.images.length === 0 ? (
-                <span className="text-xs text-slate-500">Post sans image — reel orphelin uniquement.</span>
-              ) : null}
+                <span className="text-xs text-slate-500">Post sans image — reel indépendant, sans annonce liée.</span>
+              ) : imp.status === "created" ? (
+                <span className="text-xs text-slate-500">Sera rattaché à l&apos;annonce créée.</span>
+              ) : (
+                <span className="text-xs text-slate-500">
+                  Sera rattaché automatiquement à la création de l&apos;annonce.
+                </span>
+              )}
             </div>
             {/* fbcdn video URLs expire like the photo URLs above — same caveat. */}
             <video
@@ -1633,6 +1639,33 @@ export default function ApifyPage() {
     });
   }, []);
 
+  // Creates the reel attached to a just-created listing (propertyId known
+  // synchronously from the import result — no stale-closure risk reading it
+  // back from `imp` state in the same tick).
+  const createAttachedReel = useCallback(
+    async (index: number, announcerUid: string, propertyId: string) => {
+      const reelDraft = items[index]?.reelDraft;
+      if (!reelDraft) return;
+      setReelImp((prev) => ({ ...prev, [index]: { status: "loading" } }));
+      try {
+        const data = await importReels(announcerUid, [{ ...reelDraft, propertyId }]);
+        const result = data.results[0];
+        setReelImp((prev) => ({
+          ...prev,
+          [index]: result?.ok
+            ? { status: "created", reelId: result.reelId }
+            : { status: "error", error: result?.error ?? "Échec." },
+        }));
+      } catch (cause) {
+        setReelImp((prev) => ({
+          ...prev,
+          [index]: { status: "error", error: cause instanceof Error ? cause.message : "Échec." },
+        }));
+      }
+    },
+    [items],
+  );
+
   const createOne = useCallback(
     async (index: number) => {
       if (!announcer || !items[index]) return;
@@ -1646,6 +1679,11 @@ export default function ApifyPage() {
             ? { status: "created", propertyId: result.propertyId }
             : { status: "error", error: result?.error ?? "Échec." },
         }));
+        // Post has both images and a video → attach the reel to the listing
+        // we just created, instead of leaving it orphan.
+        if (result?.ok && result.propertyId && items[index].reelDraft) {
+          await createAttachedReel(index, announcer.uid, result.propertyId);
+        }
       } catch (cause) {
         setImp((prev) => ({
           ...prev,
@@ -1653,7 +1691,7 @@ export default function ApifyPage() {
         }));
       }
     },
-    [announcer, items],
+    [announcer, items, createAttachedReel],
   );
 
   const createAll = useCallback(async () => {
@@ -1683,6 +1721,44 @@ export default function ApifyPage() {
         }
         return next;
       });
+
+      // Posts with both images and a video → attach their reel to the
+      // listing just created, in the same batch spirit as the listings call.
+      const reelTargets = data.results
+        .filter((result) => result.ok && result.propertyId)
+        .map((result) => ({ index: targets[result.index], propertyId: result.propertyId as string }))
+        .filter(({ index }) => Boolean(items[index]?.reelDraft));
+
+      if (reelTargets.length > 0) {
+        setReelImp((prev) => {
+          const next = { ...prev };
+          for (const { index } of reelTargets) next[index] = { status: "loading" };
+          return next;
+        });
+        try {
+          const reelData = await importReels(
+            announcer.uid,
+            reelTargets.map(({ index, propertyId }) => ({ ...items[index].reelDraft!, propertyId })),
+          );
+          setReelImp((prev) => {
+            const next = { ...prev };
+            for (const result of reelData.results) {
+              const originalIndex = reelTargets[result.index].index;
+              next[originalIndex] = result.ok
+                ? { status: "created", reelId: result.reelId }
+                : { status: "error", error: result.error ?? "Échec." };
+            }
+            return next;
+          });
+        } catch (cause) {
+          const message = cause instanceof Error ? cause.message : "Échec.";
+          setReelImp((prev) => {
+            const next = { ...prev };
+            for (const { index } of reelTargets) next[index] = { status: "error", error: message };
+            return next;
+          });
+        }
+      }
     } catch (cause) {
       const message = cause instanceof Error ? cause.message : "Échec.";
       setImp((prev) => {
@@ -1701,7 +1777,13 @@ export default function ApifyPage() {
       if (!announcer || !reelDraft) return;
       setReelImp((prev) => ({ ...prev, [index]: { status: "loading" } }));
       try {
-        const data = await importReels(announcer.uid, [reelDraft]);
+        // Attach to the listing if it's already been created for this post
+        // (order-independent: works whether the listing or the reel button
+        // is clicked first).
+        const existingPropertyId = imp[index]?.status === "created" ? imp[index].propertyId : undefined;
+        const data = await importReels(announcer.uid, [
+          existingPropertyId ? { ...reelDraft, propertyId: existingPropertyId } : reelDraft,
+        ]);
         const result = data.results[0];
         setReelImp((prev) => ({
           ...prev,
@@ -1716,7 +1798,7 @@ export default function ApifyPage() {
         }));
       }
     },
-    [announcer, items],
+    [announcer, items, imp],
   );
 
   const createReelAll = useCallback(async () => {
@@ -1733,7 +1815,11 @@ export default function ApifyPage() {
     try {
       const data = await importReels(
         announcer.uid,
-        targets.map((index) => items[index].reelDraft!),
+        targets.map((index) => {
+          const reelDraft = items[index].reelDraft!;
+          const existingPropertyId = imp[index]?.status === "created" ? imp[index].propertyId : undefined;
+          return existingPropertyId ? { ...reelDraft, propertyId: existingPropertyId } : reelDraft;
+        }),
       );
       setReelImp((prev) => {
         const next = { ...prev };
@@ -1753,7 +1839,7 @@ export default function ApifyPage() {
         return next;
       });
     }
-  }, [announcer, items, reelImp, removed]);
+  }, [announcer, items, imp, reelImp, removed]);
 
   const reelTargetCount = useMemo(
     () =>
