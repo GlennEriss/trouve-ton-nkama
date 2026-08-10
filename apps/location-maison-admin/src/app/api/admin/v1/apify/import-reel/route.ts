@@ -20,15 +20,20 @@ const DOWNLOAD_TIMEOUT_MS = 60_000;
 type ReelResult = { index: number; ok: boolean; reelId?: string; error?: string };
 
 /**
- * Create orphan Reels (no propertyId) from Apify post videos, on behalf of an
- * announcer selected in the admin UI — mirrors `apify/import/route.ts` for
- * listings. Reuses the existing Reel pipeline as-is: creating the Firestore
- * doc then dropping the raw file on `reels-raw/{announcerUid}/{reelId}.mp4`
- * is exactly what `POST /api/reels` + the client upload do (see
+ * Create Reels from Apify post videos, on behalf of an announcer selected in
+ * the admin UI — mirrors `apify/import/route.ts` for listings. Reuses the
+ * existing Reel pipeline as-is: creating the Firestore doc then dropping the
+ * raw file on `reels-raw/{announcerUid}/{reelId}.mp4` is exactly what
+ * `POST /api/reels` + the client upload do (see
  * apps/location-maison/src/components/reels/CreateOrphanReelClient.tsx), so
  * the existing `transcodeReelVideo` Storage trigger picks it up unchanged.
  * The reel lands `moderationStatus: 'PENDING'` like any other reel — no
  * moderation bypass for admin-imported content.
+ *
+ * When a post has both images and a video, the caller passes `propertyId`
+ * (the listing just created from the same post via `apify/import`) so the
+ * reel is attached instead of orphan — same field the client flow uses via
+ * `attachReelToProperty`, just set at creation time instead of after.
  */
 export async function POST(request: NextRequest) {
   const auth = await requireAdmin(request, "listings.create");
@@ -70,6 +75,7 @@ export async function POST(request: NextRequest) {
   const db = getFirebaseAdminDb();
   const bucket = getFirebaseAdminStorage().bucket();
   const reelsCollection = db.collection(COLLECTIONS.reels);
+  const propertiesCollection = db.collection(COLLECTIONS.properties);
   const results: ReelResult[] = [];
 
   for (let index = 0; index < items.length; index += 1) {
@@ -77,10 +83,19 @@ export async function POST(request: NextRequest) {
     const videoUrl = typeof item.videoUrl === "string" ? item.videoUrl.trim() : "";
     const contact = typeof item.contact === "string" ? item.contact.trim() : "";
     const description = typeof item.description === "string" ? item.description.trim() : "";
+    const propertyId = typeof item.propertyId === "string" && item.propertyId.trim() ? item.propertyId.trim() : null;
 
     if (!videoUrl) {
       results.push({ index, ok: false, error: "URL vidéo manquante." });
       continue;
+    }
+
+    if (propertyId) {
+      const propertySnap = await propertiesCollection.doc(propertyId).get();
+      if (!propertySnap.exists || propertySnap.data()?.createdBy !== announcerUid) {
+        results.push({ index, ok: false, error: "Annonce à rattacher introuvable pour cet annonceur." });
+        continue;
+      }
     }
 
     const reelId = randomUUID();
@@ -93,7 +108,7 @@ export async function POST(request: NextRequest) {
       // any upload whose reel doc it can't find, exactly as it would for a
       // real announcer upload racing the request.
       await reelsCollection.doc(reelId).create({
-        propertyId: null,
+        propertyId,
         createdBy: announcerUid,
         processingStatus: "uploading",
         rawVideoPath,
