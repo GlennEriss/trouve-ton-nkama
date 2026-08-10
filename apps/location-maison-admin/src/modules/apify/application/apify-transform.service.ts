@@ -4,6 +4,7 @@ import type {
   ApifyListingDraft,
   ApifyPipelineResult,
   ApifyRawPost,
+  ApifyReelDraft,
 } from "../domain/types";
 import type { Image, StatusProperty, TypeProperty } from "../domain/platform-listing";
 import { hasText, isRealEstatePost, normalizeText } from "./apify-filter.service";
@@ -76,6 +77,71 @@ export function extractImageUrls(post: ApifyRawPost): string[] {
 
   visit(post.attachments ?? []);
   return urls;
+}
+
+/* -------------------------------------------------------------------------- */
+/* Video extraction                                                           */
+/* -------------------------------------------------------------------------- */
+
+/**
+ * Best available URL for a Facebook `Video` media object. Field names are not
+ * confirmed against a real Apify export (the Photo fields above are); several
+ * plausible candidates are tried, in rough quality order, mirroring how the
+ * Facebook GraphQL video payload is commonly shaped by other scrapers.
+ */
+function bestVideoUrl(video: Record<string, unknown>): string | null {
+  const legacy = isRecord(video.videoDeliveryLegacyFields) ? video.videoDeliveryLegacyFields : null;
+  return (
+    toStr(video.browser_native_hd_url) ??
+    toStr(video.browser_native_sd_url) ??
+    (legacy && (toStr(legacy.browser_native_hd_url) ?? toStr(legacy.browser_native_sd_url))) ??
+    toStr(video.playable_url_quality_hd) ??
+    toStr(video.playable_url) ??
+    toStr(video.video_url) ??
+    toStr(video.url)
+  );
+}
+
+/**
+ * Recursively walk the attachments tree collecting video URLs from every
+ * `Video` media object, deduped the same way as {@link extractImageUrls}.
+ * `sawVideoNode` is set when a `Video` node was seen but yielded no usable
+ * URL, so the caller can warn instead of silently dropping it.
+ */
+export function extractVideoUrls(post: ApifyRawPost): { urls: string[]; sawUnresolvedVideo: boolean } {
+  const urls: string[] = [];
+  const seen = new Set<string>();
+  let sawUnresolvedVideo = false;
+
+  const visit = (node: unknown): void => {
+    if (Array.isArray(node)) {
+      node.forEach(visit);
+      return;
+    }
+    if (!isRecord(node)) {
+      return;
+    }
+    if (node.__typename === "Video") {
+      const url = bestVideoUrl(node);
+      if (url) {
+        const key = imageDedupKey(url);
+        if (!seen.has(key)) {
+          seen.add(key);
+          urls.push(url);
+        }
+      } else {
+        sawUnresolvedVideo = true;
+      }
+    }
+    for (const value of Object.values(node)) {
+      if (isRecord(value) || Array.isArray(value)) {
+        visit(value);
+      }
+    }
+  };
+
+  visit(post.attachments ?? []);
+  return { urls, sawUnresolvedVideo };
 }
 
 // A link that opens the photo within its post context (best), or the post itself.
@@ -919,7 +985,16 @@ export function transformPost(post: ApifyRawPost): ApifyDraftMeta {
     warnings.push("Province non déduite de la ville.");
   }
 
-  return { draft, missingFields, warnings };
+  // Independent of the listing draft above — a post with a video produces a
+  // reel draft whether or not it also has images (see module plan).
+  const { urls: videoUrls, sawUnresolvedVideo } = extractVideoUrls(post);
+  if (sawUnresolvedVideo && videoUrls.length === 0) {
+    warnings.push("Vidéo détectée mais URL non extraite — vérifier la structure JSON.");
+  }
+  const reelDraft: ApifyReelDraft | null =
+    videoUrls.length > 0 ? { videoUrl: videoUrls[0], contact: parsed.contact, description: original } : null;
+
+  return { draft, missingFields, warnings, reelDraft };
 }
 
 /**
