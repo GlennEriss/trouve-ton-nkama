@@ -13,6 +13,7 @@ const COLLECTIONS = {
   gift_transactions: "gift_transactions",
   gift_withdrawals: "gift_withdrawals",
   idempotency_keys: "idempotency_keys",
+  search_requests: "search_requests",
   // Written by location-maison (listing-claim.service.ts) when an
   // auto-attribution batch exceeds MAX_AUTO_CLAIM; reviewed/resolved from
   // location-maison-admin.

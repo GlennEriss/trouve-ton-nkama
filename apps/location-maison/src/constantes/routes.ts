@@ -76,6 +76,8 @@ export const routes = {
         guide_immobilier_gabon: '/guide-immobilier-gabon',
         advertise: '/faire-de-la-pub',
         property: '/property',
+        search_requests: '/demandes-recherche',
+        search_requests_publish: '/demandes-recherche/publier',
     },
     public_google: {
         homePage: '/',
@@ -101,5 +103,6 @@ export const routes = {
         blog_demarches_administratives: '/blog/demarches-administratives-immobilier-gabon-2024',
         guide_immobilier_gabon: '/guide-immobilier-gabon',
         property: '/property',
+        search_requests: '/demandes-recherche',
     }
 }

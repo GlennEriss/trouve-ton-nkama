@@ -1,0 +1,98 @@
+import { FieldValue, Timestamp } from "firebase-admin/firestore";
+
+import { getFirebaseAdminDb } from "@/lib/firebase/firebase-admin";
+import { COLLECTIONS } from "@trouve-ton-nkama/core/constants";
+import { toIsoDate } from "@trouve-ton-nkama/core/utils";
+import { resolveCursorSnapshot, sliceCursorPage } from "@/lib/firestore/pagination";
+import type { SearchRequestListItem, SearchRequestRawDoc } from "@/modules/search-requests-moderation/domain/types";
+
+const SEARCH_REQUESTS_COLLECTION = COLLECTIONS.search_requests;
+
+function mapSearchRequest(id: string, data: SearchRequestRawDoc): SearchRequestListItem {
+  return {
+    id,
+    typeProperty: data.typeProperty,
+    transactionType: data.transactionType,
+    province: data.province,
+    city: data.city,
+    neighborhood: data.neighborhood ?? null,
+    budgetMinXaf: data.budgetMinXaf,
+    budgetMaxXaf: data.budgetMaxXaf,
+    description: data.description,
+    whatsappContact: data.whatsappContact,
+    paymentStatus: data.paymentStatus,
+    amountPaidXaf: data.amountPaidXaf,
+    boostRequested: data.boostRequested,
+    boostPaid: data.boostPaid,
+    boostStartAt: toIsoDate(data.boostStartAt),
+    boostEndAt: toIsoDate(data.boostEndAt),
+    moderationStatus: data.moderationStatus,
+    rejectionReason: data.rejectionReason ?? null,
+    createdAt: toIsoDate(data.createdAt),
+    updatedAt: toIsoDate(data.updatedAt),
+  };
+}
+
+export async function listPendingSearchRequests(input: {
+  limit: number;
+  cursor?: string | null;
+}): Promise<{ items: SearchRequestListItem[]; hasMore: boolean; nextCursor: string | null }> {
+  const db = getFirebaseAdminDb();
+  const collectionRef = db.collection(SEARCH_REQUESTS_COLLECTION);
+
+  let query = collectionRef
+    .where("moderationStatus", "==", "PENDING")
+    .orderBy("createdAt", "asc")
+    .limit(input.limit + 1);
+
+  const cursorDoc = await resolveCursorSnapshot(collectionRef, input.cursor);
+  if (cursorDoc) {
+    query = query.startAfter(cursorDoc);
+  }
+
+  const snapshot = await query.get();
+  return sliceCursorPage(snapshot.docs, input.limit, (doc) =>
+    mapSearchRequest(doc.id, doc.data() as SearchRequestRawDoc),
+  );
+}
+
+export async function getSearchRequestById(searchRequestId: string): Promise<SearchRequestListItem | null> {
+  const db = getFirebaseAdminDb();
+  const snapshot = await db.collection(SEARCH_REQUESTS_COLLECTION).doc(searchRequestId).get();
+  if (!snapshot.exists) {
+    return null;
+  }
+  return mapSearchRequest(snapshot.id, snapshot.data() as SearchRequestRawDoc);
+}
+
+export async function patchSearchRequestModerationStatus(
+  searchRequestId: string,
+  input: {
+    moderationStatus: "APPROVED" | "REJECTED";
+    rejectionReason?: string | null;
+    reviewedBy: string;
+    // Fenêtre de boost calculée par le service appelant (uniquement si
+    // moderationStatus === 'APPROVED' && boostPaid) — la fenêtre démarre à
+    // l'approbation, jamais au paiement, pour ne pas pénaliser le payeur si la
+    // modération est lente.
+    boostStartAt?: Timestamp | null;
+    boostEndAt?: Timestamp | null;
+  },
+): Promise<void> {
+  const db = getFirebaseAdminDb();
+  await db
+    .collection(SEARCH_REQUESTS_COLLECTION)
+    .doc(searchRequestId)
+    .set(
+      {
+        moderationStatus: input.moderationStatus,
+        rejectionReason: input.moderationStatus === "REJECTED" ? input.rejectionReason ?? null : null,
+        moderationReviewedAt: FieldValue.serverTimestamp(),
+        moderationReviewedBy: input.reviewedBy,
+        ...(input.boostStartAt !== undefined ? { boostStartAt: input.boostStartAt } : {}),
+        ...(input.boostEndAt !== undefined ? { boostEndAt: input.boostEndAt } : {}),
+        updatedAt: FieldValue.serverTimestamp(),
+      },
+      { merge: true },
+    );
+}

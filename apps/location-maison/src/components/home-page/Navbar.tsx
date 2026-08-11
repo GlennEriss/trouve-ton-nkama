@@ -11,6 +11,7 @@ import { usePathname } from "next/navigation";
 import { NavigationMenu, NavigationMenuList, NavigationMenuItem, NavigationMenuLink } from "@/components/ui/navigation-menu"
 import MenuProfil from "@/components/navbar/MenuProfil";
 import Notifications from "@/components/navbar/Notifications";
+import { Heart } from "lucide-react";
 
 export default function Navbar() {
   const { width } = useWindowSize();
@@ -112,37 +113,41 @@ export default function Navbar() {
     );
   }
   return (
-    <div className="rounded-full bg-primary-50 dark:bg-gray-900 flex shadow dark:shadow-gray-900/50 sticky top-0 z-[9999]">
-      <div className="flex items-center gap-2">
+    <div className="rounded-2xl bg-primary-50 dark:bg-gray-900 shadow dark:shadow-gray-900/50 sticky top-0 z-[9999] overflow-hidden">
+      {/* Ligne utilitaire : logo, recherche, compte — toujours la même, quelle que soit la page */}
+      <div className="flex items-center gap-6 px-5 py-3">
         <LogoNavigation />
-        <a href="/" rel="noopener noreferrer">
-          <div className="flex flex-col items-start justify-center leading-none hover:opacity-80 transition-opacity cursor-pointer">
-            <span className="text-primary dark:text-secondary font-black text-sm drop-shadow-sm">
-              Trouve
-            </span>
-            <span className="text-primary dark:text-secondary font-black text-sm drop-shadow-sm">
-              Ton
-            </span>
-            <span className="text-primary dark:text-secondary font-black text-sm drop-shadow-sm">
-              Nkama
-            </span>
-          </div>
-        </a>
+
+        <div className="flex-1 flex justify-center min-w-0">
+          {!isProtectedRoute && <InputSearchNavbar />}
+        </div>
+
+        <div className="flex items-center gap-4 flex-shrink-0">
+          {user ? (
+            <div className="flex items-center gap-5">
+              <Link
+                href={routes.protected.favoris}
+                className="flex flex-col items-center gap-0.5 text-primary dark:text-secondary hover:opacity-80 transition-opacity"
+              >
+                <Heart className="h-5 w-5" />
+                <span className="text-[10px] font-semibold">Favoris</span>
+              </Link>
+              <Notifications />
+              <MenuProfil />
+            </div>
+          ) : (
+            <div className="flex items-center gap-3">
+              <ButtonLogin />
+              <ButtonRegister />
+            </div>
+          )}
+          <ButtonPostAd />
+        </div>
       </div>
-      <div className="ml-auto flex items-center gap-4 mr-5">
+
+      {/* Ligne de navigation secondaire : catégories, sur fond teinté */}
+      <div className="border-t border-primary-100 dark:border-gray-800 bg-primary-100/40 dark:bg-gray-800/60 px-5">
         <NavigationMenuNavbar />
-        {!isProtectedRoute && <InputSearchNavbar />}
-        {user ? (
-          <div className="flex items-center gap-8">
-            <Notifications />
-            <MenuProfil />
-          </div>
-        ) : (
-          <div className="flex items-center gap-4">
-            <ButtonLogin />
-            <ButtonRegister />
-          </div>
-        )}
       </div>
     </div>
   )
@@ -150,11 +155,28 @@ export default function Navbar() {
 
 const LogoNavigation = () => {
   return (
-    <div className="rounded-full bg-primary-50 dark:bg-gray-900 shadow dark:shadow-gray-900/50">
-      <a href="/" rel="noopener noreferrer" aria-label="Accueil - Trouve Ton Nkama">
-        <Logo width="64px" height="64px" />
-      </a>
-    </div>
+    <Link href="/" rel="noopener noreferrer" aria-label="Accueil - Trouve Ton Nkama" className="flex items-center gap-2 flex-shrink-0 hover:opacity-80 transition-opacity">
+      <Logo width="40px" height="40px" />
+      <div className="flex flex-col items-start justify-center leading-none">
+        <span className="text-primary dark:text-secondary font-black text-xs drop-shadow-sm">Trouve</span>
+        <span className="text-primary dark:text-secondary font-black text-xs drop-shadow-sm">Ton</span>
+        <span className="text-primary dark:text-secondary font-black text-xs drop-shadow-sm">Nkama</span>
+      </div>
+    </Link>
+  )
+}
+
+const ButtonPostAd = () => {
+  return (
+    <Button
+      variant="ghost"
+      className="h-11 bg-gradient-to-r from-primary via-secondary to-primary text-white border-none rounded-full text-sm px-5 py-3 font-semibold hover:brightness-110 hover:shadow-md transition-all duration-300 hover:scale-105 dark:hover:shadow-secondary/20 whitespace-nowrap"
+      asChild
+    >
+      <Link href={routes.protected.publish}>
+        + Poster une annonce
+      </Link>
+    </Button>
   )
 }
 
@@ -162,7 +184,7 @@ const ButtonLogin = () => {
   return (
     <Button
       variant="ghost"
-      className="h-11 bg-gradient-to-r from-primary via-secondary to-primary text-white border-none rounded-full text-base px-6 py-3 font-semibold hover:brightness-110 hover:shadow-md transition-all duration-300 hover:scale-105 dark:hover:shadow-secondary/20"
+      className="h-11 text-primary dark:text-secondary rounded-full text-sm px-4 py-3 font-semibold hover:bg-primary/5 dark:hover:bg-secondary/10 transition-all duration-300 whitespace-nowrap"
       asChild
     >
       <Link href={routes.public.signin}>
@@ -176,7 +198,7 @@ const ButtonRegister = () => {
   return (
     <Button
       variant="outline"
-      className="h-11 text-primary dark:text-secondary border border-primary dark:border-secondary rounded-full text-base px-6 py-3 font-semibold hover:brightness-110 hover:shadow-md transition-all duration-300 hover:scale-105 hover:bg-primary/5 dark:hover:bg-secondary/5 dark:hover:shadow-secondary/20"
+      className="h-11 text-primary dark:text-secondary border border-primary dark:border-secondary rounded-full text-sm px-5 py-3 font-semibold hover:bg-primary/5 dark:hover:bg-secondary/5 transition-all duration-300 whitespace-nowrap"
       asChild>
       <Link href={routes.public.signup}>
         S'inscrire
@@ -205,10 +227,6 @@ const NavigationMenuNavbar = () => {
       link: routes.protected.reels_mine,
       label: "Mes réels"
     }] : []),
-    {
-      link: routes.protected.publish,
-      label: "Poster une annonce"
-    },
     ...(user ? [{
       link: routes.protected.advertising,
       label: "Publicité"
@@ -217,11 +235,11 @@ const NavigationMenuNavbar = () => {
   return (
     <NavigationMenu>
       <NavigationMenuList>
-        <NavigationMenuItem className="space-x-4">
+        <NavigationMenuItem className="space-x-5">
           {menu.map((item) => (
-            <NavigationMenuLink 
-              className="text-base text-primary dark:text-secondary font-semibold hover:text-primary dark:hover:text-secondary relative after:absolute after:bottom-0 after:left-0 after:h-0.5 after:w-0 after:bg-primary dark:after:bg-secondary after:transition-all after:duration-300 hover:after:w-full" 
-              key={item.label} 
+            <NavigationMenuLink
+              className="text-[13px] py-2 inline-block text-primary/80 dark:text-secondary/80 font-semibold hover:text-primary dark:hover:text-secondary transition-colors duration-200"
+              key={item.label}
               href={item.link}
             >
               {item.label}

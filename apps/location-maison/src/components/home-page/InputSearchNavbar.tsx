@@ -129,9 +129,9 @@ export default function InputSearchNavbar() {
     }
     // Nouveau rendu pour les écrans desktop (>= 1024px)
     return (
-        <div className="flex items-center gap-3 lg:mr-5">
+        <div className="flex items-center gap-3 w-full max-w-xl">
             {/* Champ de recherche */}
-            <div className="relative w-[260px] lg:w-[320px]">
+            <div className="relative w-full">
                 <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500 w-5 h-5" />
                 <Input
                     value={searchText}
