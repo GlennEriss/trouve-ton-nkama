@@ -11,7 +11,6 @@ import { usePathname } from "next/navigation";
 import { NavigationMenu, NavigationMenuList, NavigationMenuItem, NavigationMenuLink } from "@/components/ui/navigation-menu"
 import MenuProfil from "@/components/navbar/MenuProfil";
 import Notifications from "@/components/navbar/Notifications";
-import { Heart } from "lucide-react";
 
 export default function Navbar() {
   const { width } = useWindowSize();
@@ -116,7 +115,7 @@ export default function Navbar() {
     <div className="rounded-2xl bg-primary-50 dark:bg-gray-900 shadow dark:shadow-gray-900/50 sticky top-0 z-[9999] overflow-hidden">
       {/* Ligne utilitaire : logo, recherche, compte — toujours la même, quelle que soit la page */}
       <div className="flex items-center gap-6 px-5 py-3">
-        <LogoNavigation />
+        <LogoWithWordmark />
 
         <div className="flex-1 flex justify-center min-w-0">
           {!isProtectedRoute && <InputSearchNavbar />}
@@ -125,13 +124,6 @@ export default function Navbar() {
         <div className="flex items-center gap-4 flex-shrink-0">
           {user ? (
             <div className="flex items-center gap-5">
-              <Link
-                href={routes.protected.favoris}
-                className="flex flex-col items-center gap-0.5 text-primary dark:text-secondary hover:opacity-80 transition-opacity"
-              >
-                <Heart className="h-5 w-5" />
-                <span className="text-[10px] font-semibold">Favoris</span>
-              </Link>
               <Notifications />
               <MenuProfil />
             </div>
@@ -154,6 +146,20 @@ export default function Navbar() {
 }
 
 const LogoNavigation = () => {
+  return (
+    <div className="rounded-full bg-primary-50 dark:bg-gray-900 shadow dark:shadow-gray-900/50">
+      <a href="/" rel="noopener noreferrer" aria-label="Accueil - Trouve Ton Nkama">
+        <Logo width="64px" height="64px" />
+      </a>
+    </div>
+  )
+}
+
+// Logo + wordmark combinés sur une seule ligne, réservé à la navbar desktop en 2 lignes.
+// (LogoNavigation ci-dessus reste icône seule : le bloc "Trouve Ton Nkama" est déjà rendu
+// séparément par la navbar mobile visiteur, qui réutilise LogoNavigation à côté de son propre
+// texte — lui ajouter le wordmark ici créerait un doublon sur cette route.)
+const LogoWithWordmark = () => {
   return (
     <Link href="/" rel="noopener noreferrer" aria-label="Accueil - Trouve Ton Nkama" className="flex items-center gap-2 flex-shrink-0 hover:opacity-80 transition-opacity">
       <Logo width="40px" height="40px" />
