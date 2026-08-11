@@ -1,5 +1,6 @@
 import { getPropertyById } from '@/db/property.db'
 import { getCacheStore } from '@/lib/cache'
+import { auth } from '@/next-auth/auth'
 
 let getProperty: typeof import('@/app/api/property/id/route').GET
 
@@ -29,6 +30,10 @@ jest.mock('@/lib/cache', () => ({
   getCacheStore: jest.fn(),
 }))
 
+jest.mock('@/next-auth/auth', () => ({
+  auth: jest.fn(),
+}))
+
 function makeRequest(url: string) {
   return { url } as Request
 }
@@ -54,6 +59,7 @@ describe('/api/property/id', () => {
 
   beforeEach(() => {
     jest.clearAllMocks()
+    ;(auth as jest.Mock).mockResolvedValue(null)
   })
 
   it('refuse une requete sans id', async () => {
@@ -106,6 +112,24 @@ describe('/api/property/id', () => {
         code: 'PROPERTY_NOT_FOUND',
       },
     })
+    expect(cache.set).not.toHaveBeenCalled()
+  })
+
+  it('affiche a son proprietaire une annonce en attente de moderation', async () => {
+    const cache = makeCache()
+    ;(getCacheStore as jest.Mock).mockReturnValue(cache)
+    ;(getPropertyById as jest.Mock).mockResolvedValue({
+      ...approvedProperty,
+      moderationStatus: 'PENDING',
+      createdBy: 'owner-uid',
+    })
+    ;(auth as jest.Mock).mockResolvedValue({ user: { uid: 'owner-uid' } })
+
+    const response = await getProperty(makeRequest('https://example.com/api/property/id?id=property-1'))
+    const payload = await response.json()
+
+    expect(response.status).toBe(200)
+    expect(payload).toMatchObject({ moderationStatus: 'PENDING' })
     expect(cache.set).not.toHaveBeenCalled()
   })
 

@@ -1,12 +1,18 @@
 'use client'
 import React from 'react'
-import { ChevronRight, Lock, Settings, ShieldCheck, FileText, Coins, Phone, Building2, Megaphone } from 'lucide-react';
+import { ChevronRight, Lock, Settings, ShieldCheck, FileText, Coins, Phone, Building2, Megaphone, Heart } from 'lucide-react';
 import Link from 'next/link';
 import { useWindowSize } from '@/hooks/useSize';
 import { routes } from '@/constantes/routes';
 import { useCurrentUser } from '@/hooks/use-current-user';
 
 const baseMenu = [
+    {
+        title: 'Favoris',
+        icon: Heart,
+        link: routes.protected.favoris,
+        description: 'Retrouvez toutes les annonces que vous avez sauvegardées pour les consulter plus tard.'
+    },
     {
         title: 'Faire de la pub',
         icon: Megaphone,

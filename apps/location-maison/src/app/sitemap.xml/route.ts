@@ -33,6 +33,7 @@ export async function GET() {
     { path: routes.public_google.homePage, lastmod: todayISO, priority: '1.0' },
     { path: routes.public_google.immobilier, lastmod: todayISO },
     { path: routes.public_google.search, lastmod: todayISO },
+    { path: routes.public_google.search_requests, lastmod: todayISO },
     { path: routes.public_google.blog, lastmod: todayISO },
     { path: routes.public_google.blog_tendances_marche, lastmod: todayISO },
     { path: routes.public_google.blog_financement, lastmod: todayISO },

@@ -6,7 +6,8 @@ import { useFormContext } from "react-hook-form"
 import { SelectFormApp } from "../shared/form/SelectFormApp"
 import { useLocationSync } from "@/hooks/use-location-sync"
 import { Badge } from "@/components/ui/badge"
-import { Database, MapPin, Building } from "lucide-react"
+import { Database, MapPin, Building, Plus, X } from "lucide-react"
+import { Button } from "@/components/ui/button"
 import { OptionType } from "@/models/OptionType"
 import { useStep3FormPropertyMediator } from "@/hooks/useStep3FormPropertyMediator"
 import TextareaApp from "../shared/ui/TextareaApp"
@@ -269,5 +270,75 @@ export const ContactComponent = ({ field }: Readonly<{ field?: any }>) => {
       onChange={field?.onChange ?? (() => undefined)}
       placeholder="077 12 34 56"
     />
+  )
+}
+
+// Overrides optionnels du numéro principal — voir ContactSection.tsx /
+// PreviewPropertyMobile.tsx pour la cascade whatsappContact/callContact -> contact.
+export const WhatsappContactComponent = ({ field }: Readonly<{ field?: any }>) => {
+  return (
+    <PhoneNumberParts
+      value={field?.value ?? ""}
+      onChange={field?.onChange ?? (() => undefined)}
+      placeholder="077 12 34 56"
+    />
+  )
+}
+
+export const CallContactComponent = ({ field }: Readonly<{ field?: any }>) => {
+  return (
+    <PhoneNumberParts
+      value={field?.value ?? ""}
+      onChange={field?.onChange ?? (() => undefined)}
+      placeholder="077 12 34 56"
+    />
+  )
+}
+
+const MAX_ADDITIONAL_CONTACTS = 5
+
+// Liste dynamique de numéros au-delà du principal (propriétaire/agent/famille,
+// etc.) — chacun reçoit sa propre paire de boutons WhatsApp/Appel dans
+// ContactSection.tsx / PreviewPropertyMobile.tsx.
+export const AdditionalContactsComponent = ({ field }: Readonly<{ field?: any }>) => {
+  const numbers: string[] = Array.isArray(field?.value) ? field.value : []
+  const onChange = field?.onChange ?? (() => undefined)
+
+  const updateAt = (index: number, value: string) => {
+    const next = [...numbers]
+    next[index] = value
+    onChange(next)
+  }
+
+  const removeAt = (index: number) => {
+    onChange(numbers.filter((_, i) => i !== index))
+  }
+
+  return (
+    <div className="flex flex-col gap-2">
+      {numbers.map((number, index) => (
+        // eslint-disable-next-line react/no-array-index-key
+        <div key={index} className="flex items-center gap-2">
+          <PhoneNumberParts
+            value={number}
+            onChange={(value: string) => updateAt(index, value)}
+            placeholder="077 12 34 56"
+          />
+          <button
+            type="button"
+            onClick={() => removeAt(index)}
+            className="text-red-500 hover:text-red-700"
+            aria-label="Supprimer ce numéro"
+          >
+            <X className="h-4 w-4" />
+          </button>
+        </div>
+      ))}
+      {numbers.length < MAX_ADDITIONAL_CONTACTS && (
+        <Button type="button" variant="outline" size="sm" onClick={() => onChange([...numbers, ""])}>
+          <Plus className="h-4 w-4 mr-1" /> Ajouter un numéro
+        </Button>
+      )}
+    </div>
   )
 }

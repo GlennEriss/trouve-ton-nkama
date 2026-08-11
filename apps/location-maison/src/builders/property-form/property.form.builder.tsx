@@ -6,7 +6,7 @@ import { AreaComponent, DescriptionComponent, ImagesComponent, IsOwnerComponent,
 import { LocationPicker } from '@/components/location';
 import { MAX_IMAGES_UPLOAD, MAX_TAGS } from "@/constantes";
 import { UseFormReturn } from 'react-hook-form';
-import { AdditionalInformationComponent, ContactComponent } from "@/components/stepper/step3.components";
+import { AdditionalInformationComponent, ContactComponent, WhatsappContactComponent, CallContactComponent, AdditionalContactsComponent } from "@/components/stepper/step3.components";
 
 /**
  * @typedef {Object} FormElement
@@ -124,6 +124,27 @@ export abstract class PropertyFormBuilder {
                 label: "Numéro de téléphone",
                 description: "Ex: +241 06 97 00 00 00",
                 component: ContactComponent,
+                step: 3
+            },
+            {
+                name: "whatsappContact",
+                label: "Numéro WhatsApp (si différent)",
+                description: "Laissez vide pour utiliser le numéro principal ci-dessus.",
+                component: WhatsappContactComponent,
+                step: 3
+            },
+            {
+                name: "callContact",
+                label: "Numéro d'appel (si différent)",
+                description: "Laissez vide pour utiliser le numéro principal ci-dessus.",
+                component: CallContactComponent,
+                step: 3
+            },
+            {
+                name: "additionalContacts",
+                label: "Autres numéros à contacter",
+                description: "Propriétaire, agent, famille... chaque numéro aura ses propres boutons WhatsApp/Appel (5 maximum).",
+                component: AdditionalContactsComponent,
                 step: 3
             }
         )

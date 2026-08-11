@@ -6,12 +6,14 @@ import { useAlgoliaContext } from "@/providers/AlgoliaContext";
 import { useInfiniteHits, useInstantSearch, useStats } from 'react-instantsearch'
 import { LoaderCircle } from 'lucide-react'
 import Image from 'next/image'
+import Link from 'next/link'
 import PropertyCard from '../home-page/PropertyCard'
 import { useSearchParams } from 'next/navigation'
 import FilterSearchDesktopPageSection from './FilterSearchDesktopPageSection'
 import { useTrackSearchAnalytics } from '@/features/analytics/search/hooks/useTrackSearchAnalytics';
 import SponsoredSlot from '@/components/ads/SponsoredSlot';
 import { ADSENSE_SLOTS } from '@/lib/ads/config';
+import { buildSearchRequestPrefillUrl } from '@/lib/search-request-prefill';
 
 export default function 
 SearchDesktopPage() {
@@ -192,12 +194,20 @@ SearchDesktopPage() {
                                 <p className="mt-6 text-gray-600 dark:text-gray-400 text-lg text-center">
                                     Aucun bien ne correspond à ces critères.
                                 </p>
-                                <button
-                                    onClick={clearFilters}
-                                    className="mt-6 min-h-11 rounded-full bg-primary px-6 py-2.5 text-white transition-colors hover:bg-primary-800"
-                                >
-                                    Réinitialiser les filtres
-                                </button>
+                                <div className="mt-6 flex flex-wrap items-center justify-center gap-3">
+                                    <button
+                                        onClick={clearFilters}
+                                        className="min-h-11 rounded-full bg-primary px-6 py-2.5 text-white transition-colors hover:bg-primary-800"
+                                    >
+                                        Réinitialiser les filtres
+                                    </button>
+                                    <Link
+                                        href={buildSearchRequestPrefillUrl(searchParams)}
+                                        className="min-h-11 inline-flex items-center rounded-full border border-secondary px-6 py-2.5 font-semibold text-secondary transition-colors hover:bg-secondary/5"
+                                    >
+                                        Publier ma recherche
+                                    </Link>
+                                </div>
                             </div>
                         ) : (
                             <>

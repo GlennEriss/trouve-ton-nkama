@@ -48,12 +48,16 @@ export default function HomePageDesktopComponent() {
       }
 
   return (
-    <motion.div
-      className='container-page p-5 relative'
-      initial={shouldReduceMotion ? false : { opacity: 0 }}
-      animate={shouldReduceMotion ? {} : { opacity: 1 }}
-      transition={{ duration: 0.35 }}
-    >
+    <>
+      {/* Hors du container : la navbar est une barre pleine largeur, collée en haut. */}
+      <Navbar />
+
+      <motion.div
+        className='container-page p-5 relative'
+        initial={shouldReduceMotion ? false : { opacity: 0 }}
+        animate={shouldReduceMotion ? {} : { opacity: 1 }}
+        transition={{ duration: 0.35 }}
+      >
       {/* Forme 1 - Derrière navbar et première section */}
       <div className="absolute top-0 -left-[30vw] w-full h-[530px] -z-10">
         <Image
@@ -64,7 +68,6 @@ export default function HomePageDesktopComponent() {
         />
       </div>
 
-      <Navbar />
       <motion.div {...getRevealProps(0.05)}>
         <HomeHeroSponsoredSwap reduceMotion={shouldReduceMotion} />
       </motion.div>
@@ -234,6 +237,7 @@ export default function HomePageDesktopComponent() {
           />
         </div>
       </motion.section>
-    </motion.div>
+      </motion.div>
+    </>
   )
 }

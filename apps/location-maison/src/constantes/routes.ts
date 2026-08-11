@@ -6,6 +6,7 @@ export const routes = {
     protected: {
         properties: '/property',
         add_property: '/property/add',
+        add_property_ai: '/property/create',
         publish: '/publish',
         reels: '/reels',
         reels_mine: '/reels/mine',
@@ -75,6 +76,8 @@ export const routes = {
         guide_immobilier_gabon: '/guide-immobilier-gabon',
         advertise: '/faire-de-la-pub',
         property: '/property',
+        search_requests: '/demandes-recherche',
+        search_requests_publish: '/demandes-recherche/publier',
     },
     public_google: {
         homePage: '/',
@@ -100,5 +103,6 @@ export const routes = {
         blog_demarches_administratives: '/blog/demarches-administratives-immobilier-gabon-2024',
         guide_immobilier_gabon: '/guide-immobilier-gabon',
         property: '/property',
+        search_requests: '/demandes-recherche',
     }
 }

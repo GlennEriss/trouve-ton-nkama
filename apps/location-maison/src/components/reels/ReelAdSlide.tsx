@@ -10,7 +10,7 @@
 
 import React from 'react'
 import Link from 'next/link'
-import { Loader2, Megaphone } from 'lucide-react'
+import { Loader2, Megaphone, Search } from 'lucide-react'
 import AdSenseBlock from '@/components/ads/AdSenseBlock'
 import AdCreativeCard from '@/components/ads/AdCreativeCard'
 import { routes } from '@/constantes/routes'
@@ -79,7 +79,39 @@ function AdSenseSlide({ slotKey }: { slotKey: string }) {
   )
 }
 
+// Deux contenus alternés (choisis une fois par apparition, pas de logique de
+// rotation touchée dans ReelsFeedClient.tsx) : promo pub maison classique, et
+// promo des demandes de recherche — vise les annonceurs non-inscrits qui
+// scrollent les réels, un des points d'entrée décidés pour cette section.
 function ReelsAdFallback() {
+  const [variant] = React.useState<'advertise' | 'search_requests'>(() =>
+    Math.random() < 0.5 ? 'advertise' : 'search_requests',
+  )
+
+  if (variant === 'search_requests') {
+    return (
+      <div className="w-[85%] max-w-sm rounded-2xl border border-white/10 bg-neutral-900/80 p-5 text-center text-white shadow-2xl backdrop-blur-sm">
+        <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-amber-500/15 text-amber-200">
+          <Search className="h-6 w-6" aria-hidden="true" />
+        </div>
+        <p className="mt-4 text-xs font-semibold uppercase tracking-wide text-amber-200">
+          Demandes de recherche
+        </p>
+        <h2 className="mt-2 text-xl font-bold leading-tight">Des visiteurs cherchent un logement</h2>
+        <p className="mt-3 text-sm leading-6 text-white/70">
+          Consultez ce qu&apos;ils recherchent exactement et contactez-les directement sur
+          WhatsApp si vous avez le bien qu&apos;il leur faut.
+        </p>
+        <Link
+          href={routes.public.search_requests}
+          className="mt-5 inline-flex min-h-11 items-center justify-center rounded-full bg-white px-5 text-sm font-semibold text-neutral-950 transition hover:bg-amber-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
+        >
+          Voir les demandes
+        </Link>
+      </div>
+    )
+  }
+
   return (
     <div className="w-[85%] max-w-sm rounded-2xl border border-white/10 bg-neutral-900/80 p-5 text-center text-white shadow-2xl backdrop-blur-sm">
       <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-emerald-500/15 text-emerald-200">

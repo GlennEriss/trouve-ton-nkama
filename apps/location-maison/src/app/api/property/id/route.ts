@@ -3,11 +3,16 @@ import { getPropertyById } from '@/db/property.db';
 import { getCacheStore } from '@/lib/cache';
 import { createLogger } from '@/lib/logger';
 import { handleApiError, jsonApiError } from '@/lib/api/error-response';
+import { auth } from '@/next-auth/auth';
 import type { Property } from '@/models/annonce';
 
 const logger = createLogger('api.property.id');
 
 const CACHE_TTL_SECONDS = parseInt(process.env.REDIS_PROPERTY_TTL ?? '600', 10);
+
+function isPubliclyVisible(property: Property): boolean {
+  return property.state === 'IN_PROGRESS' && property.moderationStatus === 'APPROVED';
+}
 
 export async function GET(request: Request) {
   const url = new URL(request.url);
@@ -34,21 +39,33 @@ export async function GET(request: Request) {
 
     const property = await getPropertyById(id);
 
-    // Traiter une annonce non approuvée ou archivée comme inexistante pour le public
-    // (cette route est appelée sans auth, cf. PropertyCard.tsx / use-property.ts).
-    if (!property || property.state !== 'IN_PROGRESS' || property.moderationStatus !== 'APPROVED') {
-      return jsonApiError(404, 'PROPERTY_NOT_FOUND', 'Property not found', { id });
+    // Route publique par défaut (cf. PropertyCard.tsx / use-property.ts, appelée
+    // sans auth) : une annonce non approuvée/archivée est traitée comme
+    // inexistante pour tout le monde...
+    if (property && isPubliclyVisible(property)) {
+      // Awaited (pas fire-and-forget) : en environnement serverless (Vercel), une promesse
+      // non attendue peut être annulée dès la réponse envoyée.
+      await cache.set(cacheKey, property, CACHE_TTL_SECONDS);
+
+      return NextResponse.json(property, {
+        headers: {
+          'Cache-Control': 'public, s-maxage=60, stale-while-revalidate=60',
+        },
+      });
     }
 
-    // Awaited (pas fire-and-forget) : en environnement serverless (Vercel), une promesse
-    // non attendue peut être annulée dès la réponse envoyée.
-    await cache.set(cacheKey, property, CACHE_TTL_SECONDS);
+    // ...SAUF pour son propriétaire : la vue "gestion de mon annonce"
+    // (/property/[id], PreviewPropertyClient.tsx) doit pouvoir afficher sa
+    // propre annonce même en attente de modération/rejetée. Jamais mis dans
+    // le cache public partagé ci-dessus (spécifique à cet utilisateur).
+    const session = await auth().catch(() => null);
+    if (property && session?.user?.uid && property.createdBy === session.user.uid) {
+      return NextResponse.json(property, {
+        headers: { 'Cache-Control': 'private, no-store' },
+      });
+    }
 
-    return NextResponse.json(property, {
-      headers: {
-        'Cache-Control': 'public, s-maxage=60, stale-while-revalidate=60',
-      },
-    });
+    return jsonApiError(404, 'PROPERTY_NOT_FOUND', 'Property not found', { id });
   } catch (error) {
     return handleApiError(error, {
       logger,

@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import { useWindowSize } from "@/hooks/useSize";
 import Logo from "../logo/Logo";
 import { useCurrentUser } from "@/hooks/use-current-user";
@@ -11,12 +12,15 @@ import { usePathname } from "next/navigation";
 import { NavigationMenu, NavigationMenuList, NavigationMenuItem, NavigationMenuLink } from "@/components/ui/navigation-menu"
 import MenuProfil from "@/components/navbar/MenuProfil";
 import Notifications from "@/components/navbar/Notifications";
+import MobileSidebar from "@/components/navbar/MobileSidebar";
+import { Plus, Menu } from "lucide-react";
 
 export default function Navbar() {
   const { width } = useWindowSize();
   const { user } = useCurrentUser();
   const pathname = usePathname();
   const isAnnouncer = Array.isArray(user?.roles) && user.roles.includes('Announcer');
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   
   // Vérifier si on est sur une route protégée
   const isProtectedRoute = Object.values(routes.protected).some(route =>
@@ -49,18 +53,31 @@ export default function Navbar() {
     // en-tête contextuel de la page), ce n'est pas redondant.
     if (user) {
       return (
-        <nav className="sticky top-0 left-0 right-0 z-[9999] flex items-center justify-between border-b border-gray-200 bg-white/90 px-4 py-2 backdrop-blur-lg dark:border-gray-800 dark:bg-gray-900/90">
-          <a href="/" rel="noopener noreferrer" className="flex items-center gap-2">
-            <Logo width="32px" height="32px" />
-            <span className="text-sm font-black text-primary dark:text-secondary">
-              Trouve Ton Nkama
-            </span>
-          </a>
-          <div className="flex items-center gap-3">
-            <Notifications />
-            <MenuProfil />
-          </div>
-        </nav>
+        <>
+          <nav className="sticky top-0 left-0 right-0 z-[9999] flex items-center justify-between border-b border-gray-200 bg-white/90 px-4 py-2 backdrop-blur-lg dark:border-gray-800 dark:bg-gray-900/90">
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                onClick={() => setIsSidebarOpen(true)}
+                aria-label="Ouvrir le menu"
+                className="rounded-full p-1.5 text-gray-700 hover:bg-gray-100 dark:text-gray-200 dark:hover:bg-gray-800"
+              >
+                <Menu className="h-5 w-5" />
+              </button>
+              <a href="/" rel="noopener noreferrer" className="flex items-center gap-2">
+                <Logo width="32px" height="32px" />
+                <span className="text-sm font-black text-primary dark:text-secondary">
+                  Trouve Ton Nkama
+                </span>
+              </a>
+            </div>
+            <div className="flex items-center gap-3">
+              <Notifications />
+              <MenuProfil />
+            </div>
+          </nav>
+          <MobileSidebar isOpen={isSidebarOpen} onClose={() => setIsSidebarOpen(false)} />
+        </>
       )
     }
 
@@ -71,8 +88,17 @@ export default function Navbar() {
       return null
     }
     return (
+      <>
       <nav className="border-b border-gray-300 dark:border-gray-700 sticky top-0 left-0 right-0 z-[9999] bg-white dark:bg-gray-900 text-black dark:text-white px-4 py-4 flex items-center justify-between shadow-md dark:shadow-gray-900/50">
         <div className="flex items-center gap-2">
+          <button
+            type="button"
+            onClick={() => setIsSidebarOpen(true)}
+            aria-label="Ouvrir le menu"
+            className="rounded-full p-1.5 text-gray-700 hover:bg-gray-100 dark:text-gray-200 dark:hover:bg-gray-800"
+          >
+            <Menu className="h-5 w-5" />
+          </button>
           <LogoNavigation />
           <a href="/" rel="noopener noreferrer" className="inline-flex min-h-11 min-w-11 items-center">
             <div className="flex flex-col items-start justify-center leading-none hover:opacity-80 transition-opacity cursor-pointer">
@@ -109,42 +135,43 @@ export default function Navbar() {
           )}
         </div>
       </nav>
+      <MobileSidebar isOpen={isSidebarOpen} onClose={() => setIsSidebarOpen(false)} />
+      </>
     );
   }
   return (
-    <div className="rounded-full bg-primary-50 dark:bg-gray-900 flex shadow dark:shadow-gray-900/50 sticky top-0 z-[9999]">
-      <div className="flex items-center gap-2">
-        <LogoNavigation />
-        <a href="/" rel="noopener noreferrer">
-          <div className="flex flex-col items-start justify-center leading-none hover:opacity-80 transition-opacity cursor-pointer">
-            <span className="text-primary dark:text-secondary font-black text-sm drop-shadow-sm">
-              Trouve
-            </span>
-            <span className="text-primary dark:text-secondary font-black text-sm drop-shadow-sm">
-              Ton
-            </span>
-            <span className="text-primary dark:text-secondary font-black text-sm drop-shadow-sm">
-              Nkama
-            </span>
-          </div>
-        </a>
+    <header className="sticky top-0 z-[9999] border-b border-gray-200 bg-white dark:border-gray-800 dark:bg-gray-900">
+      {/* Ligne utilitaire : logo, recherche, compte — toujours la même, quelle que soit la page */}
+      <div className="container-page flex items-center gap-8 px-6 py-3">
+        <LogoWithWordmark />
+
+        <div className="flex min-w-0 flex-1 justify-center">
+          {!isProtectedRoute && <InputSearchNavbar />}
+        </div>
+
+        <div className="flex flex-shrink-0 items-center gap-3">
+          {user ? (
+            <div className="flex items-center gap-4">
+              <Notifications />
+              <MenuProfil />
+            </div>
+          ) : (
+            <div className="flex items-center gap-2">
+              <ButtonLogin />
+              <ButtonRegister />
+            </div>
+          )}
+          <ButtonPostAd />
+        </div>
       </div>
-      <div className="ml-auto flex items-center gap-4 mr-5">
-        <NavigationMenuNavbar />
-        {!isProtectedRoute && <InputSearchNavbar />}
-        {user ? (
-          <div className="flex items-center gap-8">
-            <Notifications />
-            <MenuProfil />
-          </div>
-        ) : (
-          <div className="flex items-center gap-4">
-            <ButtonLogin />
-            <ButtonRegister />
-          </div>
-        )}
+
+      {/* Ligne de navigation secondaire : catégories, séparée par un simple filet */}
+      <div className="border-t border-gray-100 dark:border-gray-800">
+        <div className="container-page px-6">
+          <NavigationMenuNavbar />
+        </div>
       </div>
-    </div>
+    </header>
   )
 }
 
@@ -158,11 +185,41 @@ const LogoNavigation = () => {
   )
 }
 
+// Logo + wordmark sur une seule ligne, réservé à la navbar desktop.
+// (LogoNavigation ci-dessus reste icône seule : le bloc "Trouve Ton Nkama" est déjà rendu
+// séparément par la navbar mobile visiteur, qui réutilise LogoNavigation à côté de son propre
+// texte — lui ajouter le wordmark ici créerait un doublon sur cette route.)
+const LogoWithWordmark = () => {
+  return (
+    <Link href="/" rel="noopener noreferrer" aria-label="Accueil - Trouve Ton Nkama" className="flex flex-shrink-0 items-center gap-2.5 transition-opacity hover:opacity-80">
+      <Logo width="36px" height="36px" />
+      <span className="whitespace-nowrap text-[15px] font-black leading-none tracking-tight text-primary dark:text-secondary">
+        Trouve Ton Nkama
+      </span>
+    </Link>
+  )
+}
+
+const ButtonPostAd = () => {
+  return (
+    <Button
+      variant="ghost"
+      className="h-10 whitespace-nowrap rounded-full bg-primary px-5 text-sm font-semibold text-white transition-colors hover:bg-primary-800 dark:bg-secondary dark:text-gray-900 dark:hover:bg-primary-400"
+      asChild
+    >
+      <Link href={routes.protected.publish}>
+        <Plus className="mr-1.5 h-4 w-4" strokeWidth={2.5} />
+        Poster une annonce
+      </Link>
+    </Button>
+  )
+}
+
 const ButtonLogin = () => {
   return (
     <Button
       variant="ghost"
-      className="h-11 bg-gradient-to-r from-primary via-secondary to-primary text-white border-none rounded-full text-base px-6 py-3 font-semibold hover:brightness-110 hover:shadow-md transition-all duration-300 hover:scale-105 dark:hover:shadow-secondary/20"
+      className="h-10 whitespace-nowrap rounded-full px-4 text-sm font-semibold text-gray-700 transition-colors hover:bg-gray-100 hover:text-primary dark:text-gray-200 dark:hover:bg-gray-800 dark:hover:text-secondary"
       asChild
     >
       <Link href={routes.public.signin}>
@@ -176,7 +233,7 @@ const ButtonRegister = () => {
   return (
     <Button
       variant="outline"
-      className="h-11 text-primary dark:text-secondary border border-primary dark:border-secondary rounded-full text-base px-6 py-3 font-semibold hover:brightness-110 hover:shadow-md transition-all duration-300 hover:scale-105 hover:bg-primary/5 dark:hover:bg-secondary/5 dark:hover:shadow-secondary/20"
+      className="h-10 whitespace-nowrap rounded-full border border-gray-300 px-5 text-sm font-semibold text-gray-800 transition-colors hover:border-primary hover:bg-transparent hover:text-primary dark:border-gray-600 dark:text-gray-100 dark:hover:border-secondary dark:hover:text-secondary"
       asChild>
       <Link href={routes.public.signup}>
         S'inscrire
@@ -198,6 +255,10 @@ const NavigationMenuNavbar = () => {
       label: "Catalogue"
     },
     {
+      link: routes.public.search_requests,
+      label: "Demandes"
+    },
+    {
       link: routes.protected.reels,
       label: "Réels"
     },
@@ -205,10 +266,6 @@ const NavigationMenuNavbar = () => {
       link: routes.protected.reels_mine,
       label: "Mes réels"
     }] : []),
-    {
-      link: routes.protected.publish,
-      label: "Poster une annonce"
-    },
     ...(user ? [{
       link: routes.protected.advertising,
       label: "Publicité"
@@ -217,11 +274,11 @@ const NavigationMenuNavbar = () => {
   return (
     <NavigationMenu>
       <NavigationMenuList>
-        <NavigationMenuItem className="space-x-4">
+        <NavigationMenuItem className="space-x-6">
           {menu.map((item) => (
-            <NavigationMenuLink 
-              className="text-base text-primary dark:text-secondary font-semibold hover:text-primary dark:hover:text-secondary relative after:absolute after:bottom-0 after:left-0 after:h-0.5 after:w-0 after:bg-primary dark:after:bg-secondary after:transition-all after:duration-300 hover:after:w-full" 
-              key={item.label} 
+            <NavigationMenuLink
+              className="inline-block py-2.5 text-[13px] font-medium text-gray-600 transition-colors hover:text-primary dark:text-gray-300 dark:hover:text-secondary"
+              key={item.label}
               href={item.link}
             >
               {item.label}

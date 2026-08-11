@@ -39,18 +39,21 @@ export const PreviewPropertyMobile: React.FC<PreviewPropertyMobileProps> = ({ pr
         "FOR_RENT": "A LOUER",
         "FOR_SALE": "A VENDRE"
     }
-    const phoneNumber = property?.contact ?? user?.phoneNumbers?.[0]
+    // Numéros WhatsApp/Appel distincts si renseignés, sinon repli sur le
+    // numéro principal (comportement historique) — voir ContactSection.tsx.
+    const whatsappNumber = property?.whatsappContact || property?.contact || user?.phoneNumbers?.[0]
+    const callNumber = property?.callContact || property?.contact || user?.phoneNumbers?.[0]
     const primaryImageUrl = getPrimaryPropertyImageUrl(property.images)
 
     const handleWhatsAppClick = () => {
         trackInteraction('whatsapp_contact', {
-            phoneNumber,
+            phoneNumber: whatsappNumber,
         })
     }
 
     const handlePhoneClick = () => {
         trackInteraction('phone_contact', {
-            phoneNumber,
+            phoneNumber: callNumber,
         })
     }
 
@@ -133,7 +136,7 @@ export const PreviewPropertyMobile: React.FC<PreviewPropertyMobileProps> = ({ pr
                 </div>
                 <div className='flex gap-3'>
                     <Link
-                        href={phoneNumber ? `https://wa.me/${phoneNumber}?text=${encodeURIComponent(
+                        href={whatsappNumber ? `https://wa.me/${whatsappNumber}?text=${encodeURIComponent(
                             `Bonjour, je suis intéressé par votre annonce "${property.title}" au prix de ${property.price.toLocaleString('fr-FR')} FCFA. Voici le lien de l'annonce : ${process.env.NEXT_PUBLIC_HOST}/houseDetails/${property.id}`
                         )}` : '#'}
                         target="_blank"
@@ -146,7 +149,7 @@ export const PreviewPropertyMobile: React.FC<PreviewPropertyMobileProps> = ({ pr
                         </div>
                     </Link>
                     <a
-                        href={phoneNumber ? `tel:${phoneNumber}` : '#'}
+                        href={callNumber ? `tel:${callNumber}` : '#'}
                         target="_blank"
                         rel="noopener noreferrer"
                         title="Appeler"
@@ -173,6 +176,44 @@ export const PreviewPropertyMobile: React.FC<PreviewPropertyMobileProps> = ({ pr
                 propertyId={property.id}
                 announcerName={announcerName}
             />
+            {/* Annonces avec plusieurs contacts (propriétaire/agent/famille) —
+                le numéro principal ci-dessus garde sa place dans l'en-tête,
+                les autres reçoivent leur propre paire WhatsApp/Appel ici. */}
+            {property.additionalContacts && property.additionalContacts.length > 0 && (
+                <section className='px-2 space-y-2'>
+                    <h1 className='font-bold text-xl'>Autres numéros</h1>
+                    {property.additionalContacts.map((number, index) => (
+                        // eslint-disable-next-line react/no-array-index-key
+                        <div key={index} className='flex items-center justify-between gap-3'>
+                            <span className='text-gray-500 dark:text-gray-400'>Contact {index + 2}</span>
+                            <div className='flex gap-3'>
+                                <Link
+                                    href={`https://wa.me/${number}?text=${encodeURIComponent(
+                                        `Bonjour, je suis intéressé par votre annonce "${property.title}" au prix de ${property.price.toLocaleString('fr-FR')} FCFA. Voici le lien de l'annonce : ${process.env.NEXT_PUBLIC_HOST}/houseDetails/${property.id}`
+                                    )}`}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    title="Contacter via WhatsApp"
+                                    onClick={() => trackInteraction('whatsapp_contact', { phoneNumber: number })}
+                                >
+                                    <div className='border border-gray-300 p-3 rounded-lg shadow-lg'>
+                                        <FaWhatsapp size={24} className="cursor-pointer hover:text-green-600 text-green-600" />
+                                    </div>
+                                </Link>
+                                <a
+                                    href={`tel:${number}`}
+                                    title="Appeler"
+                                    onClick={() => trackInteraction('phone_contact', { phoneNumber: number })}
+                                >
+                                    <div className='border border-gray-300 p-3 rounded-lg shadow-lg'>
+                                        <FaPhoneAlt size={24} className="cursor-pointer hover:text-blue-500 text-blue-500" />
+                                    </div>
+                                </a>
+                            </div>
+                        </div>
+                    ))}
+                </section>
+            )}
             <Separator />
             <section className='px-2'>
                 <h1 className='font-bold text-xl'>Description</h1>
