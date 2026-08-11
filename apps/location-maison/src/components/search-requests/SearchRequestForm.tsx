@@ -299,7 +299,7 @@ export default function SearchRequestForm({ prefill }: { prefill?: SearchRequest
             <Smartphone className="absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
             <Input
               type="tel"
-              placeholder="074 XX XX XX"
+              placeholder={network === "MM" ? "066 XX XX XX" : "074 XX XX XX"}
               value={payerPhone}
               onChange={(e) => setPayerPhone(e.target.value)}
               className={`${FIELD_CLASS} pl-10`}

@@ -85,6 +85,12 @@ describe('Lot 6B - rendu publicitaire', () => {
     })
   })
 
+  // clearMocks ne restaure pas les espions : sans ceci, un stub de Math.random
+  // survivrait aux tests suivants de ce fichier.
+  afterEach(() => {
+    jest.restoreAllMocks()
+  })
+
   it('affiche la campagne maison et conserve l unite AdSense independante', async () => {
     const { rerender } = render(
       <SponsoredSlot
@@ -157,13 +163,26 @@ describe('Lot 6B - rendu publicitaire', () => {
     expect(trackedEvents()).toHaveLength(0)
   })
 
+  // ReelsAdFallback tire sa variante au hasard (Math.random() < 0.5) : sans
+  // figer le tirage, ces deux tests ne passeraient qu'une fois sur deux.
   it('remplace immediatement un AdSense non rempli dans les reels', () => {
+    jest.spyOn(Math, 'random').mockReturnValue(0.1)
     render(<ReelAdSlide variant="adsense" isActive slotKey="reels-adsense-6b" />)
 
     fireEvent.click(screen.getByRole('button', { name: /Simuler AdSense non rempli/i }))
 
     expect(screen.getByRole('heading', { name: /Votre bien peut être vu ici/i })).toBeVisible()
     expect(screen.getByRole('link', { name: /Faire de la pub/i })).toBeVisible()
+  })
+
+  it('propose les demandes de recherche sur l autre variante de repli', () => {
+    jest.spyOn(Math, 'random').mockReturnValue(0.9)
+    render(<ReelAdSlide variant="adsense" isActive slotKey="reels-adsense-6c" />)
+
+    fireEvent.click(screen.getByRole('button', { name: /Simuler AdSense non rempli/i }))
+
+    expect(screen.getByRole('heading', { name: /Des visiteurs cherchent un logement/i })).toBeVisible()
+    expect(screen.getByRole('link', { name: /Voir les demandes/i })).toBeVisible()
   })
 
   it('compte la campagne reels seulement quand sa diapositive devient active', async () => {
