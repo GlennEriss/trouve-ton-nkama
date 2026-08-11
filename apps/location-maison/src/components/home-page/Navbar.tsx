@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import { useWindowSize } from "@/hooks/useSize";
 import Logo from "../logo/Logo";
 import { useCurrentUser } from "@/hooks/use-current-user";
@@ -11,13 +12,15 @@ import { usePathname } from "next/navigation";
 import { NavigationMenu, NavigationMenuList, NavigationMenuItem, NavigationMenuLink } from "@/components/ui/navigation-menu"
 import MenuProfil from "@/components/navbar/MenuProfil";
 import Notifications from "@/components/navbar/Notifications";
-import { Plus } from "lucide-react";
+import MobileSidebar from "@/components/navbar/MobileSidebar";
+import { Plus, Menu } from "lucide-react";
 
 export default function Navbar() {
   const { width } = useWindowSize();
   const { user } = useCurrentUser();
   const pathname = usePathname();
   const isAnnouncer = Array.isArray(user?.roles) && user.roles.includes('Announcer');
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   
   // Vérifier si on est sur une route protégée
   const isProtectedRoute = Object.values(routes.protected).some(route =>
@@ -50,18 +53,31 @@ export default function Navbar() {
     // en-tête contextuel de la page), ce n'est pas redondant.
     if (user) {
       return (
-        <nav className="sticky top-0 left-0 right-0 z-[9999] flex items-center justify-between border-b border-gray-200 bg-white/90 px-4 py-2 backdrop-blur-lg dark:border-gray-800 dark:bg-gray-900/90">
-          <a href="/" rel="noopener noreferrer" className="flex items-center gap-2">
-            <Logo width="32px" height="32px" />
-            <span className="text-sm font-black text-primary dark:text-secondary">
-              Trouve Ton Nkama
-            </span>
-          </a>
-          <div className="flex items-center gap-3">
-            <Notifications />
-            <MenuProfil />
-          </div>
-        </nav>
+        <>
+          <nav className="sticky top-0 left-0 right-0 z-[9999] flex items-center justify-between border-b border-gray-200 bg-white/90 px-4 py-2 backdrop-blur-lg dark:border-gray-800 dark:bg-gray-900/90">
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                onClick={() => setIsSidebarOpen(true)}
+                aria-label="Ouvrir le menu"
+                className="rounded-full p-1.5 text-gray-700 hover:bg-gray-100 dark:text-gray-200 dark:hover:bg-gray-800"
+              >
+                <Menu className="h-5 w-5" />
+              </button>
+              <a href="/" rel="noopener noreferrer" className="flex items-center gap-2">
+                <Logo width="32px" height="32px" />
+                <span className="text-sm font-black text-primary dark:text-secondary">
+                  Trouve Ton Nkama
+                </span>
+              </a>
+            </div>
+            <div className="flex items-center gap-3">
+              <Notifications />
+              <MenuProfil />
+            </div>
+          </nav>
+          <MobileSidebar isOpen={isSidebarOpen} onClose={() => setIsSidebarOpen(false)} />
+        </>
       )
     }
 
@@ -72,8 +88,17 @@ export default function Navbar() {
       return null
     }
     return (
+      <>
       <nav className="border-b border-gray-300 dark:border-gray-700 sticky top-0 left-0 right-0 z-[9999] bg-white dark:bg-gray-900 text-black dark:text-white px-4 py-4 flex items-center justify-between shadow-md dark:shadow-gray-900/50">
         <div className="flex items-center gap-2">
+          <button
+            type="button"
+            onClick={() => setIsSidebarOpen(true)}
+            aria-label="Ouvrir le menu"
+            className="rounded-full p-1.5 text-gray-700 hover:bg-gray-100 dark:text-gray-200 dark:hover:bg-gray-800"
+          >
+            <Menu className="h-5 w-5" />
+          </button>
           <LogoNavigation />
           <a href="/" rel="noopener noreferrer" className="inline-flex min-h-11 min-w-11 items-center">
             <div className="flex flex-col items-start justify-center leading-none hover:opacity-80 transition-opacity cursor-pointer">
@@ -110,6 +135,8 @@ export default function Navbar() {
           )}
         </div>
       </nav>
+      <MobileSidebar isOpen={isSidebarOpen} onClose={() => setIsSidebarOpen(false)} />
+      </>
     );
   }
   return (
