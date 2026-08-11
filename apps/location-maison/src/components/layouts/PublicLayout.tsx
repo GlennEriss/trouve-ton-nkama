@@ -14,9 +14,7 @@ export default function PublicLayout({ children }: Readonly<{ children: React.Re
     
     return (
         <main className={cn('', isFullHeightPage && 'lg:overflow-hidden lg:h-screen')}>
-            <div className="md:p-5 sticky top-0 z-50">
-                <Navbar />
-            </div>
+            <Navbar />
             {children}
         </main>
     )

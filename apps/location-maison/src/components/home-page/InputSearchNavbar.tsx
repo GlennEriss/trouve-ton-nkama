@@ -127,27 +127,29 @@ export default function InputSearchNavbar() {
             </div>
         )
     }
-    // Nouveau rendu pour les écrans desktop (>= 1024px)
+    // Nouveau rendu pour les écrans desktop (>= 1280px) : champ et bouton réunis dans une
+    // seule pilule, façon leboncoin — le bouton vit à l'intérieur du champ, pas à côté.
     return (
-        <div className="flex items-center gap-3 w-full max-w-xl">
-            {/* Champ de recherche */}
-            <div className="relative w-full">
-                <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500 w-5 h-5" />
-                <Input
-                    value={searchText}
-                    onChange={(e) => setSearchText(e.target.value)}
-                    placeholder="Rechercher…"
-                    className="w-full bg-neutral-100 dark:bg-neutral-900 text-black dark:text-white placeholder:text-gray-500 border-none focus-visible:ring-1 focus-visible:ring-primary/50 dark:focus-visible:ring-secondary/50 min-h-[42px] rounded-full pl-12 shadow-inner"
-                />
-            </div>
-            {/* Bouton de validation */}
+        <div className="flex w-full max-w-xl items-center gap-2 rounded-full border border-gray-200 bg-gray-50 py-1.5 pl-4 pr-1.5 transition-colors focus-within:border-primary focus-within:bg-white dark:border-gray-700 dark:bg-gray-800 dark:focus-within:border-secondary dark:focus-within:bg-gray-900">
+            <Search className="h-[18px] w-[18px] shrink-0 text-gray-400" />
+            <Input
+                value={searchText}
+                onChange={(e) => setSearchText(e.target.value)}
+                placeholder="Rechercher une annonce…"
+                onKeyDown={(e) => {
+                    if (e.key === 'Enter') {
+                        handleSearch();
+                    }
+                }}
+                className="h-9 w-full border-none bg-transparent px-0 text-sm text-black shadow-none placeholder:text-gray-400 focus-visible:ring-0 focus-visible:ring-offset-0 dark:text-white"
+            />
             <button
                 type="button"
                 aria-label="Lancer la recherche"
                 onClick={handleSearch}
-                className="flex h-11 w-11 items-center justify-center rounded-full border border-primary bg-white text-primary transition-colors duration-200 hover:bg-primary hover:text-white dark:bg-neutral-900"
+                className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-primary text-white transition-colors hover:bg-primary-800 dark:bg-secondary dark:text-gray-900 dark:hover:bg-primary-400"
             >
-                <BiSearch className="w-6 h-6" />
+                <BiSearch className="h-[18px] w-[18px]" />
             </button>
         </div>
     )

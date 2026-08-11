@@ -11,6 +11,7 @@ import { usePathname } from "next/navigation";
 import { NavigationMenu, NavigationMenuList, NavigationMenuItem, NavigationMenuLink } from "@/components/ui/navigation-menu"
 import MenuProfil from "@/components/navbar/MenuProfil";
 import Notifications from "@/components/navbar/Notifications";
+import { Plus } from "lucide-react";
 
 export default function Navbar() {
   const { width } = useWindowSize();
@@ -112,23 +113,23 @@ export default function Navbar() {
     );
   }
   return (
-    <div className="rounded-2xl bg-primary-50 dark:bg-gray-900 shadow dark:shadow-gray-900/50 sticky top-0 z-[9999] overflow-hidden">
+    <header className="sticky top-0 z-[9999] border-b border-gray-200 bg-white dark:border-gray-800 dark:bg-gray-900">
       {/* Ligne utilitaire : logo, recherche, compte — toujours la même, quelle que soit la page */}
-      <div className="flex items-center gap-6 px-5 py-3">
+      <div className="container-page flex items-center gap-8 px-6 py-3">
         <LogoWithWordmark />
 
-        <div className="flex-1 flex justify-center min-w-0">
+        <div className="flex min-w-0 flex-1 justify-center">
           {!isProtectedRoute && <InputSearchNavbar />}
         </div>
 
-        <div className="flex items-center gap-4 flex-shrink-0">
+        <div className="flex flex-shrink-0 items-center gap-3">
           {user ? (
-            <div className="flex items-center gap-5">
+            <div className="flex items-center gap-4">
               <Notifications />
               <MenuProfil />
             </div>
           ) : (
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-2">
               <ButtonLogin />
               <ButtonRegister />
             </div>
@@ -137,11 +138,13 @@ export default function Navbar() {
         </div>
       </div>
 
-      {/* Ligne de navigation secondaire : catégories, sur fond teinté */}
-      <div className="border-t border-primary-100 dark:border-gray-800 bg-primary-100/40 dark:bg-gray-800/60 px-5">
-        <NavigationMenuNavbar />
+      {/* Ligne de navigation secondaire : catégories, séparée par un simple filet */}
+      <div className="border-t border-gray-100 dark:border-gray-800">
+        <div className="container-page px-6">
+          <NavigationMenuNavbar />
+        </div>
       </div>
-    </div>
+    </header>
   )
 }
 
@@ -155,19 +158,17 @@ const LogoNavigation = () => {
   )
 }
 
-// Logo + wordmark combinés sur une seule ligne, réservé à la navbar desktop en 2 lignes.
+// Logo + wordmark sur une seule ligne, réservé à la navbar desktop.
 // (LogoNavigation ci-dessus reste icône seule : le bloc "Trouve Ton Nkama" est déjà rendu
 // séparément par la navbar mobile visiteur, qui réutilise LogoNavigation à côté de son propre
 // texte — lui ajouter le wordmark ici créerait un doublon sur cette route.)
 const LogoWithWordmark = () => {
   return (
-    <Link href="/" rel="noopener noreferrer" aria-label="Accueil - Trouve Ton Nkama" className="flex items-center gap-2 flex-shrink-0 hover:opacity-80 transition-opacity">
-      <Logo width="40px" height="40px" />
-      <div className="flex flex-col items-start justify-center leading-none">
-        <span className="text-primary dark:text-secondary font-black text-xs drop-shadow-sm">Trouve</span>
-        <span className="text-primary dark:text-secondary font-black text-xs drop-shadow-sm">Ton</span>
-        <span className="text-primary dark:text-secondary font-black text-xs drop-shadow-sm">Nkama</span>
-      </div>
+    <Link href="/" rel="noopener noreferrer" aria-label="Accueil - Trouve Ton Nkama" className="flex flex-shrink-0 items-center gap-2.5 transition-opacity hover:opacity-80">
+      <Logo width="36px" height="36px" />
+      <span className="whitespace-nowrap text-[15px] font-black leading-none tracking-tight text-primary dark:text-secondary">
+        Trouve Ton Nkama
+      </span>
     </Link>
   )
 }
@@ -176,11 +177,12 @@ const ButtonPostAd = () => {
   return (
     <Button
       variant="ghost"
-      className="h-11 bg-gradient-to-r from-primary via-secondary to-primary text-white border-none rounded-full text-sm px-5 py-3 font-semibold hover:brightness-110 hover:shadow-md transition-all duration-300 hover:scale-105 dark:hover:shadow-secondary/20 whitespace-nowrap"
+      className="h-10 whitespace-nowrap rounded-full bg-primary px-5 text-sm font-semibold text-white transition-colors hover:bg-primary-800 dark:bg-secondary dark:text-gray-900 dark:hover:bg-primary-400"
       asChild
     >
       <Link href={routes.protected.publish}>
-        + Poster une annonce
+        <Plus className="mr-1.5 h-4 w-4" strokeWidth={2.5} />
+        Poster une annonce
       </Link>
     </Button>
   )
@@ -190,7 +192,7 @@ const ButtonLogin = () => {
   return (
     <Button
       variant="ghost"
-      className="h-11 text-primary dark:text-secondary rounded-full text-sm px-4 py-3 font-semibold hover:bg-primary/5 dark:hover:bg-secondary/10 transition-all duration-300 whitespace-nowrap"
+      className="h-10 whitespace-nowrap rounded-full px-4 text-sm font-semibold text-gray-700 transition-colors hover:bg-gray-100 hover:text-primary dark:text-gray-200 dark:hover:bg-gray-800 dark:hover:text-secondary"
       asChild
     >
       <Link href={routes.public.signin}>
@@ -204,7 +206,7 @@ const ButtonRegister = () => {
   return (
     <Button
       variant="outline"
-      className="h-11 text-primary dark:text-secondary border border-primary dark:border-secondary rounded-full text-sm px-5 py-3 font-semibold hover:bg-primary/5 dark:hover:bg-secondary/5 transition-all duration-300 whitespace-nowrap"
+      className="h-10 whitespace-nowrap rounded-full border border-gray-300 px-5 text-sm font-semibold text-gray-800 transition-colors hover:border-primary hover:bg-transparent hover:text-primary dark:border-gray-600 dark:text-gray-100 dark:hover:border-secondary dark:hover:text-secondary"
       asChild>
       <Link href={routes.public.signup}>
         S'inscrire
@@ -245,10 +247,10 @@ const NavigationMenuNavbar = () => {
   return (
     <NavigationMenu>
       <NavigationMenuList>
-        <NavigationMenuItem className="space-x-5">
+        <NavigationMenuItem className="space-x-6">
           {menu.map((item) => (
             <NavigationMenuLink
-              className="text-[13px] py-2 inline-block text-primary/80 dark:text-secondary/80 font-semibold hover:text-primary dark:hover:text-secondary transition-colors duration-200"
+              className="inline-block py-2.5 text-[13px] font-medium text-gray-600 transition-colors hover:text-primary dark:text-gray-300 dark:hover:text-secondary"
               key={item.label}
               href={item.link}
             >
