@@ -79,6 +79,14 @@ function fillValidForm() {
 
 const submitButton = () => screen.getByRole('button', { name: /Publier ma recherche —/ })
 
+// toLocaleString('fr-FR') separe les milliers par une espace fine insecable
+// (U+202F) : on normalise les deux cotes pour comparer le montant affiche.
+const normalizeSpaces = (value: string) => value.replace(/\s/g, ' ')
+const expectAmountOnButton = (amountXaf: number) =>
+  expect(normalizeSpaces(submitButton().textContent ?? '')).toContain(
+    normalizeSpaces(`${amountXaf.toLocaleString('fr-FR')} FCFA`),
+  )
+
 describe('SearchRequestForm', () => {
   beforeEach(() => {
     jest.clearAllMocks()
@@ -89,7 +97,7 @@ describe('SearchRequestForm', () => {
     it('affiche le formulaire et son tarif de base', () => {
       render(<SearchRequestForm />)
       expect(screen.getByText('Décrivez exactement ce que vous cherchez')).toBeInTheDocument()
-      expect(submitButton()).toHaveTextContent(`${(500).toLocaleString('fr-FR')} FCFA`)
+      expectAmountOnButton(500)
     })
 
     it('desactive la soumission tant que le formulaire est vide', () => {
@@ -144,7 +152,7 @@ describe('SearchRequestForm', () => {
     it('ajoute le supplement au montant a payer', () => {
       render(<SearchRequestForm />)
       fireEvent.click(screen.getByLabelText('Booster ma demande'))
-      expect(submitButton()).toHaveTextContent(`${(2000).toLocaleString('fr-FR')} FCFA`)
+      expectAmountOnButton(2000)
     })
   })
 
