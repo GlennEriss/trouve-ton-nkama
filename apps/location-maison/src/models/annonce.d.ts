@@ -43,6 +43,15 @@ export type Property = Location & ICreation & {
     createdBy?: string,
     status: StatusProperty,
     contact?: string //Propriété tampon
+    // Overrides optionnels : si absents, WhatsApp et Appel retombent tous les
+    // deux sur `contact` (comportement historique, annonces existantes non
+    // affectées) — voir ContactSection.tsx / PreviewPropertyMobile.tsx.
+    whatsappContact?: string
+    callContact?: string
+    // Numéros au-delà du principal (annonces avec plusieurs contacts —
+    // propriétaire/agent/membre de la famille, etc.) — chacun affiché avec sa
+    // propre paire de boutons WhatsApp/Appel dans ContactSection.tsx.
+    additionalContacts?: string[]
     isOwner?: boolean
 
     // Auto-attribution annonceur (Lot 4b) : rattachement par numéro de téléphone

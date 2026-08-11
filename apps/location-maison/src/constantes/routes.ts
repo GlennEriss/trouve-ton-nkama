@@ -6,6 +6,7 @@ export const routes = {
     protected: {
         properties: '/property',
         add_property: '/property/add',
+        add_property_ai: '/property/create',
         publish: '/publish',
         reels: '/reels',
         reels_mine: '/reels/mine',

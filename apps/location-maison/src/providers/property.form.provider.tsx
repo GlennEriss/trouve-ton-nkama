@@ -137,6 +137,9 @@ export const PropertyFormComponentProvider = ({ children, isUpdate, propertyToUp
             countryCode: 'GA',
             // Définir le contact directement dans les defaultValues
             contact: user?.phoneNumbers?.[0] || '',
+            whatsappContact: '',
+            callContact: '',
+            additionalContacts: [],
         }
 
         // Si on met à jour une propriété existante, utiliser ses valeurs

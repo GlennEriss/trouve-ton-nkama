@@ -118,6 +118,9 @@ export const PropertySchemaBase = z.object({
   districtPlaceId: z.string().optional(),
   locationSource: z.enum(["OFFICIAL_CATALOG", "GOOGLE_PLACES", "GPS", "LEGACY", "UNVERIFIED"]),
   contact: z.string().min(1, "Le numéro de téléphone est obligatoire"),
+  whatsappContact: z.string().optional(),
+  callContact: z.string().optional(),
+  additionalContacts: z.array(z.string().min(1)).max(5, "5 numéros supplémentaires maximum").optional(),
   additionnalInformation: z.string().optional(),
   longitude: z
     .number()

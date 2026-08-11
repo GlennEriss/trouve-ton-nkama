@@ -21,7 +21,7 @@ export default function PublishChoiceClient() {
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 items-stretch">
-        <Link href={routes.protected.add_property} className="block h-full">
+        <Link href={routes.protected.add_property_ai} className="block h-full">
           <Card className="h-full flex flex-col items-center justify-center gap-3 p-8 text-center cursor-pointer hover:border-emerald-500 hover:shadow-md transition-all">
             <Building2 className="h-10 w-10 text-emerald-600" />
             <div>
