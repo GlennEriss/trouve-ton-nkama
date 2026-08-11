@@ -25,6 +25,7 @@ export {
 // Fonctions de paiement
 export { initiatePurchase, mypaygaPaymentCallback } from './payments/mypayga';
 export { initiateGiftPayment, giftPaymentCallback } from './payments/gifts';
+export { initiateSearchRequestPayment, searchRequestPaymentCallback } from './payments/search-requests';
 export { createCreditPayment } from './credit-payment';
 
 // Fonctions d'email

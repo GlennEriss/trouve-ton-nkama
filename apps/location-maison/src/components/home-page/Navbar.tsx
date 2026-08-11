@@ -226,6 +226,10 @@ const NavigationMenuNavbar = () => {
       label: "Catalogue"
     },
     {
+      link: routes.public.search_requests,
+      label: "Demandes"
+    },
+    {
       link: routes.protected.reels,
       label: "Réels"
     },

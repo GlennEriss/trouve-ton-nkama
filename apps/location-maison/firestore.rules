@@ -167,6 +167,19 @@ service cloud.firestore {
       allow read, write: if false;
     }
 
+    // Demandes de recherche : publiées par des visiteurs anonymes (pas d'uid),
+    // écrites uniquement par les Cloud Functions (paiement) et les routes admin
+    // (modération) — Admin SDK, bypass ces règles. Contrairement à
+    // gift_transactions (personne ne les parcourt), la page publique
+    // /demandes-recherche lit directement via le SDK client : lecture
+    // conditionnée à moderationStatus == 'APPROVED' pour ne jamais exposer un
+    // brouillon impayé ou en attente (contact WhatsApp, description) avant
+    // validation admin.
+    match /search_requests/{searchRequestId} {
+      allow read: if resource.data.moderationStatus == 'APPROVED';
+      allow create, update, delete: if false;
+    }
+
     match /provinces/{provinceId} {
       allow read: if true;
       allow create, update: if isSignedIn();

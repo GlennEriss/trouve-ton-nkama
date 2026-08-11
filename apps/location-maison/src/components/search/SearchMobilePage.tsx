@@ -16,6 +16,7 @@ import SearchWithAIAccessNoticeDialog from './SearchWithAIAccessNoticeDialog';
 import { useTrackSearchAnalytics } from '@/features/analytics/search/hooks/useTrackSearchAnalytics';
 import SponsoredSlot from '@/components/ads/SponsoredSlot';
 import { ADSENSE_SLOTS } from '@/lib/ads/config';
+import { buildSearchRequestPrefillUrl } from '@/lib/search-request-prefill';
 
 export default function SearchMobilePage() {
     const { trackEvent } = useTrackEvent()
@@ -283,6 +284,12 @@ export default function SearchMobilePage() {
                         ) : items.length === 0 ? (
                             <div className="text-center py-8">
                                 <p className="text-gray-600 dark:text-gray-300">Aucun résultat trouvé</p>
+                                <Link
+                                    href={buildSearchRequestPrefillUrl(searchParams)}
+                                    className="mt-4 inline-flex min-h-11 items-center rounded-full border border-secondary px-5 py-2 text-sm font-semibold text-secondary hover:bg-secondary/5"
+                                >
+                                    Publier ma recherche
+                                </Link>
                             </div>
                         ) : (
                             <>

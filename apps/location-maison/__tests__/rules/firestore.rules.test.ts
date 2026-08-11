@@ -491,3 +491,58 @@ describe('firestore.rules finances et collections serveur', () => {
     await assertFails(setDoc(doc(authedDb('announcer'), 'idempotency_keys/key-2'), { status: 'completed' }))
   })
 })
+
+describe('firestore.rules search_requests', () => {
+  it('autorise la lecture publique anonyme seulement pour les demandes APPROVED', async () => {
+    await seed('search_requests/approved', {
+      moderationStatus: 'APPROVED',
+      paymentStatus: 'confirmed',
+      whatsappContact: '074123456',
+    })
+    await seed('search_requests/pending', {
+      moderationStatus: 'PENDING',
+      paymentStatus: 'confirmed',
+      whatsappContact: '074123456',
+    })
+    await seed('search_requests/draft', {
+      moderationStatus: null,
+      paymentStatus: 'pending_confirmation',
+      whatsappContact: '074123456',
+    })
+
+    await assertSucceeds(getDoc(doc(anonDb(), 'search_requests/approved')))
+    await assertFails(getDoc(doc(anonDb(), 'search_requests/pending')))
+    await assertFails(getDoc(doc(anonDb(), 'search_requests/draft')))
+    // Même un compte connecté (annonceur) n'a pas de lecture directe sur une
+    // demande non approuvée : seul l'Admin SDK (Cloud Function, routes admin)
+    // y accède, avant modération.
+    await assertFails(getDoc(doc(authedDb('announcer'), 'search_requests/pending')))
+  })
+
+  it('bloque toute ecriture client, connecte ou non', async () => {
+    await seed('search_requests/existing', {
+      moderationStatus: 'APPROVED',
+      paymentStatus: 'confirmed',
+      whatsappContact: '074123456',
+    })
+
+    await assertFails(
+      setDoc(doc(anonDb(), 'search_requests/new-anon'), {
+        moderationStatus: null,
+        paymentStatus: 'pending_confirmation',
+      }),
+    )
+    await assertFails(
+      setDoc(doc(authedDb('announcer'), 'search_requests/new-authed'), {
+        moderationStatus: null,
+        paymentStatus: 'pending_confirmation',
+      }),
+    )
+    await assertFails(
+      updateDoc(doc(authedDb('announcer'), 'search_requests/existing'), {
+        moderationStatus: 'REJECTED',
+      }),
+    )
+    await assertFails(deleteDoc(doc(authedDb('announcer'), 'search_requests/existing')))
+  })
+})
