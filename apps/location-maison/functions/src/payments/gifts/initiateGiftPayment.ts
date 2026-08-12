@@ -61,7 +61,7 @@ export const initiateGiftPayment = onRequest({ secrets: MYPAYGA_SECRETS }, async
     res.status(400).json({
       success: false,
       error: 'invalid_phone',
-      message: 'Numéro invalide pour ce réseau (Airtel: 074/077, Moov: 062/065/066, suivis de 6 chiffres).',
+      message: 'Numéro invalide pour ce réseau (Airtel: 074/076/077, Moov: 062/065/066, suivis de 6 chiffres).',
     })
     return
   }

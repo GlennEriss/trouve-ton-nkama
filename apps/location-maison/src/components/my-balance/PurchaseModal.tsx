@@ -82,7 +82,7 @@ export default function PurchaseModal({ isOpen, onClose, preselectedPack }: Read
   const isPhoneValid = isPhoneValidForNetwork(phoneNumber, network)
 
   // Met à jour le numéro et bascule automatiquement le réseau si le préfixe
-  // correspond clairement à l'autre opérateur (074/077 = Airtel, 062/065/066 = Moov).
+  // correspond clairement à l'autre opérateur (074/076/077 = Airtel, 062/065/066 = Moov).
   const handlePhoneChange = (value: string) => {
     setPhoneNumber(value)
     const detected = detectNetworkFromPhone(value)
@@ -272,7 +272,7 @@ export default function PurchaseModal({ isOpen, onClose, preselectedPack }: Read
                 </div>
                 {phoneNumber.trim() && !isPhoneValid ? (
                   <p className="text-xs text-red-600 dark:text-red-400">
-                    Numéro invalide. Airtel Money : 074/077 — Moov Money : 062/065/066, suivis de 6 chiffres.
+                    Numéro invalide. Airtel Money : 074/076/077 — Moov Money : 062/065/066, suivis de 6 chiffres.
                   </p>
                 ) : (
                   <p className="text-xs text-gray-500 dark:text-gray-400">

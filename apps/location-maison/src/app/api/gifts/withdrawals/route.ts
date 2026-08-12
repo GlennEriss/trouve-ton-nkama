@@ -49,7 +49,7 @@ export async function POST(request: NextRequest) {
       return jsonApiError(
         400,
         'INVALID_PHONE',
-        'Numéro invalide pour ce réseau (Airtel : 074/077 — Moov : 062/065/066).'
+        'Numéro invalide pour ce réseau (Airtel : 074/076/077 — Moov : 062/065/066).'
       );
     }
 
