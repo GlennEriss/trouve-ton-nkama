@@ -7,8 +7,8 @@ import {
     DialogHeader,
     DialogTitle,
     DialogTrigger,
-} from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
+} from "@trouve-ton-nkama/ui/dialog";
+import { Button } from "@trouve-ton-nkama/ui/button";
 import { ChevronLeft, SlidersHorizontal } from "lucide-react";
 import { statusOptions } from "@/constantes";
 import { DialogDescription } from "@radix-ui/react-dialog";
@@ -17,7 +17,7 @@ import { FormFilterSchema, FormFilterSchemaType } from "@/models/schema";
 import { FormProvider, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useFormFilterSearchMediator } from "@/hooks/useFormFilterSearchMediator";
-import { Form } from "../ui/form";
+import { Form } from '@/components/ui/form';
 import SelectProvince from "../search/SelectProvince";
 import SelectCity from "../search/SelectCity";
 import SelectStreet from "../search/SelectStreet";

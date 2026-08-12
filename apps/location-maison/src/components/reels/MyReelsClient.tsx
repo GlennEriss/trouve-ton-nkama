@@ -21,10 +21,10 @@ import {
 } from 'lucide-react'
 import { useCurrentUser } from '@/hooks/use-current-user'
 import { deleteReel, getReelsByOwner } from '@/db/reel.db'
-import { Card } from '@/components/ui/card'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Skeleton } from '@/components/ui/skeleton'
+import { Card } from '@trouve-ton-nkama/ui/card'
+import { Button } from '@trouve-ton-nkama/ui/button'
+import { Input } from '@trouve-ton-nkama/ui/input'
+import { Skeleton } from '@trouve-ton-nkama/ui/skeleton'
 import {
   Dialog,
   DialogContent,
@@ -32,7 +32,7 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from '@/components/ui/dialog'
+} from '@trouve-ton-nkama/ui/dialog'
 import { cn } from '@/lib/utils'
 import { routes } from '@/constantes/routes'
 import { useToast } from '@/hooks/use-toast'

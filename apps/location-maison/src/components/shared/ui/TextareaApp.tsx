@@ -1,6 +1,6 @@
 import { LucideIcon } from 'lucide-react'
 import React from 'react'
-import { Textarea } from '@/components/ui/textarea'
+import { Textarea } from '@trouve-ton-nkama/ui/textarea'
 
 export type TextareaAppProps = {
     IconLucide?: LucideIcon

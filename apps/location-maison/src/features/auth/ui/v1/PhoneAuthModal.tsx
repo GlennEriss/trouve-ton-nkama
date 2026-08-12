@@ -18,9 +18,9 @@ import {
   DialogDescription,
   DialogHeader,
   DialogTitle,
-} from '@/components/ui/dialog';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
+} from '@trouve-ton-nkama/ui/dialog';
+import { Button } from '@trouve-ton-nkama/ui/button';
+import { Input } from '@trouve-ton-nkama/ui/input';
 import { routes } from '@/constantes/routes';
 import { usePhoneOtpAuth } from '@/features/auth/hooks/usePhoneOtpAuth';
 

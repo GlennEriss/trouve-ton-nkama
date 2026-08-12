@@ -5,7 +5,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import queryKeys from '@/constantes/react-query-keys';
 import { CgTrashEmpty } from 'react-icons/cg';
 import { GrCircleInformation } from 'react-icons/gr';
-import { Button } from '../ui/button';
+import { Button } from '@trouve-ton-nkama/ui/button';
 import { deleteProperty } from '@/db/property.db';
 import { useRouter } from 'next/navigation';
 import { invalidatePropertyCountCache } from '@/lib/invalidate-property-count-cache';

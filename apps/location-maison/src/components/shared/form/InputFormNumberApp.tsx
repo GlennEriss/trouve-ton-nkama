@@ -1,7 +1,7 @@
 import React from 'react'
 import { Control, FieldValues, Path } from 'react-hook-form'
 import { FormField, FormItem, FormLabel, FormMessage, FormControl } from '@/components/ui/form'
-import { NumberInputRHF } from '../ui/NumberInputRHF';
+import { NumberInputRHF } from '@/components/shared/ui/NumberInputRHF';
 
 interface InputFormNumberAppProps<T extends FieldValues = any> {
     control: Control<T>;

@@ -5,7 +5,7 @@ import DataDeletionMobilePage from "@/components/data-deletion/DataDeletionMobil
 import { routes } from "@/constantes/routes";
 import { useWindowSize } from "@/hooks/useSize";
 import Image from "next/image";
-import { Card, CardContent } from "@/components/ui/card";
+import { Card, CardContent } from "@trouve-ton-nkama/ui/card";
 import { AlertTriangle, Mail } from "lucide-react";
 
 export default function DataDeletionClientPage() {

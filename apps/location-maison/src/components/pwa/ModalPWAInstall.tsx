@@ -8,7 +8,7 @@ import {
   DialogTitle,
   DialogDescription,
   DialogFooter,
-} from '@/components/ui/dialog';
+} from '@trouve-ton-nkama/ui/dialog';
 import { Download } from 'lucide-react';
 import { usePWAInstall } from '@/providers/PWAInstallProvider';
 

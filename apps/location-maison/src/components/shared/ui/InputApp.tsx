@@ -1,4 +1,4 @@
-import { Input } from '@/components/ui/input'
+import { Input } from '@trouve-ton-nkama/ui/input'
 import { LucideIcon, Eye, EyeOff } from 'lucide-react'
 import React, { useState } from 'react'
 import { useInheritedFormControl } from './InheritedFormControl'

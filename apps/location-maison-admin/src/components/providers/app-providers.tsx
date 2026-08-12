@@ -16,7 +16,7 @@ export function AppProviders({ children }: AppProvidersProps) {
 
   return (
     <QueryClientProvider client={queryClient}>
-      <TooltipProvider delay={120}>{children}</TooltipProvider>
+      <TooltipProvider delayDuration={120}>{children}</TooltipProvider>
       <ReactQueryDevtools initialIsOpen={false} />
     </QueryClientProvider>
   );

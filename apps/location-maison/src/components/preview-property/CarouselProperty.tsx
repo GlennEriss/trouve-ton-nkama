@@ -1,7 +1,7 @@
 'use client'
 import React, { useState } from 'react'
 import Image from 'next/image'
-import { Carousel, CarouselContent, CarouselItem, CarouselPrevious, CarouselNext } from '../ui/carousel'
+import { Carousel, CarouselContent, CarouselItem, CarouselPrevious, CarouselNext } from '@trouve-ton-nkama/ui/carousel'
 import { ChevronLeft, ChevronRight, ImageOff, X } from 'lucide-react'
 import { useSwipeable } from 'react-swipeable'
 

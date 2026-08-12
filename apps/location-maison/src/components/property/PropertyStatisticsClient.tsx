@@ -8,7 +8,7 @@ import { useProperty } from '@/hooks/use-property';
 import PropertyStatisticsPanel from './PropertyStatisticsPanel';
 import { ArrowLeft, Loader2, BarChart3, Sparkles, Home } from 'lucide-react';
 import Link from 'next/link';
-import { Button } from '@/components/ui/button';
+import { Button } from '@trouve-ton-nkama/ui/button';
 import { cn } from '@/lib/utils';
 
 interface PropertyStatisticsClientProps {

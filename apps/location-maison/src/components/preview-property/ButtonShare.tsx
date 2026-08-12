@@ -1,7 +1,7 @@
 'use client'
 import { Property } from '@/models/annonce'
 import React, { useState } from 'react'
-import { Button } from '../ui/button'
+import { Button } from '@trouve-ton-nkama/ui/button'
 import { Share2 } from 'lucide-react'
 import ButtonShareToWhatsapp from './ButtonShareToWhatsapp'
 import ButtonShareToFacebook from './ButtonShareToFacebook'

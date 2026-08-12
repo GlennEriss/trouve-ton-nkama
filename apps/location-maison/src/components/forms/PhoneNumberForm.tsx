@@ -1,5 +1,5 @@
 import React from 'react'
-import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from '../ui/form'
+import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form'
 import { PhoneInput } from '../ui/phone-input'
 import { FieldValues, UseFormReturn, Path } from 'react-hook-form'
 import { cn } from '@/lib/utils'

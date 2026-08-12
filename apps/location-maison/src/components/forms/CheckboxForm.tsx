@@ -1,6 +1,6 @@
 import React, { ReactNode } from 'react'
-import { FormField, FormItem, FormControl, FormLabel, FormDescription, FormMessage } from '../ui/form'
-import { Checkbox } from '../ui/checkbox'
+import { FormField, FormItem, FormControl, FormLabel, FormDescription, FormMessage } from '@/components/ui/form'
+import { Checkbox } from '@trouve-ton-nkama/ui/checkbox'
 import { UseFormReturn, Path, FieldValues } from 'react-hook-form'
 import { cn } from '@/lib/utils'
 

@@ -1,7 +1,7 @@
 import React from 'react'
-import { FormField, FormItem, FormLabel, FormControl, FormDescription, FormMessage } from '../ui/form'
+import { FormField, FormItem, FormLabel, FormControl, FormDescription, FormMessage } from '@/components/ui/form'
 import { FieldValues, Path, UseFormReturn } from 'react-hook-form';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../ui/select';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@trouve-ton-nkama/ui/select';
 import { OptionType } from '@/models/OptionType';
 
 type SelectFormProps<T extends FieldValues> = {

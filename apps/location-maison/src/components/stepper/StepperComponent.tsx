@@ -1,7 +1,7 @@
 'use client'
 import React from 'react'
 import { steps, usePropertyFormComponentContext } from '@/providers/property.form.provider'
-import { Separator } from '../ui/separator'
+import { Separator } from '@trouve-ton-nkama/ui/separator'
 import clsx from 'clsx'
 import { AiOutlineCheck } from 'react-icons/ai'
 

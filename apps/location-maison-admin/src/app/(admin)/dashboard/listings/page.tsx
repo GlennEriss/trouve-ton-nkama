@@ -1102,7 +1102,7 @@ export default function ListingsDashboardPage() {
           </div>
 
           <DialogFooter>
-            <DialogClose render={<Button type="button" variant="outline">Annuler</Button>} />
+            <DialogClose asChild><Button type="button" variant="outline">Annuler</Button></DialogClose>
             <Button type="button" disabled={isSubmittingReason} onClick={() => void onConfirmReason()}>
               {reasonDialogMeta.confirmLabel || "Confirmer"}
             </Button>

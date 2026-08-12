@@ -1,6 +1,6 @@
 'use client'
 import React from 'react'
-import { CardTitle } from '../ui/card'
+import { CardTitle } from '@trouve-ton-nkama/ui/card'
 import { useCrudContext } from '@/providers/crud.provider'
 
 export default function TitleCrudComponent() {

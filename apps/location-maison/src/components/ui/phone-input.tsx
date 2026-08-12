@@ -4,7 +4,7 @@ import * as RPNInput from "react-phone-number-input";
 import PhoneNumberInput from "react-phone-number-input";
 import flags from "react-phone-number-input/flags";
 
-import { Button } from "@/components/ui/button";
+import { Button } from "@trouve-ton-nkama/ui/button";
 import {
     Command,
     CommandEmpty,
@@ -12,14 +12,14 @@ import {
     CommandInput,
     CommandItem,
     CommandList,
-} from "@/components/ui/command";
-import { Input } from "@/components/ui/input";
+} from "@trouve-ton-nkama/ui/command";
+import { Input } from "@trouve-ton-nkama/ui/input";
 import {
     Popover,
     PopoverContent,
     PopoverTrigger,
-} from "@/components/ui/popover";
-import { ScrollArea } from "@/components/ui/scroll-area";
+} from "@trouve-ton-nkama/ui/popover";
+import { ScrollArea } from "@trouve-ton-nkama/ui/scroll-area";
 import { cn } from "@/lib/utils";
 import { getEnabledCountries, isCountryEnabled } from "@/lib/phoneValidation";
 

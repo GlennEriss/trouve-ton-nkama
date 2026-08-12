@@ -4,7 +4,7 @@ import { LayoutAuth } from '../layouts/LayoutAuth'
 import { zodResolver } from '@hookform/resolvers/zod';
 import { FormLoginSchema, FormLoginSchemaType } from '@/models/schema';
 import { useForm } from 'react-hook-form';
-import { Form } from '../ui/form';
+import { Form } from '@/components/ui/form';
 import { InputForm } from '../forms/InputForm';
 import Link from 'next/link';
 import { ButtonLoading } from '../buttons/ButtonLoading';

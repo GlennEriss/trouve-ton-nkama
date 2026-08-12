@@ -1,6 +1,6 @@
 import React from 'react';
 import { cn } from '@/lib/utils';
-import { Button } from '@/components/ui/button';
+import { Button } from '@trouve-ton-nkama/ui/button';
 import { Minus, Plus } from 'lucide-react';
 
 export interface NumberInputRHFProps extends Omit<React.InputHTMLAttributes<HTMLInputElement>, 'onChange' | 'value'> {

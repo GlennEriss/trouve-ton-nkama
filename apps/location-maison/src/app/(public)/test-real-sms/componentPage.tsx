@@ -1,11 +1,11 @@
 "use client"
 import React, { useRef, useState } from "react";
 import { useRouter } from "next/navigation";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Separator } from "@/components/ui/separator";
+import { Button } from "@trouve-ton-nkama/ui/button";
+import { Input } from "@trouve-ton-nkama/ui/input";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@trouve-ton-nkama/ui/card";
+import { Badge } from "@trouve-ton-nkama/ui/badge";
+import { Separator } from "@trouve-ton-nkama/ui/separator";
 import { useToast } from "@/hooks/use-toast";
 import { Phone, MessageSquare, CheckCircle, XCircle, AlertCircle, Loader2, RefreshCw, Clock } from "lucide-react";
 import { auth } from "@/firebase/auth";

@@ -1,7 +1,7 @@
-import { Input } from '@/components/ui/input'
+import { Input } from '@trouve-ton-nkama/ui/input'
 import React from 'react'
 import { cn } from '@/lib/utils'
-import { Button } from '@/components/ui/button'
+import { Button } from '@trouve-ton-nkama/ui/button'
 import { Minus, Plus, LucideIcon } from 'lucide-react'
 import { useInheritedFormControl } from './InheritedFormControl'
 

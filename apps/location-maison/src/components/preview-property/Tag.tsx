@@ -1,5 +1,5 @@
 import React from 'react'
-import { Badge } from '../ui/badge'
+import { Badge } from '@trouve-ton-nkama/ui/badge'
 import { nameToColorHex } from '@/lib/generateColorFromName'
 
 export default function Tag({name}: Readonly<{name: string}>) {

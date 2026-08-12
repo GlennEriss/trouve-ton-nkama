@@ -1069,7 +1069,7 @@ export default function GeolocationDashboardPage() {
           ) : null}
 
           <DialogFooter>
-            <DialogClose render={<Button type="button" variant="outline">Annuler</Button>} />
+            <DialogClose asChild><Button type="button" variant="outline">Annuler</Button></DialogClose>
             <Button type="button" onClick={() => void handleEditSubmit()} disabled={isMutating}>
               Enregistrer
             </Button>
@@ -1090,7 +1090,7 @@ export default function GeolocationDashboardPage() {
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>
-            <DialogClose render={<Button type="button" variant="outline">Annuler</Button>} />
+            <DialogClose asChild><Button type="button" variant="outline">Annuler</Button></DialogClose>
             <Button type="button" onClick={() => void handleDeleteConfirm()} disabled={isMutating}>
               Supprimer
             </Button>

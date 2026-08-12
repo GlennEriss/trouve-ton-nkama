@@ -2,7 +2,7 @@
 import { useAlgoliaContext } from '@/providers/AlgoliaContext';
 import React from 'react'
 import { Search, MapPin } from 'lucide-react';
-import { Input } from '../ui/input';
+import { Input } from '@trouve-ton-nkama/ui/input';
 import Form from 'next/form'
 import Link from 'next/link';
 import { routes } from '@/constantes/routes';

@@ -1,7 +1,7 @@
 'use client'
 import { useWindowSize } from '@/hooks/useSize'
 import React from 'react'
-import { Skeleton } from '../ui/skeleton'
+import { Skeleton } from '@trouve-ton-nkama/ui/skeleton'
 import { RiHeart3Line } from 'react-icons/ri';
 import { GoLocation } from 'react-icons/go';
 

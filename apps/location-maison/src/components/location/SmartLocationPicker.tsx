@@ -1,11 +1,11 @@
 'use client'
 
 import React from 'react'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
-import { Card, CardContent } from '@/components/ui/card'
-import { Badge } from '@/components/ui/badge'
-import { Button } from '@/components/ui/button'
+import { Input } from '@trouve-ton-nkama/ui/input'
+import { Label } from '@trouve-ton-nkama/ui/label'
+import { Card, CardContent } from '@trouve-ton-nkama/ui/card'
+import { Badge } from '@trouve-ton-nkama/ui/badge'
+import { Button } from '@trouve-ton-nkama/ui/button'
 import { 
   MapPin, 
   Home, 

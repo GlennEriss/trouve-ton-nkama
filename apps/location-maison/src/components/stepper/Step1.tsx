@@ -1,7 +1,7 @@
 'use client'
 import { FormElement } from '@/builders/property-form/property.form.builder'
 import React from 'react'
-import { FormField, FormItem, FormLabel, FormControl, FormDescription, FormMessage } from '../ui/form'
+import { FormField, FormItem, FormLabel, FormControl, FormDescription, FormMessage } from '@/components/ui/form'
 import { usePropertyFormComponentContext } from '@/providers/property.form.provider'
 import clsx from 'clsx'
 

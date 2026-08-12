@@ -15,8 +15,8 @@ import {
   Wallet,
 } from 'lucide-react'
 
-import { Button } from '@/components/ui/button'
-import { Card } from '@/components/ui/card'
+import { Button } from '@trouve-ton-nkama/ui/button'
+import { Card } from '@trouve-ton-nkama/ui/card'
 import { routes } from '@/constantes/routes'
 import { useCurrentUser } from '@/hooks/use-current-user'
 import { cn } from '@/lib/utils'

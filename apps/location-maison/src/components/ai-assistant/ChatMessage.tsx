@@ -2,8 +2,8 @@
 
 import React from 'react';
 import { Bot, User, AlertCircle } from 'lucide-react';
-import { Avatar, AvatarFallback } from '@/components/ui/avatar';
-import { Badge } from '@/components/ui/badge';
+import { Avatar, AvatarFallback } from '@trouve-ton-nkama/ui/avatar';
+import { Badge } from '@trouve-ton-nkama/ui/badge';
 
 export interface Message {
   id: string;

@@ -3,7 +3,7 @@
 import * as React from 'react'
 import { Check, ChevronsUpDown, MapPin } from 'lucide-react'
 import { cn } from '@/lib/utils'
-import { Button } from '@/components/ui/button'
+import { Button } from '@trouve-ton-nkama/ui/button'
 import {
   Command,
   CommandEmpty,
@@ -11,12 +11,12 @@ import {
   CommandInput,
   CommandItem,
   CommandList,
-} from '@/components/ui/command'
+} from '@trouve-ton-nkama/ui/command'
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
-} from '@/components/ui/popover'
+} from '@trouve-ton-nkama/ui/popover'
 import { useOSMLocations } from '@/hooks/useOSMLocations'
 import { useFormContext } from 'react-hook-form'
 

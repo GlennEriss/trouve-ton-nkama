@@ -1,13 +1,13 @@
 "use client";
 
-import { Button } from "@/components/ui/button";
+import { Button } from "@trouve-ton-nkama/ui/button";
 import {
   Dialog,
   DialogContent,
   DialogPortal,
   DialogTrigger,
   DialogTitle,
-} from "@/components/ui/dialog";
+} from "@trouve-ton-nkama/ui/dialog";
 import { ChevronLeft } from "lucide-react";
 import { useState } from "react";
 

@@ -1,8 +1,8 @@
 'use client';
 
-import { Button } from '@/components/ui/button';
-import { Checkbox } from '@/components/ui/checkbox';
-import { Label } from '@/components/ui/label';
+import { Button } from '@trouve-ton-nkama/ui/button';
+import { Checkbox } from '@trouve-ton-nkama/ui/checkbox';
+import { Label } from '@trouve-ton-nkama/ui/label';
 import { routes } from '@/constantes/routes';
 import { useBecomeAnnouncer } from '@/features/users/become-announcer/hooks';
 import { useCurrentUser } from '@/hooks/use-current-user';

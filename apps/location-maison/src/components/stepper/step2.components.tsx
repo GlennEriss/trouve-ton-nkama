@@ -1,6 +1,6 @@
 import React from 'react'
-import { RadioGroup, RadioGroupItem } from '../ui/radio-group'
-import { FormItem, FormControl, FormLabel } from '../ui/form'
+import { RadioGroup, RadioGroupItem } from '@trouve-ton-nkama/ui/radio-group'
+import { FormItem, FormControl, FormLabel } from '@/components/ui/form'
 import { InputNumberApp } from '../shared/ui/InputNumberApp'
 import { useStep2FormPropertyMediator } from '@/hooks/useStep2FormPropertyMediator'
 import { InputApp } from '../shared/ui/InputApp'

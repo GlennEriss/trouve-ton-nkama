@@ -1,7 +1,7 @@
 'use client'
 
 import React, { useState } from 'react'
-import { Button } from '../ui/button'
+import { Button } from '@trouve-ton-nkama/ui/button'
 import { TrendingUp, Star } from 'lucide-react'
 import { Property } from '@/models/annonce'
 import { PromotionModal } from './PromotionModal'

@@ -1,7 +1,7 @@
 'use client'
 import Link from 'next/link'
 import React from 'react'
-import { Button } from '../ui/button'
+import { Button } from '@trouve-ton-nkama/ui/button'
 import PropertyStatistics from './PropertyStatistics'
 import { PropertyFilter } from './PropertyFilter'
 import ListPropertySection from './ListPropertySection'

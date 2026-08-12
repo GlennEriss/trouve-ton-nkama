@@ -2,9 +2,9 @@
 
 import React, { useState, useEffect, useRef, useCallback } from 'react'
 import { useFormContext } from 'react-hook-form'
-import { Input } from '@/components/ui/input'
-import { Card, CardContent } from '@/components/ui/card'
-import { Badge } from '@/components/ui/badge'
+import { Input } from '@trouve-ton-nkama/ui/input'
+import { Card, CardContent } from '@trouve-ton-nkama/ui/card'
+import { Badge } from '@trouve-ton-nkama/ui/badge'
 import { 
   Search, 
   MapPin, 

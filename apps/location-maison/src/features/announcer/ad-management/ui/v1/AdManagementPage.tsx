@@ -1,7 +1,7 @@
 'use client';
 
-import { Button } from '@/components/ui/button';
-import { Card } from '@/components/ui/card';
+import { Button } from '@trouve-ton-nkama/ui/button';
+import { Card } from '@trouve-ton-nkama/ui/card';
 import {
   Dialog,
   DialogContent,
@@ -9,10 +9,10 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from '@/components/ui/dialog';
-import { Input } from '@/components/ui/input';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Skeleton } from '@/components/ui/skeleton';
+} from '@trouve-ton-nkama/ui/dialog';
+import { Input } from '@trouve-ton-nkama/ui/input';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@trouve-ton-nkama/ui/select';
+import { Skeleton } from '@trouve-ton-nkama/ui/skeleton';
 import PromotionBadge from '@/components/promotion/PromotionBadge';
 import PromotionButton from '@/components/promotion/PromotionButton';
 import { routes } from '@/constantes/routes';

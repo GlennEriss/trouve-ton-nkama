@@ -4,15 +4,15 @@ import React, { useState } from 'react'
 import dynamic from 'next/dynamic'
 import { useFormContext } from 'react-hook-form'
 import { MapPin, Crosshair, Loader2 } from 'lucide-react'
-import { Label } from '@/components/ui/label'
-import { Button } from '@/components/ui/button'
+import { Label } from '@trouve-ton-nkama/ui/label'
+import { Button } from '@trouve-ton-nkama/ui/button'
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@/components/ui/select'
+} from '@trouve-ton-nkama/ui/select'
 import { useToast } from '@/hooks/use-toast'
 import { useStep3FormPropertyMediator } from '@/hooks/useStep3FormPropertyMediator'
 import { useGooglePlaces, ResolvedPlace } from '@/hooks/google-map/use-google-places'

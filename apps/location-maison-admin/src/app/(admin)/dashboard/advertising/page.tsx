@@ -275,7 +275,9 @@ function NewAdvertiserDialog({ onDone, onError }: { onDone: (m: string) => void;
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger render={<Button variant="outline" size="sm" />}>Nouvel annonceur</DialogTrigger>
+      <DialogTrigger asChild>
+        <Button variant="outline" size="sm">Nouvel annonceur</Button>
+      </DialogTrigger>
       <DialogContent>
         <DialogHeader><DialogTitle>Nouvel annonceur publicitaire</DialogTitle></DialogHeader>
         <div className="space-y-3">
@@ -417,7 +419,9 @@ function NewCampaignDialog({ advertisers, onDone, onError }: { advertisers: Adve
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger render={<Button size="sm" />}>Nouvelle campagne</DialogTrigger>
+      <DialogTrigger asChild>
+        <Button size="sm">Nouvelle campagne</Button>
+      </DialogTrigger>
       <DialogContent className="max-h-[90vh] grid-rows-[auto_minmax(0,1fr)_auto]">
         <DialogHeader><DialogTitle>Nouvelle campagne</DialogTitle></DialogHeader>
         <div className="space-y-3 overflow-y-auto pr-1">
@@ -549,7 +553,9 @@ function RecordPaymentDialog({ campaignId, onDone, onError }: { campaignId: stri
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger render={<Button variant="outline" size="sm" />}>Paiement</DialogTrigger>
+      <DialogTrigger asChild>
+        <Button variant="outline" size="sm">Paiement</Button>
+      </DialogTrigger>
       <DialogContent>
         <DialogHeader><DialogTitle>Enregistrer un paiement (FCFA)</DialogTitle></DialogHeader>
         <div className="space-y-3">
@@ -600,7 +606,9 @@ function EditCampaignDialog({ campaignId, onDone, onError }: { campaignId: strin
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger render={<Button variant="outline" size="sm" />}>Modifier</DialogTrigger>
+      <DialogTrigger asChild>
+        <Button variant="outline" size="sm">Modifier</Button>
+      </DialogTrigger>
       <DialogContent className="max-h-[90vh] grid-rows-[auto_minmax(0,1fr)_auto]">
         <DialogHeader><DialogTitle>Modifier la campagne</DialogTitle></DialogHeader>
         {!open ? null : query.isPending ? (

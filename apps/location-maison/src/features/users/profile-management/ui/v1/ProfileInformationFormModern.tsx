@@ -18,8 +18,8 @@ import { ButtonApp } from '@/components/shared/ui/ButtonApp';
 import { InputFormApp } from '@/components/shared/form/InputFormApp';
 import { PhoneNumberFormAppSimple } from '@/components/shared/form/PhoneNumberFormAppSimple';
 import { SelectFormApp } from '@/components/shared/form/SelectFormApp';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Badge } from '@/components/ui/badge';
+import { Avatar, AvatarFallback, AvatarImage } from '@trouve-ton-nkama/ui/avatar';
+import { Badge } from '@trouve-ton-nkama/ui/badge';
 import {
   ProfileInformationSchema,
   type ProfileInformationSchemaType,

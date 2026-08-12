@@ -1,6 +1,6 @@
 'use client'
 import React from 'react';
-import { Switch } from '../ui/switch';
+import { Switch } from '@trouve-ton-nkama/ui/switch';
 import { useCurrentUser } from '@/hooks/use-current-user';
 import { useSession } from 'next-auth/react';
 import { updateUser } from '@/db/user.db';

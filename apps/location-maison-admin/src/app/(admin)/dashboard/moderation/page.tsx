@@ -293,7 +293,7 @@ export default function ModerationQueuePage() {
           </div>
 
           <DialogFooter>
-            <DialogClose render={<Button type="button" variant="outline">Annuler</Button>} />
+            <DialogClose asChild><Button type="button" variant="outline">Annuler</Button></DialogClose>
             <Button type="button" disabled={isSubmittingReason} onClick={() => void confirmReject()}>
               Confirmer le rejet
             </Button>

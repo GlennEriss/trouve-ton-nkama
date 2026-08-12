@@ -1,5 +1,5 @@
 import React from 'react'
-import { Input } from "@/components/ui/input";
+import { Input } from "@trouve-ton-nkama/ui/input";
 import { Search } from "lucide-react";
 import { BiSearch } from "react-icons/bi";
 import { useAlgoliaContext } from '@/providers/AlgoliaContext';

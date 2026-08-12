@@ -51,7 +51,8 @@
   --chart-3: var(--gold);
   --chart-4: var(--success);
   --chart-5: var(--warning);
-  --radius: 0.625rem;
+  /* Aligné sur apps/location-maison (packages/ui/src/tokens) — était 0.625rem. */
+  --radius: 0.5rem;
   --sidebar: #ffffff;
   --sidebar-foreground: #111827;
   --sidebar-primary: var(--primary-700);

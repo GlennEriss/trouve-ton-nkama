@@ -8,9 +8,9 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
+} from "@trouve-ton-nkama/ui/dialog";
+import { Input } from "@trouve-ton-nkama/ui/input";
+import { Button } from "@trouve-ton-nkama/ui/button";
 import { ChevronLeft } from "lucide-react";
 import { BiFilter } from "react-icons/bi";
 import { TypeProperty, getTypePropertyKey } from "@/constantes/property-type";

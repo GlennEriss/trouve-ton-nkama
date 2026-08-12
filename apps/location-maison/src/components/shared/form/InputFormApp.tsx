@@ -1,5 +1,5 @@
 import React from 'react'
-import { InputApp } from '../ui/InputApp'
+import { InputApp } from '@/components/shared/ui/InputApp'
 import { LucideIcon } from 'lucide-react'
 import { FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form'
 import { Control, FieldValues, Path } from 'react-hook-form'

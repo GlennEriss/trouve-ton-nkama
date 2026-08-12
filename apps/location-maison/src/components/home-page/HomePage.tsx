@@ -2,7 +2,7 @@
 
 import React, { useCallback } from "react";
 import { motion } from "framer-motion";
-import { Button } from "@/components/ui/button";
+import { Button } from "@trouve-ton-nkama/ui/button";
 import PropertyCarousel from "../property/PropertyCarousel";
 import { Neighborhood } from "../map/MapComponent";
 import { routes } from "@/constantes/routes";

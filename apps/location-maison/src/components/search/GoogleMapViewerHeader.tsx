@@ -3,7 +3,7 @@
 import React, { useState } from 'react';
 import dynamic from 'next/dynamic';
 import { Search, ChevronDown, X } from 'lucide-react';
-import { Button } from '@/components/ui/button';
+import { Button } from '@trouve-ton-nkama/ui/button';
 import {
   Form,
   FormControl,
@@ -11,7 +11,7 @@ import {
   FormItem,
   FormMessage,
 } from '@/components/ui/form';
-import { Input } from '@/components/ui/input';
+import { Input } from '@trouve-ton-nkama/ui/input';
 import { SearchFormSchemaType } from '@/models/schema';
 import { useFormGoogleLocation } from '@/hooks/google-map/use-form-google-location';
 import { useRouter } from 'next/navigation';

@@ -1,5 +1,5 @@
 import React from "react";
-import Logo from "../logo/Logo";
+import Logo from '@trouve-ton-nkama/ui/logo';
 import Link from "next/link";
 import { routes } from "@/constantes/routes";
 import { signInWithGoogle } from "@/actions/signin-with-google";

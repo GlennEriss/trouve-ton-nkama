@@ -1,6 +1,6 @@
 import { FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form'
-import { Input } from '@/components/ui/input'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+import { Input } from '@trouve-ton-nkama/ui/input'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@trouve-ton-nkama/ui/select'
 import React from 'react'
 import { Control, FieldValues, Path } from 'react-hook-form'
 import { getEnabledCountries, SUPPORTED_COUNTRIES } from '@/lib/phoneValidation'

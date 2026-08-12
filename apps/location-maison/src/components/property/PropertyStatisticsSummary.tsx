@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { Eye, Phone, Share2, ArrowRight } from 'lucide-react';
 import { usePropertyStatistics } from '@/hooks/use-property-statistics';
 import { Property } from '@/models/annonce';
-import { Button } from '@/components/ui/button';
+import { Button } from '@trouve-ton-nkama/ui/button';
 
 interface PropertyStatisticsSummaryProps {
   propertyId: string;

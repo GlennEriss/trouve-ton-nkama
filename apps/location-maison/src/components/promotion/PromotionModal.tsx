@@ -1,9 +1,9 @@
 'use client'
 
 import React, { useState } from 'react'
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '../ui/dialog'
-import { Button } from '../ui/button'
-import { Badge } from '../ui/badge'
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@trouve-ton-nkama/ui/dialog'
+import { Button } from '@trouve-ton-nkama/ui/button'
+import { Badge } from '@trouve-ton-nkama/ui/badge'
 import { Property, PromotionType } from '@/models/annonce'
 import { Megaphone, TrendingUp, ArrowUpCircle, Clock, Coins, CheckCircle2, CreditCard } from 'lucide-react'
 import { cn } from '@/lib/utils'

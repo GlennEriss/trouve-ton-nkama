@@ -2,7 +2,7 @@
 
 import React from 'react'
 import Link from 'next/link'
-import { Form } from '../ui/form'
+import { Form } from '@/components/ui/form'
 import { FormFilterSchemaType } from '@/models/schema';
 import { useForm, FormProvider } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -13,7 +13,7 @@ import SelectStreet from './SelectStreet';
 import MultiSelectFormApp from '../shared/form/MultiSelectFormApp'
 import { statusOptions } from "@/constantes";
 import InputFormNumberApp from '../shared/form/InputFormNumberApp'
-import { Button } from '../ui/button'
+import { Button } from '@trouve-ton-nkama/ui/button'
 import { useFormFilterSearchMediator } from '@/hooks/useFormFilterSearchMediator'
 import { trackingEvents, useTrackEvent } from '@/features/analytics/tracking'
 import { useSearchParams } from 'next/navigation'

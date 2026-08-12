@@ -1,7 +1,7 @@
 'use client'
 
 import React from 'react'
-import { Label } from '@/components/ui/label'
+import { Label } from '@trouve-ton-nkama/ui/label'
 import { ProvinceCombobox } from './combobox/ProvinceCombobox'
 import { CityCombobox } from './combobox/CityCombobox'
 import { QuarterCombobox } from './combobox/QuarterCombobox'

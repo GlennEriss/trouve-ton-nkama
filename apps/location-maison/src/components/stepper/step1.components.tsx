@@ -17,12 +17,12 @@
  */
 
 'use client'
-import { Input } from "../ui/input"
+import { Input } from '@trouve-ton-nkama/ui/input'
 import React from "react"
 import { AiOutlineCamera, AiOutlineCloseCircle } from "react-icons/ai";
 import Image from 'next/image'
-import { Button } from '../ui/button';
-import { FormItem, FormControl, FormLabel } from '../ui/form';
+import { Button } from '@trouve-ton-nkama/ui/button';
+import { FormItem, FormControl, FormLabel } from '@/components/ui/form';
 import { MAX_TAGS } from '@/constantes';
 import { IconType } from 'react-icons/lib';
 import clsx from 'clsx';

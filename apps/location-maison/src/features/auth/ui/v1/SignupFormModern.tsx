@@ -17,7 +17,7 @@ import { useToast } from '@/hooks/use-toast';
 import { FormRegisterSchemaType, FormRegisterSchema } from '@/models/schema';
 import { useSignup } from '../../hooks';
 import { Form } from '@/components/ui/form';
-import { Button } from '@/components/ui/button';
+import { Button } from '@trouve-ton-nkama/ui/button';
 import { routes } from '@/constantes/routes';
 import { InputFormApp } from '@/components/shared/form/InputFormApp';
 import { DateSelect } from '@/components/shared/form/DateSelect';
@@ -25,7 +25,7 @@ import { PhoneNumberFormAppSimple } from '@/components/shared/form/PhoneNumberFo
 import { CheckboxFormApp } from '@/components/shared/form/CheckboxFormApp';
 import { ButtonApp } from '@/components/shared/ui/ButtonApp';
 import { signIn } from 'next-auth/react';
-import Logo from '@/components/logo/Logo';
+import Logo from '@trouve-ton-nkama/ui/logo';
 import {
   User,
   Mail,

@@ -2,14 +2,14 @@
 
 import { useState } from "react";
 import { useWindowSize } from "@/hooks/useSize";
-import Logo from "../logo/Logo";
+import Logo from '@trouve-ton-nkama/ui/logo';
 import { useCurrentUser } from "@/hooks/use-current-user";
 import InputSearchNavbar from "./InputSearchNavbar";
-import { Button } from "@/components/ui/button";
+import { Button } from "@trouve-ton-nkama/ui/button";
 import { routes } from "@/constantes/routes";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { NavigationMenu, NavigationMenuList, NavigationMenuItem, NavigationMenuLink } from "@/components/ui/navigation-menu"
+import { NavigationMenu, NavigationMenuList, NavigationMenuItem, NavigationMenuLink } from "@trouve-ton-nkama/ui/navigation-menu"
 import MenuProfil from "@/components/navbar/MenuProfil";
 import Notifications from "@/components/navbar/Notifications";
 import MobileSidebar from "@/components/navbar/MobileSidebar";

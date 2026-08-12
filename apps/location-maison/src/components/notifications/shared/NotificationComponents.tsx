@@ -1,8 +1,8 @@
 import React from "react";
 import { BellIcon } from "lucide-react";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
+import { Avatar, AvatarFallback, AvatarImage } from "@trouve-ton-nkama/ui/avatar";
+import { Badge } from "@trouve-ton-nkama/ui/badge";
+import { Button } from "@trouve-ton-nkama/ui/button";
 import { cn } from "@/lib/utils";
 import Link from "next/link";
 import { NOTIFICATION_CSS_CLASSES, formatNotificationDate } from "./notification-utils";

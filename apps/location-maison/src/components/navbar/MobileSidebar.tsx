@@ -14,7 +14,7 @@ import Link from "next/link";
 import { X } from "lucide-react";
 import { routes } from "@/constantes/routes";
 import { cn } from "@/lib/utils";
-import Logo from "../logo/Logo";
+import Logo from '@trouve-ton-nkama/ui/logo';
 
 const SIDEBAR_LINKS: Array<{ href: string; label: string; highlight?: boolean }> = [
   { href: routes.public.search_requests, label: "Demandes de recherche", highlight: true },
