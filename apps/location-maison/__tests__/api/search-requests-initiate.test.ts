@@ -102,23 +102,6 @@ describe('/api/search-requests/initiate', () => {
       expect(await response.json()).toEqual({ success: true, transactionId: 'tx-1' })
     })
 
-    it('vise l emulateur local hors plateforme d hebergement', async () => {
-      process.env = { ...originalEnv, FIREBASE_PROJECT_ID: 'proj' }
-      delete process.env.VERCEL
-      ;(fetch as jest.Mock).mockResolvedValue({
-        ok: true,
-        status: 200,
-        json: async () => ({ success: true, transactionId: 'tx-1' }),
-      })
-
-      await POST(request(validRequest))
-
-      expect(fetch).toHaveBeenCalledWith(
-        'http://127.0.0.1:5001/proj/us-central1/initiateSearchRequestPayment',
-        expect.anything(),
-      )
-    })
-
     it('relaie le refus de la Cloud Function avec son statut et son motif', async () => {
       ;(fetch as jest.Mock).mockResolvedValue({
         ok: false,

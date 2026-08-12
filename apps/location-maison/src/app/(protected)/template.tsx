@@ -26,7 +26,13 @@ export default function template({ children }: Readonly<{ children: React.ReactN
 
   return (
     <div className='flex flex-col gap-4 md:py-4 md:px-10 xl:px-20'>
-      <BreadCrumpComponent hideOnMobile={true} />
+      {/* container-page + px-4 md:px-6 : meme systeme de centrage/largeur max que
+          les pages (ex. MyBalanceHistoryComponent) pour que le fil d'Ariane
+          s'aligne exactement avec leur contenu sur grand ecran, au lieu de
+          coller au padding fixe du wrapper. */}
+      <div className="container-page px-4 md:px-6">
+        <BreadCrumpComponent hideOnMobile={true} />
+      </div>
       <main>
         {children}
       </main>

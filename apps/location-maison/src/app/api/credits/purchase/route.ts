@@ -49,10 +49,7 @@ export async function POST(request: NextRequest): Promise<NextResponse<PurchaseR
       return respond({ success: false, message: 'Pack ID et numéro de téléphone requis' }, 400);
     }
 
-    const isLocalEnvironment = !process.env.VERCEL && !process.env.NETLIFY && !process.env.CF_PAGES;
-    const cloudFunctionUrl = isLocalEnvironment
-      ? `http://127.0.0.1:5001/${process.env.FIREBASE_PROJECT_ID}/us-central1/initiatePurchase`
-      : `https://us-central1-${process.env.FIREBASE_PROJECT_ID}.cloudfunctions.net/initiatePurchase`;
+    const cloudFunctionUrl = `https://us-central1-${process.env.FIREBASE_PROJECT_ID}.cloudfunctions.net/initiatePurchase`;
 
     logger.info('Calling credit purchase cloud function', {
       cloudFunctionUrl,
@@ -86,7 +83,7 @@ export async function POST(request: NextRequest): Promise<NextResponse<PurchaseR
       return respond(
         {
           success: false,
-          message: errorData.error ?? "Erreur lors de l'initiation du paiement",
+          message: errorData?.error?.message ?? "Erreur lors de l'initiation du paiement",
           error:
             process.env.NODE_ENV === 'development'
               ? `Cloud Function error: ${cloudFunctionResponse.status}`
