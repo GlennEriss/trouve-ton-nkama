@@ -51,12 +51,15 @@ await page.goto(`${BASE_URL}/my-balance/history`, { waitUntil: 'networkidle', ti
 await page.waitForSelector('text=Historique de crédits', { timeout: 15000 });
 await page.screenshot({ path: '/private/tmp/claude-501/-Users-glenneriss-Documents-projets/e61b1a0e-7843-43f0-a224-c3a476594889/scratchpad/history-after.png', fullPage: false });
 
-// Grab bounding boxes to measure alignment precisely, not just visually.
-const breadcrumbBox = await page.locator('nav[aria-label="breadcrumb"], [data-slot="breadcrumb"]').first().boundingBox().catch(() => null);
-const titleBox = await page.locator('text=Historique de crédits').first().boundingBox().catch(() => null);
-
-console.log('breadcrumbBox', breadcrumbBox);
-console.log('titleBox', titleBox);
+// Compare left edges of every .container-page box on the page (navbar, breadcrumb wrapper,
+// and the my-balance content wrapper) — this is the real alignment axis, not a centered title.
+const boxes = await page.locator('.container-page').evaluateAll((els) =>
+  els.map((el) => {
+    const r = el.getBoundingClientRect();
+    return { x: r.x, width: r.width, snippet: el.textContent.slice(0, 40).trim() };
+  })
+);
+console.log('container-page boxes:', JSON.stringify(boxes, null, 2));
 console.log('console errors', errors);
 
 await browser.close();
