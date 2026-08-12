@@ -4,9 +4,9 @@ import { useCallback, useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Download, RefreshCcw, Search } from "lucide-react";
 
-import { Badge } from "@/components/ui/badge";
+import { Badge } from "@trouve-ton-nkama/ui/badge";
 import { Button } from "@trouve-ton-nkama/ui/button";
-import { Card, CardContent, CardHeader } from "@/components/ui/card";
+import { Card, CardContent, CardHeader } from "@trouve-ton-nkama/ui/card";
 import { Input } from "@trouve-ton-nkama/ui/input";
 import { PageHeader } from "@/components/ui-kit/page-header";
 
@@ -107,7 +107,7 @@ function statusBadge(resultStatus: ResultFilter) {
   if (resultStatus === "without_results") {
     return <Badge variant="warning">Sans résultat</Badge>;
   }
-  return <Badge variant="neutral">En attente</Badge>;
+  return <Badge variant="secondary">En attente</Badge>;
 }
 
 function formatFilters(filters: Record<string, unknown> | null) {

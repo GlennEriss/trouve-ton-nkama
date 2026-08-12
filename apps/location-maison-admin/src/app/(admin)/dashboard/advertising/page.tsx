@@ -5,9 +5,9 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Megaphone, RefreshCcw } from "lucide-react";
 
 import { Button } from "@trouve-ton-nkama/ui/button";
-import { Card, CardContent, CardHeader } from "@/components/ui/card";
+import { Card, CardContent, CardHeader } from "@trouve-ton-nkama/ui/card";
 import { Input } from "@trouve-ton-nkama/ui/input";
-import { Badge } from "@/components/ui/badge";
+import { Badge } from "@trouve-ton-nkama/ui/badge";
 import { PageHeader } from "@/components/ui-kit/page-header";
 import { KpiCard } from "@/components/ui-kit/kpi-card";
 import AdCreativePreview from "@/components/advertising/AdCreativePreview";
@@ -86,14 +86,14 @@ type CampaignsPayload = {
   summary: { active: number; scheduled: number; pendingReview: number; ended: number; totalPaidAmount: number };
 };
 
-const STATUS_BADGE: Record<string, "neutral" | "success" | "warning" | "danger"> = {
+const STATUS_BADGE: Record<string, "secondary" | "success" | "warning" | "destructive"> = {
   active: "success",
-  scheduled: "neutral",
+  scheduled: "secondary",
   pending_review: "warning",
   paused: "warning",
-  ended: "neutral",
-  rejected: "danger",
-  draft: "neutral",
+  ended: "secondary",
+  rejected: "destructive",
+  draft: "secondary",
 };
 
 async function fetchJson<T>(url: string, fallback: string): Promise<T> {
@@ -226,7 +226,7 @@ export default function AdvertisingDashboardPage() {
                 <div className="flex flex-wrap items-center gap-3 text-xs text-slate-500">
                   <span>👁 {c.metrics.impressions} · 🖱 {c.metrics.clicks}</span>
                   <span>{c.billing.paymentStatus === "paid" ? formatXAF(c.billing.amount ?? 0) : "Non payé"}</span>
-                  <Badge variant={STATUS_BADGE[c.status] ?? "neutral"}>{c.status}</Badge>
+                  <Badge variant={STATUS_BADGE[c.status] ?? "secondary"}>{c.status}</Badge>
                   <CampaignActions campaign={c} onDone={(m) => { setMessage(m); invalidate(); }} onError={onError} />
                 </div>
               </CardContent>

@@ -7,6 +7,10 @@ export default {
     "./src/components/**/*.{js,ts,jsx,tsx,mdx}",
     "./src/features/**/*.{js,ts,jsx,tsx,mdx}",
     "./src/app/**/*.{js,ts,jsx,tsx,mdx}",
+    // Composants partagés (@trouve-ton-nkama/ui) : sans cette entrée, les classes
+    // utilisées uniquement là-bas (variants Button, Dialog...) ne sont jamais
+    // générées et les composants s'affichent sans style.
+    "../../packages/ui/src/**/*.{js,ts,jsx,tsx,mdx}",
   ],
   theme: {
   	extend: {

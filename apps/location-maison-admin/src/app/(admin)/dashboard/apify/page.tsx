@@ -4,9 +4,9 @@ import { useCallback, useEffect, useMemo, useRef, useState, type ChangeEvent, ty
 import { useQuery } from "@tanstack/react-query";
 import { ChevronLeft, ChevronRight, ImagePlus, Pencil, X } from "lucide-react";
 
-import { Badge } from "@/components/ui/badge";
+import { Badge } from "@trouve-ton-nkama/ui/badge";
 import { Button } from "@trouve-ton-nkama/ui/button";
-import { Card, CardContent, CardHeader } from "@/components/ui/card";
+import { Card, CardContent, CardHeader } from "@trouve-ton-nkama/ui/card";
 import {
   Dialog,
   DialogContent,
@@ -1103,12 +1103,12 @@ function DraftCard({
       <CardHeader className="flex flex-col gap-2">
         <div className="flex flex-wrap items-center gap-2">
           <span className="text-xs font-medium text-slate-400">#{index + 1}</span>
-          {draft.typeProperty ? <Badge variant="neutral">{TYPE_LABELS[draft.typeProperty]}</Badge> : null}
+          {draft.typeProperty ? <Badge variant="secondary">{TYPE_LABELS[draft.typeProperty]}</Badge> : null}
           <Badge variant={draft.status === "FOR_RENT" ? "success" : "warning"}>
             {draft.status === "FOR_RENT" ? "Location" : "Vente"}
           </Badge>
           {isEdited ? <Badge variant="success">Modifiée manuellement</Badge> : null}
-          <Badge variant="neutral">{draft.images.length} image(s)</Badge>
+          <Badge variant="secondary">{draft.images.length} image(s)</Badge>
         </div>
         <h3 className="text-base font-semibold text-slate-900">{draft.title || "Sans titre"}</h3>
         <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-slate-600">
@@ -1123,7 +1123,7 @@ function DraftCard({
         {/* Localisation */}
         <div className="flex flex-wrap items-center gap-2 rounded-md bg-slate-50 px-3 py-2 text-xs">
           {geo.source ? (
-            <Badge variant={RESOLVED_SOURCES.includes(geo.source) ? "success" : "neutral"}>
+            <Badge variant={RESOLVED_SOURCES.includes(geo.source) ? "success" : "secondary"}>
               {GEO_SOURCE_LABELS[geo.source]}
             </Badge>
           ) : (
@@ -1278,7 +1278,7 @@ function DraftCard({
         {reelDraft ? (
           <div className="space-y-2 border-t border-slate-100 pt-3">
             <div className="flex flex-wrap items-center gap-2">
-              <Badge variant="neutral">Vidéo détectée</Badge>
+              <Badge variant="secondary">Vidéo détectée</Badge>
               {draft.images.length === 0 ? (
                 <span className="text-xs text-slate-500">Post sans image — reel indépendant, sans annonce liée.</span>
               ) : imp.status === "created" ? (

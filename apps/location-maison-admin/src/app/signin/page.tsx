@@ -9,7 +9,7 @@ import { useForm } from "react-hook-form";
 import { z } from "zod";
 
 import { Button } from "@trouve-ton-nkama/ui/button";
-import { Card, CardContent, CardHeader } from "@/components/ui/card";
+import { Card, CardContent, CardHeader } from "@trouve-ton-nkama/ui/card";
 import { Input } from "@trouve-ton-nkama/ui/input";
 import { getClientAuth } from "@/lib/firebase/firebase-client";
 

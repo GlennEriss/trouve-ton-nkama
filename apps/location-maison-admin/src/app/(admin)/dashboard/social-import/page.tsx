@@ -4,9 +4,9 @@ import { FormEvent, useEffect, useMemo, useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { RefreshCcw } from "lucide-react";
 
-import { Badge } from "@/components/ui/badge";
+import { Badge } from "@trouve-ton-nkama/ui/badge";
 import { Button } from "@trouve-ton-nkama/ui/button";
-import { Card, CardContent, CardHeader } from "@/components/ui/card";
+import { Card, CardContent, CardHeader } from "@trouve-ton-nkama/ui/card";
 import { Input } from "@trouve-ton-nkama/ui/input";
 import {
   Sheet,
@@ -299,9 +299,9 @@ function toDateLabel(value: string | null | undefined) {
 
 function toStatusBadgeVariant(
   value: string | null | undefined,
-): "neutral" | "success" | "warning" | "danger" {
+): "secondary" | "success" | "warning" | "destructive" {
   if (!value) {
-    return "neutral";
+    return "secondary";
   }
   if (
     value === "active" ||
@@ -316,9 +316,9 @@ function toStatusBadgeVariant(
     return "warning";
   }
   if (value === "failed" || value === "revoked" || value === "rejected" || value === "reject") {
-    return "danger";
+    return "destructive";
   }
-  return "neutral";
+  return "secondary";
 }
 
 function toReviewCandidateStatusLabel(status: ReviewItem["status"]) {
@@ -2397,7 +2397,7 @@ export default function SocialImportDashboardPage() {
                             >
                               <div className="flex items-center justify-between gap-2">
                                 <p className="text-xs font-medium text-slate-700">{field.label}</p>
-                                <Badge variant={field.missing ? "danger" : "success"}>
+                                <Badge variant={field.missing ? "destructive" : "success"}>
                                   {field.missing ? "Manquant" : "OK"}
                                 </Badge>
                               </div>

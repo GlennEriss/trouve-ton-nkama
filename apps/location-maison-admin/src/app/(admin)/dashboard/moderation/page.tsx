@@ -4,7 +4,7 @@ import { useCallback, useMemo, useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 
 import { Button } from "@trouve-ton-nkama/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
+import { Card, CardContent } from "@trouve-ton-nkama/ui/card";
 import {
   Dialog,
   DialogClose,

@@ -2,6 +2,13 @@
 @import "tw-animate-css";
 @import "shadcn/tailwind.css";
 
+/* Composants partagés (@trouve-ton-nkama/ui). La détection automatique de
+   sources de Tailwind v4 s'arrête au dossier de cette app et ignore
+   node_modules : sans ce @source, les classes utilisées uniquement dans
+   packages/ui (variants Button, Input, Dialog...) ne sont jamais générées et
+   ces composants s'affichent sans style. */
+@source "../../../../packages/ui/src";
+
 @custom-variant dark (&:is(.dark *));
 
 :root {
@@ -53,14 +60,18 @@
   --chart-5: var(--warning);
   /* Aligné sur apps/location-maison (packages/ui/src/tokens) — était 0.625rem. */
   --radius: 0.5rem;
-  --sidebar: #ffffff;
-  --sidebar-foreground: #111827;
-  --sidebar-primary: var(--primary-700);
-  --sidebar-primary-foreground: #ffffff;
-  --sidebar-accent: var(--primary-50);
-  --sidebar-accent-foreground: var(--primary-700);
-  --sidebar-border: #e5e7eb;
-  --sidebar-ring: var(--primary-700);
+  /* Sidebar aux couleurs de la marque (teal foncé), même langage visuel que le
+     footer de la plateforme (bg-primary-950 + texte clair). Avec le variant
+     "inset" de la sidebar, cette couleur habille aussi le cadre de la page :
+     le contenu flotte en carte blanche arrondie par-dessus. */
+  --sidebar: var(--primary-900);
+  --sidebar-foreground: var(--primary-100);
+  --sidebar-primary: var(--primary-300);
+  --sidebar-primary-foreground: var(--primary-950);
+  --sidebar-accent: var(--primary-800);
+  --sidebar-accent-foreground: #ffffff;
+  --sidebar-border: var(--primary-800);
+  --sidebar-ring: var(--primary-300);
 }
 
 @theme inline {
@@ -164,12 +175,12 @@ body {
   --chart-3: var(--gold);
   --chart-4: var(--success);
   --chart-5: var(--warning);
-  --sidebar: #0e1a1a;
-  --sidebar-foreground: #f3f6f5;
+  --sidebar: var(--primary-950);
+  --sidebar-foreground: var(--primary-100);
   --sidebar-primary: var(--primary-400);
-  --sidebar-primary-foreground: #0f1f1e;
-  --sidebar-accent: #17201f;
-  --sidebar-accent-foreground: var(--primary-200);
+  --sidebar-primary-foreground: var(--primary-950);
+  --sidebar-accent: var(--primary-900);
+  --sidebar-accent-foreground: #ffffff;
   --sidebar-border: color-mix(in oklab, white 10%, transparent);
   --sidebar-ring: var(--primary-400);
 }

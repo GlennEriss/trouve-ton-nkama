@@ -3,9 +3,9 @@
 import { FormEvent, useCallback, useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 
-import { Badge } from "@/components/ui/badge";
+import { Badge } from "@trouve-ton-nkama/ui/badge";
 import { Button } from "@trouve-ton-nkama/ui/button";
-import { Card, CardContent, CardHeader } from "@/components/ui/card";
+import { Card, CardContent, CardHeader } from "@trouve-ton-nkama/ui/card";
 import {
   Dialog,
   DialogClose,

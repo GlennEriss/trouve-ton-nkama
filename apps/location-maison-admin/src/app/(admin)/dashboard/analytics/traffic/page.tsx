@@ -4,9 +4,9 @@ import { useCallback, useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Activity, Download, RefreshCcw } from "lucide-react";
 
-import { Badge } from "@/components/ui/badge";
+import { Badge } from "@trouve-ton-nkama/ui/badge";
 import { Button } from "@trouve-ton-nkama/ui/button";
-import { Card, CardContent, CardHeader } from "@/components/ui/card";
+import { Card, CardContent, CardHeader } from "@trouve-ton-nkama/ui/card";
 import { Input } from "@trouve-ton-nkama/ui/input";
 import { PageHeader } from "@/components/ui-kit/page-header";
 
@@ -123,7 +123,7 @@ function toProviderBadge(provider: string) {
   if (provider === "vercel") {
     return <Badge variant="warning">Vercel</Badge>;
   }
-  return <Badge variant="neutral">{provider}</Badge>;
+  return <Badge variant="secondary">{provider}</Badge>;
 }
 
 function toIsoIfPossible(value: string) {
@@ -285,7 +285,7 @@ export default function AnalyticsTrafficPage() {
     ) : compare?.summary.deltaVisits && compare.summary.deltaVisits < 0 ? (
       <Badge variant="success">Firebase au-dessus</Badge>
     ) : (
-      <Badge variant="neutral">Équilibré</Badge>
+      <Badge variant="secondary">Équilibré</Badge>
     );
 
   return (

@@ -51,7 +51,7 @@ export function AdminShell({ children }: AdminShellProps) {
           <SidebarTrigger className="-ml-1" />
           <div className="flex min-w-0 flex-1 items-center justify-between gap-3">
             <div className="min-w-0">
-              <p className="truncate text-sm font-semibold text-foreground">location-maison-admin</p>
+              <p className="truncate text-sm font-semibold text-ink">Trouve Ton Nkama</p>
               <p className="truncate text-xs text-muted-foreground">Tableau de bord administrateur</p>
             </div>
             <p className="hidden text-xs text-muted-foreground sm:block">Version Sprint 3</p>

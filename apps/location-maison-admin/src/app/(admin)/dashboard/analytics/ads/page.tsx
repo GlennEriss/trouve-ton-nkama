@@ -4,9 +4,9 @@ import { useCallback, useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { AlertTriangle, Download, RefreshCcw, TrendingUp } from "lucide-react";
 
-import { Badge } from "@/components/ui/badge";
+import { Badge } from "@trouve-ton-nkama/ui/badge";
 import { Button } from "@trouve-ton-nkama/ui/button";
-import { Card, CardContent, CardHeader } from "@/components/ui/card";
+import { Card, CardContent, CardHeader } from "@trouve-ton-nkama/ui/card";
 import { Input } from "@trouve-ton-nkama/ui/input";
 import { PageHeader } from "@/components/ui-kit/page-header";
 
@@ -218,12 +218,12 @@ function trendBadge(value: number | null | undefined) {
     return <Badge variant="success">Augmenté</Badge>;
   }
   if (state === "down") {
-    return <Badge variant="danger">Diminué</Badge>;
+    return <Badge variant="destructive">Diminué</Badge>;
   }
   if (state === "stable") {
-    return <Badge variant="neutral">Stable</Badge>;
+    return <Badge variant="secondary">Stable</Badge>;
   }
-  return <Badge variant="neutral">N/A</Badge>;
+  return <Badge variant="secondary">N/A</Badge>;
 }
 
 function toIsoIfPossible(value: string) {
@@ -280,12 +280,12 @@ async function fetchJson<T>(url: string, fallbackMessage: string) {
 
 function alertLevelBadge(level: "info" | "warning" | "critical") {
   if (level === "critical") {
-    return <Badge variant="danger">Critique</Badge>;
+    return <Badge variant="destructive">Critique</Badge>;
   }
   if (level === "warning") {
     return <Badge variant="warning">Alerte</Badge>;
   }
-  return <Badge variant="neutral">Info</Badge>;
+  return <Badge variant="secondary">Info</Badge>;
 }
 
 function sourceBadge(source: "ads_metrics_daily" | "ads_slot_events" | "adsense_reporting_raw" | "none") {
@@ -296,9 +296,9 @@ function sourceBadge(source: "ads_metrics_daily" | "ads_slot_events" | "adsense_
     return <Badge variant="warning">Agrégat quotidien</Badge>;
   }
   if (source === "ads_slot_events") {
-    return <Badge variant="neutral">Slots events</Badge>;
+    return <Badge variant="secondary">Slots events</Badge>;
   }
-  return <Badge variant="neutral">Aucune source</Badge>;
+  return <Badge variant="secondary">Aucune source</Badge>;
 }
 
 export default function AnalyticsAdsPage() {

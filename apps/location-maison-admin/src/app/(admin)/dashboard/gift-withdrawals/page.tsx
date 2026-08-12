@@ -5,7 +5,7 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { CheckCircle2, Clock, Smartphone, XCircle } from "lucide-react";
 
 import { Button } from "@trouve-ton-nkama/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
+import { Card, CardContent } from "@trouve-ton-nkama/ui/card";
 import { PageHeader } from "@/components/ui-kit/page-header";
 import type {
   GiftWithdrawalListItem,
