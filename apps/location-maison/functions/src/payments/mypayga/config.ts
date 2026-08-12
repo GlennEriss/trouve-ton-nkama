@@ -58,9 +58,11 @@ export function sanitizePhoneDigits(value: unknown): string {
 }
 
 // Regex de validation des numéros mobile money gabonais par réseau.
-// Airtel Money : 074/077 + 6 chiffres — Moov Money : 062/065/066 + 6 chiffres.
+// Airtel Money : 074/076/077 + 6 chiffres — Moov Money : 062/065/066 + 6 chiffres.
+// Bloc ARCEP "07X" entier réservé à Airtel (numérotation à 9 chiffres depuis 2019,
+// cf. www.arcep.ga) — 076 a été mis en service en plus de 074/077.
 const PHONE_REGEX_BY_NETWORK: Record<MyPayGaNetwork, RegExp> = {
-  AM: /^(?:074|077)\d{6}$/,
+  AM: /^(?:074|076|077)\d{6}$/,
   MM: /^(?:062|065|066)\d{6}$/,
 }
 

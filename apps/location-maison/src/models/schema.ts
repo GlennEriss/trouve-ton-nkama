@@ -175,7 +175,7 @@ export const HomeSchema = LogementSchemaBase.extend({
 
 export const StudioSchema = LogementSchemaBase.extend({
   nbrFloorStudio: z.number().min(0, "Le numéro d'étage doit être un nombre positif"),
-  numeroStudio: z.string().min(1, "Le numéro du studio est obligatoire"),
+  numeroStudio: z.string().optional(),
 }).transform((data) => ({
   ...data,
   // Mapper les champs address vers les champs attendus par le provider
@@ -186,7 +186,7 @@ export const StudioSchema = LogementSchemaBase.extend({
 
 export const ApartmentSchema = LogementSchemaBase.extend({
   nbrFloorApartment: z.number().min(0, "Le numéro d'étage de l'appartement doit être un nombre positif"),
-  numeroApartment: z.string().min(1, "Le numéro de l'appartement est obligatoire"),
+  numeroApartment: z.string().optional(),
 }).transform((data) => ({
   ...data,
   // Mapper les champs address vers les champs attendus par le provider
@@ -352,7 +352,7 @@ export const StudioStep2Schema = z.object({
   nbrBathrooms: z.number().min(0, "Le nombre de salles de bain doit être un nombre positif"),
   nbrToilets: z.number().min(0, "Le nombre de toilettes doit être un nombre positif"),
   nbrFloorStudio: z.number().min(0, "Le numéro d'étage doit être un nombre positif"),
-  numeroStudio: z.string().min(1, "Le numéro du studio est obligatoire"),
+  numeroStudio: z.string().optional(),
 });
 export const ApartmentStep2Schema = z.object({
   nbrRooms: z.number().min(0, "Le nombre de chambres doit être un nombre positif"),
@@ -360,7 +360,7 @@ export const ApartmentStep2Schema = z.object({
   nbrBathrooms: z.number().min(0, "Le nombre de salles de bain doit être un nombre positif"),
   nbrToilets: z.number().min(0, "Le nombre de toilettes doit être un nombre positif"),
   nbrFloorApartment: z.number().min(0, "Le numéro d'étage de l'appartement doit être un nombre positif"),
-  numeroApartment: z.string().min(1, "Le numéro de l'appartement est obligatoire"),
+  numeroApartment: z.string().optional(),
 });
 export const VillaStep2Schema = z.object({
   nbrRooms: z.number().min(0, "Le nombre de chambres doit être un nombre positif"),

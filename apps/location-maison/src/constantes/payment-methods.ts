@@ -22,7 +22,7 @@ export const PAYMENT_METHODS: PaymentMethod[] = [
     name: 'Airtel Money',
     icon: 'airtel-money-logo-3.png',
     network: 'AM',
-    phoneRegex: /^(?:074|077)\d{6}$/,
+    phoneRegex: /^(?:074|076|077)\d{6}$/,
   },
   {
     id: 'moov',

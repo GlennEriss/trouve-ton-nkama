@@ -212,7 +212,7 @@ export default function GiftModal({ isOpen, onClose, reelId, propertyId, announc
               </div>
               {phoneNumber && !phoneValid && (
                 <p className="mt-1 text-xs text-red-500">
-                  Numéro invalide pour ce réseau (Airtel : 074/077 — Moov : 062/065/066).
+                  Numéro invalide pour ce réseau (Airtel : 074/076/077 — Moov : 062/065/066).
                 </p>
               )}
             </div>

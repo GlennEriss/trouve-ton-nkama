@@ -34,6 +34,7 @@ describe('MyPayGa config business rules', () => {
 
   it('valide les prefixes Airtel Money et Moov Money', () => {
     expect(isPhoneValidForNetwork('+241074123456', 'AM')).toBe(true)
+    expect(isPhoneValidForNetwork('+241076123456', 'AM')).toBe(true)
     expect(isPhoneValidForNetwork('+241077123456', 'AM')).toBe(true)
     expect(isPhoneValidForNetwork('+241066123456', 'MM')).toBe(true)
     expect(isPhoneValidForNetwork('+241065123456', 'MM')).toBe(true)

@@ -16,9 +16,11 @@ import LocationPicker from '@/components/location/LocationPicker'
 import { useImageDropzone } from '@/hooks/useImageDropzone'
 import { useCurrentUser } from '@/hooks/use-current-user'
 import { useOnSubmitFormProperty } from '@/hooks/useOnSubmitFormProperty'
+import { useToast } from '@/hooks/use-toast'
 import { DirectorFactory } from '@/directors/factory.director'
 import { createProperty } from '@/db/property.db'
 import { routes } from '@/constantes/routes'
+import { MAX_IMAGES_UPLOAD } from '@/constantes'
 import type { ProcessedFormData } from '@/services/ai-form.service'
 import type { Property, TypeProperty } from '@/models/annonce'
 import {
@@ -72,6 +74,7 @@ export default function CreatePropertyWithAIPage() {
   const router = useRouter()
   const { data: session } = useSession()
   const { user } = useCurrentUser()
+  const { toast } = useToast()
 
   const [description, setDescription] = useState('')
   const [images, setImages] = useState<File[]>([])
@@ -101,8 +104,41 @@ export default function CreatePropertyWithAIPage() {
 
   const { getRootProps, getInputProps, isDragActive, isProcessing } = useImageDropzone({
     onFiles: (files) => {
-      setImages((prev) => [...prev, ...files].slice(0, 10))
-      setImagePreviews((prev) => [...prev, ...files.map((file) => URL.createObjectURL(file))].slice(0, 10))
+      const merged = [...images, ...files].slice(0, MAX_IMAGES_UPLOAD)
+      const droppedCount = images.length + files.length - merged.length
+      if (droppedCount > 0) {
+        toast({
+          title: "Certaines images n'ont pas été ajoutées",
+          description: `La limite maximale de ${MAX_IMAGES_UPLOAD} images est atteinte.`,
+          variant: 'destructive',
+        })
+      }
+      setImages(merged)
+      setImagePreviews((prev) =>
+        [...prev, ...files.map((file) => URL.createObjectURL(file))].slice(0, MAX_IMAGES_UPLOAD),
+      )
+    },
+    onFeedback: (feedback) => {
+      const messages: string[] = []
+      if (feedback.invalidTypeCount > 0) {
+        messages.push(`${feedback.invalidTypeCount} image(s) ignorée(s) : format non supporté (PNG/JPG/JPEG/WEBP).`)
+      }
+      if (feedback.tooManyFilesCount > 0) {
+        messages.push(`Maximum ${MAX_IMAGES_UPLOAD} images par ajout.`)
+      }
+      if (feedback.oversizedAfterCompressionCount > 0) {
+        messages.push(`${feedback.oversizedAfterCompressionCount} image(s) trop lourde(s) même après compression (limite 300 Ko).`)
+      }
+      if (feedback.compressionErrorCount > 0) {
+        messages.push(`${feedback.compressionErrorCount} image(s) n'ont pas pu être compressée(s).`)
+      }
+      if (messages.length > 0) {
+        toast({
+          title: "Certaines images n'ont pas été ajoutées",
+          description: messages.join(' '),
+          variant: 'destructive',
+        })
+      }
     },
   })
 

@@ -307,7 +307,7 @@ export default function SearchRequestForm({ prefill }: { prefill?: SearchRequest
           </div>
           {payerPhone && !payerPhoneValid && (
             <p className="mt-1 text-xs text-red-500">
-              Numéro invalide pour ce réseau (Airtel : 074/077 — Moov : 062/065/066).
+              Numéro invalide pour ce réseau (Airtel : 074/076/077 — Moov : 062/065/066).
             </p>
           )}
         </div>

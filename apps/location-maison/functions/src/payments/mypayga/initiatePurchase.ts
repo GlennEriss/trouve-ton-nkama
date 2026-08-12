@@ -39,7 +39,7 @@ export const initiatePurchase = onCall<InitiatePurchaseRequest, Promise<Initiate
     if (!isPhoneValidForNetwork(safePhone, providerNetwork)) {
       throw new HttpsError(
         'invalid-argument',
-        'Numéro invalide pour ce réseau (Airtel: 074/077, Moov: 062/065/066, suivis de 6 chiffres).'
+        'Numéro invalide pour ce réseau (Airtel: 074/076/077, Moov: 062/065/066, suivis de 6 chiffres).'
       )
     }
 

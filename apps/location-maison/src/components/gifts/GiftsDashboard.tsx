@@ -193,7 +193,7 @@ export default function GiftsDashboard() {
             </div>
             {numero && !phoneValid && (
               <p id="gift-withdrawal-phone-error" role="alert" className="text-xs text-red-600 dark:text-red-400">
-                Numéro invalide pour ce réseau (Airtel : 074/077 — Moov : 062/065/066).
+                Numéro invalide pour ce réseau (Airtel : 074/076/077 — Moov : 062/065/066).
               </p>
             )}
             <p className="text-sm text-slate-500">

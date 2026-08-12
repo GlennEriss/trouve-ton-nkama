@@ -8,6 +8,8 @@
  * dupliquer une nouvelle taxonomie de liens.
  */
 
+import { useEffect, useState } from "react";
+import { createPortal } from "react-dom";
 import Link from "next/link";
 import { X } from "lucide-react";
 import { routes } from "@/constantes/routes";
@@ -31,7 +33,16 @@ export default function MobileSidebar({
   isOpen,
   onClose,
 }: Readonly<{ isOpen: boolean; onClose: () => void }>) {
-  return (
+  // Rendu en portail dans <body> : Navbar est parfois monté sous un ancêtre
+  // avec un `transform` (ex. l'effet "porte de garage" de la navbar mobile
+  // sur l'accueil, HomePageMobileComponent). Un `transform` sur un ancêtre
+  // devient le containing block de tout descendant `position: fixed`, donc
+  // sans portail ce panneau se retrouve coincé dans la hauteur de la navbar
+  // au lieu de couvrir l'écran — invisible bien que correctement ouvert.
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => setMounted(true), []);
+
+  const content = (
     <>
       {isOpen && (
         <div
@@ -83,4 +94,7 @@ export default function MobileSidebar({
       </aside>
     </>
   );
+
+  if (!mounted) return null;
+  return createPortal(content, document.body);
 }

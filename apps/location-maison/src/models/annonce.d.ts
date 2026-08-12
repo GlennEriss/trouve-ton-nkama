@@ -101,7 +101,7 @@ export type Logement = Property & {
 
 export type Apartment = Logement & {
     nbrFloorApartment: number,
-    numeroApartment: string
+    numeroApartment?: string
 }
 
 export type Building = Property & {
@@ -123,7 +123,7 @@ export type Home = Logement & {
 
 export type Studio = Logement & {
     nbrFloorStudio: number,
-    numeroStudio: string
+    numeroStudio?: string
 }
 
 export type Villa = Home & {
