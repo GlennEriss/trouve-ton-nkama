@@ -67,7 +67,14 @@ describe('/api/credits/purchase', () => {
   })
 
   it('traduit un echec de la cloud function en 500', async () => {
-    ;(fetch as jest.Mock).mockResolvedValueOnce({ ok: false, status: 502, json: async () => ({ error: 'provider down' }) })
+    // Une fonction callable Firebase renvoie ses erreurs sous la forme
+    // {error: {message, status}}, pas {error: string} — cf. protocole HTTP
+    // callable (verifie empiriquement contre initiatePurchase deployee).
+    ;(fetch as jest.Mock).mockResolvedValueOnce({
+      ok: false,
+      status: 502,
+      json: async () => ({ error: { message: 'provider down', status: 'UNAVAILABLE' } }),
+    })
     const response = await POST(request(validBody, authed))
     expect(response.status).toBe(500)
     expect(await response.json()).toMatchObject({ success: false, message: 'provider down' })
