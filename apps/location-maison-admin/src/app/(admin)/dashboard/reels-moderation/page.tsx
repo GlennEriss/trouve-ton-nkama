@@ -70,14 +70,14 @@ export default function ReelsModerationPage() {
         description="Vidéos en attente de validation avant publication."
       />
 
-      {pendingQuery.isLoading && <p className="text-sm text-slate-500">Chargement...</p>}
+      {pendingQuery.isLoading && <p className="text-sm text-muted-foreground">Chargement...</p>}
       {pendingQuery.isError && (
-        <p className="text-sm text-red-600">
+        <p className="text-sm text-destructive">
           {pendingQuery.error instanceof Error ? pendingQuery.error.message : "Erreur de chargement."}
         </p>
       )}
       {pendingQuery.data && pendingQuery.data.items.length === 0 && (
-        <p className="text-sm text-slate-500">Aucun réel en attente de modération.</p>
+        <p className="text-sm text-muted-foreground">Aucun réel en attente de modération.</p>
       )}
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
@@ -92,12 +92,12 @@ export default function ReelsModerationPage() {
                   className="w-full aspect-[9/16] rounded-lg bg-black object-cover"
                 />
               ) : (
-                <div className="w-full aspect-[9/16] rounded-lg bg-slate-100 flex items-center justify-center text-xs text-slate-400">
+                <div className="w-full aspect-[9/16] rounded-lg bg-muted flex items-center justify-center text-xs text-muted-foreground">
                   Vidéo indisponible
                 </div>
               )}
 
-              <div className="text-xs text-slate-500 space-y-0.5">
+              <div className="text-xs text-muted-foreground space-y-0.5">
                 <p>Annonce : {reel.propertyId}</p>
                 <p>Annonceur : {reel.createdBy}</p>
                 {reel.durationSeconds != null && <p>Durée : {Math.round(reel.durationSeconds)}s</p>}
@@ -106,7 +106,7 @@ export default function ReelsModerationPage() {
               <div className="grid grid-cols-2 gap-2">
                 <Button
                   variant="outline"
-                  className="h-9 text-emerald-700 hover:bg-emerald-50"
+                  className="h-9 text-success hover:bg-success/10"
                   disabled={actioningId === reel.id}
                   onClick={() => handleDecision(reel.id, "approve")}
                 >
@@ -115,7 +115,7 @@ export default function ReelsModerationPage() {
                 </Button>
                 <Button
                   variant="outline"
-                  className="h-9 text-red-600 hover:bg-red-50"
+                  className="h-9 text-destructive hover:bg-destructive/10"
                   disabled={actioningId === reel.id}
                   onClick={() => handleDecision(reel.id, "reject")}
                 >

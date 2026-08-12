@@ -812,13 +812,13 @@ export default function FinanceDashboardPage() {
       />
 
       {globalError ? (
-        <div className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+        <div className="rounded-xl border border-destructive/30 bg-destructive/10 px-4 py-3 text-sm text-destructive">
           {globalError}
         </div>
       ) : null}
 
       {globalMessage ? (
-        <div className="rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-700">
+        <div className="rounded-xl border border-success/30 bg-success/10 px-4 py-3 text-sm text-success">
           {globalMessage}
         </div>
       ) : null}
@@ -1741,7 +1741,7 @@ export default function FinanceDashboardPage() {
       </Card>
 
       {(!canReadCredits || !canReadTransactions || !canReadRefunds || !canReadAudit) && permissions.length > 0 ? (
-        <div className="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-700">
+        <div className="rounded-xl border border-warning/30 bg-warning/10 px-4 py-3 text-sm text-warning">
           Certaines sections ne sont pas visibles avec vos permissions actuelles.
         </div>
       ) : null}

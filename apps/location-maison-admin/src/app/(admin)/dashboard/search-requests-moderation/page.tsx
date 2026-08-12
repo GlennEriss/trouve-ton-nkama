@@ -74,14 +74,14 @@ export default function SearchRequestsModerationPage() {
         description="Demandes payées en attente de validation avant publication sur /demandes-recherche."
       />
 
-      {pendingQuery.isLoading && <p className="text-sm text-slate-500">Chargement...</p>}
+      {pendingQuery.isLoading && <p className="text-sm text-muted-foreground">Chargement...</p>}
       {pendingQuery.isError && (
-        <p className="text-sm text-red-600">
+        <p className="text-sm text-destructive">
           {pendingQuery.error instanceof Error ? pendingQuery.error.message : "Erreur de chargement."}
         </p>
       )}
       {pendingQuery.data && pendingQuery.data.items.length === 0 && (
-        <p className="text-sm text-slate-500">Aucune demande en attente de modération.</p>
+        <p className="text-sm text-muted-foreground">Aucune demande en attente de modération.</p>
       )}
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
@@ -93,13 +93,13 @@ export default function SearchRequestsModerationPage() {
                   {item.typeProperty} · {item.transactionType === "FOR_RENT" ? "Location" : "Vente"}
                 </span>
                 {item.boostPaid && (
-                  <span className="inline-flex items-center gap-1 rounded-full bg-amber-100 px-2 py-0.5 text-xs font-medium text-amber-700">
+                  <span className="inline-flex items-center gap-1 rounded-full bg-warning/10 px-2 py-0.5 text-xs font-medium text-warning">
                     <Sparkles className="h-3 w-3" /> Boost payé
                   </span>
                 )}
               </div>
 
-              <div className="text-xs text-slate-500 space-y-0.5">
+              <div className="text-xs text-muted-foreground space-y-0.5">
                 <p>
                   {item.city}
                   {item.neighborhood ? `, ${item.neighborhood}` : ""} ({item.province})
@@ -109,12 +109,12 @@ export default function SearchRequestsModerationPage() {
                 <p>Montant payé : {item.amountPaidXaf.toLocaleString("fr-FR")} FCFA</p>
               </div>
 
-              <p className="text-sm text-slate-700 line-clamp-4">{item.description}</p>
+              <p className="text-sm text-foreground line-clamp-4">{item.description}</p>
 
               <div className="grid grid-cols-2 gap-2">
                 <Button
                   variant="outline"
-                  className="h-9 text-emerald-700 hover:bg-emerald-50"
+                  className="h-9 text-success hover:bg-success/10"
                   disabled={actioningId === item.id}
                   onClick={() => handleDecision(item.id, "approve")}
                 >
@@ -123,7 +123,7 @@ export default function SearchRequestsModerationPage() {
                 </Button>
                 <Button
                   variant="outline"
-                  className="h-9 text-red-600 hover:bg-red-50"
+                  className="h-9 text-destructive hover:bg-destructive/10"
                   disabled={actioningId === item.id}
                   onClick={() => handleDecision(item.id, "reject")}
                 >

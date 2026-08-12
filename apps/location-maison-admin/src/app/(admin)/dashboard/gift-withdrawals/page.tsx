@@ -26,9 +26,9 @@ const STATUS_FILTERS: Array<{ value: GiftWithdrawalStatus | "TOUS"; label: strin
 ];
 
 const STATUS_BADGE: Record<GiftWithdrawalStatus, { label: string; className: string }> = {
-  EN_ATTENTE: { label: "En attente", className: "bg-amber-100 text-amber-700" },
-  TRAITE: { label: "Versé", className: "bg-emerald-100 text-emerald-700" },
-  REFUSE: { label: "Refusé", className: "bg-red-100 text-red-700" },
+  EN_ATTENTE: { label: "En attente", className: "bg-warning/10 text-warning" },
+  TRAITE: { label: "Versé", className: "bg-success/10 text-success" },
+  REFUSE: { label: "Refusé", className: "bg-destructive/10 text-destructive" },
 };
 
 function formatXaf(value: number): string {
@@ -121,16 +121,16 @@ export default function GiftWithdrawalsPage() {
         ))}
       </div>
 
-      {withdrawalsQuery.isLoading && <p className="text-sm text-slate-500">Chargement...</p>}
+      {withdrawalsQuery.isLoading && <p className="text-sm text-muted-foreground">Chargement...</p>}
       {withdrawalsQuery.isError && (
-        <p className="text-sm text-red-600">
+        <p className="text-sm text-destructive">
           {withdrawalsQuery.error instanceof Error
             ? withdrawalsQuery.error.message
             : "Erreur de chargement."}
         </p>
       )}
       {withdrawalsQuery.data && withdrawalsQuery.data.items.length === 0 && (
-        <p className="text-sm text-slate-500">Aucune demande de retrait pour ce filtre.</p>
+        <p className="text-sm text-muted-foreground">Aucune demande de retrait pour ce filtre.</p>
       )}
 
       <div className="grid gap-4">
@@ -144,26 +144,26 @@ export default function GiftWithdrawalsPage() {
                     <span className={`rounded-full px-2.5 py-0.5 text-xs font-medium ${badge.className}`}>
                       {badge.label}
                     </span>
-                    <span className="text-xs text-slate-400">{formatDate(withdrawal.dateCreation)}</span>
+                    <span className="text-xs text-muted-foreground">{formatDate(withdrawal.dateCreation)}</span>
                   </div>
                   {/* Le montant NET + numéro sont ce que l'opérateur saisit dans son app MoMo */}
                   <p className="text-lg font-semibold">
                     À verser : {formatXaf(withdrawal.netPayoutXaf)}
                   </p>
-                  <p className="flex items-center gap-1.5 text-sm text-slate-600">
+                  <p className="flex items-center gap-1.5 text-sm text-muted-foreground">
                     <Smartphone className="h-4 w-4" />
                     <span className="font-mono font-medium">{withdrawal.numero}</span>
                     <span>· {withdrawal.reseau === "AM" ? "Airtel Money" : "Moov Money"}</span>
                   </p>
-                  <p className="text-xs text-slate-500">
+                  <p className="text-xs text-muted-foreground">
                     Solde débité : {formatXaf(withdrawal.montantXaf)} (frais {formatXaf(withdrawal.feeXaf)})
                     {" · "}Annonceur : <span className="font-mono">{withdrawal.announcerUid}</span>
                   </p>
                   {withdrawal.statut === "REFUSE" && withdrawal.motifRefus && (
-                    <p className="text-xs text-red-600">Motif : {withdrawal.motifRefus}</p>
+                    <p className="text-xs text-destructive">Motif : {withdrawal.motifRefus}</p>
                   )}
                   {withdrawal.statut !== "EN_ATTENTE" && withdrawal.traitePar && (
-                    <p className="text-xs text-slate-400">
+                    <p className="text-xs text-muted-foreground">
                       Traité par <span className="font-mono">{withdrawal.traitePar}</span> le{" "}
                       {formatDate(withdrawal.dateMiseAJour)}
                     </p>
@@ -190,7 +190,7 @@ export default function GiftWithdrawalsPage() {
                   </div>
                 )}
                 {withdrawal.statut === "EN_ATTENTE" && (
-                  <Clock className="hidden h-5 w-5 text-amber-500 md:block" />
+                  <Clock className="hidden h-5 w-5 text-warning md:block" />
                 )}
               </CardContent>
             </Card>

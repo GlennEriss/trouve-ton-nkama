@@ -178,8 +178,8 @@ export default function AdvertisingDashboardPage() {
         }
       />
 
-      {message ? <p className="rounded-md bg-emerald-50 px-4 py-2 text-sm text-emerald-700">{message}</p> : null}
-      {error ? <p className="rounded-md bg-red-50 px-4 py-2 text-sm text-red-700">{error}</p> : null}
+      {message ? <p className="rounded-md bg-success/10 px-4 py-2 text-sm text-success">{message}</p> : null}
+      {error ? <p className="rounded-md bg-destructive/10 px-4 py-2 text-sm text-destructive">{error}</p> : null}
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <KpiCard label="Campagnes actives" value={String(summary?.active ?? 0)} icon={<Megaphone className="h-4 w-4" />} />
@@ -198,9 +198,9 @@ export default function AdvertisingDashboardPage() {
 
       <div className="space-y-3">
         {campaignsQuery.isLoading ? (
-          <p className="text-sm text-slate-500">Chargement…</p>
+          <p className="text-sm text-muted-foreground">Chargement…</p>
         ) : (campaignsQuery.data?.campaigns.length ?? 0) === 0 ? (
-          <p className="text-sm text-slate-500">Aucune campagne.</p>
+          <p className="text-sm text-muted-foreground">Aucune campagne.</p>
         ) : (
           campaignsQuery.data?.campaigns.map((c) => (
             <Card key={c.id}>
@@ -211,11 +211,11 @@ export default function AdvertisingDashboardPage() {
                     <img src={c.creative.imageURL} alt="" className="h-12 w-20 rounded object-cover" />
                   ) : null}
                   <div>
-                    <p className="font-medium text-slate-900">{c.title}</p>
-                    <p className="text-xs text-slate-500">{advertiserName(c.advertiserId)}</p>
+                    <p className="font-medium text-foreground">{c.title}</p>
+                    <p className="text-xs text-muted-foreground">{advertiserName(c.advertiserId)}</p>
                     <div className="mt-1 flex flex-wrap gap-1">
                       {c.placements.map((p) => (
-                        <span key={p} className="rounded bg-slate-100 px-1.5 py-0.5 text-[10px] text-slate-600">
+                        <span key={p} className="rounded bg-muted px-1.5 py-0.5 text-[10px] text-muted-foreground">
                           {PLACEMENT_LABELS[p]}
                         </span>
                       ))}
@@ -223,7 +223,7 @@ export default function AdvertisingDashboardPage() {
                   </div>
                 </div>
 
-                <div className="flex flex-wrap items-center gap-3 text-xs text-slate-500">
+                <div className="flex flex-wrap items-center gap-3 text-xs text-muted-foreground">
                   <span>👁 {c.metrics.impressions} · 🖱 {c.metrics.clicks}</span>
                   <span>{c.billing.paymentStatus === "paid" ? formatXAF(c.billing.amount ?? 0) : "Non payé"}</span>
                   <Badge variant={STATUS_BADGE[c.status] ?? "secondary"}>{c.status}</Badge>
@@ -429,35 +429,35 @@ function NewCampaignDialog({ advertisers, onDone, onError }: { advertisers: Adve
             <option value="">— Aucun annonceur plateforme (externe) —</option>
             {advertisers.map((a) => (<option key={a.id} value={a.id}>{a.businessName || a.name}</option>))}
           </select>
-          <p className="text-xs text-slate-500">
+          <p className="text-xs text-muted-foreground">
             Optionnel : laisse vide si la publicité vient d&apos;une personne ou d&apos;une entreprise externe à la plateforme.
           </p>
           <Input placeholder="Titre de la campagne *" value={title} onChange={(e) => setTitle(e.target.value)} />
           <div className="space-y-2">
-            <label className="text-xs text-slate-500">Visuel par défaut *</label>
-            <p className="text-[11px] text-slate-400">Utilisé partout où aucun visuel dédié n&apos;est fourni ci-dessous.</p>
+            <label className="text-xs text-muted-foreground">Visuel par défaut *</label>
+            <p className="text-[11px] text-muted-foreground">Utilisé partout où aucun visuel dédié n&apos;est fourni ci-dessous.</p>
             <input
               type="file"
               accept="image/png,image/jpeg,image/webp,image/gif"
               disabled={uploading}
               onChange={(e) => { const f = e.target.files?.[0]; if (f) void handleUpload(f); }}
-              className="block w-full text-sm text-slate-600 file:mr-3 file:rounded-md file:border-0 file:bg-slate-100 file:px-3 file:py-1.5 file:text-sm"
+              className="block w-full text-sm text-muted-foreground file:mr-3 file:rounded-md file:border-0 file:bg-muted file:px-3 file:py-1.5 file:text-sm"
             />
-            {uploading ? <p className="text-xs text-slate-500">Upload en cours…</p> : null}
+            {uploading ? <p className="text-xs text-muted-foreground">Upload en cours…</p> : null}
             {!uploading && imageURL ? (
-              <p className="text-xs font-medium text-emerald-600">✓ Visuel importé</p>
+              <p className="text-xs font-medium text-success">✓ Visuel importé</p>
             ) : null}
             {!uploading && !imageURL && localPreview ? (
-              <p className="text-xs font-medium text-red-600">
+              <p className="text-xs font-medium text-destructive">
                 L&apos;import du visuel a échoué (l&apos;aperçu ci-dessous est local). {uploadError ? `Détail : ${uploadError}.` : ""} Réessaie de choisir le fichier.
               </p>
             ) : null}
           </div>
 
           {/* Visuels adaptés par format (optionnel) */}
-          <div className="space-y-2 rounded-lg border border-slate-200 bg-slate-50/60 p-3">
-            <p className="text-xs font-medium text-slate-600">Visuels par format (optionnel)</p>
-            <p className="text-[11px] text-slate-400">
+          <div className="space-y-2 rounded-lg border border-border bg-muted/60 p-3">
+            <p className="text-xs font-medium text-muted-foreground">Visuels par format (optionnel)</p>
+            <p className="text-[11px] text-muted-foreground">
               Fournis un visuel adapté à chaque forme pour un rendu optimal. Sinon le visuel par défaut est utilisé.
             </p>
             {AD_FORMATS.map((fmt) => {
@@ -465,21 +465,21 @@ function NewCampaignDialog({ advertisers, onDone, onError }: { advertisers: Adve
               return (
                 <div key={fmt.key} className="flex flex-wrap items-center gap-2 text-xs">
                   <div className="min-w-[150px] flex-1">
-                    <span className="font-medium text-slate-700">{fmt.label}</span>
-                    <span className="ml-1 text-slate-400">— {fmt.ratioHint} ({fmt.recommended})</span>
-                    {fmt.key === "reels" && <span className="ml-1 text-slate-400">· vidéo jusqu&apos;à 5 min</span>}
+                    <span className="font-medium text-foreground">{fmt.label}</span>
+                    <span className="ml-1 text-muted-foreground">— {fmt.ratioHint} ({fmt.recommended})</span>
+                    {fmt.key === "reels" && <span className="ml-1 text-muted-foreground">· vidéo jusqu&apos;à 5 min</span>}
                   </div>
                   <input
                     type="file"
                     accept={fmt.key === "reels" ? REELS_FORMAT_ACCEPT : IMAGE_ONLY_ACCEPT}
                     disabled={formatUploading === fmt.key}
                     onChange={(e) => { const f = e.target.files?.[0]; if (f) void handleFormatUpload(fmt, f); }}
-                    className="block max-w-[180px] text-[11px] text-slate-600 file:mr-2 file:rounded file:border-0 file:bg-slate-100 file:px-2 file:py-1"
+                    className="block max-w-[180px] text-[11px] text-muted-foreground file:mr-2 file:rounded file:border-0 file:bg-muted file:px-2 file:py-1"
                   />
                   {formatUploading === fmt.key ? (
-                    <span className="text-slate-500">Upload…</span>
+                    <span className="text-muted-foreground">Upload…</span>
                   ) : imported ? (
-                    <button type="button" className="text-emerald-600" onClick={() => clearFormat(fmt)}>
+                    <button type="button" className="text-success" onClick={() => clearFormat(fmt)}>
                       ✓ importé · retirer
                     </button>
                   ) : null}
@@ -497,18 +497,18 @@ function NewCampaignDialog({ advertisers, onDone, onError }: { advertisers: Adve
                 type="button"
                 key={p}
                 onClick={() => toggle(p)}
-                className={`rounded-full border px-3 py-1 text-xs ${placements.includes(p) ? "border-emerald-500 bg-emerald-50 text-emerald-700" : "border-slate-200 text-slate-600"}`}
+                className={`rounded-full border px-3 py-1 text-xs ${placements.includes(p) ? "border-success/30 bg-success/10 text-success" : "border-border text-muted-foreground"}`}
               >
                 {PLACEMENT_LABELS[p]}
               </button>
             ))}
           </div>
           <div className="flex gap-2">
-            <label className="flex-1 text-xs text-slate-500">Début<Input type="date" value={startDate} onChange={(e) => setStartDate(e.target.value)} /></label>
-            <label className="flex-1 text-xs text-slate-500">Fin<Input type="date" value={endDate} onChange={(e) => setEndDate(e.target.value)} /></label>
+            <label className="flex-1 text-xs text-muted-foreground">Début<Input type="date" value={startDate} onChange={(e) => setStartDate(e.target.value)} /></label>
+            <label className="flex-1 text-xs text-muted-foreground">Fin<Input type="date" value={endDate} onChange={(e) => setEndDate(e.target.value)} /></label>
           </div>
           <div className="space-y-2">
-            <p className="text-xs font-medium text-slate-500">Aperçu avant publication</p>
+            <p className="text-xs font-medium text-muted-foreground">Aperçu avant publication</p>
             <AdCreativePreview
               creative={{
                 imageURL: imageURL || localPreview || undefined,
@@ -524,7 +524,7 @@ function NewCampaignDialog({ advertisers, onDone, onError }: { advertisers: Adve
         </div>
         <DialogFooter className="sm:flex-col sm:items-stretch">
           {!valid ? (
-            <p className="text-xs text-amber-600">Pour publier, il manque encore : {missing.join(", ")}.</p>
+            <p className="text-xs text-warning">Pour publier, il manque encore : {missing.join(", ")}.</p>
           ) : null}
           <Button onClick={() => mutation.mutate()} disabled={mutation.isPending || !valid}>Créer la campagne</Button>
         </DialogFooter>
@@ -612,7 +612,7 @@ function EditCampaignDialog({ campaignId, onDone, onError }: { campaignId: strin
       <DialogContent className="max-h-[90vh] grid-rows-[auto_minmax(0,1fr)_auto]">
         <DialogHeader><DialogTitle>Modifier la campagne</DialogTitle></DialogHeader>
         {!open ? null : query.isPending ? (
-          <p className="text-sm text-slate-500">Chargement…</p>
+          <p className="text-sm text-muted-foreground">Chargement…</p>
         ) : query.data ? (
           // `key` : remonte le formulaire avec les valeurs initiales de la campagne
           // (pas de setState-in-effect ; l'état est initialisé depuis les props).
@@ -624,7 +624,7 @@ function EditCampaignDialog({ campaignId, onDone, onError }: { campaignId: strin
             onSaved={(m) => { setOpen(false); onDone(m); }}
           />
         ) : (
-          <p className="text-sm text-red-600">Impossible de charger la campagne.</p>
+          <p className="text-sm text-destructive">Impossible de charger la campagne.</p>
         )}
       </DialogContent>
     </Dialog>
@@ -750,40 +750,40 @@ function EditCampaignForm({
       <div className="space-y-3 overflow-y-auto pr-1">
             <Input placeholder="Titre de la campagne *" value={title} onChange={(e) => setTitle(e.target.value)} />
             <div className="space-y-2">
-              <label className="text-xs text-slate-500">Visuel par défaut *</label>
+              <label className="text-xs text-muted-foreground">Visuel par défaut *</label>
               <input
                 type="file"
                 accept="image/png,image/jpeg,image/webp,image/gif"
                 disabled={uploading}
                 onChange={(e) => { const f = e.target.files?.[0]; if (f) void handleUpload(f); }}
-                className="block w-full text-sm text-slate-600 file:mr-3 file:rounded-md file:border-0 file:bg-slate-100 file:px-3 file:py-1.5 file:text-sm"
+                className="block w-full text-sm text-muted-foreground file:mr-3 file:rounded-md file:border-0 file:bg-muted file:px-3 file:py-1.5 file:text-sm"
               />
-              {uploading ? <p className="text-xs text-slate-500">Upload en cours…</p> : null}
-              {!uploading && imageURL ? <p className="text-xs font-medium text-emerald-600">✓ Visuel présent</p> : null}
+              {uploading ? <p className="text-xs text-muted-foreground">Upload en cours…</p> : null}
+              {!uploading && imageURL ? <p className="text-xs font-medium text-success">✓ Visuel présent</p> : null}
             </div>
 
-            <div className="space-y-2 rounded-lg border border-slate-200 bg-slate-50/60 p-3">
-              <p className="text-xs font-medium text-slate-600">Visuels par format (optionnel)</p>
+            <div className="space-y-2 rounded-lg border border-border bg-muted/60 p-3">
+              <p className="text-xs font-medium text-muted-foreground">Visuels par format (optionnel)</p>
               {AD_FORMATS.map((fmt) => {
                 const imported = fmt.placements.every((p) => assets[p as AdPlacement]);
                 return (
                   <div key={fmt.key} className="flex flex-wrap items-center gap-2 text-xs">
                     <div className="min-w-[150px] flex-1">
-                      <span className="font-medium text-slate-700">{fmt.label}</span>
-                      <span className="ml-1 text-slate-400">— {fmt.ratioHint} ({fmt.recommended})</span>
-                      {fmt.key === "reels" && <span className="ml-1 text-slate-400">· vidéo jusqu&apos;à 5 min</span>}
+                      <span className="font-medium text-foreground">{fmt.label}</span>
+                      <span className="ml-1 text-muted-foreground">— {fmt.ratioHint} ({fmt.recommended})</span>
+                      {fmt.key === "reels" && <span className="ml-1 text-muted-foreground">· vidéo jusqu&apos;à 5 min</span>}
                     </div>
                     <input
                       type="file"
                       accept={fmt.key === "reels" ? REELS_FORMAT_ACCEPT : IMAGE_ONLY_ACCEPT}
                       disabled={formatUploading === fmt.key}
                       onChange={(e) => { const f = e.target.files?.[0]; if (f) void handleFormatUpload(fmt, f); }}
-                      className="block max-w-[180px] text-[11px] text-slate-600 file:mr-2 file:rounded file:border-0 file:bg-slate-100 file:px-2 file:py-1"
+                      className="block max-w-[180px] text-[11px] text-muted-foreground file:mr-2 file:rounded file:border-0 file:bg-muted file:px-2 file:py-1"
                     />
                     {formatUploading === fmt.key ? (
-                      <span className="text-slate-500">Upload…</span>
+                      <span className="text-muted-foreground">Upload…</span>
                     ) : imported ? (
-                      <button type="button" className="text-emerald-600" onClick={() => clearFormat(fmt)}>✓ présent · retirer</button>
+                      <button type="button" className="text-success" onClick={() => clearFormat(fmt)}>✓ présent · retirer</button>
                     ) : null}
                   </div>
                 );
@@ -800,18 +800,18 @@ function EditCampaignForm({
                   type="button"
                   key={p}
                   onClick={() => toggle(p)}
-                  className={`rounded-full border px-3 py-1 text-xs ${placements.includes(p) ? "border-emerald-500 bg-emerald-50 text-emerald-700" : "border-slate-200 text-slate-600"}`}
+                  className={`rounded-full border px-3 py-1 text-xs ${placements.includes(p) ? "border-success/30 bg-success/10 text-success" : "border-border text-muted-foreground"}`}
                 >
                   {PLACEMENT_LABELS[p]}
                 </button>
               ))}
             </div>
             <div className="flex gap-2">
-              <label className="flex-1 text-xs text-slate-500">Début<Input type="date" value={startDate} onChange={(e) => setStartDate(e.target.value)} /></label>
-              <label className="flex-1 text-xs text-slate-500">Fin<Input type="date" value={endDate} onChange={(e) => setEndDate(e.target.value)} /></label>
+              <label className="flex-1 text-xs text-muted-foreground">Début<Input type="date" value={startDate} onChange={(e) => setStartDate(e.target.value)} /></label>
+              <label className="flex-1 text-xs text-muted-foreground">Fin<Input type="date" value={endDate} onChange={(e) => setEndDate(e.target.value)} /></label>
             </div>
             <div className="space-y-2">
-              <p className="text-xs font-medium text-slate-500">Aperçu</p>
+              <p className="text-xs font-medium text-muted-foreground">Aperçu</p>
               <AdCreativePreview
                 creative={{
                   imageURL: imageURL || localPreview || undefined,

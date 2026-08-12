@@ -872,8 +872,8 @@ export default function NewListingPage() {
 
       <Card>
         <CardHeader>
-          <h2 className="text-base font-semibold text-slate-900">Créer une annonce</h2>
-          <p className="text-sm text-slate-600">Ajoute une annonce au compte annonceur ciblé.</p>
+          <h2 className="text-base font-semibold text-foreground">Créer une annonce</h2>
+          <p className="text-sm text-muted-foreground">Ajoute une annonce au compte annonceur ciblé.</p>
         </CardHeader>
         <CardContent>
           <form className="space-y-4" onSubmit={(event) => void onCreateListing(event)}>
@@ -881,7 +881,7 @@ export default function NewListingPage() {
               <button
                 type="button"
                 className={`rounded-lg border px-3 py-2 text-left text-sm ${
-                  listingStep === 1 ? "border-emerald-600 bg-emerald-50 text-emerald-800" : "border-slate-300"
+                  listingStep === 1 ? "border-success/30 bg-success/10 text-success" : "border-border"
                 }`}
                 onClick={() => setListingStep(1)}
               >
@@ -890,7 +890,7 @@ export default function NewListingPage() {
               <button
                 type="button"
                 className={`rounded-lg border px-3 py-2 text-left text-sm ${
-                  listingStep === 2 ? "border-emerald-600 bg-emerald-50 text-emerald-800" : "border-slate-300"
+                  listingStep === 2 ? "border-success/30 bg-success/10 text-success" : "border-border"
                 }`}
                 onClick={() => {
                   if (listingStep >= 2) setListingStep(2);
@@ -901,7 +901,7 @@ export default function NewListingPage() {
               <button
                 type="button"
                 className={`rounded-lg border px-3 py-2 text-left text-sm ${
-                  listingStep === 3 ? "border-emerald-600 bg-emerald-50 text-emerald-800" : "border-slate-300"
+                  listingStep === 3 ? "border-success/30 bg-success/10 text-success" : "border-border"
                 }`}
                 onClick={() => {
                   if (listingStep >= 3) setListingStep(3);
@@ -914,7 +914,7 @@ export default function NewListingPage() {
             {listingStep === 1 ? (
               <div className="space-y-3">
                 <div className="space-y-1">
-                  <p className="text-xs font-medium text-slate-700">Recherche annonceur</p>
+                  <p className="text-xs font-medium text-foreground">Recherche annonceur</p>
                   <Input
                     value={createListingAnnouncerLookupInput}
                     onChange={(event) => {
@@ -928,41 +928,41 @@ export default function NewListingPage() {
                   />
                 </div>
                 {showCreateListingAnnouncerLookup && createListingAnnouncerLookupInput.trim().length >= 2 ? (
-                  <div className="rounded-lg border border-slate-200 bg-white p-2 text-sm">
+                  <div className="rounded-lg border border-border bg-card p-2 text-sm">
                     {lookupQuery.isFetching ? (
-                      <p className="px-2 py-1 text-slate-500">Recherche des annonceurs...</p>
+                      <p className="px-2 py-1 text-muted-foreground">Recherche des annonceurs...</p>
                     ) : lookupQuery.error ? (
-                      <p className="px-2 py-1 text-red-700">{lookupQuery.error.message}</p>
+                      <p className="px-2 py-1 text-destructive">{lookupQuery.error.message}</p>
                     ) : lookupResults.length ? (
                       <div className="max-h-56 space-y-1 overflow-y-auto">
                         {lookupResults.map((announcer) => (
                           <button
                             key={`listing-lookup-${announcer.uid}`}
                             type="button"
-                            className="w-full rounded-md border border-slate-200 px-3 py-2 text-left hover:bg-slate-50"
+                            className="w-full rounded-md border border-border px-3 py-2 text-left hover:bg-muted"
                             onClick={() => onSelectCreateListingAnnouncer(announcer)}
                             disabled={createListingSubmitting || loading}
                           >
-                            <p className="font-medium text-slate-900">{announcer.fullName}</p>
-                            <p className="text-xs text-slate-500">
+                            <p className="font-medium text-foreground">{announcer.fullName}</p>
+                            <p className="text-xs text-muted-foreground">
                               {announcer.email ?? "Email N/A"} · {announcer.uid}
                             </p>
                           </button>
                         ))}
                       </div>
                     ) : (
-                      <p className="px-2 py-1 text-slate-500">Aucun annonceur trouvé.</p>
+                      <p className="px-2 py-1 text-muted-foreground">Aucun annonceur trouvé.</p>
                     )}
                   </div>
                 ) : null}
                 <div className="space-y-1">
-                  <p className="text-xs font-medium text-slate-700">UID annonceur sélectionné</p>
+                  <p className="text-xs font-medium text-foreground">UID annonceur sélectionné</p>
                   <Input value={createListing.announcerUid} readOnly placeholder="UID annonceur sélectionné" disabled />
                 </div>
 
                 <div className="grid gap-3 md:grid-cols-2">
                   <div className="space-y-1">
-                    <p className="text-xs font-medium text-slate-700">Titre de l&apos;annonce</p>
+                    <p className="text-xs font-medium text-foreground">Titre de l&apos;annonce</p>
                     <Input
                       value={createListing.title}
                       onChange={(event) =>
@@ -976,9 +976,9 @@ export default function NewListingPage() {
                     />
                   </div>
                   <div className="space-y-1">
-                    <p className="text-xs font-medium text-slate-700">Type de bien</p>
+                    <p className="text-xs font-medium text-foreground">Type de bien</p>
                     <select
-                      className="h-9 rounded-lg border border-slate-300 bg-white px-3 text-sm text-slate-800"
+                      className="h-9 rounded-lg border border-border bg-card px-3 text-sm text-foreground"
                       value={createListing.typeProperty}
                       onChange={(event) =>
                         setCreateListing((previous) => ({
@@ -998,9 +998,9 @@ export default function NewListingPage() {
                 </div>
 
                 <div className="space-y-1">
-                  <p className="text-xs font-medium text-slate-700">Description</p>
+                  <p className="text-xs font-medium text-foreground">Description</p>
                   <textarea
-                    className="min-h-24 w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-800"
+                    className="min-h-24 w-full rounded-lg border border-border bg-card px-3 py-2 text-sm text-foreground"
                     value={createListing.description}
                     onChange={(event) =>
                       setCreateListing((previous) => ({
@@ -1013,10 +1013,10 @@ export default function NewListingPage() {
                   />
                 </div>
 
-                <div className="space-y-2 rounded-lg border border-slate-200 p-3">
+                <div className="space-y-2 rounded-lg border border-border p-3">
                   <div>
-                    <p className="text-sm font-medium text-slate-900">Rôle de l&apos;annonceur sur ce bien</p>
-                    <p className="text-xs text-slate-500">
+                    <p className="text-sm font-medium text-foreground">Rôle de l&apos;annonceur sur ce bien</p>
+                    <p className="text-xs text-muted-foreground">
                       Indique si l&apos;annonceur est le propriétaire direct ou un mandataire/agence.
                     </p>
                   </div>
@@ -1029,8 +1029,8 @@ export default function NewListingPage() {
                           type="button"
                           className={`rounded-xl border-2 p-4 text-left transition ${
                             selected
-                              ? "border-emerald-700 bg-emerald-50 text-emerald-950"
-                              : "border-slate-200 bg-white text-slate-800 hover:border-emerald-600 hover:bg-emerald-50/60"
+                              ? "border-success/30 bg-success/10 text-success"
+                              : "border-border bg-card text-foreground hover:border-success/30 hover:bg-success/10/60"
                           }`}
                           onClick={() =>
                             setCreateListing((previous) => ({
@@ -1043,15 +1043,15 @@ export default function NewListingPage() {
                           <span className="flex items-start gap-3">
                             <span
                               className={`mt-0.5 flex h-4 w-4 shrink-0 items-center justify-center rounded-full border-2 ${
-                                selected ? "border-emerald-700 bg-emerald-700" : "border-slate-300"
+                                selected ? "border-success/30 bg-success" : "border-border"
                               }`}
                               aria-hidden="true"
                             >
-                              {selected ? <span className="h-2 w-2 rounded-full bg-white" /> : null}
+                              {selected ? <span className="h-2 w-2 rounded-full bg-card" /> : null}
                             </span>
                             <span>
                               <span className="block text-sm font-semibold">{option.label}</span>
-                              <span className="mt-1 block text-xs text-slate-500">{option.description}</span>
+                              <span className="mt-1 block text-xs text-muted-foreground">{option.description}</span>
                             </span>
                           </span>
                         </button>
@@ -1062,9 +1062,9 @@ export default function NewListingPage() {
 
                 <div className="grid gap-3 md:grid-cols-3">
                   <div className="space-y-1">
-                    <p className="text-xs font-medium text-slate-700">Statut annonce</p>
+                    <p className="text-xs font-medium text-foreground">Statut annonce</p>
                     <select
-                      className="h-9 rounded-lg border border-slate-300 bg-white px-3 text-sm text-slate-800"
+                      className="h-9 rounded-lg border border-border bg-card px-3 text-sm text-foreground"
                       value={createListing.status}
                       onChange={(event) =>
                         setCreateListing((previous) => ({
@@ -1082,7 +1082,7 @@ export default function NewListingPage() {
                     </select>
                   </div>
                   <div className="space-y-1">
-                    <p className="text-xs font-medium text-slate-700">Prix</p>
+                    <p className="text-xs font-medium text-foreground">Prix</p>
                     <Input
                       type="number"
                       min={0}
@@ -1099,7 +1099,7 @@ export default function NewListingPage() {
                     />
                   </div>
                   <div className="space-y-1">
-                    <p className="text-xs font-medium text-slate-700">Superficie (m²)</p>
+                    <p className="text-xs font-medium text-foreground">Superficie (m²)</p>
                     <Input
                       type="number"
                       min={0}
@@ -1117,8 +1117,8 @@ export default function NewListingPage() {
                   </div>
                 </div>
 
-                <div className="space-y-2 rounded-lg border border-slate-200 p-3">
-                  <p className="text-sm font-medium text-slate-900">Tags ({selectedListingTags.length}/6)</p>
+                <div className="space-y-2 rounded-lg border border-border p-3">
+                  <p className="text-sm font-medium text-foreground">Tags ({selectedListingTags.length}/6)</p>
                   <div className="flex flex-wrap gap-2">
                     {PLATFORM_TAG_OPTIONS.map((tag) => {
                       const isActive = selectedListingTags.includes(tag);
@@ -1128,8 +1128,8 @@ export default function NewListingPage() {
                           type="button"
                           className={`rounded-full border px-3 py-1 text-xs ${
                             isActive
-                              ? "border-emerald-700 bg-emerald-100 text-emerald-800"
-                              : "border-slate-300 bg-white text-slate-700"
+                              ? "border-success/30 bg-success/10 text-success"
+                              : "border-border bg-card text-foreground"
                           }`}
                           onClick={() => onToggleListingTag(tag)}
                           disabled={createListingSubmitting || loading}
@@ -1140,9 +1140,9 @@ export default function NewListingPage() {
                     })}
                   </div>
                   <div className="space-y-1">
-                    <p className="text-xs font-medium text-slate-700">Saisie manuelle des tags</p>
+                    <p className="text-xs font-medium text-foreground">Saisie manuelle des tags</p>
                     <textarea
-                      className="min-h-16 w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-800"
+                      className="min-h-16 w-full rounded-lg border border-border bg-card px-3 py-2 text-sm text-foreground"
                       value={createListing.tagsRaw}
                       onChange={(event) =>
                         setCreateListing((previous) => ({
@@ -1156,9 +1156,9 @@ export default function NewListingPage() {
                   </div>
                 </div>
 
-                <div className="space-y-2 rounded-lg border border-slate-200 p-3">
+                <div className="space-y-2 rounded-lg border border-border p-3">
                   <div className="flex items-center justify-between gap-2">
-                    <p className="text-sm font-medium text-slate-900">
+                    <p className="text-sm font-medium text-foreground">
                       Images ({listingLocalImages.length})
                     </p>
                     {listingLocalImages.length > 0 ? (
@@ -1174,7 +1174,7 @@ export default function NewListingPage() {
                     ) : null}
                   </div>
                   <div className="space-y-1">
-                    <p className="text-xs font-medium text-slate-700">Ajouter des images</p>
+                    <p className="text-xs font-medium text-foreground">Ajouter des images</p>
                     <Input
                       type="file"
                       accept="image/png,image/jpeg,image/webp"
@@ -1186,7 +1186,7 @@ export default function NewListingPage() {
                   {listingLocalImages.length > 0 ? (
                     <div className="grid grid-cols-2 gap-3 md:grid-cols-5">
                       {listingLocalImages.map((image) => (
-                        <div key={image.id} className="overflow-hidden rounded-lg border border-slate-200 bg-white">
+                        <div key={image.id} className="overflow-hidden rounded-lg border border-border bg-card">
                           <Image
                             src={image.previewUrl}
                             alt={image.file.name}
@@ -1196,8 +1196,8 @@ export default function NewListingPage() {
                             className="h-24 w-full object-cover"
                           />
                           <div className="space-y-1 px-2 py-2">
-                            <p className="truncate text-[11px] text-slate-700">{image.file.name}</p>
-                            <p className="text-[10px] text-slate-500">{(image.file.size / 1024 / 1024).toFixed(2)} MB</p>
+                            <p className="truncate text-[11px] text-foreground">{image.file.name}</p>
+                            <p className="text-[10px] text-muted-foreground">{(image.file.size / 1024 / 1024).toFixed(2)} MB</p>
                             <Button
                               type="button"
                               size="sm"
@@ -1213,7 +1213,7 @@ export default function NewListingPage() {
                       ))}
                     </div>
                   ) : (
-                    <p className="text-xs text-slate-500">Ajoute au moins 1 image JPG/PNG/WEBP.</p>
+                    <p className="text-xs text-muted-foreground">Ajoute au moins 1 image JPG/PNG/WEBP.</p>
                   )}
                 </div>
               </div>
@@ -1233,12 +1233,12 @@ export default function NewListingPage() {
             {listingStep === 3 ? (
               <div className="space-y-3">
                 {gabonOsmQuery.isFetching ? (
-                  <p className="rounded-md bg-slate-50 px-3 py-2 text-sm text-slate-700">
+                  <p className="rounded-md bg-muted px-3 py-2 text-sm text-foreground">
                     Chargement de la source OSM...
                   </p>
                 ) : null}
                 {gabonOsmQuery.error ? (
-                  <p className="rounded-md bg-amber-50 px-3 py-2 text-sm text-amber-700">
+                  <p className="rounded-md bg-warning/10 px-3 py-2 text-sm text-warning">
                     OSM indisponible pour le moment. Saisie manuelle activée.
                   </p>
                 ) : null}
@@ -1246,9 +1246,9 @@ export default function NewListingPage() {
                 {hasOsmOptions ? (
                   <div className="grid gap-3 md:grid-cols-3">
                     <div className="space-y-1">
-                      <p className="text-xs font-medium text-slate-700">Province (OSM)</p>
+                      <p className="text-xs font-medium text-foreground">Province (OSM)</p>
                       <select
-                        className="h-9 w-full rounded-lg border border-slate-300 bg-white px-3 text-sm text-slate-800"
+                        className="h-9 w-full rounded-lg border border-border bg-card px-3 text-sm text-foreground"
                         value={createListing.province}
                         onChange={(event) => onSelectOsmProvince(event.target.value)}
                         disabled={createListingSubmitting || loading}
@@ -1263,9 +1263,9 @@ export default function NewListingPage() {
                     </div>
 
                     <div className="space-y-1">
-                      <p className="text-xs font-medium text-slate-700">Ville (OSM)</p>
+                      <p className="text-xs font-medium text-foreground">Ville (OSM)</p>
                       <select
-                        className="h-9 w-full rounded-lg border border-slate-300 bg-white px-3 text-sm text-slate-800"
+                        className="h-9 w-full rounded-lg border border-border bg-card px-3 text-sm text-foreground"
                         value={createListing.city}
                         onChange={(event) => onSelectOsmCity(event.target.value)}
                         disabled={createListingSubmitting || loading || osmCityOptions.length === 0}
@@ -1284,9 +1284,9 @@ export default function NewListingPage() {
                     </div>
 
                     <div className="space-y-1">
-                      <p className="text-xs font-medium text-slate-700">Quartier (OSM)</p>
+                      <p className="text-xs font-medium text-foreground">Quartier (OSM)</p>
                       <select
-                        className="h-9 w-full rounded-lg border border-slate-300 bg-white px-3 text-sm text-slate-800"
+                        className="h-9 w-full rounded-lg border border-border bg-card px-3 text-sm text-foreground"
                         value={createListing.street}
                         onChange={(event) => onSelectOsmQuarter(event.target.value)}
                         disabled={createListingSubmitting || loading || osmQuarterOptions.length === 0}
@@ -1366,7 +1366,7 @@ export default function NewListingPage() {
                   <Input type="number" step="any" value={createListing.streetLat} onChange={(event) => setCreateListing((previous) => ({ ...previous, streetLat: event.target.value }))} placeholder="Street Lat (optionnel)" disabled={createListingSubmitting || loading} />
                 </div>
                 <select
-                  className="h-9 rounded-lg border border-slate-300 bg-white px-3 text-sm text-slate-800"
+                  className="h-9 rounded-lg border border-border bg-card px-3 text-sm text-foreground"
                   value={createListing.isLocExact}
                   onChange={(event) =>
                     setCreateListing((previous) => ({
@@ -1383,11 +1383,11 @@ export default function NewListingPage() {
             ) : null}
 
             {createListingError ? (
-              <p className="rounded-md bg-red-50 px-3 py-2 text-sm text-red-700">{createListingError}</p>
+              <p className="rounded-md bg-destructive/10 px-3 py-2 text-sm text-destructive">{createListingError}</p>
             ) : null}
 
             {createListingResult ? (
-              <p className="rounded-md bg-emerald-50 px-3 py-2 text-sm text-emerald-800">
+              <p className="rounded-md bg-success/10 px-3 py-2 text-sm text-success">
                 Annonce créée: ID <span className="font-mono">{createListingResult.propertyId}</span>
               </p>
             ) : null}

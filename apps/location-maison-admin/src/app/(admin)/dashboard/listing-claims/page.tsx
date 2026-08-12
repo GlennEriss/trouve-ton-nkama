@@ -119,14 +119,14 @@ export default function ListingClaimsDashboardPage() {
         }
       />
 
-      {globalError ? <p className="rounded-lg border border-red-200 bg-red-50 px-4 py-2 text-sm text-red-700">{globalError}</p> : null}
+      {globalError ? <p className="rounded-lg border border-destructive/30 bg-destructive/10 px-4 py-2 text-sm text-destructive">{globalError}</p> : null}
       {globalMessage ? (
-        <p className="rounded-lg border border-emerald-200 bg-emerald-50 px-4 py-2 text-sm text-emerald-700">{globalMessage}</p>
+        <p className="rounded-lg border border-success/30 bg-success/10 px-4 py-2 text-sm text-success">{globalMessage}</p>
       ) : null}
 
       {!canRead ? (
         <Card>
-          <CardContent className="py-6 text-sm text-slate-600">
+          <CardContent className="py-6 text-sm text-muted-foreground">
             Permission insuffisante : <code>listings.read</code> requise pour consulter les revendications.
           </CardContent>
         </Card>
@@ -134,25 +134,25 @@ export default function ListingClaimsDashboardPage() {
 
       {canRead ? (
         <Card>
-          <CardHeader className="pb-2 text-sm font-medium text-slate-700">
+          <CardHeader className="pb-2 text-sm font-medium text-foreground">
             En attente ({reviews.length})
           </CardHeader>
           <CardContent>
-            {reviewsQuery.isLoading ? <p className="text-sm text-slate-500">Chargement...</p> : null}
+            {reviewsQuery.isLoading ? <p className="text-sm text-muted-foreground">Chargement...</p> : null}
             {reviewsQuery.isError ? (
-              <p className="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
+              <p className="rounded-lg border border-destructive/30 bg-destructive/10 px-3 py-2 text-sm text-destructive">
                 {reviewsQuery.error instanceof Error ? reviewsQuery.error.message : "Erreur lors du chargement."}
               </p>
             ) : null}
 
             {!reviewsQuery.isLoading && !reviewsQuery.isError && reviews.length === 0 ? (
-              <p className="text-sm text-slate-500">Aucune revendication en attente.</p>
+              <p className="text-sm text-muted-foreground">Aucune revendication en attente.</p>
             ) : null}
 
             {!reviewsQuery.isLoading && !reviewsQuery.isError && reviews.length > 0 ? (
-              <div className="max-h-[640px] overflow-auto rounded-lg border border-slate-200">
+              <div className="max-h-[640px] overflow-auto rounded-lg border border-border">
                 <table className="w-full text-sm">
-                  <thead className="sticky top-0 z-10 bg-slate-50 text-left text-slate-600">
+                  <thead className="sticky top-0 z-10 bg-muted text-left text-muted-foreground">
                     <tr>
                       <th className="px-3 py-2 font-medium">Annonceur</th>
                       <th className="px-3 py-2 font-medium">Numéro vérifié</th>
@@ -163,16 +163,16 @@ export default function ListingClaimsDashboardPage() {
                   </thead>
                   <tbody>
                     {reviews.map((review) => (
-                      <tr key={review.id} className="border-t border-slate-100">
-                        <td className="px-3 py-2 text-slate-900">
+                      <tr key={review.id} className="border-t border-border">
+                        <td className="px-3 py-2 text-foreground">
                           {review.announcerLabel ?? review.uid}
                           <Badge variant="warning" className="ml-2">
                             En attente
                           </Badge>
                         </td>
-                        <td className="px-3 py-2 text-slate-700">{review.verifiedPhone}</td>
-                        <td className="px-3 py-2 text-slate-700">{review.matchCount}</td>
-                        <td className="px-3 py-2 text-slate-700">{toDateLabel(review.lastAttemptAt ?? review.createdAt)}</td>
+                        <td className="px-3 py-2 text-foreground">{review.verifiedPhone}</td>
+                        <td className="px-3 py-2 text-foreground">{review.matchCount}</td>
+                        <td className="px-3 py-2 text-foreground">{toDateLabel(review.lastAttemptAt ?? review.createdAt)}</td>
                         <td className="px-3 py-2">
                           {canReview ? (
                             <div className="flex items-center gap-2">
@@ -194,7 +194,7 @@ export default function ListingClaimsDashboardPage() {
                               </Button>
                             </div>
                           ) : (
-                            <span className="text-xs text-slate-400">N/A</span>
+                            <span className="text-xs text-muted-foreground">N/A</span>
                           )}
                         </td>
                       </tr>

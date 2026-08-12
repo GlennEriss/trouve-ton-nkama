@@ -120,8 +120,8 @@ type DraftEditFormState = {
 };
 
 const inputClass =
-  "w-full rounded-md border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 focus:border-brand-500 focus:outline-none";
-const labelClass = "space-y-1 text-xs font-medium text-slate-600";
+  "w-full rounded-md border border-border bg-card px-3 py-2 text-sm text-foreground focus:border-brand-500 focus:outline-none";
+const labelClass = "space-y-1 text-xs font-medium text-muted-foreground";
 
 async function fetchOsmSelector(): Promise<GabonOsmSelectorData> {
   const response = await fetch("/api/admin/v1/osm/gabon");
@@ -435,7 +435,7 @@ function ImageThumb({ url }: { url: string }) {
   if (failed) {
     return (
       <div
-        className="flex h-20 w-20 items-center justify-center rounded-md border border-dashed border-slate-300 bg-slate-50 px-1 text-center text-[10px] leading-tight text-slate-400"
+        className="flex h-20 w-20 items-center justify-center rounded-md border border-dashed border-border bg-muted px-1 text-center text-[10px] leading-tight text-muted-foreground"
         title="Aperçu inaccessible depuis ce navigateur (réseau/VPN qui bloque fbcdn.net, ou URL expirée) — n'empêche pas forcément la création de l'annonce, qui télécharge l'image depuis le serveur."
       >
         Aperçu indisponible
@@ -451,7 +451,7 @@ function ImageThumb({ url }: { url: string }) {
       alt=""
       referrerPolicy="no-referrer"
       onError={() => setFailed(true)}
-      className="h-20 w-20 rounded-md border border-slate-200 object-cover"
+      className="h-20 w-20 rounded-md border border-border object-cover"
       loading="lazy"
     />
   );
@@ -459,9 +459,9 @@ function ImageThumb({ url }: { url: string }) {
 
 function StatTile({ label, value, tone }: { label: string; value: number; tone?: "muted" }) {
   return (
-    <div className="rounded-lg border border-slate-200 bg-white px-4 py-3">
-      <p className="text-2xl font-semibold tracking-tight text-slate-900">{value}</p>
-      <p className={tone === "muted" ? "text-xs text-slate-400" : "text-xs text-slate-600"}>{label}</p>
+    <div className="rounded-lg border border-border bg-card px-4 py-3">
+      <p className="text-2xl font-semibold tracking-tight text-foreground">{value}</p>
+      <p className={tone === "muted" ? "text-xs text-muted-foreground" : "text-xs text-muted-foreground"}>{label}</p>
     </div>
   );
 }
@@ -666,7 +666,7 @@ function DraftEditDialog({
 
         <form className="space-y-5" onSubmit={submit}>
           <section className="space-y-3">
-            <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">Contenu</p>
+            <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Contenu</p>
             <label className={labelClass}>
               Titre
               <input
@@ -734,7 +734,7 @@ function DraftEditDialog({
           </section>
 
           <section className="space-y-3">
-            <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">Localisation</p>
+            <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Localisation</p>
             <div className="grid gap-3 md:grid-cols-3">
               <label className={labelClass}>
                 Province
@@ -833,7 +833,7 @@ function DraftEditDialog({
                 />
               </label>
               <div className="flex items-end gap-4 pb-2">
-                <label className="flex items-center gap-2 text-xs font-medium text-slate-600">
+                <label className="flex items-center gap-2 text-xs font-medium text-muted-foreground">
                   <input
                     type="checkbox"
                     checked={form.isLocExact}
@@ -841,7 +841,7 @@ function DraftEditDialog({
                   />
                   Position exacte
                 </label>
-                <label className="flex items-center gap-2 text-xs font-medium text-slate-600">
+                <label className="flex items-center gap-2 text-xs font-medium text-muted-foreground">
                   <input
                     type="checkbox"
                     checked={form.isOwner}
@@ -854,7 +854,7 @@ function DraftEditDialog({
           </section>
 
           <section className="space-y-3">
-            <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">Détails</p>
+            <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Détails</p>
             <div className="grid gap-3 md:grid-cols-4">
               <label className={labelClass}>
                 Chambres / pièces
@@ -916,7 +916,7 @@ function DraftEditDialog({
                 Sections
                 <input className={inputClass} inputMode="numeric" value={form.nbrSections} onChange={(event) => setField("nbrSections", event.target.value)} />
               </label>
-              <label className="flex items-end gap-2 pb-2 text-xs font-medium text-slate-600">
+              <label className="flex items-end gap-2 pb-2 text-xs font-medium text-muted-foreground">
                 <input
                   type="checkbox"
                   checked={form.hasParking}
@@ -936,7 +936,7 @@ function DraftEditDialog({
           </section>
 
           <section className="space-y-3">
-            <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">Médias & tags</p>
+            <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Médias & tags</p>
             <label className={labelClass}>
               Tags
               <input
@@ -947,7 +947,7 @@ function DraftEditDialog({
               />
             </label>
             <div className="space-y-2">
-              <p className="flex items-center justify-between text-xs font-medium text-slate-600">
+              <p className="flex items-center justify-between text-xs font-medium text-muted-foreground">
                 <span>
                   Images ({form.images.length}/{MAX_DRAFT_IMAGES})
                 </span>
@@ -962,7 +962,7 @@ function DraftEditDialog({
                         type="button"
                         aria-label="Supprimer cette image"
                         onClick={() => removeImage(imageIndex)}
-                        className="absolute -right-1.5 -top-1.5 flex h-5 w-5 items-center justify-center rounded-full bg-red-600 text-white shadow"
+                        className="absolute -right-1.5 -top-1.5 flex h-5 w-5 items-center justify-center rounded-full bg-destructive text-white shadow"
                       >
                         <X className="size-3" />
                       </button>
@@ -972,7 +972,7 @@ function DraftEditDialog({
                           aria-label="Déplacer vers la gauche"
                           disabled={imageIndex === 0}
                           onClick={() => moveImage(imageIndex, imageIndex - 1)}
-                          className="flex h-5 w-5 items-center justify-center rounded-full bg-white text-slate-600 shadow disabled:opacity-30"
+                          className="flex h-5 w-5 items-center justify-center rounded-full bg-card text-muted-foreground shadow disabled:opacity-30"
                         >
                           <ChevronLeft className="size-3" />
                         </button>
@@ -981,7 +981,7 @@ function DraftEditDialog({
                           aria-label="Déplacer vers la droite"
                           disabled={imageIndex === form.images.length - 1}
                           onClick={() => moveImage(imageIndex, imageIndex + 1)}
-                          className="flex h-5 w-5 items-center justify-center rounded-full bg-white text-slate-600 shadow disabled:opacity-30"
+                          className="flex h-5 w-5 items-center justify-center rounded-full bg-card text-muted-foreground shadow disabled:opacity-30"
                         >
                           <ChevronRight className="size-3" />
                         </button>
@@ -990,7 +990,7 @@ function DraftEditDialog({
                   ))}
                 </div>
               ) : (
-                <p className="text-xs text-slate-400">Aucune image. Ajoute-en depuis ton ordinateur ou colle une URL.</p>
+                <p className="text-xs text-muted-foreground">Aucune image. Ajoute-en depuis ton ordinateur ou colle une URL.</p>
               )}
 
               <div className="flex flex-wrap items-center gap-2">
@@ -1012,9 +1012,9 @@ function DraftEditDialog({
                   className="hidden"
                   onChange={handleFilesSelected}
                 />
-                {uploadError ? <span className="text-xs text-red-600">{uploadError}</span> : null}
+                {uploadError ? <span className="text-xs text-destructive">{uploadError}</span> : null}
               </div>
-              <p className="text-xs text-slate-400">
+              <p className="text-xs text-muted-foreground">
                 Images expirées ou absentes du JSON : télécharge-les depuis le lien du post puis ajoute-les ici (JPG/PNG/WEBP, 10 Mo max).
               </p>
 
@@ -1102,7 +1102,7 @@ function DraftCard({
     <Card>
       <CardHeader className="flex flex-col gap-2">
         <div className="flex flex-wrap items-center gap-2">
-          <span className="text-xs font-medium text-slate-400">#{index + 1}</span>
+          <span className="text-xs font-medium text-muted-foreground">#{index + 1}</span>
           {draft.typeProperty ? <Badge variant="secondary">{TYPE_LABELS[draft.typeProperty]}</Badge> : null}
           <Badge variant={draft.status === "FOR_RENT" ? "success" : "warning"}>
             {draft.status === "FOR_RENT" ? "Location" : "Vente"}
@@ -1110,9 +1110,9 @@ function DraftCard({
           {isEdited ? <Badge variant="success">Modifiée manuellement</Badge> : null}
           <Badge variant="secondary">{draft.images.length} image(s)</Badge>
         </div>
-        <h3 className="text-base font-semibold text-slate-900">{draft.title || "Sans titre"}</h3>
-        <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-slate-600">
-          <span className="font-medium text-slate-900">{formatPrice(draft.price)}</span>
+        <h3 className="text-base font-semibold text-foreground">{draft.title || "Sans titre"}</h3>
+        <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-muted-foreground">
+          <span className="font-medium text-foreground">{formatPrice(draft.price)}</span>
           {location ? <span>📍 {location}</span> : null}
           {rooms ? <span>{rooms}</span> : null}
           {draft.contact ? <span>☎ {draft.contact}</span> : null}
@@ -1121,7 +1121,7 @@ function DraftCard({
 
       <CardContent className="space-y-3">
         {/* Localisation */}
-        <div className="flex flex-wrap items-center gap-2 rounded-md bg-slate-50 px-3 py-2 text-xs">
+        <div className="flex flex-wrap items-center gap-2 rounded-md bg-muted px-3 py-2 text-xs">
           {geo.source ? (
             <Badge variant={RESOLVED_SOURCES.includes(geo.source) ? "success" : "secondary"}>
               {GEO_SOURCE_LABELS[geo.source]}
@@ -1130,12 +1130,12 @@ function DraftCard({
             <Badge variant="warning">Non localisé</Badge>
           )}
           {hasCoords(draft) ? (
-            <span className="text-slate-500">
+            <span className="text-muted-foreground">
               {draft.latitude.toFixed(5)}, {draft.longitude.toFixed(5)} · {draft.isLocExact ? "exact" : "approx."}
             </span>
           ) : null}
           {geo.status === "error" && geo.message ? (
-            <span className="text-red-600">{geo.message}</span>
+            <span className="text-destructive">{geo.message}</span>
           ) : null}
           {canRefine ? (
             <Button
@@ -1160,8 +1160,8 @@ function DraftCard({
         {/* Description générée */}
         {draft.description ? (
           <div>
-            <p className="mb-1 text-xs font-medium text-slate-500">Description générée</p>
-            <p className="whitespace-pre-line rounded-md bg-slate-50 px-3 py-2 text-sm text-slate-700">
+            <p className="mb-1 text-xs font-medium text-muted-foreground">Description générée</p>
+            <p className="whitespace-pre-line rounded-md bg-muted px-3 py-2 text-sm text-foreground">
               {draft.description}
             </p>
           </div>
@@ -1169,11 +1169,11 @@ function DraftCard({
 
         {/* Texte original du post (pour vérifier le parsing) */}
         {draft.source.rawText ? (
-          <details className="rounded-md border border-slate-200">
-            <summary className="cursor-pointer px-3 py-2 text-xs font-medium text-slate-500">
+          <details className="rounded-md border border-border">
+            <summary className="cursor-pointer px-3 py-2 text-xs font-medium text-muted-foreground">
               Texte original du post
             </summary>
-            <p className="whitespace-pre-line border-t border-slate-100 px-3 py-2 text-sm text-slate-600">
+            <p className="whitespace-pre-line border-t border-border px-3 py-2 text-sm text-muted-foreground">
               {draft.source.rawText}
             </p>
           </details>
@@ -1181,12 +1181,12 @@ function DraftCard({
 
         {/* Attributs du modèle */}
         <div>
-          <p className="mb-1 text-xs font-medium text-slate-500">Attributs</p>
+          <p className="mb-1 text-xs font-medium text-muted-foreground">Attributs</p>
           <dl className="grid grid-cols-2 gap-x-4 gap-y-1 text-sm">
             {listingAttributes(draft).map((attr) => (
-              <div key={attr.label} className="flex justify-between gap-2 border-b border-slate-100 py-0.5">
-                <dt className="text-slate-500">{attr.label}</dt>
-                <dd className="text-right font-medium text-slate-800">{attr.value}</dd>
+              <div key={attr.label} className="flex justify-between gap-2 border-b border-border py-0.5">
+                <dt className="text-muted-foreground">{attr.label}</dt>
+                <dd className="text-right font-medium text-foreground">{attr.value}</dd>
               </div>
             ))}
           </dl>
@@ -1194,7 +1194,7 @@ function DraftCard({
 
         {missingFields.length > 0 ? (
           <div className="flex flex-wrap items-center gap-2">
-            <span className="text-xs font-medium text-amber-700">À compléter :</span>
+            <span className="text-xs font-medium text-warning">À compléter :</span>
             {missingFields.map((field) => (
               <Badge key={field} variant="warning">
                 {field}
@@ -1206,7 +1206,7 @@ function DraftCard({
         )}
 
         {warnings.map((warning) => (
-          <p key={warning} className="text-xs text-slate-500">
+          <p key={warning} className="text-xs text-muted-foreground">
             ⚠ {warning}
           </p>
         ))}
@@ -1214,7 +1214,7 @@ function DraftCard({
         {draft.tags.length > 0 ? (
           <div className="flex flex-wrap gap-1">
             {draft.tags.slice(0, 12).map((tag) => (
-              <span key={tag} className="rounded-full bg-slate-100 px-2 py-0.5 text-[11px] text-slate-500">
+              <span key={tag} className="rounded-full bg-muted px-2 py-0.5 text-[11px] text-muted-foreground">
                 #{tag}
               </span>
             ))}
@@ -1227,19 +1227,19 @@ function DraftCard({
               Voir les photos du post
             </a>
           ) : (
-            <span className="text-slate-400">Pas de lien direct vers le post</span>
+            <span className="text-muted-foreground">Pas de lien direct vers le post</span>
           )}
           {draft.source.authorUrl ? (
-            <a href={draft.source.authorUrl} target="_blank" rel="noreferrer" className="text-slate-500 underline">
+            <a href={draft.source.authorUrl} target="_blank" rel="noreferrer" className="text-muted-foreground underline">
               Profil auteur{draft.source.authorName ? ` (${draft.source.authorName})` : ""}
             </a>
           ) : draft.source.authorName ? (
-            <span className="text-slate-500">Auteur : {draft.source.authorName}</span>
+            <span className="text-muted-foreground">Auteur : {draft.source.authorName}</span>
           ) : null}
         </div>
 
         {/* Création de l'annonce */}
-        <div className="flex flex-wrap items-center gap-2 border-t border-slate-100 pt-3">
+        <div className="flex flex-wrap items-center gap-2 border-t border-border pt-3">
           {imp.status === "created" ? (
             <Badge variant="success">Annonce créée{imp.propertyId ? ` · ${imp.propertyId}` : ""}</Badge>
           ) : (
@@ -1263,28 +1263,28 @@ function DraftCard({
           <Button
             variant="outline"
             size="sm"
-            className="text-red-600"
+            className="text-destructive"
             onClick={() => onRemove(index)}
           >
             Supprimer
           </Button>
-          {imp.status === "error" && imp.error ? <span className="text-xs text-red-600">{imp.error}</span> : null}
+          {imp.status === "error" && imp.error ? <span className="text-xs text-destructive">{imp.error}</span> : null}
           {!canCreate && imp.status !== "created" ? (
-            <span className="text-xs text-slate-400">Annonceur requis (barre « Annonceur cible » en haut)</span>
+            <span className="text-xs text-muted-foreground">Annonceur requis (barre « Annonceur cible » en haut)</span>
           ) : null}
         </div>
 
         {/* Reel — orphelin si le post n'a pas d'image, sinon rattaché à l'annonce */}
         {reelDraft ? (
-          <div className="space-y-2 border-t border-slate-100 pt-3">
+          <div className="space-y-2 border-t border-border pt-3">
             <div className="flex flex-wrap items-center gap-2">
               <Badge variant="secondary">Vidéo détectée</Badge>
               {draft.images.length === 0 ? (
-                <span className="text-xs text-slate-500">Post sans image — reel indépendant, sans annonce liée.</span>
+                <span className="text-xs text-muted-foreground">Post sans image — reel indépendant, sans annonce liée.</span>
               ) : imp.status === "created" ? (
-                <span className="text-xs text-slate-500">Sera rattaché à l&apos;annonce créée.</span>
+                <span className="text-xs text-muted-foreground">Sera rattaché à l&apos;annonce créée.</span>
               ) : (
-                <span className="text-xs text-slate-500">
+                <span className="text-xs text-muted-foreground">
                   Sera rattaché automatiquement à la création de l&apos;annonce.
                 </span>
               )}
@@ -1308,12 +1308,12 @@ function DraftCard({
                   {reelImp.status === "loading" ? "Création…" : "Créer le reel"}
                 </Button>
               )}
-              {reelDraft.contact ? <span className="text-xs text-slate-500">☎ {reelDraft.contact}</span> : null}
+              {reelDraft.contact ? <span className="text-xs text-muted-foreground">☎ {reelDraft.contact}</span> : null}
               {reelImp.status === "error" && reelImp.error ? (
-                <span className="text-xs text-red-600">{reelImp.error}</span>
+                <span className="text-xs text-destructive">{reelImp.error}</span>
               ) : null}
             </div>
-            <p className="text-xs text-slate-400">
+            <p className="text-xs text-muted-foreground">
               Le reel sera visible après validation dans Modération &gt; Réels.
             </p>
           </div>
@@ -1355,24 +1355,24 @@ function GroupEditDialog({ group, open, onOpenChange, onSave }: GroupEditDialogP
           <DialogTitle>Modifier le groupe</DialogTitle>
         </DialogHeader>
         <div className="space-y-3 py-2">
-          <label className="flex flex-col gap-1 text-xs text-slate-500">
+          <label className="flex flex-col gap-1 text-xs text-muted-foreground">
             URL du groupe
             <input
               value={url}
               onChange={(event) => setUrl(event.target.value)}
-              className="rounded-md border border-slate-200 px-2 py-1.5 text-sm focus:border-brand-500 focus:outline-none"
+              className="rounded-md border border-border px-2 py-1.5 text-sm focus:border-brand-500 focus:outline-none"
             />
           </label>
-          <label className="flex flex-col gap-1 text-xs text-slate-500">
+          <label className="flex flex-col gap-1 text-xs text-muted-foreground">
             Libellé
             <input
               value={label}
               onChange={(event) => setLabel(event.target.value)}
               placeholder="(optionnel)"
-              className="rounded-md border border-slate-200 px-2 py-1.5 text-sm focus:border-brand-500 focus:outline-none"
+              className="rounded-md border border-border px-2 py-1.5 text-sm focus:border-brand-500 focus:outline-none"
             />
           </label>
-          {error ? <p className="text-xs text-red-600">{error}</p> : null}
+          {error ? <p className="text-xs text-destructive">{error}</p> : null}
         </div>
         <DialogFooter>
           <Button variant="outline" onClick={() => onOpenChange(false)}>
@@ -1933,8 +1933,8 @@ export default function ApifyPage() {
 
       <Card>
         <CardHeader>
-          <p className="text-sm font-medium text-slate-900">Scraping automatique</p>
-          <p className="text-xs text-slate-500">
+          <p className="text-sm font-medium text-foreground">Scraping automatique</p>
+          <p className="text-xs text-muted-foreground">
             Lance le scraper Facebook Groups directement depuis l&apos;API Apify — remplace le
             copier-coller manuel ci-dessous. Bascule automatiquement entre les comptes Apify
             configurés si l&apos;un atteint sa limite de crédit.
@@ -1942,17 +1942,17 @@ export default function ApifyPage() {
         </CardHeader>
         <CardContent className="space-y-3">
           <div className="space-y-2">
-            <p className="text-xs font-medium text-slate-500">Groupes enregistrés</p>
+            <p className="text-xs font-medium text-muted-foreground">Groupes enregistrés</p>
             {groupsQuery.isLoading ? (
-              <p className="text-xs text-slate-400">Chargement…</p>
+              <p className="text-xs text-muted-foreground">Chargement…</p>
             ) : groups.length === 0 ? (
-              <p className="text-xs text-slate-400">Aucun groupe enregistré — ajoute-en un ci-dessous.</p>
+              <p className="text-xs text-muted-foreground">Aucun groupe enregistré — ajoute-en un ci-dessous.</p>
             ) : (
               <ul className="space-y-1">
                 {groups.map((group) => (
                   <li
                     key={group.id}
-                    className="flex items-center gap-2 rounded-md border border-slate-200 px-2 py-1.5"
+                    className="flex items-center gap-2 rounded-md border border-border px-2 py-1.5"
                   >
                     <input
                       type="checkbox"
@@ -1962,13 +1962,13 @@ export default function ApifyPage() {
                       }
                       disabled={scrapeStatus === "running"}
                     />
-                    <span className="flex-1 truncate text-sm text-slate-800">{group.label || group.url}</span>
+                    <span className="flex-1 truncate text-sm text-foreground">{group.label || group.url}</span>
                     {group.label ? (
-                      <span className="hidden truncate text-xs text-slate-400 sm:inline">{group.url}</span>
+                      <span className="hidden truncate text-xs text-muted-foreground sm:inline">{group.url}</span>
                     ) : null}
                     <button
                       type="button"
-                      className="text-slate-400 hover:text-slate-700"
+                      className="text-muted-foreground hover:text-foreground"
                       onClick={() => setEditGroup(group)}
                       aria-label="Modifier"
                     >
@@ -1976,7 +1976,7 @@ export default function ApifyPage() {
                     </button>
                     <button
                       type="button"
-                      className="text-red-500 hover:text-red-700"
+                      className="text-destructive hover:text-destructive"
                       onClick={() => setConfirmRemoveGroupId(group.id)}
                       aria-label="Supprimer"
                     >
@@ -1988,33 +1988,33 @@ export default function ApifyPage() {
             )}
           </div>
 
-          <div className="flex flex-wrap items-end gap-2 border-t border-slate-100 pt-3">
-            <label className="flex flex-col gap-1 text-xs text-slate-500">
+          <div className="flex flex-wrap items-end gap-2 border-t border-border pt-3">
+            <label className="flex flex-col gap-1 text-xs text-muted-foreground">
               URL du groupe
               <input
                 value={newGroupUrl}
                 onChange={(event) => setNewGroupUrl(event.target.value)}
                 placeholder="https://www.facebook.com/groups/..."
-                className="w-64 rounded-md border border-slate-200 px-2 py-1.5 text-sm focus:border-brand-500 focus:outline-none"
+                className="w-64 rounded-md border border-border px-2 py-1.5 text-sm focus:border-brand-500 focus:outline-none"
               />
             </label>
-            <label className="flex flex-col gap-1 text-xs text-slate-500">
+            <label className="flex flex-col gap-1 text-xs text-muted-foreground">
               Libellé (optionnel)
               <input
                 value={newGroupLabel}
                 onChange={(event) => setNewGroupLabel(event.target.value)}
                 placeholder="Bons plans immo Libreville"
-                className="w-56 rounded-md border border-slate-200 px-2 py-1.5 text-sm focus:border-brand-500 focus:outline-none"
+                className="w-56 rounded-md border border-border px-2 py-1.5 text-sm focus:border-brand-500 focus:outline-none"
               />
             </label>
             <Button variant="outline" onClick={handleAddGroup} disabled={!newGroupUrl.trim() || addingGroup}>
               {addingGroup ? "Ajout…" : "Ajouter le groupe"}
             </Button>
           </div>
-          {groupFormError ? <p className="text-xs text-red-600">{groupFormError}</p> : null}
+          {groupFormError ? <p className="text-xs text-destructive">{groupFormError}</p> : null}
 
-          <div className="flex flex-wrap items-center gap-3 border-t border-slate-100 pt-3">
-            <label className="flex items-center gap-2 text-sm text-slate-600">
+          <div className="flex flex-wrap items-center gap-3 border-t border-border pt-3">
+            <label className="flex items-center gap-2 text-sm text-muted-foreground">
               Posts par groupe
               <input
                 type="number"
@@ -2022,7 +2022,7 @@ export default function ApifyPage() {
                 value={resultsLimitText}
                 onChange={(event) => setResultsLimitText(event.target.value)}
                 disabled={scrapeStatus === "running"}
-                className="w-20 rounded-md border border-slate-200 px-2 py-1 text-sm focus:border-brand-500 focus:outline-none"
+                className="w-20 rounded-md border border-border px-2 py-1 text-sm focus:border-brand-500 focus:outline-none"
               />
             </label>
             <Button
@@ -2034,14 +2034,14 @@ export default function ApifyPage() {
                 : `Lancer le scraping (${selectedGroupUrls.length})`}
             </Button>
             {scrapeStatus === "running" ? (
-              <span className="text-xs text-slate-500">
+              <span className="text-xs text-muted-foreground">
                 Run {scrapeRunId} — ça peut prendre plusieurs minutes pour 100 posts.
               </span>
             ) : null}
             {scrapeStatus === "succeeded" ? <Badge variant="success">Résultats chargés ci-dessous</Badge> : null}
           </div>
           {scrapeStatus === "stalled" ? (
-            <div className="flex items-center gap-2 text-xs text-amber-700">
+            <div className="flex items-center gap-2 text-xs text-warning">
               <span>Toujours en cours côté Apify (run {scrapeRunId}) — le run continue même si tu quittes la page.</span>
               <Button variant="outline" size="sm" onClick={() => scrapePollQuery.refetch()}>
                 Vérifier maintenant
@@ -2049,15 +2049,15 @@ export default function ApifyPage() {
             </div>
           ) : null}
           {scrapeStatus === "failed" && scrapeError ? (
-            <p className="text-xs text-red-600">{scrapeError}</p>
+            <p className="text-xs text-destructive">{scrapeError}</p>
           ) : null}
         </CardContent>
       </Card>
 
       <Card>
         <CardHeader>
-          <p className="text-sm font-medium text-slate-900">JSON Apify</p>
-          <p className="text-xs text-slate-500">
+          <p className="text-sm font-medium text-foreground">JSON Apify</p>
+          <p className="text-xs text-muted-foreground">
             Le tableau de posts du scraper Facebook. Les annonces ne sont pas encore enregistrées en base —
             cette étape ne fait que prévisualiser la transformation. Une vignette «&nbsp;Aperçu
             indisponible&nbsp;» ne veut pas dire que l&apos;image est perdue : soit l&apos;URL Facebook a
@@ -2072,9 +2072,9 @@ export default function ApifyPage() {
             onChange={(event) => setRawJson(event.target.value)}
             spellCheck={false}
             placeholder="[ { &quot;facebookUrl&quot;: &quot;...&quot;, &quot;text&quot;: &quot;...&quot;, &quot;attachments&quot;: [...] } ]"
-            className="h-48 w-full resize-y rounded-md border border-slate-200 bg-slate-50 p-3 font-mono text-xs text-slate-800 focus:border-brand-500 focus:outline-none"
+            className="h-48 w-full resize-y rounded-md border border-border bg-muted p-3 font-mono text-xs text-foreground focus:border-brand-500 focus:outline-none"
           />
-          {error ? <p className="mt-2 text-sm text-red-600">{error}</p> : null}
+          {error ? <p className="mt-2 text-sm text-destructive">{error}</p> : null}
         </CardContent>
       </Card>
 
@@ -2090,9 +2090,9 @@ export default function ApifyPage() {
       {items.length > 0 ? (
         <Card className="sticky top-2 z-20 shadow-md">
           <CardContent className="space-y-3 py-4">
-            <p className="text-sm font-medium text-slate-900">Annonceur cible &amp; création</p>
+            <p className="text-sm font-medium text-foreground">Annonceur cible &amp; création</p>
             <div className="flex flex-wrap items-center justify-between gap-2">
-              <p className="text-sm text-slate-600">
+              <p className="text-sm text-muted-foreground">
                 Localisation : {items.length - unresolvedIndexes.length}/{items.length} résolues localement (référentiel + OSM).
                 {!osm ? " (Données OSM en cours de chargement…)" : null}
               </p>
@@ -2102,12 +2102,12 @@ export default function ApifyPage() {
             </div>
 
             {/* Annonceur cible + création */}
-            <div className="flex flex-wrap items-center gap-3 border-t border-slate-100 pt-3">
+            <div className="flex flex-wrap items-center gap-3 border-t border-border pt-3">
               <div className="relative">
                 {announcer ? (
-                  <div className="flex items-center gap-2 rounded-md border border-slate-200 px-3 py-1.5 text-sm">
-                    <span className="font-medium text-slate-800">{announcer.fullName}</span>
-                    <span className="text-xs text-slate-400">{announcer.email ?? announcer.uid}</span>
+                  <div className="flex items-center gap-2 rounded-md border border-border px-3 py-1.5 text-sm">
+                    <span className="font-medium text-foreground">{announcer.fullName}</span>
+                    <span className="text-xs text-muted-foreground">{announcer.email ?? announcer.uid}</span>
                     <button
                       type="button"
                       className="text-xs text-primary underline"
@@ -2125,32 +2125,32 @@ export default function ApifyPage() {
                       value={announcerQuery}
                       onChange={(event) => setAnnouncerQuery(event.target.value)}
                       placeholder="Rechercher l'annonceur (nom, email)…"
-                      className="w-72 rounded-md border border-slate-200 px-3 py-1.5 text-sm focus:border-brand-500 focus:outline-none"
+                      className="w-72 rounded-md border border-border px-3 py-1.5 text-sm focus:border-brand-500 focus:outline-none"
                     />
                     {announcerQueryDebounced.trim().length >= 2 ? (
-                      <div className="absolute z-10 mt-1 w-72 rounded-md border border-slate-200 bg-white shadow">
+                      <div className="absolute z-10 mt-1 w-72 rounded-md border border-border bg-card shadow">
                         {announcerQueryResult.isLoading ? (
-                          <p className="px-3 py-2 text-xs text-slate-400">Recherche…</p>
+                          <p className="px-3 py-2 text-xs text-muted-foreground">Recherche…</p>
                         ) : announcerQueryResult.isError ? (
-                          <p className="px-3 py-2 text-xs text-red-600">
+                          <p className="px-3 py-2 text-xs text-destructive">
                             {(announcerQueryResult.error as Error).message}
                           </p>
                         ) : (announcerQueryResult.data?.length ?? 0) === 0 ? (
-                          <p className="px-3 py-2 text-xs text-slate-400">Aucun annonceur trouvé.</p>
+                          <p className="px-3 py-2 text-xs text-muted-foreground">Aucun annonceur trouvé.</p>
                         ) : (
                           <ul className="max-h-56 overflow-auto">
                             {announcerQueryResult.data!.map((option) => (
                               <li key={option.uid}>
                                 <button
                                   type="button"
-                                  className="flex w-full flex-col items-start px-3 py-1.5 text-left text-sm hover:bg-slate-50"
+                                  className="flex w-full flex-col items-start px-3 py-1.5 text-left text-sm hover:bg-muted"
                                   onClick={() => {
                                     setAnnouncer(option);
                                     setAnnouncerQuery("");
                                   }}
                                 >
-                                  <span className="font-medium text-slate-800">{option.fullName}</span>
-                                  <span className="text-xs text-slate-400">{option.email ?? option.uid}</span>
+                                  <span className="font-medium text-foreground">{option.fullName}</span>
+                                  <span className="text-xs text-muted-foreground">{option.email ?? option.uid}</span>
                                 </button>
                               </li>
                             ))}
@@ -2165,17 +2165,17 @@ export default function ApifyPage() {
               <Button onClick={createAll} disabled={!announcer || importingAll}>
                 {importingAll ? "Création en cours…" : "Créer les annonces"}
               </Button>
-              <span className="text-xs text-slate-400">
+              <span className="text-xs text-muted-foreground">
                 Images expirées ou prix/lieu manquant ⇒ l&apos;annonce sera signalée en échec.
               </span>
             </div>
 
             {reelTargetCount > 0 ? (
-              <div className="flex flex-wrap items-center gap-3 border-t border-slate-100 pt-3">
+              <div className="flex flex-wrap items-center gap-3 border-t border-border pt-3">
                 <Button variant="outline" onClick={createReelAll} disabled={!announcer}>
                   Créer tous les reels ({reelTargetCount})
                 </Button>
-                <span className="text-xs text-slate-400">
+                <span className="text-xs text-muted-foreground">
                   Reels indépendants des annonces — visibles après validation dans Modération &gt; Réels.
                 </span>
               </div>
@@ -2209,7 +2209,7 @@ export default function ApifyPage() {
           </div>
         ) : (
           <Card>
-            <CardContent className="py-8 text-center text-sm text-slate-500">
+            <CardContent className="py-8 text-center text-sm text-muted-foreground">
               Aucune annonce immobilière détectée dans ce JSON.
             </CardContent>
           </Card>

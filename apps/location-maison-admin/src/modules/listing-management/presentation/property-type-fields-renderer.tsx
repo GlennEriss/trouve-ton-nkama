@@ -46,7 +46,7 @@ function renderField<T extends FieldFormState>(
   const control =
     rule.kind === "boolean" ? (
       <select
-        className="h-9 rounded-lg border border-slate-300 bg-white px-3 text-sm text-slate-800"
+        className="h-9 rounded-lg border border-border bg-card px-3 text-sm text-foreground"
         value={state[rule.key] ?? ""}
         onChange={(event) => setField(event.target.value)}
         disabled={disabled}
@@ -72,7 +72,7 @@ function renderField<T extends FieldFormState>(
 
   return (
     <div key={rule.key} className="space-y-1">
-      <p className="text-xs font-medium text-slate-700">{rule.placeholder}</p>
+      <p className="text-xs font-medium text-foreground">{rule.placeholder}</p>
       {control}
     </div>
   );
@@ -107,7 +107,7 @@ export function renderExtraTypeFields<T extends FieldFormState>(
       {isLogementLike ? renderLogementBaseFields(state, setState, disabled, variant) : null}
 
       {extraFields.length === 0 && !isLogementLike ? (
-        <p className="rounded-md bg-slate-50 px-3 py-2 text-sm text-slate-700">
+        <p className="rounded-md bg-muted px-3 py-2 text-sm text-foreground">
           Ce type n&apos;a pas d&apos;attribut supplémentaire à l&apos;étape 2.
         </p>
       ) : null}

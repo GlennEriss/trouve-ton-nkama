@@ -264,27 +264,27 @@ export default function TagsDashboardPage() {
         }
       />
 
-      {globalError ? <p className="rounded-lg border border-red-200 bg-red-50 px-4 py-2 text-sm text-red-700">{globalError}</p> : null}
+      {globalError ? <p className="rounded-lg border border-destructive/30 bg-destructive/10 px-4 py-2 text-sm text-destructive">{globalError}</p> : null}
       {globalMessage ? (
-        <p className="rounded-lg border border-emerald-200 bg-emerald-50 px-4 py-2 text-sm text-emerald-700">{globalMessage}</p>
+        <p className="rounded-lg border border-success/30 bg-success/10 px-4 py-2 text-sm text-success">{globalMessage}</p>
       ) : null}
 
       <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
         <Card>
-          <CardHeader className="pb-1 text-sm text-slate-500">Total tags</CardHeader>
-          <CardContent className="text-2xl font-semibold text-slate-900">{tagsQuery.data?.count ?? 0}</CardContent>
+          <CardHeader className="pb-1 text-sm text-muted-foreground">Total tags</CardHeader>
+          <CardContent className="text-2xl font-semibold text-foreground">{tagsQuery.data?.count ?? 0}</CardContent>
         </Card>
         <Card>
-          <CardHeader className="pb-1 text-sm text-slate-500">Tags actifs</CardHeader>
-          <CardContent className="text-2xl font-semibold text-slate-900">{activeCount}</CardContent>
+          <CardHeader className="pb-1 text-sm text-muted-foreground">Tags actifs</CardHeader>
+          <CardContent className="text-2xl font-semibold text-foreground">{activeCount}</CardContent>
         </Card>
       </div>
 
       <div className="grid gap-6 xl:grid-cols-2">
         <Card>
           <CardHeader className="space-y-1">
-            <h2 className="text-lg font-semibold text-slate-900">Créer un tag</h2>
-            <p className="text-sm text-slate-500">Permission requise: <code>listings.update</code></p>
+            <h2 className="text-lg font-semibold text-foreground">Créer un tag</h2>
+            <p className="text-sm text-muted-foreground">Permission requise: <code>listings.update</code></p>
           </CardHeader>
           <CardContent>
             <form className="space-y-3" onSubmit={handleCreate}>
@@ -322,8 +322,8 @@ export default function TagsDashboardPage() {
 
         <Card>
           <CardHeader className="space-y-1">
-            <h2 className="text-lg font-semibold text-slate-900">Modifier un tag</h2>
-            <p className="text-sm text-slate-500">Laisse un champ vide si inchangé.</p>
+            <h2 className="text-lg font-semibold text-foreground">Modifier un tag</h2>
+            <p className="text-sm text-muted-foreground">Laisse un champ vide si inchangé.</p>
           </CardHeader>
           <CardContent>
             <form className="space-y-3" onSubmit={handleUpdate}>
@@ -374,18 +374,18 @@ export default function TagsDashboardPage() {
 
       <Card>
         <CardHeader>
-          <h2 className="text-lg font-semibold text-slate-900">Liste des tags</h2>
+          <h2 className="text-lg font-semibold text-foreground">Liste des tags</h2>
         </CardHeader>
         <CardContent className="overflow-x-auto">
           {permissionsQuery.isLoading || tagsQuery.isLoading ? (
-            <p className="text-sm text-slate-500">Chargement des tags...</p>
+            <p className="text-sm text-muted-foreground">Chargement des tags...</p>
           ) : null}
           {tagsQuery.error ? (
-            <p className="text-sm text-red-600">{tagsQuery.error.message}</p>
+            <p className="text-sm text-destructive">{tagsQuery.error.message}</p>
           ) : null}
           {!tagsQuery.isLoading && !tagsQuery.error ? (
             <table className="min-w-full text-sm">
-              <thead className="text-left text-slate-500">
+              <thead className="text-left text-muted-foreground">
                 <tr>
                   <th className="px-3 py-2">Nom</th>
                   <th className="px-3 py-2">Actif</th>
@@ -397,7 +397,7 @@ export default function TagsDashboardPage() {
               <tbody>
                 {tags.map((tag) => (
                   <tr key={tag.id} className="border-t">
-                    <td className="px-3 py-2 font-medium text-slate-900">{tag.name}</td>
+                    <td className="px-3 py-2 font-medium text-foreground">{tag.name}</td>
                     <td className="px-3 py-2">{tag.isActive ? "Oui" : "Non"}</td>
                     <td className="px-3 py-2">{tag.order}</td>
                     <td className="px-3 py-2">{toDateLabel(tag.updatedAt)}</td>
@@ -416,7 +416,7 @@ export default function TagsDashboardPage() {
                 ))}
                 {tags.length === 0 ? (
                   <tr>
-                    <td className="px-3 py-6 text-center text-slate-500" colSpan={5}>
+                    <td className="px-3 py-6 text-center text-muted-foreground" colSpan={5}>
                       Aucun tag configuré.
                     </td>
                   </tr>

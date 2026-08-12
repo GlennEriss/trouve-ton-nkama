@@ -950,25 +950,25 @@ export default function ListingsDuplicatesDashboardPage() {
       />
 
       {!canReadDuplicates ? (
-        <div className="rounded-md border border-amber-300 bg-amber-50 px-3 py-2 text-sm text-amber-800">
+        <div className="rounded-md border border-warning/30 bg-warning/10 px-3 py-2 text-sm text-warning">
           Permission manquante: listings.duplicates.read
         </div>
       ) : null}
 
       {hasError ? (
-        <div className="rounded-md border border-red-300 bg-red-50 px-3 py-2 text-sm text-red-700">
+        <div className="rounded-md border border-destructive/30 bg-destructive/10 px-3 py-2 text-sm text-destructive">
           Certaines données n&apos;ont pas pu être chargées.
         </div>
       ) : null}
 
       {globalError ? (
-        <div className="rounded-md border border-red-300 bg-red-50 px-3 py-2 text-sm text-red-700">
+        <div className="rounded-md border border-destructive/30 bg-destructive/10 px-3 py-2 text-sm text-destructive">
           {globalError}
         </div>
       ) : null}
 
       {globalMessage ? (
-        <div className="rounded-md border border-emerald-300 bg-emerald-50 px-3 py-2 text-sm text-emerald-700">
+        <div className="rounded-md border border-success/30 bg-success/10 px-3 py-2 text-sm text-success">
           {globalMessage}
         </div>
       ) : null}
@@ -976,40 +976,40 @@ export default function ListingsDuplicatesDashboardPage() {
       <section className="grid gap-4 md:grid-cols-5">
         <Card>
           <CardHeader>
-            <p className="text-sm text-slate-600">Annonces scannées</p>
-            <p className="text-2xl font-semibold text-slate-900">
+            <p className="text-sm text-muted-foreground">Annonces scannées</p>
+            <p className="text-2xl font-semibold text-foreground">
               {formatNumber(duplicatesQuery.data?.scanned ?? 0)}
             </p>
           </CardHeader>
         </Card>
         <Card>
           <CardHeader>
-            <p className="text-sm text-slate-600">Clusters visibles</p>
-            <p className="text-2xl font-semibold text-slate-900">
+            <p className="text-sm text-muted-foreground">Clusters visibles</p>
+            <p className="text-2xl font-semibold text-foreground">
               {formatNumber(duplicatesQuery.data?.returned ?? 0)}
             </p>
           </CardHeader>
         </Card>
         <Card>
           <CardHeader>
-            <p className="text-sm text-slate-600">Clusters traités</p>
-            <p className="text-2xl font-semibold text-slate-900">
+            <p className="text-sm text-muted-foreground">Clusters traités</p>
+            <p className="text-2xl font-semibold text-foreground">
               {formatNumber(duplicatesQuery.data?.resolvedCount ?? 0)}
             </p>
           </CardHeader>
         </Card>
         <Card>
           <CardHeader>
-            <p className="text-sm text-slate-600">Clusters sémantiques</p>
-            <p className="text-2xl font-semibold text-slate-900">
+            <p className="text-sm text-muted-foreground">Clusters sémantiques</p>
+            <p className="text-2xl font-semibold text-foreground">
               {formatNumber(duplicatesQuery.data?.semanticGroupsCount ?? 0)}
             </p>
           </CardHeader>
         </Card>
         <Card>
           <CardHeader>
-            <p className="text-sm text-slate-600">Version matching</p>
-            <p className="text-sm font-semibold text-slate-900">
+            <p className="text-sm text-muted-foreground">Version matching</p>
+            <p className="text-sm font-semibold text-foreground">
               {duplicatesQuery.data?.matchingVersion ?? "N/A"}
             </p>
           </CardHeader>
@@ -1019,32 +1019,32 @@ export default function ListingsDuplicatesDashboardPage() {
       <section className="grid gap-4 md:grid-cols-4">
         <Card>
           <CardHeader>
-            <p className="text-sm text-slate-600">Précision</p>
-            <p className="text-2xl font-semibold text-slate-900">
+            <p className="text-sm text-muted-foreground">Précision</p>
+            <p className="text-2xl font-semibold text-foreground">
               {formatRate(metricsQuery.data?.metrics.precision)}
             </p>
           </CardHeader>
         </Card>
         <Card>
           <CardHeader>
-            <p className="text-sm text-slate-600">Rappel proxy</p>
-            <p className="text-2xl font-semibold text-slate-900">
+            <p className="text-sm text-muted-foreground">Rappel proxy</p>
+            <p className="text-2xl font-semibold text-foreground">
               {formatRate(metricsQuery.data?.metrics.recallProxy)}
             </p>
           </CardHeader>
         </Card>
         <Card>
           <CardHeader>
-            <p className="text-sm text-slate-600">Couverture review</p>
-            <p className="text-2xl font-semibold text-slate-900">
+            <p className="text-sm text-muted-foreground">Couverture review</p>
+            <p className="text-2xl font-semibold text-foreground">
               {formatRate(metricsQuery.data?.metrics.reviewCoverage)}
             </p>
           </CardHeader>
         </Card>
         <Card>
           <CardHeader>
-            <p className="text-sm text-slate-600">Mesure</p>
-            <p className="text-sm font-semibold text-slate-900">
+            <p className="text-sm text-muted-foreground">Mesure</p>
+            <p className="text-sm font-semibold text-foreground">
               {toDateLabel(metricsQuery.data?.metrics.measuredAt ?? null)}
             </p>
           </CardHeader>
@@ -1053,16 +1053,16 @@ export default function ListingsDuplicatesDashboardPage() {
 
       <Card>
         <CardHeader className="space-y-1">
-          <h2 className="text-base font-semibold text-slate-900">
+          <h2 className="text-base font-semibold text-foreground">
             Paramètres dedup avancés
           </h2>
-          <p className="text-sm text-slate-600">
+          <p className="text-sm text-muted-foreground">
             Ajuste les seuils sémantiques (Sprint D), puis relance un recalcul.
           </p>
         </CardHeader>
         <CardContent className="space-y-4">
           {!settingsDraft ? (
-            <p className="text-sm text-slate-500">
+            <p className="text-sm text-muted-foreground">
               Chargement de la configuration...
             </p>
           ) : (
@@ -1083,7 +1083,7 @@ export default function ListingsDuplicatesDashboardPage() {
                 />
                 <label
                   htmlFor="semanticEnabled"
-                  className="text-sm font-medium text-slate-700"
+                  className="text-sm font-medium text-foreground"
                 >
                   Activer la similarité sémantique
                 </label>
@@ -1091,7 +1091,7 @@ export default function ListingsDuplicatesDashboardPage() {
 
               <div className="grid gap-3 md:grid-cols-3">
                 <div className="space-y-1">
-                  <label className="text-xs font-medium text-slate-700">
+                  <label className="text-xs font-medium text-foreground">
                     Seuil candidat sémantique
                   </label>
                   <Input
@@ -1110,7 +1110,7 @@ export default function ListingsDuplicatesDashboardPage() {
                   />
                 </div>
                 <div className="space-y-1">
-                  <label className="text-xs font-medium text-slate-700">
+                  <label className="text-xs font-medium text-foreground">
                     Seuil cluster sémantique
                   </label>
                   <Input
@@ -1129,7 +1129,7 @@ export default function ListingsDuplicatesDashboardPage() {
                   />
                 </div>
                 <div className="space-y-1">
-                  <label className="text-xs font-medium text-slate-700">
+                  <label className="text-xs font-medium text-foreground">
                     Min tokens texte
                   </label>
                   <Input
@@ -1148,7 +1148,7 @@ export default function ListingsDuplicatesDashboardPage() {
 
               <div className="grid gap-3 md:grid-cols-3">
                 <div className="space-y-1">
-                  <label className="text-xs font-medium text-slate-700">
+                  <label className="text-xs font-medium text-foreground">
                     Poids texte
                   </label>
                   <Input
@@ -1164,7 +1164,7 @@ export default function ListingsDuplicatesDashboardPage() {
                   />
                 </div>
                 <div className="space-y-1">
-                  <label className="text-xs font-medium text-slate-700">
+                  <label className="text-xs font-medium text-foreground">
                     Poids prix
                   </label>
                   <Input
@@ -1180,7 +1180,7 @@ export default function ListingsDuplicatesDashboardPage() {
                   />
                 </div>
                 <div className="space-y-1">
-                  <label className="text-xs font-medium text-slate-700">
+                  <label className="text-xs font-medium text-foreground">
                     Poids localisation
                   </label>
                   <Input
@@ -1199,7 +1199,7 @@ export default function ListingsDuplicatesDashboardPage() {
 
               <div className="grid gap-3 md:grid-cols-2">
                 <div className="space-y-1">
-                  <label className="text-xs font-medium text-slate-700">
+                  <label className="text-xs font-medium text-foreground">
                     Limite annonces pour sémantique
                   </label>
                   <Input
@@ -1218,7 +1218,7 @@ export default function ListingsDuplicatesDashboardPage() {
                   />
                 </div>
                 <div className="space-y-1">
-                  <label className="text-xs font-medium text-slate-700">
+                  <label className="text-xs font-medium text-foreground">
                     Taille max d&apos;un bloc
                   </label>
                   <Input
@@ -1235,7 +1235,7 @@ export default function ListingsDuplicatesDashboardPage() {
                 </div>
               </div>
 
-              <div className="flex flex-wrap items-center justify-between gap-2 text-xs text-slate-500">
+              <div className="flex flex-wrap items-center justify-between gap-2 text-xs text-muted-foreground">
                 <p>
                   Dernière mise à jour: {toDateLabel(settingsDraft.updatedAt)} par{" "}
                   {settingsDraft.updatedBy ?? "Inconnu"}
@@ -1255,7 +1255,7 @@ export default function ListingsDuplicatesDashboardPage() {
 
       <Card>
         <CardHeader>
-          <h2 className="text-base font-semibold text-slate-900">
+          <h2 className="text-base font-semibold text-foreground">
             Clusters détectés
           </h2>
         </CardHeader>
@@ -1263,7 +1263,7 @@ export default function ListingsDuplicatesDashboardPage() {
           <div className="overflow-x-auto">
             <table className="min-w-full border-collapse text-sm">
               <thead>
-                <tr className="border-b border-slate-200 text-left text-slate-600">
+                <tr className="border-b border-border text-left text-muted-foreground">
                   <th className="py-2 pr-4 font-medium">Cluster</th>
                   <th className="py-2 pr-4 font-medium">Raison</th>
                   <th className="py-2 pr-4 font-medium">Confiance</th>
@@ -1277,31 +1277,31 @@ export default function ListingsDuplicatesDashboardPage() {
               <tbody>
                 {duplicatesQuery.data?.groups.length ? (
                   duplicatesQuery.data.groups.map((group) => (
-                    <tr key={group.clusterId} className="border-b border-slate-100 align-top">
-                      <td className="py-2 pr-4 font-mono text-xs text-slate-700">
+                    <tr key={group.clusterId} className="border-b border-border align-top">
+                      <td className="py-2 pr-4 font-mono text-xs text-foreground">
                         {group.clusterId}
                       </td>
-                      <td className="py-2 pr-4 text-slate-700">
+                      <td className="py-2 pr-4 text-foreground">
                         {reasonLabel(group.reason)}
                       </td>
-                      <td className="py-2 pr-4 text-slate-700">
+                      <td className="py-2 pr-4 text-foreground">
                         {group.confidence}%
                       </td>
-                      <td className="py-2 pr-4 text-slate-700">
+                      <td className="py-2 pr-4 text-foreground">
                         {group.reason === "semantic_similarity"
                           ? formatScore(group.semanticScore)
                           : "N/A"}
                       </td>
-                      <td className="py-2 pr-4 text-slate-700">
+                      <td className="py-2 pr-4 text-foreground">
                         {formatNumber(group.listings.length)} annonces
                       </td>
-                      <td className="py-2 pr-4 text-slate-700">
+                      <td className="py-2 pr-4 text-foreground">
                         <p>{resolutionLabel(group.resolution?.action ?? null)}</p>
-                        <p className="text-xs text-slate-500">
+                        <p className="text-xs text-muted-foreground">
                           {toDateLabel(group.resolution?.reviewedAt ?? null)}
                         </p>
                       </td>
-                      <td className="py-2 pr-4 text-xs text-slate-600">
+                      <td className="py-2 pr-4 text-xs text-muted-foreground">
                         <div className="space-y-1">
                           {group.listings.slice(0, 2).map((listing) => (
                             <p key={listing.id}>
@@ -1324,7 +1324,7 @@ export default function ListingsDuplicatesDashboardPage() {
                   ))
                 ) : (
                   <tr>
-                    <td colSpan={8} className="py-6 text-center text-sm text-slate-500">
+                    <td colSpan={8} className="py-6 text-center text-sm text-muted-foreground">
                       Aucun cluster détecté sur l&apos;échantillon actuel.
                     </td>
                   </tr>
@@ -1337,15 +1337,15 @@ export default function ListingsDuplicatesDashboardPage() {
 
       <Card>
         <CardHeader>
-          <h2 className="text-base font-semibold text-slate-900">
+          <h2 className="text-base font-semibold text-foreground">
             Doublons archivés (vue globale)
           </h2>
-          <p className="text-sm text-slate-600">
+          <p className="text-sm text-muted-foreground">
             Nettoyage rapide des annonces déjà archivées sur les clusters affichés.
           </p>
         </CardHeader>
         <CardContent className="space-y-3">
-          <div className="flex flex-wrap items-center gap-2 rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-700">
+          <div className="flex flex-wrap items-center gap-2 rounded-lg border border-border bg-muted px-3 py-2 text-sm text-foreground">
             <p>
               Clusters avec archivées:{" "}
               <span className="font-semibold">
@@ -1365,14 +1365,14 @@ export default function ListingsDuplicatesDashboardPage() {
               {archivedClustersInView.map((group) => (
                 <div
                   key={`archived_cluster_${group.clusterId}`}
-                  className="rounded-lg border border-slate-200 p-3"
+                  className="rounded-lg border border-border p-3"
                 >
                   <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
                     <div>
-                      <p className="text-sm font-semibold text-slate-900">
+                      <p className="text-sm font-semibold text-foreground">
                         {group.clusterId}
                       </p>
-                      <p className="text-xs text-slate-600">
+                      <p className="text-xs text-muted-foreground">
                         {reasonLabel(group.reason)} • décision:{" "}
                         {resolutionLabel(group.resolutionAction)}
                       </p>
@@ -1411,13 +1411,13 @@ export default function ListingsDuplicatesDashboardPage() {
                     {group.archivedListings.map((listing) => (
                       <div
                         key={`archived_global_${group.clusterId}_${listing.id}`}
-                        className="flex flex-wrap items-center justify-between gap-2 rounded-md border border-slate-200 bg-white px-3 py-2"
+                        className="flex flex-wrap items-center justify-between gap-2 rounded-md border border-border bg-card px-3 py-2"
                       >
                         <div>
-                          <p className="text-sm font-medium text-slate-900">
+                          <p className="text-sm font-medium text-foreground">
                             {listing.title}
                           </p>
-                          <p className="text-xs text-slate-500">{listing.id}</p>
+                          <p className="text-xs text-muted-foreground">{listing.id}</p>
                         </div>
                         <Button
                           type="button"
@@ -1439,7 +1439,7 @@ export default function ListingsDuplicatesDashboardPage() {
               ))}
             </div>
           ) : (
-            <p className="text-sm text-slate-500">
+            <p className="text-sm text-muted-foreground">
               Aucune annonce archivée détectée sur les clusters actuellement affichés.
             </p>
           )}
@@ -1448,10 +1448,10 @@ export default function ListingsDuplicatesDashboardPage() {
 
       <Card>
         <CardHeader>
-          <h2 className="text-base font-semibold text-slate-900">
+          <h2 className="text-base font-semibold text-foreground">
             Détail du cluster
           </h2>
-          <p className="text-sm text-slate-600">
+          <p className="text-sm text-muted-foreground">
             {selectedClusterId
               ? `Cluster sélectionné: ${selectedClusterId}`
               : "Sélectionne un cluster pour le traiter."}
@@ -1459,16 +1459,16 @@ export default function ListingsDuplicatesDashboardPage() {
         </CardHeader>
         <CardContent className="space-y-4">
           {!selectedClusterId ? (
-            <p className="text-sm text-slate-500">Aucun cluster sélectionné.</p>
+            <p className="text-sm text-muted-foreground">Aucun cluster sélectionné.</p>
           ) : clusterQuery.isLoading ? (
-            <p className="text-sm text-slate-500">
+            <p className="text-sm text-muted-foreground">
               Chargement du détail du cluster...
             </p>
           ) : !selectedCluster ? (
-            <p className="text-sm text-slate-500">Cluster introuvable.</p>
+            <p className="text-sm text-muted-foreground">Cluster introuvable.</p>
           ) : (
             <>
-              <div className="rounded-lg border border-slate-200 bg-slate-50 p-3 text-sm text-slate-700">
+              <div className="rounded-lg border border-border bg-muted p-3 text-sm text-foreground">
                 <p>
                   <span className="font-medium">Raison:</span>{" "}
                   {reasonLabel(selectedCluster.reason)}
@@ -1497,15 +1497,15 @@ export default function ListingsDuplicatesDashboardPage() {
                 {selectedCluster.listings.map((listing) => (
                   <div
                     key={listing.id}
-                    className="flex flex-wrap items-center justify-between gap-2 rounded-md border border-slate-200 px-3 py-2"
+                    className="flex flex-wrap items-center justify-between gap-2 rounded-md border border-border px-3 py-2"
                   >
                     <div>
-                      <p className="text-sm font-medium text-slate-900">
+                      <p className="text-sm font-medium text-foreground">
                         {listing.title}
                       </p>
-                      <p className="text-xs text-slate-500">{listing.id}</p>
+                      <p className="text-xs text-muted-foreground">{listing.id}</p>
                     </div>
-                    <div className="text-xs text-slate-600">
+                    <div className="text-xs text-muted-foreground">
                       <p>{statusLabel(listing.status)}</p>
                       <p>{stateLabel(listing.state)}</p>
                       <p>{formatMoney(listing.price)}</p>
@@ -1516,11 +1516,11 @@ export default function ListingsDuplicatesDashboardPage() {
 
               <div className="grid gap-3 md:grid-cols-2">
                 <div className="space-y-1">
-                  <label className="text-xs font-medium text-slate-700">
+                  <label className="text-xs font-medium text-foreground">
                     Annonce de référence (à conserver)
                   </label>
                   <select
-                    className="h-9 w-full rounded-lg border border-slate-300 bg-white px-3 text-sm text-slate-800"
+                    className="h-9 w-full rounded-lg border border-border bg-card px-3 text-sm text-foreground"
                     value={targetListingId}
                     onChange={(event) => setTargetListingId(event.target.value)}
                     disabled={!canResolveDuplicates}
@@ -1532,16 +1532,16 @@ export default function ListingsDuplicatesDashboardPage() {
                       </option>
                     ))}
                   </select>
-                  <p className="text-[11px] text-slate-500">
+                  <p className="text-[11px] text-muted-foreground">
                     Utilisé pour &quot;Conserver 1, archiver les autres&quot; et &quot;Archiver la cible&quot;.
                   </p>
                 </div>
                 <div className="space-y-1">
-                  <label className="text-xs font-medium text-slate-700">
+                  <label className="text-xs font-medium text-foreground">
                     Note de décision (optionnel)
                   </label>
                   <textarea
-                    className="min-h-[78px] w-full rounded-lg border border-slate-300 px-3 py-2 text-sm text-slate-800"
+                    className="min-h-[78px] w-full rounded-lg border border-border px-3 py-2 text-sm text-foreground"
                     value={decisionNote}
                     onChange={(event) => setDecisionNote(event.target.value)}
                     placeholder="Contexte de la décision..."
@@ -1605,13 +1605,13 @@ export default function ListingsDuplicatesDashboardPage() {
                 ) : null}
               </div>
 
-              <div className="rounded-lg border border-slate-200 bg-slate-50 p-3">
+              <div className="rounded-lg border border-border bg-muted p-3">
                 <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
                   <div>
-                    <p className="text-sm font-semibold text-slate-900">
+                    <p className="text-sm font-semibold text-foreground">
                       Annonces archivées du cluster
                     </p>
-                    <p className="text-xs text-slate-600">
+                    <p className="text-xs text-muted-foreground">
                       {formatNumber(selectedClusterArchivedListings.length)} annonces archivées
                     </p>
                   </div>
@@ -1631,7 +1631,7 @@ export default function ListingsDuplicatesDashboardPage() {
                 </div>
 
                 <div className="mb-3 space-y-1">
-                  <label className="text-xs font-medium text-slate-700">
+                  <label className="text-xs font-medium text-foreground">
                     Motif suppression définitive
                   </label>
                   <Input
@@ -1643,7 +1643,7 @@ export default function ListingsDuplicatesDashboardPage() {
                 </div>
 
                 {!canHardDeleteListings ? (
-                  <p className="mb-2 text-xs text-amber-700">
+                  <p className="mb-2 text-xs text-warning">
                     Seul le super_admin peut supprimer définitivement les annonces archivées.
                   </p>
                 ) : null}
@@ -1653,13 +1653,13 @@ export default function ListingsDuplicatesDashboardPage() {
                     {selectedClusterArchivedListings.map((listing) => (
                       <div
                         key={`archived_${listing.id}`}
-                        className="flex flex-wrap items-center justify-between gap-2 rounded-md border border-slate-200 bg-white px-3 py-2"
+                        className="flex flex-wrap items-center justify-between gap-2 rounded-md border border-border bg-card px-3 py-2"
                       >
                         <div>
-                          <p className="text-sm font-medium text-slate-900">
+                          <p className="text-sm font-medium text-foreground">
                             {listing.title}
                           </p>
-                          <p className="text-xs text-slate-500">{listing.id}</p>
+                          <p className="text-xs text-muted-foreground">{listing.id}</p>
                         </div>
                         <Button
                           type="button"
@@ -1678,7 +1678,7 @@ export default function ListingsDuplicatesDashboardPage() {
                     ))}
                   </div>
                 ) : (
-                  <p className="text-xs text-slate-500">
+                  <p className="text-xs text-muted-foreground">
                     Aucune annonce archivée dans ce cluster.
                   </p>
                 )}

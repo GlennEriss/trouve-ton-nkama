@@ -270,20 +270,20 @@ export default function AdminsPage() {
       <section className="grid gap-4 md:grid-cols-3">
         <Card>
           <CardHeader>
-            <p className="text-sm text-slate-600">Total admins</p>
-            <p className="text-2xl font-semibold text-slate-900">{stats.count}</p>
+            <p className="text-sm text-muted-foreground">Total admins</p>
+            <p className="text-2xl font-semibold text-foreground">{stats.count}</p>
           </CardHeader>
         </Card>
         <Card>
           <CardHeader>
-            <p className="text-sm text-slate-600">En ligne</p>
-            <p className="text-2xl font-semibold text-emerald-700">{stats.onlineCount}</p>
+            <p className="text-sm text-muted-foreground">En ligne</p>
+            <p className="text-2xl font-semibold text-success">{stats.onlineCount}</p>
           </CardHeader>
         </Card>
         <Card>
           <CardHeader>
-            <p className="text-sm text-slate-600">Hors ligne</p>
-            <p className="text-2xl font-semibold text-slate-900">{stats.offlineCount}</p>
+            <p className="text-sm text-muted-foreground">Hors ligne</p>
+            <p className="text-2xl font-semibold text-foreground">{stats.offlineCount}</p>
           </CardHeader>
         </Card>
       </section>
@@ -291,8 +291,8 @@ export default function AdminsPage() {
       {canInvite ? (
         <Card>
           <CardHeader>
-            <h2 className="text-base font-semibold text-slate-900">Inviter un admin</h2>
-            <p className="text-sm text-slate-600">Création ou mise à jour d&apos;un accès administrateur.</p>
+            <h2 className="text-base font-semibold text-foreground">Inviter un admin</h2>
+            <p className="text-sm text-muted-foreground">Création ou mise à jour d&apos;un accès administrateur.</p>
           </CardHeader>
           <CardContent>
             <div className="grid gap-3 md:grid-cols-[1fr_220px_auto]">
@@ -304,7 +304,7 @@ export default function AdminsPage() {
                 disabled={submitting}
               />
               <select
-                className="h-8 rounded-lg border border-slate-300 bg-white px-3 text-sm text-slate-800"
+                className="h-8 rounded-lg border border-border bg-card px-3 text-sm text-foreground"
                 value={inviteRole}
                 onChange={(event) => setInviteRole(event.target.value as AdminRole)}
                 disabled={submitting}
@@ -325,7 +325,7 @@ export default function AdminsPage() {
 
       <Card>
         <CardHeader className="flex items-center justify-between gap-2">
-          <h2 className="text-base font-semibold text-slate-900">Liste des admins</h2>
+          <h2 className="text-base font-semibold text-foreground">Liste des admins</h2>
           <Button
             type="button"
             variant="outline"
@@ -337,16 +337,16 @@ export default function AdminsPage() {
         </CardHeader>
         <CardContent>
           {error ? (
-            <p className="mb-4 rounded-md bg-red-50 px-3 py-2 text-sm text-red-700">{error}</p>
+            <p className="mb-4 rounded-md bg-destructive/10 px-3 py-2 text-sm text-destructive">{error}</p>
           ) : null}
 
           {loading ? (
-            <p className="text-sm text-slate-600">Chargement...</p>
+            <p className="text-sm text-muted-foreground">Chargement...</p>
           ) : (
             <div className="overflow-x-auto">
               <table className="min-w-full border-collapse text-sm">
                 <thead>
-                  <tr className="border-b border-slate-200 text-left text-slate-600">
+                  <tr className="border-b border-border text-left text-muted-foreground">
                     <th className="py-2 pr-4 font-medium">Admin</th>
                     <th className="py-2 pr-4 font-medium">Rôle</th>
                     <th className="py-2 pr-4 font-medium">Statut</th>
@@ -365,16 +365,16 @@ export default function AdminsPage() {
                     const canToggleStatus = canChangeStatus && canMutateRow && admin.status !== "revoked";
 
                     return (
-                      <tr key={admin.uid} className="border-b border-slate-100 align-top">
+                      <tr key={admin.uid} className="border-b border-border align-top">
                         <td className="py-3 pr-4">
-                          <p className="font-medium text-slate-900">{admin.displayName || admin.email}</p>
-                          <p className="text-xs text-slate-500">{admin.email}</p>
+                          <p className="font-medium text-foreground">{admin.displayName || admin.email}</p>
+                          <p className="text-xs text-muted-foreground">{admin.email}</p>
                         </td>
                         <td className="py-3 pr-4">
                           {canUpdateRole && canMutateRow ? (
                             <div className="flex items-center gap-2">
                               <select
-                                className="h-8 min-w-[180px] rounded-lg border border-slate-300 bg-white px-2 text-sm"
+                                className="h-8 min-w-[180px] rounded-lg border border-border bg-card px-2 text-sm"
                                 value={roleDraft}
                                 onChange={(event) =>
                                   setRoleDraftByAdminId((current) => ({
@@ -401,25 +401,25 @@ export default function AdminsPage() {
                               </Button>
                             </div>
                           ) : (
-                            <span className="text-slate-800">{admin.roles.join(", ") || "Aucun rôle"}</span>
+                            <span className="text-foreground">{admin.roles.join(", ") || "Aucun rôle"}</span>
                           )}
                         </td>
                         <td className="py-3 pr-4">
-                          <span className="text-slate-800">{toStatusLabel(admin.status)}</span>
+                          <span className="text-foreground">{toStatusLabel(admin.status)}</span>
                         </td>
                         <td className="py-3 pr-4">
                           <span
                             className={
                               admin.presenceStatus === "online"
-                                ? "font-medium text-emerald-700"
-                                : "text-slate-700"
+                                ? "font-medium text-success"
+                                : "text-foreground"
                             }
                           >
                             {toPresenceLabel(admin.presenceStatus)}
                           </span>
                         </td>
-                        <td className="py-3 pr-4 text-slate-700">{toDateLabel(admin.lastSeenAt)}</td>
-                        <td className="py-3 pr-4 text-slate-700">{toDateLabel(admin.lastLoginAt)}</td>
+                        <td className="py-3 pr-4 text-foreground">{toDateLabel(admin.lastSeenAt)}</td>
+                        <td className="py-3 pr-4 text-foreground">{toDateLabel(admin.lastLoginAt)}</td>
                         <td className="py-3 pr-4">
                           <div className="flex flex-wrap gap-2">
                             {canToggleStatus ? (

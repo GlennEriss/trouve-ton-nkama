@@ -736,7 +736,7 @@ export default function ListingsDashboardPage() {
 
       <Card>
         <CardHeader>
-          <h2 className="text-base font-semibold text-slate-900">Filtres avancés</h2>
+          <h2 className="text-base font-semibold text-foreground">Filtres avancés</h2>
         </CardHeader>
         <CardContent>
           <form className="grid gap-3 md:grid-cols-4" onSubmit={onApplyFilters}>
@@ -798,7 +798,7 @@ export default function ListingsDashboardPage() {
             <Input type="date" value={dateFromDraft} onChange={(event) => setDateFromDraft(event.target.value)} />
             <Input type="date" value={dateToDraft} onChange={(event) => setDateToDraft(event.target.value)} />
             <select
-              className="h-9 rounded-lg border border-slate-300 bg-white px-3 text-sm text-slate-800"
+              className="h-9 rounded-lg border border-border bg-card px-3 text-sm text-foreground"
               value={status}
               onChange={(event) => setStatus(event.target.value as ListingStatusFilter)}
             >
@@ -807,7 +807,7 @@ export default function ListingsDashboardPage() {
               <option value="FOR_SALE">À vendre</option>
             </select>
             <select
-              className="h-9 rounded-lg border border-slate-300 bg-white px-3 text-sm text-slate-800"
+              className="h-9 rounded-lg border border-border bg-card px-3 text-sm text-foreground"
               value={state}
               onChange={(event) => setState(event.target.value as ListingStateFilter)}
             >
@@ -816,7 +816,7 @@ export default function ListingsDashboardPage() {
               <option value="ARCHIVED">Archivé</option>
             </select>
             <select
-              className="h-9 rounded-lg border border-slate-300 bg-white px-3 text-sm text-slate-800"
+              className="h-9 rounded-lg border border-border bg-card px-3 text-sm text-foreground"
               value={duplicateState}
               onChange={(event) => setDuplicateState(event.target.value as DuplicateStateFilter)}
             >
@@ -838,71 +838,71 @@ export default function ListingsDashboardPage() {
       <section className="grid gap-4 md:grid-cols-5">
         <Card>
           <CardHeader>
-            <p className="text-sm text-slate-600">Résultats page</p>
-            <p className="text-2xl font-semibold text-slate-900">{formatNumber(listingsQuery.data?.count ?? 0)}</p>
+            <p className="text-sm text-muted-foreground">Résultats page</p>
+            <p className="text-2xl font-semibold text-foreground">{formatNumber(listingsQuery.data?.count ?? 0)}</p>
           </CardHeader>
         </Card>
         <Card>
           <CardHeader>
-            <p className="text-sm text-slate-600">Actives</p>
-            <p className="text-2xl font-semibold text-slate-900">
+            <p className="text-sm text-muted-foreground">Actives</p>
+            <p className="text-2xl font-semibold text-foreground">
               {formatNumber(listingsQuery.data?.summary.inProgressCount ?? 0)}
             </p>
           </CardHeader>
         </Card>
         <Card>
           <CardHeader>
-            <p className="text-sm text-slate-600">Archivées</p>
-            <p className="text-2xl font-semibold text-slate-900">
+            <p className="text-sm text-muted-foreground">Archivées</p>
+            <p className="text-2xl font-semibold text-foreground">
               {formatNumber(listingsQuery.data?.summary.archivedCount ?? 0)}
             </p>
           </CardHeader>
         </Card>
         <Card>
           <CardHeader>
-            <p className="text-sm text-slate-600">À louer</p>
-            <p className="text-2xl font-semibold text-slate-900">
+            <p className="text-sm text-muted-foreground">À louer</p>
+            <p className="text-2xl font-semibold text-foreground">
               {formatNumber(listingsQuery.data?.summary.forRentCount ?? 0)}
             </p>
           </CardHeader>
         </Card>
         <Card>
           <CardHeader>
-            <p className="text-sm text-slate-600">Doublons page</p>
-            <p className="text-2xl font-semibold text-slate-900">{formatNumber(duplicateCountInView)}</p>
+            <p className="text-sm text-muted-foreground">Doublons page</p>
+            <p className="text-2xl font-semibold text-foreground">{formatNumber(duplicateCountInView)}</p>
           </CardHeader>
         </Card>
       </section>
 
       {hasError ? (
-        <div className="rounded-md border border-red-300 bg-red-50 px-3 py-2 text-sm text-red-700">
+        <div className="rounded-md border border-destructive/30 bg-destructive/10 px-3 py-2 text-sm text-destructive">
           Certaines données n&apos;ont pas pu être chargées.
         </div>
       ) : null}
 
       {globalError ? (
-        <div className="rounded-md border border-red-300 bg-red-50 px-3 py-2 text-sm text-red-700">{globalError}</div>
+        <div className="rounded-md border border-destructive/30 bg-destructive/10 px-3 py-2 text-sm text-destructive">{globalError}</div>
       ) : null}
 
       {globalMessage ? (
-        <div className="rounded-md border border-emerald-300 bg-emerald-50 px-3 py-2 text-sm text-emerald-700">
+        <div className="rounded-md border border-success/30 bg-success/10 px-3 py-2 text-sm text-success">
           {globalMessage}
         </div>
       ) : null}
 
       {!globalMessage && !globalError && createdListingMessage ? (
-        <div className="rounded-md border border-emerald-300 bg-emerald-50 px-3 py-2 text-sm text-emerald-700">
+        <div className="rounded-md border border-success/30 bg-success/10 px-3 py-2 text-sm text-success">
           {createdListingMessage}
         </div>
       ) : null}
 
       <Card>
         <CardHeader>
-          <h2 className="text-base font-semibold text-slate-900">Annonces</h2>
+          <h2 className="text-base font-semibold text-foreground">Annonces</h2>
         </CardHeader>
         <CardContent className="space-y-3">
-          <div className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-slate-200 bg-slate-50 px-3 py-2">
-            <p className="text-sm text-slate-700">
+          <div className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-border bg-muted px-3 py-2">
+            <p className="text-sm text-foreground">
               Sélection actuelle: <span className="font-semibold">{formatNumber(selectedListingIds.length)}</span>
             </p>
             <div className="flex flex-wrap items-center gap-2">
@@ -948,7 +948,7 @@ export default function ListingsDashboardPage() {
           <div className="overflow-x-auto">
             <table className="min-w-full border-collapse text-sm">
               <thead>
-                <tr className="border-b border-slate-200 text-left text-slate-600">
+                <tr className="border-b border-border text-left text-muted-foreground">
                   <th className="py-2 pr-4 font-medium">
                     <input
                       type="checkbox"
@@ -972,8 +972,8 @@ export default function ListingsDashboardPage() {
                   listingsQuery.data.listings.map((listing) => (
                     <tr
                       key={listing.id}
-                      className={`border-b border-slate-100 align-top ${
-                        selectedIdsSet.has(listing.id) ? "bg-emerald-50/40" : ""
+                      className={`border-b border-border align-top ${
+                        selectedIdsSet.has(listing.id) ? "bg-success/10/40" : ""
                       }`}
                     >
                       <td className="py-2 pr-4">
@@ -984,24 +984,24 @@ export default function ListingsDashboardPage() {
                         />
                       </td>
                       <td className="py-2 pr-4">
-                        <p className="font-medium text-slate-900">{listing.title}</p>
-                        <p className="max-w-[260px] truncate text-xs text-slate-500">{listing.id}</p>
-                        <p className="text-xs text-slate-500">{listing.createdBy ?? "N/A"}</p>
+                        <p className="font-medium text-foreground">{listing.title}</p>
+                        <p className="max-w-[260px] truncate text-xs text-muted-foreground">{listing.id}</p>
+                        <p className="text-xs text-muted-foreground">{listing.createdBy ?? "N/A"}</p>
                       </td>
-                      <td className="py-2 pr-4 text-slate-700">
+                      <td className="py-2 pr-4 text-foreground">
                         <p>{listing.typeProperty ?? "N/A"}</p>
-                        <p className="text-xs text-slate-500">{statusLabel(listing.status)}</p>
+                        <p className="text-xs text-muted-foreground">{statusLabel(listing.status)}</p>
                       </td>
-                      <td className="py-2 pr-4 text-slate-700">
+                      <td className="py-2 pr-4 text-foreground">
                         <p>{formatPriceFCFA(listing.price)}</p>
-                        <p className="text-xs text-slate-500">{formatNumber(listing.area)} m²</p>
+                        <p className="text-xs text-muted-foreground">{formatNumber(listing.area)} m²</p>
                       </td>
-                      <td className="py-2 pr-4 text-slate-700">
+                      <td className="py-2 pr-4 text-foreground">
                         {(listing.city ?? "N/A") + ", " + (listing.province ?? "N/A")}
                       </td>
-                      <td className="py-2 pr-4 text-slate-700">{duplicateStateLabel(listing.duplicateState)}</td>
-                      <td className="py-2 pr-4 text-slate-700">{stateLabel(listing.state)}</td>
-                      <td className="py-2 pr-4 text-slate-700">{toDateLabel(listing.createdAt)}</td>
+                      <td className="py-2 pr-4 text-foreground">{duplicateStateLabel(listing.duplicateState)}</td>
+                      <td className="py-2 pr-4 text-foreground">{stateLabel(listing.state)}</td>
+                      <td className="py-2 pr-4 text-foreground">{toDateLabel(listing.createdAt)}</td>
                       <td className="py-2 pr-4">
                         <div className="flex flex-wrap gap-2">
                           <Button
@@ -1050,7 +1050,7 @@ export default function ListingsDashboardPage() {
                   ))
                 ) : (
                   <tr>
-                    <td colSpan={9} className="py-6 text-center text-sm text-slate-500">
+                    <td colSpan={9} className="py-6 text-center text-sm text-muted-foreground">
                       Aucune annonce trouvée.
                     </td>
                   </tr>
@@ -1088,7 +1088,7 @@ export default function ListingsDashboardPage() {
           </DialogHeader>
 
           <div className="space-y-2">
-            <label htmlFor="listing-reason" className="text-sm font-medium text-slate-700">
+            <label htmlFor="listing-reason" className="text-sm font-medium text-foreground">
               Motif obligatoire
             </label>
             <Input

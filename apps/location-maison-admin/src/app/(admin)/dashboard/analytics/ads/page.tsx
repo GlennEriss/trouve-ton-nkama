@@ -498,23 +498,23 @@ export default function AnalyticsAdsPage() {
       <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
         <Card>
           <CardHeader>
-            <p className="text-sm text-slate-600">Revenu aujourd&apos;hui</p>
-            <p className="text-2xl font-semibold text-slate-900">
+            <p className="text-sm text-muted-foreground">Revenu aujourd&apos;hui</p>
+            <p className="text-2xl font-semibold text-foreground">
               {formatMoney(overviewQuery.data?.summary.revenueToday)}
             </p>
           </CardHeader>
         </Card>
         <Card>
           <CardHeader>
-            <p className="text-sm text-slate-600">Revenu 7 jours</p>
-            <p className="text-2xl font-semibold text-slate-900">
+            <p className="text-sm text-muted-foreground">Revenu 7 jours</p>
+            <p className="text-2xl font-semibold text-foreground">
               {formatMoney(overviewQuery.data?.summary.revenue7d)}
             </p>
           </CardHeader>
         </Card>
         <Card>
           <CardHeader>
-            <p className="text-sm text-slate-600">Revenu 30 jours</p>
+            <p className="text-sm text-muted-foreground">Revenu 30 jours</p>
             <p className="text-2xl font-semibold text-primary">
               {formatMoney(overviewQuery.data?.summary.revenue30d)}
             </p>
@@ -522,16 +522,16 @@ export default function AnalyticsAdsPage() {
         </Card>
         <Card>
           <CardHeader>
-            <p className="text-sm text-slate-600">Revenu MTD</p>
-            <p className="text-2xl font-semibold text-slate-900">
+            <p className="text-sm text-muted-foreground">Revenu MTD</p>
+            <p className="text-2xl font-semibold text-foreground">
               {formatMoney(overviewQuery.data?.summary.revenueMtd)}
             </p>
           </CardHeader>
         </Card>
         <Card>
           <CardHeader>
-            <p className="text-sm text-slate-600">Page views RPM</p>
-            <p className="text-2xl font-semibold text-slate-900">
+            <p className="text-sm text-muted-foreground">Page views RPM</p>
+            <p className="text-2xl font-semibold text-foreground">
               {overviewQuery.data?.summary.pageViewsRpm == null
                 ? "N/A"
                 : formatMoney(overviewQuery.data.summary.pageViewsRpm)}
@@ -540,12 +540,12 @@ export default function AnalyticsAdsPage() {
         </Card>
         <Card>
           <CardHeader>
-            <p className="text-sm text-slate-600">Fill rate / CTR</p>
-            <p className="text-lg font-semibold text-slate-900">
+            <p className="text-sm text-muted-foreground">Fill rate / CTR</p>
+            <p className="text-lg font-semibold text-foreground">
               {formatPercent(overviewQuery.data?.summary.fillRate, 1)} /{" "}
               {formatPercent(overviewQuery.data?.summary.ctr, 2)}
             </p>
-            <p className="text-xs text-slate-500">
+            <p className="text-xs text-muted-foreground">
               Viewability: {formatPercent(overviewQuery.data?.summary.viewability, 1)}
             </p>
           </CardHeader>
@@ -554,13 +554,13 @@ export default function AnalyticsAdsPage() {
 
       <Card>
         <CardHeader>
-          <h2 className="text-base font-semibold text-slate-900">Filtres</h2>
-          <p className="text-sm text-slate-600">Par défaut, période glissante de 7 jours.</p>
+          <h2 className="text-base font-semibold text-foreground">Filtres</h2>
+          <p className="text-sm text-muted-foreground">Par défaut, période glissante de 7 jours.</p>
         </CardHeader>
         <CardContent className="space-y-3">
           <div className="grid gap-3 lg:grid-cols-4">
             <select
-              className="h-9 rounded-lg border border-slate-300 bg-white px-3 text-sm text-slate-800"
+              className="h-9 rounded-lg border border-border bg-card px-3 text-sm text-foreground"
               value={range}
               onChange={(event) => {
                 setRange(event.target.value as RangeFilter);
@@ -578,7 +578,7 @@ export default function AnalyticsAdsPage() {
               Réinitialiser les filtres
             </Button>
 
-            <div className="flex items-center text-xs text-slate-500 lg:col-span-2">
+            <div className="flex items-center text-xs text-muted-foreground lg:col-span-2">
               Fenêtre active: {toDateLabel(overviewQuery.data?.period.startAt)} -{" "}
               {toDateLabel(overviewQuery.data?.period.endAt)}
             </div>
@@ -611,8 +611,8 @@ export default function AnalyticsAdsPage() {
 
       <Card>
         <CardHeader>
-          <h2 className="text-base font-semibold text-slate-900">Comparaisons de période</h2>
-          <p className="text-sm text-slate-600">
+          <h2 className="text-base font-semibold text-foreground">Comparaisons de période</h2>
+          <p className="text-sm text-muted-foreground">
             J-1, 7 jours, 30 jours et MTD. Seuil stable: +/- {TREND_STABLE_THRESHOLD_PERCENT}%.
           </p>
         </CardHeader>
@@ -620,7 +620,7 @@ export default function AnalyticsAdsPage() {
           <div className="overflow-x-auto">
             <table className="min-w-full border-collapse text-sm">
               <thead>
-                <tr className="border-b border-slate-200 text-left text-slate-600">
+                <tr className="border-b border-border text-left text-muted-foreground">
                   <th className="py-2 pr-4 font-medium">Fenêtre</th>
                   <th className="py-2 pr-4 font-medium">Revenu actuel</th>
                   <th className="py-2 pr-4 font-medium">Revenu précédent</th>
@@ -634,35 +634,35 @@ export default function AnalyticsAdsPage() {
               <tbody>
                 {comparisonQuery.data?.rows.length ? (
                   comparisonQuery.data.rows.map((row) => (
-                    <tr key={row.key} className="border-b border-slate-100">
-                      <td className="py-2 pr-4 text-slate-700">
-                        <p className="font-medium text-slate-900">{row.key}</p>
-                        <p className="text-xs text-slate-500">
+                    <tr key={row.key} className="border-b border-border">
+                      <td className="py-2 pr-4 text-foreground">
+                        <p className="font-medium text-foreground">{row.key}</p>
+                        <p className="text-xs text-muted-foreground">
                           {row.currentStartDate} - {row.currentEndDate}
                         </p>
                       </td>
-                      <td className="py-2 pr-4 text-slate-900">{formatMoney(row.currentRevenue)}</td>
-                      <td className="py-2 pr-4 text-slate-700">{formatMoney(row.previousRevenue)}</td>
+                      <td className="py-2 pr-4 text-foreground">{formatMoney(row.currentRevenue)}</td>
+                      <td className="py-2 pr-4 text-foreground">{formatMoney(row.previousRevenue)}</td>
                       <td
                         className={`py-2 pr-4 ${
-                          (row.revenueDeltaPercent ?? 0) < 0 ? "text-red-600" : "text-emerald-700"
+                          (row.revenueDeltaPercent ?? 0) < 0 ? "text-destructive" : "text-success"
                         }`}
                       >
                         {formatDeltaPercent(row.revenueDeltaPercent)}
                       </td>
                       <td className="py-2 pr-4">{trendBadge(row.revenueDeltaPercent)}</td>
-                      <td className="py-2 pr-4 text-slate-700">
+                      <td className="py-2 pr-4 text-foreground">
                         {formatDeltaPercent(row.fillRateDeltaPercent)}
                       </td>
-                      <td className="py-2 pr-4 text-slate-700">{formatDeltaPercent(row.ctrDeltaPercent)}</td>
-                      <td className="py-2 pr-4 text-slate-700">
+                      <td className="py-2 pr-4 text-foreground">{formatDeltaPercent(row.ctrDeltaPercent)}</td>
+                      <td className="py-2 pr-4 text-foreground">
                         {formatDeltaPercent(row.pageViewsRpmDeltaPercent)}
                       </td>
                     </tr>
                   ))
                 ) : (
                   <tr>
-                    <td colSpan={8} className="py-6 text-center text-sm text-slate-500">
+                    <td colSpan={8} className="py-6 text-center text-sm text-muted-foreground">
                       Données insuffisantes pour la comparaison de période.
                     </td>
                   </tr>
@@ -674,14 +674,14 @@ export default function AnalyticsAdsPage() {
       </Card>
 
       {unavailableSources.length > 0 ? (
-        <div className="rounded-md border border-amber-300 bg-amber-50 px-3 py-2 text-sm text-amber-800">
+        <div className="rounded-md border border-warning/30 bg-warning/10 px-3 py-2 text-sm text-warning">
           Sources BigQuery indisponibles pour l&apos;instant: {unavailableSources.join(", ")}. Le
           dashboard continue avec les données disponibles.
         </div>
       ) : null}
 
       {error ? (
-        <div className="rounded-md border border-red-300 bg-red-50 px-3 py-2 text-sm text-red-700">
+        <div className="rounded-md border border-destructive/30 bg-destructive/10 px-3 py-2 text-sm text-destructive">
           {error}
         </div>
       ) : null}
@@ -689,16 +689,16 @@ export default function AnalyticsAdsPage() {
       <section className="grid gap-4 xl:grid-cols-3">
         <Card className="xl:col-span-2">
           <CardHeader>
-            <h2 className="text-base font-semibold text-slate-900">Revenus journaliers</h2>
+            <h2 className="text-base font-semibold text-foreground">Revenus journaliers</h2>
           </CardHeader>
           <CardContent>
             {isLoading ? (
-              <p className="text-sm text-slate-600">Chargement...</p>
+              <p className="text-sm text-muted-foreground">Chargement...</p>
             ) : (
               <div className="overflow-x-auto">
                 <table className="min-w-full border-collapse text-sm">
                   <thead>
-                    <tr className="border-b border-slate-200 text-left text-slate-600">
+                    <tr className="border-b border-border text-left text-muted-foreground">
                       <th className="py-2 pr-4 font-medium">Date</th>
                       <th className="py-2 pr-4 font-medium">Revenu</th>
                       <th className="py-2 pr-4 font-medium">Sessions</th>
@@ -710,20 +710,20 @@ export default function AnalyticsAdsPage() {
                   <tbody>
                     {timeseriesQuery.data?.points.length ? (
                       timeseriesQuery.data.points.map((row) => (
-                        <tr key={row.dateKey} className="border-b border-slate-100">
-                          <td className="py-2 pr-4 text-slate-700">{row.dateKey}</td>
-                          <td className="py-2 pr-4 text-slate-900">{formatMoney(row.estimatedEarnings)}</td>
-                          <td className="py-2 pr-4 text-slate-700">{formatNumber(row.sessions)}</td>
-                          <td className="py-2 pr-4 text-slate-700">{formatNumber(row.pageViews)}</td>
-                          <td className="py-2 pr-4 text-slate-700">
+                        <tr key={row.dateKey} className="border-b border-border">
+                          <td className="py-2 pr-4 text-foreground">{row.dateKey}</td>
+                          <td className="py-2 pr-4 text-foreground">{formatMoney(row.estimatedEarnings)}</td>
+                          <td className="py-2 pr-4 text-foreground">{formatNumber(row.sessions)}</td>
+                          <td className="py-2 pr-4 text-foreground">{formatNumber(row.pageViews)}</td>
+                          <td className="py-2 pr-4 text-foreground">
                             {row.pageViewsRpm == null ? "N/A" : formatMoney(row.pageViewsRpm)}
                           </td>
-                          <td className="py-2 pr-4 text-slate-700">{formatPercent(row.fillRate, 1)}</td>
+                          <td className="py-2 pr-4 text-foreground">{formatPercent(row.fillRate, 1)}</td>
                         </tr>
                       ))
                     ) : (
                       <tr>
-                        <td colSpan={6} className="py-6 text-center text-sm text-slate-500">
+                        <td colSpan={6} className="py-6 text-center text-sm text-muted-foreground">
                           Aucune donnée de revenus sur cette période.
                         </td>
                       </tr>
@@ -737,23 +737,23 @@ export default function AnalyticsAdsPage() {
 
         <Card>
           <CardHeader className="flex items-center justify-between gap-2">
-            <h2 className="text-base font-semibold text-slate-900">Alertes</h2>
-            <AlertTriangle className="h-4 w-4 text-amber-600" />
+            <h2 className="text-base font-semibold text-foreground">Alertes</h2>
+            <AlertTriangle className="h-4 w-4 text-warning" />
           </CardHeader>
           <CardContent className="space-y-3">
             {alertsQuery.data?.alerts.length ? (
               alertsQuery.data.alerts.map((alert) => (
-                <div key={alert.id} className="rounded-lg border border-slate-200 p-3">
+                <div key={alert.id} className="rounded-lg border border-border p-3">
                   <div className="mb-1 flex items-center justify-between gap-2">
-                    <p className="text-sm font-medium text-slate-900">{alert.title}</p>
+                    <p className="text-sm font-medium text-foreground">{alert.title}</p>
                     {alertLevelBadge(alert.level)}
                   </div>
-                  <p className="text-xs text-slate-600">{alert.message}</p>
-                  {alert.dateKey ? <p className="mt-1 text-xs text-slate-500">Date: {alert.dateKey}</p> : null}
+                  <p className="text-xs text-muted-foreground">{alert.message}</p>
+                  {alert.dateKey ? <p className="mt-1 text-xs text-muted-foreground">Date: {alert.dateKey}</p> : null}
                 </div>
               ))
             ) : (
-              <p className="text-sm text-slate-500">Aucune alerte.</p>
+              <p className="text-sm text-muted-foreground">Aucune alerte.</p>
             )}
           </CardContent>
         </Card>
@@ -762,14 +762,14 @@ export default function AnalyticsAdsPage() {
       <section className="grid gap-4 xl:grid-cols-2">
         <Card>
           <CardHeader className="flex items-center justify-between gap-2">
-            <h2 className="text-base font-semibold text-slate-900">Performance emplacements</h2>
+            <h2 className="text-base font-semibold text-foreground">Performance emplacements</h2>
             {sourceBadge(placementsQuery.data?.source ?? "none")}
           </CardHeader>
           <CardContent className="space-y-3">
             <div className="overflow-x-auto">
               <table className="min-w-full border-collapse text-sm">
                 <thead>
-                  <tr className="border-b border-slate-200 text-left text-slate-600">
+                  <tr className="border-b border-border text-left text-muted-foreground">
                     <th className="py-2 pr-4 font-medium">Slot</th>
                     <th className="py-2 pr-4 font-medium">Template</th>
                     <th className="py-2 pr-4 font-medium">Revenu</th>
@@ -780,17 +780,17 @@ export default function AnalyticsAdsPage() {
                 <tbody>
                   {placementsQuery.data?.rows.length ? (
                     placementsQuery.data.rows.map((row) => (
-                      <tr key={`${row.slotId}-${row.pageTemplate}`} className="border-b border-slate-100">
-                        <td className="py-2 pr-4 text-slate-700">{row.slotId}</td>
-                        <td className="py-2 pr-4 text-slate-700">{row.pageTemplate}</td>
-                        <td className="py-2 pr-4 text-slate-900">{formatMoney(row.estimatedEarnings)}</td>
-                        <td className="py-2 pr-4 text-slate-700">{formatPercent(row.fillRate, 1)}</td>
-                        <td className="py-2 pr-4 text-slate-700">{formatPercent(row.ctr, 2)}</td>
+                      <tr key={`${row.slotId}-${row.pageTemplate}`} className="border-b border-border">
+                        <td className="py-2 pr-4 text-foreground">{row.slotId}</td>
+                        <td className="py-2 pr-4 text-foreground">{row.pageTemplate}</td>
+                        <td className="py-2 pr-4 text-foreground">{formatMoney(row.estimatedEarnings)}</td>
+                        <td className="py-2 pr-4 text-foreground">{formatPercent(row.fillRate, 1)}</td>
+                        <td className="py-2 pr-4 text-foreground">{formatPercent(row.ctr, 2)}</td>
                       </tr>
                     ))
                   ) : (
                     <tr>
-                      <td colSpan={5} className="py-6 text-center text-sm text-slate-500">
+                      <td colSpan={5} className="py-6 text-center text-sm text-muted-foreground">
                         Aucun emplacement disponible sur cette période.
                       </td>
                     </tr>
@@ -826,14 +826,14 @@ export default function AnalyticsAdsPage() {
 
         <Card>
           <CardHeader className="flex items-center justify-between gap-2">
-            <h2 className="text-base font-semibold text-slate-900">Performance pages</h2>
+            <h2 className="text-base font-semibold text-foreground">Performance pages</h2>
             {sourceBadge(pagesQuery.data?.source ?? "none")}
           </CardHeader>
           <CardContent className="space-y-3">
             <div className="overflow-x-auto">
               <table className="min-w-full border-collapse text-sm">
                 <thead>
-                  <tr className="border-b border-slate-200 text-left text-slate-600">
+                  <tr className="border-b border-border text-left text-muted-foreground">
                     <th className="py-2 pr-4 font-medium">Page</th>
                     <th className="py-2 pr-4 font-medium">Revenu</th>
                     <th className="py-2 pr-4 font-medium">Pages vues</th>
@@ -843,18 +843,18 @@ export default function AnalyticsAdsPage() {
                 <tbody>
                   {pagesQuery.data?.rows.length ? (
                     pagesQuery.data.rows.map((row) => (
-                      <tr key={row.pageKey} className="border-b border-slate-100">
-                        <td className="max-w-[250px] truncate py-2 pr-4 text-slate-700">{row.pageKey}</td>
-                        <td className="py-2 pr-4 text-slate-900">{formatMoney(row.estimatedEarnings)}</td>
-                        <td className="py-2 pr-4 text-slate-700">{formatNumber(row.pageViews)}</td>
-                        <td className="py-2 pr-4 text-slate-700">
+                      <tr key={row.pageKey} className="border-b border-border">
+                        <td className="max-w-[250px] truncate py-2 pr-4 text-foreground">{row.pageKey}</td>
+                        <td className="py-2 pr-4 text-foreground">{formatMoney(row.estimatedEarnings)}</td>
+                        <td className="py-2 pr-4 text-foreground">{formatNumber(row.pageViews)}</td>
+                        <td className="py-2 pr-4 text-foreground">
                           {row.pageViewsRpm == null ? "N/A" : formatMoney(row.pageViewsRpm)}
                         </td>
                       </tr>
                     ))
                   ) : (
                     <tr>
-                      <td colSpan={4} className="py-6 text-center text-sm text-slate-500">
+                      <td colSpan={4} className="py-6 text-center text-sm text-muted-foreground">
                         Aucune page monétisée sur cette période.
                       </td>
                     </tr>
@@ -889,7 +889,7 @@ export default function AnalyticsAdsPage() {
         </Card>
       </section>
 
-      <div className="flex items-center gap-2 text-xs text-slate-500">
+      <div className="flex items-center gap-2 text-xs text-muted-foreground">
         <TrendingUp className="h-3.5 w-3.5" />
         Dernière mise à jour source: {toDateLabel(overviewQuery.data?.summary.latestUpdatedAt)}
       </div>

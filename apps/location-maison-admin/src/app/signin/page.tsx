@@ -75,26 +75,26 @@ export default function SignInPage() {
     <div className="flex min-h-screen items-center justify-center bg-app px-4 py-10">
       <Card className="w-full max-w-md">
         <CardHeader>
-          <div className="flex items-center gap-2 text-slate-900">
+          <div className="flex items-center gap-2 text-foreground">
             <LogIn className="h-5 w-5" />
             <h1 className="text-lg font-semibold">Connexion administrateur</h1>
           </div>
-          <p className="mt-1 text-sm text-slate-600">
+          <p className="mt-1 text-sm text-muted-foreground">
             Connectez-vous avec un compte présent dans la collection `admin_users`.
           </p>
         </CardHeader>
         <CardContent>
           <form className="space-y-4" onSubmit={onSubmit}>
             <div className="space-y-1">
-              <label className="text-sm font-medium text-slate-700">Email</label>
+              <label className="text-sm font-medium text-foreground">Email</label>
               <Input type="email" {...form.register("email")} />
             </div>
             <div className="space-y-1">
-              <label className="text-sm font-medium text-slate-700">Mot de passe</label>
+              <label className="text-sm font-medium text-foreground">Mot de passe</label>
               <Input type="password" {...form.register("password")} />
             </div>
             {error ? (
-              <p className="rounded-md bg-red-50 px-3 py-2 text-sm text-red-700">{error}</p>
+              <p className="rounded-md bg-destructive/10 px-3 py-2 text-sm text-destructive">{error}</p>
             ) : null}
             <Button className="w-full" type="submit" disabled={pending}>
               {pending ? "Connexion..." : "Se connecter"}
