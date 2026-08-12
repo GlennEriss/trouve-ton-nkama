@@ -5,9 +5,9 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { RefreshCcw } from "lucide-react";
 
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
+import { Button } from "@trouve-ton-nkama/ui/button";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
+import { Input } from "@trouve-ton-nkama/ui/input";
 import {
   Sheet,
   SheetContent,
@@ -2126,7 +2126,7 @@ export default function SocialImportDashboardPage() {
                           <div className="flex flex-wrap gap-2">
                             {canPauseSource && source.status !== "paused" && source.status !== "revoked" ? (
                               <Button
-                                size="xs"
+                                size="sm"
                                 variant="outline"
                                 disabled={pendingActionKey !== null}
                                 onClick={() => void handlePauseSource(source)}
@@ -2136,7 +2136,7 @@ export default function SocialImportDashboardPage() {
                             ) : null}
                             {canRevokeSource && source.status !== "revoked" ? (
                               <Button
-                                size="xs"
+                                size="sm"
                                 variant="destructive"
                                 disabled={pendingActionKey !== null}
                                 onClick={() => void handleRevokeSource(source)}
@@ -2207,7 +2207,7 @@ export default function SocialImportDashboardPage() {
                         <td className="py-3 pr-4">
                           <div className="flex flex-wrap gap-2">
                             <Button
-                              size="xs"
+                              size="sm"
                               variant="outline"
                               disabled={pendingActionKey !== null}
                               onClick={() => void handleViewJobDetails(job)}
@@ -2215,7 +2215,7 @@ export default function SocialImportDashboardPage() {
                               Détails
                             </Button>
                             <Button
-                              size="xs"
+                              size="sm"
                               variant="outline"
                               disabled={pendingActionKey !== null}
                               onClick={() => void handleViewJobLogs(job)}
@@ -2224,7 +2224,7 @@ export default function SocialImportDashboardPage() {
                             </Button>
                             {canRetryJob && job.status === "running" ? (
                               <Button
-                                size="xs"
+                                size="sm"
                                 variant="destructive"
                                 disabled={pendingActionKey !== null}
                                 onClick={() => void handleCancelJob(job)}
@@ -2265,7 +2265,7 @@ export default function SocialImportDashboardPage() {
               <div className="flex flex-wrap items-center justify-end gap-2">
                 <Button
                   type="button"
-                  size="xs"
+                  size="sm"
                   variant="outline"
                   disabled={pendingActionKey !== null || candidates.length === 0}
                   onClick={selectAllVisibleCandidates}
@@ -2274,7 +2274,7 @@ export default function SocialImportDashboardPage() {
                 </Button>
                 <Button
                   type="button"
-                  size="xs"
+                  size="sm"
                   variant="outline"
                   disabled={pendingActionKey !== null || selectedCandidateIdsResolved.length === 0}
                   onClick={clearCandidateSelection}
@@ -2284,7 +2284,7 @@ export default function SocialImportDashboardPage() {
                 {canPublishCandidate ? (
                   <Button
                     type="button"
-                    size="xs"
+                    size="sm"
                     variant="secondary"
                     disabled={pendingActionKey !== null || selectedCandidateIdsResolved.length === 0}
                     onClick={() => void handlePublishSelectedCandidates()}
@@ -2295,7 +2295,7 @@ export default function SocialImportDashboardPage() {
                 {canPublishCandidate ? (
                   <Button
                     type="button"
-                    size="xs"
+                    size="sm"
                     variant="secondary"
                     disabled={
                       pendingActionKey !== null ||
@@ -2315,7 +2315,7 @@ export default function SocialImportDashboardPage() {
                 {canDeleteCandidate ? (
                   <Button
                     type="button"
-                    size="xs"
+                    size="sm"
                     variant="destructive"
                     disabled={pendingActionKey !== null || selectedCandidateIdsResolved.length === 0}
                     onClick={() => void handleDeleteSelectedCandidates()}
@@ -2447,7 +2447,7 @@ export default function SocialImportDashboardPage() {
                       <div className="mt-3 flex flex-wrap gap-2">
                         {canDeleteCandidate && candidate.status !== "published" ? (
                           <Button
-                            size="xs"
+                            size="sm"
                             variant="outline"
                             disabled={pendingActionKey !== null}
                             onClick={() => void handleDeleteCandidate(candidate)}
@@ -2457,7 +2457,7 @@ export default function SocialImportDashboardPage() {
                         ) : null}
                         {canRejectCandidate && candidate.status !== "rejected" && candidate.status !== "published" ? (
                           <Button
-                            size="xs"
+                            size="sm"
                             variant="destructive"
                             disabled={pendingActionKey !== null}
                             onClick={() => void handleRejectCandidate(candidate)}
@@ -2467,7 +2467,7 @@ export default function SocialImportDashboardPage() {
                         ) : null}
                         {canPublishCandidate && candidate.status !== "published" ? (
                           <Button
-                            size="xs"
+                            size="sm"
                             variant="outline"
                             disabled={pendingActionKey !== null}
                             onClick={() => void handleEditCandidateType(candidate)}
@@ -2477,7 +2477,7 @@ export default function SocialImportDashboardPage() {
                         ) : null}
                         {canPublishCandidate && candidate.status === "ready_to_publish" ? (
                           <Button
-                            size="xs"
+                            size="sm"
                             variant="secondary"
                             disabled={pendingActionKey !== null}
                             onClick={() => void handlePublishCandidate(candidate)}

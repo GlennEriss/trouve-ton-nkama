@@ -4,9 +4,9 @@ import { useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Megaphone, RefreshCcw } from "lucide-react";
 
-import { Button } from "@/components/ui/button";
+import { Button } from "@trouve-ton-nkama/ui/button";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
+import { Input } from "@trouve-ton-nkama/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { PageHeader } from "@/components/ui-kit/page-header";
 import { KpiCard } from "@/components/ui-kit/kpi-card";

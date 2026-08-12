@@ -2,7 +2,7 @@
 
 import type { Dispatch, SetStateAction } from "react";
 
-import { Input } from "@/components/ui/input";
+import { Input } from "@trouve-ton-nkama/ui/input";
 import {
   LOGEMENT_BASE_FIELDS,
   LOGEMENT_LIKE_TYPES,

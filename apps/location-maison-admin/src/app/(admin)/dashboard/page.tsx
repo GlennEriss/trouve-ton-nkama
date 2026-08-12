@@ -5,7 +5,7 @@ import { useCallback, useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Activity, RefreshCcw, Search, Users } from "lucide-react";
 
-import { Button, buttonVariants } from "@/components/ui/button";
+import { Button, buttonVariants } from "@trouve-ton-nkama/ui/button";
 import { KpiCard } from "@/components/ui-kit/kpi-card";
 import { PageHeader } from "@/components/ui-kit/page-header";
 import { cn } from "@/lib/utils";

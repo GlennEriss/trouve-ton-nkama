@@ -6,8 +6,8 @@ import { cva, type VariantProps } from "class-variance-authority"
 
 import { useIsMobile } from "@/hooks/use-mobile"
 import { cn } from "@/lib/utils"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
+import { Button } from "@trouve-ton-nkama/ui/button"
+import { Input } from "@trouve-ton-nkama/ui/input"
 import { Separator } from "@/components/ui/separator"
 import {
   Sheet,
@@ -260,7 +260,7 @@ function SidebarTrigger({
       data-sidebar="trigger"
       data-slot="sidebar-trigger"
       variant="ghost"
-      size="icon-sm"
+      size="icon"
       className={cn(className)}
       onClick={(event) => {
         onClick?.(event)

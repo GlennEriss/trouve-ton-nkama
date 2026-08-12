@@ -4,7 +4,7 @@ import * as React from "react";
 import * as DialogPrimitive from "@radix-ui/react-dialog";
 import { XIcon } from "lucide-react";
 
-import { Button } from "@/components/ui/button";
+import { Button } from "@trouve-ton-nkama/ui/button";
 import { cn } from "@/lib/utils";
 
 function Dialog({ ...props }: React.ComponentProps<typeof DialogPrimitive.Root>) {
@@ -58,7 +58,7 @@ function DialogContent({
         {children}
         {showCloseButton ? (
           <DialogPrimitive.Close data-slot="dialog-close" asChild>
-            <Button type="button" variant="ghost" className="absolute top-3 right-3" size="icon-sm">
+            <Button type="button" variant="ghost" className="absolute top-3 right-3" size="icon">
               <XIcon />
               <span className="sr-only">Fermer</span>
             </Button>
