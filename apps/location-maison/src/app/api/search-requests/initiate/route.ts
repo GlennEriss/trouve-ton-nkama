@@ -40,10 +40,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const isLocalEnvironment = !process.env.VERCEL && !process.env.NETLIFY && !process.env.CF_PAGES;
-    const cloudFunctionUrl = isLocalEnvironment
-      ? `http://127.0.0.1:5001/${process.env.FIREBASE_PROJECT_ID}/us-central1/initiateSearchRequestPayment`
-      : `https://us-central1-${process.env.FIREBASE_PROJECT_ID}.cloudfunctions.net/initiateSearchRequestPayment`;
+    const cloudFunctionUrl = `https://us-central1-${process.env.FIREBASE_PROJECT_ID}.cloudfunctions.net/initiateSearchRequestPayment`;
 
     const cloudFunctionResponse = await fetch(cloudFunctionUrl, {
       method: 'POST',
