@@ -18,6 +18,7 @@ import {
 import { Input } from "@trouve-ton-nkama/ui/input";
 import { PageHeader } from "@/components/ui-kit/page-header";
 import { PlacesAutocomplete, type PlaceDetailsResult } from "@/components/geolocation/places-autocomplete";
+import { useAdminSyncPublisher } from "@/lib/cross-tab-sync";
 
 type AuthMePayload = {
   admin: {
@@ -165,6 +166,8 @@ function parseAliases(value: string) {
 }
 
 export default function GeolocationDashboardPage() {
+  // Notifie les autres onglets à chaque modification de la référence géographique.
+  const notifyAdminSync = useAdminSyncPublisher();
   const [globalMessage, setGlobalMessage] = useState<string | null>(null);
   const [globalError, setGlobalError] = useState<string | null>(null);
   const [activeDataset, setActiveDataset] = useState<ActiveDataset>("provinces");
@@ -357,6 +360,9 @@ export default function GeolocationDashboardPage() {
         `Projection OSM synchronisée (${payload.data.counts.provinces} provinces, ${payload.data.counts.cities} villes, ${payload.data.counts.quarters} quartiers).`,
       );
       await osmQuery.refetch();
+      // Prévient les autres onglets : sans ça, un scrap Apify en cours
+      // continuerait d'afficher l'ancienne liste de villes/quartiers.
+      notifyAdminSync({ type: "geolocation:updated" });
     } catch (error) {
       setGlobalError(error instanceof Error ? error.message : "Impossible de synchroniser la projection OSM.");
     } finally {
@@ -403,6 +409,9 @@ export default function GeolocationDashboardPage() {
         setGlobalMessage(`Ville ajoutée: ${payload.data.city.name}.`);
         resetCreateCityForm();
         await osmQuery.refetch();
+      // Prévient les autres onglets : sans ça, un scrap Apify en cours
+      // continuerait d'afficher l'ancienne liste de villes/quartiers.
+      notifyAdminSync({ type: "geolocation:updated" });
       } catch (error) {
         setGlobalError(error instanceof Error ? error.message : "Impossible de créer cette ville.");
       } finally {
@@ -457,6 +466,9 @@ export default function GeolocationDashboardPage() {
         setGlobalMessage(`Quartier ajouté: ${payload.data.quarter.name}.`);
         resetCreateQuarterForm();
         await osmQuery.refetch();
+      // Prévient les autres onglets : sans ça, un scrap Apify en cours
+      // continuerait d'afficher l'ancienne liste de villes/quartiers.
+      notifyAdminSync({ type: "geolocation:updated" });
       } catch (error) {
         setGlobalError(error instanceof Error ? error.message : "Impossible de créer ce quartier.");
       } finally {
@@ -573,6 +585,9 @@ export default function GeolocationDashboardPage() {
 
       setEditDialog(null);
       await osmQuery.refetch();
+      // Prévient les autres onglets : sans ça, un scrap Apify en cours
+      // continuerait d'afficher l'ancienne liste de villes/quartiers.
+      notifyAdminSync({ type: "geolocation:updated" });
     } catch (error) {
       setGlobalError(error instanceof Error ? error.message : "Impossible de modifier cet élément.");
     } finally {
@@ -616,6 +631,9 @@ export default function GeolocationDashboardPage() {
 
       setDeleteDialog(null);
       await osmQuery.refetch();
+      // Prévient les autres onglets : sans ça, un scrap Apify en cours
+      // continuerait d'afficher l'ancienne liste de villes/quartiers.
+      notifyAdminSync({ type: "geolocation:updated" });
     } catch (error) {
       setGlobalError(error instanceof Error ? error.message : "Impossible de supprimer cet élément.");
     } finally {
