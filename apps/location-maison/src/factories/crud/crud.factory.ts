@@ -18,7 +18,7 @@ export abstract class CrudFactory {
             const totalArchivedProperties = await countPropertyArchived()
             return {
                 title: 'Mes annonces',
-                link: routes.protected.add_property,
+                link: routes.protected.add_property_ai,
                 stats: [
                     {
                         title: 'Propriétés',

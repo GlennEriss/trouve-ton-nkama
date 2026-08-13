@@ -93,7 +93,7 @@ export function BecomeAnnouncerPageModern() {
         duration: 5000,
         variant: 'success',
       });
-      router.push(routes.protected.add_property);
+      router.push(routes.protected.add_property_ai);
       return;
     }
 
@@ -103,7 +103,7 @@ export function BecomeAnnouncerPageModern() {
       duration: 5000,
       variant: 'success',
     });
-    router.push(routes.protected.add_property);
+    router.push(routes.protected.add_property_ai);
   };
 
   return (
