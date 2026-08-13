@@ -11,7 +11,7 @@ export default function ButtonShareToFacebook({ property }: Readonly<{ property:
         // Tracker le partage Facebook
         trackInteraction('facebook_share');
 
-        const url = `${process.env.NEXT_PUBLIC_HOST}/houseDetails/${property.id}`;
+        const url = `${process.env.NEXT_PUBLIC_HOST}/annonce/${property.id}`;
         const fbUrl = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}`;
         window.open(fbUrl, '_blank', 'width=600,height=400');
     };
@@ -22,7 +22,7 @@ export default function ButtonShareToFacebook({ property }: Readonly<{ property:
                 <meta property="og:title" content={property.title} />
                 <meta property="og:description" content={property.description} />
                 <meta property="og:image" content={property.images[0].fileURL} />
-                <meta property="og:url" content={`${process.env.NEXT_PUBLIC_HOST}/houseDetails/${property.id}`} />
+                <meta property="og:url" content={`${process.env.NEXT_PUBLIC_HOST}/annonce/${property.id}`} />
                 <meta property="og:type" content="website" />
             </head> */}
             <button

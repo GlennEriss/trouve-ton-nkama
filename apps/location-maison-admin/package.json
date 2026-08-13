@@ -15,7 +15,10 @@
     "osm:seed:cloud:prod": "tsx scripts/location-osm/seed-cloud.ts --env-file=.env.local.prod",
     "osm:seed:cloud:dev": "tsx scripts/location-osm/seed-cloud.ts --env-file=.env.local",
     "phone:normalize": "tsx scripts/phone/normalize-existing-phones.ts",
-    "phone:normalize:apply": "tsx scripts/phone/normalize-existing-phones.ts --apply"
+    "phone:normalize:apply": "tsx scripts/phone/normalize-existing-phones.ts --apply",
+    "categories:seed:dry": "tsx scripts/categories/seed-categories.ts --dry-run",
+    "categories:seed:dev": "tsx scripts/categories/seed-categories.ts --env-file=.env.local",
+    "categories:seed:prod": "tsx scripts/categories/seed-categories.ts --env-file=.env.local.prod"
   },
   "dependencies": {
     "@trouve-ton-nkama/core": "*",

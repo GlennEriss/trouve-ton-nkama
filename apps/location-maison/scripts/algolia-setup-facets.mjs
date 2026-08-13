@@ -24,6 +24,13 @@ const body = {
         'tags',
         'status',
         'state',
+        // Multi-catégories (Lot 1) : facette hiérarchique pour la recherche/l'accueil par
+        // catégorie (voir docs/marketplace-multi-categories/03-page-recherche.md). Les
+        // facettes par attribut dynamique (attributes.taille, etc.) arrivent au Lot 4,
+        // une fois qu'il existe des annonces mode indexées pour les peupler.
+        'categoryId',
+        'categoryPath.lvl0',
+        'categoryPath.lvl1',
     ],
 };
 

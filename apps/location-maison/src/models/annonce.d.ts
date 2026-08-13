@@ -32,8 +32,26 @@ export type Image = {
     thumbURL?: string,
 }
 
+// Catégorisation multi-catégories (Lot 1, voir
+// docs/marketplace-multi-categories/00-le-vrai-probleme.md) : le tronc commun d'une
+// annonce n'est plus exclusivement immobilier. `typeProperty`/`area`/`status` restent la
+// source de vérité pour l'immobilier et ne sont pas dupliqués dans `attributes` — ce champ
+// ne sert qu'aux catégories qui n'ont pas leur propre schéma de champs (Mode, etc.).
+export type CategoryPath = {
+    lvl0: string
+    lvl1?: string
+}
+
+export type ListingAttributeValue = string | number | boolean
+
 export type Property = Location & ICreation & {
     typeProperty: TypeProperty
+    // Optionnels tant que le backfill (scripts/backfill-listing-categories.js) n'a pas
+    // tourné sur toutes les annonces existantes — voir docs/marketplace-multi-categories/
+    // 07-lots-et-sequencement.md, Lot 1.
+    categoryId?: string
+    categoryPath?: CategoryPath
+    attributes?: Record<string, ListingAttributeValue>
     images: Image[]
     title: string,
     description: string,

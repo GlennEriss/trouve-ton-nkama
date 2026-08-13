@@ -23,7 +23,7 @@ export default async function CreatePropertyPreviewPage({ params }: { params: Pr
   }
 
   if (property.createdBy !== session?.user?.uid) {
-    redirect(`/houseDetails/${id}`)
+    redirect(`/annonce/${id}`)
   }
 
   return <PreviewPropertyDraft property={property} />

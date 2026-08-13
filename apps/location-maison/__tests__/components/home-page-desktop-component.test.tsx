@@ -39,6 +39,7 @@ jest.mock('@/components/home-page/PropertyByProvince', () => ({ __esModule: true
 jest.mock('@/components/home-page/FeaturedSection', () => ({ __esModule: true, default: () => <div data-testid="featured" /> }))
 jest.mock('@/components/home-page/TrendingSection', () => ({ __esModule: true, default: () => <div data-testid="trending" /> }))
 jest.mock('@/components/home-page/RecentSection', () => ({ __esModule: true, default: () => <div data-testid="recent" /> }))
+jest.mock('@/components/home-page/CategoryHomeSections', () => ({ __esModule: true, default: () => <div data-testid="category-home-sections" /> }))
 
 describe('HomePageDesktopComponent', () => {
   beforeEach(() => {

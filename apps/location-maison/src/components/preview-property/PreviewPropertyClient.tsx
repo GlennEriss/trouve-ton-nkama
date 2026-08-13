@@ -13,7 +13,7 @@ export default function PreviewPropertyClient() {
     // La session next-auth met un instant à se résoudre au premier montage
     // (ex: arrivée directe sur cette URL, refresh) — sans ce garde, `user`
     // est encore `undefined` sur le tout premier rendu et le propriétaire
-    // légitime se fait rediriger vers /houseDetails à tort.
+    // légitime se fait rediriger vers /annonce à tort.
     const { status: sessionStatus } = useSession()
     if (!id) {
         notFound()
@@ -28,7 +28,7 @@ export default function PreviewPropertyClient() {
         return <div>Erreur ou propriété introuvable.</div>
     }
     if (property.createdBy !== user?.uid) {
-        redirect('/houseDetails/' + id)
+        redirect('/annonce/' + id)
     }
     return (
         <div>

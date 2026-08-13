@@ -95,7 +95,7 @@ export default function PropertyStatisticsClient({
         <div className="relative">
           {/* Navigation */}
           <div className="flex items-center justify-between mb-6">
-            <Link href={`/houseDetails/${propertyId}`}>
+            <Link href={`/annonce/${propertyId}`}>
               <Button 
                 variant="ghost" 
                 size="sm" 

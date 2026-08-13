@@ -14,7 +14,7 @@ export default function ButtonShareToWhatsapp({ property }: Readonly<{ property:
     const message = `🏠 Découvrez cette annonce sur Trouve Ton Nkama :
 ${property.title}
 ${property.description?.slice(0, 100)}...
-📍 ${process.env.NEXT_PUBLIC_HOST}/houseDetails/${property.id}`
+📍 ${process.env.NEXT_PUBLIC_HOST}/annonce/${property.id}`
 
     const whatsappUrl = `https://api.whatsapp.com/send?text=${encodeURIComponent(message)}`
     window.open(whatsappUrl, '_blank')

@@ -26,6 +26,7 @@ let provincesState: any[]
 
 jest.mock('next/image', () => ({ __esModule: true, default: (props: any) => <img alt={props.alt} /> }))
 jest.mock('next/navigation', () => ({
+  useRouter: () => ({ push: jest.fn() }),
   useSearchParams: () => ({
     get: (key: string) => searchParamsMap.get(key) ?? null,
     toString: () => Array.from(searchParamsMap.entries()).map(([k, v]) => `${k}=${v}`).join('&'),
@@ -46,6 +47,10 @@ jest.mock('@/components/home-page/PropertyCard', () => ({
 jest.mock('@/components/search/FilterSearchDesktopPageSection', () => ({
   __esModule: true,
   default: () => <div data-testid="filter-section" />,
+}))
+jest.mock('@/components/search/CategoryFilterPills', () => ({
+  __esModule: true,
+  default: () => <div data-testid="category-filter-pills" />,
 }))
 jest.mock('@/components/ads/SponsoredSlot', () => ({
   __esModule: true,

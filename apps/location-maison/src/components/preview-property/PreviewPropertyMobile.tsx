@@ -137,7 +137,7 @@ export const PreviewPropertyMobile: React.FC<PreviewPropertyMobileProps> = ({ pr
                 <div className='flex gap-3'>
                     <Link
                         href={whatsappNumber ? `https://wa.me/${whatsappNumber}?text=${encodeURIComponent(
-                            `Bonjour, je suis intéressé par votre annonce "${property.title}" au prix de ${property.price.toLocaleString('fr-FR')} FCFA. Voici le lien de l'annonce : ${process.env.NEXT_PUBLIC_HOST}/houseDetails/${property.id}`
+                            `Bonjour, je suis intéressé par votre annonce "${property.title}" au prix de ${property.price.toLocaleString('fr-FR')} FCFA. Voici le lien de l'annonce : ${process.env.NEXT_PUBLIC_HOST}/annonce/${property.id}`
                         )}` : '#'}
                         target="_blank"
                         rel="noopener noreferrer"
@@ -189,7 +189,7 @@ export const PreviewPropertyMobile: React.FC<PreviewPropertyMobileProps> = ({ pr
                             <div className='flex gap-3'>
                                 <Link
                                     href={`https://wa.me/${number}?text=${encodeURIComponent(
-                                        `Bonjour, je suis intéressé par votre annonce "${property.title}" au prix de ${property.price.toLocaleString('fr-FR')} FCFA. Voici le lien de l'annonce : ${process.env.NEXT_PUBLIC_HOST}/houseDetails/${property.id}`
+                                        `Bonjour, je suis intéressé par votre annonce "${property.title}" au prix de ${property.price.toLocaleString('fr-FR')} FCFA. Voici le lien de l'annonce : ${process.env.NEXT_PUBLIC_HOST}/annonce/${property.id}`
                                     )}`}
                                     target="_blank"
                                     rel="noopener noreferrer"

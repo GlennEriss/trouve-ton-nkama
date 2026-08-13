@@ -22,7 +22,7 @@ export default function SectionFavoris() {
     const [currentPage, setCurrentPage] = React.useState(0);
     const [totalPage, setTotalPage] = React.useState(0);
     const handleCardClick = (id: number | string) => {
-        router.push(`/houseDetails/${id}`);
+        router.push(`/annonce/${id}`);
     };
     const handleNext = () => {
         currentPage < totalPage - 1 && setCurrentPage(currentPage + 1);

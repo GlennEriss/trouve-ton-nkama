@@ -40,6 +40,7 @@ jest.mock('next/link', () => ({ __esModule: true, default: ({ children, href, ..
 jest.mock('@trouve-ton-nkama/ui/input', () => ({ Input: (props: any) => <input {...props} /> }))
 jest.mock('@/components/home-page/FilterModalHomePage', () => ({ FilterModalHomePage: () => <span>Filtres</span> }))
 jest.mock('@/components/home-page/PropertyCard', () => ({ __esModule: true, default: ({ property }: any) => <article>Annonce {property.objectID}</article> }))
+jest.mock('@/components/search/CategoryFilterPills', () => ({ __esModule: true, default: () => <div data-testid="category-filter-pills" /> }))
 jest.mock('@/components/ads/SponsoredSlot', () => ({ __esModule: true, default: ({ rotationIndex }: any) => <aside>Publicité {rotationIndex}</aside> }))
 jest.mock('@/components/search/SearchWithAIAccessNoticeDialog', () => ({
   __esModule: true,
