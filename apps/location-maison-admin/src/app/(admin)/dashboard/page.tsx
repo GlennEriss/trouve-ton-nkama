@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useCallback, useMemo, useState } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Activity, RefreshCcw, Search, Users } from "lucide-react";
 
 import { Button, buttonVariants } from "@trouve-ton-nkama/ui/button";
@@ -77,6 +77,21 @@ function formatNumber(value: number) {
   return new Intl.NumberFormat("fr-FR").format(value);
 }
 
+/**
+ * Arrondit l'ancre temporelle à la minute.
+ *
+ * Les bornes de fenêtre partent dans les clés React Query. Avec un `new Date()`
+ * brut, elles sont horodatées à la milliseconde : chaque remontage de la page
+ * produisait donc une clé différente, donc un cache systématiquement manqué, et
+ * TOUS les blocs de la vue d'ensemble se rechargeaient de zéro à chaque visite.
+ * Arrondir rend la clé stable d'un remontage à l'autre dans la même minute.
+ */
+function quantizeToMinute(date: Date): Date {
+  const quantized = new Date(date);
+  quantized.setSeconds(0, 0);
+  return quantized;
+}
+
 function buildWindow(anchorDate: Date, durationMs: number): TimeWindow {
   const currentEndDate = new Date(anchorDate);
   const currentStartDate = new Date(currentEndDate.getTime() - durationMs);
@@ -131,7 +146,8 @@ async function fetchJsonApi<T>(url: string, fallbackMessage: string) {
 }
 
 export default function DashboardPage() {
-  const [anchorDate, setAnchorDate] = useState(() => new Date());
+  const queryClient = useQueryClient();
+  const [anchorDate, setAnchorDate] = useState(() => quantizeToMinute(new Date()));
 
   const presenceWindow = useMemo(
     () => buildWindow(anchorDate, 24 * 60 * 60 * 1000),
@@ -375,9 +391,13 @@ export default function DashboardPage() {
       ? toTrend(visitsCurrent, visitsPrevious)
       : undefined;
 
+  // Le rafraîchissement ne peut plus reposer sur un changement de clé (l'ancre
+  // est arrondie, elle ne bouge pas d'un clic à l'autre dans la même minute) :
+  // on invalide donc explicitement les requêtes de la page.
   const handleRefresh = useCallback(() => {
-    setAnchorDate(new Date());
-  }, []);
+    setAnchorDate(quantizeToMinute(new Date()));
+    void queryClient.invalidateQueries({ queryKey: ["dashboard"] });
+  }, [queryClient]);
 
   return (
     <div className="space-y-6">
