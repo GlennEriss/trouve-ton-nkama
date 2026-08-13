@@ -251,12 +251,13 @@ export default function AnalyticsTrafficPage() {
 
   // `daily` contient une ligne par (jour × fournisseur) : on agrège par jour,
   // sinon la courbe afficherait plusieurs points pour une même date.
+  const daily = data?.daily;
   const dailyTotals = useMemo(() => {
-    if (!data?.daily?.length) {
+    if (!daily?.length) {
       return [];
     }
     const byDate = new Map<string, { dateKey: string; visits: number; uniqueVisitors: number; pageViews: number }>();
-    for (const row of data.daily) {
+    for (const row of daily) {
       const current = byDate.get(row.dateKey) ?? {
         dateKey: row.dateKey,
         visits: 0,
@@ -269,19 +270,20 @@ export default function AnalyticsTrafficPage() {
       byDate.set(row.dateKey, current);
     }
     return Array.from(byDate.values()).sort((a, b) => a.dateKey.localeCompare(b.dateKey));
-  }, [data?.daily]);
+  }, [daily]);
 
   // Barres horizontales : on tronque les chemins longs côté axe, la valeur
   // complète reste dans l'infobulle et dans le tableau plus bas.
+  const topPages = data?.topPages;
   const topPagesChartData = useMemo(() => {
-    if (!data?.topPages?.length) {
+    if (!topPages?.length) {
       return [];
     }
-    return data.topPages.slice(0, 8).map((entry) => ({
+    return topPages.slice(0, 8).map((entry) => ({
       page: entry.page.length > 28 ? `${entry.page.slice(0, 27)}…` : entry.page,
       pageViews: entry.pageViews,
     }));
-  }, [data?.topPages]);
+  }, [topPages]);
   const exportUrl = useMemo(() => {
     const params = new URLSearchParams();
     params.set("range", range);

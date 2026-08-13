@@ -1,5 +1,11 @@
 export type SearchRequestModerationStatus = "PENDING" | "APPROVED" | "REJECTED";
-export type SearchRequestPaymentStatus = "pending_confirmation" | "confirmed" | "failed";
+/** `not_required` : saisie admin, aucun paiement associé (≠ paiement confirmé). */
+export type SearchRequestPaymentStatus =
+  | "pending_confirmation"
+  | "confirmed"
+  | "failed"
+  | "not_required";
+export type SearchRequestSource = "public" | "admin";
 
 /** Forme brute du document Firestore `search_requests/{id}` — voir apps/location-maison/src/models/search-request.d.ts. */
 export type SearchRequestRawDoc = {
