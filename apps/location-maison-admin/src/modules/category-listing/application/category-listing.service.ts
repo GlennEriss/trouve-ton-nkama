@@ -9,7 +9,12 @@ import type {
   CreateCategoryListingResult,
 } from "@/modules/category-listing/domain/types";
 import type { CategoryAttributeSchemaField } from "@/modules/category-management/domain/types";
-import { createCategoryListingDocument } from "@/modules/category-listing/infrastructure/category-listing.repository";
+import { createCategoryListingDocument, listCategoryListingDocuments } from "@/modules/category-listing/infrastructure/category-listing.repository";
+
+export async function listCategoryListings() {
+  const listings = await listCategoryListingDocuments();
+  return { listings, count: listings.length };
+}
 
 function hasAnnouncerRole(roles: string[]) {
   return roles.some((role) => role.trim().toLowerCase() === "announcer");

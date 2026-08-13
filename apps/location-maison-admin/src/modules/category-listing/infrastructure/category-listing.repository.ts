@@ -66,3 +66,65 @@ export async function createCategoryListingDocument(input: {
 
   return ref.id;
 }
+
+export type CategoryListingSummary = {
+  id: string;
+  title: string;
+  price: number;
+  categoryId: string;
+  categoryPath: { lvl0: string; lvl1: string } | null;
+  moderationStatus: string;
+  rejectionReason: string | null;
+  city: string;
+  province: string;
+  createdBy: string;
+  createdAt: string | null;
+  primaryImageUrl: string | null;
+};
+
+/**
+ * Toutes les annonces multi-catégorie (categoryId présent — donc jamais immobilier tant
+ * que le backfill du Lot 1 n'a pas tourné). Une seule égalité (`!=` sur un champ, seule
+ * dans la requête) : pas de composite index Firestore requis, voir la même précaution
+ * dans home-sections/route.ts côté location-maison.
+ */
+export async function listCategoryListingDocuments(): Promise<CategoryListingSummary[]> {
+  const db = getFirebaseAdminDb();
+  const snapshot = await db.collection(COLLECTION).where("categoryId", "!=", null).limit(200).get();
+
+  const items = snapshot.docs.map((doc) => {
+    const data = doc.data();
+    const images = Array.isArray(data.images) ? data.images : [];
+    const firstImage = images.find((image: unknown) => {
+      if (typeof image === "string") return image.trim().length > 0;
+      if (image && typeof image === "object") {
+        const url = (image as { fileURL?: unknown }).fileURL;
+        return typeof url === "string" && url.trim().length > 0;
+      }
+      return false;
+    });
+    const primaryImageUrl =
+      typeof firstImage === "string" ? firstImage : (firstImage as { fileURL?: string } | undefined)?.fileURL ?? null;
+
+    return {
+      id: doc.id,
+      title: typeof data.title === "string" ? data.title : "",
+      price: typeof data.price === "number" ? data.price : 0,
+      categoryId: typeof data.categoryId === "string" ? data.categoryId : "",
+      categoryPath:
+        data.categoryPath && typeof data.categoryPath === "object"
+          ? { lvl0: String(data.categoryPath.lvl0 ?? ""), lvl1: String(data.categoryPath.lvl1 ?? "") }
+          : null,
+      moderationStatus: typeof data.moderationStatus === "string" ? data.moderationStatus : "PENDING",
+      rejectionReason: typeof data.rejectionReason === "string" ? data.rejectionReason : null,
+      city: typeof data.city === "string" ? data.city : "",
+      province: typeof data.province === "string" ? data.province : "",
+      createdBy: typeof data.createdBy === "string" ? data.createdBy : "",
+      createdAt:
+        data.createdAt && typeof data.createdAt.toDate === "function" ? data.createdAt.toDate().toISOString() : null,
+      primaryImageUrl,
+    } satisfies CategoryListingSummary;
+  });
+
+  return items.sort((a, b) => (b.createdAt ?? "").localeCompare(a.createdAt ?? ""));
+}

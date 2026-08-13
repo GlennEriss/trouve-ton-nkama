@@ -74,6 +74,33 @@ export type CategoryListingDraft = {
 
 export class CategoryListingDraftError extends Error {}
 
+/**
+ * Gemini renvoie parfois un nombre sous forme de chaîne dans le JSON ("15000" au lieu de
+ * 15000, parfois avec espaces/virgules de milliers ou un suffixe "FCFA") malgré la
+ * consigne du prompt — un `typeof value === 'number'` strict perd alors silencieusement
+ * une valeur pourtant bien détectée par l'IA. Même problème et même remède que
+ * `AIFormService.normalizeNumber` côté immobilier (`services/ai-form.service.ts`).
+ */
+function coerceToNumber(value: unknown): number | null {
+  if (typeof value === 'number') {
+    return Number.isFinite(value) ? value : null;
+  }
+  if (typeof value !== 'string') {
+    return null;
+  }
+  const normalized = value
+    .trim()
+    .replace(/\s*(?:fcfa|xaf|f\s*cfa|francs?)\s*$/gi, '')
+    .replace(/\s+/g, '')
+    .replace(/(?<=\d)[.,](?=\d{3}\b)/g, '')
+    .replace(',', '.');
+  if (!normalized) {
+    return null;
+  }
+  const parsed = Number(normalized);
+  return Number.isFinite(parsed) ? parsed : null;
+}
+
 export function parseCategoryListingDraftResponse(
   raw: string,
   categories: PublishableCategoryLeaf[],
@@ -108,8 +135,11 @@ export function parseCategoryListingDraftResponse(
     const value = rawAttributes[field.key];
     if (value === null || value === undefined || value === '') continue;
 
-    if (field.type === 'number' && typeof value === 'number' && Number.isFinite(value)) {
-      attributes[field.key] = value;
+    if (field.type === 'number') {
+      const numericValue = coerceToNumber(value);
+      if (numericValue !== null) {
+        attributes[field.key] = numericValue;
+      }
     } else if (field.type === 'boolean' && typeof value === 'boolean') {
       attributes[field.key] = value;
     } else if (field.type === 'enum' && typeof value === 'string' && (field.options ?? []).includes(value)) {
@@ -125,10 +155,10 @@ export function parseCategoryListingDraftResponse(
     categoryId: matchedCategory.id,
     title: typeof parsed.title === 'string' ? parsed.title.trim().slice(0, 120) : '',
     description: typeof parsed.description === 'string' ? parsed.description.trim().slice(0, 3000) : '',
-    price:
-      typeof parsed.price === 'number' && Number.isFinite(parsed.price) && parsed.price > 0
-        ? parsed.price
-        : null,
+    price: (() => {
+      const numericPrice = coerceToNumber(parsed.price);
+      return numericPrice !== null && numericPrice > 0 ? numericPrice : null;
+    })(),
     city: typeof parsed.city === 'string' && parsed.city.trim().length > 0 ? parsed.city.trim() : null,
     attributes,
   };

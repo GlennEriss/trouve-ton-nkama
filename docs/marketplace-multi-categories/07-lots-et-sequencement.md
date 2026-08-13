@@ -132,6 +132,14 @@ restent strictement immobilier (12 `CREATABLE_TYPES` en dur) :
   séparé). Localisation simplifiée : pas de ville/province sur l'étape 1, province par
   défaut Estuaire, tout corrigible sur la preview.
 - **Les 14 builders immobiliers restent en place**, non touchés.
+- **Révisé une 3e fois (navigation admin, retour utilisateur)** : la saisie admin mode
+  (Lot 2) n'a plus d'entrée sidebar séparée "Nouvelle annonce" — redondant avec le module
+  "Annonces" existant. Le module `/dashboard/listings` a maintenant deux onglets
+  (Immobilier / Mode) : l'onglet Immobilier est l'ancien contenu intact (renommé
+  `ImmobilierListingsPanel`, corps de fonction non touché) ; l'onglet Mode est une table
+  neuve et volontairement simple (`ModeListingsPanel`) avec son propre bouton "Nouvelle
+  annonce", plutôt qu'un retrofit du panneau immobilier (14 filtres construits autour de
+  `typeProperty`, trop risqué à adapter).
 **Sortie :** un vendeur peut publier lui-même dans une catégorie active, assisté par l'IA —
 mécaniquement prêt, invisible tant que Mode n'est pas activée avec du stock.
 

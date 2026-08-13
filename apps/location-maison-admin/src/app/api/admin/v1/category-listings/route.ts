@@ -3,8 +3,29 @@ import { z } from "zod";
 
 import { jsonError, jsonSuccess } from "@/lib/api/response";
 import { logAudit } from "@/modules/audit-compliance/application/audit-log.service";
-import { createCategoryListing } from "@/modules/category-listing/application/category-listing.service";
+import { createCategoryListing, listCategoryListings } from "@/modules/category-listing/application/category-listing.service";
 import { requireAdmin } from "@/modules/iam/presentation/admin-guard";
+
+export async function GET(request: NextRequest) {
+  const auth = await requireAdmin(request, "listings.read");
+  if (!auth.ok) {
+    return auth.response;
+  }
+
+  try {
+    const result = await listCategoryListings();
+    return jsonSuccess(result, auth.correlationId);
+  } catch (error) {
+    return jsonError(
+      {
+        code: "INTERNAL_ERROR",
+        message: error instanceof Error ? error.message : "Impossible de charger les annonces multi-catégorie.",
+      },
+      500,
+      auth.correlationId,
+    );
+  }
+}
 
 const bodySchema = z
   .object({

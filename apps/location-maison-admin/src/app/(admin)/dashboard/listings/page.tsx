@@ -18,6 +18,8 @@ import {
 import { Input } from "@trouve-ton-nkama/ui/input";
 import { PageHeader } from "@/components/ui-kit/page-header";
 import { formatPriceFCFA } from "@trouve-ton-nkama/core/utils";
+import { cn } from "@/lib/utils";
+import ModeListingsPanel from "./ModeListingsPanel";
 
 type ListingStatusFilter = "all" | "FOR_RENT" | "FOR_SALE";
 type ListingStateFilter = "all" | "IN_PROGRESS" | "ARCHIVED";
@@ -232,7 +234,11 @@ function buildQueryParams(limit: number, cursor: string | null, filters: Applied
   return params;
 }
 
-export default function ListingsDashboardPage() {
+// Panneau immobilier historique — anciennement le seul contenu de cette page, désormais
+// un onglet parmi d'autres (voir ListingsDashboardPage tout en bas). Corps de fonction
+// inchangé : reste le formulaire/table à 14 filtres immobilier existant, non touché pour
+// ne pas risquer de régression sur un module en production.
+function ImmobilierListingsPanel() {
   const searchParams = useSearchParams();
   const [queryDraft, setQueryDraft] = useState("");
   const [createdByDraft, setCreatedByDraft] = useState("");
@@ -1109,6 +1115,54 @@ export default function ListingsDashboardPage() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+    </div>
+  );
+}
+
+type ListingsTab = "immobilier" | "mode";
+
+const LISTINGS_TABS: Array<{ value: ListingsTab; label: string }> = [
+  { value: "immobilier", label: "Immobilier" },
+  { value: "mode", label: "Mode" },
+];
+
+/**
+ * Un seul module "Annonces" — pas de module "Nouvelle annonce" séparé dans la sidebar
+ * (retiré, voir docs/marketplace-multi-categories/07-lots-et-sequencement.md). Bascule
+ * volontairement écrite à la main (pas @trouve-ton-nkama/ui/tabs) : ce composant dépend de
+ * @radix-ui/react-tabs, non installé dans ce workspace — deux boutons + rendu conditionnel
+ * suffisent pour un choix binaire, pas besoin d'ajouter une dépendance pour ça.
+ */
+export default function ListingsDashboardPage() {
+  const [activeTab, setActiveTab] = useState<ListingsTab>("immobilier");
+
+  return (
+    <div className="space-y-4">
+      <div
+        role="tablist"
+        aria-label="Catégorie d'annonces"
+        className="inline-flex h-9 items-center rounded-lg bg-muted p-1 text-muted-foreground"
+      >
+        {LISTINGS_TABS.map((tab) => (
+          <button
+            key={tab.value}
+            type="button"
+            role="tab"
+            aria-selected={activeTab === tab.value}
+            onClick={() => setActiveTab(tab.value)}
+            className={cn(
+              "inline-flex items-center justify-center whitespace-nowrap rounded-md px-3 py-1 text-sm font-medium transition-all",
+              activeTab === tab.value
+                ? "bg-background text-foreground shadow"
+                : "hover:text-foreground",
+            )}
+          >
+            {tab.label}
+          </button>
+        ))}
+      </div>
+
+      {activeTab === "immobilier" ? <ImmobilierListingsPanel /> : <ModeListingsPanel />}
     </div>
   );
 }
