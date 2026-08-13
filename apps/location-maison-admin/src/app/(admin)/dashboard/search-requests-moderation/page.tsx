@@ -8,6 +8,7 @@ import { Button } from "@trouve-ton-nkama/ui/button";
 import { Card, CardContent } from "@trouve-ton-nkama/ui/card";
 import { PageHeader } from "@/components/ui-kit/page-header";
 import { CreateSearchRequestDialog } from "@/components/search-requests/CreateSearchRequestDialog";
+import { PublishedSearchRequests } from "@/components/search-requests/PublishedSearchRequests";
 import type { SearchRequestListItem } from "@/modules/search-requests-moderation/domain/types";
 
 type PendingSearchRequestsResponse = {
@@ -137,6 +138,8 @@ export default function SearchRequestsModerationPage() {
           </Card>
         ))}
       </div>
+
+      <PublishedSearchRequests />
     </div>
   );
 }

@@ -9,6 +9,7 @@ import { TypePropertyEnum } from "@trouve-ton-nkama/core/domain";
 import { logAudit } from "@/modules/audit-compliance/application/audit-log.service";
 import { hasPermission } from "@/modules/iam/domain/permissions";
 import { requireAdmin } from "@/modules/iam/presentation/admin-guard";
+import { listApprovedSearchRequests } from "@/modules/search-requests-moderation/infrastructure/search-requests.repository";
 
 /**
  * Création d'une demande de recherche par un admin, pour le compte d'un tiers
@@ -141,6 +142,64 @@ export async function POST(request: NextRequest) {
       {
         code: "INTERNAL_ERROR",
         message: error instanceof Error ? error.message : "Impossible de créer la demande.",
+      },
+      500,
+      auth.correlationId,
+    );
+  }
+}
+
+const listQuerySchema = z.object({
+  state: z.enum(["IN_PROGRESS", "ARCHIVED"]).optional(),
+  limit: z.coerce.number().int().min(1).max(100).optional(),
+  cursor: z.string().trim().min(1).optional(),
+});
+
+/** Liste les demandes déjà approuvées : publiées (IN_PROGRESS) ou archivées. */
+export async function GET(request: NextRequest) {
+  const auth = await requireAdmin(request);
+  if (!auth.ok) {
+    return auth.response;
+  }
+
+  if (!hasPermission(auth.admin.permissions, "search_requests.read")) {
+    return jsonError(
+      { code: "FORBIDDEN", message: "Permission manquante : search_requests.read" },
+      403,
+      auth.correlationId,
+    );
+  }
+
+  const parsed = listQuerySchema.safeParse({
+    state: request.nextUrl.searchParams.get("state") ?? undefined,
+    limit: request.nextUrl.searchParams.get("limit") ?? undefined,
+    cursor: request.nextUrl.searchParams.get("cursor") ?? undefined,
+  });
+
+  if (!parsed.success) {
+    return jsonError(
+      {
+        code: "VALIDATION_ERROR",
+        message: "Paramètres de requête invalides.",
+        details: { issues: parsed.error.issues },
+      },
+      400,
+      auth.correlationId,
+    );
+  }
+
+  try {
+    const result = await listApprovedSearchRequests({
+      limit: parsed.data.limit ?? 20,
+      cursor: parsed.data.cursor,
+      state: parsed.data.state ?? "IN_PROGRESS",
+    });
+    return jsonSuccess(result, auth.correlationId);
+  } catch (error) {
+    return jsonError(
+      {
+        code: "INTERNAL_ERROR",
+        message: error instanceof Error ? error.message : "Impossible de charger les demandes.",
       },
       500,
       auth.correlationId,

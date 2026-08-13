@@ -31,6 +31,9 @@ export type SearchRequestRawDoc = {
   // entrent dans la file de modération, voir search-requests.repository.ts.
   moderationStatus: SearchRequestModerationStatus | null;
   rejectionReason?: string | null;
+  /** IN_PROGRESS = publiée ; ARCHIVED = retirée du public, conservée. */
+  state?: "IN_PROGRESS" | "ARCHIVED";
+  source?: SearchRequestSource;
   createdAt?: unknown;
   updatedAt?: unknown;
 };
@@ -54,6 +57,8 @@ export type SearchRequestListItem = {
   boostEndAt: string | null;
   moderationStatus: SearchRequestModerationStatus | null;
   rejectionReason: string | null;
+  state: "IN_PROGRESS" | "ARCHIVED";
+  source: SearchRequestSource;
   createdAt: string | null;
   updatedAt: string | null;
 };

@@ -28,6 +28,9 @@ function mapSearchRequest(id: string, data: SearchRequestRawDoc): SearchRequestL
     boostEndAt: toIsoDate(data.boostEndAt),
     moderationStatus: data.moderationStatus,
     rejectionReason: data.rejectionReason ?? null,
+    // Documents créés avant l'ajout de ces champs : valeurs par défaut sûres.
+    state: data.state ?? "IN_PROGRESS",
+    source: data.source ?? "public",
     createdAt: toIsoDate(data.createdAt),
     updatedAt: toIsoDate(data.updatedAt),
   };
@@ -95,4 +98,63 @@ export async function patchSearchRequestModerationStatus(
       },
       { merge: true },
     );
+}
+
+/**
+ * Demandes déjà approuvées, filtrées par état de publication.
+ *
+ * `IN_PROGRESS` = visible sur le site public ; `ARCHIVED` = retirée du public
+ * mais conservée. C'est la liste que l'admin gère après modération, distincte de
+ * la file d'attente (qui, elle, ne montre que les PENDING).
+ */
+export async function listApprovedSearchRequests(input: {
+  limit: number;
+  cursor?: string | null;
+  state: "IN_PROGRESS" | "ARCHIVED";
+}): Promise<{ items: SearchRequestListItem[]; hasMore: boolean; nextCursor: string | null }> {
+  const db = getFirebaseAdminDb();
+  const collectionRef = db.collection(SEARCH_REQUESTS_COLLECTION);
+
+  let query = collectionRef
+    .where("moderationStatus", "==", "APPROVED")
+    .where("state", "==", input.state)
+    .orderBy("createdAt", "desc")
+    .limit(input.limit + 1);
+
+  const cursorDoc = await resolveCursorSnapshot(collectionRef, input.cursor);
+  if (cursorDoc) {
+    query = query.startAfter(cursorDoc);
+  }
+
+  const snapshot = await query.get();
+  return sliceCursorPage(snapshot.docs, input.limit, (doc) =>
+    mapSearchRequest(doc.id, doc.data() as SearchRequestRawDoc),
+  );
+}
+
+/** Bascule publication ↔ archive. Réversible, aucune donnée n'est perdue. */
+export async function setSearchRequestState(
+  searchRequestId: string,
+  state: "IN_PROGRESS" | "ARCHIVED",
+  actorUid: string,
+): Promise<void> {
+  const db = getFirebaseAdminDb();
+  await db
+    .collection(SEARCH_REQUESTS_COLLECTION)
+    .doc(searchRequestId)
+    .set(
+      {
+        state,
+        stateUpdatedAt: FieldValue.serverTimestamp(),
+        stateUpdatedBy: actorUid,
+        updatedAt: FieldValue.serverTimestamp(),
+      },
+      { merge: true },
+    );
+}
+
+/** Suppression définitive du document. Irréversible. */
+export async function deleteSearchRequest(searchRequestId: string): Promise<void> {
+  const db = getFirebaseAdminDb();
+  await db.collection(SEARCH_REQUESTS_COLLECTION).doc(searchRequestId).delete();
 }
