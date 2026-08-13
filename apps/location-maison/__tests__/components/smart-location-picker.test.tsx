@@ -23,13 +23,13 @@ jest.mock('@/hooks/usePhotonSearch', () => ({ usePhotonSearch: () => photonState
 jest.mock('next/dynamic', () => () => ({ coordinates, districtName }: any) => (
   <div data-testid="location-map">{JSON.stringify(coordinates)} {districtName}</div>
 ))
-jest.mock('@/components/ui/input', () => ({ Input: (props: any) => <input {...props} /> }))
-jest.mock('@/components/ui/label', () => ({ Label: ({ children, ...props }: any) => <label {...props}>{children}</label> }))
-jest.mock('@/components/ui/card', () => ({
+jest.mock('@trouve-ton-nkama/ui/input', () => ({ Input: (props: any) => <input {...props} /> }))
+jest.mock('@trouve-ton-nkama/ui/label', () => ({ Label: ({ children, ...props }: any) => <label {...props}>{children}</label> }))
+jest.mock('@trouve-ton-nkama/ui/card', () => ({
   Card: ({ children }: any) => <div>{children}</div>, CardContent: ({ children }: any) => <div>{children}</div>,
 }))
-jest.mock('@/components/ui/badge', () => ({ Badge: ({ children }: any) => <span>{children}</span> }))
-jest.mock('@/components/ui/button', () => ({ Button: ({ children, ...props }: any) => <button {...props}>{children}</button> }))
+jest.mock('@trouve-ton-nkama/ui/badge', () => ({ Badge: ({ children }: any) => <span>{children}</span> }))
+jest.mock('@trouve-ton-nkama/ui/button', () => ({ Button: ({ children, ...props }: any) => <button {...props}>{children}</button> }))
 
 const place = (overrides: Record<string, any> = {}) => ({
   geometry: { coordinates: [9.45, 0.4] },

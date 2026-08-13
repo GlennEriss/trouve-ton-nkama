@@ -12,14 +12,14 @@ let hookState: Record<string, any>
 
 jest.mock('@/hooks/use-promotion', () => ({ usePromotion: () => hookState }))
 jest.mock('@/providers/RechargeProvider', () => ({ useRecharge: () => ({ openRecharge: openRechargeMock }) }))
-jest.mock('@/components/ui/dialog', () => ({
+jest.mock('@trouve-ton-nkama/ui/dialog', () => ({
   Dialog: ({ open, children }: any) => open ? <div>{children}</div> : null,
   DialogContent: ({ children }: any) => <section>{children}</section>,
   DialogHeader: ({ children }: any) => <header>{children}</header>,
   DialogTitle: ({ children }: any) => <h2>{children}</h2>,
 }))
-jest.mock('@/components/ui/button', () => ({ Button: ({ children, ...props }: any) => <button {...props}>{children}</button> }))
-jest.mock('@/components/ui/badge', () => ({ Badge: ({ children }: any) => <span>{children}</span> }))
+jest.mock('@trouve-ton-nkama/ui/button', () => ({ Button: ({ children, ...props }: any) => <button {...props}>{children}</button> }))
+jest.mock('@trouve-ton-nkama/ui/badge', () => ({ Badge: ({ children }: any) => <span>{children}</span> }))
 
 const property = (type: any = null) => ({
   id: 'property-9c',

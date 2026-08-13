@@ -21,15 +21,15 @@ jest.mock('@radix-ui/react-slider', () => ({
   Range: () => <div />,
   Thumb: () => <div />,
 }))
-jest.mock('@/components/ui/dialog', () => ({
+jest.mock('@trouve-ton-nkama/ui/dialog', () => ({
   Dialog: ({ children }: any) => <div>{children}</div>,
   DialogContent: ({ children }: any) => <div role="dialog">{children}</div>,
   DialogHeader: ({ children }: any) => <div>{children}</div>,
   DialogTitle: ({ children }: any) => <h1>{children}</h1>,
   DialogTrigger: ({ children }: any) => <>{children}</>,
 }))
-jest.mock('@/components/ui/input', () => ({ Input: (props: any) => <input {...props} /> }))
-jest.mock('@/components/ui/button', () => ({
+jest.mock('@trouve-ton-nkama/ui/input', () => ({ Input: (props: any) => <input {...props} /> }))
+jest.mock('@trouve-ton-nkama/ui/button', () => ({
   Button: ({ children, ...props }: any) => <button {...props}>{children}</button>,
 }))
 

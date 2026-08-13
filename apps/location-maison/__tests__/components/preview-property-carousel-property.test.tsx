@@ -7,7 +7,7 @@ jest.mock('next/image', () => ({
   __esModule: true,
   default: ({ alt, onClick, src }: any) => <img alt={alt} data-src={src} onClick={onClick} />,
 }))
-jest.mock('@/components/ui/carousel', () => ({
+jest.mock('@trouve-ton-nkama/ui/carousel', () => ({
   Carousel: ({ children }: any) => <div>{children}</div>,
   CarouselContent: ({ children }: any) => <div>{children}</div>,
   CarouselItem: ({ children }: any) => <div>{children}</div>,

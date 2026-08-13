@@ -20,7 +20,7 @@ jest.mock('@/components/ui/form', () => ({
   FormLabel: ({ children }: any) => <span>{children}</span>,
 }))
 
-jest.mock('@/components/ui/radio-group', () => ({
+jest.mock('@trouve-ton-nkama/ui/radio-group', () => ({
   RadioGroup: ({ children, onValueChange, value, ...props }: any) => (
     <div data-value={value} {...props} ref={() => { mockRadioChange = onValueChange }}>{children}</div>
   ),

@@ -17,7 +17,7 @@ jest.mock('next/link', () => ({ __esModule: true, default: ({ href, children, ..
 jest.mock('@/components/logo/Logo', () => ({ __esModule: true, default: () => <span>Logo</span> }))
 jest.mock('framer-motion', () => ({ motion: new Proxy({}, { get: (_target, tag) => ({ children, ...props }: any) => React.createElement(tag as string, Object.fromEntries(Object.entries(props).filter(([key]) => !['animate', 'transition', 'initial', 'variants', 'custom', 'whileHover'].includes(key))), children) }) }))
 jest.mock('@/components/ui/form', () => ({ Form: ({ children }: any) => <>{children}</> }))
-jest.mock('@/components/ui/button', () => ({ Button: ({ children, ...props }: any) => <button {...props}>{children}</button> }))
+jest.mock('@trouve-ton-nkama/ui/button', () => ({ Button: ({ children, ...props }: any) => <button {...props}>{children}</button> }))
 jest.mock('@/components/shared/ui/ButtonApp', () => ({ ButtonApp: ({ title, isLoading: _loading, ...props }: any) => <button {...props}>{title}</button> }))
 jest.mock('@/components/shared/form/InputFormApp', () => ({ InputFormApp: ({ control, name, label, type }: any) => <label>{label}<input aria-label={label} type={type} value={control.values[name]} onChange={(event) => control.setValue(name, event.target.value)} /></label> }))
 jest.mock('react-hook-form', () => {

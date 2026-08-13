@@ -13,11 +13,11 @@ jest.mock('@/hooks/use-credit-history', () => ({
   useCreditHistory: (options: unknown) => useCreditHistoryMock(options),
 }))
 
-jest.mock('@/components/ui/button', () => ({
+jest.mock('@trouve-ton-nkama/ui/button', () => ({
   Button: ({ children, ...props }: any) => <button {...props}>{children}</button>,
 }))
 
-jest.mock('@/components/ui/select', () => ({
+jest.mock('@trouve-ton-nkama/ui/select', () => ({
   Select: ({ value, onValueChange }: any) => (
     <select aria-label="Filtrer les transactions" value={value} onChange={(event) => onValueChange(event.target.value)}>
       <option value="all">Toutes</option>

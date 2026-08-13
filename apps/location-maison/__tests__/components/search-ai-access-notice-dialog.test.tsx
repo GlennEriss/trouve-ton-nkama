@@ -11,10 +11,10 @@ jest.mock('next/link', () => ({
     </a>
   ),
 }))
-jest.mock('@/components/ui/button', () => ({
+jest.mock('@trouve-ton-nkama/ui/button', () => ({
   Button: ({ children, asChild, ...props }: any) => <button {...props}>{children}</button>,
 }))
-jest.mock('@/components/ui/dialog', () => ({
+jest.mock('@trouve-ton-nkama/ui/dialog', () => ({
   Dialog: ({ children, open }: any) => (open ? <div>{children}</div> : null),
   DialogContent: ({ children }: any) => <div role="dialog">{children}</div>,
   DialogDescription: ({ children }: any) => <p>{children}</p>,

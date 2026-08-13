@@ -9,7 +9,7 @@ let windowSize: { width: number; height: number }
 let recommendState: { properties: any[]; loading: boolean; error: unknown }
 
 jest.mock('@/hooks/useSize', () => ({ useWindowSize: () => windowSize }))
-jest.mock('@/components/ui/skeleton', () => ({ Skeleton: (props: any) => <div data-testid="skeleton" {...props} /> }))
+jest.mock('@trouve-ton-nkama/ui/skeleton', () => ({ Skeleton: (props: any) => <div data-testid="skeleton" {...props} /> }))
 jest.mock('next/dynamic', () => () => (props: any) => <div data-testid="simple-map">{JSON.stringify(props)}</div>)
 jest.mock('next/image', () => ({ __esModule: true, default: (props: any) => <img alt={props.alt} /> }))
 jest.mock('@/components/property/PropertyCarousel', () => ({

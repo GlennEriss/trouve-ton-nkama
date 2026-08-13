@@ -43,8 +43,8 @@ jest.mock('@/components/reels/gift/GiftModal', () => ({
   __esModule: true,
   default: ({ isOpen, announcerName }: any) => (isOpen ? <div data-testid="gift-modal">{announcerName}</div> : null),
 }))
-jest.mock('@/components/ui/separator', () => ({ Separator: () => <hr /> }))
-jest.mock('@/components/ui/avatar', () => ({
+jest.mock('@trouve-ton-nkama/ui/separator', () => ({ Separator: () => <hr /> }))
+jest.mock('@trouve-ton-nkama/ui/avatar', () => ({
   Avatar: ({ children }: any) => <div data-testid="avatar">{children}</div>,
   AvatarImage: () => <img alt="avatar" />,
   AvatarFallback: ({ children }: any) => <span data-testid="avatar-fallback">{children}</span>,

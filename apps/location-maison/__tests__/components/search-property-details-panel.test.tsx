@@ -6,7 +6,7 @@ import PropertyDetailsPanel from '@/components/search/PropertyDetailsPanel'
 const push = jest.fn()
 
 jest.mock('next/navigation', () => ({ useRouter: () => ({ push }) }))
-jest.mock('@/components/ui/button', () => ({
+jest.mock('@trouve-ton-nkama/ui/button', () => ({
   Button: ({ children, ...props }: any) => <button {...props}>{children}</button>,
 }))
 jest.mock('@/lib/property-images', () => ({

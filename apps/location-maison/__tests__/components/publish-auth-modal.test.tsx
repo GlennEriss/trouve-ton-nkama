@@ -40,7 +40,7 @@ jest.mock('@/features/auth/ui/v1/signup.mapper', () => ({
   mapSignupErrorToToast: () => ({ title: 'Inscription refusée', description: 'Email déjà utilisé' }),
 }))
 
-jest.mock('@/components/ui/dialog', () => ({
+jest.mock('@trouve-ton-nkama/ui/dialog', () => ({
   Dialog: ({ open, onOpenChange, children }: any) => open ? <div><button onClick={() => onOpenChange(false)}>fermer-dialogue</button>{children}</div> : null,
   DialogContent: ({ children }: any) => <section>{children}</section>,
   DialogHeader: ({ children }: any) => <header>{children}</header>,
