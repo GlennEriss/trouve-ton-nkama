@@ -3,6 +3,7 @@
 import { type ReactNode, useEffect } from "react";
 
 import { AppSidebar } from "@/components/ui-kit/app-sidebar";
+import { NotificationsBell } from "@/components/ui-kit/notifications-bell";
 import { SidebarInset, SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 
 type AdminShellProps = {
@@ -54,7 +55,7 @@ export function AdminShell({ children }: AdminShellProps) {
               <p className="truncate text-sm font-semibold text-ink">Trouve Ton Nkama</p>
               <p className="truncate text-xs text-muted-foreground">Tableau de bord administrateur</p>
             </div>
-            <p className="hidden text-xs text-muted-foreground sm:block">Version Sprint 3</p>
+            <NotificationsBell />
           </div>
         </header>
         <main className="flex-1 p-4 lg:p-8">{children}</main>
