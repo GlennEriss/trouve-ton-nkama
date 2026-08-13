@@ -19,7 +19,7 @@ jest.mock('next/link', () => ({
   __esModule: true,
   default: ({ href, children, ...props }: any) => <a href={String(href)} {...props}>{children}</a>,
 }))
-jest.mock('@/components/logo/Logo', () => ({ __esModule: true, default: () => <span>Logo Nkama</span> }))
+jest.mock('@trouve-ton-nkama/ui/logo', () => ({ __esModule: true, default: () => <span>Logo Nkama</span> }))
 jest.mock('@/hooks/use-toast', () => ({ useToast: () => ({ toast: toastMock }) }))
 jest.mock('@/lib/logger', () => ({
   createLogger: () => ({ warn: jest.fn(), error: jest.fn() }),

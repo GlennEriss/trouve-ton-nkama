@@ -18,7 +18,7 @@ jest.mock('next/link', () => ({
     </a>
   ),
 }))
-jest.mock('@/components/logo/Logo', () => ({ __esModule: true, default: () => <span>Logo</span> }))
+jest.mock('@trouve-ton-nkama/ui/logo', () => ({ __esModule: true, default: () => <span>Logo</span> }))
 jest.mock('@/components/home-page/InputSearchNavbar', () => ({
   __esModule: true,
   default: () => <div data-testid="search-navbar" />,

@@ -38,7 +38,7 @@ jest.mock('framer-motion', () => ({
   },
 }))
 
-jest.mock('@/components/logo/Logo', () => ({
+jest.mock('@trouve-ton-nkama/ui/logo', () => ({
   __esModule: true,
   default: () => <span>Logo Nkama</span>,
 }))
