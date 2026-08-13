@@ -7,6 +7,7 @@ import { CheckCircle2, XCircle, Sparkles } from "lucide-react";
 import { Button } from "@trouve-ton-nkama/ui/button";
 import { Card, CardContent } from "@trouve-ton-nkama/ui/card";
 import { PageHeader } from "@/components/ui-kit/page-header";
+import { CreateSearchRequestDialog } from "@/components/search-requests/CreateSearchRequestDialog";
 import type { SearchRequestListItem } from "@/modules/search-requests-moderation/domain/types";
 
 type PendingSearchRequestsResponse = {
@@ -72,6 +73,7 @@ export default function SearchRequestsModerationPage() {
       <PageHeader
         title="Modération des demandes de recherche"
         description="Demandes payées en attente de validation avant publication sur /demandes-recherche."
+        actions={<CreateSearchRequestDialog />}
       />
 
       {pendingQuery.isLoading && <p className="text-sm text-muted-foreground">Chargement...</p>}
