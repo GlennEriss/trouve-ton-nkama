@@ -2,9 +2,9 @@
 
 import React from 'react'
 import Link from 'next/link'
-import { Button } from '@/components/ui/button'
+import { Button } from '@trouve-ton-nkama/ui/button'
 import { routes } from '@/constantes/routes'
-import Logo from '@/components/logo/Logo'
+import Logo from '@trouve-ton-nkama/ui/logo'
 import { CheckCircle2, CreditCard, Bell, Heart } from 'lucide-react'
 import { supportContact } from "@/constantes";
 

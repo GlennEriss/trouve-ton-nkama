@@ -16,7 +16,7 @@ jest.mock('@/features/analytics/tracking', () => ({
   useTrackEvent: () => ({ trackEvent }),
 }))
 jest.mock('@/providers/AlgoliaContext', () => ({ useAlgoliaContext: () => algoliaState }))
-jest.mock('@/components/ui/input', () => ({ Input: (props: any) => <input {...props} /> }))
+jest.mock('@trouve-ton-nkama/ui/input', () => ({ Input: (props: any) => <input {...props} /> }))
 
 function makeAlgoliaState(overrides: Record<string, unknown> = {}) {
   return {

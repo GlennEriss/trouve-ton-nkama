@@ -9,7 +9,7 @@ jest.mock('next/dynamic', () => () => (props: any) => (
     <button onClick={() => props.onOpenChange(false)}>Fermer la carte</button>
   </div>
 ))
-jest.mock('@/components/ui/button', () => ({
+jest.mock('@trouve-ton-nkama/ui/button', () => ({
   Button: ({ children, ...props }: any) => <button {...props}>{children}</button>,
 }))
 

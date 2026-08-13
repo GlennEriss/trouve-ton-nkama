@@ -1,10 +1,10 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Switch } from '@/components/ui/switch';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@trouve-ton-nkama/ui/card';
+import { Switch } from '@trouve-ton-nkama/ui/switch';
+import { Badge } from '@trouve-ton-nkama/ui/badge';
+import { Button } from '@trouve-ton-nkama/ui/button';
 import { useToast } from '@/hooks/use-toast';
 import { 
   getEnabledCountries, 

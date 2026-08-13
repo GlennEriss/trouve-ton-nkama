@@ -24,6 +24,7 @@ import {
   Wallet,
 } from "lucide-react";
 import { usePathname } from "next/navigation";
+import Logo from "@trouve-ton-nkama/ui/logo";
 
 import {
   Sidebar,
@@ -68,11 +69,17 @@ export function AppSidebar() {
   return (
     <Sidebar collapsible="icon" variant="inset">
       <SidebarHeader>
-        <div className="px-2 py-1">
-          <p className="text-xs font-semibold uppercase tracking-[0.12em] text-primary">
-            Trouve Ton Nkama
-          </p>
-          <p className="text-sm text-muted-foreground">Espace administrateur</p>
+        <div className="flex items-center gap-2 px-2 py-1">
+          {/* Fond teal foncé : le logo garde ses couleurs de marque comme sur le
+              footer de la plateforme, et les textes passent sur les tokens
+              sidebar (le text-primary d'origine était invisible ici). */}
+          <Logo width="28px" height="28px" />
+          <div className="min-w-0 group-data-[collapsible=icon]:hidden">
+            <p className="truncate text-xs font-semibold uppercase tracking-[0.12em] text-sidebar-accent-foreground">
+              Trouve Ton Nkama
+            </p>
+            <p className="truncate text-sm text-sidebar-foreground/70">Espace administrateur</p>
+          </div>
         </div>
       </SidebarHeader>
 
@@ -90,12 +97,14 @@ export function AppSidebar() {
               return (
                 <SidebarMenuItem key={item.href}>
                   <SidebarMenuButton
+                    asChild
                     isActive={isActive}
                     tooltip={item.label}
-                    render={<Link href={item.href} />}
                   >
-                    <Icon className="size-4" />
-                    <span>{item.label}</span>
+                    <Link href={item.href}>
+                      <Icon className="size-4" />
+                      <span>{item.label}</span>
+                    </Link>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
               );
@@ -105,7 +114,7 @@ export function AppSidebar() {
       </SidebarContent>
 
       <SidebarFooter>
-        <p className="px-2 py-1 text-xs text-muted-foreground">Version Sprint 5</p>
+        <p className="px-2 py-1 text-xs text-sidebar-foreground/60">Version Sprint 5</p>
       </SidebarFooter>
       <SidebarRail />
     </Sidebar>

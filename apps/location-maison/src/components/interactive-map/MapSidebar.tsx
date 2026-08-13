@@ -6,7 +6,7 @@ import { useMapContext, type QuarterLocation } from '@/providers/MapProvider';
 import { useQuarterProperties } from '@/hooks/useQuarterProperties';
 import QuarterSearchCombobox from './QuarterSearchCombobox';
 import MapResultsList from './MapResultsList';
-import { Button } from '@/components/ui/button';
+import { Button } from '@trouve-ton-nkama/ui/button';
 
 interface MapSidebarProps {
   isCollapsed?: boolean;

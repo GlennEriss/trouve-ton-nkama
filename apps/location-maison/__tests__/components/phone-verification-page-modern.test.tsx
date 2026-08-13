@@ -15,10 +15,10 @@ let state: Record<string, any>
 
 jest.mock('@/features/users/phone-verification/hooks', () => ({ usePhoneVerification: () => state }))
 jest.mock('next/link', () => ({ __esModule: true, default: ({ href, children }: any) => <a href={href}>{children}</a> }))
-jest.mock('@/components/ui/button', () => ({ Button: ({ children, ...props }: any) => <button {...props}>{children}</button> }))
-jest.mock('@/components/ui/input', () => ({ Input: (props: any) => <input {...props} /> }))
-jest.mock('@/components/ui/label', () => ({ Label: ({ children }: any) => <label>{children}</label> }))
-jest.mock('@/components/ui/select', () => ({
+jest.mock('@trouve-ton-nkama/ui/button', () => ({ Button: ({ children, ...props }: any) => <button {...props}>{children}</button> }))
+jest.mock('@trouve-ton-nkama/ui/input', () => ({ Input: (props: any) => <input {...props} /> }))
+jest.mock('@trouve-ton-nkama/ui/label', () => ({ Label: ({ children }: any) => <label>{children}</label> }))
+jest.mock('@trouve-ton-nkama/ui/select', () => ({
   Select: ({ value, onValueChange, disabled }: any) => (
     <select aria-label="Pays" value={value} disabled={disabled} onChange={(event) => onValueChange(event.target.value)}>
       <option value="GA">Gabon</option><option value="SN">Sénégal</option>

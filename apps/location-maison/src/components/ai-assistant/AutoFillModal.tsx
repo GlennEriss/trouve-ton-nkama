@@ -7,8 +7,8 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
-} from '@/components/ui/dialog';
-import { Button } from '@/components/ui/button';
+} from '@trouve-ton-nkama/ui/dialog';
+import { Button } from '@trouve-ton-nkama/ui/button';
 
 interface AutoFillModalProps {
   isOpen: boolean;

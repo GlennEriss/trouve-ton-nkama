@@ -48,7 +48,7 @@ jest.mock('@hookform/resolvers/zod', () => ({ zodResolver: () => jest.fn() }))
 jest.mock('@/models/schema', () => ({ FormFilterSchema: {} }))
 jest.mock('@/constantes', () => ({ statusOptions: [] }))
 jest.mock('@/components/ui/form', () => ({ Form: ({ children }: any) => <>{children}</> }))
-jest.mock('@/components/ui/button', () => ({
+jest.mock('@trouve-ton-nkama/ui/button', () => ({
   Button: ({ children, onClick, ...props }: any) => (
     <button onClick={onClick} {...props}>
       {children}

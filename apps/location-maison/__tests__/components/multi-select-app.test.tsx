@@ -12,20 +12,20 @@ jest.mock('lucide-react', () => ({
   WandSparkles: (props: any) => <span role="button" aria-label="animer" data-testid="wand" {...props}>wand</span>,
 }))
 
-jest.mock('@/components/ui/button', () => ({
+jest.mock('@trouve-ton-nkama/ui/button', () => ({
   Button: React.forwardRef(({ children, ...props }: any, ref: any) => <button ref={ref} {...props}>{children}</button>),
 }))
 
-jest.mock('@/components/ui/badge', () => ({ Badge: ({ children, ...props }: any) => <span {...props}>{children}</span> }))
-jest.mock('@/components/ui/separator', () => ({ Separator: () => <span>|</span> }))
+jest.mock('@trouve-ton-nkama/ui/badge', () => ({ Badge: ({ children, ...props }: any) => <span {...props}>{children}</span> }))
+jest.mock('@trouve-ton-nkama/ui/separator', () => ({ Separator: () => <span>|</span> }))
 
-jest.mock('@/components/ui/popover', () => ({
+jest.mock('@trouve-ton-nkama/ui/popover', () => ({
   Popover: ({ children }: any) => <div>{children}</div>,
   PopoverTrigger: ({ children }: any) => <>{children}</>,
   PopoverContent: ({ children }: any) => <div>{children}</div>,
 }))
 
-jest.mock('@/components/ui/command', () => ({
+jest.mock('@trouve-ton-nkama/ui/command', () => ({
   Command: ({ children }: any) => <div>{children}</div>,
   CommandInput: (props: any) => <input aria-label="recherche desktop" {...props} />,
   CommandList: ({ children }: any) => <div>{children}</div>,

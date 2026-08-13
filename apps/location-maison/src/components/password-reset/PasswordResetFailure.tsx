@@ -5,10 +5,10 @@ import Link from 'next/link';
 import { motion } from 'framer-motion';
 import { AlertTriangle, ArrowLeft, Home, LifeBuoy, RefreshCw, ShieldAlert } from 'lucide-react';
 import { useRouter } from 'next/navigation';
-import Logo from '@/components/logo/Logo';
+import Logo from '@trouve-ton-nkama/ui/logo';
 import { routes } from '@/constantes/routes';
 import { supportContact } from '@/constantes';
-import { Button } from '@/components/ui/button';
+import { Button } from '@trouve-ton-nkama/ui/button';
 import { ButtonApp } from '@/components/shared/ui/ButtonApp';
 
 const LEFT_PANEL_BG_IMAGE = '/auth-image.png';

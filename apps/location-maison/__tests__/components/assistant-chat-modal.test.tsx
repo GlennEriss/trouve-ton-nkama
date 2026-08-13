@@ -23,13 +23,13 @@ jest.mock('@/lib/logger', () => {
   const error = jest.fn()
   return { createLogger: () => ({ debug: jest.fn(), error }), __error: error }
 })
-jest.mock('@/components/ui/dialog', () => ({
+jest.mock('@trouve-ton-nkama/ui/dialog', () => ({
   Dialog: ({ open, children }: any) => open ? <div>{children}</div> : null,
   DialogContent: ({ children }: any) => <section>{children}</section>,
   DialogHeader: ({ children }: any) => <header>{children}</header>,
   DialogTitle: ({ children }: any) => <h2>{children}</h2>,
 }))
-jest.mock('@/components/ui/scroll-area', () => ({ ScrollArea: ({ children }: any) => <div>{children}</div> }))
+jest.mock('@trouve-ton-nkama/ui/scroll-area', () => ({ ScrollArea: ({ children }: any) => <div>{children}</div> }))
 jest.mock('@/components/ai-assistant/ChatMessage', () => ({
   __esModule: true,
   default: ({ message }: any) => <div data-testid={`message-${message.type}`}>{message.content}</div>,

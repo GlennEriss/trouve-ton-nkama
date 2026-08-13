@@ -1,6 +1,6 @@
 'use client'
 import React, { useState } from 'react'
-import { Card } from '../ui/card'
+import { Card } from '@trouve-ton-nkama/ui/card'
 import Image from 'next/image'
 import { IconType } from 'react-icons/lib';
 import { BsBuilding } from 'react-icons/bs'
@@ -9,7 +9,7 @@ import { IoMdBed } from 'react-icons/io'
 import { MdKitchen } from 'react-icons/md'
 import { RiBookmarkLine } from 'react-icons/ri'
 import { GiHomeGarage } from 'react-icons/gi'
-import { Button } from '../ui/button'
+import { Button } from '@trouve-ton-nkama/ui/button'
 import Link from 'next/link'
 import { FiEdit2 } from 'react-icons/fi'
 import { AiOutlineEye } from 'react-icons/ai'
@@ -24,8 +24,8 @@ import { getCountStatisticsByPropertyType, getProperties, updateProperty } from 
 import { PROPERTY_ITEM_PER_PAGE } from '@/constantes/item-per-page';
 import queryKeys from '@/constantes/react-query-keys';
 import { RemoveProperty } from './RemoveProperty';
-import { Skeleton } from '../ui/skeleton';
-import { Switch } from '../ui/switch';
+import { Skeleton } from '@trouve-ton-nkama/ui/skeleton';
+import { Switch } from '@trouve-ton-nkama/ui/switch';
 import { useQueryClient, useInfiniteQuery } from '@tanstack/react-query';
 import PromotionButton from '../promotion/PromotionButton';
 import PromotionBadge from '../promotion/PromotionBadge';

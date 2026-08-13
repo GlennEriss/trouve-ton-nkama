@@ -57,19 +57,19 @@ function AdCreativeCard({
 }) {
   const imageClassName = fillHeight
     ? "h-full w-full object-contain"
-    : cn("w-full bg-slate-50 object-contain", PLACEMENT_MEDIA[placement]);
+    : cn("w-full bg-muted object-contain", PLACEMENT_MEDIA[placement]);
 
   return (
     <div
       className={cn(
         "relative",
         fillHeight && "h-full",
-        surface === "card" ? "rounded-xl border border-slate-200 bg-white p-3 shadow-sm" : "",
+        surface === "card" ? "rounded-xl border border-border bg-card p-3 shadow-sm" : "",
       )}
     >
       <p
         className={cn(
-          "text-[10px] font-semibold uppercase tracking-wide text-slate-400",
+          "text-[10px] font-semibold uppercase tracking-wide text-muted-foreground",
           fillHeight ? "absolute left-2 top-2 z-10" : "mb-2",
         )}
       >
@@ -86,7 +86,7 @@ function AdCreativeCard({
         ) : (
           <div
             className={cn(
-              "flex w-full items-center justify-center bg-slate-100 text-xs text-slate-400",
+              "flex w-full items-center justify-center bg-muted text-xs text-muted-foreground",
               fillHeight ? "h-full" : PLACEMENT_MEDIA[placement],
             )}
           >
@@ -96,7 +96,7 @@ function AdCreativeCard({
         {!fillHeight && (creative.headline || creative.body || creative.ctaLabel) && (
           <div className="p-3">
             {creative.headline && <p className="font-semibold text-ink">{creative.headline}</p>}
-            {creative.body && <p className="text-sm text-slate-600">{creative.body}</p>}
+            {creative.body && <p className="text-sm text-muted-foreground">{creative.body}</p>}
             {creative.ctaLabel && (
               <span className="mt-2 inline-block rounded-full bg-secondary px-4 py-1.5 text-sm font-medium text-white">
                 {creative.ctaLabel}
@@ -113,9 +113,9 @@ function AdCreativeCard({
 function GhostCard() {
   return (
     <div className="space-y-1.5">
-      <div className="aspect-[4/3] w-full rounded bg-slate-200" />
-      <div className="h-2 w-3/4 rounded bg-slate-200" />
-      <div className="h-2 w-1/2 rounded bg-slate-200" />
+      <div className="aspect-[4/3] w-full rounded bg-muted" />
+      <div className="h-2 w-3/4 rounded bg-muted" />
+      <div className="h-2 w-1/2 rounded bg-muted" />
     </div>
   );
 }
@@ -155,11 +155,11 @@ function PreviewContext({
   if (placement === "property_detail") {
     return (
       <div className="space-y-3">
-        <div className="aspect-[16/9] w-full rounded bg-slate-200" />
-        <div className="h-3 w-2/3 rounded bg-slate-200" />
-        <div className="h-2 w-1/2 rounded bg-slate-200" />
+        <div className="aspect-[16/9] w-full rounded bg-muted" />
+        <div className="h-3 w-2/3 rounded bg-muted" />
+        <div className="h-2 w-1/2 rounded bg-muted" />
         {children}
-        <div className="h-2 w-1/3 rounded bg-slate-200" />
+        <div className="h-2 w-1/3 rounded bg-muted" />
         <GhostGrid cols={2} />
       </div>
     );
@@ -170,7 +170,7 @@ function PreviewContext({
     // fond noir plein cadre + pastille "Publicité" — pas le décor "accueil".
     return (
       <div className="relative flex aspect-[9/16] w-full items-center justify-center overflow-hidden rounded-xl bg-neutral-950">
-        <p className="absolute left-4 top-4 z-10 rounded-full bg-white/10 px-3 py-1 text-[10px] font-semibold uppercase tracking-wide text-white/70 backdrop-blur-sm">
+        <p className="absolute left-4 top-4 z-10 rounded-full bg-card/10 px-3 py-1 text-[10px] font-semibold uppercase tracking-wide text-white/70 backdrop-blur-sm">
           Publicité
         </p>
         {children}
@@ -182,10 +182,10 @@ function PreviewContext({
   return (
     <div className="space-y-3">
       <div className="flex items-center gap-2">
-        <div className="h-6 w-6 rounded-full bg-slate-200" />
-        <div className="flex flex-1 items-center gap-2 rounded-full bg-slate-100 px-3 py-1.5">
-          <Search className="h-3.5 w-3.5 text-slate-400" />
-          <div className="h-2 w-1/3 rounded bg-slate-200" />
+        <div className="h-6 w-6 rounded-full bg-muted" />
+        <div className="flex flex-1 items-center gap-2 rounded-full bg-muted px-3 py-1.5">
+          <Search className="h-3.5 w-3.5 text-muted-foreground" />
+          <div className="h-2 w-1/3 rounded bg-muted" />
         </div>
       </div>
       {children}
@@ -227,7 +227,7 @@ export default function AdCreativePreview({ creative, assets, placements, classN
   };
 
   return (
-    <div className={cn("rounded-2xl border border-slate-200 bg-slate-50 p-4", className)}>
+    <div className={cn("rounded-2xl border border-border bg-muted p-4", className)}>
       <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
         <div className="flex flex-wrap gap-1.5">
           {available.map((p) => (
@@ -238,20 +238,20 @@ export default function AdCreativePreview({ creative, assets, placements, classN
               className={cn(
                 "rounded-full border px-3 py-1 text-xs transition",
                 active === p
-                  ? "border-emerald-500 bg-emerald-50 text-emerald-700"
-                  : "border-slate-200 text-slate-500 hover:border-emerald-300",
+                  ? "border-success/30 bg-success/10 text-success"
+                  : "border-border text-muted-foreground hover:border-success/30",
               )}
             >
               {PLACEMENT_LABELS[p]}
             </button>
           ))}
         </div>
-        <div className="flex items-center gap-1 rounded-full bg-white p-1">
+        <div className="flex items-center gap-1 rounded-full bg-card p-1">
           <button
             type="button"
             aria-label="Aperçu mobile"
             onClick={() => setDevice("mobile")}
-            className={cn("rounded-full p-1.5", device === "mobile" ? "bg-emerald-50 text-emerald-600" : "text-slate-400")}
+            className={cn("rounded-full p-1.5", device === "mobile" ? "bg-success/10 text-success" : "text-muted-foreground")}
           >
             <Smartphone className="h-4 w-4" />
           </button>
@@ -259,7 +259,7 @@ export default function AdCreativePreview({ creative, assets, placements, classN
             type="button"
             aria-label="Aperçu desktop"
             onClick={() => setDevice("desktop")}
-            className={cn("rounded-full p-1.5", device === "desktop" ? "bg-emerald-50 text-emerald-600" : "text-slate-400")}
+            className={cn("rounded-full p-1.5", device === "desktop" ? "bg-success/10 text-success" : "text-muted-foreground")}
           >
             <Monitor className="h-4 w-4" />
           </button>
@@ -269,7 +269,7 @@ export default function AdCreativePreview({ creative, assets, placements, classN
       <div className="flex justify-center">
         <div
           className={cn(
-            "w-full rounded-xl bg-white p-3 shadow-sm transition-all",
+            "w-full rounded-xl bg-card p-3 shadow-sm transition-all",
             device === "mobile" ? "max-w-[360px]" : "max-w-[680px]",
           )}
         >
@@ -294,7 +294,7 @@ export default function AdCreativePreview({ creative, assets, placements, classN
         </div>
       </div>
 
-      <p className="mt-3 text-center text-[11px] text-slate-400">
+      <p className="mt-3 text-center text-[11px] text-muted-foreground">
         Aperçu indicatif — les blocs gris simulent le contenu de la page ; le rendu réel s&apos;adapte à chaque écran.
       </p>
     </div>

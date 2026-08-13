@@ -4,10 +4,10 @@ import { useCallback, useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { RefreshCcw } from "lucide-react";
 
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
+import { Badge } from "@trouve-ton-nkama/ui/badge";
+import { Button } from "@trouve-ton-nkama/ui/button";
+import { Card, CardContent, CardHeader } from "@trouve-ton-nkama/ui/card";
+import { Input } from "@trouve-ton-nkama/ui/input";
 import { PageHeader } from "@/components/ui-kit/page-header";
 
 type RangeFilter = "24h" | "7d" | "30d" | "custom";
@@ -96,7 +96,7 @@ function onlineBadge(isOnline: boolean) {
   if (isOnline) {
     return <Badge variant="success">En ligne</Badge>;
   }
-  return <Badge variant="neutral">Hors ligne</Badge>;
+  return <Badge variant="secondary">Hors ligne</Badge>;
 }
 
 function buildRangeParams(input: {
@@ -308,13 +308,13 @@ export default function AnalyticsPresencePage() {
 
       <Card>
         <CardHeader>
-          <h2 className="text-base font-semibold text-slate-900">Période</h2>
-          <p className="text-sm text-slate-600">Par défaut: 7 derniers jours.</p>
+          <h2 className="text-base font-semibold text-foreground">Période</h2>
+          <p className="text-sm text-muted-foreground">Par défaut: 7 derniers jours.</p>
         </CardHeader>
         <CardContent className="space-y-3">
           <div className="grid gap-3 lg:grid-cols-4">
             <select
-              className="h-9 rounded-lg border border-slate-300 bg-white px-3 text-sm text-slate-800"
+              className="h-9 rounded-lg border border-border bg-card px-3 text-sm text-foreground"
               value={range}
               onChange={(event) => setRange(event.target.value as RangeFilter)}
             >
@@ -345,32 +345,32 @@ export default function AnalyticsPresencePage() {
       <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
         <Card>
           <CardHeader>
-            <p className="text-sm text-slate-600">Utilisateurs en ligne</p>
-            <p className="text-2xl font-semibold text-emerald-700">
+            <p className="text-sm text-muted-foreground">Utilisateurs en ligne</p>
+            <p className="text-2xl font-semibold text-success">
               {usersOnline?.summary.onlineSubjects ?? 0}
             </p>
           </CardHeader>
         </Card>
         <Card>
           <CardHeader>
-            <p className="text-sm text-slate-600">Utilisateurs hors ligne</p>
-            <p className="text-2xl font-semibold text-slate-900">
+            <p className="text-sm text-muted-foreground">Utilisateurs hors ligne</p>
+            <p className="text-2xl font-semibold text-foreground">
               {usersOnline?.summary.offlineSubjects ?? 0}
             </p>
           </CardHeader>
         </Card>
         <Card>
           <CardHeader>
-            <p className="text-sm text-slate-600">Admins en ligne</p>
-            <p className="text-2xl font-semibold text-emerald-700">
+            <p className="text-sm text-muted-foreground">Admins en ligne</p>
+            <p className="text-2xl font-semibold text-success">
               {adminsOnline?.summary.onlineSubjects ?? 0}
             </p>
           </CardHeader>
         </Card>
         <Card>
           <CardHeader>
-            <p className="text-sm text-slate-600">Admins hors ligne</p>
-            <p className="text-2xl font-semibold text-slate-900">
+            <p className="text-sm text-muted-foreground">Admins hors ligne</p>
+            <p className="text-2xl font-semibold text-foreground">
               {adminsOnline?.summary.offlineSubjects ?? 0}
             </p>
           </CardHeader>
@@ -378,22 +378,22 @@ export default function AnalyticsPresencePage() {
       </section>
 
       {error ? (
-        <p className="rounded-md bg-red-50 px-3 py-2 text-sm text-red-700">{error}</p>
+        <p className="rounded-md bg-destructive/10 px-3 py-2 text-sm text-destructive">{error}</p>
       ) : null}
 
       <section className="grid gap-4 xl:grid-cols-2">
         <Card>
           <CardHeader>
-            <h2 className="text-base font-semibold text-slate-900">Utilisateurs actuellement en ligne</h2>
+            <h2 className="text-base font-semibold text-foreground">Utilisateurs actuellement en ligne</h2>
           </CardHeader>
           <CardContent>
             {loading ? (
-              <p className="text-sm text-slate-600">Chargement...</p>
+              <p className="text-sm text-muted-foreground">Chargement...</p>
             ) : (
               <div className="overflow-x-auto">
                 <table className="min-w-full border-collapse text-sm">
                   <thead>
-                    <tr className="border-b border-slate-200 text-left text-slate-600">
+                    <tr className="border-b border-border text-left text-muted-foreground">
                       <th className="py-2 pr-4 font-medium">UID</th>
                       <th className="py-2 pr-4 font-medium">Dernière activité</th>
                       <th className="py-2 pr-4 font-medium">Device</th>
@@ -403,16 +403,16 @@ export default function AnalyticsPresencePage() {
                   <tbody>
                     {usersOnline?.records.length ? (
                       usersOnline.records.map((row) => (
-                        <tr key={row.subjectId} className="border-b border-slate-100">
-                          <td className="py-2 pr-4 text-xs text-slate-700">{row.subjectId}</td>
-                          <td className="py-2 pr-4 text-slate-700">{toDateLabel(row.lastSeenAt)}</td>
-                          <td className="py-2 pr-4 text-slate-700">{row.deviceType || "-"}</td>
-                          <td className="py-2 pr-4 text-slate-700">{row.source || "-"}</td>
+                        <tr key={row.subjectId} className="border-b border-border">
+                          <td className="py-2 pr-4 text-xs text-foreground">{row.subjectId}</td>
+                          <td className="py-2 pr-4 text-foreground">{toDateLabel(row.lastSeenAt)}</td>
+                          <td className="py-2 pr-4 text-foreground">{row.deviceType || "-"}</td>
+                          <td className="py-2 pr-4 text-foreground">{row.source || "-"}</td>
                         </tr>
                       ))
                     ) : (
                       <tr>
-                        <td colSpan={4} className="py-6 text-center text-sm text-slate-500">
+                        <td colSpan={4} className="py-6 text-center text-sm text-muted-foreground">
                           Aucun utilisateur en ligne.
                         </td>
                       </tr>
@@ -426,16 +426,16 @@ export default function AnalyticsPresencePage() {
 
         <Card>
           <CardHeader>
-            <h2 className="text-base font-semibold text-slate-900">Admins actuellement en ligne</h2>
+            <h2 className="text-base font-semibold text-foreground">Admins actuellement en ligne</h2>
           </CardHeader>
           <CardContent>
             {loading ? (
-              <p className="text-sm text-slate-600">Chargement...</p>
+              <p className="text-sm text-muted-foreground">Chargement...</p>
             ) : (
               <div className="overflow-x-auto">
                 <table className="min-w-full border-collapse text-sm">
                   <thead>
-                    <tr className="border-b border-slate-200 text-left text-slate-600">
+                    <tr className="border-b border-border text-left text-muted-foreground">
                       <th className="py-2 pr-4 font-medium">UID</th>
                       <th className="py-2 pr-4 font-medium">Dernière activité</th>
                       <th className="py-2 pr-4 font-medium">Device</th>
@@ -445,16 +445,16 @@ export default function AnalyticsPresencePage() {
                   <tbody>
                     {adminsOnline?.records.length ? (
                       adminsOnline.records.map((row) => (
-                        <tr key={row.subjectId} className="border-b border-slate-100">
-                          <td className="py-2 pr-4 text-xs text-slate-700">{row.subjectId}</td>
-                          <td className="py-2 pr-4 text-slate-700">{toDateLabel(row.lastSeenAt)}</td>
-                          <td className="py-2 pr-4 text-slate-700">{row.deviceType || "-"}</td>
-                          <td className="py-2 pr-4 text-slate-700">{row.source || "-"}</td>
+                        <tr key={row.subjectId} className="border-b border-border">
+                          <td className="py-2 pr-4 text-xs text-foreground">{row.subjectId}</td>
+                          <td className="py-2 pr-4 text-foreground">{toDateLabel(row.lastSeenAt)}</td>
+                          <td className="py-2 pr-4 text-foreground">{row.deviceType || "-"}</td>
+                          <td className="py-2 pr-4 text-foreground">{row.source || "-"}</td>
                         </tr>
                       ))
                     ) : (
                       <tr>
-                        <td colSpan={4} className="py-6 text-center text-sm text-slate-500">
+                        <td colSpan={4} className="py-6 text-center text-sm text-muted-foreground">
                           Aucun admin en ligne.
                         </td>
                       </tr>
@@ -470,16 +470,16 @@ export default function AnalyticsPresencePage() {
       <section className="grid gap-4 xl:grid-cols-2">
         <Card>
           <CardHeader>
-            <h2 className="text-base font-semibold text-slate-900">Dernière activité utilisateurs</h2>
+            <h2 className="text-base font-semibold text-foreground">Dernière activité utilisateurs</h2>
           </CardHeader>
           <CardContent>
             {loading ? (
-              <p className="text-sm text-slate-600">Chargement...</p>
+              <p className="text-sm text-muted-foreground">Chargement...</p>
             ) : (
               <div className="overflow-x-auto">
                 <table className="min-w-full border-collapse text-sm">
                   <thead>
-                    <tr className="border-b border-slate-200 text-left text-slate-600">
+                    <tr className="border-b border-border text-left text-muted-foreground">
                       <th className="py-2 pr-4 font-medium">UID</th>
                       <th className="py-2 pr-4 font-medium">Statut</th>
                       <th className="py-2 pr-4 font-medium">Last seen</th>
@@ -489,16 +489,16 @@ export default function AnalyticsPresencePage() {
                   <tbody>
                     {usersLastSeen?.records.length ? (
                       usersLastSeen.records.map((row) => (
-                        <tr key={row.subjectId} className="border-b border-slate-100">
-                          <td className="py-2 pr-4 text-xs text-slate-700">{row.subjectId}</td>
+                        <tr key={row.subjectId} className="border-b border-border">
+                          <td className="py-2 pr-4 text-xs text-foreground">{row.subjectId}</td>
                           <td className="py-2 pr-4">{onlineBadge(row.isOnline)}</td>
-                          <td className="py-2 pr-4 text-slate-700">{toDateLabel(row.lastSeenAt)}</td>
-                          <td className="py-2 pr-4 text-slate-700">{row.deviceType || "-"}</td>
+                          <td className="py-2 pr-4 text-foreground">{toDateLabel(row.lastSeenAt)}</td>
+                          <td className="py-2 pr-4 text-foreground">{row.deviceType || "-"}</td>
                         </tr>
                       ))
                     ) : (
                       <tr>
-                        <td colSpan={4} className="py-6 text-center text-sm text-slate-500">
+                        <td colSpan={4} className="py-6 text-center text-sm text-muted-foreground">
                           Aucune donnée de présence utilisateur.
                         </td>
                       </tr>
@@ -512,16 +512,16 @@ export default function AnalyticsPresencePage() {
 
         <Card>
           <CardHeader>
-            <h2 className="text-base font-semibold text-slate-900">Dernière connexion admins</h2>
+            <h2 className="text-base font-semibold text-foreground">Dernière connexion admins</h2>
           </CardHeader>
           <CardContent>
             {loading ? (
-              <p className="text-sm text-slate-600">Chargement...</p>
+              <p className="text-sm text-muted-foreground">Chargement...</p>
             ) : (
               <div className="overflow-x-auto">
                 <table className="min-w-full border-collapse text-sm">
                   <thead>
-                    <tr className="border-b border-slate-200 text-left text-slate-600">
+                    <tr className="border-b border-border text-left text-muted-foreground">
                       <th className="py-2 pr-4 font-medium">Admin</th>
                       <th className="py-2 pr-4 font-medium">Statut</th>
                       <th className="py-2 pr-4 font-medium">Rôle(s)</th>
@@ -531,19 +531,19 @@ export default function AnalyticsPresencePage() {
                   <tbody>
                     {adminsLastLogin?.records.length ? (
                       adminsLastLogin.records.map((row) => (
-                        <tr key={row.uid} className="border-b border-slate-100">
+                        <tr key={row.uid} className="border-b border-border">
                           <td className="py-2 pr-4">
-                            <p className="font-medium text-slate-900">{row.displayName || row.email}</p>
-                            <p className="text-xs text-slate-500">{row.uid}</p>
+                            <p className="font-medium text-foreground">{row.displayName || row.email}</p>
+                            <p className="text-xs text-muted-foreground">{row.uid}</p>
                           </td>
                           <td className="py-2 pr-4">{onlineBadge(row.isOnline)}</td>
-                          <td className="py-2 pr-4 text-xs text-slate-700">{row.roles.join(", ") || "-"}</td>
-                          <td className="py-2 pr-4 text-slate-700">{toDateLabel(row.lastLoginAt)}</td>
+                          <td className="py-2 pr-4 text-xs text-foreground">{row.roles.join(", ") || "-"}</td>
+                          <td className="py-2 pr-4 text-foreground">{toDateLabel(row.lastLoginAt)}</td>
                         </tr>
                       ))
                     ) : (
                       <tr>
-                        <td colSpan={4} className="py-6 text-center text-sm text-slate-500">
+                        <td colSpan={4} className="py-6 text-center text-sm text-muted-foreground">
                           Aucune donnée de connexion admin.
                         </td>
                       </tr>

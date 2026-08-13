@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Popover, PopoverContent, PopoverTrigger } from "@trouve-ton-nkama/ui/popover";
 import { useNotifications } from "@/providers/NotificationProvider";
 import { useCurrentUser } from "@/hooks/use-current-user";
 import { generateColorFromName } from "@/lib/generateColorFromName";

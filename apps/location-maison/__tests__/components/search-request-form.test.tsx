@@ -22,12 +22,12 @@ jest.mock('@/constantes/gabon-locations', () => ({
     { name: 'Ogooué-Maritime', capital: 'Port-Gentil' },
   ],
 }))
-jest.mock('@/components/ui/button', () => ({
+jest.mock('@trouve-ton-nkama/ui/button', () => ({
   Button: ({ children, asChild, ...props }: any) => <button {...props}>{children}</button>,
 }))
-jest.mock('@/components/ui/input', () => ({ Input: (props: any) => <input {...props} /> }))
-jest.mock('@/components/ui/textarea', () => ({ Textarea: (props: any) => <textarea {...props} /> }))
-jest.mock('@/components/ui/checkbox', () => ({
+jest.mock('@trouve-ton-nkama/ui/input', () => ({ Input: (props: any) => <input {...props} /> }))
+jest.mock('@trouve-ton-nkama/ui/textarea', () => ({ Textarea: (props: any) => <textarea {...props} /> }))
+jest.mock('@trouve-ton-nkama/ui/checkbox', () => ({
   Checkbox: ({ checked, onCheckedChange }: any) => (
     <input
       type="checkbox"
@@ -39,7 +39,7 @@ jest.mock('@/components/ui/checkbox', () => ({
 }))
 // Radix Select ne s'ouvre pas sous jsdom : on le remplace par un <select> natif,
 // en reprenant l'aria-label porte par SelectTrigger pour rester adressable.
-jest.mock('@/components/ui/select', () => {
+jest.mock('@trouve-ton-nkama/ui/select', () => {
   const ReactLib = require('react')
   return {
     Select: ({ value, onValueChange, children }: any) => {

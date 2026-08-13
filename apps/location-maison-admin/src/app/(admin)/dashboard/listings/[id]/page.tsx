@@ -4,8 +4,8 @@ import { useParams } from "next/navigation";
 import { FormEvent, useCallback, useEffect, useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader } from "@/components/ui/card";
+import { Button } from "@trouve-ton-nkama/ui/button";
+import { Card, CardContent, CardHeader } from "@trouve-ton-nkama/ui/card";
 import {
   Dialog,
   DialogClose,
@@ -15,7 +15,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
+import { Input } from "@trouve-ton-nkama/ui/input";
 import { PageHeader } from "@/components/ui-kit/page-header";
 
 type ListingStatus = "FOR_RENT" | "FOR_SALE";
@@ -1165,17 +1165,17 @@ export default function ListingDetailsPage() {
       />
 
       {hasError ? (
-        <div className="rounded-md border border-red-300 bg-red-50 px-3 py-2 text-sm text-red-700">
+        <div className="rounded-md border border-destructive/30 bg-destructive/10 px-3 py-2 text-sm text-destructive">
           Certaines données n&apos;ont pas pu être chargées.
         </div>
       ) : null}
 
       {globalError ? (
-        <div className="rounded-md border border-red-300 bg-red-50 px-3 py-2 text-sm text-red-700">{globalError}</div>
+        <div className="rounded-md border border-destructive/30 bg-destructive/10 px-3 py-2 text-sm text-destructive">{globalError}</div>
       ) : null}
 
       {globalMessage ? (
-        <div className="rounded-md border border-emerald-300 bg-emerald-50 px-3 py-2 text-sm text-emerald-700">
+        <div className="rounded-md border border-success/30 bg-success/10 px-3 py-2 text-sm text-success">
           {globalMessage}
         </div>
       ) : null}
@@ -1184,21 +1184,21 @@ export default function ListingDetailsPage() {
         <Card>
           <CardContent className="pt-6">
             <div className="grid gap-4 md:grid-cols-4">
-              <div className="rounded-lg border border-slate-200 p-3">
-                <p className="text-xs text-slate-500">Statut</p>
-                <p className="text-sm font-semibold text-slate-900">{statusLabel(listing.status)}</p>
+              <div className="rounded-lg border border-border p-3">
+                <p className="text-xs text-muted-foreground">Statut</p>
+                <p className="text-sm font-semibold text-foreground">{statusLabel(listing.status)}</p>
               </div>
-              <div className="rounded-lg border border-slate-200 p-3">
-                <p className="text-xs text-slate-500">État</p>
-                <p className="text-sm font-semibold text-slate-900">{stateLabel(listing.state)}</p>
+              <div className="rounded-lg border border-border p-3">
+                <p className="text-xs text-muted-foreground">État</p>
+                <p className="text-sm font-semibold text-foreground">{stateLabel(listing.state)}</p>
               </div>
-              <div className="rounded-lg border border-slate-200 p-3">
-                <p className="text-xs text-slate-500">Prix</p>
-                <p className="text-sm font-semibold text-slate-900">{formatMoney(listing.price)}</p>
+              <div className="rounded-lg border border-border p-3">
+                <p className="text-xs text-muted-foreground">Prix</p>
+                <p className="text-sm font-semibold text-foreground">{formatMoney(listing.price)}</p>
               </div>
-              <div className="rounded-lg border border-slate-200 p-3">
-                <p className="text-xs text-slate-500">Surface</p>
-                <p className="text-sm font-semibold text-slate-900">{formatNumber(listing.area)} m²</p>
+              <div className="rounded-lg border border-border p-3">
+                <p className="text-xs text-muted-foreground">Surface</p>
+                <p className="text-sm font-semibold text-foreground">{formatNumber(listing.area)} m²</p>
               </div>
             </div>
 
@@ -1300,7 +1300,7 @@ export default function ListingDetailsPage() {
                   placeholder="Titre"
                 />
                 <select
-                  className="h-9 rounded-lg border border-slate-300 bg-white px-3 text-sm text-slate-800"
+                  className="h-9 rounded-lg border border-border bg-card px-3 text-sm text-foreground"
                   value={formState.typeProperty}
                   onChange={(event) =>
                     setFormState((prev) =>
@@ -1317,7 +1317,7 @@ export default function ListingDetailsPage() {
               </div>
 
               <textarea
-                className="min-h-[120px] w-full rounded-lg border border-slate-300 px-3 py-2 text-sm text-slate-800"
+                className="min-h-[120px] w-full rounded-lg border border-border px-3 py-2 text-sm text-foreground"
                 value={formState.description}
                 onChange={(event) =>
                   setFormState((prev) => (prev ? { ...prev, description: event.target.value } : prev))
@@ -1327,7 +1327,7 @@ export default function ListingDetailsPage() {
 
               <div className="grid gap-3 md:grid-cols-4">
                 <select
-                  className="h-9 rounded-lg border border-slate-300 bg-white px-3 text-sm text-slate-800"
+                  className="h-9 rounded-lg border border-border bg-card px-3 text-sm text-foreground"
                   value={formState.status}
                   onChange={(event) =>
                     setFormState((prev) =>
@@ -1411,7 +1411,7 @@ export default function ListingDetailsPage() {
               </div>
 
               <textarea
-                className="min-h-[80px] w-full rounded-lg border border-slate-300 px-3 py-2 text-sm text-slate-800"
+                className="min-h-[80px] w-full rounded-lg border border-border px-3 py-2 text-sm text-foreground"
                 value={formState.additionnalInformation}
                 onChange={(event) =>
                   setFormState((prev) =>
@@ -1604,7 +1604,7 @@ export default function ListingDetailsPage() {
                   placeholder="nbrApartments"
                 />
                 <select
-                  className="h-9 rounded-lg border border-slate-300 bg-white px-3 text-sm text-slate-800"
+                  className="h-9 rounded-lg border border-border bg-card px-3 text-sm text-foreground"
                   value={formState.hasParking}
                   onChange={(event) =>
                     setFormState((prev) =>
@@ -1646,7 +1646,7 @@ export default function ListingDetailsPage() {
               </div>
 
               <div className="flex items-center gap-2">
-                <label className="text-sm text-slate-700">isLocExact</label>
+                <label className="text-sm text-foreground">isLocExact</label>
                 <input
                   type="checkbox"
                   checked={formState.isLocExact}
@@ -1683,27 +1683,27 @@ export default function ListingDetailsPage() {
               <div className="grid gap-3 md:grid-cols-3">
                 {listing.images.length ? (
                   listing.images.map((image, index) => (
-                    <div key={`${image.fileURL}_${index}`} className="rounded-lg border border-slate-200 p-2">
+                    <div key={`${image.fileURL}_${index}`} className="rounded-lg border border-border p-2">
                       {/* eslint-disable-next-line @next/next/no-img-element */}
                       <img src={image.fileURL} alt={`media-${index}`} className="h-40 w-full rounded-md object-cover" />
-                      <p className="mt-2 truncate text-xs text-slate-500">{image.fileURL}</p>
+                      <p className="mt-2 truncate text-xs text-muted-foreground">{image.fileURL}</p>
                     </div>
                   ))
                 ) : (
-                  <p className="text-sm text-slate-500">Aucune image.</p>
+                  <p className="text-sm text-muted-foreground">Aucune image.</p>
                 )}
               </div>
 
               <div>
-                <label className="mb-1 block text-sm text-slate-700">URLs images (une par ligne)</label>
+                <label className="mb-1 block text-sm text-foreground">URLs images (une par ligne)</label>
                 <textarea
-                  className="min-h-[200px] w-full rounded-lg border border-slate-300 px-3 py-2 text-sm text-slate-800"
+                  className="min-h-[200px] w-full rounded-lg border border-border px-3 py-2 text-sm text-foreground"
                   value={formState.imagesRaw}
                   onChange={(event) =>
                     setFormState((prev) => (prev ? { ...prev, imagesRaw: event.target.value } : prev))
                   }
                 />
-                <p className="mt-1 text-xs text-slate-500">Maximum 30 images.</p>
+                <p className="mt-1 text-xs text-muted-foreground">Maximum 30 images.</p>
               </div>
             </div>
           ) : null}
@@ -1711,43 +1711,43 @@ export default function ListingDetailsPage() {
           {activeTab === "history" ? (
             <div className="space-y-4">
               <div>
-                <h3 className="mb-2 text-sm font-semibold text-slate-900">Décisions modération</h3>
+                <h3 className="mb-2 text-sm font-semibold text-foreground">Décisions modération</h3>
                 <div className="space-y-2">
                   {moderationHistoryQuery.data?.decisions.length ? (
                     moderationHistoryQuery.data.decisions.map((decision) => (
-                      <div key={decision.id} className="rounded-lg border border-slate-200 p-3 text-sm">
-                        <p className="font-medium text-slate-900">
+                      <div key={decision.id} className="rounded-lg border border-border p-3 text-sm">
+                        <p className="font-medium text-foreground">
                           {decisionLabel(decision.decision)} • {toDateLabel(decision.createdAt)}
                         </p>
-                        <p className="text-slate-700">Motif: {decision.reason}</p>
-                        <p className="text-xs text-slate-500">
+                        <p className="text-foreground">Motif: {decision.reason}</p>
+                        <p className="text-xs text-muted-foreground">
                           État {decision.beforeState ?? "N/A"} → {decision.afterState ?? "N/A"} | Statut {decision.beforeStatus ?? "N/A"} → {decision.afterStatus ?? "N/A"}
                         </p>
-                        <p className="text-xs text-slate-500">Acteur: {decision.actorId}</p>
+                        <p className="text-xs text-muted-foreground">Acteur: {decision.actorId}</p>
                       </div>
                     ))
                   ) : (
-                    <p className="text-sm text-slate-500">Aucune décision de modération.</p>
+                    <p className="text-sm text-muted-foreground">Aucune décision de modération.</p>
                   )}
                 </div>
               </div>
 
               <div>
-                <h3 className="mb-2 text-sm font-semibold text-slate-900">Audit technique</h3>
+                <h3 className="mb-2 text-sm font-semibold text-foreground">Audit technique</h3>
                 <div className="space-y-2">
                   {moderationHistoryQuery.data?.auditLogs.length ? (
                     moderationHistoryQuery.data.auditLogs.map((audit) => (
-                      <div key={audit.id} className="rounded-lg border border-slate-200 p-3 text-sm">
-                        <p className="font-medium text-slate-900">
+                      <div key={audit.id} className="rounded-lg border border-border p-3 text-sm">
+                        <p className="font-medium text-foreground">
                           {audit.action} • {toDateLabel(audit.createdAt)}
                         </p>
-                        <p className="text-xs text-slate-500">
+                        <p className="text-xs text-muted-foreground">
                           status={audit.status ?? "N/A"} • actor={audit.actorId ?? "N/A"}
                         </p>
                       </div>
                     ))
                   ) : (
-                    <p className="text-sm text-slate-500">Aucune entrée d&apos;audit visible.</p>
+                    <p className="text-sm text-muted-foreground">Aucune entrée d&apos;audit visible.</p>
                   )}
                 </div>
               </div>
@@ -1757,21 +1757,21 @@ export default function ListingDetailsPage() {
           {activeTab === "duplicates" ? (
             <div className="space-y-3">
               {!canReadDuplicates ? (
-                <div className="rounded-md border border-amber-300 bg-amber-50 px-3 py-2 text-sm text-amber-800">
+                <div className="rounded-md border border-warning/30 bg-warning/10 px-3 py-2 text-sm text-warning">
                   Permission manquante: listings.duplicates.read
                 </div>
               ) : null}
-              <p className="text-sm text-slate-700">
+              <p className="text-sm text-foreground">
                 Clusters contenant cette annonce: {duplicatesQuery.data?.count ?? 0}
               </p>
               {duplicatesQuery.data?.groups.length ? (
                 duplicatesQuery.data.groups.map((group) => (
-                  <div key={group.clusterId} className="rounded-lg border border-slate-200 p-3">
+                  <div key={group.clusterId} className="rounded-lg border border-border p-3">
                     <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
-                      <p className="text-sm font-semibold text-slate-900">
+                      <p className="text-sm font-semibold text-foreground">
                         {duplicateReasonLabel(group.reason)} • confiance {group.confidence}%
                       </p>
-                      <p className="text-xs text-slate-500">
+                      <p className="text-xs text-muted-foreground">
                         {group.resolution
                           ? `Traité: ${duplicateResolutionLabel(group.resolution.action)}`
                           : "En attente de traitement"}
@@ -1791,7 +1791,7 @@ export default function ListingDetailsPage() {
                         disabled={!canResolveDuplicates || resolvingDuplicateClusterId === group.clusterId}
                       />
                       <select
-                        className="h-9 rounded-lg border border-slate-300 bg-white px-3 text-sm text-slate-800"
+                        className="h-9 rounded-lg border border-border bg-card px-3 text-sm text-foreground"
                         value={duplicateTargetByCluster[group.clusterId] ?? ""}
                         onChange={(event) =>
                           setDuplicateTargetByCluster((previous) => ({
@@ -1867,7 +1867,7 @@ export default function ListingDetailsPage() {
                     </div>
 
                     {!canFinalizeDuplicates ? (
-                      <p className="mb-2 text-xs text-amber-700">
+                      <p className="mb-2 text-xs text-warning">
                         Actions finales réservées à super_admin, operations_admin ou moderation_admin.
                       </p>
                     ) : null}
@@ -1876,7 +1876,7 @@ export default function ListingDetailsPage() {
                         <div
                           key={item.id}
                           className={`rounded-md px-2 py-1.5 text-xs ${
-                            item.id === listingId ? "bg-emerald-50 text-emerald-800" : "bg-slate-50 text-slate-700"
+                            item.id === listingId ? "bg-success/10 text-success" : "bg-muted text-foreground"
                           }`}
                         >
                           {item.title} ({item.id}) • {statusLabel(item.status)} • {stateLabel(item.state)} • {formatMoney(item.price)}
@@ -1884,9 +1884,9 @@ export default function ListingDetailsPage() {
                       ))}
                     </div>
 
-                    <div className="mt-3 rounded-md border border-slate-200 bg-slate-50 p-2">
+                    <div className="mt-3 rounded-md border border-border bg-muted p-2">
                       <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
-                        <p className="text-xs font-semibold text-slate-800">
+                        <p className="text-xs font-semibold text-foreground">
                           Archivées dans ce cluster:{" "}
                           {group.listings.filter((item) => item.state === "ARCHIVED").length}
                         </p>
@@ -1922,7 +1922,7 @@ export default function ListingDetailsPage() {
                       </div>
 
                       {!canHardDeleteListings ? (
-                        <p className="mb-2 text-[11px] text-amber-700">
+                        <p className="mb-2 text-[11px] text-warning">
                           Seul le super_admin peut supprimer définitivement les annonces archivées.
                         </p>
                       ) : null}
@@ -1933,7 +1933,7 @@ export default function ListingDetailsPage() {
                           .map((item) => (
                             <div
                               key={`archived_${group.clusterId}_${item.id}`}
-                              className="flex flex-wrap items-center justify-between gap-2 rounded-md border border-slate-200 bg-white px-2 py-1.5 text-xs text-slate-700"
+                              className="flex flex-wrap items-center justify-between gap-2 rounded-md border border-border bg-card px-2 py-1.5 text-xs text-foreground"
                             >
                               <p>
                                 {item.title} ({item.id})
@@ -1960,7 +1960,7 @@ export default function ListingDetailsPage() {
                   </div>
                 ))
               ) : (
-                <p className="text-sm text-slate-500">Aucun doublon détecté pour cette annonce.</p>
+                <p className="text-sm text-muted-foreground">Aucun doublon détecté pour cette annonce.</p>
               )}
             </div>
           ) : null}
@@ -1975,7 +1975,7 @@ export default function ListingDetailsPage() {
           </DialogHeader>
 
           <div className="space-y-2">
-            <label htmlFor="listing-detail-reason" className="text-sm font-medium text-slate-700">
+            <label htmlFor="listing-detail-reason" className="text-sm font-medium text-foreground">
               Motif obligatoire
             </label>
             <Input
@@ -1989,7 +1989,7 @@ export default function ListingDetailsPage() {
           </div>
 
           <DialogFooter>
-            <DialogClose render={<Button type="button" variant="outline">Annuler</Button>} />
+            <DialogClose asChild><Button type="button" variant="outline">Annuler</Button></DialogClose>
             <Button type="button" disabled={isSubmittingReason} onClick={() => void onConfirmReason()}>
               {reasonDialogMeta.confirmLabel || "Confirmer"}
             </Button>

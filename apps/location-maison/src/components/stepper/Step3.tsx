@@ -1,7 +1,7 @@
 'use client'
 import { usePropertyFormComponentContext } from '@/providers/property.form.provider'
 import React from 'react'
-import { FormField, FormItem, FormLabel, FormControl, FormDescription, FormMessage } from '../ui/form'
+import { FormField, FormItem, FormLabel, FormControl, FormDescription, FormMessage } from '@/components/ui/form'
 import { FormElement } from '@/builders/property-form/property.form.builder'
 
 type Step3Props = {

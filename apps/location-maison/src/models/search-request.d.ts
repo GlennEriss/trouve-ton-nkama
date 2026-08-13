@@ -7,8 +7,20 @@ import { ICreation } from "./creation";
 import type { TypePropertyKey, ModerationStatus } from "@trouve-ton-nkama/core/domain";
 import type { StatusProperty } from "./annonce";
 
-export type SearchRequestPaymentStatus = "pending_confirmation" | "confirmed" | "failed";
+/**
+ * `not_required` : demande saisie par un admin pour le compte d'un tiers — il
+ * n'y a pas de paiement du tout, ce n'est pas un paiement « confirmé » gratuit.
+ * Distinguer les deux évite de fausser les revenus.
+ */
+export type SearchRequestPaymentStatus =
+  | "pending_confirmation"
+  | "confirmed"
+  | "failed"
+  | "not_required";
 export type SearchRequestPayerNetwork = "AM" | "MM";
+
+/** Origine de la demande : formulaire public payant, ou back-office admin. */
+export type SearchRequestSource = "public" | "admin";
 
 /**
  * Demande de recherche publiée anonymement par un visiteur qui n'a rien trouvé
@@ -32,10 +44,17 @@ export type SearchRequest = ICreation & {
     description: string;
     whatsappContact: string;
 
-    // Paiement MyPayGa (vit sur le doc lui-même, 1:1 avec la demande)
-    provider: "mypayga";
-    payerPhone: string;
-    payerNetwork: SearchRequestPayerNetwork;
+    // Origine. Absent sur les documents créés avant l'ajout du back-office :
+    // les traiter comme "public" (voir isAdminCreated ci-dessous).
+    source?: SearchRequestSource;
+    /** uid de l'admin qui a saisi la demande (source === "admin"). */
+    createdByAdmin?: string;
+
+    // Paiement MyPayGa (vit sur le doc lui-même, 1:1 avec la demande).
+    // Optionnels : une demande créée par un admin n'a aucun paiement associé.
+    provider?: "mypayga";
+    payerPhone?: string;
+    payerNetwork?: SearchRequestPayerNetwork;
     paymentStatus: SearchRequestPaymentStatus;
     amountPaidXaf: number;
     providerPaymentToken?: string | null;

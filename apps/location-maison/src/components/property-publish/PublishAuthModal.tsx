@@ -11,9 +11,9 @@ import {
     DialogContent,
     DialogHeader,
     DialogTitle,
-} from '@/components/ui/dialog'
+} from '@trouve-ton-nkama/ui/dialog'
 import { Form } from '@/components/ui/form'
-import { Button } from '@/components/ui/button'
+import { Button } from '@trouve-ton-nkama/ui/button'
 import { InputFormApp } from '@/components/shared/form/InputFormApp'
 import { PhoneNumberFormAppSimple } from '@/components/shared/form/PhoneNumberFormAppSimple'
 import { DateSelect } from '@/components/shared/form/DateSelect'

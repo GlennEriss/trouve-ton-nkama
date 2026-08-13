@@ -1,7 +1,7 @@
 import Link from "next/link";
 import type { ReactNode } from "react";
 import { ArrowUpRight, FileText, Mail, ShieldCheck } from "lucide-react";
-import { Card, CardContent } from "@/components/ui/card";
+import { Card, CardContent } from "@trouve-ton-nkama/ui/card";
 
 export type LegalSection = {
   id: string;

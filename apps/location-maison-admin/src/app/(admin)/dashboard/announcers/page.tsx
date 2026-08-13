@@ -5,9 +5,9 @@ import { InfiniteData, useInfiniteQuery, useQuery, useQueryClient } from "@tanst
 import Image from "next/image";
 import { useSearchParams } from "next/navigation";
 
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
+import { Button } from "@trouve-ton-nkama/ui/button";
+import { Card, CardContent, CardHeader } from "@trouve-ton-nkama/ui/card";
+import { Input } from "@trouve-ton-nkama/ui/input";
 import { PageHeader } from "@/components/ui-kit/page-header";
 import { PROPERTY_TYPE_FIELD_RULES } from "@/modules/listing-management/domain/property-type-fields";
 import { renderExtraTypeFields } from "@/modules/listing-management/presentation/property-type-fields-renderer";
@@ -1349,8 +1349,8 @@ export default function AnnouncersPage() {
       {showCreateAnnouncer ? (
         <Card>
           <CardHeader>
-            <h2 className="text-base font-semibold text-slate-900">Créer un compte annonceur</h2>
-            <p className="text-sm text-slate-600">Crée un compte `Announcer` avec email vérifié.</p>
+            <h2 className="text-base font-semibold text-foreground">Créer un compte annonceur</h2>
+            <p className="text-sm text-muted-foreground">Crée un compte `Announcer` avec email vérifié.</p>
           </CardHeader>
           <CardContent>
             <form className="space-y-3" onSubmit={(event) => void onCreateAnnouncerAccount(event)}>
@@ -1503,13 +1503,13 @@ export default function AnnouncersPage() {
               </div>
 
               {createAnnouncerError ? (
-                <p className="rounded-md bg-red-50 px-3 py-2 text-sm text-red-700">
+                <p className="rounded-md bg-destructive/10 px-3 py-2 text-sm text-destructive">
                   {createAnnouncerError}
                 </p>
               ) : null}
 
               {createAnnouncerResult ? (
-                <p className="rounded-md bg-emerald-50 px-3 py-2 text-sm text-emerald-800">
+                <p className="rounded-md bg-success/10 px-3 py-2 text-sm text-success">
                   Compte créé: UID <span className="font-mono">{createAnnouncerResult.uid}</span> - Roles{" "}
                   <span className="font-mono">{createAnnouncerResult.roles.join(", ")}</span>
                 </p>
@@ -1526,8 +1526,8 @@ export default function AnnouncersPage() {
       {showCreateListing ? (
         <Card>
           <CardHeader>
-            <h2 className="text-base font-semibold text-slate-900">Créer une annonce</h2>
-            <p className="text-sm text-slate-600">Ajoute une annonce au compte annonceur ciblé.</p>
+            <h2 className="text-base font-semibold text-foreground">Créer une annonce</h2>
+            <p className="text-sm text-muted-foreground">Ajoute une annonce au compte annonceur ciblé.</p>
           </CardHeader>
           <CardContent>
             <form className="space-y-4" onSubmit={(event) => void onCreateListingForAnnouncer(event)}>
@@ -1535,7 +1535,7 @@ export default function AnnouncersPage() {
                 <button
                   type="button"
                   className={`rounded-lg border px-3 py-2 text-left text-sm ${
-                    listingStep === 1 ? "border-emerald-600 bg-emerald-50 text-emerald-800" : "border-slate-300"
+                    listingStep === 1 ? "border-success/30 bg-success/10 text-success" : "border-border"
                   }`}
                   onClick={() => setListingStep(1)}
                 >
@@ -1544,7 +1544,7 @@ export default function AnnouncersPage() {
                 <button
                   type="button"
                   className={`rounded-lg border px-3 py-2 text-left text-sm ${
-                    listingStep === 2 ? "border-emerald-600 bg-emerald-50 text-emerald-800" : "border-slate-300"
+                    listingStep === 2 ? "border-success/30 bg-success/10 text-success" : "border-border"
                   }`}
                   onClick={() => {
                     if (listingStep >= 2) setListingStep(2);
@@ -1555,7 +1555,7 @@ export default function AnnouncersPage() {
                 <button
                   type="button"
                   className={`rounded-lg border px-3 py-2 text-left text-sm ${
-                    listingStep === 3 ? "border-emerald-600 bg-emerald-50 text-emerald-800" : "border-slate-300"
+                    listingStep === 3 ? "border-success/30 bg-success/10 text-success" : "border-border"
                   }`}
                   onClick={() => {
                     if (listingStep >= 3) setListingStep(3);
@@ -1568,7 +1568,7 @@ export default function AnnouncersPage() {
               {listingStep === 1 ? (
                 <div className="space-y-3">
                   <div className="space-y-1">
-                    <p className="text-xs font-medium text-slate-700">Recherche annonceur</p>
+                    <p className="text-xs font-medium text-foreground">Recherche annonceur</p>
                     <Input
                       value={createListingAnnouncerLookupInput}
                       onChange={(event) => {
@@ -1582,35 +1582,35 @@ export default function AnnouncersPage() {
                     />
                   </div>
                   {showCreateListingAnnouncerLookup && createListingAnnouncerLookupInput.trim().length >= 2 ? (
-                    <div className="rounded-lg border border-slate-200 bg-white p-2 text-sm">
+                    <div className="rounded-lg border border-border bg-card p-2 text-sm">
                       {createListingAnnouncerLookupQuery.isFetching ? (
-                        <p className="px-2 py-1 text-slate-500">Recherche des annonceurs...</p>
+                        <p className="px-2 py-1 text-muted-foreground">Recherche des annonceurs...</p>
                       ) : createListingAnnouncerLookupQuery.error ? (
-                        <p className="px-2 py-1 text-red-700">{createListingAnnouncerLookupQuery.error.message}</p>
+                        <p className="px-2 py-1 text-destructive">{createListingAnnouncerLookupQuery.error.message}</p>
                       ) : createListingAnnouncerLookupResults.length ? (
                         <div className="max-h-56 space-y-1 overflow-y-auto">
                           {createListingAnnouncerLookupResults.map((announcer) => (
                             <button
                               key={`listing-lookup-${announcer.uid}`}
                               type="button"
-                              className="w-full rounded-md border border-slate-200 px-3 py-2 text-left hover:bg-slate-50"
+                              className="w-full rounded-md border border-border px-3 py-2 text-left hover:bg-muted"
                               onClick={() => onSelectCreateListingAnnouncer(announcer)}
                               disabled={createListingSubmitting || loading}
                             >
-                              <p className="font-medium text-slate-900">{announcer.fullName}</p>
-                              <p className="text-xs text-slate-500">
+                              <p className="font-medium text-foreground">{announcer.fullName}</p>
+                              <p className="text-xs text-muted-foreground">
                                 {announcer.email ?? "Email N/A"} · {announcer.uid}
                               </p>
                             </button>
                           ))}
                         </div>
                       ) : (
-                        <p className="px-2 py-1 text-slate-500">Aucun annonceur trouvé.</p>
+                        <p className="px-2 py-1 text-muted-foreground">Aucun annonceur trouvé.</p>
                       )}
                     </div>
                   ) : null}
                   <div className="space-y-1">
-                    <p className="text-xs font-medium text-slate-700">UID annonceur sélectionné</p>
+                    <p className="text-xs font-medium text-foreground">UID annonceur sélectionné</p>
                     <Input
                       value={createListing.announcerUid}
                       readOnly
@@ -1621,7 +1621,7 @@ export default function AnnouncersPage() {
 
                   <div className="grid gap-3 md:grid-cols-2">
                     <div className="space-y-1">
-                      <p className="text-xs font-medium text-slate-700">Titre de l&apos;annonce</p>
+                      <p className="text-xs font-medium text-foreground">Titre de l&apos;annonce</p>
                       <Input
                         value={createListing.title}
                         onChange={(event) =>
@@ -1635,9 +1635,9 @@ export default function AnnouncersPage() {
                       />
                     </div>
                     <div className="space-y-1">
-                      <p className="text-xs font-medium text-slate-700">Type de bien</p>
+                      <p className="text-xs font-medium text-foreground">Type de bien</p>
                       <select
-                        className="h-9 rounded-lg border border-slate-300 bg-white px-3 text-sm text-slate-800"
+                        className="h-9 rounded-lg border border-border bg-card px-3 text-sm text-foreground"
                         value={createListing.typeProperty}
                         onChange={(event) =>
                           setCreateListing((previous) => ({
@@ -1657,9 +1657,9 @@ export default function AnnouncersPage() {
                   </div>
 
                   <div className="space-y-1">
-                    <p className="text-xs font-medium text-slate-700">Description</p>
+                    <p className="text-xs font-medium text-foreground">Description</p>
                     <textarea
-                      className="min-h-24 w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-800"
+                      className="min-h-24 w-full rounded-lg border border-border bg-card px-3 py-2 text-sm text-foreground"
                       value={createListing.description}
                       onChange={(event) =>
                         setCreateListing((previous) => ({
@@ -1674,9 +1674,9 @@ export default function AnnouncersPage() {
 
                   <div className="grid gap-3 md:grid-cols-3">
                     <div className="space-y-1">
-                      <p className="text-xs font-medium text-slate-700">Statut annonce</p>
+                      <p className="text-xs font-medium text-foreground">Statut annonce</p>
                       <select
-                        className="h-9 rounded-lg border border-slate-300 bg-white px-3 text-sm text-slate-800"
+                        className="h-9 rounded-lg border border-border bg-card px-3 text-sm text-foreground"
                         value={createListing.status}
                         onChange={(event) =>
                           setCreateListing((previous) => ({
@@ -1694,7 +1694,7 @@ export default function AnnouncersPage() {
                       </select>
                     </div>
                     <div className="space-y-1">
-                      <p className="text-xs font-medium text-slate-700">Prix</p>
+                      <p className="text-xs font-medium text-foreground">Prix</p>
                       <Input
                         type="number"
                         min={0}
@@ -1711,7 +1711,7 @@ export default function AnnouncersPage() {
                       />
                     </div>
                     <div className="space-y-1">
-                      <p className="text-xs font-medium text-slate-700">Superficie (m²)</p>
+                      <p className="text-xs font-medium text-foreground">Superficie (m²)</p>
                       <Input
                         type="number"
                         min={0}
@@ -1729,8 +1729,8 @@ export default function AnnouncersPage() {
                     </div>
                   </div>
 
-                  <div className="space-y-2 rounded-lg border border-slate-200 p-3">
-                    <p className="text-sm font-medium text-slate-900">
+                  <div className="space-y-2 rounded-lg border border-border p-3">
+                    <p className="text-sm font-medium text-foreground">
                       Tags ({selectedListingTags.length}/6) - même logique que property/add
                     </p>
                     <div className="flex flex-wrap gap-2">
@@ -1742,8 +1742,8 @@ export default function AnnouncersPage() {
                             type="button"
                             className={`rounded-full border px-3 py-1 text-xs ${
                               isActive
-                                ? "border-emerald-700 bg-emerald-100 text-emerald-800"
-                                : "border-slate-300 bg-white text-slate-700"
+                                ? "border-success/30 bg-success/10 text-success"
+                                : "border-border bg-card text-foreground"
                             }`}
                             onClick={() => onToggleListingTag(tag)}
                             disabled={createListingSubmitting || loading}
@@ -1754,9 +1754,9 @@ export default function AnnouncersPage() {
                       })}
                     </div>
                     <div className="space-y-1">
-                      <p className="text-xs font-medium text-slate-700">Saisie manuelle des tags</p>
+                      <p className="text-xs font-medium text-foreground">Saisie manuelle des tags</p>
                       <textarea
-                        className="min-h-16 w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-800"
+                        className="min-h-16 w-full rounded-lg border border-border bg-card px-3 py-2 text-sm text-foreground"
                         value={createListing.tagsRaw}
                         onChange={(event) =>
                           setCreateListing((previous) => ({
@@ -1770,9 +1770,9 @@ export default function AnnouncersPage() {
                     </div>
                   </div>
 
-                  <div className="space-y-2 rounded-lg border border-slate-200 p-3">
+                  <div className="space-y-2 rounded-lg border border-border p-3">
                     <div className="flex items-center justify-between gap-2">
-                      <p className="text-sm font-medium text-slate-900">
+                      <p className="text-sm font-medium text-foreground">
                         Images ({listingLocalImages.length}/{MAX_LISTING_IMAGES}) - style property/add
                       </p>
                       {listingLocalImages.length > 0 ? (
@@ -1789,7 +1789,7 @@ export default function AnnouncersPage() {
                     </div>
 
                     <div className="space-y-1">
-                      <p className="text-xs font-medium text-slate-700">Ajouter des images</p>
+                      <p className="text-xs font-medium text-foreground">Ajouter des images</p>
                       <Input
                         type="file"
                         accept="image/png,image/jpeg,image/webp"
@@ -1802,7 +1802,7 @@ export default function AnnouncersPage() {
                     {listingLocalImages.length > 0 ? (
                       <div className="grid grid-cols-2 gap-3 md:grid-cols-5">
                         {listingLocalImages.map((image) => (
-                          <div key={image.id} className="overflow-hidden rounded-lg border border-slate-200 bg-white">
+                          <div key={image.id} className="overflow-hidden rounded-lg border border-border bg-card">
                             <Image
                               src={image.previewUrl}
                               alt={image.file.name}
@@ -1812,8 +1812,8 @@ export default function AnnouncersPage() {
                               className="h-24 w-full object-cover"
                             />
                             <div className="space-y-1 px-2 py-2">
-                              <p className="truncate text-[11px] text-slate-700">{image.file.name}</p>
-                              <p className="text-[10px] text-slate-500">
+                              <p className="truncate text-[11px] text-foreground">{image.file.name}</p>
+                              <p className="text-[10px] text-muted-foreground">
                                 {(image.file.size / 1024 / 1024).toFixed(2)} MB
                               </p>
                               <Button
@@ -1831,7 +1831,7 @@ export default function AnnouncersPage() {
                         ))}
                       </div>
                     ) : (
-                      <p className="text-xs text-slate-500">
+                      <p className="text-xs text-muted-foreground">
                         Ajoute entre 1 et 10 images JPG/PNG/WEBP.
                       </p>
                     )}
@@ -1855,7 +1855,7 @@ export default function AnnouncersPage() {
                 <div className="space-y-3">
                   <div className="grid gap-3 md:grid-cols-3">
                     <div className="space-y-1">
-                      <p className="text-xs font-medium text-slate-700">Province</p>
+                      <p className="text-xs font-medium text-foreground">Province</p>
                       <Input
                         value={createListing.province}
                         onChange={(event) =>
@@ -1869,7 +1869,7 @@ export default function AnnouncersPage() {
                       />
                     </div>
                     <div className="space-y-1">
-                      <p className="text-xs font-medium text-slate-700">Ville</p>
+                      <p className="text-xs font-medium text-foreground">Ville</p>
                       <Input
                         value={createListing.city}
                         onChange={(event) =>
@@ -1883,7 +1883,7 @@ export default function AnnouncersPage() {
                       />
                     </div>
                     <div className="space-y-1">
-                      <p className="text-xs font-medium text-slate-700">Quartier / District</p>
+                      <p className="text-xs font-medium text-foreground">Quartier / District</p>
                       <Input
                         value={createListing.street}
                         onChange={(event) =>
@@ -1900,7 +1900,7 @@ export default function AnnouncersPage() {
 
                   <div className="grid gap-3 md:grid-cols-2">
                     <div className="space-y-1">
-                      <p className="text-xs font-medium text-slate-700">Pays</p>
+                      <p className="text-xs font-medium text-foreground">Pays</p>
                       <Input
                         value={createListing.country}
                         onChange={(event) =>
@@ -1914,7 +1914,7 @@ export default function AnnouncersPage() {
                       />
                     </div>
                     <div className="space-y-1">
-                      <p className="text-xs font-medium text-slate-700">Code pays</p>
+                      <p className="text-xs font-medium text-foreground">Code pays</p>
                       <Input
                         value={createListing.countryCode}
                         onChange={(event) =>
@@ -1931,7 +1931,7 @@ export default function AnnouncersPage() {
 
                   <div className="grid gap-3 md:grid-cols-3">
                     <div className="space-y-1">
-                      <p className="text-xs font-medium text-slate-700">Longitude</p>
+                      <p className="text-xs font-medium text-foreground">Longitude</p>
                       <Input
                         type="number"
                         step="any"
@@ -1947,7 +1947,7 @@ export default function AnnouncersPage() {
                       />
                     </div>
                     <div className="space-y-1">
-                      <p className="text-xs font-medium text-slate-700">Latitude</p>
+                      <p className="text-xs font-medium text-foreground">Latitude</p>
                       <Input
                         type="number"
                         step="any"
@@ -1963,7 +1963,7 @@ export default function AnnouncersPage() {
                       />
                     </div>
                     <div className="space-y-1">
-                      <p className="text-xs font-medium text-slate-700">Contact (optionnel)</p>
+                      <p className="text-xs font-medium text-foreground">Contact (optionnel)</p>
                       <Input
                         value={createListing.contact}
                         onChange={(event) =>
@@ -1980,7 +1980,7 @@ export default function AnnouncersPage() {
 
                   <div className="grid gap-3 md:grid-cols-3">
                     <div className="space-y-1">
-                      <p className="text-xs font-medium text-slate-700">Province Lon (optionnel)</p>
+                      <p className="text-xs font-medium text-foreground">Province Lon (optionnel)</p>
                       <Input
                         type="number"
                         step="any"
@@ -1996,7 +1996,7 @@ export default function AnnouncersPage() {
                       />
                     </div>
                     <div className="space-y-1">
-                      <p className="text-xs font-medium text-slate-700">Province Lat (optionnel)</p>
+                      <p className="text-xs font-medium text-foreground">Province Lat (optionnel)</p>
                       <Input
                         type="number"
                         step="any"
@@ -2012,7 +2012,7 @@ export default function AnnouncersPage() {
                       />
                     </div>
                     <div className="space-y-1">
-                      <p className="text-xs font-medium text-slate-700">City Lon (optionnel)</p>
+                      <p className="text-xs font-medium text-foreground">City Lon (optionnel)</p>
                       <Input
                         type="number"
                         step="any"
@@ -2031,7 +2031,7 @@ export default function AnnouncersPage() {
 
                   <div className="grid gap-3 md:grid-cols-3">
                     <div className="space-y-1">
-                      <p className="text-xs font-medium text-slate-700">City Lat (optionnel)</p>
+                      <p className="text-xs font-medium text-foreground">City Lat (optionnel)</p>
                       <Input
                         type="number"
                         step="any"
@@ -2047,7 +2047,7 @@ export default function AnnouncersPage() {
                       />
                     </div>
                     <div className="space-y-1">
-                      <p className="text-xs font-medium text-slate-700">Street Lon (optionnel)</p>
+                      <p className="text-xs font-medium text-foreground">Street Lon (optionnel)</p>
                       <Input
                         type="number"
                         step="any"
@@ -2063,7 +2063,7 @@ export default function AnnouncersPage() {
                       />
                     </div>
                     <div className="space-y-1">
-                      <p className="text-xs font-medium text-slate-700">Street Lat (optionnel)</p>
+                      <p className="text-xs font-medium text-foreground">Street Lat (optionnel)</p>
                       <Input
                         type="number"
                         step="any"
@@ -2081,9 +2081,9 @@ export default function AnnouncersPage() {
                   </div>
 
                   <div className="space-y-1">
-                    <p className="text-xs font-medium text-slate-700">Précision de la position</p>
+                    <p className="text-xs font-medium text-foreground">Précision de la position</p>
                     <select
-                      className="h-9 rounded-lg border border-slate-300 bg-white px-3 text-sm text-slate-800"
+                      className="h-9 rounded-lg border border-border bg-card px-3 text-sm text-foreground"
                       value={createListing.isLocExact}
                       onChange={(event) =>
                         setCreateListing((previous) => ({
@@ -2101,11 +2101,11 @@ export default function AnnouncersPage() {
               ) : null}
 
               {createListingError ? (
-                <p className="rounded-md bg-red-50 px-3 py-2 text-sm text-red-700">{createListingError}</p>
+                <p className="rounded-md bg-destructive/10 px-3 py-2 text-sm text-destructive">{createListingError}</p>
               ) : null}
 
               {createListingResult ? (
-                <p className="rounded-md bg-emerald-50 px-3 py-2 text-sm text-emerald-800">
+                <p className="rounded-md bg-success/10 px-3 py-2 text-sm text-success">
                   Annonce créée: ID <span className="font-mono">{createListingResult.propertyId}</span>
                 </p>
               ) : null}
@@ -2144,33 +2144,33 @@ export default function AnnouncersPage() {
       <section className="grid gap-4 md:grid-cols-4">
         <Card>
           <CardHeader>
-            <p className="text-sm text-slate-600">Page courante</p>
-            <p className="text-2xl font-semibold text-slate-900">{stats.loadedCount}</p>
+            <p className="text-sm text-muted-foreground">Page courante</p>
+            <p className="text-2xl font-semibold text-foreground">{stats.loadedCount}</p>
           </CardHeader>
         </Card>
         <Card>
           <CardHeader>
-            <p className="text-sm text-slate-600">En ligne</p>
-            <p className="text-2xl font-semibold text-emerald-700">{stats.onlineCount}</p>
+            <p className="text-sm text-muted-foreground">En ligne</p>
+            <p className="text-2xl font-semibold text-success">{stats.onlineCount}</p>
           </CardHeader>
         </Card>
         <Card>
           <CardHeader>
-            <p className="text-sm text-slate-600">Suspendus</p>
-            <p className="text-2xl font-semibold text-amber-700">{stats.suspendedCount}</p>
+            <p className="text-sm text-muted-foreground">Suspendus</p>
+            <p className="text-2xl font-semibold text-warning">{stats.suspendedCount}</p>
           </CardHeader>
         </Card>
         <Card>
           <CardHeader>
-            <p className="text-sm text-slate-600">Hors ligne</p>
-            <p className="text-2xl font-semibold text-slate-900">{stats.offlineCount}</p>
+            <p className="text-sm text-muted-foreground">Hors ligne</p>
+            <p className="text-2xl font-semibold text-foreground">{stats.offlineCount}</p>
           </CardHeader>
         </Card>
       </section>
 
       <Card>
         <CardHeader>
-          <h2 className="text-base font-semibold text-slate-900">Filtres</h2>
+          <h2 className="text-base font-semibold text-foreground">Filtres</h2>
         </CardHeader>
         <CardContent>
           <div className="grid gap-3 md:grid-cols-[1fr_180px_180px_auto_auto_auto]">
@@ -2182,7 +2182,7 @@ export default function AnnouncersPage() {
             />
 
             <select
-              className="h-8 rounded-lg border border-slate-300 bg-white px-3 text-sm text-slate-800"
+              className="h-8 rounded-lg border border-border bg-card px-3 text-sm text-foreground"
               value={status}
               onChange={(event) => setStatus(event.target.value as AnnouncerStatusFilter)}
               disabled={submitting}
@@ -2194,7 +2194,7 @@ export default function AnnouncersPage() {
             </select>
 
             <select
-              className="h-8 rounded-lg border border-slate-300 bg-white px-3 text-sm text-slate-800"
+              className="h-8 rounded-lg border border-border bg-card px-3 text-sm text-foreground"
               value={presence}
               onChange={(event) => setPresence(event.target.value as AnnouncerPresenceFilter)}
               disabled={submitting}
@@ -2220,7 +2220,7 @@ export default function AnnouncersPage() {
       <div className="grid gap-4 lg:grid-cols-[2fr_1fr]">
         <Card>
           <CardHeader className="flex items-center justify-between gap-2">
-            <h2 className="text-base font-semibold text-slate-900">
+            <h2 className="text-base font-semibold text-foreground">
               Liste des annonceurs ({announcers.length}/{totalCountLabel}) - page {safePageIndex + 1}
             </h2>
             <Button
@@ -2234,17 +2234,17 @@ export default function AnnouncersPage() {
           </CardHeader>
           <CardContent>
             {error ? (
-              <p className="mb-4 rounded-md bg-red-50 px-3 py-2 text-sm text-red-700">{error}</p>
+              <p className="mb-4 rounded-md bg-destructive/10 px-3 py-2 text-sm text-destructive">{error}</p>
             ) : null}
 
             {loading ? (
-              <p className="text-sm text-slate-600">Chargement...</p>
+              <p className="text-sm text-muted-foreground">Chargement...</p>
             ) : (
               <>
                 <div className="overflow-x-auto">
                   <table className="min-w-full border-collapse text-sm">
                     <thead>
-                      <tr className="border-b border-slate-200 text-left text-slate-600">
+                      <tr className="border-b border-border text-left text-muted-foreground">
                         <th className="py-2 pr-4 font-medium">Annonceur</th>
                         <th className="py-2 pr-4 font-medium">Statut</th>
                         <th className="py-2 pr-4 font-medium">Présence</th>
@@ -2259,37 +2259,37 @@ export default function AnnouncersPage() {
                         const isArchived = announcer.state === "ARCHIVED";
                         const socialEntries = getAnnouncerSocialEntries(announcer);
                         return (
-                          <tr key={announcer.uid} className="border-b border-slate-100 align-top">
+                          <tr key={announcer.uid} className="border-b border-border align-top">
                             <td className="py-3 pr-4">
-                              <p className="font-medium text-slate-900">{announcer.fullName}</p>
-                              <p className="text-xs text-slate-500">{announcer.email ?? announcer.uid}</p>
+                              <p className="font-medium text-foreground">{announcer.fullName}</p>
+                              <p className="text-xs text-muted-foreground">{announcer.email ?? announcer.uid}</p>
                               {announcer.phoneNumbers.length > 0 ? (
-                                <p className="text-xs text-slate-500">{announcer.phoneNumbers[0]}</p>
+                                <p className="text-xs text-muted-foreground">{announcer.phoneNumbers[0]}</p>
                               ) : null}
                             </td>
-                            <td className="py-3 pr-4 text-slate-700">
+                            <td className="py-3 pr-4 text-foreground">
                               {isArchived ? "Archivé" : announcer.isSuspended ? "Suspendu" : "Actif"}
                             </td>
                             <td className="py-3 pr-4">
                               <span
                                 className={
                                   announcer.presenceStatus === "online"
-                                    ? "font-medium text-emerald-700"
-                                    : "text-slate-700"
+                                    ? "font-medium text-success"
+                                    : "text-foreground"
                                 }
                               >
                                 {announcer.presenceStatus === "online" ? "En ligne" : "Hors ligne"}
                               </span>
                             </td>
-                            <td className="py-3 pr-4 text-slate-700">
+                            <td className="py-3 pr-4 text-foreground">
                               {toDateLabel(announcer.announcerSinceAt)}
                             </td>
-                            <td className="py-3 pr-4 text-slate-700">
+                            <td className="py-3 pr-4 text-foreground">
                               {toDateLabel(announcer.lastSeenAt)}
                             </td>
                             <td className="py-3 pr-4">
                               {socialEntries.length === 0 ? (
-                                <span className="text-xs text-slate-400">Aucun</span>
+                                <span className="text-xs text-muted-foreground">Aucun</span>
                               ) : (
                                 <div className="flex flex-wrap gap-2">
                                   {socialEntries.map((entry) =>
@@ -2299,7 +2299,7 @@ export default function AnnouncersPage() {
                                         href={entry.url}
                                         target="_blank"
                                         rel="noopener noreferrer"
-                                        className="rounded-full border border-slate-200 px-2 py-1 text-xs text-slate-700 hover:bg-slate-50 hover:text-slate-900"
+                                        className="rounded-full border border-border px-2 py-1 text-xs text-foreground hover:bg-muted hover:text-foreground"
                                         title={entry.handle ?? entry.url}
                                       >
                                         {entry.label}
@@ -2307,7 +2307,7 @@ export default function AnnouncersPage() {
                                     ) : (
                                       <span
                                         key={`${announcer.uid}-${entry.network}`}
-                                        className="rounded-full border border-slate-200 px-2 py-1 text-xs text-slate-500"
+                                        className="rounded-full border border-border px-2 py-1 text-xs text-muted-foreground"
                                         title={entry.handle ?? ""}
                                       >
                                         {entry.label}
@@ -2356,7 +2356,7 @@ export default function AnnouncersPage() {
                   </table>
                 </div>
 
-                <div className="mt-4 flex flex-wrap items-center justify-between gap-2 text-xs text-slate-500">
+                <div className="mt-4 flex flex-wrap items-center justify-between gap-2 text-xs text-muted-foreground">
                   <p>
                     Debug curseur: courant=
                     <code>{currentPage?.page.cursor ?? "null"}</code> | suivant=
@@ -2384,65 +2384,65 @@ export default function AnnouncersPage() {
 
         <Card>
           <CardHeader>
-            <h2 className="text-base font-semibold text-slate-900">Profil annonceur</h2>
+            <h2 className="text-base font-semibold text-foreground">Profil annonceur</h2>
           </CardHeader>
           <CardContent className="space-y-2">
             {!selectedUid ? (
-              <p className="text-sm text-slate-600">Sélectionnez un annonceur pour voir ses détails.</p>
+              <p className="text-sm text-muted-foreground">Sélectionnez un annonceur pour voir ses détails.</p>
             ) : detailsQuery.isLoading ? (
-              <p className="text-sm text-slate-600">Chargement du profil...</p>
+              <p className="text-sm text-muted-foreground">Chargement du profil...</p>
             ) : detailsQuery.error ? (
-              <p className="text-sm text-red-700">{detailsQuery.error.message}</p>
+              <p className="text-sm text-destructive">{detailsQuery.error.message}</p>
             ) : detailsQuery.data ? (
               <>
-                <p className="text-sm text-slate-900">
+                <p className="text-sm text-foreground">
                   <span className="font-medium">Nom:</span> {detailsQuery.data.fullName}
                 </p>
-                <p className="text-sm text-slate-900">
+                <p className="text-sm text-foreground">
                   <span className="font-medium">Email:</span> {detailsQuery.data.email ?? "Non renseigné"}
                 </p>
-                <p className="text-sm text-slate-900">
+                <p className="text-sm text-foreground">
                   <span className="font-medium">UID:</span> {detailsQuery.data.uid}
                 </p>
-                <p className="text-sm text-slate-900">
+                <p className="text-sm text-foreground">
                   <span className="font-medium">Rôles:</span>{" "}
                   {detailsQuery.data.roles.length ? detailsQuery.data.roles.join(", ") : "Aucun"}
                 </p>
-                <p className="text-sm text-slate-900">
+                <p className="text-sm text-foreground">
                   <span className="font-medium">Présence:</span>{" "}
                   {detailsQuery.data.presenceStatus === "online" ? "En ligne" : "Hors ligne"}
                 </p>
-                <p className="text-sm text-slate-900">
+                <p className="text-sm text-foreground">
                   <span className="font-medium">Dernière activité:</span>{" "}
                   {toDateLabel(detailsQuery.data.lastSeenAt)}
                 </p>
-                <p className="text-sm text-slate-900">
+                <p className="text-sm text-foreground">
                   <span className="font-medium">Annonceur depuis:</span>{" "}
                   {toDateLabel(detailsQuery.data.announcerSinceAt)}
                 </p>
-                <p className="text-sm text-slate-900">
+                <p className="text-sm text-foreground">
                   <span className="font-medium">Création:</span> {toDateLabel(detailsQuery.data.createdAt)}
                 </p>
 
-                <div className="mt-4 border-t border-slate-200 pt-4">
-                  <h3 className="text-sm font-semibold text-slate-900">Réseaux sociaux annonceur</h3>
-                  <p className="mt-1 text-xs text-slate-600">
+                <div className="mt-4 border-t border-border pt-4">
+                  <h3 className="text-sm font-semibold text-foreground">Réseaux sociaux annonceur</h3>
+                  <p className="mt-1 text-xs text-muted-foreground">
                     Liens et @ utilisés pour le sourcing des annonces depuis les réseaux.
                   </p>
 
                   {socialActionError ? (
-                    <p className="mt-3 rounded-md bg-red-50 px-3 py-2 text-xs text-red-700">{socialActionError}</p>
+                    <p className="mt-3 rounded-md bg-destructive/10 px-3 py-2 text-xs text-destructive">{socialActionError}</p>
                   ) : null}
                   {socialActionSuccess ? (
-                    <p className="mt-3 rounded-md bg-emerald-50 px-3 py-2 text-xs text-emerald-700">
+                    <p className="mt-3 rounded-md bg-success/10 px-3 py-2 text-xs text-success">
                       {socialActionSuccess}
                     </p>
                   ) : null}
 
                   <div className="mt-3 space-y-3">
                     {SOCIAL_NETWORK_KEYS.map((network) => (
-                      <div key={network} className="rounded-md border border-slate-200 p-3">
-                        <p className="mb-2 text-xs font-medium text-slate-700">
+                      <div key={network} className="rounded-md border border-border p-3">
+                        <p className="mb-2 text-xs font-medium text-foreground">
                           {SOCIAL_NETWORK_LABELS[network]}
                         </p>
                         <div className="grid gap-2">
@@ -2479,7 +2479,7 @@ export default function AnnouncersPage() {
                       </Button>
                     </div>
                   ) : (
-                    <p className="mt-3 text-xs text-slate-500">
+                    <p className="mt-3 text-xs text-muted-foreground">
                       Lecture seule: permission `announcers.update` requise.
                     </p>
                   )}

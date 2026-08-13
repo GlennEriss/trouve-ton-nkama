@@ -1,13 +1,13 @@
 'use client'
 import React, { ReactNode } from 'react'
-import { Popover, PopoverContent, PopoverTrigger } from '../ui/popover'
-import { Button } from '../ui/button'
+import { Popover, PopoverContent, PopoverTrigger } from '@trouve-ton-nkama/ui/popover'
+import { Button } from '@trouve-ton-nkama/ui/button'
 import { AiFillFilter, AiOutlineFilter } from 'react-icons/ai'
 import { FiFilter } from 'react-icons/fi'
 import { StateCreation } from '@/models/creation'
-import { Label } from '../ui/label'
-import { Input } from '../ui/input'
-import { Tooltip, TooltipContent, TooltipTrigger } from '../ui/tooltip'
+import { Label } from '@trouve-ton-nkama/ui/label'
+import { Input } from '@trouve-ton-nkama/ui/input'
+import { Tooltip, TooltipContent, TooltipTrigger } from '@trouve-ton-nkama/ui/tooltip'
 import { useCrudContext } from '@/providers/crud.provider'
 
 export default function FilterSection({ children }: Readonly<{ children: React.ReactNode }>) {

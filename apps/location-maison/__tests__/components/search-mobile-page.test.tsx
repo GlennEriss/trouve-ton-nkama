@@ -37,7 +37,7 @@ jest.mock('@/features/analytics/search/hooks/useTrackSearchAnalytics', () => ({
 }))
 jest.mock('next/form', () => ({ __esModule: true, default: ({ children, ...props }: any) => <form {...props}>{children}</form> }))
 jest.mock('next/link', () => ({ __esModule: true, default: ({ children, href, ...props }: any) => <a href={href} {...props}>{children}</a> }))
-jest.mock('@/components/ui/input', () => ({ Input: (props: any) => <input {...props} /> }))
+jest.mock('@trouve-ton-nkama/ui/input', () => ({ Input: (props: any) => <input {...props} /> }))
 jest.mock('@/components/home-page/FilterModalHomePage', () => ({ FilterModalHomePage: () => <span>Filtres</span> }))
 jest.mock('@/components/home-page/PropertyCard', () => ({ __esModule: true, default: ({ property }: any) => <article>Annonce {property.objectID}</article> }))
 jest.mock('@/components/ads/SponsoredSlot', () => ({ __esModule: true, default: ({ rotationIndex }: any) => <aside>Publicité {rotationIndex}</aside> }))

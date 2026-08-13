@@ -41,7 +41,7 @@ jest.mock('next/link', () => ({
   ),
 }))
 
-jest.mock('@/components/ui/carousel', () => ({
+jest.mock('@trouve-ton-nkama/ui/carousel', () => ({
   Carousel: ({ children, setApi }: { children: React.ReactNode; setApi?: (api: unknown) => void }) => {
     React.useEffect(() => { setApi?.(carouselApi) }, [setApi])
     return <div data-testid="carousel">{children}</div>
@@ -50,7 +50,7 @@ jest.mock('@/components/ui/carousel', () => ({
   CarouselItem: ({ children }: { children: React.ReactNode }) => <section>{children}</section>,
 }))
 
-jest.mock('@/components/ui/dropdown-menu', () => ({
+jest.mock('@trouve-ton-nkama/ui/dropdown-menu', () => ({
   DropdownMenu: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
   DropdownMenuContent: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
   DropdownMenuItem: ({ children, onClick }: { children: React.ReactNode; onClick?: () => void }) => (
@@ -60,7 +60,7 @@ jest.mock('@/components/ui/dropdown-menu', () => ({
   DropdownMenuTrigger: ({ children }: { children: React.ReactNode }) => <>{children}</>,
 }))
 
-jest.mock('@/components/ui/avatar', () => ({
+jest.mock('@trouve-ton-nkama/ui/avatar', () => ({
   Avatar: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
   AvatarFallback: ({ children }: { children: React.ReactNode }) => <span>{children}</span>,
   AvatarImage: ({ alt }: { alt: string }) => <span>{alt}</span>,

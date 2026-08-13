@@ -1,7 +1,7 @@
 'use client';
 
 import { X } from 'lucide-react';
-import { Button } from '../ui/button';
+import { Button } from '@trouve-ton-nkama/ui/button';
 import { useRouter } from 'next/navigation';
 import { getPrimaryPropertyImageUrl } from '@/lib/property-images';
 

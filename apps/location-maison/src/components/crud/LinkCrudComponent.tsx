@@ -1,6 +1,6 @@
 'use client'
 import React from 'react'
-import { Button } from '../ui/button'
+import { Button } from '@trouve-ton-nkama/ui/button'
 import Link from 'next/link'
 import { useCrudContext } from '@/providers/crud.provider'
 

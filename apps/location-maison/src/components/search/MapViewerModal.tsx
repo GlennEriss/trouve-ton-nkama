@@ -1,6 +1,6 @@
 import React from 'react'
 import dynamic from 'next/dynamic'
-import { Button } from '../ui/button';
+import { Button } from '@trouve-ton-nkama/ui/button';
 import { MapPin } from 'lucide-react';
 
 const MAP_CENTER = { lat: 0.3476, lng: 9.4523 };

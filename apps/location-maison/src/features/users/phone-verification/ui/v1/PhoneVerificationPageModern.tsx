@@ -4,16 +4,16 @@ import { routes } from '@/constantes/routes';
 import { SUPPORTED_COUNTRIES, type SupportedCountry } from '@/lib/phoneValidation';
 import Link from 'next/link';
 import { AlertTriangle, CheckCircle, ChevronLeft, Clock, Phone, RefreshCw } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
+import { Button } from '@trouve-ton-nkama/ui/button';
+import { Input } from '@trouve-ton-nkama/ui/input';
+import { Label } from '@trouve-ton-nkama/ui/label';
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@/components/ui/select';
+} from '@trouve-ton-nkama/ui/select';
 import { usePhoneVerification } from '../../hooks';
 
 const COUNTRY_FLAGS: Record<SupportedCountry, string> = {

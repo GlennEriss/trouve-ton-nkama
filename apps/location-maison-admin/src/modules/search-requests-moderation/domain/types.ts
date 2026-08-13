@@ -1,5 +1,11 @@
 export type SearchRequestModerationStatus = "PENDING" | "APPROVED" | "REJECTED";
-export type SearchRequestPaymentStatus = "pending_confirmation" | "confirmed" | "failed";
+/** `not_required` : saisie admin, aucun paiement associé (≠ paiement confirmé). */
+export type SearchRequestPaymentStatus =
+  | "pending_confirmation"
+  | "confirmed"
+  | "failed"
+  | "not_required";
+export type SearchRequestSource = "public" | "admin";
 
 /** Forme brute du document Firestore `search_requests/{id}` — voir apps/location-maison/src/models/search-request.d.ts. */
 export type SearchRequestRawDoc = {
@@ -25,6 +31,9 @@ export type SearchRequestRawDoc = {
   // entrent dans la file de modération, voir search-requests.repository.ts.
   moderationStatus: SearchRequestModerationStatus | null;
   rejectionReason?: string | null;
+  /** IN_PROGRESS = publiée ; ARCHIVED = retirée du public, conservée. */
+  state?: "IN_PROGRESS" | "ARCHIVED";
+  source?: SearchRequestSource;
   createdAt?: unknown;
   updatedAt?: unknown;
 };
@@ -48,6 +57,8 @@ export type SearchRequestListItem = {
   boostEndAt: string | null;
   moderationStatus: SearchRequestModerationStatus | null;
   rejectionReason: string | null;
+  state: "IN_PROGRESS" | "ARCHIVED";
+  source: SearchRequestSource;
   createdAt: string | null;
   updatedAt: string | null;
 };

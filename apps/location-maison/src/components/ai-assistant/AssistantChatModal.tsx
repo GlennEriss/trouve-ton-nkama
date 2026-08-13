@@ -7,11 +7,11 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
-} from '@/components/ui/dialog';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Badge } from '@/components/ui/badge';
-import { ScrollArea } from '@/components/ui/scroll-area';
+} from '@trouve-ton-nkama/ui/dialog';
+import { Button } from '@trouve-ton-nkama/ui/button';
+import { Input } from '@trouve-ton-nkama/ui/input';
+import { Badge } from '@trouve-ton-nkama/ui/badge';
+import { ScrollArea } from '@trouve-ton-nkama/ui/scroll-area';
 import useAIAssistant from '@/hooks/useAIAssistant';
 import ChatMessage, { Message } from './ChatMessage';
 import SmartSuggestions from './SmartSuggestions';

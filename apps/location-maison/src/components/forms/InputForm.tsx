@@ -6,8 +6,8 @@ import {
     FormControl,
     FormDescription,
     FormMessage,
-} from '../ui/form';
-import { Input } from '../ui/input';
+} from '@/components/ui/form';
+import { Input } from '@trouve-ton-nkama/ui/input';
 import { UseFormReturn, FieldValues, Path } from 'react-hook-form';
 import { Eye, EyeOff } from 'lucide-react';
 import { cn } from '@/lib/utils';

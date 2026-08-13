@@ -12,8 +12,8 @@
  * 
  * Usage: These components are reusable across different steps of the form and can be bound to different fields using the `field` prop.
  */
-import { Input } from "../ui/input"
-import { Textarea } from "../ui/textarea"
+import { Input } from '@trouve-ton-nkama/ui/input'
+import { Textarea } from '@trouve-ton-nkama/ui/textarea'
 
 //Texte
 export const TextComponent = ({ field }: { field: any }) => {

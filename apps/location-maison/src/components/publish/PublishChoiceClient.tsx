@@ -3,7 +3,7 @@
 import Link from 'next/link'
 import { Building2, Search, Video } from 'lucide-react'
 import { useCurrentUser } from '@/hooks/use-current-user'
-import { Card } from '@/components/ui/card'
+import { Card } from '@trouve-ton-nkama/ui/card'
 import { routes } from '@/constantes/routes'
 
 export default function PublishChoiceClient() {

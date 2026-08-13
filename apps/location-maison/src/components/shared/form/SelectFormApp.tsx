@@ -1,5 +1,5 @@
 import { FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@trouve-ton-nkama/ui/select'
 import { cn } from '@/lib/utils'
 import { OptionType } from '@/models/OptionType'
 import React from 'react'

@@ -10,16 +10,16 @@ import {
   CarouselContent,
   CarouselItem,
   type CarouselApi,
-} from '@/components/ui/carousel'
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
-import { Button } from '@/components/ui/button'
+} from '@trouve-ton-nkama/ui/carousel'
+import { Avatar, AvatarFallback, AvatarImage } from '@trouve-ton-nkama/ui/avatar'
+import { Button } from '@trouve-ton-nkama/ui/button'
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu'
+} from '@trouve-ton-nkama/ui/dropdown-menu'
 import { useProperty } from '@/hooks/use-property'
 import { useUserByUID } from '@/hooks/use-user-by-uid'
 import { useTrackPropertyInteraction } from '@/hooks/use-track-property-interaction'

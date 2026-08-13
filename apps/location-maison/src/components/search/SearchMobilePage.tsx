@@ -4,7 +4,7 @@ import React from 'react'
 import Form from 'next/form'
 import Link from 'next/link'
 import { Search, ChevronUp, ChevronDown, LoaderCircle } from 'lucide-react';
-import { Input } from '../ui/input';
+import { Input } from '@trouve-ton-nkama/ui/input';
 import { FilterModalHomePage } from '../home-page/FilterModalHomePage';
 import { useAlgoliaContext } from '@/providers/AlgoliaContext';
 import { useInfiniteHits, useInstantSearch, useStats } from 'react-instantsearch';

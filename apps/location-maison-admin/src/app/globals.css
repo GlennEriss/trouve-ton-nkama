@@ -2,6 +2,13 @@
 @import "tw-animate-css";
 @import "shadcn/tailwind.css";
 
+/* Composants partagés (@trouve-ton-nkama/ui). La détection automatique de
+   sources de Tailwind v4 s'arrête au dossier de cette app et ignore
+   node_modules : sans ce @source, les classes utilisées uniquement dans
+   packages/ui (variants Button, Input, Dialog...) ne sont jamais générées et
+   ces composants s'affichent sans style. */
+@source "../../../../packages/ui/src";
+
 @custom-variant dark (&:is(.dark *));
 
 :root {
@@ -46,20 +53,33 @@
   --border: #e5e7eb;
   --input: #e5e7eb;
   --ring: var(--primary-700);
-  --chart-1: var(--primary-500);
-  --chart-2: var(--ink);
-  --chart-3: var(--gold);
-  --chart-4: var(--success);
-  --chart-5: var(--warning);
-  --radius: 0.625rem;
-  --sidebar: #ffffff;
-  --sidebar-foreground: #111827;
-  --sidebar-primary: var(--primary-700);
-  --sidebar-primary-foreground: #ffffff;
-  --sidebar-accent: var(--primary-50);
-  --sidebar-accent-foreground: var(--primary-700);
-  --sidebar-border: #e5e7eb;
-  --sidebar-ring: var(--primary-700);
+  /* Palette catégorielle des graphiques — validée par scripts/validate_palette.js
+     (bande de clarté, plancher de chroma, séparation daltonisme protan/deutan,
+     plancher vision normale), mode clair, toutes paires. Slot 1 = teal de la
+     marque. ink (#224d62) et gold (#cbb171) ont été écartés : trop sombre /
+     sous le plancher de chroma, ils sont lus comme du gris.
+     L'ordre des slots est le mécanisme de sécurité daltonisme : ne pas le
+     permuter, ne pas ajouter de 4e teinte générée. */
+  --chart-1: #1fa89b;
+  --chart-2: #eb6834;
+  --chart-3: #2a78d6;
+  /* Statut — réservés au sens good/warning, jamais comme "série 4". */
+  --chart-success: var(--success);
+  --chart-warning: var(--warning);
+  /* Aligné sur apps/location-maison (packages/ui/src/tokens) — était 0.625rem. */
+  --radius: 0.5rem;
+  /* Sidebar aux couleurs de la marque (teal foncé), même langage visuel que le
+     footer de la plateforme (bg-primary-950 + texte clair). Avec le variant
+     "inset" de la sidebar, cette couleur habille aussi le cadre de la page :
+     le contenu flotte en carte blanche arrondie par-dessus. */
+  --sidebar: var(--primary-900);
+  --sidebar-foreground: var(--primary-100);
+  --sidebar-primary: var(--primary-300);
+  --sidebar-primary-foreground: var(--primary-950);
+  --sidebar-accent: var(--primary-800);
+  --sidebar-accent-foreground: #ffffff;
+  --sidebar-border: var(--primary-800);
+  --sidebar-ring: var(--primary-300);
 }
 
 @theme inline {
@@ -77,11 +97,11 @@
   --color-sidebar-primary: var(--sidebar-primary);
   --color-sidebar-foreground: var(--sidebar-foreground);
   --color-sidebar: var(--sidebar);
-  --color-chart-5: var(--chart-5);
-  --color-chart-4: var(--chart-4);
   --color-chart-3: var(--chart-3);
   --color-chart-2: var(--chart-2);
   --color-chart-1: var(--chart-1);
+  --color-chart-success: var(--chart-success);
+  --color-chart-warning: var(--chart-warning);
   --color-ring: var(--ring);
   --color-input: var(--input);
   --color-border: var(--border);
@@ -158,17 +178,20 @@ body {
   --border: color-mix(in oklab, white 10%, transparent);
   --input: color-mix(in oklab, white 15%, transparent);
   --ring: var(--primary-400);
-  --chart-1: var(--primary-400);
-  --chart-2: var(--ink);
-  --chart-3: var(--gold);
-  --chart-4: var(--success);
-  --chart-5: var(--warning);
-  --sidebar: #0e1a1a;
-  --sidebar-foreground: #f3f6f5;
+  /* Mode sombre : pas une inversion automatique — pas choisis puis validés
+     contre la surface sombre (validate_palette.js --mode dark --pairs all).
+     Le slot 1 passe dans les deux modes, il ne change donc pas. */
+  --chart-1: #1fa89b;
+  --chart-2: #d95926;
+  --chart-3: #3987e5;
+  --chart-success: var(--success);
+  --chart-warning: var(--warning);
+  --sidebar: var(--primary-950);
+  --sidebar-foreground: var(--primary-100);
   --sidebar-primary: var(--primary-400);
-  --sidebar-primary-foreground: #0f1f1e;
-  --sidebar-accent: #17201f;
-  --sidebar-accent-foreground: var(--primary-200);
+  --sidebar-primary-foreground: var(--primary-950);
+  --sidebar-accent: var(--primary-900);
+  --sidebar-accent-foreground: #ffffff;
   --sidebar-border: color-mix(in oklab, white 10%, transparent);
   --sidebar-ring: var(--primary-400);
 }

@@ -1,7 +1,7 @@
 'use client'
 import { useCurrentUser } from '@/hooks/use-current-user'
 import React from 'react'
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Avatar, AvatarFallback, AvatarImage } from '@trouve-ton-nkama/ui/avatar';
 import Link from 'next/link';
 import { ChevronRight } from 'lucide-react';
 import { generateColorFromName } from '@/lib/generateColorFromName';

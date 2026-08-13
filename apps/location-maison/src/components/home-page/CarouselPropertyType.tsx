@@ -1,7 +1,7 @@
 'use client'
 import React from 'react'
 import { propertyTypesList } from './PropertyTypeList'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../ui/card'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@trouve-ton-nkama/ui/card'
 import { TypeProperty } from '@/constantes/property-type'
 import { useServerPropertyCountSummary } from '@/hooks/use-server-property-count-summary'
 import { useAlgoliaContext } from '@/providers/AlgoliaContext'

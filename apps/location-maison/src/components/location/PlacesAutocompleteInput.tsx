@@ -2,9 +2,9 @@
 
 import React, { useEffect, useRef, useState } from 'react'
 import { Search, Loader2, CheckCircle, MapPin, AlertCircle } from 'lucide-react'
-import { Input } from '@/components/ui/input'
-import { Card, CardContent } from '@/components/ui/card'
-import { Button } from '@/components/ui/button'
+import { Input } from '@trouve-ton-nkama/ui/input'
+import { Card, CardContent } from '@trouve-ton-nkama/ui/card'
+import { Button } from '@trouve-ton-nkama/ui/button'
 import { cn } from '@/lib/utils'
 import { trackLocationNoResult } from '@/features/analytics/location/services/location-search-analytics.client'
 import {

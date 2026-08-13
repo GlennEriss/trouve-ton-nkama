@@ -31,14 +31,14 @@ jest.mock('@hookform/resolvers/zod', () => ({ zodResolver: () => jest.fn() }))
 jest.mock('@/models/schema', () => ({ FormFilterSchema: {} }))
 jest.mock('@/constantes', () => ({ statusOptions: [{ value: 'FOR_RENT', label: 'À louer' }] }))
 jest.mock('@radix-ui/react-dialog', () => ({ DialogDescription: ({ children }: any) => <p>{children}</p> }))
-jest.mock('@/components/ui/dialog', () => ({
+jest.mock('@trouve-ton-nkama/ui/dialog', () => ({
   Dialog: ({ children, open }: any) => <div data-open={String(Boolean(open))}>{children}</div>,
   DialogContent: ({ children }: any) => <div role="dialog">{children}</div>,
   DialogHeader: ({ children }: any) => <div>{children}</div>,
   DialogTitle: ({ children }: any) => <h1>{children}</h1>,
   DialogTrigger: ({ children }: any) => <>{children}</>,
 }))
-jest.mock('@/components/ui/button', () => ({
+jest.mock('@trouve-ton-nkama/ui/button', () => ({
   Button: ({ children, ...props }: any) => <button {...props}>{children}</button>,
 }))
 jest.mock('@/components/ui/form', () => ({ Form: ({ children }: any) => <>{children}</> }))

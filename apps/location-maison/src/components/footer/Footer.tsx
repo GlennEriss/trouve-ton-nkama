@@ -1,6 +1,6 @@
 'use client'
 import React from 'react'
-import Logo from '../logo/Logo'
+import Logo from '@trouve-ton-nkama/ui/logo'
 import { routes } from '@/constantes/routes'
 import { MapPin, Mail, Facebook, MessageCircle, Radio, Music2 } from "lucide-react";
 import { usePathname } from 'next/navigation';

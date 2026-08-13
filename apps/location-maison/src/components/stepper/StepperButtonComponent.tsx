@@ -5,7 +5,7 @@ import { AlertTriangle, RotateCcw } from 'lucide-react'
 import { useFormContext } from 'react-hook-form'
 import { usePropertyFormComponentContext } from '@/providers/property-form.context'
 import { useStepperNavigation } from '@/hooks/useStepperNavigation'
-import { Button } from '../ui/button'
+import { Button } from '@trouve-ton-nkama/ui/button'
 import {
   Dialog,
   DialogContent,
@@ -13,7 +13,7 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from '../ui/dialog'
+} from '@trouve-ton-nkama/ui/dialog'
 import { LoadingSpinner } from '../shared/LoadingSpinner'
 
 export default function StepperButtonComponent() {

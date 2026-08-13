@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { AlertTriangle, Zap } from 'lucide-react';
-import { Badge } from '@/components/ui/badge';
+import { Badge } from '@trouve-ton-nkama/ui/badge';
 
 interface CreditNotificationProps {
   creditsAvailable: number;

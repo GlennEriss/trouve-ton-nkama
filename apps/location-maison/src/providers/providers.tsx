@@ -1,7 +1,7 @@
 import ReactQueryProvider from "@/providers/ReactQueryProvider";
 import { AlgoliaProvider } from "./AlgoliaContext";
 import NextAuthProvider from "@/providers/NextAuthProvider";
-import { Toaster } from "@/components/ui/toaster";
+import { Toaster } from "@trouve-ton-nkama/ui/toaster";
 import { LocationProvider } from "./LocationProvider";
 import { NotificationProvider } from "./NotificationProvider";
 import { AlgoliaRefinementsProvider } from "./AlgoliaRefinementsContext";

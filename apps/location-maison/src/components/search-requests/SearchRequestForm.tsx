@@ -15,11 +15,11 @@ import {
 import { PAYMENT_METHODS, detectNetworkFromPhone, isPhoneValidForNetwork } from "@/constantes/payment-methods";
 import { useSearchRequestPayment } from "@/hooks/use-search-request-payment";
 import type { TypePropertyKey } from "@trouve-ton-nkama/core/domain";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
-import { Checkbox } from "@/components/ui/checkbox";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Button } from "@trouve-ton-nkama/ui/button";
+import { Input } from "@trouve-ton-nkama/ui/input";
+import { Textarea } from "@trouve-ton-nkama/ui/textarea";
+import { Checkbox } from "@trouve-ton-nkama/ui/checkbox";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@trouve-ton-nkama/ui/select";
 
 export interface SearchRequestFormPrefill {
   typeProperty?: TypePropertyKey;

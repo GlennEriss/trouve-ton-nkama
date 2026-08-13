@@ -4,11 +4,13 @@ import { useCallback, useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Activity, Download, RefreshCcw } from "lucide-react";
 
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
+import { Badge } from "@trouve-ton-nkama/ui/badge";
+import { Button } from "@trouve-ton-nkama/ui/button";
+import { Card, CardContent, CardHeader } from "@trouve-ton-nkama/ui/card";
+import { Input } from "@trouve-ton-nkama/ui/input";
 import { PageHeader } from "@/components/ui-kit/page-header";
+import { TimeSeriesChart } from "@/components/charts/TimeSeriesChart";
+import { RankedBarChart } from "@/components/charts/RankedBarChart";
 
 type RangeFilter = "24h" | "7d" | "30d" | "custom";
 type ProviderFilter = "all" | "firebase" | "vercel";
@@ -123,7 +125,7 @@ function toProviderBadge(provider: string) {
   if (provider === "vercel") {
     return <Badge variant="warning">Vercel</Badge>;
   }
-  return <Badge variant="neutral">{provider}</Badge>;
+  return <Badge variant="secondary">{provider}</Badge>;
 }
 
 function toIsoIfPossible(value: string) {
@@ -246,6 +248,42 @@ export default function AnalyticsTrafficPage() {
   const compare = compareQuery.data;
   const loading = trafficQuery.isLoading || compareQuery.isLoading;
   const error = trafficQuery.error?.message ?? compareQuery.error?.message ?? null;
+
+  // `daily` contient une ligne par (jour × fournisseur) : on agrège par jour,
+  // sinon la courbe afficherait plusieurs points pour une même date.
+  const daily = data?.daily;
+  const dailyTotals = useMemo(() => {
+    if (!daily?.length) {
+      return [];
+    }
+    const byDate = new Map<string, { dateKey: string; visits: number; uniqueVisitors: number; pageViews: number }>();
+    for (const row of daily) {
+      const current = byDate.get(row.dateKey) ?? {
+        dateKey: row.dateKey,
+        visits: 0,
+        uniqueVisitors: 0,
+        pageViews: 0,
+      };
+      current.visits += row.visits ?? 0;
+      current.uniqueVisitors += row.uniqueVisitors ?? 0;
+      current.pageViews += row.pageViews ?? 0;
+      byDate.set(row.dateKey, current);
+    }
+    return Array.from(byDate.values()).sort((a, b) => a.dateKey.localeCompare(b.dateKey));
+  }, [daily]);
+
+  // Barres horizontales : on tronque les chemins longs côté axe, la valeur
+  // complète reste dans l'infobulle et dans le tableau plus bas.
+  const topPages = data?.topPages;
+  const topPagesChartData = useMemo(() => {
+    if (!topPages?.length) {
+      return [];
+    }
+    return topPages.slice(0, 8).map((entry) => ({
+      page: entry.page.length > 28 ? `${entry.page.slice(0, 27)}…` : entry.page,
+      pageViews: entry.pageViews,
+    }));
+  }, [topPages]);
   const exportUrl = useMemo(() => {
     const params = new URLSearchParams();
     params.set("range", range);
@@ -285,7 +323,7 @@ export default function AnalyticsTrafficPage() {
     ) : compare?.summary.deltaVisits && compare.summary.deltaVisits < 0 ? (
       <Badge variant="success">Firebase au-dessus</Badge>
     ) : (
-      <Badge variant="neutral">Équilibré</Badge>
+      <Badge variant="secondary">Équilibré</Badge>
     );
 
   return (
@@ -323,39 +361,83 @@ export default function AnalyticsTrafficPage() {
       <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
         <Card>
           <CardHeader>
-            <p className="text-sm text-slate-600">Events ingérés</p>
-            <p className="text-2xl font-semibold text-slate-900">{data?.summary.totalEvents ?? 0}</p>
+            <p className="text-sm text-muted-foreground">Events ingérés</p>
+            <p className="text-2xl font-semibold text-foreground">{data?.summary.totalEvents ?? 0}</p>
           </CardHeader>
         </Card>
         <Card>
           <CardHeader>
-            <p className="text-sm text-slate-600">Visites</p>
-            <p className="text-2xl font-semibold text-slate-900">{data?.summary.visits ?? 0}</p>
+            <p className="text-sm text-muted-foreground">Visites</p>
+            <p className="text-2xl font-semibold text-foreground">{data?.summary.visits ?? 0}</p>
           </CardHeader>
         </Card>
         <Card>
           <CardHeader>
-            <p className="text-sm text-slate-600">Visiteurs uniques</p>
-            <p className="text-2xl font-semibold text-slate-900">{data?.summary.uniqueVisitors ?? 0}</p>
+            <p className="text-sm text-muted-foreground">Visiteurs uniques</p>
+            <p className="text-2xl font-semibold text-foreground">{data?.summary.uniqueVisitors ?? 0}</p>
           </CardHeader>
         </Card>
         <Card>
           <CardHeader>
-            <p className="text-sm text-slate-600">Pages vues</p>
+            <p className="text-sm text-muted-foreground">Pages vues</p>
             <p className="text-2xl font-semibold text-primary">{data?.summary.pageViews ?? 0}</p>
           </CardHeader>
         </Card>
       </section>
 
+      <section className="grid gap-4 xl:grid-cols-3">
+        <Card className="xl:col-span-2">
+          <CardHeader>
+            <h2 className="text-base font-semibold text-ink">Évolution du trafic</h2>
+            <p className="text-sm text-muted-foreground">
+              Visites, visiteurs uniques et pages vues par jour. Même unité (comptages), donc un seul axe.
+            </p>
+          </CardHeader>
+          <CardContent>
+            {loading ? (
+              <div className="h-[280px] animate-pulse rounded-lg bg-muted" />
+            ) : (
+              <TimeSeriesChart
+                data={dailyTotals}
+                series={[
+                  { dataKey: "visits", label: "Visites" },
+                  { dataKey: "uniqueVisitors", label: "Visiteurs uniques" },
+                  { dataKey: "pageViews", label: "Pages vues" },
+                ]}
+              />
+            )}
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <h2 className="text-base font-semibold text-ink">Pages les plus vues</h2>
+            <p className="text-sm text-muted-foreground">Top 8 sur la période.</p>
+          </CardHeader>
+          <CardContent>
+            {loading ? (
+              <div className="h-[280px] animate-pulse rounded-lg bg-muted" />
+            ) : (
+              <RankedBarChart
+                data={topPagesChartData}
+                categoryKey="page"
+                valueKey="pageViews"
+                valueLabel="Pages vues"
+              />
+            )}
+          </CardContent>
+        </Card>
+      </section>
+
       <Card>
         <CardHeader>
-          <h2 className="text-base font-semibold text-slate-900">Filtres</h2>
-          <p className="text-sm text-slate-600">Par défaut, période glissante de 7 jours.</p>
+          <h2 className="text-base font-semibold text-foreground">Filtres</h2>
+          <p className="text-sm text-muted-foreground">Par défaut, période glissante de 7 jours.</p>
         </CardHeader>
         <CardContent className="space-y-3">
           <div className="grid gap-3 lg:grid-cols-4">
             <select
-              className="h-9 rounded-lg border border-slate-300 bg-white px-3 text-sm text-slate-800"
+              className="h-9 rounded-lg border border-border bg-card px-3 text-sm text-foreground"
               value={range}
               onChange={(event) => {
                 setRange(event.target.value as RangeFilter);
@@ -369,7 +451,7 @@ export default function AnalyticsTrafficPage() {
             </select>
 
             <select
-              className="h-9 rounded-lg border border-slate-300 bg-white px-3 text-sm text-slate-800"
+              className="h-9 rounded-lg border border-border bg-card px-3 text-sm text-foreground"
               value={provider}
               onChange={(event) => {
                 setProvider(event.target.value as ProviderFilter);
@@ -390,7 +472,7 @@ export default function AnalyticsTrafficPage() {
               Réinitialiser les filtres
             </Button>
 
-            <div className="flex items-center text-xs text-slate-500">
+            <div className="flex items-center text-xs text-muted-foreground">
               Fenêtre active: {toDateLabel(data?.period.startAt)} - {toDateLabel(data?.period.endAt)}
             </div>
           </div>
@@ -421,24 +503,24 @@ export default function AnalyticsTrafficPage() {
       <section className="grid gap-4 xl:grid-cols-3">
         <Card className="xl:col-span-2">
           <CardHeader className="flex items-center justify-between gap-3">
-            <h2 className="text-base font-semibold text-slate-900">Événements récents</h2>
-            <p className="text-sm text-slate-600">
+            <h2 className="text-base font-semibold text-foreground">Événements récents</h2>
+            <p className="text-sm text-muted-foreground">
               {data?.page.totalCount ?? 0} event(s) - source: {toProviderLabel(provider)}
             </p>
           </CardHeader>
           <CardContent>
             {error ? (
-              <p className="mb-3 rounded-md bg-red-50 px-3 py-2 text-sm text-red-700">{error}</p>
+              <p className="mb-3 rounded-md bg-destructive/10 px-3 py-2 text-sm text-destructive">{error}</p>
             ) : null}
 
             {loading ? (
-              <p className="text-sm text-slate-600">Chargement...</p>
+              <p className="text-sm text-muted-foreground">Chargement...</p>
             ) : (
               <div className="space-y-3">
                 <div className="overflow-x-auto">
                   <table className="min-w-full border-collapse text-sm">
                     <thead>
-                      <tr className="border-b border-slate-200 text-left text-slate-600">
+                      <tr className="border-b border-border text-left text-muted-foreground">
                         <th className="py-2 pr-4 font-medium">Date</th>
                         <th className="py-2 pr-4 font-medium">Provider</th>
                         <th className="py-2 pr-4 font-medium">Métrique</th>
@@ -452,21 +534,21 @@ export default function AnalyticsTrafficPage() {
                         data.events.map((event, index) => (
                           <tr
                             key={`${event.occurredAt}-${event.provider}-${event.metricName}-${index}`}
-                            className="border-b border-slate-100 align-top"
+                            className="border-b border-border align-top"
                           >
-                            <td className="py-3 pr-4 text-slate-700">{toDateLabel(event.occurredAt)}</td>
+                            <td className="py-3 pr-4 text-foreground">{toDateLabel(event.occurredAt)}</td>
                             <td className="py-3 pr-4">{toProviderBadge(event.provider)}</td>
-                            <td className="py-3 pr-4 text-slate-700">{event.metricName}</td>
-                            <td className="py-3 pr-4 font-medium text-slate-900">{event.metricValue}</td>
-                            <td className="py-3 pr-4 text-xs text-slate-700">{event.pagePath || "-"}</td>
-                            <td className="py-3 pr-4 text-xs text-slate-600">
+                            <td className="py-3 pr-4 text-foreground">{event.metricName}</td>
+                            <td className="py-3 pr-4 font-medium text-foreground">{event.metricValue}</td>
+                            <td className="py-3 pr-4 text-xs text-foreground">{event.pagePath || "-"}</td>
+                            <td className="py-3 pr-4 text-xs text-muted-foreground">
                               {(event.country || "--") + " / " + (event.deviceCategory || "--")}
                             </td>
                           </tr>
                         ))
                       ) : (
                         <tr>
-                          <td colSpan={6} className="py-6 text-center text-sm text-slate-500">
+                          <td colSpan={6} className="py-6 text-center text-sm text-muted-foreground">
                             Aucun event traffic sur cette période.
                           </td>
                         </tr>
@@ -495,22 +577,22 @@ export default function AnalyticsTrafficPage() {
 
         <Card>
           <CardHeader className="flex items-center justify-between gap-2">
-            <h2 className="text-base font-semibold text-slate-900">Comparaison visites</h2>
+            <h2 className="text-base font-semibold text-foreground">Comparaison visites</h2>
             {compareTrendBadge}
           </CardHeader>
           <CardContent className="space-y-4">
-            <div className="rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-sm">
-              <p className="text-slate-600">Firebase</p>
-              <p className="text-lg font-semibold text-slate-900">{compare?.summary.firebaseVisits ?? 0}</p>
+            <div className="rounded-lg border border-border bg-muted px-3 py-2 text-sm">
+              <p className="text-muted-foreground">Firebase</p>
+              <p className="text-lg font-semibold text-foreground">{compare?.summary.firebaseVisits ?? 0}</p>
             </div>
-            <div className="rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-sm">
-              <p className="text-slate-600">Vercel</p>
-              <p className="text-lg font-semibold text-slate-900">{compare?.summary.vercelVisits ?? 0}</p>
+            <div className="rounded-lg border border-border bg-muted px-3 py-2 text-sm">
+              <p className="text-muted-foreground">Vercel</p>
+              <p className="text-lg font-semibold text-foreground">{compare?.summary.vercelVisits ?? 0}</p>
             </div>
-            <div className="rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-sm">
-              <p className="text-slate-600">Delta (Vercel - Firebase)</p>
-              <p className="text-lg font-semibold text-slate-900">{compare?.summary.deltaVisits ?? 0}</p>
-              <p className="text-xs text-slate-600">
+            <div className="rounded-lg border border-border bg-muted px-3 py-2 text-sm">
+              <p className="text-muted-foreground">Delta (Vercel - Firebase)</p>
+              <p className="text-lg font-semibold text-foreground">{compare?.summary.deltaVisits ?? 0}</p>
+              <p className="text-xs text-muted-foreground">
                 {compare?.summary.deltaPercent == null
                   ? "N/A"
                   : `${compare?.summary.deltaPercent}%`}
@@ -518,29 +600,29 @@ export default function AnalyticsTrafficPage() {
             </div>
 
             <div>
-              <h3 className="mb-2 text-sm font-semibold text-slate-900">Top pages</h3>
+              <h3 className="mb-2 text-sm font-semibold text-foreground">Top pages</h3>
               <div className="space-y-1">
                 {data?.topPages.length ? (
                   data.topPages.slice(0, 8).map((page) => (
                     <div
                       key={page.page}
-                      className="flex items-center justify-between rounded-md border border-slate-200 px-2 py-1 text-xs"
+                      className="flex items-center justify-between rounded-md border border-border px-2 py-1 text-xs"
                     >
-                      <span className="truncate pr-2 text-slate-700">{page.page}</span>
-                      <span className="font-medium text-slate-900">{page.pageViews}</span>
+                      <span className="truncate pr-2 text-foreground">{page.page}</span>
+                      <span className="font-medium text-foreground">{page.pageViews}</span>
                     </div>
                   ))
                 ) : (
-                  <p className="text-xs text-slate-500">Aucune page vue pour cette période.</p>
+                  <p className="text-xs text-muted-foreground">Aucune page vue pour cette période.</p>
                 )}
               </div>
             </div>
 
             <div>
-              <h3 className="mb-2 text-sm font-semibold text-slate-900">Répartition providers</h3>
+              <h3 className="mb-2 text-sm font-semibold text-foreground">Répartition providers</h3>
               <div className="space-y-1">
                 {data?.providers.map((item) => (
-                  <p key={item.provider} className="text-xs text-slate-600">
+                  <p key={item.provider} className="text-xs text-muted-foreground">
                     {toProviderLabel(item.provider)}: {item.visits} visite(s), {item.pageViews} pages vues
                   </p>
                 ))}
@@ -552,16 +634,16 @@ export default function AnalyticsTrafficPage() {
 
       <Card>
         <CardHeader>
-          <h2 className="text-base font-semibold text-slate-900">Détail quotidien (visites)</h2>
+          <h2 className="text-base font-semibold text-foreground">Détail quotidien (visites)</h2>
         </CardHeader>
         <CardContent>
           {loading ? (
-            <p className="text-sm text-slate-600">Chargement...</p>
+            <p className="text-sm text-muted-foreground">Chargement...</p>
           ) : (
             <div className="overflow-x-auto">
               <table className="min-w-full border-collapse text-sm">
                 <thead>
-                  <tr className="border-b border-slate-200 text-left text-slate-600">
+                  <tr className="border-b border-border text-left text-muted-foreground">
                     <th className="py-2 pr-4 font-medium">Date</th>
                     <th className="py-2 pr-4 font-medium">Provider</th>
                     <th className="py-2 pr-4 font-medium">Visites</th>
@@ -572,17 +654,17 @@ export default function AnalyticsTrafficPage() {
                 <tbody>
                   {data?.daily.length ? (
                     data.daily.map((row, index) => (
-                      <tr key={`${row.dateKey}-${row.provider}-${index}`} className="border-b border-slate-100">
-                        <td className="py-2 pr-4 text-slate-700">{row.dateKey}</td>
+                      <tr key={`${row.dateKey}-${row.provider}-${index}`} className="border-b border-border">
+                        <td className="py-2 pr-4 text-foreground">{row.dateKey}</td>
                         <td className="py-2 pr-4">{toProviderBadge(row.provider)}</td>
-                        <td className="py-2 pr-4 text-slate-900">{row.visits}</td>
-                        <td className="py-2 pr-4 text-slate-700">{row.uniqueVisitors}</td>
-                        <td className="py-2 pr-4 text-slate-700">{row.pageViews}</td>
+                        <td className="py-2 pr-4 text-foreground">{row.visits}</td>
+                        <td className="py-2 pr-4 text-foreground">{row.uniqueVisitors}</td>
+                        <td className="py-2 pr-4 text-foreground">{row.pageViews}</td>
                       </tr>
                     ))
                   ) : (
                     <tr>
-                      <td colSpan={5} className="py-6 text-center text-sm text-slate-500">
+                      <td colSpan={5} className="py-6 text-center text-sm text-muted-foreground">
                         Pas de données quotidiennes sur cette période.
                       </td>
                     </tr>
@@ -592,7 +674,7 @@ export default function AnalyticsTrafficPage() {
             </div>
           )}
 
-          <div className="mt-3 flex items-center gap-2 text-xs text-slate-500">
+          <div className="mt-3 flex items-center gap-2 text-xs text-muted-foreground">
             <Activity className="h-3.5 w-3.5" />
             Comparatif calculé sur la métrique `visit`.
           </div>

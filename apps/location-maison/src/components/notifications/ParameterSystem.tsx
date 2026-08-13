@@ -1,7 +1,7 @@
 'use client'
 import { useTheme } from 'next-themes'
 import React from 'react'
-import { Switch } from '../ui/switch'
+import { Switch } from '@trouve-ton-nkama/ui/switch'
 
 export default function ParameterSystem() {
     const { setTheme, theme } = useTheme()

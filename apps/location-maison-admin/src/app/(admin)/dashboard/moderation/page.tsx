@@ -3,8 +3,8 @@
 import { useCallback, useMemo, useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 
-import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
+import { Button } from "@trouve-ton-nkama/ui/button";
+import { Card, CardContent } from "@trouve-ton-nkama/ui/card";
 import {
   Dialog,
   DialogClose,
@@ -14,7 +14,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
+import { Input } from "@trouve-ton-nkama/ui/input";
 import { PageHeader } from "@/components/ui-kit/page-header";
 
 type PendingListing = {
@@ -187,25 +187,25 @@ export default function ModerationQueuePage() {
       />
 
       {globalError ? (
-        <div className="rounded-md border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+        <div className="rounded-md border border-destructive/30 bg-destructive/10 px-4 py-3 text-sm text-destructive">
           {globalError}
         </div>
       ) : null}
       {globalMessage ? (
-        <div className="rounded-md border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-700">
+        <div className="rounded-md border border-success/30 bg-success/10 px-4 py-3 text-sm text-success">
           {globalMessage}
         </div>
       ) : null}
 
       {pendingQuery.isLoading ? (
-        <p className="text-sm text-slate-500">Chargement...</p>
+        <p className="text-sm text-muted-foreground">Chargement...</p>
       ) : pendingQuery.isError ? (
-        <p className="text-sm text-red-600">
+        <p className="text-sm text-destructive">
           {pendingQuery.error instanceof Error ? pendingQuery.error.message : "Erreur de chargement."}
         </p>
       ) : listings.length === 0 ? (
         <Card>
-          <CardContent className="py-10 text-center text-sm text-slate-500">
+          <CardContent className="py-10 text-center text-sm text-muted-foreground">
             Aucune annonce en attente. La file est vide.
           </CardContent>
         </Card>
@@ -213,7 +213,7 @@ export default function ModerationQueuePage() {
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {listings.map((listing) => (
             <Card key={listing.id} className="overflow-hidden">
-              <div className="relative h-40 w-full bg-slate-100">
+              <div className="relative h-40 w-full bg-muted">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
                   src={listing.primaryImageUrl || "/fallback-image.jpg"}
@@ -222,18 +222,18 @@ export default function ModerationQueuePage() {
                 />
               </div>
               <CardContent className="space-y-2 p-4">
-                <p className="line-clamp-2 font-semibold text-slate-900">{listing.title || "Annonce sans titre"}</p>
-                <p className="text-xs text-slate-500">
+                <p className="line-clamp-2 font-semibold text-foreground">{listing.title || "Annonce sans titre"}</p>
+                <p className="text-xs text-muted-foreground">
                   {listing.typeProperty ?? "N/A"} • {statusLabel(listing.status)}
                 </p>
-                <p className="text-sm font-medium text-slate-800">
+                <p className="text-sm font-medium text-foreground">
                   {formatMoney(listing.price)} {listing.area ? `• ${listing.area} m²` : ""}
                 </p>
-                <p className="text-xs text-slate-600">
+                <p className="text-xs text-muted-foreground">
                   {(listing.city ?? "N/A") + ", " + (listing.province ?? "N/A")}
                 </p>
-                <p className="text-xs text-slate-400">Annonceur : {listing.createdBy ?? "inconnu"}</p>
-                <p className="text-xs text-slate-400">Créée le {toDateLabel(listing.createdAt)}</p>
+                <p className="text-xs text-muted-foreground">Annonceur : {listing.createdBy ?? "inconnu"}</p>
+                <p className="text-xs text-muted-foreground">Créée le {toDateLabel(listing.createdAt)}</p>
 
                 <div className="flex gap-2 pt-2">
                   <Button
@@ -256,7 +256,7 @@ export default function ModerationQueuePage() {
                     type="button"
                     variant="outline"
                     size="sm"
-                    className="text-red-600 hover:bg-red-50"
+                    className="text-destructive hover:bg-destructive/10"
                     disabled={!canReject || mutatingId === listing.id}
                     onClick={() => openRejectDialog(listing)}
                   >
@@ -279,7 +279,7 @@ export default function ModerationQueuePage() {
           </DialogHeader>
 
           <div className="space-y-2">
-            <label htmlFor="reject-reason" className="text-sm font-medium text-slate-700">
+            <label htmlFor="reject-reason" className="text-sm font-medium text-foreground">
               Motif obligatoire
             </label>
             <Input
@@ -293,7 +293,7 @@ export default function ModerationQueuePage() {
           </div>
 
           <DialogFooter>
-            <DialogClose render={<Button type="button" variant="outline">Annuler</Button>} />
+            <DialogClose asChild><Button type="button" variant="outline">Annuler</Button></DialogClose>
             <Button type="button" disabled={isSubmittingReason} onClick={() => void confirmReject()}>
               Confirmer le rejet
             </Button>

@@ -2,9 +2,9 @@
 
 import { Image as ImageModel } from '@/models/annonce'
 import React from 'react'
-import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from '../ui/carousel'
+import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from '@trouve-ton-nkama/ui/carousel'
 import Image from 'next/image'
-import { Skeleton } from '@/components/ui/skeleton';
+import { Skeleton } from '@trouve-ton-nkama/ui/skeleton';
 import { ChevronLeft, ChevronRight, ImageOff, X } from 'lucide-react';
 import { getPropertyImageUrls } from '@/lib/property-images';
 import { useSwipeable } from 'react-swipeable';

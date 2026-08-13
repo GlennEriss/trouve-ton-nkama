@@ -3,9 +3,9 @@
 import { FormEvent, useCallback, useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader } from "@/components/ui/card";
+import { Badge } from "@trouve-ton-nkama/ui/badge";
+import { Button } from "@trouve-ton-nkama/ui/button";
+import { Card, CardContent, CardHeader } from "@trouve-ton-nkama/ui/card";
 import {
   Dialog,
   DialogClose,
@@ -15,9 +15,10 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
+import { Input } from "@trouve-ton-nkama/ui/input";
 import { PageHeader } from "@/components/ui-kit/page-header";
 import { PlacesAutocomplete, type PlaceDetailsResult } from "@/components/geolocation/places-autocomplete";
+import { useAdminSyncPublisher } from "@/lib/cross-tab-sync";
 
 type AuthMePayload = {
   admin: {
@@ -165,6 +166,8 @@ function parseAliases(value: string) {
 }
 
 export default function GeolocationDashboardPage() {
+  // Notifie les autres onglets à chaque modification de la référence géographique.
+  const notifyAdminSync = useAdminSyncPublisher();
   const [globalMessage, setGlobalMessage] = useState<string | null>(null);
   const [globalError, setGlobalError] = useState<string | null>(null);
   const [activeDataset, setActiveDataset] = useState<ActiveDataset>("provinces");
@@ -357,6 +360,9 @@ export default function GeolocationDashboardPage() {
         `Projection OSM synchronisée (${payload.data.counts.provinces} provinces, ${payload.data.counts.cities} villes, ${payload.data.counts.quarters} quartiers).`,
       );
       await osmQuery.refetch();
+      // Prévient les autres onglets : sans ça, un scrap Apify en cours
+      // continuerait d'afficher l'ancienne liste de villes/quartiers.
+      notifyAdminSync({ type: "geolocation:updated" });
     } catch (error) {
       setGlobalError(error instanceof Error ? error.message : "Impossible de synchroniser la projection OSM.");
     } finally {
@@ -403,6 +409,9 @@ export default function GeolocationDashboardPage() {
         setGlobalMessage(`Ville ajoutée: ${payload.data.city.name}.`);
         resetCreateCityForm();
         await osmQuery.refetch();
+      // Prévient les autres onglets : sans ça, un scrap Apify en cours
+      // continuerait d'afficher l'ancienne liste de villes/quartiers.
+      notifyAdminSync({ type: "geolocation:updated" });
       } catch (error) {
         setGlobalError(error instanceof Error ? error.message : "Impossible de créer cette ville.");
       } finally {
@@ -457,6 +466,9 @@ export default function GeolocationDashboardPage() {
         setGlobalMessage(`Quartier ajouté: ${payload.data.quarter.name}.`);
         resetCreateQuarterForm();
         await osmQuery.refetch();
+      // Prévient les autres onglets : sans ça, un scrap Apify en cours
+      // continuerait d'afficher l'ancienne liste de villes/quartiers.
+      notifyAdminSync({ type: "geolocation:updated" });
       } catch (error) {
         setGlobalError(error instanceof Error ? error.message : "Impossible de créer ce quartier.");
       } finally {
@@ -573,6 +585,9 @@ export default function GeolocationDashboardPage() {
 
       setEditDialog(null);
       await osmQuery.refetch();
+      // Prévient les autres onglets : sans ça, un scrap Apify en cours
+      // continuerait d'afficher l'ancienne liste de villes/quartiers.
+      notifyAdminSync({ type: "geolocation:updated" });
     } catch (error) {
       setGlobalError(error instanceof Error ? error.message : "Impossible de modifier cet élément.");
     } finally {
@@ -616,6 +631,9 @@ export default function GeolocationDashboardPage() {
 
       setDeleteDialog(null);
       await osmQuery.refetch();
+      // Prévient les autres onglets : sans ça, un scrap Apify en cours
+      // continuerait d'afficher l'ancienne liste de villes/quartiers.
+      notifyAdminSync({ type: "geolocation:updated" });
     } catch (error) {
       setGlobalError(error instanceof Error ? error.message : "Impossible de supprimer cet élément.");
     } finally {
@@ -640,14 +658,14 @@ export default function GeolocationDashboardPage() {
         }
       />
 
-      {globalError ? <p className="rounded-lg border border-red-200 bg-red-50 px-4 py-2 text-sm text-red-700">{globalError}</p> : null}
+      {globalError ? <p className="rounded-lg border border-destructive/30 bg-destructive/10 px-4 py-2 text-sm text-destructive">{globalError}</p> : null}
       {globalMessage ? (
-        <p className="rounded-lg border border-emerald-200 bg-emerald-50 px-4 py-2 text-sm text-emerald-700">{globalMessage}</p>
+        <p className="rounded-lg border border-success/30 bg-success/10 px-4 py-2 text-sm text-success">{globalMessage}</p>
       ) : null}
 
       {!canReadGeolocation ? (
         <Card>
-          <CardContent className="py-6 text-sm text-slate-600">
+          <CardContent className="py-6 text-sm text-muted-foreground">
             Permission insuffisante: <code>listings.read</code> requise pour consulter la géolocalisation.
           </CardContent>
         </Card>
@@ -657,30 +675,30 @@ export default function GeolocationDashboardPage() {
         <>
           <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
             <Card>
-              <CardHeader className="pb-1 text-sm text-slate-500">Source OSM</CardHeader>
-              <CardContent className="flex items-center gap-2 text-base font-semibold text-slate-900">
+              <CardHeader className="pb-1 text-sm text-muted-foreground">Source OSM</CardHeader>
+              <CardContent className="flex items-center gap-2 text-base font-semibold text-foreground">
                 <Badge variant={osmQuery.data?.sourceMode === "cloud" ? "success" : "warning"}>
                   {osmQuery.data?.sourceMode === "cloud" ? "Cloud Storage" : "Local"}
                 </Badge>
               </CardContent>
             </Card>
             <Card>
-              <CardHeader className="pb-1 text-sm text-slate-500">Provinces</CardHeader>
-              <CardContent className="text-2xl font-semibold text-slate-900">{osmQuery.data?.provinces.length ?? 0}</CardContent>
+              <CardHeader className="pb-1 text-sm text-muted-foreground">Provinces</CardHeader>
+              <CardContent className="text-2xl font-semibold text-foreground">{osmQuery.data?.provinces.length ?? 0}</CardContent>
             </Card>
             <Card>
-              <CardHeader className="pb-1 text-sm text-slate-500">Villes</CardHeader>
-              <CardContent className="text-2xl font-semibold text-slate-900">{osmQuery.data?.cities.length ?? 0}</CardContent>
+              <CardHeader className="pb-1 text-sm text-muted-foreground">Villes</CardHeader>
+              <CardContent className="text-2xl font-semibold text-foreground">{osmQuery.data?.cities.length ?? 0}</CardContent>
             </Card>
             <Card>
-              <CardHeader className="pb-1 text-sm text-slate-500">Quartiers</CardHeader>
-              <CardContent className="text-2xl font-semibold text-slate-900">{osmQuery.data?.quarters.length ?? 0}</CardContent>
+              <CardHeader className="pb-1 text-sm text-muted-foreground">Quartiers</CardHeader>
+              <CardContent className="text-2xl font-semibold text-foreground">{osmQuery.data?.quarters.length ?? 0}</CardContent>
             </Card>
           </div>
 
           <div className="grid gap-4 xl:grid-cols-2">
             <Card>
-              <CardHeader className="pb-2 text-sm font-medium text-slate-700">Ajouter une ville dans une province</CardHeader>
+              <CardHeader className="pb-2 text-sm font-medium text-foreground">Ajouter une ville dans une province</CardHeader>
               <CardContent>
                 <form className="grid gap-3 md:grid-cols-2" onSubmit={(event) => void handleCreateCity(event)}>
                   <PlacesAutocomplete
@@ -693,7 +711,7 @@ export default function GeolocationDashboardPage() {
                     disabled={!canManageGeolocation || isMutating}
                   />
                   <select
-                    className="h-10 rounded-md border border-slate-200 bg-white px-3 text-sm text-slate-900"
+                    className="h-10 rounded-md border border-border bg-card px-3 text-sm text-foreground"
                     value={createCityProvince}
                     onChange={(event) => setCreateCityProvince(event.target.value)}
                     disabled={!canManageGeolocation || isMutating}
@@ -731,7 +749,7 @@ export default function GeolocationDashboardPage() {
             </Card>
 
             <Card>
-              <CardHeader className="pb-2 text-sm font-medium text-slate-700">Ajouter un quartier dans une ville</CardHeader>
+              <CardHeader className="pb-2 text-sm font-medium text-foreground">Ajouter un quartier dans une ville</CardHeader>
               <CardContent>
                 <form className="grid gap-3 md:grid-cols-2" onSubmit={(event) => void handleCreateQuarter(event)}>
                   <PlacesAutocomplete
@@ -750,7 +768,7 @@ export default function GeolocationDashboardPage() {
                     disabled={!canManageGeolocation || isMutating}
                   />
                   <select
-                    className="h-10 rounded-md border border-slate-200 bg-white px-3 text-sm text-slate-900"
+                    className="h-10 rounded-md border border-border bg-card px-3 text-sm text-foreground"
                     value={createQuarterCityId}
                     onChange={(event) => setCreateQuarterCityId(event.target.value)}
                     disabled={!canManageGeolocation || isMutating}
@@ -798,13 +816,13 @@ export default function GeolocationDashboardPage() {
 
           <Card>
             <CardHeader className="space-y-2">
-              <div className="flex flex-wrap items-center gap-2 text-xs text-slate-600">
+              <div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
                 <span>
                   Pays: <strong>{osmQuery.data?.country.name ?? "N/A"}</strong> ({osmQuery.data?.country.iso2 ?? "N/A"})
                 </span>
                 <span>•</span>
                 <span>
-                  Source: <code className="rounded bg-slate-100 px-1 py-0.5">{osmQuery.data?.sourcePath ?? "N/A"}</code>
+                  Source: <code className="rounded bg-muted px-1 py-0.5">{osmQuery.data?.sourcePath ?? "N/A"}</code>
                 </span>
                 <span>•</span>
                 <span>Mis à jour: {toDateLabel(osmQuery.data?.sourceUpdatedAt)}</span>
@@ -836,17 +854,17 @@ export default function GeolocationDashboardPage() {
               </div>
             </CardHeader>
             <CardContent>
-              {osmQuery.isLoading ? <p className="text-sm text-slate-500">Chargement des données OSM...</p> : null}
+              {osmQuery.isLoading ? <p className="text-sm text-muted-foreground">Chargement des données OSM...</p> : null}
               {osmQuery.isError ? (
-                <p className="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
+                <p className="rounded-lg border border-destructive/30 bg-destructive/10 px-3 py-2 text-sm text-destructive">
                   {osmQuery.error instanceof Error ? osmQuery.error.message : "Erreur lors du chargement OSM."}
                 </p>
               ) : null}
 
               {!osmQuery.isLoading && !osmQuery.isError && activeDataset === "provinces" ? (
-                <div className="max-h-[640px] overflow-auto rounded-lg border border-slate-200">
+                <div className="max-h-[640px] overflow-auto rounded-lg border border-border">
                   <table className="w-full text-sm">
-                    <thead className="sticky top-0 z-10 bg-slate-50 text-left text-slate-600">
+                    <thead className="sticky top-0 z-10 bg-muted text-left text-muted-foreground">
                       <tr>
                         <th className="px-3 py-2 font-medium">Province</th>
                         <th className="px-3 py-2 font-medium">Latitude</th>
@@ -855,10 +873,10 @@ export default function GeolocationDashboardPage() {
                     </thead>
                     <tbody>
                       {filteredProvinces.map((province) => (
-                        <tr key={province.id} className="border-t border-slate-100">
-                          <td className="px-3 py-2 text-slate-900">{province.name}</td>
-                          <td className="px-3 py-2 text-slate-700">{toCoordLabel(province.lat)}</td>
-                          <td className="px-3 py-2 text-slate-700">{toCoordLabel(province.lon)}</td>
+                        <tr key={province.id} className="border-t border-border">
+                          <td className="px-3 py-2 text-foreground">{province.name}</td>
+                          <td className="px-3 py-2 text-foreground">{toCoordLabel(province.lat)}</td>
+                          <td className="px-3 py-2 text-foreground">{toCoordLabel(province.lon)}</td>
                         </tr>
                       ))}
                     </tbody>
@@ -867,9 +885,9 @@ export default function GeolocationDashboardPage() {
               ) : null}
 
               {!osmQuery.isLoading && !osmQuery.isError && activeDataset === "cities" ? (
-                <div className="max-h-[640px] overflow-auto rounded-lg border border-slate-200">
+                <div className="max-h-[640px] overflow-auto rounded-lg border border-border">
                   <table className="w-full text-sm">
-                    <thead className="sticky top-0 z-10 bg-slate-50 text-left text-slate-600">
+                    <thead className="sticky top-0 z-10 bg-muted text-left text-muted-foreground">
                       <tr>
                         <th className="px-3 py-2 font-medium">Ville</th>
                         <th className="px-3 py-2 font-medium">Province</th>
@@ -880,11 +898,11 @@ export default function GeolocationDashboardPage() {
                     </thead>
                     <tbody>
                       {filteredCities.map((city) => (
-                        <tr key={city.id} className="border-t border-slate-100">
-                          <td className="px-3 py-2 text-slate-900">{city.name}</td>
-                          <td className="px-3 py-2 text-slate-700">{city.province ?? "N/A"}</td>
-                          <td className="px-3 py-2 text-slate-700">{toCoordLabel(city.lat)}</td>
-                          <td className="px-3 py-2 text-slate-700">{toCoordLabel(city.lon)}</td>
+                        <tr key={city.id} className="border-t border-border">
+                          <td className="px-3 py-2 text-foreground">{city.name}</td>
+                          <td className="px-3 py-2 text-foreground">{city.province ?? "N/A"}</td>
+                          <td className="px-3 py-2 text-foreground">{toCoordLabel(city.lat)}</td>
+                          <td className="px-3 py-2 text-foreground">{toCoordLabel(city.lon)}</td>
                           <td className="px-3 py-2">
                             {canManageGeolocation ? (
                               <div className="flex items-center gap-2">
@@ -896,7 +914,7 @@ export default function GeolocationDashboardPage() {
                                 </Button>
                               </div>
                             ) : (
-                              <span className="text-xs text-slate-400">N/A</span>
+                              <span className="text-xs text-muted-foreground">N/A</span>
                             )}
                           </td>
                         </tr>
@@ -907,9 +925,9 @@ export default function GeolocationDashboardPage() {
               ) : null}
 
               {!osmQuery.isLoading && !osmQuery.isError && activeDataset === "quarters" ? (
-                <div className="max-h-[640px] overflow-auto rounded-lg border border-slate-200">
+                <div className="max-h-[640px] overflow-auto rounded-lg border border-border">
                   <table className="w-full text-sm">
-                    <thead className="sticky top-0 z-10 bg-slate-50 text-left text-slate-600">
+                    <thead className="sticky top-0 z-10 bg-muted text-left text-muted-foreground">
                       <tr>
                         <th className="px-3 py-2 font-medium">Quartier</th>
                         <th className="px-3 py-2 font-medium">Alias</th>
@@ -922,13 +940,13 @@ export default function GeolocationDashboardPage() {
                     </thead>
                     <tbody>
                       {filteredQuarters.map((quarter) => (
-                        <tr key={quarter.id} className="border-t border-slate-100">
-                          <td className="px-3 py-2 text-slate-900">{quarter.name}</td>
-                          <td className="px-3 py-2 text-slate-700">{quarter.aliases.join(', ') || "N/A"}</td>
-                          <td className="px-3 py-2 text-slate-700">{quarter.city ?? "N/A"}</td>
-                          <td className="px-3 py-2 text-slate-700">{quarter.province ?? "N/A"}</td>
-                          <td className="px-3 py-2 text-slate-700">{toCoordLabel(quarter.lat)}</td>
-                          <td className="px-3 py-2 text-slate-700">{toCoordLabel(quarter.lon)}</td>
+                        <tr key={quarter.id} className="border-t border-border">
+                          <td className="px-3 py-2 text-foreground">{quarter.name}</td>
+                          <td className="px-3 py-2 text-foreground">{quarter.aliases.join(', ') || "N/A"}</td>
+                          <td className="px-3 py-2 text-foreground">{quarter.city ?? "N/A"}</td>
+                          <td className="px-3 py-2 text-foreground">{quarter.province ?? "N/A"}</td>
+                          <td className="px-3 py-2 text-foreground">{toCoordLabel(quarter.lat)}</td>
+                          <td className="px-3 py-2 text-foreground">{toCoordLabel(quarter.lon)}</td>
                           <td className="px-3 py-2">
                             {canManageGeolocation ? (
                               <div className="flex items-center gap-2">
@@ -940,7 +958,7 @@ export default function GeolocationDashboardPage() {
                                 </Button>
                               </div>
                             ) : (
-                              <span className="text-xs text-slate-400">N/A</span>
+                              <span className="text-xs text-muted-foreground">N/A</span>
                             )}
                           </td>
                         </tr>
@@ -976,7 +994,7 @@ export default function GeolocationDashboardPage() {
                 placeholder="Rechercher une ville (Google)"
               />
               <select
-                className="h-10 rounded-md border border-slate-200 bg-white px-3 text-sm text-slate-900"
+                className="h-10 rounded-md border border-border bg-card px-3 text-sm text-foreground"
                 value={editDialog.province}
                 onChange={(event) =>
                   setEditDialog((prev) => (prev && prev.kind === "city" ? { ...prev, province: event.target.value } : prev))
@@ -1030,7 +1048,7 @@ export default function GeolocationDashboardPage() {
                 placeholder="Alias séparés par des virgules"
               />
               <select
-                className="h-10 rounded-md border border-slate-200 bg-white px-3 text-sm text-slate-900"
+                className="h-10 rounded-md border border-border bg-card px-3 text-sm text-foreground"
                 value={editDialog.cityId}
                 onChange={(event) =>
                   setEditDialog((prev) => (prev && prev.kind === "quarter" ? { ...prev, cityId: event.target.value } : prev))
@@ -1069,7 +1087,7 @@ export default function GeolocationDashboardPage() {
           ) : null}
 
           <DialogFooter>
-            <DialogClose render={<Button type="button" variant="outline">Annuler</Button>} />
+            <DialogClose asChild><Button type="button" variant="outline">Annuler</Button></DialogClose>
             <Button type="button" onClick={() => void handleEditSubmit()} disabled={isMutating}>
               Enregistrer
             </Button>
@@ -1090,7 +1108,7 @@ export default function GeolocationDashboardPage() {
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>
-            <DialogClose render={<Button type="button" variant="outline">Annuler</Button>} />
+            <DialogClose asChild><Button type="button" variant="outline">Annuler</Button></DialogClose>
             <Button type="button" onClick={() => void handleDeleteConfirm()} disabled={isMutating}>
               Supprimer
             </Button>

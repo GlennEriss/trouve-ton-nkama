@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
-import { Input } from "@/components/ui/input";
+import { Input } from "@trouve-ton-nkama/ui/input";
 
 export type PlaceDetailsResult = {
   name: string;
@@ -206,23 +206,23 @@ export function PlacesAutocomplete({
         aria-autocomplete="list"
       />
       {loading ? (
-        <span className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-xs text-slate-400">…</span>
+        <span className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-xs text-muted-foreground">…</span>
       ) : null}
       {showDropdown ? (
-        <ul className="absolute z-20 mt-1 max-h-64 w-full overflow-auto rounded-md border border-slate-200 bg-white py-1 shadow-lg">
+        <ul className="absolute z-20 mt-1 max-h-64 w-full overflow-auto rounded-md border border-border bg-card py-1 shadow-lg">
           {suggestions.map((suggestion, index) => (
             <li key={suggestion.placeId}>
               <button
                 type="button"
-                className={`flex w-full flex-col items-start px-3 py-2 text-left text-sm hover:bg-slate-50 ${
-                  index === activeIndex ? "bg-slate-100" : ""
+                className={`flex w-full flex-col items-start px-3 py-2 text-left text-sm hover:bg-muted ${
+                  index === activeIndex ? "bg-muted" : ""
                 }`}
                 onMouseDown={(event) => event.preventDefault()}
                 onClick={() => void handleSelect(suggestion)}
               >
-                <span className="font-medium text-slate-900">{suggestion.mainText}</span>
+                <span className="font-medium text-foreground">{suggestion.mainText}</span>
                 {suggestion.secondaryText ? (
-                  <span className="text-xs text-slate-500">{suggestion.secondaryText}</span>
+                  <span className="text-xs text-muted-foreground">{suggestion.secondaryText}</span>
                 ) : null}
               </button>
             </li>

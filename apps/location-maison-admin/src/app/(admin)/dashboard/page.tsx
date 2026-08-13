@@ -2,12 +2,15 @@
 
 import Link from "next/link";
 import { useCallback, useMemo, useState } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Activity, RefreshCcw, Search, Users } from "lucide-react";
 
-import { Button, buttonVariants } from "@/components/ui/button";
+import { Button, buttonVariants } from "@trouve-ton-nkama/ui/button";
+import { Card, CardContent, CardHeader } from "@trouve-ton-nkama/ui/card";
 import { KpiCard } from "@/components/ui-kit/kpi-card";
 import { PageHeader } from "@/components/ui-kit/page-header";
+import { TimeSeriesChart } from "@/components/charts/TimeSeriesChart";
+import { RankedBarChart } from "@/components/charts/RankedBarChart";
 import { cn } from "@/lib/utils";
 
 type PresenceOnlinePayload = {
@@ -35,6 +38,20 @@ type TrafficAnalyticsPayload = {
     uniqueVisitors: number;
     pageViews: number;
   };
+  // Séries utilisées par les graphiques de la vue d'ensemble. L'API les renvoie
+  // déjà ; seul le résumé était exploité auparavant.
+  daily?: Array<{
+    dateKey: string;
+    provider: string;
+    visits: number;
+    uniqueVisitors: number;
+    pageViews: number;
+  }>;
+  topPages?: Array<{
+    page: string;
+    pageViews: number;
+    visits: number;
+  }>;
 };
 
 type JsonApiSuccess<T> = {
@@ -58,6 +75,21 @@ type TimeWindow = {
 
 function formatNumber(value: number) {
   return new Intl.NumberFormat("fr-FR").format(value);
+}
+
+/**
+ * Arrondit l'ancre temporelle à la minute.
+ *
+ * Les bornes de fenêtre partent dans les clés React Query. Avec un `new Date()`
+ * brut, elles sont horodatées à la milliseconde : chaque remontage de la page
+ * produisait donc une clé différente, donc un cache systématiquement manqué, et
+ * TOUS les blocs de la vue d'ensemble se rechargeaient de zéro à chaque visite.
+ * Arrondir rend la clé stable d'un remontage à l'autre dans la même minute.
+ */
+function quantizeToMinute(date: Date): Date {
+  const quantized = new Date(date);
+  quantized.setSeconds(0, 0);
+  return quantized;
 }
 
 function buildWindow(anchorDate: Date, durationMs: number): TimeWindow {
@@ -114,7 +146,8 @@ async function fetchJsonApi<T>(url: string, fallbackMessage: string) {
 }
 
 export default function DashboardPage() {
-  const [anchorDate, setAnchorDate] = useState(() => new Date());
+  const queryClient = useQueryClient();
+  const [anchorDate, setAnchorDate] = useState(() => quantizeToMinute(new Date()));
 
   const presenceWindow = useMemo(
     () => buildWindow(anchorDate, 24 * 60 * 60 * 1000),
@@ -241,10 +274,43 @@ export default function DashboardPage() {
           analyticsWindow.currentStart,
         )}&end=${encodeURIComponent(
           analyticsWindow.currentEnd,
-        )}&provider=all&limit=1&offset=0&topPagesLimit=1`,
+        )}&provider=all&limit=1&offset=0&topPagesLimit=8`,
         "Impossible de charger les visites analytics.",
       ),
   });
+
+  // Agrégation par jour : l'API renvoie une ligne par (jour × fournisseur).
+  const dashboardDailyTotals = useMemo(() => {
+    const daily = trafficCurrentQuery.data?.daily;
+    if (!daily?.length) {
+      return [];
+    }
+    const byDate = new Map<string, { dateKey: string; visits: number; uniqueVisitors: number; pageViews: number }>();
+    for (const row of daily) {
+      const current = byDate.get(row.dateKey) ?? {
+        dateKey: row.dateKey,
+        visits: 0,
+        uniqueVisitors: 0,
+        pageViews: 0,
+      };
+      current.visits += row.visits ?? 0;
+      current.uniqueVisitors += row.uniqueVisitors ?? 0;
+      current.pageViews += row.pageViews ?? 0;
+      byDate.set(row.dateKey, current);
+    }
+    return Array.from(byDate.values()).sort((a, b) => a.dateKey.localeCompare(b.dateKey));
+  }, [trafficCurrentQuery.data?.daily]);
+
+  const dashboardTopPages = useMemo(() => {
+    const topPages = trafficCurrentQuery.data?.topPages;
+    if (!topPages?.length) {
+      return [];
+    }
+    return topPages.slice(0, 8).map((entry) => ({
+      page: entry.page.length > 28 ? `${entry.page.slice(0, 27)}…` : entry.page,
+      pageViews: entry.pageViews,
+    }));
+  }, [trafficCurrentQuery.data?.topPages]);
 
   const trafficPreviousQuery = useQuery({
     queryKey: [
@@ -325,9 +391,13 @@ export default function DashboardPage() {
       ? toTrend(visitsCurrent, visitsPrevious)
       : undefined;
 
+  // Le rafraîchissement ne peut plus reposer sur un changement de clé (l'ancre
+  // est arrondie, elle ne bouge pas d'un clic à l'autre dans la même minute) :
+  // on invalide donc explicitement les requêtes de la page.
   const handleRefresh = useCallback(() => {
-    setAnchorDate(new Date());
-  }, []);
+    setAnchorDate(quantizeToMinute(new Date()));
+    void queryClient.invalidateQueries({ queryKey: ["dashboard"] });
+  }, [queryClient]);
 
   return (
     <div className="space-y-6">
@@ -394,6 +464,50 @@ export default function DashboardPage() {
         />
       </section>
 
+      <section className="grid gap-4 xl:grid-cols-3">
+        <Card className="xl:col-span-2">
+          <CardHeader>
+            <h2 className="text-base font-semibold text-ink">Évolution du trafic</h2>
+            <p className="text-sm text-muted-foreground">
+              Visites, visiteurs uniques et pages vues sur la période. Un seul axe : même unité.
+            </p>
+          </CardHeader>
+          <CardContent>
+            {trafficCurrentQuery.isLoading ? (
+              <div className="h-[280px] animate-pulse rounded-lg bg-muted" />
+            ) : (
+              <TimeSeriesChart
+                data={dashboardDailyTotals}
+                series={[
+                  { dataKey: "visits", label: "Visites" },
+                  { dataKey: "uniqueVisitors", label: "Visiteurs uniques" },
+                  { dataKey: "pageViews", label: "Pages vues" },
+                ]}
+              />
+            )}
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <h2 className="text-base font-semibold text-ink">Pages les plus vues</h2>
+            <p className="text-sm text-muted-foreground">Top 8 sur la période.</p>
+          </CardHeader>
+          <CardContent>
+            {trafficCurrentQuery.isLoading ? (
+              <div className="h-[280px] animate-pulse rounded-lg bg-muted" />
+            ) : (
+              <RankedBarChart
+                data={dashboardTopPages}
+                categoryKey="page"
+                valueKey="pageViews"
+                valueLabel="Pages vues"
+              />
+            )}
+          </CardContent>
+        </Card>
+      </section>
+
       <section className="flex flex-wrap gap-3">
         <Link
           href="/dashboard/analytics/searches"
@@ -422,7 +536,7 @@ export default function DashboardPage() {
       </section>
 
       {hasError ? (
-        <p className="text-sm text-amber-700">
+        <p className="text-sm text-warning">
           Certaines données n&apos;ont pas pu être chargées. Vérifie les permissions du rôle
           admin ou la disponibilité BigQuery.
         </p>

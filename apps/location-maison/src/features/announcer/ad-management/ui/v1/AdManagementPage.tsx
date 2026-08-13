@@ -1,7 +1,7 @@
 'use client';
 
-import { Button } from '@/components/ui/button';
-import { Card } from '@/components/ui/card';
+import { Button } from '@trouve-ton-nkama/ui/button';
+import { Card } from '@trouve-ton-nkama/ui/card';
 import {
   Dialog,
   DialogContent,
@@ -9,10 +9,10 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from '@/components/ui/dialog';
-import { Input } from '@/components/ui/input';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Skeleton } from '@/components/ui/skeleton';
+} from '@trouve-ton-nkama/ui/dialog';
+import { Input } from '@trouve-ton-nkama/ui/input';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@trouve-ton-nkama/ui/select';
+import { Skeleton } from '@trouve-ton-nkama/ui/skeleton';
 import PromotionBadge from '@/components/promotion/PromotionBadge';
 import PromotionButton from '@/components/promotion/PromotionButton';
 import { routes } from '@/constantes/routes';
@@ -551,7 +551,7 @@ export function AdManagementPage() {
               asChild
               className="h-12 rounded-full bg-gradient-to-r from-primary to-secondary px-6 font-semibold hover:from-primary-800 hover:to-primary-600"
             >
-              <Link href={routes.protected.add_property}>
+              <Link href={routes.protected.add_property_ai}>
                 <Plus className="mr-2 h-4 w-4" />
                 Publier une annonce
               </Link>
@@ -762,7 +762,7 @@ export function AdManagementPage() {
               asChild
               className="h-11 rounded-full bg-gradient-to-r from-primary to-secondary px-6 hover:from-primary-800 hover:to-primary-600"
             >
-              <Link href={routes.protected.add_property}>
+              <Link href={routes.protected.add_property_ai}>
                 <Plus className="mr-2 h-4 w-4" />
                 Publier une annonce
               </Link>

@@ -1,10 +1,10 @@
 import React from 'react'
-import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '../ui/card'
-import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar'
+import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@trouve-ton-nkama/ui/card'
+import { Avatar, AvatarFallback, AvatarImage } from '@trouve-ton-nkama/ui/avatar'
 import { FaUserCircle } from 'react-icons/fa'
 import { BiBuilding } from 'react-icons/bi'
 import { routes } from '@/constantes/routes'
-import { Button } from '../ui/button'
+import { Button } from '@trouve-ton-nkama/ui/button'
 import Link from 'next/link'
 
 const menu = [

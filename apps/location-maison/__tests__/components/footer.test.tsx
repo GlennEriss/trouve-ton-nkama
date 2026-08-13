@@ -10,7 +10,7 @@ let viewportWidth = 390
 jest.mock('next/navigation', () => ({ usePathname: () => pathname }))
 jest.mock('@/hooks/use-current-user', () => ({ useCurrentUser: () => ({ user: currentUser }) }))
 jest.mock('@/hooks/useSize', () => ({ useWindowSize: () => ({ width: viewportWidth }) }))
-jest.mock('@/components/logo/Logo', () => ({ __esModule: true, default: () => <span>Logo Nkama</span> }))
+jest.mock('@trouve-ton-nkama/ui/logo', () => ({ __esModule: true, default: () => <span>Logo Nkama</span> }))
 jest.mock('@/components/pwa/PWAInstallButton', () => ({ __esModule: true, default: () => <button>Installer l'application</button> }))
 jest.mock('@/components/ads/InlineAdUnit', () => ({
   __esModule: true,

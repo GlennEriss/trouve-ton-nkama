@@ -18,15 +18,15 @@ jest.mock('next/link', () => ({
     </a>
   ),
 }))
-jest.mock('@/components/logo/Logo', () => ({ __esModule: true, default: () => <span>Logo</span> }))
+jest.mock('@trouve-ton-nkama/ui/logo', () => ({ __esModule: true, default: () => <span>Logo</span> }))
 jest.mock('@/components/home-page/InputSearchNavbar', () => ({
   __esModule: true,
   default: () => <div data-testid="search-navbar" />,
 }))
 jest.mock('@/components/navbar/MenuProfil', () => ({ __esModule: true, default: () => <div data-testid="menu-profil" /> }))
 jest.mock('@/components/navbar/Notifications', () => ({ __esModule: true, default: () => <div data-testid="notifications" /> }))
-jest.mock('@/components/ui/button', () => ({ Button: ({ children, asChild, ...props }: any) => <div {...props}>{children}</div> }))
-jest.mock('@/components/ui/navigation-menu', () => ({
+jest.mock('@trouve-ton-nkama/ui/button', () => ({ Button: ({ children, asChild, ...props }: any) => <div {...props}>{children}</div> }))
+jest.mock('@trouve-ton-nkama/ui/navigation-menu', () => ({
   NavigationMenu: ({ children }: any) => <nav>{children}</nav>,
   NavigationMenuList: ({ children }: any) => <ul>{children}</ul>,
   NavigationMenuItem: ({ children }: any) => <li>{children}</li>,

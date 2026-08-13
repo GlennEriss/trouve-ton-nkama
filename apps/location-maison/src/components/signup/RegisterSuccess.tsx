@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useTransition } from "react";
-import { Button } from "@/components/ui/button";
+import { Button } from "@trouve-ton-nkama/ui/button";
 import { Loader2, Mail, RefreshCw } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useToast } from "@/hooks/use-toast";

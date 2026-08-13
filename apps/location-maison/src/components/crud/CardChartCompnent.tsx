@@ -1,6 +1,6 @@
 'use client'
 import React from 'react'
-import { Card, CardContent, CardHeader } from '../ui/card'
+import { Card, CardContent, CardHeader } from '@trouve-ton-nkama/ui/card'
 import { useCrudContext } from '@/providers/crud.provider'
 
 export default function CardChartCompnent() {

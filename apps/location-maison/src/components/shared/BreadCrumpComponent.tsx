@@ -1,6 +1,6 @@
 'use client'
 import React from 'react';
-import { Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbSeparator } from '../ui/breadcrumb';
+import { Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbSeparator } from '@trouve-ton-nkama/ui/breadcrumb';
 import { routes } from '@/constantes/routes';
 import { usePathname } from 'next/navigation';
 

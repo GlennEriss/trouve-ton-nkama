@@ -9,8 +9,8 @@ jest.mock('next/image', () => ({
     <img alt={alt} data-src={src} onClick={onClick} onLoad={onLoad} />
   ),
 }))
-jest.mock('@/components/ui/skeleton', () => ({ Skeleton: (props: any) => <div data-testid="skeleton" {...props} /> }))
-jest.mock('@/components/ui/carousel', () => ({
+jest.mock('@trouve-ton-nkama/ui/skeleton', () => ({ Skeleton: (props: any) => <div data-testid="skeleton" {...props} /> }))
+jest.mock('@trouve-ton-nkama/ui/carousel', () => ({
   Carousel: ({ children }: any) => <div>{children}</div>,
   CarouselContent: ({ children }: any) => <div>{children}</div>,
   CarouselItem: ({ children }: any) => <div>{children}</div>,

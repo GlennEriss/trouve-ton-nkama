@@ -12,10 +12,10 @@ import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import React, { useEffect } from 'react';
 import { useForm } from 'react-hook-form';
-import { Form } from '../ui/form';
+import { Form } from '@/components/ui/form';
 import { InputFormApp } from '../shared/form/InputFormApp';
 import { ButtonApp } from '../shared/ui/ButtonApp';
-import { Button } from '../ui/button';
+import { Button } from '@trouve-ton-nkama/ui/button';
 
 const inter = Inter({
   subsets: ['latin'],

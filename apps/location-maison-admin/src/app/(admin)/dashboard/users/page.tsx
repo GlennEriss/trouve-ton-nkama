@@ -3,9 +3,9 @@
 import { FormEvent, useCallback, useMemo, useState } from "react";
 import { useInfiniteQuery, useQuery } from "@tanstack/react-query";
 
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
+import { Button } from "@trouve-ton-nkama/ui/button";
+import { Card, CardContent, CardHeader } from "@trouve-ton-nkama/ui/card";
+import { Input } from "@trouve-ton-nkama/ui/input";
 import { PageHeader } from "@/components/ui-kit/page-header";
 
 type UserStatusFilter = "all" | "active" | "suspended" | "archived";
@@ -369,8 +369,8 @@ export default function UsersPage() {
       {showCreateUser ? (
         <Card>
           <CardHeader>
-            <h2 className="text-base font-semibold text-slate-900">Créer un compte utilisateur</h2>
-            <p className="text-sm text-slate-600">Crée un compte `User` avec email vérifié.</p>
+            <h2 className="text-base font-semibold text-foreground">Créer un compte utilisateur</h2>
+            <p className="text-sm text-muted-foreground">Crée un compte `User` avec email vérifié.</p>
           </CardHeader>
           <CardContent>
             <form className="space-y-3" onSubmit={(event) => void onCreateUserAccount(event)}>
@@ -523,11 +523,11 @@ export default function UsersPage() {
               </div>
 
               {createUserError ? (
-                <p className="rounded-md bg-red-50 px-3 py-2 text-sm text-red-700">{createUserError}</p>
+                <p className="rounded-md bg-destructive/10 px-3 py-2 text-sm text-destructive">{createUserError}</p>
               ) : null}
 
               {createUserResult ? (
-                <p className="rounded-md bg-emerald-50 px-3 py-2 text-sm text-emerald-800">
+                <p className="rounded-md bg-success/10 px-3 py-2 text-sm text-success">
                   Compte créé: UID <span className="font-mono">{createUserResult.uid}</span> - Roles{" "}
                   <span className="font-mono">{createUserResult.roles.join(", ")}</span>
                 </p>
@@ -544,33 +544,33 @@ export default function UsersPage() {
       <section className="grid gap-4 md:grid-cols-4">
         <Card>
           <CardHeader>
-            <p className="text-sm text-slate-600">Page courante</p>
-            <p className="text-2xl font-semibold text-slate-900">{stats.loadedCount}</p>
+            <p className="text-sm text-muted-foreground">Page courante</p>
+            <p className="text-2xl font-semibold text-foreground">{stats.loadedCount}</p>
           </CardHeader>
         </Card>
         <Card>
           <CardHeader>
-            <p className="text-sm text-slate-600">En ligne</p>
-            <p className="text-2xl font-semibold text-emerald-700">{stats.onlineCount}</p>
+            <p className="text-sm text-muted-foreground">En ligne</p>
+            <p className="text-2xl font-semibold text-success">{stats.onlineCount}</p>
           </CardHeader>
         </Card>
         <Card>
           <CardHeader>
-            <p className="text-sm text-slate-600">Suspendus</p>
-            <p className="text-2xl font-semibold text-amber-700">{stats.suspendedCount}</p>
+            <p className="text-sm text-muted-foreground">Suspendus</p>
+            <p className="text-2xl font-semibold text-warning">{stats.suspendedCount}</p>
           </CardHeader>
         </Card>
         <Card>
           <CardHeader>
-            <p className="text-sm text-slate-600">Hors ligne</p>
-            <p className="text-2xl font-semibold text-slate-900">{stats.offlineCount}</p>
+            <p className="text-sm text-muted-foreground">Hors ligne</p>
+            <p className="text-2xl font-semibold text-foreground">{stats.offlineCount}</p>
           </CardHeader>
         </Card>
       </section>
 
       <Card>
         <CardHeader>
-          <h2 className="text-base font-semibold text-slate-900">Filtres</h2>
+          <h2 className="text-base font-semibold text-foreground">Filtres</h2>
         </CardHeader>
         <CardContent>
           <div className="grid gap-3 md:grid-cols-[1fr_180px_180px_180px_auto_auto_auto]">
@@ -582,7 +582,7 @@ export default function UsersPage() {
             />
 
             <select
-              className="h-8 rounded-lg border border-slate-300 bg-white px-3 text-sm text-slate-800"
+              className="h-8 rounded-lg border border-border bg-card px-3 text-sm text-foreground"
               value={role}
               onChange={(event) => setRole(event.target.value as UserRoleFilter)}
               disabled={submitting}
@@ -594,7 +594,7 @@ export default function UsersPage() {
             </select>
 
             <select
-              className="h-8 rounded-lg border border-slate-300 bg-white px-3 text-sm text-slate-800"
+              className="h-8 rounded-lg border border-border bg-card px-3 text-sm text-foreground"
               value={status}
               onChange={(event) => setStatus(event.target.value as UserStatusFilter)}
               disabled={submitting}
@@ -606,7 +606,7 @@ export default function UsersPage() {
             </select>
 
             <select
-              className="h-8 rounded-lg border border-slate-300 bg-white px-3 text-sm text-slate-800"
+              className="h-8 rounded-lg border border-border bg-card px-3 text-sm text-foreground"
               value={presence}
               onChange={(event) => setPresence(event.target.value as UserPresenceFilter)}
               disabled={submitting}
@@ -631,7 +631,7 @@ export default function UsersPage() {
 
       <Card>
         <CardHeader className="flex items-center justify-between gap-2">
-          <h2 className="text-base font-semibold text-slate-900">
+          <h2 className="text-base font-semibold text-foreground">
             Liste des utilisateurs ({users.length}/{totalCountLabel}) - page {safePageIndex + 1}
           </h2>
           <Button
@@ -645,17 +645,17 @@ export default function UsersPage() {
         </CardHeader>
         <CardContent>
           {error ? (
-            <p className="mb-4 rounded-md bg-red-50 px-3 py-2 text-sm text-red-700">{error}</p>
+            <p className="mb-4 rounded-md bg-destructive/10 px-3 py-2 text-sm text-destructive">{error}</p>
           ) : null}
 
           {loading ? (
-            <p className="text-sm text-slate-600">Chargement...</p>
+            <p className="text-sm text-muted-foreground">Chargement...</p>
           ) : (
             <>
               <div className="overflow-x-auto">
                 <table className="min-w-full border-collapse text-sm">
                   <thead>
-                    <tr className="border-b border-slate-200 text-left text-slate-600">
+                    <tr className="border-b border-border text-left text-muted-foreground">
                       <th className="py-2 pr-4 font-medium">Utilisateur</th>
                       <th className="py-2 pr-4 font-medium">Rôles</th>
                       <th className="py-2 pr-4 font-medium">Statut</th>
@@ -673,33 +673,33 @@ export default function UsersPage() {
                         ((user.isSuspended && canReactivate) || (!user.isSuspended && canSuspend));
 
                       return (
-                        <tr key={user.docId} className="border-b border-slate-100 align-top">
+                        <tr key={user.docId} className="border-b border-border align-top">
                           <td className="py-3 pr-4">
-                            <p className="font-medium text-slate-900">{user.fullName}</p>
-                            <p className="text-xs text-slate-500">{user.email ?? user.uid}</p>
+                            <p className="font-medium text-foreground">{user.fullName}</p>
+                            <p className="text-xs text-muted-foreground">{user.email ?? user.uid}</p>
                             {user.phoneNumbers.length > 0 ? (
-                              <p className="text-xs text-slate-500">{user.phoneNumbers[0]}</p>
+                              <p className="text-xs text-muted-foreground">{user.phoneNumbers[0]}</p>
                             ) : null}
                           </td>
-                          <td className="py-3 pr-4 text-slate-700">
+                          <td className="py-3 pr-4 text-foreground">
                             {user.roles.length > 0 ? user.roles.join(", ") : "Aucun"}
                           </td>
-                          <td className="py-3 pr-4 text-slate-700">
+                          <td className="py-3 pr-4 text-foreground">
                             {isArchived ? "Archivé" : user.isSuspended ? "Suspendu" : "Actif"}
                           </td>
                           <td className="py-3 pr-4">
                             <span
                               className={
                                 user.presenceStatus === "online"
-                                  ? "font-medium text-emerald-700"
-                                  : "text-slate-700"
+                                  ? "font-medium text-success"
+                                  : "text-foreground"
                               }
                             >
                               {user.presenceStatus === "online" ? "En ligne" : "Hors ligne"}
                             </span>
                           </td>
-                          <td className="py-3 pr-4 text-slate-700">{toDateLabel(user.lastSeenAt)}</td>
-                          <td className="py-3 pr-4 text-slate-700">{toDateLabel(user.createdAt)}</td>
+                          <td className="py-3 pr-4 text-foreground">{toDateLabel(user.lastSeenAt)}</td>
+                          <td className="py-3 pr-4 text-foreground">{toDateLabel(user.createdAt)}</td>
                           <td className="py-3 pr-4">
                             {canToggle ? (
                               <Button
@@ -712,7 +712,7 @@ export default function UsersPage() {
                                 {user.isSuspended ? "Réactiver" : "Suspendre"}
                               </Button>
                             ) : (
-                              <span className="text-xs text-slate-500">Aucune action</span>
+                              <span className="text-xs text-muted-foreground">Aucune action</span>
                             )}
                           </td>
                         </tr>
@@ -722,7 +722,7 @@ export default function UsersPage() {
                 </table>
               </div>
 
-              <div className="mt-4 flex flex-wrap items-center justify-between gap-2 text-xs text-slate-500">
+              <div className="mt-4 flex flex-wrap items-center justify-between gap-2 text-xs text-muted-foreground">
                 <p>
                   Debug curseur: courant=
                   <code>{currentPage?.page.cursor ?? "null"}</code> | suivant=

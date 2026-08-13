@@ -7,7 +7,7 @@ const handleSubmitInner = jest.fn()
 const onSubmit = jest.fn()
 const clearLocationFilters = jest.fn()
 
-jest.mock('@/components/ui/button', () => ({
+jest.mock('@trouve-ton-nkama/ui/button', () => ({
   Button: ({ children, ...props }: any) => <button {...props}>{children}</button>,
 }))
 jest.mock('@/components/ui/form', () => ({ Form: ({ children }: any) => <>{children}</> }))

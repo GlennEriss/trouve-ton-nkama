@@ -2,7 +2,7 @@
 import { zodResolver } from '@hookform/resolvers/zod'
 import React from 'react'
 import { useForm } from 'react-hook-form'
-import { Form } from '../ui/form'
+import { Form } from '@/components/ui/form'
 import { FormUserProfilSchemaType, FormUserProfilSchema } from '@/models/schema'
 import { InputForm } from '../forms/InputForm'
 import { useCurrentUser } from '@/hooks/use-current-user'

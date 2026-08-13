@@ -1,7 +1,7 @@
 'use client'
 
 import React from 'react';
-import { Button } from '@/components/ui/button';
+import { Button } from '@trouve-ton-nkama/ui/button';
 import { Lightbulb, MessageSquare, DollarSign, MapPin, FileText, Wand2 } from 'lucide-react';
 import usePropertyType from '@/hooks/usePropertyType';
 

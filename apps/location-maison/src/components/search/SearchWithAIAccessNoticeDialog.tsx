@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { routes } from '@/constantes/routes';
-import { Button } from '@/components/ui/button';
+import { Button } from '@trouve-ton-nkama/ui/button';
 import {
   Dialog,
   DialogContent,
@@ -10,7 +10,7 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from '@/components/ui/dialog';
+} from '@trouve-ton-nkama/ui/dialog';
 
 type SearchWithAIAccessNoticeDialogProps = {
   open: boolean;

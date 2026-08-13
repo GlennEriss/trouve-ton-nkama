@@ -1,6 +1,6 @@
 'use client'
 import React from 'react'
-import { Button } from '../ui/button'
+import { Button } from '@trouve-ton-nkama/ui/button'
 import { useToast } from '@/hooks/use-toast';
 import { useRouter } from 'next/navigation';
 import { routes } from '@/constantes/routes';

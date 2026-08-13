@@ -9,14 +9,14 @@ import { FormLoginSchema, FormLoginSchemaType } from '@/models/schema';
 import { motion } from 'framer-motion';
 import { Home, KeyRound, Mail, Phone, Shield, Sparkles } from 'lucide-react';
 import Link from 'next/link';
-import Logo from '@/components/logo/Logo';
+import Logo from '@trouve-ton-nkama/ui/logo';
 import { useRouter, useSearchParams } from 'next/navigation';
 import React, { useEffect, useState } from 'react';
 import { PhoneAuthModal } from './PhoneAuthModal';
 import { useForm } from 'react-hook-form';
 import { Form } from '@/components/ui/form';
 import { InputFormApp } from '@/components/shared/form/InputFormApp';
-import { Button } from '@/components/ui/button';
+import { Button } from '@trouve-ton-nkama/ui/button';
 import { ButtonApp } from '@/components/shared/ui/ButtonApp';
 import { trackingEvents, useTrackEvent } from '@/features/analytics/tracking';
 

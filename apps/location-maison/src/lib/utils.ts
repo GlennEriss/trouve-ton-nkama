@@ -1,9 +1,7 @@
-import { clsx, type ClassValue } from "clsx";
-import { twMerge } from "tailwind-merge";
-
-export function cn(...inputs: ClassValue[]) {
-  return twMerge(clsx(inputs));
-}
+// cn() vit désormais dans @trouve-ton-nkama/ui (source unique partagée avec
+// location-maison-admin) — ré-exporté ici pour ne pas casser les ~90 sites
+// d'import existants de "@/lib/utils".
+export { cn } from "@trouve-ton-nkama/ui/utils";
 
 // utils/date.ts
 

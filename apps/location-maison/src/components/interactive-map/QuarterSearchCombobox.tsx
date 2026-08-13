@@ -2,9 +2,9 @@
 
 import { useState, useMemo, useCallback } from 'react';
 import { Check, ChevronsUpDown, MapPin, X } from 'lucide-react';
-import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@/components/ui/command';
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { Button } from '@/components/ui/button';
+import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@trouve-ton-nkama/ui/command';
+import { Popover, PopoverContent, PopoverTrigger } from '@trouve-ton-nkama/ui/popover';
+import { Button } from '@trouve-ton-nkama/ui/button';
 import { useOSMLocations } from '@/hooks/useOSMLocations';
 import { cn } from '@/lib/utils';
 import type { QuarterLocation } from '@/providers/MapProvider';

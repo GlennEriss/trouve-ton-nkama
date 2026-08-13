@@ -13,8 +13,10 @@ export function PageHeader({ title, description, actions, className }: PageHeade
   return (
     <header className={cn("flex flex-wrap items-start justify-between gap-4", className)}>
       <div className="space-y-1">
-        <h1 className="text-2xl font-semibold tracking-tight text-slate-900">{title}</h1>
-        {description ? <p className="text-sm text-slate-600">{description}</p> : null}
+        {/* text-ink = accent bleu-nuit de la charte, réservé aux titres/emphase
+            (voir globals.css) — remplace le text-foreground générique. */}
+        <h1 className="text-2xl font-semibold tracking-tight text-ink">{title}</h1>
+        {description ? <p className="text-sm text-muted-foreground">{description}</p> : null}
       </div>
       {actions ? <div className="flex items-center gap-2">{actions}</div> : null}
     </header>

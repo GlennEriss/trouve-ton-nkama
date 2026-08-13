@@ -47,13 +47,13 @@ jest.mock('@/components/ui/form', () => ({
   Form: ({ children }: { children: React.ReactNode }) => <>{children}</>,
 }))
 
-jest.mock('@/components/ui/avatar', () => ({
+jest.mock('@trouve-ton-nkama/ui/avatar', () => ({
   Avatar: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
   AvatarImage: ({ alt }: { alt: string }) => <span>{alt}</span>,
   AvatarFallback: ({ children }: { children: React.ReactNode }) => <span>{children}</span>,
 }))
 
-jest.mock('@/components/ui/badge', () => ({
+jest.mock('@trouve-ton-nkama/ui/badge', () => ({
   Badge: ({ children }: { children: React.ReactNode }) => <span>{children}</span>,
 }))
 

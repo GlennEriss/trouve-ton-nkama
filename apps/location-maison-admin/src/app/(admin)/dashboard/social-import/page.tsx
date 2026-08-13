@@ -4,10 +4,10 @@ import { FormEvent, useEffect, useMemo, useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { RefreshCcw } from "lucide-react";
 
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
+import { Badge } from "@trouve-ton-nkama/ui/badge";
+import { Button } from "@trouve-ton-nkama/ui/button";
+import { Card, CardContent, CardHeader } from "@trouve-ton-nkama/ui/card";
+import { Input } from "@trouve-ton-nkama/ui/input";
 import {
   Sheet,
   SheetContent,
@@ -299,9 +299,9 @@ function toDateLabel(value: string | null | undefined) {
 
 function toStatusBadgeVariant(
   value: string | null | undefined,
-): "neutral" | "success" | "warning" | "danger" {
+): "secondary" | "success" | "warning" | "destructive" {
   if (!value) {
-    return "neutral";
+    return "secondary";
   }
   if (
     value === "active" ||
@@ -316,9 +316,9 @@ function toStatusBadgeVariant(
     return "warning";
   }
   if (value === "failed" || value === "revoked" || value === "rejected" || value === "reject") {
-    return "danger";
+    return "destructive";
   }
-  return "neutral";
+  return "secondary";
 }
 
 function toReviewCandidateStatusLabel(status: ReviewItem["status"]) {
@@ -1417,7 +1417,7 @@ export default function SocialImportDashboardPage() {
           description="Chargement des permissions et des données du module."
         />
         <Card>
-          <CardContent className="pt-5 text-sm text-slate-600">Chargement en cours…</CardContent>
+          <CardContent className="pt-5 text-sm text-muted-foreground">Chargement en cours…</CardContent>
         </Card>
       </div>
     );
@@ -1430,8 +1430,8 @@ export default function SocialImportDashboardPage() {
           title="Import social"
           description="Pilotage de l'import d'annonces depuis les réseaux sociaux."
         />
-        <Card className="border-amber-200 bg-amber-50">
-          <CardContent className="pt-5 text-sm text-amber-800">
+        <Card className="border-warning/30 bg-warning/10">
+          <CardContent className="pt-5 text-sm text-warning">
             Permission manquante: <code>social_import.read</code>
           </CardContent>
         </Card>
@@ -1498,18 +1498,18 @@ export default function SocialImportDashboardPage() {
       />
 
       {globalError ? (
-        <Card className="border-red-200 bg-red-50">
-          <CardContent className="pt-5 text-sm text-red-700">{globalError}</CardContent>
+        <Card className="border-destructive/30 bg-destructive/10">
+          <CardContent className="pt-5 text-sm text-destructive">{globalError}</CardContent>
         </Card>
       ) : null}
       {actionError ? (
-        <Card className="border-red-200 bg-red-50">
-          <CardContent className="pt-5 text-sm text-red-700">{actionError}</CardContent>
+        <Card className="border-destructive/30 bg-destructive/10">
+          <CardContent className="pt-5 text-sm text-destructive">{actionError}</CardContent>
         </Card>
       ) : null}
       {actionMessage ? (
-        <Card className="border-emerald-200 bg-emerald-50">
-          <CardContent className="pt-5 text-sm text-emerald-700">{actionMessage}</CardContent>
+        <Card className="border-success/30 bg-success/10">
+          <CardContent className="pt-5 text-sm text-success">{actionMessage}</CardContent>
         </Card>
       ) : null}
 
@@ -1541,7 +1541,7 @@ export default function SocialImportDashboardPage() {
 
           {jobModalMode === "details" && jobModalDetails ? (
             <div className="space-y-3 px-4 text-sm">
-              <div className="rounded-md border border-slate-200 p-3">
+              <div className="rounded-md border border-border p-3">
                 <p>
                   <span className="font-medium">Début:</span>{" "}
                   {toDateLabel(jobModalDetails.job.startedAt ?? jobModalDetails.job.createdAt)}
@@ -1568,8 +1568,8 @@ export default function SocialImportDashboardPage() {
                 </p>
               </div>
               <div>
-                <p className="mb-2 text-xs font-medium text-slate-600">Metadata brute</p>
-                <pre className="max-h-72 overflow-auto rounded-md border border-slate-200 bg-slate-50 p-3 text-xs">
+                <p className="mb-2 text-xs font-medium text-muted-foreground">Metadata brute</p>
+                <pre className="max-h-72 overflow-auto rounded-md border border-border bg-muted p-3 text-xs">
                   {JSON.stringify(jobModalDetails.job.metadata ?? {}, null, 2)}
                 </pre>
               </div>
@@ -1578,7 +1578,7 @@ export default function SocialImportDashboardPage() {
 
           {jobModalMode === "logs" && jobModalLogs ? (
             <div className="space-y-3 px-4 text-sm">
-              <div className="rounded-md border border-slate-200 p-3">
+              <div className="rounded-md border border-border p-3">
                 <p>
                   <span className="font-medium">Run externe:</span>{" "}
                   {jobModalLogs.logs.externalRunId || "N/A"}
@@ -1597,9 +1597,9 @@ export default function SocialImportDashboardPage() {
               </div>
 
               {jobModalLogs.logs.hints.length ? (
-                <div className="rounded-md border border-amber-200 bg-amber-50 p-3">
-                  <p className="text-xs font-medium text-amber-800">Indices de diagnostic</p>
-                  <ul className="mt-2 list-disc space-y-1 pl-4 text-xs text-amber-900">
+                <div className="rounded-md border border-warning/30 bg-warning/10 p-3">
+                  <p className="text-xs font-medium text-warning">Indices de diagnostic</p>
+                  <ul className="mt-2 list-disc space-y-1 pl-4 text-xs text-warning">
                     {jobModalLogs.logs.hints.map((hint, index) => (
                       <li key={`${jobModalLogs.job.id}_hint_${index + 1}`}>{hint}</li>
                     ))}
@@ -1611,14 +1611,14 @@ export default function SocialImportDashboardPage() {
 
           {jobModalMode === "cancel" ? (
             <div className="space-y-3 px-4 text-sm">
-              <div className="rounded-md border border-slate-200 p-3">
+              <div className="rounded-md border border-border p-3">
                 <p>
                   <span className="font-medium">Annonceurs:</span>{" "}
                   {jobModalJob?.announcerScope.length ? jobModalJob.announcerScope.join(", ") : "all"}
                 </p>
               </div>
               <div className="space-y-1">
-                <p className="text-xs font-medium text-slate-600">
+                <p className="text-xs font-medium text-muted-foreground">
                   Motif (optionnel)
                 </p>
                 <Input
@@ -1665,7 +1665,7 @@ export default function SocialImportDashboardPage() {
           {actionModalMode === "create_source" ? (
             <div className="space-y-3 px-4 text-sm">
               <div className="space-y-1">
-                <p className="text-xs font-medium text-slate-600">UID annonceur</p>
+                <p className="text-xs font-medium text-muted-foreground">UID annonceur</p>
                 <Input
                   value={actionSourceForm.announcerUid}
                   onChange={(event) =>
@@ -1678,7 +1678,7 @@ export default function SocialImportDashboardPage() {
                 />
               </div>
               <div className="space-y-1">
-                <p className="text-xs font-medium text-slate-600">Plateforme</p>
+                <p className="text-xs font-medium text-muted-foreground">Plateforme</p>
                 <select
                   value={actionSourceForm.platform}
                   onChange={(event) =>
@@ -1687,7 +1687,7 @@ export default function SocialImportDashboardPage() {
                       platform: event.target.value as SourceItem["platform"],
                     }))
                   }
-                  className="h-10 w-full rounded-md border border-slate-200 px-3 text-sm"
+                  className="h-10 w-full rounded-md border border-border px-3 text-sm"
                 >
                   <option value="facebook">facebook</option>
                   <option value="instagram">instagram</option>
@@ -1697,7 +1697,7 @@ export default function SocialImportDashboardPage() {
                 </select>
               </div>
               <div className="space-y-1">
-                <p className="text-xs font-medium text-slate-600">Type</p>
+                <p className="text-xs font-medium text-muted-foreground">Type</p>
                 <select
                   value={actionSourceForm.sourceType}
                   onChange={(event) =>
@@ -1706,7 +1706,7 @@ export default function SocialImportDashboardPage() {
                       sourceType: event.target.value as SourceItem["sourceType"],
                     }))
                   }
-                  className="h-10 w-full rounded-md border border-slate-200 px-3 text-sm"
+                  className="h-10 w-full rounded-md border border-border px-3 text-sm"
                 >
                   <option value="profile">profile</option>
                   <option value="page">page</option>
@@ -1714,7 +1714,7 @@ export default function SocialImportDashboardPage() {
                 </select>
               </div>
               <div className="space-y-1">
-                <p className="text-xs font-medium text-slate-600">URL source</p>
+                <p className="text-xs font-medium text-muted-foreground">URL source</p>
                 <Input
                   value={actionSourceForm.sourceUrl}
                   onChange={(event) =>
@@ -1731,7 +1731,7 @@ export default function SocialImportDashboardPage() {
 
           {actionModalMode === "pause_source" || actionModalMode === "revoke_source" ? (
             <div className="space-y-3 px-4 text-sm">
-              <div className="rounded-md border border-slate-200 p-3">
+              <div className="rounded-md border border-border p-3">
                 <p>
                   <span className="font-medium">Source:</span> {actionModalSource?.id ?? "N/A"}
                 </p>
@@ -1748,7 +1748,7 @@ export default function SocialImportDashboardPage() {
           actionModalMode === "publish_candidate" ||
           actionModalMode === "delete_candidate" ? (
             <div className="space-y-3 px-4 text-sm">
-              <div className="rounded-md border border-slate-200 p-3">
+              <div className="rounded-md border border-border p-3">
                 <p>
                   <span className="font-medium">Post:</span> {actionModalCandidate?.rawPostId ?? "N/A"}
                 </p>
@@ -1764,13 +1764,13 @@ export default function SocialImportDashboardPage() {
               {actionModalMode === "edit_candidate_type" ? (
                 <div className="space-y-3">
                   <div className="space-y-1">
-                    <p className="text-xs font-medium text-slate-600">
+                    <p className="text-xs font-medium text-muted-foreground">
                       Type d&apos;annonce cible
                     </p>
                     <select
                       value={candidateTypeDraft}
                       onChange={(event) => setCandidateTypeDraft(event.target.value)}
-                      className="h-10 w-full rounded-md border border-slate-200 px-3 text-sm"
+                      className="h-10 w-full rounded-md border border-border px-3 text-sm"
                     >
                       {LISTING_TYPE_OPTIONS.map((typeOption) => (
                         <option key={typeOption} value={typeOption}>
@@ -1778,17 +1778,17 @@ export default function SocialImportDashboardPage() {
                         </option>
                       ))}
                     </select>
-                    <p className="text-xs text-slate-500">
+                    <p className="text-xs text-muted-foreground">
                       Cette action reconstruit automatiquement les attributs requis du modèle avant publication.
                     </p>
                   </div>
-                  <div className="space-y-2 rounded-md border border-slate-200 bg-slate-50 p-3">
-                    <p className="text-xs font-semibold text-slate-700">
+                  <div className="space-y-2 rounded-md border border-border bg-muted p-3">
+                    <p className="text-xs font-semibold text-foreground">
                       Attributs actuels de l&apos;annonce (intégral)
                     </p>
-                    <div className="max-h-60 overflow-auto rounded border border-slate-200 bg-white">
+                    <div className="max-h-60 overflow-auto rounded border border-border bg-card">
                       <table className="w-full text-left text-xs">
-                        <thead className="sticky top-0 bg-slate-100 text-slate-600">
+                        <thead className="sticky top-0 bg-muted text-muted-foreground">
                           <tr>
                             <th className="px-2 py-1.5 font-medium">Attribut</th>
                             <th className="px-2 py-1.5 font-medium">Valeur</th>
@@ -1797,18 +1797,18 @@ export default function SocialImportDashboardPage() {
                         <tbody>
                           {actionModalCandidateAttributeEntries.length > 0 ? (
                             actionModalCandidateAttributeEntries.map(([attributeKey, attributeValue]) => (
-                              <tr key={`attribute_${attributeKey}`} className="border-t border-slate-100">
-                                <td className="px-2 py-1.5 font-mono text-[11px] text-slate-700">
+                              <tr key={`attribute_${attributeKey}`} className="border-t border-border">
+                                <td className="px-2 py-1.5 font-mono text-[11px] text-foreground">
                                   {attributeKey}
                                 </td>
-                                <td className="px-2 py-1.5 text-slate-600">
+                                <td className="px-2 py-1.5 text-muted-foreground">
                                   {formatUnknownForDisplay(attributeValue)}
                                 </td>
                               </tr>
                             ))
                           ) : (
                             <tr>
-                              <td colSpan={2} className="px-2 py-2 text-slate-500">
+                              <td colSpan={2} className="px-2 py-2 text-muted-foreground">
                                 Aucun attribut disponible.
                               </td>
                             </tr>
@@ -1817,8 +1817,8 @@ export default function SocialImportDashboardPage() {
                       </table>
                     </div>
                     <div>
-                      <p className="mb-1 text-[11px] font-medium text-slate-600">JSON brut</p>
-                      <pre className="max-h-48 overflow-auto rounded border border-slate-200 bg-white p-2 text-[11px] text-slate-700">
+                      <p className="mb-1 text-[11px] font-medium text-muted-foreground">JSON brut</p>
+                      <pre className="max-h-48 overflow-auto rounded border border-border bg-card p-2 text-[11px] text-foreground">
                         {JSON.stringify(actionModalCandidateAttributes, null, 2)}
                       </pre>
                     </div>
@@ -1830,12 +1830,12 @@ export default function SocialImportDashboardPage() {
 
           {actionModalMode === "delete_candidates_bulk" ? (
             <div className="space-y-3 px-4 text-sm">
-              <div className="rounded-md border border-slate-200 p-3">
+              <div className="rounded-md border border-border p-3">
                 <p>
                   <span className="font-medium">Sélection:</span>{" "}
                   {selectedCandidateIdsResolved.length} candidate(s)
                 </p>
-                <p className="text-xs text-slate-500">
+                <p className="text-xs text-muted-foreground">
                   Les candidates déjà publiées seront ignorées automatiquement.
                 </p>
               </div>
@@ -1844,12 +1844,12 @@ export default function SocialImportDashboardPage() {
 
           {actionModalMode === "publish_candidates_bulk" ? (
             <div className="space-y-3 px-4 text-sm">
-              <div className="rounded-md border border-slate-200 p-3">
+              <div className="rounded-md border border-border p-3">
                 <p>
                   <span className="font-medium">Sélection:</span>{" "}
                   {selectedCandidateIdsResolved.length} candidate(s)
                 </p>
-                <p className="text-xs text-slate-500">
+                <p className="text-xs text-muted-foreground">
                   Seules les candidates en statut ready_to_publish seront publiées.
                   Les autres seront ignorées avec un détail dans le résultat.
                 </p>
@@ -1877,7 +1877,7 @@ export default function SocialImportDashboardPage() {
 
       <Card>
         <CardHeader>
-          <h2 className="text-lg font-semibold text-slate-900">Filtres lecture</h2>
+          <h2 className="text-lg font-semibold text-foreground">Filtres lecture</h2>
         </CardHeader>
         <CardContent>
           <form className="grid gap-3 md:grid-cols-4" onSubmit={onApplyFilters}>
@@ -1889,7 +1889,7 @@ export default function SocialImportDashboardPage() {
             <select
               value={String(limit)}
               onChange={(event) => setLimit(Number(event.target.value))}
-              className="h-10 rounded-md border border-slate-200 px-3 text-sm"
+              className="h-10 rounded-md border border-border px-3 text-sm"
             >
               <option value="20">20 lignes</option>
               <option value="50">50 lignes</option>
@@ -1898,7 +1898,7 @@ export default function SocialImportDashboardPage() {
             <select
               value={reviewStatusFilter}
               onChange={(event) => setReviewStatusFilter(event.target.value as ReviewStatusFilter)}
-              className="h-10 rounded-md border border-slate-200 px-3 text-sm"
+              className="h-10 rounded-md border border-border px-3 text-sm"
             >
               <option value="open">File review: à traiter</option>
               <option value="processed">File review: traitées</option>
@@ -1915,7 +1915,7 @@ export default function SocialImportDashboardPage() {
 
       <Card>
         <CardHeader className="flex items-center justify-between gap-3">
-          <h2 className="text-lg font-semibold text-slate-900">Import JSON annonceur</h2>
+          <h2 className="text-lg font-semibold text-foreground">Import JSON annonceur</h2>
           <Badge variant={canRunProd ? "success" : "warning"}>
             {canRunProd ? "Import autorisé" : "Permission manquante"}
           </Badge>
@@ -1925,7 +1925,7 @@ export default function SocialImportDashboardPage() {
             {canReadAnnouncers ? (
               <>
                 <div className="relative space-y-1 xl:col-span-2">
-                  <p className="text-xs font-medium text-slate-600">Annonceur (recherche)</p>
+                  <p className="text-xs font-medium text-muted-foreground">Annonceur (recherche)</p>
                   <Input
                     value={announcerLookupInput}
                     onChange={(event) => {
@@ -1943,11 +1943,11 @@ export default function SocialImportDashboardPage() {
                     placeholder="Recherche par nom, email, téléphone ou UID"
                   />
                   {showAnnouncerLookup && announcerLookupInput.trim().length >= 2 ? (
-                    <div className="absolute z-30 mt-1 max-h-64 w-full overflow-auto rounded-md border border-slate-200 bg-white shadow-lg">
+                    <div className="absolute z-30 mt-1 max-h-64 w-full overflow-auto rounded-md border border-border bg-card shadow-lg">
                       {announcerLookupQuery.isFetching ? (
-                        <p className="px-3 py-2 text-xs text-slate-500">Recherche en cours…</p>
+                        <p className="px-3 py-2 text-xs text-muted-foreground">Recherche en cours…</p>
                       ) : announcerLookupQuery.error ? (
-                        <p className="px-3 py-2 text-xs text-red-600">
+                        <p className="px-3 py-2 text-xs text-destructive">
                           {announcerLookupQuery.error.message}
                         </p>
                       ) : announcerLookupResults.length ? (
@@ -1955,29 +1955,29 @@ export default function SocialImportDashboardPage() {
                           <button
                             key={announcer.uid}
                             type="button"
-                            className="block w-full border-b border-slate-100 px-3 py-2 text-left text-sm hover:bg-slate-50"
+                            className="block w-full border-b border-border px-3 py-2 text-left text-sm hover:bg-muted"
                             onMouseDown={() => selectAnnouncer(announcer)}
                           >
-                            <p className="font-medium text-slate-900">{announcer.fullName}</p>
-                            <p className="text-xs text-slate-500">
+                            <p className="font-medium text-foreground">{announcer.fullName}</p>
+                            <p className="text-xs text-muted-foreground">
                               {announcer.email || "email non renseigné"} · {announcer.uid}
                             </p>
                           </button>
                         ))
                       ) : (
-                        <p className="px-3 py-2 text-xs text-slate-500">Aucun annonceur trouvé.</p>
+                        <p className="px-3 py-2 text-xs text-muted-foreground">Aucun annonceur trouvé.</p>
                       )}
                     </div>
                   ) : null}
                 </div>
                 <div className="space-y-1">
-                  <p className="text-xs font-medium text-slate-600">UID annonceur sélectionné</p>
+                  <p className="text-xs font-medium text-muted-foreground">UID annonceur sélectionné</p>
                   <Input value={runForm.announcerUid} readOnly placeholder="Sélectionne un annonceur" />
                 </div>
               </>
             ) : (
               <div className="space-y-1">
-                <p className="text-xs font-medium text-slate-600">UID annonceur</p>
+                <p className="text-xs font-medium text-muted-foreground">UID annonceur</p>
                 <Input
                   value={runForm.announcerUid}
                   onChange={(event) =>
@@ -1991,7 +1991,7 @@ export default function SocialImportDashboardPage() {
               </div>
             )}
             <div className="space-y-1">
-              <p className="text-xs font-medium text-slate-600">Source ID (optionnel)</p>
+              <p className="text-xs font-medium text-muted-foreground">Source ID (optionnel)</p>
               <Input
                 value={runForm.sourceId}
                 onChange={(event) =>
@@ -2004,8 +2004,8 @@ export default function SocialImportDashboardPage() {
               />
             </div>
             <div className="space-y-1">
-              <p className="text-xs font-medium text-slate-600">Images</p>
-              <label className="flex h-10 items-center gap-2 rounded-md border border-slate-200 px-3 text-sm text-slate-700">
+              <p className="text-xs font-medium text-muted-foreground">Images</p>
+              <label className="flex h-10 items-center gap-2 rounded-md border border-border px-3 text-sm text-foreground">
                 <input
                   type="checkbox"
                   checked={runForm.resolveOriginalMedia}
@@ -2021,16 +2021,16 @@ export default function SocialImportDashboardPage() {
             </div>
           </div>
 
-          <div className="space-y-2 rounded-lg border border-slate-200 p-3">
-            <p className="text-sm font-medium text-slate-900">Importer des posts JSON</p>
-            <p className="text-xs text-slate-500">
+          <div className="space-y-2 rounded-lg border border-border p-3">
+            <p className="text-sm font-medium text-foreground">Importer des posts JSON</p>
+            <p className="text-xs text-muted-foreground">
               Colle ici un tableau JSON de posts Facebook (comme ton format `facebook_id/post_id/caption/media_urls`).
             </p>
             <textarea
               value={jsonImportText}
               onChange={(event) => setJsonImportText(event.target.value)}
               placeholder='[{"facebook_id":"...","post_id":"...","caption":"...","media_urls":[{"url":"..."}]}]'
-              className="min-h-40 w-full rounded-md border border-slate-200 px-3 py-2 text-xs text-slate-900"
+              className="min-h-40 w-full rounded-md border border-border px-3 py-2 text-xs text-foreground"
             />
             <div className="flex flex-wrap gap-2">
               {canRunProd ? (
@@ -2043,7 +2043,7 @@ export default function SocialImportDashboardPage() {
                   Importer JSON vers file review
                 </Button>
               ) : (
-                <p className="text-sm text-amber-700">
+                <p className="text-sm text-warning">
                   Permission manquante: <code>social_import.run.prod</code>
                 </p>
               )}
@@ -2054,34 +2054,34 @@ export default function SocialImportDashboardPage() {
 
       <div className="grid gap-4 md:grid-cols-4">
         <Card>
-          <CardHeader className="pb-2 text-sm text-slate-600">Sources</CardHeader>
+          <CardHeader className="pb-2 text-sm text-muted-foreground">Sources</CardHeader>
           <CardContent>
-            <p className="text-2xl font-semibold text-slate-900">{formatNumber(sourcesQuery.data?.count ?? 0)}</p>
+            <p className="text-2xl font-semibold text-foreground">{formatNumber(sourcesQuery.data?.count ?? 0)}</p>
           </CardContent>
         </Card>
         <Card>
-          <CardHeader className="pb-2 text-sm text-slate-600">Jobs</CardHeader>
+          <CardHeader className="pb-2 text-sm text-muted-foreground">Jobs</CardHeader>
           <CardContent>
-            <p className="text-2xl font-semibold text-slate-900">{formatNumber(jobsQuery.data?.count ?? 0)}</p>
+            <p className="text-2xl font-semibold text-foreground">{formatNumber(jobsQuery.data?.count ?? 0)}</p>
           </CardContent>
         </Card>
         <Card>
-          <CardHeader className="pb-2 text-sm text-slate-600">Review</CardHeader>
+          <CardHeader className="pb-2 text-sm text-muted-foreground">Review</CardHeader>
           <CardContent>
-            <p className="text-2xl font-semibold text-slate-900">{formatNumber(reviewQuery.data?.count ?? 0)}</p>
+            <p className="text-2xl font-semibold text-foreground">{formatNumber(reviewQuery.data?.count ?? 0)}</p>
           </CardContent>
         </Card>
         <Card>
-          <CardHeader className="pb-2 text-sm text-slate-600">Décisions</CardHeader>
+          <CardHeader className="pb-2 text-sm text-muted-foreground">Décisions</CardHeader>
           <CardContent>
-            <p className="text-2xl font-semibold text-slate-900">{formatNumber(decisionsQuery.data?.count ?? 0)}</p>
+            <p className="text-2xl font-semibold text-foreground">{formatNumber(decisionsQuery.data?.count ?? 0)}</p>
           </CardContent>
         </Card>
       </div>
 
       <Card>
         <CardHeader className="flex items-center justify-between gap-3">
-          <h2 className="text-lg font-semibold text-slate-900">Sources</h2>
+          <h2 className="text-lg font-semibold text-foreground">Sources</h2>
           <Badge variant={canReadSources ? "success" : "warning"}>
             {canReadSources ? "Lecture autorisée" : "Permission manquante"}
           </Badge>
@@ -2090,8 +2090,8 @@ export default function SocialImportDashboardPage() {
           {canReadSources ? (
             <div className="overflow-x-auto">
               <table className="w-full min-w-[860px] text-left text-sm">
-                <thead className="text-slate-500">
-                  <tr className="border-b border-slate-200">
+                <thead className="text-muted-foreground">
+                  <tr className="border-b border-border">
                     <th className="py-2 pr-4 font-medium">Annonceur</th>
                     <th className="py-2 pr-4 font-medium">Plateforme</th>
                     <th className="py-2 pr-4 font-medium">Type</th>
@@ -2101,10 +2101,10 @@ export default function SocialImportDashboardPage() {
                     <th className="py-2 pr-4 font-medium">Actions</th>
                   </tr>
                 </thead>
-                <tbody className="text-slate-700">
+                <tbody className="text-foreground">
                   {sources.length ? (
                     sources.map((source) => (
-                      <tr key={source.id} className="border-b border-slate-100 align-top">
+                      <tr key={source.id} className="border-b border-border align-top">
                         <td className="py-3 pr-4">{source.announcerUid || "N/A"}</td>
                         <td className="py-3 pr-4">{source.platform}</td>
                         <td className="py-3 pr-4">{source.sourceType}</td>
@@ -2126,7 +2126,7 @@ export default function SocialImportDashboardPage() {
                           <div className="flex flex-wrap gap-2">
                             {canPauseSource && source.status !== "paused" && source.status !== "revoked" ? (
                               <Button
-                                size="xs"
+                                size="sm"
                                 variant="outline"
                                 disabled={pendingActionKey !== null}
                                 onClick={() => void handlePauseSource(source)}
@@ -2136,7 +2136,7 @@ export default function SocialImportDashboardPage() {
                             ) : null}
                             {canRevokeSource && source.status !== "revoked" ? (
                               <Button
-                                size="xs"
+                                size="sm"
                                 variant="destructive"
                                 disabled={pendingActionKey !== null}
                                 onClick={() => void handleRevokeSource(source)}
@@ -2150,7 +2150,7 @@ export default function SocialImportDashboardPage() {
                     ))
                   ) : (
                     <tr>
-                      <td className="py-4 text-slate-500" colSpan={7}>
+                      <td className="py-4 text-muted-foreground" colSpan={7}>
                         Aucune source trouvée.
                       </td>
                     </tr>
@@ -2159,14 +2159,14 @@ export default function SocialImportDashboardPage() {
               </table>
             </div>
           ) : (
-            <p className="text-sm text-amber-700">Permission manquante: social_import.source.read</p>
+            <p className="text-sm text-warning">Permission manquante: social_import.source.read</p>
           )}
         </CardContent>
       </Card>
 
       <Card>
         <CardHeader className="flex items-center justify-between gap-3">
-          <h2 className="text-lg font-semibold text-slate-900">Jobs</h2>
+          <h2 className="text-lg font-semibold text-foreground">Jobs</h2>
           <Badge variant={canReadJobs ? "success" : "warning"}>
             {canReadJobs ? "Lecture autorisée" : "Permission manquante"}
           </Badge>
@@ -2175,8 +2175,8 @@ export default function SocialImportDashboardPage() {
           {canReadJobs ? (
             <div className="overflow-x-auto">
               <table className="w-full min-w-[900px] text-left text-sm">
-                <thead className="text-slate-500">
-                  <tr className="border-b border-slate-200">
+                <thead className="text-muted-foreground">
+                  <tr className="border-b border-border">
                     <th className="py-2 pr-4 font-medium">Job</th>
                     <th className="py-2 pr-4 font-medium">Statut</th>
                     <th className="py-2 pr-4 font-medium">Mode</th>
@@ -2186,13 +2186,13 @@ export default function SocialImportDashboardPage() {
                     <th className="py-2 pr-4 font-medium">Actions</th>
                   </tr>
                 </thead>
-                <tbody className="text-slate-700">
+                <tbody className="text-foreground">
                   {jobs.length ? (
                     jobs.map((job) => (
-                      <tr key={job.id} className="border-b border-slate-100 align-top">
+                      <tr key={job.id} className="border-b border-border align-top">
                         <td className="py-3 pr-4">
-                          <p className="font-medium text-slate-900">{job.id}</p>
-                          <p className="text-xs text-slate-500">{toDateLabel(job.startedAt ?? job.createdAt)}</p>
+                          <p className="font-medium text-foreground">{job.id}</p>
+                          <p className="text-xs text-muted-foreground">{toDateLabel(job.startedAt ?? job.createdAt)}</p>
                         </td>
                         <td className="py-3 pr-4">
                           <Badge variant={toStatusBadgeVariant(job.status)}>{job.status}</Badge>
@@ -2207,7 +2207,7 @@ export default function SocialImportDashboardPage() {
                         <td className="py-3 pr-4">
                           <div className="flex flex-wrap gap-2">
                             <Button
-                              size="xs"
+                              size="sm"
                               variant="outline"
                               disabled={pendingActionKey !== null}
                               onClick={() => void handleViewJobDetails(job)}
@@ -2215,7 +2215,7 @@ export default function SocialImportDashboardPage() {
                               Détails
                             </Button>
                             <Button
-                              size="xs"
+                              size="sm"
                               variant="outline"
                               disabled={pendingActionKey !== null}
                               onClick={() => void handleViewJobLogs(job)}
@@ -2224,7 +2224,7 @@ export default function SocialImportDashboardPage() {
                             </Button>
                             {canRetryJob && job.status === "running" ? (
                               <Button
-                                size="xs"
+                                size="sm"
                                 variant="destructive"
                                 disabled={pendingActionKey !== null}
                                 onClick={() => void handleCancelJob(job)}
@@ -2238,7 +2238,7 @@ export default function SocialImportDashboardPage() {
                     ))
                   ) : (
                     <tr>
-                      <td className="py-4 text-slate-500" colSpan={7}>
+                      <td className="py-4 text-muted-foreground" colSpan={7}>
                         Aucun job trouvé.
                       </td>
                     </tr>
@@ -2247,7 +2247,7 @@ export default function SocialImportDashboardPage() {
               </table>
             </div>
           ) : (
-            <p className="text-sm text-amber-700">Permission manquante: social_import.job.read</p>
+            <p className="text-sm text-warning">Permission manquante: social_import.job.read</p>
           )}
         </CardContent>
       </Card>
@@ -2256,7 +2256,7 @@ export default function SocialImportDashboardPage() {
         <Card>
           <CardHeader className="flex items-center justify-between gap-3">
             <div className="flex items-center gap-3">
-              <h2 className="text-lg font-semibold text-slate-900">File review</h2>
+              <h2 className="text-lg font-semibold text-foreground">File review</h2>
               <Badge variant={canReadReview ? "success" : "warning"}>
                 {canReadReview ? "Lecture autorisée" : "Permission manquante"}
               </Badge>
@@ -2265,7 +2265,7 @@ export default function SocialImportDashboardPage() {
               <div className="flex flex-wrap items-center justify-end gap-2">
                 <Button
                   type="button"
-                  size="xs"
+                  size="sm"
                   variant="outline"
                   disabled={pendingActionKey !== null || candidates.length === 0}
                   onClick={selectAllVisibleCandidates}
@@ -2274,7 +2274,7 @@ export default function SocialImportDashboardPage() {
                 </Button>
                 <Button
                   type="button"
-                  size="xs"
+                  size="sm"
                   variant="outline"
                   disabled={pendingActionKey !== null || selectedCandidateIdsResolved.length === 0}
                   onClick={clearCandidateSelection}
@@ -2284,7 +2284,7 @@ export default function SocialImportDashboardPage() {
                 {canPublishCandidate ? (
                   <Button
                     type="button"
-                    size="xs"
+                    size="sm"
                     variant="secondary"
                     disabled={pendingActionKey !== null || selectedCandidateIdsResolved.length === 0}
                     onClick={() => void handlePublishSelectedCandidates()}
@@ -2295,7 +2295,7 @@ export default function SocialImportDashboardPage() {
                 {canPublishCandidate ? (
                   <Button
                     type="button"
-                    size="xs"
+                    size="sm"
                     variant="secondary"
                     disabled={
                       pendingActionKey !== null ||
@@ -2315,7 +2315,7 @@ export default function SocialImportDashboardPage() {
                 {canDeleteCandidate ? (
                   <Button
                     type="button"
-                    size="xs"
+                    size="sm"
                     variant="destructive"
                     disabled={pendingActionKey !== null || selectedCandidateIdsResolved.length === 0}
                     onClick={() => void handleDeleteSelectedCandidates()}
@@ -2339,7 +2339,7 @@ export default function SocialImportDashboardPage() {
                           .filter((item) => item.length > 0)
                       : [];
                     return (
-                    <article key={candidate.id} className="rounded-lg border border-slate-200 p-3">
+                    <article key={candidate.id} className="rounded-lg border border-border p-3">
                       <div className="flex items-center justify-between gap-3">
                         <div className="flex items-center gap-2">
                           {canDeleteCandidate || canPublishCandidate ? (
@@ -2352,39 +2352,39 @@ export default function SocialImportDashboardPage() {
                               aria-label={`Sélectionner ${candidate.rawPostId}`}
                             />
                           ) : null}
-                          <p className="font-medium text-slate-900">{candidate.rawPostId}</p>
+                          <p className="font-medium text-foreground">{candidate.rawPostId}</p>
                         </div>
                         <Badge variant={toStatusBadgeVariant(candidate.status)}>
                           {toReviewCandidateStatusLabel(candidate.status)}
                         </Badge>
                       </div>
                       {candidate.title ? (
-                        <p className="mt-1 text-sm font-medium text-slate-800">{candidate.title}</p>
+                        <p className="mt-1 text-sm font-medium text-foreground">{candidate.title}</p>
                       ) : null}
-                      <p className="mt-1 text-xs text-slate-500">
+                      <p className="mt-1 text-xs text-muted-foreground">
                         {candidate.typeProperty || "Type N/A"}
                         {candidate.price != null ? ` · ${formatNumber(candidate.price)} FCFA` : ""}
                         {candidate.city || candidate.province
                           ? ` · ${[candidate.city, candidate.province].filter(Boolean).join(", ")}`
                           : ""}
                       </p>
-                      <p className="mt-1 text-xs text-slate-500">Annonceur: {candidate.announcerUid}</p>
-                      <p className="mt-1 text-xs text-slate-500">
+                      <p className="mt-1 text-xs text-muted-foreground">Annonceur: {candidate.announcerUid}</p>
+                      <p className="mt-1 text-xs text-muted-foreground">
                         Publiée le (source): {toDateLabel(candidate.sourcePublishedAt)}
                       </p>
-                      <p className="mt-1 text-xs text-slate-500">Score: {formatNumber(candidate.score)}</p>
+                      <p className="mt-1 text-xs text-muted-foreground">Score: {formatNumber(candidate.score)}</p>
                       {listingTags.length > 0 ? (
-                        <p className="mt-1 text-xs text-slate-500">Tags: {listingTags.join(", ")}</p>
+                        <p className="mt-1 text-xs text-muted-foreground">Tags: {listingTags.join(", ")}</p>
                       ) : null}
-                      <p className="mt-1 text-xs text-slate-500">
+                      <p className="mt-1 text-xs text-muted-foreground">
                         Raison auto: {candidate.autoReason || "non renseignée"}
                       </p>
-                      <div className="mt-3 rounded-md border border-slate-200 bg-slate-50 p-2">
+                      <div className="mt-3 rounded-md border border-border bg-muted p-2">
                         <div className="flex flex-wrap items-center justify-between gap-2">
-                          <p className="text-xs font-medium text-slate-700">
+                          <p className="text-xs font-medium text-foreground">
                             Attributs modèle · type {requiredFields.listingType}
                           </p>
-                          <p className="text-xs text-slate-600">
+                          <p className="text-xs text-muted-foreground">
                             OK {requiredFields.filledCount} / {requiredFields.rows.length} · Manquants{" "}
                             {requiredFields.missingCount}
                           </p>
@@ -2393,15 +2393,15 @@ export default function SocialImportDashboardPage() {
                           {requiredFields.rows.map((field) => (
                             <div
                               key={`${candidate.id}_${field.key}`}
-                              className="rounded border border-slate-200 bg-white px-2 py-1.5"
+                              className="rounded border border-border bg-card px-2 py-1.5"
                             >
                               <div className="flex items-center justify-between gap-2">
-                                <p className="text-xs font-medium text-slate-700">{field.label}</p>
-                                <Badge variant={field.missing ? "danger" : "success"}>
+                                <p className="text-xs font-medium text-foreground">{field.label}</p>
+                                <Badge variant={field.missing ? "destructive" : "success"}>
                                   {field.missing ? "Manquant" : "OK"}
                                 </Badge>
                               </div>
-                              <p className="mt-1 text-xs text-slate-600">
+                              <p className="mt-1 text-xs text-muted-foreground">
                                 {formatFieldValueForDisplay(field.key, field.value)}
                               </p>
                             </div>
@@ -2410,7 +2410,7 @@ export default function SocialImportDashboardPage() {
                       </div>
                       {candidate.imageUrls.length ? (
                         <div className="mt-2">
-                          <p className="mb-2 text-xs text-slate-500">
+                          <p className="mb-2 text-xs text-muted-foreground">
                             Médias détectés: {candidate.imageUrls.length}
                           </p>
                           <div className="grid grid-cols-2 gap-2 md:grid-cols-4">
@@ -2420,7 +2420,7 @@ export default function SocialImportDashboardPage() {
                                 href={imageUrl}
                                 target="_blank"
                                 rel="noreferrer"
-                                className="overflow-hidden rounded border border-slate-200"
+                                className="overflow-hidden rounded border border-border"
                               >
                                 {/* eslint-disable-next-line @next/next/no-img-element */}
                                 <img
@@ -2447,7 +2447,7 @@ export default function SocialImportDashboardPage() {
                       <div className="mt-3 flex flex-wrap gap-2">
                         {canDeleteCandidate && candidate.status !== "published" ? (
                           <Button
-                            size="xs"
+                            size="sm"
                             variant="outline"
                             disabled={pendingActionKey !== null}
                             onClick={() => void handleDeleteCandidate(candidate)}
@@ -2457,7 +2457,7 @@ export default function SocialImportDashboardPage() {
                         ) : null}
                         {canRejectCandidate && candidate.status !== "rejected" && candidate.status !== "published" ? (
                           <Button
-                            size="xs"
+                            size="sm"
                             variant="destructive"
                             disabled={pendingActionKey !== null}
                             onClick={() => void handleRejectCandidate(candidate)}
@@ -2467,7 +2467,7 @@ export default function SocialImportDashboardPage() {
                         ) : null}
                         {canPublishCandidate && candidate.status !== "published" ? (
                           <Button
-                            size="xs"
+                            size="sm"
                             variant="outline"
                             disabled={pendingActionKey !== null}
                             onClick={() => void handleEditCandidateType(candidate)}
@@ -2477,7 +2477,7 @@ export default function SocialImportDashboardPage() {
                         ) : null}
                         {canPublishCandidate && candidate.status === "ready_to_publish" ? (
                           <Button
-                            size="xs"
+                            size="sm"
                             variant="secondary"
                             disabled={pendingActionKey !== null}
                             onClick={() => void handlePublishCandidate(candidate)}
@@ -2490,18 +2490,18 @@ export default function SocialImportDashboardPage() {
                     );
                   })
                 ) : (
-                  <p className="text-sm text-slate-500">Aucune candidate review.</p>
+                  <p className="text-sm text-muted-foreground">Aucune candidate review.</p>
                 )}
               </div>
             ) : (
-              <p className="text-sm text-amber-700">Permission manquante: social_import.review</p>
+              <p className="text-sm text-warning">Permission manquante: social_import.review</p>
             )}
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader className="flex items-center justify-between gap-3">
-            <h2 className="text-lg font-semibold text-slate-900">Historique décisions</h2>
+            <h2 className="text-lg font-semibold text-foreground">Historique décisions</h2>
             <Badge variant={canReadDecisions ? "success" : "warning"}>
               {canReadDecisions ? "Lecture autorisée" : "Permission manquante"}
             </Badge>
@@ -2511,24 +2511,24 @@ export default function SocialImportDashboardPage() {
               <div className="space-y-3">
                 {decisions.length ? (
                   decisions.map((decision) => (
-                    <article key={decision.id} className="rounded-lg border border-slate-200 p-3">
+                    <article key={decision.id} className="rounded-lg border border-border p-3">
                       <div className="flex items-center justify-between gap-3">
-                        <p className="font-medium text-slate-900">{decision.rawPostId || decision.id}</p>
+                        <p className="font-medium text-foreground">{decision.rawPostId || decision.id}</p>
                         <Badge variant={toStatusBadgeVariant(decision.decision)}>{decision.decision}</Badge>
                       </div>
-                      <p className="mt-1 text-xs text-slate-500">Acteur: {decision.actorId || "N/A"}</p>
-                      <p className="mt-1 text-xs text-slate-500">Annonceur: {decision.announcerUid || "N/A"}</p>
-                      <p className="mt-1 text-xs text-slate-500">Job: {decision.jobId || "N/A"}</p>
-                      <p className="mt-1 text-xs text-slate-500">Date: {toDateLabel(decision.createdAt)}</p>
-                      <p className="mt-1 text-xs text-slate-500">Motif: {decision.reason || "non renseigné"}</p>
+                      <p className="mt-1 text-xs text-muted-foreground">Acteur: {decision.actorId || "N/A"}</p>
+                      <p className="mt-1 text-xs text-muted-foreground">Annonceur: {decision.announcerUid || "N/A"}</p>
+                      <p className="mt-1 text-xs text-muted-foreground">Job: {decision.jobId || "N/A"}</p>
+                      <p className="mt-1 text-xs text-muted-foreground">Date: {toDateLabel(decision.createdAt)}</p>
+                      <p className="mt-1 text-xs text-muted-foreground">Motif: {decision.reason || "non renseigné"}</p>
                     </article>
                   ))
                 ) : (
-                  <p className="text-sm text-slate-500">Aucune décision enregistrée.</p>
+                  <p className="text-sm text-muted-foreground">Aucune décision enregistrée.</p>
                 )}
               </div>
             ) : (
-              <p className="text-sm text-amber-700">Permission manquante: social_import.decision.read</p>
+              <p className="text-sm text-warning">Permission manquante: social_import.decision.read</p>
             )}
           </CardContent>
         </Card>

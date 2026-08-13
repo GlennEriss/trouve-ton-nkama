@@ -20,12 +20,12 @@ jest.mock('@/hooks/use-location-search', () => ({
 }))
 jest.mock('@/hooks/use-location-sync', () => ({ useLocationSync: () => syncState }))
 jest.mock('@/lib/logger', () => ({ createLogger: () => ({ info: jest.fn(), warn: jest.fn() }) }))
-jest.mock('@/components/ui/input', () => ({ Input: React.forwardRef((props: any, ref: any) => <input ref={ref} {...props} />) }))
-jest.mock('@/components/ui/card', () => ({
+jest.mock('@trouve-ton-nkama/ui/input', () => ({ Input: React.forwardRef((props: any, ref: any) => <input ref={ref} {...props} />) }))
+jest.mock('@trouve-ton-nkama/ui/card', () => ({
   Card: React.forwardRef(({ children, ...props }: any, ref: any) => <div ref={ref} {...props}>{children}</div>),
   CardContent: ({ children }: any) => <div>{children}</div>,
 }))
-jest.mock('@/components/ui/badge', () => ({ Badge: ({ children }: any) => <span>{children}</span> }))
+jest.mock('@trouve-ton-nkama/ui/badge', () => ({ Badge: ({ children }: any) => <span>{children}</span> }))
 
 const result = (name: string, overrides: Record<string, unknown> = {}) => ({
   geometry: { type: 'Point', coordinates: [9.45, 0.4] },

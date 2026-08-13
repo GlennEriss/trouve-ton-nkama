@@ -1,12 +1,12 @@
 'use client'
 import React from 'react';
-import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@trouve-ton-nkama/ui/card';
+import { Avatar, AvatarFallback, AvatarImage } from '@trouve-ton-nkama/ui/avatar';
 import { generateColorFromName } from '@/lib/generateColorFromName';
 import { useCurrentUser } from '@/hooks/use-current-user';
 import { firebaseTimestampToDate } from '@/lib/firebaseTimestampToDate';
 import { useWindowSize } from '@/hooks/useSize';
-import { Separator } from '../ui/separator';
+import { Separator } from '@trouve-ton-nkama/ui/separator';
 
 export default function CardUserProfil() {
     const { user } = useCurrentUser()

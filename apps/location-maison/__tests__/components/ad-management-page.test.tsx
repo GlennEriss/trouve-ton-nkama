@@ -50,7 +50,7 @@ jest.mock('@/components/promotion/PromotionButton', () => ({
   default: ({ property }: { property: Property }) => <button type="button">Promouvoir {property.title}</button>,
 }))
 
-jest.mock('@/components/ui/select', () => ({
+jest.mock('@trouve-ton-nkama/ui/select', () => ({
   Select: ({ children, onValueChange }: { children: React.ReactNode; onValueChange?: (value: string) => void }) => (
     <div>
       {children}
@@ -63,7 +63,7 @@ jest.mock('@/components/ui/select', () => ({
   SelectValue: () => <span>Valeur</span>,
 }))
 
-jest.mock('@/components/ui/dialog', () => ({
+jest.mock('@trouve-ton-nkama/ui/dialog', () => ({
   Dialog: ({ open, children }: { open: boolean; children: React.ReactNode }) => open ? <div>{children}</div> : null,
   DialogContent: ({ children }: { children: React.ReactNode }) => <div role="dialog">{children}</div>,
   DialogDescription: ({ children }: { children: React.ReactNode }) => <p>{children}</p>,

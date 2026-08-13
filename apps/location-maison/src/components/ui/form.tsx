@@ -13,7 +13,7 @@ import {
 } from "react-hook-form"
 
 import { cn } from "@/lib/utils"
-import { Label } from "@/components/ui/label"
+import { Label } from "@trouve-ton-nkama/ui/label"
 
 const Form = FormProvider
 
@@ -35,7 +35,7 @@ const FormField = <
   ...props
 }: ControllerProps<TFieldValues, TName>) => {
   const contextValue = React.useMemo(() => ({ name: props.name }), [props.name])
-  
+
   return (
     <FormFieldContext.Provider value={contextValue}>
       <Controller {...props} />

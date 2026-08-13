@@ -2,9 +2,9 @@
 
 import React, { useState, useEffect } from 'react'
 import { History, CheckCircle, Clock, XCircle, Plus, Minus, Download, Filter } from 'lucide-react'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@trouve-ton-nkama/ui/select'
 import { useCreditHistory } from '@/hooks/use-credit-history'
-import { Button } from '@/components/ui/button'
+import { Button } from '@trouve-ton-nkama/ui/button'
 import { CreditTransaction } from '@/db/credit-transaction.db'
 
 // Type alias pour les filtres

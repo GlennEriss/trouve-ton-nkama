@@ -44,7 +44,7 @@ jest.mock('next/link', () => ({
     </a>
   ),
 }))
-jest.mock('@/components/ui/input', () => ({ Input: (props: any) => <input {...props} /> }))
+jest.mock('@trouve-ton-nkama/ui/input', () => ({ Input: (props: any) => <input {...props} /> }))
 jest.mock('@/components/home-page/Navbar', () => ({ __esModule: true, default: () => <div data-testid="navbar" /> }))
 jest.mock('@/components/home-page/FilterModalHomePage', () => ({ FilterModalHomePage: () => <div data-testid="filter-modal" /> }))
 jest.mock('@/components/home-page/PropertyByProvince', () => ({ __esModule: true, default: () => <div data-testid="by-province" /> }))

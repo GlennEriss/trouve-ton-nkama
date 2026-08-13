@@ -1,8 +1,8 @@
 'use client'
 import React, { useState } from 'react'
-import { Separator } from '@/components/ui/separator';
+import { Separator } from '@trouve-ton-nkama/ui/separator';
 import connectionMethods from '@/constantes/connections-methods';
-import { Button } from '@/components/ui/button';
+import { Button } from '@trouve-ton-nkama/ui/button';
 import Link from 'next/link';
 import { routes } from '@/constantes/routes';
 import { signInWithGoogle } from '@/actions/signin-with-google';

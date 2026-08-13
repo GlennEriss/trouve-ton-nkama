@@ -4,10 +4,10 @@ import { useCallback, useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Download, RefreshCcw, Search } from "lucide-react";
 
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
+import { Badge } from "@trouve-ton-nkama/ui/badge";
+import { Button } from "@trouve-ton-nkama/ui/button";
+import { Card, CardContent, CardHeader } from "@trouve-ton-nkama/ui/card";
+import { Input } from "@trouve-ton-nkama/ui/input";
 import { PageHeader } from "@/components/ui-kit/page-header";
 
 type RangeFilter = "24h" | "7d" | "30d" | "custom";
@@ -107,7 +107,7 @@ function statusBadge(resultStatus: ResultFilter) {
   if (resultStatus === "without_results") {
     return <Badge variant="warning">Sans résultat</Badge>;
   }
-  return <Badge variant="neutral">En attente</Badge>;
+  return <Badge variant="secondary">En attente</Badge>;
 }
 
 function formatFilters(filters: Record<string, unknown> | null) {
@@ -300,31 +300,31 @@ export default function AnalyticsSearchesPage() {
       <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-5">
         <Card>
           <CardHeader>
-            <p className="text-sm text-slate-600">Total recherches</p>
-            <p className="text-2xl font-semibold text-slate-900">{data?.summary.totalSearches ?? 0}</p>
+            <p className="text-sm text-muted-foreground">Total recherches</p>
+            <p className="text-2xl font-semibold text-foreground">{data?.summary.totalSearches ?? 0}</p>
           </CardHeader>
         </Card>
         <Card>
           <CardHeader>
-            <p className="text-sm text-slate-600">Avec résultats</p>
-            <p className="text-2xl font-semibold text-emerald-700">{data?.summary.withResults ?? 0}</p>
+            <p className="text-sm text-muted-foreground">Avec résultats</p>
+            <p className="text-2xl font-semibold text-success">{data?.summary.withResults ?? 0}</p>
           </CardHeader>
         </Card>
         <Card>
           <CardHeader>
-            <p className="text-sm text-slate-600">Sans résultat</p>
-            <p className="text-2xl font-semibold text-amber-700">{data?.summary.withoutResults ?? 0}</p>
+            <p className="text-sm text-muted-foreground">Sans résultat</p>
+            <p className="text-2xl font-semibold text-warning">{data?.summary.withoutResults ?? 0}</p>
           </CardHeader>
         </Card>
         <Card>
           <CardHeader>
-            <p className="text-sm text-slate-600">En attente</p>
-            <p className="text-2xl font-semibold text-slate-900">{data?.summary.pendingResults ?? 0}</p>
+            <p className="text-sm text-muted-foreground">En attente</p>
+            <p className="text-2xl font-semibold text-foreground">{data?.summary.pendingResults ?? 0}</p>
           </CardHeader>
         </Card>
         <Card>
           <CardHeader>
-            <p className="text-sm text-slate-600">Taux de succès</p>
+            <p className="text-sm text-muted-foreground">Taux de succès</p>
             <p className="text-2xl font-semibold text-primary">{data?.summary.successRate ?? 0}%</p>
           </CardHeader>
         </Card>
@@ -332,13 +332,13 @@ export default function AnalyticsSearchesPage() {
 
       <Card>
         <CardHeader>
-          <h2 className="text-base font-semibold text-slate-900">Filtres</h2>
-          <p className="text-sm text-slate-600">Par défaut, les données affichent les 7 derniers jours.</p>
+          <h2 className="text-base font-semibold text-foreground">Filtres</h2>
+          <p className="text-sm text-muted-foreground">Par défaut, les données affichent les 7 derniers jours.</p>
         </CardHeader>
         <CardContent className="space-y-3">
           <div className="grid gap-3 lg:grid-cols-5">
             <select
-              className="h-9 rounded-lg border border-slate-300 bg-white px-3 text-sm text-slate-800"
+              className="h-9 rounded-lg border border-border bg-card px-3 text-sm text-foreground"
               value={range}
               onChange={(event) => {
                 setRange(event.target.value as RangeFilter);
@@ -352,7 +352,7 @@ export default function AnalyticsSearchesPage() {
             </select>
 
             <select
-              className="h-9 rounded-lg border border-slate-300 bg-white px-3 text-sm text-slate-800"
+              className="h-9 rounded-lg border border-border bg-card px-3 text-sm text-foreground"
               value={source}
               onChange={(event) => {
                 setSource(event.target.value as SourceFilter);
@@ -367,7 +367,7 @@ export default function AnalyticsSearchesPage() {
             </select>
 
             <select
-              className="h-9 rounded-lg border border-slate-300 bg-white px-3 text-sm text-slate-800"
+              className="h-9 rounded-lg border border-border bg-card px-3 text-sm text-foreground"
               value={resultFilter}
               onChange={(event) => {
                 setResultFilter(event.target.value as ResultFilter);
@@ -423,7 +423,7 @@ export default function AnalyticsSearchesPage() {
             </div>
           ) : null}
 
-          <p className="text-xs text-slate-500">
+          <p className="text-xs text-muted-foreground">
             Fenêtre active: {toDateLabel(data?.period.startAt)} - {toDateLabel(data?.period.endAt)}
           </p>
         </CardContent>
@@ -432,24 +432,24 @@ export default function AnalyticsSearchesPage() {
       <section className="grid gap-4 xl:grid-cols-3">
         <Card className="xl:col-span-2">
           <CardHeader className="flex items-center justify-between gap-3">
-            <h2 className="text-base font-semibold text-slate-900">Recherches récentes</h2>
-            <p className="text-sm text-slate-600">
+            <h2 className="text-base font-semibold text-foreground">Recherches récentes</h2>
+            <p className="text-sm text-muted-foreground">
               {data?.page.totalCount ?? 0} recherche(s) - page {Math.floor((data?.page.offset ?? 0) / limit) + 1}
             </p>
           </CardHeader>
           <CardContent>
             {error ? (
-              <p className="mb-3 rounded-md bg-red-50 px-3 py-2 text-sm text-red-700">{error}</p>
+              <p className="mb-3 rounded-md bg-destructive/10 px-3 py-2 text-sm text-destructive">{error}</p>
             ) : null}
 
             {loading ? (
-              <p className="text-sm text-slate-600">Chargement...</p>
+              <p className="text-sm text-muted-foreground">Chargement...</p>
             ) : (
               <div className="space-y-3">
                 <div className="overflow-x-auto">
                   <table className="min-w-full border-collapse text-sm">
                     <thead>
-                      <tr className="border-b border-slate-200 text-left text-slate-600">
+                      <tr className="border-b border-border text-left text-muted-foreground">
                         <th className="py-2 pr-4 font-medium">Date</th>
                         <th className="py-2 pr-4 font-medium">Source</th>
                         <th className="py-2 pr-4 font-medium">Requête</th>
@@ -461,26 +461,26 @@ export default function AnalyticsSearchesPage() {
                     <tbody>
                       {searches.length === 0 ? (
                         <tr>
-                          <td colSpan={6} className="py-6 text-center text-sm text-slate-500">
+                          <td colSpan={6} className="py-6 text-center text-sm text-muted-foreground">
                             Aucune recherche trouvée avec ces filtres.
                           </td>
                         </tr>
                       ) : (
                         searches.map((item) => (
-                          <tr key={item.searchId} className="border-b border-slate-100 align-top">
-                            <td className="py-3 pr-4 text-slate-700">{toDateLabel(item.occurredAt)}</td>
-                            <td className="py-3 pr-4 text-slate-700">{toSourceLabel(item.source)}</td>
+                          <tr key={item.searchId} className="border-b border-border align-top">
+                            <td className="py-3 pr-4 text-foreground">{toDateLabel(item.occurredAt)}</td>
+                            <td className="py-3 pr-4 text-foreground">{toSourceLabel(item.source)}</td>
                             <td className="py-3 pr-4">
-                              <p className="font-medium text-slate-900">
+                              <p className="font-medium text-foreground">
                                 {item.queryTextRaw || item.queryTextNormalized || "(vide)"}
                               </p>
-                              <p className="mt-1 text-xs text-slate-500">{formatFilters(item.filters)}</p>
+                              <p className="mt-1 text-xs text-muted-foreground">{formatFilters(item.filters)}</p>
                             </td>
-                            <td className="py-3 pr-4 text-slate-700">
+                            <td className="py-3 pr-4 text-foreground">
                               {item.resultsCount === null ? "N/A" : item.resultsCount}
                             </td>
                             <td className="py-3 pr-4">{statusBadge(item.resultStatus)}</td>
-                            <td className="py-3 pr-4 text-xs text-slate-600">
+                            <td className="py-3 pr-4 text-xs text-muted-foreground">
                               <p>{item.actorId || "Visiteur"}</p>
                               <p>{item.isAuthenticated === true ? "Authentifié" : "Anonyme"}</p>
                             </td>
@@ -511,32 +511,32 @@ export default function AnalyticsSearchesPage() {
 
         <Card>
           <CardHeader>
-            <h2 className="text-base font-semibold text-slate-900">Top requêtes</h2>
+            <h2 className="text-base font-semibold text-foreground">Top requêtes</h2>
           </CardHeader>
           <CardContent className="space-y-2">
             {loading ? (
-              <p className="text-sm text-slate-600">Chargement...</p>
+              <p className="text-sm text-muted-foreground">Chargement...</p>
             ) : data?.topQueries.length ? (
               data.topQueries.slice(0, 10).map((item) => (
                 <div
                   key={item.queryText}
-                  className="rounded-lg border border-slate-200 bg-slate-50 px-3 py-2"
+                  className="rounded-lg border border-border bg-muted px-3 py-2"
                 >
-                  <p className="text-sm font-medium text-slate-900">{item.queryText}</p>
-                  <p className="text-xs text-slate-600">
+                  <p className="text-sm font-medium text-foreground">{item.queryText}</p>
+                  <p className="text-xs text-muted-foreground">
                     {item.searches} recherche(s) | {item.withResults} avec résultat
                   </p>
                 </div>
               ))
             ) : (
-              <p className="text-sm text-slate-600">Aucune requête sur cette période.</p>
+              <p className="text-sm text-muted-foreground">Aucune requête sur cette période.</p>
             )}
 
             <div className="pt-2">
-              <h3 className="text-sm font-semibold text-slate-900">Répartition par source</h3>
+              <h3 className="text-sm font-semibold text-foreground">Répartition par source</h3>
               <div className="mt-2 space-y-1">
                 {data?.sources.map((item) => (
-                  <p key={item.source} className="text-xs text-slate-600">
+                  <p key={item.source} className="text-xs text-muted-foreground">
                     {toSourceLabel(item.source)}: {item.searches}
                   </p>
                 ))}
