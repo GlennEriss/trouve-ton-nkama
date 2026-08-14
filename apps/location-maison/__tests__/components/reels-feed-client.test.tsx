@@ -15,6 +15,8 @@ const writeTextMock = jest.fn()
 
 let queryState: Record<string, any>
 let queryOptions: Record<string, any>
+let activeCategoriesQueryState: Record<string, any>
+let activeCategoriesQueryOptions: Record<string, any>
 let carouselSelect: (() => void) | undefined
 let selectedIndex = 0
 
@@ -33,10 +35,10 @@ jest.mock('@tanstack/react-query', () => ({
     queryOptions = options
     return queryState
   },
-  // Onglets catégorie (Lot 9) : liste vide => `categoryTabs` reste masqué (même seuil de
-  // self-gating que CategoryFilterPills), donc aucune des assertions existantes n'est
-  // affectée par cet ajout.
-  useQuery: () => ({ data: [] }),
+  useQuery: (options: Record<string, any>) => {
+    activeCategoriesQueryOptions = options
+    return activeCategoriesQueryState
+  },
 }))
 
 jest.mock('next/link', () => ({
@@ -147,6 +149,7 @@ describe('ReelsFeedClient', () => {
     selectedIndex = 0
     carouselSelect = undefined
     queryState = loadedState([reel(1), reel(2), reel(3), reel(4)])
+    activeCategoriesQueryState = { data: [] }
     trackLikeMock.mockResolvedValue(undefined)
     trackShareMock.mockResolvedValue(undefined)
     Object.defineProperty(window, 'open', { configurable: true, value: openMock })
@@ -251,6 +254,50 @@ describe('ReelsFeedClient', () => {
 
     ;(global.fetch as jest.Mock).mockResolvedValueOnce({ ok: false })
     await expect(queryOptions.queryFn({ pageParam: null })).rejects.toThrow('Impossible de charger les réels.')
+  })
+
+  it('affiche les onglets catégorie des qu il y a au moins 2 categories actives et permet de filtrer', async () => {
+    activeCategoriesQueryState = {
+      data: [
+        { id: 'mode', slug: 'mode', name: 'Mode', icon: null, order: 10 },
+        { id: 'immobilier', slug: 'immobilier', name: 'Immobilier', icon: null, order: 0 },
+      ],
+    }
+    render(<ReelsFeedClient />)
+
+    expect(screen.getByRole('button', { name: 'Tout' })).toBeVisible()
+    const modeTab = screen.getByRole('button', { name: 'Mode' })
+    expect(modeTab).toBeVisible()
+    expect(screen.getByRole('button', { name: 'Immobilier' })).toBeVisible()
+
+    carouselApi.scrollTo.mockClear()
+    fireEvent.click(modeTab)
+    await waitFor(() => expect(carouselApi.scrollTo).toHaveBeenCalledWith(0))
+  })
+
+  it('masque les onglets catégorie quand moins de 2 categories sont actives', () => {
+    activeCategoriesQueryState = { data: [{ id: 'mode', slug: 'mode', name: 'Mode', icon: null, order: 10 }] }
+    render(<ReelsFeedClient />)
+    expect(screen.queryByRole('button', { name: 'Tout' })).not.toBeInTheDocument()
+  })
+
+  it('recupere les categories actives et se replie sur une liste vide en cas d echec HTTP', async () => {
+    render(<ReelsFeedClient />)
+
+    const categories = await activeCategoriesQueryOptions.queryFn()
+    expect(global.fetch).toHaveBeenCalledWith('/api/categories/active')
+    expect(categories).toEqual([])
+
+    ;(global.fetch as jest.Mock).mockResolvedValueOnce({ ok: false })
+    await expect(activeCategoriesQueryOptions.queryFn()).resolves.toEqual([])
+
+    ;(global.fetch as jest.Mock).mockResolvedValueOnce({
+      ok: true,
+      json: async () => ({ categories: [{ id: 'mode', slug: 'mode', name: 'Mode', icon: null, order: 10 }] }),
+    })
+    await expect(activeCategoriesQueryOptions.queryFn()).resolves.toEqual([
+      { id: 'mode', slug: 'mode', name: 'Mode', icon: null, order: 10 },
+    ])
   })
 })
 
