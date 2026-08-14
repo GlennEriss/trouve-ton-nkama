@@ -113,6 +113,7 @@ export default function CategoriesDashboardPage() {
   const [createDensity, setCreateDensity] = useState<(typeof DENSITIES)[number]>("standard");
   const [createMinListings, setCreateMinListings] = useState("12");
   const [createAttributeSchema, setCreateAttributeSchema] = useState("[]");
+  const [createPromotionPricing, setCreatePromotionPricing] = useState("{}");
   const [isCreating, setIsCreating] = useState(false);
 
   const [editTargetId, setEditTargetId] = useState("");
@@ -122,6 +123,7 @@ export default function CategoriesDashboardPage() {
   const [editHasMapView, setEditHasMapView] = useState<"unchanged" | "true" | "false">("unchanged");
   const [editMinListings, setEditMinListings] = useState("");
   const [editAttributeSchema, setEditAttributeSchema] = useState("");
+  const [editPromotionPricing, setEditPromotionPricing] = useState("");
   const [isUpdating, setIsUpdating] = useState(false);
   const [isDeletingCategoryId, setIsDeletingCategoryId] = useState<string | null>(null);
 
@@ -163,6 +165,7 @@ export default function CategoriesDashboardPage() {
     setCreateDensity("standard");
     setCreateMinListings("12");
     setCreateAttributeSchema("[]");
+    setCreatePromotionPricing("{}");
   }, []);
 
   const resetEditForm = useCallback(() => {
@@ -173,6 +176,7 @@ export default function CategoriesDashboardPage() {
     setEditHasMapView("unchanged");
     setEditMinListings("");
     setEditAttributeSchema("");
+    setEditPromotionPricing("");
   }, []);
 
   const handleCreate = useCallback(
@@ -205,6 +209,16 @@ export default function CategoriesDashboardPage() {
           throw new Error("Le schéma d'attributs doit être un tableau JSON.");
         }
 
+        let promotionPricing: unknown;
+        try {
+          promotionPricing = JSON.parse(createPromotionPricing || "{}");
+        } catch {
+          throw new Error("Le tarif des promotions n'est pas un JSON valide.");
+        }
+        if (typeof promotionPricing !== "object" || promotionPricing === null || Array.isArray(promotionPricing)) {
+          throw new Error("Le tarif des promotions doit être un objet JSON.");
+        }
+
         const response = await fetch("/api/admin/v1/categories", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -221,6 +235,7 @@ export default function CategoriesDashboardPage() {
             defaultDensity: createDensity,
             minListingsForHomeSection: minListings,
             attributeSchema,
+            promotionPricing,
           }),
         });
 
@@ -253,6 +268,7 @@ export default function CategoriesDashboardPage() {
       createMinListings,
       createName,
       createOrder,
+      createPromotionPricing,
       createParentId,
       createSlug,
       categoriesQuery,
@@ -309,6 +325,20 @@ export default function CategoriesDashboardPage() {
         }
         patch.attributeSchema = attributeSchema;
       }
+      if (editPromotionPricing.trim()) {
+        let promotionPricing: unknown;
+        try {
+          promotionPricing = JSON.parse(editPromotionPricing);
+        } catch {
+          setGlobalError("Le tarif des promotions n'est pas un JSON valide.");
+          return;
+        }
+        if (typeof promotionPricing !== "object" || promotionPricing === null || Array.isArray(promotionPricing)) {
+          setGlobalError("Le tarif des promotions doit être un objet JSON.");
+          return;
+        }
+        patch.promotionPricing = promotionPricing;
+      }
 
       if (Object.keys(patch).length === 0) {
         setGlobalError("Aucun changement détecté.");
@@ -350,6 +380,7 @@ export default function CategoriesDashboardPage() {
       editMinListings,
       editName,
       editOrder,
+      editPromotionPricing,
       editTargetId,
       categoriesQuery,
       resetEditForm,
@@ -577,6 +608,18 @@ export default function CategoriesDashboardPage() {
                   disabled={!canManageCategories || isCreating}
                 />
               </div>
+              <div className="space-y-1">
+                <label className="text-xs text-muted-foreground">
+                  Tarif des promotions (JSON, optionnel — sinon la grille par défaut immobilier s&apos;applique)
+                </label>
+                <textarea
+                  className="min-h-[100px] w-full rounded-md border border-input bg-background px-3 py-2 text-xs font-mono"
+                  value={createPromotionPricing}
+                  onChange={(event) => setCreatePromotionPricing(event.target.value)}
+                  placeholder='{"boost":{"credits":3,"duration":0},"trending-3d":{"credits":5,"duration":3},"trending-7d":{"credits":7,"duration":7},"featured":{"credits":10,"duration":7}}'
+                  disabled={!canManageCategories || isCreating}
+                />
+              </div>
               <Button type="submit" disabled={!canManageCategories || isCreating || !createName.trim()}>
                 {isCreating ? "Création..." : "Créer la catégorie"}
               </Button>
@@ -660,6 +703,16 @@ export default function CategoriesDashboardPage() {
                   value={editAttributeSchema}
                   onChange={(event) => setEditAttributeSchema(event.target.value)}
                   placeholder="Laisser vide pour ne pas toucher au schéma existant"
+                  disabled={!canManageCategories || isUpdating}
+                />
+              </div>
+              <div className="space-y-1">
+                <label className="text-xs text-muted-foreground">Nouveau tarif des promotions (JSON, optionnel)</label>
+                <textarea
+                  className="min-h-[100px] w-full rounded-md border border-input bg-background px-3 py-2 text-xs font-mono"
+                  value={editPromotionPricing}
+                  onChange={(event) => setEditPromotionPricing(event.target.value)}
+                  placeholder="Laisser vide pour ne pas toucher au tarif existant"
                   disabled={!canManageCategories || isUpdating}
                 />
               </div>

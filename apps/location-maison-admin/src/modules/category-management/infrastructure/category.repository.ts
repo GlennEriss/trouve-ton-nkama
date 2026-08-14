@@ -3,8 +3,10 @@ import { FieldValue } from "firebase-admin/firestore";
 import { getFirebaseAdminDb } from "@/lib/firebase/firebase-admin";
 import type {
   CategoryAttributeSchemaField,
+  CategoryPromotionPricing,
   CreateListingCategoryInput,
   ListingCategory,
+  PromotionType,
   UpdateListingCategoryInput,
 } from "@/modules/category-management/domain/types";
 import { toIsoDate } from "@trouve-ton-nkama/core/utils";
@@ -25,6 +27,7 @@ type ListingCategoryDoc = {
   defaultDensity?: unknown;
   defaultSort?: unknown;
   minListingsForHomeSection?: unknown;
+  promotionPricing?: unknown;
   createdAt?: unknown;
   updatedAt?: unknown;
   createdBy?: unknown;
@@ -83,6 +86,26 @@ function toSafeAttributeSchema(value: unknown): CategoryAttributeSchemaField[] {
     .filter((field): field is CategoryAttributeSchemaField => field !== null);
 }
 
+const PROMOTION_TYPES: PromotionType[] = ["featured", "trending-7d", "trending-3d", "boost"];
+
+function toSafePromotionPricing(value: unknown): CategoryPromotionPricing {
+  if (!value || typeof value !== "object") {
+    return {};
+  }
+  const raw = value as Record<string, unknown>;
+  const result: CategoryPromotionPricing = {};
+  for (const type of PROMOTION_TYPES) {
+    const entry = raw[type];
+    if (!entry || typeof entry !== "object") continue;
+    const entryRaw = entry as Record<string, unknown>;
+    const credits = toSafeNumber(entryRaw.credits, -1);
+    const duration = toSafeNumber(entryRaw.duration, -1);
+    if (credits < 0 || duration < 0) continue;
+    result[type] = { credits, duration };
+  }
+  return result;
+}
+
 function mapDoc(id: string, data: ListingCategoryDoc): ListingCategory {
   return {
     id,
@@ -101,6 +124,7 @@ function mapDoc(id: string, data: ListingCategoryDoc): ListingCategory {
       data.defaultDensity === "showcase" || data.defaultDensity === "compact" ? data.defaultDensity : "standard",
     defaultSort: toSafeString(data.defaultSort) ?? "relevance",
     minListingsForHomeSection: Math.max(0, toSafeNumber(data.minListingsForHomeSection, 12)),
+    promotionPricing: toSafePromotionPricing(data.promotionPricing),
     createdAt: toIsoDate(data.createdAt),
     updatedAt: toIsoDate(data.updatedAt),
     createdBy: toSafeString(data.createdBy),
@@ -178,6 +202,7 @@ export async function createListingCategory(input: CreateListingCategoryInput) {
     defaultDensity: input.defaultDensity ?? "standard",
     defaultSort: input.defaultSort ?? "relevance",
     minListingsForHomeSection: Math.max(0, Math.trunc(input.minListingsForHomeSection ?? 12)),
+    promotionPricing: input.promotionPricing ?? {},
     createdBy: input.actorUid,
     updatedBy: input.actorUid,
     createdAt: FieldValue.serverTimestamp(),

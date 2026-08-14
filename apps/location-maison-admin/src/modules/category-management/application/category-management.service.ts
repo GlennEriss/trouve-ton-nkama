@@ -1,5 +1,6 @@
 import type {
   CategoryAttributeSchemaField,
+  CategoryPromotionPricing,
   CreateListingCategoryInput,
   ListingCategoryPatch,
   UpdateListingCategoryInput,
@@ -45,6 +46,21 @@ function validateAttributeSchema(fields: CategoryAttributeSchemaField[] | undefi
     }
     if (field.type === "enum" && (!field.options || field.options.length === 0)) {
       throw new Error("CATEGORY_ENUM_REQUIRES_OPTIONS");
+    }
+  }
+}
+
+function validatePromotionPricing(pricing: CategoryPromotionPricing | undefined) {
+  if (!pricing) {
+    return;
+  }
+  for (const [type, entry] of Object.entries(pricing)) {
+    if (!entry) continue;
+    if (!Number.isFinite(entry.credits) || entry.credits < 0 || entry.credits > 1000) {
+      throw new Error(`CATEGORY_INVALID_PROMOTION_PRICING:${type}`);
+    }
+    if (!Number.isFinite(entry.duration) || entry.duration < 0 || entry.duration > 90) {
+      throw new Error(`CATEGORY_INVALID_PROMOTION_PRICING:${type}`);
     }
   }
 }
@@ -95,6 +111,7 @@ export async function createCategory(input: CreateListingCategoryInput) {
   const order = Math.trunc(input.order ?? 0);
   validateOrder(order);
   validateAttributeSchema(input.attributeSchema);
+  validatePromotionPricing(input.promotionPricing);
 
   const slug = normalizeSlug(input.slug || name);
   if (!slug) {
@@ -138,6 +155,9 @@ export async function updateCategory(input: UpdateListingCategoryInput) {
   }
   if (patch.attributeSchema) {
     validateAttributeSchema(patch.attributeSchema);
+  }
+  if (patch.promotionPricing) {
+    validatePromotionPricing(patch.promotionPricing);
   }
   if (typeof patch.slug === "string") {
     const slug = normalizeSlug(patch.slug);

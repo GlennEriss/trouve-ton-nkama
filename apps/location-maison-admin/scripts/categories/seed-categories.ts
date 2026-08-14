@@ -23,6 +23,7 @@ import type {
   CategoryDefaultDensity,
   CategoryImageRatio,
   CategoryLocationPrecision,
+  CategoryPromotionPricing,
 } from "@/modules/category-management/domain/types";
 
 const COLLECTION = "listing_categories";
@@ -41,6 +42,19 @@ type SeedCategory = {
   defaultDensity: CategoryDefaultDensity;
   defaultSort: string;
   minListingsForHomeSection: number;
+  promotionPricing: CategoryPromotionPricing;
+};
+
+// Repère de calibrage (docs/marketplace-multi-categories/06-monetisation.md) : une
+// promotion doit coûter entre 2% et 5% du prix de l'article, pas la grille immobilier
+// (15cr/~1500F = 10% d'un article mode à 15000F, invendable). Point de départ pour un
+// article autour de 15-20000F — ajustable depuis le dashboard admin sans redéploiement,
+// c'est tout l'intérêt de porter ce tarif sur la catégorie plutôt qu'en dur dans le code.
+const MODE_PROMOTION_PRICING: CategoryPromotionPricing = {
+  boost: { credits: 3, duration: 0 },
+  "trending-3d": { credits: 5, duration: 3 },
+  "trending-7d": { credits: 7, duration: 7 },
+  featured: { credits: 10, duration: 7 },
 };
 
 // Type de bien -> libellé, repris tel quel de packages/core/src/domain/property-type.ts.
@@ -145,6 +159,7 @@ function buildSeedTree(): SeedCategory[] {
     defaultDensity: "standard",
     defaultSort: "relevance",
     minListingsForHomeSection: 0,
+    promotionPricing: {},
   });
 
   IMMOBILIER_CHILDREN.forEach((child, index) => {
@@ -161,6 +176,7 @@ function buildSeedTree(): SeedCategory[] {
       defaultDensity: "standard",
       defaultSort: "relevance",
       minListingsForHomeSection: 0,
+      promotionPricing: {},
     });
   });
 
@@ -180,6 +196,7 @@ function buildSeedTree(): SeedCategory[] {
     defaultDensity: "compact",
     defaultSort: "recent",
     minListingsForHomeSection: 12,
+    promotionPricing: {},
   });
 
   MODE_CHILDREN.forEach((child, index) => {
@@ -196,6 +213,7 @@ function buildSeedTree(): SeedCategory[] {
       defaultDensity: "compact",
       defaultSort: "recent",
       minListingsForHomeSection: 12,
+      promotionPricing: MODE_PROMOTION_PRICING,
     });
   });
 
@@ -247,32 +265,43 @@ async function main() {
   }
 
   const db = getFirebaseAdminDb();
+
+  // Idempotent au sens strict : ne touche QUE les catégories qui n'existent pas encore.
+  // Un premier passage de ce script avait écrasé `isActive` (et écraserait tout autant
+  // attributeSchema/promotionPricing/order) sur des catégories déjà activées/configurées
+  // depuis le dashboard admin — un rejeu de "seed" ne doit jamais revenir sur une décision
+  // prise dans l'UI après coup. Pour ajuster une catégorie existante, passer par l'admin
+  // (/dashboard/categories), pas par ce script.
+  const existingSnapshot = await db.collection(COLLECTION).get();
+  const existingIds = new Set(existingSnapshot.docs.map((doc) => doc.id));
+  const toCreate = categories.filter((category) => !existingIds.has(category.id));
+  const skipped = categories.filter((category) => existingIds.has(category.id)).map((category) => category.id);
+
   const batch = db.batch();
 
-  for (const category of categories) {
+  for (const category of toCreate) {
     const ref = db.collection(COLLECTION).doc(category.id);
-    batch.set(
-      ref,
-      {
-        ...category,
-        slug: category.id,
-        icon: null,
-        createdBy: SEED_ACTOR,
-        updatedBy: SEED_ACTOR,
-        updatedAt: FieldValue.serverTimestamp(),
-        createdAt: FieldValue.serverTimestamp(),
-      },
-      { merge: true },
-    );
+    batch.set(ref, {
+      ...category,
+      slug: category.id,
+      icon: null,
+      createdBy: SEED_ACTOR,
+      updatedBy: SEED_ACTOR,
+      updatedAt: FieldValue.serverTimestamp(),
+      createdAt: FieldValue.serverTimestamp(),
+    });
   }
 
-  await batch.commit();
+  if (toCreate.length > 0) {
+    await batch.commit();
+  }
 
   console.log(
     JSON.stringify(
       {
-        seeded: categories.map((category) => ({ id: category.id, parentId: category.parentId, isActive: category.isActive })),
-        count: categories.length,
+        created: toCreate.map((category) => ({ id: category.id, parentId: category.parentId, isActive: category.isActive })),
+        createdCount: toCreate.length,
+        skippedAlreadyExists: skipped,
       },
       null,
       2,

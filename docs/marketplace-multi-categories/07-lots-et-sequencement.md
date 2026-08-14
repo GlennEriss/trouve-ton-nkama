@@ -143,13 +143,29 @@ restent strictement immobilier (12 `CREATABLE_TYPES` en dur) :
 **Sortie :** un vendeur peut publier lui-même dans une catégorie active, assisté par l'IA —
 mécaniquement prêt, invisible tant que Mode n'est pas activée avec du stock.
 
-### Lot 8 — Monétisation
-`promotionPricing` par catégorie, quota d'annonces actives par catégorie, facturation des
-annonces supplémentaires, emplacements sponsorisés dans les pages mode, instrumentation des
-métriques de décision.
-**Sortie :** la catégorie génère du revenu.
-**Point d'attention :** l'instrumentation (comptes au-dessus du quota, taux de clic contact,
-favoris) doit en réalité être livrée **dès le lot 5**, sinon la phase d'activation sera un pari.
+### Lot 8 — Monétisation ✅ fait (2026-08-14)
+**Décision utilisateur** qui a simplifié le lot : pas de quota gratuit — coût en crédits dès
+la 1ère annonce, uniforme toutes catégories. Déjà vrai par construction (brouillon IA = 1
+crédit, immobilier et mode, Lot 7) : rien à construire pour ça. Seul point réellement ouvert
+traité ici : **retarification des promotions par catégorie**.
+- `promotionPricing` ajouté au modèle `ListingCategory` (admin), validé (bornes crédits/durée),
+  éditable en JSON depuis `/dashboard/categories` (create + edit), seedé pour Mode (boost 3cr,
+  tendance 3j 5cr, tendance 7j 7cr, mise à la une 10cr — vs 3/5/10/15 immobilier).
+- `app/api/property/promote/route.ts` (**endpoint live, débite de vrais crédits**) lit
+  maintenant `property.categoryId` → `listing_categories/{id}.promotionPricing` **à
+  l'intérieur de la même transaction Firestore** (pas de lecture hors transaction, cohérence
+  garantie) ; absent ou catégorie non trouvée ⇒ repli sur la grille immobilier historique,
+  strictement inchangée. Vérifié par la suite de tests dédiée existante (10 tests) ET par le
+  test d'intégration sur **émulateur Firestore réel** (transaction + idempotence) — tous verts
+  sans modification.
+- **Bug de seed trouvé et corrigé pendant les vérifications** : relancer le script de seed
+  écrasait `isActive` (et aurait écrasé `attributeSchema`/`promotionPricing`/`order`) sur des
+  catégories déjà configurées depuis le dashboard — un rejeu de seed ne doit jamais revenir sur
+  une décision admin. Script rendu réellement idempotent : ne crée que les catégories absentes,
+  ne touche plus jamais celles qui existent déjà.
+**Point d'attention resté valable :** l'instrumentation (comptes au-dessus d'un futur seuil,
+taux de clic contact, favoris) reste à construire si un modèle de quota/abonnement est
+introduit plus tard — non fait ici, cohérent avec la décision "pas de quota" de ce lot.
 
 ### Lot 9 — Réels par catégorie
 `categoryPath` sur le réel, onglets de feed, liens de partage vers `/annonce/[id]`.

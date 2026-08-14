@@ -20,6 +20,15 @@ const attributeFieldSchema = z
   })
   .strict();
 
+const promotionPricingSchema = z
+  .object({
+    featured: z.object({ credits: z.number().int().min(0).max(1000), duration: z.number().int().min(0).max(90) }).optional(),
+    "trending-7d": z.object({ credits: z.number().int().min(0).max(1000), duration: z.number().int().min(0).max(90) }).optional(),
+    "trending-3d": z.object({ credits: z.number().int().min(0).max(1000), duration: z.number().int().min(0).max(90) }).optional(),
+    boost: z.object({ credits: z.number().int().min(0).max(1000), duration: z.number().int().min(0).max(90) }).optional(),
+  })
+  .strict();
+
 const bodySchema = z
   .object({
     parentId: z.string().trim().min(1).nullable().optional(),
@@ -35,6 +44,7 @@ const bodySchema = z
     defaultDensity: z.enum(["showcase", "standard", "compact"]).optional(),
     defaultSort: z.string().trim().min(1).max(30).optional(),
     minListingsForHomeSection: z.coerce.number().int().min(0).max(10000).optional(),
+    promotionPricing: promotionPricingSchema.optional(),
   })
   .strict();
 
@@ -76,6 +86,13 @@ const UPDATE_ERROR_MAP: Record<string, { status: number; apiCode: "CONFLICT" | "
 };
 
 function resolveUpdateError(code: string) {
+  if (code.startsWith("CATEGORY_INVALID_PROMOTION_PRICING:")) {
+    return {
+      status: 400,
+      apiCode: "VALIDATION_ERROR" as const,
+      message: `Tarif de promotion invalide pour : ${code.split(":")[1]}.`,
+    };
+  }
   return (
     UPDATE_ERROR_MAP[code] ?? {
       status: 500,
