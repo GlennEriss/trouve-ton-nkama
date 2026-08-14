@@ -15,6 +15,8 @@ const writeTextMock = jest.fn()
 
 let queryState: Record<string, any>
 let queryOptions: Record<string, any>
+let activeCategoriesQueryState: Record<string, any>
+let activeCategoriesQueryOptions: Record<string, any>
 let carouselSelect: (() => void) | undefined
 let selectedIndex = 0
 
@@ -33,10 +35,10 @@ jest.mock('@tanstack/react-query', () => ({
     queryOptions = options
     return queryState
   },
-  // Onglets catégorie (Lot 9) : liste vide => `categoryTabs` reste masqué (même seuil de
-  // self-gating que CategoryFilterPills), donc aucune des assertions existantes n'est
-  // affectée par cet ajout.
-  useQuery: () => ({ data: [] }),
+  useQuery: (options: Record<string, any>) => {
+    activeCategoriesQueryOptions = options
+    return activeCategoriesQueryState
+  },
 }))
 
 jest.mock('next/link', () => ({
@@ -147,6 +149,7 @@ describe('ReelsFeedClient', () => {
     selectedIndex = 0
     carouselSelect = undefined
     queryState = loadedState([reel(1), reel(2), reel(3), reel(4)])
+    activeCategoriesQueryState = { data: [] }
     trackLikeMock.mockResolvedValue(undefined)
     trackShareMock.mockResolvedValue(undefined)
     Object.defineProperty(window, 'open', { configurable: true, value: openMock })
