@@ -86,9 +86,10 @@ composite Firestore documenté en commentaire dans le fichier (`categoryPath.lvl
 Asc, moderationStatus Asc, createdAt Desc`) n'avait jamais été créé. Corrigé en l'ajoutant à
 `firestore.indexes.json` (+ l'équivalent pour les réels, `categoryPath.lvl0/processingStatus/
 moderationStatus/createdAt`, avant que Mode n'ait de réels) et en déployant
-(`firebase deploy --only firestore:indexes`) contre dev. **Reste à faire avant l'ouverture
-Mode en prod** : le même déploiement d'index contre `location-maison-prod-167da` — sans quoi
-le même 500 silencieux se reproduira le jour de l'activation.
+(`firebase deploy --only firestore:indexes`) contre dev **puis contre prod** (2026-08-14, à la
+demande explicite de l'utilisateur) — opération purement additive (création d'index, aucune
+donnée touchée, aucun index existant supprimé sur les deux environnements). Les deux
+environnements ont désormais l'index avant même l'activation publique de Mode en prod.
 
 ### Lot 6 — URLs migrées ✅ fait (2026-08-13) ; fiche générique par catégorie non fait
 Fait : nouvelle route `/annonce/[id]` (contenu identique à l'ancienne page), `/houseDetails/[id]`
