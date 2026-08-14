@@ -41,7 +41,7 @@ describe('/api/reels/feed', () => {
     const response = await GET(req('limitPerPage=5&cursor=cur-1'))
     expect(await response.json()).toMatchObject({ reels: [{ id: 'r2' }], nextCursor: 'cur-2' })
     expect(getPublicReels).toHaveBeenCalledWith({ limitPerPage: 5, cursor: 'cur-1' })
-    expect(cache.set).toHaveBeenCalledWith('reels:feed:5:cur-1', expect.any(Object), expect.any(Number))
+    expect(cache.set).toHaveBeenCalledWith('reels:feed:all:5:cur-1', expect.any(Object), expect.any(Number))
   })
 
   it('utilise les valeurs par defaut sans parametres', async () => {

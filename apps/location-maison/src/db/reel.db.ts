@@ -338,9 +338,19 @@ export async function getReelById(reelId: string): Promise<(Reel & { id: string 
 export async function getPublicReels({
     limitPerPage,
     cursor,
+    categoryRootName,
 }: {
     limitPerPage: number;
     cursor: string | null;
+    // Nom exact de la racine (ex. "Immobilier", "Mode"), même convention que le paramètre
+    // `category` de /search (Lot 4) — jamais saisi librement, toujours issu de
+    // GET /api/categories/active. Absent => comportement historique inchangé (onglet
+    // "Tout"). ⚠️ Nécessite un index composite Firestore (categoryPath.lvl0 Asc,
+    // processingStatus Asc, moderationStatus Asc, createdAt Desc) sur `reels`, à créer
+    // avant que le filtre par catégorie fonctionne — voir home-sections/route.ts pour la
+    // même précaution côté annonces. Sans lui, la requête échoue proprement et le feed
+    // retombe sur "Tout" côté client (ReelsFeedClient), pas de crash public.
+    categoryRootName?: string;
 }): Promise<{ reels: (Reel & { id: string })[]; nextCursor: string | null }> {
     const { collection, getDocs, doc, getDoc, db, where, query, orderBy, startAfter, limit } = await getFirestore();
     const reelsRef = collection(db, firebaseCollectionNames.reels);
@@ -348,6 +358,7 @@ export async function getPublicReels({
         reelsRef,
         where('processingStatus', '==', 'ready'),
         where('moderationStatus', '==', 'APPROVED'),
+        ...(categoryRootName ? [where('categoryPath.lvl0', '==', categoryRootName)] : []),
         orderBy('createdAt', 'desc'),
         limit(limitPerPage)
     );

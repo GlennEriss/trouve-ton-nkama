@@ -80,6 +80,15 @@ se masque tant qu'aucune catégorie active hors immobilier n'atteint son seuil �
 Mode est inactive et sans stock réel, donc invisible. **L'ouverture publique réelle de Mode
 reste une décision produit + opérationnelle** (seed + backfill + activation + stock via le
 Lot 2), pas un déploiement de code.
+**Bug réel trouvé en testant avec du stock (2026-08-14)** : une fois Mode active + du stock
+mock créé, `/api/categories/home-sections` renvoyait 500 (donc 0 annonce visible) — l'index
+composite Firestore documenté en commentaire dans le fichier (`categoryPath.lvl0 Asc, state
+Asc, moderationStatus Asc, createdAt Desc`) n'avait jamais été créé. Corrigé en l'ajoutant à
+`firestore.indexes.json` (+ l'équivalent pour les réels, `categoryPath.lvl0/processingStatus/
+moderationStatus/createdAt`, avant que Mode n'ait de réels) et en déployant
+(`firebase deploy --only firestore:indexes`) contre dev. **Reste à faire avant l'ouverture
+Mode en prod** : le même déploiement d'index contre `location-maison-prod-167da` — sans quoi
+le même 500 silencieux se reproduira le jour de l'activation.
 
 ### Lot 6 — URLs migrées ✅ fait (2026-08-13) ; fiche générique par catégorie non fait
 Fait : nouvelle route `/annonce/[id]` (contenu identique à l'ancienne page), `/houseDetails/[id]`
@@ -167,11 +176,32 @@ traité ici : **retarification des promotions par catégorie**.
 taux de clic contact, favoris) reste à construire si un modèle de quota/abonnement est
 introduit plus tard — non fait ici, cohérent avec la décision "pas de quota" de ce lot.
 
-### Lot 9 — Réels par catégorie
-`categoryPath` sur le réel, onglets de feed, liens de partage vers `/annonce/[id]`.
-**Sortie :** le feed mode alimente l'acquisition et les cadeaux.
-**Peut remonter avant le lot 8** si le stock de vendeurs mode produisant de la vidéo est là :
-coût faible, effet d'acquisition important.
+### Lot 9 — Réels par catégorie ✅ fait (2026-08-14)
+- `categoryPath` ajouté au modèle `Reel` (optionnel — les réels orphelins, sans annonce liée,
+  n'ont pas de catégorie). Capturé depuis l'annonce liée à deux points d'écriture : création du
+  réel (`POST /api/reels`, `assertOwnedProperty` retourne désormais l'annonce au lieu de
+  `void`) et rattachement a posteriori (`PATCH .../attach-property`).
+- `getPublicReels()` (`db/reel.db.ts`) accepte un `categoryRootName` optionnel ; si absent,
+  requête strictement identique à avant (aucun risque pour le feed actuel). Si présent, filtre
+  `where('categoryPath.lvl0', '==', categoryRootName)` — **nécessite un index composite Firestore
+  manuel** (`categoryPath.lvl0 Asc, processingStatus Asc, moderationStatus Asc, createdAt Desc`),
+  documenté en commentaire dans le fichier ; tant qu'il n'est pas créé, un onglet catégorie
+  échouerait et le client retombe sur "Tout" (repli côté `ReelsFeedClient`).
+- `GET /api/reels/feed` accepte un paramètre `category`, clé de cache changée en
+  `reels:feed:${categoryRootName ?? 'all'}:...` pour ne jamais mélanger les caches par catégorie.
+- `ReelsFeedClient` : onglets de catégorie en overlay (pills `bg-black/50 backdrop-blur-sm`,
+  "Tout" + catégories actives), **masqués tant qu'il y a moins de 2 catégories actives** — même
+  seuil de self-gating que `CategoryFilterPills`/`CategoryHomeSections`, donc invisible
+  aujourd'hui. Changement d'onglet → reset `activeIndex` + `scrollTo(0)` sur le carousel, et
+  `queryKey` React Query inclut le filtre pour ne pas mélanger les pages de résultats.
+- Liens de partage : déjà sur `/annonce/[id]` depuis le lot 6, rien à changer ici.
+**Bugs de test corrigés en cours de route (pas de bug fonctionnel réel)** : clé de cache
+attendue dans `reels-feed.test.ts` non mise à jour après l'ajout du segment catégorie ; mock
+`@tanstack/react-query` de `reels-feed-client.test.tsx` ne fournissait que `useInfiniteQuery`
+(ajout de `useQuery`) ; mock du carousel (`carouselApi`) sans `scrollTo`. Suite reels complète
+(8 fichiers, 70 tests) verte, `tsc --noEmit` propre.
+**Sortie :** le feed mode alimente l'acquisition et les cadeaux, mécaniquement prêt et invisible
+tant que Mode n'est pas ouverte (même logique que les lots 4/5).
 
 ### Lot 10 — Convergence immobilière (différé, non planifié)
 Migration des 14 builders vers le moteur générique, rapatriement de `tags.json` dans

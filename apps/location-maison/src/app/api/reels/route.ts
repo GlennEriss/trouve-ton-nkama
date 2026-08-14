@@ -327,6 +327,8 @@ async function assertOwnedProperty(
   if (property.createdBy !== uid) {
     throw new ReelApiError(403, 'FORBIDDEN_PROPERTY', "Cette annonce ne vous appartient pas.");
   }
+
+  return property;
 }
 
 export async function POST(request: NextRequest): Promise<NextResponse<ReelApiResponse>> {
@@ -365,8 +367,12 @@ export async function POST(request: NextRequest): Promise<NextResponse<ReelApiRe
         throw new ReelApiError(409, 'REEL_ALREADY_EXISTS', 'Ce réel existe déjà.');
       }
 
+      let categoryPath: Reel['categoryPath'];
       if (propertyRef) {
-        await assertOwnedProperty(transaction, propertyRef, uid);
+        const property = await assertOwnedProperty(transaction, propertyRef, uid);
+        if (property.categoryPath) {
+          categoryPath = property.categoryPath as Reel['categoryPath'];
+        }
       }
 
       const payload: Reel & { state: 'IN_PROGRESS'; createdAt: FirebaseFirestore.FieldValue; updatedAt: FirebaseFirestore.FieldValue } = {
@@ -388,6 +394,7 @@ export async function POST(request: NextRequest): Promise<NextResponse<ReelApiRe
         ...(typeof trimStartSeconds === 'number' ? { trimStartSeconds } : {}),
         ...(typeof trimEndSeconds === 'number' ? { trimEndSeconds } : {}),
         ...(typeof muted === 'boolean' ? { muted } : {}),
+        ...(categoryPath ? { categoryPath } : {}),
       } as Reel & { state: 'IN_PROGRESS'; createdAt: FirebaseFirestore.FieldValue; updatedAt: FirebaseFirestore.FieldValue };
 
       transaction.create(reelRef, payload);
@@ -545,10 +552,11 @@ export async function PATCH(request: NextRequest): Promise<NextResponse<ReelApiR
         throw new ReelApiError(409, 'REEL_ALREADY_ATTACHED', 'Ce réel est déjà rattaché à une annonce.');
       }
 
-      await assertOwnedProperty(transaction, propertyRef, uid);
+      const property = await assertOwnedProperty(transaction, propertyRef, uid);
 
       transaction.update(reelRef, {
         propertyId,
+        ...(property.categoryPath ? { categoryPath: property.categoryPath } : {}),
         updatedAt: FieldValue.serverTimestamp(),
       });
     });
