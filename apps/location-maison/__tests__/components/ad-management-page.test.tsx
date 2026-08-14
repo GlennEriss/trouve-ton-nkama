@@ -241,4 +241,29 @@ describe('AdManagementPage', () => {
     rerender(<AdManagementPage />)
     expect(screen.getByRole('heading', { name: 'Aucune annonce trouvée' })).toBeVisible()
   })
+
+  it('affiche une annonce multi-categorie (sans typeProperty) avec son sous-titre, sa localisation et son lien de modification', () => {
+    managementState = buildManagementState({
+      items: [
+        property({
+          id: 'property-mode-9b',
+          title: 'Robe wax élégante',
+          typeProperty: undefined,
+          categoryId: 'vetements',
+          categoryPath: { lvl0: 'Mode', lvl1: 'Mode > Vêtements' },
+          street: '',
+          city: 'Libreville',
+          province: 'Estuaire',
+        }),
+      ],
+    })
+    render(<AdManagementPage />)
+
+    expect(screen.getByText('Vêtements')).toBeVisible()
+    expect(screen.getByText('Libreville, Estuaire')).toBeVisible()
+    expect(screen.getByRole('link', { name: /Modifier/ })).toHaveAttribute(
+      'href',
+      '/category-listing/create/preview/property-mode-9b',
+    )
+  })
 })
