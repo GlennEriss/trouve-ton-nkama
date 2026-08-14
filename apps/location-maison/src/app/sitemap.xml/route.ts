@@ -72,7 +72,7 @@ export async function GET() {
 
   const properties = await listPublicPropertiesForSitemap();
   const propertyEntries: SitemapEntry[] = properties.map((property) => ({
-    path: `/houseDetails/${property.id}`,
+    path: `/annonce/${property.id}`,
     lastmod: getPropertyLastModified(property),
   }));
 

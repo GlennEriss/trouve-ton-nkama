@@ -21,12 +21,15 @@ export default function PublishChoiceClient() {
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 items-stretch">
-        <Link href={routes.protected.add_property_ai} className="block h-full">
+        {/* "Publier une annonce" mène au choix de catégorie (/publish/category), pas
+            directement à l'immobilier — ce bouton n'est plus restreint à un seul
+            vertical (voir docs/marketplace-multi-categories/07-lots-et-sequencement.md). */}
+        <Link href={routes.protected.publish_category_choice} className="block h-full">
           <Card className="h-full flex flex-col items-center justify-center gap-3 p-8 text-center cursor-pointer hover:border-emerald-500 hover:shadow-md transition-all">
             <Building2 className="h-10 w-10 text-emerald-600" />
             <div>
               <p className="font-semibold text-slate-800 dark:text-slate-100">Publier une annonce</p>
-              <p className="mt-1 text-xs text-slate-500 dark:text-slate-300">Louer ou vendre un bien</p>
+              <p className="mt-1 text-xs text-slate-500 dark:text-slate-300">Immobilier, mode...</p>
             </div>
           </Card>
         </Link>

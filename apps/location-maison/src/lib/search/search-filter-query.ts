@@ -9,6 +9,11 @@ const FACET_FILTERS = [
   ['typeProperty', 'typeProperty'],
   ['status', 'status'],
   ['tags', 'tags'],
+  // Multi-catégories (Lot 4) : `category` porte le NOM exact de la catégorie racine tel
+  // qu'indexé dans categoryPath.lvl0 (ex. "Immobilier", "Mode"), pas un slug — la valeur
+  // vient toujours de GET /api/categories/active, jamais saisie librement par l'utilisateur.
+  // Absent de l'URL (comportement historique) => aucun filtre, résultats inchangés.
+  ['category', 'categoryPath.lvl0'],
 ] as const;
 
 const NUMERIC_FILTERS = [

@@ -2,7 +2,7 @@
 
 import React from 'react'
 import Link from 'next/link'
-import { useInfiniteQuery } from '@tanstack/react-query'
+import { useInfiniteQuery, useQuery } from '@tanstack/react-query'
 import { Check, ChevronDown, ChevronUp, Copy, Gift, Heart, Loader2, Mail, PhoneCall, PlusCircle, RefreshCw, Share2, Video, Volume2, VolumeX } from 'lucide-react'
 import { FaFacebookF, FaTiktok, FaWhatsapp, FaXTwitter } from 'react-icons/fa6'
 import {
@@ -77,14 +77,24 @@ function buildSlides(reels: (Reel & { id: string })[]): FeedSlide[] {
 
 type FeedPage = { reels: (Reel & { id: string })[]; nextCursor: string | null }
 
-async function fetchReelsPage(cursor: string | null): Promise<FeedPage> {
+async function fetchReelsPage(cursor: string | null, category: string | null): Promise<FeedPage> {
   const params = new URLSearchParams({ limitPerPage: String(PAGE_SIZE) })
   if (cursor) params.set('cursor', cursor)
+  if (category) params.set('category', category)
   const response = await fetch(`/api/reels/feed?${params.toString()}`)
   if (!response.ok) {
     throw new Error('Impossible de charger les réels.')
   }
   return response.json()
+}
+
+type ActiveCategory = { id: string; slug: string; name: string; icon: string | null; order: number }
+
+async function fetchActiveCategories(): Promise<ActiveCategory[]> {
+  const response = await fetch('/api/categories/active')
+  if (!response.ok) return []
+  const data = await response.json()
+  return Array.isArray(data.categories) ? data.categories : []
 }
 
 function getReelPublicUrl(reelId: string) {
@@ -645,10 +655,21 @@ export default function ReelsFeedClient() {
     return () => observer.disconnect()
   }, [api])
 
+  // Filtre par catégorie racine (Lot 9, voir docs/marketplace-multi-categories/
+  // 07-lots-et-sequencement.md) — null = "Tout" (comportement historique inchangé).
+  const [categoryFilter, setCategoryFilter] = React.useState<string | null>(null)
+
+  const activeCategoriesQuery = useQuery({
+    queryKey: ['categories', 'active-roots'],
+    queryFn: fetchActiveCategories,
+    staleTime: 1000 * 60 * 10,
+  })
+  const activeCategories = activeCategoriesQuery.data ?? []
+
   const feedQuery = useInfiniteQuery({
-    queryKey: ['reels-feed'],
+    queryKey: ['reels-feed', categoryFilter],
     initialPageParam: null as string | null,
-    queryFn: ({ pageParam }) => fetchReelsPage(pageParam),
+    queryFn: ({ pageParam }) => fetchReelsPage(pageParam, categoryFilter),
     getNextPageParam: (lastPage) => lastPage.nextCursor ?? undefined,
   })
 
@@ -664,6 +685,13 @@ export default function ReelsFeedClient() {
   const carouselItemCount = slides.length + (showEndOfFeedCta ? 1 : 0) + (feedQuery.isFetchingNextPage ? 1 : 0)
   const activeSlide = slides[activeIndex]
   const activeReel = activeSlide?.kind === 'reel' ? activeSlide.reel : null
+
+  // Changer d'onglet catégorie recharge un tout autre jeu de réels : repartir du haut
+  // plutôt que de garder un activeIndex qui pointait sur l'ancienne liste.
+  React.useEffect(() => {
+    setActiveIndex(0)
+    api?.scrollTo(0)
+  }, [categoryFilter, api])
 
   React.useEffect(() => {
     if (!api) return
@@ -697,6 +725,38 @@ export default function ReelsFeedClient() {
       void feedQuery.fetchNextPage()
     }
   }, [activeIndex, activeReel, slides.length, feedQuery])
+
+  // Se masque tant qu'il n'y a pas au moins 2 catégories racine actives — même pattern
+  // self-gating que CategoryFilterPills (Lot 4), donc invisible aujourd'hui.
+  const categoryTabs = activeCategories.length >= 2 ? (
+    <div className="pointer-events-none absolute inset-x-0 top-[max(env(safe-area-inset-top),1rem)] z-20 flex justify-center px-4">
+      <div className="pointer-events-auto flex items-center gap-1 rounded-full bg-black/50 p-1 backdrop-blur-sm">
+        <button
+          type="button"
+          onClick={() => setCategoryFilter(null)}
+          className={cn(
+            'rounded-full px-3 py-1 text-xs font-medium transition-colors',
+            categoryFilter === null ? 'bg-white text-black' : 'text-white/80 hover:text-white',
+          )}
+        >
+          Tout
+        </button>
+        {activeCategories.map((category) => (
+          <button
+            key={category.id}
+            type="button"
+            onClick={() => setCategoryFilter(category.name)}
+            className={cn(
+              'rounded-full px-3 py-1 text-xs font-medium transition-colors',
+              categoryFilter === category.name ? 'bg-white text-black' : 'text-white/80 hover:text-white',
+            )}
+          >
+            {category.name}
+          </button>
+        ))}
+      </div>
+    </div>
+  ) : null
 
   if (feedQuery.isLoading) {
     return (
@@ -732,7 +792,8 @@ export default function ReelsFeedClient() {
 
   if (reels.length === 0) {
     return (
-      <div className="flex h-[100dvh] w-full items-center justify-center bg-black md:h-auto md:bg-neutral-950 md:py-8">
+      <div className="relative flex h-[100dvh] w-full items-center justify-center bg-black md:h-auto md:bg-neutral-950 md:py-8">
+        {categoryTabs}
         <div className={cn('flex h-full w-full flex-col items-center justify-center gap-2 bg-black text-white', DESKTOP_CARD_CLASS)}>
           <p className="font-medium">Aucun réel pour le moment</p>
           <p className="text-sm text-white/60">Revenez bientôt !</p>
@@ -742,7 +803,8 @@ export default function ReelsFeedClient() {
   }
 
   return (
-    <div ref={feedRootRef} className="flex h-[100dvh] w-full items-center justify-center bg-black md:h-auto md:gap-4 md:bg-neutral-950 md:py-8">
+    <div ref={feedRootRef} className="relative flex h-[100dvh] w-full items-center justify-center bg-black md:h-auto md:gap-4 md:bg-neutral-950 md:py-8">
+      {categoryTabs}
       <div className={cn('relative h-full w-full overflow-hidden md:shadow-2xl', DESKTOP_CARD_CLASS)}>
         <Carousel
           orientation="vertical"

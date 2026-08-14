@@ -52,6 +52,7 @@ jest.mock('@/components/home-page/CarouselPropertyType', () => ({ __esModule: tr
 jest.mock('@/components/home-page/FeaturedSection', () => ({ __esModule: true, default: () => <div data-testid="featured" /> }))
 jest.mock('@/components/home-page/TrendingSection', () => ({ __esModule: true, default: () => <div data-testid="trending" /> }))
 jest.mock('@/components/home-page/RecentSection', () => ({ __esModule: true, default: () => <div data-testid="recent" /> }))
+jest.mock('@/components/home-page/CategoryHomeSections', () => ({ __esModule: true, default: () => <div data-testid="category-home-sections" /> }))
 jest.mock('@/components/ads/SponsoredSlot', () => ({ __esModule: true, default: () => <div data-testid="sponsored" /> }))
 jest.mock('@/lib/ads/config', () => ({ ADSENSE_SLOTS: { footer: 'footer-slot' } }))
 

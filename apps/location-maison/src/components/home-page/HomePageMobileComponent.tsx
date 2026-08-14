@@ -18,6 +18,7 @@ import SponsoredSlot from '@/components/ads/SponsoredSlot';
 import { ADSENSE_SLOTS } from '@/lib/ads/config';
 import TrendingSection from './TrendingSection';
 import RecentSection from './RecentSection';
+import CategoryHomeSections from './CategoryHomeSections';
 import { motion, useReducedMotion } from 'framer-motion';
 import { trackingEvents, useTrackEvent } from '@/features/analytics/tracking';
 
@@ -222,9 +223,11 @@ export default function HomePageMobileComponent() {
 
                 <motion.section className='space-y-5' {...getRevealProps(0.11)}>
                     {/* Sections des annonces promues */}
-                    <TrendingSection /> 
+                    <TrendingSection />
                     <RecentSection />
                 </motion.section>
+
+                <CategoryHomeSections />
 
                 <motion.section className='space-y-5 m-5' {...getRevealProps(0.13)}>
                     <h1 className='text-xl font-bold text-center text-primary'>Logements par province</h1>

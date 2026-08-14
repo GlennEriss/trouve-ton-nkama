@@ -80,7 +80,7 @@ describe('PropertyCard', () => {
       'card-click',
       expect.objectContaining({ source: '/search-property', property_id: 'p-click' }),
     )
-    expect(push).toHaveBeenCalledWith('/houseDetails/p-click')
+    expect(push).toHaveBeenCalledWith('/annonce/p-click')
   })
 
   it('masque la date de publication quand hideDate est actif', () => {

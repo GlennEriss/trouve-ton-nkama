@@ -59,7 +59,7 @@ export default function ContactSection({ property }: Readonly<{ property: Proper
                         <div className="flex gap-3">
                             <Link
                                 href={entry.whatsapp ? `https://wa.me/${entry.whatsapp}?text=${encodeURIComponent(
-                                    `Bonjour, je suis intéressé par votre annonce "${property.title}" au prix de ${property.price.toLocaleString('fr-FR')} FCFA. Voici le lien de l'annonce : ${process.env.NEXT_PUBLIC_HOST}/houseDetails/${property.id}`
+                                    `Bonjour, je suis intéressé par votre annonce "${property.title}" au prix de ${property.price.toLocaleString('fr-FR')} FCFA. Voici le lien de l'annonce : ${process.env.NEXT_PUBLIC_HOST}/annonce/${property.id}`
                                 )}` : '#'}
                                 target="_blank"
                                 rel="noopener noreferrer"

@@ -2,7 +2,7 @@
  * @module reel
  */
 import { ICreation } from "./creation";
-import type { ModerationStatus } from "./annonce";
+import type { CategoryPath, ModerationStatus } from "./annonce";
 
 export type ReelProcessingStatus = 'uploading' | 'processing' | 'ready' | 'failed';
 
@@ -10,6 +10,10 @@ export type Reel = ICreation & {
     // Optionnel : un réel peut être créé sans annonce existante (visiteur sans compte/sans
     // annonce, voir CreateOrphanReelClient) puis rattaché plus tard via attachReelToProperty.
     propertyId?: string | null;
+    // Copié depuis l'annonce liée au moment de la création/du rattachement (Lot 9, voir
+    // docs/marketplace-multi-categories/07-lots-et-sequencement.md) — un réel orphelin (sans
+    // propertyId) n'a pas de catégorie, il n'apparaît que dans l'onglet "Tout" du feed.
+    categoryPath?: CategoryPath;
     createdBy: string;
     // Numéro à contacter pour ce réel, indépendant d'une éventuelle annonce liée (un réel peut
     // exister sans annonce, voir propertyId). Optionnel : si absent, le feed retombe sur le

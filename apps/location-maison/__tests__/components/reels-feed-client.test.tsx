@@ -25,6 +25,7 @@ const carouselApi = {
   reInit: jest.fn(),
   scrollPrev: jest.fn(),
   scrollNext: jest.fn(),
+  scrollTo: jest.fn(),
 }
 
 jest.mock('@tanstack/react-query', () => ({
@@ -32,6 +33,10 @@ jest.mock('@tanstack/react-query', () => ({
     queryOptions = options
     return queryState
   },
+  // Onglets catégorie (Lot 9) : liste vide => `categoryTabs` reste masqué (même seuil de
+  // self-gating que CategoryFilterPills), donc aucune des assertions existantes n'est
+  // affectée par cet ajout.
+  useQuery: () => ({ data: [] }),
 }))
 
 jest.mock('next/link', () => ({

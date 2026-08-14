@@ -46,7 +46,7 @@ export default function MapPropertyCard({
 
   return (
     <Link 
-      href={`/houseDetails/${property.objectID || property.id}`}
+      href={`/annonce/${property.objectID || property.id}`}
       className={`block transition-all duration-200 ${isHighlighted ? 'ring-2 ring-primary scale-[1.02]' : ''}`}
       onMouseEnter={onMouseEnter}
       onMouseLeave={onMouseLeave}

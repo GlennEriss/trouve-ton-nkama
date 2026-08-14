@@ -88,7 +88,7 @@ export default function PropertyDetailsPanel({ selectedProperty, onClose }: Prop
 
         <div className="flex gap-3">
           <Button
-            onClick={() => router.push(`/houseDetails/${selectedProperty.objectID}`)}
+            onClick={() => router.push(`/annonce/${selectedProperty.objectID}`)}
             className="flex-1 bg-primary hover:bg-secondary text-white">
             Voir les détails
           </Button>

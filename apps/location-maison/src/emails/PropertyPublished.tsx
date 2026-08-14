@@ -115,7 +115,7 @@ const PropertyPublished: React.FC<PropertyPublishedProps> = ({
         <Row>
           <Column align="center">
             <Button
-              href={`${texts.websiteUrl}/houseDetails/${property.id}`}
+              href={`${texts.websiteUrl}/annonce/${property.id}`}
               style={styleViewButton}
               className="mobile-button"
             >
@@ -143,7 +143,7 @@ const PropertyPublished: React.FC<PropertyPublishedProps> = ({
         <Row>
           <Column align="center">
             <Button
-              href={`${texts.websiteUrl}/houseDetails/${property.id}?share=true`}
+              href={`${texts.websiteUrl}/annonce/${property.id}?share=true`}
               style={styleShareButton}
               className="mobile-button"
             >

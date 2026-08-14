@@ -43,6 +43,42 @@ function hasActiveSamePromotion(data: FirebaseFirestore.DocumentData, promotionT
   return endMillis > Date.now();
 }
 
+/**
+ * Grille par défaut (immobilier) sauf si la catégorie de l'annonce définit son propre
+ * `promotionPricing` pour ce type de promotion (voir docs/marketplace-multi-categories/
+ * 06-monetisation.md — 1500F/15cr est indolore sur un loyer, c'est 10% d'un article mode à
+ * 15000F). Aucune catégorie ⇒ comportement strictement identique à avant ce changement :
+ * la quasi-totalité des annonces aujourd'hui n'ont pas encore `categoryId` (backfill du
+ * Lot 1 pas encore exécuté en prod), donc ce chemin ne change rien pour elles.
+ */
+async function resolvePromotionConfig(
+  transaction: FirebaseFirestore.Transaction,
+  db: FirebaseFirestore.Firestore,
+  property: FirebaseFirestore.DocumentData,
+  promotionType: NonNullable<PromotionType>,
+) {
+  const base = PROMOTION_CONFIGS[promotionType];
+  const categoryId = typeof property.categoryId === 'string' ? property.categoryId.trim() : '';
+  if (!categoryId) {
+    return base;
+  }
+
+  const categorySnap = await transaction.get(db.collection('listing_categories').doc(categoryId));
+  if (!categorySnap.exists) {
+    return base;
+  }
+
+  const pricing = categorySnap.data()?.promotionPricing;
+  const override = pricing && typeof pricing === 'object' ? pricing[promotionType] : null;
+  const credits = Number(override?.credits);
+  const duration = Number(override?.duration);
+  if (!Number.isFinite(credits) || credits < 0 || !Number.isFinite(duration) || duration < 0) {
+    return base;
+  }
+
+  return { credits, duration, serviceName: base.serviceName };
+}
+
 export async function POST(request: NextRequest) {
   try {
     const session = await auth();
@@ -65,7 +101,6 @@ export async function POST(request: NextRequest) {
     }
 
     const db = getFirestore(adminApp);
-    const config = PROMOTION_CONFIGS[promotionType];
     const propertyRef = db.collection(firebaseCollectionNames.properties).doc(propertyId);
     const usersQuery = await db.collection(firebaseCollectionNames.users).where('uid', '==', uid).limit(1).get();
 
@@ -96,11 +131,17 @@ export async function POST(request: NextRequest) {
             throw new Error('IDEMPOTENCY_PAYLOAD_MISMATCH');
           }
           if (idempotencyData.status === 'completed' && idempotencyData.response) {
+            const cachedResponse = idempotencyData.response as {
+              nextCredits: number;
+              transactionId: string;
+              creditsUsed?: number;
+            };
             return {
-              ...(idempotencyData.response as {
-                nextCredits: number;
-                transactionId: string;
-              }),
+              ...cachedResponse,
+              // Réponses mises en cache avant ce champ (rejeu d'un appel déjà traité) :
+              // repli sur la grille de base, cosmétique seulement — la charge réelle a déjà
+              // eu lieu au premier appel avec le bon montant, ce n'est qu'un affichage.
+              creditsUsed: cachedResponse.creditsUsed ?? PROMOTION_CONFIGS[promotionType].credits,
               replayed: true,
             };
           }
@@ -123,6 +164,7 @@ export async function POST(request: NextRequest) {
         throw new Error('SAME_PROMOTION_ACTIVE');
       }
 
+      const config = await resolvePromotionConfig(transaction, db, property, promotionType);
       const user = userSnap.data() ?? {};
       const credits = Number(user.credits ?? 0);
       if (credits < config.credits) {
@@ -176,20 +218,21 @@ export async function POST(request: NextRequest) {
           response: {
             nextCredits,
             transactionId: transactionRef.id,
+            creditsUsed: config.credits,
           },
           createdAt: now,
           updatedAt: now,
         });
       }
 
-      return { nextCredits, transactionId: transactionRef.id, replayed: false };
+      return { nextCredits, transactionId: transactionRef.id, replayed: false, creditsUsed: config.credits };
     });
 
     return NextResponse.json({
       success: true,
       promotionType,
       creditsRemaining: result.nextCredits,
-      creditsUsed: config.credits,
+      creditsUsed: result.creditsUsed,
       transactionId: result.transactionId,
       replayed: result.replayed,
     });

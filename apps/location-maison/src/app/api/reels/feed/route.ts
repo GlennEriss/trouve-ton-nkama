@@ -12,9 +12,10 @@ export async function GET(request: Request) {
   const url = new URL(request.url);
   const limitPerPage = parseInt(url.searchParams.get('limitPerPage') ?? '10', 10);
   const cursor = url.searchParams.get('cursor') ?? null;
+  const categoryRootName = url.searchParams.get('category')?.trim() || undefined;
 
   const cache = getCacheStore();
-  const cacheKey = `reels:feed:${limitPerPage}:${cursor ?? 'first'}`;
+  const cacheKey = `reels:feed:${categoryRootName ?? 'all'}:${limitPerPage}:${cursor ?? 'first'}`;
 
   try {
     const cached = await cache.get<unknown>(cacheKey);
@@ -26,7 +27,7 @@ export async function GET(request: Request) {
       });
     }
 
-    const result = await getPublicReels({ limitPerPage, cursor });
+    const result = await getPublicReels({ limitPerPage, cursor, categoryRootName });
 
     await cache.set(cacheKey, result, CACHE_TTL_SECONDS);
 

@@ -101,7 +101,7 @@ test.describe('Lot 8E - recherche et consultation', () => {
       await route.fulfill({ status: 200, contentType: 'application/json', body: '{"success":true}' })
     })
 
-    await page.goto(`/houseDetails/${seed.propertyId}`, { waitUntil: 'domcontentloaded' })
+    await page.goto(`/annonce/${seed.propertyId}`, { waitUntil: 'domcontentloaded' })
     await expect(page.getByRole('heading', { name: String(seed.hit.title) })).toBeVisible({ timeout: 20_000 })
     await expect(page.getByText(String(seed.hit.description))).toBeVisible()
     await expect(page.getByTitle('Contacter via WhatsApp')).toBeVisible()
@@ -118,7 +118,7 @@ test.describe('Lot 8E - recherche et consultation', () => {
   })
 
   test('rend une page introuvable non indexable pour une annonce absente', async ({ page }) => {
-    const response = await page.goto('/houseDetails/lot8e-missing-property', { waitUntil: 'domcontentloaded' })
+    const response = await page.goto('/annonce/lot8e-missing-property', { waitUntil: 'domcontentloaded' })
 
     // Next.js peut conserver 200 après le début d'une réponse streamée, même lorsque
     // notFound() rend ensuite la vue 404. Le contenu et noindex sont les invariants utiles.

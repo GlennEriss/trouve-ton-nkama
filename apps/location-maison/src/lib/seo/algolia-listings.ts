@@ -160,7 +160,7 @@ function mapHitToLandingProperty(
     id,
     objectID: id,
     path: `properties/${id}`,
-    detailsHref: `/houseDetails/${id}`,
+    detailsHref: `/annonce/${id}`,
     title: typeof hit.title === 'string' && hit.title.trim().length > 0 ? hit.title : 'Annonce immobiliere',
     description:
       typeof hit.description === 'string' && hit.description.trim().length > 0

@@ -78,7 +78,10 @@ function resolvePageSpecificEvent(pathname: string): TrackingEventName | null {
   if (pathname === '/search-with-ia') return trackingEvents.PAGE_SEARCH_WITH_IA_VIEW;
   if (pathname === '/signin') return trackingEvents.PAGE_SIGNIN_VIEW;
   if (pathname === '/signup') return trackingEvents.PAGE_SIGNUP_VIEW;
-  if (pathname.startsWith('/houseDetails/')) return trackingEvents.PAGE_PROPERTY_DETAILS_VIEW;
+  // /annonce = route canonique actuelle ; /houseDetails reste un alias qui redirige en 308
+  // (voir app/(public)/houseDetails/[id]/page.tsx) — gardé ici par précaution, un visiteur
+  // ne devrait normalement jamais rester sur ce chemin côté client.
+  if (pathname.startsWith('/annonce/') || pathname.startsWith('/houseDetails/')) return trackingEvents.PAGE_PROPERTY_DETAILS_VIEW;
   return null;
 }
 

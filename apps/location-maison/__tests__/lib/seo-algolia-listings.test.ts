@@ -43,7 +43,7 @@ describe('searchLandingProperties', () => {
     const result = await searchLandingProperties({ transaction: 'location', type: 'maison', citySlug: 'libreville', page: 2.9, hitsPerPage: 10.8 })
     expect(result).toMatchObject({ currentPage: 2, totalPages: 3, totalHits: 4, hitsPerPage: 10 })
     expect(result.items).toHaveLength(3)
-    expect(result.items[0]).toMatchObject({ id: 'p1', price: 45000, area: 80, typeProperty: 'Home', detailsHref: '/houseDetails/p1' })
+    expect(result.items[0]).toMatchObject({ id: 'p1', price: 45000, area: 80, typeProperty: 'Home', detailsHref: '/annonce/p1' })
     expect(result.items[1]).toMatchObject({ title: 'Annonce immobiliere', price: 0, status: 'FOR_RENT', typeProperty: 'Home', images: [] })
     expect(result.items[2]).toMatchObject({ id: 'p3', typeProperty: 'Apartment' })
     const call = (fetch as jest.Mock).mock.calls[0]

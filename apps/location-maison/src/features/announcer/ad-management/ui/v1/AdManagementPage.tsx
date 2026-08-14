@@ -175,6 +175,21 @@ function resolveTypeLabel(typeProperty: string): string {
   return TypeProperty[typeProperty] ?? typeProperty;
 }
 
+/** Immobilier (typeProperty présent) : "Maison • 90 m²", comme avant. Toute autre
+ * catégorie (categoryPath présent, pas de typeProperty) : le nom de la feuille, sans
+ * surface — voir la même logique dans ListingCard.tsx (Lot 3). */
+function resolveAdSubtitle(ad: Property): string {
+  if (ad.typeProperty) {
+    return `${resolveTypeLabel(ad.typeProperty)} • ${ad.area || 0} m²`;
+  }
+  const leafName = ad.categoryPath?.lvl1?.split(' > ').pop();
+  return leafName ?? 'Annonce';
+}
+
+function resolveAdLocation(ad: Property): string {
+  return [ad.street, ad.city, ad.province].filter(Boolean).join(', ');
+}
+
 function getSortValue(sortBy: string, sortOrder: string): string {
   if (sortBy === 'createdAt' && sortOrder === 'desc') return 'recent';
   if (sortBy === 'createdAt' && sortOrder === 'asc') return 'oldest';
@@ -294,7 +309,7 @@ function AdCard({ ad, onToggleState, onDelete, actionLoading }: AdCardProps) {
             {ad.title || 'Annonce sans titre'}
           </h3>
           <p className="line-clamp-1 text-sm text-gray-500 dark:text-gray-400">
-            {resolveTypeLabel(ad.typeProperty)} • {ad.area || 0} m²
+            {resolveAdSubtitle(ad)}
           </p>
           {ad.moderationStatus === 'REJECTED' && ad.rejectionReason && (
             <p className="rounded-lg bg-red-50 px-2.5 py-1.5 text-xs text-red-700 dark:bg-red-950/30 dark:text-red-300">
@@ -303,7 +318,7 @@ function AdCard({ ad, onToggleState, onDelete, actionLoading }: AdCardProps) {
           )}
           <p className="line-clamp-1 inline-flex items-center gap-1 text-sm text-gray-600 dark:text-gray-300">
             <MapPin className="h-4 w-4 text-primary" />
-            {ad.street}, {ad.city}, {ad.province}
+            {resolveAdLocation(ad)}
           </p>
         </div>
 
@@ -329,7 +344,17 @@ function AdCard({ ad, onToggleState, onDelete, actionLoading }: AdCardProps) {
               </Link>
             </Button>
             <Button variant="outline" className="h-11 rounded-full" asChild>
-              <Link href={`${routes.protected.properties}/modify/${ad.id}`}>
+              {/* Immobilier (typeProperty) : formulaire à 14 builders existant. Toute
+                  autre catégorie (categoryId présent) : preview brouillon éditable
+                  réutilisée aussi pour l'édition post-rejet — voir
+                  PreviewCategoryListingDraft.tsx. */}
+              <Link
+                href={
+                  ad.categoryId
+                    ? `${routes.protected.add_category_listing}/preview/${ad.id}`
+                    : `${routes.protected.properties}/modify/${ad.id}`
+                }
+              >
                 <Pencil className="mr-1.5 h-4 w-4" />
                 Modifier
               </Link>

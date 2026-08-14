@@ -8,6 +8,7 @@ import PropertyByProvince from './PropertyByProvince'
 import FeaturedSection from './FeaturedSection'
 import TrendingSection from './TrendingSection'
 import RecentSection from './RecentSection'
+import CategoryHomeSections from './CategoryHomeSections'
 import { motion, useReducedMotion } from 'framer-motion'
 import { trackingEvents, useTrackEvent } from '@/features/analytics/tracking'
 import HomeHeroSponsoredSwap from './HomeHeroSponsoredSwap'
@@ -170,6 +171,8 @@ export default function HomePageDesktopComponent() {
       <motion.section className='mb-8' {...getRevealProps(0.16)}>
         <RecentSection />
       </motion.section>
+
+      <CategoryHomeSections />
 
       <motion.section className='space-y-5 m-5' {...getRevealProps(0.18)}>
         <h1 className='text-xl lg:text-2xl xl:text-3xl leading-tight font-bold text-center text-primary my-10'>Annonces par province</h1>

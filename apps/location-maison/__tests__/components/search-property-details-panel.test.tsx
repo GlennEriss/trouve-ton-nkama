@@ -61,6 +61,6 @@ describe('PropertyDetailsPanel', () => {
   it('navigue vers la fiche detaillee au clic sur Voir les details', () => {
     render(<PropertyDetailsPanel selectedProperty={{ objectID: 'p1', title: 'Villa' }} onClose={jest.fn()} />)
     fireEvent.click(screen.getByText('Voir les détails'))
-    expect(push).toHaveBeenCalledWith('/houseDetails/p1')
+    expect(push).toHaveBeenCalledWith('/annonce/p1')
   })
 })

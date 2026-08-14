@@ -21,7 +21,7 @@ export default async function page({ params }: { params: Promise<{ id?: string }
   }
 
   if (property.createdBy !== session?.user?.uid) {
-    redirect(`/houseDetails/${id}`)
+    redirect(`/annonce/${id}`)
   }
 
   return (

@@ -51,7 +51,7 @@ const PropertyCarousel: React.FC<CarouselProps> = ({ properties = [], isRecommen
   const handleCardClick = useCallback(
     (id?: string) => {
       if (id) {
-        router.push(`/houseDetails/${id}`);
+        router.push(`/annonce/${id}`);
       }
     },
     [router]
