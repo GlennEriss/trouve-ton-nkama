@@ -90,6 +90,18 @@ moderationStatus/createdAt`, avant que Mode n'ait de réels) et en déployant
 demande explicite de l'utilisateur) — opération purement additive (création d'index, aucune
 donnée touchée, aucun index existant supprimé sur les deux environnements). Les deux
 environnements ont désormais l'index avant même l'activation publique de Mode en prod.
+**Revu le 2026-08-15 (demande utilisateur explicite)** : "immobilier" n'est plus exclu de
+`GET /api/categories/home-sections` — il participe désormais comme n'importe quelle catégorie
+racine, avec `minListingsForHomeSection:0` (rail toujours affiché dès qu'il y a une annonce
+APPROVED). Redondant avec Tendances/Récentes/Par province, assumé : objectif = même lisibilité
+par catégorie que le rail Mode, pas une home minimaliste. `roots` désormais trié par le champ
+`order` des catégories (immobilier=0 avant mode=10) plutôt que par l'ordre Firestore non
+garanti. **Piège de données dev découvert en vérifiant** : le backfill `categoryId`/
+`categoryPath` (Lot 1) n'avait tourné qu'en PROD (931 annonces) — jamais contre dev, où seuls
+les 20 mocks Mode portaient ces champs. Corrigé en relançant
+`backfill-listing-categories.js --apply` contre dev (19 annonces immobilier migrées) ; 6
+passées manuellement en `moderationStatus:APPROVED` pour vérification visuelle (données de
+test dev sans rapport avec la logique produit).
 
 ### Lot 6 — URLs migrées ✅ fait (2026-08-13) ; fiche générique par catégorie non fait
 Fait : nouvelle route `/annonce/[id]` (contenu identique à l'ancienne page), `/houseDetails/[id]`
