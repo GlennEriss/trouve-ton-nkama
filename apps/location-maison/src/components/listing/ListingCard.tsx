@@ -249,7 +249,11 @@ const ListingCard = ({ property, hideDate = false, density = "standard" }: Listi
   // épaisse du gabarit immobilier, qui n'ont pas de sens pour un vêtement ou un accessoire.
   // "standard"/"showcase" (immobilier) restent strictement inchangés ci-dessous.
   if (density === "compact") {
-    const locationLabel = [property.city, property.province].filter(Boolean).join(", ");
+    // Quartier (street) en premier : c'est l'info la plus utile pour une annonce
+    // immobilière (savoir précisément où se situe le logement) — absent pour la plupart
+    // des annonces Mode (street:""), filtré silencieusement dans ce cas (2026-08-15,
+    // demande utilisateur explicite).
+    const locationLabel = [property.street, property.city, property.province].filter(Boolean).join(", ");
     return (
       <div
         onClick={handleCardClick}
@@ -314,7 +318,7 @@ const ListingCard = ({ property, hideDate = false, density = "standard" }: Listi
           <p className="line-clamp-2 min-h-[2.5rem] text-sm text-gray-700 dark:text-gray-300">
             {property.title ?? "Annonce"}
           </p>
-          <p className="mt-auto truncate text-xs text-gray-400 dark:text-gray-500">
+          <p className="mt-auto truncate text-[10px] text-gray-400 dark:text-gray-500">
             {[locationLabel, !hideDate ? formatPublicationDate(property.createdAt) : null]
               .filter(Boolean)
               .join(" · ")}

@@ -74,13 +74,12 @@ describe('PropertyCard (gabarit compact commun a toute la plateforme)', () => {
     global.fetch = originalFetch
   })
 
-  it('affiche le titre, le statut/prix, le badge de type et le lieu (sans rue ni chambres/sdb)', () => {
+  it('affiche le titre, le statut/prix, le badge de type et le lieu (quartier, ville, province, sans chambres/sdb)', () => {
     render(<PropertyCard property={baseProperty({ id: 'p-basic' })} />)
     expect(screen.getByText('Villa a Nkembo')).toBeInTheDocument()
     expect(screen.getByText(priceLineMatching(/À louer.*250,000.*F CFA/))).toBeInTheDocument()
     expect(screen.getByText('Maison')).toBeInTheDocument()
-    const locationLine = screen.getByText(/^Libreville, Estuaire/)
-    expect(locationLine.textContent).not.toContain('Nkembo') // pas de rue, contrairement au titre qui contient ce mot par coïncidence
+    expect(screen.getByText(/^Nkembo, Libreville, Estuaire/)).toBeInTheDocument()
     expect(screen.queryByText('120 m²')).not.toBeInTheDocument()
   })
 
@@ -101,12 +100,12 @@ describe('PropertyCard (gabarit compact commun a toute la plateforme)', () => {
 
   it('masque la date de publication quand hideDate est actif', () => {
     render(<PropertyCard property={baseProperty({ id: 'p-hide' })} hideDate />)
-    expect(screen.getByText('Libreville, Estuaire')).toBeInTheDocument()
+    expect(screen.getByText('Nkembo, Libreville, Estuaire')).toBeInTheDocument()
   })
 
   it('affiche la date de publication par defaut, accolee au lieu', () => {
     render(<PropertyCard property={baseProperty({ id: 'p-date' })} />)
-    expect(screen.getByText(/Libreville, Estuaire.*·.*\d{2}\/\d{2}\/\d{4}/)).toBeInTheDocument()
+    expect(screen.getByText(/Nkembo, Libreville, Estuaire.*·.*\d{2}\/\d{2}\/\d{4}/)).toBeInTheDocument()
   })
 
   it('retombe sur l image par defaut quand aucune image n est fournie', () => {
