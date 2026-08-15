@@ -21,11 +21,13 @@ async function fetchHomeSections(): Promise<HomeSection[]> {
 }
 
 /**
- * Une section par catégorie racine active (hors immobilier, qui a déjà ses sections
- * dédiées) — Lot 5, voir docs/marketplace-multi-categories/02-page-accueil.md. Ne
- * s'affiche pas tant qu'aucune catégorie n'atteint son seuil `minListingsForHomeSection`
- * (filtré côté serveur) : c'est ce qui garde l'accueil identique à aujourd'hui tant que
- * Mode n'a pas de stock réel.
+ * Une section par catégorie racine active, triée par `order` (Lot 5, voir
+ * docs/marketplace-multi-categories/02-page-accueil.md) — inclut "Immobilier" depuis le
+ * 2026-08-15 (demande utilisateur explicite), redondant avec Tendances/Récentes/Par
+ * province mais cohérent avec le rail "Mode". Ne s'affiche pas tant qu'aucune catégorie
+ * n'atteint son seuil `minListingsForHomeSection` (filtré côté serveur, 0 pour Immobilier
+ * donc toujours affiché dès qu'il y a une annonce) : c'est ce qui garde le rail Mode
+ * invisible tant qu'il n'a pas de stock réel.
  */
 export default function CategoryHomeSections() {
   const { data: sections = [] } = useQuery({
