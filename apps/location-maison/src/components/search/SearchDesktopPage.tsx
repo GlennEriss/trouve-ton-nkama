@@ -219,17 +219,18 @@ SearchDesktopPage() {
                                     </h2>
                                 </div>
 
-                                {/* flex-wrap plutôt qu'un nombre de colonnes fixe par breakpoint
-                                    (2026-08-15, demande utilisateur explicite) : la card fait
-                                    désormais une taille fixe (220px, même gabarit que le carrousel
-                                    de la home), le nombre de cards par ligne s'adapte à la largeur
-                                    disponible. */}
-                                <div className="flex flex-wrap gap-6 pb-20">
+                                {/* Grille CSS auto-fit/minmax plutôt qu'un flex-wrap à largeur fixe
+                                    (2026-08-15, demande utilisateur explicite) : flex-wrap laissait un
+                                    vide en fin de ligne quand le nombre de cards ne divisait pas
+                                    exactement la largeur disponible. auto-fit fait grandir les cards
+                                    (via 1fr) pour occuper toute la ligne, tout en gardant un nombre de
+                                    colonnes adaptatif (190px minimum par card). */}
+                                <div className="grid grid-cols-[repeat(auto-fit,minmax(190px,1fr))] gap-6 pb-20">
                                     {feedItems.map((entry) =>
                                         entry.type === 'property' ? (
                                             <div
                                                 key={entry.item.objectID}
-                                                className="w-[220px] animate-fade-in-up transform transition-all duration-300 hover:translate-y-[-4px]"
+                                                className="animate-fade-in-up transform transition-all duration-300 hover:translate-y-[-4px]"
                                             >
                                                 <PropertyCard property={entry.item} />
                                             </div>
@@ -240,7 +241,7 @@ SearchDesktopPage() {
                                                 province={searchParams.get('province')}
                                                 city={searchParams.get('city')}
                                                 rotationIndex={entry.adIndex}
-                                                className="h-full w-full"
+                                                className="h-full col-span-full"
                                                 fallbackSlot={ADSENSE_SLOTS.searchInline}
                                                 fallbackSlotKey={`search-desktop-${entry.key}`}
                                             />

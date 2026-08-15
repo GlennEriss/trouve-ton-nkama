@@ -296,18 +296,19 @@ export default function SearchMobilePage() {
                             </div>
                         ) : (
                             <>
-                                {/* Grille de résultats — flex-wrap plutôt qu'un nombre de colonnes fixe par
-                                    breakpoint (2026-08-15, demande utilisateur explicite) : la card fait
-                                    désormais une taille fixe (220px, même gabarit que le carrousel de la
-                                    home), le nombre de cards par ligne s'adapte à la largeur disponible.
-                                    Largeur en % sous sm (2 cards par ligne garanties sur mobile étroit,
-                                    demande utilisateur explicite) puis fixe à 220px à partir de sm. */}
-                                <div className="flex flex-wrap gap-4">
+                                {/* Grille CSS auto-fit/minmax plutôt qu'un flex-wrap à largeur fixe
+                                    (2026-08-15, demande utilisateur explicite) : flex-wrap laissait un
+                                    vide en fin de ligne quand le nombre de cards ne divisait pas
+                                    exactement la largeur disponible. auto-fit fait grandir les cards
+                                    (via 1fr) pour occuper toute la ligne — 150px garantit au moins 2
+                                    colonnes sur mobile étroit, le nombre de colonnes augmente ensuite
+                                    en continu (pas de saut brutal à un breakpoint) avec la largeur. */}
+                                <div className="grid grid-cols-[repeat(auto-fit,minmax(150px,1fr))] gap-4">
                                     {feedItems.map((entry) =>
                                         entry.type === 'property' ? (
                                             <div
                                                 key={entry.item.objectID}
-                                                className="w-[calc(50%-0.5rem)] sm:w-[220px] animate-fade-in-up transition-all duration-300"
+                                                className="animate-fade-in-up transition-all duration-300"
                                             >
                                                 <PropertyCard property={entry.item} />
                                             </div>
@@ -318,7 +319,7 @@ export default function SearchMobilePage() {
                                                 province={province}
                                                 city={city}
                                                 rotationIndex={entry.adIndex}
-                                                className="w-full"
+                                                className="col-span-full"
                                                 fallbackSlot={ADSENSE_SLOTS.searchInline}
                                                 fallbackSlotKey={`search-mobile-${entry.key}`}
                                                 fallbackCompact
