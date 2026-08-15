@@ -12,9 +12,14 @@ import { useTrackPropertyInteraction } from '@/hooks/use-track-property-interact
 import { trackingEvents, useTrackEvent } from '@/features/analytics/tracking';
 type ButtonFavorisProps = {
   idProperty: string
+  /** Taille de l'icône coeur en pixels. Par défaut 40 (page détail). */
+  size?: number
+  /** Contexte d'origine pour le tracking (`source` de trackInteraction/trackEvent). */
+  source?: string
+  className?: string
 }
 
-export const ButtonFavoris: React.FC<ButtonFavorisProps> = ({ idProperty }) => {
+export const ButtonFavoris: React.FC<ButtonFavorisProps> = ({ idProperty, size = 40, source = 'property_details', className }) => {
   const { user } = useCurrentUser()
   const { update } = useSession()
   const { trackEvent } = useTrackEvent({ roleContext: 'user' })
@@ -84,14 +89,14 @@ export const ButtonFavoris: React.FC<ButtonFavorisProps> = ({ idProperty }) => {
 
       const interactionType = addInFavorite ? 'favorite_add' : 'favorite_remove';
       trackInteraction(interactionType, {
-        source: 'property_details',
+        source,
       });
       trackEvent(
         addInFavorite
           ? trackingEvents.CTA_PROPERTY_FAVORITE_ADD_CLICK
           : trackingEvents.CTA_PROPERTY_FAVORITE_REMOVE_CLICK,
         {
-          source: 'property_details',
+          source,
           property_id: idProperty,
         }
       );
@@ -102,10 +107,21 @@ export const ButtonFavoris: React.FC<ButtonFavorisProps> = ({ idProperty }) => {
 
   return (
     <button
-      className="relative flex items-center justify-center rounded-full transition-all duration-300 
-                 hover:bg-red-100 dark:hover:bg-red-900 group"
-      onClick={isLoading ? undefined : toggleFavorite}
+      type="button"
+      className={clsx(
+        "relative flex items-center justify-center rounded-full transition-all duration-300",
+        "hover:bg-red-100 dark:hover:bg-red-900 group",
+        className,
+      )}
+      onClick={(event) => {
+        // Card cliquable dans ListingCard (Lot 3) : le coeur ne doit jamais déclencher
+        // la navigation vers la fiche détail portée par le conteneur parent.
+        event.stopPropagation();
+        if (!isLoading) toggleFavorite();
+      }}
       disabled={isLoading}
+      aria-label={isFavorite ? 'Retirer des favoris' : 'Ajouter aux favoris'}
+      aria-pressed={isFavorite}
     >
       <RiHeart3Line
         className={clsx(
@@ -115,7 +131,7 @@ export const ButtonFavoris: React.FC<ButtonFavorisProps> = ({ idProperty }) => {
             : "text-gray-400 group-hover:text-red-500"
         )}
         color='black'
-        size={40}
+        size={size}
       />
       {isLoading && (
         <div className="absolute inset-0 flex items-center justify-center">

@@ -33,6 +33,7 @@ jest.mock('@/lib/image-debug', () => ({
 jest.mock('@/lib/property-images', () => ({
   resolveThumbnailUrl: (image: any) => (image ? `https://cdn/${typeof image === 'string' ? image : image.fileURL}` : undefined),
 }))
+jest.mock('@/components/preview-property/ButtonFavoris', () => ({ ButtonFavoris: () => <div data-testid="favoris" /> }))
 
 function baseProperty(overrides: Record<string, unknown> = {}) {
   return {
