@@ -308,10 +308,11 @@ export default function SearchPage() {
           {/* Grille de résultats — flex-wrap plutôt qu'un nombre de colonnes fixe par
               breakpoint (2026-08-15, demande utilisateur explicite) : la card fait
               désormais une taille fixe (220px, même gabarit que le carrousel de la home),
-              le nombre de cards par ligne s'adapte naturellement à la largeur disponible. */}
+              le nombre de cards par ligne s'adapte naturellement à la largeur disponible.
+              Largeur en % sous sm (2 cards par ligne sur mobile étroit) puis fixe. */}
           <div className="flex flex-wrap gap-4">
             {items.map((propertyData, i) => (
-              <div key={propertyData.objectID} className="w-[220px]">
+              <div key={propertyData.objectID} className="w-[calc(50%-0.5rem)] sm:w-[220px]">
                 <PropertyCard property={propertyData} />
               </div>
             ))}

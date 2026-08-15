@@ -44,12 +44,13 @@ export default function ImmobilierPropertyCardsGrid({ properties }: ImmobilierPr
     // flex-wrap plutôt qu'un nombre de colonnes fixe par breakpoint (2026-08-15, demande
     // utilisateur explicite) : la card fait désormais une taille fixe (220px, même gabarit
     // que le carrousel de la home), le nombre de cards par ligne s'adapte à la largeur.
+    // Largeur en % sous sm (2 cards par ligne sur mobile étroit) puis fixe.
     <div className="mt-6 flex flex-wrap gap-6">
       {feedItems.map((entry, index) =>
         entry.type === 'property' ? (
           <div
             key={entry.property.id}
-            className="w-[220px] animate-fade-in-up transform transition-all duration-300 hover:translate-y-[-4px]"
+            className="w-[calc(50%-0.75rem)] sm:w-[220px] animate-fade-in-up transform transition-all duration-300 hover:translate-y-[-4px]"
             style={{
               animationDelay: `${Math.min(index, 12) * 45}ms`,
               animationFillMode: 'both',

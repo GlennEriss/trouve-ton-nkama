@@ -299,13 +299,15 @@ export default function SearchMobilePage() {
                                 {/* Grille de résultats — flex-wrap plutôt qu'un nombre de colonnes fixe par
                                     breakpoint (2026-08-15, demande utilisateur explicite) : la card fait
                                     désormais une taille fixe (220px, même gabarit que le carrousel de la
-                                    home), le nombre de cards par ligne s'adapte à la largeur disponible. */}
+                                    home), le nombre de cards par ligne s'adapte à la largeur disponible.
+                                    Largeur en % sous sm (2 cards par ligne garanties sur mobile étroit,
+                                    demande utilisateur explicite) puis fixe à 220px à partir de sm. */}
                                 <div className="flex flex-wrap gap-4">
                                     {feedItems.map((entry) =>
                                         entry.type === 'property' ? (
                                             <div
                                                 key={entry.item.objectID}
-                                                className="w-[220px] animate-fade-in-up transition-all duration-300"
+                                                className="w-[calc(50%-0.5rem)] sm:w-[220px] animate-fade-in-up transition-all duration-300"
                                             >
                                                 <PropertyCard property={entry.item} />
                                             </div>

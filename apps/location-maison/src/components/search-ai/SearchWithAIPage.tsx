@@ -284,12 +284,13 @@ export default function SearchWithAIPage() {
               ) : (
                 <>
                   {/* flex-wrap plutôt qu'un nombre de colonnes fixe (2026-08-15, demande
-                      utilisateur explicite) : card à taille fixe (220px), colonnes adaptatives. */}
+                      utilisateur explicite) : card à taille fixe (220px), colonnes adaptatives.
+                      Largeur en % sous sm (2 cards par ligne sur mobile étroit) puis fixe. */}
                   <div className="flex flex-wrap gap-4">
                     {results.map((hit, index) => (
                       <div
                         key={hit.objectID}
-                        className="w-[220px]"
+                        className="w-[calc(50%-0.5rem)] sm:w-[220px]"
                         onClickCapture={() => {
                           void trackResultClick(hit, index + 1);
                         }}
