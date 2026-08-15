@@ -20,9 +20,12 @@ type HomeSection = {
 
 /**
  * Sections d'accueil par catégorie (Lot 5, voir docs/marketplace-multi-categories/
- * 02-page-accueil.md). Exclut TOUJOURS "immobilier" : cette catégorie a déjà ses propres
- * sections (Tendances/Récentes/Par province) — dupliquer un rail "Immobilier" ici serait
- * redondant, pas une ouverture de catégorie.
+ * 02-page-accueil.md). Inclut désormais "immobilier" (revu le 2026-08-15, demande
+ * utilisateur explicite) : bien que redondant avec Tendances/Récentes/Par province, un rail
+ * "Immobilier" donne à la home la même lisibilité par catégorie que "Mode", plutôt que des
+ * sections immobilier non étiquetées suivies d'un rail Mode étiqueté. `minListingsForHomeSection`
+ * d'immobilier est seedé à 0 : son rail apparaît donc toujours dès qu'il y a au moins une
+ * annonce APPROVED, sans "catégorie vide" possible.
  *
  * Une catégorie n'apparaît que si son nombre d'annonces publiées atteint
  * `minListingsForHomeSection` — une catégorie fraîchement ouverte avec 3 annonces fait plus
@@ -61,13 +64,14 @@ export async function GET() {
       id: string;
       name?: unknown;
       slug?: unknown;
+      order?: unknown;
       minListingsForHomeSection?: unknown;
       defaultDensity?: unknown;
     };
 
     const roots: RootCategoryDoc[] = categoriesSnapshot.docs
       .map((doc): RootCategoryDoc => ({ id: doc.id, ...(doc.data() as Record<string, unknown>) }))
-      .filter((root) => root.id !== 'immobilier');
+      .sort((a, b) => (typeof a.order === 'number' ? a.order : 0) - (typeof b.order === 'number' ? b.order : 0));
 
     const sections: HomeSection[] = [];
 

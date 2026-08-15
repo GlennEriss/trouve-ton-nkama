@@ -1,6 +1,7 @@
 'use client'
 import React from 'react'
 import clsx from 'clsx';
+import { useRouter } from 'next/navigation';
 import { useCurrentUser } from '@/hooks/use-current-user';
 import { useSession } from 'next-auth/react';
 import { updateUser } from '@/db/user.db';
@@ -10,29 +11,44 @@ import { routes } from '@/constantes/routes';
 import { RiHeart3Line } from 'react-icons/ri';
 import { useTrackPropertyInteraction } from '@/hooks/use-track-property-interaction';
 import { trackingEvents, useTrackEvent } from '@/features/analytics/tracking';
+import { useToast } from '@/hooks/use-toast';
 type ButtonFavorisProps = {
   idProperty: string
+  /** Taille de l'icône coeur en pixels. Par défaut 40 (page détail). */
+  size?: number
+  /** Contexte d'origine pour le tracking (`source` de trackInteraction/trackEvent). */
+  source?: string
+  className?: string
 }
 
-export const ButtonFavoris: React.FC<ButtonFavorisProps> = ({ idProperty }) => {
+export const ButtonFavoris: React.FC<ButtonFavorisProps> = ({ idProperty, size = 40, source = 'property_details', className }) => {
   const { user } = useCurrentUser()
   const { update } = useSession()
   const { trackEvent } = useTrackEvent({ roleContext: 'user' })
+  const { toast } = useToast()
+  const router = useRouter()
   const [isFavorite, setIsFavorite] = React.useState(false);
   const [isLoading, setIsLoading] = React.useState(false);
   const { trackInteraction } = useTrackPropertyInteraction(idProperty);
 
-  // Tous les hooks doivent être appelés avant le retour conditionnel
   React.useEffect(() => {
     if (user?.favoris)
       setIsFavorite(user.favoris.includes(idProperty));
   }, [user, idProperty]);
 
-  if(!user){
-    return null
-  }
-
   const toggleFavorite = async () => {
+    // Visiteur non connecté (bouton toujours visible, comme le bouton "j'aime" des réels) :
+    // aucun favori anonyme côté données (favoris = tableau sur le compte utilisateur), donc
+    // on invite simplement à se connecter plutôt que de simuler un toggle qui se perdrait.
+    if (!user) {
+      toast({
+        title: 'Connecte-toi pour ajouter aux favoris',
+        description: 'Crée un compte ou connecte-toi pour retrouver tes annonces favorites.',
+      })
+      router.push(routes.public.signin)
+      return
+    }
+
     if (isLoading) return; // Empêche plusieurs clics
     setIsLoading(true);
     try {
@@ -84,14 +100,14 @@ export const ButtonFavoris: React.FC<ButtonFavorisProps> = ({ idProperty }) => {
 
       const interactionType = addInFavorite ? 'favorite_add' : 'favorite_remove';
       trackInteraction(interactionType, {
-        source: 'property_details',
+        source,
       });
       trackEvent(
         addInFavorite
           ? trackingEvents.CTA_PROPERTY_FAVORITE_ADD_CLICK
           : trackingEvents.CTA_PROPERTY_FAVORITE_REMOVE_CLICK,
         {
-          source: 'property_details',
+          source,
           property_id: idProperty,
         }
       );
@@ -102,10 +118,21 @@ export const ButtonFavoris: React.FC<ButtonFavorisProps> = ({ idProperty }) => {
 
   return (
     <button
-      className="relative flex items-center justify-center rounded-full transition-all duration-300 
-                 hover:bg-red-100 dark:hover:bg-red-900 group"
-      onClick={isLoading ? undefined : toggleFavorite}
+      type="button"
+      className={clsx(
+        "relative flex items-center justify-center rounded-full transition-all duration-300",
+        "hover:bg-red-100 dark:hover:bg-red-900 group",
+        className,
+      )}
+      onClick={(event) => {
+        // Card cliquable dans ListingCard (Lot 3) : le coeur ne doit jamais déclencher
+        // la navigation vers la fiche détail portée par le conteneur parent.
+        event.stopPropagation();
+        if (!isLoading) toggleFavorite();
+      }}
       disabled={isLoading}
+      aria-label={isFavorite ? 'Retirer des favoris' : 'Ajouter aux favoris'}
+      aria-pressed={isFavorite}
     >
       <RiHeart3Line
         className={clsx(
@@ -115,7 +142,7 @@ export const ButtonFavoris: React.FC<ButtonFavorisProps> = ({ idProperty }) => {
             : "text-gray-400 group-hover:text-red-500"
         )}
         color='black'
-        size={40}
+        size={size}
       />
       {isLoading && (
         <div className="absolute inset-0 flex items-center justify-center">

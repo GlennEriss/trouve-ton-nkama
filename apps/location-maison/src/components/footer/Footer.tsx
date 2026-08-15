@@ -19,7 +19,6 @@ export default function Footer({ isHide = false }: Readonly<{ isHide?: boolean }
     const hiddenFooterRoutes = [
         routes.public.signin,
         routes.public.signup,
-        routes.public.signinSignup,
         routes.public.completeProfile,
         routes.public.passwordResetRequest,
         routes.public.reset_password,

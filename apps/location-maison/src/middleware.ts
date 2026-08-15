@@ -10,7 +10,6 @@ const { auth } = NextAuth(authConfig)
 const GUEST_ONLY_ROUTES = [
     routes.public.signin,
     routes.public.signup,
-    routes.public.signinSignup,
 ] as const
 
 const PROTECTED_ROUTE_PREFIXES = [

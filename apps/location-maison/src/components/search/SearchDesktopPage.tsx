@@ -161,6 +161,35 @@ SearchDesktopPage() {
         return results;
     }, [items]);
 
+    // Groupe les cards consécutives entre deux pubs (2026-08-15, demande utilisateur
+    // explicite) : une pub insérée comme simple item d'une grille auto-fit partagée force un
+    // saut de ligne à un index fixe qui ne correspond pas forcément à un nombre plein de
+    // colonnes (variable selon la largeur d'écran) — la ligne juste avant la pub restait donc
+    // partiellement vide. Chaque groupe de cards a désormais sa PROPRE grille, qui se remplit
+    // toujours entièrement puisqu'aucun autre élément ne vient forcer un saut de ligne dedans.
+    const feedGroups = React.useMemo(() => {
+        const groups: Array<
+            | { kind: 'properties'; entries: Extract<(typeof feedItems)[number], { type: 'property' }>[] }
+            | { kind: 'ad'; entry: Extract<(typeof feedItems)[number], { type: 'ad' }> }
+        > = [];
+        let current: Extract<(typeof feedItems)[number], { type: 'property' }>[] = [];
+        for (const entry of feedItems) {
+            if (entry.type === 'property') {
+                current.push(entry);
+            } else {
+                if (current.length > 0) {
+                    groups.push({ kind: 'properties', entries: current });
+                    current = [];
+                }
+                groups.push({ kind: 'ad', entry });
+            }
+        }
+        if (current.length > 0) {
+            groups.push({ kind: 'properties', entries: current });
+        }
+        return groups;
+    }, [feedItems]);
+
     return (
         <>
             <div className='flex p-5'>
@@ -219,25 +248,37 @@ SearchDesktopPage() {
                                     </h2>
                                 </div>
 
-                                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 gap-6 pb-20">
-                                    {feedItems.map((entry) =>
-                                        entry.type === 'property' ? (
+                                {/* Grille CSS auto-fit/minmax par groupe de cards, séparée à chaque
+                                    pub (2026-08-15, demande utilisateur explicite) — voir le
+                                    commentaire sur feedGroups : chaque grille se remplit
+                                    entièrement puisqu'aucune pub ne vient forcer un saut de ligne
+                                    à l'intérieur. */}
+                                <div className="space-y-6 pb-20">
+                                    {feedGroups.map((group, groupIndex) =>
+                                        group.kind === 'properties' ? (
                                             <div
-                                                key={entry.item.objectID}
-                                                className="h-full animate-fade-in-up transform transition-all duration-300 hover:translate-y-[-4px]"
+                                                key={`properties-${groupIndex}`}
+                                                className="grid grid-cols-[repeat(auto-fit,minmax(190px,1fr))] gap-6"
                                             >
-                                                <PropertyCard property={entry.item} />
+                                                {group.entries.map((entry) => (
+                                                    <div
+                                                        key={entry.item.objectID}
+                                                        className="animate-fade-in-up transform transition-all duration-300 hover:translate-y-[-4px]"
+                                                    >
+                                                        <PropertyCard property={entry.item} />
+                                                    </div>
+                                                ))}
                                             </div>
                                         ) : (
                                             <SponsoredSlot
-                                                key={`ad-${entry.key}`}
+                                                key={`ad-${group.entry.key}`}
                                                 placement="search_infeed"
                                                 province={searchParams.get('province')}
                                                 city={searchParams.get('city')}
-                                                rotationIndex={entry.adIndex}
-                                                className="h-full sm:col-span-2 xl:col-span-3"
+                                                rotationIndex={group.entry.adIndex}
+                                                className="h-full"
                                                 fallbackSlot={ADSENSE_SLOTS.searchInline}
-                                                fallbackSlotKey={`search-desktop-${entry.key}`}
+                                                fallbackSlotKey={`search-desktop-${group.entry.key}`}
                                             />
                                         )
                                     )}

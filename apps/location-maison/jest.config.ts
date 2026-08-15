@@ -122,8 +122,11 @@ const config: Config = {
     // Mock NextAuth
     '^next-auth$': '<rootDir>/__tests__/mocks/next-auth.ts',
     
-    // Mock des styles CSS (pour les composants React)
-    '\\.(css|less|scss|sass)$': 'identity-obj-proxy',
+    // Mock des styles CSS (pour les composants React). 'identity-obj-proxy' n'est pas
+    // installé dans ce workspace — jamais démasqué avant l'ajout de ListingCardsCarousel.test.tsx
+    // car aucun test n'importait jusque-là un composant qui importe réellement du CSS
+    // (ex: PropertyCarousel est toujours mocké entièrement ailleurs dans la suite).
+    '\\.(css|less|scss|sass)$': '<rootDir>/__tests__/mocks/style-mock.ts',
     
     // Mock des assets
     '\\.(jpg|jpeg|png|gif|webp|svg)$': '<rootDir>/__tests__/mocks/file-mock.ts',

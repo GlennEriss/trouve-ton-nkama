@@ -154,7 +154,7 @@ export default function HomePageMobileComponent() {
                                 Générez des revenus passifs en publiant vos annonces immobilières !
                             </span>
                             <Link
-                                href={user ? routes.protected.publish : routes.public.signinSignup}
+                                href={user ? routes.protected.publish : routes.public.signin}
                                 className='text-primary bg-white p-2 rounded-full text-center font-bold'
                             >
                                 Publiez votre annonce

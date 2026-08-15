@@ -14,6 +14,7 @@ import { resolveThumbnailUrl } from "@/lib/property-images";
 import { IoMdBed } from "react-icons/io";
 import { MdOutlineBathtub, MdOutlineSquareFoot } from "react-icons/md";
 import { CheckCircle, KeyRound } from "lucide-react";
+import { ButtonFavoris } from "@/components/preview-property/ButtonFavoris";
 
 /**
  * Densité d'affichage — voir docs/marketplace-multi-categories/01-direction-artistique.md.
@@ -141,6 +142,13 @@ const ListingCard = ({ property, hideDate = false, density = "standard" }: Listi
   }, [primaryImageSrc]);
 
   React.useEffect(() => {
+    // Le badge "Propriétaire direct" ne s'affiche que sur les densités showcase/standard
+    // (voir plus bas) — inutile de fetcher isOwner par carte pour la densité compact,
+    // devenue le gabarit unique de toute la plateforme (2026-08-15).
+    if (density === "compact") {
+      return;
+    }
+
     const hitIsDirectOwner = isDirectOwnerValue(property.isOwner);
     const hitHasOwnerValue = property.isOwner !== undefined && property.isOwner !== null;
 
@@ -196,7 +204,7 @@ const ListingCard = ({ property, hideDate = false, density = "standard" }: Listi
     return () => {
       isCancelled = true;
     };
-  }, [property.isOwner, propertyId]);
+  }, [property.isOwner, propertyId, density]);
 
   React.useEffect(() => {
     if (hasPrimaryImageUrl) {
@@ -233,6 +241,92 @@ const ListingCard = ({ property, hideDate = false, density = "standard" }: Listi
     property.attributes &&
     typeof property.attributes === "object" &&
     Object.keys(property.attributes).length > 0;
+
+  // Densité "compact" (Mode, voir docs/marketplace-multi-categories/01-direction-artistique.md,
+  // révisé 2026-08-15 sur demande utilisateur explicite) : layout dédié façon Le Bon Coin —
+  // image carrée, coeur favori en overlay, prix en gras sous l'image, titre court, lieu + date
+  // en petit texte gris. Volontairement SANS le bloc chambres/sdb/surface ni l'ombre/bordure
+  // épaisse du gabarit immobilier, qui n'ont pas de sens pour un vêtement ou un accessoire.
+  // "standard"/"showcase" (immobilier) restent strictement inchangés ci-dessous.
+  if (density === "compact") {
+    // Quartier (street) en premier : c'est l'info la plus utile pour une annonce
+    // immobilière (savoir précisément où se situe le logement) — absent pour la plupart
+    // des annonces Mode (street:""), filtré silencieusement dans ce cas (2026-08-15,
+    // demande utilisateur explicite).
+    const locationLabel = [property.street, property.city, property.province].filter(Boolean).join(", ");
+    return (
+      <div
+        onClick={handleCardClick}
+        onKeyDown={(e) => {
+          if (e.key === "Enter" || e.key === " ") {
+            e.preventDefault();
+            handleCardClick();
+          }
+        }}
+        className="relative flex h-full w-full cursor-pointer flex-col overflow-hidden rounded-lg border border-gray-200 bg-white text-left transition-shadow hover:shadow-md dark:border-gray-800 dark:bg-gray-900"
+        aria-label={`Voir les détails de ${property.title ?? "l'annonce"}`}
+        role="button"
+        tabIndex={0}
+      >
+        <div className="relative aspect-square w-full bg-gray-100 dark:bg-gray-800">
+          <Image
+            src={resolvedImageSrc}
+            alt={property.title ?? "Image de l'annonce"}
+            fill
+            sizes="(max-width: 640px) 50vw, 220px"
+            className="object-cover"
+            onError={(event) => {
+              logImageError({
+                component: "ListingCard",
+                propertyId,
+                title: property.title,
+                rawFileUrl: rawPrimaryImageUrl,
+                resolvedSrc:
+                  event.currentTarget.currentSrc || event.currentTarget.src || resolvedImageSrc,
+              });
+              if (resolvedImageSrc !== "/home.png") {
+                setResolvedImageSrc("/home.png");
+              }
+            }}
+          />
+          <div className="absolute right-2 top-2 z-10">
+            <ButtonFavoris
+              idProperty={propertyId}
+              size={20}
+              source="listing_card"
+              className="bg-white/90 p-1.5 shadow-sm backdrop-blur-sm dark:bg-gray-900/80"
+            />
+          </div>
+          {categoryBadgeLabel && (
+            <div className="absolute left-2 top-2 rounded-full bg-white/90 px-2 py-0.5 text-xs font-medium text-gray-700 backdrop-blur-sm dark:bg-gray-900/80 dark:text-gray-200">
+              {categoryBadgeLabel}
+            </div>
+          )}
+        </div>
+        <div className="flex flex-1 flex-col gap-0.5 p-2.5">
+          {/* min-h sur 2 lignes (comme le titre juste en dessous) : un prix immobilier
+              ("À vendre · 45 000 000 F CFA") peut passer sur 2 lignes à 220px de large,
+              contrairement à un loyer ou un prix Mode plus court — sans cette réserve
+              d'espace fixe, les cards d'une même section (surtout Immobilier) n'avaient pas
+              toutes la même hauteur (2026-08-15, signalé par l'utilisateur). */}
+          <p className="line-clamp-2 min-h-[3rem] text-base font-bold text-gray-900 dark:text-white">
+            {property.typeProperty && (
+              <span className="mr-1">{property.status === "FOR_RENT" ? "À louer ·" : "À vendre ·"}</span>
+            )}
+            {property.price?.toLocaleString?.() ?? property.price} F CFA
+          </p>
+          <p className="line-clamp-2 min-h-[2.5rem] text-sm text-gray-700 dark:text-gray-300">
+            {property.title ?? "Annonce"}
+          </p>
+          <p className="mt-auto truncate text-[10px] text-gray-400 dark:text-gray-500">
+            {[locationLabel, !hideDate ? formatPublicationDate(property.createdAt) : null]
+              .filter(Boolean)
+              .join(" · ")}
+          </p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div key={property.id} className="">

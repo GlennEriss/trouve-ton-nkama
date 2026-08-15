@@ -2,14 +2,12 @@
 
 import { useQuery } from "@tanstack/react-query";
 import Link from "next/link";
-import ListingCard from "@/components/listing/ListingCard";
-import type { ListingCardDensity } from "@/components/listing/ListingCard";
+import ListingCardsCarousel from "@/components/listing/ListingCardsCarousel";
 
 type HomeSection = {
   id: string;
   slug: string;
   name: string;
-  density: ListingCardDensity;
   items: unknown[];
 };
 
@@ -21,11 +19,22 @@ async function fetchHomeSections(): Promise<HomeSection[]> {
 }
 
 /**
- * Une section par catégorie racine active (hors immobilier, qui a déjà ses sections
- * dédiées) — Lot 5, voir docs/marketplace-multi-categories/02-page-accueil.md. Ne
- * s'affiche pas tant qu'aucune catégorie n'atteint son seuil `minListingsForHomeSection`
- * (filtré côté serveur) : c'est ce qui garde l'accueil identique à aujourd'hui tant que
- * Mode n'a pas de stock réel.
+ * Une section par catégorie racine active, triée par `order` (Lot 5, voir
+ * docs/marketplace-multi-categories/02-page-accueil.md) — inclut "Immobilier" depuis le
+ * 2026-08-15 (demande utilisateur explicite), redondant avec Tendances/Récentes/Par
+ * province mais cohérent avec le rail "Mode". Ne s'affiche pas tant qu'aucune catégorie
+ * n'atteint son seuil `minListingsForHomeSection` (filtré côté serveur, 0 pour Immobilier
+ * donc toujours affiché dès qu'il y a une annonce) : c'est ce qui garde le rail Mode
+ * invisible tant qu'il n'a pas de stock réel.
+ *
+ * Densité "compact" forcée pour toutes les sections (2026-08-15, demande utilisateur
+ * explicite) : un seul gabarit de carte dans toute la plateforme, plutôt que le
+ * `defaultDensity` par catégorie (`listing_categories/{id}.defaultDensity`, resté
+ * "standard" pour Immobilier en base) qui aurait fait diverger ce rail de PropertyCard.
+ *
+ * Carrousel (2026-08-15, demande utilisateur explicite) : même librairie que "Annonces
+ * récentes" (react-slick, via `ListingCardsCarousel`) plutôt qu'une simple rangée avec
+ * défilement horizontal manuel.
  */
 export default function CategoryHomeSections() {
   const { data: sections = [] } = useQuery({
@@ -53,13 +62,7 @@ export default function CategoryHomeSections() {
               Voir tout
             </Link>
           </div>
-          <div className="flex gap-4 overflow-x-auto pb-2 snap-x">
-            {section.items.map((item: any) => (
-              <div key={item.id} className="min-w-[220px] max-w-[220px] snap-start">
-                <ListingCard property={item} density={section.density} hideDate />
-              </div>
-            ))}
-          </div>
+          <ListingCardsCarousel items={section.items} hideDate />
         </section>
       ))}
     </>
