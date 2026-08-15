@@ -43,7 +43,6 @@ export const routes = {
         gifts: '/gifts',
     },
     public: {
-        signinSignup: '/signin-signup',
         signin: '/signin',
         signup: '/signup',
         completeProfile: '/complete-profile',

@@ -142,6 +142,13 @@ const ListingCard = ({ property, hideDate = false, density = "standard" }: Listi
   }, [primaryImageSrc]);
 
   React.useEffect(() => {
+    // Le badge "Propriétaire direct" ne s'affiche que sur les densités showcase/standard
+    // (voir plus bas) — inutile de fetcher isOwner par carte pour la densité compact,
+    // devenue le gabarit unique de toute la plateforme (2026-08-15).
+    if (density === "compact") {
+      return;
+    }
+
     const hitIsDirectOwner = isDirectOwnerValue(property.isOwner);
     const hitHasOwnerValue = property.isOwner !== undefined && property.isOwner !== null;
 
@@ -197,7 +204,7 @@ const ListingCard = ({ property, hideDate = false, density = "standard" }: Listi
     return () => {
       isCancelled = true;
     };
-  }, [property.isOwner, propertyId]);
+  }, [property.isOwner, propertyId, density]);
 
   React.useEffect(() => {
     if (hasPrimaryImageUrl) {
@@ -294,6 +301,9 @@ const ListingCard = ({ property, hideDate = false, density = "standard" }: Listi
         </div>
         <div className="flex flex-1 flex-col gap-0.5 p-2.5">
           <p className="text-base font-bold text-gray-900 dark:text-white">
+            {property.typeProperty && (
+              <span className="mr-1">{property.status === "FOR_RENT" ? "À louer ·" : "À vendre ·"}</span>
+            )}
             {property.price?.toLocaleString?.() ?? property.price} F CFA
           </p>
           <p className="line-clamp-2 min-h-[2.5rem] text-sm text-gray-700 dark:text-gray-300">

@@ -45,7 +45,7 @@ export const ButtonFavoris: React.FC<ButtonFavorisProps> = ({ idProperty, size =
         title: 'Connecte-toi pour ajouter aux favoris',
         description: 'Crée un compte ou connecte-toi pour retrouver tes annonces favorites.',
       })
-      router.push(routes.public.signinSignup)
+      router.push(routes.public.signin)
       return
     }
 

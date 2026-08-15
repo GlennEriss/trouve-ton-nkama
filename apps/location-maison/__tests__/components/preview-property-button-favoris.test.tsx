@@ -38,7 +38,7 @@ describe('ButtonFavoris', () => {
     fireEvent.click(screen.getByRole('button'))
 
     expect(toast).toHaveBeenCalledWith(expect.objectContaining({ title: expect.stringContaining('Connecte-toi') }))
-    expect(push).toHaveBeenCalledWith('/signin-signup')
+    expect(push).toHaveBeenCalledWith('/signin')
     expect(updateUser).not.toHaveBeenCalled()
   })
 

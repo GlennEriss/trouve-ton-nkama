@@ -30,7 +30,6 @@ const isActivePath = (pathname: string, link: string) => {
 const GUEST_BOTTOM_NAV_HIDDEN_PREFIXES = [
     routes.public.signin,
     routes.public.signup,
-    routes.public.signinSignup,
     routes.public.completeProfile,
     routes.public.reset_password,
     routes.public.passwordResetRequest,

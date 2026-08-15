@@ -54,7 +54,17 @@ function baseProperty(overrides: Record<string, unknown> = {}) {
   }
 }
 
-describe('PropertyCard', () => {
+// Le prix est reparti sur plusieurs noeuds texte adjacents dans le <p> (prefixe "À
+// louer/vendre" dans un <span>, valeur et "F CFA" en texte JSX distincts) : getByText par
+// defaut ne concatene pas le texte a travers les elements enfants, d'ou ce matcher dedie sur
+// le textContent complet du <p>, restreint au tagName pour eviter les faux positifs sur les
+// ancetres (dont le textContent inclut aussi le titre et le lieu).
+function priceLineMatching(regex: RegExp) {
+  return (_content: string, element: Element | null) =>
+    element?.tagName === 'P' && regex.test(element.textContent ?? '')
+}
+
+describe('PropertyCard (gabarit compact commun a toute la plateforme)', () => {
   const originalFetch = global.fetch
   beforeEach(() => {
     jest.clearAllMocks()
@@ -64,14 +74,19 @@ describe('PropertyCard', () => {
     global.fetch = originalFetch
   })
 
-  it('affiche le titre, le prix, l adresse et les caracteristiques', () => {
+  it('affiche le titre, le statut/prix, le badge de type et le lieu (sans rue ni chambres/sdb)', () => {
     render(<PropertyCard property={baseProperty({ id: 'p-basic' })} />)
     expect(screen.getByText('Villa a Nkembo')).toBeInTheDocument()
-    expect(screen.getByText(/À louer.*250.*000.*F CFA/)).toBeInTheDocument()
-    expect(screen.getByText('Libreville, Estuaire, Nkembo')).toBeInTheDocument()
-    expect(screen.getByText('120 m²')).toBeInTheDocument()
-    expect(screen.getByText('3')).toBeInTheDocument()
-    expect(screen.getByText('2')).toBeInTheDocument()
+    expect(screen.getByText(priceLineMatching(/À louer.*250,000.*F CFA/))).toBeInTheDocument()
+    expect(screen.getByText('Maison')).toBeInTheDocument()
+    const locationLine = screen.getByText(/^Libreville, Estuaire/)
+    expect(locationLine.textContent).not.toContain('Nkembo') // pas de rue, contrairement au titre qui contient ce mot par coïncidence
+    expect(screen.queryByText('120 m²')).not.toBeInTheDocument()
+  })
+
+  it('affiche "À vendre" pour un statut FOR_SALE', () => {
+    render(<PropertyCard property={baseProperty({ id: 'p-sale', status: 'FOR_SALE' })} />)
+    expect(screen.getByText(priceLineMatching(/À vendre.*250,000.*F CFA/))).toBeInTheDocument()
   })
 
   it('navigue et trace l evenement au clic sur la carte', () => {
@@ -86,12 +101,12 @@ describe('PropertyCard', () => {
 
   it('masque la date de publication quand hideDate est actif', () => {
     render(<PropertyCard property={baseProperty({ id: 'p-hide' })} hideDate />)
-    expect(screen.queryByText(/Publiée/)).not.toBeInTheDocument()
+    expect(screen.getByText('Libreville, Estuaire')).toBeInTheDocument()
   })
 
-  it('affiche la date de publication par defaut', () => {
+  it('affiche la date de publication par defaut, accolee au lieu', () => {
     render(<PropertyCard property={baseProperty({ id: 'p-date' })} />)
-    expect(screen.getByText(/Publiée/)).toBeInTheDocument()
+    expect(screen.getByText(/Libreville, Estuaire.*·.*\d{2}\/\d{2}\/\d{4}/)).toBeInTheDocument()
   })
 
   it('retombe sur l image par defaut quand aucune image n est fournie', () => {
@@ -108,35 +123,15 @@ describe('PropertyCard', () => {
     expect(logImageError).toHaveBeenCalled()
   })
 
-  it('affiche le badge proprietaire direct de maniere synchrone', () => {
-    render(<PropertyCard property={baseProperty({ id: 'p-owner', isOwner: true })} />)
-    expect(screen.getByText('Propriétaire direct')).toBeInTheDocument()
-    expect(global.fetch).not.toHaveBeenCalled()
-  })
-
-  it('affiche le badge numero verifie quand le proprietaire est verifie', () => {
+  it('ne fetch jamais isOwner et ne montre aucun badge proprietaire/verifie (densite compact)', async () => {
     render(
       <PropertyCard
-        property={baseProperty({ id: 'p-verified', createdBy: { phoneNumberVerified: true } })}
+        property={baseProperty({ id: 'p-owner', isOwner: true, createdBy: { phoneNumberVerified: true } })}
       />,
     )
-    expect(screen.getByText('Numéro vérifié')).toBeInTheDocument()
-  })
-
-  it('detecte le statut proprietaire direct de maniere asynchrone', async () => {
-    ;(global.fetch as jest.Mock).mockResolvedValueOnce({ ok: true, json: async () => ({ isOwner: true }) })
-    render(<PropertyCard property={baseProperty({ id: 'p-async-owner' })} />)
     expect(screen.queryByText('Propriétaire direct')).not.toBeInTheDocument()
-    await waitFor(() => expect(screen.getByText('Propriétaire direct')).toBeInTheDocument())
-    expect(global.fetch).toHaveBeenCalledWith(expect.stringContaining('/api/property/id?id=p-async-owner'))
-  })
-
-  it('ne rend pas les chambres/salles de bain pour un type de bien non concerne', () => {
-    render(
-      <PropertyCard
-        property={baseProperty({ id: 'p-land', typeProperty: 'Land', nbrRooms: 5, nbrBathrooms: 2 })}
-      />,
-    )
-    expect(screen.queryByText('5')).not.toBeInTheDocument()
+    expect(screen.queryByText('Numéro vérifié')).not.toBeInTheDocument()
+    await new Promise((resolve) => setTimeout(resolve, 0))
+    expect(global.fetch).not.toHaveBeenCalled()
   })
 })
