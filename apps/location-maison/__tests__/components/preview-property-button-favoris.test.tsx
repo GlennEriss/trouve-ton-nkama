@@ -9,9 +9,13 @@ const trackInteraction = jest.fn()
 const trackEvent = jest.fn()
 const updateUser = jest.fn(async (..._args: unknown[]) => undefined)
 const getPropertyById = jest.fn()
+const push = jest.fn()
+const toast = jest.fn()
 
 jest.mock('@/hooks/use-current-user', () => ({ useCurrentUser: () => ({ user: currentUser }) }))
 jest.mock('next-auth/react', () => ({ useSession: () => ({ update: updateSession }) }))
+jest.mock('next/navigation', () => ({ useRouter: () => ({ push }) }))
+jest.mock('@/hooks/use-toast', () => ({ useToast: () => ({ toast }) }))
 jest.mock('@/db/user.db', () => ({ updateUser: (...args: any[]) => updateUser(...args) }))
 jest.mock('@/db/property.db', () => ({ getPropertyById: (...args: any[]) => getPropertyById(...args) }))
 jest.mock('@/hooks/use-track-property-interaction', () => ({
@@ -27,10 +31,15 @@ describe('ButtonFavoris', () => {
     jest.clearAllMocks()
   })
 
-  it('ne rend rien sans utilisateur connecte', () => {
+  it('reste visible sans utilisateur connecte et invite a se connecter au clic', () => {
     currentUser = null
-    const { container } = render(<ButtonFavoris idProperty="prop-1" />)
-    expect(container).toBeEmptyDOMElement()
+    render(<ButtonFavoris idProperty="prop-1" />)
+
+    fireEvent.click(screen.getByRole('button'))
+
+    expect(toast).toHaveBeenCalledWith(expect.objectContaining({ title: expect.stringContaining('Connecte-toi') }))
+    expect(push).toHaveBeenCalledWith('/signin-signup')
+    expect(updateUser).not.toHaveBeenCalled()
   })
 
   it('ajoute l annonce aux favoris et trace l interaction', async () => {

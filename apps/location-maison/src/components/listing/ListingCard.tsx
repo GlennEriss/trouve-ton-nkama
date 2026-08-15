@@ -278,12 +278,14 @@ const ListingCard = ({ property, hideDate = false, density = "standard" }: Listi
               }
             }}
           />
-          <ButtonFavoris
-            idProperty={propertyId}
-            size={20}
-            source="listing_card"
-            className="absolute right-2 top-2 z-10 bg-white/90 p-1.5 shadow-sm backdrop-blur-sm dark:bg-gray-900/80"
-          />
+          <div className="absolute right-2 top-2 z-10">
+            <ButtonFavoris
+              idProperty={propertyId}
+              size={20}
+              source="listing_card"
+              className="bg-white/90 p-1.5 shadow-sm backdrop-blur-sm dark:bg-gray-900/80"
+            />
+          </div>
           {categoryBadgeLabel && (
             <div className="absolute left-2 top-2 rounded-full bg-white/90 px-2 py-0.5 text-xs font-medium text-gray-700 backdrop-blur-sm dark:bg-gray-900/80 dark:text-gray-200">
               {categoryBadgeLabel}

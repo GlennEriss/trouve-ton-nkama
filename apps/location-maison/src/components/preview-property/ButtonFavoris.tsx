@@ -1,6 +1,7 @@
 'use client'
 import React from 'react'
 import clsx from 'clsx';
+import { useRouter } from 'next/navigation';
 import { useCurrentUser } from '@/hooks/use-current-user';
 import { useSession } from 'next-auth/react';
 import { updateUser } from '@/db/user.db';
@@ -10,6 +11,7 @@ import { routes } from '@/constantes/routes';
 import { RiHeart3Line } from 'react-icons/ri';
 import { useTrackPropertyInteraction } from '@/hooks/use-track-property-interaction';
 import { trackingEvents, useTrackEvent } from '@/features/analytics/tracking';
+import { useToast } from '@/hooks/use-toast';
 type ButtonFavorisProps = {
   idProperty: string
   /** Taille de l'icône coeur en pixels. Par défaut 40 (page détail). */
@@ -23,21 +25,30 @@ export const ButtonFavoris: React.FC<ButtonFavorisProps> = ({ idProperty, size =
   const { user } = useCurrentUser()
   const { update } = useSession()
   const { trackEvent } = useTrackEvent({ roleContext: 'user' })
+  const { toast } = useToast()
+  const router = useRouter()
   const [isFavorite, setIsFavorite] = React.useState(false);
   const [isLoading, setIsLoading] = React.useState(false);
   const { trackInteraction } = useTrackPropertyInteraction(idProperty);
 
-  // Tous les hooks doivent être appelés avant le retour conditionnel
   React.useEffect(() => {
     if (user?.favoris)
       setIsFavorite(user.favoris.includes(idProperty));
   }, [user, idProperty]);
 
-  if(!user){
-    return null
-  }
-
   const toggleFavorite = async () => {
+    // Visiteur non connecté (bouton toujours visible, comme le bouton "j'aime" des réels) :
+    // aucun favori anonyme côté données (favoris = tableau sur le compte utilisateur), donc
+    // on invite simplement à se connecter plutôt que de simuler un toggle qui se perdrait.
+    if (!user) {
+      toast({
+        title: 'Connecte-toi pour ajouter aux favoris',
+        description: 'Crée un compte ou connecte-toi pour retrouver tes annonces favorites.',
+      })
+      router.push(routes.public.signinSignup)
+      return
+    }
+
     if (isLoading) return; // Empêche plusieurs clics
     setIsLoading(true);
     try {
