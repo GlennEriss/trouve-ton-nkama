@@ -7,9 +7,12 @@ import { FaArrowLeft, FaArrowRight } from "react-icons/fa";
 import "slick-carousel/slick/slick.css";
 import "slick-carousel/slick/slick-theme.css";
 import PropertyCard from "../home-page/PropertyCard";
-import { useWindowSize } from "@/hooks/useSize";
 import { Property } from "@/models/annonce";
 import { cn } from "@/lib/utils";
+
+// Même largeur fixe que ListingCardsCarousel (2026-08-15, demande utilisateur explicite :
+// une seule taille de card dans toute la plateforme) — plus de slidesToShow par breakpoint.
+const CARD_WIDTH = 220;
 
 interface CarouselProps {
   properties?: Property[]; // Optionnel maintenant
@@ -37,15 +40,10 @@ const ArrowButton: React.FC<{ direction: "prev" | "next"; onClick?: () => void }
 
 const PropertyCarousel: React.FC<CarouselProps> = ({ properties = [], isRecommendation = false, hideDate = false }) => {
   const router = useRouter();
-  const { width } = useWindowSize();
 
   /* ----- Comptage & helpers ----- */
   const count = properties.length;
   const hasMultiple = count > 1;
-
-  /* centre-mode seulement sur desktop et ≤ 3 cartes */
-  const isDesktop = width >= 1024;
-  const shouldCenter = isDesktop && count <= 3;
 
   /* Navigation mémoïsée */
   const handleCardClick = useCallback(
@@ -57,7 +55,9 @@ const PropertyCarousel: React.FC<CarouselProps> = ({ properties = [], isRecommen
     [router]
   );
 
-  /* Paramètres du slider (uniquement si plusieurs propriétés) */
+  /* Paramètres du slider (uniquement si plusieurs propriétés) — largeur de card fixe
+     (variableWidth), le nombre de cards visibles s'adapte à la largeur d'écran plutôt que
+     l'inverse. */
   const settings = useMemo(
     () =>
       hasMultiple
@@ -65,31 +65,14 @@ const PropertyCarousel: React.FC<CarouselProps> = ({ properties = [], isRecommen
             dots: true,
             infinite: count > 4,
             speed: 500,
-            slidesToShow: Math.min(count, 4),
-            variableWidth: shouldCenter,
-            centerMode: shouldCenter,
-            centerPadding: shouldCenter ? "40px" : "0px",
+            slidesToShow: 1,
+            variableWidth: true,
             slidesToScroll: 1,
             prevArrow: <ArrowButton direction="prev" />,
             nextArrow: <ArrowButton direction="next" />,
-            responsive: [
-              {
-                breakpoint: 1280,
-                settings: {
-                  slidesToShow: Math.min(count, 3),
-                  variableWidth: false,
-                  centerMode: false,
-                },
-              },
-              { breakpoint: 1024, settings: { slidesToShow: Math.min(count, 3) } },
-              { breakpoint: 912, settings: { slidesToShow: Math.min(count, 3) } },
-              { breakpoint: 820, settings: { slidesToShow: Math.min(count, 2) } },
-              { breakpoint: 540, settings: { slidesToShow: Math.min(count, 2) } },
-              { breakpoint: 539, settings: { slidesToShow: 1 } },
-            ],
           }
         : undefined,
-    [hasMultiple, count, shouldCenter]
+    [hasMultiple, count]
   );
 
   /* ----- Rendu ----- */
@@ -100,8 +83,8 @@ const PropertyCarousel: React.FC<CarouselProps> = ({ properties = [], isRecommen
           {properties.map((p) => (
             <div
               key={p.id ?? `property-${Math.random()}`}
-              className="p-3 w-full text-left focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 rounded-lg transition-all duration-200"
-              style={shouldCenter ? { width: 320 } : undefined}
+              className="p-3 text-left focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 rounded-lg transition-all duration-200"
+              style={{ width: CARD_WIDTH }}
               onClick={() => handleCardClick(p.id)}
               onKeyDown={(e) => {
                 if (e.key === 'Enter' || e.key === ' ') {
@@ -122,7 +105,7 @@ const PropertyCarousel: React.FC<CarouselProps> = ({ properties = [], isRecommen
         properties[0] && (
           <div
             className="mx-auto block focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 rounded-lg transition-all duration-200"
-            style={{ width: '100%', maxWidth: 320 }}
+            style={{ width: CARD_WIDTH }}
             onClick={() => handleCardClick(properties[0].id)}
             onKeyDown={(e) => {
               if (e.key === 'Enter' || e.key === ' ') {

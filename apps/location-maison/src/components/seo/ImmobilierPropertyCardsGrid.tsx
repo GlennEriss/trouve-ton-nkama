@@ -41,12 +41,15 @@ export default function ImmobilierPropertyCardsGrid({ properties }: ImmobilierPr
   }, [properties]);
 
   return (
-    <div className="mt-6 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 auto-rows-fr">
+    // flex-wrap plutôt qu'un nombre de colonnes fixe par breakpoint (2026-08-15, demande
+    // utilisateur explicite) : la card fait désormais une taille fixe (220px, même gabarit
+    // que le carrousel de la home), le nombre de cards par ligne s'adapte à la largeur.
+    <div className="mt-6 flex flex-wrap gap-6">
       {feedItems.map((entry, index) =>
         entry.type === 'property' ? (
           <div
             key={entry.property.id}
-            className="h-full animate-fade-in-up transform transition-all duration-300 hover:translate-y-[-4px]"
+            className="w-[220px] animate-fade-in-up transform transition-all duration-300 hover:translate-y-[-4px]"
             style={{
               animationDelay: `${Math.min(index, 12) * 45}ms`,
               animationFillMode: 'both',
@@ -59,7 +62,7 @@ export default function ImmobilierPropertyCardsGrid({ properties }: ImmobilierPr
             key={`ad-${entry.key}`}
             placement="immobilier_infeed"
             rotationIndex={entry.adIndex}
-            className="sm:col-span-2 lg:col-span-3 xl:col-span-4"
+            className="w-full"
             fallbackSlot={ADSENSE_SLOTS.immobilierInline}
             fallbackSlotKey={entry.key}
             fallbackCompact

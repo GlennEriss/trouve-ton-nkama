@@ -305,10 +305,15 @@ export default function SearchPage() {
         </div>
       ) : (
         <>
-          {/* Grille de résultats */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 xl:grid-cols-6 gap-4">
+          {/* Grille de résultats — flex-wrap plutôt qu'un nombre de colonnes fixe par
+              breakpoint (2026-08-15, demande utilisateur explicite) : la card fait
+              désormais une taille fixe (220px, même gabarit que le carrousel de la home),
+              le nombre de cards par ligne s'adapte naturellement à la largeur disponible. */}
+          <div className="flex flex-wrap gap-4">
             {items.map((propertyData, i) => (
-              <PropertyCard key={propertyData.objectID} property={propertyData} />
+              <div key={propertyData.objectID} className="w-[220px]">
+                <PropertyCard property={propertyData} />
+              </div>
             ))}
           </div>
 

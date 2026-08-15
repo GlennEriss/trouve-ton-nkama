@@ -219,12 +219,17 @@ SearchDesktopPage() {
                                     </h2>
                                 </div>
 
-                                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 gap-6 pb-20">
+                                {/* flex-wrap plutôt qu'un nombre de colonnes fixe par breakpoint
+                                    (2026-08-15, demande utilisateur explicite) : la card fait
+                                    désormais une taille fixe (220px, même gabarit que le carrousel
+                                    de la home), le nombre de cards par ligne s'adapte à la largeur
+                                    disponible. */}
+                                <div className="flex flex-wrap gap-6 pb-20">
                                     {feedItems.map((entry) =>
                                         entry.type === 'property' ? (
                                             <div
                                                 key={entry.item.objectID}
-                                                className="h-full animate-fade-in-up transform transition-all duration-300 hover:translate-y-[-4px]"
+                                                className="w-[220px] animate-fade-in-up transform transition-all duration-300 hover:translate-y-[-4px]"
                                             >
                                                 <PropertyCard property={entry.item} />
                                             </div>
@@ -235,7 +240,7 @@ SearchDesktopPage() {
                                                 province={searchParams.get('province')}
                                                 city={searchParams.get('city')}
                                                 rotationIndex={entry.adIndex}
-                                                className="h-full sm:col-span-2 xl:col-span-3"
+                                                className="h-full w-full"
                                                 fallbackSlot={ADSENSE_SLOTS.searchInline}
                                                 fallbackSlotKey={`search-desktop-${entry.key}`}
                                             />

@@ -296,13 +296,16 @@ export default function SearchMobilePage() {
                             </div>
                         ) : (
                             <>
-                                {/* Grille de résultats */}
-                                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 xl:grid-cols-6 gap-4">
+                                {/* Grille de résultats — flex-wrap plutôt qu'un nombre de colonnes fixe par
+                                    breakpoint (2026-08-15, demande utilisateur explicite) : la card fait
+                                    désormais une taille fixe (220px, même gabarit que le carrousel de la
+                                    home), le nombre de cards par ligne s'adapte à la largeur disponible. */}
+                                <div className="flex flex-wrap gap-4">
                                     {feedItems.map((entry) =>
                                         entry.type === 'property' ? (
                                             <div
                                                 key={entry.item.objectID}
-                                                className="h-full animate-fade-in-up transition-all duration-300"
+                                                className="w-[220px] animate-fade-in-up transition-all duration-300"
                                             >
                                                 <PropertyCard property={entry.item} />
                                             </div>
@@ -313,7 +316,7 @@ export default function SearchMobilePage() {
                                                 province={province}
                                                 city={city}
                                                 rotationIndex={entry.adIndex}
-                                                className="sm:col-span-2 lg:col-span-5 xl:col-span-6"
+                                                className="w-full"
                                                 fallbackSlot={ADSENSE_SLOTS.searchInline}
                                                 fallbackSlotKey={`search-mobile-${entry.key}`}
                                                 fallbackCompact
