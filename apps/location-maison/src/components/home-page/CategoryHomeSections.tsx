@@ -3,13 +3,11 @@
 import { useQuery } from "@tanstack/react-query";
 import Link from "next/link";
 import ListingCard from "@/components/listing/ListingCard";
-import type { ListingCardDensity } from "@/components/listing/ListingCard";
 
 type HomeSection = {
   id: string;
   slug: string;
   name: string;
-  density: ListingCardDensity;
   items: unknown[];
 };
 
@@ -28,6 +26,11 @@ async function fetchHomeSections(): Promise<HomeSection[]> {
  * n'atteint son seuil `minListingsForHomeSection` (filtré côté serveur, 0 pour Immobilier
  * donc toujours affiché dès qu'il y a une annonce) : c'est ce qui garde le rail Mode
  * invisible tant qu'il n'a pas de stock réel.
+ *
+ * Densité "compact" forcée pour toutes les sections (2026-08-15, demande utilisateur
+ * explicite) : un seul gabarit de carte dans toute la plateforme, plutôt que le
+ * `defaultDensity` par catégorie (`listing_categories/{id}.defaultDensity`, resté
+ * "standard" pour Immobilier en base) qui aurait fait diverger ce rail de PropertyCard.
  */
 export default function CategoryHomeSections() {
   const { data: sections = [] } = useQuery({
@@ -58,7 +61,7 @@ export default function CategoryHomeSections() {
           <div className="flex gap-4 overflow-x-auto pb-2 snap-x">
             {section.items.map((item: any) => (
               <div key={item.id} className="min-w-[220px] max-w-[220px] snap-start">
-                <ListingCard property={item} density={section.density} hideDate />
+                <ListingCard property={item} density="compact" hideDate />
               </div>
             ))}
           </div>
