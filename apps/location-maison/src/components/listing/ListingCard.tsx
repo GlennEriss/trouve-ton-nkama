@@ -300,7 +300,12 @@ const ListingCard = ({ property, hideDate = false, density = "standard" }: Listi
           )}
         </div>
         <div className="flex flex-1 flex-col gap-0.5 p-2.5">
-          <p className="text-base font-bold text-gray-900 dark:text-white">
+          {/* min-h sur 2 lignes (comme le titre juste en dessous) : un prix immobilier
+              ("À vendre · 45 000 000 F CFA") peut passer sur 2 lignes à 220px de large,
+              contrairement à un loyer ou un prix Mode plus court — sans cette réserve
+              d'espace fixe, les cards d'une même section (surtout Immobilier) n'avaient pas
+              toutes la même hauteur (2026-08-15, signalé par l'utilisateur). */}
+          <p className="line-clamp-2 min-h-[3rem] text-base font-bold text-gray-900 dark:text-white">
             {property.typeProperty && (
               <span className="mr-1">{property.status === "FOR_RENT" ? "À louer ·" : "À vendre ·"}</span>
             )}
