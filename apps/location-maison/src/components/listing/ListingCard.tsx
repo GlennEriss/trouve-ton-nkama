@@ -263,7 +263,14 @@ const ListingCard = ({ property, hideDate = false, density = "standard" }: Listi
             handleCardClick();
           }
         }}
-        className="relative flex h-full w-full cursor-pointer flex-col overflow-hidden rounded-lg border border-gray-200 bg-white text-left transition-shadow hover:shadow-md dark:border-gray-800 dark:bg-gray-900"
+        className={cn(
+          "relative flex h-full w-full cursor-pointer flex-col overflow-hidden rounded-lg border border-gray-200 bg-white text-left transition-shadow hover:shadow-md dark:border-gray-800 dark:bg-gray-900",
+          // ring (box-shadow) plutôt que border : ne change pas la taille de la boîte,
+          // donc n'affecte pas la hauteur uniforme des cards (ring-2 ring-amber-400/90,
+          // repris du gabarit immobilier précédent — demande utilisateur explicite
+          // 2026-08-16, ce repère de confiance avait disparu avec le redesign compact).
+          isDirectOwner && "border-transparent ring-2 ring-amber-400/90"
+        )}
         aria-label={`Voir les détails de ${property.title ?? "l'annonce"}`}
         role="button"
         tabIndex={0}
