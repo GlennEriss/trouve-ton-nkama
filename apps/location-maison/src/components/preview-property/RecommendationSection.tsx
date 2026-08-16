@@ -8,18 +8,24 @@ interface RecommendationSectionProps {
     currentPropertyId: string;
     currentPropertyType: string;
     currentPropertyLocation: string;
+    /** Feuille de catégorie pour une annonce hors immobilier (voir getRecommendedProperties). */
+    currentCategoryId?: string;
 }
 
 export default function RecommendationSection({ 
     currentPropertyId, 
     currentPropertyType, 
-    currentPropertyLocation 
+    currentPropertyLocation,
+    currentCategoryId
 }: Readonly<RecommendationSectionProps>) {
     const { properties, loading, error } = useRecommend({
         limit: 8,
         excludeId: currentPropertyId,
-        type: currentPropertyType,
-        location: currentPropertyLocation
+        // Hors immobilier, on recommande par catégorie : `type`/`location` reposent sur
+        // typeProperty/province, sans pertinence pour un vêtement ou un parfum.
+        type: currentCategoryId ? undefined : currentPropertyType,
+        location: currentCategoryId ? undefined : currentPropertyLocation,
+        categoryId: currentCategoryId
     });
 
     if (loading) return null;
