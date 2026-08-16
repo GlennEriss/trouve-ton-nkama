@@ -234,3 +234,27 @@ export async function getServerCountByPropertyType(type: string): Promise<number
         throw new Error("Failed to fetch property count by type");
     }
 }
+
+/**
+ * Récupère le nombre d'annonces APPROVED pour une feuille de catégorie donnée
+ * (categoryId, ex. "vetements") — équivalent de getServerCountByPropertyType pour les
+ * catégories hors immobilier (Lot 5/9, tuiles "Types d'annonces" de la home).
+ */
+export async function getServerCountByCategoryId(categoryId: string): Promise<number> {
+    try {
+        const { collection, getCountFromServer, db, where, query } = await getFirestore();
+        const propertiesRef = collection(db, firebaseCollectionNames.properties);
+
+        const q = query(propertiesRef,
+            where('categoryId', '==', categoryId),
+            where('moderationStatus', '==', 'APPROVED')
+        );
+
+        const snapshot = await getCountFromServer(q);
+
+        return snapshot.data().count;
+    } catch (error) {
+        logger.error('Error fetching property count by category', { categoryId, error });
+        throw new Error("Failed to fetch property count by category");
+    }
+}

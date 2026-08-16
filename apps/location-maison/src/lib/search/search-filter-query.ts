@@ -14,6 +14,10 @@ const FACET_FILTERS = [
   // vient toujours de GET /api/categories/active, jamais saisie librement par l'utilisateur.
   // Absent de l'URL (comportement historique) => aucun filtre, résultats inchangés.
   ['category', 'categoryPath.lvl0'],
+  // Filtre par feuille précise (ex. "vetements", "chaussures" — tuiles "Types d'annonces"
+  // de la home, Lot 5/9) : valeur = id de document listing_categories, indexé tel quel
+  // dans categoryId (voir extensions/firestore-algolia-search.env).
+  ['categoryId', 'categoryId'],
 ] as const;
 
 const NUMERIC_FILTERS = [

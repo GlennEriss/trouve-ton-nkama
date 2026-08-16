@@ -1,4 +1,4 @@
-import { Home, Warehouse, Building, Building2, Briefcase, Bed, Store, ShoppingBag, Landmark } from "lucide-react";
+import { Home, Warehouse, Building, Building2, Briefcase, Bed, Store, ShoppingBag, Landmark, Castle, Layers, PackageOpen } from "lucide-react";
 
 export const propertyTypesList = [
     { type: "Home", icon: <Home className="w-10 h-10 text-blue-500" /> },
@@ -27,5 +27,17 @@ export const propertyTypesList = [
     {
       type: "Land",
       icon: <Landmark className="w-10 h-10 text-green-500" />,
+    },
+    {
+      type: "Villa",
+      icon: <Castle className="w-10 h-10 text-pink-500" />,
+    },
+    {
+      type: "Duplex",
+      icon: <Layers className="w-10 h-10 text-indigo-500" />,
+    },
+    {
+      type: "Warehouse",
+      icon: <PackageOpen className="w-10 h-10 text-amber-600" />,
     },
   ];

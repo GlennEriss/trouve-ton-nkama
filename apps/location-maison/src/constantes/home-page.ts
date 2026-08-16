@@ -8,6 +8,9 @@ export const HOME_PROPERTY_TYPE_KEYS = [
   'Kiosk',
   'Shop',
   'Land',
+  'Villa',
+  'Duplex',
+  'Warehouse',
 ] as const;
 
 export type HomePropertyTypeKey = (typeof HOME_PROPERTY_TYPE_KEYS)[number];
