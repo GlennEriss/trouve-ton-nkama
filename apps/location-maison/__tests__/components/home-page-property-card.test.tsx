@@ -122,15 +122,25 @@ describe('PropertyCard (gabarit compact commun a toute la plateforme)', () => {
     expect(logImageError).toHaveBeenCalled()
   })
 
-  it('ne fetch jamais isOwner et ne montre aucun badge proprietaire/verifie (densite compact)', async () => {
-    render(
-      <PropertyCard
-        property={baseProperty({ id: 'p-owner', isOwner: true, createdBy: { phoneNumberVerified: true } })}
-      />,
-    )
-    expect(screen.queryByText('Propriétaire direct')).not.toBeInTheDocument()
-    expect(screen.queryByText('Numéro vérifié')).not.toBeInTheDocument()
+  it('affiche le badge Proprietaire direct sans fetch quand isOwner est deja sur le hit', async () => {
+    render(<PropertyCard property={baseProperty({ id: 'p-owner', isOwner: true })} />)
+    expect(screen.getByText('Propriétaire direct')).toBeInTheDocument()
     await new Promise((resolve) => setTimeout(resolve, 0))
     expect(global.fetch).not.toHaveBeenCalled()
+  })
+
+  it('n affiche pas le badge Proprietaire direct quand isOwner est false', async () => {
+    render(<PropertyCard property={baseProperty({ id: 'p-agency', isOwner: false })} />)
+    expect(screen.queryByText('Propriétaire direct')).not.toBeInTheDocument()
+    await new Promise((resolve) => setTimeout(resolve, 0))
+    expect(global.fetch).not.toHaveBeenCalled()
+  })
+
+  it('detecte isOwner de maniere asynchrone quand il est absent du hit', async () => {
+    ;(global.fetch as jest.Mock).mockResolvedValueOnce({ ok: true, json: async () => ({ isOwner: true }) })
+    render(<PropertyCard property={baseProperty({ id: 'p-async-owner' })} />)
+    expect(screen.queryByText('Propriétaire direct')).not.toBeInTheDocument()
+    await waitFor(() => expect(screen.getByText('Propriétaire direct')).toBeInTheDocument())
+    expect(global.fetch).toHaveBeenCalledWith(expect.stringContaining('/api/property/id?id=p-async-owner'))
   })
 })
