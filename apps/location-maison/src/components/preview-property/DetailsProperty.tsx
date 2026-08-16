@@ -30,6 +30,12 @@ const items: Record<string, { label: string, icon: IconType }> = {
 
 export default function DetailsProperty({ property }: Readonly<{ property: Property }>) {
     const details = () => {
+        // Pas de typeProperty = annonce hors immobilier (Mode, etc.) : DetailsLand
+        // suppose `area` toujours défini ("undefined m²" sinon) — on affiche plutôt les
+        // attributs génériques de la catégorie (mêmes données que ListingCard).
+        if (!property.typeProperty) {
+            return <DetailsAttributes property={property} />;
+        }
         switch (property.typeProperty) {
             case 'Apartment': return <DetailsApartment apartment={property as Apartment} />;
             case 'Building': return <DetailsBuilding building={property as Building} />;
@@ -144,3 +150,24 @@ const DetailsLand = ({ land }: Readonly<{ land: Property }>) => (
         <DetailsItem keyName="area" value={`${land.area} m²`} />
     </div>
 );
+
+const DetailsAttributes = ({ property }: Readonly<{ property: Property }>) => {
+    const attributes = property.attributes && typeof property.attributes === 'object' ? property.attributes : {};
+    const entries = Object.entries(attributes).filter(
+        ([, value]) => value !== undefined && value !== null && value !== ''
+    );
+
+    if (entries.length === 0) {
+        return null;
+    }
+
+    return (
+        <div className="flex flex-wrap gap-4">
+            {entries.map(([key, value]) => (
+                <div key={key} className="flex items-center gap-2 my-2 bg-gray-100 p-2 rounded-md shadow-sm">
+                    <span className="font-medium">{String(value)}</span>
+                </div>
+            ))}
+        </div>
+    );
+};

@@ -71,6 +71,11 @@ describe('PreviewProperty', () => {
     expect(screen.getAllByTestId('tag')[0]).toHaveTextContent('A VENDRE')
   })
 
+  it('ne rend aucun tag de statut et ne plante pas quand status est absent (annonce Mode)', () => {
+    render(<PreviewProperty property={baseProperty({ status: undefined, tags: [] }) as any} />)
+    expect(screen.queryAllByTestId('tag')).toHaveLength(0)
+  })
+
   it('affiche l alerte propriete archivee quand le statut est ARCHIVED', () => {
     render(<PreviewProperty property={baseProperty({ state: 'ARCHIVED' }) as any} />)
     expect(screen.getByText('Propriété non disponible')).toBeInTheDocument()
