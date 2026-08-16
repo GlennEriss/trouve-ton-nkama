@@ -96,6 +96,10 @@ async function main() {
         categoryId: data.categoryId,
         categoryPath: data.categoryPath ?? null,
         attributes: data.attributes ?? {},
+        // isOwner ("Propriétaire direct") : dans FIELDS de l'extension mais jamais
+        // resynchronisé sur les docs existants — sans lui dans l'index, chaque card
+        // immobilière déclenche un fetch de secours `/api/property/id` (ListingCard).
+        ...(typeof data.isOwner === 'boolean' ? { isOwner: data.isOwner } : {}),
       },
     };
   });

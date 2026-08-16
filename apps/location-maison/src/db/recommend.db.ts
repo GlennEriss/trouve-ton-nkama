@@ -22,16 +22,45 @@ export async function getRecommendedProperties({
     limit = 6,
     excludeId = '',
     type,
-    location
+    location,
+    categoryId
 }: {
     limit?: number;
     excludeId?: string;
     type?: string;
     location?: string;
+    /**
+     * Annonce hors immobilier : on recommande dans la MÊME feuille de catégorie plutôt que
+     * par `status`/`typeProperty`, qui n'existent pas pour ces annonces. Sans ça, la section
+     * "Annonces similaires" d'un parfum listait des logements en location (le filtre de base
+     * `status == FOR_RENT` ci-dessous étant toujours appliqué).
+     * ⚠️ Requiert l'index composite (categoryId Asc, moderationStatus Asc, createdAt Desc)
+     * déclaré dans firestore.indexes.json.
+     */
+    categoryId?: string;
 }): Promise<Property[]> {
     try {
         const { collection, getDocs, db, where, query, limit: queryLimit, orderBy } = await getFirestore();
         const propertiesRef = collection(db, collectionFirebaseNames.properties);
+
+        if (categoryId) {
+            const categoryQuery = query(
+                propertiesRef,
+                where('categoryId', '==', categoryId),
+                where('moderationStatus', '==', 'APPROVED'),
+                orderBy('createdAt', 'desc'),
+                queryLimit(limit)
+            );
+            const categorySnapshot = await getDocs(categoryQuery);
+            const categoryProperties: Property[] = [];
+            categorySnapshot.forEach((doc) => {
+                const property = normalizeKitchenField({ ...doc.data(), id: doc.id }) as Property;
+                if (property.id !== excludeId) {
+                    categoryProperties.push(property);
+                }
+            });
+            return categoryProperties;
+        }
 
         // Create base query
         let q = query(

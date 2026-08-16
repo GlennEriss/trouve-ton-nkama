@@ -142,13 +142,6 @@ const ListingCard = ({ property, hideDate = false, density = "standard" }: Listi
   }, [primaryImageSrc]);
 
   React.useEffect(() => {
-    // Le badge "Propriétaire direct" ne s'affiche que sur les densités showcase/standard
-    // (voir plus bas) — inutile de fetcher isOwner par carte pour la densité compact,
-    // devenue le gabarit unique de toute la plateforme (2026-08-15).
-    if (density === "compact") {
-      return;
-    }
-
     const hitIsDirectOwner = isDirectOwnerValue(property.isOwner);
     const hitHasOwnerValue = property.isOwner !== undefined && property.isOwner !== null;
 
@@ -204,7 +197,7 @@ const ListingCard = ({ property, hideDate = false, density = "standard" }: Listi
     return () => {
       isCancelled = true;
     };
-  }, [property.isOwner, propertyId, density]);
+  }, [property.isOwner, propertyId]);
 
   React.useEffect(() => {
     if (hasPrimaryImageUrl) {
@@ -263,7 +256,14 @@ const ListingCard = ({ property, hideDate = false, density = "standard" }: Listi
             handleCardClick();
           }
         }}
-        className="relative flex h-full w-full cursor-pointer flex-col overflow-hidden rounded-lg border border-gray-200 bg-white text-left transition-shadow hover:shadow-md dark:border-gray-800 dark:bg-gray-900"
+        className={cn(
+          "relative flex h-full w-full cursor-pointer flex-col overflow-hidden rounded-lg border border-gray-200 bg-white text-left transition-shadow hover:shadow-md dark:border-gray-800 dark:bg-gray-900",
+          // ring (box-shadow) plutôt que border : ne change pas la taille de la boîte,
+          // donc n'affecte pas la hauteur uniforme des cards (ring-2 ring-amber-400/90,
+          // repris du gabarit immobilier précédent — demande utilisateur explicite
+          // 2026-08-16, ce repère de confiance avait disparu avec le redesign compact).
+          isDirectOwner && "border-transparent ring-2 ring-amber-400/90"
+        )}
         aria-label={`Voir les détails de ${property.title ?? "l'annonce"}`}
         role="button"
         tabIndex={0}
@@ -300,6 +300,15 @@ const ListingCard = ({ property, hideDate = false, density = "standard" }: Listi
           {categoryBadgeLabel && (
             <div className="absolute left-2 top-2 rounded-full bg-white/90 px-2 py-0.5 text-xs font-medium text-gray-700 backdrop-blur-sm dark:bg-gray-900/80 dark:text-gray-200">
               {categoryBadgeLabel}
+            </div>
+          )}
+          {/* En bas de l'image (haut déjà pris par le badge catégorie + le coeur) :
+              n'affecte pas la hauteur du texte en dessous, donc ne casse pas la hauteur
+              uniforme des cards. */}
+          {isDirectOwner && (
+            <div className="absolute bottom-2 left-2 flex items-center gap-1 rounded-full bg-amber-400 px-2 py-0.5 text-[10px] font-semibold text-amber-950 shadow-sm ring-1 ring-white/80">
+              <KeyRound className="h-3 w-3" />
+              <span>Propriétaire direct</span>
             </div>
           )}
         </div>

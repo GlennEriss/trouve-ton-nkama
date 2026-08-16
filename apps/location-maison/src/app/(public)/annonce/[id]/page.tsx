@@ -76,12 +76,39 @@ export default async function Page({ params }: { params: AnnonceParams }) {
     notFound();
   }
 
-  // Structured data immobilier (RealEstateListing) — les catégories hors immobilier
-  // (mode, etc.) n'atteignent pas encore cette page en production (Lot 2 les garde en
-  // PENDING, Lot 5 n'expose Mode nulle part tant qu'elle n'est pas activée) ; migrer vers
-  // Product/Offer par catégorie est un chantier à part, voir
-  // docs/marketplace-multi-categories/04-page-detail.md.
-  const structuredData = {
+  // Hors immobilier (Mode, etc.) : Product/Offer. Annoncer un RealEstateListing avec
+  // Accommodation/floorSize/numberOfRooms pour un parfum ou une robe induit Google en
+  // erreur (mauvais type d'entité, propriétés immobilières absurdes) — ce n'était pas un
+  // problème tant que Mode restait inactive, ça en est devenu un depuis son ouverture
+  // publique (2026-08-15). Voir docs/marketplace-multi-categories/04-page-detail.md.
+  const isCategoryListing = !property.typeProperty && Boolean(property.categoryId);
+  const leafName =
+    typeof property.categoryPath?.lvl1 === 'string'
+      ? property.categoryPath.lvl1.split(' > ').pop()
+      : undefined;
+
+  const categoryStructuredData = {
+    '@context': 'https://schema.org',
+    '@type': 'Product',
+    name: property.title,
+    description: property.description,
+    url: canonical(buildCanonicalPath(id)),
+    image: property.images?.map((image) => (typeof image === 'string' ? image : image?.fileURL)).filter(Boolean),
+    category: leafName,
+    offers: {
+      '@type': 'Offer',
+      priceCurrency: 'XAF',
+      price: property.price,
+      availability: 'https://schema.org/InStock',
+      itemCondition: 'https://schema.org/UsedCondition',
+      areaServed: {
+        '@type': 'City',
+        name: property.city,
+      },
+    },
+  };
+
+  const realEstateStructuredData = {
     '@context': 'https://schema.org',
     '@type': 'RealEstateListing',
     name: property.title,
@@ -123,7 +150,7 @@ export default async function Page({ params }: { params: AnnonceParams }) {
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{
-          __html: JSON.stringify(structuredData),
+          __html: JSON.stringify(isCategoryListing ? categoryStructuredData : realEstateStructuredData),
         }}
       />
       <HouseDetails />

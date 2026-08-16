@@ -325,18 +325,21 @@ export default function SearchMobilePage() {
                             </div>
                         ) : (
                             <>
-                                {/* Grille CSS auto-fit/minmax par groupe de cards, séparée à chaque
-                                    pub (2026-08-15, demande utilisateur explicite) — voir le
+                                {/* Grille CSS auto-fill par groupe de cards, séparée à chaque pub
+                                    (2026-08-15, demande utilisateur explicite) — voir le
                                     commentaire sur feedGroups : chaque grille se remplit
                                     entièrement puisqu'aucune pub ne vient forcer un saut de ligne
-                                    à l'intérieur. 150px garantit au moins 2 colonnes sur mobile
-                                    étroit. */}
+                                    à l'intérieur. Taille de colonne FIXE (150px, pas minmax(...,1fr))
+                                    : avec 1fr, une ligne incomplète (1-2 résultats) étirait les
+                                    cards à une taille énorme (signalé par l'utilisateur,
+                                    2026-08-16) — auto-fill sans 1fr laisse l'espace vide plutôt
+                                    que d'agrandir les cards. */}
                                 <div className="space-y-4">
                                     {feedGroups.map((group, groupIndex) =>
                                         group.kind === 'properties' ? (
                                             <div
                                                 key={`properties-${groupIndex}`}
-                                                className="grid grid-cols-[repeat(auto-fit,minmax(150px,1fr))] gap-4"
+                                                className="grid grid-cols-[repeat(auto-fill,150px)] gap-4"
                                             >
                                                 {group.entries.map((entry) => (
                                                     <div
