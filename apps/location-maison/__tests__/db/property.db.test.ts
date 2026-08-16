@@ -35,6 +35,7 @@ import {
   getCountStatisticsByPropertyType,
   getProperties,
   getPropertyById,
+  getServerCountByCategoryId,
   getServerCountByPropertyType,
   getServerCountByProvince,
   updateProperty,
@@ -204,6 +205,15 @@ describe('property database', () => {
     expect(firestore.where).toHaveBeenCalledWith('moderationStatus', '==', 'APPROVED')
   })
 
+  it('compte seulement les annonces approuvées par feuille de categorie', async () => {
+    firestore.getCountFromServer.mockResolvedValueOnce({ data: () => ({ count: 8 }) })
+
+    await expect(getServerCountByCategoryId('vetements')).resolves.toBe(8)
+
+    expect(firestore.where).toHaveBeenCalledWith('categoryId', '==', 'vetements')
+    expect(firestore.where).toHaveBeenCalledWith('moderationStatus', '==', 'APPROVED')
+  })
+
   it('remonte une erreur métier stable quand Firestore échoue', async () => {
     firestore.getCountFromServer.mockRejectedValue(new Error('offline'))
     firestore.getDoc.mockRejectedValue(new Error('offline'))
@@ -211,6 +221,7 @@ describe('property database', () => {
     await expect(getCountStatisticsByPropertyType('owner-1')).rejects.toThrow('Failed to fetch property count')
     await expect(getServerCountByProvince('Estuaire')).rejects.toThrow('Failed to fetch property count by province')
     await expect(getServerCountByPropertyType('Studio')).rejects.toThrow('Failed to fetch property count by type')
+    await expect(getServerCountByCategoryId('vetements')).rejects.toThrow('Failed to fetch property count by category')
     await expect(getPropertyById('property-1')).rejects.toThrow('Failed to fetch property with ID property-1')
   })
 })
