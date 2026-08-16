@@ -15,7 +15,15 @@ if (!ADMIN_API_KEY) {
 const url = `https://${APP_ID}-dsn.algolia.net/1/indexes/${INDEX_NAME}/settings`;
 
 const body = {
-    // Tous les attributs utilisés pour les filtres et les facettes de l'UI
+    // Tous les attributs utilisés pour les filtres et les facettes de l'UI.
+    // ⚠️ PUT settings REMPLACE ce tableau en entier (pas de fusion) — un attribut déjà
+    // facettable en prod mais absent d'ici disparaît silencieusement au prochain run.
+    // Incident réel (2026-08-16) : ce fichier ne listait pas `moderationStatus`, qui était
+    // pourtant déjà facettable en prod (ajouté hors de ce script à un moment donné) — le
+    // relancer a fait disparaître `moderationStatus` de la liste, cassant TOUTES les
+    // requêtes de la plateforme (elle filtre systématiquement moderationStatus:"APPROVED"),
+    // pas seulement le filtre par catégorie visé. Avant de relancer ce script, comparer
+    // d'abord la liste ci-dessous à un GET réel des settings de prod.
     attributesForFaceting: [
         'province',
         'city',
@@ -24,6 +32,7 @@ const body = {
         'tags',
         'status',
         'state',
+        'moderationStatus',
         // Multi-catégories (Lot 1) : facette hiérarchique pour la recherche/l'accueil par
         // catégorie (voir docs/marketplace-multi-categories/03-page-recherche.md). Les
         // facettes par attribut dynamique (attributes.taille, etc.) arrivent au Lot 4,
