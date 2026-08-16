@@ -64,7 +64,9 @@ export const PreviewPropertyMobile: React.FC<PreviewPropertyMobileProps> = ({ pr
                 <div className='px-2'>
                     <section className='flex justify-between items-start'>
                         <div className='flex flex-wrap gap-3 items-center mt-1.5'>
-                            <Tag name={tagSatus[property.status as string]} />
+                            {/* property.status (À louer/à vendre) absent pour une annonce hors
+                                immobilier (Mode, etc.) — ne pas rendre le tag évite un crash. */}
+                            {tagSatus[property.status as string] && <Tag name={tagSatus[property.status as string]} />}
                             {
                                 property.tags.map((tag) => (
                                     <Tag key={tag} name={tag} />

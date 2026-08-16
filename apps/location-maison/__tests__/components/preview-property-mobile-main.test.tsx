@@ -89,6 +89,11 @@ describe('PreviewPropertyMobile', () => {
     expect(screen.getByText(/FCFA.*250.*000/)).toBeInTheDocument()
   })
 
+  it('ne rend aucun tag de statut et ne plante pas quand status est absent (annonce Mode)', () => {
+    render(<PreviewPropertyMobile property={baseProperty({ status: undefined, tags: [] }) as any} />)
+    expect(screen.queryAllByTestId('tag')).toHaveLength(0)
+  })
+
   it('affiche l initiale de l annonceur dans l avatar', () => {
     render(<PreviewPropertyMobile property={baseProperty() as any} />)
     expect(screen.getByTestId('avatar-fallback')).toHaveTextContent('J')

@@ -12,14 +12,17 @@ describe('AlgoliaFilters', () => {
 })
 
 describe('propertyTypesList', () => {
-  it('expose neuf types de biens avec une icone chacun', () => {
-    expect(propertyTypesList).toHaveLength(9)
+  it('expose les douze types de biens avec une icone chacun', () => {
+    expect(propertyTypesList).toHaveLength(12)
     for (const entry of propertyTypesList) {
       expect(typeof entry.type).toBe('string')
       expect(entry.icon).toBeTruthy()
     }
     expect(propertyTypesList.map((e) => e.type)).toEqual(
-      expect.arrayContaining(['Home', 'Studio', 'Apartment', 'Building', 'Desk', 'Room', 'Kiosk', 'Shop', 'Land']),
+      expect.arrayContaining([
+        'Home', 'Studio', 'Apartment', 'Building', 'Desk', 'Room', 'Kiosk', 'Shop', 'Land',
+        'Villa', 'Duplex', 'Warehouse',
+      ]),
     )
   })
 })

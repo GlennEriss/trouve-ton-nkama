@@ -30,7 +30,10 @@ export default function PreviewProperty({ property }: Readonly<{ property: Prope
       {/* Section des tags */}
       <section className='flex justify-between'>
         <div className='flex flex-wrap gap-3 items-center'>
-          <Tag name={tagSatus[property.status as string]} />
+          {/* property.status (À louer/à vendre) n'a pas de sens pour une annonce hors
+              immobilier (Mode, etc.) — absent dans ce cas, ne pas rendre le tag évite
+              un crash (Tag exige un name défini). */}
+          {tagSatus[property.status as string] && <Tag name={tagSatus[property.status as string]} />}
           {
             property.tags.map((tag) => (
               <Tag key={tag} name={tag} />

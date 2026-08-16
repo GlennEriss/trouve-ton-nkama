@@ -1,10 +1,12 @@
 export {};
 let getByProvince: typeof import('@/app/api/property/count/by-province/route').GET
 let getByType: typeof import('@/app/api/property/count/by-type/route').GET
+let getByCategory: typeof import('@/app/api/property/count/by-category/route').GET
 
 const propertyDb = {
   getServerCountByProvince: jest.fn(),
   getServerCountByPropertyType: jest.fn(),
+  getServerCountByCategoryId: jest.fn(),
 }
 const cache = { get: jest.fn(), set: jest.fn(async () => undefined) }
 
@@ -27,6 +29,7 @@ describe('/api/property/count', () => {
   beforeAll(async () => {
     getByProvince = (await import('@/app/api/property/count/by-province/route')).GET
     getByType = (await import('@/app/api/property/count/by-type/route')).GET
+    getByCategory = (await import('@/app/api/property/count/by-category/route')).GET
   })
   beforeEach(() => {
     jest.clearAllMocks()
@@ -88,6 +91,35 @@ describe('/api/property/count', () => {
     it('traduit une panne en 500', async () => {
       propertyDb.getServerCountByPropertyType.mockRejectedValueOnce(new Error('db down'))
       const response = await getByType(req('type=maison', 'by-type'))
+      expect(response.status).toBe(500)
+    })
+  })
+
+  describe('by-category', () => {
+    it('exige un parametre categoryId', async () => {
+      const response = await getByCategory(req('', 'by-category'))
+      expect(response.status).toBe(400)
+      expect(propertyDb.getServerCountByCategoryId).not.toHaveBeenCalled()
+    })
+
+    it('sert le compteur en cache sans requete', async () => {
+      cache.get.mockResolvedValueOnce(8)
+      const response = await getByCategory(req('categoryId=vetements', 'by-category'))
+      expect(await response.json()).toMatchObject({ count: 8 })
+      expect(propertyDb.getServerCountByCategoryId).not.toHaveBeenCalled()
+    })
+
+    it('calcule et met en cache le compteur', async () => {
+      propertyDb.getServerCountByCategoryId.mockResolvedValueOnce(18)
+      const response = await getByCategory(req('categoryId=vetements', 'by-category'))
+      expect(await response.json()).toMatchObject({ count: 18 })
+      expect(propertyDb.getServerCountByCategoryId).toHaveBeenCalledWith('vetements')
+      expect(cache.set).toHaveBeenCalledWith('propertyCountByCategory:vetements', 18, expect.any(Number))
+    })
+
+    it('traduit une panne en 500', async () => {
+      propertyDb.getServerCountByCategoryId.mockRejectedValueOnce(new Error('db down'))
+      const response = await getByCategory(req('categoryId=vetements', 'by-category'))
       expect(response.status).toBe(500)
     })
   })

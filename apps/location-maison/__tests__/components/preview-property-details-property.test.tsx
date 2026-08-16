@@ -101,4 +101,21 @@ describe('DetailsProperty', () => {
     expect(screen.getByText('500 m²')).toBeInTheDocument()
     expect(screen.getByText('Superficie')).toBeInTheDocument()
   })
+
+  it('sans typeProperty (Mode) : affiche les attributs generiques au lieu de la superficie', () => {
+    render(
+      <DetailsProperty
+        property={{ attributes: { taille: 'M', marque: 'Nike', genre: undefined, couleur: '' } } as any}
+      />,
+    )
+    expect(screen.getByText('M')).toBeInTheDocument()
+    expect(screen.getByText('Nike')).toBeInTheDocument()
+    expect(screen.queryByText('Superficie')).not.toBeInTheDocument()
+    expect(screen.queryByText(/m²/)).not.toBeInTheDocument()
+  })
+
+  it('sans typeProperty et sans attributs : ne rend rien plutot que "undefined m²"', () => {
+    const { container } = render(<DetailsProperty property={{ attributes: {} } as any} />)
+    expect(container.querySelector('.p-4')?.textContent).toBe('')
+  })
 })
