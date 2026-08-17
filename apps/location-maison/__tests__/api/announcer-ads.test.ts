@@ -32,6 +32,70 @@ const items = [
   { id: 'c', title: 'Maison familiale', city: 'Owendo', typeProperty: 'Home', status: 'FOR_RENT', state: 'IN_PROGRESS', price: 150000, createdAt: 0, updatedAt: { toMillis: () => { throw new Error('bad timestamp') } }, currentPromotion: { isActive: false, endDate: future } },
 ]
 
+// Annonces marketplace : pas de typeProperty, mais un categoryId — comme en prod, où un
+// backfill a posé categoryId sur presque toutes les annonces, immobilier comprise.
+const mixedItems = [
+  ...items.map((item) => ({ ...item, categoryId: item.typeProperty?.toLowerCase() })),
+  { id: 'm1', title: 'Robe wax', city: 'Libreville', categoryId: 'vetements', categoryPath: { lvl0: 'Mode', lvl1: 'Mode > Vêtements' }, state: 'IN_PROGRESS', moderationStatus: 'PENDING', price: 15000, createdAt: new Date('2026-03-01') },
+  { id: 'm2', title: 'Gloss Crush', city: 'Libreville', categoryId: 'parfums-beaute', categoryPath: { lvl0: 'Mode', lvl1: 'Mode > Parfums & beauté' }, state: 'IN_PROGRESS', price: 7000, createdAt: new Date('2026-03-02') },
+]
+
+describe('/api/announcer/ads — séparation immobilier / marketplace', () => {
+  beforeAll(async () => { ({ GET: getAds } = await import('@/app/api/announcer/ads/route')) })
+  beforeEach(() => {
+    jest.clearAllMocks()
+    ;(auth as jest.Mock).mockResolvedValue({ user: { uid: 'u1' } })
+    ;(getFirestore as jest.Mock).mockReturnValue(dbWith(mixedItems))
+  })
+
+  it('sépare sur typeProperty et non sur categoryId', async () => {
+    // Les annonces immobilier portent AUSSI un categoryId : s'en servir comme discriminant
+    // ferait basculer les 931 annonces immobilier de prod dans l'onglet marketplace.
+    const immo = await (await getAds(request('?scope=immobilier'))).json()
+    expect(immo.items.map((item: any) => item.id).sort()).toEqual(['a', 'b', 'c'])
+
+    const market = await (await getAds(request('?scope=marketplace'))).json()
+    expect(market.items.map((item: any) => item.id).sort()).toEqual(['m1', 'm2'])
+  })
+
+  it('renvoie des compteurs d onglets stables quels que soient les filtres', async () => {
+    const filtered = await (await getAds(request('?scope=immobilier&type=Villa'))).json()
+
+    expect(filtered.items).toHaveLength(1)
+    // Le filtre réduit la liste mais jamais les compteurs d'onglets, sinon le nombre affiché
+    // sur l'onglet voisin changerait sans raison visible.
+    expect(filtered.scopeCounts).toEqual({ immobilier: 3, marketplace: 2 })
+  })
+
+  it('applique le defaut immobilier quand le scope est absent ou invalide', async () => {
+    for (const query of ['', '?scope=', '?scope=nimportequoi']) {
+      const body = await (await getAds(request(query))).json()
+      expect(body.appliedFilters.scope).toBe('immobilier')
+      expect(body.items.map((item: any) => item.id).sort()).toEqual(['a', 'b', 'c'])
+    }
+  })
+
+  it('filtre par catégorie et compte les stats propres au marketplace', async () => {
+    const body = await (await getAds(request('?scope=marketplace&category=vetements'))).json()
+
+    expect(body.items.map((item: any) => item.id)).toEqual(['m1'])
+    // Stats calculées sur l'onglet entier, pas sur le filtre en cours.
+    expect(body.summary.global.total).toBe(2)
+    expect(body.summary.global.pendingModeration).toBe(1)
+    expect(body.summary.global.categoriesUsed).toBe(2)
+    expect(body.summary.global.forRent).toBe(0)
+  })
+
+  it('ne propose que les catégories réellement utilisées dans l onglet', async () => {
+    const body = await (await getAds(request('?scope=marketplace'))).json()
+
+    expect(body.categoryOptions).toEqual([
+      { id: 'vetements', label: 'Vêtements', count: 1 },
+      { id: 'parfums-beaute', label: 'Parfums & beauté', count: 1 },
+    ])
+  })
+})
+
 describe('/api/announcer/ads', () => {
   beforeAll(async () => { ({ GET: getAds } = await import('@/app/api/announcer/ads/route')) })
   beforeEach(() => {
@@ -49,7 +113,7 @@ describe('/api/announcer/ads', () => {
   it('retourne le résumé global et une pagination stable', async () => {
     const response = await getAds(request('?limit=2&cursor=0'))
     const body = await response.json()
-    expect(body.summary.global).toEqual({ total: 3, active: 2, archived: 1, promoted: 1, forRent: 2, forSale: 1 })
+    expect(body.summary.global).toEqual({ total: 3, active: 2, archived: 1, promoted: 1, forRent: 2, forSale: 1, pendingModeration: 0, categoriesUsed: 0 })
     expect(body.pagination).toMatchObject({ total: 3, limit: 2, nextCursor: '2', hasMore: true })
     expect(body.items.map((item: any) => item.id)).toEqual(['b', 'a'])
   })

@@ -29,6 +29,7 @@ import {
   BadgeDollarSign,
   Building2,
   CalendarDays,
+  Clock3,
   Eye,
   Filter,
   Gift,
@@ -37,6 +38,8 @@ import {
   Pencil,
   Plus,
   Search,
+  ShoppingBag,
+  Tag as TagIcon,
   Trash2,
   TrendingUp,
   Video,
@@ -44,6 +47,11 @@ import {
 } from 'lucide-react';
 import { useAdManagement } from '../../hooks';
 import { AutoClaimBanner } from '@/features/announcer/listing-claim/ui';
+
+const AD_SCOPE_TABS = [
+  { value: 'immobilier' as const, label: 'Immobilier', icon: Building2 },
+  { value: 'marketplace' as const, label: 'Mode', icon: ShoppingBag },
+];
 
 const TYPE_FILTER_OPTIONS: Array<{ value: string; label: string }> = [
   { value: '__all', label: 'Tous types' },
@@ -251,7 +259,12 @@ const MODERATION_STATUS_CLASSES: Record<string, string> = {
 };
 
 function AdCard({ ad, onToggleState, onDelete, actionLoading }: AdCardProps) {
-  const statusLabel = ad.status === 'FOR_RENT' ? 'À louer' : 'À vendre';
+  // Même discriminant que l'API (route.ts) : hors immobilier, louer/vendre n'a pas de sens et
+  // le badge affichait « À vendre » par défaut sur toutes les annonces mode. On montre la
+  // catégorie à la place, seule information de rangement qu'elles possèdent.
+  const statusLabel = ad.typeProperty
+    ? (ad.status === 'FOR_RENT' ? 'À louer' : 'À vendre')
+    : (ad.categoryPath?.lvl1?.split(' > ').pop() ?? 'Annonce');
   const stateLabel = ad.state === 'IN_PROGRESS' ? 'Active' : 'Archivée';
   const publishedAt = formatDate(ad.createdAt);
   const updatedAt = formatDate(ad.updatedAt);
@@ -405,9 +418,13 @@ export function AdManagementPage() {
     total,
     filteredTotal,
     summary,
+    scopeCounts,
+    categoryOptions,
     searchInput,
     setSearchInput,
     filters,
+    setScope,
+    setCategoryFilter,
     setTypeFilter,
     setStatusFilter,
     setStateFilter,
@@ -424,6 +441,7 @@ export function AdManagementPage() {
     isRemoving,
     error,
   } = useAdManagement();
+  const isMarketplaceScope = filters.scope === 'marketplace';
   const { toast } = useToast();
   const sentinelRef = useRef<HTMLDivElement | null>(null);
   const [toggleStateCandidate, setToggleStateCandidate] = useState<Property | null>(null);
@@ -576,7 +594,7 @@ export function AdManagementPage() {
               asChild
               className="h-12 rounded-full bg-gradient-to-r from-primary to-secondary px-6 font-semibold hover:from-primary-800 hover:to-primary-600"
             >
-              <Link href={routes.protected.add_property_ai}>
+              <Link href={routes.protected.publish}>
                 <Plus className="mr-2 h-4 w-4" />
                 Publier une annonce
               </Link>
@@ -585,13 +603,65 @@ export function AdManagementPage() {
         </div>
       </section>
 
-      <section className="grid grid-cols-2 gap-3 md:grid-cols-3 xl:grid-cols-6">
+      <section aria-label="Univers d'annonces">
+        <div role="tablist" aria-label="Univers d'annonces" className="flex gap-2 overflow-x-auto rounded-full bg-gray-100 p-1 dark:bg-gray-800/70">
+          {AD_SCOPE_TABS.map((tab) => {
+            const isActive = filters.scope === tab.value;
+            return (
+              <button
+                key={tab.value}
+                type="button"
+                role="tab"
+                id={`ad-scope-tab-${tab.value}`}
+                aria-selected={isActive}
+                aria-controls="ad-scope-panel"
+                onClick={() => setScope(tab.value)}
+                className={`flex flex-1 items-center justify-center gap-2 whitespace-nowrap rounded-full px-4 py-2.5 text-sm font-semibold transition-colors ${
+                  isActive
+                    ? 'bg-white text-gray-900 shadow-sm dark:bg-gray-900 dark:text-white'
+                    : 'text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white'
+                }`}
+              >
+                <tab.icon className="h-4 w-4" />
+                {tab.label}
+                <span
+                  className={`rounded-full px-2 py-0.5 text-xs font-bold ${
+                    isActive
+                      ? 'bg-primary/10 text-primary'
+                      : 'bg-gray-200 text-gray-600 dark:bg-gray-700 dark:text-gray-300'
+                  }`}
+                >
+                  {scopeCounts[tab.value]}
+                </span>
+              </button>
+            );
+          })}
+        </div>
+      </section>
+
+      <section
+        id="ad-scope-panel"
+        role="tabpanel"
+        aria-labelledby={`ad-scope-tab-${filters.scope}`}
+        className="grid grid-cols-2 gap-3 md:grid-cols-3 xl:grid-cols-6"
+      >
         <StatCard title="Total annonces" value={summary.global.total} icon={Layers3} tone="accent" />
         <StatCard title="Actives" value={summary.global.active} icon={TrendingUp} tone="success" />
         <StatCard title="Archivées" value={summary.global.archived} icon={Archive} tone="warning" />
         <StatCard title="Promues" value={summary.global.promoted} icon={BadgeDollarSign} tone="accent" />
-        <StatCard title="À louer" value={summary.global.forRent} icon={Building2} />
-        <StatCard title="À vendre" value={summary.global.forSale} icon={Building2} />
+        {isMarketplaceScope ? (
+          <>
+            {/* Louer/vendre n'existe pas hors immobilier : on montre ce qui pilote réellement
+                une annonce marketplace, sa modération et son rangement. */}
+            <StatCard title="En modération" value={summary.global.pendingModeration} icon={Clock3} tone="warning" />
+            <StatCard title="Catégories" value={summary.global.categoriesUsed} icon={TagIcon} />
+          </>
+        ) : (
+          <>
+            <StatCard title="À louer" value={summary.global.forRent} icon={Building2} />
+            <StatCard title="À vendre" value={summary.global.forSale} icon={Building2} />
+          </>
+        )}
       </section>
 
       <section className="rounded-2xl border border-gray-200 bg-white p-4 shadow-sm dark:border-gray-800 dark:bg-gray-900 md:p-5">
@@ -620,43 +690,69 @@ export function AdManagementPage() {
             </div>
           </div>
 
-          <div>
-            <label htmlFor="property-type-filter" className="mb-1 block text-xs font-medium text-gray-500 dark:text-gray-400">Type</label>
-            <Select
-              value={filters.type || '__all'}
-              onValueChange={(value) => setTypeFilter(value === '__all' ? '' : (value as any))}
-            >
-              <SelectTrigger id="property-type-filter" aria-label="Type de bien" className={SELECT_TRIGGER_CLASS}>
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                {TYPE_FILTER_OPTIONS.map((option) => (
-                  <SelectItem key={option.value} value={option.value}>
-                    {option.label}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
+          {isMarketplaceScope ? (
+            // Les catégories proposées sont celles que l'annonceur utilise vraiment : une liste
+            // figée de tout le catalogue offrirait surtout des filtres qui ne rendent rien.
+            <div>
+              <label htmlFor="listing-category-filter" className="mb-1 block text-xs font-medium text-gray-500 dark:text-gray-400">Catégorie</label>
+              <Select
+                value={filters.category || '__all'}
+                onValueChange={(value) => setCategoryFilter(value === '__all' ? '' : value)}
+              >
+                <SelectTrigger id="listing-category-filter" aria-label="Catégorie" className={SELECT_TRIGGER_CLASS}>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="__all">Toutes catégories</SelectItem>
+                  {categoryOptions.map((option) => (
+                    <SelectItem key={option.id} value={option.id}>
+                      {option.label} ({option.count})
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          ) : (
+            <>
+              <div>
+                <label htmlFor="property-type-filter" className="mb-1 block text-xs font-medium text-gray-500 dark:text-gray-400">Type</label>
+                <Select
+                  value={filters.type || '__all'}
+                  onValueChange={(value) => setTypeFilter(value === '__all' ? '' : (value as any))}
+                >
+                  <SelectTrigger id="property-type-filter" aria-label="Type de bien" className={SELECT_TRIGGER_CLASS}>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {TYPE_FILTER_OPTIONS.map((option) => (
+                      <SelectItem key={option.value} value={option.value}>
+                        {option.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
 
-          <div>
-            <label htmlFor="property-status-filter" className="mb-1 block text-xs font-medium text-gray-500 dark:text-gray-400">Statut</label>
-            <Select
-              value={filters.status || '__all'}
-              onValueChange={(value) => setStatusFilter(value === '__all' ? '' : (value as any))}
-            >
-              <SelectTrigger id="property-status-filter" aria-label="Statut de l'annonce" className={SELECT_TRIGGER_CLASS}>
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                {STATUS_OPTIONS.map((option) => (
-                  <SelectItem key={option.value} value={option.value}>
-                    {option.label}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
+              <div>
+                <label htmlFor="property-status-filter" className="mb-1 block text-xs font-medium text-gray-500 dark:text-gray-400">Statut</label>
+                <Select
+                  value={filters.status || '__all'}
+                  onValueChange={(value) => setStatusFilter(value === '__all' ? '' : (value as any))}
+                >
+                  <SelectTrigger id="property-status-filter" aria-label="Statut de l'annonce" className={SELECT_TRIGGER_CLASS}>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {STATUS_OPTIONS.map((option) => (
+                      <SelectItem key={option.value} value={option.value}>
+                        {option.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            </>
+          )}
 
           <div>
             <label htmlFor="property-state-filter" className="mb-1 block text-xs font-medium text-gray-500 dark:text-gray-400">État</label>
@@ -787,7 +883,7 @@ export function AdManagementPage() {
               asChild
               className="h-11 rounded-full bg-gradient-to-r from-primary to-secondary px-6 hover:from-primary-800 hover:to-primary-600"
             >
-              <Link href={routes.protected.add_property_ai}>
+              <Link href={routes.protected.publish}>
                 <Plus className="mr-2 h-4 w-4" />
                 Publier une annonce
               </Link>

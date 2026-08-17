@@ -121,12 +121,38 @@ function isPromoted(property: PropertyRecord): boolean {
   return toMillis(promotion.endDate) > Date.now();
 }
 
+export type AdScope = 'immobilier' | 'marketplace';
+
+/**
+ * Sépare les deux familles d'annonces sur la présence de `typeProperty`.
+ *
+ * `categoryId` ne peut PAS servir de discriminant : un backfill l'a posé sur presque toutes les
+ * annonces, immobilier comprise (relevé en prod le 2026-08-17 : 949 annonces sur 950 en ont un,
+ * dont des `studio`, `home`, `apartment`). Seul `typeProperty` reste propre à l'immobilier — le
+ * parcours de création marketplace (category-listing/create) ne le renseigne jamais.
+ */
+function resolveScope(property: PropertyRecord): AdScope {
+  return property.typeProperty ? 'immobilier' : 'marketplace';
+}
+
+function parseScope(value: string | null): AdScope {
+  return value === 'marketplace' ? 'marketplace' : 'immobilier';
+}
+
+/** Libellé lisible de la catégorie feuille, tiré de categoryPath pour éviter un accès Firestore. */
+function resolveCategoryLabel(property: PropertyRecord): string {
+  const leaf = property.categoryPath?.lvl1?.split(' > ').pop()?.trim();
+  return leaf || property.categoryId || 'Sans catégorie';
+}
+
 function buildSummary(properties: PropertyRecord[]) {
   let active = 0;
   let archived = 0;
   let promoted = 0;
   let forRent = 0;
   let forSale = 0;
+  let pendingModeration = 0;
+  const categories = new Set<string>();
 
   for (const property of properties) {
     if (property.state === 'IN_PROGRESS') {
@@ -144,6 +170,12 @@ function buildSummary(properties: PropertyRecord[]) {
     if (isPromoted(property)) {
       promoted += 1;
     }
+    if (property.moderationStatus === 'PENDING') {
+      pendingModeration += 1;
+    }
+    if (property.categoryId) {
+      categories.add(property.categoryId);
+    }
   }
 
   return {
@@ -153,7 +185,33 @@ function buildSummary(properties: PropertyRecord[]) {
     promoted,
     forRent,
     forSale,
+    // Statistiques utiles à l'onglet marketplace, où louer/vendre n'a aucun sens.
+    pendingModeration,
+    categoriesUsed: categories.size,
   };
+}
+
+/** Catégories réellement utilisées par l'annonceur, pour n'offrir que des filtres qui rendent des résultats. */
+function buildCategoryOptions(properties: PropertyRecord[]) {
+  const counts = new Map<string, { id: string; label: string; count: number }>();
+
+  for (const property of properties) {
+    if (!property.categoryId) {
+      continue;
+    }
+    const existing = counts.get(property.categoryId);
+    if (existing) {
+      existing.count += 1;
+    } else {
+      counts.set(property.categoryId, {
+        id: property.categoryId,
+        label: resolveCategoryLabel(property),
+        count: 1,
+      });
+    }
+  }
+
+  return Array.from(counts.values()).sort((left, right) => right.count - left.count);
 }
 
 function compareProperties(left: PropertyRecord, right: PropertyRecord, sortBy: SortBy, sortOrder: SortOrder) {
@@ -203,6 +261,8 @@ export async function GET(request: NextRequest) {
 
     const { searchParams } = request.nextUrl;
     const q = normalizeText(searchParams.get('q'));
+    const scope = parseScope(searchParams.get('scope'));
+    const category = searchParams.get('category') || '';
     const type = searchParams.get('type') || '';
     const status = searchParams.get('status') || '';
     const state = searchParams.get('state') || '';
@@ -249,9 +309,23 @@ export async function GET(request: NextRequest) {
     }
     const allItems = Array.from(byId.values());
 
-    const globalSummary = buildSummary(allItems);
+    // Compteurs des onglets : calculés sur la totalité des annonces, jamais sur le résultat
+    // filtré — un onglet dont le nombre bouge au gré des filtres de l'autre onglet serait
+    // illisible.
+    const scopeCounts = {
+      immobilier: allItems.filter((property) => resolveScope(property) === 'immobilier').length,
+      marketplace: allItems.filter((property) => resolveScope(property) === 'marketplace').length,
+    };
 
-    const filteredItems = allItems
+    const scopedItems = allItems.filter((property) => resolveScope(property) === scope);
+
+    // Le résumé "global" est celui de l'onglet courant : les cartes de stats décrivent ce que
+    // l'annonceur a sous les yeux, pas un total tous univers confondus.
+    const globalSummary = buildSummary(scopedItems);
+    const categoryOptions = buildCategoryOptions(scopedItems);
+
+    const filteredItems = scopedItems
+      .filter((property) => !category || property.categoryId === category)
       .filter((property) => !type || property.typeProperty === type)
       .filter((property) => !status || property.status === status)
       .filter((property) => !state || property.state === state)
@@ -287,8 +361,12 @@ export async function GET(request: NextRequest) {
         global: globalSummary,
         filtered: filteredSummary,
       },
+      scopeCounts,
+      categoryOptions,
       appliedFilters: {
         q: searchParams.get('q') ?? '',
+        scope,
+        category,
         type,
         status,
         state,
