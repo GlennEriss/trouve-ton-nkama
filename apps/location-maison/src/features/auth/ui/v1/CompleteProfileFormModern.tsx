@@ -7,7 +7,7 @@ import { motion } from 'framer-motion';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { signOut, useSession } from 'next-auth/react';
-import { Building2, Home, Mail, Phone, Shield, Sparkles, User } from 'lucide-react';
+import { Building2, Home, Mail, Phone, Shield, Sparkles, Store, User } from 'lucide-react';
 import Logo from '@trouve-ton-nkama/ui/logo';
 import { Form } from '@/components/ui/form';
 import { Button } from '@trouve-ton-nkama/ui/button';
@@ -84,7 +84,9 @@ export const CompleteProfileFormModern: React.FC = () => {
       acceptAnnouncerTerms: false,
       firstname: '',
       lastname: '',
+      pseudo: '',
       phone: '',
+      whatsappPhone: '',
       birthdate: {
         day: '',
         month: '',
@@ -135,7 +137,9 @@ export const CompleteProfileFormModern: React.FC = () => {
       acceptAnnouncerTerms: isAnnouncer,
       firstname: sessionUser.firstname ?? '',
       lastname: sessionUser.lastname ?? '',
-      phone: sessionUser.phoneNumbers?.[0] ?? '',
+      pseudo: sessionUser.pseudo ?? '',
+      phone: sessionUser.callNumber ?? sessionUser.phoneNumbers?.[0] ?? '',
+      whatsappPhone: sessionUser.whatsappNumber ?? '',
       birthdate,
     });
   }, [form, router, session, status]);
@@ -175,7 +179,9 @@ export const CompleteProfileFormModern: React.FC = () => {
       uid: currentUser.uid,
       firstname: values.firstname,
       lastname: values.lastname,
+      pseudo: values.pseudo,
       phoneNumber: values.phone,
+      whatsappNumber: values.whatsappPhone,
       birthdate: values.birthdate,
       accountType: values.accountType,
       acceptTerms: values.termsOfPrivacyPolicy,
@@ -411,16 +417,55 @@ export const CompleteProfileFormModern: React.FC = () => {
               />
 
               <div className="space-y-1">
-                <PhoneNumberFormAppSimple
+                <InputFormApp
                   control={form.control}
-                  name="phone"
-                  label="Numéro de téléphone"
-                  placeholder="06 12 34 56 78"
-                  disabled={isFormLoading || isPhoneAccount}
+                  name="pseudo"
+                  label="Pseudo (optionnel)"
+                  type="text"
+                  IconLucide={Store}
+                  IconColor="#9ca3af"
+                  placeholder="Ex : le nom de votre boutique"
                 />
-                {isPhoneAccount ? (
-                  <p className="text-xs text-gray-500">Numéro déjà vérifié par SMS, non modifiable.</p>
-                ) : null}
+                <p className="text-xs text-gray-500">
+                  C&apos;est ce nom qui apparaîtra sur vos annonces. Vide, on affiche votre prénom et votre nom.
+                </p>
+              </div>
+
+              {/* Les deux numéros sont séparés visuellement : un annonceur gabonais a très souvent
+                  une ligne d'appel et un WhatsApp différents, et les confondre envoie les clients
+                  sur le mauvais canal. */}
+              <div className="rounded-xl border border-gray-200 dark:border-gray-700 p-4 space-y-4">
+                <p className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                  Vos numéros de contact
+                </p>
+
+                <div className="space-y-1">
+                  <PhoneNumberFormAppSimple
+                    control={form.control}
+                    name="phone"
+                    label="Numéro d'appel"
+                    placeholder="06 12 34 56 78"
+                    disabled={isFormLoading || isPhoneAccount}
+                  />
+                  <p className="text-xs text-gray-500">
+                    {isPhoneAccount
+                      ? 'Numéro déjà vérifié par SMS, non modifiable.'
+                      : 'Le numéro sur lequel les clients vous appellent.'}
+                  </p>
+                </div>
+
+                <div className="space-y-1">
+                  <PhoneNumberFormAppSimple
+                    control={form.control}
+                    name="whatsappPhone"
+                    label="Numéro WhatsApp"
+                    placeholder="06 12 34 56 78"
+                    disabled={isFormLoading}
+                  />
+                  <p className="text-xs text-gray-500">
+                    Laissez vide si c&apos;est le même que votre numéro d&apos;appel.
+                  </p>
+                </div>
               </div>
 
               <DateSelect

@@ -72,6 +72,8 @@ function mapErrorMessage(code: CompleteProfileErrorCode): string {
       return "L'identifiant utilisateur est requis";
     case CompleteProfileErrorCode.INVALID_PHONE:
       return 'Le numéro de téléphone est invalide';
+    case CompleteProfileErrorCode.INVALID_WHATSAPP:
+      return 'Le numéro WhatsApp est invalide';
     case CompleteProfileErrorCode.INVALID_BIRTHDATE:
       return 'La date de naissance est invalide';
     case CompleteProfileErrorCode.UNDERAGE:
@@ -109,6 +111,19 @@ export class CompleteProfileServiceImpl implements CompleteProfileService {
         error: {
           code: CompleteProfileErrorCode.INVALID_PHONE,
           message: mapErrorMessage(CompleteProfileErrorCode.INVALID_PHONE),
+        },
+      };
+    }
+
+    // Le numéro WhatsApp est optionnel, mais s'il est fourni il doit être valide : le laisser
+    // passer écrirait un contact injoignable sur toutes les annonces de l'annonceur.
+    const rawWhatsapp = data.whatsappNumber?.trim();
+    if (rawWhatsapp && !validatePhoneNumberForSupportedCountries(rawWhatsapp).isValid) {
+      return {
+        success: false,
+        error: {
+          code: CompleteProfileErrorCode.INVALID_WHATSAPP,
+          message: mapErrorMessage(CompleteProfileErrorCode.INVALID_WHATSAPP),
         },
       };
     }
@@ -174,11 +189,29 @@ export class CompleteProfileServiceImpl implements CompleteProfileService {
       const phoneNumberVerified =
         Boolean(existingUser.phoneNumberVerified) && normalizedPhone === previousPhone;
 
+      // WhatsApp vide = même numéro que l'appel, cas le plus courant.
+      const normalizedWhatsapp = rawWhatsapp
+        ? normalizePhoneNumberForFirebase(rawWhatsapp)
+        : normalizedPhone;
+      // phoneNumbers reste la source pour l'OTP et l'auto-attribution : on y garde les deux
+      // numéros quand ils diffèrent, sinon un annonceur contacté sur son WhatsApp ne serait
+      // pas reconnu par findByPhoneNumber (array-contains).
+      const phoneNumbers = normalizedWhatsapp === normalizedPhone
+        ? [normalizedPhone]
+        : [normalizedPhone, normalizedWhatsapp];
+
+      const pseudo = data.pseudo?.trim();
+
       const updatedUser = await userRepository.update(uid, {
         firstname,
         lastname,
+        // Champ optionnel : on n'écrit `pseudo` que s'il est renseigné, pour ne pas effacer
+        // celui d'un compte qui repasserait par ce parcours.
+        ...(pseudo ? { pseudo } : {}),
         searchableName,
-        phoneNumbers: [normalizedPhone],
+        phoneNumbers,
+        callNumber: normalizedPhone,
+        whatsappNumber: normalizedWhatsapp,
         phoneNumberVerified,
         birthDate: birthdate.value,
         roles,
