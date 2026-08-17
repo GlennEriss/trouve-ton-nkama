@@ -259,7 +259,7 @@ describe('AdManagementPage', () => {
     expect(tabs[0]).toHaveTextContent('Immobilier')
     expect(tabs[0]).toHaveTextContent('2')
     expect(tabs[0]).toHaveAttribute('aria-selected', 'true')
-    expect(tabs[1]).toHaveTextContent('Annonces')
+    expect(tabs[1]).toHaveTextContent('Mode')
     expect(tabs[1]).toHaveTextContent('3')
     expect(tabs[1]).toHaveAttribute('aria-selected', 'false')
 

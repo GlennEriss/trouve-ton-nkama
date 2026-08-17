@@ -50,7 +50,7 @@ import { AutoClaimBanner } from '@/features/announcer/listing-claim/ui';
 
 const AD_SCOPE_TABS = [
   { value: 'immobilier' as const, label: 'Immobilier', icon: Building2 },
-  { value: 'marketplace' as const, label: 'Annonces', icon: ShoppingBag },
+  { value: 'marketplace' as const, label: 'Mode', icon: ShoppingBag },
 ];
 
 const TYPE_FILTER_OPTIONS: Array<{ value: string; label: string }> = [
