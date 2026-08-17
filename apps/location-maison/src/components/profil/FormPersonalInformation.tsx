@@ -34,18 +34,30 @@ export default function FormPersonalInformation() {
     })
     
     const onSubmit = async (values: FormUserProfilSchemaType) => {
-        // Ne mettre à jour que le numéro de téléphone avec Gabon par défaut
+        const callNumber = values.phoneNumbers?.trim() || user?.callNumber || user?.phoneNumbers?.[0] || ''
+        // WhatsApp vide = on suppose le même numéro que l'appel, cas le plus courant.
+        const whatsappNumber = values.whatsappPhone?.trim() || callNumber
+        // phoneNumbers reste la source pour l'auth et l'auto-attribution : on la reconstruit à
+        // partir des deux champs au lieu de l'écraser avec le seul numéro d'appel, sinon
+        // enregistrer son profil ferait perdre le numéro WhatsApp.
+        const phoneNumbers = [callNumber, whatsappNumber]
+            .filter(Boolean)
+            .filter((value, index, all) => all.indexOf(value) === index)
+
         const userUpdated = {
             ...user,
-            phoneNumbers: values.phoneNumbers ? [values.phoneNumbers] : [],
+            pseudo: values.pseudo?.trim() ?? '',
+            callNumber,
+            whatsappNumber,
+            phoneNumbers,
             country: { code: 'GA', name: 'Gabon' }
         }
         const isUpdated = await updateUser(user?.uid ?? '', userUpdated)
         if (isUpdated) {
             toast({
                 duration: 5000,
-                title: "Numéro de téléphone modifié",
-                description: "Votre numéro de téléphone a été mis à jour avec succès!",
+                title: "Profil mis à jour",
+                description: "Vos informations ont été enregistrées avec succès!",
                 variant: "success",
             });
             update({
@@ -70,7 +82,12 @@ export default function FormPersonalInformation() {
             // Utiliser directement la date string du schéma
             form.setValue('birthDate', user?.birthDate ?? '')
             
-            form.setValue('phoneNumbers', user.phoneNumbers.length > 0 ? user.phoneNumbers[0] : '')
+            form.setValue('pseudo', user.pseudo ?? '')
+
+            // Comptes créés avant l'introduction de callNumber/whatsappNumber : on retombe sur
+            // phoneNumbers, seule donnée disponible pour eux.
+            form.setValue('phoneNumbers', user.callNumber || user.phoneNumbers?.[0] || '')
+            form.setValue('whatsappPhone', user.whatsappNumber ?? '')
         }
     }, [user])
 
@@ -101,6 +118,16 @@ export default function FormPersonalInformation() {
                             placeholder='Saisissez votre prénom'
                             disabled={true}
                         />
+                        <InputFormApp
+                            control={form.control}
+                            name='pseudo'
+                            label='Pseudo (nom affiché sur vos annonces)'
+                            type='text'
+                            IconLucide={CircleUser}
+                            IconColorFill={'none'}
+                            IconColor='gray'
+                            placeholder='Ex : le nom de votre boutique'
+                        />
                         <DateSelect
                             control={form.control}
                             name='birthDate'
@@ -111,21 +138,25 @@ export default function FormPersonalInformation() {
                         <PhoneNumberFormApp
                             control={form.control}
                             name='phoneNumbers'
-                            label='Téléphone'
-                            placeholder='Saisissez votre numéro de téléphone'
+                            label="Numéro d'appel"
+                            placeholder="Saisissez votre numéro d'appel"
                             disabled={user?.phoneNumberVerified}
                         />
-                        {!user?.phoneNumberVerified && (
-                            <div className='flex flex-col items-center gap-3'>
-                                <ButtonApp
-                                    type='submit'
-                                    disabled={Boolean(form.formState.isSubmitting) || Boolean(form.formState.isLoading)}
-                                    isLoading={Boolean(form.formState.isSubmitting) || Boolean(form.formState.isLoading)}
-                                    className='bg-gradient-to-b from-secondary to-primary md:py-7 mt-5'
-                                    title='Modifier le téléphone'
-                                />
-                            </div>
-                        )}
+                        <PhoneNumberFormApp
+                            control={form.control}
+                            name='whatsappPhone'
+                            label='Numéro WhatsApp'
+                            placeholder="Laissez vide si c'est le même numéro"
+                        />
+                        <div className='flex flex-col items-center gap-3'>
+                            <ButtonApp
+                                type='submit'
+                                disabled={Boolean(form.formState.isSubmitting) || Boolean(form.formState.isLoading)}
+                                isLoading={Boolean(form.formState.isSubmitting) || Boolean(form.formState.isLoading)}
+                                className='bg-gradient-to-b from-secondary to-primary md:py-7 mt-5'
+                                title='Enregistrer'
+                            />
+                        </div>
                     </form>
                 </Form>
             </div>
@@ -148,6 +179,11 @@ export default function FormPersonalInformation() {
                         disabled={true}
                     />
                     <InputForm
+                        name='pseudo'
+                        form={form}
+                        label={'Pseudo (nom affiché sur vos annonces)'}
+                    />
+                    <InputForm
                         name='email'
                         form={form}
                         label={'Email'}
@@ -164,23 +200,26 @@ export default function FormPersonalInformation() {
 
                     <PhoneNumberForm
                         form={form}
-                        label='Téléphone'
+                        label="Numéro d'appel"
                         name='phoneNumbers'
                         disabled={user?.phoneNumberVerified}
                     />
-                    {!user?.phoneNumberVerified && (
-                        <ButtonLoading
-                            type="submit"
-                            className="w-full bg-black text-white font-bold border border-transparent 
-                  dark:bg-gray-900 dark:text-white dark:border-gray-700 
-                  hover:bg-gray-800 dark:hover:bg-gray-700 
-                  focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 
+                    <PhoneNumberForm
+                        form={form}
+                        label='Numéro WhatsApp'
+                        name='whatsappPhone'
+                    />
+                    <ButtonLoading
+                        type="submit"
+                        className="w-full bg-black text-white font-bold border border-transparent
+                  dark:bg-gray-900 dark:text-white dark:border-gray-700
+                  hover:bg-gray-800 dark:hover:bg-gray-700
+                  focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2
                   disabled:opacity-50 disabled:cursor-not-allowed"
-                            disabled={Boolean(form.formState.isLoading) || Boolean(form.formState.isSubmitting)}
-                        >
-                            Modifier le numéro de téléphone
-                        </ButtonLoading>
-                    )}
+                        disabled={Boolean(form.formState.isLoading) || Boolean(form.formState.isSubmitting)}
+                    >
+                        Enregistrer
+                    </ButtonLoading>
                 </form>
             </Form>
         </div>

@@ -12,7 +12,12 @@ export interface CompleteProfileData {
   uid: string;
   firstname: string;
   lastname: string;
+  /** Nom d'affichage optionnel (nom de boutique). Vide = on affiche prénom + nom. */
+  pseudo?: string;
+  /** Numéro d'appel. */
   phoneNumber: string;
+  /** Numéro WhatsApp quand il diffère du numéro d'appel. */
+  whatsappNumber?: string;
   birthdate: CompleteProfileBirthdate;
   accountType: CompleteProfileAccountType;
   acceptTerms: boolean;
@@ -50,6 +55,7 @@ export class CompleteProfileServiceError extends Error {
 export enum CompleteProfileErrorCode {
   USER_ID_REQUIRED = 'USER_ID_REQUIRED',
   INVALID_PHONE = 'INVALID_PHONE',
+  INVALID_WHATSAPP = 'INVALID_WHATSAPP',
   INVALID_BIRTHDATE = 'INVALID_BIRTHDATE',
   UNDERAGE = 'UNDERAGE',
   TERMS_NOT_ACCEPTED = 'TERMS_NOT_ACCEPTED',

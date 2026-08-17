@@ -59,8 +59,8 @@ const LEFT_PANEL_BG_IMAGE = '/auth-image.png';
 
 // Step configuration
 const steps = [
-  { id: 1, title: 'Identité', icon: User, fields: ['accountType', 'firstname', 'lastname'] },
-  { id: 2, title: 'Contact', icon: Mail, fields: ['email', 'phone'] },
+  { id: 1, title: 'Identité', icon: User, fields: ['accountType', 'firstname', 'lastname', 'pseudo'] },
+  { id: 2, title: 'Contact', icon: Mail, fields: ['email', 'phone', 'whatsappPhone'] },
   { id: 3, title: 'Naissance', icon: Calendar, fields: ['birthdate'] },
   { id: 4, title: 'Sécurité', icon: KeyRound, fields: ['password', 'passwordConfirm', 'termsOfPrivacyPolicy'] },
 ];
@@ -102,11 +102,13 @@ export const SignupFormModern: React.FC = () => {
       acceptAnnouncerTerms: false,
       firstname: '',
       lastname: '',
+      pseudo: '',
       email: '',
       password: '',
       passwordConfirm: '',
       birthdate: { day: '', month: '', year: '' },
       phone: '',
+      whatsappPhone: '',
       country: 'GA',
       termsOfPrivacyPolicy: false,
     },
@@ -495,6 +497,15 @@ export const SignupFormModern: React.FC = () => {
                         IconColor="#9ca3af"
                         placeholder="Entrez votre prénom"
                       />
+                      <InputFormApp
+                        control={form.control}
+                        name="pseudo"
+                        label="Pseudo (optionnel)"
+                        type="text"
+                        IconLucide={User}
+                        IconColor="#9ca3af"
+                        placeholder="Nom affiché sur vos annonces"
+                      />
                     </>
                   )}
 
@@ -512,13 +523,24 @@ export const SignupFormModern: React.FC = () => {
                       />
                       <div className="space-y-2">
                         <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                          Numéro de téléphone
+                          Numéro d&apos;appel
                         </label>
                         <PhoneNumberFormAppSimple
                           control={form.control}
                           name="phone"
                           label=""
                           placeholder="Ex: 66 12 34 56 (sans 0)"
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                          Numéro WhatsApp
+                        </label>
+                        <PhoneNumberFormAppSimple
+                          control={form.control}
+                          name="whatsappPhone"
+                          label=""
+                          placeholder="Laissez vide si c'est le même numéro"
                         />
                       </div>
                     </>

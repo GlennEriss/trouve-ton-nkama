@@ -34,6 +34,11 @@ jest.mock('@/components/shared/form/PhoneNumberFormApp', () => ({ PhoneNumberFor
 jest.mock('@/components/shared/form/DateSelect', () => ({ DateSelect: () => <div>Date de naissance</div> }))
 jest.mock('@/components/shared/form/CheckboxFormApp', () => ({ CheckboxFormApp: ({ control, name, label }: any) => <label><input aria-label={name} type="checkbox" checked={Boolean(control.values[name])} onChange={(event) => control.setValue(name, event.target.checked)} />{label}</label> }))
 jest.mock('@/components/shared/ui/ButtonApp', () => ({ ButtonApp: ({ title, isLoading: _loading, ...props }: any) => <button {...props}>{title}</button> }))
+jest.mock('@/features/auth/ui/v1/PhoneAuthModal', () => ({ PhoneAuthModal: ({ open }: any) => (open ? <div role="dialog">Modale téléphone</div> : null) }))
+jest.mock('@/features/analytics/tracking', () => ({
+  trackingEvents: { CTA_AUTH_SIGNUP_CLICK: 'cta_auth_signup_click' },
+  useTrackEvent: () => ({ trackEvent: jest.fn() }),
+}))
 
 describe('SignupMobileComponent', () => {
   beforeEach(() => {
@@ -90,5 +95,15 @@ describe('SignupMobileComponent', () => {
     mockLoading = true
     rerender(<SignupMobileComponent />)
     expect(screen.getByRole('button', { name: 'Création en cours...' })).toBeDisabled()
+  })
+
+  it("propose l'inscription par téléphone et ouvre la modale OTP (parité avec le desktop)", () => {
+    render(<SignupMobileComponent />)
+    const phoneButton = screen.getByRole('button', { name: /Continuer avec Numéro de téléphone/ })
+    expect(phoneButton).toBeInTheDocument()
+
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
+    fireEvent.click(phoneButton)
+    expect(screen.getByRole('dialog')).toBeInTheDocument()
   })
 })

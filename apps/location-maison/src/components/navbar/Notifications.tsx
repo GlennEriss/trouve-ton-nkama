@@ -5,6 +5,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "@trouve-ton-nkama/ui/po
 import { useNotifications } from "@/providers/NotificationProvider";
 import { useCurrentUser } from "@/hooks/use-current-user";
 import { generateColorFromName } from "@/lib/generateColorFromName";
+import { getUserDisplayName } from "@/lib/user-display-name";
 import {
   EmptyNotificationsState,
   NotificationItem,
@@ -42,7 +43,7 @@ function NotificationsHeader({
 export default function Notifications() {
   const { notifications, unreadCount, markAllAsRead, markAsRead } = useNotifications();
   const { user } = useCurrentUser();
-  const avatarBackground = generateColorFromName(user?.firstname);
+  const avatarBackground = generateColorFromName(getUserDisplayName(user) ?? '');
   const [isOpen, setIsOpen] = useState(false);
 
   return (

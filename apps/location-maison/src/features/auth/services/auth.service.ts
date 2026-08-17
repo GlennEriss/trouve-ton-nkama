@@ -201,15 +201,26 @@ export class AuthServiceImpl implements AuthService {
       ? ['User', 'Announcer']
       : ['User'];
 
+    const whatsappNumber = data.whatsappNumber?.trim() || data.phoneNumber;
+    // phoneNumbers reste la source pour l'auth et l'auto-attribution : le numéro WhatsApp y est
+    // ajouté quand il diffère, pour qu'un annonceur contacté sur ce numéro puisse aussi être
+    // reconnu. Pas de doublon quand les deux numéros sont identiques.
+    const phoneNumbers = whatsappNumber === data.phoneNumber
+      ? [data.phoneNumber]
+      : [data.phoneNumber, whatsappNumber];
+
     return {
       uid,
       login: data.email,
       firstname: data.firstName,
       lastname: data.lastName,
+      ...(data.pseudo?.trim() ? { pseudo: data.pseudo.trim() } : {}),
       birthDate: data.birthDate,
       email: data.email,
       country,
-      phoneNumbers: [data.phoneNumber],
+      phoneNumbers,
+      callNumber: data.phoneNumber,
+      whatsappNumber,
       roles,
       emailVerified: false,
       providers: ['CREDENTIALS'],

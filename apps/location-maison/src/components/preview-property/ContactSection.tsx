@@ -9,6 +9,7 @@ import { useUserByUID } from '@/hooks/use-user-by-uid'
 import { useWindowSize } from "@/hooks/useSize"
 import { useTrackPropertyInteraction } from "@/hooks/use-track-property-interaction"
 import GiftModal from '@/components/reels/gift/GiftModal'
+import { getUserDisplayName } from '@/lib/user-display-name'
 
 type ContactEntry = { whatsapp?: string; call?: string }
 
@@ -129,7 +130,7 @@ export default function ContactSection({ property }: Readonly<{ property: Proper
                 isOpen={giftOpen}
                 onClose={() => setGiftOpen(false)}
                 propertyId={property.id}
-                announcerName={[user?.firstname, user?.lastname].filter(Boolean).join(' ') || null}
+                announcerName={getUserDisplayName(user)}
             />
         </section>
     )

@@ -210,6 +210,57 @@ describe('CompleteProfileFormModern', () => {
     expect(pushMock).toHaveBeenCalledWith('/property')
   })
 
+  it('pré-remplit le pseudo et sépare numéro d appel et WhatsApp', async () => {
+    // Cas réel du compte kissandsishop : le nom de boutique doit atterrir dans le champ Pseudo,
+    // pas dans le champ Nom, et les deux numéros connus doivent être répartis sur les bons champs.
+    mockSession = {
+      user: sessionUser({
+        firstname: 'Mawily-koumba',
+        lastname: 'Loddy Kiss',
+        pseudo: "kiss&sis'shop",
+        callNumber: '+24174533664',
+        whatsappNumber: '+24160010727',
+        phoneNumbers: ['+24174533664', '+24160010727'],
+      }),
+    }
+
+    render(<CompleteProfileFormModern />)
+
+    expect(await screen.findByLabelText('Pseudo (optionnel)')).toHaveValue("kiss&sis'shop")
+    expect(screen.getByLabelText('Prénom')).toHaveValue('Mawily-koumba')
+    expect(screen.getByLabelText('Nom')).toHaveValue('Loddy Kiss')
+    expect(screen.getByLabelText("Numéro d'appel")).toHaveValue('+24174533664')
+    expect(screen.getByLabelText('Numéro WhatsApp')).toHaveValue('+24160010727')
+  })
+
+  it('retombe sur phoneNumbers quand callNumber n existe pas encore', async () => {
+    // Comptes créés avant l'ajout de callNumber/whatsappNumber : le champ d'appel doit rester
+    // rempli, et le champ WhatsApp vide plutôt que de deviner un numéro.
+    mockSession = { user: sessionUser({ phoneNumbers: ['+24166545430'] }) }
+
+    render(<CompleteProfileFormModern />)
+
+    expect(await screen.findByLabelText("Numéro d'appel")).toHaveValue('+24166545430')
+    expect(screen.getByLabelText('Numéro WhatsApp')).toHaveValue('')
+  })
+
+  it('transmet le pseudo et le WhatsApp au service', async () => {
+    mockSession = {
+      user: sessionUser({ pseudo: "kiss&sis'shop", callNumber: '+24174533664', whatsappNumber: '+24160010727' }),
+    }
+    render(<CompleteProfileFormModern />)
+    await screen.findByRole('heading', { name: 'Compléter le profil' })
+
+    fireEvent.click(screen.getByLabelText('termsOfPrivacyPolicy'))
+    fireEvent.submit(screen.getByRole('button', { name: 'Finaliser mon compte' }).closest('form')!)
+
+    await waitFor(() => expect(completeProfileMock).toHaveBeenCalledWith(expect.objectContaining({
+      pseudo: "kiss&sis'shop",
+      phoneNumber: '+24174533664',
+      whatsappNumber: '+24160010727',
+    })))
+  })
+
   it('tolère l échec de mise à jour de session et ne redirige pas sur échec métier', async () => {
     updateSessionMock.mockRejectedValueOnce(new Error('NextAuth offline'))
     render(<CompleteProfileFormModern />)

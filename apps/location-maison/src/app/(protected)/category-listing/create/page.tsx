@@ -105,7 +105,8 @@ export default function CreateCategoryListingPage() {
       setError(`Complète d'abord : ${missingUpfrontFields.join(', ')}.`)
       return
     }
-    const contact = user?.phoneNumbers?.[0] ?? ''
+    const contact = user?.callNumber || user?.phoneNumbers?.[0] || ''
+    const whatsappContact = user?.whatsappNumber || contact
     if (!contact) {
       setError('Ajoute un numéro de téléphone à ton profil avant de publier.')
       return
@@ -113,6 +114,11 @@ export default function CreateCategoryListingPage() {
 
     setIsGenerating(true)
     try {
+      // Les images sont uploadées AVANT l'appel IA, qui est ce qui débite le crédit
+      // (voir /api/ai/category-listing-draft). Dans l'autre sens, un upload qui échoue
+      // laisse l'annonceur facturé sans annonce — constaté en prod le 2026-08-17.
+      const uploadedImages = await Promise.all(images.map((file) => createFile(file, user!.uid, 'property')))
+
       const draft = await requestCategoryListingDraft(description)
       const matchedCategory = leaves.find((leaf) => leaf.id === draft.categoryId)
       if (!matchedCategory) {
@@ -125,7 +131,6 @@ export default function CreateCategoryListingPage() {
         if (value !== undefined) attributes[field.key] = value
       }
 
-      const uploadedImages = await Promise.all(images.map((file) => createFile(file, user!.uid, 'property')))
       const provinceMeta = GABON_PROVINCES[0]
 
       const property = {
@@ -146,6 +151,8 @@ export default function CreateCategoryListingPage() {
         isLocExact: false,
         locationSource: 'UNVERIFIED',
         contact,
+        callContact: contact,
+        whatsappContact,
         createdBy: user!.uid,
         tags: [],
         state: 'IN_PROGRESS',

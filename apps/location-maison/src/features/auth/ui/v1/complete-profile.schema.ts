@@ -49,12 +49,22 @@ export const CompleteProfileSchema = z.object({
   acceptAnnouncerTerms: z.boolean().optional(),
   firstname: z.string().trim().min(1, { message: 'Le prénom est requis' }),
   lastname: z.string().trim().min(1, { message: 'Le nom est requis' }),
+  // Mêmes règles que FormRegisterSchema : ce parcours est l'autre porte d'entrée (Google,
+  // Facebook, téléphone) et ne doit pas offrir moins que l'inscription par email.
+  pseudo: z.string().trim().max(50, { message: 'Le pseudo ne doit pas dépasser 50 caractères' }).optional(),
   phone: z
     .string()
-    .min(1, { message: 'Le numéro de téléphone est obligatoire' })
+    .min(1, { message: "Le numéro d'appel est obligatoire" })
     .refine((value) => validatePhoneNumberForSupportedCountries(value).isValid, {
       message: 'Le numéro de téléphone est invalide',
     }),
+  whatsappPhone: z
+    .string()
+    .optional()
+    .refine((value) => {
+      if (!value?.trim()) return true;
+      return validatePhoneNumberForSupportedCountries(value).isValid;
+    }, { message: 'Le numéro WhatsApp est invalide' }),
   birthdate: BirthdateSchema,
 }).refine(
   (data) => data.accountType !== 'Announcer' || data.acceptAnnouncerTerms === true,
