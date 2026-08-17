@@ -47,6 +47,7 @@ export const SignupMobileComponent = () => {
             acceptAnnouncerTerms: false,
             firstname: '',
             lastname: '',
+            pseudo: '',
             email: '',
             password: '',
             passwordConfirm: '',
@@ -56,6 +57,7 @@ export const SignupMobileComponent = () => {
                 year: ''
             },
             phone: '',
+            whatsappPhone: '',
             country: 'GA',
             termsOfPrivacyPolicy: false
         }
@@ -224,6 +226,16 @@ export const SignupMobileComponent = () => {
                         />
                         <InputFormApp
                             control={form.control}
+                            name='pseudo'
+                            label='Pseudo (optionnel)'
+                            type='text'
+                            IconLucide={CircleUser}
+                            IconColorFill={'none'}
+                            IconColor='gray'
+                            placeholder='Nom affiché sur vos annonces'
+                        />
+                        <InputFormApp
+                            control={form.control}
                             name='email'
                             label='Email'
                             type='email'
@@ -240,13 +252,24 @@ export const SignupMobileComponent = () => {
 
                         <div className="space-y-2">
                             <p className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                                Téléphone *
+                                Numéro d&apos;appel *
                             </p>
                             <PhoneNumberFormApp
                                 control={form.control}
                                 name='phone'
                                 label=''
                                 placeholder='Ex: 66 12 34 56 (sans 0)'
+                            />
+                        </div>
+                        <div className="space-y-2">
+                            <p className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                                Numéro WhatsApp
+                            </p>
+                            <PhoneNumberFormApp
+                                control={form.control}
+                                name='whatsappPhone'
+                                label=''
+                                placeholder="Laissez vide si c'est le même numéro"
                             />
                         </div>
                         <InputFormApp

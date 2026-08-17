@@ -12,6 +12,7 @@ import PropertyStatisticsSummary from '@/components/property/PropertyStatisticsS
 import { useCurrentUser } from '@/hooks/use-current-user'
 import { useUserByUID } from '@/hooks/use-user-by-uid'
 import { getPropertyImageUrls } from '@/lib/property-images'
+import { getUserDisplayName } from '@/lib/user-display-name'
 import { generateColorFromName } from '@/lib/generateColorFromName'
 import { formatPublicationDate } from '@/lib/utils'
 
@@ -54,8 +55,8 @@ export default function PreviewCategoryListing({ property }: Readonly<{ property
   const etat = typeof attributes.etat === 'string' ? attributes.etat : undefined
   const otherAttributes = attributeEntries.filter(([key]) => key !== 'etat')
 
-  const sellerName = [seller?.firstname, seller?.lastname].filter(Boolean).join(' ') || null
-  const avatarBackground = generateColorFromName(seller?.firstname ?? '')
+  const sellerName = getUserDisplayName(seller)
+  const avatarBackground = generateColorFromName(sellerName ?? '')
 
   return (
     <div className="flex flex-col gap-6 pb-24 md:pb-8">

@@ -135,10 +135,12 @@ export const PropertyFormComponentProvider = ({ children, isUpdate, propertyToUp
             streetLat: 0,
             country: 'Gabon',
             countryCode: 'GA',
-            // Définir le contact directement dans les defaultValues
-            contact: user?.phoneNumbers?.[0] || '',
-            whatsappContact: '',
-            callContact: '',
+            // Contacts pré-remplis depuis le profil : l'annonceur saisit ses numéros une fois et
+            // peut toujours les remplacer pour une annonce donnée. Repli sur phoneNumbers pour les
+            // comptes antérieurs aux champs callNumber/whatsappNumber.
+            contact: user?.callNumber || user?.phoneNumbers?.[0] || '',
+            whatsappContact: user?.whatsappNumber || user?.phoneNumbers?.[0] || '',
+            callContact: user?.callNumber || user?.phoneNumbers?.[0] || '',
             additionalContacts: [],
         }
 
@@ -159,7 +161,7 @@ export const PropertyFormComponentProvider = ({ children, isUpdate, propertyToUp
         }
 
         return baseValues
-    }, [property, propertyToUpdated, user?.phoneNumbers])
+    }, [property, propertyToUpdated, user?.phoneNumbers, user?.callNumber, user?.whatsappNumber])
 
     const form = useForm<any>({
         resolver: zodResolver(currentStepSchema), // Utiliser le schéma de l'étape actuelle

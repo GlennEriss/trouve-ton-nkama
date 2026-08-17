@@ -287,6 +287,62 @@ describe('AuthService', () => {
       );
     });
 
+    it('enregistre le pseudo et distingue numero d appel et WhatsApp', async () => {
+      // Arrange
+      const signupData = createSignupData({
+        pseudo: "  kiss&sis'shop  ",
+        phoneNumber: '+24174533664',
+        whatsappNumber: '+24160010727',
+      });
+      const { createUserWithEmailAndPassword } = await import('@/firebase/auth');
+
+      mockUserRepository.findByPhoneNumber.mockResolvedValue(null);
+      mockUserRepository.findByEmail.mockResolvedValue(null);
+      (createUserWithEmailAndPassword as any).mockResolvedValue({
+        user: { uid: 'uid-123', email: signupData.email },
+      });
+      mockUserRepository.create.mockResolvedValue(createMockUser());
+      (fetch as any).mockResolvedValue({ ok: true });
+
+      // Act
+      await authService.signup(signupData);
+
+      // Assert
+      expect(mockUserRepository.create).toHaveBeenCalledWith(
+        expect.objectContaining({
+          pseudo: "kiss&sis'shop",
+          callNumber: '+24174533664',
+          whatsappNumber: '+24160010727',
+          // phoneNumbers reste la source pour l'auth et l'auto-attribution : les deux numéros
+          // doivent y figurer, sinon un annonceur contacté sur son WhatsApp n'est pas reconnu.
+          phoneNumbers: ['+24174533664', '+24160010727'],
+        })
+      );
+    });
+
+    it('ne duplique pas le numero quand WhatsApp est absent', async () => {
+      // Arrange
+      const signupData = createSignupData({ phoneNumber: '+24174533664', whatsappNumber: undefined });
+      const { createUserWithEmailAndPassword } = await import('@/firebase/auth');
+
+      mockUserRepository.findByPhoneNumber.mockResolvedValue(null);
+      mockUserRepository.findByEmail.mockResolvedValue(null);
+      (createUserWithEmailAndPassword as any).mockResolvedValue({
+        user: { uid: 'uid-123', email: signupData.email },
+      });
+      mockUserRepository.create.mockResolvedValue(createMockUser());
+      (fetch as any).mockResolvedValue({ ok: true });
+
+      // Act
+      await authService.signup(signupData);
+
+      // Assert
+      const created = mockUserRepository.create.mock.calls[0][0] as any;
+      expect(created.phoneNumbers).toEqual(['+24174533664']);
+      expect(created.whatsappNumber).toBe('+24174533664');
+      expect(created).not.toHaveProperty('pseudo');
+    });
+
     it('should fail if announcer terms are not accepted', async () => {
       // Arrange
       const signupData = createSignupData({

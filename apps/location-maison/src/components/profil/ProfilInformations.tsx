@@ -5,26 +5,28 @@ import { Avatar, AvatarFallback, AvatarImage } from '@trouve-ton-nkama/ui/avatar
 import Link from 'next/link';
 import { ChevronRight } from 'lucide-react';
 import { generateColorFromName } from '@/lib/generateColorFromName';
+import { getUserDisplayInitial, getUserDisplayName } from '@/lib/user-display-name';
 import { routes } from '@/constantes/routes';
 
 export default function ProfilInformations() {
     const { user } = useCurrentUser()
-    const avatarBackground = generateColorFromName(user?.firstname);
+    const displayName = getUserDisplayName(user);
+    const avatarBackground = generateColorFromName(displayName ?? '');
     return (
         <Link href={routes.protected.profil_informations} className='flex min-h-20 items-center gap-5 rounded-lg border border-gray-200 bg-white p-5 transition-colors hover:border-secondary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary dark:border-gray-700 dark:bg-gray-900'>
             <Avatar
                 className='w-[50px] h-[50px]'
             >
-                <AvatarImage src={user?.image ?? ''} alt={user?.firstname} />
+                <AvatarImage src={user?.image ?? ''} alt={displayName ?? ''} />
                 <AvatarFallback
                     style={{ backgroundColor: avatarBackground }}
                     className='text-2xl font-bold text-white'>
-                    {user?.firstname?.at(0) ?? ''}
+                    {getUserDisplayInitial(user)}
                 </AvatarFallback>
             </Avatar>
             <div className='flex flex-col'>
                 <p className='flex gap-1'>
-                    <span className='text-xl'>{user?.firstname}</span>
+                    <span className='text-xl'>{displayName}</span>
                     <span className='text-xl hidden md:block'>{user?.lastname}</span>
                 </p>
 

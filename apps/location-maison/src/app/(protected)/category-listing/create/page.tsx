@@ -105,7 +105,8 @@ export default function CreateCategoryListingPage() {
       setError(`Complète d'abord : ${missingUpfrontFields.join(', ')}.`)
       return
     }
-    const contact = user?.phoneNumbers?.[0] ?? ''
+    const contact = user?.callNumber || user?.phoneNumbers?.[0] || ''
+    const whatsappContact = user?.whatsappNumber || contact
     if (!contact) {
       setError('Ajoute un numéro de téléphone à ton profil avant de publier.')
       return
@@ -150,6 +151,8 @@ export default function CreateCategoryListingPage() {
         isLocExact: false,
         locationSource: 'UNVERIFIED',
         contact,
+        callContact: contact,
+        whatsappContact,
         createdBy: user!.uid,
         tags: [],
         state: 'IN_PROGRESS',

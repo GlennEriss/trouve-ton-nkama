@@ -6,6 +6,7 @@ import { Button } from '@trouve-ton-nkama/ui/button'
 import { DropdownMenu, DropdownMenuContent, DropdownMenuGroup, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@trouve-ton-nkama/ui/dropdown-menu'
 import { useCurrentUser } from '@/hooks/use-current-user'
 import { generateColorFromName } from '@/lib/generateColorFromName'
+import { getUserDisplayInitial, getUserDisplayName } from '@/lib/user-display-name'
 import { useToast } from '@/hooks/use-toast'
 import { useRouter } from 'next/navigation'
 import { signOut } from 'next-auth/react'
@@ -41,7 +42,8 @@ export default function MenuProfil() {
     const { toast } = useToast();
     const router = useRouter()
     const [isLoading, setIsLoading] = React.useState(false)
-    const avatarBackground = generateColorFromName(user?.firstname);
+    const displayName = getUserDisplayName(user);
+    const avatarBackground = generateColorFromName(displayName ?? '');
 
 
     
@@ -85,11 +87,11 @@ export default function MenuProfil() {
                 >
                     <div className="flex items-center gap-2">
                         <Avatar className="h-9 w-9 ring-2 ring-white dark:ring-gray-800 group-hover:ring-primary/20 transition-all duration-200">
-                            <AvatarImage src={user?.image ?? ''} alt={user?.firstname + '' + user?.lastname} />
+                            <AvatarImage src={user?.image ?? ''} alt={displayName ?? ''} />
                             <AvatarFallback
                                 style={{ backgroundColor: avatarBackground }}
                                 className='text-sm font-semibold text-white'>
-                                {user?.firstname?.at(0) ?? ''}
+                                {getUserDisplayInitial(user)}
                             </AvatarFallback>
                         </Avatar>
                         <ChevronDown className="h-4 w-4 text-gray-500 dark:text-gray-400 group-hover:text-primary transition-colors duration-200 hidden sm:block" />
@@ -105,16 +107,16 @@ export default function MenuProfil() {
                 <div className="px-4 py-4 bg-gradient-to-r from-primary to-secondary text-white">
                     <div className="flex items-center gap-3">
                         <Avatar className="h-12 w-12 ring-2 ring-white/20">
-                            <AvatarImage src={user?.image ?? ''} alt={user?.firstname + '' + user?.lastname} />
+                            <AvatarImage src={user?.image ?? ''} alt={displayName ?? ''} />
                             <AvatarFallback
                                 style={{ backgroundColor: 'rgba(255,255,255,0.1)' }}
                                 className='text-lg font-semibold text-white border border-white/20'>
-                                {user?.firstname?.at(0) ?? ''}
+                                {getUserDisplayInitial(user)}
                             </AvatarFallback>
                         </Avatar>
                         <div className="flex-1 min-w-0">
                             <p className="font-semibold text-white truncate">
-                                {user?.firstname} {user?.lastname}
+                                {displayName}
                             </p>
                             <p className="text-sm text-white/80 truncate">
                                 {user?.email}

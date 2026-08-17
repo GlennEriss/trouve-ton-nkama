@@ -190,7 +190,9 @@ export default function CreatePropertyWithAIPage() {
         ...aiData,
         images: uploadedImages,
         isOwner,
-        contact: aiData.contact || user?.phoneNumbers?.[0] || '',
+        contact: aiData.contact || user?.callNumber || user?.phoneNumbers?.[0] || '',
+        callContact: aiData.callContact || user?.callNumber || user?.phoneNumbers?.[0] || '',
+        whatsappContact: aiData.whatsappContact || user?.whatsappNumber || user?.phoneNumbers?.[0] || '',
         ...location,
       }
 
@@ -216,7 +218,7 @@ export default function CreatePropertyWithAIPage() {
     } finally {
       setGenerating(false)
     }
-  }, [description, images, isOwner, locationForm, missingUpfrontFields, router, submitProperty, user?.phoneNumbers])
+  }, [description, images, isOwner, locationForm, missingUpfrontFields, router, submitProperty, user?.phoneNumbers, user?.callNumber, user?.whatsappNumber])
 
   return (
     <div className="max-w-2xl mx-auto space-y-6 p-4">

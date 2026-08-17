@@ -9,8 +9,13 @@ export interface SignupData {
   password: string;
   firstName: string;
   lastName: string;
+  /** Nom d'affichage optionnel (nom de boutique). Vide = on affiche prénom + nom. */
+  pseudo?: string;
   birthDate: string;
+  /** Numéro d'appel : clé d'unicité du compte et premier élément de phoneNumbers. */
   phoneNumber: string;
+  /** Numéro WhatsApp quand il diffère du numéro d'appel. */
+  whatsappNumber?: string;
   country: string;
   acceptTerms: boolean;
   accountType?: 'User' | 'Announcer';

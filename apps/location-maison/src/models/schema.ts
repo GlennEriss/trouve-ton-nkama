@@ -20,6 +20,8 @@ export const FormRegisterSchema = z.object({
   acceptAnnouncerTerms: z.boolean().optional(),
   firstname: z.string().min(1, { message: 'Le prénom est requis' }),
   lastname: z.string().min(1, { message: 'Le nom est requis' }),
+  // Optionnel : sans pseudo, les annonces affichent le prénom et le nom.
+  pseudo: z.string().trim().max(50, { message: 'Le pseudo ne doit pas dépasser 50 caractères' }).optional(),
   email: z.string().email({ message: 'L\'email n\'est pas valide' }),
   password: z
     .string()
@@ -64,6 +66,7 @@ export const FormRegisterSchema = z.object({
     message: 'Vous devez avoir au moins 18 ans pour créer un compte',
     }),
   country: z.string().min(1, { message: 'Le pays est requis' }),
+  // Numéro d'appel. Reste la clé d'unicité du compte et alimente phoneNumbers[0].
   phone: z
     .string()
     .min(1, { message: 'Le numéro de téléphone est obligatoire' })
@@ -71,6 +74,14 @@ export const FormRegisterSchema = z.object({
       const validation = validatePhoneNumberForSupportedCountries(value);
       return validation.isValid;
     }, { message: "Le numéro de téléphone est invalide" }),
+  // Numéro WhatsApp, quand il diffère du numéro d'appel. Vide = on réutilise le numéro d'appel.
+  whatsappPhone: z
+    .string()
+    .optional()
+    .refine((value) => {
+      if (!value?.trim()) return true;
+      return validatePhoneNumberForSupportedCountries(value).isValid;
+    }, { message: "Le numéro WhatsApp est invalide" }),
   termsOfPrivacyPolicy: z
     .boolean()
     .refine((value) => value === true, 'errors.terms_required'),
@@ -414,7 +425,10 @@ export const Step2Schema = Step2SchemaBase.refine((data) => {
 export const FormUserProfilSchema = z.object({
   firstname: z.string().min(1, "Le prénom est requis"),
   lastname: z.string().min(1, "Le nom est requis"),
+  pseudo: z.string().trim().max(50, "Le pseudo ne doit pas dépasser 50 caractères").optional(),
   email: z.string().email("L'email est invalide"),
+  // Numéro d'appel historique du profil. Conservé sous ce nom pour ne pas casser les formulaires
+  // et les brouillons existants.
   phoneNumbers: z
     .string()
     .refine((value) => {
@@ -422,6 +436,13 @@ export const FormUserProfilSchema = z.object({
       const validation = validatePhoneNumberForSupportedCountries(value);
       return validation.isValid;
     }, { message: "Le numéro de téléphone est invalide" })
+    .optional(),
+  whatsappPhone: z
+    .string()
+    .refine((value) => {
+      if (!value?.trim()) return true;
+      return validatePhoneNumberForSupportedCountries(value).isValid;
+    }, { message: "Le numéro WhatsApp est invalide" })
     .optional(),
   country: z.string().min(1, { message: 'Le pays est requis' }),
   birthDate: z.string().regex(
