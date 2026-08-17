@@ -203,7 +203,7 @@ export default function SearchMobilePage() {
 
     return (
         <>
-            <div className='p-5 space-y-5 h-full pb-20' ref={topRef}>
+            <div className='px-4 py-5 space-y-5 h-full pb-20 sm:px-5' ref={topRef}>
                 {/* Barre de recherche identique à la homepage */}
                 <section className='space-y-4'>
                     <div className='space-y-1'>
@@ -325,21 +325,22 @@ export default function SearchMobilePage() {
                             </div>
                         ) : (
                             <>
-                                {/* Grille CSS auto-fill par groupe de cards, séparée à chaque pub
-                                    (2026-08-15, demande utilisateur explicite) — voir le
+                                {/* Grille CSS par groupe de cards, séparée à chaque pub (voir le
                                     commentaire sur feedGroups : chaque grille se remplit
-                                    entièrement puisqu'aucune pub ne vient forcer un saut de ligne
-                                    à l'intérieur. Taille de colonne FIXE (150px, pas minmax(...,1fr))
-                                    : avec 1fr, une ligne incomplète (1-2 résultats) étirait les
-                                    cards à une taille énorme (signalé par l'utilisateur,
-                                    2026-08-16) — auto-fill sans 1fr laisse l'espace vide plutôt
-                                    que d'agrandir les cards. */}
+                                    entièrement puisqu'aucune pub ne force un saut de ligne dedans).
+                                    `auto-fill` + `minmax(150px,1fr)` : les colonnes s'étirent pour
+                                    occuper toute la largeur (une largeur FIXE laissait ~34px morts
+                                    à droite sur mobile, d'où des cards trop petites et une liste
+                                    qui paraissait décalée — signalé le 2026-08-17). `auto-fill`
+                                    et surtout PAS `auto-fit` : auto-fill conserve les colonnes
+                                    vides, donc 1-2 résultats gardent leur taille normale au lieu
+                                    d'être étirés sur toute la ligne (bug du 2026-08-16). */}
                                 <div className="space-y-4">
                                     {feedGroups.map((group, groupIndex) =>
                                         group.kind === 'properties' ? (
                                             <div
                                                 key={`properties-${groupIndex}`}
-                                                className="grid grid-cols-[repeat(auto-fill,150px)] gap-4"
+                                                className="grid grid-cols-[repeat(auto-fill,minmax(150px,1fr))] gap-4"
                                             >
                                                 {group.entries.map((entry) => (
                                                     <div

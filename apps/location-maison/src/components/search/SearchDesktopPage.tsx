@@ -262,7 +262,7 @@ SearchDesktopPage() {
                                         group.kind === 'properties' ? (
                                             <div
                                                 key={`properties-${groupIndex}`}
-                                                className="grid grid-cols-[repeat(auto-fill,190px)] gap-6"
+                                                className="grid grid-cols-[repeat(auto-fill,minmax(190px,1fr))] gap-6"
                                             >
                                                 {group.entries.map((entry) => (
                                                     <div

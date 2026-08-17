@@ -46,9 +46,9 @@ export default function ImmobilierPropertyCardsGrid({ properties }: ImmobilierPr
   // colonnes (variable selon la largeur d'écran) — la ligne juste avant la pub restait donc
   // partiellement vide. Chaque groupe de cards a désormais sa PROPRE grille, qui se remplit
   // toujours entièrement puisqu'aucun autre élément ne vient forcer un saut de ligne dedans.
-  // Taille de colonne FIXE (220px, pas minmax(...,1fr)) : avec 1fr, une ligne incomplète
-  // (1-2 résultats) étirait les cards à une taille énorme (signalé par l'utilisateur,
-  // 2026-08-16) — auto-fill sans 1fr laisse l'espace vide plutôt que d'agrandir les cards.
+  // `auto-fill` + `minmax(220px,1fr)` : les colonnes s'étirent pour occuper toute la largeur,
+  // sans espace mort en fin de ligne. `auto-fill` et surtout PAS `auto-fit` : auto-fill conserve
+  // les colonnes vides, donc 1-2 résultats gardent leur taille normale (bug du 2026-08-16).
   const feedGroups = React.useMemo(() => {
     const groups: Array<
       | { kind: 'properties'; entries: Extract<(typeof feedItems)[number], { type: 'property' }>[] }
@@ -78,7 +78,7 @@ export default function ImmobilierPropertyCardsGrid({ properties }: ImmobilierPr
         group.kind === 'properties' ? (
           <div
             key={`properties-${groupIndex}`}
-            className="grid grid-cols-[repeat(auto-fill,220px)] gap-6"
+            className="grid grid-cols-[repeat(auto-fill,minmax(220px,1fr))] gap-6"
           >
             {group.entries.map((entry, index) => (
               <div
