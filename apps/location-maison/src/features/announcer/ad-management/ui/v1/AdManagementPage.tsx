@@ -576,7 +576,7 @@ export function AdManagementPage() {
               asChild
               className="h-12 rounded-full bg-gradient-to-r from-primary to-secondary px-6 font-semibold hover:from-primary-800 hover:to-primary-600"
             >
-              <Link href={routes.protected.add_property_ai}>
+              <Link href={routes.protected.publish}>
                 <Plus className="mr-2 h-4 w-4" />
                 Publier une annonce
               </Link>
@@ -787,7 +787,7 @@ export function AdManagementPage() {
               asChild
               className="h-11 rounded-full bg-gradient-to-r from-primary to-secondary px-6 hover:from-primary-800 hover:to-primary-600"
             >
-              <Link href={routes.protected.add_property_ai}>
+              <Link href={routes.protected.publish}>
                 <Plus className="mr-2 h-4 w-4" />
                 Publier une annonce
               </Link>
