@@ -8,7 +8,10 @@ import { useInfiniteQuery, useMutation, useQueryClient } from '@tanstack/react-q
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import {
   adManagementService,
+  type AdCategoryOption,
   type AdManagementFilters,
+  type AdScope,
+  type AdScopeCounts,
   type AdSortBy,
   type AdSortOrder,
 } from '../services';
@@ -18,6 +21,8 @@ const AD_PAGE_SIZE = 12;
 const AD_QUERY_KEY = 'announcer-ad-management';
 
 export const DEFAULT_AD_FILTERS: Omit<AdManagementFilters, 'q'> = {
+  scope: 'immobilier',
+  category: '',
   type: '',
   status: '',
   state: '',
@@ -38,26 +43,16 @@ type UseAdManagementReturn = {
   total: number;
   filteredTotal: number;
   summary: {
-    global: {
-      total: number;
-      active: number;
-      archived: number;
-      promoted: number;
-      forRent: number;
-      forSale: number;
-    };
-    filtered: {
-      total: number;
-      active: number;
-      archived: number;
-      promoted: number;
-      forRent: number;
-      forSale: number;
-    };
+    global: AdSummaryShape;
+    filtered: AdSummaryShape;
   };
+  scopeCounts: AdScopeCounts;
+  categoryOptions: AdCategoryOption[];
   searchInput: string;
   setSearchInput: (value: string) => void;
   filters: Omit<AdManagementFilters, 'q'>;
+  setScope: (value: AdScope) => void;
+  setCategoryFilter: (value: string) => void;
   setTypeFilter: (value: '' | TypeProperty) => void;
   setStatusFilter: (value: '' | 'FOR_RENT' | 'FOR_SALE') => void;
   setStateFilter: (value: '' | StateCreation) => void;
@@ -75,24 +70,34 @@ type UseAdManagementReturn = {
   error: string | null;
 };
 
-const EMPTY_SUMMARY = {
-  global: {
-    total: 0,
-    active: 0,
-    archived: 0,
-    promoted: 0,
-    forRent: 0,
-    forSale: 0,
-  },
-  filtered: {
-    total: 0,
-    active: 0,
-    archived: 0,
-    promoted: 0,
-    forRent: 0,
-    forSale: 0,
-  },
+type AdSummaryShape = {
+  total: number;
+  active: number;
+  archived: number;
+  promoted: number;
+  forRent: number;
+  forSale: number;
+  pendingModeration: number;
+  categoriesUsed: number;
 };
+
+const EMPTY_SCOPE_SUMMARY: AdSummaryShape = {
+  total: 0,
+  active: 0,
+  archived: 0,
+  promoted: 0,
+  forRent: 0,
+  forSale: 0,
+  pendingModeration: 0,
+  categoriesUsed: 0,
+};
+
+const EMPTY_SUMMARY = {
+  global: EMPTY_SCOPE_SUMMARY,
+  filtered: EMPTY_SCOPE_SUMMARY,
+};
+
+const EMPTY_SCOPE_COUNTS: AdScopeCounts = { immobilier: 0, marketplace: 0 };
 
 export function useAdManagement(): UseAdManagementReturn {
   const queryClient = useQueryClient();
@@ -152,6 +157,8 @@ export function useAdManagement(): UseAdManagementReturn {
   );
 
   const summary = adsQuery.data?.pages[0]?.summary ?? EMPTY_SUMMARY;
+  const scopeCounts = adsQuery.data?.pages[0]?.scopeCounts ?? EMPTY_SCOPE_COUNTS;
+  const categoryOptions = adsQuery.data?.pages[0]?.categoryOptions ?? [];
   const total = summary.global.total;
   const filteredTotal = summary.filtered.total;
   const hasMore = Boolean(adsQuery.hasNextPage);
@@ -192,6 +199,28 @@ export function useAdManagement(): UseAdManagementReturn {
     },
   });
 
+  // Changer d'onglet remet à zéro les filtres propres à l'autre univers : un filtre
+  // « Studio » conservé en passant sur le marketplace viderait la liste sans que rien à
+  // l'écran n'explique pourquoi.
+  const setScope = useCallback((value: AdScope) => {
+    setFilters((previous) => {
+      if (previous.scope === value) {
+        return previous;
+      }
+      return {
+        ...previous,
+        scope: value,
+        category: '',
+        type: '',
+        status: '',
+      };
+    });
+  }, []);
+
+  const setCategoryFilter = useCallback((value: string) => {
+    setFilters((previous) => ({ ...previous, category: value }));
+  }, []);
+
   const setTypeFilter = useCallback((value: '' | TypeProperty) => {
     setFilters((previous) => ({ ...previous, type: value }));
   }, []);
@@ -223,7 +252,9 @@ export function useAdManagement(): UseAdManagementReturn {
   }, []);
 
   const resetFilters = useCallback(() => {
-    setFilters(DEFAULT_AD_FILTERS);
+    // L'onglet n'est pas un filtre : le réinitialiser renverrait l'annonceur sur l'immobilier
+    // alors qu'il gère ses annonces mode.
+    setFilters((previous) => ({ ...DEFAULT_AD_FILTERS, scope: previous.scope }));
     setSearchInput('');
     setDebouncedSearch('');
     setError(null);
@@ -253,6 +284,7 @@ export function useAdManagement(): UseAdManagementReturn {
   const hasActiveFilters = useMemo(() => {
     return Boolean(
       debouncedSearch ||
+      filters.category ||
       filters.type ||
       filters.status ||
       filters.state ||
@@ -274,9 +306,13 @@ export function useAdManagement(): UseAdManagementReturn {
     total,
     filteredTotal,
     summary,
+    scopeCounts,
+    categoryOptions,
     searchInput,
     setSearchInput,
     filters,
+    setScope,
+    setCategoryFilter,
     setTypeFilter,
     setStatusFilter,
     setStateFilter,

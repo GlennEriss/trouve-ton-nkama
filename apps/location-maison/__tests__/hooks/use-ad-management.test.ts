@@ -140,6 +140,50 @@ describe('useAdManagement', () => {
     expect(result.current.hasActiveFilters).toBe(false)
   })
 
+  it('purge les filtres de l autre univers en changeant d onglet', () => {
+    const { result } = renderHook(() => useAdManagement())
+
+    act(() => {
+      result.current.setTypeFilter('Home')
+      result.current.setStatusFilter('FOR_RENT')
+    })
+    expect(result.current.filters.type).toBe('Home')
+
+    act(() => result.current.setScope('marketplace'))
+
+    // Un filtre « Maisons » conservé côté marketplace viderait la liste sans que rien à
+    // l'écran n'explique pourquoi.
+    expect(result.current.filters).toEqual(expect.objectContaining({
+      scope: 'marketplace',
+      type: '',
+      status: '',
+      category: '',
+    }))
+
+    act(() => result.current.setCategoryFilter('vetements'))
+    expect(result.current.filters.category).toBe('vetements')
+
+    act(() => result.current.setScope('immobilier'))
+    expect(result.current.filters.category).toBe('')
+  })
+
+  it('conserve l onglet courant lors d une réinitialisation des filtres', () => {
+    const { result } = renderHook(() => useAdManagement())
+
+    act(() => {
+      result.current.setScope('marketplace')
+      result.current.setCategoryFilter('vetements')
+    })
+
+    act(() => result.current.resetFilters())
+
+    // L'onglet n'est pas un filtre : le remettre à zéro renverrait l'annonceur sur
+    // l'immobilier alors qu'il gère ses annonces mode.
+    expect(result.current.filters.scope).toBe('marketplace')
+    expect(result.current.filters.category).toBe('')
+    expect(result.current.hasActiveFilters).toBe(false)
+  })
+
   it('charge la suite, archive et supprime en invalidant le cache', async () => {
     const { result } = renderHook(() => useAdManagement())
 

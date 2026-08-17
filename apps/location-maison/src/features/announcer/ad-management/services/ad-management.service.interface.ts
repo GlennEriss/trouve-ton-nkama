@@ -1,12 +1,17 @@
 import type { Property, StatusProperty, TypeProperty } from '@/models/annonce';
 import type { StateCreation } from '@/models/creation';
 
+export type AdScope = 'immobilier' | 'marketplace';
 export type AdSortBy = 'createdAt' | 'updatedAt' | 'price' | 'title';
 export type AdSortOrder = 'asc' | 'desc';
 export type AdPromotedFilter = '' | 'true' | 'false';
 
 export type AdManagementFilters = {
   q: string;
+  /** Onglet courant. L'immobilier et le marketplace n'ont ni les mêmes filtres ni les mêmes stats. */
+  scope: AdScope;
+  /** Filtre marketplace : identifiant de catégorie feuille (ex. `parfums-beaute`). */
+  category: string;
   type: '' | TypeProperty;
   status: '' | StatusProperty;
   state: '' | StateCreation;
@@ -24,6 +29,18 @@ export type AdSummary = {
   promoted: number;
   forRent: number;
   forSale: number;
+  /** Annonces en attente de modération — la statistique qui compte côté marketplace. */
+  pendingModeration: number;
+  /** Nombre de catégories distinctes utilisées. */
+  categoriesUsed: number;
+};
+
+export type AdScopeCounts = Record<AdScope, number>;
+
+export type AdCategoryOption = {
+  id: string;
+  label: string;
+  count: number;
 };
 
 export type AdListResponse = {
@@ -40,8 +57,14 @@ export type AdListResponse = {
     global: AdSummary;
     filtered: AdSummary;
   };
+  /** Totaux par onglet, calculés hors filtres pour rester stables. */
+  scopeCounts: AdScopeCounts;
+  /** Catégories réellement présentes dans l'onglet courant. */
+  categoryOptions: AdCategoryOption[];
   appliedFilters: {
     q: string;
+    scope: AdScope;
+    category: string;
     type: string;
     status: string;
     state: string;

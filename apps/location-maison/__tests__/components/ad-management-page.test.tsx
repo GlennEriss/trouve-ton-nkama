@@ -6,6 +6,8 @@ import type { Property } from '@/models/annonce'
 
 const toastMock = jest.fn()
 const setSearchInputMock = jest.fn()
+const setScopeMock = jest.fn()
+const setCategoryFilterMock = jest.fn()
 const setPriceMinMock = jest.fn()
 const setPriceMaxMock = jest.fn()
 const setSortMock = jest.fn()
@@ -123,14 +125,21 @@ function buildManagementState(overrides: Record<string, unknown> = {}) {
     total: 2,
     filteredTotal: 2,
     summary: {
-      global: { total: 2, active: 1, archived: 1, promoted: 1, forRent: 1, forSale: 1 },
-      filtered: { total: 2, active: 1, archived: 1, promoted: 1, forRent: 1, forSale: 1 },
+      global: { total: 2, active: 1, archived: 1, promoted: 1, forRent: 1, forSale: 1, pendingModeration: 1, categoriesUsed: 2 },
+      filtered: { total: 2, active: 1, archived: 1, promoted: 1, forRent: 1, forSale: 1, pendingModeration: 1, categoriesUsed: 2 },
     },
+    scopeCounts: { immobilier: 2, marketplace: 3 },
+    categoryOptions: [
+      { id: 'parfums-beaute', label: 'Parfums & beauté', count: 2 },
+      { id: 'vetements', label: 'Vêtements', count: 1 },
+    ],
     searchInput: 'Akébé',
     setSearchInput: setSearchInputMock,
     filters: {
-      type: '', status: '', state: '', promoted: '', priceMin: '', priceMax: '', sortBy: 'createdAt', sortOrder: 'desc',
+      scope: 'immobilier', category: '', type: '', status: '', state: '', promoted: '', priceMin: '', priceMax: '', sortBy: 'createdAt', sortOrder: 'desc',
     },
+    setScope: setScopeMock,
+    setCategoryFilter: setCategoryFilterMock,
     setTypeFilter: jest.fn(),
     setStatusFilter: jest.fn(),
     setStateFilter: jest.fn(),
@@ -242,6 +251,56 @@ describe('AdManagementPage', () => {
     expect(screen.getByRole('heading', { name: 'Aucune annonce trouvée' })).toBeVisible()
   })
 
+  it('affiche les deux onglets avec leur nombre d annonces', () => {
+    render(<AdManagementPage />)
+
+    const tabs = screen.getAllByRole('tab')
+    expect(tabs).toHaveLength(2)
+    expect(tabs[0]).toHaveTextContent('Immobilier')
+    expect(tabs[0]).toHaveTextContent('2')
+    expect(tabs[0]).toHaveAttribute('aria-selected', 'true')
+    expect(tabs[1]).toHaveTextContent('Annonces')
+    expect(tabs[1]).toHaveTextContent('3')
+    expect(tabs[1]).toHaveAttribute('aria-selected', 'false')
+
+    fireEvent.click(tabs[1])
+    expect(setScopeMock).toHaveBeenCalledWith('marketplace')
+  })
+
+  it('montre les filtres et stats immobilier sur l onglet immobilier', () => {
+    render(<AdManagementPage />)
+
+    expect(screen.getByLabelText('Type de bien')).toBeInTheDocument()
+    expect(screen.getByLabelText("Statut de l'annonce")).toBeInTheDocument()
+    expect(screen.queryByLabelText('Catégorie')).not.toBeInTheDocument()
+
+    // Les libellés « À louer »/« À vendre » existent aussi en badge sur les cartes : on vise
+    // le panneau de statistiques pour ne tester que lui.
+    const stats = within(screen.getByRole('tabpanel'))
+    expect(stats.getByText('À louer')).toBeVisible()
+    expect(stats.getByText('À vendre')).toBeVisible()
+    expect(stats.queryByText('En modération')).not.toBeInTheDocument()
+  })
+
+  it('bascule filtres et stats sur l onglet marketplace', () => {
+    // Type de bien et louer/vendre n'existent pas hors immobilier : les laisser afficherait
+    // des filtres sans effet et des compteurs bloqués à zéro.
+    managementState = buildManagementState({
+      filters: { ...buildManagementState().filters, scope: 'marketplace' },
+    })
+    render(<AdManagementPage />)
+
+    expect(screen.getByLabelText('Catégorie')).toBeInTheDocument()
+    expect(screen.queryByLabelText('Type de bien')).not.toBeInTheDocument()
+    expect(screen.queryByLabelText("Statut de l'annonce")).not.toBeInTheDocument()
+
+    const stats = within(screen.getByRole('tabpanel'))
+    expect(stats.getByText('En modération')).toBeVisible()
+    expect(stats.getByText('Catégories')).toBeVisible()
+    expect(stats.queryByText('À louer')).not.toBeInTheDocument()
+    expect(stats.queryByText('À vendre')).not.toBeInTheDocument()
+  })
+
   it('affiche une annonce multi-categorie (sans typeProperty) avec son sous-titre, sa localisation et son lien de modification', () => {
     managementState = buildManagementState({
       items: [
@@ -259,7 +318,12 @@ describe('AdManagementPage', () => {
     })
     render(<AdManagementPage />)
 
-    expect(screen.getByText('Vêtements')).toBeVisible()
+    // La catégorie apparaît deux fois : en badge (à la place de « À vendre », qui n'a pas de
+    // sens hors immobilier) et en sous-titre de la carte.
+    expect(screen.getAllByText('Vêtements')).toHaveLength(2)
+    // Une seule occurrence restante : la carte de statistiques. Le badge de l'annonce, lui,
+    // ne dit plus « À vendre ».
+    expect(screen.getAllByText('À vendre')).toHaveLength(1)
     expect(screen.getByText('Libreville, Estuaire')).toBeVisible()
     expect(screen.getByRole('link', { name: /Modifier/ })).toHaveAttribute(
       'href',

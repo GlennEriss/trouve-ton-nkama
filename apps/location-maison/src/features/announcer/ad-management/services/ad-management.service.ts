@@ -28,6 +28,8 @@ const EMPTY_RESPONSE: AdListResponse = {
       promoted: 0,
       forRent: 0,
       forSale: 0,
+      pendingModeration: 0,
+      categoriesUsed: 0,
     },
     filtered: {
       total: 0,
@@ -36,10 +38,16 @@ const EMPTY_RESPONSE: AdListResponse = {
       promoted: 0,
       forRent: 0,
       forSale: 0,
+      pendingModeration: 0,
+      categoriesUsed: 0,
     },
   },
+  scopeCounts: { immobilier: 0, marketplace: 0 },
+  categoryOptions: [],
   appliedFilters: {
     q: '',
+    scope: 'immobilier',
+    category: '',
     type: '',
     status: '',
     state: '',
@@ -59,6 +67,8 @@ export class AdManagementServiceImpl implements AdManagementService {
   async listAds(params: {
     filters: {
       q: string;
+      scope: string;
+      category: string;
       type: string;
       status: string;
       state: string;
@@ -77,6 +87,10 @@ export class AdManagementServiceImpl implements AdManagementService {
 
     if (params.filters.q.trim()) {
       queryParams.set('q', params.filters.q.trim());
+    }
+    queryParams.set('scope', params.filters.scope);
+    if (params.filters.category) {
+      queryParams.set('category', params.filters.category);
     }
     if (params.filters.type) {
       queryParams.set('type', params.filters.type);
