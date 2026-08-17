@@ -70,6 +70,68 @@ function withTimeout<T>(promise: Promise<T>, timeoutMs: number, operation: strin
     });
 }
 
+const DOWNLOAD_URL_TIMEOUT_MS = 30_000;
+const DOWNLOAD_URL_RETRIES = 3;
+const DOWNLOAD_URL_RETRY_BASE_DELAY_MS = 500;
+
+const delay = (ms: number) => new Promise<void>((resolve) => setTimeout(resolve, ms));
+
+/**
+ * Reconstruit l'URL de téléchargement à partir des métadonnées renvoyées par l'upload lui-même.
+ *
+ * `getDownloadURL` ne fait rien d'autre que ça : un GET sur les métadonnées de l'objet pour en
+ * extraire `downloadTokens`, puis cette concaténation. Or `uploadBytes` renvoie déjà ces mêmes
+ * métadonnées — le round-trip supplémentaire n'apporte aucune information et constitue un point
+ * de panne réseau gratuit (constaté en prod le 2026-08-17 : image de 306 Ko uploadée avec succès,
+ * puis `getDownloadURL` en timeout, annonce perdue et crédit IA facturé pour rien).
+ *
+ * Renvoie `null` si le token est absent — cas possible sur un bucket sans token de téléchargement
+ * — auquel cas l'appelant retombe sur `getDownloadURL`.
+ *
+ * NB : l'app n'utilise pas l'émulateur Storage (`@/firebase/storage` appelle `getStorage(app)` sans
+ * `connectStorageEmulator`), l'hôte est donc toujours celui de production. À revoir si ça change.
+ */
+function buildDownloadURLFromMetadata(metadata: {
+    bucket?: string;
+    fullPath?: string;
+    downloadTokens?: string[] | undefined;
+}): string | null {
+    const token = metadata?.downloadTokens?.[0];
+
+    if (!token || !metadata.bucket || !metadata.fullPath) {
+        return null;
+    }
+
+    const encodedPath = encodeURIComponent(metadata.fullPath);
+    return `https://firebasestorage.googleapis.com/v0/b/${metadata.bucket}/o/${encodedPath}?alt=media&token=${token}`;
+}
+
+/**
+ * Chemin de repli lorsque l'upload n'a pas renvoyé de token : `getDownloadURL` avec retry en
+ * backoff. Un simple hoquet réseau ne doit plus coûter toute l'annonce à l'annonceur.
+ */
+async function fetchDownloadURLWithRetry(
+    fetchURL: () => Promise<string>,
+    operation: string
+): Promise<string> {
+    let lastError: unknown;
+
+    for (let attempt = 0; attempt < DOWNLOAD_URL_RETRIES; attempt += 1) {
+        try {
+            return await withTimeout(fetchURL(), DOWNLOAD_URL_TIMEOUT_MS, operation);
+        } catch (error) {
+            lastError = error;
+
+            if (attempt < DOWNLOAD_URL_RETRIES - 1) {
+                logger.warn('Download URL retrieval failed, retrying', { error, operation, attempt });
+                await delay(DOWNLOAD_URL_RETRY_BASE_DELAY_MS * 2 ** attempt);
+            }
+        }
+    }
+
+    throw lastError;
+}
+
 /**
  * Génère et uploade une variante basse résolution du fichier déjà compressé, utilisée dans les
  * contextes "liste" (cartes de recherche, favoris, gestion des annonces) pour éviter de servir
@@ -95,8 +157,11 @@ async function uploadThumbnail(
         const thumbRef = ref(storage, `${location}/thumb_${uniqueFileName}`);
         const thumbPATH = thumbRef.fullPath;
 
-        await withTimeout(uploadBytes(thumbRef, thumbnailFile), 15_000, "Upload vignette");
-        const thumbURL = await withTimeout(getDownloadURL(thumbRef), 10_000, "Récupération URL vignette");
+        const uploadResult = await withTimeout(uploadBytes(thumbRef, thumbnailFile), 15_000, "Upload vignette");
+
+        const thumbURL =
+            buildDownloadURLFromMetadata(uploadResult.metadata) ??
+            (await fetchDownloadURLWithRetry(() => getDownloadURL(thumbRef), "Récupération URL vignette"));
 
         return { thumbURL, thumbPATH };
     } catch (error) {
@@ -141,10 +206,12 @@ export async function createFile(file: File, ownerId: string | undefined, locati
             },
         };
         // Upload the file with metadata
-        await withTimeout(uploadBytes(fileRef, file, metadata), 20_000, "Upload image");
+        const uploadResult = await withTimeout(uploadBytes(fileRef, file, metadata), 20_000, "Upload image");
 
-        // Get the download URL after upload
-        const fileURL = await withTimeout(getDownloadURL(fileRef), 10_000, "Récupération URL image");
+        // L'URL est déduite des métadonnées de l'upload ; `getDownloadURL` n'est appelé qu'en repli.
+        const fileURL =
+            buildDownloadURLFromMetadata(uploadResult.metadata) ??
+            (await fetchDownloadURLWithRetry(() => getDownloadURL(fileRef), "Récupération URL image"));
 
         const thumbnail = await uploadThumbnail(file, location, uniqueFileName);
 

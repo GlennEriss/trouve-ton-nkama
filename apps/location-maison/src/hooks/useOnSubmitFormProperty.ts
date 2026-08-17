@@ -19,29 +19,42 @@ export function useOnSubmitFormProperty(
 ) {
   const { user } = useCurrentUser()
 
-  const onSubmit = async (data: any) => {
+  /**
+   * @param preUploadedImages Images déjà uploadées par l'appelant. Les parcours qui débitent un
+   * crédit avant d'appeler ce hook (création assistée par IA) doivent uploader en amont : sinon un
+   * upload qui échoue laisse l'annonceur facturé sans annonce. Quand ce paramètre est fourni,
+   * aucun upload n'est refait ici.
+   */
+  const onSubmit = async (data: any, preUploadedImages?: Image[]) => {
     // Séparer les images déjà uploadées (string) des nouvelles (File/Blob)
-    const imgStringList = data.images.filter((img: File | Blob | string | undefined) => 
+    const imgStringList = data.images.filter((img: File | Blob | string | undefined) =>
       typeof img === "string"
     )
-    const imgUploads = imagesAlreadyUpload.filter(img => 
+    const imgUploads = imagesAlreadyUpload.filter(img =>
       imgStringList.includes(img.fileURL)
     )
 
-    // Créer les nouvelles images
-    const filesUpload = data.images.filter((img: File | Blob | string | undefined) =>
-      img instanceof File || img instanceof Blob
-    ) as (File | Blob)[]
+    // Créer les nouvelles images. `.map` déclenche les uploads immédiatement, donc on ne
+    // construit les promesses que si l'appelant n'a pas déjà fourni les images.
+    let images: Image[]
 
-    const promiseFiles = filesUpload.map(async (img: File | Blob, index) => {
-      const file = img instanceof File ? img : new File([img], `image_${index}.jpeg`, {
-        type: img.type || 'image/jpeg',
-        lastModified: Date.now(),
-      })
-      return await createFile(file, user?.uid, 'property')
-    })
-    
-    const images = await Promise.all(promiseFiles)
+    if (preUploadedImages) {
+      images = preUploadedImages
+    } else {
+      const filesUpload = data.images.filter((img: File | Blob | string | undefined) =>
+        img instanceof File || img instanceof Blob
+      ) as (File | Blob)[]
+
+      images = await Promise.all(
+        filesUpload.map(async (img: File | Blob, index) => {
+          const file = img instanceof File ? img : new File([img], `image_${index}.jpeg`, {
+            type: img.type || 'image/jpeg',
+            lastModified: Date.now(),
+          })
+          return await createFile(file, user?.uid, 'property')
+        })
+      )
+    }
 
     // Nettoyer les données en retirant les coordonnées de localisation
     const { 

@@ -18,6 +18,7 @@ import { useCurrentUser } from '@/hooks/use-current-user'
 import { useOnSubmitFormProperty } from '@/hooks/useOnSubmitFormProperty'
 import { useToast } from '@/hooks/use-toast'
 import { DirectorFactory } from '@/directors/factory.director'
+import { createFile } from '@/db/file.db'
 import { createProperty } from '@/db/property.db'
 import { routes } from '@/constantes/routes'
 import { MAX_IMAGES_UPLOAD } from '@/constantes'
@@ -174,13 +175,20 @@ export default function CreatePropertyWithAIPage() {
 
     setGenerating(true)
     try {
+      // Upload AVANT l'appel IA, qui est ce qui débite le crédit (voir /api/ai/property-draft).
+      // Dans l'autre sens, un upload qui échoue laisse l'annonceur facturé sans annonce —
+      // constaté en prod le 2026-08-17.
+      const uploadedImages = await Promise.all(
+        images.map((file) => createFile(file, user?.uid, 'property')),
+      )
+
       const aiData = await requestPropertyDraft(description)
       const skeleton = DirectorFactory.createDirectorProperty(aiData.typeProperty).build()
 
       const rawForValidation = {
         ...skeleton,
         ...aiData,
-        images,
+        images: uploadedImages,
         isOwner,
         contact: aiData.contact || user?.phoneNumbers?.[0] || '',
         ...location,
@@ -192,7 +200,7 @@ export default function CreatePropertyWithAIPage() {
       // la remet après coup.
       const finalData = { ...validated, typeProperty: aiData.typeProperty }
 
-      const propertyMutate = await submitProperty(finalData)
+      const propertyMutate = await submitProperty(finalData, uploadedImages)
       const propertyId = await createProperty(propertyMutate)
       if (!propertyId) {
         throw new Error("La création de l'annonce a échoué. Réessaie.")

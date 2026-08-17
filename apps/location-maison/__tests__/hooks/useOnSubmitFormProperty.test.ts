@@ -208,4 +208,19 @@ describe('useOnSubmitFormProperty', () => {
 
     expect(clearStorage).not.toHaveBeenCalled()
   })
+
+  it('reutilise les images pre-uploadees sans declencher de nouvel upload', async () => {
+    const preUploaded = [
+      { fileURL: 'https://cdn.test/pre-1.jpg', filePATH: 'property/pre-1.jpg' },
+    ]
+    const file = new File(['photo'], 'studio.jpg', { type: 'image/jpeg' })
+    const { result } = renderHook(() => useOnSubmitFormProperty(baseProperty, [], false))
+
+    const property = await result.current.onSubmit(validData({ images: [file] }), preUploaded)
+
+    // Le parcours IA facture un crédit avant d'appeler ce hook : ré-uploader ici ferait payer
+    // deux fois la même image et rouvrirait la fenêtre de panne que ce paramètre supprime.
+    expect(mockCreateFile).not.toHaveBeenCalled()
+    expect(property.images).toEqual(preUploaded)
+  })
 })
