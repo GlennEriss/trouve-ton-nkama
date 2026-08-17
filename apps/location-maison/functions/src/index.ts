@@ -37,6 +37,9 @@ export { syncAdSenseToAdminAnalytics } from './analytics/adsense-sync';
 // Fonctions Réels (transcodage vidéo)
 export { transcodeReelVideo } from './reels';
 
+// Publication automatique des annonces approuvées sur la Page Facebook
+export { onListingApprovedPublishToFacebook } from './social';
+
 // Exemple de fonction (à décommenter si nécessaire)
 // export const helloWorld = onRequest((request, response) => {
 //   logger.info("Hello logs!", {structuredData: true});
