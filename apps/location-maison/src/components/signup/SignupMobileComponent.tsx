@@ -5,7 +5,7 @@ import { createLogger } from '@/lib/logger'
 import { cn } from '@/lib/utils'
 import { FormRegisterSchema, FormRegisterSchemaType } from '@/models/schema'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { Building2, ChevronLeft, CircleUser, KeyRound, Mail } from 'lucide-react'
+import { Building2, ChevronLeft, CircleUser, KeyRound, Mail, Phone } from 'lucide-react'
 import { Inter } from 'next/font/google'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
@@ -16,6 +16,8 @@ import { InputFormApp } from '../shared/form/InputFormApp'
 import { ButtonApp } from '../shared/ui/ButtonApp'
 import { signIn } from 'next-auth/react'
 import { Button } from '@trouve-ton-nkama/ui/button'
+import { PhoneAuthModal } from '@/features/auth/ui/v1/PhoneAuthModal'
+import { trackingEvents, useTrackEvent } from '@/features/analytics/tracking'
 import { PhoneNumberFormApp } from '../shared/form/PhoneNumberFormApp'
 import { CheckboxFormApp } from '../shared/form/CheckboxFormApp'
 import { DateSelect } from '../shared/form/DateSelect'
@@ -32,6 +34,8 @@ const logger = createLogger('auth.signup-mobile')
 export const SignupMobileComponent = () => {
     const router = useRouter()
     const { toast } = useToast()
+    const { trackEvent } = useTrackEvent()
+    const [isPhoneModalOpen, setIsPhoneModalOpen] = React.useState(false)
     const [isOtherMethodConnection, setIsOtherMethodConnection] = React.useState(false)
     const { signup, isLoading } = useSignup()
     
@@ -333,6 +337,30 @@ export const SignupMobileComponent = () => {
                         )}
                     </Button>
                 </div>
+
+                {/* Inscription par téléphone (OTP) : présente sur la variante desktop
+                    (SignupFormModern) depuis le lot phone-auth mais oubliée ici — les deux
+                    variantes sont des composants entièrement séparés, rien ne garantit qu'un
+                    ajout dans l'une arrive dans l'autre (signalé par l'utilisateur 2026-08-17). */}
+                <div className="mt-3 flex items-center justify-center">
+                    <Button
+                        type="button"
+                        onClick={() => {
+                            trackEvent(trackingEvents.CTA_AUTH_SIGNUP_CLICK, {
+                                method: 'phone',
+                                entry_point: 'signup_form_mobile',
+                            });
+                            setIsPhoneModalOpen(true);
+                        }}
+                        variant='outline'
+                        disabled={isFormLoading || isGoogleLoading}
+                        className="w-full flex justify-center items-center gap-2 bg-white dark:bg-gray-900 border border-gray-300 rounded-full p-6 text-md font-medium text-gray-800 dark:text-white hover:bg-gray-200 focus:outline-none focus:ring-offset-2 focus:ring-gray-500">
+                        <Phone className="h-5 w-5 mr-2 text-secondary" />
+                        <span>Continuer avec Numéro de téléphone</span>
+                    </Button>
+                </div>
+
+                <PhoneAuthModal open={isPhoneModalOpen} onOpenChange={setIsPhoneModalOpen} />
             </Form>
         </div>
     )

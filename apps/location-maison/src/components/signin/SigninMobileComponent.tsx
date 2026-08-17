@@ -6,7 +6,7 @@ import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
 import { FormLoginSchema, FormLoginSchemaType } from '@/models/schema';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { ChevronLeft, CircleUser, KeyRound } from 'lucide-react';
+import { ChevronLeft, CircleUser, KeyRound, Phone } from 'lucide-react';
 import { Inter } from 'next/font/google';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
@@ -16,6 +16,8 @@ import { Form } from '@/components/ui/form';
 import { InputFormApp } from '../shared/form/InputFormApp';
 import { ButtonApp } from '../shared/ui/ButtonApp';
 import { Button } from '@trouve-ton-nkama/ui/button';
+import { PhoneAuthModal } from '@/features/auth/ui/v1/PhoneAuthModal';
+import { trackingEvents, useTrackEvent } from '@/features/analytics/tracking';
 
 const inter = Inter({
   subsets: ['latin'],
@@ -26,6 +28,8 @@ export default function SigninMobileComponent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { toast } = useToast();
+  const { trackEvent } = useTrackEvent();
+  const [isPhoneModalOpen, setIsPhoneModalOpen] = React.useState(false);
   const {
     signinWithCredentials,
     signinWithGoogle,
@@ -211,6 +215,31 @@ export default function SigninMobileComponent() {
             )}
           </Button>
         </div>
+
+        {/* Connexion par téléphone (OTP) : présente sur la variante desktop
+            (SigninFormModern) depuis le lot phone-auth mais oubliée ici — les deux
+            variantes sont des composants entièrement séparés, rien ne garantit qu'un
+            ajout dans l'une arrive dans l'autre (signalé par l'utilisateur 2026-08-17). */}
+        <div className="mt-3 flex items-center justify-center">
+          <Button
+            type="button"
+            onClick={() => {
+              trackEvent(trackingEvents.CTA_AUTH_SIGNIN_CLICK, {
+                method: 'phone',
+                entry_point: 'signin_form_mobile',
+              });
+              setIsPhoneModalOpen(true);
+            }}
+            variant="outline"
+            disabled={isLoading}
+            className="w-full flex justify-center items-center gap-2 bg-white dark:bg-gray-900 border border-gray-300 rounded-full p-6 text-md font-medium text-gray-800 dark:text-white hover:bg-gray-200 focus:outline-none focus:ring-offset-2 focus:ring-gray-500"
+          >
+            <Phone className="h-5 w-5 mr-2 text-secondary" />
+            <span>Continuer avec Numéro de téléphone</span>
+          </Button>
+        </div>
+
+        <PhoneAuthModal open={isPhoneModalOpen} onOpenChange={setIsPhoneModalOpen} />
       </Form>
 
       <div className="mt-6 md:mt-8 text-center px-4">
