@@ -203,7 +203,7 @@ export default function SearchMobilePage() {
 
     return (
         <>
-            <div className='p-5 space-y-5 h-full pb-20' ref={topRef}>
+            <div className='px-4 py-5 space-y-5 h-full pb-20 sm:px-5' ref={topRef}>
                 {/* Barre de recherche identique à la homepage */}
                 <section className='space-y-4'>
                     <div className='space-y-1'>
