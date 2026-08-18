@@ -65,10 +65,14 @@ if (data.is_valid) {
 }
 
 // expires_at = 0 signifie "n'expire jamais" : c'est le seul cas acceptable en production.
+// Absent, l'information n'est simplement pas exploitable — le dire plutôt que d'afficher
+// l'époque Unix, qui laisse croire à un jeton expiré depuis 1970.
 if (data.expires_at === 0) {
   pass("n'expire jamais");
+} else if (typeof data.expires_at !== 'number') {
+  fail("date d'expiration absente — jeton non reconnu par cette app ? vérifie que FACEBOOK_APP_ID est bien celle qui a émis le jeton");
 } else {
-  const when = new Date((data.expires_at ?? 0) * 1000).toISOString();
+  const when = new Date(data.expires_at * 1000).toISOString();
   fail(`expire le ${when} — dérive le jeton de Page depuis un jeton utilisateur LONGUE DURÉE, sinon la publication s'arrêtera toute seule`);
 }
 

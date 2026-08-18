@@ -79,7 +79,25 @@ describe('buildListingPostMessage', () => {
     expect(message).toMatch(/7[\s ]000 FCFA/);
   });
 
-  it('utilise le type de bien pour une annonce immobilier', () => {
+  it('prefere le libelle francais de categoryPath a l enum typeProperty', () => {
+    // Sans ça le post affiche "Room" au lieu de "Chambre" — constaté sur une vraie annonce
+    // avant la première publication.
+    const message = buildListingPostMessage(
+      {
+        title: 'Chambre américaine sécurisée',
+        price: 80000,
+        city: 'Libreville',
+        typeProperty: 'Room',
+        categoryPath: { lvl0: 'Immobilier', lvl1: 'Immobilier > Chambre' },
+      },
+      url
+    );
+
+    expect(message).toContain('Chambre');
+    expect(message).not.toContain('Room');
+  });
+
+  it('retombe sur typeProperty pour les annonces sans categoryPath', () => {
     const message = buildListingPostMessage(
       { title: 'Studio meublé', price: 150000, city: 'Libreville', typeProperty: 'Studio' },
       url
@@ -99,6 +117,18 @@ describe('buildListingPostMessage', () => {
   it('ignore un prix nul ou invalide plutôt que d afficher 0 FCFA', () => {
     expect(buildListingPostMessage({ title: 'Don', price: 0, city: 'Owendo' }, url)).not.toContain('FCFA');
     expect(buildListingPostMessage({ title: 'Don', price: 'abc', city: 'Owendo' }, url)).not.toContain('FCFA');
+  });
+
+  it('ajoute le pied de post avec catalogue et reseaux', () => {
+    const message = buildListingPostMessage({ title: 'Studio meublé', price: 150000 }, url);
+
+    expect(message).toContain('https://www.tonnkama.com/search');
+    expect(message).toContain('TikTok :');
+    expect(message).toContain('Chaîne WhatsApp :');
+    // La Page Facebook est volontairement absente : le post est publié dessus.
+    expect(message).not.toContain('Page Facebook');
+    // Le lien de l'annonce doit rester avant le pied : c'est lui qui porte la carte d'aperçu.
+    expect(message.indexOf(url)).toBeLessThan(message.indexOf('https://www.tonnkama.com/search'));
   });
 
   it('retombe sur un titre générique si l annonce n en a pas', () => {

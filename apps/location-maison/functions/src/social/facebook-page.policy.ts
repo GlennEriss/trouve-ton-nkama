@@ -5,6 +5,8 @@
  * new-announcement-policy.ts et favoris-property-policy.ts.
  */
 
+import { buildSocialFooter } from './social-links';
+
 export type PublishableProperty = Record<string, unknown>;
 
 export type FacebookPostRecord = {
@@ -61,18 +63,21 @@ function formatPrice(value: unknown): string {
 }
 
 /**
- * Libellé de rangement : type de bien pour l'immobilier, catégorie feuille sinon. Même
- * discriminant (`typeProperty`) que l'API annonceur et les cartes d'annonce.
+ * Libellé de rangement affiché dans le post.
+ *
+ * `categoryPath` est privilégié parce qu'il porte le libellé français lisible
+ * ("Immobilier > Chambre" -> "Chambre"), là où `typeProperty` ne contient que la valeur brute
+ * de l'énumération ("Room"). Le repli sur `typeProperty` ne sert qu'aux rares annonces
+ * antérieures au backfill de catégories (1 sur 950 en prod au 2026-08-18).
  */
 function resolveCategoryLabel(property: PublishableProperty): string {
-  const typeProperty = asString(property.typeProperty);
-  if (typeProperty) {
-    return typeProperty;
-  }
-
   const categoryPath = property.categoryPath as { lvl1?: unknown } | undefined;
   const leaf = asString(categoryPath?.lvl1).split(' > ').pop()?.trim();
-  return leaf || '';
+  if (leaf) {
+    return leaf;
+  }
+
+  return asString(property.typeProperty);
 }
 
 export function buildListingUrl(propertyId: string, appUrl: string): string {
@@ -91,5 +96,17 @@ export function buildListingPostMessage(property: PublishableProperty, listingUr
     .filter(Boolean)
     .join(' · ');
 
-  return [title, facts, '', `👉 ${listingUrl}`].filter((line) => line !== undefined).join('\n');
+  // Un séparateur visuel avant le pied : sur Facebook, texte de l'annonce et liens
+  // institutionnels se confondraient sinon en un seul bloc.
+  return [
+    title,
+    facts,
+    '',
+    `👉 ${listingUrl}`,
+    '',
+    '—',
+    buildSocialFooter(),
+  ]
+    .filter((line) => line !== undefined)
+    .join('\n');
 }

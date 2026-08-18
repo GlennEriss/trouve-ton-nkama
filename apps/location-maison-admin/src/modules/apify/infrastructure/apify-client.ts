@@ -18,10 +18,18 @@
 const API_BASE = "https://api.apify.com/v2";
 const DEFAULT_ACTOR_ID = "apify~facebook-groups-scraper";
 
-// Account-level errors worth retrying with the next token. Anything else
-// (400 bad input, 404 unknown actor/run, 5xx) would fail identically on
-// every token, so it's surfaced immediately instead of retried 5 times.
+// Account-level errors worth retrying with the next token: jeton révoqué (401), quota mensuel
+// épuisé (402 `not-enough-usage-to-run-paid-actor`), rate limit (429).
 const FAILOVER_STATUSES = new Set([401, 402, 429]);
+
+// Erreurs signifiant "cette ressource appartient à un autre compte du pool".
+//
+// 403 est le cas réel : relevé le 2026-08-18 sur les runs de production, Apify répond
+// `403 insufficient-permissions` — et non 404 — quand on interroge /actor-runs/{id} avec le
+// jeton d'un compte qui ne possède pas ce run. Son absence ici bloquait tout le suivi : le
+// premier jeton du pool renvoyait 403, l'erreur n'était pas jugée réessayable, et la boucle
+// s'arrêtait sans jamais atteindre le compte propriétaire. 404 est conservé par prudence.
+const WRONG_ACCOUNT_STATUSES = new Set([403, 404]);
 
 export type ApifyRunStatus = "READY" | "RUNNING" | "SUCCEEDED" | "FAILED" | "TIMED-OUT" | "ABORTED" | "ABORTING";
 
@@ -47,12 +55,14 @@ function getActorId(): string {
 }
 
 /**
- * Try `attempt` with each token in `pool`, in order. Advances to the next
- * token only on a 401/402/429 (account-level: revoked/exhausted/rate
- * limited). Any other error — including a 404 "run not found", which for
- * `getRunStatus`/`getDatasetItems` just means "wrong account for this
- * run/dataset ID" — is also treated as failover-worthy here, since the
- * caller has no other way to know which account owns a given run.
+ * Try `attempt` with each token in `pool`, in order. Advances to the next token on deux
+ * familles d'erreurs :
+ *  - compte inutilisable (401/402/429) — on essaie le compte suivant ;
+ *  - ressource appartenant à un autre compte (403/404) — le pool étant composé de comptes
+ *    indépendants, l'appelant n'a aucun moyen de savoir lequel possède un run donné.
+ *
+ * Tout le reste (400 entrée invalide, 5xx côté Apify) échouerait à l'identique sur chaque
+ * compte : on le remonte immédiatement plutôt que de le réessayer cinq fois.
  */
 async function withTokenFailover<T>(pool: string[], attempt: (token: string) => Promise<T>): Promise<T> {
   if (pool.length === 0) {
@@ -65,7 +75,8 @@ async function withTokenFailover<T>(pool: string[], attempt: (token: string) => 
       return await attempt(pool[index]);
     } catch (cause) {
       const status = cause instanceof ApifyAccountCallError ? cause.status : null;
-      const retryable = status !== null && (FAILOVER_STATUSES.has(status) || status === 404);
+      const retryable =
+        status !== null && (FAILOVER_STATUSES.has(status) || WRONG_ACCOUNT_STATUSES.has(status));
       failures.push(`compte ${index + 1}: ${status ?? (cause instanceof Error ? cause.message : "échec")}`);
       if (!retryable) {
         throw cause;

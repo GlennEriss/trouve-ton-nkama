@@ -226,26 +226,19 @@ export default function CarouselProperty({ images }: Readonly<{ images: string[]
                         {imageUrls.map((image, index) => (
                             <CarouselItem
                                 key={image}
-                                // Une photo par vue à toutes les tailles : la galerie d'une page
-                                // détail vit dans une colonne de demi-largeur sur desktop, où
-                                // `md:basis-1/2 lg:basis-1/3` réduisait la photo au sixième de la
-                                // page. C'est la photo qui vend l'article, elle doit dominer.
                                 className="pl-2 md:pl-4 basis-full"
                             >
                                 <button
                                     type="button"
                                     onClick={() => openPreview(image)}
-                                    className="relative block w-full aspect-[4/3] md:aspect-square overflow-hidden rounded-xl bg-gray-100 dark:bg-gray-800 cursor-zoom-in"
+                                    className="relative block w-full aspect-[4/3] md:aspect-square overflow-hidden rounded-xl bg-gray-100 dark:bg-gray-800 cursor-zoom-in max-h-[600px] md:max-h-[500px]"
                                     aria-label={`Agrandir la photo ${index + 1}`}
                                 >
                                     <Image
                                         src={image}
                                         alt={`Photo ${index + 1} de l'annonce`}
                                         fill
-                                        sizes="(max-width: 768px) 100vw, 50vw"
-                                        // `contain` plutôt que `cover` : les photos sont prises au
-                                        // téléphone dans des cadrages quelconques, un recadrage
-                                        // automatique coupe régulièrement l'article lui-même.
+                                        sizes="(max-width: 768px) 100vw, (max-width: 1024px) 70vw, 560px"
                                         className="object-contain"
                                         priority={index === 0}
                                     />
