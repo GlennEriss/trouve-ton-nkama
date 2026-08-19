@@ -44,10 +44,9 @@ export default function Notifications() {
   const { notifications, unreadCount, markAllAsRead, markAsRead } = useNotifications();
   const { user } = useCurrentUser();
   const avatarBackground = generateColorFromName(getUserDisplayName(user) ?? '');
-  const [isOpen, setIsOpen] = useState(false);
 
   return (
-    <Popover open={isOpen} onOpenChange={setIsOpen}>
+    <Popover>
       <PopoverTrigger asChild>
         <NotificationButton unreadCount={unreadCount} />
       </PopoverTrigger>
