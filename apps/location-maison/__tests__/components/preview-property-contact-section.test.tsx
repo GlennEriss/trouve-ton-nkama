@@ -56,7 +56,7 @@ describe('ContactSection', () => {
     render(<ContactSection property={property} />)
     expect(screen.queryByText('+24166545430')).not.toBeInTheDocument()
 
-    fireEvent.click(screen.getByTitle('Afficher le numéro'))
+    fireEvent.click(screen.getByTitle('Afficher le numéro de téléphone'))
     expect(trackInteraction).toHaveBeenCalledWith('phone_contact', { phoneNumber: '+24166545430' })
     expect(screen.getByText('+24166545430')).toBeInTheDocument()
   })
