@@ -40,6 +40,10 @@ export { transcodeReelVideo } from './reels';
 // Publication automatique des annonces approuvées sur la Page Facebook
 export { onListingApprovedPublishToFacebook } from './social';
 
+// Promotions (mise a la une, tendance, boost)
+export { onPropertyCreateDefaultSortTimestamp } from './promotions/default-sort-timestamp';
+export { expireStalePromotions } from './promotions/expire-promotions';
+
 // Exemple de fonction (à décommenter si nécessaire)
 // export const helloWorld = onRequest((request, response) => {
 //   logger.info("Hello logs!", {structuredData: true});

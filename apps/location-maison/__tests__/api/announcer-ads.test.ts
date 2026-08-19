@@ -134,6 +134,20 @@ describe('/api/announcer/ads', () => {
     expect(body.items.map((item: any) => item.id)).toEqual(expected)
   })
 
+  it('le tri par defaut suit sortTimestamp (boost) plutot que createdAt brut', async () => {
+    // "c" a le createdAt le plus ancien des trois, mais un sortTimestamp tres recent : un
+    // boost doit le faire remonter en tete du tri par defaut, comme une annonce fraiche.
+    ;(getFirestore as jest.Mock).mockReturnValue(dbWith([
+      { id: 'a', title: 'Ancienne', typeProperty: 'Home', createdAt: new Date('2026-01-01') },
+      { id: 'b', title: 'Recente', typeProperty: 'Home', createdAt: new Date('2026-06-01') },
+      { id: 'c', title: 'Boostee', typeProperty: 'Home', createdAt: new Date('2026-01-01'), sortTimestamp: new Date('2026-08-01') },
+    ]))
+
+    const body = await (await getAds(request(''))).json()
+
+    expect(body.items.map((item: any) => item.id)).toEqual(['c', 'b', 'a'])
+  })
+
   it('normalise les paramètres invalides et plafonne la limite', async () => {
     const body = await (await getAds(request('?limit=500&cursor=-2&sortBy=bad&sortOrder=bad&priceMin=nope'))).json()
     expect(body.pagination).toMatchObject({ limit: 50, cursor: '0', nextCursor: null })

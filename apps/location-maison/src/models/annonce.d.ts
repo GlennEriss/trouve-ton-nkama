@@ -90,6 +90,12 @@ export type Property = Location & ICreation & {
     promotionHistory?: Promotion[];
     lastBoostedAt?: Timestamp; // Pour le boost simple
     isPromoted?: boolean; // Indicateur rapide pour les requêtes
+    // Clé de tri recence pour /search (customRanking Algolia) et tout futur tri par defaut.
+    // = createdAt a la creation (rempli par le trigger onPropertyCreate), remis a `now` par un
+    // boost — c'est ce qui donne au boost son effet de "remontee qui s'estompe naturellement" :
+    // l'annonce boostee se comporte comme si elle venait d'etre creee, sans etat "actif"
+    // separe a expirer. Distinct de updatedAt, que toute edition touche.
+    sortTimestamp?: Timestamp;
 
     // Cadeaux (dons MoMo) reçus sur cette annonce — voir applyGiftOnce (Cloud Function).
     giftCount?: number;

@@ -6,7 +6,9 @@ import { handleApiError } from '@/lib/api/error-response';
 
 const logger = createLogger('api.property.promoted');
 
-const CACHE_KEY = 'properties:promoted';
+// Exporté pour que /api/property/promote invalide ce même cache après une promotion —
+// une seule chaîne à faire évoluer si la clé change un jour.
+export const CACHE_KEY = 'properties:promoted';
 const CACHE_TTL_SECONDS = parseInt(process.env.REDIS_CATALOG_TTL ?? '600', 10);
 
 type PromotedResult = {
