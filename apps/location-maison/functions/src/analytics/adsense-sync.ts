@@ -60,7 +60,12 @@ type DateRange = {
 const DEFAULT_SCHEDULE = "15 2 * * *";
 const DEFAULT_TIME_ZONE = "Africa/Libreville";
 const DEFAULT_LOOKBACK_DAYS = 1;
-const DEFAULT_MAX_REPORT_ROWS = 250000;
+// Plafond imposé par l'API AdSense v2 sur `limit` : au-delà, reports:generate répond
+// « 400 Request contains an invalid argument » (mesuré le 2026-08-18 : 100000 -> 200,
+// 100001 -> 400). La valeur précédente, 250000, faisait échouer TOUTES les synchronisations
+// depuis le 2026-05-07 — 102 exécutions, aucune réussie.
+const ADSENSE_MAX_REPORT_ROWS_LIMIT = 100000;
+const DEFAULT_MAX_REPORT_ROWS = ADSENSE_MAX_REPORT_ROWS_LIMIT;
 const DEFAULT_DIMENSIONS = [
   "DATE",
   "PAGE_URL",
@@ -300,7 +305,12 @@ async function fetchAdSenseReport(input: {
 }) {
   const dimensions = splitCsvConfig(process.env.ADSENSE_SYNC_DIMENSIONS, DEFAULT_DIMENSIONS);
   const metrics = splitCsvConfig(process.env.ADSENSE_SYNC_METRICS, DEFAULT_METRICS);
-  const maxRows = parsePositiveInt(process.env.ADSENSE_SYNC_MAX_ROWS, DEFAULT_MAX_REPORT_ROWS);
+  // Borné au plafond de l'API : une valeur trop haute dans ADSENSE_SYNC_MAX_ROWS ne doit plus
+  // pouvoir casser la synchronisation en silence.
+  const maxRows = Math.min(
+    parsePositiveInt(process.env.ADSENSE_SYNC_MAX_ROWS, DEFAULT_MAX_REPORT_ROWS),
+    ADSENSE_MAX_REPORT_ROWS_LIMIT,
+  );
   const reportingTimeZone =
     process.env.ADSENSE_SYNC_REPORTING_TIME_ZONE?.trim() || "ACCOUNT_TIME_ZONE";
   const currencyCode = process.env.ADSENSE_SYNC_CURRENCY_CODE?.trim();

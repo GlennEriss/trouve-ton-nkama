@@ -17,7 +17,7 @@ import { getPrimaryPropertyImageUrl, getPropertyImageUrls } from '@/lib/property
 export default function PreviewProperty({ property }: Readonly<{ property: Property }>) {
   const { user } = useCurrentUser()
   const isOwner = property.createdBy === user?.uid
-  
+
   const tagSatus: Record<string, string> = {
     "FOR_RENT": "A LOUER",
     "FOR_SALE": "A VENDRE"
@@ -26,46 +26,66 @@ export default function PreviewProperty({ property }: Readonly<{ property: Prope
   const primaryImageUrl = getPrimaryPropertyImageUrl(property.images)
 
   return (
-    <div className='flex flex-col gap-3 bg-gray-50 dark:bg-gray-950 p-3 mb-24 md:px-0 max-w-full overflow-x-hidden'>
-      {/* Section des tags */}
-      <section className='flex justify-between'>
+    <div className='flex flex-col gap-8 bg-gray-50 dark:bg-gray-950 mb-24 max-w-full overflow-x-hidden'>
+      {/* En-tête : tags et actions */}
+      <div className='px-4 md:px-20 pt-4 flex justify-between items-center gap-4'>
         <div className='flex flex-wrap gap-3 items-center'>
-          {/* property.status (À louer/à vendre) n'a pas de sens pour une annonce hors
-              immobilier (Mode, etc.) — absent dans ce cas, ne pas rendre le tag évite
-              un crash (Tag exige un name défini). */}
           {tagSatus[property.status as string] && <Tag name={tagSatus[property.status as string]} />}
-          {
-            property.tags.map((tag) => (
-              <Tag key={tag} name={tag} />
-            ))
-          }
+          {property.tags.map((tag) => (
+            <Tag key={tag} name={tag} />
+          ))}
         </div>
-        <div className=''>
-          <div className='flex gap-2 items-center'>
-            <ButtonShare property={property} />
-            <ButtonFavoris idProperty={property.id!} />
-          </div>
+        <div className='flex gap-2 items-center flex-shrink-0'>
+          <ButtonShare property={property} />
+          <ButtonFavoris idProperty={property.id!} />
         </div>
-      </section>
+      </div>
 
-      {/* Section des informations principales */}
-      <section className='flex flex-col gap-2'>
-        <div className='flex flex-col gap-2 md:flex-row md:justify-between'>
-          <h1 className='text-2xl font-bold text-gray-900 dark:text-white'>{property.title}</h1>
-          <h1 className='text-2xl font-bold text-green-700'>
-            FCFA {property.price.toLocaleString('fr-FR')}
-          </h1>
+      {/* Section principale : 2 colonnes en desktop */}
+      <div className='px-4 md:px-20 grid grid-cols-1 md:grid-cols-[1fr_400px] gap-8 lg:gap-12'>
+        {/* Colonne gauche : Photo et galerie */}
+        <div className='flex flex-col gap-4'>
+          <CarouselProperty images={images} />
         </div>
-        <div className='flex items-center gap-2'>
-          <GoLocation size={25} className='text-red-600' />
-          <h2 className='text-[13px] md:text-lg text-justify text-gray-500 dark:text-gray-400'>{property.street}, {property.city} {property.province}</h2>
+
+        {/* Colonne droite : Infos essentielles et contact */}
+        <div className='flex flex-col gap-6'>
+          {/* Titre et prix */}
+          <div className='flex flex-col gap-2'>
+            <h1 className='text-2xl lg:text-3xl font-bold text-gray-900 dark:text-white break-words'>
+              {property.title}
+            </h1>
+            <div className='text-2xl lg:text-3xl font-bold text-green-600 dark:text-green-500'>
+              FCFA {property.price.toLocaleString('fr-FR')}
+            </div>
+          </div>
+
+          {/* Localisation */}
+          <div className='flex items-start gap-2'>
+            <GoLocation size={20} className='text-red-600 flex-shrink-0 mt-0.5' />
+            <p className='text-sm md:text-base text-gray-600 dark:text-gray-400'>
+              {property.street}, {property.city} {property.province}
+            </p>
+          </div>
+
+          {/* Dates */}
+          <div className='text-xs text-gray-500 dark:text-gray-400 space-y-1 pt-2 border-t border-gray-200 dark:border-gray-700'>
+            <p>
+              Créé le: {property.createdAt ? new Date(property.createdAt.seconds * 1000).toLocaleDateString('fr-FR', { weekday: 'short', year: 'numeric', month: 'long', day: 'numeric' }) : 'Date inconnue'}
+            </p>
+            <p>
+              Modifié le: {property.updatedAt ? new Date(property.updatedAt.seconds * 1000).toLocaleDateString('fr-FR', { weekday: 'short', year: 'numeric', month: 'long', day: 'numeric' }) : 'Date inconnue'}
+            </p>
+          </div>
+
+          {/* Section contact minimaliste */}
+          <ContactSection property={property} />
         </div>
-        <CarouselProperty images={images} />
-      </section>
+      </div>
 
       {/* Alerte propriété archivée */}
       {property.state === 'ARCHIVED' && (
-        <section className="mx-3 md:mx-0">
+        <section className="px-4 md:px-20">
           <div className="flex items-center gap-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-4 shadow-md">
             <div className="flex-shrink-0">
               <AlertTriangle className="h-6 w-6 text-red-600 dark:text-red-400" />
@@ -82,43 +102,37 @@ export default function PreviewProperty({ property }: Readonly<{ property: Prope
         </section>
       )}
 
-      {/* Section description */}
-      <section className='flex flex-col gap-2'>
-        <div className="flex flex-col gap-3 rounded-lg p-5 shadow dark:shadow-gray-800 dark:bg-gray-800 dark:text-white">
-          <h1 className='font-bold'>Description</h1>
-          <p className='text-gray-700 dark:text-gray-300'>
-            {property.description}
-          </p>
-        </div>
-
-        {/* Section aperçu */}
-        <section className="flex flex-col gap-3 rounded-lg p-5 shadow dark:shadow-gray-800 dark:bg-gray-800 dark:text-white">
-          <h1 className='font-bold'>Aperçu</h1>
-          <p className='flex flex-col text-gray-500 dark:text-gray-400 text-sm text-justify italic'>
-            <span>
-              Créé le: {property.createdAt ? new Date(property.createdAt.seconds * 1000).toLocaleDateString('fr-FR', { weekday: 'short', year: 'numeric', month: 'long', day: 'numeric' }) : 'Date inconnue'}
-            </span>
-            <span>
-              Modifié le: {property.updatedAt ? new Date(property.updatedAt.seconds * 1000).toLocaleDateString('fr-FR', { weekday: 'short', year: 'numeric', month: 'long', day: 'numeric' }) : 'Date inconnue'}
-            </span>
-          </p>
-          <DetailsProperty property={property as any} />
+      {/* Section bas : contenu en pleine largeur */}
+      <div className='px-4 md:px-20 flex flex-col gap-6'>
+        {/* Description */}
+        <section className='flex flex-col gap-3'>
+          <h2 className='text-xl font-bold text-gray-900 dark:text-white'>Description</h2>
+          <div className='bg-white dark:bg-gray-800 rounded-lg p-5 shadow'>
+            <p className='text-gray-700 dark:text-gray-300 leading-relaxed'>
+              {property.description}
+            </p>
+          </div>
         </section>
 
-        {/* Section contact */}
-        <ContactSection property={property} />
+        {/* Aperçu / Caractéristiques */}
+        <section className='flex flex-col gap-3'>
+          <h2 className='text-xl font-bold text-gray-900 dark:text-white'>Aperçu</h2>
+          <div className='bg-white dark:bg-gray-800 rounded-lg p-5 shadow'>
+            <DetailsProperty property={property as any} />
+          </div>
+        </section>
 
-        {/* Section localisation */}
-        {
-          property.additionnalInformation && (
-            <section className="flex flex-col gap-3 rounded-lg p-5 shadow dark:shadow-gray-800 dark:bg-gray-800 dark:text-white">
-              <h1 className='font-bold'>Localisation</h1>
-              <p className='text-gray-700 dark:text-gray-300'>
+        {/* Localisation additionnelle */}
+        {property.additionnalInformation && (
+          <section className='flex flex-col gap-3'>
+            <h2 className='text-xl font-bold text-gray-900 dark:text-white'>Localisation</h2>
+            <div className='bg-white dark:bg-gray-800 rounded-lg p-5 shadow'>
+              <p className='text-gray-700 dark:text-gray-300 leading-relaxed'>
                 {property.additionnalInformation}
               </p>
-            </section>
-          )
-        }
+            </div>
+          </section>
+        )}
 
         {/* Carte */}
         <MapSection
@@ -132,14 +146,14 @@ export default function PreviewProperty({ property }: Readonly<{ property: Prope
           countryCode={property.countryCode}
         />
 
-        {/* Section Statistiques - Visible uniquement pour le propriétaire */}
+        {/* Statistiques pour le propriétaire */}
         {isOwner && property.id && (
-          <PropertyStatisticsSummary 
+          <PropertyStatisticsSummary
             propertyId={property.id}
             property={property}
           />
         )}
-      </section>
+      </div>
     </div>
   )
 }

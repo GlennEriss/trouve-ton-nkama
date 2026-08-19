@@ -1603,6 +1603,21 @@ export default function ApifyPage() {
     setScrapeError(data.error ?? `Le run Apify s'est terminé avec le statut ${data.status}.`);
   }, [scrapePollQuery.data, scrapeStatus, scrapeStartedAt, applyRawJson]);
 
+  // Une requête de suivi en échec ne remplit jamais `data` : sans ce second effet, l'état
+  // restait "running" et le sondage repartait toutes les 5 s indéfiniment, sans qu'aucune
+  // erreur ne s'affiche. Le garde-fou SCRAPE_MAX_POLL_MS ne couvrait pas ce cas, puisqu'il
+  // n'est évalué que dans la branche RUNNING de l'effet ci-dessus.
+  useEffect(() => {
+    if (!scrapePollQuery.isError || scrapeStatus !== "running") return;
+
+    setScrapeStatus("failed");
+    setScrapeError(
+      scrapePollQuery.error instanceof Error
+        ? `Suivi du run impossible : ${scrapePollQuery.error.message}`
+        : "Suivi du run impossible.",
+    );
+  }, [scrapePollQuery.isError, scrapePollQuery.error, scrapeStatus]);
+
   const handleClear = useCallback(() => {
     setRawJson("");
     setError(null);

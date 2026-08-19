@@ -83,30 +83,25 @@ export default function ContactSection({ property }: Readonly<{ property: Proper
                                     )}
                                 </div>
                             </Link>
-                            {isDesktop ? (
-                                entry.call && (
-                                    <div className="flex items-center gap-2 border border-gray-300 px-4 py-3 rounded-lg shadow-lg">
-                                        <FaPhoneAlt size={22} className="text-primary" />
-                                        <span className="font-medium select-all">{entry.call}</span>
-                                    </div>
-                                )
+                            {shownIndexes.has(index) ? (
+                                <div className={`flex items-center gap-2 border border-gray-300 ${
+                                    isDesktop ? 'px-4 py-3' : 'px-4 py-3'
+                                } rounded-lg shadow-lg`}>
+                                    <FaPhoneAlt size={isDesktop ? 22 : 30} className="text-primary" />
+                                    <span className="font-medium select-all">{entry.call}</span>
+                                </div>
                             ) : (
-                                <>
-                                    {shownIndexes.has(index) ? (
-                                        <div className="border border-gray-300 px-4 py-3 rounded-lg shadow-lg">
-                                            <span className="font-medium select-all">{entry.call}</span>
-                                        </div>
-                                    ) : (
-                                        <button
-                                            type="button"
-                                            onClick={() => handlePhoneClick(index, entry.call)}
-                                            className="border border-gray-300 p-3 rounded-lg shadow-lg"
-                                            title="Afficher le numéro"
-                                        >
-                                            <FaPhoneAlt size={30} className="text-primary" />
-                                        </button>
-                                    )}
-                                </>
+                                <button
+                                    type="button"
+                                    onClick={() => handlePhoneClick(index, entry.call)}
+                                    className={`flex items-center gap-2 border border-gray-300 ${
+                                        isDesktop ? 'px-4 py-3' : 'p-3'
+                                    } rounded-lg shadow-lg hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors`}
+                                    title="Afficher le numéro de téléphone"
+                                >
+                                    <FaPhoneAlt size={isDesktop ? 22 : 30} className="text-primary" />
+                                    {isDesktop && <span className="font-medium">Appeler</span>}
+                                </button>
                             )}
                             {index === 0 && (
                                 <button
