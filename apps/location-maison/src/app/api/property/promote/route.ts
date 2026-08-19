@@ -12,7 +12,7 @@ import {
 } from '@/lib/server/idempotency';
 import { auth } from '@/next-auth/auth';
 import { getCacheStore } from '@/lib/cache';
-import { CACHE_KEY as PROMOTED_PROPERTIES_CACHE_KEY } from '@/app/api/property/promoted/route';
+import { CACHE_KEY as PROMOTED_PROPERTIES_CACHE_KEY } from '@/app/api/property/promoted/constants';
 import type { PromotionType } from '@/models/annonce';
 
 const logger = createLogger('api.property.promote');

@@ -3,12 +3,10 @@ import { getCacheStore } from '@/lib/cache';
 import { Property } from '@/models/annonce';
 import { createLogger } from '@/lib/logger';
 import { handleApiError } from '@/lib/api/error-response';
+import { CACHE_KEY } from './constants';
 
 const logger = createLogger('api.property.promoted');
 
-// Exporté pour que /api/property/promote invalide ce même cache après une promotion —
-// une seule chaîne à faire évoluer si la clé change un jour.
-export const CACHE_KEY = 'properties:promoted';
 const CACHE_TTL_SECONDS = parseInt(process.env.REDIS_CATALOG_TTL ?? '600', 10);
 
 type PromotedResult = {
