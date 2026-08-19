@@ -5,6 +5,7 @@ import Link from 'next/link'
 import { useSearchParams } from 'next/navigation'
 import { ArrowLeft, CheckCircle2, Loader2, Pencil, Send, Video, X, XCircle } from 'lucide-react'
 import { useCurrentUser } from '@/hooks/use-current-user'
+import { useProperty } from '@/hooks/use-property'
 import { useVideoDropzone, type VideoDropzoneRejectionReason } from '@/hooks/useVideoDropzone'
 import { useReelDraftVideoStorage } from '@/hooks/useReelDraftVideoStorage'
 import { buildRawReelVideoPath, createReel, markReelUploadFailed, uploadRawReelVideo, subscribeToReel } from '@/db/reel.db'
@@ -35,11 +36,15 @@ const ALLOWED_RETURN_PATHS = new Set([
   routes.protected.publish,
   routes.protected.reels_mine,
   routes.protected.reels,
+  routes.protected.properties,
 ])
 
-function getSafeReturnHref(returnTo: string | null) {
-  if (!returnTo) return routes.protected.publish
-  return ALLOWED_RETURN_PATHS.has(returnTo) ? returnTo : routes.protected.publish
+// Repli sur "Mes annonces" quand une annonce est présélectionnée (arrivée depuis
+// SelectPropertyForReelClient ou le bouton "Ajouter un réel" d'une annonce) — repli sur
+// "Publier" sinon, comme avant.
+function getSafeReturnHref(returnTo: string | null, fallback: string) {
+  if (!returnTo) return fallback
+  return ALLOWED_RETURN_PATHS.has(returnTo) ? returnTo : fallback
 }
 
 export default function CreateOrphanReelClient() {
@@ -47,7 +52,15 @@ export default function CreateOrphanReelClient() {
   const { toast } = useToast()
   const searchParams = useSearchParams()
   const { saveDraftVideo, loadDraftVideo, clearDraftVideo } = useReelDraftVideoStorage()
-  const returnHref = getSafeReturnHref(searchParams.get('returnTo'))
+  // Présent quand on arrive via SelectPropertyForReelClient (choix d'une annonce avant
+  // création) ou le bouton "Ajouter un réel" d'une annonce — le réel est alors créé directement
+  // rattaché, sans étape de rattachement séparée après coup.
+  const propertyId = searchParams.get('propertyId')?.trim() || null
+  const { data: property } = useProperty(propertyId ?? undefined)
+  const returnHref = getSafeReturnHref(
+    searchParams.get('returnTo'),
+    propertyId ? routes.protected.properties : routes.protected.publish,
+  )
 
   const [videoFile, setVideoFile] = React.useState<File | null>(null)
   const [videoDurationSeconds, setVideoDurationSeconds] = React.useState(0)
@@ -76,8 +89,11 @@ export default function CreateOrphanReelClient() {
   }, [])
 
   React.useEffect(() => {
-    if (user?.phoneNumbers?.[0]) setContact((current) => current || user.phoneNumbers[0])
-  }, [user?.phoneNumbers])
+    // Contact de l'annonce en priorité (comme avant sur la page dédiée par annonce), sinon
+    // le numéro de profil de l'annonceur.
+    const defaultContact = property?.contact || user?.phoneNumbers?.[0]
+    if (defaultContact) setContact((current) => current || defaultContact)
+  }, [property?.contact, user?.phoneNumbers])
 
   React.useEffect(() => {
     if (!reel?.id) return undefined
@@ -126,7 +142,7 @@ export default function CreateOrphanReelClient() {
       const isTrimmed = trimStart > 0 || trimEnd < videoDurationSeconds
       const createdId = await createReel(
         reelId,
-        null,
+        propertyId,
         user.uid,
         rawVideoPath,
         trimmedContact,
@@ -152,7 +168,7 @@ export default function CreateOrphanReelClient() {
       void clearDraftVideo()
       setReel({
         id: createdId,
-        propertyId: null,
+        propertyId,
         createdBy: user.uid,
         processingStatus: 'uploading',
         rawVideoPath,
@@ -178,7 +194,7 @@ export default function CreateOrphanReelClient() {
       })
       throw error
     }
-  }, [user?.uid, contact, description, trimStart, trimEnd, videoDurationSeconds, muted, clearDraftVideo, toast])
+  }, [user?.uid, propertyId, contact, description, trimStart, trimEnd, videoDurationSeconds, muted, clearDraftVideo, toast])
 
   const handlePublish = React.useCallback(async () => {
     if (!videoFile) return
@@ -243,6 +259,11 @@ export default function CreateOrphanReelClient() {
           >
             <X className="h-5 w-5" />
           </button>
+          {propertyId && property?.title ? (
+            <span className="max-w-[60%] truncate rounded-full bg-white/10 px-3 py-1.5 text-xs text-white/80">
+              Pour « {property.title} »
+            </span>
+          ) : null}
         </div>
 
         <VideoTrimEditor
@@ -333,7 +354,11 @@ export default function CreateOrphanReelClient() {
           </p>
           <h1 className="mt-1 text-2xl font-bold text-slate-900 dark:text-white md:text-3xl">Créer un réel</h1>
           <p className="mt-1 max-w-2xl text-sm leading-6 text-slate-600 dark:text-slate-300">
-            Vidéo verticale, 5 minutes maximum. Vous pourrez l&apos;attacher à une de vos annonces ensuite.
+            {propertyId && property?.title ? (
+              <>Pour l&apos;annonce « {property.title} » — vidéo verticale, 5 minutes maximum.</>
+            ) : (
+              <>Vidéo verticale, 5 minutes maximum. Vous pourrez l&apos;attacher à une de vos annonces ensuite.</>
+            )}
           </p>
         </div>
       </section>

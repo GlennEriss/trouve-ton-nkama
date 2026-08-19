@@ -17,13 +17,22 @@ const mockSaveDraftVideo = jest.fn()
 const mockLoadDraftVideo = jest.fn()
 let selectedFile: File
 let returnTo = '/reels/mine'
+let propertyId: string | null = null
 
 jest.mock('next/navigation', () => ({
-  useSearchParams: () => ({ get: () => returnTo }),
+  useSearchParams: () => ({
+    get: (key: string) => (key === 'propertyId' ? propertyId : returnTo),
+  }),
 }))
 
 jest.mock('@/hooks/use-current-user', () => ({
   useCurrentUser: () => currentUserState,
+}))
+
+let propertyQueryData: Record<string, unknown> | undefined
+
+jest.mock('@/hooks/use-property', () => ({
+  useProperty: () => ({ data: propertyQueryData }),
 }))
 
 jest.mock('@/hooks/use-toast', () => ({
@@ -84,6 +93,8 @@ describe('CreateOrphanReelClient', () => {
     }
     currentUserState.isFirebaseConnected = true
     returnTo = '/reels/mine'
+    propertyId = null
+    propertyQueryData = undefined
     selectedFile = new File(['video'], 'visite.mov', { type: 'video/quicktime' })
     mockLoadDraftVideo.mockResolvedValue(null)
     mockCreateReel.mockResolvedValue('reel-fixed-id')
@@ -147,6 +158,57 @@ describe('CreateOrphanReelClient', () => {
 
     fireEvent.click(screen.getByRole('button', { name: 'Fermer' }))
     expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
+  })
+
+  it('propose un retour vers Mes annonces quand une annonce est preselectionnee', () => {
+    // Arrivée depuis SelectPropertyForReelClient ou le bouton "Ajouter un réel" d'une annonce :
+    // sans returnTo explicite, le retour naturel est la liste des annonces, pas "Publier".
+    propertyId = 'property-1'
+    returnTo = null as unknown as string
+    render(<CreateOrphanReelClient />)
+    expect(screen.getByRole('link', { name: /Retour/i })).toHaveAttribute('href', '/property')
+  })
+
+  it('affiche le titre de l annonce preselectionnee et preremplit son contact', async () => {
+    propertyId = 'property-1'
+    propertyQueryData = { title: 'Studio Akébé', contact: '+24177001122' }
+    render(<CreateOrphanReelClient />)
+
+    expect(screen.getByText(/Pour l'annonce « Studio Akébé »/)).toBeInTheDocument()
+
+    await chooseVideo()
+    fireEvent.click(screen.getByRole('button', { name: 'Publier le réel' }))
+
+    await waitFor(() => expect(mockCreateReel).toHaveBeenCalledWith(
+      'reel-fixed-id',
+      'property-1',
+      'owner-1',
+      'reels-raw/owner-1/reel-fixed-id.mov',
+      // Le contact de l'annonce prévaut sur le numéro de profil de l'annonceur.
+      '+24177001122',
+      undefined,
+      {},
+    ))
+  })
+
+  it('rattache le reel cree a l annonce preselectionnee sans contact', async () => {
+    propertyId = 'property-2'
+    propertyQueryData = { title: 'Villa Owendo' }
+    render(<CreateOrphanReelClient />)
+    await chooseVideo()
+
+    fireEvent.click(screen.getByRole('button', { name: 'Publier le réel' }))
+
+    await waitFor(() => expect(mockCreateReel).toHaveBeenCalledWith(
+      'reel-fixed-id',
+      'property-2',
+      'owner-1',
+      'reels-raw/owner-1/reel-fixed-id.mov',
+      // Pas de contact sur l'annonce : repli sur le numéro de profil, comme sans annonce.
+      '+24166545430',
+      undefined,
+      {},
+    ))
   })
 
   it('marque le document en echec quand l upload Storage casse', async () => {

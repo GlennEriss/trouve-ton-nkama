@@ -189,6 +189,13 @@ describe('AdManagementPage', () => {
     expect(screen.getByText('Promotion active')).toBeVisible()
     expect(screen.getByText('Une synchronisation a échoué.')).toBeVisible()
     expect(screen.getByText(/Actualisation en cours/)).toBeVisible()
+    // Le bouton "Ajouter un réel" doit router vers la page de création unifiée
+    // (CreateOrphanReelClient) avec l'annonce présélectionnée, pas vers l'ancienne page dédiée
+    // /property/:id/reels/add, supprimée.
+    expect(screen.getAllByRole('link', { name: /Ajouter un réel/ })[0]).toHaveAttribute(
+      'href',
+      '/reels/add?propertyId=property-9b',
+    )
     await waitFor(() => expect(fetchNextPageMock).toHaveBeenCalled())
 
     fireEvent.change(screen.getByLabelText('Recherche'), { target: { value: 'Owendo' } })

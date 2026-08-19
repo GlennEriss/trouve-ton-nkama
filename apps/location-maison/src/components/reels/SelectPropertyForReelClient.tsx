@@ -35,7 +35,7 @@ export default function SelectPropertyForReelClient() {
 
   const handleSelect = async (property: Property) => {
     if (!attachReelId) {
-      router.push(`${routes.protected.properties}/${property.id}/reels/add`)
+      router.push(`${routes.protected.reels_add}?propertyId=${property.id}`)
       return
     }
 
