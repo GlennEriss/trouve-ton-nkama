@@ -52,7 +52,7 @@ export default function Notifications() {
         <NotificationButton unreadCount={unreadCount} />
       </PopoverTrigger>
 
-      <PopoverContent className={`w-80 p-1 ${NOTIFICATION_CSS_CLASSES.bg.content}`}>
+      <PopoverContent className={`w-80 p-1 z-[9999] ${NOTIFICATION_CSS_CLASSES.bg.content}`}>
         <NotificationsHeader 
           unreadCount={unreadCount} 
           onMarkAllAsRead={markAllAsRead} 
