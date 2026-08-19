@@ -150,6 +150,40 @@ function roleQueryValues(role: PlatformUserRoleQuery) {
   return ["Announcer", "announcer"];
 }
 
+/**
+ * Annonceurs gérés par la plateforme (identités d'affichage créées par
+ * scripts/announcers/seed-platform-announcers.ts), destinés à la liste d'accès rapide du
+ * module Apify.
+ *
+ * Requête directe sur le marqueur plutôt que via listPlatformUsersRawPage : ce dernier scanne
+ * la collection page par page puis filtre en mémoire, ce qui est inutilement coûteux ici alors
+ * qu'on veut exactement les documents portant le drapeau.
+ */
+export type PlatformAnnouncerUser = PlatformUser & { platformAnnouncerKind: string | null };
+
+export async function listPlatformAnnouncerUsers(limit = 100): Promise<PlatformAnnouncerUser[]> {
+  const db = getFirebaseAdminDb();
+  const snapshot = await db
+    .collection(USERS_COLLECTION)
+    .where("isPlatformAnnouncer", "==", true)
+    .limit(Math.max(1, Math.min(200, limit)))
+    .get();
+
+  return snapshot.docs
+    .map((doc) => {
+      const data = doc.data() as RawUserDoc & { platformAnnouncerKind?: unknown };
+      return {
+        ...mapUserDoc(doc.id, data),
+        // Permet de regrouper la liste par famille (agence / marque / personne) côté admin.
+        platformAnnouncerKind:
+          typeof data.platformAnnouncerKind === "string" ? data.platformAnnouncerKind : null,
+      };
+    })
+    .sort((left, right) =>
+      (left.searchableName ?? "").localeCompare(right.searchableName ?? "", "fr", { sensitivity: "base" }),
+    );
+}
+
 export async function listPlatformUsersRawPage(
   input: ListPlatformUsersRawPageInput,
 ): Promise<ListPlatformUsersRawPageResult> {

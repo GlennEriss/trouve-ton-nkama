@@ -394,7 +394,7 @@ function AdCard({ ad, onToggleState, onDelete, actionLoading }: AdCardProps) {
 
           <div className="grid grid-cols-2 gap-2 pt-0.5">
             <Button variant="outline" className="h-11 w-full rounded-full px-3" asChild>
-              <Link href={`${routes.protected.properties}/${ad.id}/reels/add`}>
+              <Link href={`${routes.protected.reels_add}?propertyId=${ad.id}`}>
                 <Video className="mr-1 h-4 w-4" />
                 Ajouter un réel
               </Link>

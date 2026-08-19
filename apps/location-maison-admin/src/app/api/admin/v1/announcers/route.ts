@@ -2,7 +2,10 @@ import { NextRequest } from "next/server";
 import { z } from "zod";
 
 import { jsonError, jsonSuccess } from "@/lib/api/response";
-import { listAnnouncers } from "@/modules/announcer-management/application/announcer-management.service";
+import {
+  listAnnouncers,
+  listPlatformAnnouncers,
+} from "@/modules/announcer-management/application/announcer-management.service";
 import { requireAdmin } from "@/modules/iam/presentation/admin-guard";
 
 const querySchema = z.object({
@@ -11,6 +14,9 @@ const querySchema = z.object({
   query: z.string().trim().optional(),
   status: z.enum(["all", "active", "suspended", "archived"]).optional(),
   presence: z.enum(["all", "online", "offline"]).optional(),
+  // ?platform=true : uniquement les annonceurs gérés par la plateforme, pour la liste
+  // d'accès rapide du module Apify.
+  platform: z.enum(["true", "false"]).optional(),
 });
 
 export async function GET(request: NextRequest) {
@@ -21,6 +27,7 @@ export async function GET(request: NextRequest) {
   }
 
   const parsed = querySchema.safeParse({
+    platform: request.nextUrl.searchParams.get("platform") ?? undefined,
     limit: request.nextUrl.searchParams.get("limit"),
     cursor: request.nextUrl.searchParams.get("cursor") ?? undefined,
     query: request.nextUrl.searchParams.get("query") ?? undefined,
@@ -40,6 +47,11 @@ export async function GET(request: NextRequest) {
       400,
       auth.correlationId,
     );
+  }
+
+  if (parsed.data.platform === "true") {
+    // Chemin dédié : requête directe sur le marqueur, sans le scan paginé de listAnnouncers.
+    return jsonSuccess(await listPlatformAnnouncers(), auth.correlationId);
   }
 
   const result = await listAnnouncers({

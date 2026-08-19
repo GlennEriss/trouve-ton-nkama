@@ -98,8 +98,8 @@ export default function MenuProfil() {
                     </div>
                 </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent 
-                className="w-72 mt-2 p-0 bg-white dark:bg-gray-900 border-0 shadow-xl rounded-2xl overflow-hidden"
+            <DropdownMenuContent
+                className="w-72 mt-2 p-0 bg-white dark:bg-gray-900 border-0 shadow-xl rounded-2xl overflow-hidden z-[9999]"
                 align="end"
                 sideOffset={8}
             >

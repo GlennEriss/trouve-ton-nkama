@@ -18,7 +18,9 @@
     "phone:normalize:apply": "tsx scripts/phone/normalize-existing-phones.ts --apply",
     "categories:seed:dry": "tsx scripts/categories/seed-categories.ts --dry-run",
     "categories:seed:dev": "tsx scripts/categories/seed-categories.ts --env-file=.env.local",
-    "categories:seed:prod": "tsx scripts/categories/seed-categories.ts --env-file=.env.local.prod"
+    "categories:seed:prod": "tsx scripts/categories/seed-categories.ts --env-file=.env.local.prod",
+    "announcers:seed:dry": "tsx scripts/announcers/seed-platform-announcers.ts --env-file=.env.local.prod --dry-run",
+    "announcers:seed:prod": "tsx scripts/announcers/seed-platform-announcers.ts --env-file=.env.local.prod"
   },
   "dependencies": {
     "@trouve-ton-nkama/core": "*",
