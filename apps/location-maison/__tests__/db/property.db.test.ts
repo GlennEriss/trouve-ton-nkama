@@ -164,6 +164,42 @@ describe('property database', () => {
     expect(firestore.startAfter).toHaveBeenCalledWith(cursor)
   })
 
+  it('ignore un curseur dont le document n existe plus', async () => {
+    // Une annonce supprimée entre deux pages : le curseur doit être abandonné plutôt que
+    // passé tel quel à startAfter, qui recevrait un snapshot inexistant.
+    firestore.getDoc.mockResolvedValue({ id: 'property-supprimee', exists: () => false })
+    firestore.getDocs.mockResolvedValue(querySnapshot([]))
+
+    await getProperties({ limitPerPage: 10, lastDoc: 'property-supprimee' })
+
+    expect(firestore.startAfter).not.toHaveBeenCalled()
+  })
+
+  it('ne renvoie pas de curseur quand la page suivante est vide', async () => {
+    const firstPage = [docSnapshot('property-1', { title: 'Unique' })]
+    firestore.getDocs
+      .mockResolvedValueOnce(querySnapshot(firstPage))
+      .mockResolvedValueOnce(querySnapshot([]))
+
+    const result = await getProperties({ limitPerPage: 1, lastDoc: null })
+
+    expect(result.lastDoc).toBeNull()
+  })
+
+  it('laisse intact un document sans ancien champ cuisine', async () => {
+    // nbrKitchens déjà renseigné : la migration nbrChickens -> nbrKitchens ne doit pas écraser
+    // la valeur existante.
+    firestore.getDoc.mockResolvedValue({
+      id: 'property-1',
+      exists: () => true,
+      data: () => ({ title: 'Villa', nbrKitchens: 3, nbrChickens: 9 }),
+    })
+
+    await expect(getPropertyById('property-1')).resolves.toEqual(
+      expect.objectContaining({ nbrKitchens: 3 }),
+    )
+  })
+
   it('retourne une annonce par identifiant et migre l ancien champ cuisine', async () => {
     firestore.getDoc.mockResolvedValue({
       id: 'property-1',
