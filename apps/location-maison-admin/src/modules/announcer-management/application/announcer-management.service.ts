@@ -9,7 +9,10 @@ import {
   getAnnouncerUserByUid,
   listAnnouncerUsersRawPage,
 } from "@/modules/announcer-management/infrastructure/announcer.repository";
-import { setPlatformUserMetadata } from "@/modules/user-management/infrastructure/platform-user.repository";
+import {
+  listPlatformAnnouncerUsers,
+  setPlatformUserMetadata,
+} from "@/modules/user-management/infrastructure/platform-user.repository";
 
 const ONLINE_THRESHOLD_SECONDS = Number(process.env.USER_ONLINE_THRESHOLD_SECONDS ?? 300);
 const MAX_SCAN_PAGES = 50;
@@ -249,6 +252,27 @@ function matchesPresence(
     return true;
   }
   return user.presenceStatus === presence;
+}
+
+/**
+ * Annonceurs gérés par la plateforme, pour la liste d'accès rapide du module Apify.
+ * Même forme que les entrées de listAnnouncers pour que l'UI puisse les traiter à l'identique.
+ */
+export async function listPlatformAnnouncers(): Promise<{
+  announcers: Array<{ uid: string; fullName: string; email: string | null; phoneNumbers: string[]; kind: string | null }>;
+  count: number;
+}> {
+  const users = await listPlatformAnnouncerUsers(200);
+
+  const announcers = users.map((user) => ({
+    uid: user.uid,
+    fullName: computeFullName(user),
+    email: user.email,
+    phoneNumbers: user.phoneNumbers,
+    kind: user.platformAnnouncerKind,
+  }));
+
+  return { announcers, count: announcers.length };
 }
 
 export async function listAnnouncers(input: ListAnnouncersInput): Promise<ListAnnouncersResult> {

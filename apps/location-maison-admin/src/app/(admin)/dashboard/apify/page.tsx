@@ -71,6 +71,13 @@ type ImportState = { status: ImportStatus; propertyId?: string; error?: string }
 type ReelImportState = { status: ImportStatus; reelId?: string; error?: string };
 
 type AnnouncerOption = { uid: string; fullName: string; email: string | null; phoneNumbers: string[] };
+type PlatformAnnouncerOption = AnnouncerOption & { kind: string | null };
+
+const PLATFORM_KIND_LABELS: Record<string, string> = {
+  agency: "Agences",
+  brand: "Enseignes",
+  person: "Particuliers",
+};
 
 type ImportResult = { index: number; ok: boolean; propertyId?: string; imageCount: number; error?: string };
 type ReelImportResult = { index: number; ok: boolean; reelId?: string; error?: string };
@@ -139,6 +146,18 @@ async function fetchAnnouncers(query: string): Promise<AnnouncerOption[]> {
   const response = await fetch(`/api/admin/v1/announcers?${params.toString()}`);
   const body = (await response.json()) as
     | { success: true; data: { announcers: AnnouncerOption[] } }
+    | { success: false; error?: { message?: string } };
+  if (!response.ok || !body.success) {
+    throw new Error(body.success ? "Erreur" : body.error?.message ?? "Impossible de charger les annonceurs.");
+  }
+  return body.data.announcers ?? [];
+}
+
+/** Annonceurs gérés par la plateforme, pour la sélection rapide (voir ?platform=true). */
+async function fetchPlatformAnnouncers(): Promise<PlatformAnnouncerOption[]> {
+  const response = await fetch("/api/admin/v1/announcers?platform=true");
+  const body = (await response.json()) as
+    | { success: true; data: { announcers: PlatformAnnouncerOption[] } }
     | { success: false; error?: { message?: string } };
   if (!response.ok || !body.success) {
     throw new Error(body.success ? "Erreur" : body.error?.message ?? "Impossible de charger les annonceurs.");
@@ -1435,6 +1454,12 @@ export default function ApifyPage() {
     return () => clearTimeout(timer);
   }, [announcerQuery]);
 
+  const platformAnnouncersQuery = useQuery({
+    queryKey: ["announcers", "platform"],
+    queryFn: fetchPlatformAnnouncers,
+    staleTime: 5 * 60 * 1000,
+  });
+
   const announcerQueryResult = useQuery({
     queryKey: ["announcers", "lookup", announcerQueryDebounced],
     queryFn: () => fetchAnnouncers(announcerQueryDebounced),
@@ -2173,6 +2198,48 @@ export default function ApifyPage() {
                         )}
                       </div>
                     ) : null}
+
+                    {/* Sélection rapide : les annonceurs de la plateforme sont ceux qu'on
+                        attribue le plus souvent aux annonces importées. La recherche reste
+                        disponible pour tous les autres comptes. */}
+                    <select
+                      aria-label="Annonceur de la plateforme"
+                      className="w-64 rounded-md border border-border bg-card px-3 py-1.5 text-sm focus:border-brand-500 focus:outline-none"
+                      value=""
+                      disabled={platformAnnouncersQuery.isLoading || platformAnnouncersQuery.isError}
+                      onChange={(event) => {
+                        const picked = (platformAnnouncersQuery.data ?? []).find(
+                          (option) => option.uid === event.target.value,
+                        );
+                        if (picked) {
+                          setAnnouncer(picked);
+                          setAnnouncerQuery("");
+                        }
+                      }}
+                    >
+                      <option value="">
+                        {platformAnnouncersQuery.isLoading
+                          ? "Chargement des annonceurs…"
+                          : platformAnnouncersQuery.isError
+                            ? "Annonceurs indisponibles"
+                            : `Choisir parmi ${platformAnnouncersQuery.data?.length ?? 0} annonceurs`}
+                      </option>
+                      {Object.entries(PLATFORM_KIND_LABELS).map(([kind, label]) => {
+                        const group = (platformAnnouncersQuery.data ?? []).filter(
+                          (option) => option.kind === kind,
+                        );
+                        if (group.length === 0) return null;
+                        return (
+                          <optgroup key={kind} label={label}>
+                            {group.map((option) => (
+                              <option key={option.uid} value={option.uid}>
+                                {option.fullName}
+                              </option>
+                            ))}
+                          </optgroup>
+                        );
+                      })}
+                    </select>
                   </>
                 )}
               </div>
