@@ -2201,45 +2201,77 @@ export default function ApifyPage() {
 
                     {/* Sélection rapide : les annonceurs de la plateforme sont ceux qu'on
                         attribue le plus souvent aux annonces importées. La recherche reste
-                        disponible pour tous les autres comptes. */}
-                    <select
-                      aria-label="Annonceur de la plateforme"
-                      className="w-64 rounded-md border border-border bg-card px-3 py-1.5 text-sm focus:border-brand-500 focus:outline-none"
-                      value=""
-                      disabled={platformAnnouncersQuery.isLoading || platformAnnouncersQuery.isError}
-                      onChange={(event) => {
-                        const picked = (platformAnnouncersQuery.data ?? []).find(
-                          (option) => option.uid === event.target.value,
-                        );
-                        if (picked) {
-                          setAnnouncer(picked);
-                          setAnnouncerQuery("");
-                        }
-                      }}
-                    >
-                      <option value="">
-                        {platformAnnouncersQuery.isLoading
-                          ? "Chargement des annonceurs…"
-                          : platformAnnouncersQuery.isError
-                            ? "Annonceurs indisponibles"
-                            : `Choisir parmi ${platformAnnouncersQuery.data?.length ?? 0} annonceurs`}
-                      </option>
-                      {Object.entries(PLATFORM_KIND_LABELS).map(([kind, label]) => {
-                        const group = (platformAnnouncersQuery.data ?? []).filter(
-                          (option) => option.kind === kind,
-                        );
-                        if (group.length === 0) return null;
-                        return (
-                          <optgroup key={kind} label={label}>
-                            {group.map((option) => (
-                              <option key={option.uid} value={option.uid}>
-                                {option.fullName}
-                              </option>
-                            ))}
-                          </optgroup>
-                        );
-                      })}
-                    </select>
+                        disponible pour tous les autres comptes.
+
+                        Le select n'est JAMAIS désactivé sur erreur : un <select disabled> ne
+                        s'ouvre même pas au clic dans un navigateur, et rendait ce bug invisible
+                        (un hoquet réseau au premier chargement laissait le contrôle inerte en
+                        silence, sans que rien ne l'indique — constaté en prod le 2026-08-19,
+                        remonté comme "rien ne se passe au clic"). Le message d'erreur réel et un
+                        bouton Réessayer remplacent ce silence. */}
+                    <div className="flex items-center gap-2">
+                      <select
+                        aria-label="Annonceur de la plateforme"
+                        className="w-64 rounded-md border border-border bg-card px-3 py-1.5 text-sm focus:border-brand-500 focus:outline-none disabled:opacity-60"
+                        value=""
+                        disabled={platformAnnouncersQuery.isLoading}
+                        onChange={(event) => {
+                          const picked = (platformAnnouncersQuery.data ?? []).find(
+                            (option) => option.uid === event.target.value,
+                          );
+                          if (picked) {
+                            setAnnouncer(picked);
+                            setAnnouncerQuery("");
+                          }
+                        }}
+                      >
+                        <option value="">
+                          {platformAnnouncersQuery.isLoading
+                            ? "Chargement des annonceurs…"
+                            : platformAnnouncersQuery.isError
+                              ? "Erreur de chargement — voir message ci-contre"
+                              : `Choisir parmi ${platformAnnouncersQuery.data?.length ?? 0} annonceurs`}
+                        </option>
+                        {Object.entries(PLATFORM_KIND_LABELS).map(([kind, label]) => {
+                          const group = (platformAnnouncersQuery.data ?? []).filter(
+                            (option) => option.kind === kind,
+                          );
+                          if (group.length === 0) return null;
+                          return (
+                            <optgroup key={kind} label={label}>
+                              {group.map((option) => (
+                                <option key={option.uid} value={option.uid}>
+                                  {option.fullName}
+                                </option>
+                              ))}
+                            </optgroup>
+                          );
+                        })}
+                      </select>
+                      {platformAnnouncersQuery.isError ? (
+                        <>
+                          <span className="text-xs text-destructive">
+                            {platformAnnouncersQuery.error instanceof Error
+                              ? platformAnnouncersQuery.error.message
+                              : "Erreur inconnue."}
+                          </span>
+                          <button
+                            type="button"
+                            onClick={() => platformAnnouncersQuery.refetch()}
+                            className="text-xs text-brand-600 underline"
+                          >
+                            Réessayer
+                          </button>
+                        </>
+                      ) : null}
+                      {!platformAnnouncersQuery.isLoading &&
+                      !platformAnnouncersQuery.isError &&
+                      platformAnnouncersQuery.data?.length === 0 ? (
+                        <span className="text-xs text-muted-foreground">
+                          Aucun annonceur plateforme trouvé.
+                        </span>
+                      ) : null}
+                    </div>
                   </>
                 )}
               </div>

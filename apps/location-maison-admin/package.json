@@ -22,7 +22,8 @@
     "announcers:seed:dry": "tsx scripts/announcers/seed-platform-announcers.ts --env-file=.env.local.prod --dry-run",
     "announcers:seed:prod": "tsx scripts/announcers/seed-platform-announcers.ts --env-file=.env.local.prod",
     "promotions:backfill-sort:dry": "tsx scripts/promotions/backfill-sort-timestamp.ts --env-file=.env.local.prod",
-    "promotions:backfill-sort:apply": "tsx scripts/promotions/backfill-sort-timestamp.ts --env-file=.env.local.prod --apply"
+    "promotions:backfill-sort:apply": "tsx scripts/promotions/backfill-sort-timestamp.ts --env-file=.env.local.prod --apply",
+    "announcers:seed:dev": "tsx scripts/announcers/seed-platform-announcers.ts --env-file=.env.local"
   },
   "dependencies": {
     "@trouve-ton-nkama/core": "*",
