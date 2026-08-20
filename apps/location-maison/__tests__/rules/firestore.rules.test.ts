@@ -180,6 +180,28 @@ describe('firestore.rules users', () => {
       }),
     )
   })
+
+  // Régression 2026-08-20 : complete-profile.service.ts écrit pseudo/callNumber/
+  // whatsappNumber (ajoutés au 2026-08-17) sans que isSafeUserSelfUpdate() n'ait jamais
+  // autorisé ces clés — permission-denied silencieux pour tout utilisateur finalisant son
+  // compte depuis cette date (Google comme téléphone).
+  it('autorise la finalisation de profil avec pseudo/callNumber/whatsappNumber', async () => {
+    await assertSucceeds(
+      updateDoc(doc(authedDb('incomplete'), 'users/incomplete'), {
+        firstname: 'Nyangui',
+        lastname: 'Ghitiana',
+        pseudo: 'Boutique Nyangui',
+        searchableName: 'Nyangui Ghitiana',
+        phoneNumbers: ['+24177000000'],
+        callNumber: '+24177000000',
+        whatsappNumber: '+24177000000',
+        phoneNumberVerified: false,
+        birthDate: '1990-01-01',
+        roles: ['User', 'Announcer'],
+        metadata: { needsProfileCompletion: false },
+      }),
+    )
+  })
 })
 
 describe('firestore.rules properties', () => {
