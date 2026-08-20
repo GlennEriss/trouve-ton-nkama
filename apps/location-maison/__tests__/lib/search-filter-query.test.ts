@@ -41,4 +41,23 @@ describe('public search filters', () => {
       expect(filters).not.toContain('DELETED')
     },
   )
+
+  it('traduit les filtres d\'attributs dynamiques attr_<key> vers attributes.<key>', () => {
+    const filters = buildPublicSearchFilters(new URLSearchParams({
+      attr_taille: 'M,L',
+      attr_marque: 'Zara',
+    }))
+
+    expect(filters).toContain('(attributes.taille:"M" OR attributes.taille:"L")')
+    expect(filters).toContain('attributes.marque:"Zara"')
+  })
+
+  it('ignore une cle attr_ invalide sans planter', () => {
+    const filters = buildPublicSearchFilters(new URLSearchParams({
+      'attr_taille;DROP': 'M',
+      'attr_': 'x',
+    }))
+
+    expect(filters).toBe('state:"IN_PROGRESS" AND moderationStatus:"APPROVED"')
+  })
 })

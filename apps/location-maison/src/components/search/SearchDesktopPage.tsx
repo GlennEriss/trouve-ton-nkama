@@ -11,6 +11,7 @@ import PropertyCard from '../home-page/PropertyCard'
 import { useSearchParams } from 'next/navigation'
 import FilterSearchDesktopPageSection from './FilterSearchDesktopPageSection'
 import CategoryFilterPills from './CategoryFilterPills'
+import CategoryLeafFilterPills from './CategoryLeafFilterPills'
 import { useTrackSearchAnalytics } from '@/features/analytics/search/hooks/useTrackSearchAnalytics';
 import SponsoredSlot from '@/components/ads/SponsoredSlot';
 import { ADSENSE_SLOTS } from '@/lib/ads/config';
@@ -197,6 +198,7 @@ SearchDesktopPage() {
                 <div className="w-3/4 flex flex-col h-screen pb-20">
                     <div ref={resultsContainerRef} className="p-5 flex-1 overflow-auto">
                         <CategoryFilterPills />
+                        <CategoryLeafFilterPills />
                         {searchStatus === 'error' ? (
                             <div className="flex h-full flex-col items-center justify-center bg-gray-50 p-8 text-center dark:bg-gray-800" role="alert">
                                 <p className="text-lg text-gray-700 dark:text-gray-200">La recherche est momentanément indisponible.</p>

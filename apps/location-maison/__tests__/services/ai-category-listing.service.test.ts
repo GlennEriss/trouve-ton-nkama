@@ -13,10 +13,10 @@ const vetements: PublishableCategoryLeaf = {
   rootName: 'Mode',
   locationPrecision: 'city',
   attributeSchema: [
-    { key: 'taille', label: 'Taille', type: 'enum', options: ['S', 'M', 'L'], required: true },
-    { key: 'marque', label: 'Marque', type: 'text', required: false },
-    { key: 'prixNeuf', label: 'Prix neuf', type: 'number', required: false },
-    { key: 'occasion', label: "D'occasion", type: 'boolean', required: false },
+    { key: 'taille', label: 'Taille', type: 'enum', options: ['S', 'M', 'L'], required: true, facetable: true, primary: true },
+    { key: 'marque', label: 'Marque', type: 'text', required: false, facetable: true, primary: false },
+    { key: 'prixNeuf', label: 'Prix neuf', type: 'number', required: false, facetable: false, primary: false },
+    { key: 'occasion', label: "D'occasion", type: 'boolean', required: false, facetable: false, primary: false },
   ],
 }
 

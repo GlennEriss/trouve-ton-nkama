@@ -1,6 +1,21 @@
 interface SearchParamsReader {
   get(name: string): string | null;
+  keys(): IterableIterator<string>;
 }
+
+// Filtres d'attributs dynamiques par catégorie (Mode, etc.) : contrat d'URL `attr_<key>`
+// déjà documenté dans docs/marketplace-multi-categories/03-page-recherche.md, traduit ici
+// vers `attributes.<key>` — le champ Firestore `attributes` est indexé tel quel (objet
+// imbriqué, extensions/firestore-algolia-search.env) sans aplatissement Cloud Function,
+// et Algolia facette nativement les chemins imbriqués par notation pointée (déjà prouvé
+// par categoryPath.lvl0/lvl1). Divergence assumée par rapport au plan d'aplatissement
+// documenté, qui n'a jamais été implémenté.
+const ATTRIBUTE_FILTER_PREFIX = 'attr_';
+// Un nom de clé (pas seulement sa valeur) vient ici directement de l'URL — contrairement
+// aux facettes fixes ci-dessus, un utilisateur pourrait forger un paramètre `attr_<x>`
+// arbitraire. On borne strictement le jeu de caractères acceptés avant de l'injecter dans
+// le chemin d'attribut Algolia.
+const ATTRIBUTE_KEY_PATTERN = /^[a-zA-Z0-9_]+$/;
 
 const FACET_FILTERS = [
   ['city', 'city'],
@@ -73,6 +88,16 @@ export function buildPublicSearchFilters(searchParams: SearchParamsReader) {
     const value = normalizeNonNegativeNumber(searchParams.get(param));
     if (value !== null) filters.push(`${attribute} ${operator} ${value}`);
   });
+
+  const seenAttributeParams = new Set<string>();
+  for (const param of searchParams.keys()) {
+    if (!param.startsWith(ATTRIBUTE_FILTER_PREFIX) || seenAttributeParams.has(param)) continue;
+    seenAttributeParams.add(param);
+    const attrKey = param.slice(ATTRIBUTE_FILTER_PREFIX.length);
+    if (!ATTRIBUTE_KEY_PATTERN.test(attrKey)) continue;
+    const filter = buildFacetFilter(`attributes.${attrKey}`, searchParams.get(param) ?? '');
+    if (filter) filters.push(filter);
+  }
 
   return filters.join(' AND ');
 }

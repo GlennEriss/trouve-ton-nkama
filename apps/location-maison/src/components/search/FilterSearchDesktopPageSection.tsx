@@ -20,6 +20,7 @@ import { useSearchParams } from 'next/navigation'
 import { useSession } from 'next-auth/react'
 import SearchWithAIAccessNoticeDialog from './SearchWithAIAccessNoticeDialog'
 import { useAlgoliaTypePropertyOptions, useAlgoliaTagOptions } from '@/hooks/useAlgoliaFacetOptions'
+import CategoryAttributeFilters from './CategoryAttributeFilters'
 
 export default function FilterSearchDesktopPageSection() {
     const form = useForm<FormFilterSchemaType>({
@@ -103,6 +104,8 @@ export default function FilterSearchDesktopPageSection() {
                                 <SelectStreet />
                             </div>
                         </section>
+
+                        <CategoryAttributeFilters />
 
                         <section className='space-y-5 p-5'>
                             <h2 className='text-lg font-semibold text-primary dark:text-secondary'>

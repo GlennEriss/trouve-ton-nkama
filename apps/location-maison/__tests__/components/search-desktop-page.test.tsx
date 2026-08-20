@@ -52,6 +52,10 @@ jest.mock('@/components/search/CategoryFilterPills', () => ({
   __esModule: true,
   default: () => <div data-testid="category-filter-pills" />,
 }))
+jest.mock('@/components/search/CategoryLeafFilterPills', () => ({
+  __esModule: true,
+  default: () => <div data-testid="category-leaf-filter-pills" />,
+}))
 jest.mock('@/components/ads/SponsoredSlot', () => ({
   __esModule: true,
   default: (props: any) => <div data-testid="sponsored-slot">{props.rotationIndex}</div>,

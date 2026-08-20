@@ -58,6 +58,7 @@ jest.mock('@trouve-ton-nkama/ui/button', () => ({
 jest.mock('@/components/search/SelectProvince', () => ({ __esModule: true, default: () => <div data-testid="select-province" /> }))
 jest.mock('@/components/search/SelectCity', () => ({ __esModule: true, default: () => <div data-testid="select-city" /> }))
 jest.mock('@/components/search/SelectStreet', () => ({ __esModule: true, default: () => <div data-testid="select-street" /> }))
+jest.mock('@/components/search/CategoryAttributeFilters', () => ({ __esModule: true, default: () => <div data-testid="category-attribute-filters" /> }))
 jest.mock('@/components/shared/form/MultiSelectFormApp', () => ({
   __esModule: true,
   default: ({ name }: any) => <div data-testid={`multiselect-${name}`} />,
