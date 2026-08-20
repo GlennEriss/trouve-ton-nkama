@@ -7,7 +7,6 @@ import { MAX_IMAGES_UPLOAD } from "@/constantes";
 export interface ImageDropzoneFeedback {
   invalidTypeCount: number;
   tooManyFilesCount: number;
-  oversizedAfterCompressionCount: number;
   compressionErrorCount: number;
 }
 
@@ -29,9 +28,7 @@ export function useImageDropzone({
       
       setIsProcessing(true);
       try {
-        const maxSizeInBytes = 300 * 1024;
         const compressed: File[] = [];
-        let oversizedAfterCompressionCount = 0;
         let compressionErrorCount = 0;
 
         const invalidTypeCount = fileRejections.reduce((count, rejection) => {
@@ -46,12 +43,12 @@ export function useImageDropzone({
 
         for (const file of acceptedFiles) {
           try {
+            // Cible de compression indicative pour la librairie, pas un plafond qui exclut
+            // le fichier : toute photo est acceptée quelle que soit sa taille d'origine ou
+            // le résultat de la compression — seul un échec de compression (fichier corrompu,
+            // format non géré par le navigateur) écarte une photo.
             const compressedFile = await imageCompression(file, { maxSizeMB: 0.3, maxWidthOrHeight: 1920 });
-            if (compressedFile.size <= maxSizeInBytes) {
-              compressed.push(compressedFile);
-            } else {
-              oversizedAfterCompressionCount += 1;
-            }
+            compressed.push(compressedFile);
           } catch {
             compressionErrorCount += 1;
           }
@@ -61,7 +58,6 @@ export function useImageDropzone({
         onFeedback?.({
           invalidTypeCount,
           tooManyFilesCount,
-          oversizedAfterCompressionCount,
           compressionErrorCount,
         });
       } finally {

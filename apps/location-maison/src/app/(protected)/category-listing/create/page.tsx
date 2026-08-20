@@ -75,11 +75,12 @@ export default function CreateCategoryListingPage() {
         [...previous, ...files.map((file) => URL.createObjectURL(file))].slice(0, MAX_IMAGES_UPLOAD),
       )
     },
-    // Les 3 champs de feedback autres que tooManyFilesCount étaient ignorés ici — les photos
-    // qui échouaient la compression (limite 300 Ko) disparaissaient sans aucun message,
-    // laissant l'annonceur croire que ses ~10 photos avaient toutes été prises en compte alors
-    // que seules celles sous la limite l'étaient réellement. Même correctif déjà appliqué côté
-    // immobilier (property/create/page.tsx), jamais porté ici.
+    // Les 2 champs de feedback autres que tooManyFilesCount étaient ignorés ici — les photos
+    // qui échouaient la compression disparaissaient sans aucun message, laissant l'annonceur
+    // croire que ses ~10 photos avaient toutes été prises en compte alors que seules certaines
+    // l'étaient réellement. Même correctif déjà appliqué côté immobilier
+    // (property/create/page.tsx), jamais porté ici. Toute taille de photo est acceptée
+    // (aucune limite post-compression) — seul un échec de compression écarte une photo.
     onFeedback: (feedback) => {
       const messages: string[] = []
       if (feedback.invalidTypeCount > 0) {
@@ -87,9 +88,6 @@ export default function CreateCategoryListingPage() {
       }
       if (feedback.tooManyFilesCount > 0) {
         messages.push(`Maximum ${MAX_IMAGES_UPLOAD} photos.`)
-      }
-      if (feedback.oversizedAfterCompressionCount > 0) {
-        messages.push(`${feedback.oversizedAfterCompressionCount} image(s) trop lourde(s) même après compression (limite 300 Ko).`)
       }
       if (feedback.compressionErrorCount > 0) {
         messages.push(`${feedback.compressionErrorCount} image(s) n'ont pas pu être compressée(s).`)
