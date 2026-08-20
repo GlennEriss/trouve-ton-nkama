@@ -75,9 +75,31 @@ export default function CreateCategoryListingPage() {
         [...previous, ...files.map((file) => URL.createObjectURL(file))].slice(0, MAX_IMAGES_UPLOAD),
       )
     },
+    // Les 3 champs de feedback autres que tooManyFilesCount étaient ignorés ici — les photos
+    // qui échouaient la compression (limite 300 Ko) disparaissaient sans aucun message,
+    // laissant l'annonceur croire que ses ~10 photos avaient toutes été prises en compte alors
+    // que seules celles sous la limite l'étaient réellement. Même correctif déjà appliqué côté
+    // immobilier (property/create/page.tsx), jamais porté ici.
     onFeedback: (feedback) => {
+      const messages: string[] = []
+      if (feedback.invalidTypeCount > 0) {
+        messages.push(`${feedback.invalidTypeCount} image(s) ignorée(s) : format non supporté (PNG/JPG/JPEG/WEBP).`)
+      }
       if (feedback.tooManyFilesCount > 0) {
-        toast({ title: 'Trop de photos', description: `Maximum ${MAX_IMAGES_UPLOAD} photos.`, variant: 'destructive' })
+        messages.push(`Maximum ${MAX_IMAGES_UPLOAD} photos.`)
+      }
+      if (feedback.oversizedAfterCompressionCount > 0) {
+        messages.push(`${feedback.oversizedAfterCompressionCount} image(s) trop lourde(s) même après compression (limite 300 Ko).`)
+      }
+      if (feedback.compressionErrorCount > 0) {
+        messages.push(`${feedback.compressionErrorCount} image(s) n'ont pas pu être compressée(s).`)
+      }
+      if (messages.length > 0) {
+        toast({
+          title: "Certaines photos n'ont pas été ajoutées",
+          description: messages.join(' '),
+          variant: 'destructive',
+        })
       }
     },
   })
