@@ -28,7 +28,13 @@ export async function GET(request: NextRequest) {
 
   const parsed = querySchema.safeParse({
     platform: request.nextUrl.searchParams.get("platform") ?? undefined,
-    limit: request.nextUrl.searchParams.get("limit"),
+    // `?? undefined` obligatoire comme sur les autres champs : searchParams.get() renvoie
+    // `null` en son absence, et z.optional() n'accepte que `undefined`, pas `null` — un
+    // appelant qui n'envoie jamais `limit` (comme le sélecteur rapide plateforme) fait échouer
+    // toute la validation avec "Paramètres de requête invalides.", constaté en prod le
+    // 2026-08-20. La recherche classique n'a jamais déclenché ce bug car elle envoie toujours
+    // limit=10 explicitement.
+    limit: request.nextUrl.searchParams.get("limit") ?? undefined,
     cursor: request.nextUrl.searchParams.get("cursor") ?? undefined,
     query: request.nextUrl.searchParams.get("query") ?? undefined,
     status: request.nextUrl.searchParams.get("status") ?? undefined,

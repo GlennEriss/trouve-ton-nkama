@@ -44,9 +44,12 @@ service cloud.firestore {
       return changedKeys.hasOnly([
           'firstname',
           'lastname',
+          'pseudo',
           'searchableName',
           'phoneNumbers',
           'phoneNumberVerified',
+          'callNumber',
+          'whatsappNumber',
           'birthDate',
           'country',
           'metadata',
