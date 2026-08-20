@@ -30,6 +30,11 @@ jest.mock('@/lib/logger', () => ({
   })),
 }))
 
+const mockCacheDel = jest.fn()
+jest.mock('@/lib/cache', () => ({
+  getCacheStore: () => ({ del: (...args: unknown[]) => mockCacheDel(...args) }),
+}))
+
 jest.mock('firebase-admin/firestore', () => ({
   getFirestore: jest.fn(),
   Timestamp: {
@@ -73,7 +78,7 @@ function makePromoteDb(options: {
 } = {}) {
   const userData = options.userData === undefined ? { uid: 'uid-1', credits: 20 } : options.userData
   const propertyData = options.propertyData === undefined
-    ? { id: 'property-1', createdBy: 'uid-1', title: 'Belle chambre' }
+    ? { id: 'property-1', createdBy: 'uid-1', title: 'Belle chambre', moderationStatus: 'APPROVED', state: 'IN_PROGRESS' }
     : options.propertyData
 
   const userRef: FakeRef = { __collection: 'users', id: 'user-doc-1' }
@@ -269,6 +274,8 @@ describe('/api/property/promote', () => {
       propertyData: {
         createdBy: 'uid-1',
         title: 'Belle chambre',
+        moderationStatus: 'APPROVED',
+        state: 'IN_PROGRESS',
         currentPromotion: {
           type: 'featured',
           isActive: true,
@@ -288,6 +295,97 @@ describe('/api/property/promote', () => {
     })
     expect(transaction.update).not.toHaveBeenCalled()
     expect(transaction.set).not.toHaveBeenCalled()
+  })
+
+  it('refuse de promouvoir une annonce en attente de moderation et ne debite rien', async () => {
+    // Constaté en dev le 2026-08-19 : l'ancienne route ne vérifiait que la propriété de
+    // l'annonce, pas son statut de modération — une annonce PENDING (invisible partout
+    // publiquement) pouvait être promue et débiter des crédits pour rien.
+    const { db, transaction } = makePromoteDb({
+      propertyData: {
+        createdBy: 'uid-1',
+        title: 'Studio en attente',
+        moderationStatus: 'PENDING',
+        state: 'IN_PROGRESS',
+      },
+    })
+    ;(getFirestore as jest.Mock).mockReturnValue(db)
+
+    const response = await postPromote(makeRequest({ propertyId: 'property-1', promotionType: 'featured' }))
+    const payload = await response.json()
+
+    expect(response.status).toBe(409)
+    expect(payload).toMatchObject({
+      success: false,
+      message: 'Cette annonce doit être approuvée et active avant de pouvoir être promue.',
+    })
+    expect(transaction.update).not.toHaveBeenCalled()
+    expect(transaction.set).not.toHaveBeenCalled()
+  })
+
+  it('refuse de promouvoir une annonce archivee meme si elle est approuvee', async () => {
+    const { db, transaction } = makePromoteDb({
+      propertyData: {
+        createdBy: 'uid-1',
+        title: 'Studio archive',
+        moderationStatus: 'APPROVED',
+        state: 'ARCHIVED',
+      },
+    })
+    ;(getFirestore as jest.Mock).mockReturnValue(db)
+
+    const response = await postPromote(makeRequest({ propertyId: 'property-1', promotionType: 'boost' }))
+    const payload = await response.json()
+
+    expect(response.status).toBe(409)
+    expect(payload.success).toBe(false)
+    expect(transaction.update).not.toHaveBeenCalled()
+  })
+
+  it('invalide le cache des annonces promues apres une promotion reussie', async () => {
+    // La page d'accueil sert /api/property/promoted depuis un cache Redis de 10 min : sans
+    // cette invalidation, une promotion fraîche restait invisible jusqu'à expiration naturelle
+    // (constaté en dev — "à la une" comme "en tendance courte" n'apparaissaient jamais).
+    const { db } = makePromoteDb()
+    ;(getFirestore as jest.Mock).mockReturnValue(db)
+
+    const response = await postPromote(makeRequest({ propertyId: 'property-1', promotionType: 'featured' }))
+
+    expect(response.status).toBe(200)
+    expect(mockCacheDel).toHaveBeenCalledWith('properties:promoted')
+  })
+
+  it('ne fait pas echouer la promotion si l invalidation du cache echoue', async () => {
+    mockCacheDel.mockRejectedValueOnce(new Error('redis down'))
+    const { db } = makePromoteDb()
+    ;(getFirestore as jest.Mock).mockReturnValue(db)
+
+    const response = await postPromote(makeRequest({ propertyId: 'property-1', promotionType: 'featured' }))
+    const payload = await response.json()
+
+    expect(response.status).toBe(200)
+    expect(payload.success).toBe(true)
+  })
+
+  it('un boost remet sortTimestamp et lastBoostedAt a now, sans fenetre active', async () => {
+    const { db, transaction, refs } = makePromoteDb()
+    ;(getFirestore as jest.Mock).mockReturnValue(db)
+
+    const response = await postPromote(makeRequest({ propertyId: 'property-1', promotionType: 'boost' }))
+    const payload = await response.json()
+
+    expect(response.status).toBe(200)
+    expect(payload.creditsUsed).toBe(3)
+    expect(transaction.update).toHaveBeenCalledWith(
+      refs.propertyRef,
+      expect.objectContaining({
+        lastBoostedAt: expect.anything(),
+        sortTimestamp: expect.anything(),
+        // Le boost n'a pas de fenetre "active" a expirer (duration=0) : c'est sortTimestamp,
+        // pas currentPromotion.endDate, qui porte son effet de remontee.
+        currentPromotion: expect.objectContaining({ type: 'boost' }),
+      }),
+    )
   })
 
   it('refuse lorsque les credits utilisateur sont insuffisants', async () => {

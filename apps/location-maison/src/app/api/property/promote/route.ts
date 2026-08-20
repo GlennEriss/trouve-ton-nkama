@@ -11,6 +11,8 @@ import {
   readIdempotencyKey,
 } from '@/lib/server/idempotency';
 import { auth } from '@/next-auth/auth';
+import { getCacheStore } from '@/lib/cache';
+import { CACHE_KEY as PROMOTED_PROPERTIES_CACHE_KEY } from '@/app/api/property/promoted/constants';
 import type { PromotionType } from '@/models/annonce';
 
 const logger = createLogger('api.property.promote');
@@ -160,6 +162,13 @@ export async function POST(request: NextRequest) {
         throw new Error('FORBIDDEN_PROPERTY');
       }
 
+      // Une annonce en attente de modération (ou rejetée/archivée) n'est visible nulle part
+      // publiquement : la promouvoir débiterait des crédits pour une visibilité qui n'existe
+      // pas encore. Mêmes conditions que le filtre de /api/property/promoted, côté écriture.
+      if (property.moderationStatus !== 'APPROVED' || property.state !== 'IN_PROGRESS') {
+        throw new Error('PROPERTY_NOT_APPROVED');
+      }
+
       if (hasActiveSamePromotion(property, promotionType)) {
         throw new Error('SAME_PROMOTION_ACTIVE');
       }
@@ -192,7 +201,11 @@ export async function POST(request: NextRequest) {
         currentPromotion: promotion,
         promotionHistory: FieldValue.arrayUnion(promotion),
         isPromoted: true,
-        ...(promotionType === 'boost' ? { lastBoostedAt: now } : {}),
+        // Le boost n'a pas de fenetre "active" a expirer (voir resolvePromotionConfig,
+        // duration=0) : son effet est de remettre l'annonce au sommet du tri par recence
+        // (customRanking Algolia + tri par defaut), exactement comme si elle venait d'etre
+        // creee — d'ou la remise a jour du meme champ que celui pose a la creation.
+        ...(promotionType === 'boost' ? { lastBoostedAt: now, sortTimestamp: now } : {}),
         updatedAt: now,
       });
 
@@ -227,6 +240,18 @@ export async function POST(request: NextRequest) {
 
       return { nextCredits, transactionId: transactionRef.id, replayed: false, creditsUsed: config.credits };
     });
+
+    // Best-effort : la page d'accueil (FeaturedSection/TrendingSection) sert
+    // /api/property/promoted depuis un cache Redis de 10 min (REDIS_CATALOG_TTL). Sans cette
+    // invalidation, une promotion fraîche restait invisible jusqu'à expiration naturelle du
+    // cache — l'invalidation côté client (queryClient.invalidateQueries) ne fait que redemander
+    // la même réponse serveur périmée. Un échec ici ne doit pas faire échouer la promotion,
+    // déjà actée en base.
+    try {
+      await getCacheStore().del(PROMOTED_PROPERTIES_CACHE_KEY);
+    } catch (cacheError) {
+      logger.warn('Failed to invalidate promoted properties cache', { error: cacheError });
+    }
 
     return NextResponse.json({
       success: true,
@@ -283,6 +308,13 @@ export async function POST(request: NextRequest) {
 
     if (message === 'SAME_PROMOTION_ACTIVE') {
       return NextResponse.json({ success: false, message: 'Cette promotion est déjà active.' }, { status: 409 });
+    }
+
+    if (message === 'PROPERTY_NOT_APPROVED') {
+      return NextResponse.json(
+        { success: false, message: 'Cette annonce doit être approuvée et active avant de pouvoir être promue.' },
+        { status: 409 },
+      );
     }
 
     return NextResponse.json(

@@ -227,7 +227,11 @@ function compareProperties(left: PropertyRecord, right: PropertyRecord, sortBy: 
   } else if (sortBy === 'updatedAt') {
     comparison = toMillis(left.updatedAt) - toMillis(right.updatedAt);
   } else {
-    comparison = toMillis(left.createdAt) - toMillis(right.createdAt);
+    // Le tri par défaut ("Plus récentes") suit sortTimestamp plutôt que createdAt brut : un
+    // boost remet ce champ à `now` (voir /api/property/promote), c'est ce qui fait remonter
+    // l'annonce ici. Repli sur createdAt pour les annonces créées avant l'introduction du
+    // champ (trigger onPropertyCreateDefaultSortTimestamp).
+    comparison = toMillis(left.sortTimestamp ?? left.createdAt) - toMillis(right.sortTimestamp ?? right.createdAt);
   }
 
   if (comparison === 0) {
