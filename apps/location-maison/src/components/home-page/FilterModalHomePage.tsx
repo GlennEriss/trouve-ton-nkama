@@ -4,6 +4,7 @@ import React from "react";
 import {
     Dialog,
     DialogContent,
+    DialogDescription,
     DialogHeader,
     DialogTitle,
     DialogTrigger,
@@ -11,7 +12,6 @@ import {
 import { Button } from "@trouve-ton-nkama/ui/button";
 import { ChevronLeft, SlidersHorizontal } from "lucide-react";
 import { statusOptions } from "@/constantes";
-import { DialogDescription } from "@radix-ui/react-dialog";
 import { useFilterModal } from "@/hooks/use-filter-modal";
 import { FormFilterSchema, FormFilterSchemaType } from "@/models/schema";
 import { FormProvider, useForm } from "react-hook-form";

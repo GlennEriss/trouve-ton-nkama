@@ -30,10 +30,10 @@ jest.mock('react-hook-form', () => ({
 jest.mock('@hookform/resolvers/zod', () => ({ zodResolver: () => jest.fn() }))
 jest.mock('@/models/schema', () => ({ FormFilterSchema: {} }))
 jest.mock('@/constantes', () => ({ statusOptions: [{ value: 'FOR_RENT', label: 'À louer' }] }))
-jest.mock('@radix-ui/react-dialog', () => ({ DialogDescription: ({ children }: any) => <p>{children}</p> }))
 jest.mock('@trouve-ton-nkama/ui/dialog', () => ({
   Dialog: ({ children, open }: any) => <div data-open={String(Boolean(open))}>{children}</div>,
   DialogContent: ({ children }: any) => <div role="dialog">{children}</div>,
+  DialogDescription: ({ children }: any) => <p>{children}</p>,
   DialogHeader: ({ children }: any) => <div>{children}</div>,
   DialogTitle: ({ children }: any) => <h1>{children}</h1>,
   DialogTrigger: ({ children }: any) => <>{children}</>,
