@@ -2,6 +2,17 @@ import { UseFormReturn } from "react-hook-form";
 import { FormFilterSchemaType } from "@/models/schema";
 import { AlgoliaContextType } from "@/providers/AlgoliaContext";
 
+// Clés que buildUrlParams peut produire — doit rester synchronisé avec les `key` du
+// tableau `mappings` ci-dessous. Sert à useFormFilterSearchMediator pour distinguer "le
+// formulaire a explicitement vidé ce champ" (ne pas le réimporter de l'ancienne URL) de
+// "ce paramètre n'appartient pas à ce formulaire" (category, categoryId, attr_<key>... —
+// à reporter tel quel, sinon silencieusement effacé au premier submit).
+export const FORM_MANAGED_URL_PARAMS = [
+    'query', 'province', 'city', 'street',
+    'minPrice', 'maxPrice', 'minArea', 'maxArea', 'minNbrRooms', 'maxNbrRooms',
+    'typeProperty', 'status', 'tags',
+] as const;
+
 export class FormFilterSearchMediator {
     constructor(
         private form: UseFormReturn<FormFilterSchemaType>,

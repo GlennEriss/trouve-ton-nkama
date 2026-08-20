@@ -24,6 +24,7 @@ import SelectStreet from "../search/SelectStreet";
 import MultiSelectFormApp from "../shared/form/MultiSelectFormApp";
 import InputFormNumberApp from "../shared/form/InputFormNumberApp";
 import { useAlgoliaTypePropertyOptions, useAlgoliaTagOptions } from "@/hooks/useAlgoliaFacetOptions";
+import CategoryAttributeFilters from "../search/CategoryAttributeFilters";
 
 export const FilterModalHomePage = () => {
     const form = useForm<FormFilterSchemaType>({
@@ -83,6 +84,8 @@ export const FilterModalHomePage = () => {
                                         <SelectCity />
                                         <SelectStreet />
                                     </div>
+
+                                    <CategoryAttributeFilters modalPopover />
 
                                     {/* Statut (À vendre/À louer) */}
                                     <div className="space-y-3">

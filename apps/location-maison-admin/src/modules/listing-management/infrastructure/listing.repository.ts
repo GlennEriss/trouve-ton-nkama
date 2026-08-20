@@ -125,6 +125,7 @@ function mapListingDetails(docId: string, data: RawPropertyDoc): ListingDetails 
     "images",
     "createdAt",
     "updatedAt",
+    "facebookPost",
     "longitude",
     "latitude",
     "isLocExact",
@@ -176,6 +177,9 @@ function mapListingDetails(docId: string, data: RawPropertyDoc): ListingDetails 
     imageCount: images.length,
     createdAt: toIsoString(data.createdAt),
     updatedAt: toIsoString(data.updatedAt),
+    facebookPostId: toTrimmedString(
+      (data.facebookPost as { id?: unknown } | undefined)?.id,
+    ),
     street: toTrimmedString(data.street),
     countryCode: toTrimmedString(data.countryCode),
     additionnalInformation: toTrimmedString(data.additionnalInformation),
@@ -231,6 +235,7 @@ function toListItem(details: ListingDetails): ListingListItem {
     tags: details.tags,
     primaryImageUrl: details.primaryImageUrl,
     imageCount: details.imageCount,
+    facebookPostId: details.facebookPostId,
     createdAt: details.createdAt,
     updatedAt: details.updatedAt,
   };

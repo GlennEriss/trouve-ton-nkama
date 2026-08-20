@@ -118,7 +118,6 @@ describe('composants de la première étape immobilière', () => {
     mockDropzoneOptions.onFeedback({
       invalidTypeCount: 1,
       tooManyFilesCount: 1,
-      oversizedAfterCompressionCount: 1,
       compressionErrorCount: 1,
     })
     expect(toastMock).toHaveBeenCalledWith(expect.objectContaining({
@@ -126,7 +125,7 @@ describe('composants de la première étape immobilière', () => {
       variant: 'destructive',
     }))
     toastMock.mockClear()
-    mockDropzoneOptions.onFeedback({ invalidTypeCount: 0, tooManyFilesCount: 0, oversizedAfterCompressionCount: 0, compressionErrorCount: 0 })
+    mockDropzoneOptions.onFeedback({ invalidTypeCount: 0, tooManyFilesCount: 0, compressionErrorCount: 0 })
     expect(toastMock).not.toHaveBeenCalled()
   })
 

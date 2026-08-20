@@ -41,10 +41,19 @@ type ListingRow = {
   tags: string[];
   primaryImageUrl: string | null;
   imageCount: number;
+  // Posé par onListingApprovedPublishToFacebook au moment de l'approbation — absent tant que
+  // l'annonce n'a pas encore été publiée sur la Page.
+  facebookPostId: string | null;
   duplicateState?: "suspected" | "confirmed" | "resolved" | "none";
   createdAt: string | null;
   updatedAt: string | null;
 };
+
+// Un ID de post Page ("pageId_postId") résout directement en permalien via ce chemin — même
+// forme que celle utilisée pour publier (voir facebook-page.client.ts côté Cloud Function).
+function facebookPostUrl(postId: string): string {
+  return `https://www.facebook.com/${postId}`;
+}
 
 type ListingsPayload = {
   listings: ListingRow[];
@@ -1018,6 +1027,28 @@ function ImmobilierListingsPanel() {
                           >
                             Voir fiche
                           </Button>
+                          {listing.facebookPostId ? (
+                            <Button
+                              type="button"
+                              variant="outline"
+                              size="sm"
+                              onClick={async () => {
+                                try {
+                                  await navigator.clipboard.writeText(facebookPostUrl(listing.facebookPostId!));
+                                  setGlobalError(null);
+                                  setGlobalMessage("Lien du post Facebook copié.");
+                                } catch {
+                                  // Presse-papiers indisponible (contexte non sécurisé, permission refusée) :
+                                  // pas de blocage, l'annonceur peut toujours ouvrir "Voir fiche" et copier
+                                  // le lien depuis la Page elle-même.
+                                  setGlobalMessage(null);
+                                  setGlobalError("Impossible de copier automatiquement — presse-papiers indisponible.");
+                                }
+                              }}
+                            >
+                              Copier le lien Facebook
+                            </Button>
+                          ) : null}
                           {listing.state === "ARCHIVED" ? (
                             <Button
                               type="button"

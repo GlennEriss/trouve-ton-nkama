@@ -12,7 +12,10 @@ function toAttributeType(value: unknown): 'text' | 'number' | 'enum' | 'boolean'
   return 'text';
 }
 
-const CACHE_KEY = 'categories:publishable-leaves';
+// Bump de version plutôt que d'attendre le TTL (600s) : évite toute ambiguïté de debug sur
+// une éventuelle valeur encore en cache après déploiement de ce changement (ajout de
+// facetable/primary, consommés par les filtres de recherche — voir CategoryAttributeFilters).
+const CACHE_KEY = 'categories:publishable-leaves-v2';
 const CACHE_TTL_SECONDS = parseInt(process.env.REDIS_CATALOG_TTL ?? '600', 10);
 
 export type PublishableAttributeField = {
@@ -21,6 +24,12 @@ export type PublishableAttributeField = {
   type: 'text' | 'number' | 'enum' | 'boolean';
   options?: string[];
   required: boolean;
+  // Pilotent le panneau de filtres de recherche (CategoryAttributeFilters) : facetable
+  // détermine si le champ y apparaît, primary son ordre d'affichage. Absents des versions
+  // antérieures de ce DTO (volontairement masqués), nécessaires pour générer les filtres
+  // sans coder chaque catégorie en dur côté recherche.
+  facetable: boolean;
+  primary: boolean;
 };
 
 export type PublishableCategoryLeaf = {
@@ -105,6 +114,8 @@ export async function GET() {
                   ? field.options.filter((o): o is string => typeof o === 'string')
                   : undefined,
                 required: field.required === true,
+                facetable: field.facetable === true,
+                primary: field.primary === true,
               }),
             )
             .filter((field) => field.key.length > 0),

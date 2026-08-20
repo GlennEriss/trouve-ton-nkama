@@ -126,6 +126,8 @@ async function loadPublishableLeaves(db: any): Promise<PublishableCategoryLeaf[]
                 ? field.options.filter((o): o is string => typeof o === 'string')
                 : undefined,
               required: field.required === true,
+              facetable: field.facetable === true,
+              primary: field.primary === true,
             }),
           )
           .filter((field: PublishableAttributeField) => field.key.length > 0),

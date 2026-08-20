@@ -34,6 +34,10 @@ export type ListingListItem = {
   tags: string[];
   primaryImageUrl: string | null;
   imageCount: number;
+  // Posé par la Cloud Function onListingApprovedPublishToFacebook au moment de
+  // l'approbation (voir functions/src/social/), toutes catégories confondues — absent tant
+  // que l'annonce n'a pas encore été publiée sur la Page.
+  facebookPostId: string | null;
   duplicateState?: "suspected" | "confirmed" | "resolved" | "none";
   createdAt: string | null;
   updatedAt: string | null;

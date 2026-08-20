@@ -10,6 +10,7 @@ import { useAlgoliaContext } from '@/providers/AlgoliaContext';
 import { useInfiniteHits, useInstantSearch, useStats } from 'react-instantsearch';
 import PropertyCard from '../home-page/PropertyCard';
 import CategoryFilterPills from './CategoryFilterPills';
+import CategoryLeafFilterPills from './CategoryLeafFilterPills';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { trackingEvents, useTrackEvent } from '@/features/analytics/tracking';
 import { useSession } from 'next-auth/react';
@@ -295,6 +296,7 @@ export default function SearchMobilePage() {
                     </div>
 
                     <CategoryFilterPills />
+                    <CategoryLeafFilterPills />
 
                     <div className="space-y-4">
                         {searchStatus === 'error' ? (
