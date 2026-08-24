@@ -65,6 +65,17 @@ const steps = [
   { id: 4, title: 'Sécurité', icon: KeyRound, fields: ['password', 'passwordConfirm', 'termsOfPrivacyPolicy'] },
 ];
 
+/**
+ * Champs déclarés `.optional()` dans FormRegisterSchema (models/schema.ts) : leur absence
+ * ne doit JAMAIS bloquer le passage à l'étape suivante. `isCurrentStepValid` exigeait
+ * auparavant une valeur non vide pour TOUS les champs de l'étape, ce qui rendait
+ * « Continuer » impossible à cliquer alors que l'UI annonce l'inverse — « Pseudo (optionnel) »
+ * à l'étape 1 et « Laissez vide si c'est le même numéro » pour le WhatsApp à l'étape 2
+ * (signalé par l'utilisateur, 2026-08-18). La validation réelle reste celle du schéma Zod,
+ * via `form.trigger()` dans nextStep().
+ */
+const OPTIONAL_FIELDS = new Set(['pseudo', 'whatsappPhone']);
+
 // Animation variants
 const pageVariants = {
   initial: { opacity: 0, x: 20 },
@@ -113,7 +124,13 @@ export const SignupFormModern: React.FC = () => {
       termsOfPrivacyPolicy: false,
     },
   });
-  const selectedAccountType = form.watch('accountType') || 'User';
+  // `watch()` sans argument s'abonne à TOUTES les valeurs : indispensable pour que l'état
+  // désactivé du bouton « Continuer » soit recalculé à chaque frappe. Avec `getValues()`
+  // seul (non réactif) et un `watch('accountType')` limité à un champ, remplir un champ
+  // ne provoquait aucun re-rendu tant qu'aucune erreur n'apparaissait/disparaissait —
+  // le bouton pouvait donc rester grisé alors que l'étape était complète.
+  const watchedValues = form.watch();
+  const selectedAccountType = watchedValues.accountType || 'User';
 
   // Get current step fields for validation
   const currentStepConfig = steps[currentStep - 1];
@@ -121,7 +138,7 @@ export const SignupFormModern: React.FC = () => {
   // Check if current step is valid
   const isCurrentStepValid = () => {
     const errors = form.formState.errors;
-    const values = form.getValues();
+    const values = watchedValues;
     
     for (const field of currentStepConfig.fields) {
       if (field === 'accountType') {
@@ -134,6 +151,10 @@ export const SignupFormModern: React.FC = () => {
         if (values.accountType === 'Announcer' && !values.acceptAnnouncerTerms) return false;
       } else if (field === 'termsOfPrivacyPolicy') {
         if (!values.termsOfPrivacyPolicy) return false;
+      } else if (OPTIONAL_FIELDS.has(field)) {
+        // Vide = valide. Seule une valeur saisie mais invalide (ex: numéro WhatsApp mal
+        // formé) bloque, via l'erreur remontée par le schéma.
+        if (errors[field as keyof typeof errors]) return false;
       } else {
         const value = values[field as keyof FormRegisterSchemaType];
         if (!value || (typeof value === 'string' && value.trim() === '')) return false;

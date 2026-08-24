@@ -120,6 +120,37 @@ describe('SignupFormModern', () => {
     expect(mockSignIn).toHaveBeenCalledWith('google');
   });
 
+  // Régression 2026-08-18 : « Continuer » restait désactivé quand un champ pourtant
+  // annoncé comme facultatif était laissé vide (le libellé/placeholder promettait
+  // l'inverse). Ces deux tests verrouillent chaque champ `.optional()` du schéma.
+  it('laisse passer l etape 1 avec le pseudo (optionnel) vide', () => {
+    render(<SignupFormModern />);
+
+    fireEvent.change(screen.getByPlaceholderText('Entrez votre nom'), { target: { value: 'Ondo' } });
+    fireEvent.change(screen.getByPlaceholderText(/pr[ée]nom/i), { target: { value: 'Gerard' } });
+    // Pseudo volontairement laissé vide.
+
+    expect(screen.getByRole('button', { name: /^continuer$/i })).toBeEnabled();
+  });
+
+  it('laisse passer l etape 2 avec le numero WhatsApp vide', async () => {
+    render(<SignupFormModern />);
+
+    fireEvent.change(screen.getByPlaceholderText('Entrez votre nom'), { target: { value: 'Ondo' } });
+    fireEvent.change(screen.getByPlaceholderText(/pr[ée]nom/i), { target: { value: 'Gerard' } });
+    fireEvent.click(screen.getByRole('button', { name: /^continuer$/i }));
+
+    expect(await screen.findByText('Comment vous joindre ?')).toBeInTheDocument();
+
+    fireEvent.change(screen.getByPlaceholderText('exemple@email.com'), {
+      target: { value: 'gerard@example.com' },
+    });
+    fireEvent.change(screen.getByPlaceholderText(/Ex: 66 12 34 56/), { target: { value: '66123456' } });
+    // Numéro WhatsApp volontairement laissé vide (« Laissez vide si c'est le même numéro »).
+
+    expect(screen.getByRole('button', { name: /^continuer$/i })).toBeEnabled();
+  });
+
   it('disables google sign-in button when signup is loading', () => {
     mockUseSignup.mockReturnValue({
       signup: jest.fn<(data: SignupData) => Promise<SignupResult>>(),
