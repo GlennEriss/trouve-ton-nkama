@@ -10,19 +10,17 @@
 
 import React, { useCallback, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { KeyRound, Phone } from 'lucide-react';
 
 import {
   Dialog,
   DialogContent,
-  DialogDescription,
   DialogHeader,
   DialogTitle,
 } from '@trouve-ton-nkama/ui/dialog';
 import { Button } from '@trouve-ton-nkama/ui/button';
-import { Input } from '@trouve-ton-nkama/ui/input';
 import { routes } from '@/constantes/routes';
 import { usePhoneOtpAuth } from '@/features/auth/hooks/usePhoneOtpAuth';
+import { PhoneNumberParts } from '@/components/shared/form/PhoneNumberFormAppSimple';
 
 type PhoneAuthModalProps = {
   open: boolean;
@@ -87,32 +85,17 @@ export const PhoneAuthModal: React.FC<PhoneAuthModalProps> = ({
       <DialogContent className="max-w-md">
         <DialogHeader>
           <DialogTitle>
-            {step === 'phone' ? 'Continuer avec votre numéro' : 'Vérification du code'}
+            {step === 'phone' ? 'Numéro de téléphone' : 'Vérification du code'}
           </DialogTitle>
-          <DialogDescription>
-            {step === 'phone'
-              ? 'Nous vous enverrons un code par SMS pour vous connecter, sans mot de passe.'
-              : `Saisissez le code à 6 chiffres envoyé au ${phone}.`}
-          </DialogDescription>
         </DialogHeader>
 
         {step === 'phone' ? (
           <form onSubmit={handleSend} className="space-y-4">
-            <div className="relative">
-              <Phone className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
-              <Input
-                type="tel"
-                inputMode="tel"
-                autoComplete="tel"
-                autoFocus
-                value={phoneInput}
-                onChange={(event) => setPhoneInput(event.target.value)}
-                placeholder="Ex: 066 12 34 56"
-                className="pl-9"
-                disabled={isSending}
-              />
-            </div>
-            <p className="text-xs text-gray-500">Numéro gabonais (+241). Le 0 initial est optionnel.</p>
+            <PhoneNumberParts
+              value={phoneInput}
+              onChange={setPhoneInput}
+              disabled={isSending}
+            />
             {error ? <p className="text-sm text-red-600">{error}</p> : null}
             <Button
               type="submit"
@@ -124,20 +107,25 @@ export const PhoneAuthModal: React.FC<PhoneAuthModalProps> = ({
           </form>
         ) : (
           <form onSubmit={handleVerify} className="space-y-4">
-            <div className="relative">
-              <KeyRound className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
-              <Input
-                type="text"
-                inputMode="numeric"
-                autoComplete="one-time-code"
-                autoFocus
-                maxLength={6}
-                value={otpInput}
-                onChange={(event) => setOtpInput(event.target.value.replace(/\D/g, ''))}
-                placeholder="123456"
-                className="pl-9 tracking-[0.4em]"
-                disabled={isVerifying}
-              />
+            <div className="space-y-1">
+              <span className="block text-xs font-medium text-gray-600 dark:text-gray-300">
+                Code envoyé au {phone}
+              </span>
+              <div className="border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900 rounded-full flex items-center transition-colors focus-within:border-secondary focus-within:bg-primary-50 dark:focus-within:bg-gray-800 min-h-[48px] py-2 px-4">
+                <input
+                  type="text"
+                  inputMode="numeric"
+                  autoComplete="one-time-code"
+                  autoFocus
+                  maxLength={6}
+                  value={otpInput}
+                  onChange={(event) => setOtpInput(event.target.value.replace(/\D/g, ''))}
+                  placeholder="123456"
+                  disabled={isVerifying}
+                  className="min-h-11 w-full border-none shadow-none focus-visible:outline-none focus-visible:ring-0 placeholder:text-gray-400 dark:text-white dark:placeholder:text-gray-500 bg-transparent tracking-[0.4em]"
+                  aria-label="Code reçu par SMS"
+                />
+              </div>
             </div>
             {error ? <p className="text-sm text-red-600">{error}</p> : null}
             <Button
