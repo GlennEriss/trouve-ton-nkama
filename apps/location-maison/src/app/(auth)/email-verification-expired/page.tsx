@@ -20,10 +20,6 @@ export default function EmailVerificationExpiredPage() {
       return;
     }
 
-    // Ne peut pas basculer sur l'envoi natif Firebase (NEXT_PUBLIC_EMAIL_PROVIDER=firebase_default) :
-    // sendEmailVerification() du SDK client exige un User authentifié, or ce formulaire cible
-    // justement des utilisateurs dont le lien (et probablement la session) a expiré. Reste sur
-    // notre pipeline serveur (Admin SDK), seul capable d'envoyer pour un email arbitraire.
     startTransition(async () => {
       try {
         const response = await fetch('/api/auth/send-verification-email', {

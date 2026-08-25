@@ -7,26 +7,9 @@ namespace NodeJS {
     GOOGLE_EMAIL: string;
     GMAIL_USER: string;
     NEXT_PUBLIC_GOOGLE_MAPS_API_KEY: string;
-    //HOSTINGER SMTP (provider PRINCIPAL par défaut, voir EMAIL_PROVIDER)
+    //HOSTINGER SMTP
     HOSTINGER_EMAIL_USER: string;
     HOSTINGER_EMAIL_PASS: string;
-    HOSTINGER_SMTP_HOST?: string;
-    HOSTINGER_SMTP_PORT?: string;
-    //EMAIL - bascule de provider et secours (src/services/email.service.ts)
-    EMAIL_PROVIDER?: 'hostinger' | 'gmail_oauth2';
-    //EMAIL - bascule CLIENT auth (verif + reset), src/lib/email-provider-client.ts
-    NEXT_PUBLIC_EMAIL_PROVIDER?: 'custom' | 'firebase_default';
-    EMAIL_DISPLAY_NAME?: string;
-    FORCE_REAL_EMAILS?: string;
-    FALLBACK_EMAIL_USER?: string;
-    FALLBACK_EMAIL_PASS?: string;
-    FALLBACK_SMTP_HOST?: string;
-    FALLBACK_SMTP_PORT?: string;
-    //GMAIL OAUTH2 (provider alternatif si EMAIL_PROVIDER=gmail_oauth2)
-    GMAIL_SENDER_EMAIL?: string;
-    GMAIL_OAUTH_CLIENT_ID?: string;
-    GMAIL_OAUTH_CLIENT_SECRET?: string;
-    GMAIL_OAUTH_REFRESH_TOKEN?: string;
     //MYPAYGA
     NEXT_PUBLIC_MYPAYGA_PUBLIC_KEY: string;
     MYPAYGA_SECRET_KEY: string;

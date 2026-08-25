@@ -8,8 +8,6 @@ import { useToast } from "@/hooks/use-toast";
 import Link from "next/link";
 import { routes } from '@/constantes/routes';
 import { createLogger } from '@/lib/logger';
-import { auth, sendEmailVerification } from '@/firebase/auth';
-import { isFirebaseDefaultEmailProvider, getAppHost } from '@/lib/email-provider-client';
 
 const logger = createLogger('components.signup.register-success');
 
@@ -56,44 +54,9 @@ export const RegisterSuccess: React.FC<RegisterSuccessProps> = ({ uid }) => {
     }
   };
 
-  const handleResendSuccess = () => {
-    toast({
-      duration: 5000,
-      title: "Email renvoyé",
-      description: "Un nouvel email de vérification a été envoyé !",
-      variant: 'success',
-    });
-    setResendStatus(true);
-    setCountdown(60);
-
-    // Countdown timer
-    const timer = setInterval(() => {
-      setCountdown((prev) => {
-        if (prev <= 1) {
-          clearInterval(timer);
-          setResendStatus(false);
-          return 0;
-        }
-        return prev - 1;
-      });
-    }, 1000);
-  };
-
   const handleResendEmail = () => {
     startTransition(async () => {
       try {
-        // Envoi natif Firebase possible uniquement si le navigateur est encore authentifié
-        // comme CE uid (sendEmailVerification exige l'objet User, pas juste un uid) — sinon on
-        // retombe sur notre pipeline habituel, seul capable d'envoyer pour un uid arbitraire.
-        if (isFirebaseDefaultEmailProvider() && auth.currentUser?.uid === uid) {
-          await sendEmailVerification(auth.currentUser, {
-            url: `${getAppHost()}/email-verification-success`,
-            handleCodeInApp: false,
-          });
-          handleResendSuccess();
-          return;
-        }
-
         const response = await fetch('/api/auth/send-verification-email', {
           method: 'POST',
           headers: {
@@ -103,9 +66,28 @@ export const RegisterSuccess: React.FC<RegisterSuccessProps> = ({ uid }) => {
             uid: uid,
           }),
         });
-
+        
         if (response.ok) {
-          handleResendSuccess();
+          toast({
+            duration: 5000,
+            title: "Email renvoyé",
+            description: "Un nouvel email de vérification a été envoyé !",
+            variant: 'success',
+          });
+          setResendStatus(true);
+          setCountdown(60);
+          
+          // Countdown timer
+          const timer = setInterval(() => {
+            setCountdown((prev) => {
+              if (prev <= 1) {
+                clearInterval(timer);
+                setResendStatus(false);
+                return 0;
+              }
+              return prev - 1;
+            });
+          }, 1000);
         } else {
           throw new Error('Erreur lors du renvoi');
         }
