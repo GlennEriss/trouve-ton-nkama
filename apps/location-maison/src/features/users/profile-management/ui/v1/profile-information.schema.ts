@@ -81,6 +81,7 @@ const SocialNetworkSchema = z.object({
 export const ProfileInformationSchema = z.object({
   firstname: z.string().trim().min(1, { message: 'Le prénom est requis.' }),
   lastname: z.string().trim().min(1, { message: 'Le nom est requis.' }),
+  pseudo: z.string().trim().max(50, { message: 'Le pseudo ne doit pas dépasser 50 caractères.' }).optional(),
   email: z.string().email({ message: "L'email est invalide." }),
   birthDate: z
     .string()

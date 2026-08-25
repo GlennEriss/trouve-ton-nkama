@@ -89,6 +89,50 @@ describe('ProfileInformationService', () => {
     );
   });
 
+  it('met à jour le pseudo (ajout puis suppression)', async () => {
+    const currentUser = createMockUser({ pseudo: undefined });
+    const updatedUser = createMockUser({ pseudo: 'DressByK' });
+
+    mockedFindById.mockResolvedValue(currentUser);
+    mockedFindByPhoneNumber.mockResolvedValue(null);
+    mockedUpdate.mockResolvedValue(updatedUser);
+
+    const result = await service.updateProfileInformation({
+      uid: 'uid-1',
+      firstname: currentUser.firstname,
+      lastname: currentUser.lastname,
+      pseudo: '  DressByK  ',
+      birthDate: currentUser.birthDate!,
+      phoneNumber: currentUser.phoneNumbers[0],
+      countryCode: currentUser.country!.code,
+    });
+
+    expect(result.success).toBe(true);
+    expect(mockedUpdate).toHaveBeenCalledWith(
+      'uid-1',
+      expect.objectContaining({ pseudo: 'DressByK' }),
+    );
+
+    // Vider le pseudo doit aussi passer (repli sur firstname/lastname côté affichage).
+    mockedFindById.mockResolvedValue(updatedUser);
+    mockedUpdate.mockResolvedValue(createMockUser({ pseudo: '' }));
+
+    await service.updateProfileInformation({
+      uid: 'uid-1',
+      firstname: updatedUser.firstname,
+      lastname: updatedUser.lastname,
+      pseudo: '',
+      birthDate: updatedUser.birthDate!,
+      phoneNumber: updatedUser.phoneNumbers[0],
+      countryCode: updatedUser.country!.code,
+    });
+
+    expect(mockedUpdate).toHaveBeenLastCalledWith(
+      'uid-1',
+      expect.objectContaining({ pseudo: '' }),
+    );
+  });
+
   it('rejects missing uid', async () => {
     const result = await service.updateProfileInformation({
       uid: ' ',

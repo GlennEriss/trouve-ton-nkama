@@ -300,6 +300,8 @@ export class ProfileInformationServiceImpl implements ProfileInformationService 
       };
     }
 
+    const pseudo = (data.pseudo ?? '').trim();
+
     const birthDate = data.birthDate.trim();
     const birthDateCheck = parseBirthDate(birthDate);
     if (!birthDateCheck.ok) {
@@ -369,6 +371,9 @@ export class ProfileInformationServiceImpl implements ProfileInformationService 
       if (currentUser.lastname !== lastname) {
         changedFields.push('nom');
       }
+      if ((currentUser.pseudo ?? '') !== pseudo) {
+        changedFields.push('pseudo');
+      }
       if ((currentUser.birthDate ?? '') !== birthDate) {
         changedFields.push('date de naissance');
       }
@@ -430,6 +435,7 @@ export class ProfileInformationServiceImpl implements ProfileInformationService 
       const updatedUser = await userRepository.update(uid, {
         firstname,
         lastname,
+        pseudo,
         birthDate,
         phoneNumbers: [phoneNumber],
         country: {
