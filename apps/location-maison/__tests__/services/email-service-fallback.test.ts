@@ -111,3 +111,50 @@ describe('EmailService — repli SMTP', () => {
     expect(sendMailMock).not.toHaveBeenCalled()
   })
 })
+
+describe('EmailService — bascule de provider (EMAIL_PROVIDER=gmail_oauth2)', () => {
+  const originalEnv = process.env
+
+  beforeEach(() => {
+    jest.clearAllMocks()
+    process.env = {
+      ...originalEnv,
+      NODE_ENV: 'production',
+      EMAIL_DISPLAY_NAME: 'Trouve Ton Nkama',
+      EMAIL_PROVIDER: 'gmail_oauth2',
+      GMAIL_SENDER_EMAIL: 'ancien@gmail.com',
+      GMAIL_OAUTH_CLIENT_ID: 'client-id',
+      GMAIL_OAUTH_CLIENT_SECRET: 'client-secret',
+      GMAIL_OAUTH_REFRESH_TOKEN: 'refresh-token',
+      HOSTINGER_EMAIL_USER: 'contact@tonnkama.com',
+      HOSTINGER_EMAIL_PASS: 'mauvais-mot-de-passe',
+    } as NodeJS.ProcessEnv
+    createTransportMock.mockReturnValue({ sendMail: sendMailMock })
+  })
+
+  afterAll(() => {
+    process.env = originalEnv
+  })
+
+  it('utilise le transport OAuth2 Gmail comme principal, avec le bon expediteur', async () => {
+    sendMailMock.mockResolvedValueOnce({ messageId: 'id-oauth', accepted: [OPTIONS.to], rejected: [] })
+    const service = await freshService()
+
+    const result = await service.sendEmail(OPTIONS)
+
+    expect(result.usedFallback).toBe(false)
+    expect(createTransportMock).toHaveBeenCalledWith(
+      expect.objectContaining({
+        service: 'gmail',
+        auth: expect.objectContaining({
+          type: 'OAuth2',
+          user: 'ancien@gmail.com',
+          clientId: 'client-id',
+          clientSecret: 'client-secret',
+          refreshToken: 'refresh-token',
+        }),
+      }),
+    )
+    expect(sendMailMock.mock.calls[0][0].from).toBe('"Trouve Ton Nkama" <ancien@gmail.com>')
+  })
+})

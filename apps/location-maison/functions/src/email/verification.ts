@@ -25,6 +25,11 @@ export const sendVerificationEmail = functions
       'HOSTINGER_EMAIL_PASS',
       'EMAIL_DISPLAY_NAME',
       'NEXT_PUBLIC_APP_URL',
+      'EMAIL_PROVIDER',
+      'GMAIL_SENDER_EMAIL',
+      'GMAIL_OAUTH_CLIENT_ID',
+      'GMAIL_OAUTH_CLIENT_SECRET',
+      'GMAIL_OAUTH_REFRESH_TOKEN',
     ],
   })
   .https.onRequest(async (request, response) => {
@@ -107,36 +112,63 @@ export const sendVerificationEmail = functions
       // Générer l'email en texte brut
       const emailText = generateVerificationEmailText(name, userEmail, verificationLink, emailTexts);
 
-      // Utiliser les secrets chargés
-      const emailUser = secrets.HOSTINGER_EMAIL_USER;
-      const emailPass = secrets.HOSTINGER_EMAIL_PASS;
+      // Bascule de provider (2026-08-25) : 'hostinger' (défaut) ou 'gmail_oauth2' en secours,
+      // même logique que src/services/email.service.ts côté Next.js.
+      const provider = secrets.EMAIL_PROVIDER === 'gmail_oauth2' ? 'gmail_oauth2' : 'hostinger';
       const displayName = secrets.EMAIL_DISPLAY_NAME || 'Trouve Ton Nkama';
 
+      const emailUser = provider === 'gmail_oauth2' ? secrets.GMAIL_SENDER_EMAIL : secrets.HOSTINGER_EMAIL_USER;
+
       console.log('Configuration email:', {
+        provider,
         hasEmailUser: !!emailUser,
-        hasEmailPass: !!emailPass,
         emailUser: emailUser ? `${emailUser.substring(0, 3)}***` : 'N/A',
         displayName,
       });
 
-      if (!emailUser || !emailPass) {
-        console.error('Configuration email manquante:', {
-          hasEmailUser: !!emailUser,
-          hasEmailPass: !!emailPass,
+      let transporter: nodemailer.Transporter;
+      if (provider === 'gmail_oauth2') {
+        if (
+          !secrets.GMAIL_SENDER_EMAIL ||
+          !secrets.GMAIL_OAUTH_CLIENT_ID ||
+          !secrets.GMAIL_OAUTH_CLIENT_SECRET ||
+          !secrets.GMAIL_OAUTH_REFRESH_TOKEN
+        ) {
+          throw new Error(
+            'Configuration email manquante: GMAIL_SENDER_EMAIL / GMAIL_OAUTH_CLIENT_ID / GMAIL_OAUTH_CLIENT_SECRET / GMAIL_OAUTH_REFRESH_TOKEN sont requis pour EMAIL_PROVIDER=gmail_oauth2',
+          );
+        }
+        console.log('Création du transporteur Gmail OAuth2...');
+        transporter = nodemailer.createTransport({
+          service: 'gmail',
+          auth: {
+            type: 'OAuth2',
+            user: secrets.GMAIL_SENDER_EMAIL,
+            clientId: secrets.GMAIL_OAUTH_CLIENT_ID,
+            clientSecret: secrets.GMAIL_OAUTH_CLIENT_SECRET,
+            refreshToken: secrets.GMAIL_OAUTH_REFRESH_TOKEN,
+          },
         });
-        throw new Error('Configuration email manquante: HOSTINGER_EMAIL_USER et HOSTINGER_EMAIL_PASS sont requis');
+      } else {
+        const emailPass = secrets.HOSTINGER_EMAIL_PASS;
+        if (!emailUser || !emailPass) {
+          console.error('Configuration email manquante:', {
+            hasEmailUser: !!emailUser,
+            hasEmailPass: !!emailPass,
+          });
+          throw new Error('Configuration email manquante: HOSTINGER_EMAIL_USER et HOSTINGER_EMAIL_PASS sont requis');
+        }
+        console.log('Création du transporteur SMTP Hostinger...');
+        transporter = nodemailer.createTransport({
+          host: 'smtp.hostinger.com',
+          port: 465,
+          secure: true,
+          auth: {
+            user: emailUser,
+            pass: emailPass,
+          },
+        });
       }
-
-      console.log('Création du transporteur SMTP...');
-      const transporter = nodemailer.createTransport({
-        host: 'smtp.hostinger.com',
-        port: 465,
-        secure: true,
-        auth: {
-          user: emailUser,
-          pass: emailPass,
-        },
-      });
 
       // Vérifier la connexion SMTP
       console.log('Vérification de la connexion SMTP...');
@@ -218,6 +250,19 @@ export const sendVerificationEmail = functions
  */
 let secretsCache: { [key: string]: string } | null = null;
 
+/** Secrets requis présents pour le provider actif (gmail_oauth2 n'a pas besoin de Hostinger, et inversement). */
+function hasEssentialSecrets(secrets: { [key: string]: string }): boolean {
+  const provider = secrets.EMAIL_PROVIDER === 'gmail_oauth2' ? 'gmail_oauth2' : 'hostinger';
+  return provider === 'gmail_oauth2'
+    ? Boolean(
+        secrets.GMAIL_SENDER_EMAIL &&
+          secrets.GMAIL_OAUTH_CLIENT_ID &&
+          secrets.GMAIL_OAUTH_CLIENT_SECRET &&
+          secrets.GMAIL_OAUTH_REFRESH_TOKEN,
+      )
+    : Boolean(secrets.HOSTINGER_EMAIL_USER && secrets.HOSTINGER_EMAIL_PASS);
+}
+
 async function loadSecrets(): Promise<{ [key: string]: string }> {
   // Utiliser le cache si disponible
   if (secretsCache) {
@@ -229,6 +274,11 @@ async function loadSecrets(): Promise<{ [key: string]: string }> {
     'HOSTINGER_EMAIL_PASS',
     'EMAIL_DISPLAY_NAME',
     'NEXT_PUBLIC_APP_URL',
+    'EMAIL_PROVIDER',
+    'GMAIL_SENDER_EMAIL',
+    'GMAIL_OAUTH_CLIENT_ID',
+    'GMAIL_OAUTH_CLIENT_SECRET',
+    'GMAIL_OAUTH_REFRESH_TOKEN',
   ];
 
   const secrets: { [key: string]: string } = {};
@@ -244,8 +294,7 @@ async function loadSecrets(): Promise<{ [key: string]: string }> {
     }
   }
 
-  // Si tous les secrets essentiels sont présents, utiliser ceux-là
-  if (secrets.HOSTINGER_EMAIL_USER && secrets.HOSTINGER_EMAIL_PASS) {
+  if (hasEssentialSecrets(secrets)) {
     console.log('✅ Tous les secrets essentiels sont disponibles');
     secretsCache = secrets;
     return secrets;
@@ -275,9 +324,14 @@ async function loadSecrets(): Promise<{ [key: string]: string }> {
     console.error('❌ Erreur lors du chargement des secrets depuis Secret Manager:', error);
   }
 
-  // Vérifier que les secrets essentiels sont présents
-  if (!secrets.HOSTINGER_EMAIL_USER || !secrets.HOSTINGER_EMAIL_PASS) {
-    throw new Error('Impossible de charger les secrets HOSTINGER_EMAIL_USER et HOSTINGER_EMAIL_PASS');
+  // Vérifier que les secrets essentiels sont présents (selon le provider actif)
+  if (!hasEssentialSecrets(secrets)) {
+    const provider = secrets.EMAIL_PROVIDER === 'gmail_oauth2' ? 'gmail_oauth2' : 'hostinger';
+    throw new Error(
+      provider === 'gmail_oauth2'
+        ? 'Impossible de charger les secrets GMAIL_SENDER_EMAIL / GMAIL_OAUTH_CLIENT_ID / GMAIL_OAUTH_CLIENT_SECRET / GMAIL_OAUTH_REFRESH_TOKEN'
+        : 'Impossible de charger les secrets HOSTINGER_EMAIL_USER et HOSTINGER_EMAIL_PASS',
+    );
   }
 
   // Mettre en cache

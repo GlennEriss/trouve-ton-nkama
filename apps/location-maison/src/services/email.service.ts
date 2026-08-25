@@ -21,14 +21,26 @@ export interface EmailSendResult {
 }
 
 type TransportKind = 'primary' | 'fallback';
+type EmailProvider = 'hostinger' | 'gmail_oauth2';
+
+/** Provider actif pour le transport PRINCIPAL. Bascule via EMAIL_PROVIDER (Vercel). */
+function getActiveProvider(): EmailProvider {
+  return process.env.EMAIL_PROVIDER === 'gmail_oauth2' ? 'gmail_oauth2' : 'hostinger';
+}
 
 /**
  * Envoi d'emails transactionnels (vérification d'adresse, notifications).
  *
- * Deux transports SMTP :
- * - PRINCIPAL : Hostinger / contact@tonnkama.com.
- * - SECOURS   : n'importe quel SMTP (Gmail par défaut), activé uniquement si
- *   FALLBACK_EMAIL_USER + FALLBACK_EMAIL_PASS sont définis.
+ * Le transport PRINCIPAL a deux modes possibles, sélectionnés par EMAIL_PROVIDER :
+ * - 'hostinger' (défaut)  : SMTP Hostinger / contact@tonnkama.com.
+ * - 'gmail_oauth2'        : Gmail via OAuth2 (GMAIL_SENDER_EMAIL + GMAIL_OAUTH_CLIENT_ID/
+ *   CLIENT_SECRET/REFRESH_TOKEN), l'ancien mode utilisé avant l'arrivée de Hostinger.
+ *   Objectif : pouvoir basculer en un redéploiement si Hostinger retombe en panne (facture,
+ *   etc.), sans dépendre d'un mot de passe d'application à régénérer.
+ *
+ * En plus, un transport de SECOURS (n'importe quel SMTP, Gmail par défaut avec mot de passe
+ * d'application) est activé automatiquement si FALLBACK_EMAIL_USER + FALLBACK_EMAIL_PASS sont
+ * définis — il s'essaie quel que soit le provider principal choisi.
  *
  * Pourquoi un secours (2026-08-18) : la boîte contact@tonnkama.com est tombée en panne
  * d'authentification (535 5.7.8, facture impayée) et PERSONNE ne s'en est aperçu — les
@@ -49,12 +61,35 @@ export class EmailService {
     return Boolean(process.env.FALLBACK_EMAIL_USER && process.env.FALLBACK_EMAIL_PASS);
   }
 
+  static isGmailOAuth2Configured(): boolean {
+    return Boolean(
+      process.env.GMAIL_SENDER_EMAIL &&
+        process.env.GMAIL_OAUTH_CLIENT_ID &&
+        process.env.GMAIL_OAUTH_CLIENT_SECRET &&
+        process.env.GMAIL_OAUTH_REFRESH_TOKEN,
+    );
+  }
+
+  static checkHostingerConfiguration(): boolean {
+    return Boolean(process.env.HOSTINGER_EMAIL_USER && process.env.HOSTINGER_EMAIL_PASS);
+  }
+
+  /** Le transport PRINCIPAL est-il utilisable, quel que soit le provider actif ? */
+  static isPrimaryConfigured(): boolean {
+    return getActiveProvider() === 'gmail_oauth2'
+      ? EmailService.isGmailOAuth2Configured()
+      : EmailService.checkHostingerConfiguration();
+  }
+
   private getTransportConfig(kind: TransportKind) {
     if (kind === 'primary') {
+      const usingGmailOAuth2 = getActiveProvider() === 'gmail_oauth2';
       return {
         host: process.env.HOSTINGER_SMTP_HOST || 'smtp.hostinger.com',
         port: Number(process.env.HOSTINGER_SMTP_PORT || 465),
-        user: process.env.HOSTINGER_EMAIL_USER || '',
+        user: usingGmailOAuth2
+          ? process.env.GMAIL_SENDER_EMAIL || ''
+          : process.env.HOSTINGER_EMAIL_USER || '',
         pass: process.env.HOSTINGER_EMAIL_PASS || '',
       };
     }
@@ -72,13 +107,27 @@ export class EmailService {
       return cached;
     }
 
-    const { host, port, user, pass } = this.getTransportConfig(kind);
-    const transporter = nodemailer.createTransport({
-      host,
-      port,
-      secure: port === 465,
-      auth: { user, pass },
-    });
+    let transporter: nodemailer.Transporter;
+    if (kind === 'primary' && getActiveProvider() === 'gmail_oauth2') {
+      transporter = nodemailer.createTransport({
+        service: 'gmail',
+        auth: {
+          type: 'OAuth2',
+          user: process.env.GMAIL_SENDER_EMAIL,
+          clientId: process.env.GMAIL_OAUTH_CLIENT_ID,
+          clientSecret: process.env.GMAIL_OAUTH_CLIENT_SECRET,
+          refreshToken: process.env.GMAIL_OAUTH_REFRESH_TOKEN,
+        },
+      });
+    } else {
+      const { host, port, user, pass } = this.getTransportConfig(kind);
+      transporter = nodemailer.createTransport({
+        host,
+        port,
+        secure: port === 465,
+        auth: { user, pass },
+      });
+    }
 
     this.transporters[kind] = transporter;
     return transporter;
@@ -129,7 +178,8 @@ export class EmailService {
       // On garde le détail (code SMTP, message serveur) : c'est la seule trace exploitable
       // pour distinguer un mot de passe invalide d'une panne réseau.
       logger.error('Échec du SMTP principal', {
-        host: this.getTransportConfig('primary').host,
+        provider: getActiveProvider(),
+        host: getActiveProvider() === 'gmail_oauth2' ? 'smtp.gmail.com (OAuth2)' : this.getTransportConfig('primary').host,
         user: this.getTransportConfig('primary').user,
         code: (error as { code?: string })?.code,
         message: (error as Error)?.message,
@@ -176,6 +226,9 @@ export class EmailService {
   }
 
   static getEmailOnly(): string {
+    if (getActiveProvider() === 'gmail_oauth2' && process.env.GMAIL_SENDER_EMAIL) {
+      return process.env.GMAIL_SENDER_EMAIL;
+    }
     return (
       process.env.HOSTINGER_EMAIL_USER ||
       process.env.FALLBACK_EMAIL_USER ||
@@ -186,10 +239,6 @@ export class EmailService {
   static isValidEmail(email: string): boolean {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     return emailRegex.test(email);
-  }
-
-  static checkHostingerConfiguration(): boolean {
-    return Boolean(process.env.HOSTINGER_EMAIL_USER && process.env.HOSTINGER_EMAIL_PASS);
   }
 }
 
