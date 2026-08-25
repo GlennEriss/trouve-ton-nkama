@@ -1,4 +1,3 @@
-import '../node/slow-buffer-compat';
 import * as functions from 'firebase-functions/v1';
 import { adminAuth } from '../admin';
 import * as nodemailer from 'nodemailer';
