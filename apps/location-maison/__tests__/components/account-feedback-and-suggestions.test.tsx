@@ -24,6 +24,10 @@ jest.mock('@/hooks/use-toast', () => ({ useToast: () => ({ toast: toastMock }) }
 jest.mock('@/lib/logger', () => ({
   createLogger: () => ({ warn: jest.fn(), error: jest.fn() }),
 }))
+jest.mock('@/firebase/auth', () => ({
+  auth: { currentUser: null },
+  sendEmailVerification: jest.fn(),
+}))
 jest.mock('@/hooks/usePropertyType', () => ({
   __esModule: true,
   default: () => propertyContext,

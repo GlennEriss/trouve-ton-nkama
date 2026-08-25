@@ -7,11 +7,12 @@
 
 import { AuthService, SignupData, SignupResult, SignupError, SignupErrorCode, AuthServiceError } from './auth.service.interface';
 import { userRepository } from '../repositories/user.repository';
-import { createUserWithEmailAndPassword, signOut, auth } from '@/firebase/auth';
+import { createUserWithEmailAndPassword, signOut, auth, sendEmailVerification, type User as FirebaseAuthUser } from '@/firebase/auth';
 import { Role, User } from '@/models/authentication';
 import { Country } from '@/models/compte';
 import { Timestamp } from 'firebase/firestore';
 import { createLogger } from '@/lib/logger';
+import { isFirebaseDefaultEmailProvider, getAppHost } from '@/lib/email-provider-client';
 
 const logger = createLogger('auth.service');
 
@@ -155,7 +156,7 @@ export class AuthServiceImpl implements AuthService {
 
       // 8. Send verification email (non-blocking, in background)
       // Use UID instead of email for more reliable user identification
-      this.sendVerificationEmail(uid).catch((error) => {
+      this.sendVerificationEmail(uid, userCredential.user).catch((error) => {
         // Log but don't fail the signup
         logger.warn('Failed to send verification email', {
           uid,
@@ -274,8 +275,19 @@ export class AuthServiceImpl implements AuthService {
    * (notamment sur mobile / LAN en dev) et centraliser la logique d'envoi.
    * 
    * @param uidOrEmail - User UID (preferred) or email address
+   * @param firebaseUser - Utilisateur Firebase fraîchement créé (disponible juste après
+   *   createUserWithEmailAndPassword) : seul cas où l'envoi natif Firebase est possible ici,
+   *   sendEmailVerification() du SDK client exige l'objet User, pas juste un uid.
    */
-  private async sendVerificationEmail(uidOrEmail: string): Promise<void> {
+  private async sendVerificationEmail(uidOrEmail: string, firebaseUser?: FirebaseAuthUser): Promise<void> {
+    if (isFirebaseDefaultEmailProvider() && firebaseUser) {
+      await sendEmailVerification(firebaseUser, {
+        url: `${getAppHost()}/email-verification-success`,
+        handleCodeInApp: false,
+      });
+      return;
+    }
+
     try {
       // Determine if it's a UID (typically longer and doesn't contain @) or email
       const isUid = !uidOrEmail.includes('@');

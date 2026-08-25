@@ -25,6 +25,7 @@ jest.mock('../../repositories/user.repository', () => ({
 jest.mock('@/firebase/auth', () => ({
   createUserWithEmailAndPassword: jest.fn(),
   signOut: jest.fn(),
+  sendEmailVerification: jest.fn(),
   auth: {},
 }));
 
@@ -457,6 +458,37 @@ describe('AuthService', () => {
           body: JSON.stringify({ uid: 'uid-123' }),
         })
       );
+    });
+
+    it('devrait envoyer via sendEmailVerification (Firebase natif) quand NEXT_PUBLIC_EMAIL_PROVIDER=firebase_default', async () => {
+      // Arrange
+      const signupData = createSignupData();
+      const { createUserWithEmailAndPassword, sendEmailVerification } = await import('@/firebase/auth');
+      const mockFirebaseUser = { uid: 'uid-123', email: signupData.email };
+
+      mockUserRepository.findByPhoneNumber.mockResolvedValue(null);
+      mockUserRepository.findByEmail.mockResolvedValue(null);
+      (createUserWithEmailAndPassword as any).mockResolvedValue({ user: mockFirebaseUser });
+      mockUserRepository.create.mockResolvedValue(createMockUser());
+      (sendEmailVerification as any).mockResolvedValue(undefined);
+      process.env.NEXT_PUBLIC_EMAIL_PROVIDER = 'firebase_default';
+
+      try {
+        // Act
+        await authService.signup(signupData);
+
+        // Assert
+        expect(sendEmailVerification).toHaveBeenCalledWith(
+          mockFirebaseUser,
+          expect.objectContaining({ handleCodeInApp: false }),
+        );
+        expect(fetch).not.toHaveBeenCalledWith(
+          '/api/auth/send-verification-email',
+          expect.anything(),
+        );
+      } finally {
+        delete process.env.NEXT_PUBLIC_EMAIL_PROVIDER;
+      }
     });
 
     it('should not fail if email sending fails', async () => {

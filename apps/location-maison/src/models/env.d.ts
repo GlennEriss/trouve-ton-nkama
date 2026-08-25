@@ -14,6 +14,8 @@ namespace NodeJS {
     HOSTINGER_SMTP_PORT?: string;
     //EMAIL - bascule de provider et secours (src/services/email.service.ts)
     EMAIL_PROVIDER?: 'hostinger' | 'gmail_oauth2';
+    //EMAIL - bascule CLIENT auth (verif + reset), src/lib/email-provider-client.ts
+    NEXT_PUBLIC_EMAIL_PROVIDER?: 'custom' | 'firebase_default';
     EMAIL_DISPLAY_NAME?: string;
     FORCE_REAL_EMAILS?: string;
     FALLBACK_EMAIL_USER?: string;

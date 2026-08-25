@@ -6,6 +6,8 @@ import type {
   PasswordResetService,
 } from './password-reset.service.interface';
 import { PasswordResetConfirmErrorCode, PasswordResetRequestErrorCode } from './password-reset.service.interface';
+import { auth, sendPasswordResetEmail } from '@/firebase/auth';
+import { isFirebaseDefaultEmailProvider, getAppHost } from '@/lib/email-provider-client';
 
 const logger = createLogger('auth.password-reset-service');
 
@@ -56,8 +58,51 @@ async function parseJsonSafely<T>(response: Response): Promise<T | null> {
   }
 }
 
+function mapFirebaseAuthErrorCode(code: string | undefined): PasswordResetRequestErrorCode {
+  switch (code) {
+    case 'auth/user-not-found':
+      return PasswordResetRequestErrorCode.USER_NOT_FOUND;
+    case 'auth/invalid-email':
+      return PasswordResetRequestErrorCode.INVALID_EMAIL;
+    case 'auth/user-disabled':
+      return PasswordResetRequestErrorCode.USER_DISABLED;
+    case 'auth/too-many-requests':
+      return PasswordResetRequestErrorCode.RATE_LIMIT_EXCEEDED;
+    default:
+      return PasswordResetRequestErrorCode.UNKNOWN_ERROR;
+  }
+}
+
 export class PasswordResetServiceImpl implements PasswordResetService {
   async requestPasswordReset(email: string): Promise<PasswordResetRequestResult> {
+    // handleCodeInApp: true pointe directement vers notre page /password-reset existante
+    // (oobCode en query param) — même flux de confirmation que le lien généré côté serveur,
+    // seul l'envoi change. Ne pas passer par le mode 'firebase par défaut' (handleCodeInApp:
+    // false) : Firebase gérerait alors la réinitialisation sur sa propre page générique,
+    // court-circuitant notre notification d'activité de compte (voir /api/auth/password-reset).
+    if (isFirebaseDefaultEmailProvider()) {
+      try {
+        await sendPasswordResetEmail(auth, email, {
+          url: `${getAppHost()}/password-reset`,
+          handleCodeInApp: true,
+        });
+        logger.info('Password reset request succeeded (Firebase default)', { email });
+        return { success: true };
+      } catch (error: any) {
+        logger.warn('Password reset request failed (Firebase default)', {
+          email,
+          code: error?.code,
+        });
+        return {
+          success: false,
+          error: {
+            code: mapFirebaseAuthErrorCode(error?.code),
+            message: 'Impossible d\'envoyer l\'email de réinitialisation. Réessayez plus tard.',
+          },
+        };
+      }
+    }
+
     try {
       const response = await fetch('/api/auth/send-password-reset-email', {
         method: 'POST',
