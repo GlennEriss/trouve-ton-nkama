@@ -10,6 +10,7 @@
 
 import React, { useCallback, useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { REGEXP_ONLY_DIGITS } from 'input-otp';
 
 import {
   Dialog,
@@ -18,6 +19,7 @@ import {
   DialogTitle,
 } from '@trouve-ton-nkama/ui/dialog';
 import { Button } from '@trouve-ton-nkama/ui/button';
+import { InputOTP, InputOTPGroup, InputOTPSlot } from '@trouve-ton-nkama/ui/input-otp';
 import { routes } from '@/constantes/routes';
 import { usePhoneOtpAuth } from '@/features/auth/hooks/usePhoneOtpAuth';
 import { PhoneNumberParts } from '@/components/shared/form/PhoneNumberFormAppSimple';
@@ -107,25 +109,28 @@ export const PhoneAuthModal: React.FC<PhoneAuthModalProps> = ({
           </form>
         ) : (
           <form onSubmit={handleVerify} className="space-y-4">
-            <div className="space-y-1">
+            <div className="space-y-2">
               <span className="block text-xs font-medium text-gray-600 dark:text-gray-300">
                 Code envoyé au {phone}
               </span>
-              <div className="border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900 rounded-full flex items-center transition-colors focus-within:border-secondary focus-within:bg-primary-50 dark:focus-within:bg-gray-800 min-h-[48px] py-2 px-4">
-                <input
-                  type="text"
-                  inputMode="numeric"
-                  autoComplete="one-time-code"
-                  autoFocus
-                  maxLength={6}
-                  value={otpInput}
-                  onChange={(event) => setOtpInput(event.target.value.replace(/\D/g, ''))}
-                  placeholder="123456"
-                  disabled={isVerifying}
-                  className="min-h-11 w-full border-none shadow-none focus-visible:outline-none focus-visible:ring-0 placeholder:text-gray-400 dark:text-white dark:placeholder:text-gray-500 bg-transparent tracking-[0.4em]"
-                  aria-label="Code reçu par SMS"
-                />
-              </div>
+              <InputOTP
+                maxLength={6}
+                value={otpInput}
+                onChange={setOtpInput}
+                pattern={REGEXP_ONLY_DIGITS}
+                autoFocus
+                disabled={isVerifying}
+                containerClassName="justify-center"
+              >
+                <InputOTPGroup>
+                  <InputOTPSlot index={0} />
+                  <InputOTPSlot index={1} />
+                  <InputOTPSlot index={2} />
+                  <InputOTPSlot index={3} />
+                  <InputOTPSlot index={4} />
+                  <InputOTPSlot index={5} />
+                </InputOTPGroup>
+              </InputOTP>
             </div>
             {error ? <p className="text-sm text-red-600">{error}</p> : null}
             <Button
