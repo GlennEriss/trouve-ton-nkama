@@ -27,18 +27,33 @@ jest.mock('@/features/analytics/tracking', () => ({
 }))
 jest.mock('@/lib/logger', () => ({ createLogger: () => ({ debug: jest.fn(), info: jest.fn(), warn: jest.fn(), error: jest.fn() }) }))
 jest.mock('@/components/ui/form', () => ({ Form: ({ children }: { children: React.ReactNode }) => <>{children}</> }))
+jest.mock('@trouve-ton-nkama/ui/logo', () => ({ __esModule: true, default: () => <span>Logo Nkama</span> }))
+jest.mock('../PhoneAuthModal', () => ({ PhoneAuthModal: () => null }))
 jest.mock('framer-motion', () => {
-  const ReactModule = require('react') as typeof React
-  const passthrough = (Tag: keyof JSX.IntrinsicElements) =>
-    ReactModule.forwardRef((props: any, ref: any) => {
-      const { initial: _i, animate: _a, exit: _e, transition: _t, variants: _v, whileHover: _wh, whileTap: _wt, custom: _c, ...rest } = props
-      return ReactModule.createElement(Tag, { ...rest, ref })
-    })
+  const ReactModule = require('react');
+
+  const FRAMER_PROPS = new Set([
+    'initial', 'animate', 'exit', 'transition', 'variants', 'whileHover', 'whileTap', 'layoutId', 'custom',
+  ]);
+
+  const toElement = (tag: string) => ({ children, ...props }: any) => {
+    const cleanProps: Record<string, unknown> = {};
+    for (const [key, value] of Object.entries(props || {})) {
+      if (!FRAMER_PROPS.has(key)) {
+        cleanProps[key] = value;
+      }
+    }
+    const safeTag = ['button', 'h1', 'h2', 'h3', 'p', 'span', 'div'].includes(tag) ? tag : 'div';
+    return ReactModule.createElement(safeTag, cleanProps, children);
+  };
+
+  const motion = new Proxy({}, { get: (_, prop: string) => toElement(prop) });
+
   return {
-    motion: { div: passthrough('div') },
-    AnimatePresence: ({ children }: { children: React.ReactNode }) => <>{children}</>,
+    motion,
+    AnimatePresence: ({ children }: any) => ReactModule.createElement(ReactModule.Fragment, null, children),
     useReducedMotion: () => false,
-  }
+  };
 })
 
 function getValue(values: any, path: string) {
@@ -84,6 +99,7 @@ function Field({ control, name, label, placeholder, type = 'text' }: any) {
       {label}
       <input
         aria-label={ariaLabel}
+        placeholder={placeholder}
         type={type}
         value={getValue(control.values, name) ?? ''}
         onChange={(event) => control.setValue(name, event.target.value)}
@@ -151,12 +167,12 @@ async function fillStep3() {
   fireEvent.change(screen.getByLabelText('Date de naissance month'), { target: { value: '06' } })
   fireEvent.change(screen.getByLabelText('Date de naissance year'), { target: { value: '1995' } })
   fireEvent.click(screen.getByRole('button', { name: /^continuer$/i }))
-  await screen.findByLabelText('Créez un mot de passe sécurisé')
+  await screen.findByLabelText('Mot de passe')
 }
 
 function fillStep4AndSubmit() {
-  fireEvent.change(screen.getByLabelText('Créez un mot de passe sécurisé'), { target: { value: VALID_PASSWORD } })
-  fireEvent.change(screen.getByLabelText('Confirmez votre mot de passe'), { target: { value: VALID_PASSWORD } })
+  fireEvent.change(screen.getByLabelText('Mot de passe'), { target: { value: VALID_PASSWORD } })
+  fireEvent.change(screen.getByLabelText('Confirmez le mot de passe'), { target: { value: VALID_PASSWORD } })
   fireEvent.click(screen.getByLabelText('termsOfPrivacyPolicy'))
   fireEvent.submit(screen.getByRole('button', { name: /créer mon compte/i }).closest('form')!)
 }
