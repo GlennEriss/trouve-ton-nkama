@@ -1,15 +1,25 @@
 import { describe, it, expect, beforeEach, jest } from '@jest/globals';
 
 import type { User } from '@/models/authentication';
+import firebaseCollectionNames from '@/constantes/firebase-collection-name';
 
+const SERVER_TIMESTAMP = 'SERVER_TIMESTAMP';
+const mockSet = jest.fn() as jest.MockedFunction<(data: unknown) => Promise<void>>;
+const mockGet = jest.fn() as jest.MockedFunction<() => Promise<{ exists: boolean; data: () => unknown }>>;
+const mockUpdate = jest.fn() as jest.MockedFunction<(data: unknown) => Promise<void>>;
+const mockDoc = jest.fn(() => ({ set: mockSet, get: mockGet, update: mockUpdate }));
+const mockCollection = jest.fn(() => ({ doc: mockDoc }));
+
+jest.mock('firebase-admin/firestore', () => ({
+  getFirestore: jest.fn(() => ({ collection: mockCollection })),
+  FieldValue: { serverTimestamp: () => SERVER_TIMESTAMP },
+}));
 jest.mock('@/firebase/admin', () => ({
+  adminApp: {},
   adminAuth: { verifyIdToken: jest.fn() },
 }));
 jest.mock('../resolve-session-user', () => ({
   resolveSessionUser: jest.fn(),
-}));
-jest.mock('../../repositories/user.repository', () => ({
-  userRepository: { create: jest.fn(), update: jest.fn() },
 }));
 jest.mock('@/lib/logger', () => ({
   createLogger: () => ({ warn: jest.fn(), error: jest.fn(), info: jest.fn(), debug: jest.fn() }),
@@ -41,17 +51,17 @@ function makeUser(overrides: Partial<User> = {}): User {
 describe('authenticateWithPhoneIdToken', () => {
   let adminAuth: any;
   let resolveSessionUser: any;
-  let userRepository: any;
   let claimListingsByVerifiedPhone: any;
 
   beforeEach(() => {
     jest.clearAllMocks();
     adminAuth = require('@/firebase/admin').adminAuth;
     resolveSessionUser = require('../resolve-session-user').resolveSessionUser;
-    userRepository = require('../../repositories/user.repository').userRepository;
     claimListingsByVerifiedPhone =
       require('@/features/announcer/listing-claim/services/listing-claim.service').claimListingsByVerifiedPhone;
     claimListingsByVerifiedPhone.mockResolvedValue({ claimedCount: 0, skippedThreshold: false });
+    mockSet.mockResolvedValue(undefined);
+    mockUpdate.mockResolvedValue(undefined);
   });
 
   it('throws INVALID_TOKEN when the ID token cannot be verified', async () => {
@@ -71,39 +81,43 @@ describe('authenticateWithPhoneIdToken', () => {
     });
   });
 
-  it('creates a minimal announcer account on first sign-in', async () => {
+  it('creates a minimal announcer account via the Admin SDK on first sign-in', async () => {
     adminAuth.verifyIdToken.mockResolvedValue({ uid: 'uid-new', phone_number: PHONE });
     resolveSessionUser.mockResolvedValue(null);
-    userRepository.create.mockImplementation(async (u: User) => u);
 
     const result = await authenticateWithPhoneIdToken('t');
 
-    expect(resolveSessionUser).toHaveBeenCalledWith({ uid: 'uid-new', phone: PHONE });
-    expect(userRepository.create).toHaveBeenCalledTimes(1);
-    const created = userRepository.create.mock.calls[0][0] as User;
+    expect(mockCollection).toHaveBeenCalledWith(firebaseCollectionNames.users);
+    expect(mockDoc).toHaveBeenCalledWith('uid-new');
+    expect(mockSet).toHaveBeenCalledTimes(1);
+    const created = mockSet.mock.calls[0][0] as User;
     expect(created.uid).toBe('uid-new');
     expect(created.phoneNumbers).toEqual([PHONE]);
     expect(created.roles).toEqual(['User', 'Announcer']);
     expect(created.providers).toEqual(['PHONE']);
     expect(created.phoneNumberVerified).toBe(true);
     expect(created.metadata.needsProfileCompletion).toBe(true);
+    expect(created.createdAt).toBe(SERVER_TIMESTAMP);
+    expect(created.updatedAt).toBe(SERVER_TIMESTAMP);
     expect(result.uid).toBe('uid-new');
   });
 
-  it('links the PHONE provider to an existing account (option A)', async () => {
+  it('links the PHONE provider to an existing account (option A), writing via the Admin SDK', async () => {
     adminAuth.verifyIdToken.mockResolvedValue({ uid: 'uid-phone', phone_number: PHONE });
     const existing = makeUser({ uid: 'uid-email', providers: ['CREDENTIALS'], phoneNumberVerified: false });
     resolveSessionUser.mockResolvedValue(existing);
-    userRepository.update.mockImplementation(async (_uid: string, data: Partial<User>) => ({ ...existing, ...data }));
+    mockGet.mockResolvedValue({ exists: true, data: () => existing });
 
     const result = await authenticateWithPhoneIdToken('t');
 
-    expect(userRepository.update).toHaveBeenCalledWith('uid-email', {
+    expect(mockDoc).toHaveBeenCalledWith('uid-email');
+    expect(mockUpdate).toHaveBeenCalledWith({
       providers: ['CREDENTIALS', 'PHONE'],
       phoneNumberVerified: true,
+      updatedAt: SERVER_TIMESTAMP,
     });
     expect(result.providers).toContain('PHONE');
-    expect(userRepository.create).not.toHaveBeenCalled();
+    expect(mockSet).not.toHaveBeenCalled();
   });
 
   it('does not re-update an already-linked, verified account', async () => {
@@ -113,8 +127,8 @@ describe('authenticateWithPhoneIdToken', () => {
 
     const result = await authenticateWithPhoneIdToken('t');
 
-    expect(userRepository.update).not.toHaveBeenCalled();
-    expect(userRepository.create).not.toHaveBeenCalled();
+    expect(mockUpdate).not.toHaveBeenCalled();
+    expect(mockSet).not.toHaveBeenCalled();
     expect(result).toBe(existing);
   });
 
@@ -142,13 +156,11 @@ describe('authenticateWithPhoneIdToken', () => {
     const existing = makeUser({ providers: ['PHONE'], phoneNumberVerified: true, metadata: { foo: 'bar' } });
     resolveSessionUser.mockResolvedValue(existing);
     claimListingsByVerifiedPhone.mockResolvedValue({ claimedCount: 3, skippedThreshold: false });
-    const updated = { ...existing, metadata: { foo: 'bar', pendingClaimNotice: { count: 3, claimedAt: 'now' } } };
-    userRepository.update.mockResolvedValue(updated);
+    mockGet.mockResolvedValue({ exists: true, data: () => existing });
 
     const result = await authenticateWithPhoneIdToken('t');
 
-    expect(userRepository.update).toHaveBeenCalledWith(
-      'uid-1',
+    expect(mockUpdate).toHaveBeenCalledWith(
       expect.objectContaining({
         metadata: expect.objectContaining({
           foo: 'bar',
@@ -156,7 +168,7 @@ describe('authenticateWithPhoneIdToken', () => {
         }),
       }),
     );
-    expect(result).toBe(updated);
+    expect(result.metadata.pendingClaimNotice).toEqual(expect.objectContaining({ count: 3 }));
   });
 
   it('does not touch metadata when nothing was claimed', async () => {
@@ -167,7 +179,7 @@ describe('authenticateWithPhoneIdToken', () => {
 
     const result = await authenticateWithPhoneIdToken('t');
 
-    expect(userRepository.update).not.toHaveBeenCalled();
+    expect(mockUpdate).not.toHaveBeenCalled();
     expect(result).toBe(existing);
   });
 });

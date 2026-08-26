@@ -20,17 +20,60 @@
  */
 
 import { Timestamp } from "firebase/firestore";
+import { FieldValue, getFirestore } from "firebase-admin/firestore";
 
-import { adminAuth } from "@/firebase/admin";
+import { adminApp, adminAuth } from "@/firebase/admin";
 import { createLogger } from "@/lib/logger";
 import type { Role, User } from "@/models/authentication";
+import firebaseCollectionNames from "@/constantes/firebase-collection-name";
 
 import { claimListingsByVerifiedPhone } from "@/features/announcer/listing-claim/services/listing-claim.service";
 
-import { userRepository } from "../repositories/user.repository";
 import { resolveSessionUser } from "./resolve-session-user";
 
 const logger = createLogger("auth.phone-auth.service");
+
+/**
+ * `userRepository` writes through the Firebase CLIENT SDK, which enforces
+ * firestore.rules and requires `request.auth != null`. This service runs
+ * entirely server-side (inside NextAuth's `authorize()` callback) where no
+ * client-side Firebase Auth session exists — verifying the ID token via
+ * `adminAuth` does NOT sign the client SDK in. Writes here must go through
+ * the Admin SDK instead, which bypasses the rules (same as token verification
+ * already does). Reads stay on `userRepository`/`resolveSessionUser`: the
+ * `users` collection allows public reads (`allow read: if true`), so those
+ * already work unauthenticated.
+ */
+function usersCollection() {
+  if (!adminApp) {
+    throw new Error("Firebase admin non initialisé.");
+  }
+  return getFirestore(adminApp).collection(firebaseCollectionNames.users);
+}
+
+async function adminCreateUser(user: User): Promise<User> {
+  const { id, ...dataWithoutId } = user as User & { id?: string };
+  await usersCollection()
+    .doc(user.uid)
+    .set({
+      ...dataWithoutId,
+      state: "IN_PROGRESS",
+      createdAt: FieldValue.serverTimestamp(),
+      updatedAt: FieldValue.serverTimestamp(),
+    });
+  return { ...user, id: user.uid };
+}
+
+async function adminUpdateUser(uid: string, data: Partial<User>): Promise<User> {
+  const userRef = usersCollection().doc(uid);
+  const snapshot = await userRef.get();
+  if (!snapshot.exists) {
+    throw new Error("User not found");
+  }
+  const { createdAt, id, ...updates } = data as Partial<User> & { id?: string };
+  await userRef.update({ ...updates, updatedAt: FieldValue.serverTimestamp() });
+  return { ...(snapshot.data() as User), ...updates, uid, id: uid };
+}
 
 export type PhoneAuthErrorCode = "INVALID_TOKEN" | "MISSING_PHONE" | "PERSISTENCE_ERROR";
 
@@ -75,7 +118,7 @@ export async function authenticateWithPhoneIdToken(idToken: string): Promise<Use
   try {
     const { claimedCount } = await claimListingsByVerifiedPhone(resolvedUser.uid, phone);
     if (claimedCount > 0) {
-      resolvedUser = await userRepository.update(resolvedUser.uid, {
+      resolvedUser = await adminUpdateUser(resolvedUser.uid, {
         metadata: {
           ...resolvedUser.metadata,
           pendingClaimNotice: { count: claimedCount, claimedAt: new Date().toISOString() },
@@ -100,7 +143,7 @@ async function ensurePhoneProvider(user: User): Promise<User> {
 
   const nextProviders = alreadyLinked ? providers : [...providers, "PHONE" as const];
   try {
-    return await userRepository.update(user.uid, {
+    return await adminUpdateUser(user.uid, {
       providers: nextProviders,
       phoneNumberVerified: true,
     });
@@ -138,7 +181,7 @@ async function createMinimalPhoneUser(uid: string, phone: string): Promise<User>
   } as User;
 
   try {
-    return await userRepository.create(user);
+    return await adminCreateUser(user);
   } catch (error) {
     logger.error("Failed to create minimal phone user", { uid, error });
     throw new PhoneAuthError("PERSISTENCE_ERROR", "Impossible de créer le compte téléphone.");
