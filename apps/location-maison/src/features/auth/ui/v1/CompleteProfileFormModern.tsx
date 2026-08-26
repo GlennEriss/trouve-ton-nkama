@@ -420,7 +420,7 @@ export const CompleteProfileFormModern: React.FC = () => {
                 <InputFormApp
                   control={form.control}
                   name="pseudo"
-                  label="Pseudo (optionnel)"
+                  label="Nom de l'entreprise (optionnel)"
                   type="text"
                   IconLucide={Store}
                   IconColor="#9ca3af"
