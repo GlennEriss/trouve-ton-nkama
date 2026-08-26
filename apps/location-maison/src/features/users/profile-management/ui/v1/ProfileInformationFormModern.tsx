@@ -440,7 +440,7 @@ export function ProfileInformationFormModern() {
               <InputFormApp
                 control={form.control}
                 name="pseudo"
-                label="Pseudo"
+                label="Nom de l'entreprise (optionnel)"
                 IconLucide={AtSign}
                 IconColor={INPUT_ICON_COLOR}
                 placeholder="Laissez vide pour afficher votre prénom et nom"

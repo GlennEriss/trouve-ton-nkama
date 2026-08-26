@@ -521,7 +521,7 @@ export const SignupFormModern: React.FC = () => {
                       <InputFormApp
                         control={form.control}
                         name="pseudo"
-                        label="Pseudo (optionnel)"
+                        label="Nom de l'entreprise (optionnel)"
                         type="text"
                         IconLucide={User}
                         IconColor="#9ca3af"

@@ -210,9 +210,10 @@ describe('CompleteProfileFormModern', () => {
     expect(pushMock).toHaveBeenCalledWith('/property')
   })
 
-  it('pré-remplit le pseudo et sépare numéro d appel et WhatsApp', async () => {
-    // Cas réel du compte kissandsishop : le nom de boutique doit atterrir dans le champ Pseudo,
-    // pas dans le champ Nom, et les deux numéros connus doivent être répartis sur les bons champs.
+  it('pré-remplit le nom de l entreprise et sépare numéro d appel et WhatsApp', async () => {
+    // Cas réel du compte kissandsishop : le nom de boutique doit atterrir dans le champ
+    // "Nom de l'entreprise", pas dans le champ Nom, et les deux numéros connus doivent être
+    // répartis sur les bons champs.
     mockSession = {
       user: sessionUser({
         firstname: 'Mawily-koumba',
@@ -226,7 +227,7 @@ describe('CompleteProfileFormModern', () => {
 
     render(<CompleteProfileFormModern />)
 
-    expect(await screen.findByLabelText('Pseudo (optionnel)')).toHaveValue("kiss&sis'shop")
+    expect(await screen.findByLabelText("Nom de l'entreprise (optionnel)")).toHaveValue("kiss&sis'shop")
     expect(screen.getByLabelText('Prénom')).toHaveValue('Mawily-koumba')
     expect(screen.getByLabelText('Nom')).toHaveValue('Loddy Kiss')
     expect(screen.getByLabelText("Numéro d'appel")).toHaveValue('+24174533664')

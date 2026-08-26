@@ -227,7 +227,7 @@ export const SignupMobileComponent = () => {
                         <InputFormApp
                             control={form.control}
                             name='pseudo'
-                            label='Pseudo (optionnel)'
+                            label="Nom de l'entreprise (optionnel)"
                             type='text'
                             IconLucide={CircleUser}
                             IconColorFill={'none'}
