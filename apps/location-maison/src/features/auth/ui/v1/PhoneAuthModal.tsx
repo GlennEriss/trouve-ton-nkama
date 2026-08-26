@@ -10,19 +10,19 @@
 
 import React, { useCallback, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { KeyRound, Phone } from 'lucide-react';
+import { REGEXP_ONLY_DIGITS } from 'input-otp';
 
 import {
   Dialog,
   DialogContent,
-  DialogDescription,
   DialogHeader,
   DialogTitle,
 } from '@trouve-ton-nkama/ui/dialog';
 import { Button } from '@trouve-ton-nkama/ui/button';
-import { Input } from '@trouve-ton-nkama/ui/input';
+import { InputOTP, InputOTPGroup, InputOTPSlot } from '@trouve-ton-nkama/ui/input-otp';
 import { routes } from '@/constantes/routes';
 import { usePhoneOtpAuth } from '@/features/auth/hooks/usePhoneOtpAuth';
+import { PhoneNumberParts } from '@/components/shared/form/PhoneNumberFormAppSimple';
 
 type PhoneAuthModalProps = {
   open: boolean;
@@ -87,32 +87,17 @@ export const PhoneAuthModal: React.FC<PhoneAuthModalProps> = ({
       <DialogContent className="max-w-md">
         <DialogHeader>
           <DialogTitle>
-            {step === 'phone' ? 'Continuer avec votre numéro' : 'Vérification du code'}
+            {step === 'phone' ? 'Numéro de téléphone' : 'Vérification du code'}
           </DialogTitle>
-          <DialogDescription>
-            {step === 'phone'
-              ? 'Nous vous enverrons un code par SMS pour vous connecter, sans mot de passe.'
-              : `Saisissez le code à 6 chiffres envoyé au ${phone}.`}
-          </DialogDescription>
         </DialogHeader>
 
         {step === 'phone' ? (
           <form onSubmit={handleSend} className="space-y-4">
-            <div className="relative">
-              <Phone className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
-              <Input
-                type="tel"
-                inputMode="tel"
-                autoComplete="tel"
-                autoFocus
-                value={phoneInput}
-                onChange={(event) => setPhoneInput(event.target.value)}
-                placeholder="Ex: 066 12 34 56"
-                className="pl-9"
-                disabled={isSending}
-              />
-            </div>
-            <p className="text-xs text-gray-500">Numéro gabonais (+241). Le 0 initial est optionnel.</p>
+            <PhoneNumberParts
+              value={phoneInput}
+              onChange={setPhoneInput}
+              disabled={isSending}
+            />
             {error ? <p className="text-sm text-red-600">{error}</p> : null}
             <Button
               type="submit"
@@ -124,20 +109,28 @@ export const PhoneAuthModal: React.FC<PhoneAuthModalProps> = ({
           </form>
         ) : (
           <form onSubmit={handleVerify} className="space-y-4">
-            <div className="relative">
-              <KeyRound className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
-              <Input
-                type="text"
-                inputMode="numeric"
-                autoComplete="one-time-code"
-                autoFocus
+            <div className="space-y-2">
+              <span className="block text-xs font-medium text-gray-600 dark:text-gray-300">
+                Code envoyé au {phone}
+              </span>
+              <InputOTP
                 maxLength={6}
                 value={otpInput}
-                onChange={(event) => setOtpInput(event.target.value.replace(/\D/g, ''))}
-                placeholder="123456"
-                className="pl-9 tracking-[0.4em]"
+                onChange={setOtpInput}
+                pattern={REGEXP_ONLY_DIGITS}
+                autoFocus
                 disabled={isVerifying}
-              />
+                containerClassName="justify-center"
+              >
+                <InputOTPGroup>
+                  <InputOTPSlot index={0} />
+                  <InputOTPSlot index={1} />
+                  <InputOTPSlot index={2} />
+                  <InputOTPSlot index={3} />
+                  <InputOTPSlot index={4} />
+                  <InputOTPSlot index={5} />
+                </InputOTPGroup>
+              </InputOTP>
             </div>
             {error ? <p className="text-sm text-red-600">{error}</p> : null}
             <Button

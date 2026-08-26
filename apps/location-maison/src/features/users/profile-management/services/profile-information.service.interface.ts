@@ -28,6 +28,7 @@ export type UpdateProfileInformationData = {
   uid: string;
   firstname: string;
   lastname: string;
+  pseudo?: string;
   birthDate: string;
   phoneNumber: string;
   countryCode: string;

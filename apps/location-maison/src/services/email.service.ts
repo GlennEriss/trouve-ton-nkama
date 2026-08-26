@@ -26,21 +26,22 @@ export class EmailService {
   }
 
   /**
-   * Crée le transporteur Nodemailer avec Hostinger SMTP
+   * Crée le transporteur Nodemailer (Gmail ou Hostinger selon l'adresse configurée)
    */
   private async createTransporter(): Promise<nodemailer.Transporter> {
     if (this.transporter) {
       return this.transporter;
     }
 
+    const user = process.env.HOSTINGER_EMAIL_USER || 'ton.email@tondomaine.com';
+    const pass = process.env.HOSTINGER_EMAIL_PASS || 'tonMotDePasse';
+    const isGmail = user.toLowerCase().endsWith('@gmail.com');
+
     this.transporter = nodemailer.createTransport({
-      host: 'smtp.hostinger.com',
+      host: isGmail ? 'smtp.gmail.com' : 'smtp.hostinger.com',
       port: 465,
       secure: true,
-      auth: {
-        user: process.env.HOSTINGER_EMAIL_USER || 'ton.email@tondomaine.com',
-        pass: process.env.HOSTINGER_EMAIL_PASS || 'tonMotDePasse',
-      },
+      auth: { user, pass },
     });
 
     return this.transporter;

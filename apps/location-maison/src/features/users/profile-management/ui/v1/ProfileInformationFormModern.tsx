@@ -9,7 +9,8 @@ import { useToast } from '@/hooks/use-toast';
 import { createLogger } from '@/lib/logger';
 import { generateColorFromName } from '@/lib/generateColorFromName';
 import { firebaseTimestampToDate } from '@/lib/firebaseTimestampToDate';
-import { AlertTriangle, CalendarDays, ChevronDown, ChevronLeft, Link2, Mail, ShieldCheck, UserCircle } from 'lucide-react';
+import { getUserDisplayInitial, getUserDisplayName } from '@/lib/user-display-name';
+import { AlertTriangle, AtSign, CalendarDays, ChevronDown, ChevronLeft, Link2, Mail, ShieldCheck, UserCircle } from 'lucide-react';
 import Link from 'next/link';
 import { useEffect, useMemo, useState } from 'react';
 import { useForm } from 'react-hook-form';
@@ -203,6 +204,7 @@ export function ProfileInformationFormModern() {
     defaultValues: {
       firstname: '',
       lastname: '',
+      pseudo: '',
       email: '',
       birthDate: '',
       phoneNumber: '',
@@ -225,6 +227,7 @@ export function ProfileInformationFormModern() {
     form.reset({
       firstname: user.firstname ?? '',
       lastname: user.lastname ?? '',
+      pseudo: user.pseudo ?? '',
       email: user.email ?? '',
       birthDate: user.birthDate ?? '',
       phoneNumber: user.phoneNumbers?.[0] ?? '',
@@ -279,6 +282,7 @@ export function ProfileInformationFormModern() {
       uid: user.uid,
       firstname: values.firstname,
       lastname: values.lastname,
+      pseudo: values.pseudo,
       birthDate: values.birthDate,
       phoneNumber: values.phoneNumber,
       countryCode: values.countryCode,
@@ -314,6 +318,8 @@ export function ProfileInformationFormModern() {
   const createdAt = firebaseTimestampToDate(user?.createdAt?.seconds, user?.createdAt?.nanoseconds);
   const updatedAt = firebaseTimestampToDate(user?.updatedAt?.seconds, user?.updatedAt?.nanoseconds);
   const avatarBackground = generateColorFromName(user?.firstname);
+  const displayName = getUserDisplayName(user);
+  const displayInitial = getUserDisplayInitial(user);
   const isPhoneChangeLocked = phoneChangeLockInfo.isLocked;
   const phoneLockUntilLabel = phoneChangeLockInfo.lockUntil?.toLocaleDateString('fr-FR') ?? '';
   const currentPhoneNumber = (user.phoneNumbers?.[0] ?? '').trim();
@@ -355,13 +361,18 @@ export function ProfileInformationFormModern() {
                 style={{ backgroundColor: avatarBackground }}
                 className="text-xl font-bold text-white"
               >
-                {user?.firstname?.at(0) ?? '?'}
+                {displayInitial || '?'}
               </AvatarFallback>
             </Avatar>
             <div>
               <p className="font-semibold text-gray-900 dark:text-white">
-                {user.firstname} {user.lastname}
+                {displayName}
               </p>
+              {user.pseudo?.trim() && (
+                <p className="text-xs text-gray-500 dark:text-gray-400">
+                  {user.firstname} {user.lastname}
+                </p>
+              )}
               <p className="text-sm text-gray-500 dark:text-gray-400">{user.email}</p>
             </div>
           </div>
@@ -425,6 +436,16 @@ export function ProfileInformationFormModern() {
                   disabled
                 />
               </div>
+
+              <InputFormApp
+                control={form.control}
+                name="pseudo"
+                label="Pseudo"
+                IconLucide={AtSign}
+                IconColor={INPUT_ICON_COLOR}
+                placeholder="Laissez vide pour afficher votre prénom et nom"
+                autoComplete="nickname"
+              />
 
               <InputFormApp
                 control={form.control}
