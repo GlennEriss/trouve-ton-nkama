@@ -152,10 +152,12 @@ export default auth(async (req) => {
         return NextResponse.redirect(signinUrl)
     }
 
+    // Inconditionnel (pas de `requiresAuth || isGuestOnlyRoute`) : un profil incomplet doit
+    // être complété avant TOUTE navigation, pas seulement sur les routes protégées. Sans ça,
+    // un compte fraîchement créé par téléphone (redirection par défaut vers /search, une route
+    // publique — voir PhoneAuthModal.tsx) traversait ce garde-fou sans jamais être redirigé.
     if (userNeedsProfileCompletion && !isProfileCompletionRoute) {
-        if (requiresAuth || isGuestOnlyRoute) {
-            return NextResponse.redirect(new URL(routes.public.completeProfile, nextUrl))
-        }
+        return NextResponse.redirect(new URL(routes.public.completeProfile, nextUrl))
     }
 
     if (isLoggedIn && isProfileCompletionRoute && !userNeedsProfileCompletion) {
