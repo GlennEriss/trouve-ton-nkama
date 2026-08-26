@@ -6,7 +6,7 @@ import { useForm } from 'react-hook-form';
 import { motion } from 'framer-motion';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { signOut, useSession } from 'next-auth/react';
+import { useSession } from 'next-auth/react';
 import { Building2, Home, Mail, Phone, Shield, Sparkles, Store, User } from 'lucide-react';
 import Logo from '@trouve-ton-nkama/ui/logo';
 import { Form } from '@/components/ui/form';
@@ -21,7 +21,7 @@ import { routes } from '@/constantes/routes';
 import { createLogger } from '@/lib/logger';
 import { getPostAuthRedirectPath } from '@/lib/auth/role-routing';
 import type { User as AuthUser } from '@/models/authentication';
-import { useCompleteProfile, mapCompleteProfileError } from '@/features/auth/hooks';
+import { useCompleteProfile, mapCompleteProfileError, useSignOut } from '@/features/auth/hooks';
 import { CompleteProfileSchema, type CompleteProfileSchemaType } from './complete-profile.schema';
 
 const logger = createLogger('auth.complete-profile-form-modern');
@@ -74,6 +74,7 @@ export const CompleteProfileFormModern: React.FC = () => {
     lastError,
     clearError,
   } = useCompleteProfile();
+  const { signOut, isSigningOut } = useSignOut(routes.public.signin);
 
   const form = useForm<CompleteProfileSchemaType>({
     resolver: zodResolver(CompleteProfileSchema),
@@ -550,11 +551,11 @@ export const CompleteProfileFormModern: React.FC = () => {
           <Button
             type="button"
             variant="outline"
-            onClick={() => signOut({ callbackUrl: routes.public.signin })}
-            disabled={isFormLoading}
+            onClick={signOut}
+            disabled={isFormLoading || isSigningOut}
             className="w-full mt-4 h-11 rounded-full"
           >
-            Se déconnecter
+            {isSigningOut ? 'Déconnexion...' : 'Se déconnecter'}
           </Button>
         </div>
       </div>

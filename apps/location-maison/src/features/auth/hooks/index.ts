@@ -29,3 +29,4 @@ export {
   type UsePhoneOtpAuthReturn,
   type PhoneOtpStep,
 } from './usePhoneOtpAuth';
+export { useSignOut, type UseSignOutReturn } from './useSignOut';
