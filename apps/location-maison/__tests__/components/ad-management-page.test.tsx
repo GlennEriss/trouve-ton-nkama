@@ -74,6 +74,34 @@ jest.mock('@trouve-ton-nkama/ui/dialog', () => ({
   DialogTitle: ({ children }: { children: React.ReactNode }) => <h2>{children}</h2>,
 }))
 
+jest.mock('@trouve-ton-nkama/ui/sheet', () => {
+  const ReactModule = require('react') as typeof React
+  const SheetContext = ReactModule.createContext<{ open: boolean; onOpenChange: (open: boolean) => void }>({
+    open: false,
+    onOpenChange: () => {},
+  })
+  return {
+    Sheet: ({ open, onOpenChange, children }: { open: boolean; onOpenChange: (open: boolean) => void; children: React.ReactNode }) => (
+      <SheetContext.Provider value={{ open, onOpenChange }}>{children}</SheetContext.Provider>
+    ),
+    SheetTrigger: ({ children }: { children: React.ReactElement }) => {
+      const { onOpenChange } = ReactModule.useContext(SheetContext)
+      return ReactModule.cloneElement(children, { onClick: () => onOpenChange(true) })
+    },
+    SheetContent: ({ children }: { children: React.ReactNode }) => {
+      const { open } = ReactModule.useContext(SheetContext)
+      return open ? <div role="dialog" aria-label="Filtres (mobile)">{children}</div> : null
+    },
+    SheetClose: ({ children }: { children: React.ReactElement }) => {
+      const { onOpenChange } = ReactModule.useContext(SheetContext)
+      return ReactModule.cloneElement(children, { onClick: () => onOpenChange(false) })
+    },
+    SheetHeader: ({ children }: { children: React.ReactNode }) => <header>{children}</header>,
+    SheetFooter: ({ children }: { children: React.ReactNode }) => <footer>{children}</footer>,
+    SheetTitle: ({ children }: { children: React.ReactNode }) => <h2>{children}</h2>,
+  }
+})
+
 function property(overrides: Partial<Property> = {}): Property {
   return {
     id: 'property-9b',
@@ -179,6 +207,31 @@ describe('AdManagementPage', () => {
     Object.defineProperty(global, 'IntersectionObserver', { configurable: true, value: IntersectionObserverMock })
   })
 
+  it('ouvre les filtres mobile dans un Sheet (bouton filtre à côté de la recherche), applique et réinitialise', () => {
+    // Retour utilisateur 2026-08-27 : la grille de ~9 filtres empilée sur une seule colonne
+    // mobile rendait /property "trop étouffé". Les mêmes contrôles vivent maintenant dans un
+    // Sheet, ouvert par un bouton filtre à côté de la recherche compacte.
+    render(<AdManagementPage />)
+
+    fireEvent.click(screen.getByRole('button', { name: 'Filtres' }))
+
+    const sheet = within(screen.getByRole('dialog', { name: 'Filtres (mobile)' }))
+    expect(sheet.getByText('Filtres')).toBeVisible()
+    expect(sheet.getByText('Type')).toBeVisible()
+    expect(sheet.getByText('Statut')).toBeVisible()
+    expect(sheet.getByText('État')).toBeVisible()
+    expect(sheet.getByText('Promotion')).toBeVisible()
+
+    fireEvent.change(sheet.getByLabelText('Prix min (FCFA)'), { target: { value: '15000' } })
+    expect(setPriceMinMock).toHaveBeenCalledWith('15000')
+
+    fireEvent.click(sheet.getByRole('button', { name: 'Réinitialiser' }))
+    expect(resetFiltersMock).toHaveBeenCalled()
+
+    fireEvent.click(sheet.getByRole('button', { name: 'Voir les résultats' }))
+    expect(screen.queryByRole('dialog', { name: 'Filtres (mobile)' })).not.toBeInTheDocument()
+  })
+
   it('affiche les statistiques, cartes et filtres puis charge la page suivante', async () => {
     render(<AdManagementPage />)
 
@@ -198,11 +251,16 @@ describe('AdManagementPage', () => {
     )
     await waitFor(() => expect(fetchNextPageMock).toHaveBeenCalled())
 
-    fireEvent.change(screen.getByLabelText('Recherche'), { target: { value: 'Owendo' } })
-    fireEvent.click(screen.getByRole('button', { name: 'Effacer la recherche' }))
-    fireEvent.change(screen.getByLabelText('Prix min (FCFA)'), { target: { value: '25000' } })
-    fireEvent.change(screen.getByLabelText('Prix max (FCFA)'), { target: { value: '80000' } })
-    fireEvent.click(screen.getByRole('button', { name: 'Réinitialiser' }))
+    // La barre de recherche/filtres existe deux fois dans le DOM (section desktop toujours
+    // montée + barre compacte mobile masquée par CSS uniquement — jsdom ne résout pas les
+    // media queries) : on scope sur la section desktop, identifiée par son champ labellisé
+    // "Recherche" (seule la version desktop porte ce label).
+    const desktopFiltersSection = screen.getByLabelText('Recherche').closest('section') as HTMLElement
+    fireEvent.change(within(desktopFiltersSection).getByLabelText('Recherche'), { target: { value: 'Owendo' } })
+    fireEvent.click(within(desktopFiltersSection).getByRole('button', { name: 'Effacer la recherche' }))
+    fireEvent.change(within(desktopFiltersSection).getByLabelText('Prix min (FCFA)'), { target: { value: '25000' } })
+    fireEvent.change(within(desktopFiltersSection).getByLabelText('Prix max (FCFA)'), { target: { value: '80000' } })
+    fireEvent.click(within(desktopFiltersSection).getByRole('button', { name: 'Réinitialiser' }))
 
     expect(setSearchInputMock).toHaveBeenCalledWith('Owendo')
     expect(setSearchInputMock).toHaveBeenCalledWith('')
