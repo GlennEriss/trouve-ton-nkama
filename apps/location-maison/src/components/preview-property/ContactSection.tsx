@@ -76,11 +76,7 @@ export default function ContactSection({ property }: Readonly<{ property: Proper
                                         size={isDesktop ? 22 : 30}
                                         className="text-green-600"
                                     />
-                                    {isDesktop && entry.call && (
-                                        <span className="font-medium select-all">
-                                            {entry.call}
-                                        </span>
-                                    )}
+                                    {isDesktop && <span className="font-medium">WhatsApp</span>}
                                 </div>
                             </Link>
                             {shownIndexes.has(index) ? (
