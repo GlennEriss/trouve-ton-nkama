@@ -74,6 +74,14 @@ jest.mock('@trouve-ton-nkama/ui/dialog', () => ({
   DialogTitle: ({ children }: { children: React.ReactNode }) => <h2>{children}</h2>,
 }))
 
+// Embla (utilisé sous le capot par Carousel) appelle window.matchMedia, absent de jsdom —
+// même mock que preview-property-carousel-property.test.tsx.
+jest.mock('@trouve-ton-nkama/ui/carousel', () => ({
+  Carousel: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
+  CarouselContent: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
+  CarouselItem: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
+}))
+
 jest.mock('@trouve-ton-nkama/ui/sheet', () => {
   const ReactModule = require('react') as typeof React
   const SheetContext = ReactModule.createContext<{ open: boolean; onOpenChange: (open: boolean) => void }>({
@@ -339,9 +347,10 @@ describe('AdManagementPage', () => {
     expect(screen.getByLabelText("Statut de l'annonce")).toBeInTheDocument()
     expect(screen.queryByLabelText('Catégorie')).not.toBeInTheDocument()
 
-    // Les libellés « À louer »/« À vendre » existent aussi en badge sur les cartes : on vise
-    // le panneau de statistiques pour ne tester que lui.
-    const stats = within(screen.getByRole('tabpanel'))
+    // Les libellés « À louer »/« À vendre » existent aussi en badge sur les cartes, et les
+    // cartes de stats elles-mêmes existent deux fois dans le DOM (grille desktop + carousel
+    // mobile, CSS-only côté visibilité) : on scope sur la grille desktop.
+    const stats = within(screen.getByTestId('ad-stats-desktop'))
     expect(stats.getByText('À louer')).toBeVisible()
     expect(stats.getByText('À vendre')).toBeVisible()
     expect(stats.queryByText('En modération')).not.toBeInTheDocument()
@@ -359,7 +368,10 @@ describe('AdManagementPage', () => {
     expect(screen.queryByLabelText('Type de bien')).not.toBeInTheDocument()
     expect(screen.queryByLabelText("Statut de l'annonce")).not.toBeInTheDocument()
 
-    const stats = within(screen.getByRole('tabpanel'))
+    // Les cartes de stats existent deux fois dans le DOM (grille desktop toujours montée +
+    // carousel mobile masqué par CSS uniquement — jsdom ne résout pas les media queries) : on
+    // scope sur la grille desktop, identifiée par son data-testid.
+    const stats = within(screen.getByTestId('ad-stats-desktop'))
     expect(stats.getByText('En modération')).toBeVisible()
     expect(stats.getByText('Catégories')).toBeVisible()
     expect(stats.queryByText('À louer')).not.toBeInTheDocument()
@@ -386,9 +398,10 @@ describe('AdManagementPage', () => {
     // La catégorie apparaît deux fois : en badge (à la place de « À vendre », qui n'a pas de
     // sens hors immobilier) et en sous-titre de la carte.
     expect(screen.getAllByText('Vêtements')).toHaveLength(2)
-    // Une seule occurrence restante : la carte de statistiques. Le badge de l'annonce, lui,
-    // ne dit plus « À vendre ».
-    expect(screen.getAllByText('À vendre')).toHaveLength(1)
+    // Seule la carte de statistiques dit encore « À vendre » — présente deux fois dans le DOM
+    // (grille desktop + carousel mobile, cf. ad-stats-desktop/ad-stats-mobile). Le badge de
+    // l'annonce, lui, ne dit plus « À vendre ».
+    expect(screen.getAllByText('À vendre')).toHaveLength(2)
     expect(screen.getByText('Libreville, Estuaire')).toBeVisible()
     expect(screen.getByRole('link', { name: /Modifier/ })).toHaveAttribute(
       'href',

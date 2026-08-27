@@ -21,6 +21,7 @@ import {
   SheetTitle,
   SheetTrigger,
 } from '@trouve-ton-nkama/ui/sheet';
+import { Carousel, CarouselContent, CarouselItem } from '@trouve-ton-nkama/ui/carousel';
 import { Skeleton } from '@trouve-ton-nkama/ui/skeleton';
 import PromotionBadge from '@/components/promotion/PromotionBadge';
 import PromotionButton from '@/components/promotion/PromotionButton';
@@ -564,6 +565,32 @@ export function AdManagementPage() {
     }
   }, [deleteCandidate, handleDelete]);
 
+  // Une seule liste, consommée par la grille desktop ET le carousel mobile — évite de
+  // dupliquer 6 <StatCard> littéralement pour chaque mise en page.
+  const statCards: Array<{
+    key: string;
+    title: string;
+    value: number;
+    icon: ComponentType<{ className?: string }>;
+    tone?: StatCardProps['tone'];
+  }> = [
+    { key: 'total', title: 'Total annonces', value: summary.global.total, icon: Layers3, tone: 'accent' },
+    { key: 'active', title: 'Actives', value: summary.global.active, icon: TrendingUp, tone: 'success' },
+    { key: 'archived', title: 'Archivées', value: summary.global.archived, icon: Archive, tone: 'warning' },
+    { key: 'promoted', title: 'Promues', value: summary.global.promoted, icon: BadgeDollarSign, tone: 'accent' },
+    // Louer/vendre n'existe pas hors immobilier : on montre ce qui pilote réellement une
+    // annonce marketplace, sa modération et son rangement.
+    ...(isMarketplaceScope
+      ? [
+          { key: 'pendingModeration', title: 'En modération', value: summary.global.pendingModeration, icon: Clock3, tone: 'warning' as const },
+          { key: 'categoriesUsed', title: 'Catégories', value: summary.global.categoriesUsed, icon: TagIcon },
+        ]
+      : [
+          { key: 'forRent', title: 'À louer', value: summary.global.forRent, icon: Building2 },
+          { key: 'forSale', title: 'À vendre', value: summary.global.forSale, icon: Building2 },
+        ]),
+  ];
+
   // Réutilisé tel quel dans la grille desktop ET dans le Sheet mobile (mêmes state/handlers,
   // filtrage toujours en direct) — idPrefix évite les id/htmlFor dupliqués entre les deux
   // rendus simultanés dans le DOM (un seul visible à la fois selon la largeur d'écran).
@@ -796,30 +823,29 @@ export function AdManagementPage() {
         </div>
       </section>
 
-      <section
-        id="ad-scope-panel"
-        role="tabpanel"
-        aria-labelledby={`ad-scope-tab-${filters.scope}`}
-        className="grid grid-cols-2 gap-3 md:grid-cols-3 xl:grid-cols-6"
-      >
-        <StatCard title="Total annonces" value={summary.global.total} icon={Layers3} tone="accent" />
-        <StatCard title="Actives" value={summary.global.active} icon={TrendingUp} tone="success" />
-        <StatCard title="Archivées" value={summary.global.archived} icon={Archive} tone="warning" />
-        <StatCard title="Promues" value={summary.global.promoted} icon={BadgeDollarSign} tone="accent" />
-        {isMarketplaceScope ? (
-          <>
-            {/* Louer/vendre n'existe pas hors immobilier : on montre ce qui pilote réellement
-                une annonce marketplace, sa modération et son rangement. */}
-            <StatCard title="En modération" value={summary.global.pendingModeration} icon={Clock3} tone="warning" />
-            <StatCard title="Catégories" value={summary.global.categoriesUsed} icon={TagIcon} />
-          </>
-        ) : (
-          <>
-            <StatCard title="À louer" value={summary.global.forRent} icon={Building2} />
-            <StatCard title="À vendre" value={summary.global.forSale} icon={Building2} />
-          </>
-        )}
-      </section>
+      <div id="ad-scope-panel" role="tabpanel" aria-labelledby={`ad-scope-tab-${filters.scope}`}>
+        {/* Mobile (<md) : carousel horizontal — 6 cartes empilées en grille 2 colonnes prenaient
+            trop de hauteur d'écran avant même d'atteindre les annonces (retour utilisateur
+            2026-08-27). Desktop (>=md) inchangé : déjà aligné sur une seule ligne, où la place
+            ne manque pas. */}
+        <div className="md:hidden" data-testid="ad-stats-mobile">
+          <Carousel opts={{ align: 'start', dragFree: true }}>
+            <CarouselContent className="-ml-3">
+              {statCards.map((stat) => (
+                <CarouselItem key={stat.key} className="basis-[42%] pl-3">
+                  <StatCard title={stat.title} value={stat.value} icon={stat.icon} tone={stat.tone} />
+                </CarouselItem>
+              ))}
+            </CarouselContent>
+          </Carousel>
+        </div>
+
+        <div className="hidden gap-3 md:grid md:grid-cols-3 xl:grid-cols-6" data-testid="ad-stats-desktop">
+          {statCards.map((stat) => (
+            <StatCard key={stat.key} title={stat.title} value={stat.value} icon={stat.icon} tone={stat.tone} />
+          ))}
+        </div>
+      </div>
 
       {/* Mobile (<md) : barre compacte recherche + bouton filtres ouvrant un Sheet, pour ne
           pas empiler ~9 contrôles en colonne unique sur un petit écran ("trop étouffé" —
