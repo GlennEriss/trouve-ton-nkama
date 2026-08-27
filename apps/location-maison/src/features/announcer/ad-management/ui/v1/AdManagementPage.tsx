@@ -229,19 +229,23 @@ function StatCard({ title, value, icon: Icon, tone = 'neutral' }: StatCardProps)
   return (
     <Card
       className={cn(
-        'border p-4 transition-all duration-300 hover:-translate-y-0.5 hover:shadow-md',
+        // h-full : sans ça, une carte au titre plus long ("Total annonces", "En modération")
+        // passe sur deux lignes et devient visiblement plus haute que ses voisines — grid et
+        // flex étirent déjà leur conteneur (align-items: stretch par défaut) à la hauteur de
+        // la plus grande carte de la rangée, encore faut-il que la carte elle-même en profite.
+        'flex h-full flex-col justify-center border p-4 transition-all duration-300 hover:-translate-y-0.5 hover:shadow-md',
         tone === 'success' && 'border-emerald-200 bg-emerald-50/60 dark:border-emerald-800 dark:bg-emerald-900/20',
         tone === 'warning' && 'border-amber-200 bg-amber-50/70 dark:border-amber-800 dark:bg-amber-900/20',
         tone === 'accent' && 'border-secondary/30 bg-secondary/5 dark:border-secondary/50 dark:bg-secondary/10',
         tone === 'neutral' && 'border-gray-200 bg-white dark:border-gray-800 dark:bg-gray-900'
       )}
     >
-      <div className="flex items-center justify-between">
-        <div>
+      <div className="flex items-center justify-between gap-3">
+        <div className="min-w-0">
           <p className="text-xs text-gray-500 dark:text-gray-400">{title}</p>
           <p className="mt-1 text-2xl font-bold text-gray-900 dark:text-white">{value}</p>
         </div>
-        <div className="rounded-xl bg-white/70 p-2 dark:bg-black/20">
+        <div className="shrink-0 rounded-xl bg-white/70 p-2 dark:bg-black/20">
           <Icon className="h-5 w-5 text-primary" />
         </div>
       </div>
