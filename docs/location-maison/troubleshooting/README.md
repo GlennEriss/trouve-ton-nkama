@@ -5,6 +5,7 @@ Ce dossier contient la documentation relative au dépannage et aux diagnostics d
 ## 📄 Fichiers
 
 - **DIAGNOSTIC_SIGNUP.md** : Diagnostic des problèmes d'inscription
+- **BUGS-AUTH-E2E-2026-08.md** : Bugs trouvés par les tests e2e Playwright réels de l'auth (checkbox complete-profile, DateSelect, couverture manquante)
 
 ---
 

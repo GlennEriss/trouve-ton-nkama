@@ -232,6 +232,16 @@ describe('AdManagementPage', () => {
 
     fireEvent.change(sheet.getByLabelText('Prix min (FCFA)'), { target: { value: '15000' } })
     expect(setPriceMinMock).toHaveBeenCalledWith('15000')
+    fireEvent.change(sheet.getByLabelText('Prix max (FCFA)'), { target: { value: '90000' } })
+    expect(setPriceMaxMock).toHaveBeenCalledWith('90000')
+
+    // Type, Statut, État, Promotion, Tri : chacun de ces selects a son propre gestionnaire
+    // onValueChange (un par champ), qu'un simple rendu n'exerce jamais.
+    sheet.getAllByTestId('change-select').forEach((button) => fireEvent.click(button))
+    expect(managementState.setTypeFilter).toHaveBeenCalled()
+    expect(managementState.setStatusFilter).toHaveBeenCalled()
+    expect(managementState.setStateFilter).toHaveBeenCalled()
+    expect(managementState.setPromotedFilter).toHaveBeenCalled()
 
     fireEvent.click(sheet.getByRole('button', { name: 'Réinitialiser' }))
     expect(resetFiltersMock).toHaveBeenCalled()
@@ -268,6 +278,15 @@ describe('AdManagementPage', () => {
     fireEvent.click(within(desktopFiltersSection).getByRole('button', { name: 'Effacer la recherche' }))
     fireEvent.change(within(desktopFiltersSection).getByLabelText('Prix min (FCFA)'), { target: { value: '25000' } })
     fireEvent.change(within(desktopFiltersSection).getByLabelText('Prix max (FCFA)'), { target: { value: '80000' } })
+
+    // Grille desktop : mêmes champs Type/Statut/État/Promotion/Tri que le Sheet mobile, mais
+    // rendus par un bloc JSX distinct (donc des gestionnaires onValueChange distincts).
+    within(desktopFiltersSection).getAllByTestId('change-select').forEach((button) => fireEvent.click(button))
+    expect(managementState.setTypeFilter).toHaveBeenCalled()
+    expect(managementState.setStatusFilter).toHaveBeenCalled()
+    expect(managementState.setStateFilter).toHaveBeenCalled()
+    expect(managementState.setPromotedFilter).toHaveBeenCalled()
+
     fireEvent.click(within(desktopFiltersSection).getByRole('button', { name: 'Réinitialiser' }))
 
     expect(setSearchInputMock).toHaveBeenCalledWith('Owendo')
@@ -275,6 +294,14 @@ describe('AdManagementPage', () => {
     expect(setPriceMinMock).toHaveBeenCalledWith('25000')
     expect(setPriceMaxMock).toHaveBeenCalledWith('80000')
     expect(resetFiltersMock).toHaveBeenCalled()
+
+    // Barre compacte mobile (<md, masquée par CSS uniquement — toujours montée sous jsdom) :
+    // recherche + son bouton "Effacer la recherche" propres, distincts de la section desktop.
+    const mobileSearchInput = screen.getAllByPlaceholderText('Titre, description, ville, quartier...')[0]
+    fireEvent.change(mobileSearchInput, { target: { value: 'Nkembo' } })
+    expect(setSearchInputMock).toHaveBeenCalledWith('Nkembo')
+    fireEvent.click(screen.getAllByRole('button', { name: 'Effacer la recherche' })[0])
+    expect(setSearchInputMock).toHaveBeenCalledWith('')
   })
 
   it('confirme l archivage et la suppression avec les messages attendus', async () => {
@@ -376,6 +403,16 @@ describe('AdManagementPage', () => {
     expect(stats.getByText('Catégories')).toBeVisible()
     expect(stats.queryByText('À louer')).not.toBeInTheDocument()
     expect(stats.queryByText('À vendre')).not.toBeInTheDocument()
+
+    // Le select Catégorie (desktop ET Sheet mobile) n'existe qu'en scope marketplace — son
+    // gestionnaire onValueChange n'est donc jamais exercé par les tests en scope immobilier.
+    // Catégorie est le premier select rendu dans chaque bloc (desktop, puis Sheet mobile).
+    const desktopFiltersSection = screen.getByLabelText('Recherche').closest('section') as HTMLElement
+    fireEvent.click(within(desktopFiltersSection).getAllByTestId('change-select')[0])
+    fireEvent.click(screen.getByRole('button', { name: 'Filtres' }))
+    const sheet = within(screen.getByRole('dialog', { name: 'Filtres (mobile)' }))
+    fireEvent.click(sheet.getAllByTestId('change-select')[0])
+    expect(managementState.setCategoryFilter).toHaveBeenCalled()
   })
 
   it('affiche une annonce multi-categorie (sans typeProperty) avec son sous-titre, sa localisation et son lien de modification', () => {

@@ -66,15 +66,19 @@ export const DateSelect = <T extends FieldValues>({
           value: String(i + 1).padStart(2, '0')
         }));
 
-        // Forcer la validation quand les valeurs changent
+        const currentDay = currentValues?.[name]?.day || '';
+
+        // Forcer la validation quand les valeurs changent. Dépendances sur des
+        // primitives (pas l'objet currentValues?.[name], une référence neuve à
+        // chaque rendu) : sinon l'effet se redéclenche en boucle à chaque rendu
+        // et le Select (Radix) de la date de naissance ne se referme jamais
+        // correctement après une sélection (constaté en e2e réel, pas seulement
+        // sous les mocks Jest — cf. complete-profile-form-modern-validation.test.tsx).
         useEffect(() => {
-          const currentDate = currentValues?.[name];
-          // Déclencher la validation dès qu'au moins un champ est rempli
-          if (currentDate?.day || currentDate?.month || currentDate?.year) {
-            // Forcer la validation immédiatement
+          if (currentDay || currentMonth || currentYear) {
             (control as any)._trigger?.(name);
           }
-        }, [currentValues?.[name], control, name]);
+        }, [currentDay, currentMonth, currentYear, control, name]);
         
         return (
           <FormItem>

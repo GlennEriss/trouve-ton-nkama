@@ -174,7 +174,7 @@ export default function SigninMobileComponent() {
 
         <div className="flex items-center my-6 md:mt-10">
           <div className="flex-grow h-px bg-gray-300"></div>
-          <span className="px-4 py-1 text-primary bg-primary-50 rounded-full text-sm font-medium">OU</span>
+          <span className="px-4 py-1 text-primary bg-primary-50 dark:bg-gray-800 dark:text-primary-200 rounded-full text-sm font-medium">OU</span>
           <div className="flex-grow h-px bg-gray-300"></div>
         </div>
 

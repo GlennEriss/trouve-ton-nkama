@@ -57,6 +57,7 @@ export default function MobileSidebar({
           isOpen ? "translate-x-0" : "-translate-x-full",
         )}
         aria-hidden={!isOpen}
+        inert={!isOpen}
       >
         <div className="flex items-center justify-between border-b border-gray-200 px-4 py-4 dark:border-gray-800">
           <Link href="/" onClick={onClose} className="flex items-center gap-2">

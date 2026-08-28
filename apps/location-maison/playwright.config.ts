@@ -22,7 +22,7 @@ try {
   console.warn(`⚠️  Could not load ${envFile}, using default environment variables`);
 }
 
-const serverUrl = 'http://localhost:3001';
+const serverUrl = process.env.E2E_BASE_URL || 'http://localhost:3001';
 
 // En CI, toujours démarrer le serveur
 // En local, réutiliser le serveur s'il existe (reuseExistingServer: true)
@@ -49,6 +49,11 @@ export default defineConfig({
     screenshot: 'only-on-failure',
     video: 'on-first-retry',
     actionTimeout: 10 * 1000,
+    // Refuse la géolocalisation par défaut : sans ça, le navigateur affiche
+    // une vraie invite native ("Connaître votre position ?") qui bloque la
+    // vue en mode --headed et peut perturber le timing des tests.
+    permissions: [],
+    geolocation: undefined,
   },
 
   // Multi-navigateurs + Multi-viewports
