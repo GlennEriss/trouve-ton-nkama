@@ -74,6 +74,42 @@ jest.mock('@trouve-ton-nkama/ui/dialog', () => ({
   DialogTitle: ({ children }: { children: React.ReactNode }) => <h2>{children}</h2>,
 }))
 
+// Embla (utilisé sous le capot par Carousel) appelle window.matchMedia, absent de jsdom —
+// même mock que preview-property-carousel-property.test.tsx.
+jest.mock('@trouve-ton-nkama/ui/carousel', () => ({
+  Carousel: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
+  CarouselContent: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
+  CarouselItem: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
+}))
+
+jest.mock('@trouve-ton-nkama/ui/sheet', () => {
+  const ReactModule = require('react') as typeof React
+  const SheetContext = ReactModule.createContext<{ open: boolean; onOpenChange: (open: boolean) => void }>({
+    open: false,
+    onOpenChange: () => {},
+  })
+  return {
+    Sheet: ({ open, onOpenChange, children }: { open: boolean; onOpenChange: (open: boolean) => void; children: React.ReactNode }) => (
+      <SheetContext.Provider value={{ open, onOpenChange }}>{children}</SheetContext.Provider>
+    ),
+    SheetTrigger: ({ children }: { children: React.ReactElement }) => {
+      const { onOpenChange } = ReactModule.useContext(SheetContext)
+      return ReactModule.cloneElement(children, { onClick: () => onOpenChange(true) })
+    },
+    SheetContent: ({ children }: { children: React.ReactNode }) => {
+      const { open } = ReactModule.useContext(SheetContext)
+      return open ? <div role="dialog" aria-label="Filtres (mobile)">{children}</div> : null
+    },
+    SheetClose: ({ children }: { children: React.ReactElement }) => {
+      const { onOpenChange } = ReactModule.useContext(SheetContext)
+      return ReactModule.cloneElement(children, { onClick: () => onOpenChange(false) })
+    },
+    SheetHeader: ({ children }: { children: React.ReactNode }) => <header>{children}</header>,
+    SheetFooter: ({ children }: { children: React.ReactNode }) => <footer>{children}</footer>,
+    SheetTitle: ({ children }: { children: React.ReactNode }) => <h2>{children}</h2>,
+  }
+})
+
 function property(overrides: Partial<Property> = {}): Property {
   return {
     id: 'property-9b',
@@ -179,6 +215,41 @@ describe('AdManagementPage', () => {
     Object.defineProperty(global, 'IntersectionObserver', { configurable: true, value: IntersectionObserverMock })
   })
 
+  it('ouvre les filtres mobile dans un Sheet (bouton filtre à côté de la recherche), applique et réinitialise', () => {
+    // Retour utilisateur 2026-08-27 : la grille de ~9 filtres empilée sur une seule colonne
+    // mobile rendait /property "trop étouffé". Les mêmes contrôles vivent maintenant dans un
+    // Sheet, ouvert par un bouton filtre à côté de la recherche compacte.
+    render(<AdManagementPage />)
+
+    fireEvent.click(screen.getByRole('button', { name: 'Filtres' }))
+
+    const sheet = within(screen.getByRole('dialog', { name: 'Filtres (mobile)' }))
+    expect(sheet.getByText('Filtres')).toBeVisible()
+    expect(sheet.getByText('Type')).toBeVisible()
+    expect(sheet.getByText('Statut')).toBeVisible()
+    expect(sheet.getByText('État')).toBeVisible()
+    expect(sheet.getByText('Promotion')).toBeVisible()
+
+    fireEvent.change(sheet.getByLabelText('Prix min (FCFA)'), { target: { value: '15000' } })
+    expect(setPriceMinMock).toHaveBeenCalledWith('15000')
+    fireEvent.change(sheet.getByLabelText('Prix max (FCFA)'), { target: { value: '90000' } })
+    expect(setPriceMaxMock).toHaveBeenCalledWith('90000')
+
+    // Type, Statut, État, Promotion, Tri : chacun de ces selects a son propre gestionnaire
+    // onValueChange (un par champ), qu'un simple rendu n'exerce jamais.
+    sheet.getAllByTestId('change-select').forEach((button) => fireEvent.click(button))
+    expect(managementState.setTypeFilter).toHaveBeenCalled()
+    expect(managementState.setStatusFilter).toHaveBeenCalled()
+    expect(managementState.setStateFilter).toHaveBeenCalled()
+    expect(managementState.setPromotedFilter).toHaveBeenCalled()
+
+    fireEvent.click(sheet.getByRole('button', { name: 'Réinitialiser' }))
+    expect(resetFiltersMock).toHaveBeenCalled()
+
+    fireEvent.click(sheet.getByRole('button', { name: 'Voir les résultats' }))
+    expect(screen.queryByRole('dialog', { name: 'Filtres (mobile)' })).not.toBeInTheDocument()
+  })
+
   it('affiche les statistiques, cartes et filtres puis charge la page suivante', async () => {
     render(<AdManagementPage />)
 
@@ -198,17 +269,39 @@ describe('AdManagementPage', () => {
     )
     await waitFor(() => expect(fetchNextPageMock).toHaveBeenCalled())
 
-    fireEvent.change(screen.getByLabelText('Recherche'), { target: { value: 'Owendo' } })
-    fireEvent.click(screen.getByRole('button', { name: 'Effacer la recherche' }))
-    fireEvent.change(screen.getByLabelText('Prix min (FCFA)'), { target: { value: '25000' } })
-    fireEvent.change(screen.getByLabelText('Prix max (FCFA)'), { target: { value: '80000' } })
-    fireEvent.click(screen.getByRole('button', { name: 'Réinitialiser' }))
+    // La barre de recherche/filtres existe deux fois dans le DOM (section desktop toujours
+    // montée + barre compacte mobile masquée par CSS uniquement — jsdom ne résout pas les
+    // media queries) : on scope sur la section desktop, identifiée par son champ labellisé
+    // "Recherche" (seule la version desktop porte ce label).
+    const desktopFiltersSection = screen.getByLabelText('Recherche').closest('section') as HTMLElement
+    fireEvent.change(within(desktopFiltersSection).getByLabelText('Recherche'), { target: { value: 'Owendo' } })
+    fireEvent.click(within(desktopFiltersSection).getByRole('button', { name: 'Effacer la recherche' }))
+    fireEvent.change(within(desktopFiltersSection).getByLabelText('Prix min (FCFA)'), { target: { value: '25000' } })
+    fireEvent.change(within(desktopFiltersSection).getByLabelText('Prix max (FCFA)'), { target: { value: '80000' } })
+
+    // Grille desktop : mêmes champs Type/Statut/État/Promotion/Tri que le Sheet mobile, mais
+    // rendus par un bloc JSX distinct (donc des gestionnaires onValueChange distincts).
+    within(desktopFiltersSection).getAllByTestId('change-select').forEach((button) => fireEvent.click(button))
+    expect(managementState.setTypeFilter).toHaveBeenCalled()
+    expect(managementState.setStatusFilter).toHaveBeenCalled()
+    expect(managementState.setStateFilter).toHaveBeenCalled()
+    expect(managementState.setPromotedFilter).toHaveBeenCalled()
+
+    fireEvent.click(within(desktopFiltersSection).getByRole('button', { name: 'Réinitialiser' }))
 
     expect(setSearchInputMock).toHaveBeenCalledWith('Owendo')
     expect(setSearchInputMock).toHaveBeenCalledWith('')
     expect(setPriceMinMock).toHaveBeenCalledWith('25000')
     expect(setPriceMaxMock).toHaveBeenCalledWith('80000')
     expect(resetFiltersMock).toHaveBeenCalled()
+
+    // Barre compacte mobile (<md, masquée par CSS uniquement — toujours montée sous jsdom) :
+    // recherche + son bouton "Effacer la recherche" propres, distincts de la section desktop.
+    const mobileSearchInput = screen.getAllByPlaceholderText('Titre, description, ville, quartier...')[0]
+    fireEvent.change(mobileSearchInput, { target: { value: 'Nkembo' } })
+    expect(setSearchInputMock).toHaveBeenCalledWith('Nkembo')
+    fireEvent.click(screen.getAllByRole('button', { name: 'Effacer la recherche' })[0])
+    expect(setSearchInputMock).toHaveBeenCalledWith('')
   })
 
   it('confirme l archivage et la suppression avec les messages attendus', async () => {
@@ -281,9 +374,10 @@ describe('AdManagementPage', () => {
     expect(screen.getByLabelText("Statut de l'annonce")).toBeInTheDocument()
     expect(screen.queryByLabelText('Catégorie')).not.toBeInTheDocument()
 
-    // Les libellés « À louer »/« À vendre » existent aussi en badge sur les cartes : on vise
-    // le panneau de statistiques pour ne tester que lui.
-    const stats = within(screen.getByRole('tabpanel'))
+    // Les libellés « À louer »/« À vendre » existent aussi en badge sur les cartes, et les
+    // cartes de stats elles-mêmes existent deux fois dans le DOM (grille desktop + carousel
+    // mobile, CSS-only côté visibilité) : on scope sur la grille desktop.
+    const stats = within(screen.getByTestId('ad-stats-desktop'))
     expect(stats.getByText('À louer')).toBeVisible()
     expect(stats.getByText('À vendre')).toBeVisible()
     expect(stats.queryByText('En modération')).not.toBeInTheDocument()
@@ -301,11 +395,24 @@ describe('AdManagementPage', () => {
     expect(screen.queryByLabelText('Type de bien')).not.toBeInTheDocument()
     expect(screen.queryByLabelText("Statut de l'annonce")).not.toBeInTheDocument()
 
-    const stats = within(screen.getByRole('tabpanel'))
+    // Les cartes de stats existent deux fois dans le DOM (grille desktop toujours montée +
+    // carousel mobile masqué par CSS uniquement — jsdom ne résout pas les media queries) : on
+    // scope sur la grille desktop, identifiée par son data-testid.
+    const stats = within(screen.getByTestId('ad-stats-desktop'))
     expect(stats.getByText('En modération')).toBeVisible()
     expect(stats.getByText('Catégories')).toBeVisible()
     expect(stats.queryByText('À louer')).not.toBeInTheDocument()
     expect(stats.queryByText('À vendre')).not.toBeInTheDocument()
+
+    // Le select Catégorie (desktop ET Sheet mobile) n'existe qu'en scope marketplace — son
+    // gestionnaire onValueChange n'est donc jamais exercé par les tests en scope immobilier.
+    // Catégorie est le premier select rendu dans chaque bloc (desktop, puis Sheet mobile).
+    const desktopFiltersSection = screen.getByLabelText('Recherche').closest('section') as HTMLElement
+    fireEvent.click(within(desktopFiltersSection).getAllByTestId('change-select')[0])
+    fireEvent.click(screen.getByRole('button', { name: 'Filtres' }))
+    const sheet = within(screen.getByRole('dialog', { name: 'Filtres (mobile)' }))
+    fireEvent.click(sheet.getAllByTestId('change-select')[0])
+    expect(managementState.setCategoryFilter).toHaveBeenCalled()
   })
 
   it('affiche une annonce multi-categorie (sans typeProperty) avec son sous-titre, sa localisation et son lien de modification', () => {
@@ -328,9 +435,10 @@ describe('AdManagementPage', () => {
     // La catégorie apparaît deux fois : en badge (à la place de « À vendre », qui n'a pas de
     // sens hors immobilier) et en sous-titre de la carte.
     expect(screen.getAllByText('Vêtements')).toHaveLength(2)
-    // Une seule occurrence restante : la carte de statistiques. Le badge de l'annonce, lui,
-    // ne dit plus « À vendre ».
-    expect(screen.getAllByText('À vendre')).toHaveLength(1)
+    // Seule la carte de statistiques dit encore « À vendre » — présente deux fois dans le DOM
+    // (grille desktop + carousel mobile, cf. ad-stats-desktop/ad-stats-mobile). Le badge de
+    // l'annonce, lui, ne dit plus « À vendre ».
+    expect(screen.getAllByText('À vendre')).toHaveLength(2)
     expect(screen.getByText('Libreville, Estuaire')).toBeVisible()
     expect(screen.getByRole('link', { name: /Modifier/ })).toHaveAttribute(
       'href',

@@ -47,7 +47,7 @@ export default function Notifications() {
 
   return (
     <Popover>
-      <PopoverTrigger>
+      <PopoverTrigger asChild>
         <NotificationButton unreadCount={unreadCount} />
       </PopoverTrigger>
 

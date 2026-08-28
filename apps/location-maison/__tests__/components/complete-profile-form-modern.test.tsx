@@ -55,6 +55,7 @@ jest.mock('@/features/auth/hooks', () => ({
     clearError: clearErrorMock,
   }),
   mapCompleteProfileError: () => ({ title: 'Session invalide', message: 'Utilisateur introuvable', duration: 7000 }),
+  useSignOut: () => ({ signOut: signOutMock, isSigningOut: false }),
 }))
 
 jest.mock('@/lib/auth/role-routing', () => ({
@@ -286,6 +287,6 @@ describe('CompleteProfileFormModern', () => {
     await waitFor(() => expect(toastMock).toHaveBeenCalledWith(expect.objectContaining({ title: 'Profil invalide' })))
     expect(clearErrorMock).toHaveBeenCalled()
     fireEvent.click(screen.getByRole('button', { name: 'Se déconnecter' }))
-    expect(signOutMock).toHaveBeenCalledWith({ callbackUrl: '/signin' })
+    expect(signOutMock).toHaveBeenCalledTimes(1)
   })
 })

@@ -12,6 +12,16 @@ import {
 } from '@trouve-ton-nkama/ui/dialog';
 import { Input } from '@trouve-ton-nkama/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@trouve-ton-nkama/ui/select';
+import {
+  Sheet,
+  SheetClose,
+  SheetContent,
+  SheetFooter,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from '@trouve-ton-nkama/ui/sheet';
+import { Carousel, CarouselContent, CarouselItem } from '@trouve-ton-nkama/ui/carousel';
 import { Skeleton } from '@trouve-ton-nkama/ui/skeleton';
 import PromotionBadge from '@/components/promotion/PromotionBadge';
 import PromotionButton from '@/components/promotion/PromotionButton';
@@ -219,19 +229,23 @@ function StatCard({ title, value, icon: Icon, tone = 'neutral' }: StatCardProps)
   return (
     <Card
       className={cn(
-        'border p-4 transition-all duration-300 hover:-translate-y-0.5 hover:shadow-md',
+        // h-full : sans ça, une carte au titre plus long ("Total annonces", "En modération")
+        // passe sur deux lignes et devient visiblement plus haute que ses voisines — grid et
+        // flex étirent déjà leur conteneur (align-items: stretch par défaut) à la hauteur de
+        // la plus grande carte de la rangée, encore faut-il que la carte elle-même en profite.
+        'flex h-full flex-col justify-center border p-4 transition-all duration-300 hover:-translate-y-0.5 hover:shadow-md',
         tone === 'success' && 'border-emerald-200 bg-emerald-50/60 dark:border-emerald-800 dark:bg-emerald-900/20',
         tone === 'warning' && 'border-amber-200 bg-amber-50/70 dark:border-amber-800 dark:bg-amber-900/20',
         tone === 'accent' && 'border-secondary/30 bg-secondary/5 dark:border-secondary/50 dark:bg-secondary/10',
         tone === 'neutral' && 'border-gray-200 bg-white dark:border-gray-800 dark:bg-gray-900'
       )}
     >
-      <div className="flex items-center justify-between">
-        <div>
+      <div className="flex items-center justify-between gap-3">
+        <div className="min-w-0">
           <p className="text-xs text-gray-500 dark:text-gray-400">{title}</p>
           <p className="mt-1 text-2xl font-bold text-gray-900 dark:text-white">{value}</p>
         </div>
-        <div className="rounded-xl bg-white/70 p-2 dark:bg-black/20">
+        <div className="shrink-0 rounded-xl bg-white/70 p-2 dark:bg-black/20">
           <Icon className="h-5 w-5 text-primary" />
         </div>
       </div>
@@ -446,6 +460,7 @@ export function AdManagementPage() {
   const sentinelRef = useRef<HTMLDivElement | null>(null);
   const [toggleStateCandidate, setToggleStateCandidate] = useState<Property | null>(null);
   const [deleteCandidate, setDeleteCandidate] = useState<Property | null>(null);
+  const [isFilterSheetOpen, setIsFilterSheetOpen] = useState(false);
 
   useEffect(() => {
     const element = sentinelRef.current;
@@ -554,6 +569,179 @@ export function AdManagementPage() {
     }
   }, [deleteCandidate, handleDelete]);
 
+  // Une seule liste, consommée par la grille desktop ET le carousel mobile — évite de
+  // dupliquer 6 <StatCard> littéralement pour chaque mise en page.
+  const statCards: Array<{
+    key: string;
+    title: string;
+    value: number;
+    icon: ComponentType<{ className?: string }>;
+    tone?: StatCardProps['tone'];
+  }> = [
+    { key: 'total', title: 'Total annonces', value: summary.global.total, icon: Layers3, tone: 'accent' },
+    { key: 'active', title: 'Actives', value: summary.global.active, icon: TrendingUp, tone: 'success' },
+    { key: 'archived', title: 'Archivées', value: summary.global.archived, icon: Archive, tone: 'warning' },
+    { key: 'promoted', title: 'Promues', value: summary.global.promoted, icon: BadgeDollarSign, tone: 'accent' },
+    // Louer/vendre n'existe pas hors immobilier : on montre ce qui pilote réellement une
+    // annonce marketplace, sa modération et son rangement.
+    ...(isMarketplaceScope
+      ? [
+          { key: 'pendingModeration', title: 'En modération', value: summary.global.pendingModeration, icon: Clock3, tone: 'warning' as const },
+          { key: 'categoriesUsed', title: 'Catégories', value: summary.global.categoriesUsed, icon: TagIcon },
+        ]
+      : [
+          { key: 'forRent', title: 'À louer', value: summary.global.forRent, icon: Building2 },
+          { key: 'forSale', title: 'À vendre', value: summary.global.forSale, icon: Building2 },
+        ]),
+  ];
+
+  // Réutilisé tel quel dans la grille desktop ET dans le Sheet mobile (mêmes state/handlers,
+  // filtrage toujours en direct) — idPrefix évite les id/htmlFor dupliqués entre les deux
+  // rendus simultanés dans le DOM (un seul visible à la fois selon la largeur d'écran).
+  const renderFilterFields = (idPrefix: string) => (
+    <>
+      {isMarketplaceScope ? (
+        // Les catégories proposées sont celles que l'annonceur utilise vraiment : une liste
+        // figée de tout le catalogue offrirait surtout des filtres qui ne rendent rien.
+        <div>
+          <label htmlFor={`${idPrefix}listing-category-filter`} className="mb-1 block text-xs font-medium text-gray-500 dark:text-gray-400">Catégorie</label>
+          <Select
+            value={filters.category || '__all'}
+            onValueChange={(value) => setCategoryFilter(value === '__all' ? '' : value)}
+          >
+            <SelectTrigger id={`${idPrefix}listing-category-filter`} aria-label="Catégorie" className={SELECT_TRIGGER_CLASS}>
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="__all">Toutes catégories</SelectItem>
+              {categoryOptions.map((option) => (
+                <SelectItem key={option.id} value={option.id}>
+                  {option.label} ({option.count})
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+      ) : (
+        <>
+          <div>
+            <label htmlFor={`${idPrefix}property-type-filter`} className="mb-1 block text-xs font-medium text-gray-500 dark:text-gray-400">Type</label>
+            <Select
+              value={filters.type || '__all'}
+              onValueChange={(value) => setTypeFilter(value === '__all' ? '' : (value as any))}
+            >
+              <SelectTrigger id={`${idPrefix}property-type-filter`} aria-label="Type de bien" className={SELECT_TRIGGER_CLASS}>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {TYPE_FILTER_OPTIONS.map((option) => (
+                  <SelectItem key={option.value} value={option.value}>
+                    {option.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
+          <div>
+            <label htmlFor={`${idPrefix}property-status-filter`} className="mb-1 block text-xs font-medium text-gray-500 dark:text-gray-400">Statut</label>
+            <Select
+              value={filters.status || '__all'}
+              onValueChange={(value) => setStatusFilter(value === '__all' ? '' : (value as any))}
+            >
+              <SelectTrigger id={`${idPrefix}property-status-filter`} aria-label="Statut de l'annonce" className={SELECT_TRIGGER_CLASS}>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {STATUS_OPTIONS.map((option) => (
+                  <SelectItem key={option.value} value={option.value}>
+                    {option.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+        </>
+      )}
+
+      <div>
+        <label htmlFor={`${idPrefix}property-state-filter`} className="mb-1 block text-xs font-medium text-gray-500 dark:text-gray-400">État</label>
+        <Select
+          value={filters.state || '__all'}
+          onValueChange={(value) => setStateFilter(value === '__all' ? '' : (value as any))}
+        >
+          <SelectTrigger id={`${idPrefix}property-state-filter`} aria-label="État de publication" className={SELECT_TRIGGER_CLASS}>
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            {STATE_OPTIONS.map((option) => (
+              <SelectItem key={option.value} value={option.value}>
+                {option.label}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </div>
+
+      <div>
+        <label htmlFor={`${idPrefix}property-promotion-filter`} className="mb-1 block text-xs font-medium text-gray-500 dark:text-gray-400">Promotion</label>
+        <Select
+          value={filters.promoted || '__all'}
+          onValueChange={(value) => setPromotedFilter(value === '__all' ? '' : (value as any))}
+        >
+          <SelectTrigger id={`${idPrefix}property-promotion-filter`} aria-label="État de promotion" className={SELECT_TRIGGER_CLASS}>
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            {PROMOTED_OPTIONS.map((option) => (
+              <SelectItem key={option.value} value={option.value}>
+                {option.label}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </div>
+
+      <div>
+        <label htmlFor={`${idPrefix}property-price-min`} className="mb-1 block text-xs font-medium text-gray-500 dark:text-gray-400">Prix min (FCFA)</label>
+        <Input
+          id={`${idPrefix}property-price-min`}
+          inputMode="numeric"
+          value={filters.priceMin}
+          onChange={(event) => setPriceMin(event.target.value)}
+          placeholder="0"
+          className={CONTROL_CLASS}
+        />
+      </div>
+      <div>
+        <label htmlFor={`${idPrefix}property-price-max`} className="mb-1 block text-xs font-medium text-gray-500 dark:text-gray-400">Prix max (FCFA)</label>
+        <Input
+          id={`${idPrefix}property-price-max`}
+          inputMode="numeric"
+          value={filters.priceMax}
+          onChange={(event) => setPriceMax(event.target.value)}
+          placeholder="2000000"
+          className={CONTROL_CLASS}
+        />
+      </div>
+      <div>
+        <label htmlFor={`${idPrefix}property-sort`} className="mb-1 block text-xs font-medium text-gray-500 dark:text-gray-400">Tri</label>
+        <Select value={sortValue} onValueChange={handleSortChange}>
+          <SelectTrigger id={`${idPrefix}property-sort`} aria-label="Ordre de tri" className={SELECT_TRIGGER_CLASS}>
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            {SORT_OPTIONS.map((option) => (
+              <SelectItem key={option.value} value={option.value}>
+                {option.label}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </div>
+    </>
+  );
+
   return (
     <div className="space-y-6 px-4 pb-20 pt-2 md:px-0 md:pb-8">
       <AutoClaimBanner />
@@ -639,32 +827,96 @@ export function AdManagementPage() {
         </div>
       </section>
 
-      <section
-        id="ad-scope-panel"
-        role="tabpanel"
-        aria-labelledby={`ad-scope-tab-${filters.scope}`}
-        className="grid grid-cols-2 gap-3 md:grid-cols-3 xl:grid-cols-6"
-      >
-        <StatCard title="Total annonces" value={summary.global.total} icon={Layers3} tone="accent" />
-        <StatCard title="Actives" value={summary.global.active} icon={TrendingUp} tone="success" />
-        <StatCard title="Archivées" value={summary.global.archived} icon={Archive} tone="warning" />
-        <StatCard title="Promues" value={summary.global.promoted} icon={BadgeDollarSign} tone="accent" />
-        {isMarketplaceScope ? (
-          <>
-            {/* Louer/vendre n'existe pas hors immobilier : on montre ce qui pilote réellement
-                une annonce marketplace, sa modération et son rangement. */}
-            <StatCard title="En modération" value={summary.global.pendingModeration} icon={Clock3} tone="warning" />
-            <StatCard title="Catégories" value={summary.global.categoriesUsed} icon={TagIcon} />
-          </>
-        ) : (
-          <>
-            <StatCard title="À louer" value={summary.global.forRent} icon={Building2} />
-            <StatCard title="À vendre" value={summary.global.forSale} icon={Building2} />
-          </>
-        )}
+      <div id="ad-scope-panel" role="tabpanel" aria-labelledby={`ad-scope-tab-${filters.scope}`}>
+        {/* Mobile (<md) : carousel horizontal — 6 cartes empilées en grille 2 colonnes prenaient
+            trop de hauteur d'écran avant même d'atteindre les annonces (retour utilisateur
+            2026-08-27). Desktop (>=md) inchangé : déjà aligné sur une seule ligne, où la place
+            ne manque pas. */}
+        <div className="md:hidden" data-testid="ad-stats-mobile">
+          <Carousel opts={{ align: 'start', dragFree: true }}>
+            <CarouselContent className="-ml-3">
+              {statCards.map((stat) => (
+                <CarouselItem key={stat.key} className="basis-[42%] pl-3">
+                  <StatCard title={stat.title} value={stat.value} icon={stat.icon} tone={stat.tone} />
+                </CarouselItem>
+              ))}
+            </CarouselContent>
+          </Carousel>
+        </div>
+
+        <div className="hidden gap-3 md:grid md:grid-cols-3 xl:grid-cols-6" data-testid="ad-stats-desktop">
+          {statCards.map((stat) => (
+            <StatCard key={stat.key} title={stat.title} value={stat.value} icon={stat.icon} tone={stat.tone} />
+          ))}
+        </div>
+      </div>
+
+      {/* Mobile (<md) : barre compacte recherche + bouton filtres ouvrant un Sheet, pour ne
+          pas empiler ~9 contrôles en colonne unique sur un petit écran ("trop étouffé" —
+          retour utilisateur 2026-08-27). Desktop (>=md) inchangé : grille complète ci-dessous,
+          où la place ne manque pas. */}
+      <section className="flex items-center gap-2 md:hidden">
+        <div className="relative flex-1">
+          <Search className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
+          <Input
+            id="property-search-mobile"
+            value={searchInput}
+            onChange={(event) => setSearchInput(event.target.value)}
+            placeholder="Titre, description, ville, quartier..."
+            className={`${CONTROL_CLASS} bg-white pl-10 pr-10 dark:bg-gray-900`}
+          />
+          {searchInput && (
+            <button
+              type="button"
+              onClick={() => setSearchInput('')}
+              className="absolute right-0.5 top-0.5 flex h-11 w-11 items-center justify-center rounded-full text-gray-500 hover:bg-gray-100 hover:text-gray-700 dark:hover:bg-gray-800"
+              aria-label="Effacer la recherche"
+            >
+              <X className="h-4 w-4" />
+            </button>
+          )}
+        </div>
+
+        <Sheet open={isFilterSheetOpen} onOpenChange={setIsFilterSheetOpen}>
+          <SheetTrigger asChild>
+            <button
+              type="button"
+              aria-label="Filtres"
+              className="relative flex h-12 w-12 shrink-0 items-center justify-center rounded-full border border-gray-200 bg-white text-gray-700 shadow-none dark:border-gray-700 dark:bg-gray-900 dark:text-gray-200"
+            >
+              <Filter className="h-5 w-5" />
+              {hasActiveFilters && (
+                <span className="absolute right-2.5 top-2.5 h-2 w-2 rounded-full bg-primary" aria-hidden />
+              )}
+            </button>
+          </SheetTrigger>
+          <SheetContent side="bottom" className="flex h-[85vh] flex-col rounded-t-2xl px-4 pb-4">
+            <SheetHeader>
+              <SheetTitle>Filtres</SheetTitle>
+            </SheetHeader>
+            <div className="flex-1 space-y-4 overflow-y-auto py-4">
+              {renderFilterFields('mobile-')}
+            </div>
+            <SheetFooter className="flex-row gap-2 border-t border-gray-100 pt-4 dark:border-gray-800">
+              <Button
+                variant="outline"
+                className="h-12 flex-1 rounded-full border-gray-200 bg-gray-50 hover:bg-gray-100 dark:border-gray-700 dark:bg-gray-800/70 dark:hover:bg-gray-800"
+                onClick={resetFilters}
+                disabled={!hasActiveFilters}
+              >
+                Réinitialiser
+              </Button>
+              <SheetClose asChild>
+                <Button className="h-12 flex-1 rounded-full">
+                  Voir les résultats
+                </Button>
+              </SheetClose>
+            </SheetFooter>
+          </SheetContent>
+        </Sheet>
       </section>
 
-      <section className="rounded-2xl border border-gray-200 bg-white p-4 shadow-sm dark:border-gray-800 dark:bg-gray-900 md:p-5">
+      <section className="hidden rounded-2xl border border-gray-200 bg-white p-4 shadow-sm dark:border-gray-800 dark:bg-gray-900 md:block md:p-5">
         <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-6">
           <div className="xl:col-span-2">
             <label htmlFor="property-search" className="mb-1 block text-xs font-medium text-gray-500 dark:text-gray-400">Recherche</label>

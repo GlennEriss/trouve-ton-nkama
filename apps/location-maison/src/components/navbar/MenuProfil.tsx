@@ -7,14 +7,9 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuGroup, DropdownMenuItem,
 import { useCurrentUser } from '@/hooks/use-current-user'
 import { generateColorFromName } from '@/lib/generateColorFromName'
 import { getUserDisplayInitial, getUserDisplayName } from '@/lib/user-display-name'
-import { useToast } from '@/hooks/use-toast'
 import { useRouter } from 'next/navigation'
-import { signOut } from 'next-auth/react'
+import { useSignOut } from '@/features/auth/hooks'
 import { User, Coins, Heart, LogOut, ChevronDown } from 'lucide-react'
-import { createLogger } from '@/lib/logger'
-
-const logger = createLogger('components.menu-profil')
-const getAuth = () => import("@/firebase/auth");
 
 const menu = [
     {
@@ -39,40 +34,11 @@ const menu = [
 
 export default function MenuProfil() {
     const { user } = useCurrentUser()
-    const { toast } = useToast();
     const router = useRouter()
-    const [isLoading, setIsLoading] = React.useState(false)
+    const { signOut, isSigningOut } = useSignOut()
     const displayName = getUserDisplayName(user);
     const avatarBackground = generateColorFromName(displayName ?? '');
 
-
-    
-    const handleClientSignout = async () => {
-        setIsLoading(true)
-        try {
-            const { auth, signOut: firebaseSignOut } = await getAuth();
-            await firebaseSignOut(auth);
-            await signOut();
-            toast({
-                duration: 5000,
-                title: "Déconnexion",
-                description: "Vous vous êtes déconnectés de la plateforme",
-                variant: "warning",
-            });
-            setIsLoading(false)
-            router.push(routes.public.homePage)
-        } catch (error) {
-            logger.error('Logout failed from profile menu', { error });
-            setIsLoading(false)
-            toast({
-                duration: 5000,
-                title: "Erreur de déconnexion",
-                description: "Une erreur est survenue lors de la déconnexion.",
-                variant: "destructive",
-            });
-        }
-    }
-    
     const handleNavigate = (link: string) => {
         router.push(link)
     }
@@ -160,13 +126,13 @@ export default function MenuProfil() {
                 {/* Bouton de déconnexion */}
                 <div className='p-2'>
                     <Button
-                        onClick={handleClientSignout}
-                        disabled={isLoading}
+                        onClick={signOut}
+                        disabled={isSigningOut}
                         variant="ghost"
                         className='w-full justify-start gap-3 h-12 px-3 text-red-600 dark:text-red-400 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-950/50 transition-all duration-200 rounded-xl group'
                     >
                         <div className="flex-shrink-0 w-10 h-10 rounded-lg bg-red-50 dark:bg-red-950/50 group-hover:bg-red-100 dark:group-hover:bg-red-950 flex items-center justify-center transition-all duration-200">
-                            {isLoading ? (
+                            {isSigningOut ? (
                                 <div className="w-5 h-5 border-2 border-red-500 rounded-full animate-spin border-t-transparent"></div>
                             ) : (
                                 <LogOut className="h-5 w-5 text-red-600 dark:text-red-400" />
@@ -174,7 +140,7 @@ export default function MenuProfil() {
                         </div>
                         <div className="flex-1 text-left">
                             <p className="font-medium">
-                                {isLoading ? 'Déconnexion...' : 'Se déconnecter'}
+                                {isSigningOut ? 'Déconnexion...' : 'Se déconnecter'}
                             </p>
                             <p className="text-xs text-red-500 dark:text-red-400">
                                 Fermer votre session

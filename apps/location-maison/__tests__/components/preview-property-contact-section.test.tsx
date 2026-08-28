@@ -45,10 +45,11 @@ describe('ContactSection', () => {
     process.env = originalEnv
   })
 
-  it('affiche directement le numero de telephone en desktop', () => {
+  it("n'affiche pas le numero de telephone en clair dans le bouton WhatsApp en desktop", () => {
     windowWidth = 1280
     render(<ContactSection property={property} />)
-    expect(screen.getAllByText('+24166545430').length).toBeGreaterThan(0)
+    expect(screen.queryByText('+24166545430')).not.toBeInTheDocument()
+    expect(screen.getByText('WhatsApp')).toBeInTheDocument()
   })
 
   it('masque le numero sur mobile jusqu au clic, puis trace l interaction', () => {

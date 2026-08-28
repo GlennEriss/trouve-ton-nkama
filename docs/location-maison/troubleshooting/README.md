@@ -5,8 +5,9 @@ Ce dossier contient la documentation relative au dépannage et aux diagnostics d
 ## 📄 Fichiers
 
 - **DIAGNOSTIC_SIGNUP.md** : Diagnostic des problèmes d'inscription
+- **BUGS-AUTH-E2E-2026-08.md** : Bugs trouvés et corrigés via la suite e2e Playwright réelle de l'auth (labels signup, contraste, a11y navbar, timing complete-profile) — état à jour de la suite
 
 ---
 
-*Dernière mise à jour : 2026-01-12*
+*Dernière mise à jour : 2026-08-29*
 

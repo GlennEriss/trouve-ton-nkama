@@ -503,20 +503,20 @@ export const SignupFormModern: React.FC = () => {
                       <InputFormApp
                         control={form.control}
                         name="firstname"
-                        label="Nom"
-                        type="text"
-                        IconLucide={User}
-                        IconColor="#9ca3af"
-                        placeholder="Entrez votre nom"
-                      />
-                      <InputFormApp
-                        control={form.control}
-                        name="lastname"
                         label="Prénom"
                         type="text"
                         IconLucide={User}
                         IconColor="#9ca3af"
                         placeholder="Entrez votre prénom"
+                      />
+                      <InputFormApp
+                        control={form.control}
+                        name="lastname"
+                        label="Nom"
+                        type="text"
+                        IconLucide={User}
+                        IconColor="#9ca3af"
+                        placeholder="Entrez votre nom"
                       />
                       <InputFormApp
                         control={form.control}

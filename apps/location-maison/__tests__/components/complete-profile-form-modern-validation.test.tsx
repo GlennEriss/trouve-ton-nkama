@@ -74,6 +74,7 @@ jest.mock('@/features/auth/hooks', () => ({
     clearError: jest.fn(),
   }),
   mapCompleteProfileError: () => ({ title: 'Session invalide', message: 'Utilisateur introuvable', duration: 7000 }),
+  useSignOut: () => ({ signOut: jest.fn(), isSigningOut: false }),
 }))
 jest.mock('@/lib/auth/role-routing', () => ({
   getPostAuthRedirectPath: (user: { roles?: string[] }) => (user.roles?.includes('Announcer') ? '/property' : '/'),

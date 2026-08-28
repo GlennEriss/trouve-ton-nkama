@@ -207,22 +207,22 @@ export const SignupMobileComponent = () => {
                         <InputFormApp
                             control={form.control}
                             name='firstname'
-                            label='Nom'
-                            type='text'
-                            IconLucide={CircleUser}
-                            IconColorFill={'none'}
-                            IconColor='gray'
-                            placeholder='Saisissez votre nom'
-                        />
-                        <InputFormApp
-                            control={form.control}
-                            name='lastname'
                             label='Prénom'
                             type='text'
                             IconLucide={CircleUser}
                             IconColorFill={'none'}
                             IconColor='gray'
                             placeholder='Saisissez votre prénom'
+                        />
+                        <InputFormApp
+                            control={form.control}
+                            name='lastname'
+                            label='Nom'
+                            type='text'
+                            IconLucide={CircleUser}
+                            IconColorFill={'none'}
+                            IconColor='gray'
+                            placeholder='Saisissez votre nom'
                         />
                         <InputFormApp
                             control={form.control}
