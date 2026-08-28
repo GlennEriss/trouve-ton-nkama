@@ -195,8 +195,8 @@ describe('SignupFormModern — soumission complète', () => {
     const payload = mockSignup.mock.calls[0][0]
     expect(payload.pseudo).toBeUndefined()
     expect(payload.whatsappNumber).toBeUndefined()
-    expect(payload.firstName).toBe('Ondo')
-    expect(payload.lastName).toBe('Gerard')
+    expect(payload.firstName).toBe('Gerard')
+    expect(payload.lastName).toBe('Ondo')
     expect(payload.birthDate).toBe('1995-06-15')
     expect(mockPush).toHaveBeenCalledWith('/signup/success?uid=new-user-1')
     expect(mockToast).toHaveBeenCalledWith(expect.objectContaining({ variant: 'success' }))
@@ -214,8 +214,8 @@ describe('SignupFormModern — soumission complète', () => {
     const payload = mockSignup.mock.calls[0][0]
     expect(payload.pseudo).toBe('Chez Gerard')
     expect(payload.whatsappNumber).toBe('066654321')
-    expect(payload.firstName).toBe('Ondo')
-    expect(payload.lastName).toBe('Gerard')
+    expect(payload.firstName).toBe('Gerard')
+    expect(payload.lastName).toBe('Ondo')
     expect(mockPush).toHaveBeenCalledWith('/signup/success?uid=new-user-1')
     expect(mockToast).toHaveBeenCalledWith(expect.objectContaining({ variant: 'success' }))
   })

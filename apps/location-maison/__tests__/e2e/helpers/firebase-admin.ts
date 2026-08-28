@@ -96,3 +96,21 @@ export async function deleteUserDoc(uid: string): Promise<void> {
   const app = ensureAdminApp()
   await admin.firestore(app).collection('users').doc(uid).delete()
 }
+
+/** Deletes the Firebase Auth user (and matching Firestore `users/{uid}` doc) for an email, if one exists. */
+export async function deleteAccountByEmail(email: string): Promise<void> {
+  const app = ensureAdminApp()
+  const auth = admin.auth(app)
+
+  let uid: string
+  try {
+    const user = await auth.getUserByEmail(email)
+    uid = user.uid
+  } catch (err: unknown) {
+    if ((err as { code?: string }).code === 'auth/user-not-found') return
+    throw err
+  }
+
+  await admin.firestore(app).collection('users').doc(uid).delete()
+  await auth.deleteUser(uid)
+}
