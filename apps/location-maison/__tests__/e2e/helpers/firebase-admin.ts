@@ -114,3 +114,55 @@ export async function deleteAccountByEmail(email: string): Promise<void> {
   await admin.firestore(app).collection('users').doc(uid).delete()
   await auth.deleteUser(uid)
 }
+
+export type SeedProperty = {
+  id: string
+  title: string
+  description: string
+  typeProperty: string
+  status: 'FOR_RENT' | 'FOR_SALE'
+  state: 'IN_PROGRESS' | 'ARCHIVED'
+  moderationStatus: 'APPROVED'
+  price: number
+  area: number
+  province: string
+  city: string
+  street: string
+}
+
+/**
+ * Writes real `properties/{id}` docs directly via Admin SDK, all owned by the
+ * same `createdBy` uid — so /api/announcer/ads (which queries Firestore for
+ * `createdBy == uid`, then filters/sorts server-side in memory) has real data
+ * to search and filter against. No network mocking: exercises the real
+ * server-side filter logic in src/app/api/announcer/ads/route.ts.
+ */
+export async function seedProperties(createdBy: string, properties: SeedProperty[]): Promise<void> {
+  const app = ensureAdminApp()
+  const db = admin.firestore(app)
+  const now = admin.firestore.Timestamp.now()
+
+  await Promise.all(
+    properties.map(({ id, ...data }) =>
+      db
+        .collection('properties')
+        .doc(id)
+        .set({
+          ...data,
+          createdBy,
+          images: [],
+          currentPromotion: null,
+          createdAt: now,
+          updatedAt: now,
+          sortTimestamp: now,
+        }),
+    ),
+  )
+}
+
+/** Deletes `properties/{id}` docs by id. */
+export async function deleteProperties(ids: string[]): Promise<void> {
+  const app = ensureAdminApp()
+  const db = admin.firestore(app)
+  await Promise.all(ids.map((id) => db.collection('properties').doc(id).delete()))
+}
