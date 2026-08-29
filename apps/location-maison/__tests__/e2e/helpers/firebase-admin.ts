@@ -128,6 +128,11 @@ export type SeedProperty = {
   province: string
   city: string
   street: string
+  // Optionnel : le vrai flux de création immobilier renseigne toujours ce champ (même vide),
+  // contrairement au TS `Property.tags` non-optionnel qui le laisse croire garanti partout —
+  // PreviewProperty.tsx fait `property.tags.map(...)` sans garde. Défaut `[]` ci-dessous pour
+  // les seeds qui n'ont pas besoin de le préciser explicitement.
+  tags?: string[]
 }
 
 /**
@@ -143,12 +148,13 @@ export async function seedProperties(createdBy: string, properties: SeedProperty
   const now = admin.firestore.Timestamp.now()
 
   await Promise.all(
-    properties.map(({ id, ...data }) =>
+    properties.map(({ id, tags, ...data }) =>
       db
         .collection('properties')
         .doc(id)
         .set({
           ...data,
+          tags: tags ?? [],
           createdBy,
           images: [],
           currentPromotion: null,
@@ -158,6 +164,49 @@ export async function seedProperties(createdBy: string, properties: SeedProperty
         }),
     ),
   )
+}
+
+export type SeedCategoryListing = {
+  id: string
+  title: string
+  description: string
+  price: number
+  province: string
+  city: string
+  categoryId: string
+  categoryLeaf: string
+  attributes?: Record<string, string>
+}
+
+/**
+ * Écrit une annonce "Mode" (hors immobilier) réaliste : PAS de `typeProperty` (le
+ * discriminant utilisé partout — resolveScope() dans /api/announcer/ads, isCategoryListing
+ * dans HouseDetails.tsx — pour distinguer immobilier/marketplace), `categoryId` présent. Ne
+ * pose délibérément pas `tags` : la création marketplace ne renseigne jamais ce champ
+ * immobilier, contrairement à ce que le type TS `Property.tags` (non optionnel) laisse
+ * croire — voir le bug trouvé dans PreviewProperty.tsx (`property.tags.map(...)` sans garde).
+ */
+export async function seedCategoryListing(createdBy: string, listing: SeedCategoryListing): Promise<void> {
+  const app = ensureAdminApp()
+  const db = admin.firestore(app)
+  const now = admin.firestore.Timestamp.now()
+  const { id, categoryLeaf, ...data } = listing
+
+  await db
+    .collection('properties')
+    .doc(id)
+    .set({
+      ...data,
+      createdBy,
+      moderationStatus: 'APPROVED',
+      state: 'IN_PROGRESS',
+      categoryPath: { lvl1: categoryLeaf },
+      images: [],
+      currentPromotion: null,
+      createdAt: now,
+      updatedAt: now,
+      sortTimestamp: now,
+    })
 }
 
 /** Deletes `properties/{id}` docs by id. */

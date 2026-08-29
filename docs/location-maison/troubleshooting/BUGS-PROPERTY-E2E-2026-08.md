@@ -179,5 +179,46 @@ compte Firestore, vraie annonce, suppression réelle vérifiée à la fois par l
 disparition de la carte) et par une relecture directe de `/api/announcer/ads` prouvant que
 le document n'existe plus.
 
-*Créé le 2026-08-29, mis à jour le même jour suite au test complet des 4 types de promotion
-et de la suppression d'annonce.*
+---
+
+## 🔴 Corrigé — Bouton "Voir" sur une annonce Mode plantait la page (crash React)
+
+**Statut** : corrigé, vérifié pour immobilier et Mode.
+
+**Repro initial** : sur `/property`, onglet "Mode", cliquer "Voir" sur une annonce Mode
+(vêtement, etc.) → page blanche, "Application error: a client-side exception has occurred".
+La même annonce, vue par un visiteur externe sur `/annonce/{id}` (page publique), s'affiche
+correctement.
+
+**Cause** : `/property/{id}` (bouton "Voir" de l'annonceur, `PreviewPropertyClient.tsx`)
+rend **toujours** `PreviewProperty` — le gabarit immobilier (statut à louer/vendre,
+caractéristiques chambres/sdb, carte précise à la rue). La page publique équivalente
+(`/annonce/{id}`, `HouseDetails.tsx`) branche elle correctement entre `PreviewProperty`
+(immobilier) et `PreviewCategoryListing` (Mode/marketplace) via
+`isCategoryListing = !property.typeProperty && Boolean(property.categoryId)`.
+`PreviewPropertyClient.tsx` n'avait jamais cette branche. Une annonce Mode n'a jamais
+`property.tags` (concept propre à l'immobilier) — `PreviewProperty.tsx` fait
+`property.tags.map(...)` sans garde à la ligne 34 → `TypeError: Cannot read properties of
+undefined (reading 'map')`, confirmé par la stack trace du crash en e2e réel.
+
+**Correctif** : `PreviewPropertyClient.tsx` reprend exactement le même discriminant que
+`HouseDetails.tsx` et rend `PreviewCategoryListing` pour une annonce Mode.
+
+**Fichier** : `apps/location-maison/src/components/preview-property/PreviewPropertyClient.tsx`.
+
+**Piste écartée en cours de route, pas un bug** : `/api/property/id` (route derrière
+`useProperty`) met la réponse en cache Redis 10 minutes dès qu'une annonce est "publiquement
+visible" (state IN_PROGRESS + moderationStatus APPROVED). Une annonce de test réutilisant le
+même id entre plusieurs runs sert alors une réponse périmée — a fait perdre du temps de
+diagnostic ici (le crash semblait persister après un premier correctif de données de test qui
+avait pourtant fonctionné). Pas un bug applicatif : comportement de cache normal, juste un
+piège pour des données de test à id fixe. `SimpleMap.tsx` plante aussi
+("Invalid LatLng object") si une annonce immobilier n'a pas de coordonnées — pas creusé plus
+loin, le vrai flux de création en fournit toujours.
+
+**Test qui le prouve** : `apps/location-maison/__tests__/e2e/property-view.spec.ts` — une
+annonce immobilière et une annonce Mode, vraies données Firestore, vérifie le bon gabarit
+pour chacune (et l'absence de crash).
+
+*Créé le 2026-08-29, mis à jour le même jour suite au test complet des 4 types de promotion,
+de la suppression d'annonce et du bouton "Voir" (immobilier + Mode).*

@@ -2,6 +2,7 @@
 import React from 'react'
 import { useSession } from 'next-auth/react'
 import PreviewProperty from '@/components/preview-property/PreviewProperty'
+import PreviewCategoryListing from '@/components/preview-property/PreviewCategoryListing'
 import Advertissment from '@/components/shared/Advertissment'
 import { notFound, redirect, useParams } from 'next/navigation'
 import { useCurrentUser } from '@/hooks/use-current-user'
@@ -30,10 +31,21 @@ export default function PreviewPropertyClient() {
     if (property.createdBy !== user?.uid) {
         redirect('/annonce/' + id)
     }
+
+    // Même discriminant que la page publique (HouseDetails.tsx) : une annonce Mode n'a pas
+    // `typeProperty` et n'a jamais les champs immobilier que PreviewProperty suppose garantis
+    // (ex. `property.tags`, absent hors immobilier — provoquait un crash React ici avant ce
+    // correctif, constaté en e2e réel sur le bouton "Voir" d'une annonce Mode).
+    const isCategoryListing = !property.typeProperty && Boolean(property.categoryId)
+
     return (
         <div>
             <Advertissment />
-            <PreviewProperty property={property} />
+            {isCategoryListing ? (
+                <PreviewCategoryListing property={property} />
+            ) : (
+                <PreviewProperty property={property} />
+            )}
         </div>
     )
 }
