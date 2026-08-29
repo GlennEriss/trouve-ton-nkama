@@ -166,3 +166,31 @@ export async function deleteProperties(ids: string[]): Promise<void> {
   const db = admin.firestore(app)
   await Promise.all(ids.map((id) => db.collection('properties').doc(id).delete()))
 }
+
+/**
+ * Creates a real `users/{uid}` doc with a starting credits balance. Needed
+ * for /api/property/promote, which queries Firestore for the real user doc
+ * (`where('uid', '==', uid)`) and debits `credits` inside a transaction —
+ * unlike most other routes here, this one is not satisfied by the forged
+ * NextAuth session alone.
+ */
+export async function seedAnnouncerUser(uid: string, credits: number): Promise<void> {
+  const app = ensureAdminApp()
+  const db = admin.firestore(app)
+  const now = admin.firestore.Timestamp.now()
+  await db
+    .collection('users')
+    .doc(uid)
+    .set({
+      uid,
+      firstname: 'Test',
+      lastname: 'Announcer',
+      email: `${uid}@example.com`,
+      roles: ['User', 'Announcer'],
+      credits,
+      favoris: [],
+      providers: ['CREDENTIALS'],
+      createdAt: now,
+      updatedAt: now,
+    })
+}

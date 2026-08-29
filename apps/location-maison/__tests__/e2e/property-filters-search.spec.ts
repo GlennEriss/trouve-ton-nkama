@@ -93,6 +93,43 @@ test.describe('Recherche et filtres /property — vraies annonces Firestore', ()
       await expect(page.getByText(ARCHIVED_APARTMENT.title)).not.toBeVisible()
     })
 
+    test('la recherche par titre fonctionne, insensible à la casse', async ({ page }) => {
+      await gotoProperty(page)
+
+      await page.locator('#property-search').fill('VILLA TEST')
+
+      await expect(page.getByText(VILLA.title)).toBeVisible()
+      await expect(page.getByText(STUDIO.title)).not.toBeVisible()
+      await expect(page.getByText(ARCHIVED_APARTMENT.title)).not.toBeVisible()
+    })
+
+    test('une recherche sans résultat affiche l état vide', async ({ page }) => {
+      await gotoProperty(page)
+
+      await page.locator('#property-search').fill('zzz-introuvable-zzz')
+
+      await expect(page.getByRole('heading', { name: 'Aucune annonce trouvée' })).toBeVisible()
+      await expect(page.getByText(VILLA.title)).not.toBeVisible()
+      await expect(page.getByText(STUDIO.title)).not.toBeVisible()
+      await expect(page.getByText(ARCHIVED_APARTMENT.title)).not.toBeVisible()
+    })
+
+    test('le bouton "Effacer la recherche" vide le champ et restaure les résultats', async ({
+      page,
+    }) => {
+      await gotoProperty(page)
+
+      await page.locator('#property-search').fill('Akanda')
+      await expect(page.getByText(VILLA.title)).not.toBeVisible()
+
+      await page.getByRole('button', { name: 'Effacer la recherche' }).click()
+
+      await expect(page.locator('#property-search')).toHaveValue('')
+      await expect(page.getByText(VILLA.title)).toBeVisible()
+      await expect(page.getByText(STUDIO.title)).toBeVisible()
+      await expect(page.getByText(ARCHIVED_APARTMENT.title)).toBeVisible()
+    })
+
     test('le filtre Type ne garde que le type sélectionné', async ({ page }) => {
       await gotoProperty(page)
 
@@ -151,6 +188,21 @@ test.describe('Recherche et filtres /property — vraies annonces Firestore', ()
 
       await expect(page.getByText(STUDIO.title)).toBeVisible()
       await expect(page.getByText(VILLA.title)).not.toBeVisible()
+    })
+
+    test('le bouton "Effacer la recherche" vide le champ et restaure les résultats', async ({
+      page,
+    }) => {
+      await gotoProperty(page)
+
+      await page.locator('#property-search-mobile').fill('Akanda')
+      await expect(page.getByText(VILLA.title)).not.toBeVisible()
+
+      await page.getByRole('button', { name: 'Effacer la recherche' }).click()
+
+      await expect(page.locator('#property-search-mobile')).toHaveValue('')
+      await expect(page.getByText(VILLA.title)).toBeVisible()
+      await expect(page.getByText(STUDIO.title)).toBeVisible()
     })
 
     test('le Sheet de filtres applique le filtre Type puis Réinitialiser le retire', async ({
