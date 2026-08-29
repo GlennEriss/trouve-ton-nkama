@@ -124,9 +124,12 @@ export const usePromotion = ({ property, onSuccess }: UsePromotionProps) => {
 
       logger.info('Promotion activated', { promotionType, transactionId, propertyId: property.id })
 
-      // Invalider les caches liés aux propriétés promues
+      // Invalider les caches liés aux propriétés promues. 'announcer-ad-management' est la
+      // vraie clé de /property (voir AD_QUERY_KEY dans useAdManagement.ts) — 'user-properties'
+      // ne correspond à aucune query existante, cette invalidation ne servait donc à rien : la
+      // carte de l'annonce restait sur son ancien badge/bouton jusqu'à un rechargement manuel.
       queryClient.invalidateQueries({ queryKey: ['promoted-properties'] })
-      queryClient.invalidateQueries({ queryKey: ['user-properties'] })
+      queryClient.invalidateQueries({ queryKey: ['announcer-ad-management'] })
       queryClient.invalidateQueries({ queryKey: ['credit-history'] })
 
       onSuccess?.()

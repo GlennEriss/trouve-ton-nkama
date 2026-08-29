@@ -61,4 +61,69 @@ créateur), mobile + desktop :
 tri (`Tri` / `sortBy`), filtre Statut (Location/Vente), filtre Promotion, prix maximum,
 pagination, onglet marketplace vs immobilier, catégories marketplace.
 
-*Créé le 2026-08-29.*
+---
+
+## 🟢 Corrigé — Une annonce promue ne l'affiche jamais côté client (bug sévère)
+
+**Statut** : corrigé, vérifié pour les 4 types de promotion.
+
+**Repro initial** : promouvoir une annonce (n'importe quel type) depuis `/property` —
+paiement des crédits réel, transaction Firestore réelle, toast "Promotion activée !"
+affiché. Mais la carte de l'annonce continue d'afficher le bouton "Promouvoir" au lieu de
+"À la une"/"En tendance"/"Boostée" — **même après un rechargement complet de la page**. Le
+stat "Promues" reste à 0. Réouvrir la modale ne montre jamais le bandeau "Promotion active",
+et rien n'empêche (côté UI) de payer une seconde fois pour le même type de promotion déjà
+active — seul un filet de sécurité serveur (`hasActiveSamePromotion` dans
+`/api/property/promote/route.ts`, qui lit le Timestamp Firestore brut, pas le JSON) empêche
+la double-facturation, mais l'utilisateur n'a aucun moyen de le savoir en regardant la page.
+
+**Cause** : le SDK Admin Firebase sérialise ses `Timestamp` en JSON avec un préfixe
+underscore — `{"_seconds": ..., "_nanoseconds": ...}` (vérifié directement :
+`JSON.stringify(admin.firestore.Timestamp.now())`). `/api/announcer/ads/route.ts` renvoie les
+propriétés telles quelles depuis `doc.data()`. Mais tout le code client qui décide si une
+promotion est active lit `currentPromotion.endDate.seconds` **sans underscore** — le SDK
+client Firebase, lui, expose bien `.seconds` — dans trois fichiers distincts :
+`PromotionButton.tsx`, `PromotionBadge.tsx`, `use-promotion.ts` (`hasActivePromotion`,
+`getPromotionStatus`, `canPromote`). Résultat : `endDate.seconds` vaut `undefined` pour toute
+donnée passée par cette route, `new Date(undefined * 1000)` est une date invalide, et
+`hasActivePromotion` vaut donc toujours `false` — quelle que soit la réalité en base.
+
+**Correctif** : normalisation à la source, dans `/api/announcer/ads/route.ts` — une fonction
+`serializeProperty`/`serializeTimestamp` convertit `currentPromotion.startDate`/`endDate` en
+`{ seconds, nanoseconds }` (sans underscore) juste avant `NextResponse.json`, en s'appuyant
+sur la méthode `.toMillis()` déjà disponible sur l'objet Timestamp brut à ce stade. Un seul
+point de correction plutôt que de toucher les 3 fichiers client. Portée volontairement limitée
+à cette route (celle réellement testée) — la route publique `/api/property/promoted` n'a pas
+été vérifiée, possiblement concernée par le même bug si elle sérialise `currentPromotion` de
+la même façon.
+
+**Fichier** : `apps/location-maison/src/app/api/announcer/ads/route.ts`.
+
+**Bug additionnel corrigé au passage** : `usePromotion`'s `onSuccess` invalidait
+`queryClient` avec la clé `['user-properties']`, qui ne correspond à aucune query existante
+dans tout le codebase (vérifié par recherche globale) — donc sans effet. La vraie clé de la
+liste `/property` est `'announcer-ad-management'` (`AD_QUERY_KEY` dans
+`useAdManagement.ts`, déjà utilisée correctement ailleurs dans ce même hook pour d'autres
+actions). Corrigé dans `src/hooks/use-promotion.ts`. Ce correctif seul n'aurait pas suffi
+sans celui du Timestamp ci-dessus — les deux bugs se superposaient sur le même symptôme.
+
+**Non vérifié** : si ce même bug de sérialisation affecte l'affichage des annonces promues
+ailleurs dans l'app (page d'accueil, page détail publique d'une annonce) — routes différentes,
+non auditées cette session.
+
+**Test qui le prouve** : `apps/location-maison/__tests__/e2e/property-promotion.spec.ts`,
+6 tests, un par type de promotion (featured, trending-7d, trending-3d, boost) + le blocage
+de re-sélection d'une promotion déjà active + les crédits insuffisants. Vrai paiement en
+crédits via de vrais comptes Firestore (`seedAnnouncerUser`), vraie transaction
+`/api/property/promote`.
+
+**Particularité du type "boost"** (pas un bug, un constat) : `duration: 0` par design
+(`PROMOTION_CONFIGS`) — `endDate === startDate`, donc `hasActivePromotion()` ne peut
+structurellement jamais être vrai pour ce type. Le bouton "Boostée" dans
+`PromotionButton.tsx` (`case 'boost': return 'Boostée'`) est du code mort : cette branche ne
+peut jamais s'exécuter en pratique. Le boost fonctionne bien (remonte l'annonce en tête de
+liste via `sortTimestamp`), mais n'affiche jamais de badge/état persistant — cohérent avec sa
+description ("remise à jour instantanée"), mais le libellé "Boostée" laisse penser à tort
+qu'un état visuel devrait apparaître. Non corrigé (cosmétique, pas de vrai bug fonctionnel).
+
+*Créé le 2026-08-29, mis à jour le même jour suite au test complet des 4 types de promotion.*
