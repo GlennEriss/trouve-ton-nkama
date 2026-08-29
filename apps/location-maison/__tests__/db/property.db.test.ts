@@ -102,18 +102,31 @@ describe('property database', () => {
     expect(mockInvalidateSeo).not.toHaveBeenCalled()
   })
 
-  it('modifie et supprime puis invalide uniquement après succès', async () => {
+  it('modifie puis invalide uniquement après succès', async () => {
     mockUpdateModel.mockResolvedValueOnce(true).mockResolvedValueOnce(false)
-    mockDeleteModel.mockResolvedValueOnce(true).mockResolvedValueOnce(false)
 
     await expect(updateProperty('property-1', { price: 50000 })).resolves.toBe(true)
     await expect(updateProperty('property-2', { price: 60000 })).resolves.toBe(false)
+
+    expect(mockUpdateModel).toHaveBeenCalledWith('property-1', { price: 50000 }, 'properties')
+    expect(mockInvalidateSeo).toHaveBeenCalledTimes(1)
+  })
+
+  it('supprime via la route serveur (Admin SDK), pas le SDK client', async () => {
+    // deleteModel (SDK client) exige une vraie session Firebase Auth navigateur que ni
+    // Google ni la connexion email/mot de passe ne fournissent (voir property-delete.spec.ts
+    // + BUGS-PROPERTY-E2E-2026-08.md) — la suppression passe donc par une route serveur.
+    const mockFetch = jest.fn()
+      .mockResolvedValueOnce({ ok: true } as Response)
+      .mockResolvedValueOnce({ ok: false } as Response)
+    global.fetch = mockFetch as unknown as typeof fetch
+
     await expect(deleteProperty('property-1')).resolves.toBe(true)
     await expect(deleteProperty('property-2')).resolves.toBe(false)
 
-    expect(mockUpdateModel).toHaveBeenCalledWith('property-1', { price: 50000 }, 'properties')
-    expect(mockDeleteModel).toHaveBeenCalledWith('property-1', 'properties')
-    expect(mockInvalidateSeo).toHaveBeenCalledTimes(2)
+    expect(mockFetch).toHaveBeenCalledWith('/api/property/property-1', { method: 'DELETE' })
+    expect(mockFetch).toHaveBeenCalledWith('/api/property/property-2', { method: 'DELETE' })
+    expect(mockDeleteModel).not.toHaveBeenCalled()
   })
 
   it('liste uniquement les annonces publiées et applique les filtres', async () => {

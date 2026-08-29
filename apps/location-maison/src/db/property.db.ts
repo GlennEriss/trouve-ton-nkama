@@ -42,11 +42,16 @@ export async function createProperty(property: Property): Promise<string | null>
 }
 
 export async function deleteProperty(id: string): Promise<boolean> {
-    const deleted = await deleteModel(id, firebaseCollectionNames.properties)
-    if (deleted) {
-        void invalidatePropertySeoCache();
-    }
-    return deleted;
+    // Route serveur (Admin SDK) plutôt que deleteModel (SDK client) : la suppression exige
+    // `request.auth != null` par firestore.rules, or ni Google (credential échangé côté
+    // serveur) ni la connexion email/mot de passe (Credentials provider NextAuth, lui aussi
+    // côté serveur) ne laissent le navigateur avec une vraie session Firebase Auth — la
+    // suppression restait bloquée 30-60s avant d'échouer pour la quasi-totalité des
+    // utilisateurs réels (constaté en e2e réel, voir property-delete.spec.ts).
+    // Invalidation du cache SEO déjà faite côté serveur dans la route, pas besoin de la
+    // refaire ici.
+    const response = await fetch(`/api/property/${id}`, { method: 'DELETE' });
+    return response.ok;
 }
 export async function getProperties({ limitPerPage, lastDoc, createdBy, type }: { limitPerPage: number, lastDoc: any, createdBy?: string, type?: string }) {
     const { collection, doc, getDoc, getDocs, db, where, query, startAfter, limit, orderBy } = await getFirestore();
