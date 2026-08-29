@@ -122,12 +122,19 @@ export type SeedProperty = {
   typeProperty: string
   status: 'FOR_RENT' | 'FOR_SALE'
   state: 'IN_PROGRESS' | 'ARCHIVED'
-  moderationStatus: 'APPROVED'
+  moderationStatus: 'APPROVED' | 'PENDING' | 'REJECTED'
   price: number
   area: number
   province: string
   city: string
   street: string
+  // Optionnel : requis par SimpleMap.tsx (L.marker([latitude, longitude])) — sans, la page
+  // preview/modifier plante avec "Invalid LatLng object". Le vrai flux de création
+  // immobilier renseigne toujours ces deux champs.
+  latitude?: number
+  longitude?: number
+  // Optionnel : uniquement pertinent avec moderationStatus 'REJECTED'.
+  rejectionReason?: string
   // Optionnel : le vrai flux de création immobilier renseigne toujours ce champ (même vide),
   // contrairement au TS `Property.tags` non-optionnel qui le laisse croire garanti partout —
   // PreviewProperty.tsx fait `property.tags.map(...)` sans garde. Défaut `[]` ci-dessous pour

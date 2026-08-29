@@ -18,17 +18,25 @@ import { routes } from '@/constantes/routes'
 const MAX_ADDITIONAL_CONTACTS = 4
 
 /**
- * Brouillon éditable d'une annonce fraîchement créée par l'IA
- * (`/property/create/preview/[id]`) — même gabarit visuel que
- * `PreviewProperty.tsx` (la page annonce réelle), avec un crayon d'édition
- * sur chaque attribut simple. L'annonce existe déjà en base (moderationStatus
- * 'PENDING', comme n'importe quelle annonce créée via l'ancien formulaire) :
- * chaque sauvegarde ici est un simple `updateProperty`, pas de bouton
- * "Publier" séparé à gérer.
+ * Page preview + édition champ par champ pour une annonce immobilière —
+ * même gabarit visuel que `PreviewProperty.tsx` (la page annonce réelle),
+ * avec un crayon d'édition sur chaque attribut simple. Sert à la fois :
+ *  - juste après création (`/property/create/preview/[id]`), moderationStatus
+ *    'PENDING' ;
+ *  - au clic sur "Modifier" depuis la gestion des annonces, quelle que soit
+ *    l'annonce (APPROVED déjà en ligne, ou REJECTED) — remplace l'ancien
+ *    formulaire à 14 builders (`property/modify/[id]`), décision produit
+ *    explicite. Le bandeau ci-dessous s'adapte à `moderationStatus` pour ne
+ *    pas prétendre à une annonce déjà en ligne qu'elle "vient d'être créée".
+ *  Toute sauvegarde sur une annonce REJECTED la repasse automatiquement en
+ *  PENDING (même logique que `PreviewCategoryListingDraft.tsx` pour Mode).
  */
 export default function PreviewPropertyDraft({ property: initialProperty }: Readonly<{ property: Property }>) {
   const router = useRouter()
   const [property, setProperty] = useState(initialProperty)
+
+  const isRejected = property.moderationStatus === 'REJECTED'
+  const isPending = property.moderationStatus === 'PENDING'
 
   const tagSatus: Record<string, string> = {
     FOR_RENT: 'A LOUER',
@@ -38,11 +46,14 @@ export default function PreviewPropertyDraft({ property: initialProperty }: Read
   const primaryImageUrl = getPrimaryPropertyImageUrl(property.images)
 
   const saveField = async (patch: Partial<Property>) => {
-    const ok = await updateProperty(property.id!, patch)
+    const finalPatch: Omit<Partial<Property>, 'rejectionReason'> & { rejectionReason?: string | null } = isRejected
+      ? { ...patch, moderationStatus: 'PENDING', rejectionReason: null }
+      : patch
+    const ok = await updateProperty(property.id!, finalPatch as Partial<Property>)
     if (!ok) {
       throw new Error("La mise à jour a échoué. Réessaie.")
     }
-    setProperty((prev) => ({ ...prev, ...patch }))
+    setProperty((prev) => ({ ...prev, ...finalPatch }) as Property)
   }
 
   const additionalContacts = property.additionalContacts ?? []
@@ -62,22 +73,49 @@ export default function PreviewPropertyDraft({ property: initialProperty }: Read
 
   return (
     <div className="flex flex-col gap-3 bg-gray-50 dark:bg-gray-950 p-3 mb-24 md:px-0 max-w-full overflow-x-hidden">
-      <div className="flex flex-col gap-3 rounded-lg border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-800 dark:border-emerald-900 dark:bg-emerald-950 dark:text-emerald-200 sm:flex-row sm:items-center sm:justify-between">
-        <span>
-          <strong>Ton annonce est déjà enregistrée</strong> et sera examinée par notre équipe avant
-          publication — rien d&apos;autre à “valider”. Corrige ce qui te semble faux avec les
-          crayons ci-dessous, puis termine quand tu es satisfait.
-        </span>
-        <Button onClick={goToMyListings} className="shrink-0 gap-1.5">
-          <CheckCircle2 className="h-4 w-4" /> Terminé — voir mes annonces
-        </Button>
-      </div>
+      {isRejected ? (
+        <div className="flex flex-col gap-3 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800 dark:border-red-900 dark:bg-red-950 dark:text-red-200 sm:flex-row sm:items-center sm:justify-between">
+          <span className="flex flex-col gap-1">
+            <span>
+              <strong>Cette annonce a été rejetée.</strong> Corrige ce qui pose problème avec les
+              crayons ci-dessous — la première modification la renvoie automatiquement en review,
+              gratuitement.
+            </span>
+            {property.rejectionReason && (
+              <span>
+                Motif : <strong>{property.rejectionReason}</strong>
+              </span>
+            )}
+          </span>
+          <Button onClick={goToMyListings} className="shrink-0 gap-1.5">
+            <CheckCircle2 className="h-4 w-4" /> Terminé — voir mes annonces
+          </Button>
+        </div>
+      ) : isPending ? (
+        <div className="flex flex-col gap-3 rounded-lg border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-800 dark:border-emerald-900 dark:bg-emerald-950 dark:text-emerald-200 sm:flex-row sm:items-center sm:justify-between">
+          <span>
+            <strong>Ton annonce est déjà enregistrée</strong> et sera examinée par notre équipe avant
+            publication — rien d&apos;autre à “valider”. Corrige ce qui te semble faux avec les
+            crayons ci-dessous, puis termine quand tu es satisfait.
+          </span>
+          <Button onClick={goToMyListings} className="shrink-0 gap-1.5">
+            <CheckCircle2 className="h-4 w-4" /> Terminé — voir mes annonces
+          </Button>
+        </div>
+      ) : (
+        <div className="flex flex-col gap-3 rounded-lg border border-gray-200 bg-gray-100 px-4 py-3 text-sm text-gray-700 dark:border-gray-800 dark:bg-gray-900 dark:text-gray-300 sm:flex-row sm:items-center sm:justify-between">
+          <span>Modifie ce que tu veux avec les crayons ci-dessous — chaque champ s&apos;enregistre séparément.</span>
+          <Button onClick={goToMyListings} className="shrink-0 gap-1.5">
+            <CheckCircle2 className="h-4 w-4" /> Terminé — voir mes annonces
+          </Button>
+        </div>
+      )}
 
       {/* Section des tags */}
       <section className="flex justify-between">
         <div className="flex flex-wrap gap-3 items-center">
           <Tag name={tagSatus[property.status as string]} />
-          {property.tags.map((tag) => (
+          {(property.tags ?? []).map((tag) => (
             <Tag key={tag} name={tag} />
           ))}
         </div>

@@ -234,11 +234,11 @@ en repassant sur une vraie annonce après le premier correctif — pas détecté
 ## 🔴 Corrigé — Bouton "Modifier" envoyait la quasi-totalité des annonces immobilières vers le mauvais flux d'édition
 
 **Statut** : corrigé, vérifié. Bug le plus étendu trouvé cette session en termes de nombre
-d'annonces affectées.
+d'annonces affectées. Corrigé en deux temps (discriminant, puis destination — voir plus bas).
 
 **Repro initial** : sur `/property`, cliquer "Modifier" sur une annonce immobilière → atterrit
 sur `/category-listing/create/preview/{id}` (le flux d'édition **Mode**, brouillon de
-catégorie), pas sur `/property/modify/{id}` (le vrai formulaire immobilier à 14 builders).
+catégorie), pas sur le flux d'édition immobilier attendu.
 
 **Cause** : `AdManagementPage.tsx` décidait du lien "Modifier" avec `ad.categoryId` seul
 (`ad.categoryId ? .../preview/${id} : .../modify/${id}`). Or un backfill en prod (2026-08-17,
@@ -250,14 +250,61 @@ tous `!typeProperty && categoryId`, jamais `categoryId` seul. Le bouton "Modifie
 endroit du code où ce piège, pourtant déjà documenté ailleurs dans le même fichier de route,
 n'avait pas été appliqué.
 
-**Correctif** : même discriminant que partout ailleurs — `!ad.typeProperty && ad.categoryId`.
+**Correctif (discriminant)** : même test que partout ailleurs — `!ad.typeProperty && ad.categoryId`.
 
-**Fichier** : `apps/location-maison/src/features/announcer/ad-management/ui/v1/AdManagementPage.tsx`.
+**Correctif (destination, décision produit du 2026-08-29)** : l'ancien formulaire immobilier à 14
+builders (`/property/modify/[id]`, `FormModifyProperty.tsx`/`FormProperty.tsx`) n'est plus le
+point d'entrée de "Modifier" pour l'immobilier — décision explicite du PO ("ce n'est plus le
+formulaire super long"). L'immobilier bascule sur la même famille de page que Mode : preview +
+crayons par attribut (`PreviewPropertyDraft.tsx`, route `/property/create/preview/{id}`), déjà
+utilisée pour la relecture juste après création par l'IA. Cette page ne gérait que l'état
+"vient d'être créée, en attente de review" (`moderationStatus: 'PENDING'`) ; comme elle sert
+maintenant aussi à éditer une annonce déjà `APPROVED` (en ligne) ou `REJECTED`, son bandeau a été
+rendu conditionnel sur `moderationStatus` (mirroir du pattern déjà en place dans
+`PreviewCategoryListingDraft.tsx` pour Mode) :
+- `PENDING` : bandeau vert "vient d'être enregistrée, en attente de review" (inchangé) ;
+- `REJECTED` : bandeau rouge avec le motif de rejet, et toute sauvegarde repasse l'annonce en
+  `PENDING` automatiquement (même règle gratuite que Mode) ;
+- autre (`APPROVED` normalement) : bandeau neutre "Modifie ce que tu veux avec les crayons
+  ci-dessous", sans prétendre que l'annonce vient d'être créée.
 
-**Test qui le prouve** : `apps/location-maison/__tests__/e2e/property-edit.spec.ts` — une
-annonce immobilière avec `categoryId` réaliste (imite le backfill) vérifie l'atterrissage sur
-`/property/modify/{id}` et le montage réel du formulaire (pas juste la bonne URL) ; une annonce
-Mode vérifie l'atterrissage sur `/category-listing/create/preview/{id}`.
+L'ancien formulaire `/property/modify/[id]` n'a pas été supprimé (personne ne l'a demandé), mais
+n'est plus lié depuis "Modifier" — probablement mort/orphelin désormais, à vérifier avant de le
+retirer.
+
+**Fichiers** : `AdManagementPage.tsx` (lien), `PreviewPropertyDraft.tsx` (bandeau conditionnel +
+reset REJECTED→PENDING au save), `property/create/preview/[id]/page.tsx` (commentaire mis à jour).
+
+**Test qui le prouve** : `apps/location-maison/__tests__/e2e/property-edit.spec.ts` — une annonce
+immobilière `APPROVED` avec `categoryId` réaliste (imite le backfill) vérifie l'atterrissage sur
+`/property/create/preview/{id}`, l'absence du bandeau "vient d'être créée" et la présence du
+bandeau neutre ; une annonce immobilière `REJECTED` vérifie l'affichage du motif de rejet ; une
+annonce Mode vérifie l'atterrissage sur `/category-listing/create/preview/{id}`.
+
+**Bug de test découvert en écrivant ce test** : `RUN_ID = Date.now()` en tête de fichier peut
+produire la même valeur dans deux workers Playwright lancés à la même milliseconde
+(`fullyParallel: true` fait tourner chacun des tests de ce fichier dans un worker séparé, chacun
+recalculant `RUN_ID` indépendamment) — les deux écrivent alors le même id Firestore, et
+l'`afterAll` du premier worker à finir supprime le document avant que l'autre worker n'ait fini
+de tester dessus. `OWNER_UID` statique aggrave le symptôme : comme il est interrogé par égalité
+stricte sans filtre par id, les annonces de tous les workers actifs en même temps s'affichent
+ensemble sur la même page (annonces "Robe test..." vues en double/quadruple). Corrigé dans
+`property-edit.spec.ts` avec `crypto.randomUUID()` pour `RUN_ID` et un `OWNER_UID` dérivé
+(`e2e-property-edit-owner-${RUN_ID}`), garantissant une isolation complète par worker.
+**Ce même pattern (`OWNER_UID` statique, parfois `RUN_ID = Date.now()`) existe tel quel dans
+`property-view.spec.ts`, `property-promotion.spec.ts`, `property-delete.spec.ts` et
+`property-filters-search.spec.ts`** — `property-view.spec.ts` a été vu échouer avec exactement
+le même symptôme (carte introuvable) en exécution isolée pendant cette session. Pas corrigé ici
+(hors périmètre de cette tâche) : à traiter comme un correctif transverse séparé.
+
+**Contention serveur observée** : lancer les 8 "projects" Playwright (tous pointent vers le même
+serveur dev réutilisé sur le port 3001 et le même Firestore — les suffixes `-dev`/`-preprod`/
+`-prod` ne changent pas l'env à l'intérieur d'une même exécution) ou plusieurs fichiers de specs
+en parallèle sature ce serveur unique et produit des échecs "élément introuvable" qui disparaissent
+en isolant `--project=chromium-desktop-dev` sur un seul fichier à la fois — vu se reproduire sur
+des tests déjà considérés stables (promotion, suppression, filtres). Pas un bug produit ; limite
+de l'environnement de test local.
 
 *Créé le 2026-08-29, mis à jour le même jour suite au test complet des 4 types de promotion,
-de la suppression d'annonce, du bouton "Voir" (immobilier + Mode) et du bouton "Modifier".*
+de la suppression d'annonce, du bouton "Voir" (immobilier + Mode) et du bouton "Modifier"
+(discriminant puis destination finale).*
