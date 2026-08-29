@@ -133,6 +133,11 @@ export type SeedProperty = {
   // PreviewProperty.tsx fait `property.tags.map(...)` sans garde. Défaut `[]` ci-dessous pour
   // les seeds qui n'ont pas besoin de le préciser explicitement.
   tags?: string[]
+  // Optionnel : un backfill en prod (2026-08-17) a posé categoryId sur ~949/950 annonces,
+  // immobilier comprises (voir le commentaire de resolveScope() dans
+  // /api/announcer/ads/route.ts) — categoryId seul n'est donc PAS un discriminant fiable
+  // immobilier/Mode. Permet de reproduire cette donnée réaliste dans un seed de test.
+  categoryId?: string
 }
 
 /**

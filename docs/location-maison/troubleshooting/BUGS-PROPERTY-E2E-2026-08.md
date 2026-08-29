@@ -220,5 +220,44 @@ loin, le vrai flux de création en fournit toujours.
 annonce immobilière et une annonce Mode, vraies données Firestore, vérifie le bon gabarit
 pour chacune (et l'absence de crash).
 
+**Régression corrigée juste après (même cause racine)** : une fois le crash résolu, la fiche
+Mode restait mal aérée en vue mobile — éléments collés aux bords, aucun padding horizontal.
+`PreviewCategoryListing.tsx` n'a pas de padding propre (contrairement à `PreviewProperty`,
+auto-paddé) et compte sur son conteneur pour ça — `HouseDetails.tsx` (page publique) l'enveloppe
+bien de `px-4 py-4` (mobile) / `py-5 px-20` (desktop), mais ce padding n'avait pas été repris
+dans le correctif ci-dessus pour `PreviewPropertyClient.tsx`. Ajouté (signalé par l'utilisateur
+en repassant sur une vraie annonce après le premier correctif — pas détecté par
+`property-view.spec.ts`, qui vérifie la présence du contenu mais pas son espacement visuel).
+
+---
+
+## 🔴 Corrigé — Bouton "Modifier" envoyait la quasi-totalité des annonces immobilières vers le mauvais flux d'édition
+
+**Statut** : corrigé, vérifié. Bug le plus étendu trouvé cette session en termes de nombre
+d'annonces affectées.
+
+**Repro initial** : sur `/property`, cliquer "Modifier" sur une annonce immobilière → atterrit
+sur `/category-listing/create/preview/{id}` (le flux d'édition **Mode**, brouillon de
+catégorie), pas sur `/property/modify/{id}` (le vrai formulaire immobilier à 14 builders).
+
+**Cause** : `AdManagementPage.tsx` décidait du lien "Modifier" avec `ad.categoryId` seul
+(`ad.categoryId ? .../preview/${id} : .../modify/${id}`). Or un backfill en prod (2026-08-17,
+commentaire déjà présent dans `resolveScope()` de `/api/announcer/ads/route.ts`) a posé
+`categoryId` sur **~949 annonces sur 950, immobilier comprises** (studio, home, apartment...).
+`categoryId` seul n'a donc jamais été un discriminant fiable — c'est exactement pourquoi
+`resolveScope()`, `HouseDetails.tsx` et `PreviewPropertyClient.tsx` (corrigé plus haut) testent
+tous `!typeProperty && categoryId`, jamais `categoryId` seul. Le bouton "Modifier" est le seul
+endroit du code où ce piège, pourtant déjà documenté ailleurs dans le même fichier de route,
+n'avait pas été appliqué.
+
+**Correctif** : même discriminant que partout ailleurs — `!ad.typeProperty && ad.categoryId`.
+
+**Fichier** : `apps/location-maison/src/features/announcer/ad-management/ui/v1/AdManagementPage.tsx`.
+
+**Test qui le prouve** : `apps/location-maison/__tests__/e2e/property-edit.spec.ts` — une
+annonce immobilière avec `categoryId` réaliste (imite le backfill) vérifie l'atterrissage sur
+`/property/modify/{id}` et le montage réel du formulaire (pas juste la bonne URL) ; une annonce
+Mode vérifie l'atterrissage sur `/category-listing/create/preview/{id}`.
+
 *Créé le 2026-08-29, mis à jour le même jour suite au test complet des 4 types de promotion,
-de la suppression d'annonce et du bouton "Voir" (immobilier + Mode).*
+de la suppression d'annonce, du bouton "Voir" (immobilier + Mode) et du bouton "Modifier".*

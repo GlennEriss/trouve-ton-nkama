@@ -42,7 +42,13 @@ export default function PreviewPropertyClient() {
         <div>
             <Advertissment />
             {isCategoryListing ? (
-                <PreviewCategoryListing property={property} />
+                // PreviewCategoryListing n'a pas de padding horizontal propre (contrairement à
+                // PreviewProperty, auto-paddé) — HouseDetails.tsx (page publique) l'enveloppe
+                // toujours avec ce padding ; oublié ici lors de l'ajout de cette branche, d'où
+                // des éléments collés aux bords en vue mobile.
+                <div className="px-4 py-4 md:px-20 md:py-5 space-y-10">
+                    <PreviewCategoryListing property={property} />
+                </div>
             ) : (
                 <PreviewProperty property={property} />
             )}
