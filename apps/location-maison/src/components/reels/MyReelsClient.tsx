@@ -13,6 +13,7 @@ import {
   Link2,
   Loader2,
   Pencil,
+  Play,
   Search,
   Share2,
   Trash2,
@@ -126,41 +127,73 @@ function ReelCard({
           dans un cadre 4/5 (plus large par rapport à sa hauteur) forçait `object-cover` à
           recadrer bien plus que nécessaire pour remplir la largeur — l'aperçu semblait "zoomé",
           montrant une tranche centrale de la vidéo au lieu du cadrage réel. */}
-      <div className="relative aspect-[9/16] w-full overflow-hidden bg-gray-100 dark:bg-gray-800">
-        {reel.thumbnailUrl ? (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img src={reel.thumbnailUrl} alt="" className="h-full w-full object-cover" />
+      {(() => {
+        // Lisible seulement une fois traité + approuvé : /reels/[reelId] (SingleReelClient.tsx)
+        // n'affiche que ce que getPublicReelById() renvoie (processingStatus 'ready' +
+        // moderationStatus 'APPROVED', voir reel.db.ts) — cliquer la miniature d'un réel encore
+        // en cours d'envoi/traitement ou rejeté afficherait à tort "n'est plus disponible". Le
+        // badge de statut déjà affiché ici suffit à expliquer pourquoi ce n'est pas encore
+        // cliquable.
+        const isPlayable = reel.processingStatus === 'ready'
+        const media = (
+          <>
+            {reel.thumbnailUrl ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img src={reel.thumbnailUrl} alt="" className="h-full w-full object-cover" />
+            ) : (
+              <div className="flex h-full w-full items-center justify-center">
+                <Video className="h-10 w-10 text-gray-400" />
+              </div>
+            )}
+            {isPlayable && (
+              <div className="absolute inset-0 flex items-center justify-center bg-black/0 transition-colors group-hover:bg-black/20">
+                <span className="flex h-12 w-12 items-center justify-center rounded-full bg-white/90 text-gray-900 opacity-90 shadow-lg transition-transform group-hover:scale-110 group-hover:opacity-100">
+                  <Play className="ml-0.5 h-5 w-5 fill-current" />
+                </span>
+              </div>
+            )}
+            <div className="absolute left-3 top-3 flex flex-wrap items-center gap-2">
+              {reel.processingStatus !== 'ready' && (
+                <span
+                  className={cn(
+                    'inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-xs font-semibold backdrop-blur',
+                    reel.processingStatus === 'failed'
+                      ? 'bg-red-100/95 text-red-800'
+                      : 'bg-white/90 text-gray-900'
+                  )}
+                >
+                  {reel.processingStatus === 'failed' ? (
+                    <XCircle className="h-3.5 w-3.5" />
+                  ) : (
+                    <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                  )}
+                  {PROCESSING_LABELS[reel.processingStatus]}
+                </span>
+              )}
+              {moderationLabel && (
+                <span className={cn('rounded-full px-2.5 py-1 text-xs font-semibold backdrop-blur', moderationClass)}>
+                  {reel.moderationStatus === 'APPROVED' && <CheckCircle2 className="mr-1 inline h-3.5 w-3.5" />}
+                  {moderationLabel}
+                </span>
+              )}
+            </div>
+          </>
+        )
+
+        return isPlayable ? (
+          <Link
+            href={`/reels/${reel.id}`}
+            className="group relative block aspect-[9/16] w-full overflow-hidden bg-gray-100 dark:bg-gray-800"
+            aria-label="Lire le réel"
+          >
+            {media}
+          </Link>
         ) : (
-          <div className="flex h-full w-full items-center justify-center">
-            <Video className="h-10 w-10 text-gray-400" />
+          <div className="relative aspect-[9/16] w-full overflow-hidden bg-gray-100 dark:bg-gray-800">
+            {media}
           </div>
-        )}
-        <div className="absolute left-3 top-3 flex flex-wrap items-center gap-2">
-          {reel.processingStatus !== 'ready' && (
-            <span
-              className={cn(
-                'inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-xs font-semibold backdrop-blur',
-                reel.processingStatus === 'failed'
-                  ? 'bg-red-100/95 text-red-800'
-                  : 'bg-white/90 text-gray-900'
-              )}
-            >
-              {reel.processingStatus === 'failed' ? (
-                <XCircle className="h-3.5 w-3.5" />
-              ) : (
-                <Loader2 className="h-3.5 w-3.5 animate-spin" />
-              )}
-              {PROCESSING_LABELS[reel.processingStatus]}
-            </span>
-          )}
-          {moderationLabel && (
-            <span className={cn('rounded-full px-2.5 py-1 text-xs font-semibold backdrop-blur', moderationClass)}>
-              {reel.moderationStatus === 'APPROVED' && <CheckCircle2 className="mr-1 inline h-3.5 w-3.5" />}
-              {moderationLabel}
-            </span>
-          )}
-        </div>
-      </div>
+        )
+      })()}
 
       <div className="flex flex-1 flex-col space-y-3 p-4">
         <div className="space-y-1.5">

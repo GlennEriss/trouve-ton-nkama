@@ -209,4 +209,32 @@ recadrage artificiel, contre une tranche centrale zoomée avant le correctif. Pa
 automatisé dédié (changement purement visuel, un ratio CSS) ; suites e2e existantes
 (`lot8d-reels-ux.spec.ts`, `reels-mine-filters.spec.ts`) relancées après coup, aucune régression.
 
+## 🟢 Ajouté — cliquer la miniature d'un réel sur "Mes réels" le lance
+
+**Statut** : demande produit directe, implémentée et vérifiée (Jest + e2e réel).
+
+**Avant** : la miniature de chaque carte (`ReelCard`, `MyReelsClient.tsx`) n'était pas cliquable —
+seuls "Modifier"/"Supprimer"/"Attacher à une annonce" en bas de carte l'étaient.
+
+**Correctif** : la miniature devient un `Link` vers `/reels/{id}` (page existante,
+`SingleReelClient.tsx`, déjà utilisée comme lien profond WhatsApp) avec un bouton "lecture" rond
+superposé (icône `Play`, `aria-label="Lire le réel"`), visible en permanence et qui grossit
+légèrement au survol. **Seulement pour un réel `processingStatus: 'ready'`** :
+`/reels/[reelId]` ne charge un réel que via `getPublicReelById()`, qui exige aussi
+`processingStatus === 'ready'` **et** `moderationStatus === 'APPROVED'` — cliquer la miniature
+d'un réel encore en envoi/traitement/rejeté afficherait à tort "n'est plus disponible" alors que
+le badge de statut déjà affiché sur la carte explique déjà pourquoi ce n'est pas encore
+disponible. Pour ces réels-là, la miniature reste un simple `<div>`, non cliquable.
+
+**Fichier** : `src/components/reels/MyReelsClient.tsx`.
+
+**Test qui le prouve** :
+- Jest (`my-reels-client.test.tsx`) : le réel `ready` par défaut a un lien "Lire le réel" vers
+  `/reels/mine-reel-1` ; un seul lien de ce type existe (les deux autres réels seedés par défaut
+  ne sont pas `ready`).
+- E2E réel (`reels-mine-play.spec.ts`, nouveau) : clique la miniature d'un réel `ready` → arrive
+  réellement sur `/reels/{id}`, pas d'erreur, la description du bon réel s'affiche (pas juste une
+  page qui ne plante pas) ; la miniature d'un réel `processing` n'a pas de lien "Lire le réel" du
+  tout.
+
 *Créé le 2026-08-30.*

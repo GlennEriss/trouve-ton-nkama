@@ -142,6 +142,12 @@ describe('MyReelsClient', () => {
     expect(stats.getByText('60')).toBeVisible()
     expect(stats.getByText('12')).toBeVisible()
     expect(screen.getAllByRole('link', { name: /Attacher à une annonce/i }).length).toBeGreaterThan(0)
+    // La miniature d'un réel prêt (reel 1, processingStatus 'ready') mène à /reels/{id} — celle
+    // d'un réel encore en traitement/échoué (2, 3) ne doit pas être cliquable : /reels/[reelId]
+    // (SingleReelClient.tsx) n'affiche que les réels approuvés + prêts (getPublicReelById), un
+    // clic prématuré afficherait à tort "n'est plus disponible".
+    expect(screen.getByRole('link', { name: 'Lire le réel' })).toHaveAttribute('href', '/reels/mine-reel-1')
+    expect(screen.getAllByRole('link', { name: 'Lire le réel' })).toHaveLength(1)
     await waitFor(() => expect(fetchNextPageMock).toHaveBeenCalled())
   })
 
