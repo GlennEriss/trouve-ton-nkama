@@ -188,6 +188,9 @@ export type SeedCategoryListing = {
   categoryId: string
   categoryLeaf: string
   attributes?: Record<string, string>
+  // Optionnel, défaut 'IN_PROGRESS' — pour reproduire une annonce déjà archivée (tests de
+  // désarchivage) sans avoir à la repatcher séparément après le seed.
+  state?: 'IN_PROGRESS' | 'ARCHIVED'
 }
 
 /**
@@ -202,7 +205,7 @@ export async function seedCategoryListing(createdBy: string, listing: SeedCatego
   const app = ensureAdminApp()
   const db = admin.firestore(app)
   const now = admin.firestore.Timestamp.now()
-  const { id, categoryLeaf, ...data } = listing
+  const { id, categoryLeaf, state, ...data } = listing
 
   await db
     .collection('properties')
@@ -211,7 +214,7 @@ export async function seedCategoryListing(createdBy: string, listing: SeedCatego
       ...data,
       createdBy,
       moderationStatus: 'APPROVED',
-      state: 'IN_PROGRESS',
+      state: state ?? 'IN_PROGRESS',
       categoryPath: { lvl1: categoryLeaf },
       images: [],
       currentPromotion: null,

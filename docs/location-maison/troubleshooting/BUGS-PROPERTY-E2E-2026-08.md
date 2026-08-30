@@ -372,3 +372,23 @@ et `moderationStatus` repasse bien à `PENDING` avec `rejectionReason` remis à 
 *Créé le 2026-08-29, mis à jour le même jour suite au test complet des 4 types de promotion,
 de la suppression d'annonce, du bouton "Voir" (immobilier + Mode) et du bouton "Modifier"
 (discriminant puis destination finale).*
+
+## 🟢 Couverture ajoutée — `property-archive.spec.ts` (archiver/désarchiver, immobilier + Mode)
+
+**Statut** : pas de bug produit trouvé ici — cette suite confirme surtout que le correctif
+`updateProperty` → route `PATCH` Admin SDK (voir la section ci-dessus sur les crayons) profite
+aussi à `toggleAdState` (`ad-management.service.ts`), qui appelle la même fonction. Sans ce
+correctif, archiver/désarchiver aurait souffert du même échec silencieux (`permission-denied`
+côté SDK client) que les crayons EditableField.
+
+**Piège rencontré en écrivant le test** : le bouton "Archiver"/"Activer" de la carte n'agit pas
+directement — il ouvre une `Dialog` de confirmation (`requestToggleState`/`confirmToggleState`).
+Le bouton de confirmation de cette Dialog est libellé différemment selon le sens : **"Archiver"**
+pour archiver (cohérent avec le bouton de la carte), mais **"Réactiver"** pour désarchiver — alors
+que le bouton de la carte dit "Activer". Une incohérence de libellé mineure, notée mais pas
+corrigée (pas demandé) : le test s'y adapte explicitement plutôt que de la masquer.
+
+**Fichiers** : `__tests__/e2e/property-archive.spec.ts` (nouveau), `helpers/firebase-admin.ts`
+(`SeedCategoryListing.state`, optionnel, pour seeder une annonce Mode déjà archivée).
+
+*Ajouté le 2026-08-30.*
