@@ -1,3 +1,5 @@
+import crypto from 'node:crypto'
+
 import { expect, test } from '@playwright/test'
 
 import { E2E_ANNOUNCER, signInAsAnnouncer } from './helpers/auth'
@@ -19,9 +21,13 @@ import { deleteProperties, seedProperties, type SeedProperty } from './helpers/f
  * (/api/property/[id], DELETE) — voir BUGS-PROPERTY-E2E-2026-08.md. Ce test vérifie le
  * comportement correct désormais attendu : suppression rapide et réelle.
  */
-const OWNER_UID = 'e2e-property-delete-owner'
+// RUN_ID/OWNER_UID uniques par worker (crypto.randomUUID(), pas de littéral statique) : même
+// raison que property-edit.spec.ts/property-archive.spec.ts — un id statique réutilisé par un
+// run précédent (si son afterAll n'a pas pu s'exécuter, ex. crash) polluerait ce run-ci.
+const RUN_ID = crypto.randomUUID()
+const OWNER_UID = `e2e-property-delete-owner-${RUN_ID}`
 const PROPERTY: SeedProperty = {
-  id: 'e2e-prop-delete',
+  id: `e2e-prop-delete-${RUN_ID}`,
   title: 'Annonce test suppression E2E',
   description: 'Annonce de test pour la suppression.',
   typeProperty: 'Studio',
@@ -67,11 +73,11 @@ test.describe('Suppression d\'une annonce /property — vrai Firestore', () => {
     await expect(page.getByText(PROPERTY.title)).not.toBeVisible({ timeout: 5000 })
 
     // Preuve définitive côté données : le document n'existe plus réellement dans Firestore.
-    const stillExists = await page.evaluate(async () => {
+    const stillExists = await page.evaluate(async (propertyId) => {
       const res = await fetch('/api/announcer/ads?scope=immobilier', { credentials: 'include' })
       const data = await res.json()
-      return (data.items ?? []).some((item: { id: string }) => item.id === 'e2e-prop-delete')
-    })
+      return (data.items ?? []).some((item: { id: string }) => item.id === propertyId)
+    }, PROPERTY.id)
     expect(stillExists).toBe(false)
   })
 })

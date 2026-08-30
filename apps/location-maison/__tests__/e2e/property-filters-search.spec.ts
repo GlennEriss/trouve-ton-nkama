@@ -1,3 +1,5 @@
+import crypto from 'node:crypto'
+
 import { expect, test, type Page } from '@playwright/test'
 
 import { E2E_ANNOUNCER, signInAsAnnouncer } from './helpers/auth'
@@ -8,11 +10,21 @@ import { deleteProperties, seedProperties, type SeedProperty } from './helpers/f
  * annonces Firestore (pas de mock réseau). /api/announcer/ads interroge
  * Firestore par `createdBy` puis filtre/trie en mémoire côté serveur — ces
  * tests exercent donc ce vrai code de filtrage, pas juste l'UI.
+ *
+ * RUN_ID/OWNER_UID uniques par worker (crypto.randomUUID(), pas de littéral statique) : avec
+ * `fullyParallel: true`, Playwright peut répartir les tests Desktop/Mobile de ce fichier sur
+ * des workers séparés, chacun réimportant ce module. Des ids statiques partagés entre workers
+ * font que l'afterAll du premier worker à finir supprime les annonces avant qu'un autre worker
+ * n'ait fini de tester dessus (même bug déjà trouvé et corrigé sur property-edit.spec.ts /
+ * property-archive.spec.ts — voir BUGS-PROPERTY-E2E-2026-08.md). Ces tests sont en lecture
+ * seule (recherche/filtre, aucun état serveur muté d'un test à l'autre), donc contrairement à
+ * property-promotion.spec.ts, une isolation par worker suffit : pas besoin de mode `serial`.
  */
-const OWNER_UID = 'e2e-property-filters-owner'
+const RUN_ID = crypto.randomUUID()
+const OWNER_UID = `e2e-property-filters-owner-${RUN_ID}`
 
 const VILLA: SeedProperty = {
-  id: 'e2e-prop-villa',
+  id: `e2e-prop-villa-${RUN_ID}`,
   title: 'Villa test Libreville E2E',
   description: 'Grande villa avec jardin.',
   typeProperty: 'Villa',
@@ -27,7 +39,7 @@ const VILLA: SeedProperty = {
 }
 
 const STUDIO: SeedProperty = {
-  id: 'e2e-prop-studio',
+  id: `e2e-prop-studio-${RUN_ID}`,
   title: 'Studio test Akanda E2E',
   description: 'Studio meublé proche commodités.',
   typeProperty: 'Studio',
@@ -42,7 +54,7 @@ const STUDIO: SeedProperty = {
 }
 
 const ARCHIVED_APARTMENT: SeedProperty = {
-  id: 'e2e-prop-archived',
+  id: `e2e-prop-archived-${RUN_ID}`,
   title: 'Appartement test Owendo E2E',
   description: 'Appartement archivé.',
   typeProperty: 'Apartment',

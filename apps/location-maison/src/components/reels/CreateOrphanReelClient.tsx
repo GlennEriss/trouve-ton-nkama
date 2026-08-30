@@ -48,7 +48,7 @@ function getSafeReturnHref(returnTo: string | null, fallback: string) {
 }
 
 export default function CreateOrphanReelClient() {
-  const { user, isFirebaseConnected } = useCurrentUser()
+  const { user, isFirebaseConnected, error: firebaseConnectionError } = useCurrentUser()
   const { toast } = useToast()
   const searchParams = useSearchParams()
   const { saveDraftVideo, loadDraftVideo, clearDraftVideo } = useReelDraftVideoStorage()
@@ -220,7 +220,29 @@ export default function CreateOrphanReelClient() {
   React.useEffect(() => {
     if (!pendingSubmission) return
     if (!user || !isAnnouncer(user)) return
-    if (!isFirebaseConnected) return
+
+    if (!isFirebaseConnected) {
+      // connectFirebaseClient (custom token NextAuth -> Firebase, voir use-current-user.ts)
+      // peut échouer définitivement (réseau, jeton refusé...) sans jamais redevenir vrai — sans
+      // ce garde, le bouton "Publier" restait bloqué en chargement indéfiniment, sans aucun
+      // message (isFinalSubmitting déjà mis à true dans handlePublish avant que cet effet ne
+      // s'exécute) : constaté en lisant le code pendant l'écriture du test e2e
+      // property-add-reel.spec.ts, qui dépend justement de cette connexion pour réussir.
+      // firebaseConnectionError n'est posé qu'après un échec réel (pas pendant l'attente
+      // normale) — tant qu'il est absent, on continue d'attendre.
+      if (firebaseConnectionError) {
+        setPendingSubmission(false)
+        isFinalSubmittingRef.current = false
+        setIsFinalSubmitting(false)
+        toast({
+          title: "Échec de l'envoi",
+          description: firebaseConnectionError,
+          variant: "destructive",
+        })
+      }
+      return
+    }
+
     if (!videoFile) return
 
     setPendingSubmission(false)
@@ -234,7 +256,7 @@ export default function CreateOrphanReelClient() {
         setIsFinalSubmitting(false)
       })
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [pendingSubmission, user, isFirebaseConnected, videoFile])
+  }, [pendingSubmission, user, isFirebaseConnected, firebaseConnectionError, videoFile])
 
   const { getRootProps, getInputProps, isDragActive, isProcessing } = useVideoDropzone({
     onFile: handleFileSelected,

@@ -3,6 +3,7 @@ import { getCacheStore } from '@/lib/cache';
 import { Property } from '@/models/annonce';
 import { createLogger } from '@/lib/logger';
 import { handleApiError } from '@/lib/api/error-response';
+import { serializePropertyPromotion } from '@/lib/serialize-property-promotion';
 import { CACHE_KEY } from './constants';
 
 const logger = createLogger('api.property.promoted');
@@ -68,9 +69,16 @@ export async function GET() {
       const stillValid = type === 'boost' || (isActive && endDate && endDate > now);
       if (!stillValid) return;
 
-      if (type === 'featured') featured.push(property);
-      else if (type === 'boost') boost.push(property);
-      else if (type === 'trending-7d' || type === 'trending-3d') trending.push(property);
+      // Normalisation avant NextResponse.json — même bug que /api/announcer/ads corrigé
+      // plus tôt (voir serialize-property-promotion.ts) : le SDK Admin sérialise ses
+      // Timestamp avec un préfixe `_` (`_seconds`), pas encore consommé côté client ici
+      // (aucun badge/countdown ne lit `currentPromotion` sur ces sections aujourd'hui),
+      // mais latent pour la même raison — normalisé par précaution.
+      const serializedProperty = serializePropertyPromotion(property);
+
+      if (type === 'featured') featured.push(serializedProperty);
+      else if (type === 'boost') boost.push(serializedProperty);
+      else if (type === 'trending-7d' || type === 'trending-3d') trending.push(serializedProperty);
     });
 
     const result: PromotedResult = {

@@ -58,6 +58,14 @@ jest.mock('@trouve-ton-nkama/ui/dialog', () => ({
   DialogTitle: ({ children }: { children: React.ReactNode }) => <h2>{children}</h2>,
 }))
 
+// Le vrai Carousel (Embla) ne fonctionne pas en jsdom (matchMedia absent) — même mock que
+// ad-management-page.test.tsx, qui a le même besoin pour les stats de /property.
+jest.mock('@trouve-ton-nkama/ui/carousel', () => ({
+  Carousel: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
+  CarouselContent: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
+  CarouselItem: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
+}))
+
 function reel(index: number, overrides: Partial<Reel> = {}): Reel & { id: string } {
   return {
     id: `mine-reel-${index}`,
@@ -127,9 +135,12 @@ describe('MyReelsClient', () => {
     expect(screen.getByText('Échec du traitement')).toBeVisible()
     expect(screen.getByText('Traitement en cours')).toBeVisible()
     expect(screen.getAllByText('Sans description').length).toBeGreaterThan(0)
-    expect(screen.getByText('600')).toBeVisible()
-    expect(screen.getByText('60')).toBeVisible()
-    expect(screen.getByText('12')).toBeVisible()
+    // Les stats sont dupliquées dans le DOM (grille desktop + carousel mobile, cf.
+    // reel-stats-desktop/reel-stats-mobile) — scope au bloc desktop pour éviter l'ambiguïté.
+    const stats = within(screen.getByTestId('reel-stats-desktop'))
+    expect(stats.getByText('600')).toBeVisible()
+    expect(stats.getByText('60')).toBeVisible()
+    expect(stats.getByText('12')).toBeVisible()
     expect(screen.getAllByRole('link', { name: /Attacher à une annonce/i }).length).toBeGreaterThan(0)
     await waitFor(() => expect(fetchNextPageMock).toHaveBeenCalled())
   })
@@ -192,9 +203,53 @@ describe('MyReelsClient', () => {
     expect(screen.getByRole('heading', { name: /Vous n'avez encore créé aucun réel/i })).toBeVisible()
 
     fireEvent.change(screen.getByLabelText('Publiés depuis le'), { target: { value: '2026-07-01' } })
-    expect(screen.getByRole('heading', { name: 'Aucun réel sur cette période' })).toBeVisible()
-    fireEvent.click(screen.getByRole('button', { name: 'Réinitialiser le filtre' }))
+    expect(screen.getByRole('heading', { name: 'Aucun réel ne correspond à vos filtres' })).toBeVisible()
+    fireEvent.click(screen.getByRole('button', { name: 'Réinitialiser les filtres' }))
     expect(screen.getByRole('heading', { name: /Vous n'avez encore créé aucun réel/i })).toBeVisible()
+  })
+
+  it('ouvre le Sheet "Filtres" (mobile), applique et réinitialise la période depuis celui-ci', () => {
+    render(<MyReelsClient />)
+
+    expect(screen.queryByRole('heading', { name: 'Filtres' })).not.toBeInTheDocument()
+    fireEvent.click(screen.getByRole('button', { name: 'Filtres' }))
+
+    // Les champs du Sheet portent un préfixe d'id ("mobile-") distinct de la grille desktop
+    // (toutes deux montées dans le DOM en jsdom, faute de media queries réelles) mais le même
+    // libellé — même design que /property (AdManagementPage.tsx) — d'où le scope sur le dialog.
+    const sheet = screen.getByRole('dialog')
+    expect(within(sheet).getByRole('heading', { name: 'Filtres' })).toBeVisible()
+
+    fireEvent.change(within(sheet).getByLabelText('Publiés depuis le'), { target: { value: '2026-07-01' } })
+    expect(within(sheet).getByRole('button', { name: 'Réinitialiser' })).toBeEnabled()
+
+    fireEvent.click(within(sheet).getByRole('button', { name: 'Réinitialiser' }))
+    expect(within(sheet).getByLabelText('Publiés depuis le')).toHaveValue('')
+
+    fireEvent.click(within(sheet).getByRole('button', { name: 'Voir les résultats' }))
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
+  })
+
+  it('filtre les réels affichés (et les stats) par le texte de recherche, côté client', () => {
+    firebaseConnected = true
+    queryState = state([
+      reel(1, { description: 'Villa avec piscine à Owendo', viewCount: 10 }),
+      reel(2, { description: 'Studio meublé au centre-ville', viewCount: 5 }),
+    ])
+    render(<MyReelsClient />)
+
+    expect(screen.getByText('Villa avec piscine à Owendo')).toBeVisible()
+    expect(screen.getByText('Studio meublé au centre-ville')).toBeVisible()
+
+    fireEvent.change(screen.getByLabelText('Recherche'), { target: { value: 'piscine' } })
+
+    expect(screen.getByText('Villa avec piscine à Owendo')).toBeVisible()
+    expect(screen.queryByText('Studio meublé au centre-ville')).not.toBeInTheDocument()
+    // Les stats totales ne comptent plus que les réels visibles après recherche.
+    // Les stats sont dupliquées dans le DOM (grille desktop + carousel mobile) — scope au bloc
+    // desktop pour éviter l'ambiguïté.
+    const stats = within(screen.getByTestId('reel-stats-desktop'))
+    expect(stats.getByText('Vues totales').closest('div')?.parentElement).toHaveTextContent('10')
   })
 
   it('désactive la requête sans utilisateur', () => {

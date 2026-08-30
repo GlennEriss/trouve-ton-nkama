@@ -267,3 +267,110 @@ export async function seedAnnouncerUser(uid: string, credits: number): Promise<v
       updatedAt: now,
     })
 }
+
+/** Reads a real `reels/{id}` doc — utilisé pour vérifier qu'un réel créé via l'UI (bouton
+ * "Ajouter un réel" -> /reels/add -> Publier) a bien été persisté en base par la vraie route
+ * POST /api/reels (Admin SDK), pas juste affiché côté client. */
+export async function getReel(id: string): Promise<Record<string, unknown> | null> {
+  const app = ensureAdminApp()
+  const snapshot = await admin.firestore(app).collection('reels').doc(id).get()
+  return snapshot.exists ? (snapshot.data() ?? null) : null
+}
+
+/**
+ * Finds the (single, expected) `reels/{id}` doc created by a given owner — le client génère
+ * l'id lui-même (`crypto.randomUUID()`, voir CreateOrphanReelClient.tsx) donc un test ne peut
+ * pas le connaître à l'avance ; interroger par `createdBy` est le seul moyen de le retrouver
+ * après une vraie publication via l'UI.
+ */
+export async function findReelByOwner(uid: string): Promise<{ id: string; data: Record<string, unknown> } | null> {
+  const app = ensureAdminApp()
+  const snapshot = await admin.firestore(app).collection('reels').where('createdBy', '==', uid).limit(1).get()
+  if (snapshot.empty) return null
+  const doc = snapshot.docs[0]
+  return { id: doc.id, data: doc.data() }
+}
+
+/**
+ * Deletes real `reels/{id}` docs by id, plus every Storage object they reference — contrairement
+ * à property.db.ts, la création d'un réel uploade réellement un fichier vidéo (SDK client
+ * Storage, voir uploadRawReelVideo dans reel.db.ts) ; supprimer seulement le document Firestore
+ * laisserait l'objet orphelin dans le bucket. Lit chaque doc AVANT de le supprimer pour
+ * récupérer ses vrais chemins (rawVideoPath, et videoPath/thumbnailPath si la Cloud Function de
+ * transcodage a déjà tourné — même logique que getStoragePathsFromReel dans
+ * /api/reels/route.ts) plutôt que de deviner un chemin/extension à l'avance. `fallbackRawPath`
+ * permet quand même un nettoyage best-effort si le doc n'existe plus (ex. jamais créé, le test a
+ * échoué avant).
+ */
+export async function deleteReels(
+  entries: Array<{ id: string; uid: string; fallbackExtension?: string }>,
+): Promise<void> {
+  const app = ensureAdminApp()
+  const db = admin.firestore(app)
+  // Nom de bucket explicite : l'app Admin (ci-dessus) n'a pas de storageBucket dans sa config,
+  // et le bucket réel de ce projet (*.firebasestorage.app) ne suit pas le nom par défaut que
+  // `bucket()` sans argument devinerait (*.appspot.com) — même logique que /api/reels/route.ts.
+  const bucketName = process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET || process.env.FIREBASE_STORAGE_BUCKET
+  const bucket = admin.storage(app).bucket(bucketName)
+
+  await Promise.all(
+    entries.map(async ({ id, uid, fallbackExtension = 'mp4' }) => {
+      const ref = db.collection('reels').doc(id)
+      const snapshot = await ref.get()
+      const data = snapshot.data() ?? {}
+      const paths = [data.rawVideoPath, data.videoPath, data.thumbnailPath].filter(
+        (value): value is string => typeof value === 'string' && value.trim().length > 0,
+      )
+      if (paths.length === 0) {
+        paths.push(`reels-raw/${uid}/${id}.${fallbackExtension}`)
+      }
+
+      await Promise.all([
+        ref.delete(),
+        ...paths.map((filePath) => bucket.file(filePath).delete({ ignoreNotFound: true })),
+      ])
+    }),
+  )
+}
+
+export type SeedReel = {
+  id: string
+  description?: string
+  propertyId?: string | null
+  processingStatus?: 'uploading' | 'processing' | 'ready' | 'failed'
+  moderationStatus?: 'PENDING' | 'APPROVED' | 'REJECTED'
+}
+
+/**
+ * Writes a `reels/{id}` doc directly (pas d'upload Storage réel) — pour les tests qui n'ont
+ * besoin que d'un réel existant à retrouver dans une liste (ex. "Mes réels"), pas de vérifier le
+ * pipeline d'upload/transcodage lui-même (voir property-add-reel.spec.ts pour ce cas). Mêmes
+ * champs minimaux que seedLot8DReels (helpers/reels-dev.ts), exposé ici comme les autres helpers
+ * de seed de ce fichier plutôt que dupliqué.
+ */
+export async function seedReel(createdBy: string, reel: SeedReel): Promise<void> {
+  const app = ensureAdminApp()
+  const db = admin.firestore(app)
+  const now = admin.firestore.Timestamp.now()
+  const { id, ...data } = reel
+
+  await db
+    .collection('reels')
+    .doc(id)
+    .set({
+      ...data,
+      propertyId: data.propertyId ?? null,
+      processingStatus: data.processingStatus ?? 'ready',
+      moderationStatus: data.moderationStatus ?? 'APPROVED',
+      createdBy,
+      rawVideoPath: `reels-raw/${createdBy}/${id}.mp4`,
+      state: 'IN_PROGRESS',
+      viewCount: 0,
+      likeCount: 0,
+      shareCount: 0,
+      giftCount: 0,
+      giftTotalAmount: 0,
+      createdAt: now,
+      updatedAt: now,
+    })
+}

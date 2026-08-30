@@ -3,9 +3,11 @@ import { fireEvent, render, screen, waitFor } from '@testing-library/react'
 const currentUserState: {
   user: Record<string, unknown> | null
   isFirebaseConnected: boolean
+  error: string | null
 } = {
   user: { uid: 'owner-1', roles: ['Announcer'], phoneNumbers: ['+24166545430'] },
   isFirebaseConnected: true,
+  error: null,
 }
 const mockToast = jest.fn()
 const mockCreateReel = jest.fn()
@@ -92,6 +94,7 @@ describe('CreateOrphanReelClient', () => {
       phoneNumbers: ['+24166545430'],
     }
     currentUserState.isFirebaseConnected = true
+    currentUserState.error = null
     returnTo = '/reels/mine'
     propertyId = null
     propertyQueryData = undefined
@@ -226,5 +229,28 @@ describe('CreateOrphanReelClient', () => {
       title: "Échec de l'envoi",
       variant: 'destructive',
     }))
+  })
+
+  it("prévient et débloque le bouton quand la connexion Firebase échoue, au lieu de tourner indéfiniment", async () => {
+    // connectFirebaseClient (custom token NextAuth -> Firebase) peut échouer définitivement
+    // sans jamais faire passer isFirebaseConnected à true — sans le correctif, le bouton
+    // "Publier" restait bloqué en chargement pour toujours, sans aucun toast ni message.
+    currentUserState.isFirebaseConnected = false
+    currentUserState.error = 'Erreur de connexion Firebase'
+    render(<CreateOrphanReelClient />)
+    await chooseVideo()
+
+    const publish = screen.getByRole('button', { name: 'Publier le réel' })
+    fireEvent.click(publish)
+
+    await waitFor(() => expect(mockToast).toHaveBeenCalledWith(expect.objectContaining({
+      title: "Échec de l'envoi",
+      description: 'Erreur de connexion Firebase',
+      variant: 'destructive',
+    })))
+    expect(mockCreateReel).not.toHaveBeenCalled()
+    expect(mockUploadRawReelVideo).not.toHaveBeenCalled()
+    // Le bouton redevient cliquable (isFinalSubmitting réinitialisé), pas bloqué en chargement.
+    await waitFor(() => expect(publish).not.toBeDisabled())
   })
 })

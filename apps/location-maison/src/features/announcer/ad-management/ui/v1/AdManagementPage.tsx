@@ -399,7 +399,10 @@ function AdCard({ ad, onToggleState, onDelete, actionLoading }: AdCardProps) {
               disabled={actionLoading}
             >
               <Archive className="mr-1.5 h-4 w-4" />
-              {ad.state === 'IN_PROGRESS' ? 'Archiver' : 'Activer'}
+              {/* Même libellé que le bouton de confirmation dans la Dialog ci-dessous
+                  (requestToggleState/confirmToggleState) : "Réactiver", pas "Activer" —
+                  incohérence trouvée en e2e réel (property-archive.spec.ts). */}
+              {ad.state === 'IN_PROGRESS' ? 'Archiver' : 'Réactiver'}
             </Button>
             <Button
               variant="outline"

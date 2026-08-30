@@ -3,6 +3,7 @@ import { auth } from '@/next-auth/auth';
 import { createLogger } from '@/lib/logger';
 import type { Property } from '@/models/annonce';
 import firebaseCollectionNames from '@/constantes/firebase-collection-name';
+import { serializePropertyPromotion } from '@/lib/serialize-property-promotion';
 
 const logger = createLogger('api.announcer.ads');
 const DEFAULT_LIMIT = 12;
@@ -82,53 +83,8 @@ function toMillis(value: unknown): number {
   return 0;
 }
 
-/**
- * Le SDK Admin sérialise ses Timestamp en JSON avec un préfixe `_` (`_seconds`,
- * `_nanoseconds`) — voir `firebase-admin.Timestamp`. Mais tout le code client qui lit
- * `currentPromotion.{start,end}Date` (PromotionButton.tsx, PromotionBadge.tsx,
- * use-promotion.ts) attend `.seconds`/`.nanoseconds` sans préfixe, comme le SDK client.
- * Sans cette normalisation avant `NextResponse.json`, `hasActivePromotion` vaut toujours
- * `false` côté client — même juste après une promotion réussie et un rechargement de
- * page — alors que la donnée est correcte en base (constaté en e2e réel).
- */
-function serializeTimestamp(value: unknown): { seconds: number; nanoseconds: number } | null {
-  if (!value || typeof value !== 'object') {
-    return null;
-  }
-  const withToMillis = value as { toMillis?: () => number; nanoseconds?: unknown; _nanoseconds?: unknown };
-  if (typeof withToMillis.toMillis === 'function') {
-    const millis = withToMillis.toMillis();
-    const nanoseconds =
-      typeof withToMillis.nanoseconds === 'number'
-        ? withToMillis.nanoseconds
-        : typeof withToMillis._nanoseconds === 'number'
-          ? withToMillis._nanoseconds
-          : 0;
-    return { seconds: Math.floor(millis / 1000), nanoseconds };
-  }
-  return null;
-}
-
-function serializePromotion(promotion: unknown) {
-  if (!promotion || typeof promotion !== 'object') {
-    return promotion;
-  }
-  const record = promotion as Record<string, unknown>;
-  return {
-    ...record,
-    startDate: serializeTimestamp(record.startDate) ?? record.startDate,
-    endDate: serializeTimestamp(record.endDate) ?? record.endDate,
-  };
-}
-
 function serializeProperty(property: PropertyRecord): PropertyRecord {
-  if (!property.currentPromotion) {
-    return property;
-  }
-  return {
-    ...property,
-    currentPromotion: serializePromotion(property.currentPromotion) as PropertyRecord['currentPromotion'],
-  };
+  return serializePropertyPromotion(property) as PropertyRecord;
 }
 
 function normalizeText(value: unknown): string {

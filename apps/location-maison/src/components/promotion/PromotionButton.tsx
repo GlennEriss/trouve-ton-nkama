@@ -40,8 +40,12 @@ export default function PromotionButton({ property }: Readonly<PromotionButtonPr
         case 'trending-7d':
         case 'trending-3d':
           return 'En tendance'
-        case 'boost':
-          return 'Boostée'
+        // Pas de cas 'boost' ici : duration: 0 par design (PROMOTION_CONFIGS) veut dire
+        // endDate === startDate, donc `hasActivePromotion` (qui exige endDate > maintenant)
+        // ne peut structurellement jamais être vrai pour ce type — ce cas était mort (jamais
+        // atteint), constaté en e2e réel (property-promotion.spec.ts). Le boost fonctionne
+        // bien (remonte l'annonce en tête de liste), il n'affiche juste jamais de badge/état
+        // persistant, cohérent avec sa description ("remontée instantanée").
         default:
           return 'Promue'
       }

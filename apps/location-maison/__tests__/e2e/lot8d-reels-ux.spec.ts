@@ -132,11 +132,15 @@ test.describe('Lot 8D - parcours annonceur Réels sur Firebase Dev', () => {
     await expect(page.getByText('Studio lumineux à modifier pendant le test.')).toBeVisible({ timeout: 20_000 })
     await expect(page.getByText('Réel destiné au test de suppression.')).toBeVisible()
     await expect(page.getByText('Traitement en cours')).toBeVisible()
-    await expect(page.getByText('Vues totales').locator('..').getByText('128')).toBeVisible()
-    await expect(page.getByText('Likes reçus').locator('..').getByText('14')).toBeVisible()
-    await expect(
-      page.getByText('Partages', { exact: true }).first().locator('xpath=following-sibling::p'),
-    ).toHaveText('6')
+    // Les stats sont dans un carousel sur mobile ET une grille desktop, toutes deux dans le DOM
+    // en permanence (seul le CSS masque l'une ou l'autre) — Playwright compte les éléments
+    // masqués dans la résolution stricte d'un locator, d'où le scope explicite au bloc mobile
+    // (viewport de ce test) via son data-testid, plutôt que .first()/xpath qui ne garantissaient
+    // pas de cibler le bon bloc.
+    const mobileStats = page.getByTestId('reel-stats-mobile')
+    await expect(mobileStats.getByText('Vues totales').locator('..').getByText('128')).toBeVisible()
+    await expect(mobileStats.getByText('Likes reçus').locator('..').getByText('14')).toBeVisible()
+    await expect(mobileStats.getByText('Partages', { exact: true }).locator('..').getByText('6')).toBeVisible()
 
     const newReel = page.getByRole('link', { name: 'Nouveau réel' })
     await expect(newReel).toHaveAttribute('href', '/reels/add?returnTo=%2Freels%2Fmine')

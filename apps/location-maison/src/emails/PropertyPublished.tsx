@@ -129,7 +129,10 @@ const PropertyPublished: React.FC<PropertyPublishedProps> = ({
         <Row>
           <Column align="center">
             <Button
-              href={`${texts.websiteUrl}/property/modify/${property.id}`}
+              // /property/modify/[id] (ancien formulaire à 14 builders) a été retiré — voir
+              // BUGS-PROPERTY-E2E-2026-08.md. Même destination que le bouton "Modifier" de
+              // la gestion des annonces pour l'immobilier (seul type que ce template gérait).
+              href={`${texts.websiteUrl}/property/create/preview/${property.id}`}
               style={styleEditButton}
               className="mobile-button"
             >

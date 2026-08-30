@@ -1,3 +1,5 @@
+import crypto from 'node:crypto'
+
 import { expect, test, type Page } from '@playwright/test'
 
 import { E2E_ANNOUNCER, signInAsAnnouncer } from './helpers/auth'
@@ -17,12 +19,21 @@ import {
  * du bien immobilier (statut à louer/vendre, `property.tags.map(...)` sans garde, alors
  * qu'une annonce Mode n'a jamais de `tags`).
  */
-const OWNER_UID = 'e2e-property-view-owner'
-// /api/property/id met la réponse en cache (Redis, 10 min) sous property:{id} dès qu'une
-// annonce "publiquement visible" (state IN_PROGRESS + moderationStatus APPROVED — le cas de
-// VILLA ici) est lue une fois. Réutiliser un id fixe entre plusieurs runs de ce fichier sert
-// une réponse périmée si les données du seed ont changé entre-temps — id unique par run.
-const RUN_ID = Date.now()
+// RUN_ID doit être unique par worker Playwright, pas seulement par run manuel : avec
+// `fullyParallel: true`, chaque test de ce fichier peut s'exécuter dans un worker séparé, qui
+// réimporte ce module et recalcule RUN_ID indépendamment. Un `Date.now()` peut produire la
+// même valeur dans deux workers lancés à la même milliseconde ; les deux écriraient alors le
+// même id, et l'afterAll du premier worker à finir supprimerait le document avant que l'autre
+// worker n'ait fini de tester dessus (constaté en e2e réel sur property-edit.spec.ts, même
+// pattern). OWNER_UID doit lui aussi être unique par worker, sinon les annonces de tous les
+// workers actifs en même temps s'affichent ensemble sur la même page /property (interrogées
+// par égalité stricte sur `createdBy`, sans filtre par id).
+// Accessoirement : /api/property/id met la réponse en cache (Redis, 10 min) sous
+// property:{id} dès qu'une annonce "publiquement visible" (state IN_PROGRESS +
+// moderationStatus APPROVED — le cas de VILLA ici) est lue une fois — un id unique par run
+// évite aussi de servir une réponse périmée d'un run précédent.
+const RUN_ID = crypto.randomUUID()
+const OWNER_UID = `e2e-property-view-owner-${RUN_ID}`
 
 const VILLA: SeedProperty = {
   id: `e2e-view-villa-${RUN_ID}`,

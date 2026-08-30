@@ -167,12 +167,13 @@ ailleurs dans l'app) — les deux sont corrigés du même coup.
 **Fichiers** : `apps/location-maison/src/app/api/property/[id]/route.ts` (nouveau),
 `apps/location-maison/src/db/property.db.ts`.
 
-**Risque identique non corrigé** : "Archiver" (`toggleAdState` → `updateProperty` →
-`updateModel`, même SDK client, mêmes `firestore.rules` côté `update`) a très probablement
-le même bug — confirmé par lecture de code, pas re-testé en e2e séparément (hors périmètre
-de cette demande, qui portait sur la suppression). Suppression et création via
-`createProperty`/`createModel` méritent la même vérification si elles n'ont pas déjà leur
-propre route serveur.
+**Risque identique, confirmé et corrigé plus tard le même mois** : "Archiver"
+(`toggleAdState` → `updateProperty` → `updateModel`, même SDK client, mêmes `firestore.rules`
+côté `update`) avait très probablement le même bug — à l'époque confirmé seulement par lecture
+de code. `updateProperty()` a depuis été corrigé pour toute son utilisation (voir plus bas,
+section "Les sauvegardes via les crayons ne persistaient jamais réellement"), ce qui couvre
+`toggleAdState` du même coup — vérifié en e2e réel dans `property-archive.spec.ts`. Création via
+`createProperty`/`createModel` n'a, elle, pas été revérifiée.
 
 **Test qui le prouve** : `apps/location-maison/__tests__/e2e/property-delete.spec.ts` — vrai
 compte Firestore, vraie annonce, suppression réelle vérifiée à la fois par l'UI (toast,
@@ -291,11 +292,11 @@ stricte sans filtre par id, les annonces de tous les workers actifs en même tem
 ensemble sur la même page (annonces "Robe test..." vues en double/quadruple). Corrigé dans
 `property-edit.spec.ts` avec `crypto.randomUUID()` pour `RUN_ID` et un `OWNER_UID` dérivé
 (`e2e-property-edit-owner-${RUN_ID}`), garantissant une isolation complète par worker.
-**Ce même pattern (`OWNER_UID` statique, parfois `RUN_ID = Date.now()`) existe tel quel dans
+**Ce même pattern (`OWNER_UID` statique, parfois `RUN_ID = Date.now()`) existait tel quel dans
 `property-view.spec.ts`, `property-promotion.spec.ts`, `property-delete.spec.ts` et
 `property-filters-search.spec.ts`** — `property-view.spec.ts` a été vu échouer avec exactement
-le même symptôme (carte introuvable) en exécution isolée pendant cette session. Pas corrigé ici
-(hors périmètre de cette tâche) : à traiter comme un correctif transverse séparé.
+le même symptôme (carte introuvable) en exécution isolée pendant cette session. Corrigé plus tard
+le même mois dans les 4 fichiers — voir la section "Nettoyage du reste de la dette..." plus bas.
 
 **Contention serveur observée** : lancer les 8 "projects" Playwright (tous pointent vers le même
 serveur dev réutilisé sur le port 3001 et le même Firestore — les suffixes `-dev`/`-preprod`/
@@ -381,14 +382,105 @@ aussi à `toggleAdState` (`ad-management.service.ts`), qui appelle la même fonc
 correctif, archiver/désarchiver aurait souffert du même échec silencieux (`permission-denied`
 côté SDK client) que les crayons EditableField.
 
-**Piège rencontré en écrivant le test** : le bouton "Archiver"/"Activer" de la carte n'agit pas
-directement — il ouvre une `Dialog` de confirmation (`requestToggleState`/`confirmToggleState`).
-Le bouton de confirmation de cette Dialog est libellé différemment selon le sens : **"Archiver"**
-pour archiver (cohérent avec le bouton de la carte), mais **"Réactiver"** pour désarchiver — alors
-que le bouton de la carte dit "Activer". Une incohérence de libellé mineure, notée mais pas
-corrigée (pas demandé) : le test s'y adapte explicitement plutôt que de la masquer.
+**Piège rencontré en écrivant le test, corrigé le même jour** : le bouton "Archiver"/"Activer" de
+la carte n'agit pas directement — il ouvre une `Dialog` de confirmation
+(`requestToggleState`/`confirmToggleState`). Le bouton de confirmation de cette Dialog était
+libellé différemment selon le sens : "Archiver" pour archiver (cohérent avec le bouton de la
+carte), mais **"Réactiver"** pour désarchiver — alors que le bouton de la carte disait "Activer".
+Uniformisé sur "Réactiver" partout (carte + Dialog + tests Jest/e2e concernés).
 
 **Fichiers** : `__tests__/e2e/property-archive.spec.ts` (nouveau), `helpers/firebase-admin.ts`
-(`SeedCategoryListing.state`, optionnel, pour seeder une annonce Mode déjà archivée).
+(`SeedCategoryListing.state`, optionnel, pour seeder une annonce Mode déjà archivée),
+`AdManagementPage.tsx` (libellé du bouton de la carte), `__tests__/components/ad-management-page.test.tsx`.
 
 *Ajouté le 2026-08-30.*
+
+## 🟢 Nettoyage du reste de la dette listée dans ce doc (2026-08-30)
+
+Suite à la demande explicite de corriger tout ce qui restait ouvert dans ce fichier. Un point
+(l'incohérence Activer/Réactiver ci-dessus) a été corrigé directement dans sa propre section ;
+les autres sont regroupés ici.
+
+**RUN_ID/OWNER_UID statiques, transverse** (signalé plus haut, section "Modifier") — corrigé
+dans les 4 fichiers concernés :
+- `property-view.spec.ts`, `property-filters-search.spec.ts`, `property-delete.spec.ts` : même
+  traitement que `property-edit.spec.ts`/`property-archive.spec.ts` — `crypto.randomUUID()` pour
+  `RUN_ID`, `OWNER_UID` et tous les ids d'annonces dérivés, isolation complète par worker. Au
+  passage dans `property-delete.spec.ts` : la vérification finale ("le document n'existe plus")
+  comparait à un id littéral `'e2e-prop-delete'` — devenu un vrai faux-négatif potentiel une fois
+  l'id rendu dynamique, corrigé pour comparer à `PROPERTY.id`.
+- `property-promotion.spec.ts` : cas différent — ses tests dépendent **volontairement** les uns
+  des autres dans le même run (solde de crédits cumulatif, "promotion déjà active"). Une
+  isolation par worker aurait cassé cette hypothèse. Corrigé avec
+  `test.describe.configure({ mode: 'serial' })` à la place, qui force l'exécution en séquence
+  dans un seul worker — plus le même traitement RUN_ID que les autres fichiers, par précaution
+  contre une pollution par un run précédent.
+
+**SimpleMap plante sans lat/lng** — `MapSection.tsx` vérifie maintenant
+`Number.isFinite(latitude) && Number.isFinite(longitude)` avant de monter `SimpleMap`, et affiche
+un repli propre ("Localisation non disponible sur la carte") sinon, au lieu de laisser
+`L.marker([undefined, undefined])` planter toute la page ("Invalid LatLng object"). `Property.latitude`/`longitude`
+restent typés `number` (non optionnels) mais certaines annonces existantes en base ne les ont pas.
+
+**Audit du bug Timestamp (promotion) sur les autres routes** — vérifié `/api/property/promoted`
+(accueil, sections À la une/Tendance), la page publique `/annonce/[id]` et son
+`getPublicPropertyById`. Aucun des deux derniers ne lit `currentPromotion` côté client (pas de
+badge/countdown affiché) : pas de bug actif là. `/api/property/promoted` en revanche renvoyait
+lui aussi `currentPromotion` avec des `Timestamp` Admin SDK bruts (même défaut que
+`/api/announcer/ads` avant son correctif) — latent, sans symptôme visible aujourd'hui puisque
+`FeaturedSection.tsx`/`TrendingSection.tsx` n'affichent pas de badge de promotion, mais corrigé
+par précaution pour ne pas laisser le même piège en place pour la prochaine fois que quelqu'un y
+ajoutera un badge. La normalisation (`serializeTimestamp`/`serializePromotion`) a été extraite de
+`/api/announcer/ads/route.ts` vers `src/lib/serialize-property-promotion.ts`, partagée par les
+deux routes plutôt que dupliquée.
+
+**Ancien formulaire `/property/modify/[id]` : vérifié, puis retiré** — la vérification a
+contredit l'hypothèse initiale ("probablement orphelin") : deux liens vivants restaient présents
+(`ListPropertySection.tsx` et l'email `PropertyPublished.tsx`), pas trois comme un survol rapide
+l'aurait laissé penser. En creusant chacun :
+- `ListPropertySection.tsx` (+ `PropertyList.tsx`, qui l'utilise) : composant **jamais monté** —
+  aucun fichier de `src/app/` ne l'importe, ni directement ni via `PropertyList.tsx`. Mort en
+  pratique malgré la présence du lien dans son code. Supprimés tous les deux, ainsi que
+  `__tests__/components/list-property-section.test.tsx` qui ne testait qu'eux.
+- `PropertyPublished.tsx` (template d'email "annonce publiée") : jamais réellement envoyé
+  (`generatePropertyPublishedProps`/le composant ne sont invoqués nulle part dans
+  `src/services/`/`src/app/api/`) — corrigé pour pointer vers la nouvelle destination
+  (`/property/create/preview/{id}`) plutôt que supprimé, le template lui-même n'étant pas dans le
+  périmètre de cette tâche.
+- Confirmé aussi qu'un e2e **déjà existant** (`lot4-mobile-announcer.spec.ts`, test mocké)
+  asserait encore l'ancienne destination `/property/modify/property-e2e-1` — cassé silencieusement
+  depuis le changement de destination du bouton "Modifier" plus tôt cette session, jamais
+  re-exécuté depuis. Corrigé pour attendre `/property/create/preview/property-e2e-1`.
+
+Le formulaire lui-même (`FormModifyProperty.tsx`, `ModifyPropertyWithProvider.tsx`, la route
+`/property/modify/[id]` entière) a été supprimé. **Non touché, délibérément** : `FormProperty.tsx`
+et les builders par type (`FormVilla.tsx`, `FormStudio.tsx`, etc.) — toujours bien vivants,
+utilisés par `/property/create` pour la **création** d'une annonce immobilière ; et les branches
+`isUpdate` dans `property.form.provider.tsx` (fichier partagé, gros, utilisé aussi par la
+création) — devenues mortes maintenant que plus rien n'appelle `PropertyFormComponentProvider`
+avec `isUpdate=true`, mais les retirer proprement sans risquer de casser la création aurait
+dépassé le périmètre de cette tâche. `route-guards.ts` (`isPropertyFormFlowPath`, désactive les
+pubs pendant l'édition) a perdu son préfixe dédié `/property/modify/` — plus nécessaire, la
+nouvelle destination `/property/create/preview/[id]` tombe déjà sous le préfixe `add_property_ai`
+(`/property/create`) déjà couvert.
+
+**Code mort "Boostée" retiré** — `duration: 0` par design pour le type `boost`
+(`PROMOTION_CONFIGS`) fait que `endDate === startDate` : `hasActivePromotion()` (qui exige
+`endDate > maintenant`) ne peut structurellement jamais être vrai pour ce type. Les branches
+`case 'boost': return 'Boostée'` dans `PromotionButton.tsx` et `PromotionBadge.tsx` n'étaient
+donc jamais atteintes — retirées (avec un commentaire expliquant pourquoi, pour éviter qu'un futur
+lecteur ne les réintroduise en pensant combler un oubli). Le boost continue de fonctionner
+normalement (remontée en tête de liste via `sortTimestamp`) ; seul l'affichage d'un badge/état
+persistant reste absent, ce qui était déjà le comportement réel avant ce nettoyage.
+
+**Découverte annexe, non corrigée (hors périmètre)** : en vérifiant `lot4-mobile-announcer.spec.ts`
+(voir ci-dessus), plusieurs autres assertions de ce même fichier échouent aussi — violations de
+strict mode Playwright sur des locators non désambiguïsés (`getByText`/`getByPlaceholder` sans
+`.first()` ni scope par testid) là où la page rend délibérément deux blocs DOM, mobile et desktop
+(`data-testid="ad-stats-mobile"`/`"ad-stats-desktop"`, `#property-search-mobile`/`#property-search`).
+Une seule instance corrigée en passant ("Total annonces", même remède `.first()` déjà utilisé une
+ligne plus bas dans le même test pour "Actives"). Le reste de ce fichier semble ne plus être
+passé depuis un moment, indépendamment de tout changement fait cette session — mériterait un
+passage dédié.
+
+*Créé le 2026-08-30.*

@@ -325,7 +325,7 @@ describe('AdManagementPage', () => {
     managementState = buildManagementState({ items: [property({ id: 'archived', state: 'ARCHIVED' })], hasMore: false, isFetching: false })
     render(<AdManagementPage />)
 
-    fireEvent.click(screen.getByRole('button', { name: 'Activer' }))
+    fireEvent.click(screen.getByRole('button', { name: 'Réactiver' }))
     const dialog = screen.getByRole('dialog')
     expect(within(dialog).getByRole('heading', { name: 'Réactiver cette annonce ?' })).toBeVisible()
     fireEvent.click(within(dialog).getByRole('button', { name: 'Annuler' }))

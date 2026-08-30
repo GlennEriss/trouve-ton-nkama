@@ -2,7 +2,7 @@
 
 import React from 'react'
 import { Property } from '@/models/annonce'
-import { Star, TrendingUp, ArrowUpCircle } from 'lucide-react'
+import { Star, TrendingUp } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
 interface PromotionBadgeProps {
@@ -47,15 +47,11 @@ export default function PromotionBadge({ property, className }: Readonly<Promoti
           textColor: 'text-indigo-700 dark:text-indigo-300',
           borderColor: 'border-indigo-200 dark:border-indigo-700'
         }
-      case 'boost':
-        return {
-          label: 'Boostée',
-          icon: ArrowUpCircle,
-          gradient: 'from-green-500 to-emerald-500',
-          bgColor: 'bg-green-50 dark:bg-green-900/20',
-          textColor: 'text-green-700 dark:text-green-300',
-          borderColor: 'border-green-200 dark:border-green-700'
-        }
+      // Pas de cas 'boost' ici : `hasActivePromotion` ci-dessus (endDate > maintenant) ne
+      // peut structurellement jamais être vrai pour ce type (duration: 0 par design, voir
+      // PROMOTION_CONFIGS) — cette fonction n'est même jamais appelée pour un boost, le
+      // composant retourne déjà `null` avant. Code mort, jamais atteint (constaté en e2e
+      // réel, property-promotion.spec.ts) — voir la même remarque dans PromotionButton.tsx.
       default:
         return null
     }

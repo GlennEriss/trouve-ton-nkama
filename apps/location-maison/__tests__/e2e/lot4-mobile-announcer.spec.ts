@@ -48,7 +48,11 @@ test.describe('Lot 4B mobile annonceur', () => {
     await expect(page).not.toHaveURL(/\/signin/)
     await expect(page.getByRole('heading', { name: /Gestion des annonces/i })).toBeVisible()
     await expect(page.getByText(/Espace annonceur/i)).toBeVisible()
-    await expect(page.getByText(/Total annonces/i)).toBeVisible()
+    // Le bloc stats est dupliqué dans le DOM (mobile masqué en desktop et vice versa, voir
+    // data-testid="ad-stats-mobile"/"ad-stats-desktop" dans AdManagementPage.tsx) — .first()
+    // nécessaire pour éviter une violation strict mode (pré-existant, comme "Actives" juste
+    // en dessous qui l'utilise déjà).
+    await expect(page.getByText(/Total annonces/i).first()).toBeVisible()
     await expect(page.getByText('Actives', { exact: true }).first()).toBeVisible()
     await expect(page.getByPlaceholder(/Titre, description, ville, quartier/i)).toBeVisible()
     await expect(page.getByText(/1 annonce\(s\) affichée\(s\) sur 1 au total/i)).toBeVisible()
@@ -59,7 +63,9 @@ test.describe('Lot 4B mobile annonceur', () => {
 
     await expect(page.getByRole('heading', { name: /Appartement moderne a Akanda/i })).toBeVisible()
     await expect(page.getByRole('link', { name: /^Voir$/i })).toHaveAttribute('href', '/property/property-e2e-1')
-    await expect(page.getByRole('link', { name: /Modifier/i })).toHaveAttribute('href', '/property/modify/property-e2e-1')
+    // Immobilier : pointe vers la page preview + crayons, pas l'ancien formulaire à 14
+    // builders (/property/modify/[id], retiré — voir BUGS-PROPERTY-E2E-2026-08.md).
+    await expect(page.getByRole('link', { name: /Modifier/i })).toHaveAttribute('href', '/property/create/preview/property-e2e-1')
     await expect(page.getByRole('link', { name: /Ajouter un réel/i })).toHaveAttribute('href', '/property/property-e2e-1/reels/add')
     await expectNoHorizontalOverflow(page)
   })

@@ -1,3 +1,5 @@
+import crypto from 'node:crypto'
+
 import { expect, test, type Locator, type Page } from '@playwright/test'
 
 import { E2E_ANNOUNCER, signInAsAnnouncer } from './helpers/auth'
@@ -14,9 +16,19 @@ import {
  * vraies annonces Firestore. /api/property/promote débite les crédits et met à jour
  * currentPromotion dans une vraie transaction Firestore — ces tests exercent ce vrai
  * chemin, crédits compris, pas un mock.
+ *
+ * Contrairement à property-edit/archive/view/filters-search.spec.ts, une simple isolation
+ * par worker (id unique par test) ne suffit PAS ici : les tests dépendent volontairement les
+ * uns des autres dans le même run (voir "une promotion déjà active..." et le solde exact de
+ * crédits "167" dans le test Boost, qui suppose que Featured/Trending7/Trending3/Boost ont
+ * déjà débité dans cet ordre sur la MÊME annonce/le MÊME compte). Avec `fullyParallel: true`,
+ * Playwright peut répartir ces tests sur des workers séparés, cassant cet ordre et cette
+ * donnée partagée — `mode: 'serial'` force leur exécution en séquence, dans un seul worker,
+ * comme le code des tests le suppose déjà implicitement.
  */
-const OWNER_UID = 'e2e-promotion-owner'
-const LOW_CREDIT_UID = 'e2e-promotion-low-credit'
+const RUN_ID = crypto.randomUUID()
+const OWNER_UID = `e2e-promotion-owner-${RUN_ID}`
+const LOW_CREDIT_UID = `e2e-promotion-low-credit-${RUN_ID}`
 
 function makeProperty(id: string, title: string): SeedProperty {
   return {
@@ -35,11 +47,11 @@ function makeProperty(id: string, title: string): SeedProperty {
   }
 }
 
-const FEATURED_PROPERTY = makeProperty('e2e-promo-featured', 'Annonce test promotion Featured')
-const TRENDING7_PROPERTY = makeProperty('e2e-promo-trending7', 'Annonce test promotion Trending7')
-const TRENDING3_PROPERTY = makeProperty('e2e-promo-trending3', 'Annonce test promotion Trending3')
-const BOOST_PROPERTY = makeProperty('e2e-promo-boost', 'Annonce test promotion Boost')
-const LOW_CREDIT_PROPERTY = makeProperty('e2e-promo-lowcredit', 'Annonce test promotion LowCredit')
+const FEATURED_PROPERTY = makeProperty(`e2e-promo-featured-${RUN_ID}`, 'Annonce test promotion Featured')
+const TRENDING7_PROPERTY = makeProperty(`e2e-promo-trending7-${RUN_ID}`, 'Annonce test promotion Trending7')
+const TRENDING3_PROPERTY = makeProperty(`e2e-promo-trending3-${RUN_ID}`, 'Annonce test promotion Trending3')
+const BOOST_PROPERTY = makeProperty(`e2e-promo-boost-${RUN_ID}`, 'Annonce test promotion Boost')
+const LOW_CREDIT_PROPERTY = makeProperty(`e2e-promo-lowcredit-${RUN_ID}`, 'Annonce test promotion LowCredit')
 
 const ALL_PROPERTIES = [
   FEATURED_PROPERTY,
@@ -69,6 +81,10 @@ function cardFor(page: Page, title: string): Locator {
 }
 
 test.describe('Promotion d\'une annonce /property — vrai Firestore, tous les types', () => {
+  // Obligatoire : voir le commentaire sur RUN_ID plus haut — ces tests dépendent d'un ordre
+  // d'exécution précis et d'un état serveur partagé (solde de crédits, promotion déjà active).
+  test.describe.configure({ mode: 'serial' })
+
   test.beforeAll(async () => {
     await seedAnnouncerUser(OWNER_UID, 200)
     await seedAnnouncerUser(LOW_CREDIT_UID, 2)

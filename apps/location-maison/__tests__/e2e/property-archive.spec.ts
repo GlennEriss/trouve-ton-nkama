@@ -12,7 +12,7 @@ import {
 } from './helpers/firebase-admin'
 
 /**
- * Bouton "Archiver"/"Activer" sur /property (AdManagementPage.tsx -> toggleAdState ->
+ * Bouton "Archiver"/"Réactiver" sur /property (AdManagementPage.tsx -> toggleAdState ->
  * updateProperty -> PATCH /api/property/[id], corrigé le même jour que ce test — voir
  * BUGS-PROPERTY-E2E-2026-08.md, "les sauvegardes par crayon ne persistaient jamais
  * réellement"). Vérifie la vraie persistance Firestore (pas seulement le badge/toast côté UI)
@@ -83,19 +83,17 @@ async function gotoAdCard(page: Page, title: string, scope: 'immobilier' | 'mark
 }
 
 /**
- * Le bouton "Archiver"/"Activer" de la carte n'agit pas directement : il ouvre une Dialog de
- * confirmation (AdManagementPage.tsx, requestToggleState/confirmToggleState) dont le bouton de
- * confirmation est libellé différemment ("Archiver" ou **"Réactiver"**, pas "Activer" — seul le
- * bouton de la carte dit "Activer").
+ * Le bouton "Archiver"/"Réactiver" de la carte n'agit pas directement : il ouvre une Dialog de
+ * confirmation (AdManagementPage.tsx, requestToggleState/confirmToggleState) qu'il faut valider
+ * avec le même libellé.
  */
-async function toggleAndConfirm(page: Page, cardButtonLabel: 'Archiver' | 'Activer', card: Locator) {
-  await card.getByRole('button', { name: cardButtonLabel }).click()
+async function toggleAndConfirm(page: Page, label: 'Archiver' | 'Réactiver', card: Locator) {
+  await card.getByRole('button', { name: label }).click()
   const dialog = page.getByRole('dialog')
-  const confirmLabel = cardButtonLabel === 'Archiver' ? 'Archiver' : 'Réactiver'
-  await dialog.getByRole('button', { name: confirmLabel, exact: true }).click()
+  await dialog.getByRole('button', { name: label, exact: true }).click()
 }
 
-test.describe('Bouton "Archiver"/"Activer" /property — immobilier et Mode', () => {
+test.describe('Bouton "Archiver"/"Réactiver" /property — immobilier et Mode', () => {
   test.beforeAll(async () => {
     await seedProperties(OWNER_UID, [ACTIVE_VILLA, ARCHIVED_VILLA])
     await seedCategoryListing(OWNER_UID, ACTIVE_MODE_LISTING)
@@ -118,7 +116,7 @@ test.describe('Bouton "Archiver"/"Activer" /property — immobilier et Mode', ()
     await toggleAndConfirm(page, 'Archiver', card)
     await expect(page.getByText('L’annonce a été archivée.', { exact: true })).toBeVisible({ timeout: 10000 })
     await expect(card.getByText('Archivée', { exact: true })).toBeVisible()
-    await expect(card.getByRole('button', { name: 'Activer' })).toBeVisible()
+    await expect(card.getByRole('button', { name: 'Réactiver' })).toBeVisible()
 
     await expect.poll(async () => (await getProperty(ACTIVE_VILLA.id))?.state, { timeout: 5000 }).toBe('ARCHIVED')
   })
@@ -130,7 +128,7 @@ test.describe('Bouton "Archiver"/"Activer" /property — immobilier et Mode', ()
     await toggleAndConfirm(page, 'Archiver', card)
     await expect(page.getByText('L’annonce a été archivée.', { exact: true })).toBeVisible({ timeout: 10000 })
     await expect(card.getByText('Archivée', { exact: true })).toBeVisible()
-    await expect(card.getByRole('button', { name: 'Activer' })).toBeVisible()
+    await expect(card.getByRole('button', { name: 'Réactiver' })).toBeVisible()
 
     await expect
       .poll(async () => (await getProperty(ACTIVE_MODE_LISTING.id))?.state, { timeout: 5000 })
@@ -141,7 +139,7 @@ test.describe('Bouton "Archiver"/"Activer" /property — immobilier et Mode', ()
     const card = await gotoAdCard(page, ARCHIVED_VILLA.title)
     await expect(card.getByText('Archivée', { exact: true })).toBeVisible()
 
-    await toggleAndConfirm(page, 'Activer', card)
+    await toggleAndConfirm(page, 'Réactiver', card)
     await expect(page.getByText('L’annonce a été réactivée.', { exact: true })).toBeVisible({ timeout: 10000 })
     await expect(card.getByText('Active', { exact: true })).toBeVisible()
     await expect(card.getByRole('button', { name: 'Archiver' })).toBeVisible()
@@ -155,7 +153,7 @@ test.describe('Bouton "Archiver"/"Activer" /property — immobilier et Mode', ()
     const card = await gotoAdCard(page, ARCHIVED_MODE_LISTING.title, 'marketplace')
     await expect(card.getByText('Archivée', { exact: true })).toBeVisible()
 
-    await toggleAndConfirm(page, 'Activer', card)
+    await toggleAndConfirm(page, 'Réactiver', card)
     await expect(page.getByText('L’annonce a été réactivée.', { exact: true })).toBeVisible({ timeout: 10000 })
     await expect(card.getByText('Active', { exact: true })).toBeVisible()
     await expect(card.getByRole('button', { name: 'Archiver' })).toBeVisible()
