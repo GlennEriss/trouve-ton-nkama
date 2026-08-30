@@ -23,6 +23,10 @@ jest.mock('@/components/preview-property/ContactSection', () => ({
   __esModule: true,
   default: () => <div data-testid="contact" />,
 }))
+jest.mock('@/components/preview-property/GiftSection', () => ({
+  __esModule: true,
+  default: () => <div data-testid="gift" />,
+}))
 jest.mock('@/components/preview-property/MapSection', () => ({ MapSection: () => <div data-testid="map" /> }))
 jest.mock('@/components/preview-property/ButtonShare', () => ({
   __esModule: true,

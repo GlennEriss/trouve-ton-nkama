@@ -1,15 +1,12 @@
 'use client'
 import React, { useState } from 'react'
 import { FaWhatsapp, FaPhoneAlt } from 'react-icons/fa'
-import { Gift } from 'lucide-react'
 import { Property } from '@/models/annonce'
 import Link from 'next/link'
 
 import { useUserByUID } from '@/hooks/use-user-by-uid'
 import { useWindowSize } from "@/hooks/useSize"
 import { useTrackPropertyInteraction } from "@/hooks/use-track-property-interaction"
-import GiftModal from '@/components/reels/gift/GiftModal'
-import { getUserDisplayName } from '@/lib/user-display-name'
 
 type ContactEntry = { whatsapp?: string; call?: string }
 
@@ -20,7 +17,6 @@ export default function ContactSection({ property }: Readonly<{ property: Proper
     const { trackInteraction } = useTrackPropertyInteraction(property.id)
 
     const [shownIndexes, setShownIndexes] = useState<Set<number>>(new Set())
-    const [giftOpen, setGiftOpen] = useState(false)
 
     // Numéro principal : whatsappContact/callContact si renseignés, sinon repli
     // sur contact (comportement historique, annonces existantes non affectées)
@@ -99,30 +95,10 @@ export default function ContactSection({ property }: Readonly<{ property: Proper
                                     {isDesktop && <span className="font-medium">Appeler</span>}
                                 </button>
                             )}
-                            {index === 0 && (
-                                <button
-                                    type="button"
-                                    onClick={() => setGiftOpen(true)}
-                                    title="Envoyer un cadeau à l'annonceur"
-                                    className={`flex items-center gap-2 border border-gray-300 ${
-                                        isDesktop ? 'px-4 py-3' : 'p-3'
-                                    } rounded-lg shadow-lg`}
-                                >
-                                    <Gift size={isDesktop ? 22 : 30} className="text-pink-600" />
-                                    {isDesktop && <span className="font-medium">Cadeau</span>}
-                                </button>
-                            )}
                         </div>
                     </div>
                 ))}
             </div>
-
-            <GiftModal
-                isOpen={giftOpen}
-                onClose={() => setGiftOpen(false)}
-                propertyId={property.id}
-                announcerName={getUserDisplayName(user)}
-            />
         </section>
     )
 }

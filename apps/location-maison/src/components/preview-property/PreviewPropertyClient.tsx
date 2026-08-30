@@ -3,6 +3,7 @@ import React from 'react'
 import { useSession } from 'next-auth/react'
 import PreviewProperty from '@/components/preview-property/PreviewProperty'
 import PreviewCategoryListing from '@/components/preview-property/PreviewCategoryListing'
+import HouseDetailSkeleton from '@/components/preview-property/HouseDetailSkeleton'
 import Advertissment from '@/components/shared/Advertissment'
 import { notFound, redirect, useParams } from 'next/navigation'
 import { useCurrentUser } from '@/hooks/use-current-user'
@@ -22,7 +23,7 @@ export default function PreviewPropertyClient() {
     const { data: property, isLoading, error } = useProperty(id)
 
     if (isLoading || sessionStatus === 'loading') {
-        return <div>Chargement...</div>
+        return <HouseDetailSkeleton />
     }
 
     if (error || !property) {
