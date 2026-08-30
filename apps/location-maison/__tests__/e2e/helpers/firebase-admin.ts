@@ -221,6 +221,15 @@ export async function seedCategoryListing(createdBy: string, listing: SeedCatego
     })
 }
 
+/** Reads a real `properties/{id}` doc — utilisé pour vérifier qu'une sauvegarde côté UI
+ * (bouton "Enregistrer" d'EditableField) a bien persisté en base, pas juste changé l'état
+ * React local. */
+export async function getProperty(id: string): Promise<Record<string, unknown> | null> {
+  const app = ensureAdminApp()
+  const snapshot = await admin.firestore(app).collection('properties').doc(id).get()
+  return snapshot.exists ? (snapshot.data() ?? null) : null
+}
+
 /** Deletes `properties/{id}` docs by id. */
 export async function deleteProperties(ids: string[]): Promise<void> {
   const app = ensureAdminApp()

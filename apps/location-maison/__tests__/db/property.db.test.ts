@@ -102,14 +102,32 @@ describe('property database', () => {
     expect(mockInvalidateSeo).not.toHaveBeenCalled()
   })
 
-  it('modifie puis invalide uniquement après succès', async () => {
-    mockUpdateModel.mockResolvedValueOnce(true).mockResolvedValueOnce(false)
+  it('modifie via la route serveur (Admin SDK), pas le SDK client', async () => {
+    // updateModel (SDK client, updateDoc) exige une vraie session Firebase Auth navigateur que
+    // ni Google ni la connexion email/mot de passe ne fournissent (même raison que
+    // deleteProperty ci-dessous) — constaté en e2e réel : la sauvegarde d'un crayon
+    // EditableField semblait réussir côté UI (state React local) alors que `updateDoc`
+    // échouait silencieusement en tâche de fond (permission-denied) sans jamais persister en
+    // base (voir property-edit.spec.ts + BUGS-PROPERTY-E2E-2026-08.md).
+    const mockFetch = jest.fn()
+      .mockResolvedValueOnce({ ok: true } as Response)
+      .mockResolvedValueOnce({ ok: false } as Response)
+    global.fetch = mockFetch as unknown as typeof fetch
 
     await expect(updateProperty('property-1', { price: 50000 })).resolves.toBe(true)
     await expect(updateProperty('property-2', { price: 60000 })).resolves.toBe(false)
 
-    expect(mockUpdateModel).toHaveBeenCalledWith('property-1', { price: 50000 }, 'properties')
-    expect(mockInvalidateSeo).toHaveBeenCalledTimes(1)
+    expect(mockFetch).toHaveBeenCalledWith('/api/property/property-1', {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ price: 50000 }),
+    })
+    expect(mockFetch).toHaveBeenCalledWith('/api/property/property-2', {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ price: 60000 }),
+    })
+    expect(mockUpdateModel).not.toHaveBeenCalled()
   })
 
   it('supprime via la route serveur (Admin SDK), pas le SDK client', async () => {

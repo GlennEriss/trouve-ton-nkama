@@ -303,7 +303,71 @@ serveur dev réutilisé sur le port 3001 et le même Firestore — les suffixes 
 en parallèle sature ce serveur unique et produit des échecs "élément introuvable" qui disparaissent
 en isolant `--project=chromium-desktop-dev` sur un seul fichier à la fois — vu se reproduire sur
 des tests déjà considérés stables (promotion, suppression, filtres). Pas un bug produit ; limite
-de l'environnement de test local.
+de l'environnement de test local. **Autre piste identifiée pour cette même contention** :
+`reuseExistingServer: true` ne réutilise que s'il trouve déjà un serveur qui répond sur le port
+cible (3001 par défaut) — sinon Playwright démarre son propre `next dev --turbopack` pour la durée
+de l'exécution puis le termine à la fin. Enchaîner des `npx playwright test` successifs relance
+donc à chaque fois une compilation Turbopack à froid, et les premières requêtes tombent pendant
+que le serveur compile encore — d'où des taux de réussite très variables d'une exécution à
+l'autre. Pointer `E2E_BASE_URL` vers un serveur dev déjà chaud et durable (lancé une fois via
+`npm run dev` dans un terminal séparé, laissé tourner) réduit un peu ce bruit mais ne l'élimine
+pas complètement : avec plusieurs workers Playwright (`fullyParallel: true`), même un serveur
+chaud reste sensible à la charge. **Seul `--workers=1` (tests de ce fichier sérialisés) a donné
+un taux de réussite fiable de 5/5 de façon répétée** ; en parallèle (3 workers pour 5 tests), le
+taux observé a varié de 5/5 à 0/5 selon l'exécution, sans lien avec le code testé — reproduit à
+l'identique en pointant vers un serveur déjà chaud. À traiter comme limite de l'environnement de
+test local, pas comme un signal sur la correction du code.
+
+## 🔴 Corrigé — Les sauvegardes via les crayons (EditableField) ne persistaient jamais réellement
+
+**Statut** : corrigé, vérifié avec une vraie relecture Firestore (pas seulement l'apparence de
+l'UI). Trouvé en écrivant le test de sauvegarde de `property-edit.spec.ts` — sans ce test, rien
+dans l'UI ne le laissait deviner.
+
+**Symptôme** : sur `/property/create/preview/{id}`, éditer un champ via un crayon (titre, prix,
+description...), cliquer "Enregistrer" → le crayon repasse en mode affichage avec la nouvelle
+valeur, aucune erreur visible. Tout donne l'impression que la sauvegarde a réussi. En relisant le
+document Firestore juste après (Admin SDK, pas le SDK client), l'ancienne valeur était toujours
+là — rien n'avait été persisté.
+
+**Cause** : `updateProperty()` (`src/db/property.db.ts`) passait par `updateModel()`
+(`src/db/generic.db.ts`), qui utilise le SDK Firestore **client** (`updateDoc`). Or
+`firestore.rules` exige `request.auth != null` pour écrire sur `properties/{id}`, et — fait déjà
+établi cette session à trois reprises (création de compte téléphone, finalisation de profil,
+suppression d'annonce) — **aucune session réelle ne laisse jamais le navigateur avec une vraie
+session Firebase Auth côté client** : ni Google (credential échangé côté serveur), ni la connexion
+email/mot de passe (Credentials provider de NextAuth, dont `authorize()` tourne aussi côté
+serveur). `updateDoc` échouait donc systématiquement avec `FirebaseError: Missing or insufficient
+permissions.` — mais silencieusement : `saveField()` catch bien l'échec et devrait normalement
+afficher une erreur via `EditableField`, sauf que le test a montré que dans certains passages le
+message d'erreur n'apparaissait pas de façon fiable non plus (à surveiller si ça se reproduit). Ce
+chemin est le SEUL moyen de sauvegarde de `PreviewPropertyDraft.tsx` ET
+`PreviewCategoryListingDraft.tsx` — la fonctionnalité crayon était donc probablement cassée pour
+**toute** annonce (immobilier et Mode) depuis sa création, pas seulement pour le nouveau flux
+"Modifier" immobilier ajouté aujourd'hui.
+
+**Portée plus large** : `updateProperty()` est aussi appelé par `property.form.provider.tsx`
+(l'ancien formulaire wizard), `ad-management.service.ts` (archiver/réactiver une annonce) et
+`ListPropertySection.tsx` — ces trois chemins étaient donc probablement affectés aussi, pas
+vérifiés individuellement ici mais corrigés par le même changement puisqu'ils passent tous par la
+même fonction.
+
+**Correctif** : même remède que `deleteProperty()` — route serveur Admin SDK. Nouveau handler
+`PATCH` sur `/api/property/[id]/route.ts` (à côté du `DELETE` existant) : vérifie la session,
+vérifie que `createdBy`/`claimedBy` correspond à l'utilisateur, filtre les champs protégés
+(`createdBy`, `claimedBy`, `id`, `currentPromotion`), applique le patch via `propertyRef.update()`
+(Admin SDK), invalide le cache SEO côté serveur. `updateProperty()` appelle maintenant cette route
+via `fetch(..., { method: 'PATCH' })` au lieu de `updateModel`.
+
+**Fichiers** : `src/app/api/property/[id]/route.ts` (nouveau handler `PATCH`),
+`src/db/property.db.ts` (`updateProperty`), `__tests__/db/property.db.test.ts` (test unitaire
+réécrit pour le nouveau chemin fetch).
+
+**Test qui le prouve** : `property-edit.spec.ts` — deux tests éditent un champ via un crayon puis
+relisent le document Firestore par Admin SDK (`getProperty()`, nouveau helper) pour confirmer une
+vraie persistance, pas juste l'apparence côté UI : un sur une annonce `APPROVED` (le titre change
+réellement et `moderationStatus` reste `APPROVED`), un sur une annonce `REJECTED` (le titre change
+et `moderationStatus` repasse bien à `PENDING` avec `rejectionReason` remis à `null`).
 
 *Créé le 2026-08-29, mis à jour le même jour suite au test complet des 4 types de promotion,
 de la suppression d'annonce, du bouton "Voir" (immobilier + Mode) et du bouton "Modifier"

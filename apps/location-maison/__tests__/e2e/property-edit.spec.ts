@@ -5,6 +5,7 @@ import { expect, test, type Page } from '@playwright/test'
 import { E2E_ANNOUNCER, signInAsAnnouncer } from './helpers/auth'
 import {
   deleteProperties,
+  getProperty,
   seedCategoryListing,
   seedProperties,
   type SeedProperty,
@@ -65,6 +66,23 @@ const REJECTED_VILLA: SeedProperty = {
   rejectionReason: 'Photos manquantes',
 }
 
+// Seeds dédiés (pas de réutilisation de VILLA_WITH_CATEGORY_ID/REJECTED_VILLA) pour les deux
+// tests qui sauvegardent réellement une modification : si plusieurs tests de ce fichier
+// finissent packés dans le même worker Playwright (selon le nombre de CPU disponibles),
+// ils partagent le même module et donc le même id — une mutation dans un test casserait
+// silencieusement un `getByText(titre original)` dans un autre.
+const VILLA_FOR_SAVE_TEST: SeedProperty = {
+  ...VILLA_WITH_CATEGORY_ID,
+  id: `e2e-edit-villa-save-${RUN_ID}`,
+  title: 'Villa test sauvegarde crayon E2E',
+}
+
+const REJECTED_VILLA_FOR_SAVE_TEST: SeedProperty = {
+  ...REJECTED_VILLA,
+  id: `e2e-edit-villa-rejected-save-${RUN_ID}`,
+  title: 'Villa rejetée test sauvegarde crayon E2E',
+}
+
 const CATEGORY_LISTING = {
   id: `e2e-edit-mode-${RUN_ID}`,
   title: 'Robe test bouton Modifier E2E',
@@ -97,12 +115,23 @@ async function gotoPropertyAndClickModifier(
 
 test.describe('Bouton "Modifier" /property — immobilier (avec categoryId) et Mode', () => {
   test.beforeAll(async () => {
-    await seedProperties(OWNER_UID, [VILLA_WITH_CATEGORY_ID, REJECTED_VILLA])
+    await seedProperties(OWNER_UID, [
+      VILLA_WITH_CATEGORY_ID,
+      REJECTED_VILLA,
+      VILLA_FOR_SAVE_TEST,
+      REJECTED_VILLA_FOR_SAVE_TEST,
+    ])
     await seedCategoryListing(OWNER_UID, CATEGORY_LISTING)
   })
 
   test.afterAll(async () => {
-    await deleteProperties([VILLA_WITH_CATEGORY_ID.id, REJECTED_VILLA.id, CATEGORY_LISTING.id])
+    await deleteProperties([
+      VILLA_WITH_CATEGORY_ID.id,
+      REJECTED_VILLA.id,
+      VILLA_FOR_SAVE_TEST.id,
+      REJECTED_VILLA_FOR_SAVE_TEST.id,
+      CATEGORY_LISTING.id,
+    ])
   })
 
   test('Modifier une annonce immobilière APPROVED (avec categoryId réaliste) ouvre la page preview + crayons, sans bandeau "vient d\'être créée"', async ({
@@ -133,5 +162,56 @@ test.describe('Bouton "Modifier" /property — immobilier (avec categoryId) et M
 
     await expect(page).toHaveURL(new RegExp(`/category-listing/create/preview/${CATEGORY_LISTING.id}$`))
     await expect(page.getByRole('heading', { name: 'Application error', exact: false })).not.toBeVisible()
+  })
+
+  // Les tests ci-dessus ne vérifient que la route/le bandeau. Celui-ci vérifie que le crayon
+  // d'EditableField (saveField -> updateProperty) persiste réellement en Firestore, pas
+  // seulement dans le state React local — c'est le seul chemin de sauvegarde de cette page.
+  test('Enregistrer une modification via un crayon persiste réellement en Firestore', async ({ page }) => {
+    await gotoPropertyAndClickModifier(page, VILLA_FOR_SAVE_TEST.title)
+    await expect(page).toHaveURL(new RegExp(`/property/create/preview/${VILLA_FOR_SAVE_TEST.id}$`))
+
+    const newTitle = `${VILLA_FOR_SAVE_TEST.title} (modifié e2e)`
+    const heading = page.getByRole('heading', { name: VILLA_FOR_SAVE_TEST.title })
+    await heading.getByRole('button', { name: 'Modifier' }).click()
+    await heading.locator('input').fill(newTitle)
+    await heading.getByRole('button', { name: 'Enregistrer' }).click()
+
+    // Le crayon repasse en mode affichage seulement après un `updateProperty` résolu avec
+    // succès (pas d'erreur affichée) — la nouvelle valeur visible ici est déjà la confirmation
+    // que la sauvegarde a réussi côté client.
+    await expect(page.getByRole('heading', { name: newTitle })).toBeVisible()
+    await expect(page.getByText('La mise à jour a échoué', { exact: false })).not.toBeVisible()
+
+    await expect
+      .poll(async () => (await getProperty(VILLA_FOR_SAVE_TEST.id))?.title, { timeout: 5000 })
+      .toBe(newTitle)
+    // Une annonce déjà APPROVED reste APPROVED après une simple édition — seule REJECTED doit
+    // repasser en PENDING (voir test suivant).
+    expect((await getProperty(VILLA_FOR_SAVE_TEST.id))?.moderationStatus).toBe('APPROVED')
+  })
+
+  test('Enregistrer une modification sur une annonce REJECTED la repasse automatiquement en PENDING', async ({
+    page,
+  }) => {
+    await gotoPropertyAndClickModifier(page, REJECTED_VILLA_FOR_SAVE_TEST.title)
+    await expect(page).toHaveURL(new RegExp(`/property/create/preview/${REJECTED_VILLA_FOR_SAVE_TEST.id}$`))
+    await expect(page.getByText('Cette annonce a été rejetée.')).toBeVisible()
+
+    const newTitle = `${REJECTED_VILLA_FOR_SAVE_TEST.title} (corrigée e2e)`
+    const heading = page.getByRole('heading', { name: REJECTED_VILLA_FOR_SAVE_TEST.title })
+    await heading.getByRole('button', { name: 'Modifier' }).click()
+    await heading.locator('input').fill(newTitle)
+    await heading.getByRole('button', { name: 'Enregistrer' }).click()
+
+    await expect(page.getByRole('heading', { name: newTitle })).toBeVisible()
+    // Resoumission gratuite : le bandeau rouge disparaît dès que le state local reflète le
+    // nouveau moderationStatus 'PENDING' renvoyé par saveField.
+    await expect(page.getByText('Cette annonce a été rejetée.')).not.toBeVisible()
+
+    await expect
+      .poll(async () => (await getProperty(REJECTED_VILLA_FOR_SAVE_TEST.id))?.moderationStatus, { timeout: 5000 })
+      .toBe('PENDING')
+    expect((await getProperty(REJECTED_VILLA_FOR_SAVE_TEST.id))?.rejectionReason ?? null).toBeNull()
   })
 })

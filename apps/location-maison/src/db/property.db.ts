@@ -1,6 +1,6 @@
 import firebaseCollectionNames from "@/constantes/firebase-collection-name";
 import { Property, TypeProperty } from "@/models/annonce";
-import { createModel, deleteModel, updateModel } from "./generic.db";
+import { createModel, deleteModel } from "./generic.db";
 import { collectionFirebaseNames } from "@/constantes";
 import { createLogger } from '@/lib/logger';
 import { invalidatePropertySeoCache } from '@/lib/invalidate-property-seo-cache';
@@ -21,13 +21,22 @@ function normalizeKitchenField<T extends Record<string, any>>(data: T): T {
     return data;
 }
 
-export async function updateProperty(id: string, property: Partial<Property>): Promise<boolean>{
-    const updated = await updateModel<Property>(id, property, collectionFirebaseNames.properties)
-    if (updated) {
-        void invalidatePropertySeoCache();
-    }
-    return updated;
-
+export async function updateProperty(id: string, property: Partial<Property>): Promise<boolean> {
+    // Route serveur (Admin SDK) plutôt que updateModel (SDK client) : même raison que
+    // deleteProperty ci-dessous — `request.auth != null` par firestore.rules, jamais vrai
+    // côté navigateur (ni Google, ni Credentials NextAuth, tous deux échangés côté serveur).
+    // `updateDoc` (SDK client) échouait silencieusement en arrière-plan (permission-denied)
+    // pendant que le state React local donnait l'illusion d'une sauvegarde réussie — constaté
+    // en e2e réel en vérifiant la persistance Firestore réelle après un crayon EditableField,
+    // pas seulement l'apparence côté UI (property-edit.spec.ts).
+    // Invalidation du cache SEO déjà faite côté serveur dans la route, pas besoin de la
+    // refaire ici.
+    const response = await fetch(`/api/property/${id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(property),
+    });
+    return response.ok;
 }
 export async function createProperty(property: Property): Promise<string | null> {
     // Toute nouvelle annonce démarre en attente de review, quelle que soit la valeur
