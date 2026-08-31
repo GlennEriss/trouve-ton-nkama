@@ -68,12 +68,17 @@ export default function EditReelClient({ reelId }: EditReelClientProps) {
   // La vidéo déjà "ready" devient le point de départ d'un éventuel nouveau montage : on la
   // traite comme un fichier fraîchement choisi (trim 0..durée totale), pas comme le montage
   // d'origine — le brut d'origine n'existe de toute façon plus (supprimé après transcodage).
+  // Passe par /api/reels/{id}/video (Admin SDK côté serveur) plutôt qu'un fetch direct de
+  // reel.videoUrl : ce fetch échouait systématiquement en CORS (le bucket Storage n'a aucune
+  // configuration CORS — <video src=...> fonctionne quand même car la lecture ne passe jamais
+  // par fetch/XHR), ce qui faisait silencieusement retomber sur le lecteur simple sans jamais
+  // afficher la barre de montage — bug rapporté directement par l'utilisateur en capture d'écran.
   React.useEffect(() => {
     if (!reel?.videoUrl || reel.processingStatus !== 'ready') return
     let cancelled = false
     setVideoFetchStatus('loading')
 
-    fetch(reel.videoUrl)
+    fetch(`/api/reels/${encodeURIComponent(reel.id)}/video`)
       .then((res) => {
         if (!res.ok) throw new Error('download failed')
         return res.blob()

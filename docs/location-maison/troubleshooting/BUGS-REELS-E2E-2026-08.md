@@ -423,24 +423,56 @@ centre exact de la poignée tombe pile sur la limite de rognage et ne déclenche
 `pointerdown` — corrigé en visant 25% de la largeur de la poignée (fermement dans sa moitié
 visible/cliquable) plutôt que son centre.
 
-**Fichiers** : `src/app/api/reels/route.ts`, `src/db/reel.db.ts`,
-`src/hooks/useVideoDropzone.ts`, `src/components/reels/EditReelClient.tsx`,
+**🔴 Correctif — la barre de montage n'apparaissait jamais en réalité (CORS)** : signalé par
+l'utilisateur avec une capture d'écran comparant le formulaire de création (barre présente) à
+l'édition (barre absente, juste le lecteur simple). Cause : `fetch(reel.videoUrl)` — une vraie
+URL `firebasestorage.googleapis.com` — échoue systématiquement en CORS dans le navigateur (le
+bucket Storage n'a **aucune** configuration CORS dans ce repo, confirmé par
+`grep -rn cors` sur tout le monorepo). `<video src=...>` fonctionnait déjà très bien sans souci
+car la lecture ne passe jamais par fetch/XHR (pas soumise à CORS), ce qui masquait totalement le
+problème à l'usage normal de l'app. Le `.catch()` de l'effet avalait l'erreur silencieusement
+(`videoFetchStatus: 'error'`), sans aucun message ni log visible — d'où la confusion initiale.
+Reproduit avec une preuve directe : `page.evaluate(() => fetch(videoUrl))` sur une vraie vidéo
+publiée renvoie `TypeError: Failed to fetch`, et la console navigateur affiche explicitement
+`No 'Access-Control-Allow-Origin' header is present`.
+
+**Blind spot du premier test e2e** : la toute première version de `reel-edit-retrim.spec.ts`
+seedait directement un réel avec `videoUrl: 'data:video/mp4;base64,...'` — un `data:` URI n'a
+*aucune* restriction CORS, donc ce test passait alors même que le vrai bug (CORS sur une URL
+Storage réelle) existait déjà. Corrigé en réécrivant le test pour publier un réel via un vrai
+upload Storage + vrai transcodage (comme `property-add-reel.spec.ts`) avant de tester l'édition —
+cette version du test a effectivement échoué avant le correctif ci-dessous, confirmant qu'elle
+attrape bien ce que la version en `data:` URI laissait passer.
+
+**Correctif retenu** : proxy serveur plutôt qu'une configuration CORS sur le bucket (évite de
+modifier une infrastructure partagée) — nouvelle route `GET /api/reels/[reelId]/video`
+(Admin SDK, session NextAuth, propriétaire uniquement) qui télécharge les octets côté serveur
+(jamais soumis à CORS navigateur) et les renvoie same-origin. `EditReelClient.tsx` fetch
+désormais cette route plutôt que `reel.videoUrl` directement.
+
+**Fichiers** : `src/app/api/reels/[reelId]/video/route.ts` (nouveau), `src/app/api/reels/route.ts`,
+`src/db/reel.db.ts`, `src/hooks/useVideoDropzone.ts`, `src/components/reels/EditReelClient.tsx`,
 `src/components/reels/VideoTrimEditor.tsx`, `src/models/reel.d.ts` (commentaire).
 
 **Test qui le prouve** :
+- Jest (`__tests__/api/reels-video.test.ts`, nouveau) : la route proxy — sert les octets au
+  propriétaire d'un réel `ready` ; 404 pour un réel inexistant, non possédé, ou sans
+  `videoPath` ; 401 sans session ; 500 sur une exception Storage inattendue.
 - Jest (`__tests__/api/reels-api.test.ts`) : nouvelle action `retrim` — écrit
   `processingStatus: 'uploading'` + nouveau `rawVideoPath`/trim/contact/description ; accepte un
   retrim après un échec précédent (`processingStatus: 'failed'`) ; refuse pendant un traitement
   déjà en cours (409), sur un réel d'autrui (403), avec une plage invalide (400) ou un
   `rawVideoPath` qui ne correspond pas à l'utilisateur (400).
-- E2E réel, nouveau fichier (`reel-edit-retrim.spec.ts`) : vraie vidéo de 3s embarquée en `data:`
-  URI comme réel déjà "ready", ouverture de `/reels/{id}/edit`, **vrai drag de souris** sur la
-  poignée de fin de la barre de montage (~100% → ~50%), enregistrement, puis — sans aucune
-  assertion sur un état transitoire ('uploading'/'processing', intrinsèquement compétitif avec
-  la vraie Cloud Function qui tourne sur cet environnement, voir la note similaire dans
-  `property-add-reel.spec.ts`) — attente du retraitement complet et vérification en base :
-  `durationSeconds` réellement plus courte que la source, `rawVideoPath` pointant vers le
-  nouveau brut, `videoUrl` ayant changé (nouveau fichier transcodé, plus le `data:` URI
-  d'origine).
+- E2E réel, nouveau fichier (`reel-edit-retrim.spec.ts`, réécrit après le correctif CORS
+  ci-dessus) : **deux tests en série** — (1) publie un vrai réel via `/reels/add` (vraie vidéo
+  ffmpeg de 3s, vrai upload Storage, vraie Cloud Function, poll jusqu'à `processingStatus:
+  'ready'` avec un `videoPath` réel — pas de raccourci `data:` URI, justement pour exercer le
+  même chemin CORS que la vraie application) ; (2) ouvre `/reels/{id}/edit` sur ce réel réel,
+  **vrai drag de souris** sur la poignée de fin de la barre de montage (~100% → ~50%),
+  enregistrement, puis — sans aucune assertion sur un état transitoire
+  ('uploading'/'processing', intrinsèquement compétitif avec la vraie Cloud Function qui tourne
+  sur cet environnement, voir la note similaire dans `property-add-reel.spec.ts`) — attente du
+  retraitement complet et vérification en base : `durationSeconds` réellement plus courte que la
+  source, `rawVideoPath` pointant vers le nouveau brut.
 
 *Créé le 2026-08-31.*

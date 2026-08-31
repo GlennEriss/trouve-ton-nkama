@@ -1,6 +1,6 @@
 import crypto from 'node:crypto'
 import { execFile } from 'node:child_process'
-import { mkdtemp, readFile, rm } from 'node:fs/promises'
+import { mkdtemp, rm } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import path from 'node:path'
 import { promisify } from 'node:util'
@@ -8,7 +8,7 @@ import { promisify } from 'node:util'
 import { expect, test } from '@playwright/test'
 
 import { E2E_ANNOUNCER, mockCommonAppNoise, signInAsAnnouncer } from './helpers/auth'
-import { deleteReels, getReel, seedAnnouncerUser, seedReel } from './helpers/firebase-admin'
+import { deleteReels, findReelByOwner, getReel, seedAnnouncerUser } from './helpers/firebase-admin'
 
 const execFileAsync = promisify(execFile)
 
@@ -17,34 +17,38 @@ const execFileAsync = promisify(execFile)
  * la barre de montage disponible à la création — "il n'y a que" contact/description. Le
  * propriétaire doit pouvoir recouper un réel déjà publié, exactement comme à la création.
  *
- * Vraie session Firebase + vrai Storage + vraie Cloud Function requis (pas de mock) : le montage
- * réenvoie la vidéo déjà publiée (récupérée en Blob depuis videoUrl) comme nouveau "brut" vers
- * reels-raw/, ce qui déclenche à nouveau transcodeReelVideo (même Cloud Function, réellement
- * active sur cet environnement dev, voir property-add-reel.spec.ts/lot8d-reels-ux.spec.ts) — la
- * seule preuve honnête que le montage a été appliqué est une durée réellement plus courte après
- * un nouveau traitement complet, pas juste un état local React.
- *
- * Vidéo initiale en `data:` URI (comme reels-mine-play.spec.ts) : évite un vrai upload Storage
- * pour l'état de départ "déjà publié" — EditReelClient la récupère par un simple fetch(), qui
- * fonctionne aussi bien sur un data: URI que sur une URL Storage réelle.
+ * Vraie session Firebase + vrai Storage + vraie Cloud Function requis (pas de mock), à DEUX
+ * reprises : une fois pour publier un premier réel réel (comme property-add-reel.spec.ts), une
+ * seconde fois pour le nouveau montage envoyé depuis l'édition. Un premier essai de cette suite
+ * avec une vidéo de départ en `data:` URI (raccourci pratique, pas d'upload initial nécessaire)
+ * a laissé passer un vrai bug : le fetch(reel.videoUrl) direct depuis le navigateur échoue en
+ * CORS sur une vraie URL Firebase Storage (le bucket n'a aucune configuration CORS) — un `data:`
+ * URI n'a aucune restriction CORS, donc ce raccourci masquait exactement le bug que l'utilisateur
+ * a fini par voir en vrai ("aucune barre de montage en édition"). Corrigé côté app par un proxy
+ * serveur (/api/reels/[reelId]/video, Admin SDK) plutôt qu'une configuration CORS sur le bucket.
+ * Ce test part donc d'un réel RÉELLEMENT publié via Storage, pour exercer le même chemin que la
+ * vraie application et ne plus jamais recréer ce blind spot.
  *
  * RUN_ID unique par worker (crypto.randomUUID()) : même raison que les autres specs de ce
  * dossier — fullyParallel peut répartir les tests sur des workers séparés.
  */
 const RUN_ID = crypto.randomUUID()
 const OWNER_UID = `e2e-reel-retrim-${RUN_ID}`
-const REEL_ID = `e2e-reel-retrim-reel-${RUN_ID}`
-const ORIGINAL_DESCRIPTION = 'Studio meublé, à recouper pendant le test.'
+const ORIGINAL_DESCRIPTION = `Studio meublé, à recouper pendant le test ${RUN_ID}.`
 const SOURCE_DURATION_SECONDS = 3
 
 test.describe('Recouper un réel déjà publié depuis /reels/{id}/edit — vrai Storage + Cloud Function', () => {
+  test.describe.configure({ mode: 'serial' })
+
   let fixtureDirectory = ''
+  let videoFixture = ''
+  let reelId = ''
 
   test.beforeAll(async () => {
     await seedAnnouncerUser(OWNER_UID, 0)
 
     fixtureDirectory = await mkdtemp(path.join(tmpdir(), 'e2e-reel-retrim-'))
-    const videoFixture = path.join(fixtureDirectory, 'visite.mp4')
+    videoFixture = path.join(fixtureDirectory, 'visite.mp4')
     const installerEntry = require.resolve('@ffmpeg-installer/ffmpeg', {
       paths: [path.resolve(process.cwd(), 'functions')],
     })
@@ -57,34 +61,60 @@ test.describe('Recouper un réel déjà publié depuis /reels/{id}/edit — vrai
       '-c:a', 'aac', '-shortest', '-movflags', '+faststart',
       videoFixture,
     ])
-    const videoBase64 = (await readFile(videoFixture)).toString('base64')
-
-    await seedReel(OWNER_UID, {
-      id: REEL_ID,
-      description: ORIGINAL_DESCRIPTION,
-      videoUrl: `data:video/mp4;base64,${videoBase64}`,
-    })
   })
 
   test.afterAll(async () => {
-    await deleteReels([{ id: REEL_ID, uid: OWNER_UID }])
+    if (reelId) {
+      await deleteReels([{ id: reelId, uid: OWNER_UID }])
+    }
     if (fixtureDirectory) {
       await rm(fixtureDirectory, { recursive: true, force: true })
     }
   })
 
+  test('publie un premier réel réel (upload + traitement Storage réels)', async ({ page }) => {
+    await signInAsAnnouncer(page.context(), 'http://localhost:3000', { ...E2E_ANNOUNCER, uid: OWNER_UID })
+    await mockCommonAppNoise(page, { mockFirebaseToken: false })
+    await page.goto('/reels/add', { waitUntil: 'domcontentloaded' })
+
+    await page.getByLabel('Choisir une vidéo').setInputFiles(videoFixture)
+    const publishButton = page.getByRole('button', { name: 'Publier le réel' })
+    await expect(publishButton).toBeVisible({ timeout: 15000 })
+    await page.getByPlaceholder('Ajouter une légende...').fill(ORIGINAL_DESCRIPTION)
+    await publishButton.click()
+
+    await expect(page.getByText('Vidéo envoyée', { exact: true })).toBeVisible({ timeout: 30000 })
+
+    await expect.poll(async () => (await findReelByOwner(OWNER_UID))?.id, { timeout: 15000 }).not.toBeUndefined()
+    const found = await findReelByOwner(OWNER_UID)
+    reelId = found!.id
+
+    // Pas juste "not failed" : ce réel doit vraiment finir 'ready' avec un videoPath Storage
+    // réel, c'est la condition que /api/reels/[reelId]/video (le proxy) exige pour servir des
+    // octets — le test suivant en dépend directement.
+    await expect
+      .poll(async () => (await getReel(reelId))?.processingStatus, { timeout: 30000 })
+      .toBe('ready')
+    const publishedReel = await getReel(reelId)
+    expect(typeof publishedReel?.videoPath).toBe('string')
+    expect(publishedReel?.videoPath).toBeTruthy()
+  })
+
   test('la barre de montage est disponible en édition et une découpe est réellement appliquée après retraitement', async ({
     page,
   }) => {
+    test.skip(!reelId, 'Dépend du test de publication précédent (même run, mode serial).')
+
     await signInAsAnnouncer(page.context(), 'http://localhost:3000', { ...E2E_ANNOUNCER, uid: OWNER_UID })
     await mockCommonAppNoise(page, { mockFirebaseToken: false })
-    await page.goto(`/reels/${REEL_ID}/edit`, { waitUntil: 'domcontentloaded' })
+    await page.goto(`/reels/${reelId}/edit`, { waitUntil: 'domcontentloaded' })
 
     const contactToggle = page.getByRole('button', { name: /Contact :|Ajouter un numéro/i })
     await expect(contactToggle).toBeVisible({ timeout: 20000 })
 
-    // Preuve que la vidéo déjà publiée a bien été récupérée et chargée dans le même éditeur de
-    // montage qu'à la création (VideoTrimEditor) — pas juste le lecteur simple d'avant.
+    // Preuve que la vidéo déjà publiée a bien été récupérée (via le proxy serveur, pas un fetch
+    // direct qui échouerait en CORS) et chargée dans le même éditeur de montage qu'à la création
+    // (VideoTrimEditor) — pas juste le lecteur simple d'avant.
     const trimBar = page.getByTestId('reel-trim-bar')
     await expect(trimBar).toBeVisible({ timeout: 20000 })
     await expect(page.getByLabel('Couper le son')).toBeVisible()
@@ -127,17 +157,13 @@ test.describe('Recouper un réel déjà publié depuis /reels/{id}/edit — vrai
     // réellement plus courte que la vidéo source (3s) — pas juste un état local React qui
     // n'aurait jamais été appliqué au fichier.
     await expect
-      .poll(async () => (await getReel(REEL_ID))?.processingStatus, { timeout: 45000 })
+      .poll(async () => (await getReel(reelId))?.processingStatus, { timeout: 45000 })
       .toBe('ready')
 
-    const reel = await getReel(REEL_ID)
+    const reel = await getReel(reelId)
     expect(reel?.durationSeconds).toBeLessThan(SOURCE_DURATION_SECONDS)
     expect(reel?.durationSeconds).toBeGreaterThan(0)
     expect(reel?.trimEndSeconds).toBeLessThan(SOURCE_DURATION_SECONDS)
-    expect(reel?.rawVideoPath).toBe(`reels-raw/${OWNER_UID}/${REEL_ID}.mp4`)
-    // L'URL vidéo a bien changé (nouveau fichier transcodé), pas juste conservé le data: URI
-    // d'origine.
-    expect(typeof reel?.videoUrl).toBe('string')
-    expect(reel?.videoUrl as string).not.toContain('data:video')
+    expect(reel?.rawVideoPath).toBe(`reels-raw/${OWNER_UID}/${reelId}.mp4`)
   })
 })
