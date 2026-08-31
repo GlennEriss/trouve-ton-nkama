@@ -11,6 +11,7 @@ import InlineAdUnit from '@/components/ads/InlineAdUnit';
 import { ADSENSE_SLOTS } from '@/lib/ads/config';
 import { useCurrentUser } from '@/hooks/use-current-user';
 import { useWindowSize } from '@/hooks/useSize';
+import { isSingleReelViewRoute } from '@/lib/reels/single-reel-route';
 
 export default function Footer({ isHide = false }: Readonly<{ isHide?: boolean }>) {
     const pathname = usePathname()
@@ -35,7 +36,14 @@ export default function Footer({ isHide = false }: Readonly<{ isHide?: boolean }
     // orientée tâche. Reste affiché sur desktop (n'y gêne pas) et pour les visiteurs anonymes
     // sur mobile (où le footer sert de navigation de repli).
     const hideOnMobileLoggedIn = Boolean(user) && width > 0 && width < 768
-    const hideByRoute = isHide || hideOnMobileLoggedIn || hiddenFooterRoutes.includes(pathname) || isPropertyFormFlowPath(pathname)
+    const hideByRoute =
+        isHide ||
+        hideOnMobileLoggedIn ||
+        hiddenFooterRoutes.includes(pathname) ||
+        isPropertyFormFlowPath(pathname) ||
+        // Vue plein écran d'un réel unique (/reels/{id}) : même raison que routes.protected.reels
+        // ci-dessus, mais route dynamique donc pas exprimable dans hiddenFooterRoutes.
+        isSingleReelViewRoute(pathname)
     const shouldRenderFooterAd =
         pathname === routes.public.homePage ||
         pathname.startsWith('/immobilier') ||

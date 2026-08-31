@@ -331,3 +331,43 @@ Aucun changement nécessaire côté `MyReelsClient.tsx` : le gating de la miniat
   réellement (`<video>` non `paused`).
 
 *Créé le 2026-08-31.*
+
+---
+
+## 🔴 Corrigé — La page de lecture d'un réel unique scrollait à cause de la navbar et la bottom bar
+
+**Repro rapporté par l'utilisateur** : sur `/reels/{id}?returnTo=%2Freels%2Fmine`, le conteneur
+vidéo (`h-[100dvh]`, pensé pour occuper exactement l'écran) provoquait un scroll de page au lieu
+de rester figé.
+
+**Cause** : cette page est physiquement dans `(protected)/reels/[reelId]/`, donc héritait sans
+condition de `(protected)/layout.tsx` (navbar sticky, `Navbar` + `PhoneVerificationBanner`) et du
+`Footer` + `BottomNavigation` du layout racine (`src/app/layout.tsx`), rendus pour toutes les
+routes protégées. Ces éléments ajoutent leur propre hauteur en plus des 100dvh du lecteur — le
+total dépasse la hauteur de l'écran. Le fil public `/reels` avait déjà ce même problème
+partiellement corrigé (le `Footer` s'y masque déjà, voir son commentaire dans `Footer.tsx`), mais
+`/reels/{id}` n'existait pas encore comme route à traiter à l'époque.
+
+**Correctif** : nouveau helper partagé `isSingleReelViewRoute(pathname)`
+(`src/lib/reels/single-reel-route.ts`, regex excluant `/reels`, `/reels/mine`, `/reels/add`,
+`/reels/select-property` et `/reels/{id}/edit`) utilisé à trois endroits pour masquer
+entièrement navbar/footer/bottom-nav sur cette page précise :
+- `(protected)/layout.tsx` (converti en composant client pour lire `usePathname()`) : ne rend
+  plus `Navbar`/`PhoneVerificationBanner` sur cette route.
+- `BottomNavigation.tsx` : ajouté à `shouldHideBottomNavigationForEveryone`.
+- `Footer.tsx` : ajouté à la condition `hideByRoute` (même raison que `routes.protected.reels`,
+  déjà dans `hiddenFooterRoutes`).
+
+**Fichiers** : `src/lib/reels/single-reel-route.ts` (nouveau),
+`src/app/(protected)/layout.tsx`, `src/components/shared/BottomNavigation.tsx`,
+`src/components/footer/Footer.tsx`.
+
+**Test qui le prouve** : e2e réel (`reels-mine-play.spec.ts`, test "la vidéo se lit
+intégralement...") — vérifie l'absence du lien "Accueil - Trouve Ton Nkama" (navbar) et de la
+`nav[aria-label="Navigation mobile"]` (bottom bar), et que `document.documentElement.scrollHeight`
+ne dépasse pas `window.innerHeight` sur cette page. A d'abord révélé, sur desktop
+(`chromium-desktop-dev`), que masquer la navbar seule ne suffisait pas : le `Footer` marketing
+restait affiché en dessous et dépassait toujours la hauteur de l'écran — corrigé en l'ajoutant
+lui aussi à la condition de masquage.
+
+*Créé le 2026-08-31.*

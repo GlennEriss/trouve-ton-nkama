@@ -131,6 +131,16 @@ test.describe('Lire un réel depuis sa miniature sur /reels/mine — vrai Firest
     await expect(page).toHaveURL(new RegExp(`/reels/${PLAYABLE_REEL_ID}\\?returnTo=`))
     await expect(page.getByText(PLAYABLE_DESCRIPTION)).toBeVisible({ timeout: 15000 })
 
+    // Signalé le 2026-08-31 : la navbar sticky + la barre de navigation mobile fixed ajoutent
+    // leur propre hauteur en plus du conteneur vidéo en h-[100dvh], provoquant un scroll de page
+    // au lieu d'un rendu figé plein écran. Les deux doivent être absentes sur cette page.
+    await expect(page.getByLabel('Accueil - Trouve Ton Nkama')).toHaveCount(0)
+    await expect(page.getByRole('navigation', { name: 'Navigation mobile' })).toHaveCount(0)
+    const hasPageScroll = await page.evaluate(
+      () => document.documentElement.scrollHeight > window.innerHeight + 1,
+    )
+    expect(hasPageScroll).toBe(false)
+
     const video = page.locator('video')
     await expect(video).toBeVisible()
     // isActive appelle video.play() dans un effet (ReelSlide, muted au départ) — laisse le
