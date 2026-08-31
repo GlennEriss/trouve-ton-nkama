@@ -250,6 +250,14 @@ function sanitizeOptionalTrimSeconds(value: unknown, fieldName: string): number 
   return value;
 }
 
+function sanitizeRequiredTrimSeconds(value: unknown, fieldName: string): number {
+  const seconds = sanitizeOptionalTrimSeconds(value, fieldName);
+  if (typeof seconds !== 'number') {
+    throw new ReelApiError(400, 'INVALID_TRIM', `${fieldName} requis.`);
+  }
+  return seconds;
+}
+
 function sanitizeOptionalMuted(value: unknown): boolean | undefined {
   return typeof value === 'boolean' ? value : undefined;
 }
@@ -448,7 +456,8 @@ export async function PATCH(request: NextRequest): Promise<NextResponse<ReelApiR
     if (
       action !== 'mark-upload-failed' &&
       action !== 'attach-property' &&
-      action !== 'update-details'
+      action !== 'update-details' &&
+      action !== 'retrim'
     ) {
       throw new ReelApiError(400, 'INVALID_ACTION', 'Action de modification invalide.');
     }
@@ -529,6 +538,63 @@ export async function PATCH(request: NextRequest): Promise<NextResponse<ReelApiR
         success: true,
         reelId,
         message: 'Réel modifié avec succès.',
+      }, 200, requestContext.requestId);
+    }
+
+    if (action === 'retrim') {
+      await assertAnnouncer(db, uid);
+
+      const rawVideoPath = sanitizeRawVideoPath(body.rawVideoPath, uid, reelId);
+      const trimStartSeconds = sanitizeRequiredTrimSeconds(body.trimStartSeconds, 'Début du montage');
+      const trimEndSeconds = sanitizeRequiredTrimSeconds(body.trimEndSeconds, 'Fin du montage');
+      if (trimEndSeconds <= trimStartSeconds) {
+        throw new ReelApiError(400, 'INVALID_TRIM_RANGE', 'La fin du montage doit être après le début.');
+      }
+      const muted = sanitizeOptionalMuted(body.muted);
+      const contact = sanitizeEditableContact(body.contact);
+      const description = sanitizeEditableDescription(body.description);
+
+      await db.runTransaction(async (transaction) => {
+        const reelSnapshot = await transaction.get(reelRef);
+        if (!reelSnapshot.exists) {
+          throw new ReelApiError(404, 'REEL_NOT_FOUND', 'Réel introuvable.');
+        }
+
+        const reel = reelSnapshot.data() ?? {};
+        if (reel.createdBy !== uid) {
+          throw new ReelApiError(403, 'FORBIDDEN_REEL', "Ce réel ne vous appartient pas.");
+        }
+
+        // Un nouveau montage ré-envoie la vidéo déjà publiée (déjà transcodée) comme nouveau
+        // brut pour que transcodeReelVideo la recoupe à nouveau — seulement possible une fois
+        // le traitement précédent terminé (avec ou sans succès), jamais en même temps qu'un
+        // envoi/traitement déjà en cours.
+        if (reel.processingStatus !== 'ready' && reel.processingStatus !== 'failed') {
+          throw new ReelApiError(409, 'REEL_STATUS_CHANGED', 'Le réel est déjà en cours de traitement.');
+        }
+
+        transaction.update(reelRef, {
+          processingStatus: 'uploading',
+          rawVideoPath,
+          trimStartSeconds,
+          trimEndSeconds,
+          muted: muted ?? FieldValue.delete(),
+          contact: contact ?? FieldValue.delete(),
+          description: description ?? FieldValue.delete(),
+          processingError: FieldValue.delete(),
+          updatedAt: FieldValue.serverTimestamp(),
+        });
+      });
+
+      requestLogger.info('Reel retrim requested', {
+        uid,
+        reelId,
+      });
+
+      return jsonResponse({
+        success: true,
+        reelId,
+        message: 'Nouveau montage envoyé, traitement en cours.',
       }, 200, requestContext.requestId);
     }
 

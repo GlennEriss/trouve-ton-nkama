@@ -371,3 +371,76 @@ restait affiché en dessous et dépassait toujours la hauteur de l'écran — co
 lui aussi à la condition de masquage.
 
 *Créé le 2026-08-31.*
+
+---
+
+## 🟢 Ajouté — Barre de montage disponible en édition d'un réel déjà publié
+
+**Demande directe de l'utilisateur** : "La seule chose qui manque dans l'édition est la barre du
+haut permettant de rogner le réel comme quand on crée un réel" — `/reels/{id}/edit`
+(EditReelClient.tsx) ne permettait de modifier que contact/description, pas le montage.
+
+**Pourquoi ce n'était pas juste "réafficher le même composant"** : le rognage à la création
+fonctionne parce que la vidéo BRUTE (choisie localement, jamais encore transcodée) est envoyée à
+`transcodeReelVideo` (Cloud Function ffmpeg) qui la recoupe puis supprime le brut. Une fois le
+réel `ready`, il ne reste plus de brut à recouper — seulement la vidéo déjà transcodée
+(`videoUrl`). Deux approches possibles (question posée à l'utilisateur, qui a choisi la
+première) :
+- **Retenue** : renvoyer la vidéo déjà publiée comme nouveau "brut" pour que la même Cloud
+  Function la recoupe à nouveau — coupe physique réelle, identique au comportement de la
+  création, au prix d'un nouveau cycle Storage + Cloud Function à chaque montage.
+- Écartée : stocker juste trimStart/trimEnd et adapter la lecture pour ne jouer que cette plage
+  (aucun re-traitement, mais le fichier stocké reste entier et le comportement diffère de la
+  création).
+
+**Implémentation** :
+- `functions/src/reels/transcode.ts` : **aucun changement** — `transcodeReelVideo` lit déjà
+  `trimStartSeconds`/`trimEndSeconds`/`muted` depuis Firestore à chaque déclenchement Storage,
+  peu importe si c'est le premier envoi ou un nouveau montage.
+- `src/app/api/reels/route.ts` : nouvelle action PATCH `retrim` — vérifie la propriété, exige
+  `processingStatus` `ready` ou `failed` (jamais pendant un traitement déjà en cours), remet
+  `processingStatus: 'uploading'` + nouveau `rawVideoPath` + `trimStartSeconds`/`trimEndSeconds`
+  + `contact`/`description` en une seule transaction (mêmes sanitizers que `update-details`).
+- `src/db/reel.db.ts` : `retrimReel()`, même pattern fetch+Bearer token que `createReel`.
+- `src/hooks/useVideoDropzone.ts` : `readVideoDurationSeconds` exportée (déjà utilisée en
+  interne, réutilisée telle quelle pour le Blob récupéré en édition).
+- `src/components/reels/EditReelClient.tsx` : au chargement d'un réel `ready` avec `videoUrl`,
+  récupère la vidéo en Blob (`fetch(videoUrl)`) en arrière-plan (le lecteur simple reste affiché
+  et utilisable pendant ce chargement) puis affiche **le même `VideoTrimEditor`** qu'à la
+  création dès que prête. À l'enregistrement : si le montage a changé, `retrimReel()` puis
+  réenvoi du fichier via `uploadRawReelVideo()` (même fonction qu'à la création) ; sinon,
+  chemin inchangé (`updateReelDetails()` seul, pas de re-traitement pour un simple changement de
+  texte).
+- `src/components/reels/VideoTrimEditor.tsx` : `data-testid` ajoutés sur la barre et les deux
+  poignées (aucun changement de comportement) — nécessaires pour piloter le drag depuis un test
+  e2e réel.
+
+**Piège rencontré en écrivant le test e2e** : la poignée de fin est centrée exactement sur le
+bord droit de la barre (`left: 100%`, `-translate-x-1/2`) — sa moitié droite dépasse la barre et
+est rognée par l'`overflow-hidden` du conteneur (invisible et hors zone cliquable), même si
+`boundingBox()` Playwright continue de rapporter sa géométrie complète, non rognée. Un clic au
+centre exact de la poignée tombe pile sur la limite de rognage et ne déclenche parfois aucun
+`pointerdown` — corrigé en visant 25% de la largeur de la poignée (fermement dans sa moitié
+visible/cliquable) plutôt que son centre.
+
+**Fichiers** : `src/app/api/reels/route.ts`, `src/db/reel.db.ts`,
+`src/hooks/useVideoDropzone.ts`, `src/components/reels/EditReelClient.tsx`,
+`src/components/reels/VideoTrimEditor.tsx`, `src/models/reel.d.ts` (commentaire).
+
+**Test qui le prouve** :
+- Jest (`__tests__/api/reels-api.test.ts`) : nouvelle action `retrim` — écrit
+  `processingStatus: 'uploading'` + nouveau `rawVideoPath`/trim/contact/description ; accepte un
+  retrim après un échec précédent (`processingStatus: 'failed'`) ; refuse pendant un traitement
+  déjà en cours (409), sur un réel d'autrui (403), avec une plage invalide (400) ou un
+  `rawVideoPath` qui ne correspond pas à l'utilisateur (400).
+- E2E réel, nouveau fichier (`reel-edit-retrim.spec.ts`) : vraie vidéo de 3s embarquée en `data:`
+  URI comme réel déjà "ready", ouverture de `/reels/{id}/edit`, **vrai drag de souris** sur la
+  poignée de fin de la barre de montage (~100% → ~50%), enregistrement, puis — sans aucune
+  assertion sur un état transitoire ('uploading'/'processing', intrinsèquement compétitif avec
+  la vraie Cloud Function qui tourne sur cet environnement, voir la note similaire dans
+  `property-add-reel.spec.ts`) — attente du retraitement complet et vérification en base :
+  `durationSeconds` réellement plus courte que la source, `rawVideoPath` pointant vers le
+  nouveau brut, `videoUrl` ayant changé (nouveau fichier transcodé, plus le `data:` URI
+  d'origine).
+
+*Créé le 2026-08-31.*

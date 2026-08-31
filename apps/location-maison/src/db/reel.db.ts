@@ -202,6 +202,64 @@ export async function updateReelDetails(
     }
 }
 
+/**
+ * Renvoie la vidéo déjà publiée (déjà transcodée) comme nouveau brut pour que
+ * transcodeReelVideo la recoupe à nouveau selon les nouvelles bornes — seule façon de "rogner"
+ * un réel déjà "ready" (le brut d'origine, lui, est supprimé après le premier traitement, voir
+ * EditReelClient.tsx). Écrit aussi contact/description en un seul aller-retour, mêmes
+ * conventions que update-details (vide -> champ supprimé).
+ */
+export async function retrimReel(
+    reelId: string,
+    rawVideoPath: string,
+    trimStartSeconds: number,
+    trimEndSeconds: number,
+    muted: boolean,
+    contact: string,
+    description: string
+): Promise<boolean> {
+    try {
+        const { auth } = await getAuth();
+        const token = await auth.currentUser?.getIdToken();
+
+        if (!token) {
+            throw new Error("Session Firebase introuvable. Rechargez la page puis réessayez.");
+        }
+
+        const response = await fetch('/api/reels', {
+            method: 'PATCH',
+            headers: {
+                'Content-Type': 'application/json',
+                Authorization: `Bearer ${token}`,
+            },
+            body: JSON.stringify({
+                action: 'retrim',
+                reelId,
+                rawVideoPath,
+                trimStartSeconds,
+                trimEndSeconds,
+                muted,
+                contact,
+                description,
+            }),
+        });
+
+        const result = await response.json().catch(() => null) as { success?: boolean; message?: string } | null;
+
+        if (!response.ok || !result?.success) {
+            throw new Error(result?.message || "Le nouveau montage a échoué.");
+        }
+
+        return true;
+    } catch (error) {
+        logger.error('Reel retrim failed', {
+            error,
+            reelId,
+        });
+        throw error;
+    }
+}
+
 export async function deleteReel(reelId: string): Promise<boolean> {
     try {
         const { auth } = await getAuth();

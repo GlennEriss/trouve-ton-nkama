@@ -415,6 +415,156 @@ describe('/api/reels', () => {
     expect(transaction.update).not.toHaveBeenCalled()
   })
 
+  it('renvoie la vidéo déjà publiée comme nouveau brut à recouper (retrim)', async () => {
+    const { db, transaction, refFor } = makeReelsDb({
+      reelData: { createdBy: 'uid-1', processingStatus: 'ready', contact: '+24166000000', description: 'Avant' },
+    })
+    ;(getFirestore as jest.Mock).mockReturnValue(db)
+
+    const response = await patchReel(
+      makeRequest({
+        action: 'retrim',
+        reelId: 'reel-1',
+        rawVideoPath: 'reels-raw/uid-1/reel-1.mp4',
+        trimStartSeconds: 1.5,
+        trimEndSeconds: 6,
+        muted: true,
+        contact: '+24177112233',
+        description: 'Nouveau montage',
+      }),
+    )
+    const payload = await response.json()
+
+    expect(response.status).toBe(200)
+    expect(payload).toMatchObject({ success: true, reelId: 'reel-1' })
+    expect(transaction.update).toHaveBeenCalledWith(
+      refFor('reels', 'reel-1'),
+      expect.objectContaining({
+        processingStatus: 'uploading',
+        rawVideoPath: 'reels-raw/uid-1/reel-1.mp4',
+        trimStartSeconds: 1.5,
+        trimEndSeconds: 6,
+        muted: true,
+        contact: '+24177112233',
+        description: 'Nouveau montage',
+      }),
+    )
+  })
+
+  it('accepte un retrim sur un réel dont le traitement précédent avait échoué', async () => {
+    const { db, transaction } = makeReelsDb({
+      reelData: { createdBy: 'uid-1', processingStatus: 'failed', processingError: 'Codec non supporté.' },
+    })
+    ;(getFirestore as jest.Mock).mockReturnValue(db)
+
+    const response = await patchReel(
+      makeRequest({
+        action: 'retrim',
+        reelId: 'reel-1',
+        rawVideoPath: 'reels-raw/uid-1/reel-1.mp4',
+        trimStartSeconds: 0,
+        trimEndSeconds: 4,
+        contact: '',
+        description: '',
+      }),
+    )
+    const payload = await response.json()
+
+    expect(response.status).toBe(200)
+    expect(payload).toMatchObject({ success: true })
+    expect(transaction.update).toHaveBeenCalled()
+  })
+
+  it('refuse un retrim pendant qu un traitement est déjà en cours', async () => {
+    const { db, transaction } = makeReelsDb({
+      reelData: { createdBy: 'uid-1', processingStatus: 'processing' },
+    })
+    ;(getFirestore as jest.Mock).mockReturnValue(db)
+
+    const response = await patchReel(
+      makeRequest({
+        action: 'retrim',
+        reelId: 'reel-1',
+        rawVideoPath: 'reels-raw/uid-1/reel-1.mp4',
+        trimStartSeconds: 0,
+        trimEndSeconds: 4,
+        contact: '',
+        description: '',
+      }),
+    )
+    const payload = await response.json()
+
+    expect(response.status).toBe(409)
+    expect(payload).toMatchObject({ success: false, code: 'REEL_STATUS_CHANGED' })
+    expect(transaction.update).not.toHaveBeenCalled()
+  })
+
+  it('refuse un retrim dont la fin du montage est avant le début', async () => {
+    const { db } = makeReelsDb({
+      reelData: { createdBy: 'uid-1', processingStatus: 'ready' },
+    })
+    ;(getFirestore as jest.Mock).mockReturnValue(db)
+
+    const response = await patchReel(
+      makeRequest({
+        action: 'retrim',
+        reelId: 'reel-1',
+        rawVideoPath: 'reels-raw/uid-1/reel-1.mp4',
+        trimStartSeconds: 5,
+        trimEndSeconds: 2,
+      }),
+    )
+    const payload = await response.json()
+
+    expect(response.status).toBe(400)
+    expect(payload).toMatchObject({ success: false, code: 'INVALID_TRIM_RANGE' })
+  })
+
+  it('refuse un retrim sur un réel appartenant à un autre annonceur', async () => {
+    const { db, transaction } = makeReelsDb({
+      reelData: { createdBy: 'other-uid', processingStatus: 'ready' },
+    })
+    ;(getFirestore as jest.Mock).mockReturnValue(db)
+
+    const response = await patchReel(
+      makeRequest({
+        action: 'retrim',
+        reelId: 'reel-1',
+        rawVideoPath: 'reels-raw/uid-1/reel-1.mp4',
+        trimStartSeconds: 0,
+        trimEndSeconds: 4,
+        contact: '',
+        description: '',
+      }),
+    )
+    const payload = await response.json()
+
+    expect(response.status).toBe(403)
+    expect(payload).toMatchObject({ success: false, code: 'FORBIDDEN_REEL' })
+    expect(transaction.update).not.toHaveBeenCalled()
+  })
+
+  it('refuse un retrim avec un rawVideoPath qui ne correspond pas à l utilisateur', async () => {
+    const { db } = makeReelsDb({
+      reelData: { createdBy: 'uid-1', processingStatus: 'ready' },
+    })
+    ;(getFirestore as jest.Mock).mockReturnValue(db)
+
+    const response = await patchReel(
+      makeRequest({
+        action: 'retrim',
+        reelId: 'reel-1',
+        rawVideoPath: 'reels-raw/someone-else/reel-1.mp4',
+        trimStartSeconds: 0,
+        trimEndSeconds: 4,
+      }),
+    )
+    const payload = await response.json()
+
+    expect(response.status).toBe(400)
+    expect(payload).toMatchObject({ success: false, code: 'INVALID_RAW_VIDEO_PATH' })
+  })
+
   it('refuse une action de modification inconnue', async () => {
     const { db } = makeReelsDb()
     ;(getFirestore as jest.Mock).mockReturnValue(db)
