@@ -181,8 +181,10 @@ function ReelCard({
         )
 
         return isPlayable ? (
+          // returnTo : sans lui, "Voir plus de réels" sur /reels/{id} (SingleReelClient.tsx)
+          // ramènerait vers le fil public /reels au lieu de cette page de gestion.
           <Link
-            href={`/reels/${reel.id}`}
+            href={`/reels/${reel.id}?returnTo=${encodeURIComponent(routes.protected.reels_mine)}`}
             className="group relative block aspect-[9/16] w-full overflow-hidden bg-gray-100 dark:bg-gray-800"
             aria-label="Lire le réel"
           >

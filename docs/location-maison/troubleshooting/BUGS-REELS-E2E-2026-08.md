@@ -237,4 +237,47 @@ disponible. Pour ces réels-là, la miniature reste un simple `<div>`, non cliqu
   page qui ne plante pas) ; la miniature d'un réel `processing` n'a pas de lien "Lire le réel" du
   tout.
 
-*Créé le 2026-08-30.*
+## 🔴 Corrigé — "Voir plus de réels" ramenait toujours vers le fil public, jamais vers "Mes réels"
+
+**Statut** : corrigé, vérifié (Jest + e2e réel avec une vraie lecture vidéo).
+
+**Repro initial** : depuis `/reels/mine`, cliquer une miniature (voir section précédente) ouvre
+`/reels/{id}`. Cliquer "Voir plus de réels" sur cette page ramenait vers `/reels` (le fil public
+de consommation), pas vers `/reels/mine` d'où on venait.
+
+**Cause** : `SingleReelClient.tsx` était conçu à l'origine uniquement pour un lien profond ouvert
+depuis WhatsApp (un acheteur externe, sans contexte "page d'origine" — repli sur le fil public
+logique dans ce cas). Le lien "Voir plus de réels" pointait donc en dur vers
+`routes.protected.reels`, sans jamais tenir compte de la page depuis laquelle on était arrivé —
+resté inchangé quand ce composant a commencé à servir aussi de destination pour le clic sur une
+miniature de "Mes réels".
+
+**Correctif** : même mécanisme `?returnTo=` que `CreateOrphanReelClient.tsx` (liste blanche
+`[/reels, /reels/mine]`, repli sur `/reels` par défaut — comportement inchangé pour le lien
+profond WhatsApp, qui ne pose jamais ce paramètre). La miniature de `MyReelsClient.tsx` pointe
+désormais vers `/reels/{id}?returnTo=%2Freels%2Fmine`.
+
+**Bug d'accessibilité trouvé au passage (corrigé)** : le lien portait `aria-label="Retour au fil"`
+alors que son texte visible dit "Voir plus de réels" — un `aria-label` explicite écrase le nom
+accessible calculé depuis le contenu, donc un lecteur d'écran annonçait un texte différent de
+celui affiché à l'écran (WCAG 2.5.3 "Label in Name"). Repéré par le test Jest lui-même
+(`getByRole('link', { name: /Voir plus de réels/i })` ne trouvait pas l'élément). Retiré
+l'`aria-label` : le texte visible, déjà descriptif, suffit.
+
+**Fichiers** : `src/components/reels/SingleReelClient.tsx`, `src/components/reels/MyReelsClient.tsx`.
+
+**Test qui le prouve** :
+- Jest (`single-reel-client.test.tsx`, nouveau) : états chargement/introuvable/erreur/prêt ;
+  lien "Voir plus de réels" → `/reels` par défaut (sans `returnTo`, cas WhatsApp) ; →
+  `/reels/mine` avec `?returnTo=/reels/mine` ; retombe sur `/reels` si `returnTo` n'est pas dans
+  la liste blanche (`https://malicious.example`).
+- E2E réel (`reels-mine-play.spec.ts`) : nouveau test qui seed un réel avec une **vraie vidéo
+  jouable** (générée par ffmpeg, embarquée en `data:` URI — pas d'upload Storage réel ni de
+  dépendance réseau externe), clique sa miniature, vérifie que `<video>` joue réellement
+  (`currentTime` échantillonné sur une fenêtre plus longue que la durée totale de la vidéo, une
+  **baisse** entre deux échantillons prouvant qu'elle a bouclé — donc lue jusqu'au bout, pas
+  figée sur la première image), puis clique "Voir plus de réels" et vérifie l'atterrissage exact
+  sur `/reels/mine` (pas `/reels`), avec le contenu de la page bien rechargé (titre "Mes réels" +
+  le réel visionné toujours présent dans la liste).
+
+*Créé le 2026-08-30, mis à jour le 2026-08-31.*

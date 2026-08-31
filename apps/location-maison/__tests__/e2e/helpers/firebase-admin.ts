@@ -339,6 +339,11 @@ export type SeedReel = {
   propertyId?: string | null
   processingStatus?: 'uploading' | 'processing' | 'ready' | 'failed'
   moderationStatus?: 'PENDING' | 'APPROVED' | 'REJECTED'
+  // Optionnel — un `data:` URI généré à partir d'un vrai fichier vidéo permet de vérifier une
+  // lecture réelle (currentTime qui avance) sans dépendre du pipeline d'upload/transcodage ni
+  // d'une ressource externe (voir reels-mine-play.spec.ts).
+  videoUrl?: string
+  thumbnailUrl?: string
 }
 
 /**

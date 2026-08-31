@@ -146,7 +146,12 @@ describe('MyReelsClient', () => {
     // d'un réel encore en traitement/échoué (2, 3) ne doit pas être cliquable : /reels/[reelId]
     // (SingleReelClient.tsx) n'affiche que les réels approuvés + prêts (getPublicReelById), un
     // clic prématuré afficherait à tort "n'est plus disponible".
-    expect(screen.getByRole('link', { name: 'Lire le réel' })).toHaveAttribute('href', '/reels/mine-reel-1')
+    // ?returnTo=/reels/mine : sans lui, "Voir plus de réels" sur la page de lecture ramènerait
+    // au fil public au lieu de "Mes réels" (voir SingleReelClient.tsx).
+    expect(screen.getByRole('link', { name: 'Lire le réel' })).toHaveAttribute(
+      'href',
+      '/reels/mine-reel-1?returnTo=%2Freels%2Fmine',
+    )
     expect(screen.getAllByRole('link', { name: 'Lire le réel' })).toHaveLength(1)
     await waitFor(() => expect(fetchNextPageMock).toHaveBeenCalled())
   })
