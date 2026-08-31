@@ -33,6 +33,9 @@ const PROCESSING_DESCRIPTION = 'Réel encore en cours de traitement.'
 const PLAYABLE_REEL_ID = `e2e-reels-mine-play-playable-${RUN_ID}`
 const PLAYABLE_DESCRIPTION = 'Studio meublé, réel avec une vraie vidéo à lire.'
 
+const PENDING_REEL_ID = `e2e-reels-mine-play-pending-${RUN_ID}`
+const PENDING_DESCRIPTION = 'Chambre meublée, réel pas encore approuvé par la modération.'
+
 test.describe('Lire un réel depuis sa miniature sur /reels/mine — vrai Firestore', () => {
   let fixtureDirectory = ''
 
@@ -69,6 +72,15 @@ test.describe('Lire un réel depuis sa miniature sur /reels/mine — vrai Firest
       description: PLAYABLE_DESCRIPTION,
       videoUrl: `data:video/mp4;base64,${videoBase64}`,
     })
+    // moderationStatus 'PENDING' + processingStatus 'ready' (par défaut de seedReel) : reproduit
+    // exactement le bug rapporté (BUGS-REELS-E2E-2026-08.md) — le propriétaire d'un réel pas
+    // encore approuvé par la modération doit quand même pouvoir le relire depuis /reels/mine.
+    await seedReel(OWNER_UID, {
+      id: PENDING_REEL_ID,
+      description: PENDING_DESCRIPTION,
+      moderationStatus: 'PENDING',
+      videoUrl: `data:video/mp4;base64,${videoBase64}`,
+    })
   })
 
   test.afterAll(async () => {
@@ -76,6 +88,7 @@ test.describe('Lire un réel depuis sa miniature sur /reels/mine — vrai Firest
       { id: READY_REEL_ID, uid: OWNER_UID },
       { id: PROCESSING_REEL_ID, uid: OWNER_UID },
       { id: PLAYABLE_REEL_ID, uid: OWNER_UID },
+      { id: PENDING_REEL_ID, uid: OWNER_UID },
     ])
     if (fixtureDirectory) {
       await rm(fixtureDirectory, { recursive: true, force: true })
@@ -157,8 +170,35 @@ test.describe('Lire un réel depuis sa miniature sur /reels/mine — vrai Firest
     const card = page
       .getByText(PROCESSING_DESCRIPTION)
       .locator('xpath=ancestor::div[contains(@class,"flex h-full flex-col")][1]')
-    // /reels/[reelId] n'affiche que les réels approuvés + prêts (getPublicReelById) — un lien
-    // "Lire le réel" ici afficherait à tort "n'est plus disponible" ; il ne doit donc pas exister.
+    // Tant que processingStatus !== 'ready', il n'y a pas encore de vidéo à lire (peu importe
+    // moderationStatus) — un lien "Lire le réel" ici n'aurait rien à afficher.
     await expect(card.getByRole('link', { name: 'Lire le réel' })).toHaveCount(0)
+  })
+
+  test('le propriétaire peut lire son propre réel pas encore approuvé par la modération', async ({ page }) => {
+    await signInAsAnnouncer(page.context(), 'http://localhost:3000', { ...E2E_ANNOUNCER, uid: OWNER_UID })
+    await mockCommonAppNoise(page, { mockFirebaseToken: false })
+    await page.goto('/reels/mine', { waitUntil: 'domcontentloaded' })
+    await expect(page.getByText(PENDING_DESCRIPTION)).toBeVisible({ timeout: 20000 })
+
+    const card = page
+      .getByText(PENDING_DESCRIPTION)
+      .locator('xpath=ancestor::div[contains(@class,"flex h-full flex-col")][1]')
+    // processingStatus 'ready' rend la miniature cliquable même si moderationStatus est
+    // 'PENDING' — seule la visibilité PUBLIQUE dépend de l'approbation, pas le droit du
+    // créateur de relire son propre réel (voir /api/reels/[reelId]/route.ts).
+    await card.getByRole('link', { name: 'Lire le réel' }).click()
+
+    await expect(page).toHaveURL(new RegExp(`/reels/${PENDING_REEL_ID}\\?returnTo=`))
+    // Le bug rapporté : "Ce réel n'est plus disponible ou n'a pas encore été approuvé" ne doit
+    // JAMAIS s'afficher au propriétaire sur son propre réel, approuvé ou non.
+    await expect(page.getByText('n\'est plus disponible')).not.toBeVisible()
+    await expect(page.getByText(PENDING_DESCRIPTION)).toBeVisible({ timeout: 15000 })
+
+    const video = page.locator('video')
+    await expect(video).toBeVisible()
+    await expect
+      .poll(async () => video.evaluate((el: HTMLVideoElement) => el.paused), { timeout: 10000 })
+      .toBe(false)
   })
 })

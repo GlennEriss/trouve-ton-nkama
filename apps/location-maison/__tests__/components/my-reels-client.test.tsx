@@ -143,9 +143,9 @@ describe('MyReelsClient', () => {
     expect(stats.getByText('12')).toBeVisible()
     expect(screen.getAllByRole('link', { name: /Attacher à une annonce/i }).length).toBeGreaterThan(0)
     // La miniature d'un réel prêt (reel 1, processingStatus 'ready') mène à /reels/{id} — celle
-    // d'un réel encore en traitement/échoué (2, 3) ne doit pas être cliquable : /reels/[reelId]
-    // (SingleReelClient.tsx) n'affiche que les réels approuvés + prêts (getPublicReelById), un
-    // clic prématuré afficherait à tort "n'est plus disponible".
+    // d'un réel encore en traitement/échoué (2, 3) ne doit pas être cliquable : tant qu'il n'est
+    // pas traité il n'y a pas encore de vidéo à lire (le propriétaire n'a pas besoin
+    // d'approbation pour lire un réel déjà prêt, voir /api/reels/[reelId]/route.ts).
     // ?returnTo=/reels/mine : sans lui, "Voir plus de réels" sur la page de lecture ramènerait
     // au fil public au lieu de "Mes réels" (voir SingleReelClient.tsx).
     expect(screen.getByRole('link', { name: 'Lire le réel' })).toHaveAttribute(

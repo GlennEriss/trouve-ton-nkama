@@ -128,12 +128,11 @@ function ReelCard({
           recadrer bien plus que nécessaire pour remplir la largeur — l'aperçu semblait "zoomé",
           montrant une tranche centrale de la vidéo au lieu du cadrage réel. */}
       {(() => {
-        // Lisible seulement une fois traité + approuvé : /reels/[reelId] (SingleReelClient.tsx)
-        // n'affiche que ce que getPublicReelById() renvoie (processingStatus 'ready' +
-        // moderationStatus 'APPROVED', voir reel.db.ts) — cliquer la miniature d'un réel encore
-        // en cours d'envoi/traitement ou rejeté afficherait à tort "n'est plus disponible". Le
-        // badge de statut déjà affiché ici suffit à expliquer pourquoi ce n'est pas encore
-        // cliquable.
+        // Lisible dès que traité (videoUrl existe), quel que soit moderationStatus : le
+        // propriétaire n'a pas besoin d'approbation pour relire son propre réel — seule la
+        // visibilité PUBLIQUE en dépend (voir /api/reels/[reelId]/route.ts). Tant que
+        // processingStatus !== 'ready', il n'y a pas encore de vidéo à lire ; le badge de statut
+        // déjà affiché ici suffit à expliquer pourquoi ce n'est pas encore cliquable.
         const isPlayable = reel.processingStatus === 'ready'
         const media = (
           <>

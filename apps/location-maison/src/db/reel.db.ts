@@ -381,34 +381,6 @@ export async function getPublicReels({
 }
 
 /**
- * Un seul réel public par id (lien profond, ex. partagé par WhatsApp depuis le
- * bouton de contact) — `null` si inexistant ou pas encore public (mêmes
- * conditions que getPublicReels : processingStatus 'ready' + moderationStatus
- * 'APPROVED', pour ne jamais exposer un réel en attente de modération via un
- * lien deviné).
- */
-export async function getPublicReelById(reelId: string): Promise<(Reel & { id: string }) | null> {
-    const { doc, getDoc, db } = await getFirestore();
-
-    let snapshot;
-    try {
-        snapshot = await getDoc(doc(db, firebaseCollectionNames.reels, reelId));
-    } catch {
-        // firestore.rules évalue `resource.data.moderationStatus` sur un doc qui n'existe
-        // pas (ou qui existe mais n'est pas APPROVED, pour un visiteur non-propriétaire) —
-        // dans les deux cas le SDK client lève "permission-denied" au lieu de renvoyer un
-        // snapshot vide. Traité comme "introuvable publiquement", même résultat visible.
-        return null;
-    }
-    if (!snapshot.exists()) return null;
-
-    const reel = snapshot.data() as Reel;
-    if (reel.processingStatus !== 'ready' || reel.moderationStatus !== 'APPROVED') return null;
-
-    return { ...reel, id: snapshot.id };
-}
-
-/**
  * Upload le fichier vidéo brut — la Cloud Function de transcodage se déclenche sur cet upload
  * et prend le relais (durée réelle, conversion, miniature), ce module ne fait que déposer le
  * fichier au bon endroit.

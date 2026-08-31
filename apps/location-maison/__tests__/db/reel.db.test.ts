@@ -37,7 +37,6 @@ import {
   buildRawReelVideoPath,
   createReel,
   deleteReel,
-  getPublicReelById,
   getPublicReels,
   getReelById,
   getReelsByOwner,
@@ -224,19 +223,6 @@ describe('reel database and API client', () => {
     })
     expect(firestore.where).toHaveBeenCalledWith('processingStatus', '==', 'ready')
     expect(firestore.where).toHaveBeenCalledWith('moderationStatus', '==', 'APPROVED')
-  })
-
-  it.each([
-    [{ processingStatus: 'processing', moderationStatus: 'APPROVED' }],
-    [{ processingStatus: 'ready', moderationStatus: 'PENDING' }],
-  ])('masque un reel profond non public: %j', async (data) => {
-    firestore.getDoc.mockResolvedValue(reelDoc('reel-1', data))
-    await expect(getPublicReelById('reel-1')).resolves.toBeNull()
-  })
-
-  it('traite permission-denied comme un reel public introuvable', async () => {
-    firestore.getDoc.mockRejectedValue(new Error('permission-denied'))
-    await expect(getPublicReelById('private-reel')).resolves.toBeNull()
   })
 
   it('upload la video brute avec les metadonnees de proprietaire', async () => {

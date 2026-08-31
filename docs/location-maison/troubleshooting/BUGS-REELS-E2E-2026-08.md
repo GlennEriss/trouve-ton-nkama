@@ -280,4 +280,54 @@ l'`aria-label` : le texte visible, déjà descriptif, suffit.
   sur `/reels/mine` (pas `/reels`), avec le contenu de la page bien rechargé (titre "Mes réels" +
   le réel visionné toujours présent dans la liste).
 
-*Créé le 2026-08-30, mis à jour le 2026-08-31.*
+---
+
+## 🔴 Corrigé — Le créateur d'un réel ne pouvait pas le visionner tant qu'il n'était pas approuvé
+
+**Repro rapporté par l'utilisateur** : depuis `/reels/mine`, cliquer la miniature d'un réel
+`processingStatus: 'ready'` mais pas encore approuvé (`moderationStatus` autre que `APPROVED`)
+ouvrait `/reels/{id}` mais affichait "Ce réel n'est plus disponible ou n'a pas encore été
+approuvé" — y compris pour son propre créateur. L'utilisateur : *"c'est moi qui a créé le réel
+approuvé ou pas je dois le lire dans ma gallerie de reel. L'approbation permet juste de le rendre
+publique."*
+
+**Cause, à deux niveaux** :
+1. `GET /api/reels/[reelId]` lisait via `getPublicReelById()` (`src/db/reel.db.ts`), qui utilise
+   le SDK client Firestore et exigeait inconditionnellement `processingStatus === 'ready' &&
+   moderationStatus === 'APPROVED'`, sans distinguer le créateur d'un visiteur public.
+2. Même en ajoutant une règle "créateur" dans `firestore.rules`, cette route n'aurait de toute
+   façon jamais pu la satisfaire : une route serveur qui utilise le SDK **client** n'a pas de
+   session Firebase Auth réelle (ni Google OAuth ni le provider Credentials de NextAuth n'en
+   établissent une), donc toute lecture y était **structurellement anonyme** aux yeux des règles
+   — jamais reconnue comme le créateur, quel que soit l'utilisateur réellement connecté. Même
+   famille de bug que `/api/property/[id]`, déjà corrigée plus tôt cette session.
+
+**Correctif** : réécrit la route avec le SDK **Admin** (`firebase-admin/firestore`), identité
+vérifiée côté serveur via la session NextAuth (`await auth()`, comme `/api/property/[id]`).
+Logique explicite dans le code plutôt que dans des règles Firestore : `isOwner` (uid de la
+session === `createdBy` du réel) OU `isPubliclyVisible` (`processingStatus === 'ready' &&
+moderationStatus === 'APPROVED'`) — sinon 404. L'approbation ne conditionne donc plus que la
+visibilité **publique**, jamais le droit du créateur à relire son propre réel, y compris
+`PENDING` ou `REJECTED`. `getPublicReelById()` (SDK client, plus aucun appelant) supprimé de
+`reel.db.ts`.
+
+Aucun changement nécessaire côté `MyReelsClient.tsx` : le gating de la miniature
+(`processingStatus === 'ready'`) était déjà correct — il ne dépendait jamais de
+`moderationStatus`, seule la route API était en cause.
+
+**Fichiers** : `src/app/api/reels/[reelId]/route.ts` (réécrit), `src/db/reel.db.ts`
+(`getPublicReelById` supprimé), commentaires mis à jour dans `MyReelsClient.tsx`.
+
+**Test qui le prouve** :
+- Jest (`__tests__/api/reels-by-id.test.ts`, nouveau) : teste la route directement — visiteur
+  anonyme voit un réel approuvé, ne voit pas un réel `PENDING` ; utilisateur connecté non
+  propriétaire ne voit pas un réel `PENDING` d'autrui ; **le propriétaire voit son propre réel
+  `PENDING` ou `REJECTED`** (le bug rapporté) ; 404 sur réel inexistant ; pas de crash si la
+  résolution de session échoue.
+- E2E réel (`reels-mine-play.spec.ts`) : nouveau test qui seed un réel `moderationStatus:
+  'PENDING'` avec une vraie vidéo jouable (même technique `data:` URI que les autres tests de ce
+  fichier), se connecte comme son propriétaire, clique sa miniature depuis `/reels/mine`, et
+  vérifie que le message "n'est plus disponible" ne s'affiche jamais et que la vidéo démarre
+  réellement (`<video>` non `paused`).
+
+*Créé le 2026-08-31.*
