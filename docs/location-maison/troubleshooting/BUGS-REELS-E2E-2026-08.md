@@ -572,3 +572,66 @@ annonces réelles (20 génériques + 1 au titre distinctif) :
   première page). Effacer la recherche restaure la première page complète (20 cartes).
 
 *Créé le 2026-09-01.*
+
+---
+
+## 🟢 Ajouté — Limite de durée des réels remontée de 5 à 10 minutes
+
+**Demande directe de l'utilisateur** : une vendeuse a reçu une erreur en essayant de créer un
+réel ; soupçon d'une limite de taille/durée trop stricte. Confirmé : `MAX_REEL_DURATION_SECONDS`
+= 300s (5 min) côté navigateur, plus un plafond de taille et un timeout d'upload qui, ensemble,
+rendaient l'envoi d'une vidéo un peu longue/lourde peu fiable sur une connexion mobile moyenne.
+Demande explicite : passer à 10 minutes.
+
+**Changements, tous nécessaires ensemble** (relever seulement la durée sans le reste aurait
+laissé les vidéos plus longues buter sur les autres plafonds, inchangés) :
+- `src/constantes/index.ts` : `MAX_REEL_DURATION_SECONDS` 300→600s ; `MAX_REEL_RAW_SIZE_BYTES`
+  500→1000 Mo (sinon une vidéo deux fois plus longue au même bitrate aurait quand même buté sur
+  l'ancien plafond de taille, annulant l'intérêt du relèvement de durée). `AD_VIDEO_MAX_*`
+  (créas publicitaires) volontairement **non touchées** — système découplé par design (voir
+  commentaire déjà présent dans le fichier).
+- `src/db/reel.db.ts` : timeout de `uploadRawReelVideo` (`withTimeout(uploadBytes(...))`)
+  120s→600s — à l'ancien plafond de taille (500 Mo), 2 min exigeait déjà ~33 Mbps soutenus pour
+  ne pas expirer avant la fin de l'envoi, hors de portée d'une connexion mobile moyenne ; c'est
+  très probablement la cause réelle de l'erreur de la vendeuse (pas un refus explicite, un
+  timeout silencieux côté client).
+- `functions/src/reels/config.ts` : `REEL_MAX_DURATION_SECONDS` 300→600s (miroir serveur, revalidé
+  par `transcodeReelVideo` indépendamment du contrôle navigateur).
+- `src/components/reels/CreateOrphanReelClient.tsx` : textes "5 minutes" → "10 minutes" (message
+  de refus + les deux textes d'aide de l'écran de dépôt).
+
+**Piège au déploiement** : `timeoutSeconds: 900` (relevé en même temps, pour laisser au job de
+transcodage — download + probe + encodage + miniature + upload — le temps de traiter une vidéo
+deux fois plus longue) a été **refusé par Firebase** au déploiement : 540s est le plafond
+MAXIMUM autorisé pour ce type de déclencheur (trigger Storage 2ᵉ génération), pas une marge
+ajustable. Reverti à 540s (valeur déjà maximale, inchangée) — l'encodage h264 `-preset veryfast`
+sur 2 vCPU reste largement plus rapide que le temps réel, donc cette limite reste confortable en
+pratique malgré la durée vidéo doublée.
+
+**Déploiement** : `firebase deploy --only functions:transcodeReelVideo` sur `location-maison-dev`
+et `location-maison-prod-167da` — réussi sur les deux. **Échoué sur `location-maison-preprod`**,
+mais pour une raison **totalement indépendante** de ce changement : le déploiement (même filtré à
+une seule fonction) valide tous les secrets référencés dans l'ensemble du codebase de fonctions,
+et `MYPAYGA_SEARCH_REQUEST_CALLBACK_URL` (secret utilisé par une fonction de callback de
+paiement MyPayGA, sans rapport avec les réels) n'existe pas du tout sur ce projet
+(`firebase functions:secrets:access` → 404, confirmé absent — présent et correct sur prod).
+Préexistant, non introduit par ce travail — **action à part nécessaire** :
+`firebase functions:secrets:set MYPAYGA_SEARCH_REQUEST_CALLBACK_URL --project
+location-maison-preprod` (valeur à confirmer, hors de portée sans en connaître l'URL exacte),
+puis relancer le déploiement des réels sur preprod.
+
+**Fichiers** : `src/constantes/index.ts`, `src/db/reel.db.ts`, `functions/src/reels/config.ts`,
+`src/components/reels/CreateOrphanReelClient.tsx`.
+
+**Test qui le prouve** :
+- Jest, functions (`functions/__tests__/reels/transcode.test.ts`) : `buildReelProcessingPlan`
+  accepte jusqu'à 600s, rejette 601s (`VIDEO_TOO_LONG`) — ancien seuil à 301s mis à jour.
+- E2E réel, nouveau fichier (`reel-duration-limit.spec.ts`) : deux vraies vidéos synthétiques
+  (ffmpeg, très faible bitrate donc quelques Ko malgré une longue durée — génération en
+  &lt;100ms, aucun upload réel nécessaire ici puisque le contrôle est 100% côté navigateur avant
+  tout envoi) — une de 605s est refusée avec le message "Vidéo trop longue (10 minutes
+  maximum)." et reste sur l'écran de dépôt ; une de 595s (au-delà de l'ancien plafond de 5 min,
+  sous le nouveau) est acceptée et passe à l'éditeur de montage, sans aucun toast de refus —
+  preuve que le seuil a bien été relevé, pas seulement que l'ancien message fonctionne encore.
+
+*Créé le 2026-09-01.*

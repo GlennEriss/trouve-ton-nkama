@@ -24,11 +24,14 @@ const REGION_BY_PROJECT: Record<string, string> = {
 
 export const TRANSCODE_FUNCTION_OPTIONS = {
   memory: '2GiB',
-  // Relevé avec REEL_MAX_DURATION_SECONDS (300 -> 600s) : le job (download + probe + transcode
-  // + miniature + upload) doit avoir le temps de traiter une vidéo deux fois plus longue, avec
-  // de la marge pour le cas où canRemuxToMp4() retombe sur un ré-encodage complet (plus lent
-  // qu'une simple copie de flux).
-  timeoutSeconds: 900,
+  // 540s : plafond MAXIMUM autorisé par ce type de déclencheur (trigger Storage 2e génération)
+  // — confirmé au déploiement ("functions have timeouts that exceed the maximum allowed", voir
+  // https://firebase.google.com/docs/functions/quotas#time_limits), pas une marge choisie. Ne
+  // peut donc pas être relevé en même temps que REEL_MAX_DURATION_SECONDS (300 -> 600s) ;
+  // l'encodage h264 (`-preset veryfast`, 2 vCPU) reste largement plus rapide que le temps réel
+  // pour une vidéo de 10 min, donc cette limite reste confortable en pratique malgré la durée
+  // vidéo doublée.
+  timeoutSeconds: 540,
   cpu: 2,
   region: REGION_BY_PROJECT[process.env.GCLOUD_PROJECT ?? ''] ?? 'us-east1',
 } as const;
