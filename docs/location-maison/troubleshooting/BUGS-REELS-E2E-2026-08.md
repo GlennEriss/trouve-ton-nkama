@@ -626,12 +626,53 @@ puis relancer le déploiement des réels sur preprod.
 **Test qui le prouve** :
 - Jest, functions (`functions/__tests__/reels/transcode.test.ts`) : `buildReelProcessingPlan`
   accepte jusqu'à 600s, rejette 601s (`VIDEO_TOO_LONG`) — ancien seuil à 301s mis à jour.
-- E2E réel, nouveau fichier (`reel-duration-limit.spec.ts`) : deux vraies vidéos synthétiques
+- E2E réel (`reel-duration-limit.spec.ts` — depuis absorbé/élargi dans
+  `reel-creation-validation.spec.ts`, voir entrée suivante) : deux vraies vidéos synthétiques
   (ffmpeg, très faible bitrate donc quelques Ko malgré une longue durée — génération en
   &lt;100ms, aucun upload réel nécessaire ici puisque le contrôle est 100% côté navigateur avant
   tout envoi) — une de 605s est refusée avec le message "Vidéo trop longue (10 minutes
   maximum)." et reste sur l'écran de dépôt ; une de 595s (au-delà de l'ancien plafond de 5 min,
   sous le nouveau) est acceptée et passe à l'éditeur de montage, sans aucun toast de refus —
   preuve que le seuil a bien été relevé, pas seulement que l'ancien message fonctionne encore.
+
+*Créé le 2026-09-01.*
+
+---
+
+## 🟢 Couverture ajoutée — `reel-creation-validation.spec.ts` (parcours complet de création : trop lourd / trop long / réussite)
+
+**Demande directe de l'utilisateur**, suite à l'entrée précédente : couvrir les trois cas du
+parcours de création d'un réel avec de vrais fichiers vidéo — trop lourd, trop long, et un
+upload qui réussit réellement. Remplace/élargit `reel-duration-limit.spec.ts` (qui ne couvrait
+que la durée, pas la taille ni le succès complet).
+
+**Fichier "trop lourd" (>1 Go) sans encoder 1 Go de vraie vidéo** : `useVideoDropzone.ts` lit
+uniquement `file.size` pour ce contrôle, jamais le contenu — un fichier factice creux
+(`fs.truncate`, aucune vraie donnée vidéo) suffit et se crée instantanément, contrairement à un
+véritable encodage ffmpeg d'une telle taille (lent, inutile ici).
+
+**Piège rencontré** : les assertions positives sur le texte du toast de refus
+(`getByText('Fichier trop volumineux.')`, `getByText('Vidéo trop longue (10 minutes
+maximum).')`, `getByText('Vidéo envoyée')`) échouaient en "strict mode violation" — le
+composant de toast duplique son texte dans une région `aria-live="assertive"` pour les lecteurs
+d'écran (annonce "Vidéo refusée" + le message concaténés), donc deux éléments contiennent le
+texte recherché. Corrigé avec `.first()` sur chacune (on veut confirmer qu'il s'affiche quelque
+part, peu importe lequel des deux nœuds).
+
+**Fichiers** : `__tests__/e2e/reel-creation-validation.spec.ts` (nouveau, remplace
+`reel-duration-limit.spec.ts`).
+
+**Test qui le prouve** — trois scénarios dans un seul fichier :
+- **Trop lourd** : fichier factice de 1 Go + 10 Mo → "Fichier trop volumineux." affiché, reste
+  sur l'écran de dépôt, aucun bouton "Publier le réel" n'apparaît (jamais tenté l'upload).
+- **Trop long** : vraie vidéo synthétique de 605s (ffmpeg, faible bitrate) → "Vidéo trop longue
+  (10 minutes maximum)." affiché, même comportement.
+- **Réussite complète** : vraie vidéo synthétique de 3s → aucun message de refus, "Publier le
+  réel" cliqué, "Vidéo envoyée" affiché, puis preuve définitive côté données (pas juste le
+  toast) : le document `reels/{id}` existe réellement (retrouvé par `createdBy`, l'id étant
+  généré côté client), et — contrairement à d'autres tests de cette suite qui se contentent de
+  "pas failed" à cause du risque de course avec la vraie Cloud Function — celui-ci attend
+  explicitement `processingStatus: 'ready'`, `moderationStatus: 'PENDING'`, `description`,
+  `rawVideoPath`, `videoUrl` et `durationSeconds` corrects.
 
 *Créé le 2026-09-01.*
