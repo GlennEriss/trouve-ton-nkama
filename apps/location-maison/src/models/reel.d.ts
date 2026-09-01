@@ -25,9 +25,10 @@ export type Reel = ICreation & {
     processingStatus: ReelProcessingStatus;
     processingError?: string;
     rawVideoPath: string;
-    // Découpe demandée par l'annonceur à l'envoi (secondes, relatives au fichier brut) — lue
-    // une seule fois par transcodeReelVideo puis sans effet ultérieur (le montage ne s'applique
-    // qu'au transcodage initial, pas à une vidéo déjà "ready").
+    // Découpe demandée par l'annonceur (secondes, relatives au fichier brut envoyé à ce
+    // moment-là — celui de la création, ou celui réenvoyé lors d'un nouveau montage depuis
+    // "Modifier", voir retrimReel() dans reel.db.ts) — lue par transcodeReelVideo à chaque
+    // upload vers reels-raw/, sans effet en dehors de ce déclenchement.
     trimStartSeconds?: number;
     trimEndSeconds?: number;
     // Son coupé à l'envoi (WhatsApp-like) — répercuté dans l'encodage final (-an), pas

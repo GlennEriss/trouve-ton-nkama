@@ -3,6 +3,7 @@ import { auth } from '@/next-auth/auth';
 import { createLogger } from '@/lib/logger';
 import type { Property } from '@/models/annonce';
 import firebaseCollectionNames from '@/constantes/firebase-collection-name';
+import { serializePropertyPromotion } from '@/lib/serialize-property-promotion';
 
 const logger = createLogger('api.announcer.ads');
 const DEFAULT_LIMIT = 12;
@@ -80,6 +81,10 @@ function toMillis(value: unknown): number {
   }
 
   return 0;
+}
+
+function serializeProperty(property: PropertyRecord): PropertyRecord {
+  return serializePropertyPromotion(property) as PropertyRecord;
 }
 
 function normalizeText(value: unknown): string {
@@ -346,7 +351,7 @@ export async function GET(request: NextRequest) {
       .sort((left, right) => compareProperties(left, right, sortBy, sortOrder));
 
     const total = filteredItems.length;
-    const paginatedItems = filteredItems.slice(cursor, cursor + limit);
+    const paginatedItems = filteredItems.slice(cursor, cursor + limit).map(serializeProperty);
     const nextCursor = cursor + limit < total ? String(cursor + limit) : null;
 
     const filteredSummary = buildSummary(filteredItems);

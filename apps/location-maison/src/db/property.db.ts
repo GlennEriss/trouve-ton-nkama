@@ -1,6 +1,6 @@
 import firebaseCollectionNames from "@/constantes/firebase-collection-name";
 import { Property, TypeProperty } from "@/models/annonce";
-import { createModel, deleteModel, updateModel } from "./generic.db";
+import { createModel, deleteModel } from "./generic.db";
 import { collectionFirebaseNames } from "@/constantes";
 import { createLogger } from '@/lib/logger';
 import { invalidatePropertySeoCache } from '@/lib/invalidate-property-seo-cache';
@@ -21,13 +21,22 @@ function normalizeKitchenField<T extends Record<string, any>>(data: T): T {
     return data;
 }
 
-export async function updateProperty(id: string, property: Partial<Property>): Promise<boolean>{
-    const updated = await updateModel<Property>(id, property, collectionFirebaseNames.properties)
-    if (updated) {
-        void invalidatePropertySeoCache();
-    }
-    return updated;
-
+export async function updateProperty(id: string, property: Partial<Property>): Promise<boolean> {
+    // Route serveur (Admin SDK) plutôt que updateModel (SDK client) : même raison que
+    // deleteProperty ci-dessous — `request.auth != null` par firestore.rules, jamais vrai
+    // côté navigateur (ni Google, ni Credentials NextAuth, tous deux échangés côté serveur).
+    // `updateDoc` (SDK client) échouait silencieusement en arrière-plan (permission-denied)
+    // pendant que le state React local donnait l'illusion d'une sauvegarde réussie — constaté
+    // en e2e réel en vérifiant la persistance Firestore réelle après un crayon EditableField,
+    // pas seulement l'apparence côté UI (property-edit.spec.ts).
+    // Invalidation du cache SEO déjà faite côté serveur dans la route, pas besoin de la
+    // refaire ici.
+    const response = await fetch(`/api/property/${id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(property),
+    });
+    return response.ok;
 }
 export async function createProperty(property: Property): Promise<string | null> {
     // Toute nouvelle annonce démarre en attente de review, quelle que soit la valeur
@@ -42,11 +51,16 @@ export async function createProperty(property: Property): Promise<string | null>
 }
 
 export async function deleteProperty(id: string): Promise<boolean> {
-    const deleted = await deleteModel(id, firebaseCollectionNames.properties)
-    if (deleted) {
-        void invalidatePropertySeoCache();
-    }
-    return deleted;
+    // Route serveur (Admin SDK) plutôt que deleteModel (SDK client) : la suppression exige
+    // `request.auth != null` par firestore.rules, or ni Google (credential échangé côté
+    // serveur) ni la connexion email/mot de passe (Credentials provider NextAuth, lui aussi
+    // côté serveur) ne laissent le navigateur avec une vraie session Firebase Auth — la
+    // suppression restait bloquée 30-60s avant d'échouer pour la quasi-totalité des
+    // utilisateurs réels (constaté en e2e réel, voir property-delete.spec.ts).
+    // Invalidation du cache SEO déjà faite côté serveur dans la route, pas besoin de la
+    // refaire ici.
+    const response = await fetch(`/api/property/${id}`, { method: 'DELETE' });
+    return response.ok;
 }
 export async function getProperties({ limitPerPage, lastDoc, createdBy, type }: { limitPerPage: number, lastDoc: any, createdBy?: string, type?: string }) {
     const { collection, doc, getDoc, getDocs, db, where, query, startAfter, limit, orderBy } = await getFirestore();
@@ -109,6 +123,58 @@ export async function getProperties({ limitPerPage, lastDoc, createdBy, type }: 
         properties,
         limitPerPage,
         lastDoc,
+    };
+}
+
+export type SearchOwnedPropertiesResult = {
+    properties: (Property & { id: string })[];
+    nextCursor: string | null;
+    hasMore: boolean;
+};
+
+/**
+ * Recherche paginée dans les annonces immobilières de l'annonceur connecté (pas les annonces
+ * marketplace/Mode) — réutilise /api/announcer/ads (Admin SDK, session NextAuth), déjà utilisée
+ * par "Gestion des annonces" pour la recherche texte + pagination sur les annonces d'un
+ * annonceur. Contrairement à getProperties() ci-dessus, ne filtre pas par state/moderationStatus
+ * : le propriétaire doit pouvoir retrouver N'IMPORTE LAQUELLE de ses annonces (y compris
+ * archivée ou en attente de modération), pas seulement celles déjà publiques.
+ *
+ * Utilisé par SelectPropertyForReelClient.tsx (rattacher un réel à une annonce) — évite de
+ * charger la totalité des annonces d'un annonceur d'un coup (potentiellement des centaines).
+ */
+export async function searchOwnedProperties({
+    query,
+    limitPerPage,
+    cursor,
+}: {
+    query: string;
+    limitPerPage: number;
+    cursor: string | null;
+}): Promise<SearchOwnedPropertiesResult> {
+    const params = new URLSearchParams();
+    params.set('scope', 'immobilier');
+    params.set('limit', String(limitPerPage));
+    params.set('cursor', cursor ?? '0');
+    if (query.trim()) {
+        params.set('q', query.trim());
+    }
+
+    const response = await fetch(`/api/announcer/ads?${params.toString()}`);
+    const payload = await response.json().catch(() => null) as {
+        success?: boolean;
+        items?: (Property & { id: string })[];
+        pagination?: { nextCursor: string | null; hasMore: boolean };
+    } | null;
+
+    if (!response.ok || !payload?.success) {
+        throw new Error("Impossible de charger vos annonces.");
+    }
+
+    return {
+        properties: payload.items ?? [],
+        nextCursor: payload.pagination?.nextCursor ?? null,
+        hasMore: payload.pagination?.hasMore ?? false,
     };
 }
 

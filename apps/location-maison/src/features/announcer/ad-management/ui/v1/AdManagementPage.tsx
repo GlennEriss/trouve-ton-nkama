@@ -371,15 +371,21 @@ function AdCard({ ad, onToggleState, onDelete, actionLoading }: AdCardProps) {
               </Link>
             </Button>
             <Button variant="outline" className="h-11 rounded-full" asChild>
-              {/* Immobilier (typeProperty) : formulaire à 14 builders existant. Toute
-                  autre catégorie (categoryId présent) : preview brouillon éditable
-                  réutilisée aussi pour l'édition post-rejet — voir
-                  PreviewCategoryListingDraft.tsx. */}
+              {/* Immobilier (typeProperty) et Mode (categoryId) pointent tous deux vers leur
+                  page preview + édition champ par champ (PreviewPropertyDraft.tsx / crayons
+                  pour l'immobilier, PreviewCategoryListingDraft.tsx pour Mode) — le vieux
+                  formulaire à 14 builders (`property/modify/[id]`) n'est plus le point d'entrée
+                  "Modifier" pour l'immobilier, décision produit explicite.
+                  `categoryId` seul n'est PAS le bon test pour distinguer les deux : un backfill
+                  (2026-08-17) l'a posé sur ~949/950 annonces, immobilier comprises — voir
+                  resolveScope() dans /api/announcer/ads/route.ts, qui utilise le même
+                  !typeProperty pour cette raison. Sans lui, "Modifier" envoyait la quasi-totalité
+                  des annonces immobilières vers le flux d'édition Mode (constaté en e2e réel). */}
               <Link
                 href={
-                  ad.categoryId
+                  !ad.typeProperty && ad.categoryId
                     ? `${routes.protected.add_category_listing}/preview/${ad.id}`
-                    : `${routes.protected.properties}/modify/${ad.id}`
+                    : `${routes.protected.properties}/create/preview/${ad.id}`
                 }
               >
                 <Pencil className="mr-1.5 h-4 w-4" />
@@ -393,7 +399,10 @@ function AdCard({ ad, onToggleState, onDelete, actionLoading }: AdCardProps) {
               disabled={actionLoading}
             >
               <Archive className="mr-1.5 h-4 w-4" />
-              {ad.state === 'IN_PROGRESS' ? 'Archiver' : 'Activer'}
+              {/* Même libellé que le bouton de confirmation dans la Dialog ci-dessous
+                  (requestToggleState/confirmToggleState) : "Réactiver", pas "Activer" —
+                  incohérence trouvée en e2e réel (property-archive.spec.ts). */}
+              {ad.state === 'IN_PROGRESS' ? 'Archiver' : 'Réactiver'}
             </Button>
             <Button
               variant="outline"

@@ -20,11 +20,6 @@ jest.mock('@/hooks/useSize', () => ({ useWindowSize: () => ({ width: windowWidth
 jest.mock('@/hooks/use-track-property-interaction', () => ({
   useTrackPropertyInteraction: () => ({ trackInteraction }),
 }))
-jest.mock('@/components/reels/gift/GiftModal', () => ({
-  __esModule: true,
-  default: ({ isOpen, propertyId, announcerName }: any) =>
-    isOpen ? <div data-testid="gift-modal">{propertyId} - {announcerName}</div> : null,
-}))
 
 const property = {
   id: 'prop-1',
@@ -69,13 +64,6 @@ describe('ContactSection', () => {
     expect(link).toHaveAttribute('href', expect.stringContaining('https://wa.me/+24166545430?text='))
     fireEvent.click(link)
     expect(trackInteraction).toHaveBeenCalledWith('whatsapp_contact', { phoneNumber: '+24166545430' })
-  })
-
-  it('ouvre la modale de cadeau avec le nom de l annonceur', () => {
-    windowWidth = 1280
-    render(<ContactSection property={property} />)
-    fireEvent.click(screen.getByTitle("Envoyer un cadeau à l'annonceur"))
-    expect(screen.getByTestId('gift-modal')).toHaveTextContent('prop-1 - Jean Dupont')
   })
 
   it('utilise le lien # quand aucun numero n est disponible', () => {

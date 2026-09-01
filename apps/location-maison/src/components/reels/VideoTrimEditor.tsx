@@ -133,6 +133,7 @@ function TrimBar({ durationSeconds, trimStart, trimEnd, onChange, frames, disabl
   return (
     <div
       ref={trackRef}
+      data-testid="reel-trim-bar"
       className="relative h-16 w-full touch-none select-none overflow-hidden rounded-lg bg-neutral-800"
       onPointerMove={handlePointerMove}
       onPointerUp={handlePointerUp}
@@ -158,6 +159,7 @@ function TrimBar({ durationSeconds, trimStart, trimEnd, onChange, frames, disabl
       />
 
       <div
+        data-testid="reel-trim-handle-start"
         className="absolute inset-y-0 flex w-6 -translate-x-1/2 cursor-ew-resize touch-none items-center justify-center"
         style={{ left: `${startPct}%` }}
         onPointerDown={handlePointerDown('start')}
@@ -165,6 +167,7 @@ function TrimBar({ durationSeconds, trimStart, trimEnd, onChange, frames, disabl
         <div className="h-10 w-1.5 rounded-full bg-white shadow" />
       </div>
       <div
+        data-testid="reel-trim-handle-end"
         className="absolute inset-y-0 flex w-6 -translate-x-1/2 cursor-ew-resize touch-none items-center justify-center"
         style={{ left: `${endPct}%` }}
         onPointerDown={handlePointerDown('end')}

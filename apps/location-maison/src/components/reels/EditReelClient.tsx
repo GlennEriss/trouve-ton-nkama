@@ -7,11 +7,22 @@ import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { ArrowLeft, Loader2, Pencil, Send, Video, X } from 'lucide-react'
 import { Button } from '@trouve-ton-nkama/ui/button'
 import { routes } from '@/constantes/routes'
-import { getReelById, updateReelDetails } from '@/db/reel.db'
+import {
+  buildRawReelVideoPath,
+  getReelById,
+  markReelUploadFailed,
+  retrimReel,
+  updateReelDetails,
+  uploadRawReelVideo,
+} from '@/db/reel.db'
 import { useCurrentUser } from '@/hooks/use-current-user'
 import { useToast } from '@/hooks/use-toast'
+import { readVideoDurationSeconds } from '@/hooks/useVideoDropzone'
+import { VideoTrimEditor } from '@/components/reels/VideoTrimEditor'
 
 const MAX_DESCRIPTION_LENGTH = 280
+
+type VideoFetchStatus = 'idle' | 'loading' | 'ready' | 'error'
 
 interface EditReelClientProps {
   reelId: string
@@ -27,6 +38,16 @@ export default function EditReelClient({ reelId }: EditReelClientProps) {
   const [isEditingContact, setIsEditingContact] = React.useState(false)
   const [initializedReelId, setInitializedReelId] = React.useState<string | null>(null)
   const [isSaving, setIsSaving] = React.useState(false)
+
+  // Barre de montage identique à la création (VideoTrimEditor) : la vidéo déjà publiée est
+  // récupérée en Blob (elle est déjà transcodée/allégée) pour permettre un nouveau montage sans
+  // bloquer l'affichage — le lecteur simple reste visible pendant ce chargement en arrière-plan.
+  const [videoFetchStatus, setVideoFetchStatus] = React.useState<VideoFetchStatus>('idle')
+  const [videoFile, setVideoFile] = React.useState<File | null>(null)
+  const [videoDurationSeconds, setVideoDurationSeconds] = React.useState(0)
+  const [trimStart, setTrimStart] = React.useState(0)
+  const [trimEnd, setTrimEnd] = React.useState(0)
+  const [muted, setMuted] = React.useState(false)
 
   const reelQuery = useQuery({
     queryKey: ['reels', 'edit', reelId, user?.uid],
@@ -44,21 +65,77 @@ export default function EditReelClient({ reelId }: EditReelClientProps) {
     setInitializedReelId(reel.id)
   }, [initializedReelId, reel])
 
+  // La vidéo déjà "ready" devient le point de départ d'un éventuel nouveau montage : on la
+  // traite comme un fichier fraîchement choisi (trim 0..durée totale), pas comme le montage
+  // d'origine — le brut d'origine n'existe de toute façon plus (supprimé après transcodage).
+  // Passe par /api/reels/{id}/video (Admin SDK côté serveur) plutôt qu'un fetch direct de
+  // reel.videoUrl : ce fetch échouait systématiquement en CORS (le bucket Storage n'a aucune
+  // configuration CORS — <video src=...> fonctionne quand même car la lecture ne passe jamais
+  // par fetch/XHR), ce qui faisait silencieusement retomber sur le lecteur simple sans jamais
+  // afficher la barre de montage — bug rapporté directement par l'utilisateur en capture d'écran.
+  React.useEffect(() => {
+    if (!reel?.videoUrl || reel.processingStatus !== 'ready') return
+    let cancelled = false
+    setVideoFetchStatus('loading')
+
+    fetch(`/api/reels/${encodeURIComponent(reel.id)}/video`)
+      .then((res) => {
+        if (!res.ok) throw new Error('download failed')
+        return res.blob()
+      })
+      .then(async (blob) => {
+        if (cancelled) return
+        const file = new File([blob], `${reel.id}.mp4`, { type: blob.type || 'video/mp4' })
+        const duration = await readVideoDurationSeconds(file)
+        if (cancelled) return
+        setVideoFile(file)
+        setVideoDurationSeconds(duration)
+        setTrimStart(0)
+        setTrimEnd(duration)
+        setMuted(false)
+        setVideoFetchStatus('ready')
+      })
+      .catch(() => {
+        // Best-effort : la vidéo simple reste lisible/éditable (contact/description) même si
+        // le montage n'a pas pu se charger (réseau, CORS...).
+        if (!cancelled) setVideoFetchStatus('error')
+      })
+
+    return () => {
+      cancelled = true
+    }
+  }, [reel?.id, reel?.videoUrl, reel?.processingStatus])
+
   const normalizedContact = contact.trim()
   const normalizedDescription = description.trim()
   const initialContact = reel?.contact?.trim() ?? ''
   const initialDescription = reel?.description?.trim() ?? ''
-  const hasChanges = normalizedContact !== initialContact || normalizedDescription !== initialDescription
+  const isTrimChanged = videoFetchStatus === 'ready' && (trimStart > 0 || trimEnd < videoDurationSeconds || muted)
+  const hasChanges =
+    normalizedContact !== initialContact || normalizedDescription !== initialDescription || isTrimChanged
   const waitingForFirebase = Boolean(user?.uid && !isFirebaseConnected)
   const isBusy = isSaving || reelQuery.isLoading || authLoading || waitingForFirebase
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault()
-    if (!canEdit || isSaving || !hasChanges) return
+    if (!canEdit || isSaving || !hasChanges || !user?.uid) return
 
     setIsSaving(true)
     try {
-      await updateReelDetails(reelId, contact, description)
+      if (isTrimChanged && videoFile) {
+        const rawVideoPath = buildRawReelVideoPath(videoFile, user.uid, reelId)
+        await retrimReel(reelId, rawVideoPath, trimStart, trimEnd, muted, contact, description)
+        try {
+          await uploadRawReelVideo(videoFile, user.uid, reelId)
+        } catch (uploadError) {
+          const message = uploadError instanceof Error ? uploadError.message : "Échec de l'envoi de la vidéo."
+          await markReelUploadFailed(reelId, message)
+          throw uploadError
+        }
+      } else {
+        await updateReelDetails(reelId, contact, description)
+      }
+
       await Promise.all([
         queryClient.invalidateQueries({ queryKey: ['reels-mine', user?.uid] }),
         queryClient.invalidateQueries({ queryKey: ['reels', 'edit', reelId, user?.uid] }),
@@ -66,7 +143,9 @@ export default function EditReelClient({ reelId }: EditReelClientProps) {
       ])
       toast({
         title: "Réel modifié",
-        description: "Le numéro et la description ont été mis à jour.",
+        description: isTrimChanged
+          ? "Le nouveau montage a été envoyé, le traitement démarre."
+          : "Le numéro et la description ont été mis à jour.",
       })
       router.push(routes.protected.reels_mine)
     } catch (error) {
@@ -114,7 +193,10 @@ export default function EditReelClient({ reelId }: EditReelClientProps) {
 
   // Même éditeur plein écran façon statut WhatsApp que le formulaire d'ajout
   // (CreateOrphanReelClient) : vidéo au centre, pilule contact + légende + envoi en bas.
-  // Seule différence : la vidéo est déjà traitée (lecture depuis videoUrl, pas de montage).
+  // La barre de montage (VideoTrimEditor) remplace le lecteur simple dès que la vidéo déjà
+  // publiée a fini d'être récupérée en arrière-plan (voir l'effet ci-dessus) — jusque-là, ou si
+  // la récupération échoue, le lecteur simple reste affiché et seuls contact/description
+  // restent modifiables.
   return (
     <div className="fixed inset-0 z-40 flex flex-col bg-black">
       <div className="flex items-center justify-between px-4 pt-[calc(env(safe-area-inset-top,0px)+0.75rem)] pb-2">
@@ -129,26 +211,43 @@ export default function EditReelClient({ reelId }: EditReelClientProps) {
         </button>
       </div>
 
-      <div className="relative mx-4 flex min-h-0 flex-1 items-center justify-center overflow-hidden rounded-2xl bg-white/5">
-        {reel.videoUrl ? (
-          <video
-            src={reel.videoUrl}
-            poster={reel.thumbnailUrl}
-            controls
-            playsInline
-            loop
-            className="h-full w-full object-contain"
+      {videoFetchStatus === 'ready' && videoFile ? (
+        <div className="relative mx-4 flex min-h-0 flex-1 flex-col overflow-hidden rounded-2xl bg-white/5">
+          <VideoTrimEditor
+            file={videoFile}
+            durationSeconds={videoDurationSeconds}
+            trimStart={trimStart}
+            trimEnd={trimEnd}
+            onTrimChange={(start, end) => {
+              setTrimStart(start)
+              setTrimEnd(end)
+            }}
+            muted={muted}
+            onToggleMute={() => setMuted((current) => !current)}
           />
-        ) : reel.thumbnailUrl ? (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img src={reel.thumbnailUrl} alt="" className="h-full w-full object-contain" />
-        ) : (
-          <div className="flex flex-col items-center gap-2 text-white/60">
-            <Video className="h-10 w-10" />
-            <p className="text-sm">Vidéo en cours de traitement</p>
-          </div>
-        )}
-      </div>
+        </div>
+      ) : (
+        <div className="relative mx-4 flex min-h-0 flex-1 items-center justify-center overflow-hidden rounded-2xl bg-white/5">
+          {reel.videoUrl ? (
+            <video
+              src={reel.videoUrl}
+              poster={reel.thumbnailUrl}
+              controls
+              playsInline
+              loop
+              className="h-full w-full object-contain"
+            />
+          ) : reel.thumbnailUrl ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img src={reel.thumbnailUrl} alt="" className="h-full w-full object-contain" />
+          ) : (
+            <div className="flex flex-col items-center gap-2 text-white/60">
+              <Video className="h-10 w-10" />
+              <p className="text-sm">Vidéo en cours de traitement</p>
+            </div>
+          )}
+        </div>
+      )}
 
       <form
         onSubmit={handleSubmit}

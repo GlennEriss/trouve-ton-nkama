@@ -6,10 +6,18 @@
  * l'annonceur sache précisément à quel réel l'acheteur fait référence. Réutilise
  * ReelSlide (même rendu que dans le fil), sans carousel/scroll infini : le lien
  * pointe sur UN réel, pas un point d'entrée dans le flux général.
+ *
+ * Aussi la destination du clic sur la miniature d'un réel depuis "Mes réels"
+ * (MyReelsClient.tsx) — dans ce cas, "Voir plus de réels" ne doit pas envoyer
+ * l'annonceur dans le fil public, mais le ramener à sa page de gestion. Même
+ * mécanisme `?returnTo=` que CreateOrphanReelClient.tsx (liste blanche, repli sur
+ * le fil public par défaut pour ne pas changer le comportement du lien profond
+ * WhatsApp, qui n'envoie jamais ce paramètre).
  */
 
 import React from 'react'
 import Link from 'next/link'
+import { useSearchParams } from 'next/navigation'
 import { ArrowLeft, Loader2 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { routes } from '@/constantes/routes'
@@ -20,6 +28,13 @@ import { trackReelView } from '@/lib/statistics/reel-statistics.client'
 
 const DESKTOP_CARD_CLASS = 'md:h-[75vh] md:max-h-[760px] md:aspect-[9/16] md:w-auto md:rounded-2xl md:border md:border-white/10'
 
+const ALLOWED_RETURN_PATHS = new Set([routes.protected.reels, routes.protected.reels_mine])
+
+function getSafeReturnHref(returnTo: string | null): string {
+  if (!returnTo) return routes.protected.reels
+  return ALLOWED_RETURN_PATHS.has(returnTo) ? returnTo : routes.protected.reels
+}
+
 type FetchState =
   | { status: 'loading' }
   | { status: 'not-found' }
@@ -27,6 +42,8 @@ type FetchState =
   | { status: 'ready'; reel: Reel & { id: string } }
 
 export default function SingleReelClient({ reelId }: Readonly<{ reelId: string }>) {
+  const searchParams = useSearchParams()
+  const returnHref = getSafeReturnHref(searchParams.get('returnTo'))
   const [state, setState] = React.useState<FetchState>({ status: 'loading' })
   const [isMuted, setIsMuted] = React.useState(true)
   const [giftOpen, setGiftOpen] = React.useState(false)
@@ -65,10 +82,13 @@ export default function SingleReelClient({ reelId }: Readonly<{ reelId: string }
   return (
     <main className="flex h-[100dvh] w-full items-center justify-center bg-black md:h-auto md:gap-4 md:bg-neutral-950 md:py-8">
       <div className={cn('relative h-full w-full overflow-hidden md:shadow-2xl', DESKTOP_CARD_CLASS)}>
+        {/* Pas d'aria-label ici : le texte visible ("Voir plus de réels") suffit déjà à décrire
+            le lien — un aria-label explicite écraserait le nom accessible calculé à partir de ce
+            texte, créant un décalage entre ce qui s'affiche et ce qu'un lecteur d'écran annonce
+            (WCAG 2.5.3 "Label in Name"). Repéré en écrivant le test Jest de ce composant. */}
         <Link
-          href={routes.protected.reels}
+          href={returnHref}
           className="absolute left-4 top-4 z-20 flex items-center gap-1.5 rounded-full bg-black/45 px-3.5 py-2 text-sm font-medium text-white backdrop-blur-sm"
-          aria-label="Retour au fil"
         >
           <ArrowLeft size={16} aria-hidden="true" />
           Voir plus de réels

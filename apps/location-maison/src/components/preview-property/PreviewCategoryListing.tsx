@@ -7,6 +7,7 @@ import { Property } from '@/models/annonce'
 import { ButtonFavoris } from './ButtonFavoris'
 import ButtonShare from './ButtonShare'
 import ContactSection from './ContactSection'
+import GiftSection from './GiftSection'
 import CarouselProperty from './CarouselProperty'
 import PropertyStatisticsSummary from '@/components/property/PropertyStatisticsSummary'
 import { useCurrentUser } from '@/hooks/use-current-user'
@@ -157,6 +158,7 @@ export default function PreviewCategoryListing({ property }: Readonly<{ property
           )}
 
           <ContactSection property={property} />
+          <GiftSection property={property} />
         </div>
       </div>
 

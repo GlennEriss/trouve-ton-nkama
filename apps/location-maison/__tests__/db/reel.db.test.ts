@@ -37,11 +37,11 @@ import {
   buildRawReelVideoPath,
   createReel,
   deleteReel,
-  getPublicReelById,
   getPublicReels,
   getReelById,
   getReelsByOwner,
   markReelUploadFailed,
+  retrimReel,
   subscribeToReel,
   updateReelDetails,
   uploadRawReelVideo,
@@ -158,6 +158,37 @@ describe('reel database and API client', () => {
     await expect(updateReelDetails('reel-1', '', '')).rejects.toThrow('Interdit')
   })
 
+  it('recoupe un reel deja publie et remonte une erreur metier', async () => {
+    fetchMock.mockResolvedValueOnce(response({ success: true }))
+    await expect(retrimReel('reel-1', 'reels-published/owner-1/reel-1.mp4', 2, 8, true, '066545430', 'Nouvelle description'))
+      .resolves.toBe(true)
+    expect(fetchMock).toHaveBeenLastCalledWith('/api/reels', expect.objectContaining({
+      method: 'PATCH',
+      headers: expect.objectContaining({ Authorization: 'Bearer firebase-token' }),
+      body: JSON.stringify({
+        action: 'retrim',
+        reelId: 'reel-1',
+        rawVideoPath: 'reels-published/owner-1/reel-1.mp4',
+        trimStartSeconds: 2,
+        trimEndSeconds: 8,
+        muted: true,
+        contact: '066545430',
+        description: 'Nouvelle description',
+      }),
+    }))
+
+    fetchMock.mockResolvedValueOnce(response({ success: false, message: 'Traitement deja en cours' }, false))
+    await expect(retrimReel('reel-1', 'reels-published/owner-1/reel-1.mp4', 2, 8, false, '', ''))
+      .rejects.toThrow('Traitement deja en cours')
+  })
+
+  it('refuse le recoupage sans session Firebase', async () => {
+    authState.auth.currentUser = null
+    await expect(retrimReel('reel-1', 'reels-published/owner-1/reel-1.mp4', 0, 5, false, '', ''))
+      .rejects.toThrow('Session Firebase')
+    expect(fetchMock).not.toHaveBeenCalled()
+  })
+
   it('supprime un reel authentifie', async () => {
     fetchMock.mockResolvedValue(response({ success: true }))
     await expect(deleteReel('reel-1')).resolves.toBe(true)
@@ -224,19 +255,6 @@ describe('reel database and API client', () => {
     })
     expect(firestore.where).toHaveBeenCalledWith('processingStatus', '==', 'ready')
     expect(firestore.where).toHaveBeenCalledWith('moderationStatus', '==', 'APPROVED')
-  })
-
-  it.each([
-    [{ processingStatus: 'processing', moderationStatus: 'APPROVED' }],
-    [{ processingStatus: 'ready', moderationStatus: 'PENDING' }],
-  ])('masque un reel profond non public: %j', async (data) => {
-    firestore.getDoc.mockResolvedValue(reelDoc('reel-1', data))
-    await expect(getPublicReelById('reel-1')).resolves.toBeNull()
-  })
-
-  it('traite permission-denied comme un reel public introuvable', async () => {
-    firestore.getDoc.mockRejectedValue(new Error('permission-denied'))
-    await expect(getPublicReelById('private-reel')).resolves.toBeNull()
   })
 
   it('upload la video brute avec les metadonnees de proprietaire', async () => {

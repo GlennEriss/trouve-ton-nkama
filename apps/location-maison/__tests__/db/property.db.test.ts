@@ -38,6 +38,7 @@ import {
   getServerCountByCategoryId,
   getServerCountByPropertyType,
   getServerCountByProvince,
+  searchOwnedProperties,
   updateProperty,
 } from '@/db/property.db'
 
@@ -102,18 +103,49 @@ describe('property database', () => {
     expect(mockInvalidateSeo).not.toHaveBeenCalled()
   })
 
-  it('modifie et supprime puis invalide uniquement après succès', async () => {
-    mockUpdateModel.mockResolvedValueOnce(true).mockResolvedValueOnce(false)
-    mockDeleteModel.mockResolvedValueOnce(true).mockResolvedValueOnce(false)
+  it('modifie via la route serveur (Admin SDK), pas le SDK client', async () => {
+    // updateModel (SDK client, updateDoc) exige une vraie session Firebase Auth navigateur que
+    // ni Google ni la connexion email/mot de passe ne fournissent (même raison que
+    // deleteProperty ci-dessous) — constaté en e2e réel : la sauvegarde d'un crayon
+    // EditableField semblait réussir côté UI (state React local) alors que `updateDoc`
+    // échouait silencieusement en tâche de fond (permission-denied) sans jamais persister en
+    // base (voir property-edit.spec.ts + BUGS-PROPERTY-E2E-2026-08.md).
+    const mockFetch = jest.fn()
+      .mockResolvedValueOnce({ ok: true } as Response)
+      .mockResolvedValueOnce({ ok: false } as Response)
+    global.fetch = mockFetch as unknown as typeof fetch
 
     await expect(updateProperty('property-1', { price: 50000 })).resolves.toBe(true)
     await expect(updateProperty('property-2', { price: 60000 })).resolves.toBe(false)
+
+    expect(mockFetch).toHaveBeenCalledWith('/api/property/property-1', {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ price: 50000 }),
+    })
+    expect(mockFetch).toHaveBeenCalledWith('/api/property/property-2', {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ price: 60000 }),
+    })
+    expect(mockUpdateModel).not.toHaveBeenCalled()
+  })
+
+  it('supprime via la route serveur (Admin SDK), pas le SDK client', async () => {
+    // deleteModel (SDK client) exige une vraie session Firebase Auth navigateur que ni
+    // Google ni la connexion email/mot de passe ne fournissent (voir property-delete.spec.ts
+    // + BUGS-PROPERTY-E2E-2026-08.md) — la suppression passe donc par une route serveur.
+    const mockFetch = jest.fn()
+      .mockResolvedValueOnce({ ok: true } as Response)
+      .mockResolvedValueOnce({ ok: false } as Response)
+    global.fetch = mockFetch as unknown as typeof fetch
+
     await expect(deleteProperty('property-1')).resolves.toBe(true)
     await expect(deleteProperty('property-2')).resolves.toBe(false)
 
-    expect(mockUpdateModel).toHaveBeenCalledWith('property-1', { price: 50000 }, 'properties')
-    expect(mockDeleteModel).toHaveBeenCalledWith('property-1', 'properties')
-    expect(mockInvalidateSeo).toHaveBeenCalledTimes(2)
+    expect(mockFetch).toHaveBeenCalledWith('/api/property/property-1', { method: 'DELETE' })
+    expect(mockFetch).toHaveBeenCalledWith('/api/property/property-2', { method: 'DELETE' })
+    expect(mockDeleteModel).not.toHaveBeenCalled()
   })
 
   it('liste uniquement les annonces publiées et applique les filtres', async () => {
@@ -248,6 +280,52 @@ describe('property database', () => {
 
     expect(firestore.where).toHaveBeenCalledWith('categoryId', '==', 'vetements')
     expect(firestore.where).toHaveBeenCalledWith('moderationStatus', '==', 'APPROVED')
+  })
+
+  it('recherche les annonces possedees via /api/announcer/ads en envoyant le texte et le curseur', async () => {
+    const mockFetch = jest.fn().mockResolvedValue({
+      ok: true,
+      json: jest.fn().mockResolvedValue({
+        success: true,
+        items: [{ id: 'property-1', title: 'Studio lumineux' }],
+        pagination: { nextCursor: '10', hasMore: true },
+      }),
+    })
+    global.fetch = mockFetch as unknown as typeof fetch
+
+    await expect(searchOwnedProperties({ query: '  Studio  ', limitPerPage: 5, cursor: null }))
+      .resolves.toEqual({
+        properties: [{ id: 'property-1', title: 'Studio lumineux' }],
+        nextCursor: '10',
+        hasMore: true,
+      })
+
+    const [url] = mockFetch.mock.calls[0]
+    expect(url).toBe('/api/announcer/ads?scope=immobilier&limit=5&cursor=0&q=Studio')
+  })
+
+  it('omet le parametre q sans texte de recherche et propage le curseur fourni', async () => {
+    const mockFetch = jest.fn().mockResolvedValue({
+      ok: true,
+      json: jest.fn().mockResolvedValue({ success: true }),
+    })
+    global.fetch = mockFetch as unknown as typeof fetch
+
+    await expect(searchOwnedProperties({ query: '   ', limitPerPage: 20, cursor: '15' }))
+      .resolves.toEqual({ properties: [], nextCursor: null, hasMore: false })
+
+    const [url] = mockFetch.mock.calls[0]
+    expect(url).toBe('/api/announcer/ads?scope=immobilier&limit=20&cursor=15')
+  })
+
+  it('leve une erreur metier stable quand la recherche echoue', async () => {
+    global.fetch = jest.fn().mockResolvedValue({
+      ok: false,
+      json: jest.fn().mockResolvedValue(null),
+    }) as unknown as typeof fetch
+
+    await expect(searchOwnedProperties({ query: '', limitPerPage: 10, cursor: null }))
+      .rejects.toThrow('Impossible de charger vos annonces.')
   })
 
   it('remonte une erreur métier stable quand Firestore échoue', async () => {

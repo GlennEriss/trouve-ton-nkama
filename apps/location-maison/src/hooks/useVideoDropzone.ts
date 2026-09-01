@@ -15,9 +15,10 @@ export interface VideoDropzoneFeedback {
 
 /**
  * Lit la durée d'un fichier vidéo côté navigateur (metadata seule, pas de décodage complet)
- * en le montant temporairement dans un <video> hors DOM.
+ * en le montant temporairement dans un <video> hors DOM. Exportée : réutilisée par
+ * EditReelClient.tsx pour la vidéo déjà publiée récupérée en Blob avant un nouveau montage.
  */
-function readVideoDurationSeconds(file: File): Promise<number> {
+export function readVideoDurationSeconds(file: File): Promise<number> {
   return new Promise((resolve, reject) => {
     const video = document.createElement('video');
     video.preload = 'metadata';

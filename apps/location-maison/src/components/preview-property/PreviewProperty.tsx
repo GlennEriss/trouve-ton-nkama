@@ -7,6 +7,7 @@ import DetailsProperty from './DetailsProperty'
 import { Property } from '@/models/annonce'
 import { ButtonFavoris } from './ButtonFavoris'
 import ContactSection from './ContactSection'
+import GiftSection from './GiftSection'
 import { MapSection } from './MapSection'
 import ButtonShare from './ButtonShare'
 import { AlertTriangle } from 'lucide-react'
@@ -80,6 +81,7 @@ export default function PreviewProperty({ property }: Readonly<{ property: Prope
 
           {/* Section contact minimaliste */}
           <ContactSection property={property} />
+          <GiftSection property={property} />
         </div>
       </div>
 

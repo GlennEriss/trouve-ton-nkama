@@ -202,6 +202,64 @@ export async function updateReelDetails(
     }
 }
 
+/**
+ * Renvoie la vidéo déjà publiée (déjà transcodée) comme nouveau brut pour que
+ * transcodeReelVideo la recoupe à nouveau selon les nouvelles bornes — seule façon de "rogner"
+ * un réel déjà "ready" (le brut d'origine, lui, est supprimé après le premier traitement, voir
+ * EditReelClient.tsx). Écrit aussi contact/description en un seul aller-retour, mêmes
+ * conventions que update-details (vide -> champ supprimé).
+ */
+export async function retrimReel(
+    reelId: string,
+    rawVideoPath: string,
+    trimStartSeconds: number,
+    trimEndSeconds: number,
+    muted: boolean,
+    contact: string,
+    description: string
+): Promise<boolean> {
+    try {
+        const { auth } = await getAuth();
+        const token = await auth.currentUser?.getIdToken();
+
+        if (!token) {
+            throw new Error("Session Firebase introuvable. Rechargez la page puis réessayez.");
+        }
+
+        const response = await fetch('/api/reels', {
+            method: 'PATCH',
+            headers: {
+                'Content-Type': 'application/json',
+                Authorization: `Bearer ${token}`,
+            },
+            body: JSON.stringify({
+                action: 'retrim',
+                reelId,
+                rawVideoPath,
+                trimStartSeconds,
+                trimEndSeconds,
+                muted,
+                contact,
+                description,
+            }),
+        });
+
+        const result = await response.json().catch(() => null) as { success?: boolean; message?: string } | null;
+
+        if (!response.ok || !result?.success) {
+            throw new Error(result?.message || "Le nouveau montage a échoué.");
+        }
+
+        return true;
+    } catch (error) {
+        logger.error('Reel retrim failed', {
+            error,
+            reelId,
+        });
+        throw error;
+    }
+}
+
 export async function deleteReel(reelId: string): Promise<boolean> {
     try {
         const { auth } = await getAuth();
@@ -381,34 +439,6 @@ export async function getPublicReels({
 }
 
 /**
- * Un seul réel public par id (lien profond, ex. partagé par WhatsApp depuis le
- * bouton de contact) — `null` si inexistant ou pas encore public (mêmes
- * conditions que getPublicReels : processingStatus 'ready' + moderationStatus
- * 'APPROVED', pour ne jamais exposer un réel en attente de modération via un
- * lien deviné).
- */
-export async function getPublicReelById(reelId: string): Promise<(Reel & { id: string }) | null> {
-    const { doc, getDoc, db } = await getFirestore();
-
-    let snapshot;
-    try {
-        snapshot = await getDoc(doc(db, firebaseCollectionNames.reels, reelId));
-    } catch {
-        // firestore.rules évalue `resource.data.moderationStatus` sur un doc qui n'existe
-        // pas (ou qui existe mais n'est pas APPROVED, pour un visiteur non-propriétaire) —
-        // dans les deux cas le SDK client lève "permission-denied" au lieu de renvoyer un
-        // snapshot vide. Traité comme "introuvable publiquement", même résultat visible.
-        return null;
-    }
-    if (!snapshot.exists()) return null;
-
-    const reel = snapshot.data() as Reel;
-    if (reel.processingStatus !== 'ready' || reel.moderationStatus !== 'APPROVED') return null;
-
-    return { ...reel, id: snapshot.id };
-}
-
-/**
  * Upload le fichier vidéo brut — la Cloud Function de transcodage se déclenche sur cet upload
  * et prend le relais (durée réelle, conversion, miniature), ce module ne fait que déposer le
  * fichier au bon endroit.
@@ -426,7 +456,12 @@ export async function uploadRawReelVideo(file: File, ownerId: string, reelId: st
             },
         };
 
-        await withTimeout(uploadBytes(fileRef, file, metadata), 120_000, "Upload vidéo");
+        // 10 min (pas 2, l'ancienne valeur) : à l'ancien plafond de 500 Mo, 2 min exigeait déjà
+        // un débit montant soutenu d'environ 33 Mbps pour ne pas expirer avant la fin de
+        // l'envoi — hors de portée d'une connexion mobile moyenne. Avec le nouveau plafond
+        // (1 Go), une marge courte aurait fait systématiquement échouer les gros fichiers sur
+        // une connexion lente au lieu de simplement prendre plus longtemps.
+        await withTimeout(uploadBytes(fileRef, file, metadata), 600_000, "Upload vidéo");
 
         return rawVideoPath;
     } catch (error) {

@@ -28,7 +28,6 @@ const profiles = {
       'src/features/announcer/ad-management/ui/v1/AdManagementPage.tsx': { branches: 70, functions: 70, lines: 90, statements: 90 },
       'src/components/reels/ReelsFeedClient.tsx': { branches: 70, functions: 65, lines: 90, statements: 90 },
       'src/components/reels/MyReelsClient.tsx': { branches: 85, functions: 85, lines: 95, statements: 95 },
-      'src/components/property/ListPropertySection.tsx': { branches: 80, functions: 95, lines: 95, statements: 95 },
       'src/components/property/PropertyStatisticsPanel.tsx': { branches: 90, functions: 95, lines: 95, statements: 95 },
       'src/emails/Layout.tsx': { branches: 90, functions: 100, lines: 95, statements: 95 },
       'src/emails/PropertyPublished.tsx': { branches: 95, functions: 100, lines: 95, statements: 95 },

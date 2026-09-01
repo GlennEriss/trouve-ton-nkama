@@ -8,6 +8,7 @@ import clsx from 'clsx';
 import { useCurrentUser } from '@/hooks/use-current-user';
 import { Inter } from 'next/font/google';
 import { cn } from '@/lib/utils';
+import { isSingleReelViewRoute } from '@/lib/reels/single-reel-route';
 
 const inter = Inter({
     subsets: ['latin'],
@@ -45,14 +46,17 @@ function shouldHideGuestBottomNavigation(pathname: string) {
 
 // Routes masquées pour TOUT le monde (pas seulement les visiteurs) : la création et l'édition
 // de réel sont des éditeurs plein écran façon statut WhatsApp (fixed inset-0) — cette barre
-// (z-50, fixed bottom) recouvrirait la légende et le bouton d'envoi.
+// (z-50, fixed bottom) recouvrirait la légende et le bouton d'envoi. La vue d'un réel unique
+// (/reels/{id}, SingleReelClient.tsx) est plein écran en h-[100dvh] pour la même raison : cette
+// barre fixed ajouterait sa propre hauteur en plus et ferait scroller la page.
 const ALWAYS_HIDDEN_PREFIXES = [routes.protected.reels_add] as const
 const REEL_EDIT_ROUTE_REGEX = /^\/reels\/[^/]+\/edit\/?$/
 
 function shouldHideBottomNavigationForEveryone(pathname: string) {
     return (
         ALWAYS_HIDDEN_PREFIXES.some((prefix) => isActivePath(pathname, prefix)) ||
-        REEL_EDIT_ROUTE_REGEX.test(pathname)
+        REEL_EDIT_ROUTE_REGEX.test(pathname) ||
+        isSingleReelViewRoute(pathname)
     )
 }
 

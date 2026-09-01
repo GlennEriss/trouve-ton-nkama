@@ -28,7 +28,7 @@ export function EditableField({ value, onSave, type = 'text', renderValue, class
 
   if (!editing) {
     return (
-      <span className={`group inline-flex items-center gap-1.5 ${className ?? ''}`}>
+      <span className={`group inline-flex items-center gap-2 ${className ?? ''}`}>
         {renderValue ? renderValue(value) : value}
         <button
           type="button"
@@ -37,11 +37,11 @@ export function EditableField({ value, onSave, type = 'text', renderValue, class
             setError(null)
             setEditing(true)
           }}
-          className="inline-flex h-6 w-6 shrink-0 items-center justify-center rounded-full border border-slate-300 bg-white text-slate-600 shadow-sm hover:border-primary hover:text-primary dark:border-slate-600 dark:bg-slate-800 dark:text-slate-300 dark:hover:text-primary"
+          className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-slate-300 bg-white text-slate-600 shadow-sm hover:border-primary hover:bg-slate-50 hover:text-primary active:scale-95 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700 dark:hover:text-primary"
           aria-label="Modifier"
           title="Modifier"
         >
-          <Pencil className="h-3.5 w-3.5" />
+          <Pencil className="h-4 w-4" />
         </button>
       </span>
     )
@@ -61,7 +61,7 @@ export function EditableField({ value, onSave, type = 'text', renderValue, class
   }
 
   return (
-    <span className="inline-flex flex-col gap-1 align-top">
+    <span className="inline-flex flex-col gap-1.5 align-top">
       <span className="inline-flex items-start gap-1.5">
         {type === 'textarea' ? (
           <textarea
@@ -80,23 +80,29 @@ export function EditableField({ value, onSave, type = 'text', renderValue, class
             autoFocus
           />
         )}
+        {/* Boutons pleins (pas juste des icônes nues) : sur mobile, un icône seul sans fond ni
+            bordure ne se lit pas comme un bouton et rate la cible tactile recommandée (~36px+).
+            Vert plein = action qui valide/persiste, gris bordé = action neutre/annule — même
+            langage que le reste de l'UI (Button primaire vs outline). */}
         <button
           type="button"
           onClick={save}
           disabled={saving}
-          className="text-green-600 hover:text-green-800 disabled:opacity-50"
+          className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-green-600 text-white shadow-sm hover:bg-green-700 active:scale-95 disabled:cursor-not-allowed disabled:opacity-50"
           aria-label="Enregistrer"
+          title="Enregistrer"
         >
-          {saving ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Check className="h-3.5 w-3.5" />}
+          {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Check className="h-5 w-5" />}
         </button>
         <button
           type="button"
           onClick={() => setEditing(false)}
           disabled={saving}
-          className="text-slate-400 hover:text-red-600 disabled:opacity-50"
+          className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-slate-300 bg-white text-slate-500 shadow-sm hover:border-red-400 hover:bg-red-50 hover:text-red-600 active:scale-95 disabled:cursor-not-allowed disabled:opacity-50 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700 dark:hover:text-red-400"
           aria-label="Annuler"
+          title="Annuler"
         >
-          <X className="h-3.5 w-3.5" />
+          <X className="h-5 w-5" />
         </button>
       </span>
       {error ? <span className="text-xs text-red-600">{error}</span> : null}

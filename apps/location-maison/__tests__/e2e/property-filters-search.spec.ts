@@ -1,3 +1,5 @@
+import crypto from 'node:crypto'
+
 import { expect, test, type Page } from '@playwright/test'
 
 import { E2E_ANNOUNCER, signInAsAnnouncer } from './helpers/auth'
@@ -8,11 +10,21 @@ import { deleteProperties, seedProperties, type SeedProperty } from './helpers/f
  * annonces Firestore (pas de mock réseau). /api/announcer/ads interroge
  * Firestore par `createdBy` puis filtre/trie en mémoire côté serveur — ces
  * tests exercent donc ce vrai code de filtrage, pas juste l'UI.
+ *
+ * RUN_ID/OWNER_UID uniques par worker (crypto.randomUUID(), pas de littéral statique) : avec
+ * `fullyParallel: true`, Playwright peut répartir les tests Desktop/Mobile de ce fichier sur
+ * des workers séparés, chacun réimportant ce module. Des ids statiques partagés entre workers
+ * font que l'afterAll du premier worker à finir supprime les annonces avant qu'un autre worker
+ * n'ait fini de tester dessus (même bug déjà trouvé et corrigé sur property-edit.spec.ts /
+ * property-archive.spec.ts — voir BUGS-PROPERTY-E2E-2026-08.md). Ces tests sont en lecture
+ * seule (recherche/filtre, aucun état serveur muté d'un test à l'autre), donc contrairement à
+ * property-promotion.spec.ts, une isolation par worker suffit : pas besoin de mode `serial`.
  */
-const OWNER_UID = 'e2e-property-filters-owner'
+const RUN_ID = crypto.randomUUID()
+const OWNER_UID = `e2e-property-filters-owner-${RUN_ID}`
 
 const VILLA: SeedProperty = {
-  id: 'e2e-prop-villa',
+  id: `e2e-prop-villa-${RUN_ID}`,
   title: 'Villa test Libreville E2E',
   description: 'Grande villa avec jardin.',
   typeProperty: 'Villa',
@@ -27,7 +39,7 @@ const VILLA: SeedProperty = {
 }
 
 const STUDIO: SeedProperty = {
-  id: 'e2e-prop-studio',
+  id: `e2e-prop-studio-${RUN_ID}`,
   title: 'Studio test Akanda E2E',
   description: 'Studio meublé proche commodités.',
   typeProperty: 'Studio',
@@ -42,7 +54,7 @@ const STUDIO: SeedProperty = {
 }
 
 const ARCHIVED_APARTMENT: SeedProperty = {
-  id: 'e2e-prop-archived',
+  id: `e2e-prop-archived-${RUN_ID}`,
   title: 'Appartement test Owendo E2E',
   description: 'Appartement archivé.',
   typeProperty: 'Apartment',
@@ -91,6 +103,43 @@ test.describe('Recherche et filtres /property — vraies annonces Firestore', ()
       await expect(page.getByText(STUDIO.title)).toBeVisible()
       await expect(page.getByText(VILLA.title)).not.toBeVisible()
       await expect(page.getByText(ARCHIVED_APARTMENT.title)).not.toBeVisible()
+    })
+
+    test('la recherche par titre fonctionne, insensible à la casse', async ({ page }) => {
+      await gotoProperty(page)
+
+      await page.locator('#property-search').fill('VILLA TEST')
+
+      await expect(page.getByText(VILLA.title)).toBeVisible()
+      await expect(page.getByText(STUDIO.title)).not.toBeVisible()
+      await expect(page.getByText(ARCHIVED_APARTMENT.title)).not.toBeVisible()
+    })
+
+    test('une recherche sans résultat affiche l état vide', async ({ page }) => {
+      await gotoProperty(page)
+
+      await page.locator('#property-search').fill('zzz-introuvable-zzz')
+
+      await expect(page.getByRole('heading', { name: 'Aucune annonce trouvée' })).toBeVisible()
+      await expect(page.getByText(VILLA.title)).not.toBeVisible()
+      await expect(page.getByText(STUDIO.title)).not.toBeVisible()
+      await expect(page.getByText(ARCHIVED_APARTMENT.title)).not.toBeVisible()
+    })
+
+    test('le bouton "Effacer la recherche" vide le champ et restaure les résultats', async ({
+      page,
+    }) => {
+      await gotoProperty(page)
+
+      await page.locator('#property-search').fill('Akanda')
+      await expect(page.getByText(VILLA.title)).not.toBeVisible()
+
+      await page.getByRole('button', { name: 'Effacer la recherche' }).click()
+
+      await expect(page.locator('#property-search')).toHaveValue('')
+      await expect(page.getByText(VILLA.title)).toBeVisible()
+      await expect(page.getByText(STUDIO.title)).toBeVisible()
+      await expect(page.getByText(ARCHIVED_APARTMENT.title)).toBeVisible()
     })
 
     test('le filtre Type ne garde que le type sélectionné', async ({ page }) => {
@@ -151,6 +200,21 @@ test.describe('Recherche et filtres /property — vraies annonces Firestore', ()
 
       await expect(page.getByText(STUDIO.title)).toBeVisible()
       await expect(page.getByText(VILLA.title)).not.toBeVisible()
+    })
+
+    test('le bouton "Effacer la recherche" vide le champ et restaure les résultats', async ({
+      page,
+    }) => {
+      await gotoProperty(page)
+
+      await page.locator('#property-search-mobile').fill('Akanda')
+      await expect(page.getByText(VILLA.title)).not.toBeVisible()
+
+      await page.getByRole('button', { name: 'Effacer la recherche' }).click()
+
+      await expect(page.locator('#property-search-mobile')).toHaveValue('')
+      await expect(page.getByText(VILLA.title)).toBeVisible()
+      await expect(page.getByText(STUDIO.title)).toBeVisible()
     })
 
     test('le Sheet de filtres applique le filtre Type puis Réinitialiser le retire', async ({

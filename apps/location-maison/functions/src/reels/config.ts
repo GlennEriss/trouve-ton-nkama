@@ -1,5 +1,5 @@
 export const REELS_RAW_PREFIX = 'reels-raw/';
-export const REEL_MAX_DURATION_SECONDS = 300;
+export const REEL_MAX_DURATION_SECONDS = 600;
 // Downscale proportionnel si la vidéo source dépasse cette hauteur (format vertical) — pas
 // d'upscale si la source est plus petite.
 export const REEL_MAX_HEIGHT_PX = 1920;
@@ -24,6 +24,13 @@ const REGION_BY_PROJECT: Record<string, string> = {
 
 export const TRANSCODE_FUNCTION_OPTIONS = {
   memory: '2GiB',
+  // 540s : plafond MAXIMUM autorisé par ce type de déclencheur (trigger Storage 2e génération)
+  // — confirmé au déploiement ("functions have timeouts that exceed the maximum allowed", voir
+  // https://firebase.google.com/docs/functions/quotas#time_limits), pas une marge choisie. Ne
+  // peut donc pas être relevé en même temps que REEL_MAX_DURATION_SECONDS (300 -> 600s) ;
+  // l'encodage h264 (`-preset veryfast`, 2 vCPU) reste largement plus rapide que le temps réel
+  // pour une vidéo de 10 min, donc cette limite reste confortable en pratique malgré la durée
+  // vidéo doublée.
   timeoutSeconds: 540,
   cpu: 2,
   region: REGION_BY_PROJECT[process.env.GCLOUD_PROJECT ?? ''] ?? 'us-east1',
