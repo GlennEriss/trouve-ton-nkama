@@ -101,7 +101,7 @@ describe('reel transcoding contracts', () => {
     expect(isActiveProcessingGeneration('ready', 123, 123)).toBe(false);
   });
 
-  it('rejette une decoupe vide et une video de plus de cinq minutes', () => {
+  it('rejette une decoupe vide et une video de plus de dix minutes', () => {
     expect(buildReelProcessingPlan(compatibleMetadata, {
       trimStartSeconds: 99,
     })).toEqual(expect.objectContaining({
@@ -109,11 +109,11 @@ describe('reel transcoding contracts', () => {
       incidentCode: 'INVALID_TRIM_RANGE',
       durationSeconds: 0,
     }));
-    expect(buildReelProcessingPlan({ ...compatibleMetadata, durationSeconds: 301 }, {})).toEqual(
+    expect(buildReelProcessingPlan({ ...compatibleMetadata, durationSeconds: 601 }, {})).toEqual(
       expect.objectContaining({
         ok: false,
         incidentCode: 'VIDEO_TOO_LONG',
-        durationSeconds: 301,
+        durationSeconds: 601,
       }),
     );
   });

@@ -38,6 +38,7 @@ import {
   getServerCountByCategoryId,
   getServerCountByPropertyType,
   getServerCountByProvince,
+  searchOwnedProperties,
   updateProperty,
 } from '@/db/property.db'
 
@@ -279,6 +280,52 @@ describe('property database', () => {
 
     expect(firestore.where).toHaveBeenCalledWith('categoryId', '==', 'vetements')
     expect(firestore.where).toHaveBeenCalledWith('moderationStatus', '==', 'APPROVED')
+  })
+
+  it('recherche les annonces possedees via /api/announcer/ads en envoyant le texte et le curseur', async () => {
+    const mockFetch = jest.fn().mockResolvedValue({
+      ok: true,
+      json: jest.fn().mockResolvedValue({
+        success: true,
+        items: [{ id: 'property-1', title: 'Studio lumineux' }],
+        pagination: { nextCursor: '10', hasMore: true },
+      }),
+    })
+    global.fetch = mockFetch as unknown as typeof fetch
+
+    await expect(searchOwnedProperties({ query: '  Studio  ', limitPerPage: 5, cursor: null }))
+      .resolves.toEqual({
+        properties: [{ id: 'property-1', title: 'Studio lumineux' }],
+        nextCursor: '10',
+        hasMore: true,
+      })
+
+    const [url] = mockFetch.mock.calls[0]
+    expect(url).toBe('/api/announcer/ads?scope=immobilier&limit=5&cursor=0&q=Studio')
+  })
+
+  it('omet le parametre q sans texte de recherche et propage le curseur fourni', async () => {
+    const mockFetch = jest.fn().mockResolvedValue({
+      ok: true,
+      json: jest.fn().mockResolvedValue({ success: true }),
+    })
+    global.fetch = mockFetch as unknown as typeof fetch
+
+    await expect(searchOwnedProperties({ query: '   ', limitPerPage: 20, cursor: '15' }))
+      .resolves.toEqual({ properties: [], nextCursor: null, hasMore: false })
+
+    const [url] = mockFetch.mock.calls[0]
+    expect(url).toBe('/api/announcer/ads?scope=immobilier&limit=20&cursor=15')
+  })
+
+  it('leve une erreur metier stable quand la recherche echoue', async () => {
+    global.fetch = jest.fn().mockResolvedValue({
+      ok: false,
+      json: jest.fn().mockResolvedValue(null),
+    }) as unknown as typeof fetch
+
+    await expect(searchOwnedProperties({ query: '', limitPerPage: 10, cursor: null }))
+      .rejects.toThrow('Impossible de charger vos annonces.')
   })
 
   it('remonte une erreur métier stable quand Firestore échoue', async () => {

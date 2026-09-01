@@ -456,7 +456,12 @@ export async function uploadRawReelVideo(file: File, ownerId: string, reelId: st
             },
         };
 
-        await withTimeout(uploadBytes(fileRef, file, metadata), 120_000, "Upload vidéo");
+        // 10 min (pas 2, l'ancienne valeur) : à l'ancien plafond de 500 Mo, 2 min exigeait déjà
+        // un débit montant soutenu d'environ 33 Mbps pour ne pas expirer avant la fin de
+        // l'envoi — hors de portée d'une connexion mobile moyenne. Avec le nouveau plafond
+        // (1 Go), une marge courte aurait fait systématiquement échouer les gros fichiers sur
+        // une connexion lente au lieu de simplement prendre plus longtemps.
+        await withTimeout(uploadBytes(fileRef, file, metadata), 600_000, "Upload vidéo");
 
         return rawVideoPath;
     } catch (error) {

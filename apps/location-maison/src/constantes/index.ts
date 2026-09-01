@@ -9,8 +9,11 @@ import { DEFAULT_TAG_NAMES } from '@/lib/tags/default-tags';
 // Constants
 export const MAX_IMAGES_UPLOAD = 10;
 export const MAX_TAGS = 6;
-export const MAX_REEL_DURATION_SECONDS = 300;
-export const MAX_REEL_RAW_SIZE_BYTES = 500 * 1024 * 1024;
+export const MAX_REEL_DURATION_SECONDS = 600;
+// Relevée avec la durée max (300 -> 600s) : sinon une vidéo deux fois plus longue au même
+// bitrate se heurtait quand même à l'ancien plafond de taille, annulant l'intérêt de la
+// nouvelle limite de durée pour les vidéos réellement longues.
+export const MAX_REEL_RAW_SIZE_BYTES = 1000 * 1024 * 1024;
 
 // Créa vidéo publicitaire (emplacement reels_infeed uniquement). Valeurs
 // volontairement alignées sur les constantes Réels ci-dessus mais dupliquées

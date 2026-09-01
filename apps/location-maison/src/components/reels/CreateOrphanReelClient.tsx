@@ -20,7 +20,7 @@ import type { Reel, ReelProcessingStatus } from '@/models/reel'
 const REJECTION_MESSAGES: Record<VideoDropzoneRejectionReason, string> = {
   'invalid-type': "Format non supporté. Utilisez MP4, MOV ou WebM.",
   'too-large': "Fichier trop volumineux.",
-  'too-long': "Vidéo trop longue (5 minutes maximum).",
+  'too-long': "Vidéo trop longue (10 minutes maximum).",
   'duration-read-error': "Impossible de lire cette vidéo, réessayez avec un autre fichier.",
 }
 
@@ -377,9 +377,9 @@ export default function CreateOrphanReelClient() {
           <h1 className="mt-1 text-2xl font-bold text-slate-900 dark:text-white md:text-3xl">Créer un réel</h1>
           <p className="mt-1 max-w-2xl text-sm leading-6 text-slate-600 dark:text-slate-300">
             {propertyId && property?.title ? (
-              <>Pour l&apos;annonce « {property.title} » — vidéo verticale, 5 minutes maximum.</>
+              <>Pour l&apos;annonce « {property.title} » — vidéo verticale, 10 minutes maximum.</>
             ) : (
-              <>Vidéo verticale, 5 minutes maximum. Vous pourrez l&apos;attacher à une de vos annonces ensuite.</>
+              <>Vidéo verticale, 10 minutes maximum. Vous pourrez l&apos;attacher à une de vos annonces ensuite.</>
             )}
           </p>
         </div>
@@ -403,7 +403,7 @@ export default function CreateOrphanReelClient() {
           <p className="font-medium text-slate-700 dark:text-slate-200">
             {isProcessing ? "Vérification en cours..." : "Glissez une vidéo ou cliquez pour en choisir une"}
           </p>
-          <p className="text-xs text-slate-600 dark:text-slate-300">MP4, MOV ou WebM — 5 minutes maximum</p>
+          <p className="text-xs text-slate-600 dark:text-slate-300">MP4, MOV ou WebM — 10 minutes maximum</p>
         </div>
       )}
 

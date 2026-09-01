@@ -1,5 +1,5 @@
 export const REELS_RAW_PREFIX = 'reels-raw/';
-export const REEL_MAX_DURATION_SECONDS = 300;
+export const REEL_MAX_DURATION_SECONDS = 600;
 // Downscale proportionnel si la vidéo source dépasse cette hauteur (format vertical) — pas
 // d'upscale si la source est plus petite.
 export const REEL_MAX_HEIGHT_PX = 1920;
@@ -24,7 +24,11 @@ const REGION_BY_PROJECT: Record<string, string> = {
 
 export const TRANSCODE_FUNCTION_OPTIONS = {
   memory: '2GiB',
-  timeoutSeconds: 540,
+  // Relevé avec REEL_MAX_DURATION_SECONDS (300 -> 600s) : le job (download + probe + transcode
+  // + miniature + upload) doit avoir le temps de traiter une vidéo deux fois plus longue, avec
+  // de la marge pour le cas où canRemuxToMp4() retombe sur un ré-encodage complet (plus lent
+  // qu'une simple copie de flux).
+  timeoutSeconds: 900,
   cpu: 2,
   region: REGION_BY_PROJECT[process.env.GCLOUD_PROJECT ?? ''] ?? 'us-east1',
 } as const;
