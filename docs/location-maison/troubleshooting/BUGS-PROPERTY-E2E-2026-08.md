@@ -484,3 +484,111 @@ passé depuis un moment, indépendamment de tout changement fait cette session �
 passage dédié.
 
 *Créé le 2026-08-30.*
+
+---
+
+## 🟢 Couverture ajoutée — `property-and-mode-creation.spec.ts` (publication réelle immobilier + Mode, vérifiée sur /property)
+
+**Demande directe de l'utilisateur** : tester la publication d'une annonce immobilière ET d'une
+annonce Mode via leurs vrais formulaires, puis vérifier que les deux apparaissent sur `/property`
+("Gestion des annonces"), chacune sous le bon onglet (Immobilier / Mode). Aucun des deux
+parcours de création n'avait de couverture e2e allant jusqu'à une vraie écriture Firestore avant
+ce test — seul le seed direct via Admin SDK existait (`seedProperties`/`seedCategoryListing`).
+
+**Immobilier** : formulaire manuel classique (`/property/add/studio`, 3 étapes),
+délibérément **pas** le nouveau flux IA (`/property/create`) qui dépend de Gemini et de crédits —
+le flux manuel est déterministe. **Mode** : à la différence de l'immobilier, **aucune
+alternative manuelle n'existe** pour `/category-listing/create` — c'est intégralement un flux IA
+(description + photos → Gemini choisit catégorie/titre/attributs), donc ce second scénario
+dépend nécessairement de Gemini ; description volontairement explicite et sans ambiguïté
+("Je vends une robe en wax taille M... à Libreville... 15 000 FCFA") pour fiabiliser la
+détection de catégorie.
+
+Les deux formulaires écrivent via `createProperty()` (SDK Firestore **client**, `addDoc`) —
+exige une vraie session Firebase Auth (`firestore.rules: isAnnouncer()`), pas seulement le
+cookie NextAuth forgé. Même recette que `property-add-reel.spec.ts` : `seedAnnouncerUser` +
+`signInAsAnnouncer` + `mockCommonAppNoise(page, { mockFirebaseToken: false })`.
+
+**🟡 Bug d'environnement rencontré, PAS un bug produit — diagnostiqué mais pas corrigé (dev
+Redis rate-limited, hors périmètre de ce travail)** : le scénario Mode a échoué plusieurs fois
+avec "Aucune catégorie n'accepte de nouvelles annonces pour le moment." alors que les catégories
+Mode (`vetements`, `chaussures`, `accessoires`, `parfums-beaute`) existent bien et sont
+`isActive: true` en base (confirmé plusieurs fois par requête Admin SDK directe, y compris juste
+avant l'échec). Cause confirmée directement : le projet Upstash **dev** est temporairement
+rate-limited (`UpstashError: Your database has been temporarily rate-limited`, reproduit en
+interrogeant la clé de cache `categories:publishable-leaves-v2` directement) — vraisemblablement
+par le volume cumulé de toute la vraie navigation e2e de cette session (beaucoup de pages
+utilisant `getCacheStore()`). Un premier essai de vider cette clé de cache a été bloqué par le
+classifieur d'auto-mode (action sur une infra partagée) puis autorisé explicitement ; le test est
+repassé au vert juste après — mais le rate-limit Upstash est réapparu plus tard dans la session
+et a refait échouer le même scénario à plusieurs reprises, de façon non déterministe selon l'état
+du quota au moment du run.
+
+**Lacune de résilience révélée en creusant (réelle, mais hors périmètre — pas corrigée)** :
+`/api/categories/publishable-leaves` ne se dégrade pas proprement quand Redis est indisponible —
+tout échec (rate-limit compris) semble se traduire par une réponse non-`ok` côté client, et
+`fetchPublishableLeaves()` (`category-listing/create/page.tsx`) traite alors silencieusement
+"erreur serveur" et "vraiment aucune catégorie active" de la même façon ("Aucune catégorie
+n'accepte de nouvelles annonces pour le moment."), sans que l'utilisateur ni les logs ne
+distinguent les deux cas. Une vraie panne Redis en production produirait exactement ce même
+message trompeur à un annonceur essayant de publier une annonce Mode. Mériterait un correctif
+séparé (repli sur une lecture Firestore directe si le cache échoue, comme le fait déjà
+`/api/announcer/ads` qui n'utilise pas de cache du tout pour cette raison).
+
+**Deux vrais champs pré-remplis à connaître pour ce parcours** :
+- Le champ téléphone de l'étape 3 immobilier est **pré-rempli** depuis le profil de
+  l'utilisateur de test (`phoneNumbers` seedé) — pas besoin de le re-remplir ; il existe en
+  double dans le DOM (mise en page mobile + desktop en parallèle, comme ailleurs dans cette
+  suite), d'où `.first()` sur l'assertion plutôt qu'un match strict.
+- Le flux Mode lit le contact depuis `user.callNumber || user.phoneNumbers?.[0]` **sans aucun
+  champ téléphone dans son UI** — contrairement au formulaire immobilier. Sans `phoneNumbers`
+  seedé sur l'utilisateur de test, la génération est bloquée avant même l'appel IA ("Ajoute un
+  numéro de téléphone à ton profil avant de publier."). `seedAnnouncerUser()` étendu avec un
+  paramètre optionnel `{ phoneNumbers }` pour couvrir ce cas (rétrocompatible, tous les autres
+  appels existants l'omettent).
+
+**Nouveau helper** : `findPropertiesByOwner(uid)` (`firebase-admin.ts`) — `createProperty()`
+génère l'id côté client (`addDoc`), et le formulaire immobilier ne le met même pas dans son URL
+de succès (`/property?submitted=1`, sans id) ; impossible de retrouver l'annonce créée autrement
+qu'en interrogeant par `createdBy`, même principe que `findReelByOwner` pour les réels.
+
+**Découverte annexe, non corrigée (hors périmètre)** : la page `/category-listing/create/preview/{id}`
+émet un avertissement Next.js répété ("Only plain objects can be passed to Client Components
+from Server Components... Objects with toJSON methods are not supported") sur les champs
+`createdAt`/`updatedAt`/`sortTimestamp` — un `Timestamp` Admin SDK passé tel quel comme prop à un
+Client Component, jamais sérialisé en `{seconds, nanoseconds}` plat au préalable. Même famille de
+piège que celui déjà rencontré et corrigé ailleurs cette session (`serializePropertyPromotion`),
+mais ici la page fonctionne quand même (React résout apparemment `toJSON()` silencieusement) donc
+non bloquant — juste un avertissement serveur, pas une erreur visible. Mériterait le même
+correctif que les autres routes si cette page est retouchée.
+
+**Fichiers** : `__tests__/e2e/property-and-mode-creation.spec.ts` (nouveau),
+`__tests__/e2e/helpers/firebase-admin.ts` (`seedAnnouncerUser` étendu, `findPropertiesByOwner`
+ajouté).
+
+**Test qui le prouve** — trois étapes en série dans un seul fichier :
+- **Publication immobilière** : remplit les 3 étapes du formulaire studio (images, titre,
+  description, superficie, prix, propriétaire, tag, province/ville/quartier via
+  `PlacesAutocompleteInput`), clique "Enregistrer", vérifie le toast de succès + la redirection,
+  puis en base que le document existe réellement avec `typeProperty` renseigné (le discriminant
+  "Immobilier" côté `resolveScope()`).
+- **Publication Mode** : remplit description + photo, clique "Générer l'annonce", vérifie la
+  redirection vers la page preview, puis en base que le document existe réellement **sans**
+  `typeProperty` (le discriminant "Mode"/marketplace).
+- **Vérification croisée sur /property** : l'annonce immobilière est visible sous l'onglet
+  "Immobilier" (actif par défaut) et absente sous "Mode" ; l'annonce Mode est visible sous
+  l'onglet "Mode" après un clic dessus, et absente sous "Immobilier" — preuve que chacune est
+  bien classée dans le bon onglet, pas seulement qu'elle existe quelque part sur la page.
+
+**Statut de vérification** : les 3 tests sont passés au vert intégralement, à deux reprises
+chacun, en isolation par viewport (3/3 sur `chromium-mobile` seul, puis 3/3 sur
+`chromium-desktop-dev` seul — deux runs propres et complets, preuve que le parcours fonctionne
+réellement de bout en bout). Les tentatives suivantes de confirmation combinée (les deux
+viewports dans la même commande) ont buté sur le rate-limit Upstash dev décrit ci-dessus, externe
+au test — pas rejouées indéfiniment pour éviter d'aggraver ce rate-limit. Timeouts déjà élargis
+en prévision de la contention réelle entre plusieurs projets Playwright sur ce parcours lourd
+(upload Storage + écriture Firestore + appel Gemini) : `test.setTimeout(90_000)` sur les deux
+tests de publication, image "1/10" jusqu'à 60s, toast de succès immobilier jusqu'à 40s. À
+rejouer sur `location-maison-dev` une fois le quota Upstash reconstitué.
+
+*Créé le 2026-09-01.*
