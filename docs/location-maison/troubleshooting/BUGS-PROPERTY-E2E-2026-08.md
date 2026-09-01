@@ -794,3 +794,65 @@ arbitraire dans le fil public), qui l'écrit directement sur le réel s'il n'a p
 (nouveau).
 
 *Créé le 2026-09-01.*
+
+## 🔴 Corrigé (prod) — /search affichait les annonces les plus anciennes en premier
+
+**Demande directe de l'utilisateur** : "il affiche carrément les annonces les plus anciennes en
+premier au lieu des plus récentes" sur https://tonnkama.com/search (constaté sur
+localhost:3000/search, même index Algolia partagé entre dev et prod).
+
+**Root cause** : `/search` est piloté par Algolia (`location-maison_property-index`), avec
+`customRanking: ["desc(currentPromotion.endDate)", "desc(sortTimestamp)"]` — les annonces
+promues passent avant tout le reste, `sortTimestamp` (récence) ne départage qu'entre annonces de
+même statut de promotion. La fonction planifiée `expireStalePromotions`
+(`functions/src/promotions/expire-promotions.ts`) désactive bien les promotions expirées
+(`isPromoted: false`, `currentPromotion.isActive: false`) mais ne touchait JAMAIS
+`currentPromotion.endDate` — or ce champ est exactement ce que lit `desc(currentPromotion.endDate)`,
+qui ne regarde jamais `isActive`. Résultat : une annonce promue même une seule fois, il y a plus
+d'un an, restait classée en tête de /search pour toujours, devant toute annonce plus récente
+jamais promue. Confirmé en interrogeant directement l'index Algolia de prod : sur les 100
+premiers résultats, 58 étaient d'anciennes promotions expirées (certaines remontant à avril
+2025) et les annonces réellement récentes (août 2026) ne commençaient qu'en position 58.
+
+**Correctif structurel** : nouvelle fonction `buildExpiryUpdate()`
+(`functions/src/promotions/expire-promotions.policy.ts`), utilisée par la fonction planifiée —
+supprime maintenant aussi `currentPromotion.endDate` (`FieldValue.delete()`) en plus de désactiver
+`isActive`/`isPromoted`. Algolia traite un attribut de `customRanking` absent comme la valeur la
+plus basse possible : une promotion expirée ne peut donc plus jamais battre quoi que ce soit sur
+ce critère, y compris longtemps après son expiration. Volontairement restreint aux types
+featured/trending (le type `boost` n'a pas de fenêtre "active" à expirer par conception, hors
+périmètre de cette correction).
+
+**Nettoyage des données déjà corrompues** : le correctif ci-dessus n'empêche que les FUTURES
+expirations de laisser un `endDate` périmé — nouveau script one-shot
+`apps/location-maison-admin/scripts/promotions/backfill-clear-expired-promotion-enddate.ts`
+(dry-run par défaut, `--apply` pour écrire, idempotent, même convention que
+`backfill-sort-timestamp.ts`) pour nettoyer les documents déjà dans cet état. Dry-run confirmé
+58 annonces en prod et 3 en dev — exactement le nombre trouvé en interrogeant l'index Algolia
+directement. **Appliqué en prod ET dev après autorisation explicite de l'utilisateur** (une
+tentative de dry-run direct sur prod avait été bloquée par le classifieur auto-mode comme action
+sur infrastructure partagée — arrêté et demandé via `AskUserQuestion`, comme pour l'incident
+Redis plus haut dans ce document). Reconfirmé après coup en réinterrogeant l'index Algolia en
+direct : les 15 premiers résultats sont désormais bien les annonces les plus récentes (25, 21,
+20... août 2026), triées par ordre décroissant correct.
+
+**Vérification** :
+- Jest (`functions/__tests__/promotions/expire-promotions.policy.test.ts`, nouveau cas) : `buildExpiryUpdate()`
+  désactive `isPromoted`/`isActive` ET pose un sentinel `FieldValue.delete()` sur `endDate`.
+- `tsc --noEmit` propre sur `functions/` et sur `location-maison-admin/` (nouveau script).
+- Suite Jest complète de `functions/` : 113/113 sans régression.
+- Preuve en direct sur l'index Algolia de prod, avant/après le backfill (requêtes brutes,
+  documentées ci-dessus) — pas seulement l'apparence du correctif de code.
+
+**Fichiers** : `functions/src/promotions/expire-promotions.policy.ts`,
+`functions/src/promotions/expire-promotions.ts`,
+`functions/__tests__/promotions/expire-promotions.policy.test.ts`,
+`apps/location-maison-admin/scripts/promotions/backfill-clear-expired-promotion-enddate.ts`
+(nouveau).
+
+**Reste à déployer** : le correctif de `expire-promotions.ts` ne prend effet en prod qu'après un
+déploiement Cloud Functions (`firebase deploy --only functions`) — action distincte, pas
+effectuée dans le cadre de cette session (jamais demandée, et un déploiement Cloud Functions est
+une action à part, hors du geste "corriger le code + les données déjà écrites").
+
+*Créé le 2026-09-01.*
