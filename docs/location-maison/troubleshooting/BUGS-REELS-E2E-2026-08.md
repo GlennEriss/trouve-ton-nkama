@@ -525,3 +525,50 @@ enfin que la carte affiche réellement "Attaché à une annonce" (plus le bouton
 au retour sur la liste, sans rechargement manuel (preuve du bug n°2).
 
 *Créé le 2026-09-01.*
+
+---
+
+## 🟢 Ajouté — Recherche + pagination sur "Choisir l'annonce à attacher"
+
+**Demande directe de l'utilisateur** : "si j'ai 300 annonces, on ne va pas charger les 300
+annonces mais les paginer et pour retrouver facilement une annonce en particulier ce serait bien
+avec une barre de recherche" — `SelectPropertyForReelClient.tsx` chargeait jusqu'à 50 annonces
+d'un coup (`getProperties({ limitPerPage: 50, ... })`), sans recherche.
+
+**Implémentation** : réutilise `/api/announcer/ads` (déjà utilisée par "Gestion des annonces",
+`AdManagementPage.tsx`/`useAdManagement.ts`) plutôt que d'inventer un nouveau système — cette
+route fait déjà exactement ce qu'il fallait ici : recherche texte substring insensible à la
+casse/accents (`matchesQuery`/`normalizeText`, sur titre/description/ville/province/rue/type) et
+pagination par curseur numérique, le tout calculé côté serveur (Admin SDK) sur les annonces de
+l'annonceur. Contrairement à `MyReelsClient.tsx` (`/reels/mine`), dont la recherche ne filtre
+QUE les pages déjà chargées via l'infini-scroll (limite documentée dans son propre code) — pas
+adapté ici puisque l'objectif explicite est justement de retrouver une annonce **sans avoir tout
+chargé**.
+
+- `src/db/property.db.ts` : nouvelle fonction `searchOwnedProperties({ query, limitPerPage,
+  cursor })`, appelle `/api/announcer/ads?scope=immobilier&q=...&limit=...&cursor=...` (session
+  NextAuth, pas de token Bearer à gérer côté client). `scope=immobilier` exclut les annonces
+  marketplace/Mode — un réel ne peut être rattaché qu'à une annonce immobilière
+  (`attachReelToProperty` écrit sur `properties/{id}`). Contrairement à `getProperties()`
+  (toujours utilisée ailleurs, inchangée), ne filtre pas par `state`/`moderationStatus` : le
+  propriétaire doit pouvoir retrouver n'importe laquelle de ses annonces, y compris archivée ou
+  en attente de modération.
+- `src/components/reels/SelectPropertyForReelClient.tsx` : `useQuery` → `useInfiniteQuery`
+  (curseur serveur, page de 20), barre de recherche avec debounce 350ms (même délai que
+  `useAdManagement.ts`), chargement automatique au scroll (IntersectionObserver + sentinelle) et
+  bouton "Voir plus d'annonces" de repli — même pattern que `MyReelsClient.tsx`. Distingue l'état
+  vide "aucune annonce" (compte réellement à zéro) de "aucun résultat pour cette recherche".
+
+**Fichiers** : `src/db/property.db.ts`, `src/components/reels/SelectPropertyForReelClient.tsx`.
+
+**Test qui le prouve** : e2e réel, nouveau bloc dans `reel-attach-property.spec.ts` — seed 21
+annonces réelles (20 génériques + 1 au titre distinctif) :
+- **Pagination** : la première visite n'affiche que 20 cartes (`data-testid="select-property-card"`,
+  pas les 21), le bouton "Voir plus d'annonces" est visible, un clic charge la 21e et fait
+  disparaître le bouton.
+- **Recherche** : une recherche partielle et insensible à la casse ("RARE ET UNIQUE" sur un
+  titre contenant "rare et unique") ne laisse plus qu'un seul résultat — l'annonce cherchée,
+  aucune des 20 génériques — sans dépendre de la pagination (elle n'était pas forcément sur la
+  première page). Effacer la recherche restaure la première page complète (20 cartes).
+
+*Créé le 2026-09-01.*

@@ -106,3 +106,97 @@ test.describe('Attacher un réel orphelin à une annonce depuis /reels/mine — 
     await expect(cardAfter.getByRole('link', { name: 'Attacher à une annonce' })).toHaveCount(0)
   })
 })
+
+/**
+ * Demande directe de l'utilisateur : avec 300 annonces, cette page ne doit pas toutes les
+ * charger d'un coup (pagination) et doit permettre de retrouver facilement une annonce
+ * particulière (recherche). Vérifie les deux avec de vraies données Firestore, via la vraie
+ * route serveur /api/announcer/ads (searchOwnedProperties, property.db.ts) — pas de mock.
+ */
+test.describe('Recherche et pagination sur /reels/select-property — vrai Firestore', () => {
+  const SEARCH_RUN_ID = crypto.randomUUID()
+  const SEARCH_OWNER_UID = `e2e-reel-attach-search-${SEARCH_RUN_ID}`
+  const SEARCH_REEL_ID = `e2e-reel-attach-search-reel-${SEARCH_RUN_ID}`
+  const PAGE_SIZE = 20
+  const TOTAL_PROPERTIES = PAGE_SIZE + 1
+  // Partagé par toutes les annonces "page" (fillers) pour pouvoir les compter par un seul
+  // texte — la findable a un titre totalement différent pour ne jamais matcher par accident.
+  const FILLER_TITLE_PREFIX = `Annonce pagination ${SEARCH_RUN_ID}`
+  const FINDABLE_TITLE = `Studio rare et unique ${SEARCH_RUN_ID}`
+
+  const FILLER_IDS = Array.from({ length: TOTAL_PROPERTIES - 1 }, (_, i) => `${SEARCH_RUN_ID}-filler-${i}`)
+  const FINDABLE_ID = `${SEARCH_RUN_ID}-findable`
+
+  function makeProperty(id: string, title: string): SeedProperty {
+    return {
+      id,
+      title,
+      description: 'Annonce de test pour la pagination/recherche du rattachement de réel.',
+      typeProperty: 'Studio',
+      status: 'FOR_RENT',
+      state: 'IN_PROGRESS',
+      moderationStatus: 'APPROVED',
+      price: 150_000,
+      area: 25,
+      province: 'Estuaire',
+      city: 'Libreville',
+      street: 'Rue de test',
+      latitude: 0.4162,
+      longitude: 9.4673,
+    }
+  }
+
+  test.beforeAll(async () => {
+    await seedAnnouncerUser(SEARCH_OWNER_UID, 0)
+    await seedProperties(SEARCH_OWNER_UID, [
+      ...FILLER_IDS.map((id, i) => makeProperty(id, `${FILLER_TITLE_PREFIX} #${i}`)),
+      makeProperty(FINDABLE_ID, FINDABLE_TITLE),
+    ])
+    await seedReel(SEARCH_OWNER_UID, { id: SEARCH_REEL_ID, description: 'Réel pour test recherche/pagination.' })
+  })
+
+  test.afterAll(async () => {
+    await deleteReels([{ id: SEARCH_REEL_ID, uid: SEARCH_OWNER_UID }])
+    await deleteProperties([...FILLER_IDS, FINDABLE_ID])
+  })
+
+  test('pagine : ne charge pas les 21 annonces d\'un coup, "Voir plus" en charge le reste', async ({ page }) => {
+    await signInAsAnnouncer(page.context(), 'http://localhost:3000', { ...E2E_ANNOUNCER, uid: SEARCH_OWNER_UID })
+    await mockCommonAppNoise(page, { mockFirebaseToken: false })
+    await page.goto(`/reels/select-property?attachReelId=${SEARCH_REEL_ID}`, { waitUntil: 'domcontentloaded' })
+
+    const cards = page.getByTestId('select-property-card')
+    await expect(cards).toHaveCount(PAGE_SIZE, { timeout: 20000 })
+
+    const loadMore = page.getByRole('button', { name: /Voir plus d.annonces/i })
+    await expect(loadMore).toBeVisible()
+
+    await loadMore.click()
+
+    await expect(cards).toHaveCount(TOTAL_PROPERTIES, { timeout: 15000 })
+    await expect(loadMore).toHaveCount(0)
+  })
+
+  test('recherche : retrouve une annonce précise sans dépendre de la pagination', async ({ page }) => {
+    await signInAsAnnouncer(page.context(), 'http://localhost:3000', { ...E2E_ANNOUNCER, uid: SEARCH_OWNER_UID })
+    await mockCommonAppNoise(page, { mockFirebaseToken: false })
+    await page.goto(`/reels/select-property?attachReelId=${SEARCH_REEL_ID}`, { waitUntil: 'domcontentloaded' })
+
+    await expect(page.getByTestId('select-property-card')).toHaveCount(PAGE_SIZE, { timeout: 20000 })
+
+    // "rare et unique" : recherche partielle (pas le titre entier), insensible à la casse —
+    // preuve que le matching est un vrai "contains", pas une égalité stricte.
+    await page.getByPlaceholder('Rechercher une annonce par titre, ville...').fill('RARE ET UNIQUE')
+
+    // Débounce 350ms côté client avant l'appel réseau — attendre la mise à jour du DOM plutôt
+    // qu'un délai fixe. Un seul résultat prouve à la fois que la recherche matche bien la bonne
+    // annonce ET qu'aucune des 20 "fillers" ne reste affichée.
+    await expect(page.getByTestId('select-property-card')).toHaveCount(1, { timeout: 15000 })
+    await expect(page.getByText(FINDABLE_TITLE)).toBeVisible()
+    await expect(page.getByRole('button', { name: /Voir plus d.annonces/i })).toHaveCount(0)
+
+    // Effacer la recherche restaure la pagination normale (première page complète).
+    await page.getByLabel('Effacer la recherche').click()
+    await expect(page.getByTestId('select-property-card')).toHaveCount(PAGE_SIZE, { timeout: 15000 })
+  })
+})

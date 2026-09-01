@@ -126,6 +126,58 @@ export async function getProperties({ limitPerPage, lastDoc, createdBy, type }: 
     };
 }
 
+export type SearchOwnedPropertiesResult = {
+    properties: (Property & { id: string })[];
+    nextCursor: string | null;
+    hasMore: boolean;
+};
+
+/**
+ * Recherche paginée dans les annonces immobilières de l'annonceur connecté (pas les annonces
+ * marketplace/Mode) — réutilise /api/announcer/ads (Admin SDK, session NextAuth), déjà utilisée
+ * par "Gestion des annonces" pour la recherche texte + pagination sur les annonces d'un
+ * annonceur. Contrairement à getProperties() ci-dessus, ne filtre pas par state/moderationStatus
+ * : le propriétaire doit pouvoir retrouver N'IMPORTE LAQUELLE de ses annonces (y compris
+ * archivée ou en attente de modération), pas seulement celles déjà publiques.
+ *
+ * Utilisé par SelectPropertyForReelClient.tsx (rattacher un réel à une annonce) — évite de
+ * charger la totalité des annonces d'un annonceur d'un coup (potentiellement des centaines).
+ */
+export async function searchOwnedProperties({
+    query,
+    limitPerPage,
+    cursor,
+}: {
+    query: string;
+    limitPerPage: number;
+    cursor: string | null;
+}): Promise<SearchOwnedPropertiesResult> {
+    const params = new URLSearchParams();
+    params.set('scope', 'immobilier');
+    params.set('limit', String(limitPerPage));
+    params.set('cursor', cursor ?? '0');
+    if (query.trim()) {
+        params.set('q', query.trim());
+    }
+
+    const response = await fetch(`/api/announcer/ads?${params.toString()}`);
+    const payload = await response.json().catch(() => null) as {
+        success?: boolean;
+        items?: (Property & { id: string })[];
+        pagination?: { nextCursor: string | null; hasMore: boolean };
+    } | null;
+
+    if (!response.ok || !payload?.success) {
+        throw new Error("Impossible de charger vos annonces.");
+    }
+
+    return {
+        properties: payload.items ?? [],
+        nextCursor: payload.pagination?.nextCursor ?? null,
+        hasMore: payload.pagination?.hasMore ?? false,
+    };
+}
+
 /**
  * Récupère le nombre total de propriétés pour un type donné dans Firestore.
  *
