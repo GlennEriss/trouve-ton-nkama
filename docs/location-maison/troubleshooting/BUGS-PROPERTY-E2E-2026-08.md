@@ -856,3 +856,71 @@ effectuée dans le cadre de cette session (jamais demandée, et un déploiement 
 une action à part, hors du geste "corriger le code + les données déjà écrites").
 
 *Créé le 2026-09-01.*
+
+## 🟢 Correctif UX — les filtres de /search n'étaient adaptés qu'à l'immobilier, Mode en était absent
+
+**Demande directe de l'utilisateur**, avant de commencer les tests e2e des filtres de
+`/search` : "les filtres là ne sont adaptés qu'à l'immobilier et donc omet la partie Mode".
+
+**Root cause** : `Statut` (FOR_RENT/FOR_SALE), `Surface (m²)` et `Types d'annonces`
+(typeProperty) s'affichaient inconditionnellement dans les deux panneaux de filtre
+(`FilterSearchDesktopPageSection.tsx` desktop, `FilterModalHomePage.tsx` mobile) — trois champs
+qui n'existent tout simplement pas sur une annonce Mode. Pire, "Secteur recherché"
+(Province/Ville/Quartier) est structurellement cassé pour Mode : `category-listing/create/page.tsx`
+pose toujours `street: ''` (vide) et `province: GABON_PROVINCES[0].name` (codé en dur, jamais
+la vraie localisation du vendeur) — seul `city` (texte libre extrait par l'IA depuis la
+description) porte un vrai signal. Le sélecteur "Mode/Immobilier" (`CategoryFilterPills`)
+existait déjà et fonctionnait, mais ne faisait qu'AJOUTER les filtres d'attributs Mode
+(taille/marque/genre...) par-dessus le panneau immobilier existant, sans jamais le masquer.
+
+**Correctif** (portée volontairement limitée aux filtres de recherche, décision explicite de
+l'utilisateur — la correction de la capture de localisation à la création d'une annonce Mode
+reste un chantier séparé, non traité ici) :
+- `useIsImmobilierSearchScope()` (nouveau, `src/hooks/useSearchCategoryScope.ts`) : lit le
+  paramètre `category` de l'URL, `true` pour "Toutes catégories"/"Immobilier", `false` sinon.
+- Les deux panneaux masquent désormais Statut/Surface/Types d'annonces hors scope immobilier,
+  et réduisent "Secteur recherché" à "Ville" seule (`SelectCityModeScope.tsx`, nouveau) —
+  Province/Quartier disparaissent, puisqu'aucune donnée fiable ne les alimente pour Mode.
+- `SelectCityModeScope` interroge la facette `city` SANS filtre province
+  (`useAlgoliaAllCityOptions`, nouveau dans `useAlgoliaLocationOptions.ts`) : la cascade
+  habituelle Province → Ville (`useAlgoliaCityOptions`, `enabled: !!province`) bloquerait
+  sinon le sélecteur en attente d'une Province qui ne reflète jamais la vraie localisation.
+- **Bug additionnel trouvé et corrigé en marge** : `CategoryFilterPills.selectCategory()`
+  changeait la racine (`category`) sans jamais purger `categoryId`/`attr_<key>` (feuille et
+  attributs Mode) ni les champs immobilier-only (`province`/`street`/`status`/`minArea`/
+  `maxArea`/`typeProperty`) déjà présents dans l'URL. Sans ce nettoyage, un filtre laissé actif
+  en changeant de racine continuait de s'appliquer à la recherche alors que son contrôle avait
+  disparu de l'UI — résultats vides sans aucune explication visible. Purge désormais
+  systématique de ces clés à chaque changement de racine, dans les deux sens.
+
+**Vérification** :
+- Jest (`__tests__/hooks/use-search-category-scope.test.ts`, nouveau) : les 3 cas de
+  `useIsImmobilierSearchScope()`.
+- Jest (`__tests__/components/category-filter-pills.test.tsx`, nouveau) : purge de
+  `categoryId`/`attr_*`/immobilier-only en changeant de racine, champs génériques (`city`,
+  `query`) préservés.
+- Jest (`search-filter-desktop-section.test.tsx`, `home-page-filter-modal.test.tsx`, cas
+  ajoutés) : sections immobilier-only absentes + `SelectCityModeScope` visible hors scope
+  immobilier.
+- Vérifié visuellement par capture d'écran (fichier de test jetable, supprimé après
+  vérification) : bascule réelle sur `/search?category=Mode`, panneau réduit à Ville/Prix/Tags,
+  25 annonces Mode (Parfums & beauté, Vêtements) affichées correctement.
+- **Détour** : lors de cette vérification, les pastilles de catégorie ("Toutes catégories" /
+  "Immobilier" / "Mode") sont apparues absentes du premier rendu malgré `/api/categories/active`
+  répondant correctement — diagnostiqué comme un état HMR/Turbopack périmé du serveur `next dev`
+  local, actif en continu depuis plusieurs jours de session (pas un bug de code) : confirmé en
+  ajoutant un log temporaire dans `CategoryFilterPills.tsx`, qui a forcé une recompilation et
+  fait immédiatement réapparaître les pastilles ; retiré ensuite.
+- `tsc --noEmit` propre, suite Jest complète 1529/1529.
+
+**Fichiers** : `src/hooks/useSearchCategoryScope.ts` (nouveau),
+`src/components/search/SelectCityModeScope.tsx` (nouveau),
+`src/hooks/useAlgoliaLocationOptions.ts`, `src/components/search/CategoryFilterPills.tsx`,
+`src/components/search/FilterSearchDesktopPageSection.tsx`,
+`src/components/home-page/FilterModalHomePage.tsx`,
+`__tests__/hooks/use-search-category-scope.test.ts` (nouveau),
+`__tests__/components/category-filter-pills.test.tsx` (nouveau),
+`__tests__/components/search-filter-desktop-section.test.tsx`,
+`__tests__/components/home-page-filter-modal.test.tsx`.
+
+*Créé le 2026-09-01.*

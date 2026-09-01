@@ -7,6 +7,7 @@ const onSubmit = jest.fn()
 const onClear = jest.fn()
 const trackEvent = jest.fn()
 let sessionStatus: string
+let isImmobilierScope: boolean
 
 jest.mock('next/link', () => ({
   __esModule: true,
@@ -26,6 +27,9 @@ jest.mock('@/hooks/useFormFilterSearchMediator', () => ({
 jest.mock('@/hooks/useAlgoliaFacetOptions', () => ({
   useAlgoliaTypePropertyOptions: () => ({ options: [] }),
   useAlgoliaTagOptions: () => ({ options: [] }),
+}))
+jest.mock('@/hooks/useSearchCategoryScope', () => ({
+  useIsImmobilierSearchScope: () => isImmobilierScope,
 }))
 jest.mock('@/features/analytics/tracking', () => ({
   trackingEvents: {
@@ -58,6 +62,7 @@ jest.mock('@trouve-ton-nkama/ui/button', () => ({
 jest.mock('@/components/search/SelectProvince', () => ({ __esModule: true, default: () => <div data-testid="select-province" /> }))
 jest.mock('@/components/search/SelectCity', () => ({ __esModule: true, default: () => <div data-testid="select-city" /> }))
 jest.mock('@/components/search/SelectStreet', () => ({ __esModule: true, default: () => <div data-testid="select-street" /> }))
+jest.mock('@/components/search/SelectCityModeScope', () => ({ __esModule: true, default: () => <div data-testid="select-city-mode-scope" /> }))
 jest.mock('@/components/search/CategoryAttributeFilters', () => ({ __esModule: true, default: () => <div data-testid="category-attribute-filters" /> }))
 jest.mock('@/components/shared/form/MultiSelectFormApp', () => ({
   __esModule: true,
@@ -76,6 +81,7 @@ describe('FilterSearchDesktopPageSection', () => {
   beforeEach(() => {
     jest.clearAllMocks()
     sessionStatus = 'unauthenticated'
+    isImmobilierScope = true
   })
 
   it('affiche tous les blocs de filtres', () => {
@@ -85,6 +91,26 @@ describe('FilterSearchDesktopPageSection', () => {
     expect(screen.getByLabelText('Prix min')).toBeInTheDocument()
     expect(screen.getByLabelText('Surface max')).toBeInTheDocument()
     expect(screen.getByTestId('multiselect-typeProperty')).toBeInTheDocument()
+    expect(screen.getByTestId('multiselect-tags')).toBeInTheDocument()
+  })
+
+  it('cache les filtres immobilier-only et reduit Secteur recherche a la Ville hors immobilier', () => {
+    // Demande directe de l'utilisateur : les filtres de /search n'etaient adaptes qu'a
+    // l'immobilier (Statut/Surface/Types d'annonces n'existent pas sur une annonce Mode, et
+    // Province/Quartier sont soit codes en dur soit toujours vides a la creation d'une
+    // annonce Mode, voir category-listing/create/page.tsx).
+    isImmobilierScope = false
+    render(<FilterSearchDesktopPageSection />)
+
+    expect(screen.queryByTestId('select-province')).not.toBeInTheDocument()
+    expect(screen.queryByTestId('select-street')).not.toBeInTheDocument()
+    expect(screen.queryByTestId('multiselect-status')).not.toBeInTheDocument()
+    expect(screen.queryByLabelText('Surface min')).not.toBeInTheDocument()
+    expect(screen.queryByTestId('multiselect-typeProperty')).not.toBeInTheDocument()
+
+    expect(screen.getByTestId('select-city-mode-scope')).toBeInTheDocument()
+    // Generiques, restent visibles quelle que soit la categorie.
+    expect(screen.getByLabelText('Prix min')).toBeInTheDocument()
     expect(screen.getByTestId('multiselect-tags')).toBeInTheDocument()
   })
 
