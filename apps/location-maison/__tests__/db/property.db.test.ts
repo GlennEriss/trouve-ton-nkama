@@ -301,7 +301,7 @@ describe('property database', () => {
       })
 
     const [url] = mockFetch.mock.calls[0]
-    expect(url).toBe('/api/announcer/ads?scope=immobilier&limit=5&cursor=0&q=Studio')
+    expect(url).toBe('/api/announcer/ads?scope=all&limit=5&cursor=0&q=Studio')
   })
 
   it('omet le parametre q sans texte de recherche et propage le curseur fourni', async () => {
@@ -315,7 +315,7 @@ describe('property database', () => {
       .resolves.toEqual({ properties: [], nextCursor: null, hasMore: false })
 
     const [url] = mockFetch.mock.calls[0]
-    expect(url).toBe('/api/announcer/ads?scope=immobilier&limit=20&cursor=15')
+    expect(url).toBe('/api/announcer/ads?scope=all&limit=20&cursor=15')
   })
 
   it('leve une erreur metier stable quand la recherche echoue', async () => {

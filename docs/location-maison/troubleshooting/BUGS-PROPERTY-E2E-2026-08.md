@@ -592,3 +592,85 @@ tests de publication, image "1/10" jusqu'à 60s, toast de succès immobilier jus
 rejouer sur `location-maison-dev` une fois le quota Upstash reconstitué.
 
 *Créé le 2026-09-01.*
+
+---
+
+## 🔴 Corrigé — Le sélecteur "Attacher à une annonce" excluait toutes les annonces Mode (régression introduite la veille)
+
+**Contexte** : question directe de l'utilisateur — "comment sait-on qu'un réel est Mode, le
+formulaire de création ne montre rien qui le permette ?". En creusant la réponse (la catégorie
+d'un réel n'est jamais choisie directement, elle est copiée depuis l'annonce à laquelle il est
+rattaché — `categoryPath`, voir `resolveScope()` dans `/api/announcer/ads/route.ts`), un vrai bug
+est apparu : `searchOwnedProperties()` (`property.db.ts`, utilisée par
+`SelectPropertyForReelClient.tsx` pour "Attacher à une annonce") appelait
+`/api/announcer/ads?scope=immobilier` codé en dur — introduit la veille en construisant la
+recherche+pagination de ce sélecteur (voir l'entrée précédente). Conséquence : **toutes les
+annonces Mode disparaissaient du sélecteur**, alors que rien côté API ne limite un rattachement
+de réel à l'immobilier (`attachReelToProperty` écrit sur `properties/{id}` sans distinguer le
+type). La seule façon d'obtenir un réel Mode restait de créer le réel directement depuis la page
+d'une annonce Mode (`propertyId` préselectionné dans l'URL) — le flux générique "Mes réels" →
+"Attacher à une annonce" ne le permettait plus du tout.
+
+**Correctif** : `/api/announcer/ads/route.ts` accepte désormais `scope=all` (en plus de
+`immobilier`/`marketplace`) — mélange les deux familles sans filtre, uniquement pour cet usage
+précis ("Gestion des annonces" continue de demander un scope précis pour ses onglets).
+`searchOwnedProperties()` utilise ce nouveau `scope=all`.
+
+**Reste ouvert (pas dans le périmètre de ce correctif)** : la question initiale de
+l'utilisateur — le manque de visibilité de la catégorie dans le parcours de création/rattachement
+d'un réel (ni sur l'écran de création, ni dans le sélecteur d'annonce, ni sur la carte du réel
+une fois publié) — n'est pas résolue, seulement le bug d'exclusion qui l'accompagnait. À discuter
+séparément si un affichage explicite de la catégorie est souhaité quelque part dans ce parcours.
+
+**Fichiers** : `src/app/api/announcer/ads/route.ts` (`scope=all`),
+`src/db/property.db.ts` (`searchOwnedProperties`).
+
+**Test qui le prouve** :
+- Jest (`__tests__/api/announcer-ads.test.ts`) : `scope=all` renvoie bien les annonces
+  immobilier ET marketplace mélangées, sans filtre.
+- Jest (`__tests__/db/property.db.test.ts`) : `searchOwnedProperties()` appelle bien
+  `/api/announcer/ads?scope=all&...` (corrigé, testait auparavant `scope=immobilier`).
+- E2E réel (`reel-attach-property.spec.ts`, nouveau test) : seed une annonce immobilier ET une
+  annonce Mode pour le même annonceur, ouvre le sélecteur "Attacher à une annonce", vérifie que
+  les deux titres sont bien visibles — aurait détecté la régression si elle avait existé avant
+  ce correctif (le listing Mode n'apparaissait pas du tout auparavant).
+
+*Créé le 2026-09-01.*
+
+---
+
+## 🟢 Preuve de bout en bout ajoutée — la catégorie d'un réel se propage bien au rattachement (Jest + e2e réel)
+
+**Demande directe de l'utilisateur**, suite au correctif ci-dessus : "refait les tests alors on
+va voir si la categorie passe bien" — vérifier concrètement que rattacher un réel à une annonce
+Mode copie bien la bonne catégorie dessus, pas seulement que l'annonce Mode redevient visible
+dans le sélecteur.
+
+**Trois niveaux de preuve ajoutés** :
+- Jest (`reels-api.test.ts`) : l'action `attach-property` copie bien `property.categoryPath`
+  (`{ lvl0: 'Mode', lvl1: 'Mode > Vêtements' }`) sur le document `reels/{id}` — logique déjà
+  présente dans la route, jusqu'ici non testée directement.
+- E2E réel (`reel-attach-property.spec.ts`) : seed un réel orphelin + une annonce Mode, ouvre le
+  sélecteur, l'attache, vérifie en base que `categoryPath.lvl0 === 'Mode'` — exactement le champ
+  que `getPublicReels()` filtre pour l'onglet "Mode" du fil public (`reel.db.ts`).
+- Aide de test corrigée en le faisant (`seedCategoryListing`, `firebase-admin.ts`) :
+  `categoryPath` ne posait que `lvl1`, jamais `lvl0` — contrairement au vrai flux de création
+  (`category-listing/create/page.tsx`, qui pose toujours les deux). Une annonce Mode seedée par
+  ce helper aurait donc été invisible de n'importe quel filtre par catégorie racine, sans rapport
+  avec le bug testé ici. `lvl0` désormais dérivé de `categoryLeaf` ("Mode > Vêtements" → "Mode").
+
+**Détour, non gardé dans le test final** : une première version vérifiait aussi que le réel
+apparaissait réellement dans l'onglet "Mode" du **vrai** fil public affiché (`/reels`, après
+clic sur l'onglet) — la preuve la plus convaincante possible. Deux runs consécutifs (desktop
+puis mobile, quelques secondes d'écart) ont révélé que `/api/reels/feed` met en cache sa réponse
+par catégorie 10 minutes (`reels:feed:Mode:{limit}:first`, Redis) **sans segmenter par run de
+test** — le second run a vu la carte laissée par le premier, pas la sienne, un faux négatif pur
+sur un mécanisme qui fonctionne réellement (confirmé par le premier run, passé proprement).
+Retiré cette assertion UI au profit du seul contrôle `categoryPath.lvl0` en base — c'est
+exactement ce que ce filtre lit, donc une preuve tout aussi déterminante mais qui ne dépend pas
+de l'état d'un cache partagé.
+
+**Fichiers** : `__tests__/api/reels-api.test.ts`, `__tests__/e2e/reel-attach-property.spec.ts`,
+`__tests__/e2e/helpers/firebase-admin.ts` (`seedCategoryListing`).
+
+*Créé le 2026-09-01.*

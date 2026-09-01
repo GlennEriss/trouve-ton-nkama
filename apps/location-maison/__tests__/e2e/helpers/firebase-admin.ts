@@ -207,6 +207,13 @@ export async function seedCategoryListing(createdBy: string, listing: SeedCatego
   const now = admin.firestore.Timestamp.now()
   const { id, categoryLeaf, state, ...data } = listing
 
+  // lvl0 dérivé de categoryLeaf ("Mode > Vêtements" -> "Mode") : le vrai flux de création
+  // (category-listing/create/page.tsx) pose toujours les deux (`categoryPath: { lvl0:
+  // matchedCategory.rootName, lvl1: ... }`) — sans lvl0, ce seed ne représenterait pas
+  // fidèlement une vraie annonce Mode, notamment pour le filtre par catégorie du fil de réels
+  // public (getPublicReels, filtre sur categoryPath.lvl0).
+  const rootName = categoryLeaf.split('>')[0]?.trim() || categoryLeaf
+
   await db
     .collection('properties')
     .doc(id)
@@ -215,7 +222,7 @@ export async function seedCategoryListing(createdBy: string, listing: SeedCatego
       createdBy,
       moderationStatus: 'APPROVED',
       state: state ?? 'IN_PROGRESS',
-      categoryPath: { lvl1: categoryLeaf },
+      categoryPath: { lvl0: rootName, lvl1: categoryLeaf },
       images: [],
       currentPromotion: null,
       createdAt: now,

@@ -399,6 +399,32 @@ describe('/api/reels', () => {
     )
   })
 
+  it('copie le categoryPath Mode de l annonce lors du rattachement (classement du fil public)', async () => {
+    // categoryPath.lvl0 est ce que getPublicReels() filtre pour l'onglet "Mode" du fil public
+    // (reel.db.ts) — sans cette copie, un réel rattaché à une annonce Mode resterait invisible
+    // dans cet onglet malgré le rattachement réussi.
+    const { db, transaction, refFor } = makeReelsDb({
+      reelData: { createdBy: 'uid-1', propertyId: null },
+      propertyData: { createdBy: 'uid-1', categoryPath: { lvl0: 'Mode', lvl1: 'Mode > Vêtements' } },
+    })
+    ;(getFirestore as jest.Mock).mockReturnValue(db)
+
+    const response = await patchReel(
+      makeRequest({ action: 'attach-property', reelId: 'reel-1', propertyId: 'property-1' }),
+    )
+    const payload = await response.json()
+
+    expect(response.status).toBe(200)
+    expect(payload).toMatchObject({ success: true, reelId: 'reel-1' })
+    expect(transaction.update).toHaveBeenCalledWith(
+      refFor('reels', 'reel-1'),
+      expect.objectContaining({
+        propertyId: 'property-1',
+        categoryPath: { lvl0: 'Mode', lvl1: 'Mode > Vêtements' },
+      }),
+    )
+  })
+
   it('refuse de rattacher un reel deja rattache', async () => {
     const { db, transaction } = makeReelsDb({
       reelData: { createdBy: 'uid-1', propertyId: 'property-existing' },
