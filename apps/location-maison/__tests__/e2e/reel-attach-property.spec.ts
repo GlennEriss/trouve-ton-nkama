@@ -88,7 +88,9 @@ test.describe('Attacher un réel orphelin à une annonce depuis /reels/mine — 
     await deleteProperties([PROPERTY_ID, MODE_LISTING_ID])
   })
 
-  test('le sélecteur d\'annonce propose aussi bien l\'immobilier que le Mode', async ({ page }) => {
+  test('le sélecteur d\'annonce propose aussi bien l\'immobilier que le Mode, avec un badge par annonce', async ({
+    page,
+  }) => {
     await signInAsAnnouncer(page.context(), 'http://localhost:3000', { ...E2E_ANNOUNCER, uid: OWNER_UID })
     await mockCommonAppNoise(page, { mockFirebaseToken: false })
     await page.goto(`/reels/select-property?attachReelId=${REEL_ID}`, { waitUntil: 'domcontentloaded' })
@@ -98,6 +100,18 @@ test.describe('Attacher un réel orphelin à une annonce depuis /reels/mine — 
     // l'immobilier alors que rien côté API ne l'exige.
     await expect(page.getByText(PROPERTY.title)).toBeVisible({ timeout: 15000 })
     await expect(page.getByText(MODE_LISTING_TITLE)).toBeVisible({ timeout: 15000 })
+
+    // Demande directe de l'utilisateur : rien n'indiquait la catégorie qu'un réel hériterait en
+    // se rattachant à une annonce donnée — chaque carte affiche désormais un badge dédié.
+    const immobilierCard = page
+      .getByText(PROPERTY.title)
+      .locator('xpath=ancestor::div[contains(@class,"cursor-pointer")][1]')
+    await expect(immobilierCard.getByText('Immobilier', { exact: true })).toBeVisible()
+
+    const modeCard = page
+      .getByText(MODE_LISTING_TITLE)
+      .locator('xpath=ancestor::div[contains(@class,"cursor-pointer")][1]')
+    await expect(modeCard.getByText('Mode', { exact: true })).toBeVisible()
   })
 
   test('clique "Attacher à une annonce", choisit l\'annonce, et le rattachement est réellement écrit en base', async ({

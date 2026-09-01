@@ -216,6 +216,102 @@ describe('/api/reels', () => {
     )
   })
 
+  it('classe directement le reel via le chip categoryRoot quand aucune annonce n est presselectionnee', async () => {
+    // Chip Immobilier/Mode a cote du contact (CreateOrphanReelClient) : seul moyen de classer un
+    // reel qui ne sera jamais rattache a une annonce. `categoryPath.lvl0` est exactement ce que
+    // getPublicReels() filtre pour les onglets du fil public (reel.db.ts).
+    const { db, transaction, refFor } = makeReelsDb()
+    ;(getFirestore as jest.Mock).mockReturnValue(db)
+
+    const response = await postReel(
+      makeRequest({
+        reelId: 'reel-1',
+        propertyId: null,
+        rawVideoPath: 'reels-raw/uid-1/reel-1.mov',
+        categoryRoot: 'Mode',
+      }),
+    )
+    const payload = await response.json()
+
+    expect(response.status).toBe(200)
+    expect(payload).toMatchObject({ success: true, reelId: 'reel-1' })
+    expect(transaction.create).toHaveBeenCalledWith(
+      refFor('reels', 'reel-1'),
+      expect.objectContaining({ categoryPath: { lvl0: 'Mode' } }),
+    )
+  })
+
+  it('ignore le chip categoryRoot quand une annonce est presselectionnee (la categorie de l annonce prevaut)', async () => {
+    const { db, transaction, refFor } = makeReelsDb({
+      propertyData: { createdBy: 'uid-1', categoryPath: { lvl0: 'Mode', lvl1: 'Mode > Vêtements' } },
+    })
+    ;(getFirestore as jest.Mock).mockReturnValue(db)
+
+    const response = await postReel(
+      makeRequest({
+        reelId: 'reel-1',
+        propertyId: 'property-1',
+        rawVideoPath: 'reels-raw/uid-1/reel-1.mov',
+        // Ne devrait jamais arriver depuis l'UI (le chip est masque des qu'une annonce est
+        // presselectionnee), mais un client pourrait l'envoyer quand meme.
+        categoryRoot: 'Immobilier',
+      }),
+    )
+    const payload = await response.json()
+
+    expect(response.status).toBe(200)
+    expect(payload).toMatchObject({ success: true })
+    expect(transaction.create).toHaveBeenCalledWith(
+      refFor('reels', 'reel-1'),
+      expect.objectContaining({ categoryPath: { lvl0: 'Mode', lvl1: 'Mode > Vêtements' } }),
+    )
+  })
+
+  it('refuse une valeur de categoryRoot arbitraire (pas Immobilier/Mode)', async () => {
+    const { db } = makeReelsDb()
+    ;(getFirestore as jest.Mock).mockReturnValue(db)
+
+    const response = await postReel(
+      makeRequest({
+        reelId: 'reel-1',
+        propertyId: null,
+        rawVideoPath: 'reels-raw/uid-1/reel-1.mov',
+        categoryRoot: 'Autre',
+      }),
+    )
+    const payload = await response.json()
+
+    expect(response.status).toBe(400)
+    expect(payload).toMatchObject({ success: false, code: 'INVALID_CATEGORY_ROOT' })
+  })
+
+  it('classe par defaut Immobilier une annonce immobilier presselectionnee sans son propre categoryPath', async () => {
+    // Une annonce immobilier n'a JAMAIS son propre categoryPath en base (seul le flux Mode
+    // l'ecrit, category-listing/create/page.tsx) — sans ce repli sur typeProperty,
+    // property.categoryPath reste toujours undefined pour de l'immobilier, et l'onglet
+    // "Immobilier" du fil public ne recevrait donc jamais aucun reel.
+    const { db, transaction, refFor } = makeReelsDb({
+      propertyData: { createdBy: 'uid-1', typeProperty: 'Villa' },
+    })
+    ;(getFirestore as jest.Mock).mockReturnValue(db)
+
+    const response = await postReel(
+      makeRequest({
+        reelId: 'reel-1',
+        propertyId: 'property-1',
+        rawVideoPath: 'reels-raw/uid-1/reel-1.mov',
+      }),
+    )
+    const payload = await response.json()
+
+    expect(response.status).toBe(200)
+    expect(payload).toMatchObject({ success: true })
+    expect(transaction.create).toHaveBeenCalledWith(
+      refFor('reels', 'reel-1'),
+      expect.objectContaining({ categoryPath: { lvl0: 'Immobilier' } }),
+    )
+  })
+
   it('refuse de recreer un reel existant avec le meme reelId', async () => {
     const { db, transaction } = makeReelsDb({
       reelData: {
@@ -421,6 +517,32 @@ describe('/api/reels', () => {
       expect.objectContaining({
         propertyId: 'property-1',
         categoryPath: { lvl0: 'Mode', lvl1: 'Mode > Vêtements' },
+      }),
+    )
+  })
+
+  it('classe par defaut Immobilier au rattachement quand l annonce n a pas son propre categoryPath', async () => {
+    // Meme repli qu'a la creation (voir le test equivalent plus haut) : une annonce immobilier
+    // n'ecrit jamais categoryPath elle-meme, donc sans ce repli sur typeProperty, tout rattachement
+    // a de l'immobilier laisserait le reel invisible dans l'onglet "Immobilier" du fil public.
+    const { db, transaction, refFor } = makeReelsDb({
+      reelData: { createdBy: 'uid-1', propertyId: null },
+      propertyData: { createdBy: 'uid-1', typeProperty: 'Villa' },
+    })
+    ;(getFirestore as jest.Mock).mockReturnValue(db)
+
+    const response = await patchReel(
+      makeRequest({ action: 'attach-property', reelId: 'reel-1', propertyId: 'property-1' }),
+    )
+    const payload = await response.json()
+
+    expect(response.status).toBe(200)
+    expect(payload).toMatchObject({ success: true, reelId: 'reel-1' })
+    expect(transaction.update).toHaveBeenCalledWith(
+      refFor('reels', 'reel-1'),
+      expect.objectContaining({
+        propertyId: 'property-1',
+        categoryPath: { lvl0: 'Immobilier' },
       }),
     )
   })

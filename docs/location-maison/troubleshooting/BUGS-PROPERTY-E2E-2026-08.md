@@ -674,3 +674,123 @@ de l'état d'un cache partagé.
 `__tests__/e2e/helpers/firebase-admin.ts` (`seedCategoryListing`).
 
 *Créé le 2026-09-01.*
+
+## 🟢 Correctif UX — rien n'indiquait, dans le parcours réel, si un réel serait classé Immobilier ou Mode
+
+**Demande directe de l'utilisateur** : après avoir confirmé (entrée précédente) que la catégorie
+se propage bien en base au rattachement, il a signalé que ça restait invisible à l'écran :
+"Bon je suis entrain de créer un reel mais je ne vois pas toujours ce qui me permet de dire que
+c'est un reel de mode ou immobilier". Un réel n'a jamais de catégorie choisie directement — il
+hérite de `categoryPath` copié depuis l'annonce au rattachement (voir entrée précédente) — mais
+rien dans l'UI ne montrait ce résultat avant de publier.
+
+**Correctif** : nouveau helper partagé `src/lib/listing-scope.ts` (`resolveListingScopeLabel` /
+`resolveReelScopeLabel`), même discriminant que `resolveScope()` côté serveur
+(`typeProperty` présent = Immobilier, absent = Mode ; `categoryId` explicitement écarté car posé
+sur la quasi-totalité des annonces par un backfill). Badge ajouté à trois endroits du parcours :
+- `SelectPropertyForReelClient.tsx` (sélecteur d'annonce) : pastille "Immobilier"/"Mode" sur
+  chaque carte.
+- `CreateOrphanReelClient.tsx` (création avec annonce présélectionnée) : "Ce réel sera classé
+  {Mode|Immobilier}" sur l'écran d'intro, et la même pastille sur le pill "Pour « {titre} »" de
+  l'écran de recadrage vidéo.
+- `MyReelsClient.tsx` (Mes réels) : pastille à côté du statut de rattachement sur chaque carte
+  existante ; absente (pas de faux "Immobilier" par défaut) si `categoryPath` manque — cas d'une
+  annonce immobilier trop ancienne pour l'avoir reçu au backfill.
+
+**Vérification** : confirmé visuellement par capture d'écran (fichier de test jetable, seed
+1 annonce immobilier + 1 Mode, supprimé après vérification) avant d'ajouter une preuve durable —
+`reel-attach-property.spec.ts` (test "le sélecteur d'annonce propose aussi bien l'immobilier que
+le Mode, avec un badge par annonce") scope désormais chaque carte via l'ancêtre `cursor-pointer`
+et vérifie le texte exact du badge ("Immobilier" sur la carte immobilier, "Mode" sur la carte
+Mode) — 5/5 sur `chromium-desktop-dev` et `chromium-mobile`. `tsc --noEmit` propre, suite Jest
+complète 1513/1513 sans régression.
+
+**Fichiers** : `src/lib/listing-scope.ts` (nouveau), `src/components/reels/SelectPropertyForReelClient.tsx`,
+`src/components/reels/CreateOrphanReelClient.tsx`, `src/components/reels/MyReelsClient.tsx`,
+`__tests__/e2e/reel-attach-property.spec.ts`.
+
+*Créé le 2026-09-01.*
+
+## 🟢 Correctif UX (suite) — l'entrée directe `/reels/add` (sans annonce présélectionnée) ne montrait toujours rien
+
+Le correctif précédent ne couvrait que le cas où une annonce est déjà présélectionnée
+(`?propertyId=...`). L'utilisateur a montré une capture de `/reels/add?returnTo=%2Freels%2Fmine`
+— exactement les liens `CREATE_REEL_FROM_MINE_HREF` (`MyReelsClient.tsx`) et
+`CREATE_REEL_FROM_FEED_HREF` (`ReelsFeedClient.tsx`), qui sautent entièrement le sélecteur
+d'annonce et déposent l'annonceur directement sur l'écran d'upload sans aucune annonce liée. Sur
+cet écran, il n'existe **aucun moyen de choisir** Immobilier/Mode à la création : ce choix est
+entièrement différé au rattachement après coup (`/reels/select-property`), et le texte
+précédent ("Vous pourrez l'attacher à une de vos annonces ensuite") ne le disait pas assez
+clairement pour que l'utilisateur comprenne où faire ce choix.
+
+**Correctif** : dans `CreateOrphanReelClient.tsx`, quand aucune annonce n'est présélectionnée,
+affichage d'un badge explicite "Pas encore classé Immobilier ou Mode" + un bouton "Choisir une
+annonce" pointant directement vers `/reels/select-property` (`routes.protected.reels_select_property`)
+— répond directement à la question de l'utilisateur en donnant un chemin cliquable vers l'endroit
+où ce choix se fait réellement, au lieu de le laisser deviner. Vérifié visuellement par capture
+d'écran (fichier de test jetable, supprimé après vérification) : badge ambre + bouton vert
+visibles sous le titre "Créer un réel".
+
+**Fichiers** : `src/components/reels/CreateOrphanReelClient.tsx`.
+
+*Créé le 2026-09-01.*
+
+## 🔴 Correctif majeur — l'onglet "Immobilier" du fil public de réels était structurellement vide (bug latent, jamais lié à l'UI)
+
+**Demande directe de l'utilisateur** : "que l'on choisisse une annonce ou pas ça ne coute rien de
+faire un chips qui change de catégorie quand clique dessus directement sur la page [...] à côté
+de contact" — un chip Immobilier/Mode cliquable directement sur l'écran d'upload, sans passer par
+le sélecteur d'annonce.
+
+**En implémentant ce chip, découverte d'un bug bien plus sérieux, sans rapport avec l'UI** :
+`categoryPath` (le champ que `getPublicReels()` filtre pour les onglets du fil public,
+`categoryPath.lvl0`, reel.db.ts) n'était écrit **qu'à un seul endroit dans tout le code** —
+`category-listing/create/page.tsx`, le flux Mode. Une annonce immobilier (stepper manuel ou flux
+IA) n'obtient **jamais** son propre `categoryPath`, contrairement à ce que suggérait le
+commentaire précédent sur `resolveReelScopeLabel` ("annonce trop ancienne pour l'avoir reçu au
+backfill" — c'était en réalité systématique, pas un cas limite). Conséquence concrète : à la
+création d'un réel avec une annonce immobilier présélectionnée, et au rattachement a posteriori,
+`property.categoryPath` valait toujours `undefined`, donc le réel n'obtenait jamais
+`categoryPath.lvl0 = 'Immobilier'` — **l'onglet "Immobilier" du fil public ne pouvait recevoir
+aucun réel, quel que soit leur nombre**, depuis la mise en place de ce filtre.
+
+**Correctif** : nouveau helper `resolveCategoryPathForProperty()` (`src/lib/listing-scope.ts`),
+même discriminant que `resolveScope()`/`resolveListingScopeLabel` — repli sur
+`{ lvl0: 'Immobilier' }` quand `typeProperty` est présent mais `categoryPath` absent. Appliqué
+aux deux endroits qui écrivaient `property.categoryPath` sans repli (`POST /api/reels` à la
+création, `PATCH .../attach-property` au rattachement, `src/app/api/reels/route.ts`).
+
+**Chip demandé, ajouté en parallèle** : sur l'écran d'upload (`CreateOrphanReelClient.tsx`),
+quand aucune annonce n'est présélectionnée, deux boutons "Immobilier"/"Mode" à côté du contact
+(masqués dès qu'une annonce est présélectionnée — sa catégorie prévaut alors). Le choix est
+transmis à `createReel()` (`src/db/reel.db.ts`, nouveau paramètre `categoryRoot`) puis à
+`POST /api/reels` (nouveau champ `categoryRoot`, strictement validé à `'Immobilier' | 'Mode'` —
+`INVALID_CATEGORY_ROOT` sinon — pour ne pas laisser un client injecter un `categoryPath.lvl0`
+arbitraire dans le fil public), qui l'écrit directement sur le réel s'il n'a pas d'annonce.
+
+**Vérification** :
+- Jest (`__tests__/api/reels-api.test.ts`, 6 nouveaux cas) : chip appliqué sans annonce, chip
+  ignoré quand une annonce est présélectionnée, `categoryRoot` invalide rejeté en 400, repli
+  Immobilier à la création ET au rattachement quand l'annonce n'a pas son propre `categoryPath`.
+- Jest composant (`__tests__/components/create-orphan-reel.test.tsx`, 3 nouveaux cas) : chip
+  transmis à `createReel`, désélection en recliquant, chip masqué quand une annonce est
+  présélectionnée — 3 assertions existantes mises à jour pour le nouveau paramètre.
+- E2E réel (nouveau fichier `reel-create-category-chip.spec.ts`) : vraie publication sans
+  aucune annonce, chip "Immobilier" cliqué, vérifie en base (Admin SDK) que le réel créé porte
+  bien `propertyId` absent + `categoryPath: { lvl0: 'Immobilier' }` — 1/1 sur
+  `chromium-desktop-dev` et `chromium-mobile`.
+- Vérifié visuellement par capture d'écran (fichier de test jetable, supprimé après
+  vérification) : les deux chips s'affichent bien sous le bouton Contact, celui sélectionné en
+  surbrillance.
+- Régression : `tsc --noEmit` propre, suite Jest complète 1521/1521, et
+  `reel-attach-property.spec.ts` + `lot8d-reels-ux.spec.ts` + `property-add-reel.spec.ts` +
+  `reel-create-category-chip.spec.ts` rejoués sur les deux viewports (un seul échec, déjà connu
+  comme un flake de contention entre workers en exécution combinée — confirmé en le rejouant
+  seul, qui passe systématiquement).
+
+**Fichiers** : `src/lib/listing-scope.ts`, `src/app/api/reels/route.ts`, `src/db/reel.db.ts`,
+`src/components/reels/CreateOrphanReelClient.tsx`, `__tests__/api/reels-api.test.ts`,
+`__tests__/components/create-orphan-reel.test.tsx`, `__tests__/e2e/reel-create-category-chip.spec.ts`
+(nouveau).
+
+*Créé le 2026-09-01.*

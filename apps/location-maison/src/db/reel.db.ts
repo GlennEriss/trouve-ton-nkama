@@ -68,7 +68,11 @@ export async function createReel(
     rawVideoPath: string,
     contact?: string,
     description?: string,
-    trim?: { trimStartSeconds?: number; trimEndSeconds?: number; muted?: boolean }
+    trim?: { trimStartSeconds?: number; trimEndSeconds?: number; muted?: boolean },
+    // Chip "Immobilier"/"Mode" choisi directement sur l'écran de création quand aucune annonce
+    // n'est présélectionnée (CreateOrphanReelClient) — ignoré côté serveur si propertyId est
+    // fourni (la catégorie de l'annonce prévaut alors, voir /api/reels/route.ts).
+    categoryRoot?: 'Immobilier' | 'Mode'
 ): Promise<string | null> {
     try {
         const { auth } = await getAuth();
@@ -93,6 +97,7 @@ export async function createReel(
                 trimStartSeconds: trim?.trimStartSeconds,
                 trimEndSeconds: trim?.trimEndSeconds,
                 muted: trim?.muted,
+                categoryRoot,
             }),
         });
 

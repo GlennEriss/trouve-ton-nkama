@@ -9,6 +9,7 @@ import { useCurrentUser } from '@/hooks/use-current-user'
 import { searchOwnedProperties } from '@/db/property.db'
 import { attachReelToProperty } from '@/db/reel.db'
 import { resolveThumbnailUrl } from '@/lib/property-images'
+import { resolveListingScopeLabel } from '@/lib/listing-scope'
 import { Button } from '@trouve-ton-nkama/ui/button'
 import { Card } from '@trouve-ton-nkama/ui/card'
 import { Input } from '@trouve-ton-nkama/ui/input'
@@ -185,29 +186,38 @@ export default function SelectPropertyForReelClient() {
       )}
 
       <div className="space-y-3">
-        {properties.map((property) => (
-          <Card
-            key={property.id}
-            data-testid="select-property-card"
-            className="flex items-center gap-3 p-3 cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors"
-            onClick={() => !attachingId && handleSelect(property)}
-          >
-            <div className="h-16 w-16 rounded-lg overflow-hidden bg-slate-100 shrink-0">
-              {resolveThumbnailUrl(property.images?.[0]) ? (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img src={resolveThumbnailUrl(property.images?.[0])} alt="" className="h-full w-full object-cover" />
-              ) : null}
-            </div>
-            <div className="min-w-0 flex-1">
-              <p className="text-sm font-medium text-slate-800 dark:text-slate-100 truncate">{property.title}</p>
-              <p className="text-xs text-slate-500 flex items-center gap-1 mt-0.5">
-                <MapPin className="h-3 w-3" />
-                {property.city}
-              </p>
-            </div>
-            {attachingId === property.id && <Loader2 className="h-4 w-4 animate-spin text-emerald-600" />}
-          </Card>
-        ))}
+        {properties.map((property) => {
+          const scope = resolveListingScopeLabel(property)
+          return (
+            <Card
+              key={property.id}
+              data-testid="select-property-card"
+              className="flex items-center gap-3 p-3 cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors"
+              onClick={() => !attachingId && handleSelect(property)}
+            >
+              <div className="h-16 w-16 rounded-lg overflow-hidden bg-slate-100 shrink-0">
+                {resolveThumbnailUrl(property.images?.[0]) ? (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img src={resolveThumbnailUrl(property.images?.[0])} alt="" className="h-full w-full object-cover" />
+                ) : null}
+              </div>
+              <div className="min-w-0 flex-1">
+                <div className="flex items-center gap-1.5">
+                  <p className="text-sm font-medium text-slate-800 dark:text-slate-100 truncate">{property.title}</p>
+                  <span className="inline-flex shrink-0 items-center gap-1 rounded-full bg-slate-100 px-2 py-0.5 text-[11px] font-medium text-slate-600 dark:bg-slate-800 dark:text-slate-300">
+                    <scope.icon className="h-3 w-3" />
+                    {scope.label}
+                  </span>
+                </div>
+                <p className="text-xs text-slate-500 flex items-center gap-1 mt-0.5">
+                  <MapPin className="h-3 w-3" />
+                  {property.city}
+                </p>
+              </div>
+              {attachingId === property.id && <Loader2 className="h-4 w-4 animate-spin text-emerald-600" />}
+            </Card>
+          )
+        })}
       </div>
 
       <div ref={sentinelRef} className="h-2 w-full" />
