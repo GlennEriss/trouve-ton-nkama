@@ -3,7 +3,7 @@
 import React from 'react'
 import Link from 'next/link'
 import { useRouter, useSearchParams } from 'next/navigation'
-import { useQuery } from '@tanstack/react-query'
+import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { ArrowLeft, Loader2, MapPin, Video } from 'lucide-react'
 import { useCurrentUser } from '@/hooks/use-current-user'
 import { getProperties } from '@/db/property.db'
@@ -18,6 +18,7 @@ import type { Property } from '@/models/annonce'
 export default function SelectPropertyForReelClient() {
   const { user } = useCurrentUser()
   const router = useRouter()
+  const queryClient = useQueryClient()
   const searchParams = useSearchParams()
   const { toast } = useToast()
   const attachReelId = searchParams.get('attachReelId')
@@ -43,6 +44,11 @@ export default function SelectPropertyForReelClient() {
     try {
       const ok = await attachReelToProperty(attachReelId, property.id!)
       if (!ok) throw new Error("Impossible de rattacher le réel.")
+      // Sans ça, /reels/mine (MyReelsClient.tsx) réaffichait l'ancien état en cache
+      // (react-query) au retour — "Pas encore attaché à une annonce" alors que le
+      // rattachement était déjà bien écrit en base. Même clé que ses propres invalidations
+      // (REELS_QUERY_KEY = 'reels-mine').
+      await queryClient.invalidateQueries({ queryKey: ['reels-mine', user?.uid] })
       toast({ title: "Réel rattaché", description: `Rattaché à "${property.title}".` })
       router.push(routes.protected.reels_mine)
     } catch (error) {

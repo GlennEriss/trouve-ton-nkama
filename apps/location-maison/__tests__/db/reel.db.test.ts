@@ -41,6 +41,7 @@ import {
   getReelById,
   getReelsByOwner,
   markReelUploadFailed,
+  retrimReel,
   subscribeToReel,
   updateReelDetails,
   uploadRawReelVideo,
@@ -155,6 +156,37 @@ describe('reel database and API client', () => {
 
     fetchMock.mockResolvedValueOnce(response({ success: false, message: 'Interdit' }, false))
     await expect(updateReelDetails('reel-1', '', '')).rejects.toThrow('Interdit')
+  })
+
+  it('recoupe un reel deja publie et remonte une erreur metier', async () => {
+    fetchMock.mockResolvedValueOnce(response({ success: true }))
+    await expect(retrimReel('reel-1', 'reels-published/owner-1/reel-1.mp4', 2, 8, true, '066545430', 'Nouvelle description'))
+      .resolves.toBe(true)
+    expect(fetchMock).toHaveBeenLastCalledWith('/api/reels', expect.objectContaining({
+      method: 'PATCH',
+      headers: expect.objectContaining({ Authorization: 'Bearer firebase-token' }),
+      body: JSON.stringify({
+        action: 'retrim',
+        reelId: 'reel-1',
+        rawVideoPath: 'reels-published/owner-1/reel-1.mp4',
+        trimStartSeconds: 2,
+        trimEndSeconds: 8,
+        muted: true,
+        contact: '066545430',
+        description: 'Nouvelle description',
+      }),
+    }))
+
+    fetchMock.mockResolvedValueOnce(response({ success: false, message: 'Traitement deja en cours' }, false))
+    await expect(retrimReel('reel-1', 'reels-published/owner-1/reel-1.mp4', 2, 8, false, '', ''))
+      .rejects.toThrow('Traitement deja en cours')
+  })
+
+  it('refuse le recoupage sans session Firebase', async () => {
+    authState.auth.currentUser = null
+    await expect(retrimReel('reel-1', 'reels-published/owner-1/reel-1.mp4', 0, 5, false, '', ''))
+      .rejects.toThrow('Session Firebase')
+    expect(fetchMock).not.toHaveBeenCalled()
   })
 
   it('supprime un reel authentifie', async () => {

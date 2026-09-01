@@ -180,8 +180,16 @@ describe('MyReelsClient', () => {
   it('supprime un réel et invalide la liste ainsi que le feed', async () => {
     render(<MyReelsClient />)
     fireEvent.click(screen.getAllByRole('button', { name: 'Supprimer' })[0])
-    const dialog = screen.getByRole('dialog')
+    let dialog = screen.getByRole('dialog')
     expect(within(dialog).getByRole('heading', { name: 'Supprimer ce réel ?' })).toBeVisible()
+
+    // Annuler ferme la confirmation sans supprimer.
+    fireEvent.click(within(dialog).getByRole('button', { name: 'Annuler' }))
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
+    expect(deleteReelMock).not.toHaveBeenCalled()
+
+    fireEvent.click(screen.getAllByRole('button', { name: 'Supprimer' })[0])
+    dialog = screen.getByRole('dialog')
     fireEvent.click(within(dialog).getByRole('button', { name: 'Supprimer' }))
 
     await waitFor(() => expect(deleteReelMock).toHaveBeenCalledWith('mine-reel-1'))
@@ -232,6 +240,7 @@ describe('MyReelsClient', () => {
     expect(within(sheet).getByRole('heading', { name: 'Filtres' })).toBeVisible()
 
     fireEvent.change(within(sheet).getByLabelText('Publiés depuis le'), { target: { value: '2026-07-01' } })
+    fireEvent.change(within(sheet).getByLabelText("Jusqu'au"), { target: { value: '2026-07-31' } })
     expect(within(sheet).getByRole('button', { name: 'Réinitialiser' })).toBeEnabled()
 
     fireEvent.click(within(sheet).getByRole('button', { name: 'Réinitialiser' }))
@@ -261,6 +270,14 @@ describe('MyReelsClient', () => {
     // desktop pour éviter l'ambiguïté.
     const stats = within(screen.getByTestId('reel-stats-desktop'))
     expect(stats.getByText('Vues totales').closest('div')?.parentElement).toHaveTextContent('10')
+
+    // Barre compacte mobile (<md, masquée par CSS uniquement — toujours montée sous jsdom) :
+    // recherche + son bouton "Effacer la recherche" propres, distincts de la section desktop.
+    const mobileSearchInput = screen.getAllByPlaceholderText('Rechercher dans la description...')[0]
+    fireEvent.change(mobileSearchInput, { target: { value: 'Owendo' } })
+    expect(mobileSearchInput).toHaveValue('Owendo')
+    fireEvent.click(screen.getAllByRole('button', { name: 'Effacer la recherche' })[0])
+    expect(mobileSearchInput).toHaveValue('')
   })
 
   it('désactive la requête sans utilisateur', () => {

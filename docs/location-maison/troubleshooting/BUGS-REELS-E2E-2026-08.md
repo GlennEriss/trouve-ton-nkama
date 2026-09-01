@@ -476,3 +476,52 @@ désormais cette route plutôt que `reel.videoUrl` directement.
   source, `rawVideoPath` pointant vers le nouveau brut.
 
 *Créé le 2026-08-31.*
+
+---
+
+## 🔴 Corrigé — "Attacher à une annonce" restait bloqué en chargement infini (index Firestore manquant), et la liste ne se rafraîchissait pas après un rattachement réussi
+
+**Contexte** : premier test e2e réel pour ce parcours (aucun n'existait), demandé directement par
+l'utilisateur — bouton "Attacher à une annonce" sur `/reels/mine` (réel orphelin, sans annonce)
+→ `/reels/select-property?attachReelId={id}` → choix d'une annonce → `PATCH /api/reels` action
+`attach-property`.
+
+**Bug n°1 — 🔴 index Firestore manquant, spinner infini** : `getProperties({ createdBy, ... })`
+(`db/property.db.ts`, utilisée par `SelectPropertyForReelClient.tsx`) combine
+`where('state','==','IN_PROGRESS')`, `where('moderationStatus','==','APPROVED')`,
+`where('createdBy','==',uid)` et `orderBy('createdAt','desc')` — aucun index composite
+correspondant n'existait dans `firestore.indexes.json` (le plus proche,
+`state+moderationStatus+createdAt`, n'inclut pas `createdBy`). Résultat en vrai navigateur :
+`getDocs()` ne rejette jamais et ne se résout jamais — spinner de chargement infini, sans la
+moindre erreur en console, sur la page "Choisir l'annonce à attacher". Repéré uniquement parce
+que le test attendait la liste des annonces et n'a jamais vu apparaître le titre de l'annonce
+seedée.
+
+Diagnostiqué en comparant les index réellement déployés sur `location-maison-dev`
+(`gcloud firestore indexes composite list`) à `firestore.indexes.json` — confirmé qu'aucun index
+`state, moderationStatus, createdBy, createdAt` n'existait. **Correctif** : ajouté ce même index
+à `firestore.indexes.json`, puis créé sur les trois projets (`location-maison-dev`,
+`location-maison-preprod`, `location-maison-prod-167da`) via
+`gcloud firestore indexes composite create` (additif, un seul index créé — délibérément **pas**
+`firebase deploy --only firestore:indexes`, qui est déclaratif et aurait supprimé 3 index déjà
+en prod/dev mais absents du fichier local, constaté au diff avant toute action : dérive
+préexistante entre le fichier et les projets réels, hors sujet de ce correctif, non touchée).
+
+**Bug n°2 — 🔴 liste non rafraîchie après un rattachement réussi** : une fois le bug n°1 corrigé,
+le rattachement réussissait bien en base (`reels/{id}.propertyId` mis à jour, confirmé par
+lecture Firestore directe) mais `SelectPropertyForReelClient.tsx` ne réinvalidait jamais le cache
+react-query `['reels-mine', uid]` avant de rediriger vers `/reels/mine` — la carte y affichait
+encore "Pas encore attaché à une annonce" jusqu'à un rechargement manuel. **Correctif** :
+`queryClient.invalidateQueries({ queryKey: ['reels-mine', user?.uid] })` avant la redirection,
+même clé que celle déjà invalidée ailleurs par `MyReelsClient.tsx`/`EditReelClient.tsx`.
+
+**Fichiers** : `firestore.indexes.json`, `src/components/reels/SelectPropertyForReelClient.tsx`.
+
+**Test qui le prouve** : e2e réel, nouveau fichier (`reel-attach-property.spec.ts`) — seed un
+réel orphelin + une annonce réels, clique "Attacher à une annonce" depuis `/reels/mine`, vérifie
+que la liste des annonces s'affiche réellement (preuve du bug n°1), choisit l'annonce, vérifie le
+toast, la redirection vers `/reels/mine`, puis en base que `propertyId` a bien été écrit — et
+enfin que la carte affiche réellement "Attaché à une annonce" (plus le bouton de rattachement)
+au retour sur la liste, sans rechargement manuel (preuve du bug n°2).
+
+*Créé le 2026-09-01.*
