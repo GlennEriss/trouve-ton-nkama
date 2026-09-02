@@ -11,6 +11,8 @@ import {
 } from '@/lib/observability/request-context';
 import type { Role } from '@/models/authentication';
 import type { Reel } from '@/models/reel';
+import type { Property } from '@/models/annonce';
+import { resolveCategoryPathForProperty } from '@/lib/listing-scope';
 
 export const runtime = 'nodejs';
 
@@ -262,6 +264,23 @@ function sanitizeOptionalMuted(value: unknown): boolean | undefined {
   return typeof value === 'boolean' ? value : undefined;
 }
 
+// Choix direct de catégorie sur l'écran de création, quand aucune annonce n'est présélectionnée
+// (chip "Immobilier"/"Mode" à côté du contact, CreateOrphanReelClient.tsx) — volontairement
+// restreint à ces deux valeurs exactes plutôt qu'une chaîne libre, pour ne pas laisser un client
+// injecter n'importe quel `categoryPath.lvl0` arbitraire dans le fil public.
+const CATEGORY_ROOTS = ['Immobilier', 'Mode'] as const;
+type CategoryRoot = (typeof CATEGORY_ROOTS)[number];
+
+function sanitizeOptionalCategoryRoot(value: unknown): CategoryRoot | undefined {
+  if (typeof value !== 'string') return undefined;
+  const trimmed = value.trim();
+  if (!trimmed) return undefined;
+  if (!(CATEGORY_ROOTS as readonly string[]).includes(trimmed)) {
+    throw new ReelApiError(400, 'INVALID_CATEGORY_ROOT', 'Catégorie invalide.');
+  }
+  return trimmed as CategoryRoot;
+}
+
 function sanitizeRawVideoPath(value: unknown, uid: string, reelId: string): string {
   const rawVideoPath = typeof value === 'string' ? value.trim() : '';
   const expectedPrefix = `reels-raw/${uid}/${reelId}.`;
@@ -360,6 +379,7 @@ export async function POST(request: NextRequest): Promise<NextResponse<ReelApiRe
       throw new ReelApiError(400, 'INVALID_TRIM_RANGE', 'La fin du montage doit être après le début.');
     }
     const muted = sanitizeOptionalMuted(body.muted);
+    const categoryRoot = sanitizeOptionalCategoryRoot(body.categoryRoot);
 
     const db = getAdminDb();
     await assertAnnouncer(db, uid);
@@ -378,9 +398,11 @@ export async function POST(request: NextRequest): Promise<NextResponse<ReelApiRe
       let categoryPath: Reel['categoryPath'];
       if (propertyRef) {
         const property = await assertOwnedProperty(transaction, propertyRef, uid);
-        if (property.categoryPath) {
-          categoryPath = property.categoryPath as Reel['categoryPath'];
-        }
+        categoryPath = resolveCategoryPathForProperty(property as unknown as Pick<Property, 'typeProperty' | 'categoryPath'>);
+      } else if (categoryRoot) {
+        // Pas d'annonce présélectionnée : le chip de catégorie directe (CreateOrphanReelClient)
+        // classe quand même le réel, sans passer par un rattachement.
+        categoryPath = { lvl0: categoryRoot };
       }
 
       const payload: Reel & { state: 'IN_PROGRESS'; createdAt: FirebaseFirestore.FieldValue; updatedAt: FirebaseFirestore.FieldValue } = {
@@ -619,10 +641,11 @@ export async function PATCH(request: NextRequest): Promise<NextResponse<ReelApiR
       }
 
       const property = await assertOwnedProperty(transaction, propertyRef, uid);
+      const categoryPath = resolveCategoryPathForProperty(property as unknown as Pick<Property, 'typeProperty' | 'categoryPath'>);
 
       transaction.update(reelRef, {
         propertyId,
-        ...(property.categoryPath ? { categoryPath: property.categoryPath } : {}),
+        ...(categoryPath ? { categoryPath } : {}),
         updatedAt: FieldValue.serverTimestamp(),
       });
     });

@@ -207,6 +207,13 @@ export async function seedCategoryListing(createdBy: string, listing: SeedCatego
   const now = admin.firestore.Timestamp.now()
   const { id, categoryLeaf, state, ...data } = listing
 
+  // lvl0 dérivé de categoryLeaf ("Mode > Vêtements" -> "Mode") : le vrai flux de création
+  // (category-listing/create/page.tsx) pose toujours les deux (`categoryPath: { lvl0:
+  // matchedCategory.rootName, lvl1: ... }`) — sans lvl0, ce seed ne représenterait pas
+  // fidèlement une vraie annonce Mode, notamment pour le filtre par catégorie du fil de réels
+  // public (getPublicReels, filtre sur categoryPath.lvl0).
+  const rootName = categoryLeaf.split('>')[0]?.trim() || categoryLeaf
+
   await db
     .collection('properties')
     .doc(id)
@@ -215,7 +222,7 @@ export async function seedCategoryListing(createdBy: string, listing: SeedCatego
       createdBy,
       moderationStatus: 'APPROVED',
       state: state ?? 'IN_PROGRESS',
-      categoryPath: { lvl1: categoryLeaf },
+      categoryPath: { lvl0: rootName, lvl1: categoryLeaf },
       images: [],
       currentPromotion: null,
       createdAt: now,
@@ -233,6 +240,18 @@ export async function getProperty(id: string): Promise<Record<string, unknown> |
   return snapshot.exists ? (snapshot.data() ?? null) : null
 }
 
+/**
+ * Finds all `properties/{id}` docs created by a given owner — le client génère l'id lui-même
+ * (`addDoc`, voir createProperty()/createModel() dans property.db.ts) donc un test qui crée une
+ * annonce via la vraie UI ne peut la retrouver après coup qu'en interrogeant par `createdBy`,
+ * comme findReelByOwner() pour les réels.
+ */
+export async function findPropertiesByOwner(uid: string): Promise<{ id: string; data: Record<string, unknown> }[]> {
+  const app = ensureAdminApp()
+  const snapshot = await admin.firestore(app).collection('properties').where('createdBy', '==', uid).get()
+  return snapshot.docs.map((doc) => ({ id: doc.id, data: doc.data() }))
+}
+
 /** Deletes `properties/{id}` docs by id. */
 export async function deleteProperties(ids: string[]): Promise<void> {
   const app = ensureAdminApp()
@@ -247,7 +266,11 @@ export async function deleteProperties(ids: string[]): Promise<void> {
  * unlike most other routes here, this one is not satisfied by the forged
  * NextAuth session alone.
  */
-export async function seedAnnouncerUser(uid: string, credits: number): Promise<void> {
+export async function seedAnnouncerUser(
+  uid: string,
+  credits: number,
+  options?: { phoneNumbers?: string[] },
+): Promise<void> {
   const app = ensureAdminApp()
   const db = admin.firestore(app)
   const now = admin.firestore.Timestamp.now()
@@ -265,6 +288,10 @@ export async function seedAnnouncerUser(uid: string, credits: number): Promise<v
       providers: ['CREDENTIALS'],
       createdAt: now,
       updatedAt: now,
+      // Optionnel : requis par le flux "Mode" (category-listing/create/page.tsx), qui lit
+      // user.callNumber || user.phoneNumbers?.[0] et refuse de générer une annonce sans contact
+      // — pas de champ téléphone dans son UI, contrairement au formulaire immobilier classique.
+      ...(options?.phoneNumbers ? { phoneNumbers: options.phoneNumbers } : {}),
     })
 }
 

@@ -50,6 +50,22 @@ export function useAlgoliaCityOptions(province: string | undefined) {
     });
 }
 
+/**
+ * Villes toutes provinces confondues, sans filtre province — pour la catégorie Mode. Une
+ * annonce Mode a `province` codée en dur à la création (voir
+ * category-listing/create/page.tsx, toujours GABON_PROVINCES[0]) : la cascade
+ * Province -> Ville habituelle (useAlgoliaCityOptions, ci-dessus) bloquerait alors le
+ * sélecteur Ville en attente d'une Province qui ne reflète jamais la vraie localisation du
+ * vendeur. Utilisé par SelectCityModeScope.
+ */
+export function useAlgoliaAllCityOptions() {
+    return useQuery({
+        queryKey: ['algolia-facets', 'city', 'all'],
+        queryFn: () => fetchLocationFacet('city'),
+        staleTime: 5 * 60 * 1000,
+    });
+}
+
 export function useAlgoliaStreetOptions(province: string | undefined, city: string | undefined) {
     return useQuery({
         queryKey: ['algolia-facets', 'street', province, city],

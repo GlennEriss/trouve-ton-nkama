@@ -127,6 +127,12 @@ function isPromoted(property: PropertyRecord): boolean {
 }
 
 export type AdScope = 'immobilier' | 'marketplace';
+// 'all' : les deux familles mélangées, sans filtre — utilisé par SelectPropertyForReelClient.tsx
+// (rattacher un réel à une annonce), qui doit proposer aussi bien les annonces immobilier que
+// Mode (un réel peut être rattaché à n'importe laquelle des deux, attachReelToProperty ne fait
+// aucune distinction). "Gestion des annonces" (AdManagementPage.tsx), elle, continue de demander
+// un scope précis pour ses onglets Immobilier/Mode.
+type RequestedScope = AdScope | 'all';
 
 /**
  * Sépare les deux familles d'annonces sur la présence de `typeProperty`.
@@ -140,8 +146,9 @@ function resolveScope(property: PropertyRecord): AdScope {
   return property.typeProperty ? 'immobilier' : 'marketplace';
 }
 
-function parseScope(value: string | null): AdScope {
-  return value === 'marketplace' ? 'marketplace' : 'immobilier';
+function parseScope(value: string | null): RequestedScope {
+  if (value === 'marketplace' || value === 'all') return value;
+  return 'immobilier';
 }
 
 /** Libellé lisible de la catégorie feuille, tiré de categoryPath pour éviter un accès Firestore. */
@@ -326,7 +333,9 @@ export async function GET(request: NextRequest) {
       marketplace: allItems.filter((property) => resolveScope(property) === 'marketplace').length,
     };
 
-    const scopedItems = allItems.filter((property) => resolveScope(property) === scope);
+    const scopedItems = scope === 'all'
+      ? allItems
+      : allItems.filter((property) => resolveScope(property) === scope);
 
     // Le résumé "global" est celui de l'onglet courant : les cartes de stats décrivent ce que
     // l'annonceur a sous les yeux, pas un total tous univers confondus.

@@ -8,6 +8,7 @@ import {
   deleteReels,
   getReel,
   seedAnnouncerUser,
+  seedCategoryListing,
   seedProperties,
   seedReel,
   type SeedProperty,
@@ -30,8 +31,12 @@ import {
 const RUN_ID = crypto.randomUUID()
 const OWNER_UID = `e2e-reel-attach-${RUN_ID}`
 const REEL_ID = `e2e-reel-attach-reel-${RUN_ID}`
+const MODE_REEL_ID = `e2e-reel-attach-mode-reel-${RUN_ID}`
 const PROPERTY_ID = `e2e-reel-attach-property-${RUN_ID}`
+const MODE_LISTING_ID = `e2e-reel-attach-mode-${RUN_ID}`
 const REEL_DESCRIPTION = `Réel orphelin à rattacher, run ${RUN_ID}.`
+const MODE_REEL_DESCRIPTION = `Réel Mode à rattacher, run ${RUN_ID}.`
+const MODE_LISTING_TITLE = `Robe wax test rattachement de réel ${RUN_ID}`
 
 const PROPERTY: SeedProperty = {
   id: PROPERTY_ID,
@@ -54,14 +59,59 @@ test.describe('Attacher un réel orphelin à une annonce depuis /reels/mine — 
   test.beforeAll(async () => {
     await seedAnnouncerUser(OWNER_UID, 0)
     await seedProperties(OWNER_UID, [PROPERTY])
+    // Un réel peut être rattaché aussi bien à une annonce immobilier qu'à une annonce Mode
+    // (attachReelToProperty ne fait aucune distinction) — ce listing Mode prouve que le
+    // sélecteur ne les exclut pas (scope=all côté searchOwnedProperties/property.db.ts).
+    await seedCategoryListing(OWNER_UID, {
+      id: MODE_LISTING_ID,
+      title: MODE_LISTING_TITLE,
+      description: 'Robe en wax, très bon état, pour le parcours de rattachement de réel.',
+      price: 15_000,
+      province: 'Estuaire',
+      city: 'Libreville',
+      categoryId: 'vetements',
+      categoryLeaf: 'Mode > Vêtements',
+    })
     // propertyId reste null par défaut (voir seedReel) : c'est justement l'état "orphelin" que
-    // ce test doit pouvoir rattacher.
+    // ce test doit pouvoir rattacher. Deux réels distincts : les tests s'exécutent sans mode
+    // serial dans ce bloc, un seul réel partagé entre deux tests qui l'attachent chacun à une
+    // annonce différente serait racy.
     await seedReel(OWNER_UID, { id: REEL_ID, description: REEL_DESCRIPTION })
+    await seedReel(OWNER_UID, { id: MODE_REEL_ID, description: MODE_REEL_DESCRIPTION })
   })
 
   test.afterAll(async () => {
-    await deleteReels([{ id: REEL_ID, uid: OWNER_UID }])
-    await deleteProperties([PROPERTY_ID])
+    await deleteReels([
+      { id: REEL_ID, uid: OWNER_UID },
+      { id: MODE_REEL_ID, uid: OWNER_UID },
+    ])
+    await deleteProperties([PROPERTY_ID, MODE_LISTING_ID])
+  })
+
+  test('le sélecteur d\'annonce propose aussi bien l\'immobilier que le Mode, avec un badge par annonce', async ({
+    page,
+  }) => {
+    await signInAsAnnouncer(page.context(), 'http://localhost:3000', { ...E2E_ANNOUNCER, uid: OWNER_UID })
+    await mockCommonAppNoise(page, { mockFirebaseToken: false })
+    await page.goto(`/reels/select-property?attachReelId=${REEL_ID}`, { waitUntil: 'domcontentloaded' })
+
+    // Régression corrigée : ce sélecteur excluait auparavant toutes les annonces Mode
+    // (scope=immobilier codé en dur), un réel ne pouvait alors être rattaché qu'à de
+    // l'immobilier alors que rien côté API ne l'exige.
+    await expect(page.getByText(PROPERTY.title)).toBeVisible({ timeout: 15000 })
+    await expect(page.getByText(MODE_LISTING_TITLE)).toBeVisible({ timeout: 15000 })
+
+    // Demande directe de l'utilisateur : rien n'indiquait la catégorie qu'un réel hériterait en
+    // se rattachant à une annonce donnée — chaque carte affiche désormais un badge dédié.
+    const immobilierCard = page
+      .getByText(PROPERTY.title)
+      .locator('xpath=ancestor::div[contains(@class,"cursor-pointer")][1]')
+    await expect(immobilierCard.getByText('Immobilier', { exact: true })).toBeVisible()
+
+    const modeCard = page
+      .getByText(MODE_LISTING_TITLE)
+      .locator('xpath=ancestor::div[contains(@class,"cursor-pointer")][1]')
+    await expect(modeCard.getByText('Mode', { exact: true })).toBeVisible()
   })
 
   test('clique "Attacher à une annonce", choisit l\'annonce, et le rattachement est réellement écrit en base', async ({
@@ -104,6 +154,45 @@ test.describe('Attacher un réel orphelin à une annonce depuis /reels/mine — 
       .locator('xpath=ancestor::div[contains(@class,"flex h-full flex-col")][1]')
     await expect(cardAfter.getByText('Attaché à une annonce', { exact: true })).toBeVisible()
     await expect(cardAfter.getByRole('link', { name: 'Attacher à une annonce' })).toHaveCount(0)
+  })
+
+  /**
+   * Demande directe de l'utilisateur : la catégorie d'un réel (Immobilier/Mode) n'est jamais
+   * choisie dans le formulaire — elle est copiée depuis l'annonce au moment du rattachement
+   * (categoryPath, voir attach-property dans /api/reels/route.ts).
+   *
+   * Preuve côté données plutôt qu'en lisant le vrai fil public affiché : `/api/reels/feed` met
+   * en cache sa réponse par catégorie 10 minutes (`reels:feed:Mode:{limit}:first`, Redis) SANS
+   * segmenter par run de test — un run précédent ayant déjà consulté l'onglet "Mode" dans les 10
+   * dernières minutes y laisse une réponse figée qui ne contient jamais le réel tout juste
+   * rattaché par CE run, indépendamment de l'exactitude réelle des données. Constaté en e2e réel
+   * en enchaînant deux runs à quelques secondes d'intervalle (mobile après desktop) : le second
+   * a vu la carte du run précédent, pas la sienne. Vérifier `categoryPath.lvl0` directement sur
+   * le document est la preuve déterministe : c'est exactement le champ que `getPublicReels()`
+   * filtre pour cet onglet (`where('categoryPath.lvl0', '==', categoryRootName)`, reel.db.ts) —
+   * une fois ce champ confirmé correct, le classement dans le fil est garanti par ce filtre,
+   * caching mis à part.
+   */
+  test('rattacher à une annonce Mode copie bien le categoryPath qui classe le réel dans le fil public', async ({
+    page,
+  }) => {
+    await signInAsAnnouncer(page.context(), 'http://localhost:3000', { ...E2E_ANNOUNCER, uid: OWNER_UID })
+    await mockCommonAppNoise(page, { mockFirebaseToken: false })
+    await page.goto(`/reels/select-property?attachReelId=${MODE_REEL_ID}`, { waitUntil: 'domcontentloaded' })
+
+    await expect(page.getByText(MODE_LISTING_TITLE)).toBeVisible({ timeout: 15000 })
+    const modeCard = page
+      .getByText(MODE_LISTING_TITLE)
+      .locator('xpath=ancestor::div[contains(@class,"cursor-pointer")][1]')
+    await modeCard.click()
+
+    await expect(page.getByText('Réel rattaché', { exact: true })).toBeVisible({ timeout: 15000 })
+    await expect(page).toHaveURL(/\/reels\/mine$/, { timeout: 15000 })
+
+    await expect.poll(async () => (await getReel(MODE_REEL_ID))?.propertyId, { timeout: 15000 })
+      .toBe(MODE_LISTING_ID)
+    const attachedReel = await getReel(MODE_REEL_ID)
+    expect((attachedReel?.categoryPath as { lvl0?: string } | undefined)?.lvl0).toBe('Mode')
   })
 })
 

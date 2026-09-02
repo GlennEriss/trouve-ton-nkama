@@ -58,6 +58,17 @@ describe('/api/announcer/ads — séparation immobilier / marketplace', () => {
     expect(market.items.map((item: any) => item.id).sort()).toEqual(['m1', 'm2'])
   })
 
+  it('scope=all mélange immobilier et marketplace, utilisé par le rattachement de réel', async () => {
+    // SelectPropertyForReelClient.tsx (searchOwnedProperties, property.db.ts) : un réel peut
+    // être rattaché aussi bien à une annonce immobilier qu'à une annonce Mode
+    // (attachReelToProperty ne fait aucune distinction), ce picker ne doit donc exclure ni
+    // l'une ni l'autre — contrairement à "Gestion des annonces", qui demande toujours un
+    // scope précis pour ses onglets.
+    const all = await (await getAds(request('?scope=all'))).json()
+    expect(all.items.map((item: any) => item.id).sort()).toEqual(['a', 'b', 'c', 'm1', 'm2'])
+    expect(all.appliedFilters.scope).toBe('all')
+  })
+
   it('renvoie des compteurs d onglets stables quels que soient les filtres', async () => {
     const filtered = await (await getAds(request('?scope=immobilier&type=Villa'))).json()
 

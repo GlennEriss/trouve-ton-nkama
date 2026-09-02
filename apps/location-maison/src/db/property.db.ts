@@ -133,12 +133,15 @@ export type SearchOwnedPropertiesResult = {
 };
 
 /**
- * Recherche paginée dans les annonces immobilières de l'annonceur connecté (pas les annonces
- * marketplace/Mode) — réutilise /api/announcer/ads (Admin SDK, session NextAuth), déjà utilisée
- * par "Gestion des annonces" pour la recherche texte + pagination sur les annonces d'un
- * annonceur. Contrairement à getProperties() ci-dessus, ne filtre pas par state/moderationStatus
- * : le propriétaire doit pouvoir retrouver N'IMPORTE LAQUELLE de ses annonces (y compris
- * archivée ou en attente de modération), pas seulement celles déjà publiques.
+ * Recherche paginée dans TOUTES les annonces de l'annonceur connecté — immobilier ET Mode
+ * confondus, un réel pouvant être rattaché à l'une comme à l'autre (attachReelToProperty ne
+ * fait aucune distinction, écrit sur properties/{id} quel que soit son type). Réutilise
+ * /api/announcer/ads (Admin SDK, session NextAuth) avec scope=all, déjà utilisée par "Gestion
+ * des annonces" pour la recherche texte + pagination (elle, avec un scope précis pour ses
+ * onglets Immobilier/Mode). Contrairement à getProperties() ci-dessus, ne filtre pas par
+ * state/moderationStatus : le propriétaire doit pouvoir retrouver N'IMPORTE LAQUELLE de ses
+ * annonces (y compris archivée ou en attente de modération), pas seulement celles déjà
+ * publiques.
  *
  * Utilisé par SelectPropertyForReelClient.tsx (rattacher un réel à une annonce) — évite de
  * charger la totalité des annonces d'un annonceur d'un coup (potentiellement des centaines).
@@ -153,7 +156,7 @@ export async function searchOwnedProperties({
     cursor: string | null;
 }): Promise<SearchOwnedPropertiesResult> {
     const params = new URLSearchParams();
-    params.set('scope', 'immobilier');
+    params.set('scope', 'all');
     params.set('limit', String(limitPerPage));
     params.set('cursor', cursor ?? '0');
     if (query.trim()) {

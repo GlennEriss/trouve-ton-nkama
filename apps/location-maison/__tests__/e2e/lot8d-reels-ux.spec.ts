@@ -150,6 +150,17 @@ test.describe('Lot 8D - parcours annonceur Réels sur Firebase Dev', () => {
   test('ouvre l’éditeur vidéo vertical sans contrôle masqué sur mobile', async ({ page }) => {
     await page.setViewportSize(MOBILE_SIZE)
     await page.goto('/reels/add?returnTo=%2Freels%2Fmine', { waitUntil: 'domcontentloaded' })
+
+    // Demande directe de l'utilisateur : cette entrée directe (lien "Nouveau réel" de
+    // /reels/mine, ou le fil) saute le sélecteur d'annonce et n'a donc aucune annonce
+    // présélectionnée — rien ne détermine encore Immobilier/Mode ici. Doit rester signalé
+    // explicitement, avec un chemin cliquable vers l'endroit où ce choix se fait réellement.
+    await expect(page.getByText('Pas encore classé Immobilier ou Mode')).toBeVisible()
+    await expect(page.getByRole('link', { name: 'Choisir une annonce' })).toHaveAttribute(
+      'href',
+      '/reels/select-property'
+    )
+
     await page.getByLabel('Choisir une vidéo').setInputFiles(videoFixture)
 
     const publishButton = page.getByRole('button', { name: 'Publier le réel' })

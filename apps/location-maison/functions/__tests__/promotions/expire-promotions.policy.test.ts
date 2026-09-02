@@ -1,4 +1,5 @@
-import { needsPromotionExpiry } from '../../src/promotions/expire-promotions.policy'
+import { FieldValue } from 'firebase-admin/firestore'
+import { buildExpiryUpdate, needsPromotionExpiry } from '../../src/promotions/expire-promotions.policy'
 
 const HOUR = 60 * 60 * 1000
 const NOW = 1_800_000_000_000
@@ -70,5 +71,18 @@ describe('needsPromotionExpiry', () => {
     expect(
       needsPromotionExpiry({ currentPromotion: { type: 'featured', isActive: true } }, NOW),
     ).toBe(true)
+  })
+})
+
+describe('buildExpiryUpdate', () => {
+  it('desactive isPromoted/isActive ET supprime endDate', () => {
+    // Bug reel corrige le 2026-09-01 : desactiver isActive seul ne suffit pas, le
+    // customRanking Algolia (desc(currentPromotion.endDate)) ne lit jamais isActive et
+    // continuait donc de classer une promotion expiree en tete de /search indefiniment.
+    const update = buildExpiryUpdate()
+
+    expect(update.isPromoted).toBe(false)
+    expect(update['currentPromotion.isActive']).toBe(false)
+    expect(FieldValue.delete().isEqual(update['currentPromotion.endDate'] as FirebaseFirestore.FieldValue)).toBe(true)
   })
 })

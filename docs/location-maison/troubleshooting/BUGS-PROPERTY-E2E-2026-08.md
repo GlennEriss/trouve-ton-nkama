@@ -484,3 +484,443 @@ passé depuis un moment, indépendamment de tout changement fait cette session �
 passage dédié.
 
 *Créé le 2026-08-30.*
+
+---
+
+## 🟢 Couverture ajoutée — `property-and-mode-creation.spec.ts` (publication réelle immobilier + Mode, vérifiée sur /property)
+
+**Demande directe de l'utilisateur** : tester la publication d'une annonce immobilière ET d'une
+annonce Mode via leurs vrais formulaires, puis vérifier que les deux apparaissent sur `/property`
+("Gestion des annonces"), chacune sous le bon onglet (Immobilier / Mode). Aucun des deux
+parcours de création n'avait de couverture e2e allant jusqu'à une vraie écriture Firestore avant
+ce test — seul le seed direct via Admin SDK existait (`seedProperties`/`seedCategoryListing`).
+
+**Immobilier** : formulaire manuel classique (`/property/add/studio`, 3 étapes),
+délibérément **pas** le nouveau flux IA (`/property/create`) qui dépend de Gemini et de crédits —
+le flux manuel est déterministe. **Mode** : à la différence de l'immobilier, **aucune
+alternative manuelle n'existe** pour `/category-listing/create` — c'est intégralement un flux IA
+(description + photos → Gemini choisit catégorie/titre/attributs), donc ce second scénario
+dépend nécessairement de Gemini ; description volontairement explicite et sans ambiguïté
+("Je vends une robe en wax taille M... à Libreville... 15 000 FCFA") pour fiabiliser la
+détection de catégorie.
+
+Les deux formulaires écrivent via `createProperty()` (SDK Firestore **client**, `addDoc`) —
+exige une vraie session Firebase Auth (`firestore.rules: isAnnouncer()`), pas seulement le
+cookie NextAuth forgé. Même recette que `property-add-reel.spec.ts` : `seedAnnouncerUser` +
+`signInAsAnnouncer` + `mockCommonAppNoise(page, { mockFirebaseToken: false })`.
+
+**🟡 Bug d'environnement rencontré, PAS un bug produit — diagnostiqué mais pas corrigé (dev
+Redis rate-limited, hors périmètre de ce travail)** : le scénario Mode a échoué plusieurs fois
+avec "Aucune catégorie n'accepte de nouvelles annonces pour le moment." alors que les catégories
+Mode (`vetements`, `chaussures`, `accessoires`, `parfums-beaute`) existent bien et sont
+`isActive: true` en base (confirmé plusieurs fois par requête Admin SDK directe, y compris juste
+avant l'échec). Cause confirmée directement : le projet Upstash **dev** est temporairement
+rate-limited (`UpstashError: Your database has been temporarily rate-limited`, reproduit en
+interrogeant la clé de cache `categories:publishable-leaves-v2` directement) — vraisemblablement
+par le volume cumulé de toute la vraie navigation e2e de cette session (beaucoup de pages
+utilisant `getCacheStore()`). Un premier essai de vider cette clé de cache a été bloqué par le
+classifieur d'auto-mode (action sur une infra partagée) puis autorisé explicitement ; le test est
+repassé au vert juste après — mais le rate-limit Upstash est réapparu plus tard dans la session
+et a refait échouer le même scénario à plusieurs reprises, de façon non déterministe selon l'état
+du quota au moment du run.
+
+**Lacune de résilience révélée en creusant (réelle, mais hors périmètre — pas corrigée)** :
+`/api/categories/publishable-leaves` ne se dégrade pas proprement quand Redis est indisponible —
+tout échec (rate-limit compris) semble se traduire par une réponse non-`ok` côté client, et
+`fetchPublishableLeaves()` (`category-listing/create/page.tsx`) traite alors silencieusement
+"erreur serveur" et "vraiment aucune catégorie active" de la même façon ("Aucune catégorie
+n'accepte de nouvelles annonces pour le moment."), sans que l'utilisateur ni les logs ne
+distinguent les deux cas. Une vraie panne Redis en production produirait exactement ce même
+message trompeur à un annonceur essayant de publier une annonce Mode. Mériterait un correctif
+séparé (repli sur une lecture Firestore directe si le cache échoue, comme le fait déjà
+`/api/announcer/ads` qui n'utilise pas de cache du tout pour cette raison).
+
+**Deux vrais champs pré-remplis à connaître pour ce parcours** :
+- Le champ téléphone de l'étape 3 immobilier est **pré-rempli** depuis le profil de
+  l'utilisateur de test (`phoneNumbers` seedé) — pas besoin de le re-remplir ; il existe en
+  double dans le DOM (mise en page mobile + desktop en parallèle, comme ailleurs dans cette
+  suite), d'où `.first()` sur l'assertion plutôt qu'un match strict.
+- Le flux Mode lit le contact depuis `user.callNumber || user.phoneNumbers?.[0]` **sans aucun
+  champ téléphone dans son UI** — contrairement au formulaire immobilier. Sans `phoneNumbers`
+  seedé sur l'utilisateur de test, la génération est bloquée avant même l'appel IA ("Ajoute un
+  numéro de téléphone à ton profil avant de publier."). `seedAnnouncerUser()` étendu avec un
+  paramètre optionnel `{ phoneNumbers }` pour couvrir ce cas (rétrocompatible, tous les autres
+  appels existants l'omettent).
+
+**Nouveau helper** : `findPropertiesByOwner(uid)` (`firebase-admin.ts`) — `createProperty()`
+génère l'id côté client (`addDoc`), et le formulaire immobilier ne le met même pas dans son URL
+de succès (`/property?submitted=1`, sans id) ; impossible de retrouver l'annonce créée autrement
+qu'en interrogeant par `createdBy`, même principe que `findReelByOwner` pour les réels.
+
+**Découverte annexe, non corrigée (hors périmètre)** : la page `/category-listing/create/preview/{id}`
+émet un avertissement Next.js répété ("Only plain objects can be passed to Client Components
+from Server Components... Objects with toJSON methods are not supported") sur les champs
+`createdAt`/`updatedAt`/`sortTimestamp` — un `Timestamp` Admin SDK passé tel quel comme prop à un
+Client Component, jamais sérialisé en `{seconds, nanoseconds}` plat au préalable. Même famille de
+piège que celui déjà rencontré et corrigé ailleurs cette session (`serializePropertyPromotion`),
+mais ici la page fonctionne quand même (React résout apparemment `toJSON()` silencieusement) donc
+non bloquant — juste un avertissement serveur, pas une erreur visible. Mériterait le même
+correctif que les autres routes si cette page est retouchée.
+
+**Fichiers** : `__tests__/e2e/property-and-mode-creation.spec.ts` (nouveau),
+`__tests__/e2e/helpers/firebase-admin.ts` (`seedAnnouncerUser` étendu, `findPropertiesByOwner`
+ajouté).
+
+**Test qui le prouve** — trois étapes en série dans un seul fichier :
+- **Publication immobilière** : remplit les 3 étapes du formulaire studio (images, titre,
+  description, superficie, prix, propriétaire, tag, province/ville/quartier via
+  `PlacesAutocompleteInput`), clique "Enregistrer", vérifie le toast de succès + la redirection,
+  puis en base que le document existe réellement avec `typeProperty` renseigné (le discriminant
+  "Immobilier" côté `resolveScope()`).
+- **Publication Mode** : remplit description + photo, clique "Générer l'annonce", vérifie la
+  redirection vers la page preview, puis en base que le document existe réellement **sans**
+  `typeProperty` (le discriminant "Mode"/marketplace).
+- **Vérification croisée sur /property** : l'annonce immobilière est visible sous l'onglet
+  "Immobilier" (actif par défaut) et absente sous "Mode" ; l'annonce Mode est visible sous
+  l'onglet "Mode" après un clic dessus, et absente sous "Immobilier" — preuve que chacune est
+  bien classée dans le bon onglet, pas seulement qu'elle existe quelque part sur la page.
+
+**Statut de vérification** : les 3 tests sont passés au vert intégralement, à deux reprises
+chacun, en isolation par viewport (3/3 sur `chromium-mobile` seul, puis 3/3 sur
+`chromium-desktop-dev` seul — deux runs propres et complets, preuve que le parcours fonctionne
+réellement de bout en bout). Les tentatives suivantes de confirmation combinée (les deux
+viewports dans la même commande) ont buté sur le rate-limit Upstash dev décrit ci-dessus, externe
+au test — pas rejouées indéfiniment pour éviter d'aggraver ce rate-limit. Timeouts déjà élargis
+en prévision de la contention réelle entre plusieurs projets Playwright sur ce parcours lourd
+(upload Storage + écriture Firestore + appel Gemini) : `test.setTimeout(90_000)` sur les deux
+tests de publication, image "1/10" jusqu'à 60s, toast de succès immobilier jusqu'à 40s. À
+rejouer sur `location-maison-dev` une fois le quota Upstash reconstitué.
+
+*Créé le 2026-09-01.*
+
+---
+
+## 🔴 Corrigé — Le sélecteur "Attacher à une annonce" excluait toutes les annonces Mode (régression introduite la veille)
+
+**Contexte** : question directe de l'utilisateur — "comment sait-on qu'un réel est Mode, le
+formulaire de création ne montre rien qui le permette ?". En creusant la réponse (la catégorie
+d'un réel n'est jamais choisie directement, elle est copiée depuis l'annonce à laquelle il est
+rattaché — `categoryPath`, voir `resolveScope()` dans `/api/announcer/ads/route.ts`), un vrai bug
+est apparu : `searchOwnedProperties()` (`property.db.ts`, utilisée par
+`SelectPropertyForReelClient.tsx` pour "Attacher à une annonce") appelait
+`/api/announcer/ads?scope=immobilier` codé en dur — introduit la veille en construisant la
+recherche+pagination de ce sélecteur (voir l'entrée précédente). Conséquence : **toutes les
+annonces Mode disparaissaient du sélecteur**, alors que rien côté API ne limite un rattachement
+de réel à l'immobilier (`attachReelToProperty` écrit sur `properties/{id}` sans distinguer le
+type). La seule façon d'obtenir un réel Mode restait de créer le réel directement depuis la page
+d'une annonce Mode (`propertyId` préselectionné dans l'URL) — le flux générique "Mes réels" →
+"Attacher à une annonce" ne le permettait plus du tout.
+
+**Correctif** : `/api/announcer/ads/route.ts` accepte désormais `scope=all` (en plus de
+`immobilier`/`marketplace`) — mélange les deux familles sans filtre, uniquement pour cet usage
+précis ("Gestion des annonces" continue de demander un scope précis pour ses onglets).
+`searchOwnedProperties()` utilise ce nouveau `scope=all`.
+
+**Reste ouvert (pas dans le périmètre de ce correctif)** : la question initiale de
+l'utilisateur — le manque de visibilité de la catégorie dans le parcours de création/rattachement
+d'un réel (ni sur l'écran de création, ni dans le sélecteur d'annonce, ni sur la carte du réel
+une fois publié) — n'est pas résolue, seulement le bug d'exclusion qui l'accompagnait. À discuter
+séparément si un affichage explicite de la catégorie est souhaité quelque part dans ce parcours.
+
+**Fichiers** : `src/app/api/announcer/ads/route.ts` (`scope=all`),
+`src/db/property.db.ts` (`searchOwnedProperties`).
+
+**Test qui le prouve** :
+- Jest (`__tests__/api/announcer-ads.test.ts`) : `scope=all` renvoie bien les annonces
+  immobilier ET marketplace mélangées, sans filtre.
+- Jest (`__tests__/db/property.db.test.ts`) : `searchOwnedProperties()` appelle bien
+  `/api/announcer/ads?scope=all&...` (corrigé, testait auparavant `scope=immobilier`).
+- E2E réel (`reel-attach-property.spec.ts`, nouveau test) : seed une annonce immobilier ET une
+  annonce Mode pour le même annonceur, ouvre le sélecteur "Attacher à une annonce", vérifie que
+  les deux titres sont bien visibles — aurait détecté la régression si elle avait existé avant
+  ce correctif (le listing Mode n'apparaissait pas du tout auparavant).
+
+*Créé le 2026-09-01.*
+
+---
+
+## 🟢 Preuve de bout en bout ajoutée — la catégorie d'un réel se propage bien au rattachement (Jest + e2e réel)
+
+**Demande directe de l'utilisateur**, suite au correctif ci-dessus : "refait les tests alors on
+va voir si la categorie passe bien" — vérifier concrètement que rattacher un réel à une annonce
+Mode copie bien la bonne catégorie dessus, pas seulement que l'annonce Mode redevient visible
+dans le sélecteur.
+
+**Trois niveaux de preuve ajoutés** :
+- Jest (`reels-api.test.ts`) : l'action `attach-property` copie bien `property.categoryPath`
+  (`{ lvl0: 'Mode', lvl1: 'Mode > Vêtements' }`) sur le document `reels/{id}` — logique déjà
+  présente dans la route, jusqu'ici non testée directement.
+- E2E réel (`reel-attach-property.spec.ts`) : seed un réel orphelin + une annonce Mode, ouvre le
+  sélecteur, l'attache, vérifie en base que `categoryPath.lvl0 === 'Mode'` — exactement le champ
+  que `getPublicReels()` filtre pour l'onglet "Mode" du fil public (`reel.db.ts`).
+- Aide de test corrigée en le faisant (`seedCategoryListing`, `firebase-admin.ts`) :
+  `categoryPath` ne posait que `lvl1`, jamais `lvl0` — contrairement au vrai flux de création
+  (`category-listing/create/page.tsx`, qui pose toujours les deux). Une annonce Mode seedée par
+  ce helper aurait donc été invisible de n'importe quel filtre par catégorie racine, sans rapport
+  avec le bug testé ici. `lvl0` désormais dérivé de `categoryLeaf` ("Mode > Vêtements" → "Mode").
+
+**Détour, non gardé dans le test final** : une première version vérifiait aussi que le réel
+apparaissait réellement dans l'onglet "Mode" du **vrai** fil public affiché (`/reels`, après
+clic sur l'onglet) — la preuve la plus convaincante possible. Deux runs consécutifs (desktop
+puis mobile, quelques secondes d'écart) ont révélé que `/api/reels/feed` met en cache sa réponse
+par catégorie 10 minutes (`reels:feed:Mode:{limit}:first`, Redis) **sans segmenter par run de
+test** — le second run a vu la carte laissée par le premier, pas la sienne, un faux négatif pur
+sur un mécanisme qui fonctionne réellement (confirmé par le premier run, passé proprement).
+Retiré cette assertion UI au profit du seul contrôle `categoryPath.lvl0` en base — c'est
+exactement ce que ce filtre lit, donc une preuve tout aussi déterminante mais qui ne dépend pas
+de l'état d'un cache partagé.
+
+**Fichiers** : `__tests__/api/reels-api.test.ts`, `__tests__/e2e/reel-attach-property.spec.ts`,
+`__tests__/e2e/helpers/firebase-admin.ts` (`seedCategoryListing`).
+
+*Créé le 2026-09-01.*
+
+## 🟢 Correctif UX — rien n'indiquait, dans le parcours réel, si un réel serait classé Immobilier ou Mode
+
+**Demande directe de l'utilisateur** : après avoir confirmé (entrée précédente) que la catégorie
+se propage bien en base au rattachement, il a signalé que ça restait invisible à l'écran :
+"Bon je suis entrain de créer un reel mais je ne vois pas toujours ce qui me permet de dire que
+c'est un reel de mode ou immobilier". Un réel n'a jamais de catégorie choisie directement — il
+hérite de `categoryPath` copié depuis l'annonce au rattachement (voir entrée précédente) — mais
+rien dans l'UI ne montrait ce résultat avant de publier.
+
+**Correctif** : nouveau helper partagé `src/lib/listing-scope.ts` (`resolveListingScopeLabel` /
+`resolveReelScopeLabel`), même discriminant que `resolveScope()` côté serveur
+(`typeProperty` présent = Immobilier, absent = Mode ; `categoryId` explicitement écarté car posé
+sur la quasi-totalité des annonces par un backfill). Badge ajouté à trois endroits du parcours :
+- `SelectPropertyForReelClient.tsx` (sélecteur d'annonce) : pastille "Immobilier"/"Mode" sur
+  chaque carte.
+- `CreateOrphanReelClient.tsx` (création avec annonce présélectionnée) : "Ce réel sera classé
+  {Mode|Immobilier}" sur l'écran d'intro, et la même pastille sur le pill "Pour « {titre} »" de
+  l'écran de recadrage vidéo.
+- `MyReelsClient.tsx` (Mes réels) : pastille à côté du statut de rattachement sur chaque carte
+  existante ; absente (pas de faux "Immobilier" par défaut) si `categoryPath` manque — cas d'une
+  annonce immobilier trop ancienne pour l'avoir reçu au backfill.
+
+**Vérification** : confirmé visuellement par capture d'écran (fichier de test jetable, seed
+1 annonce immobilier + 1 Mode, supprimé après vérification) avant d'ajouter une preuve durable —
+`reel-attach-property.spec.ts` (test "le sélecteur d'annonce propose aussi bien l'immobilier que
+le Mode, avec un badge par annonce") scope désormais chaque carte via l'ancêtre `cursor-pointer`
+et vérifie le texte exact du badge ("Immobilier" sur la carte immobilier, "Mode" sur la carte
+Mode) — 5/5 sur `chromium-desktop-dev` et `chromium-mobile`. `tsc --noEmit` propre, suite Jest
+complète 1513/1513 sans régression.
+
+**Fichiers** : `src/lib/listing-scope.ts` (nouveau), `src/components/reels/SelectPropertyForReelClient.tsx`,
+`src/components/reels/CreateOrphanReelClient.tsx`, `src/components/reels/MyReelsClient.tsx`,
+`__tests__/e2e/reel-attach-property.spec.ts`.
+
+*Créé le 2026-09-01.*
+
+## 🟢 Correctif UX (suite) — l'entrée directe `/reels/add` (sans annonce présélectionnée) ne montrait toujours rien
+
+Le correctif précédent ne couvrait que le cas où une annonce est déjà présélectionnée
+(`?propertyId=...`). L'utilisateur a montré une capture de `/reels/add?returnTo=%2Freels%2Fmine`
+— exactement les liens `CREATE_REEL_FROM_MINE_HREF` (`MyReelsClient.tsx`) et
+`CREATE_REEL_FROM_FEED_HREF` (`ReelsFeedClient.tsx`), qui sautent entièrement le sélecteur
+d'annonce et déposent l'annonceur directement sur l'écran d'upload sans aucune annonce liée. Sur
+cet écran, il n'existe **aucun moyen de choisir** Immobilier/Mode à la création : ce choix est
+entièrement différé au rattachement après coup (`/reels/select-property`), et le texte
+précédent ("Vous pourrez l'attacher à une de vos annonces ensuite") ne le disait pas assez
+clairement pour que l'utilisateur comprenne où faire ce choix.
+
+**Correctif** : dans `CreateOrphanReelClient.tsx`, quand aucune annonce n'est présélectionnée,
+affichage d'un badge explicite "Pas encore classé Immobilier ou Mode" + un bouton "Choisir une
+annonce" pointant directement vers `/reels/select-property` (`routes.protected.reels_select_property`)
+— répond directement à la question de l'utilisateur en donnant un chemin cliquable vers l'endroit
+où ce choix se fait réellement, au lieu de le laisser deviner. Vérifié visuellement par capture
+d'écran (fichier de test jetable, supprimé après vérification) : badge ambre + bouton vert
+visibles sous le titre "Créer un réel".
+
+**Fichiers** : `src/components/reels/CreateOrphanReelClient.tsx`.
+
+*Créé le 2026-09-01.*
+
+## 🔴 Correctif majeur — l'onglet "Immobilier" du fil public de réels était structurellement vide (bug latent, jamais lié à l'UI)
+
+**Demande directe de l'utilisateur** : "que l'on choisisse une annonce ou pas ça ne coute rien de
+faire un chips qui change de catégorie quand clique dessus directement sur la page [...] à côté
+de contact" — un chip Immobilier/Mode cliquable directement sur l'écran d'upload, sans passer par
+le sélecteur d'annonce.
+
+**En implémentant ce chip, découverte d'un bug bien plus sérieux, sans rapport avec l'UI** :
+`categoryPath` (le champ que `getPublicReels()` filtre pour les onglets du fil public,
+`categoryPath.lvl0`, reel.db.ts) n'était écrit **qu'à un seul endroit dans tout le code** —
+`category-listing/create/page.tsx`, le flux Mode. Une annonce immobilier (stepper manuel ou flux
+IA) n'obtient **jamais** son propre `categoryPath`, contrairement à ce que suggérait le
+commentaire précédent sur `resolveReelScopeLabel` ("annonce trop ancienne pour l'avoir reçu au
+backfill" — c'était en réalité systématique, pas un cas limite). Conséquence concrète : à la
+création d'un réel avec une annonce immobilier présélectionnée, et au rattachement a posteriori,
+`property.categoryPath` valait toujours `undefined`, donc le réel n'obtenait jamais
+`categoryPath.lvl0 = 'Immobilier'` — **l'onglet "Immobilier" du fil public ne pouvait recevoir
+aucun réel, quel que soit leur nombre**, depuis la mise en place de ce filtre.
+
+**Correctif** : nouveau helper `resolveCategoryPathForProperty()` (`src/lib/listing-scope.ts`),
+même discriminant que `resolveScope()`/`resolveListingScopeLabel` — repli sur
+`{ lvl0: 'Immobilier' }` quand `typeProperty` est présent mais `categoryPath` absent. Appliqué
+aux deux endroits qui écrivaient `property.categoryPath` sans repli (`POST /api/reels` à la
+création, `PATCH .../attach-property` au rattachement, `src/app/api/reels/route.ts`).
+
+**Chip demandé, ajouté en parallèle** : sur l'écran d'upload (`CreateOrphanReelClient.tsx`),
+quand aucune annonce n'est présélectionnée, deux boutons "Immobilier"/"Mode" à côté du contact
+(masqués dès qu'une annonce est présélectionnée — sa catégorie prévaut alors). Le choix est
+transmis à `createReel()` (`src/db/reel.db.ts`, nouveau paramètre `categoryRoot`) puis à
+`POST /api/reels` (nouveau champ `categoryRoot`, strictement validé à `'Immobilier' | 'Mode'` —
+`INVALID_CATEGORY_ROOT` sinon — pour ne pas laisser un client injecter un `categoryPath.lvl0`
+arbitraire dans le fil public), qui l'écrit directement sur le réel s'il n'a pas d'annonce.
+
+**Vérification** :
+- Jest (`__tests__/api/reels-api.test.ts`, 6 nouveaux cas) : chip appliqué sans annonce, chip
+  ignoré quand une annonce est présélectionnée, `categoryRoot` invalide rejeté en 400, repli
+  Immobilier à la création ET au rattachement quand l'annonce n'a pas son propre `categoryPath`.
+- Jest composant (`__tests__/components/create-orphan-reel.test.tsx`, 3 nouveaux cas) : chip
+  transmis à `createReel`, désélection en recliquant, chip masqué quand une annonce est
+  présélectionnée — 3 assertions existantes mises à jour pour le nouveau paramètre.
+- E2E réel (nouveau fichier `reel-create-category-chip.spec.ts`) : vraie publication sans
+  aucune annonce, chip "Immobilier" cliqué, vérifie en base (Admin SDK) que le réel créé porte
+  bien `propertyId` absent + `categoryPath: { lvl0: 'Immobilier' }` — 1/1 sur
+  `chromium-desktop-dev` et `chromium-mobile`.
+- Vérifié visuellement par capture d'écran (fichier de test jetable, supprimé après
+  vérification) : les deux chips s'affichent bien sous le bouton Contact, celui sélectionné en
+  surbrillance.
+- Régression : `tsc --noEmit` propre, suite Jest complète 1521/1521, et
+  `reel-attach-property.spec.ts` + `lot8d-reels-ux.spec.ts` + `property-add-reel.spec.ts` +
+  `reel-create-category-chip.spec.ts` rejoués sur les deux viewports (un seul échec, déjà connu
+  comme un flake de contention entre workers en exécution combinée — confirmé en le rejouant
+  seul, qui passe systématiquement).
+
+**Fichiers** : `src/lib/listing-scope.ts`, `src/app/api/reels/route.ts`, `src/db/reel.db.ts`,
+`src/components/reels/CreateOrphanReelClient.tsx`, `__tests__/api/reels-api.test.ts`,
+`__tests__/components/create-orphan-reel.test.tsx`, `__tests__/e2e/reel-create-category-chip.spec.ts`
+(nouveau).
+
+*Créé le 2026-09-01.*
+
+## 🔴 Corrigé (prod) — /search affichait les annonces les plus anciennes en premier
+
+**Demande directe de l'utilisateur** : "il affiche carrément les annonces les plus anciennes en
+premier au lieu des plus récentes" sur https://tonnkama.com/search (constaté sur
+localhost:3000/search, même index Algolia partagé entre dev et prod).
+
+**Root cause** : `/search` est piloté par Algolia (`location-maison_property-index`), avec
+`customRanking: ["desc(currentPromotion.endDate)", "desc(sortTimestamp)"]` — les annonces
+promues passent avant tout le reste, `sortTimestamp` (récence) ne départage qu'entre annonces de
+même statut de promotion. La fonction planifiée `expireStalePromotions`
+(`functions/src/promotions/expire-promotions.ts`) désactive bien les promotions expirées
+(`isPromoted: false`, `currentPromotion.isActive: false`) mais ne touchait JAMAIS
+`currentPromotion.endDate` — or ce champ est exactement ce que lit `desc(currentPromotion.endDate)`,
+qui ne regarde jamais `isActive`. Résultat : une annonce promue même une seule fois, il y a plus
+d'un an, restait classée en tête de /search pour toujours, devant toute annonce plus récente
+jamais promue. Confirmé en interrogeant directement l'index Algolia de prod : sur les 100
+premiers résultats, 58 étaient d'anciennes promotions expirées (certaines remontant à avril
+2025) et les annonces réellement récentes (août 2026) ne commençaient qu'en position 58.
+
+**Correctif structurel** : nouvelle fonction `buildExpiryUpdate()`
+(`functions/src/promotions/expire-promotions.policy.ts`), utilisée par la fonction planifiée —
+supprime maintenant aussi `currentPromotion.endDate` (`FieldValue.delete()`) en plus de désactiver
+`isActive`/`isPromoted`. Algolia traite un attribut de `customRanking` absent comme la valeur la
+plus basse possible : une promotion expirée ne peut donc plus jamais battre quoi que ce soit sur
+ce critère, y compris longtemps après son expiration. Volontairement restreint aux types
+featured/trending (le type `boost` n'a pas de fenêtre "active" à expirer par conception, hors
+périmètre de cette correction).
+
+**Nettoyage des données déjà corrompues** : le correctif ci-dessus n'empêche que les FUTURES
+expirations de laisser un `endDate` périmé — nouveau script one-shot
+`apps/location-maison-admin/scripts/promotions/backfill-clear-expired-promotion-enddate.ts`
+(dry-run par défaut, `--apply` pour écrire, idempotent, même convention que
+`backfill-sort-timestamp.ts`) pour nettoyer les documents déjà dans cet état. Dry-run confirmé
+58 annonces en prod et 3 en dev — exactement le nombre trouvé en interrogeant l'index Algolia
+directement. **Appliqué en prod ET dev après autorisation explicite de l'utilisateur** (une
+tentative de dry-run direct sur prod avait été bloquée par le classifieur auto-mode comme action
+sur infrastructure partagée — arrêté et demandé via `AskUserQuestion`, comme pour l'incident
+Redis plus haut dans ce document). Reconfirmé après coup en réinterrogeant l'index Algolia en
+direct : les 15 premiers résultats sont désormais bien les annonces les plus récentes (25, 21,
+20... août 2026), triées par ordre décroissant correct.
+
+**Vérification** :
+- Jest (`functions/__tests__/promotions/expire-promotions.policy.test.ts`, nouveau cas) : `buildExpiryUpdate()`
+  désactive `isPromoted`/`isActive` ET pose un sentinel `FieldValue.delete()` sur `endDate`.
+- `tsc --noEmit` propre sur `functions/` et sur `location-maison-admin/` (nouveau script).
+- Suite Jest complète de `functions/` : 113/113 sans régression.
+- Preuve en direct sur l'index Algolia de prod, avant/après le backfill (requêtes brutes,
+  documentées ci-dessus) — pas seulement l'apparence du correctif de code.
+
+**Fichiers** : `functions/src/promotions/expire-promotions.policy.ts`,
+`functions/src/promotions/expire-promotions.ts`,
+`functions/__tests__/promotions/expire-promotions.policy.test.ts`,
+`apps/location-maison-admin/scripts/promotions/backfill-clear-expired-promotion-enddate.ts`
+(nouveau).
+
+**Reste à déployer** : le correctif de `expire-promotions.ts` ne prend effet en prod qu'après un
+déploiement Cloud Functions (`firebase deploy --only functions`) — action distincte, pas
+effectuée dans le cadre de cette session (jamais demandée, et un déploiement Cloud Functions est
+une action à part, hors du geste "corriger le code + les données déjà écrites").
+
+*Créé le 2026-09-01.*
+
+## 🟢 Correctif UX — les filtres de /search n'étaient adaptés qu'à l'immobilier, Mode en était absent
+
+**Demande directe de l'utilisateur**, avant de commencer les tests e2e des filtres de
+`/search` : "les filtres là ne sont adaptés qu'à l'immobilier et donc omet la partie Mode".
+
+**Root cause** : `Statut` (FOR_RENT/FOR_SALE), `Surface (m²)` et `Types d'annonces`
+(typeProperty) s'affichaient inconditionnellement dans les deux panneaux de filtre
+(`FilterSearchDesktopPageSection.tsx` desktop, `FilterModalHomePage.tsx` mobile) — trois champs
+qui n'existent tout simplement pas sur une annonce Mode. Pire, "Secteur recherché"
+(Province/Ville/Quartier) est structurellement cassé pour Mode : `category-listing/create/page.tsx`
+pose toujours `street: ''` (vide) et `province: GABON_PROVINCES[0].name` (codé en dur, jamais
+la vraie localisation du vendeur) — seul `city` (texte libre extrait par l'IA depuis la
+description) porte un vrai signal. Le sélecteur "Mode/Immobilier" (`CategoryFilterPills`)
+existait déjà et fonctionnait, mais ne faisait qu'AJOUTER les filtres d'attributs Mode
+(taille/marque/genre...) par-dessus le panneau immobilier existant, sans jamais le masquer.
+
+**Correctif** (portée volontairement limitée aux filtres de recherche, décision explicite de
+l'utilisateur — la correction de la capture de localisation à la création d'une annonce Mode
+reste un chantier séparé, non traité ici) :
+- `useIsImmobilierSearchScope()` (nouveau, `src/hooks/useSearchCategoryScope.ts`) : lit le
+  paramètre `category` de l'URL, `true` pour "Toutes catégories"/"Immobilier", `false` sinon.
+- Les deux panneaux masquent désormais Statut/Surface/Types d'annonces hors scope immobilier,
+  et réduisent "Secteur recherché" à "Ville" seule (`SelectCityModeScope.tsx`, nouveau) —
+  Province/Quartier disparaissent, puisqu'aucune donnée fiable ne les alimente pour Mode.
+- `SelectCityModeScope` interroge la facette `city` SANS filtre province
+  (`useAlgoliaAllCityOptions`, nouveau dans `useAlgoliaLocationOptions.ts`) : la cascade
+  habituelle Province → Ville (`useAlgoliaCityOptions`, `enabled: !!province`) bloquerait
+  sinon le sélecteur en attente d'une Province qui ne reflète jamais la vraie localisation.
+- **Bug additionnel trouvé et corrigé en marge** : `CategoryFilterPills.selectCategory()`
+  changeait la racine (`category`) sans jamais purger `categoryId`/`attr_<key>` (feuille et
+  attributs Mode) ni les champs immobilier-only (`province`/`street`/`status`/`minArea`/
+  `maxArea`/`typeProperty`) déjà présents dans l'URL. Sans ce nettoyage, un filtre laissé actif
+  en changeant de racine continuait de s'appliquer à la recherche alors que son contrôle avait
+  disparu de l'UI — résultats vides sans aucune explication visible. Purge désormais
+  systématique de ces clés à chaque changement de racine, dans les deux sens.
+
+**Vérification** :
+- Jest (`__tests__/hooks/use-search-category-scope.test.ts`, nouveau) : les 3 cas de
+  `useIsImmobilierSearchScope()`.
+- Jest (`__tests__/components/category-filter-pills.test.tsx`, nouveau) : purge de
+  `categoryId`/`attr_*`/immobilier-only en changeant de racine, champs génériques (`city`,
+  `query`) préservés.
+- Jest (`search-filter-desktop-section.test.tsx`, `home-page-filter-modal.test.tsx`, cas
+  ajoutés) : sections immobilier-only absentes + `SelectCityModeScope` visible hors scope
+  immobilier.
+- Vérifié visuellement par capture d'écran (fichier de test jetable, supprimé après
+  vérification) : bascule réelle sur `/search?category=Mode`, panneau réduit à Ville/Prix/Tags,
+  25 annonces Mode (Parfums & beauté, Vêtements) affichées correctement.
+- **Détour** : lors de cette vérification, les pastilles de catégorie ("Toutes catégories" /
+  "Immobilier" / "Mode") sont apparues absentes du premier rendu malgré `/api/categories/active`
+  répondant correctement — diagnostiqué comme un état HMR/Turbopack périmé du serveur `next dev`
+  local, actif en continu depuis plusieurs jours de session (pas un bug de code) : confirmé en
+  ajoutant un log temporaire dans `CategoryFilterPills.tsx`, qui a forcé une recompilation et
+  fait immédiatement réapparaître les pastilles ; retiré ensuite.
+- `tsc --noEmit` propre, suite Jest complète 1529/1529.
+
+**Fichiers** : `src/hooks/useSearchCategoryScope.ts` (nouveau),
+`src/components/search/SelectCityModeScope.tsx` (nouveau),
+`src/hooks/useAlgoliaLocationOptions.ts`, `src/components/search/CategoryFilterPills.tsx`,
+`src/components/search/FilterSearchDesktopPageSection.tsx`,
+`src/components/home-page/FilterModalHomePage.tsx`,
+`__tests__/hooks/use-search-category-scope.test.ts` (nouveau),
+`__tests__/components/category-filter-pills.test.tsx` (nouveau),
+`__tests__/components/search-filter-desktop-section.test.tsx`,
+`__tests__/components/home-page-filter-modal.test.tsx`.
+
+*Créé le 2026-09-01.*

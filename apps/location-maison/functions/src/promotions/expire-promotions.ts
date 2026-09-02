@@ -2,7 +2,7 @@ import '../node/slow-buffer-compat';
 import * as functions from 'firebase-functions';
 import { onSchedule } from 'firebase-functions/v2/scheduler';
 import { adminDB } from '../admin';
-import { needsPromotionExpiry, type RawPropertyRecord } from './expire-promotions.policy';
+import { buildExpiryUpdate, needsPromotionExpiry, type RawPropertyRecord } from './expire-promotions.policy';
 
 const DEFAULT_SCHEDULE = 'every 60 minutes';
 const BATCH_CHUNK_SIZE = 400; // marge sous la limite Firestore de 500 écritures/batch.
@@ -37,10 +37,7 @@ export const expireStalePromotions = onSchedule(
     for (let start = 0; start < toExpire.length; start += BATCH_CHUNK_SIZE) {
       const batch = adminDB.batch();
       for (const doc of toExpire.slice(start, start + BATCH_CHUNK_SIZE)) {
-        batch.update(doc.ref, {
-          isPromoted: false,
-          'currentPromotion.isActive': false,
-        });
+        batch.update(doc.ref, buildExpiryUpdate());
       }
       await batch.commit();
     }

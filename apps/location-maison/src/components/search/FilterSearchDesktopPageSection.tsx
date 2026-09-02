@@ -20,7 +20,9 @@ import { useSearchParams } from 'next/navigation'
 import { useSession } from 'next-auth/react'
 import SearchWithAIAccessNoticeDialog from './SearchWithAIAccessNoticeDialog'
 import { useAlgoliaTypePropertyOptions, useAlgoliaTagOptions } from '@/hooks/useAlgoliaFacetOptions'
+import { useIsImmobilierSearchScope } from '@/hooks/useSearchCategoryScope'
 import CategoryAttributeFilters from './CategoryAttributeFilters'
+import SelectCityModeScope from './SelectCityModeScope'
 
 export default function FilterSearchDesktopPageSection() {
     const form = useForm<FormFilterSchemaType>({
@@ -33,6 +35,7 @@ export default function FilterSearchDesktopPageSection() {
     const [isAccessDialogOpen, setIsAccessDialogOpen] = React.useState(false);
     const { options: typePropertyOptions } = useAlgoliaTypePropertyOptions();
     const { options: tagOptions } = useAlgoliaTagOptions();
+    const isImmobilierScope = useIsImmobilierSearchScope();
     const searchWithAIHref = `/search-with-ia?${new URLSearchParams(searchParams.toString()).toString()}&entry=search_cta`;
     const isAuthenticated = status === 'authenticated';
 
@@ -99,26 +102,34 @@ export default function FilterSearchDesktopPageSection() {
                                 <h2 className='text-lg font-semibold text-primary dark:text-secondary'>
                                     Secteur recherché
                                 </h2>
-                                <SelectProvince />
-                                <SelectCity />
-                                <SelectStreet />
+                                {isImmobilierScope ? (
+                                    <>
+                                        <SelectProvince />
+                                        <SelectCity />
+                                        <SelectStreet />
+                                    </>
+                                ) : (
+                                    <SelectCityModeScope />
+                                )}
                             </div>
                         </section>
 
                         <CategoryAttributeFilters />
 
-                        <section className='space-y-5 p-5'>
-                            <h2 className='text-lg font-semibold text-primary dark:text-secondary'>
-                                Statut
-                            </h2>
-                            <MultiSelectFormApp
-                                control={form.control}
-                                name="status"
-                                options={statusOptions}
-                                placeholder="Sélectionnez le statut"
-                                className='rounded-full p-2 h-14 bg-gray-50 dark:bg-gray-900 dark:text-white'
-                            />
-                        </section>
+                        {isImmobilierScope && (
+                            <section className='space-y-5 p-5'>
+                                <h2 className='text-lg font-semibold text-primary dark:text-secondary'>
+                                    Statut
+                                </h2>
+                                <MultiSelectFormApp
+                                    control={form.control}
+                                    name="status"
+                                    options={statusOptions}
+                                    placeholder="Sélectionnez le statut"
+                                    className='rounded-full p-2 h-14 bg-gray-50 dark:bg-gray-900 dark:text-white'
+                                />
+                            </section>
+                        )}
 
                         <section className='space-y-5 p-5'>
                             <h2 className='text-lg font-semibold text-primary dark:text-secondary'>
@@ -140,38 +151,42 @@ export default function FilterSearchDesktopPageSection() {
                             />
                         </section>
 
-                        <section className='space-y-5 p-5'>
-                            <h2 className='text-lg font-semibold text-primary dark:text-secondary'>
-                                Surface (m²)
-                            </h2>
-                            <InputFormNumberApp
-                                control={form.control}
-                                name="minArea"
-                                label="Surface min"
-                                step={10}
-                                placeholder="0"
-                            />
-                            <InputFormNumberApp
-                                control={form.control}
-                                name="maxArea"
-                                label="Surface max"
-                                step={10}
-                                placeholder="0"
-                            />
-                        </section>
+                        {isImmobilierScope && (
+                            <section className='space-y-5 p-5'>
+                                <h2 className='text-lg font-semibold text-primary dark:text-secondary'>
+                                    Surface (m²)
+                                </h2>
+                                <InputFormNumberApp
+                                    control={form.control}
+                                    name="minArea"
+                                    label="Surface min"
+                                    step={10}
+                                    placeholder="0"
+                                />
+                                <InputFormNumberApp
+                                    control={form.control}
+                                    name="maxArea"
+                                    label="Surface max"
+                                    step={10}
+                                    placeholder="0"
+                                />
+                            </section>
+                        )}
 
-                        <section className='space-y-5 p-5'>
-                            <h2 className='text-lg font-semibold text-primary dark:text-secondary'>
-                                Types d'annonces
-                            </h2>
-                            <MultiSelectFormApp
-                                control={form.control}
-                                name="typeProperty"
-                                options={typePropertyOptions}
-                                placeholder="Types d'annonces"
-                                className='rounded-full p-2 h-14 bg-gray-50 dark:bg-gray-900 dark:text-white'
-                            />
-                        </section>
+                        {isImmobilierScope && (
+                            <section className='space-y-5 p-5'>
+                                <h2 className='text-lg font-semibold text-primary dark:text-secondary'>
+                                    Types d'annonces
+                                </h2>
+                                <MultiSelectFormApp
+                                    control={form.control}
+                                    name="typeProperty"
+                                    options={typePropertyOptions}
+                                    placeholder="Types d'annonces"
+                                    className='rounded-full p-2 h-14 bg-gray-50 dark:bg-gray-900 dark:text-white'
+                                />
+                            </section>
+                        )}
 
                         <section className='space-y-5 p-5'>
                             <h2 className='text-lg font-semibold text-primary dark:text-secondary'>

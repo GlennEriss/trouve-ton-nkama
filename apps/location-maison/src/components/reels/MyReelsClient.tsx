@@ -46,6 +46,7 @@ import {
   SheetTrigger,
 } from '@trouve-ton-nkama/ui/sheet'
 import { cn } from '@/lib/utils'
+import { resolveReelScopeLabel } from '@/lib/listing-scope'
 import { routes } from '@/constantes/routes'
 import { useToast } from '@/hooks/use-toast'
 import type { Reel, ReelProcessingStatus } from '@/models/reel'
@@ -115,6 +116,7 @@ function ReelCard({
 }>) {
   const moderationLabel = reel.processingStatus === 'ready' ? MODERATION_LABELS[reel.moderationStatus] : null
   const moderationClass = reel.moderationStatus ? MODERATION_CLASSES[reel.moderationStatus] : ''
+  const reelScope = resolveReelScopeLabel(reel)
   const createdAtDate =
     reel.createdAt && 'seconds' in reel.createdAt
       ? new Date(reel.createdAt.seconds * 1000)
@@ -198,10 +200,18 @@ function ReelCard({
 
       <div className="flex flex-1 flex-col space-y-3 p-4">
         <div className="space-y-1.5">
-          <p className="line-clamp-1 inline-flex items-center gap-1.5 text-sm font-medium text-gray-700 dark:text-gray-200">
-            <Link2 className="h-3.5 w-3.5 text-primary" />
-            {reel.propertyId ? 'Attaché à une annonce' : 'Pas encore attaché à une annonce'}
-          </p>
+          <div className="flex flex-wrap items-center gap-1.5">
+            <p className="line-clamp-1 inline-flex items-center gap-1.5 text-sm font-medium text-gray-700 dark:text-gray-200">
+              <Link2 className="h-3.5 w-3.5 text-primary" />
+              {reel.propertyId ? 'Attaché à une annonce' : 'Pas encore attaché à une annonce'}
+            </p>
+            {reelScope && (
+              <span className="inline-flex shrink-0 items-center gap-1 rounded-full bg-gray-100 px-2 py-0.5 text-[11px] font-medium text-gray-600 dark:bg-gray-800 dark:text-gray-300">
+                <reelScope.icon className="h-3 w-3" />
+                {reelScope.label}
+              </span>
+            )}
+          </div>
           {reel.description ? (
             <p className="line-clamp-2 text-sm text-gray-500 dark:text-gray-400">{reel.description}</p>
           ) : (

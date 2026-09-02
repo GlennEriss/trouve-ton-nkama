@@ -8,6 +8,7 @@ const onApply = jest.fn()
 const onSubmit = jest.fn()
 const onClear = jest.fn()
 let filterModalState: Record<string, unknown>
+let isImmobilierScope: boolean
 
 jest.mock('@/hooks/use-filter-modal', () => ({ useFilterModal: () => filterModalState }))
 jest.mock('@/hooks/useFormFilterSearchMediator', () => ({
@@ -16,6 +17,9 @@ jest.mock('@/hooks/useFormFilterSearchMediator', () => ({
 jest.mock('@/hooks/useAlgoliaFacetOptions', () => ({
   useAlgoliaTypePropertyOptions: () => ({ options: [{ value: 'Home', label: 'Maison' }] }),
   useAlgoliaTagOptions: () => ({ options: [{ value: 'piscine', label: 'Piscine' }] }),
+}))
+jest.mock('@/hooks/useSearchCategoryScope', () => ({
+  useIsImmobilierSearchScope: () => isImmobilierScope,
 }))
 jest.mock('react-hook-form', () => ({
   useForm: () => ({
@@ -45,6 +49,7 @@ jest.mock('@/components/ui/form', () => ({ Form: ({ children }: any) => <>{child
 jest.mock('@/components/search/SelectProvince', () => ({ __esModule: true, default: () => <div data-testid="select-province" /> }))
 jest.mock('@/components/search/SelectCity', () => ({ __esModule: true, default: () => <div data-testid="select-city" /> }))
 jest.mock('@/components/search/SelectStreet', () => ({ __esModule: true, default: () => <div data-testid="select-street" /> }))
+jest.mock('@/components/search/SelectCityModeScope', () => ({ __esModule: true, default: () => <div data-testid="select-city-mode-scope" /> }))
 jest.mock('@/components/search/CategoryAttributeFilters', () => ({ __esModule: true, default: () => <div data-testid="category-attribute-filters" /> }))
 jest.mock('@/components/shared/form/MultiSelectFormApp', () => ({
   __esModule: true,
@@ -61,6 +66,7 @@ describe('FilterModalHomePage', () => {
   beforeEach(() => {
     jest.clearAllMocks()
     filterModalState = { open: true, setOpen, onApply }
+    isImmobilierScope = true
   })
 
   it('affiche les champs de filtre principaux', () => {
@@ -73,6 +79,21 @@ describe('FilterModalHomePage', () => {
     expect(screen.getByTestId('multiselect-tags')).toHaveTextContent('Piscine')
     expect(screen.getByLabelText('Prix min')).toBeInTheDocument()
     expect(screen.getByLabelText('Surface max')).toBeInTheDocument()
+  })
+
+  it('cache les filtres immobilier-only et reduit Secteur recherche a la Ville hors immobilier', () => {
+    isImmobilierScope = false
+    render(<FilterModalHomePage />)
+
+    expect(screen.queryByTestId('select-province')).not.toBeInTheDocument()
+    expect(screen.queryByTestId('select-street')).not.toBeInTheDocument()
+    expect(screen.queryByTestId('multiselect-status')).not.toBeInTheDocument()
+    expect(screen.queryByLabelText('Surface min')).not.toBeInTheDocument()
+    expect(screen.queryByTestId('multiselect-typeProperty')).not.toBeInTheDocument()
+
+    expect(screen.getByTestId('select-city-mode-scope')).toBeInTheDocument()
+    expect(screen.getByLabelText('Prix min')).toBeInTheDocument()
+    expect(screen.getByTestId('multiselect-tags')).toHaveTextContent('Piscine')
   })
 
   it('ferme la modale via le chevron', () => {

@@ -12,6 +12,13 @@ type ActiveCategory = {
   order: number;
 };
 
+// Champs qui n'existent que sur une annonce immobilier (typeProperty) — leurs contrôles
+// disparaissent de l'UI dès qu'on quitte "Immobilier"/"Toutes catégories" (voir
+// useIsImmobilierSearchScope, FilterSearchDesktopPageSection, FilterModalHomePage). Sans ce
+// nettoyage, un filtre laissé actif (ex. minArea) continuait de s'appliquer à une recherche
+// Mode sans qu'aucun contrôle visible n'explique pourquoi les résultats étaient vides.
+const IMMOBILIER_ONLY_PARAMS = ['province', 'street', 'status', 'minArea', 'maxArea', 'typeProperty'] as const;
+
 async function fetchActiveCategories(): Promise<ActiveCategory[]> {
   const response = await fetch("/api/categories/active");
   if (!response.ok) return [];
@@ -46,6 +53,16 @@ export default function CategoryFilterPills() {
       params.set("category", name);
     } else {
       params.delete("category");
+    }
+    // Change de racine : la feuille choisie (categoryId) et ses filtres d'attributs
+    // (attr_<key>) n'ont plus de sens pour une autre racine — même geste que
+    // CategoryLeafFilterPills au changement de feuille.
+    params.delete("categoryId");
+    for (const key of Array.from(params.keys())) {
+      if (key.startsWith("attr_")) params.delete(key);
+    }
+    for (const key of IMMOBILIER_ONLY_PARAMS) {
+      params.delete(key);
     }
     router.push(`/search?${params.toString()}`);
   };

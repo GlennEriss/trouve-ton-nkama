@@ -143,9 +143,67 @@ describe('CreateOrphanReelClient', () => {
       '+24166545430',
       undefined,
       {},
+      undefined,
     )
     expect(mockClearDraftVideo).toHaveBeenCalled()
     expect(mockToast).toHaveBeenCalledWith(expect.objectContaining({ title: 'Vidéo envoyée' }))
+  })
+
+  it('transmet la categorie choisie via le chip quand aucune annonce n est presselectionnee', async () => {
+    // Demande directe d'un utilisateur : classer un réel qui ne sera jamais rattaché à une
+    // annonce ne devrait pas être impossible — le chip Immobilier/Mode le fait directement.
+    render(<CreateOrphanReelClient />)
+    await chooseVideo()
+
+    fireEvent.click(screen.getByRole('button', { name: 'Mode' }))
+    fireEvent.click(screen.getByRole('button', { name: 'Publier le réel' }))
+
+    await waitFor(() => expect(mockCreateReel).toHaveBeenCalledWith(
+      'reel-fixed-id',
+      null,
+      'owner-1',
+      'reels-raw/owner-1/reel-fixed-id.mov',
+      '+24166545430',
+      undefined,
+      {},
+      'Mode',
+    ))
+  })
+
+  it('desélectionne la categorie choisie via le chip en le recliquant', async () => {
+    render(<CreateOrphanReelClient />)
+    await chooseVideo()
+
+    const modeChip = screen.getByRole('button', { name: 'Mode' })
+    fireEvent.click(modeChip)
+    expect(modeChip).toHaveAttribute('aria-pressed', 'true')
+    fireEvent.click(modeChip)
+    expect(modeChip).toHaveAttribute('aria-pressed', 'false')
+
+    fireEvent.click(screen.getByRole('button', { name: 'Publier le réel' }))
+
+    await waitFor(() => expect(mockCreateReel).toHaveBeenCalledWith(
+      'reel-fixed-id',
+      null,
+      'owner-1',
+      'reels-raw/owner-1/reel-fixed-id.mov',
+      '+24166545430',
+      undefined,
+      {},
+      undefined,
+    ))
+  })
+
+  it('masque le chip de categorie quand une annonce est deja presselectionnee', async () => {
+    // La catégorie est alors déjà déterminée par l'annonce rattachée (categoryPath copié
+    // côté serveur) — laisser le chip visible pourrait faire croire qu'il change quelque chose.
+    propertyId = 'property-1'
+    propertyQueryData = { title: 'Studio Akébé', contact: '+24177001122', typeProperty: 'Studio' }
+    render(<CreateOrphanReelClient />)
+    await chooseVideo()
+
+    expect(screen.queryByRole('button', { name: 'Mode' })).not.toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: 'Immobilier' })).not.toBeInTheDocument()
   })
 
   it('ouvre l authentification sans ecriture pour un visiteur', async () => {
@@ -191,6 +249,7 @@ describe('CreateOrphanReelClient', () => {
       '+24177001122',
       undefined,
       {},
+      undefined,
     ))
   })
 
@@ -211,6 +270,7 @@ describe('CreateOrphanReelClient', () => {
       '+24166545430',
       undefined,
       {},
+      undefined,
     ))
   })
 

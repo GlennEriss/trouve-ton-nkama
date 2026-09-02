@@ -24,7 +24,9 @@ import SelectStreet from "../search/SelectStreet";
 import MultiSelectFormApp from "../shared/form/MultiSelectFormApp";
 import InputFormNumberApp from "../shared/form/InputFormNumberApp";
 import { useAlgoliaTypePropertyOptions, useAlgoliaTagOptions } from "@/hooks/useAlgoliaFacetOptions";
+import { useIsImmobilierSearchScope } from "@/hooks/useSearchCategoryScope";
 import CategoryAttributeFilters from "../search/CategoryAttributeFilters";
+import SelectCityModeScope from "../search/SelectCityModeScope";
 
 export const FilterModalHomePage = () => {
     const form = useForm<FormFilterSchemaType>({
@@ -40,6 +42,7 @@ export const FilterModalHomePage = () => {
     const { onSubmit, onClear } = useFormFilterSearchMediator(form);
     const { options: typePropertyOptions } = useAlgoliaTypePropertyOptions();
     const { options: tagOptions } = useAlgoliaTagOptions();
+    const isImmobilierScope = useIsImmobilierSearchScope();
     return (
         <Dialog open={open} onOpenChange={setOpen}>
             <DialogTrigger asChild>
@@ -80,25 +83,33 @@ export const FilterModalHomePage = () => {
                                     {/* Province, Ville & Quartier */}
                                     <div className="grid grid-cols-1 gap-3">
                                         <h1 className="text-lg mb-1 text-secondary font-bold col-span-full">Secteur recherché</h1>
-                                        <SelectProvince />
-                                        <SelectCity />
-                                        <SelectStreet />
+                                        {isImmobilierScope ? (
+                                            <>
+                                                <SelectProvince />
+                                                <SelectCity />
+                                                <SelectStreet />
+                                            </>
+                                        ) : (
+                                            <SelectCityModeScope />
+                                        )}
                                     </div>
 
                                     <CategoryAttributeFilters modalPopover />
 
                                     {/* Statut (À vendre/À louer) */}
-                                    <div className="space-y-3">
-                                        <h1 className="text-lg mb-1 text-secondary font-bold">Statut</h1>
-                                        <MultiSelectFormApp
-                                            control={form.control}
-                                            name="status"
-                                            options={statusOptions}
-                                            placeholder="Sélectionnez le statut"
-                                            className='rounded-full p-2 h-14 bg-gray-50 dark:bg-gray-900 dark:text-white'
-                                            modalPopover
-                                        />
-                                    </div>
+                                    {isImmobilierScope && (
+                                        <div className="space-y-3">
+                                            <h1 className="text-lg mb-1 text-secondary font-bold">Statut</h1>
+                                            <MultiSelectFormApp
+                                                control={form.control}
+                                                name="status"
+                                                options={statusOptions}
+                                                placeholder="Sélectionnez le statut"
+                                                className='rounded-full p-2 h-14 bg-gray-50 dark:bg-gray-900 dark:text-white'
+                                                modalPopover
+                                            />
+                                        </div>
+                                    )}
 
                                     {/* Prix */}
                                     <div className="space-y-2">
@@ -122,24 +133,26 @@ export const FilterModalHomePage = () => {
                                     </div>
 
                                     {/* Surface */}
-                                    <div className="space-y-3">
-                                        <h1 className="text-lg mb-1 text-secondary font-bold">Surface (m²)</h1>
-                                        <label htmlFor="area-slider-home" className="text-gray-600">Surface (m²)</label>
-                                        <InputFormNumberApp
-                                            control={form.control}
-                                            name="minArea"
-                                            label="Surface min"
-                                            step={10}
-                                            placeholder="0"
-                                        />
-                                        <InputFormNumberApp
-                                            control={form.control}
-                                            name="maxArea"
-                                            label="Surface max"
-                                            step={10}
-                                            placeholder="0"
-                                        />
-                                    </div>
+                                    {isImmobilierScope && (
+                                        <div className="space-y-3">
+                                            <h1 className="text-lg mb-1 text-secondary font-bold">Surface (m²)</h1>
+                                            <label htmlFor="area-slider-home" className="text-gray-600">Surface (m²)</label>
+                                            <InputFormNumberApp
+                                                control={form.control}
+                                                name="minArea"
+                                                label="Surface min"
+                                                step={10}
+                                                placeholder="0"
+                                            />
+                                            <InputFormNumberApp
+                                                control={form.control}
+                                                name="maxArea"
+                                                label="Surface max"
+                                                step={10}
+                                                placeholder="0"
+                                            />
+                                        </div>
+                                    )}
 
                                     {/* Chambres */}
                                     {/* <div className="space-y-3">
@@ -174,17 +187,19 @@ export const FilterModalHomePage = () => {
                                 {/* Colonne Droite */}
                                 <div className="space-y-6">
                                     {/* Type de propriété */}
-                                    <div className="space-y-3">
-                                        <h1 className="text-lg mb-1 text-secondary font-bold">Type d'annonces</h1>
-                                        <MultiSelectFormApp
-                                            control={form.control}
-                                            name="typeProperty"
-                                            options={typePropertyOptions}
-                                            placeholder="Types d'annonces"
-                                            className='rounded-full p-2 h-14 bg-gray-50 dark:bg-gray-900 dark:text-white'
-                                            modalPopover
-                                        />
-                                    </div>
+                                    {isImmobilierScope && (
+                                        <div className="space-y-3">
+                                            <h1 className="text-lg mb-1 text-secondary font-bold">Type d'annonces</h1>
+                                            <MultiSelectFormApp
+                                                control={form.control}
+                                                name="typeProperty"
+                                                options={typePropertyOptions}
+                                                placeholder="Types d'annonces"
+                                                className='rounded-full p-2 h-14 bg-gray-50 dark:bg-gray-900 dark:text-white'
+                                                modalPopover
+                                            />
+                                        </div>
+                                    )}
 
                                     {/* Tags */}
                                     <div className="space-y-3">

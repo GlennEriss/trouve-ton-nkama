@@ -3,7 +3,7 @@
 import React from 'react'
 import Link from 'next/link'
 import { useSearchParams } from 'next/navigation'
-import { ArrowLeft, CheckCircle2, Loader2, Pencil, Send, Video, X, XCircle } from 'lucide-react'
+import { ArrowLeft, Building2, CheckCircle2, Loader2, Pencil, Send, ShoppingBag, Video, X, XCircle } from 'lucide-react'
 import { useCurrentUser } from '@/hooks/use-current-user'
 import { useProperty } from '@/hooks/use-property'
 import { useVideoDropzone, type VideoDropzoneRejectionReason } from '@/hooks/useVideoDropzone'
@@ -15,6 +15,7 @@ import { Button } from '@trouve-ton-nkama/ui/button'
 import { useToast } from '@/hooks/use-toast'
 import { routes } from '@/constantes/routes'
 import { isAnnouncer } from '@/lib/auth/role-routing'
+import { resolveListingScopeLabel } from '@/lib/listing-scope'
 import type { Reel, ReelProcessingStatus } from '@/models/reel'
 
 const REJECTION_MESSAGES: Record<VideoDropzoneRejectionReason, string> = {
@@ -73,6 +74,10 @@ export default function CreateOrphanReelClient() {
   // au moment de l'affichage si laissé vide, voir ReelsFeedClient).
   const [contact, setContact] = React.useState('')
   const [description, setDescription] = React.useState('')
+  // Chip "Immobilier"/"Mode" à côté du contact — seul moyen de classer ce réel quand aucune
+  // annonce n'est présélectionnée (demande directe d'un utilisateur : attacher une annonce reste
+  // possible ensuite, mais ne devait pas être le seul chemin pour choisir la catégorie).
+  const [categoryOverride, setCategoryOverride] = React.useState<'Immobilier' | 'Mode' | null>(null)
   const [pendingSubmission, setPendingSubmission] = React.useState(false)
   const [isPublishAuthModalOpen, setIsPublishAuthModalOpen] = React.useState(false)
   const isFinalSubmittingRef = React.useRef(false)
@@ -150,7 +155,10 @@ export default function CreateOrphanReelClient() {
         {
           ...(isTrimmed ? { trimStartSeconds: trimStart, trimEndSeconds: trimEnd } : {}),
           ...(muted ? { muted: true } : {}),
-        }
+        },
+        // Ignoré côté serveur si propertyId est fourni (voir /api/reels/route.ts) — inutile de
+        // le conditionner ici, plus simple à lire.
+        categoryOverride ?? undefined
       )
 
       if (!createdId) {
@@ -180,6 +188,7 @@ export default function CreateOrphanReelClient() {
         giftTotalAmount: 0,
         ...(trimmedContact ? { contact: trimmedContact } : {}),
         ...(trimmedDescription ? { description: trimmedDescription } : {}),
+        ...(!propertyId && categoryOverride ? { categoryPath: { lvl0: categoryOverride } } : {}),
       } as Reel & { id: string })
 
       toast({
@@ -194,7 +203,7 @@ export default function CreateOrphanReelClient() {
       })
       throw error
     }
-  }, [user?.uid, propertyId, contact, description, trimStart, trimEnd, videoDurationSeconds, muted, clearDraftVideo, toast])
+  }, [user?.uid, propertyId, contact, description, categoryOverride, trimStart, trimEnd, videoDurationSeconds, muted, clearDraftVideo, toast])
 
   const handlePublish = React.useCallback(async () => {
     if (!videoFile) return
@@ -282,8 +291,17 @@ export default function CreateOrphanReelClient() {
             <X className="h-5 w-5" />
           </button>
           {propertyId && property?.title ? (
-            <span className="max-w-[60%] truncate rounded-full bg-white/10 px-3 py-1.5 text-xs text-white/80">
-              Pour « {property.title} »
+            <span className="flex max-w-[70%] items-center gap-1.5 truncate rounded-full bg-white/10 px-3 py-1.5 text-xs text-white/80">
+              <span className="truncate">Pour « {property.title} »</span>
+              {(() => {
+                const scope = resolveListingScopeLabel(property)
+                return (
+                  <span className="inline-flex shrink-0 items-center gap-1 rounded-full bg-white/15 px-2 py-0.5 text-[11px] font-medium text-white">
+                    <scope.icon className="h-3 w-3" />
+                    {scope.label}
+                  </span>
+                )
+              })()}
             </span>
           ) : null}
         </div>
@@ -302,14 +320,42 @@ export default function CreateOrphanReelClient() {
         />
 
         <div className="space-y-2 px-4 pb-[calc(env(safe-area-inset-bottom,0px)+1rem)] pt-2">
-          <button
-            type="button"
-            onClick={() => setIsEditingContact((current) => !current)}
-            className="inline-flex min-h-11 items-center gap-1.5 rounded-full bg-white/10 px-3 py-2 text-xs text-white/80"
-          >
-            <Pencil className="h-3 w-3" />
-            {contact ? `Contact : ${contact}` : 'Ajouter un numéro de contact'}
-          </button>
+          <div className="flex flex-wrap items-center gap-2">
+            <button
+              type="button"
+              onClick={() => setIsEditingContact((current) => !current)}
+              className="inline-flex min-h-11 items-center gap-1.5 rounded-full bg-white/10 px-3 py-2 text-xs text-white/80"
+            >
+              <Pencil className="h-3 w-3" />
+              {contact ? `Contact : ${contact}` : 'Ajouter un numéro de contact'}
+            </button>
+
+            {!propertyId && (
+              // Chip direct Immobilier/Mode — demande explicite d'un utilisateur pour qui
+              // "Choisir une annonce" (écran précédent) n'était pas un chemin assez direct :
+              // classer le réel ne devrait pas dépendre de lui trouver une annonce à rattacher.
+              <div className="flex items-center gap-1.5" role="group" aria-label="Catégorie du réel">
+                {(['Immobilier', 'Mode'] as const).map((option) => {
+                  const Icon = option === 'Mode' ? ShoppingBag : Building2
+                  const selected = categoryOverride === option
+                  return (
+                    <button
+                      key={option}
+                      type="button"
+                      onClick={() => setCategoryOverride((current) => (current === option ? null : option))}
+                      aria-pressed={selected}
+                      className={`inline-flex min-h-11 items-center gap-1.5 rounded-full px-3 py-2 text-xs transition-colors ${
+                        selected ? 'bg-primary text-white' : 'bg-white/10 text-white/80'
+                      }`}
+                    >
+                      <Icon className="h-3 w-3" />
+                      {option}
+                    </button>
+                  )
+                })}
+              </div>
+            )}
+          </div>
 
           {isEditingContact && (
             <input
@@ -379,9 +425,41 @@ export default function CreateOrphanReelClient() {
             {propertyId && property?.title ? (
               <>Pour l&apos;annonce « {property.title} » — vidéo verticale, 10 minutes maximum.</>
             ) : (
-              <>Vidéo verticale, 10 minutes maximum. Vous pourrez l&apos;attacher à une de vos annonces ensuite.</>
+              <>Vidéo verticale, 10 minutes maximum.</>
             )}
           </p>
+          {propertyId && property ? (
+            (() => {
+              // Un réel n'a pas de catégorie propre — il hérite de celle de l'annonce à laquelle
+              // il est rattaché (categoryPath). Rendu visible ici : sans ça, rien dans cet écran
+              // n'indique si ce réel sera classé "Immobilier" ou "Mode" dans le fil public.
+              const scope = resolveListingScopeLabel(property)
+              return (
+                <span className="mt-2 inline-flex items-center gap-1 rounded-full bg-primary/10 px-2.5 py-1 text-xs font-medium text-primary dark:bg-primary/20 dark:text-primary-200">
+                  <scope.icon className="h-3.5 w-3.5" />
+                  Ce réel sera classé {scope.label}
+                </span>
+              )
+            })()
+          ) : (
+            // Entrée directe depuis "Mes réels" ou le fil (CREATE_REEL_FROM_MINE_HREF /
+            // CREATE_REEL_FROM_FEED_HREF) : aucune annonce n'est présélectionnée, donc rien ne
+            // détermine encore Immobilier/Mode pour ce réel. Signalé explicitement + lien direct
+            // vers le sélecteur — demande directe d'un utilisateur qui ne voyait aucun moyen de
+            // faire ce choix à la création (avant, seul un texte discret mentionnait un
+            // rattachement "ensuite", sans dire que la catégorie en dépendait).
+            <div className="mt-2 flex flex-wrap items-center gap-2">
+              <span className="inline-flex items-center rounded-full bg-amber-100 px-2.5 py-1 text-xs font-medium text-amber-800 dark:bg-amber-900/30 dark:text-amber-200">
+                Pas encore classé Immobilier ou Mode
+              </span>
+              <Link
+                href={routes.protected.reels_select_property}
+                className="inline-flex items-center rounded-full bg-primary px-2.5 py-1 text-xs font-medium text-white hover:bg-primary/90"
+              >
+                Choisir une annonce
+              </Link>
+            </div>
+          )}
         </div>
       </section>
 
