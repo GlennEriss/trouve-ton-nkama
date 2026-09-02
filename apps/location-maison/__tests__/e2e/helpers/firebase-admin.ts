@@ -406,3 +406,80 @@ export async function seedReel(createdBy: string, reel: SeedReel): Promise<void>
       updatedAt: now,
     })
 }
+
+/**
+ * Reads a real `ad_campaigns/{id}` doc — vérifie ce que POST /api/advertising/campaigns a
+ * réellement écrit (Admin SDK), pas juste ce que le dashboard affiche côté client.
+ */
+export async function getAdCampaign(id: string): Promise<Record<string, unknown> | null> {
+  const app = ensureAdminApp()
+  const snapshot = await admin.firestore(app).collection('ad_campaigns').doc(id).get()
+  return snapshot.exists ? (snapshot.data() ?? null) : null
+}
+
+/**
+ * Finds the (single, expected) `ad_campaigns/{id}` doc created by a given owner — le client ne
+ * connaît l'id de la campagne créée que via la réponse JSON (`campaignId`), donc un test qui ne
+ * l'a pas capturée directement (ex. vérification après la redirection vers /advertising) doit
+ * la retrouver par `createdBy`.
+ */
+export async function findAdCampaignByOwner(
+  uid: string,
+): Promise<{ id: string; data: Record<string, unknown> } | null> {
+  const app = ensureAdminApp()
+  const snapshot = await admin
+    .firestore(app)
+    .collection('ad_campaigns')
+    .where('createdBy', '==', uid)
+    .limit(1)
+    .get()
+  if (snapshot.empty) return null
+  const doc = snapshot.docs[0]
+  return { id: doc.id, data: doc.data() }
+}
+
+/**
+ * Deletes real `ad_campaigns/{id}` docs, the Storage object their créative référence (POST
+ * /api/advertising/upload écrit réellement dans Storage, contrairement à property.db.ts) et
+ * leurs `credit_transactions` associées (créées dans la même transaction Firestore que la
+ * campagne, voir /api/advertising/campaigns/route.ts). Lit chaque doc AVANT de le supprimer
+ * pour récupérer son vrai chemin d'image plutôt que d'en deviner un — même logique que
+ * deleteReels ci-dessus.
+ */
+export async function deleteAdCampaigns(ids: string[]): Promise<void> {
+  const app = ensureAdminApp()
+  const db = admin.firestore(app)
+  const bucketName = process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET || process.env.FIREBASE_STORAGE_BUCKET
+  const bucket = admin.storage(app).bucket(bucketName)
+
+  await Promise.all(
+    ids.map(async (id) => {
+      const ref = db.collection('ad_campaigns').doc(id)
+      const snapshot = await ref.get()
+      const data = snapshot.data() ?? {}
+      const imagePATH =
+        typeof (data as any).creative?.imagePATH === 'string' ? (data as any).creative.imagePATH : ''
+
+      const transactionsSnap = await db.collection('credit_transactions').where('campaignId', '==', id).get()
+
+      await Promise.all([
+        ref.delete(),
+        ...(imagePATH ? [bucket.file(imagePATH).delete({ ignoreNotFound: true })] : []),
+        ...transactionsSnap.docs.map((doc) => doc.ref.delete()),
+      ])
+    }),
+  )
+}
+
+/**
+ * Reads a real `users/{uid}` doc's `credits` field — pour vérifier qu'une création de campagne
+ * (POST /api/advertising/campaigns) a réellement débité le compte, pas seulement renvoyé un
+ * `creditsRemaining` dans la réponse JSON.
+ */
+export async function getUserCredits(uid: string): Promise<number | null> {
+  const app = ensureAdminApp()
+  const snapshot = await admin.firestore(app).collection('users').where('uid', '==', uid).limit(1).get()
+  if (snapshot.empty) return null
+  const credits = snapshot.docs[0].data().credits
+  return typeof credits === 'number' ? credits : null
+}
