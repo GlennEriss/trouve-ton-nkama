@@ -924,3 +924,67 @@ reste un chantier séparé, non traité ici) :
 `__tests__/components/home-page-filter-modal.test.tsx`.
 
 *Créé le 2026-09-01.*
+
+## 🔴 Corrigé — l'état des filtres de /search survivait incorrectement à un changement de catégorie
+
+**Demande directe de l'utilisateur**, avec une URL reproduisant le problème :
+`/search?province=Estuaire&city=Libreville&street=Angondjé&maxPrice=10000&category=Mode` — puis,
+en précisant le comportement voulu : *"le souci est quand je mets des filtres sur la section
+'Toutes les catégories' puis je pars sur 'Mode' [...] mieux on réinitialise les filtres si on
+change de section [...] pareillement si je pars de Immobilier à Mode ou de Mode à une autre"*.
+
+**Root cause, deux couches** :
+1. `CategoryFilterPills.selectCategory()` (juste après l'entrée précédente) ne purgeait que les
+   champs immobilier-only (`province`/`street`/`status`/`minArea`/`maxArea`/`typeProperty`) —
+   pas les filtres génériques (Prix, Ville, Tags). Un Prix ou une Ville posés sur "Toutes
+   catégories" restaient donc actifs, invisibles, après bascule vers une autre section.
+2. Plus grave : `buildPublicSearchFilters()` (`search-filter-query.ts`, la fonction qui construit
+   réellement la requête Algolia) lisait les paramètres d'URL **sans jamais tenir compte de
+   `category`**. Une URL combinant `category=Mode` avec un `province`/`street` déjà présent
+   (navigation directe, lien partagé, historique du navigateur — pas seulement le clic sur une
+   pastille) appliquait donc un filtre `street:"Angondjé"` qu'AUCUNE annonce Mode ne peut jamais
+   satisfaire (`street` toujours vide à la création, voir l'entrée précédente) : zéro résultat,
+   sans la moindre explication visible puisque les contrôles Province/Quartier sont cachés dès
+   que `category` ≠ Immobilier. Reproduit et confirmé avec l'URL exacte fournie par
+   l'utilisateur : 0 résultat avant correctif, 12 après.
+
+**Correctif, aux deux couches** :
+- `buildPublicSearchFilters()` ignore désormais entièrement les filtres immobilier-only
+  (`province`/`street`/`status`/`typeProperty`/`minArea`/`maxArea`/`minNbrRooms`/`maxNbrRooms`,
+  liste exportée `IMMOBILIER_ONLY_PARAMS`) dès que `category` n'est ni vide ni "Immobilier" —
+  quelle que soit la façon dont l'utilisateur est arrivé sur cette URL. Défense en profondeur :
+  corrige le bug même pour une URL qui contourne entièrement l'UI de la pastille.
+- `CategoryFilterPills.selectCategory()` réécrit pour une **réinitialisation complète** au
+  changement de section, pas une purge sélective : seule la recherche texte libre (`query`)
+  traverse le changement, tout le reste (province/ville/quartier/prix/surface/statut/type/tags,
+  la feuille Mode `categoryId`, ses filtres d'attributs `attr_<key>`) repart à zéro — exactement
+  le comportement demandé, dans les deux sens (Immobilier→Mode, Mode→Immobilier, →"Toutes
+  catégories", etc.).
+
+**Vérification** :
+- Jest (`__tests__/lib/search-filter-query.test.ts`, 2 nouveaux cas) : tous les champs
+  immobilier-only ignorés quand `category=Mode` (avec `city`/`price`/`categoryPath.lvl0`
+  toujours appliqués), tous appliqués quand `category` est vide ou "Immobilier".
+- Jest (`__tests__/components/category-filter-pills.test.tsx`, réécrit) : un jeu complet de
+  filtres (immobilier-only + génériques + Mode) posé sur une section est entièrement absent de
+  l'URL après clic sur une autre pastille — seule `category`/`query` survit.
+- E2E réel (fichiers de test jetables, supprimés après vérification) : l'URL exacte fournie par
+  l'utilisateur passe de 0 à 12 résultats Mode ; un clic sur la pastille "Mode" depuis
+  `/search?minPrice=1000&maxPrice=9000&city=Libreville` aboutit bien à `/search?category=Mode`
+  seul, tous les filtres précédents effacés.
+- `tsc --noEmit` propre, suite Jest complète 1531/1531.
+- Régression réelle : `property-filters-search.spec.ts` + `lot8e-search-consultation.spec.ts`
+  rejoués sur les deux viewports — un seul échec (`rend une page introuvable...`), confirmé
+  **pré-existant et sans rapport** (page 404 d'une annonce individuelle, aucun fichier touché
+  par ce correctif ne s'en approche — vérifié via `git diff`).
+- **Incident en cours de diagnostic, corrigé immédiatement** : un `git stash` a été lancé par
+  erreur pour isoler cet échec pré-existant, ce qui a temporairement remis le répertoire de
+  travail dans son état d'avant les modifications de cette session. Repéré immédiatement via les
+  avertissements automatiques de fichiers modifiés, corrigé par `git stash pop` avant toute autre
+  action — aucune perte, mais un geste à ne pas répéter sur ce dépôt sans autorisation explicite.
+
+**Fichiers** : `src/lib/search/search-filter-query.ts`,
+`src/components/search/CategoryFilterPills.tsx`,
+`__tests__/lib/search-filter-query.test.ts`, `__tests__/components/category-filter-pills.test.tsx`.
+
+*Créé le 2026-09-02.*

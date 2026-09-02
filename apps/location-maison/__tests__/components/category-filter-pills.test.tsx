@@ -33,14 +33,16 @@ describe('CategoryFilterPills', () => {
     expect(screen.getByText('Mode')).toBeInTheDocument()
   })
 
-  it('purge categoryId, attr_*, et les filtres immobilier-only en changeant de racine', () => {
-    // Bug reel trouve en adaptant les filtres /search a Mode : sans cette purge, un filtre
-    // immobilier-only laisse dans l'URL (ex. minArea, typeProperty) continuait de s'appliquer
-    // a une recherche Mode alors que son controle avait disparu de l'UI (FilterSearchDesktopPageSection/
-    // FilterModalHomePage) — resultats vides sans aucune explication visible.
+  it('reinitialise TOUS les filtres (pas seulement immobilier-only) en changeant de section', () => {
+    // Demande explicite d'un utilisateur constatant qu'un filtre posé sur "Toutes categories"
+    // restait actif (invisible mais toujours applique) apres bascule vers Immobilier ou Mode,
+    // et pareillement d'une section a l'autre — seule la recherche texte libre doit traverser
+    // le changement de section, tout le reste repart a zero (pas juste les champs immobilier-only,
+    // un filtre generique comme le Prix serait tout aussi trompeur en restant actif).
     searchParamsString =
       'categoryId=leaf-1&attr_taille=M&province=Estuaire&street=Glass&status=FOR_SALE' +
-      '&minArea=10&maxArea=50&typeProperty=Villa&city=Libreville&query=test'
+      '&minArea=10&maxArea=50&typeProperty=Villa&city=Libreville&minPrice=1000&maxPrice=9000' +
+      '&tags=piscine&query=studio'
     render(<CategoryFilterPills />)
 
     fireEvent.click(screen.getByText('Mode'))
@@ -50,27 +52,18 @@ describe('CategoryFilterPills', () => {
     const params = url.searchParams
 
     expect(params.get('category')).toBe('Mode')
-    expect(params.has('categoryId')).toBe(false)
-    expect(params.has('attr_taille')).toBe(false)
-    expect(params.has('province')).toBe(false)
-    expect(params.has('street')).toBe(false)
-    expect(params.has('status')).toBe(false)
-    expect(params.has('minArea')).toBe(false)
-    expect(params.has('maxArea')).toBe(false)
-    expect(params.has('typeProperty')).toBe(false)
-    // Génériques, sans rapport avec l'immobilier : doivent survivre au changement de racine.
-    expect(params.get('city')).toBe('Libreville')
-    expect(params.get('query')).toBe('test')
+    // Seule la recherche texte libre traverse le changement de section.
+    expect(params.get('query')).toBe('studio')
+    expect([...params.keys()].sort()).toEqual(['category', 'query'])
   })
 
-  it('efface le parametre category en revenant sur "Toutes categories"', () => {
-    searchParamsString = 'category=Mode&categoryId=leaf-1'
+  it('efface aussi la recherche texte libre : reste identique en repassant sur "Toutes categories" sans query', () => {
+    searchParamsString = 'category=Mode&categoryId=leaf-1&minPrice=1000'
     render(<CategoryFilterPills />)
 
     fireEvent.click(screen.getByText('Toutes catégories'))
 
     const url = new URL(push.mock.calls[0][0] as string, 'http://localhost')
-    expect(url.searchParams.has('category')).toBe(false)
-    expect(url.searchParams.has('categoryId')).toBe(false)
+    expect([...url.searchParams.keys()]).toEqual([])
   })
 })

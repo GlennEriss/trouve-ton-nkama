@@ -60,4 +60,51 @@ describe('public search filters', () => {
 
     expect(filters).toBe('state:"IN_PROGRESS" AND moderationStatus:"APPROVED"')
   })
+
+  it('ignore les filtres immobilier-only quand category est une racine non-immobilier', () => {
+    // Bug reel : une URL combinant category=Mode avec des champs immobilier-only laisses
+    // (navigation directe, lien partage, historique du navigateur) appliquait un filtre
+    // qu'aucune annonce Mode ne peut jamais satisfaire (street:"" toujours pour Mode), zero
+    // resultat sans la moindre explication visible puisque les controles correspondants sont
+    // caches des que category != Immobilier (voir useIsImmobilierSearchScope).
+    const params = new URLSearchParams({
+      category: 'Mode',
+      province: 'Estuaire',
+      city: 'Libreville',
+      street: 'Angondjé',
+      status: 'FOR_SALE',
+      typeProperty: 'Villa',
+      minArea: '10',
+      maxArea: '50',
+      minNbrRooms: '2',
+      maxNbrRooms: '4',
+      maxPrice: '10000',
+    })
+
+    const filters = buildPublicSearchFilters(params)
+
+    expect(filters).not.toContain('province:')
+    expect(filters).not.toContain('street:')
+    expect(filters).not.toContain('status:')
+    expect(filters).not.toContain('typeProperty:')
+    expect(filters).not.toContain('area >=')
+    expect(filters).not.toContain('area <=')
+    expect(filters).not.toContain('nbrRooms >=')
+    expect(filters).not.toContain('nbrRooms <=')
+    // Génériques : restent appliqués pour Mode.
+    expect(filters).toContain('city:"Libreville"')
+    expect(filters).toContain('price <= 10000')
+    expect(filters).toContain('categoryPath.lvl0:"Mode"')
+  })
+
+  it('applique les filtres immobilier-only quand category est vide ou "Immobilier"', () => {
+    const withoutCategory = buildPublicSearchFilters(new URLSearchParams({ province: 'Estuaire' }))
+    expect(withoutCategory).toContain('province:"Estuaire"')
+
+    const withImmobilier = buildPublicSearchFilters(
+      new URLSearchParams({ category: 'Immobilier', province: 'Estuaire', minArea: '10' }),
+    )
+    expect(withImmobilier).toContain('province:"Estuaire"')
+    expect(withImmobilier).toContain('area >= 10')
+  })
 })

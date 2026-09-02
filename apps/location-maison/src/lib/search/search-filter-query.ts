@@ -44,6 +44,24 @@ const NUMERIC_FILTERS = [
   ['maxNbrRooms', 'nbrRooms', '<='],
 ] as const;
 
+// Champs qui n'existent que sur une annonce immobilier (typeProperty) — `street`/`province`
+// sont en plus structurellement peu fiables pour Mode (voir category-listing/create/page.tsx :
+// street toujours vide, province codée en dur). Partagé avec CategoryFilterPills.tsx (purge
+// ces mêmes clés de l'URL au changement de catégorie) pour éviter que les deux listes divergent
+// — exactement le bug trouvé ici : sans ce filtrage, une URL forgée/partagée/issue de l'historique
+// du navigateur combinant `category=Mode` avec un `street`/`province` laissé d'une recherche
+// immobilier appliquait un filtre qu'aucune annonce Mode ne peut jamais satisfaire
+// (`street:""` toujours), zéro résultat sans la moindre explication visible (les contrôles
+// correspondants sont cachés dès que category ≠ Immobilier, voir useIsImmobilierSearchScope).
+export const IMMOBILIER_ONLY_PARAMS = [
+  'province', 'street', 'status', 'typeProperty', 'minArea', 'maxArea', 'minNbrRooms', 'maxNbrRooms',
+] as const;
+
+function isImmobilierSearchScope(searchParams: SearchParamsReader): boolean {
+  const category = searchParams.get('category') ?? '';
+  return category === '' || category === 'Immobilier';
+}
+
 function splitParamValues(value: string) {
   return value
     .split(',')
@@ -78,13 +96,17 @@ export function buildPublicSearchFilters(searchParams: SearchParamsReader) {
     'state:"IN_PROGRESS"',
     'moderationStatus:"APPROVED"',
   ];
+  const immobilierScope = isImmobilierSearchScope(searchParams);
+  const immobilierOnly = new Set<string>(IMMOBILIER_ONLY_PARAMS);
 
   FACET_FILTERS.forEach(([param, attribute]) => {
+    if (!immobilierScope && immobilierOnly.has(param)) return;
     const filter = buildFacetFilter(attribute, searchParams.get(param) ?? '');
     if (filter) filters.push(filter);
   });
 
   NUMERIC_FILTERS.forEach(([param, attribute, operator]) => {
+    if (!immobilierScope && immobilierOnly.has(param)) return;
     const value = normalizeNonNegativeNumber(searchParams.get(param));
     if (value !== null) filters.push(`${attribute} ${operator} ${value}`);
   });
