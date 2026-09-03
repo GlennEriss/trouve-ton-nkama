@@ -40,8 +40,16 @@ jest.mock('next/link', () => ({ __esModule: true, default: ({ children, href, ..
 jest.mock('@trouve-ton-nkama/ui/input', () => ({ Input: (props: any) => <input {...props} /> }))
 jest.mock('@/components/home-page/FilterModalHomePage', () => ({ FilterModalHomePage: () => <span>Filtres</span> }))
 jest.mock('@/components/home-page/PropertyCard', () => ({ __esModule: true, default: ({ property }: any) => <article>Annonce {property.objectID}</article> }))
-jest.mock('@/components/search/CategoryFilterPills', () => ({ __esModule: true, default: () => <div data-testid="category-filter-pills" /> }))
+jest.mock('@/components/search/CategoryFilterPills', () => ({
+  __esModule: true,
+  default: () => <div data-testid="category-filter-pills" />,
+  DEMANDES_CATEGORY_NAME: 'Demandes',
+}))
 jest.mock('@/components/search/CategoryLeafFilterPills', () => ({ __esModule: true, default: () => <div data-testid="category-leaf-filter-pills" /> }))
+jest.mock('@/components/search-requests/SearchRequestsListClient', () => ({
+  __esModule: true,
+  default: () => <div data-testid="search-requests-list" />,
+}))
 jest.mock('@/components/ads/SponsoredSlot', () => ({ __esModule: true, default: ({ rotationIndex }: any) => <aside>Publicité {rotationIndex}</aside> }))
 jest.mock('@/components/search/SearchWithAIAccessNoticeDialog', () => ({
   __esModule: true,
@@ -155,5 +163,15 @@ describe('SearchMobilePage', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Aller en haut' }))
     fireEvent.click(screen.getByRole('button', { name: 'Aller en bas' }))
     expect(Element.prototype.scrollIntoView).toHaveBeenCalledTimes(2)
+  })
+
+  it('bascule vers SearchRequestsListClient quand category=Demandes, sans le titre "Resultats de la recherche" ni la pagination Algolia', () => {
+    params = new URLSearchParams('category=Demandes')
+    render(<SearchMobilePage />)
+
+    expect(screen.getByTestId('search-requests-list')).toBeInTheDocument()
+    expect(screen.getByTestId('category-filter-pills')).toBeInTheDocument()
+    expect(screen.queryByText('Résultats de la recherche')).not.toBeInTheDocument()
+    expect(screen.queryByTestId('category-leaf-filter-pills')).not.toBeInTheDocument()
   })
 })

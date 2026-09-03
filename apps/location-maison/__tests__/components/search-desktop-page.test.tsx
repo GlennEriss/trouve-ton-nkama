@@ -51,10 +51,15 @@ jest.mock('@/components/search/FilterSearchDesktopPageSection', () => ({
 jest.mock('@/components/search/CategoryFilterPills', () => ({
   __esModule: true,
   default: () => <div data-testid="category-filter-pills" />,
+  DEMANDES_CATEGORY_NAME: 'Demandes',
 }))
 jest.mock('@/components/search/CategoryLeafFilterPills', () => ({
   __esModule: true,
   default: () => <div data-testid="category-leaf-filter-pills" />,
+}))
+jest.mock('@/components/search-requests/SearchRequestsListClient', () => ({
+  __esModule: true,
+  default: () => <div data-testid="search-requests-list" />,
 }))
 jest.mock('@/components/ads/SponsoredSlot', () => ({
   __esModule: true,
@@ -150,5 +155,19 @@ describe('SearchDesktopPage', () => {
     provincesState = []
     render(<SearchDesktopPage />)
     expect(setters.setProvince).not.toHaveBeenCalled()
+  })
+
+  it('bascule vers SearchRequestsListClient quand category=Demandes, sans le panneau de filtres immobilier', () => {
+    // Une demande de recherche (collection Firestore search_requests) n'est jamais indexee
+    // dans Algolia : items/nbHits ne la concernent pas, et son propre filtre integre rend le
+    // panneau FilterSearchDesktopPageSection (province/prix/surface immobilier) hors-sujet.
+    searchParamsMap.set('category', 'Demandes')
+    render(<SearchDesktopPage />)
+
+    expect(screen.getByTestId('search-requests-list')).toBeInTheDocument()
+    expect(screen.getByTestId('category-filter-pills')).toBeInTheDocument()
+    expect(screen.queryByTestId('filter-section')).not.toBeInTheDocument()
+    expect(screen.queryByTestId('category-leaf-filter-pills')).not.toBeInTheDocument()
+    expect(screen.queryByTestId('property-card')).not.toBeInTheDocument()
   })
 })

@@ -483,3 +483,96 @@ export async function getUserCredits(uid: string): Promise<number | null> {
   const credits = snapshot.docs[0].data().credits
   return typeof credits === 'number' ? credits : null
 }
+
+export type SeedSearchRequest = {
+  id: string
+  typeProperty: string
+  transactionType: 'FOR_RENT' | 'FOR_SALE'
+  province: string
+  city: string
+  neighborhood?: string
+  budgetMinXaf: number
+  budgetMaxXaf: number
+  description: string
+  whatsappContact: string
+  moderationStatus?: 'PENDING' | 'APPROVED' | 'REJECTED' | null
+  state?: 'IN_PROGRESS' | 'ARCHIVED'
+  /** Pose boostRequested/boostPaid/boostStartAt/boostEndAt si fourni — matérialise une
+   * "recherche urgente" (voir getBoostedSearchRequests, reel.db.ts). */
+  boostEndAt?: Date | null
+}
+
+/**
+ * Writes a real `search_requests/{id}` doc directement (pas de vrai paiement MyPayGa — la
+ * création réelle passe uniquement par la Cloud Function initiateSearchRequestPayment, hors
+ * d'atteinte d'un test e2e sans dépenser de vrai argent, voir search-request.db.ts). Même champs
+ * minimaux que produirait le webhook de confirmation, pour que getSearchRequests()/
+ * getBoostedSearchRequests() (lues par SearchRequestsListClient, vraie lecture Firestore client)
+ * les retrouvent exactement comme une vraie demande confirmée.
+ */
+export async function seedSearchRequest(request: SeedSearchRequest): Promise<void> {
+  const app = ensureAdminApp()
+  const db = admin.firestore(app)
+  const now = admin.firestore.Timestamp.now()
+  const { id, boostEndAt, ...data } = request
+
+  await db
+    .collection('search_requests')
+    .doc(id)
+    .set({
+      ...data,
+      moderationStatus: data.moderationStatus ?? 'APPROVED',
+      state: data.state ?? 'IN_PROGRESS',
+      source: 'public',
+      provider: 'mypayga',
+      paymentStatus: 'confirmed',
+      amountPaidXaf: 500,
+      boostRequested: Boolean(boostEndAt),
+      boostPaid: Boolean(boostEndAt),
+      ...(boostEndAt
+        ? { boostStartAt: now, boostEndAt: admin.firestore.Timestamp.fromDate(boostEndAt) }
+        : {}),
+      createdAt: now,
+      updatedAt: now,
+    })
+}
+
+export async function deleteSearchRequests(ids: string[]): Promise<void> {
+  const app = ensureAdminApp()
+  const db = admin.firestore(app)
+  await Promise.all(ids.map((id) => db.collection('search_requests').doc(id).delete()))
+}
+
+/**
+ * Simule exactement l'effet du webhook MyPayGa
+ * (functions/src/payments/search-requests/webhook.ts,
+ * applySearchRequestPaymentOnce) sans passer par un vrai callback signé —
+ * utilisé pour tester la création réelle d'une demande de recherche jusqu'au
+ * paiement (vrai appel /api/search-requests/initiate, vrai document Firestore
+ * 'pending_confirmation') sans jamais compléter le vrai paiement MoMo côté
+ * MyPayGa (aucun sandbox documenté dans ce dépôt — décision explicite prise
+ * avec l'utilisateur). Mêmes champs, même ordre logique que le webhook réel.
+ */
+export async function simulateSearchRequestPaymentConfirmed(
+  transactionId: string,
+  { boostRequested }: { boostRequested: boolean },
+): Promise<void> {
+  const app = ensureAdminApp()
+  const db = admin.firestore(app)
+  const now = admin.firestore.Timestamp.now()
+
+  await db.collection('search_requests').doc(transactionId).update({
+    paymentStatus: 'confirmed',
+    boostPaid: boostRequested,
+    moderationStatus: 'PENDING',
+    paymentConfirmedVia: 'provider_callback',
+    completedAt: now,
+    updatedAt: now,
+  })
+}
+
+export async function getSearchRequest(id: string): Promise<Record<string, unknown> | null> {
+  const app = ensureAdminApp()
+  const snapshot = await admin.firestore(app).collection('search_requests').doc(id).get()
+  return snapshot.exists ? (snapshot.data() ?? null) : null
+}

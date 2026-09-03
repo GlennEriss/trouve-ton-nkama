@@ -146,4 +146,34 @@ describe('middleware — redirection /complete-profile', () => {
     expect(redirectMock).not.toHaveBeenCalled()
     expect(nextMock).toHaveBeenCalledTimes(1)
   })
+
+  it('visiteur non connecté sur /advertising → renvoyé vers /signin (bug réel corrigé le 2026-09-03)', async () => {
+    // /advertising vit dans app/(protected)/ mais n'était jamais listé dans
+    // PROTECTED_ROUTE_PREFIXES : un visiteur non connecté chargeait quand même la coquille de
+    // page (0 crédits, GET /api/advertising/campaigns en 401 -> "Impossible de charger vos
+    // publicités") au lieu d'être redirigé vers la connexion — repéré par l'utilisateur sur une
+    // vidéo marketing tournée sur cette page.
+    await middleware(makeRequest('/advertising', null))
+
+    expect(redirectMock).toHaveBeenCalledTimes(1)
+    const redirectUrl = redirectMock.mock.calls[0][0]
+    expect(redirectUrl.pathname).toBe('/signin')
+    expect(redirectUrl.searchParams.get('callbackUrl')).toBe('/advertising')
+  })
+
+  it('visiteur non connecté sur /advertising/create → renvoyé vers /signin (sous-route couverte)', async () => {
+    await middleware(makeRequest('/advertising/create', null))
+
+    expect(redirectMock).toHaveBeenCalledTimes(1)
+    expect(redirectMock.mock.calls[0][0].pathname).toBe('/signin')
+  })
+
+  it('compte connecté SANS rôle Annonceur accède à /advertising sans redirection (pas de garde-fou de rôle)', async () => {
+    // /api/advertising/campaigns/route.ts n'exige que auth() — n'importe quel compte connecté
+    // peut acheter une publicité, contrairement à /property et /reels (ANNOUNCER_ONLY).
+    await middleware(makeRequest('/advertising', { ...COMPLETE_ANNOUNCER, roles: ['User'] }))
+
+    expect(redirectMock).not.toHaveBeenCalled()
+    expect(nextMock).toHaveBeenCalledTimes(1)
+  })
 })

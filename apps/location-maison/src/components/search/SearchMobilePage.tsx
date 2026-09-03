@@ -9,8 +9,9 @@ import { FilterModalHomePage } from '../home-page/FilterModalHomePage';
 import { useAlgoliaContext } from '@/providers/AlgoliaContext';
 import { useInfiniteHits, useInstantSearch, useStats } from 'react-instantsearch';
 import PropertyCard from '../home-page/PropertyCard';
-import CategoryFilterPills from './CategoryFilterPills';
+import CategoryFilterPills, { DEMANDES_CATEGORY_NAME } from './CategoryFilterPills';
 import CategoryLeafFilterPills from './CategoryLeafFilterPills';
+import SearchRequestsListClient from '@/components/search-requests/SearchRequestsListClient';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { trackingEvents, useTrackEvent } from '@/features/analytics/tracking';
 import { useSession } from 'next-auth/react';
@@ -32,6 +33,11 @@ export default function SearchMobilePage() {
     const { nbHits } = useStats();
     const { status: searchStatus, refresh } = useInstantSearch();
     const searchParams = useSearchParams();
+    // Une demande de recherche est un contenu acheteur (collection Firestore `search_requests`,
+    // voir DEMANDES_CATEGORY_NAME) — jamais indexé dans Algolia, donc nbHits/items ci-dessus ne
+    // le concernent pas. Les hooks react-instantsearch continuent de s'exécuter normalement
+    // (règle des Hooks), seul le rendu de la section résultats bascule.
+    const isDemandesTab = searchParams.get('category') === DEMANDES_CATEGORY_NAME;
     const searchWithAIHref = React.useMemo(() => {
         const params = new URLSearchParams(searchParams.toString());
         params.set('entry', 'search_cta');
@@ -276,26 +282,37 @@ export default function SearchMobilePage() {
                 </section>
 
                 <section className='space-y-5'>
-                    <div className='flex items-center justify-between'>
-                        <div>
-                            <h1 className='text-2xl font-bold text-primary'>
-                                Résultats de la recherche
-                            </h1>
-                            <p className='text-sm text-gray-600 dark:text-gray-300'>
-                                {nbHits} résultats trouvés
-                            </p>
+                    {!isDemandesTab && (
+                        <div className='flex items-center justify-between'>
+                            <div>
+                                <h1 className='text-2xl font-bold text-primary'>
+                                    Résultats de la recherche
+                                </h1>
+                                <p className='text-sm text-gray-600 dark:text-gray-300'>
+                                    {nbHits} résultats trouvés
+                                </p>
+                            </div>
+                            <div className='flex items-center gap-2'>
+                                <button
+                                    type='button'
+                                    className='hidden md:flex items-center gap-2'
+                                >
+                                    <FilterModalHomePage />
+                                </button>
+                            </div>
                         </div>
-                        <div className='flex items-center gap-2'>
-                            <button
-                                type='button'
-                                className='hidden md:flex items-center gap-2'
-                            >
-                                <FilterModalHomePage />
-                            </button>
-                        </div>
-                    </div>
+                    )}
 
                     <CategoryFilterPills />
+
+                    {isDemandesTab ? (
+                        // Pas de FilterModalHomePage/CategoryLeafFilterPills/pagination Algolia
+                        // ici : une demande de recherche a ses propres filtres intégrés
+                        // (SearchRequestsListClient), les montrer côte à côte laisserait croire
+                        // à tort qu'ils s'appliquent aux demandes.
+                        <SearchRequestsListClient />
+                    ) : (
+                    <>
                     <CategoryLeafFilterPills />
 
                     <div className="space-y-4">
@@ -397,6 +414,8 @@ export default function SearchMobilePage() {
                             </>
                         )}
                     </div>
+                    </>
+                    )}
 
                     {/* Boutons de scroll haut/bas */}
                     <div className="fixed bottom-24 right-6 flex flex-col gap-2 z-50">

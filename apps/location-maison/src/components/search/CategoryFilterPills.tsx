@@ -19,11 +19,23 @@ async function fetchActiveCategories(): Promise<ActiveCategory[]> {
   return Array.isArray(data.categories) ? data.categories : [];
 }
 
+// Valeur de `category` réservée aux demandes de recherche (SearchDesktopPage/SearchMobilePage
+// s'en servent pour basculer tout le panneau de résultats vers SearchRequestsListClient).
+// Volontairement PAS un document `listing_categories` (voir fetchActiveCategories ci-dessus) :
+// une demande de recherche est un contenu acheteur (collection Firestore `search_requests`,
+// hors index Algolia), pas une annonce vendeur — l'ajouter à cette collection la ferait
+// apparaître dans l'agrégat "Toutes catégories", qui ne doit rester qu'Immobilier + Mode
+// (demande explicite de l'utilisateur). D'où ce pill codé en dur, séparé de `categories`.
+export const DEMANDES_CATEGORY_NAME = "Demandes";
+
 /**
- * Sélecteur de catégorie racine (Lot 4). Ne s'affiche pas tant qu'il n'y a pas au moins
- * 2 catégories racine actives — aujourd'hui seule "Immobilier" l'est, choisir entre une
- * seule option n'a aucun sens et ça garde la page de recherche identique à avant tant que
- * Mode n'est pas activé (voir docs/marketplace-multi-categories/07-lots-et-sequencement.md).
+ * Sélecteur de catégorie racine (Lot 4) + le pill fixe "Demandes" ci-dessus. S'affiche dès
+ * qu'il y a au moins une option réelle à choisir face à "Demandes" — avant l'ajout de ce pill,
+ * la rangée entière restait masquée tant qu'une seule catégorie (Immobilier) était active,
+ * choisir entre une seule option n'ayant aucun sens ; "Demandes" est désormais toujours une
+ * vraie option, donc la rangée a toujours au moins 2 choix utiles (elle ne se limitait qu'à
+ * Toutes catégories/Immobilier/Mode avant, voir
+ * docs/marketplace-multi-categories/07-lots-et-sequencement.md).
  */
 export default function CategoryFilterPills() {
   const router = useRouter();
@@ -35,10 +47,6 @@ export default function CategoryFilterPills() {
     queryFn: fetchActiveCategories,
     staleTime: 1000 * 60 * 10,
   });
-
-  if (categories.length < 2) {
-    return null;
-  }
 
   // Réinitialisation complète des filtres au changement de section (demande explicite d'un
   // utilisateur constatant qu'un filtre posé sur "Toutes catégories" restait actif — invisible
@@ -81,6 +89,13 @@ export default function CategoryFilterPills() {
           {category.name}
         </button>
       ))}
+      <button
+        type="button"
+        className={pillClass(currentCategory === DEMANDES_CATEGORY_NAME)}
+        onClick={() => selectCategory(DEMANDES_CATEGORY_NAME)}
+      >
+        {DEMANDES_CATEGORY_NAME}
+      </button>
     </div>
   );
 }

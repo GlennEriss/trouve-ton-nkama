@@ -10,8 +10,9 @@ import Link from 'next/link'
 import PropertyCard from '../home-page/PropertyCard'
 import { useSearchParams } from 'next/navigation'
 import FilterSearchDesktopPageSection from './FilterSearchDesktopPageSection'
-import CategoryFilterPills from './CategoryFilterPills'
+import CategoryFilterPills, { DEMANDES_CATEGORY_NAME } from './CategoryFilterPills'
 import CategoryLeafFilterPills from './CategoryLeafFilterPills'
+import SearchRequestsListClient from '@/components/search-requests/SearchRequestsListClient'
 import { useTrackSearchAnalytics } from '@/features/analytics/search/hooks/useTrackSearchAnalytics';
 import SponsoredSlot from '@/components/ads/SponsoredSlot';
 import { ADSENSE_SLOTS } from '@/lib/ads/config';
@@ -23,6 +24,13 @@ SearchDesktopPage() {
     const { nbHits } = useStats();
     const { status: searchStatus, refresh } = useInstantSearch();
     const searchParams = useSearchParams();
+    // Une demande de recherche est un contenu acheteur (collection Firestore `search_requests`,
+    // voir DEMANDES_CATEGORY_NAME) — jamais indexé dans Algolia, donc rien de ce que ce
+    // composant construit par ailleurs (items/nbHits/pagination) ne s'applique. Les hooks
+    // react-instantsearch ci-dessus continuent de s'exécuter normalement (règle des Hooks,
+    // context InstantSearch toujours monté) mais leur résultat est ignoré dans ce mode : seul
+    // le rendu bascule vers SearchRequestsListClient, en pleine largeur.
+    const isDemandesTab = searchParams.get('category') === DEMANDES_CATEGORY_NAME;
     const resultsContainerRef = React.useRef<HTMLDivElement>(null);
     const sentinelRef = React.useRef<HTMLDivElement>(null);
     const [isLoadingMore, setIsLoadingMore] = React.useState(false);
@@ -190,6 +198,19 @@ SearchDesktopPage() {
         }
         return groups;
     }, [feedItems]);
+
+    if (isDemandesTab) {
+        // Pleine largeur, pas de FilterSearchDesktopPageSection : ses champs (province, prix,
+        // surface immobilier...) n'ont aucune prise sur les demandes de recherche, qui ont
+        // leurs propres filtres intégrés (SearchRequestsListClient) — les montrer côte à côte
+        // laisserait croire à tort qu'ils s'appliquent ici.
+        return (
+            <div className="flex h-screen flex-col overflow-auto p-5 pb-20">
+                <CategoryFilterPills />
+                <SearchRequestsListClient />
+            </div>
+        );
+    }
 
     return (
         <>

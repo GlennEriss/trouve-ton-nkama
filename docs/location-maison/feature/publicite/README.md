@@ -1,5 +1,17 @@
 # Feature — Publicité (Régie publicitaire first-party)
 
+## Documentation associée
+
+- [Landing page publique `/publicite`](./LANDING-PUBLICITE.md) : objectif,
+  contenu, intégration de la vidéo 11, accès sans connexion, parcours de
+  conversion, SEO et critères d'acceptation.
+
+> **Note de cohérence (septembre 2026)** : le code contient désormais un parcours
+> self-service sous `/advertising` et `/advertising/create`. Les sections V1
+> « concierge » ci-dessous décrivent l'origine du module. La spécification de
+> `/publicite` se fonde sur le parcours self-service actuellement présent dans
+> l'application.
+
 > **Documentation-only** (aucun code dans ce document). Spécification fonctionnelle
 > et technique du module qui permet à des **entreprises / marques / services**
 > de promouvoir leur activité sur la plateforme, contre paiement.

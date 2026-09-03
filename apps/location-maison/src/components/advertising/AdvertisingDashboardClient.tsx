@@ -17,6 +17,7 @@ import {
 
 import { Button } from '@trouve-ton-nkama/ui/button'
 import { Card } from '@trouve-ton-nkama/ui/card'
+import { Carousel, CarouselContent, CarouselItem, type CarouselApi } from '@trouve-ton-nkama/ui/carousel'
 import { routes } from '@/constantes/routes'
 import { useCurrentUser } from '@/hooks/use-current-user'
 import { cn } from '@/lib/utils'
@@ -56,6 +57,65 @@ function StatTile({
           <p className="text-xs font-medium uppercase tracking-wide text-gray-500">{label}</p>
           <p className="mt-0.5 text-xl font-bold text-ink dark:text-white">{value}</p>
         </div>
+      </div>
+    </div>
+  )
+}
+
+type StatItem = {
+  key: string
+  icon: React.ComponentType<{ className?: string }>
+  label: string
+  value: string | number
+}
+
+/**
+ * Version mobile des tuiles de stats, en carrousel défilable (demande explicite) au lieu d'un
+ * simple empilement — chaque tuile occupe l'essentiel de la largeur avec un aperçu de la
+ * suivante (`basis-[85%]`), pagination par points en dessous. Le grid desktop existant reste
+ * inchangé (`hidden sm:grid` juste après) : sur un écran assez large pour montrer les 4 tuiles
+ * d'un coup, un carrousel n'apporte rien.
+ */
+function StatsCarousel({ items }: { items: StatItem[] }) {
+  const [api, setApi] = React.useState<CarouselApi>()
+  const [currentSlide, setCurrentSlide] = React.useState(0)
+
+  React.useEffect(() => {
+    if (!api) return
+    const onSelect = () => setCurrentSlide(api.selectedScrollSnap())
+    onSelect()
+    api.on('select', onSelect)
+    return () => {
+      api.off('select', onSelect)
+    }
+  }, [api])
+
+  return (
+    <div className="sm:hidden">
+      <Carousel setApi={setApi} opts={{ align: 'start' }}>
+        <CarouselContent>
+          {items.map((item) => (
+            <CarouselItem key={item.key} className="basis-[85%]">
+              <StatTile icon={item.icon} label={item.label} value={item.value} />
+            </CarouselItem>
+          ))}
+        </CarouselContent>
+      </Carousel>
+      <div className="mt-3 flex items-center justify-center gap-1.5" role="tablist" aria-label="Statistiques">
+        {items.map((item, index) => (
+          <button
+            key={item.key}
+            type="button"
+            role="tab"
+            aria-label={`Voir la statistique ${item.label}`}
+            aria-selected={index === currentSlide}
+            onClick={() => api?.scrollTo(index)}
+            className={cn(
+              'h-1.5 rounded-full transition-all',
+              index === currentSlide ? 'w-5 bg-secondary' : 'w-1.5 bg-gray-300 dark:bg-gray-600',
+            )}
+          />
+        ))}
       </div>
     </div>
   )
@@ -169,6 +229,18 @@ export default function AdvertisingDashboardClient() {
   const totalImpressions = campaigns.reduce((sum, campaign) => sum + campaign.metrics.impressions, 0)
   const totalClicks = campaigns.reduce((sum, campaign) => sum + campaign.metrics.clicks, 0)
 
+  const statItems: StatItem[] = [
+    { key: 'active', icon: BarChart3, label: 'Campagnes actives', value: activeCount },
+    { key: 'views', icon: Eye, label: 'Vues', value: totalImpressions.toLocaleString('fr-FR') },
+    { key: 'clicks', icon: MousePointerClick, label: 'Clics', value: totalClicks.toLocaleString('fr-FR') },
+    {
+      key: 'ctr',
+      icon: Percent,
+      label: 'Taux de clic',
+      value: formatClickThroughRate(totalImpressions, totalClicks),
+    },
+  ]
+
   return (
     <div className="mx-auto max-w-5xl space-y-8 px-5 pb-28 pt-8 md:pb-10">
       <header className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
@@ -197,15 +269,13 @@ export default function AdvertisingDashboardClient() {
         </div>
       </header>
 
-      <section className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-        <StatTile icon={BarChart3} label="Campagnes actives" value={activeCount} />
-        <StatTile icon={Eye} label="Vues" value={totalImpressions.toLocaleString('fr-FR')} />
-        <StatTile icon={MousePointerClick} label="Clics" value={totalClicks.toLocaleString('fr-FR')} />
-        <StatTile
-          icon={Percent}
-          label="Taux de clic"
-          value={formatClickThroughRate(totalImpressions, totalClicks)}
-        />
+      <section>
+        <StatsCarousel items={statItems} />
+        <div className="hidden gap-3 sm:grid sm:grid-cols-2 lg:grid-cols-4">
+          {statItems.map((item) => (
+            <StatTile key={item.key} icon={item.icon} label={item.label} value={item.value} />
+          ))}
+        </div>
       </section>
 
       <section className="space-y-3">
