@@ -1426,3 +1426,60 @@ test reste à trancher avec l'utilisateur.
 `src/components/search-requests/SearchRequestsListClient.tsx`, `firestore.indexes.json`.
 
 *Créé le 2026-09-03.*
+
+---
+
+## 🟢 Couverture ajoutée — `search-requests-create.spec.ts` (création réelle d'une demande de recherche, jusqu'au paiement MyPayGa live)
+
+**Décision explicite prise avec l'utilisateur** (voir la question posée en cours de session) sur
+la seule partie qui restait non couverte de la demande initiale ("tester les filtres et la
+création d'une recherche") : appeler pour de vrai `/api/search-requests/initiate` — donc un
+vrai appel HTTP à l'API MyPayGa live (`https://api.mypayga.com`, aucun sandbox documenté dans ce
+dépôt) — mais sans jamais compléter le paiement réel. Numéro payeur fourni explicitement par
+l'utilisateur pour cet usage (077401202, format Airtel Money).
+
+**Ce qui est réellement testé** :
+- Remplissage complet du formulaire `/demandes-recherche/publier` (Select Type de bien/Radix,
+  ville, budgets, description, WhatsApp, numéro payeur Mobile Money).
+- Soumission réelle → vrai appel à la Cloud Function `initiateSearchRequestPayment`, qui appelle
+  elle-même l'API MyPayGa live. `initiateResponse.ok()` et `transactionId` vérifiés sur la vraie
+  réponse réseau (`page.waitForResponse`).
+- Vérification en base (Admin SDK) que le document `search_requests/{transactionId}` existe bien
+  en `paymentStatus: 'pending_confirmation'`, `moderationStatus: null` — preuve que
+  l'initiation a réellement écrit en Firestore, pas seulement renvoyé un succès factice.
+- La confirmation (ce que ferait normalement le webhook MyPayGa signé) est **simulée** via un
+  nouveau helper Admin SDK, `simulateSearchRequestPaymentConfirmed` — reproduit exactement les
+  mêmes champs que `applySearchRequestPaymentOnce` dans le vrai webhook
+  (`functions/src/payments/search-requests/webhook.ts`) sans jamais appeler MyPayGa ni compléter
+  un vrai paiement.
+- Le polling client (3 s, `use-search-request-payment.ts`) détecte cette confirmation et affiche
+  l'écran de succès — preuve que le polling fonctionne réellement, pas juste que l'API répond.
+- Relecture finale en base : tous les champs soumis (`typeProperty`, `transactionType`, `city`,
+  budgets, `description`, `whatsappContact`) et les champs posés par la confirmation
+  (`paymentStatus: 'confirmed'`, `moderationStatus: 'PENDING'`, `state: 'IN_PROGRESS'`,
+  `boostPaid: false`, `amountPaidXaf: 500`) vérifiés directement en base, pas seulement à
+  l'écran.
+
+**Effet de bord réel, à savoir** : si l'initiation aboutit, MyPayGa envoie une vraie invite de
+paiement Mobile Money au numéro payeur — sans risque (aucun argent ne bouge sans code MoMo
+saisi sur ce téléphone), mais un vrai effet de bord externe à chaque exécution complète de ce
+test. `test.skip` restreint volontairement ce test à `chromium-desktop-dev` uniquement — le
+répéter sur plusieurs projets Playwright enverrait plusieurs invites réelles par exécution
+complète de la suite.
+
+**Bug d'environnement rencontré en cours de route (pas un bug produit)** : le serveur dev
+Playwright réutilisé (`localhost:3001`) était mort au moment de lancer ce test précis — les
+deux processus `next dev` visibles dans `ps aux` ne répondaient sur aucun port surveillé
+(`lsof` : rien sur 3001). Playwright a alors tenté de démarrer son propre serveur, qui a échoué
+à se compiler dans les 180s impartis (échecs de résolution de polices Google Fonts en plus) —
+premier essai du test a échoué avec `TypeError: fetch failed` côté route
+`/api/search-requests/initiate` (avant même d'atteindre MyPayGa, donc **aucune vraie invite de
+paiement envoyée à ce premier essai**). Un serveur `test:e2e:dev` dédié relancé manuellement en
+arrière-plan et attendu jusqu'à répondre (`curl` en boucle) avant de rejouer le test a résolu le
+problème — le second essai a réussi normalement, avec le vrai appel MyPayGa cette fois.
+
+**Fichiers** : `__tests__/e2e/search-requests-create.spec.ts` (nouveau),
+`__tests__/e2e/helpers/firebase-admin.ts` (`simulateSearchRequestPaymentConfirmed`,
+`getSearchRequest`).
+
+*Créé le 2026-09-03.*

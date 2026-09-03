@@ -542,3 +542,37 @@ export async function deleteSearchRequests(ids: string[]): Promise<void> {
   const db = admin.firestore(app)
   await Promise.all(ids.map((id) => db.collection('search_requests').doc(id).delete()))
 }
+
+/**
+ * Simule exactement l'effet du webhook MyPayGa
+ * (functions/src/payments/search-requests/webhook.ts,
+ * applySearchRequestPaymentOnce) sans passer par un vrai callback signé —
+ * utilisé pour tester la création réelle d'une demande de recherche jusqu'au
+ * paiement (vrai appel /api/search-requests/initiate, vrai document Firestore
+ * 'pending_confirmation') sans jamais compléter le vrai paiement MoMo côté
+ * MyPayGa (aucun sandbox documenté dans ce dépôt — décision explicite prise
+ * avec l'utilisateur). Mêmes champs, même ordre logique que le webhook réel.
+ */
+export async function simulateSearchRequestPaymentConfirmed(
+  transactionId: string,
+  { boostRequested }: { boostRequested: boolean },
+): Promise<void> {
+  const app = ensureAdminApp()
+  const db = admin.firestore(app)
+  const now = admin.firestore.Timestamp.now()
+
+  await db.collection('search_requests').doc(transactionId).update({
+    paymentStatus: 'confirmed',
+    boostPaid: boostRequested,
+    moderationStatus: 'PENDING',
+    paymentConfirmedVia: 'provider_callback',
+    completedAt: now,
+    updatedAt: now,
+  })
+}
+
+export async function getSearchRequest(id: string): Promise<Record<string, unknown> | null> {
+  const app = ensureAdminApp()
+  const snapshot = await admin.firestore(app).collection('search_requests').doc(id).get()
+  return snapshot.exists ? (snapshot.data() ?? null) : null
+}
