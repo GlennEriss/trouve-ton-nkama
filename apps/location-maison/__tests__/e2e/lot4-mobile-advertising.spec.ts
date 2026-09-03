@@ -53,7 +53,10 @@ test.describe('Lot 4D mobile publicites', () => {
 
     await expect(page.getByRole('heading', { name: /^Publicités$/i })).toBeVisible()
     await expect(page.getByText(/169 crédits/i)).toBeVisible()
-    await expect(page.getByText(/Campagnes actives/i)).toBeVisible()
+    // .first() : les tuiles de stats existent en double dans le DOM (carrousel mobile +
+    // grid desktop, seul le CSS bascule entre elles selon le viewport) — voir
+    // AdvertisingDashboardClient.tsx.
+    await expect(page.getByText(/Campagnes actives/i).first()).toBeVisible()
     await expect(page.getByText(/Vues/i).first()).toBeVisible()
     await expect(page.getByText(/Clics/i).first()).toBeVisible()
     await expect(page.getByRole('heading', { name: /Promo Akanda/i })).toBeVisible()

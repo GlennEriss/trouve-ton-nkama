@@ -1113,3 +1113,316 @@ renseigner — action côté compte Google, pas quelque chose que je peux fabriq
 `__tests__/components/adsense-block.test.tsx` (nouveau).
 
 *Créé le 2026-09-02.*
+
+## 🔴 Corrigé — /advertising accessible (et cassé) sans être connecté
+
+**Demande directe de l'utilisateur**, avec capture d'écran à l'appui : sur
+`http://localhost:3000/advertising`, "0 crédits" et "Impossible de charger vos publicités.
+Actualisez la page ou reconnectez-vous." — repéré en tournant une vidéo marketing sur cette
+page. Intuition juste : "j'ai l'impression que cette page est accessible sans utilisateur
+connecté".
+
+**Root cause** : `/advertising` vit dans `app/(protected)/advertising/` (nom de dossier), mais
+n'a jamais été ajouté à `PROTECTED_ROUTE_PREFIXES` dans `src/middleware.ts` — déjà repéré en
+creux lors de l'investigation du module Publicité, non corrigé sur le coup faute de demande
+explicite. Résultat : un visiteur non connecté charge quand même la coquille de la page
+(`useCurrentUser()` sans session → `credits = 0` ; `GET /api/advertising/campaigns` → 401 →
+React Query bascule en état d'erreur) au lieu d'être redirigé vers `/signin`, comme le sont déjà
+`/property`, `/reels`, `/profil`, etc.
+
+**Correctif** : `/advertising` ajouté à `PROTECTED_ROUTE_PREFIXES` — un visiteur non connecté
+est désormais redirigé vers `/signin?callbackUrl=/advertising` (ou `/advertising/create`),
+exactement comme les autres routes protégées. Volontairement **pas** ajouté à
+`ANNOUNCER_ONLY_ROUTE_PREFIXES` : `POST /api/advertising/campaigns` n'exige que `auth()`,
+n'importe quel compte connecté (pas seulement Annonceur) peut acheter une publicité.
+
+**Vérification** :
+- Jest (`__tests__/unit/middleware.test.ts`, 3 nouveaux cas) : visiteur non connecté sur
+  `/advertising` → redirigé vers `/signin` avec le bon `callbackUrl` ; même chose sur
+  `/advertising/create` (sous-route) ; un compte connecté SANS rôle Annonceur accède bien sans
+  redirection (pas de garde-fou de rôle, contrairement à `/property`/`/reels`).
+- Vérifié en direct sur le vrai serveur dev : `curl /advertising` → `307` vers
+  `/signin?callbackUrl=%2Fadvertising` (et pareil pour `/advertising/create`).
+- Régression : `advertising-real.spec.ts` + `lot4-mobile-advertising.spec.ts` (accès connecté)
+  toujours 5/5 — la redirection ne casse rien pour un utilisateur réellement connecté.
+- `tsc --noEmit` propre, suite Jest complète 1539/1539.
+
+**Fichiers** : `src/middleware.ts`, `__tests__/unit/middleware.test.ts`.
+
+*Créé le 2026-09-03.*
+
+## 🟢 Fonctionnalité ajoutée — pill "Demandes" sur /search, à côté de Mode
+
+**Demande directe de l'utilisateur** : "dans la partie /search on ajoute à côté de Mode la
+section Demandes, mais quand on clique sur 'Toutes catégories' elle n'inclut que Mode et
+Immobilier, ensuite quand on clique sur demandes, je veux qu'on affiche déjà la section demande
+aussi sur la page search."
+
+**Contexte technique** : une "demande de recherche" (`SearchRequest`, collection Firestore
+`search_requests`) est un contenu **acheteur** — l'inverse d'une annonce vendeur — jamais
+indexé dans Algolia, avec son propre composant `SearchRequestsListClient.tsx` (hero + 3 filtres
+select + grille), auparavant uniquement accessible via `/demandes-recherche`.
+
+**Implémentation** :
+- `CategoryFilterPills.tsx` : nouveau pill fixe "Demandes" (`DEMANDES_CATEGORY_NAME`, exporté),
+  ajouté à côté des racines réelles (`Immobilier`/`Mode`) mais **volontairement séparé** du
+  tableau `categories` issu de `/api/categories/active` — donc jamais un document
+  `listing_categories`, et jamais agrégé par "Toutes catégories" (category vide), qui ne
+  continue de filtrer que sur les racines réellement issues de cette API. Effet de bord
+  positif : la rangée de pills, auparavant masquée tant qu'il n'y avait pas 2 catégories
+  actives, est désormais toujours utile (Demandes est toujours une vraie 2e option) — guard
+  `categories.length < 2` retiré.
+- `SearchDesktopPage.tsx`/`SearchMobilePage.tsx` : `isDemandesTab = category === 'Demandes'`.
+  Quand actif, bascule tout le panneau de résultats vers `SearchRequestsListClient` directement
+  intégré (pas de navigation) — masque `FilterSearchDesktopPageSection`/`FilterModalHomePage`
+  (province/prix/surface immobilier n'ont aucune prise sur une demande) et
+  `CategoryLeafFilterPills`/le titre "Résultats de la recherche"/nbHits (spécifiques à
+  Algolia). Les hooks `react-instantsearch` continuent de s'exécuter normalement (règle des
+  Hooks, contexte `InstantSearch` toujours monté) mais leur résultat est simplement ignoré
+  dans ce mode.
+
+**Vérification** :
+- Jest (`category-filter-pills.test.tsx`, 3 nouveaux cas) : pill Demandes toujours affiché
+  (même avec une seule racine réelle active) ; clic dessus pose `category=Demandes` et
+  réinitialise tout le reste ; "Toutes catégories" ne pose jamais `category` (n'agrège donc
+  jamais Demandes).
+- Jest (`search-desktop-page.test.tsx`, `search-mobile-page.test.tsx`, 1 cas chacun) :
+  `category=Demandes` bascule bien vers `SearchRequestsListClient`, sans le panneau de filtres
+  immobilier ni la pagination Algolia.
+- Vérifié visuellement par capture d'écran (fichiers de test jetables, supprimés après
+  vérification), desktop et mobile : pastille "Demandes" visible à côté de Mode ; clic dessus
+  → hero + filtres + grille des demandes s'affichent directement sur `/search`, panneau
+  immobilier disparu ; retour sur "Toutes catégories" → grille Immobilier+Mode normale
+  (901 annonces), Demandes non incluse.
+- `tsc --noEmit` propre, suite Jest complète 1544/1544.
+- Régression : `property-filters-search.spec.ts` + `lot8e-search-consultation.spec.ts`
+  rejoués — 14/15 (le seul échec est le 404 pré-existant déjà documenté plus haut, sans
+  rapport, confirmé par `git diff`).
+
+**⚠️ Bug pré-existant découvert en marge, signalé mais non corrigé (hors périmètre de cette
+demande)** : en chronométrant les captures d'écran, `document.body.scrollHeight` sur `/search`
+(onglet normal, Immobilier+Mode) grossit de façon non bornée en restant simplement immobile —
+1200px à t=1s, 7919px à t=3s, 21595px à t=6s, sans le moindre scroll utilisateur. L'observer
+d'infinite-scroll (`IntersectionObserver` + `requestMore()`/`showMore()`,
+`SearchDesktopPage.tsx`) semble se redéclencher en boucle au lieu de s'arrêter une fois la
+zone sentinelle chargée — chaque page Algolia chargée agrandit la zone, ce qui peut re-
+déclencher l'observer immédiatement selon la position du sentinel. Confirmé indépendant de
+l'ajout de Demandes (reproduit sur `/search` sans jamais y toucher). Risque réel : surcharge de
+requêtes Algolia (coût/quota) et page qui devient de plus en plus lourde sans action de
+l'utilisateur.
+
+**Fichiers** : `src/components/search/CategoryFilterPills.tsx`,
+`src/components/search/SearchDesktopPage.tsx`, `src/components/search/SearchMobilePage.tsx`,
+`__tests__/components/category-filter-pills.test.tsx`,
+`__tests__/components/search-desktop-page.test.tsx`,
+`__tests__/components/search-mobile-page.test.tsx`.
+
+*Créé le 2026-09-03.*
+
+## 🟢 Fonctionnalités ajoutées — Demandes : filtres mobile en Sheet + partage Facebook automatique
+
+**Demandes directes de l'utilisateur** (suite à l'entrée précédente) :
+1. "en vue mobile mieux vaut avoir un bouton de filtres qui ouvre une sorte de drawer avec les
+   3 filtres car je trouve qu'en vue mobile les 3 filtres alignés comme ça prennent trop de
+   place."
+2. "on va faire comme avec la création d'annonce. Une fois une personne publie une recherche
+   précise, cette dernière sera partagée automatiquement sur ma page facebook comme on a fait
+   avec les annonces avec l'api facebook qu'on a déjà intégré."
+
+### 1. Filtres mobile en Sheet (`SearchRequestsListClient.tsx`)
+
+Les 3 selects (type de bien, location/vente, ville), auparavant alignés en permanence
+(`flex flex-wrap`), prenaient trop de place empilés sur mobile. Repris exactement le pattern déjà
+établi dans ce dépôt (`AdManagementPage.tsx`/`MyReelsClient.tsx`, `@trouve-ton-nkama/ui/sheet`) :
+- Desktop (`hidden sm:flex`) : les 3 selects inline, inchangé.
+- Mobile (`sm:hidden`) : bouton icône rond "Filtres" (pastille visible si un filtre est actif)
+  ouvrant un Sheet du bas (`side="bottom"`, 70vh) avec les mêmes 3 champs
+  (`renderFilterFields(idPrefix)`, factorisé pour éviter les ids DOM dupliqués), pied de page
+  "Réinitialiser" (désactivé sans filtre actif, ne ferme pas le Sheet) / "Voir les résultats"
+  (`SheetClose`, ferme).
+- Sheet rendu `open`/`onOpenChange` (état contrôlé) plutôt que non contrôlé : seule façon de
+  réutiliser tel quel le mock de test déjà établi par `ad-management-page.test.tsx`.
+
+**Vérification** : Jest (`search-requests-list-client.test.tsx`, 1 nouveau cas complet — ouvre
+le Sheet, vérifie Réinitialiser désactivé puis activé après un filtre choisi DANS le Sheet,
+vérifie que `getSearchRequests` reçoit bien ce filtre, réinitialise sans fermer, ferme via
+"Voir les résultats") + 9 cas existants toujours verts (le Sheet fermé par défaut n'ajoute
+aucun select dupliqué dans le DOM — Radix ne rend son contenu qu'à l'ouverture, contrairement
+au pattern CSS `hidden`/`sm:hidden` toujours-dans-le-DOM utilisé ailleurs dans cette session).
+Vérifié visuellement par capture d'écran (fichier de test jetable, supprimé après vérification) :
+bouton compact replié, Sheet du bas avec les 3 filtres à l'ouverture. `tsc --noEmit` propre,
+suite Jest complète 1545/1545.
+
+### 2. Partage Facebook automatique à l'approbation d'une demande
+
+Réutilise intégralement l'intégration Facebook déjà en place pour les annonces
+(`functions/src/social/`) : `publishLinkToPage`/`resolveFacebookPageConfig`
+(`facebook-page.client.ts`, Graph API `POST /{page-id}/feed`) sont génériques et repris sans
+modification — même secrets Firebase déjà configurés (`FACEBOOK_PAGE_ID`,
+`FACEBOOK_PAGE_ACCESS_TOKEN`), aucune nouvelle configuration compte/app Meta nécessaire.
+
+Nouveau, propre à `search_requests` (collection distincte, contenu acheteur — l'inverse d'une
+annonce vendeur) :
+- `search-request-facebook.policy.ts` (module pur, comme `facebook-page.policy.ts`) :
+  `shouldPublishApprovedSearchRequest` (même garde-fous que les annonces — transition vers
+  `APPROVED` uniquement, jamais si déjà `facebookPost.id`, jamais si `state === 'ARCHIVED'`),
+  `buildSearchRequestPostMessage` (type de bien + location/vente + ville/quartier + budget +
+  description + lien + pied institutionnel commun), `buildSearchRequestsListUrl`.
+- Nouveau trigger `onSearchRequestApprovedPublishToFacebook`
+  (`functions/src/social/index.ts`, exporté depuis `functions/src/index.ts`) : `onUpdate` sur
+  `search_requests/{searchRequestId}`, même structure que `onListingApprovedPublishToFacebook`
+  (échec = log seul, pas de relance ; succès = marqueur d'idempotence `facebookPost` sur le doc).
+
+**Décision explicite prise avec l'utilisateur** (une annonce a sa propre page publique
+`/annonce/{id}` dont les balises OpenGraph donnent une belle carte Facebook — une demande de
+recherche n'en a aucune) : le post pointe vers `/demandes-recherche` (la liste), **pas** de
+nouvelle page individuelle `/demandes-recherche/{id}` — éviterait une URL publique indexable
+stable exposant le numéro WhatsApp d'une demande précise, pour un gain (jolie carte d'aperçu)
+jugé secondaire par rapport à ce risque.
+
+**Vérification** : Jest (`search-request-facebook.policy.test.ts`, 15 nouveaux cas, mêmes
+scénarios que `facebook-page.policy.test.ts` — transition APPROVED, non-republication,
+marqueur d'idempotence, demande archivée, construction du message avec budget partiel/absent,
+libellé français du type de bien, repli ville→quartier→province, pied de post). `tsc --noEmit`
+propre sur `functions/`, suite Jest complète 128/128 sans régression. Pas de test e2e/trigger
+direct — même limite déjà acceptée pour le trigger annonces équivalent (aucun test n'existe non
+plus pour `onListingApprovedPublishToFacebook` lui-même, uniquement pour ses briques pures).
+
+**Reste à déployer** : comme pour le correctif AdSense/expire-promotions plus haut, ce nouveau
+trigger Cloud Functions ne prend effet qu'après `firebase deploy --only functions` — pas fait
+dans le cadre de cette session (action distincte, pas demandée).
+
+**Fichiers** : `src/components/search-requests/SearchRequestsListClient.tsx`,
+`__tests__/components/search-requests-list-client.test.tsx`,
+`functions/src/social/search-request-facebook.policy.ts` (nouveau),
+`functions/src/social/index.ts`, `functions/src/index.ts`,
+`functions/__tests__/social/search-request-facebook.policy.test.ts` (nouveau).
+
+*Créé le 2026-09-03.*
+
+### Retouche — bouton Filtres déplacé sur la même ligne que "Toutes les demandes"
+
+**Demande directe de l'utilisateur**, capture d'écran à l'appui : le bouton Filtres mobile
+(ajouté ci-dessus) se retrouvait seul, centré au-dessus du titre "Toutes les demandes" au lieu
+d'être sur la même ligne.
+
+**Correctif** : le `<Sheet>` (panneau + contenu) reste unique, mais n'a plus de `SheetTrigger`
+dédié — juste un bouton simple contrôlé par le même state (`isFilterSheetOpen`), factorisé en
+`renderFilterTriggerButton()` et posé à deux endroits désormais : dans la ligne du titre
+"Toutes les demandes" (`flex items-center justify-between`, demande explicite), et dans l'état
+vide (pour ne pas rendre les filtres inaccessibles quand cette section ne s'affiche pas — ex.
+un filtre actif qui ne retourne aucun résultat).
+
+**Vérification** : Jest (2 nouveaux cas dans `search-requests-list-client.test.tsx` — le bouton
+partage bien le même parent flex que le titre ; le test du Sheet existant adapté pour attendre
+que l'état se stabilise avant de chercher le bouton, qui n'est plus rendu inconditionnellement
+dès le montage). Vérifié visuellement par capture d'écran (fichier de test jetable, supprimé
+après vérification) : bouton bien aligné à droite du titre "Toutes les demandes". `tsc --noEmit`
+propre, suite Jest complète 1546/1546.
+
+**Fichiers** : `src/components/search-requests/SearchRequestsListClient.tsx`,
+`__tests__/components/search-requests-list-client.test.tsx`.
+
+*Créé le 2026-09-03.*
+
+---
+
+## 🔴 Corrigé — Tous les filtres de /search?category=Demandes (type, location/vente, ville) étaient silencieusement cassés en production
+
+**Demande directe de l'utilisateur** : "fais maintenant les tests jest et e2e dans la page
+http://localhost:3000/search?category=Demandes. Tu vas tester les filtres et la création d'une
+recherche" — en écrivant le premier e2e réel de ce filtre (données Firestore réelles, pas
+mockées), les trois selects (type de bien, location/vente, ville) n'avaient strictement aucun
+effet visible : changer leur valeur ne modifiait jamais la liste affichée.
+
+**Repro initial** : sur `/search?category=Demandes`, sélectionner n'importe quelle valeur dans
+un des trois selects — la liste reste identique à avant le changement, aucune erreur visible à
+l'écran.
+
+**Cause** : root-causé via un fichier de test jetable (`_debug_sr_filter.spec.ts`, avec des
+listeners `page.on('console', …)`/`page.on('pageerror', …)`, supprimé après diagnostic) — la
+vraie cause est une **erreur Firestore silencieusement avalée** : `The query requires an
+index...`. `getSearchRequests()` (`src/db/search-request.db.ts`) applique `where(typeProperty
+==)`/`where(transactionType==)`/`where(city==)` en plus de `where(state==)`,
+`where(moderationStatus==)` et `orderBy(createdAt desc)` déjà indexés — mais
+`firestore.indexes.json` ne contenait que 3 index `search_requests` (aucun ne couvrant ces
+combinaisons). La promesse rejetée n'était affichée nulle part côté composant
+(`SearchRequestsListClient.tsx`) : l'ancien état restait affiché tel quel, donnant l'illusion
+d'un select "qui ne fait rien" plutôt que d'une vraie erreur.
+
+**Correctif** : 7 nouveaux index composites ajoutés à `firestore.indexes.json`, couvrant chaque
+combinaison atteignable des 3 selects optionnels (`typeProperty` seul, `transactionType` seul,
+`city` seul, et les 4 combinaisons à 2/3), toujours avec `state`+`moderationStatus` en égalité
+et `createdAt desc` en tri — même schéma que les 3 index déjà en place.
+
+**Déployé sur dev uniquement** (`firebase deploy --only firestore:indexes --project dev`),
+vérifié construits (polling direct). **Pas encore déployé sur prod** — c'est pourtant un bug
+actuellement live sur tonnkama.com, à déployer dès que confirmé par l'utilisateur.
+
+**Fichier** : `firestore.indexes.json`.
+
+**Test qui le prouve** : `__tests__/e2e/search-requests-filters.spec.ts` — les 3 tests filtre
+simple (type, transaction, ville) échouaient tous avant le déploiement des index (liste
+inchangée après sélection), passent après.
+
+---
+
+## 🟢 Corrigé — le bouton Filtres mobile disparaissait quand un filtre combiné ne laissait qu'une demande boostée
+
+**Trouvé en écrivant** `search-requests-filters.spec.ts` (voir bug ci-dessus, même session de
+travail) : une fois les index corrigés, un filtre combiné (ex. type=Villa + ville=Libreville) ne
+laissant aucune demande "régulière" mais une demande boostée toujours affichée (elle ignore
+volontairement les filtres, voir `getBoostedSearchRequests`) faisait aussi disparaître le bouton
+"Filtres" mobile — plus aucun moyen de le rouvrir sans recharger la page.
+
+**Cause** : `renderFilterTriggerButton()` n'était rendu qu'à deux endroits, tous deux
+conditionnés (directement ou indirectement) sur `boosted.length === 0` : à côté du titre "Toutes
+les demandes" (qui ne s'affiche que si `items.length > 0`), et dans le bloc état-vide (qui
+exigeait `boosted.length === 0 && items.length === 0`). Dès qu'une boostée restait affichée
+malgré un `items` vide, aucun des deux blocs ne rendait le bouton.
+
+**Correctif** : découplé la condition du bouton de `boosted.length` — il s'affiche désormais dès
+que `items.length === 0`, que des demandes boostées restent visibles par ailleurs ou non ; seul
+le message texte "Aucune demande..." reste conditionné sur `boosted.length === 0` en plus.
+
+**Fichier** : `src/components/search-requests/SearchRequestsListClient.tsx`.
+
+**Test qui le prouve** : `search-requests-filters.spec.ts`, test mobile dédié ("mobile :
+combinaison sans resultat regulier (mais une boostee reste) ne fait pas disparaître le bouton
+Filtres") — échouait avant le correctif, passe après. Couverture Jest ajoutée en miroir dans
+`search-requests-list-client.test.tsx` ("garde le bouton Filtres accessible quand seule une
+demande boostee reste").
+
+---
+
+## 🟢 Couverture ajoutée — `search-requests-filters.spec.ts` (filtres de /search?category=Demandes, vraie lecture Firestore)
+
+7 tests, données Firestore réelles (un studio à louer à Libreville, une villa à vendre à
+Port-Gentil, une demande boostée de type distinct pour éviter toute ambiguïté), desktop +
+mobile :
+
+- Le pill "Demandes" affiche bien les vraies demandes (boostée en tête dans "Recherches
+  urgentes", le reste sous "Toutes les demandes").
+- Filtre type de bien, filtre location/vente, filtre ville (desktop, select inline) — skip
+  proprement sous 640px de large (`viewportSize().width < 640`) : cette section est CSS-masquée
+  sur mobile (`hidden sm:flex`), l'équivalent y est couvert par les tests Sheet mobile.
+- Combinaison de filtres sans résultat régulier : la boostée reste affichée, "Toutes les
+  demandes" disparaît (desktop).
+- Mobile : la même combinaison ne fait pas disparaître le bouton Filtres (régression du bug
+  ci-dessus).
+- Mobile : le Sheet de filtres applique un filtre réel puis le retire via "Réinitialiser".
+
+Rodé sur `chromium-desktop-dev` (7/7) et `chromium-mobile` (3 passent, 4 skip proprement).
+
+**Pas couvert par ce passage** : la création réelle d'une demande de recherche
+(`/demandes-recherche/publier`), qui passe par un paiement MyPayGa réel — aucun sandbox
+documenté dans ce dépôt, aucun e2e existant dans ce codebase n'a jamais mené un flux MyPayGa
+(dons, crédits, ou demandes de recherche) jusqu'à une confirmation réelle. Comment approcher ce
+test reste à trancher avec l'utilisateur.
+
+**Fichiers** : `__tests__/e2e/search-requests-filters.spec.ts` (nouveau),
+`__tests__/e2e/helpers/firebase-admin.ts` (`seedSearchRequest`/`deleteSearchRequests`),
+`__tests__/components/search-requests-list-client.test.tsx`,
+`src/components/search-requests/SearchRequestsListClient.tsx`, `firestore.indexes.json`.
+
+*Créé le 2026-09-03.*

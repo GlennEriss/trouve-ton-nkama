@@ -24,6 +24,14 @@ const PROTECTED_ROUTE_PREFIXES = [
     '/verify-phone',
     '/search-with-ia',
     '/admin',
+    // Vit dans app/(protected)/advertising mais n'était jamais listé ici : un visiteur non
+    // connecté chargeait quand même la coquille de page (0 crédits, GET /api/advertising/
+    // campaigns en 401 -> "Impossible de charger vos publicités. Actualisez la page ou
+    // reconnectez-vous.") au lieu d'être redirigé vers la connexion, comme toutes les autres
+    // routes de ce groupe. Pas de rôle Annonceur exigé (voir /api/advertising/campaigns/
+    // route.ts : `auth()` seul, n'importe quel compte connecté peut payer une pub) — reste donc
+    // hors de ANNOUNCER_ONLY_ROUTE_PREFIXES, contrairement à /property et /reels.
+    '/advertising',
 ] as const
 
 type SessionUser = {

@@ -483,3 +483,62 @@ export async function getUserCredits(uid: string): Promise<number | null> {
   const credits = snapshot.docs[0].data().credits
   return typeof credits === 'number' ? credits : null
 }
+
+export type SeedSearchRequest = {
+  id: string
+  typeProperty: string
+  transactionType: 'FOR_RENT' | 'FOR_SALE'
+  province: string
+  city: string
+  neighborhood?: string
+  budgetMinXaf: number
+  budgetMaxXaf: number
+  description: string
+  whatsappContact: string
+  moderationStatus?: 'PENDING' | 'APPROVED' | 'REJECTED' | null
+  state?: 'IN_PROGRESS' | 'ARCHIVED'
+  /** Pose boostRequested/boostPaid/boostStartAt/boostEndAt si fourni — matérialise une
+   * "recherche urgente" (voir getBoostedSearchRequests, reel.db.ts). */
+  boostEndAt?: Date | null
+}
+
+/**
+ * Writes a real `search_requests/{id}` doc directement (pas de vrai paiement MyPayGa — la
+ * création réelle passe uniquement par la Cloud Function initiateSearchRequestPayment, hors
+ * d'atteinte d'un test e2e sans dépenser de vrai argent, voir search-request.db.ts). Même champs
+ * minimaux que produirait le webhook de confirmation, pour que getSearchRequests()/
+ * getBoostedSearchRequests() (lues par SearchRequestsListClient, vraie lecture Firestore client)
+ * les retrouvent exactement comme une vraie demande confirmée.
+ */
+export async function seedSearchRequest(request: SeedSearchRequest): Promise<void> {
+  const app = ensureAdminApp()
+  const db = admin.firestore(app)
+  const now = admin.firestore.Timestamp.now()
+  const { id, boostEndAt, ...data } = request
+
+  await db
+    .collection('search_requests')
+    .doc(id)
+    .set({
+      ...data,
+      moderationStatus: data.moderationStatus ?? 'APPROVED',
+      state: data.state ?? 'IN_PROGRESS',
+      source: 'public',
+      provider: 'mypayga',
+      paymentStatus: 'confirmed',
+      amountPaidXaf: 500,
+      boostRequested: Boolean(boostEndAt),
+      boostPaid: Boolean(boostEndAt),
+      ...(boostEndAt
+        ? { boostStartAt: now, boostEndAt: admin.firestore.Timestamp.fromDate(boostEndAt) }
+        : {}),
+      createdAt: now,
+      updatedAt: now,
+    })
+}
+
+export async function deleteSearchRequests(ids: string[]): Promise<void> {
+  const app = ensureAdminApp()
+  const db = admin.firestore(app)
+  await Promise.all(ids.map((id) => db.collection('search_requests').doc(id).delete()))
+}

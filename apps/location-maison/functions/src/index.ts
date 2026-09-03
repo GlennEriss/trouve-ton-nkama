@@ -38,7 +38,7 @@ export { syncAdSenseToAdminAnalytics } from './analytics/adsense-sync';
 export { transcodeReelVideo } from './reels';
 
 // Publication automatique des annonces approuvées sur la Page Facebook
-export { onListingApprovedPublishToFacebook } from './social';
+export { onListingApprovedPublishToFacebook, onSearchRequestApprovedPublishToFacebook } from './social';
 
 // Promotions (mise a la une, tendance, boost)
 export { onPropertyCreateDefaultSortTimestamp } from './promotions/default-sort-timestamp';
