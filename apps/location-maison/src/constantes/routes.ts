@@ -75,7 +75,10 @@ export const routes = {
         blog_conseils_negociation: '/blog/conseils-negociation-immobiliere-gabon',
         blog_demarches_administratives: '/blog/demarches-administratives-immobilier-gabon-2024',
         guide_immobilier_gabon: '/guide-immobilier-gabon',
+        // Ancienne landing concierge — redirection permanente vers `publicite` (voir
+        // next.config.ts). Conservée ici uniquement pour ce renvoi, plus utilisée comme lien.
         advertise: '/faire-de-la-pub',
+        publicite: '/publicite',
         property: '/property',
         search_requests: '/demandes-recherche',
         search_requests_publish: '/demandes-recherche/publier',
@@ -105,5 +108,6 @@ export const routes = {
         guide_immobilier_gabon: '/guide-immobilier-gabon',
         property: '/property',
         search_requests: '/demandes-recherche',
+        publicite: '/publicite',
     }
 }

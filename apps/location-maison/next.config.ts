@@ -18,6 +18,14 @@ const nextConfig: NextConfig = {
         destination: 'https://www.tonnkama.com/:path*',
         permanent: true,
       },
+      // Ancienne landing "concierge" de la pub, remplacée par la landing self-serve /publicite
+      // (docs/location-maison/feature/publicite/LANDING-PUBLICITE.md) — 308, même transfert
+      // d'autorité SEO définitif que l'alias houseDetails -> annonce.
+      {
+        source: '/faire-de-la-pub',
+        destination: '/publicite',
+        permanent: true,
+      },
     ];
   },
   images: {

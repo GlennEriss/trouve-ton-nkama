@@ -126,7 +126,7 @@ function ReelsAdFallback() {
         regardent les réels.
       </p>
       <Link
-        href={routes.public.advertise}
+        href={routes.public.publicite}
         className="mt-5 inline-flex min-h-11 items-center justify-center rounded-full bg-white px-5 text-sm font-semibold text-neutral-950 transition hover:bg-emerald-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
       >
         Faire de la pub

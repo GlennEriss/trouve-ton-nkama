@@ -33,6 +33,12 @@ export const trackingEvents = {
   BUSINESS_PUBLISH_AUTH_BECOME_ANNOUNCER_SUCCESS: 'business_publish_auth_become_announcer_success',
   BUSINESS_PROPERTY_AUTO_PUBLISH_SUCCESS: 'business_property_auto_publish_success',
   BUSINESS_PROPERTY_AUTO_PUBLISH_FAILED: 'business_property_auto_publish_failed',
+  // Landing publique /publicite — voir docs/location-maison/feature/publicite/LANDING-PUBLICITE.md §7.
+  PUBLICITE_LANDING_VIEWED: 'publicite_landing_viewed',
+  PUBLICITE_VIDEO_STARTED: 'publicite_video_started',
+  PUBLICITE_VIDEO_COMPLETED: 'publicite_video_completed',
+  PUBLICITE_CTA_CLICKED: 'publicite_cta_clicked',
+  PUBLICITE_PRICING_VIEWED: 'publicite_pricing_viewed',
 } as const;
 
 export type TrackingEventName = (typeof trackingEvents)[keyof typeof trackingEvents];
