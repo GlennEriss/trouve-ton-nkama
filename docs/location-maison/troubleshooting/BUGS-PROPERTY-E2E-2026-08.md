@@ -988,3 +988,128 @@ change de section [...] pareillement si je pars de Immobilier à Mode ou de Mode
 `__tests__/lib/search-filter-query.test.ts`, `__tests__/components/category-filter-pills.test.tsx`.
 
 *Créé le 2026-09-02.*
+
+## 🔴 Corrigé — l'upload de visuel publicitaire échouait toujours réellement (bug bloquant trouvé juste avant la promotion publique du module)
+
+**Demande directe de l'utilisateur** : tests e2e réels du module Publicité (`/advertising`)
+avant d'en faire la promotion sur ses réseaux pour attirer des annonceurs pub.
+
+**Contexte technique découvert en amont** : contrairement aux réels/annonces (SDK client
+Firebase, session Firebase réelle requise via `/api/generate-token`), le module Publicité
+authentifie uniquement via la session NextAuth (`auth()`) — l'upload (`POST
+/api/advertising/upload`) ET la création de campagne (`POST /api/advertising/campaigns`)
+passent tous les deux par l'Admin SDK côté serveur. Le cookie NextAuth forgé de
+`signInAsAnnouncer()` suffit donc seul pour un test e2e réel, sans le pont Firebase habituel.
+
+**Bug trouvé en écrivant le premier test e2e réel (non mocké) de ce parcours** :
+`src/app/api/advertising/upload/route.ts` appelait `getStorage(adminApp).bucket()` **sans nom
+de bucket explicite**. L'app Admin (`src/firebase/admin.ts`) n'a pas de `storageBucket` dans sa
+config — sans argument, le SDK devine l'ancienne convention `{project-id}.appspot.com`, qui ne
+correspond pas au vrai bucket de ce projet (`*.firebasestorage.app`). Résultat en pratique :
+**tout upload de visuel publicitaire échouait à 100%**, avec l'erreur "Bucket name not specified
+or invalid" — bloquant entièrement la création de campagne (l'étape 2 du wizard, "Ajouter les
+visuels", ne peut jamais passer à "5/5 emplacements prêts"). Même contournement déjà en place
+ailleurs (`/api/reels/route.ts`, `/api/reels/[reelId]/video/route.ts`) mais oublié ici — la
+suite Jest existante (`advertising-upload.test.ts`) ne pouvait pas le détecter : son mock de
+`bucket` accepte n'importe quel nombre d'arguments sans distinguer les deux cas.
+
+**Correctif** : même résolution `NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET || FIREBASE_STORAGE_BUCKET`
+que les routes reels, appliquée à `/api/advertising/upload/route.ts`.
+
+**Vérification** :
+- E2E réel (nouveau fichier `advertising-real.spec.ts`) : parcours complet du wizard avec un
+  vrai upload d'image (Storage réel), vrai `POST /api/advertising/campaigns`, vraie campagne
+  `ad_campaigns` en base (`status: 'active'`, `billing.creditsUsed: 70`, placements corrects),
+  vrai débit du compte (`users/{uid}.credits`, 100 → 30), et apparition réelle sur le dashboard
+  après redirection — 2/2 sur `chromium-desktop-dev` et `chromium-mobile`. Second test : compte
+  à 50 crédits (forfait à 70) → vrai 402, aucune campagne créée, crédits inchangés.
+- Jest (`__tests__/api/advertising-upload.test.ts`, nouveau cas) : verrouille explicitement que
+  `bucket()` est appelé avec le nom résolu depuis l'env, jamais sans argument — pour que ce
+  bug précis ne puisse plus repasser inaperçu par cette suite.
+- Nouveaux helpers de test (`__tests__/e2e/helpers/firebase-admin.ts`) : `getAdCampaign`,
+  `findAdCampaignByOwner`, `deleteAdCampaigns` (nettoie aussi le fichier Storage et les
+  `credit_transactions` associées), `getUserCredits`.
+- Régression : suite Jest complète 1532/1532, `lot4-mobile-advertising.spec.ts` (existant,
+  mocké) toujours 3/3, `tsc --noEmit` propre.
+
+**⚠️ Signalé à l'utilisateur, non traité ici (décision produit, pas un bug de code)** : la doc
+`docs/location-maison/feature/publicite/README.md` spécifie un V1 "concierge" (l'admin crée les
+campagnes manuellement, le client paie l'admin directement, `billing.mode: 'admin_amount'`,
+self-serve explicitement repoussé en "Phase 2"). Le code réellement en place est déjà la
+Phase 2 self-serve : n'importe quel utilisateur connecté peut payer en crédits et publier une
+campagne **instantanément active, sans aucune étape de modération**. Avant une promotion
+publique invitant des inconnus à publier du contenu payant, vaut la peine de confirmer que
+l'absence de modération est un choix assumé plutôt qu'un chantier resté inachevé.
+
+**Fichiers** : `src/app/api/advertising/upload/route.ts`,
+`__tests__/api/advertising-upload.test.ts`, `__tests__/e2e/advertising-real.spec.ts` (nouveau),
+`__tests__/e2e/helpers/firebase-admin.ts`.
+
+*Créé le 2026-09-02.*
+
+## 🔴 Corrigé — AdSense poussait deux fois la même publicité sur (quasi) chaque chargement de page
+
+**Demande directe de l'utilisateur** : "j'ai l'impression qu'on a fait un composant qui charge
+une seule fois et je trouve les revenus générés trop bas" — révision de l'intégration Google
+AdSense (`src/components/ads/AdSenseBlock.tsx`), déjà repérée en filigrane plus tôt dans cette
+session via un warning console répété : `"AdSense push failed"` /
+`"adsbygoogle.push() error: All 'ins' elements ... already have ads in them"`.
+
+**La théorie "le composant ne charge qu'une fois" (jamais remonté à la navigation) était
+fausse** — `<ins key={slotKey}>` force déjà un vrai remontage React à chaque changement de
+slot, et 5 des 6 emplacements vivent dans des pages qui démontent entièrement à la navigation
+App Router. Seul le pied de page persiste à travers les navigations, et il gère déjà ça
+correctement (`slotKey = \`footer-${pathname}\``).
+
+**Root cause réelle, à l'opposé** : le composant pousse la pub UNE fois... puis **une seconde
+fois** peu après, sur le même nœud DOM, à cause de deux bugs combinés :
+1. La garde anti-doublon comparait `data-ad-status` à `'done'` — une valeur que Google **ne
+   pose jamais** (seulement `'filled'` ou `'unfilled'`, déjà utilisées ailleurs dans ce même
+   projet, `globals.css:261,266`). Cette garde ne bloquait donc jamais rien.
+2. Le tableau de dépendances de l'effet incluait `uid`/`isAuthenticated` (dérivés de
+   `useSession()`, qui résout de façon asynchrone `'loading'` → `'authenticated'` peu après le
+   montage) et `onStatusChange`. Quand la session résout, l'effet se relance — sur le **même**
+   `<ins>` (slotKey/pathname inchangés, React ne le démonte pas) — et appelle
+   `adsbygoogle.push({})` une seconde fois, sans que la garde cassée (point 1) ne l'arrête.
+
+Concrètement : chaque chargement de page envoyait deux requêtes de publicité pour le même
+emplacement, quelques centaines de ms d'écart — pas juste du bruit console. Une requête
+dupliquée sur un slot déjà revendiqué par la file `adsbygoogle` peut faire échouer ou
+invalider le remplissage réel, et des motifs de double-requête répétés sur un même compte sont
+exactement le genre de signal que Google peut classer comme trafic non valide, avec un risque
+réel de baisse de remplissage/CPC voire de sanction du compte — cohérent avec des revenus jugés
+trop bas.
+
+**Correctif** :
+- Garde corrigée : vérifie `'filled'` ou `'unfilled'` (les seules valeurs réellement posées par
+  Google), plus jamais `'done'`.
+- `uid`/`isAuthenticated`/`onStatusChange` retirés du tableau de dépendances de l'effet
+  principal — lus via une ref (`actorRef`, mise à jour par un effet séparé, sans effet de
+  bord DOM) au moment de chaque appel `emitAdsSlotEvent`/`onStatusChange`, donc toujours à
+  jour sans jamais relancer le `push({})`. L'effet ne se relance plus que sur
+  `[slot, slotKey, pathname]` — les seules valeurs qui affectent réellement le nœud `<ins>`
+  ciblé.
+
+**Vérification** :
+- Jest (`__tests__/components/adsense-block.test.tsx`, nouveau) : `push` appelé une seule fois
+  malgré une résolution de session après montage (le bug exact) ; `push` non ré-appelé sur un
+  nœud déjà `filled` même si l'effet se relance (ex. changement de pathname sans changement de
+  slotKey) ; `push` ré-appelé pour un nouveau `slotKey` (nouveau `<ins>`, comportement normal
+  préservé). Les deux premiers tests échouent de façon vérifiée avec l'ancien code (tracé
+  manuellement : garde `'done'` + deps incluant uid/isAuthenticated → 2 appels).
+- E2E réel (fichier de test jetable, supprimé après vérification) : chargement réel de
+  `/search`, 0 warning "AdSense push failed" observé — le même chargement produisait ce warning
+  de façon répétée plus tôt dans cette session (logs déjà capturés).
+- `tsc --noEmit` propre, suite Jest complète 1535/1535 sans régression.
+
+**⚠️ Signalé à l'utilisateur, non corrigeable en code** : `NEXT_PUBLIC_ADSENSE_SLOT_REELS_INLINE`
+n'est défini dans aucun `.env.local*` — l'emplacement pub dans le fil des réels
+(`src/lib/ads/config.ts:17`) retombe silencieusement sur le slot du pied de page (responsive,
+petit format), potentiellement mal adapté à un emplacement plein écran/portrait. Nécessite de
+créer un vrai bloc d'annonces dédié dans le tableau de bord AdSense pour avoir un vrai slot ID à
+renseigner — action côté compte Google, pas quelque chose que je peux fabriquer.
+
+**Fichiers** : `src/components/ads/AdSenseBlock.tsx`,
+`__tests__/components/adsense-block.test.tsx` (nouveau).
+
+*Créé le 2026-09-02.*

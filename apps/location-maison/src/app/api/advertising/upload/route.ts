@@ -42,7 +42,14 @@ export async function POST(request: Request) {
   }
   try {
     const { getStorage } = await import('firebase-admin/storage')
-    const bucket = getStorage(adminApp).bucket()
+    const storage = getStorage(adminApp)
+    // Sans nom explicite, le SDK Admin devine {project-id}.appspot.com (ancienne convention),
+    // qui ne correspond pas au vrai bucket de ce projet (*.firebasestorage.app) — même
+    // contournement que /api/reels/route.ts. Sans lui, tout upload de visuel publicitaire
+    // échouait ("Bucket name not specified or invalid"), bloquant entièrement la création
+    // d'une campagne : repéré en écrivant le premier test e2e réel (non mocké) de ce parcours.
+    const bucketName = process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET || process.env.FIREBASE_STORAGE_BUCKET
+    const bucket = bucketName ? storage.bucket(bucketName) : storage.bucket()
     const imagePATH = `ad-campaigns/${uid}/${Date.now()}-${randomUUID()}.${ext}`
     const buffer = Buffer.from(await file.arrayBuffer())
 

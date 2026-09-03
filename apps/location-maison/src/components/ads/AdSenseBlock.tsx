@@ -37,6 +37,19 @@ export default function AdSenseBlock({
   }, [session?.user]);
   const isAuthenticated = status === 'authenticated';
 
+  // useSession() résout de façon asynchrone ('loading' -> 'authenticated'/'unauthenticated'
+  // peu après le montage) : sans cette indirection par ref, uid/isAuthenticated dans le tableau
+  // de dépendances ci-dessous relançait l'effet principal — donc un second adsbygoogle.push({})
+  // sur le MÊME nœud <ins> (slotKey/pathname inchangés, React ne le démonte pas) — quelques
+  // centaines de ms après le premier, exactement l'erreur observée en prod ("All 'ins' elements
+  // ... already have ads in them", AdSenseBlock.useEffect.tryInitialize). onStatusChange est
+  // traité pareil par précaution : une identité de callback instable côté appelant aurait le
+  // même effet, même si aucun appelant actuel n'en passe un.
+  const actorRef = React.useRef({ uid, isAuthenticated, onStatusChange });
+  React.useEffect(() => {
+    actorRef.current = { uid, isAuthenticated, onStatusChange };
+  }, [uid, isAuthenticated, onStatusChange]);
+
   React.useEffect(() => {
     let retries = 0;
     let cancelled = false;
@@ -55,7 +68,12 @@ export default function AdSenseBlock({
         return false;
       }
 
-      if (adElement.getAttribute('data-ad-status') === 'done') {
+      // Google ne pose jamais 'done' — seulement 'filled' ou 'unfilled' une fois le slot
+      // traité (voir globals.css:261,266, qui cible déjà ces deux valeurs réelles). Cette
+      // vérification ne matchait donc jamais : un second push({}) sur un <ins> déjà traité
+      // n'était jamais bloqué, d'où l'erreur "already have ads in them" observée en prod.
+      const existingStatus = adElement.getAttribute('data-ad-status');
+      if (existingStatus === 'filled' || existingStatus === 'unfilled') {
         return true;
       }
 
@@ -77,8 +95,8 @@ export default function AdSenseBlock({
           pathname: pathname || '/',
           latencyMs: now - initStart,
           actor: {
-            uid,
-            isAuthenticated,
+            uid: actorRef.current.uid,
+            isAuthenticated: actorRef.current.isAuthenticated,
           },
         });
         return true;
@@ -99,18 +117,18 @@ export default function AdSenseBlock({
       eventName: 'ad_slot_rendered',
       pathname: pathname || '/',
       actor: {
-        uid,
-        isAuthenticated,
+        uid: actorRef.current.uid,
+        isAuthenticated: actorRef.current.isAuthenticated,
       },
     });
 
     const adElement = adRef.current;
     let observer: MutationObserver | null = null;
     if (adElement && typeof MutationObserver !== 'undefined') {
-      onStatusChange?.(adElement.getAttribute('data-ad-status'));
+      actorRef.current.onStatusChange?.(adElement.getAttribute('data-ad-status'));
       observer = new MutationObserver(() => {
         const adStatus = adElement.getAttribute('data-ad-status');
-        onStatusChange?.(adStatus);
+        actorRef.current.onStatusChange?.(adStatus);
         if (adStatus === 'filled') {
           emitAdsSlotEvent({
             slotId: slot,
@@ -118,8 +136,8 @@ export default function AdSenseBlock({
             eventName: 'ad_filled',
             pathname: pathname || '/',
             actor: {
-              uid,
-              isAuthenticated,
+              uid: actorRef.current.uid,
+              isAuthenticated: actorRef.current.isAuthenticated,
             },
           });
           emitAdsSlotEvent({
@@ -128,8 +146,8 @@ export default function AdSenseBlock({
             eventName: 'ad_impression',
             pathname: pathname || '/',
             actor: {
-              uid,
-              isAuthenticated,
+              uid: actorRef.current.uid,
+              isAuthenticated: actorRef.current.isAuthenticated,
             },
           });
         }
@@ -166,7 +184,12 @@ export default function AdSenseBlock({
       window.clearInterval(intervalId);
       observer?.disconnect();
     };
-  }, [slot, slotKey, pathname, uid, isAuthenticated, onStatusChange]);
+    // uid/isAuthenticated/onStatusChange sont volontairement absents : ils n'affectent ni le
+    // <ins> ciblé ni le besoin d'un push({}) (lus via actorRef ci-dessus, toujours à jour), et
+    // les faire varier ici relançait cet effet sur le MÊME nœud DOM (slotKey/pathname
+    // inchangés) à chaque résolution de session — la cause racine du double push.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [slot, slotKey, pathname]);
 
   return (
     <div className={className}>

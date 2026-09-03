@@ -83,6 +83,26 @@ describe('/api/advertising/upload', () => {
     expect(options).toMatchObject({ contentType: 'image/png', resumable: false })
   })
 
+  it('resout le bucket par son nom explicite, jamais storage.bucket() sans argument', async () => {
+    // Bug reel corrige le 2026-09-02 (trouve en ecrivant le premier e2e reel, non mocke, de ce
+    // parcours) : storage.bucket() sans argument fait deviner au SDK Admin l'ancienne
+    // convention {project-id}.appspot.com, qui ne correspond pas au vrai bucket de ce projet
+    // (*.firebasestorage.app, voir NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET) — tout upload de
+    // visuel publicitaire echouait reellement en dev/prod malgre cette suite Jest verte, car
+    // ce mock accepte n'importe quel nombre d'arguments sans distinguer les deux cas. Fixe la
+    // variable ici plutot que de compter sur l'environnement ambiant (non garanti sous Jest).
+    const originalBucketEnv = process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET
+    process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET = 'trouve-ton-nkama-test.firebasestorage.app'
+    try {
+      await POST(requestWith({ get: () => pngFile() }))
+
+      expect(bucket).toHaveBeenCalledTimes(1)
+      expect(bucket).toHaveBeenCalledWith('trouve-ton-nkama-test.firebasestorage.app')
+    } finally {
+      process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET = originalBucketEnv
+    }
+  })
+
   it('traduit un echec de stockage en 500', async () => {
     save.mockRejectedValueOnce(new Error('gcs down'))
     const response = await POST(requestWith({ get: () => pngFile() }))

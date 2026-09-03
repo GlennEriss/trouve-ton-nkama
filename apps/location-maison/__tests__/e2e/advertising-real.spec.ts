@@ -144,7 +144,9 @@ test.describe('Module Publicité (/advertising) — vraie création de campagne,
 
     // Vrai 402 de POST /api/advertising/campaigns (50 < 70 crédits requis) — reste sur l'étape
     // de récapitulatif, affiche le toast d'erreur, n'est jamais redirigé vers /advertising.
-    await expect(page.getByText(/Crédits insuffisants/i)).toBeVisible({ timeout: 15000 })
+    // .first() : le toast (texte visible) ET la région aria-live (annonce lecteur d'écran)
+    // portent le même texte — strict mode Playwright refuse sinon de choisir entre les deux.
+    await expect(page.getByText(/Crédits insuffisants/i).first()).toBeVisible({ timeout: 15000 })
     await expect(page).toHaveURL(/\/advertising\/create$/)
 
     // Preuve définitive côté données : aucune campagne créée, crédits inchangés — le rejet
