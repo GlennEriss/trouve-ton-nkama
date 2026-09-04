@@ -351,6 +351,17 @@ describe('AdManagementPage', () => {
     expect(screen.getByRole('heading', { name: 'Aucune annonce trouvée' })).toBeVisible()
   })
 
+  it('propose les raccourcis de l espace annonceur, dont "Mes publicités"', () => {
+    // Demande explicite de l'utilisateur : le bouton "Mes publicités" manquait dans la barre
+    // d'actions de /property, à côté des raccourcis déjà présents (réels, cadeaux).
+    render(<AdManagementPage />)
+
+    expect(screen.getByRole('link', { name: /Mes publicités/ })).toHaveAttribute('href', '/advertising')
+    expect(screen.getByRole('link', { name: /Mes réels/ })).toHaveAttribute('href', '/reels/mine')
+    expect(screen.getByRole('link', { name: /Mes cadeaux/ })).toHaveAttribute('href', '/gifts')
+    expect(screen.getByRole('link', { name: /Publier une annonce/ })).toHaveAttribute('href', '/publish')
+  })
+
   it('affiche les deux onglets avec leur nombre d annonces', () => {
     render(<AdManagementPage />)
 

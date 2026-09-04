@@ -1483,3 +1483,33 @@ problème — le second essai a réussi normalement, avec le vrai appel MyPayGa 
 `getSearchRequest`).
 
 *Créé le 2026-09-03.*
+
+---
+
+## 🟢 Corrigé — Sur /publicite, le CTA mobile fixe recouvrait les contrôles du lecteur vidéo
+
+**Signalé directement par l'utilisateur** après mise en ligne de la landing `/publicite` : sur
+mobile, la barre "Créer ma publicité — X FCFA" (fixe en bas d'écran une fois le hero dépassé)
+restait affichée devant la vidéo de présentation, recouvrant le bouton lecture puis les
+contrôles natifs une fois la lecture démarrée.
+
+**Cause** : `PubliciteLandingClient.tsx` ne calculait la visibilité de la barre fixe qu'à partir
+d'un seul `IntersectionObserver` (sur `#hero-cta`) — dès que le hero sortait du champ, la barre
+restait affichée pour le reste du défilement, y compris pendant que le lecteur vidéo occupait
+l'écran.
+
+**Correctif** : un second `IntersectionObserver` observe désormais `#video-player` (nouvel id
+posé sur le conteneur du lecteur dans `PubliciteVideoSection.tsx`, `threshold: 0` — se déclenche
+dès qu'un seul pixel du lecteur entre/sort du viewport). La barre fixe n'est affichée que si le
+hero est dépassé **ET** que le lecteur n'est pas à l'écran : `showStickyCta = isPastHero &&
+!isVideoPlayerVisible`.
+
+**Vérifié en réel** (captures d'écran, vraie lecture démarrée avec sous-titres) : barre visible
+entre le hero et la vidéo, disparaît dès que le lecteur entre dans le viewport (avant ET pendant
+la lecture, contrôles natifs inclus), réapparaît après la section vidéo (section tarifs).
+
+**Fichiers** : `src/components/publicite/PubliciteLandingClient.tsx`,
+`src/components/publicite/PubliciteVideoSection.tsx` (id `video-player`),
+`__tests__/e2e/publicite-landing.spec.ts` (nouveau test dédié, desktop + mobile).
+
+*Créé le 2026-09-04.*

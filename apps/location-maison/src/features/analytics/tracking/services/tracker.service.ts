@@ -82,6 +82,7 @@ function resolvePageSpecificEvent(pathname: string): TrackingEventName | null {
   // (voir app/(public)/houseDetails/[id]/page.tsx) — gardé ici par précaution, un visiteur
   // ne devrait normalement jamais rester sur ce chemin côté client.
   if (pathname.startsWith('/annonce/') || pathname.startsWith('/houseDetails/')) return trackingEvents.PAGE_PROPERTY_DETAILS_VIEW;
+  if (pathname === '/publicite') return trackingEvents.PUBLICITE_LANDING_VIEWED;
   return null;
 }
 

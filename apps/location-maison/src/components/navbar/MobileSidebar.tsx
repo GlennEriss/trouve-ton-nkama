@@ -23,7 +23,7 @@ const SIDEBAR_LINKS: Array<{ href: string; label: string; highlight?: boolean }>
   { href: "/immobilier/location/maison", label: "Maisons à louer" },
   { href: "/immobilier/vente/maison", label: "Maisons à vendre" },
   { href: routes.public.guide_immobilier_gabon, label: "Guide Immobilier" },
-  { href: routes.public.advertise, label: "Faire de la pub" },
+  { href: routes.public.publicite, label: "Publicité" },
   { href: routes.public.confidentiality, label: "Politique de confidentialité" },
   { href: routes.public.terms_of_use, label: "Conditions d'utilisation" },
   { href: routes.public.announcer_terms, label: "Conditions annonceur" },

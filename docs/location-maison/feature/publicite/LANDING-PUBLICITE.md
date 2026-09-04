@@ -1,6 +1,26 @@
 # Landing page publique — `/publicite`
 
-> Statut : spécification produit, UX, contenu et SEO à implémenter.
+> **Statut : implémentée (2026-09-03).** `src/app/(public)/publicite/page.tsx` +
+> `src/components/publicite/*`. `/faire-de-la-pub` (ancienne landing concierge)
+> redirige désormais en 308 vers `/publicite` (`next.config.ts`), page supprimée.
+>
+> **Écarts assumés par rapport à cette spec, à corriger si besoin** :
+> - §3.4 : pas de version WebM (MP4 seul, H.264 déjà largement supporté) ; pas de
+>   sous-titres multi-pistes, un seul `.vtt` français.
+> - §3.5 : pas de captures d'écran "en situation" par emplacement (recherche/
+>   annonce/accueil/réels) — `SponsoredSlot` n'existe pas encore dans le code
+>   (§7 du README reste une spec, pas une implémentation), impossible de
+>   screenshoter un vrai rendu en contexte sans fabriquer une maquette. Remplacé
+>   par une grille d'icônes descriptive, honnête sur ce qui existe réellement.
+> - §5 : lien ajouté au pied de page, au menu mobile (`MobileSidebar.tsx`) et
+>   depuis le slide "Sponsorisé" du fil Réels (`ReelAdSlide.tsx`, déjà existant,
+>   repointé). Pas ajouté à la barre de navigation desktop principale
+>   (`Navbar.tsx`, hors périmètre de cette passe). QR code et soumission Search
+>   Console non faits (actions hors code).
+> - §3.7 : prix lus en direct depuis `credit_packs` (Firestore, Admin SDK côté
+>   serveur), repli sur `ADMIN_PACKS_TEMPLATE` si vide/erreur — même source que
+>   `AD_PACKAGES` (`src/constantes/ad-packages.ts`), déjà utilisée par
+>   `/advertising/create`.
 >
 > Cette page ne remplace pas `/advertising`. Elle explique l'offre avant de
 > demander à la personne de créer un compte.

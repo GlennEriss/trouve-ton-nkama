@@ -97,7 +97,7 @@ export default function Footer({ isHide = false }: Readonly<{ isHide?: boolean }
                                 <a href={routes.public.guide_immobilier_gabon} className="hover:underline py-1">Guide Immobilier</a>
                             </li>
                             <li>
-                                <a href={routes.public.advertise} className="hover:underline py-1">Faire de la pub</a>
+                                <a href={routes.public.publicite} className="hover:underline py-1">Publicité</a>
                             </li>
                             <li>
                                 <a href={routes.public.search_requests} className="hover:underline py-1">Demandes de recherche</a>
