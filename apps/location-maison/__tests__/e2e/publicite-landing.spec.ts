@@ -81,6 +81,37 @@ test.describe('/publicite — landing publique', () => {
     await expect(page.locator('input[type="password"]').first()).toBeVisible({ timeout: 10000 })
   })
 
+  test('mobile : le CTA fixe disparaît pendant que le lecteur vidéo est visible, puis revient', async ({
+    page,
+  }) => {
+    // Régression signalée par l'utilisateur : la barre fixe recouvrait les contrôles du lecteur
+    // vidéo sur mobile. PubliciteLandingClient observe désormais #video-player
+    // (PubliciteVideoSection) en plus du hero et masque le CTA fixe tant qu'il est à l'écran.
+    await page.setViewportSize({ width: 390, height: 844 })
+    await page.goto('/publicite', { waitUntil: 'domcontentloaded' })
+    await page.getByRole('heading', { level: 1 }).waitFor({ timeout: 15000 })
+
+    const stickyBar = page.getByText(/Créer ma publicité — /)
+
+    // Après le hero, avant la vidéo : le CTA fixe est bien là.
+    await page.getByText("Pas besoin d'être dans l'immobilier").scrollIntoViewIfNeeded()
+    await expect(stickyBar).toBeVisible({ timeout: 10000 })
+
+    // Le lecteur vidéo à l'écran : le CTA fixe doit disparaître pour ne pas recouvrir ses
+    // contrôles (bouton lecture, puis contrôles natifs une fois démarrée).
+    await page.locator('#video-player').scrollIntoViewIfNeeded()
+    await expect(stickyBar).not.toBeVisible({ timeout: 10000 })
+
+    // Même pendant la lecture réelle (contrôles natifs affichés).
+    await page.getByRole('button', { name: 'Lire la vidéo de présentation' }).click()
+    await page.waitForTimeout(500)
+    await expect(stickyBar).not.toBeVisible()
+
+    // Une fois la vidéo dépassée (tarifs), le CTA fixe revient.
+    await page.locator('#tarifs').scrollIntoViewIfNeeded()
+    await expect(stickyBar).toBeVisible({ timeout: 10000 })
+  })
+
   test('/faire-de-la-pub redirige en 308 vers /publicite (ancienne landing concierge)', async ({ request }) => {
     const response = await request.get('/faire-de-la-pub', { maxRedirects: 0 })
     expect(response.status()).toBe(308)

@@ -88,23 +88,41 @@ export default function PubliciteLandingClient({
   const heroTextAnim = useEntranceAnimation()
   const heroVisualAnim = useEntranceAnimation(0.15)
   const [openFaqIndex, setOpenFaqIndex] = useState<number | null>(null)
-  const [showStickyCta, setShowStickyCta] = useState(false)
+  const [isPastHero, setIsPastHero] = useState(false)
+  const [isVideoPlayerVisible, setIsVideoPlayerVisible] = useState(false)
   const [hasTrackedPricing, setHasTrackedPricing] = useState(false)
 
-  // Le bouton d'action mobile fixe n'apparaît qu'une fois le hero (et son propre CTA) hors
-  // champ — jamais superposé aux contrôles de la vidéo (marge suffisante en pratique, le
-  // lecteur reste centré avec de l'espace autour, voir PubliciteVideoSection).
+  // Le bouton d'action mobile fixe n'apparaît qu'une fois le hero (et son propre CTA) hors champ.
   useEffect(() => {
     if (typeof IntersectionObserver === 'undefined') return
     const hero = document.getElementById('hero-cta')
     if (!hero) return
     const observer = new IntersectionObserver(
-      ([entry]) => setShowStickyCta(!entry.isIntersecting),
+      ([entry]) => setIsPastHero(!entry.isIntersecting),
       { rootMargin: '-72px 0px 0px 0px' },
     )
     observer.observe(hero)
     return () => observer.disconnect()
   }, [])
+
+  // ... et disparaît le temps que le lecteur vidéo (PubliciteVideoSection, #video-player) est à
+  // l'écran, pour ne jamais recouvrir ses contrôles (natifs une fois la lecture démarrée, ou le
+  // simple bouton lecture avant) — bug mobile signalé par l'utilisateur. threshold à 0 : la barre
+  // se retire dès qu'un seul pixel du lecteur entre dans le viewport, pas seulement quand il est
+  // pleinement visible.
+  useEffect(() => {
+    if (typeof IntersectionObserver === 'undefined') return
+    const videoPlayer = document.getElementById('video-player')
+    if (!videoPlayer) return
+    const observer = new IntersectionObserver(
+      ([entry]) => setIsVideoPlayerVisible(entry.isIntersecting),
+      { threshold: 0 },
+    )
+    observer.observe(videoPlayer)
+    return () => observer.disconnect()
+  }, [])
+
+  const showStickyCta = isPastHero && !isVideoPlayerVisible
 
   useEffect(() => {
     if (typeof IntersectionObserver === 'undefined' || hasTrackedPricing) return
@@ -432,7 +450,9 @@ export default function PubliciteLandingClient({
 
       {/* CTA mobile fixe — posée AU-DESSUS de la barre de navigation mobile permanente de
           l'app (BottomNavigation.tsx, fixed bottom-0 z-50, ~6rem + safe-area) plutôt qu'à
-          bottom-0 : sinon elle serait recouverte (z-40 < z-50) et donc invisible/inutile. */}
+          bottom-0 : sinon elle serait recouverte (z-40 < z-50) et donc invisible/inutile.
+          Masquée tant que le lecteur vidéo est à l'écran (isVideoPlayerVisible) — sinon elle
+          recouvre ses contrôles, voir la section vidéo plus haut. */}
       {showStickyCta && (
         <div
           className="fixed inset-x-0 z-40 border-t border-gray-100 bg-white/95 p-3 backdrop-blur dark:border-gray-800 dark:bg-gray-950/95 md:hidden"

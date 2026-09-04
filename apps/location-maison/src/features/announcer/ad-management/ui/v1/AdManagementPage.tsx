@@ -45,6 +45,7 @@ import {
   Gift,
   Layers3,
   MapPin,
+  Megaphone,
   Pencil,
   Plus,
   Search,
@@ -785,6 +786,16 @@ export function AdManagementPage() {
               <Link href={routes.protected.gifts}>
                 <Gift className="mr-2 h-4 w-4" />
                 Mes cadeaux
+              </Link>
+            </Button>
+            <Button
+              asChild
+              variant="outline"
+              className="h-12 rounded-full px-6 font-semibold"
+            >
+              <Link href={routes.protected.advertising}>
+                <Megaphone className="mr-2 h-4 w-4" />
+                Mes publicités
               </Link>
             </Button>
             <Button
