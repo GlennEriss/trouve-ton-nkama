@@ -4,7 +4,7 @@ import { logger } from 'firebase-functions'
 import { onRequest } from 'firebase-functions/v2/https'
 import { adminDB } from '../../admin'
 import { generateTransactionId } from '../airtel/config'
-import { MYPAYGA_SECRETS, getMyPayGaConfig, isPhoneValidForNetwork, normalizeMyPayGaNetwork, toLocalPhone } from '../mypayga/config'
+import { MYPAYGA_SECRETS, getMyPayGaConfig, isPhoneValidForNetwork, normalizeMyPayGaNetwork, toGabonE164, toLocalPhone } from '../mypayga/config'
 import {
   SEARCH_REQUEST_DESCRIPTION_MAX_LENGTH,
   SEARCH_REQUEST_MAX_PENDING_PER_PHONE_PER_HOUR,
@@ -121,7 +121,11 @@ export const initiateSearchRequestPayment = onRequest({ secrets: MYPAYGA_SECRETS
     budgetMinXaf,
     budgetMaxXaf,
     description,
-    whatsappContact,
+    // Stocké au format +241... (indicatif Gabon, 0 initial retiré) — demande explicite de
+    // l'utilisateur. `whatsappContact` local ci-dessus reste la forme validée (longueur 9,
+    // voir plus haut) ; seule la forme persistée change, pour un numéro directement affichable
+    // et exploitable dans un lien wa.me sans transformation supplémentaire côté client.
+    whatsappContact: toGabonE164(whatsappContact),
     provider: 'mypayga',
     payerPhone,
     payerNetwork: providerNetwork,

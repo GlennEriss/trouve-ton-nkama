@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Archive, ArchiveRestore, Sparkles, Trash2 } from "lucide-react";
+import { Archive, ArchiveRestore, Pencil, Sparkles, Trash2 } from "lucide-react";
 
 import { Button } from "@trouve-ton-nkama/ui/button";
 import { Card, CardContent } from "@trouve-ton-nkama/ui/card";
@@ -14,6 +14,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { EditSearchRequestDialog } from "@/components/search-requests/EditSearchRequestDialog";
 import { cn } from "@/lib/utils";
 import type { SearchRequestListItem } from "@/modules/search-requests-moderation/domain/types";
 
@@ -149,7 +150,7 @@ export function PublishedSearchRequests() {
         </p>
       ) : null}
 
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+      <div className="grid grid-cols-1 items-start gap-4 sm:grid-cols-2 lg:grid-cols-3">
         {items.map((item) => (
           <Card key={item.id} className={cn(item.state === "ARCHIVED" && "opacity-70")}>
             <CardContent className="space-y-3 p-4">
@@ -178,7 +179,17 @@ export function PublishedSearchRequests() {
                 <p>WhatsApp : {item.whatsappContact}</p>
               </div>
 
-              <p className="line-clamp-3 text-sm text-foreground">{item.description}</p>
+              <p className="whitespace-pre-wrap break-words text-sm text-foreground">{item.description}</p>
+
+              <EditSearchRequestDialog
+                item={item}
+                trigger={
+                  <Button variant="outline" size="sm" className="w-full">
+                    <Pencil className="mr-1.5 h-4 w-4" />
+                    Modifier
+                  </Button>
+                }
+              />
 
               <div className="grid grid-cols-2 gap-2">
                 {item.state === "IN_PROGRESS" ? (

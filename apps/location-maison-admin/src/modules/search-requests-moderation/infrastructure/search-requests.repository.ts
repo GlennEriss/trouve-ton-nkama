@@ -158,3 +158,41 @@ export async function deleteSearchRequest(searchRequestId: string): Promise<void
   const db = getFirebaseAdminDb();
   await db.collection(SEARCH_REQUESTS_COLLECTION).doc(searchRequestId).delete();
 }
+
+export type SearchRequestContentPatch = {
+  typeProperty: string;
+  transactionType: "FOR_RENT" | "FOR_SALE";
+  province: string;
+  city: string;
+  neighborhood: string | null;
+  budgetMinXaf: number;
+  budgetMaxXaf: number;
+  description: string;
+  whatsappContact: string;
+};
+
+/**
+ * Correction du contenu d'une demande (erreur de saisie, budget mal interprété, etc.) —
+ * distincte de `patchSearchRequestModerationStatus` (décision d'approbation) et de
+ * `setSearchRequestState` (publier/archiver) : ne touche à aucun des deux, disponible que
+ * la demande soit encore en attente ou déjà publiée.
+ */
+export async function updateSearchRequestContent(
+  searchRequestId: string,
+  content: SearchRequestContentPatch,
+  actorUid: string,
+): Promise<void> {
+  const db = getFirebaseAdminDb();
+  await db
+    .collection(SEARCH_REQUESTS_COLLECTION)
+    .doc(searchRequestId)
+    .set(
+      {
+        ...content,
+        contentEditedAt: FieldValue.serverTimestamp(),
+        contentEditedBy: actorUid,
+        updatedAt: FieldValue.serverTimestamp(),
+      },
+      { merge: true },
+    );
+}

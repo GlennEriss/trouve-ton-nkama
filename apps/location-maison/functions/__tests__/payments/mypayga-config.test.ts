@@ -4,6 +4,7 @@ import {
   isPhoneValidForNetwork,
   normalizeMyPayGaNetwork,
   sanitizePhoneDigits,
+  toGabonE164,
   toLocalPhone,
 } from '../../src/payments/mypayga/config'
 
@@ -42,6 +43,13 @@ describe('MyPayGa config business rules', () => {
     expect(isPhoneValidForNetwork('+241066123456', 'AM')).toBe(false)
     expect(isPhoneValidForNetwork('+241074123456', 'MM')).toBe(false)
     expect(isPhoneValidForNetwork('123', 'AM')).toBe(false)
+  })
+
+  it('convertit un numero local gabonais en +241 (demande explicite de l\'utilisateur)', () => {
+    expect(toGabonE164('062459646')).toBe('+24162459646')
+    expect(toGabonE164('077123456')).toBe('+24177123456')
+    expect(toGabonE164('+24162459646')).toBe('+24162459646')
+    expect(toGabonE164('24162459646')).toBe('+24162459646')
   })
 
   it('retourne les valeurs par defaut quand les secrets ne sont pas injectes', () => {

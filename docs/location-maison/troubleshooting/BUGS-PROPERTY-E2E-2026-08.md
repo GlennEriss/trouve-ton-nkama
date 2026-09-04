@@ -1573,3 +1573,45 @@ densité "standard"), `src/components/home-page/PropertyCard.tsx` (relai de la p
 (nouveau), `__tests__/components/search-desktop-page.test.tsx`, `__tests__/components/search-mobile-page.test.tsx`.
 
 *Créé le 2026-09-04.*
+
+---
+
+## 🔴 Corrigé — Le bouton "Contacter sur WhatsApp" d'une demande de recherche ne fonctionnait pour aucune demande
+
+**Signalé indirectement par l'utilisateur** (« il faut mettre l'indicatif +241... en enlevant le
+1er 0 ») en corrigeant le contact d'une demande créée manuellement — creusé plus loin, révèle un
+vrai bug déjà en production, pas seulement un problème d'affichage.
+
+**Cause** : `whatsappContact` était stocké au format local gabonais (`"062459646"`, 0 initial) —
+aussi bien via le flux public payant (`initiateSearchRequestPayment.ts`, `toLocalPhone`) que via
+la création manuelle admin. `SearchRequestCard.tsx` (rendu public, `/demandes-recherche`)
+construisait le lien avec `https://wa.me/${item.whatsappContact}` **tel quel** — or wa.me exige
+l'indicatif pays sans le 0 initial (`24162459646`, pas `062459646`). Résultat : le bouton
+"Contacter sur WhatsApp" était non fonctionnel pour **toute** demande de recherche déjà publiée
+sur le site, depuis le lancement de la fonctionnalité.
+
+**Correctif, à deux niveaux** :
+- **Stockage** (nouvelles demandes) : `whatsappContact` est désormais persisté au format
+  `+241...` — dans `initiateSearchRequestPayment.ts` (flux public payant, nouvelle fonction
+  `toGabonE164` dans `mypayga/config.ts`) et dans les routes admin de création/modification
+  (`toGabonWhatsappE164`, `location-maison-admin/src/lib/phone/gabon-whatsapp.ts`).
+- **Affichage/lien** (toutes les demandes, y compris celles déjà en base au format local) :
+  `SearchRequestCard.tsx` construit désormais le lien via `toWaMeDigits()`
+  (`src/lib/phone/gabon-whatsapp.ts`), qui reconnaît indifféremment l'ancien format local et le
+  nouveau format `+241...` — le bouton redevient fonctionnel pour les demandes existantes sans
+  nécessiter de migration des données.
+
+**Fichiers** : `apps/location-maison/src/lib/phone/gabon-whatsapp.ts` (nouveau),
+`apps/location-maison/src/components/search-requests/SearchRequestCard.tsx`,
+`apps/location-maison/functions/src/payments/mypayga/config.ts` (`toGabonE164`),
+`apps/location-maison/functions/src/payments/search-requests/initiateSearchRequestPayment.ts`,
+`apps/location-maison-admin/src/lib/phone/gabon-whatsapp.ts` (nouveau),
+`apps/location-maison-admin/src/app/api/admin/v1/search-requests/route.ts`,
+`apps/location-maison-admin/src/app/api/admin/v1/search-requests/[searchRequestId]/route.ts`.
+
+**Non traité, à considérer séparément** : les demandes déjà en base côté Firestore restent au
+format local tant qu'elles ne sont pas éditées (le correctif d'affichage les couvre déjà, donc
+pas urgent) — une migration en masse (script Admin SDK, même principe que les correctifs
+manuels de cette session) normaliserait aussi le champ stocké, si souhaité.
+
+*Créé le 2026-09-04.*

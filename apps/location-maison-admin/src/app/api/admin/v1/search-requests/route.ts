@@ -7,6 +7,7 @@ import { getFirebaseAdminDb } from "@/lib/firebase/firebase-admin";
 import { COLLECTIONS } from "@trouve-ton-nkama/core/constants";
 import { TypePropertyEnum } from "@trouve-ton-nkama/core/domain";
 import { logAudit } from "@/modules/audit-compliance/application/audit-log.service";
+import { toGabonWhatsappE164 } from "@/lib/phone/gabon-whatsapp";
 import { hasPermission } from "@/modules/iam/domain/permissions";
 import { requireAdmin } from "@/modules/iam/presentation/admin-guard";
 import { listApprovedSearchRequests } from "@/modules/search-requests-moderation/infrastructure/search-requests.repository";
@@ -97,7 +98,10 @@ export async function POST(request: NextRequest) {
       budgetMinXaf: input.budgetMinXaf,
       budgetMaxXaf: input.budgetMaxXaf,
       description: input.description,
-      whatsappContact: input.whatsappContact,
+      // Format +241... (indicatif Gabon, 0 initial retiré) — demande explicite de
+      // l'utilisateur : l'admin saisit le numéro local ("062459646", comme dicté par
+      // téléphone/WhatsApp), stocké ici au format affichable/exploitable directement.
+      whatsappContact: toGabonWhatsappE164(input.whatsappContact),
 
       source: "admin",
       createdByAdmin: auth.admin.uid,

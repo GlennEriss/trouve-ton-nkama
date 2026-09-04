@@ -3,6 +3,7 @@
 import { Sparkles, MessageCircle } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { TypeProperty } from "@/constantes/property-type";
+import { toWaMeDigits } from "@/lib/phone/gabon-whatsapp";
 import type { SearchRequest } from "@/models/search-request";
 
 function isCurrentlyBoosted(item: SearchRequest): boolean {
@@ -17,7 +18,11 @@ function isCurrentlyBoosted(item: SearchRequest): boolean {
 export default function SearchRequestCard({ item }: { item: SearchRequest }) {
   const boosted = isCurrentlyBoosted(item);
   const whatsappMessage = `Bonjour, j'ai vu votre demande de recherche sur Trouve Ton Nkama (${TypeProperty[item.typeProperty]} à ${item.city}). J'ai peut-être ce qu'il vous faut.`;
-  const whatsappLink = `https://wa.me/${item.whatsappContact}?text=${encodeURIComponent(whatsappMessage)}`;
+  // wa.me exige l'indicatif pays sans "0" initial (ex: 24162459646). Passe par toWaMeDigits
+  // plutôt que d'utiliser item.whatsappContact tel quel : le champ était jusqu'ici stocké au
+  // format local ("062459646"), ce qui rendait ce lien non fonctionnel pour toute demande
+  // existante — corrigé ici sans dépendre d'une migration des données déjà en base.
+  const whatsappLink = `https://wa.me/${toWaMeDigits(item.whatsappContact)}?text=${encodeURIComponent(whatsappMessage)}`;
 
   return (
     <div
