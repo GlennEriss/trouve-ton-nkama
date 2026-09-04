@@ -2,13 +2,11 @@
 
 import { createContext, useCallback, useContext, useState, useMemo } from "react";
 import { InstantSearch } from "react-instantsearch";
-import { liteClient as algoliasearch } from "algoliasearch/lite";
+import { algoliaClient as searchClient } from "@/lib/algolia";
 
-// Configuration du client Algolia
-const searchClient = algoliasearch(
-  process.env.NEXT_PUBLIC_ALGOLIA_APP_ID,
-  process.env.NEXT_PUBLIC_ALGOLIA_SEARCH_API_KEY
-);
+// Client Algolia partagé, "cache-aware" (proxy /api/algolia/search, voir
+// src/lib/algolia.ts et docs/location-maison/troubleshooting/ALGOLIA-COST-AUDIT-2026-09.md) —
+// un seul point de cache pour tout le trafic Algolia côté client, InstantSearch inclus.
 
 // Typage du contexte Algolia
 export interface AlgoliaContextType {

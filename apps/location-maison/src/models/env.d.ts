@@ -36,6 +36,10 @@ namespace NodeJS {
     NEXT_PUBLIC_ALGOLIA_SEARCH_API_KEY: string;
     ALGOLIA_INSIGHTS_API_KEY?: string;
     ALGOLIA_INDEX_NAME?: string;
+    // TTL (secondes) du cache serveur mémoire devant Algolia — voir
+    // src/app/api/algolia/search/route.ts. Défauts appliqués dans le code si absent.
+    ALGOLIA_CACHE_HITS_TTL_SECONDS?: string;
+    ALGOLIA_CACHE_FACETS_TTL_SECONDS?: string;
     //FACEBOOK
     FACEBOOK_CLIENT_ID: string;
     FACEBOOK_CLIENT_SECRET: string;
