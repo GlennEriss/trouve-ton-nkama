@@ -86,39 +86,121 @@ transactions + 10 pages globales = **80 pages**, chacune interroge Algolia une f
 via `generateStaticParams` (au build) puis au maximum une fois par heure par page grâce à
 `revalidate = 3600` (ISR) — volume déjà borné, pas une priorité.
 
-## Recommandations non implémentées (décision produit à prendre)
+## ✅ Fait — Cache serveur devant Algolia, sans Redis (2026-09-04)
 
-Par ordre d'impact probable, non fait ici car chacune implique un vrai choix produit :
+**Demande directe** : « Redis aussi nous donnait des factures salées, on l'a suspendu
+temporairement... pour le cache serveur faut vraiment qu'on le mette en place... sans Redis
+malheureusement pour Algolia ». Implémente la recommandation n°1 ci-dessus, mais en mémoire
+process plutôt que Redis (indisponible) ou Firestore (lectures/écritures facturées, mauvais
+choix pour un cache aussi sollicité).
 
-1. **Mettre en cache côté serveur les compteurs de facettes** (Redis, déjà utilisé ailleurs dans
-   ce même dépôt pour d'autres caches) avec un TTL de quelques dizaines de secondes à quelques
-   minutes — un compteur "23 studios disponibles" n'a pas besoin d'être exact à la seconde près.
-   Remplacerait 1 requête Algolia par visiteur par 1 requête Algolia par fenêtre de cache
-   (partagée entre tous les visiteurs de cette fenêtre), pour la partie la plus coûteuse du
-   volume restant.
-2. **Réduire le nombre de facettes demandées par requête** sur `/search` si toutes ne sont pas
+**Découverte en creusant** : deux points d'appel Algolia distincts existaient, pas un seul —
+
+1. `AlgoliaContext.tsx` → `<InstantSearch searchClient>`, consommé par les widgets
+   InstantSearch (`useRefinementList`, `useInfiniteHits`...).
+2. `src/lib/algolia.ts` → client Algolia appelé **directement**, hors InstantSearch, par
+   `useAlgoliaFacetOptions.ts` et `useAlgoliaLocationOptions.ts` (compteurs de facettes
+   `typeProperty`/`tags`/attributs Mode, et cascades Province → Ville → Rue). Ces hooks ont
+   déjà un cache React Query côté navigateur (`staleTime: 5 min`), mais **par onglet** : chaque
+   nouveau visiteur relance une requête Algolia facturée pour un compteur identique.
+
+**Architecture retenue** : un seul proxy serveur (`POST /api/algolia/search`) devant les deux
+points d'appel, avec un cache mémoire process (`MemoryCacheStore`, nouveau, zéro coût, zéro
+infra) partagé entre tous les visiteurs pendant sa fenêtre de TTL :
+
+- `src/lib/algolia-cached-search-client.ts` : même interface `.search()` que le client Algolia
+  officiel (supporte les deux conventions d'appel `search(array)` et `search({requests})|`),
+  mais appelle `/api/algolia/search` au lieu d'Algolia directement.
+- `src/lib/algolia.ts` et `AlgoliaContext.tsx` pointent désormais tous les deux vers ce même
+  client — un seul point de cache pour tout le trafic Algolia côté navigateur.
+- `src/app/api/algolia/search/route.ts` : reçoit un lot de requêtes, sert celles déjà en cache,
+  ne renvoie à Algolia que les requêtes manquantes (un seul appel groupé), met les nouvelles en
+  cache. Jamais plus de 20 requêtes par lot (garde-fou anti-abus).
+- `src/lib/cache/memory-cache-store.ts` : nouveau backend `CacheStore` (même interface que
+  `RedisCacheStore`/`FirestoreCacheStore`), ajouté au sélecteur `CACHE_BACKEND` existant
+  (`get-cache-store.ts`) pour être réutilisable ailleurs, mais utilisé ici via une instance
+  **dédiée** et toujours mémoire, indépendante du choix de backend général — un cache à cette
+  fréquence doit rester gratuit quel que soit l'état de Redis/Firestore par ailleurs.
+- TTL différencié : 120s pour les requêtes "facettes uniquement" (`hitsPerPage: 0` — comptages,
+  tolèrent largement ce délai), 30s pour les requêtes avec de vraies annonces (fraîcheur après
+  publication/modération). Réglable via `ALGOLIA_CACHE_FACETS_TTL_SECONDS` /
+  `ALGOLIA_CACHE_HITS_TTL_SECONDS`.
+
+**Limite assumée** : un cache mémoire process n'est pas partagé entre plusieurs instances
+serveur et se vide à chaque redémarrage/déploiement — contrairement à Redis. Sur le volume
+actuel (pré-revenu), c'est un compromis délibéré : zéro coût, zéro latence réseau, et un
+partage déjà réel entre visiteurs simultanés d'une même instance. À reconsidérer seulement si
+le trafic justifie plusieurs instances serveur en parallèle.
+
+**Vérifié** :
+- `tsc --noEmit` propre.
+- Suite Jest complète : **1594/1594** (24 nouveaux tests : `MemoryCacheStore`, canonicalisation
+  de clé de cache, logique de résolution par lot avec cache partiel, client proxy, route API).
+- Trace réseau live (Playwright, dev) sur `/`, `/search`, `/publicite` : **0 appel direct
+  navigateur → `*.algolia.net` sur les trois pages** (avant : chaque page en faisait un
+  directement). Tout le trafic passe désormais par `/api/algolia/search`.
+
+**Fichiers** : `src/lib/cache/memory-cache-store.ts` (+ enregistré dans `get-cache-store.ts`,
+`index.ts`), `src/lib/algolia-search-proxy.ts`, `src/lib/algolia-cached-search-client.ts`,
+`src/app/api/algolia/search/route.ts`, `src/lib/algolia.ts`, `src/providers/AlgoliaContext.tsx`.
+
+## Recommandations non implémentées restantes (décision produit à prendre)
+
+1. **Réduire le nombre de facettes demandées par requête** sur `/search` si toutes ne sont pas
    affichées immédiatement (ex. charger les facettes secondaires à la demande, pas au premier
    rendu).
-3. Retirer `SearchPage.tsx` du dépôt (code mort confirmé, utilise `useSearchBox` — aucun risque
+2. Retirer `SearchPage.tsx` du dépôt (code mort confirmé, utilise `useSearchBox` — aucun risque
    de coût aujourd'hui puisqu'il n'est jamais monté, mais clarifierait le code pour la suite).
 
-## Alternative gratuite à Algolia — recherche demandée
+## Piste Meilisearch — en complément d'Algolia, pas en remplacement
 
-**Il n'existe pas d'équivalent 100% gratuit et zéro-infrastructure** (Algolia lui-même n'est
-gratuit que jusqu'à 10k requêtes/mois — au-delà, toute alternative a un coût quelque part,
-même minime). Trois options réalistes, du plus proche du fonctionnement actuel au plus radical :
+**Précision explicite de l'utilisateur** : « l'objectif n'est pas de retirer Algolia mais de
+l'épauler avec une bibliothèque comme Meilisearch ». Donc pas une migration — un partage de
+charge : Meilisearch absorbe le trafic qui n'a pas besoin du moteur de pertinence d'Algolia,
+Algolia reste sur ce qui en a vraiment besoin.
 
-| Option | Coût | Effort de migration | Remarque |
-|---|---|---|---|
-| **Meilisearch** (auto-hébergé) | Gratuit (open-source, MIT) + un petit serveur (~5$/mois, ou VM gratuite type Oracle Cloud free tier) | Faible-moyen — adaptateur officiel `@meilisearch/instant-meilisearch`, largement compatible avec `react-instantsearch` déjà utilisé ici | Le plus proche d'un remplacement direct, sans refonte du front |
-| **Typesense** (auto-hébergé) | Identique à Meilisearch | Identique — a aussi un adaptateur InstantSearch | Alternative équivalente, à choisir sur préférence technique plutôt que fonctionnalité |
-| **Firestore natif, sans moteur de recherche externe** | Vraiment 0€ (déjà payé pour Firestore) | Élevé — remplace InstantSearch par des requêtes Firestore composites (ville/type/transaction/prix), déjà le modèle utilisé ailleurs dans ce même dépôt (ex. `search_requests`) | Perd la recherche floue/texte libre tolérante aux fautes ; viable si l'essentiel de l'usage réel est du filtrage structuré (ville, type, prix) plutôt que du texte libre — à vérifier avec de vraies données d'usage avant de trancher |
+### Répartition proposée
 
-**Recommandation** : vu le stade du produit (pré-revenu), l'option la plus sûre à court terme
-est déjà faite (éliminer le gaspillage). Si le volume légitime dépasse encore 10k/mois après ce
-correctif, Meilisearch auto-hébergé est le choix le plus pragmatique (changement de code limité,
-coût fixe et prévisible au lieu d'un coût par requête). Basculer entièrement sur Firestore ne
-vaut le coup que si l'usage réel du texte libre est marginal — ça se vérifie avec les vraies
-requêtes des visiteurs, pas en devinant.
+| Trafic | Aujourd'hui | Proposition |
+|---|---|---|
+| Recherche texte libre + tri par pertinence (`/search`, résultats réels) | Algolia | **Reste sur Algolia** — c'est là que son moteur de pertinence/tolérance aux fautes a une vraie valeur |
+| Compteurs de facettes (`useAlgoliaFacetOptions.ts` : types, tags, attributs Mode) | Algolia (via le nouveau proxy caché) | **Bascule vers Meilisearch** — un simple comptage par valeur distincte, aucun besoin de pertinence |
+| Cascades de localisation (`useAlgoliaLocationOptions.ts` : Province → Ville → Rue) | Algolia (via le nouveau proxy caché) | **Bascule vers Meilisearch** — idem, énumération de valeurs distinctes |
+| Widgets `useRefinementList` du carrousel accueil | Algolia (via le nouveau proxy caché) | **Bascule vers Meilisearch** — même raisonnement |
 
-*Créé le 2026-09-04.*
+Concrètement : tout ce qui passe aujourd'hui par `src/lib/algolia.ts` (les deux hooks de
+facettes) migrerait vers un client Meilisearch, pendant qu'`AlgoliaContext.tsx`/`/search`
+resteraient sur Algolia. C'est une frontière nette et déjà visible dans le code actuel (deux
+points d'appel distincts, justement séparés lors du travail de cache ci-dessus) — donc un
+changement localisé, pas une réécriture du moteur de recherche.
+
+**Effet sur la facture Algolia** : les hooks de facettes sont probablement la plus grosse part
+du volume restant après la mise en cache (appelés à chaque ouverture de filtre, chaque
+sélection Province/Ville, chaque formulaire Mode) — les faire sortir d'Algolia réduirait son
+volume facturé bien plus que le cache seul, sans toucher à la recherche principale.
+
+### Ce qu'il manque pour livrer ça, et pourquoi ce n'est pas fait dans ce même passage
+
+Contrairement à Algolia (synchronisé automatiquement depuis Firestore par l'extension Firebase
+officielle `algolia/firestore-algolia-search`, zéro code côté ce dépôt), **Meilisearch n'a pas
+d'extension Firebase équivalente maintenue par Meilisearch** — il faudrait écrire une Cloud
+Function dédiée (déclenchée sur les mêmes écritures Firestore que l'extension Algolia) qui
+pousse les documents vers l'API REST de Meilisearch. Faisable et pas complexe (Meilisearch a un
+SDK Node officiel), mais :
+
+1. **Ça suppose une instance Meilisearch qui tourne déjà** (auto-hébergée : ~5$/mois sur un
+   petit VPS type Fly.io/Railway/Hetzner, ou gratuite sur le free tier Oracle Cloud) — un choix
+   d'hébergement et de budget qui vous revient, pas quelque chose que je peux provisionner
+   depuis ce dépôt.
+2. Une fois l'instance choisie, le travail restant est : (a) la Cloud Function d'indexation
+   (miroir de ce que fait l'extension Algolia aujourd'hui), (b) un client Meilisearch côté
+   front (`meilisearch` npm, adaptateur officiel `@meilisearch/instant-meilisearch` si on
+   voulait aussi le brancher sur `react-instantsearch` plus tard), (c) rebrancher les deux
+   hooks de facettes dessus. Effort raisonnable une fois l'hébergement en place — mais écrire
+   la Cloud Function maintenant, sans instance à laquelle la tester, produirait du code invérifié.
+
+**Prochaine étape concrète** : dites-moi où héberger Meilisearch (ou si vous avez déjà une
+préférence/un compte quelque part) et je code l'indexation + le rebranchement des deux hooks
+dessus.
+
+*Mis à jour le 2026-09-04.*

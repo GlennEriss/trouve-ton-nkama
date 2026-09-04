@@ -1,12 +1,20 @@
 import type { CacheStore } from './cache-store.interface';
 import { RedisCacheStore } from './redis-cache-store';
 import { FirestoreCacheStore } from './firestore-cache-store';
+import { MemoryCacheStore } from './memory-cache-store';
 
 /**
  * Sélecteur de stratégie de cache (Strategy pattern). Contrôlé par la variable
  * d'environnement CACHE_BACKEND :
  *   - "redis" (défaut) : comportement nominal, Upstash Redis.
  *   - "firestore" : repli temporaire, ex. le temps de régler un compte Upstash bloqué.
+ *   - "memory" : repli zéro-coût (aucune infra externe), ex. quand même Firestore
+ *     n'est pas souhaitable pour un cache à très haute fréquence — voir
+ *     memory-cache-store.ts pour les limites (non partagé entre instances, non
+ *     persistant). N'est PAS le défaut : ce backend général sert des usages où un
+ *     cache non partagé entre instances serait plus risqué (ex. compteurs affichés).
+ *     Pour un cache dédié et volontairement mémoire (ex. proxy Algolia), instancier
+ *     directement `new MemoryCacheStore()` plutôt que de passer par ce sélecteur.
  *
  * Pour basculer temporairement sur Firestore : ajouter CACHE_BACKEND=firestore dans
  * .env.local (ou les variables d'environnement du déploiement), puis retirer la
@@ -21,8 +29,12 @@ export function getCacheStore(): CacheStore {
   }
 
   const backend = (process.env.CACHE_BACKEND ?? 'redis').trim().toLowerCase();
-  cachedStore = backend === 'firestore'
-    ? new FirestoreCacheStore()
-    : new RedisCacheStore(new FirestoreCacheStore());
+  if (backend === 'firestore') {
+    cachedStore = new FirestoreCacheStore();
+  } else if (backend === 'memory') {
+    cachedStore = new MemoryCacheStore();
+  } else {
+    cachedStore = new RedisCacheStore(new FirestoreCacheStore());
+  }
   return cachedStore;
 }
