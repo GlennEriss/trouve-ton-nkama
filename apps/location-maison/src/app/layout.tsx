@@ -11,6 +11,7 @@ import { PresenceAnalyticsTracker } from '@/features/analytics/presence/ui/Prese
 import { TrafficAnalyticsTracker } from '@/features/analytics/traffic/ui/TrafficAnalyticsTracker';
 import { MetaPixelScript, MetaPixelPageViewTracker } from '@/features/analytics/meta-pixel';
 import { Analytics } from '@vercel/analytics/react';
+import { SpeedInsights } from '@vercel/speed-insights/next';
 import AdSenseRouteLoader from '@/components/ads/AdSenseRouteLoader';
 import { ADSENSE_CLIENT } from '@/lib/ads/config';
 import { getSiteOrigin } from '@/lib/seo/site-url';
@@ -264,6 +265,7 @@ export default async function RootLayout({
             <TrafficAnalyticsTracker />
             <MetaPixelPageViewTracker />
             <Analytics />
+            <SpeedInsights />
           </Providers>
         </div>
       </body>
