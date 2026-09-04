@@ -80,6 +80,27 @@ export function isPhoneValidForNetwork(value: unknown, network: MyPayGaNetwork):
   return PHONE_REGEX_BY_NETWORK[network].test(toLocalPhone(value))
 }
 
+/**
+ * Numéro Gabon affichable/exploitable publiquement (ex: whatsappContact d'une demande de
+ * recherche) : "+241" + les 8 chiffres locaux, sans le 0 initial — "062459646" ->
+ * "+24162459646". Distinct de toLocalPhone ci-dessus (qui va dans l'autre sens et sert
+ * uniquement à la validation réseau MyPayGa côté payeur) — demande explicite de l'utilisateur.
+ * Dupliqué dans src/lib/phone/gabon-whatsapp.ts côté app (même raison que
+ * TYPE_PROPERTY_LABELS plus haut dans le module search-requests : functions/ ne dépend pas du
+ * package partagé, pas la peine d'en ajouter un pour une poignée de lignes pures).
+ */
+export function toGabonE164(value: unknown): string {
+  const digits = sanitizePhoneDigits(value)
+  if (!digits) return String(value ?? '').trim()
+  if (digits.startsWith('241') && digits.length >= 11) {
+    return `+${digits}`
+  }
+  if (digits.length === 9 && digits.startsWith('0')) {
+    return `+241${digits.slice(1)}`
+  }
+  return String(value ?? '').trim()
+}
+
 function trimEnv(name: string): string | null {
   const value = process.env[name]
   if (typeof value !== 'string') {

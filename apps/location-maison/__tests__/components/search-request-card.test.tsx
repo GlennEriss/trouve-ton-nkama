@@ -62,6 +62,22 @@ describe('SearchRequestCard', () => {
     expect(link).toHaveAttribute('rel', 'noopener noreferrer')
   })
 
+  it('construit un lien WhatsApp fonctionnel meme pour l ancien format local stocke en base', () => {
+    // Bug réel trouvé en construisant cette demande : whatsappContact était stocké au format
+    // local ("062459646", 0 initial) — utilisé tel quel, `wa.me/062459646` ne fonctionne pas
+    // (wa.me exige l'indicatif pays sans le 0 initial). Corrigé sans dépendre d'une migration
+    // des demandes déjà en base.
+    render(<SearchRequestCard item={makeItem({ whatsappContact: '062459646' })} />)
+    const link = screen.getByRole('link', { name: /Contacter sur WhatsApp/ })
+    expect(link).toHaveAttribute('href', expect.stringContaining('https://wa.me/24162459646'))
+  })
+
+  it('construit aussi un lien correct si whatsappContact est deja au format +241', () => {
+    render(<SearchRequestCard item={makeItem({ whatsappContact: '+24162459646' })} />)
+    const link = screen.getByRole('link', { name: /Contacter sur WhatsApp/ })
+    expect(link).toHaveAttribute('href', expect.stringContaining('https://wa.me/24162459646'))
+  })
+
   describe('badge de boost', () => {
     it('signale une recherche urgente quand le boost court encore', () => {
       const future = { toMillis: () => Date.now() + 60_000 }

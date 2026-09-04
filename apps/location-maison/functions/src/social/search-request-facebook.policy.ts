@@ -123,7 +123,11 @@ export function buildSearchRequestPostMessage(
     headline,
     facts,
     '',
-    `👉 Vous avez peut-être ce qu'il faut : ${listUrl}`,
+    // Demande explicite de l'utilisateur : le libellé précédent ("Vous avez peut-être ce
+    // qu'il faut") ne disait pas quoi faire du lien. Propriétaires/agences/particuliers
+    // doivent comprendre que c'est ICI qu'on clique pour voir la demande et y répondre
+    // (WhatsApp du demandeur, visible sur sa carte une fois sur la plateforme).
+    `👉 Cliquez ici pour répondre à cette demande : ${listUrl}`,
     '',
     '—',
     buildSocialFooter(),

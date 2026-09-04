@@ -2,12 +2,13 @@
 
 import { useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { CheckCircle2, XCircle, Sparkles } from "lucide-react";
+import { CheckCircle2, XCircle, Sparkles, Pencil } from "lucide-react";
 
 import { Button } from "@trouve-ton-nkama/ui/button";
 import { Card, CardContent } from "@trouve-ton-nkama/ui/card";
 import { PageHeader } from "@/components/ui-kit/page-header";
 import { CreateSearchRequestDialog } from "@/components/search-requests/CreateSearchRequestDialog";
+import { EditSearchRequestDialog } from "@/components/search-requests/EditSearchRequestDialog";
 import { PublishedSearchRequests } from "@/components/search-requests/PublishedSearchRequests";
 import type { SearchRequestListItem } from "@/modules/search-requests-moderation/domain/types";
 
@@ -87,7 +88,12 @@ export default function SearchRequestsModerationPage() {
         <p className="text-sm text-muted-foreground">Aucune demande en attente de modération.</p>
       )}
 
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+      {/* items-start : sans ça, la grille CSS étire chaque carte à la hauteur de la plus
+          grande de sa ligne (comportement par défaut de `grid`) — problématique maintenant
+          que la description n'est plus tronquée (line-clamp retiré ci-dessous, demande
+          explicite : l'admin doit voir le texte intégral pour modérer correctement), sans
+          quoi une description longue étirerait artificiellement ses voisines plus courtes. */}
+      <div className="grid grid-cols-1 items-start gap-4 sm:grid-cols-2 lg:grid-cols-3">
         {pendingQuery.data?.items.map((item) => (
           <Card key={item.id} className="overflow-hidden">
             <CardContent className="p-4 space-y-3">
@@ -112,7 +118,24 @@ export default function SearchRequestsModerationPage() {
                 <p>Montant payé : {item.amountPaidXaf.toLocaleString("fr-FR")} FCFA</p>
               </div>
 
-              <p className="text-sm text-foreground line-clamp-4">{item.description}</p>
+              {/* Texte intégral, jamais tronqué : la modération exige de lire toute la
+                  demande (contraintes, quartier, contexte) avant d'approuver ou de rejeter —
+                  un line-clamp aurait pu cacher une information décisive. whitespace-pre-wrap
+                  préserve les retours à la ligne saisis par le visiteur ou l'admin. */}
+              <p className="whitespace-pre-wrap break-words text-sm text-foreground">{item.description}</p>
+
+              {/* Modifier avant de trancher : une demande dictée par téléphone/WhatsApp
+                  contient souvent une erreur de saisie (ex. budget) qu'il vaut mieux corriger
+                  ici plutôt que rejeter puis recréer. Ne touche jamais moderationStatus. */}
+              <EditSearchRequestDialog
+                item={item}
+                trigger={
+                  <Button variant="outline" className="h-9 w-full">
+                    <Pencil className="mr-1.5 h-4 w-4" />
+                    Modifier
+                  </Button>
+                }
+              />
 
               <div className="grid grid-cols-2 gap-2">
                 <Button

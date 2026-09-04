@@ -83,6 +83,15 @@ describe('buildSearchRequestPostMessage', () => {
     expect(message).toMatch(/120[\s ]000 FCFA/);
   });
 
+  it('appelle explicitement a repondre a la demande, pas juste a suivre un lien vague', () => {
+    // Demande explicite de l'utilisateur : l'ancien libellé ("Vous avez peut-être ce qu'il
+    // faut") ne disait pas quoi faire du lien — propriétaires/agences/particuliers doivent
+    // comprendre que c'est ici qu'on clique pour voir la demande et y répondre.
+    const message = buildSearchRequestPostMessage({ typeProperty: 'Studio', transactionType: 'FOR_RENT' }, url);
+    expect(message).toContain(`Cliquez ici pour répondre à cette demande : ${url}`);
+    expect(message).not.toContain("Vous avez peut-être ce qu'il faut");
+  });
+
   it('traduit le type de bien avec le libelle francais', () => {
     const message = buildSearchRequestPostMessage(
       { typeProperty: 'Room', transactionType: 'FOR_RENT', city: 'Libreville' },
