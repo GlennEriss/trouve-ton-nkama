@@ -11,8 +11,16 @@ import ListingCard from "@/components/listing/ListingCard";
  * différents. Voir docs/marketplace-multi-categories/07-lots-et-sequencement.md, Lot 3/9.
  */
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-const PropertyCard = ({ property, hideDate = false }: { property: any; hideDate?: boolean }) => {
-  return <ListingCard property={property} hideDate={hideDate} density="compact" />;
+const PropertyCard = ({
+  property,
+  hideDate = false,
+  priority = false,
+}: {
+  property: any;
+  hideDate?: boolean;
+  priority?: boolean;
+}) => {
+  return <ListingCard property={property} hideDate={hideDate} density="compact" priority={priority} />;
 };
 
 export default PropertyCard;

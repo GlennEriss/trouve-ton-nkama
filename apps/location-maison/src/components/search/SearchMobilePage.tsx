@@ -361,12 +361,14 @@ export default function SearchMobilePage() {
                                                 key={`properties-${groupIndex}`}
                                                 className="grid grid-cols-[repeat(auto-fill,minmax(150px,1fr))] gap-4"
                                             >
-                                                {group.entries.map((entry) => (
+                                                {group.entries.map((entry, index) => (
                                                     <div
                                                         key={entry.item.objectID}
                                                         className="animate-fade-in-up transition-all duration-300"
                                                     >
-                                                        <PropertyCard property={entry.item} />
+                                                        {/* priority sur la toute première card (LCP de la page) — voir
+                                                            ListingCard.tsx et SearchDesktopPage.tsx. */}
+                                                        <PropertyCard property={entry.item} priority={groupIndex === 0 && index === 0} />
                                                     </div>
                                                 ))}
                                             </div>

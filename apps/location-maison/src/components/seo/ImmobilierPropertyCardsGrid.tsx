@@ -89,7 +89,12 @@ export default function ImmobilierPropertyCardsGrid({ properties }: ImmobilierPr
                   animationFillMode: 'both',
                 }}
               >
-                <PropertyCard property={entry.property} />
+                {/* priority sur la toute première card seulement (groupIndex 0, index 0) : c'est
+                    elle qui est l'élément LCP de la page — voir le commentaire de la prop dans
+                    ListingCard.tsx. LCP mesuré à 9,5s (Search Console + reproduit en local avant
+                    ce correctif) sur cette page précise, causé par le lazy loading par défaut de
+                    next/image sur cette image au-dessus de la ligne de flottaison. */}
+                <PropertyCard property={entry.property} priority={groupIndex === 0 && index === 0} />
               </div>
             ))}
           </div>

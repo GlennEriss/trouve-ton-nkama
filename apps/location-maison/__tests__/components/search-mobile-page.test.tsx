@@ -39,7 +39,12 @@ jest.mock('next/form', () => ({ __esModule: true, default: ({ children, ...props
 jest.mock('next/link', () => ({ __esModule: true, default: ({ children, href, ...props }: any) => <a href={href} {...props}>{children}</a> }))
 jest.mock('@trouve-ton-nkama/ui/input', () => ({ Input: (props: any) => <input {...props} /> }))
 jest.mock('@/components/home-page/FilterModalHomePage', () => ({ FilterModalHomePage: () => <span>Filtres</span> }))
-jest.mock('@/components/home-page/PropertyCard', () => ({ __esModule: true, default: ({ property }: any) => <article>Annonce {property.objectID}</article> }))
+jest.mock('@/components/home-page/PropertyCard', () => ({
+  __esModule: true,
+  default: ({ property, priority }: any) => (
+    <article data-priority={String(Boolean(priority))}>Annonce {property.objectID}</article>
+  ),
+}))
 jest.mock('@/components/search/CategoryFilterPills', () => ({
   __esModule: true,
   default: () => <div data-testid="category-filter-pills" />,
@@ -151,6 +156,17 @@ describe('SearchMobilePage', () => {
     expect(screen.getByText('+2 nouvelles annonces ajoutées')).toBeVisible()
     act(() => jest.advanceTimersByTime(1800))
     expect(screen.queryByText('+2 nouvelles annonces ajoutées')).not.toBeInTheDocument()
+  })
+
+  it('ne passe priority qu\'a la toute premiere card (LCP), jamais aux suivantes', () => {
+    // Même correctif que SearchDesktopPage (voir ce fichier) — LCP mobile mesuré à 9,5s sur
+    // Search Console, causé par l'absence de `priority` sur la première card d'une grille.
+    hitsState = { items: Array.from({ length: 3 }, (_, index) => ({ objectID: `p${index}` })), isLastPage: true, showMore: showMoreMock }
+    render(<SearchMobilePage />)
+    const cards = screen.getAllByText(/Annonce p/)
+    expect(cards[0]).toHaveAttribute('data-priority', 'true')
+    expect(cards[1]).toHaveAttribute('data-priority', 'false')
+    expect(cards[2]).toHaveAttribute('data-priority', 'false')
   })
 
   it('arrête un chargement sans nouvelles annonces et gère le défilement', () => {
