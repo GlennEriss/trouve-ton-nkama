@@ -241,7 +241,15 @@ export default async function RootLayout({
         <link rel="apple-touch-icon" href="/icons/icon-192x192.png" />
       </head>
 
+      {/* suppressHydrationWarning ici pour la même raison que sur <html> plus haut : les
+          extensions de navigateur (ColorZilla `cz-shortcut-listen`, gestionnaires de mots de
+          passe, etc.) injectent leurs propres attributs sur <body> AVANT l'hydratation React,
+          ce qui produit un "tree hydrated but some attributes... didn't match" sur toutes les
+          pages, chez les visiteurs qui ont ce type d'extension. Remède documenté par React
+          (react.dev/link/hydration-mismatch) : ne supprime que la comparaison d'attributs de
+          CETTE balise, pas celle de ses enfants. */}
       <body
+        suppressHydrationWarning
         className={cn('antialiased overscroll-y-none', inter.className)}
       >
         <AdSenseRouteLoader />

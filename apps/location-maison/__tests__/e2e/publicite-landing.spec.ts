@@ -64,6 +64,23 @@ test.describe('/publicite — landing publique', () => {
     }
   })
 
+  test('le CTA "Créer ma publicité" mène bien à une connexion utilisable pour un visiteur non connecté', async ({
+    page,
+  }) => {
+    // Preuve de bout en bout du parcours décrit en §2 de LANDING-PUBLICITE.md : "le même bouton
+    // ouvre la connexion... avec un paramètre de retour vers /advertising/create". Ne vérifie
+    // pas qu'un simple lien href pointe au bon endroit (déjà fait par le premier test) mais que
+    // la navigation réelle aboutit à une page de connexion qui charge effectivement.
+    await page.goto('/publicite', { waitUntil: 'domcontentloaded' })
+    await page.getByRole('link', { name: 'Créer ma publicité' }).first().click()
+    await expect(page).toHaveURL(/\/signin\?callbackUrl=%2Fadvertising%2Fcreate/, { timeout: 15000 })
+    // La page de connexion doit réellement se charger (pas un 500) — un vrai formulaire de
+    // connexion visible. Le composant diffère entre desktop et mobile (heading/bouton différents
+    // selon le breakpoint, vu en comparant les deux) — le champ mot de passe est le point commun
+    // fiable aux deux variantes.
+    await expect(page.locator('input[type="password"]').first()).toBeVisible({ timeout: 10000 })
+  })
+
   test('/faire-de-la-pub redirige en 308 vers /publicite (ancienne landing concierge)', async ({ request }) => {
     const response = await request.get('/faire-de-la-pub', { maxRedirects: 0 })
     expect(response.status()).toBe(308)
