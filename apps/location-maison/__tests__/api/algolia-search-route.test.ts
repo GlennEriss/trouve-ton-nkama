@@ -27,6 +27,10 @@ function makeRequest(body: unknown) {
   return { json: async () => body } as Request
 }
 
+function makeInvalidJsonRequest() {
+  return { json: () => Promise.reject(new Error('bad json')) } as unknown as Request
+}
+
 describe('POST /api/algolia/search', () => {
   beforeEach(() => {
     jest.clearAllMocks()
@@ -41,8 +45,7 @@ describe('POST /api/algolia/search', () => {
   })
 
   it('rejette un JSON invalide avec un 400', async () => {
-    const badRequest = { json: async () => { throw new Error('bad json') } } as Request
-    const response = await POST(badRequest)
+    const response = await POST(makeInvalidJsonRequest())
 
     expect(response.status).toBe(400)
   })

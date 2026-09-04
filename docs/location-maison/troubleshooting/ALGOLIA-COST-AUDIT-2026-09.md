@@ -199,8 +199,8 @@ SDK Node officiel), mais :
    hooks de facettes dessus. Effort raisonnable une fois l'hébergement en place — mais écrire
    la Cloud Function maintenant, sans instance à laquelle la tester, produirait du code invérifié.
 
-**Prochaine étape concrète** : dites-moi où héberger Meilisearch (ou si vous avez déjà une
-préférence/un compte quelque part) et je code l'indexation + le rebranchement des deux hooks
-dessus.
+**Plan détaillé** (répartition du trafic, comparatif d'hébergement gratuit, architecture de
+cache partagée, étapes) :
+[setup/MEILISEARCH_SETUP.md](../setup/MEILISEARCH_SETUP.md).
 
 *Mis à jour le 2026-09-04.*
