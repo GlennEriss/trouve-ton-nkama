@@ -287,12 +287,15 @@ SearchDesktopPage() {
                                                 key={`properties-${groupIndex}`}
                                                 className="grid grid-cols-[repeat(auto-fill,minmax(190px,1fr))] gap-6"
                                             >
-                                                {group.entries.map((entry) => (
+                                                {group.entries.map((entry, index) => (
                                                     <div
                                                         key={entry.item.objectID}
                                                         className="animate-fade-in-up transform transition-all duration-300 hover:translate-y-[-4px]"
                                                     >
-                                                        <PropertyCard property={entry.item} />
+                                                        {/* priority sur la toute première card (LCP de la page) — même correctif que
+                                                            ImmobilierPropertyCardsGrid.tsx, voir le commentaire de la prop dans
+                                                            ListingCard.tsx (LCP mobile 9,5s mesuré sur les pages immobilier/*). */}
+                                                        <PropertyCard property={entry.item} priority={groupIndex === 0 && index === 0} />
                                                     </div>
                                                 ))}
                                             </div>

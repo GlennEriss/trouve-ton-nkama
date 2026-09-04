@@ -105,9 +105,23 @@ type ListingCardProps = {
   property: any;
   hideDate?: boolean;
   density?: ListingCardDensity;
+  /**
+   * À réserver aux toutes premières cards d'une grille affichée au chargement de la page
+   * (au-dessus de la ligne de flottaison) — voir docs Core Web Vitals, LCP mobile
+   * `/immobilier/location/maison/libreville` mesuré à 9,5s sur Search Console (2026-09).
+   * Sans `priority`, next/image applique `loading="lazy"` par défaut : le navigateur
+   * n'entame le téléchargement qu'après confirmation par IntersectionObserver que l'image
+   * est proche du viewport, donc après hydratation JS — exactement le délai qui faisait
+   * exploser le LCP quand l'image LCP elle-même était lazy-loadée. `priority` retire ce
+   * lazy loading et ajoute un `<link rel="preload">`, permettant au navigateur de démarrer
+   * le téléchargement pendant le parsing du HTML, avant même l'hydratation.
+   * Ne JAMAIS mettre `true` pour toutes les cards d'une grille : ferait régresser les autres
+   * métriques (bande passante, CPU) en précédant tout le reste de la queue de chargement.
+   */
+  priority?: boolean;
 };
 
-const ListingCard = ({ property, hideDate = false, density = "standard" }: ListingCardProps) => {
+const ListingCard = ({ property, hideDate = false, density = "standard", priority = false }: ListingCardProps) => {
   const router = useRouter();
   const pathname = usePathname();
   const { trackEvent } = useTrackEvent();
@@ -274,6 +288,7 @@ const ListingCard = ({ property, hideDate = false, density = "standard" }: Listi
             alt={property.title ?? "Image de l'annonce"}
             fill
             sizes="(max-width: 640px) 50vw, 220px"
+            priority={priority}
             className="object-cover"
             onError={(event) => {
               logImageError({
@@ -375,6 +390,8 @@ const ListingCard = ({ property, hideDate = false, density = "standard" }: Listi
             src={resolvedImageSrc}
             alt={property.title ?? "Image de l'annonce"}
             fill
+            sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+            priority={priority}
             className="object-cover"
             onLoad={() =>
               logImageLoad({

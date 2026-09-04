@@ -1513,3 +1513,63 @@ la lecture, contrôles natifs inclus), réapparaît après la section vidéo (se
 `__tests__/e2e/publicite-landing.spec.ts` (nouveau test dédié, desktop + mobile).
 
 *Créé le 2026-09-04.*
+
+---
+
+## 🔴 Corrigé — LCP mobile à 9,5s sur les pages /immobilier/* et /search (Search Console)
+
+**Signalé directement par l'utilisateur** via un rapport Google Search Console (Core Web
+Vitals) : "Problème LCP : dépasse 4s (mobile)", 1 340 URL concernées, toutes regroupées sous un
+seul groupe LCP à **9,5 s**, exemple `https://www.tonnkama.com/immobilier/location/maison/libreville`.
+Premier signalé le 25/07/2025 — un problème de fond, pas un accident récent.
+
+**Diagnostic** : reproduit et confirmé en conditions contrôlées (Playwright + CDP, throttling
+CPU 4x + réseau "Slow 4G" ~1,6 Mbps, profil proche de Lighthouse mobile) directement contre la
+page en production — **LCP mesuré à 9500ms, exactement le chiffre de Search Console**, élément
+confirmé `<img>` (la toute première card de la grille de résultats).
+
+**Cause** : aucune image de `ListingCard.tsx`/`PropertyCard.tsx` (composant partagé par
+`/immobilier/*`, `/search` et l'accueil) n'avait la prop `priority` de next/image — la première
+card d'une grille, quasi toujours l'élément LCP de la page, se voyait donc appliquer
+`loading="lazy"` par défaut. Une image lazy-loadée n'entame son téléchargement qu'après
+confirmation par IntersectionObserver qu'elle approche du viewport — donc après hydratation
+React, pas pendant le parsing initial du HTML. Sur un CPU mobile throttlé, ce délai
+d'hydratation à lui seul explique l'essentiel des 9,5 secondes.
+
+**Correctif** : nouvelle prop `priority?: boolean` sur `ListingCard`/`PropertyCard`, transmise à
+`next/image`. Retire `loading="lazy"` UNIQUEMENT sur la toute première card de chaque grille
+(jamais les suivantes, pour ne pas dégrader bande passante/CPU en aval) :
+- `ImmobilierPropertyCardsGrid.tsx` (`/immobilier/*` — la page exacte signalée) ;
+- `SearchDesktopPage.tsx` et `SearchMobilePage.tsx` (`/search`, même motif `feedGroups` que la
+  grille immobilier).
+
+**Vérifié en réel** (pas seulement en théorie) : sur `localhost` pointé vers les mêmes données
+prod, avant le correctif la première image portait `loading="lazy"` ; après, elle n'a plus cet
+attribut et Next.js injecte un `<link rel="preload" as="image">` correspondant dans `<head>` —
+la deuxième image de la grille, elle, reste bien `loading="lazy"` (pas de régression). Vérifié à
+la fois sur `/immobilier/location/maison/libreville` et sur `/search`, desktop et mobile.
+
+**Écarté du périmètre, vérifié sans être touché** : le carrousel de l'accueil
+(`ListingCardsCarousel.tsx`, react-slick) utilise le même `ListingCard` mais mesuré non-
+responsable — l'élément LCP réel de l'accueil est le `<h1>` du hero, pas une image de carte.
+React-slick clone/réordonne son DOM pour le défilement infini, ce qui rend le mapping
+"premier élément du tableau = premier élément visuel" incertain sans vérification visuelle
+poussée — pas touché tant que ce n'est pas la cause mesurée d'un vrai problème.
+
+**Non traité, recommandé séparément** : `next.config.ts` a `images.unoptimized: true` — désactive
+entièrement l'optimisation d'image de Next.js (pas de redimensionnement responsive, pas de
+conversion WebP/AVIF automatique) sur tout le site, réglage présent depuis le tout premier
+`next.config.ts` du projet (2024-12-20), sans justification documentée. `sharp` est déjà une
+dépendance du projet (`package.json`) — le prérequis pour activer l'optimiseur en déploiement
+`output: 'standalone'` est donc déjà réuni. Flipper ce réglage (`unoptimized: false`) apporterait
+un gain supplémentaire (poids d'image réduit, format moderne) mais touche TOUTES les images du
+site — mérite sa propre validation (vérifier que `sharp` fonctionne bien dans le runtime Docker/
+Cloud Run réel, mesurer l'impact CPU) plutôt que d'être fait dans la foulée de ce correctif ciblé.
+
+**Fichiers** : `src/components/listing/ListingCard.tsx` (prop `priority`, `sizes` ajouté à la
+densité "standard"), `src/components/home-page/PropertyCard.tsx` (relai de la prop),
+`src/components/seo/ImmobilierPropertyCardsGrid.tsx`, `src/components/search/SearchDesktopPage.tsx`,
+`src/components/search/SearchMobilePage.tsx`, `__tests__/components/immobilier-property-cards-grid.test.tsx`
+(nouveau), `__tests__/components/search-desktop-page.test.tsx`, `__tests__/components/search-mobile-page.test.tsx`.
+
+*Créé le 2026-09-04.*

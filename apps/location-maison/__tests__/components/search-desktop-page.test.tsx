@@ -42,7 +42,11 @@ jest.mock('@/providers/AlgoliaContext', () => ({ useAlgoliaContext: () => setter
 jest.mock('@/features/analytics/search/hooks/useTrackSearchAnalytics', () => ({ useTrackSearchAnalytics: jest.fn() }))
 jest.mock('@/components/home-page/PropertyCard', () => ({
   __esModule: true,
-  default: ({ property }: any) => <div data-testid="property-card">{property.objectID}</div>,
+  default: ({ property, priority }: any) => (
+    <div data-testid="property-card" data-priority={String(Boolean(priority))}>
+      {property.objectID}
+    </div>
+  ),
 }))
 jest.mock('@/components/search/FilterSearchDesktopPageSection', () => ({
   __esModule: true,
@@ -119,6 +123,20 @@ describe('SearchDesktopPage', () => {
     render(<SearchDesktopPage />)
     expect(screen.getByText('3 annonces trouvées')).toBeInTheDocument()
     expect(screen.getAllByTestId('property-card')).toHaveLength(3)
+  })
+
+  it('ne passe priority qu\'a la toute premiere card (LCP), jamais aux suivantes', () => {
+    // LCP mobile mesure a 9,5s sur Search Console (voir BUGS-PROPERTY-E2E-2026-08.md) —
+    // cause : aucune card n'avait `priority`, donc l'image LCP etait lazy-loadee. Corrige
+    // ici pour /search ; toutes les autres cards doivent rester en lazy (pas de regression
+    // bande passante si `priority` fuit vers plus d'une card).
+    infiniteHitsState = { items: makeItems(3), isLastPage: true, showMore: jest.fn() }
+    statsState = { nbHits: 3 }
+    render(<SearchDesktopPage />)
+    const cards = screen.getAllByTestId('property-card')
+    expect(cards[0]).toHaveAttribute('data-priority', 'true')
+    expect(cards[1]).toHaveAttribute('data-priority', 'false')
+    expect(cards[2]).toHaveAttribute('data-priority', 'false')
   })
 
   it('accorde le singulier pour une seule annonce', () => {
