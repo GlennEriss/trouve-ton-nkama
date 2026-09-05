@@ -23,6 +23,7 @@ import { Button } from '@trouve-ton-nkama/ui/button'
 import { Input } from '@trouve-ton-nkama/ui/input'
 import { Label } from '@trouve-ton-nkama/ui/label'
 import { Textarea } from '@trouve-ton-nkama/ui/textarea'
+import { LabelWithHelp } from '@/components/shared/form/FieldHelp'
 import { AD_PACKAGES } from '@/constantes/ad-packages'
 import { formatsForPlacements, type AdFormat, type AdFormatKey } from '@/constantes/ad-formats'
 import { routes } from '@/constantes/routes'
@@ -941,7 +942,11 @@ export default function AdvertisingCreateWizard() {
             </div>
             <div className="grid gap-4 lg:grid-cols-2">
               <div className="space-y-2">
-                <Label htmlFor="ad-headline">Accroche</Label>
+                <LabelWithHelp
+                  htmlFor="ad-headline"
+                  label="Accroche"
+                  help="Le titre principal affiché sur votre publicité — la première chose que les gens lisent. Court et direct : ce qui donne envie de s'arrêter dessus."
+                />
                 <Input
                   id="ad-headline"
                   placeholder="Ex: Chambre moderne à visiter aujourd’hui"
@@ -950,7 +955,11 @@ export default function AdvertisingCreateWizard() {
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="ad-cta">Texte du bouton</Label>
+                <LabelWithHelp
+                  htmlFor="ad-cta"
+                  label="Texte du bouton"
+                  help="Le texte affiché sur le bouton que les gens touchent pour vous contacter. Choisissez-le selon ce que fait réellement le champ « Lien au clic » juste en dessous : « Appeler » si vous avez mis un numéro, « WhatsApp » si vous avez mis un lien wa.me, etc."
+                />
                 <Input
                   id="ad-cta"
                   placeholder="Ex: Appeler, WhatsApp, Voir"
@@ -960,7 +969,11 @@ export default function AdvertisingCreateWizard() {
                 <p className="text-xs leading-5 text-gray-500">Par défaut : {DEFAULT_CTA_LABEL}.</p>
               </div>
               <div className="space-y-2 lg:col-span-2">
-                <Label htmlFor="ad-body">Description courte</Label>
+                <LabelWithHelp
+                  htmlFor="ad-body"
+                  label="Description courte"
+                  help="Une phrase sous le titre pour donner un peu plus de détails et convaincre de cliquer."
+                />
                 <Textarea
                   id="ad-body"
                   placeholder="Une phrase claire pour donner envie de cliquer."
@@ -970,7 +983,26 @@ export default function AdvertisingCreateWizard() {
                 />
               </div>
               <div className="space-y-2 lg:col-span-2">
-                <Label htmlFor="ad-url">Lien au clic <span className="text-red-600">*</span></Label>
+                <LabelWithHelp
+                  htmlFor="ad-url"
+                  label="Lien au clic"
+                  required
+                  help={
+                    <>
+                      <p className="mb-2">
+                        Ce qui se passe quand quelqu&apos;un touche votre publicité. Vous n&apos;avez pas
+                        besoin d&apos;un site web ou de WhatsApp — un simple numéro à appeler fonctionne
+                        aussi.
+                      </p>
+                      <ul className="list-disc space-y-1 pl-4">
+                        <li>Numéro à appeler : <code>tel:+24174123456</code></li>
+                        <li>WhatsApp : <code>wa.me/24174123456</code></li>
+                        <li>Site web : <code>https://votre-site.com</code></li>
+                        <li>Email : <code>mailto:contact@exemple.com</code></li>
+                      </ul>
+                    </>
+                  }
+                />
                 <Input
                   id="ad-url"
                   type="url"
@@ -979,7 +1011,7 @@ export default function AdvertisingCreateWizard() {
                   required
                   aria-invalid={Boolean(ctaUrlError)}
                   aria-describedby="ad-url-helper"
-                  placeholder="https://... ou wa.me/241..."
+                  placeholder="tel:+241... ou wa.me/241... ou https://..."
                   value={ctaUrl}
                   onChange={(e) => setCtaUrl(e.target.value)}
                   onBlur={() => setCtaUrl(normalizeCtaUrl(ctaUrl))}
