@@ -78,6 +78,27 @@ describe('SearchRequestCard', () => {
     expect(link).toHaveAttribute('href', expect.stringContaining('https://wa.me/24162459646'))
   })
 
+  describe('second contact', () => {
+    it('n affiche qu un bouton WhatsApp en l absence de second contact', () => {
+      render(<SearchRequestCard item={baseItem} />)
+      expect(screen.getByRole('link', { name: /Contacter sur WhatsApp/ })).toBeInTheDocument()
+      expect(screen.queryByRole('link', { name: /Appeler/ })).not.toBeInTheDocument()
+    })
+
+    it('affiche un bouton Appeler en plus de WhatsApp quand un second contact existe', () => {
+      render(<SearchRequestCard item={makeItem({ secondaryContact: '077429211' })} />)
+
+      expect(screen.getByRole('link', { name: /WhatsApp/ })).toBeInTheDocument()
+      const callLink = screen.getByRole('link', { name: /Appeler/ })
+      expect(callLink).toHaveAttribute('href', 'tel:+24177429211')
+    })
+
+    it('normalise un second contact deja au format +241 pour le lien tel:', () => {
+      render(<SearchRequestCard item={makeItem({ secondaryContact: '+24165065120' })} />)
+      expect(screen.getByRole('link', { name: /Appeler/ })).toHaveAttribute('href', 'tel:+24165065120')
+    })
+  })
+
   describe('badge de boost', () => {
     it('signale une recherche urgente quand le boost court encore', () => {
       const future = { toMillis: () => Date.now() + 60_000 }

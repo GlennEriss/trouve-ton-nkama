@@ -188,6 +188,27 @@ describe('SearchRequestForm', () => {
       )
     })
 
+    it('omet le second contact quand il est laisse vide', () => {
+      render(<SearchRequestForm />)
+      fillValidForm()
+      fireEvent.click(submitButton())
+
+      expect(submitSearchRequest).toHaveBeenCalledWith(
+        expect.objectContaining({ secondaryContact: undefined }),
+      )
+    })
+
+    it('inclut le second contact quand il est renseigne', () => {
+      render(<SearchRequestForm />)
+      fillValidForm()
+      fireEvent.change(screen.getByPlaceholderText('066 XX XX XX'), { target: { value: '066123456' } })
+      fireEvent.click(submitButton())
+
+      expect(submitSearchRequest).toHaveBeenCalledWith(
+        expect.objectContaining({ secondaryContact: '066123456' }),
+      )
+    })
+
     it('ne soumet rien quand le formulaire est incomplet', () => {
       render(<SearchRequestForm />)
       fireEvent.click(submitButton())

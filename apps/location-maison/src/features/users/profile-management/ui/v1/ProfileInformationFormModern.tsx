@@ -529,7 +529,7 @@ export function ProfileInformationFormModern() {
                         Réseaux sociaux (facultatif)
                       </span>
                       <span className="mt-1 block text-xs text-gray-600 dark:text-gray-400">
-                        Ajoutez les liens utilisés pour publier vos annonces.
+                        Indiquez juste votre @ : le lien est généré automatiquement.
                       </span>
                     </span>
                     <ChevronDown
@@ -540,21 +540,14 @@ export function ProfileInformationFormModern() {
                   {socialProfilesOpen && (
                     <div id="social-profile-fields" className="mt-4 space-y-4">
                       {SOCIAL_NETWORKS.map((network) => (
-                        <div key={network.key} className="grid grid-cols-1 gap-3 md:grid-cols-2">
-                          <InputFormApp
-                            control={form.control}
-                            name={`socialProfiles.${network.key}.url`}
-                            label={`${network.label} - lien`}
-                            placeholder={`https://${network.key}.com/...`}
-                            autoComplete="url"
-                          />
-                          <InputFormApp
-                            control={form.control}
-                            name={`socialProfiles.${network.key}.handle`}
-                            label={`${network.label} - @`}
-                            placeholder="@username"
-                          />
-                        </div>
+                        <InputFormApp
+                          key={network.key}
+                          control={form.control}
+                          name={`socialProfiles.${network.key}.handle`}
+                          label={network.label}
+                          placeholder="@username"
+                          IconLucide={AtSign}
+                        />
                       ))}
                     </div>
                   )}

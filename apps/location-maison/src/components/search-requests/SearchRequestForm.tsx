@@ -48,6 +48,7 @@ export default function SearchRequestForm({ prefill }: { prefill?: SearchRequest
   const [budgetMaxXaf, setBudgetMaxXaf] = React.useState(prefill?.budgetMaxXaf ?? 0);
   const [description, setDescription] = React.useState("");
   const [whatsappContact, setWhatsappContact] = React.useState("");
+  const [secondaryContact, setSecondaryContact] = React.useState("");
   const [boostRequested, setBoostRequested] = React.useState(false);
   const [payerPhone, setPayerPhone] = React.useState("");
   const [network, setNetwork] = React.useState<"AM" | "MM">("AM");
@@ -85,6 +86,7 @@ export default function SearchRequestForm({ prefill }: { prefill?: SearchRequest
       budgetMaxXaf,
       description: description.trim(),
       whatsappContact: whatsappContact.trim(),
+      secondaryContact: secondaryContact.trim() || undefined,
       payerPhone,
       network,
       boostRequested,
@@ -261,6 +263,17 @@ export default function SearchRequestForm({ prefill }: { prefill?: SearchRequest
             value={whatsappContact}
             onChange={(e) => setWhatsappContact(e.target.value)}
             placeholder="074 XX XX XX"
+            className={FIELD_CLASS}
+          />
+        </div>
+
+        <div>
+          <label className={LABEL_CLASS}>Autre contact (optionnel)</label>
+          <Input
+            type="tel"
+            value={secondaryContact}
+            onChange={(e) => setSecondaryContact(e.target.value)}
+            placeholder="066 XX XX XX"
             className={FIELD_CLASS}
           />
         </div>

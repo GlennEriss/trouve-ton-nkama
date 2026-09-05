@@ -23,6 +23,7 @@ const bodySchema = z.object({
   budgetMaxXaf: z.number().int().min(1),
   description: z.string().trim().min(10).max(SEARCH_REQUEST_DESCRIPTION_MAX_LENGTH),
   whatsappContact: z.string().trim().min(6).max(20),
+  secondaryContact: z.string().trim().min(6).max(20).optional(),
   payerPhone: z.string().trim().min(6).max(20),
   network: z.enum(['AM', 'MM']),
   boostRequested: z.boolean(),

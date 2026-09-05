@@ -164,6 +164,22 @@ function normalizeSocialHandle(value: unknown) {
   return /^@[A-Za-z0-9._-]{2,50}$/.test(normalized) ? normalized : null;
 }
 
+// Le formulaire ne demande plus que le "@" (voir ProfileInformationFormModern.tsx —
+// beaucoup d'annonceurs remplissaient le handle sans le lien, laissant leur profil
+// inexploitable côté admin). TikTok inclut le "@" dans le chemin de l'URL, pas les autres.
+const SOCIAL_NETWORK_BASE_URL: Record<SocialNetworkKey, string> = {
+  facebook: 'https://facebook.com/',
+  instagram: 'https://instagram.com/',
+  tiktok: 'https://tiktok.com/@',
+  linkedin: 'https://linkedin.com/in/',
+  x: 'https://x.com/',
+};
+
+function buildSocialProfileUrl(network: SocialNetworkKey, handle: string): string {
+  const username = handle.replace(/^@+/, '');
+  return `${SOCIAL_NETWORK_BASE_URL[network]}${username}`;
+}
+
 function extractSocialProfiles(metadata: Record<string, unknown>): NormalizedSocialProfiles {
   const rawContainer = metadata.socialProfiles;
   const rawProfiles =
@@ -210,8 +226,11 @@ function normalizeSocialProfilesInput(
       continue;
     }
 
-    const url = normalizeSocialUrl(candidate.url);
     const handle = normalizeSocialHandle(candidate.handle);
+    // `url` explicite gardé en priorité (compat : anciennes entrées, ou un lien personnalisé
+    // saisi par une intégration externe) ; sinon dérivé du handle pour que l'utilisateur n'ait
+    // plus qu'un seul champ à remplir.
+    const url = normalizeSocialUrl(candidate.url) ?? (handle ? buildSocialProfileUrl(key, handle) : null);
     next[key] = url || handle ? { url, handle } : null;
   }
 

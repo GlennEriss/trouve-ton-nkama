@@ -1,9 +1,9 @@
 "use client";
 
-import { Sparkles, MessageCircle } from "lucide-react";
+import { Sparkles, MessageCircle, Phone } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { TypeProperty } from "@/constantes/property-type";
-import { toWaMeDigits } from "@/lib/phone/gabon-whatsapp";
+import { toWaMeDigits, toGabonWhatsappE164 } from "@/lib/phone/gabon-whatsapp";
 import type { SearchRequest } from "@/models/search-request";
 
 function isCurrentlyBoosted(item: SearchRequest): boolean {
@@ -23,6 +23,10 @@ export default function SearchRequestCard({ item }: { item: SearchRequest }) {
   // format local ("062459646"), ce qui rendait ce lien non fonctionnel pour toute demande
   // existante — corrigé ici sans dépendre d'une migration des données déjà en base.
   const whatsappLink = `https://wa.me/${toWaMeDigits(item.whatsappContact)}?text=${encodeURIComponent(whatsappMessage)}`;
+  const hasSecondaryContact = Boolean(item.secondaryContact && item.secondaryContact.trim());
+  // "+" gardé (contrairement au lien wa.me) : tel: suit RFC 3966, un "+" en tête indique un
+  // numéro international et laisse le téléphone choisir le bon préfixe de sortie.
+  const callLink = hasSecondaryContact ? `tel:${toGabonWhatsappE164(item.secondaryContact!)}` : undefined;
 
   return (
     <div
@@ -55,15 +59,26 @@ export default function SearchRequestCard({ item }: { item: SearchRequest }) {
 
       <p className="mt-3 flex-1 text-sm text-gray-700 dark:text-gray-300 line-clamp-4">{item.description}</p>
 
-      <a
-        href={whatsappLink}
-        target="_blank"
-        rel="noopener noreferrer"
-        className="mt-4 inline-flex items-center justify-center gap-2 rounded-full bg-green-600 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-green-700"
-      >
-        <MessageCircle className="h-4 w-4" />
-        Contacter sur WhatsApp
-      </a>
+      <div className={cn("mt-4 grid gap-2", hasSecondaryContact ? "grid-cols-2" : "grid-cols-1")}>
+        <a
+          href={whatsappLink}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="inline-flex items-center justify-center gap-2 rounded-full bg-green-600 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-green-700"
+        >
+          <MessageCircle className="h-4 w-4" />
+          {hasSecondaryContact ? "WhatsApp" : "Contacter sur WhatsApp"}
+        </a>
+        {hasSecondaryContact && (
+          <a
+            href={callLink}
+            className="inline-flex items-center justify-center gap-2 rounded-full bg-primary px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-primary-800"
+          >
+            <Phone className="h-4 w-4" />
+            Appeler
+          </a>
+        )}
+      </div>
     </div>
   );
 }
