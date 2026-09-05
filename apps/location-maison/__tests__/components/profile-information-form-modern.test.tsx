@@ -176,17 +176,18 @@ describe('ProfileInformationFormModern', () => {
     expect(screen.getByText('Membre depuis')).toBeVisible()
   })
 
-  it('ouvre et hydrate les réseaux sociaux pour un annonceur', async () => {
+  it('ouvre et hydrate les réseaux sociaux pour un annonceur (un seul champ @, pas de lien)', async () => {
     render(<ProfileInformationFormModern />)
     const toggle = await screen.findByRole('button', { name: /Réseaux sociaux/i })
     expect(toggle).toHaveAttribute('aria-expanded', 'false')
     fireEvent.click(toggle)
     expect(toggle).toHaveAttribute('aria-expanded', 'true')
-    expect(screen.getByLabelText('Facebook - lien')).toHaveValue('https://facebook.com/nkama')
-    expect(screen.getByLabelText('Facebook - @')).toHaveValue('@nkama')
-    expect(screen.getByLabelText('Instagram - lien')).toHaveValue('')
-    fireEvent.click(toggle)
+    // Le lien n'est plus demandé à l'utilisateur (généré côté service à partir du @) —
+    // voir profile-information.service.ts.
+    expect(screen.getByLabelText('Facebook')).toHaveValue('@nkama')
     expect(screen.queryByLabelText('Facebook - lien')).not.toBeInTheDocument()
+    fireEvent.click(toggle)
+    expect(screen.queryByLabelText('Facebook')).not.toBeInTheDocument()
   })
 
   it('enregistre les informations et avertit quand un téléphone vérifié change', async () => {
