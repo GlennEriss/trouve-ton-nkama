@@ -43,6 +43,8 @@ export type SearchRequest = ICreation & {
     budgetMaxXaf: number;
     description: string;
     whatsappContact: string;
+    /** Second numéro (souvent donné en plus du WhatsApp) — affiche un bouton "Appeler" distinct. */
+    secondaryContact?: string | null;
 
     // Origine. Absent sur les documents créés avant l'ajout du back-office :
     // les traiter comme "public" (voir isAdminCreated ci-dessous).

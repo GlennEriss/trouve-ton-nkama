@@ -33,6 +33,7 @@ export interface SearchRequestPaymentInput {
   budgetMaxXaf: number
   description: string
   whatsappContact: string
+  secondaryContact?: string
   payerPhone: string
   network: 'AM' | 'MM'
   boostRequested: boolean

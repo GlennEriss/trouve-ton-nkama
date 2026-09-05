@@ -35,6 +35,7 @@ export const initiateSearchRequestPayment = onRequest({ secrets: MYPAYGA_SECRETS
   const budgetMaxXaf = Number(body.budgetMaxXaf)
   const description = String(body.description ?? '').trim().slice(0, SEARCH_REQUEST_DESCRIPTION_MAX_LENGTH)
   const whatsappContact = toLocalPhone(body.whatsappContact)
+  const secondaryContactRaw = String(body.secondaryContact ?? '').trim()
   const boostRequested = Boolean(body.boostRequested)
 
   const providerNetwork = normalizeMyPayGaNetwork(body.network)
@@ -126,6 +127,9 @@ export const initiateSearchRequestPayment = onRequest({ secrets: MYPAYGA_SECRETS
     // voir plus haut) ; seule la forme persistée change, pour un numéro directement affichable
     // et exploitable dans un lien wa.me sans transformation supplémentaire côté client.
     whatsappContact: toGabonE164(whatsappContact),
+    // Optionnel : les demandeurs donnent souvent un second numéro en plus du WhatsApp — même
+    // format de stockage que whatsappContact, pour un bouton "Appeler" directement exploitable.
+    secondaryContact: secondaryContactRaw ? toGabonE164(secondaryContactRaw) : null,
     provider: 'mypayga',
     payerPhone,
     payerNetwork: providerNetwork,
