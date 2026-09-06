@@ -9,6 +9,8 @@ import {
   ArrowLeft,
   ArrowRight,
   CheckCircle,
+  ChevronLeft,
+  ChevronRight,
   ImagePlus,
   Loader2,
   Megaphone,
@@ -455,6 +457,7 @@ export default function AdvertisingCreateWizard() {
     formats.find((format) => format.key === activeFormatKey) ??
     formats.find((format) => format.key === 'infeed') ??
     formats[0]
+  const activeFormatIndex = formats.findIndex((format) => format.key === activeFormat?.key)
   const activePlacement = activeFormat?.placements[0]
   const activeAsset = activeFormat?.placements.map((placement) => assets[placement]).find(Boolean)
   const totalPlacementCount = selectedPackage?.placements.length ?? 0
@@ -468,6 +471,24 @@ export default function AdvertisingCreateWizard() {
   const reelsFormatWarning =
     formatWarnings.reels ||
     (hasReelsPlacement && !hasAsset(assets.reels_infeed) ? defaultVisualReelsWarning : '')
+  // Statut de l'emplacement affiché par le carrousel (un à la fois, voir plus bas) — même
+  // logique que celle utilisée avant par onglet, appliquée ici seulement à l'emplacement actif.
+  const activeFormatReady = activeFormat ? activeFormat.placements.every(hasVisualForPlacement) : false
+  const activeFormatDedicated = activeFormat
+    ? activeFormat.placements.every((placement) => hasAsset(assets[placement]))
+    : false
+  const activeFormatWarning = activeFormat
+    ? activeFormat.key === 'reels'
+      ? reelsFormatWarning
+      : formatWarnings[activeFormat.key]
+    : ''
+  const activeFormatStatusLabel = activeFormatWarning
+    ? 'Format à vérifier'
+    : activeFormatDedicated
+      ? 'Visuel dédié'
+      : activeFormatReady
+        ? 'Visuel par défaut'
+        : (activeFormat?.recommended ?? '')
 
   const setFormatWarning = (formatKey: AdFormatKey, warning: string) => {
     setFormatWarnings((prev) => {
@@ -738,7 +759,10 @@ export default function AdvertisingCreateWizard() {
           <div className="space-y-4 sm:space-y-6">
             <div className="space-y-1">
               <h2 className="text-lg font-semibold text-ink dark:text-white">Ajouter les visuels</h2>
-              <p className="text-sm leading-6 text-gray-500">Choisissez le format, puis touchez la zone pub pour importer le visuel.</p>
+              <p className="text-sm leading-6 text-gray-500">
+                Un emplacement à la fois : importez un visuel puis passez au suivant (ou passez directement, le
+                visuel par défaut prendra le relais).
+              </p>
             </div>
 
             <div className="rounded-2xl border border-secondary/20 bg-primary-50 p-3 dark:border-secondary/30 dark:bg-primary-950 sm:p-4">
@@ -756,44 +780,79 @@ export default function AdvertisingCreateWizard() {
                   style={{ width: `${visualProgress}%` }}
                 />
               </div>
-              <div className="-mx-3 mt-3 overflow-x-auto px-3 pb-1 sm:mx-0 sm:px-0">
-                <div className="flex min-w-max gap-2 lg:grid lg:min-w-0 lg:grid-cols-4" role="tablist" aria-label="Formats publicitaires">
-                  {formats.map((fmt) => {
-                    const ready = fmt.placements.every(hasVisualForPlacement)
-                    const dedicated = fmt.placements.every((placement) => hasAsset(assets[placement]))
-                    const warning = fmt.key === 'reels' ? reelsFormatWarning : formatWarnings[fmt.key]
-                    return (
-                      <button
-                        key={fmt.key}
-                        type="button"
-                        role="tab"
-                        aria-selected={activeFormat?.key === fmt.key}
-                        onClick={() => setActiveFormatKey(fmt.key)}
-                        className={cn(
-                          'min-h-[58px] w-[11.5rem] shrink-0 touch-manipulation rounded-2xl border bg-white px-3 py-2 text-left transition active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-secondary lg:w-auto',
-                          activeFormat?.key === fmt.key
-                            ? 'border-secondary shadow-sm ring-2 ring-secondary/15'
-                            : 'border-transparent ring-1 ring-gray-200 dark:bg-gray-900 dark:ring-gray-700',
-                        )}
-                      >
-                        <span className="flex items-center gap-2">
-                          <span
-                            className={cn(
-                              'h-2.5 w-2.5 rounded-full',
-                              warning ? 'bg-amber-500' : ready ? 'bg-secondary' : 'bg-gray-300 dark:bg-gray-600',
-                            )}
-                          />
-                          <span className="min-w-0 flex-1 truncate text-sm font-semibold text-ink dark:text-white">
-                            {fmt.label}
-                          </span>
-                        </span>
-                        <span className="mt-1 block text-xs text-gray-500">
-                          {warning ? 'Format à vérifier' : dedicated ? 'Visuel dédié' : ready ? 'Visuel par défaut' : fmt.recommended}
-                        </span>
-                      </button>
-                    )
-                  })}
+              {/* Un emplacement à la fois plutôt qu'un rang de 4 onglets à comparer d'un coup :
+                  personne ne peut rater qu'il faut regarder chaque emplacement, puisque c'est
+                  littéralement la seule chose affichée à l'écran. Les petits points en dessous
+                  restent cliquables pour sauter directement à un emplacement (utilisateurs
+                  avancés), mais Précédent/Suivant guident un parcours séquentiel explicite. */}
+              <div className="mt-4 flex items-center justify-between gap-2">
+                <button
+                  type="button"
+                  onClick={() => setActiveFormatKey(formats[Math.max(activeFormatIndex - 1, 0)].key)}
+                  disabled={activeFormatIndex <= 0}
+                  aria-label="Reculer d'un emplacement"
+                  className="inline-flex h-9 w-9 shrink-0 touch-manipulation items-center justify-center rounded-full border border-gray-200 text-gray-600 transition hover:bg-gray-50 active:scale-[0.96] disabled:opacity-30 disabled:hover:bg-transparent dark:border-gray-700 dark:text-gray-300"
+                >
+                  <ChevronLeft className="h-4 w-4" />
+                </button>
+
+                <div className="min-w-0 flex-1 text-center">
+                  <p className="text-xs font-medium text-gray-500">
+                    Emplacement {activeFormatIndex + 1} sur {formats.length}
+                  </p>
+                  <p className="mt-0.5 flex items-center justify-center gap-1.5">
+                    <span
+                      className={cn(
+                        'h-2.5 w-2.5 shrink-0 rounded-full',
+                        activeFormatWarning
+                          ? 'bg-amber-500'
+                          : activeFormatReady
+                            ? 'bg-secondary'
+                            : 'bg-gray-300 dark:bg-gray-600',
+                      )}
+                    />
+                    <span className="truncate text-sm font-semibold text-ink dark:text-white">
+                      {activeFormat?.label}
+                    </span>
+                  </p>
+                  <p className="text-xs text-gray-500">{activeFormatStatusLabel}</p>
                 </div>
+
+                <button
+                  type="button"
+                  onClick={() =>
+                    setActiveFormatKey(formats[Math.min(activeFormatIndex + 1, formats.length - 1)].key)
+                  }
+                  disabled={activeFormatIndex >= formats.length - 1}
+                  aria-label="Avancer d'un emplacement"
+                  className="inline-flex h-9 w-9 shrink-0 touch-manipulation items-center justify-center rounded-full border border-gray-200 text-gray-600 transition hover:bg-gray-50 active:scale-[0.96] disabled:opacity-30 disabled:hover:bg-transparent dark:border-gray-700 dark:text-gray-300"
+                >
+                  <ChevronRight className="h-4 w-4" />
+                </button>
+              </div>
+
+              <div className="mt-3 flex justify-center gap-1.5" role="tablist" aria-label="Formats publicitaires">
+                {formats.map((fmt) => {
+                  const ready = fmt.placements.every(hasVisualForPlacement)
+                  const warning = fmt.key === 'reels' ? reelsFormatWarning : formatWarnings[fmt.key]
+                  const isActive = activeFormat?.key === fmt.key
+                  return (
+                    <button
+                      key={fmt.key}
+                      type="button"
+                      role="tab"
+                      aria-selected={isActive}
+                      aria-label={fmt.label}
+                      onClick={() => setActiveFormatKey(fmt.key)}
+                      className={cn(
+                        'h-2.5 touch-manipulation rounded-full transition-all',
+                        isActive ? 'w-6 bg-secondary' : 'w-2.5',
+                        !isActive &&
+                          (warning ? 'bg-amber-500' : ready ? 'bg-secondary/40' : 'bg-gray-300 dark:bg-gray-600'),
+                      )}
+                    />
+                  )
+                })}
               </div>
             </div>
 
