@@ -576,3 +576,55 @@ export async function getSearchRequest(id: string): Promise<Record<string, unkno
   const snapshot = await admin.firestore(app).collection('search_requests').doc(id).get()
   return snapshot.exists ? (snapshot.data() ?? null) : null
 }
+
+export type SeedNotification = {
+  id: string
+  createdFor: string
+  title: string
+  message: string
+  actionUrl?: string
+  type?: 'BOOKMARKING' | 'SECURITY' | 'ANNOUNCEMENT' | 'MODERATION' | 'GIFT'
+  isRead?: boolean
+}
+
+/**
+ * Écrit un `notifications/{id}` doc directement — mêmes champs minimaux que ceux posés par les
+ * vrais triggers Cloud Functions (voir functions/src/notification/index.ts : onUserCreate,
+ * onPropertyCreateNewAnnouncement...). NotificationProvider (client) lit cette collection via un
+ * onSnapshot filtré sur `createdFor == uid` : nécessite une vraie session Firebase côté client
+ * (mockCommonAppNoise(page, { mockFirebaseToken: false })), pas le pont custom-token désactivé
+ * par défaut — même contrainte que findReelByOwner/seedReel pour /reels/mine.
+ */
+export async function seedNotification(notification: SeedNotification): Promise<void> {
+  const app = ensureAdminApp()
+  const db = admin.firestore(app)
+  const now = admin.firestore.Timestamp.now()
+  const { id, ...data } = notification
+
+  await db
+    .collection('notifications')
+    .doc(id)
+    .set({
+      ...data,
+      type: data.type ?? 'ANNOUNCEMENT',
+      isRead: data.isRead ?? false,
+      state: 'IN_PROGRESS',
+      createdAt: now,
+      updatedAt: now,
+    })
+}
+
+/** Reads a real `notifications/{id}` doc — vérifie qu'un clic (ex. "Tout marquer comme lu",
+ * ou l'ouverture d'une notification) a réellement persisté `isRead: true` en base, pas juste
+ * changé l'état React local. */
+export async function getNotification(id: string): Promise<Record<string, unknown> | null> {
+  const app = ensureAdminApp()
+  const snapshot = await admin.firestore(app).collection('notifications').doc(id).get()
+  return snapshot.exists ? (snapshot.data() ?? null) : null
+}
+
+export async function deleteNotifications(ids: string[]): Promise<void> {
+  const app = ensureAdminApp()
+  const db = admin.firestore(app)
+  await Promise.all(ids.map((id) => db.collection('notifications').doc(id).delete()))
+}
