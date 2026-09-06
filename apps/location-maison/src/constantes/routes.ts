@@ -82,6 +82,7 @@ export const routes = {
         property: '/property',
         search_requests: '/demandes-recherche',
         search_requests_publish: '/demandes-recherche/publier',
+        follow_us: '/suivez-nous',
     },
     public_google: {
         homePage: '/',

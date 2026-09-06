@@ -198,18 +198,23 @@ export function NotificationItem({
 }
 
 // Composant pour le bouton de notification avec badge
+// `...rest` (via ButtonHTMLAttributes) est indispensable : ce composant est utilisé comme enfant
+// de <PopoverTrigger asChild> (Notifications.tsx), qui clone dessus onClick/aria-expanded/
+// aria-haspopup/data-state pour piloter l'ouverture du popover. Sans les répercuter sur le
+// <Button> réel, ils étaient silencieusement perdus et le clic ne faisait plus rien.
 type NotificationButtonProps = {
   unreadCount: number;
   iconSize?: number;
   variant?: "icon" | "floating";
   className?: string;
-}
+} & React.ButtonHTMLAttributes<HTMLButtonElement>;
 
 export const NotificationButton = React.forwardRef<HTMLButtonElement, NotificationButtonProps>(function NotificationButton({
   unreadCount,
   iconSize = 16,
   variant = "icon",
   className = "",
+  ...rest
 }, ref) {
   const buttonClass = variant === "floating" 
     ? "fixed bottom-4 right-4"
@@ -234,6 +239,7 @@ export const NotificationButton = React.forwardRef<HTMLButtonElement, Notificati
       )}
       aria-label="Ouvrir les notifications"
       type="button"
+      {...rest}
     >
       <BellIcon size={iconSize} aria-hidden="true" />
       {unreadCount > 0 && (

@@ -223,6 +223,45 @@ describe('AdvertisingCreateWizard', () => {
     }))
   })
 
+  describe('navigation par emplacement (carrousel, un a la fois)', () => {
+    it('affiche un seul emplacement a la fois avec sa position (in-feed est actif par defaut : 2 sur 4)', () => {
+      render(<AdvertisingCreateWizard />)
+      fireEvent.click(screen.getByRole('button', { name: /Suivant/i }))
+      expect(screen.getByRole('heading', { name: /Ajouter les visuels/i })).toBeVisible()
+
+      expect(screen.getByText('Emplacement 2 sur 4')).toBeVisible()
+      expect(
+        screen.getByRole('tab', { name: 'Bannière in-feed (recherche / immobilier)' }),
+      ).toHaveAttribute('aria-selected', 'true')
+    })
+
+    it("Avancer/Reculer d'un emplacement deplacent le carrousel, desactives aux extremites", () => {
+      render(<AdvertisingCreateWizard />)
+      fireEvent.click(screen.getByRole('button', { name: /Suivant/i }))
+
+      // in-feed (2/4) -> accueil (1/4), la premiere : reculer se desactive.
+      fireEvent.click(screen.getByRole('button', { name: "Reculer d'un emplacement" }))
+      expect(screen.getByText('Emplacement 1 sur 4')).toBeVisible()
+      expect(screen.getByRole('button', { name: "Reculer d'un emplacement" })).toBeDisabled()
+
+      // accueil -> in-feed -> detail -> reels (4/4), la derniere : avancer se desactive.
+      fireEvent.click(screen.getByRole('button', { name: "Avancer d'un emplacement" }))
+      fireEvent.click(screen.getByRole('button', { name: "Avancer d'un emplacement" }))
+      fireEvent.click(screen.getByRole('button', { name: "Avancer d'un emplacement" }))
+      expect(screen.getByText('Emplacement 4 sur 4')).toBeVisible()
+      expect(screen.getByRole('button', { name: "Avancer d'un emplacement" })).toBeDisabled()
+    })
+
+    it('un point du carrousel permet de sauter directement a un emplacement (utilisateur avance)', () => {
+      render(<AdvertisingCreateWizard />)
+      fireEvent.click(screen.getByRole('button', { name: /Suivant/i }))
+
+      fireEvent.click(screen.getByRole('tab', { name: 'Réels (image ou vidéo)' }))
+      expect(screen.getByText('Emplacement 4 sur 4')).toBeVisible()
+      expect(screen.getByRole('tab', { name: 'Réels (image ou vidéo)' })).toHaveAttribute('aria-selected', 'true')
+    })
+  })
+
   it('signale un upload sans session et conserve le forfait Réels sélectionné', async () => {
     currentUser = null
     render(<AdvertisingCreateWizard />)

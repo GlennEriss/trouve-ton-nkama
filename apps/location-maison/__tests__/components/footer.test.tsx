@@ -46,6 +46,18 @@ describe('Footer', () => {
     expect(container.querySelector('footer')).toBeInTheDocument()
   })
 
+  it('lie vers les comptes Instagram et Threads officiels de la plateforme', () => {
+    render(<Footer />)
+    expect(screen.getByRole('link', { name: 'Suivez-nous sur Instagram' })).toHaveAttribute(
+      'href',
+      'https://www.instagram.com/trouvetonnkama/',
+    )
+    expect(screen.getByRole('link', { name: 'Suivez-nous sur Threads' })).toHaveAttribute(
+      'href',
+      'https://www.threads.com/@trouvetonkama',
+    )
+  })
+
   it('utilise les contacts de repli et masque la publicité sur une page ordinaire', () => {
     Reflect.deleteProperty(process.env, 'NEXT_PUBLIC_EMAIL_SUPPORT')
     Reflect.deleteProperty(process.env, 'NEXT_PUBLIC_CONTACT_SUPPORT')

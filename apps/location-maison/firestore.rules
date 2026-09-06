@@ -101,7 +101,20 @@ service cloud.firestore {
     }
     
     match /notifications/{notificationId} {
-      allow read, update: if isSignedIn() && request.auth.uid == resource.data.uid;
+      // Le document a un champ `createdFor` (voir models/notification.d.ts et
+      // functions/src/notification/index.ts), pas `uid` — cette règle vérifiait le mauvais
+      // champ (copié-collé de la règle `users` juste au-dessus) : `resource.data.uid` est
+      // toujours absent sur ce document, donc TOUJOURS `null` != `request.auth.uid`, ce qui
+      // refusait silencieusement la lecture pour tout le monde (NotificationProvider avale
+      // l'erreur `permission-denied` sans planter — la cloche semblait juste vide en
+      // permanence, pour tous les utilisateurs réels).
+      allow read: if isSignedIn() && request.auth.uid == resource.data.createdFor;
+      // Seul markAsRead/markAllAsRead écrivent sur ce document (NotificationProvider.tsx),
+      // et uniquement `isRead` — un propriétaire ne doit pas pouvoir réécrire le titre, le
+      // message ou `createdFor` d'une notification qui lui appartient.
+      allow update: if isSignedIn() &&
+        request.auth.uid == resource.data.createdFor &&
+        request.resource.data.diff(resource.data).affectedKeys().hasOnly(['isRead']);
     }
     
     match /properties/{propertyId} {

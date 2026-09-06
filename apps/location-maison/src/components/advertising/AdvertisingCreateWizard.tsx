@@ -9,6 +9,8 @@ import {
   ArrowLeft,
   ArrowRight,
   CheckCircle,
+  ChevronLeft,
+  ChevronRight,
   ImagePlus,
   Loader2,
   Megaphone,
@@ -23,6 +25,7 @@ import { Button } from '@trouve-ton-nkama/ui/button'
 import { Input } from '@trouve-ton-nkama/ui/input'
 import { Label } from '@trouve-ton-nkama/ui/label'
 import { Textarea } from '@trouve-ton-nkama/ui/textarea'
+import { LabelWithHelp } from '@/components/shared/form/FieldHelp'
 import { AD_PACKAGES } from '@/constantes/ad-packages'
 import { formatsForPlacements, type AdFormat, type AdFormatKey } from '@/constantes/ad-formats'
 import { routes } from '@/constantes/routes'
@@ -454,6 +457,7 @@ export default function AdvertisingCreateWizard() {
     formats.find((format) => format.key === activeFormatKey) ??
     formats.find((format) => format.key === 'infeed') ??
     formats[0]
+  const activeFormatIndex = formats.findIndex((format) => format.key === activeFormat?.key)
   const activePlacement = activeFormat?.placements[0]
   const activeAsset = activeFormat?.placements.map((placement) => assets[placement]).find(Boolean)
   const totalPlacementCount = selectedPackage?.placements.length ?? 0
@@ -467,6 +471,24 @@ export default function AdvertisingCreateWizard() {
   const reelsFormatWarning =
     formatWarnings.reels ||
     (hasReelsPlacement && !hasAsset(assets.reels_infeed) ? defaultVisualReelsWarning : '')
+  // Statut de l'emplacement affiché par le carrousel (un à la fois, voir plus bas) — même
+  // logique que celle utilisée avant par onglet, appliquée ici seulement à l'emplacement actif.
+  const activeFormatReady = activeFormat ? activeFormat.placements.every(hasVisualForPlacement) : false
+  const activeFormatDedicated = activeFormat
+    ? activeFormat.placements.every((placement) => hasAsset(assets[placement]))
+    : false
+  const activeFormatWarning = activeFormat
+    ? activeFormat.key === 'reels'
+      ? reelsFormatWarning
+      : formatWarnings[activeFormat.key]
+    : ''
+  const activeFormatStatusLabel = activeFormatWarning
+    ? 'Format à vérifier'
+    : activeFormatDedicated
+      ? 'Visuel dédié'
+      : activeFormatReady
+        ? 'Visuel par défaut'
+        : (activeFormat?.recommended ?? '')
 
   const setFormatWarning = (formatKey: AdFormatKey, warning: string) => {
     setFormatWarnings((prev) => {
@@ -737,7 +759,10 @@ export default function AdvertisingCreateWizard() {
           <div className="space-y-4 sm:space-y-6">
             <div className="space-y-1">
               <h2 className="text-lg font-semibold text-ink dark:text-white">Ajouter les visuels</h2>
-              <p className="text-sm leading-6 text-gray-500">Choisissez le format, puis touchez la zone pub pour importer le visuel.</p>
+              <p className="text-sm leading-6 text-gray-500">
+                Un emplacement à la fois : importez un visuel puis passez au suivant (ou passez directement, le
+                visuel par défaut prendra le relais).
+              </p>
             </div>
 
             <div className="rounded-2xl border border-secondary/20 bg-primary-50 p-3 dark:border-secondary/30 dark:bg-primary-950 sm:p-4">
@@ -755,44 +780,79 @@ export default function AdvertisingCreateWizard() {
                   style={{ width: `${visualProgress}%` }}
                 />
               </div>
-              <div className="-mx-3 mt-3 overflow-x-auto px-3 pb-1 sm:mx-0 sm:px-0">
-                <div className="flex min-w-max gap-2 lg:grid lg:min-w-0 lg:grid-cols-4" role="tablist" aria-label="Formats publicitaires">
-                  {formats.map((fmt) => {
-                    const ready = fmt.placements.every(hasVisualForPlacement)
-                    const dedicated = fmt.placements.every((placement) => hasAsset(assets[placement]))
-                    const warning = fmt.key === 'reels' ? reelsFormatWarning : formatWarnings[fmt.key]
-                    return (
-                      <button
-                        key={fmt.key}
-                        type="button"
-                        role="tab"
-                        aria-selected={activeFormat?.key === fmt.key}
-                        onClick={() => setActiveFormatKey(fmt.key)}
-                        className={cn(
-                          'min-h-[58px] w-[11.5rem] shrink-0 touch-manipulation rounded-2xl border bg-white px-3 py-2 text-left transition active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-secondary lg:w-auto',
-                          activeFormat?.key === fmt.key
-                            ? 'border-secondary shadow-sm ring-2 ring-secondary/15'
-                            : 'border-transparent ring-1 ring-gray-200 dark:bg-gray-900 dark:ring-gray-700',
-                        )}
-                      >
-                        <span className="flex items-center gap-2">
-                          <span
-                            className={cn(
-                              'h-2.5 w-2.5 rounded-full',
-                              warning ? 'bg-amber-500' : ready ? 'bg-secondary' : 'bg-gray-300 dark:bg-gray-600',
-                            )}
-                          />
-                          <span className="min-w-0 flex-1 truncate text-sm font-semibold text-ink dark:text-white">
-                            {fmt.label}
-                          </span>
-                        </span>
-                        <span className="mt-1 block text-xs text-gray-500">
-                          {warning ? 'Format à vérifier' : dedicated ? 'Visuel dédié' : ready ? 'Visuel par défaut' : fmt.recommended}
-                        </span>
-                      </button>
-                    )
-                  })}
+              {/* Un emplacement à la fois plutôt qu'un rang de 4 onglets à comparer d'un coup :
+                  personne ne peut rater qu'il faut regarder chaque emplacement, puisque c'est
+                  littéralement la seule chose affichée à l'écran. Les petits points en dessous
+                  restent cliquables pour sauter directement à un emplacement (utilisateurs
+                  avancés), mais Précédent/Suivant guident un parcours séquentiel explicite. */}
+              <div className="mt-4 flex items-center justify-between gap-2">
+                <button
+                  type="button"
+                  onClick={() => setActiveFormatKey(formats[Math.max(activeFormatIndex - 1, 0)].key)}
+                  disabled={activeFormatIndex <= 0}
+                  aria-label="Reculer d'un emplacement"
+                  className="inline-flex h-9 w-9 shrink-0 touch-manipulation items-center justify-center rounded-full border border-gray-200 text-gray-600 transition hover:bg-gray-50 active:scale-[0.96] disabled:opacity-30 disabled:hover:bg-transparent dark:border-gray-700 dark:text-gray-300"
+                >
+                  <ChevronLeft className="h-4 w-4" />
+                </button>
+
+                <div className="min-w-0 flex-1 text-center">
+                  <p className="text-xs font-medium text-gray-500">
+                    Emplacement {activeFormatIndex + 1} sur {formats.length}
+                  </p>
+                  <p className="mt-0.5 flex items-center justify-center gap-1.5">
+                    <span
+                      className={cn(
+                        'h-2.5 w-2.5 shrink-0 rounded-full',
+                        activeFormatWarning
+                          ? 'bg-amber-500'
+                          : activeFormatReady
+                            ? 'bg-secondary'
+                            : 'bg-gray-300 dark:bg-gray-600',
+                      )}
+                    />
+                    <span className="truncate text-sm font-semibold text-ink dark:text-white">
+                      {activeFormat?.label}
+                    </span>
+                  </p>
+                  <p className="text-xs text-gray-500">{activeFormatStatusLabel}</p>
                 </div>
+
+                <button
+                  type="button"
+                  onClick={() =>
+                    setActiveFormatKey(formats[Math.min(activeFormatIndex + 1, formats.length - 1)].key)
+                  }
+                  disabled={activeFormatIndex >= formats.length - 1}
+                  aria-label="Avancer d'un emplacement"
+                  className="inline-flex h-9 w-9 shrink-0 touch-manipulation items-center justify-center rounded-full border border-gray-200 text-gray-600 transition hover:bg-gray-50 active:scale-[0.96] disabled:opacity-30 disabled:hover:bg-transparent dark:border-gray-700 dark:text-gray-300"
+                >
+                  <ChevronRight className="h-4 w-4" />
+                </button>
+              </div>
+
+              <div className="mt-3 flex justify-center gap-1.5" role="tablist" aria-label="Formats publicitaires">
+                {formats.map((fmt) => {
+                  const ready = fmt.placements.every(hasVisualForPlacement)
+                  const warning = fmt.key === 'reels' ? reelsFormatWarning : formatWarnings[fmt.key]
+                  const isActive = activeFormat?.key === fmt.key
+                  return (
+                    <button
+                      key={fmt.key}
+                      type="button"
+                      role="tab"
+                      aria-selected={isActive}
+                      aria-label={fmt.label}
+                      onClick={() => setActiveFormatKey(fmt.key)}
+                      className={cn(
+                        'h-2.5 touch-manipulation rounded-full transition-all',
+                        isActive ? 'w-6 bg-secondary' : 'w-2.5',
+                        !isActive &&
+                          (warning ? 'bg-amber-500' : ready ? 'bg-secondary/40' : 'bg-gray-300 dark:bg-gray-600'),
+                      )}
+                    />
+                  )
+                })}
               </div>
             </div>
 
@@ -941,7 +1001,11 @@ export default function AdvertisingCreateWizard() {
             </div>
             <div className="grid gap-4 lg:grid-cols-2">
               <div className="space-y-2">
-                <Label htmlFor="ad-headline">Accroche</Label>
+                <LabelWithHelp
+                  htmlFor="ad-headline"
+                  label="Accroche"
+                  help="Le titre principal affiché sur votre publicité — la première chose que les gens lisent. Court et direct : ce qui donne envie de s'arrêter dessus."
+                />
                 <Input
                   id="ad-headline"
                   placeholder="Ex: Chambre moderne à visiter aujourd’hui"
@@ -950,7 +1014,11 @@ export default function AdvertisingCreateWizard() {
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="ad-cta">Texte du bouton</Label>
+                <LabelWithHelp
+                  htmlFor="ad-cta"
+                  label="Texte du bouton"
+                  help="Le texte affiché sur le bouton que les gens touchent pour vous contacter. Choisissez-le selon ce que fait réellement le champ « Lien au clic » juste en dessous : « Appeler » si vous avez mis un numéro, « WhatsApp » si vous avez mis un lien wa.me, etc."
+                />
                 <Input
                   id="ad-cta"
                   placeholder="Ex: Appeler, WhatsApp, Voir"
@@ -960,7 +1028,11 @@ export default function AdvertisingCreateWizard() {
                 <p className="text-xs leading-5 text-gray-500">Par défaut : {DEFAULT_CTA_LABEL}.</p>
               </div>
               <div className="space-y-2 lg:col-span-2">
-                <Label htmlFor="ad-body">Description courte</Label>
+                <LabelWithHelp
+                  htmlFor="ad-body"
+                  label="Description courte"
+                  help="Une phrase sous le titre pour donner un peu plus de détails et convaincre de cliquer."
+                />
                 <Textarea
                   id="ad-body"
                   placeholder="Une phrase claire pour donner envie de cliquer."
@@ -970,7 +1042,26 @@ export default function AdvertisingCreateWizard() {
                 />
               </div>
               <div className="space-y-2 lg:col-span-2">
-                <Label htmlFor="ad-url">Lien au clic <span className="text-red-600">*</span></Label>
+                <LabelWithHelp
+                  htmlFor="ad-url"
+                  label="Lien au clic"
+                  required
+                  help={
+                    <>
+                      <p className="mb-2">
+                        Ce qui se passe quand quelqu&apos;un touche votre publicité. Vous n&apos;avez pas
+                        besoin d&apos;un site web ou de WhatsApp — un simple numéro à appeler fonctionne
+                        aussi.
+                      </p>
+                      <ul className="list-disc space-y-1 pl-4">
+                        <li>Numéro à appeler : <code>tel:+24174123456</code></li>
+                        <li>WhatsApp : <code>wa.me/24174123456</code></li>
+                        <li>Site web : <code>https://votre-site.com</code></li>
+                        <li>Email : <code>mailto:contact@exemple.com</code></li>
+                      </ul>
+                    </>
+                  }
+                />
                 <Input
                   id="ad-url"
                   type="url"
@@ -979,7 +1070,7 @@ export default function AdvertisingCreateWizard() {
                   required
                   aria-invalid={Boolean(ctaUrlError)}
                   aria-describedby="ad-url-helper"
-                  placeholder="https://... ou wa.me/241..."
+                  placeholder="tel:+241... ou wa.me/241... ou https://..."
                   value={ctaUrl}
                   onChange={(e) => setCtaUrl(e.target.value)}
                   onBlur={() => setCtaUrl(normalizeCtaUrl(ctaUrl))}
