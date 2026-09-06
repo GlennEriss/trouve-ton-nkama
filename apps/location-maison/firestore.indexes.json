@@ -275,7 +275,25 @@
       "queryScope": "COLLECTION",
       "fields": [
         {
-          "fieldPath": "uid",
+          "fieldPath": "createdFor",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "createdAt",
+          "order": "DESCENDING"
+        }
+      ]
+    },
+    {
+      "collectionGroup": "notifications",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "createdFor",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "isRead",
           "order": "ASCENDING"
         },
         {

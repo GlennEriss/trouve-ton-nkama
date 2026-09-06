@@ -19,7 +19,7 @@ type NotificationContextType = {
 const NotificationContext = createContext<NotificationContextType | undefined>(undefined);
 
 export function NotificationProvider({ children }: Readonly<{ children: React.ReactNode }>) {
-    const { user } = useCurrentUser();
+    const { user, isFirebaseConnected } = useCurrentUser();
     const [notifications, setNotifications] = useState<Notification[]>([]);
     const [unreadCount, setUnreadCount] = useState(0);
 
@@ -42,7 +42,13 @@ export function NotificationProvider({ children }: Readonly<{ children: React.Re
     // Récupération des notifications en temps réel
     useEffect(() => {
         const uid = user?.uid?.trim();
-        if (!uid) {
+        // `user.uid` (session NextAuth) est disponible avant que le pont Firebase (custom
+        // token, voir connectFirebaseClient dans use-current-user.ts) soit réellement établi.
+        // S'abonner trop tôt fait échouer la requête en permission-denied — et onSnapshot ne
+        // réessaie jamais tout seul après une erreur de permission, donc la cloche restait
+        // vide jusqu'au prochain rechargement complet de la page. Attendre isFirebaseConnected
+        // avant de s'abonner évite ce raté au premier chargement.
+        if (!uid || !isFirebaseConnected) {
             setNotifications([]);
             setUnreadCount(0);
             return;
@@ -119,7 +125,7 @@ export function NotificationProvider({ children }: Readonly<{ children: React.Re
                 unsubscribeRecent();
             }
         };
-    }, [user?.uid]);
+    }, [user?.uid, isFirebaseConnected]);
 
     // Mise à jour du nombre de notifications non lues
     useEffect(() => {
