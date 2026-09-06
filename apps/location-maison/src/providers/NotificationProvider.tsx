@@ -2,12 +2,30 @@
 
 import React, { createContext, useContext, useEffect, useState, useMemo } from "react";
 import { Notification } from "@/models/notification";
-import { collection, query, where, onSnapshot, doc, updateDoc, Timestamp, orderBy, limit, QuerySnapshot, DocumentData } from 'firebase/firestore';
+import { collection, query, where, onSnapshot, doc, updateDoc, orderBy, limit, QuerySnapshot, DocumentData } from 'firebase/firestore';
 import { useCurrentUser } from "@/hooks/use-current-user";
 import { db } from "@/firebase/firestore";
 import { createLogger } from '@/lib/logger';
 
 const logger = createLogger('providers.notification');
+
+const RECENT_WINDOW_MS = 7 * 24 * 60 * 60 * 1000;
+// Force une réévaluation périodique de la fenêtre "récent" même sans nouvel évènement
+// Firestore — sans ça, un onglet resté ouvert plusieurs jours ne referait jamais le calcul
+// (voir plus bas pourquoi il ne faut plus le faire côté requête Firestore).
+const RECENT_WINDOW_REFRESH_MS = 15 * 60 * 1000;
+
+// Les documents viennent d'un onSnapshot Firestore (toujours un vrai Timestamp avec
+// toMillis()), mais on reste défensif comme formatNotificationDate (notification-utils.ts)
+// au cas où une valeur sérialisée {seconds, nanoseconds} circule un jour par une autre voie.
+function createdAtToMillis(createdAt: Notification['createdAt']): number {
+    if (!createdAt) return 0;
+    if (typeof (createdAt as { toMillis?: () => number }).toMillis === 'function') {
+        return (createdAt as { toMillis: () => number }).toMillis();
+    }
+    const seconds = (createdAt as { seconds?: number }).seconds;
+    return typeof seconds === 'number' ? seconds * 1000 : 0;
+}
 
 type NotificationContextType = {
     notifications: Notification[];
@@ -31,10 +49,16 @@ export function NotificationProvider({ children }: Readonly<{ children: React.Re
         }));
     };
 
-    // Fonction pour fusionner les notifications en évitant les doublons
+    // Fonction pour fusionner les notifications en évitant les doublons. Le filtre "moins de 7
+    // jours" est appliqué ICI, avec Date.now() pris à CHAQUE appel — pas dans la requête
+    // Firestore (voir recentQuery plus bas) — pour qu'il reste exact même dans un onglet resté
+    // ouvert plusieurs jours sans rechargement. Les non-lues, elles, n'ont volontairement aucune
+    // limite de fraîcheur : une notification jamais lue ne doit pas disparaître toute seule.
     const mergeNotifications = (unreadNotifications: Notification[], recentNotifications: Notification[]): Notification[] => {
-        const filteredRecent = recentNotifications.filter((notif: Notification) => 
-            !unreadNotifications.some((un: Notification) => un.id === notif.id)
+        const cutoffMs = Date.now() - RECENT_WINDOW_MS;
+        const filteredRecent = recentNotifications.filter((notif: Notification) =>
+            !unreadNotifications.some((un: Notification) => un.id === notif.id) &&
+            createdAtToMillis(notif.createdAt) >= cutoffMs
         );
         return [...unreadNotifications, ...filteredRecent];
     };
@@ -54,9 +78,6 @@ export function NotificationProvider({ children }: Readonly<{ children: React.Re
             return;
         }
     
-        // Calcul de la date limite (7 jours en arrière)
-        const sevenDaysAgo = Timestamp.fromDate(new Date(Date.now() - 7 * 24 * 60 * 60 * 1000));
-    
         // Requête 1 : Récupérer uniquement les notifications non lues
         const unreadQuery = query(
             collection(db, "notifications"),
@@ -65,12 +86,16 @@ export function NotificationProvider({ children }: Readonly<{ children: React.Re
             orderBy("createdAt", "desc"),
             limit(50)
         );
-    
-        // Requête 2 : Récupérer les notifications des 7 derniers jours
+
+        // Requête 2 : les notifications les plus récentes, bornées par un COMPTE (limit), pas
+        // par une date Firestore figée au moment de l'abonnement — un `where(createdAt >= X)`
+        // avec X calculé une fois ne "glisse" jamais : sur un onglet resté ouvert plusieurs
+        // jours, la fenêtre réellement servie s'élargissait avec le temps au lieu de rester à
+        // 7 jours glissants. Le filtre de fraîcheur réel vit dans mergeNotifications
+        // ci-dessus, recalculé à chaque snapshot avec l'heure courante.
         const recentQuery = query(
             collection(db, "notifications"),
             where("createdFor", "==", uid),
-            where("createdAt", ">=", sevenDaysAgo),
             orderBy("createdAt", "desc"),
             limit(50)
         );
@@ -116,8 +141,14 @@ export function NotificationProvider({ children }: Readonly<{ children: React.Re
         } catch (error) {
             logger.warn("Erreur lors de l'initialisation des listeners de notifications", { error });
         }
-    
+
+        // Reproduit le filtre de fraîcheur avec l'heure courante même sans nouvel évènement
+        // Firestore — sinon un onglet resté ouvert plusieurs jours sans activité ne ferait
+        // jamais disparaître une notification passée ses 7 jours.
+        const refreshIntervalId = setInterval(syncNotifications, RECENT_WINDOW_REFRESH_MS);
+
         return () => {
+            clearInterval(refreshIntervalId);
             if (unsubscribeUnread) {
                 unsubscribeUnread();
             }
