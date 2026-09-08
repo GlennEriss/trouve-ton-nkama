@@ -1,0 +1,16 @@
+module.exports = {
+  getFirestore: jest.fn(() => ({})),
+  collection: jest.fn((_db, path) => ({ path })),
+  doc: jest.fn((_db, ...segments) => ({ path: segments.join('/') })),
+  query: jest.fn((ref, ...clauses) => ({ ref, clauses })),
+  where: jest.fn((field, op, value) => ({ type: 'where', field, op, value })),
+  orderBy: jest.fn((field, direction) => ({ type: 'orderBy', field, direction })),
+  limit: jest.fn((n) => ({ type: 'limit', n })),
+  getDocs: jest.fn(async () => ({ empty: true, docs: [] })),
+  getDoc: jest.fn(async () => ({ exists: () => false, data: () => undefined })),
+  setDoc: jest.fn(async () => undefined),
+  updateDoc: jest.fn(async () => undefined),
+  onSnapshot: jest.fn(() => jest.fn()),
+  arrayUnion: jest.fn((value) => ({ __op: 'arrayUnion', value })),
+  arrayRemove: jest.fn((value) => ({ __op: 'arrayRemove', value })),
+};

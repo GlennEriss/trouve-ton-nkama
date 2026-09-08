@@ -5,7 +5,7 @@ export type SearchRequestPaymentStatus =
   | "confirmed"
   | "failed"
   | "not_required";
-export type SearchRequestSource = "public" | "admin";
+export type SearchRequestSource = "public" | "admin" | "mobile";
 
 /** Forme brute du document Firestore `search_requests/{id}` — voir apps/location-maison/src/models/search-request.d.ts. */
 export type SearchRequestRawDoc = {
