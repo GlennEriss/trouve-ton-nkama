@@ -19,8 +19,9 @@ export type SearchRequestPaymentStatus =
   | "not_required";
 export type SearchRequestPayerNetwork = "AM" | "MM";
 
-/** Origine de la demande : formulaire public payant, ou back-office admin. */
-export type SearchRequestSource = "public" | "admin";
+/** Origine de la demande : formulaire public payant, back-office admin, ou app mobile
+ * (gratuite pendant la phase de lancement — voir /api/search-requests/mobile-create). */
+export type SearchRequestSource = "public" | "admin" | "mobile";
 
 /**
  * Demande de recherche publiée anonymement par un visiteur qui n'a rien trouvé
@@ -51,6 +52,8 @@ export type SearchRequest = ICreation & {
     source?: SearchRequestSource;
     /** uid de l'admin qui a saisi la demande (source === "admin"). */
     createdByAdmin?: string;
+    /** uid de l'utilisateur authentifié qui a publié depuis l'app mobile (source === "mobile"). */
+    createdByUid?: string;
 
     // Paiement MyPayGa (vit sur le doc lui-même, 1:1 avec la demande).
     // Optionnels : une demande créée par un admin n'a aucun paiement associé.

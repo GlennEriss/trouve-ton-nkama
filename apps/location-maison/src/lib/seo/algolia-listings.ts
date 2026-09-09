@@ -1,4 +1,5 @@
 import { createLogger } from '@/lib/logger';
+import { recordAlgoliaQueriesOncePerWindow } from '@/lib/search/algolia-quota-store';
 import {
   getCityConfig,
   getTransactionConfig,
@@ -279,6 +280,14 @@ export async function searchLandingProperties(options: {
         hitsPerPage,
       };
     }
+
+    // Compte cette requête dans le quota Algolia (cycle du 9 au 8). `fetch` ISR ne touche
+    // Algolia qu'une fois par fenêtre `revalidate` -> on dédup sur la même fenêtre.
+    // Mode observation en Phase A. Voir docs/location-maison/setup/ALGOLIA-QUOTA-FAILOVER.md.
+    void recordAlgoliaQueriesOncePerWindow(
+      `seo:${indexName}:${filters}:p${currentPage}:h${hitsPerPage}`,
+      ALGOLIA_REVALIDATE_SECONDS,
+    ).catch(() => {});
 
     const data = (await response.json()) as AlgoliaLandingResponse;
     const items = Array.isArray(data.hits)

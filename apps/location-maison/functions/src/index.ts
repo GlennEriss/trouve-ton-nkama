@@ -44,6 +44,9 @@ export { onListingApprovedPublishToFacebook, onSearchRequestApprovedPublishToFac
 export { onPropertyCreateDefaultSortTimestamp } from './promotions/default-sort-timestamp';
 export { expireStalePromotions } from './promotions/expire-promotions';
 
+// Surveillance du quota de recherche Algolia (cycle de facturation du 9 au 8)
+export { monitorAlgoliaSearchQuota } from './search/algolia-quota-monitor';
+
 // Exemple de fonction (à décommenter si nécessaire)
 // export const helloWorld = onRequest((request, response) => {
 //   logger.info("Hello logs!", {structuredData: true});

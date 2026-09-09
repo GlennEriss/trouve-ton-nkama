@@ -1,0 +1,8 @@
+appId: com.tonnkama.app
+---
+- launchApp
+- tapOn:
+    id: "tab-reels"
+- assertVisible:
+    id: "screen-reels"
+- assertVisible: "Réels"

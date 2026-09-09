@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { liteClient as algoliasearch } from 'algoliasearch/lite';
 import { createLogger } from '@/lib/logger';
 import { resolveAlgoliaSearchRequests, type AlgoliaProxyRequest } from '@/lib/algolia-search-proxy';
+import { recordAlgoliaQueries } from '@/lib/search/algolia-quota-store';
 
 const logger = createLogger('api.algolia-search-proxy');
 
@@ -45,10 +46,22 @@ export async function POST(request: Request) {
   }
 
   try {
+    // Nombre de requêtes RÉELLEMENT transmises à Algolia (les hits de cache ne coûtent
+    // rien) — c'est l'unité facturée par le plan Grow. Sert au compteur de quota aligné
+    // sur le cycle de facturation du 9 au 8. Voir
+    // docs/location-maison/setup/ALGOLIA-QUOTA-FAILOVER.md.
+    let billedQueries = 0;
+
     const { results } = await resolveAlgoliaSearchRequests(requests, async (missRequests) => {
+      billedQueries += missRequests.length;
       const response = await algoliaClient.search(missRequests as never);
       return response as { results: unknown[] };
     });
+
+    if (billedQueries > 0) {
+      // Ne bloque pas la réponse : le compteur est en mode observation (Phase A).
+      void recordAlgoliaQueries(billedQueries).catch(() => {});
+    }
 
     return NextResponse.json({ results });
   } catch (error) {

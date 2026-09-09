@@ -13,6 +13,12 @@ jest.mock('algoliasearch/lite', () => ({
   liteClient: () => ({ search: (...args: unknown[]) => searchMock(...args) }),
 }))
 
+// Le compteur de quota (Firestore) est instrumenté à part — hors périmètre de ce test.
+const recordAlgoliaQueriesMock = jest.fn().mockResolvedValue(undefined)
+jest.mock('@/lib/search/algolia-quota-store', () => ({
+  recordAlgoliaQueries: (...args: unknown[]) => recordAlgoliaQueriesMock(...args),
+}))
+
 jest.mock('@/lib/logger', () => ({
   createLogger: jest.fn(() => ({
     info: jest.fn(),
@@ -68,6 +74,13 @@ describe('POST /api/algolia/search', () => {
 
     expect(searchMock).toHaveBeenCalledTimes(1)
     expect(payload).toEqual({ results: [{ hits: ['a-listing'] }] })
+    // La requête réellement transmise à Algolia est comptée dans le quota (cycle du 9 au 8).
+    expect(recordAlgoliaQueriesMock).toHaveBeenCalledWith(1)
+  })
+
+  it('ne compte rien dans le quota quand Algolia n\'est pas appelé', async () => {
+    await POST(makeRequest({ requests: [] }))
+    expect(recordAlgoliaQueriesMock).not.toHaveBeenCalled()
   })
 
   it('renvoie un 502 si Algolia echoue', async () => {

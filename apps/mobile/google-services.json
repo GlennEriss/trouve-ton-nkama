@@ -1,0 +1,46 @@
+{
+  "project_info": {
+    "project_number": "237524455298",
+    "project_id": "location-maison-dev",
+    "storage_bucket": "location-maison-dev.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:237524455298:android:d8773e6844c8dd0c9d499b",
+        "android_client_info": {
+          "package_name": "com.tonnkama.app"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "237524455298-35dqvnbrrtsek2tr6uf7s822sv13stin.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyB4z8E6e9L4enzds2jPo5TXJDxxH8Kw1Bs"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "237524455298-35dqvnbrrtsek2tr6uf7s822sv13stin.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "237524455298-f00r7lr86vh2oj138qq47n3dr8s9rnpk.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.tonnkama.app"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

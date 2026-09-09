@@ -1,0 +1,8 @@
+appId: com.tonnkama.app
+---
+- launchApp
+- tapOn:
+    id: "tab-recherche"
+- assertVisible:
+    id: "screen-recherche"
+- assertVisible: "Rechercher une annonce (ville, type...)"

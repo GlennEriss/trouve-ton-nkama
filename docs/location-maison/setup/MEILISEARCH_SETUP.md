@@ -10,6 +10,14 @@ Algolia. Contexte complet (diagnostic, cache serveur déjà en place) :
 Ce document est un **plan** — rien n'est encore implémenté ni provisionné. Il sert de base de
 décision (surtout la partie hébergement) avant d'écrire le moindre code d'indexation.
 
+> **Voir aussi** : [ALGOLIA-QUOTA-FAILOVER.md](./ALGOLIA-QUOTA-FAILOVER.md) — garde-fou de quota
+> aligné sur le cycle de facturation Algolia (du 9 au 8) qui, en plus du partage de charge
+> permanent décrit ici, bascule **tout** le trafic de recherche vers Meilisearch quand la
+> période approche des 10 000 requêtes, pour garantir 0 FCFA de dépassement. Ce document-ci
+> couvre le complément permanent (§1) ; le failover conditionnel impose en plus d'indexer le
+> **document complet** dans Meilisearch (pas seulement les champs de facettes) — voir §5 de
+> l'autre doc.
+
 ---
 
 ## 1. Qui prend quoi — répartition du trafic
