@@ -3,6 +3,11 @@ import { searchLandingProperties } from '@/lib/seo/algolia-listings'
 const mockLoggerError = jest.fn()
 jest.mock('@/lib/logger', () => ({ createLogger: () => ({ error: (...args: any[]) => mockLoggerError(...args) }) }))
 
+// Le comptage du quota Algolia (Firestore) est hors périmètre de ce test.
+jest.mock('@/lib/search/algolia-quota-store', () => ({
+  recordAlgoliaQueriesOncePerWindow: jest.fn().mockResolvedValue(undefined),
+}))
+
 describe('searchLandingProperties', () => {
   const originalEnv = process.env
 

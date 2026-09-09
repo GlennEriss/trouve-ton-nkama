@@ -8,13 +8,33 @@ incluses**, facturées 13 × 0,50 $ = **6,50 $ ≈ 5 000 FCFA**. Il faut ramener
 sous 10 000 requêtes facturables, et garantir que même un pic ne fera jamais repasser en
 dépassement.
 
-Ce document est l'**analyse complète + l'architecture**. Rien n'est encore implémenté. Il
+Ce document est l'**analyse complète + l'architecture**. Il
 complète, et ne remplace pas :
 - [ALGOLIA-COST-AUDIT-2026-09.md](../troubleshooting/ALGOLIA-COST-AUDIT-2026-09.md) — diagnostic
   et correctifs déjà livrés (fuite de requêtes globale supprimée, cache serveur mémoire devant
   Algolia).
 - [MEILISEARCH_SETUP.md](./MEILISEARCH_SETUP.md) — plan de mise en place de Meilisearch en
   complément (répartition du trafic, hébergement, indexation).
+
+## État d'avancement
+
+| Phase | État | Détail |
+|---|---|---|
+| **A — Observabilité** | ✅ **Livré (2026-09-09)** | Compteur Firestore `system_config/algolia-quota` en mode observation, instrumentation du proxy `/api/algolia/search` + des pages SEO, Cloud Function `monitorAlgoliaSearchQuota` (reset de période + réconciliation API Usage + alerte log/e-mail à 80 %), carte admin `/admin/search-quota`. Aucune bascule : `SEARCH_QUOTA_ENFORCE` non activé. |
+| **B — Meilisearch permanent (facettes)** | ⏳ En attente du provisioning Meilisearch (§13.1) | — |
+| **C — Failover armé** | ⏳ Après B | Adaptateur Algolia↔Meilisearch + `SEARCH_QUOTA_ENFORCE=true` |
+
+**Fichiers livrés en Phase A** :
+`src/lib/search/algolia-billing-period.ts`, `src/lib/search/algolia-quota-store.ts`,
+`src/app/api/algolia/search/route.ts` (instrumenté), `src/lib/seo/algolia-listings.ts`
+(instrumenté), `src/app/api/admin/search-quota/route.ts`,
+`src/components/admin/SearchQuotaCard.tsx`,
+`src/app/(protected)/admin/search-quota/page.tsx`,
+`functions/src/search/algolia-billing-period.ts`,
+`functions/src/search/algolia-quota-monitor.ts` (+ export dans `functions/src/index.ts`).
+Tests : `__tests__/lib/algolia-billing-period.test.ts`,
+`__tests__/lib/algolia-quota-store.test.ts`,
+`functions/__tests__/algolia-billing-period.test.ts`.
 
 ---
 
@@ -413,15 +433,25 @@ automatiquement, **aucun travail dédié**.
 
 ## 11. Plan de mise en œuvre par phases
 
-### Phase A — Observabilité, sans Meilisearch *(livrable tout de suite)*
-1. Document Firestore `system_config/algolia-quota` + helpers `periodKey()` / `getSearchMode()`
-   en **mode observation** (`mode` toujours `ALGOLIA`, on ne fait qu'incrémenter + alerter).
-2. Instrumenter `/api/algolia/search` : `count += missIndexes.length`.
-3. Router `searchLandingProperties()` par le resolver partagé (levier 2) → trafic SEO compté.
-4. CF `onSchedule` quotidienne : reset de période + alerte 80 %.
-5. Petite carte admin (voir §12).
-6. **Vérification** : après une période complète, comparer `count` à la prochaine facture
-   Algolia → cale le modèle et le fuseau de reset. Trace réseau avant/après pour le SEO.
+### Phase A — Observabilité, sans Meilisearch — ✅ **LIVRÉ (2026-09-09)**
+1. ✅ Document Firestore `system_config/algolia-quota` + helpers `billingPeriodKey()` /
+   `getQuotaStatus()` / `getSearchMode()` en **mode observation** (`getSearchMode()` renvoie
+   toujours `ALGOLIA` tant que `isQuotaEnforced()` est faux ; on ne fait qu'incrémenter + alerter).
+2. ✅ Instrumenter `/api/algolia/search` : `recordAlgoliaQueries(billedQueries)` où
+   `billedQueries` s'accumule sur `missRequests.length` (les hits de cache ne comptent pas).
+3. ✅ Instrumenter `searchLandingProperties()` (levier 2) via
+   `recordAlgoliaQueriesOncePerWindow(key, 900)` — dédup par fenêtre ISR. *Note :* le `fetch`
+   direct est conservé (meilleur cache que le proxy pour ce cas) ; il basculera vers
+   Meilisearch en Phase B/C, pas via ce proxy.
+4. ✅ CF `monitorAlgoliaSearchQuota` (`onSchedule`, `15 0 * * *` UTC) : reset de période +
+   réconciliation API Usage (si `ALGOLIA_USAGE_API_KEY`) + alerte 80 % (log structuré +
+   e-mail Hostinger, cooldown 24 h, destinataire `SEARCH_QUOTA_ALERT_EMAIL` ou
+   `contact@tonnkama.com`).
+5. ✅ Carte admin `/admin/search-quota` (`SearchQuotaCard`) + API `/api/admin/search-quota`
+   (garde `Admin`).
+6. ⏳ **Vérification à faire sur une période complète** : comparer `count` à la prochaine
+   facture Algolia (période close le 08/10/2026) → cale le modèle et confirme le fuseau du
+   reset. Trace réseau avant/après pour le SEO.
 
 > Livre déjà une **alerte** avant dépassement et des **chiffres réels** sur la répartition du
 > trafic, sans dépendre de l'hébergement Meilisearch.

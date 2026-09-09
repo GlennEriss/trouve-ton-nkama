@@ -7,6 +7,7 @@ import { useQuery } from '@tanstack/react-query';
 import { searchProperties, type PropertyHit } from '../api/algolia';
 import { getImageUrl } from '../lib/propertyImage';
 import { colors } from '../theme/colors';
+import { HomeHeroCarousel } from '../components/HomeHeroCarousel';
 import type { MainTabParamList } from '../navigation/types';
 
 // Version simplifiée de HomePageComponent (web) pour la V1 mobile — annonces récentes
@@ -26,6 +27,7 @@ export default function HomeScreen() {
 
   return (
     <SafeAreaView style={styles.container} edges={['top']} testID="screen-accueil">
+      <HomeHeroCarousel />
       <Text style={styles.header}>Annonces récentes</Text>
 
       {isLoading ? (
