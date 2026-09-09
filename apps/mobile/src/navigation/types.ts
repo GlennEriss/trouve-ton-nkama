@@ -9,7 +9,9 @@ export type ProfileStackParamList = {
 };
 
 export type SearchStackParamList = {
-  SearchHome: undefined;
+  // province optionnel : pré-remplit le filtre en arrivant depuis les chips "Explorer par
+  // province" de l'accueil (voir ProvinceChips.tsx / HomeScreen.tsx).
+  SearchHome: { province?: string } | undefined;
   ListingDetail: { objectID: string };
 };
 
@@ -22,7 +24,10 @@ export type SearchStackParamList = {
 // SignIn via useRequireAuth) — seul son libellé change selon l'état de connexion.
 export type MainTabParamList = {
   Accueil: undefined;
-  Recherche: { screen: 'ListingDetail'; params: SearchStackParamList['ListingDetail'] } | undefined;
+  Recherche:
+    | { screen: 'ListingDetail'; params: SearchStackParamList['ListingDetail'] }
+    | { screen: 'SearchHome'; params?: SearchStackParamList['SearchHome'] }
+    | undefined;
   Publier: undefined;
   Reels: undefined;
   ProfilOuConnexion: undefined;
