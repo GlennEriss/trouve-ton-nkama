@@ -15,6 +15,7 @@ export type SearchFilters = {
   typeProperty?: string[];
   status?: 'FOR_RENT' | 'FOR_SALE';
   city?: string;
+  province?: string;
   budgetMinXaf?: number;
   budgetMaxXaf?: number;
 };
@@ -39,6 +40,9 @@ export function buildFilters(filters: SearchFilters): string {
   }
   if (filters.city?.trim()) {
     clauses.push(`city:"${escapeAlgoliaFilterValue(filters.city.trim())}"`);
+  }
+  if (filters.province?.trim()) {
+    clauses.push(`province:"${escapeAlgoliaFilterValue(filters.province.trim())}"`);
   }
   if (filters.budgetMinXaf) {
     clauses.push(`price >= ${filters.budgetMinXaf}`);

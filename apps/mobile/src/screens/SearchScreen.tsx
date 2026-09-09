@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { ActivityIndicator, FlatList, Image, Modal, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation, useRoute, type RouteProp } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useInfiniteQuery } from '@tanstack/react-query';
 import { searchProperties, type PropertyHit, type SearchFilters } from '../api/algolia';
@@ -152,9 +152,15 @@ function FiltersModal({
 
 export default function SearchScreen() {
   const navigation = useNavigation<NativeStackNavigationProp<SearchStackParamList, 'SearchHome'>>();
+  const route = useRoute<RouteProp<SearchStackParamList, 'SearchHome'>>();
   const [searchText, setSearchText] = useState('');
   const [submittedQuery, setSubmittedQuery] = useState('');
-  const [filters, setFilters] = useState<SearchFilters>(EMPTY_FILTERS);
+  // Pré-rempli si on arrive depuis une chip "Explorer par province" de l'accueil (voir
+  // ProvinceChips.tsx) — lu une seule fois au montage : on ne veut pas écraser un filtre que
+  // l'utilisateur aurait déjà changé manuellement si l'écran restait monté avec de nouveaux params.
+  const [filters, setFilters] = useState<SearchFilters>(() =>
+    route.params?.province ? { ...EMPTY_FILTERS, province: route.params.province } : EMPTY_FILTERS,
+  );
   const [isFiltersVisible, setIsFiltersVisible] = useState(false);
 
   const { data, isLoading, isError, refetch, isFetching, fetchNextPage, hasNextPage, isFetchingNextPage } = useInfiniteQuery({

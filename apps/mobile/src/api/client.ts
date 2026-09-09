@@ -11,7 +11,7 @@ import { parseApiError } from './error';
 // fonctionne tel quel (contrairement à un appareil Android physique, qui aurait besoin de
 // l'IP réseau de la machine). À reconfigurer par profil de build (eas.json) une fois la
 // mise en prod des environnements dev/preprod/prod abordée.
-const API_BASE_URL = process.env.EXPO_PUBLIC_API_BASE_URL ?? 'http://localhost:3000';
+export const API_BASE_URL = process.env.EXPO_PUBLIC_API_BASE_URL ?? 'http://localhost:3000';
 
 type RequestOptions = Omit<RequestInit, 'body'> & { body?: unknown };
 
