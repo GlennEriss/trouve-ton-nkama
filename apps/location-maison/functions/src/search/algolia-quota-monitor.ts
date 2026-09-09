@@ -141,12 +141,13 @@ export const monitorAlgoliaSearchQuota = onSchedule(
     timeoutSeconds: 120,
     memory: '256MiB',
     retryCount: 1,
-    // ALGOLIA_USAGE_API_KEY n'est PAS déclaré ici tant que le secret n'existe pas dans les
-    // projets (sinon le déploiement échoue). La réconciliation avec l'API Usage est
-    // simplement désactivée en son absence (fetchAlgoliaUsageForPeriod -> null). Quand la
-    // clé est obtenue : `firebase functions:secrets:set ALGOLIA_USAGE_API_KEY` sur chaque
-    // projet, ajouter le nom ci-dessous, redéployer.
-    secrets: ['HOSTINGER_EMAIL_USER', 'HOSTINGER_EMAIL_PASS', 'EMAIL_DISPLAY_NAME'],
+    // Pas de `secrets: [...]` ici :
+    //  - HOSTINGER_EMAIL_USER / HOSTINGER_EMAIL_PASS / EMAIL_DISPLAY_NAME sont déjà fournis
+    //    en clair par functions/.env (les déclarer aussi comme secrets fait échouer le
+    //    déploiement : « Secret environment variable overlaps non secret environment
+    //    variable »). Si absents, `sendAlertEmail` se contente du log structuré.
+    //  - ALGOLIA_USAGE_API_KEY : à ajouter (secret ou .env) quand la clé sera obtenue ;
+    //    sans elle, la réconciliation API Usage est simplement désactivée.
   },
   async () => {
     const now = new Date();
