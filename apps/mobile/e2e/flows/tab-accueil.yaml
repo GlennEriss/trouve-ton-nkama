@@ -1,0 +1,15 @@
+appId: com.tonnkama.app
+---
+# Part d'un autre onglet pour vérifier que le bouton "Accueil" navigue réellement
+# (et ne se contente pas de constater qu'on y est déjà, puisque Accueil est l'onglet
+# initial de la barre).
+- launchApp
+- tapOn:
+    id: "tab-recherche"
+- assertVisible:
+    id: "screen-recherche"
+- tapOn:
+    id: "tab-accueil"
+- assertVisible:
+    id: "screen-accueil"
+- assertVisible: "Annonces récentes"

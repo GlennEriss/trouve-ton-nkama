@@ -168,7 +168,7 @@ export default function SearchScreen() {
   const activeFiltersCount = countActiveFilters(filters);
 
   return (
-    <SafeAreaView style={styles.container} edges={['top']}>
+    <SafeAreaView style={styles.container} edges={['top']} testID="screen-recherche">
       <View style={styles.searchBar}>
         <TextInput
           style={styles.searchInput}

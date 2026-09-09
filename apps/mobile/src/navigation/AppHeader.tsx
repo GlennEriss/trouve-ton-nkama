@@ -38,17 +38,23 @@ export function AppHeader(_props: DrawerHeaderProps) {
   return (
     <SafeAreaView style={styles.safeArea} edges={['top']}>
       <View style={styles.row}>
-        <DrawerToggleButton tintColor={colors.foreground} />
+        {/* hamburger + logo groupés dans un seul conteneur flex : avec 3 enfants directs et
+            justifyContent:'space-between' sur `row`, l'espace se répartissait entre CHAQUE
+            paire (hamburger↔logo ET logo↔actions), poussant le logo au centre de la barre
+            au lieu de rester collé au hamburger comme sur le web. */}
+        <View style={styles.left}>
+          <DrawerToggleButton tintColor={colors.foreground} />
 
-        <View style={styles.brand}>
-          <Logo size={28} />
-          {/* Empilement délibéré sur 3 lignes (Navbar.tsx web, variante mobile, lignes
-              103-115) — pas un retour à la ligne accidentel : 3 <span> séparés, text-xs
-              font-black, dans une colonne étroite à côté du logo. */}
-          <View style={styles.wordmarkColumn}>
-            <Text style={styles.wordmark}>Trouve</Text>
-            <Text style={styles.wordmark}>Ton</Text>
-            <Text style={styles.wordmark}>Nkama</Text>
+          <View style={styles.brand}>
+            <Logo size={28} />
+            {/* Empilement délibéré sur 3 lignes (Navbar.tsx web, variante mobile, lignes
+                103-115) — pas un retour à la ligne accidentel : 3 <span> séparés, text-xs
+                font-black, dans une colonne étroite à côté du logo. */}
+            <View style={styles.wordmarkColumn}>
+              <Text style={styles.wordmark}>Trouve</Text>
+              <Text style={styles.wordmark}>Ton</Text>
+              <Text style={styles.wordmark}>Nkama</Text>
+            </View>
           </View>
         </View>
 
@@ -80,6 +86,7 @@ export function AppHeader(_props: DrawerHeaderProps) {
 const styles = StyleSheet.create({
   safeArea: { backgroundColor: '#fff', borderBottomWidth: 1, borderBottomColor: '#f0f0f0' },
   row: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 4, paddingVertical: 8 },
+  left: { flexDirection: 'row', alignItems: 'center' },
   brand: { flexDirection: 'row', alignItems: 'center', gap: 8, marginLeft: 4 },
   wordmarkColumn: { justifyContent: 'center' },
   wordmark: { fontSize: 11, fontWeight: '900', color: colors.primary, lineHeight: 12 },

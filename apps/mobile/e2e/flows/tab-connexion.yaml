@@ -1,0 +1,8 @@
+appId: com.tonnkama.app
+---
+- launchApp
+- tapOn:
+    id: "tab-connexion"
+- assertVisible:
+    id: "screen-connexion"
+- assertVisible: "Bienvenue sur Trouve Ton Nkama !"

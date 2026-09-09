@@ -6,9 +6,9 @@ import { colors } from '../theme/colors';
 // restent visibles dans la structure de navigation pour rester fidèle à la barre de la PWA
 // (voir [[feedback-mobile-reuse-pwa-design]]) — mais leur contenu réel est hors du scope V1
 // déjà verrouillé.
-export default function ComingSoonScreen({ title }: { title: string }) {
+export default function ComingSoonScreen({ title, testID }: { title: string; testID?: string }) {
   return (
-    <View style={styles.container}>
+    <View style={styles.container} testID={testID}>
       <Text style={styles.title}>{title}</Text>
       <Text style={styles.subtitle}>Bientôt disponible dans l&apos;application.</Text>
     </View>

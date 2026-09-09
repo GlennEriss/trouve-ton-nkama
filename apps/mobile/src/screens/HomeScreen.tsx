@@ -25,7 +25,7 @@ export default function HomeScreen() {
   });
 
   return (
-    <SafeAreaView style={styles.container} edges={['top']}>
+    <SafeAreaView style={styles.container} edges={['top']} testID="screen-accueil">
       <Text style={styles.header}>Annonces récentes</Text>
 
       {isLoading ? (

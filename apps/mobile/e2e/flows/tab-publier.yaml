@@ -1,0 +1,11 @@
+appId: com.tonnkama.app
+---
+# Comportement réel actuel (voir authGuard.ts) : "Publier" est protégé, un invité qui tape
+# sur le "+" est redirigé vers Connexion plutôt que d'ouvrir un formulaire (qui n'existe pas
+# encore côté mobile — V1.1). Ce flow valide donc la redirection, pas un écran de formulaire.
+- launchApp
+- tapOn:
+    id: "tab-publier"
+- assertVisible:
+    id: "screen-connexion"
+- assertVisible: "Bienvenue sur Trouve Ton Nkama !"

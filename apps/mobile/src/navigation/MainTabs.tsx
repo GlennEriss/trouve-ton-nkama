@@ -19,7 +19,7 @@ const Tab = createBottomTabNavigator<MainTabParamList>();
 // bouton central "Publier" surélevé, en cercle plein, plus grand que les autres icônes — voir
 // [[feedback-mobile-reuse-pwa-design]] et la note détaillée dans types.ts (MainTabParamList).
 function PublishTabButton(props: BottomTabBarButtonProps) {
-  const { children, onPress, style } = props;
+  const { children, onPress, style, testID } = props;
   return (
     // `style` (fourni par le Tab.Navigator) porte le flex:1 qui donne à cet onglet la même
     // largeur que les 4 autres — l'omettre (bug précédent) cassait la symétrie de la barre :
@@ -27,6 +27,7 @@ function PublishTabButton(props: BottomTabBarButtonProps) {
     // largeur, décalant tout le reste. Appliqué au conteneur extérieur ; le cercle surélevé
     // (taille fixe, `top` négatif) reste un enfant centré dedans.
     <TouchableOpacity
+      testID={testID}
       style={[style, styles.publishButtonWrapper]}
       onPress={(e) => {
         // "Publier" nécessite un compte même une fois construit (V1.1) — cohérent avec les
@@ -54,22 +55,36 @@ export function MainTabs() {
         tabBarInactiveTintColor: colors.mutedText,
       }}
     >
-      <Tab.Screen name="Accueil" component={HomeScreen} options={{ tabBarIcon: ({ color, size }) => <Home color={color} size={size} /> }} />
-      <Tab.Screen name="Recherche" component={SearchStack} options={{ tabBarIcon: ({ color, size }) => <Search color={color} size={size} /> }} />
+      <Tab.Screen
+        name="Accueil"
+        component={HomeScreen}
+        options={{ tabBarButtonTestID: 'tab-accueil', tabBarIcon: ({ color, size }) => <Home color={color} size={size} /> }}
+      />
+      <Tab.Screen
+        name="Recherche"
+        component={SearchStack}
+        options={{ tabBarButtonTestID: 'tab-recherche', tabBarIcon: ({ color, size }) => <Search color={color} size={size} /> }}
+      />
       <Tab.Screen
         name="Publier"
         component={PublishScreen}
         options={{
+          tabBarButtonTestID: 'tab-publier',
           tabBarIcon: () => <Plus color="#fff" size={26} />,
           tabBarButton: (props) => <PublishTabButton {...props} />,
           tabBarLabel: () => null,
         }}
       />
-      <Tab.Screen name="Reels" component={ReelsScreen} options={{ tabBarLabel: 'Réels', tabBarIcon: ({ color, size }) => <Video color={color} size={size} /> }} />
+      <Tab.Screen
+        name="Reels"
+        component={ReelsScreen}
+        options={{ tabBarButtonTestID: 'tab-reels', tabBarLabel: 'Réels', tabBarIcon: ({ color, size }) => <Video color={color} size={size} /> }}
+      />
       <Tab.Screen
         name="ProfilOuConnexion"
         component={ProfileStack}
         options={{
+          tabBarButtonTestID: 'tab-connexion',
           tabBarLabel: user ? 'Profil' : 'Connexion',
           tabBarIcon: ({ color, size }) => <UserCircle color={color} size={size} />,
         }}

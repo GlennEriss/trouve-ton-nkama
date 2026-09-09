@@ -49,7 +49,7 @@ export default function SignInScreen() {
   };
 
   return (
-    <View style={styles.container}>
+    <View style={styles.container} testID="screen-connexion">
       <Text style={styles.title}>Bienvenue sur Trouve Ton Nkama !</Text>
       <Text style={styles.subtitle}>Connectez-vous pour retrouver vos annonces, favoris et paramètres de compte.</Text>
 
