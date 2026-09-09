@@ -43,7 +43,7 @@ export function AppHeader(_props: DrawerHeaderProps) {
             paire (hamburger↔logo ET logo↔actions), poussant le logo au centre de la barre
             au lieu de rester collé au hamburger comme sur le web. */}
         <View style={styles.left}>
-          <DrawerToggleButton tintColor={colors.foreground} />
+          <DrawerToggleButton testID="header-hamburger" tintColor={colors.foreground} />
 
           <View style={styles.brand}>
             <Logo size={28} />
@@ -59,7 +59,7 @@ export function AppHeader(_props: DrawerHeaderProps) {
         </View>
 
         <View style={styles.actions}>
-          <TouchableOpacity onPress={openSearch} style={styles.iconButton} accessibilityLabel="Rechercher">
+          <TouchableOpacity testID="header-search" onPress={openSearch} style={styles.iconButton} accessibilityLabel="Rechercher">
             <Search color={colors.foreground} size={22} />
           </TouchableOpacity>
 
@@ -73,7 +73,7 @@ export function AppHeader(_props: DrawerHeaderProps) {
               </TouchableOpacity>
             </>
           ) : (
-            <TouchableOpacity onPress={openSignIn} style={styles.signInButton}>
+            <TouchableOpacity testID="header-signin" onPress={openSignIn} style={styles.signInButton}>
               <Text style={styles.signInText}>Se connecter</Text>
             </TouchableOpacity>
           )}

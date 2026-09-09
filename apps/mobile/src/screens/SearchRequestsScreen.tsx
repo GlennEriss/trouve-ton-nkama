@@ -168,7 +168,7 @@ export default function SearchRequestsScreen() {
   });
 
   return (
-    <SafeAreaView style={styles.container} edges={['top']}>
+    <SafeAreaView style={styles.container} edges={['top']} testID="screen-search-requests">
       <View style={styles.header}>
         <Text style={styles.headerTitle}>Demandes de recherche</Text>
         <TouchableOpacity style={styles.newButton} onPress={() => requireAuthOrRedirect() && setIsModalVisible(true)}>

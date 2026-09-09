@@ -203,4 +203,15 @@ SDK Node officiel), mais :
 cache partagée, étapes) :
 [setup/MEILISEARCH_SETUP.md](../setup/MEILISEARCH_SETUP.md).
 
-*Mis à jour le 2026-09-04.*
+## Garde-fou de quota (0 FCFA de dépassement) — analyse + architecture
+
+Demande du 2026-09-09, sur facture à l'appui : plan **Grow**, période de facturation **du 9 au
+8**, dernière facture **13 000 requêtes au-delà des 10 000 incluses = 6,50 $ ≈ 5 000 FCFA**.
+Objectif : **0 FCFA sur chaque période**, via un compteur Firestore aligné sur le cycle du 9,
+qui bascule automatiquement tout le trafic restant vers Meilisearch quand on approche des
+10 000, puis rebascule sur Algolia au 9 suivant.
+
+Analyse complète, architecture, modes de défaillance, coûts, plan par phases et décisions à
+trancher : [setup/ALGOLIA-QUOTA-FAILOVER.md](../setup/ALGOLIA-QUOTA-FAILOVER.md).
+
+*Mis à jour le 2026-09-09.*

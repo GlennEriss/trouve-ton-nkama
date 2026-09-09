@@ -5,56 +5,92 @@ import type { DrawerContentComponentProps } from '@react-navigation/drawer';
 import { X, ClipboardList, FileText, Shield, Trash2 } from 'lucide-react-native';
 import { colors } from '../theme/colors';
 import { Logo } from '../components/Logo';
+import type { DrawerParamList } from './types';
 
-// Reprend fidèlement MobileSidebar.tsx (web) — voir [[feedback-mobile-reuse-pwa-design]] :
-// "Demandes de recherche" est en `font-semibold text-secondary` (juste une couleur de texte
-// différente), PAS un fond plein en forme de pilule — un fond plein se lit comme un indicateur
-// d'état "actif/sélectionné", ce que web ne fait JAMAIS ici (aucun highlight ne dépend de la
-// route courante). Favoris n'existe pas dans SIDEBAR_LINKS côté web (accessible depuis la
-// barre du bas une fois connecté à la place) — retiré, ne pas réinventer. Les items purement
-// SEO/blog du web (Blog, Guide Immobilier, Maisons à louer/vendre, Publicité, Conditions
-// annonceur) restent hors du scope V1 mobile. "Suppression des données" (conformité
-// App Store/Play Store) n'a pas d'équivalent dans SIDEBAR_LINKS mais reste ici volontairement.
-export function AppDrawerContent({ navigation }: DrawerContentComponentProps) {
+// Écart volontaire et explicite par rapport à MobileSidebar.tsx (web), demandé par l'utilisateur :
+// contrairement au web (aucun lien n'y dépend de la route courante — voir l'historique dans
+// [[feedback-mobile-reuse-pwa-design]]), chaque lien ici passe en vert uniquement lorsqu'on est
+// sur sa propre page, gris sinon — y compris "Demandes de recherche", qui n'est plus vert par
+// défaut. Favoris n'existe pas dans SIDEBAR_LINKS côté web (accessible depuis la barre du bas
+// une fois connecté à la place) — retiré, ne pas réinventer. Les items purement SEO/blog du web
+// (Blog, Guide Immobilier, Maisons à louer/vendre, Publicité, Conditions annonceur) restent hors
+// du scope V1 mobile. "Suppression des données" (conformité App Store/Play Store) n'a pas
+// d'équivalent dans SIDEBAR_LINKS mais reste ici volontairement.
+type LegalPage = 'terms' | 'privacy' | 'dataDeletion';
+
+function getActiveRoute(state: DrawerContentComponentProps['state']): { name: keyof DrawerParamList; page?: LegalPage } {
+  const route = state.routes[state.index];
+  if (route.name === 'Legal') {
+    const params = route.params as DrawerParamList['Legal'] | undefined;
+    return { name: 'Legal', page: params?.page };
+  }
+  return { name: route.name as keyof DrawerParamList };
+}
+
+export function AppDrawerContent({ navigation, state }: DrawerContentComponentProps) {
+  const active = getActiveRoute(state);
+  const isSearchRequestsActive = active.name === 'SearchRequests';
+  const isLegalActive = (page: LegalPage) => active.name === 'Legal' && active.page === page;
+
   const close = () => navigation.closeDrawer();
   const goSearchRequests = () => {
     navigation.navigate('SearchRequests');
     close();
   };
-  const goLegal = (page: 'terms' | 'privacy' | 'dataDeletion') => {
+  const goLegal = (page: LegalPage) => {
     navigation.navigate('Legal', { page });
     close();
   };
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView style={styles.container} testID="drawer-content">
       <View style={styles.header}>
         <View style={styles.brand}>
           <Logo size={30} />
           <Text style={styles.wordmark}>Trouve Ton Nkama</Text>
         </View>
-        <TouchableOpacity onPress={close} accessibilityLabel="Fermer le menu">
+        <TouchableOpacity testID="drawer-close" onPress={close} accessibilityLabel="Fermer le menu">
           <X color={colors.foreground} size={22} />
         </TouchableOpacity>
       </View>
 
       <View style={styles.nav}>
-        <TouchableOpacity style={styles.row} onPress={goSearchRequests}>
-          <ClipboardList color={colors.secondary} size={18} />
-          <Text style={styles.rowTextHighlight}>Demandes de recherche</Text>
+        <TouchableOpacity
+          testID="drawer-link-search-requests"
+          accessibilityState={{ selected: isSearchRequestsActive }}
+          style={styles.row}
+          onPress={goSearchRequests}
+        >
+          <ClipboardList color={isSearchRequestsActive ? colors.secondary : colors.mutedText} size={18} />
+          <Text style={isSearchRequestsActive ? styles.rowTextActive : styles.rowText}>Demandes de recherche</Text>
         </TouchableOpacity>
 
-        <TouchableOpacity style={styles.row} onPress={() => goLegal('terms')}>
-          <FileText color={colors.mutedText} size={18} />
-          <Text style={styles.rowText}>Conditions d&apos;utilisation</Text>
+        <TouchableOpacity
+          testID="drawer-link-terms"
+          accessibilityState={{ selected: isLegalActive('terms') }}
+          style={styles.row}
+          onPress={() => goLegal('terms')}
+        >
+          <FileText color={isLegalActive('terms') ? colors.secondary : colors.mutedText} size={18} />
+          <Text style={isLegalActive('terms') ? styles.rowTextActive : styles.rowText}>Conditions d&apos;utilisation</Text>
         </TouchableOpacity>
-        <TouchableOpacity style={styles.row} onPress={() => goLegal('privacy')}>
-          <Shield color={colors.mutedText} size={18} />
-          <Text style={styles.rowText}>Politique de confidentialité</Text>
+        <TouchableOpacity
+          testID="drawer-link-privacy"
+          accessibilityState={{ selected: isLegalActive('privacy') }}
+          style={styles.row}
+          onPress={() => goLegal('privacy')}
+        >
+          <Shield color={isLegalActive('privacy') ? colors.secondary : colors.mutedText} size={18} />
+          <Text style={isLegalActive('privacy') ? styles.rowTextActive : styles.rowText}>Politique de confidentialité</Text>
         </TouchableOpacity>
-        <TouchableOpacity style={styles.row} onPress={() => goLegal('dataDeletion')}>
-          <Trash2 color={colors.mutedText} size={18} />
-          <Text style={styles.rowText}>Suppression des données</Text>
+        <TouchableOpacity
+          testID="drawer-link-data-deletion"
+          accessibilityState={{ selected: isLegalActive('dataDeletion') }}
+          style={styles.row}
+          onPress={() => goLegal('dataDeletion')}
+        >
+          <Trash2 color={isLegalActive('dataDeletion') ? colors.secondary : colors.mutedText} size={18} />
+          <Text style={isLegalActive('dataDeletion') ? styles.rowTextActive : styles.rowText}>Suppression des données</Text>
         </TouchableOpacity>
       </View>
     </SafeAreaView>
@@ -69,5 +105,5 @@ const styles = StyleSheet.create({
   nav: { paddingVertical: 8 },
   row: { flexDirection: 'row', alignItems: 'center', gap: 12, paddingHorizontal: 20, paddingVertical: 12 },
   rowText: { fontSize: 14, fontWeight: '500', color: colors.mutedText },
-  rowTextHighlight: { fontSize: 14, fontWeight: '600', color: colors.secondary },
+  rowTextActive: { fontSize: 14, fontWeight: '600', color: colors.secondary },
 });

@@ -18,18 +18,24 @@ type Props = NativeStackScreenProps<ProfileStackParamList, 'Legal'>;
 
 export default function LegalWebViewScreen({ route }: Props) {
   return (
-    <WebView
-      source={{ uri: LEGAL_URLS[route.params.page] }}
-      startInLoadingState
-      renderLoading={() => (
-        <View style={styles.loading}>
-          <ActivityIndicator size="large" color="#146B67" />
-        </View>
-      )}
-    />
+    // testID sur le conteneur (pas la WebView elle-même) : son contenu est une page distante,
+    // hors de portée de l'arbre d'accessibilité RN — ce testID identifie seulement "on est sur
+    // la bonne page légale", indépendamment du chargement réseau du contenu web.
+    <View style={styles.container} testID={`screen-legal-${route.params.page}`}>
+      <WebView
+        source={{ uri: LEGAL_URLS[route.params.page] }}
+        startInLoadingState
+        renderLoading={() => (
+          <View style={styles.loading}>
+            <ActivityIndicator size="large" color="#146B67" />
+          </View>
+        )}
+      />
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
+  container: { flex: 1 },
   loading: { flex: 1, alignItems: 'center', justifyContent: 'center' },
 });
