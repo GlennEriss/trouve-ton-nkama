@@ -109,9 +109,6 @@ export const ImageUploader = () => {
             if (feedback.tooManyFilesCount > 0) {
                 messages.push(`Maximum ${MAX_IMAGES_UPLOAD} images par ajout.`);
             }
-            if (feedback.compressionErrorCount > 0) {
-                messages.push(`${feedback.compressionErrorCount} image(s) n'ont pas pu être compressée(s).`);
-            }
 
             if (messages.length > 0) {
                 toast({

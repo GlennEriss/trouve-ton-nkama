@@ -28,7 +28,7 @@ export function PropertyCard({ property, onPress, width = 200 }: { property: Pro
   };
 
   return (
-    <TouchableOpacity style={[styles.card, { width }]} onPress={onPress} activeOpacity={0.85}>
+    <TouchableOpacity testID="property-card" style={[styles.card, { width }]} onPress={onPress} activeOpacity={0.85}>
       <View style={styles.imageWrapper}>
         {thumbnailUrl ? (
           <Image source={{ uri: thumbnailUrl }} style={styles.image} />

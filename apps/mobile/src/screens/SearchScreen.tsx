@@ -3,13 +3,14 @@ import { ActivityIndicator, Dimensions, FlatList, Modal, ScrollView, StyleSheet,
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation, useRoute, type RouteProp } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import { useInfiniteQuery, useQuery } from '@tanstack/react-query';
-import { Search, SlidersHorizontal } from 'lucide-react-native';
+import { keepPreviousData, useInfiniteQuery, useQuery } from '@tanstack/react-query';
+import { Search, SlidersHorizontal, X } from 'lucide-react-native';
 import { searchProperties, type SearchFilters } from '../api/algolia';
 import { getActiveCategories, getPublishableLeaves, type PublishableCategoryLeaf } from '../api/categories';
 import { toPropertyListItem } from '../lib/propertyMapping';
 import { colors } from '../theme/colors';
 import { PropertyCard } from '../components/PropertyCard';
+import { ChipExpander, type ChipOption } from '../components/ChipExpander';
 import type { SearchStackParamList } from '../navigation/types';
 
 const GRID_GAP = 12;
@@ -126,9 +127,20 @@ function FiltersModal({
 
   return (
     <Modal visible={visible} animationType="slide" onRequestClose={onClose}>
-      <SafeAreaView style={{ flex: 1 }}>
+      <SafeAreaView style={{ flex: 1 }} testID="filters-modal">
         <ScrollView contentContainerStyle={styles.modalContent}>
-          <Text style={styles.modalTitle}>Filtres</Text>
+          <View style={styles.modalHeader}>
+            <Text style={styles.modalTitle}>Filtres</Text>
+            <TouchableOpacity
+              testID="filters-close"
+              onPress={onClose}
+              accessibilityLabel="Fermer les filtres"
+              hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
+              style={styles.closeButton}
+            >
+              <X size={22} color={colors.foreground} />
+            </TouchableOpacity>
+          </View>
 
           {isImmobilierScope && (
             <>
@@ -188,10 +200,10 @@ function FiltersModal({
             </View>
           ))}
 
-          <TouchableOpacity style={styles.applyButton} onPress={handleApply}>
+          <TouchableOpacity testID="filters-apply" style={styles.applyButton} onPress={handleApply}>
             <Text style={styles.applyButtonText}>Appliquer</Text>
           </TouchableOpacity>
-          <TouchableOpacity style={styles.resetButton} onPress={handleReset}>
+          <TouchableOpacity testID="filters-reset" style={styles.resetButton} onPress={handleReset}>
             <Text style={styles.resetButtonText}>Réinitialiser</Text>
           </TouchableOpacity>
         </ScrollView>
@@ -239,22 +251,34 @@ export default function SearchScreen() {
   const selectLeaf = (id: string) => {
     setFilters((prev) => ({ ...prev, categoryId: id || undefined, attributes: undefined }));
   };
+  // Sélection simple (remplace, ne cumule pas) — comme selectLeaf, ne touche qu'à son propre
+  // champ, laisse ville/budget/statut intacts.
+  const selectPropertyType = (key: string) => {
+    setFilters((prev) => ({ ...prev, typeProperty: key ? [key] : undefined }));
+  };
 
   const { data, isLoading, isError, refetch, isFetching, fetchNextPage, hasNextPage, isFetchingNextPage } = useInfiniteQuery({
     queryKey: ['algolia-search', submittedQuery, filters],
     queryFn: ({ pageParam }) => searchProperties(submittedQuery, pageParam, filters),
     initialPageParam: 0,
     getNextPageParam: (lastPage, allPages) => (allPages.length < lastPage.nbPages ? allPages.length : undefined),
+    // Revisiter un filtre déjà consulté (Immobilier → Mode → Immobilier) sert le résultat en
+    // cache instantanément au lieu de refetch.
+    staleTime: 60 * 1000,
+    // Garde la liste précédente visible pendant le refetch d'un nouveau filtre au lieu de
+    // blanchir tout l'écran avec un spinner — la latence perçue chute nettement.
+    placeholderData: keepPreviousData,
   });
 
   const hits = data?.pages.flatMap((p) => p.hits) ?? [];
   const activeFiltersCount = countActiveFilters(filters);
 
   return (
-    <SafeAreaView style={styles.container} edges={['top']} testID="screen-recherche">
+    <SafeAreaView style={styles.container} edges={[]} testID="screen-recherche">
       <View style={styles.searchBar}>
         <Search size={18} color={colors.mutedText} />
         <TextInput
+          testID="search-input"
           style={styles.searchInput}
           placeholder="Rechercher une annonce (ville, type...)"
           placeholderTextColor={colors.mutedText}
@@ -263,7 +287,7 @@ export default function SearchScreen() {
           onSubmitEditing={() => setSubmittedQuery(searchText.trim())}
           returnKeyType="search"
         />
-        <TouchableOpacity onPress={() => setIsFiltersVisible(true)} accessibilityLabel="Filtres">
+        <TouchableOpacity testID="search-filters-button" onPress={() => setIsFiltersVisible(true)} accessibilityLabel="Filtres">
           <SlidersHorizontal size={18} color={colors.primary} />
           {activeFiltersCount > 0 && (
             <View style={styles.filterBadge}>
@@ -275,6 +299,7 @@ export default function SearchScreen() {
 
       <View style={styles.categoryPillsRow}>
         <TouchableOpacity
+          testID="category-pill-toutes"
           style={[styles.pill, !filters.category && styles.pillActive]}
           onPress={() => selectCategory('')}
         >
@@ -283,6 +308,7 @@ export default function SearchScreen() {
         {categories.map((category) => (
           <TouchableOpacity
             key={category.id}
+            testID={`category-pill-${category.slug}`}
             style={[styles.pill, filters.category === category.name && styles.pillActive]}
             onPress={() => selectCategory(category.name)}
           >
@@ -293,27 +319,32 @@ export default function SearchScreen() {
         ))}
       </View>
 
+      {/* Sous-catégories repliables (voir ChipExpander) — Mode a ses vraies feuilles
+          listing_categories ; Immobilier n'en a pas (typeProperty est un champ plat), on
+          réutilise PROPERTY_TYPES. Les deux partagent `filters.typeProperty` / `filters.categoryId`. */}
       {relevantLeaves.length >= 2 && (
-        <View style={styles.categoryPillsRow}>
-          <TouchableOpacity
-            style={[styles.pill, !filters.categoryId && styles.pillActive]}
-            onPress={() => selectLeaf('')}
-          >
-            <Text style={[styles.pillText, !filters.categoryId && styles.pillTextActive]}>Tout {filters.category}</Text>
-          </TouchableOpacity>
-          {relevantLeaves.map((leaf) => (
-            <TouchableOpacity
-              key={leaf.id}
-              style={[styles.pill, filters.categoryId === leaf.id && styles.pillActive]}
-              onPress={() => selectLeaf(leaf.id)}
-            >
-              <Text style={[styles.pillText, filters.categoryId === leaf.id && styles.pillTextActive]}>{leaf.name}</Text>
-            </TouchableOpacity>
-          ))}
-        </View>
+        <ChipExpander
+          label="Sous-catégorie"
+          allLabel={`Tout ${filters.category}`}
+          options={relevantLeaves.map((l): ChipOption => ({ id: l.slug, label: l.name }))}
+          selectedId={activeLeaf?.slug}
+          onSelect={(slug) => selectLeaf(relevantLeaves.find((l) => l.slug === slug)?.id ?? '')}
+          pillTestID="leaf-pill"
+        />
       )}
 
-      {isLoading || isFetching ? (
+      {filters.category === 'Immobilier' && (
+        <ChipExpander
+          label="Type de bien"
+          allLabel="Tout Immobilier"
+          options={PROPERTY_TYPES.map((t): ChipOption => ({ id: t.key, label: t.label }))}
+          selectedId={filters.typeProperty?.[0]}
+          onSelect={selectPropertyType}
+          pillTestID="type-pill"
+        />
+      )}
+
+      {isLoading ? (
         <View style={styles.centered}>
           <ActivityIndicator size="large" color="#146B67" />
         </View>
@@ -325,7 +356,13 @@ export default function SearchScreen() {
           </TouchableOpacity>
         </View>
       ) : (
+        <View style={{ flex: 1 }}>
+          {/* Barre fine (statique, pas d'ActivityIndicator qui animerait en continu) visible
+              pendant un refetch : la liste reste affichée dessous grâce à placeholderData, plus
+              de spinner plein écran. */}
+          {isFetching && !isFetchingNextPage && <View testID="search-refetch-bar" style={styles.refetchBar} />}
         <FlatList
+          testID="search-results-list"
           data={hits}
           keyExtractor={(item) => item.objectID}
           numColumns={2}
@@ -349,6 +386,7 @@ export default function SearchScreen() {
           }
           contentContainerStyle={styles.gridContent}
         />
+        </View>
       )}
 
       <FiltersModal
@@ -372,13 +410,15 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: 10,
     marginHorizontal: 16,
-    marginVertical: 12,
+    marginTop: 6,
+    marginBottom: 10,
     borderWidth: 1,
     borderColor: colors.border,
     borderRadius: 999,
     paddingHorizontal: 16,
     paddingVertical: 12,
   },
+  refetchBar: { height: 3, backgroundColor: colors.secondary },
   searchInput: { flex: 1, fontSize: 15, color: colors.foreground, padding: 0 },
   filterBadge: {
     position: 'absolute',
@@ -405,7 +445,9 @@ const styles = StyleSheet.create({
   emptyText: { color: '#666', fontSize: 14 },
   retryText: { color: '#146B67', fontWeight: '600' },
   modalContent: { padding: 20, gap: 4 },
-  modalTitle: { fontSize: 20, fontWeight: '800', marginBottom: 8 },
+  modalHeader: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 },
+  modalTitle: { fontSize: 20, fontWeight: '800' },
+  closeButton: { padding: 8 },
   label: { fontSize: 13, fontWeight: '600', marginTop: 16, marginBottom: 8 },
   input: { borderWidth: 1, borderColor: '#ddd', borderRadius: 12, padding: 12, fontSize: 15 },
   pillsRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
