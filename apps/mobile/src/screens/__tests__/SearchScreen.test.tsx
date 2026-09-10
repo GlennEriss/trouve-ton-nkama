@@ -62,19 +62,19 @@ describe('SearchScreen', () => {
     mockAlgoliaResponse([]);
     await renderScreen();
 
-    await fireEvent.press(screen.getByText('Filtres'));
+    await fireEvent.press(screen.getByLabelText('Filtres'));
     await fireEvent.press(await screen.findByText('Villa'));
     await fireEvent.press(screen.getByText('Location'));
     await fireEvent.press(screen.getByText('Appliquer'));
 
-    expect(await screen.findByText('Filtres (2)')).toBeTruthy();
+    expect(await screen.findByText('2')).toBeTruthy();
   });
 
   it('envoie les filtres appliqués dans la requête Algolia (type + budget)', async () => {
     mockAlgoliaResponse([]);
     await renderScreen();
 
-    await fireEvent.press(screen.getByText('Filtres'));
+    await fireEvent.press(screen.getByLabelText('Filtres'));
     await fireEvent.press(await screen.findByText('Villa'));
     await fireEvent.changeText(screen.getByPlaceholderText('Ex: 300000'), '500000');
     await fireEvent.press(screen.getByText('Appliquer'));
@@ -91,16 +91,15 @@ describe('SearchScreen', () => {
     mockAlgoliaResponse([]);
     await renderScreen();
 
-    await fireEvent.press(screen.getByText('Filtres'));
+    await fireEvent.press(screen.getByLabelText('Filtres'));
     await fireEvent.press(await screen.findByText('Villa'));
     await fireEvent.press(screen.getByText('Appliquer'));
-    expect(await screen.findByText('Filtres (1)')).toBeTruthy();
+    expect(await screen.findByText('1')).toBeTruthy();
 
-    await fireEvent.press(screen.getByText('Filtres (1)'));
+    await fireEvent.press(screen.getByLabelText('Filtres'));
     await fireEvent.press(screen.getByText('Réinitialiser'));
     await fireEvent.press(screen.getByText('Appliquer'));
 
-    expect(await screen.findByText('Filtres')).toBeTruthy();
-    expect(screen.queryByText(/Filtres \(/)).toBeNull();
+    expect(screen.queryByText('1')).toBeNull();
   });
 });
