@@ -35,6 +35,22 @@ function adb(cmd) {
   return execFileSync(ADB, ['-s', DEVICE, ...cmd], { maxBuffer: 1024 * 1024 * 20 }).toString();
 }
 
+// Comme `adb` mais capture aussi stderr (fusionné) et n'échoue jamais sur un code de sortie
+// non nul — `uiautomator dump` écrit "null root node returned by UiTestAutomationBridge" et
+// "could not get idle state" sur stderr tout en sortant parfois avec 0, donc `adb()` seul ne
+// verrait jamais ces messages pour pouvoir réagir (pause de récupération).
+function adbCombined(cmd) {
+  try {
+    const out = execFileSync(ADB, ['-s', DEVICE, ...cmd], {
+      maxBuffer: 1024 * 1024 * 20,
+      stdio: ['ignore', 'pipe', 'pipe'],
+    });
+    return out.toString();
+  } catch (err) {
+    return `${err.stdout ?? ''}${err.stderr ?? ''}`;
+  }
+}
+
 function sleep(ms) {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
@@ -44,15 +60,22 @@ function sleep(ms) {
 // d'accessibilité n'est pas encore prêt) et n'écrit pas de nouveau fichier ; sans vérification,
 // `cat` renverrait alors le dump précédent (obsolète) sans jamais lever d'erreur. On revalide
 // et réessaie ici plutôt que de laisser la boucle de polling appelante tourner dans le vide.
-async function dumpTree(retries = 8, delayMs = 400) {
+async function dumpTree(retries = 12, delayMs = 400) {
   for (let attempt = 1; attempt <= retries; attempt++) {
     try {
-      const dumpOutput = adb(['shell', 'uiautomator', 'dump', '/sdcard/window_dump.xml']);
+      const dumpOutput = adbCombined(['shell', 'uiautomator', 'dump', '/sdcard/window_dump.xml']);
       if (process.env.E2E_DEBUG) console.error(`[dump attempt ${attempt}] output: ${JSON.stringify(dumpOutput.slice(0, 120))}`);
       if (dumpOutput.includes('dumped to')) {
         const xml = adb(['shell', 'cat', '/sdcard/window_dump.xml']);
         if (xml.includes('<?xml')) return xml;
         if (process.env.E2E_DEBUG) console.error(`[dump attempt ${attempt}] cat did not return valid xml, length=${xml.length}`);
+      } else if (dumpOutput.includes('null root node') || dumpOutput.includes('could not get idle state')) {
+        // Le service UiAutomationBridge est momentanément coincé (appels rapprochés + appareil
+        // occupé). Il se débloque tout seul mais a besoin d'une pause plus longue qu'un simple
+        // délai de polling — sinon toutes les tentatives s'épuisent sur le même état coincé.
+        if (process.env.E2E_DEBUG) console.error(`[dump attempt ${attempt}] service coincé, pause longue`);
+        await sleep(2500);
+        continue;
       }
     } catch (err) {
       if (process.env.E2E_DEBUG) console.error(`[dump attempt ${attempt}] threw: ${err.message}`);
@@ -79,6 +102,18 @@ function isNodeSelected(xml, testID) {
   const re = new RegExp(`resource-id="${testID}"[^>]*selected="(true|false)"`);
   const match = xml.match(re);
   return match ? match[1] === 'true' : null;
+}
+
+// Nombre de nœuds portant ce resource-id — utilisé pour vérifier "au moins N cartes d'annonce
+// affichées" sans dépendre des ids précis (données réelles, imprévisibles).
+function countTestID(xml, testID) {
+  return (xml.match(new RegExp(`resource-id="${testID}"`, 'g')) ?? []).length;
+}
+
+// Saisit du texte dans le champ focus courant (le champ de recherche doit être focus, donc
+// tapé juste avant). Mot simple sans espace attendu — `input text` gère mal les espaces.
+function typeText(text) {
+  adb(['shell', 'input', 'text', text]);
 }
 
 // La bulle de notification LogBox ("!, Open debugger to view warnings.", en bas de l'écran en
@@ -184,6 +219,8 @@ module.exports = {
   dumpTree,
   findNodeCenter,
   isNodeSelected,
+  countTestID,
+  typeText,
   dismissLogBoxNoticeIfPresent,
   waitForTestID,
   waitForTestIDGone,

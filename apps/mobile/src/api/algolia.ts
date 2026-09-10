@@ -18,6 +18,15 @@ export type SearchFilters = {
   province?: string;
   budgetMinXaf?: number;
   budgetMaxXaf?: number;
+  // Multi-catégories (voir search-filter-query.ts, web) : `category` porte le NOM exact de la
+  // catégorie racine tel qu'indexé dans categoryPath.lvl0 (ex. "Immobilier", "Mode"), toujours
+  // lu depuis GET /api/categories/active — jamais saisi librement. `categoryId` filtre sur une
+  // feuille précise (ex. "chaussures", id de listing_categories). `attributes` = filtres
+  // dynamiques par attribut de la feuille active (`attributes.<clé>`, OR entre valeurs d'une
+  // même clé) — seuls les champs de type "enum" sont supportés côté mobile pour l'instant.
+  category?: string;
+  categoryId?: string;
+  attributes?: Record<string, string[]>;
 };
 
 // Même syntaxe de filtre Algolia que buildPublicSearchFilters côté web (src/lib/search/
@@ -28,27 +37,49 @@ function escapeAlgoliaFilterValue(value: string): string {
   return value.replace(/\\/g, '\\\\').replace(/"/g, '\\"');
 }
 
+function buildFacetOrClause(attribute: string, values: string[]): string {
+  const clauses = values.map((v) => `${attribute}:"${escapeAlgoliaFilterValue(v)}"`);
+  return clauses.length > 1 ? `(${clauses.join(' OR ')})` : clauses[0];
+}
+
 export function buildFilters(filters: SearchFilters): string {
   const clauses = [ALGOLIA_BASE_FILTER];
+  // Champs immobilier uniquement (voir IMMOBILIER_ONLY_PARAMS, search-filter-query.ts web) :
+  // ignorés dès que category=Mode, même s'ils traînent encore dans le state (ex. changement de
+  // catégorie qui aurait mal réinitialisé) — filet de sécurité côté requête, pas seulement côté
+  // UI (bug réel déjà rencontré côté web : un `province` laissé d'une recherche immobilier
+  // combiné à category=Mode donnait 0 résultat sans explication, aucune annonce Mode n'ayant
+  // jamais ce champ).
+  const isImmobilierScope = !filters.category || filters.category === 'Immobilier';
 
-  if (filters.typeProperty?.length) {
-    const typeClauses = filters.typeProperty.map((t) => `typeProperty:"${escapeAlgoliaFilterValue(t)}"`);
-    clauses.push(typeClauses.length > 1 ? `(${typeClauses.join(' OR ')})` : typeClauses[0]);
+  if (isImmobilierScope && filters.typeProperty?.length) {
+    clauses.push(buildFacetOrClause('typeProperty', filters.typeProperty));
   }
-  if (filters.status) {
+  if (isImmobilierScope && filters.status) {
     clauses.push(`status:"${filters.status}"`);
+  }
+  if (isImmobilierScope && filters.province?.trim()) {
+    clauses.push(`province:"${escapeAlgoliaFilterValue(filters.province.trim())}"`);
   }
   if (filters.city?.trim()) {
     clauses.push(`city:"${escapeAlgoliaFilterValue(filters.city.trim())}"`);
-  }
-  if (filters.province?.trim()) {
-    clauses.push(`province:"${escapeAlgoliaFilterValue(filters.province.trim())}"`);
   }
   if (filters.budgetMinXaf) {
     clauses.push(`price >= ${filters.budgetMinXaf}`);
   }
   if (filters.budgetMaxXaf) {
     clauses.push(`price <= ${filters.budgetMaxXaf}`);
+  }
+  if (filters.category) {
+    clauses.push(`categoryPath.lvl0:"${escapeAlgoliaFilterValue(filters.category)}"`);
+  }
+  if (filters.categoryId) {
+    clauses.push(`categoryId:"${escapeAlgoliaFilterValue(filters.categoryId)}"`);
+  }
+  if (filters.attributes) {
+    for (const [key, values] of Object.entries(filters.attributes)) {
+      if (values?.length) clauses.push(buildFacetOrClause(`attributes.${key}`, values));
+    }
   }
 
   return clauses.join(' AND ');
