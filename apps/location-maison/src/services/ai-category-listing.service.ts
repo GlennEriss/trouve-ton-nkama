@@ -1,4 +1,5 @@
 import type { PublishableAttributeField, PublishableCategoryLeaf } from '@/app/api/categories/publishable-leaves/route';
+import { normalizeCityNames } from '@/lib/listing-zones';
 
 /**
  * Prompt IA générique multi-catégorie (Lot 7) — pendant du prompt immobilier
@@ -43,12 +44,18 @@ UNIQUEMENT à la catégorie choisie (ne mélange jamais les attributs de deux ca
 
 RÈGLES :
 - Réponds TOUJOURS en français.
-- N'invente jamais un prix, une ville ou un attribut absent de la description : mets null.
+- N'invente jamais un prix, une ville ou un attribut absent de la description : mets null
+  (ou un tableau vide pour les villes).
 - Le titre doit être court (60 caractères max), vendeur, sans emoji.
 - La description doit rester fidèle à ce que le vendeur a écrit, juste mieux formulée
   (corrige l'orthographe, structure en phrases claires), sans ajouter d'information inventée.
 - Si la description ne correspond clairement à AUCUNE catégorie de la liste, mets
   "categoryId": null plutôt que de deviner au hasard.
+- Un vendeur peut proposer son article dans PLUSIEURS villes (ex. "disponible à Libreville
+  et Franceville") : liste TOUTES les villes explicitement mentionnées dans "cities", sans
+  doublon. Si une seule ville est mentionnée, "cities" contient un seul élément. Si aucune
+  ville concrète n'est mentionnée (y compris une formulation vague comme "un peu partout"
+  ou "dans tout le pays"), "cities": [] — n'invente jamais une liste de villes.
 
 Réponds UNIQUEMENT avec un objet JSON (pas de texte autour, pas de \`\`\`), exactement sous
 cette forme :
@@ -57,7 +64,7 @@ cette forme :
   "title": "string",
   "description": "string",
   "price": number ou null,
-  "city": "string ou null",
+  "cities": ["string", ...] (villes explicitement mentionnées, [] si aucune),
   "attributes": { ... selon la catégorie choisie ... }
 }
 `.trim();
@@ -68,7 +75,7 @@ export type CategoryListingDraft = {
   title: string;
   description: string;
   price: number | null;
-  city: string | null;
+  cities: string[];
   attributes: Record<string, string | number | boolean>;
 };
 
@@ -115,6 +122,7 @@ export function parseCategoryListingDraftResponse(
     title?: unknown;
     description?: unknown;
     price?: unknown;
+    cities?: unknown;
     city?: unknown;
     attributes?: unknown;
   };
@@ -159,7 +167,23 @@ export function parseCategoryListingDraftResponse(
       const numericPrice = coerceToNumber(parsed.price);
       return numericPrice !== null && numericPrice > 0 ? numericPrice : null;
     })(),
-    city: typeof parsed.city === 'string' && parsed.city.trim().length > 0 ? parsed.city.trim() : null,
+    cities: extractCities(parsed.cities, parsed.city),
     attributes,
   };
+}
+
+/**
+ * `cities` est le format attendu (tableau). Tolère en plus l'ancien format singulier
+ * `"city": "X"` — Gemini peut continuer à y répondre malgré le prompt mis à jour (défense
+ * en profondeur, même esprit que `coerceToNumber` ci-dessus pour les prix) — et un `cities`
+ * mal formé (pas un tableau) en repliant sur `city` si présent, sinon `[]`.
+ */
+function extractCities(citiesValue: unknown, cityValue: unknown): string[] {
+  if (Array.isArray(citiesValue)) {
+    return normalizeCityNames(citiesValue.filter((value): value is string => typeof value === 'string'));
+  }
+  if (typeof cityValue === 'string' && cityValue.trim().length > 0) {
+    return normalizeCityNames([cityValue]);
+  }
+  return [];
 }

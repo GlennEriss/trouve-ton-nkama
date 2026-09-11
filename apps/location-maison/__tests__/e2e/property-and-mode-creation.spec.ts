@@ -10,6 +10,7 @@ import {
   findPropertiesByOwner,
   getProperty,
   seedAnnouncerUser,
+  seedCategoryListing,
 } from './helpers/firebase-admin'
 
 /**
@@ -45,13 +46,22 @@ import {
  *
  * RUN_ID unique par worker (crypto.randomUUID()) : même raison que les autres specs de ce
  * dossier — fullyParallel peut répartir les tests sur des workers séparés.
+ *
+ * Zones multiples (voir docs/marketplace-multi-categories/08-zones-multiples-mode.md) :
+ * MODE_DESCRIPTION mentionne explicitement DEUX villes ("Libreville et Franceville") pour
+ * vérifier que l'IA les détecte toutes les deux, pas seulement la première — c'est
+ * exactement le problème remonté par de vrais vendeurs (un vendeur qui livre dans plusieurs
+ * villes). Un test dédié édite ensuite manuellement les zones sur la page de preview
+ * (/category-listing/create/preview/[id], l'URL exacte à l'origine de la demande), et un
+ * dernier test seed directement une annonce Mode à l'ANCIEN format (city/province seuls,
+ * sans `zones`) pour prouver la rétrocompatibilité sans dépendre de Gemini.
  */
 const RUN_ID = crypto.randomUUID()
 const OWNER_UID = `e2e-property-mode-${RUN_ID}`
 const PROPERTY_TITLE = `Studio test création e2e ${RUN_ID}`
 const MODE_DESCRIPTION =
-  `Je vends une robe en wax taille M, portée deux fois, très bon état, à Libreville. ` +
-  `Prix 15 000 FCFA, légèrement négociable. Référence test ${RUN_ID}.`
+  `Je vends une robe en wax taille M, portée deux fois, très bon état. Disponible à ` +
+  `Libreville et Franceville. Prix 15 000 FCFA, légèrement négociable. Référence test ${RUN_ID}.`
 
 test.describe('Publication d\'une annonce immobilière et d\'une annonce Mode — vrai Firestore/Storage', () => {
   test.describe.configure({ mode: 'serial' })
@@ -59,13 +69,14 @@ test.describe('Publication d\'une annonce immobilière et d\'une annonce Mode �
   let propertyId = ''
   let modeListingId = ''
   let modeListingTitle = ''
+  const legacyModeListingId = `e2e-legacy-mode-${RUN_ID}`
 
   test.beforeAll(async () => {
     await seedAnnouncerUser(OWNER_UID, 5, { phoneNumbers: ['+24166545430'] })
   })
 
   test.afterAll(async () => {
-    const ids = [propertyId, modeListingId].filter(Boolean)
+    const ids = [propertyId, modeListingId, legacyModeListingId].filter(Boolean)
     if (ids.length > 0) {
       await deleteProperties(ids)
     }
@@ -171,6 +182,45 @@ test.describe('Publication d\'une annonce immobilière et d\'une annonce Mode �
     expect(modeListing?.typeProperty).toBeFalsy()
     expect(typeof modeListing?.title).toBe('string')
     modeListingTitle = modeListing!.title as string
+
+    // Zones multiples : la description mentionne Libreville ET Franceville, l'IA doit les
+    // détecter toutes les deux (pas seulement la première) — voir
+    // docs/marketplace-multi-categories/08-zones-multiples-mode.md §6.
+    const cities = (modeListing?.cities as string[] | undefined) ?? []
+    expect(cities).toContain('Libreville')
+    expect(cities).toContain('Franceville')
+    expect(cities.length).toBeGreaterThanOrEqual(2)
+    // city (singulier, rétrocompatibilité) = zone primaire = premier élément de cities.
+    expect(modeListing?.city).toBe(cities[0])
+    const zones = (modeListing?.zones as Array<{ city: string }> | undefined) ?? []
+    expect(zones.map((zone) => zone.city)).toEqual(cities)
+  })
+
+  test('édite les zones sur la page de preview — ajoute une 3e ville, en retire une', async ({ page }) => {
+    test.skip(!modeListingId, 'Dépend de la publication Mode précédente (même run, mode serial).')
+    test.setTimeout(60_000)
+    await signInAsAnnouncer(page.context(), 'http://localhost:3000', { ...E2E_ANNOUNCER, uid: OWNER_UID })
+    await mockCommonAppNoise(page, { mockFirebaseToken: false })
+    await page.goto(`/category-listing/create/preview/${modeListingId}`, { waitUntil: 'domcontentloaded' })
+
+    // Ajout d'une 3e zone via l'éditeur dédié (EditableZonesField).
+    await page.getByPlaceholder(/Ajouter une ville/i).fill('Port-Gentil')
+    await page.getByRole('button', { name: /^Ajouter$/i }).click()
+    await expect(page.getByText('Port-Gentil', { exact: true })).toBeVisible({ timeout: 15000 })
+
+    await expect.poll(async () => {
+      const property = await getProperty(modeListingId)
+      return (property?.cities as string[] | undefined)?.length ?? 0
+    }, { timeout: 15000 }).toBe(3)
+
+    // Retrait d'une zone (Franceville) — clic sur son bouton de suppression.
+    await page.getByLabel('Retirer Franceville').click()
+    await expect(page.getByText('Franceville', { exact: true })).toHaveCount(0)
+
+    await expect.poll(async () => {
+      const property = await getProperty(modeListingId)
+      return (property?.cities as string[] | undefined) ?? []
+    }, { timeout: 15000 }).toEqual(['Libreville', 'Port-Gentil'])
   })
 
   test('les deux annonces apparaissent bien sur /property, respectivement sous Immobilier et Mode', async ({
@@ -197,7 +247,39 @@ test.describe('Publication d\'une annonce immobilière et d\'une annonce Mode �
     await expect(modeTab).toHaveAttribute('aria-selected', 'true')
     await expect(page.getByText(modeListingTitle)).toBeVisible({ timeout: 15000 })
 
+    // Zones multiples (après le test d'édition précédent : Libreville + Port-Gentil) —
+    // resolveAdLocation() doit afficher les deux villes, pas seulement la première. Voir
+    // docs/marketplace-multi-categories/08-zones-multiples-mode.md.
+    await expect(page.getByText('Libreville, Port-Gentil')).toBeVisible()
+
     // Et inversement, l'annonce immobilière ne doit plus apparaître sous "Mode".
     await expect(page.getByText(PROPERTY_TITLE)).toHaveCount(0)
+  })
+
+  test('annonce Mode à l\'ANCIEN format (city/province seuls, sans zones) s\'affiche normalement', async ({
+    page,
+  }) => {
+    // Rétrocompatibilité (voir docs/marketplace-multi-categories/08-zones-multiples-mode.md
+    // §7) : une annonce créée avant l'introduction de `zones` n'a jamais ce champ. Seed
+    // direct (Admin SDK), pas de dépendance à Gemini — reproduit fidèlement une annonce Mode
+    // réelle d'avant ce chantier.
+    const legacyTitle = `Sac légère e2e ${RUN_ID}`
+    await seedCategoryListing(OWNER_UID, {
+      id: legacyModeListingId,
+      title: legacyTitle,
+      description: 'Sac à main en cuir, jamais porté.',
+      price: 12000,
+      province: 'Estuaire',
+      city: 'Libreville',
+      categoryId: 'mode-robes',
+      categoryLeaf: 'Robes',
+    })
+
+    await page.goto(`/annonce/${legacyModeListingId}`, { waitUntil: 'domcontentloaded' })
+
+    await expect(page.getByRole('heading', { name: legacyTitle })).toBeVisible({ timeout: 15000 })
+    // Une seule puce de zone, la ville seule (repli de getListingZones() sur city/province
+    // singuliers) — comportement identique à avant l'introduction de `zones`.
+    await expect(page.getByText('Libreville', { exact: true })).toBeVisible()
   })
 })

@@ -9,6 +9,7 @@ import { TypeProperty } from "@/constantes/property-type";
 import { trackingEvents, useTrackEvent } from '@/features/analytics/tracking';
 import { logImageError, logImageFallback, logImageLoad } from "@/lib/image-debug";
 import { resolveThumbnailUrl } from "@/lib/property-images";
+import { formatZonesLabel, getListingZones } from "@/lib/listing-zones";
 
 // Import des icônes
 import { IoMdBed } from "react-icons/io";
@@ -260,7 +261,17 @@ const ListingCard = ({ property, hideDate = false, density = "standard", priorit
     // immobilière (savoir précisément où se situe le logement) — absent pour la plupart
     // des annonces Mode (street:""), filtré silencieusement dans ce cas (2026-08-15,
     // demande utilisateur explicite).
-    const locationLabel = [property.street, property.city, property.province].filter(Boolean).join(", ");
+    // Immobilier (typeProperty présent) OU catégorie à zone unique : comportement
+    // historique inchangé (street, city, province) — la grande majorité des annonces
+    // aujourd'hui. Seule une annonce à PLUSIEURS zones (Mode, etc., voir
+    // docs/marketplace-multi-categories/08-zones-multiples-mode.md) bascule sur un libellé
+    // villes uniquement (province placeholder perdrait son sens face à plusieurs villes),
+    // tronqué à 2 + "+N" pour préserver la hauteur de carte uniforme (contrainte ci-dessus).
+    const zones = getListingZones(property);
+    const locationLabel =
+      property.typeProperty || zones.length <= 1
+        ? [property.street, property.city, property.province].filter(Boolean).join(", ")
+        : [property.street, formatZonesLabel(zones, { max: 2 })].filter(Boolean).join(", ");
     return (
       <div
         onClick={handleCardClick}

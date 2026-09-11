@@ -8,6 +8,7 @@ import { toGabonWhatsappE164, toWaMeDigits } from '../lib/phone';
 import { getImageUrl, type PropertyImage } from '../lib/propertyImage';
 import { useFavoriteIds, addFavorite, removeFavorite } from '../hooks/useFavoriteIds';
 import { requireAuthOrRedirect } from '../lib/authGuard';
+import { formatListingZones } from '../lib/listingZones';
 import { colors } from '../theme/colors';
 import type { SearchStackParamList } from '../navigation/types';
 
@@ -111,7 +112,14 @@ export default function ListingDetailScreen() {
             <Heart size={24} color={colors.destructive} fill={isFavorite ? colors.destructive : 'transparent'} />
           </TouchableOpacity>
         </View>
-        <Text style={styles.location}>{[property.street, property.city, property.province].filter(Boolean).join(', ')}</Text>
+        <Text style={styles.location}>
+          {/* Zones multiples (Mode, etc.) — voir docs/marketplace-multi-categories/
+              08-zones-multiples-mode.md. Immobilier (pas de `cities`) : comportement
+              inchangé. */}
+          {property.cities && property.cities.length > 1
+            ? formatListingZones(property)
+            : [property.street, property.city, property.province].filter(Boolean).join(', ')}
+        </Text>
         <Text style={styles.price}>
           {formatPrice(property.price)}
           {property.status === 'FOR_RENT' ? ' / mois' : ''}

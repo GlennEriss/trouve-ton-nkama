@@ -11,6 +11,10 @@ export type PropertyDetail = {
   status: 'FOR_RENT' | 'FOR_SALE';
   city: string;
   province: string;
+  // Zones multiples (Mode, etc.) — voir docs/marketplace-multi-categories/
+  // 08-zones-multiples-mode.md. Absent sur l'immobilier et sur une annonce Mode créée avant
+  // ce champ (repli sur `city` géré par formatListingZones, lib/listingZones.ts).
+  cities?: string[];
   street?: string;
   images: PropertyImage[];
   nbrRooms?: number;
@@ -35,6 +39,7 @@ export type PropertyListItem = {
   status: 'FOR_RENT' | 'FOR_SALE';
   city: string;
   province: string;
+  cities?: string[];
   typeProperty: string;
   images: PropertyImage[];
 };

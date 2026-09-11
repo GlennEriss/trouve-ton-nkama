@@ -6,8 +6,10 @@ import CarouselProperty from './CarouselProperty'
 import { Property } from '@/models/annonce'
 import { Button } from '@trouve-ton-nkama/ui/button'
 import { EditableField } from '@/components/shared/EditableField'
+import { EditableZonesField } from '@/components/shared/EditableZonesField'
 import { updateProperty } from '@/db/property.db'
 import { getPropertyImageUrls } from '@/lib/property-images'
+import { getListingZones, buildZonesPatch } from '@/lib/listing-zones'
 import { routes } from '@/constantes/routes'
 
 /**
@@ -50,6 +52,34 @@ export default function PreviewCategoryListingDraft({ property: initialProperty 
 
   const saveAttribute = (key: string, value: string) => {
     return saveField({ attributes: { ...attributes, [key]: value } })
+  }
+
+  // Zones multiples (Mode, etc.) — voir docs/marketplace-multi-categories/
+  // 08-zones-multiples-mode.md. `getListingZones` replie automatiquement sur
+  // city/province singuliers pour une annonce créée avant ce champ.
+  const zones = getListingZones(property)
+  const zoneCities = zones.map((zone) => zone.city)
+  const currentProvince = zones[0]?.province || property.province || ''
+
+  const saveCities = (nextCities: string[]) => {
+    const existingByCity = new Map(zones.map((zone) => [zone.city, zone]))
+    const nextZones = nextCities.map(
+      (city) =>
+        existingByCity.get(city) ?? {
+          city,
+          province: currentProvince,
+          latitude: zones[0]?.latitude ?? property.latitude ?? 0,
+          longitude: zones[0]?.longitude ?? property.longitude ?? 0,
+        },
+    )
+    return saveField(buildZonesPatch(nextZones))
+  }
+
+  const saveProvince = (value: string) => {
+    if (zones.length === 0) {
+      return saveField({ province: value })
+    }
+    return saveField(buildZonesPatch(zones.map((zone) => ({ ...zone, province: value }))))
   }
 
   const goToMyListings = () => router.push(`${routes.protected.properties}?submitted=1`)
@@ -119,15 +149,17 @@ export default function PreviewCategoryListingDraft({ property: initialProperty 
 
         <div className="flex flex-col gap-3 rounded-lg p-5 shadow dark:shadow-gray-800 dark:bg-gray-800 dark:text-white">
           <h1 className="font-bold">Localisation</h1>
-          <div className="grid gap-3 sm:grid-cols-2">
-            <div>
-              <p className="text-xs font-medium text-gray-500 dark:text-gray-400">Ville</p>
-              <EditableField value={property.city} onSave={(value) => saveField({ city: value })} />
-            </div>
-            <div>
-              <p className="text-xs font-medium text-gray-500 dark:text-gray-400">Province</p>
-              <EditableField value={property.province} onSave={(value) => saveField({ province: value })} />
-            </div>
+          <p className="text-xs text-gray-500 dark:text-gray-400">
+            Zones où tu proposes cet article — ajoute toutes les villes où tu vends (livraison,
+            point de retrait...), pas seulement où tu résides.
+          </p>
+          <div>
+            <p className="text-xs font-medium text-gray-500 dark:text-gray-400">Ville(s)</p>
+            <EditableZonesField cities={zoneCities} onSave={saveCities} />
+          </div>
+          <div>
+            <p className="text-xs font-medium text-gray-500 dark:text-gray-400">Province</p>
+            <EditableField value={currentProvince} onSave={saveProvince} />
           </div>
         </div>
 

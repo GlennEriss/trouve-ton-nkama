@@ -14,6 +14,10 @@ export type MyListingItem = {
   moderationStatus: 'PENDING' | 'APPROVED' | 'REJECTED';
   state: 'IN_PROGRESS' | 'ARCHIVED';
   city: string;
+  // Zones multiples (Mode, etc.) — voir docs/marketplace-multi-categories/
+  // 08-zones-multiples-mode.md. Absent sur l'immobilier et sur une annonce Mode créée avant
+  // ce champ (repli sur `city` géré par formatListingZones, lib/listingZones.ts).
+  cities?: string[];
 };
 
 function moderationLabel(status: MyListingItem['moderationStatus']): string {

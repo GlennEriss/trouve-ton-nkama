@@ -77,20 +77,26 @@ async function main() {
     return false;
   });
 
-  // property/ : namespace plat, pas de uid dans le chemin → on supprime les objets
-  // référencés par AUCUNE annonce vivante (orphelins). Un `thumb_<base>` est conservé
-  // tant que `<base>` est référencé.
-  const props = await db.collection("properties").get();
-  const referenced = new Set();
-  props.forEach((d) => (d.data().images || []).forEach((im) => {
-    if (im && im.filePATH) {
-      referenced.add(im.filePATH);
-      const base = im.filePATH.replace(/^property\//, "");
-      referenced.add(`property/thumb_${base}`);
-    }
-    if (im && im.thumbnailPATH) referenced.add(im.thumbnailPATH);
-  }));
-  const staleProperty = files.filter((f) => f.name.startsWith("property/") && !referenced.has(f.name));
+  // property/ : namespace plat, pas de uid dans le chemin, mais chaque upload pose
+  // `customMetadata.owner` (voir file.db.ts) — signal fiable, contrairement à "orphelin de
+  // toute annonce vivante" (un upload réel passe par Storage AVANT la création du doc
+  // Firestore, donc un brouillon en cours est un orphelin légitime, pas un résidu e2e) ou à
+  // la date de création (réinitialisée par `gcloud storage cp` lors d'une migration de
+  // bucket — vérifié empiriquement, tout redevient "récent" après une copie). On supprime
+  // uniquement les objets dont le owner est un uid e2e, plus leur miniature `thumb_<base>`
+  // associée (qui elle n'a pas de owner propre).
+  const propertyFiles = files.filter((f) => f.name.startsWith("property/"));
+  const ownerByBase = new Map();
+  propertyFiles.forEach((f) => {
+    const base = f.name.replace(/^property\/(thumb_)?/, "");
+    const owner = f.metadata.metadata && f.metadata.metadata.owner;
+    if (owner) ownerByBase.set(base, owner);
+  });
+  const staleProperty = propertyFiles.filter((f) => {
+    const base = f.name.replace(/^property\/(thumb_)?/, "");
+    const owner = ownerByBase.get(base);
+    return owner && isE2eUid(owner);
+  });
 
   const staleFiles = [...staleByPrefix, ...staleProperty];
   const staleBytes = staleFiles.reduce((s, f) => s + Number(f.metadata.size || 0), 0);

@@ -101,7 +101,12 @@ export function buildPublicSearchFilters(searchParams: SearchParamsReader) {
 
   FACET_FILTERS.forEach(([param, attribute]) => {
     if (!immobilierScope && immobilierOnly.has(param)) return;
-    const filter = buildFacetFilter(attribute, searchParams.get(param) ?? '');
+    // Hors scope immobilier (Mode, etc.), une annonce peut vendre dans plusieurs villes
+    // (`cities`, tableau) — voir docs/marketplace-multi-categories/
+    // 08-zones-multiples-mode.md §5. `city` (singulier) reste l'attribut interrogé en
+    // scope immobilier, comportement historique inchangé.
+    const resolvedAttribute = param === 'city' && !immobilierScope ? 'cities' : attribute;
+    const filter = buildFacetFilter(resolvedAttribute, searchParams.get(param) ?? '');
     if (filter) filters.push(filter);
   });
 

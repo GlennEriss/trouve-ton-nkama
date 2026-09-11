@@ -118,8 +118,10 @@ describe('buildFilters', () => {
   });
 
   it('conserve ville et budget en scope Mode (pas immobilier uniquement)', () => {
+    // `city` interroge l'attribut `cities` (tableau, zones multiples) hors scope
+    // immobilier — voir docs/marketplace-multi-categories/08-zones-multiples-mode.md §5.
     expect(buildFilters({ category: 'Mode', city: 'Libreville', budgetMaxXaf: 20000 })).toBe(
-      'state:"IN_PROGRESS" AND moderationStatus:"APPROVED" AND city:"Libreville" AND price <= 20000 AND categoryPath.lvl0:"Mode"',
+      'state:"IN_PROGRESS" AND moderationStatus:"APPROVED" AND cities:"Libreville" AND price <= 20000 AND categoryPath.lvl0:"Mode"',
     );
   });
 

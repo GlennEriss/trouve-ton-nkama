@@ -5,6 +5,7 @@ import { useQueries } from '@tanstack/react-query';
 import { useFavoriteIds } from '../hooks/useFavoriteIds';
 import { useRequireAuth } from '../hooks/useRequireAuth';
 import { getPropertyById } from '../api/property';
+import { formatListingZones } from '../lib/listingZones';
 import { navigationRef } from '../navigation/navigationRef';
 
 function formatPrice(price?: number): string {
@@ -59,7 +60,11 @@ export default function FavorisScreen() {
               onPress={() => openListing(item.id)}
             >
               <Text style={styles.rowTitle} numberOfLines={1}>{item.title}</Text>
-              <Text style={styles.rowSubtitle} numberOfLines={1}>{[item.city, item.province].filter(Boolean).join(', ')}</Text>
+              <Text style={styles.rowSubtitle} numberOfLines={1}>
+                {item.cities && item.cities.length > 1
+                  ? formatListingZones(item)
+                  : [item.city, item.province].filter(Boolean).join(', ')}
+              </Text>
               <Text style={styles.rowPrice}>{formatPrice(item.price)}</Text>
             </TouchableOpacity>
           )}

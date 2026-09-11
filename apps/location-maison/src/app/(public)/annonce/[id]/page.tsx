@@ -6,6 +6,7 @@ import { notFound } from 'next/navigation';
 import { absoluteUrl, canonical } from '@/lib/seo/site-url';
 import { getPropertyLastModified, getPublicPropertyById } from '@/lib/seo/public-listings';
 import { buildListingShareTitle } from '@/lib/seo/listing-share';
+import { getListingZones } from '@/lib/listing-zones';
 
 const logger = createLogger('app.annonce.page')
 type AnnonceParams = Promise<{ id: string }>;
@@ -87,6 +88,10 @@ export default async function Page({ params }: { params: AnnonceParams }) {
       ? property.categoryPath.lvl1.split(' > ').pop()
       : undefined;
 
+  // Zones multiples (Mode, etc.) : areaServed accepte nativement un tableau en schema.org —
+  // voir docs/marketplace-multi-categories/08-zones-multiples-mode.md §4.4. `getListingZones`
+  // replie sur city/province singuliers pour une annonce créée avant ce champ.
+  const zones = getListingZones(property);
   const categoryStructuredData = {
     '@context': 'https://schema.org',
     '@type': 'Product',
@@ -101,10 +106,7 @@ export default async function Page({ params }: { params: AnnonceParams }) {
       price: property.price,
       availability: 'https://schema.org/InStock',
       itemCondition: 'https://schema.org/UsedCondition',
-      areaServed: {
-        '@type': 'City',
-        name: property.city,
-      },
+      areaServed: zones.map((zone) => ({ '@type': 'City', name: zone.city })),
     },
   };
 

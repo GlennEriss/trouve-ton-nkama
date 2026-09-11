@@ -31,6 +31,7 @@ import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
 import type { Property } from '@/models/annonce';
 import { resolveThumbnailUrl } from '@/lib/property-images';
+import { formatZonesLabel, getListingZones } from '@/lib/listing-zones';
 import Link from 'next/link';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { ComponentType } from 'react';
@@ -206,7 +207,15 @@ function resolveAdSubtitle(ad: Property): string {
 }
 
 function resolveAdLocation(ad: Property): string {
-  return [ad.street, ad.city, ad.province].filter(Boolean).join(', ');
+  // Immobilier OU catégorie à zone unique : comportement historique inchangé (street,
+  // city, province). Seule une annonce à PLUSIEURS zones (Mode, etc.) bascule sur un
+  // libellé villes uniquement — voir docs/marketplace-multi-categories/
+  // 08-zones-multiples-mode.md.
+  const zones = getListingZones(ad);
+  if (ad.typeProperty || zones.length <= 1) {
+    return [ad.street, ad.city, ad.province].filter(Boolean).join(', ');
+  }
+  return [ad.street, formatZonesLabel(zones, { max: 2 })].filter(Boolean).join(', ');
 }
 
 function getSortValue(sortBy: string, sortOrder: string): string {

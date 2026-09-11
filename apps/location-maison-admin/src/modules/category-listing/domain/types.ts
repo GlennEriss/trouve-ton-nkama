@@ -7,7 +7,9 @@ export type CreateCategoryListingInput = {
   description: string;
   price: number;
   province: string;
-  city: string;
+  // Zones multiples (Mode, etc.) — voir docs/marketplace-multi-categories/
+  // 08-zones-multiples-mode.md. Au moins une ville requise.
+  cities: string[];
   images: Array<{ fileURL: string; filePATH: string }>;
   contact?: string;
   whatsappContact?: string;
