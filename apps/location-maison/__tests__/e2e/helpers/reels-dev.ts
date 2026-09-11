@@ -1,4 +1,5 @@
 import { cert, getApps, initializeApp, type App } from 'firebase-admin/app'
+import { getAuth } from 'firebase-admin/auth'
 import { getFirestore, Timestamp, type Firestore } from 'firebase-admin/firestore'
 
 const DEV_PROJECT_ID = 'location-maison-dev'
@@ -34,7 +35,8 @@ function requireDevAdminApp(): App {
 }
 
 export async function seedLot8DReels(runId: string): Promise<Lot8DSeed> {
-  const db = getFirestore(requireDevAdminApp())
+  const app = requireDevAdminApp()
+  const db = getFirestore(app)
   const uid = `announcer-e2e-lot8d-${runId}`
   const reelIds = {
     edit: `lot8d-edit-${runId}`,
@@ -111,6 +113,11 @@ export async function seedLot8DReels(runId: string): Promise<Lot8DSeed> {
       await Promise.all([
         ...Object.values(reelIds).map((reelId) => db.collection('reels').doc(reelId).delete()),
         db.collection('users').doc(uid).delete(),
+        // Le test se connecte pour de vrai (signInWithCustomToken) → Firebase a créé
+        // l'enregistrement Auth pour cet uid ; sans ça il resterait orphelin.
+        getAuth(app).deleteUser(uid).catch((err: unknown) => {
+          if ((err as { code?: string }).code !== 'auth/user-not-found') throw err
+        }),
       ])
     },
   }

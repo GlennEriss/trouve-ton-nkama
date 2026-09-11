@@ -1,4 +1,5 @@
 import { cert, getApps, initializeApp, type App } from 'firebase-admin/app'
+import { getAuth } from 'firebase-admin/auth'
 import { getFirestore, Timestamp, type Firestore } from 'firebase-admin/firestore'
 
 const DEV_PROJECT_ID = 'location-maison-dev'
@@ -31,7 +32,8 @@ function requireDevAdminApp(): App {
 }
 
 export async function seedLot8ESearch(runId: string): Promise<Lot8ESearchSeed> {
-  const db = getFirestore(requireDevAdminApp())
+  const app = requireDevAdminApp()
+  const db = getFirestore(app)
   const propertyId = `lot8e-property-${runId}`
   const ownerId = `lot8e-owner-${runId}`
   const now = Date.now()
@@ -94,6 +96,9 @@ export async function seedLot8ESearch(runId: string): Promise<Lot8ESearchSeed> {
         db.collection('property_statistics').doc(propertyId).delete().catch(() => undefined),
         db.collection('properties').doc(propertyId).delete(),
         db.collection('users').doc(ownerId).delete(),
+        getAuth(app).deleteUser(ownerId).catch((err: unknown) => {
+          if ((err as { code?: string }).code !== 'auth/user-not-found') throw err
+        }),
       ])
     },
   }

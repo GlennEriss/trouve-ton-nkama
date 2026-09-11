@@ -193,6 +193,47 @@ async function tapTestID(testID, timeoutMs = 10000, pollMs = 200) {
   throw new Error(`Timeout (${timeoutMs}ms) : impossible de localiser le testID "${testID}" pour taper dessus.`);
 }
 
+// Ramène l'app au premier plan SANS la tuer (contrairement à relaunchApp) : `am start` sur une
+// activité déjà au premier plan est un no-op ("brought to the front"), et si l'app a été mise en
+// arrière-plan entre-temps (un KEYCODE_BACK émis à vide sur ce Samsung agit comme un retour et
+// renvoie à l'écran d'accueil) elle est restaurée en < 1 s, sans rechargement du bundle Metro.
+async function bringAppToForeground() {
+  adb(['shell', 'input', 'keyevent', 'KEYCODE_WAKEUP']);
+  adb(['shell', 'am', 'start', '-n', ACTIVITY]);
+  await sleep(800);
+}
+
+// true si le clavier logiciel est effectivement affiché — à vérifier avant d'émettre un
+// KEYCODE_BACK pour le fermer, sinon le BACK "traverse" et met l'app en arrière-plan.
+function isSoftKeyboardShown() {
+  try {
+    return /mInputShown=true/.test(adb(['shell', 'dumpsys', 'input_method']));
+  } catch {
+    return false;
+  }
+}
+
+// Empêche l'écran de s'éteindre / se verrouiller pendant toute la durée d'un run (l'appareil
+// est branché en USB pour le débogage adb, donc "stay on while plugged in" reste actif). Un
+// écran éteint ou un keyguard rend TOUS les dumps uiautomator inutiles (arbre = launcher /
+// écran de verrouillage) et fait échouer la suite entière ; c'était la cause n°1 des runs
+// "tout rouge". À restaurer en fin de run via `releaseScreenAwake`.
+function keepScreenAwake() {
+  try {
+    adb(['shell', 'svc', 'power', 'stayon', 'true']);
+  } catch {
+    // certaines ROM refusent la valeur "true" seule — sans importance, on tente quand même.
+  }
+}
+
+function releaseScreenAwake() {
+  try {
+    adb(['shell', 'svc', 'power', 'stayon', 'false']);
+  } catch {
+    // appareil déconnecté en fin de run — ne pas planter le handler de sortie.
+  }
+}
+
 async function relaunchApp() {
   adb(['shell', 'am', 'force-stop', PACKAGE]);
   await sleep(500);
@@ -200,6 +241,7 @@ async function relaunchApp() {
   // verrouiller entre deux essais (l'app n'a alors plus le wakelock le temps du redémarrage) ;
   // sans ça, uiautomator ne voit qu'un arbre minimal (écran éteint/verrouillé) indéfiniment.
   adb(['shell', 'input', 'keyevent', 'KEYCODE_WAKEUP']);
+  adb(['shell', 'wm', 'dismiss-keyguard']);
   adb(['shell', 'am', 'start', '-n', ACTIVITY]);
 }
 
@@ -226,5 +268,9 @@ module.exports = {
   waitForTestIDGone,
   tapTestID,
   relaunchApp,
+  bringAppToForeground,
+  isSoftKeyboardShown,
+  keepScreenAwake,
+  releaseScreenAwake,
   startAppAndDismissLogBox,
 };

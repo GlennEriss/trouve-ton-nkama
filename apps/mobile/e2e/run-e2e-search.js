@@ -30,12 +30,16 @@ const {
   waitForTestIDGone,
   tapTestID,
   relaunchApp,
+  bringAppToForeground,
+  isSoftKeyboardShown,
+  keepScreenAwake,
+  releaseScreenAwake,
   startAppAndDismissLogBox,
 } = require('./lib');
 
 // Attend que la liste de résultats soit stabilisée après un changement de filtre : au moins une
 // carte, ou le message vide (certains types immobilier — Kiosque, Entrepôt... — ont 0 annonce).
-async function waitForResultsSettled(timeoutMs = 25000, pollMs = 300) {
+async function waitForResultsSettled(timeoutMs = 45000, pollMs = 300) {
   const start = Date.now();
   while (Date.now() - start < timeoutMs) {
     const xml = await dumpTree();
@@ -47,13 +51,18 @@ async function waitForResultsSettled(timeoutMs = 25000, pollMs = 300) {
   throw new Error(`Timeout (${timeoutMs}ms) : la liste de résultats ne s'est jamais stabilisée.`);
 }
 
-// Remet l'app dans un état stable avant chaque test : ferme un clavier / une modale / un menu
-// resté ouvert d'un test précédent, sans naviguer. KEYCODE_ESCAPE ferme claviers et popups sur
-// Android sans jamais faire "retour", contrairement à KEYCODE_BACK.
+// Remet l'app dans un état stable avant chaque test : la ramène au premier plan (un test
+// précédent a pu la laisser en arrière-plan), puis ferme un clavier / une modale restés
+// ouverts — mais uniquement s'ils sont réellement là. Sur ce Samsung, un KEYCODE_BACK (ou
+// KEYCODE_ESCAPE, qui y est mappé sur BACK) émis alors qu'il n'y a rien à fermer agit comme
+// un "retour" et met l'app en arrière-plan → l'écran d'accueil, ce qui faisait ensuite
+// échouer toute la suite (fenêtre MainActivity masquée, tous les dumps montrant le launcher).
 async function recoverToStableState() {
-  adb(['shell', 'input', 'keyevent', 'KEYCODE_WAKEUP']);
-  adb(['shell', 'input', 'keyevent', 'KEYCODE_ESCAPE']);
-  await sleep(300);
+  await bringAppToForeground();
+  if (isSoftKeyboardShown()) {
+    adb(['shell', 'input', 'keyevent', 'KEYCODE_BACK']);
+    await sleep(400);
+  }
   const xml = await dumpTree();
   if (xml.includes('resource-id="filters-apply"')) {
     adb(['shell', 'input', 'keyevent', 'KEYCODE_BACK']);
@@ -294,7 +303,13 @@ async function main() {
   // Animations coupées le temps du run : un ActivityIndicator RN (la barre de refetch)
   // maintient sinon la fenêtre "non idle" et uiautomator renvoie "could not get idle state".
   setAnimationScale(0);
-  process.on('exit', () => setAnimationScale(1));
+  // Écran maintenu allumé : sur ce Samsung l'écran se verrouillait au bout de ~30 s en plein
+  // run, ce qui faisait échouer tous les tests restants (dumps = écran de verrouillage).
+  keepScreenAwake();
+  process.on('exit', () => {
+    setAnimationScale(1);
+    releaseScreenAwake();
+  });
 
   process.stdout.write('▶ Démarrage de l\'app (état initial : Accueil) ... ');
   const { startupMs, dismissed } = await startAppAndDismissLogBox();
