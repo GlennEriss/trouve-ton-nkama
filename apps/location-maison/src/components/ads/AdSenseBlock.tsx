@@ -17,6 +17,9 @@ type AdSenseBlockProps = Readonly<{
   format?: 'auto' | 'rectangle' | 'vertical' | 'horizontal' | string;
   fullWidthResponsive?: boolean;
   onStatusChange?: (status: string | null) => void;
+  /** Tag d'experience A/B (empilement/alternance) propage aux evenements analytics du slot. */
+  experimentId?: string;
+  experimentVariant?: string;
 }>;
 
 export default function AdSenseBlock({
@@ -27,6 +30,8 @@ export default function AdSenseBlock({
   format = 'auto',
   fullWidthResponsive = true,
   onStatusChange,
+  experimentId,
+  experimentVariant,
 }: AdSenseBlockProps) {
   const adRef = React.useRef<HTMLModElement | null>(null);
   const pathname = usePathname();
@@ -45,10 +50,10 @@ export default function AdSenseBlock({
   // ... already have ads in them", AdSenseBlock.useEffect.tryInitialize). onStatusChange est
   // traité pareil par précaution : une identité de callback instable côté appelant aurait le
   // même effet, même si aucun appelant actuel n'en passe un.
-  const actorRef = React.useRef({ uid, isAuthenticated, onStatusChange });
+  const actorRef = React.useRef({ uid, isAuthenticated, onStatusChange, experimentId, experimentVariant });
   React.useEffect(() => {
-    actorRef.current = { uid, isAuthenticated, onStatusChange };
-  }, [uid, isAuthenticated, onStatusChange]);
+    actorRef.current = { uid, isAuthenticated, onStatusChange, experimentId, experimentVariant };
+  }, [uid, isAuthenticated, onStatusChange, experimentId, experimentVariant]);
 
   // 'filled' prouve qu'une creation a ete servie dans le slot, pas qu'elle a ete vue. La
   // vue visible (Active View) est mesuree separement ci-dessous via IntersectionObserver :
@@ -105,6 +110,8 @@ export default function AdSenseBlock({
             uid: actorRef.current.uid,
             isAuthenticated: actorRef.current.isAuthenticated,
           },
+          experimentId: actorRef.current.experimentId,
+          experimentVariant: actorRef.current.experimentVariant,
         });
         return true;
       } catch (error) {
@@ -127,6 +134,8 @@ export default function AdSenseBlock({
         uid: actorRef.current.uid,
         isAuthenticated: actorRef.current.isAuthenticated,
       },
+      experimentId: actorRef.current.experimentId,
+      experimentVariant: actorRef.current.experimentVariant,
     });
 
     const adElement = adRef.current;
@@ -147,6 +156,8 @@ export default function AdSenseBlock({
               uid: actorRef.current.uid,
               isAuthenticated: actorRef.current.isAuthenticated,
             },
+            experimentId: actorRef.current.experimentId,
+            experimentVariant: actorRef.current.experimentVariant,
           });
         }
       });
@@ -195,6 +206,8 @@ export default function AdSenseBlock({
                 uid: actorRef.current.uid,
                 isAuthenticated: actorRef.current.isAuthenticated,
               },
+              experimentId: actorRef.current.experimentId,
+              experimentVariant: actorRef.current.experimentVariant,
             });
           }, 1000);
         },

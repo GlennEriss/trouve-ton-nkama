@@ -27,10 +27,11 @@ jest.mock('@/components/ads/AdSenseBlock', () => ({
   ),
 }))
 
-let stackingDecisionOverride: { showHouse: boolean; showAdSense: boolean } | null = null
+let stackingDecisionOverride: { showHouse: boolean; showAdSense: boolean; variant?: string } | null = null
 jest.mock('@/lib/ads/stacking-experiment', () => ({
+  AD_STACKING_EXPERIMENT_ID: null,
   resolveAdStackingDecision: (input: { hasHouseCreative: boolean }) =>
-    stackingDecisionOverride ?? { showHouse: input.hasHouseCreative, showAdSense: true },
+    stackingDecisionOverride ?? { showHouse: input.hasHouseCreative, showAdSense: true, variant: 'A_STACK' },
 }))
 
 jest.mock('@/components/ads/AdCreativeCard', () => ({

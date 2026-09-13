@@ -59,6 +59,11 @@ const bodySchema = z
             latency_ms: z.number().int().min(0).max(120000).optional(),
             country: z.string().trim().regex(/^[A-Z]{2}$/).optional(),
             device_category: z.enum(['mobile', 'desktop', 'tablet', 'unknown']).optional(),
+            // Tag d'experience A/B (stacking-experiment.ts) : accepte et transmis a
+            // l'adaptateur admin, pas encore persiste en BigQuery (colonnes absentes de
+            // `ads_slot_events`, cf. commentaire dans ads-slot-analytics.client.ts).
+            experiment_id: z.string().trim().max(100).optional(),
+            experiment_variant: z.string().trim().max(50).optional(),
           })
           .strict(),
       )

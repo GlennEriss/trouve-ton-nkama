@@ -11,6 +11,9 @@ type InlineAdUnitProps = Readonly<{
   compact?: boolean;
   showLabel?: boolean;
   surface?: 'none' | 'card';
+  /** Tag d'experience A/B (empilement/alternance) propage aux evenements analytics du slot. */
+  experimentId?: string;
+  experimentVariant?: string;
 }>;
 
 export default function InlineAdUnit({
@@ -20,6 +23,8 @@ export default function InlineAdUnit({
   compact = false,
   showLabel = false,
   surface = 'none',
+  experimentId,
+  experimentVariant,
 }: InlineAdUnitProps) {
   const containerClassName =
     surface === 'card'
@@ -35,6 +40,8 @@ export default function InlineAdUnit({
         slot={slot}
         slotKey={slotKey}
         minHeight={compact ? 48 : 60}
+        experimentId={experimentId}
+        experimentVariant={experimentVariant}
       />
     </div>
   );

@@ -31,6 +31,15 @@ type EmitAdsSlotEventInput = {
     isAuthenticated: boolean;
   };
   keepalive?: boolean;
+  /**
+   * Tag d'experience A/B (empilement/alternance, cf. lib/ads/stacking-experiment.ts). Valide
+   * par le schema Zod cote route/adaptateur admin, mais volontairement PAS encore mappe dans
+   * AdsSlotEventRow/l'insert BigQuery : la table `ads_slot_events` n'a pas ces colonnes et
+   * `ignoreUnknownValues: false` ferait echouer CHAQUE insertion tant qu'elles n'existent pas.
+   * Ajouter la colonne cote BigQuery avant de cabler le mapping final.
+   */
+  experimentId?: string;
+  experimentVariant?: string;
 };
 
 function resolveEnvironment(): 'dev' | 'preprod' | 'prod' {
@@ -169,6 +178,8 @@ export function emitAdsSlotEvent(input: EmitAdsSlotEventInput) {
         device_category: /mobile/i.test(navigator.userAgent)
           ? ('mobile' as const)
           : ('desktop' as const),
+        experiment_id: input.experimentId,
+        experiment_variant: input.experimentVariant,
       },
     ],
   };

@@ -22,13 +22,15 @@ export type AdStackingVariant = 'A_STACK' | 'B_ALTERNATE' | 'C_RESERVED' | 'D_HO
 export type AdStackingDecision = {
   showHouse: boolean;
   showAdSense: boolean;
+  /** Variante effectivement appliquee (utile pour tagger les evenements analytics). */
+  variant: AdStackingVariant;
 };
 
 const VALID_VARIANTS: AdStackingVariant[] = ['A_STACK', 'B_ALTERNATE', 'C_RESERVED', 'D_HOUSE_PRIORITY'];
 
-function normalizeVariant(value: string | undefined): AdStackingVariant {
+function normalizeVariant(value: string | undefined): AdStackingVariant | null {
   const normalized = (value ?? '').trim().toUpperCase();
-  return (VALID_VARIANTS as string[]).includes(normalized) ? (normalized as AdStackingVariant) : 'A_STACK';
+  return (VALID_VARIANTS as string[]).includes(normalized) ? (normalized as AdStackingVariant) : null;
 }
 
 function parsePlacementList(value: string | undefined): Set<string> {
@@ -40,7 +42,7 @@ function parsePlacementList(value: string | undefined): Set<string> {
   );
 }
 
-export const AD_STACKING_VARIANT = normalizeVariant(process.env.NEXT_PUBLIC_ADS_STACKING_EXPERIMENT_VARIANT);
+export const AD_STACKING_VARIANT = normalizeVariant(process.env.NEXT_PUBLIC_ADS_STACKING_EXPERIMENT_VARIANT) ?? 'A_STACK';
 
 const reservedHousePlacements = parsePlacementList(
   process.env.NEXT_PUBLIC_ADS_RESERVED_HOUSE_PLACEMENTS,
@@ -49,9 +51,41 @@ const reservedAdSensePlacements = parsePlacementList(
   process.env.NEXT_PUBLIC_ADS_RESERVED_ADSENSE_PLACEMENTS,
 );
 
-const STACK_DECISION = (hasHouseCreative: boolean): AdStackingDecision => ({
+// Experience live A_STACK vs B_ALTERNATE (recommandation 2026-09-14) : identifiant stable de
+// l'experience + population restreinte a search/immobilier (seules surfaces avec assez de
+// volume et un rotationIndex par occurrence). Le bucket est deduit du session_id (meme session
+// = meme variante toute la duree de l'experience), jamais recalcule a chaque rendu.
+export const AD_STACKING_EXPERIMENT_ID = (() => {
+  const raw = process.env.NEXT_PUBLIC_ADS_STACKING_EXPERIMENT_ID?.trim();
+  return raw && raw.length > 0 ? raw : null;
+})();
+
+const EXPERIMENT_ELIGIBLE_PLACEMENTS = new Set(['search_infeed', 'immobilier_infeed']);
+
+// Hash stable (djb2a + finalisation Murmur3-like) : les session_id reels partagent un prefixe
+// commun ("ttn_...") suivi d'un UUID, mais un djb2 nu melange mal des entrees tres proches
+// (ex. "session-0".."session-499" dans les tests) — la finalisation supplementaire evite un
+// bucket 50/50 biaise sur des identifiants structures, sans besoin de resistance cryptographique.
+function hashToUnitInterval(value: string): number {
+  let hash = 5381;
+  for (let index = 0; index < value.length; index += 1) {
+    hash = (hash * 33) ^ value.charCodeAt(index);
+  }
+  hash = Math.imul(hash ^ (hash >>> 15), 0x85ebca6b);
+  hash ^= hash >>> 13;
+  hash = Math.imul(hash, 0xc2b2ae35);
+  hash ^= hash >>> 16;
+  return (hash >>> 0) / 0xffffffff;
+}
+
+export function resolveExperimentBucket(sessionId: string): 'A_STACK' | 'B_ALTERNATE' {
+  return hashToUnitInterval(sessionId) < 0.5 ? 'A_STACK' : 'B_ALTERNATE';
+}
+
+const STACK_DECISION = (hasHouseCreative: boolean, variant: AdStackingVariant): AdStackingDecision => ({
   showHouse: hasHouseCreative,
   showAdSense: true,
+  variant,
 });
 
 export function resolveAdStackingDecision(input: {
@@ -59,15 +93,23 @@ export function resolveAdStackingDecision(input: {
   hasHouseCreative: boolean;
   rotationIndex?: number;
   variant?: AdStackingVariant;
+  sessionId?: string;
+  experimentId?: string | null;
   reservedHouse?: Set<string>;
   reservedAdSense?: Set<string>;
 }): AdStackingDecision {
-  const variant = input.variant ?? AD_STACKING_VARIANT;
+  const experimentId = input.experimentId === undefined ? AD_STACKING_EXPERIMENT_ID : input.experimentId;
+  const isExperimentEligible =
+    Boolean(experimentId) && EXPERIMENT_ELIGIBLE_PLACEMENTS.has(input.placement) && Boolean(input.sessionId);
+
+  const variant =
+    input.variant ??
+    (isExperimentEligible ? resolveExperimentBucket(input.sessionId as string) : AD_STACKING_VARIANT);
 
   if (variant === 'D_HOUSE_PRIORITY') {
     return input.hasHouseCreative
-      ? { showHouse: true, showAdSense: false }
-      : { showHouse: false, showAdSense: true };
+      ? { showHouse: true, showAdSense: false, variant }
+      : { showHouse: false, showAdSense: true, variant };
   }
 
   if (variant === 'C_RESERVED') {
@@ -76,24 +118,24 @@ export function resolveAdStackingDecision(input: {
 
     if (houseList.has(input.placement)) {
       return input.hasHouseCreative
-        ? { showHouse: true, showAdSense: false }
-        : { showHouse: false, showAdSense: true };
+        ? { showHouse: true, showAdSense: false, variant }
+        : { showHouse: false, showAdSense: true, variant };
     }
     if (adSenseList.has(input.placement)) {
-      return { showHouse: false, showAdSense: true };
+      return { showHouse: false, showAdSense: true, variant };
     }
-    return STACK_DECISION(input.hasHouseCreative);
+    return STACK_DECISION(input.hasHouseCreative, variant);
   }
 
   if (variant === 'B_ALTERNATE' && typeof input.rotationIndex === 'number') {
     const isHouseTurn = input.rotationIndex % 2 === 0;
     if (!isHouseTurn) {
-      return { showHouse: false, showAdSense: true };
+      return { showHouse: false, showAdSense: true, variant };
     }
     return input.hasHouseCreative
-      ? { showHouse: true, showAdSense: false }
-      : { showHouse: false, showAdSense: true };
+      ? { showHouse: true, showAdSense: false, variant }
+      : { showHouse: false, showAdSense: true, variant };
   }
 
-  return STACK_DECISION(input.hasHouseCreative);
+  return STACK_DECISION(input.hasHouseCreative, variant);
 }

@@ -83,6 +83,12 @@ const adsSlotEventSchema = z
     latency_ms: z.number().int().min(0).max(120000).optional(),
     country: z.string().trim().regex(/^[A-Z]{2}$/).optional(),
     device_category: z.enum(["mobile", "desktop", "tablet", "unknown"]).optional(),
+    // Tag d'experience A/B (location-maison src/lib/ads/stacking-experiment.ts) : accepte
+    // pour ne pas rejeter le payload, PAS ENCORE mappe dans AdsSlotEventRow/l'insert BigQuery
+    // (voir buildAdsSlotEventRows dans ads-analytics-adapter.service.ts) tant que la table
+    // `ads_slot_events` n'a pas ces colonnes (ignoreUnknownValues: false cote insertRows).
+    experiment_id: z.string().trim().max(100).optional(),
+    experiment_variant: z.string().trim().max(50).optional(),
   })
   .strict();
 

@@ -37,75 +37,91 @@ describe('useRankedListings', () => {
     jest.useRealTimers()
   })
 
-  it("passe en isRanking=true dès le premier lot d'items, puis affiche l'ordre Algolia si la variante est control", async () => {
-    let resolveRequest!: (value: unknown) => void
-    registerRecommendationRequest.mockReturnValue(new Promise((resolve) => { resolveRequest = resolve }))
+  it("affiche l'ordre Algolia immédiatement, sans attendre la réponse du serveur", () => {
+    registerRecommendationRequest.mockReturnValue(new Promise(() => {})) // ne se résout jamais
 
     const items = [{ objectID: 'a' }, { objectID: 'b' }]
-    const { rerender } = render(<TestComponent items={items} />)
+    render(<TestComponent items={items} />)
 
-    expect(lastResult?.isRanking).toBe(true)
-    expect(lastResult?.displayItems).toEqual(items)
-
-    resolveRequest({
-      recommendationRequestId: 'req-1',
-      rankingVariant: 'control',
-      rankingVersion: 'pre-baseline-v0',
-      orderedListingIds: null,
-    })
-    await act(async () => {
-      await Promise.resolve()
-      await Promise.resolve()
-    })
-    rerender(<TestComponent items={items} />)
-
-    expect(lastResult?.isRanking).toBe(false)
+    // Aucun blocage : l'ordre d'origine est affiché dès le premier rendu.
     expect(lastResult?.displayItems).toEqual(items)
   })
 
-  it("réordonne l'affichage selon orderedListingIds quand la variante baseline répond à temps", async () => {
+  it("réordonne en place quand la variante baseline répond (reflow accepté, pas d'attente)", async () => {
     let resolveRequest!: (value: unknown) => void
     registerRecommendationRequest.mockReturnValue(new Promise((resolve) => { resolveRequest = resolve }))
 
     const items = [{ objectID: 'a' }, { objectID: 'b' }, { objectID: 'c' }]
     const { rerender } = render(<TestComponent items={items} />)
 
-    resolveRequest({
-      recommendationRequestId: 'req-1',
-      rankingVariant: 'baseline',
-      rankingVersion: 'baseline-v1',
-      orderedListingIds: ['c', 'a'],
+    expect(lastResult?.displayItems.map((item) => item.objectID)).toEqual(['a', 'b', 'c'])
+
+    await act(async () => {
+      resolveRequest({
+        recommendationRequestId: 'req-1',
+        rankingVariant: 'baseline',
+        rankingVersion: 'baseline-v1',
+        orderedListingIds: ['c', 'a'],
+      })
+      await Promise.resolve()
+      await Promise.resolve()
     })
+    rerender(<TestComponent items={items} />)
+
+    // "c" et "a" dans l'ordre reçu, "b" (absent du reclassement) à la suite plutôt que perdu.
+    expect(lastResult?.displayItems.map((item) => item.objectID)).toEqual(['c', 'a', 'b'])
+  })
+
+  it('garde l’ordre Algolia quand la variante est control (orderedListingIds=null)', async () => {
+    registerRecommendationRequest.mockResolvedValue({
+      recommendationRequestId: 'req-1',
+      rankingVariant: 'control',
+      rankingVersion: 'pre-baseline-v0',
+      orderedListingIds: null,
+    })
+
+    const items = [{ objectID: 'a' }, { objectID: 'b' }]
+    const { rerender } = render(<TestComponent items={items} />)
+
     await act(async () => {
       await Promise.resolve()
       await Promise.resolve()
     })
     rerender(<TestComponent items={items} />)
 
-    expect(lastResult?.isRanking).toBe(false)
-    // "c" et "a" dans l'ordre reçu, "b" (absent du reclassement) à la suite plutôt que perdu.
-    expect(lastResult?.displayItems.map((item) => item.objectID)).toEqual(['c', 'a', 'b'])
+    expect(lastResult?.displayItems).toEqual(items)
   })
 
-  it("retombe sur l'ordre Algolia si la réponse n'arrive pas dans le délai imparti", async () => {
-    registerRecommendationRequest.mockReturnValue(new Promise(() => {})) // ne se résout jamais
+  it('ignore une réponse arrivée trop tard (au-delà de la fenêtre de grâce)', async () => {
+    let resolveRequest!: (value: unknown) => void
+    registerRecommendationRequest.mockReturnValue(new Promise((resolve) => { resolveRequest = resolve }))
 
     const items = [{ objectID: 'a' }, { objectID: 'b' }]
     const { rerender } = render(<TestComponent items={items} />)
 
-    expect(lastResult?.isRanking).toBe(true)
+    act(() => {
+      jest.advanceTimersByTime(3000)
+    })
 
-    act(() => { jest.advanceTimersByTime(150) })
-    await act(async () => { await Promise.resolve() })
+    await act(async () => {
+      resolveRequest({
+        recommendationRequestId: 'req-1',
+        rankingVariant: 'baseline',
+        rankingVersion: 'baseline-v1',
+        orderedListingIds: ['b', 'a'],
+      })
+      await Promise.resolve()
+      await Promise.resolve()
+    })
     rerender(<TestComponent items={items} />)
 
-    // Le timeout abandonne l'attente : isRanking retombe côté hook via l'abort (la promesse
-    // registerRecommendationRequest ne se résout jamais ici, donc on vérifie au moins qu'aucun
-    // reclassement n'est appliqué et que l'affichage reste l'ordre Algolia).
+    // Réponse ignorée pour l'affichage (trop tardive) : ordre Algolia inchangé, mais le
+    // recommendationRequestId reste disponible pour le tracking.
     expect(lastResult?.displayItems).toEqual(items)
+    expect(lastResult?.recommendationRequest?.recommendationRequestId).toBe('req-1')
   })
 
-  it("ne bloque jamais et ne reclasse jamais les pages suivantes du scroll infini", async () => {
+  it('ne perturbe pas l’affichage sur les pages suivantes du scroll infini', async () => {
     registerRecommendationRequest.mockResolvedValue({
       recommendationRequestId: 'req-1',
       rankingVariant: 'baseline',
@@ -120,7 +136,6 @@ describe('useRankedListings', () => {
       await Promise.resolve()
     })
     rerender(<TestComponent items={firstPage} />)
-    expect(lastResult?.isRanking).toBe(false)
 
     registerRecommendationRequest.mockClear()
     registerRecommendationRequest.mockReturnValue(new Promise(() => {}))
@@ -128,9 +143,9 @@ describe('useRankedListings', () => {
     const grownPage = [{ objectID: 'a' }, { objectID: 'b' }]
     rerender(<TestComponent items={grownPage} />)
 
-    // Un nouvel appel est bien déclenché (nouvelle signature), mais il ne doit pas remettre
-    // isRanking à true : seule la toute première page est bloquante.
+    // Un nouvel appel est bien déclenché (nouvelle signature, journalisation Phase 1 inchangée),
+    // et le nouvel item apparaît immédiatement sans attendre sa réponse.
     expect(registerRecommendationRequest).toHaveBeenCalledTimes(1)
-    expect(lastResult?.isRanking).toBe(false)
+    expect(lastResult?.displayItems.map((item) => item.objectID)).toEqual(['a', 'b'])
   })
 })

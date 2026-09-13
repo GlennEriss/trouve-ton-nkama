@@ -1,6 +1,6 @@
 'use client'
 
-import { useLayoutEffect, useMemo, useRef, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 
 import {
   registerRecommendationRequest,
@@ -16,17 +16,18 @@ import {
 // suivis en Phase 1/2 — limitation connue, pas un bug (voir docs/recommendation-ml/).
 const MAX_CANDIDATES = 50
 
-// Marge réseau au-dessus du NFR serveur (reranking P95 < 100ms, ARCHITECTURE-OVERVIEW.md) : passé
-// ce délai, on abandonne l'attente et on garde l'ordre Algolia — jamais de blocage indéfini.
-const FIRST_PAGE_TIMEOUT_MS = 150
+// Décision produit (2026-09-14) : jamais de rendu bloquant sur le reclassement — un délai
+// perçu par 100% des sessions (dont 80% en variante control, sans aucun bénéfice) coûtait plus
+// cher que le reflow visuel occasionnel de la variante baseline. On affiche l'ordre Algolia
+// immédiatement et on réordonne en place si/quand la réponse arrive. Passé ce délai, une réponse
+// tardive est ignorée : réordonner longtemps après que l'utilisateur a déjà vu la liste serait
+// plus perturbant qu'utile.
+const LATE_REORDER_CUTOFF_MS = 2000
 
 export type RankedListingsResult<T> = {
-  /** Items dans l'ordre final à afficher : reclassés si une variante baseline a répondu à temps,
-   * ordre Algolia d'origine sinon (variante control, timeout, ou échec). */
+  /** Items dans l'ordre d'affichage : ordre Algolia/Firestore d'origine jusqu'à ce qu'une
+   * réponse de reclassement arrive (variante baseline), puis réordonnés en place. */
   displayItems: T[]
-  /** true uniquement pendant la brève attente du tout premier chargement (jamais pour les pages
-   * suivantes du scroll infini, qui ne sont ni bloquantes ni reclassées). */
-  isRanking: boolean
   recommendationRequest: RegisteredRecommendationRequest | null
 }
 
@@ -37,13 +38,9 @@ export function useRankedListings<T>(
   scoringContext?: RecommendationScoringContext,
 ): RankedListingsResult<T> {
   const [registered, setRegistered] = useState<RegisteredRecommendationRequest | null>(null)
-  const [isRanking, setIsRanking] = useState(false)
   const lastSignatureRef = useRef<string | null>(null)
-  const hasHandledFirstPageRef = useRef(false)
 
-  // useLayoutEffect (pas useEffect) : pose isRanking=true avant la peinture du premier
-  // chargement, pour éviter un flash de l'ordre Algolia non reclassé avant l'état d'attente.
-  useLayoutEffect(() => {
+  useEffect(() => {
     if (!context) return
 
     const candidates = items
@@ -57,32 +54,22 @@ export function useRankedListings<T>(
     if (signature === lastSignatureRef.current) return
     lastSignatureRef.current = signature
 
-    const isFirstPage = !hasHandledFirstPageRef.current
-    hasHandledFirstPageRef.current = true
-
     let cancelled = false
-    const controller = isFirstPage && typeof AbortController !== 'undefined' ? new AbortController() : undefined
-    let timeoutId: ReturnType<typeof setTimeout> | undefined
+    const requestedAt = Date.now()
 
-    if (isFirstPage) {
-      setIsRanking(true)
-      timeoutId = setTimeout(() => controller?.abort(), FIRST_PAGE_TIMEOUT_MS)
-    }
-
-    void registerRecommendationRequest({
-      context,
-      candidates,
-      scoringContext,
-      signal: controller?.signal,
-    }).then((result) => {
-      if (cancelled) return
-      if (result) setRegistered(result)
-      if (isFirstPage) setIsRanking(false)
+    void registerRecommendationRequest({ context, candidates, scoringContext }).then((result) => {
+      if (cancelled || !result) return
+      // Réponse arrivée trop tard : on garde recommendationRequestId pour le tracking (favoris/
+      // contact restent corrélés), mais on n'applique plus le reflow visuel à ce stade.
+      if (Date.now() - requestedAt > LATE_REORDER_CUTOFF_MS) {
+        setRegistered({ ...result, orderedListingIds: null })
+        return
+      }
+      setRegistered(result)
     })
 
     return () => {
       cancelled = true
-      if (timeoutId !== undefined) clearTimeout(timeoutId)
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [items, context, scoringContext])
@@ -104,5 +91,5 @@ export function useRankedListings<T>(
     return [...ranked.map((entry) => entry.item), ...unranked]
   }, [items, registered, toCandidate])
 
-  return { displayItems, isRanking, recommendationRequest: registered }
+  return { displayItems, recommendationRequest: registered }
 }

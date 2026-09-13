@@ -61,28 +61,46 @@ Pas remesuré séparément : le code retiré (`updateOrCreateSuggestion` + `with
 lenteur/timeout de cette écriture — entièrement supprimé du chemin critique. Gain plancher
 garanti par construction (plus d'attente du tout), pas seulement mesuré.
 
-### Points 3/4/6 — pipeline image, concurrence, upload Reel
+### Point 3 — pipeline vignette parallèle (mesure réelle, réseau throttlé, 2026-09-14)
 
-**Non isolés séparément** dans cette passe : les mesurer proprement demande, comme le
-document le précise lui-même (§ Point 4 « Mesure et réglage », § Point 3 « Validation
-performance »), un **réseau simulé/throttlé** et plusieurs images de tailles réalistes — sur
-la bonne connexion de cet environnement de dev, `Promise.all` illimité et une concurrence à 3
-ne se distinguent pas de façon fiable (l'écart n'apparaît qu'en dégradant la connexion,
-exactement ce que le document anticipe : « le temps médian ne doit pas régresser sur une
-bonne connexion »). Référence disponible en attendant : les runs e2e réels de ce chantier
-(`property-and-mode-creation.spec.ts`, vrai Storage + vrai Firestore) publient une annonce
-immobilière complète (formulaire manuel, 1 image) en **17,5 à 23,5 s**, et une annonce Mode
-par IA (upload + appel Gemini + écriture) en **16,4 s** — chiffres de bout en bout après
-l'ensemble des optimisations de ce document, à comparer à une mesure « avant » qui
-nécessiterait de rejouer l'ancien code, non fait ici pour ne pas revenir en arrière sur du
-code déjà remplacé.
+Méthode : e2e Playwright réel (vrai Storage + vrai Firestore, `location-maison-dev`),
+formulaire immobilier manuel (`/property/add/studio`), une photo de 185 Ko (taille réaliste,
+compressée depuis un original 1,9 Mo via `sips`). Le throttle réseau (CDP
+`Network.emulateNetworkConditions` : 128 kbps upload / 750 kbps download / 150 ms de
+latence — profil "3G lente") n'est activé qu'une fois le formulaire rempli, juste avant le
+clic sur "Enregistrer", pour isoler la phase d'upload sans faire échouer le chargement du
+bundle Next dev par la même occasion. Mesure via l'instrumentation du point 8 (phase
+`image_upload`, qui englobe tout `createFile`/`uploadPropertyImages`). Comparaison AVANT
+(code temporairement remis en séquentiel — vignette démarrée seulement après la fin de
+l'upload principal — puis restauré à l'identique, `git diff` vide confirmé après coup) vs
+APRÈS (code actuellement déployé, vignette démarrée en parallèle) :
+
+| Mesure | Run 1 | Run 2 | Run 3 | Moyenne |
+|---|---:|---:|---:|---:|
+| AVANT (vignette séquentielle) | 20 477 ms | 19 932 ms | 20 711 ms | **20 373 ms** |
+| APRÈS (vignette parallèle, code actuel) | 19 352 ms | 18 015 ms | 17 929 ms | **18 432 ms** |
+
+**Lecture** : gain réel d'environ **1,9 s (~9,5 %)** sur la phase `image_upload` pour une
+image, sous une connexion mobile lente simulée. Le gain est borné par la durée de la branche
+vignette (compression + upload d'un fichier nettement plus petit) : sur une bonne connexion
+de développement (non throttlée), les deux branches sont si rapides que l'écart n'est pas
+mesurable de façon fiable, ce qui explique pourquoi ce point nécessitait spécifiquement un
+réseau dégradé pour être objectivé (comme le document l'anticipe : « le temps médian ne doit
+pas régresser sur une bonne connexion »).
+
+### Points 4/6 — concurrence, upload Reel
+
+**Non isolés séparément** dans cette passe. Référence disponible en attendant : les runs e2e
+réels de ce chantier (`property-and-mode-creation.spec.ts`, vrai Storage + vrai Firestore)
+publient une annonce immobilière complète (formulaire manuel, 1 image) en **17,5 à 23,5 s**,
+et une annonce Mode par IA (upload + appel Gemini + écriture) en **16,4 s** — chiffres de
+bout en bout après l'ensemble des optimisations de ce document.
 
 ### Suite recommandée
 
-Établir une baseline chiffrée pour les points 3/4/6 nécessite un test dédié avec profil
-réseau simulé (voir Playwright `context.route`/CDP throttling) et plusieurs tailles de lot
-d'images — hors budget de cette passe, proposé comme prochaine étape si ces points doivent
-être formellement validés au même niveau que le point 1.
+Établir une baseline chiffrée pour les points 4 (plusieurs images, effet de la concurrence
+bornée) et 6 (upload vidéo Reel reprenable) sous le même profil réseau throttlé — même
+méthode que le point 3 ci-dessus, hors budget de cette passe.
 
 ## Objet du document
 

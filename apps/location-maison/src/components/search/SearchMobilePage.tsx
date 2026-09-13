@@ -34,7 +34,7 @@ export default function SearchMobilePage() {
     const sentinelRef = React.useRef<HTMLDivElement>(null);
     const { items, isLastPage, showMore } = useInfiniteHits();
     const searchParams = useSearchParams();
-    const { displayItems, isRanking, recommendationRequest } = useRankedListings(
+    const { displayItems, recommendationRequest } = useRankedListings(
         items,
         'search',
         (item: any, index) => (item?.objectID ? toRecommendationCandidate(item, index) : null),
@@ -349,14 +349,6 @@ export default function SearchMobilePage() {
                                 </button>
                             </div>
                         ) : items.length === 0 && (searchStatus === 'loading' || searchStatus === 'stalled') ? (
-                            <div className="flex items-center justify-center gap-2 py-8 text-gray-600 dark:text-gray-300" role="status">
-                                <LoaderCircle className="h-5 w-5 animate-spin" aria-hidden="true" />
-                                <span>Recherche des annonces...</span>
-                            </div>
-                        ) : isRanking ? (
-                            // Attente brève (~150ms max) du reclassement Phase 2 avant d'afficher
-                            // la première page — jamais de blocage indéfini, un timeout retombe
-                            // sur l'ordre Algolia.
                             <div className="flex items-center justify-center gap-2 py-8 text-gray-600 dark:text-gray-300" role="status">
                                 <LoaderCircle className="h-5 w-5 animate-spin" aria-hidden="true" />
                                 <span>Recherche des annonces...</span>

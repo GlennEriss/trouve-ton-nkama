@@ -25,7 +25,7 @@ export default function
 SearchDesktopPage() {
     const { items, isLastPage, showMore } = useInfiniteHits();
     const searchParams = useSearchParams();
-    const { displayItems, isRanking, recommendationRequest } = useRankedListings(
+    const { displayItems, recommendationRequest } = useRankedListings(
         items,
         'search',
         (item: any, index) => (item?.objectID ? toRecommendationCandidate(item, index) : null),
@@ -253,14 +253,6 @@ SearchDesktopPage() {
                                 </button>
                             </div>
                         ) : items.length === 0 && (searchStatus === 'loading' || searchStatus === 'stalled') ? (
-                            <div className="flex h-full items-center justify-center gap-3 text-gray-600 dark:text-gray-300" role="status">
-                                <LoaderCircle className="h-6 w-6 animate-spin" aria-hidden="true" />
-                                <span>Recherche des annonces...</span>
-                            </div>
-                        ) : isRanking ? (
-                            // Attente brève (~150ms max) du reclassement Phase 2 avant d'afficher
-                            // la première page — jamais de blocage indéfini, un timeout retombe
-                            // sur l'ordre Algolia.
                             <div className="flex h-full items-center justify-center gap-3 text-gray-600 dark:text-gray-300" role="status">
                                 <LoaderCircle className="h-6 w-6 animate-spin" aria-hidden="true" />
                                 <span>Recherche des annonces...</span>

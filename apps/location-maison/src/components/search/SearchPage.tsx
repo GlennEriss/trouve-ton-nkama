@@ -165,7 +165,7 @@ export default function SearchPage() {
 
   // 5. Infinite hits + intersection observer
   const { items, isLastPage, showMore } = useInfiniteHits();
-  const { displayItems, isRanking, recommendationRequest } = useRankedListings(
+  const { displayItems, recommendationRequest } = useRankedListings(
     items,
     "search",
     (item: any, index) => (item?.objectID ? toRecommendationCandidate(item, index) : null),
@@ -324,23 +324,15 @@ export default function SearchPage() {
               désormais une taille fixe (220px, même gabarit que le carrousel de la home),
               le nombre de cards par ligne s'adapte naturellement à la largeur disponible.
               Largeur en % sous sm (2 cards par ligne sur mobile étroit) puis fixe. */}
-          {isRanking ? (
-            // Attente brève (~150ms max) du reclassement Phase 2 avant d'afficher la première
-            // page — jamais de blocage indéfini, un timeout retombe sur l'ordre Algolia.
-            <div className="flex items-center justify-center py-20" role="status" aria-label="Chargement des annonces">
-              <div className="h-8 w-8 animate-spin rounded-full border-2 border-primary border-t-transparent" />
+          <RecommendationRequestProvider value={recommendationRequest}>
+            <div className="flex flex-wrap gap-4">
+              {displayItems.map((propertyData: any, i) => (
+                <div key={propertyData.objectID} className="w-[calc(50%-0.5rem)] sm:w-[220px]">
+                  <PropertyCard property={propertyData} position={i} />
+                </div>
+              ))}
             </div>
-          ) : (
-            <RecommendationRequestProvider value={recommendationRequest}>
-              <div className="flex flex-wrap gap-4">
-                {displayItems.map((propertyData: any, i) => (
-                  <div key={propertyData.objectID} className="w-[calc(50%-0.5rem)] sm:w-[220px]">
-                    <PropertyCard property={propertyData} position={i} />
-                  </div>
-                ))}
-              </div>
-            </RecommendationRequestProvider>
-          )}
+          </RecommendationRequestProvider>
 
           {/* Sentinel pour infinite scroll */}
           <div ref={sentinelRef} />

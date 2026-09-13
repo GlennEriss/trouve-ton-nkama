@@ -55,7 +55,7 @@ const PropertyCarousel: React.FC<CarouselProps> = ({
   recommendationContext,
 }) => {
   const router = useRouter();
-  const { displayItems, isRanking, recommendationRequest } = useRankedListings(
+  const { displayItems, recommendationRequest } = useRankedListings(
     properties,
     recommendationContext,
     (property, index) =>
@@ -118,14 +118,7 @@ const PropertyCarousel: React.FC<CarouselProps> = ({
   return (
     <RecommendationRequestProvider value={recommendationRequest}>
     <div className="container-page px-4 relative">
-      {isRanking ? (
-        // Attente brève (~150ms max, voir useRankedListings) du reclassement Phase 2 avant
-        // d'afficher la première page — jamais de blocage indéfini, un timeout retombe sur
-        // l'ordre Algolia/Firestore d'origine.
-        <div className="flex h-40 items-center justify-center" style={{ width: CARD_WIDTH }} role="status" aria-label="Chargement des annonces">
-          <div className="h-6 w-6 animate-spin rounded-full border-2 border-primary border-t-transparent" />
-        </div>
-      ) : hasMultiple ? (
+      {hasMultiple ? (
         <Slider {...settings}>
           {displayItems.map((p, index) => (
             <div
