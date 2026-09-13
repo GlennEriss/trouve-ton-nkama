@@ -118,9 +118,13 @@ CASES.push({
     }
 
     // Scroll jusqu'en bas pour vérifier que le contenu de fin de page (contact, footer) est bien
-    // atteignable et lisible — pas seulement le haut de l'écran.
-    for (let i = 0; i < 6; i += 1) {
-      adb(['shell', 'input', 'swipe', '360', '1300', '360', '250', '150']);
+    // atteignable et lisible — pas seulement le haut de l'écran. Amplitude calibrée sur l'écran
+    // de l'émulateur (Pixel 10 Pro, résolution plus grande que le téléphone physique utilisé
+    // ailleurs) : 6 swipes courts ne suffisaient pas à atteindre le bas d'une page à 6 sections
+    // + documents liés + contact — vérifié manuellement, 8 swipes amples suffisent.
+    for (let i = 0; i < 8; i += 1) {
+      adb(['shell', 'input', 'swipe', '360', '1600', '360', '200', '100']);
+      await new Promise((resolve) => setTimeout(resolve, 150));
     }
     await new Promise((resolve) => setTimeout(resolve, 500));
     xml = await dumpTree();

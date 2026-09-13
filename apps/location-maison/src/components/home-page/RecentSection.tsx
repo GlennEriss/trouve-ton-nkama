@@ -50,7 +50,7 @@ export default function RecentSection() {
             <h1 className='text-xl lg:text-2xl xl:text-3xl leading-tight font-bold text-center text-primary'>
                 Annonces récentes
             </h1>
-            <PropertyCarousel properties={data?.pages[0]?.properties ?? []} />
+            <PropertyCarousel properties={data?.pages[0]?.properties ?? []} recommendationContext="home" />
         </section>
     )
 }

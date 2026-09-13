@@ -10,6 +10,8 @@ import {
 } from "react-instantsearch";
 import { useAlgoliaContext } from "@/providers/AlgoliaContext";
 import PropertyCard from "../home-page/PropertyCard";
+import { RecommendationRequestProvider } from "@/providers/recommendation-request-provider";
+import { useRegisterRecommendationRequest } from "@/features/recommendation/tracking/use-register-recommendation-request";
 import { FilterModal } from "../home-page/FilterModal";
 import { TypeProperty } from "@/constantes/property-type";
 
@@ -162,6 +164,7 @@ export default function SearchPage() {
 
   // 5. Infinite hits + intersection observer
   const { items, isLastPage, showMore } = useInfiniteHits();
+  const recommendationRequest = useRegisterRecommendationRequest(items, "search");
   useEffect(() => {
     if (!sentinelRef.current) return;
     const obs = new IntersectionObserver(
@@ -310,13 +313,15 @@ export default function SearchPage() {
               désormais une taille fixe (220px, même gabarit que le carrousel de la home),
               le nombre de cards par ligne s'adapte naturellement à la largeur disponible.
               Largeur en % sous sm (2 cards par ligne sur mobile étroit) puis fixe. */}
-          <div className="flex flex-wrap gap-4">
-            {items.map((propertyData, i) => (
-              <div key={propertyData.objectID} className="w-[calc(50%-0.5rem)] sm:w-[220px]">
-                <PropertyCard property={propertyData} />
-              </div>
-            ))}
-          </div>
+          <RecommendationRequestProvider value={recommendationRequest}>
+            <div className="flex flex-wrap gap-4">
+              {items.map((propertyData, i) => (
+                <div key={propertyData.objectID} className="w-[calc(50%-0.5rem)] sm:w-[220px]">
+                  <PropertyCard property={propertyData} position={i} />
+                </div>
+              ))}
+            </div>
+          </RecommendationRequestProvider>
 
           {/* Sentinel pour infinite scroll */}
           <div ref={sentinelRef} />

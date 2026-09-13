@@ -9,6 +9,8 @@ import { FilterModalHomePage } from '../home-page/FilterModalHomePage';
 import { useAlgoliaContext } from '@/providers/AlgoliaContext';
 import { useInfiniteHits, useInstantSearch, useStats } from 'react-instantsearch';
 import PropertyCard from '../home-page/PropertyCard';
+import { RecommendationRequestProvider } from '@/providers/recommendation-request-provider';
+import { useRegisterRecommendationRequest } from '@/features/recommendation/tracking/use-register-recommendation-request';
 import CategoryFilterPills, { DEMANDES_CATEGORY_NAME } from './CategoryFilterPills';
 import CategoryLeafFilterPills from './CategoryLeafFilterPills';
 import SearchRequestsListClient from '@/components/search-requests/SearchRequestsListClient';
@@ -30,6 +32,14 @@ export default function SearchMobilePage() {
     const topRef = React.useRef<HTMLDivElement>(null);
     const sentinelRef = React.useRef<HTMLDivElement>(null);
     const { items, isLastPage, showMore } = useInfiniteHits();
+    const recommendationRequest = useRegisterRecommendationRequest(items, 'search');
+    const recommendationPositionByObjectId = React.useMemo(() => {
+        const map = new Map<string, number>();
+        items.forEach((item: any, index: number) => {
+            if (item?.objectID) map.set(item.objectID, index);
+        });
+        return map;
+    }, [items]);
     const { nbHits } = useStats();
     const { status: searchStatus, refresh } = useInstantSearch();
     const searchParams = useSearchParams();
@@ -354,6 +364,7 @@ export default function SearchMobilePage() {
                                     et surtout PAS `auto-fit` : auto-fill conserve les colonnes
                                     vides, donc 1-2 résultats gardent leur taille normale au lieu
                                     d'être étirés sur toute la ligne (bug du 2026-08-16). */}
+                                <RecommendationRequestProvider value={recommendationRequest}>
                                 <div className="space-y-4">
                                     {feedGroups.map((group, groupIndex) =>
                                         group.kind === 'properties' ? (
@@ -368,7 +379,11 @@ export default function SearchMobilePage() {
                                                     >
                                                         {/* priority sur la toute première card (LCP de la page) — voir
                                                             ListingCard.tsx et SearchDesktopPage.tsx. */}
-                                                        <PropertyCard property={entry.item} priority={groupIndex === 0 && index === 0} />
+                                                        <PropertyCard
+                                                            property={entry.item}
+                                                            priority={groupIndex === 0 && index === 0}
+                                                            position={recommendationPositionByObjectId.get(entry.item.objectID)}
+                                                        />
                                                     </div>
                                                 ))}
                                             </div>
@@ -386,6 +401,7 @@ export default function SearchMobilePage() {
                                         )
                                     )}
                                 </div>
+                                </RecommendationRequestProvider>
 
                                 {/* Sentinel pour infinite scroll */}
                                 <div ref={sentinelRef} />

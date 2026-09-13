@@ -9,6 +9,8 @@ import "slick-carousel/slick/slick-theme.css";
 import PropertyCard from "../home-page/PropertyCard";
 import { Property } from "@/models/annonce";
 import { cn } from "@/lib/utils";
+import { RecommendationRequestProvider } from "@/providers/recommendation-request-provider";
+import { useRegisterRecommendationRequest } from "@/features/recommendation/tracking/use-register-recommendation-request";
 
 // Même largeur fixe que ListingCardsCarousel (2026-08-15, demande utilisateur explicite :
 // une seule taille de card dans toute la plateforme) — plus de slidesToShow par breakpoint.
@@ -18,6 +20,13 @@ interface CarouselProps {
   properties?: Property[]; // Optionnel maintenant
   isRecommendation?: boolean;
   hideDate?: boolean;
+  /**
+   * Active la collecte recommandation ML (docs/recommendation-ml/) pour ce carrousel.
+   * Volontairement optionnelle : seules les surfaces MVP (accueil) la passent. Les
+   * "similaires" (RecommendationSection.tsx) et autres usages restent hors périmètre Phase 1
+   * — voir docs/recommendation-ml/AVANT-IMPLEMENTATION.md §1 (surfaces exclues).
+   */
+  recommendationContext?: "home" | "search" | "similar" | "reel";
 }
 
 /* Flèche réutilisable (précédent / suivant) */
@@ -38,8 +47,14 @@ const ArrowButton: React.FC<{ direction: "prev" | "next"; onClick?: () => void }
   );
 };
 
-const PropertyCarousel: React.FC<CarouselProps> = ({ properties = [], isRecommendation = false, hideDate = false }) => {
+const PropertyCarousel: React.FC<CarouselProps> = ({
+  properties = [],
+  isRecommendation = false,
+  hideDate = false,
+  recommendationContext,
+}) => {
   const router = useRouter();
+  const recommendationRequest = useRegisterRecommendationRequest(properties, recommendationContext);
 
   /* ----- Comptage & helpers ----- */
   const count = properties.length;
@@ -77,10 +92,11 @@ const PropertyCarousel: React.FC<CarouselProps> = ({ properties = [], isRecommen
 
   /* ----- Rendu ----- */
   return (
+    <RecommendationRequestProvider value={recommendationRequest}>
     <div className="container-page px-4 relative">
       {hasMultiple ? (
         <Slider {...settings}>
-          {properties.map((p) => (
+          {properties.map((p, index) => (
             <div
               key={p.id ?? `property-${Math.random()}`}
               className="p-3 text-left focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 rounded-lg transition-all duration-200"
@@ -96,7 +112,7 @@ const PropertyCarousel: React.FC<CarouselProps> = ({ properties = [], isRecommen
               tabIndex={0}
               aria-label={`Voir les détails de ${p.title}`}
             >
-              <PropertyCard property={p} hideDate={hideDate} />
+              <PropertyCard property={p} hideDate={hideDate} position={index} />
             </div>
           ))}
         </Slider>
@@ -117,7 +133,7 @@ const PropertyCarousel: React.FC<CarouselProps> = ({ properties = [], isRecommen
             tabIndex={0}
             aria-label={`Voir les détails de ${properties[0].title}`}
           >
-            <PropertyCard property={properties[0]} hideDate={hideDate} />
+            <PropertyCard property={properties[0]} hideDate={hideDate} position={0} />
           </div>
         )
       )}
@@ -131,6 +147,7 @@ const PropertyCarousel: React.FC<CarouselProps> = ({ properties = [], isRecommen
         </button>
       </div>
     </div>
+    </RecommendationRequestProvider>
   );
 };
 

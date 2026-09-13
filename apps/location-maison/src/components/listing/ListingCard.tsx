@@ -10,6 +10,12 @@ import { trackingEvents, useTrackEvent } from '@/features/analytics/tracking';
 import { logImageError, logImageFallback, logImageLoad } from "@/lib/image-debug";
 import { resolveThumbnailUrl } from "@/lib/property-images";
 import { formatZonesLabel, getListingZones } from "@/lib/listing-zones";
+import { useRecommendationImpression } from "@/hooks/use-recommendation-impression";
+import { trackRecommendationEvent } from "@/features/recommendation/tracking/recommendation-tracking.client";
+import {
+  RecommendationCardProvider,
+  useRecommendationRequestContext,
+} from "@/providers/recommendation-request-provider";
 
 // Import des icônes
 import { IoMdBed } from "react-icons/io";
@@ -120,13 +126,27 @@ type ListingCardProps = {
    * métriques (bande passante, CPU) en précédant tout le reste de la queue de chargement.
    */
   priority?: boolean;
+  /**
+   * Position dans la liste servie (index de boucle du composant appelant). Optionnelle :
+   * seules les surfaces MVP (accueil/recherche) sous un RecommendationRequestProvider la
+   * fournissent — voir docs/recommendation-ml/IMPLEMENTATION-ET-TESTS.md, Phase 1.
+   */
+  position?: number;
 };
 
-const ListingCard = ({ property, hideDate = false, density = "standard", priority = false }: ListingCardProps) => {
+const ListingCard = ({ property, hideDate = false, density = "standard", priority = false, position }: ListingCardProps) => {
   const router = useRouter();
   const pathname = usePathname();
   const { trackEvent } = useTrackEvent();
   const propertyId = normalizePropertyId(property) || "unknown";
+  const recommendationRequest = useRecommendationRequestContext();
+  const impressionRef = useRecommendationImpression({
+    recommendationRequestId: recommendationRequest?.recommendationRequestId,
+    listingId: propertyId,
+    position: position ?? 0,
+    rankingVariant: recommendationRequest?.rankingVariant ?? "control",
+    rankingVersion: recommendationRequest?.rankingVersion ?? "unknown",
+  });
   const sizing = DENSITY_CLASSES[density];
 
   const firstImageCandidate = Array.isArray(property.images)
@@ -234,6 +254,17 @@ const ListingCard = ({ property, hideDate = false, density = "standard", priorit
       property_type: property.typeProperty ?? '',
       property_status: property.status ?? '',
     });
+
+    if (recommendationRequest) {
+      trackRecommendationEvent({
+        eventName: 'recommendation_click',
+        recommendationRequestId: recommendationRequest.recommendationRequestId,
+        listingId: propertyId,
+        position: position ?? 0,
+        rankingVariant: recommendationRequest.rankingVariant,
+        rankingVersion: recommendationRequest.rankingVersion,
+      });
+    }
 
     router.push(`/annonce/${propertyId}`);
   };
@@ -364,7 +395,14 @@ const ListingCard = ({ property, hideDate = false, density = "standard", priorit
   }
 
   return (
-    <div key={property.id} className="">
+    <RecommendationCardProvider
+      value={
+        recommendationRequest
+          ? { ...recommendationRequest, listingId: propertyId, position: position ?? 0 }
+          : null
+      }
+    >
+    <div key={property.id} className="" ref={impressionRef}>
       <div
         onClick={() => handleCardClick()}
         onKeyDown={(e) => {
@@ -530,6 +568,7 @@ const ListingCard = ({ property, hideDate = false, density = "standard", priorit
         </div>
       </div>
     </div>
+    </RecommendationCardProvider>
   );
 };
 
