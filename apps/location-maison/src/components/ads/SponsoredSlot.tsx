@@ -8,6 +8,7 @@ import type { AdCreativePublic, AdPlacement } from '@/models/advertising'
 import { trackAdEvent } from '@/lib/statistics/ad-tracking.client'
 import { resolveAdStackingDecision, AD_STACKING_EXPERIMENT_ID } from '@/lib/ads/stacking-experiment'
 import { getPresenceSessionId } from '@/features/analytics/presence/services/presence-admin-analytics.client'
+import { ADSENSE_SLOT_STACKING_EXPERIMENT_B } from '@/lib/ads/config'
 
 type SponsoredSlotProps = Readonly<{
   placement: AdPlacement
@@ -99,7 +100,11 @@ export default function SponsoredSlot({
       ) : null}
       {showAdSense ? (
         <InlineAdUnit
-          slot={fallbackSlot}
+          // Bucket B de l'experience A/B : unite AdSense dediee (si configuree) pour que
+          // Google attribue le revenu a la bonne variante, distinctement du slot A normal.
+          slot={variant === 'B_ALTERNATE' && ADSENSE_SLOT_STACKING_EXPERIMENT_B
+            ? ADSENSE_SLOT_STACKING_EXPERIMENT_B
+            : fallbackSlot}
           slotKey={fallbackSlotKey}
           surface={surface}
           compact={fallbackCompact}

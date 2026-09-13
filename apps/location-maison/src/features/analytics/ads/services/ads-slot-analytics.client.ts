@@ -32,11 +32,9 @@ type EmitAdsSlotEventInput = {
   };
   keepalive?: boolean;
   /**
-   * Tag d'experience A/B (empilement/alternance, cf. lib/ads/stacking-experiment.ts). Valide
-   * par le schema Zod cote route/adaptateur admin, mais volontairement PAS encore mappe dans
-   * AdsSlotEventRow/l'insert BigQuery : la table `ads_slot_events` n'a pas ces colonnes et
-   * `ignoreUnknownValues: false` ferait echouer CHAQUE insertion tant qu'elles n'existent pas.
-   * Ajouter la colonne cote BigQuery avant de cabler le mapping final.
+   * Tag d'experience A/B (empilement/alternance, cf. lib/ads/stacking-experiment.ts). Persiste
+   * dans `ads_slot_events.experiment_id`/`.experiment_variant` cote admin depuis l'ajout de
+   * ces 2 colonnes STRING nullable le 2026-09-14 (voir buildAdsSlotEventRows).
    */
   experimentId?: string;
   experimentVariant?: string;

@@ -63,3 +63,12 @@ export const ADSENSE_SLOTS = {
   immobilierInline: immobilierInlineSlot,
   reelsInline: reelsInlineSlot,
 } as const;
+
+// Unite AdSense dediee au bucket B de l'experience empilement/alternance (audit §5.4/§9 Lot 3,
+// point 3 des raccordements analytiques) : sans elle, A et B partageraient la meme unite
+// (searchInline/immobilierInline) et Google ne permettrait pas de distinguer leurs revenus.
+// Volontairement PAS de fallback vers un autre slot si absente : `stacking-experiment.ts`
+// retombe alors sur le slot normal du placement (empilement standard, aucune separation de
+// revenu tant que ce slot n'est pas configure).
+export const ADSENSE_SLOT_STACKING_EXPERIMENT_B =
+  normalize(process.env.NEXT_PUBLIC_ADSENSE_SLOT_STACKING_EXPERIMENT_B) ?? null;
