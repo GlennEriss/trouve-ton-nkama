@@ -226,7 +226,10 @@ CASES.push({
       'Comment demander la suppression ?',
       'glenneriss@gmail.com',
       'Objet : « Suppression de compte »',
-      'Politique de Confidentialité',
+      // Le lien est imbriqué dans le paragraphe (<Text>...<Text onPress>Politique de
+      // Confidentialité</Text>.</Text>) : RN fusionne tout en un seul texte d'accessibilité,
+      // donc on cherche la phrase entière plutôt que le lien seul (jamais isolé dans le dump).
+      "Pour plus d'informations, consultez notre Politique de Confidentialité.",
     ]);
 
     return `écran chargé en ${navMs} ms (total avec tap ${totalMs} ms), contenu complet vérifié haut+bas, aucune WebView`;
